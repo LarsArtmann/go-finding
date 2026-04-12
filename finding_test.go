@@ -9,12 +9,24 @@ import (
 
 func standardTestFinding() Finding {
 	return Finding{
-		ID:       "test:rule1:file.go:10:5",
-		Rule:     "rule1",
-		ToolName: "test",
-		Message:  "test message",
-		Severity: SeverityError,
-		Position: Position{File: "file.go", Line: 10, Column: 5},
+		ID:          "test:rule1:file.go:10:5",
+		Rule:        "rule1",
+		ToolName:    "test",
+		Message:     "test message",
+		Severity:    SeverityError,
+		Position:    Position{File: "file.go", Line: 10, Column: 5, Offset: 0},
+		Category:    "",
+		Tag:         "",
+		FixStrategy: FixStrategyNone,
+		Suggestion:  "",
+		BeforeCode:  "",
+		AfterCode:   "",
+		Range:       nil,
+		Snippet:     "",
+		Confidence:  100,
+		Related:     []RelatedRef{},
+		Suppression: nil,
+		Metadata:    map[string]string{},
 	}
 }
 
@@ -28,6 +40,27 @@ func assertTotalCount(t *testing.T, r *Report, expected int) {
 	if r.Summary.Total != expected {
 		t.Errorf("expected %d total, got %d", expected, r.Summary.Total)
 	}
+}
+
+// addFindingForTest is a helper to add a finding to a report with minimal boilerplate.
+func addFindingForTest(r *Report, id string, sev Severity, file string) {
+	r.AddFinding(Finding{
+		ID:          id,
+		Severity:    sev,
+		Position:    Position{File: file, Line: 0, Column: 0, Offset: 0},
+		Category:    "",
+		Tag:         "",
+		FixStrategy: FixStrategyNone,
+		Suggestion:  "",
+		BeforeCode:  "",
+		AfterCode:   "",
+		Range:       nil,
+		Snippet:     "",
+		Confidence:  100,
+		Related:     []RelatedRef{},
+		Suppression: nil,
+		Metadata:    map[string]string{},
+	})
 }
 
 func TestSeverity(t *testing.T) {
@@ -294,9 +327,9 @@ func TestReport(t *testing.T) {
 
 	r := NewReport(ToolInfo{Name: "test-tool", Version: "1.0.0"})
 
-	r.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go"}})
-	r.AddFinding(Finding{ID: "2", Severity: SeverityWarning, Position: Position{File: "b.go"}})
-	r.AddFinding(Finding{ID: "3", Severity: SeverityError, Position: Position{File: "a.go"}})
+	addFindingForTest(r, "1", SeverityError, "a.go")
+	addFindingForTest(r, "2", SeverityWarning, "b.go")
+	addFindingForTest(r, "3", SeverityError, "a.go")
 
 	r.ComputeSummary()
 
@@ -490,16 +523,27 @@ func TestRangeContains(t *testing.T) {
 		End:   Position{File: "test.go", Line: 20, Column: 10},
 	}
 
-	// Test containment
-	if !r.Contains(Position{File: "test.go", Line: 15, Column: 7}) {
-		t.Error("position in range should be contained")
+	tests := []struct {
+		name    string
+		pos     Position
+		want    bool
+		message string
+	}{
+		{"in range", Position{File: "test.go", Line: 15, Column: 7}, true, ""},
+		{"before range", Position{File: "test.go", Line: 5, Column: 1}, false, "position before range should not be contained"},
+		{"different file", Position{File: "other.go", Line: 15, Column: 7}, false, "position in different file should not be contained"},
 	}
 
-	if r.Contains(Position{File: "test.go", Line: 5, Column: 1}) {
-		t.Error("position before range should not be contained")
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := r.Contains(tt.pos)
+			if tt.want && !got {
+				t.Error(tt.message)
+			}
 
-	if r.Contains(Position{File: "other.go", Line: 15, Column: 7}) {
-		t.Error("position in different file should not be contained")
+			if !tt.want && got {
+				t.Error(tt.message)
+			}
+		})
 	}
 }

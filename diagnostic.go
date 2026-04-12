@@ -29,6 +29,7 @@ func FromDiagnostic(
 		File:   pos.Filename,
 		Line:   pos.Line,
 		Column: pos.Column,
+		Offset: pos.Offset,
 	})
 
 	f := Finding{
@@ -40,14 +41,25 @@ func FromDiagnostic(
 		Position:    FromTokenPosition(pos),
 		Category:    d.Category,
 		FixStrategy: fixStrategy,
+		Tag:         "",
+		Suggestion:  "",
+		BeforeCode:  "",
+		AfterCode:   "",
+		Range:       nil,
+		Snippet:     "",
+		Confidence:  0.0,
+		Related:     []RelatedRef(nil),
+		Suppression: nil,
+		Metadata:    map[string]string(nil),
 	}
 
 	// Add related information
 	for _, info := range d.Related {
 		relatedPos := fset.Position(info.Pos)
 		f.Related = append(f.Related, RelatedRef{
-			Relation: "related",
-			Position: FromTokenPosition(relatedPos),
+			FindingID: id,
+			Relation:  "related",
+			Position:  FromTokenPosition(relatedPos),
 		})
 	}
 
@@ -59,9 +71,13 @@ func FromDiagnostic(
 // Note: This is lossy - many Finding fields have no equivalent in analysis.Diagnostic.
 func (f Finding) AnalysisDiagnostic() analysis.Diagnostic {
 	d := analysis.Diagnostic{
-		Pos:      token.NoPos, // Would need fset
-		Message:  f.Message,
-		Category: f.Category,
+		Pos:        token.NoPos, // Would need fset
+		End:        token.NoPos,
+		Message:    f.Message,
+		Category:   f.Category,
+		URL:        "",
+		SuggestedFixes: []analysis.SuggestedFix{},
+		Related:    []analysis.RelatedInformation{},
 	}
 
 	if f.FixStrategy == FixStrategyDirect && f.AfterCode != "" {
@@ -73,6 +89,8 @@ func (f Finding) AnalysisDiagnostic() analysis.Diagnostic {
 				TextEdits: []analysis.TextEdit{
 					{
 						NewText: []byte(f.AfterCode),
+						Pos:  0,
+						End:  0,
 					},
 				},
 			},
@@ -95,20 +113,27 @@ func FromTokenPosition(pos token.Position) Position {
 // NodePosition returns a Position from an AST node.
 func NodePosition(fset *token.FileSet, node ast.Node) Position {
 	if node == nil {
-		return Position{}
+		return Position{
+		File:   "",
+		Line:   0,
+		Column: 0,
+		Offset: 0,
+	}
 	}
 
 	return FromTokenPosition(fset.Position(node.Pos()))
 }
 
 // NodeRange returns a Range from an AST node.
-func NodeRange(fset *token.FileSet, node ast.Node) Range {
+func NodeRange(node ast.Node, fset *token.FileSet) Range {
 	if node == nil {
-		return Range{}
+		return Range{Start: Position{}, End: Position{}}
 	}
 
+	startPos := FromTokenPosition(fset.Position(node.Pos()))
+
 	return Range{
-		Start: FromTokenPosition(fset.Position(node.Pos())),
+		Start: startPos,
 		End:   FromTokenPosition(fset.Position(node.End())),
 	}
 }

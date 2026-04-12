@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 )
 
-// SARIF confidence constant
+// SARIF confidence constant.
 const (
 	ConfidenceScale = 100.0 // Confidence values are expressed as percentage (0-100)
 )

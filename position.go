@@ -45,40 +45,43 @@ func (r Range) HasEnd() bool {
 	return r.End.Line > 0
 }
 
-// Contains reports whether the position is within the range.
-// This is a simple check: same file and position >= start and <= end.
-func (r Range) Contains(p Position) bool {
-	if r.Start.File != p.File {
+// containsSameFile checks if both positions are in the same file.
+func (r Range) containsSameFile(p Position) bool {
+	return r.Start.File == p.File && (r.End.File == "" || r.End.File == p.File)
+}
+
+// hasLineRange checks if the range has defined line numbers and evaluates if p is within line bounds.
+func (r Range) hasLineRange(p Position) bool {
+	if r.Start.Line == 0 || p.Line == 0 {
 		return false
 	}
 
-	if r.End.File != "" && r.End.File != p.File {
+	if p.Line < r.Start.Line {
 		return false
 	}
 
-	// If we have line numbers, use them
-	if r.Start.Line > 0 && p.Line > 0 {
-		if p.Line < r.Start.Line {
-			return false
-		}
-
-		if r.End.Line > 0 && p.Line > r.End.Line {
-			return false
-		}
-
-		if p.Line == r.Start.Line && r.Start.Column > 0 && p.Column > 0 &&
-			p.Column < r.Start.Column {
-			return false
-		}
-
-		if p.Line == r.End.Line && r.End.Column > 0 && p.Column > 0 && p.Column > r.End.Column {
-			return false
-		}
-
-		return true
+	if r.End.Line > 0 && p.Line > r.End.Line {
+		return false
 	}
 
-	// Fall back to offset comparison
+	return r.checkColumnRange(p)
+}
+
+// checkColumnRange checks if p's column is within the range's column bounds.
+func (r Range) checkColumnRange(p Position) bool {
+	if r.Start.Column > 0 && p.Column > 0 && p.Column < r.Start.Column {
+		return false
+	}
+
+	if r.End.Column > 0 && p.Column > 0 && p.Column > r.End.Column {
+		return false
+	}
+
+	return true
+}
+
+// containsByOffset checks if position is within range using byte offsets.
+func (r Range) containsByOffset(p Position) bool {
 	if r.Start.Offset > 0 && p.Offset > 0 {
 		if p.Offset < r.Start.Offset {
 			return false
@@ -92,4 +95,18 @@ func (r Range) Contains(p Position) bool {
 	}
 
 	return false
+}
+
+// Contains reports whether the position is within the range.
+// Checks same file, line range, and offset when line ranges aren't available.
+func (r Range) Contains(p Position) bool {
+	if !r.containsSameFile(p) {
+		return false
+	}
+
+	if r.hasLineRange(p) {
+		return true
+	}
+
+	return r.containsByOffset(p)
 }

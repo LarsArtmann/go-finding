@@ -2,15 +2,15 @@ package finding
 
 import "fmt"
 
-// LSP severity level constants
+// LSP severity level constants.
 const (
-	LSPErrorSeverity     = 1 // Error
-	LSPWarningSeverity   = 2 // Warning
-	LSPInfoSeverity      = 3 // Info
-	LSPCaseError         = 1 // Error case value
-	LSPCaseWarning       = 2 // Warning case value
-	LSPCaseInfo          = 3 // Info case value
-	LSPCaseInfoAlias     = 4 // Secondary Info case value
+	LSPErrorSeverity   = 1 // Error
+	LSPWarningSeverity = 2 // Warning
+	LSPInfoSeverity    = 3 // Info
+	LSPCaseError       = 1 // Error case value
+	LSPCaseWarning     = 2 // Warning case value
+	LSPCaseInfo        = 3 // Info case value
+	LSPCaseInfoAlias   = 4 // Secondary Info case value
 )
 
 // LSP types for conversion.

@@ -10,9 +10,9 @@ const (
 	SeverityCritical Severity = "critical"
 )
 
-// Severity code constants for int-based severity
+// Severity code constants for int-based severity.
 const (
-	SeverityToIntError     = 2
+	SeverityToIntError    = 2
 	SeverityToIntCritical = 3
 )
 

@@ -5,13 +5,13 @@ import (
 	"sort"
 )
 
-// Merge correlation constants
+// Merge correlation constants.
 const (
-	MinFindingsInFile   = 2  // Minimum findings in a file for correlation analysis
-	MaxLineDiff         = 5  // Maximum line difference for considering findings related
-	CorrelationScoreScale = 5.0 // For converting lineDiff to score
-	MinCorrelationScore  = 0.5 // Minimum correlation score for matching
-	FindingPairsSameToolSkip = 2 // Skip first 2 index in findingPairs array
+	MinFindingsInFile        = 2   // Minimum findings in a file for correlation analysis
+	MaxLineDiff              = 5   // Maximum line difference for considering findings related
+	CorrelationScoreScale    = 5.0 // For converting lineDiff to score
+	MinCorrelationScore      = 0.5 // Minimum correlation score for matching
+	FindingPairsSameToolSkip = 2   // Skip first 2 index in findingPairs array
 )
 
 // Merge combines multiple reports into one.
