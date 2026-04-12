@@ -5,6 +5,15 @@ import (
 	"sort"
 )
 
+// Merge correlation constants
+const (
+	MinFindingsInFile   = 2  // Minimum findings in a file for correlation analysis
+	MaxLineDiff         = 5  // Maximum line difference for considering findings related
+	CorrelationScoreScale = 5.0 // For converting lineDiff to score
+	MinCorrelationScore  = 0.5 // Minimum correlation score for matching
+	FindingPairsSameToolSkip = 2 // Skip first 2 index in findingPairs array
+)
+
 // Merge combines multiple reports into one.
 // The merged report has:
 // - Tool.Name = "merged" (unless there's only one report)
@@ -38,11 +47,11 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 
 	seen := make(map[string]struct{})
 
-	for _, r := range reports {
-		for _, f := range r.Findings {
+	for _, report := range reports {
+		for _, finding := range report.Findings {
 			// Check for duplicates
 			if options.Deduplicate {
-				key := dedupKey(f, options)
+				key := dedupKey(finding, options)
 				if _, exists := seen[key]; exists {
 					continue
 				}
@@ -50,7 +59,7 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 				seen[key] = struct{}{}
 			}
 
-			merged.AddFinding(f)
+			merged.AddFinding(finding)
 		}
 	}
 
@@ -67,6 +76,7 @@ type MergeOptions struct {
 	ConflictHandler ConflictHandler
 }
 
+// MergeOption is a functional option for configuring merge behavior.
 type MergeOption func(*MergeOptions)
 
 // DeduplicateBy specifies what fields to use for deduplication.
@@ -111,22 +121,27 @@ func WithDeduplicateBy(by DeduplicateBy) MergeOption {
 	}
 }
 
-func dedupKey(f Finding, opts MergeOptions) string {
+func dedupKey(finding Finding, opts MergeOptions) string {
 	switch opts.DeduplicateBy {
 	case DeduplicateByID:
-		return f.ID
+		return finding.ID
 	case DeduplicateByPosition:
-		return fmt.Sprintf("%s:%d:%d", f.Position.File, f.Position.Line, f.Position.Column)
+		return fmt.Sprintf(
+			"%s:%d:%d",
+			finding.Position.File,
+			finding.Position.Line,
+			finding.Position.Column,
+		)
 	case DeduplicateByRule:
 		return fmt.Sprintf(
 			"%s:%s:%d:%d",
-			f.Rule,
-			f.Position.File,
-			f.Position.Line,
-			f.Position.Column,
+			finding.Rule,
+			finding.Position.File,
+			finding.Position.Line,
+			finding.Position.Column,
 		)
 	default:
-		return f.ID
+		return finding.ID
 	}
 }
 
@@ -146,7 +161,7 @@ func Correlate(findings []Finding) []Correlation {
 	byFile := GroupByFile(findings)
 
 	for _, fileFindings := range byFile {
-		if len(fileFindings) < 2 {
+		if len(fileFindings) < MinFindingsInFile {
 			continue
 		}
 
@@ -164,12 +179,12 @@ func Correlate(findings []Finding) []Correlation {
 
 				// Check if lines are close
 				lineDiff := f2.Position.Line - f1.Position.Line
-				if lineDiff > 5 { // Within 5 lines
+				if lineDiff > MaxLineDiff { // Within MaxLineDiff
 					break
 				}
 
-				confidence := 1.0 - (float64(lineDiff) / 5.0)
-				if confidence > 0.5 {
+				confidence := 1.0 - (float64(lineDiff) / CorrelationScoreScale)
+				if confidence > MinCorrelationScore {
 					correlations = append(correlations, Correlation{
 						FindingIDs: []string{f1.ID, f2.ID},
 						Reason:     "same file, nearby lines",

@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+// ID format constants
+const (
+	IDPartCount       = 3  // Minimum number of parts for hash-based IDs
+	HashLength        = 16 // Length of hex-encoded hash
+	IDPartMin         = 4  // Minimum parts to attempt parsing column and line
+	MaxShortHashLength = 16 // Maximum length to identify as short hash (without :line:col)
+)
+
 // GenerateID creates a stable, unique identifier for a finding.
 // Format: "tool:rule:file:line:col" (human-readable)
 // If line is 0, uses hash-based ID for stability.
@@ -33,7 +41,7 @@ func GenerateID(toolName, rule string, pos Position) string {
 // Returns tool, rule, file, line, column, and ok status.
 func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 	parts := strings.Split(id, ":")
-	if len(parts) < 3 {
+	if len(parts) < IDPartCount {
 		return "", "", "", 0, 0, false
 	}
 
@@ -41,7 +49,7 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 	rule = parts[1]
 
 	// Handle hash-based IDs
-	if len(parts) == 3 && len(parts[2]) == 16 { // hex encoded hash
+	if len(parts) == IDPartCount && len(parts[2]) == HashLength { // hex encoded hash
 		file = ""
 
 		return tool, rule, file, 0, 0, true
@@ -52,7 +60,7 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 	// File may contain colons (e.g., Windows paths), so we need to be careful
 	// We assume the last 1-2 parts are line:column
 
-	if len(parts) >= 4 {
+	if len(parts) >= IDPartMin {
 		// Try parsing last part as column
 		if n, err := fmt.Sscanf(parts[len(parts)-1], "%d", &column); err == nil && n == 1 {
 			// Try parsing second-to-last as line
@@ -81,9 +89,9 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 // IsHashID returns true if the ID appears to be hash-based.
 func IsHashID(id string) bool {
 	parts := strings.Split(id, ":")
-	if len(parts) != 3 {
+	if len(parts) != IDPartCount {
 		return false
 	}
 
-	return len(parts[2]) == 16 // 8 bytes hex encoded
+	return len(parts[2]) == HashLength // 8 bytes hex encoded
 }

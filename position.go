@@ -40,6 +40,11 @@ func (r Range) IsValid() bool {
 	return r.Start.IsValid()
 }
 
+// HasEnd returns true if the range has an end position set.
+func (r Range) HasEnd() bool {
+	return r.End.Line > 0
+}
+
 // Contains reports whether the position is within the range.
 // This is a simple check: same file and position >= start and <= end.
 func (r Range) Contains(p Position) bool {

@@ -32,17 +32,12 @@ func FromDiagnostic(
 	})
 
 	f := Finding{
-		ID:       id,
-		Rule:     ruleCode,
-		ToolName: toolName,
-		Message:  d.Message,
-		Severity: SeverityWarning, // go/analysis doesn't have severity
-		Position: Position{
-			File:   pos.Filename,
-			Line:   pos.Line,
-			Column: pos.Column,
-			Offset: pos.Offset,
-		},
+		ID:          id,
+		Rule:        ruleCode,
+		ToolName:    toolName,
+		Message:     d.Message,
+		Severity:    SeverityWarning, // go/analysis doesn't have severity
+		Position:    FromTokenPosition(pos),
 		Category:    d.Category,
 		FixStrategy: fixStrategy,
 	}
@@ -52,12 +47,7 @@ func FromDiagnostic(
 		relatedPos := fset.Position(info.Pos)
 		f.Related = append(f.Related, RelatedRef{
 			Relation: "related",
-			Position: Position{
-				File:   relatedPos.Filename,
-				Line:   relatedPos.Line,
-				Column: relatedPos.Column,
-				Offset: relatedPos.Offset,
-			},
+			Position: FromTokenPosition(relatedPos),
 		})
 	}
 
@@ -92,14 +82,8 @@ func (f Finding) AnalysisDiagnostic() analysis.Diagnostic {
 	return d
 }
 
-// NodePosition returns a Position from an AST node.
-func NodePosition(fset *token.FileSet, node ast.Node) Position {
-	if node == nil {
-		return Position{}
-	}
-
-	pos := fset.Position(node.Pos())
-
+// FromTokenPosition creates a Position from a token.Position.
+func FromTokenPosition(pos token.Position) Position {
 	return Position{
 		File:   pos.Filename,
 		Line:   pos.Line,
@@ -108,28 +92,24 @@ func NodePosition(fset *token.FileSet, node ast.Node) Position {
 	}
 }
 
+// NodePosition returns a Position from an AST node.
+func NodePosition(fset *token.FileSet, node ast.Node) Position {
+	if node == nil {
+		return Position{}
+	}
+
+	return FromTokenPosition(fset.Position(node.Pos()))
+}
+
 // NodeRange returns a Range from an AST node.
 func NodeRange(fset *token.FileSet, node ast.Node) Range {
 	if node == nil {
 		return Range{}
 	}
 
-	startPos := fset.Position(node.Pos())
-	endPos := fset.Position(node.End())
-
 	return Range{
-		Start: Position{
-			File:   startPos.Filename,
-			Line:   startPos.Line,
-			Column: startPos.Column,
-			Offset: startPos.Offset,
-		},
-		End: Position{
-			File:   endPos.Filename,
-			Line:   endPos.Line,
-			Column: endPos.Column,
-			Offset: endPos.Offset,
-		},
+		Start: FromTokenPosition(fset.Position(node.Pos())),
+		End:   FromTokenPosition(fset.Position(node.End())),
 	}
 }
 

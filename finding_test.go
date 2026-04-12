@@ -5,6 +5,31 @@ import (
 	"testing"
 )
 
+// test helper functions
+
+func standardTestFinding() Finding {
+	return Finding{
+		ID:       "test:rule1:file.go:10:5",
+		Rule:     "rule1",
+		ToolName: "test",
+		Message:  "test message",
+		Severity: SeverityError,
+		Position: Position{File: "file.go", Line: 10, Column: 5},
+	}
+}
+
+func assertErrorCount(t *testing.T, findings []Finding, expected int) {
+	if len(findings) != expected {
+		t.Errorf("expected %d errors, got %d", expected, len(findings))
+	}
+}
+
+func assertTotalCount(t *testing.T, r *Report, expected int) {
+	if r.Summary.Total != expected {
+		t.Errorf("expected %d total, got %d", expected, r.Summary.Total)
+	}
+}
+
 func TestSeverity(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -20,6 +45,8 @@ func TestSeverity(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if got := tt.severity.IsValid(); got != tt.valid {
 				t.Errorf("IsValid() = %v, want %v", got, tt.valid)
 			}
@@ -28,6 +55,8 @@ func TestSeverity(t *testing.T) {
 }
 
 func TestSeverityOrdering(t *testing.T) {
+	t.Parallel()
+
 	if SeverityInfo.GreaterThan(SeverityWarning) {
 		t.Error("info should not be greater than warning")
 	}
@@ -42,6 +71,8 @@ func TestSeverityOrdering(t *testing.T) {
 }
 
 func TestFixStrategy(t *testing.T) {
+	t.Parallel()
+
 	if !FixStrategyNone.IsValid() {
 		t.Error("none should be valid")
 	}
@@ -60,6 +91,8 @@ func TestFixStrategy(t *testing.T) {
 }
 
 func TestPosition(t *testing.T) {
+	t.Parallel()
+
 	p := Position{File: "test.go", Line: 42, Column: 5}
 	if !p.IsValid() {
 		t.Error("position should be valid")
@@ -71,6 +104,8 @@ func TestPosition(t *testing.T) {
 }
 
 func TestPositionString(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		pos  Position
 		want string
@@ -82,6 +117,8 @@ func TestPositionString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.want, func(t *testing.T) {
+			t.Parallel()
+
 			if got := tt.pos.String(); got != tt.want {
 				t.Errorf("String() = %s, want %s", got, tt.want)
 			}
@@ -90,6 +127,8 @@ func TestPositionString(t *testing.T) {
 }
 
 func TestFinding(t *testing.T) {
+	t.Parallel()
+
 	f := Finding{
 		ID:          "test:rule1:file.go:10:5",
 		Rule:        "rule1",
@@ -120,6 +159,8 @@ func TestFinding(t *testing.T) {
 }
 
 func TestFindingSuppressed(t *testing.T) {
+	t.Parallel()
+
 	f := Finding{
 		ID:          "test:rule1:file.go:10:5",
 		Rule:        "rule1",
@@ -136,6 +177,8 @@ func TestFindingSuppressed(t *testing.T) {
 }
 
 func TestGenerateID(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		toolName string
 		rule     string
@@ -153,6 +196,8 @@ func TestGenerateID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.want, func(t *testing.T) {
+			t.Parallel()
+
 			got := GenerateID(tt.toolName, tt.rule, tt.pos)
 			if got != tt.want {
 				t.Errorf("GenerateID() = %s, want %s", got, tt.want)
@@ -162,6 +207,8 @@ func TestGenerateID(t *testing.T) {
 }
 
 func TestParseID(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		id         string
 		wantTool   string
@@ -178,6 +225,8 @@ func TestParseID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.id, func(t *testing.T) {
+			t.Parallel()
+
 			tool, rule, file, line, col, ok := ParseID(tt.id)
 			if ok != tt.wantOK {
 				t.Errorf("ParseID() ok = %v, want %v", ok, tt.wantOK)
@@ -196,6 +245,8 @@ func TestParseID(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
+	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", Severity: SeverityError, ToolName: "tool1"},
 		{ID: "2", Severity: SeverityWarning, ToolName: "tool2"},
@@ -204,9 +255,7 @@ func TestFilter(t *testing.T) {
 
 	// Filter by severity
 	errors := Filter(findings, BySeverity(SeverityError))
-	if len(errors) != 2 {
-		t.Errorf("expected 2 errors, got %d", len(errors))
-	}
+	assertErrorCount(t, errors, 2)
 
 	// Filter by tool
 	tool2 := Filter(findings, ByTool("tool2"))
@@ -222,6 +271,8 @@ func TestFilter(t *testing.T) {
 }
 
 func TestGroupBy(t *testing.T) {
+	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", Severity: SeverityError},
 		{ID: "2", Severity: SeverityWarning},
@@ -239,6 +290,8 @@ func TestGroupBy(t *testing.T) {
 }
 
 func TestReport(t *testing.T) {
+	t.Parallel()
+
 	r := NewReport(ToolInfo{Name: "test-tool", Version: "1.0.0"})
 
 	r.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go"}})
@@ -247,9 +300,7 @@ func TestReport(t *testing.T) {
 
 	r.ComputeSummary()
 
-	if r.Summary.Total != 3 {
-		t.Errorf("expected total 3, got %d", r.Summary.Total)
-	}
+	assertTotalCount(t, r, 3)
 
 	if r.Summary.FilesAffected != 2 {
 		t.Errorf("expected 2 files affected, got %d", r.Summary.FilesAffected)
@@ -260,12 +311,12 @@ func TestReport(t *testing.T) {
 	}
 
 	errors := r.BySeverity(SeverityError)
-	if len(errors) != 2 {
-		t.Errorf("expected 2 errors, got %d", len(errors))
-	}
+	assertErrorCount(t, errors, 2)
 }
 
 func TestReportJSON(t *testing.T) {
+	t.Parallel()
+
 	r := NewReport(ToolInfo{Name: "test"})
 	r.AddFinding(Finding{
 		ID:       "test:rule1:file.go:10:5",
@@ -298,14 +349,9 @@ func TestReportJSON(t *testing.T) {
 }
 
 func TestFindingJSON(t *testing.T) {
-	f := Finding{
-		ID:       "test:rule1:file.go:10:5",
-		Rule:     "rule1",
-		ToolName: "test",
-		Message:  "test message",
-		Severity: SeverityError,
-		Position: Position{File: "file.go", Line: 10, Column: 5},
-	}
+	t.Parallel()
+
+	f := standardTestFinding()
 
 	data, err := json.Marshal(f)
 	if err != nil {
@@ -323,6 +369,8 @@ func TestFindingJSON(t *testing.T) {
 }
 
 func TestMerge(t *testing.T) {
+	t.Parallel()
+
 	r1 := NewReport(ToolInfo{Name: "tool1"})
 	r1.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go"}})
 
@@ -332,9 +380,7 @@ func TestMerge(t *testing.T) {
 	merged := Merge([]*Report{r1, r2})
 	merged.ComputeSummary()
 
-	if merged.Summary.Total != 2 {
-		t.Errorf("expected 2 total, got %d", merged.Summary.Total)
-	}
+	assertTotalCount(t, merged, 2)
 
 	if merged.Summary.FilesAffected != 2 {
 		t.Errorf("expected 2 files, got %d", merged.Summary.FilesAffected)
@@ -342,6 +388,8 @@ func TestMerge(t *testing.T) {
 }
 
 func TestMergeWithDeduplication(t *testing.T) {
+	t.Parallel()
+
 	r1 := NewReport(ToolInfo{Name: "tool1"})
 	r1.AddFinding(
 		Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go", Line: 10}},
@@ -355,12 +403,12 @@ func TestMergeWithDeduplication(t *testing.T) {
 	merged := Merge([]*Report{r1, r2}, WithDeduplication(true))
 	merged.ComputeSummary()
 
-	if merged.Summary.Total != 1 {
-		t.Errorf("expected 1 total after dedup, got %d", merged.Summary.Total)
-	}
+	assertTotalCount(t, merged, 1)
 }
 
 func TestSARIFConversion(t *testing.T) {
+	t.Parallel()
+
 	r := NewReport(ToolInfo{Name: "test"})
 	r.AddFinding(Finding{
 		ID:          "test:rule1:file.go:10:5",
@@ -383,7 +431,9 @@ func TestSARIFConversion(t *testing.T) {
 
 	// Basic validation - should be valid JSON
 	var log map[string]any
-	if err := json.Unmarshal(sarif, &log); err != nil {
+
+	err = json.Unmarshal(sarif, &log)
+	if err != nil {
 		t.Fatalf("SARIF is not valid JSON: %v", err)
 	}
 
@@ -393,14 +443,9 @@ func TestSARIFConversion(t *testing.T) {
 }
 
 func TestLSPConversion(t *testing.T) {
-	f := Finding{
-		ID:       "test:rule1:file.go:10:5",
-		Rule:     "rule1",
-		ToolName: "test",
-		Message:  "test message",
-		Severity: SeverityError,
-		Position: Position{File: "file.go", Line: 10, Column: 5},
-	}
+	t.Parallel()
+
+	f := standardTestFinding()
 
 	lsp := f.ToLSP()
 	if lsp.Range.Start.Line != 9 { // 0-based
@@ -413,6 +458,8 @@ func TestLSPConversion(t *testing.T) {
 }
 
 func TestCategory(t *testing.T) {
+	t.Parallel()
+
 	if !IsStandardCategory(CategorySecurity) {
 		t.Error("security should be standard category")
 	}
@@ -423,6 +470,8 @@ func TestCategory(t *testing.T) {
 }
 
 func TestSuppression(t *testing.T) {
+	t.Parallel()
+
 	s := &Suppression{
 		Kind:   SuppressionInSource,
 		Rule:   "rule1",
@@ -434,6 +483,8 @@ func TestSuppression(t *testing.T) {
 }
 
 func TestRangeContains(t *testing.T) {
+	t.Parallel()
+
 	r := Range{
 		Start: Position{File: "test.go", Line: 10, Column: 5},
 		End:   Position{File: "test.go", Line: 20, Column: 10},

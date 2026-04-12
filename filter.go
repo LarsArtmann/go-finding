@@ -7,11 +7,11 @@ type FilterFunc func(Finding) bool
 func Filter(findings []Finding, predicates ...FilterFunc) []Finding {
 	var result []Finding
 
-	for _, f := range findings {
+	for _, finding := range findings {
 		match := true
 
 		for _, p := range predicates {
-			if !p(f) {
+			if !p(finding) {
 				match = false
 
 				break
@@ -19,7 +19,7 @@ func Filter(findings []Finding, predicates ...FilterFunc) []Finding {
 		}
 
 		if match {
-			result = append(result, f)
+			result = append(result, finding)
 		}
 	}
 
@@ -94,9 +94,9 @@ func HasSuggestion(f Finding) bool {
 func GroupBy(findings []Finding, keyFn func(Finding) string) map[string][]Finding {
 	groups := make(map[string][]Finding)
 
-	for _, f := range findings {
-		key := keyFn(f)
-		groups[key] = append(groups[key], f)
+	for _, finding := range findings {
+		key := keyFn(finding)
+		groups[key] = append(groups[key], finding)
 	}
 
 	return groups
@@ -104,16 +104,16 @@ func GroupBy(findings []Finding, keyFn func(Finding) string) map[string][]Findin
 
 // GroupByFile groups findings by file path.
 func GroupByFile(findings []Finding) map[string][]Finding {
-	return GroupBy(findings, func(f Finding) string {
-		return f.Position.File
+	return GroupBy(findings, func(finding Finding) string {
+		return finding.Position.File
 	})
 }
 
 // GroupBySeverity groups findings by severity.
 func GroupBySeverity(findings []Finding) map[Severity][]Finding {
 	groups := make(map[Severity][]Finding)
-	for _, f := range findings {
-		groups[f.Severity] = append(groups[f.Severity], f)
+	for _, finding := range findings {
+		groups[finding.Severity] = append(groups[finding.Severity], finding)
 	}
 
 	return groups
@@ -121,7 +121,7 @@ func GroupBySeverity(findings []Finding) map[Severity][]Finding {
 
 // GroupByCategory groups findings by category.
 func GroupByCategory(findings []Finding) map[string][]Finding {
-	return GroupBy(findings, func(f Finding) string {
-		return f.Category
+	return GroupBy(findings, func(finding Finding) string {
+		return finding.Category
 	})
 }

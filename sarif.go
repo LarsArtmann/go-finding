@@ -4,29 +4,39 @@ import (
 	"encoding/json"
 )
 
+// SARIF confidence constant
+const (
+	ConfidenceScale = 100.0 // Confidence values are expressed as percentage (0-100)
+)
+
 // SARIF types for Report generation.
 // These are simplified representations of SARIF 2.1.0.
 
+// SarifLog represents a SARIF log file containing run results.
 type SarifLog struct {
 	Version string     `json:"version"`
 	Schema  string     `json:"$schema"`
 	Runs    []SarifRun `json:"runs"`
 }
 
+// SarifRun represents a single analysis run in a SARIF log.
 type SarifRun struct {
 	Tool    SarifTool     `json:"tool"`
 	Results []SarifResult `json:"results"`
 }
 
+// SarifTool defines the static analysis tool that generated the results.
 type SarifTool struct {
 	Driver SarifDriver `json:"driver"`
 }
 
+// SarifDriver represents the main driver tool with version information.
 type SarifDriver struct {
 	Name    string `json:"name"`
 	Version string `json:"version,omitempty"`
 }
 
+// SarifResult represents a single finding in SARIF format.
 type SarifResult struct {
 	RuleID     string                 `json:"ruleId"`
 	Level      string                 `json:"level"`
@@ -38,23 +48,28 @@ type SarifResult struct {
 	Properties map[string]interface{} `json:"properties,omitempty"`
 }
 
+// SarifMessage represents a message in SARIF format.
 type SarifMessage struct {
 	Text string `json:"text"`
 }
 
+// SarifLocation represents a location in SARIF format.
 type SarifLocation struct {
 	PhysicalLocation SarifPhysicalLocation `json:"physicalLocation"`
 }
 
+// SarifPhysicalLocation represents physical details of a location.
 type SarifPhysicalLocation struct {
 	ArtifactLocation SarifArtifactLocation `json:"artifactLocation"`
 	Region           *SarifRegion          `json:"region,omitempty"`
 }
 
+// SarifArtifactLocation represents the artifact URI.
 type SarifArtifactLocation struct {
 	URI string `json:"uri"`
 }
 
+// SarifRegion represents a code region in a text document.
 type SarifRegion struct {
 	StartLine   int `json:"startLine,omitempty"`
 	StartColumn int `json:"startColumn,omitempty"`
@@ -62,84 +77,95 @@ type SarifRegion struct {
 	EndColumn   int `json:"endColumn,omitempty"`
 }
 
+// SarifFix represents a fix to be applied to the artifact.
 type SarifFix struct {
 	Description SarifMessage          `json:"description"`
 	Changes     []SarifArtifactChange `json:"artifactChanges"`
 }
 
+// SarifArtifactChange represents a change to an artifact.
 type SarifArtifactChange struct {
 	ArtifactLocation SarifArtifactLocation `json:"artifactLocation"`
 	Replacements     []SarifReplacement    `json:"replacements"`
 }
 
+// SarifReplacement represents a replacement of text in an artifact.
 type SarifReplacement struct {
 	DeletedRegion SarifRegion  `json:"deletedRegion"`
 	InsertedText  SarifMessage `json:"insertedText"`
 }
 
+// SarifRelatedLoc represents a related location in SARIF.
 type SarifRelatedLoc struct {
 	PhysicalLocation SarifPhysicalLocation `json:"physicalLocation"`
 	Message          SarifMessage          `json:"message,omitempty"`
 }
 
-// ToSARIF converts a Report to SARIF 2.1.0 format.
-func (r *Report) ToSARIF() ([]byte, error) {
-	log := SarifLog{
-		Version: "2.1.0",
-		Schema:  "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-		Runs: []SarifRun{
-			{
-				Tool: SarifTool{
-					Driver: SarifDriver{
-						Name:    r.Tool.Name,
-						Version: r.Tool.Version,
-					},
-				},
-				Results: make([]SarifResult, 0, len(r.Findings)),
-			},
-		},
-	}
-
-	for _, f := range r.Findings {
+func sarifResultsFromFindings(findings []Finding) []SarifResult {
+	results := make([]SarifResult, 0, len(findings))
+	for _, f := range findings {
 		if f.IsSuppressed() {
-			continue // Skip suppressed findings
+			continue
 		}
 
-		result := findingToSARIF(f)
-		log.Runs[0].Results = append(log.Runs[0].Results, result)
+		results = append(results, findingToSARIF(f))
 	}
 
-	return json.MarshalIndent(log, "", "  ")
+	return results
+}
+
+func sarifResultsFromFindingsFiltered(findings []Finding, minSeverity Severity) []SarifResult {
+	results := make([]SarifResult, 0)
+
+	for _, f := range findings {
+		if f.IsSuppressed() || f.Severity.LessThan(minSeverity) {
+			continue
+		}
+
+		results = append(results, findingToSARIF(f))
+	}
+
+	return results
+}
+
+func sarifDriverFromReport(r *Report) SarifDriver {
+	return SarifDriver{Name: r.Tool.Name, Version: r.Tool.Version}
+}
+
+// ToSARIF converts a Report to SARIF 2.1.0 format.
+func (r *Report) ToSARIF() ([]byte, error) {
+	return json.MarshalIndent(r.sarifLog(), "", "  ")
 }
 
 // ToSARIFFiltered converts only non-suppressed findings.
 func (r *Report) ToSARIFFiltered(severity Severity) ([]byte, error) {
-	log := SarifLog{
+	return json.MarshalIndent(r.sarifLogFiltered(severity), "", "  ")
+}
+
+func (r *Report) sarifLog() SarifLog {
+	return SarifLog{
 		Version: "2.1.0",
 		Schema:  "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
 		Runs: []SarifRun{
 			{
-				Tool: SarifTool{
-					Driver: SarifDriver{
-						Name:    r.Tool.Name,
-						Version: r.Tool.Version,
-					},
-				},
-				Results: make([]SarifResult, 0),
+				Tool:    SarifTool{Driver: sarifDriverFromReport(r)},
+				Results: sarifResultsFromFindings(r.Findings),
 			},
 		},
 	}
+}
 
-	for _, f := range r.Findings {
-		if f.IsSuppressed() || f.Severity.LessThan(severity) {
-			continue
-		}
-
-		result := findingToSARIF(f)
-		log.Runs[0].Results = append(log.Runs[0].Results, result)
+func (r *Report) sarifLogFiltered(severity Severity) SarifLog {
+	return SarifLog{
+		Version: "2.1.0",
+		Schema:  "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+		Runs: []SarifRun{
+			{
+				Tool:    SarifTool{Driver: sarifDriverFromReport(r)},
+				Results: sarifResultsFromFindingsFiltered(r.Findings, severity),
+			},
+		},
 	}
-
-	return json.MarshalIndent(log, "", "  ")
 }
 
 func findingToSARIF(f Finding) SarifResult {
@@ -160,7 +186,7 @@ func findingToSARIF(f Finding) SarifResult {
 	}
 
 	// Add end position if available
-	if f.Range != nil && f.Range.End.Line > 0 {
+	if f.Range != nil && f.Range.HasEnd() {
 		result.Location.PhysicalLocation.Region.EndLine = f.Range.End.Line
 		result.Location.PhysicalLocation.Region.EndColumn = f.Range.End.Column
 	}
@@ -187,7 +213,7 @@ func findingToSARIF(f Finding) SarifResult {
 			},
 		}
 		// Override with actual range if available
-		if f.Range != nil && f.Range.End.Line > 0 {
+		if f.Range != nil && f.Range.HasEnd() {
 			fix.Changes[0].Replacements[0].DeletedRegion.EndLine = f.Range.End.Line
 			fix.Changes[0].Replacements[0].DeletedRegion.EndColumn = f.Range.End.Column
 		}

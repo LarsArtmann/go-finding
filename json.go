@@ -9,23 +9,9 @@ import (
 
 // MarshalJSON serializes a Finding to JSON.
 func (f Finding) MarshalJSON() ([]byte, error) {
-	// Use the default serialization
 	type FindingAlias Finding
 
 	return json.Marshal((*FindingAlias)(&f))
-}
-
-// UnmarshalJSON deserializes JSON to a Finding.
-func (f *Finding) UnmarshalJSON(data []byte) error {
-	type FindingAlias Finding
-
-	aux := (*FindingAlias)(f)
-	err := json.Unmarshal(data, &aux)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // MarshalJSON serializes a Report to JSON.
@@ -48,6 +34,7 @@ func (r *Report) PrettyJSON() (string, error) {
 // FromJSON parses a Finding from JSON.
 func FromJSON(data []byte) (*Finding, error) {
 	var f Finding
+
 	err := json.Unmarshal(data, &f)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal finding: %w", err)
@@ -59,6 +46,7 @@ func FromJSON(data []byte) (*Finding, error) {
 // ReportFromJSON parses a Report from JSON.
 func ReportFromJSON(data []byte) (*Report, error) {
 	var r Report
+
 	err := json.Unmarshal(data, &r)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal report: %w", err)
@@ -70,6 +58,7 @@ func ReportFromJSON(data []byte) (*Report, error) {
 // FindingsFromJSON parses a slice of Findings from JSON.
 func FindingsFromJSON(data []byte) ([]Finding, error) {
 	var findings []Finding
+
 	err := json.Unmarshal(data, &findings)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal findings: %w", err)
