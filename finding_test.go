@@ -31,9 +31,11 @@ func TestSeverityOrdering(t *testing.T) {
 	if SeverityInfo.GreaterThan(SeverityWarning) {
 		t.Error("info should not be greater than warning")
 	}
+
 	if !SeverityError.GreaterThan(SeverityWarning) {
 		t.Error("error should be greater than warning")
 	}
+
 	if !SeverityCritical.GreaterThan(SeverityError) {
 		t.Error("critical should be greater than error")
 	}
@@ -43,12 +45,15 @@ func TestFixStrategy(t *testing.T) {
 	if !FixStrategyNone.IsValid() {
 		t.Error("none should be valid")
 	}
+
 	if !FixStrategyDirect.CanAutoApply() {
 		t.Error("direct should be auto-applicable")
 	}
+
 	if FixStrategySuggest.CanAutoApply() {
 		t.Error("suggest should not be auto-applicable")
 	}
+
 	if !FixStrategyAI.NeedsAI() {
 		t.Error("ai should need AI")
 	}
@@ -59,6 +64,7 @@ func TestPosition(t *testing.T) {
 	if !p.IsValid() {
 		t.Error("position should be valid")
 	}
+
 	if p.String() != "test.go:42:5" {
 		t.Errorf("String() = %s, want test.go:42:5", p.String())
 	}
@@ -99,12 +105,15 @@ func TestFinding(t *testing.T) {
 	if !f.IsValid() {
 		t.Error("finding should be valid")
 	}
+
 	if !f.HasFix() {
 		t.Error("finding should have fix")
 	}
+
 	if !f.HasSuggestion() {
 		t.Error("finding should have suggestion")
 	}
+
 	if f.IsSuppressed() {
 		t.Error("finding should not be suppressed")
 	}
@@ -133,7 +142,12 @@ func TestGenerateID(t *testing.T) {
 		pos      Position
 		want     string
 	}{
-		{"go-vet", "nilcheck", Position{File: "main.go", Line: 42, Column: 10}, "go-vet:nilcheck:main.go:42:10"},
+		{
+			"go-vet",
+			"nilcheck",
+			Position{File: "main.go", Line: 42, Column: 10},
+			"go-vet:nilcheck:main.go:42:10",
+		},
 		{"go-vet", "nilcheck", Position{File: "main.go", Line: 42}, "go-vet:nilcheck:main.go:42"},
 	}
 
@@ -167,8 +181,10 @@ func TestParseID(t *testing.T) {
 			tool, rule, file, line, col, ok := ParseID(tt.id)
 			if ok != tt.wantOK {
 				t.Errorf("ParseID() ok = %v, want %v", ok, tt.wantOK)
+
 				return
 			}
+
 			if tool != tt.wantTool || rule != tt.wantRule || file != tt.wantFile ||
 				line != tt.wantLine || col != tt.wantColumn {
 				t.Errorf("ParseID() = (%s, %s, %s, %d, %d), want (%s, %s, %s, %d, %d)",
@@ -216,6 +232,7 @@ func TestGroupBy(t *testing.T) {
 	if len(bySeverity[SeverityError]) != 2 {
 		t.Errorf("expected 2 errors, got %d", len(bySeverity[SeverityError]))
 	}
+
 	if len(bySeverity[SeverityWarning]) != 1 {
 		t.Errorf("expected 1 warning, got %d", len(bySeverity[SeverityWarning]))
 	}
@@ -233,9 +250,11 @@ func TestReport(t *testing.T) {
 	if r.Summary.Total != 3 {
 		t.Errorf("expected total 3, got %d", r.Summary.Total)
 	}
+
 	if r.Summary.FilesAffected != 2 {
 		t.Errorf("expected 2 files affected, got %d", r.Summary.FilesAffected)
 	}
+
 	if r.Summary.BySeverity[SeverityError] != 2 {
 		t.Errorf("expected 2 errors, got %d", r.Summary.BySeverity[SeverityError])
 	}
@@ -272,6 +291,7 @@ func TestReportJSON(t *testing.T) {
 	if parsed.Tool.Name != "test" {
 		t.Errorf("expected tool name 'test', got '%s'", parsed.Tool.Name)
 	}
+
 	if len(parsed.Findings) != 1 {
 		t.Errorf("expected 1 finding, got %d", len(parsed.Findings))
 	}
@@ -315,6 +335,7 @@ func TestMerge(t *testing.T) {
 	if merged.Summary.Total != 2 {
 		t.Errorf("expected 2 total, got %d", merged.Summary.Total)
 	}
+
 	if merged.Summary.FilesAffected != 2 {
 		t.Errorf("expected 2 files, got %d", merged.Summary.FilesAffected)
 	}
@@ -322,10 +343,14 @@ func TestMerge(t *testing.T) {
 
 func TestMergeWithDeduplication(t *testing.T) {
 	r1 := NewReport(ToolInfo{Name: "tool1"})
-	r1.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go", Line: 10}})
+	r1.AddFinding(
+		Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go", Line: 10}},
+	)
 
 	r2 := NewReport(ToolInfo{Name: "tool2"})
-	r2.AddFinding(Finding{ID: "1", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 10}}) // Same ID
+	r2.AddFinding(
+		Finding{ID: "1", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 10}},
+	) // Same ID
 
 	merged := Merge([]*Report{r1, r2}, WithDeduplication(true))
 	merged.ComputeSummary()
@@ -357,7 +382,7 @@ func TestSARIFConversion(t *testing.T) {
 	}
 
 	// Basic validation - should be valid JSON
-	var log map[string]interface{}
+	var log map[string]any
 	if err := json.Unmarshal(sarif, &log); err != nil {
 		t.Fatalf("SARIF is not valid JSON: %v", err)
 	}
@@ -381,6 +406,7 @@ func TestLSPConversion(t *testing.T) {
 	if lsp.Range.Start.Line != 9 { // 0-based
 		t.Errorf("expected line 9 (0-based), got %d", lsp.Range.Start.Line)
 	}
+
 	if lsp.Severity != 1 { // Error
 		t.Errorf("expected severity 1 (Error), got %d", lsp.Severity)
 	}
@@ -390,6 +416,7 @@ func TestCategory(t *testing.T) {
 	if !IsStandardCategory(CategorySecurity) {
 		t.Error("security should be standard category")
 	}
+
 	if IsStandardCategory("custom-category") {
 		t.Error("custom-category should not be standard")
 	}
@@ -416,9 +443,11 @@ func TestRangeContains(t *testing.T) {
 	if !r.Contains(Position{File: "test.go", Line: 15, Column: 7}) {
 		t.Error("position in range should be contained")
 	}
+
 	if r.Contains(Position{File: "test.go", Line: 5, Column: 1}) {
 		t.Error("position before range should not be contained")
 	}
+
 	if r.Contains(Position{File: "other.go", Line: 15, Column: 7}) {
 		t.Error("position in different file should not be contained")
 	}

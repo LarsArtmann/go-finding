@@ -63,10 +63,10 @@
 //
 // The package includes a pipeline for automated fixing:
 //
-//   1. Detect: Run tools and collect findings
-//   2. Triage: Route by fix strategy
-//   3. Fix: Apply direct fixes, route AI fixes
-//   4. Verify: Re-run and validate
+//  1. Detect: Run tools and collect findings
+//  2. Triage: Route by fix strategy
+//  3. Fix: Apply direct fixes, route AI fixes
+//  4. Verify: Re-run and validate
 //
 // See the pipeline subpackage for details.
 //
@@ -75,5 +75,4 @@
 //   - go/analysis: The standard Go analysis framework
 //   - SARIF 2.1.0: Static Analysis Results Interchange Format
 //   - LSP: Language Server Protocol
-//
 package finding

@@ -26,5 +26,6 @@ func IsStandardCategory(cat string) bool {
 		CategoryTesting:
 		return true
 	}
+
 	return false
 }

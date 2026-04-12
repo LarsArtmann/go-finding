@@ -8,9 +8,9 @@ import (
 // These are simplified representations of SARIF 2.1.0.
 
 type SarifLog struct {
-	Version string      `json:"version"`
-	Schema  string      `json:"$schema"`
-	Runs    []SarifRun  `json:"runs"`
+	Version string     `json:"version"`
+	Schema  string     `json:"$schema"`
+	Runs    []SarifRun `json:"runs"`
 }
 
 type SarifRun struct {
@@ -28,13 +28,13 @@ type SarifDriver struct {
 }
 
 type SarifResult struct {
-	RuleID   string              `json:"ruleId"`
-	Level    string              `json:"level"`
-	Message  SarifMessage        `json:"message"`
-	Location SarifLocation       `json:"location"`
-	Fixes    []SarifFix          `json:"fixes,omitempty"`
-	Related  []SarifRelatedLoc   `json:"relatedLocations,omitempty"`
-	Rank     float64             `json:"rank,omitempty"`
+	RuleID     string                 `json:"ruleId"`
+	Level      string                 `json:"level"`
+	Message    SarifMessage           `json:"message"`
+	Location   SarifLocation          `json:"location"`
+	Fixes      []SarifFix             `json:"fixes,omitempty"`
+	Related    []SarifRelatedLoc      `json:"relatedLocations,omitempty"`
+	Rank       float64                `json:"rank,omitempty"`
 	Properties map[string]interface{} `json:"properties,omitempty"`
 }
 
@@ -63,7 +63,7 @@ type SarifRegion struct {
 }
 
 type SarifFix struct {
-	Description SarifMessage        `json:"description"`
+	Description SarifMessage          `json:"description"`
 	Changes     []SarifArtifactChange `json:"artifactChanges"`
 }
 
@@ -73,13 +73,13 @@ type SarifArtifactChange struct {
 }
 
 type SarifReplacement struct {
-	DeletedRegion SarifRegion `json:"deletedRegion"`
+	DeletedRegion SarifRegion  `json:"deletedRegion"`
 	InsertedText  SarifMessage `json:"insertedText"`
 }
 
 type SarifRelatedLoc struct {
 	PhysicalLocation SarifPhysicalLocation `json:"physicalLocation"`
-	Message        SarifMessage          `json:"message,omitempty"`
+	Message          SarifMessage          `json:"message,omitempty"`
 }
 
 // ToSARIF converts a Report to SARIF 2.1.0 format.
@@ -191,6 +191,7 @@ func findingToSARIF(f Finding) SarifResult {
 			fix.Changes[0].Replacements[0].DeletedRegion.EndLine = f.Range.End.Line
 			fix.Changes[0].Replacements[0].DeletedRegion.EndColumn = f.Range.End.Column
 		}
+
 		result.Fixes = append(result.Fixes, fix)
 	}
 
@@ -214,6 +215,7 @@ func findingToSARIF(f Finding) SarifResult {
 		for k, v := range f.Metadata {
 			result.Properties[k] = v
 		}
+
 		result.Properties["toolName"] = f.ToolName
 		result.Properties["category"] = f.Category
 		result.Properties["tag"] = f.Tag

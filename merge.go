@@ -18,6 +18,7 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 
 	if len(reports) == 1 {
 		r := reports[0]
+
 		return &Report{
 			Tool:     r.Tool,
 			Findings: append([]Finding(nil), r.Findings...),
@@ -45,6 +46,7 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 				if _, exists := seen[key]; exists {
 					continue
 				}
+
 				seen[key] = struct{}{}
 			}
 
@@ -53,6 +55,7 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 	}
 
 	merged.ComputeSummary()
+
 	return merged
 }
 
@@ -79,10 +82,10 @@ const (
 type ConflictHandler int
 
 const (
-	ConflictKeepFirst ConflictHandler = iota // Keep first occurrence
-	ConflictKeepLast                         // Keep last occurrence
-	ConflictKeepHighest                     // Keep highest severity
-	ConflictKeepAll                         // Keep both (don't deduplicate)
+	ConflictKeepFirst   ConflictHandler = iota // Keep first occurrence
+	ConflictKeepLast                           // Keep last occurrence
+	ConflictKeepHighest                        // Keep highest severity
+	ConflictKeepAll                            // Keep both (don't deduplicate)
 )
 
 func defaultMergeOptions() MergeOptions {
@@ -115,7 +118,13 @@ func dedupKey(f Finding, opts MergeOptions) string {
 	case DeduplicateByPosition:
 		return fmt.Sprintf("%s:%d:%d", f.Position.File, f.Position.Line, f.Position.Column)
 	case DeduplicateByRule:
-		return fmt.Sprintf("%s:%s:%d:%d", f.Rule, f.Position.File, f.Position.Line, f.Position.Column)
+		return fmt.Sprintf(
+			"%s:%s:%d:%d",
+			f.Rule,
+			f.Position.File,
+			f.Position.Line,
+			f.Position.Column,
+		)
 	default:
 		return f.ID
 	}
@@ -123,9 +132,9 @@ func dedupKey(f Finding, opts MergeOptions) string {
 
 // Correlation links related findings from different tools.
 type Correlation struct {
-	FindingIDs []string  // IDs of correlated findings
-	Reason     string    // Why they're correlated
-	Confidence float64   // 0.0-1.0
+	FindingIDs []string // IDs of correlated findings
+	Reason     string   // Why they're correlated
+	Confidence float64  // 0.0-1.0
 }
 
 // Correlate finds potentially related findings across tools.

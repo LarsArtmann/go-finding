@@ -21,9 +21,11 @@ func (p Position) String() string {
 	if p.Line == 0 {
 		return p.File
 	}
+
 	if p.Column == 0 {
 		return fmt.Sprintf("%s:%d", p.File, p.Line)
 	}
+
 	return fmt.Sprintf("%s:%d:%d", p.File, p.Line, p.Column)
 }
 
@@ -44,6 +46,7 @@ func (r Range) Contains(p Position) bool {
 	if r.Start.File != p.File {
 		return false
 	}
+
 	if r.End.File != "" && r.End.File != p.File {
 		return false
 	}
@@ -53,15 +56,20 @@ func (r Range) Contains(p Position) bool {
 		if p.Line < r.Start.Line {
 			return false
 		}
+
 		if r.End.Line > 0 && p.Line > r.End.Line {
 			return false
 		}
-		if p.Line == r.Start.Line && r.Start.Column > 0 && p.Column > 0 && p.Column < r.Start.Column {
+
+		if p.Line == r.Start.Line && r.Start.Column > 0 && p.Column > 0 &&
+			p.Column < r.Start.Column {
 			return false
 		}
+
 		if p.Line == r.End.Line && r.End.Column > 0 && p.Column > 0 && p.Column > r.End.Column {
 			return false
 		}
+
 		return true
 	}
 
@@ -70,9 +78,11 @@ func (r Range) Contains(p Position) bool {
 		if p.Offset < r.Start.Offset {
 			return false
 		}
+
 		if r.End.Offset > 0 && p.Offset > r.End.Offset {
 			return false
 		}
+
 		return true
 	}
 

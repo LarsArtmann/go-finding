@@ -6,18 +6,23 @@ type FilterFunc func(Finding) bool
 // Filter returns findings that match all predicates.
 func Filter(findings []Finding, predicates ...FilterFunc) []Finding {
 	var result []Finding
+
 	for _, f := range findings {
 		match := true
+
 		for _, p := range predicates {
 			if !p(f) {
 				match = false
+
 				break
 			}
 		}
+
 		if match {
 			result = append(result, f)
 		}
 	}
+
 	return result
 }
 
@@ -88,10 +93,12 @@ func HasSuggestion(f Finding) bool {
 // GroupBy groups findings by a key extractor function.
 func GroupBy(findings []Finding, keyFn func(Finding) string) map[string][]Finding {
 	groups := make(map[string][]Finding)
+
 	for _, f := range findings {
 		key := keyFn(f)
 		groups[key] = append(groups[key], f)
 	}
+
 	return groups
 }
 
@@ -108,6 +115,7 @@ func GroupBySeverity(findings []Finding) map[Severity][]Finding {
 	for _, f := range findings {
 		groups[f.Severity] = append(groups[f.Severity], f)
 	}
+
 	return groups
 }
 

@@ -16,6 +16,7 @@ func (f FixStrategy) IsValid() bool {
 	case FixStrategyNone, FixStrategySuggest, FixStrategyDirect, FixStrategyAI:
 		return true
 	}
+
 	return false
 }
 

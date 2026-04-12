@@ -24,5 +24,6 @@ func (s *Suppression) IsExpired() bool {
 	if s == nil || s.ExpiresAt == nil {
 		return false
 	}
+
 	return time.Now().After(*s.ExpiresAt)
 }

@@ -23,11 +23,11 @@ type Finding struct {
 	AfterCode   string      `json:"afterCode,omitempty"`  // Code after the fix
 
 	// Context
-	Range       *Range        `json:"range,omitempty"`       // For span-based findings
-	Snippet     string        `json:"snippet,omitempty"`     // Surrounding code context
-	Confidence  float64       `json:"confidence,omitempty"`  // 0.0-1.0
-	Related     []RelatedRef  `json:"related,omitempty"`     // Related findings
-	Suppression *Suppression  `json:"suppression,omitempty"` // If suppressed
+	Range       *Range       `json:"range,omitempty"`       // For span-based findings
+	Snippet     string       `json:"snippet,omitempty"`     // Surrounding code context
+	Confidence  float64      `json:"confidence,omitempty"`  // 0.0-1.0
+	Related     []RelatedRef `json:"related,omitempty"`     // Related findings
+	Suppression *Suppression `json:"suppression,omitempty"` // If suppressed
 
 	// Extensibility
 	Metadata map[string]string `json:"metadata,omitempty"` // Tool-specific key-value pairs

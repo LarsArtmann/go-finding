@@ -9,16 +9,20 @@ import (
 func Example_basic() {
 	// Create a finding
 	f := finding.Finding{
-		ID:       finding.GenerateID("my-linter", "unused-import", finding.Position{File: "main.go", Line: 5}),
-		Rule:     "unused-import",
-		ToolName: "my-linter",
-		Message:  "import \"fmt\" is unused",
-		Severity: finding.SeverityWarning,
-		Position: finding.Position{File: "main.go", Line: 5, Column: 2},
-		Category: finding.CategoryStyle,
+		ID: finding.GenerateID(
+			"my-linter",
+			"unused-import",
+			finding.Position{File: "main.go", Line: 5},
+		),
+		Rule:        "unused-import",
+		ToolName:    "my-linter",
+		Message:     "import \"fmt\" is unused",
+		Severity:    finding.SeverityWarning,
+		Position:    finding.Position{File: "main.go", Line: 5, Column: 2},
+		Category:    finding.CategoryStyle,
 		FixStrategy: finding.FixStrategyDirect,
-		BeforeCode: `import "fmt"`,
-		AfterCode:  "",
+		BeforeCode:  `import "fmt"`,
+		AfterCode:   "",
 	}
 
 	// Create a report
@@ -49,7 +53,10 @@ func Example_filter() {
 	fmt.Printf("Errors: %d\n", len(errors))
 
 	// Filter for severity >= warning
-	warningsAndErrors := finding.Filter(findings, finding.BySeverityAtLeast(finding.SeverityWarning))
+	warningsAndErrors := finding.Filter(
+		findings,
+		finding.BySeverityAtLeast(finding.SeverityWarning),
+	)
 	fmt.Printf("Warnings and Errors: %d\n", len(warningsAndErrors))
 
 	// Output:

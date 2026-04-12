@@ -16,11 +16,12 @@ func (s Severity) IsValid() bool {
 	case SeverityInfo, SeverityWarning, SeverityError, SeverityCritical:
 		return true
 	}
+
 	return false
 }
 
 // GreaterThan returns true if this severity is greater than the other.
-// Order: info < warning < error < critical
+// Order: info < warning < error < critical.
 func (s Severity) GreaterThan(other Severity) bool {
 	return severityRank(s) > severityRank(other)
 }
@@ -41,5 +42,6 @@ func severityRank(s Severity) int {
 	case SeverityCritical:
 		return 3
 	}
+
 	return -1
 }

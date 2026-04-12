@@ -11,7 +11,11 @@ import (
 // FromDiagnostic converts a go/analysis.Diagnostic to a Finding.
 // The toolName parameter identifies which analyzer produced this.
 // The ruleCode parameter provides a rule identifier (since go/analysis.Diagnostic doesn't have Code).
-func FromDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, toolName, ruleCode string) Finding {
+func FromDiagnostic(
+	d *analysis.Diagnostic,
+	fset *token.FileSet,
+	toolName, ruleCode string,
+) Finding {
 	pos := fset.Position(d.Pos)
 
 	// Determine fix strategy from suggested fixes
@@ -28,12 +32,17 @@ func FromDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, toolName, ruleC
 	})
 
 	f := Finding{
-		ID:          id,
-		Rule:        ruleCode,
-		ToolName:    toolName,
-		Message:     d.Message,
-		Severity:    SeverityWarning, // go/analysis doesn't have severity
-		Position:    Position{File: pos.Filename, Line: pos.Line, Column: pos.Column, Offset: pos.Offset},
+		ID:       id,
+		Rule:     ruleCode,
+		ToolName: toolName,
+		Message:  d.Message,
+		Severity: SeverityWarning, // go/analysis doesn't have severity
+		Position: Position{
+			File:   pos.Filename,
+			Line:   pos.Line,
+			Column: pos.Column,
+			Offset: pos.Offset,
+		},
 		Category:    d.Category,
 		FixStrategy: fixStrategy,
 	}
@@ -88,7 +97,9 @@ func NodePosition(fset *token.FileSet, node ast.Node) Position {
 	if node == nil {
 		return Position{}
 	}
+
 	pos := fset.Position(node.Pos())
+
 	return Position{
 		File:   pos.Filename,
 		Line:   pos.Line,
@@ -102,8 +113,10 @@ func NodeRange(fset *token.FileSet, node ast.Node) Range {
 	if node == nil {
 		return Range{}
 	}
+
 	startPos := fset.Position(node.Pos())
 	endPos := fset.Position(node.End())
+
 	return Range{
 		Start: Position{
 			File:   startPos.Filename,
@@ -124,5 +137,13 @@ func NodeRange(fset *token.FileSet, node ast.Node) Range {
 // Similar to how go vet formats output.
 func FormatDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, analyzerName string) string {
 	pos := fset.Position(d.Pos)
-	return fmt.Sprintf("%s:%d:%d: %s: %s\n", pos.Filename, pos.Line, pos.Column, analyzerName, d.Message)
+
+	return fmt.Sprintf(
+		"%s:%d:%d: %s: %s\n",
+		pos.Filename,
+		pos.Line,
+		pos.Column,
+		analyzerName,
+		d.Message,
+	)
 }

@@ -15,6 +15,7 @@ func GenerateID(toolName, rule string, pos Position) string {
 		// Hash-based for position-less findings
 		h := sha256.New()
 		h.Write([]byte(toolName + ":" + rule + ":" + pos.File))
+
 		return fmt.Sprintf("%s:%s:%x", toolName, rule, h.Sum(nil)[:8])
 	}
 
@@ -24,6 +25,7 @@ func GenerateID(toolName, rule string, pos Position) string {
 	if pos.Column == 0 {
 		return fmt.Sprintf("%s:%s:%s:%d", toolName, rule, file, pos.Line)
 	}
+
 	return fmt.Sprintf("%s:%s:%s:%d:%d", toolName, rule, file, pos.Line, pos.Column)
 }
 
@@ -41,6 +43,7 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 	// Handle hash-based IDs
 	if len(parts) == 3 && len(parts[2]) == 16 { // hex encoded hash
 		file = ""
+
 		return tool, rule, file, 0, 0, true
 	}
 
@@ -56,6 +59,7 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 			if n2, err2 := fmt.Sscanf(parts[len(parts)-2], "%d", &line); err2 == nil && n2 == 1 {
 				// File is everything between rule and line
 				file = strings.Join(parts[2:len(parts)-2], ":")
+
 				return tool, rule, file, line, column, true
 			}
 		}
@@ -63,12 +67,14 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 		// No column, try line only
 		if n, err := fmt.Sscanf(parts[len(parts)-1], "%d", &line); err == nil && n == 1 {
 			file = strings.Join(parts[2:len(parts)-1], ":")
+
 			return tool, rule, file, line, 0, true
 		}
 	}
 
 	// Just file, no position
 	file = strings.Join(parts[2:], ":")
+
 	return tool, rule, file, 0, 0, true
 }
 
@@ -78,5 +84,6 @@ func IsHashID(id string) bool {
 	if len(parts) != 3 {
 		return false
 	}
+
 	return len(parts[2]) == 16 // 8 bytes hex encoded
 }

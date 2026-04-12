@@ -20,7 +20,7 @@ type Summary struct {
 	ByCategory    map[string]int      `json:"byCategory,omitempty"`    // Count by category
 	ByFixStrategy map[FixStrategy]int `json:"byFixStrategy,omitempty"` // Count by fix strategy
 	FilesAffected int                 `json:"filesAffected,omitempty"` // Unique files with findings
-	DurationMs    int64               `json:"durationMs,omitempty"`  // Execution time
+	DurationMs    int64               `json:"durationMs,omitempty"`    // Execution time
 	Suppressed    int                 `json:"suppressed,omitempty"`    // Count of suppressed findings
 }
 
@@ -55,13 +55,16 @@ func (r *Report) ComputeSummary() {
 
 	for _, f := range r.Findings {
 		r.Summary.BySeverity[f.Severity]++
+
 		r.Summary.ByFixStrategy[f.FixStrategy]++
 		if f.Category != "" {
 			r.Summary.ByCategory[f.Category]++
 		}
+
 		if f.Position.File != "" {
 			files[f.Position.File] = struct{}{}
 		}
+
 		if f.IsSuppressed() {
 			suppressed++
 		}
@@ -74,44 +77,52 @@ func (r *Report) ComputeSummary() {
 // ActiveFindings returns all non-suppressed findings.
 func (r Report) ActiveFindings() []Finding {
 	var active []Finding
+
 	for _, f := range r.Findings {
 		if !f.IsSuppressed() {
 			active = append(active, f)
 		}
 	}
+
 	return active
 }
 
 // BySeverity returns findings filtered by severity.
 func (r Report) BySeverity(sev Severity) []Finding {
 	var filtered []Finding
+
 	for _, f := range r.Findings {
 		if f.Severity == sev && !f.IsSuppressed() {
 			filtered = append(filtered, f)
 		}
 	}
+
 	return filtered
 }
 
 // ByCategory returns findings filtered by category.
 func (r Report) ByCategory(cat string) []Finding {
 	var filtered []Finding
+
 	for _, f := range r.Findings {
 		if f.Category == cat && !f.IsSuppressed() {
 			filtered = append(filtered, f)
 		}
 	}
+
 	return filtered
 }
 
 // ByFixStrategy returns findings filtered by fix strategy.
 func (r Report) ByFixStrategy(fs FixStrategy) []Finding {
 	var filtered []Finding
+
 	for _, f := range r.Findings {
 		if f.FixStrategy == fs && !f.IsSuppressed() {
 			filtered = append(filtered, f)
 		}
 	}
+
 	return filtered
 }
 
@@ -122,5 +133,6 @@ func (r Report) FindByID(id string) *Finding {
 			return &r.Findings[i]
 		}
 	}
+
 	return nil
 }

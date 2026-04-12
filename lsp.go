@@ -88,7 +88,13 @@ func (f Finding) ToLSP() LSPDiagnostic {
 // Many fields will be empty/default since LSP has less information.
 func FromLSP(diag LSPDiagnostic) Finding {
 	return Finding{
-		ID:       fmt.Sprintf("lsp:%s:%s:%d:%d", diag.Source, diag.Code, diag.Range.Start.Line+1, diag.Range.Start.Character+1),
+		ID: fmt.Sprintf(
+			"lsp:%s:%s:%d:%d",
+			diag.Source,
+			diag.Code,
+			diag.Range.Start.Line+1,
+			diag.Range.Start.Character+1,
+		),
 		Rule:     diag.Code,
 		ToolName: diag.Source,
 		Message:  diag.Message,
