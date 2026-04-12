@@ -83,8 +83,11 @@ type MergeOption func(*MergeOptions)
 type DeduplicateBy int
 
 const (
-	DeduplicateByID       DeduplicateBy = iota // Exact ID match
+	// DeduplicateByID ensures exact ID matches.
+	DeduplicateByID       DeduplicateBy = iota
+	// DeduplicateByPosition uses file:line:column.
 	DeduplicateByPosition                      // Same file, line, column
+	// DeduplicateByRule matches rule position.
 	DeduplicateByRule                          // Same rule + position
 )
 
@@ -92,9 +95,13 @@ const (
 type ConflictHandler int
 
 const (
-	ConflictKeepFirst   ConflictHandler = iota // Keep first occurrence
+	// ConflictKeepFirst keeps the first occurrence.
+	ConflictKeepFirst   ConflictHandler = iota
+	// ConflictKeepLast keeps the last occurrence.
 	ConflictKeepLast                           // Keep last occurrence
+	// ConflictKeepHighest keeps the highest severity.
 	ConflictKeepHighest                        // Keep highest severity
+	// ConflictKeepAll keeps both findings.
 	ConflictKeepAll                            // Keep both (don't deduplicate)
 )
 

@@ -134,8 +134,3 @@ formatters:
 issues:
     max-issues-per-linter: 50
     max-same-issues: 10
-run:
-    issues-exclude-rules:
-        - linters:
-            - testpackage
-          text: "package should be"

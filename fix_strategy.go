@@ -4,10 +4,14 @@ package finding
 type FixStrategy string
 
 const (
-	FixStrategyNone    FixStrategy = "none"    // No fix available
-	FixStrategySuggest FixStrategy = "suggest" // Human-readable suggestion, not machine-applicable
-	FixStrategyDirect  FixStrategy = "direct"  // Deterministic code transformation
-	FixStrategyAI      FixStrategy = "ai"      // Requires AI/LLM to generate fix
+	// FixStrategyNone indicates no fix is available.
+	FixStrategyNone FixStrategy = "none"
+	// FixStrategySuggest provides a human-readable suggestion.
+	FixStrategySuggest FixStrategy = "suggest"
+	// FixStrategyDirect can be automatically applied.
+	FixStrategyDirect  FixStrategy = "direct"
+	// FixStrategyAI requires AI assistance.
+	FixStrategyAI      FixStrategy = "ai"
 )
 
 // IsValid returns true if the fix strategy is a valid value.

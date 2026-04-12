@@ -530,8 +530,18 @@ func TestRangeContains(t *testing.T) {
 		message string
 	}{
 		{"in range", Position{File: "test.go", Line: 15, Column: 7}, true, ""},
-		{"before range", Position{File: "test.go", Line: 5, Column: 1}, false, "position before range should not be contained"},
-		{"different file", Position{File: "other.go", Line: 15, Column: 7}, false, "position in different file should not be contained"},
+		{
+			"before range",
+			Position{File: "test.go", Line: 5, Column: 1},
+			false,
+			"position before range should not be contained",
+		},
+		{
+			"different file",
+			Position{File: "other.go", Line: 15, Column: 7},
+			false,
+			"position in different file should not be contained",
+		},
 	}
 
 	for _, tt := range tests {
