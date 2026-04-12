@@ -71,13 +71,13 @@ func FromDiagnostic(
 // Note: This is lossy - many Finding fields have no equivalent in analysis.Diagnostic.
 func (f Finding) AnalysisDiagnostic() analysis.Diagnostic {
 	d := analysis.Diagnostic{
-		Pos:        token.NoPos, // Would need fset
-		End:        token.NoPos,
-		Message:    f.Message,
-		Category:   f.Category,
-		URL:        "",
+		Pos:            token.NoPos, // Would need fset
+		End:            token.NoPos,
+		Message:        f.Message,
+		Category:       f.Category,
+		URL:            "",
 		SuggestedFixes: []analysis.SuggestedFix{},
-		Related:    []analysis.RelatedInformation{},
+		Related:        []analysis.RelatedInformation{},
 	}
 
 	if f.FixStrategy == FixStrategyDirect && f.AfterCode != "" {
@@ -89,8 +89,8 @@ func (f Finding) AnalysisDiagnostic() analysis.Diagnostic {
 				TextEdits: []analysis.TextEdit{
 					{
 						NewText: []byte(f.AfterCode),
-						Pos:  0,
-						End:  0,
+						Pos:     0,
+						End:     0,
 					},
 				},
 			},
@@ -114,11 +114,11 @@ func FromTokenPosition(pos token.Position) Position {
 func NodePosition(fset *token.FileSet, node ast.Node) Position {
 	if node == nil {
 		return Position{
-		File:   "",
-		Line:   0,
-		Column: 0,
-		Offset: 0,
-	}
+			File:   "",
+			Line:   0,
+			Column: 0,
+			Offset: 0,
+		}
 	}
 
 	return FromTokenPosition(fset.Position(node.Pos()))

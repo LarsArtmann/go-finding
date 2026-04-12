@@ -27,6 +27,7 @@ linters:
         - copyloopvar
         - cyclop
         - decorder
+        - depguard
         - dogsled
         - dupl
         - dupword
@@ -133,29 +134,5 @@ formatters:
 issues:
     max-issues-per-linter: 50
     max-same-issues: 10
-    # Complex issues requiring architectural refactoring
-    exclude-rules:
-        - linters:
-            - cyclop
-          path: ^id\.go$
-        - linters:
-            - cyclop
-          path: ^position\.go$
-        - linters:
-            - exhaustruct
-          path: ^finding\.go$
-        - linters:
-            - exhaustruct
-          path: ^diagnostic\.go$
-        - linters:
-            - recvcheck
-          path: ^(finding|report)\.go$
-        - linters:
-            - wrapcheck
-          path: ^(json|sarif)\.go$
-        - linters:
-            - depguard
-          path: ^(diagnostic|finding_test)\.go$
-        - linters:
-            - paralleltest
-          path: ^finding_test\.go$
+    exclude:
+        - testpackage
