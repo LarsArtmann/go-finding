@@ -50,7 +50,7 @@ func extractFile(parts []string, trailingCount int) string {
 
 // ParseID parses a finding ID and extracts its components.
 // Returns tool, rule, file, line, column, and ok status.
-func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
+func ParseID(id string) (tool string, rule string, file string, line int, column int, ok bool) {
 	parts := strings.Split(id, ":")
 	if len(parts) < IDPartCount {
 		return "", "", "", 0, 0, false
@@ -83,7 +83,8 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 		}
 
 		// No column, try line only
-		if err := parseInt(parts[len(parts)-1], &line); err == nil {
+		line, err := parseInt(parts[len(parts)-1], &line)
+		if err == nil {
 			file = extractFile(parts, 1)
 
 			return tool, rule, file, line, 0, true
@@ -100,7 +101,11 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 func parseInt(s string, result *int) error {
 	_, err := fmt.Sscanf(s, "%d", result)
 
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to parse int: %w", err)
+	}
+
+	return nil
 }
 
 // IsHashID returns true if the ID appears to be hash-based.
