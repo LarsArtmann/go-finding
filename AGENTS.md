@@ -15,17 +15,17 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 ### Key Files
 
-| File | Purpose |
-|------|---------|
-| `finding.go` | Core Finding type |
-| `severity.go` | Severity enum (info/warning/error/critical) |
-| `fix_strategy.go` | FixStrategy enum (none/suggest/direct/ai) |
-| `report.go` | Report container with summary |
-| `filter.go` | Filtering and grouping utilities |
-| `merge.go` | Report merging with deduplication |
-| `sarif.go` | SARIF 2.1.0 output |
-| `lsp.go` | LSP Diagnostic conversion |
-| `diagnostic.go` | go/analysis integration |
+| File              | Purpose                                     |
+| ----------------- | ------------------------------------------- |
+| `finding.go`      | Core Finding type                           |
+| `severity.go`     | Severity enum (info/warning/error/critical) |
+| `fix_strategy.go` | FixStrategy enum (none/suggest/direct/ai)   |
+| `report.go`       | Report container with summary               |
+| `filter.go`       | Filtering and grouping utilities            |
+| `merge.go`        | Report merging with deduplication           |
+| `sarif.go`        | SARIF 2.1.0 output                          |
+| `lsp.go`          | LSP Diagnostic conversion                   |
+| `diagnostic.go`   | go/analysis integration                     |
 
 ### Testing
 

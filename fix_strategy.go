@@ -9,9 +9,9 @@ const (
 	// FixStrategySuggest provides a human-readable suggestion.
 	FixStrategySuggest FixStrategy = "suggest"
 	// FixStrategyDirect can be automatically applied.
-	FixStrategyDirect  FixStrategy = "direct"
+	FixStrategyDirect FixStrategy = "direct"
 	// FixStrategyAI requires AI assistance.
-	FixStrategyAI      FixStrategy = "ai"
+	FixStrategyAI FixStrategy = "ai"
 )
 
 // IsValid returns true if the fix strategy is a valid value.

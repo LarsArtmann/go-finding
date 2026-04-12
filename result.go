@@ -45,6 +45,7 @@ func (r Result[T]) Value() T {
 	if !r.ok {
 		panic("called Value on an Err Result")
 	}
+
 	return r.value
 }
 
@@ -53,6 +54,7 @@ func (r Result[T]) ValueOr(def T) T {
 	if r.ok {
 		return r.value
 	}
+
 	return def
 }
 
@@ -61,6 +63,7 @@ func (r Result[T]) ValueOrElse(f func(error) T) T {
 	if r.ok {
 		return r.value
 	}
+
 	return f(r.err)
 }
 
@@ -71,7 +74,7 @@ func (r Result[T]) Error() error {
 }
 
 // Unwrap returns the value and error.
-// This allows direct assignment: val, err := res.Unwrap()
+// This allows direct assignment: val, err := res.Unwrap().
 func (r Result[T]) Unwrap() (T, error) {
 	return r.value, r.err
 }
@@ -81,12 +84,14 @@ func (r Result[T]) UnwrapOr(def T) T {
 	if r.ok {
 		return r.value
 	}
+
 	return def
 }
 
 // UnwrapOrDefault returns the value if Ok, otherwise returns the zero value.
 func (r Result[T]) UnwrapOrDefault() T {
 	var zero T
+
 	return r.UnwrapOr(zero)
 }
 
@@ -96,8 +101,10 @@ func (r Result[T]) Expect(msg string) T {
 		if r.err != nil {
 			panic(fmt.Sprintf("%s: %v", msg, r.err))
 		}
+
 		panic(msg)
 	}
+
 	return r.value
 }
 
@@ -106,6 +113,7 @@ func (r Result[T]) ExpectErr(msg string) error {
 	if r.ok {
 		panic(msg)
 	}
+
 	return r.err
 }
 
@@ -114,6 +122,7 @@ func (r Result[T]) Map(f func(T) T) Result[T] {
 	if r.ok {
 		return Ok(f(r.value))
 	}
+
 	return r
 }
 
@@ -122,6 +131,7 @@ func (r Result[T]) MapErr(f func(error) error) Result[T] {
 	if !r.ok {
 		return Err[T](f(r.err))
 	}
+
 	return r
 }
 
@@ -130,6 +140,7 @@ func (r Result[T]) And(other Result[T]) Result[T] {
 	if r.ok {
 		return other
 	}
+
 	return r
 }
 
@@ -138,6 +149,7 @@ func (r Result[T]) Or(other Result[T]) Result[T] {
 	if r.ok {
 		return r
 	}
+
 	return other
 }
 
@@ -146,6 +158,7 @@ func (r Result[T]) FlatMap(f func(T) Result[T]) Result[T] {
 	if r.ok {
 		return f(r.value)
 	}
+
 	return r
 }
 
@@ -157,6 +170,7 @@ func (r Result[T]) MarshalJSON() ([]byte, error) {
 			"value": r.value,
 		})
 	}
+
 	return json.Marshal(map[string]any{
 		"ok":    false,
 		"error": r.err.Error(),
@@ -170,19 +184,24 @@ func (r *Result[T]) UnmarshalJSON(data []byte) error {
 		Value json.RawMessage `json:"value"`
 		Error string          `json:"error"`
 	}
-	if err := json.Unmarshal(data, &aux); err != nil {
+	err := json.Unmarshal(data, &aux)
+	if err != nil {
 		return err
 	}
+
 	r.ok = aux.Ok
 	if aux.Ok {
 		var val T
-		if err := json.Unmarshal(aux.Value, &val); err != nil {
+		err := json.Unmarshal(aux.Value, &val)
+		if err != nil {
 			return err
 		}
+
 		r.value = val
 	} else {
 		r.err = fmt.Errorf("%s", aux.Error)
 	}
+
 	return nil
 }
 
@@ -191,5 +210,6 @@ func (r Result[T]) String() string {
 	if r.ok {
 		return fmt.Sprintf("Ok(%v)", r.value)
 	}
+
 	return fmt.Sprintf("Err(%v)", r.err)
 }

@@ -2,6 +2,7 @@ package finding_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
@@ -69,6 +70,7 @@ func Example_simpleCLI() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	_ = sarif // In real tool, write to file
 
 	// Output:
@@ -85,12 +87,15 @@ func Example_resultHandling() {
 	// Function that might fail
 	parseFinding := func(data []byte) finding.Result[finding.Finding] {
 		var f finding.Finding
-		if err := json.Unmarshal(data, &f); err != nil {
+		err := json.Unmarshal(data, &f)
+		if err != nil {
 			return finding.Err[finding.Finding](err)
 		}
+
 		if !f.IsValid() {
-			return finding.Err[finding.Finding](fmt.Errorf("invalid finding"))
+			return finding.Err[finding.Finding](errors.New("invalid finding"))
 		}
+
 		return finding.Ok(f)
 	}
 

@@ -8,6 +8,7 @@
 ## ✅ COMPLETED
 
 ### Phase 1: Foundation
+
 - [x] Core types (Finding, Severity, FixStrategy, Position, Range, Suppression, Report)
 - [x] Utilities (filter, merge, id, json)
 - [x] Integrations (SARIF, LSP, go/analysis)
@@ -27,21 +28,21 @@
 
 Pipeline stages have different input/output types:
 
-| Stage | Input | Output |
-|-------|-------|--------|
-| Detect | `[]Detector` | `[]Finding` |
-| Triage | `[]Finding` | `TriageResult{Direct, Suggest, None}` |
-| Fix | `TriageResult` | `FixResult{Applied, Failed}` |
-| Verify | `[]string` (modified files) | `VerificationResult` |
+| Stage  | Input                       | Output                                |
+| ------ | --------------------------- | ------------------------------------- |
+| Detect | `[]Detector`                | `[]Finding`                           |
+| Triage | `[]Finding`                 | `TriageResult{Direct, Suggest, None}` |
+| Fix    | `TriageResult`              | `FixResult{Applied, Failed}`          |
+| Verify | `[]string` (modified files) | `VerificationResult`                  |
 
 **Which design?**
 
-| Option | Approach | Pros | Cons |
-|--------|----------|------|------|
-| **A** | `Stage[In, Out any]` interface | Type-safe | Complex |
-| **B** | Separate concrete stages | Clear, simple | Rigid |
-| **C** | Functional: `func(ctx, input) (output, error)` | Simple | Less structure |
-| **D** | `any` with type assertions | Flexible | Runtime errors |
+| Option | Approach                                       | Pros          | Cons           |
+| ------ | ---------------------------------------------- | ------------- | -------------- |
+| **A**  | `Stage[In, Out any]` interface                 | Type-safe     | Complex        |
+| **B**  | Separate concrete stages                       | Clear, simple | Rigid          |
+| **C**  | Functional: `func(ctx, input) (output, error)` | Simple        | Less structure |
+| **D**  | `any` with type assertions                     | Flexible      | Runtime errors |
 
 **My recommendation: Option C (Functional)**
 

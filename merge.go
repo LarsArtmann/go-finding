@@ -83,9 +83,9 @@ type MergeOption func(*MergeOptions)
 type DeduplicateBy int
 
 const (
-	DeduplicateByID DeduplicateBy = iota // DeduplicateByID ensures exact ID matches.
-	DeduplicateByPosition                // DeduplicateByPosition uses file:line:column.
-	DeduplicateByRule                    // DeduplicateByRule matches rule position.
+	DeduplicateByID       DeduplicateBy = iota // DeduplicateByID ensures exact ID matches.
+	DeduplicateByPosition                      // DeduplicateByPosition uses file:line:column.
+	DeduplicateByRule                          // DeduplicateByRule matches rule position.
 )
 
 // ConflictHandler handles when findings conflict.

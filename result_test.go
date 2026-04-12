@@ -10,9 +10,11 @@ func TestResultOk(t *testing.T) {
 	if !r.IsOk() {
 		t.Error("expected IsOk to be true")
 	}
+
 	if r.IsErr() {
 		t.Error("expected IsErr to be false")
 	}
+
 	if r.Value() != 42 {
 		t.Errorf("expected value 42, got %v", r.Value())
 	}
@@ -20,14 +22,17 @@ func TestResultOk(t *testing.T) {
 
 func TestResultErr(t *testing.T) {
 	err := errors.New("something went wrong")
+
 	r := Err[int](err)
 	if r.IsOk() {
 		t.Error("expected IsOk to be false")
 	}
+
 	if !r.IsErr() {
 		t.Error("expected IsErr to be true")
 	}
-	if r.Error() != err {
+
+	if !errors.Is(r.Error(), err) {
 		t.Error("expected error to match")
 	}
 }
@@ -58,19 +63,23 @@ func TestResultValueOrElse(t *testing.T) {
 
 func TestResultUnwrap(t *testing.T) {
 	ok := Ok(42)
+
 	val, err := ok.Unwrap()
 	if err != nil {
 		t.Error("expected no error")
 	}
+
 	if val != 42 {
 		t.Errorf("expected 42, got %v", val)
 	}
 
 	errRes := Err[int](errors.New("fail"))
+
 	val, err = errRes.Unwrap()
 	if err == nil {
 		t.Error("expected error")
 	}
+
 	if val != 0 {
 		t.Errorf("expected zero value, got %v", val)
 	}
@@ -78,15 +87,18 @@ func TestResultUnwrap(t *testing.T) {
 
 func TestResultMap(t *testing.T) {
 	ok := Ok(5)
+
 	doubled := ok.Map(func(x int) int { return x * 2 })
 	if !doubled.IsOk() {
 		t.Error("expected Ok")
 	}
+
 	if doubled.Value() != 10 {
 		t.Errorf("expected 10, got %v", doubled.Value())
 	}
 
 	err := Err[int](errors.New("fail"))
+
 	mapped := err.Map(func(x int) int { return x * 2 })
 	if mapped.IsOk() {
 		t.Error("expected Err")
@@ -95,10 +107,12 @@ func TestResultMap(t *testing.T) {
 
 func TestResultFlatMap(t *testing.T) {
 	ok := Ok(5)
+
 	result := ok.FlatMap(func(x int) Result[int] {
 		if x > 0 {
 			return Ok(x * 2)
 		}
+
 		return Err[int](errors.New("negative"))
 	})
 	if !result.IsOk() || result.Value() != 10 {
@@ -106,6 +120,7 @@ func TestResultFlatMap(t *testing.T) {
 	}
 
 	err := Err[int](errors.New("fail"))
+
 	result = err.FlatMap(func(x int) Result[int] { return Ok(x * 2) })
 	if result.IsOk() {
 		t.Error("expected Err")
@@ -114,6 +129,7 @@ func TestResultFlatMap(t *testing.T) {
 
 func TestResultAndOr(t *testing.T) {
 	ok1 := Ok(1)
+
 	ok2 := Ok(2)
 	if r := ok1.And(ok2); !r.IsOk() || r.Value() != 2 {
 		t.Error("expected Ok(2)")

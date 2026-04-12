@@ -64,6 +64,8 @@ func addFindingForTest(r *Report, id string, sev Severity, file string) {
 }
 
 func TestSeverity(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		severity Severity
