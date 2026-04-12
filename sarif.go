@@ -38,14 +38,14 @@ type SarifDriver struct {
 
 // SarifResult represents a single finding in SARIF format.
 type SarifResult struct {
-	RuleID     string                 `json:"ruleId"`
-	Level      string                 `json:"level"`
-	Message    SarifMessage           `json:"message"`
-	Location   SarifLocation          `json:"location"`
-	Fixes      []SarifFix             `json:"fixes,omitempty"`
-	Related    []SarifRelatedLoc      `json:"relatedLocations,omitempty"`
-	Rank       float64                `json:"rank,omitempty"`
-	Properties map[string]interface{} `json:"properties,omitempty"`
+	RuleID     string            `json:"ruleId"`
+	Level      string            `json:"level"`
+	Message    SarifMessage      `json:"message"`
+	Location   SarifLocation     `json:"location"`
+	Fixes      []SarifFix        `json:"fixes,omitempty"`
+	Related    []SarifRelatedLoc `json:"relatedLocations,omitempty"`
+	Rank       float64           `json:"rank,omitempty"`
+	Properties map[string]any    `json:"properties,omitempty"`
 }
 
 // SarifMessage represents a message in SARIF format.
@@ -98,7 +98,7 @@ type SarifReplacement struct {
 // SarifRelatedLoc represents a related location in SARIF.
 type SarifRelatedLoc struct {
 	PhysicalLocation SarifPhysicalLocation `json:"physicalLocation"`
-	Message          SarifMessage          `json:"message,omitempty"`
+	Message          SarifMessage          `json:"message"`
 }
 
 func sarifResultsFromFindings(findings []Finding) []SarifResult {
@@ -237,7 +237,7 @@ func findingToSARIF(f Finding) SarifResult {
 
 	// Add metadata as properties
 	if len(f.Metadata) > 0 {
-		result.Properties = make(map[string]interface{})
+		result.Properties = make(map[string]any)
 		for k, v := range f.Metadata {
 			result.Properties[k] = v
 		}

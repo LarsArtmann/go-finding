@@ -31,8 +31,8 @@ func (p Position) String() string {
 
 // Range represents a span in source code from Start to End.
 type Range struct {
-	Start Position `json:"start"`         // Required: start position
-	End   Position `json:"end,omitempty"` // Optional: end position
+	Start Position `json:"start"` // Required: start position
+	End   Position `json:"end"`   // Optional: end position
 }
 
 // IsValid returns true if the range has a valid start position.

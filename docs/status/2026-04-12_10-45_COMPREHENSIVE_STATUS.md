@@ -17,56 +17,56 @@ Successfully created a new Go library `go-finding` for unified static analysis f
 
 ### Core Types (Phase 1 Complete)
 
-| Component | Status | Tests | Notes |
-|-----------|--------|-------|-------|
-| `Finding` | ✅ Complete | ✅ 100% | Core finding type with all fields |
-| `Severity` | ✅ Complete | ✅ 100% | info/warning/error/critical with ordering |
-| `FixStrategy` | ✅ Complete | ✅ 100% | none/suggest/direct/ai |
-| `Position` | ✅ Complete | ✅ 100% | File/line/column with String() |
-| `Range` | ✅ Complete | ✅ 100% | Contains() method implemented |
-| `Suppression` | ✅ Complete | ✅ 100% | Kind/Reason/Expiry support |
-| `Report` | ✅ Complete | ✅ 100% | Summary computation, filtering |
-| `RelatedRef` | ✅ Complete | ✅ 100% | Finding relationship links |
-| Categories | ✅ Complete | ✅ 100% | 12 standard categories |
+| Component     | Status      | Tests   | Notes                                     |
+| ------------- | ----------- | ------- | ----------------------------------------- |
+| `Finding`     | ✅ Complete | ✅ 100% | Core finding type with all fields         |
+| `Severity`    | ✅ Complete | ✅ 100% | info/warning/error/critical with ordering |
+| `FixStrategy` | ✅ Complete | ✅ 100% | none/suggest/direct/ai                    |
+| `Position`    | ✅ Complete | ✅ 100% | File/line/column with String()            |
+| `Range`       | ✅ Complete | ✅ 100% | Contains() method implemented             |
+| `Suppression` | ✅ Complete | ✅ 100% | Kind/Reason/Expiry support                |
+| `Report`      | ✅ Complete | ✅ 100% | Summary computation, filtering            |
+| `RelatedRef`  | ✅ Complete | ✅ 100% | Finding relationship links                |
+| Categories    | ✅ Complete | ✅ 100% | 12 standard categories                    |
 
 ### Utilities
 
-| Component | Status | Tests | Notes |
-|-----------|--------|-------|-------|
-| `filter.go` | ✅ Complete | ✅ 100% | 15+ filter functions, grouping |
-| `merge.go` | ✅ Complete | ✅ 100% | Report merging, deduplication |
-| `id.go` | ✅ Complete | ✅ 100% | GenerateID, ParseID, hash support |
-| `json.go` | ✅ Complete | ✅ 100% | Marshal/Unmarshal helpers |
+| Component   | Status      | Tests   | Notes                             |
+| ----------- | ----------- | ------- | --------------------------------- |
+| `filter.go` | ✅ Complete | ✅ 100% | 15+ filter functions, grouping    |
+| `merge.go`  | ✅ Complete | ✅ 100% | Report merging, deduplication     |
+| `id.go`     | ✅ Complete | ✅ 100% | GenerateID, ParseID, hash support |
+| `json.go`   | ✅ Complete | ✅ 100% | Marshal/Unmarshal helpers         |
 
 ### Integration
 
-| Component | Status | Tests | Notes |
-|-----------|--------|-------|-------|
-| `sarif.go` | ✅ Complete | ✅ 100% | SARIF 2.1.0 output |
-| `lsp.go` | ✅ Complete | ✅ 100% | LSP Diagnostic conversion |
-| `diagnostic.go` | ✅ Complete | ✅ 100% | go/analysis integration |
+| Component       | Status      | Tests   | Notes                     |
+| --------------- | ----------- | ------- | ------------------------- |
+| `sarif.go`      | ✅ Complete | ✅ 100% | SARIF 2.1.0 output        |
+| `lsp.go`        | ✅ Complete | ✅ 100% | LSP Diagnostic conversion |
+| `diagnostic.go` | ✅ Complete | ✅ 100% | go/analysis integration   |
 
 ### Project Infrastructure
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Git repository | ✅ Initialized | Clean commit history |
-| go.mod | ✅ Configured | Go 1.21, proper module name |
-| CI/CD | ✅ Added | GitHub Actions workflow |
-| CHANGELOG.md | ✅ Added | Keep a Changelog format |
-| LICENSE | ✅ Added | MIT License |
-| AUTHORS | ✅ Added | Attribution file |
-| README.md | ✅ Complete | Usage examples, API docs |
-| doc.go | ✅ Added | Package documentation |
-| .gitignore | ✅ Added | Standard Go ignores |
+| Component      | Status         | Notes                       |
+| -------------- | -------------- | --------------------------- |
+| Git repository | ✅ Initialized | Clean commit history        |
+| go.mod         | ✅ Configured  | Go 1.21, proper module name |
+| CI/CD          | ✅ Added       | GitHub Actions workflow     |
+| CHANGELOG.md   | ✅ Added       | Keep a Changelog format     |
+| LICENSE        | ✅ Added       | MIT License                 |
+| AUTHORS        | ✅ Added       | Attribution file            |
+| README.md      | ✅ Complete    | Usage examples, API docs    |
+| doc.go         | ✅ Added       | Package documentation       |
+| .gitignore     | ✅ Added       | Standard Go ignores         |
 
 ### Documentation
 
-| Document | Status | Purpose |
-|----------|--------|---------|
-| PROPOSAL.md | ✅ Complete | Original design document (moved from go-business-rules) |
-| EXECUTION_PLAN.md | ✅ Complete | Phased implementation roadmap |
-| README.md | ✅ Complete | User-facing documentation |
+| Document          | Status      | Purpose                                                 |
+| ----------------- | ----------- | ------------------------------------------------------- |
+| PROPOSAL.md       | ✅ Complete | Original design document (moved from go-business-rules) |
+| EXECUTION_PLAN.md | ✅ Complete | Phased implementation roadmap                           |
+| README.md         | ✅ Complete | User-facing documentation                               |
 
 ### Test Coverage
 
@@ -88,31 +88,31 @@ Successfully created a new Go library `go-finding` for unified static analysis f
 
 ### Pipeline Engine (Phase 2 - In Progress)
 
-| Component | Status | Completion | Blockers |
-|-----------|--------|------------|----------|
-| Pipeline design | 🟡 In Progress | 30% | Needs architectural decisions |
-| Detector interface | 🟡 Drafted | 50% | Needs validation |
-| Stage interface | 🟡 Conceptual | 20% | Depends on pipeline design |
-| Fix application | 🔴 Not Started | 0% | Needs file I/O design |
-| Verify stage | 🔴 Not Started | 0% | Depends on detector interface |
+| Component          | Status         | Completion | Blockers                      |
+| ------------------ | -------------- | ---------- | ----------------------------- |
+| Pipeline design    | 🟡 In Progress | 30%        | Needs architectural decisions |
+| Detector interface | 🟡 Drafted     | 50%        | Needs validation              |
+| Stage interface    | 🟡 Conceptual  | 20%        | Depends on pipeline design    |
+| Fix application    | 🔴 Not Started | 0%         | Needs file I/O design         |
+| Verify stage       | 🔴 Not Started | 0%         | Depends on detector interface |
 
 **Current State:** Directory `pipeline/` created but empty. Core interfaces need definition.
 
 ### Type System Improvements
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Error handling | 🟡 Partial | Some functions don't return errors |
-| Validation | 🟡 Basic | Finding.IsValid() exists but limited |
-| Result[T] type | 🔴 Not Added | Could use samber/mo |
+| Component      | Status       | Notes                                |
+| -------------- | ------------ | ------------------------------------ |
+| Error handling | 🟡 Partial   | Some functions don't return errors   |
+| Validation     | 🟡 Basic     | Finding.IsValid() exists but limited |
+| Result[T] type | 🔴 Not Added | Could use samber/mo                  |
 
 ### Documentation
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| API documentation | 🟡 Good | Package docs exist, could be deeper |
-| Code examples | 🟡 Basic | 3 examples, could have more |
-| Architecture docs | 🔴 Missing | No ADRs or design docs |
+| Component         | Status     | Notes                               |
+| ----------------- | ---------- | ----------------------------------- |
+| API documentation | 🟡 Good    | Package docs exist, could be deeper |
+| Code examples     | 🟡 Basic   | 3 examples, could have more         |
+| Architecture docs | 🔴 Missing | No ADRs or design docs              |
 
 ---
 
@@ -122,7 +122,7 @@ Successfully created a new Go library `go-finding` for unified static analysis f
 
 - [ ] `pipeline/pipeline.go` - Core orchestration
 - [ ] `pipeline/detect.go` - Detection stage
-- [ ] `pipeline/triage.go` - Triage/routing stage  
+- [ ] `pipeline/triage.go` - Triage/routing stage
 - [ ] `pipeline/fix.go` - Fix application stage
 - [ ] `pipeline/verify.go` - Verification stage
 - [ ] `pipeline/events.go` - Event/observer system
@@ -164,6 +164,7 @@ Successfully created a new Go library `go-finding` for unified static analysis f
 **None currently.** The codebase is in good shape with all tests passing.
 
 **Historical Issues (FIXED):**
+
 1. ~~Infinite recursion in Report.MarshalJSON~~ - Fixed by using type alias
 2. ~~SARIF nil pointer dereference~~ - Fixed by adding nil checks for Range
 3. ~~go.mod version too high~~ - Fixed by lowering to Go 1.21
@@ -281,11 +282,13 @@ Successfully created a new Go library `go-finding` for unified static analysis f
 **Question:** Should the Pipeline use:
 
 **Option A: Function-based stages**
+
 ```go
 type Stage func(ctx context.Context, findings []Finding) ([]Finding, error)
 ```
 
 **Option B: Interface-based stages**
+
 ```go
 type Stage interface {
     Execute(ctx context.Context, findings []Finding) ([]Finding, error)
@@ -294,6 +297,7 @@ type Stage interface {
 ```
 
 **Option C: Generic stages with state**
+
 ```go
 type Stage[T any] interface {
     Execute(ctx context.Context, input T) (T, error)
@@ -301,11 +305,13 @@ type Stage[T any] interface {
 ```
 
 **Tradeoffs:**
+
 - **A** is simple but not extensible
 - **B** allows stateful stages (e.g., caching) but more verbose
 - **C** is type-safe but complex
 
 **Context:** The pipeline needs to support:
+
 - Detect: `[]Detector -> []Finding`
 - Triage: `[]Finding -> TriageResult` (split by strategy)
 - Fix: `TriageResult -> FixResult` (apply fixes)
@@ -339,12 +345,12 @@ nothing to commit, working tree clean
 
 ### Risk Assessment
 
-| Risk | Level | Mitigation |
-|------|-------|------------|
-| Pipeline architecture wrong | Medium | Get your input on design |
-| SARIF non-compliant | Medium | Add schema validation |
-| No real-world validation | High | Test on existing projects |
-| Performance issues | Low | Add benchmarks early |
+| Risk                        | Level  | Mitigation                |
+| --------------------------- | ------ | ------------------------- |
+| Pipeline architecture wrong | Medium | Get your input on design  |
+| SARIF non-compliant         | Medium | Add schema validation     |
+| No real-world validation    | High   | Test on existing projects |
+| Performance issues          | Low    | Add benchmarks early      |
 
 ### Success Metrics
 

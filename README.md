@@ -7,6 +7,7 @@ A Go library for unified static analysis findings. Provides a common data model 
 Seven tools detect issues. Zero tools **route them to remediation**.
 
 This SDK solves:
+
 - Each tool invents its own types for findings
 - No standardized way to apply fixes
 - Manual loop: run tool → read output → fix → re-run

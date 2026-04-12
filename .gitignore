@@ -27,3 +27,11 @@ go.work
 # OS
 .DS_Store
 Thumbs.db
+Dependencies
+node_modules/
+Test coverage
+/coverage
+# Build artifacts
+/go-finding
+Copy/paste detection report
+/report/jscpd-report.json

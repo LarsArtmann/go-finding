@@ -16,15 +16,15 @@ run tool → read output → fix manually → re-run → new issues → repeat 5
 
 The loop is manual, lossy, and incomplete. Each tool invents its own types:
 
-| Project | Finding Type | Severity | Position | Fix Model | Output |
-|---------|-------------|----------|----------|-----------|--------|
-| **golangci-lint-auto-configure** | `LinterRecommendation`, `ValidationError` | `LinterPriority` (Critical/High/Medium/Optional) | Config path only (no source lines) | `AutoFix bool` on linter metadata | JSON, HTML |
-| **BuildFlow** | `BinaryViolation`, `TODOViolation`, `HierarchicalErrorsViolation`, etc. | `ViolationSeverity` (Critical/High/Medium/Low/Info) | `GetFile()`, `GetLine()`, `GetColumn()` | `AutoFix bool` in config; `Suggestion string` on violations | JSON, SARIF, HTML |
-| **rules** | `analysis.Analyzer` diagnostics (no custom type) | None (delegated to host framework) | `token.Pos` via `go/analysis` | None (report-only) | Text (via `go vet`) |
-| **art-dupl** | `Clone`, `CloneGroup` | `CloneSeverity` (low/medium/high/critical) | `LineNumber`, `BytePosition`, `Filename` (no column) | None; `Suggestion` text only | JSON, SARIF, HTML, CSV, text |
-| **branching-flow** | `StrongIDViolation`, `BoolBlindnessViolation`, `PrimitiveTypeViolation`, `DuplicateGroup`, `Detection` | `Severity` (critical/high/medium/low) | `SourceLocation` (file, line, column) | Rich: `StrongIDSuggestion{BeforeCode, AfterCode}`, `BitFlagSuggestion`, `EnumSuggestion`, `CompositionSuggestion`; `--fix` flag | JSON, SARIF, HTML, Markdown, text |
-| **go-auto-upgrade** | `Change`, `Warning` | None (implicit: change vs warning vs error) | `PathString`, `LineInt` (no column) | All changes are auto-fixable via AST rewrite; `Result.Content` has new code | Text (slog) |
-| **hierarchical-errors** | `ErrorViolation`, `ErrorFlow`, `ErrorHierarchy` | `Severity` (low/medium/high) | `token.Position` (file, line, column, offset) | `Suggestion string`; SARIF `Fix` structs (descriptive only) | JSON, SARIF, HTML, DOT, Mermaid, agent, text |
+| Project                          | Finding Type                                                                                           | Severity                                            | Position                                             | Fix Model                                                                                                                       | Output                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **golangci-lint-auto-configure** | `LinterRecommendation`, `ValidationError`                                                              | `LinterPriority` (Critical/High/Medium/Optional)    | Config path only (no source lines)                   | `AutoFix bool` on linter metadata                                                                                               | JSON, HTML                                   |
+| **BuildFlow**                    | `BinaryViolation`, `TODOViolation`, `HierarchicalErrorsViolation`, etc.                                | `ViolationSeverity` (Critical/High/Medium/Low/Info) | `GetFile()`, `GetLine()`, `GetColumn()`              | `AutoFix bool` in config; `Suggestion string` on violations                                                                     | JSON, SARIF, HTML                            |
+| **rules**                        | `analysis.Analyzer` diagnostics (no custom type)                                                       | None (delegated to host framework)                  | `token.Pos` via `go/analysis`                        | None (report-only)                                                                                                              | Text (via `go vet`)                          |
+| **art-dupl**                     | `Clone`, `CloneGroup`                                                                                  | `CloneSeverity` (low/medium/high/critical)          | `LineNumber`, `BytePosition`, `Filename` (no column) | None; `Suggestion` text only                                                                                                    | JSON, SARIF, HTML, CSV, text                 |
+| **branching-flow**               | `StrongIDViolation`, `BoolBlindnessViolation`, `PrimitiveTypeViolation`, `DuplicateGroup`, `Detection` | `Severity` (critical/high/medium/low)               | `SourceLocation` (file, line, column)                | Rich: `StrongIDSuggestion{BeforeCode, AfterCode}`, `BitFlagSuggestion`, `EnumSuggestion`, `CompositionSuggestion`; `--fix` flag | JSON, SARIF, HTML, Markdown, text            |
+| **go-auto-upgrade**              | `Change`, `Warning`                                                                                    | None (implicit: change vs warning vs error)         | `PathString`, `LineInt` (no column)                  | All changes are auto-fixable via AST rewrite; `Result.Content` has new code                                                     | Text (slog)                                  |
+| **hierarchical-errors**          | `ErrorViolation`, `ErrorFlow`, `ErrorHierarchy`                                                        | `Severity` (low/medium/high)                        | `token.Position` (file, line, column, offset)        | `Suggestion string`; SARIF `Fix` structs (descriptive only)                                                                     | JSON, SARIF, HTML, DOT, Mermaid, agent, text |
 
 ---
 
@@ -34,11 +34,11 @@ SARIF 2.1.0 is excellent as an **interchange format for reporting**. 4 of 7 tool
 
 SARIF is **insufficient** for three things this SDK must do:
 
-| Gap | Why it matters |
-|-----|---------------|
-| **Fix strategy** | SARIF has `fixes[]` with `artifactChanges`, but can't distinguish "apply mechanically" from "AI should figure it out" from "no fix possible". The pipeline needs to know *how* to remediate, not just *that* a fix exists. |
-| **Cross-tool correlation** | golangci-lint and branching-flow may flag the same line. SARIF has no merge protocol, no cross-run identity, no dedup semantics. |
-| **Pipeline state** | SARIF is a terminal snapshot. It can't express "fix → verify → re-detect → fix again → stable". The pipeline needs mutable working state, not serialized output. |
+| Gap                        | Why it matters                                                                                                                                                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fix strategy**           | SARIF has `fixes[]` with `artifactChanges`, but can't distinguish "apply mechanically" from "AI should figure it out" from "no fix possible". The pipeline needs to know _how_ to remediate, not just _that_ a fix exists. |
+| **Cross-tool correlation** | golangci-lint and branching-flow may flag the same line. SARIF has no merge protocol, no cross-run identity, no dedup semantics.                                                                                           |
+| **Pipeline state**         | SARIF is a terminal snapshot. It can't express "fix → verify → re-detect → fix again → stable". The pipeline needs mutable working state, not serialized output.                                                           |
 
 **Design stance:** SARIF is the output format. The SDK is the in-memory working representation + pipeline engine. SARIF is generated from `Report`, not the other way around.
 
@@ -90,7 +90,7 @@ type Diagnostic struct {
 De facto interchange format for Go linters. Every tool that integrates with golangci-lint speaks this:
 
 ```json
-{"Pos":"file.go:42:5","Text":"message","FromLinter":"gosec","Severity":"warning"}
+{ "Pos": "file.go:42:5", "Text": "message", "FromLinter": "gosec", "Severity": "warning" }
 ```
 
 **Alignment:** The SDK parses golangci-lint JSON into `Finding` via `FromGolangciLintJSON()`. This is how BuildFlow already integrates external linters.
@@ -182,29 +182,29 @@ const (
 
 **Mapping from existing projects:**
 
-| Project | Native | Maps To |
-|---------|--------|---------|
-| BuildFlow `ViolationSeverityCritical` | Critical | `critical` |
-| BuildFlow `ViolationSeverityHigh` | High | `error` |
-| BuildFlow `ViolationSeverityMedium` | Medium | `warning` |
-| BuildFlow `ViolationSeverityLow` | Low | `info` |
-| BuildFlow `ViolationSeverityInfo` | Info | `info` |
-| art-dupl `CloneSeverityCritical` | critical | `critical` |
-| art-dupl `CloneSeverityHigh` | high | `error` |
-| art-dupl `CloneSeverityMedium` | medium | `warning` |
-| art-dupl `CloneSeverityLow` | low | `info` |
-| branching-flow `SeverityCritical` | critical | `critical` |
-| branching-flow `SeverityHigh` | high | `error` |
-| branching-flow `SeverityMedium` | medium | `warning` |
-| branching-flow `SeverityLow` | low | `info` |
-| hierarchical-errors `SeverityHigh` | high | `error` |
-| hierarchical-errors `SeverityMedium` | medium | `warning` |
-| hierarchical-errors `SeverityLow` | low | `info` |
-| go-auto-upgrade `Warning` | (implicit) | `warning` |
-| go-auto-upgrade `Change` | (implicit) | `info` |
-| go-auto-upgrade `Error` | (implicit) | `error` |
-| LSP `DiagnosticSeverity` (1-4) | Error/Warning/Info/Hint | `error`/`warning`/`info`/`info` |
-| `go/analysis` | (none) | defaults to `warning` |
+| Project                               | Native                  | Maps To                         |
+| ------------------------------------- | ----------------------- | ------------------------------- |
+| BuildFlow `ViolationSeverityCritical` | Critical                | `critical`                      |
+| BuildFlow `ViolationSeverityHigh`     | High                    | `error`                         |
+| BuildFlow `ViolationSeverityMedium`   | Medium                  | `warning`                       |
+| BuildFlow `ViolationSeverityLow`      | Low                     | `info`                          |
+| BuildFlow `ViolationSeverityInfo`     | Info                    | `info`                          |
+| art-dupl `CloneSeverityCritical`      | critical                | `critical`                      |
+| art-dupl `CloneSeverityHigh`          | high                    | `error`                         |
+| art-dupl `CloneSeverityMedium`        | medium                  | `warning`                       |
+| art-dupl `CloneSeverityLow`           | low                     | `info`                          |
+| branching-flow `SeverityCritical`     | critical                | `critical`                      |
+| branching-flow `SeverityHigh`         | high                    | `error`                         |
+| branching-flow `SeverityMedium`       | medium                  | `warning`                       |
+| branching-flow `SeverityLow`          | low                     | `info`                          |
+| hierarchical-errors `SeverityHigh`    | high                    | `error`                         |
+| hierarchical-errors `SeverityMedium`  | medium                  | `warning`                       |
+| hierarchical-errors `SeverityLow`     | low                     | `info`                          |
+| go-auto-upgrade `Warning`             | (implicit)              | `warning`                       |
+| go-auto-upgrade `Change`              | (implicit)              | `info`                          |
+| go-auto-upgrade `Error`               | (implicit)              | `error`                         |
+| LSP `DiagnosticSeverity` (1-4)        | Error/Warning/Info/Hint | `error`/`warning`/`info`/`info` |
+| `go/analysis`                         | (none)                  | defaults to `warning`           |
 
 ### FixStrategy
 
@@ -221,21 +221,21 @@ const (
 
 **Mapping from existing projects:**
 
-| Project | Scenario | FixStrategy |
-|---------|----------|-------------|
-| art-dupl | Clone detected (no suggestion) | `none` |
-| art-dupl | `Suggestion` text present | `suggest` |
-| branching-flow | `StrongIDSuggestion{BeforeCode, AfterCode}` | `suggest` |
-| branching-flow | `--fix` flag + deterministic rewrite | `direct` |
-| BuildFlow | `AutoFix=true` + formatter step | `direct` |
-| BuildFlow | `Suggestion string` on violation | `suggest` |
-| go-auto-upgrade | `Result.Content` with AST rewrite | `direct` |
-| go-auto-upgrade | `Warning` (manual review needed) | `suggest` |
-| hierarchical-errors | `Suggestion string` on ErrorViolation | `suggest` |
-| golangci-lint-auto-configure | `AutoFix bool` on linter | `direct` (via `golangci-lint --fix`) |
-| rules | No fixes | `none` |
-| `go/analysis.SuggestedFix` present | Has `TextEdits` | `direct` |
-| `go/analysis` without `SuggestedFix` | Report-only | `none` |
+| Project                              | Scenario                                    | FixStrategy                          |
+| ------------------------------------ | ------------------------------------------- | ------------------------------------ |
+| art-dupl                             | Clone detected (no suggestion)              | `none`                               |
+| art-dupl                             | `Suggestion` text present                   | `suggest`                            |
+| branching-flow                       | `StrongIDSuggestion{BeforeCode, AfterCode}` | `suggest`                            |
+| branching-flow                       | `--fix` flag + deterministic rewrite        | `direct`                             |
+| BuildFlow                            | `AutoFix=true` + formatter step             | `direct`                             |
+| BuildFlow                            | `Suggestion string` on violation            | `suggest`                            |
+| go-auto-upgrade                      | `Result.Content` with AST rewrite           | `direct`                             |
+| go-auto-upgrade                      | `Warning` (manual review needed)            | `suggest`                            |
+| hierarchical-errors                  | `Suggestion string` on ErrorViolation       | `suggest`                            |
+| golangci-lint-auto-configure         | `AutoFix bool` on linter                    | `direct` (via `golangci-lint --fix`) |
+| rules                                | No fixes                                    | `none`                               |
+| `go/analysis.SuggestedFix` present   | Has `TextEdits`                             | `direct`                             |
+| `go/analysis` without `SuggestedFix` | Report-only                                 | `none`                               |
 
 ### Suppression
 
@@ -260,15 +260,15 @@ const (
 
 **Existing mechanisms:**
 
-| Project | Mechanism | Maps To |
-|---------|-----------|---------|
-| golangci-lint | `//nolint` comments | `in-source` |
-| branching-flow | `//lint:ignore STRONG_ID` | `in-source` |
+| Project             | Mechanism                                                                                     | Maps To                   |
+| ------------------- | --------------------------------------------------------------------------------------------- | ------------------------- |
+| golangci-lint       | `//nolint` comments                                                                           | `in-source`               |
+| branching-flow      | `//lint:ignore STRONG_ID`                                                                     | `in-source`               |
 | hierarchical-errors | `//nolint` + config-based rules with `FilePattern`, `FunctionPattern`, `LineStart`, `LineEnd` | `in-source` + `in-config` |
-| BuildFlow | Config exclusions | `in-config` |
-| art-dupl | None | (missing) |
-| go-auto-upgrade | None | (missing) |
-| rules | None | (missing) |
+| BuildFlow           | Config exclusions                                                                             | `in-config`               |
+| art-dupl            | None                                                                                          | (missing)                 |
+| go-auto-upgrade     | None                                                                                          | (missing)                 |
+| rules               | None                                                                                          | (missing)                 |
 
 ### Position
 
@@ -288,14 +288,14 @@ type Range struct {
 
 **Alignment with existing types:**
 
-| Existing Type | Conversion |
-|---------------|-----------|
-| `token.Position` (Go stdlib) | `Position{File: p.Filename, Line: p.Line, Column: p.Column, Offset: p.Offset}` |
-| `go/analysis` `token.Pos` | Requires `pass.Fset.Position(pos)` then as above |
-| branching-flow `SourceLocation` | `Position{File: l.FilePath(), Line: l.Line(), Column: l.Column()}` |
-| art-dupl `LineNumber` + `BytePosition` | `Position{File: f, Line: int(ln), Offset: int(bp)}` |
-| LSP `Range` (0-based) | `Line+1, Column+1` when converting from LSP |
-| SARIF `Region` (1-based) | Direct mapping |
+| Existing Type                          | Conversion                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------ |
+| `token.Position` (Go stdlib)           | `Position{File: p.Filename, Line: p.Line, Column: p.Column, Offset: p.Offset}` |
+| `go/analysis` `token.Pos`              | Requires `pass.Fset.Position(pos)` then as above                               |
+| branching-flow `SourceLocation`        | `Position{File: l.FilePath(), Line: l.Line(), Column: l.Column()}`             |
+| art-dupl `LineNumber` + `BytePosition` | `Position{File: f, Line: int(ln), Offset: int(bp)}`                            |
+| LSP `Range` (0-based)                  | `Line+1, Column+1` when converting from LSP                                    |
+| SARIF `Region` (1-based)               | Direct mapping                                                                 |
 
 ### Finding
 
@@ -472,24 +472,24 @@ func FromDiagnostic(d analysis.Diagnostic, fset *token.FileSet, toolName string)
 
 Every `Finding` maps directly to SARIF 2.1.0. The SDK generates SARIF from `Report`:
 
-| Finding field | SARIF path |
-|--------------|-----------|
-| `Rule` | `result.ruleId` |
-| `Message` | `result.message.text` |
+| Finding field            | SARIF path                                                               |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `Rule`                   | `result.ruleId`                                                          |
+| `Message`                | `result.message.text`                                                    |
 | `Severity` → SARIF level | `result.level` (info→note, warning→warning, error→error, critical→error) |
-| `Position.File` | `result.locations[0].physicalLocation.artifactLocation.uri` |
-| `Position.Line` | `result.locations[0].physicalLocation.region.startLine` |
-| `Position.Column` | `result.locations[0].physicalLocation.region.startColumn` |
-| `Range.End.Line` | `result.locations[0].physicalLocation.region.endLine` |
-| `Range.End.Column` | `result.locations[0].physicalLocation.region.endColumn` |
-| `Suggestion` | `result.fixes[0].description.text` |
-| `BeforeCode`/`AfterCode` | `result.fixes[0].artifactChanges[0].replacements[0]` |
-| `Related` | `result.relatedLocations` |
-| `Metadata` | `result.properties` |
-| `Confidence` | `result.rank` (0.0-100.0) |
-| `ToolName`/`Version` | `run.tool.driver.name`/`version` |
-| `Category` | `rule.properties.category` |
-| `Suppression` | `result.suppressions` |
+| `Position.File`          | `result.locations[0].physicalLocation.artifactLocation.uri`              |
+| `Position.Line`          | `result.locations[0].physicalLocation.region.startLine`                  |
+| `Position.Column`        | `result.locations[0].physicalLocation.region.startColumn`                |
+| `Range.End.Line`         | `result.locations[0].physicalLocation.region.endLine`                    |
+| `Range.End.Column`       | `result.locations[0].physicalLocation.region.endColumn`                  |
+| `Suggestion`             | `result.fixes[0].description.text`                                       |
+| `BeforeCode`/`AfterCode` | `result.fixes[0].artifactChanges[0].replacements[0]`                     |
+| `Related`                | `result.relatedLocations`                                                |
+| `Metadata`               | `result.properties`                                                      |
+| `Confidence`             | `result.rank` (0.0-100.0)                                                |
+| `ToolName`/`Version`     | `run.tool.driver.name`/`version`                                         |
+| `Category`               | `rule.properties.category`                                               |
+| `Suppression`            | `result.suppressions`                                                    |
 
 ---
 
@@ -543,15 +543,15 @@ No `converters/` directory. Converters live in each tool as a single file.
 
 ### How Each Tool Would Use This
 
-| Tool | Integration | Migration Cost |
-|------|------------|---------------|
-| **art-dupl** | Add `finding.go` with `ToFindings()`; output `Report` as JSON alongside existing formats | Low: additive, no existing types changed |
-| **branching-flow** | Add `finding.go` with `ToFindings()`; add `--format finding` flag | Low: additive, existing output unchanged |
-| **BuildFlow** | Add `Finding` as alternative to `PrioritizedViolation`; adapters can output either | Medium: `ValidationResult[T PrioritizedViolation]` is wired into 40+ steps, don't rip out — add parallel path |
-| **go-auto-upgrade** | Add `finding.go` with `ToFindings()`; emit `Report` JSON | Low: additive |
-| **hierarchical-errors** | Add `finding.go` with `ToFindings()`; use `Finding` in LSP server | Medium: LSP server already has its own mapping, but `Finding` → LSP Diagnostic is provided |
-| **golangci-lint-auto-configure** | Add `finding.go` with `ToFindings()` for recommendations | Low: additive |
-| **rules** | Future: custom analyzers emit `Finding` via `FromDiagnostic()` | Low: just adds output format |
+| Tool                             | Integration                                                                              | Migration Cost                                                                                                |
+| -------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **art-dupl**                     | Add `finding.go` with `ToFindings()`; output `Report` as JSON alongside existing formats | Low: additive, no existing types changed                                                                      |
+| **branching-flow**               | Add `finding.go` with `ToFindings()`; add `--format finding` flag                        | Low: additive, existing output unchanged                                                                      |
+| **BuildFlow**                    | Add `Finding` as alternative to `PrioritizedViolation`; adapters can output either       | Medium: `ValidationResult[T PrioritizedViolation]` is wired into 40+ steps, don't rip out — add parallel path |
+| **go-auto-upgrade**              | Add `finding.go` with `ToFindings()`; emit `Report` JSON                                 | Low: additive                                                                                                 |
+| **hierarchical-errors**          | Add `finding.go` with `ToFindings()`; use `Finding` in LSP server                        | Medium: LSP server already has its own mapping, but `Finding` → LSP Diagnostic is provided                    |
+| **golangci-lint-auto-configure** | Add `finding.go` with `ToFindings()` for recommendations                                 | Low: additive                                                                                                 |
+| **rules**                        | Future: custom analyzers emit `Finding` via `FromDiagnostic()`                           | Low: just adds output format                                                                                  |
 
 ### Consumer Use Cases
 

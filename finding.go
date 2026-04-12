@@ -35,9 +35,9 @@ type Finding struct {
 
 // RelatedRef links to another finding.
 type RelatedRef struct {
-	FindingID string   `json:"findingId"`          // ID of the related finding
-	Relation  string   `json:"relation"`           // e.g., "clone-of", "wraps", "causes"
-	Position  Position `json:"position,omitempty"` // Quick access to related location
+	FindingID string   `json:"findingId"` // ID of the related finding
+	Relation  string   `json:"relation"`  // e.g., "clone-of", "wraps", "causes"
+	Position  Position `json:"position"`  // Quick access to related location
 }
 
 // IsSuppressed returns true if this finding is suppressed.
