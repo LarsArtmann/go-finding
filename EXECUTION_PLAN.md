@@ -1,11 +1,11 @@
 # go-finding Execution Plan
 
-**Last Updated:** 2026-04-12  
-**Status:** Phase 1 Complete, Phase 2 Ready
+**Last Updated:** 2026-04-12
+**Status:** Phase 1 & 2 Complete
 
 ---
 
-## ✅ COMPLETED
+## COMPLETED
 
 ### Phase 1: Foundation
 
@@ -16,77 +16,55 @@
 - [x] Documentation (README, CHANGELOG, AGENTS.md, doc.go)
 - [x] Result[T] type for ergonomic error handling
 - [x] Justfile for common tasks
-- **Tests:** 34 passing
+- **Tests:** 47 passing (was 34)
+
+### Phase 2: Pipeline Engine
+
+- [x] Pipeline orchestration with detect -> triage -> fix -> verify loop
+- [x] Detector interface with DetectorFunc adapter
+- [x] Sequential detection with context support
+- [x] Parallel detection with errgroup (~3.4x faster than sequential)
+- [x] TriageResult for categorizing findings by fix strategy
+- [x] FixApplier with backup/restore and text replacement
+- [x] Configurable timeout, max iterations, and callbacks
+- [x] Comprehensive pipeline tests (15 new tests)
+
+### Additional Fixes
+
+- [x] Fixed ParseID to return ok=true for non-hash IDs
+- [x] Added go.mod dependency: golang.org/x/sync for errgroup
 
 ---
 
-## 🔄 NEXT: Phase 2 - Pipeline Engine
-
-**Status:** ⏸️ **BLOCKED - Need user input on architecture**
-
-### The Question
-
-Pipeline stages have different input/output types:
-
-| Stage  | Input                       | Output                                |
-| ------ | --------------------------- | ------------------------------------- |
-| Detect | `[]Detector`                | `[]Finding`                           |
-| Triage | `[]Finding`                 | `TriageResult{Direct, Suggest, None}` |
-| Fix    | `TriageResult`              | `FixResult{Applied, Failed}`          |
-| Verify | `[]string` (modified files) | `VerificationResult`                  |
-
-**Which design?**
-
-| Option | Approach                                       | Pros          | Cons           |
-| ------ | ---------------------------------------------- | ------------- | -------------- |
-| **A**  | `Stage[In, Out any]` interface                 | Type-safe     | Complex        |
-| **B**  | Separate concrete stages                       | Clear, simple | Rigid          |
-| **C**  | Functional: `func(ctx, input) (output, error)` | Simple        | Less structure |
-| **D**  | `any` with type assertions                     | Flexible      | Runtime errors |
-
-**My recommendation: Option C (Functional)**
-
-```go
-// Simple, composable, clear
-func Detect(ctx context.Context, detectors []Detector) ([]Finding, error)
-func Triage(ctx context.Context, findings []Finding) (*TriageResult, error)
-func Fix(ctx context.Context, triage *TriageResult) (*FixResult, error)
-func Verify(ctx context.Context, files []string) (*VerifyResult, error)
-
-// Pipeline orchestrates
-pipeline.Run(ctx) // Calls stages in sequence
-```
-
-**Waiting for your decision before proceeding.**
-
----
-
-## 📋 Phase 3: Established Libraries (Pending)
+## NEXT: Phase 3: Established Libraries (Pending)
 
 - [ ] Evaluate `github.com/owenrumney/go-sarif`
 - [ ] SARIF schema validation tests
 
-## 📋 Phase 4: Testing & Examples (Pending)
+## Phase 4: Testing & Examples (Pending)
 
-- [ ] Benchmark tests
 - [ ] Fuzz tests
 - [ ] Tool converter examples
 
-## 📋 Phase 5: Integration (Pending)
+## Phase 5: Integration (Pending)
 
 - [ ] Real project validation
 - [ ] Performance tuning
 
 ---
 
-## Immediate Actions (No Pipeline)
+## Quick Reference
 
-If you want me to continue without the pipeline:
+**Pipeline usage:**
+```go
+config := pipeline.DefaultConfig()
+p := pipeline.New(config, "/project/root",
+    pipeline.DetectorFunc(myDetectorFunc),
+)
+result, err := p.Run(ctx)
+```
 
-1. ✅ Add benchmarks (next)
-2. ✅ Add fuzz tests
-3. ✅ Fix Range type (pointer → value)
-4. ✅ Create simple CLI example
-5. ✅ Push current state
-
-**Current commits ahead of origin: 3**
+**All tests pass:**
+```bash
+just test  # or: go test ./...
+```

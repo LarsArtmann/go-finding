@@ -54,9 +54,11 @@ func extractFile(parts []string, trailingCount int) string {
 // Returns tool, rule, file, line, column, and ok status.
 func ParseID(id string) (string, string, string, int, int, bool) {
 	parts := strings.Split(id, ":")
-	var tool, rule, file string
-	var line, column int
-	var ok bool
+
+	var (
+		tool, rule, file string
+		line, column     int
+	)
 
 	if len(parts) < IDPartCount {
 		return "", "", "", 0, 0, false
@@ -67,7 +69,7 @@ func ParseID(id string) (string, string, string, int, int, bool) {
 
 	// Handle hash-based IDs
 	if len(parts) == IDPartCount && len(parts[2]) == HashLength { // hex encoded hash
-		return tool, rule, file, line, column, ok
+		return tool, rule, "", line, column, true
 	}
 
 	// Try to parse position from remaining parts
@@ -77,39 +79,42 @@ func ParseID(id string) (string, string, string, int, int, bool) {
 
 	if len(parts) >= IDPartMin {
 		// Try parsing last part as column
-		err := parseInt(parts[len(parts)-1], &column)
+		colTest := 0
+		err := parseInt(parts[len(parts)-1], &colTest)
 		if err == nil {
 			// Try parsing second-to-last as line
-			err2 := parseInt(parts[len(parts)-2], &line)
+			lineTest := 0
+			err2 := parseInt(parts[len(parts)-2], &lineTest)
 			if err2 == nil {
 				file = extractFile(parts, PositionPartsTwo)
+				line = lineTest
+				column = colTest
 
-				return tool, rule, file, line, column, ok
+				return tool, rule, file, line, column, true
 			}
 		}
 
 		// No column, try line only
-		parseErr := parseInt(parts[len(parts)-1], &line)
-		if parseErr == nil {
+		err = parseInt(parts[len(parts)-1], &line)
+		if err == nil {
 			file = extractFile(parts, PositionPartsOne)
 
-			return tool, rule, file, line, column, ok
+			return tool, rule, file, line, column, true
 		}
 	}
 
 	// Just file, no position
 	file = strings.Join(parts[2:], ":")
 
-	return tool, rule, file, line, column, ok
+	return tool, rule, file, line, column, true
 }
 
 // parseInt is a helper to parse a string to int, returning nil on success.
 func parseInt(s string, result *int) error {
-	_, err := fmt.Sscanf(s, "%d", result)
-	if err != nil {
-		return fmt.Errorf("failed to parse int: %w", err)
+	n, err := fmt.Sscanf(s, "%d", result)
+	if err != nil || n != 1 {
+		return fmt.Errorf("failed to parse %q as int", s)
 	}
-
 	return nil
 }
 

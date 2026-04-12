@@ -184,6 +184,7 @@ func (r *Result[T]) UnmarshalJSON(data []byte) error {
 		Value json.RawMessage `json:"value"`
 		Error string          `json:"error"`
 	}
+
 	err := json.Unmarshal(data, &aux)
 	if err != nil {
 		return err
@@ -192,6 +193,7 @@ func (r *Result[T]) UnmarshalJSON(data []byte) error {
 	r.ok = aux.Ok
 	if aux.Ok {
 		var val T
+
 		err := json.Unmarshal(aux.Value, &val)
 		if err != nil {
 			return err

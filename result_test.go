@@ -7,6 +7,7 @@ import (
 
 func TestResultOk(t *testing.T) {
 	t.Parallel()
+
 	r := Ok(42)
 	if !r.IsOk() {
 		t.Error("expected IsOk to be true")
@@ -23,6 +24,7 @@ func TestResultOk(t *testing.T) {
 
 func TestResultErr(t *testing.T) {
 	t.Parallel()
+
 	err := errors.New("something went wrong")
 
 	r := Err[int](err)
@@ -41,6 +43,7 @@ func TestResultErr(t *testing.T) {
 
 func TestResultValueOr(t *testing.T) {
 	t.Parallel()
+
 	ok := Ok(42)
 	if v := ok.ValueOr(0); v != 42 {
 		t.Errorf("expected 42, got %v", v)
@@ -54,6 +57,7 @@ func TestResultValueOr(t *testing.T) {
 
 func TestResultValueOrElse(t *testing.T) {
 	t.Parallel()
+
 	ok := Ok(42)
 	if v := ok.ValueOrElse(func(e error) int { return 0 }); v != 42 {
 		t.Errorf("expected 42, got %v", v)
@@ -67,6 +71,7 @@ func TestResultValueOrElse(t *testing.T) {
 
 func TestResultUnwrap(t *testing.T) {
 	t.Parallel()
+
 	ok := Ok(42)
 
 	val, err := ok.Unwrap()
@@ -92,6 +97,7 @@ func TestResultUnwrap(t *testing.T) {
 
 func TestResultMap(t *testing.T) {
 	t.Parallel()
+
 	ok := Ok(5)
 
 	doubled := ok.Map(func(x int) int { return x * 2 })
@@ -113,6 +119,7 @@ func TestResultMap(t *testing.T) {
 
 func TestResultFlatMap(t *testing.T) {
 	t.Parallel()
+
 	ok := Ok(5)
 
 	result := ok.FlatMap(func(x int) Result[int] {
@@ -136,6 +143,7 @@ func TestResultFlatMap(t *testing.T) {
 
 func TestResultAndOr(t *testing.T) {
 	t.Parallel()
+
 	ok1 := Ok(1)
 
 	ok2 := Ok(2)
@@ -159,6 +167,7 @@ func TestResultAndOr(t *testing.T) {
 
 func TestResultString(t *testing.T) {
 	t.Parallel()
+
 	ok := Ok(42)
 	if s := ok.String(); s != "Ok(42)" {
 		t.Errorf("expected 'Ok(42)', got '%s'", s)
@@ -172,6 +181,7 @@ func TestResultString(t *testing.T) {
 
 func TestResultPanic(t *testing.T) {
 	t.Parallel()
+
 	defer func() {
 		if r := recover(); r == nil {
 			t.Error("expected panic")

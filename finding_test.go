@@ -524,8 +524,6 @@ func TestSuppression(t *testing.T) {
 }
 
 func TestRangeContains(t *testing.T) {
-	t.Parallel()
-
 	r := Range{
 		Start: Position{File: "test.go", Line: 10, Column: 5},
 		End:   Position{File: "test.go", Line: 20, Column: 10},
@@ -553,9 +551,9 @@ func TestRangeContains(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Parallel()
-
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := r.Contains(tt.pos)
 			if tt.want && !got {
 				t.Error(tt.message)

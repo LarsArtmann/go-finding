@@ -87,6 +87,7 @@ func Example_resultHandling() {
 	// Function that might fail
 	parseFinding := func(data []byte) finding.Result[finding.Finding] {
 		var f finding.Finding
+
 		err := json.Unmarshal(data, &f)
 		if err != nil {
 			return finding.Err[finding.Finding](err)
