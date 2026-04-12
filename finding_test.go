@@ -31,19 +31,25 @@ func standardTestFinding() Finding {
 }
 
 func assertErrorCount(t *testing.T, findings []Finding, expected int) {
+	t.Helper()
+
 	if len(findings) != expected {
 		t.Errorf("expected %d errors, got %d", expected, len(findings))
 	}
 }
 
 func assertTotalCount(t *testing.T, r *Report, expected int) {
+	t.Helper()
+
 	if r.Summary.Total != expected {
 		t.Errorf("expected %d total, got %d", expected, r.Summary.Total)
 	}
 }
 
 // addFindingForTest is a helper to add a finding to a report with minimal boilerplate.
-func addFindingForTest(r *Report, id string, sev Severity, file string) {
+func addFindingForTest(t *testing.T, r *Report, id string, sev Severity, file string) {
+	t.Helper()
+
 	r.AddFinding(Finding{
 		ID:          id,
 		Severity:    sev,
@@ -329,9 +335,9 @@ func TestReport(t *testing.T) {
 
 	r := NewReport(ToolInfo{Name: "test-tool", Version: "1.0.0"})
 
-	addFindingForTest(r, "1", SeverityError, "a.go")
-	addFindingForTest(r, "2", SeverityWarning, "b.go")
-	addFindingForTest(r, "3", SeverityError, "a.go")
+	addFindingForTest(t, r, "1", SeverityError, "a.go")
+	addFindingForTest(t, r, "2", SeverityWarning, "b.go")
+	addFindingForTest(t, r, "3", SeverityError, "a.go")
 
 	r.ComputeSummary()
 
@@ -547,6 +553,8 @@ func TestRangeContains(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		t.Parallel()
+
 		t.Run(tt.name, func(t *testing.T) {
 			got := r.Contains(tt.pos)
 			if tt.want && !got {

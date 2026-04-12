@@ -13,6 +13,8 @@ const (
 	HashLength         = 16 // Length of hex-encoded hash
 	IDPartMin          = 4  // Minimum parts to attempt parsing column and line
 	MaxShortHashLength = 16 // Maximum length to identify as short hash (without :line:col)
+	PositionPartsOne   = 1  // Number of positional parts when only line is present
+	PositionPartsTwo   = 2  // Number of positional parts when line and column are present
 )
 
 // GenerateID creates a stable, unique identifier for a finding.
@@ -50,8 +52,12 @@ func extractFile(parts []string, trailingCount int) string {
 
 // ParseID parses a finding ID and extracts its components.
 // Returns tool, rule, file, line, column, and ok status.
-func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
+func ParseID(id string) (string, string, string, int, int, bool) {
 	parts := strings.Split(id, ":")
+	var tool, rule, file string
+	var line, column int
+	var ok bool
+
 	if len(parts) < IDPartCount {
 		return "", "", "", 0, 0, false
 	}
@@ -61,7 +67,7 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 
 	// Handle hash-based IDs
 	if len(parts) == IDPartCount && len(parts[2]) == HashLength { // hex encoded hash
-		return tool, rule, "", 0, 0, true
+		return tool, rule, file, line, column, ok
 	}
 
 	// Try to parse position from remaining parts
@@ -76,25 +82,25 @@ func ParseID(id string) (tool, rule, file string, line, column int, ok bool) {
 			// Try parsing second-to-last as line
 			err2 := parseInt(parts[len(parts)-2], &line)
 			if err2 == nil {
-				file = extractFile(parts, 2)
+				file = extractFile(parts, PositionPartsTwo)
 
-				return tool, rule, file, line, column, true
+				return tool, rule, file, line, column, ok
 			}
 		}
 
 		// No column, try line only
 		parseErr := parseInt(parts[len(parts)-1], &line)
 		if parseErr == nil {
-			file = extractFile(parts, 1)
+			file = extractFile(parts, PositionPartsOne)
 
-			return tool, rule, file, line, 0, true
+			return tool, rule, file, line, column, ok
 		}
 	}
 
 	// Just file, no position
 	file = strings.Join(parts[2:], ":")
 
-	return tool, rule, file, 0, 0, true
+	return tool, rule, file, line, column, ok
 }
 
 // parseInt is a helper to parse a string to int, returning nil on success.
