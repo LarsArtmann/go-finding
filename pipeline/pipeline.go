@@ -346,11 +346,11 @@ func (a *FixApplier) backup(path string) error {
 	}
 
 	backupPath := filepath.Join(a.backupDir, filepath.Base(path)+".bak")
-	if err := os.MkdirAll(a.backupDir, 0755); err != nil {
+	if err := os.MkdirAll(a.backupDir, 0750); err != nil {
 		return fmt.Errorf("create backup dir: %w", err)
 	}
 
-	if err := os.WriteFile(backupPath, data, 0644); err != nil {
+	if err := os.WriteFile(backupPath, data, 0600); err != nil {
 		return fmt.Errorf("write backup: %w", err)
 	}
 
@@ -370,7 +370,7 @@ func (a *FixApplier) restore(path string) error {
 		return fmt.Errorf("read backup: %w", err)
 	}
 
-	if err := os.WriteFile(path, data, 0644); err != nil {
+	if err := os.WriteFile(path, data, 0600); err != nil {
 		return fmt.Errorf("restore file: %w", err)
 	}
 
@@ -396,7 +396,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) error {
 	}
 
 	// Write updated content
-	if err := os.WriteFile(path, []byte(result), 0644); err != nil {
+	if err := os.WriteFile(path, []byte(result), 0600); err != nil {
 		return fmt.Errorf("write file: %w", err)
 	}
 
