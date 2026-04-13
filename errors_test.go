@@ -1,0 +1,224 @@
+package finding
+
+import (
+	"errors"
+	"fmt"
+	"testing"
+)
+
+func TestFindingErrorError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		err      *FindingError
+		expected string
+	}{
+		{
+			name:     "with cause",
+			err:      NewValidationError("invalid finding", errors.New("missing ID")),
+			expected: "[validation] invalid finding: missing ID",
+		},
+		{
+			name:     "without cause",
+			err:      NewIOError("file not found", nil),
+			expected: "[io] file not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := tt.err.Error()
+			if got != tt.expected {
+				t.Errorf("Error() = %q, want %q", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestFindingErrorUnwrap(t *testing.T) {
+	t.Parallel()
+
+	cause := errors.New("underlying error")
+	err := NewValidationError("validation failed", cause)
+
+	if !errors.Is(err, cause) {
+		t.Error("expected errors.Is to find underlying cause")
+	}
+}
+
+func TestFindingErrorWithFinding(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		ID:       "test:1",
+		Position: Position{File: "test.go", Line: 10, Column: 5},
+	}
+
+	err := NewValidationError("invalid finding", nil).WithFinding(f)
+
+	if err.Finding == nil {
+		t.Fatal("expected Finding to be set")
+	}
+
+	if err.Finding.ID != f.ID {
+		t.Errorf("Finding.ID = %q, want %q", err.Finding.ID, f.ID)
+	}
+
+	if err.File != "test.go" {
+		t.Errorf("File = %q, want test.go", err.File)
+	}
+
+	if err.Position == nil || err.Position.Line != 10 {
+		t.Error("Position not set correctly")
+	}
+}
+
+func TestFindingErrorWithPosition(t *testing.T) {
+	t.Parallel()
+
+	pos := Position{File: "test.go", Line: 20, Column: 10}
+	err := NewIOError("read failed", nil).WithPosition(pos)
+
+	if err.Position == nil {
+		t.Fatal("expected Position to be set")
+	}
+
+	if err.Position.Line != 20 {
+		t.Errorf("Position.Line = %d, want 20", err.Position.Line)
+	}
+
+	if err.File != "test.go" {
+		t.Errorf("File = %q, want test.go", err.File)
+	}
+}
+
+func TestIsFindingError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{
+			name:     "FindingError",
+			err:      NewValidationError("test", nil),
+			expected: true,
+		},
+		{
+			name:     "wrapped FindingError",
+			err:      fmt.Errorf("wrapped: %w", NewValidationError("test", nil)),
+			expected: true,
+		},
+		{
+			name:     "regular error",
+			err:      errors.New("regular"),
+			expected: false,
+		},
+		{
+			name:     "nil error",
+			err:      nil,
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := IsFindingError(tt.err)
+			if got != tt.expected {
+				t.Errorf("IsFindingError() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetCategory(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		err      error
+		expected ErrorCategory
+	}{
+		{
+			name:     "validation error",
+			err:      NewValidationError("test", nil),
+			expected: ErrCategoryValidation,
+		},
+		{
+			name:     "io error",
+			err:      NewIOError("test", nil),
+			expected: ErrCategoryIO,
+		},
+		{
+			name:     "regular error",
+			err:      errors.New("regular"),
+			expected: "",
+		},
+		{
+			name:     "nil error",
+			err:      nil,
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := GetCategory(tt.err)
+			if got != tt.expected {
+				t.Errorf("GetCategory() = %q, want %q", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestIsCategory(t *testing.T) {
+	t.Parallel()
+
+	err := NewValidationError("test", nil)
+
+	if !IsCategory(err, ErrCategoryValidation) {
+		t.Error("expected IsCategory to match validation")
+	}
+
+	if IsCategory(err, ErrCategoryIO) {
+		t.Error("expected IsCategory to not match io")
+	}
+
+	if IsCategory(errors.New("regular"), ErrCategoryValidation) {
+		t.Error("expected IsCategory to return false for regular error")
+	}
+}
+
+func TestErrorCategoryConstructors(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		err      *FindingError
+		expected ErrorCategory
+	}{
+		{"validation", NewValidationError("test", nil), ErrCategoryValidation},
+		{"io", NewIOError("test", nil), ErrCategoryIO},
+		{"parse", NewParseError("test", nil), ErrCategoryParse},
+		{"conflict", NewConflictError("test", nil), ErrCategoryConflict},
+		{"internal", NewInternalError("test", nil), ErrCategoryInternal},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if tt.err.Category != tt.expected {
+				t.Errorf("Category = %q, want %q", tt.err.Category, tt.expected)
+			}
+		})
+	}
+}
