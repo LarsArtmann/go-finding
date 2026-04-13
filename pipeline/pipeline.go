@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -211,7 +212,6 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 	g, ctx := errgroup.WithContext(ctx)
 
 	for _, d := range p.detectors {
-		d := d // capture loop variable
 		g.Go(func() error {
 			findings, err := d.Detect(ctx)
 			if err != nil {
@@ -419,7 +419,7 @@ func stringReplaceAll(s, old, new string) string {
 	if old == "" {
 		return s
 	}
-	result := ""
+	var result strings.Builder
 	start := 0
 	for {
 		idx := 0
@@ -432,9 +432,10 @@ func stringReplaceAll(s, old, new string) string {
 		if idx == 0 && (start > len(s)-len(old) || s[start:start+len(old)] != old) {
 			break
 		}
-		result += s[start:idx] + new
+		result.WriteString(s[start:idx])
+		result.WriteString(new)
 		start = idx + len(old)
 	}
-	result += s[start:]
-	return result
+	result.WriteString(s[start:])
+	return result.String()
 }
