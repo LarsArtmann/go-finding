@@ -346,7 +346,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 		// Create backup
 		if a.backupEnabled {
 			if err := a.backup(path); err != nil {
-				return applied, fmt.Errorf("backup %s: %w", path, err)
+				return applied, finding.NewIOError(fmt.Sprintf("backup %s", path), err)
 			}
 		}
 
@@ -356,7 +356,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 			if a.backupEnabled {
 				_ = a.restore(path)
 			}
-			return applied, fmt.Errorf("apply to %s: %w", path, err)
+			return applied, finding.NewConflictError(fmt.Sprintf("apply to %s", path), err)
 		}
 
 		applied += len(fileFixes)
@@ -369,16 +369,16 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 func (a *FixApplier) backup(path string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("read file: %w", err)
+		return finding.NewIOError("read file for backup", err).WithPosition(finding.Position{File: path})
 	}
 
 	backupPath := filepath.Join(a.backupDir, filepath.Base(path)+".bak")
 	if err := os.MkdirAll(a.backupDir, 0750); err != nil {
-		return fmt.Errorf("create backup dir: %w", err)
+		return finding.NewIOError("create backup dir", err)
 	}
 
 	if err := os.WriteFile(backupPath, data, 0600); err != nil {
-		return fmt.Errorf("write backup: %w", err)
+		return finding.NewIOError("write backup", err).WithPosition(finding.Position{File: path})
 	}
 
 	a.backups[path] = backupPath
@@ -389,16 +389,16 @@ func (a *FixApplier) backup(path string) error {
 func (a *FixApplier) restore(path string) error {
 	backupPath, ok := a.backups[path]
 	if !ok {
-		return fmt.Errorf("no backup for %s", path)
+		return finding.NewInternalError(fmt.Sprintf("no backup for %s", path), nil)
 	}
 
 	data, err := os.ReadFile(backupPath)
 	if err != nil {
-		return fmt.Errorf("read backup: %w", err)
+		return finding.NewIOError("read backup", err).WithPosition(finding.Position{File: path})
 	}
 
 	if err := os.WriteFile(path, data, 0600); err != nil {
-		return fmt.Errorf("restore file: %w", err)
+		return finding.NewIOError("restore file", err).WithPosition(finding.Position{File: path})
 	}
 
 	return nil
@@ -409,7 +409,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) error {
 	// Read file content
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("read file: %w", err)
+		return finding.NewIOError("read file", err).WithPosition(finding.Position{File: path})
 	}
 
 	// For now, we only support simple text replacement based on BeforeCode/AfterCode
@@ -424,7 +424,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) error {
 
 	// Write updated content
 	if err := os.WriteFile(path, []byte(result), 0600); err != nil {
-		return fmt.Errorf("write file: %w", err)
+		return finding.NewIOError("write file", err).WithPosition(finding.Position{File: path})
 	}
 
 	return nil
