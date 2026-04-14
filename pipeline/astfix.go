@@ -53,11 +53,11 @@ func (a *ASTFixer) ApplyFixes(ctx context.Context, filePath string, fixes []find
 	}
 
 	// Mark conflicting fixes as skipped
-	for range conflicts {
+	for _, cf := range conflicts {
 		results = append(results, ApplyResult{
 			Applied: false,
 			Method:  "skipped",
-			Error:   fmt.Errorf("conflicts with another fix"),
+			Error:   fmt.Errorf("conflicts with another fix: %s", cf.ID),
 		})
 	}
 
@@ -87,7 +87,7 @@ func (a *ASTFixer) Apply(ctx context.Context, filePath string, fix finding.Findi
 
 // tryASTFix attempts to apply a fix using AST transformations.
 // Returns (result, true) if successful, (_, false) if should fall back.
-func (a *ASTFixer) tryASTFix(ctx context.Context, filePath string, content []byte, fix finding.Finding) (ApplyResult, bool) {
+func (a *ASTFixer) tryASTFix(_ context.Context, filePath string, content []byte, fix finding.Finding) (ApplyResult, bool) {
 	// Parse the file
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, filePath, content, parser.ParseComments)
@@ -135,7 +135,7 @@ func (a *ASTFixer) tryASTFix(ctx context.Context, filePath string, content []byt
 // findAndReplaceNode attempts to find a node matching beforeCode and replace it with afterCode.
 // This is a simplified implementation that handles common cases.
 // Returns true if a modification was made.
-func (a *ASTFixer) findAndReplaceNode(f *ast.File, fset *token.FileSet, beforeCode, afterCode string) bool {
+func (a *ASTFixer) findAndReplaceNode(_ *ast.File, _ *token.FileSet, _, _ string) bool {
 	// For now, this is a placeholder for AST-based transformations
 	// A full implementation would:
 	// 1. Walk the AST looking for nodes matching beforeCode

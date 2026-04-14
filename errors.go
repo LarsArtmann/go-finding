@@ -114,16 +114,13 @@ func NewInternalError(message string, cause error) *FindingError {
 
 // IsFindingError returns true if err is a *FindingError.
 func IsFindingError(err error) bool {
-	var findingErr *FindingError
-
-	return errors.As(err, &findingErr)
+	_, ok := errors.AsType[*FindingError](err)
+	return ok
 }
 
 // GetCategory returns the category of the error, or empty string if not a FindingError.
 func GetCategory(err error) ErrorCategory {
-	var findingErr *FindingError
-
-	if errors.As(err, &findingErr) {
+	if findingErr, ok := errors.AsType[*FindingError](err); ok {
 		return findingErr.Category
 	}
 

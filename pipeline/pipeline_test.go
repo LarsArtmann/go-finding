@@ -457,6 +457,18 @@ func TestIteration_Progress(t *testing.T) {
 	if iter.DirectFixes != 3 {
 		t.Errorf("expected DirectFixes 3, got %d", iter.DirectFixes)
 	}
+	if iter.SuggestFixes != 2 {
+		t.Errorf("expected SuggestFixes 2, got %d", iter.SuggestFixes)
+	}
+	if iter.NoFix != 5 {
+		t.Errorf("expected NoFix 5, got %d", iter.NoFix)
+	}
+	if iter.Applied != 3 {
+		t.Errorf("expected Applied 3, got %d", iter.Applied)
+	}
+	if iter.Failed != 0 {
+		t.Errorf("expected Failed 0, got %d", iter.Failed)
+	}
 }
 
 // BenchmarkParallelDetection benchmarks parallel vs sequential detection.
