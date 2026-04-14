@@ -10,12 +10,6 @@ const (
 	SeverityCritical Severity = "critical"
 )
 
-// Severity code constants for int-based severity.
-const (
-	SeverityToIntError    = 2
-	SeverityToIntCritical = 3
-)
-
 // IsValid returns true if the severity is a valid value.
 func (s Severity) IsValid() bool {
 	switch s {
