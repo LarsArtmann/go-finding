@@ -125,13 +125,9 @@ func (p *Pipeline) Run(ctx context.Context) (*Result, error) {
 		iter.SuggestFixes = len(triage.Suggest)
 		iter.NoFix = len(triage.None)
 
-		// Apply fixes
-		if len(triage.Direct) > 0 {
-			applied, err := p.applyDirectFixes(ctx, triage.Direct)
-			if err != nil {
-				return result, fmt.Errorf("iteration %d: apply fixes: %w", p.iterations+1, err)
-			}
-			iter.Applied = applied
+		// Apply fixes (with conflict detection)
+		if err := p.applyTriage(ctx, triage.Direct, &iter); err != nil {
+			return result, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
 		}
 
 		result.Iterations = append(result.Iterations, iter)
@@ -163,6 +159,7 @@ type Iteration struct {
 	DirectFixes   int
 	SuggestFixes  int
 	NoFix         int
+	Conflicts     int
 	Applied       int
 	Failed        int
 }
@@ -270,6 +267,36 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 	}
 
 	return result
+}
+
+// applyTriage handles conflict detection and fix application for one iteration.
+func (p *Pipeline) applyTriage(ctx context.Context, fixes []finding.Finding, iter *Iteration) error {
+	if len(fixes) == 0 {
+		return nil
+	}
+
+	safeFixes := FilterConflictingFixes(fixes)
+	iter.Conflicts = len(fixes) - len(safeFixes)
+
+	if iter.Conflicts > 0 {
+		for _, c := range AnalyzeConflicts(fixes) {
+			if p.config.OnFix != nil {
+				p.config.OnFix(c.Finding, false)
+			}
+		}
+	}
+
+	if len(safeFixes) == 0 {
+		return nil
+	}
+
+	applied, err := p.applyDirectFixes(ctx, safeFixes)
+	if err != nil {
+		return fmt.Errorf("apply fixes: %w", err)
+	}
+
+	iter.Applied = applied
+	return nil
 }
 
 // applyDirectFixes applies deterministic fixes to files.
