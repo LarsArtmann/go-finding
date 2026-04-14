@@ -56,6 +56,8 @@ type Config struct {
 	OnFix func(f finding.Finding, applied bool)
 	// OnIteration is called at the end of each iteration.
 	OnIteration func(iter int, findings []finding.Finding)
+	// Metrics collects timing and count data. If nil, no metrics are collected.
+	Metrics *Metrics
 }
 
 // DefaultConfig returns a sensible default configuration.
@@ -83,11 +85,25 @@ func New(config Config, rootDir string, detectors ...Detector) *Pipeline {
 		detectors: detectors,
 		rootDir:   rootDir,
 		findings:  make([]finding.Finding, 0),
+		metrics:   config.Metrics,
 	}
+}
+
+// stageTiming returns a function that records stage duration when called.
+// Returns a no-op if metrics collection is disabled.
+func (p *Pipeline) stageTiming(name string) func() {
+	if p.metrics == nil {
+		return func() {}
+	}
+	return p.metrics.StageTiming(name)
 }
 
 // Run executes the pipeline until stable or max iterations reached.
 func (p *Pipeline) Run(ctx context.Context) (*Result, error) {
+	if p.metrics != nil {
+		p.metrics.StartTime = time.Now()
+		defer func() { p.metrics.EndTime = time.Now() }()
+	}
 	if p.config.Timeout > 0 {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, p.config.Timeout)
@@ -108,7 +124,9 @@ func (p *Pipeline) Run(ctx context.Context) (*Result, error) {
 		iter := Iteration{Number: p.iterations + 1}
 
 		// Detect
+		detectDone := p.stageTiming("detect")
 		findings, err := p.detect(ctx)
+		detectDone()
 		if err != nil {
 			return result, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
 		}
@@ -130,9 +148,12 @@ func (p *Pipeline) Run(ctx context.Context) (*Result, error) {
 		iter.NoFix = len(triage.None)
 
 		// Apply fixes (with conflict detection)
+		applyDone := p.stageTiming("apply")
 		if err := p.applyTriage(ctx, triage.Direct, &iter); err != nil {
+			applyDone()
 			return result, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
 		}
+		applyDone()
 
 		result.Iterations = append(result.Iterations, iter)
 		p.iterations++
