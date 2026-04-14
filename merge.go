@@ -7,11 +7,10 @@ import (
 
 // Merge correlation constants.
 const (
-	MinFindingsInFile        = 2   // Minimum findings in a file for correlation analysis
-	MaxLineDiff              = 5   // Maximum line difference for considering findings related
-	CorrelationScoreScale    = 5.0 // For converting lineDiff to score
-	MinCorrelationScore      = 0.5 // Minimum correlation score for matching
-	FindingPairsSameToolSkip = 2   // Skip first 2 index in findingPairs array
+	minFindingsInFile     = 2   // Minimum findings in a file for correlation analysis
+	maxLineDiff           = 5   // Maximum line difference for considering findings related
+	correlationScoreScale = 5.0 // For converting lineDiff to score
+	minCorrelationScore   = 0.5 // Minimum correlation score for matching
 )
 
 // Merge combines multiple reports into one.
@@ -161,7 +160,7 @@ func Correlate(findings []Finding) []Correlation {
 	byFile := GroupByFile(findings)
 
 	for _, fileFindings := range byFile {
-		if len(fileFindings) < MinFindingsInFile {
+		if len(fileFindings) < minFindingsInFile {
 			continue
 		}
 
@@ -179,12 +178,12 @@ func Correlate(findings []Finding) []Correlation {
 
 				// Check if lines are close
 				lineDiff := f2.Position.Line - f1.Position.Line
-				if lineDiff > MaxLineDiff { // Within MaxLineDiff
+				if lineDiff > maxLineDiff {
 					break
 				}
 
-				confidence := 1.0 - (float64(lineDiff) / CorrelationScoreScale)
-				if confidence > MinCorrelationScore {
+				confidence := 1.0 - (float64(lineDiff) / correlationScoreScale)
+				if confidence > minCorrelationScore {
 					correlations = append(correlations, Correlation{
 						FindingIDs: []string{f1.ID, f2.ID},
 						Reason:     "same file, nearby lines",
