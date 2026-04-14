@@ -76,6 +76,7 @@ type Pipeline struct {
 	rootDir    string
 	iterations int
 	findings   []finding.Finding
+	metrics    *Metrics
 }
 
 // New creates a new Pipeline with the given configuration.
