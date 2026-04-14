@@ -1,0 +1,88 @@
+package pipeline
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/larsartmann/go-finding"
+)
+
+// VerifyResult holds the outcome of verifying fixes by re-running detectors.
+type VerifyResult struct {
+	Fixed    []finding.Finding // Findings that were resolved
+	Resolved int               // Count of resolved findings
+	// Remaining findings that still exist after fixes
+	Remaining []finding.Finding
+	// New findings introduced by the fixes
+	NewFindings []finding.Finding
+}
+
+// Verifier re-runs detectors after fixes to verify what was resolved.
+type Verifier struct {
+	detectors []Detector
+}
+
+// NewVerifier creates a verifier that uses the same detectors as the pipeline.
+func NewVerifier(detectors []Detector) *Verifier {
+	return &Verifier{detectors: detectors}
+}
+
+// Verify compares original findings against a fresh detection run.
+func (v *Verifier) Verify(ctx context.Context, original []finding.Finding) (*VerifyResult, error) {
+	// Re-run all detectors
+	var postFindings []finding.Finding
+	for _, d := range v.detectors {
+		findings, err := d.Detect(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("verify: detector %s: %w", d.Name(), err)
+		}
+		for _, f := range findings {
+			if !f.IsSuppressed() {
+				postFindings = append(postFindings, f)
+			}
+		}
+	}
+
+	return DiffFindings(original, postFindings), nil
+}
+
+// DiffFindings compares original and post-fix findings to categorize them.
+func DiffFindings(original, post []finding.Finding) *VerifyResult {
+	origSet := make(map[string]finding.Finding, len(original))
+	for _, f := range original {
+		origSet[f.ID] = f
+	}
+
+	postSet := make(map[string]finding.Finding, len(post))
+	for _, f := range post {
+		postSet[f.ID] = f
+	}
+
+	var fixed []finding.Finding
+	for id, f := range origSet {
+		if _, exists := postSet[id]; !exists {
+			fixed = append(fixed, f)
+		}
+	}
+
+	var newFindings []finding.Finding
+	for id, f := range postSet {
+		if _, exists := origSet[id]; !exists {
+			newFindings = append(newFindings, f)
+		}
+	}
+
+	var remaining []finding.Finding
+	for _, f := range post {
+		if _, exists := origSet[f.ID]; exists {
+			remaining = append(remaining, f)
+		}
+	}
+
+	return &VerifyResult{
+		Fixed:       fixed,
+		Resolved:    len(fixed),
+		Remaining:   remaining,
+		NewFindings: newFindings,
+	}
+}

@@ -48,6 +48,8 @@ type Config struct {
 	ParallelDetectors bool
 	// Timeout for the entire pipeline.
 	Timeout time.Duration
+	// VerifyAfterFix runs a final verification pass after all iterations.
+	VerifyAfterFix bool
 	// OnFinding is called for each finding found.
 	OnFinding func(f finding.Finding)
 	// OnFix is called when a fix is applied.
@@ -111,6 +113,8 @@ func (p *Pipeline) Run(ctx context.Context) (*Result, error) {
 			return result, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
 		}
 		iter.FindingsFound = len(findings)
+		iter.findings = findings
+		p.findings = append(p.findings, findings...)
 
 		// If no findings, we're done
 		if len(findings) == 0 {
@@ -139,8 +143,38 @@ func (p *Pipeline) Run(ctx context.Context) (*Result, error) {
 	}
 
 	result.TotalIterations = len(result.Iterations)
+
+	// Optional final verification
+	if p.config.VerifyAfterFix && len(p.detectors) > 0 {
+		verifier := NewVerifier(p.detectors)
+		allOriginal := p.collectAllFindings(result)
+		verifyResult, err := verifier.Verify(ctx, allOriginal)
+		if err != nil {
+			return result, fmt.Errorf("verify: %w", err)
+		}
+		result.Verification = verifyResult
+	}
+
 	result.FinalFindingCount = len(p.findings)
 	return result, nil
+}
+
+// collectAllFindings gathers all findings from all iterations for verification.
+func (p *Pipeline) collectAllFindings(result *Result) []finding.Finding {
+	seen := make(map[string]bool)
+	var all []finding.Finding
+	for _, iter := range result.Iterations {
+		for _, f := range iter.findings {
+			if !seen[f.ID] {
+				seen[f.ID] = true
+				all = append(all, f)
+			}
+		}
+	}
+	if len(all) == 0 {
+		return p.findings
+	}
+	return all
 }
 
 // Result contains the outcome of running the pipeline.
@@ -149,6 +183,7 @@ type Result struct {
 	TotalIterations   int
 	Iterations        []Iteration
 	FinalFindingCount int
+	Verification      *VerifyResult
 	Error             error
 }
 
@@ -162,6 +197,7 @@ type Iteration struct {
 	Conflicts     int
 	Applied       int
 	Failed        int
+	findings      []finding.Finding
 }
 
 // detect runs all detectors and collects findings.
