@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -111,10 +112,11 @@ func ParseID(id string) (string, string, string, int, int, bool) {
 
 // parseInt is a helper to parse a string to int, returning nil on success.
 func parseInt(s string, result *int) error {
-	n, err := fmt.Sscanf(s, "%d", result)
-	if err != nil || n != 1 {
-		return fmt.Errorf("failed to parse %q as int", s)
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return fmt.Errorf("failed to parse %q as int: %w", s, err)
 	}
+	*result = n
 	return nil
 }
 
