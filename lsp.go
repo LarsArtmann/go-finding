@@ -2,15 +2,12 @@ package finding
 
 import "fmt"
 
-// LSP severity level constants.
+// LSP severity level constants per the LSP specification.
 const (
-	LSPErrorSeverity   = 1 // Error
-	LSPWarningSeverity = 2 // Warning
-	LSPInfoSeverity    = 3 // Info
-	LSPCaseError       = 1 // Error case value
-	LSPCaseWarning     = 2 // Warning case value
-	LSPCaseInfo        = 3 // Info case value
-	LSPCaseInfoAlias   = 4 // Secondary Info case value
+	LSPSeverityError   = 1 // Error
+	LSPSeverityWarning = 2 // Warning
+	LSPSeverityInfo    = 3 // Information
+	LSPSeverityHint    = 4 // Hint
 )
 
 // LSP types for conversion.
@@ -123,23 +120,23 @@ func FromLSP(diag LSPDiagnostic) Finding {
 func severityToLSP(s Severity) int {
 	switch s {
 	case SeverityCritical, SeverityError:
-		return LSPErrorSeverity
+		return LSPSeverityError
 	case SeverityWarning:
-		return LSPWarningSeverity
+		return LSPSeverityWarning
 	case SeverityInfo:
-		return LSPInfoSeverity
+		return LSPSeverityInfo
 	default:
-		return LSPWarningSeverity // Default to warning
+		return LSPSeverityWarning
 	}
 }
 
 func severityFromLSP(sev int) Severity {
 	switch sev {
-	case LSPCaseError:
+	case LSPSeverityError:
 		return SeverityError
-	case LSPCaseWarning:
+	case LSPSeverityWarning:
 		return SeverityWarning
-	case LSPCaseInfo, LSPCaseInfoAlias:
+	case LSPSeverityInfo, LSPSeverityHint:
 		return SeverityInfo
 	default:
 		return SeverityWarning
