@@ -100,7 +100,7 @@ func (p *Pipeline) stageTiming(name string) func() {
 }
 
 // Run executes the pipeline until stable or max iterations reached.
-func (p *Pipeline) Run(ctx context.Context) (*Result, error) {
+func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	if p.metrics != nil {
 		p.metrics.StartTime = time.Now()
 		defer func() { p.metrics.EndTime = time.Now() }()
@@ -111,7 +111,7 @@ func (p *Pipeline) Run(ctx context.Context) (*Result, error) {
 		defer cancel()
 	}
 
-	result := &Result{
+	result := &PipelineResult{
 		Iterations: make([]Iteration, 0, p.config.MaxIterations),
 	}
 
@@ -182,7 +182,7 @@ func (p *Pipeline) Run(ctx context.Context) (*Result, error) {
 }
 
 // collectAllFindings gathers all findings from all iterations for verification.
-func (p *Pipeline) collectAllFindings(result *Result) []finding.Finding {
+func (p *Pipeline) collectAllFindings(result *PipelineResult) []finding.Finding {
 	seen := make(map[string]bool)
 	var all []finding.Finding
 	for _, iter := range result.Iterations {
@@ -199,8 +199,8 @@ func (p *Pipeline) collectAllFindings(result *Result) []finding.Finding {
 	return all
 }
 
-// Result contains the outcome of running the pipeline.
-type Result struct {
+// PipelineResult contains the outcome of running the pipeline.
+type PipelineResult struct {
 	Stable            bool
 	TotalIterations   int
 	Iterations        []Iteration
