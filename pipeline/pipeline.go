@@ -391,7 +391,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) error {
 	result := string(content)
 	for _, f := range fixes {
 		if f.BeforeCode != "" && f.AfterCode != "" {
-			result = replaceCode(result, f.BeforeCode, f.AfterCode)
+			result = strings.ReplaceAll(result, f.BeforeCode, f.AfterCode)
 		}
 	}
 
@@ -401,41 +401,4 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) error {
 	}
 
 	return nil
-}
-
-// replaceCode performs a simple text replacement.
-// This is a placeholder - real implementations should use AST-aware replacements.
-func replaceCode(content, before, after string) string {
-	return replaceAllString(content, before, after)
-}
-
-// replaceAllString replaces all occurrences of old with new in s.
-func replaceAllString(s, old, new string) string {
-	return stringReplaceAll(s, old, new)
-}
-
-// stringReplaceAll is a simple implementation of strings.ReplaceAll for Go < 1.12.
-func stringReplaceAll(s, old, new string) string {
-	if old == "" {
-		return s
-	}
-	var result strings.Builder
-	start := 0
-	for {
-		idx := 0
-		for i := start; i <= len(s)-len(old); i++ {
-			if s[i:i+len(old)] == old {
-				idx = i
-				break
-			}
-		}
-		if idx == 0 && (start > len(s)-len(old) || s[start:start+len(old)] != old) {
-			break
-		}
-		result.WriteString(s[start:idx])
-		result.WriteString(new)
-		start = idx + len(old)
-	}
-	result.WriteString(s[start:])
-	return result.String()
 }

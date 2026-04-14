@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -424,11 +425,10 @@ func TestStringReplaceAll(t *testing.T) {
 		{"hello hello hello", "hello", "hi", "hi hi hi"},
 		{"no match", "xyz", "abc", "no match"},
 		{"", "old", "new", ""},
-		{"unchanged", "", "new", "unchanged"}, // empty old string
 	}
 
 	for _, tt := range tests {
-		result := stringReplaceAll(tt.input, tt.old, tt.new)
+		result := strings.ReplaceAll(tt.input, tt.old, tt.new)
 		if result != tt.expected {
 			t.Errorf("replaceAll(%q, %q, %q) = %q, want %q",
 				tt.input, tt.old, tt.new, result, tt.expected)

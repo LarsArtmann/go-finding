@@ -11,6 +11,7 @@ import (
 	"go/printer"
 	"go/token"
 	"os"
+	"strings"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -158,7 +159,7 @@ func (a *ASTFixer) applyTextFix(filePath string, content []byte, fix finding.Fin
 	}
 
 	result := string(content)
-	result = replaceAllString(result, fix.BeforeCode, fix.AfterCode)
+	result = strings.ReplaceAll(result, fix.BeforeCode, fix.AfterCode)
 
 	// Check if replacement actually happened
 	if result == string(content) {
