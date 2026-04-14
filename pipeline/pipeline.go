@@ -206,7 +206,6 @@ type PipelineResult struct {
 	Iterations        []Iteration
 	FinalFindingCount int
 	Verification      *VerifyResult
-	Error             error
 }
 
 // Iteration represents one loop through the pipeline.

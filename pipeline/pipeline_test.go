@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -412,64 +411,6 @@ func TestFixApplier_Apply(t *testing.T) {
 	expected := "package main\n\nfunc main() {\n\tprintln(\"world\")\n}\n"
 	if string(content) != expected {
 		t.Errorf("expected:\n%s\ngot:\n%s", expected, string(content))
-	}
-}
-
-// TestStringReplaceAll tests the replaceAll function.
-func TestStringReplaceAll(t *testing.T) {
-	tests := []struct {
-		input    string
-		old      string
-		new      string
-		expected string
-	}{
-		{"hello world", "world", "universe", "hello universe"},
-		{"hello hello hello", "hello", "hi", "hi hi hi"},
-		{"no match", "xyz", "abc", "no match"},
-		{"", "old", "new", ""},
-	}
-
-	for _, tt := range tests {
-		result := strings.ReplaceAll(tt.input, tt.old, tt.new)
-		if result != tt.expected {
-			t.Errorf("replaceAll(%q, %q, %q) = %q, want %q",
-				tt.input, tt.old, tt.new, result, tt.expected)
-		}
-	}
-}
-
-// TestIteration_Progress tests iteration counting.
-func TestIteration_Progress(t *testing.T) {
-	iter := Iteration{
-		Number:        1,
-		FindingsFound: 10,
-		DirectFixes:   3,
-		SuggestFixes:  2,
-		NoFix:         5,
-		Applied:       3,
-		Failed:        0,
-	}
-
-	if iter.Number != 1 {
-		t.Errorf("expected Number 1, got %d", iter.Number)
-	}
-	if iter.FindingsFound != 10 {
-		t.Errorf("expected FindingsFound 10, got %d", iter.FindingsFound)
-	}
-	if iter.DirectFixes != 3 {
-		t.Errorf("expected DirectFixes 3, got %d", iter.DirectFixes)
-	}
-	if iter.SuggestFixes != 2 {
-		t.Errorf("expected SuggestFixes 2, got %d", iter.SuggestFixes)
-	}
-	if iter.NoFix != 5 {
-		t.Errorf("expected NoFix 5, got %d", iter.NoFix)
-	}
-	if iter.Applied != 3 {
-		t.Errorf("expected Applied 3, got %d", iter.Applied)
-	}
-	if iter.Failed != 0 {
-		t.Errorf("expected Failed 0, got %d", iter.Failed)
 	}
 }
 

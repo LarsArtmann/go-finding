@@ -10,12 +10,11 @@ import (
 
 // ID format constants.
 const (
-	IDPartCount        = 3  // Minimum number of parts for hash-based IDs
-	HashLength         = 16 // Length of hex-encoded hash
-	IDPartMin          = 4  // Minimum parts to attempt parsing column and line
-	MaxShortHashLength = 16 // Maximum length to identify as short hash (without :line:col)
-	PositionPartsOne   = 1  // Number of positional parts when only line is present
-	PositionPartsTwo   = 2  // Number of positional parts when line and column are present
+	idPartCount      = 3  // Minimum number of parts for hash-based IDs
+	hashLength        = 16 // Length of hex-encoded hash
+	idPartMin         = 4  // Minimum parts to attempt parsing column and line
+	positionPartsOne  = 1  // Number of positional parts when only line is present
+	positionPartsTwo  = 2  // Number of positional parts when line and column are present
 )
 
 // GenerateID creates a stable, unique identifier for a finding.
@@ -27,7 +26,7 @@ func GenerateID(toolName, rule string, pos Position) string {
 		h := sha256.New()
 		h.Write([]byte(toolName + ":" + rule + ":" + pos.File))
 
-		return fmt.Sprintf("%s:%s:%x", toolName, rule, h.Sum(nil)[:8])
+		return fmt.Sprintf("%s:%s:%x", toolName, rule, h.Sum(nil)[:hashLength/2])
 	}
 
 	// Normalize file path to use forward slashes
@@ -44,7 +43,7 @@ func GenerateID(toolName, rule string, pos Position) string {
 // The parts slice is expected to be [tool, rule, file parts..., line?, column?].
 // trailingCount is the number of trailing position parts (1 for line only, 2 for line:col).
 func extractFile(parts []string, trailingCount int) string {
-	if len(parts) < IDPartCount+1 { // Need at least tool:rule:file (3 parts)
+	if len(parts) < idPartCount+1 { // Need at least tool:rule:file (3 parts)
 		return ""
 	}
 
@@ -61,7 +60,7 @@ func ParseID(id string) (string, string, string, int, int, bool) {
 		line, column     int
 	)
 
-	if len(parts) < IDPartCount {
+	if len(parts) < idPartCount {
 		return "", "", "", 0, 0, false
 	}
 
@@ -69,7 +68,7 @@ func ParseID(id string) (string, string, string, int, int, bool) {
 	rule = parts[1]
 
 	// Handle hash-based IDs
-	if len(parts) == IDPartCount && len(parts[2]) == HashLength { // hex encoded hash
+	if len(parts) == idPartCount && len(parts[2]) == hashLength { // hex encoded hash
 		return tool, rule, "", line, column, true
 	}
 
@@ -78,7 +77,7 @@ func ParseID(id string) (string, string, string, int, int, bool) {
 	// File may contain colons (e.g., Windows paths), so we need to be careful
 	// We assume the last 1-2 parts are line:column
 
-	if len(parts) >= IDPartMin {
+	if len(parts) >= idPartMin {
 		// Try parsing last part as column
 		colTest := 0
 		err := parseInt(parts[len(parts)-1], &colTest)
@@ -87,7 +86,7 @@ func ParseID(id string) (string, string, string, int, int, bool) {
 			lineTest := 0
 			err2 := parseInt(parts[len(parts)-2], &lineTest)
 			if err2 == nil {
-				file = extractFile(parts, PositionPartsTwo)
+				file = extractFile(parts, positionPartsTwo)
 				line = lineTest
 				column = colTest
 
@@ -98,7 +97,7 @@ func ParseID(id string) (string, string, string, int, int, bool) {
 		// No column, try line only
 		err = parseInt(parts[len(parts)-1], &line)
 		if err == nil {
-			file = extractFile(parts, PositionPartsOne)
+			file = extractFile(parts, positionPartsOne)
 
 			return tool, rule, file, line, column, true
 		}
@@ -123,9 +122,9 @@ func parseInt(s string, result *int) error {
 // IsHashID returns true if the ID appears to be hash-based.
 func IsHashID(id string) bool {
 	parts := strings.Split(id, ":")
-	if len(parts) != IDPartCount {
+	if len(parts) != idPartCount {
 		return false
 	}
 
-	return len(parts[2]) == HashLength // 8 bytes hex encoded
+	return len(parts[2]) == hashLength // 8 bytes hex encoded
 }
