@@ -23,16 +23,16 @@ linters:
     - gocognit
     - godot
     - gochecksumtype
-  settings:
-    gosec:
-      excludes:
-        - G102
-        - G104
-        - G301
-        - G304
-        - G306
-        - G307
 
+linters-settings:
+  gosec:
+    excludes:
+      - G102
+      - G104
+      - G301
+      - G304
+      - G306
+      - G307
   godot:
     require-expecting-newline: false
 
