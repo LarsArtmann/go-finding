@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -172,11 +173,12 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 func TestPipelineRun_Timeout(t *testing.T) {
 	config := DefaultConfig()
 	config.ParallelDetectors = false
-	config.Timeout = 10 * time.Millisecond
+	config.Timeout = 50 * time.Millisecond
 
 	detector := &mockDetector{
-		name:  "slow",
-		delay: 100 * time.Millisecond,
+		name:     "slow",
+		delay:    500 * time.Millisecond,
+		findings: []finding.Finding{{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"}},
 	}
 
 	p := New(config, t.TempDir(), detector)
@@ -535,7 +537,7 @@ func readFile(path string) ([]byte, error) {
 			result = append(result, buf[:n]...)
 		}
 		if err != nil {
-			if err.Error() == "EOF" {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			return nil, err
