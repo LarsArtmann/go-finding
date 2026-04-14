@@ -230,6 +230,19 @@ func (p *Pipeline) detect(ctx context.Context) ([]finding.Finding, error) {
 	return p.detectSequential(ctx)
 }
 
+// addFindings adds non-suppressed findings to the target slice, calling OnFinding if set.
+func (p *Pipeline) addFindings(target []finding.Finding, findings []finding.Finding) []finding.Finding {
+	for _, f := range findings {
+		if !f.IsSuppressed() {
+			target = append(target, f)
+			if p.config.OnFinding != nil {
+				p.config.OnFinding(f)
+			}
+		}
+	}
+	return target
+}
+
 // detectSequential runs detectors one at a time.
 func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, error) {
 	var allFindings []finding.Finding
@@ -246,14 +259,7 @@ func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, err
 			return nil, fmt.Errorf("detector %s: %w", d.Name(), err)
 		}
 
-		for _, f := range findings {
-			if !f.IsSuppressed() {
-				allFindings = append(allFindings, f)
-				if p.config.OnFinding != nil {
-					p.config.OnFinding(f)
-				}
-			}
-		}
+		allFindings = p.addFindings(allFindings, findings)
 	}
 
 	return allFindings, nil
@@ -274,14 +280,7 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 			}
 
 			mu.Lock()
-			for _, f := range findings {
-				if !f.IsSuppressed() {
-					allFindings = append(allFindings, f)
-					if p.config.OnFinding != nil {
-						p.config.OnFinding(f)
-					}
-				}
-			}
+			allFindings = p.addFindings(allFindings, findings)
 			mu.Unlock()
 			return nil
 		})

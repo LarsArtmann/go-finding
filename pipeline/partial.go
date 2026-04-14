@@ -30,6 +30,18 @@ func (p *Pipeline) DetectPartial(ctx context.Context) (*PartialResult, error) {
 	return p.detectPartialSequential(ctx)
 }
 
+// addFindingsToResult adds non-suppressed findings to the partial result.
+func (p *Pipeline) addFindingsToResult(result *PartialResult, findings []finding.Finding) {
+	for _, f := range findings {
+		if !f.IsSuppressed() {
+			result.Findings = append(result.Findings, f)
+			if p.config.OnFinding != nil {
+				p.config.OnFinding(f)
+			}
+		}
+	}
+}
+
 func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult, error) {
 	result := &PartialResult{
 		Errors: make(map[string]error),
@@ -48,14 +60,7 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 			continue
 		}
 
-		for _, f := range findings {
-			if !f.IsSuppressed() {
-				result.Findings = append(result.Findings, f)
-				if p.config.OnFinding != nil {
-					p.config.OnFinding(f)
-				}
-			}
-		}
+		p.addFindingsToResult(result, findings)
 	}
 
 	return result, nil
@@ -79,14 +84,7 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 				result.Errors[d.Name()] = err
 				return nil // Don't propagate — collect partial results
 			}
-			for _, f := range findings {
-				if !f.IsSuppressed() {
-					result.Findings = append(result.Findings, f)
-					if p.config.OnFinding != nil {
-						p.config.OnFinding(f)
-					}
-				}
-			}
+			p.addFindingsToResult(result, findings)
 			return nil
 		})
 	}
