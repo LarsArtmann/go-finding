@@ -501,12 +501,12 @@ func TestLSPConversion(t *testing.T) {
 func TestCategory(t *testing.T) {
 	t.Parallel()
 
-	if !IsStandardCategory(CategorySecurity) {
-		t.Error("security should be standard category")
+	if !CategorySecurity.IsValid() {
+		t.Error("security should be a valid category")
 	}
 
-	if IsStandardCategory("custom-category") {
-		t.Error("custom-category should not be standard")
+	if Category("custom-category").IsValid() {
+		t.Error("custom-category should not be valid")
 	}
 }
 

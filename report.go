@@ -17,7 +17,7 @@ type ToolInfo struct {
 type Summary struct {
 	Total         int                 `json:"total"`                   // Total findings
 	BySeverity    map[Severity]int    `json:"bySeverity"`              // Count by severity
-	ByCategory    map[string]int      `json:"byCategory,omitempty"`    // Count by category
+	ByCategory    map[Category]int     `json:"byCategory,omitempty"`    // Count by category
 	ByFixStrategy map[FixStrategy]int `json:"byFixStrategy,omitempty"` // Count by fix strategy
 	FilesAffected int                 `json:"filesAffected,omitempty"` // Unique files with findings
 	DurationMs    int64               `json:"durationMs,omitempty"`    // Execution time
@@ -47,7 +47,7 @@ func (r *Report) AddFindings(findings []Finding) {
 func (r *Report) ComputeSummary() {
 	r.Summary.Total = len(r.Findings)
 	r.Summary.BySeverity = make(map[Severity]int)
-	r.Summary.ByCategory = make(map[string]int)
+	r.Summary.ByCategory = make(map[Category]int)
 	r.Summary.ByFixStrategy = make(map[FixStrategy]int)
 
 	files := make(map[string]struct{})
@@ -101,7 +101,7 @@ func (r Report) BySeverity(sev Severity) []Finding {
 }
 
 // ByCategory returns findings filtered by category.
-func (r Report) ByCategory(cat string) []Finding {
+func (r Report) ByCategory(cat Category) []Finding {
 	var filtered []Finding
 
 	for _, f := range r.Findings {

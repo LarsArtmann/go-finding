@@ -41,7 +41,7 @@ func BySeverityAtLeast(sev Severity) FilterFunc {
 }
 
 // ByCategory returns a filter for the given category.
-func ByCategory(cat string) FilterFunc {
+func ByCategory(cat Category) FilterFunc {
 	return func(f Finding) bool {
 		return f.Category == cat
 	}
@@ -120,8 +120,12 @@ func GroupBySeverity(findings []Finding) map[Severity][]Finding {
 }
 
 // GroupByCategory groups findings by category.
-func GroupByCategory(findings []Finding) map[string][]Finding {
-	return GroupBy(findings, func(finding Finding) string {
-		return finding.Category
-	})
+func GroupByCategory(findings []Finding) map[Category][]Finding {
+	groups := make(map[Category][]Finding)
+
+	for _, f := range findings {
+		groups[f.Category] = append(groups[f.Category], f)
+	}
+
+	return groups
 }

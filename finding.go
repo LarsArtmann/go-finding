@@ -13,7 +13,7 @@ type Finding struct {
 	Position Position `json:"position"` // Where the issue is
 
 	// Classification
-	Category string `json:"category,omitempty"` // Domain: "security", "style", "duplication", etc.
+	Category Category `json:"category,omitempty"` // Domain: "security", "style", "duplication", etc.
 	Tag      string `json:"tag,omitempty"`      // Sub-classification: "phantom-type", "clone", etc.
 
 	// Fix

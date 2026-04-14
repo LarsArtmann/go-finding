@@ -39,7 +39,7 @@ func FromDiagnostic(
 		Message:     d.Message,
 		Severity:    SeverityWarning, // go/analysis doesn't have severity
 		Position:    FromTokenPosition(pos),
-		Category:    d.Category,
+		Category:    Category(d.Category),
 		FixStrategy: fixStrategy,
 		Tag:         "",
 		Suggestion:  "",
@@ -74,7 +74,7 @@ func (f Finding) AnalysisDiagnostic() analysis.Diagnostic {
 		Pos:            token.NoPos, // Would need fset
 		End:            token.NoPos,
 		Message:        f.Message,
-		Category:       f.Category,
+		Category:       string(f.Category),
 		URL:            "",
 		SuggestedFixes: []analysis.SuggestedFix{},
 		Related:        []analysis.RelatedInformation{},

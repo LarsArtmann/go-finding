@@ -1,25 +1,28 @@
 package finding
 
+// Category classifies the domain of a finding.
+type Category string
+
 // Standard category constants for findings.
 const (
-	CategorySecurity      = "security"
-	CategoryStyle         = "style"
-	CategoryPerformance   = "performance"
-	CategoryCorrectness   = "correctness"
-	CategoryComplexity    = "complexity"
-	CategoryDuplication   = "duplication"
-	CategoryErrorHandling = "error-handling"
-	CategoryMigration     = "migration"
-	CategoryTypeSafety    = "type-safety"
-	CategoryStructure     = "structure"
-	CategoryConfiguration = "configuration"
-	CategoryDocumentation = "documentation"
-	CategoryTesting       = "testing"
+	CategorySecurity      Category = "security"
+	CategoryStyle         Category = "style"
+	CategoryPerformance   Category = "performance"
+	CategoryCorrectness   Category = "correctness"
+	CategoryComplexity    Category = "complexity"
+	CategoryDuplication   Category = "duplication"
+	CategoryErrorHandling Category = "error-handling"
+	CategoryMigration     Category = "migration"
+	CategoryTypeSafety    Category = "type-safety"
+	CategoryStructure     Category = "structure"
+	CategoryConfiguration Category = "configuration"
+	CategoryDocumentation Category = "documentation"
+	CategoryTesting       Category = "testing"
 )
 
-// IsStandardCategory returns true if the category is a standard value.
-func IsStandardCategory(cat string) bool {
-	switch cat {
+// IsValid returns true if the category is a standard value.
+func (c Category) IsValid() bool {
+	switch c {
 	case CategorySecurity, CategoryStyle, CategoryPerformance, CategoryCorrectness,
 		CategoryComplexity, CategoryDuplication, CategoryErrorHandling, CategoryMigration,
 		CategoryTypeSafety, CategoryStructure, CategoryConfiguration, CategoryDocumentation,

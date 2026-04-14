@@ -29,7 +29,7 @@ func FuzzFilter(f *testing.F) {
 			{
 				ID:       "F1",
 				Severity: severity,
-				Category: category,
+				Category: Category(category),
 				ToolName: tool,
 				Position: Position{File: file, Line: 1},
 			},
@@ -49,9 +49,9 @@ func FuzzFilter(f *testing.F) {
 		}
 
 		// Property: filtered results all match the predicate
-		byCat := Filter(findings, ByCategory(category))
+		byCat := Filter(findings, ByCategory(Category(category)))
 		for _, f := range byCat {
-			if f.Category != category {
+			if f.Category != Category(category) {
 				t.Errorf("ByCategory mismatch: got %q, want %q", f.Category, category)
 			}
 		}
@@ -65,9 +65,9 @@ func FuzzFilter(f *testing.F) {
 		}
 
 		// Property: combined predicates = intersection
-		both := Filter(findings, ByCategory(category), BySeverity(severity))
+		both := Filter(findings, ByCategory(Category(category)), BySeverity(severity))
 		for _, f := range both {
-			if f.Category != category || f.Severity != severity {
+			if f.Category != Category(category) || f.Severity != severity {
 				t.Errorf("combined filter mismatch")
 			}
 		}
@@ -84,12 +84,12 @@ func FuzzGroupBy(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, key1, key2, key3 string) {
 		findings := []Finding{
-			{ID: "F1", Category: key1},
-			{ID: "F2", Category: key2},
-			{ID: "F3", Category: key3},
+			{ID: "F1", Category: Category(key1)},
+			{ID: "F2", Category: Category(key2)},
+			{ID: "F3", Category: Category(key3)},
 		}
 
-		groups := GroupBy(findings, func(f Finding) string { return f.Category })
+		groups := GroupBy(findings, func(f Finding) string { return string(f.Category) })
 
 		total := 0
 		for _, g := range groups {
