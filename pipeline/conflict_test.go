@@ -6,6 +6,18 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+// findingWithRange creates a Finding with a Range in the same file.
+func findingWithRange(id string, file string, line, startLine, endLine int) finding.Finding {
+	return finding.Finding{
+		ID: id,
+		Position: finding.Position{File: file, Line: line},
+		Range: &finding.Range{
+			Start: finding.Position{File: file, Line: startLine},
+			End:   finding.Position{File: file, Line: endLine},
+		},
+	}
+}
+
 func TestConflictDetectorDetectConflicts(t *testing.T) {
 	t.Parallel()
 
@@ -36,14 +48,8 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 		{
 			name: "conflict - overlapping ranges",
 			fixes: []finding.Finding{
-				{ID: "1", Position: finding.Position{File: "a.go", Line: 10},
-					Range: &finding.Range{
-						Start: finding.Position{File: "a.go", Line: 10},
-						End:   finding.Position{File: "a.go", Line: 20}}},
-				{ID: "2", Position: finding.Position{File: "a.go", Line: 15},
-					Range: &finding.Range{
-						Start: finding.Position{File: "a.go", Line: 15},
-						End:   finding.Position{File: "a.go", Line: 25}}},
+				findingWithRange("1", "a.go", 10, 10, 20),
+				findingWithRange("2", "a.go", 15, 15, 25),
 			},
 			expectedGroups:  1,
 			expectedConflicts: 1,
@@ -51,14 +57,8 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 		{
 			name: "conflict - adjacent ranges",
 			fixes: []finding.Finding{
-				{ID: "1", Position: finding.Position{File: "a.go", Line: 10},
-					Range: &finding.Range{
-						Start: finding.Position{File: "a.go", Line: 10},
-						End:   finding.Position{File: "a.go", Line: 20}}},
-				{ID: "2", Position: finding.Position{File: "a.go", Line: 20},
-					Range: &finding.Range{
-						Start: finding.Position{File: "a.go", Line: 20},
-						End:   finding.Position{File: "a.go", Line: 30}}},
+				findingWithRange("1", "a.go", 10, 10, 20),
+				findingWithRange("2", "a.go", 20, 20, 30),
 			},
 			expectedGroups:  1,
 			expectedConflicts: 1,
@@ -123,15 +123,9 @@ func TestHasConflicts(t *testing.T) {
 		},
 		{
 			name:     "has conflicts",
-			fixes:    []finding.Finding{
-				{ID: "1", Position: finding.Position{File: "a.go", Line: 10},
-					Range: &finding.Range{
-						Start: finding.Position{File: "a.go", Line: 10},
-						End:   finding.Position{File: "a.go", Line: 20}}},
-				{ID: "2", Position: finding.Position{File: "a.go", Line: 15},
-					Range: &finding.Range{
-						Start: finding.Position{File: "a.go", Line: 15},
-						End:   finding.Position{File: "a.go", Line: 25}}},
+			fixes: []finding.Finding{
+				findingWithRange("1", "a.go", 10, 10, 20),
+				findingWithRange("2", "a.go", 15, 15, 25),
 			},
 			expected: true,
 		},
@@ -159,17 +153,9 @@ func TestFilterConflictingFixes(t *testing.T) {
 
 	// Create fixes with overlapping ranges (need File in Range.Start for overlap detection)
 	fixes := []finding.Finding{
-		{ID: "1", Position: finding.Position{File: "a.go", Line: 10},
-			Range: &finding.Range{
-				Start: finding.Position{File: "a.go", Line: 10},
-				End:   finding.Position{File: "a.go", Line: 15}}},
-		{ID: "2", Position: finding.Position{File: "a.go", Line: 14}, // Overlaps with 1
-			Range: &finding.Range{
-				Start: finding.Position{File: "a.go", Line: 14},
-				End:   finding.Position{File: "a.go", Line: 20}}},
-		{ID: "3", Position: finding.Position{File: "a.go", Line: 30}, // No conflict
-			Range: &finding.Range{
-				Start: finding.Position{File: "a.go", Line: 30}}},
+		findingWithRange("1", "a.go", 10, 10, 15),
+		findingWithRange("2", "a.go", 14, 14, 20), // Overlaps with 1
+		{ID: "3", Position: finding.Position{File: "a.go", Line: 30}}, // No conflict
 	}
 
 	result := FilterConflictingFixes(fixes)

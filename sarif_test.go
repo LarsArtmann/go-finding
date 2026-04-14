@@ -7,6 +7,16 @@ import (
 	"time"
 )
 
+// unmarshalSARIF unmarshals SARIF data and fails the test on error.
+func unmarshalSARIF(t *testing.T, data []byte) *SarifLog {
+	t.Helper()
+	var log SarifLog
+	if err := json.Unmarshal(data, &log); err != nil {
+		t.Fatalf("unmarshal SARIF: %v", err)
+	}
+	return &log
+}
+
 func TestFromSARIFLevel(t *testing.T) {
 	t.Parallel()
 
@@ -53,10 +63,7 @@ func TestToSARIF(t *testing.T) {
 		t.Fatalf("ToSARIF: %v", err)
 	}
 
-	var log SarifLog
-	if err := json.Unmarshal(data, &log); err != nil {
-		t.Fatalf("unmarshal SARIF: %v", err)
-	}
+	log := unmarshalSARIF(t, data)
 
 	if log.Version != "2.1.0" {
 		t.Errorf("Version = %q, want %q", log.Version, "2.1.0")
@@ -111,10 +118,7 @@ func TestToSARIFFiltered(t *testing.T) {
 		t.Fatalf("ToSARIFFiltered: %v", err)
 	}
 
-	var log SarifLog
-	if err := json.Unmarshal(data, &log); err != nil {
-		t.Fatalf("unmarshal: %v", err)
-	}
+	log := unmarshalSARIF(t, data)
 
 	results := log.Runs[0].Results
 	if len(results) != 2 {
@@ -154,10 +158,7 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 		t.Fatalf("ToSARIF: %v", err)
 	}
 
-	var log SarifLog
-	if err := json.Unmarshal(data, &log); err != nil {
-		t.Fatalf("unmarshal: %v", err)
-	}
+	log := unmarshalSARIF(t, data)
 
 	results := log.Runs[0].Results
 	if len(results) != 1 {
@@ -196,10 +197,7 @@ func TestToSARIF_WithFix(t *testing.T) {
 		t.Fatalf("ToSARIF: %v", err)
 	}
 
-	var log SarifLog
-	if err := json.Unmarshal(data, &log); err != nil {
-		t.Fatalf("unmarshal: %v", err)
-	}
+	log := unmarshalSARIF(t, data)
 
 	result := log.Runs[0].Results[0]
 	if len(result.Fixes) != 1 {
@@ -257,10 +255,7 @@ func TestToSARIF_EmptyReport(t *testing.T) {
 		t.Fatalf("ToSARIF: %v", err)
 	}
 
-	var log SarifLog
-	if err := json.Unmarshal(data, &log); err != nil {
-		t.Fatalf("unmarshal: %v", err)
-	}
+	log := unmarshalSARIF(t, data)
 
 	if len(log.Runs[0].Results) != 0 {
 		t.Errorf("Results length = %d, want 0", len(log.Runs[0].Results))

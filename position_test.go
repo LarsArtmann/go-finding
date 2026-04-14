@@ -4,6 +4,31 @@ import (
 	"testing"
 )
 
+// rangeLine creates a Range with line-based positions in the same file.
+func rangeLine(file string, startLine, endLine int) Range {
+	return Range{Start: Position{File: file, Line: startLine}, End: Position{Line: endLine}}
+}
+
+// rangeOffset creates a Range with offset-based positions in the same file.
+func rangeOffset(file string, startOffset, endOffset int) Range {
+	return Range{Start: Position{File: file, Offset: startOffset}, End: Position{Offset: endOffset}}
+}
+
+// ptrRange returns a pointer to a Range (for test expected values).
+func ptrRange(r Range) *Range {
+	return &r
+}
+
+// posLine creates a Position with a line number.
+func posLine(file string, line int) Position {
+	return Position{File: file, Line: line}
+}
+
+// posLineCol creates a Position with line and column.
+func posLineCol(file string, line, col int) Position {
+	return Position{File: file, Line: line, Column: col}
+}
+
 func TestRangeOverlaps(t *testing.T) {
 	t.Parallel()
 
@@ -15,50 +40,50 @@ func TestRangeOverlaps(t *testing.T) {
 	}{
 		{
 			name:     "same single position",
-			r1:       Range{Start: Position{File: "a.go", Line: 10, Column: 5}},
-			r2:       Range{Start: Position{File: "a.go", Line: 10, Column: 5}},
+			r1:       Range{Start: posLineCol("a.go", 10, 5)},
+			r2:       Range{Start: posLineCol("a.go", 10, 5)},
 			expected: true,
 		},
 		{
 			name:     "overlapping ranges",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
-			r2:       Range{Start: Position{File: "a.go", Line: 15}, End: Position{Line: 25}},
+			r1:       rangeLine("a.go", 10, 20),
+			r2:       rangeLine("a.go", 15, 25),
 			expected: true,
 		},
 		{
 			name:     "non-overlapping ranges",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 15}},
-			r2:       Range{Start: Position{File: "a.go", Line: 20}, End: Position{Line: 25}},
+			r1:       rangeLine("a.go", 10, 15),
+			r2:       rangeLine("a.go", 20, 25),
 			expected: false,
 		},
 		{
 			name:     "different files",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}},
-			r2:       Range{Start: Position{File: "b.go", Line: 10}},
+			r1:       Range{Start: posLine("a.go", 10)},
+			r2:       Range{Start: posLine("b.go", 10)},
 			expected: false,
 		},
 		{
 			name:     "contained range",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 30}},
-			r2:       Range{Start: Position{File: "a.go", Line: 15}, End: Position{Line: 20}},
+			r1:       rangeLine("a.go", 10, 30),
+			r2:       rangeLine("a.go", 15, 20),
 			expected: true,
 		},
 		{
 			name:     "touching at boundary",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
-			r2:       Range{Start: Position{File: "a.go", Line: 20}, End: Position{Line: 30}},
+			r1:       rangeLine("a.go", 10, 20),
+			r2:       rangeLine("a.go", 20, 30),
 			expected: true,
 		},
 		{
 			name:     "offset-based overlap",
-			r1:       Range{Start: Position{File: "a.go", Offset: 100}, End: Position{Offset: 200}},
-			r2:       Range{Start: Position{File: "a.go", Offset: 150}, End: Position{Offset: 250}},
+			r1:       rangeOffset("a.go", 100, 200),
+			r2:       rangeOffset("a.go", 150, 250),
 			expected: true,
 		},
 		{
 			name:     "offset-based no overlap",
-			r1:       Range{Start: Position{File: "a.go", Offset: 100}, End: Position{Offset: 150}},
-			r2:       Range{Start: Position{File: "a.go", Offset: 200}, End: Position{Offset: 250}},
+			r1:       rangeOffset("a.go", 100, 150),
+			r2:       rangeOffset("a.go", 200, 250),
 			expected: false,
 		},
 	}
@@ -92,32 +117,32 @@ func TestRangeIntersection(t *testing.T) {
 	}{
 		{
 			name:     "overlapping ranges",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
-			r2:       Range{Start: Position{File: "a.go", Line: 15}, End: Position{Line: 25}},
-			expected: &Range{Start: Position{File: "a.go", Line: 15}, End: Position{Line: 20}},
+			r1:       rangeLine("a.go", 10, 20),
+			r2:       rangeLine("a.go", 15, 25),
+			expected: ptrRange(rangeLine("a.go", 15, 20)),
 		},
 		{
 			name:     "non-overlapping returns nil",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 15}},
-			r2:       Range{Start: Position{File: "a.go", Line: 20}, End: Position{Line: 25}},
+			r1:       rangeLine("a.go", 10, 15),
+			r2:       rangeLine("a.go", 20, 25),
 			expected: nil,
 		},
 		{
 			name:     "contained range",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 30}},
-			r2:       Range{Start: Position{File: "a.go", Line: 15}, End: Position{Line: 20}},
-			expected: &Range{Start: Position{File: "a.go", Line: 15}, End: Position{Line: 20}},
+			r1:       rangeLine("a.go", 10, 30),
+			r2:       rangeLine("a.go", 15, 20),
+			expected: ptrRange(rangeLine("a.go", 15, 20)),
 		},
 		{
 			name:     "single point overlap",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
-			r2:       Range{Start: Position{File: "a.go", Line: 20}, End: Position{Line: 30}},
-			expected: &Range{Start: Position{File: "a.go", Line: 20}, End: Position{}},
+			r1:       rangeLine("a.go", 10, 20),
+			r2:       rangeLine("a.go", 20, 30),
+			expected: ptrRange(Range{Start: Position{File: "a.go", Line: 20}}),
 		},
 		{
 			name:     "different files",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}},
-			r2:       Range{Start: Position{File: "b.go", Line: 10}},
+			r1:       Range{Start: posLine("a.go", 10)},
+			r2:       Range{Start: posLine("b.go", 10)},
 			expected: nil,
 		},
 	}
@@ -163,32 +188,32 @@ func TestRangeAdjacent(t *testing.T) {
 		},
 		{
 			name:     "adjacent at start",
-			r1:       Range{Start: Position{File: "a.go", Line: 20}, End: Position{Line: 30}},
-			r2:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
+			r1:       rangeLine("a.go", 20, 30),
+			r2:       rangeLine("a.go", 10, 20),
 			expected: true,
 		},
 		{
 			name:     "overlapping not adjacent",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
-			r2:       Range{Start: Position{File: "a.go", Line: 15}, End: Position{Line: 25}},
+			r1:       rangeLine("a.go", 10, 20),
+			r2:       rangeLine("a.go", 15, 25),
 			expected: false,
 		},
 		{
 			name:     "gap not adjacent",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 15}},
-			r2:       Range{Start: Position{File: "a.go", Line: 20}, End: Position{Line: 25}},
+			r1:       rangeLine("a.go", 10, 15),
+			r2:       rangeLine("a.go", 20, 25),
 			expected: false,
 		},
 		{
 			name:     "offset adjacent",
-			r1:       Range{Start: Position{File: "a.go", Offset: 100}, End: Position{Offset: 200}},
-			r2:       Range{Start: Position{File: "a.go", Offset: 200}, End: Position{Offset: 300}},
+			r1:       rangeOffset("a.go", 100, 200),
+			r2:       rangeOffset("a.go", 200, 300),
 			expected: true,
 		},
 		{
 			name:     "different files",
-			r1:       Range{Start: Position{File: "a.go", Line: 10, Column: 5}},
-			r2:       Range{Start: Position{File: "b.go", Line: 10, Column: 5}},
+			r1:       Range{Start: posLineCol("a.go", 10, 5)},
+			r2:       Range{Start: posLineCol("b.go", 10, 5)},
 			expected: false,
 		},
 	}
