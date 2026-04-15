@@ -17,6 +17,7 @@ func FromDiagnostic(
 	toolName, ruleCode string,
 ) Finding {
 	pos := fset.Position(d.Pos)
+	findingPos := FromTokenPosition(pos)
 
 	// Determine fix strategy from suggested fixes
 	fixStrategy := FixStrategyNone
@@ -25,12 +26,7 @@ func FromDiagnostic(
 	}
 
 	// Build ID from available info
-	id := GenerateID(toolName, ruleCode, Position{
-		File:   pos.Filename,
-		Line:   pos.Line,
-		Column: pos.Column,
-		Offset: pos.Offset,
-	})
+	id := GenerateID(toolName, ruleCode, findingPos)
 
 	f := Finding{
 		ID:          id,
@@ -38,7 +34,7 @@ func FromDiagnostic(
 		ToolName:    toolName,
 		Message:     d.Message,
 		Severity:    SeverityWarning, // go/analysis doesn't have severity
-		Position:    FromTokenPosition(pos),
+		Position:    findingPos,
 		Category:    Category(d.Category),
 		FixStrategy: fixStrategy,
 		Tag:         "",

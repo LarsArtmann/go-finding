@@ -45,6 +45,11 @@ func (r Range) HasEnd() bool {
 	return r.End.Line > 0
 }
 
+// sameFileAs checks if this range is in the same file as another range.
+func (r Range) sameFileAs(other Range) bool {
+	return r.Start.File == other.Start.File
+}
+
 // containsSameFile checks if both positions are in the same file.
 func (r Range) containsSameFile(p Position) bool {
 	return r.Start.File == p.File && (r.End.File == "" || r.End.File == p.File)
@@ -114,8 +119,7 @@ func (r Range) Contains(p Position) bool {
 // Overlaps reports whether this range overlaps with another range.
 // Two ranges overlap if they share at least one position.
 func (r Range) Overlaps(other Range) bool {
-	// Must be in same file
-	if r.Start.File != other.Start.File {
+	if !r.sameFileAs(other) {
 		return false
 	}
 
@@ -238,7 +242,7 @@ func (r Range) intersectionByOffset(other Range) *Range {
 // Adjacent reports whether this range is immediately adjacent to another range.
 // Adjacent means one range ends exactly where the other begins.
 func (r Range) Adjacent(other Range) bool {
-	if r.Start.File != other.Start.File {
+	if !r.sameFileAs(other) {
 		return false
 	}
 

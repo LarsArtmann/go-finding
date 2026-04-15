@@ -17,6 +17,15 @@ type FixGroup struct {
 	Bounds finding.Range
 }
 
+// newFixGroup creates a FixGroup with a single fix.
+func newFixGroup(file string, f finding.Finding, bounds finding.Range) FixGroup {
+	return FixGroup{
+		File:   file,
+		Fixes:  []finding.Finding{f},
+		Bounds: bounds,
+	}
+}
+
 // ConflictDetector identifies conflicting fixes.
 type ConflictDetector struct{}
 
@@ -71,12 +80,7 @@ func (c *ConflictDetector) detectConflictsInFile(file string, fixes []finding.Fi
 		rangeInfo := c.getFindingRange(f)
 
 		if len(currentGroup.Fixes) == 0 {
-			// Start new group
-			currentGroup = FixGroup{
-				File:   file,
-				Fixes:  []finding.Finding{f},
-				Bounds: rangeInfo,
-			}
+			currentGroup = newFixGroup(file, f, rangeInfo)
 		} else {
 			// Check if this fix conflicts with current group
 			if currentGroup.Bounds.Overlaps(rangeInfo) || currentGroup.Bounds.Adjacent(rangeInfo) {
@@ -86,11 +90,7 @@ func (c *ConflictDetector) detectConflictsInFile(file string, fixes []finding.Fi
 			} else {
 				// No conflict - finalize current group and start new one
 				groups = append(groups, currentGroup)
-				currentGroup = FixGroup{
-					File:   file,
-					Fixes:  []finding.Finding{f},
-					Bounds: rangeInfo,
-				}
+				currentGroup = newFixGroup(file, f, rangeInfo)
 			}
 		}
 	}

@@ -183,7 +183,7 @@ func TestHasSuggestion(t *testing.T) {
 	}
 }
 
-func TestGroupBy(t *testing.T) {
+func TestGroupByCustom(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
