@@ -87,43 +87,22 @@ func (r Report) ActiveFindings() []Finding {
 	return active
 }
 
-// BySeverity returns findings filtered by severity.
+// BySeverity returns findings filtered by severity, excluding suppressed.
+// For composable filtering, use filter.BySeverity with filter.NotSuppressed instead.
 func (r Report) BySeverity(sev Severity) []Finding {
-	var filtered []Finding
-
-	for _, f := range r.Findings {
-		if f.Severity == sev && !f.IsSuppressed() {
-			filtered = append(filtered, f)
-		}
-	}
-
-	return filtered
+	return Filter(r.ActiveFindings(), BySeverity(sev))
 }
 
-// ByCategory returns findings filtered by category.
+// ByCategory returns findings filtered by category, excluding suppressed.
+// For composable filtering, use filter.ByCategory with filter.NotSuppressed instead.
 func (r Report) ByCategory(cat Category) []Finding {
-	var filtered []Finding
-
-	for _, f := range r.Findings {
-		if f.Category == cat && !f.IsSuppressed() {
-			filtered = append(filtered, f)
-		}
-	}
-
-	return filtered
+	return Filter(r.ActiveFindings(), ByCategory(cat))
 }
 
-// ByFixStrategy returns findings filtered by fix strategy.
+// ByFixStrategy returns findings filtered by fix strategy, excluding suppressed.
+// For composable filtering, use filter.ByFixStrategy with filter.NotSuppressed instead.
 func (r Report) ByFixStrategy(fs FixStrategy) []Finding {
-	var filtered []Finding
-
-	for _, f := range r.Findings {
-		if f.FixStrategy == fs && !f.IsSuppressed() {
-			filtered = append(filtered, f)
-		}
-	}
-
-	return filtered
+	return Filter(r.ActiveFindings(), ByFixStrategy(fs))
 }
 
 // FindByID returns a finding by its ID, or nil if not found.
