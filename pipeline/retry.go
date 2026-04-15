@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"math/rand"
 	"time"
 
 	"github.com/larsartmann/go-finding"
@@ -25,11 +26,16 @@ func DefaultRetryConfig() RetryConfig {
 	}
 }
 
-// delay calculates the backoff duration for the given attempt.
+// delay calculates the backoff duration for the given attempt with jitter.
 func (c RetryConfig) delay(attempt int) time.Duration {
 	d := time.Duration(math.Pow(2, float64(attempt))) * c.BaseDelay
 	if d > c.MaxDelay {
-		return c.MaxDelay
+		d = c.MaxDelay
+	}
+	// Add up to 25% jitter to avoid thundering herd
+	if quarter := int64(d) / 4; quarter > 0 {
+		jitter := time.Duration(rand.Int63n(quarter))
+		d += jitter
 	}
 	return d
 }

@@ -13,19 +13,20 @@ func TestRetryConfig_delay(t *testing.T) {
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 5 * time.Second}
 
 	tests := []struct {
-		attempt  int
-		expected time.Duration
+		attempt int
+		min     time.Duration
+		max     time.Duration
 	}{
-		{0, 100 * time.Millisecond},
-		{1, 200 * time.Millisecond},
-		{2, 400 * time.Millisecond},
-		{3, 800 * time.Millisecond},
+		{0, 100 * time.Millisecond, 125 * time.Millisecond},
+		{1, 200 * time.Millisecond, 250 * time.Millisecond},
+		{2, 400 * time.Millisecond, 500 * time.Millisecond},
+		{3, 800 * time.Millisecond, 1000 * time.Millisecond},
 	}
 
 	for _, tt := range tests {
 		got := c.delay(tt.attempt)
-		if got != tt.expected {
-			t.Errorf("delay(%d) = %v, want %v", tt.attempt, got, tt.expected)
+		if got < tt.min || got > tt.max {
+			t.Errorf("delay(%d) = %v, want [%v, %v]", tt.attempt, got, tt.min, tt.max)
 		}
 	}
 }
@@ -33,8 +34,8 @@ func TestRetryConfig_delay(t *testing.T) {
 func TestRetryConfig_delay_maxCap(t *testing.T) {
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 300 * time.Millisecond}
 	got := c.delay(10)
-	if got != 300*time.Millisecond {
-		t.Errorf("delay(10) = %v, want %v (capped)", got, 300*time.Millisecond)
+	if got < 300*time.Millisecond || got > 375*time.Millisecond {
+		t.Errorf("delay(10) = %v, want [%v, %v] (capped + jitter)", got, 300*time.Millisecond, 375*time.Millisecond)
 	}
 }
 
