@@ -31,9 +31,27 @@ func (f DetectorFunc) Detect(ctx context.Context) ([]finding.Finding, error) {
 	return f(ctx)
 }
 
-// Name implements Detector.
+// Name implements Detector. Returns "anonymous" — use NamedDetectorFunc for a custom name.
 func (f DetectorFunc) Name() string {
 	return "anonymous"
+}
+
+// NamedDetectorFunc returns a Detector with the given name wrapping the provided function.
+func NamedDetectorFunc(name string, fn DetectorFunc) Detector {
+	return &namedDetector{name: name, fn: fn}
+}
+
+type namedDetector struct {
+	name string
+	fn   DetectorFunc
+}
+
+func (n *namedDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
+	return n.fn(ctx)
+}
+
+func (n *namedDetector) Name() string {
+	return n.name
 }
 
 // Stage represents a pipeline stage.

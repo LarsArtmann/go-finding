@@ -304,6 +304,28 @@ func TestDetectorFunc(t *testing.T) {
 	}
 }
 
+func TestNamedDetectorFunc(t *testing.T) {
+	t.Parallel()
+
+	fn := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+		return []finding.Finding{{ID: "test"}}, nil
+	})
+
+	d := NamedDetectorFunc("my-linter", fn)
+
+	if d.Name() != "my-linter" {
+		t.Errorf("expected name 'my-linter', got %s", d.Name())
+	}
+
+	findings, err := d.Detect(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(findings) != 1 || findings[0].ID != "test" {
+		t.Errorf("expected 1 finding with ID 'test', got %v", findings)
+	}
+}
+
 // TestDefaultConfig tests default configuration.
 func TestDefaultConfig(t *testing.T) {
 	config := DefaultConfig()
