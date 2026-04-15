@@ -69,6 +69,10 @@ type Config struct {
 	Timeout time.Duration
 	// VerifyAfterFix runs a final verification pass after all iterations.
 	VerifyAfterFix bool
+	// GracefulDegradation continues on detector failures, collecting partial results.
+	GracefulDegradation bool
+	// Retry wraps each detector with retry logic. nil disables retries.
+	Retry *RetryConfig
 	// OnFinding is called for each finding found.
 	OnFinding func(f finding.Finding)
 	// OnFix is called when a fix is applied.
@@ -100,6 +104,15 @@ type Pipeline struct {
 
 // New creates a new Pipeline with the given configuration.
 func New(config Config, rootDir string, detectors ...Detector) *Pipeline {
+	// Wrap detectors with retry if configured.
+	if config.Retry != nil {
+		wrapped := make([]Detector, len(detectors))
+		for i, d := range detectors {
+			wrapped[i] = NewRetryDetector(d, *config.Retry)
+		}
+		detectors = wrapped
+	}
+
 	return &Pipeline{
 		config:    config,
 		detectors: detectors,
@@ -243,6 +256,13 @@ type Iteration struct {
 
 // detect runs all detectors and collects findings.
 func (p *Pipeline) detect(ctx context.Context) ([]finding.Finding, error) {
+	if p.config.GracefulDegradation {
+		result, err := p.DetectPartial(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return result.Findings, FormatPartialErrors(result.Errors)
+	}
 	if p.config.ParallelDetectors {
 		return p.detectParallel(ctx)
 	}
