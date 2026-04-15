@@ -5,22 +5,6 @@ import (
 	"fmt"
 )
 
-// JSON helpers for serialization.
-
-// MarshalJSON serializes a Finding to JSON.
-func (f Finding) MarshalJSON() ([]byte, error) {
-	type FindingAlias Finding
-
-	return json.Marshal((*FindingAlias)(&f))
-}
-
-// MarshalJSON serializes a Report to JSON.
-func (r Report) MarshalJSON() ([]byte, error) {
-	type ReportAlias Report
-
-	return json.Marshal((*ReportAlias)(&r))
-}
-
 // PrettyJSON returns a formatted JSON representation of the report.
 func (r *Report) PrettyJSON() (string, error) {
 	bytes, err := json.MarshalIndent(r, "", "  ")

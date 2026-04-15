@@ -256,13 +256,13 @@ func TestReportJSON(t *testing.T) {
 	})
 	r.ComputeSummary()
 
-	json, err := r.MarshalJSON()
+	data, err := json.Marshal(r)
 	if err != nil {
 		t.Fatalf("MarshalJSON failed: %v", err)
 	}
 
 	// Parse it back
-	parsed, err := ReportFromJSON(json)
+	parsed, err := ReportFromJSON(data)
 	if err != nil {
 		t.Fatalf("ReportFromJSON failed: %v", err)
 	}
