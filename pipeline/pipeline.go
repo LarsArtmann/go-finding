@@ -254,6 +254,11 @@ type Iteration struct {
 	findings      []finding.Finding
 }
 
+// Findings returns the findings discovered in this iteration.
+func (it Iteration) Findings() []finding.Finding {
+	return it.findings
+}
+
 // detect runs all detectors and collects findings.
 func (p *Pipeline) detect(ctx context.Context) ([]finding.Finding, error) {
 	if p.config.GracefulDegradation {

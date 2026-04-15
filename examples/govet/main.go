@@ -49,8 +49,7 @@ func (d *GoVetDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 
 	output, err := cmd.Output()
 	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
+		if _, ok := errors.AsType[*exec.ExitError](err); ok {
 			// go vet exits non-zero when issues found — that's fine
 		} else {
 			return nil, fmt.Errorf("go vet: %w", err)

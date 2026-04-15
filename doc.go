@@ -70,6 +70,21 @@
 //
 // See the pipeline subpackage for details.
 //
+// # Cross-Tool Correlation
+//
+// Correlate finds related findings across different tools using simple heuristics
+// (same file, nearby lines). It is a standalone utility, not wired into the pipeline:
+//
+//	correlations := finding.Correlate(allFindings)
+//	for _, c := range correlations {
+//	    fmt.Printf("%v are related: %s (%.1f)\n", c.FindingIDs, c.Reason, c.Confidence)
+//	}
+//
+// # Known Limitations
+//
+// SeverityCritical maps to SARIF level "error" (SARIF 2.1.0 has no "critical" level).
+// The original severity is preserved in Properties["go-finding/severity"] for round-trip fidelity.
+//
 // # Related Projects
 //
 //   - go/analysis: The standard Go analysis framework

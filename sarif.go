@@ -236,7 +236,19 @@ func findingToSARIF(f Finding) SarifResult {
 		for k, v := range f.Metadata {
 			result.Properties[k] = v
 		}
+	} else if f.Severity == SeverityCritical {
+		result.Properties = make(map[string]any)
+	}
 
+	if f.Severity == SeverityCritical {
+		if result.Properties == nil {
+			result.Properties = make(map[string]any)
+		}
+		result.Properties["toolName"] = f.ToolName
+		result.Properties["category"] = f.Category
+		result.Properties["tag"] = f.Tag
+		result.Properties["go-finding/severity"] = string(f.Severity)
+	} else if len(result.Properties) > 0 {
 		result.Properties["toolName"] = f.ToolName
 		result.Properties["category"] = f.Category
 		result.Properties["tag"] = f.Tag
@@ -245,6 +257,12 @@ func findingToSARIF(f Finding) SarifResult {
 	return result
 }
 
+// severityToSARIFLevel converts a Severity to a SARIF level string.
+//
+// Known limitation: SeverityCritical maps to "error" because SARIF 2.1.0 does not
+// have a "critical" level. The original severity is preserved in the result's
+// Properties["go-finding/severity"] for round-trip fidelity. Use FromSARIFLevel
+// only when Properties are not available; otherwise prefer reading the property.
 func severityToSARIFLevel(s Severity) string {
 	switch s {
 	case SeverityInfo:

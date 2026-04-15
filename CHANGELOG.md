@@ -9,44 +9,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial implementation of core types:
-  - `Finding` - unified static analysis finding representation
-  - `Severity` - info/warning/error/critical levels with ordering
-  - `FixStrategy` - none/suggest/direct/ai classification
-  - `Position`/`Range` - source code location tracking
-  - `Suppression` - unified suppression handling
-  - `Report` - container for tool findings with summary statistics
-- Filtering and grouping utilities for findings
-- Report merging with deduplication support
-- SARIF 2.1.0 output generation
-- LSP Diagnostic conversion
-- go/analysis.Diagnostic integration
-- JSON serialization helpers
-- Comprehensive test suite (25 tests)
+- **Pipeline package** (`pipeline/`) — detect → triage → fix → verify loop
+  - Parallel and sequential detector execution via `errgroup`
+  - Fix conflict detection and resolution
+  - AST-aware fix application with text fallback
+  - Post-fix verification by re-running detectors
+  - Metrics collection with timing, counts, and snapshots
+  - Exponential backoff retry wrapper for flaky detectors
+  - Partial success — continue with findings from successful detectors
+- **CLI tool** (`cmd/go-finding`) with flags:
+  - `-dir`, `-format` (text/json/sarif), `-severity`, `-max-iterations`
+  - `-parallel`, `-verify`, `-timeout`
+  - `-config` for YAML/JSON config file support
+  - `-cpuprof`/`-memprof` for `runtime/pprof` profiling
+- **YAML config support** — config files accept `.yaml`/`.yml` and `.json`
+- **Structured errors** — `FindingError` with categories (validation, IO, parse, conflict, internal) and position context
+- **ID generation** — stable `tool:rule:file:line:col` format with SHA-256 hash-based fallback
+- **Correlation** — heuristic cross-tool finding correlation (same file, nearby lines)
+- **Retry** — `RetryConfig` with exponential backoff and jitter
+- **Partial success** — `DetectPartial` for graceful degradation
+- **Metrics** — `Metrics` type with stage/detector timing and `MetricsSnapshot`
 
-### Changed
+### Examples
 
-- N/A
+- `examples/govet/` — Go vet JSON → Finding converter
+- `examples/staticcheck/` — staticcheck JSON → Finding converter
+- `examples/artdupl/` — art-dupl clone detector with `RelatedRef` linking
+- `examples/branching/` — code complexity with `FixStrategyDirect` refactoring suggestions
 
-### Deprecated
+### Testing
 
-- N/A
+- Coverage tests for `IsValid`, `HasFix`, `HasSuggestion`, `IsSuppressed`
+- Fuzz tests for ID generation/parsing, merge, filter, dedup, correlate
+- Property-based tests using `testing/quick` for filter, group, merge, ID round-trip
+- Benchmarks for ID generation, filtering, grouping, merge, correlate, SARIF
+- GoDoc examples (`Example*()`) for all major public APIs
 
-### Removed
+### Documentation
 
-- N/A
+- `docs/USAGE_GUIDE.md` — comprehensive usage guide
+- `CONTRIBUTING.md` — contribution guidelines and development setup
+- `cmd/go-finding/config.example.yaml` — sample configuration
 
-### Fixed
+### Dependencies
 
-- N/A
-
-### Security
-
-- N/A
+- `gopkg.in/yaml.v3` — YAML config support in CLI
 
 ## [0.1.0] - 2026-04-11
 
 ### Added
 
-- Initial release with core types and basic functionality
-- Support for unified finding representation across tools
+- Core types: `Finding`, `Severity`, `FixStrategy`, `Position`, `Range`, `Category`, `Suppression`, `Report`
+- Filtering: `Filter`, `BySeverity`, `BySeverityAtLeast`, `ByCategory`, `ByFile`, `ByRule`, `ByTool`, `ByFixStrategy`
+- Grouping: `GroupBy`, `GroupByFile`, `GroupBySeverity`, `GroupByCategory`
+- Merging: `Merge` with deduplication by ID, position, or rule
+- SARIF 2.1.0 output: `ToSARIF`, `ToSARIFFiltered`
+- LSP Diagnostic conversion: `FromLSP`, `ToLSP`
+- go/analysis integration: `FromDiagnostic`, `AnalysisDiagnostic`
+- JSON serialization: `FromJSON`, `FindingsFromJSON`, `LineJSON`
+- Initial test suite
