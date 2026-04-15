@@ -271,9 +271,15 @@ func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, err
 		default:
 		}
 
+		start := time.Now()
 		findings, err := d.Detect(ctx)
+		elapsed := time.Since(start)
 		if err != nil {
 			return nil, fmt.Errorf("detector %s: %w", d.Name(), err)
+		}
+
+		if p.metrics != nil {
+			p.metrics.RecordDetector(d.Name(), elapsed, len(findings))
 		}
 
 		allFindings = p.addFindings(allFindings, findings)
@@ -291,9 +297,15 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 
 	for _, d := range p.detectors {
 		g.Go(func() error {
+			start := time.Now()
 			findings, err := d.Detect(ctx)
+			elapsed := time.Since(start)
 			if err != nil {
 				return fmt.Errorf("detector %s: %w", d.Name(), err)
+			}
+
+			if p.metrics != nil {
+				p.metrics.RecordDetector(d.Name(), elapsed, len(findings))
 			}
 
 			mu.Lock()
@@ -384,7 +396,18 @@ func (p *Pipeline) applyTriage(ctx context.Context, fixes []finding.Finding, ite
 // applyDirectFixes applies deterministic fixes to files.
 func (p *Pipeline) applyDirectFixes(ctx context.Context, fixes []finding.Finding) (int, error) {
 	applier := NewFixApplier(p.rootDir)
-	return applier.Apply(ctx, fixes)
+	applied, err := applier.Apply(ctx, fixes)
+	if err != nil {
+		return applied, err
+	}
+
+	if p.metrics != nil {
+		for i := 0; i < applied; i++ {
+			p.metrics.RecordFix()
+		}
+	}
+
+	return applied, nil
 }
 
 // FixApplier handles application of fixes to source files.
