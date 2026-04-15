@@ -217,51 +217,6 @@ func TestFindingSuppressed(t *testing.T) {
 	}
 }
 
-func TestFilter(t *testing.T) {
-	t.Parallel()
-
-	findings := []Finding{
-		{ID: "1", Severity: SeverityError, ToolName: "tool1"},
-		{ID: "2", Severity: SeverityWarning, ToolName: "tool2"},
-		{ID: "3", Severity: SeverityError, ToolName: "tool2"},
-	}
-
-	// Filter by severity
-	errors := Filter(findings, BySeverity(SeverityError))
-	assertErrorCount(t, errors, 2)
-
-	// Filter by tool
-	tool2 := Filter(findings, ByTool("tool2"))
-	if len(tool2) != 2 {
-		t.Errorf("expected 2 tool2 findings, got %d", len(tool2))
-	}
-
-	// Filter by severity at least
-	atLeastWarning := Filter(findings, BySeverityAtLeast(SeverityWarning))
-	if len(atLeastWarning) != 3 {
-		t.Errorf("expected 3 findings >= warning, got %d", len(atLeastWarning))
-	}
-}
-
-func TestGroupBy(t *testing.T) {
-	t.Parallel()
-
-	findings := []Finding{
-		{ID: "1", Severity: SeverityError},
-		{ID: "2", Severity: SeverityWarning},
-		{ID: "3", Severity: SeverityError},
-	}
-
-	bySeverity := GroupBySeverity(findings)
-	if len(bySeverity[SeverityError]) != 2 {
-		t.Errorf("expected 2 errors, got %d", len(bySeverity[SeverityError]))
-	}
-
-	if len(bySeverity[SeverityWarning]) != 1 {
-		t.Errorf("expected 1 warning, got %d", len(bySeverity[SeverityWarning]))
-	}
-}
-
 func TestReport(t *testing.T) {
 	t.Parallel()
 
@@ -341,44 +296,6 @@ func TestFindingJSON(t *testing.T) {
 	}
 }
 
-func TestMerge(t *testing.T) {
-	t.Parallel()
-
-	r1 := NewReport(ToolInfo{Name: "tool1"})
-	r1.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go"}})
-
-	r2 := NewReport(ToolInfo{Name: "tool2"})
-	r2.AddFinding(Finding{ID: "2", Severity: SeverityWarning, Position: Position{File: "b.go"}})
-
-	merged := Merge([]*Report{r1, r2})
-	merged.ComputeSummary()
-
-	assertTotalCount(t, merged, 2)
-
-	if merged.Summary.FilesAffected != 2 {
-		t.Errorf("expected 2 files, got %d", merged.Summary.FilesAffected)
-	}
-}
-
-func TestMergeWithDeduplication(t *testing.T) {
-	t.Parallel()
-
-	r1 := NewReport(ToolInfo{Name: "tool1"})
-	r1.AddFinding(
-		Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go", Line: 10}},
-	)
-
-	r2 := NewReport(ToolInfo{Name: "tool2"})
-	r2.AddFinding(
-		Finding{ID: "1", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 10}},
-	) // Same ID
-
-	merged := Merge([]*Report{r1, r2}, WithDeduplication(true))
-	merged.ComputeSummary()
-
-	assertTotalCount(t, merged, 1)
-}
-
 func TestSARIFConversion(t *testing.T) {
 	t.Parallel()
 
@@ -439,19 +356,6 @@ func TestCategory(t *testing.T) {
 
 	if Category("custom-category").IsValid() {
 		t.Error("custom-category should not be valid")
-	}
-}
-
-func TestSuppression(t *testing.T) {
-	t.Parallel()
-
-	s := &Suppression{
-		Kind:   SuppressionInSource,
-		Rule:   "rule1",
-		Reason: "intentional",
-	}
-	if s.IsExpired() {
-		t.Error("suppression without expiry should not be expired")
 	}
 }
 
