@@ -71,6 +71,20 @@ type MetricsSnapshot struct {
 	TotalDuration  time.Duration
 }
 
+// SetStart records the pipeline start time.
+func (m *Metrics) SetStart(t time.Time) {
+	m.mu.Lock()
+	m.StartTime = t
+	m.mu.Unlock()
+}
+
+// SetEnd records the pipeline end time.
+func (m *Metrics) SetEnd(t time.Time) {
+	m.mu.Lock()
+	m.EndTime = t
+	m.mu.Unlock()
+}
+
 // Snapshot returns a point-in-time copy of the metrics.
 func (m *Metrics) Snapshot() MetricsSnapshot {
 	m.mu.Lock()

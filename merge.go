@@ -27,11 +27,12 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 	if len(reports) == 1 {
 		r := reports[0]
 
-		return &Report{
+		result := &Report{
 			Tool:     r.Tool,
 			Findings: append([]Finding(nil), r.Findings...),
-			Summary:  r.Summary,
 		}
+		result.ComputeSummary()
+		return result
 	}
 
 	options := defaultMergeOptions()
@@ -69,10 +70,8 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 
 // MergeOptions controls how reports are merged.
 type MergeOptions struct {
-	Deduplicate     bool
-	DeduplicateBy   DeduplicateBy
-	KeepAllRelated  bool
-	ConflictHandler ConflictHandler
+	Deduplicate   bool
+	DeduplicateBy DeduplicateBy
 }
 
 // MergeOption is a functional option for configuring merge behavior.
@@ -87,22 +86,10 @@ const (
 	DeduplicateByRule                          // DeduplicateByRule matches rule position.
 )
 
-// ConflictHandler handles when findings conflict.
-type ConflictHandler int
-
-const (
-	ConflictKeepFirst   ConflictHandler = iota // ConflictKeepFirst keeps first occurrence.
-	ConflictKeepLast                           // ConflictKeepLast keeps last occurrence.
-	ConflictKeepHighest                        // ConflictKeepHighest keeps highest severity.
-	ConflictKeepAll                            // ConflictKeepAll keeps both findings.
-)
-
 func defaultMergeOptions() MergeOptions {
 	return MergeOptions{
-		Deduplicate:     true,
-		DeduplicateBy:   DeduplicateByID,
-		KeepAllRelated:  true,
-		ConflictHandler: ConflictKeepHighest,
+		Deduplicate:   true,
+		DeduplicateBy: DeduplicateByID,
 	}
 }
 
@@ -156,27 +143,30 @@ type Correlation struct {
 func Correlate(findings []Finding) []Correlation {
 	var correlations []Correlation
 
-	// Group by file
 	byFile := GroupByFile(findings)
 
-	for _, fileFindings := range byFile {
+	files := make([]string, 0, len(byFile))
+	for f := range byFile {
+		files = append(files, f)
+	}
+	sort.Strings(files)
+
+	for _, file := range files {
+		fileFindings := byFile[file]
 		if len(fileFindings) < minFindingsInFile {
 			continue
 		}
 
-		// Sort by line
 		sort.Slice(fileFindings, func(i, j int) bool {
 			return fileFindings[i].Position.Line < fileFindings[j].Position.Line
 		})
 
-		// Find nearby findings from different tools
 		for i, f1 := range fileFindings {
 			for _, f2 := range fileFindings[i+1:] {
 				if f1.ToolName == f2.ToolName {
-					continue // Same tool, skip
+					continue
 				}
 
-				// Check if lines are close
 				lineDiff := f2.Position.Line - f1.Position.Line
 				if lineDiff > maxLineDiff {
 					break

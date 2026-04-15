@@ -50,21 +50,23 @@ func (e *FindingError) IsCategory(cat ErrorCategory) bool {
 	return e.Category == cat
 }
 
-// WithFinding returns a new FindingError with the finding set.
+// WithFinding sets the finding on a copy of the FindingError and returns it.
 func (e *FindingError) WithFinding(f Finding) *FindingError {
-	e.Finding = &f
-	e.File = f.Position.File
-	e.Position = &f.Position
+	clone := *e
+	clone.Finding = &f
+	clone.File = f.Position.File
+	clone.Position = &f.Position
 
-	return e
+	return &clone
 }
 
-// WithPosition returns a new FindingError with position set.
+// WithPosition sets the position on a copy of the FindingError and returns it.
 func (e *FindingError) WithPosition(pos Position) *FindingError {
-	e.Position = &pos
-	e.File = pos.File
+	clone := *e
+	clone.Position = &pos
+	clone.File = pos.File
 
-	return e
+	return &clone
 }
 
 // NewValidationError creates a validation error.

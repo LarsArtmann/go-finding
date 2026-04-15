@@ -171,9 +171,14 @@ func (r Result[T]) MarshalJSON() ([]byte, error) {
 		})
 	}
 
+	errMsg := ""
+	if r.err != nil {
+		errMsg = r.err.Error()
+	}
+
 	return json.Marshal(map[string]any{
 		"ok":    false,
-		"error": r.err.Error(),
+		"error": errMsg,
 	})
 }
 

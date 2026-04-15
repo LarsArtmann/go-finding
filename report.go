@@ -128,9 +128,10 @@ func (r Report) ByFixStrategy(fs FixStrategy) []Finding {
 
 // FindByID returns a finding by its ID, or nil if not found.
 func (r Report) FindByID(id string) *Finding {
-	for i, f := range r.Findings {
+	for _, f := range r.Findings {
 		if f.ID == id {
-			return &r.Findings[i]
+			cp := f
+			return &cp
 		}
 	}
 

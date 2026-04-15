@@ -114,8 +114,9 @@ func (r Range) Contains(p Position) bool {
 		return false
 	}
 
-	if r.hasLineRange(p) {
-		return true
+	// If both range and position have line info, use line-based check exclusively
+	if r.Start.Line > 0 && p.Line > 0 {
+		return r.hasLineRange(p)
 	}
 
 	return r.containsByOffset(p)

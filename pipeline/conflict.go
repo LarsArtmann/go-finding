@@ -83,7 +83,7 @@ func (c *ConflictDetector) detectConflictsInFile(file string, fixes []finding.Fi
 			currentGroup = newFixGroup(file, f, rangeInfo)
 		} else {
 			// Check if this fix conflicts with current group
-			if currentGroup.Bounds.Overlaps(rangeInfo) || currentGroup.Bounds.Adjacent(rangeInfo) {
+			if currentGroup.Bounds.Overlaps(rangeInfo) {
 				// Conflict detected - add to current group and extend bounds
 				currentGroup.Fixes = append(currentGroup.Fixes, f)
 				currentGroup.Bounds = extendRange(currentGroup.Bounds, rangeInfo)
@@ -254,7 +254,7 @@ func AnalyzeConflicts(fixes []finding.Finding) []ConflictInfo {
 		var conflictsWith []finding.Finding
 
 		for _, g := range groups {
-			if g.Bounds.Overlaps(cfRange) || g.Bounds.Adjacent(cfRange) {
+			if g.Bounds.Overlaps(cfRange) {
 				conflictsWith = append(conflictsWith, g.Fixes...)
 			}
 		}

@@ -101,9 +101,12 @@ func (p *Pipeline) stageTiming(name string) func() {
 
 // Run executes the pipeline until stable or max iterations reached.
 func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
+	p.findings = p.findings[:0]
+	p.iterations = 0
+
 	if p.metrics != nil {
-		p.metrics.StartTime = time.Now()
-		defer func() { p.metrics.EndTime = time.Now() }()
+		p.metrics.SetStart(time.Now())
+		defer func() { p.metrics.SetEnd(time.Now()) }()
 	}
 	if p.config.Timeout > 0 {
 		var cancel context.CancelFunc
@@ -275,7 +278,7 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 			}
 
 			mu.Lock()
-			allFindings = p.addFindings(allFindings, findings)
+			allFindings = append(allFindings, findings...)
 			mu.Unlock()
 			return nil
 		})
@@ -283,6 +286,12 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 
 	if err := g.Wait(); err != nil {
 		return nil, err
+	}
+
+	for i := range allFindings {
+		if !allFindings[i].IsSuppressed() {
+			p.notifyFinding(allFindings[i])
+		}
 	}
 
 	return allFindings, nil
@@ -408,7 +417,8 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 		}
 
 		// Apply fixes
-		if err := a.applyToFile(path, fileFixes); err != nil {
+		count, err := a.applyToFile(path, fileFixes)
+		if err != nil {
 			// Restore from backup on error
 			if a.backupEnabled {
 				_ = a.restore(path)
@@ -416,7 +426,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 			return applied, finding.NewConflictError(fmt.Sprintf("apply to %s", path), err)
 		}
 
-		applied += len(fileFixes)
+		applied += count
 	}
 
 	return applied, nil
@@ -462,27 +472,31 @@ func (a *FixApplier) restore(path string) error {
 }
 
 // applyToFile applies fixes to a single file.
-func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) error {
-	// Read file content
+func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return ioErrorAt("read file", err, path)
+		return 0, ioErrorAt("read file", err, path)
 	}
 
-	// For now, we only support simple text replacement based on BeforeCode/AfterCode
-	// This is a simplified implementation - in practice you'd want to use
-	// proper AST-based transformations or at least line/column-aware replacements
 	result := string(content)
+	applied := 0
 	for _, f := range fixes {
 		if f.BeforeCode != "" && f.AfterCode != "" {
-			result = strings.ReplaceAll(result, f.BeforeCode, f.AfterCode)
+			newResult := strings.Replace(result, f.BeforeCode, f.AfterCode, 1)
+			if newResult != result {
+				result = newResult
+				applied++
+			}
 		}
 	}
 
-	// Write updated content
-	if err := os.WriteFile(path, []byte(result), 0600); err != nil {
-		return ioErrorAt("write file", err, path)
+	if applied == 0 {
+		return 0, nil
 	}
 
-	return nil
+	if err := os.WriteFile(path, []byte(result), 0600); err != nil {
+		return 0, ioErrorAt("write file", err, path)
+	}
+
+	return applied, nil
 }

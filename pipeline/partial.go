@@ -89,7 +89,6 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 	g, ctx := errgroup.WithContext(ctx)
 
 	for _, d := range p.detectors {
-		d := d
 		g.Go(func() error {
 			findings, err := d.Detect(ctx)
 			mu.Lock()
