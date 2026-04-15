@@ -307,13 +307,15 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 		return nil, err
 	}
 
+	var filtered []finding.Finding
 	for i := range allFindings {
 		if !allFindings[i].IsSuppressed() {
+			filtered = append(filtered, allFindings[i])
 			p.notifyFinding(allFindings[i])
 		}
 	}
 
-	return allFindings, nil
+	return filtered, nil
 }
 
 // TriageResult holds findings categorized by fix strategy.
