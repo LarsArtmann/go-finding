@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -64,6 +65,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 			fixed = append(fixed, f)
 		}
 	}
+	sort.Slice(fixed, func(i, j int) bool { return fixed[i].ID < fixed[j].ID })
 
 	var newFindings []finding.Finding
 	for id, f := range postSet {
@@ -71,6 +73,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 			newFindings = append(newFindings, f)
 		}
 	}
+	sort.Slice(newFindings, func(i, j int) bool { return newFindings[i].ID < newFindings[j].ID })
 
 	var remaining []finding.Finding
 	for _, f := range post {

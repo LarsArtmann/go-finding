@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 
 	"github.com/larsartmann/go-finding"
@@ -113,9 +114,14 @@ func FormatPartialErrors(errors map[string]error) error {
 	if len(errors) == 0 {
 		return nil
 	}
+	names := make([]string, 0, len(errors))
+	for name := range errors {
+		names = append(names, name)
+	}
+	sort.Strings(names)
 	msgs := make([]string, 0, len(errors))
-	for name, err := range errors {
-		msgs = append(msgs, fmt.Sprintf("%s: %v", name, err))
+	for _, name := range names {
+		msgs = append(msgs, fmt.Sprintf("%s: %v", name, errors[name]))
 	}
 	return fmt.Errorf("partial detection failures: %v", msgs)
 }
