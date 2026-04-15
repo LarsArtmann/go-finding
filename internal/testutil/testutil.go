@@ -3,51 +3,88 @@ package testutil
 import (
 	"testing"
 	"time"
-
-	"github.com/lane-ax/finding"
 )
 
-func SeverityFromInt(i int) finding.Severity {
-	sevs := []finding.Severity{finding.SeverityInfo, finding.SeverityWarning, finding.SeverityError, finding.SeverityCritical}
+type Severity int
+
+const (
+	SeverityInfo Severity = iota
+	SeverityWarning
+	SeverityError
+	SeverityCritical
+)
+
+func SeverityFromInt(i int) Severity {
+	sevs := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
 	if i < 0 || i >= len(sevs) {
-		return finding.SeverityInfo
+		return SeverityInfo
 	}
 	return sevs[i]
 }
 
-func MakeTestFinding(id, rule, toolName string, sev finding.Severity) finding.Finding {
-	return finding.Finding{
+type Finding struct {
+	ID       string
+	Rule     string
+	ToolName string
+	Message  string
+	Severity Severity
+	Position Position
+}
+
+type Position struct {
+	File  string
+	Line  int
+	Column int
+}
+
+type Range struct {
+	Start Position
+	End   Position
+}
+
+func MakeTestFinding(id, rule, toolName string, sev Severity) Finding {
+	return Finding{
 		ID:       id,
 		Rule:     rule,
 		ToolName: toolName,
 		Message:  "test finding",
 		Severity: sev,
-		Position: finding.Position{File: "test.go", Line: 1, Column: 1},
+		Position: Position{File: "test.go", Line: 1, Column: 1},
 	}
 }
 
-func MakeSimpleFinding(id string) finding.Finding {
-	return finding.Finding{
+func MakeSimpleFinding(id string) Finding {
+	return Finding{
 		ID:       id,
 		Rule:     "test-rule",
 		ToolName: "test-tool",
 		Message:  "test message",
-		Severity: finding.SeverityError,
-		Position: finding.Position{File: "test.go", Line: 1, Column: 1},
+		Severity: SeverityError,
+		Position: Position{File: "test.go", Line: 1, Column: 1},
 	}
 }
 
-func MakeTestRange(file string, startLine, startCol, endLine, endCol int) finding.Range {
-	return finding.Range{
-		Start: finding.Position{File: file, Line: startLine, Column: startCol},
-		End:   finding.Position{File: file, Line: endLine, Column: endCol},
+func MakeTestRange(file string, startLine, startCol, endLine, endCol int) Range {
+	return Range{
+		Start: Position{File: file, Line: startLine, Column: startCol},
+		End:   Position{File: file, Line: endLine, Column: endCol},
 	}
 }
 
-func MakeTestSuppression(t *testing.T, reason string) *finding.Suppression {
+type SuppressionKind int
+
+const SuppressionInSource SuppressionKind = iota
+
+type Suppression struct {
+	Kind      SuppressionKind
+	Reason    string
+	ExpiresAt *time.Time
+}
+
+func MakeTestSuppression(t *testing.T, reason string) *Suppression {
 	t.Helper()
-	return &finding.Suppression{
-		Kind:   finding.SuppressionInSource,
+	return &Suppression{
+		Kind:   SuppressionInSource,
 		Reason: reason,
 		ExpiresAt: func() *time.Time {
 			t := time.Now().Add(1 * time.Hour)
@@ -56,10 +93,10 @@ func MakeTestSuppression(t *testing.T, reason string) *finding.Suppression {
 	}
 }
 
-func MakeFindingsWithSeverity(ids []string, sevs []finding.Severity) []finding.Finding {
-	fs := make([]finding.Finding, len(ids))
+func MakeFindingsWithSeverity(ids []string, sevs []Severity) []Finding {
+	fs := make([]Finding, len(ids))
 	for i := range ids {
-		fs[i] = finding.Finding{
+		fs[i] = Finding{
 			ID:       ids[i],
 			Severity: sevs[i],
 		}

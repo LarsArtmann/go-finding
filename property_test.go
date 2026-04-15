@@ -6,14 +6,6 @@ import (
 	"testing/quick"
 )
 
-func sevFromIntP(i int) Severity {
-	sevs := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
-	if i < 0 || i >= len(sevs) {
-		return SeverityInfo
-	}
-	return sevs[i]
-}
-
 func TestProperty_FilterBySeverityAtLeast(t *testing.T) {
 	t.Parallel()
 	property := func(sev uint8) bool {
@@ -26,9 +18,9 @@ func TestProperty_FilterBySeverityAtLeast(t *testing.T) {
 			{Severity: SeverityError},
 			{Severity: SeverityCritical},
 		}
-		filtered := Filter(findings, BySeverityAtLeast(sevFromIntP(int(sev))))
+		filtered := Filter(findings, BySeverityAtLeast(sevFromInt(int(sev))))
 		for _, f := range filtered {
-			if f.Severity.LessThan(sevFromIntP(int(sev))) {
+			if f.Severity.LessThan(sevFromInt(int(sev))) {
 				return false
 			}
 		}
@@ -70,7 +62,7 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 		for i := range findings {
 			findings[i] = Finding{
 				ID:       randomSeedRule(rng) + ":" + randomSeedFile(rng) + ":" + string(rune('A'+rng.Intn(26))),
-				Severity: sevFromIntP(rng.Intn(4)),
+				Severity: sevFromInt(rng.Intn(4)),
 			}
 		}
 		reports := splitSeedFindings(findings, rng)
@@ -121,7 +113,7 @@ func TestProperty_MergeDedupReducesOrPreserves(t *testing.T) {
 		for i := range findings {
 			findings[i] = Finding{
 				ID:       "dupe-id",
-				Severity: sevFromIntP(rng.Intn(4)),
+				Severity: sevFromInt(rng.Intn(4)),
 			}
 		}
 

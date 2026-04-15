@@ -5,14 +5,6 @@ import (
 	"testing"
 )
 
-func sevFromIntB(i int) Severity {
-	sevs := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
-	if i < 0 || i >= len(sevs) {
-		return SeverityInfo
-	}
-	return sevs[i]
-}
-
 func BenchmarkGenerateID(b *testing.B) {
 	pos := Position{File: "main.go", Line: 42, Column: 10}
 	b.ResetTimer()
@@ -48,7 +40,7 @@ func BenchmarkFilter(b *testing.B) {
 	for i := range findings {
 		findings[i] = Finding{
 			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
-			Severity: sevFromIntB(i % 4),
+			Severity: sevFromInt(i % 4),
 			Category: CategoryStyle,
 			Position: Position{File: "file.go", Line: i + 1},
 		}
@@ -64,7 +56,7 @@ func BenchmarkFilterMultiple(b *testing.B) {
 	for i := range findings {
 		findings[i] = Finding{
 			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
-			Severity: sevFromIntB(i % 4),
+			Severity: sevFromInt(i % 4),
 			Category: []Category{CategoryStyle, CategorySecurity, CategoryPerformance, CategoryCorrectness}[i%4],
 			Position: Position{File: fmt.Sprintf("file%d.go", i%10), Line: i + 1},
 		}
@@ -98,7 +90,7 @@ func BenchmarkMerge(b *testing.B) {
 		for j := 0; j < 200; j++ {
 			reports[i].AddFinding(Finding{
 				ID:       fmt.Sprintf("tool%d:rule:file%d.go:%d", i, j%10, j),
-				Severity: sevFromIntB(j % 4),
+				Severity: sevFromInt(j % 4),
 				Position: Position{File: fmt.Sprintf("file%d.go", j%10), Line: j + 1},
 			})
 		}
@@ -131,7 +123,7 @@ func BenchmarkMergeNoDedup(b *testing.B) {
 		for j := 0; j < 500; j++ {
 			reports[i].AddFinding(Finding{
 				ID:       fmt.Sprintf("tool%d:rule:file.go:%d:%d", i, j, i),
-				Severity: sevFromIntB(j % 4),
+				Severity: sevFromInt(j % 4),
 			})
 		}
 	}
@@ -148,7 +140,7 @@ func BenchmarkToSARIF(b *testing.B) {
 			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
 			Rule:     "SA1000",
 			Message:  "test finding",
-			Severity: sevFromIntB(i % 4),
+			Severity: sevFromInt(i % 4),
 			Position: Position{File: "file.go", Line: i + 1, Column: 1},
 		})
 	}
