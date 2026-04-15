@@ -4,6 +4,26 @@ import (
 	"testing"
 )
 
+func posLine(file string, line int) Position {
+	return Position{File: file, Line: line}
+}
+
+func posLineCol(file string, line, col int) Position {
+	return Position{File: file, Line: line, Column: col}
+}
+
+func rangeLine(file string, startLine, endLine int) Range {
+	return Range{Start: Position{File: file, Line: startLine}, End: Position{Line: endLine}}
+}
+
+func rangeOffset(file string, startOffset, endOffset int) Range {
+	return Range{Start: Position{File: file, Offset: startOffset}, End: Position{Offset: endOffset}}
+}
+
+func ptrRange(r Range) *Range {
+	return &r
+}
+
 // overlapCase represents a test case for Overlaps/Adjacent tests.
 type overlapCase struct {
 	name     string
