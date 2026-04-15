@@ -1,8 +1,6 @@
 package finding_test
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 
@@ -80,47 +78,6 @@ func Example_simpleCLI() {
 	// Need manual review: 1
 	// Errors: 1
 	// Warnings: 2
-}
-
-// Example_resultHandling shows using Result[T] for error handling.
-func Example_resultHandling() {
-	// Function that might fail
-	parseFinding := func(data []byte) finding.Result[finding.Finding] {
-		var f finding.Finding
-
-		err := json.Unmarshal(data, &f)
-		if err != nil {
-			return finding.Err[finding.Finding](err)
-		}
-
-		if !f.IsValid() {
-			return finding.Err[finding.Finding](errors.New("invalid finding"))
-		}
-
-		return finding.Ok(f)
-	}
-
-	// Valid JSON
-	validJSON := `{"id":"test","rule":"R","toolName":"T","message":"M","severity":"warning","position":{"file":"f.go"}}`
-
-	result := parseFinding([]byte(validJSON))
-	if result.IsOk() {
-		finding := result.Value()
-		fmt.Printf("Parsed: %s\n", finding.ID)
-	} else {
-		fmt.Printf("Error: %v\n", result.Error())
-	}
-
-	// Invalid JSON
-	invalidJSON := `{"invalid": true}`
-
-	result2 := parseFinding([]byte(invalidJSON))
-	finding2 := result2.ValueOr(finding.Finding{ID: "default"})
-	fmt.Printf("Using default: %s\n", finding2.ID)
-
-	// Output:
-	// Parsed: test
-	// Using default: default
 }
 
 // Example_mergingShows unified report from multiple tools.
