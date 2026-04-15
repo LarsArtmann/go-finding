@@ -101,9 +101,9 @@ func lspLine(n int) int {
 	return n - 1
 }
 
-// FromLSP creates a Finding from an LSP Diagnostic.
+// FromLSP creates a Finding from an LSP Diagnostic at the given file URI.
 // Many fields will be empty/default since LSP has less information.
-func FromLSP(diag LSPDiagnostic) Finding {
+func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	return Finding{
 		ID: fmt.Sprintf(
 			"lsp:%s:%s:%d:%d",
@@ -117,11 +117,11 @@ func FromLSP(diag LSPDiagnostic) Finding {
 		Message:  diag.Message,
 		Severity: severityFromLSP(diag.Severity),
 		Position: Position{
-			File:   "", // Would need URI from context
+			File:   fileURI,
 			Line:   diag.Range.Start.Line + 1,
 			Column: diag.Range.Start.Character + 1,
 		},
-		FixStrategy: FixStrategyNone, // LSP doesn't specify this
+		FixStrategy: FixStrategyNone,
 	}
 }
 

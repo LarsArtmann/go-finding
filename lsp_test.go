@@ -69,7 +69,7 @@ func TestFromLSP(t *testing.T) {
 		Message:  "unused variable: x",
 	}
 
-	f := FromLSP(diag)
+	f := FromLSP("file:///test.go", diag)
 
 	if got, want := f.ID, "lsp:golangci-lint:unused-var:5:10"; got != want {
 		t.Errorf("FromLSP ID = %q, want %q", got, want)
@@ -91,6 +91,9 @@ func TestFromLSP(t *testing.T) {
 	}
 	if got, want := f.Position.Column, 10; got != want {
 		t.Errorf("FromLSP Position.Column = %d, want %d (0-based→1-based)", got, want)
+	}
+	if got, want := f.Position.File, "file:///test.go"; got != want {
+		t.Errorf("FromLSP Position.File = %q, want %q", got, want)
 	}
 	if got, want := f.FixStrategy, FixStrategyNone; got != want {
 		t.Errorf("FromLSP FixStrategy = %v, want %v", got, want)
@@ -213,7 +216,7 @@ func TestToLSP(t *testing.T) {
 			Message:  "msg1",
 		}
 
-		f := FromLSP(orig)
+		f := FromLSP("file:///test.go", orig)
 		roundTrip := f.ToLSP()
 
 		if got, want := roundTrip.Code, orig.Code; got != want {
