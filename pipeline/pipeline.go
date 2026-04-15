@@ -4,6 +4,7 @@ package pipeline
 
 import (
 	"context"
+	"crypto/sha1"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -390,6 +391,7 @@ type FixApplier struct {
 	backupEnabled bool
 	backupDir     string
 	backups       map[string]string // original -> backup path
+	backupsMu     sync.Mutex
 }
 
 // NewFixApplier creates a new FixApplier.
@@ -450,6 +452,12 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 	return applied, nil
 }
 
+// sha1Sum returns the hex-encoded SHA1 hash of s.
+func sha1Sum(s string) string {
+	h := sha1.Sum([]byte(s))
+	return fmt.Sprintf("%x", h)
+}
+
 // backup creates a backup of the given file.
 func (a *FixApplier) backup(path string) error {
 	data, err := os.ReadFile(path)
@@ -457,7 +465,7 @@ func (a *FixApplier) backup(path string) error {
 		return ioErrorAt("read file for backup", err, path)
 	}
 
-	backupPath := filepath.Join(a.backupDir, filepath.Base(path)+".bak")
+	backupPath := filepath.Join(a.backupDir, fmt.Sprintf("%x.bak", sha1Sum(path)))
 	if err := os.MkdirAll(a.backupDir, 0750); err != nil {
 		return finding.NewIOError("create backup dir", err)
 	}
@@ -466,13 +474,20 @@ func (a *FixApplier) backup(path string) error {
 		return ioErrorAt("write backup", err, path)
 	}
 
+	a.backupsMu.Lock()
 	a.backups[path] = backupPath
+	a.backupsMu.Unlock()
 	return nil
 }
 
 // restore restores a file from its backup.
 func (a *FixApplier) restore(path string) error {
-	backupPath, ok := a.backups[path]
+	backupPath, ok := func() (string, bool) {
+		a.backupsMu.Lock()
+		defer a.backupsMu.Unlock()
+		p, exists := a.backups[path]
+		return p, exists
+	}()
 	if !ok {
 		return finding.NewInternalError(fmt.Sprintf("no backup for %s", path), nil)
 	}
