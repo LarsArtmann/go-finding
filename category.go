@@ -20,8 +20,8 @@ const (
 	CategoryTesting       Category = "testing"
 )
 
-// IsValid returns true if the category is a standard value.
-func (c Category) IsValid() bool {
+// IsStandard returns true if the category is one of the predefined standard constants.
+func (c Category) IsStandard() bool {
 	switch c {
 	case CategorySecurity, CategoryStyle, CategoryPerformance, CategoryCorrectness,
 		CategoryComplexity, CategoryDuplication, CategoryErrorHandling, CategoryMigration,
@@ -31,4 +31,11 @@ func (c Category) IsValid() bool {
 	}
 
 	return false
+}
+
+// IsValid returns true if the category is a non-empty string.
+// Custom categories (e.g. "go-vet") are valid. Use IsStandard to check
+// for predefined constants only.
+func (c Category) IsValid() bool {
+	return c != ""
 }

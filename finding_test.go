@@ -354,8 +354,12 @@ func TestCategory(t *testing.T) {
 		t.Error("security should be a valid category")
 	}
 
-	if Category("custom-category").IsValid() {
-		t.Error("custom-category should not be valid")
+	if !Category("custom-category").IsValid() {
+		t.Error("custom-category should be valid")
+	}
+
+	if Category("custom-category").IsStandard() {
+		t.Error("custom-category should not be standard")
 	}
 }
 
