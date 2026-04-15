@@ -27,3 +27,11 @@ func (s *Suppression) IsExpired() bool {
 
 	return time.Now().After(*s.ExpiresAt)
 }
+
+// IsValid returns true if the suppression has a kind and rule.
+func (s *Suppression) IsValid() bool {
+	if s == nil {
+		return false
+	}
+	return s.Kind != "" && s.Rule != ""
+}

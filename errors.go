@@ -21,6 +21,11 @@ const (
 	ErrCategoryInternal ErrorCategory = "internal"
 )
 
+// IsValid returns true if the error category is a non-empty string.
+func (c ErrorCategory) IsValid() bool {
+	return c != ""
+}
+
 // FindingError provides structured error information with context.
 type FindingError struct {
 	Category ErrorCategory // Category of error

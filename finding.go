@@ -40,6 +40,11 @@ type RelatedRef struct {
 	Position  Position `json:"position"`  // Quick access to related location
 }
 
+// IsValid returns true if the reference has a non-empty FindingID.
+func (r RelatedRef) IsValid() bool {
+	return r.FindingID != ""
+}
+
 // IsSuppressed returns true if this finding is suppressed.
 func (f Finding) IsSuppressed() bool {
 	return f.Suppression != nil && !f.Suppression.IsExpired()
