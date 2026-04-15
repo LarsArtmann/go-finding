@@ -116,10 +116,8 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	}
 
 	for p.iterations < p.config.MaxIterations {
-		select {
-		case <-ctx.Done():
+		if isContextDone(ctx) {
 			return result, ctx.Err()
-		default:
 		}
 
 		iter := Iteration{Number: p.iterations + 1}
@@ -234,9 +232,7 @@ func (p *Pipeline) addFindings(target []finding.Finding, findings []finding.Find
 	for _, f := range findings {
 		if !f.IsSuppressed() {
 			target = append(target, f)
-			if p.config.OnFinding != nil {
-				p.config.OnFinding(f)
-			}
+			p.notifyFinding(f)
 		}
 	}
 	return target

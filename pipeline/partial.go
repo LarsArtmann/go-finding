@@ -35,10 +35,25 @@ func (p *Pipeline) addFindingsToResult(result *PartialResult, findings []finding
 	for _, f := range findings {
 		if !f.IsSuppressed() {
 			result.Findings = append(result.Findings, f)
-			if p.config.OnFinding != nil {
-				p.config.OnFinding(f)
-			}
+			p.notifyFinding(f)
 		}
+	}
+}
+
+// notifyFinding calls OnFinding callback if configured.
+func (p *Pipeline) notifyFinding(f finding.Finding) {
+	if p.config.OnFinding != nil {
+		p.config.OnFinding(f)
+	}
+}
+
+// isContextDone returns true if the context is done (cancelled/timed out).
+func isContextDone(ctx context.Context) bool {
+	select {
+	case <-ctx.Done():
+		return true
+	default:
+		return false
 	}
 }
 
@@ -48,10 +63,8 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 	}
 
 	for _, d := range p.detectors {
-		select {
-		case <-ctx.Done():
+		if isContextDone(ctx) {
 			return result, ctx.Err()
-		default:
 		}
 
 		findings, err := d.Detect(ctx)

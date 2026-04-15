@@ -50,6 +50,11 @@ func (r Range) sameFileAs(other Range) bool {
 	return r.Start.File == other.Start.File
 }
 
+// hasLineInfo checks if both ranges have line information available.
+func (r Range) hasLineInfo(other Range) bool {
+	return r.Start.Line > 0 && other.Start.Line > 0
+}
+
 // containsSameFile checks if both positions are in the same file.
 func (r Range) containsSameFile(p Position) bool {
 	return r.Start.File == p.File && (r.End.File == "" || r.End.File == p.File)
@@ -124,7 +129,7 @@ func (r Range) Overlaps(other Range) bool {
 	}
 
 	// Check using line numbers if available
-	if r.Start.Line > 0 && other.Start.Line > 0 {
+	if r.hasLineInfo(other) {
 		return r.overlapsByLine(other)
 	}
 
@@ -178,7 +183,7 @@ func (r Range) Intersection(other Range) *Range {
 	}
 
 	// Use line-based intersection if available
-	if r.Start.Line > 0 && other.Start.Line > 0 {
+	if r.hasLineInfo(other) {
 		return r.intersectionByLine(other)
 	}
 

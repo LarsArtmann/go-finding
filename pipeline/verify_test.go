@@ -7,36 +7,34 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+func makeFinding(id, msg string) finding.Finding {
+	return finding.Finding{ID: id, Message: msg}
+}
+
+func assertDiffResult(t *testing.T, result *VerifyResult, resolved, remaining, newFindings int) {
+	t.Helper()
+	if result.Resolved != resolved {
+		t.Errorf("expected %d resolved, got %d", resolved, result.Resolved)
+	}
+	if len(result.Remaining) != remaining {
+		t.Errorf("expected %d remaining, got %d", remaining, len(result.Remaining))
+	}
+	if len(result.NewFindings) != newFindings {
+		t.Errorf("expected %d new findings, got %d", newFindings, len(result.NewFindings))
+	}
+}
+
 func TestDiffFindings_AllFixed(t *testing.T) {
 	t.Parallel()
-
-	original := []finding.Finding{
-		{ID: "a:rule:file.go:1", Message: "issue1"},
-		{ID: "b:rule:file.go:2", Message: "issue2"},
-	}
-
+	original := []finding.Finding{makeFinding("a:rule:file.go:1", "issue1"), makeFinding("b:rule:file.go:2", "issue2")}
 	result := DiffFindings(original, nil)
-
-	if result.Resolved != 2 {
-		t.Errorf("expected 2 resolved, got %d", result.Resolved)
-	}
-	if len(result.Remaining) != 0 {
-		t.Errorf("expected 0 remaining, got %d", len(result.Remaining))
-	}
-	if len(result.NewFindings) != 0 {
-		t.Errorf("expected 0 new findings, got %d", len(result.NewFindings))
-	}
+	assertDiffResult(t, result, 2, 0, 0)
 }
 
 func TestDiffFindings_NoneFixed(t *testing.T) {
 	t.Parallel()
-
-	original := []finding.Finding{
-		{ID: "a:rule:file.go:1", Message: "issue1"},
-	}
-
+	original := []finding.Finding{makeFinding("a:rule:file.go:1", "issue1")}
 	result := DiffFindings(original, original)
-
 	if result.Resolved != 0 {
 		t.Errorf("expected 0 resolved, got %d", result.Resolved)
 	}
@@ -47,17 +45,9 @@ func TestDiffFindings_NoneFixed(t *testing.T) {
 
 func TestDiffFindings_NewFindings(t *testing.T) {
 	t.Parallel()
-
-	original := []finding.Finding{
-		{ID: "a:rule:file.go:1", Message: "issue1"},
-	}
-	post := []finding.Finding{
-		{ID: "a:rule:file.go:1", Message: "issue1"},
-		{ID: "c:rule:file.go:3", Message: "new issue"},
-	}
-
+	original := []finding.Finding{makeFinding("a:rule:file.go:1", "issue1")}
+	post := []finding.Finding{makeFinding("a:rule:file.go:1", "issue1"), makeFinding("c:rule:file.go:3", "new issue")}
 	result := DiffFindings(original, post)
-
 	if result.Resolved != 0 {
 		t.Errorf("expected 0 resolved, got %d", result.Resolved)
 	}
@@ -71,18 +61,9 @@ func TestDiffFindings_NewFindings(t *testing.T) {
 
 func TestDiffFindings_Mixed(t *testing.T) {
 	t.Parallel()
-
-	original := []finding.Finding{
-		{ID: "a:rule:file.go:1", Message: "fixed"},
-		{ID: "b:rule:file.go:2", Message: "remaining"},
-	}
-	post := []finding.Finding{
-		{ID: "b:rule:file.go:2", Message: "remaining"},
-		{ID: "c:rule:file.go:3", Message: "new"},
-	}
-
+	original := []finding.Finding{makeFinding("a:rule:file.go:1", "fixed"), makeFinding("b:rule:file.go:2", "remaining")}
+	post := []finding.Finding{makeFinding("b:rule:file.go:2", "remaining"), makeFinding("c:rule:file.go:3", "new")}
 	result := DiffFindings(original, post)
-
 	if result.Resolved != 1 {
 		t.Errorf("expected 1 resolved, got %d", result.Resolved)
 	}
@@ -99,13 +80,8 @@ func TestDiffFindings_Mixed(t *testing.T) {
 
 func TestDiffFindings_EmptyOriginal(t *testing.T) {
 	t.Parallel()
-
-	post := []finding.Finding{
-		{ID: "a:rule:file.go:1", Message: "issue"},
-	}
-
+	post := []finding.Finding{makeFinding("a:rule:file.go:1", "issue")}
 	result := DiffFindings(nil, post)
-
 	if result.Resolved != 0 {
 		t.Errorf("expected 0 resolved, got %d", result.Resolved)
 	}
@@ -116,44 +92,26 @@ func TestDiffFindings_EmptyOriginal(t *testing.T) {
 
 func TestDiffFindings_BothEmpty(t *testing.T) {
 	t.Parallel()
-
 	result := DiffFindings(nil, nil)
-
-	if result.Resolved != 0 {
-		t.Errorf("expected 0 resolved, got %d", result.Resolved)
-	}
-	if len(result.Remaining) != 0 {
-		t.Errorf("expected 0 remaining, got %d", len(result.Remaining))
-	}
-	if len(result.NewFindings) != 0 {
-		t.Errorf("expected 0 new findings, got %d", len(result.NewFindings))
-	}
+	assertDiffResult(t, result, 0, 0, 0)
 }
 
 func TestVerifier_Verify(t *testing.T) {
 	t.Parallel()
-
 	callCount := 0
 	detector := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
 		callCount++
 		if callCount <= 1 {
-			return []finding.Finding{
-				{ID: "a:rule:f.go:1", Message: "issue"},
-			}, nil
+			return []finding.Finding{makeFinding("a:rule:f.go:1", "issue")}, nil
 		}
 		return nil, nil
 	})
-
-	// First call to get original findings
 	original, _ := detector.Detect(context.Background())
-
-	// Second call (inside Verify) returns empty — all fixed
 	v := NewVerifier([]Detector{detector})
 	result, err := v.Verify(context.Background(), original)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-
 	if result.Resolved != 1 {
 		t.Errorf("expected 1 resolved, got %d", result.Resolved)
 	}
