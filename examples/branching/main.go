@@ -54,16 +54,24 @@ func (d *BranchingDetector) Detect(ctx context.Context) ([]finding.Finding, erro
 	return findings, nil
 }
 
+func newBranchingIssue(dir string, line int, message, rule, before, after string) branchingIssue {
+	return branchingIssue{
+		file:    filepath.Join(dir, "example.go"),
+		line:    line,
+		message: message,
+		rule:    rule,
+		before:  before,
+		after:   after,
+	}
+}
+
 func detectBranchingIssues(dir string) []branchingIssue {
 	var issues []branchingIssue
 
-	// Example: detect if-else chains that could be switch statements
-	issues = append(issues, branchingIssue{
-		file:    filepath.Join(dir, "example.go"),
-		line:    1,
-		message: "if-else chain could be replaced with a switch statement",
-		rule:    "if-else-to-switch",
-		before: `if x == 1 {
+	issues = append(issues, newBranchingIssue(dir, 1,
+		"if-else chain could be replaced with a switch statement",
+		"if-else-to-switch",
+		`if x == 1 {
 	foo()
 } else if x == 2 {
 	bar()
@@ -72,7 +80,7 @@ func detectBranchingIssues(dir string) []branchingIssue {
 } else {
 	qux()
 }`,
-		after: `switch x {
+		`switch x {
 case 1:
 	foo()
 case 2:
@@ -82,15 +90,12 @@ case 3:
 default:
 	qux()
 }`,
-	})
+	))
 
-	// Example: detect nested conditionals that could use early returns
-	issues = append(issues, branchingIssue{
-		file:    filepath.Join(dir, "example.go"),
-		line:    20,
-		message: "nested conditional can be simplified with early return",
-		rule:    "nested-early-return",
-		before: `func process(data *Data) error {
+	issues = append(issues, newBranchingIssue(dir, 20,
+		"nested conditional can be simplified with early return",
+		"nested-early-return",
+		`func process(data *Data) error {
 	if data != nil {
 		if data.IsValid() {
 			if data.Size > 0 {
@@ -102,7 +107,7 @@ default:
 	}
 	return fmt.Errorf("nil data")
 }`,
-		after: `func process(data *Data) error {
+		`func process(data *Data) error {
 	if data == nil {
 		return fmt.Errorf("nil data")
 	}
@@ -114,7 +119,7 @@ default:
 	}
 	return doProcess(data)
 }`,
-	})
+	))
 
 	return issues
 }

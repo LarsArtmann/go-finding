@@ -172,14 +172,16 @@ func ExampleNewReport() {
 
 func ExampleReport_ToSARIF() {
 	report := finding.NewReport(finding.ToolInfo{Name: "mytool", Version: "1.0.0"})
-	report.AddFinding(finding.Finding{
+	pos := finding.Position{File: "main.go", Line: 1, Column: 1}
+	f := finding.Finding{
+		Severity: finding.SeverityWarning,
 		ID:       "mytool:R1:main.go:1:1",
 		Rule:     "R1",
 		ToolName: "mytool",
 		Message:  "test finding",
-		Severity: finding.SeverityWarning,
-		Position: finding.Position{File: "main.go", Line: 1, Column: 1},
-	})
+		Position: pos,
+	}
+	report.AddFinding(f)
 
 	data, err := report.ToSARIF()
 	if err != nil {

@@ -198,9 +198,11 @@ func TestRelatedRefIsValid(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if got := tt.r.IsValid(); got != tt.want {
+			got := tt.r.IsValid()
+			if got != tt.want {
 				t.Errorf("IsValid() = %v, want %v", got, tt.want)
 			}
 		})

@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/examples/detectorutil"
 )
 
 type staticcheckDiagnostic struct {
@@ -44,18 +44,10 @@ func (d *StaticcheckDetector) Name() string {
 }
 
 func (d *StaticcheckDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
-	cmd := exec.CommandContext(ctx, "staticcheck", "-f", "json", "./...")
-	cmd.Dir = d.dir
-
-	output, err := cmd.Output()
+	output, err := detectorutil.RunTool(ctx, d.dir, "staticcheck", "-f", "json", "./...")
 	if err != nil {
-		if _, ok := err.(*exec.ExitError); ok {
-			// staticcheck exits non-zero when issues found
-		} else {
-			return nil, fmt.Errorf("staticcheck: %w", err)
-		}
+		return nil, err
 	}
-
 	return parseStaticcheckOutput(output)
 }
 

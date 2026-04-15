@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
-	"time"
 )
 
 // unmarshalSARIF unmarshals SARIF data and fails the test on error.
@@ -97,10 +96,7 @@ func TestToSARIF(t *testing.T) {
 func TestToSARIFFiltered(t *testing.T) {
 	t.Parallel()
 
-	suppression := &Suppression{
-		Reason:    "test",
-		ExpiresAt: func() *time.Time { t := time.Now().Add(1 * time.Hour); return &t }(),
-	}
+	suppression := expiringSuppression(t, "test")
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -140,10 +136,7 @@ func TestToSARIFFiltered(t *testing.T) {
 func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 	t.Parallel()
 
-	suppression := &Suppression{
-		Reason:    "won't fix",
-		ExpiresAt: func() *time.Time { t := time.Now().Add(1 * time.Hour); return &t }(),
-	}
+	suppression := expiringSuppression(t, "won't fix")
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},

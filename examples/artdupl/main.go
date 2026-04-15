@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/examples/detectorutil"
 )
 
 type duplClone struct {
@@ -39,18 +39,10 @@ func (d *ArtduplDetector) Name() string {
 }
 
 func (d *ArtduplDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
-	cmd := exec.CommandContext(ctx, "art-dupl", "-json", "-t", "50", "./...")
-	cmd.Dir = d.dir
-
-	output, err := cmd.Output()
+	output, err := detectorutil.RunTool(ctx, d.dir, "art-dupl", "-json", "-t", "50", "./...")
 	if err != nil {
-		if _, ok := err.(*exec.ExitError); ok {
-			// art-dupl exits non-zero when duplicates found
-		} else {
-			return nil, fmt.Errorf("art-dupl: %w", err)
-		}
+		return nil, err
 	}
-
 	return parseArtduplOutput(output)
 }
 

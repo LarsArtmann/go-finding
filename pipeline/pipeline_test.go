@@ -35,6 +35,15 @@ func (m *mockDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 	return m.findings, m.err
 }
 
+func newMockDetector(name, toolName string, findings ...finding.Finding) *mockDetector {
+	if len(findings) == 0 {
+		findings = []finding.Finding{
+			{ID: "1", Rule: "r1", ToolName: toolName, Message: "m", Severity: finding.SeverityError},
+		}
+	}
+	return &mockDetector{name: name, findings: findings}
+}
+
 // TestNew tests pipeline creation.
 func TestNew(t *testing.T) {
 	config := DefaultConfig()

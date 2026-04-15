@@ -122,12 +122,7 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 		GracefulDegradation: true,
 	}
 
-	goodDetector := &mockDetector{
-		name: "good",
-		findings: []finding.Finding{
-			{ID: "1", Rule: "r1", ToolName: "good", Message: "m", Severity: finding.SeverityError},
-		},
-	}
+	goodDetector := newMockDetector("good", "good")
 	badDetector := &mockDetector{
 		name: "bad",
 		err:  os.ErrPermission,
