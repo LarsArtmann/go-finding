@@ -261,7 +261,9 @@ func (p *Pipeline) detect(ctx context.Context) ([]finding.Finding, error) {
 		if err != nil {
 			return nil, err
 		}
-		return result.Findings, FormatPartialErrors(result.Errors)
+		// Partial detector errors are non-fatal with GracefulDegradation.
+		// Attach them to PipelineResult if callers need them.
+		return result.Findings, nil
 	}
 	if p.config.ParallelDetectors {
 		return p.detectParallel(ctx)
