@@ -183,14 +183,6 @@ func extendRange(r1, r2 finding.Range) finding.Range {
 	return result
 }
 
-// HasConflicts returns true if any of the fixes conflict with each other.
-func HasConflicts(fixes []finding.Finding) bool {
-	detector := NewConflictDetector()
-	_, conflicts := detector.DetectConflicts(fixes)
-
-	return len(conflicts) > 0
-}
-
 // FilterConflictingFixes returns only non-conflicting fixes.
 func FilterConflictingFixes(fixes []finding.Finding) []finding.Finding {
 	detector := NewConflictDetector()
@@ -199,28 +191,6 @@ func FilterConflictingFixes(fixes []finding.Finding) []finding.Finding {
 	var result []finding.Finding
 	for _, g := range groups {
 		result = append(result, g.Fixes...)
-	}
-
-	return result
-}
-
-// GroupFixesByConflict groups fixes and returns them in order of application.
-// Each inner slice can be applied safely together.
-func GroupFixesByConflict(fixes []finding.Finding) [][]finding.Finding {
-	detector := NewConflictDetector()
-	groups, _ := detector.DetectConflicts(fixes)
-
-	// Sort groups by file and position for deterministic ordering
-	sort.Slice(groups, func(i, j int) bool {
-		if groups[i].File != groups[j].File {
-			return groups[i].File < groups[j].File
-		}
-		return positionLess(groups[i].Bounds.Start, groups[j].Bounds.Start)
-	})
-
-	var result [][]finding.Finding
-	for _, g := range groups {
-		result = append(result, g.Fixes)
 	}
 
 	return result

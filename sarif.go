@@ -4,11 +4,6 @@ import (
 	"encoding/json"
 )
 
-// SARIF confidence constant.
-const (
-	ConfidenceScale = 100.0 // Confidence values are expressed as percentage (0-100)
-)
-
 // SARIF types for Report generation.
 // These are simplified representations of SARIF 2.1.0.
 
