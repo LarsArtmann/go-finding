@@ -165,7 +165,7 @@ Successfully completed Phase 2 of the go-finding library with a fully functional
 20. **Add watch mode** - File system monitoring
 21. **Write comprehensive docs** - Usage guide, architecture
 22. **Add property-based tests** - For core operations
-23. **Create IDE plugin stubs** - VS Code extension
+23. ~~**Create IDE plugin stubs** - VS Code extension~~ (**REMOVED - not VS Code**)
 24. **Evaluate go-sarif library** - Compare functionality
 25. **Plan v1.0 release** - Stabilize API, write changelog
 

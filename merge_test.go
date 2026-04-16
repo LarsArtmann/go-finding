@@ -9,9 +9,7 @@ func TestMerge_Empty(t *testing.T) {
 	if merged == nil {
 		t.Fatal("Merge(nil) = nil, want non-nil report")
 	}
-	if len(merged.Findings) != 0 {
-		t.Errorf("Merge(nil) findings = %d, want 0", len(merged.Findings))
-	}
+	assertFindingsLen(t, "Merge(nil) findings", len(merged.Findings), 0)
 }
 
 func TestMerge_SingleReport(t *testing.T) {
@@ -21,12 +19,8 @@ func TestMerge_SingleReport(t *testing.T) {
 	r.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go"}})
 
 	merged := Merge([]*Report{r})
-	if merged.Tool.Name != "tool1" {
-		t.Errorf("single report merge tool = %q, want %q", merged.Tool.Name, "tool1")
-	}
-	if len(merged.Findings) != 1 {
-		t.Errorf("single report merge findings = %d, want 1", len(merged.Findings))
-	}
+	assertReportFieldStr(t, merged.Tool.Name, "tool1", "single report merge tool")
+	assertFindingsLen(t, "single report merge findings", len(merged.Findings), 1)
 }
 
 func TestMerge_MultipleReports(t *testing.T) {
@@ -41,15 +35,9 @@ func TestMerge_MultipleReports(t *testing.T) {
 	merged := Merge([]*Report{r1, r2})
 	merged.ComputeSummary()
 
-	if merged.Tool.Name != "merged" {
-		t.Errorf("merged tool name = %q, want %q", merged.Tool.Name, "merged")
-	}
-	if len(merged.Findings) != 2 {
-		t.Errorf("merged findings = %d, want 2", len(merged.Findings))
-	}
-	if merged.Summary.FilesAffected != 2 {
-		t.Errorf("merged files = %d, want 2", merged.Summary.FilesAffected)
-	}
+	assertReportFieldStr(t, merged.Tool.Name, "merged", "merged tool name")
+	assertFindingsLen(t, "merged findings", len(merged.Findings), 2)
+	assertReportFieldInt(t, merged.Summary.FilesAffected, 2, "merged files")
 }
 
 func TestMerge_WithDeduplication(t *testing.T) {
@@ -64,9 +52,7 @@ func TestMerge_WithDeduplication(t *testing.T) {
 	merged := Merge([]*Report{r1, r2}, WithDeduplication(true))
 	merged.ComputeSummary()
 
-	if len(merged.Findings) != 1 {
-		t.Errorf("deduplicated merge = %d, want 1", len(merged.Findings))
-	}
+	assertFindingsLen(t, "deduplicated merge", len(merged.Findings), 1)
 }
 
 func TestMerge_WithoutDeduplication(t *testing.T) {
@@ -81,9 +67,7 @@ func TestMerge_WithoutDeduplication(t *testing.T) {
 	merged := Merge([]*Report{r1, r2}, WithDeduplication(false))
 	merged.ComputeSummary()
 
-	if len(merged.Findings) != 2 {
-		t.Errorf("non-deduplicated merge = %d, want 2", len(merged.Findings))
-	}
+	assertFindingsLen(t, "non-deduplicated merge", len(merged.Findings), 2)
 }
 
 func TestMerge_DeduplicateByPosition(t *testing.T) {
@@ -98,9 +82,7 @@ func TestMerge_DeduplicateByPosition(t *testing.T) {
 	merged := Merge([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByPosition))
 	merged.ComputeSummary()
 
-	if len(merged.Findings) != 1 {
-		t.Errorf("dedup by position = %d, want 1", len(merged.Findings))
-	}
+	assertFindingsLen(t, "dedup by position", len(merged.Findings), 1)
 }
 
 func TestMerge_DeduplicateByRule(t *testing.T) {
@@ -115,9 +97,7 @@ func TestMerge_DeduplicateByRule(t *testing.T) {
 	merged := Merge([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByRule))
 	merged.ComputeSummary()
 
-	if len(merged.Findings) != 1 {
-		t.Errorf("dedup by rule = %d, want 1", len(merged.Findings))
-	}
+	assertFindingsLen(t, "dedup by rule", len(merged.Findings), 1)
 }
 
 func TestDedupKey(t *testing.T) {
