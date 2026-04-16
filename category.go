@@ -39,3 +39,8 @@ func (c Category) IsStandard() bool {
 func (c Category) IsValid() bool {
 	return c != ""
 }
+
+// String returns the string representation of the category.
+func (c Category) String() string {
+	return string(c)
+}

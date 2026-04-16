@@ -31,6 +31,11 @@ func (s Severity) LessThan(other Severity) bool {
 	return severityRank(s) < severityRank(other)
 }
 
+// String returns the string representation of the severity.
+func (s Severity) String() string {
+	return string(s)
+}
+
 func severityRank(s Severity) int {
 	switch s {
 	case SeverityInfo:

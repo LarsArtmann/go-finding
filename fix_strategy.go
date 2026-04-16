@@ -33,3 +33,8 @@ func (f FixStrategy) CanAutoApply() bool {
 func (f FixStrategy) NeedsAI() bool {
 	return f == FixStrategyAI
 }
+
+// String returns the string representation of the fix strategy.
+func (f FixStrategy) String() string {
+	return string(f)
+}
