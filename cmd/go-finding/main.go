@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -89,27 +88,11 @@ func main() {
 		}
 	}
 
-	detectors := buildDetectors(dir)
-	if len(detectors) == 0 {
-		fmt.Fprintln(os.Stderr, "No detectors available. Install tools or provide a config file.")
-		os.Exit(1)
-	}
+	fmt.Fprintf(os.Stderr, "go-finding CLI v0.1.0\n")
+	fmt.Fprintf(os.Stderr, "Config: dir=%s format=%s severity=%s\n", dir, format, sev)
 
-	p := pipeline.New(cfg, dir, detectors...)
-	result, err := p.Run(context.Background())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Pipeline error: %v\n", err)
-		os.Exit(1)
-	}
-
-	report := finding.NewReport(finding.ToolInfo{Name: "go-finding", Version: "0.1.0"})
-	report.Findings = collectFindings(result)
-	report.ComputeSummary()
-
-	if err := outputResults(report, format, sev); err != nil {
-		fmt.Fprintf(os.Stderr, "Output error: %v\n", err)
-		os.Exit(1)
-	}
+	_ = cfg
+	fmt.Fprintln(os.Stderr, "No detectors configured yet. See examples/ for detector implementations.")
 }
 
 func parseSeverity(s string) (finding.Severity, error) {
@@ -125,79 +108,6 @@ func parseSeverity(s string) (finding.Severity, error) {
 	default:
 		return finding.SeverityWarning, fmt.Errorf("unknown severity %q (use: info, warning, error, critical)", s)
 	}
-}
-
-type detectorBuilder func(dir string) pipeline.Detector
-
-var detectorBuilders []detectorBuilder
-
-func registerDetector(b detectorBuilder) {
-	detectorBuilders = append(detectorBuilders, b)
-}
-
-func buildDetectors(dir string) []pipeline.Detector {
-	var detectors []pipeline.Detector
-	for _, builder := range detectorBuilders {
-		if d := builder(dir); d != nil {
-			detectors = append(detectors, d)
-		}
-	}
-	return detectors
-}
-
-func collectFindings(result *pipeline.PipelineResult) []finding.Finding {
-	seen := make(map[string]bool)
-	var all []finding.Finding
-	for _, iter := range result.Iterations {
-		for _, f := range iter.Findings() {
-			if !seen[f.ID] {
-				seen[f.ID] = true
-				all = append(all, f)
-			}
-		}
-	}
-	return all
-}
-
-func outputResults(report *finding.Report, format string, minSev finding.Severity) error {
-	switch format {
-	case "json":
-		data, err := json.MarshalIndent(report, "", "  ")
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(data))
-	case "sarif":
-		data, err := report.ToSARIFFiltered(minSev)
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(data))
-	case "text":
-		outputText(report, minSev)
-	default:
-		return fmt.Errorf("unknown format %q (use: text, json, sarif)", format)
-	}
-	return nil
-}
-
-func outputText(report *finding.Report, minSev finding.Severity) {
-	filtered := finding.Filter(report.Findings, finding.BySeverityAtLeast(minSev))
-	if len(filtered) == 0 {
-		fmt.Println("No issues found.")
-		return
-	}
-
-	fmt.Printf("Found %d issues:\n\n", len(filtered))
-	for _, f := range filtered {
-		loc := f.Position.String()
-		fmt.Printf("  %s: %s [%s] (%s)\n", loc, f.Message, f.Rule, f.Severity)
-		if f.Suggestion != "" {
-			fmt.Printf("    Suggestion: %s\n", f.Suggestion)
-		}
-	}
-
-	fmt.Printf("\nSummary: %d total, %d files affected\n", len(filtered), report.Summary.FilesAffected)
 }
 
 func loadConfig(path string) (pipeline.Config, error) {
