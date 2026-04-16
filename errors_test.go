@@ -222,3 +222,40 @@ func TestErrorCategoryConstructors(t *testing.T) {
 		})
 	}
 }
+
+func TestSentinelErrors(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		err    *FindingError
+		target error
+		want   bool
+	}{
+		{"validation matches", NewValidationError("test", nil), ErrValidation, true},
+		{"io matches", NewIOError("test", nil), ErrIO, true},
+		{"parse matches", NewParseError("test", nil), ErrParse, true},
+		{"conflict matches", NewConflictError("test", nil), ErrConflict, true},
+		{"internal matches", NewInternalError("test", nil), ErrInternal, true},
+		{"validation wrong sentinel", NewValidationError("test", nil), ErrIO, false},
+		{"io wrong sentinel", NewIOError("test", nil), ErrParse, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := errors.Is(tt.err, tt.target); got != tt.want {
+				t.Errorf("errors.Is(%v, %v) = %v, want %v", tt.err, tt.target, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSentinelErrors_Wrapped(t *testing.T) {
+	t.Parallel()
+
+	err := fmt.Errorf("wrapped: %w", NewValidationError("test", nil))
+	if !errors.Is(err, ErrValidation) {
+		t.Error("expected errors.Is to find sentinel through wrapping")
+	}
+}

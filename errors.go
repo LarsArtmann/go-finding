@@ -5,6 +5,15 @@ import (
 	"fmt"
 )
 
+// Sentinel errors for use with errors.Is.
+var (
+	ErrValidation = errors.New("finding: validation error")
+	ErrIO         = errors.New("finding: I/O error")
+	ErrParse      = errors.New("finding: parse error")
+	ErrConflict   = errors.New("finding: conflict error")
+	ErrInternal   = errors.New("finding: internal error")
+)
+
 // ErrorCategory categorizes errors for programmatic handling.
 type ErrorCategory string
 
@@ -48,6 +57,24 @@ func (e *FindingError) Error() string {
 // Unwrap returns the underlying cause for error inspection.
 func (e *FindingError) Unwrap() error {
 	return e.Cause
+}
+
+// Is supports errors.Is by matching sentinel errors.
+func (e *FindingError) Is(target error) bool {
+	switch e.Category {
+	case ErrCategoryValidation:
+		return target == ErrValidation
+	case ErrCategoryIO:
+		return target == ErrIO
+	case ErrCategoryParse:
+		return target == ErrParse
+	case ErrCategoryConflict:
+		return target == ErrConflict
+	case ErrCategoryInternal:
+		return target == ErrInternal
+	default:
+		return false
+	}
 }
 
 // IsCategory returns true if the error matches the given category.
