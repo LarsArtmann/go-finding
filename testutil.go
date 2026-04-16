@@ -54,3 +54,12 @@ func newTestReports(specs []struct {
 	}
 	return reports
 }
+
+// sevFromInt maps an integer to a Severity (0=info, 1=warning, 2=error, 3=critical).
+func sevFromInt(i int) Severity {
+	sevs := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
+	if i < 0 || i >= len(sevs) {
+		return SeverityInfo
+	}
+	return sevs[i]
+}

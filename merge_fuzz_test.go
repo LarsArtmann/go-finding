@@ -83,14 +83,6 @@ func randomSeedFile(rng *rand.Rand) string {
 	return files[rng.Intn(len(files))]
 }
 
-func sevFromInt(i int) Severity {
-	sevs := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
-	if i < 0 || i >= len(sevs) {
-		return SeverityInfo
-	}
-	return sevs[i]
-}
-
 func randomSeverity(rng *rand.Rand) Severity {
 	sevs := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
 	return sevs[rng.Intn(len(sevs))]
