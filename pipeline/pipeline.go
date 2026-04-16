@@ -429,7 +429,7 @@ func (p *Pipeline) applyDirectFixes(ctx context.Context, fixes []finding.Finding
 	}
 
 	if p.metrics != nil {
-		for i := 0; i < applied; i++ {
+		for range applied {
 			p.metrics.RecordFix()
 		}
 	}

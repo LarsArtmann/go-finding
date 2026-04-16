@@ -57,7 +57,7 @@ func parseStaticcheckOutput(data []byte) ([]finding.Finding, error) {
 	}
 
 	var diagnostics []staticcheckDiagnostic
-	for _, line := range strings.Split(string(data), "\n") {
+	for line := range strings.SplitSeq(string(data), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue

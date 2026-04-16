@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"maps"
 	"sync"
 	"time"
 )
@@ -91,19 +92,13 @@ func (m *Metrics) Snapshot() MetricsSnapshot {
 	defer m.mu.Unlock()
 
 	stages := make(map[string]time.Duration, len(m.StageDurations))
-	for k, v := range m.StageDurations {
-		stages[k] = v
-	}
+	maps.Copy(stages, m.StageDurations)
 
 	detectors := make(map[string]time.Duration, len(m.DetectorTimes))
-	for k, v := range m.DetectorTimes {
-		detectors[k] = v
-	}
+	maps.Copy(detectors, m.DetectorTimes)
 
 	findings := make(map[string]int, len(m.FindingsFound))
-	for k, v := range m.FindingsFound {
-		findings[k] = v
-	}
+	maps.Copy(findings, m.FindingsFound)
 
 	return MetricsSnapshot{
 		StageDurations: stages,
