@@ -116,7 +116,7 @@ func mapStaticcheckCategory(code string) finding.Category {
 	case 'S': // style, simplicity
 		return finding.CategoryStyle
 	case 'U': // unused
-		return finding.CategoryCorrectness
+		return finding.CategoryUnused
 	case 'Q': // correctness
 		return finding.CategoryCorrectness
 	case 'A': // performance
