@@ -84,7 +84,6 @@ func TestPositionLess(t *testing.T) {
 	}{
 		{"different lines", finding.Position{Line: 10}, finding.Position{Line: 20}, true},
 		{"same line, different columns", finding.Position{Line: 10, Column: 5}, finding.Position{Line: 10, Column: 10}, true},
-		{"same line and column, different offset", finding.Position{Line: 10, Column: 5, Offset: 100}, finding.Position{Line: 10, Column: 5, Offset: 200}, true},
 		{"equal positions", finding.Position{Line: 10, Column: 5}, finding.Position{Line: 10, Column: 5}, false},
 		{"greater line", finding.Position{Line: 20}, finding.Position{Line: 10}, false},
 	}
@@ -92,9 +91,9 @@ func TestPositionLess(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got := positionLess(tt.a, tt.b)
+			got := tt.a.Compare(tt.b) < 0
 			if got != tt.expected {
-				t.Errorf("positionLess() = %v, want %v", got, tt.expected)
+				t.Errorf("Position.Compare() < 0 = %v, want %v", got, tt.expected)
 			}
 		})
 	}

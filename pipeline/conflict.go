@@ -69,7 +69,7 @@ func (c *ConflictDetector) detectConflictsInFile(file string, fixes []finding.Fi
 	sorted := make([]finding.Finding, len(fixes))
 	copy(sorted, fixes)
 	sort.Slice(sorted, func(i, j int) bool {
-		return positionLess(sorted[i].Position, sorted[j].Position)
+		return sorted[i].Position.Compare(sorted[j].Position) < 0
 	})
 
 	var groups []FixGroup
@@ -132,19 +132,6 @@ func (c *ConflictDetector) getFindingRange(f finding.Finding) finding.Range {
 		Start: f.Position,
 		End:   finding.Position{}, // Empty end means single position
 	}
-}
-
-// positionLess compares two positions for sorting.
-func positionLess(a, b finding.Position) bool {
-	if a.Line != b.Line {
-		return a.Line < b.Line
-	}
-
-	if a.Column != b.Column {
-		return a.Column < b.Column
-	}
-
-	return a.Offset < b.Offset
 }
 
 // extendRange returns a range that covers both input ranges.
