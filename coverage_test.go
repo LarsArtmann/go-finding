@@ -249,10 +249,11 @@ func TestSuppressionIsExpired(t *testing.T) {
 		{"nil suppression", nil, false},
 	}
 
+	now := time.Now()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if got := tt.s.IsExpired(); got != tt.want {
+			if got := tt.s.IsExpired(now); got != tt.want {
 				t.Errorf("IsExpired() = %v, want %v", got, tt.want)
 			}
 		})

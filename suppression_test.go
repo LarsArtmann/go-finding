@@ -8,8 +8,9 @@ import (
 func TestSuppression_IsExpired_NilSuppression(t *testing.T) {
 	t.Parallel()
 
+	now := time.Now()
 	var s *Suppression
-	if s.IsExpired() {
+	if s.IsExpired(now) {
 		t.Error("nil suppression should not be expired")
 	}
 }
@@ -17,8 +18,9 @@ func TestSuppression_IsExpired_NilSuppression(t *testing.T) {
 func TestSuppression_IsExpired_NilExpiresAt(t *testing.T) {
 	t.Parallel()
 
+	now := time.Now()
 	s := &Suppression{Kind: SuppressionInSource, Reason: "intentional"}
-	if s.IsExpired() {
+	if s.IsExpired(now) {
 		t.Error("suppression without ExpiresAt should not be expired")
 	}
 }
@@ -26,9 +28,10 @@ func TestSuppression_IsExpired_NilExpiresAt(t *testing.T) {
 func TestSuppression_IsExpired_PastTime(t *testing.T) {
 	t.Parallel()
 
-	past := time.Now().Add(-1 * time.Hour)
+	now := time.Now()
+	past := now.Add(-1 * time.Hour)
 	s := &Suppression{Kind: SuppressionInSource, ExpiresAt: &past}
-	if !s.IsExpired() {
+	if !s.IsExpired(now) {
 		t.Error("suppression with past expiry should be expired")
 	}
 }
@@ -36,9 +39,10 @@ func TestSuppression_IsExpired_PastTime(t *testing.T) {
 func TestSuppression_IsExpired_FutureTime(t *testing.T) {
 	t.Parallel()
 
-	future := time.Now().Add(24 * time.Hour)
+	now := time.Now()
+	future := now.Add(24 * time.Hour)
 	s := &Suppression{Kind: SuppressionInSource, ExpiresAt: &future}
-	if s.IsExpired() {
+	if s.IsExpired(now) {
 		t.Error("suppression with future expiry should not be expired")
 	}
 }

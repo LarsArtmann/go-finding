@@ -1,6 +1,9 @@
 package finding
 
-import "maps"
+import (
+	"maps"
+	"time"
+)
 
 // Finding represents a single issue detected by a static analysis tool.
 type Finding struct {
@@ -49,7 +52,7 @@ func (r RelatedRef) IsValid() bool {
 
 // IsSuppressed returns true if this finding is suppressed.
 func (f Finding) IsSuppressed() bool {
-	return f.Suppression != nil && !f.Suppression.IsExpired()
+	return f.Suppression != nil && !f.Suppression.IsExpired(time.Now())
 }
 
 // HasFix returns true if this finding has a fix available.

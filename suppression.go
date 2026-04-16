@@ -19,13 +19,13 @@ type Suppression struct {
 	ExpiresAt *time.Time      `json:"expiresAt,omitempty"` // Optional expiry
 }
 
-// IsExpired returns true if the suppression has expired.
-func (s *Suppression) IsExpired() bool {
+// IsExpired returns true if the suppression has expired relative to now.
+func (s *Suppression) IsExpired(now time.Time) bool {
 	if s == nil || s.ExpiresAt == nil {
 		return false
 	}
 
-	return time.Now().After(*s.ExpiresAt)
+	return now.After(*s.ExpiresAt)
 }
 
 // IsValid returns true if the suppression has a kind and rule.
