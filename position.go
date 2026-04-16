@@ -1,6 +1,9 @@
 package finding
 
-import "fmt"
+import (
+	"cmp"
+	"fmt"
+)
 
 // Position represents a location in source code.
 // Line and Column are 1-based; 0 means not set.
@@ -22,6 +25,18 @@ func (p Position) Equal(other Position) bool {
 		p.Line == other.Line &&
 		p.Column == other.Column &&
 		p.Offset == other.Offset
+}
+
+// Compare returns -1, 0, or 1 depending on whether p is less than, equal to,
+// or greater than other. Positions are ordered by file, then line, then column.
+func (p Position) Compare(other Position) int {
+	if c := cmp.Compare(p.File, other.File); c != 0 {
+		return c
+	}
+	if c := cmp.Compare(p.Line, other.Line); c != 0 {
+		return c
+	}
+	return cmp.Compare(p.Column, other.Column)
 }
 
 // String returns a human-readable representation.
@@ -56,6 +71,15 @@ func (r Range) HasEnd() bool {
 // Equal reports whether two ranges are identical.
 func (r Range) Equal(other Range) bool {
 	return r.Start.Equal(other.Start) && r.End.Equal(other.End)
+}
+
+// Compare returns -1, 0, or 1 depending on whether r is less than, equal to,
+// or greater than other. Ranges are ordered by start position, then end position.
+func (r Range) Compare(other Range) int {
+	if c := r.Start.Compare(other.Start); c != 0 {
+		return c
+	}
+	return r.End.Compare(other.End)
 }
 
 // sameFileAs checks if this range is in the same file as another range.
