@@ -1,5 +1,7 @@
 package finding
 
+import "maps"
+
 // Finding represents a single issue detected by a static analysis tool.
 type Finding struct {
 	// Identity
@@ -64,4 +66,57 @@ func (f Finding) HasSuggestion() bool {
 func (f Finding) IsValid() bool {
 	return f.ID != "" && f.Rule != "" && f.ToolName != "" &&
 		f.Message != "" && f.Position.IsValid() && f.Severity.IsValid()
+}
+
+// Equal reports whether two findings are identical, including all nested fields.
+func (f Finding) Equal(other Finding) bool {
+	if f.ID != other.ID || f.Rule != other.Rule || f.ToolName != other.ToolName ||
+		f.Message != other.Message || f.Severity != other.Severity ||
+		!f.Position.Equal(other.Position) ||
+		f.Category != other.Category || f.Tag != other.Tag ||
+		f.FixStrategy != other.FixStrategy ||
+		f.Suggestion != other.Suggestion ||
+		f.BeforeCode != other.BeforeCode || f.AfterCode != other.AfterCode ||
+		f.Snippet != other.Snippet || f.Confidence != other.Confidence {
+		return false
+	}
+
+	if !f.equalRange(other) {
+		return false
+	}
+
+	if len(f.Related) != len(other.Related) {
+		return false
+	}
+	for i, r := range f.Related {
+		if r != other.Related[i] {
+			return false
+		}
+	}
+
+	if !f.equalSuppression(other) {
+		return false
+	}
+
+	return maps.Equal(f.Metadata, other.Metadata)
+}
+
+func (f Finding) equalRange(other Finding) bool {
+	if f.Range == nil && other.Range == nil {
+		return true
+	}
+	if f.Range == nil || other.Range == nil {
+		return false
+	}
+	return f.Range.Equal(*other.Range)
+}
+
+func (f Finding) equalSuppression(other Finding) bool {
+	if f.Suppression == nil && other.Suppression == nil {
+		return true
+	}
+	if f.Suppression == nil || other.Suppression == nil {
+		return false
+	}
+	return *f.Suppression == *other.Suppression
 }

@@ -16,6 +16,14 @@ func (p Position) IsValid() bool {
 	return p.File != ""
 }
 
+// Equal reports whether two positions are identical.
+func (p Position) Equal(other Position) bool {
+	return p.File == other.File &&
+		p.Line == other.Line &&
+		p.Column == other.Column &&
+		p.Offset == other.Offset
+}
+
 // String returns a human-readable representation.
 func (p Position) String() string {
 	if p.Line == 0 {
@@ -43,6 +51,11 @@ func (r Range) IsValid() bool {
 // HasEnd returns true if the range has an end position set.
 func (r Range) HasEnd() bool {
 	return r.End.Line > 0
+}
+
+// Equal reports whether two ranges are identical.
+func (r Range) Equal(other Range) bool {
+	return r.Start.Equal(other.Start) && r.End.Equal(other.End)
 }
 
 // sameFileAs checks if this range is in the same file as another range.
