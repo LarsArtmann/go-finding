@@ -44,6 +44,18 @@ func newMockDetector(name, toolName string, findings ...finding.Finding) *mockDe
 	return &mockDetector{name: name, findings: findings}
 }
 
+// testFinding creates a Finding for testing with common fields.
+func testFinding(id, rule, tool, msg string, sev finding.Severity, file string) finding.Finding {
+	return finding.Finding{
+		ID:       id,
+		Rule:     rule,
+		ToolName: tool,
+		Message:  msg,
+		Severity: sev,
+		Position: finding.Position{File: file},
+	}
+}
+
 // TestNew tests pipeline creation.
 func TestNew(t *testing.T) {
 	config := DefaultConfig()
@@ -241,7 +253,7 @@ func TestPipelineRun_Parallel(t *testing.T) {
 	d1 := &mockDetector{
 		name: "d1",
 		findings: []finding.Finding{
-			{ID: "1", Rule: "r1", ToolName: "t1", Message: "m1", Severity: finding.SeverityInfo, Position: finding.Position{File: "a.go"}},
+			testFinding("1", "r1", "t1", "m1", finding.SeverityInfo, "a.go"),
 		},
 	}
 	d2 := &mockDetector{
@@ -464,7 +476,7 @@ func BenchmarkParallelDetection(b *testing.B) {
 					name:  "bench",
 					delay: 1 * time.Millisecond,
 					findings: []finding.Finding{
-						{ID: "bench", Rule: "r", ToolName: "t", Message: "m", Severity: finding.SeverityInfo, Position: finding.Position{File: "x.go"}},
+						testFinding("bench", "r", "t", "m", finding.SeverityInfo, "x.go"),
 					},
 				}
 			}

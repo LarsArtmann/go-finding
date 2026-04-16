@@ -177,10 +177,7 @@ func TestToSARIF_WithFix(t *testing.T) {
 				BeforeCode:  "old",
 				AfterCode:   "new",
 				Suggestion:  "replace old with new",
-				Range: &Range{
-					Start: Position{File: "a.go", Line: 5, Column: 1},
-					End:   Position{File: "a.go", Line: 5, Column: 10},
-				},
+				Range:       MakeRangePtr("a.go", 5, 1, 5, 10),
 			},
 		},
 	}

@@ -26,6 +26,24 @@ func runFilterCase(t *testing.T, tc filterTestCase) {
 	})
 }
 
+// makeFindingsWithSeverity creates findings with specified severities.
+func makeFindingsWithSeverity(sev ...Severity) []Finding {
+	findings := make([]Finding, len(sev))
+	for i, s := range sev {
+		findings[i] = Finding{ID: string(rune('1' + i)), Severity: s}
+	}
+	return findings
+}
+
+// makeFindingsWithCategory creates findings with specified categories.
+func makeFindingsWithCategory(cats ...Category) []Finding {
+	findings := make([]Finding, len(cats))
+	for i, c := range cats {
+		findings[i] = Finding{ID: string(rune('1' + i)), Category: c}
+	}
+	return findings
+}
+
 func TestFilter_Empty(t *testing.T) {
 	t.Parallel()
 	result := Filter(nil, BySeverity(SeverityError))
@@ -58,11 +76,7 @@ func TestFilter_MultiplePredicates(t *testing.T) {
 
 func TestBySeverity(t *testing.T) {
 	t.Parallel()
-	findings := []Finding{
-		{ID: "1", Severity: SeverityError},
-		{ID: "2", Severity: SeverityWarning},
-		{ID: "3", Severity: SeverityError},
-	}
+	findings := makeFindingsWithSeverity(SeverityError, SeverityWarning, SeverityError)
 	runFilterCase(t, newFilterCase("error", findings, BySeverity(SeverityError), 2))
 }
 
@@ -79,11 +93,7 @@ func TestBySeverityAtLeast(t *testing.T) {
 
 func TestByCategory(t *testing.T) {
 	t.Parallel()
-	findings := []Finding{
-		{ID: "1", Category: CategorySecurity},
-		{ID: "2", Category: CategoryStyle},
-		{ID: "3", Category: CategorySecurity},
-	}
+	findings := makeFindingsWithCategory(CategorySecurity, CategoryStyle, CategorySecurity)
 	runFilterCase(t, newFilterCase("security", findings, ByCategory(CategorySecurity), 2))
 }
 
@@ -192,11 +202,7 @@ func TestGroupByFile(t *testing.T) {
 
 func TestGroupBySeverity(t *testing.T) {
 	t.Parallel()
-	findings := []Finding{
-		{ID: "1", Severity: SeverityError},
-		{ID: "2", Severity: SeverityWarning},
-		{ID: "3", Severity: SeverityError},
-	}
+	findings := makeFindingsWithSeverity(SeverityError, SeverityWarning, SeverityError)
 	groups := GroupBySeverity(findings)
 	if len(groups[SeverityError]) != 2 {
 		t.Errorf("GroupBySeverity error = %d, want 2", len(groups[SeverityError]))
@@ -208,11 +214,7 @@ func TestGroupBySeverity(t *testing.T) {
 
 func TestGroupByCategory(t *testing.T) {
 	t.Parallel()
-	findings := []Finding{
-		{ID: "1", Category: CategorySecurity},
-		{ID: "2", Category: CategoryStyle},
-		{ID: "3", Category: CategorySecurity},
-	}
+	findings := makeFindingsWithCategory(CategorySecurity, CategoryStyle, CategorySecurity)
 	groups := GroupByCategory(findings)
 	if len(groups[CategorySecurity]) != 2 {
 		t.Errorf("GroupByCategory security = %d, want 2", len(groups[CategorySecurity]))

@@ -156,7 +156,7 @@ func TestPipeline_RetryConfig(t *testing.T) {
 			return nil, os.ErrDeadlineExceeded
 		}
 		return []finding.Finding{
-			{ID: "1", Rule: "r1", ToolName: "flaky", Message: "m", Severity: finding.SeverityError},
+			testFinding("1", "r1", "flaky", "m", finding.SeverityError, ""),
 		}, nil
 	}))
 
@@ -193,7 +193,7 @@ func TestPipeline_VerifyAfterFix(t *testing.T) {
 		c := callCount.Add(1)
 		if c == 1 {
 			return []finding.Finding{
-				{ID: "1", Rule: "r1", ToolName: "v", Message: "m", Severity: finding.SeverityError},
+				testFinding("1", "r1", "v", "m", finding.SeverityError, ""),
 			}, nil
 		}
 		return nil, nil

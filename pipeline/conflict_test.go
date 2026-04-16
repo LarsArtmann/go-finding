@@ -33,6 +33,14 @@ func findings(fixSpecs ...any) []finding.Finding {
 	return fixes
 }
 
+// assertRangeLinesEq asserts two ranges have equal lines in a test.
+func assertRangeLinesEq(t *testing.T, got, want finding.Range) {
+	t.Helper()
+	if !finding.RangeLinesEq(got, want) {
+		t.Errorf("Range lines = %+v, want %+v", got, want)
+	}
+}
+
 func TestConflictDetectorDetectConflicts(t *testing.T) {
 	t.Parallel()
 
@@ -113,9 +121,7 @@ func TestExtendRange(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := extendRange(tt.r1, tt.r2)
-			if got.Start.Line != tt.expected.Start.Line || got.End.Line != tt.expected.End.Line {
-				t.Errorf("extendRange() = %v, want %v", got, tt.expected)
-			}
+			assertRangeLinesEq(t, got, tt.expected)
 		})
 	}
 }

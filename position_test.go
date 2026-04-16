@@ -103,9 +103,7 @@ func TestRangeIntersection(t *testing.T) {
 				return
 			}
 
-			if got.Start.Line != tt.expected.Start.Line || got.End.Line != tt.expected.End.Line || got.Start.File != tt.expected.Start.File {
-				t.Errorf("Intersection() = %v, want %v", got, tt.expected)
-			}
+			AssertRangesEq(t, *got, *tt.expected)
 		})
 	}
 }

@@ -2,6 +2,28 @@ package finding
 
 import "testing"
 
+// parseIDCase is a test case for ParseID.
+type parseIDCase struct {
+	name      string
+	id        string
+	wantTool  string
+	wantRule  string
+	wantFile  string
+	wantLine  int
+	wantCol   int
+	wantOK    bool
+}
+
+// stdIDCase creates a parseIDCase with standard tool/rule fields.
+func stdIDCase(name, id, file string, line, col int, ok bool) parseIDCase {
+	return parseIDCase{
+		name:     name,
+		id:       id,
+		wantTool: "govet", wantRule: "nilcheck",
+		wantFile: file, wantLine: line, wantCol: col, wantOK: ok,
+	}
+}
+
 func TestGenerateID(t *testing.T) {
 	t.Parallel()
 
@@ -84,34 +106,10 @@ func TestGenerateID_HashDeterministic(t *testing.T) {
 func TestParseID(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name      string
-		id        string
-		wantTool  string
-		wantRule  string
-		wantFile  string
-		wantLine  int
-		wantCol   int
-		wantOK    bool
-	}{
-		{
-			name:     "full ID",
-			id:       "govet:nilcheck:main.go:42:10",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "main.go", wantLine: 42, wantCol: 10, wantOK: true,
-		},
-		{
-			name:     "line only",
-			id:       "govet:nilcheck:main.go:42",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "main.go", wantLine: 42, wantCol: 0, wantOK: true,
-		},
-		{
-			name:     "no position",
-			id:       "govet:nilcheck:main.go",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "main.go", wantLine: 0, wantCol: 0, wantOK: true,
-		},
+	tests := []parseIDCase{
+		stdIDCase("full ID", "govet:nilcheck:main.go:42:10", "main.go", 42, 10, true),
+		stdIDCase("line only", "govet:nilcheck:main.go:42", "main.go", 42, 0, true),
+		stdIDCase("no position", "govet:nilcheck:main.go", "main.go", 0, 0, true),
 		{
 			name:     "hash-based",
 			id:       "tool:rule:0123456789abcdef",

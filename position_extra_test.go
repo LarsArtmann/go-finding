@@ -98,10 +98,7 @@ func TestRangeHasEnd(t *testing.T) {
 func TestRangeContainsExtra(t *testing.T) {
 	t.Parallel()
 
-	r := Range{
-		Start: Position{File: "a.go", Line: 10, Column: 5},
-		End:   Position{File: "a.go", Line: 20, Column: 15},
-	}
+	r := MakeRange("a.go", 10, 5, 20, 15)
 
 	tests := []struct {
 		name string

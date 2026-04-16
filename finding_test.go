@@ -364,10 +364,7 @@ func TestCategory(t *testing.T) {
 }
 
 func TestRangeContains(t *testing.T) {
-	r := Range{
-		Start: Position{File: "test.go", Line: 10, Column: 5},
-		End:   Position{File: "test.go", Line: 20, Column: 10},
-	}
+	r := MakeRange("test.go", 10, 5, 20, 10)
 
 	tests := []struct {
 		name    string
