@@ -126,5 +126,19 @@ func IsHashID(id string) bool {
 		return false
 	}
 
-	return len(parts[2]) == hashLength // 8 bytes hex encoded
+	return isHexString(parts[2]) && len(parts[2]) == hashLength
+}
+
+// isHexString reports whether s consists entirely of hex digits.
+func isHexString(s string) bool {
+	for _, r := range s {
+		if !isHexDigit(r) {
+			return false
+		}
+	}
+	return len(s) > 0
+}
+
+func isHexDigit(r rune) bool {
+	return (r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F')
 }

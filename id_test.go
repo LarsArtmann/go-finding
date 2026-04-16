@@ -203,6 +203,8 @@ func TestIsHashID(t *testing.T) {
 		{"tool:rule:short", false},
 		{"tooshort", false},
 		{"a:b:c:d", false},
+		{"tool:rule:abcdefghijklmnop", false}, // 16 chars but not hex
+		{"tool:rule:0123456789ABCDEF", true},  // uppercase hex
 	}
 
 	for _, tt := range tests {
