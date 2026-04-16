@@ -4,7 +4,7 @@ package pipeline
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha256"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -504,9 +504,9 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 	return applied, nil
 }
 
-// sha1Sum returns the hex-encoded SHA1 hash of s.
-func sha1Sum(s string) string {
-	h := sha1.Sum([]byte(s))
+// fileHash returns the hex-encoded SHA256 hash of s.
+func fileHash(s string) string {
+	h := sha256.Sum256([]byte(s))
 	return fmt.Sprintf("%x", h)
 }
 
@@ -517,7 +517,7 @@ func (a *FixApplier) backup(path string) error {
 		return ioErrorAt("read file for backup", err, path)
 	}
 
-	backupPath := filepath.Join(a.backupDir, fmt.Sprintf("%x.bak", sha1Sum(path)))
+	backupPath := filepath.Join(a.backupDir, fmt.Sprintf("%x.bak", fileHash(path)))
 	if err := os.MkdirAll(a.backupDir, 0750); err != nil {
 		return finding.NewIOError("create backup dir", err)
 	}
