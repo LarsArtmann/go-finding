@@ -1,20 +1,25 @@
-# Module Split Plan — go-finding
+# Module Split Plan — go-finding SDK
 
-**Status:** Proposal | **Date:** 2026-04-15
+**Status:** Revised Proposal v2 | **Date:** 2026-04-16
+**Identity:** SDK (library-first). CLI is a demo binary, not the product.
 
 ---
 
 ## Context
 
-go-finding is currently a single Go module (`github.com/larsartmann/go-finding`) with one sub-package (`pipeline/`), a CLI (`cmd/go-finding/`), and example programs (`examples/`). The root `go.mod` declares three external dependencies:
+go-finding is an **SDK** providing a unified data model and pipeline for static analysis tools. Per the founding principle in PROPOSAL.md:
 
-| Dependency | Used by | Weight |
-|---|---|---|
-| `golang.org/x/tools` | `diagnostic.go` only | **Heavy** — pulls in go/analysis, go/packages, many transitive deps |
-| `golang.org/x/sync` | `pipeline/pipeline.go`, `pipeline/partial.go` | Light |
-| `gopkg.in/yaml.v3` | `cmd/go-finding/main.go` only | Light |
+> *"Converters live in each tool, not in the SDK. Tools depend on the SDK; the SDK depends on nothing."*
 
-**Key insight:** The root package (everything except `pipeline/` and `cmd/`) is **stdlib-only**. The only file that needs `golang.org/x/tools` is `diagnostic.go`. This creates an unnecessary heavy dependency for users who only want the data model.
+Currently a single Go module (`github.com/larsartmann/go-finding`) with one sub-package (`pipeline/`), a demo CLI (`cmd/go-finding/`), and example programs (`examples/`). The root `go.mod` declares three external dependencies:
+
+| Dependency | Used by | Disk Size | Transitive Deps |
+|---|---|---|---|
+| `golang.org/x/tools` v0.44.0 | `diagnostic.go` only | **33 MB** (6 transitive) | go-cmp, goldmark, x/mod, x/net, x/telemetry, x/sys |
+| `golang.org/x/sync` v0.20.0 | `pipeline/pipeline.go`, `pipeline/partial.go` | 104 KB (0 transitive) | — |
+| `gopkg.in/yaml.v3` v3.0.1 | `cmd/go-finding/main.go` only | 504 KB (0 transitive) | — |
+
+**Key insight:** The root package (everything except `pipeline/` and `cmd/`) is **stdlib-only**. The only file that needs `golang.org/x/tools` is `diagnostic.go` — a converter for `go/analysis.Diagnostic`. This creates a **33 MB unnecessary download** for SDK consumers who only want the data model.
 
 ---
 
@@ -44,19 +49,19 @@ go-finding is currently a single Go module (`github.com/larsartmann/go-finding`)
   (methods on      │  sarif.go  (→ finding, report)       │  ← stdlib only
   core types)      │  lsp.go  (→ finding, position)       │
                     │                                       │
-  Integration ──►  │  diagnostic.go  (→ finding, id)       │  ← golang.org/x/tools
+  Integration ──►  │  diagnostic.go  (→ finding, id)       │  ← 33 MB golang.org/x/tools
                     └──────────────┬──────────────────────┘
                                    │ imports
                     ┌──────────────▼──────────────────────┐
                     │     Pipeline Package                  │
                     │  (pipeline/)                          │
                     │  pipeline.go, conflict.go, verify.go  │
-                    │  retry.go, metrics.go, partial.go     │  ← golang.org/x/sync
+                    │  retry.go, metrics.go, partial.go     │  ← 104 KB golang.org/x/sync
                     └──────────────────────────────────────┘
                                    │ imports
                     ┌──────────────▼──────────────────────┐
                     │     CLI (cmd/go-finding/)             │
-                    │  main.go                              │  ← gopkg.in/yaml.v3
+                    │  main.go                              │  ← 504 KB gopkg.in/yaml.v3
                     └──────────────────────────────────────┘
 ```
 
@@ -73,50 +78,21 @@ Go requires methods on a type to be defined in the **same package** as the type.
 | `json.go` | `Finding.LineJSON()` | `Finding` | Must convert to function |
 | `diagnostic.go` | `Finding.AnalysisDiagnostic()` | `Finding` | Must convert to function |
 
----
+### Test Cross-Module Dependency (Blocker — Resolved)
 
-## Three Approaches
+`example_test.go:254-288` (`ExamplePipeline`) imports `pipeline` from root package tests. If pipeline becomes a separate module, root's `go.mod` would need pipeline as a dependency — breaking the "zero dep" claim.
 
-### Approach A: Minimal — Formalize Pipeline (2 modules)
-
-Only give `pipeline/` its own `go.mod`. Root stays intact.
-
-```
-go-finding/
-├── go.mod                           # Module 1: Core (all root files)
-│   require: golang.org/x/tools      # Still heavy — unchanged
-│   require: golang.org/x/sync       # Still pulls sync for nothing
-│
-├── pipeline/
-│   ├── go.mod                       # Module 2: Pipeline
-│   │   require: go-finding
-│   │   require: golang.org/x/sync
-│   └── *.go
-```
-
-**PROs:**
-- Minimal change — only `pipeline/` gets a `go.mod`
-- No API breakage at all
-- Pipeline can be versioned independently
-- `golang.org/x/sync` moves to pipeline's `go.mod`
-
-**CONs:**
-- Root still has `golang.org/x/tools` dependency (the heaviest one)
-- Users who only want the data model still pull go/analysis transitive deps
-- No real dependency boundary improvement for the root package
-- `gopkg.in/yaml.v3` stays in root's `go.mod` even though only CLI uses it
-
-**Effort:** ~1 hour
+**Resolution:** Move `ExamplePipeline` (and any other pipeline-dependent examples) to `pipeline/example_test.go`. Root tests must not import pipeline. This is the correct home anyway — the example demonstrates pipeline usage, not core type usage.
 
 ---
 
-### Approach B: Dependency-Driven — Extract Heavy Deps (4 modules) ⭐ RECOMMENDED
+## Recommendation: Approach B — SDK Module Split (4 modules)
 
 Split by dependency boundaries. Each module only declares what it actually needs.
 
 ```
 go-finding/
-├── go.mod                           # Module 1: Core types + utilities
+├── go.mod                           # Module 1: SDK Core
 │   require: (none — stdlib only)    # ← ZERO external dependencies
 │
 │   Files: finding.go, severity.go, fix_strategy.go, position.go,
@@ -127,7 +103,7 @@ go-finding/
 ├── analysis/
 │   ├── go.mod                       # Module 2: go/analysis integration
 │   │   require: go-finding          # (root)
-│   │   require: golang.org/x/tools  # Only consumer of this heavy dep
+│   │   require: golang.org/x/tools  # Only consumer of this 33 MB dep
 │   └── diagnostic.go
 │
 ├── pipeline/
@@ -137,7 +113,7 @@ go-finding/
 │   └── *.go
 │
 ├── cmd/go-finding/
-│   ├── go.mod                       # Module 4: CLI binary
+│   ├── go.mod                       # Module 4: Demo CLI binary
 │   │   require: go-finding          # (root)
 │   │   require: go-finding/pipeline # (pipeline module)
 │   │   require: gopkg.in/yaml.v3
@@ -146,178 +122,142 @@ go-finding/
 └── go.work                          # Workspace for local development
 ```
 
-**Dependency flow:**
+**Dependency flow (clean DAG, no cycles):**
 
 ```
-  cmd/go-finding ──► pipeline ──► core (go-finding)
+  cmd/go-finding ──► pipeline ──► core (go-finding)     ← ZERO deps
        │                                ▲
        └────────────────────────────────┘
        │
-       └──► analysis ──► core (go-finding)
+       └──► analysis ──► core (go-finding)               ← ZERO deps
 ```
 
-No circular dependencies. Clean DAG.
+### Why This Is the Right Split for an SDK
 
-**API changes required:**
+1. **PROPOSAL.md principle alignment:** *"Tools depend on the SDK; the SDK depends on nothing."* Moving `diagnostic.go` (a converter for `go/analysis.Diagnostic`) out of root **enforces** this principle at the module level.
 
-Only `analysis/diagnostic.go` needs changes — it moves from the root package to `analysis/`:
+2. **33 MB dep isolation:** SDK consumers who use core types + SARIF/LSP/JSON output (the majority) get **zero transitive dependencies**. Only consumers who need `go/analysis` integration opt into the 33 MB `golang.org/x/tools` download.
 
-| Current | New | Breaking? |
-|---|---|---|
-| `finding.FromDiagnostic(...)` | `analysis.FromDiagnostic(...)` | Yes — import path change |
-| `finding.FromTokenPosition(...)` | `analysis.FromTokenPosition(...)` | Yes — import path change |
-| `finding.NodePosition(...)` | `analysis.NodePosition(...)` | Yes — import path change |
-| `finding.NodeRange(...)` | `analysis.NodeRange(...)` | Yes — import path change |
-| `finding.FormatDiagnostic(...)` | `analysis.FormatDiagnostic(...)` | Yes — import path change |
-| `finding.Finding.AnalysisDiagnostic()` | `analysis.ToDiagnostic(finding.Finding)` | Yes — method → function |
+3. **`analysis/` is not "too thin":** It's a focused integration adapter for `go/analysis.Diagnostic`, just like each downstream tool (art-dupl, branching-flow) will have its own adapter. The difference is this one ships with the SDK because `go/analysis` is ecosystem-standard.
 
-All other API surface is preserved. `Finding.ToLSP()`, `Report.ToSARIF()`, `Report.PrettyJSON()`, etc. stay in root package.
-
-**Who is affected by breaking changes:**
-- Only users of `FromDiagnostic`, `AnalysisDiagnostic`, `NodePosition`, `NodeRange`, `FormatDiagnostic`
-- These are go/analysis integration functions — a small, specific audience
-- Migration is mechanical: change import path + convert method to function
-
-**PROs:**
-- **Root module becomes zero-dependency** — the biggest win
-- Users who only need the data model + SARIF/LSP/JSON get zero transitive deps
-- `golang.org/x/tools` (heavy) isolated to `analysis/` module — opt-in only
-- `golang.org/x/sync` isolated to `pipeline/` module — opt-in only
-- `gopkg.in/yaml.v3` isolated to CLI — not a library dep at all
-- Pipeline already a separate package — natural boundary
-- CLI can be versioned on its own schedule
-- Each module's `go.mod` honestly reflects its actual dependencies
-- All format methods (SARIF, LSP, JSON) preserved — no API break for most users
-- Follows Go team's guidance: split by dependency boundaries
-
-**CONs:**
-- 6 functions change import paths (all go/analysis integration)
-- `Finding.AnalysisDiagnostic()` method becomes `analysis.ToDiagnostic()` function
-- More `go.mod` files to maintain
-- Version tagging for subdirectory modules uses prefix format (`analysis/v1.2.3`)
-- Slightly more complex CI setup (test each module independently)
-- `analysis/` module is thin (1 file) — arguably too small to be its own module
-
-**Effort:** ~4-6 hours (move file, update imports, create go.mod files, go.work, update CI, update examples)
+4. **Format adapters stay in root:** SARIF, LSP, JSON are stdlib-only. Methods on types (`Report.ToSARIF()`, `Finding.ToLSP()`) are idiomatic Go. No dependency to isolate, no reason to break the API.
 
 ---
 
-### Approach C: Full Modularization — Extract Formats Too (5+ modules)
+## API Changes Required
 
-Same as Approach B, but also extract format adapters (SARIF, LSP, JSON) into a separate `format/` module.
+### Breaking Changes (6 — all in go/analysis integration)
 
-```
-go-finding/
-├── go.mod                           # Module 1: Core types ONLY
-│   require: (none)
-│   Files: finding.go, severity.go, fix_strategy.go, position.go,
-│          category.go, suppression.go, errors.go, id.go,
-│          filter.go, report.go, merge.go
-│
-├── format/
-│   ├── go.mod                       # Module 2: Output format adapters
-│   │   require: go-finding           # (root)
-│   └── sarif.go, lsp.go, json.go
-│
-├── analysis/
-│   ├── go.mod                       # Module 3: go/analysis integration
-│   │   require: go-finding
-│   │   require: golang.org/x/tools
-│   └── diagnostic.go
-│
-├── pipeline/
-│   ├── go.mod                       # Module 4: Pipeline orchestration
-│   │   require: go-finding
-│   │   require: golang.org/x/sync
-│   └── *.go
-│
-├── cmd/go-finding/
-│   ├── go.mod                       # Module 5: CLI
-│   │   require: go-finding, pipeline, format, gopkg.in/yaml.v3
-│   └── main.go
-│
-└── go.work
-```
-
-**API changes required (in addition to Approach B):**
-
-| Current | New | Breaking? |
+| Current (root package) | New (analysis package) | Migration |
 |---|---|---|
-| `report.ToSARIF()` | `sarif.Encode(report)` or `sarif.FromReport(report)` | Yes — method → function |
-| `report.ToSARIFFiltered(sev)` | `sarif.EncodeFiltered(report, sev)` | Yes |
-| `finding.ToLSP()` | `lsp.FromFinding(finding)` | Yes |
-| `finding.FromLSP(...)` | `lsp.FromLSP(...)` | Yes — already a function |
-| `report.PrettyJSON()` | `jsonfmt.Pretty(report)` | Yes — method → function |
-| `finding.LineJSON()` | `jsonfmt.Line(finding)` | Yes |
-| `finding.FromJSON(...)` | `jsonfmt.FromJSON(...)` | Yes — already a function |
-| `finding.ReportFromJSON(...)` | `jsonfmt.ReportFromJSON(...)` | Yes |
-| `finding.FindingsFromJSON(...)` | `jsonfmt.FindingsFromJSON(...)` | Yes |
-| `finding.FromSARIFLevel(...)` | `sarif.FromLevel(...)` | Yes |
-| All SARIF types (`SarifLog`, etc.) | `sarif.Log`, `sarif.Run`, etc. | Yes — type renames |
-| All LSP types (`LSPDiagnostic`, etc.) | `lsp.Diagnostic`, `lsp.Range`, etc. | Yes — type renames |
+| `finding.FromDiagnostic(d, fset, tool, rule)` | `analysis.FromDiagnostic(d, fset, tool, rule)` | Change import |
+| `finding.FromTokenPosition(pos)` | `analysis.FromTokenPosition(pos)` | Change import |
+| `finding.NodePosition(fset, node)` | `analysis.NodePosition(fset, node)` | Change import |
+| `finding.NodeRange(node, fset)` | `analysis.NodeRange(node, fset)` | Change import |
+| `finding.FormatDiagnostic(d, fset, name)` | `analysis.FormatDiagnostic(d, fset, name)` | Change import |
+| `f.AnalysisDiagnostic()` | `analysis.ToDiagnostic(f)` | Change import + method → function |
 
-**PROs:**
-- Maximum dependency isolation
-- Core module is the absolute minimum (types + utilities)
-- Format adapters are independently versionable
-- Cleanest conceptual separation: types vs. serialization vs. integration vs. orchestration
+### Migration Guide for Downstream Consumers
 
-**CONs:**
-- **14+ API breaking changes** — massive migration burden
-- Methods → functions is a significant ergonomic regression (`report.ToSARIF()` → `sarif.Encode(report)`)
-- SARIF/LSP/JSON types lose their prefix when moved to subpackage (`SarifLog` → either `sarif.SarifLog` redundant or `sarif.Log` ambiguous)
-- Format module is still stdlib-only — no actual dependency savings vs. keeping in root
-- Two of three format adapters (SARIF, JSON) only need stdlib `encoding/json` — no dependency to isolate
-- Violates Go convention: format conversion methods on types are idiomatic Go
-- Examples all need import path updates
-- Very high migration cost for very low dependency payoff
+**Before:**
+```go
+import "github.com/larsartmann/go-finding"
 
-**Effort:** ~12-16 hours (significant refactoring + test updates + documentation)
+func main() {
+    f := finding.FromDiagnostic(diag, fset, "mytool", "RULE001")
+    d := f.AnalysisDiagnostic()
+    pos := finding.NodePosition(fset, node)
+}
+```
+
+**After:**
+```go
+import (
+    "github.com/larsartmann/go-finding"
+    "github.com/larsartmann/go-finding/analysis"
+)
+
+func main() {
+    f := analysis.FromDiagnostic(diag, fset, "mytool", "RULE001")
+    d := analysis.ToDiagnostic(f)
+    pos := analysis.NodePosition(fset, node)
+}
+```
+
+Everything else (Finding, Report, SARIF, LSP, JSON, Filter, Merge, Pipeline) — **no changes**.
+
+### Who Is Affected
+
+- Only users of the 6 go/analysis integration functions
+- These are Go tool authors who already depend on `golang.org/x/tools`
+- Migration is mechanical: add one import, change prefix on 1-6 calls
+
+### Who Is NOT Affected
+
+- Users of core types (Finding, Report, Severity, etc.)
+- Users of format output (SARIF, LSP, JSON)
+- Users of filtering, merging, grouping
+- Users of the pipeline package
+- Downstream tools (art-dupl, branching-flow, etc.) — they write their own converters
 
 ---
 
 ## Comparison Matrix
 
-| Criterion | A: Minimal | B: Dependency-Driven ⭐ | C: Full Modularization |
+| Criterion | A: Minimal (2 modules) | **B: SDK Split (4 modules)** | C: Full Modular (5+ modules) |
 |---|---|---|---|
-| External deps in root module | 3 (unchanged) | **0** | **0** |
-| `golang.org/x/tools` isolated | No | **Yes** | Yes |
-| Breaking API changes | 0 | 6 (go/analysis only) | 14+ |
-| Method → function conversions | 0 | 1 | 5 |
-| Modules to maintain | 2 | 4 | 5+ |
-| User migration effort | None | Low (only go/analysis users) | High (all users) |
-| Dependency payoff | Low | **High** | Same as B for deps |
+| External deps in root module | 3 (unchanged) | **0** | 0 |
+| `golang.org/x/tools` isolated (33 MB) | No | **Yes** | Yes |
+| Breaking API changes | 0 | **6** (go/analysis only) | 14+ |
+| Method → function conversions | 0 | **1** | 5 |
+| Modules to maintain | 2 | **4** | 5+ |
+| User migration effort | None | **Low** (go/analysis users only) | High (all users) |
+| Dependency download for core users | ~34 MB | **0 MB** | 0 MB |
 | Conceptual clarity | Low | **High** | Very high |
-| Risk of over-splitting | None | Low | High |
-| Effort | ~1h | ~4-6h | ~12-16h |
-| Follows Go team guidance | Partially | **Yes** | Over-engineered |
-
----
-
-## Recommendation: Approach B
-
-**Why:** It delivers the highest value (zero-dependency core) at the lowest cost (6 breaking changes, all in a niche go/analysis integration API). The format adapters stay in root because:
-
-1. They're stdlib-only — no dependency to isolate
-2. Methods on types are idiomatic Go and convenient
-3. Moving them would break the API for all users, not just go/analysis users
-
-The `analysis/` module is thin (1 file) but justified because:
-- `golang.org/x/tools` is the heaviest dependency in the project
-- go/analysis users are a specific, identifiable audience
-- It enforces the design principle from PROPOSAL.md: *"the SDK depends on nothing"*
+| Risk of over-splitting | None | **Low** | High |
+| Effort | ~1h | **~4-6h** | ~12-16h |
+| SDK principle compliance | Violates | **Enforces** | Over-engineered |
 
 ---
 
 ## Implementation Plan (Approach B)
 
-### Step 1: Create `analysis/` module
+### Step 1: Resolve the test blocker
+
+Move `ExamplePipeline` from root `example_test.go` to `pipeline/example_test.go`.
+
+**Before** (`example_test.go:254-288`):
+```go
+import "github.com/larsartmann/go-finding/pipeline"
+
+func ExamplePipeline() {
+    detector := pipeline.NamedDetectorFunc(...)
+    p := pipeline.New(cfg, ".", detector)
+    ...
+}
+```
+
+**After** (`pipeline/example_test.go` — new file):
+```go
+package pipeline_test
+
+import (
+    "github.com/larsartmann/go-finding"
+    "github.com/larsartmann/go-finding/pipeline"
+)
+
+func ExamplePipeline() { /* same code */ }
+```
+
+Verify root tests pass with `go test .` (no pipeline import).
+
+### Step 2: Create `analysis/` module
 
 1. Create `analysis/` directory
 2. Move `diagnostic.go` → `analysis/diagnostic.go`
-3. Change package declaration from `finding` to `analysis`
-4. Convert `Finding.AnalysisDiagnostic()` method to `analysis.ToDiagnostic(f Finding) analysis.Diagnostic`
-5. Update all imports: `golang.org/x/tools/go/analysis`, `go/ast`, `go/token` stay; add `github.com/larsartmann/go-finding` for core types
+3. Change package from `finding` to `analysis`
+4. Convert `Finding.AnalysisDiagnostic()` → `analysis.ToDiagnostic(f finding.Finding) analysis.Diagnostic`
+5. Move `diagnostic_test.go` → `analysis/diagnostic_test.go`, update package + imports
 6. Create `analysis/go.mod`:
    ```
    module github.com/larsartmann/go-finding/analysis
@@ -329,9 +269,8 @@ The `analysis/` module is thin (1 file) but justified because:
        golang.org/x/tools v0.44.0
    )
    ```
-7. Move `diagnostic_test.go` → `analysis/diagnostic_test.go` and update
 
-### Step 2: Create `pipeline/` module
+### Step 3: Create `pipeline/` module
 
 1. Add `pipeline/go.mod`:
    ```
@@ -344,9 +283,8 @@ The `analysis/` module is thin (1 file) but justified because:
        golang.org/x/sync v0.20.0
    )
    ```
-2. Update all pipeline imports to use the module path (already correct)
 
-### Step 3: Create `cmd/go-finding/` module
+### Step 4: Create `cmd/go-finding/` module
 
 1. Add `cmd/go-finding/go.mod`:
    ```
@@ -361,17 +299,16 @@ The `analysis/` module is thin (1 file) but justified because:
    )
    ```
 
-### Step 4: Update root `go.mod`
+### Step 5: Update root `go.mod`
 
-1. Remove `golang.org/x/tools`, `golang.org/x/sync`, `gopkg.in/yaml.v3`
-2. Root becomes:
-   ```
-   module github.com/larsartmann/go-finding
+Remove all three external dependencies. Root becomes:
+```
+module github.com/larsartmann/go-finding
 
-   go 1.26.0
-   ```
+go 1.26.0
+```
 
-### Step 5: Create `go.work`
+### Step 6: Create `go.work`
 
 ```go
 go 1.26.0
@@ -384,89 +321,159 @@ use (
 )
 ```
 
-### Step 6: Update examples
+### Step 7: Update examples
 
-- `examples/govet/main.go` — if it uses `FromDiagnostic`, update import to `analysis` package
-- `examples/detectorutil/util.go` — no change (doesn't use any finding types)
-- Other examples — no change (they use root package types)
+- `examples/govet/main.go` — uses `finding` types only, no change needed
+- `examples/detectorutil/util.go` — no go-finding dependency, no change
+- `examples/artdupl/main.go` — uses `finding` types + `detectorutil`, no change
+- `examples/branching/main.go` — uses `finding` types only, no change
+- `examples/staticcheck/main.go` — uses `finding` types + `detectorutil`, no change
 
-### Step 7: Update CI
+None of the examples use `FromDiagnostic` or other `analysis/` functions — they construct `Finding` structs directly. No example changes needed.
 
-- Test each module independently:
-  ```yaml
-  - cd / && go test github.com/larsartmann/go-finding/...  (root)
-  - cd / && go test github.com/larsartmann/go-finding/analysis/...
-  - cd / && go test github.com/larsartmann/go-finding/pipeline/...
-  - cd / && go build github.com/larsartmann/go-finding/cmd/go-finding
-  ```
-- Or use `go.work` in CI: `GOWORK=off go test ./...` per module
+### Step 8: Update CI
 
-### Step 8: Update documentation
+Fix the Go version matrix (currently broken — tests Go 1.21/1.22/1.23 but go.mod requires 1.26.0):
 
-- Update AGENTS.md, README.md, PROPOSAL.md with new module structure
-- Add `analysis/README.md` explaining the go/analysis integration
-- Update import examples in docs
+```yaml
+strategy:
+  matrix:
+    go-version: ["1.26"]
 
-### Step 9: Version tagging
+steps:
+  - name: Test root
+    run: cd . && go test -v -race -coverprofile=coverage.out ./...
 
-- Root module: `git tag v1.1.0`
-- Analysis module: `git tag analysis/v0.1.0`
-- Pipeline module: `git tag pipeline/v0.1.0`
-- CLI module: `git tag cmd/go-finding/v0.1.0`
+  - name: Test analysis
+    run: cd analysis && go test -v -race ./...
 
----
+  - name: Test pipeline
+    run: cd pipeline && go test -v -race ./...
 
-## Open Questions
+  - name: Build CLI
+    run: cd cmd/go-finding && go build -v ./...
+```
 
-1. **Should `analysis/` also contain `astfix.go`?** — The pipeline has an `astfix.go` that uses `go/ast`. If pipeline needs go/analysis support, it should depend on the `analysis` module, not import `golang.org/x/tools` itself. Evaluate whether `astfix.go` belongs in `analysis/` or stays in `pipeline/` (pipeline would add `golang.org/x/tools` as a dependency only if AST fix is used).
+Note: Each `go test` runs within its module directory. `go.work` makes cross-module resolution work. CI should also run `GOWORK=off` tests to verify published dependency resolution works.
 
-2. **Should `examples/` be a module?** — No. Examples are demonstration programs, not importable packages. They can use `go.work` replace directives during development.
+### Step 9: Update release workflow
 
-3. **go.work in version control?** — Yes, commit `go.work` for this repo. It's a monorepo workspace. The Go team's recommendation against committing `go.work` applies to libraries, not monorepos with multiple modules.
+Fix Go version + update for multi-module tags:
 
-4. **Initial version for sub-modules?** — Start at `v0.1.0` for `analysis/` and `pipeline/` to signal they're new extractions. Root stays at `v1.x.x`.
+```yaml
+- name: Set up Go
+  uses: actions/setup-go@v5
+  with:
+    go-version: "1.26"
+```
 
-5. **Replace directives during development?** — `go.work` handles this. No manual `replace` directives needed in `go.mod` files. The `v0.0.0` versions in `go.mod` are ignored when `go.work` is active.
+Update `.goreleaser.yml` to build from the CLI module:
+```yaml
+builds:
+  - id: go-finding
+    main: ./cmd/go-finding
+    dir: ./cmd/go-finding    # Build from CLI module root
+```
+
+Release tags use subdirectory prefix format:
+- Root: `git tag v1.1.0`
+- Analysis: `git tag analysis/v0.1.0`
+- Pipeline: `git tag pipeline/v0.1.0`
+- CLI: `git tag cmd/go-finding/v0.1.0`
+
+### Step 10: First release procedure (bootstrap)
+
+The `v0.0.0` versions in `go.mod` only work with `go.work` active. For the first published release:
+
+```bash
+# 1. Ensure all modules pass tests locally with go.work
+go test ./...
+
+# 2. Verify each module independently (simulate published resolution)
+GOWORK=off bash -c 'cd analysis && go get github.com/larsartmann/go-finding@latest'
+GOWORK=off bash -c 'cd pipeline && go get github.com/larsartmann/go-finding@latest'
+
+# 3. Tag and push root first (downstream modules need a published version)
+git tag v1.1.0
+git push origin v1.1.0
+
+# 4. Update analysis/go.mod to reference the real published version
+cd analysis && go get github.com/larsartmann/go-finding@v1.1.0
+
+# 5. Tag and push analysis
+cd .. && git tag analysis/v0.1.0 && git push origin analysis/v0.1.0
+
+# 6. Repeat for pipeline and CLI
+```
+
+### Step 11: Update documentation
+
+- Update AGENTS.md with new module structure
+- Add `analysis/doc.go` with package documentation
+- Update PROPOSAL.md "File Structure" section
+- Update README.md import examples
+
+### Step 12: Rollback plan
+
+If the split causes issues:
+1. Revert the commit(s)
+2. All code returns to single-module state
+3. `go.work` is deleted
+4. `go mod tidy` restores single `go.mod`
+5. No data loss — files move back to original locations
 
 ---
 
 ## Dependency Size Comparison
 
-### Before (single module)
+### Before (single module — current state)
 
 ```
-go-finding  ──►  golang.org/x/tools  (heavy: ~50+ transitive deps)
-            ──►  golang.org/x/sync    (light: 0 transitive deps)
-            ──►  gopkg.in/yaml.v3     (light: 0 transitive deps)
+go-finding  ──►  golang.org/x/tools v0.44.0  (12 MB + 21 MB transitive = 33 MB total)
+            ──►  golang.org/x/sync v0.20.0    (104 KB, 0 transitive)
+            ──►  gopkg.in/yaml.v3 v3.0.1      (504 KB, 0 transitive)
+
+Total download for any consumer: ~34 MB, 3 direct + 6 transitive = 9 modules
 ```
 
-Every user gets all three, even if they only need the data model.
+### After (Approach B — SDK split)
 
-### After (Approach B)
+| Consumer type | What they import | Download | Transitive deps |
+|---|---|---|---|
+| **Core only** (types + SARIF/LSP/JSON) | `go-finding` | **0 MB** | **0** |
+| **Pipeline user** | `go-finding` + `pipeline` | **104 KB** | **0** |
+| **go/analysis user** | `go-finding` + `analysis` | **33 MB** | **6** |
+| **CLI user** | everything | **34 MB** | **6** |
 
-```
-go-finding        ──►  (nothing)         ← data model users: ZERO deps
-analysis/         ──►  go-finding
-                  ──►  golang.org/x/tools ← go/analysis users: opt-in to heavy dep
-pipeline/         ──►  go-finding
-                  ──►  golang.org/x/sync  ← pipeline users: lightweight
-cmd/go-finding/   ──►  go-finding
-                  ──►  pipeline/
-                  ──►  gopkg.in/yaml.v3   ← CLI only: not a library dep
-```
-
-**Result:** Most users (data model + SARIF/LSP/JSON) get zero transitive dependencies. Go/analysis users explicitly opt in. Pipeline users get a lightweight sync dependency. CLI is self-contained.
+**Result:** The majority of SDK consumers (downstream tools writing `ToFindings()` converters) get **zero dependencies**. They import the SDK, build `Finding` structs, output SARIF — and download nothing.
 
 ---
 
 ## What NOT to Split
 
-These were considered and rejected:
-
 | Candidate | Why not split |
 |---|---|
-| SARIF/LSP/JSON into `format/` | Stdlib-only — no dependency to isolate. Breaking method API not justified. |
+| SARIF/LSP/JSON into `format/` | Stdlib-only — no dependency to isolate. Breaking method API (`report.ToSARIF()` → function) is a massive ergonomic regression with zero dependency payoff. |
 | Filter/Merge into `query/` | Tightly coupled to `Report` type. No dependency boundary. |
 | Errors/ID into separate module | Too granular. No dependency to isolate. Both stdlib-only. |
-| Examples into modules | Not importable packages. Demo code only. |
-| `detectorutil/` into module | Zero dependency on go-finding. Not part of the library API. |
+| Examples into modules | Not importable packages. Demo code only. Use `go.work` for local dev. |
+| `detectorutil/` into module | Zero dependency on go-finding. Not part of the SDK API. |
+
+---
+
+## Open Questions (Resolved)
+
+1. **Should `analysis/` also contain `astfix.go`?**
+   The pipeline has `astfix.go` that uses `go/ast`. Keep it in pipeline for now — `go/ast` is stdlib, not `golang.org/x/tools`. If pipeline later needs `golang.org/x/tools/go/analysis`, it adds `analysis` as a dependency.
+
+2. **Should `examples/` be a module?**
+   No. Examples are demonstration programs, not importable packages. They use `go.work` for local development.
+
+3. **go.work in version control?**
+   Yes, commit `go.work`. This is a monorepo workspace. The Go team's recommendation against committing `go.work` applies to published libraries consumed externally, not monorepos with multiple modules.
+
+4. **Initial version for sub-modules?**
+   Start at `v0.1.0` for `analysis/` and `pipeline/` to signal they're new extractions. Root stays at `v1.x.x`.
+
+5. **Replace directives during development?**
+   `go.work` handles this. No manual `replace` directives in `go.mod`. The `v0.0.0` versions are ignored when `go.work` is active.
