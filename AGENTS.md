@@ -53,13 +53,12 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | `cmd/go-finding/main.go` | Functional CLI: govet+staticcheck detectors, pipeline integration, text/json/sarif output, config validation |
 
-#### Examples
+#### Internal Detectors
 
-| File                            | Purpose                                                            |
-| ------------------------------- | ------------------------------------------------------------------ |
-| `examples/govet/main.go`        | Go vet JSON → Finding converter (Detector impl)                    |
-| `examples/staticcheck/main.go`  | Staticcheck JSON → Finding converter (Detector impl)               |
-| `examples/detectorutil/tool.go` | Shared helper: RunTool executes external tools and captures output |
+| File                                | Purpose                                              |
+| ----------------------------------- | ---------------------------------------------------- |
+| `internal/detectors/govet.go`       | Go vet JSON → Finding converter (Detector impl)      |
+| `internal/detectors/staticcheck.go` | Staticcheck JSON → Finding converter (Detector impl) |
 
 ### Testing
 

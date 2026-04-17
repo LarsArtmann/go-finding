@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `-parallel`, `-verify`, `-timeout`
   - `-config` for YAML/JSON config file support
   - `-cpuprof`/`-memprof` for `runtime/pprof` profiling
+- **Built-in detectors** (`internal/detectors/`)
+  - `govet` — Go vet JSON → Finding converter
+  - `staticcheck` — staticcheck JSON → Finding converter
 - **YAML config support** — config files accept `.yaml`/`.yml` and `.json`
 - **Structured errors** — `FindingError` with categories (validation, IO, parse, conflict, internal) and position context
 - **ID generation** — stable `tool:rule:file:line:col` format with SHA-256 hash-based fallback
@@ -29,13 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Retry** — `RetryConfig` with exponential backoff and jitter
 - **Partial success** — `DetectPartial` for graceful degradation
 - **Metrics** — `Metrics` type with stage/detector timing and `MetricsSnapshot`
-
-### Examples
-
-- `examples/govet/` — Go vet JSON → Finding converter
-- `examples/staticcheck/` — staticcheck JSON → Finding converter
-- `examples/artdupl/` — art-dupl clone detector with `RelatedRef` linking
-- `examples/branching/` — code complexity with `FixStrategyDirect` refactoring suggestions
 
 ### Testing
 

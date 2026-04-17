@@ -32,9 +32,6 @@ go test -bench=. -benchmem ./...
 
 # Build the CLI
 go build ./cmd/go-finding
-
-# Build all examples
-go build ./examples/...
 ```
 
 ### Using Just (optional)
@@ -75,7 +72,7 @@ go-finding/
 │   ├── retry.go        # Retry with backoff
 │   └── partial.go      # Partial success
 ├── cmd/go-finding/     # CLI tool
-└── examples/           # Detector examples
+├── internal/detectors/ # Built-in detectors (govet, staticcheck)
 ```
 
 ## Coding Standards

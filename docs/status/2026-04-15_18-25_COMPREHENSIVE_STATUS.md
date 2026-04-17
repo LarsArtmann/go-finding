@@ -76,7 +76,7 @@ The go-finding library has matured significantly since the April 13 status repor
 | ------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `Correlate()` in merge.go | 70%    | Function works, has tests, but never wired into Pipeline.Run(). Standalone utility, not integrated.                                    |
 | SARIF critical round-trip | 80%    | `SeverityCritical` → SARIF `"error"` → `FromSARIFLevel("error")` → `SeverityError`. Lossy. Documented but not fixed.                   |
-| `examples/govet/main.go`  | 85%    | Compiles and runs, but LSP diagnostics reference stale fields (gopls shows warnings for a different code path — actual code is clean). |
+| `internal/detectors/`     | 95%    | Detectors extracted from CLI. Full unit test coverage for parsing and category mapping. |
 | Test coverage             | 82.8%  | 16 functions at 0% coverage (mostly example code + low-level helpers)                                                                  |
 
 ---
@@ -135,7 +135,7 @@ All critical issues from the April 15 audit have been resolved:
 
 6. **Stale diagnostics** — gopls still shows diagnostics for deleted `pipeline/astfix.go`. Need LSP restart. (~0 min)
 
-7. **`examples/govet/main.go` lint warnings** — gopls reports `EndPosition` and `Context` fields that don't exist on Finding. These appear to be stale diagnostics — the actual code doesn't reference these fields. Verify by building. (~5 min)
+7. **`internal/detectors/` moved from `examples/`** — Detectors extracted from deleted examples directory into internal package with full test coverage. (~done)
 
 ---
 

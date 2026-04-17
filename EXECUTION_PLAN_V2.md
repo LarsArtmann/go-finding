@@ -196,30 +196,15 @@ func (a *ASTFixer) Apply(file string, fix finding.Finding) error
 
 ---
 
-### Task 7: Create Go Vet Converter Example
+### Task 7: Create Go Vet Converter
 
 **Time:** ~12 min  
-**Impact:** Real tool integration example  
-**Why:** Need examples that work with actual tools
+**Impact:** Real tool integration  
+**Why:** Need detector implementations that work with actual tools
 
-```go
-// examples/govet/govet.go
+**Deliverable:** Moved to `internal/detectors/govet.go` — exports `NewGoVetDetector(dir string) pipeline.Detector`
 
-// GoVetDetector wraps `go vet` as a Detector
-
-type GoVetDetector struct {
-    Dir     string
-    Patterns []string
-}
-
-func (d *GoVetDetector) Name() string { return "go-vet" }
-
-func (d *GoVetDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
-    // Run go vet -json
-    // Parse JSON output
-    // Convert to Finding structs
-}
-```
+**Status:** ✅ Done (extracted to `internal/detectors/`)
 
 ---
 
@@ -477,7 +462,7 @@ Key deliverables shipped:
 - RetryDetector with configurable exponential backoff
 - Partial success detection (DetectPartial)
 - Fuzz tests for Filter, Merge, Correlate, DedupKey
-- Go vet detector example in `examples/govet/`
+- Go vet detector in `internal/detectors/govet.go`
 
 Remaining work (Phase 4): CLI tool, config files, watch mode, Web UI, property tests.
 These are lower priority and can be addressed as the project evolves.

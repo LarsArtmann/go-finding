@@ -536,11 +536,9 @@ if errors.As(err, &fe) {
 }
 ```
 
-## Example Detectors
+## Built-in Detectors
 
-See the `examples/` directory for complete detector implementations:
+The library ships with detector implementations in `internal/detectors/`:
 
-- **`examples/govet/`** — Wraps `go vet -json` output
-- **`examples/staticcheck/`** — Wraps staticcheck JSON output
-- **`examples/artdupl/`** — Wraps art-dupl clone detection
-- **`examples/branching/`** — Code complexity analysis with refactoring suggestions
+- **`govet`** — Wraps `go vet -json` output (`NewGoVetDetector(dir)`)
+- **`staticcheck`** — Wraps staticcheck JSON output (`NewStaticcheckDetector(dir)`)
