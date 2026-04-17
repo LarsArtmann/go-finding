@@ -56,10 +56,6 @@ func (n *namedDetector) Name() string {
 	return n.name
 }
 
-// Stage represents a pipeline stage.
-// Stages are pure functions that transform input to output.
-type Stage func(ctx context.Context) error
-
 // Config configures the pipeline behavior.
 type Config struct {
 	// MaxIterations prevents infinite loops.
