@@ -457,6 +457,95 @@ func TestFixApplier_Apply(t *testing.T) {
 	}
 }
 
+func TestFixApplier_RangeBasedFix(t *testing.T) {
+	tempDir := t.TempDir()
+	applier := NewFixApplier(tempDir)
+
+	testFile := filepath.Join(tempDir, "test.go")
+	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tprintln(\"hello\")\n}\n"
+	if err := writeFile(testFile, []byte(content), 0644); err != nil {
+		t.Fatalf("create test file: %v", err)
+	}
+
+	// Fix only the second "println" at line 5, using Range for precision.
+	// Without Range, strings.Replace would hit the first occurrence at line 4.
+	fixes := []finding.Finding{
+		{
+			ID:         "fix1",
+			BeforeCode: "println(\"hello\")",
+			AfterCode:  "fmt.Println(\"world\")",
+			Position:   finding.Position{File: "test.go", Line: 5, Column: 2},
+			Range: &finding.Range{
+				Start: finding.Position{File: "test.go", Line: 5, Column: 2},
+				End:   finding.Position{File: "test.go", Line: 5, Column: 18},
+			},
+			FixStrategy: finding.FixStrategyDirect,
+		},
+	}
+
+	applied, err := applier.Apply(context.Background(), fixes)
+	if err != nil {
+		t.Fatalf("apply failed: %v", err)
+	}
+	if applied != 1 {
+		t.Fatalf("expected 1 applied, got %d", applied)
+	}
+
+	got, err := readFile(testFile)
+	if err != nil {
+		t.Fatalf("read file: %v", err)
+	}
+
+	// First println unchanged, second replaced.
+	want := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tfmt.Println(\"world\")\n}\n"
+	if string(got) != want {
+		t.Errorf("want:\n%s\ngot:\n%s", want, string(got))
+	}
+}
+
+func TestFixApplier_MultiLineRangeFix(t *testing.T) {
+	tempDir := t.TempDir()
+	applier := NewFixApplier(tempDir)
+
+	testFile := filepath.Join(tempDir, "test.go")
+	content := "package main\n\nfunc old() {\n\treturn\n}\n\nfunc main() {}\n"
+	if err := writeFile(testFile, []byte(content), 0644); err != nil {
+		t.Fatalf("create test file: %v", err)
+	}
+
+	// Replace lines 3-5 (func old) with new content.
+	fixes := []finding.Finding{
+		{
+			BeforeCode: "func old() {\n\treturn\n}",
+			AfterCode:  "func new() {\n\treturn 42\n}",
+			Position:   finding.Position{File: "test.go", Line: 3},
+			Range: &finding.Range{
+				Start: finding.Position{File: "test.go", Line: 3, Column: 1},
+				End:   finding.Position{File: "test.go", Line: 5, Column: 2},
+			},
+			FixStrategy: finding.FixStrategyDirect,
+		},
+	}
+
+	applied, err := applier.Apply(context.Background(), fixes)
+	if err != nil {
+		t.Fatalf("apply failed: %v", err)
+	}
+	if applied != 1 {
+		t.Fatalf("expected 1 applied, got %d", applied)
+	}
+
+	got, err := readFile(testFile)
+	if err != nil {
+		t.Fatalf("read file: %v", err)
+	}
+
+	want := "package main\n\nfunc new() {\n\treturn 42\n}\n\nfunc main() {}\n"
+	if string(got) != want {
+		t.Errorf("want:\n%s\ngot:\n%s", want, string(got))
+	}
+}
+
 // BenchmarkParallelDetection benchmarks parallel vs sequential detection.
 func BenchmarkParallelDetection(b *testing.B) {
 	for _, parallel := range []bool{false, true} {

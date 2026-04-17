@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -560,29 +561,95 @@ func (a *FixApplier) restore(path string) error {
 }
 
 // applyToFile applies fixes to a single file.
+// When a finding has a Range with valid end position, it uses line-based replacement
+// targeting the exact line range. Otherwise it falls back to string replacement.
+// Fixes are sorted descending by position so earlier replacements don't shift later ones.
 func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return 0, ioErrorAt("read file", err, path)
 	}
 
-	result := string(content)
+	lines := strings.Split(string(content), "\n")
 	applied := 0
+
+	// Partition: range-based fixes (apply first, sorted descending) vs string-based.
+	var rangeFixes, stringFixes []finding.Finding
 	for _, f := range fixes {
-		if f.BeforeCode != "" && f.AfterCode != "" {
-			newResult := strings.Replace(result, f.BeforeCode, f.AfterCode, 1)
-			if newResult != result {
-				result = newResult
+		if f.BeforeCode == "" && f.AfterCode == "" {
+			continue
+		}
+		if f.Range != nil && f.Range.HasEnd() && f.Range.Start.Line > 0 && f.Range.End.Line > 0 {
+			rangeFixes = append(rangeFixes, f)
+		} else if f.BeforeCode != "" && f.AfterCode != "" {
+			stringFixes = append(stringFixes, f)
+		}
+	}
+
+	// Sort range fixes descending so earlier edits don't shift later line numbers.
+	slices.SortFunc(rangeFixes, func(a, b finding.Finding) int {
+		if a.Range.Start.Line != b.Range.Start.Line {
+			return b.Range.Start.Line - a.Range.Start.Line
+		}
+		return b.Range.Start.Column - a.Range.Start.Column
+	})
+
+	// Apply range-based fixes.
+	for _, f := range rangeFixes {
+		startIdx := f.Range.Start.Line - 1 // 0-indexed
+		endIdx := f.Range.End.Line - 1
+
+		if startIdx < 0 || startIdx >= len(lines) {
+			continue
+		}
+		if endIdx >= len(lines) {
+			endIdx = len(lines) - 1
+		}
+
+		// Verify BeforeCode is present in the range if set.
+		rangeContent := strings.Join(lines[startIdx:endIdx+1], "\n")
+		if f.BeforeCode != "" {
+			if !strings.Contains(rangeContent, f.BeforeCode) {
+				continue
+			}
+			// Targeted replacement: swap BeforeCode→AfterCode within the range,
+			// preserving surrounding content like indentation.
+			replaced := strings.Replace(rangeContent, f.BeforeCode, f.AfterCode, 1)
+			replacementLines := strings.Split(replaced, "\n")
+			newLines := make([]string, 0, len(lines)-(endIdx-startIdx+1)+len(replacementLines))
+			newLines = append(newLines, lines[:startIdx]...)
+			newLines = append(newLines, replacementLines...)
+			newLines = append(newLines, lines[endIdx+1:]...)
+			lines = newLines
+		} else if f.AfterCode != "" {
+			// Full replacement: replace entire line range with AfterCode.
+			replacement := make([]string, 0, len(lines)-(endIdx-startIdx+1)+1)
+			replacement = append(replacement, lines[:startIdx]...)
+			replacement = append(replacement, f.AfterCode)
+			replacement = append(replacement, lines[endIdx+1:]...)
+			lines = replacement
+		}
+		applied++
+	}
+
+	// Apply string-based fixes (fallback, position-independent).
+	if len(stringFixes) > 0 {
+		joined := strings.Join(lines, "\n")
+		for _, f := range stringFixes {
+			newContent := strings.Replace(joined, f.BeforeCode, f.AfterCode, 1)
+			if newContent != joined {
+				joined = newContent
 				applied++
 			}
 		}
+		lines = strings.Split(joined, "\n")
 	}
 
 	if applied == 0 {
 		return 0, nil
 	}
 
-	if err := os.WriteFile(path, []byte(result), 0600); err != nil {
+	if err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0600); err != nil {
 		return 0, ioErrorAt("write file", err, path)
 	}
 
