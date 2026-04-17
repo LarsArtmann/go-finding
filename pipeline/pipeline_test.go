@@ -38,7 +38,13 @@ func (m *mockDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 func newMockDetector(name, toolName string, findings ...finding.Finding) *mockDetector {
 	if len(findings) == 0 {
 		findings = []finding.Finding{
-			{ID: "1", Rule: "r1", ToolName: toolName, Message: "m", Severity: finding.SeverityError},
+			{
+				ID:       "1",
+				Rule:     "r1",
+				ToolName: toolName,
+				Message:  "m",
+				Severity: finding.SeverityError,
+			},
 		}
 	}
 	return &mockDetector{name: name, findings: findings}
@@ -133,7 +139,11 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 		t.Errorf("expected %d iterations, got %d", config.MaxIterations, result.TotalIterations)
 	}
 	if len(result.Iterations) != config.MaxIterations {
-		t.Fatalf("expected %d iteration records, got %d", config.MaxIterations, len(result.Iterations))
+		t.Fatalf(
+			"expected %d iteration records, got %d",
+			config.MaxIterations,
+			len(result.Iterations),
+		)
 	}
 	// Check first iteration
 	iter := result.Iterations[0]
@@ -262,7 +272,14 @@ func TestPipelineRun_Parallel(t *testing.T) {
 	d2 := &mockDetector{
 		name: "d2",
 		findings: []finding.Finding{
-			{ID: "2", Rule: "r2", ToolName: "t2", Message: "m2", Severity: finding.SeverityWarning, Position: finding.Position{File: "b.go"}},
+			{
+				ID:       "2",
+				Rule:     "r2",
+				ToolName: "t2",
+				Message:  "m2",
+				Severity: finding.SeverityWarning,
+				Position: finding.Position{File: "b.go"},
+			},
 		},
 	}
 
@@ -371,7 +388,7 @@ func TestFixApplier(t *testing.T) {
 	// Create a test file
 	testFile := filepath.Join(tempDir, "test.go")
 	testContent := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
-	if err := writeFile(testFile, []byte(testContent), 0644); err != nil {
+	if err := writeFile(testFile, []byte(testContent), 0o644); err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
 
@@ -423,7 +440,7 @@ func TestFixApplier_Apply(t *testing.T) {
 	// Create test file
 	testFile := filepath.Join(tempDir, "test.go")
 	originalContent := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
-	if err := writeFile(testFile, []byte(originalContent), 0644); err != nil {
+	if err := writeFile(testFile, []byte(originalContent), 0o644); err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
 
@@ -463,7 +480,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 
 	testFile := filepath.Join(tempDir, "test.go")
 	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tprintln(\"hello\")\n}\n"
-	if err := writeFile(testFile, []byte(content), 0644); err != nil {
+	if err := writeFile(testFile, []byte(content), 0o644); err != nil {
 		t.Fatalf("create test file: %v", err)
 	}
 
@@ -509,7 +526,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 
 	testFile := filepath.Join(tempDir, "test.go")
 	content := "package main\n\nfunc old() {\n\treturn\n}\n\nfunc main() {}\n"
-	if err := writeFile(testFile, []byte(content), 0644); err != nil {
+	if err := writeFile(testFile, []byte(content), 0o644); err != nil {
 		t.Fatalf("create test file: %v", err)
 	}
 
@@ -571,10 +588,10 @@ func BenchmarkParallelDetection(b *testing.B) {
 			}
 
 			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				p := New(config, b.TempDir(), detectors...)
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				p.Run(ctx)
+				_, _ = p.Run(ctx)
 				cancel()
 			}
 		})
@@ -600,7 +617,7 @@ func readFile(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var result []byte
 	buf := make([]byte, 1024)

@@ -57,7 +57,13 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 		findings := make([]Finding, n)
 		for i := range findings {
 			findings[i] = Finding{
-				ID:       randomSeedRule(rng) + ":" + randomSeedFile(rng) + ":" + string(rune('A'+rng.Intn(26))),
+				ID: randomSeedRule(
+					rng,
+				) + ":" + randomSeedFile(
+					rng,
+				) + ":" + string(
+					rune('A'+rng.Intn(26)),
+				),
 				Severity: sevFromInt(rng.Intn(4)),
 			}
 		}

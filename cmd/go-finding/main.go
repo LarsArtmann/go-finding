@@ -12,11 +12,10 @@ import (
 	"slices"
 	"time"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/larsartmann/go-finding"
 	det "github.com/larsartmann/go-finding/internal/detectors"
 	"github.com/larsartmann/go-finding/pipeline"
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -50,8 +49,10 @@ func main() {
 		if err != nil {
 			fatal("creating CPU profile", err)
 		}
-		defer f.Close()
-		pprof.StartCPUProfile(f)
+		defer func() { _ = f.Close() }()
+		if err := pprof.StartCPUProfile(f); err != nil {
+			fatal("starting CPU profile", err)
+		}
 		defer pprof.StopCPUProfile()
 	}
 
@@ -62,8 +63,10 @@ func main() {
 				fmt.Fprintf(os.Stderr, "Error creating memory profile: %v\n", err)
 				return
 			}
-			defer f.Close()
-			pprof.WriteHeapProfile(f)
+			defer func() { _ = f.Close() }()
+			if err := pprof.WriteHeapProfile(f); err != nil {
+				fmt.Fprintf(os.Stderr, "Error writing heap profile: %v\n", err)
+			}
 		}
 	}()
 
@@ -103,7 +106,10 @@ func main() {
 
 	detectorList := buildDetectors(cfg.Detectors, dir)
 	if len(detectorList) == 0 {
-		fmt.Fprintln(os.Stderr, "No detectors configured. Use -config or the default govet+staticcheck detectors.")
+		fmt.Fprintln(
+			os.Stderr,
+			"No detectors configured. Use -config or the default govet+staticcheck detectors.",
+		)
 		os.Exit(1)
 	}
 
@@ -114,7 +120,12 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), pipelineCfg.Timeout)
 	defer cancel()
 
-	fmt.Fprintf(os.Stderr, "go-finding v0.1.0: analyzing %s with %d detector(s)\n", dir, len(detectorList))
+	fmt.Fprintf(
+		os.Stderr,
+		"go-finding v0.1.0: analyzing %s with %d detector(s)\n",
+		dir,
+		len(detectorList),
+	)
 
 	result, err := p.Run(ctx)
 	if err != nil {
@@ -159,7 +170,10 @@ func parseSeverity(s string) (finding.Severity, error) {
 	case "critical":
 		return finding.SeverityCritical, nil
 	default:
-		return finding.SeverityWarning, fmt.Errorf("unknown severity %q (use: info, warning, error, critical)", s)
+		return finding.SeverityWarning, fmt.Errorf(
+			"unknown severity %q (use: info, warning, error, critical)",
+			s,
+		)
 	}
 }
 
@@ -196,15 +210,19 @@ func outputResults(w *os.File, report *finding.Report, format string) error {
 	case "json":
 		out, err := report.PrettyJSON()
 		if err != nil {
+			return fmt.Errorf("serializing JSON: %w", err)
+		}
+		if _, err := fmt.Fprintln(w, out); err != nil {
 			return err
 		}
-		fmt.Fprintln(w, out)
 	case "sarif":
 		out, err := report.ToSARIF()
 		if err != nil {
+			return fmt.Errorf("serializing SARIF: %w", err)
+		}
+		if _, err := fmt.Fprintln(w, string(out)); err != nil {
 			return err
 		}
-		fmt.Fprintln(w, string(out))
 	default:
 		outputText(w, report)
 	}
@@ -213,18 +231,18 @@ func outputResults(w *os.File, report *finding.Report, format string) error {
 
 func outputText(w *os.File, report *finding.Report) {
 	if len(report.Findings) == 0 {
-		fmt.Fprintln(w, "No findings.")
+		_, _ = fmt.Fprintln(w, "No findings.")
 		return
 	}
 	for _, f := range report.Findings {
-		fmt.Fprintf(w, "%s: [%s] %s: %s\n", f.Position.String(), f.Severity, f.Rule, f.Message)
+		_, _ = fmt.Fprintf(w, "%s: [%s] %s: %s\n", f.Position.String(), f.Severity, f.Rule, f.Message)
 		if f.Suggestion != "" {
-			fmt.Fprintf(w, "  Suggestion: %s\n", f.Suggestion)
+			_, _ = fmt.Fprintf(w, "  Suggestion: %s\n", f.Suggestion)
 		}
 	}
-	fmt.Fprintf(w, "\n%d finding(s)\n", len(report.Findings))
+	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(report.Findings))
 	if report.Summary.Total > 0 {
-		fmt.Fprintf(w, "  By severity: %d info, %d warning, %d error, %d critical\n",
+		_, _ = fmt.Fprintf(w, "  By severity: %d info, %d warning, %d error, %d critical\n",
 			report.Summary.BySeverity[finding.SeverityInfo],
 			report.Summary.BySeverity[finding.SeverityWarning],
 			report.Summary.BySeverity[finding.SeverityError],
@@ -234,11 +252,11 @@ func outputText(w *os.File, report *finding.Report) {
 }
 
 type pipelineConfigFile struct {
-	MaxIterations     int            `json:"maxIterations" yaml:"maxIterations"`
+	MaxIterations     int            `json:"maxIterations"     yaml:"maxIterations"`
 	ParallelDetectors bool           `json:"parallelDetectors" yaml:"parallelDetectors"`
-	VerifyAfterFix    bool           `json:"verifyAfterFix" yaml:"verifyAfterFix"`
-	Timeout           string         `json:"timeout" yaml:"timeout"`
-	Detectors         []detectorSpec `json:"detectors" yaml:"detectors"`
+	VerifyAfterFix    bool           `json:"verifyAfterFix"    yaml:"verifyAfterFix"`
+	Timeout           string         `json:"timeout"           yaml:"timeout"`
+	Detectors         []detectorSpec `json:"detectors"         yaml:"detectors"`
 }
 
 type detectorSpec struct {

@@ -28,7 +28,12 @@ func MakeFinding(id, rule, tool, message string, severity Severity) Finding {
 }
 
 // MakeFindingWithPos creates a Finding with position info.
-func MakeFindingWithPos(id, rule, tool, message string, severity Severity, file string, line, col int) Finding {
+func MakeFindingWithPos(
+	id, rule, tool, message string,
+	severity Severity,
+	file string,
+	line, col int,
+) Finding {
 	return Finding{
 		ID:       id,
 		Rule:     rule,
@@ -42,8 +47,9 @@ func MakeFindingWithPos(id, rule, tool, message string, severity Severity, file 
 // MakeFindings creates a slice of findings from field tuples.
 func MakeFindings(fields []struct {
 	ID, Rule, Tool, Message string
-	Severity Severity
-}) []Finding {
+	Severity                Severity
+},
+) []Finding {
 	result := make([]Finding, len(fields))
 	for i, f := range fields {
 		result[i] = MakeFinding(f.ID, f.Rule, f.Tool, f.Message, f.Severity)
@@ -82,7 +88,8 @@ func RunEqualTests[T any](t *testing.T, tests []struct {
 	name string
 	a, b T
 	want bool
-}, eqFunc func(a, b T) bool, formatName string) {
+}, eqFunc func(a, b T) bool, formatName string,
+) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()

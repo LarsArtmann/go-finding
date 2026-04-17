@@ -17,7 +17,7 @@ type ToolInfo struct {
 type Summary struct {
 	Total         int                 `json:"total"`                   // Total findings
 	BySeverity    map[Severity]int    `json:"bySeverity"`              // Count by severity
-	ByCategory    map[Category]int     `json:"byCategory,omitempty"`    // Count by category
+	ByCategory    map[Category]int    `json:"byCategory,omitempty"`    // Count by category
 	ByFixStrategy map[FixStrategy]int `json:"byFixStrategy,omitempty"` // Count by fix strategy
 	FilesAffected int                 `json:"filesAffected,omitempty"` // Unique files with findings
 	DurationMs    int64               `json:"durationMs,omitempty"`    // Execution time

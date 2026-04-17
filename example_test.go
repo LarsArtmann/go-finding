@@ -3,6 +3,7 @@ package finding_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -39,9 +40,24 @@ func ExampleParseID() {
 
 func ExampleFilter() {
 	findings := []finding.Finding{
-		{ID: "1", Rule: "R1", Severity: finding.SeverityInfo, Position: finding.Position{File: "a.go"}},
-		{ID: "2", Rule: "R2", Severity: finding.SeverityError, Position: finding.Position{File: "b.go"}},
-		{ID: "3", Rule: "R1", Severity: finding.SeverityWarning, Position: finding.Position{File: "a.go"}},
+		{
+			ID:       "1",
+			Rule:     "R1",
+			Severity: finding.SeverityInfo,
+			Position: finding.Position{File: "a.go"},
+		},
+		{
+			ID:       "2",
+			Rule:     "R2",
+			Severity: finding.SeverityError,
+			Position: finding.Position{File: "b.go"},
+		},
+		{
+			ID:       "3",
+			Rule:     "R1",
+			Severity: finding.SeverityWarning,
+			Position: finding.Position{File: "a.go"},
+		},
 	}
 
 	errors := finding.Filter(findings, finding.BySeverityAtLeast(finding.SeverityError))
@@ -108,10 +124,14 @@ func ExampleMerge() {
 
 func ExampleMerge_deduplication() {
 	r1 := finding.NewReport(finding.ToolInfo{Name: "tool-a"})
-	r1.AddFinding(finding.Finding{ID: "same-id", Rule: "R1", Position: finding.Position{File: "a.go"}})
+	r1.AddFinding(
+		finding.Finding{ID: "same-id", Rule: "R1", Position: finding.Position{File: "a.go"}},
+	)
 
 	r2 := finding.NewReport(finding.ToolInfo{Name: "tool-b"})
-	r2.AddFinding(finding.Finding{ID: "same-id", Rule: "R1", Position: finding.Position{File: "a.go"}})
+	r2.AddFinding(
+		finding.Finding{ID: "same-id", Rule: "R1", Position: finding.Position{File: "a.go"}},
+	)
 
 	merged := finding.Merge([]*finding.Report{r1, r2})
 	fmt.Println("After dedup:", merged.Summary.Total)
@@ -192,7 +212,7 @@ func ExampleReport_ToSARIF() {
 	var log struct {
 		Version string `json:"version"`
 	}
-	json.Unmarshal(data, &log)
+	_ = json.Unmarshal(data, &log)
 	fmt.Println("SARIF version:", log.Version)
 
 	// Output:
@@ -252,19 +272,22 @@ func ExampleRange() {
 }
 
 func ExamplePipeline() {
-	detector := pipeline.NamedDetectorFunc("example", func(ctx context.Context) ([]finding.Finding, error) {
-		return []finding.Finding{
-			{
-				ID:          "example:R1:main.go:1:1",
-				Rule:        "R1",
-				ToolName:    "example",
-				Message:     "example finding",
-				Severity:    finding.SeverityWarning,
-				Position:    finding.Position{File: "main.go", Line: 1, Column: 1},
-				FixStrategy: finding.FixStrategyNone,
-			},
-		}, nil
-	})
+	detector := pipeline.NamedDetectorFunc(
+		"example",
+		func(ctx context.Context) ([]finding.Finding, error) {
+			return []finding.Finding{
+				{
+					ID:          "example:R1:main.go:1:1",
+					Rule:        "R1",
+					ToolName:    "example",
+					Message:     "example finding",
+					Severity:    finding.SeverityWarning,
+					Position:    finding.Position{File: "main.go", Line: 1, Column: 1},
+					FixStrategy: finding.FixStrategyNone,
+				},
+			}, nil
+		},
+	)
 
 	cfg := pipeline.Config{
 		MaxIterations:     1,
@@ -292,7 +315,7 @@ func ExampleFindingError() {
 	fmt.Println(finding.IsFindingError(err))
 	fmt.Println(finding.GetCategory(err))
 
-	ioErr := finding.NewIOError("read file", fmt.Errorf("permission denied"))
+	ioErr := finding.NewIOError("read file", errors.New("permission denied"))
 	fmt.Println(ioErr.Error())
 
 	// Output:

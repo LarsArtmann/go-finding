@@ -41,3 +41,5 @@ node_modules/
 
 # Copy/paste detection report
 /report/jscpd-report.jsonstaticcheck
+Copy/paste detection report
+/report/jscpd-report.json

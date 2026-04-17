@@ -80,18 +80,18 @@ go-finding -cpuprof cpu.prof -memprof mem.prof
 
 ## CLI Flags
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `-dir` | `.` | Root directory to analyze |
-| `-format` | `text` | Output format: `text`, `json`, `sarif` |
-| `-severity` | `info` | Minimum severity: `info`, `warning`, `error`, `critical` |
-| `-max-iterations` | `5` | Maximum pipeline iterations |
-| `-parallel` | `true` | Run detectors in parallel |
-| `-verify` | `false` | Verify fixes by re-running detectors |
-| `-timeout` | `10m` | Pipeline timeout (Go duration format) |
-| `-config` | `""` | Path to YAML or JSON config file |
-| `-cpuprof` | `""` | Write CPU profile to file |
-| `-memprof` | `""` | Write memory profile to file |
+| Flag              | Default | Description                                              |
+| ----------------- | ------- | -------------------------------------------------------- |
+| `-dir`            | `.`     | Root directory to analyze                                |
+| `-format`         | `text`  | Output format: `text`, `json`, `sarif`                   |
+| `-severity`       | `info`  | Minimum severity: `info`, `warning`, `error`, `critical` |
+| `-max-iterations` | `5`     | Maximum pipeline iterations                              |
+| `-parallel`       | `true`  | Run detectors in parallel                                |
+| `-verify`         | `false` | Verify fixes by re-running detectors                     |
+| `-timeout`        | `10m`   | Pipeline timeout (Go duration format)                    |
+| `-config`         | `""`    | Path to YAML or JSON config file                         |
+| `-cpuprof`        | `""`    | Write CPU profile to file                                |
+| `-memprof`        | `""`    | Write memory profile to file                             |
 
 ## Configuration File
 
@@ -120,8 +120,8 @@ Equivalent JSON:
   "verifyAfterFix": false,
   "timeout": "10m",
   "detectors": [
-    {"name": "govet", "args": {}},
-    {"name": "staticcheck", "args": {}}
+    { "name": "govet", "args": {} },
+    { "name": "staticcheck", "args": {} }
   ]
 }
 ```
@@ -172,22 +172,22 @@ finding.SeverityInfo.LessThan(finding.SeverityCritical)    // true
 
 Standard categories:
 
-| Constant | Value |
-|----------|-------|
-| `CategorySecurity` | `"security"` |
-| `CategoryStyle` | `"style"` |
-| `CategoryPerformance` | `"performance"` |
-| `CategoryCorrectness` | `"correctness"` |
-| `CategoryComplexity` | `"complexity"` |
-| `CategoryDuplication` | `"duplication"` |
+| Constant                | Value              |
+| ----------------------- | ------------------ |
+| `CategorySecurity`      | `"security"`       |
+| `CategoryStyle`         | `"style"`          |
+| `CategoryPerformance`   | `"performance"`    |
+| `CategoryCorrectness`   | `"correctness"`    |
+| `CategoryComplexity`    | `"complexity"`     |
+| `CategoryDuplication`   | `"duplication"`    |
 | `CategoryErrorHandling` | `"error-handling"` |
-| `CategoryMigration` | `"migration"` |
-| `CategoryTypeSafety` | `"type-safety"` |
-| `CategoryStructure` | `"structure"` |
-| `CategoryConfiguration` | `"configuration"` |
-| `CategoryDocumentation` | `"documentation"` |
-| `CategoryTesting` | `"testing"` |
-| `CategoryUnused` | `"unused"` |
+| `CategoryMigration`     | `"migration"`      |
+| `CategoryTypeSafety`    | `"type-safety"`    |
+| `CategoryStructure`     | `"structure"`      |
+| `CategoryConfiguration` | `"configuration"`  |
+| `CategoryDocumentation` | `"documentation"`  |
+| `CategoryTesting`       | `"testing"`        |
+| `CategoryUnused`        | `"unused"`         |
 
 Custom categories are valid — `Category` is a string type.
 

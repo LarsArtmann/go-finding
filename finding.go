@@ -19,7 +19,7 @@ type Finding struct {
 
 	// Classification
 	Category Category `json:"category,omitempty"` // Domain: "security", "style", "duplication", etc.
-	Tag      string `json:"tag,omitempty"`      // Sub-classification: "phantom-type", "clone", etc.
+	Tag      string   `json:"tag,omitempty"`      // Sub-classification: "phantom-type", "clone", etc.
 
 	// Fix
 	FixStrategy FixStrategy `json:"fixStrategy"`          // none, suggest, direct, ai

@@ -5,6 +5,7 @@ package pipeline
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -281,7 +282,7 @@ func (p *Pipeline) detect(ctx context.Context) ([]finding.Finding, error) {
 }
 
 // addFindings adds non-suppressed findings to the target slice, calling OnFinding if set.
-func (p *Pipeline) addFindings(target []finding.Finding, findings []finding.Finding) []finding.Finding {
+func (p *Pipeline) addFindings(target, findings []finding.Finding) []finding.Finding {
 	for _, f := range findings {
 		if !f.IsSuppressed() {
 			target = append(target, f)
@@ -391,7 +392,11 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 }
 
 // applyTriage handles conflict detection and fix application for one iteration.
-func (p *Pipeline) applyTriage(ctx context.Context, fixes []finding.Finding, iter *Iteration) error {
+func (p *Pipeline) applyTriage(
+	ctx context.Context,
+	fixes []finding.Finding,
+	iter *Iteration,
+) error {
 	if len(fixes) == 0 {
 		return nil
 	}
@@ -484,7 +489,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 		// Create backup
 		if a.backupEnabled {
 			if err := a.backup(path); err != nil {
-				return applied, finding.NewIOError(fmt.Sprintf("backup %s", path), err)
+				return applied, finding.NewIOError("backup "+path, err)
 			}
 		}
 
@@ -495,7 +500,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 			if a.backupEnabled {
 				_ = a.restore(path)
 			}
-			return applied, finding.NewConflictError(fmt.Sprintf("apply to %s", path), err)
+			return applied, finding.NewConflictError("apply to "+path, err)
 		}
 
 		applied += count
@@ -507,7 +512,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 // fileHash returns the hex-encoded SHA256 hash of s.
 func fileHash(s string) string {
 	h := sha256.Sum256([]byte(s))
-	return fmt.Sprintf("%x", h)
+	return hex.EncodeToString(h[:])
 }
 
 // backup creates a backup of the given file.
@@ -518,11 +523,11 @@ func (a *FixApplier) backup(path string) error {
 	}
 
 	backupPath := filepath.Join(a.backupDir, fmt.Sprintf("%x.bak", fileHash(path)))
-	if err := os.MkdirAll(a.backupDir, 0750); err != nil {
+	if err := os.MkdirAll(a.backupDir, 0o750); err != nil {
 		return finding.NewIOError("create backup dir", err)
 	}
 
-	if err := os.WriteFile(backupPath, data, 0600); err != nil {
+	if err := os.WriteFile(backupPath, data, 0o600); err != nil {
 		return ioErrorAt("write backup", err, path)
 	}
 
@@ -541,7 +546,7 @@ func (a *FixApplier) restore(path string) error {
 		return p, exists
 	}()
 	if !ok {
-		return finding.NewInternalError(fmt.Sprintf("no backup for %s", path), nil)
+		return finding.NewInternalError("no backup for "+path, nil)
 	}
 
 	data, err := os.ReadFile(backupPath)
@@ -549,7 +554,7 @@ func (a *FixApplier) restore(path string) error {
 		return ioErrorAt("read backup", err, path)
 	}
 
-	if err := os.WriteFile(path, data, 0600); err != nil {
+	if err := os.WriteFile(path, data, 0o600); err != nil {
 		return ioErrorAt("restore file", err, path)
 	}
 
@@ -645,7 +650,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, err
 		return 0, nil
 	}
 
-	if err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0600); err != nil {
+	if err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o600); err != nil {
 		return 0, ioErrorAt("write file", err, path)
 	}
 

@@ -170,8 +170,22 @@ func TestFindingIsSuppressed(t *testing.T) {
 	}{
 		{"no suppression", Finding{}, false},
 		{"nil suppression", Finding{Suppression: nil}, false},
-		{"active suppression", Finding{Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R1"}}, true},
-		{"expired suppression", Finding{Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R1", ExpiresAt: ptrTime(time.Now().Add(-time.Hour))}}, false},
+		{
+			"active suppression",
+			Finding{Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R1"}},
+			true,
+		},
+		{
+			"expired suppression",
+			Finding{
+				Suppression: &Suppression{
+					Kind:      SuppressionInSource,
+					Rule:      "R1",
+					ExpiresAt: new(time.Now().Add(-time.Hour)),
+				},
+			},
+			false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -194,11 +208,18 @@ func TestRelatedRefIsValid(t *testing.T) {
 	}{
 		{"with finding ID", RelatedRef{FindingID: "abc123"}, true},
 		{"empty finding ID", RelatedRef{FindingID: ""}, false},
-		{"with relation and position", RelatedRef{FindingID: "abc", Relation: "clone-of", Position: Position{File: "f.go", Line: 1}}, true},
+		{
+			"with relation and position",
+			RelatedRef{
+				FindingID: "abc",
+				Relation:  "clone-of",
+				Position:  Position{File: "f.go", Line: 1},
+			},
+			true,
+		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := tt.r.IsValid()
@@ -244,8 +265,24 @@ func TestSuppressionIsExpired(t *testing.T) {
 		want bool
 	}{
 		{"no expiry", &Suppression{Kind: SuppressionInSource, Rule: "R1"}, false},
-		{"future expiry", &Suppression{Kind: SuppressionInSource, Rule: "R1", ExpiresAt: ptrTime(time.Now().Add(time.Hour))}, false},
-		{"past expiry", &Suppression{Kind: SuppressionInSource, Rule: "R1", ExpiresAt: ptrTime(time.Now().Add(-time.Hour))}, true},
+		{
+			"future expiry",
+			&Suppression{
+				Kind:      SuppressionInSource,
+				Rule:      "R1",
+				ExpiresAt: new(time.Now().Add(time.Hour)),
+			},
+			false,
+		},
+		{
+			"past expiry",
+			&Suppression{
+				Kind:      SuppressionInSource,
+				Rule:      "R1",
+				ExpiresAt: new(time.Now().Add(-time.Hour)),
+			},
+			true,
+		},
 		{"nil suppression", nil, false},
 	}
 
@@ -401,6 +438,7 @@ func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 	}
 }
 
+//go:fix inline
 func ptrTime(t time.Time) *time.Time {
-	return &t
+	return new(t)
 }

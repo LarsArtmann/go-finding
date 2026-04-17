@@ -40,7 +40,7 @@ func (c RetryConfig) delay(attempt int) time.Duration {
 
 // RetryDetector wraps a Detector with retry logic on error.
 type RetryDetector struct {
-	inner Detector
+	inner  Detector
 	config RetryConfig
 }
 
@@ -73,5 +73,10 @@ func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 		}
 		lastErr = err
 	}
-	return nil, fmt.Errorf("detector %s failed after %d retries: %w", d.inner.Name(), d.config.MaxRetries, lastErr)
+	return nil, fmt.Errorf(
+		"detector %s failed after %d retries: %w",
+		d.inner.Name(),
+		d.config.MaxRetries,
+		lastErr,
+	)
 }

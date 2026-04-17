@@ -5,6 +5,7 @@ package detectors
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os/exec"
 	"path/filepath"
@@ -16,19 +17,23 @@ import (
 
 // NewGoVetDetector returns a Detector that runs `go vet -json` on the given directory.
 func NewGoVetDetector(dir string) pipeline.Detector {
-	return pipeline.NamedDetectorFunc("govet", func(ctx context.Context) ([]finding.Finding, error) {
-		cmd := exec.CommandContext(ctx, "go", "vet", "-json", "./...")
-		cmd.Dir = dir
-		cmd.Stderr = nil
-		out, err := cmd.Output()
-		if err != nil {
-			if _, ok := err.(*exec.ExitError); ok {
-				return nil, nil
+	return pipeline.NamedDetectorFunc(
+		"govet",
+		func(ctx context.Context) ([]finding.Finding, error) {
+			cmd := exec.CommandContext(ctx, "go", "vet", "-json", "./...")
+			cmd.Dir = dir
+			cmd.Stderr = nil
+			out, err := cmd.Output()
+			if err != nil {
+				exitError := &exec.ExitError{}
+				if errors.As(err, &exitError) {
+					return nil, nil
+				}
+				return nil, fmt.Errorf("run go vet: %w", err)
 			}
-			return nil, fmt.Errorf("run go vet: %w", err)
-		}
-		return parseGoVetJSON(out, dir), nil
-	})
+			return parseGoVetJSON(out, dir), nil
+		},
+	)
 }
 
 func parseGoVetJSON(data []byte, dir string) []finding.Finding {
@@ -72,10 +77,10 @@ func parsePosn(posn, dir string) finding.Position {
 		pos.File = filepath.Join(dir, parts[0])
 	}
 	if len(parts) >= 2 {
-		fmt.Sscanf(parts[1], "%d", &pos.Line)
+		_, _ = fmt.Sscanf(parts[1], "%d", &pos.Line)
 	}
 	if len(parts) >= 3 {
-		fmt.Sscanf(parts[2], "%d", &pos.Column)
+		_, _ = fmt.Sscanf(parts[2], "%d", &pos.Column)
 	}
 	return pos
 }

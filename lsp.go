@@ -1,6 +1,9 @@
 package finding
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // LSP severity level constants per the LSP specification.
 const (
@@ -158,7 +161,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	// Preserve raw LSP severity for fidelity.
 	if diag.Severity > 0 {
 		f.Metadata = map[string]string{
-			"go-finding/lsp-severity": fmt.Sprintf("%d", diag.Severity),
+			"go-finding/lsp-severity": strconv.Itoa(diag.Severity),
 		}
 	}
 

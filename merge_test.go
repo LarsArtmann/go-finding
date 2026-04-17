@@ -89,10 +89,24 @@ func TestMerge_DeduplicateByRule(t *testing.T) {
 	t.Parallel()
 
 	r1 := MakeSimpleReport("tool1")
-	r1.AddFinding(Finding{ID: "a", Rule: "nilcheck", Severity: SeverityError, Position: Position{File: "a.go", Line: 10}})
+	r1.AddFinding(
+		Finding{
+			ID:       "a",
+			Rule:     "nilcheck",
+			Severity: SeverityError,
+			Position: Position{File: "a.go", Line: 10},
+		},
+	)
 
 	r2 := MakeSimpleReport("tool2")
-	r2.AddFinding(Finding{ID: "b", Rule: "nilcheck", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 10}})
+	r2.AddFinding(
+		Finding{
+			ID:       "b",
+			Rule:     "nilcheck",
+			Severity: SeverityWarning,
+			Position: Position{File: "a.go", Line: 10},
+		},
+	)
 
 	merged := Merge([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByRule))
 	merged.ComputeSummary()
@@ -103,7 +117,11 @@ func TestMerge_DeduplicateByRule(t *testing.T) {
 func TestDedupKey(t *testing.T) {
 	t.Parallel()
 
-	f := Finding{ID: "test-id", Rule: "rule1", Position: Position{File: "a.go", Line: 10, Column: 5}}
+	f := Finding{
+		ID:       "test-id",
+		Rule:     "rule1",
+		Position: Position{File: "a.go", Line: 10, Column: 5},
+	}
 
 	tests := []struct {
 		name string
@@ -133,7 +151,12 @@ func TestCorrelate(t *testing.T) {
 
 	findings := []Finding{
 		{ID: "1", ToolName: "govet", Rule: "nilcheck", Position: Position{File: "a.go", Line: 10}},
-		{ID: "2", ToolName: "staticcheck", Rule: "nilcheck", Position: Position{File: "a.go", Line: 12}},
+		{
+			ID:       "2",
+			ToolName: "staticcheck",
+			Rule:     "nilcheck",
+			Position: Position{File: "a.go", Line: 12},
+		},
 		{ID: "3", ToolName: "govet", Rule: "unused", Position: Position{File: "a.go", Line: 50}},
 	}
 

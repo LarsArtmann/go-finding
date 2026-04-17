@@ -105,7 +105,13 @@ func TestToSARIFFiltered(t *testing.T) {
 			{ID: "f2", Severity: SeverityError, Rule: "r2", Position: Position{File: "a.go"}},
 			{ID: "f3", Severity: SeverityWarning, Rule: "r3", Position: Position{File: "a.go"}},
 			{ID: "f4", Severity: SeverityInfo, Rule: "r4", Position: Position{File: "a.go"}},
-			{ID: "f5", Severity: SeverityError, Rule: "r5", Position: Position{File: "a.go"}, Suppression: suppression},
+			{
+				ID:          "f5",
+				Severity:    SeverityError,
+				Rule:        "r5",
+				Position:    Position{File: "a.go"},
+				Suppression: suppression,
+			},
 		},
 	}
 
@@ -118,7 +124,10 @@ func TestToSARIFFiltered(t *testing.T) {
 
 	results := log.Runs[0].Results
 	if len(results) != 2 {
-		t.Fatalf("Results length = %d, want 2 (critical + error, excluding warning/info/suppressed)", len(results))
+		t.Fatalf(
+			"Results length = %d, want 2 (critical + error, excluding warning/info/suppressed)",
+			len(results),
+		)
 	}
 
 	rules := make(map[string]bool)
@@ -142,7 +151,13 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 		Tool: ToolInfo{Name: "tool"},
 		Findings: []Finding{
 			{ID: "f1", Rule: "r1", Severity: SeverityError, Position: Position{File: "a.go"}},
-			{ID: "f2", Rule: "r2", Severity: SeverityError, Position: Position{File: "a.go"}, Suppression: suppression},
+			{
+				ID:          "f2",
+				Rule:        "r2",
+				Severity:    SeverityError,
+				Position:    Position{File: "a.go"},
+				Suppression: suppression,
+			},
 		},
 	}
 
@@ -206,14 +221,14 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 		Tool: ToolInfo{Name: "tool"},
 		Findings: []Finding{
 			{
-				ID:          "f1",
-				Rule:        "r1",
-				Severity:    SeverityInfo,
-				Position:    Position{File: "a.go"},
-				Metadata:    map[string]string{"key1": "val1"},
-				Category:    "security",
-				Tag:         "injection",
-				ToolName:    "scanner",
+				ID:       "f1",
+				Rule:     "r1",
+				Severity: SeverityInfo,
+				Position: Position{File: "a.go"},
+				Metadata: map[string]string{"key1": "val1"},
+				Category: "security",
+				Tag:      "injection",
+				ToolName: "scanner",
 			},
 		},
 	}
@@ -293,16 +308,16 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 	props := log.Runs[0].Results[0].Properties
 
 	checks := map[string]any{
-		"go-finding/id":           "govet:printf:main.go:10:5",
-		"go-finding/severity":     "critical",
-		"go-finding/fixStrategy":  "suggest",
-		"go-finding/toolName":     "govet",
-		"go-finding/category":     "correctness",
-		"go-finding/tag":          "printf",
-		"go-finding/confidence":   0.9,
-		"go-finding/suggestion":   "fix format string",
-		"go-finding/snippet":      "fmt.Sprintf(\"%d\")",
-		"custom":                  "value",
+		"go-finding/id":          "govet:printf:main.go:10:5",
+		"go-finding/severity":    "critical",
+		"go-finding/fixStrategy": "suggest",
+		"go-finding/toolName":    "govet",
+		"go-finding/category":    "correctness",
+		"go-finding/tag":         "printf",
+		"go-finding/confidence":  0.9,
+		"go-finding/suggestion":  "fix format string",
+		"go-finding/snippet":     "fmt.Sprintf(\"%d\")",
+		"custom":                 "value",
 	}
 
 	for key, want := range checks {

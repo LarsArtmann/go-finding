@@ -17,87 +17,87 @@ Successfully completed Phase 2 of the go-finding library with a fully functional
 
 ### Phase 1: Core Foundation (Already Complete)
 
-| Component | Status | Tests | Notes |
-|-----------|--------|-------|-------|
-| `Finding` | Complete | 100% | Core finding type with all fields |
-| `Severity` | Complete | 100% | info/warning/error/critical |
-| `FixStrategy` | Complete | 100% | none/suggest/direct/ai |
-| `Position` | Complete | 100% | File/line/column with String() |
-| `Range` | Complete | 100% | Contains() method |
-| `Suppression` | Complete | 100% | Kind/Reason/Expiry |
-| `Report` | Complete | 100% | Summary, filtering |
-| Categories | Complete | 100% | 12 standard categories |
-| `filter.go` | Complete | 100% | 15+ filter functions |
-| `merge.go` | Complete | 100% | Report merging, dedup |
-| `id.go` | Complete | 100% | GenerateID, ParseID |
-| `json.go` | Complete | 100% | Marshal/Unmarshal |
-| `sarif.go` | Complete | 100% | SARIF 2.1.0 output |
-| `lsp.go` | Complete | 100% | LSP Diagnostic conversion |
-| `diagnostic.go` | Complete | 100% | go/analysis integration |
-| `Result[T]` | Complete | 100% | Ergonomic error handling |
+| Component       | Status   | Tests | Notes                             |
+| --------------- | -------- | ----- | --------------------------------- |
+| `Finding`       | Complete | 100%  | Core finding type with all fields |
+| `Severity`      | Complete | 100%  | info/warning/error/critical       |
+| `FixStrategy`   | Complete | 100%  | none/suggest/direct/ai            |
+| `Position`      | Complete | 100%  | File/line/column with String()    |
+| `Range`         | Complete | 100%  | Contains() method                 |
+| `Suppression`   | Complete | 100%  | Kind/Reason/Expiry                |
+| `Report`        | Complete | 100%  | Summary, filtering                |
+| Categories      | Complete | 100%  | 12 standard categories            |
+| `filter.go`     | Complete | 100%  | 15+ filter functions              |
+| `merge.go`      | Complete | 100%  | Report merging, dedup             |
+| `id.go`         | Complete | 100%  | GenerateID, ParseID               |
+| `json.go`       | Complete | 100%  | Marshal/Unmarshal                 |
+| `sarif.go`      | Complete | 100%  | SARIF 2.1.0 output                |
+| `lsp.go`        | Complete | 100%  | LSP Diagnostic conversion         |
+| `diagnostic.go` | Complete | 100%  | go/analysis integration           |
+| `Result[T]`     | Complete | 100%  | Ergonomic error handling          |
 
 ### Phase 2: Pipeline Engine (NEW - COMPLETE)
 
-| Component | Status | Tests | Notes |
-|-----------|--------|-------|-------|
-| `Pipeline` struct | Complete | 100% | Orchestrates detect→triage→fix→verify |
-| `Detector` interface | Complete | 100% | Name() + Detect(ctx) |
-| `DetectorFunc` | Complete | 100% | Adapter for functions |
-| `detectSequential()` | Complete | 100% | Sequential with ctx support |
-| `detectParallel()` | Complete | 100% | errgroup-based, 3.4x faster |
-| `triage()` | Complete | 100% | Categorizes by FixStrategy |
-| `TriageResult` | Complete | 100% | Direct/Suggest/AI/None |
-| `FixApplier` | Complete | 100% | Backup/restore, text replace |
-| `applyDirectFixes()` | Complete | 100% | Orchestrates fix application |
-| `Config` | Complete | 100% | Timeout, iterations, callbacks |
-| `Result` | Complete | 100% | Iteration history, stability |
-| Pipeline tests | Complete | 100% | 15 comprehensive tests |
+| Component            | Status   | Tests | Notes                                 |
+| -------------------- | -------- | ----- | ------------------------------------- |
+| `Pipeline` struct    | Complete | 100%  | Orchestrates detect→triage→fix→verify |
+| `Detector` interface | Complete | 100%  | Name() + Detect(ctx)                  |
+| `DetectorFunc`       | Complete | 100%  | Adapter for functions                 |
+| `detectSequential()` | Complete | 100%  | Sequential with ctx support           |
+| `detectParallel()`   | Complete | 100%  | errgroup-based, 3.4x faster           |
+| `triage()`           | Complete | 100%  | Categorizes by FixStrategy            |
+| `TriageResult`       | Complete | 100%  | Direct/Suggest/AI/None                |
+| `FixApplier`         | Complete | 100%  | Backup/restore, text replace          |
+| `applyDirectFixes()` | Complete | 100%  | Orchestrates fix application          |
+| `Config`             | Complete | 100%  | Timeout, iterations, callbacks        |
+| `Result`             | Complete | 100%  | Iteration history, stability          |
+| Pipeline tests       | Complete | 100%  | 15 comprehensive tests                |
 
 ### Infrastructure (Complete)
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| GitHub Actions CI | Complete | Tests on push/PR |
-| Justfile | Complete | test, lint, format commands |
-| AGENTS.md | Complete | Development guidelines |
-| Examples | Complete | 6 runnable examples |
-| go.mod | Complete | golang.org/x/sync added |
+| Component         | Status   | Notes                       |
+| ----------------- | -------- | --------------------------- |
+| GitHub Actions CI | Complete | Tests on push/PR            |
+| Justfile          | Complete | test, lint, format commands |
+| AGENTS.md         | Complete | Development guidelines      |
+| Examples          | Complete | 6 runnable examples         |
+| go.mod            | Complete | golang.org/x/sync added     |
 
 ---
 
 ## b) PARTIALLY DONE
 
-| Component | Status | What's Missing |
-|-----------|--------|----------------|
-| AST-aware fix application | 30% | Currently uses simple text replacement |
-| Progress reporting | 50% | Callbacks exist but no UI integration |
-| Verification stage | 20% | Stub only, no actual verification logic |
+| Component                 | Status | What's Missing                          |
+| ------------------------- | ------ | --------------------------------------- |
+| AST-aware fix application | 30%    | Currently uses simple text replacement  |
+| Progress reporting        | 50%    | Callbacks exist but no UI integration   |
+| Verification stage        | 20%    | Stub only, no actual verification logic |
 
 ---
 
 ## c) NOT STARTED
 
-| Component | Priority | Notes |
-|-----------|----------|-------|
-| Fuzz tests | Medium | Would improve robustness |
-| Property-based tests | Medium | For merge/filter operations |
-| Real tool converters | High | art-dupl, go-vet integration examples |
-| SARIF library evaluation | Low | Compare with go-sarif |
-| Performance profiling | Low | pprof integration |
-| CLI tool | Medium | Standalone binary for running pipelines |
-| Configuration file support | Low | YAML/JSON config for pipelines |
-| Plugin system | Low | Dynamic detector loading |
-| Watch mode | Low | File system watching for continuous analysis |
-| IDE integrations | Low | VS Code, GoLand plugins |
+| Component                  | Priority | Notes                                        |
+| -------------------------- | -------- | -------------------------------------------- |
+| Fuzz tests                 | Medium   | Would improve robustness                     |
+| Property-based tests       | Medium   | For merge/filter operations                  |
+| Real tool converters       | High     | art-dupl, go-vet integration examples        |
+| SARIF library evaluation   | Low      | Compare with go-sarif                        |
+| Performance profiling      | Low      | pprof integration                            |
+| CLI tool                   | Medium   | Standalone binary for running pipelines      |
+| Configuration file support | Low      | YAML/JSON config for pipelines               |
+| Plugin system              | Low      | Dynamic detector loading                     |
+| Watch mode                 | Low      | File system watching for continuous analysis |
+| IDE integrations           | Low      | VS Code, GoLand plugins                      |
 
 ---
 
 ## d) TOTALLY FUCKED UP
 
-| Component | Issue | Severity | Fix Plan |
-|-----------|-------|----------|----------|
+| Component | Issue                                           | Severity  | Fix Plan                        |
+| --------- | ----------------------------------------------- | --------- | ------------------------------- |
 | `ParseID` | Was returning `ok=false` for valid non-hash IDs | **FIXED** | Now correctly returns `ok=true` |
-| `id.go` | Variable shadowing in parse logic | **FIXED** | Used separate test variables |
+| `id.go`   | Variable shadowing in parse logic               | **FIXED** | Used separate test variables    |
 
 **No currently broken components.**
 
@@ -186,10 +186,12 @@ func foo() {
 ```
 
 If we apply both fixes:
+
 - Finding A deletes line 2 entirely
 - Finding B modifies line 3
 
 This is fine. But what if:
+
 - Finding A changes `x := 1` to `x := 2`
 - Finding B changes `x := 1` to `y := 1`
 
@@ -256,12 +258,13 @@ Recent commits:
 ## Next Recommended Action
 
 Implement the **art-dupl converter example** to demonstrate real tool integration. This will:
+
 - Show how to wrap external tools as Detectors
 - Validate the pipeline API works for real use cases
 - Provide a reference implementation for other tool integrations
 
 ---
 
-*Report generated: 2026-04-13 22:33*  
-*Crush AI Assistant*  
-*go-finding Phase 2 Complete*
+_Report generated: 2026-04-13 22:33_  
+_Crush AI Assistant_  
+_go-finding Phase 2 Complete_

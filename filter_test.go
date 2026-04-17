@@ -88,7 +88,10 @@ func TestBySeverityAtLeast(t *testing.T) {
 		{ID: "3", Severity: SeverityError},
 		{ID: "4", Severity: SeverityCritical},
 	}
-	runFilterCase(t, newFilterCase("at least warning", findings, BySeverityAtLeast(SeverityWarning), 3))
+	runFilterCase(
+		t,
+		newFilterCase("at least warning", findings, BySeverityAtLeast(SeverityWarning), 3),
+	)
 }
 
 func TestByCategory(t *testing.T) {

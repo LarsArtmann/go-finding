@@ -56,6 +56,7 @@
 ## Quick Reference
 
 **Pipeline usage:**
+
 ```go
 config := pipeline.DefaultConfig()
 p := pipeline.New(config, "/project/root",
@@ -65,6 +66,7 @@ result, err := p.Run(ctx)
 ```
 
 **All tests pass:**
+
 ```bash
 just test  # or: go test ./...
 ```

@@ -10,11 +10,26 @@ func TestPosition_Equal(t *testing.T) {
 		a, b Position
 		want bool
 	}{
-		{"identical", Position{File: "a.go", Line: 1, Column: 2, Offset: 3}, Position{File: "a.go", Line: 1, Column: 2, Offset: 3}, true},
+		{
+			"identical",
+			Position{File: "a.go", Line: 1, Column: 2, Offset: 3},
+			Position{File: "a.go", Line: 1, Column: 2, Offset: 3},
+			true,
+		},
 		{"different file", Position{File: "a.go"}, Position{File: "b.go"}, false},
 		{"different line", Position{File: "a.go", Line: 1}, Position{File: "a.go", Line: 2}, false},
-		{"different column", Position{File: "a.go", Column: 1}, Position{File: "a.go", Column: 2}, false},
-		{"different offset", Position{File: "a.go", Offset: 1}, Position{File: "a.go", Offset: 2}, false},
+		{
+			"different column",
+			Position{File: "a.go", Column: 1},
+			Position{File: "a.go", Column: 2},
+			false,
+		},
+		{
+			"different offset",
+			Position{File: "a.go", Offset: 1},
+			Position{File: "a.go", Offset: 2},
+			false,
+		},
 		{"both empty", Position{}, Position{}, true},
 	}
 
@@ -65,19 +80,19 @@ func TestFinding_Equal(t *testing.T) {
 		return Finding{
 			ID: "tool:rule:file.go:1:1", Rule: "rule", ToolName: "tool",
 			Message: "msg", Severity: SeverityError,
-			Position:   Position{File: "file.go", Line: 1},
-			Category:   CategorySecurity,
+			Position:    Position{File: "file.go", Line: 1},
+			Category:    CategorySecurity,
 			FixStrategy: FixStrategyDirect,
-			Suggestion: "fix it",
-			Confidence: 0.9,
-			Metadata:   map[string]string{"key": "val"},
+			Suggestion:  "fix it",
+			Confidence:  0.9,
+			Metadata:    map[string]string{"key": "val"},
 		}
 	}
 
 	tests := []struct {
-		name  string
-		a, b  Finding
-		want  bool
+		name string
+		a, b Finding
+		want bool
 	}{
 		{
 			"identical",
@@ -166,12 +181,27 @@ func TestPosition_Compare(t *testing.T) {
 		a, b Position
 		want int
 	}{
-		{"equal", Position{File: "a.go", Line: 1, Column: 2}, Position{File: "a.go", Line: 1, Column: 2}, 0},
+		{
+			"equal",
+			Position{File: "a.go", Line: 1, Column: 2},
+			Position{File: "a.go", Line: 1, Column: 2},
+			0,
+		},
 		{"different file", Position{File: "a.go"}, Position{File: "b.go"}, -1},
 		{"different file reverse", Position{File: "b.go"}, Position{File: "a.go"}, 1},
 		{"different line", Position{File: "a.go", Line: 1}, Position{File: "a.go", Line: 2}, -1},
-		{"different line reverse", Position{File: "a.go", Line: 2}, Position{File: "a.go", Line: 1}, 1},
-		{"different column", Position{File: "a.go", Line: 1, Column: 1}, Position{File: "a.go", Line: 1, Column: 2}, -1},
+		{
+			"different line reverse",
+			Position{File: "a.go", Line: 2},
+			Position{File: "a.go", Line: 1},
+			1,
+		},
+		{
+			"different column",
+			Position{File: "a.go", Line: 1, Column: 1},
+			Position{File: "a.go", Line: 1, Column: 2},
+			-1,
+		},
 		{"both zero", Position{}, Position{}, 0},
 	}
 

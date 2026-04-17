@@ -20,8 +20,9 @@ func rangeOffset(file string, startOffset, endOffset int) Range {
 	return Range{Start: Position{File: file, Offset: startOffset}, End: Position{Offset: endOffset}}
 }
 
+//go:fix inline
 func ptrRange(r Range) *Range {
-	return &r
+	return new(r)
 }
 
 // overlapCase represents a test case for Overlaps/Adjacent tests.
@@ -34,14 +35,34 @@ type overlapCase struct {
 
 func overlapCases() []overlapCase {
 	return []overlapCase{
-		{"same single position", Range{Start: posLineCol("a.go", 10, 5)}, Range{Start: posLineCol("a.go", 10, 5)}, true},
+		{
+			"same single position",
+			Range{Start: posLineCol("a.go", 10, 5)},
+			Range{Start: posLineCol("a.go", 10, 5)},
+			true,
+		},
 		{"overlapping ranges", rangeLine("a.go", 10, 20), rangeLine("a.go", 15, 25), true},
 		{"non-overlapping ranges", rangeLine("a.go", 10, 15), rangeLine("a.go", 20, 25), false},
-		{"different files", Range{Start: posLine("a.go", 10)}, Range{Start: posLine("b.go", 10)}, false},
+		{
+			"different files",
+			Range{Start: posLine("a.go", 10)},
+			Range{Start: posLine("b.go", 10)},
+			false,
+		},
 		{"contained range", rangeLine("a.go", 10, 30), rangeLine("a.go", 15, 20), true},
 		{"touching at boundary", rangeLine("a.go", 10, 20), rangeLine("a.go", 20, 30), true},
-		{"offset-based overlap", rangeOffset("a.go", 100, 200), rangeOffset("a.go", 150, 250), true},
-		{"offset-based no overlap", rangeOffset("a.go", 100, 150), rangeOffset("a.go", 200, 250), false},
+		{
+			"offset-based overlap",
+			rangeOffset("a.go", 100, 200),
+			rangeOffset("a.go", 150, 250),
+			true,
+		},
+		{
+			"offset-based no overlap",
+			rangeOffset("a.go", 100, 150),
+			rangeOffset("a.go", 200, 250),
+			false,
+		},
 	}
 }
 
@@ -75,11 +96,31 @@ type intersectionCase struct {
 
 func intersectionCases() []intersectionCase {
 	return []intersectionCase{
-		{"overlapping ranges", rangeLine("a.go", 10, 20), rangeLine("a.go", 15, 25), ptrRange(rangeLine("a.go", 15, 20))},
+		{
+			"overlapping ranges",
+			rangeLine("a.go", 10, 20),
+			rangeLine("a.go", 15, 25),
+			new(rangeLine("a.go", 15, 20)),
+		},
 		{"non-overlapping returns nil", rangeLine("a.go", 10, 15), rangeLine("a.go", 20, 25), nil},
-		{"contained range", rangeLine("a.go", 10, 30), rangeLine("a.go", 15, 20), ptrRange(rangeLine("a.go", 15, 20))},
-		{"single point overlap", rangeLine("a.go", 10, 20), rangeLine("a.go", 20, 30), ptrRange(Range{Start: Position{File: "a.go", Line: 20}})},
-		{"different files", Range{Start: posLine("a.go", 10)}, Range{Start: posLine("b.go", 10)}, nil},
+		{
+			"contained range",
+			rangeLine("a.go", 10, 30),
+			rangeLine("a.go", 15, 20),
+			new(rangeLine("a.go", 15, 20)),
+		},
+		{
+			"single point overlap",
+			rangeLine("a.go", 10, 20),
+			rangeLine("a.go", 20, 30),
+			new(Range{Start: Position{File: "a.go", Line: 20}}),
+		},
+		{
+			"different files",
+			Range{Start: posLine("a.go", 10)},
+			Range{Start: posLine("b.go", 10)},
+			nil,
+		},
 	}
 }
 
@@ -110,12 +151,22 @@ func TestRangeIntersection(t *testing.T) {
 
 func adjacentCases() []overlapCase {
 	return []overlapCase{
-		{"adjacent at end", Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20, Column: 5}}, Range{Start: Position{File: "a.go", Line: 20, Column: 5}, End: Position{Line: 30}}, true},
+		{
+			"adjacent at end",
+			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20, Column: 5}},
+			Range{Start: Position{File: "a.go", Line: 20, Column: 5}, End: Position{Line: 30}},
+			true,
+		},
 		{"adjacent at start", rangeLine("a.go", 20, 30), rangeLine("a.go", 10, 20), true},
 		{"overlapping not adjacent", rangeLine("a.go", 10, 20), rangeLine("a.go", 15, 25), false},
 		{"gap not adjacent", rangeLine("a.go", 10, 15), rangeLine("a.go", 20, 25), false},
 		{"offset adjacent", rangeOffset("a.go", 100, 200), rangeOffset("a.go", 200, 300), true},
-		{"different files", Range{Start: posLineCol("a.go", 10, 5)}, Range{Start: posLineCol("b.go", 10, 5)}, false},
+		{
+			"different files",
+			Range{Start: posLineCol("a.go", 10, 5)},
+			Range{Start: posLineCol("b.go", 10, 5)},
+			false,
+		},
 	}
 }
 

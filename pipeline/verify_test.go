@@ -26,7 +26,10 @@ func assertDiffResult(t *testing.T, result *VerifyResult, resolved, remaining, n
 
 func TestDiffFindings_AllFixed(t *testing.T) {
 	t.Parallel()
-	original := []finding.Finding{makeFinding("a:rule:file.go:1", "issue1"), makeFinding("b:rule:file.go:2", "issue2")}
+	original := []finding.Finding{
+		makeFinding("a:rule:file.go:1", "issue1"),
+		makeFinding("b:rule:file.go:2", "issue2"),
+	}
 	result := DiffFindings(original, nil)
 	assertDiffResult(t, result, 2, 0, 0)
 }
@@ -46,7 +49,10 @@ func TestDiffFindings_NoneFixed(t *testing.T) {
 func TestDiffFindings_NewFindings(t *testing.T) {
 	t.Parallel()
 	original := []finding.Finding{makeFinding("a:rule:file.go:1", "issue1")}
-	post := []finding.Finding{makeFinding("a:rule:file.go:1", "issue1"), makeFinding("c:rule:file.go:3", "new issue")}
+	post := []finding.Finding{
+		makeFinding("a:rule:file.go:1", "issue1"),
+		makeFinding("c:rule:file.go:3", "new issue"),
+	}
 	result := DiffFindings(original, post)
 	if result.Resolved != 0 {
 		t.Errorf("expected 0 resolved, got %d", result.Resolved)
@@ -61,8 +67,14 @@ func TestDiffFindings_NewFindings(t *testing.T) {
 
 func TestDiffFindings_Mixed(t *testing.T) {
 	t.Parallel()
-	original := []finding.Finding{makeFinding("a:rule:file.go:1", "fixed"), makeFinding("b:rule:file.go:2", "remaining")}
-	post := []finding.Finding{makeFinding("b:rule:file.go:2", "remaining"), makeFinding("c:rule:file.go:3", "new")}
+	original := []finding.Finding{
+		makeFinding("a:rule:file.go:1", "fixed"),
+		makeFinding("b:rule:file.go:2", "remaining"),
+	}
+	post := []finding.Finding{
+		makeFinding("b:rule:file.go:2", "remaining"),
+		makeFinding("c:rule:file.go:3", "new"),
+	}
 	result := DiffFindings(original, post)
 	if result.Resolved != 1 {
 		t.Errorf("expected 1 resolved, got %d", result.Resolved)

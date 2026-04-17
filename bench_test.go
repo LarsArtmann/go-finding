@@ -87,7 +87,7 @@ func BenchmarkMerge(b *testing.B) {
 	reports := make([]*Report, 5)
 	for i := range reports {
 		reports[i] = NewReport(ToolInfo{Name: fmt.Sprintf("tool%d", i)})
-		for j := 0; j < 200; j++ {
+		for j := range 200 {
 			reports[i].AddFinding(Finding{
 				ID:       fmt.Sprintf("tool%d:rule:file%d.go:%d", i, j%10, j),
 				Severity: sevFromInt(j % 4),
@@ -120,7 +120,7 @@ func BenchmarkMergeNoDedup(b *testing.B) {
 	reports := make([]*Report, 3)
 	for i := range reports {
 		reports[i] = NewReport(ToolInfo{Name: fmt.Sprintf("tool%d", i)})
-		for j := 0; j < 500; j++ {
+		for j := range 500 {
 			reports[i].AddFinding(Finding{
 				ID:       fmt.Sprintf("tool%d:rule:file.go:%d:%d", i, j, i),
 				Severity: sevFromInt(j % 4),

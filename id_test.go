@@ -4,14 +4,14 @@ import "testing"
 
 // parseIDCase is a test case for ParseID.
 type parseIDCase struct {
-	name      string
-	id        string
-	wantTool  string
-	wantRule  string
-	wantFile  string
-	wantLine  int
-	wantCol   int
-	wantOK    bool
+	name     string
+	id       string
+	wantTool string
+	wantRule string
+	wantFile string
+	wantLine int
+	wantCol  int
+	wantOK   bool
 }
 
 // stdIDCase creates a parseIDCase with standard tool/rule fields.
@@ -28,32 +28,32 @@ func TestGenerateID(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name     string
-		tool     string
-		rule     string
-		pos      Position
+		name       string
+		tool       string
+		rule       string
+		pos        Position
 		wantPrefix string
-		check    func(t *testing.T, got string)
+		check      func(t *testing.T, got string)
 	}{
 		{
-			name:      "full position",
-			tool:      "govet",
-			rule:      "nilcheck",
-			pos:       Position{File: "main.go", Line: 42, Column: 10},
+			name:       "full position",
+			tool:       "govet",
+			rule:       "nilcheck",
+			pos:        Position{File: "main.go", Line: 42, Column: 10},
 			wantPrefix: "govet:nilcheck:main.go:42:10",
 		},
 		{
-			name:      "line only",
-			tool:      "govet",
-			rule:      "nilcheck",
-			pos:       Position{File: "main.go", Line: 42},
+			name:       "line only",
+			tool:       "govet",
+			rule:       "nilcheck",
+			pos:        Position{File: "main.go", Line: 42},
 			wantPrefix: "govet:nilcheck:main.go:42",
 		},
 		{
-			name:      "hash-based no line",
-			tool:      "govet",
-			rule:      "nilcheck",
-			pos:       Position{File: "main.go"},
+			name: "hash-based no line",
+			tool: "govet",
+			rule: "nilcheck",
+			pos:  Position{File: "main.go"},
 			check: func(t *testing.T, got string) {
 				t.Helper()
 				if !IsHashID(got) {
@@ -224,7 +224,12 @@ func TestExtractFile(t *testing.T) {
 		want          string
 	}{
 		{"simple", []string{"tool", "rule", "main.go", "42", "10"}, 2, "main.go"},
-		{"path with colons", []string{"tool", "rule", "C", "Users", "main.go", "42"}, 1, "C:Users:main.go"},
+		{
+			"path with colons",
+			[]string{"tool", "rule", "C", "Users", "main.go", "42"},
+			1,
+			"C:Users:main.go",
+		},
 		{"too few parts", []string{"tool", "rule"}, 1, ""},
 	}
 

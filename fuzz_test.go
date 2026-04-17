@@ -170,7 +170,11 @@ func FuzzMerge_DedupByID(f *testing.F) {
 		r2 := NewReport(ToolInfo{Name: "tool2"})
 		r2.AddFinding(Finding{ID: id3, Severity: SeverityInfo})
 
-		merged := Merge([]*Report{r1, r2}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByID))
+		merged := Merge(
+			[]*Report{r1, r2},
+			WithDeduplication(true),
+			WithDeduplicateBy(DeduplicateByID),
+		)
 
 		seen := make(map[string]int)
 		for _, f := range merged.Findings {
@@ -272,7 +276,7 @@ func FuzzDedupKey(f *testing.F) {
 	f.Add("F1", "file.go", 1, 1, "rule1")
 	f.Add("", "", 0, 0, "")
 
-	f.Fuzz(func(t *testing.T, id string, file string, line, col int, rule string) {
+	f.Fuzz(func(t *testing.T, id, file string, line, col int, rule string) {
 		f := Finding{
 			ID:       id,
 			Rule:     rule,

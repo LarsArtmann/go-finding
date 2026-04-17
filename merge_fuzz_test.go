@@ -39,7 +39,11 @@ func FuzzMergeRandom(f *testing.F) {
 		}
 
 		if !dedup && len(merged.Findings) != len(findings) {
-			t.Fatalf("merge without dedup: got %d findings, want %d", len(merged.Findings), len(findings))
+			t.Fatalf(
+				"merge without dedup: got %d findings, want %d",
+				len(merged.Findings),
+				len(findings),
+			)
 		}
 	})
 }
@@ -94,7 +98,13 @@ func randomSeedTool(rng *rand.Rand) string {
 }
 
 func randomSeedCategory(rng *rand.Rand) Category {
-	cats := []Category{CategorySecurity, CategoryStyle, CategoryPerformance, CategoryCorrectness, CategoryTesting}
+	cats := []Category{
+		CategorySecurity,
+		CategoryStyle,
+		CategoryPerformance,
+		CategoryCorrectness,
+		CategoryTesting,
+	}
 	return cats[rng.Intn(len(cats))]
 }
 

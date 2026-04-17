@@ -66,7 +66,14 @@ func TestSeverity_GreaterThan(t *testing.T) {
 
 	for _, tt := range tests {
 		if got := tt.a.GreaterThan(tt.b); got != tt.want {
-			t.Errorf("Severity(%q).GreaterThan(%q) = %v, want %v (%s)", tt.a, tt.b, got, tt.want, tt.label)
+			t.Errorf(
+				"Severity(%q).GreaterThan(%q) = %v, want %v (%s)",
+				tt.a,
+				tt.b,
+				got,
+				tt.want,
+				tt.label,
+			)
 		}
 	}
 }
@@ -92,12 +99,18 @@ func TestSeverity_Ordering(t *testing.T) {
 
 	ordered := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
 
-	for i := 0; i < len(ordered); i++ {
-		for j := 0; j < len(ordered); j++ {
+	for i := range ordered {
+		for j := range ordered {
 			got := ordered[i].GreaterThan(ordered[j])
 			want := i > j
 			if got != want {
-				t.Errorf("Severity(%q).GreaterThan(%q) = %v, want %v", ordered[i], ordered[j], got, want)
+				t.Errorf(
+					"Severity(%q).GreaterThan(%q) = %v, want %v",
+					ordered[i],
+					ordered[j],
+					got,
+					want,
+				)
 			}
 		}
 	}

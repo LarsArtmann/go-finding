@@ -9,6 +9,7 @@
 ## Part 1: Audit — What Was Forgotten, What Could Improve
 
 ### What Was Done Well
+
 - Clean architecture with zero external deps for core types
 - 96% test coverage in root package, 87.5% in pipeline
 - Fuzz tests, property tests, benchmarks, integration tests
@@ -18,52 +19,52 @@
 
 ### What Was Forgotten / Could Improve
 
-| # | Finding | Severity | Location |
-|---|---------|----------|----------|
-| 1 | CI matrix tests Go 1.21/1.22/1.23 but go.mod requires 1.26.0 | Critical | `.github/workflows/ci.yml` |
-| 2 | `registerDetector` in CLI is dead code | Low | `cmd/go-finding/main.go` |
-| 3 | `sevFromInt` duplicated in `bench_test.go` and `merge_fuzz_test.go` | Low | Test files |
-| 4 | No `Equal` method on Finding, Position, Range | Medium | Core types |
-| 5 | No `fmt.Stringer` on Severity, Category, FixStrategy | Low | Core types |
-| 6 | `sha1Sum` for backup paths — should use sha256 | Low | `pipeline/pipeline.go` |
-| 7 | No SARIF parsing (`FromSARIF`) — only generation exists | High | `sarif.go` |
-| 8 | `Suppression.IsExpired` calls `time.Now()` — not deterministic | Medium | `suppression.go` |
-| 9 | No configuration validation in CLI | Medium | `cmd/go-finding/main.go` |
-| 10 | LSP conversion is lossy (loses FixStrategy, Confidence) | Medium | `lsp.go` |
-| 11 | `IsHashID` checks `len(parts[2]) == 16` — fragile | Low | `id.go` |
-| 12 | No streaming/iterator for large finding sets | Low | Core types |
-| 13 | `Correlate` only works cross-tool, same-tool ignored | Medium | `merge.go` |
-| 14 | FixApplier uses naive `strings.Replace` | Medium | `pipeline/pipeline.go` |
-| 15 | `FindingError.WithFinding`/`WithPosition` clone, not mutate | Low | `errors.go` |
-| 16 | 12+ gopls hints (rangeint, mapsloop, stringsseq, newexpr) | Low | Various |
-| 17 | No `CategoryUnused` constant | Low | `category.go` |
-| 18 | CLI flags hardcoded — would benefit from cobra | Medium | `cmd/go-finding/main.go` |
-| 19 | No `go generate` support | Low | Build |
-| 20 | Pipeline `detectBranchingIssues` is hardcoded stub | Low | `examples/branching/` |
+| #   | Finding                                                             | Severity | Location                   |
+| --- | ------------------------------------------------------------------- | -------- | -------------------------- |
+| 1   | CI matrix tests Go 1.21/1.22/1.23 but go.mod requires 1.26.0        | Critical | `.github/workflows/ci.yml` |
+| 2   | `registerDetector` in CLI is dead code                              | Low      | `cmd/go-finding/main.go`   |
+| 3   | `sevFromInt` duplicated in `bench_test.go` and `merge_fuzz_test.go` | Low      | Test files                 |
+| 4   | No `Equal` method on Finding, Position, Range                       | Medium   | Core types                 |
+| 5   | No `fmt.Stringer` on Severity, Category, FixStrategy                | Low      | Core types                 |
+| 6   | `sha1Sum` for backup paths — should use sha256                      | Low      | `pipeline/pipeline.go`     |
+| 7   | No SARIF parsing (`FromSARIF`) — only generation exists             | High     | `sarif.go`                 |
+| 8   | `Suppression.IsExpired` calls `time.Now()` — not deterministic      | Medium   | `suppression.go`           |
+| 9   | No configuration validation in CLI                                  | Medium   | `cmd/go-finding/main.go`   |
+| 10  | LSP conversion is lossy (loses FixStrategy, Confidence)             | Medium   | `lsp.go`                   |
+| 11  | `IsHashID` checks `len(parts[2]) == 16` — fragile                   | Low      | `id.go`                    |
+| 12  | No streaming/iterator for large finding sets                        | Low      | Core types                 |
+| 13  | `Correlate` only works cross-tool, same-tool ignored                | Medium   | `merge.go`                 |
+| 14  | FixApplier uses naive `strings.Replace`                             | Medium   | `pipeline/pipeline.go`     |
+| 15  | `FindingError.WithFinding`/`WithPosition` clone, not mutate         | Low      | `errors.go`                |
+| 16  | 12+ gopls hints (rangeint, mapsloop, stringsseq, newexpr)           | Low      | Various                    |
+| 17  | No `CategoryUnused` constant                                        | Low      | `category.go`              |
+| 18  | CLI flags hardcoded — would benefit from cobra                      | Medium   | `cmd/go-finding/main.go`   |
+| 19  | No `go generate` support                                            | Low      | Build                      |
+| 20  | Pipeline `detectBranchingIssues` is hardcoded stub                  | Low      | `examples/branching/`      |
 
 ### What Could Still Improve — Architecture
 
-| # | Topic | Current State | Improvement |
-|---|-------|---------------|-------------|
-| A | Type safety | `Severity string`, `Category string` | Consider typed enums with compile-time guarantees |
-| B | Value objects | Position/Range are structs with methods | Add `Equal`, `String`, `Compare` methods |
-| C | Immutability | Finding is mutable struct | Consider builder pattern or functional options |
-| D | Error wrapping | `FindingError` with categories | Add `errors.Is`/`errors.As` support via sentinel values |
-| E | Collections | `[]Finding` everywhere | Consider `Findings` collection type with methods |
-| F | Serialization | Manual JSON marshal | Consider `encoding/json` custom marshalers |
-| G | Pipeline API | `*Pipeline` with methods | Consider functional options for configuration |
+| #   | Topic          | Current State                           | Improvement                                             |
+| --- | -------------- | --------------------------------------- | ------------------------------------------------------- |
+| A   | Type safety    | `Severity string`, `Category string`    | Consider typed enums with compile-time guarantees       |
+| B   | Value objects  | Position/Range are structs with methods | Add `Equal`, `String`, `Compare` methods                |
+| C   | Immutability   | Finding is mutable struct               | Consider builder pattern or functional options          |
+| D   | Error wrapping | `FindingError` with categories          | Add `errors.Is`/`errors.As` support via sentinel values |
+| E   | Collections    | `[]Finding` everywhere                  | Consider `Findings` collection type with methods        |
+| F   | Serialization  | Manual JSON marshal                     | Consider `encoding/json` custom marshalers              |
+| G   | Pipeline API   | `*Pipeline` with methods                | Consider functional options for configuration           |
 
 ### Library Recommendations
 
-| Library | Purpose | Assessment | Recommendation |
-|---------|---------|------------|----------------|
+| Library                          | Purpose                    | Assessment                                       | Recommendation                                                 |
+| -------------------------------- | -------------------------- | ------------------------------------------------ | -------------------------------------------------------------- |
 | `github.com/owenrumney/go-sarif` | SARIF parsing + generation | Mature, well-maintained, SARIF schema compliance | Adopt for `FromSARIF`; keep custom `ToSARIF` for zero-dep core |
-| `github.com/spf13/cobra` | CLI framework | Industry standard for Go CLIs | Adopt for `cmd/go-finding` |
-| `github.com/stretchr/testify` | Test assertions | Already in scope | Consider for cleaner test code |
-| `github.com/google/uuid` | ID generation | RFC 4122 UUIDs | Evaluate for `GenerateID` alternative |
-| `github.com/bmatcuk/doublestar` | Glob pattern matching | For file filtering in pipeline | Low priority |
-| `github.com/fsnotify/fsnotify` | File watching | For watch mode | Low priority |
-| `golang.org/x/exp/slices` | Slice utilities | `slices.Equal`, `slices.Sort` | Use for Finding comparison |
+| `github.com/spf13/cobra`         | CLI framework              | Industry standard for Go CLIs                    | Adopt for `cmd/go-finding`                                     |
+| `github.com/stretchr/testify`    | Test assertions            | Already in scope                                 | Consider for cleaner test code                                 |
+| `github.com/google/uuid`         | ID generation              | RFC 4122 UUIDs                                   | Evaluate for `GenerateID` alternative                          |
+| `github.com/bmatcuk/doublestar`  | Glob pattern matching      | For file filtering in pipeline                   | Low priority                                                   |
+| `github.com/fsnotify/fsnotify`   | File watching              | For watch mode                                   | Low priority                                                   |
+| `golang.org/x/exp/slices`        | Slice utilities            | `slices.Equal`, `slices.Sort`                    | Use for Finding comparison                                     |
 
 ---
 
@@ -98,6 +99,7 @@ Each task is self-contained and commit-ready.
 **Why:** 12+ linting hints indicate code that can be modernized for Go 1.22+.
 
 **Files:**
+
 - `bench_test.go` — range over int
 - `pipeline/metrics.go` — maps.Copy
 - `examples/staticcheck/main.go` — stringsseq
@@ -128,6 +130,7 @@ Each task is self-contained and commit-ready.
 **Files:** `position.go`, `finding.go`, plus new test files
 
 **Change:**
+
 ```go
 func (p Position) Equal(other Position) bool
 func (r Range) Equal(other Range) bool
@@ -169,6 +172,7 @@ func (f Finding) Equal(other Finding) bool
 **Files:** `suppression.go`, `suppression_test.go` (if exists)
 
 **Change:**
+
 ```go
 func (s Suppression) IsExpired(now time.Time) bool
 ```
@@ -202,6 +206,7 @@ func (s Suppression) IsExpired(now time.Time) bool
 **Approach:** Evaluate `github.com/owenrumney/go-sarif/v2` for parsing. If adopted, keep `ToSARIF` in core (zero deps) but add `FromSARIF` that optionally uses the library.
 
 **Change:**
+
 ```go
 func FromSARIF(data []byte) (*Report, error)
 func ReportFromSARIF(data []byte) (*Report, error)
@@ -242,6 +247,7 @@ func ReportFromSARIF(data []byte) (*Report, error)
 **Files:** `position.go`
 
 **Change:**
+
 ```go
 func (p Position) Compare(other Position) int  // -1, 0, +1
 func (r Range) Compare(other Range) int
@@ -298,6 +304,7 @@ func (r Range) Compare(other Range) int
 **Files:** New `findings.go`, `findings_test.go`
 
 **Change:**
+
 ```go
 type Findings []Finding
 
@@ -320,6 +327,7 @@ func (fs Findings) Contains(f Finding) bool
 **Files:** `errors.go`
 
 **Change:** Add sentinel errors:
+
 ```go
 var (
     ErrValidation = errors.New("finding: validation error")
@@ -343,6 +351,7 @@ Make `FindingError` wrap these for `errors.Is` support.
 **Files:** New `iterator.go`, `iterator_test.go`
 
 **Change:**
+
 ```go
 type FindingIterator interface {
     Next() bool
@@ -423,6 +432,7 @@ func NewSARIFIterator(r io.Reader) FindingIterator
 **Why:** Finding construction is verbose with many fields.
 
 **Change:**
+
 ```go
 func NewFinding(tool, rule string) *FindingBuilder
 // builder.WithFile(f).WithSeverity(s).WithMessage(m).Build()
@@ -434,33 +444,33 @@ func NewFinding(tool, rule string) *FindingBuilder
 
 Recommended execution sequence (approximately):
 
-| Order | Task | Tier | Rationale |
-|-------|------|------|-----------|
-| 1 | T1-01: Fix CI matrix | Quick Win | CI is currently broken |
-| 2 | T1-02: Fix gopls hints | Quick Win | Code modernization |
-| 3 | T1-03: Extract sevFromInt | Quick Win | DRY |
-| 4 | T1-04: Add Equal methods | Quick Win | Core API completeness |
-| 5 | T1-05: Add Stringer methods | Quick Win | Debugging support |
-| 6 | T1-06: sha1→sha256 | Quick Win | Security consistency |
-| 7 | T1-07: IsExpired determinism | Quick Win | Testability |
-| 8 | T1-08: Clean dead code | Quick Win | Maintenance |
-| 9 | T2-06: Harden IsHashID | Medium | Robustness |
-| 10 | T3-05: Add CategoryUnused | Medium | API completeness |
-| 11 | T2-04: Add Compare methods | Medium | Sorting support |
-| 12 | T3-02: Sentinel errors | Medium | Error handling |
-| 13 | T2-02: Config validation | Medium | Robustness |
-| 14 | T2-03: Improve LSP conversion | Medium | Data loss prevention |
-| 15 | T2-07: Line-based FixApplier | Medium | Correctness |
-| 16 | T2-01: SARIF parsing | Medium | Interoperability |
-| 17 | T2-05: Adopt cobra CLI | Medium | UX |
-| 18 | T3-01: Findings collection | Higher | Architecture |
-| 19 | T3-04: Improve Correlate | Higher | Feature completeness |
-| 20 | T3-03: Streaming iterator | Higher | Scalability |
-| 21 | T4-03: go generate | Lower | Automation |
-| 22 | T4-04: Property tests | Lower | Coverage |
-| 23 | T4-05: Builder pattern | Lower | Ergonomics |
-| 24 | T4-01: go-sarif evaluation | Lower | Dependencies |
-| 25 | T4-02: Watch mode | Lower | Features |
+| Order | Task                          | Tier      | Rationale              |
+| ----- | ----------------------------- | --------- | ---------------------- |
+| 1     | T1-01: Fix CI matrix          | Quick Win | CI is currently broken |
+| 2     | T1-02: Fix gopls hints        | Quick Win | Code modernization     |
+| 3     | T1-03: Extract sevFromInt     | Quick Win | DRY                    |
+| 4     | T1-04: Add Equal methods      | Quick Win | Core API completeness  |
+| 5     | T1-05: Add Stringer methods   | Quick Win | Debugging support      |
+| 6     | T1-06: sha1→sha256            | Quick Win | Security consistency   |
+| 7     | T1-07: IsExpired determinism  | Quick Win | Testability            |
+| 8     | T1-08: Clean dead code        | Quick Win | Maintenance            |
+| 9     | T2-06: Harden IsHashID        | Medium    | Robustness             |
+| 10    | T3-05: Add CategoryUnused     | Medium    | API completeness       |
+| 11    | T2-04: Add Compare methods    | Medium    | Sorting support        |
+| 12    | T3-02: Sentinel errors        | Medium    | Error handling         |
+| 13    | T2-02: Config validation      | Medium    | Robustness             |
+| 14    | T2-03: Improve LSP conversion | Medium    | Data loss prevention   |
+| 15    | T2-07: Line-based FixApplier  | Medium    | Correctness            |
+| 16    | T2-01: SARIF parsing          | Medium    | Interoperability       |
+| 17    | T2-05: Adopt cobra CLI        | Medium    | UX                     |
+| 18    | T3-01: Findings collection    | Higher    | Architecture           |
+| 19    | T3-04: Improve Correlate      | Higher    | Feature completeness   |
+| 20    | T3-03: Streaming iterator     | Higher    | Scalability            |
+| 21    | T4-03: go generate            | Lower     | Automation             |
+| 22    | T4-04: Property tests         | Lower     | Coverage               |
+| 23    | T4-05: Builder pattern        | Lower     | Ergonomics             |
+| 24    | T4-01: go-sarif evaluation    | Lower     | Dependencies           |
+| 25    | T4-02: Watch mode             | Lower     | Features               |
 
 ---
 
@@ -479,5 +489,5 @@ Recommended execution sequence (approximately):
 
 ---
 
-*Plan created: 2026-04-15*
-*Based on: Full codebase audit of all source, test, config, and documentation files*
+_Plan created: 2026-04-15_
+_Based on: Full codebase audit of all source, test, config, and documentation files_

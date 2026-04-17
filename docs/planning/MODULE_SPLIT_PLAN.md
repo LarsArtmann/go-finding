@@ -9,15 +9,15 @@
 
 go-finding is an **SDK** providing a unified data model and pipeline for static analysis tools. Per the founding principle in PROPOSAL.md:
 
-> *"Converters live in each tool, not in the SDK. Tools depend on the SDK; the SDK depends on nothing."*
+> _"Converters live in each tool, not in the SDK. Tools depend on the SDK; the SDK depends on nothing."_
 
 Currently a single Go module (`github.com/larsartmann/go-finding`) with one sub-package (`pipeline/`), a demo CLI (`cmd/go-finding/`), and example programs (`examples/`). The root `go.mod` declares three external dependencies:
 
-| Dependency | Used by | Disk Size | Transitive Deps |
-|---|---|---|---|
-| `golang.org/x/tools` v0.44.0 | `diagnostic.go` only | **33 MB** (6 transitive) | go-cmp, goldmark, x/mod, x/net, x/telemetry, x/sys |
-| `golang.org/x/sync` v0.20.0 | `pipeline/pipeline.go`, `pipeline/partial.go` | 104 KB (0 transitive) | — |
-| `gopkg.in/yaml.v3` v3.0.1 | `cmd/go-finding/main.go` only | 504 KB (0 transitive) | — |
+| Dependency                   | Used by                                       | Disk Size                | Transitive Deps                                    |
+| ---------------------------- | --------------------------------------------- | ------------------------ | -------------------------------------------------- |
+| `golang.org/x/tools` v0.44.0 | `diagnostic.go` only                          | **33 MB** (6 transitive) | go-cmp, goldmark, x/mod, x/net, x/telemetry, x/sys |
+| `golang.org/x/sync` v0.20.0  | `pipeline/pipeline.go`, `pipeline/partial.go` | 104 KB (0 transitive)    | —                                                  |
+| `gopkg.in/yaml.v3` v3.0.1    | `cmd/go-finding/main.go` only                 | 504 KB (0 transitive)    | —                                                  |
 
 **Key insight:** The root package (everything except `pipeline/` and `cmd/`) is **stdlib-only**. The only file that needs `golang.org/x/tools` is `diagnostic.go` — a converter for `go/analysis.Diagnostic`. This creates a **33 MB unnecessary download** for SDK consumers who only want the data model.
 
@@ -69,13 +69,13 @@ Currently a single Go module (`github.com/larsartmann/go-finding`) with one sub-
 
 Go requires methods on a type to be defined in the **same package** as the type. The following methods on core types exist in format/integration files:
 
-| File | Method | On Type | Impact if moved |
-|---|---|---|---|
-| `sarif.go` | `Report.ToSARIF()` | `*Report` | Must convert to function |
-| `sarif.go` | `Report.ToSARIFFiltered()` | `*Report` | Must convert to function |
-| `lsp.go` | `Finding.ToLSP()` | `Finding` | Must convert to function |
-| `json.go` | `Report.PrettyJSON()` | `*Report` | Must convert to function |
-| `json.go` | `Finding.LineJSON()` | `Finding` | Must convert to function |
+| File            | Method                         | On Type   | Impact if moved          |
+| --------------- | ------------------------------ | --------- | ------------------------ |
+| `sarif.go`      | `Report.ToSARIF()`             | `*Report` | Must convert to function |
+| `sarif.go`      | `Report.ToSARIFFiltered()`     | `*Report` | Must convert to function |
+| `lsp.go`        | `Finding.ToLSP()`              | `Finding` | Must convert to function |
+| `json.go`       | `Report.PrettyJSON()`          | `*Report` | Must convert to function |
+| `json.go`       | `Finding.LineJSON()`           | `Finding` | Must convert to function |
 | `diagnostic.go` | `Finding.AnalysisDiagnostic()` | `Finding` | Must convert to function |
 
 ### Test Cross-Module Dependency (Blocker — Resolved)
@@ -134,7 +134,7 @@ go-finding/
 
 ### Why This Is the Right Split for an SDK
 
-1. **PROPOSAL.md principle alignment:** *"Tools depend on the SDK; the SDK depends on nothing."* Moving `diagnostic.go` (a converter for `go/analysis.Diagnostic`) out of root **enforces** this principle at the module level.
+1. **PROPOSAL.md principle alignment:** _"Tools depend on the SDK; the SDK depends on nothing."_ Moving `diagnostic.go` (a converter for `go/analysis.Diagnostic`) out of root **enforces** this principle at the module level.
 
 2. **33 MB dep isolation:** SDK consumers who use core types + SARIF/LSP/JSON output (the majority) get **zero transitive dependencies**. Only consumers who need `go/analysis` integration opt into the 33 MB `golang.org/x/tools` download.
 
@@ -148,18 +148,19 @@ go-finding/
 
 ### Breaking Changes (6 — all in go/analysis integration)
 
-| Current (root package) | New (analysis package) | Migration |
-|---|---|---|
-| `finding.FromDiagnostic(d, fset, tool, rule)` | `analysis.FromDiagnostic(d, fset, tool, rule)` | Change import |
-| `finding.FromTokenPosition(pos)` | `analysis.FromTokenPosition(pos)` | Change import |
-| `finding.NodePosition(fset, node)` | `analysis.NodePosition(fset, node)` | Change import |
-| `finding.NodeRange(node, fset)` | `analysis.NodeRange(node, fset)` | Change import |
-| `finding.FormatDiagnostic(d, fset, name)` | `analysis.FormatDiagnostic(d, fset, name)` | Change import |
-| `f.AnalysisDiagnostic()` | `analysis.ToDiagnostic(f)` | Change import + method → function |
+| Current (root package)                        | New (analysis package)                         | Migration                         |
+| --------------------------------------------- | ---------------------------------------------- | --------------------------------- |
+| `finding.FromDiagnostic(d, fset, tool, rule)` | `analysis.FromDiagnostic(d, fset, tool, rule)` | Change import                     |
+| `finding.FromTokenPosition(pos)`              | `analysis.FromTokenPosition(pos)`              | Change import                     |
+| `finding.NodePosition(fset, node)`            | `analysis.NodePosition(fset, node)`            | Change import                     |
+| `finding.NodeRange(node, fset)`               | `analysis.NodeRange(node, fset)`               | Change import                     |
+| `finding.FormatDiagnostic(d, fset, name)`     | `analysis.FormatDiagnostic(d, fset, name)`     | Change import                     |
+| `f.AnalysisDiagnostic()`                      | `analysis.ToDiagnostic(f)`                     | Change import + method → function |
 
 ### Migration Guide for Downstream Consumers
 
 **Before:**
+
 ```go
 import "github.com/larsartmann/go-finding"
 
@@ -171,6 +172,7 @@ func main() {
 ```
 
 **After:**
+
 ```go
 import (
     "github.com/larsartmann/go-finding"
@@ -204,19 +206,19 @@ Everything else (Finding, Report, SARIF, LSP, JSON, Filter, Merge, Pipeline) —
 
 ## Comparison Matrix
 
-| Criterion | A: Minimal (2 modules) | **B: SDK Split (4 modules)** | C: Full Modular (5+ modules) |
-|---|---|---|---|
-| External deps in root module | 3 (unchanged) | **0** | 0 |
-| `golang.org/x/tools` isolated (33 MB) | No | **Yes** | Yes |
-| Breaking API changes | 0 | **6** (go/analysis only) | 14+ |
-| Method → function conversions | 0 | **1** | 5 |
-| Modules to maintain | 2 | **4** | 5+ |
-| User migration effort | None | **Low** (go/analysis users only) | High (all users) |
-| Dependency download for core users | ~34 MB | **0 MB** | 0 MB |
-| Conceptual clarity | Low | **High** | Very high |
-| Risk of over-splitting | None | **Low** | High |
-| Effort | ~1h | **~4-6h** | ~12-16h |
-| SDK principle compliance | Violates | **Enforces** | Over-engineered |
+| Criterion                             | A: Minimal (2 modules) | **B: SDK Split (4 modules)**     | C: Full Modular (5+ modules) |
+| ------------------------------------- | ---------------------- | -------------------------------- | ---------------------------- |
+| External deps in root module          | 3 (unchanged)          | **0**                            | 0                            |
+| `golang.org/x/tools` isolated (33 MB) | No                     | **Yes**                          | Yes                          |
+| Breaking API changes                  | 0                      | **6** (go/analysis only)         | 14+                          |
+| Method → function conversions         | 0                      | **1**                            | 5                            |
+| Modules to maintain                   | 2                      | **4**                            | 5+                           |
+| User migration effort                 | None                   | **Low** (go/analysis users only) | High (all users)             |
+| Dependency download for core users    | ~34 MB                 | **0 MB**                         | 0 MB                         |
+| Conceptual clarity                    | Low                    | **High**                         | Very high                    |
+| Risk of over-splitting                | None                   | **Low**                          | High                         |
+| Effort                                | ~1h                    | **~4-6h**                        | ~12-16h                      |
+| SDK principle compliance              | Violates               | **Enforces**                     | Over-engineered              |
 
 ---
 
@@ -227,6 +229,7 @@ Everything else (Finding, Report, SARIF, LSP, JSON, Filter, Merge, Pipeline) —
 Move `ExamplePipeline` from root `example_test.go` to `pipeline/example_test.go`.
 
 **Before** (`example_test.go:254-288`):
+
 ```go
 import "github.com/larsartmann/go-finding/pipeline"
 
@@ -238,6 +241,7 @@ func ExamplePipeline() {
 ```
 
 **After** (`pipeline/example_test.go` — new file):
+
 ```go
 package pipeline_test
 
@@ -259,6 +263,7 @@ Verify root tests pass with `go test .` (no pipeline import).
 4. Convert `Finding.AnalysisDiagnostic()` → `analysis.ToDiagnostic(f finding.Finding) analysis.Diagnostic`
 5. Move `diagnostic_test.go` → `analysis/diagnostic_test.go`, update package + imports
 6. Create `analysis/go.mod`:
+
    ```
    module github.com/larsartmann/go-finding/analysis
 
@@ -273,6 +278,7 @@ Verify root tests pass with `go test .` (no pipeline import).
 ### Step 3: Create `pipeline/` module
 
 1. Add `pipeline/go.mod`:
+
    ```
    module github.com/larsartmann/go-finding/pipeline
 
@@ -287,6 +293,7 @@ Verify root tests pass with `go test .` (no pipeline import).
 ### Step 4: Create `cmd/go-finding/` module
 
 1. Add `cmd/go-finding/go.mod`:
+
    ```
    module github.com/larsartmann/go-finding/cmd/go-finding
 
@@ -302,6 +309,7 @@ Verify root tests pass with `go test .` (no pipeline import).
 ### Step 5: Update root `go.mod`
 
 Remove all three external dependencies. Root becomes:
+
 ```
 module github.com/larsartmann/go-finding
 
@@ -368,14 +376,16 @@ Fix Go version + update for multi-module tags:
 ```
 
 Update `.goreleaser.yml` to build from the CLI module:
+
 ```yaml
 builds:
   - id: go-finding
     main: ./cmd/go-finding
-    dir: ./cmd/go-finding    # Build from CLI module root
+    dir: ./cmd/go-finding # Build from CLI module root
 ```
 
 Release tags use subdirectory prefix format:
+
 - Root: `git tag v1.1.0`
 - Analysis: `git tag analysis/v0.1.0`
 - Pipeline: `git tag pipeline/v0.1.0`
@@ -416,6 +426,7 @@ cd .. && git tag analysis/v0.1.0 && git push origin analysis/v0.1.0
 ### Step 12: Rollback plan
 
 If the split causes issues:
+
 1. Revert the commit(s)
 2. All code returns to single-module state
 3. `go.work` is deleted
@@ -438,12 +449,12 @@ Total download for any consumer: ~34 MB, 3 direct + 6 transitive = 9 modules
 
 ### After (Approach B — SDK split)
 
-| Consumer type | What they import | Download | Transitive deps |
-|---|---|---|---|
-| **Core only** (types + SARIF/LSP/JSON) | `go-finding` | **0 MB** | **0** |
-| **Pipeline user** | `go-finding` + `pipeline` | **104 KB** | **0** |
-| **go/analysis user** | `go-finding` + `analysis` | **33 MB** | **6** |
-| **CLI user** | everything | **34 MB** | **6** |
+| Consumer type                          | What they import          | Download   | Transitive deps |
+| -------------------------------------- | ------------------------- | ---------- | --------------- |
+| **Core only** (types + SARIF/LSP/JSON) | `go-finding`              | **0 MB**   | **0**           |
+| **Pipeline user**                      | `go-finding` + `pipeline` | **104 KB** | **0**           |
+| **go/analysis user**                   | `go-finding` + `analysis` | **33 MB**  | **6**           |
+| **CLI user**                           | everything                | **34 MB**  | **6**           |
 
 **Result:** The majority of SDK consumers (downstream tools writing `ToFindings()` converters) get **zero dependencies**. They import the SDK, build `Finding` structs, output SARIF — and download nothing.
 
@@ -451,13 +462,13 @@ Total download for any consumer: ~34 MB, 3 direct + 6 transitive = 9 modules
 
 ## What NOT to Split
 
-| Candidate | Why not split |
-|---|---|
-| SARIF/LSP/JSON into `format/` | Stdlib-only — no dependency to isolate. Breaking method API (`report.ToSARIF()` → function) is a massive ergonomic regression with zero dependency payoff. |
-| Filter/Merge into `query/` | Tightly coupled to `Report` type. No dependency boundary. |
-| Errors/ID into separate module | Too granular. No dependency to isolate. Both stdlib-only. |
-| Examples into modules | Not importable packages. Demo code only. Use `go.work` for local dev. |
-| `detectorutil/` into module | Zero dependency on go-finding. Not part of the SDK API. |
+| Candidate                      | Why not split                                                                                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SARIF/LSP/JSON into `format/`  | Stdlib-only — no dependency to isolate. Breaking method API (`report.ToSARIF()` → function) is a massive ergonomic regression with zero dependency payoff. |
+| Filter/Merge into `query/`     | Tightly coupled to `Report` type. No dependency boundary.                                                                                                  |
+| Errors/ID into separate module | Too granular. No dependency to isolate. Both stdlib-only.                                                                                                  |
+| Examples into modules          | Not importable packages. Demo code only. Use `go.work` for local dev.                                                                                      |
+| `detectorutil/` into module    | Zero dependency on go-finding. Not part of the SDK API.                                                                                                    |
 
 ---
 

@@ -17,48 +17,48 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 #### Core Types (root package)
 
-| File              | Purpose                                     |
-| ----------------- | ------------------------------------------- |
-| `finding.go`      | Core Finding type                           |
-| `severity.go`     | Severity enum (info/warning/error/critical) |
-| `fix_strategy.go` | FixStrategy enum (none/suggest/direct/ai)   |
+| File              | Purpose                                                   |
+| ----------------- | --------------------------------------------------------- |
+| `finding.go`      | Core Finding type                                         |
+| `severity.go`     | Severity enum (info/warning/error/critical)               |
+| `fix_strategy.go` | FixStrategy enum (none/suggest/direct/ai)                 |
 | `position.go`     | Position, Range types with Overlaps/Intersection/Adjacent |
-| `report.go`       | Report container with summary               |
-| `filter.go`       | Filtering and grouping utilities            |
-| `merge.go`        | Report merging with deduplication + Correlate |
-| `sarif.go`        | SARIF 2.1.0 output                          |
-| `lsp.go`          | LSP Diagnostic conversion                   |
-| `diagnostic.go`   | go/analysis integration                     |
-| `errors.go`       | Structured error types (FindingError with categories) |
-| `category.go`     | Category constants                          |
-| `id.go`           | ID generation utilities                     |
-| `json.go`         | JSON marshaling/unmarshaling                |
-| `suppression.go`  | Suppression handling                        |
+| `report.go`       | Report container with summary                             |
+| `filter.go`       | Filtering and grouping utilities                          |
+| `merge.go`        | Report merging with deduplication + Correlate             |
+| `sarif.go`        | SARIF 2.1.0 output                                        |
+| `lsp.go`          | LSP Diagnostic conversion                                 |
+| `diagnostic.go`   | go/analysis integration                                   |
+| `errors.go`       | Structured error types (FindingError with categories)     |
+| `category.go`     | Category constants                                        |
+| `id.go`           | ID generation utilities                                   |
+| `json.go`         | JSON marshaling/unmarshaling                              |
+| `suppression.go`  | Suppression handling                                      |
 
 #### Pipeline Package
 
-| File                       | Purpose                                          |
-| -------------------------- | ------------------------------------------------ |
-| `pipeline/pipeline.go`     | Pipeline orchestrator: detect → triage → fix → verify |
-| `pipeline/conflict.go`     | Fix conflict detection and analysis              |
-| `pipeline/astfix.go`       | AST-aware fix application (fallback to text)     |
-| `pipeline/verify.go`       | Verification stage: re-run detectors, diff findings |
-| `pipeline/metrics.go`      | Timing/count metrics collection with snapshots   |
-| `pipeline/retry.go`        | Exponential backoff retry wrapper for detectors  |
-| `pipeline/partial.go`      | Partial success: collect from failed detectors   |
+| File                   | Purpose                                               |
+| ---------------------- | ----------------------------------------------------- |
+| `pipeline/pipeline.go` | Pipeline orchestrator: detect → triage → fix → verify |
+| `pipeline/conflict.go` | Fix conflict detection and analysis                   |
+| `pipeline/astfix.go`   | AST-aware fix application (fallback to text)          |
+| `pipeline/verify.go`   | Verification stage: re-run detectors, diff findings   |
+| `pipeline/metrics.go`  | Timing/count metrics collection with snapshots        |
+| `pipeline/retry.go`    | Exponential backoff retry wrapper for detectors       |
+| `pipeline/partial.go`  | Partial success: collect from failed detectors        |
 
 #### CLI
 
-| File | Purpose |
-|------|---------|
+| File                     | Purpose                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | `cmd/go-finding/main.go` | Functional CLI: govet+staticcheck detectors, pipeline integration, text/json/sarif output, config validation |
 
 #### Examples
 
-| File | Purpose |
-|------|---------|
-| `examples/govet/main.go` | Go vet JSON → Finding converter (Detector impl) |
-| `examples/staticcheck/main.go` | Staticcheck JSON → Finding converter (Detector impl) |
+| File                            | Purpose                                                            |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `examples/govet/main.go`        | Go vet JSON → Finding converter (Detector impl)                    |
+| `examples/staticcheck/main.go`  | Staticcheck JSON → Finding converter (Detector impl)               |
 | `examples/detectorutil/tool.go` | Shared helper: RunTool executes external tools and captures output |
 
 ### Testing

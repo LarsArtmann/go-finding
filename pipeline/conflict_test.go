@@ -6,7 +6,7 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
-func findingWithRange(id string, file string, line, startLine, endLine int) finding.Finding {
+func findingWithRange(id, file string, line, startLine, endLine int) finding.Finding {
 	return finding.Finding{
 		ID:       id,
 		Position: finding.Position{File: file, Line: line},
@@ -46,17 +46,43 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 
 	tests := []struct {
 		name              string
-		fixes            []finding.Finding
+		fixes             []finding.Finding
 		expectedGroups    int
 		expectedConflicts int
 	}{
 		{"no conflicts - separate files", findings("1", "a.go", 10, "2", "b.go", 10), 2, 0},
-		{"no conflicts - same file, different lines", findings("1", "a.go", 10, "2", "a.go", 20), 2, 0},
-		{"conflict - overlapping ranges", []finding.Finding{findingWithRange("1", "a.go", 10, 10, 20), findingWithRange("2", "a.go", 15, 15, 25)}, 1, 1},
-		{"conflict - adjacent ranges", []finding.Finding{findingWithRange("1", "a.go", 10, 10, 20), findingWithRange("2", "a.go", 20, 20, 30)}, 1, 1},
+		{
+			"no conflicts - same file, different lines",
+			findings("1", "a.go", 10, "2", "a.go", 20),
+			2,
+			0,
+		},
+		{
+			"conflict - overlapping ranges",
+			[]finding.Finding{
+				findingWithRange("1", "a.go", 10, 10, 20),
+				findingWithRange("2", "a.go", 15, 15, 25),
+			},
+			1,
+			1,
+		},
+		{
+			"conflict - adjacent ranges",
+			[]finding.Finding{
+				findingWithRange("1", "a.go", 10, 10, 20),
+				findingWithRange("2", "a.go", 20, 20, 30),
+			},
+			1,
+			1,
+		},
 		{"empty fixes", []finding.Finding{}, 0, 0},
 		{"single fix", findings("1", "a.go", 10), 1, 0},
-		{"fix without file skipped", []finding.Finding{{ID: "1", Position: finding.Position{Line: 10}}}, 0, 0},
+		{
+			"fix without file skipped",
+			[]finding.Finding{{ID: "1", Position: finding.Position{Line: 10}}},
+			0,
+			0,
+		},
 	}
 
 	for _, tt := range tests {
@@ -83,8 +109,18 @@ func TestPositionLess(t *testing.T) {
 		expected bool
 	}{
 		{"different lines", finding.Position{Line: 10}, finding.Position{Line: 20}, true},
-		{"same line, different columns", finding.Position{Line: 10, Column: 5}, finding.Position{Line: 10, Column: 10}, true},
-		{"equal positions", finding.Position{Line: 10, Column: 5}, finding.Position{Line: 10, Column: 5}, false},
+		{
+			"same line, different columns",
+			finding.Position{Line: 10, Column: 5},
+			finding.Position{Line: 10, Column: 10},
+			true,
+		},
+		{
+			"equal positions",
+			finding.Position{Line: 10, Column: 5},
+			finding.Position{Line: 10, Column: 5},
+			false,
+		},
 		{"greater line", finding.Position{Line: 20}, finding.Position{Line: 10}, false},
 	}
 
@@ -103,7 +139,10 @@ func TestExtendRange(t *testing.T) {
 	t.Parallel()
 
 	makeRange := func(startLine, endLine int) finding.Range {
-		return finding.Range{Start: finding.Position{Line: startLine}, End: finding.Position{Line: endLine}}
+		return finding.Range{
+			Start: finding.Position{Line: startLine},
+			End:   finding.Position{Line: endLine},
+		}
 	}
 
 	tests := []struct {
@@ -113,7 +152,12 @@ func TestExtendRange(t *testing.T) {
 	}{
 		{"r2 extends r1", makeRange(10, 20), makeRange(15, 30), makeRange(10, 30)},
 		{"r2 contained in r1", makeRange(10, 30), makeRange(15, 20), makeRange(10, 30)},
-		{"single position ranges", finding.Range{Start: finding.Position{Line: 10}}, finding.Range{Start: finding.Position{Line: 20}}, makeRange(10, 20)},
+		{
+			"single position ranges",
+			finding.Range{Start: finding.Position{Line: 10}},
+			finding.Range{Start: finding.Position{Line: 20}},
+			makeRange(10, 20),
+		},
 	}
 
 	for _, tt := range tests {

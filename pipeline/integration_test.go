@@ -19,7 +19,7 @@ func TestFixApplier_BackupRestoreRoundTrip(t *testing.T) {
 
 	testFile := filepath.Join(tempDir, "original.go")
 	original := "package main\n\nfunc main() {\n\tprintln(\"original\")\n}\n"
-	if err := writeFile(testFile, []byte(original), 0644); err != nil {
+	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
 		t.Fatalf("write: %v", err)
 	}
 
@@ -28,7 +28,7 @@ func TestFixApplier_BackupRestoreRoundTrip(t *testing.T) {
 	}
 
 	modified := "package main\n\nfunc main() {\n\tprintln(\"modified\")\n}\n"
-	if err := writeFile(testFile, []byte(modified), 0644); err != nil {
+	if err := writeFile(testFile, []byte(modified), 0o644); err != nil {
 		t.Fatalf("write modified: %v", err)
 	}
 
@@ -54,17 +54,17 @@ func TestFixApplier_BackupPathCollision(t *testing.T) {
 	sub1 := filepath.Join(tempDir, "dirA", "file.go")
 	sub2 := filepath.Join(tempDir, "dirB", "file.go")
 
-	if err := os.MkdirAll(filepath.Dir(sub1), 0750); err != nil {
+	if err := os.MkdirAll(filepath.Dir(sub1), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Dir(sub2), 0750); err != nil {
+	if err := os.MkdirAll(filepath.Dir(sub2), 0o750); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := writeFile(sub1, []byte("A"), 0644); err != nil {
+	if err := writeFile(sub1, []byte("A"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := writeFile(sub2, []byte("B"), 0644); err != nil {
+	if err := writeFile(sub2, []byte("B"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -88,8 +88,10 @@ func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
 
 	for i := range 5 {
 		name := filepath.Join(tempDir, "file"+string(rune('A'+i))+".go")
-		content := "package main\n\nfunc main() {\n\tprintln(\"old" + string(rune('A'+i)) + "\")\n}\n"
-		if err := writeFile(name, []byte(content), 0644); err != nil {
+		content := "package main\n\nfunc main() {\n\tprintln(\"old" + string(
+			rune('A'+i),
+		) + "\")\n}\n"
+		if err := writeFile(name, []byte(content), 0o644); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -118,7 +120,7 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 	t.Parallel()
 
 	config := Config{
-		MaxIterations:      1,
+		MaxIterations:       1,
 		GracefulDegradation: true,
 	}
 
@@ -142,7 +144,10 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 		t.Fatalf("iterations = %d, want 1", len(result.Iterations))
 	}
 	if result.Iterations[0].FindingsFound != 1 {
-		t.Errorf("FindingsFound = %d, want 1 (from good detector)", result.Iterations[0].FindingsFound)
+		t.Errorf(
+			"FindingsFound = %d, want 1 (from good detector)",
+			result.Iterations[0].FindingsFound,
+		)
 	}
 }
 
@@ -150,15 +155,18 @@ func TestPipeline_RetryConfig(t *testing.T) {
 	t.Parallel()
 
 	var calls atomic.Int32
-	flaky := NamedDetectorFunc("flaky", DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
-		count := calls.Add(1)
-		if count < 3 {
-			return nil, os.ErrDeadlineExceeded
-		}
-		return []finding.Finding{
-			testFinding("1", "r1", "flaky", "m", finding.SeverityError, ""),
-		}, nil
-	}))
+	flaky := NamedDetectorFunc(
+		"flaky",
+		DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+			count := calls.Add(1)
+			if count < 3 {
+				return nil, os.ErrDeadlineExceeded
+			}
+			return []finding.Finding{
+				testFinding("1", "r1", "flaky", "m", finding.SeverityError, ""),
+			}, nil
+		}),
+	)
 
 	retryConfig := RetryConfig{
 		MaxRetries: 3,
@@ -189,15 +197,18 @@ func TestPipeline_VerifyAfterFix(t *testing.T) {
 	t.Parallel()
 
 	var callCount atomic.Int32
-	det := NamedDetectorFunc("verifiable", DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
-		c := callCount.Add(1)
-		if c == 1 {
-			return []finding.Finding{
-				testFinding("1", "r1", "v", "m", finding.SeverityError, ""),
-			}, nil
-		}
-		return nil, nil
-	}))
+	det := NamedDetectorFunc(
+		"verifiable",
+		DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+			c := callCount.Add(1)
+			if c == 1 {
+				return []finding.Finding{
+					testFinding("1", "r1", "v", "m", finding.SeverityError, ""),
+				}, nil
+			}
+			return nil, nil
+		}),
+	)
 
 	config := Config{
 		MaxIterations:     2,

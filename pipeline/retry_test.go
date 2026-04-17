@@ -35,7 +35,12 @@ func TestRetryConfig_delay_maxCap(t *testing.T) {
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 300 * time.Millisecond}
 	got := c.delay(10)
 	if got < 300*time.Millisecond || got > 375*time.Millisecond {
-		t.Errorf("delay(10) = %v, want [%v, %v] (capped + jitter)", got, 300*time.Millisecond, 375*time.Millisecond)
+		t.Errorf(
+			"delay(10) = %v, want [%v, %v] (capped + jitter)",
+			got,
+			300*time.Millisecond,
+			375*time.Millisecond,
+		)
 	}
 }
 

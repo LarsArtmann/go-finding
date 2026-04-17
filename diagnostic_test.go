@@ -20,8 +20,8 @@ func TestFromDiagnostic(t *testing.T) {
 	}
 
 	d := &analysis.Diagnostic{
-		Pos:     f.Name.Pos(),
-		Message: "test diagnostic",
+		Pos:      f.Name.Pos(),
+		Message:  "test diagnostic",
 		Category: "test",
 	}
 

@@ -10,9 +10,9 @@ import (
 
 // ID format constants.
 const (
-	idPartCount     = 3  // Minimum number of parts for hash-based IDs
-	hashLength      = 16 // Length of hex-encoded hash
-	idPartMin       = 4  // Minimum parts to attempt parsing column and line
+	idPartCount      = 3  // Minimum number of parts for hash-based IDs
+	hashLength       = 16 // Length of hex-encoded hash
+	idPartMin        = 4  // Minimum parts to attempt parsing column and line
 	positionPartsOne = 1  // Number of positional parts when only line is present
 	positionPartsTwo = 2  // Number of positional parts when line and column are present
 )

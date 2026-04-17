@@ -8,7 +8,7 @@ import (
 
 // Metrics collects timing and count data from pipeline execution.
 type Metrics struct {
-	mu            sync.Mutex
+	mu             sync.Mutex
 	StageDurations map[string]time.Duration
 	DetectorTimes  map[string]time.Duration
 	FindingsFound  map[string]int

@@ -19,79 +19,79 @@ The go-finding library has matured significantly since the April 13 status repor
 
 ### Core Foundation (Phase 1)
 
-| Component | Lines | Coverage | Status |
-|-----------|-------|----------|--------|
-| `finding.go` | 67 | High | Complete — Finding, RelatedRef, IsValid, IsSuppressed, HasFix, HasSuggestion |
-| `severity.go` | 47 | 100% | Complete — info/warning/error/critical with ordering |
-| `category.go` | 41 | 100% | Complete — 13 standard categories + custom support via IsStandard() |
-| `fix_strategy.go` | 35 | 100% | Complete — none/suggest/direct/ai with CanAutoApply, NeedsAI |
-| `position.go` | 274 | High | Complete — Position, Range, Contains, Overlaps, Intersection, Adjacent |
-| `suppression.go` | 37 | 80% | Complete — Kind/Reason/Expiry, IsValid (untested) |
-| `report.go` | 118 | High | Complete — Summary, filtering delegates to filter package |
-| `filter.go` | 131 | High | Complete — 15+ filter functions, GroupBy variants |
-| `merge.go` | 188 | High | Complete — Report merging, dedup, Correlate |
-| `id.go` | 130 | High | Complete — GenerateID, ParseID, IsHashID |
-| `json.go` | 62 | High | Complete — Marshal/Unmarshal (no-op MarshalJSON removed) |
-| `sarif.go` | 273 | High | Complete — SARIF 2.1.0 output with filtered variant |
-| `lsp.go` | 152 | High | Complete — LSP Diagnostic bidirectional (FromLSP now sets Position.File) |
-| `diagnostic.go` | 150 | 100% | Complete — go/analysis integration |
-| `errors.go` | 140 | 95% | Complete — 5 error categories, FindingError with Unwrap, WithFinding, WithPosition |
-| `doc.go` | 78 | N/A | Complete — Comprehensive package docs |
+| Component         | Lines | Coverage | Status                                                                             |
+| ----------------- | ----- | -------- | ---------------------------------------------------------------------------------- |
+| `finding.go`      | 67    | High     | Complete — Finding, RelatedRef, IsValid, IsSuppressed, HasFix, HasSuggestion       |
+| `severity.go`     | 47    | 100%     | Complete — info/warning/error/critical with ordering                               |
+| `category.go`     | 41    | 100%     | Complete — 13 standard categories + custom support via IsStandard()                |
+| `fix_strategy.go` | 35    | 100%     | Complete — none/suggest/direct/ai with CanAutoApply, NeedsAI                       |
+| `position.go`     | 274   | High     | Complete — Position, Range, Contains, Overlaps, Intersection, Adjacent             |
+| `suppression.go`  | 37    | 80%      | Complete — Kind/Reason/Expiry, IsValid (untested)                                  |
+| `report.go`       | 118   | High     | Complete — Summary, filtering delegates to filter package                          |
+| `filter.go`       | 131   | High     | Complete — 15+ filter functions, GroupBy variants                                  |
+| `merge.go`        | 188   | High     | Complete — Report merging, dedup, Correlate                                        |
+| `id.go`           | 130   | High     | Complete — GenerateID, ParseID, IsHashID                                           |
+| `json.go`         | 62    | High     | Complete — Marshal/Unmarshal (no-op MarshalJSON removed)                           |
+| `sarif.go`        | 273   | High     | Complete — SARIF 2.1.0 output with filtered variant                                |
+| `lsp.go`          | 152   | High     | Complete — LSP Diagnostic bidirectional (FromLSP now sets Position.File)           |
+| `diagnostic.go`   | 150   | 100%     | Complete — go/analysis integration                                                 |
+| `errors.go`       | 140   | 95%      | Complete — 5 error categories, FindingError with Unwrap, WithFinding, WithPosition |
+| `doc.go`          | 78    | N/A      | Complete — Comprehensive package docs                                              |
 
 ### Pipeline Engine (Phase 2)
 
-| Component | Lines | Coverage | Status |
-|-----------|-------|----------|--------|
-| `pipeline/pipeline.go` | 582 | 83% | Complete — detect→triage→fix→verify loop with FixApplier |
-| `pipeline/metrics.go` | 115 | High | Complete — wired into pipeline: RecordDetector, RecordFix, StageTiming |
-| `pipeline/partial.go` | 126 | High | Complete — DetectPartial wired via Config.GracefulDegradation |
-| `pipeline/retry.go` | 80 | High | Complete — RetryDetector wired via Config.RetryConfig |
-| `pipeline/verify.go` | 91 | High | Complete — Verifier with DiffFindings, wired via Config.VerifyAfterFix |
-| `pipeline/conflict.go` | 240 | Med | Complete — ConflictDetector, FilterConflictingFixes, AnalyzeConflicts |
+| Component              | Lines | Coverage | Status                                                                 |
+| ---------------------- | ----- | -------- | ---------------------------------------------------------------------- |
+| `pipeline/pipeline.go` | 582   | 83%      | Complete — detect→triage→fix→verify loop with FixApplier               |
+| `pipeline/metrics.go`  | 115   | High     | Complete — wired into pipeline: RecordDetector, RecordFix, StageTiming |
+| `pipeline/partial.go`  | 126   | High     | Complete — DetectPartial wired via Config.GracefulDegradation          |
+| `pipeline/retry.go`    | 80    | High     | Complete — RetryDetector wired via Config.RetryConfig                  |
+| `pipeline/verify.go`   | 91    | High     | Complete — Verifier with DiffFindings, wired via Config.VerifyAfterFix |
+| `pipeline/conflict.go` | 240   | Med      | Complete — ConflictDetector, FilterConflictingFixes, AnalyzeConflicts  |
 
 ### Cleanup Executed (April 15 Session)
 
-| # | What | Commit | Status |
-|---|------|--------|--------|
-| 1 | Delete Result[T] (222 lines) | cf1d0a2 | Done |
-| 2 | Delete ASTFixer (155 lines) | bd0f15f | Done |
-| 3 | Delete dead symbols (ConfidenceScale, HasConflicts, GroupFixesByConflict) | c2e479e | Done |
-| 4 | Fix FromLSP missing Position.File | 00556fe | Done |
-| 5 | Add NamedDetectorFunc | f885182 | Done |
-| 6 | Fix FixApplier backup path collision + add mutex | c8852ec | Done |
-| 7 | Fix detectParallel suppressed finding inconsistency | 84a62db | Done |
-| 8 | Fix Category.IsValid() for custom categories | b7725c7 | Done |
-| 9 | Unify Report.By* to delegate to filter package | 047ecac | Done |
-| 10 | Wire Metrics into pipeline | c1bab24 | Done |
-| 11 | Remove no-op MarshalJSON | d9a3b97 | Done |
-| 12 | Add IsValid to Suppression, ErrorCategory, RelatedRef | 78989bf | Done |
-| 13 | Wire GracefulDegradation + RetryConfig | 83ee6a4 | Done |
-| 14 | Integration tests (backup/restore, graceful, retry, verify) | e4c69a9 | Done |
+| #   | What                                                                      | Commit  | Status |
+| --- | ------------------------------------------------------------------------- | ------- | ------ |
+| 1   | Delete Result[T] (222 lines)                                              | cf1d0a2 | Done   |
+| 2   | Delete ASTFixer (155 lines)                                               | bd0f15f | Done   |
+| 3   | Delete dead symbols (ConfidenceScale, HasConflicts, GroupFixesByConflict) | c2e479e | Done   |
+| 4   | Fix FromLSP missing Position.File                                         | 00556fe | Done   |
+| 5   | Add NamedDetectorFunc                                                     | f885182 | Done   |
+| 6   | Fix FixApplier backup path collision + add mutex                          | c8852ec | Done   |
+| 7   | Fix detectParallel suppressed finding inconsistency                       | 84a62db | Done   |
+| 8   | Fix Category.IsValid() for custom categories                              | b7725c7 | Done   |
+| 9   | Unify Report.By\* to delegate to filter package                           | 047ecac | Done   |
+| 10  | Wire Metrics into pipeline                                                | c1bab24 | Done   |
+| 11  | Remove no-op MarshalJSON                                                  | d9a3b97 | Done   |
+| 12  | Add IsValid to Suppression, ErrorCategory, RelatedRef                     | 78989bf | Done   |
+| 13  | Wire GracefulDegradation + RetryConfig                                    | 83ee6a4 | Done   |
+| 14  | Integration tests (backup/restore, graceful, retry, verify)               | e4c69a9 | Done   |
 
 ---
 
 ## b) PARTIALLY DONE
 
-| Component | Status | What's Missing |
-|-----------|--------|----------------|
-| `Correlate()` in merge.go | 70% | Function works, has tests, but never wired into Pipeline.Run(). Standalone utility, not integrated. |
-| SARIF critical round-trip | 80% | `SeverityCritical` → SARIF `"error"` → `FromSARIFLevel("error")` → `SeverityError`. Lossy. Documented but not fixed. |
-| `examples/govet/main.go` | 85% | Compiles and runs, but LSP diagnostics reference stale fields (gopls shows warnings for a different code path — actual code is clean). |
-| Test coverage | 82.8% | 16 functions at 0% coverage (mostly example code + low-level helpers) |
+| Component                 | Status | What's Missing                                                                                                                         |
+| ------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `Correlate()` in merge.go | 70%    | Function works, has tests, but never wired into Pipeline.Run(). Standalone utility, not integrated.                                    |
+| SARIF critical round-trip | 80%    | `SeverityCritical` → SARIF `"error"` → `FromSARIFLevel("error")` → `SeverityError`. Lossy. Documented but not fixed.                   |
+| `examples/govet/main.go`  | 85%    | Compiles and runs, but LSP diagnostics reference stale fields (gopls shows warnings for a different code path — actual code is clean). |
+| Test coverage             | 82.8%  | 16 functions at 0% coverage (mostly example code + low-level helpers)                                                                  |
 
 ---
 
 ## c) NOT STARTED
 
-| Component | Priority | Effort | Notes |
-|-----------|----------|--------|-------|
-| CLI tool (`cmd/go-finding`) | Medium | 2-3h | Standalone binary for running pipelines |
-| Configuration file support | Low | 2h | YAML/JSON pipeline config |
-| Property-based tests | Low | 1h | testing/quick for core ops |
-| Watch mode | Low | 3h | fsnotify-based continuous analysis |
-| IDE integrations | Low | 5h+ | VS Code, GoLand plugins |
-| Performance profiling | Low | 1h | pprof benchmarks |
-| Web UI | Very Low | 5h+ | Separate project |
+| Component                   | Priority | Effort | Notes                                   |
+| --------------------------- | -------- | ------ | --------------------------------------- |
+| CLI tool (`cmd/go-finding`) | Medium   | 2-3h   | Standalone binary for running pipelines |
+| Configuration file support  | Low      | 2h     | YAML/JSON pipeline config               |
+| Property-based tests        | Low      | 1h     | testing/quick for core ops              |
+| Watch mode                  | Low      | 3h     | fsnotify-based continuous analysis      |
+| IDE integrations            | Low      | 5h+    | VS Code, GoLand plugins                 |
+| Performance profiling       | Low      | 1h     | pprof benchmarks                        |
+| Web UI                      | Very Low | 5h+    | Separate project                        |
 
 ---
 
@@ -99,19 +99,19 @@ The go-finding library has matured significantly since the April 13 status repor
 
 All critical issues from the April 15 audit have been resolved:
 
-| Issue | Severity | Fix |
-|-------|----------|-----|
-| `Result[T]` — 222 lines of unused Rust-style type | Scope creep | Deleted (cf1d0a2) |
-| `ASTFixer` — duplicate of FixApplier with variable shadow bug | Ghost system | Deleted (bd0f15f) |
-| `ConfidenceScale`, `HasConflicts`, `GroupFixesByConflict` — dead symbols | Dead code | Deleted (c2e479e) |
-| `FromLSP` returned Findings with empty Position.File | Bug | Fixed (00556fe) |
-| `DetectorFunc.Name()` always "anonymous" | Design flaw | Added NamedDetectorFunc (f885182) |
-| `FixApplier.backup()` path collision via filepath.Base | Data loss risk | Fixed with SHA1 hash (c8852ec) |
-| `FixApplier.backups` map race condition | Data race | Added mutex (c8852ec) |
-| `detectParallel` included suppressed in OnFinding | Inconsistency | Fixed (84a62db) |
-| `Category.IsValid()` rejected custom categories | Wrong semantics | Fixed with IsStandard() (b7725c7) |
-| No-op MarshalJSON methods | Dead code | Removed (d9a3b97) |
-| Metrics/Retry/GracefulDegradation never wired | Split brain | All wired (c1bab24, 83ee6a4) |
+| Issue                                                                    | Severity        | Fix                               |
+| ------------------------------------------------------------------------ | --------------- | --------------------------------- |
+| `Result[T]` — 222 lines of unused Rust-style type                        | Scope creep     | Deleted (cf1d0a2)                 |
+| `ASTFixer` — duplicate of FixApplier with variable shadow bug            | Ghost system    | Deleted (bd0f15f)                 |
+| `ConfidenceScale`, `HasConflicts`, `GroupFixesByConflict` — dead symbols | Dead code       | Deleted (c2e479e)                 |
+| `FromLSP` returned Findings with empty Position.File                     | Bug             | Fixed (00556fe)                   |
+| `DetectorFunc.Name()` always "anonymous"                                 | Design flaw     | Added NamedDetectorFunc (f885182) |
+| `FixApplier.backup()` path collision via filepath.Base                   | Data loss risk  | Fixed with SHA1 hash (c8852ec)    |
+| `FixApplier.backups` map race condition                                  | Data race       | Added mutex (c8852ec)             |
+| `detectParallel` included suppressed in OnFinding                        | Inconsistency   | Fixed (84a62db)                   |
+| `Category.IsValid()` rejected custom categories                          | Wrong semantics | Fixed with IsStandard() (b7725c7) |
+| No-op MarshalJSON methods                                                | Dead code       | Removed (d9a3b97)                 |
+| Metrics/Retry/GracefulDegradation never wired                            | Split brain     | All wired (c1bab24, 83ee6a4)      |
 
 **No currently broken components.** All tests pass. Zero lint errors.
 
@@ -143,48 +143,48 @@ All critical issues from the April 15 audit have been resolved:
 
 ### Immediate (Today)
 
-| # | Task | Effort | Impact |
-|---|------|--------|--------|
-| 1 | Delete `report/jscpd-report.json` artifact | 2 min | Clean repo |
-| 2 | Add `govet` binary to .gitignore | 1 min | Clean repo |
-| 3 | Restart LSP to clear stale astfix.go diagnostics | 1 min | Clean IDE |
-| 4 | Test `Finding.IsValid()`, `Suppression.IsValid()`, `ErrorCategory.IsValid()` | 15 min | Coverage |
-| 5 | Test `FilterConflictingFixes()`, `AnalyzeConflicts()` | 15 min | Coverage |
-| 6 | Document SARIF critical round-trip limitation | 10 min | Honesty |
-| 7 | Decide: wire or document `Correlate()` | 15 min | Closure |
+| #   | Task                                                                         | Effort | Impact     |
+| --- | ---------------------------------------------------------------------------- | ------ | ---------- |
+| 1   | Delete `report/jscpd-report.json` artifact                                   | 2 min  | Clean repo |
+| 2   | Add `govet` binary to .gitignore                                             | 1 min  | Clean repo |
+| 3   | Restart LSP to clear stale astfix.go diagnostics                             | 1 min  | Clean IDE  |
+| 4   | Test `Finding.IsValid()`, `Suppression.IsValid()`, `ErrorCategory.IsValid()` | 15 min | Coverage   |
+| 5   | Test `FilterConflictingFixes()`, `AnalyzeConflicts()`                        | 15 min | Coverage   |
+| 6   | Document SARIF critical round-trip limitation                                | 10 min | Honesty    |
+| 7   | Decide: wire or document `Correlate()`                                       | 15 min | Closure    |
 
 ### Short Term (This Week)
 
-| # | Task | Effort | Impact |
-|---|------|--------|--------|
-| 8 | Wire `Correlate()` as optional post-merge step | 60 min | Feature |
-| 9 | Add SARIF extension to preserve critical level | 45 min | Correctness |
-| 10 | Create real-world tool integration (staticcheck converter) | 2h | Adoption |
-| 11 | Add `cmd/go-finding` CLI binary | 3h | Usability |
-| 12 | Add configuration file support (YAML) | 2h | Usability |
-| 13 | Benchmark pipeline performance | 1h | Performance |
-| 14 | Profile memory allocation hotspots | 1h | Performance |
+| #   | Task                                                       | Effort | Impact      |
+| --- | ---------------------------------------------------------- | ------ | ----------- |
+| 8   | Wire `Correlate()` as optional post-merge step             | 60 min | Feature     |
+| 9   | Add SARIF extension to preserve critical level             | 45 min | Correctness |
+| 10  | Create real-world tool integration (staticcheck converter) | 2h     | Adoption    |
+| 11  | Add `cmd/go-finding` CLI binary                            | 3h     | Usability   |
+| 12  | Add configuration file support (YAML)                      | 2h     | Usability   |
+| 13  | Benchmark pipeline performance                             | 1h     | Performance |
+| 14  | Profile memory allocation hotspots                         | 1h     | Performance |
 
 ### Medium Term (Next 2 Weeks)
 
-| # | Task | Effort | Impact |
-|---|------|--------|--------|
-| 15 | Add property-based tests for core ops | 1h | Robustness |
-| 16 | Add watch mode for continuous analysis | 3h | DX |
-| 17 | Write comprehensive usage guide | 2h | Adoption |
-| 18 | Evaluate go-sarif library for optional integration | 30 min | Decision |
-| 19 | Plan v1.0 release — stabilize API, write CHANGELOG | 2h | Release |
-| 20 | Add GitHub release workflow | 1h | Release |
-| 21 | Create GoDoc examples for all public types | 2h | DX |
-| 22 | Add contribution guidelines (CONTRIBUTING.md) | 30 min | Community |
+| #   | Task                                               | Effort | Impact     |
+| --- | -------------------------------------------------- | ------ | ---------- |
+| 15  | Add property-based tests for core ops              | 1h     | Robustness |
+| 16  | Add watch mode for continuous analysis             | 3h     | DX         |
+| 17  | Write comprehensive usage guide                    | 2h     | Adoption   |
+| 18  | Evaluate go-sarif library for optional integration | 30 min | Decision   |
+| 19  | Plan v1.0 release — stabilize API, write CHANGELOG | 2h     | Release    |
+| 20  | Add GitHub release workflow                        | 1h     | Release    |
+| 21  | Create GoDoc examples for all public types         | 2h     | DX         |
+| 22  | Add contribution guidelines (CONTRIBUTING.md)      | 30 min | Community  |
 
 ### Longer Term
 
-| # | Task | Effort | Impact |
-|---|------|--------|--------|
-| 23 | IDE plugin stubs (VS Code) | 5h | DX |
-| 24 | Web UI prototype for pipeline monitoring | 5h | DX |
-| 25 | Distributed detection support | 8h | Scale |
+| #   | Task                                     | Effort | Impact |
+| --- | ---------------------------------------- | ------ | ------ |
+| 23  | IDE plugin stubs (VS Code)               | 5h     | DX     |
+| 24  | Web UI prototype for pipeline monitoring | 5h     | DX     |
+| 25  | Distributed detection support            | 8h     | Scale  |
 
 ---
 
@@ -193,11 +193,13 @@ All critical issues from the April 15 audit have been resolved:
 **Should `Correlate()` be wired into the pipeline or documented as a standalone utility?**
 
 Arguments for wiring:
+
 - It's real, working code with tests
 - Cross-tool correlation is a unique value proposition
 - Would make Pipeline.Run() output richer
 
 Arguments against:
+
 - Adds complexity to the hot path
 - No real consumer asking for it yet
 - Correlation heuristics (same file, nearby lines) are simplistic
@@ -325,6 +327,6 @@ Recent commits (cleanup session):
 
 ---
 
-*Report generated: 2026-04-15 18:25*
-*Crush AI Assistant*
-*go-finding Cleanup Complete — v1.0 Planning Phase*
+_Report generated: 2026-04-15 18:25_
+_Crush AI Assistant_
+_go-finding Cleanup Complete — v1.0 Planning Phase_

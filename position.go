@@ -233,7 +233,8 @@ func (r Range) Intersection(other Range) *Range {
 func (r Range) intersectionByLine(other Range) *Range {
 	// Determine max start
 	start := r.Start
-	if other.Start.Line > start.Line || (other.Start.Line == start.Line && other.Start.Column > start.Column) {
+	if other.Start.Line > start.Line ||
+		(other.Start.Line == start.Line && other.Start.Column > start.Column) {
 		start = other.Start
 	}
 

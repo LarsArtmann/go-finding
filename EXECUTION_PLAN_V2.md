@@ -14,27 +14,30 @@ This plan addresses the gaps identified in the status report and prioritizes wor
 
 ## Prioritization Matrix
 
-| Priority | Impact | Effort | Tasks |
-|----------|--------|--------|-------|
-| 🔴 Critical | High | Low | 1-5 |
-| 🟠 High | High | Medium | 6-10 |
-| 🟡 Medium | Medium | Medium | 11-14 |
-| 🟢 Low | Low | High | 15-20 |
+| Priority    | Impact | Effort | Tasks |
+| ----------- | ------ | ------ | ----- |
+| 🔴 Critical | High   | Low    | 1-5   |
+| 🟠 High     | High   | Medium | 6-10  |
+| 🟡 Medium   | Medium | Medium | 11-14 |
+| 🟢 Low      | Low    | High   | 15-20 |
 
 ---
 
 ## Phase 1: Immediate Fixes (Critical)
 
 ### Task 1: Fix Pipeline Linting Issues
+
 **Time:** ~8 min  
 **Impact:** Code quality, prevents technical debt  
 **Why:** Current code has linting hints that should be addressed
 
 **Issues to fix:**
+
 - `pipeline/pipeline.go:214` - Unnecessary loop variable copy (gopls forvar)
 - `pipeline/pipeline.go:435` - Inefficient string concatenation (use strings.Builder)
 
 **Verification:**
+
 ```bash
 just lint
 ```
@@ -42,11 +45,13 @@ just lint
 ---
 
 ### Task 2: Create Structured Error Types
+
 **Time:** ~10 min  
 **Impact:** Better error handling for consumers  
 **Why:** Current errors are plain fmt.Errorf, hard to programmatically handle
 
 **Deliverables:**
+
 ```go
 // errors.go
 package finding
@@ -76,6 +81,7 @@ func (e *FindingError) Unwrap() error
 ---
 
 ### Task 3: Implement Fix Conflict Detection
+
 **Time:** ~12 min  
 **Impact:** Prevents broken code from overlapping fixes  
 **Why:** The #1 question in status report - how to handle overlapping fixes
@@ -104,6 +110,7 @@ func DetectConflicts(fixes []finding.Finding) ([]FixGroup, []finding.Finding)
 ---
 
 ### Task 4: Add Position/Range Overlap Methods
+
 **Time:** ~8 min  
 **Impact:** Enables conflict detection, improves type model  
 **Why:** Current Range only has Contains(), needs Overlaps(), Intersects()
@@ -126,6 +133,7 @@ func (r Range) Adjacent(other Range) bool
 ---
 
 ### Task 5: Fix Applier Error Structuring
+
 **Time:** ~10 min  
 **Impact:** Better error reporting from FixApplier  
 **Why:** Currently logs failures but doesn't provide structured errors
@@ -155,6 +163,7 @@ func (a *FixApplier) ApplyWithResult(ctx context.Context, fixes []finding.Findin
 ## Phase 2: Core Improvements (High Priority)
 
 ### Task 6: Implement AST-Aware Fix Application
+
 **Time:** ~12 min  
 **Impact:** Robust code transformations  
 **Why:** Current text replacement is fragile
@@ -188,6 +197,7 @@ func (a *ASTFixer) Apply(file string, fix finding.Finding) error
 ---
 
 ### Task 7: Create Go Vet Converter Example
+
 **Time:** ~12 min  
 **Impact:** Real tool integration example  
 **Why:** Need examples that work with actual tools
@@ -214,16 +224,19 @@ func (d *GoVetDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 ---
 
 ### Task 8: Evaluate go-sarif Library
+
 **Time:** ~10 min  
 **Impact:** Decision on SARIF implementation  
 **Why:** EXECUTION_PLAN.md mentions evaluating github.com/owenrumney/go-sarif
 
 **Research:**
+
 1. Check if go-sarif provides value over custom implementation
 2. Compare features: validation, schema compliance, round-tripping
 3. Check dependency cost
 
 **Decision criteria:**
+
 - Only adopt if it provides significant value
 - Prefer keeping zero external deps for core types
 - Consider as optional integration
@@ -231,6 +244,7 @@ func (d *GoVetDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 ---
 
 ### Task 9: Add Pipeline Metrics Collection
+
 **Time:** ~12 min  
 **Impact:** Performance insights, debugging  
 **Why:** Track timing per stage, memory, detector performance
@@ -251,6 +265,7 @@ func (p *Pipeline) RunWithMetrics(ctx context.Context) (*Result, *Metrics, error
 ---
 
 ### Task 10: Implement Verification Stage
+
 **Time:** ~12 min  
 **Impact:** Confirms fixes actually worked  
 **Why:** Pipeline has verify step in theory but no implementation
@@ -279,6 +294,7 @@ type VerifyResult struct {
 ## Phase 3: Robustness (Medium Priority)
 
 ### Task 11: Add Fuzz Tests for Filter/Merge
+
 **Time:** ~10 min  
 **Impact:** Catches edge cases  
 **Why:** Property-based testing for core operations
@@ -297,6 +313,7 @@ func FuzzFilter(f *testing.F) {
 ---
 
 ### Task 12: Add Retry Logic with Exponential Backoff
+
 **Time:** ~10 min  
 **Impact:** Handles transient detector failures  
 **Why:** External tools may fail intermittently
@@ -312,6 +329,7 @@ func detectWithRetry(d Detector, maxRetries int, baseDelay time.Duration) ([]fin
 ---
 
 ### Task 13: Implement Partial Success Handling
+
 **Time:** ~12 min  
 **Impact:** More resilient pipelines  
 **Why:** Currently fails entire iteration if one detector errors
@@ -329,6 +347,7 @@ func (p *Pipeline) detectPartial(ctx context.Context) *PartialResult
 ---
 
 ### Task 14: Create CLI Tool
+
 **Time:** ~12 min  
 **Impact:** Usable standalone tool  
 **Why:** Make the library accessible without code
@@ -347,6 +366,7 @@ func (p *Pipeline) detectPartial(ctx context.Context) *PartialResult
 ## Phase 4: Advanced Features (Low Priority)
 
 ### Task 15: Configuration File Support
+
 **Time:** ~12 min  
 **Impact:** Flexible configuration  
 **Why:** YAML/JSON config for pipelines
@@ -365,6 +385,7 @@ type PipelineConfig struct {
 ---
 
 ### Task 16: Add Watch Mode
+
 **Time:** ~12 min  
 **Impact:** Continuous analysis during development  
 **Why:** File system monitoring for continuous analysis
@@ -374,6 +395,7 @@ Use `fsnotify` or poll-based approach
 ---
 
 ### Task 17: Create Web UI Prototype
+
 **Time:** >12 min  
 **Impact:** Visual pipeline monitoring  
 **Why:** Progress visualization
@@ -383,6 +405,7 @@ Use `fsnotify` or poll-based approach
 ---
 
 ### Task 18: Add Property-Based Tests
+
 **Time:** ~12 min  
 **Impact:** Mathematical confidence  
 **Why:** Quick-check style testing
@@ -393,38 +416,38 @@ Use `testing/quick` from stdlib or `gopter`
 
 ## Summary Table
 
-| # | Task | Time | Impact | Effort | Status |
-|---|------|------|--------|--------|--------|
-| 1 | Fix linting issues | 8m | High | Low | ✅ Done |
-| 2 | Structured error types | 10m | High | Low | ✅ Done |
-| 3 | Fix conflict detection | 12m | High | Medium | ✅ Done |
-| 4 | Position/Range methods | 8m | High | Low | ✅ Done |
-| 5 | FixApplier error struct | 10m | High | Low | ✅ Done |
-| 6 | AST-aware fixes | 12m | High | Medium | ✅ Done |
-| 7 | Go vet converter | 12m | High | Medium | ✅ Done |
-| 8 | Evaluate go-sarif | 10m | Medium | Low | ⬜ Deferred |
-| 9 | Metrics collection | 12m | Medium | Medium | ✅ Done |
-| 10 | Verification stage | 12m | High | Medium | ✅ Done |
-| 11 | Fuzz tests | 10m | Medium | Low | ✅ Done |
-| 12 | Retry logic | 10m | Medium | Low | ✅ Done |
-| 13 | Partial success | 12m | Medium | Medium | ✅ Done |
-| 14 | CLI tool | 12m | High | Medium | ⬜ Pending |
-| 15 | Config file support | 12m | Low | Medium | ⬜ Pending |
-| 16 | Watch mode | 12m | Low | Medium | ⬜ Pending |
-| 17 | Web UI | >12m | Low | High | ⬜ Deferred |
-| 18 | Property tests | 12m | Low | Medium | ⬜ Pending |
+| #   | Task                    | Time | Impact | Effort | Status      |
+| --- | ----------------------- | ---- | ------ | ------ | ----------- |
+| 1   | Fix linting issues      | 8m   | High   | Low    | ✅ Done     |
+| 2   | Structured error types  | 10m  | High   | Low    | ✅ Done     |
+| 3   | Fix conflict detection  | 12m  | High   | Medium | ✅ Done     |
+| 4   | Position/Range methods  | 8m   | High   | Low    | ✅ Done     |
+| 5   | FixApplier error struct | 10m  | High   | Low    | ✅ Done     |
+| 6   | AST-aware fixes         | 12m  | High   | Medium | ✅ Done     |
+| 7   | Go vet converter        | 12m  | High   | Medium | ✅ Done     |
+| 8   | Evaluate go-sarif       | 10m  | Medium | Low    | ⬜ Deferred |
+| 9   | Metrics collection      | 12m  | Medium | Medium | ✅ Done     |
+| 10  | Verification stage      | 12m  | High   | Medium | ✅ Done     |
+| 11  | Fuzz tests              | 10m  | Medium | Low    | ✅ Done     |
+| 12  | Retry logic             | 10m  | Medium | Low    | ✅ Done     |
+| 13  | Partial success         | 12m  | Medium | Medium | ✅ Done     |
+| 14  | CLI tool                | 12m  | High   | Medium | ⬜ Pending  |
+| 15  | Config file support     | 12m  | Low    | Medium | ⬜ Pending  |
+| 16  | Watch mode              | 12m  | Low    | Medium | ⬜ Pending  |
+| 17  | Web UI                  | >12m | Low    | High   | ⬜ Deferred |
+| 18  | Property tests          | 12m  | Low    | Medium | ⬜ Pending  |
 
 ---
 
 ## Dependencies to Evaluate
 
-| Library | Purpose | Current Status |
-|---------|---------|----------------|
-| github.com/owenrumney/go-sarif | SARIF parsing | Evaluate Task 8 |
-| github.com/fsnotify/fsnotify | File watching | Task 16 |
-| github.com/spf13/cobra | CLI framework | Task 14 |
-| github.com/BurntSushi/toml | Config parsing | Task 15 |
-| gopkg.in/yaml.v3 | Config parsing | Already available |
+| Library                        | Purpose        | Current Status    |
+| ------------------------------ | -------------- | ----------------- |
+| github.com/owenrumney/go-sarif | SARIF parsing  | Evaluate Task 8   |
+| github.com/fsnotify/fsnotify   | File watching  | Task 16           |
+| github.com/spf13/cobra         | CLI framework  | Task 14           |
+| github.com/BurntSushi/toml     | Config parsing | Task 15           |
+| gopkg.in/yaml.v3               | Config parsing | Already available |
 
 ---
 
@@ -446,6 +469,7 @@ Use `testing/quick` from stdlib or `gopter`
 **Completed: 13/18 tasks** (Phase 1–3 fully done)
 
 Key deliverables shipped:
+
 - Structured errors with 5 categories (validation, io, parse, conflict, internal)
 - Conflict detection with range-based overlap analysis
 - Verification stage with ID-based finding diffing
@@ -460,5 +484,5 @@ These are lower priority and can be addressed as the project evolves.
 
 ---
 
-*Plan created: 2026-04-13*
-*Last updated: 2026-04-13 — Phase 1–3 complete*
+_Plan created: 2026-04-13_
+_Last updated: 2026-04-13 — Phase 1–3 complete_

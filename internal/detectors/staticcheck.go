@@ -3,6 +3,7 @@ package detectors
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os/exec"
 	"path/filepath"
@@ -14,19 +15,23 @@ import (
 
 // NewStaticcheckDetector returns a Detector that runs `staticcheck -f json` on the given directory.
 func NewStaticcheckDetector(dir string) pipeline.Detector {
-	return pipeline.NamedDetectorFunc("staticcheck", func(ctx context.Context) ([]finding.Finding, error) {
-		cmd := exec.CommandContext(ctx, "staticcheck", "-f", "json", "./...")
-		cmd.Dir = dir
-		cmd.Stderr = nil
-		out, err := cmd.Output()
-		if err != nil {
-			if _, ok := err.(*exec.ExitError); ok {
-				return parseStaticcheckJSON(out, dir), nil
+	return pipeline.NamedDetectorFunc(
+		"staticcheck",
+		func(ctx context.Context) ([]finding.Finding, error) {
+			cmd := exec.CommandContext(ctx, "staticcheck", "-f", "json", "./...")
+			cmd.Dir = dir
+			cmd.Stderr = nil
+			out, err := cmd.Output()
+			if err != nil {
+				exitError := &exec.ExitError{}
+				if errors.As(err, &exitError) {
+					return parseStaticcheckJSON(out, dir), nil
+				}
+				return nil, fmt.Errorf("run staticcheck: %w", err)
 			}
-			return nil, fmt.Errorf("run staticcheck: %w", err)
-		}
-		return parseStaticcheckJSON(out, dir), nil
-	})
+			return parseStaticcheckJSON(out, dir), nil
+		},
+	)
 }
 
 func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
@@ -35,7 +40,7 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 	}
 
 	var findings []finding.Finding
-	for _, line := range strings.Split(string(data), "\n") {
+	for line := range strings.SplitSeq(string(data), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
