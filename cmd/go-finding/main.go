@@ -7,16 +7,15 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime/pprof"
 	"slices"
-	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/internal/detectors"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
@@ -185,170 +184,14 @@ func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {
 	for _, spec := range specs {
 		switch spec.Name {
 		case "govet":
-			detectors = append(detectors, pipeline.NamedDetectorFunc("govet", goVetDetector(dir)))
+			detectors = append(detectors, detectors.NewGoVetDetector(dir))
 		case "staticcheck":
-			detectors = append(detectors, pipeline.NamedDetectorFunc("staticcheck", staticcheckDetector(dir)))
+			detectors = append(detectors, detectors.NewStaticcheckDetector(dir))
 		default:
 			fmt.Fprintf(os.Stderr, "Warning: unknown detector %q, skipping\n", spec.Name)
 		}
 	}
 	return detectors
-}
-
-func goVetDetector(dir string) pipeline.DetectorFunc {
-	return func(ctx context.Context) ([]finding.Finding, error) {
-		cmd := exec.CommandContext(ctx, "go", "vet", "-json", "./...")
-		cmd.Dir = dir
-		cmd.Stderr = nil
-		out, err := cmd.Output()
-		if err != nil {
-			if _, ok := err.(*exec.ExitError); ok {
-				return nil, nil
-			}
-			return nil, fmt.Errorf("run go vet: %w", err)
-		}
-		return parseGoVetJSON(out, dir), nil
-	}
-}
-
-func parseGoVetJSON(data []byte, dir string) []finding.Finding {
-	var diagnostics map[string]json.RawMessage
-	if err := json.Unmarshal(data, &diagnostics); err != nil {
-		return nil
-	}
-
-	var findings []finding.Finding
-	for pkg, raw := range diagnostics {
-		var entries []struct {
-			Posn    string `json:"posn"`
-			Message string `json:"message"`
-		}
-		if err := json.Unmarshal(raw, &entries); err != nil {
-			continue
-		}
-		for _, e := range entries {
-			pos := parsePosn(e.Posn, dir)
-			findings = append(findings, finding.Finding{
-				ID:          finding.GenerateID("govet", "", pos),
-				ToolName:    "govet",
-				Message:     e.Message,
-				Severity:    finding.SeverityWarning,
-				Position:    pos,
-				Category:    finding.CategoryCorrectness,
-				FixStrategy: finding.FixStrategySuggest,
-			})
-		}
-		_ = pkg
-	}
-	return findings
-}
-
-func parsePosn(posn, dir string) finding.Position {
-	parts := strings.SplitN(posn, ":", 4)
-	if len(parts) < 2 {
-		return finding.Position{File: posn}
-	}
-	pos := finding.Position{File: parts[0]}
-	if dir != "" && !filepath.IsAbs(pos.File) {
-		pos.File = filepath.Join(dir, parts[0])
-	}
-	if len(parts) >= 2 {
-		fmt.Sscanf(parts[1], "%d", &pos.Line)
-	}
-	if len(parts) >= 3 {
-		fmt.Sscanf(parts[2], "%d", &pos.Column)
-	}
-	return pos
-}
-
-func staticcheckDetector(dir string) pipeline.DetectorFunc {
-	return func(ctx context.Context) ([]finding.Finding, error) {
-		cmd := exec.CommandContext(ctx, "staticcheck", "-f", "json", "./...")
-		cmd.Dir = dir
-		cmd.Stderr = nil
-		out, err := cmd.Output()
-		if err != nil {
-			if _, ok := err.(*exec.ExitError); ok {
-				return parseStaticcheckJSON(out, dir), nil
-			}
-			return nil, fmt.Errorf("run staticcheck: %w", err)
-		}
-		return parseStaticcheckJSON(out, dir), nil
-	}
-}
-
-func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
-	if len(data) == 0 {
-		return nil
-	}
-
-	var findings []finding.Finding
-	for _, line := range strings.Split(string(data), "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		var entry struct {
-			Code     string `json:"code"`
-			Severity string `json:"severity"`
-			Location struct {
-				File   string `json:"file"`
-				Line   int    `json:"line"`
-				Column int    `json:"column"`
-			} `json:"location"`
-			Message string `json:"message"`
-		}
-		if err := json.Unmarshal([]byte(line), &entry); err != nil {
-			continue
-		}
-
-		pos := finding.Position{
-			File:   entry.Location.File,
-			Line:   entry.Location.Line,
-			Column: entry.Location.Column,
-		}
-		if dir != "" && !filepath.IsAbs(pos.File) {
-			pos.File = filepath.Join(dir, entry.Location.File)
-		}
-
-		sev := finding.SeverityWarning
-		if entry.Severity == "error" {
-			sev = finding.SeverityError
-		}
-
-		cat := staticcheckCategory(entry.Code)
-
-		findings = append(findings, finding.Finding{
-			ID:          finding.GenerateID("staticcheck", entry.Code, pos),
-			Rule:        entry.Code,
-			ToolName:    "staticcheck",
-			Message:     entry.Message,
-			Severity:    sev,
-			Position:    pos,
-			Category:    cat,
-			FixStrategy: finding.FixStrategySuggest,
-			Confidence:  0.8,
-		})
-	}
-	return findings
-}
-
-func staticcheckCategory(code string) finding.Category {
-	if len(code) == 0 {
-		return finding.CategoryCorrectness
-	}
-	switch code[0] {
-	case 'S', 'Q':
-		return finding.CategoryStyle
-	case 'U':
-		return finding.CategoryUnused
-	case 'P', 'R', 'F':
-		return finding.CategoryPerformance
-	case 'A':
-		return finding.CategoryCorrectness
-	default:
-		return finding.CategoryCorrectness
-	}
 }
 
 func outputResults(w *os.File, report *finding.Report, format string) error {
