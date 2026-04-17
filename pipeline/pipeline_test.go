@@ -143,6 +143,9 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 	if iter.SuggestFixes != 1 {
 		t.Errorf("expected 1 suggest-fix, got %d", iter.SuggestFixes)
 	}
+	if len(iter.SuggestedFindings()) != 1 {
+		t.Errorf("expected 1 suggested finding, got %d", len(iter.SuggestedFindings()))
+	}
 }
 
 // TestPipelineRun_DetectorError tests error handling from detector.

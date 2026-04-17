@@ -179,6 +179,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		triage := p.triage(findings)
 		iter.DirectFixes = len(triage.Direct)
 		iter.SuggestFixes = len(triage.Suggest)
+		iter.suggest = triage.Suggest
 		iter.NoFix = len(triage.None)
 
 		// Apply fixes (with conflict detection)
@@ -252,11 +253,17 @@ type Iteration struct {
 	Applied       int
 	Failed        int
 	findings      []finding.Finding
+	suggest       []finding.Finding
 }
 
-// Findings returns the findings discovered in this iteration.
+// Findings returns all findings discovered in this iteration.
 func (it Iteration) Findings() []finding.Finding {
 	return it.findings
+}
+
+// SuggestedFindings returns findings that have FixStrategySuggest.
+func (it Iteration) SuggestedFindings() []finding.Finding {
+	return it.suggest
 }
 
 // detect runs all detectors and collects findings.
