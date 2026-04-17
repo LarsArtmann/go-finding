@@ -40,4 +40,4 @@ node_modules/
 /govet
 
 # Copy/paste detection report
-/report/jscpd-report.json
+/report/jscpd-report.jsonstaticcheck

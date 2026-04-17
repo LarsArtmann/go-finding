@@ -54,8 +54,8 @@ func (f Finding) ToLSP() LSPDiagnostic {
 	diag := LSPDiagnostic{
 		Range: LSPRange{
 			Start: LSPPosition{
-				Line:      lspLine(f.Position.Line),
-				Character: lspLine(f.Position.Column),
+				Line:      toZeroBased(f.Position.Line),
+				Character: toZeroBased(f.Position.Column),
 			},
 		},
 		Severity: severityToLSP(f.Severity),
@@ -67,8 +67,8 @@ func (f Finding) ToLSP() LSPDiagnostic {
 	// Set end position if available
 	if f.Range != nil && f.Range.HasEnd() {
 		diag.Range.End = LSPPosition{
-			Line:      lspLine(f.Range.End.Line),
-			Character: lspLine(f.Range.End.Column),
+			Line:      toZeroBased(f.Range.End.Line),
+			Character: toZeroBased(f.Range.End.Column),
 		}
 	} else {
 		// Single position diagnostic
@@ -78,8 +78,8 @@ func (f Finding) ToLSP() LSPDiagnostic {
 	// Add related information
 	for _, rel := range f.Related {
 		lspPos := LSPPosition{
-			Line:      lspLine(rel.Position.Line),
-			Character: lspLine(rel.Position.Column),
+			Line:      toZeroBased(rel.Position.Line),
+			Character: toZeroBased(rel.Position.Column),
 		}
 		diag.Related = append(diag.Related, LSPRelatedInfo{
 			Location: LSPLocation{
@@ -93,8 +93,8 @@ func (f Finding) ToLSP() LSPDiagnostic {
 	return diag
 }
 
-// lspLine converts a 1-based position to a 0-based LSP position, clamping to 0.
-func lspLine(n int) int {
+// toZeroBased converts a 1-based position to a 0-based LSP position, clamping to 0.
+func toZeroBased(n int) int {
 	if n <= 0 {
 		return 0
 	}

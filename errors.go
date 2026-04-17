@@ -77,11 +77,6 @@ func (e *FindingError) Is(target error) bool {
 	}
 }
 
-// IsCategory returns true if the error matches the given category.
-func (e *FindingError) IsCategory(cat ErrorCategory) bool {
-	return e.Category == cat
-}
-
 // WithFinding sets the finding on a copy of the FindingError and returns it.
 func (e *FindingError) WithFinding(f Finding) *FindingError {
 	clone := *e

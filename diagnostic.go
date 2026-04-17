@@ -87,7 +87,7 @@ func NodePosition(fset *token.FileSet, node ast.Node) Position {
 }
 
 // NodeRange returns a Range from an AST node.
-func NodeRange(node ast.Node, fset *token.FileSet) Range {
+func NodeRange(fset *token.FileSet, node ast.Node) Range {
 	if node == nil {
 		return Range{Start: Position{}, End: Position{}}
 	}

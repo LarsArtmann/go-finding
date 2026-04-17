@@ -291,11 +291,11 @@ func TestFindingErrorIsCategory(t *testing.T) {
 	t.Parallel()
 
 	err := NewValidationError("test", nil)
-	if !err.IsCategory(ErrCategoryValidation) {
+	if !IsCategory(err, ErrCategoryValidation) {
 		t.Error("expected IsCategory to match validation")
 	}
 
-	if err.IsCategory(ErrCategoryIO) {
+	if IsCategory(err, ErrCategoryIO) {
 		t.Error("expected IsCategory to not match io")
 	}
 }

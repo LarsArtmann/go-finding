@@ -148,7 +148,7 @@ func TestNodeRange(t *testing.T) {
 	t.Run("nil node", func(t *testing.T) {
 		t.Parallel()
 		fset := token.NewFileSet()
-		r := NodeRange(nil, fset)
+		r := NodeRange(fset, nil)
 		if r.Start.File != "" || r.End.File != "" {
 			t.Errorf("expected empty range for nil node, got %+v", r)
 		}
@@ -174,7 +174,7 @@ func TestNodeRange(t *testing.T) {
 			t.Fatal("no func decl found")
 		}
 
-		r := NodeRange(decl, fset)
+		r := NodeRange(fset, decl)
 		if r.Start.File == "" {
 			t.Error("expected non-empty start file")
 		}
