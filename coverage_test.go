@@ -447,3 +447,44 @@ func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 		t.Errorf("go-finding/severity = %v, want %q", severity, "critical")
 	}
 }
+
+func TestCategoryString(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		cat  Category
+		want string
+	}{
+		{CategoryCorrectness, "correctness"},
+		{CategoryStyle, "style"},
+		{CategoryPerformance, "performance"},
+		{CategorySecurity, "security"},
+		{CategoryUnused, "unused"},
+		{Category("custom"), "custom"},
+	}
+	for _, tt := range tests {
+		if got := tt.cat.String(); got != tt.want {
+			t.Errorf("Category(%q).String() = %q, want %q", tt.cat, got, tt.want)
+		}
+	}
+}
+
+func TestFixStrategyString(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		fs   FixStrategy
+		want string
+	}{
+		{FixStrategyNone, "none"},
+		{FixStrategySuggest, "suggest"},
+		{FixStrategyDirect, "direct"},
+		{FixStrategyAI, "ai"},
+		{FixStrategy("custom"), "custom"},
+	}
+	for _, tt := range tests {
+		if got := tt.fs.String(); got != tt.want {
+			t.Errorf("FixStrategy(%q).String() = %q, want %q", tt.fs, got, tt.want)
+		}
+	}
+}
