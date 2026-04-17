@@ -31,10 +31,10 @@ type overlapCase struct {
 func overlapCases() []overlapCase {
 	return []overlapCase{
 		{
-			"same single position",
-			Range{Start: posLineCol("a.go", 10, 5)},
-			Range{Start: posLineCol("a.go", 10, 5)},
-			true,
+			name:     "same single position",
+			r1:       Range{Start: posLineCol("a.go", 10, 5)},
+			r2:       Range{Start: posLineCol("a.go", 10, 5)},
+			expected: true,
 		},
 		{"overlapping ranges", rangeLine("a.go", 10, 20), rangeLine("a.go", 15, 25), true},
 		{"non-overlapping ranges", rangeLine("a.go", 10, 15), rangeLine("a.go", 20, 25), false},
@@ -149,10 +149,10 @@ func TestRangeIntersection(t *testing.T) {
 func adjacentCases() []overlapCase {
 	return []overlapCase{
 		{
-			"adjacent at end",
-			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20, Column: 5}},
-			Range{Start: Position{File: "a.go", Line: 20, Column: 5}, End: Position{Line: 30}},
-			true,
+			name:     "adjacent at end",
+			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20, Column: 5}},
+			r2:       Range{Start: Position{File: "a.go", Line: 20, Column: 5}, End: Position{Line: 30}},
+			expected: true,
 		},
 		{"adjacent at start", rangeLine("a.go", 20, 30), rangeLine("a.go", 10, 20), true},
 		{"overlapping not adjacent", rangeLine("a.go", 10, 20), rangeLine("a.go", 15, 25), false},

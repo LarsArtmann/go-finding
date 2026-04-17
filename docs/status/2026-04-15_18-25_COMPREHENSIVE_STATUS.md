@@ -72,12 +72,12 @@ The go-finding library has matured significantly since the April 13 status repor
 
 ## b) PARTIALLY DONE
 
-| Component                 | Status | What's Missing                                                                                                                         |
-| ------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `Correlate()` in merge.go | 70%    | Function works, has tests, but never wired into Pipeline.Run(). Standalone utility, not integrated.                                    |
-| SARIF critical round-trip | 80%    | `SeverityCritical` → SARIF `"error"` → `FromSARIFLevel("error")` → `SeverityError`. Lossy. Documented but not fixed.                   |
-| `internal/detectors/`     | 95%    | Detectors extracted from CLI. Full unit test coverage for parsing and category mapping. |
-| Test coverage             | 82.8%  | 16 functions at 0% coverage (mostly example code + low-level helpers)                                                                  |
+| Component                 | Status | What's Missing                                                                                                       |
+| ------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------- |
+| `Correlate()` in merge.go | 70%    | Function works, has tests, but never wired into Pipeline.Run(). Standalone utility, not integrated.                  |
+| SARIF critical round-trip | 80%    | `SeverityCritical` → SARIF `"error"` → `FromSARIFLevel("error")` → `SeverityError`. Lossy. Documented but not fixed. |
+| `internal/detectors/`     | 95%    | Detectors extracted from CLI. Full unit test coverage for parsing and category mapping.                              |
+| Test coverage             | 82.8%  | 16 functions at 0% coverage (mostly example code + low-level helpers)                                                |
 
 ---
 

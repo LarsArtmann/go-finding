@@ -75,7 +75,7 @@ func (r *Report) ComputeSummary() {
 }
 
 // ActiveFindings returns all non-suppressed findings.
-func (r Report) ActiveFindings() []Finding {
+func (r *Report) ActiveFindings() []Finding {
 	var active []Finding
 
 	for _, f := range r.Findings {
@@ -89,24 +89,24 @@ func (r Report) ActiveFindings() []Finding {
 
 // BySeverity returns findings filtered by severity, excluding suppressed.
 // For composable filtering, use filter.BySeverity with filter.NotSuppressed instead.
-func (r Report) BySeverity(sev Severity) []Finding {
+func (r *Report) BySeverity(sev Severity) []Finding {
 	return Filter(r.ActiveFindings(), BySeverity(sev))
 }
 
 // ByCategory returns findings filtered by category, excluding suppressed.
 // For composable filtering, use filter.ByCategory with filter.NotSuppressed instead.
-func (r Report) ByCategory(cat Category) []Finding {
+func (r *Report) ByCategory(cat Category) []Finding {
 	return Filter(r.ActiveFindings(), ByCategory(cat))
 }
 
 // ByFixStrategy returns findings filtered by fix strategy, excluding suppressed.
 // For composable filtering, use filter.ByFixStrategy with filter.NotSuppressed instead.
-func (r Report) ByFixStrategy(fs FixStrategy) []Finding {
+func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 	return Filter(r.ActiveFindings(), ByFixStrategy(fs))
 }
 
 // FindByID returns a finding by its ID, or nil if not found.
-func (r Report) FindByID(id string) *Finding {
+func (r *Report) FindByID(id string) *Finding {
 	for _, f := range r.Findings {
 		if f.ID == id {
 			cp := f

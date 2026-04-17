@@ -318,8 +318,8 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 			} `json:"results"`
 		} `json:"runs"`
 	}
-	if err := json.Unmarshal(sarif, &log); err != nil {
-		t.Fatalf("unmarshal: %v", err)
+	if uErr := json.Unmarshal(sarif, &log); uErr != nil {
+		t.Fatalf("unmarshal: %v", uErr)
 	}
 
 	props := log.Runs[0].Results[0].Properties

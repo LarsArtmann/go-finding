@@ -147,18 +147,22 @@ func TestDedupKey(t *testing.T) {
 	}
 }
 
+func makeFinding(id, tool, rule, file string, line int) Finding {
+	return Finding{
+		ID:       id,
+		ToolName: tool,
+		Rule:     rule,
+		Position: Position{File: file, Line: line},
+	}
+}
+
 func TestCorrelate(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
-		{ID: "1", ToolName: "govet", Rule: "nilcheck", Position: Position{File: "a.go", Line: 10}},
-		{
-			ID:       "2",
-			ToolName: "staticcheck",
-			Rule:     "nilcheck",
-			Position: Position{File: "a.go", Line: 12},
-		},
-		{ID: "3", ToolName: "govet", Rule: "unused", Position: Position{File: "a.go", Line: 50}},
+		makeFinding("1", "govet", "nilcheck", "a.go", 10),
+		makeFinding("2", "staticcheck", "nilcheck", "a.go", 12),
+		makeFinding("3", "govet", "unused", "a.go", 50),
 	}
 
 	correlations := Correlate(findings)
@@ -167,8 +171,9 @@ func TestCorrelate(t *testing.T) {
 	}
 
 	for _, c := range correlations {
-		if c.Confidence <= 0 || c.Confidence > 1 {
-			t.Errorf("correlation confidence = %f, want (0, 1]", c.Confidence)
+		conf := c.Confidence
+		if conf <= 0 || conf > 1 {
+			t.Errorf("correlation confidence = %f, want (0, 1]", conf)
 		}
 	}
 }

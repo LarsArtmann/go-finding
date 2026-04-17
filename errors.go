@@ -36,6 +36,8 @@ func (c ErrorCategory) IsValid() bool {
 }
 
 // FindingError provides structured error information with context.
+//
+//nolint:revive // stuttering name is intentional for clarity
 type FindingError struct {
 	Category ErrorCategory // Category of error
 	Finding  *Finding      // Associated finding (may be nil)

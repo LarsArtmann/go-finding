@@ -35,7 +35,9 @@ func (f DetectorFunc) Detect(ctx context.Context) ([]finding.Finding, error) {
 }
 
 // Name implements Detector. Returns "anonymous" — use NamedDetectorFunc for a custom name.
-func (_ DetectorFunc) Name() string {
+//
+//nolint:revive // receiver unused by design — method exists only to satisfy Detector interface
+func (f DetectorFunc) Name() string {
 	return "anonymous"
 }
 
@@ -252,6 +254,8 @@ func (p *Pipeline) collectAllFindings(result *PipelineResult) []finding.Finding 
 }
 
 // PipelineResult contains the outcome of running the pipeline.
+//
+//nolint:revive // stuttering name is intentional for clarity
 type PipelineResult struct {
 	Stable            bool
 	TotalIterations   int
@@ -408,7 +412,9 @@ type TriageResult struct {
 }
 
 // triage categorizes findings by their fix strategy.
-func (_ *Pipeline) triage(findings []finding.Finding) *TriageResult {
+//
+//nolint:revive // receiver unused by design — method belongs to Pipeline for API cohesion
+func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 	result := &TriageResult{
 		Direct:  make([]finding.Finding, 0),
 		Suggest: make([]finding.Finding, 0),

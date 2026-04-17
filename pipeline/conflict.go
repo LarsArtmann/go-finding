@@ -1,5 +1,3 @@
-// Package pipeline provides a detect → triage → fix → verify workflow
-// for automated code remediation.
 package pipeline
 
 import (
@@ -52,8 +50,8 @@ func (c *ConflictDetector) DetectConflicts(
 	}
 
 	var (
-		groups    []FixGroup
-		conflicts []finding.Finding
+		groups    = make([]FixGroup, 0, len(byFile))
+		conflicts = make([]finding.Finding, 0)
 	)
 
 	for file, fileFixes := range byFile {
@@ -134,7 +132,7 @@ func (c *ConflictDetector) detectConflictsInFile(
 
 // getFindingRange extracts the range for a finding.
 // Falls back to a single position if no range is specified.
-func (c *ConflictDetector) getFindingRange(f finding.Finding) finding.Range {
+func (_ *ConflictDetector) getFindingRange(f finding.Finding) finding.Range {
 	if f.Range != nil && f.Range.IsValid() {
 		return *f.Range
 	}
@@ -179,7 +177,7 @@ func FilterConflictingFixes(fixes []finding.Finding) []finding.Finding {
 	detector := NewConflictDetector()
 	groups, _ := detector.DetectConflicts(fixes)
 
-	var result []finding.Finding
+	result := make([]finding.Finding, 0, len(groups))
 	for _, g := range groups {
 		result = append(result, g.Fixes...)
 	}
@@ -208,7 +206,7 @@ func AnalyzeConflicts(fixes []finding.Finding) []ConflictInfo {
 		}
 	}
 
-	var result []ConflictInfo
+	result := make([]ConflictInfo, 0, len(conflictingFixes))
 
 	// For each conflicting fix, find what it conflicts with
 	for _, cf := range conflictingFixes {

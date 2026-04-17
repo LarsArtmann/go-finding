@@ -174,20 +174,20 @@ func TestFindingIsSuppressed(t *testing.T) {
 		{"no suppression", Finding{}, false},
 		{"nil suppression", Finding{Suppression: nil}, false},
 		{
-			"active suppression",
-			Finding{Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R1"}},
-			true,
+			name: "active suppression",
+			f:    Finding{Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R1"}},
+			want: true,
 		},
 		{
-			"expired suppression",
-			Finding{
+			name: "expired suppression",
+			f: Finding{
 				Suppression: &Suppression{
 					Kind:      SuppressionInSource,
 					Rule:      "R1",
 					ExpiresAt: new(time.Now().Add(-time.Hour)),
 				},
 			},
-			false,
+			want: false,
 		},
 	}
 
@@ -281,13 +281,13 @@ func TestSuppressionIsExpired(t *testing.T) {
 			false,
 		},
 		{
-			"past expiry",
-			&Suppression{
+			name: "past expiry",
+			s: &Suppression{
 				Kind:      SuppressionInSource,
 				Rule:      "R1",
 				ExpiresAt: new(time.Now().Add(-time.Hour)),
 			},
-			true,
+			want: true,
 		},
 		{"nil suppression", nil, false},
 	}

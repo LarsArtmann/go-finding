@@ -1,8 +1,10 @@
+// Package main implements the go-finding CLI tool.
 package main
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -201,10 +203,7 @@ func parseSeverity(s string) (finding.Severity, error) {
 	case "critical":
 		return finding.SeverityCritical, nil
 	default:
-		return finding.SeverityWarning, fmt.Errorf(
-			"unknown severity %q (use: info, warning, error, critical)",
-			s,
-		)
+		return finding.SeverityWarning, fmt.Errorf("%w %q (use: info, warning, error, critical)", errUnknownSeverity, s)
 	}
 }
 
@@ -311,6 +310,14 @@ type detectorSpec struct {
 	Args map[string]string `json:"args" yaml:"args"`
 }
 
+// Sentinel errors for CLI validation.
+var (
+	errUnknownSeverity = errors.New("unknown severity")
+	errInvalidConfig   = errors.New("invalid config")
+	errUnknownDetector = errors.New("unknown detector")
+)
+
+//nolint:gochecknoglobals // CLI lookup table for validated detector names
 var knownDetectors = map[string]bool{
 	"govet":       true,
 	"staticcheck": true,
@@ -318,7 +325,7 @@ var knownDetectors = map[string]bool{
 
 func (c pipelineConfigFile) validate() error {
 	if c.MaxIterations < 0 {
-		return fmt.Errorf("maxIterations must be >= 0, got %d", c.MaxIterations)
+		return fmt.Errorf("%w: maxIterations must be >= 0, got %d", errInvalidConfig, c.MaxIterations)
 	}
 
 	if c.Timeout != "" {
@@ -329,7 +336,7 @@ func (c pipelineConfigFile) validate() error {
 
 	for _, d := range c.Detectors {
 		if !knownDetectors[d.Name] {
-			return fmt.Errorf("unknown detector %q (available: govet, staticcheck)", d.Name)
+			return fmt.Errorf("%w %q (available: govet, staticcheck)", errUnknownDetector, d.Name)
 		}
 	}
 
@@ -359,6 +366,7 @@ func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
 	}
 }
 
+//nolint:gochecknoinits // CLI log flags setup
 func init() {
 	log.SetFlags(0)
 }

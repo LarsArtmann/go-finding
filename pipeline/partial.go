@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"sync"
@@ -118,6 +119,9 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 	return result, nil
 }
 
+// ErrPartialDetection indicates one or more detectors failed during partial detection.
+var ErrPartialDetection = errors.New("pipeline: partial detection failures")
+
 // FormatPartialErrors formats partial detection errors into a single error message.
 func FormatPartialErrors(errors map[string]error) error {
 	if len(errors) == 0 {
@@ -136,5 +140,5 @@ func FormatPartialErrors(errors map[string]error) error {
 		msgs = append(msgs, fmt.Sprintf("%s: %v", name, errors[name]))
 	}
 
-	return fmt.Errorf("partial detection failures: %v", msgs)
+	return fmt.Errorf("%w: %v", ErrPartialDetection, msgs)
 }

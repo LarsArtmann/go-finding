@@ -115,9 +115,18 @@ func TestByFixStrategy(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
-		{ID: "1", FixStrategy: FixStrategyDirect},
-		{ID: "2", FixStrategy: FixStrategyNone},
-		{ID: "3", FixStrategy: FixStrategyDirect},
+		{
+			ID:          "1",
+			FixStrategy: FixStrategyDirect,
+		},
+		{
+			ID:          "2",
+			FixStrategy: FixStrategyNone,
+		},
+		{
+			ID:          "3",
+			FixStrategy: FixStrategyDirect,
+		},
 	}
 	runFilterCase(t, newFilterCase("direct", findings, ByFixStrategy(FixStrategyDirect), 2))
 }
@@ -166,9 +175,18 @@ func TestHasFix(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
-		{ID: "1", FixStrategy: FixStrategyDirect},
-		{ID: "2", FixStrategy: FixStrategyNone},
-		{ID: "3", FixStrategy: FixStrategyAI},
+		{
+			ID:          "1",
+			FixStrategy: FixStrategyDirect,
+		},
+		{
+			ID:          "2",
+			FixStrategy: FixStrategyNone,
+		},
+		{
+			ID:          "3",
+			FixStrategy: FixStrategyAI,
+		},
 	}
 	runFilterCase(t, newFilterCase("has fix", findings, HasFix, 2))
 }

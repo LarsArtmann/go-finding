@@ -37,6 +37,8 @@ func NewStaticcheckDetector(dir string) pipeline.Detector {
 	)
 }
 
+const defaultStaticcheckConfidence = 0.8
+
 func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 	if len(data) == 0 {
 		return nil
@@ -91,7 +93,7 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 			Position:    pos,
 			Category:    cat,
 			FixStrategy: finding.FixStrategySuggest,
-			Confidence:  0.8,
+			Confidence:  defaultStaticcheckConfidence,
 		})
 	}
 

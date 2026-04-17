@@ -128,19 +128,20 @@ func TestRangeContainsExtra(t *testing.T) {
 	}
 }
 
+func makeRangeWithOffsets(file string, startOff, endOff int) Range {
+	return Range{
+		Start: Position{File: file, Offset: startOff},
+		End:   Position{Offset: endOff},
+	}
+}
+
 func TestRangeIntersectionByOffset(t *testing.T) {
 	t.Parallel()
 
-	r1 := Range{
-		Start: Position{File: "a.go", Offset: 100},
-		End:   Position{Offset: 200},
-	}
-	r2 := Range{
-		Start: Position{File: "a.go", Offset: 150},
-		End:   Position{Offset: 250},
-	}
+	rng1 := makeRangeWithOffsets("a.go", 100, 200)
+	rng2 := makeRangeWithOffsets("a.go", 150, 250)
 
-	inter := r1.Intersection(r2)
+	inter := rng1.Intersection(rng2)
 	if inter == nil {
 		t.Fatal("expected non-nil intersection")
 	}

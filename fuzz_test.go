@@ -231,8 +231,9 @@ func FuzzCorrelate(f *testing.F) {
 		correlations := Correlate(findings)
 
 		for _, c := range correlations {
-			if c.Confidence < 0 || c.Confidence > 1 {
-				t.Errorf("confidence out of range: %f", c.Confidence)
+			conf := c.Confidence
+			if conf < 0 || conf > 1 {
+				t.Errorf("confidence out of range: %f", conf)
 			}
 
 			if len(c.FindingIDs) != 2 {

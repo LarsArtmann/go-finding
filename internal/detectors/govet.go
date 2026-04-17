@@ -78,7 +78,8 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
 }
 
 func parsePosn(posn, dir string) finding.Position {
-	parts := strings.SplitN(posn, ":", 4)
+	posnFieldCount := 4
+	parts := strings.SplitN(posn, ":", posnFieldCount)
 	if len(parts) < 2 {
 		return finding.Position{File: posn}
 	}
