@@ -97,42 +97,6 @@ func TestFromDiagnostic_WithRelated(t *testing.T) {
 	}
 }
 
-func TestAnalysisDiagnostic(t *testing.T) {
-	t.Parallel()
-
-	t.Run("with direct fix", func(t *testing.T) {
-		t.Parallel()
-		f := Finding{
-			Message:     "test",
-			FixStrategy: FixStrategyDirect,
-			AfterCode:   "fixed",
-			Suggestion:  "apply fix",
-		}
-		d := f.AnalysisDiagnostic()
-		if d.Message != "test" {
-			t.Errorf("expected message 'test', got %q", d.Message)
-		}
-		if len(d.SuggestedFixes) != 1 {
-			t.Fatalf("expected 1 suggested fix, got %d", len(d.SuggestedFixes))
-		}
-		if string(d.SuggestedFixes[0].TextEdits[0].NewText) != "fixed" {
-			t.Errorf("expected new text 'fixed'")
-		}
-	})
-
-	t.Run("without fix", func(t *testing.T) {
-		t.Parallel()
-		f := Finding{
-			Message:     "test",
-			FixStrategy: FixStrategyNone,
-		}
-		d := f.AnalysisDiagnostic()
-		if len(d.SuggestedFixes) != 0 {
-			t.Errorf("expected 0 suggested fixes, got %d", len(d.SuggestedFixes))
-		}
-	})
-}
-
 func TestFromTokenPosition(t *testing.T) {
 	t.Parallel()
 

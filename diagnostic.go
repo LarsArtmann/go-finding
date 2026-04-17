@@ -62,40 +62,6 @@ func FromDiagnostic(
 	return f
 }
 
-// AnalysisDiagnostic creates a Diagnostic from a Finding for go/analysis framework.
-// This is the reverse of FromDiagnostic.
-// Note: This is lossy - many Finding fields have no equivalent in analysis.Diagnostic.
-func (f Finding) AnalysisDiagnostic() analysis.Diagnostic {
-	d := analysis.Diagnostic{
-		Pos:            token.NoPos, // Would need fset
-		End:            token.NoPos,
-		Message:        f.Message,
-		Category:       string(f.Category),
-		URL:            "",
-		SuggestedFixes: []analysis.SuggestedFix{},
-		Related:        []analysis.RelatedInformation{},
-	}
-
-	if f.FixStrategy == FixStrategyDirect && f.AfterCode != "" {
-		// We can't accurately set Pos/End without fset
-		// This is a simplified representation
-		d.SuggestedFixes = []analysis.SuggestedFix{
-			{
-				Message: f.Suggestion,
-				TextEdits: []analysis.TextEdit{
-					{
-						NewText: []byte(f.AfterCode),
-						Pos:     0,
-						End:     0,
-					},
-				},
-			},
-		}
-	}
-
-	return d
-}
-
 // FromTokenPosition creates a Position from a token.Position.
 func FromTokenPosition(pos token.Position) Position {
 	return Position{
