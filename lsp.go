@@ -102,15 +102,19 @@ func lspLine(n int) int {
 }
 
 // FromLSP creates a Finding from an LSP Diagnostic at the given file URI.
-// Many fields will be empty/default since LSP has less information.
+// Preserves end position in Range and related information when present.
+// The raw LSP severity integer is stored in Metadata under "go-finding/lsp-severity".
 func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
-	return Finding{
+	startLine := diag.Range.Start.Line + 1
+	startChar := diag.Range.Start.Character + 1
+
+	f := Finding{
 		ID: fmt.Sprintf(
 			"lsp:%s:%s:%d:%d",
 			diag.Source,
 			diag.Code,
-			diag.Range.Start.Line+1,
-			diag.Range.Start.Character+1,
+			startLine,
+			startChar,
 		),
 		Rule:     diag.Code,
 		ToolName: diag.Source,
@@ -118,11 +122,47 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 		Severity: severityFromLSP(diag.Severity),
 		Position: Position{
 			File:   fileURI,
-			Line:   diag.Range.Start.Line + 1,
-			Column: diag.Range.Start.Character + 1,
+			Line:   startLine,
+			Column: startChar,
 		},
 		FixStrategy: FixStrategyNone,
 	}
+
+	// Preserve end position as Range when it differs from start.
+	endLine := diag.Range.End.Line + 1
+	endChar := diag.Range.End.Character + 1
+	if endLine != startLine || endChar != startChar {
+		f.Range = &Range{
+			Start: f.Position,
+			End:   Position{File: fileURI, Line: endLine, Column: endChar},
+		}
+	}
+
+	// Convert related information.
+	for _, rel := range diag.Related {
+		f.Related = append(f.Related, RelatedRef{
+			FindingID: fmt.Sprintf("lsp:%s:%s:%d:%d",
+				diag.Source, diag.Code,
+				rel.Location.Range.Start.Line+1,
+				rel.Location.Range.Start.Character+1,
+			),
+			Relation: rel.Message,
+			Position: Position{
+				File:   rel.Location.URI,
+				Line:   rel.Location.Range.Start.Line + 1,
+				Column: rel.Location.Range.Start.Character + 1,
+			},
+		})
+	}
+
+	// Preserve raw LSP severity for fidelity.
+	if diag.Severity > 0 {
+		f.Metadata = map[string]string{
+			"go-finding/lsp-severity": fmt.Sprintf("%d", diag.Severity),
+		}
+	}
+
+	return f
 }
 
 func severityToLSP(s Severity) int {

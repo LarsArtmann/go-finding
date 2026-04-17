@@ -98,6 +98,80 @@ func TestFromLSP(t *testing.T) {
 	if got, want := f.FixStrategy, FixStrategyNone; got != want {
 		t.Errorf("FromLSP FixStrategy = %v, want %v", got, want)
 	}
+	// End position preserved in Range
+	if f.Range == nil {
+		t.Fatal("FromLSP Range = nil, want non-nil (end differs from start)")
+	}
+	if got, want := f.Range.End.Line, 5; got != want {
+		t.Errorf("FromLSP Range.End.Line = %d, want %d", got, want)
+	}
+	if got, want := f.Range.End.Column, 16; got != want {
+		t.Errorf("FromLSP Range.End.Column = %d, want %d", got, want)
+	}
+	// Raw LSP severity in metadata
+	if got, want := f.Metadata["go-finding/lsp-severity"], "1"; got != want {
+		t.Errorf("FromLSP Metadata[lsp-severity] = %q, want %q", got, want)
+	}
+}
+
+func TestFromLSPNoEndRange(t *testing.T) {
+	t.Parallel()
+
+	diag := LSPDiagnostic{
+		Range: LSPRange{
+			Start: LSPPosition{Line: 4, Character: 9},
+			End:   LSPPosition{Line: 4, Character: 9},
+		},
+		Severity: LSPSeverityWarning,
+		Code:     "simplify",
+		Source:   "gofmt",
+		Message:  "can simplify",
+	}
+
+	f := FromLSP("file:///test.go", diag)
+
+	if f.Range != nil {
+		t.Errorf("FromLSP Range = %v, want nil (end same as start)", f.Range)
+	}
+}
+
+func TestFromLSPRelated(t *testing.T) {
+	t.Parallel()
+
+	diag := LSPDiagnostic{
+		Range: LSPRange{
+			Start: LSPPosition{Line: 0, Character: 0},
+			End:   LSPPosition{Line: 0, Character: 5},
+		},
+		Severity: LSPSeverityWarning,
+		Code:     "dupl",
+		Source:   "dupl",
+		Message:  "clone detected",
+		Related: []LSPRelatedInfo{
+			{
+				Location: LSPLocation{
+					URI:   "file:///other.go",
+					Range: LSPRange{Start: LSPPosition{Line: 9, Character: 0}},
+				},
+				Message: "clone-of",
+			},
+		},
+	}
+
+	f := FromLSP("file:///test.go", diag)
+
+	if got, want := len(f.Related), 1; got != want {
+		t.Fatalf("FromLSP Related length = %d, want %d", got, want)
+	}
+	if got, want := f.Related[0].Relation, "clone-of"; got != want {
+		t.Errorf("FromLSP Related[0].Relation = %q, want %q", got, want)
+	}
+	if got, want := f.Related[0].Position.File, "file:///other.go"; got != want {
+		t.Errorf("FromLSP Related[0].File = %q, want %q", got, want)
+	}
+	if got, want := f.Related[0].Position.Line, 10; got != want {
+		t.Errorf("FromLSP Related[0].Line = %d, want %d", got, want)
+	}
 }
 
 func TestToLSP(t *testing.T) {
