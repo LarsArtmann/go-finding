@@ -129,9 +129,23 @@ linters:
         depguard:
             rules:
                 main:
+                    list-mode: lax
+                    files:
+                        - $all
+                        - "!$test"
                     allow:
                         - $gostd
-                        - $module
+                        - github.com/larsartmann/go-finding
+                    deny:
+                        - pkg: io/ioutil
+                          desc: "deprecated since Go 1.16, use io and os"
+                test:
+                    list-mode: lax
+                    files:
+                        - $test
+                    allow:
+                        - $gostd
+                        - github.com/larsartmann/go-finding
         gocritic:
             disabled-checks:
                 - ifElseChain
