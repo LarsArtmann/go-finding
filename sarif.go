@@ -2,10 +2,14 @@ package finding
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 // SARIF types for Report generation.
 // These are simplified representations of SARIF 2.1.0.
+
+// SARIF confidence scale: Confidence is 0-1, SARIF rank is 0-100.
+const sarifConfidenceScale = 100.0
 
 // SarifLog represents a SARIF log file containing run results.
 type SarifLog struct {
@@ -129,12 +133,22 @@ func sarifDriverFromReport(r *Report) SarifDriver {
 
 // ToSARIF converts a Report to SARIF 2.1.0 format.
 func (r *Report) ToSARIF() ([]byte, error) {
-	return json.MarshalIndent(r.sarifLog(), "", "  ")
+	data, err := json.MarshalIndent(r.sarifLog(), "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("marshaling SARIF: %w", err)
+	}
+
+	return data, nil
 }
 
 // ToSARIFFiltered converts only non-suppressed findings.
 func (r *Report) ToSARIFFiltered(severity Severity) ([]byte, error) {
-	return json.MarshalIndent(r.sarifLogFiltered(severity), "", "  ")
+	data, err := json.MarshalIndent(r.sarifLogFiltered(severity), "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("marshaling SARIF: %w", err)
+	}
+
+	return data, nil
 }
 
 func (r *Report) sarifLog() SarifLog {
@@ -177,7 +191,7 @@ func findingToSARIF(f Finding) SarifResult {
 				},
 			},
 		},
-		Rank: f.Confidence * 100.0, // SARIF uses 0-100
+		Rank: f.Confidence * sarifConfidenceScale, // SARIF uses 0-100
 	}
 
 	// Add end position if available

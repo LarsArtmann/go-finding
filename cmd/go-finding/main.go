@@ -248,7 +248,7 @@ func outputResults(w *os.File, report *finding.Report, format string) error {
 		}
 
 		if _, err := fmt.Fprintln(w, out); err != nil {
-			return err
+			return fmt.Errorf("writing JSON: %w", err)
 		}
 	case "sarif":
 		out, err := report.ToSARIF()
@@ -257,7 +257,7 @@ func outputResults(w *os.File, report *finding.Report, format string) error {
 		}
 
 		if _, err := fmt.Fprintln(w, string(out)); err != nil {
-			return err
+			return fmt.Errorf("writing SARIF: %w", err)
 		}
 	default:
 		outputText(w, report)

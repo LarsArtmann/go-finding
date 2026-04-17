@@ -5,6 +5,7 @@ import "time"
 // SuppressionKind indicates where a suppression was defined.
 type SuppressionKind string
 
+// Suppression kinds indicate where a suppression was defined.
 const (
 	SuppressionInSource SuppressionKind = "in-source" // e.g., //nolint, //lint:ignore
 	SuppressionInConfig SuppressionKind = "in-config" // Config file rules

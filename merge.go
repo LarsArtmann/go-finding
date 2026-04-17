@@ -81,10 +81,11 @@ type MergeOption func(*MergeOptions)
 // DeduplicateBy specifies what fields to use for deduplication.
 type DeduplicateBy int
 
+// Deduplication strategies control how findings are matched during merge.
 const (
-	DeduplicateByID       DeduplicateBy = iota // DeduplicateByID ensures exact ID matches.
-	DeduplicateByPosition                      // DeduplicateByPosition uses file:line:column.
-	DeduplicateByRule                          // DeduplicateByRule matches rule position.
+	DeduplicateByID       DeduplicateBy = iota // Exact ID matches.
+	DeduplicateByPosition                      // File:line:column matching.
+	DeduplicateByRule                          // Rule + position matching.
 )
 
 func defaultMergeOptions() MergeOptions {

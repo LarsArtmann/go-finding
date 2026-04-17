@@ -9,7 +9,7 @@ import (
 func (r *Report) PrettyJSON() (string, error) {
 	bytes, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("marshaling JSON: %w", err)
 	}
 
 	return string(bytes), nil
@@ -55,7 +55,7 @@ func FindingsFromJSON(data []byte) ([]Finding, error) {
 func (f Finding) LineJSON() (string, error) {
 	bytes, err := json.Marshal(f)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("marshaling finding: %w", err)
 	}
 
 	return string(bytes), nil

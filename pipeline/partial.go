@@ -66,7 +66,7 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 
 	for _, d := range p.detectors {
 		if isContextDone(ctx) {
-			return result, ctx.Err()
+			return result, fmt.Errorf("context cancelled: %w", ctx.Err())
 		}
 
 		findings, err := d.Detect(ctx)
@@ -112,7 +112,7 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 
 	err := g.Wait()
 	if err != nil {
-		return result, err
+		return result, fmt.Errorf("detector group: %w", err)
 	}
 
 	return result, nil

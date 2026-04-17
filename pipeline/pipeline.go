@@ -35,7 +35,7 @@ func (f DetectorFunc) Detect(ctx context.Context) ([]finding.Finding, error) {
 }
 
 // Name implements Detector. Returns "anonymous" — use NamedDetectorFunc for a custom name.
-func (f DetectorFunc) Name() string {
+func (_ DetectorFunc) Name() string {
 	return "anonymous"
 }
 
@@ -81,10 +81,12 @@ type Config struct {
 	Metrics *Metrics
 }
 
+const defaultMaxIterations = 5
+
 // DefaultConfig returns a sensible default configuration.
 func DefaultConfig() Config {
 	return Config{
-		MaxIterations:     5,
+		MaxIterations:     defaultMaxIterations,
 		ParallelDetectors: true,
 		Timeout:           10 * time.Minute,
 	}
@@ -155,7 +157,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	for p.iterations < p.config.MaxIterations {
 		if isContextDone(ctx) {
-			return result, ctx.Err()
+			return result, fmt.Errorf("pipeline cancelled: %w", ctx.Err())
 		}
 
 		iter := Iteration{Number: p.iterations + 1}
@@ -331,7 +333,7 @@ func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, err
 	for _, d := range p.detectors {
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return nil, fmt.Errorf("detection cancelled: %w", ctx.Err())
 		default:
 		}
 
@@ -383,7 +385,7 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 
 	err := g.Wait()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parallel detection: %w", err)
 	}
 
 	var filtered []finding.Finding
@@ -406,7 +408,7 @@ type TriageResult struct {
 }
 
 // triage categorizes findings by their fix strategy.
-func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
+func (_ *Pipeline) triage(findings []finding.Finding) *TriageResult {
 	result := &TriageResult{
 		Direct:  make([]finding.Finding, 0),
 		Suggest: make([]finding.Finding, 0),
@@ -525,7 +527,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 	for path, fileFixes := range byFile {
 		select {
 		case <-ctx.Done():
-			return applied, ctx.Err()
+			return applied, fmt.Errorf("fix application cancelled: %w", ctx.Err())
 		default:
 		}
 

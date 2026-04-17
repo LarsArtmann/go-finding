@@ -3,6 +3,7 @@ package finding
 // Severity represents the severity level of a finding.
 type Severity string
 
+// Severity levels for findings, ordered by urgency.
 const (
 	SeverityInfo     Severity = "info"
 	SeverityWarning  Severity = "warning"
