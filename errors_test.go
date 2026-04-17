@@ -67,9 +67,7 @@ func TestFindingErrorWithFinding(t *testing.T) {
 		t.Errorf("Finding.ID = %q, want %q", err.Finding.ID, f.ID)
 	}
 
-	if err.File != "test.go" {
-		t.Errorf("File = %q, want test.go", err.File)
-	}
+	assertFindingErrorFile(t, err, "test.go")
 
 	if err.Position == nil || err.Position.Line != 10 {
 		t.Error("Position not set correctly")
@@ -90,9 +88,7 @@ func TestFindingErrorWithPosition(t *testing.T) {
 		t.Errorf("Position.Line = %d, want 20", err.Position.Line)
 	}
 
-	if err.File != "test.go" {
-		t.Errorf("File = %q, want test.go", err.File)
-	}
+	assertFindingErrorFile(t, err, "test.go")
 }
 
 func TestIsFindingError(t *testing.T) {

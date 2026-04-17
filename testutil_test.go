@@ -76,3 +76,19 @@ func AssertRangeLinesEq(t *testing.T, got, want Range) {
 		t.Errorf("Range lines = %+v, want %+v", got, want)
 	}
 }
+
+// RunEqualTests runs a table-driven equality test for types with Equal methods.
+func RunEqualTests[T any](t *testing.T, tests []struct {
+	name string
+	a, b T
+	want bool
+}, eqFunc func(a, b T) bool, formatName string) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := eqFunc(tt.a, tt.b); got != tt.want {
+				t.Errorf("%s.Equal() = %v, want %v", formatName, got, tt.want)
+			}
+		})
+	}
+}

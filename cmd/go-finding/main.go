@@ -15,7 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/larsartmann/go-finding/internal/detectors"
+	det "github.com/larsartmann/go-finding/internal/detectors"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
@@ -48,8 +48,7 @@ func main() {
 	if cpuprof != "" {
 		f, err := os.Create(cpuprof)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating CPU profile: %v\n", err)
-			os.Exit(1)
+			fatal("creating CPU profile", err)
 		}
 		defer f.Close()
 		pprof.StartCPUProfile(f)
@@ -70,32 +69,27 @@ func main() {
 
 	sev, err := parseSeverity(minSev)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		fatal("parsing severity", err)
 	}
 
 	var cfg pipelineConfigFile
 	if configFile != "" {
 		data, err := os.ReadFile(configFile)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading config: %v\n", err)
-			os.Exit(1)
+			fatal("reading config", err)
 		}
 		switch ext := filepath.Ext(configFile); ext {
 		case ".yaml", ".yml":
 			if err := yaml.Unmarshal(data, &cfg); err != nil {
-				fmt.Fprintf(os.Stderr, "Error parsing YAML config: %v\n", err)
-				os.Exit(1)
+				fatal("parsing YAML config", err)
 			}
 		default:
 			if err := json.Unmarshal(data, &cfg); err != nil {
-				fmt.Fprintf(os.Stderr, "Error parsing config: %v\n", err)
-				os.Exit(1)
+				fatal("parsing config", err)
 			}
 		}
 		if err := cfg.validate(); err != nil {
-			fmt.Fprintf(os.Stderr, "Invalid config: %v\n", err)
-			os.Exit(1)
+			fatal("invalid config", err)
 		}
 	} else {
 		cfg = pipelineConfigFile{
@@ -107,25 +101,24 @@ func main() {
 		}
 	}
 
-	detectors := buildDetectors(cfg.Detectors, dir)
-	if len(detectors) == 0 {
+	detectorList := buildDetectors(cfg.Detectors, dir)
+	if len(detectorList) == 0 {
 		fmt.Fprintln(os.Stderr, "No detectors configured. Use -config or the default govet+staticcheck detectors.")
 		os.Exit(1)
 	}
 
 	pipelineCfg := cfg.toPipelineConfig()
 	pipelineCfg.GracefulDegradation = true
-	p := pipeline.New(pipelineCfg, dir, detectors...)
+	p := pipeline.New(pipelineCfg, dir, detectorList...)
 
 	ctx, cancel := context.WithTimeout(context.Background(), pipelineCfg.Timeout)
 	defer cancel()
 
-	fmt.Fprintf(os.Stderr, "go-finding v0.1.0: analyzing %s with %d detector(s)\n", dir, len(detectors))
+	fmt.Fprintf(os.Stderr, "go-finding v0.1.0: analyzing %s with %d detector(s)\n", dir, len(detectorList))
 
 	result, err := p.Run(ctx)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		fatal("running pipeline", err)
 	}
 
 	var allFindings []finding.Finding
@@ -143,12 +136,16 @@ func main() {
 	report.ComputeSummary()
 
 	if err := outputResults(os.Stdout, report, format); err != nil {
-		fmt.Fprintf(os.Stderr, "Error writing output: %v\n", err)
-		os.Exit(1)
+		fatal("writing output", err)
 	}
 
 	fmt.Fprintf(os.Stderr, "\nDone: %d findings (%d iterations, stable=%v)\n",
 		len(filtered), result.TotalIterations, result.Stable)
+}
+
+func fatal(context string, err error) {
+	fmt.Fprintf(os.Stderr, "Error %s: %v\n", context, err)
+	os.Exit(1)
 }
 
 func parseSeverity(s string) (finding.Severity, error) {
@@ -180,18 +177,18 @@ func filterBySeverity(findings []finding.Finding, min finding.Severity) []findin
 }
 
 func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {
-	var detectors []pipeline.Detector
+	var result []pipeline.Detector
 	for _, spec := range specs {
 		switch spec.Name {
 		case "govet":
-			detectors = append(detectors, detectors.NewGoVetDetector(dir))
+			result = append(result, det.NewGoVetDetector(dir))
 		case "staticcheck":
-			detectors = append(detectors, detectors.NewStaticcheckDetector(dir))
+			result = append(result, det.NewStaticcheckDetector(dir))
 		default:
 			fmt.Fprintf(os.Stderr, "Warning: unknown detector %q, skipping\n", spec.Name)
 		}
 	}
-	return detectors
+	return result
 }
 
 func outputResults(w *os.File, report *finding.Report, format string) error {

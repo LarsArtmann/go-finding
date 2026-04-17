@@ -15,8 +15,8 @@ func TestMerge_Empty(t *testing.T) {
 func TestMerge_SingleReport(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "tool1"})
-	r.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go"}})
+	r := MakeSimpleReport("tool1")
+	r.AddFinding(MakeSimpleFinding("1", SeverityError))
 
 	merged := Merge([]*Report{r})
 	assertReportFieldStr(t, merged.Tool.Name, "tool1", "single report merge tool")
@@ -26,10 +26,10 @@ func TestMerge_SingleReport(t *testing.T) {
 func TestMerge_MultipleReports(t *testing.T) {
 	t.Parallel()
 
-	r1 := NewReport(ToolInfo{Name: "tool1"})
+	r1 := MakeSimpleReport("tool1")
 	r1.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go"}})
 
-	r2 := NewReport(ToolInfo{Name: "tool2"})
+	r2 := MakeSimpleReport("tool2")
 	r2.AddFinding(Finding{ID: "2", Severity: SeverityWarning, Position: Position{File: "b.go"}})
 
 	merged := Merge([]*Report{r1, r2})
@@ -43,11 +43,11 @@ func TestMerge_MultipleReports(t *testing.T) {
 func TestMerge_WithDeduplication(t *testing.T) {
 	t.Parallel()
 
-	r1 := NewReport(ToolInfo{Name: "tool1"})
-	r1.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go", Line: 10}})
+	r1 := MakeSimpleReport("tool1")
+	r1.AddFinding(MakeSimpleFinding("1", SeverityError))
 
-	r2 := NewReport(ToolInfo{Name: "tool2"})
-	r2.AddFinding(Finding{ID: "1", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 10}})
+	r2 := MakeSimpleReport("tool2")
+	r2.AddFinding(MakeSimpleFinding("1", SeverityWarning))
 
 	merged := Merge([]*Report{r1, r2}, WithDeduplication(true))
 	merged.ComputeSummary()
@@ -58,11 +58,11 @@ func TestMerge_WithDeduplication(t *testing.T) {
 func TestMerge_WithoutDeduplication(t *testing.T) {
 	t.Parallel()
 
-	r1 := NewReport(ToolInfo{Name: "tool1"})
-	r1.AddFinding(Finding{ID: "1", Severity: SeverityError, Position: Position{File: "a.go"}})
+	r1 := MakeSimpleReport("tool1")
+	r1.AddFinding(MakeSimpleFinding("1", SeverityError))
 
-	r2 := NewReport(ToolInfo{Name: "tool2"})
-	r2.AddFinding(Finding{ID: "1", Severity: SeverityWarning, Position: Position{File: "a.go"}})
+	r2 := MakeSimpleReport("tool2")
+	r2.AddFinding(MakeSimpleFinding("1", SeverityWarning))
 
 	merged := Merge([]*Report{r1, r2}, WithDeduplication(false))
 	merged.ComputeSummary()
@@ -73,11 +73,11 @@ func TestMerge_WithoutDeduplication(t *testing.T) {
 func TestMerge_DeduplicateByPosition(t *testing.T) {
 	t.Parallel()
 
-	r1 := NewReport(ToolInfo{Name: "tool1"})
-	r1.AddFinding(Finding{ID: "a", Severity: SeverityError, Position: Position{File: "a.go", Line: 10, Column: 5}})
+	r1 := MakeSimpleReport("tool1")
+	r1.AddFinding(MakeSimpleFinding("a", SeverityError))
 
-	r2 := NewReport(ToolInfo{Name: "tool2"})
-	r2.AddFinding(Finding{ID: "b", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 10, Column: 5}})
+	r2 := MakeSimpleReport("tool2")
+	r2.AddFinding(MakeSimpleFinding("b", SeverityWarning))
 
 	merged := Merge([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByPosition))
 	merged.ComputeSummary()
@@ -88,10 +88,10 @@ func TestMerge_DeduplicateByPosition(t *testing.T) {
 func TestMerge_DeduplicateByRule(t *testing.T) {
 	t.Parallel()
 
-	r1 := NewReport(ToolInfo{Name: "tool1"})
+	r1 := MakeSimpleReport("tool1")
 	r1.AddFinding(Finding{ID: "a", Rule: "nilcheck", Severity: SeverityError, Position: Position{File: "a.go", Line: 10}})
 
-	r2 := NewReport(ToolInfo{Name: "tool2"})
+	r2 := MakeSimpleReport("tool2")
 	r2.AddFinding(Finding{ID: "b", Rule: "nilcheck", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 10}})
 
 	merged := Merge([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByRule))

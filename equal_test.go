@@ -18,14 +18,7 @@ func TestPosition_Equal(t *testing.T) {
 		{"both empty", Position{}, Position{}, true},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			if got := tt.a.Equal(tt.b); got != tt.want {
-				t.Errorf("Position.Equal() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	RunEqualTests(t, tests, func(a, b Position) bool { return a.Equal(b) }, "Position")
 }
 
 func TestRange_Equal(t *testing.T) {
@@ -62,14 +55,7 @@ func TestRange_Equal(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			if got := tt.a.Equal(tt.b); got != tt.want {
-				t.Errorf("Range.Equal() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	RunEqualTests(t, tests, func(a, b Range) bool { return a.Equal(b) }, "Range")
 }
 
 func TestFinding_Equal(t *testing.T) {

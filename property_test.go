@@ -26,9 +26,7 @@ func TestProperty_FilterBySeverityAtLeast(t *testing.T) {
 		}
 		return true
 	}
-	if err := quick.Check(property, nil); err != nil {
-		t.Error(err)
-	}
+	checkProperty(t, property)
 }
 
 func TestProperty_GroupByFileCoversAll(t *testing.T) {
@@ -48,9 +46,7 @@ func TestProperty_GroupByFileCoversAll(t *testing.T) {
 		}
 		return total == len(findings)
 	}
-	if err := quick.Check(property, nil); err != nil {
-		t.Error(err)
-	}
+	checkProperty(t, property)
 }
 
 func TestProperty_MergePreservesAll(t *testing.T) {
