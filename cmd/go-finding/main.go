@@ -94,6 +94,10 @@ func main() {
 				os.Exit(1)
 			}
 		}
+		if err := cfg.validate(); err != nil {
+			fmt.Fprintf(os.Stderr, "Invalid config: %v\n", err)
+			os.Exit(1)
+		}
 	} else {
 		cfg = pipelineConfigFile{
 			MaxIterations:     maxIter,
@@ -400,6 +404,28 @@ type pipelineConfigFile struct {
 type detectorSpec struct {
 	Name string            `json:"name" yaml:"name"`
 	Args map[string]string `json:"args" yaml:"args"`
+}
+
+var knownDetectors = map[string]bool{
+	"govet":       true,
+	"staticcheck": true,
+}
+
+func (c pipelineConfigFile) validate() error {
+	if c.MaxIterations < 0 {
+		return fmt.Errorf("maxIterations must be >= 0, got %d", c.MaxIterations)
+	}
+	if c.Timeout != "" {
+		if _, err := time.ParseDuration(c.Timeout); err != nil {
+			return fmt.Errorf("invalid timeout %q: %w", c.Timeout, err)
+		}
+	}
+	for _, d := range c.Detectors {
+		if !knownDetectors[d.Name] {
+			return fmt.Errorf("unknown detector %q (available: govet, staticcheck)", d.Name)
+		}
+	}
+	return nil
 }
 
 func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
