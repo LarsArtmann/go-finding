@@ -675,3 +675,48 @@ func readFile(path string) ([]byte, error) {
 
 	return result, nil
 }
+
+func TestIteration_Findings(t *testing.T) {
+	t.Parallel()
+
+	findings := []finding.Finding{
+		{Message: "a", Severity: finding.SeverityError},
+		{Message: "b", Severity: finding.SeverityWarning},
+	}
+	iter := Iteration{
+		Number:   1,
+		findings: findings,
+		suggest:  []finding.Finding{{Message: "s", FixStrategy: finding.FixStrategySuggest}},
+	}
+
+	got := iter.Findings()
+	if len(got) != 2 {
+		t.Fatalf("Findings() returned %d items, want 2", len(got))
+	}
+	if got[0].Message != "a" {
+		t.Errorf("Findings()[0].Message = %q, want %q", got[0].Message, "a")
+	}
+	if got[1].Message != "b" {
+		t.Errorf("Findings()[1].Message = %q, want %q", got[1].Message, "b")
+	}
+
+	suggested := iter.SuggestedFindings()
+	if len(suggested) != 1 {
+		t.Fatalf("SuggestedFindings() returned %d items, want 1", len(suggested))
+	}
+	if suggested[0].Message != "s" {
+		t.Errorf("SuggestedFindings()[0].Message = %q, want %q", suggested[0].Message, "s")
+	}
+}
+
+func TestIteration_Findings_Empty(t *testing.T) {
+	t.Parallel()
+
+	iter := Iteration{Number: 1}
+	if got := iter.Findings(); got != nil {
+		t.Errorf("Findings() = %v, want nil", got)
+	}
+	if got := iter.SuggestedFindings(); got != nil {
+		t.Errorf("SuggestedFindings() = %v, want nil", got)
+	}
+}
