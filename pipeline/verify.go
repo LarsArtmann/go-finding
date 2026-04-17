@@ -32,11 +32,13 @@ func NewVerifier(detectors []Detector) *Verifier {
 func (v *Verifier) Verify(ctx context.Context, original []finding.Finding) (*VerifyResult, error) {
 	// Re-run all detectors
 	var postFindings []finding.Finding
+
 	for _, d := range v.detectors {
 		findings, err := d.Detect(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("verify: detector %s: %w", d.Name(), err)
 		}
+
 		for _, f := range findings {
 			if !f.IsSuppressed() {
 				postFindings = append(postFindings, f)
@@ -60,22 +62,27 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 	}
 
 	var fixed []finding.Finding
+
 	for id, f := range origSet {
 		if _, exists := postSet[id]; !exists {
 			fixed = append(fixed, f)
 		}
 	}
+
 	sort.Slice(fixed, func(i, j int) bool { return fixed[i].ID < fixed[j].ID })
 
 	var newFindings []finding.Finding
+
 	for id, f := range postSet {
 		if _, exists := origSet[id]; !exists {
 			newFindings = append(newFindings, f)
 		}
 	}
+
 	sort.Slice(newFindings, func(i, j int) bool { return newFindings[i].ID < newFindings[j].ID })
 
 	var remaining []finding.Finding
+
 	for _, f := range post {
 		if _, exists := origSet[f.ID]; exists {
 			remaining = append(remaining, f)

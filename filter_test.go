@@ -19,6 +19,7 @@ func newFilterCase(name string, input []Finding, pred FilterFunc, expected int) 
 func runFilterCase(t *testing.T, tc filterTestCase) {
 	t.Run(tc.name, func(t *testing.T) {
 		t.Parallel()
+
 		result := Filter(tc.input, tc.preds...)
 		if len(result) != tc.expected {
 			t.Errorf("Filter() = %d, want %d", len(result), tc.expected)
@@ -32,6 +33,7 @@ func makeFindingsWithSeverity(sev ...Severity) []Finding {
 	for i, s := range sev {
 		findings[i] = Finding{ID: string(rune('1' + i)), Severity: s}
 	}
+
 	return findings
 }
 
@@ -41,11 +43,13 @@ func makeFindingsWithCategory(cats ...Category) []Finding {
 	for i, c := range cats {
 		findings[i] = Finding{ID: string(rune('1' + i)), Category: c}
 	}
+
 	return findings
 }
 
 func TestFilter_Empty(t *testing.T) {
 	t.Parallel()
+
 	result := Filter(nil, BySeverity(SeverityError))
 	if len(result) != 0 {
 		t.Errorf("Filter(nil) = %d, want 0", len(result))
@@ -54,7 +58,9 @@ func TestFilter_Empty(t *testing.T) {
 
 func TestFilter_NoPredicates(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{{ID: "1"}, {ID: "2"}}
+
 	result := Filter(findings)
 	if len(result) != 2 {
 		t.Errorf("Filter with no predicates = %d, want 2", len(result))
@@ -63,11 +69,13 @@ func TestFilter_NoPredicates(t *testing.T) {
 
 func TestFilter_MultiplePredicates(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", Severity: SeverityError, ToolName: "tool1"},
 		{ID: "2", Severity: SeverityError, ToolName: "tool2"},
 		{ID: "3", Severity: SeverityWarning, ToolName: "tool1"},
 	}
+
 	result := Filter(findings, BySeverity(SeverityError), ByTool("tool1"))
 	if len(result) != 1 || result[0].ID != "1" {
 		t.Errorf("Filter(Severity=error, Tool=tool1) = %v, want [1]", result)
@@ -76,12 +84,14 @@ func TestFilter_MultiplePredicates(t *testing.T) {
 
 func TestBySeverity(t *testing.T) {
 	t.Parallel()
+
 	findings := makeFindingsWithSeverity(SeverityError, SeverityWarning, SeverityError)
 	runFilterCase(t, newFilterCase("error", findings, BySeverity(SeverityError), 2))
 }
 
 func TestBySeverityAtLeast(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", Severity: SeverityInfo},
 		{ID: "2", Severity: SeverityWarning},
@@ -96,12 +106,14 @@ func TestBySeverityAtLeast(t *testing.T) {
 
 func TestByCategory(t *testing.T) {
 	t.Parallel()
+
 	findings := makeFindingsWithCategory(CategorySecurity, CategoryStyle, CategorySecurity)
 	runFilterCase(t, newFilterCase("security", findings, ByCategory(CategorySecurity), 2))
 }
 
 func TestByFixStrategy(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", FixStrategy: FixStrategyDirect},
 		{ID: "2", FixStrategy: FixStrategyNone},
@@ -112,6 +124,7 @@ func TestByFixStrategy(t *testing.T) {
 
 func TestByTool(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", ToolName: "govet"},
 		{ID: "2", ToolName: "staticcheck"},
@@ -121,6 +134,7 @@ func TestByTool(t *testing.T) {
 
 func TestByRule(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", Rule: "nilcheck"},
 		{ID: "2", Rule: "unused"},
@@ -130,6 +144,7 @@ func TestByRule(t *testing.T) {
 
 func TestByFile(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", Position: Position{File: "a.go"}},
 		{ID: "2", Position: Position{File: "b.go"}},
@@ -139,6 +154,7 @@ func TestByFile(t *testing.T) {
 
 func TestNotSuppressed(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1"},
 		{ID: "2", Suppression: &Suppression{Kind: SuppressionInSource}},
@@ -148,6 +164,7 @@ func TestNotSuppressed(t *testing.T) {
 
 func TestHasFix(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", FixStrategy: FixStrategyDirect},
 		{ID: "2", FixStrategy: FixStrategyNone},
@@ -158,6 +175,7 @@ func TestHasFix(t *testing.T) {
 
 func TestHasSuggestion(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", Suggestion: "fix it"},
 		{ID: "2", BeforeCode: "old", AfterCode: "new"},
@@ -166,24 +184,36 @@ func TestHasSuggestion(t *testing.T) {
 	runFilterCase(t, newFilterCase("has suggestion", findings, HasSuggestion, 2))
 }
 
+func assertGroupLen[K comparable](
+	t *testing.T,
+	groups map[K][]Finding,
+	key K,
+	want int,
+	msg string,
+) {
+	t.Helper()
+
+	if len(groups[key]) != want {
+		t.Errorf("%s = %d, want %d", msg, len(groups[key]), want)
+	}
+}
+
 func TestGroupByCustom(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", ToolName: "a"},
 		{ID: "2", ToolName: "b"},
 		{ID: "3", ToolName: "a"},
 	}
 	groups := GroupBy(findings, func(f Finding) string { return f.ToolName })
-	if len(groups["a"]) != 2 {
-		t.Errorf("GroupBy tool 'a' = %d, want 2", len(groups["a"]))
-	}
-	if len(groups["b"]) != 1 {
-		t.Errorf("GroupBy tool 'b' = %d, want 1", len(groups["b"]))
-	}
+	assertGroupLen(t, groups, "a", 2, "GroupBy tool 'a'")
+	assertGroupLen(t, groups, "b", 1, "GroupBy tool 'b'")
 }
 
 func TestGroupBy_Empty(t *testing.T) {
 	t.Parallel()
+
 	groups := GroupBy(nil, func(f Finding) string { return f.ToolName })
 	if len(groups) != 0 {
 		t.Errorf("GroupBy(nil) = %d groups, want 0", len(groups))
@@ -192,34 +222,29 @@ func TestGroupBy_Empty(t *testing.T) {
 
 func TestGroupByFile(t *testing.T) {
 	t.Parallel()
+
 	findings := []Finding{
 		{ID: "1", Position: Position{File: "a.go"}},
 		{ID: "2", Position: Position{File: "b.go"}},
 		{ID: "3", Position: Position{File: "a.go"}},
 	}
 	groups := GroupByFile(findings)
-	if len(groups["a.go"]) != 2 {
-		t.Errorf("GroupByFile 'a.go' = %d, want 2", len(groups["a.go"]))
-	}
+	assertGroupLen(t, groups, "a.go", 2, "GroupByFile 'a.go'")
 }
 
 func TestGroupBySeverity(t *testing.T) {
 	t.Parallel()
+
 	findings := makeFindingsWithSeverity(SeverityError, SeverityWarning, SeverityError)
 	groups := GroupBySeverity(findings)
-	if len(groups[SeverityError]) != 2 {
-		t.Errorf("GroupBySeverity error = %d, want 2", len(groups[SeverityError]))
-	}
-	if len(groups[SeverityWarning]) != 1 {
-		t.Errorf("GroupBySeverity warning = %d, want 1", len(groups[SeverityWarning]))
-	}
+	assertGroupLen(t, groups, SeverityError, 2, "GroupBySeverity error")
+	assertGroupLen(t, groups, SeverityWarning, 1, "GroupBySeverity warning")
 }
 
 func TestGroupByCategory(t *testing.T) {
 	t.Parallel()
+
 	findings := makeFindingsWithCategory(CategorySecurity, CategoryStyle, CategorySecurity)
 	groups := GroupByCategory(findings)
-	if len(groups[CategorySecurity]) != 2 {
-		t.Errorf("GroupByCategory security = %d, want 2", len(groups[CategorySecurity]))
-	}
+	assertGroupLen(t, groups, CategorySecurity, 2, "GroupByCategory security")
 }

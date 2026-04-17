@@ -56,6 +56,7 @@ func TestGenerateID(t *testing.T) {
 			pos:  Position{File: "main.go"},
 			check: func(t *testing.T, got string) {
 				t.Helper()
+
 				if !IsHashID(got) {
 					t.Errorf("expected hash-based ID, got %q", got)
 				}
@@ -70,8 +71,10 @@ func TestGenerateID(t *testing.T) {
 			got := GenerateID(tt.tool, tt.rule, tt.pos)
 			if tt.check != nil {
 				tt.check(t, got)
+
 				return
 			}
+
 			if got != tt.wantPrefix {
 				t.Errorf("GenerateID() = %q, want %q", got, tt.wantPrefix)
 			}
@@ -136,9 +139,11 @@ func TestParseID(t *testing.T) {
 			if ok != tt.wantOK {
 				t.Fatalf("ParseID() ok = %v, want %v", ok, tt.wantOK)
 			}
+
 			if !tt.wantOK {
 				return
 			}
+
 			if tool != tt.wantTool || rule != tt.wantRule || file != tt.wantFile ||
 				line != tt.wantLine || col != tt.wantCol {
 				t.Errorf("ParseID() = (%q, %q, %q, %d, %d), want (%q, %q, %q, %d, %d)",
@@ -172,18 +177,23 @@ func TestGenerateID_ParseID_RoundTrip(t *testing.T) {
 			if !ok {
 				t.Fatalf("ParseID(%q) returned ok=false", id)
 			}
+
 			if tool != tt.tool {
 				t.Errorf("tool = %q, want %q", tool, tt.tool)
 			}
+
 			if rule != tt.rule {
 				t.Errorf("rule = %q, want %q", rule, tt.rule)
 			}
+
 			if file != tt.pos.File {
 				t.Errorf("file = %q, want %q", file, tt.pos.File)
 			}
+
 			if line != tt.pos.Line {
 				t.Errorf("line = %d, want %d", line, tt.pos.Line)
 			}
+
 			if col != tt.pos.Column {
 				t.Errorf("col = %d, want %d", col, tt.pos.Column)
 			}

@@ -56,6 +56,7 @@ func TestFilterConflictingFixes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			result := FilterConflictingFixes(tt.fixes)
 			if len(result) != tt.expected {
 				t.Errorf("FilterConflictingFixes() returned %d, want %d", len(result), tt.expected)
@@ -69,6 +70,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 
 	t.Run("no conflicts returns empty", func(t *testing.T) {
 		t.Parallel()
+
 		result := AnalyzeConflicts(findings("1", "a.go", 10, "2", "b.go", 20))
 		if len(result) != 0 {
 			t.Errorf("expected 0 conflicts, got %d", len(result))
@@ -77,20 +79,25 @@ func TestAnalyzeConflicts(t *testing.T) {
 
 	t.Run("overlapping fixes detected", func(t *testing.T) {
 		t.Parallel()
+
 		fixes := []finding.Finding{
 			findingWithRange("1", "a.go", 10, 10, 20),
 			findingWithRange("2", "a.go", 15, 15, 25),
 		}
+
 		result := AnalyzeConflicts(fixes)
 		if len(result) != 1 {
 			t.Fatalf("expected 1 conflict, got %d", len(result))
 		}
+
 		if result[0].Finding.ID != "2" {
 			t.Errorf("conflicting finding ID = %q, want %q", result[0].Finding.ID, "2")
 		}
+
 		if result[0].Reason != "overlapping range" {
 			t.Errorf("reason = %q, want %q", result[0].Reason, "overlapping range")
 		}
+
 		if len(result[0].ConflictsWith) == 0 {
 			t.Error("expected ConflictsWith to be populated")
 		}
@@ -98,6 +105,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 
 	t.Run("empty input returns empty", func(t *testing.T) {
 		t.Parallel()
+
 		result := AnalyzeConflicts(nil)
 		if len(result) != 0 {
 			t.Errorf("expected 0, got %d", len(result))
@@ -112,7 +120,9 @@ func TestGetFindingRange(t *testing.T) {
 
 	t.Run("with explicit range", func(t *testing.T) {
 		t.Parallel()
+
 		f := findingWithRange("1", "a.go", 10, 10, 20)
+
 		r := cd.getFindingRange(f)
 		if r.Start.Line != 10 || r.End.Line != 20 {
 			t.Errorf("range = %v-%v, want 10-20", r.Start.Line, r.End.Line)
@@ -121,11 +131,14 @@ func TestGetFindingRange(t *testing.T) {
 
 	t.Run("without range falls back to position", func(t *testing.T) {
 		t.Parallel()
+
 		f := findingAt("1", "a.go", 10)
+
 		r := cd.getFindingRange(f)
 		if r.Start.Line != 10 {
 			t.Errorf("start line = %d, want 10", r.Start.Line)
 		}
+
 		if r.End.Line != 0 {
 			t.Errorf("end line = %d, want 0 (empty)", r.End.Line)
 		}

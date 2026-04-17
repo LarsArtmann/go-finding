@@ -8,7 +8,9 @@ func TestRangeLinesEq(t *testing.T) {
 	lineEq := func(aStart, aEnd, bStart, bEnd int, want bool) func(*testing.T) {
 		return func(t *testing.T) {
 			t.Parallel()
+
 			a := Range{Start: Position{Line: aStart}, End: Position{Line: aEnd}}
+
 			b := Range{Start: Position{Line: bStart}, End: Position{Line: bEnd}}
 			if got := RangeLinesEq(a, b); got != want {
 				t.Errorf("RangeLinesEq() = %v, want %v", got, want)

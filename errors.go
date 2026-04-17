@@ -144,6 +144,7 @@ func NewInternalError(message string, cause error) *FindingError {
 // IsFindingError returns true if err is a *FindingError.
 func IsFindingError(err error) bool {
 	_, ok := errors.AsType[*FindingError](err)
+
 	return ok
 }
 

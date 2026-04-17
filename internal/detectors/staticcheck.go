@@ -21,14 +21,17 @@ func NewStaticcheckDetector(dir string) pipeline.Detector {
 			cmd := exec.CommandContext(ctx, "staticcheck", "-f", "json", "./...")
 			cmd.Dir = dir
 			cmd.Stderr = nil
+
 			out, err := cmd.Output()
 			if err != nil {
 				exitError := &exec.ExitError{}
 				if errors.As(err, &exitError) {
 					return parseStaticcheckJSON(out, dir), nil
 				}
+
 				return nil, fmt.Errorf("run staticcheck: %w", err)
 			}
+
 			return parseStaticcheckJSON(out, dir), nil
 		},
 	)
@@ -40,11 +43,13 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 	}
 
 	var findings []finding.Finding
+
 	for line := range strings.SplitSeq(string(data), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
+
 		var entry struct {
 			Code     string `json:"code"`
 			Severity string `json:"severity"`
@@ -55,7 +60,9 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 			} `json:"location"`
 			Message string `json:"message"`
 		}
-		if err := json.Unmarshal([]byte(line), &entry); err != nil {
+
+		err := json.Unmarshal([]byte(line), &entry)
+		if err != nil {
 			continue
 		}
 
@@ -87,6 +94,7 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 			Confidence:  0.8,
 		})
 	}
+
 	return findings
 }
 
@@ -94,6 +102,7 @@ func staticcheckCategory(code string) finding.Category {
 	if len(code) == 0 {
 		return finding.CategoryCorrectness
 	}
+
 	switch code[0] {
 	case 'S', 'Q':
 		return finding.CategoryStyle

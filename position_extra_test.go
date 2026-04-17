@@ -20,6 +20,7 @@ func TestPositionIsValidExtra(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.p.IsValid(); got != tt.want {
 				t.Errorf("IsValid() = %v, want %v", got, tt.want)
 			}
@@ -43,6 +44,7 @@ func TestPositionStringExtra(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.p.String(); got != tt.want {
 				t.Errorf("String() = %q, want %q", got, tt.want)
 			}
@@ -65,6 +67,7 @@ func TestRangeIsValidExtra(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.r.IsValid(); got != tt.want {
 				t.Errorf("IsValid() = %v, want %v", got, tt.want)
 			}
@@ -88,6 +91,7 @@ func TestRangeHasEnd(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.r.HasEnd(); got != tt.want {
 				t.Errorf("HasEnd() = %v, want %v", got, tt.want)
 			}
@@ -116,6 +120,7 @@ func TestRangeContainsExtra(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := r.Contains(tt.p); got != tt.want {
 				t.Errorf("Contains() = %v, want %v", got, tt.want)
 			}
@@ -139,10 +144,7 @@ func TestRangeIntersectionByOffset(t *testing.T) {
 	if inter == nil {
 		t.Fatal("expected non-nil intersection")
 	}
-	if inter.Start.Offset != 150 {
-		t.Errorf("Start.Offset = %d, want 150", inter.Start.Offset)
-	}
-	if inter.End.Offset != 200 {
-		t.Errorf("End.Offset = %d, want 200", inter.End.Offset)
-	}
+
+	assertReportField(t, "Start.Offset", inter.Start.Offset, 150)
+	assertReportField(t, "End.Offset", inter.End.Offset, 200)
 }

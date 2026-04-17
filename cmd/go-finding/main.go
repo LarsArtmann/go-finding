@@ -19,6 +19,10 @@ import (
 )
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	var (
 		dir        string
 		format     string
@@ -47,12 +51,19 @@ func main() {
 	if cpuprof != "" {
 		f, err := os.Create(cpuprof)
 		if err != nil {
-			fatal("creating CPU profile", err)
+			fmt.Fprintf(os.Stderr, "Error creating CPU profile: %v\n", err)
+
+			return 1
 		}
+
 		defer func() { _ = f.Close() }()
+
 		if err := pprof.StartCPUProfile(f); err != nil {
-			fatal("starting CPU profile", err)
+			fmt.Fprintf(os.Stderr, "Error starting CPU profile: %v\n", err)
+
+			return 1
 		}
+
 		defer pprof.StopCPUProfile()
 	}
 
@@ -61,9 +72,12 @@ func main() {
 			f, err := os.Create(memprof)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error creating memory profile: %v\n", err)
+
 				return
 			}
+
 			defer func() { _ = f.Close() }()
+
 			if err := pprof.WriteHeapProfile(f); err != nil {
 				fmt.Fprintf(os.Stderr, "Error writing heap profile: %v\n", err)
 			}
@@ -72,27 +86,42 @@ func main() {
 
 	sev, err := parseSeverity(minSev)
 	if err != nil {
-		fatal("parsing severity", err)
+		fmt.Fprintf(os.Stderr, "Error %s: %v\n", "parsing severity", err)
+
+		return 1
 	}
 
 	var cfg pipelineConfigFile
+
 	if configFile != "" {
 		data, err := os.ReadFile(configFile)
 		if err != nil {
-			fatal("reading config", err)
+			fmt.Fprintf(os.Stderr, "Error %s: %v\n", "reading config", err)
+
+			return 1
 		}
+
 		switch ext := filepath.Ext(configFile); ext {
 		case ".yaml", ".yml":
-			if err := yaml.Unmarshal(data, &cfg); err != nil {
-				fatal("parsing YAML config", err)
+			err := yaml.Unmarshal(data, &cfg)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error %s: %v\n", "parsing YAML config", err)
+
+				return 1
 			}
 		default:
-			if err := json.Unmarshal(data, &cfg); err != nil {
-				fatal("parsing config", err)
+			err := json.Unmarshal(data, &cfg)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error %s: %v\n", "parsing config", err)
+
+				return 1
 			}
 		}
+
 		if err := cfg.validate(); err != nil {
-			fatal("invalid config", err)
+			fmt.Fprintf(os.Stderr, "Error %s: %v\n", "invalid config", err)
+
+			return 1
 		}
 	} else {
 		cfg = pipelineConfigFile{
@@ -110,7 +139,8 @@ func main() {
 			os.Stderr,
 			"No detectors configured. Use -config or the default govet+staticcheck detectors.",
 		)
-		os.Exit(1)
+
+		return 1
 	}
 
 	pipelineCfg := cfg.toPipelineConfig()
@@ -129,7 +159,9 @@ func main() {
 
 	result, err := p.Run(ctx)
 	if err != nil {
-		fatal("running pipeline", err)
+		fmt.Fprintf(os.Stderr, "Error %s: %v\n", "running pipeline", err)
+
+		return 1
 	}
 
 	var allFindings []finding.Finding
@@ -147,16 +179,15 @@ func main() {
 	report.ComputeSummary()
 
 	if err := outputResults(os.Stdout, report, format); err != nil {
-		fatal("writing output", err)
+		fmt.Fprintf(os.Stderr, "Error %s: %v\n", "writing output", err)
+
+		return 1
 	}
 
 	fmt.Fprintf(os.Stderr, "\nDone: %d findings (%d iterations, stable=%v)\n",
 		len(filtered), result.TotalIterations, result.Stable)
-}
 
-func fatal(context string, err error) {
-	fmt.Fprintf(os.Stderr, "Error %s: %v\n", context, err)
-	os.Exit(1)
+	return 0
 }
 
 func parseSeverity(s string) (finding.Severity, error) {
@@ -185,6 +216,7 @@ func filterBySeverity(findings []finding.Finding, minSeverity finding.Severity) 
 		finding.SeverityCritical: 3,
 	}
 	minLevel := levels[minSeverity]
+
 	return slices.DeleteFunc(findings, func(f finding.Finding) bool {
 		return levels[f.Severity] < minLevel
 	})
@@ -192,6 +224,7 @@ func filterBySeverity(findings []finding.Finding, minSeverity finding.Severity) 
 
 func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {
 	var result []pipeline.Detector
+
 	for _, spec := range specs {
 		switch spec.Name {
 		case "govet":
@@ -202,6 +235,7 @@ func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {
 			fmt.Fprintf(os.Stderr, "Warning: unknown detector %q, skipping\n", spec.Name)
 		}
 	}
+
 	return result
 }
 
@@ -212,6 +246,7 @@ func outputResults(w *os.File, report *finding.Report, format string) error {
 		if err != nil {
 			return fmt.Errorf("serializing JSON: %w", err)
 		}
+
 		if _, err := fmt.Fprintln(w, out); err != nil {
 			return err
 		}
@@ -220,26 +255,38 @@ func outputResults(w *os.File, report *finding.Report, format string) error {
 		if err != nil {
 			return fmt.Errorf("serializing SARIF: %w", err)
 		}
+
 		if _, err := fmt.Fprintln(w, string(out)); err != nil {
 			return err
 		}
 	default:
 		outputText(w, report)
 	}
+
 	return nil
 }
 
 func outputText(w *os.File, report *finding.Report) {
 	if len(report.Findings) == 0 {
 		_, _ = fmt.Fprintln(w, "No findings.")
+
 		return
 	}
+
 	for _, f := range report.Findings {
-		_, _ = fmt.Fprintf(w, "%s: [%s] %s: %s\n", f.Position.String(), f.Severity, f.Rule, f.Message)
+		_, _ = fmt.Fprintf(
+			w,
+			"%s: [%s] %s: %s\n",
+			f.Position.String(),
+			f.Severity,
+			f.Rule,
+			f.Message,
+		)
 		if f.Suggestion != "" {
 			_, _ = fmt.Fprintf(w, "  Suggestion: %s\n", f.Suggestion)
 		}
 	}
+
 	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(report.Findings))
 	if report.Summary.Total > 0 {
 		_, _ = fmt.Fprintf(w, "  By severity: %d info, %d warning, %d error, %d critical\n",
@@ -273,30 +320,36 @@ func (c pipelineConfigFile) validate() error {
 	if c.MaxIterations < 0 {
 		return fmt.Errorf("maxIterations must be >= 0, got %d", c.MaxIterations)
 	}
+
 	if c.Timeout != "" {
 		if _, err := time.ParseDuration(c.Timeout); err != nil {
 			return fmt.Errorf("invalid timeout %q: %w", c.Timeout, err)
 		}
 	}
+
 	for _, d := range c.Detectors {
 		if !knownDetectors[d.Name] {
 			return fmt.Errorf("unknown detector %q (available: govet, staticcheck)", d.Name)
 		}
 	}
+
 	return nil
 }
 
 func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
 	t := 10 * time.Minute
+
 	if c.Timeout != "" {
 		if d, err := time.ParseDuration(c.Timeout); err == nil {
 			t = d
 		}
 	}
+
 	maxIter := c.MaxIterations
 	if maxIter == 0 {
 		maxIter = 1
 	}
+
 	return pipeline.Config{
 		MaxIterations:     maxIter,
 		ParallelDetectors: c.ParallelDetectors,

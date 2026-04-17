@@ -38,15 +38,19 @@ func TestFromJSON(t *testing.T) {
 		if got.ID != orig.ID {
 			t.Errorf("ID = %q, want %q", got.ID, orig.ID)
 		}
+
 		if got.Rule != orig.Rule {
 			t.Errorf("Rule = %q, want %q", got.Rule, orig.Rule)
 		}
+
 		if got.Severity != orig.Severity {
 			t.Errorf("Severity = %v, want %v", got.Severity, orig.Severity)
 		}
+
 		if got.Position.File != orig.Position.File {
 			t.Errorf("Position.File = %q, want %q", got.Position.File, orig.Position.File)
 		}
+
 		if got.FixStrategy != orig.FixStrategy {
 			t.Errorf("FixStrategy = %v, want %v", got.FixStrategy, orig.FixStrategy)
 		}
@@ -86,9 +90,11 @@ func TestReportFromJSON(t *testing.T) {
 		if got.Tool.Name != orig.Tool.Name {
 			t.Errorf("Tool.Name = %q, want %q", got.Tool.Name, orig.Tool.Name)
 		}
+
 		if len(got.Findings) != 1 {
 			t.Fatalf("Findings length = %d, want 1", len(got.Findings))
 		}
+
 		if got.Findings[0].ID != "f1" {
 			t.Errorf("Findings[0].ID = %q, want %q", got.Findings[0].ID, "f1")
 		}
@@ -128,6 +134,7 @@ func TestFindingsFromJSON(t *testing.T) {
 		if len(got) != 2 {
 			t.Fatalf("length = %d, want 2", len(got))
 		}
+
 		if got[0].ID != "f1" || got[1].ID != "f2" {
 			t.Errorf("IDs = [%q, %q], want [f1, f2]", got[0].ID, got[1].ID)
 		}
@@ -159,9 +166,11 @@ func TestPrettyJSON(t *testing.T) {
 	if !strings.Contains(got, "\n") {
 		t.Error("PrettyJSON should contain newlines")
 	}
+
 	if !strings.Contains(got, "  ") {
 		t.Error("PrettyJSON should be indented")
 	}
+
 	if !strings.Contains(got, `"tool"`) {
 		t.Error("PrettyJSON should contain tool name")
 	}
@@ -184,6 +193,7 @@ func TestLineJSON(t *testing.T) {
 	if strings.Contains(got, "\n") {
 		t.Error("LineJSON should be single line (no newlines)")
 	}
+
 	if !strings.Contains(got, `"id"`) {
 		t.Error("LineJSON should contain JSON fields")
 	}

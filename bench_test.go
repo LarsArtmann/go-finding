@@ -7,7 +7,9 @@ import (
 
 func BenchmarkGenerateID(b *testing.B) {
 	pos := Position{File: "main.go", Line: 42, Column: 10}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		GenerateID("govet", "printf", pos)
 	}
@@ -15,7 +17,9 @@ func BenchmarkGenerateID(b *testing.B) {
 
 func BenchmarkGenerateID_Hash(b *testing.B) {
 	pos := Position{File: "main.go"}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		GenerateID("govet", "printf", pos)
 	}
@@ -27,7 +31,9 @@ func BenchmarkParseID(b *testing.B) {
 		"staticcheck:SA1000:pkg/handler.go:100:5",
 		"govet:copylocks:a:b:c:deep/path.go:999:1",
 	}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		for _, id := range ids {
 			ParseID(id)
@@ -45,7 +51,9 @@ func BenchmarkFilter(b *testing.B) {
 			Position: Position{File: "file.go", Line: i + 1},
 		}
 	}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		Filter(findings, BySeverityAtLeast(SeverityWarning))
 	}
@@ -61,7 +69,9 @@ func BenchmarkFilterMultiple(b *testing.B) {
 			Position: Position{File: fmt.Sprintf("file%d.go", i%10), Line: i + 1},
 		}
 	}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		Filter(findings,
 			BySeverityAtLeast(SeverityWarning),
@@ -77,7 +87,9 @@ func BenchmarkGroupByFile(b *testing.B) {
 			Position: Position{File: fmt.Sprintf("pkg/file%d.go", i%20), Line: i + 1},
 		}
 	}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		GroupByFile(findings)
 	}
@@ -95,7 +107,9 @@ func BenchmarkMerge(b *testing.B) {
 			})
 		}
 	}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		Merge(reports, WithDeduplication(true))
 	}
@@ -110,7 +124,9 @@ func BenchmarkCorrelate(b *testing.B) {
 			Position: Position{File: fmt.Sprintf("file%d.go", i%5), Line: i + 1},
 		}
 	}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		Correlate(findings)
 	}
@@ -127,7 +143,9 @@ func BenchmarkMergeNoDedup(b *testing.B) {
 			})
 		}
 	}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		Merge(reports, WithDeduplication(false))
 	}
@@ -144,7 +162,9 @@ func BenchmarkToSARIF(b *testing.B) {
 			Position: Position{File: "file.go", Line: i + 1, Column: 1},
 		})
 	}
+
 	b.ResetTimer()
+
 	for b.Loop() {
 		_, _ = report.ToSARIF()
 	}

@@ -108,6 +108,7 @@ func New(config Config, rootDir string, detectors ...Detector) *Pipeline {
 		for i, d := range detectors {
 			wrapped[i] = NewRetryDetector(d, *config.Retry)
 		}
+
 		detectors = wrapped
 	}
 
@@ -126,6 +127,7 @@ func (p *Pipeline) stageTiming(name string) func() {
 	if p.metrics == nil {
 		return func() {}
 	}
+
 	return p.metrics.StageTiming(name)
 }
 
@@ -136,10 +138,13 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	if p.metrics != nil {
 		p.metrics.SetStart(time.Now())
+
 		defer func() { p.metrics.SetEnd(time.Now()) }()
 	}
+
 	if p.config.Timeout > 0 {
 		var cancel context.CancelFunc
+
 		ctx, cancel = context.WithTimeout(ctx, p.config.Timeout)
 		defer cancel()
 	}
@@ -158,10 +163,13 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		// Detect
 		detectDone := p.stageTiming("detect")
 		findings, err := p.detect(ctx)
+
 		detectDone()
+
 		if err != nil {
 			return result, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
 		}
+
 		iter.FindingsFound = len(findings)
 		iter.findings = findings
 		p.findings = append(p.findings, findings...)
@@ -170,6 +178,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		if len(findings) == 0 {
 			result.Stable = true
 			result.Iterations = append(result.Iterations, iter)
+
 			break
 		}
 
@@ -184,8 +193,10 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		applyDone := p.stageTiming("apply")
 		if err := p.applyTriage(ctx, triage.Direct, &iter); err != nil {
 			applyDone()
+
 			return result, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
 		}
+
 		applyDone()
 
 		result.Iterations = append(result.Iterations, iter)
@@ -202,21 +213,26 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	if p.config.VerifyAfterFix && len(p.detectors) > 0 {
 		verifier := NewVerifier(p.detectors)
 		allOriginal := p.collectAllFindings(result)
+
 		verifyResult, err := verifier.Verify(ctx, allOriginal)
 		if err != nil {
 			return result, fmt.Errorf("verify: %w", err)
 		}
+
 		result.Verification = verifyResult
 	}
 
 	result.FinalFindingCount = len(p.findings)
+
 	return result, nil
 }
 
 // collectAllFindings gathers all findings from all iterations for verification.
 func (p *Pipeline) collectAllFindings(result *PipelineResult) []finding.Finding {
 	seen := make(map[string]bool)
+
 	var all []finding.Finding
+
 	for _, iter := range result.Iterations {
 		for _, f := range iter.findings {
 			if !seen[f.ID] {
@@ -225,9 +241,11 @@ func (p *Pipeline) collectAllFindings(result *PipelineResult) []finding.Finding 
 			}
 		}
 	}
+
 	if len(all) == 0 {
 		return p.findings
 	}
+
 	return all
 }
 
@@ -275,9 +293,11 @@ func (p *Pipeline) detect(ctx context.Context) ([]finding.Finding, error) {
 		// Attach them to PipelineResult if callers need them.
 		return result.Findings, nil
 	}
+
 	if p.config.ParallelDetectors {
 		return p.detectParallel(ctx)
 	}
+
 	return p.detectSequential(ctx)
 }
 
@@ -289,7 +309,19 @@ func (p *Pipeline) addFindings(target, findings []finding.Finding) []finding.Fin
 			p.notifyFinding(f)
 		}
 	}
+
 	return target
+}
+
+// recordDetectorMetrics records timing metrics for a detector if metrics are enabled.
+func (p *Pipeline) recordDetectorMetrics(
+	name string,
+	elapsed time.Duration,
+	findings []finding.Finding,
+) {
+	if p.metrics != nil {
+		p.metrics.RecordDetector(name, elapsed, len(findings))
+	}
 }
 
 // detectSequential runs detectors one at a time.
@@ -306,13 +338,12 @@ func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, err
 		start := time.Now()
 		findings, err := d.Detect(ctx)
 		elapsed := time.Since(start)
+
 		if err != nil {
 			return nil, fmt.Errorf("detector %s: %w", d.Name(), err)
 		}
 
-		if p.metrics != nil {
-			p.metrics.RecordDetector(d.Name(), elapsed, len(findings))
-		}
+		p.recordDetectorMetrics(d.Name(), elapsed, findings)
 
 		allFindings = p.addFindings(allFindings, findings)
 	}
@@ -322,8 +353,10 @@ func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, err
 
 // detectParallel runs detectors concurrently using errgroup.
 func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error) {
-	var mu sync.Mutex
-	var allFindings []finding.Finding
+	var (
+		mu          sync.Mutex
+		allFindings []finding.Finding
+	)
 
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -332,26 +365,29 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 			start := time.Now()
 			findings, err := d.Detect(ctx)
 			elapsed := time.Since(start)
+
 			if err != nil {
 				return fmt.Errorf("detector %s: %w", d.Name(), err)
 			}
 
-			if p.metrics != nil {
-				p.metrics.RecordDetector(d.Name(), elapsed, len(findings))
-			}
+			p.recordDetectorMetrics(d.Name(), elapsed, findings)
 
 			mu.Lock()
+
 			allFindings = append(allFindings, findings...)
 			mu.Unlock()
+
 			return nil
 		})
 	}
 
-	if err := g.Wait(); err != nil {
+	err := g.Wait()
+	if err != nil {
 		return nil, err
 	}
 
 	var filtered []finding.Finding
+
 	for i := range allFindings {
 		if !allFindings[i].IsSuppressed() {
 			filtered = append(filtered, allFindings[i])
@@ -378,7 +414,6 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 	}
 
 	for _, f := range findings {
-		//nolint:exhaustive // FixStrategy is extensible; default handles unknown strategies
 		switch f.FixStrategy {
 		case finding.FixStrategyDirect:
 			result.Direct = append(result.Direct, f)
@@ -427,12 +462,14 @@ func (p *Pipeline) applyTriage(
 	}
 
 	iter.Applied = applied
+
 	return nil
 }
 
 // applyDirectFixes applies deterministic fixes to files.
 func (p *Pipeline) applyDirectFixes(ctx context.Context, fixes []finding.Finding) (int, error) {
 	applier := NewFixApplier(p.rootDir)
+
 	applied, err := applier.Apply(ctx, fixes)
 	if err != nil {
 		return applied, err
@@ -475,15 +512,18 @@ func ioErrorAt(msg string, err error, path string) error {
 func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, error) {
 	// Group fixes by file
 	byFile := make(map[string][]finding.Finding)
+
 	for _, f := range fixes {
 		if f.Position.File == "" {
 			continue
 		}
+
 		path := filepath.Join(a.rootDir, f.Position.File)
 		byFile[path] = append(byFile[path], f)
 	}
 
 	applied := 0
+
 	for path, fileFixes := range byFile {
 		select {
 		case <-ctx.Done():
@@ -493,7 +533,8 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 
 		// Create backup
 		if a.backupEnabled {
-			if err := a.backup(path); err != nil {
+			err := a.backup(path)
+			if err != nil {
 				return applied, finding.NewIOError("backup "+path, err)
 			}
 		}
@@ -505,6 +546,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 			if a.backupEnabled {
 				_ = a.restore(path)
 			}
+
 			return applied, finding.NewConflictError("apply to "+path, err)
 		}
 
@@ -517,6 +559,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 // fileHash returns the hex-encoded SHA256 hash of s.
 func fileHash(s string) string {
 	h := sha256.Sum256([]byte(s))
+
 	return hex.EncodeToString(h[:])
 }
 
@@ -539,6 +582,7 @@ func (a *FixApplier) backup(path string) error {
 	a.backupsMu.Lock()
 	a.backups[path] = backupPath
 	a.backupsMu.Unlock()
+
 	return nil
 }
 
@@ -547,7 +591,9 @@ func (a *FixApplier) restore(path string) error {
 	backupPath, ok := func() (string, bool) {
 		a.backupsMu.Lock()
 		defer a.backupsMu.Unlock()
+
 		p, exists := a.backups[path]
+
 		return p, exists
 	}()
 	if !ok {
@@ -581,10 +627,12 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, err
 
 	// Partition: range-based fixes (apply first, sorted descending) vs string-based.
 	var rangeFixes, stringFixes []finding.Finding
+
 	for _, f := range fixes {
 		if f.BeforeCode == "" && f.AfterCode == "" {
 			continue
 		}
+
 		if f.Range != nil && f.Range.HasEnd() && f.Range.Start.Line > 0 && f.Range.End.Line > 0 {
 			rangeFixes = append(rangeFixes, f)
 		} else if f.BeforeCode != "" && f.AfterCode != "" {
@@ -597,6 +645,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, err
 		if a.Range.Start.Line != b.Range.Start.Line {
 			return b.Range.Start.Line - a.Range.Start.Line
 		}
+
 		return b.Range.Start.Column - a.Range.Start.Column
 	})
 
@@ -608,6 +657,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, err
 		if startIdx < 0 || startIdx >= len(lines) {
 			continue
 		}
+
 		if endIdx >= len(lines) {
 			endIdx = len(lines) - 1
 		}
@@ -635,6 +685,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, err
 			replacement = append(replacement, lines[endIdx+1:]...)
 			lines = replacement
 		}
+
 		applied++
 	}
 
@@ -648,6 +699,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, err
 				applied++
 			}
 		}
+
 		lines = strings.Split(joined, "\n")
 	}
 

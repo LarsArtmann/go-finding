@@ -52,12 +52,14 @@ func (m *Metrics) RecordFix() {
 func (m *Metrics) TotalDuration() time.Duration {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
 	return m.EndTime.Sub(m.StartTime)
 }
 
 // StageTiming returns a function that records stage duration when called.
 func (m *Metrics) StageTiming(name string) func() {
 	start := time.Now()
+
 	return func() {
 		m.RecordStage(name, time.Since(start))
 	}

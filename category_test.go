@@ -62,6 +62,7 @@ func TestCategory_Constants(t *testing.T) {
 	if CategorySecurity != "security" {
 		t.Errorf("CategorySecurity = %q, want %q", CategorySecurity, "security")
 	}
+
 	if CategoryErrorHandling != "error-handling" {
 		t.Errorf("CategoryErrorHandling = %q, want %q", CategoryErrorHandling, "error-handling")
 	}

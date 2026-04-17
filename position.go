@@ -33,9 +33,11 @@ func (p Position) Compare(other Position) int {
 	if c := cmp.Compare(p.File, other.File); c != 0 {
 		return c
 	}
+
 	if c := cmp.Compare(p.Line, other.Line); c != 0 {
 		return c
 	}
+
 	return cmp.Compare(p.Column, other.Column)
 }
 
@@ -79,6 +81,7 @@ func (r Range) Compare(other Range) int {
 	if c := r.Start.Compare(other.Start); c != 0 {
 		return c
 	}
+
 	return r.End.Compare(other.End)
 }
 
@@ -295,6 +298,7 @@ func (r Range) Adjacent(other Range) bool {
 		if r.End.Line == other.Start.Line && r.End.Column == other.Start.Column {
 			return true
 		}
+
 		if other.End.Line == r.Start.Line && other.End.Column == r.Start.Column {
 			return true
 		}
@@ -304,6 +308,7 @@ func (r Range) Adjacent(other Range) bool {
 	if r.End.Offset > 0 && other.Start.Offset > 0 && r.End.Offset == other.Start.Offset {
 		return true
 	}
+
 	if other.End.Offset > 0 && r.Start.Offset > 0 && other.End.Offset == r.Start.Offset {
 		return true
 	}
@@ -327,5 +332,6 @@ func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
 // NewRangePtr creates a pointer to a Range with the given file, start/end lines, and columns.
 func NewRangePtr(file string, startLine, startCol, endLine, endCol int) *Range {
 	r := NewRange(file, startLine, startCol, endLine, endCol)
+
 	return &r
 }

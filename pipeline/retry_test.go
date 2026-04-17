@@ -33,6 +33,7 @@ func TestRetryConfig_delay(t *testing.T) {
 
 func TestRetryConfig_delay_maxCap(t *testing.T) {
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 300 * time.Millisecond}
+
 	got := c.delay(10)
 	if got < 300*time.Millisecond || got > 375*time.Millisecond {
 		t.Errorf(
@@ -55,6 +56,7 @@ func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if len(findings) != 1 {
 		t.Errorf("expected 1 finding, got %d", len(findings))
 	}
@@ -67,17 +69,21 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 		if calls < 3 {
 			return nil, errors.New("transient")
 		}
+
 		return []finding.Finding{{ID: "F1"}}, nil
 	})
 
 	rd := NewRetryDetector(inner, RetryConfig{MaxRetries: 3, BaseDelay: time.Millisecond})
+
 	findings, err := rd.Detect(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if len(findings) != 1 {
 		t.Errorf("expected 1 finding, got %d", len(findings))
 	}
+
 	if calls != 3 {
 		t.Errorf("expected 3 calls, got %d", calls)
 	}
@@ -89,10 +95,12 @@ func TestRetryDetector_ExhaustedRetries(t *testing.T) {
 	})
 
 	rd := NewRetryDetector(inner, RetryConfig{MaxRetries: 2, BaseDelay: time.Millisecond})
+
 	_, err := rd.Detect(context.Background())
 	if err == nil {
 		t.Fatal("expected error")
 	}
+
 	if !errors.Is(err, errors.New("permanent")) {
 		// The wrapped error should contain "permanent"
 		if err.Error() == "" {
@@ -105,6 +113,7 @@ func TestRetryDetector_ContextCancellation(t *testing.T) {
 	calls := 0
 	inner := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
 		calls++
+
 		return nil, errors.New("fail")
 	})
 
@@ -112,10 +121,12 @@ func TestRetryDetector_ContextCancellation(t *testing.T) {
 	cancel() // Cancel immediately
 
 	rd := NewRetryDetector(inner, RetryConfig{MaxRetries: 10, BaseDelay: time.Millisecond})
+
 	_, err := rd.Detect(ctx)
 	if err == nil {
 		t.Fatal("expected error")
 	}
+
 	if !errors.Is(err, context.Canceled) {
 		t.Errorf("expected context.Canceled, got %v", err)
 	}
@@ -123,6 +134,7 @@ func TestRetryDetector_ContextCancellation(t *testing.T) {
 
 func TestRetryDetector_Name(t *testing.T) {
 	inner := &mockDetector{name: "my-detector"}
+
 	rd := NewRetryDetector(inner, DefaultRetryConfig())
 	if rd.Name() != "my-detector" {
 		t.Errorf("expected my-detector, got %s", rd.Name())
@@ -134,9 +146,11 @@ func TestDefaultRetryConfig(t *testing.T) {
 	if c.MaxRetries != 3 {
 		t.Errorf("expected MaxRetries=3, got %d", c.MaxRetries)
 	}
+
 	if c.BaseDelay != 100*time.Millisecond {
 		t.Errorf("expected BaseDelay=100ms, got %v", c.BaseDelay)
 	}
+
 	if c.MaxDelay != 5*time.Second {
 		t.Errorf("expected MaxDelay=5s, got %v", c.MaxDelay)
 	}

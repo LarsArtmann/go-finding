@@ -20,13 +20,6 @@ func rangeOffset(file string, startOffset, endOffset int) Range {
 	return Range{Start: Position{File: file, Offset: startOffset}, End: Position{Offset: endOffset}}
 }
 
-//go:fix inline
-func ptrRange(r Range) *Range {
-	return new(r)
-}
-
-// ptrRange is used by the go:fix directive for testing coverage instrumentation.
-
 // overlapCase represents a test case for Overlaps/Adjacent tests.
 type overlapCase struct {
 	name     string
@@ -138,11 +131,13 @@ func TestRangeIntersection(t *testing.T) {
 				if got != nil {
 					t.Errorf("Intersection() = %v, want nil", got)
 				}
+
 				return
 			}
 
 			if got == nil {
 				t.Errorf("Intersection() = nil, want %v", tt.expected)
+
 				return
 			}
 

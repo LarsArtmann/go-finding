@@ -41,16 +41,20 @@ func (c *ConflictDetector) DetectConflicts(
 ) ([]FixGroup, []finding.Finding) {
 	// Group by file first
 	byFile := make(map[string][]finding.Finding)
+
 	for _, f := range fixes {
 		file := f.Position.File
 		if file == "" {
 			continue // Skip fixes without file info
 		}
+
 		byFile[file] = append(byFile[file], f)
 	}
 
-	var groups []FixGroup
-	var conflicts []finding.Finding
+	var (
+		groups    []FixGroup
+		conflicts []finding.Finding
+	)
 
 	for file, fileFixes := range byFile {
 		fileGroups, fileConflicts := c.detectConflictsInFile(file, fileFixes)
@@ -77,9 +81,11 @@ func (c *ConflictDetector) detectConflictsInFile(
 		return sorted[i].Position.Compare(sorted[j].Position) < 0
 	})
 
-	var groups []FixGroup
-	var currentGroup FixGroup
-	var conflicts []finding.Finding
+	var (
+		groups       []FixGroup
+		currentGroup FixGroup
+		conflicts    []finding.Finding
+	)
 
 	for _, f := range sorted {
 		rangeInfo := c.getFindingRange(f)
@@ -108,6 +114,7 @@ func (c *ConflictDetector) detectConflictsInFile(
 	// Split groups with multiple fixes into individual fixes as conflicts
 	// (for now - we could implement merge logic later)
 	var finalGroups []FixGroup
+
 	for _, g := range groups {
 		if len(g.Fixes) == 1 {
 			finalGroups = append(finalGroups, g)
@@ -194,6 +201,7 @@ func AnalyzeConflicts(fixes []finding.Finding) []ConflictInfo {
 
 	// Build a map of which group each safe fix belongs to
 	fixToGroup := make(map[string]int)
+
 	for i, g := range groups {
 		for _, f := range g.Fixes {
 			fixToGroup[f.ID] = i
@@ -205,6 +213,7 @@ func AnalyzeConflicts(fixes []finding.Finding) []ConflictInfo {
 	// For each conflicting fix, find what it conflicts with
 	for _, cf := range conflictingFixes {
 		cfRange := detector.getFindingRange(cf)
+
 		var conflictsWith []finding.Finding
 
 		for _, g := range groups {

@@ -101,6 +101,7 @@ func toZeroBased(n int) int {
 	if n <= 0 {
 		return 0
 	}
+
 	return n - 1
 }
 
@@ -133,6 +134,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 
 	// Preserve end position as Range when it differs from start.
 	endLine := diag.Range.End.Line + 1
+
 	endChar := diag.Range.End.Character + 1
 	if endLine != startLine || endChar != startChar {
 		f.Range = &Range{

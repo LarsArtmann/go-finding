@@ -13,6 +13,7 @@ func FuzzFilter(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, sevStr, category, file, tool string) {
 		var severity Severity
+
 		switch sevStr {
 		case "info":
 			severity = SeverityInfo
@@ -25,6 +26,7 @@ func FuzzFilter(f *testing.F) {
 		default:
 			severity = SeverityInfo
 		}
+
 		findings := []Finding{
 			{
 				ID:       "F1",
@@ -71,6 +73,7 @@ func FuzzFilter(f *testing.F) {
 				t.Errorf("combined filter mismatch")
 			}
 		}
+
 		if len(both) > len(byCat) || len(both) > len(bySev) {
 			t.Error("combined filter should be subset of each individual filter")
 		}
@@ -95,6 +98,7 @@ func FuzzGroupBy(f *testing.F) {
 		for _, g := range groups {
 			total += len(g)
 		}
+
 		if total != len(findings) {
 			t.Errorf("GroupBy total: got %d, want %d", total, len(findings))
 		}
@@ -145,6 +149,7 @@ func FuzzGroupByFile(f *testing.F) {
 		for _, g := range groups {
 			total += len(g)
 		}
+
 		if total != len(findings) {
 			t.Errorf("GroupByFile total: got %d, want %d", total, len(findings))
 		}
@@ -229,6 +234,7 @@ func FuzzCorrelate(f *testing.F) {
 			if c.Confidence < 0 || c.Confidence > 1 {
 				t.Errorf("confidence out of range: %f", c.Confidence)
 			}
+
 			if len(c.FindingIDs) != 2 {
 				t.Errorf("expected 2 finding IDs, got %d", len(c.FindingIDs))
 			}

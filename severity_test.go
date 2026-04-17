@@ -102,6 +102,7 @@ func TestSeverity_Ordering(t *testing.T) {
 	for i := range ordered {
 		for j := range ordered {
 			got := ordered[i].GreaterThan(ordered[j])
+
 			want := i > j
 			if got != want {
 				t.Errorf(

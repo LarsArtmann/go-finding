@@ -22,6 +22,7 @@ func TestSeverityToLSP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := severityToLSP(tt.severity); got != tt.want {
 				t.Errorf("severityToLSP(%v) = %d, want %d", tt.severity, got, tt.want)
 			}
@@ -48,10 +49,20 @@ func TestSeverityFromLSP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := severityFromLSP(tt.sev); got != tt.want {
 				t.Errorf("severityFromLSP(%d) = %v, want %v", tt.sev, got, tt.want)
 			}
 		})
+	}
+}
+
+func lspDiag(line, startChar, endChar int) LSPDiagnostic {
+	return LSPDiagnostic{
+		Range: LSPRange{
+			Start: LSPPosition{Line: line, Character: startChar},
+			End:   LSPPosition{Line: line, Character: endChar},
+		},
 	}
 }
 
@@ -74,27 +85,35 @@ func TestFromLSP(t *testing.T) {
 	if got, want := f.ID, "lsp:golangci-lint:unused-var:5:10"; got != want {
 		t.Errorf("FromLSP ID = %q, want %q", got, want)
 	}
+
 	if got, want := f.Rule, "unused-var"; got != want {
 		t.Errorf("FromLSP Rule = %q, want %q", got, want)
 	}
+
 	if got, want := f.ToolName, "golangci-lint"; got != want {
 		t.Errorf("FromLSP ToolName = %q, want %q", got, want)
 	}
+
 	if got, want := f.Message, "unused variable: x"; got != want {
 		t.Errorf("FromLSP Message = %q, want %q", got, want)
 	}
+
 	if got, want := f.Severity, SeverityError; got != want {
 		t.Errorf("FromLSP Severity = %v, want %v", got, want)
 	}
+
 	if got, want := f.Position.Line, 5; got != want {
 		t.Errorf("FromLSP Position.Line = %d, want %d (0-based→1-based)", got, want)
 	}
+
 	if got, want := f.Position.Column, 10; got != want {
 		t.Errorf("FromLSP Position.Column = %d, want %d (0-based→1-based)", got, want)
 	}
+
 	if got, want := f.Position.File, "file:///test.go"; got != want {
 		t.Errorf("FromLSP Position.File = %q, want %q", got, want)
 	}
+
 	if got, want := f.FixStrategy, FixStrategyNone; got != want {
 		t.Errorf("FromLSP FixStrategy = %v, want %v", got, want)
 	}
@@ -102,9 +121,11 @@ func TestFromLSP(t *testing.T) {
 	if f.Range == nil {
 		t.Fatal("FromLSP Range = nil, want non-nil (end differs from start)")
 	}
+
 	if got, want := f.Range.End.Line, 5; got != want {
 		t.Errorf("FromLSP Range.End.Line = %d, want %d", got, want)
 	}
+
 	if got, want := f.Range.End.Column, 16; got != want {
 		t.Errorf("FromLSP Range.End.Column = %d, want %d", got, want)
 	}
@@ -117,16 +138,11 @@ func TestFromLSP(t *testing.T) {
 func TestFromLSPNoEndRange(t *testing.T) {
 	t.Parallel()
 
-	diag := LSPDiagnostic{
-		Range: LSPRange{
-			Start: LSPPosition{Line: 4, Character: 9},
-			End:   LSPPosition{Line: 4, Character: 9},
-		},
-		Severity: LSPSeverityWarning,
-		Code:     "simplify",
-		Source:   "gofmt",
-		Message:  "can simplify",
-	}
+	diag := lspDiag(4, 9, 9)
+	diag.Severity = LSPSeverityWarning
+	diag.Code = "simplify"
+	diag.Source = "gofmt"
+	diag.Message = "can simplify"
 
 	f := FromLSP("file:///test.go", diag)
 
@@ -138,23 +154,18 @@ func TestFromLSPNoEndRange(t *testing.T) {
 func TestFromLSPRelated(t *testing.T) {
 	t.Parallel()
 
-	diag := LSPDiagnostic{
-		Range: LSPRange{
-			Start: LSPPosition{Line: 0, Character: 0},
-			End:   LSPPosition{Line: 0, Character: 5},
-		},
-		Severity: LSPSeverityWarning,
-		Code:     "dupl",
-		Source:   "dupl",
-		Message:  "clone detected",
-		Related: []LSPRelatedInfo{
-			{
-				Location: LSPLocation{
-					URI:   "file:///other.go",
-					Range: LSPRange{Start: LSPPosition{Line: 9, Character: 0}},
-				},
-				Message: "clone-of",
+	diag := lspDiag(0, 0, 5)
+	diag.Severity = LSPSeverityWarning
+	diag.Code = "dupl"
+	diag.Source = "dupl"
+	diag.Message = "clone detected"
+	diag.Related = []LSPRelatedInfo{
+		{
+			Location: LSPLocation{
+				URI:   "file:///other.go",
+				Range: LSPRange{Start: LSPPosition{Line: 9, Character: 0}},
 			},
+			Message: "clone-of",
 		},
 	}
 
@@ -163,12 +174,15 @@ func TestFromLSPRelated(t *testing.T) {
 	if got, want := len(f.Related), 1; got != want {
 		t.Fatalf("FromLSP Related length = %d, want %d", got, want)
 	}
+
 	if got, want := f.Related[0].Relation, "clone-of"; got != want {
 		t.Errorf("FromLSP Related[0].Relation = %q, want %q", got, want)
 	}
+
 	if got, want := f.Related[0].Position.File, "file:///other.go"; got != want {
 		t.Errorf("FromLSP Related[0].File = %q, want %q", got, want)
 	}
+
 	if got, want := f.Related[0].Position.Line, 10; got != want {
 		t.Errorf("FromLSP Related[0].Line = %d, want %d", got, want)
 	}
@@ -194,24 +208,31 @@ func TestToLSP(t *testing.T) {
 		if got, want := diag.Severity, LSPSeverityWarning; got != want {
 			t.Errorf("ToLSP Severity = %d, want %d", got, want)
 		}
+
 		if got, want := diag.Code, "SA1000"; got != want {
 			t.Errorf("ToLSP Code = %q, want %q", got, want)
 		}
+
 		if got, want := diag.Source, "staticcheck"; got != want {
 			t.Errorf("ToLSP Source = %q, want %q", got, want)
 		}
+
 		if got, want := diag.Message, "invalid printf format"; got != want {
 			t.Errorf("ToLSP Message = %q, want %q", got, want)
 		}
+
 		if got, want := diag.Range.Start.Line, 9; got != want {
 			t.Errorf("ToLSP Start.Line = %d, want %d (1-based→0-based)", got, want)
 		}
+
 		if got, want := diag.Range.Start.Character, 4; got != want {
 			t.Errorf("ToLSP Start.Character = %d, want %d (1-based→0-based)", got, want)
 		}
+
 		if got, want := diag.Range.End.Line, 9; got != want {
 			t.Errorf("ToLSP End.Line = %d, want %d", got, want)
 		}
+
 		if got, want := diag.Range.End.Character, 19; got != want {
 			t.Errorf("ToLSP End.Character = %d, want %d", got, want)
 		}
@@ -233,6 +254,7 @@ func TestToLSP(t *testing.T) {
 		if got, want := diag.Range.End.Line, diag.Range.Start.Line; got != want {
 			t.Errorf("ToLSP End.Line = %d, want %d (same as start)", got, want)
 		}
+
 		if got, want := diag.Range.End.Character, diag.Range.Start.Character; got != want {
 			t.Errorf("ToLSP End.Character = %d, want %d (same as start)", got, want)
 		}
@@ -261,13 +283,16 @@ func TestToLSP(t *testing.T) {
 		if got, want := len(diag.Related), 1; got != want {
 			t.Fatalf("ToLSP Related length = %d, want %d", got, want)
 		}
+
 		rel := diag.Related[0]
 		if got, want := rel.Message, "clone-of"; got != want {
 			t.Errorf("ToLSP Related[0].Message = %q, want %q", got, want)
 		}
+
 		if got, want := rel.Location.URI, "b.go"; got != want {
 			t.Errorf("ToLSP Related[0].URI = %q, want %q", got, want)
 		}
+
 		if got, want := rel.Location.Range.Start.Line, 9; got != want {
 			t.Errorf("ToLSP Related[0].Line = %d, want %d (1-based→0-based)", got, want)
 		}
@@ -276,16 +301,11 @@ func TestToLSP(t *testing.T) {
 	t.Run("round-trip preserves core fields", func(t *testing.T) {
 		t.Parallel()
 
-		orig := LSPDiagnostic{
-			Range: LSPRange{
-				Start: LSPPosition{Line: 0, Character: 0},
-				End:   LSPPosition{Line: 0, Character: 5},
-			},
-			Severity: LSPSeverityWarning,
-			Code:     "rule1",
-			Source:   "tool1",
-			Message:  "msg1",
-		}
+		orig := lspDiag(0, 0, 5)
+		orig.Severity = LSPSeverityWarning
+		orig.Code = "rule1"
+		orig.Source = "tool1"
+		orig.Message = "msg1"
 
 		f := FromLSP("file:///test.go", orig)
 		roundTrip := f.ToLSP()
@@ -293,18 +313,23 @@ func TestToLSP(t *testing.T) {
 		if got, want := roundTrip.Code, orig.Code; got != want {
 			t.Errorf("round-trip Code = %q, want %q", got, want)
 		}
+
 		if got, want := roundTrip.Source, orig.Source; got != want {
 			t.Errorf("round-trip Source = %q, want %q", got, want)
 		}
+
 		if got, want := roundTrip.Message, orig.Message; got != want {
 			t.Errorf("round-trip Message = %q, want %q", got, want)
 		}
+
 		if got, want := roundTrip.Severity, orig.Severity; got != want {
 			t.Errorf("round-trip Severity = %d, want %d", got, want)
 		}
+
 		if got, want := roundTrip.Range.Start.Line, orig.Range.Start.Line; got != want {
 			t.Errorf("round-trip Start.Line = %d, want %d", got, want)
 		}
+
 		if got, want := roundTrip.Range.Start.Character, orig.Range.Start.Character; got != want {
 			t.Errorf("round-trip Start.Character = %d, want %d", got, want)
 		}

@@ -33,6 +33,7 @@ func (c RetryConfig) delay(attempt int) time.Duration {
 		jitter := time.Duration(rand.Int63n(quarter))
 		d += jitter
 	}
+
 	return d
 }
 
@@ -55,6 +56,7 @@ func (d *RetryDetector) Name() string {
 // Detect implements Detector, retrying on error up to MaxRetries times.
 func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 	var lastErr error
+
 	for attempt := 0; attempt <= d.config.MaxRetries; attempt++ {
 		if attempt > 0 {
 			delay := d.config.delay(attempt - 1)
@@ -69,8 +71,10 @@ func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 		if err == nil {
 			return findings, nil
 		}
+
 		lastErr = err
 	}
+
 	return nil, fmt.Errorf(
 		"detector %s failed after %d retries: %w",
 		d.inner.Name(),

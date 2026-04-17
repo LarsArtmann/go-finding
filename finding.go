@@ -91,6 +91,7 @@ func (f Finding) Equal(other Finding) bool {
 	if len(f.Related) != len(other.Related) {
 		return false
 	}
+
 	for i, r := range f.Related {
 		if r != other.Related[i] {
 			return false
@@ -108,9 +109,11 @@ func (f Finding) equalRange(other Finding) bool {
 	if f.Range == nil && other.Range == nil {
 		return true
 	}
+
 	if f.Range == nil || other.Range == nil {
 		return false
 	}
+
 	return f.Range.Equal(*other.Range)
 }
 
@@ -118,8 +121,10 @@ func (f Finding) equalSuppression(other Finding) bool {
 	if f.Suppression == nil && other.Suppression == nil {
 		return true
 	}
+
 	if f.Suppression == nil || other.Suppression == nil {
 		return false
 	}
+
 	return *f.Suppression == *other.Suppression
 }

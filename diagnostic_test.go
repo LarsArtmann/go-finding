@@ -14,6 +14,7 @@ func TestFromDiagnostic(t *testing.T) {
 
 	fset := token.NewFileSet()
 	src := `package main; func main() {}`
+
 	f, err := parser.ParseFile(fset, "test.go", src, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -29,15 +30,19 @@ func TestFromDiagnostic(t *testing.T) {
 	if finding.ToolName != "testtool" {
 		t.Errorf("expected toolName 'testtool', got %q", finding.ToolName)
 	}
+
 	if finding.Rule != "R001" {
 		t.Errorf("expected rule 'R001', got %q", finding.Rule)
 	}
+
 	if finding.Message != "test diagnostic" {
 		t.Errorf("expected message 'test diagnostic', got %q", finding.Message)
 	}
+
 	if finding.Severity != SeverityWarning {
 		t.Errorf("expected severity warning, got %v", finding.Severity)
 	}
+
 	if finding.ID == "" {
 		t.Error("expected non-empty ID")
 	}
@@ -48,6 +53,7 @@ func TestFromDiagnostic_WithSuggestedFixes(t *testing.T) {
 
 	fset := token.NewFileSet()
 	src := `package main; func main() {}`
+
 	f, err := parser.ParseFile(fset, "test.go", src, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -72,6 +78,7 @@ func TestFromDiagnostic_WithRelated(t *testing.T) {
 
 	fset := token.NewFileSet()
 	src := `package main; func main() { println() }`
+
 	f, err := parser.ParseFile(fset, "test.go", src, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -92,6 +99,7 @@ func TestFromDiagnostic_WithRelated(t *testing.T) {
 	if len(finding.Related) != 1 {
 		t.Fatalf("expected 1 related, got %d", len(finding.Related))
 	}
+
 	if finding.Related[0].Relation != "related" {
 		t.Errorf("expected relation 'related', got %q", finding.Related[0].Relation)
 	}
@@ -106,6 +114,7 @@ func TestFromTokenPosition(t *testing.T) {
 		Column:   5,
 		Offset:   100,
 	}
+
 	p := FromTokenPosition(pos)
 	if p.File != "test.go" || p.Line != 10 || p.Column != 5 || p.Offset != 100 {
 		t.Errorf("unexpected position: %+v", p)
@@ -117,7 +126,9 @@ func TestNodePosition(t *testing.T) {
 
 	t.Run("nil node", func(t *testing.T) {
 		t.Parallel()
+
 		fset := token.NewFileSet()
+
 		p := NodePosition(fset, nil)
 		if p.File != "" || p.Line != 0 || p.Column != 0 {
 			t.Errorf("expected empty position for nil node, got %+v", p)
@@ -126,16 +137,20 @@ func TestNodePosition(t *testing.T) {
 
 	t.Run("valid node", func(t *testing.T) {
 		t.Parallel()
+
 		fset := token.NewFileSet()
 		src := `package main; func main() {}`
+
 		f, err := parser.ParseFile(fset, "test.go", src, 0)
 		if err != nil {
 			t.Fatalf("parse: %v", err)
 		}
+
 		p := NodePosition(fset, f.Name)
 		if p.File == "" {
 			t.Error("expected non-empty file")
 		}
+
 		if p.Line == 0 {
 			t.Error("expected non-zero line")
 		}
@@ -147,7 +162,9 @@ func TestNodeRange(t *testing.T) {
 
 	t.Run("nil node", func(t *testing.T) {
 		t.Parallel()
+
 		fset := token.NewFileSet()
+
 		r := NodeRange(fset, nil)
 		if r.Start.File != "" || r.End.File != "" {
 			t.Errorf("expected empty range for nil node, got %+v", r)
@@ -156,20 +173,25 @@ func TestNodeRange(t *testing.T) {
 
 	t.Run("valid node", func(t *testing.T) {
 		t.Parallel()
+
 		fset := token.NewFileSet()
 		src := `package main; func main() {}`
+
 		f, err := parser.ParseFile(fset, "test.go", src, 0)
 		if err != nil {
 			t.Fatalf("parse: %v", err)
 		}
 
 		var decl *ast.FuncDecl
+
 		for _, d := range f.Decls {
 			if fd, ok := d.(*ast.FuncDecl); ok {
 				decl = fd
+
 				break
 			}
 		}
+
 		if decl == nil {
 			t.Fatal("no func decl found")
 		}
@@ -178,6 +200,7 @@ func TestNodeRange(t *testing.T) {
 		if r.Start.File == "" {
 			t.Error("expected non-empty start file")
 		}
+
 		if r.End.Line == 0 {
 			t.Error("expected non-zero end line")
 		}
@@ -189,6 +212,7 @@ func TestFormatDiagnostic(t *testing.T) {
 
 	fset := token.NewFileSet()
 	src := `package main; func main() {}`
+
 	f, err := parser.ParseFile(fset, "test.go", src, 0)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
@@ -203,9 +227,11 @@ func TestFormatDiagnostic(t *testing.T) {
 	if out == "" {
 		t.Error("expected non-empty output")
 	}
+
 	if !contains(out, "test message") {
 		t.Errorf("expected output to contain 'test message', got %q", out)
 	}
+
 	if !contains(out, "myanalyzer") {
 		t.Errorf("expected output to contain 'myanalyzer', got %q", out)
 	}
@@ -221,5 +247,6 @@ func containsStr(s, substr string) bool {
 			return true
 		}
 	}
+
 	return false
 }

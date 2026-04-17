@@ -30,8 +30,10 @@ func ExampleParseID() {
 	tool, rule, file, line, col, ok := finding.ParseID("govet:printf:main.go:42:5")
 	if !ok {
 		fmt.Println("invalid ID")
+
 		return
 	}
+
 	fmt.Printf("tool=%s rule=%s file=%s line=%d col=%d\n", tool, rule, file, line, col)
 
 	// Output:
@@ -158,6 +160,7 @@ func ExampleCorrelate() {
 
 	correlations := finding.Correlate(findings)
 	fmt.Println("Correlations:", len(correlations))
+
 	for _, c := range correlations {
 		fmt.Printf("%.1f: %s\n", c.Confidence, c.Reason)
 	}
@@ -206,12 +209,14 @@ func ExampleReport_ToSARIF() {
 	data, err := report.ToSARIF()
 	if err != nil {
 		fmt.Println("error:", err)
+
 		return
 	}
 
 	var log struct {
 		Version string `json:"version"`
 	}
+
 	_ = json.Unmarshal(data, &log)
 	fmt.Println("SARIF version:", log.Version)
 
@@ -293,9 +298,11 @@ func ExamplePipeline() {
 	}
 
 	p := pipeline.New(cfg, ".", detector)
+
 	result, err := p.Run(context.Background())
 	if err != nil {
 		fmt.Println("error:", err)
+
 		return
 	}
 

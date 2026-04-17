@@ -17,6 +17,7 @@ func TestReportActiveFindings(t *testing.T) {
 	if len(active) != 1 {
 		t.Fatalf("expected 1 active finding, got %d", len(active))
 	}
+
 	if active[0].ID != "1" {
 		t.Errorf("expected active finding ID '1', got %q", active[0].ID)
 	}
@@ -39,6 +40,7 @@ func TestReportActiveFindings_None(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: "test"})
+
 	active := r.ActiveFindings()
 	if active != nil {
 		t.Errorf("expected nil for empty findings, got %v", active)
@@ -99,6 +101,7 @@ func TestReportFindByID(t *testing.T) {
 	if found == nil {
 		t.Fatal("expected to find finding")
 	}
+
 	if found.Message != "target" {
 		t.Errorf("expected message 'target', got %q", found.Message)
 	}

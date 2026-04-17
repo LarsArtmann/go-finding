@@ -10,6 +10,7 @@ func FuzzMergeRandom(f *testing.F) {
 		rng := rand.New(rand.NewSource(seed))
 
 		n := rng.Intn(20) + 1
+
 		findings := make([]Finding, n)
 		for i := range findings {
 			findings[i] = Finding{
@@ -28,6 +29,7 @@ func FuzzMergeRandom(f *testing.F) {
 		reports := splitSeedFindings(findings, rng)
 
 		var opts []MergeOption
+
 		opts = append(opts, WithDeduplication(dedup))
 		if dedupBy >= 0 && dedupBy <= 2 {
 			opts = append(opts, WithDeduplicateBy(DeduplicateBy(dedupBy)))
@@ -56,6 +58,7 @@ func FuzzFilterBySeverity(f *testing.F) {
 
 		rng := rand.New(rand.NewSource(seed))
 		n := rng.Intn(50) + 1
+
 		findings := make([]Finding, n)
 		for i := range findings {
 			findings[i] = Finding{
@@ -79,21 +82,25 @@ func randomSeedID(rng *rand.Rand) string {
 
 func randomSeedRule(rng *rand.Rand) string {
 	rules := []string{"SA1000", "S1001", "ST1000", "QF1001", "U1000"}
+
 	return rules[rng.Intn(len(rules))]
 }
 
 func randomSeedFile(rng *rand.Rand) string {
 	files := []string{"main.go", "foo.go", "bar.go", "baz.go", "util.go"}
+
 	return files[rng.Intn(len(files))]
 }
 
 func randomSeverity(rng *rand.Rand) Severity {
 	sevs := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
+
 	return sevs[rng.Intn(len(sevs))]
 }
 
 func randomSeedTool(rng *rand.Rand) string {
 	tools := []string{"govet", "staticcheck", "artdupl", "branching"}
+
 	return tools[rng.Intn(len(tools))]
 }
 
@@ -105,18 +112,22 @@ func randomSeedCategory(rng *rand.Rand) Category {
 		CategoryCorrectness,
 		CategoryTesting,
 	}
+
 	return cats[rng.Intn(len(cats))]
 }
 
 func splitSeedFindings(all []Finding, rng *rand.Rand) []*Report {
 	n := rng.Intn(3) + 1
+
 	reports := make([]*Report, n)
 	for i := range reports {
 		reports[i] = NewReport(ToolInfo{Name: "test"})
 	}
+
 	for _, f := range all {
 		idx := rng.Intn(n)
 		reports[idx].AddFinding(f)
 	}
+
 	return reports
 }

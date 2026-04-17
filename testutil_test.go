@@ -5,6 +5,7 @@ import "testing"
 // MakeRangePtr returns a pointer to a Range for testing purposes.
 func MakeRangePtr(file string, startLine, startCol, endLine, endCol int) *Range {
 	r := NewRange(file, startLine, startCol, endLine, endCol)
+
 	return &r
 }
 
@@ -46,6 +47,7 @@ func MakeFindings(fields []struct {
 	for i, f := range fields {
 		result[i] = MakeFinding(f.ID, f.Rule, f.Tool, f.Message, f.Severity)
 	}
+
 	return result
 }
 
@@ -62,6 +64,7 @@ func RangesEq(a, b Range) bool {
 // AssertRangesEq asserts two ranges are equal in a test.
 func AssertRangesEq(t *testing.T, got, want Range) {
 	t.Helper()
+
 	if !RangesEq(got, want) {
 		t.Errorf("Range = %+v, want %+v", got, want)
 	}
@@ -70,6 +73,7 @@ func AssertRangesEq(t *testing.T, got, want Range) {
 // AssertRangeLinesEq asserts two ranges have equal lines in a test.
 func AssertRangeLinesEq(t *testing.T, got, want Range) {
 	t.Helper()
+
 	if !RangeLinesEq(got, want) {
 		t.Errorf("Range lines = %+v, want %+v", got, want)
 	}
@@ -85,6 +89,7 @@ func RunEqualTests[T any](t *testing.T, tests []struct {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := eqFunc(tt.a, tt.b); got != tt.want {
 				t.Errorf("%s.Equal() = %v, want %v", formatName, got, tt.want)
 			}
@@ -102,6 +107,7 @@ func RunCompareTests[T any](t *testing.T, tests []struct {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := cmpFunc(tt.a, tt.b); got != tt.want {
 				t.Errorf("%s.Compare() = %d, want %d", formatName, got, tt.want)
 			}

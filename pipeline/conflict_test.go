@@ -23,20 +23,24 @@ func findingAt(id, file string, line int) finding.Finding {
 
 func findings(fixSpecs ...any) []finding.Finding {
 	var fixes []finding.Finding
+
 	for i := 0; i+2 < len(fixSpecs); i += 3 {
 		id, idOk := fixSpecs[i].(string)
 		file, fileOk := fixSpecs[i+1].(string)
+
 		line, lineOk := fixSpecs[i+2].(int)
 		if idOk && fileOk && lineOk {
 			fixes = append(fixes, findingAt(id, file, line))
 		}
 	}
+
 	return fixes
 }
 
 // assertRangeLinesEq asserts two ranges have equal lines in a test.
 func assertRangeLinesEq(t *testing.T, got, want finding.Range) {
 	t.Helper()
+
 	if !finding.RangeLinesEq(got, want) {
 		t.Errorf("Range lines = %+v, want %+v", got, want)
 	}
@@ -89,11 +93,14 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			detector := NewConflictDetector()
+
 			groups, conflicts := detector.DetectConflicts(tt.fixes)
 			if len(groups) != tt.expectedGroups {
 				t.Errorf("len(groups) = %d, want %d", len(groups), tt.expectedGroups)
 			}
+
 			if len(conflicts) != tt.expectedConflicts {
 				t.Errorf("len(conflicts) = %d, want %d", len(conflicts), tt.expectedConflicts)
 			}
@@ -128,6 +135,7 @@ func TestPositionLess(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			got := tt.a.Compare(tt.b) < 0
 			if got != tt.expected {
 				t.Errorf("Position.Compare() < 0 = %v, want %v", got, tt.expected)
@@ -164,6 +172,7 @@ func TestExtendRange(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			got := extendRange(tt.r1, tt.r2)
 			assertRangeLinesEq(t, got, tt.expected)
 		})

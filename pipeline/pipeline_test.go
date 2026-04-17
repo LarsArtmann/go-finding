@@ -32,6 +32,7 @@ func (m *mockDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 			return nil, ctx.Err()
 		}
 	}
+
 	return m.findings, m.err
 }
 
@@ -47,6 +48,7 @@ func newMockDetector(name, toolName string, findings ...finding.Finding) *mockDe
 			},
 		}
 	}
+
 	return &mockDetector{name: name, findings: findings}
 }
 
@@ -72,12 +74,15 @@ func TestNew(t *testing.T) {
 	if p == nil {
 		t.Fatal("expected non-nil pipeline")
 	}
+
 	if len(p.detectors) != 1 {
 		t.Errorf("expected 1 detector, got %d", len(p.detectors))
 	}
+
 	if p.rootDir != "/tmp" {
 		t.Errorf("expected rootDir /tmp, got %s", p.rootDir)
 	}
+
 	if p.config.MaxIterations != config.MaxIterations {
 		t.Error("config not set correctly")
 	}
@@ -96,6 +101,7 @@ func TestPipelineRun_NoFindings(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if !result.Stable {
 		t.Error("expected stable result")
 	}
@@ -131,6 +137,7 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if result.Stable {
 		t.Error("expected non-stable result (findings present but not auto-fixed)")
 	}
@@ -138,6 +145,7 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 	if result.TotalIterations != config.MaxIterations {
 		t.Errorf("expected %d iterations, got %d", config.MaxIterations, result.TotalIterations)
 	}
+
 	if len(result.Iterations) != config.MaxIterations {
 		t.Fatalf(
 			"expected %d iteration records, got %d",
@@ -150,9 +158,11 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 	if iter.FindingsFound != 1 {
 		t.Errorf("expected 1 finding found, got %d", iter.FindingsFound)
 	}
+
 	if iter.SuggestFixes != 1 {
 		t.Errorf("expected 1 suggest-fix, got %d", iter.SuggestFixes)
 	}
+
 	if len(iter.SuggestedFindings()) != 1 {
 		t.Errorf("expected 1 suggested finding, got %d", len(iter.SuggestedFindings()))
 	}
@@ -173,6 +183,7 @@ func TestPipelineRun_DetectorError(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
+
 	if !errors.Is(err, expectedErr) {
 		t.Errorf("expected error to wrap %v, got %v", expectedErr, err)
 	}
@@ -197,6 +208,7 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected context error")
 	}
+
 	if !errors.Is(err, context.Canceled) {
 		t.Errorf("expected context.Canceled, got %v", err)
 	}
@@ -221,6 +233,7 @@ func TestPipelineRun_Timeout(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected timeout error")
 	}
+
 	if !errors.Is(err, context.DeadlineExceeded) {
 		t.Errorf("expected context.DeadlineExceeded, got %v", err)
 	}
@@ -253,6 +266,7 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if result.TotalIterations != config.MaxIterations {
 		t.Errorf("expected %d iterations, got %d", config.MaxIterations, result.TotalIterations)
 	}
@@ -290,9 +304,11 @@ func TestPipelineRun_Parallel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if len(result.Iterations) == 0 {
 		t.Fatal("expected at least one iteration")
 	}
+
 	if result.Iterations[0].FindingsFound != 2 {
 		t.Errorf("expected 2 findings, got %d", result.Iterations[0].FindingsFound)
 	}
@@ -314,9 +330,11 @@ func TestTriage(t *testing.T) {
 	if len(result.Direct) != 1 {
 		t.Errorf("expected 1 direct, got %d", len(result.Direct))
 	}
+
 	if len(result.Suggest) != 2 {
 		t.Errorf("expected 2 suggest, got %d", len(result.Suggest))
 	}
+
 	if len(result.None) != 2 {
 		t.Errorf("expected 2 none, got %d", len(result.None))
 	}
@@ -327,6 +345,7 @@ func TestDetectorFunc(t *testing.T) {
 	called := false
 	f := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
 		called = true
+
 		return nil, nil
 	})
 
@@ -334,9 +353,11 @@ func TestDetectorFunc(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if !called {
 		t.Error("function was not called")
 	}
+
 	if f.Name() != "anonymous" {
 		t.Errorf("expected name 'anonymous', got %s", f.Name())
 	}
@@ -359,6 +380,7 @@ func TestNamedDetectorFunc(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if len(findings) != 1 || findings[0].ID != "test" {
 		t.Errorf("expected 1 finding with ID 'test', got %v", findings)
 	}
@@ -371,9 +393,11 @@ func TestDefaultConfig(t *testing.T) {
 	if config.MaxIterations != 5 {
 		t.Errorf("expected MaxIterations 5, got %d", config.MaxIterations)
 	}
+
 	if !config.ParallelDetectors {
 		t.Error("expected ParallelDetectors to be true")
 	}
+
 	if config.Timeout != 10*time.Minute {
 		t.Errorf("expected Timeout 10m, got %v", config.Timeout)
 	}
@@ -387,6 +411,7 @@ func TestFixApplier(t *testing.T) {
 
 	// Create a test file
 	testFile := filepath.Join(tempDir, "test.go")
+
 	testContent := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
 	if err := writeFile(testFile, []byte(testContent), 0o644); err != nil {
 		t.Fatalf("failed to create test file: %v", err)
@@ -415,6 +440,7 @@ func TestFixApplier(t *testing.T) {
 	if err != nil {
 		t.Fatalf("apply with nil fixes failed: %v", err)
 	}
+
 	if applied != 0 {
 		t.Errorf("expected 0 applied, got %d", applied)
 	}
@@ -423,10 +449,12 @@ func TestFixApplier(t *testing.T) {
 	fixes := []finding.Finding{
 		{ID: "1", BeforeCode: "old", AfterCode: "new", Position: finding.Position{}},
 	}
+
 	applied, err = applier.Apply(context.Background(), fixes)
 	if err != nil {
 		t.Fatalf("apply failed: %v", err)
 	}
+
 	if applied != 0 {
 		t.Errorf("expected 0 applied (no file), got %d", applied)
 	}
@@ -439,6 +467,7 @@ func TestFixApplier_Apply(t *testing.T) {
 
 	// Create test file
 	testFile := filepath.Join(tempDir, "test.go")
+
 	originalContent := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
 	if err := writeFile(testFile, []byte(originalContent), 0o644); err != nil {
 		t.Fatalf("failed to create test file: %v", err)
@@ -459,6 +488,7 @@ func TestFixApplier_Apply(t *testing.T) {
 	if err != nil {
 		t.Fatalf("apply failed: %v", err)
 	}
+
 	if applied != 1 {
 		t.Errorf("expected 1 applied, got %d", applied)
 	}
@@ -468,6 +498,7 @@ func TestFixApplier_Apply(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read file: %v", err)
 	}
+
 	expected := "package main\n\nfunc main() {\n\tprintln(\"world\")\n}\n"
 	if string(content) != expected {
 		t.Errorf("expected:\n%s\ngot:\n%s", expected, string(content))
@@ -479,7 +510,8 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 	applier := NewFixApplier(tempDir)
 
 	testFile := filepath.Join(tempDir, "test.go")
-	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tprintln(\"hello\")\n}\n"
+
+	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\t"
 	if err := writeFile(testFile, []byte(content), 0o644); err != nil {
 		t.Fatalf("create test file: %v", err)
 	}
@@ -501,6 +533,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 	if err != nil {
 		t.Fatalf("apply failed: %v", err)
 	}
+
 	if applied != 1 {
 		t.Fatalf("expected 1 applied, got %d", applied)
 	}
@@ -522,6 +555,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 	applier := NewFixApplier(tempDir)
 
 	testFile := filepath.Join(tempDir, "test.go")
+
 	content := "package main\n\nfunc old() {\n\treturn\n}\n\nfunc main() {}\n"
 	if err := writeFile(testFile, []byte(content), 0o644); err != nil {
 		t.Fatalf("create test file: %v", err)
@@ -542,6 +576,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 	if err != nil {
 		t.Fatalf("apply failed: %v", err)
 	}
+
 	if applied != 1 {
 		t.Fatalf("expected 1 applied, got %d", applied)
 	}
@@ -582,10 +617,12 @@ func BenchmarkParallelDetection(b *testing.B) {
 			}
 
 			b.ResetTimer()
+
 			for range b.N {
 				p := New(config, b.TempDir(), detectors...)
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				_, _ = p.Run(ctx)
+
 				cancel()
 			}
 		})
@@ -599,10 +636,14 @@ func writeFile(path string, data []byte, perm uint32) error {
 	if err != nil {
 		return err
 	}
+
 	_, err = f.Write(data)
-	if err1 := f.Close(); err1 != nil && err == nil {
+
+	err1 := f.Close()
+	if err1 != nil && err == nil {
 		err = err1
 	}
+
 	return err
 }
 
@@ -611,21 +652,26 @@ func readFile(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer func() { _ = f.Close() }()
 
 	var result []byte
+
 	buf := make([]byte, 1024)
 	for {
 		n, err := f.Read(buf)
 		if n > 0 {
 			result = append(result, buf[:n]...)
 		}
+
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
 			}
+
 			return nil, err
 		}
 	}
+
 	return result, nil
 }

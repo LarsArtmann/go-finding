@@ -8,17 +8,36 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+func assertMetricsDuration(t *testing.T, got, want time.Duration, msg string) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("%s = %v, want %v", msg, got, want)
+	}
+}
+
+func assertMetricsInt(t *testing.T, got, want int, msg string) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("%s = %d, want %d", msg, got, want)
+	}
+}
+
 func TestNewMetrics(t *testing.T) {
 	m := NewMetrics()
 	if m == nil {
 		t.Fatal("expected non-nil metrics")
 	}
+
 	if m.StageDurations == nil {
 		t.Error("StageDurations should be initialized")
 	}
+
 	if m.DetectorTimes == nil {
 		t.Error("DetectorTimes should be initialized")
 	}
+
 	if m.FindingsFound == nil {
 		t.Error("FindingsFound should be initialized")
 	}
@@ -30,12 +49,18 @@ func TestMetrics_RecordStage(t *testing.T) {
 	m.RecordStage("detect", 50*time.Millisecond)
 	m.RecordStage("apply", 200*time.Millisecond)
 
-	if m.StageDurations["detect"] != 150*time.Millisecond {
-		t.Errorf("expected detect=150ms, got %v", m.StageDurations["detect"])
-	}
-	if m.StageDurations["apply"] != 200*time.Millisecond {
-		t.Errorf("expected apply=200ms, got %v", m.StageDurations["apply"])
-	}
+	assertMetricsDuration(
+		t,
+		m.StageDurations["detect"],
+		150*time.Millisecond,
+		"expected detect=150ms",
+	)
+	assertMetricsDuration(
+		t,
+		m.StageDurations["apply"],
+		200*time.Millisecond,
+		"expected apply=200ms",
+	)
 }
 
 func TestMetrics_RecordDetector(t *testing.T) {
@@ -44,15 +69,14 @@ func TestMetrics_RecordDetector(t *testing.T) {
 	m.RecordDetector("staticcheck", 30*time.Millisecond, 5)
 	m.RecordDetector("govet", 20*time.Millisecond, 3)
 
-	if m.DetectorTimes["staticcheck"] != 80*time.Millisecond {
-		t.Errorf("expected staticcheck=80ms, got %v", m.DetectorTimes["staticcheck"])
-	}
-	if m.FindingsFound["staticcheck"] != 15 {
-		t.Errorf("expected staticcheck findings=15, got %d", m.FindingsFound["staticcheck"])
-	}
-	if m.FindingsFound["govet"] != 3 {
-		t.Errorf("expected govet findings=3, got %d", m.FindingsFound["govet"])
-	}
+	assertMetricsDuration(
+		t,
+		m.DetectorTimes["staticcheck"],
+		80*time.Millisecond,
+		"expected staticcheck=80ms",
+	)
+	assertMetricsInt(t, m.FindingsFound["staticcheck"], 15, "expected staticcheck findings=15")
+	assertMetricsInt(t, m.FindingsFound["govet"], 3, "expected govet findings=3")
 }
 
 func TestMetrics_RecordFix(t *testing.T) {
@@ -69,6 +93,7 @@ func TestMetrics_RecordFix(t *testing.T) {
 func TestMetrics_StageTiming(t *testing.T) {
 	m := NewMetrics()
 	done := m.StageTiming("detect")
+
 	time.Sleep(10 * time.Millisecond)
 	done()
 
@@ -80,7 +105,9 @@ func TestMetrics_StageTiming(t *testing.T) {
 func TestMetrics_TotalDuration(t *testing.T) {
 	m := NewMetrics()
 	m.StartTime = time.Now()
+
 	time.Sleep(10 * time.Millisecond)
+
 	m.EndTime = time.Now()
 
 	d := m.TotalDuration()
@@ -99,18 +126,21 @@ func TestMetrics_Snapshot(t *testing.T) {
 
 	snap := m.Snapshot()
 
-	if snap.StageDurations["detect"] != 100*time.Millisecond {
-		t.Errorf("snapshot: expected detect=100ms, got %v", snap.StageDurations["detect"])
-	}
-	if snap.DetectorTimes["govet"] != 50*time.Millisecond {
-		t.Errorf("snapshot: expected govet=50ms, got %v", snap.DetectorTimes["govet"])
-	}
-	if snap.FindingsFound["govet"] != 5 {
-		t.Errorf("snapshot: expected govet findings=5, got %d", snap.FindingsFound["govet"])
-	}
-	if snap.FixesApplied != 1 {
-		t.Errorf("snapshot: expected 1 fix, got %d", snap.FixesApplied)
-	}
+	assertMetricsDuration(
+		t,
+		snap.StageDurations["detect"],
+		100*time.Millisecond,
+		"snapshot: expected detect=100ms",
+	)
+	assertMetricsDuration(
+		t,
+		snap.DetectorTimes["govet"],
+		50*time.Millisecond,
+		"snapshot: expected govet=50ms",
+	)
+	assertMetricsInt(t, snap.FindingsFound["govet"], 5, "snapshot: expected govet findings=5")
+	assertMetricsInt(t, snap.FixesApplied, 1, "snapshot: expected 1 fix")
+
 	if snap.TotalDuration < 900*time.Millisecond {
 		t.Errorf("snapshot: expected >= 900ms, got %v", snap.TotalDuration)
 	}
@@ -130,6 +160,7 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 		if count > 1 {
 			return nil, nil
 		}
+
 		return []finding.Finding{
 			{ID: "F1", Severity: finding.SeverityWarning, FixStrategy: finding.FixStrategyNone},
 		}, nil
@@ -143,10 +174,12 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 	}
 
 	p := New(config, t.TempDir(), detector)
+
 	result, err := p.Run(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if !result.Stable {
 		t.Error("expected stable result")
 	}
@@ -154,9 +187,11 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 	if m.StartTime.IsZero() {
 		t.Error("StartTime should be set")
 	}
+
 	if m.EndTime.IsZero() {
 		t.Error("EndTime should be set")
 	}
+
 	if _, ok := m.StageDurations["detect"]; !ok {
 		t.Error("expected detect stage timing")
 	}
@@ -176,10 +211,12 @@ func TestPipeline_NilMetricsNoPanic(t *testing.T) {
 	}
 
 	p := New(config, t.TempDir(), detector)
+
 	result, err := p.Run(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if !result.Stable {
 		t.Error("expected stable with no findings")
 	}

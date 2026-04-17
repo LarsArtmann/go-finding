@@ -110,6 +110,7 @@ func (r Report) FindByID(id string) *Finding {
 	for _, f := range r.Findings {
 		if f.ID == id {
 			cp := f
+
 			return &cp
 		}
 	}

@@ -32,6 +32,7 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 			Findings: append([]Finding(nil), r.Findings...),
 		}
 		result.ComputeSummary()
+
 		return result
 	}
 
@@ -152,6 +153,7 @@ func Correlate(findings []Finding) []Correlation {
 	for f := range byFile {
 		files = append(files, f)
 	}
+
 	sort.Strings(files)
 
 	for _, file := range files {

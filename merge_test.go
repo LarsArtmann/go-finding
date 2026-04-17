@@ -9,6 +9,7 @@ func TestMerge_Empty(t *testing.T) {
 	if merged == nil {
 		t.Fatal("Merge(nil) = nil, want non-nil report")
 	}
+
 	assertFindingsLen(t, "Merge(nil) findings", len(merged.Findings), 0)
 }
 
@@ -19,7 +20,7 @@ func TestMerge_SingleReport(t *testing.T) {
 	r.AddFinding(MakeSimpleFinding("1", SeverityError))
 
 	merged := Merge([]*Report{r})
-	assertReportFieldStr(t, merged.Tool.Name, "tool1", "single report merge tool")
+	assertReportField(t, "single report merge tool", merged.Tool.Name, "tool1")
 	assertFindingsLen(t, "single report merge findings", len(merged.Findings), 1)
 }
 
@@ -35,9 +36,9 @@ func TestMerge_MultipleReports(t *testing.T) {
 	merged := Merge([]*Report{r1, r2})
 	merged.ComputeSummary()
 
-	assertReportFieldStr(t, merged.Tool.Name, "merged", "merged tool name")
+	assertReportField(t, "merged tool name", merged.Tool.Name, "merged")
 	assertFindingsLen(t, "merged findings", len(merged.Findings), 2)
-	assertReportFieldInt(t, merged.Summary.FilesAffected, 2, "merged files")
+	assertReportField(t, "merged files", merged.Summary.FilesAffected, 2)
 }
 
 func TestMerge_WithDeduplication(t *testing.T) {

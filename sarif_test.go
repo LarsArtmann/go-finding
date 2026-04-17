@@ -9,10 +9,14 @@ import (
 // unmarshalSARIF unmarshals SARIF data and fails the test on error.
 func unmarshalSARIF(t *testing.T, data []byte) *SarifLog {
 	t.Helper()
+
 	var log SarifLog
-	if err := json.Unmarshal(data, &log); err != nil {
+
+	err := json.Unmarshal(data, &log)
+	if err != nil {
 		t.Fatalf("unmarshal SARIF: %v", err)
 	}
+
 	return &log
 }
 
@@ -34,6 +38,7 @@ func TestFromSARIFLevel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := FromSARIFLevel(tt.level); got != tt.want {
 				t.Errorf("FromSARIFLevel(%q) = %v, want %v", tt.level, got, tt.want)
 			}
@@ -67,26 +72,33 @@ func TestToSARIF(t *testing.T) {
 	if log.Version != "2.1.0" {
 		t.Errorf("Version = %q, want %q", log.Version, "2.1.0")
 	}
+
 	if len(log.Runs) != 1 {
 		t.Fatalf("Runs length = %d, want 1", len(log.Runs))
 	}
+
 	run := log.Runs[0]
 	if run.Tool.Driver.Name != "test-tool" {
 		t.Errorf("Driver.Name = %q, want %q", run.Tool.Driver.Name, "test-tool")
 	}
+
 	if len(run.Results) != 1 {
 		t.Fatalf("Results length = %d, want 1", len(run.Results))
 	}
+
 	result := run.Results[0]
 	if result.RuleID != "SA1000" {
 		t.Errorf("RuleID = %q, want %q", result.RuleID, "SA1000")
 	}
+
 	if result.Level != "error" {
 		t.Errorf("Level = %q, want %q", result.Level, "error")
 	}
+
 	if result.Message.Text != "bad code" {
 		t.Errorf("Message.Text = %q, want %q", result.Message.Text, "bad code")
 	}
+
 	uri := result.Location.PhysicalLocation.ArtifactLocation.URI
 	if uri != "main.go" {
 		t.Errorf("URI = %q, want %q", uri, "main.go")
@@ -134,9 +146,11 @@ func TestToSARIFFiltered(t *testing.T) {
 	for _, res := range results {
 		rules[res.RuleID] = true
 	}
+
 	if !rules["r1"] || !rules["r2"] {
 		t.Errorf("expected r1 and r2 in results, got rules: %v", rules)
 	}
+
 	if rules["r3"] || rules["r4"] || rules["r5"] {
 		t.Error("r3 (warning), r4 (info), r5 (suppressed) should be excluded")
 	}
@@ -172,6 +186,7 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 	if len(results) != 1 {
 		t.Fatalf("Results length = %d, want 1 (suppressed excluded)", len(results))
 	}
+
 	if results[0].RuleID != "r1" {
 		t.Errorf("RuleID = %q, want %q", results[0].RuleID, "r1")
 	}
@@ -208,6 +223,7 @@ func TestToSARIF_WithFix(t *testing.T) {
 	if len(result.Fixes) != 1 {
 		t.Fatalf("Fixes length = %d, want 1", len(result.Fixes))
 	}
+
 	fix := result.Fixes[0]
 	if fix.Description.Text != "replace old with new" {
 		t.Errorf("Fix description = %q, want %q", fix.Description.Text, "replace old with new")
@@ -242,6 +258,7 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 	if !strings.Contains(raw, `"key1"`) || !strings.Contains(raw, `"val1"`) {
 		t.Errorf("SARIF output should contain metadata, got: %s", raw)
 	}
+
 	if !strings.Contains(raw, `"go-finding/toolName"`) {
 		t.Error("SARIF output should contain go-finding/toolName in properties")
 	}
@@ -324,6 +341,7 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 		got, ok := props[key]
 		if !ok {
 			t.Errorf("missing property %q", key)
+
 			continue
 		}
 		// JSON numbers unmarshal as float64

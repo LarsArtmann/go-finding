@@ -240,21 +240,27 @@ func findingToSARIF(f Finding) SarifResult {
 	if f.Category != "" {
 		props["go-finding/category"] = string(f.Category)
 	}
+
 	if f.Tag != "" {
 		props["go-finding/tag"] = f.Tag
 	}
+
 	if f.Confidence > 0 {
 		props["go-finding/confidence"] = f.Confidence
 	}
+
 	if f.Suggestion != "" {
 		props["go-finding/suggestion"] = f.Suggestion
 	}
+
 	if f.Snippet != "" {
 		props["go-finding/snippet"] = f.Snippet
 	}
+
 	for k, v := range f.Metadata {
 		props[k] = v
 	}
+
 	result.Properties = props
 
 	return result

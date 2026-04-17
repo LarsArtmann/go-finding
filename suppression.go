@@ -33,5 +33,6 @@ func (s *Suppression) IsValid() bool {
 	if s == nil {
 		return false
 	}
+
 	return s.Kind != "" && s.Rule != ""
 }

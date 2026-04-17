@@ -104,6 +104,7 @@ func TestFindingIsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.f.IsValid(); got != tt.want {
 				t.Errorf("IsValid() = %v, want %v", got, tt.want)
 			}
@@ -128,6 +129,7 @@ func TestFindingHasFix(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.f.HasFix(); got != tt.want {
 				t.Errorf("HasFix() = %v, want %v", got, tt.want)
 			}
@@ -153,6 +155,7 @@ func TestFindingHasSuggestion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.f.HasSuggestion(); got != tt.want {
 				t.Errorf("HasSuggestion() = %v, want %v", got, tt.want)
 			}
@@ -191,6 +194,7 @@ func TestFindingIsSuppressed(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.f.IsSuppressed(); got != tt.want {
 				t.Errorf("IsSuppressed() = %v, want %v", got, tt.want)
 			}
@@ -222,6 +226,7 @@ func TestRelatedRefIsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			got := tt.r.IsValid()
 			if got != tt.want {
 				t.Errorf("IsValid() = %v, want %v", got, tt.want)
@@ -249,6 +254,7 @@ func TestSuppressionIsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.s.IsValid(); got != tt.want {
 				t.Errorf("IsValid() = %v, want %v", got, tt.want)
 			}
@@ -287,9 +293,11 @@ func TestSuppressionIsExpired(t *testing.T) {
 	}
 
 	now := time.Now()
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.s.IsExpired(now); got != tt.want {
 				t.Errorf("IsExpired() = %v, want %v", got, tt.want)
 			}
@@ -317,6 +325,7 @@ func TestErrorCategoryIsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.c.IsValid(); got != tt.want {
 				t.Errorf("IsValid() = %v, want %v", got, tt.want)
 			}
@@ -362,6 +371,7 @@ func TestRangeContainsByOffset(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := r.containsByOffset(tt.p); got != tt.want {
 				t.Errorf("containsByOffset() = %v, want %v", got, tt.want)
 			}
@@ -437,10 +447,3 @@ func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 		t.Errorf("go-finding/severity = %v, want %q", severity, "critical")
 	}
 }
-
-//go:fix inline
-func ptrTime(t time.Time) *time.Time {
-	return new(t)
-}
-
-// ptrTime is used by the go:fix directive for testing coverage instrumentation.

@@ -80,10 +80,12 @@ func ParseID(id string) (string, string, string, int, int, bool) {
 	if len(parts) >= idPartMin {
 		// Try parsing last part as column
 		colTest := 0
+
 		err := parseInt(parts[len(parts)-1], &colTest)
 		if err == nil {
 			// Try parsing second-to-last as line
 			lineTest := 0
+
 			err2 := parseInt(parts[len(parts)-2], &lineTest)
 			if err2 == nil {
 				file = extractFile(parts, positionPartsTwo)
@@ -115,7 +117,9 @@ func parseInt(s string, result *int) error {
 	if err != nil {
 		return fmt.Errorf("failed to parse %q as int: %w", s, err)
 	}
+
 	*result = n
+
 	return nil
 }
 
@@ -136,6 +140,7 @@ func isHexString(s string) bool {
 			return false
 		}
 	}
+
 	return len(s) > 0
 }
 

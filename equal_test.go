@@ -51,7 +51,12 @@ func TestRange_Equal(t *testing.T) {
 		{"identical", lineEq(1, 3), lineEq(1, 3), true},
 		{"different start", lineEq(1, 3), lineEq(2, 3), false},
 		{"different end", lineEq(1, 3), lineEq(1, 4), false},
-		{"both empty end", Range{Start: Position{File: "a.go", Line: 1}}, Range{Start: Position{File: "a.go", Line: 1}}, true},
+		{
+			"both empty end",
+			Range{Start: Position{File: "a.go", Line: 1}},
+			Range{Start: Position{File: "a.go", Line: 1}},
+			true,
+		},
 	}
 
 	RunEqualTests(t, tests, func(a, b Range) bool { return a.Equal(b) }, "Range")
@@ -75,6 +80,7 @@ func TestFinding_Equal(t *testing.T) {
 
 	withRange := func(f Finding, line int) Finding {
 		f.Range = &Range{Start: Position{File: "f.go", Line: line}}
+
 		return f
 	}
 
@@ -87,18 +93,69 @@ func TestFinding_Equal(t *testing.T) {
 		want bool
 	}{
 		{"identical", base, base, true},
-		{"different ID", base, func() Finding { f := newBase(); f.ID = "other"; return f }(), false},
-		{"different severity", base, func() Finding { f := newBase(); f.Severity = SeverityWarning; return f }(), false},
-		{"different position", base, func() Finding { f := newBase(); f.Position.Line = 99; return f }(), false},
-		{"different metadata", base, func() Finding { f := newBase(); f.Metadata = map[string]string{"key": "val", "k2": "v2"}; return f }(), false},
+		{
+			"different ID",
+			base,
+			func() Finding {
+				f := newBase()
+				f.ID = "other"
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different severity",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Severity = SeverityWarning
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different position",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Position.Line = 99
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different metadata",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Metadata = map[string]string{"key": "val", "k2": "v2"}
+
+				return f
+			}(),
+			false,
+		},
 		{"nil vs non-nil range", base, withRange(newBase(), 0), false},
 		{"same range", rangedFinding, rangedFinding, true},
-		{"different related", base, func() Finding { f := newBase(); f.Related = []RelatedRef{{FindingID: "x"}}; return f }(), false},
+		{
+			"different related",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Related = []RelatedRef{{FindingID: "x"}}
+
+				return f
+			}(),
+			false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := tt.a.Equal(tt.b); got != tt.want {
 				t.Errorf("Finding.Equal() = %v, want %v", got, tt.want)
 			}
@@ -117,9 +174,11 @@ func TestFinding_Equal_Suppression(t *testing.T) {
 	if !a.Equal(b) {
 		t.Error("same suppression should be equal")
 	}
+
 	if a.Equal(c) {
 		t.Error("nil vs non-nil suppression should not be equal")
 	}
+
 	if a.Equal(d) {
 		t.Error("different suppression should not be equal")
 	}
