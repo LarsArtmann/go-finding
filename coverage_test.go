@@ -1,10 +1,17 @@
 package finding
 
 import (
-	"encoding/json"
 	"testing"
 	"time"
 )
+
+func expiredSuppression() *Suppression {
+	return &Suppression{
+		Kind:      SuppressionInSource,
+		Rule:      "R1",
+		ExpiresAt: new(time.Now().Add(-time.Hour)),
+	}
+}
 
 func TestFindingIsValid(t *testing.T) {
 	t.Parallel()
@@ -180,13 +187,7 @@ func TestFindingIsSuppressed(t *testing.T) {
 		},
 		{
 			name: "expired suppression",
-			f: Finding{
-				Suppression: &Suppression{
-					Kind:      SuppressionInSource,
-					Rule:      "R1",
-					ExpiresAt: new(time.Now().Add(-time.Hour)),
-				},
-			},
+			f:    Finding{Suppression: expiredSuppression()},
 			want: false,
 		},
 	}
@@ -282,11 +283,7 @@ func TestSuppressionIsExpired(t *testing.T) {
 		},
 		{
 			name: "past expiry",
-			s: &Suppression{
-				Kind:      SuppressionInSource,
-				Rule:      "R1",
-				ExpiresAt: new(time.Now().Add(-time.Hour)),
-			},
+			s:    expiredSuppression(),
 			want: true,
 		},
 		{"nil suppression", nil, false},
@@ -425,9 +422,7 @@ func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 		} `json:"runs"`
 	}
 
-	if uErr := json.Unmarshal(sarif, &log); uErr != nil {
-		t.Fatalf("unmarshal: %v", uErr)
-	}
+	unmarshalJSON(t, sarif, &log)
 
 	if len(log.Runs) == 0 || len(log.Runs[0].Results) == 0 {
 		t.Fatal("no results in SARIF")

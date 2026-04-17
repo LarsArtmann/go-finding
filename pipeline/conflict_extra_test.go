@@ -35,11 +35,8 @@ func TestFilterConflictingFixes(t *testing.T) {
 			expected: 2,
 		},
 		{
-			name: "conflict - overlapping ranges keeps first",
-			fixes: []finding.Finding{
-				findingWithRange("1", "a.go", 10, 10, 20),
-				findingWithRange("2", "a.go", 15, 15, 25),
-			},
+			name:     "conflict - overlapping ranges keeps first",
+			fixes:    overlappingFindings(),
 			expected: 1,
 		},
 		{

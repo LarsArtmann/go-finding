@@ -64,9 +64,11 @@ func TestParsePosn(t *testing.T) {
 			if pos.File != tt.wantFile {
 				t.Errorf("File = %q, want %q", pos.File, tt.wantFile)
 			}
+
 			if pos.Line != tt.wantLine {
 				t.Errorf("Line = %d, want %d", pos.Line, tt.wantLine)
 			}
+
 			if pos.Column != tt.wantCol {
 				t.Errorf("Column = %d, want %d", pos.Column, tt.wantCol)
 			}
@@ -93,6 +95,7 @@ func TestParseGoVetJSON(t *testing.T) {
 	if f.ToolName != "govet" {
 		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
 	}
+
 	if f.Message != "unused variable x" {
 		t.Errorf("Message = %q, want %q", f.Message, "unused variable x")
 	}
@@ -102,15 +105,19 @@ func TestParseGoVetJSON(t *testing.T) {
 			t.Errorf("Severity = %v, want %v", got, finding.SeverityWarning)
 		}
 	}
+
 	if f.Category != finding.CategoryCorrectness {
 		t.Errorf("Category = %v, want %v", f.Category, finding.CategoryCorrectness)
 	}
+
 	if f.FixStrategy != finding.FixStrategySuggest {
 		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, finding.FixStrategySuggest)
 	}
+
 	if f.Position.File != "/project/main.go" {
 		t.Errorf("Position.File = %q, want %q", f.Position.File, "/project/main.go")
 	}
+
 	if f.Position.Line != 10 {
 		t.Errorf("Position.Line = %d, want 10", f.Position.Line)
 	}
@@ -149,6 +156,7 @@ func TestParseStaticcheckJSON(t *testing.T) {
 	if f.ToolName != "staticcheck" {
 		t.Errorf("ToolName = %q, want %q", f.ToolName, "staticcheck")
 	}
+
 	if f.Rule != "SA1000" {
 		t.Errorf("Rule = %q, want %q", f.Rule, "SA1000")
 	}
@@ -158,9 +166,11 @@ func TestParseStaticcheckJSON(t *testing.T) {
 			t.Errorf("Severity = %v, want %v", actual, finding.SeverityWarning)
 		}
 	}
+
 	if f.Category != finding.CategoryStyle {
 		t.Errorf("Category = %v, want %v", f.Category, finding.CategoryStyle)
 	}
+
 	if f.Confidence != 0.8 {
 		t.Errorf("Confidence = %f, want 0.8", f.Confidence)
 	}
@@ -176,6 +186,7 @@ func TestParseStaticcheckJSON(t *testing.T) {
 			t.Errorf("Severity = %v, want %v", sev, finding.SeverityError)
 		}
 	}
+
 	if f2.Category != finding.CategoryStyle {
 		t.Errorf("Category = %v, want %v", f2.Category, finding.CategoryStyle)
 	}
@@ -199,6 +210,7 @@ func TestParseStaticcheckJSON_InvalidLine(t *testing.T) {
 	if len(findings) != 1 {
 		t.Fatalf("expected 1 finding (skip invalid line), got %d", len(findings))
 	}
+
 	if findings[0].Rule != "S1001" {
 		t.Errorf("Rule = %q, want %q", findings[0].Rule, "S1001")
 	}

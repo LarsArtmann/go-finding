@@ -203,7 +203,11 @@ func parseSeverity(s string) (finding.Severity, error) {
 	case "critical":
 		return finding.SeverityCritical, nil
 	default:
-		return finding.SeverityWarning, fmt.Errorf("%w %q (use: info, warning, error, critical)", errUnknownSeverity, s)
+		return finding.SeverityWarning, fmt.Errorf(
+			"%w %q (use: info, warning, error, critical)",
+			errUnknownSeverity,
+			s,
+		)
 	}
 }
 
@@ -317,7 +321,6 @@ var (
 	errUnknownDetector = errors.New("unknown detector")
 )
 
-//nolint:gochecknoglobals // CLI lookup table for validated detector names
 var knownDetectors = map[string]bool{
 	"govet":       true,
 	"staticcheck": true,
@@ -325,7 +328,11 @@ var knownDetectors = map[string]bool{
 
 func (c pipelineConfigFile) validate() error {
 	if c.MaxIterations < 0 {
-		return fmt.Errorf("%w: maxIterations must be >= 0, got %d", errInvalidConfig, c.MaxIterations)
+		return fmt.Errorf(
+			"%w: maxIterations must be >= 0, got %d",
+			errInvalidConfig,
+			c.MaxIterations,
+		)
 	}
 
 	if c.Timeout != "" {
@@ -366,7 +373,6 @@ func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
 	}
 }
 
-//nolint:gochecknoinits // CLI log flags setup
 func init() {
 	log.SetFlags(0)
 }

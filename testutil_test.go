@@ -1,6 +1,9 @@
 package finding
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
 
 // MakeRangePtr returns a pointer to a Range for testing purposes.
 func MakeRangePtr(file string, startLine, startCol, endLine, endCol int) *Range {
@@ -94,6 +97,14 @@ func RunEqualTests[T any](t *testing.T, tests []struct {
 				t.Errorf("%s.Equal() = %v, want %v", formatName, got, tt.want)
 			}
 		})
+	}
+}
+
+func unmarshalJSON(t *testing.T, data []byte, v any) {
+	t.Helper()
+
+	if err := json.Unmarshal(data, v); err != nil {
+		t.Fatalf("unmarshal: %v", err)
 	}
 }
 

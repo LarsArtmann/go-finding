@@ -315,12 +315,7 @@ func TestPipelineRun_Parallel(t *testing.T) {
 		t.Fatal("expected at least one iteration")
 	}
 
-	{
-		found := result.Iterations[0].FindingsFound
-		if found != 2 {
-			t.Errorf("expected 2 findings, got %d", found)
-		}
-	}
+	assertFindingsFound(t, result, 2, "expected 2 findings")
 }
 
 // TestTriage tests the triage function.
@@ -702,23 +697,22 @@ func TestIteration_Findings(t *testing.T) {
 	if len(got) != 2 {
 		t.Fatalf("Findings() returned %d items, want 2", len(got))
 	}
-	{
-		msg := got[0].Message
-		if msg != "a" {
-			t.Errorf("Findings()[0].Message = %q, want %q", msg, "a")
+
+	assertFindingMessage := func(idx int, want string) {
+		t.Helper()
+		msg := got[idx].Message
+		if msg != want {
+			t.Errorf("Findings()[%d].Message = %q, want %q", idx, msg, want)
 		}
 	}
-	{
-		msg := got[1].Message
-		if msg != "b" {
-			t.Errorf("Findings()[1].Message = %q, want %q", msg, "b")
-		}
-	}
+	assertFindingMessage(0, "a")
+	assertFindingMessage(1, "b")
 
 	suggested := iter.SuggestedFindings()
 	if len(suggested) != 1 {
 		t.Fatalf("SuggestedFindings() returned %d items, want 1", len(suggested))
 	}
+
 	if suggested[0].Message != "s" {
 		t.Errorf("SuggestedFindings()[0].Message = %q, want %q", suggested[0].Message, "s")
 	}
@@ -731,6 +725,7 @@ func TestIteration_Findings_Empty(t *testing.T) {
 	if got := iter.Findings(); got != nil {
 		t.Errorf("Findings() = %v, want nil", got)
 	}
+
 	if got := iter.SuggestedFindings(); got != nil {
 		t.Errorf("SuggestedFindings() = %v, want nil", got)
 	}

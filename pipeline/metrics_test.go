@@ -8,19 +8,11 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
-func assertMetricsDuration(t *testing.T, got, want time.Duration, msg string) {
+func assertEqual[T comparable](t *testing.T, got, want T, msg string) {
 	t.Helper()
 
 	if got != want {
 		t.Errorf("%s = %v, want %v", msg, got, want)
-	}
-}
-
-func assertInt(t *testing.T, got, want int, msg string) {
-	t.Helper()
-
-	if got != want {
-		t.Errorf("%s = %d, want %d", msg, got, want)
 	}
 }
 
@@ -49,18 +41,8 @@ func TestMetrics_RecordStage(t *testing.T) {
 	m.RecordStage("detect", 50*time.Millisecond)
 	m.RecordStage("apply", 200*time.Millisecond)
 
-	assertMetricsDuration(
-		t,
-		m.StageDurations["detect"],
-		150*time.Millisecond,
-		"expected detect=150ms",
-	)
-	assertMetricsDuration(
-		t,
-		m.StageDurations["apply"],
-		200*time.Millisecond,
-		"expected apply=200ms",
-	)
+	assertEqual(t, m.StageDurations["detect"], 150*time.Millisecond, "expected detect=150ms")
+	assertEqual(t, m.StageDurations["apply"], 200*time.Millisecond, "expected apply=200ms")
 }
 
 func TestMetrics_RecordDetector(t *testing.T) {
@@ -69,14 +51,9 @@ func TestMetrics_RecordDetector(t *testing.T) {
 	m.RecordDetector("staticcheck", 30*time.Millisecond, 5)
 	m.RecordDetector("govet", 20*time.Millisecond, 3)
 
-	assertMetricsDuration(
-		t,
-		m.DetectorTimes["staticcheck"],
-		80*time.Millisecond,
-		"expected staticcheck=80ms",
-	)
-	assertInt(t, m.FindingsFound["staticcheck"], 15, "expected staticcheck findings=15")
-	assertInt(t, m.FindingsFound["govet"], 3, "expected govet findings=3")
+	assertEqual(t, m.DetectorTimes["staticcheck"], 80*time.Millisecond, "expected staticcheck=80ms")
+	assertEqual(t, m.FindingsFound["staticcheck"], 15, "expected staticcheck findings=15")
+	assertEqual(t, m.FindingsFound["govet"], 3, "expected govet findings=3")
 }
 
 func TestMetrics_RecordFix(t *testing.T) {
@@ -126,20 +103,10 @@ func TestMetrics_Snapshot(t *testing.T) {
 
 	snap := m.Snapshot()
 
-	assertMetricsDuration(
-		t,
-		snap.StageDurations["detect"],
-		100*time.Millisecond,
-		"snapshot: expected detect=100ms",
-	)
-	assertMetricsDuration(
-		t,
-		snap.DetectorTimes["govet"],
-		50*time.Millisecond,
-		"snapshot: expected govet=50ms",
-	)
-	assertInt(t, snap.FindingsFound["govet"], 5, "snapshot: expected govet findings=5")
-	assertInt(t, snap.FixesApplied, 1, "snapshot: expected 1 fix")
+	assertEqual(t, snap.StageDurations["detect"], 100*time.Millisecond, "snapshot: expected detect=100ms")
+	assertEqual(t, snap.DetectorTimes["govet"], 50*time.Millisecond, "snapshot: expected govet=50ms")
+	assertEqual(t, snap.FindingsFound["govet"], 5, "snapshot: expected govet findings=5")
+	assertEqual(t, snap.FixesApplied, 1, "snapshot: expected 1 fix")
 
 	if snap.TotalDuration < 900*time.Millisecond {
 		t.Errorf("snapshot: expected >= 900ms, got %v", snap.TotalDuration)

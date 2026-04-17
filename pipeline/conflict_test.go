@@ -37,6 +37,13 @@ func findings(fixSpecs ...any) []finding.Finding {
 	return fixes
 }
 
+func overlappingFindings() []finding.Finding {
+	return []finding.Finding{
+		findingWithRange("1", "a.go", 10, 10, 20),
+		findingWithRange("2", "a.go", 15, 15, 25),
+	}
+}
+
 // assertRangeLinesEq asserts two ranges have equal lines in a test.
 func assertRangeLinesEq(t *testing.T, got, want finding.Range) {
 	t.Helper()
@@ -63,13 +70,10 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 			0,
 		},
 		{
-			name: "conflict - overlapping ranges",
-			fixes: []finding.Finding{
-				findingWithRange("1", "a.go", 10, 10, 20),
-				findingWithRange("2", "a.go", 15, 15, 25),
-			},
-			expectedGroups:    1,
-			expectedConflicts: 1,
+			name:               "conflict - overlapping ranges",
+			fixes:              overlappingFindings(),
+			expectedGroups:     1,
+			expectedConflicts:  1,
 		},
 		{
 			"conflict - adjacent ranges",

@@ -27,6 +27,15 @@ func runFilterCase(t *testing.T, tc filterTestCase) {
 	})
 }
 
+// makeFixStrategyFindings creates test findings with varying FixStrategy values.
+func makeFixStrategyFindings(id2, id3 FixStrategy) []Finding {
+	return []Finding{
+		{ID: "1", FixStrategy: FixStrategyDirect},
+		{ID: "2", FixStrategy: id2},
+		{ID: "3", FixStrategy: id3},
+	}
+}
+
 // makeFindingsWithSeverity creates findings with specified severities.
 func makeFindingsWithSeverity(sev ...Severity) []Finding {
 	findings := make([]Finding, len(sev))
@@ -114,20 +123,7 @@ func TestByCategory(t *testing.T) {
 func TestByFixStrategy(t *testing.T) {
 	t.Parallel()
 
-	findings := []Finding{
-		{
-			ID:          "1",
-			FixStrategy: FixStrategyDirect,
-		},
-		{
-			ID:          "2",
-			FixStrategy: FixStrategyNone,
-		},
-		{
-			ID:          "3",
-			FixStrategy: FixStrategyDirect,
-		},
-	}
+	findings := makeFixStrategyFindings(FixStrategyNone, FixStrategyDirect)
 	runFilterCase(t, newFilterCase("direct", findings, ByFixStrategy(FixStrategyDirect), 2))
 }
 
@@ -174,20 +170,7 @@ func TestNotSuppressed(t *testing.T) {
 func TestHasFix(t *testing.T) {
 	t.Parallel()
 
-	findings := []Finding{
-		{
-			ID:          "1",
-			FixStrategy: FixStrategyDirect,
-		},
-		{
-			ID:          "2",
-			FixStrategy: FixStrategyNone,
-		},
-		{
-			ID:          "3",
-			FixStrategy: FixStrategyAI,
-		},
-	}
+	findings := makeFixStrategyFindings(FixStrategyNone, FixStrategyAI)
 	runFilterCase(t, newFilterCase("has fix", findings, HasFix, 2))
 }
 

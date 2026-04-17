@@ -149,9 +149,15 @@ func TestRangeIntersection(t *testing.T) {
 func adjacentCases() []overlapCase {
 	return []overlapCase{
 		{
-			name:     "adjacent at end",
-			r1:       Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20, Column: 5}},
-			r2:       Range{Start: Position{File: "a.go", Line: 20, Column: 5}, End: Position{Line: 30}},
+			name: "adjacent at end",
+			r1: Range{
+				Start: Position{File: "a.go", Line: 10},
+				End:   Position{Line: 20, Column: 5},
+			},
+			r2: Range{
+				Start: Position{File: "a.go", Line: 20, Column: 5},
+				End:   Position{Line: 30},
+			},
 			expected: true,
 		},
 		{"adjacent at start", rangeLine("a.go", 20, 30), rangeLine("a.go", 10, 20), true},

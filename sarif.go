@@ -286,7 +286,9 @@ func findingToSARIF(f Finding) SarifResult {
 // have a "critical" level. The original severity is preserved in the result's
 // Properties["go-finding/severity"] for round-trip fidelity. Use FromSARIFLevel
 // only when Properties are not available; otherwise prefer reading the property.
-func severityToSARIFLevel(s Severity) string { //nolint:goconst // SARIF level strings are distinct from Severity constants
+func severityToSARIFLevel(
+	s Severity,
+) string {
 	switch s {
 	case SeverityInfo:
 		return "note"

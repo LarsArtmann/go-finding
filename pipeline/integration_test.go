@@ -11,6 +11,19 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+func assertFindingsFound(t *testing.T, result *PipelineResult, want int, msg string) {
+	t.Helper()
+
+	if len(result.Iterations) == 0 {
+		t.Fatal("expected at least one iteration")
+	}
+
+	found := result.Iterations[0].FindingsFound
+	if found != want {
+		t.Errorf("%s = %d, want %d", msg, found, want)
+	}
+}
+
 func TestFixApplier_BackupRestoreRoundTrip(t *testing.T) {
 	t.Parallel()
 
@@ -161,12 +174,7 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 		t.Fatalf("iterations = %d, want 1", len(result.Iterations))
 	}
 
-	{
-		found := result.Iterations[0].FindingsFound
-		if found != 1 {
-			t.Errorf("FindingsFound = %d, want 1 (from good detector)", found)
-		}
-	}
+	assertFindingsFound(t, result, 1, "FindingsFound")
 }
 
 func TestPipeline_RetryConfig(t *testing.T) {
