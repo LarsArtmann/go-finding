@@ -230,29 +230,32 @@ func findingToSARIF(f Finding) SarifResult {
 		})
 	}
 
-	// Add metadata as properties
-	if len(f.Metadata) > 0 {
-		result.Properties = make(map[string]any)
-		for k, v := range f.Metadata {
-			result.Properties[k] = v
-		}
-	} else if f.Severity == SeverityCritical {
-		result.Properties = make(map[string]any)
-	}
+	// Preserve all non-standard fields in properties for round-trip fidelity.
+	props := make(map[string]any)
+	props["go-finding/id"] = f.ID
+	props["go-finding/severity"] = string(f.Severity)
+	props["go-finding/fixStrategy"] = string(f.FixStrategy)
+	props["go-finding/toolName"] = f.ToolName
 
-	if f.Severity == SeverityCritical {
-		if result.Properties == nil {
-			result.Properties = make(map[string]any)
-		}
-		result.Properties["toolName"] = f.ToolName
-		result.Properties["category"] = f.Category
-		result.Properties["tag"] = f.Tag
-		result.Properties["go-finding/severity"] = string(f.Severity)
-	} else if len(result.Properties) > 0 {
-		result.Properties["toolName"] = f.ToolName
-		result.Properties["category"] = f.Category
-		result.Properties["tag"] = f.Tag
+	if f.Category != "" {
+		props["go-finding/category"] = string(f.Category)
 	}
+	if f.Tag != "" {
+		props["go-finding/tag"] = f.Tag
+	}
+	if f.Confidence > 0 {
+		props["go-finding/confidence"] = f.Confidence
+	}
+	if f.Suggestion != "" {
+		props["go-finding/suggestion"] = f.Suggestion
+	}
+	if f.Snippet != "" {
+		props["go-finding/snippet"] = f.Snippet
+	}
+	for k, v := range f.Metadata {
+		props[k] = v
+	}
+	result.Properties = props
 
 	return result
 }

@@ -227,8 +227,8 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 	if !strings.Contains(raw, `"key1"`) || !strings.Contains(raw, `"val1"`) {
 		t.Errorf("SARIF output should contain metadata, got: %s", raw)
 	}
-	if !strings.Contains(raw, `"toolName"`) {
-		t.Error("SARIF output should contain toolName in properties")
+	if !strings.Contains(raw, `"go-finding/toolName"`) {
+		t.Error("SARIF output should contain go-finding/toolName in properties")
 	}
 }
 
@@ -249,5 +249,75 @@ func TestToSARIF_EmptyReport(t *testing.T) {
 
 	if len(log.Runs[0].Results) != 0 {
 		t.Errorf("Results length = %d, want 0", len(log.Runs[0].Results))
+	}
+}
+
+func TestToSARIF_RoundTripProperties(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		ID:          "govet:printf:main.go:10:5",
+		Rule:        "printf",
+		ToolName:    "govet",
+		Message:     "invalid format",
+		Severity:    SeverityCritical,
+		Position:    Position{File: "main.go", Line: 10, Column: 5},
+		Category:    CategoryCorrectness,
+		Tag:         "printf",
+		FixStrategy: FixStrategySuggest,
+		Confidence:  0.9,
+		Suggestion:  "fix format string",
+		Snippet:     "fmt.Sprintf(\"%d\")",
+		Metadata:    map[string]string{"custom": "value"},
+	}
+
+	report := NewReport(ToolInfo{Name: "govet"})
+	report.AddFinding(f)
+
+	sarif, err := report.ToSARIF()
+	if err != nil {
+		t.Fatalf("ToSARIF: %v", err)
+	}
+
+	var log struct {
+		Runs []struct {
+			Results []struct {
+				Properties map[string]any `json:"properties"`
+			} `json:"results"`
+		} `json:"runs"`
+	}
+	if err := json.Unmarshal(sarif, &log); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	props := log.Runs[0].Results[0].Properties
+
+	checks := map[string]any{
+		"go-finding/id":           "govet:printf:main.go:10:5",
+		"go-finding/severity":     "critical",
+		"go-finding/fixStrategy":  "suggest",
+		"go-finding/toolName":     "govet",
+		"go-finding/category":     "correctness",
+		"go-finding/tag":          "printf",
+		"go-finding/confidence":   0.9,
+		"go-finding/suggestion":   "fix format string",
+		"go-finding/snippet":      "fmt.Sprintf(\"%d\")",
+		"custom":                  "value",
+	}
+
+	for key, want := range checks {
+		got, ok := props[key]
+		if !ok {
+			t.Errorf("missing property %q", key)
+			continue
+		}
+		// JSON numbers unmarshal as float64
+		if f64, ok := want.(float64); ok {
+			if gotFloat, ok := got.(float64); !ok || gotFloat != f64 {
+				t.Errorf("properties[%q] = %v, want %v", key, got, want)
+			}
+		} else if got != want {
+			t.Errorf("properties[%q] = %v, want %v", key, got, want)
+		}
 	}
 }
