@@ -57,79 +57,21 @@ func run() int {
 	flag.StringVar(&memprof, "memprof", "", "write memory profile to file")
 	flag.Parse()
 
-	if cpuprof != "" {
-		f, err := os.Create(cpuprof)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating CPU profile: %v\n", err)
-
-			return 1
-		}
-
-		defer func() { _ = f.Close() }()
-
-		if err := pprof.StartCPUProfile(f); err != nil {
-			fmt.Fprintf(os.Stderr, "Error starting CPU profile: %v\n", err)
-
-			return 1
-		}
-
-		defer pprof.StopCPUProfile()
+	stopProf, err := setupProfiling(cpuprof, memprof)
+	if err != nil {
+		return 1
 	}
 
-	defer func() {
-		if memprof != "" {
-			f, err := os.Create(memprof)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error creating memory profile: %v\n", err)
-
-				return
-			}
-
-			defer func() { _ = f.Close() }()
-
-			if err := pprof.WriteHeapProfile(f); err != nil {
-				fmt.Fprintf(os.Stderr, "Error writing heap profile: %v\n", err)
-			}
-		}
-	}()
+	defer stopProf()
 
 	sev, err := parseSeverity(minSev)
 	if err != nil {
 		return fatalf("parsing severity", err)
 	}
 
-	var cfg pipelineConfigFile
-
-	if configFile != "" {
-		data, err := os.ReadFile(configFile)
-		if err != nil {
-			return fatalf("reading config", err)
-		}
-
-		switch ext := filepath.Ext(configFile); ext {
-		case ".yaml", ".yml":
-			err := yaml.Unmarshal(data, &cfg)
-			if err != nil {
-				return fatalf("parsing YAML config", err)
-			}
-		default:
-			err := json.Unmarshal(data, &cfg)
-			if err != nil {
-				return fatalf("parsing config", err)
-			}
-		}
-
-		if err := cfg.validate(); err != nil {
-			return fatalf("invalid config", err)
-		}
-	} else {
-		cfg = pipelineConfigFile{
-			MaxIterations:     maxIter,
-			ParallelDetectors: parallel,
-			VerifyAfterFix:    verify,
-			Timeout:           timeout.String(),
-			Detectors:         []detectorSpec{{Name: "govet"}, {Name: "staticcheck"}},
-		}
+	cfg, err := loadConfig(configFile, maxIter, parallel, verify, timeout)
+	if err != nil {
+		return fatalf("loading config", err)
 	}
 
 	detectorList := buildDetectors(cfg.Detectors, dir)
@@ -183,6 +125,88 @@ func run() int {
 		len(filtered), result.TotalIterations, result.Stable)
 
 	return 0
+}
+
+func setupProfiling(cpuprof, memprof string) (func(), error) {
+	var stopFuncs []func()
+
+	if cpuprof != "" {
+		f, err := os.Create(cpuprof)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating CPU profile: %v\n", err)
+
+			return nil, err
+		}
+
+		stopFuncs = append(stopFuncs, func() { _ = f.Close() })
+
+		if err := pprof.StartCPUProfile(f); err != nil {
+			fmt.Fprintf(os.Stderr, "Error starting CPU profile: %v\n", err)
+
+			return nil, err
+		}
+
+		stopFuncs = append(stopFuncs, pprof.StopCPUProfile)
+	}
+
+	if memprof != "" {
+		stopFuncs = append(stopFuncs, func() {
+			f, err := os.Create(memprof)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error creating memory profile: %v\n", err)
+
+				return
+			}
+
+			defer func() { _ = f.Close() }()
+
+			if err := pprof.WriteHeapProfile(f); err != nil {
+				fmt.Fprintf(os.Stderr, "Error writing heap profile: %v\n", err)
+			}
+		})
+	}
+
+	return func() {
+		for i := len(stopFuncs) - 1; i >= 0; i-- {
+			stopFuncs[i]()
+		}
+	}, nil
+}
+
+func loadConfig(configFile string, maxIter int, parallel, verify bool, timeout time.Duration) (pipelineConfigFile, error) {
+	if configFile != "" {
+		data, err := os.ReadFile(configFile)
+		if err != nil {
+			return pipelineConfigFile{}, fmt.Errorf("reading config: %w", err)
+		}
+
+		var cfg pipelineConfigFile
+
+		switch ext := filepath.Ext(configFile); ext {
+		case ".yaml", ".yml":
+			if err := yaml.Unmarshal(data, &cfg); err != nil {
+				return pipelineConfigFile{}, fmt.Errorf("parsing YAML config: %w", err)
+			}
+		default:
+			if err := json.Unmarshal(data, &cfg); err != nil {
+				return pipelineConfigFile{}, fmt.Errorf("parsing config: %w", err)
+			}
+		}
+
+		if err := cfg.validate(); err != nil {
+			return pipelineConfigFile{}, fmt.Errorf("invalid config: %w", err)
+		}
+
+		return cfg, nil
+	}
+
+	return pipelineConfigFile{
+		MaxIterations:     maxIter,
+		ParallelDetectors: parallel,
+		VerifyAfterFix:    verify,
+		Timeout:           timeout.String(),
+		Detectors:         []detectorSpec{{Name: "govet"}, {Name: "staticcheck"}},
+	}, nil
 }
 
 func parseSeverity(s string) (finding.Severity, error) {

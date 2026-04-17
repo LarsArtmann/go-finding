@@ -51,7 +51,7 @@ func (c *ConflictDetector) DetectConflicts(
 
 	var (
 		groups    = make([]FixGroup, 0, len(byFile))
-		conflicts = make([]finding.Finding, 0)
+		conflicts []finding.Finding //nolint:prealloc // size depends on conflict detection results
 	)
 
 	for file, fileFixes := range byFile {
@@ -132,7 +132,7 @@ func (c *ConflictDetector) detectConflictsInFile(
 
 // getFindingRange extracts the range for a finding.
 // Falls back to a single position if no range is specified.
-func (_ *ConflictDetector) getFindingRange(f finding.Finding) finding.Range {
+func (*ConflictDetector) getFindingRange(f finding.Finding) finding.Range { //nolint:revive // receiver required for method set
 	if f.Range != nil && f.Range.IsValid() {
 		return *f.Range
 	}
