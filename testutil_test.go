@@ -5,13 +5,6 @@ import (
 	"testing"
 )
 
-// MakeRangePtr returns a pointer to a Range for testing purposes.
-func MakeRangePtr(file string, startLine, startCol, endLine, endCol int) *Range {
-	r := NewRange(file, startLine, startCol, endLine, endCol)
-
-	return &r
-}
-
 // MakeFinding creates a Finding with common fields for testing.
 func MakeFinding(id, rule, tool, message string, severity Severity) Finding {
 	return Finding{
@@ -105,6 +98,24 @@ func unmarshalJSON(t *testing.T, data []byte, v any) {
 
 	if err := json.Unmarshal(data, v); err != nil {
 		t.Fatalf("unmarshal: %v", err)
+	}
+}
+
+// AssertLen asserts a slice has the expected length.
+func AssertLen[T any](t *testing.T, got []T, want int, msg string) {
+	t.Helper()
+
+	if len(got) != want {
+		t.Errorf("%s = %d, want %d", msg, len(got), want)
+	}
+}
+
+// AssertEmpty asserts a slice is empty.
+func AssertEmpty[T any](t *testing.T, got []T, msg string) {
+	t.Helper()
+
+	if len(got) != 0 {
+		t.Errorf("%s = %d, want 0", msg, len(got))
 	}
 }
 

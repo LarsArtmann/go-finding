@@ -60,9 +60,7 @@ func TestFilter_Empty(t *testing.T) {
 	t.Parallel()
 
 	result := Filter(nil, BySeverity(SeverityError))
-	if len(result) != 0 {
-		t.Errorf("Filter(nil) = %d, want 0", len(result))
-	}
+	AssertEmpty(t, result, "Filter(nil)")
 }
 
 func TestFilter_NoPredicates(t *testing.T) {

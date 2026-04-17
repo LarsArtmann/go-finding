@@ -70,10 +70,10 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 			0,
 		},
 		{
-			name:               "conflict - overlapping ranges",
-			fixes:              overlappingFindings(),
-			expectedGroups:     1,
-			expectedConflicts:  1,
+			name:              "conflict - overlapping ranges",
+			fixes:             overlappingFindings(),
+			expectedGroups:    1,
+			expectedConflicts: 1,
 		},
 		{
 			"conflict - adjacent ranges",

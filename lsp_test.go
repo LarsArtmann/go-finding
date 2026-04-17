@@ -200,7 +200,7 @@ func TestToLSP(t *testing.T) {
 			Message:  "invalid printf format",
 			Severity: SeverityWarning,
 			Position: Position{File: "main.go", Line: 10, Column: 5},
-			Range:    MakeRangePtr("main.go", 10, 5, 10, 20),
+			Range:    NewRangePtr("main.go", 10, 5, 10, 20),
 		}
 
 		diag := f.ToLSP()

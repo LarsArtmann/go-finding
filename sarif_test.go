@@ -207,7 +207,7 @@ func TestToSARIF_WithFix(t *testing.T) {
 				BeforeCode:  "old",
 				AfterCode:   "new",
 				Suggestion:  "replace old with new",
-				Range:       MakeRangePtr("a.go", 5, 1, 5, 10),
+				Range:       NewRangePtr("a.go", 5, 1, 5, 10),
 			},
 		},
 	}

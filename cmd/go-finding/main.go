@@ -24,6 +24,13 @@ func main() {
 	os.Exit(run())
 }
 
+// fatalf prints an error message and returns exit code 1.
+func fatalf(op string, err error) int {
+	fmt.Fprintf(os.Stderr, "Error %s: %v\n", op, err)
+
+	return 1
+}
+
 func run() int {
 	var (
 		dir        string
@@ -88,9 +95,7 @@ func run() int {
 
 	sev, err := parseSeverity(minSev)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error %s: %v\n", "parsing severity", err)
-
-		return 1
+		return fatalf("parsing severity", err)
 	}
 
 	var cfg pipelineConfigFile
@@ -98,32 +103,24 @@ func run() int {
 	if configFile != "" {
 		data, err := os.ReadFile(configFile)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error %s: %v\n", "reading config", err)
-
-			return 1
+			return fatalf("reading config", err)
 		}
 
 		switch ext := filepath.Ext(configFile); ext {
 		case ".yaml", ".yml":
 			err := yaml.Unmarshal(data, &cfg)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error %s: %v\n", "parsing YAML config", err)
-
-				return 1
+				return fatalf("parsing YAML config", err)
 			}
 		default:
 			err := json.Unmarshal(data, &cfg)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error %s: %v\n", "parsing config", err)
-
-				return 1
+				return fatalf("parsing config", err)
 			}
 		}
 
 		if err := cfg.validate(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error %s: %v\n", "invalid config", err)
-
-			return 1
+			return fatalf("invalid config", err)
 		}
 	} else {
 		cfg = pipelineConfigFile{
@@ -161,9 +158,7 @@ func run() int {
 
 	result, err := p.Run(ctx)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error %s: %v\n", "running pipeline", err)
-
-		return 1
+		return fatalf("running pipeline", err)
 	}
 
 	var allFindings []finding.Finding
@@ -181,9 +176,7 @@ func run() int {
 	report.ComputeSummary()
 
 	if err := outputResults(os.Stdout, report, format); err != nil {
-		fmt.Fprintf(os.Stderr, "Error %s: %v\n", "writing output", err)
-
-		return 1
+		return fatalf("writing output", err)
 	}
 
 	fmt.Fprintf(os.Stderr, "\nDone: %d findings (%d iterations, stable=%v)\n",

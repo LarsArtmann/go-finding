@@ -66,9 +66,7 @@ func TestReportByCategory(t *testing.T) {
 	}
 
 	none := r.ByCategory("nonexistent")
-	if len(none) != 0 {
-		t.Errorf("expected 0 findings for nonexistent category")
-	}
+	AssertEmpty(t, none, "nonexistent category")
 }
 
 func TestReportByFixStrategy(t *testing.T) {
