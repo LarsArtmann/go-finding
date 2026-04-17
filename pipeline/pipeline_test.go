@@ -492,10 +492,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 			BeforeCode: "println(\"hello\")",
 			AfterCode:  "fmt.Println(\"world\")",
 			Position:   finding.Position{File: "test.go", Line: 5, Column: 2},
-			Range: &finding.Range{
-				Start: finding.Position{File: "test.go", Line: 5, Column: 2},
-				End:   finding.Position{File: "test.go", Line: 5, Column: 18},
-			},
+			Range:      ptrRange(finding.NewRange("test.go", 5, 2, 5, 18)),
 			FixStrategy: finding.FixStrategyDirect,
 		},
 	}
@@ -533,13 +530,10 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 	// Replace lines 3-5 (func old) with new content.
 	fixes := []finding.Finding{
 		{
-			BeforeCode: "func old() {\n\treturn\n}",
-			AfterCode:  "func new() {\n\treturn 42\n}",
-			Position:   finding.Position{File: "test.go", Line: 3},
-			Range: &finding.Range{
-				Start: finding.Position{File: "test.go", Line: 3, Column: 1},
-				End:   finding.Position{File: "test.go", Line: 5, Column: 2},
-			},
+			BeforeCode:  "func old() {\n\treturn\n}",
+			AfterCode:   "func new() {\n\treturn 42\n}",
+			Position:    finding.Position{File: "test.go", Line: 3},
+			Range:       ptrRange(finding.NewRange("test.go", 3, 1, 5, 2)),
 			FixStrategy: finding.FixStrategyDirect,
 		},
 	}

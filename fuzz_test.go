@@ -149,7 +149,7 @@ func FuzzGroupByFile(f *testing.F) {
 			t.Errorf("GroupByFile total: got %d, want %d", total, len(findings))
 		}
 
-		if file1 == file2 && file1 == file3 {
+		if file1 == file2 && file2 == file3 {
 			if len(groups) != 1 {
 				t.Errorf("same file: expected 1 group, got %d", len(groups))
 			}

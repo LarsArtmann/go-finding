@@ -383,7 +383,9 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 			result.Direct = append(result.Direct, f)
 		case finding.FixStrategySuggest:
 			result.Suggest = append(result.Suggest, f)
-		default:
+		case finding.FixStrategyAI:
+			result.Suggest = append(result.Suggest, f)
+		case finding.FixStrategyNone:
 			result.None = append(result.None, f)
 		}
 	}

@@ -310,3 +310,16 @@ func (r Range) Adjacent(other Range) bool {
 
 	return false
 }
+
+// Pos creates a Position with the given file, line, and column.
+func Pos(file string, line, column int) Position {
+	return Position{File: file, Line: line, Column: column}
+}
+
+// NewRange creates a Range with the given file, start/end lines, and columns.
+func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
+	return Range{
+		Start: Position{File: file, Line: startLine, Column: startCol},
+		End:   Position{File: file, Line: endLine, Column: endCol},
+	}
+}

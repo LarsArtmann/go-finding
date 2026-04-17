@@ -23,12 +23,13 @@ func findingAt(id, file string, line int) finding.Finding {
 
 func findings(fixSpecs ...any) []finding.Finding {
 	var fixes []finding.Finding
-	for i := 0; i < len(fixSpecs); i += 3 {
-		fixes = append(fixes, findingAt(
-			fixSpecs[i].(string),
-			fixSpecs[i+1].(string),
-			fixSpecs[i+2].(int),
-		))
+	for i := 0; i+2 < len(fixSpecs); i += 3 {
+		id, idOk := fixSpecs[i].(string)
+		file, fileOk := fixSpecs[i+1].(string)
+		line, lineOk := fixSpecs[i+2].(int)
+		if idOk && fileOk && lineOk {
+			fixes = append(fixes, findingAt(id, file, line))
+		}
 	}
 	return fixes
 }

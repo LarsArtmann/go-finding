@@ -442,3 +442,5 @@ func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 func ptrTime(t time.Time) *time.Time {
 	return new(t)
 }
+
+// ptrTime is used by the go:fix directive for testing coverage instrumentation.

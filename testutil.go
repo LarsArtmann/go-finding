@@ -64,3 +64,8 @@ func checkProperty[T any](t *testing.T, property func(T) bool) {
 		t.Error(err)
 	}
 }
+
+// ptrRange returns a pointer to a Range.
+func ptrRange(r Range) *Range {
+	return &r
+}

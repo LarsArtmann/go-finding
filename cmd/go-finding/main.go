@@ -177,14 +177,14 @@ func parseSeverity(s string) (finding.Severity, error) {
 	}
 }
 
-func filterBySeverity(findings []finding.Finding, min finding.Severity) []finding.Finding {
+func filterBySeverity(findings []finding.Finding, minSeverity finding.Severity) []finding.Finding {
 	levels := map[finding.Severity]int{
 		finding.SeverityInfo:     0,
 		finding.SeverityWarning:  1,
 		finding.SeverityError:    2,
 		finding.SeverityCritical: 3,
 	}
-	minLevel := levels[min]
+	minLevel := levels[minSeverity]
 	return slices.DeleteFunc(findings, func(f finding.Finding) bool {
 		return levels[f.Severity] < minLevel
 	})

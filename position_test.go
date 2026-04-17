@@ -25,6 +25,8 @@ func ptrRange(r Range) *Range {
 	return new(r)
 }
 
+// ptrRange is used by the go:fix directive for testing coverage instrumentation.
+
 // overlapCase represents a test case for Overlaps/Adjacent tests.
 type overlapCase struct {
 	name     string

@@ -39,35 +39,19 @@ func TestPosition_Equal(t *testing.T) {
 func TestRange_Equal(t *testing.T) {
 	t.Parallel()
 
+	lineEq := func(sl, el int) Range {
+		return Range{Start: Position{Line: sl}, End: Position{Line: el}}
+	}
+
 	tests := []struct {
 		name string
 		a, b Range
 		want bool
 	}{
-		{
-			"identical",
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 3}},
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 3}},
-			true,
-		},
-		{
-			"different start",
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 3}},
-			Range{Start: Position{File: "a.go", Line: 2}, End: Position{File: "a.go", Line: 3}},
-			false,
-		},
-		{
-			"different end",
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 3}},
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 4}},
-			false,
-		},
-		{
-			"both empty end",
-			Range{Start: Position{File: "a.go", Line: 1}},
-			Range{Start: Position{File: "a.go", Line: 1}},
-			true,
-		},
+		{"identical", lineEq(1, 3), lineEq(1, 3), true},
+		{"different start", lineEq(1, 3), lineEq(2, 3), false},
+		{"different end", lineEq(1, 3), lineEq(1, 4), false},
+		{"both empty end", Range{Start: Position{File: "a.go", Line: 1}}, Range{Start: Position{File: "a.go", Line: 1}}, true},
 	}
 
 	RunEqualTests(t, tests, func(a, b Range) bool { return a.Equal(b) }, "Range")
@@ -176,32 +160,19 @@ func TestFinding_Equal_Suppression(t *testing.T) {
 func TestPosition_Compare(t *testing.T) {
 	t.Parallel()
 
+	p := func(f string, l, c int) Position { return Pos(f, l, c) }
+
 	tests := []struct {
 		name string
-		a, b Position
-		want int
+		a, b  Position
+		want  int
 	}{
-		{
-			"equal",
-			Position{File: "a.go", Line: 1, Column: 2},
-			Position{File: "a.go", Line: 1, Column: 2},
-			0,
-		},
-		{"different file", Position{File: "a.go"}, Position{File: "b.go"}, -1},
-		{"different file reverse", Position{File: "b.go"}, Position{File: "a.go"}, 1},
-		{"different line", Position{File: "a.go", Line: 1}, Position{File: "a.go", Line: 2}, -1},
-		{
-			"different line reverse",
-			Position{File: "a.go", Line: 2},
-			Position{File: "a.go", Line: 1},
-			1,
-		},
-		{
-			"different column",
-			Position{File: "a.go", Line: 1, Column: 1},
-			Position{File: "a.go", Line: 1, Column: 2},
-			-1,
-		},
+		{"equal", p("a.go", 1, 2), p("a.go", 1, 2), 0},
+		{"different file", p("a.go", 0, 0), p("b.go", 0, 0), -1},
+		{"different file reverse", p("b.go", 0, 0), p("a.go", 0, 0), 1},
+		{"different line", p("a.go", 1, 0), p("a.go", 2, 0), -1},
+		{"different line reverse", p("a.go", 2, 0), p("a.go", 1, 0), 1},
+		{"different column", p("a.go", 1, 1), p("a.go", 1, 2), -1},
 		{"both zero", Position{}, Position{}, 0},
 	}
 
@@ -218,41 +189,20 @@ func TestPosition_Compare(t *testing.T) {
 func TestRange_Compare(t *testing.T) {
 	t.Parallel()
 
+	rng := func(f string, sl, el int) Range {
+		return NewRange(f, sl, 0, el, 0)
+	}
+
 	tests := []struct {
 		name string
 		a, b Range
 		want int
 	}{
-		{
-			"equal",
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 3}},
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 3}},
-			0,
-		},
-		{
-			"earlier start",
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 3}},
-			Range{Start: Position{File: "a.go", Line: 2}, End: Position{File: "a.go", Line: 3}},
-			-1,
-		},
-		{
-			"later start",
-			Range{Start: Position{File: "a.go", Line: 2}, End: Position{File: "a.go", Line: 3}},
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 3}},
-			1,
-		},
-		{
-			"same start different end",
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 2}},
-			Range{Start: Position{File: "a.go", Line: 1}, End: Position{File: "a.go", Line: 3}},
-			-1,
-		},
-		{
-			"different file",
-			Range{Start: Position{File: "a.go", Line: 1}},
-			Range{Start: Position{File: "b.go", Line: 1}},
-			-1,
-		},
+		{"equal", rng("a.go", 1, 3), rng("a.go", 1, 3), 0},
+		{"earlier start", rng("a.go", 1, 3), rng("a.go", 2, 3), -1},
+		{"later start", rng("a.go", 2, 3), rng("a.go", 1, 3), 1},
+		{"same start diff end", rng("a.go", 1, 2), rng("a.go", 1, 3), -1},
+		{"different file", NewRange("a.go", 1, 0, 0, 0), NewRange("b.go", 1, 0, 0, 0), -1},
 	}
 
 	for _, tt := range tests {

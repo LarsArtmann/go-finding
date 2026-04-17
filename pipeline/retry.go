@@ -29,9 +29,7 @@ func DefaultRetryConfig() RetryConfig {
 // delay calculates the backoff duration for the given attempt with jitter.
 func (c RetryConfig) delay(attempt int) time.Duration {
 	d := min(time.Duration(math.Pow(2, float64(attempt)))*c.BaseDelay, c.MaxDelay)
-	// Add up to 25% jitter to avoid thundering herd
 	if quarter := int64(d) / 4; quarter > 0 {
-		//nolint:gosec // G404: math/rand is acceptable for jitter
 		jitter := time.Duration(rand.Int63n(quarter))
 		d += jitter
 	}

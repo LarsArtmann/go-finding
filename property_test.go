@@ -61,9 +61,7 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 					rng,
 				) + ":" + randomSeedFile(
 					rng,
-				) + ":" + string(
-					rune('A'+rng.Intn(26)),
-				),
+				) + ":" + string(rune('A')+rune(uint8(rng.Intn(26)))),
 				Severity: sevFromInt(rng.Intn(4)),
 			}
 		}

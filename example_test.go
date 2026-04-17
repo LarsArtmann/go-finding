@@ -255,10 +255,7 @@ func ExampleSeverity() {
 }
 
 func ExampleRange() {
-	r := finding.Range{
-		Start: finding.Position{File: "main.go", Line: 10, Column: 1},
-		End:   finding.Position{File: "main.go", Line: 15, Column: 20},
-	}
+	r := finding.NewRange("main.go", 10, 1, 15, 20)
 
 	p := finding.Position{File: "main.go", Line: 12, Column: 5}
 	fmt.Println("Contains:", r.Contains(p))
