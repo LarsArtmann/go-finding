@@ -321,7 +321,7 @@ func TestTriage(t *testing.T) {
 		{ID: "2", FixStrategy: finding.FixStrategySuggest},
 		{ID: "3", FixStrategy: finding.FixStrategyAI},
 		{ID: "4", FixStrategy: finding.FixStrategyNone},
-		{ID: "5", FixStrategy: ""}, // Empty strategy
+		{ID: "5", FixStrategy: ""},
 	}
 
 	p := &Pipeline{config: DefaultConfig()}
@@ -511,7 +511,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 
 	testFile := filepath.Join(tempDir, "test.go")
 
-	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\t"
+	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tprintln(\"hello\")\n}\n"
 	if err := writeFile(testFile, []byte(content), 0o644); err != nil {
 		t.Fatalf("create test file: %v", err)
 	}

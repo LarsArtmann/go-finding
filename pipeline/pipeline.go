@@ -422,9 +422,7 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 		case finding.FixStrategyNone:
 			result.None = append(result.None, f)
 		default:
-			if f.FixStrategy != "" {
-				result.None = append(result.None, f)
-			}
+			result.None = append(result.None, f)
 		}
 	}
 
