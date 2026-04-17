@@ -139,32 +139,24 @@ func extendRange(r1, r2 finding.Range) finding.Range {
 	result := r1
 
 	// Extend start if r2 starts earlier
-	if r2.Start.Line < result.Start.Line ||
-		(r2.Start.Line == result.Start.Line && r2.Start.Column < result.Start.Column) {
+	if r2.Start.Compare(result.Start) < 0 {
 		result.Start = r2.Start
 	}
 
-	// Determine effective end positions
-	r1EndLine := r1.End.Line
-	r1EndCol := r1.End.Column
-	if r1EndLine == 0 {
-		r1EndLine = r1.Start.Line
-		r1EndCol = r1.Start.Column
+	// Determine effective end positions (single-point ranges end at their start)
+	r1End := r1.End
+	if r1End.Line == 0 {
+		r1End = r1.Start
 	}
 
-	r2EndLine := r2.End.Line
-	r2EndCol := r2.End.Column
-	r2EndPos := r2.End
-	if r2EndLine == 0 {
-		r2EndLine = r2.Start.Line
-		r2EndCol = r2.Start.Column
-		r2EndPos = r2.Start // Single-point range ends at its start
+	r2End := r2.End
+	if r2End.Line == 0 {
+		r2End = r2.Start
 	}
 
 	// Extend end if r2 ends later
-	if r2EndLine > r1EndLine ||
-		(r2EndLine == r1EndLine && r2EndCol > r1EndCol) {
-		result.End = r2EndPos
+	if r2End.Compare(r1End) > 0 {
+		result.End = r2End
 	}
 
 	return result
