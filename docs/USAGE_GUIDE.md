@@ -187,6 +187,7 @@ Standard categories:
 | `CategoryConfiguration` | `"configuration"` |
 | `CategoryDocumentation` | `"documentation"` |
 | `CategoryTesting` | `"testing"` |
+| `CategoryUnused` | `"unused"` |
 
 Custom categories are valid — `Category` is a string type.
 

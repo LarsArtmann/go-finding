@@ -47,11 +47,19 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `pipeline/retry.go`        | Exponential backoff retry wrapper for detectors  |
 | `pipeline/partial.go`      | Partial success: collect from failed detectors   |
 
+#### CLI
+
+| File | Purpose |
+|------|---------|
+| `cmd/go-finding/main.go` | Functional CLI: govet+staticcheck detectors, pipeline integration, text/json/sarif output, config validation |
+
 #### Examples
 
-| File                       | Purpose                                          |
-| -------------------------- | ------------------------------------------------ |
-| `examples/govet/main.go`   | Go vet JSON → Finding converter (Detector impl)  |
+| File | Purpose |
+|------|---------|
+| `examples/govet/main.go` | Go vet JSON → Finding converter (Detector impl) |
+| `examples/staticcheck/main.go` | Staticcheck JSON → Finding converter (Detector impl) |
+| `examples/detectorutil/tool.go` | Shared helper: RunTool executes external tools and captures output |
 
 ### Testing
 
@@ -65,28 +73,34 @@ just lint        # Run linter
 
 - `golang.org/x/tools` - go/analysis framework
 - `golang.org/x/sync` - errgroup for parallel detection
-- Standard library only (minimal deps)
+- `gopkg.in/yaml.v3` - YAML config file parsing (CLI only)
 
 ### Design Principles
 
-1. **Zero dependencies** for core types
-2. **Immutable** - Findings are data, not state machines
-3. **Lossless** - Conversions preserve all data
-4. **Compatible** - Works with existing Go analysis tools
-5. **Resilient** - Retry logic, partial success, nil-safe metrics
+1. **Minimal dependencies** — core types depend only on stdlib
+2. **Immutable** — Findings are data, not state machines
+3. **Lossless** — Conversions (SARIF, LSP) preserve all data via Metadata
+4. **Compatible** — Works with existing Go analysis tools
+5. **Resilient** — Retry logic, partial success, nil-safe metrics
 
 ### Pipeline Features
 
-- **Conflict detection** - Overlapping fixes are filtered before application
-- **Verification** - Optional post-fix verification by re-running detectors
-- **Metrics** - Optional timing/count collection with snapshot support
-- **Retry** - Configurable exponential backoff for flaky detectors
-- **Partial success** - Continue with findings from successful detectors
-- **Parallel detection** - errgroup-based concurrent detector execution
+- **Conflict detection** — Overlapping fixes are filtered before application
+- **Verification** — Optional post-fix verification by re-running detectors
+- **Metrics** — Optional timing/count collection with snapshot support
+- **Retry** — Configurable exponential backoff for flaky detectors
+- **Partial success** — Continue with findings from successful detectors
+- **Parallel detection** — errgroup-based concurrent detector execution
+- **Line-based FixApplier** — Range-aware fixes target exact line spans; falls back to string replacement
 
-### Future Work
+### CLI Features
 
-See EXECUTION_PLAN_V2.md for roadmap. Remaining items: CLI tool (14), config files (15), watch mode (16), go-sarif evaluation (8).
+- Built-in govet and staticcheck detectors
+- Text, JSON, and SARIF output formats
+- YAML/JSON config file support with validation
+- Severity filtering, timeout, max-iterations
+- CPU/memory profiling
+- Graceful degradation on detector failures
 
 ---
 
