@@ -361,7 +361,6 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 type TriageResult struct {
 	Direct  []finding.Finding
 	Suggest []finding.Finding
-	AI      []finding.Finding
 	None    []finding.Finding
 }
 
@@ -370,7 +369,6 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 	result := &TriageResult{
 		Direct:  make([]finding.Finding, 0),
 		Suggest: make([]finding.Finding, 0),
-		AI:      make([]finding.Finding, 0),
 		None:    make([]finding.Finding, 0),
 	}
 
@@ -380,8 +378,6 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 			result.Direct = append(result.Direct, f)
 		case finding.FixStrategySuggest:
 			result.Suggest = append(result.Suggest, f)
-		case finding.FixStrategyAI:
-			result.AI = append(result.AI, f)
 		default:
 			result.None = append(result.None, f)
 		}

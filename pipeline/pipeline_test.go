@@ -297,11 +297,8 @@ func TestTriage(t *testing.T) {
 	if len(result.Suggest) != 1 {
 		t.Errorf("expected 1 suggest, got %d", len(result.Suggest))
 	}
-	if len(result.AI) != 1 {
-		t.Errorf("expected 1 AI, got %d", len(result.AI))
-	}
-	if len(result.None) != 2 {
-		t.Errorf("expected 2 none, got %d", len(result.None))
+	if len(result.None) != 3 {
+		t.Errorf("expected 3 none (including AI), got %d", len(result.None))
 	}
 }
 
