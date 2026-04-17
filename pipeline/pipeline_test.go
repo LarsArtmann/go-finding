@@ -142,8 +142,11 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 		t.Error("expected non-stable result (findings present but not auto-fixed)")
 	}
 	// Should run until max iterations since findings persist and can't be auto-fixed
-	if result.TotalIterations != config.MaxIterations {
-		t.Errorf("expected %d iterations, got %d", config.MaxIterations, result.TotalIterations)
+	{
+		iterations := result.TotalIterations
+		if iterations != config.MaxIterations {
+			t.Errorf("expected %d iterations, got %d", config.MaxIterations, iterations)
+		}
 	}
 
 	if len(result.Iterations) != config.MaxIterations {
@@ -267,8 +270,11 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if result.TotalIterations != config.MaxIterations {
-		t.Errorf("expected %d iterations, got %d", config.MaxIterations, result.TotalIterations)
+	{
+		total := result.TotalIterations
+		if total != config.MaxIterations {
+			t.Errorf("expected %d iterations, got %d", config.MaxIterations, total)
+		}
 	}
 }
 
@@ -309,8 +315,11 @@ func TestPipelineRun_Parallel(t *testing.T) {
 		t.Fatal("expected at least one iteration")
 	}
 
-	if result.Iterations[0].FindingsFound != 2 {
-		t.Errorf("expected 2 findings, got %d", result.Iterations[0].FindingsFound)
+	{
+		found := result.Iterations[0].FindingsFound
+		if found != 2 {
+			t.Errorf("expected 2 findings, got %d", found)
+		}
 	}
 }
 
@@ -512,8 +521,8 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 	testFile := filepath.Join(tempDir, "test.go")
 
 	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tprintln(\"hello\")\n}\n"
-	if err := writeFile(testFile, []byte(content), 0o644); err != nil {
-		t.Fatalf("create test file: %v", err)
+	if writeErr := writeFile(testFile, []byte(content), 0o644); writeErr != nil {
+		t.Fatalf("create test file: %v", writeErr)
 	}
 
 	// Fix only the second "println" at line 5, using Range for precision.
@@ -557,8 +566,8 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 	testFile := filepath.Join(tempDir, "test.go")
 
 	content := "package main\n\nfunc old() {\n\treturn\n}\n\nfunc main() {}\n"
-	if err := writeFile(testFile, []byte(content), 0o644); err != nil {
-		t.Fatalf("create test file: %v", err)
+	if wErr := writeFile(testFile, []byte(content), 0o644); wErr != nil {
+		t.Fatalf("create test file: %v", wErr)
 	}
 
 	// Replace lines 3-5 (func old) with new content.
@@ -693,11 +702,17 @@ func TestIteration_Findings(t *testing.T) {
 	if len(got) != 2 {
 		t.Fatalf("Findings() returned %d items, want 2", len(got))
 	}
-	if got[0].Message != "a" {
-		t.Errorf("Findings()[0].Message = %q, want %q", got[0].Message, "a")
+	{
+		msg := got[0].Message
+		if msg != "a" {
+			t.Errorf("Findings()[0].Message = %q, want %q", msg, "a")
+		}
 	}
-	if got[1].Message != "b" {
-		t.Errorf("Findings()[1].Message = %q, want %q", got[1].Message, "b")
+	{
+		msg := got[1].Message
+		if msg != "b" {
+			t.Errorf("Findings()[1].Message = %q, want %q", msg, "b")
+		}
 	}
 
 	suggested := iter.SuggestedFindings()

@@ -63,13 +63,13 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 			0,
 		},
 		{
-			"conflict - overlapping ranges",
-			[]finding.Finding{
+			name: "conflict - overlapping ranges",
+			fixes: []finding.Finding{
 				findingWithRange("1", "a.go", 10, 10, 20),
 				findingWithRange("2", "a.go", 15, 15, 25),
 			},
-			1,
-			1,
+			expectedGroups:    1,
+			expectedConflicts: 1,
 		},
 		{
 			"conflict - adjacent ranges",
@@ -118,10 +118,10 @@ func TestPositionLess(t *testing.T) {
 	}{
 		{"different lines", finding.Position{Line: 10}, finding.Position{Line: 20}, true},
 		{
-			"same line, different columns",
-			finding.Position{Line: 10, Column: 5},
-			finding.Position{Line: 10, Column: 10},
-			true,
+			name:     "same line, different columns",
+			a:        finding.Position{Line: 10, Column: 5},
+			b:        finding.Position{Line: 10, Column: 10},
+			expected: true,
 		},
 		{
 			"equal positions",

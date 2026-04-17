@@ -96,8 +96,11 @@ func TestParseGoVetJSON(t *testing.T) {
 	if f.Message != "unused variable x" {
 		t.Errorf("Message = %q, want %q", f.Message, "unused variable x")
 	}
-	if f.Severity != finding.SeverityWarning {
-		t.Errorf("Severity = %v, want %v", f.Severity, finding.SeverityWarning)
+	{
+		got := f.Severity
+		if got != finding.SeverityWarning {
+			t.Errorf("Severity = %v, want %v", got, finding.SeverityWarning)
+		}
 	}
 	if f.Category != finding.CategoryCorrectness {
 		t.Errorf("Category = %v, want %v", f.Category, finding.CategoryCorrectness)
@@ -149,8 +152,11 @@ func TestParseStaticcheckJSON(t *testing.T) {
 	if f.Rule != "SA1000" {
 		t.Errorf("Rule = %q, want %q", f.Rule, "SA1000")
 	}
-	if f.Severity != finding.SeverityWarning {
-		t.Errorf("Severity = %v, want %v", f.Severity, finding.SeverityWarning)
+	{
+		actual := f.Severity
+		if actual != finding.SeverityWarning {
+			t.Errorf("Severity = %v, want %v", actual, finding.SeverityWarning)
+		}
 	}
 	if f.Category != finding.CategoryStyle {
 		t.Errorf("Category = %v, want %v", f.Category, finding.CategoryStyle)
@@ -164,8 +170,11 @@ func TestParseStaticcheckJSON(t *testing.T) {
 	if f2.Rule != "S1001" {
 		t.Errorf("Rule = %q, want %q", f2.Rule, "S1001")
 	}
-	if f2.Severity != finding.SeverityError {
-		t.Errorf("Severity = %v, want %v", f2.Severity, finding.SeverityError)
+	{
+		sev := f2.Severity
+		if sev != finding.SeverityError {
+			t.Errorf("Severity = %v, want %v", sev, finding.SeverityError)
+		}
 	}
 	if f2.Category != finding.CategoryStyle {
 		t.Errorf("Category = %v, want %v", f2.Category, finding.CategoryStyle)

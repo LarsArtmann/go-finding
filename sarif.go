@@ -272,14 +272,14 @@ func findingToSARIF(f Finding) SarifResult {
 // have a "critical" level. The original severity is preserved in the result's
 // Properties["go-finding/severity"] for round-trip fidelity. Use FromSARIFLevel
 // only when Properties are not available; otherwise prefer reading the property.
-func severityToSARIFLevel(s Severity) string {
+func severityToSARIFLevel(s Severity) string { //nolint:goconst // SARIF level strings are distinct from Severity constants
 	switch s {
 	case SeverityInfo:
 		return "note"
 	case SeverityWarning:
-		return "warning"
+		return "warning" //nolint:goconst // SARIF "warning" != SeverityWarning
 	case SeverityError, SeverityCritical:
-		return "error"
+		return "error" //nolint:goconst // SARIF "error" != SeverityError
 	default:
 		return "warning"
 	}

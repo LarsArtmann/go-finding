@@ -161,11 +161,11 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 		t.Fatalf("iterations = %d, want 1", len(result.Iterations))
 	}
 
-	if result.Iterations[0].FindingsFound != 1 {
-		t.Errorf(
-			"FindingsFound = %d, want 1 (from good detector)",
-			result.Iterations[0].FindingsFound,
-		)
+	{
+		found := result.Iterations[0].FindingsFound
+		if found != 1 {
+			t.Errorf("FindingsFound = %d, want 1 (from good detector)", found)
+		}
 	}
 }
 
@@ -210,8 +210,11 @@ func TestPipeline_RetryConfig(t *testing.T) {
 		t.Errorf("FindingsFound = %d, want 1 (after retries)", result.Iterations[0].FindingsFound)
 	}
 
-	if calls.Load() < 3 {
-		t.Errorf("calls = %d, want >= 3", calls.Load())
+	{
+		cnt := calls.Load()
+		if cnt < 3 {
+			t.Errorf("calls = %d, want >= 3", cnt)
+		}
 	}
 }
 

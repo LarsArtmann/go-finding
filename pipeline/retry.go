@@ -10,6 +10,12 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+const (
+	delayJitterDivisor  = 4
+	delayMaxMultiplier  = 100
+	delayMaxRetryFactor = 5
+)
+
 // RetryConfig configures retry behavior for detectors.
 type RetryConfig struct {
 	MaxRetries int
@@ -21,15 +27,15 @@ type RetryConfig struct {
 func DefaultRetryConfig() RetryConfig {
 	return RetryConfig{
 		MaxRetries: 3,
-		BaseDelay:  100 * time.Millisecond,
-		MaxDelay:   5 * time.Second,
+		BaseDelay:  time.Duration(delayMaxMultiplier) * time.Millisecond,
+		MaxDelay:   time.Duration(delayMaxRetryFactor) * time.Second,
 	}
 }
 
 // delay calculates the backoff duration for the given attempt with jitter.
 func (c RetryConfig) delay(attempt int) time.Duration {
 	d := min(time.Duration(math.Pow(2, float64(attempt)))*c.BaseDelay, c.MaxDelay)
-	if quarter := int64(d) / 4; quarter > 0 {
+	if quarter := int64(d) / delayJitterDivisor; quarter > 0 {
 		jitter := time.Duration(rand.Int63n(quarter))
 		d += jitter
 	}

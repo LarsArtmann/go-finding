@@ -13,6 +13,13 @@ run:
 output:
     formats: {}
 linters:
+    disable:
+        - exhaustruct
+        - ireturn
+        - noinlineerr
+        - paralleltest
+        - testpackage
+        - varnamelen
     enable:
         - arangolint
         - asasalint
@@ -37,7 +44,6 @@ linters:
         - errname
         - errorlint
         - exhaustive
-        - exhaustruct
         - exptostd
         - fatcontext
         - forbidigo
@@ -70,7 +76,6 @@ linters:
         - interfacebloat
         - intrange
         - iotamixing
-        - ireturn
         - loggercheck
         - maintidx
         - makezero
@@ -86,11 +91,9 @@ linters:
         - nilnil
         - nlreturn
         - noctx
-        - noinlineerr
         - nolintlint
         - nonamedreturns
         - nosprintfhostport
-        - paralleltest
         - perfsprint
         - prealloc
         - predeclared
@@ -108,7 +111,6 @@ linters:
         - tagliatelle
         - testableexamples
         - testifylint
-        - testpackage
         - thelper
         - tparallel
         - unconvert
@@ -117,7 +119,6 @@ linters:
         - unused
         - usestdlibvars
         - usetesting
-        - varnamelen
         - wastedassign
         - whitespace
         - wrapcheck
@@ -146,6 +147,9 @@ linters:
                     allow:
                         - $gostd
                         - github.com/larsartmann/go-finding
+        funlen:
+            lines: 120
+            statements: 80
         gocritic:
             disabled-checks:
                 - ifElseChain
@@ -163,6 +167,62 @@ linters:
                 - G306
                 - G307
                 - G404
+        mnd:
+            ignored-functions:
+                - fmt.Errorf
+                - fmt.Fprintf
+                - fmt.Sprintf
+                - time.ParseDuration
+                - os.WriteFile
+                - os.MkdirAll
+            ignored-numbers:
+                - "0"
+                - "1"
+                - "2"
+                - "3"
+                - "10"
+        revive:
+            rules:
+                - name: unused-parameter
+                  severity: warning
+                  disabled: false
+                - name: unreachable-code
+                  severity: warning
+                - name: context-as-argument
+                  severity: warning
+                - name: error-return
+                  severity: warning
+                - name: error-strings
+                  severity: warning
+                - name: error-naming
+                  severity: warning
+                - name: exported
+                  severity: warning
+                - name: increment-decrement
+                  severity: warning
+                - name: var-naming
+                  severity: warning
+                - name: package-comments
+                  severity: warning
+                - name: range
+                  severity: warning
+                - name: receiver-naming
+                  severity: warning
+                - name: time-naming
+                  severity: warning
+                - name: unexported-return
+                  severity: warning
+                - name: indent-error-flow
+                  severity: warning
+                - name: errorf
+                  severity: warning
+                - name: unnecessary-stmt
+                  severity: warning
+                - name: unused-receiver
+                  severity: warning
+        wrapcheck:
+            ignore-package-globs:
+                - github.com/larsartmann/go-finding/*
 formatters:
     enable:
         - gci

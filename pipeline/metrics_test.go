@@ -16,7 +16,7 @@ func assertMetricsDuration(t *testing.T, got, want time.Duration, msg string) {
 	}
 }
 
-func assertMetricsInt(t *testing.T, got, want int, msg string) {
+func assertInt(t *testing.T, got, want int, msg string) {
 	t.Helper()
 
 	if got != want {
@@ -75,8 +75,8 @@ func TestMetrics_RecordDetector(t *testing.T) {
 		80*time.Millisecond,
 		"expected staticcheck=80ms",
 	)
-	assertMetricsInt(t, m.FindingsFound["staticcheck"], 15, "expected staticcheck findings=15")
-	assertMetricsInt(t, m.FindingsFound["govet"], 3, "expected govet findings=3")
+	assertInt(t, m.FindingsFound["staticcheck"], 15, "expected staticcheck findings=15")
+	assertInt(t, m.FindingsFound["govet"], 3, "expected govet findings=3")
 }
 
 func TestMetrics_RecordFix(t *testing.T) {
@@ -138,8 +138,8 @@ func TestMetrics_Snapshot(t *testing.T) {
 		50*time.Millisecond,
 		"snapshot: expected govet=50ms",
 	)
-	assertMetricsInt(t, snap.FindingsFound["govet"], 5, "snapshot: expected govet findings=5")
-	assertMetricsInt(t, snap.FixesApplied, 1, "snapshot: expected 1 fix")
+	assertInt(t, snap.FindingsFound["govet"], 5, "snapshot: expected govet findings=5")
+	assertInt(t, snap.FixesApplied, 1, "snapshot: expected 1 fix")
 
 	if snap.TotalDuration < 900*time.Millisecond {
 		t.Errorf("snapshot: expected >= 900ms, got %v", snap.TotalDuration)

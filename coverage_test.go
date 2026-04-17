@@ -425,8 +425,8 @@ func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 		} `json:"runs"`
 	}
 
-	if err := json.Unmarshal(sarif, &log); err != nil {
-		t.Fatalf("unmarshal: %v", err)
+	if uErr := json.Unmarshal(sarif, &log); uErr != nil {
+		t.Fatalf("unmarshal: %v", uErr)
 	}
 
 	if len(log.Runs) == 0 || len(log.Runs[0].Results) == 0 {
