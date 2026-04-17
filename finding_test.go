@@ -364,7 +364,7 @@ func TestCategory(t *testing.T) {
 }
 
 func TestRangeContains(t *testing.T) {
-	r := MakeRange("test.go", 10, 5, 20, 10)
+	r := NewRange("test.go", 10, 5, 20, 10)
 
 	tests := []struct {
 		name    string

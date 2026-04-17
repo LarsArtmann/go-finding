@@ -378,15 +378,18 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 	}
 
 	for _, f := range findings {
+		//nolint:exhaustive // FixStrategy is extensible; default handles unknown strategies
 		switch f.FixStrategy {
 		case finding.FixStrategyDirect:
 			result.Direct = append(result.Direct, f)
-		case finding.FixStrategySuggest:
-			result.Suggest = append(result.Suggest, f)
-		case finding.FixStrategyAI:
+		case finding.FixStrategySuggest, finding.FixStrategyAI:
 			result.Suggest = append(result.Suggest, f)
 		case finding.FixStrategyNone:
 			result.None = append(result.None, f)
+		default:
+			if f.FixStrategy != "" {
+				result.None = append(result.None, f)
+			}
 		}
 	}
 

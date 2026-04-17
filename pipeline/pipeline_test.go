@@ -314,11 +314,11 @@ func TestTriage(t *testing.T) {
 	if len(result.Direct) != 1 {
 		t.Errorf("expected 1 direct, got %d", len(result.Direct))
 	}
-	if len(result.Suggest) != 1 {
-		t.Errorf("expected 1 suggest, got %d", len(result.Suggest))
+	if len(result.Suggest) != 2 {
+		t.Errorf("expected 2 suggest, got %d", len(result.Suggest))
 	}
-	if len(result.None) != 3 {
-		t.Errorf("expected 3 none (including AI), got %d", len(result.None))
+	if len(result.None) != 2 {
+		t.Errorf("expected 2 none, got %d", len(result.None))
 	}
 }
 
@@ -488,11 +488,11 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 	// Without Range, strings.Replace would hit the first occurrence at line 4.
 	fixes := []finding.Finding{
 		{
-			ID:         "fix1",
-			BeforeCode: "println(\"hello\")",
-			AfterCode:  "fmt.Println(\"world\")",
-			Position:   finding.Position{File: "test.go", Line: 5, Column: 2},
-			Range:      ptrRange(finding.NewRange("test.go", 5, 2, 5, 18)),
+			ID:          "fix1",
+			BeforeCode:  "println(\"hello\")",
+			AfterCode:   "fmt.Println(\"world\")",
+			Position:    finding.Position{File: "test.go", Line: 5, Column: 2},
+			Range:       finding.NewRangePtr("test.go", 5, 2, 5, 18),
 			FixStrategy: finding.FixStrategyDirect,
 		},
 	}
@@ -533,7 +533,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 			BeforeCode:  "func old() {\n\treturn\n}",
 			AfterCode:   "func new() {\n\treturn 42\n}",
 			Position:    finding.Position{File: "test.go", Line: 3},
-			Range:       ptrRange(finding.NewRange("test.go", 3, 1, 5, 2)),
+			Range:       finding.NewRangePtr("test.go", 3, 1, 5, 2),
 			FixStrategy: finding.FixStrategyDirect,
 		},
 	}

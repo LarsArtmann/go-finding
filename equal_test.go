@@ -73,59 +73,27 @@ func TestFinding_Equal(t *testing.T) {
 		}
 	}
 
+	withRange := func(f Finding, line int) Finding {
+		f.Range = &Range{Start: Position{File: "f.go", Line: line}}
+		return f
+	}
+
+	base := newBase()
+	rangedFinding := withRange(newBase(), 1)
+
 	tests := []struct {
 		name string
 		a, b Finding
 		want bool
 	}{
-		{
-			"identical",
-			newBase(),
-			newBase(),
-			true,
-		},
-		{
-			"different ID",
-			newBase(),
-			func() Finding { f := newBase(); f.ID = "other"; return f }(),
-			false,
-		},
-		{
-			"different severity",
-			newBase(),
-			func() Finding { f := newBase(); f.Severity = SeverityWarning; return f }(),
-			false,
-		},
-		{
-			"different position",
-			newBase(),
-			func() Finding { f := newBase(); f.Position.Line = 99; return f }(),
-			false,
-		},
-		{
-			"different metadata",
-			newBase(),
-			func() Finding { f := newBase(); f.Metadata = map[string]string{"key": "val", "k2": "v2"}; return f }(),
-			false,
-		},
-		{
-			"nil vs non-nil range",
-			newBase(),
-			func() Finding { f := newBase(); f.Range = &Range{Start: Position{File: "f.go"}}; return f }(),
-			false,
-		},
-		{
-			"same range",
-			func() Finding { f := newBase(); f.Range = &Range{Start: Position{File: "f.go", Line: 1}}; return f }(),
-			func() Finding { f := newBase(); f.Range = &Range{Start: Position{File: "f.go", Line: 1}}; return f }(),
-			true,
-		},
-		{
-			"different related",
-			newBase(),
-			func() Finding { f := newBase(); f.Related = []RelatedRef{{FindingID: "x"}}; return f }(),
-			false,
-		},
+		{"identical", base, base, true},
+		{"different ID", base, func() Finding { f := newBase(); f.ID = "other"; return f }(), false},
+		{"different severity", base, func() Finding { f := newBase(); f.Severity = SeverityWarning; return f }(), false},
+		{"different position", base, func() Finding { f := newBase(); f.Position.Line = 99; return f }(), false},
+		{"different metadata", base, func() Finding { f := newBase(); f.Metadata = map[string]string{"key": "val", "k2": "v2"}; return f }(), false},
+		{"nil vs non-nil range", base, withRange(newBase(), 0), false},
+		{"same range", rangedFinding, rangedFinding, true},
+		{"different related", base, func() Finding { f := newBase(); f.Related = []RelatedRef{{FindingID: "x"}}; return f }(), false},
 	}
 
 	for _, tt := range tests {
@@ -160,30 +128,21 @@ func TestFinding_Equal_Suppression(t *testing.T) {
 func TestPosition_Compare(t *testing.T) {
 	t.Parallel()
 
-	p := func(f string, l, c int) Position { return Pos(f, l, c) }
-
 	tests := []struct {
 		name string
-		a, b  Position
-		want  int
+		a, b Position
+		want int
 	}{
-		{"equal", p("a.go", 1, 2), p("a.go", 1, 2), 0},
-		{"different file", p("a.go", 0, 0), p("b.go", 0, 0), -1},
-		{"different file reverse", p("b.go", 0, 0), p("a.go", 0, 0), 1},
-		{"different line", p("a.go", 1, 0), p("a.go", 2, 0), -1},
-		{"different line reverse", p("a.go", 2, 0), p("a.go", 1, 0), 1},
-		{"different column", p("a.go", 1, 1), p("a.go", 1, 2), -1},
+		{"equal", Pos("a.go", 1, 2), Pos("a.go", 1, 2), 0},
+		{"different file", Pos("a.go", 0, 0), Pos("b.go", 0, 0), -1},
+		{"different file reverse", Pos("b.go", 0, 0), Pos("a.go", 0, 0), 1},
+		{"different line", Pos("a.go", 1, 0), Pos("a.go", 2, 0), -1},
+		{"different line reverse", Pos("a.go", 2, 0), Pos("a.go", 1, 0), 1},
+		{"different column", Pos("a.go", 1, 1), Pos("a.go", 1, 2), -1},
 		{"both zero", Position{}, Position{}, 0},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			if got := tt.a.Compare(tt.b); got != tt.want {
-				t.Errorf("Position.Compare() = %d, want %d", got, tt.want)
-			}
-		})
-	}
+	RunCompareTests(t, tests, func(a, b Position) int { return a.Compare(b) }, "Position")
 }
 
 func TestRange_Compare(t *testing.T) {
@@ -205,12 +164,5 @@ func TestRange_Compare(t *testing.T) {
 		{"different file", NewRange("a.go", 1, 0, 0, 0), NewRange("b.go", 1, 0, 0, 0), -1},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			if got := tt.a.Compare(tt.b); got != tt.want {
-				t.Errorf("Range.Compare() = %d, want %d", got, tt.want)
-			}
-		})
-	}
+	RunCompareTests(t, tests, func(a, b Range) int { return a.Compare(b) }, "Range")
 }

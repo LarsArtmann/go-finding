@@ -323,3 +323,9 @@ func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
 		End:   Position{File: file, Line: endLine, Column: endCol},
 	}
 }
+
+// NewRangePtr creates a pointer to a Range with the given file, start/end lines, and columns.
+func NewRangePtr(file string, startLine, startCol, endLine, endCol int) *Range {
+	r := NewRange(file, startLine, startCol, endLine, endCol)
+	return &r
+}

@@ -98,7 +98,7 @@ func TestRangeHasEnd(t *testing.T) {
 func TestRangeContainsExtra(t *testing.T) {
 	t.Parallel()
 
-	r := MakeRange("a.go", 10, 5, 20, 15)
+	r := NewRange("a.go", 10, 5, 20, 15)
 
 	tests := []struct {
 		name string

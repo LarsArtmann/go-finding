@@ -2,17 +2,9 @@ package finding
 
 import "testing"
 
-// MakeRange creates a Range for testing purposes.
-func MakeRange(file string, startLine, startCol, endLine, endCol int) Range {
-	return Range{
-		Start: Position{File: file, Line: startLine, Column: startCol},
-		End:   Position{File: file, Line: endLine, Column: endCol},
-	}
-}
-
 // MakeRangePtr returns a pointer to a Range for testing purposes.
 func MakeRangePtr(file string, startLine, startCol, endLine, endCol int) *Range {
-	r := MakeRange(file, startLine, startCol, endLine, endCol)
+	r := NewRange(file, startLine, startCol, endLine, endCol)
 	return &r
 }
 
@@ -95,6 +87,23 @@ func RunEqualTests[T any](t *testing.T, tests []struct {
 			t.Parallel()
 			if got := eqFunc(tt.a, tt.b); got != tt.want {
 				t.Errorf("%s.Equal() = %v, want %v", formatName, got, tt.want)
+			}
+		})
+	}
+}
+
+// RunCompareTests runs a table-driven comparison test for types with Compare methods.
+func RunCompareTests[T any](t *testing.T, tests []struct {
+	name string
+	a, b T
+	want int
+}, cmpFunc func(a, b T) int, formatName string,
+) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := cmpFunc(tt.a, tt.b); got != tt.want {
+				t.Errorf("%s.Compare() = %d, want %d", formatName, got, tt.want)
 			}
 		})
 	}
