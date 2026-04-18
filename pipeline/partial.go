@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/larsartmann/go-finding"
 	"golang.org/x/sync/errgroup"
@@ -70,13 +71,18 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 			return result, fmt.Errorf("context cancelled: %w", ctx.Err())
 		}
 
+		start := time.Now()
 		findings, err := d.Detect(ctx)
+		elapsed := time.Since(start)
+
 		if err != nil {
 			result.Errors[d.Name()] = err
+			p.recordDetectorMetrics(d.Name(), elapsed, nil)
 
 			continue
 		}
 
+		p.recordDetectorMetrics(d.Name(), elapsed, findings)
 		p.addFindingsToResult(result, findings)
 	}
 
@@ -94,17 +100,21 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 
 	for _, d := range p.detectors {
 		g.Go(func() error {
+			start := time.Now()
 			findings, err := d.Detect(ctx)
+			elapsed := time.Since(start)
 
 			mu.Lock()
 			defer mu.Unlock()
 
 			if err != nil {
 				result.Errors[d.Name()] = err
+				p.recordDetectorMetrics(d.Name(), elapsed, nil)
 
 				return nil // Don't propagate — collect partial results
 			}
 
+			p.recordDetectorMetrics(d.Name(), elapsed, findings)
 			p.addFindingsToResult(result, findings)
 
 			return nil
