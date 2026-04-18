@@ -34,11 +34,13 @@ func NewReport(tool ToolInfo) *Report {
 }
 
 // AddFinding adds a finding to the report.
+// Not safe for concurrent use; callers must synchronize access.
 func (r *Report) AddFinding(f Finding) {
 	r.Findings = append(r.Findings, f)
 }
 
 // AddFindings adds multiple findings to the report.
+// Not safe for concurrent use; callers must synchronize access.
 func (r *Report) AddFindings(findings []Finding) {
 	r.Findings = append(r.Findings, findings...)
 }
