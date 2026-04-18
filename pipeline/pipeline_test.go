@@ -749,3 +749,91 @@ func TestIoErrorAt(t *testing.T) {
 		t.Errorf("file = %q, want %q", fe.Position.File, "foo.go")
 	}
 }
+
+func TestApplyDirectFixes(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	testFile := filepath.Join(tempDir, "fixme.go")
+
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
+	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
+		t.Fatalf("create test file: %v", err)
+	}
+
+	fixes := []finding.Finding{
+		{
+			ID:          "fix1",
+			BeforeCode:  "old()",
+			AfterCode:   "new()",
+			Position:    finding.Position{File: "fixme.go", Line: 4},
+			FixStrategy: finding.FixStrategyDirect,
+		},
+	}
+
+	m := NewMetrics()
+	p := &Pipeline{
+		config:  Config{Metrics: m},
+		rootDir: tempDir,
+		metrics: m,
+	}
+
+	applied, err := p.applyDirectFixes(context.Background(), fixes)
+	if err != nil {
+		t.Fatalf("applyDirectFixes: %v", err)
+	}
+
+	if applied != 1 {
+		t.Fatalf("applied = %d, want 1", applied)
+	}
+
+	got, err := readFile(testFile)
+	if err != nil {
+		t.Fatalf("read file: %v", err)
+	}
+
+	want := "package main\n\nfunc main() {\n\tnew()\n}\n"
+	if string(got) != want {
+		t.Errorf("file content:\nwant:\n%s\ngot:\n%s", want, string(got))
+	}
+
+	if m.FixesApplied != 1 {
+		t.Errorf("FixesApplied = %d, want 1", m.FixesApplied)
+	}
+}
+
+func TestApplyDirectFixes_NoMetrics(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	testFile := filepath.Join(tempDir, "fixme.go")
+
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
+	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
+		t.Fatalf("create test file: %v", err)
+	}
+
+	fixes := []finding.Finding{
+		{
+			ID:          "fix1",
+			BeforeCode:  "old()",
+			AfterCode:   "new()",
+			Position:    finding.Position{File: "fixme.go", Line: 4},
+			FixStrategy: finding.FixStrategyDirect,
+		},
+	}
+
+	p := &Pipeline{
+		config:  DefaultConfig(),
+		rootDir: tempDir,
+	}
+
+	applied, err := p.applyDirectFixes(context.Background(), fixes)
+	if err != nil {
+		t.Fatalf("applyDirectFixes: %v", err)
+	}
+
+	if applied != 1 {
+		t.Fatalf("applied = %d, want 1", applied)
+	}
+}
