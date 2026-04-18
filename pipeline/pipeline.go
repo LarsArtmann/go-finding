@@ -379,8 +379,7 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 			p.recordDetectorMetrics(d.Name(), elapsed, findings)
 
 			mu.Lock()
-
-			allFindings = append(allFindings, findings...)
+			allFindings = p.addFindings(allFindings, findings)
 			mu.Unlock()
 
 			return nil
@@ -392,16 +391,7 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 		return nil, fmt.Errorf("parallel detection: %w", err)
 	}
 
-	var filtered []finding.Finding
-
-	for i := range allFindings {
-		if !allFindings[i].IsSuppressed() {
-			filtered = append(filtered, allFindings[i])
-			p.notifyFinding(allFindings[i])
-		}
-	}
-
-	return filtered, nil
+	return allFindings, nil
 }
 
 // TriageResult holds findings categorized by fix strategy.
