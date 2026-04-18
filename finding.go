@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"fmt"
 	"maps"
 	"time"
 )
@@ -93,6 +94,12 @@ func (f Finding) HasFix() bool {
 // HasSuggestion returns true if this finding has a human-readable suggestion.
 func (f Finding) HasSuggestion() bool {
 	return f.Suggestion != "" || (f.BeforeCode != "" && f.AfterCode != "")
+}
+
+// String returns a human-readable summary of the finding.
+func (f Finding) String() string {
+	return fmt.Sprintf("%s %s [%s] %s: %s",
+		f.Severity, f.ToolName, f.Rule, f.Position, f.Message)
 }
 
 // IsValid returns true if the finding has required fields set.
