@@ -128,8 +128,7 @@ func dedupKey(finding Finding, opts MergeOptions) string {
 		return finding.ID
 	case DeduplicateByPosition:
 		return fmt.Sprintf(
-			"%s:%s:%d:%d",
-			finding.Rule,
+			"%s:%d:%d",
 			finding.Position.File,
 			finding.Position.Line,
 			finding.Position.Column,
