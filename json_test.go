@@ -98,7 +98,7 @@ func TestReportFromJSON(t *testing.T) {
 
 		orig := Report{
 			Tool:     ToolInfo{Name: "test-tool", Version: "1.0"},
-			Findings: []Finding{{ID: "f1", Severity: SeverityWarning}},
+			Findings: []Finding{{ID: "f1", Rule: "R1", ToolName: "test-tool", Message: "msg", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 1, Column: 1}}},
 		}
 
 		data, err := json.Marshal(orig)
@@ -141,6 +141,36 @@ func TestReportFromJSON(t *testing.T) {
 			t.Error("expected validation error for missing tool name")
 		}
 	})
+
+	t.Run("filters invalid findings in report", func(t *testing.T) {
+		t.Parallel()
+
+		orig := Report{
+			Tool: ToolInfo{Name: "test-tool"},
+			Findings: []Finding{
+				{ID: "f1", Rule: "R1", ToolName: "test-tool", Message: "msg", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 1, Column: 1}},
+				{ID: "bad", Severity: SeverityWarning},
+			},
+		}
+
+		data, err := json.Marshal(orig)
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+
+		got, err := ReportFromJSON(data)
+		if err != nil {
+			t.Fatalf("ReportFromJSON: %v", err)
+		}
+
+		if len(got.Findings) != 1 {
+			t.Fatalf("Findings length = %d, want 1 (invalid filtered)", len(got.Findings))
+		}
+
+		if got.Findings[0].ID != "f1" {
+			t.Errorf("Findings[0].ID = %q, want %q", got.Findings[0].ID, "f1")
+		}
+	})
 }
 
 func TestFindingsFromJSON(t *testing.T) {
@@ -150,8 +180,8 @@ func TestFindingsFromJSON(t *testing.T) {
 		t.Parallel()
 
 		orig := []Finding{
-			{ID: "f1", Severity: SeverityInfo},
-			{ID: "f2", Severity: SeverityError},
+			{ID: "f1", Rule: "R1", ToolName: "t", Message: "msg", Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1, Column: 1}},
+			{ID: "f2", Rule: "R2", ToolName: "t", Message: "msg", Severity: SeverityError, Position: Position{File: "b.go", Line: 2, Column: 1}},
 		}
 
 		data, err := json.Marshal(orig)
@@ -179,6 +209,33 @@ func TestFindingsFromJSON(t *testing.T) {
 		_, err := FindingsFromJSON([]byte("[]]"))
 		if err == nil {
 			t.Error("expected error for invalid JSON")
+		}
+	})
+
+	t.Run("filters invalid findings", func(t *testing.T) {
+		t.Parallel()
+
+		orig := []Finding{
+			{ID: "f1", Rule: "R1", ToolName: "t", Message: "msg", Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1, Column: 1}},
+			{ID: "bad", Severity: SeverityWarning},
+		}
+
+		data, err := json.Marshal(orig)
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+
+		got, err := FindingsFromJSON(data)
+		if err != nil {
+			t.Fatalf("FindingsFromJSON: %v", err)
+		}
+
+		if len(got) != 1 {
+			t.Fatalf("length = %d, want 1 (invalid finding filtered)", len(got))
+		}
+
+		if got[0].ID != "f1" {
+			t.Errorf("ID = %q, want %q", got[0].ID, "f1")
 		}
 	})
 }

@@ -3,6 +3,7 @@ package finding
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 )
 
 // PrettyJSON returns a formatted JSON representation of the report.
@@ -44,10 +45,14 @@ func ReportFromJSON(data []byte) (*Report, error) {
 		return nil, fmt.Errorf("invalid report: missing tool name")
 	}
 
+	r.Findings = slices.DeleteFunc(r.Findings, func(f Finding) bool {
+		return !f.IsValid()
+	})
+
 	return &r, nil
 }
 
-// FindingsFromJSON parses a slice of Findings from JSON.
+// FindingsFromJSON parses a slice of Findings from JSON and validates each one.
 func FindingsFromJSON(data []byte) ([]Finding, error) {
 	var findings []Finding
 
@@ -55,6 +60,10 @@ func FindingsFromJSON(data []byte) ([]Finding, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal findings: %w", err)
 	}
+
+	findings = slices.DeleteFunc(findings, func(f Finding) bool {
+		return !f.IsValid()
+	})
 
 	return findings, nil
 }
