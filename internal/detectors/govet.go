@@ -26,9 +26,9 @@ func NewGoVetDetector(dir string) pipeline.Detector {
 
 			out, err := cmd.Output()
 			if err != nil {
-				exitError := &exec.ExitError{}
-				if errors.As(err, &exitError) {
-					return nil, nil
+				var exitErr *exec.ExitError
+				if errors.As(err, &exitErr) && len(out) > 0 {
+					return parseGoVetJSON(out, dir), nil
 				}
 
 				return nil, fmt.Errorf("run go vet: %w", err)
