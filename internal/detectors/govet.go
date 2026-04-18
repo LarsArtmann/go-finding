@@ -49,7 +49,7 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
 
 	var findings []finding.Finding
 
-	for _, raw := range diagnostics {
+	for name, raw := range diagnostics {
 		var entries []struct {
 			Posn    string `json:"posn"`
 			Message string `json:"message"`
@@ -63,7 +63,8 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
 		for _, e := range entries {
 			pos := parsePosn(e.Posn, dir)
 			findings = append(findings, finding.Finding{
-				ID:          finding.GenerateID("govet", "", pos),
+				ID:          finding.GenerateID("govet", name, pos),
+				Rule:        name,
 				ToolName:    "govet",
 				Message:     e.Message,
 				Severity:    finding.SeverityWarning,

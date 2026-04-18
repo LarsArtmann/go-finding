@@ -96,6 +96,10 @@ func TestParseGoVetJSON(t *testing.T) {
 		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
 	}
 
+	if f.Rule != "github.com/example/pkg" {
+		t.Errorf("Rule = %q, want %q", f.Rule, "github.com/example/pkg")
+	}
+
 	if f.Message != "unused variable x" {
 		t.Errorf("Message = %q, want %q", f.Message, "unused variable x")
 	}
