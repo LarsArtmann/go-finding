@@ -63,13 +63,22 @@ func TestFromDiagnostic_WithSuggestedFixes(t *testing.T) {
 		Pos:     f.Name.Pos(),
 		Message: "has fix",
 		SuggestedFixes: []analysis.SuggestedFix{
-			{Message: "fix it"},
+			{
+				Message:   "fix it",
+				TextEdits: []analysis.TextEdit{{NewText: []byte("fixed")}},
+			},
 		},
 	}
 
 	finding := FromDiagnostic(d, fset, "tool", "R001")
 	if finding.FixStrategy != FixStrategyDirect {
 		t.Errorf("expected FixStrategyDirect, got %v", finding.FixStrategy)
+	}
+	if finding.Suggestion != "fix it" {
+		t.Errorf("expected suggestion 'fix it', got %q", finding.Suggestion)
+	}
+	if finding.AfterCode != "fixed" {
+		t.Errorf("expected afterCode 'fixed', got %q", finding.AfterCode)
 	}
 }
 
