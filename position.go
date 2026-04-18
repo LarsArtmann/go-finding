@@ -86,17 +86,27 @@ func (r Range) LineCount() int {
 		return 1
 	}
 
-	return r.End.Line - r.Start.Line + 1
+	count := r.End.Line - r.Start.Line + 1
+	if count < 0 {
+		return 0
+	}
+
+	return count
 }
 
 // Length returns the byte length of the range (End.Offset - Start.Offset).
-// Returns 0 if either offset is not set.
+// Returns 0 if either offset is not set. Returns 0 if End < Start.
 func (r Range) Length() int {
 	if r.Start.Offset == 0 || r.End.Offset == 0 {
 		return 0
 	}
 
-	return r.End.Offset - r.Start.Offset
+	length := r.End.Offset - r.Start.Offset
+	if length < 0 {
+		return 0
+	}
+
+	return length
 }
 
 // Equal reports whether two ranges are identical.
