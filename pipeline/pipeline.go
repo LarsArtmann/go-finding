@@ -250,10 +250,6 @@ func (p *Pipeline) collectAllFindings(result *PipelineResult) []finding.Finding 
 		}
 	}
 
-	if len(all) == 0 {
-		return p.findings
-	}
-
 	return all
 }
 
