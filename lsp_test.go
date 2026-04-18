@@ -82,7 +82,7 @@ func TestFromLSP(t *testing.T) {
 
 	f := FromLSP("file:///test.go", diag)
 
-	if got, want := f.ID, "lsp:golangci-lint:unused-var:5:10"; got != want {
+	if got, want := f.ID, "golangci-lint:unused-var:file:///test.go:5:10"; got != want {
 		t.Errorf("FromLSP ID = %q, want %q", got, want)
 	}
 
@@ -132,6 +132,20 @@ func TestFromLSP(t *testing.T) {
 	// Raw LSP severity in metadata
 	if got, want := f.Metadata["go-finding/lsp-severity"], "1"; got != want {
 		t.Errorf("FromLSP Metadata[lsp-severity] = %q, want %q", got, want)
+	}
+
+	// ID round-trips through ParseID
+	tool, rule, file, line, col, ok := ParseID(f.ID)
+	if !ok {
+		t.Fatalf("ParseID(%q) failed", f.ID)
+	}
+
+	if tool != "golangci-lint" || rule != "unused-var" {
+		t.Errorf("ParseID tool=%q rule=%q, want golangci-lint/unused-var", tool, rule)
+	}
+
+	if file != "file:///test.go" || line != 5 || col != 10 {
+		t.Errorf("ParseID file=%q line=%d col=%d, want file:///test.go/5/10", file, line, col)
 	}
 }
 

@@ -1,7 +1,6 @@
 package finding
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -113,15 +112,9 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	startChar := diag.Range.Start.Character + 1
 
 	f := Finding{
-		ID: fmt.Sprintf(
-			"lsp:%s:%s:%d:%d",
-			diag.Source,
-			diag.Code,
-			startLine,
-			startChar,
-		),
-		Rule:     diag.Code,
-		ToolName: diag.Source,
+		ID:        GenerateID(diag.Source, diag.Code, Position{File: fileURI, Line: startLine, Column: startChar}),
+		Rule:      diag.Code,
+		ToolName:  diag.Source,
 		Message:  diag.Message,
 		Severity: severityFromLSP(diag.Severity),
 		Position: Position{
@@ -146,11 +139,11 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	// Convert related information.
 	for _, rel := range diag.Related {
 		f.Related = append(f.Related, RelatedRef{
-			FindingID: fmt.Sprintf("lsp:%s:%s:%d:%d",
-				diag.Source, diag.Code,
-				rel.Location.Range.Start.Line+1,
-				rel.Location.Range.Start.Character+1,
-			),
+			FindingID: GenerateID(diag.Source, diag.Code, Position{
+				File:   rel.Location.URI,
+				Line:   rel.Location.Range.Start.Line + 1,
+				Column: rel.Location.Range.Start.Character + 1,
+			}),
 			Relation: rel.Message,
 			Position: Position{
 				File:   rel.Location.URI,
