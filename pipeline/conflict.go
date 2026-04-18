@@ -197,15 +197,6 @@ func AnalyzeConflicts(fixes []finding.Finding) []ConflictInfo {
 	detector := NewConflictDetector()
 	groups, conflictingFixes := detector.DetectConflicts(fixes)
 
-	// Build a map of which group each safe fix belongs to
-	fixToGroup := make(map[string]int)
-
-	for i, g := range groups {
-		for _, f := range g.Fixes {
-			fixToGroup[f.ID] = i
-		}
-	}
-
 	result := make([]ConflictInfo, 0, len(conflictingFixes))
 
 	// For each conflicting fix, find what it conflicts with
