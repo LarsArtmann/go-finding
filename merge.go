@@ -29,7 +29,7 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 
 		result := &Report{
 			Tool:     r.Tool,
-			Findings: append([]Finding(nil), r.Findings...),
+			Findings: cloneFindings(r.Findings),
 		}
 		result.ComputeSummary()
 
@@ -60,13 +60,26 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 				seen[key] = struct{}{}
 			}
 
-			merged.AddFinding(finding)
+			merged.AddFinding(finding.Clone())
 		}
 	}
 
 	merged.ComputeSummary()
 
 	return merged
+}
+
+func cloneFindings(findings []Finding) []Finding {
+	if len(findings) == 0 {
+		return nil
+	}
+
+	cloned := make([]Finding, len(findings))
+	for i, f := range findings {
+		cloned[i] = f.Clone()
+	}
+
+	return cloned
 }
 
 // MergeOptions controls how reports are merged.
