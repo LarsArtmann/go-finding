@@ -71,6 +71,8 @@ type Config struct {
 	VerifyAfterFix bool
 	// GracefulDegradation continues on detector failures, collecting partial results.
 	GracefulDegradation bool
+	// DryRun runs detect+triage but skips fix application.
+	DryRun bool
 	// Retry wraps each detector with retry logic. nil disables retries.
 	Retry *RetryConfig
 	// OnFinding is called for each finding found.
@@ -194,14 +196,16 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		iter.NoFix = len(triage.None)
 
 		// Apply fixes (with conflict detection)
-		applyDone := p.stageTiming("apply")
-		if err := p.applyTriage(ctx, triage.Direct, &iter); err != nil {
+		if !p.config.DryRun {
+			applyDone := p.stageTiming("apply")
+			if err := p.applyTriage(ctx, triage.Direct, &iter); err != nil {
+				applyDone()
+
+				return result, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
+			}
+
 			applyDone()
-
-			return result, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
 		}
-
-		applyDone()
 
 		result.Iterations = append(result.Iterations, iter)
 		p.iterations++

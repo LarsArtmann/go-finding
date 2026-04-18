@@ -837,3 +837,55 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 		t.Fatalf("applied = %d, want 1", applied)
 	}
 }
+
+func TestDryRun(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "test.go")
+	if err := os.WriteFile(testFile, []byte("package main\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	f := testFinding("1", "r1", "tool", "msg", finding.SeverityError, testFile)
+	f.FixStrategy = finding.FixStrategyDirect
+	f.BeforeCode = "package main"
+	f.AfterCode = "package main // fixed"
+
+	applied := 0
+	cfg := Config{
+		MaxIterations: 1,
+		DryRun:        true,
+		OnFix: func(_ finding.Finding, wasApplied bool) {
+			if wasApplied {
+				applied++
+			}
+		},
+	}
+
+	det := &mockDetector{name: "tool", findings: []finding.Finding{f}}
+	p := New(cfg, tmpDir, det)
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	if applied != 0 {
+		t.Errorf("applied = %d, want 0 (dry run should not apply fixes)", applied)
+	}
+
+	if len(result.Iterations) != 1 {
+		t.Fatalf("iterations = %d, want 1", len(result.Iterations))
+	}
+
+	iter := result.Iterations[0]
+	if iter.DirectFixes != 1 {
+		t.Errorf("DirectFixes = %d, want 1 (triage should still run)", iter.DirectFixes)
+	}
+
+	data, _ := os.ReadFile(testFile)
+	if string(data) != "package main\n" {
+		t.Errorf("file was modified during dry run: %q", data)
+	}
+}
