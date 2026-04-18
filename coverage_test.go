@@ -380,7 +380,7 @@ func TestRangeContainsByOffsetZeroStart(t *testing.T) {
 	t.Parallel()
 
 	r := Range{
-		Start: Position{File: "test.go", Line: 10},
+		Start: Position{File: "test.go", Line: 10, Offset: -1},
 		End:   Position{File: "test.go", Offset: 200},
 	}
 

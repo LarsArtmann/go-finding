@@ -7,11 +7,12 @@ import (
 
 // Position represents a location in source code.
 // Line and Column are 1-based; 0 means not set.
+// Offset is 0-based; -1 means not set (offset 0 = start of file is valid).
 type Position struct {
 	File   string `json:"file"`             // Required: file path
 	Line   int    `json:"line,omitempty"`   // 1-based line number; 0 = not set
 	Column int    `json:"column,omitempty"` // 1-based column number; 0 = not set
-	Offset int    `json:"offset,omitempty"` // Byte offset from file start; 0 = not set
+	Offset int    `json:"offset,omitempty"` // 0-based byte offset; -1 = not set
 }
 
 // IsValid returns true if the position has a file set.
@@ -97,7 +98,7 @@ func (r Range) LineCount() int {
 // Length returns the byte length of the range (End.Offset - Start.Offset).
 // Returns 0 if either offset is not set. Returns 0 if End < Start.
 func (r Range) Length() int {
-	if r.Start.Offset == 0 || r.End.Offset == 0 {
+	if r.Start.Offset < 0 || r.End.Offset < 0 {
 		return 0
 	}
 
@@ -171,7 +172,7 @@ func (r Range) checkColumnRange(p Position) bool {
 
 // containsByOffset checks if position is within range using byte offsets.
 func (r Range) containsByOffset(p Position) bool {
-	if r.Start.Offset > 0 && p.Offset > 0 {
+	if r.Start.Offset >= 0 && p.Offset >= 0 {
 		if p.Offset < r.Start.Offset {
 			return false
 		}
@@ -238,18 +239,18 @@ func (r Range) overlapsByLine(other Range) bool {
 
 // overlapsByOffset checks overlap using byte offsets.
 func (r Range) overlapsByOffset(other Range) bool {
-	if r.Start.Offset == 0 || other.Start.Offset == 0 {
+	if r.Start.Offset < 0 || other.Start.Offset < 0 {
 		// Cannot determine overlap without offsets
 		return false
 	}
 
 	rEndOffset := r.End.Offset
-	if rEndOffset == 0 {
+	if rEndOffset < 0 {
 		rEndOffset = r.Start.Offset
 	}
 
 	otherEndOffset := other.End.Offset
-	if otherEndOffset == 0 {
+	if otherEndOffset < 0 {
 		otherEndOffset = other.Start.Offset
 	}
 
@@ -308,12 +309,12 @@ func (r Range) intersectionByOffset(other Range) *Range {
 	startOffset := max(r.Start.Offset, other.Start.Offset)
 
 	rEndOffset := r.End.Offset
-	if rEndOffset == 0 {
+	if rEndOffset < 0 {
 		rEndOffset = r.Start.Offset
 	}
 
 	otherEndOffset := other.End.Offset
-	if otherEndOffset == 0 {
+	if otherEndOffset < 0 {
 		otherEndOffset = other.Start.Offset
 	}
 
@@ -367,7 +368,10 @@ func (r Range) Adjacent(other Range) bool {
 	return false
 }
 
-// Pos creates a Position with the given file, line, and column.
+// HasOffset reports whether the offset is set.
+func (p Position) HasOffset() bool {
+	return p.Offset >= 0
+}
 func Pos(file string, line, column int) Position {
 	return Position{File: file, Line: line, Column: column}
 }
