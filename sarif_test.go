@@ -284,6 +284,21 @@ func TestToSARIF_EmptyReport(t *testing.T) {
 	}
 }
 
+func TestFindingsFromSARIF_NotYetImplemented(t *testing.T) {
+	t.Parallel()
+
+	findings, err := FindingsFromSARIF([]byte(`{}`))
+	if findings != nil {
+		t.Errorf("FindingsFromSARIF() findings = %v, want nil", findings)
+	}
+	if err == nil {
+		t.Fatal("FindingsFromSARIF() expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "not yet implemented") {
+		t.Errorf("FindingsFromSARIF() error = %q, want 'not yet implemented'", err.Error())
+	}
+}
+
 func TestToSARIF_RoundTripProperties(t *testing.T) {
 	t.Parallel()
 

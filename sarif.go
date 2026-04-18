@@ -275,6 +275,13 @@ func findingToSARIF(f Finding) SarifResult {
 	return result
 }
 
+// FindingsFromSARIF parses SARIF JSON and returns Findings.
+// This establishes the API surface for reverse conversion.
+// A full implementation will be added in a future release.
+func FindingsFromSARIF(data []byte) ([]Finding, error) {
+	return nil, fmt.Errorf("FindingsFromSARIF: not yet implemented")
+}
+
 // severityToSARIFLevel converts a Severity to a SARIF level string.
 //
 // Known limitation: SeverityCritical maps to "error" because SARIF 2.1.0 does not
