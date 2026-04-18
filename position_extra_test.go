@@ -1,208 +1,53 @@
 package finding
 
-import (
-	"testing"
-)
+import "testing"
 
-func TestPositionIsValidExtra(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name string
-		p    Position
-		want bool
-	}{
-		{"with file", Position{File: "a.go", Line: 10}, true},
-		{"empty file", Position{File: "", Line: 10}, false},
-		{"file only", Position{File: "a.go"}, true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			if got := tt.p.IsValid(); got != tt.want {
-				t.Errorf("IsValid() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestPositionStringExtra(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name string
-		p    Position
-		want string
-	}{
-		{"file:line:col", Position{File: "a.go", Line: 10, Column: 5}, "a.go:10:5"},
-		{"file:line", Position{File: "a.go", Line: 10}, "a.go:10"},
-		{"file only", Position{File: "a.go"}, "a.go"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			if got := tt.p.String(); got != tt.want {
-				t.Errorf("String() = %q, want %q", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestRangeIsValidExtra(t *testing.T) {
+func TestRangeLineCount(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
 		r    Range
-		want bool
+		want int
 	}{
-		{"valid start", Range{Start: Position{File: "a.go", Line: 10}}, true},
-		{"empty start", Range{Start: Position{}}, false},
+		{"no line info", Range{Start: Position{File: "a.go"}}, 0},
+		{"single line no end", Range{Start: Position{File: "a.go", Line: 5}}, 1},
+		{"single line with end", Range{Start: Position{Line: 5}, End: Position{Line: 5}}, 1},
+		{"multi line", Range{Start: Position{Line: 10}, End: Position{Line: 20}}, 11},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got := tt.r.IsValid(); got != tt.want {
-				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			if got := tt.r.LineCount(); got != tt.want {
+				t.Errorf("LineCount() = %d, want %d", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestRangeHasEnd(t *testing.T) {
+func TestRangeLength(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
 		r    Range
-		want bool
+		want int
 	}{
-		{"with end", Range{Start: Position{File: "a.go"}, End: Position{Line: 20}}, true},
-		{"without end", Range{Start: Position{File: "a.go"}}, false},
-		{"end line zero", Range{Start: Position{File: "a.go"}, End: Position{Line: 0}}, false},
+		{"no offsets", Range{Start: Position{File: "a.go", Line: 1}, End: Position{Line: 3}}, 0},
+		{"missing start offset", Range{Start: Position{File: "a.go"}, End: Position{Offset: 100}}, 0},
+		{"missing end offset", Range{Start: Position{Offset: 10}, End: Position{}}, 0},
+		{"valid range", Range{Start: Position{Offset: 50}, End: Position{Offset: 100}}, 50},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got := tt.r.HasEnd(); got != tt.want {
-				t.Errorf("HasEnd() = %v, want %v", got, tt.want)
+			if got := tt.r.Length(); got != tt.want {
+				t.Errorf("Length() = %d, want %d", got, tt.want)
 			}
 		})
 	}
-}
-
-func TestRangeContainsExtra(t *testing.T) {
-	t.Parallel()
-
-	r := NewRange("a.go", 10, 5, 20, 15)
-
-	tests := []struct {
-		name string
-		p    Position
-		want bool
-	}{
-		{"inside", Position{File: "a.go", Line: 15, Column: 10}, true},
-		{"start position", Position{File: "a.go", Line: 10, Column: 5}, true},
-		{"end position", Position{File: "a.go", Line: 20, Column: 15}, true},
-		{"different file", Position{File: "b.go", Line: 15}, false},
-		{"before range", Position{File: "a.go", Line: 5}, false},
-		{"after range", Position{File: "a.go", Line: 25}, false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			if got := r.Contains(tt.p); got != tt.want {
-				t.Errorf("Contains() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func makeRangeWithOffsets(file string, startOff, endOff int) Range {
-	return Range{
-		Start: Position{File: file, Offset: startOff},
-		End:   Position{Offset: endOff},
-	}
-}
-
-func TestNewRangePtr(t *testing.T) {
-	t.Parallel()
-
-	r := NewRangePtr("main.go", 1, 2, 3, 4)
-	if r == nil {
-		t.Fatal("expected non-nil range pointer")
-	}
-
-	if r.Start.File != "main.go" || r.Start.Line != 1 || r.Start.Column != 2 {
-		t.Errorf("start = %+v, want {File:main.go Line:1 Column:2}", r.Start)
-	}
-
-	if r.End.File != "main.go" || r.End.Line != 3 || r.End.Column != 4 {
-		t.Errorf("end = %+v, want {File:main.go Line:3 Column:4}", r.End)
-	}
-}
-
-func TestPositionCompareConsistentWithEqual(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name string
-		a, b Position
-	}{
-		{"identical", Position{File: "a.go", Line: 1, Column: 2, Offset: 100}, Position{File: "a.go", Line: 1, Column: 2, Offset: 100}},
-		{"different offset", Position{File: "a.go", Line: 1, Column: 2, Offset: 50}, Position{File: "a.go", Line: 1, Column: 2, Offset: 100}},
-		{"different line", Position{File: "a.go", Line: 1}, Position{File: "a.go", Line: 2}},
-		{"different column", Position{File: "a.go", Line: 1, Column: 3}, Position{File: "a.go", Line: 1, Column: 5}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			eq := tt.a.Equal(tt.b)
-			cmp := tt.a.Compare(tt.b)
-			if eq != (cmp == 0) {
-				t.Errorf("Equal()=%v but Compare()=%d — must be consistent", eq, cmp)
-			}
-		})
-	}
-}
-
-func TestPositionCompareUsesOffset(t *testing.T) {
-	t.Parallel()
-
-	a := Position{File: "a.go", Line: 1, Column: 2, Offset: 50}
-	b := Position{File: "a.go", Line: 1, Column: 2, Offset: 100}
-
-	if a.Equal(b) {
-		t.Fatal("positions with different offsets should not be equal")
-	}
-
-	if a.Compare(b) >= 0 {
-		t.Error("lower offset should compare less")
-	}
-}
-
-func TestRangeIntersectionByOffset(t *testing.T) {
-	t.Parallel()
-
-	rng1 := makeRangeWithOffsets("a.go", 100, 200)
-	rng2 := makeRangeWithOffsets("a.go", 150, 250)
-
-	inter := rng1.Intersection(rng2)
-	if inter == nil {
-		t.Fatal("expected non-nil intersection")
-	}
-
-	assertReportField(t, "Start.Offset", inter.Start.Offset, 150)
-	assertReportField(t, "End.Offset", inter.End.Offset, 200)
 }

@@ -75,6 +75,30 @@ func (r Range) HasEnd() bool {
 	return r.End.Line > 0
 }
 
+// LineCount returns the number of lines spanned by the range (End.Line - Start.Line + 1).
+// Returns 1 if End is not set (single-line range). Returns 0 if Start has no line info.
+func (r Range) LineCount() int {
+	if r.Start.Line == 0 {
+		return 0
+	}
+
+	if r.End.Line == 0 {
+		return 1
+	}
+
+	return r.End.Line - r.Start.Line + 1
+}
+
+// Length returns the byte length of the range (End.Offset - Start.Offset).
+// Returns 0 if either offset is not set.
+func (r Range) Length() int {
+	if r.Start.Offset == 0 || r.End.Offset == 0 {
+		return 0
+	}
+
+	return r.End.Offset - r.Start.Offset
+}
+
 // Equal reports whether two ranges are identical.
 func (r Range) Equal(other Range) bool {
 	return r.Start.Equal(other.Start) && r.End.Equal(other.End)
