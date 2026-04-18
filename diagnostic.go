@@ -112,7 +112,7 @@ func FormatDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, analyzerName 
 	pos := fset.Position(d.Pos)
 
 	return fmt.Sprintf(
-		"%s:%d:%d: %s: %s\n",
+		"%s:%d:%d: %s: %s",
 		pos.Filename,
 		pos.Line,
 		pos.Column,
