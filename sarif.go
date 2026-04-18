@@ -152,26 +152,21 @@ func (r *Report) ToSARIFFiltered(severity Severity) ([]byte, error) {
 }
 
 func (r *Report) sarifLog() SarifLog {
-	return SarifLog{
-		Version: "2.1.0",
-		Schema:  "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-		Runs: []SarifRun{
-			{
-				Tool:    SarifTool{Driver: sarifDriverFromReport(r)},
-				Results: sarifResultsFromFindings(r.Findings),
-			},
-		},
-	}
+	return r.buildSarifLog(sarifResultsFromFindings(r.Findings))
 }
 
 func (r *Report) sarifLogFiltered(severity Severity) SarifLog {
+	return r.buildSarifLog(sarifResultsFromFindingsFiltered(r.Findings, severity))
+}
+
+func (r *Report) buildSarifLog(results []SarifResult) SarifLog {
 	return SarifLog{
 		Version: "2.1.0",
 		Schema:  "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
 		Runs: []SarifRun{
 			{
 				Tool:    SarifTool{Driver: sarifDriverFromReport(r)},
-				Results: sarifResultsFromFindingsFiltered(r.Findings, severity),
+				Results: results,
 			},
 		},
 	}
