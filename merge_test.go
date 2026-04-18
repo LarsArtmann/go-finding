@@ -166,15 +166,36 @@ func TestCorrelate(t *testing.T) {
 	}
 
 	correlations := Correlate(findings)
-	if len(correlations) == 0 {
-		t.Error("Correlate() = 0 correlations, expected at least 1")
+	if len(correlations) != 1 {
+		t.Fatalf("Correlate() = %d correlations, want 1", len(correlations))
 	}
 
-	for _, c := range correlations {
-		conf := c.Confidence
-		if conf <= 0 || conf > 1 {
-			t.Errorf("correlation confidence = %f, want (0, 1]", conf)
+	c := correlations[0]
+	if got, want := len(c.FindingIDs), 2; got != want {
+		t.Errorf("len(FindingIDs) = %d, want %d", got, want)
+	}
+
+	if c.Reason != "same file, nearby lines" {
+		t.Errorf("Reason = %q, want %q", c.Reason, "same file, nearby lines")
+	}
+
+	wantConf := 1.0 - (2.0 / 5.0)
+	if c.Confidence != wantConf {
+		t.Errorf("Confidence = %f, want %f", c.Confidence, wantConf)
+	}
+
+	hasID := func(id string) bool {
+		for _, fid := range c.FindingIDs {
+			if fid == id {
+				return true
+			}
 		}
+
+		return false
+	}
+
+	if !hasID("1") || !hasID("2") {
+		t.Errorf("FindingIDs = %v, want [1 2]", c.FindingIDs)
 	}
 }
 
