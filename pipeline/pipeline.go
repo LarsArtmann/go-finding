@@ -138,6 +138,10 @@ func (p *Pipeline) stageTiming(name string) func() {
 }
 
 // Run executes the pipeline until stable or max iterations reached.
+//
+// Run is NOT safe for concurrent use. Create a new Pipeline for each
+// concurrent invocation. The returned PipelineResult is safe to read
+// concurrently after Run returns.
 func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	p.findings = p.findings[:0]
 	p.iterations = 0
