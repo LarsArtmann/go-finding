@@ -130,7 +130,7 @@ func TestDedupKey(t *testing.T) {
 		want string
 	}{
 		{"by ID", DeduplicateByID, "test-id"},
-		{"by position", DeduplicateByPosition, "a.go:10:5"},
+		{"by position", DeduplicateByPosition, "rule1:a.go:10:5"},
 		{"by rule", DeduplicateByRule, "rule1:a.go:10:5"},
 		{"default", DeduplicateBy(99), "test-id"},
 	}
