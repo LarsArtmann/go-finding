@@ -4,9 +4,9 @@ package pipeline
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"hash/fnv"
 	"os"
 	"path/filepath"
 	"slices"
@@ -556,11 +556,12 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 	return applied, nil
 }
 
-// fileHash returns the hex-encoded SHA256 hash of s.
+// fileHash returns the hex-encoded FNV-128 hash of s.
 func fileHash(s string) string {
-	h := sha256.Sum256([]byte(s))
+	h := fnv.New128a()
+	h.Write([]byte(s))
 
-	return hex.EncodeToString(h[:])
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 // backup creates a backup of the given file.
