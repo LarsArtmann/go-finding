@@ -111,10 +111,7 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 		})
 	}
 
-	err := g.Wait()
-	if err != nil {
-		return result, fmt.Errorf("detector group: %w", err)
-	}
+	_ = g.Wait()
 
 	return result, nil
 }
