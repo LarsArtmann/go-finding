@@ -64,6 +64,30 @@ func TestFromJSON(t *testing.T) {
 			t.Error("expected error for invalid JSON")
 		}
 	})
+
+	t.Run("missing required fields returns error", func(t *testing.T) {
+		t.Parallel()
+
+		tests := []struct {
+			name string
+			json string
+		}{
+			{"empty object", `{}`},
+			{"missing position", `{"id":"x","rule":"r","toolName":"t","message":"m","severity":"warning"}`},
+			{"missing id", `{"rule":"r","toolName":"t","message":"m","severity":"warning","position":{"file":"a.go"}}`},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
+
+				_, err := FromJSON([]byte(tt.json))
+				if err == nil {
+					t.Error("expected validation error for incomplete finding")
+				}
+			})
+		}
+	})
 }
 
 func TestReportFromJSON(t *testing.T) {
@@ -106,6 +130,15 @@ func TestReportFromJSON(t *testing.T) {
 		_, err := ReportFromJSON([]byte("{bad"))
 		if err == nil {
 			t.Error("expected error for invalid JSON")
+		}
+	})
+
+	t.Run("missing tool name returns error", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := ReportFromJSON([]byte(`{"tool":{"name":""},"findings":[]}`))
+		if err == nil {
+			t.Error("expected validation error for missing tool name")
 		}
 	})
 }
