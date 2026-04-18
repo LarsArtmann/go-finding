@@ -7,11 +7,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
-	"slices"
 	"time"
 
 	"github.com/larsartmann/go-finding"
@@ -229,37 +229,27 @@ func parseSeverity(s string) (finding.Severity, error) {
 }
 
 func filterBySeverity(findings []finding.Finding, minSeverity finding.Severity) []finding.Finding {
-	levels := map[finding.Severity]int{
-		finding.SeverityInfo:     0,
-		finding.SeverityWarning:  1,
-		finding.SeverityError:    2,
-		finding.SeverityCritical: 3,
-	}
-	minLevel := levels[minSeverity]
-
-	return slices.DeleteFunc(findings, func(f finding.Finding) bool {
-		return levels[f.Severity] < minLevel
-	})
+	return finding.Filter(findings, finding.BySeverityAtLeast(minSeverity))
 }
 
 func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {
 	var result []pipeline.Detector
 
 	for _, spec := range specs {
-		switch spec.Name {
-		case "govet":
-			result = append(result, det.NewGoVetDetector(dir))
-		case "staticcheck":
-			result = append(result, det.NewStaticcheckDetector(dir))
-		default:
+		builder, ok := knownDetectorBuilders[spec.Name]
+		if !ok {
 			fmt.Fprintf(os.Stderr, "Warning: unknown detector %q, skipping\n", spec.Name)
+
+			continue
 		}
+
+		result = append(result, builder(dir))
 	}
 
 	return result
 }
 
-func outputResults(w *os.File, report *finding.Report, format string) error {
+func outputResults(w io.Writer, report *finding.Report, format string) error {
 	switch format {
 	case "json":
 		out, err := report.PrettyJSON()
@@ -286,7 +276,7 @@ func outputResults(w *os.File, report *finding.Report, format string) error {
 	return nil
 }
 
-func outputText(w *os.File, report *finding.Report) {
+func outputText(w io.Writer, report *finding.Report) {
 	if len(report.Findings) == 0 {
 		_, _ = fmt.Fprintln(w, "No findings.")
 
@@ -338,9 +328,9 @@ var (
 	errUnknownDetector = errors.New("unknown detector")
 )
 
-var knownDetectors = map[string]bool{
-	"govet":       true,
-	"staticcheck": true,
+var knownDetectorBuilders = map[string]func(string) pipeline.Detector{
+	"govet":       det.NewGoVetDetector,
+	"staticcheck": det.NewStaticcheckDetector,
 }
 
 func (c pipelineConfigFile) validate() error {
@@ -359,7 +349,7 @@ func (c pipelineConfigFile) validate() error {
 	}
 
 	for _, d := range c.Detectors {
-		if !knownDetectors[d.Name] {
+		if _, ok := knownDetectorBuilders[d.Name]; !ok {
 			return fmt.Errorf("%w %q (available: govet, staticcheck)", errUnknownDetector, d.Name)
 		}
 	}
