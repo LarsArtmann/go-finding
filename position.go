@@ -334,12 +334,24 @@ func (r Range) Adjacent(other Range) bool {
 
 	// Try line-based adjacency first
 	if r.End.Line > 0 && other.Start.Line > 0 {
-		if r.End.Line == other.Start.Line && r.End.Column == other.Start.Column {
-			return true
+		if r.End.Line == other.Start.Line {
+			if r.End.Column == 0 && other.Start.Column == 0 {
+				return true
+			}
+
+			if r.End.Column > 0 && other.Start.Column > 0 && r.End.Column == other.Start.Column {
+				return true
+			}
 		}
 
-		if other.End.Line == r.Start.Line && other.End.Column == r.Start.Column {
-			return true
+		if other.End.Line == r.Start.Line {
+			if other.End.Column == 0 && r.Start.Column == 0 {
+				return true
+			}
+
+			if other.End.Column > 0 && r.Start.Column > 0 && other.End.Column == r.Start.Column {
+				return true
+			}
 		}
 	}
 
