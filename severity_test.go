@@ -60,8 +60,9 @@ func TestSeverity_GreaterThan(t *testing.T) {
 		{SeverityInfo, SeverityInfo, false, "info == info"},
 		{SeverityInfo, SeverityWarning, false, "info < warning"},
 		{SeverityWarning, SeverityError, false, "warning < error"},
-		{Severity("unknown"), SeverityInfo, false, "unknown < info (rank -1)"},
-		{SeverityInfo, Severity("unknown"), true, "info > unknown (rank -1)"},
+		{Severity("unknown"), SeverityInfo, false, "invalid < valid returns false"},
+		{SeverityInfo, Severity("unknown"), false, "valid > invalid returns false"},
+		{Severity("unknown"), Severity("unknown"), false, "invalid > invalid returns false"},
 	}
 
 	for _, tt := range tests {

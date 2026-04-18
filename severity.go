@@ -24,21 +24,33 @@ func (s Severity) IsValid() bool {
 // GreaterThan returns true if this severity is greater than the other.
 // Order: info < warning < error < critical.
 func (s Severity) GreaterThan(other Severity) bool {
+	if !s.IsValid() || !other.IsValid() {
+		return false
+	}
 	return severityRank(s) > severityRank(other)
 }
 
 // LessThan returns true if this severity is less than the other.
 func (s Severity) LessThan(other Severity) bool {
+	if !s.IsValid() || !other.IsValid() {
+		return false
+	}
 	return severityRank(s) < severityRank(other)
 }
 
 // GreaterThanOrEqual returns true if this severity is greater than or equal to the other.
 func (s Severity) GreaterThanOrEqual(other Severity) bool {
+	if !s.IsValid() || !other.IsValid() {
+		return false
+	}
 	return severityRank(s) >= severityRank(other)
 }
 
 // LessThanOrEqual returns true if this severity is less than or equal to the other.
 func (s Severity) LessThanOrEqual(other Severity) bool {
+	if !s.IsValid() || !other.IsValid() {
+		return false
+	}
 	return severityRank(s) <= severityRank(other)
 }
 
