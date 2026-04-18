@@ -152,6 +152,46 @@ func TestNewRangePtr(t *testing.T) {
 	}
 }
 
+func TestPositionCompareConsistentWithEqual(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		a, b Position
+	}{
+		{"identical", Position{File: "a.go", Line: 1, Column: 2, Offset: 100}, Position{File: "a.go", Line: 1, Column: 2, Offset: 100}},
+		{"different offset", Position{File: "a.go", Line: 1, Column: 2, Offset: 50}, Position{File: "a.go", Line: 1, Column: 2, Offset: 100}},
+		{"different line", Position{File: "a.go", Line: 1}, Position{File: "a.go", Line: 2}},
+		{"different column", Position{File: "a.go", Line: 1, Column: 3}, Position{File: "a.go", Line: 1, Column: 5}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			eq := tt.a.Equal(tt.b)
+			cmp := tt.a.Compare(tt.b)
+			if eq != (cmp == 0) {
+				t.Errorf("Equal()=%v but Compare()=%d — must be consistent", eq, cmp)
+			}
+		})
+	}
+}
+
+func TestPositionCompareUsesOffset(t *testing.T) {
+	t.Parallel()
+
+	a := Position{File: "a.go", Line: 1, Column: 2, Offset: 50}
+	b := Position{File: "a.go", Line: 1, Column: 2, Offset: 100}
+
+	if a.Equal(b) {
+		t.Fatal("positions with different offsets should not be equal")
+	}
+
+	if a.Compare(b) >= 0 {
+		t.Error("lower offset should compare less")
+	}
+}
+
 func TestRangeIntersectionByOffset(t *testing.T) {
 	t.Parallel()
 

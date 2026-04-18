@@ -28,7 +28,8 @@ func (p Position) Equal(other Position) bool {
 }
 
 // Compare returns -1, 0, or 1 depending on whether p is less than, equal to,
-// or greater than other. Positions are ordered by file, then line, then column.
+// or greater than other. Positions are ordered by file, then line, then column,
+// then offset. This is consistent with Equal: Compare returns 0 iff Equal returns true.
 func (p Position) Compare(other Position) int {
 	if c := cmp.Compare(p.File, other.File); c != 0 {
 		return c
@@ -38,7 +39,11 @@ func (p Position) Compare(other Position) int {
 		return c
 	}
 
-	return cmp.Compare(p.Column, other.Column)
+	if c := cmp.Compare(p.Column, other.Column); c != 0 {
+		return c
+	}
+
+	return cmp.Compare(p.Offset, other.Offset)
 }
 
 // String returns a human-readable representation.
