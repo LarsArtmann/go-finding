@@ -147,6 +147,22 @@ func TestDedupKey(t *testing.T) {
 	}
 }
 
+func TestDeduplicateStrategiesDistinct(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		Rule:     "rule1",
+		Position: Position{File: "a.go", Line: 10, Column: 5},
+	}
+
+	posKey := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
+	ruleKey := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
+
+	if posKey == ruleKey {
+		t.Errorf("DeduplicateByPosition key %q should differ from DeduplicateByRule key %q", posKey, ruleKey)
+	}
+}
+
 func makeFinding(id, tool, rule, file string, line int) Finding {
 	return Finding{
 		ID:       id,
