@@ -37,3 +37,13 @@ func (s *Suppression) IsValid() bool {
 
 	return s.Kind != "" && s.Rule != ""
 }
+
+// IsValid returns true if the suppression kind is a recognized value.
+func (k SuppressionKind) IsValid() bool {
+	switch k {
+	case SuppressionInSource, SuppressionInConfig, SuppressionInReview:
+		return true
+	}
+
+	return false
+}

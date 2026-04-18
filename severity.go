@@ -32,6 +32,16 @@ func (s Severity) LessThan(other Severity) bool {
 	return severityRank(s) < severityRank(other)
 }
 
+// GreaterThanOrEqual returns true if this severity is greater than or equal to the other.
+func (s Severity) GreaterThanOrEqual(other Severity) bool {
+	return severityRank(s) >= severityRank(other)
+}
+
+// LessThanOrEqual returns true if this severity is less than or equal to the other.
+func (s Severity) LessThanOrEqual(other Severity) bool {
+	return severityRank(s) <= severityRank(other)
+}
+
 // String returns the string representation of the severity.
 func (s Severity) String() string {
 	return string(s)

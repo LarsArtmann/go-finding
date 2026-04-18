@@ -31,6 +31,7 @@ const (
 )
 
 // IsValid returns true if the error category is a non-empty string.
+// Custom categories are valid. Use specific constants for predefined values.
 func (c ErrorCategory) IsValid() bool {
 	return c != ""
 }

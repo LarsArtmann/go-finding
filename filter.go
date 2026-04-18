@@ -36,7 +36,7 @@ func BySeverity(sev Severity) FilterFunc {
 // BySeverityAtLeast returns a filter for severity >= the given level.
 func BySeverityAtLeast(sev Severity) FilterFunc {
 	return func(f Finding) bool {
-		return f.Severity.GreaterThan(sev) || f.Severity == sev
+		return f.Severity.GreaterThanOrEqual(sev)
 	}
 }
 
