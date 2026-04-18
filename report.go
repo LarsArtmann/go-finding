@@ -117,3 +117,8 @@ func (r *Report) FindByID(id string) *Finding {
 
 	return nil
 }
+
+// FindByRule returns all findings matching the given rule name.
+func (r *Report) FindByRule(rule string) []Finding {
+	return Filter(r.Findings, func(f Finding) bool { return f.Rule == rule })
+}

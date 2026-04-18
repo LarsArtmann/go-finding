@@ -128,3 +128,20 @@ func TestReportBySeverity(t *testing.T) {
 		t.Fatalf("expected 1 warning finding, got %d", len(warnings))
 	}
 }
+
+func TestReportFindByRule(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	r.AddFinding(Finding{ID: "1", Rule: "SA1000", Message: "a"})
+	r.AddFinding(Finding{ID: "2", Rule: "SA2000", Message: "b"})
+	r.AddFinding(Finding{ID: "3", Rule: "SA1000", Message: "c"})
+
+	matches := r.FindByRule("SA1000")
+	if len(matches) != 2 {
+		t.Fatalf("expected 2 SA1000 findings, got %d", len(matches))
+	}
+
+	none := r.FindByRule("nonexistent")
+	AssertEmpty(t, none, "nonexistent rule")
+}
