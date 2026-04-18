@@ -318,6 +318,102 @@ func TestPipelineRun_Parallel(t *testing.T) {
 	assertFindingsFound(t, result, 2, "expected 2 findings")
 }
 
+// TestDetectParallel_SuppressionConsistency verifies that parallel and
+// sequential detection produce identical results when findings are suppressed.
+func TestDetectParallel_SuppressionConsistency(t *testing.T) {
+	makeFindings := func() []finding.Finding {
+		return []finding.Finding{
+			{ID: "s1", Rule: "r1", ToolName: "t1", Message: "active-1", Severity: finding.SeverityError},
+			{
+				ID:       "s2",
+				Rule:     "r2",
+				ToolName: "t1",
+				Message:  "suppressed-1",
+				Severity: finding.SeverityWarning,
+				Suppression: &finding.Suppression{
+					Kind:   finding.SuppressionInSource,
+					Rule:   "r2",
+					Reason: "false positive",
+				},
+			},
+			{ID: "s3", Rule: "r3", ToolName: "t1", Message: "active-2", Severity: finding.SeverityInfo},
+			{
+				ID:       "s4",
+				Rule:     "r4",
+				ToolName: "t1",
+				Message:  "suppressed-2",
+				Severity: finding.SeverityError,
+				Suppression: &finding.Suppression{
+					Kind:   finding.SuppressionInConfig,
+					Rule:   "r4",
+					Reason: "legacy",
+				},
+			},
+		}
+	}
+
+	runDetect := func(parallel bool) ([]finding.Finding, []string) {
+		var notified []string
+
+		config := DefaultConfig()
+		config.ParallelDetectors = parallel
+		config.OnFinding = func(f finding.Finding) {
+			notified = append(notified, f.ID)
+		}
+
+		d1 := &mockDetector{name: "d1", findings: makeFindings()}
+		d2 := &mockDetector{name: "d2", findings: makeFindings()}
+
+		p := New(config, t.TempDir(), d1, d2)
+		findings, err := p.Run(context.Background())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var all []finding.Finding
+		for _, iter := range findings.Iterations {
+			all = append(all, iter.Findings()...)
+		}
+
+		return all, notified
+	}
+
+	seqFindings, seqNotified := runDetect(false)
+	parFindings, parNotified := runDetect(true)
+
+	if len(seqFindings) != len(parFindings) {
+		t.Errorf("sequential found %d findings, parallel found %d", len(seqFindings), len(parFindings))
+	}
+
+	if len(seqNotified) != len(parNotified) {
+		t.Errorf("sequential notified %d, parallel notified %d", len(seqNotified), len(parNotified))
+	}
+
+	for _, f := range seqFindings {
+		if f.ID == "s2" || f.ID == "s4" {
+			t.Errorf("suppressed finding %s present in sequential results", f.ID)
+		}
+	}
+
+	for _, f := range parFindings {
+		if f.ID == "s2" || f.ID == "s4" {
+			t.Errorf("suppressed finding %s present in parallel results", f.ID)
+		}
+	}
+
+	for _, id := range seqNotified {
+		if id == "s2" || id == "s4" {
+			t.Errorf("OnFinding called for suppressed finding %s in sequential mode", id)
+		}
+	}
+
+	for _, id := range parNotified {
+		if id == "s2" || id == "s4" {
+			t.Errorf("OnFinding called for suppressed finding %s in parallel mode", id)
+		}
+	}
+}
+
 // TestTriage tests the triage function.
 func TestTriage(t *testing.T) {
 	findings := []finding.Finding{
