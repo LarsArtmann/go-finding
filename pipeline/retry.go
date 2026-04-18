@@ -3,7 +3,6 @@ package pipeline
 import (
 	"context"
 	"fmt"
-	"math"
 	"math/rand"
 	"time"
 
@@ -34,7 +33,7 @@ func DefaultRetryConfig() RetryConfig {
 
 // delay calculates the backoff duration for the given attempt with jitter.
 func (c RetryConfig) delay(attempt int) time.Duration {
-	d := min(time.Duration(math.Pow(2, float64(attempt)))*c.BaseDelay, c.MaxDelay)
+	d := min(time.Duration(1<<attempt)*c.BaseDelay, c.MaxDelay)
 	if quarter := int64(d) / delayJitterDivisor; quarter > 0 {
 		jitter := time.Duration(rand.Int63n(quarter))
 		d += jitter
