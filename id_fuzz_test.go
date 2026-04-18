@@ -29,8 +29,8 @@ func FuzzGenerateID(f *testing.F) {
 
 func FuzzParseID(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id string) {
-		tool, rule, file, line, col, ok := ParseID(id)
-		if !ok {
+		p := ParseID(id)
+		if !p.OK() {
 			if len(strings.Split(id, ":")) >= 3 {
 				t.Fatalf("ParseID should succeed for multi-part ID %q", id)
 			}
@@ -38,14 +38,9 @@ func FuzzParseID(f *testing.F) {
 			return
 		}
 
-		if tool == "" && len(strings.Split(id, ":")) >= 3 {
+		if p.Tool == "" && len(strings.Split(id, ":")) >= 3 {
 			t.Fatalf("ParseID returned empty tool for %q", id)
 		}
-
-		_ = rule
-		_ = file
-		_ = line
-		_ = col
 	})
 }
 
@@ -57,10 +52,12 @@ func FuzzRoundTripID(f *testing.F) {
 
 		id := GenerateID(tool, rule, Position{File: file, Line: line, Column: col})
 
-		parsedTool, parsedRule, _, parsedLine, parsedCol, ok := ParseID(id)
-		if !ok {
+		p := ParseID(id)
+		if !p.OK() {
 			t.Fatalf("ParseID failed for generated ID %q", id)
 		}
+
+		parsedTool, parsedRule, parsedLine, parsedCol := p.Tool, p.Rule, p.Line, p.Column
 
 		if tool != "" && parsedTool != tool {
 			t.Fatalf("tool round-trip mismatch: got %q, want %q", parsedTool, tool)

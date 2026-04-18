@@ -135,17 +135,17 @@ func TestFromLSP(t *testing.T) {
 	}
 
 	// ID round-trips through ParseID
-	tool, rule, file, line, col, ok := ParseID(f.ID)
-	if !ok {
+	p := ParseID(f.ID)
+	if !p.OK() {
 		t.Fatalf("ParseID(%q) failed", f.ID)
 	}
 
-	if tool != "golangci-lint" || rule != "unused-var" {
-		t.Errorf("ParseID tool=%q rule=%q, want golangci-lint/unused-var", tool, rule)
+	if p.Tool != "golangci-lint" || p.Rule != "unused-var" {
+		t.Errorf("ParseID tool=%q rule=%q, want golangci-lint/unused-var", p.Tool, p.Rule)
 	}
 
-	if file != "file:///test.go" || line != 5 || col != 10 {
-		t.Errorf("ParseID file=%q line=%d col=%d, want file:///test.go/5/10", file, line, col)
+	if p.File != "file:///test.go" || p.Line != 5 || p.Column != 10 {
+		t.Errorf("ParseID file=%q line=%d col=%d, want file:///test.go/5/10", p.File, p.Line, p.Column)
 	}
 }
 

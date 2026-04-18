@@ -135,19 +135,19 @@ func TestParseID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			tool, rule, file, line, col, ok := ParseID(tt.id)
-			if ok != tt.wantOK {
-				t.Fatalf("ParseID() ok = %v, want %v", ok, tt.wantOK)
+			p := ParseID(tt.id)
+			if p.OK() != tt.wantOK {
+				t.Fatalf("ParseID() ok = %v, want %v", p.OK(), tt.wantOK)
 			}
 
 			if !tt.wantOK {
 				return
 			}
 
-			if tool != tt.wantTool || rule != tt.wantRule || file != tt.wantFile ||
-				line != tt.wantLine || col != tt.wantCol {
+			if p.Tool != tt.wantTool || p.Rule != tt.wantRule || p.File != tt.wantFile ||
+				p.Line != tt.wantLine || p.Column != tt.wantCol {
 				t.Errorf("ParseID() = (%q, %q, %q, %d, %d), want (%q, %q, %q, %d, %d)",
-					tool, rule, file, line, col,
+					p.Tool, p.Rule, p.File, p.Line, p.Column,
 					tt.wantTool, tt.wantRule, tt.wantFile, tt.wantLine, tt.wantCol)
 			}
 		})
@@ -172,30 +172,30 @@ func TestGenerateID_ParseID_RoundTrip(t *testing.T) {
 			t.Parallel()
 
 			id := GenerateID(tt.tool, tt.rule, tt.pos)
-			tool, rule, file, line, col, ok := ParseID(id)
+			p := ParseID(id)
 
-			if !ok {
+			if !p.OK() {
 				t.Fatalf("ParseID(%q) returned ok=false", id)
 			}
 
-			if tool != tt.tool {
-				t.Errorf("tool = %q, want %q", tool, tt.tool)
+			if p.Tool != tt.tool {
+				t.Errorf("tool = %q, want %q", p.Tool, tt.tool)
 			}
 
-			if rule != tt.rule {
-				t.Errorf("rule = %q, want %q", rule, tt.rule)
+			if p.Rule != tt.rule {
+				t.Errorf("rule = %q, want %q", p.Rule, tt.rule)
 			}
 
-			if file != tt.pos.File {
-				t.Errorf("file = %q, want %q", file, tt.pos.File)
+			if p.File != tt.pos.File {
+				t.Errorf("file = %q, want %q", p.File, tt.pos.File)
 			}
 
-			if line != tt.pos.Line {
-				t.Errorf("line = %d, want %d", line, tt.pos.Line)
+			if p.Line != tt.pos.Line {
+				t.Errorf("line = %d, want %d", p.Line, tt.pos.Line)
 			}
 
-			if col != tt.pos.Column {
-				t.Errorf("col = %d, want %d", col, tt.pos.Column)
+			if p.Column != tt.pos.Column {
+				t.Errorf("col = %d, want %d", p.Column, tt.pos.Column)
 			}
 		})
 	}
@@ -276,17 +276,17 @@ func TestParseID_WindowsPaths(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			tool, rule, file, line, col, ok := ParseID(tt.id)
-			if ok != tt.wantOK {
-				t.Fatalf("ParseID() ok = %v, want %v", ok, tt.wantOK)
+			p := ParseID(tt.id)
+			if p.OK() != tt.wantOK {
+				t.Fatalf("ParseID() ok = %v, want %v", p.OK(), tt.wantOK)
 			}
 			if !tt.wantOK {
 				return
 			}
-			if tool != tt.wantTool || rule != tt.wantRule || file != tt.wantFile ||
-				line != tt.wantLine || col != tt.wantCol {
+			if p.Tool != tt.wantTool || p.Rule != tt.wantRule || p.File != tt.wantFile ||
+				p.Line != tt.wantLine || p.Column != tt.wantCol {
 				t.Errorf("ParseID() = (%q, %q, %q, %d, %d), want (%q, %q, %q, %d, %d)",
-					tool, rule, file, line, col,
+					p.Tool, p.Rule, p.File, p.Line, p.Column,
 					tt.wantTool, tt.wantRule, tt.wantFile, tt.wantLine, tt.wantCol)
 			}
 		})
@@ -317,24 +317,24 @@ func TestGenerateID_WindowsPathRoundTrip(t *testing.T) {
 			pos := Position{File: tt.file, Line: tt.line, Column: tt.col}
 			id := GenerateID(tt.tool, tt.rule, pos)
 
-			tool, rule, file, line, col, ok := ParseID(id)
-			if !ok {
+			p := ParseID(id)
+			if !p.OK() {
 				t.Fatalf("ParseID(%q) returned ok=false", id)
 			}
-			if tool != tt.tool {
-				t.Errorf("tool = %q, want %q", tool, tt.tool)
+			if p.Tool != tt.tool {
+				t.Errorf("tool = %q, want %q", p.Tool, tt.tool)
 			}
-			if rule != tt.rule {
-				t.Errorf("rule = %q, want %q", rule, tt.rule)
+			if p.Rule != tt.rule {
+				t.Errorf("rule = %q, want %q", p.Rule, tt.rule)
 			}
-			if file != tt.file {
-				t.Errorf("file = %q, want %q", file, tt.file)
+			if p.File != tt.file {
+				t.Errorf("file = %q, want %q", p.File, tt.file)
 			}
-			if line != tt.line {
-				t.Errorf("line = %d, want %d", line, tt.line)
+			if p.Line != tt.line {
+				t.Errorf("line = %d, want %d", p.Line, tt.line)
 			}
-			if col != tt.col {
-				t.Errorf("col = %d, want %d", col, tt.col)
+			if p.Column != tt.col {
+				t.Errorf("col = %d, want %d", p.Column, tt.col)
 			}
 		})
 	}

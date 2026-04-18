@@ -98,24 +98,24 @@ func TestProperty_IDRoundTrip(t *testing.T) {
 
 		id := GenerateID(tool, rule, Position{File: file, Line: int(line), Column: int(col)})
 
-		parsedTool, parsedRule, _, parsedLine, parsedCol, ok := ParseID(id)
-		if !ok {
+		p := ParseID(id)
+		if !p.OK() {
 			return false
 		}
 
-		if parsedTool != tool {
+		if p.Tool != tool {
 			return false
 		}
 
-		if parsedRule != rule {
+		if p.Rule != rule {
 			return false
 		}
 
-		if int(line) > 0 && parsedLine != int(line) {
+		if int(line) > 0 && p.Line != int(line) {
 			return false
 		}
 
-		if int(col) > 0 && parsedCol != int(col) {
+		if int(col) > 0 && p.Column != int(col) {
 			return false
 		}
 

@@ -27,14 +27,14 @@ func ExampleGenerateID() {
 }
 
 func ExampleParseID() {
-	tool, rule, file, line, col, ok := finding.ParseID("govet:printf:main.go:42:5")
-	if !ok {
+	p := finding.ParseID("govet:printf:main.go:42:5")
+	if !p.OK() {
 		fmt.Println("invalid ID")
 
 		return
 	}
 
-	fmt.Printf("tool=%s rule=%s file=%s line=%d col=%d\n", tool, rule, file, line, col)
+	fmt.Printf("tool=%s rule=%s file=%s line=%d col=%d\n", p.Tool, p.Rule, p.File, p.Line, p.Column)
 
 	// Output:
 	// tool=govet rule=printf file=main.go line=42 col=5
