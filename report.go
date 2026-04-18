@@ -76,7 +76,7 @@ func (r *Report) ComputeSummary() {
 
 // ActiveFindings returns all non-suppressed findings.
 func (r *Report) ActiveFindings() []Finding {
-	var active []Finding
+	active := make([]Finding, 0, len(r.Findings))
 
 	for _, f := range r.Findings {
 		if !f.IsSuppressed() {

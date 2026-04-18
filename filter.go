@@ -5,7 +5,7 @@ type FilterFunc func(Finding) bool
 
 // Filter returns findings that match all predicates.
 func Filter(findings []Finding, predicates ...FilterFunc) []Finding {
-	var result []Finding
+	result := make([]Finding, 0, len(findings))
 
 	for _, finding := range findings {
 		match := true

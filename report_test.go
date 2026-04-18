@@ -42,8 +42,8 @@ func TestReportActiveFindings_None(t *testing.T) {
 	r := NewReport(ToolInfo{Name: "test"})
 
 	active := r.ActiveFindings()
-	if active != nil {
-		t.Errorf("expected nil for empty findings, got %v", active)
+	if len(active) != 0 {
+		t.Errorf("expected empty slice for empty findings, got %v", active)
 	}
 }
 
