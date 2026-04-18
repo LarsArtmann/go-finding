@@ -596,6 +596,47 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 	}
 }
 
+func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
+	tempDir := t.TempDir()
+	applier := NewFixApplier(tempDir)
+
+	testFile := filepath.Join(tempDir, "test.go")
+
+	content := "package main\n\nfunc old() {\n\treturn\n}\n\nfunc main() {}\n"
+	if wErr := writeFile(testFile, []byte(content), 0o644); wErr != nil {
+		t.Fatalf("create test file: %v", wErr)
+	}
+
+	// Replace lines 3-5 with new content using only Range + AfterCode (no BeforeCode).
+	fixes := []finding.Finding{
+		{
+			AfterCode:   "func replaced() { // inserted\n}",
+			Position:    finding.Position{File: "test.go", Line: 3},
+			Range:       finding.NewRangePtr("test.go", 3, 1, 5, 2),
+			FixStrategy: finding.FixStrategyDirect,
+		},
+	}
+
+	applied, err := applier.Apply(context.Background(), fixes)
+	if err != nil {
+		t.Fatalf("apply failed: %v", err)
+	}
+
+	if applied != 1 {
+		t.Fatalf("expected 1 applied, got %d", applied)
+	}
+
+	got, err := readFile(testFile)
+	if err != nil {
+		t.Fatalf("read file: %v", err)
+	}
+
+	want := "package main\n\nfunc replaced() { // inserted\n}\n\nfunc main() {}\n"
+	if string(got) != want {
+		t.Errorf("want:\n%s\ngot:\n%s", want, string(got))
+	}
+}
+
 // BenchmarkParallelDetection benchmarks parallel vs sequential detection.
 func BenchmarkParallelDetection(b *testing.B) {
 	for _, parallel := range []bool{false, true} {
