@@ -934,8 +934,8 @@ func TestApplyDirectFixes(t *testing.T) {
 		t.Errorf("file content:\nwant:\n%s\ngot:\n%s", want, string(got))
 	}
 
-	if m.FixesApplied != 1 {
-		t.Errorf("FixesApplied = %d, want 1", m.FixesApplied)
+	if m.TotalFixesApplied() != 1 {
+		t.Errorf("FixesApplied = %d, want 1", m.TotalFixesApplied())
 	}
 }
 

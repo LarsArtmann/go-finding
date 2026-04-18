@@ -22,15 +22,16 @@ func TestNewMetrics(t *testing.T) {
 		t.Fatal("expected non-nil metrics")
 	}
 
-	if m.StageDurations == nil {
+	snap := m.Snapshot()
+	if snap.StageDurations == nil {
 		t.Error("StageDurations should be initialized")
 	}
 
-	if m.DetectorTimes == nil {
+	if snap.DetectorTimes == nil {
 		t.Error("DetectorTimes should be initialized")
 	}
 
-	if m.FindingsFound == nil {
+	if snap.FindingsFound == nil {
 		t.Error("FindingsFound should be initialized")
 	}
 }
@@ -41,8 +42,8 @@ func TestMetrics_RecordStage(t *testing.T) {
 	m.RecordStage("detect", 50*time.Millisecond)
 	m.RecordStage("apply", 200*time.Millisecond)
 
-	assertEqual(t, m.StageDurations["detect"], 150*time.Millisecond, "expected detect=150ms")
-	assertEqual(t, m.StageDurations["apply"], 200*time.Millisecond, "expected apply=200ms")
+	assertEqual(t, m.StageDuration("detect"), 150*time.Millisecond, "expected detect=150ms")
+	assertEqual(t, m.StageDuration("apply"), 200*time.Millisecond, "expected apply=200ms")
 }
 
 func TestMetrics_RecordDetector(t *testing.T) {
@@ -51,9 +52,9 @@ func TestMetrics_RecordDetector(t *testing.T) {
 	m.RecordDetector("staticcheck", 30*time.Millisecond, 5)
 	m.RecordDetector("govet", 20*time.Millisecond, 3)
 
-	assertEqual(t, m.DetectorTimes["staticcheck"], 80*time.Millisecond, "expected staticcheck=80ms")
-	assertEqual(t, m.FindingsFound["staticcheck"], 15, "expected staticcheck findings=15")
-	assertEqual(t, m.FindingsFound["govet"], 3, "expected govet findings=3")
+	assertEqual(t, m.DetectorTime("staticcheck"), 80*time.Millisecond, "expected staticcheck=80ms")
+	assertEqual(t, m.DetectorFindings("staticcheck"), 15, "expected staticcheck findings=15")
+	assertEqual(t, m.DetectorFindings("govet"), 3, "expected govet findings=3")
 }
 
 func TestMetrics_RecordFix(t *testing.T) {
@@ -62,8 +63,8 @@ func TestMetrics_RecordFix(t *testing.T) {
 	m.RecordFix()
 	m.RecordFix()
 
-	if m.FixesApplied != 3 {
-		t.Errorf("expected 3 fixes, got %d", m.FixesApplied)
+	if m.TotalFixesApplied() != 3 {
+		t.Errorf("expected 3 fixes, got %d", m.TotalFixesApplied())
 	}
 }
 
@@ -74,18 +75,18 @@ func TestMetrics_StageTiming(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 	done()
 
-	if m.StageDurations["detect"] < 10*time.Millisecond {
-		t.Errorf("expected >= 10ms, got %v", m.StageDurations["detect"])
+	if m.StageDuration("detect") < 10*time.Millisecond {
+		t.Errorf("expected >= 10ms, got %v", m.StageDuration("detect"))
 	}
 }
 
 func TestMetrics_TotalDuration(t *testing.T) {
 	m := NewMetrics()
-	m.StartTime = time.Now()
+	m.SetStart(time.Now())
 
 	time.Sleep(10 * time.Millisecond)
 
-	m.EndTime = time.Now()
+	m.SetEnd(time.Now())
 
 	d := m.TotalDuration()
 	if d < 10*time.Millisecond {
@@ -98,8 +99,8 @@ func TestMetrics_Snapshot(t *testing.T) {
 	m.RecordStage("detect", 100*time.Millisecond)
 	m.RecordDetector("govet", 50*time.Millisecond, 5)
 	m.RecordFix()
-	m.StartTime = time.Now().Add(-1 * time.Second)
-	m.EndTime = time.Now()
+	m.SetStart(time.Now().Add(-1 * time.Second))
+	m.SetEnd(time.Now())
 
 	snap := m.Snapshot()
 
@@ -113,8 +114,9 @@ func TestMetrics_Snapshot(t *testing.T) {
 	}
 
 	// Verify snapshot is a copy
-	snap.StageDurations["detect"] = 0
-	if m.StageDurations["detect"] != 100*time.Millisecond {
+	snap2 := m.Snapshot()
+	snap2.StageDurations["detect"] = 0
+	if m.StageDuration("detect") != 100*time.Millisecond {
 		t.Error("snapshot should be a copy, not a reference")
 	}
 }
@@ -151,15 +153,16 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 		t.Error("expected stable result")
 	}
 
-	if m.StartTime.IsZero() {
+	snap := m.Snapshot()
+	if snap.StartTime.IsZero() {
 		t.Error("StartTime should be set")
 	}
 
-	if m.EndTime.IsZero() {
+	if snap.EndTime.IsZero() {
 		t.Error("EndTime should be set")
 	}
 
-	if _, ok := m.StageDurations["detect"]; !ok {
+	if _, ok := snap.StageDurations["detect"]; !ok {
 		t.Error("expected detect stage timing")
 	}
 }
