@@ -52,8 +52,9 @@ func FromDiagnostic(
 	// Add related information
 	for _, info := range d.Related {
 		relatedPos := fset.Position(info.Pos)
+		relatedID := GenerateID(toolName, ruleCode, FromTokenPosition(relatedPos))
 		f.Related = append(f.Related, RelatedRef{
-			FindingID: id,
+			FindingID: relatedID,
 			Relation:  "related",
 			Position:  FromTokenPosition(relatedPos),
 		})

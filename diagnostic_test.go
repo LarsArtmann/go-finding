@@ -103,6 +103,14 @@ func TestFromDiagnostic_WithRelated(t *testing.T) {
 	if finding.Related[0].Relation != "related" {
 		t.Errorf("expected relation 'related', got %q", finding.Related[0].Relation)
 	}
+
+	if finding.Related[0].FindingID == finding.ID {
+		t.Errorf("related ref should have unique ID, got same as parent %q", finding.ID)
+	}
+
+	if finding.Related[0].FindingID == "" {
+		t.Error("related ref should have non-empty FindingID")
+	}
 }
 
 func TestFromTokenPosition(t *testing.T) {
