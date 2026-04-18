@@ -247,3 +247,45 @@ func TestGroupByCategory(t *testing.T) {
 	groups := GroupByCategory(findings)
 	assertGroupLen(t, groups, CategorySecurity, 2, "GroupByCategory security")
 }
+
+func TestSortByPosition(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{
+		{ID: "b", Position: Position{File: "b.go", Line: 5, Column: 1}},
+		{ID: "a2", Position: Position{File: "a.go", Line: 10, Column: 5}},
+		{ID: "a1", Position: Position{File: "a.go", Line: 10, Column: 1}},
+		{ID: "a0", Position: Position{File: "a.go", Line: 3, Column: 1}},
+	}
+
+	SortByPosition(findings)
+
+	want := []string{"a0", "a1", "a2", "b"}
+
+	for i, f := range findings {
+		if f.ID != want[i] {
+			t.Errorf("findings[%d].ID = %q, want %q", i, f.ID, want[i])
+		}
+	}
+}
+
+func TestSortBySeverity(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{
+		{ID: "info", Severity: SeverityInfo},
+		{ID: "critical", Severity: SeverityCritical},
+		{ID: "warning", Severity: SeverityWarning},
+		{ID: "error", Severity: SeverityError},
+	}
+
+	SortBySeverity(findings)
+
+	want := []string{"critical", "error", "warning", "info"}
+
+	for i, f := range findings {
+		if f.ID != want[i] {
+			t.Errorf("findings[%d].ID = %q, want %q", i, f.ID, want[i])
+		}
+	}
+}

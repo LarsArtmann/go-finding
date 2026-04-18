@@ -1,5 +1,9 @@
 package finding
 
+import (
+	"slices"
+)
+
 // FilterFunc is a predicate for filtering findings.
 type FilterFunc func(Finding) bool
 
@@ -128,4 +132,38 @@ func GroupByCategory(findings []Finding) map[Category][]Finding {
 	}
 
 	return groups
+}
+
+// SortByPosition sorts findings by file path, then line, then column.
+func SortByPosition(findings []Finding) {
+	slices.SortFunc(findings, func(a, b Finding) int {
+		if a.Position.File != b.Position.File {
+			if a.Position.File < b.Position.File {
+				return -1
+			}
+
+			return 1
+		}
+
+		if a.Position.Line != b.Position.Line {
+			return a.Position.Line - b.Position.Line
+		}
+
+		return a.Position.Column - b.Position.Column
+	})
+}
+
+// SortBySeverity sorts findings by severity (most severe first).
+func SortBySeverity(findings []Finding) {
+	slices.SortFunc(findings, func(a, b Finding) int {
+		if a.Severity == b.Severity {
+			return 0
+		}
+
+		if a.Severity.GreaterThan(b.Severity) {
+			return -1
+		}
+
+		return 1
+	})
 }
