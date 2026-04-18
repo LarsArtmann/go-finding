@@ -20,12 +20,11 @@ func NewStaticcheckDetector(dir string) pipeline.Detector {
 		func(ctx context.Context) ([]finding.Finding, error) {
 			cmd := exec.CommandContext(ctx, "staticcheck", "-f", "json", "./...")
 			cmd.Dir = dir
-			cmd.Stderr = nil
 
 			out, err := cmd.Output()
 			if err != nil {
 				exitError := &exec.ExitError{}
-				if errors.As(err, &exitError) {
+				if errors.As(err, &exitError) && len(out) > 0 {
 					return parseStaticcheckJSON(out, dir), nil
 				}
 

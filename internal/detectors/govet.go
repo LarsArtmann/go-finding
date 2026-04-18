@@ -22,7 +22,6 @@ func NewGoVetDetector(dir string) pipeline.Detector {
 		func(ctx context.Context) ([]finding.Finding, error) {
 			cmd := exec.CommandContext(ctx, "go", "vet", "-json", "./...")
 			cmd.Dir = dir
-			cmd.Stderr = nil
 
 			out, err := cmd.Output()
 			if err != nil {
