@@ -224,6 +224,122 @@ func TestIsHashID(t *testing.T) {
 	}
 }
 
+func TestParseID_WindowsPaths(t *testing.T) {
+	t.Parallel()
+
+	tests := []parseIDCase{
+		{
+			name:     "Windows absolute drive letter with line and col",
+			id:       "govet:nilcheck:C:/Users/test/file.go:42:10",
+			wantTool: "govet", wantRule: "nilcheck",
+			wantFile: "C:/Users/test/file.go", wantLine: 42, wantCol: 10, wantOK: true,
+		},
+		{
+			name:     "Windows absolute drive letter line only",
+			id:       "govet:nilcheck:C:/Users/test/file.go:42",
+			wantTool: "govet", wantRule: "nilcheck",
+			wantFile: "C:/Users/test/file.go", wantLine: 42, wantCol: 0, wantOK: true,
+		},
+		{
+			name:     "Windows drive letter no position",
+			id:       "govet:nilcheck:C:/Users/test/file.go",
+			wantTool: "govet", wantRule: "nilcheck",
+			wantFile: "C:/Users/test/file.go", wantLine: 0, wantCol: 0, wantOK: true,
+		},
+		{
+			name:     "Windows path with spaces",
+			id:       "govet:nilcheck:C:/Program Files/My App/main.go:15:5",
+			wantTool: "govet", wantRule: "nilcheck",
+			wantFile: "C:/Program Files/My App/main.go", wantLine: 15, wantCol: 5, wantOK: true,
+		},
+		{
+			name:     "UNC forward-slash path",
+			id:       "govet:nilcheck://server/share/file.go:10:1",
+			wantTool: "govet", wantRule: "nilcheck",
+			wantFile: "//server/share/file.go", wantLine: 10, wantCol: 1, wantOK: true,
+		},
+		{
+			name:     "UNC path line only",
+			id:       "govet:nilcheck://server/share/dir/file.go:7",
+			wantTool: "govet", wantRule: "nilcheck",
+			wantFile: "//server/share/dir/file.go", wantLine: 7, wantCol: 0, wantOK: true,
+		},
+		{
+			name:     "drive root only",
+			id:       "govet:nilcheck:C:/:1:1",
+			wantTool: "govet", wantRule: "nilcheck",
+			wantFile: "C:/", wantLine: 1, wantCol: 1, wantOK: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			tool, rule, file, line, col, ok := ParseID(tt.id)
+			if ok != tt.wantOK {
+				t.Fatalf("ParseID() ok = %v, want %v", ok, tt.wantOK)
+			}
+			if !tt.wantOK {
+				return
+			}
+			if tool != tt.wantTool || rule != tt.wantRule || file != tt.wantFile ||
+				line != tt.wantLine || col != tt.wantCol {
+				t.Errorf("ParseID() = (%q, %q, %q, %d, %d), want (%q, %q, %q, %d, %d)",
+					tool, rule, file, line, col,
+					tt.wantTool, tt.wantRule, tt.wantFile, tt.wantLine, tt.wantCol)
+			}
+		})
+	}
+}
+
+func TestGenerateID_WindowsPathRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		tool string
+		rule string
+		file string
+		line int
+		col  int
+	}{
+		{"Windows drive path", "govet", "nilcheck", "C:/Users/test/file.go", 42, 10},
+		{"Windows path spaces", "staticcheck", "SA1000", "C:/Program Files/My App/main.go", 15, 5},
+		{"UNC path", "govet", "assign", "//server/share/dir/file.go", 7, 0},
+		{"drive root", "govet", "nilcheck", "C:/", 1, 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			pos := Position{File: tt.file, Line: tt.line, Column: tt.col}
+			id := GenerateID(tt.tool, tt.rule, pos)
+
+			tool, rule, file, line, col, ok := ParseID(id)
+			if !ok {
+				t.Fatalf("ParseID(%q) returned ok=false", id)
+			}
+			if tool != tt.tool {
+				t.Errorf("tool = %q, want %q", tool, tt.tool)
+			}
+			if rule != tt.rule {
+				t.Errorf("rule = %q, want %q", rule, tt.rule)
+			}
+			if file != tt.file {
+				t.Errorf("file = %q, want %q", file, tt.file)
+			}
+			if line != tt.line {
+				t.Errorf("line = %d, want %d", line, tt.line)
+			}
+			if col != tt.col {
+				t.Errorf("col = %d, want %d", col, tt.col)
+			}
+		})
+	}
+}
+
 func TestExtractFile(t *testing.T) {
 	t.Parallel()
 
