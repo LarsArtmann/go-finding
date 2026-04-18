@@ -196,7 +196,7 @@ func findingToSARIF(f Finding) SarifResult {
 	}
 
 	// Add fix if available
-	if f.FixStrategy != FixStrategyNone && f.AfterCode != "" {
+	if f.HasFix() {
 		fix := SarifFix{
 			Description: SarifMessage{Text: f.Suggestion},
 			Changes: []SarifArtifactChange{

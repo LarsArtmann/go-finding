@@ -88,7 +88,14 @@ func (f Finding) IsSuppressed() bool {
 
 // HasFix returns true if this finding has a fix available.
 func (f Finding) HasFix() bool {
-	return f.FixStrategy == FixStrategyDirect || f.FixStrategy == FixStrategyAI
+	switch f.FixStrategy {
+	case FixStrategyDirect, FixStrategyAI:
+		return true
+	case FixStrategySuggest:
+		return f.AfterCode != ""
+	default:
+		return false
+	}
 }
 
 // HasSuggestion returns true if this finding has a human-readable suggestion.
