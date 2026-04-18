@@ -50,6 +50,36 @@ func (r RelatedRef) IsValid() bool {
 	return r.FindingID != ""
 }
 
+// Clone returns a deep copy of the finding.
+func (f Finding) Clone() Finding {
+	clone := f
+
+	if f.Range != nil {
+		r := *f.Range
+		clone.Range = &r
+	}
+
+	if len(f.Related) > 0 {
+		clone.Related = make([]RelatedRef, len(f.Related))
+		copy(clone.Related, f.Related)
+	}
+
+	if f.Suppression != nil {
+		s := *f.Suppression
+		if s.ExpiresAt != nil {
+			t := *s.ExpiresAt
+			s.ExpiresAt = &t
+		}
+		clone.Suppression = &s
+	}
+
+	if len(f.Metadata) > 0 {
+		clone.Metadata = maps.Clone(f.Metadata)
+	}
+
+	return clone
+}
+
 // IsSuppressed returns true if this finding is suppressed.
 func (f Finding) IsSuppressed() bool {
 	return f.Suppression != nil && !f.Suppression.IsExpired(time.Now())
@@ -126,5 +156,23 @@ func (f Finding) equalSuppression(other Finding) bool {
 		return false
 	}
 
-	return *f.Suppression == *other.Suppression
+	if f.Suppression.Kind != other.Suppression.Kind ||
+		f.Suppression.Rule != other.Suppression.Rule ||
+		f.Suppression.Reason != other.Suppression.Reason {
+		return false
+	}
+
+	return equalTimePtr(f.Suppression.ExpiresAt, other.Suppression.ExpiresAt)
+}
+
+func equalTimePtr(a, b *time.Time) bool {
+	if a == nil && b == nil {
+		return true
+	}
+
+	if a == nil || b == nil {
+		return false
+	}
+
+	return a.Equal(*b)
 }
