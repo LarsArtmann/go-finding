@@ -730,3 +730,22 @@ func TestIteration_Findings_Empty(t *testing.T) {
 		t.Errorf("SuggestedFindings() = %v, want nil", got)
 	}
 }
+
+func TestIoErrorAt(t *testing.T) {
+	t.Parallel()
+
+	err := ioErrorAt("read failed", os.ErrNotExist, "foo.go")
+
+	var fe *finding.FindingError
+	if !errors.As(err, &fe) {
+		t.Fatal("expected FindingError")
+	}
+
+	if fe.Category != finding.ErrCategoryIO {
+		t.Errorf("category = %q, want %q", fe.Category, finding.ErrCategoryIO)
+	}
+
+	if fe.Position.File != "foo.go" {
+		t.Errorf("file = %q, want %q", fe.Position.File, "foo.go")
+	}
+}

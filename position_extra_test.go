@@ -135,6 +135,23 @@ func makeRangeWithOffsets(file string, startOff, endOff int) Range {
 	}
 }
 
+func TestNewRangePtr(t *testing.T) {
+	t.Parallel()
+
+	r := NewRangePtr("main.go", 1, 2, 3, 4)
+	if r == nil {
+		t.Fatal("expected non-nil range pointer")
+	}
+
+	if r.Start.File != "main.go" || r.Start.Line != 1 || r.Start.Column != 2 {
+		t.Errorf("start = %+v, want {File:main.go Line:1 Column:2}", r.Start)
+	}
+
+	if r.End.File != "main.go" || r.End.Line != 3 || r.End.Column != 4 {
+		t.Errorf("end = %+v, want {File:main.go Line:3 Column:4}", r.End)
+	}
+}
+
 func TestRangeIntersectionByOffset(t *testing.T) {
 	t.Parallel()
 
