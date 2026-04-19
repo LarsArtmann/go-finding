@@ -304,14 +304,14 @@ type Iteration struct {
 	suggest       []finding.Finding
 }
 
-// Findings returns all findings discovered in this iteration.
+// Findings returns a copy of all findings discovered in this iteration.
 func (it Iteration) Findings() []finding.Finding {
-	return it.findings
+	return slices.Clone(it.findings)
 }
 
-// SuggestedFindings returns findings that have FixStrategySuggest.
+// SuggestedFindings returns a copy of findings that have FixStrategySuggest.
 func (it Iteration) SuggestedFindings() []finding.Finding {
-	return it.suggest
+	return slices.Clone(it.suggest)
 }
 
 // detect runs all detectors and collects findings.
