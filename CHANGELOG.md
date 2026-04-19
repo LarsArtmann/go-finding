@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-04-19
+
+### Changed
+
+- **SARIF property key constants** — Extracted 10 hardcoded property strings into named constants (`sarifPropID`, etc.)
+- **SARIF nil safety** — Fixed nil `Region` dereference panics in `applySarifPosition` and `findingFromSarResult` for malformed SARIF input
+- **SortByPosition refactor** — Replaced hand-rolled three-way comparison with `Position.Compare`
+- **map[string]bool → map[string]struct{}** — Idiomatic Go set in `pipeline.collectAllFindings`
+- **Retry MaxDelay validation** — `MaxDelay == 0` with `BaseDelay > 0` now returns an error instead of busy-looping
+- **Merge nil-safety** — Passing nil `*Report` in the reports slice no longer panics
+
+### Fixed
+
+- Hand-rolled `HasPrefix` check replaced with `strings.HasPrefix` in SARIF metadata parsing
+- SARIF filtered results capacity hint for reduced allocations
+- Missing test coverage for `NewFinding`, `SuppressionKind.IsValid`, `Severity.GTE/LTE`, `Finding.String()`, `Report.AddFindings`, `Merge` with nil reports
+- Missing `staticcheckCategory` F-prefix test case
+
 ## [0.1.1] - 2026-04-19
 
 ### Changed
