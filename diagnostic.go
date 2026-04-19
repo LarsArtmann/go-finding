@@ -45,16 +45,8 @@ func FromDiagnostic(
 		Position:    findingPos,
 		Category:    Category(d.Category),
 		FixStrategy: fixStrategy,
-		Tag:         "",
 		Suggestion:  suggestion,
-		BeforeCode:  "",
 		AfterCode:   afterCode,
-		Range:       nil,
-		Snippet:     "",
-		Confidence:  0.0,
-		Related:     []RelatedRef(nil),
-		Suppression: nil,
-		Metadata:    map[string]string(nil),
 	}
 
 	// Add related information
@@ -84,12 +76,7 @@ func FromTokenPosition(pos token.Position) Position {
 // NodePosition returns a Position from an AST node.
 func NodePosition(fset *token.FileSet, node ast.Node) Position {
 	if node == nil {
-		return Position{
-			File:   "",
-			Line:   0,
-			Column: 0,
-			Offset: 0,
-		}
+		return Position{}
 	}
 
 	return FromTokenPosition(fset.Position(node.Pos()))
