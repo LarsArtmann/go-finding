@@ -605,7 +605,7 @@ func (a *FixApplier) rollbackAll(paths []string) error {
 	return errors.Join(errs...)
 }
 
-// fileHash returns the hex-encoded FNV-128 hash of s.
+// fileHash returns the hex-encoded FNV-1a 128-bit hash of s.
 func fileHash(s string) string {
 	h := fnv.New128a()
 	h.Write([]byte(s))
