@@ -11,6 +11,9 @@ const (
 	// FixStrategyDirect can be automatically applied.
 	FixStrategyDirect FixStrategy = "direct"
 	// FixStrategyAI requires AI assistance.
+	// Pipeline triage groups this with FixStrategySuggest (no auto-apply).
+	// NeedsAI() is defined but no AI backend exists yet. Reserve this value
+	// for future AI-powered remediation — do not remove.
 	FixStrategyAI FixStrategy = "ai"
 )
 
