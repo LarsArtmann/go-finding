@@ -169,3 +169,24 @@ func BenchmarkToSARIF(b *testing.B) {
 		_, _ = report.ToSARIF()
 	}
 }
+
+func BenchmarkFromSARIF(b *testing.B) {
+	report := NewReport(ToolInfo{Name: "bench", Version: "1.0"})
+	for i := range 100 {
+		report.AddFinding(Finding{
+			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
+			Rule:     "SA1000",
+			Message:  "test finding",
+			Severity: sevFromInt(i % 4),
+			Position: Position{File: "file.go", Line: i + 1, Column: 1},
+		})
+	}
+
+	sarifData, _ := report.ToSARIF()
+
+	b.ResetTimer()
+
+	for b.Loop() {
+		_, _ = FindingsFromSARIF(sarifData)
+	}
+}
