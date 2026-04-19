@@ -90,9 +90,7 @@ linters:
     - nestif
     - nilerr
     - nilnesserr
-    - nilnil
-    - nlreturn
-    - noctx
+
     - nolintlint
     - nonamedreturns
     - nosprintfhostport
@@ -122,10 +120,7 @@ linters:
     - usestdlibvars
     - usetesting
     - wastedassign
-    - whitespace
-    - wrapcheck
-    - wsl_v5
-    - zerologlint
+
   settings:
     cyclop:
       max-complexity: 25
