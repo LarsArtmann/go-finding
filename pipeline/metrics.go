@@ -54,6 +54,7 @@ func (m *Metrics) RecordFix() {
 func (m *Metrics) StageDuration(name string) time.Duration {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
 	return m.stageDurations[name]
 }
 

@@ -104,6 +104,7 @@ func ParseID(id string) ParsedID {
 
 		// No column, try line only
 		var line int
+
 		err = parseInt(parts[len(parts)-1], &line)
 		if err == nil {
 			file := extractFile(parts, positionPartsOne)

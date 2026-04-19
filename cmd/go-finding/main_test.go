@@ -13,6 +13,7 @@ func TestOutputResults_JSON(t *testing.T) {
 	t.Parallel()
 
 	report := reportWithFindings()
+
 	var buf bytes.Buffer
 
 	if err := outputResults(&buf, report, "json"); err != nil {
@@ -34,6 +35,7 @@ func TestOutputResults_SARIF(t *testing.T) {
 	t.Parallel()
 
 	report := reportWithFindings()
+
 	var buf bytes.Buffer
 
 	if err := outputResults(&buf, report, "sarif"); err != nil {
@@ -55,6 +57,7 @@ func TestOutputResults_Text(t *testing.T) {
 	t.Parallel()
 
 	report := reportWithFindings()
+
 	var buf bytes.Buffer
 
 	if err := outputResults(&buf, report, "text"); err != nil {

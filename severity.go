@@ -35,6 +35,7 @@ func (s Severity) LessThan(other Severity) bool {
 	if !s.IsValid() || !other.IsValid() {
 		return false
 	}
+
 	return severityRank(s) < severityRank(other)
 }
 
@@ -43,6 +44,7 @@ func (s Severity) GreaterThanOrEqual(other Severity) bool {
 	if !s.IsValid() || !other.IsValid() {
 		return false
 	}
+
 	return severityRank(s) >= severityRank(other)
 }
 
@@ -51,6 +53,7 @@ func (s Severity) LessThanOrEqual(other Severity) bool {
 	if !s.IsValid() || !other.IsValid() {
 		return false
 	}
+
 	return severityRank(s) <= severityRank(other)
 }
 

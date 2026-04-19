@@ -21,9 +21,12 @@ func FromDiagnostic(
 
 	// Determine fix strategy from suggested fixes
 	fixStrategy := FixStrategyNone
+
 	var suggestion, afterCode string
+
 	if len(d.SuggestedFixes) > 0 {
 		fixStrategy = FixStrategyDirect
+
 		suggestion = d.SuggestedFixes[0].Message
 		if len(d.SuggestedFixes[0].TextEdits) > 0 {
 			afterCode = string(d.SuggestedFixes[0].TextEdits[0].NewText)

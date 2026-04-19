@@ -76,9 +76,11 @@ func TestFromDiagnostic_WithSuggestedFixes(t *testing.T) {
 	if finding.FixStrategy != FixStrategyDirect {
 		t.Errorf("expected FixStrategyDirect, got %v", finding.FixStrategy)
 	}
+
 	if finding.Suggestion != "fix it" {
 		t.Errorf("expected suggestion 'fix it', got %q", finding.Suggestion)
 	}
+
 	if finding.AfterCode != "fixed" {
 		t.Errorf("expected afterCode 'fixed', got %q", finding.AfterCode)
 	}
