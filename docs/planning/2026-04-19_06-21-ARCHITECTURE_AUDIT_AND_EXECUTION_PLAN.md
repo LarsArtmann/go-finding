@@ -39,6 +39,7 @@
 ### e) Did we lie to you?
 
 **Yes, by omission.** The CHANGELOG v0.1.2 lists "nil-safety fixes" and "test coverage" but omits that:
+
 - `Config.Validate()` is still not called in `pipeline.New()`
 - Metrics are still collected but never reported
 - Partial errors are still silently dropped
@@ -56,13 +57,13 @@ We documented the bugs we fixed but not the integrations we skipped.
 
 ### g) Ghost Systems Found
 
-| Ghost | File | Integration Value |
-|-------|------|-------------------|
-| `ErrPartialDetection` + `FormatPartialErrors()` | `pipeline/partial.go` | **HIGH** — Surface detector failures in `PipelineResult` |
-| `Config.Validate()` | `pipeline/pipeline.go:107` | **HIGH** — Call from `New()`, fail fast |
-| `Metrics` in CLI | `cmd/go-finding/main.go:389` | **MEDIUM** — Include in JSON/SARIF output |
-| `Correlate()` | `merge.go:165` | **LOW** — Interesting but not critical for v1 |
-| `FixStrategyAI` | `fix_strategy.go:13` | **LOW** — Remove phantom or implement |
+| Ghost                                           | File                         | Integration Value                                        |
+| ----------------------------------------------- | ---------------------------- | -------------------------------------------------------- |
+| `ErrPartialDetection` + `FormatPartialErrors()` | `pipeline/partial.go`        | **HIGH** — Surface detector failures in `PipelineResult` |
+| `Config.Validate()`                             | `pipeline/pipeline.go:107`   | **HIGH** — Call from `New()`, fail fast                  |
+| `Metrics` in CLI                                | `cmd/go-finding/main.go:389` | **MEDIUM** — Include in JSON/SARIF output                |
+| `Correlate()`                                   | `merge.go:165`               | **LOW** — Interesting but not critical for v1            |
+| `FixStrategyAI`                                 | `fix_strategy.go:13`         | **LOW** — Remove phantom or implement                    |
 
 ### h) Scope Creep Assessment
 
@@ -84,28 +85,28 @@ We documented the bugs we fixed but not the integrations we skipped.
 
 **Strong foundation, specific gaps:**
 
-| Aspect | Status |
-|--------|--------|
-| Coverage | 84.7% total — good |
-| Fuzz tests | 14 functions — excellent quality |
-| Property tests | 6 functions — good |
-| Examples | 18 — all with `// Output:` — excellent |
-| Benchmarks | 11 — adequate |
-| Implementation coupling | 6 tests (~2%) test unexported functions — acceptable |
+| Aspect                      | Status                                                 |
+| --------------------------- | ------------------------------------------------------ |
+| Coverage                    | 84.7% total — good                                     |
+| Fuzz tests                  | 14 functions — excellent quality                       |
+| Property tests              | 6 functions — good                                     |
+| Examples                    | 18 — all with `// Output:` — excellent                 |
+| Benchmarks                  | 11 — adequate                                          |
+| Implementation coupling     | 6 tests (~2%) test unexported functions — acceptable   |
 | **Production test helpers** | **CRITICAL** — `testutil.go` ships 7 test-only exports |
-| Test naming consistency | Mixed — needs standardization |
+| Test naming consistency     | Mixed — needs standardization                          |
 
 ---
 
 ## 1. Architectural Decisions Causing Problems
 
-| Decision | Problem | Impact | Fix |
-|----------|---------|--------|-----|
-| `pipeline.New()` skips validation | Invalid configs silently pass | Bugs in production use | Call `Validate()` in `New()` |
-| Partial errors dropped in `detect()` | Callers can't know which detectors failed | Silent data loss | Add `Errors` to `PipelineResult` |
-| Metrics not wired to output | Collected but invisible | Waste of CPU/memory | Include in `PipelineResult` or CLI output |
-| `testutil.go` not `_test.go` | Test code in production binary | Bloat, confusing API | Rename to `_test.go` |
-| `FixApplier` in `pipeline.go` | 780-line god file | Hard to maintain | Extract to `pipeline/fix.go` |
+| Decision                             | Problem                                   | Impact                 | Fix                                       |
+| ------------------------------------ | ----------------------------------------- | ---------------------- | ----------------------------------------- |
+| `pipeline.New()` skips validation    | Invalid configs silently pass             | Bugs in production use | Call `Validate()` in `New()`              |
+| Partial errors dropped in `detect()` | Callers can't know which detectors failed | Silent data loss       | Add `Errors` to `PipelineResult`          |
+| Metrics not wired to output          | Collected but invisible                   | Waste of CPU/memory    | Include in `PipelineResult` or CLI output |
+| `testutil.go` not `_test.go`         | Test code in production binary            | Bloat, confusing API   | Rename to `_test.go`                      |
+| `FixApplier` in `pipeline.go`        | 780-line god file                         | Hard to maintain       | Extract to `pipeline/fix.go`              |
 
 ---
 
@@ -113,80 +114,80 @@ We documented the bugs we fixed but not the integrations we skipped.
 
 ### Phase 1: Critical Bug Fixes & Ghost Integration
 
-| # | Task | Impact | Effort | Customer Value |
-|---|------|--------|--------|----------------|
-| 1 | Call `Config.Validate()` in `pipeline.New()` | HIGH | 15min | Users get immediate errors on bad configs |
-| 2 | Wire partial errors into `PipelineResult` | HIGH | 45min | Users know which detectors failed |
-| 3 | Delete `detectorSpec.Args` dead field | MEDIUM | 10min | Honest API — no false promises |
-| 4 | Fix 2 err113 violations in `json.go` | MEDIUM | 15min | Lint compliance |
+| #   | Task                                         | Impact | Effort | Customer Value                            |
+| --- | -------------------------------------------- | ------ | ------ | ----------------------------------------- |
+| 1   | Call `Config.Validate()` in `pipeline.New()` | HIGH   | 15min  | Users get immediate errors on bad configs |
+| 2   | Wire partial errors into `PipelineResult`    | HIGH   | 45min  | Users know which detectors failed         |
+| 3   | Delete `detectorSpec.Args` dead field        | MEDIUM | 10min  | Honest API — no false promises            |
+| 4   | Fix 2 err113 violations in `json.go`         | MEDIUM | 15min  | Lint compliance                           |
 
 ### Phase 2: Production Code Cleanup
 
-| # | Task | Impact | Effort | Customer Value |
-|---|------|--------|--------|----------------|
-| 5 | Rename `testutil.go` → `_test.go` (stop shipping test helpers) | HIGH | 20min | Cleaner binary, honest API surface |
-| 6 | Rename `suppression_test_util.go` → `_test.go` | MEDIUM | 5min | Same |
-| 7 | Extract `FixApplier` to `pipeline/fix.go` | MEDIUM | 60min | Maintainable file sizes |
-| 8 | Remove unused nolint in `finding_extra_test.go:46` | LOW | 5min | Clean metadata |
-| 9 | Remove unused nolint in `pipeline.go:672` | LOW | 5min | Clean metadata |
+| #   | Task                                                           | Impact | Effort | Customer Value                     |
+| --- | -------------------------------------------------------------- | ------ | ------ | ---------------------------------- |
+| 5   | Rename `testutil.go` → `_test.go` (stop shipping test helpers) | HIGH   | 20min  | Cleaner binary, honest API surface |
+| 6   | Rename `suppression_test_util.go` → `_test.go`                 | MEDIUM | 5min   | Same                               |
+| 7   | Extract `FixApplier` to `pipeline/fix.go`                      | MEDIUM | 60min  | Maintainable file sizes            |
+| 8   | Remove unused nolint in `finding_extra_test.go:46`             | LOW    | 5min   | Clean metadata                     |
+| 9   | Remove unused nolint in `pipeline.go:672`                      | LOW    | 5min   | Clean metadata                     |
 
 ### Phase 3: API Coherence
 
-| # | Task | Impact | Effort | Customer Value |
-|---|------|--------|--------|----------------|
-| 10 | Wire metrics into `PipelineResult` | MEDIUM | 30min | Users can inspect timing |
-| 11 | Output metrics in CLI JSON mode | MEDIUM | 30min | Observable CLI output |
-| 12 | Decide: remove or document `FixStrategyAI` | MEDIUM | 20min | Honest API |
-| 13 | Decide: integrate or document `Correlate()` | LOW | 15min | Honest API |
-| 14 | Standardize filter pattern (closures vs values) | LOW | 30min | Consistent API |
+| #   | Task                                            | Impact | Effort | Customer Value           |
+| --- | ----------------------------------------------- | ------ | ------ | ------------------------ |
+| 10  | Wire metrics into `PipelineResult`              | MEDIUM | 30min  | Users can inspect timing |
+| 11  | Output metrics in CLI JSON mode                 | MEDIUM | 30min  | Observable CLI output    |
+| 12  | Decide: remove or document `FixStrategyAI`      | MEDIUM | 20min  | Honest API               |
+| 13  | Decide: integrate or document `Correlate()`     | LOW    | 15min  | Honest API               |
+| 14  | Standardize filter pattern (closures vs values) | LOW    | 30min  | Consistent API           |
 
 ### Phase 4: Test Quality
 
-| # | Task | Impact | Effort | Customer Value |
-|---|------|--------|--------|----------------|
-| 15 | Standardize test naming (pick underscore) | LOW | 60min | Consistent codebase |
-| 16 | Add test for `Config.Validate()` enforcement | HIGH | 15min | Verifies fix #1 |
-| 17 | Add test for partial errors in `PipelineResult` | HIGH | 30min | Verifies fix #2 |
-| 18 | Fix `map[string]bool` in `sarif_test.go:145` | LOW | 5min | Idiomatic Go |
+| #   | Task                                            | Impact | Effort | Customer Value      |
+| --- | ----------------------------------------------- | ------ | ------ | ------------------- |
+| 15  | Standardize test naming (pick underscore)       | LOW    | 60min  | Consistent codebase |
+| 16  | Add test for `Config.Validate()` enforcement    | HIGH   | 15min  | Verifies fix #1     |
+| 17  | Add test for partial errors in `PipelineResult` | HIGH   | 30min  | Verifies fix #2     |
+| 18  | Fix `map[string]bool` in `sarif_test.go:145`    | LOW    | 5min   | Idiomatic Go        |
 
 ### Phase 5: Documentation & Final Verification
 
-| # | Task | Impact | Effort | Customer Value |
-|---|------|--------|--------|----------------|
-| 19 | Update CHANGELOG for v0.1.3 | LOW | 15min | Honest release notes |
-| 20 | Update AGENTS.md with current state | LOW | 10min | Session continuity |
-| 21 | Full verification: test, vet, lint, bench | MEDIUM | 15min | Confidence |
+| #   | Task                                      | Impact | Effort | Customer Value       |
+| --- | ----------------------------------------- | ------ | ------ | -------------------- |
+| 19  | Update CHANGELOG for v0.1.3               | LOW    | 15min  | Honest release notes |
+| 20  | Update AGENTS.md with current state       | LOW    | 10min  | Session continuity   |
+| 21  | Full verification: test, vet, lint, bench | MEDIUM | 15min  | Confidence           |
 
 ---
 
 ## 3. Fine-Grained TODOs (max 12 min each, sorted by importance)
 
-| # | Task | File(s) | Impact | Est. |
-|---|------|---------|--------|------|
-| 1 | Add `if err := c.Validate(); err != nil { return nil, err }` to `New()` | `pipeline/pipeline.go:138` | HIGH | 3min |
-| 2 | Add `PartialErrors map[string]error` to `PipelineResult` | `pipeline/pipeline.go` | HIGH | 5min |
-| 3 | Wire `result.PartialErrors` in `detect()` when using GracefulDegradation | `pipeline/pipeline.go:327-334` | HIGH | 8min |
-| 4 | Delete `Args map[string]string` from `detectorSpec` | `cmd/go-finding/main.go:331` | MEDIUM | 3min |
-| 5 | Convert `fmt.Errorf("literal")` to `errors.New` sentinel in `json.go:29` | `json.go` | MEDIUM | 5min |
-| 6 | Convert `fmt.Errorf("literal")` to `errors.New` sentinel in `json.go:48` | `json.go` | MEDIUM | 5min |
-| 7 | Rename `testutil.go` → `testutil_test.go` | `testutil.go` | HIGH | 3min |
-| 8 | Fix compilation: unexport helpers that external tests need via `export_test.go` | root package | HIGH | 10min |
-| 9 | Rename `suppression_test_util.go` → `suppression_test_util_test.go` | `suppression_test_util.go` | MEDIUM | 2min |
-| 10 | Remove unused nolint `finding_extra_test.go:46` | `finding_extra_test.go` | LOW | 2min |
-| 11 | Remove unused nolint `pipeline/pipeline.go:672` | `pipeline/pipeline.go` | LOW | 2min |
-| 12 | Extract `FixApplier` struct + methods to `pipeline/fix.go` | `pipeline/pipeline.go`, new `pipeline/fix.go` | MEDIUM | 12min |
-| 13 | Add `MetricsSnapshot` to `PipelineResult` | `pipeline/pipeline.go` | MEDIUM | 5min |
-| 14 | Populate metrics snapshot in `Run()` return path | `pipeline/pipeline.go` | MEDIUM | 5min |
-| 15 | Add metrics section to CLI JSON output | `cmd/go-finding/main.go` | MEDIUM | 8min |
-| 16 | Document `FixStrategyAI` status (phantom — use only when AI exists) | `fix_strategy.go` | LOW | 3min |
-| 17 | Document `Correlate()` status (standalone — not in pipeline) | `merge.go` | LOW | 2min |
-| 18 | Write test: `Config.Validate()` called by `New()` | `pipeline/pipeline_test.go` | HIGH | 8min |
-| 19 | Write test: partial errors surfaced in `PipelineResult` | `pipeline/pipeline_test.go` | HIGH | 10min |
-| 20 | Fix `map[string]bool` → `map[string]struct{}` in `sarif_test.go:145` | `sarif_test.go` | LOW | 2min |
-| 21 | Run tests, vet, lint, bench | all | MEDIUM | 8min |
-| 22 | Update CHANGELOG for v0.1.3 | `CHANGELOG.md` | LOW | 5min |
-| 23 | Update AGENTS.md with current state | `AGENTS.md` | LOW | 5min |
-| 24 | Push all commits to origin | git | MEDIUM | 2min |
+| #   | Task                                                                            | File(s)                                       | Impact | Est.  |
+| --- | ------------------------------------------------------------------------------- | --------------------------------------------- | ------ | ----- |
+| 1   | Add `if err := c.Validate(); err != nil { return nil, err }` to `New()`         | `pipeline/pipeline.go:138`                    | HIGH   | 3min  |
+| 2   | Add `PartialErrors map[string]error` to `PipelineResult`                        | `pipeline/pipeline.go`                        | HIGH   | 5min  |
+| 3   | Wire `result.PartialErrors` in `detect()` when using GracefulDegradation        | `pipeline/pipeline.go:327-334`                | HIGH   | 8min  |
+| 4   | Delete `Args map[string]string` from `detectorSpec`                             | `cmd/go-finding/main.go:331`                  | MEDIUM | 3min  |
+| 5   | Convert `fmt.Errorf("literal")` to `errors.New` sentinel in `json.go:29`        | `json.go`                                     | MEDIUM | 5min  |
+| 6   | Convert `fmt.Errorf("literal")` to `errors.New` sentinel in `json.go:48`        | `json.go`                                     | MEDIUM | 5min  |
+| 7   | Rename `testutil.go` → `testutil_test.go`                                       | `testutil.go`                                 | HIGH   | 3min  |
+| 8   | Fix compilation: unexport helpers that external tests need via `export_test.go` | root package                                  | HIGH   | 10min |
+| 9   | Rename `suppression_test_util.go` → `suppression_test_util_test.go`             | `suppression_test_util.go`                    | MEDIUM | 2min  |
+| 10  | Remove unused nolint `finding_extra_test.go:46`                                 | `finding_extra_test.go`                       | LOW    | 2min  |
+| 11  | Remove unused nolint `pipeline/pipeline.go:672`                                 | `pipeline/pipeline.go`                        | LOW    | 2min  |
+| 12  | Extract `FixApplier` struct + methods to `pipeline/fix.go`                      | `pipeline/pipeline.go`, new `pipeline/fix.go` | MEDIUM | 12min |
+| 13  | Add `MetricsSnapshot` to `PipelineResult`                                       | `pipeline/pipeline.go`                        | MEDIUM | 5min  |
+| 14  | Populate metrics snapshot in `Run()` return path                                | `pipeline/pipeline.go`                        | MEDIUM | 5min  |
+| 15  | Add metrics section to CLI JSON output                                          | `cmd/go-finding/main.go`                      | MEDIUM | 8min  |
+| 16  | Document `FixStrategyAI` status (phantom — use only when AI exists)             | `fix_strategy.go`                             | LOW    | 3min  |
+| 17  | Document `Correlate()` status (standalone — not in pipeline)                    | `merge.go`                                    | LOW    | 2min  |
+| 18  | Write test: `Config.Validate()` called by `New()`                               | `pipeline/pipeline_test.go`                   | HIGH   | 8min  |
+| 19  | Write test: partial errors surfaced in `PipelineResult`                         | `pipeline/pipeline_test.go`                   | HIGH   | 10min |
+| 20  | Fix `map[string]bool` → `map[string]struct{}` in `sarif_test.go:145`            | `sarif_test.go`                               | LOW    | 2min  |
+| 21  | Run tests, vet, lint, bench                                                     | all                                           | MEDIUM | 8min  |
+| 22  | Update CHANGELOG for v0.1.3                                                     | `CHANGELOG.md`                                | LOW    | 5min  |
+| 23  | Update AGENTS.md with current state                                             | `AGENTS.md`                                   | LOW    | 5min  |
+| 24  | Push all commits to origin                                                      | git                                           | MEDIUM | 2min  |
 
 ---
 

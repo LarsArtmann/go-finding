@@ -6,7 +6,7 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
-func assertConflictsLen(t *testing.T, got int, want int, msg string) {
+func assertConflictsLen(t *testing.T, got, want int, msg string) {
 	t.Helper()
 
 	if got != want {

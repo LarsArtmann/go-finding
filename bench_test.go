@@ -5,6 +5,43 @@ import (
 	"testing"
 )
 
+func BenchmarkClone(b *testing.B) {
+	f := Finding{
+		ID:       "tool:rule:file.go:42",
+		Rule:     "SA1000",
+		Message:  "test finding with a longer message",
+		Severity: SeverityError,
+		Position: Position{File: "file.go", Line: 42, Column: 10},
+		Range: &Range{
+			Start: Position{Line: 42, Column: 10},
+			End:   Position{Line: 42, Column: 20},
+		},
+		Related:  []RelatedRef{{FindingID: "related1", Relation: "related"}},
+		Category: CategorySecurity,
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		f.Clone()
+	}
+}
+
+func BenchmarkClone_Simple(b *testing.B) {
+	f := Finding{
+		ID:       "tool:rule:file.go:1",
+		Severity: SeverityInfo,
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		f.Clone()
+	}
+}
+
 func BenchmarkGenerateID(b *testing.B) {
 	pos := Position{File: "main.go", Line: 42, Column: 10}
 

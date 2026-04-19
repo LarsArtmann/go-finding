@@ -12,6 +12,7 @@
 The go-finding library has undergone **four major cleanup sessions** since April 12, progressing from a proof-of-concept with ghost systems and split brains to a clean, well-tested library with a working CLI. The V5 "Ruthless Cleanup & API Coherence" plan completed all 5 phases: ghost deletion, split-brain fixes, detector extraction, test coverage additions, and stale doc cleanup. A subsequent lint hardening session added golangci-lint v2 compliance and extracted test utilities.
 
 **Key numbers:**
+
 - **522 tests passing**, 0 failing
 - **95.0%** root package coverage, **85.8%** pipeline, **69.7%** detectors
 - **0 lint errors**, 0 vet errors
@@ -25,88 +26,88 @@ The go-finding library has undergone **four major cleanup sessions** since April
 
 ### Core Types (Root Package — 95.0% coverage)
 
-| File | Lines | Coverage | Status |
-|------|-------|----------|--------|
-| `finding.go` | 67 | High | Finding, RelatedRef, IsValid, IsSuppressed, HasFix, HasSuggestion |
-| `severity.go` | 47 | 100% | info/warning/error/critical with ordering |
-| `category.go` | 41 | 100% | 13 standard categories + custom via IsStandard() |
-| `fix_strategy.go` | 35 | 100% | none/suggest/direct/ai with CanAutoApply, NeedsAI |
-| `position.go` | 274 | High | Position, Range, Contains, Overlaps, Intersection, Adjacent |
-| `suppression.go` | 37 | 100% | Kind/Reason/Expiry, IsValid, IsExpired |
-| `report.go` | 118 | 100% | Summary, filtering delegates to filter package |
-| `filter.go` | 131 | 100% | 15+ filter functions, GroupBy variants |
-| `merge.go` | 188 | 100% | Report merging, dedup, Correlate |
-| `id.go` | 130 | 100% | GenerateID, ParseID, IsHashID |
-| `json.go` | 62 | 100% | Marshal/Unmarshal |
-| `sarif.go` | 273 | High | SARIF 2.1.0 output with filtered variant |
-| `lsp.go` | 152 | 100% | LSP Diagnostic bidirectional |
-| `diagnostic.go` | 150 | 100% | go/analysis integration |
-| `errors.go` | 165 | 100% | 5 error categories, FindingError with Unwrap, WithFinding, WithPosition |
-| `doc.go` | 78 | N/A | Comprehensive package docs |
-| `range_utils.go` | 4 | 100% | RangeLinesEq helper |
+| File              | Lines | Coverage | Status                                                                  |
+| ----------------- | ----- | -------- | ----------------------------------------------------------------------- |
+| `finding.go`      | 67    | High     | Finding, RelatedRef, IsValid, IsSuppressed, HasFix, HasSuggestion       |
+| `severity.go`     | 47    | 100%     | info/warning/error/critical with ordering                               |
+| `category.go`     | 41    | 100%     | 13 standard categories + custom via IsStandard()                        |
+| `fix_strategy.go` | 35    | 100%     | none/suggest/direct/ai with CanAutoApply, NeedsAI                       |
+| `position.go`     | 274   | High     | Position, Range, Contains, Overlaps, Intersection, Adjacent             |
+| `suppression.go`  | 37    | 100%     | Kind/Reason/Expiry, IsValid, IsExpired                                  |
+| `report.go`       | 118   | 100%     | Summary, filtering delegates to filter package                          |
+| `filter.go`       | 131   | 100%     | 15+ filter functions, GroupBy variants                                  |
+| `merge.go`        | 188   | 100%     | Report merging, dedup, Correlate                                        |
+| `id.go`           | 130   | 100%     | GenerateID, ParseID, IsHashID                                           |
+| `json.go`         | 62    | 100%     | Marshal/Unmarshal                                                       |
+| `sarif.go`        | 273   | High     | SARIF 2.1.0 output with filtered variant                                |
+| `lsp.go`          | 152   | 100%     | LSP Diagnostic bidirectional                                            |
+| `diagnostic.go`   | 150   | 100%     | go/analysis integration                                                 |
+| `errors.go`       | 165   | 100%     | 5 error categories, FindingError with Unwrap, WithFinding, WithPosition |
+| `doc.go`          | 78    | N/A      | Comprehensive package docs                                              |
+| `range_utils.go`  | 4     | 100%     | RangeLinesEq helper                                                     |
 
 ### Pipeline Engine (85.8% coverage)
 
-| File | Lines | Coverage | Status |
-|------|-------|----------|--------|
-| `pipeline/pipeline.go` | 582+ | 85.8% | detect→triage→fix→verify loop with FixApplier |
-| `pipeline/metrics.go` | 115 | 100% | Wired: RecordDetector, RecordFix, StageTiming, Snapshot |
-| `pipeline/partial.go` | 126 | 90%+ | DetectPartial wired via Config.GracefulDegradation |
-| `pipeline/retry.go` | 80 | 100% | RetryDetector wired via Config.RetryConfig |
-| `pipeline/verify.go` | 91 | High | Verifier with DiffFindings, wired via Config.VerifyAfterFix |
-| `pipeline/conflict.go` | 240 | 100% | ConflictDetector, FilterConflictingFixes, AnalyzeConflicts |
+| File                   | Lines | Coverage | Status                                                      |
+| ---------------------- | ----- | -------- | ----------------------------------------------------------- |
+| `pipeline/pipeline.go` | 582+  | 85.8%    | detect→triage→fix→verify loop with FixApplier               |
+| `pipeline/metrics.go`  | 115   | 100%     | Wired: RecordDetector, RecordFix, StageTiming, Snapshot     |
+| `pipeline/partial.go`  | 126   | 90%+     | DetectPartial wired via Config.GracefulDegradation          |
+| `pipeline/retry.go`    | 80    | 100%     | RetryDetector wired via Config.RetryConfig                  |
+| `pipeline/verify.go`   | 91    | High     | Verifier with DiffFindings, wired via Config.VerifyAfterFix |
+| `pipeline/conflict.go` | 240   | 100%     | ConflictDetector, FilterConflictingFixes, AnalyzeConflicts  |
 
 ### Internal Detectors (69.7% coverage)
 
-| File | Lines | Coverage | Status |
-|------|-------|----------|--------|
-| `internal/detectors/govet.go` | ~100 | 70% | NewGoVetDetector, parseGoVetJSON, parsePosn (parsing tested, Detect() via external tool not tested) |
-| `internal/detectors/staticcheck.go` | ~120 | 70% | NewStaticcheckDetector, parseStaticcheckJSON, staticcheckCategory (parsing tested, Detect() via external tool not tested) |
+| File                                | Lines | Coverage | Status                                                                                                                    |
+| ----------------------------------- | ----- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `internal/detectors/govet.go`       | ~100  | 70%      | NewGoVetDetector, parseGoVetJSON, parsePosn (parsing tested, Detect() via external tool not tested)                       |
+| `internal/detectors/staticcheck.go` | ~120  | 70%      | NewStaticcheckDetector, parseStaticcheckJSON, staticcheckCategory (parsing tested, Detect() via external tool not tested) |
 
 ### CLI Tool (0% test coverage, compiles and runs)
 
-| File | Lines | Status |
-|------|-------|--------|
-| `cmd/go-finding/main.go` | 395 | Functional CLI: govet+staticcheck detectors, text/json/sarif output, YAML config, profiling |
+| File                     | Lines | Status                                                                                      |
+| ------------------------ | ----- | ------------------------------------------------------------------------------------------- |
+| `cmd/go-finding/main.go` | 395   | Functional CLI: govet+staticcheck detectors, text/json/sarif output, YAML config, profiling |
 
 ### Cleanup & Refactoring (All Sessions)
 
-| Session | What | Commits |
-|---------|------|---------|
-| V1 (Apr 12-13) | Core types, pipeline, SARIF, LSP, merge, filter | Initial build |
-| V2 (Apr 13) | Ghost deletion: Result[T], ASTFixer, dead symbols, fix FromLSP | cf1d0a2–c2e479e |
-| V3 (Apr 15) | Integration wiring: Metrics, GracefulDegradation, RetryConfig, IsValid | 78989bf–e4c69a9 |
-| V4 (Apr 16) | Modernize CLI, test utilities, error handling | 49372f1–136c220 |
-| V5 (Apr 17) | Split-brain fixes, detector extraction, test coverage, doc cleanup | 66744f8–8a30977 |
-| Lint (Apr 17-18) | golangci-lint v2 compliance, test util extraction, profiling refactor | 5b0439e–b17bb22 |
+| Session          | What                                                                   | Commits         |
+| ---------------- | ---------------------------------------------------------------------- | --------------- |
+| V1 (Apr 12-13)   | Core types, pipeline, SARIF, LSP, merge, filter                        | Initial build   |
+| V2 (Apr 13)      | Ghost deletion: Result[T], ASTFixer, dead symbols, fix FromLSP         | cf1d0a2–c2e479e |
+| V3 (Apr 15)      | Integration wiring: Metrics, GracefulDegradation, RetryConfig, IsValid | 78989bf–e4c69a9 |
+| V4 (Apr 16)      | Modernize CLI, test utilities, error handling                          | 49372f1–136c220 |
+| V5 (Apr 17)      | Split-brain fixes, detector extraction, test coverage, doc cleanup     | 66744f8–8a30977 |
+| Lint (Apr 17-18) | golangci-lint v2 compliance, test util extraction, profiling refactor  | 5b0439e–b17bb22 |
 
 ---
 
 ## b) PARTIALLY DONE
 
-| Component | Status | What's Missing |
-|-----------|--------|---------------|
-| `Correlate()` in merge.go | 100% tested, not wired | Function works, has tests, but never called by Pipeline.Run(). Standalone utility, not integrated. |
-| SARIF critical round-trip | 80% | `SeverityCritical` → SARIF `"error"` → `FromSARIFLevel("error")` → `SeverityError`. Lossy. Documented but not fixed. |
-| Detector test coverage | 69.7% | Internal functions (parsePosn, parseGoVetJSON, parseStaticcheckJSON, staticcheckCategory) fully tested. `Detect()` methods untested (require external tool binaries). |
-| `applyDirectFixes` | 0% | Pipeline function never covered — the fix application code path needs integration tests |
-| `ioErrorAt` | 0% | Helper function in pipeline — only 3 lines, trivially testable |
-| `NewRangePtr` | 0% | One-line constructor, trivially testable |
+| Component                 | Status                 | What's Missing                                                                                                                                                        |
+| ------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Correlate()` in merge.go | 100% tested, not wired | Function works, has tests, but never called by Pipeline.Run(). Standalone utility, not integrated.                                                                    |
+| SARIF critical round-trip | 80%                    | `SeverityCritical` → SARIF `"error"` → `FromSARIFLevel("error")` → `SeverityError`. Lossy. Documented but not fixed.                                                  |
+| Detector test coverage    | 69.7%                  | Internal functions (parsePosn, parseGoVetJSON, parseStaticcheckJSON, staticcheckCategory) fully tested. `Detect()` methods untested (require external tool binaries). |
+| `applyDirectFixes`        | 0%                     | Pipeline function never covered — the fix application code path needs integration tests                                                                               |
+| `ioErrorAt`               | 0%                     | Helper function in pipeline — only 3 lines, trivially testable                                                                                                        |
+| `NewRangePtr`             | 0%                     | One-line constructor, trivially testable                                                                                                                              |
 
 ---
 
 ## c) NOT STARTED
 
-| Component | Priority | Effort | Notes |
-|-----------|----------|--------|-------|
-| CLI test coverage | Medium | 3-4h | 0% coverage on 395-line CLI. Need integration tests with mocked detectors |
-| Watch mode | Low | 3h | fsnotify-based continuous analysis |
-| IDE integrations | Low | 5h+ | VS Code, GoLand plugins |
-| Web UI | Very Low | 5h+ | Separate project, deferred |
-| go-sarif evaluation | Low | 30min | Evaluate github.com/owenrumney/go-sarif for optional SARIF schema compliance |
-| Property-based tests | Low | 1h | testing/quick for core ops (partially done via fuzz tests) |
-| GitHub Actions CI | Medium | 1h | Pipeline exists at `.github/workflows/` but needs Go 1.26 alignment |
-| GoDoc examples | Low | 2h | Some exist, not comprehensive |
+| Component            | Priority | Effort | Notes                                                                        |
+| -------------------- | -------- | ------ | ---------------------------------------------------------------------------- |
+| CLI test coverage    | Medium   | 3-4h   | 0% coverage on 395-line CLI. Need integration tests with mocked detectors    |
+| Watch mode           | Low      | 3h     | fsnotify-based continuous analysis                                           |
+| IDE integrations     | Low      | 5h+    | VS Code, GoLand plugins                                                      |
+| Web UI               | Very Low | 5h+    | Separate project, deferred                                                   |
+| go-sarif evaluation  | Low      | 30min  | Evaluate github.com/owenrumney/go-sarif for optional SARIF schema compliance |
+| Property-based tests | Low      | 1h     | testing/quick for core ops (partially done via fuzz tests)                   |
+| GitHub Actions CI    | Medium   | 1h     | Pipeline exists at `.github/workflows/` but needs Go 1.26 alignment          |
+| GoDoc examples       | Low      | 2h     | Some exist, not comprehensive                                                |
 
 ---
 
@@ -114,28 +115,28 @@ The go-finding library has undergone **four major cleanup sessions** since April
 
 All critical issues have been resolved across 20+ commits:
 
-| Issue | Severity | Fix |
-|-------|----------|-----|
-| `Result[T]` — 222 lines of unused Rust-style type | Scope creep | Deleted |
-| `ASTFixer` — duplicate of FixApplier with variable shadow bug | Ghost system | Deleted |
-| `ConfidenceScale`, `HasConflicts`, `GroupFixesByConflict` — dead symbols | Dead code | Deleted |
-| `FromLSP` returned Findings with empty Position.File | Bug | Fixed |
-| `DetectorFunc.Name()` always "anonymous" | Design flaw | Added NamedDetectorFunc |
-| `FixApplier.backup()` path collision via filepath.Base | Data loss risk | Fixed with SHA hash |
-| `FixApplier.backups` map race condition | Data race | Added mutex |
-| `detectParallel` included suppressed in OnFinding | Inconsistency | Fixed |
-| `Category.IsValid()` rejected custom categories | Wrong semantics | Fixed with IsStandard() |
-| No-op MarshalJSON methods | Dead code | Removed |
-| Metrics/Retry/GracefulDegradation never wired | Split brain | All wired |
-| `IsCategory` method — split brain with `IsCategory` func | Split brain | Method removed |
-| `NodeRange` param order inconsistent with `NodePosition` | Bug | Fixed |
-| Exported ID constants that should be internal | API surface | Unexported |
-| `lspLine` confusing name | Naming | Renamed to `toZeroBased` |
-| Triage guard dropping empty-FixStrategy findings | Bug | Guard removed |
-| Range-based fix test with wrong file content | Test bug | Fixed content |
-| `.gitignore` line 43 malformed merge artifact | Config | Needs fix |
-| Binary artifacts (`go-finding`, `govet`) in repo | Cleanup | Gitignored but still on disk |
-| `report/jscpd-report.json` stale artifact | Cleanup | Gitignored but directory persists |
+| Issue                                                                    | Severity        | Fix                               |
+| ------------------------------------------------------------------------ | --------------- | --------------------------------- |
+| `Result[T]` — 222 lines of unused Rust-style type                        | Scope creep     | Deleted                           |
+| `ASTFixer` — duplicate of FixApplier with variable shadow bug            | Ghost system    | Deleted                           |
+| `ConfidenceScale`, `HasConflicts`, `GroupFixesByConflict` — dead symbols | Dead code       | Deleted                           |
+| `FromLSP` returned Findings with empty Position.File                     | Bug             | Fixed                             |
+| `DetectorFunc.Name()` always "anonymous"                                 | Design flaw     | Added NamedDetectorFunc           |
+| `FixApplier.backup()` path collision via filepath.Base                   | Data loss risk  | Fixed with SHA hash               |
+| `FixApplier.backups` map race condition                                  | Data race       | Added mutex                       |
+| `detectParallel` included suppressed in OnFinding                        | Inconsistency   | Fixed                             |
+| `Category.IsValid()` rejected custom categories                          | Wrong semantics | Fixed with IsStandard()           |
+| No-op MarshalJSON methods                                                | Dead code       | Removed                           |
+| Metrics/Retry/GracefulDegradation never wired                            | Split brain     | All wired                         |
+| `IsCategory` method — split brain with `IsCategory` func                 | Split brain     | Method removed                    |
+| `NodeRange` param order inconsistent with `NodePosition`                 | Bug             | Fixed                             |
+| Exported ID constants that should be internal                            | API surface     | Unexported                        |
+| `lspLine` confusing name                                                 | Naming          | Renamed to `toZeroBased`          |
+| Triage guard dropping empty-FixStrategy findings                         | Bug             | Guard removed                     |
+| Range-based fix test with wrong file content                             | Test bug        | Fixed content                     |
+| `.gitignore` line 43 malformed merge artifact                            | Config          | Needs fix                         |
+| Binary artifacts (`go-finding`, `govet`) in repo                         | Cleanup         | Gitignored but still on disk      |
+| `report/jscpd-report.json` stale artifact                                | Cleanup         | Gitignored but directory persists |
 
 **No currently broken components.** All 522 tests pass. Zero vet errors. Zero lint errors.
 
@@ -146,6 +147,7 @@ All critical issues have been resolved across 20+ commits:
 ### Immediate Quality Gaps
 
 1. **`.gitignore` line 43 corruption** — Two entries merged: `jscpd-report.jsonstaticcheck`. Should be:
+
    ```
    # Copy/paste detection report
    /report/jscpd-report.json
@@ -193,48 +195,48 @@ All critical issues have been resolved across 20+ commits:
 
 ### Immediate (Today — 30 minutes total)
 
-| # | Task | Effort | Impact |
-|---|------|--------|--------|
-| 1 | Fix `.gitignore` line 43 corruption | 2 min | Clean config |
-| 2 | Delete binary artifacts (`go-finding`, `govet`) | 1 min | Clean repo |
-| 3 | Delete stale coverage files (`cover.out`, `coverage.out`) | 1 min | Clean repo |
-| 4 | Remove or archive stale planning docs | 5 min | Clarity |
-| 5 | Test `ioErrorAt` and `NewRangePtr` | 10 min | Coverage |
-| 6 | Delete `report/` directory (only contains gitignored artifact) | 1 min | Clean structure |
+| #   | Task                                                           | Effort | Impact          |
+| --- | -------------------------------------------------------------- | ------ | --------------- |
+| 1   | Fix `.gitignore` line 43 corruption                            | 2 min  | Clean config    |
+| 2   | Delete binary artifacts (`go-finding`, `govet`)                | 1 min  | Clean repo      |
+| 3   | Delete stale coverage files (`cover.out`, `coverage.out`)      | 1 min  | Clean repo      |
+| 4   | Remove or archive stale planning docs                          | 5 min  | Clarity         |
+| 5   | Test `ioErrorAt` and `NewRangePtr`                             | 10 min | Coverage        |
+| 6   | Delete `report/` directory (only contains gitignored artifact) | 1 min  | Clean structure |
 
 ### Short Term (This Week)
 
-| # | Task | Effort | Impact |
-|---|------|--------|--------|
-| 7 | Add `applyDirectFixes` integration tests | 60 min | Coverage |
-| 8 | Document SARIF critical round-trip limitation in sarif.go | 15 min | Honesty |
-| 9 | Decide: wire or document `Correlate()` | 30 min | Closure |
-| 10 | Add CLI smoke tests (flag parsing, output formats) | 2h | Coverage |
-| 11 | Suppress gosec G401 false positive for sha256 | 5 min | Clean lint |
-| 12 | Address gopls rangeint hints (3 locations) | 15 min | Modern code |
-| 13 | Evaluate go-sarif for optional SARIF schema compliance | 30 min | Decision |
+| #   | Task                                                      | Effort | Impact      |
+| --- | --------------------------------------------------------- | ------ | ----------- |
+| 7   | Add `applyDirectFixes` integration tests                  | 60 min | Coverage    |
+| 8   | Document SARIF critical round-trip limitation in sarif.go | 15 min | Honesty     |
+| 9   | Decide: wire or document `Correlate()`                    | 30 min | Closure     |
+| 10  | Add CLI smoke tests (flag parsing, output formats)        | 2h     | Coverage    |
+| 11  | Suppress gosec G401 false positive for sha256             | 5 min  | Clean lint  |
+| 12  | Address gopls rangeint hints (3 locations)                | 15 min | Modern code |
+| 13  | Evaluate go-sarif for optional SARIF schema compliance    | 30 min | Decision    |
 
 ### Medium Term (Next 2 Weeks)
 
-| # | Task | Effort | Impact |
-|---|------|--------|--------|
-| 14 | Plan v1.0 release — stabilize API, write CHANGELOG | 2h | Release |
-| 15 | Add GitHub release workflow (GoReleaser config exists) | 1h | Release |
-| 16 | Create comprehensive GoDoc examples for all public types | 2h | DX |
-| 17 | Add detector integration tests with fixture data | 2h | Coverage |
-| 18 | Benchmark pipeline performance | 1h | Performance |
-| 19 | Profile memory allocation hotspots | 1h | Performance |
-| 20 | Add property-based tests (testing/quick) | 1h | Robustness |
+| #   | Task                                                     | Effort | Impact      |
+| --- | -------------------------------------------------------- | ------ | ----------- |
+| 14  | Plan v1.0 release — stabilize API, write CHANGELOG       | 2h     | Release     |
+| 15  | Add GitHub release workflow (GoReleaser config exists)   | 1h     | Release     |
+| 16  | Create comprehensive GoDoc examples for all public types | 2h     | DX          |
+| 17  | Add detector integration tests with fixture data         | 2h     | Coverage    |
+| 18  | Benchmark pipeline performance                           | 1h     | Performance |
+| 19  | Profile memory allocation hotspots                       | 1h     | Performance |
+| 20  | Add property-based tests (testing/quick)                 | 1h     | Robustness  |
 
 ### Longer Term
 
-| # | Task | Effort | Impact |
-|---|------|--------|--------|
-| 21 | Add watch mode for continuous analysis | 3h | DX |
-| 22 | IDE plugin stubs (VS Code) | 5h | DX |
-| 23 | Web UI prototype for pipeline monitoring | 5h | DX |
-| 24 | Add more detector integrations (errcheck, gosimple, etc.) | 3h | Adoption |
-| 25 | Distributed detection support | 8h | Scale |
+| #   | Task                                                      | Effort | Impact   |
+| --- | --------------------------------------------------------- | ------ | -------- |
+| 21  | Add watch mode for continuous analysis                    | 3h     | DX       |
+| 22  | IDE plugin stubs (VS Code)                                | 5h     | DX       |
+| 23  | Web UI prototype for pipeline monitoring                  | 5h     | DX       |
+| 24  | Add more detector integrations (errcheck, gosimple, etc.) | 3h     | Adoption |
+| 25  | Distributed detection support                             | 8h     | Scale    |
 
 ---
 
@@ -243,11 +245,13 @@ All critical issues have been resolved across 20+ commits:
 **Should `Correlate()` be wired into the pipeline or documented as a standalone utility?**
 
 Arguments for wiring:
+
 - It's real, working code with 100% test coverage
 - Cross-tool correlation is a unique value proposition
 - Would make Pipeline.Run() output richer (connected findings across tools)
 
 Arguments against:
+
 - Adds complexity to the hot path
 - No real consumer asking for it yet
 - Correlation heuristics (same file, nearby lines) are simplistic

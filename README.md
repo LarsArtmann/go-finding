@@ -59,15 +59,15 @@ func main() {
 
 ## Core Types
 
-| Type | Purpose |
-|------|---------|
-| `Finding` | A single issue: ID, rule, severity, position, fix strategy |
-| `Report` | Container for findings with summary statistics |
-| `Severity` | `info` / `warning` / `error` / `critical` |
-| `FixStrategy` | `none` / `suggest` / `direct` / `ai` |
-| `Position` | File, line, column location |
-| `Range` | Start and end positions with geometric operations |
-| `Category` | `security`, `style`, `performance`, `correctness`, etc. |
+| Type          | Purpose                                                    |
+| ------------- | ---------------------------------------------------------- |
+| `Finding`     | A single issue: ID, rule, severity, position, fix strategy |
+| `Report`      | Container for findings with summary statistics             |
+| `Severity`    | `info` / `warning` / `error` / `critical`                  |
+| `FixStrategy` | `none` / `suggest` / `direct` / `ai`                       |
+| `Position`    | File, line, column location                                |
+| `Range`       | Start and end positions with geometric operations          |
+| `Category`    | `security`, `style`, `performance`, `correctness`, etc.    |
 
 ## Filtering
 
@@ -132,16 +132,16 @@ fmt.Printf("Iterations: %d, Findings: %d, Stable: %v\n",
 
 ### Pipeline Features
 
-| Feature | Description |
-|---------|-------------|
-| **Parallel detection** | errgroup-based concurrent detector execution |
-| **Conflict detection** | Overlapping fixes filtered before application |
-| **Fix application** | AST-aware with text fallback, backup/rollback |
-| **Verification** | Re-run detectors to confirm fixes |
-| **Retry** | Exponential backoff for flaky detectors |
-| **Partial success** | Continue with findings from successful detectors |
-| **Metrics** | Optional timing and count collection with snapshots |
-| **Dry run** | Detect + triage without applying fixes |
+| Feature                | Description                                         |
+| ---------------------- | --------------------------------------------------- |
+| **Parallel detection** | errgroup-based concurrent detector execution        |
+| **Conflict detection** | Overlapping fixes filtered before application       |
+| **Fix application**    | AST-aware with text fallback, backup/rollback       |
+| **Verification**       | Re-run detectors to confirm fixes                   |
+| **Retry**              | Exponential backoff for flaky detectors             |
+| **Partial success**    | Continue with findings from successful detectors    |
+| **Metrics**            | Optional timing and count collection with snapshots |
+| **Dry run**            | Detect + triage without applying fixes              |
 
 ### Custom Detector
 
@@ -251,12 +251,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Project Stats
 
-| Package | Coverage |
-|---------|----------|
-| Root | 91.7% |
-| Pipeline | 84.0% |
-| Detectors | 71.6% |
-| CLI | 24.1% |
+| Package   | Coverage  |
+| --------- | --------- |
+| Root      | 91.7%     |
+| Pipeline  | 84.0%     |
+| Detectors | 71.6%     |
+| CLI       | 24.1%     |
 | **Total** | **81.1%** |
 
 ## Related Projects
