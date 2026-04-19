@@ -328,7 +328,7 @@ func (r Range) intersectionByOffset(other Range) *Range {
 
 // Adjacent reports whether this range is immediately adjacent to another range.
 // Adjacent means one range ends exactly where the other begins.
-func (r Range) Adjacent(other Range) bool {
+func (r Range) Adjacent(other Range) bool { //nolint:nestif // symmetric adjacency check requires multi-way comparison
 	if !r.sameFileAs(other) {
 		return false
 	}
@@ -373,6 +373,7 @@ func (p Position) HasOffset() bool {
 	return p.Offset >= 0
 }
 
+// Pos creates a Position from the given file, line, and column.
 func Pos(file string, line, column int) Position {
 	return Position{File: file, Line: line, Column: column}
 }
