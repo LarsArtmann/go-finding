@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-04-19
+
+### Breaking
+
+- **`pipeline.New()` now returns `(*Pipeline, error)`** — Previously returned `*Pipeline` with no error. Now validates config via `Config.Validate()` and rejects invalid configs (negative iterations/timeout, invalid retry settings).
+
+### Added
+
+- **`PipelineResult.PartialErrors`** — `map[string]error` surfacing per-detector errors when `GracefulDegradation` is enabled. Callers can now inspect which detectors failed during partial success.
+- **`PipelineResult.Metrics`** — `MetricsSnapshot` populated automatically after `Run()` completes, including `TotalDuration`, `StageDurations`, `DetectorTimes`, and `FindingsFound`.
+- **CLI metrics output** — Metrics summary printed to stderr after each run (detect/fix counts, duration).
+- **Tests for config validation, partial errors, metrics snapshot** — `TestNew_RejectsInvalidConfig`, `TestNew_ValidConfig_NoError`, `TestPipelineRun_PartialErrorsSurfaced`, `TestPipelineRun_MetricsInResult`.
+
+### Changed
+
+- **Test helpers moved to `_test.go`** — `testutil.go` merged into `testutil_test.go`; `suppression_test_util.go` renamed to `suppression_test_util_test.go`. No test-only code ships in production builds.
+- **`FixStrategyAI` documented** as phantom/placeholder — not wired to any implementation.
+- **`map[string]bool` → `map[string]struct{}`** in `sarif_test.go` for idiomatic Go sets.
+- **Removed dead `detectorSpec.Args` field** from CLI.
+- **Removed unused `//nolint:goconst` directive** in `finding_extra_test.go`.
+- **Extracted "changed" sentinel to const** in clone test for goconst compliance.
+
+### Fixed
+
+- **Metrics snapshot defer ordering bug** — `TotalDuration` was always zero because snapshot was taken before deferred `SetEnd()`. Moved snapshot into deferred cleanup so it captures correct end time.
+
+### Testing
+
+- Coverage: 93.1% root, 87.1% pipeline, 71.6% detectors, 57.3% CLI
+- All tests pass with `-race`, `go vet` clean
+
 ## [0.1.2] - 2026-04-19
 
 ### Changed

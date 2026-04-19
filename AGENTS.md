@@ -90,6 +90,9 @@ just lint        # Run linter
 - **Retry** — Configurable exponential backoff for flaky detectors
 - **Partial success** — Continue with findings from successful detectors
 - **Parallel detection** — errgroup-based concurrent detector execution
+- **Config validation** — `pipeline.New()` rejects invalid configs, returns error
+- **Partial error surfacing** — `PipelineResult.PartialErrors` exposes per-detector failures
+- **Metrics snapshot in result** — `PipelineResult.Metrics` auto-populated after `Run()`
 - **Line-based FixApplier** — Range-aware fixes target exact line spans; falls back to string replacement
 
 ### CLI Features
@@ -100,6 +103,7 @@ just lint        # Run linter
 - Severity filtering, timeout, max-iterations
 - CPU/memory profiling
 - Graceful degradation on detector failures
+- Metrics summary output to stderr
 
 ---
 
