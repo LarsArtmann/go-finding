@@ -43,8 +43,8 @@ func TestClone(t *testing.T) {
 		t.Error("Clone should be Equal to original")
 	}
 
-	clone.Metadata["key"] = "changed" //nolint:goconst
-	if original.Metadata["key"] == "changed" { //nolint:goconst
+	clone.Metadata["key"] = "changed" //nolint:goconst // test value
+	if original.Metadata["key"] == "changed" {
 		t.Error("mutating clone Metadata should not affect original")
 	}
 

@@ -228,7 +228,7 @@ func TestToLSP(t *testing.T) { //nolint:gocognit,funlen // comprehensive table-d
 			t.Errorf("ToLSP Severity = %d, want %d", got, want)
 		}
 
-		if got, want := diag.Code, "SA1000"; got != want {
+		if got, want := diag.Code, f.Rule; got != want {
 			t.Errorf("ToLSP Code = %q, want %q", got, want)
 		}
 

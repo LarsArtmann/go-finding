@@ -83,6 +83,7 @@ func RunEqualTests[T any](t *testing.T, tests []struct {
 }, eqFunc func(a, b T) bool, formatName string,
 ) {
 	t.Helper()
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
@@ -128,6 +129,7 @@ func RunCompareTests[T any](t *testing.T, tests []struct {
 }, cmpFunc func(a, b T) int, formatName string,
 ) {
 	t.Helper()
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()

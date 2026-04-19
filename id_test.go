@@ -314,6 +314,7 @@ func TestGenerateID_WindowsPathRoundTrip(t *testing.T) {
 			if !p.OK() {
 				t.Fatalf("ParseID(%q) returned ok=false", id)
 			}
+
 			if p.Tool != tt.tool {
 				t.Errorf("tool = %q, want %q", p.Tool, tt.tool)
 			}
@@ -326,6 +327,7 @@ func TestGenerateID_WindowsPathRoundTrip(t *testing.T) {
 			if p.Line != tt.line {
 				t.Errorf("line = %d, want %d", p.Line, tt.line)
 			}
+
 			if p.Column != tt.col {
 				t.Errorf("col = %d, want %d", p.Column, tt.col)
 			}

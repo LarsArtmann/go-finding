@@ -328,13 +328,13 @@ func (r Range) intersectionByOffset(other Range) *Range {
 
 // Adjacent reports whether this range is immediately adjacent to another range.
 // Adjacent means one range ends exactly where the other begins.
-func (r Range) Adjacent(other Range) bool { //nolint:nestif // symmetric adjacency check requires multi-way comparison
+func (r Range) Adjacent(other Range) bool {
 	if !r.sameFileAs(other) {
 		return false
 	}
 
 	// Try line-based adjacency first
-	if r.End.Line > 0 && other.Start.Line > 0 {
+	if r.End.Line > 0 && other.Start.Line > 0 { //nolint:nestif // symmetric adjacency check
 		if r.End.Line == other.Start.Line {
 			if r.End.Column == 0 && other.Start.Column == 0 {
 				return true
