@@ -303,7 +303,10 @@ func severityToSARIFLevel(
 	}
 }
 
-// FromSARIFLevel converts SARIF level back to Severity.
+// FromSARIFLevel converts a SARIF level back to Severity.
+// Lossy: both SeverityCritical and SeverityError map to SARIF "error",
+// so FromSARIFLevel("error") returns SeverityError. For full fidelity,
+// read the "go-finding/severity" property from the result instead.
 func FromSARIFLevel(level string) Severity {
 	switch level {
 	case "note":
