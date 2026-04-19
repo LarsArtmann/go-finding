@@ -17,6 +17,7 @@ func newFilterCase(name string, input []Finding, pred FilterFunc, expected int) 
 
 // runFilterCase runs a filter test case.
 func runFilterCase(t *testing.T, tc filterTestCase) {
+	t.Helper()
 	t.Run(tc.name, func(t *testing.T) {
 		t.Parallel()
 

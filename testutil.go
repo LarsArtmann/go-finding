@@ -48,6 +48,7 @@ func MakeSimpleReport(toolName string) *Report {
 
 // assertFindingErrorFile asserts the File field of a FindingError.
 func assertFindingErrorFile(t *testing.T, err *FindingError, want string) {
+	t.Helper()
 	if err.File != want {
 		t.Errorf("File = %q, want %q", err.File, want)
 	}
@@ -55,6 +56,7 @@ func assertFindingErrorFile(t *testing.T, err *FindingError, want string) {
 
 // checkProperty runs a property-based test using quick.Check.
 func checkProperty[T any](t *testing.T, property func(T) bool) {
+	t.Helper()
 	err := quick.Check(property, nil)
 	if err != nil {
 		t.Error(err)

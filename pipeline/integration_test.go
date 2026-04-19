@@ -171,7 +171,7 @@ func TestPipeline_RetryConfig(t *testing.T) {
 
 	flaky := NamedDetectorFunc(
 		"flaky",
-		DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+		DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 			count := calls.Add(1)
 			if count < 3 {
 				return nil, os.ErrDeadlineExceeded
@@ -220,7 +220,7 @@ func TestPipeline_VerifyAfterFix(t *testing.T) {
 
 	det := NamedDetectorFunc(
 		"verifiable",
-		DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+		DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 			c := callCount.Add(1)
 			if c == 1 {
 				return []finding.Finding{

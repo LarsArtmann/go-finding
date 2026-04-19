@@ -58,6 +58,7 @@ func TestRangeLinesEq(t *testing.T) {
 
 	lineEq := func(aStart, aEnd, bStart, bEnd int, want bool) func(*testing.T) {
 		return func(t *testing.T) {
+			t.Helper()
 			t.Parallel()
 
 			a := Range{Start: Position{Line: aStart}, End: Position{Line: aEnd}}

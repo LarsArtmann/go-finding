@@ -100,7 +100,7 @@ func TestVerifier_Verify(t *testing.T) {
 	t.Parallel()
 
 	callCount := 0
-	detector := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+	detector := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		callCount++
 		if callCount <= 1 {
 			return []finding.Finding{makeFinding("a:rule:f.go:1", "issue")}, nil

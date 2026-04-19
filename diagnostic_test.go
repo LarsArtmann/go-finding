@@ -9,11 +9,13 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
+const testSrcMain = `package main; func main() {}`
+
 func TestFromDiagnostic(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
-	src := `package main; func main() {}`
+	src := testSrcMain
 
 	f, err := parser.ParseFile(fset, "test.go", src, 0)
 	if err != nil {
@@ -52,7 +54,7 @@ func TestFromDiagnostic_WithSuggestedFixes(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
-	src := `package main; func main() {}`
+	src := testSrcMain
 
 	f, err := parser.ParseFile(fset, "test.go", src, 0)
 	if err != nil {
@@ -156,7 +158,7 @@ func TestNodePosition(t *testing.T) {
 		t.Parallel()
 
 		fset := token.NewFileSet()
-		src := `package main; func main() {}`
+		src := testSrcMain
 
 		f, err := parser.ParseFile(fset, "test.go", src, 0)
 		if err != nil {
@@ -192,7 +194,7 @@ func TestNodeRange(t *testing.T) {
 		t.Parallel()
 
 		fset := token.NewFileSet()
-		src := `package main; func main() {}`
+		src := testSrcMain
 
 		f, err := parser.ParseFile(fset, "test.go", src, 0)
 		if err != nil {
@@ -228,7 +230,7 @@ func TestFormatDiagnostic(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
-	src := `package main; func main() {}`
+	src := testSrcMain
 
 	f, err := parser.ParseFile(fset, "test.go", src, 0)
 	if err != nil {

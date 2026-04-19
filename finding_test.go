@@ -364,6 +364,8 @@ func TestCategory(t *testing.T) {
 }
 
 func TestRangeContains(t *testing.T) {
+	t.Parallel()
+
 	r := NewRange("test.go", 10, 5, 20, 10)
 
 	tests := []struct {

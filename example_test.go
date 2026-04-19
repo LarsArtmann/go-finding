@@ -276,7 +276,7 @@ func ExampleRange() {
 func ExamplePipeline() {
 	detector := pipeline.NamedDetectorFunc(
 		"example",
-		func(ctx context.Context) ([]finding.Finding, error) {
+		func(_ context.Context) ([]finding.Finding, error) {
 			return []finding.Finding{
 				{
 					ID:          "example:R1:main.go:1:1",

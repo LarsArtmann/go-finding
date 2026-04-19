@@ -390,7 +390,7 @@ func TestTriage(t *testing.T) {
 // TestDetectorFunc tests the DetectorFunc adapter.
 func TestDetectorFunc(t *testing.T) {
 	called := false
-	f := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+	f := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		called = true
 
 		return nil, nil
@@ -413,7 +413,7 @@ func TestDetectorFunc(t *testing.T) {
 func TestNamedDetectorFunc(t *testing.T) {
 	t.Parallel()
 
-	fn := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+	fn := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		return []finding.Finding{{ID: "test"}}, nil
 	})
 
@@ -558,7 +558,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 
 	testFile := filepath.Join(tempDir, "test.go")
 
-	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tprintln(\"hello\")\n}\n"
+	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tprintln(\"hello\")\n}\n" //nolint:dupword // test fixture intentionally duplicates println
 	if writeErr := writeFile(testFile, []byte(content), 0o644); writeErr != nil {
 		t.Fatalf("create test file: %v", writeErr)
 	}
