@@ -207,14 +207,14 @@ func TestFromLSPRelated(t *testing.T) {
 	}
 }
 
-func TestToLSP(t *testing.T) { //nolint:gocognit // comprehensive table-driven test
+func TestToLSP(t *testing.T) { //nolint:gocognit,funlen // comprehensive table-driven test
 	t.Parallel()
 
 	t.Run("with range", func(t *testing.T) {
 		t.Parallel()
 
 		f := Finding{
-			Rule:     "SA1000", //nolint:goconst
+			Rule:     "SA1000",
 			ToolName: "staticcheck",
 			Message:  "invalid printf format",
 			Severity: SeverityWarning,
@@ -228,7 +228,7 @@ func TestToLSP(t *testing.T) { //nolint:gocognit // comprehensive table-driven t
 			t.Errorf("ToLSP Severity = %d, want %d", got, want)
 		}
 
-		if got, want := diag.Code, "SA1000"; got != want { //nolint:goconst
+		if got, want := diag.Code, "SA1000"; got != want {
 			t.Errorf("ToLSP Code = %q, want %q", got, want)
 		}
 
