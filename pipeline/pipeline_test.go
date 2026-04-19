@@ -978,3 +978,97 @@ func TestDryRun(t *testing.T) {
 		t.Errorf("file was modified during dry run: %q", data)
 	}
 }
+
+func TestNew_RejectsInvalidConfig(t *testing.T) {
+	tests := []struct {
+		name   string
+		config Config
+	}{
+		{"negative iterations", Config{MaxIterations: -1}},
+		{"negative timeout", Config{MaxIterations: 1, Timeout: -1 * time.Second}},
+		{"invalid retry", Config{MaxIterations: 1, Retry: &RetryConfig{MaxRetries: -1}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := New(tt.config, t.TempDir())
+			if err == nil {
+				t.Fatal("expected error for invalid config")
+			}
+		})
+	}
+}
+
+func TestNew_ValidConfig_NoError(t *testing.T) {
+	config := DefaultConfig()
+	p, err := New(config, t.TempDir())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if p == nil {
+		t.Fatal("expected non-nil pipeline")
+	}
+}
+
+func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
+	goodDetector := &mockDetector{
+		name:     "good",
+		findings: []finding.Finding{{ID: "F1", Rule: "r", ToolName: "good", Message: "m", Severity: finding.SeverityError}},
+	}
+	badDetector := &mockDetector{name: "bad", err: errors.New("boom")}
+
+	config := Config{
+		MaxIterations:       1,
+		GracefulDegradation: true,
+	}
+
+	p, err := New(config, t.TempDir(), goodDetector, badDetector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if result.PartialErrors == nil {
+		t.Fatal("expected PartialErrors to be populated")
+	}
+
+	if _, ok := result.PartialErrors["bad"]; !ok {
+		t.Error("expected 'bad' detector in PartialErrors")
+	}
+
+	if _, ok := result.PartialErrors["good"]; ok {
+		t.Error("did not expect 'good' detector in PartialErrors")
+	}
+}
+
+func TestPipelineRun_MetricsInResult(t *testing.T) {
+	m := NewMetrics()
+	config := Config{
+		MaxIterations: 1,
+		Metrics:       m,
+	}
+
+	detector := &mockDetector{name: "test", findings: nil}
+	p, err := New(config, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if result.Metrics.TotalDuration == 0 {
+		t.Error("expected non-zero TotalDuration in metrics snapshot")
+	}
+
+	if result.Metrics.FixesApplied != 0 {
+		t.Errorf("FixesApplied = %d, want 0", result.Metrics.FixesApplied)
+	}
+}
