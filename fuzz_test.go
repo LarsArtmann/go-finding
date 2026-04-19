@@ -17,9 +17,9 @@ func FuzzFilter(f *testing.F) {
 		switch sevStr {
 		case "info":
 			severity = SeverityInfo
-		case "warning":
+		case string(SeverityWarning):
 			severity = SeverityWarning
-		case "error":
+		case string(SeverityError):
 			severity = SeverityError
 		case "critical":
 			severity = SeverityCritical

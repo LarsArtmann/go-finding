@@ -91,8 +91,8 @@ func TestToSARIF(t *testing.T) {
 		t.Errorf("RuleID = %q, want %q", result.RuleID, "SA1000")
 	}
 
-	if result.Level != "error" {
-		t.Errorf("Level = %q, want %q", result.Level, "error")
+	if result.Level != string(SeverityError) {
+		t.Errorf("Level = %q, want %q", result.Level, SeverityError)
 	}
 
 	if result.Message.Text != "bad code" {
