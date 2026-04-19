@@ -142,17 +142,29 @@ func TestToSARIFFiltered(t *testing.T) {
 		)
 	}
 
-	rules := make(map[string]bool)
+	rules := make(map[string]struct{})
 	for _, res := range results {
-		rules[res.RuleID] = true
+		rules[res.RuleID] = struct{}{}
 	}
 
-	if !rules["r1"] || !rules["r2"] {
-		t.Errorf("expected r1 and r2 in results, got rules: %v", rules)
+	if _, ok := rules["r1"]; !ok {
+		t.Error("expected r1 in results")
 	}
 
-	if rules["r3"] || rules["r4"] || rules["r5"] {
-		t.Error("r3 (warning), r4 (info), r5 (suppressed) should be excluded")
+	if _, ok := rules["r2"]; !ok {
+		t.Error("expected r2 in results")
+	}
+
+	if _, ok := rules["r3"]; ok {
+		t.Error("r3 (warning) should be excluded")
+	}
+
+	if _, ok := rules["r4"]; ok {
+		t.Error("r4 (info) should be excluded")
+	}
+
+	if _, ok := rules["r5"]; ok {
+		t.Error("r5 (suppressed) should be excluded")
 	}
 }
 
