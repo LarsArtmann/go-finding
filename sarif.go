@@ -276,10 +276,122 @@ func findingToSARIF(f Finding) SarifResult {
 }
 
 // FindingsFromSARIF parses SARIF JSON and returns Findings.
-// This establishes the API surface for reverse conversion.
-// A full implementation will be added in a future release.
+// It extracts go-finding-specific properties for round-trip fidelity
+// (severity, ID, tool name, etc.) and falls back to SARIF fields otherwise.
 func FindingsFromSARIF(data []byte) ([]Finding, error) {
-	return nil, fmt.Errorf("FindingsFromSARIF: not yet implemented")
+	var log SarifLog
+	if err := json.Unmarshal(data, &log); err != nil {
+		return nil, fmt.Errorf("parsing SARIF: %w", err)
+	}
+
+	var findings []Finding
+	for _, run := range log.Runs {
+		toolName := run.Tool.Driver.Name
+
+		for _, r := range run.Results {
+			f := Finding{
+				Rule:     r.RuleID,
+				Severity: FromSARIFLevel(r.Level),
+				Message:  r.Message.Text,
+				ToolName: toolName,
+			}
+
+			if len(r.Locations) > 0 {
+				loc := r.Locations[0]
+				f.Position = Position{
+					File:   loc.PhysicalLocation.ArtifactLocation.URI,
+					Line:   loc.PhysicalLocation.Region.StartLine,
+					Column: loc.PhysicalLocation.Region.StartColumn,
+				}
+
+				if loc.PhysicalLocation.Region.EndLine > 0 || loc.PhysicalLocation.Region.EndColumn > 0 {
+					f.Range = &Range{
+						Start: f.Position,
+						End: Position{
+							File:   loc.PhysicalLocation.ArtifactLocation.URI,
+							Line:   loc.PhysicalLocation.Region.EndLine,
+							Column: loc.PhysicalLocation.Region.EndColumn,
+						},
+					}
+				}
+			}
+
+			if r.Rank > 0 {
+				f.Confidence = r.Rank / sarifConfidenceScale
+			}
+
+			if len(r.Fixes) > 0 && len(r.Fixes[0].Changes) > 0 && len(r.Fixes[0].Changes[0].Replacements) > 0 {
+				f.Suggestion = r.Fixes[0].Description.Text
+				f.AfterCode = r.Fixes[0].Changes[0].Replacements[0].InsertedText.Text
+				f.FixStrategy = FixStrategySuggest
+			}
+
+			for _, rel := range r.Related {
+				f.Related = append(f.Related, RelatedRef{
+					Relation: rel.Message.Text,
+					Position: Position{
+						File:   rel.PhysicalLocation.ArtifactLocation.URI,
+						Line:   rel.PhysicalLocation.Region.StartLine,
+						Column: rel.PhysicalLocation.Region.StartColumn,
+					},
+				})
+			}
+
+			// Restore go-finding-specific properties for round-trip fidelity.
+			if r.Properties != nil {
+				if v, ok := r.Properties["go-finding/id"].(string); ok {
+					f.ID = v
+				}
+				if v, ok := r.Properties["go-finding/severity"].(string); ok {
+					s := Severity(v)
+					if s.IsValid() {
+						f.Severity = s
+					}
+				}
+				if v, ok := r.Properties["go-finding/fixStrategy"].(string); ok {
+					fs := FixStrategy(v)
+					if fs.IsValid() {
+						f.FixStrategy = fs
+					}
+				}
+				if v, ok := r.Properties["go-finding/toolName"].(string); ok {
+					f.ToolName = v
+				}
+				if v, ok := r.Properties["go-finding/category"].(string); ok {
+					f.Category = Category(v)
+				}
+				if v, ok := r.Properties["go-finding/tag"].(string); ok {
+					f.Tag = v
+				}
+				if v, ok := r.Properties["go-finding/confidence"].(float64); ok {
+					f.Confidence = v
+				}
+				if v, ok := r.Properties["go-finding/suggestion"].(string); ok {
+					f.Suggestion = v
+				}
+				if v, ok := r.Properties["go-finding/snippet"].(string); ok {
+					f.Snippet = v
+				}
+
+				f.Metadata = make(map[string]string)
+				for k, v := range r.Properties {
+					if len(k) > len("go-finding/") && k[:len("go-finding/")] == "go-finding/" {
+						continue
+					}
+					if s, ok := v.(string); ok {
+						f.Metadata[k] = s
+					}
+				}
+				if len(f.Metadata) == 0 {
+					f.Metadata = nil
+				}
+			}
+
+			findings = append(findings, f)
+		}
+	}
+
+	return findings, nil
 }
 
 // severityToSARIFLevel converts a Severity to a SARIF level string.

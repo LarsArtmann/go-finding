@@ -284,18 +284,112 @@ func TestToSARIF_EmptyReport(t *testing.T) {
 	}
 }
 
-func TestFindingsFromSARIF_NotYetImplemented(t *testing.T) {
+func TestFindingsFromSARIF_EmptyLog(t *testing.T) {
 	t.Parallel()
 
-	findings, err := FindingsFromSARIF([]byte(`{}`))
-	if findings != nil {
-		t.Errorf("FindingsFromSARIF() findings = %v, want nil", findings)
+	findings, err := FindingsFromSARIF([]byte(`{"version":"2.1.0","runs":[]}`))
+	if err != nil {
+		t.Fatalf("FindingsFromSARIF(): %v", err)
 	}
+	if len(findings) != 0 {
+		t.Errorf("FindingsFromSARIF() findings = %v, want empty", findings)
+	}
+}
+
+func TestFindingsFromSARIF_InvalidJSON(t *testing.T) {
+	t.Parallel()
+
+	_, err := FindingsFromSARIF([]byte(`not json`))
 	if err == nil {
-		t.Fatal("FindingsFromSARIF() expected error, got nil")
+		t.Fatal("FindingsFromSARIF() expected error for invalid JSON, got nil")
 	}
-	if !strings.Contains(err.Error(), "not yet implemented") {
-		t.Errorf("FindingsFromSARIF() error = %q, want 'not yet implemented'", err.Error())
+}
+
+func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
+	t.Parallel()
+
+	original := Finding{
+		ID:          "govet:printf:main.go:10:5",
+		Rule:        "printf",
+		ToolName:    "govet",
+		Message:     "invalid format",
+		Severity:    SeverityCritical,
+		Position:    Position{File: "main.go", Line: 10, Column: 5},
+		Category:    CategoryCorrectness,
+		Tag:         "printf",
+		FixStrategy: FixStrategySuggest,
+		Confidence:  0.9,
+		Suggestion:  "fix format string",
+		Snippet:     "fmt.Sprintf(\"%d\")",
+		Metadata:    map[string]string{"custom": "value"},
+		Range: &Range{
+			Start: Position{File: "main.go", Line: 10, Column: 5},
+			End:   Position{File: "main.go", Line: 10, Column: 20},
+		},
+	}
+
+	report := NewReport(ToolInfo{Name: "govet"})
+	report.AddFinding(original)
+
+	sarif, err := report.ToSARIF()
+	if err != nil {
+		t.Fatalf("ToSARIF(): %v", err)
+	}
+
+	findings, err := FindingsFromSARIF(sarif)
+	if err != nil {
+		t.Fatalf("FindingsFromSARIF(): %v", err)
+	}
+	if len(findings) != 1 {
+		t.Fatalf("FindingsFromSARIF() got %d findings, want 1", len(findings))
+	}
+
+	got := findings[0]
+
+	if got.ID != original.ID {
+		t.Errorf("ID = %q, want %q", got.ID, original.ID)
+	}
+	if got.Rule != original.Rule {
+		t.Errorf("Rule = %q, want %q", got.Rule, original.Rule)
+	}
+	if got.ToolName != original.ToolName {
+		t.Errorf("ToolName = %q, want %q", got.ToolName, original.ToolName)
+	}
+	if got.Severity != original.Severity {
+		t.Errorf("Severity = %q, want %q", got.Severity, original.Severity)
+	}
+	if got.Message != original.Message {
+		t.Errorf("Message = %q, want %q", got.Message, original.Message)
+	}
+	if got.Category != original.Category {
+		t.Errorf("Category = %q, want %q", got.Category, original.Category)
+	}
+	if got.Tag != original.Tag {
+		t.Errorf("Tag = %q, want %q", got.Tag, original.Tag)
+	}
+	if got.FixStrategy != original.FixStrategy {
+		t.Errorf("FixStrategy = %q, want %q", got.FixStrategy, original.FixStrategy)
+	}
+	if got.Confidence != original.Confidence {
+		t.Errorf("Confidence = %v, want %v", got.Confidence, original.Confidence)
+	}
+	if got.Suggestion != original.Suggestion {
+		t.Errorf("Suggestion = %q, want %q", got.Suggestion, original.Suggestion)
+	}
+	if got.Snippet != original.Snippet {
+		t.Errorf("Snippet = %q, want %q", got.Snippet, original.Snippet)
+	}
+	if got.Position != original.Position {
+		t.Errorf("Position = %v, want %v", got.Position, original.Position)
+	}
+	if got.Range == nil {
+		t.Fatal("Range is nil, want non-nil")
+	}
+	if got.Range.End != original.Range.End {
+		t.Errorf("Range.End = %v, want %v", got.Range.End, original.Range.End)
+	}
+	if got.Metadata["custom"] != "value" {
+		t.Errorf("Metadata[\"custom\"] = %q, want %q", got.Metadata["custom"], "value")
 	}
 }
 
