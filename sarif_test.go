@@ -99,7 +99,7 @@ func TestToSARIF(t *testing.T) {
 		t.Errorf("Message.Text = %q, want %q", result.Message.Text, "bad code")
 	}
 
-	uri := result.Location.PhysicalLocation.ArtifactLocation.URI
+	uri := result.Locations[0].PhysicalLocation.ArtifactLocation.URI
 	if uri != "main.go" {
 		t.Errorf("URI = %q, want %q", uri, "main.go")
 	}

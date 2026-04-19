@@ -40,7 +40,7 @@ type SarifResult struct {
 	RuleID     string            `json:"ruleId"`
 	Level      string            `json:"level"`
 	Message    SarifMessage      `json:"message"`
-	Location   SarifLocation     `json:"location"`
+	Locations []SarifLocation    `json:"locations"`
 	Fixes      []SarifFix        `json:"fixes,omitempty"`
 	Related    []SarifRelatedLoc `json:"relatedLocations,omitempty"`
 	Rank       float64           `json:"rank,omitempty"`
@@ -177,7 +177,7 @@ func findingToSARIF(f Finding) SarifResult {
 		RuleID:  f.Rule,
 		Level:   severityToSARIFLevel(f.Severity),
 		Message: SarifMessage{Text: f.Message},
-		Location: SarifLocation{
+		Locations: []SarifLocation{{
 			PhysicalLocation: SarifPhysicalLocation{
 				ArtifactLocation: SarifArtifactLocation{URI: f.Position.File},
 				Region: &SarifRegion{
@@ -185,14 +185,14 @@ func findingToSARIF(f Finding) SarifResult {
 					StartColumn: f.Position.Column,
 				},
 			},
-		},
+		}},
 		Rank: f.Confidence * sarifConfidenceScale, // SARIF uses 0-100
 	}
 
 	// Add end position if available
 	if f.Range != nil && f.Range.HasEnd() {
-		result.Location.PhysicalLocation.Region.EndLine = f.Range.End.Line
-		result.Location.PhysicalLocation.Region.EndColumn = f.Range.End.Column
+		result.Locations[0].PhysicalLocation.Region.EndLine = f.Range.End.Line
+		result.Locations[0].PhysicalLocation.Region.EndColumn = f.Range.End.Column
 	}
 
 	// Add fix if available
@@ -218,7 +218,7 @@ func findingToSARIF(f Finding) SarifResult {
 		}
 		// Override with actual range if available
 		if f.Range != nil && f.Range.HasEnd() {
-			fix.Changes[0].Replacements[0].DeletedRegion.EndLine = f.Range.End.Line
+		fix.Changes[0].Replacements[0].DeletedRegion.EndLine = f.Range.End.Line
 			fix.Changes[0].Replacements[0].DeletedRegion.EndColumn = f.Range.End.Column
 		}
 
