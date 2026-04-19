@@ -3,6 +3,7 @@ package finding
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // SARIF types for Report generation.
@@ -10,6 +11,19 @@ import (
 
 // SARIF confidence scale: Confidence is 0-1, SARIF rank is 0-100.
 const sarifConfidenceScale = 100.0
+
+const (
+	sarifPropID          = "go-finding/id"
+	sarifPropSeverity    = "go-finding/severity"
+	sarifPropFixStrategy = "go-finding/fixStrategy"
+	sarifPropToolName    = "go-finding/toolName"
+	sarifPropCategory    = "go-finding/category"
+	sarifPropTag         = "go-finding/tag"
+	sarifPropConfidence  = "go-finding/confidence"
+	sarifPropSuggestion  = "go-finding/suggestion"
+	sarifPropSnippet     = "go-finding/snippet"
+	sarifPropPrefix      = "go-finding/"
+)
 
 // SarifLog represents a SARIF log file containing run results.
 type SarifLog struct {
@@ -114,7 +128,7 @@ func sarifResultsFromFindings(findings []Finding) []SarifResult {
 }
 
 func sarifResultsFromFindingsFiltered(findings []Finding, minSeverity Severity) []SarifResult {
-	results := make([]SarifResult, 0)
+	results := make([]SarifResult, 0, len(findings))
 
 	for _, f := range findings {
 		if f.IsSuppressed() || f.Severity.LessThan(minSeverity) {
@@ -241,29 +255,29 @@ func findingToSARIF(f Finding) SarifResult {
 
 	// Preserve all non-standard fields in properties for round-trip fidelity.
 	props := make(map[string]any)
-	props["go-finding/id"] = f.ID
-	props["go-finding/severity"] = string(f.Severity)
-	props["go-finding/fixStrategy"] = string(f.FixStrategy)
-	props["go-finding/toolName"] = f.ToolName
+	props[sarifPropID] = f.ID
+	props[sarifPropSeverity] = string(f.Severity)
+	props[sarifPropFixStrategy] = string(f.FixStrategy)
+	props[sarifPropToolName] = f.ToolName
 
 	if f.Category != "" {
-		props["go-finding/category"] = string(f.Category)
+		props[sarifPropCategory] = string(f.Category)
 	}
 
 	if f.Tag != "" {
-		props["go-finding/tag"] = f.Tag
+		props[sarifPropTag] = f.Tag
 	}
 
 	if f.Confidence > 0 {
-		props["go-finding/confidence"] = f.Confidence
+		props[sarifPropConfidence] = f.Confidence
 	}
 
 	if f.Suggestion != "" {
-		props["go-finding/suggestion"] = f.Suggestion
+		props[sarifPropSuggestion] = f.Suggestion
 	}
 
 	if f.Snippet != "" {
-		props["go-finding/snippet"] = f.Snippet
+		props[sarifPropSnippet] = f.Snippet
 	}
 
 	for k, v := range f.Metadata {
@@ -322,13 +336,15 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 	}
 
 	for _, rel := range r.Related {
+		pos := Position{File: rel.PhysicalLocation.ArtifactLocation.URI}
+		if rel.PhysicalLocation.Region != nil {
+			pos.Line = rel.PhysicalLocation.Region.StartLine
+			pos.Column = rel.PhysicalLocation.Region.StartColumn
+		}
+
 		f.Related = append(f.Related, RelatedRef{
 			Relation: rel.Message.Text,
-			Position: Position{
-				File:   rel.PhysicalLocation.ArtifactLocation.URI,
-				Line:   rel.PhysicalLocation.Region.StartLine,
-				Column: rel.PhysicalLocation.Region.StartColumn,
-			},
+			Position: pos,
 		})
 	}
 
@@ -346,20 +362,29 @@ func applySarifPosition(f *Finding, r SarifResult) {
 	}
 
 	loc := r.Locations[0]
-	f.Position = Position{
-		File:   loc.PhysicalLocation.ArtifactLocation.URI,
-		Line:   loc.PhysicalLocation.Region.StartLine,
-		Column: loc.PhysicalLocation.Region.StartColumn,
+	region := loc.PhysicalLocation.Region
+
+	fileURI := loc.PhysicalLocation.ArtifactLocation.URI
+	if region == nil {
+		f.Position = Position{File: fileURI}
+
+		return
 	}
 
-	if loc.PhysicalLocation.Region.EndLine > 0 ||
-		loc.PhysicalLocation.Region.EndColumn > 0 {
+	f.Position = Position{
+		File:   fileURI,
+		Line:   region.StartLine,
+		Column: region.StartColumn,
+	}
+
+	if region.EndLine > 0 ||
+		region.EndColumn > 0 {
 		f.Range = &Range{
 			Start: f.Position,
 			End: Position{
-				File:   loc.PhysicalLocation.ArtifactLocation.URI,
-				Line:   loc.PhysicalLocation.Region.EndLine,
-				Column: loc.PhysicalLocation.Region.EndColumn,
+				File:   fileURI,
+				Line:   region.EndLine,
+				Column: region.EndColumn,
 			},
 		}
 	}
@@ -367,43 +392,43 @@ func applySarifPosition(f *Finding, r SarifResult) {
 
 // applySarifProperties restores go-finding-specific properties for round-trip fidelity.
 func applySarifProperties(f *Finding, props map[string]any) {
-	if v, ok := props["go-finding/id"].(string); ok {
+	if v, ok := props[sarifPropID].(string); ok {
 		f.ID = v
 	}
 
-	if v, ok := props["go-finding/severity"].(string); ok {
+	if v, ok := props[sarifPropSeverity].(string); ok {
 		if s := Severity(v); s.IsValid() {
 			f.Severity = s
 		}
 	}
 
-	if v, ok := props["go-finding/fixStrategy"].(string); ok {
+	if v, ok := props[sarifPropFixStrategy].(string); ok {
 		if fs := FixStrategy(v); fs.IsValid() {
 			f.FixStrategy = fs
 		}
 	}
 
-	if v, ok := props["go-finding/toolName"].(string); ok {
+	if v, ok := props[sarifPropToolName].(string); ok {
 		f.ToolName = v
 	}
 
-	if v, ok := props["go-finding/category"].(string); ok {
+	if v, ok := props[sarifPropCategory].(string); ok {
 		f.Category = Category(v)
 	}
 
-	if v, ok := props["go-finding/tag"].(string); ok {
+	if v, ok := props[sarifPropTag].(string); ok {
 		f.Tag = v
 	}
 
-	if v, ok := props["go-finding/confidence"].(float64); ok {
+	if v, ok := props[sarifPropConfidence].(float64); ok {
 		f.Confidence = v
 	}
 
-	if v, ok := props["go-finding/suggestion"].(string); ok {
+	if v, ok := props[sarifPropSuggestion].(string); ok {
 		f.Suggestion = v
 	}
 
-	if v, ok := props["go-finding/snippet"].(string); ok {
+	if v, ok := props[sarifPropSnippet].(string); ok {
 		f.Snippet = v
 	}
 
@@ -418,7 +443,7 @@ func sarifMetadataFromProps(props map[string]any) map[string]string {
 	meta := make(map[string]string)
 
 	for k, v := range props {
-		if len(k) > len("go-finding/") && k[:len("go-finding/")] == "go-finding/" {
+		if strings.HasPrefix(k, sarifPropPrefix) {
 			continue
 		}
 

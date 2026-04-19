@@ -271,14 +271,14 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 func (*Pipeline) collectAllFindings(
 	result *PipelineResult,
 ) []finding.Finding {
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 
 	var all []finding.Finding
 
 	for _, iter := range result.Iterations {
 		for _, f := range iter.findings {
-			if !seen[f.ID] {
-				seen[f.ID] = true
+			if _, exists := seen[f.ID]; !exists {
+				seen[f.ID] = struct{}{}
 				all = append(all, f)
 			}
 		}

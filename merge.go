@@ -49,6 +49,10 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 	seen := make(map[string]struct{})
 
 	for _, report := range reports {
+		if report == nil {
+			continue
+		}
+
 		for _, finding := range report.Findings {
 			// Check for duplicates
 			if options.Deduplicate {

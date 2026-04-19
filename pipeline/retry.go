@@ -21,6 +21,7 @@ var (
 	errBaseDelayNegative   = errors.New("BaseDelay must be >= 0")
 	errMaxDelayNegative    = errors.New("MaxDelay must be >= 0")
 	errBaseDelayExceedsMax = errors.New("BaseDelay must not exceed MaxDelay")
+	errMaxDelayZero        = errors.New("MaxDelay must be > 0 when BaseDelay is set")
 )
 
 // RetryConfig configures retry behavior for detectors.
@@ -57,6 +58,10 @@ func (c RetryConfig) Validate() error {
 
 	if c.BaseDelay > 0 && c.MaxDelay > 0 && c.BaseDelay > c.MaxDelay {
 		errs = append(errs, errBaseDelayExceedsMax)
+	}
+
+	if c.MaxDelay == 0 && c.BaseDelay > 0 {
+		errs = append(errs, errMaxDelayZero)
 	}
 
 	return errors.Join(errs...)
