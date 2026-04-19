@@ -148,7 +148,7 @@ func dedupKey(finding Finding, opts MergeOptions) string {
 
 // Correlation links related findings from different tools.
 type Correlation struct {
-	FindingIDs []string `json:"finding_ids"` // IDs of correlated findings
+	FindingIDs []string `json:"finding_ids" tagliatelle:"camel=no"` // IDs of correlated findings
 	Reason     string   `json:"reason"`      // Why they're correlated
 	Confidence float64  `json:"confidence"`  // 0.0-1.0
 }
