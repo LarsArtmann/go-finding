@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CI upgraded** — Multi-OS matrix (ubuntu + macos), dedicated coverage job with 75% enforcement, tag-triggered builds
 - **Code formatting** — Applied golines across entire codebase
 
+- **CLI integration tests** — Coverage from 24% to 59% (loadConfig, validate, profiling, output)
+- **SARIF parse benchmark** — `BenchmarkFromSARIF` for the `FindingsFromSARIF` hot path
+- **CONTRIBUTING.md** — Fixed Go version (1.26), added golangci-lint commands, expanded pre-submit checklist
+
 ### Fixed
 
 - Missing `FixStrategyNone` case in `HasFix()` switch (exhaustive linter, potential silent bug)
