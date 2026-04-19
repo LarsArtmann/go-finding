@@ -161,3 +161,61 @@ func TestReportLen(t *testing.T) {
 		t.Fatalf("expected 2 findings, got %d", r.Len())
 	}
 }
+
+func TestReportAll(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	r.AddFinding(Finding{ID: "1", Message: "a"})
+	r.AddFinding(Finding{ID: "2", Message: "b"})
+	r.AddFinding(Finding{ID: "3", Message: "c"})
+
+	var collected []Finding
+	for f := range r.All() {
+		collected = append(collected, f)
+	}
+
+	if len(collected) != 3 {
+		t.Fatalf("expected 3 findings, got %d", len(collected))
+	}
+
+	if collected[0].ID != "1" || collected[1].ID != "2" || collected[2].ID != "3" {
+		t.Errorf("unexpected order: %v", collected)
+	}
+}
+
+func TestReportAll_Empty(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+
+	count := 0
+	for range r.All() {
+		count++
+	}
+
+	if count != 0 {
+		t.Errorf("expected 0 findings, got %d", count)
+	}
+}
+
+func TestReportAll_BreakEarly(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	for i := range 10 {
+		r.AddFinding(Finding{ID: string(rune('A' + i)), Message: "finding"})
+	}
+
+	count := 0
+	for range r.All() {
+		count++
+		if count == 3 {
+			break
+		}
+	}
+
+	if count != 3 {
+		t.Errorf("expected 3 iterations before break, got %d", count)
+	}
+}

@@ -1,5 +1,7 @@
 package finding
 
+import "iter"
+
 // Report is the top-level container for a tool run.
 type Report struct {
 	Tool     ToolInfo  `json:"tool"`     // Tool metadata
@@ -128,4 +130,16 @@ func (r *Report) FindByRule(rule string) []Finding {
 // Len returns the number of findings in the report.
 func (r *Report) Len() int {
 	return len(r.Findings)
+}
+
+// All returns an iterator over all findings in the report.
+// Supports break via yield returning false.
+func (r *Report) All() iter.Seq[Finding] {
+	return func(yield func(Finding) bool) {
+		for _, f := range r.Findings {
+			if !yield(f) {
+				return
+			}
+		}
+	}
 }

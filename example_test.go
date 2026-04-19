@@ -98,10 +98,32 @@ func ExampleGroupByFile() {
 
 func ExampleMerge() {
 	r1 := finding.NewReport(finding.ToolInfo{Name: "tool-a"})
-	r1.AddFinding(makeFinding("govet:printf:main.go:10:3", "printf", "govet", "fmt.Printf format error", finding.SeverityWarning, "main.go", 10, 3))
+	r1.AddFinding(
+		makeFinding(
+			"govet:printf:main.go:10:3",
+			"printf",
+			"govet",
+			"fmt.Printf format error",
+			finding.SeverityWarning,
+			"main.go",
+			10,
+			3,
+		),
+	)
 
 	r2 := finding.NewReport(finding.ToolInfo{Name: "tool-b"})
-	r2.AddFinding(makeFinding("staticcheck:SA1000:main.go:20:1", "SA1000", "staticcheck", "invalid regular expression", finding.SeverityError, "main.go", 20, 1))
+	r2.AddFinding(
+		makeFinding(
+			"staticcheck:SA1000:main.go:20:1",
+			"SA1000",
+			"staticcheck",
+			"invalid regular expression",
+			finding.SeverityError,
+			"main.go",
+			20,
+			1,
+		),
+	)
 
 	merged := finding.Merge([]*finding.Report{r1, r2})
 	fmt.Println("Total:", merged.Summary.Total)
@@ -110,7 +132,12 @@ func ExampleMerge() {
 	// Total: 2
 }
 
-func makeFinding(id, rule, tool, msg string, sev finding.Severity, file string, line, col int) finding.Finding {
+func makeFinding(
+	id, rule, tool, msg string,
+	sev finding.Severity,
+	file string,
+	line, col int,
+) finding.Finding {
 	return finding.Finding{
 		ID:       id,
 		Rule:     rule,

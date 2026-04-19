@@ -112,7 +112,15 @@ func TestComputeSummary_PreservesDurationMs(t *testing.T) {
 	}
 }
 
-func addFinding(r *Report, id, rule, msg string, sev Severity, file string, line int, cat Category, fs FixStrategy) {
+func addFinding(
+	r *Report,
+	id, rule, msg string,
+	sev Severity,
+	file string,
+	line int,
+	cat Category,
+	fs FixStrategy,
+) {
 	r.AddFinding(Finding{
 		ID: id, Rule: rule, ToolName: "test", Message: msg,
 		Severity: sev, Position: Position{File: file, Line: line},
