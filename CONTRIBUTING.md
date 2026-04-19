@@ -6,7 +6,8 @@ Thank you for your interest in contributing to `go-finding`. This document outli
 
 ### Prerequisites
 
-- Go 1.22 or later
+- Go 1.26 or later
+- `golangci-lint` (for linting)
 - `golang.org/x/tools` (for `go/analysis` integration)
 - `golang.org/x/sync` (for errgroup)
 
@@ -21,17 +22,24 @@ go mod download
 ### Build & Test
 
 ```bash
-# Run all tests
-go test ./...
+# Run all tests (must use -race)
+go test -race -count=1 ./...
 
 # Run tests with coverage
-go test -cover ./...
+go test -race -count=1 -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out
 
 # Run benchmarks
 go test -bench=. -benchmem ./...
 
-# Build the CLI
-go build ./cmd/go-finding
+# Build all packages
+go build ./...
+
+# Run linter
+golangci-lint run ./...
+
+# Run vet
+go vet ./...
 ```
 
 ### Using Just (optional)
@@ -39,9 +47,23 @@ go build ./cmd/go-finding
 If you have [just](https://github.com/casey/just) installed:
 
 ```bash
-just test
-just bench
-just lint
+just test        # Run all tests with -race
+just bench       # Run benchmarks
+just lint        # golangci-lint
+just cover       # Coverage report (coverage.out + HTML)
+just check       # All checks (fmt + lint + test)
+just vuln        # Check for known vulnerabilities
+just ci          # CI simulation (deps + check)
+```
+
+Without `just`, use the Go commands directly:
+
+```bash
+go test -race -count=1 ./...
+go test -bench=. -benchmem ./...
+golangci-lint run ./...
+go test -coverprofile=coverage.out ./...
+go vet ./...
 ```
 
 ## Project Structure
@@ -73,6 +95,9 @@ go-finding/
 │   └── partial.go      # Partial success
 ├── cmd/go-finding/     # CLI tool
 ├── internal/detectors/ # Built-in detectors (govet, staticcheck)
+├── bench_test.go       # Benchmarks for hot paths
+├── fuzz_test.go        # Fuzz tests
+├── example_test.go     # GoDoc examples
 ```
 
 ## Coding Standards
@@ -128,11 +153,13 @@ return fmt.Errorf("detector %s: %w", d.Name(), err)
 
 ### Before Submitting
 
-1. Run the full test suite: `go test ./...`
+1. Run the full test suite: `go test -race -count=1 ./...`
 2. Run vet: `go vet ./...`
-3. Verify all examples build: `go build ./...`
-4. Ensure GoDoc examples pass: `go test -run Example ./...`
-5. Check test coverage has not decreased
+3. Run linter: `golangci-lint run ./...`
+4. Verify all examples build: `go build ./...`
+5. Ensure GoDoc examples pass: `go test -run Example ./...`
+6. Check test coverage has not decreased
+7. Verify benchmarks still work: `go test -bench=. -benchmem ./...`
 
 ### PR Guidelines
 
