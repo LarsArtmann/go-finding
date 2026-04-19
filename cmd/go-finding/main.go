@@ -138,7 +138,7 @@ func setupProfiling(cpuprof, memprof string) (func(), error) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating CPU profile: %v\n", err)
 
-			return nil, err
+			return nil, fmt.Errorf("create CPU profile: %w", err)
 		}
 
 		stopFuncs = append(stopFuncs, func() { _ = f.Close() })
@@ -148,7 +148,7 @@ func setupProfiling(cpuprof, memprof string) (func(), error) {
 
 			fmt.Fprintf(os.Stderr, "Error starting CPU profile: %v\n", err)
 
-			return nil, err
+			return nil, fmt.Errorf("start CPU profile: %w", err)
 		}
 
 		stopFuncs = append(stopFuncs, pprof.StopCPUProfile)
