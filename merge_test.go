@@ -1,6 +1,9 @@
 package finding
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 func TestMerge_Empty(t *testing.T) {
 	t.Parallel()
@@ -205,13 +208,7 @@ func TestCorrelate(t *testing.T) {
 	}
 
 	hasID := func(id string) bool {
-		for _, fid := range c.FindingIDs {
-			if fid == id {
-				return true
-			}
-		}
-
-		return false
+		return slices.Contains(c.FindingIDs, id)
 	}
 
 	if !hasID("1") || !hasID("2") {
