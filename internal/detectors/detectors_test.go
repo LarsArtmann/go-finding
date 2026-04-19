@@ -233,6 +233,7 @@ func TestStaticcheckCategory(t *testing.T) {
 		{"U1000", finding.CategoryUnused},
 		{"PERF1001", finding.CategoryPerformance},
 		{"R1001", finding.CategoryPerformance},
+		{"F1001", finding.CategoryPerformance},
 		{"SA", finding.CategoryStyle},
 		{"", finding.CategoryCorrectness},
 		{"X9999", finding.CategoryCorrectness},

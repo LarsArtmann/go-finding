@@ -1,0 +1,191 @@
+package finding
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestNewFinding(t *testing.T) {
+	t.Parallel()
+
+	pos := Position{File: "main.go", Line: 42, Column: 5, Offset: 100}
+	f := NewFinding("nilcheck", "govet", "possible nil dereference", SeverityError, pos)
+
+	if f.Rule != "nilcheck" {
+		t.Errorf("Rule = %q, want %q", f.Rule, "nilcheck")
+	}
+
+	if f.ToolName != "govet" {
+		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
+	}
+
+	if f.Message != "possible nil dereference" {
+		t.Errorf("Message = %q, want %q", f.Message, "possible nil dereference")
+	}
+
+	if f.Severity != SeverityError {
+		t.Errorf("Severity = %v, want %v", f.Severity, SeverityError)
+	}
+
+	if f.Position != pos {
+		t.Errorf("Position = %v, want %v", f.Position, pos)
+	}
+
+	if f.FixStrategy != FixStrategyNone {
+		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyNone)
+	}
+
+	if f.ID == "" {
+		t.Error("ID should be auto-generated and non-empty")
+	}
+
+	if !strings.Contains(f.ID, "govet") || !strings.Contains(f.ID, "nilcheck") {
+		t.Errorf("ID = %q, should contain tool name and rule", f.ID)
+	}
+}
+
+func TestSuppressionKind_IsValid(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		kind SuppressionKind
+		want bool
+	}{
+		{SuppressionInSource, true},
+		{SuppressionInConfig, true},
+		{SuppressionInReview, true},
+		{SuppressionKind(""), false},
+		{SuppressionKind("unknown"), false},
+		{SuppressionKind("in-source-extra"), false},
+	}
+
+	for _, tt := range tests {
+		if got := tt.kind.IsValid(); got != tt.want {
+			t.Errorf("SuppressionKind(%q).IsValid() = %v, want %v", tt.kind, got, tt.want)
+		}
+	}
+}
+
+func TestSeverity_GreaterThanOrEqual(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		a, b  Severity
+		want  bool
+		label string
+	}{
+		{SeverityCritical, SeverityCritical, true, "critical >= critical"},
+		{SeverityCritical, SeverityError, true, "critical >= error"},
+		{SeverityError, SeverityWarning, true, "error >= warning"},
+		{SeverityWarning, SeverityInfo, true, "warning >= info"},
+		{SeverityInfo, SeverityInfo, true, "info >= info"},
+		{SeverityInfo, SeverityWarning, false, "info < warning"},
+		{SeverityWarning, SeverityError, false, "warning < error"},
+		{Severity("unknown"), SeverityInfo, false, "invalid >= valid returns false"},
+		{SeverityInfo, Severity("unknown"), false, "valid >= invalid returns false"},
+	}
+
+	for _, tt := range tests {
+		if got := tt.a.GreaterThanOrEqual(tt.b); got != tt.want {
+			t.Errorf("Severity(%q).GreaterThanOrEqual(%q) = %v, want %v (%s)",
+				tt.a, tt.b, got, tt.want, tt.label)
+		}
+	}
+}
+
+func TestSeverity_LessThanOrEqual(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		a, b  Severity
+		want  bool
+		label string
+	}{
+		{SeverityInfo, SeverityInfo, true, "info <= info"},
+		{SeverityInfo, SeverityWarning, true, "info <= warning"},
+		{SeverityWarning, SeverityError, true, "warning <= error"},
+		{SeverityError, SeverityCritical, true, "error <= critical"},
+		{SeverityCritical, SeverityCritical, true, "critical <= critical"},
+		{SeverityCritical, SeverityError, false, "critical > error"},
+		{SeverityError, SeverityWarning, false, "error > warning"},
+		{Severity("unknown"), SeverityInfo, false, "invalid <= valid returns false"},
+		{SeverityInfo, Severity("unknown"), false, "valid <= invalid returns false"},
+	}
+
+	for _, tt := range tests {
+		if got := tt.a.LessThanOrEqual(tt.b); got != tt.want {
+			t.Errorf("Severity(%q).LessThanOrEqual(%q) = %v, want %v (%s)",
+				tt.a, tt.b, got, tt.want, tt.label)
+		}
+	}
+}
+
+func TestFinding_String(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		Severity: SeverityError,
+		ToolName: "govet",
+		Rule:     "nilcheck",
+		Position: Position{File: "main.go", Line: 42, Column: 5},
+		Message:  "possible nil dereference",
+	}
+
+	got := f.String()
+	want := "error govet [nilcheck] main.go:42:5: possible nil dereference"
+
+	if got != want {
+		t.Errorf("String() = %q, want %q", got, want)
+	}
+}
+
+func TestReport_AddFindings(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+
+	r.AddFindings([]Finding{
+		{ID: "1", Message: "first"},
+		{ID: "2", Message: "second"},
+		{ID: "3", Message: "third"},
+	})
+
+	if len(r.Findings) != 3 {
+		t.Fatalf("AddFindings: len = %d, want 3", len(r.Findings))
+	}
+
+	if r.Findings[0].ID != "1" || r.Findings[2].ID != "3" {
+		t.Errorf("AddFindings order = %v, want [1 2 3]", r.Findings)
+	}
+}
+
+func TestReport_AddFindings_Empty(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	r.AddFindings(nil)
+
+	if len(r.Findings) != 0 {
+		t.Errorf("AddFindings(nil): len = %d, want 0", len(r.Findings))
+	}
+
+	r.AddFindings([]Finding{})
+	if len(r.Findings) != 0 {
+		t.Errorf("AddFindings(empty): len = %d, want 0", len(r.Findings))
+	}
+}
+
+func TestMerge_NilReports(t *testing.T) {
+	t.Parallel()
+
+	r1 := MakeSimpleReport("tool1")
+	r1.AddFinding(MakeSimpleFinding("1", SeverityError))
+
+	r2 := MakeSimpleReport("tool2")
+	r2.AddFinding(MakeSimpleFinding("2", SeverityWarning))
+
+	merged := Merge([]*Report{r1, nil, r2})
+	merged.ComputeSummary()
+
+	assertFindingsLen(t, "merge with nil reports", len(merged.Findings), 2)
+}
