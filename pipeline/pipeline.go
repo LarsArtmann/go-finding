@@ -268,7 +268,9 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 }
 
 // collectAllFindings gathers all findings from all iterations for verification.
-func (_ *Pipeline) collectAllFindings(result *PipelineResult) []finding.Finding {
+func (*Pipeline) collectAllFindings(
+	result *PipelineResult,
+) []finding.Finding {
 	seen := make(map[string]bool)
 
 	var all []finding.Finding

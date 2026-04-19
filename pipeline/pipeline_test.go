@@ -326,7 +326,6 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 		p := New(config, t.TempDir(), d1, d2)
 
 		findings, err := p.Run(context.Background())
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -898,6 +897,7 @@ func TestDryRun(t *testing.T) {
 	t.Parallel()
 
 	tmpDir := t.TempDir()
+
 	testFile := filepath.Join(tmpDir, "test.go")
 	if err := os.WriteFile(testFile, []byte("package main\n"), 0o644); err != nil {
 		t.Fatal(err)

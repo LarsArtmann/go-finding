@@ -126,6 +126,7 @@ func TestMetrics_Snapshot(t *testing.T) {
 	// Verify snapshot is a copy
 	snap2 := m.Snapshot()
 	snap2.StageDurations["detect"] = 0
+
 	if m.StageDuration("detect") != 100*time.Millisecond {
 		t.Error("snapshot should be a copy, not a reference")
 	}
