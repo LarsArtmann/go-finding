@@ -132,6 +132,13 @@ func run() int {
 	fmt.Fprintf(os.Stderr, "\nDone: %d findings (%d iterations, stable=%v)\n",
 		len(filtered), result.TotalIterations, result.Stable)
 
+	if result.Metrics.TotalDuration > 0 {
+		fmt.Fprintf(os.Stderr, "Metrics: %v total, %d fixes, %d detector(s)\n",
+			result.Metrics.TotalDuration,
+			result.Metrics.FixesApplied,
+			len(result.Metrics.DetectorTimes))
+	}
+
 	return 0
 }
 
