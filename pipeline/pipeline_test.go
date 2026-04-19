@@ -846,15 +846,7 @@ func TestApplyDirectFixes(t *testing.T) {
 		t.Fatalf("create test file: %v", err)
 	}
 
-	fixes := []finding.Finding{
-		{
-			ID:          "fix1",
-			BeforeCode:  "old()",
-			AfterCode:   "new()",
-			Position:    finding.Position{File: "fixme.go", Line: 4},
-			FixStrategy: finding.FixStrategyDirect,
-		},
-	}
+	fixes := directFixFinding()
 
 	m := NewMetrics()
 	p := &Pipeline{
@@ -898,15 +890,7 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 		t.Fatalf("create test file: %v", err)
 	}
 
-	fixes := []finding.Finding{
-		{
-			ID:          "fix1",
-			BeforeCode:  "old()",
-			AfterCode:   "new()",
-			Position:    finding.Position{File: "fixme.go", Line: 4},
-			FixStrategy: finding.FixStrategyDirect,
-		},
-	}
+	fixes := directFixFinding()
 
 	p := &Pipeline{
 		config:  DefaultConfig(),
@@ -1012,12 +996,7 @@ func TestNew_ValidConfig_NoError(t *testing.T) {
 }
 
 func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
-	goodDetector := &mockDetector{
-		name: "good",
-		findings: []finding.Finding{
-			{ID: "F1", Rule: "r", ToolName: "good", Message: "m", Severity: finding.SeverityError},
-		},
-	}
+	goodDetector := mockDetectorWithFinding("good", "F1", "r", "good", "m")
 	badDetector := &mockDetector{name: "bad", err: errors.New("boom")}
 
 	config := Config{
@@ -1072,5 +1051,26 @@ func TestPipelineRun_MetricsInResult(t *testing.T) {
 
 	if result.Metrics.FixesApplied != 0 {
 		t.Errorf("FixesApplied = %d, want 0", result.Metrics.FixesApplied)
+	}
+}
+
+func directFixFinding() []finding.Finding {
+	return []finding.Finding{
+		{
+			ID:          "fix1",
+			BeforeCode:  "old()",
+			AfterCode:   "new()",
+			Position:    finding.Position{File: "fixme.go", Line: 4},
+			FixStrategy: finding.FixStrategyDirect,
+		},
+	}
+}
+
+func mockDetectorWithFinding(name, id, rule, tool, msg string) *mockDetector {
+	return &mockDetector{
+		name: name,
+		findings: []finding.Finding{
+			{ID: id, Rule: rule, ToolName: tool, Message: msg, Severity: finding.SeverityError},
+		},
 	}
 }

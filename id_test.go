@@ -45,6 +45,16 @@ func testParseIDCase(t *testing.T, tt parseIDCase) {
 	}
 }
 
+// runParseIDCases runs all parseIDCase tests in a subtest.
+func runParseIDCases(t *testing.T, tests []parseIDCase) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			testParseIDCase(t, tt)
+		})
+	}
+}
+
 func TestGenerateID(t *testing.T) {
 	t.Parallel()
 
@@ -152,12 +162,7 @@ func TestParseID(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			testParseIDCase(t, tt)
-		})
-	}
+	runParseIDCases(t, tests)
 }
 
 func TestGenerateID_ParseID_RoundTrip(t *testing.T) {
@@ -278,12 +283,7 @@ func TestParseID_WindowsPaths(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			testParseIDCase(t, tt)
-		})
-	}
+	runParseIDCases(t, tests)
 }
 
 func TestGenerateID_WindowsPathRoundTrip(t *testing.T) {

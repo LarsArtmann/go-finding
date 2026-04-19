@@ -188,7 +188,7 @@ func BenchmarkMergeNoDedup(b *testing.B) {
 	}
 }
 
-func BenchmarkToSARIF(b *testing.B) {
+func sarifBenchReport() *Report {
 	report := NewReport(ToolInfo{Name: "bench", Version: "1.0"})
 	for i := range 100 {
 		report.AddFinding(Finding{
@@ -199,6 +199,11 @@ func BenchmarkToSARIF(b *testing.B) {
 			Position: Position{File: "file.go", Line: i + 1, Column: 1},
 		})
 	}
+	return report
+}
+
+func BenchmarkToSARIF(b *testing.B) {
+	report := sarifBenchReport()
 
 	b.ResetTimer()
 
@@ -208,16 +213,7 @@ func BenchmarkToSARIF(b *testing.B) {
 }
 
 func BenchmarkFromSARIF(b *testing.B) {
-	report := NewReport(ToolInfo{Name: "bench", Version: "1.0"})
-	for i := range 100 {
-		report.AddFinding(Finding{
-			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
-			Rule:     "SA1000",
-			Message:  "test finding",
-			Severity: sevFromInt(i % 4),
-			Position: Position{File: "file.go", Line: i + 1, Column: 1},
-		})
-	}
+	report := sarifBenchReport()
 
 	sarifData, _ := report.ToSARIF()
 

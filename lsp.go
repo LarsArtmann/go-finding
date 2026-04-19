@@ -142,18 +142,15 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 
 	// Convert related information.
 	for _, rel := range diag.Related {
+		relPos := Position{
+			File:   rel.Location.URI,
+			Line:   rel.Location.Range.Start.Line + 1,
+			Column: rel.Location.Range.Start.Character + 1,
+		}
 		f.Related = append(f.Related, RelatedRef{
-			FindingID: GenerateID(diag.Source, diag.Code, Position{
-				File:   rel.Location.URI,
-				Line:   rel.Location.Range.Start.Line + 1,
-				Column: rel.Location.Range.Start.Character + 1,
-			}),
-			Relation: rel.Message,
-			Position: Position{
-				File:   rel.Location.URI,
-				Line:   rel.Location.Range.Start.Line + 1,
-				Column: rel.Location.Range.Start.Character + 1,
-			},
+			FindingID: GenerateID(diag.Source, diag.Code, relPos),
+			Relation:  rel.Message,
+			Position:  relPos,
 		})
 	}
 

@@ -23,10 +23,7 @@ func TestClone(t *testing.T) {
 		Suggestion:  "fix it",
 		BeforeCode:  "old",
 		AfterCode:   "new",
-		Range: &Range{
-			Start: Position{File: "file.go", Line: 10, Column: 5},
-			End:   Position{File: "file.go", Line: 10, Column: 20},
-		},
+		Range:      posRange("file.go", 10, 5, 10, 20),
 		Snippet:    "code here",
 		Confidence: 0.95,
 		Related:    []RelatedRef{{FindingID: "other:1", Relation: "causes"}},
@@ -77,5 +74,12 @@ func TestCloneEmpty(t *testing.T) {
 	clone := f.Clone()
 	if !clone.Equal(f) {
 		t.Error("Clone of simple finding should be Equal")
+	}
+}
+
+func posRange(file string, startLine, startCol, endLine, endCol int) *Range {
+	return &Range{
+		Start: Position{File: file, Line: startLine, Column: startCol},
+		End:   Position{File: file, Line: endLine, Column: endCol},
 	}
 }

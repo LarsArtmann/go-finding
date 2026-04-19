@@ -246,10 +246,10 @@ func TestFindingsFromJSON(t *testing.T) {
 	t.Run("invalid JSON returns error", func(t *testing.T) {
 		t.Parallel()
 
-		_, _, err := FindingsFromJSON([]byte("[]]"))
-		if err == nil {
-			t.Error("expected error for invalid JSON")
-		}
+		expectJSONError(t, func() error {
+			_, _, err := FindingsFromJSON([]byte("[]]"))
+			return err
+		}, "invalid JSON")
 	})
 
 	t.Run("filters invalid findings", func(t *testing.T) {
@@ -337,5 +337,13 @@ func TestLineJSON(t *testing.T) {
 
 	if !strings.Contains(got, `"id"`) {
 		t.Error("LineJSON should contain JSON fields")
+	}
+}
+
+func expectJSONError(t *testing.T, fn func() error, context string) {
+	t.Helper()
+
+	if err := fn(); err == nil {
+		t.Errorf("expected error for %s", context)
 	}
 }

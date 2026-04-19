@@ -6,16 +6,8 @@ func TestComputeSummary(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: "test", Version: "1.0"})
-	r.AddFinding(Finding{
-		ID: "1", Rule: "R1", ToolName: "test", Message: "m1",
-		Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
-		Category: CategorySecurity, FixStrategy: FixStrategyDirect,
-	})
-	r.AddFinding(Finding{
-		ID: "2", Rule: "R2", ToolName: "test", Message: "m2",
-		Severity: SeverityWarning, Position: Position{File: "a.go", Line: 2},
-		Category: CategoryStyle, FixStrategy: FixStrategySuggest,
-	})
+	addFinding(r, "1", "R1", "m1", SeverityError, "a.go", 1, CategorySecurity, FixStrategyDirect)
+	addFinding(r, "2", "R2", "m2", SeverityWarning, "a.go", 2, CategoryStyle, FixStrategySuggest)
 	r.AddFinding(Finding{
 		ID: "3", Rule: "R3", ToolName: "test", Message: "m3",
 		Severity: SeverityInfo, Position: Position{File: "b.go", Line: 1},
@@ -74,11 +66,7 @@ func TestComputeSummary_Resets(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: "test"})
-	r.AddFinding(Finding{
-		ID: "1", Rule: "R1", ToolName: "test", Message: "m",
-		Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
-		Category: CategorySecurity, FixStrategy: FixStrategyDirect,
-	})
+	addFinding(r, "1", "R1", "m", SeverityError, "a.go", 1, CategorySecurity, FixStrategyDirect)
 	r.ComputeSummary()
 
 	if r.Summary.ByCategory[CategorySecurity] != 1 {
@@ -88,11 +76,7 @@ func TestComputeSummary_Resets(t *testing.T) {
 		)
 	}
 
-	r.AddFinding(Finding{
-		ID: "2", Rule: "R2", ToolName: "test", Message: "m",
-		Severity: SeverityWarning, Position: Position{File: "a.go", Line: 2},
-		Category: CategoryStyle, FixStrategy: FixStrategyNone,
-	})
+	addFinding(r, "2", "R2", "m", SeverityWarning, "a.go", 2, CategoryStyle, FixStrategyNone)
 	r.ComputeSummary()
 
 	if r.Summary.Total != 2 {
@@ -126,4 +110,12 @@ func TestComputeSummary_PreservesDurationMs(t *testing.T) {
 			r.Summary.DurationMs,
 		)
 	}
+}
+
+func addFinding(r *Report, id, rule, msg string, sev Severity, file string, line int, cat Category, fs FixStrategy) {
+	r.AddFinding(Finding{
+		ID: id, Rule: rule, ToolName: "test", Message: msg,
+		Severity: sev, Position: Position{File: file, Line: line},
+		Category: cat, FixStrategy: fs,
+	})
 }

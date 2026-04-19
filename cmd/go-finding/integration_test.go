@@ -102,32 +102,28 @@ func TestLoadConfig_MissingFile(t *testing.T) {
 func TestLoadConfig_InvalidYAML(t *testing.T) {
 	t.Parallel()
 
-	dir := t.TempDir()
-	cfgPath := filepath.Join(dir, "bad.yaml")
-
-	if err := os.WriteFile(cfgPath, []byte("{{invalid yaml"), 0o644); err != nil {
-		t.Fatalf("write config: %v", err)
-	}
-
-	_, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
-	if err == nil {
-		t.Fatal("expected error for invalid YAML")
-	}
+	expectConfigError(t, "yaml", "{{invalid yaml")
 }
 
 func TestLoadConfig_InvalidJSON(t *testing.T) {
 	t.Parallel()
 
-	dir := t.TempDir()
-	cfgPath := filepath.Join(dir, "bad.json")
+	expectConfigError(t, "json", "{invalid json}")
+}
 
-	if err := os.WriteFile(cfgPath, []byte("{invalid json}"), 0o644); err != nil {
+func expectConfigError(t *testing.T, ext, content string) {
+	t.Helper()
+
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "bad."+ext)
+
+	if err := os.WriteFile(cfgPath, []byte(content), 0o644); err != nil {
 		t.Fatalf("write config: %v", err)
 	}
 
 	_, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
 	if err == nil {
-		t.Fatal("expected error for invalid JSON")
+		t.Fatalf("expected error for invalid %s", ext)
 	}
 }
 

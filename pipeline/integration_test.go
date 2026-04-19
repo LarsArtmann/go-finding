@@ -270,12 +270,7 @@ func TestPipeline_MetricsRecordsDetector(t *testing.T) {
 		Metrics:           metrics,
 	}
 
-	det := &mockDetector{
-		name: "my-detector",
-		findings: []finding.Finding{
-			{ID: "1", Rule: "r1", ToolName: "test", Message: "m", Severity: finding.SeverityError},
-		},
-	}
+	det := mockDetectorWithFinding("my-detector", "1", "r1", "test", "m")
 
 	tempDir := t.TempDir()
 	p, err := New(config, tempDir, det)

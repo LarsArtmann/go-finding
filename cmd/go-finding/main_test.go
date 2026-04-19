@@ -200,12 +200,19 @@ func TestBuildDetectors(t *testing.T) {
 
 func reportWithFindings() *finding.Report {
 	report := finding.NewReport(finding.ToolInfo{Name: "test", Version: "1.0"})
-	report.AddFinding(finding.Finding{
-		ID: "test:nilcheck:main.go:10:5", Rule: "nilcheck", ToolName: "test",
-		Message: "possible nil dereference", Severity: finding.SeverityWarning,
-		Position: finding.Position{File: "main.go", Line: 10, Column: 5},
-	})
+	report.AddFinding(makeTestFinding("test:nilcheck:main.go:10:5", "nilcheck", "test", "possible nil dereference", finding.SeverityWarning, "main.go", 10, 5))
 	report.ComputeSummary()
 
 	return report
+}
+
+func makeTestFinding(id, rule, tool, msg string, sev finding.Severity, file string, line, col int) finding.Finding {
+	return finding.Finding{
+		ID:       id,
+		Rule:     rule,
+		ToolName: tool,
+		Message:  msg,
+		Severity: sev,
+		Position: finding.Position{File: file, Line: line, Column: col},
+	}
 }
