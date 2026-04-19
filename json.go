@@ -2,8 +2,15 @@ package finding
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
+)
+
+// Sentinel errors for JSON validation.
+var (
+	ErrInvalidFinding = errors.New("invalid finding: missing required fields")
+	ErrInvalidReport  = errors.New("invalid report: missing tool name")
 )
 
 // PrettyJSON returns a formatted JSON representation of the report.
@@ -26,9 +33,7 @@ func FromJSON(data []byte) (*Finding, error) {
 	}
 
 	if !f.IsValid() {
-		return nil, fmt.Errorf(
-			"invalid finding: missing required fields (id, rule, toolName, message, position, severity)",
-		)
+		return nil, ErrInvalidFinding
 	}
 
 	return &f, nil
@@ -45,7 +50,7 @@ func ReportFromJSON(data []byte) (*Report, int, error) {
 	}
 
 	if r.Tool.Name == "" {
-		return nil, 0, fmt.Errorf("invalid report: missing tool name")
+		return nil, 0, ErrInvalidReport
 	}
 
 	before := len(r.Findings)

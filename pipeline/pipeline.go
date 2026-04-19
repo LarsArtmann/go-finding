@@ -97,21 +97,27 @@ func DefaultConfig() Config {
 	}
 }
 
+// Sentinel validation errors.
+var (
+	errMaxIterations = errors.New("max iterations must be >= 0")
+	errTimeout       = errors.New("timeout must be >= 0")
+)
+
 // Validate checks the configuration and returns an error if invalid.
 func (c Config) Validate() error {
 	var errs []error
 
 	if c.MaxIterations < 0 {
-		errs = append(errs, fmt.Errorf("MaxIterations must be >= 0, got %d", c.MaxIterations))
+		errs = append(errs, fmt.Errorf("%w: got %d", errMaxIterations, c.MaxIterations))
 	}
 
 	if c.Timeout < 0 {
-		errs = append(errs, fmt.Errorf("Timeout must be >= 0, got %v", c.Timeout))
+		errs = append(errs, fmt.Errorf("%w: got %v", errTimeout, c.Timeout))
 	}
 
 	if c.Retry != nil {
 		if err := c.Retry.Validate(); err != nil {
-			errs = append(errs, fmt.Errorf("Retry: %w", err))
+			errs = append(errs, fmt.Errorf("retry: %w", err))
 		}
 	}
 
@@ -262,7 +268,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 }
 
 // collectAllFindings gathers all findings from all iterations for verification.
-func (p *Pipeline) collectAllFindings(result *PipelineResult) []finding.Finding {
+func (_ *Pipeline) collectAllFindings(result *PipelineResult) []finding.Finding {
 	seen := make(map[string]bool)
 
 	var all []finding.Finding
@@ -669,7 +675,7 @@ func (a *FixApplier) restore(path string) error {
 func (*FixApplier) applyToFile(
 	path string,
 	fixes []finding.Finding,
-) (int, error) { //nolint:revive // receiver required for method set
+) (int, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return 0, ioErrorAt("read file", err, path)
