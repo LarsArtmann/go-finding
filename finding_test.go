@@ -262,7 +262,7 @@ func TestReportJSON(t *testing.T) {
 	}
 
 	// Parse it back
-	parsed, err := ReportFromJSON(data)
+	parsed, _, err := ReportFromJSON(data)
 	if err != nil {
 		t.Fatalf("ReportFromJSON failed: %v", err)
 	}

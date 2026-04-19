@@ -33,39 +33,43 @@ func FromJSON(data []byte) (*Finding, error) {
 }
 
 // ReportFromJSON parses a Report from JSON and validates required fields.
-func ReportFromJSON(data []byte) (*Report, error) {
+// Invalid findings are silently dropped. Use the returned count to detect data loss.
+func ReportFromJSON(data []byte) (*Report, int, error) {
 	var r Report
 
 	err := json.Unmarshal(data, &r)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal report: %w", err)
+		return nil, 0, fmt.Errorf("unmarshal report: %w", err)
 	}
 
 	if r.Tool.Name == "" {
-		return nil, fmt.Errorf("invalid report: missing tool name")
+		return nil, 0, fmt.Errorf("invalid report: missing tool name")
 	}
 
+	before := len(r.Findings)
 	r.Findings = slices.DeleteFunc(r.Findings, func(f Finding) bool {
 		return !f.IsValid()
 	})
 
-	return &r, nil
+	return &r, before - len(r.Findings), nil
 }
 
 // FindingsFromJSON parses a slice of Findings from JSON and validates each one.
-func FindingsFromJSON(data []byte) ([]Finding, error) {
+// Invalid findings are silently dropped. Use the returned count to detect data loss.
+func FindingsFromJSON(data []byte) ([]Finding, int, error) {
 	var findings []Finding
 
 	err := json.Unmarshal(data, &findings)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal findings: %w", err)
+		return nil, 0, fmt.Errorf("unmarshal findings: %w", err)
 	}
 
+	before := len(findings)
 	findings = slices.DeleteFunc(findings, func(f Finding) bool {
 		return !f.IsValid()
 	})
 
-	return findings, nil
+	return findings, before - len(findings), nil
 }
 
 // LineJSON returns compact JSON (single line).

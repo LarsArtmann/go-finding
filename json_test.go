@@ -106,7 +106,7 @@ func TestReportFromJSON(t *testing.T) {
 			t.Fatalf("marshal: %v", err)
 		}
 
-		got, err := ReportFromJSON(data)
+		got, _, err := ReportFromJSON(data)
 		if err != nil {
 			t.Fatalf("ReportFromJSON: %v", err)
 		}
@@ -127,7 +127,7 @@ func TestReportFromJSON(t *testing.T) {
 	t.Run("invalid JSON returns error", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := ReportFromJSON([]byte("{bad"))
+		_, _, err := ReportFromJSON([]byte("{bad"))
 		if err == nil {
 			t.Error("expected error for invalid JSON")
 		}
@@ -136,7 +136,7 @@ func TestReportFromJSON(t *testing.T) {
 	t.Run("missing tool name returns error", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := ReportFromJSON([]byte(`{"tool":{"name":""},"findings":[]}`))
+		_, _, err := ReportFromJSON([]byte(`{"tool":{"name":""},"findings":[]}`))
 		if err == nil {
 			t.Error("expected validation error for missing tool name")
 		}
@@ -158,9 +158,13 @@ func TestReportFromJSON(t *testing.T) {
 			t.Fatalf("marshal: %v", err)
 		}
 
-		got, err := ReportFromJSON(data)
+		got, dropped, err := ReportFromJSON(data)
 		if err != nil {
 			t.Fatalf("ReportFromJSON: %v", err)
+		}
+
+		if dropped != 1 {
+			t.Errorf("dropped = %d, want 1", dropped)
 		}
 
 		if len(got.Findings) != 1 {
@@ -189,7 +193,7 @@ func TestFindingsFromJSON(t *testing.T) {
 			t.Fatalf("marshal: %v", err)
 		}
 
-		got, err := FindingsFromJSON(data)
+		got, _, err := FindingsFromJSON(data)
 		if err != nil {
 			t.Fatalf("FindingsFromJSON: %v", err)
 		}
@@ -206,7 +210,7 @@ func TestFindingsFromJSON(t *testing.T) {
 	t.Run("invalid JSON returns error", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := FindingsFromJSON([]byte("[]]"))
+		_, _, err := FindingsFromJSON([]byte("[]]"))
 		if err == nil {
 			t.Error("expected error for invalid JSON")
 		}
@@ -225,9 +229,13 @@ func TestFindingsFromJSON(t *testing.T) {
 			t.Fatalf("marshal: %v", err)
 		}
 
-		got, err := FindingsFromJSON(data)
+		got, dropped, err := FindingsFromJSON(data)
 		if err != nil {
 			t.Fatalf("FindingsFromJSON: %v", err)
+		}
+
+		if dropped != 1 {
+			t.Errorf("dropped = %d, want 1", dropped)
 		}
 
 		if len(got) != 1 {
