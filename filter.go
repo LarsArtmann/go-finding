@@ -137,19 +137,7 @@ func GroupByCategory(findings []Finding) map[Category][]Finding {
 // SortByPosition sorts findings by file path, then line, then column.
 func SortByPosition(findings []Finding) {
 	slices.SortFunc(findings, func(a, b Finding) int {
-		if a.Position.File != b.Position.File {
-			if a.Position.File < b.Position.File {
-				return -1
-			}
-
-			return 1
-		}
-
-		if a.Position.Line != b.Position.Line {
-			return a.Position.Line - b.Position.Line
-		}
-
-		return a.Position.Column - b.Position.Column
+		return a.Position.Compare(b.Position)
 	})
 }
 
