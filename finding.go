@@ -39,6 +39,19 @@ type Finding struct {
 	Metadata map[string]string `json:"metadata,omitempty"` // Tool-specific key-value pairs
 }
 
+// NewFinding creates a Finding with an auto-generated ID and default fix strategy.
+func NewFinding(rule, toolName, message string, severity Severity, pos Position) Finding {
+	return Finding{
+		ID:          GenerateID(toolName, rule, pos),
+		Rule:        rule,
+		ToolName:    toolName,
+		Message:     message,
+		Severity:    severity,
+		Position:    pos,
+		FixStrategy: FixStrategyNone,
+	}
+}
+
 // RelatedRef links to another finding.
 type RelatedRef struct {
 	FindingID string   `json:"findingId"` // ID of the related finding
