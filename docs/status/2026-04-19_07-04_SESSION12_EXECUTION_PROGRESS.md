@@ -10,24 +10,24 @@
 
 All 24 tasks from the architecture audit have been completed:
 
-| # | Task | Commit |
-|---|------|--------|
-| 1 | `pipeline.New()` returns `(*Pipeline, error)`, calls `Config.Validate()` | `47ca5ed` |
-| 2-3 | `detect()` returns `detectResult` with `PartialErrors`; accumulated in `PipelineResult` | `5816d9e` |
-| 4 | Removed dead `detectorSpec.Args` field | `3feef77` |
-| 5-6 | err113 in json.go — sentinel errors already in place | pre-session |
-| 7-8 | Merged `testutil.go` into `testutil_test.go`, deleted production file | `6629a23` |
-| 9 | Renamed `suppression_test_util.go` → `_test.go` | `6629a23` |
-| 10-11 | Removed unused nolint directives | `c44467a` + verified |
-| 12 | FixApplier extraction to `pipeline/fix_applier.go` | pre-session |
-| 13-14 | Added `Metrics MetricsSnapshot` to `PipelineResult` | `e8cf460` |
-| 15 | CLI outputs metrics to stderr | `bd9ce43` |
-| 16-17 | Expanded FixStrategyAI docs; Correlate() already documented | `fe9c0ed` |
-| 18-19 | Tests for config validation, partial errors, metrics | `db7fef2` |
-| 20 | `map[string]bool` → `map[string]struct{}` in sarif_test.go | `9a941fc` |
-| 21 | Full verification: build, test (race), vet, lint | `d7769bf` |
-| 22 | CHANGELOG v0.1.3 | `7aa1173` |
-| 23 | AGENTS.md updated | `7aa1173` |
+| #     | Task                                                                                    | Commit               |
+| ----- | --------------------------------------------------------------------------------------- | -------------------- |
+| 1     | `pipeline.New()` returns `(*Pipeline, error)`, calls `Config.Validate()`                | `47ca5ed`            |
+| 2-3   | `detect()` returns `detectResult` with `PartialErrors`; accumulated in `PipelineResult` | `5816d9e`            |
+| 4     | Removed dead `detectorSpec.Args` field                                                  | `3feef77`            |
+| 5-6   | err113 in json.go — sentinel errors already in place                                    | pre-session          |
+| 7-8   | Merged `testutil.go` into `testutil_test.go`, deleted production file                   | `6629a23`            |
+| 9     | Renamed `suppression_test_util.go` → `_test.go`                                         | `6629a23`            |
+| 10-11 | Removed unused nolint directives                                                        | `c44467a` + verified |
+| 12    | FixApplier extraction to `pipeline/fix_applier.go`                                      | pre-session          |
+| 13-14 | Added `Metrics MetricsSnapshot` to `PipelineResult`                                     | `e8cf460`            |
+| 15    | CLI outputs metrics to stderr                                                           | `bd9ce43`            |
+| 16-17 | Expanded FixStrategyAI docs; Correlate() already documented                             | `fe9c0ed`            |
+| 18-19 | Tests for config validation, partial errors, metrics                                    | `db7fef2`            |
+| 20    | `map[string]bool` → `map[string]struct{}` in sarif_test.go                              | `9a941fc`            |
+| 21    | Full verification: build, test (race), vet, lint                                        | `d7769bf`            |
+| 22    | CHANGELOG v0.1.3                                                                        | `7aa1173`            |
+| 23    | AGENTS.md updated                                                                       | `7aa1173`            |
 
 ### Bonus fixes discovered during execution:
 
@@ -58,33 +58,33 @@ Nothing this session. Clean execution with one bug found and fixed (metrics snap
 
 ## f) Top 25 Things
 
-| # | What | Priority | Effort |
-|---|------|----------|--------|
-| 1 | Push v0.1.3 to origin | NOW | 1min |
-| 2 | Tag v0.1.3 release | HIGH | 2min |
-| 3 | Fix flaky property test (seed control) | HIGH | 30min |
-| 4 | Pre-existing goconst warnings (sarif, coverage_test) | LOW | 10min |
-| 5 | CLI coverage → 70%+ | MEDIUM | 2hr |
-| 6 | FixApplier unit tests | MEDIUM | 1hr |
-| 7 | Decide on FixStrategyAI: implement or remove | MEDIUM | 30min |
-| 8 | EXECUTION_PLAN_V2.md remaining items (CLI tool #14) | MEDIUM | 4hr |
-| 9 | Config files (#15 in plan) | MEDIUM | 3hr |
-| 10 | Watch mode (#16 in plan) | LOW | 4hr |
-| 11 | go-sarif evaluation (#8 in plan) | LOW | 2hr |
-| 12 | Fix `go vet` nix store intermittent | LOW | env issue |
-| 13 | Consider fuzz test for SARIF parser | MEDIUM | 2hr |
-| 14 | Add `-json` flag to CLI for machine-readable output | LOW | 1hr |
-| 15 | Document pipeline result interpretation | LOW | 1hr |
-| 16 | Performance benchmarks for pipeline Run() | LOW | 1hr |
-| 17 | Example integration with golangci-lint | MEDIUM | 3hr |
-| 18 | Version flag via ldflags in Makefile | LOW | 30min |
-| 19 | CONTRIBUTING.md update for v0.1.3 changes | LOW | 30min |
-| 20 | Consider removing `.golangci.yml` golines if 100-chars is too restrictive | LOW | 5min |
-| 21 | Integration test: full pipeline with real govet | MEDIUM | 2hr |
-| 22 | Add Example tests for godoc | LOW | 2hr |
-| 23 | Consider `errors.Join` for multi-error aggregation | LOW | 1hr |
-| 24 | Pipeline result JSON serialization | LOW | 1hr |
-| 25 | README refresh with v0.1.3 API | LOW | 30min |
+| #   | What                                                                      | Priority | Effort    |
+| --- | ------------------------------------------------------------------------- | -------- | --------- |
+| 1   | Push v0.1.3 to origin                                                     | NOW      | 1min      |
+| 2   | Tag v0.1.3 release                                                        | HIGH     | 2min      |
+| 3   | Fix flaky property test (seed control)                                    | HIGH     | 30min     |
+| 4   | Pre-existing goconst warnings (sarif, coverage_test)                      | LOW      | 10min     |
+| 5   | CLI coverage → 70%+                                                       | MEDIUM   | 2hr       |
+| 6   | FixApplier unit tests                                                     | MEDIUM   | 1hr       |
+| 7   | Decide on FixStrategyAI: implement or remove                              | MEDIUM   | 30min     |
+| 8   | EXECUTION_PLAN_V2.md remaining items (CLI tool #14)                       | MEDIUM   | 4hr       |
+| 9   | Config files (#15 in plan)                                                | MEDIUM   | 3hr       |
+| 10  | Watch mode (#16 in plan)                                                  | LOW      | 4hr       |
+| 11  | go-sarif evaluation (#8 in plan)                                          | LOW      | 2hr       |
+| 12  | Fix `go vet` nix store intermittent                                       | LOW      | env issue |
+| 13  | Consider fuzz test for SARIF parser                                       | MEDIUM   | 2hr       |
+| 14  | Add `-json` flag to CLI for machine-readable output                       | LOW      | 1hr       |
+| 15  | Document pipeline result interpretation                                   | LOW      | 1hr       |
+| 16  | Performance benchmarks for pipeline Run()                                 | LOW      | 1hr       |
+| 17  | Example integration with golangci-lint                                    | MEDIUM   | 3hr       |
+| 18  | Version flag via ldflags in Makefile                                      | LOW      | 30min     |
+| 19  | CONTRIBUTING.md update for v0.1.3 changes                                 | LOW      | 30min     |
+| 20  | Consider removing `.golangci.yml` golines if 100-chars is too restrictive | LOW      | 5min      |
+| 21  | Integration test: full pipeline with real govet                           | MEDIUM   | 2hr       |
+| 22  | Add Example tests for godoc                                               | LOW      | 2hr       |
+| 23  | Consider `errors.Join` for multi-error aggregation                        | LOW      | 1hr       |
+| 24  | Pipeline result JSON serialization                                        | LOW      | 1hr       |
+| 25  | README refresh with v0.1.3 API                                            | LOW      | 30min     |
 
 ## g) Top #1 Question
 

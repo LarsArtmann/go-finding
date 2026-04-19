@@ -37,6 +37,7 @@ linters:
         - errname
         - errorlint
         - exhaustive
+        - exhaustruct
         - exptostd
         - fatcontext
         - forbidigo
@@ -86,6 +87,7 @@ linters:
         - nolintlint
         - nonamedreturns
         - nosprintfhostport
+        - paralleltest
         - perfsprint
         - prealloc
         - predeclared
