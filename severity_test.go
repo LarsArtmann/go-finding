@@ -117,3 +117,27 @@ func TestSeverity_Ordering(t *testing.T) {
 		}
 	}
 }
+
+func TestSeverity_Compare(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		a, b  Severity
+		want  int
+		label string
+	}{
+		{SeverityInfo, SeverityInfo, 0, "info == info"},
+		{SeverityWarning, SeverityInfo, 1, "warning > info"},
+		{SeverityInfo, SeverityWarning, -1, "info < warning"},
+		{SeverityCritical, SeverityError, 1, "critical > error"},
+		{SeverityError, SeverityCritical, -1, "error < critical"},
+		{Severity("unknown"), SeverityInfo, -1, "invalid < valid"},
+		{SeverityInfo, Severity("unknown"), 1, "valid > invalid"},
+	}
+
+	for _, tt := range tests {
+		if got := tt.a.Compare(tt.b); got != tt.want {
+			t.Errorf("Compare(%q, %q) = %d, want %d (%s)", tt.a, tt.b, got, tt.want, tt.label)
+		}
+	}
+}

@@ -144,14 +144,6 @@ func SortByPosition(findings []Finding) {
 // SortBySeverity sorts findings by severity (most severe first).
 func SortBySeverity(findings []Finding) {
 	slices.SortFunc(findings, func(a, b Finding) int {
-		if a.Severity == b.Severity {
-			return 0
-		}
-
-		if a.Severity.GreaterThan(b.Severity) {
-			return -1
-		}
-
-		return 1
+		return -a.Severity.Compare(b.Severity)
 	})
 }

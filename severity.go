@@ -1,5 +1,7 @@
 package finding
 
+import "cmp"
+
 // Severity represents the severity level of a finding.
 type Severity string
 
@@ -60,6 +62,12 @@ func (s Severity) LessThanOrEqual(other Severity) bool {
 // String returns the string representation of the severity.
 func (s Severity) String() string {
 	return string(s)
+}
+
+// Compare returns -1, 0, or 1 depending on whether s is less than, equal to,
+// or greater than other. Invalid severities rank below all valid ones.
+func (s Severity) Compare(other Severity) int {
+	return cmp.Compare(severityRank(s), severityRank(other))
 }
 
 func severityRank(s Severity) int {
