@@ -20,6 +20,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var version = "0.1.0" // overridden via -ldflags "-X main.version=..."
+
 func main() {
 	os.Exit(run())
 }
@@ -93,7 +95,8 @@ func run() int {
 
 	fmt.Fprintf(
 		os.Stderr,
-		"go-finding v0.1.0: analyzing %s with %d detector(s)\n",
+		"go-finding v%s: analyzing %s with %d detector(s)\n",
+		version,
 		dir,
 		len(detectorList),
 	)
@@ -112,7 +115,7 @@ func run() int {
 
 	report := finding.NewReport(finding.ToolInfo{
 		Name:    "go-finding",
-		Version: "0.1.0",
+		Version: version,
 	})
 	report.AddFindings(filtered)
 	report.ComputeSummary()
