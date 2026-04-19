@@ -332,8 +332,7 @@ type pipelineConfigFile struct {
 }
 
 type detectorSpec struct {
-	Name string            `json:"name" yaml:"name"`
-	Args map[string]string `json:"args" yaml:"args"`
+	Name string `json:"name" yaml:"name"`
 }
 
 // Sentinel errors for CLI validation.
