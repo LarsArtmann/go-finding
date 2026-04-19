@@ -17,9 +17,11 @@ linters:
     - exhaustruct
     - ireturn
     - noinlineerr
+    - nlreturn
     - paralleltest
     - testpackage
     - varnamelen
+    - wsl_v5
   enable:
     - arangolint
     - asasalint
@@ -159,7 +161,6 @@ linters:
     gocritic:
       disabled-checks:
         - ifElseChain
-        - sloppyReassign
     gocyclo:
       min-complexity: 25
     godot:
