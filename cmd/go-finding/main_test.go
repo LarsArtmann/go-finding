@@ -155,40 +155,44 @@ func TestFilterBySeverity(t *testing.T) {
 func TestBuildDetectors(t *testing.T) {
 	t.Parallel()
 
-	t.Run("known detectors", func(t *testing.T) {
-		t.Parallel()
+	tests := []struct {
+		name      string
+		specs     []detectorSpec
+		wantCount int
+	}{
+		{
+			name: "known detectors",
+			specs: []detectorSpec{
+				{Name: "govet"},
+				{Name: "staticcheck"},
+			},
+			wantCount: 2,
+		},
+		{
+			name: "unknown detector skipped",
+			specs: []detectorSpec{
+				{Name: "govet"},
+				{Name: "nonexistent"},
+			},
+			wantCount: 1,
+		},
+		{
+			name:      "empty specs",
+			specs:     nil,
+			wantCount: 0,
+		},
+	}
 
-		dets := buildDetectors([]detectorSpec{
-			{Name: "govet"},
-			{Name: "staticcheck"},
-		}, ".")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-		if len(dets) != 2 {
-			t.Errorf("buildDetectors returned %d detectors, want 2", len(dets))
-		}
-	})
-
-	t.Run("unknown detector skipped", func(t *testing.T) {
-		t.Parallel()
-
-		dets := buildDetectors([]detectorSpec{
-			{Name: "govet"},
-			{Name: "nonexistent"},
-		}, ".")
-
-		if len(dets) != 1 {
-			t.Errorf("buildDetectors with unknown returned %d, want 1", len(dets))
-		}
-	})
-
-	t.Run("empty specs", func(t *testing.T) {
-		t.Parallel()
-
-		dets := buildDetectors(nil, ".")
-		if len(dets) != 0 {
-			t.Errorf("buildDetectors(nil) returned %d, want 0", len(dets))
-		}
-	})
+			dets := buildDetectors(tt.specs, ".")
+			if len(dets) != tt.wantCount {
+				t.Errorf("buildDetectors returned %d, want %d", len(dets), tt.wantCount)
+			}
+		})
+	}
 }
 
 func reportWithFindings() *finding.Report {

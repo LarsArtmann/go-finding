@@ -24,6 +24,27 @@ func stdIDCase(name, id, file string, line, col int, ok bool) parseIDCase {
 	}
 }
 
+// testParseIDCase runs a parseIDCase, validating ParseID returns expected values.
+func testParseIDCase(t *testing.T, tt parseIDCase) {
+	t.Helper()
+
+	p := ParseID(tt.id)
+	if p.OK() != tt.wantOK {
+		t.Fatalf("ParseID() ok = %v, want %v", p.OK(), tt.wantOK)
+	}
+
+	if !tt.wantOK {
+		return
+	}
+
+	if p.Tool != tt.wantTool || p.Rule != tt.wantRule || p.File != tt.wantFile ||
+		p.Line != tt.wantLine || p.Column != tt.wantCol {
+		t.Errorf("ParseID() = (%q, %q, %q, %d, %d), want (%q, %q, %q, %d, %d)",
+			p.Tool, p.Rule, p.File, p.Line, p.Column,
+			tt.wantTool, tt.wantRule, tt.wantFile, tt.wantLine, tt.wantCol)
+	}
+}
+
 func TestGenerateID(t *testing.T) {
 	t.Parallel()
 
@@ -134,22 +155,7 @@ func TestParseID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
-			p := ParseID(tt.id)
-			if p.OK() != tt.wantOK {
-				t.Fatalf("ParseID() ok = %v, want %v", p.OK(), tt.wantOK)
-			}
-
-			if !tt.wantOK {
-				return
-			}
-
-			if p.Tool != tt.wantTool || p.Rule != tt.wantRule || p.File != tt.wantFile ||
-				p.Line != tt.wantLine || p.Column != tt.wantCol {
-				t.Errorf("ParseID() = (%q, %q, %q, %d, %d), want (%q, %q, %q, %d, %d)",
-					p.Tool, p.Rule, p.File, p.Line, p.Column,
-					tt.wantTool, tt.wantRule, tt.wantFile, tt.wantLine, tt.wantCol)
-			}
+			testParseIDCase(t, tt)
 		})
 	}
 }
@@ -275,20 +281,7 @@ func TestParseID_WindowsPaths(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
-			p := ParseID(tt.id)
-			if p.OK() != tt.wantOK {
-				t.Fatalf("ParseID() ok = %v, want %v", p.OK(), tt.wantOK)
-			}
-			if !tt.wantOK {
-				return
-			}
-			if p.Tool != tt.wantTool || p.Rule != tt.wantRule || p.File != tt.wantFile ||
-				p.Line != tt.wantLine || p.Column != tt.wantCol {
-				t.Errorf("ParseID() = (%q, %q, %q, %d, %d), want (%q, %q, %q, %d, %d)",
-					p.Tool, p.Rule, p.File, p.Line, p.Column,
-					tt.wantTool, tt.wantRule, tt.wantFile, tt.wantLine, tt.wantCol)
-			}
+			testParseIDCase(t, tt)
 		})
 	}
 }
