@@ -71,7 +71,7 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 					rng,
 				) + ":" + randomSeedFile(
 					rng,
-				) + ":" + string(rune('A')+rune(rng.Intn(26))),
+				) + ":" + string(rune('A')+rune(rng.Intn(26))), //nolint:gosec // test-only random character generation
 				Severity: sevFromInt(rng.Intn(4)),
 			}
 		}

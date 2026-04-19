@@ -26,7 +26,9 @@ func FromJSON(data []byte) (*Finding, error) {
 	}
 
 	if !f.IsValid() {
-		return nil, fmt.Errorf("invalid finding: missing required fields (id, rule, toolName, message, position, severity)")
+		return nil, fmt.Errorf(
+			"invalid finding: missing required fields (id, rule, toolName, message, position, severity)",
+		)
 	}
 
 	return &f, nil

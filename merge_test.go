@@ -159,7 +159,11 @@ func TestDeduplicateStrategiesDistinct(t *testing.T) {
 	ruleKey := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
 
 	if posKey == ruleKey {
-		t.Errorf("DeduplicateByPosition key %q should differ from DeduplicateByRule key %q", posKey, ruleKey)
+		t.Errorf(
+			"DeduplicateByPosition key %q should differ from DeduplicateByRule key %q",
+			posKey,
+			ruleKey,
+		)
 	}
 }
 

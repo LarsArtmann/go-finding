@@ -73,8 +73,14 @@ func TestFromJSON(t *testing.T) {
 			json string
 		}{
 			{"empty object", `{}`},
-			{"missing position", `{"id":"x","rule":"r","toolName":"t","message":"m","severity":"warning"}`},
-			{"missing id", `{"rule":"r","toolName":"t","message":"m","severity":"warning","position":{"file":"a.go"}}`},
+			{
+				"missing position",
+				`{"id":"x","rule":"r","toolName":"t","message":"m","severity":"warning"}`,
+			},
+			{
+				"missing id",
+				`{"rule":"r","toolName":"t","message":"m","severity":"warning","position":{"file":"a.go"}}`,
+			},
 		}
 
 		for _, tt := range tests {
@@ -97,8 +103,17 @@ func TestReportFromJSON(t *testing.T) {
 		t.Parallel()
 
 		orig := Report{
-			Tool:     ToolInfo{Name: "test-tool", Version: "1.0"},
-			Findings: []Finding{{ID: "f1", Rule: "R1", ToolName: "test-tool", Message: "msg", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 1, Column: 1}}},
+			Tool: ToolInfo{Name: "test-tool", Version: "1.0"},
+			Findings: []Finding{
+				{
+					ID:       "f1",
+					Rule:     "R1",
+					ToolName: "test-tool",
+					Message:  "msg",
+					Severity: SeverityWarning,
+					Position: Position{File: "a.go", Line: 1, Column: 1},
+				},
+			},
 		}
 
 		data, err := json.Marshal(orig)
@@ -148,7 +163,14 @@ func TestReportFromJSON(t *testing.T) {
 		orig := Report{
 			Tool: ToolInfo{Name: "test-tool"},
 			Findings: []Finding{
-				{ID: "f1", Rule: "R1", ToolName: "test-tool", Message: "msg", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 1, Column: 1}},
+				{
+					ID:       "f1",
+					Rule:     "R1",
+					ToolName: "test-tool",
+					Message:  "msg",
+					Severity: SeverityWarning,
+					Position: Position{File: "a.go", Line: 1, Column: 1},
+				},
 				{ID: "bad", Severity: SeverityWarning},
 			},
 		}
@@ -184,8 +206,22 @@ func TestFindingsFromJSON(t *testing.T) {
 		t.Parallel()
 
 		orig := []Finding{
-			{ID: "f1", Rule: "R1", ToolName: "t", Message: "msg", Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1, Column: 1}},
-			{ID: "f2", Rule: "R2", ToolName: "t", Message: "msg", Severity: SeverityError, Position: Position{File: "b.go", Line: 2, Column: 1}},
+			{
+				ID:       "f1",
+				Rule:     "R1",
+				ToolName: "t",
+				Message:  "msg",
+				Severity: SeverityInfo,
+				Position: Position{File: "a.go", Line: 1, Column: 1},
+			},
+			{
+				ID:       "f2",
+				Rule:     "R2",
+				ToolName: "t",
+				Message:  "msg",
+				Severity: SeverityError,
+				Position: Position{File: "b.go", Line: 2, Column: 1},
+			},
 		}
 
 		data, err := json.Marshal(orig)
@@ -220,7 +256,14 @@ func TestFindingsFromJSON(t *testing.T) {
 		t.Parallel()
 
 		orig := []Finding{
-			{ID: "f1", Rule: "R1", ToolName: "t", Message: "msg", Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1, Column: 1}},
+			{
+				ID:       "f1",
+				Rule:     "R1",
+				ToolName: "t",
+				Message:  "msg",
+				Severity: SeverityInfo,
+				Position: Position{File: "a.go", Line: 1, Column: 1},
+			},
 			{ID: "bad", Severity: SeverityWarning},
 		}
 

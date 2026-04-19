@@ -36,7 +36,11 @@ func TestRangeLength(t *testing.T) {
 		want int
 	}{
 		{"no offsets", Range{Start: Position{File: "a.go", Line: 1}, End: Position{Line: 3}}, 0},
-		{"missing start offset", Range{Start: Position{File: "a.go", Offset: -1}, End: Position{Offset: 100}}, 0},
+		{
+			"missing start offset",
+			Range{Start: Position{File: "a.go", Offset: -1}, End: Position{Offset: 100}},
+			0,
+		},
 		{"missing end offset", Range{Start: Position{Offset: 10}, End: Position{Offset: -1}}, 0},
 		{"valid range", Range{Start: Position{Offset: 50}, End: Position{Offset: 100}}, 50},
 		{"zero start offset", Range{Start: Position{Offset: 0}, End: Position{Offset: 100}}, 100},

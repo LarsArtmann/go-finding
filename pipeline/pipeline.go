@@ -666,7 +666,10 @@ func (a *FixApplier) restore(path string) error {
 // When a finding has a Range with valid end position, it uses line-based replacement
 // targeting the exact line range. Otherwise it falls back to string replacement.
 // Fixes are sorted descending by position so earlier replacements don't shift later ones.
-func (*FixApplier) applyToFile(path string, fixes []finding.Finding) (int, error) { //nolint:revive // receiver required for method set
+func (*FixApplier) applyToFile(
+	path string,
+	fixes []finding.Finding,
+) (int, error) { //nolint:revive // receiver required for method set
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return 0, ioErrorAt("read file", err, path)

@@ -102,8 +102,8 @@ func (m *Metrics) StageTiming(name string) func() {
 
 // MetricsSnapshot holds a point-in-time copy of the current metrics.
 type MetricsSnapshot struct {
-	StartTime     time.Time
-	EndTime       time.Time
+	StartTime      time.Time
+	EndTime        time.Time
 	StageDurations map[string]time.Duration
 	DetectorTimes  map[string]time.Duration
 	FindingsFound  map[string]int
@@ -150,8 +150,8 @@ func (m *Metrics) Snapshot() MetricsSnapshot {
 	}
 
 	return MetricsSnapshot{
-		StartTime:     m.startTime,
-		EndTime:       m.endTime,
+		StartTime:      m.startTime,
+		EndTime:        m.endTime,
 		StageDurations: stages,
 		DetectorTimes:  detectors,
 		FindingsFound:  findings,

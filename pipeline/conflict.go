@@ -132,7 +132,9 @@ func (c *ConflictDetector) detectConflictsInFile(
 
 // getFindingRange extracts the range for a finding.
 // Falls back to a single position if no range is specified.
-func (*ConflictDetector) getFindingRange(f finding.Finding) finding.Range { //nolint:revive // receiver required for method set
+func (*ConflictDetector) getFindingRange(
+	f finding.Finding,
+) finding.Range { //nolint:revive // receiver required for method set
 	if f.Range != nil && f.Range.IsValid() {
 		return *f.Range
 	}

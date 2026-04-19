@@ -22,12 +22,19 @@ func TestClone(t *testing.T) {
 		Suggestion:  "fix it",
 		BeforeCode:  "old",
 		AfterCode:   "new",
-		Range:       &Range{Start: Position{File: "file.go", Line: 10, Column: 5}, End: Position{File: "file.go", Line: 10, Column: 20}},
-		Snippet:     "code here",
-		Confidence:  0.95,
-		Related:     []RelatedRef{{FindingID: "other:1", Relation: "causes"}},
-		Suppression: &Suppression{Kind: SuppressionInSource, Reason: "intentional", ExpiresAt: &expires},
-		Metadata:    map[string]string{"key": "value"},
+		Range: &Range{
+			Start: Position{File: "file.go", Line: 10, Column: 5},
+			End:   Position{File: "file.go", Line: 10, Column: 20},
+		},
+		Snippet:    "code here",
+		Confidence: 0.95,
+		Related:    []RelatedRef{{FindingID: "other:1", Relation: "causes"}},
+		Suppression: &Suppression{
+			Kind:      SuppressionInSource,
+			Reason:    "intentional",
+			ExpiresAt: &expires,
+		},
+		Metadata: map[string]string{"key": "value"},
 	}
 
 	clone := original.Clone()

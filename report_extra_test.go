@@ -82,7 +82,10 @@ func TestComputeSummary_Resets(t *testing.T) {
 	r.ComputeSummary()
 
 	if r.Summary.ByCategory[CategorySecurity] != 1 {
-		t.Fatalf("first call: ByCategory[Security] = %d, want 1", r.Summary.ByCategory[CategorySecurity])
+		t.Fatalf(
+			"first call: ByCategory[Security] = %d, want 1",
+			r.Summary.ByCategory[CategorySecurity],
+		)
 	}
 
 	r.AddFinding(Finding{
@@ -118,6 +121,9 @@ func TestComputeSummary_PreservesDurationMs(t *testing.T) {
 	r.ComputeSummary()
 
 	if r.Summary.DurationMs != 1234 {
-		t.Errorf("DurationMs = %d, want 1234 (externally set value should be preserved)", r.Summary.DurationMs)
+		t.Errorf(
+			"DurationMs = %d, want 1234 (externally set value should be preserved)",
+			r.Summary.DurationMs,
+		)
 	}
 }

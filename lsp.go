@@ -112,9 +112,13 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	startChar := diag.Range.Start.Character + 1
 
 	f := Finding{
-		ID:        GenerateID(diag.Source, diag.Code, Position{File: fileURI, Line: startLine, Column: startChar}),
-		Rule:      diag.Code,
-		ToolName:  diag.Source,
+		ID: GenerateID(
+			diag.Source,
+			diag.Code,
+			Position{File: fileURI, Line: startLine, Column: startChar},
+		),
+		Rule:     diag.Code,
+		ToolName: diag.Source,
 		Message:  diag.Message,
 		Severity: severityFromLSP(diag.Severity),
 		Position: Position{

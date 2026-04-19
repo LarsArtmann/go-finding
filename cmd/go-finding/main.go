@@ -178,7 +178,12 @@ func setupProfiling(cpuprof, memprof string) (func(), error) {
 	}, nil
 }
 
-func loadConfig(configFile string, maxIter int, parallel, verify bool, timeout time.Duration) (pipelineConfigFile, error) {
+func loadConfig(
+	configFile string,
+	maxIter int,
+	parallel, verify bool,
+	timeout time.Duration,
+) (pipelineConfigFile, error) {
 	if configFile != "" {
 		data, err := os.ReadFile(configFile)
 		if err != nil {

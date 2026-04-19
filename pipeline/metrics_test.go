@@ -104,8 +104,18 @@ func TestMetrics_Snapshot(t *testing.T) {
 
 	snap := m.Snapshot()
 
-	assertEqual(t, snap.StageDurations["detect"], 100*time.Millisecond, "snapshot: expected detect=100ms")
-	assertEqual(t, snap.DetectorTimes["govet"], 50*time.Millisecond, "snapshot: expected govet=50ms")
+	assertEqual(
+		t,
+		snap.StageDurations["detect"],
+		100*time.Millisecond,
+		"snapshot: expected detect=100ms",
+	)
+	assertEqual(
+		t,
+		snap.DetectorTimes["govet"],
+		50*time.Millisecond,
+		"snapshot: expected govet=50ms",
+	)
 	assertEqual(t, snap.FindingsFound["govet"], 5, "snapshot: expected govet findings=5")
 	assertEqual(t, snap.FixesApplied, 1, "snapshot: expected 1 fix")
 

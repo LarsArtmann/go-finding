@@ -372,6 +372,7 @@ func (r Range) Adjacent(other Range) bool {
 func (p Position) HasOffset() bool {
 	return p.Offset >= 0
 }
+
 func Pos(file string, line, column int) Position {
 	return Position{File: file, Line: line, Column: column}
 }

@@ -145,7 +145,12 @@ func TestFromLSP(t *testing.T) {
 	}
 
 	if p.File != "file:///test.go" || p.Line != 5 || p.Column != 10 {
-		t.Errorf("ParseID file=%q line=%d col=%d, want file:///test.go/5/10", p.File, p.Line, p.Column)
+		t.Errorf(
+			"ParseID file=%q line=%d col=%d, want file:///test.go/5/10",
+			p.File,
+			p.Line,
+			p.Column,
+		)
 	}
 }
 
@@ -202,14 +207,14 @@ func TestFromLSPRelated(t *testing.T) {
 	}
 }
 
-func TestToLSP(t *testing.T) {
+func TestToLSP(t *testing.T) { //nolint:gocognit // comprehensive table-driven test
 	t.Parallel()
 
 	t.Run("with range", func(t *testing.T) {
 		t.Parallel()
 
 		f := Finding{
-			Rule:     "SA1000",
+			Rule:     "SA1000", //nolint:goconst
 			ToolName: "staticcheck",
 			Message:  "invalid printf format",
 			Severity: SeverityWarning,
@@ -223,7 +228,7 @@ func TestToLSP(t *testing.T) {
 			t.Errorf("ToLSP Severity = %d, want %d", got, want)
 		}
 
-		if got, want := diag.Code, "SA1000"; got != want {
+		if got, want := diag.Code, "SA1000"; got != want { //nolint:goconst
 			t.Errorf("ToLSP Code = %q, want %q", got, want)
 		}
 

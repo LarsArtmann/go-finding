@@ -270,7 +270,13 @@ func TestPipelineRun_Parallel(t *testing.T) {
 func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 	makeFindings := func() []finding.Finding {
 		return []finding.Finding{
-			{ID: "s1", Rule: "r1", ToolName: "t1", Message: "active-1", Severity: finding.SeverityError},
+			{
+				ID:       "s1",
+				Rule:     "r1",
+				ToolName: "t1",
+				Message:  "active-1",
+				Severity: finding.SeverityError,
+			},
 			{
 				ID:       "s2",
 				Rule:     "r2",
@@ -283,7 +289,13 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 					Reason: "false positive",
 				},
 			},
-			{ID: "s3", Rule: "r3", ToolName: "t1", Message: "active-2", Severity: finding.SeverityInfo},
+			{
+				ID:       "s3",
+				Rule:     "r3",
+				ToolName: "t1",
+				Message:  "active-2",
+				Severity: finding.SeverityInfo,
+			},
 			{
 				ID:       "s4",
 				Rule:     "r4",
@@ -329,7 +341,11 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 	parFindings, parNotified := runDetect(true)
 
 	if len(seqFindings) != len(parFindings) {
-		t.Errorf("sequential found %d findings, parallel found %d", len(seqFindings), len(parFindings))
+		t.Errorf(
+			"sequential found %d findings, parallel found %d",
+			len(seqFindings),
+			len(parFindings),
+		)
 	}
 
 	if len(seqNotified) != len(parNotified) {
@@ -737,6 +753,7 @@ func TestIteration_Findings(t *testing.T) {
 
 	assertFindingMessage := func(idx int, want string) {
 		t.Helper()
+
 		msg := got[idx].Message
 		if msg != want {
 			t.Errorf("Findings()[%d].Message = %q, want %q", idx, msg, want)
