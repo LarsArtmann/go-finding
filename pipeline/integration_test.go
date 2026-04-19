@@ -11,19 +11,6 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
-func assertFindingsFound(t *testing.T, result *PipelineResult, want int, msg string) {
-	t.Helper()
-
-	if len(result.Iterations) == 0 {
-		t.Fatal("expected at least one iteration")
-	}
-
-	found := result.Iterations[0].FindingsFound
-	if found != want {
-		t.Errorf("%s = %d, want %d", msg, found, want)
-	}
-}
-
 func TestFixApplier_BackupRestoreRoundTrip(t *testing.T) {
 	t.Parallel()
 

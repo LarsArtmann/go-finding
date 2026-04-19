@@ -6,44 +6,6 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
-func findingWithRange(id, file string, line, startLine, endLine int) finding.Finding {
-	return finding.Finding{
-		ID:       id,
-		Position: finding.Position{File: file, Line: line},
-		Range: &finding.Range{
-			Start: finding.Position{File: file, Line: startLine},
-			End:   finding.Position{File: file, Line: endLine},
-		},
-	}
-}
-
-func findingAt(id, file string, line int) finding.Finding {
-	return finding.Finding{ID: id, Position: finding.Position{File: file, Line: line}}
-}
-
-func findings(fixSpecs ...any) []finding.Finding {
-	var fixes []finding.Finding
-
-	for i := 0; i+2 < len(fixSpecs); i += 3 {
-		id, idOk := fixSpecs[i].(string)
-		file, fileOk := fixSpecs[i+1].(string)
-
-		line, lineOk := fixSpecs[i+2].(int)
-		if idOk && fileOk && lineOk {
-			fixes = append(fixes, findingAt(id, file, line))
-		}
-	}
-
-	return fixes
-}
-
-func overlappingFindings() []finding.Finding {
-	return []finding.Finding{
-		findingWithRange("1", "a.go", 10, 10, 20),
-		findingWithRange("2", "a.go", 15, 15, 25),
-	}
-}
-
 // assertRangeLinesEq asserts two ranges have equal lines in a test.
 func assertRangeLinesEq(t *testing.T, got, want finding.Range) {
 	t.Helper()
