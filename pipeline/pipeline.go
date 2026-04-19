@@ -537,6 +537,7 @@ func ioErrorAt(msg string, err error, path string) error {
 }
 
 // Apply applies the given fixes to files and returns the number of successful fixes.
+// If an error occurs, all previously modified files are rolled back to their backups.
 func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, error) {
 	// Group fixes by file
 	byFile := make(map[string][]finding.Finding)
@@ -551,10 +552,12 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 	}
 
 	applied := 0
+	var modified []string
 
 	for path, fileFixes := range byFile {
 		select {
 		case <-ctx.Done():
+			_ = a.rollbackAll(modified)
 			return applied, fmt.Errorf("fix application cancelled: %w", ctx.Err())
 		default:
 		}
@@ -563,6 +566,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 		if a.backupEnabled {
 			err := a.backup(path)
 			if err != nil {
+				_ = a.rollbackAll(modified)
 				return applied, finding.NewIOError("backup "+path, err)
 			}
 		}
@@ -570,18 +574,35 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 		// Apply fixes
 		count, err := a.applyToFile(path, fileFixes)
 		if err != nil {
-			// Restore from backup on error
+			// Restore current file from backup
 			if a.backupEnabled {
 				_ = a.restore(path)
 			}
 
+			// Restore all previously modified files
+			_ = a.rollbackAll(modified)
+
 			return applied, finding.NewConflictError("apply to "+path, err)
 		}
 
+		modified = append(modified, path)
 		applied += count
 	}
 
 	return applied, nil
+}
+
+// rollbackAll restores all modified files from their backups.
+func (a *FixApplier) rollbackAll(paths []string) error {
+	var errs []error
+
+	for _, p := range paths {
+		if err := a.restore(p); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errors.Join(errs...)
 }
 
 // fileHash returns the hex-encoded FNV-128 hash of s.
