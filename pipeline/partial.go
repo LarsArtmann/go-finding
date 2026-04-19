@@ -96,7 +96,8 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 
 	var mu sync.Mutex
 
-	g, ctx := errgroup.WithContext(ctx)
+	parentCtx := ctx
+	g, _ := errgroup.WithContext(ctx)
 
 	for _, d := range p.detectors {
 		g.Go(func() error {
@@ -122,6 +123,10 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 	}
 
 	_ = g.Wait()
+
+	if isContextDone(parentCtx) {
+		return result, fmt.Errorf("context cancelled: %w", parentCtx.Err())
+	}
 
 	return result, nil
 }
