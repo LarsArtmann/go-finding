@@ -12,7 +12,7 @@ func findingKey(f finding.Finding) string {
 	if f.ID != "" {
 		return f.ID
 	}
-	return f.Position.File + ":" + f.Rule + ":" + f.Message
+	return f.Position.File + "\x00" + f.Rule + "\x00" + f.Message
 }
 
 // VerifyResult holds the outcome of verifying fixes by re-running detectors.
