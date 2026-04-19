@@ -64,7 +64,7 @@ func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 
 func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 	calls := 0
-	inner := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		calls++
 		if calls < 3 {
 			return nil, errors.New("transient")
@@ -90,7 +90,7 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 }
 
 func TestRetryDetector_ExhaustedRetries(t *testing.T) {
-	inner := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		return nil, errors.New("permanent")
 	})
 
@@ -111,7 +111,7 @@ func TestRetryDetector_ExhaustedRetries(t *testing.T) {
 
 func TestRetryDetector_ContextCancellation(t *testing.T) {
 	calls := 0
-	inner := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		calls++
 
 		return nil, errors.New("fail")

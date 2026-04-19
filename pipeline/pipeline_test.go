@@ -324,12 +324,14 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 		d2 := &mockDetector{name: "d2", findings: makeFindings()}
 
 		p := New(config, t.TempDir(), d1, d2)
+
 		findings, err := p.Run(context.Background())
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		var all []finding.Finding
+		var all []finding.Finding //nolint:prealloc
 		for _, iter := range findings.Iterations {
 			all = append(all, iter.Findings()...)
 		}

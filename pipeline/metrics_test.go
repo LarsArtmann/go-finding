@@ -134,7 +134,7 @@ func TestMetrics_Snapshot(t *testing.T) {
 func TestPipeline_MetricsIntegration(t *testing.T) {
 	m := NewMetrics()
 	count := 0
-	detector := DetectorFunc(func(ctx context.Context) ([]finding.Finding, error) {
+	detector := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		count++
 		if count > 1 {
 			return nil, nil
