@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -29,6 +30,29 @@ func DefaultRetryConfig() RetryConfig {
 		BaseDelay:  time.Duration(delayMaxMultiplier) * time.Millisecond,
 		MaxDelay:   time.Duration(delayMaxRetryFactor) * time.Second,
 	}
+}
+
+// Validate checks the retry configuration and returns an error if invalid.
+func (c RetryConfig) Validate() error {
+	var errs []error
+
+	if c.MaxRetries < 0 {
+		errs = append(errs, errors.New("MaxRetries must be >= 0"))
+	}
+
+	if c.BaseDelay < 0 {
+		errs = append(errs, errors.New("BaseDelay must be >= 0"))
+	}
+
+	if c.MaxDelay < 0 {
+		errs = append(errs, errors.New("MaxDelay must be >= 0"))
+	}
+
+	if c.BaseDelay > 0 && c.MaxDelay > 0 && c.BaseDelay > c.MaxDelay {
+		errs = append(errs, errors.New("BaseDelay must not exceed MaxDelay"))
+	}
+
+	return errors.Join(errs...)
 }
 
 // delay calculates the backoff duration for the given attempt with jitter.

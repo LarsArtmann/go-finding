@@ -5,6 +5,7 @@ package pipeline
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"hash/fnv"
 	"os"
@@ -94,6 +95,27 @@ func DefaultConfig() Config {
 		ParallelDetectors: true,
 		Timeout:           10 * time.Minute,
 	}
+}
+
+// Validate checks the configuration and returns an error if invalid.
+func (c Config) Validate() error {
+	var errs []error
+
+	if c.MaxIterations < 0 {
+		errs = append(errs, fmt.Errorf("MaxIterations must be >= 0, got %d", c.MaxIterations))
+	}
+
+	if c.Timeout < 0 {
+		errs = append(errs, fmt.Errorf("Timeout must be >= 0, got %v", c.Timeout))
+	}
+
+	if c.Retry != nil {
+		if err := c.Retry.Validate(); err != nil {
+			errs = append(errs, fmt.Errorf("Retry: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
 }
 
 // Pipeline orchestrates the detect → triage → fix → verify loop.
