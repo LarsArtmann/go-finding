@@ -297,7 +297,12 @@ func ExamplePipeline() {
 		Timeout:           5 * time.Second,
 	}
 
-	p := pipeline.New(cfg, ".", detector)
+	p, err := pipeline.New(cfg, ".", detector)
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
 
 	result, err := p.Run(context.Background())
 	if err != nil {

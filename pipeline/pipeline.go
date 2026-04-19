@@ -129,7 +129,12 @@ type Pipeline struct {
 }
 
 // New creates a new Pipeline with the given configuration.
-func New(config Config, rootDir string, detectors ...Detector) *Pipeline {
+// Returns an error if the configuration is invalid.
+func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error) {
+	if err := config.Validate(); err != nil {
+		return nil, fmt.Errorf("validate config: %w", err)
+	}
+
 	// Wrap detectors with retry if configured.
 	if config.Retry != nil {
 		wrapped := make([]Detector, len(detectors))
@@ -146,7 +151,7 @@ func New(config Config, rootDir string, detectors ...Detector) *Pipeline {
 		rootDir:   rootDir,
 		findings:  make([]finding.Finding, 0),
 		metrics:   config.Metrics,
-	}
+	}, nil
 }
 
 // stageTiming returns a function that records stage duration when called.

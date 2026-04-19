@@ -16,7 +16,10 @@ func TestNew(t *testing.T) {
 	config := DefaultConfig()
 	detector := &mockDetector{name: "test", findings: nil}
 
-	p := New(config, "/tmp", detector)
+	p, err := New(config, "/tmp", detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	if p == nil {
 		t.Fatal("expected non-nil pipeline")
@@ -41,7 +44,10 @@ func TestPipelineRun_NoFindings(t *testing.T) {
 	config.ParallelDetectors = false
 	detector := &mockDetector{name: "test", findings: nil}
 
-	p := New(config, t.TempDir(), detector)
+	p, err := New(config, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	ctx := context.Background()
 
 	result, err := p.Run(ctx)
@@ -77,7 +83,10 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 	}
 
 	detector := &mockDetector{name: "test", findings: findings}
-	p := New(config, t.TempDir(), detector)
+	p, err := New(config, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	ctx := context.Background()
 
 	result, err := p.Run(ctx)
@@ -126,10 +135,13 @@ func TestPipelineRun_DetectorError(t *testing.T) {
 	expectedErr := errors.New("detector failed")
 	detector := &mockDetector{name: "test", err: expectedErr}
 
-	p := New(config, t.TempDir(), detector)
+	p, err := New(config, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	ctx := context.Background()
 
-	_, err := p.Run(ctx)
+	_, err = p.Run(ctx)
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -150,11 +162,14 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 		delay: 100 * time.Millisecond,
 	}
 
-	p := New(config, t.TempDir(), detector)
+	p, err := New(config, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately
 
-	_, err := p.Run(ctx)
+	_, err = p.Run(ctx)
 	if err == nil {
 		t.Fatal("expected context error")
 	}
@@ -176,10 +191,13 @@ func TestPipelineRun_Timeout(t *testing.T) {
 		findings: []finding.Finding{{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"}},
 	}
 
-	p := New(config, t.TempDir(), detector)
+	p, err := New(config, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	ctx := context.Background()
 
-	_, err := p.Run(ctx)
+	_, err = p.Run(ctx)
 	if err == nil {
 		t.Fatal("expected timeout error")
 	}
@@ -209,7 +227,10 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 	}
 
 	detector := &mockDetector{name: "test", findings: findings}
-	p := New(config, t.TempDir(), detector)
+	p, err := New(config, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	ctx := context.Background()
 
 	result, err := p.Run(ctx)
@@ -250,7 +271,10 @@ func TestPipelineRun_Parallel(t *testing.T) {
 		},
 	}
 
-	p := New(config, t.TempDir(), d1, d2)
+	p, err := New(config, t.TempDir(), d1, d2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	ctx := context.Background()
 
 	result, err := p.Run(ctx)
@@ -323,7 +347,10 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 		d1 := &mockDetector{name: "d1", findings: makeFindings()}
 		d2 := &mockDetector{name: "d2", findings: makeFindings()}
 
-		p := New(config, t.TempDir(), d1, d2)
+		p, err := New(config, t.TempDir(), d1, d2)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
 		findings, err := p.Run(context.Background())
 		if err != nil {
@@ -724,7 +751,10 @@ func BenchmarkParallelDetection(b *testing.B) {
 			b.ResetTimer()
 
 			for range b.N {
-				p := New(config, b.TempDir(), detectors...)
+				p, err := New(config, b.TempDir(), detectors...)
+				if err != nil {
+					b.Fatalf("unexpected error: %v", err)
+				}
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				_, _ = p.Run(ctx)
 
@@ -920,7 +950,10 @@ func TestDryRun(t *testing.T) {
 	}
 
 	det := &mockDetector{name: "tool", findings: []finding.Finding{f}}
-	p := New(cfg, tmpDir, det)
+	p, err := New(cfg, tmpDir, det)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.Run(context.Background())
 	if err != nil {

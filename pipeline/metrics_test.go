@@ -153,7 +153,10 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 		Metrics:           m,
 	}
 
-	p := New(config, t.TempDir(), detector)
+	p, err := New(config, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.Run(context.Background())
 	if err != nil {
@@ -191,7 +194,10 @@ func TestPipeline_NilMetricsNoPanic(t *testing.T) {
 		Metrics:           nil,
 	}
 
-	p := New(config, t.TempDir(), detector)
+	p, err := New(config, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.Run(context.Background())
 	if err != nil {

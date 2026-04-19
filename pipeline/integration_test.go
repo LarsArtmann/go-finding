@@ -146,7 +146,10 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 	}
 
 	tempDir := t.TempDir()
-	p := New(config, tempDir, goodDetector, badDetector)
+	p, err := New(config, tempDir, goodDetector, badDetector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.Run(context.Background())
 	if err != nil {
@@ -194,7 +197,10 @@ func TestPipeline_RetryConfig(t *testing.T) {
 	}
 
 	tempDir := t.TempDir()
-	p := New(config, tempDir, flaky)
+	p, err := New(config, tempDir, flaky)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.Run(context.Background())
 	if err != nil {
@@ -239,7 +245,10 @@ func TestPipeline_VerifyAfterFix(t *testing.T) {
 	}
 
 	tempDir := t.TempDir()
-	p := New(config, tempDir, det)
+	p, err := New(config, tempDir, det)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.Run(context.Background())
 	if err != nil {
@@ -269,9 +278,12 @@ func TestPipeline_MetricsRecordsDetector(t *testing.T) {
 	}
 
 	tempDir := t.TempDir()
-	p := New(config, tempDir, det)
+	p, err := New(config, tempDir, det)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
-	_, err := p.Run(context.Background())
+	_, err = p.Run(context.Background())
 	if err != nil {
 		t.Fatalf("run: %v", err)
 	}

@@ -32,7 +32,10 @@ func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
 	config := Config{ParallelDetectors: false}
 	d1 := &mockDetector{name: "d1", findings: []finding.Finding{{ID: "F1"}}}
 	d2 := &mockDetector{name: "d2", findings: []finding.Finding{{ID: "F2"}}}
-	p := New(config, t.TempDir(), d1, d2)
+	p, err := New(config, t.TempDir(), d1, d2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.DetectPartial(context.Background())
 	if err != nil {
@@ -50,7 +53,10 @@ func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
 	config := Config{ParallelDetectors: false}
 	d1 := &mockDetector{name: "good", findings: []finding.Finding{{ID: "F1"}}}
 	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
-	p := New(config, t.TempDir(), d1, d2)
+	p, err := New(config, t.TempDir(), d1, d2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.DetectPartial(context.Background())
 	if err != nil {
@@ -72,7 +78,10 @@ func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {
 	config := Config{ParallelDetectors: true}
 	d1 := &mockDetector{name: "good", findings: []finding.Finding{{ID: "F1"}}}
 	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
-	p := New(config, t.TempDir(), d1, d2)
+	p, err := New(config, t.TempDir(), d1, d2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.DetectPartial(context.Background())
 	if err != nil {
@@ -90,7 +99,10 @@ func TestDetectPartial_AllFail(t *testing.T) {
 	config := Config{ParallelDetectors: false}
 	d1 := &mockDetector{name: "d1", err: errors.New("fail1")}
 	d2 := &mockDetector{name: "d2", err: errors.New("fail2")}
-	p := New(config, t.TempDir(), d1, d2)
+	p, err := New(config, t.TempDir(), d1, d2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	result, err := p.DetectPartial(context.Background())
 	if err != nil {

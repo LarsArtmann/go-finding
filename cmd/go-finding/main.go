@@ -88,7 +88,12 @@ func run() int {
 
 	pipelineCfg := cfg.toPipelineConfig()
 	pipelineCfg.GracefulDegradation = true
-	p := pipeline.New(pipelineCfg, dir, detectorList...)
+	p, err := pipeline.New(pipelineCfg, dir, detectorList...)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "invalid pipeline config: %v\n", err)
+
+		return 1
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), pipelineCfg.Timeout)
 	defer cancel()
