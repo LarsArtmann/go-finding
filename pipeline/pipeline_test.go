@@ -1013,8 +1013,10 @@ func TestNew_ValidConfig_NoError(t *testing.T) {
 
 func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
 	goodDetector := &mockDetector{
-		name:     "good",
-		findings: []finding.Finding{{ID: "F1", Rule: "r", ToolName: "good", Message: "m", Severity: finding.SeverityError}},
+		name: "good",
+		findings: []finding.Finding{
+			{ID: "F1", Rule: "r", ToolName: "good", Message: "m", Severity: finding.SeverityError},
+		},
 	}
 	badDetector := &mockDetector{name: "bad", err: errors.New("boom")}
 

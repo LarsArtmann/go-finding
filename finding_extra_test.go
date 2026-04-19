@@ -6,6 +6,7 @@ import (
 )
 
 func TestClone(t *testing.T) {
+	const mutated = "changed"
 	t.Parallel()
 
 	expires := time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)
@@ -43,13 +44,13 @@ func TestClone(t *testing.T) {
 		t.Error("Clone should be Equal to original")
 	}
 
-	clone.Metadata["key"] = "changed"
-	if original.Metadata["key"] == "changed" {
+	clone.Metadata["key"] = mutated
+	if original.Metadata["key"] == mutated {
 		t.Error("mutating clone Metadata should not affect original")
 	}
 
-	clone.Related[0] = RelatedRef{FindingID: "changed"}
-	if original.Related[0].FindingID == "changed" {
+	clone.Related[0] = RelatedRef{FindingID: mutated}
+	if original.Related[0].FindingID == mutated {
 		t.Error("mutating clone Related should not affect original")
 	}
 

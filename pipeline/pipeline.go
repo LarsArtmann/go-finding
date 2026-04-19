@@ -169,7 +169,7 @@ func (p *Pipeline) stageTiming(name string) func() {
 // Run is NOT safe for concurrent use. Create a new Pipeline for each
 // concurrent invocation. The returned PipelineResult is safe to read
 // concurrently after Run returns.
-func (p *Pipeline) Run(ctx context.Context) (result *PipelineResult, err error) {
+func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	p.findings = p.findings[:0]
 	p.iterations = 0
 
@@ -177,12 +177,14 @@ func (p *Pipeline) Run(ctx context.Context) (result *PipelineResult, err error) 
 		p.metrics.SetStart(time.Now())
 	}
 
+	var metricsResult *PipelineResult
+
 	defer func() {
 		if p.metrics != nil {
 			p.metrics.SetEnd(time.Now())
 
-			if result != nil {
-				result.Metrics = p.metrics.Snapshot()
+			if metricsResult != nil {
+				metricsResult.Metrics = p.metrics.Snapshot()
 			}
 		}
 	}()
@@ -194,7 +196,7 @@ func (p *Pipeline) Run(ctx context.Context) (result *PipelineResult, err error) 
 		defer cancel()
 	}
 
-	result = &PipelineResult{
+	result := &PipelineResult{
 		Iterations: make([]Iteration, 0, p.config.MaxIterations),
 	}
 
@@ -282,7 +284,9 @@ func (p *Pipeline) Run(ctx context.Context) (result *PipelineResult, err error) 
 
 	result.FinalFindingCount = len(p.findings)
 
-	return
+	metricsResult = result
+
+	return result, nil
 }
 
 // collectAllFindings gathers all findings from all iterations for verification.
