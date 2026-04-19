@@ -15,6 +15,7 @@ type PipelineResult struct {
 	Iterations        []Iteration
 	FinalFindingCount int
 	Verification      *VerifyResult
+	PartialErrors     map[string]error
 }
 
 // Iteration represents one loop through the pipeline.

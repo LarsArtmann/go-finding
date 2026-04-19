@@ -199,12 +199,23 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 		// Detect
 		detectDone := p.stageTiming("detect")
-		findings, err := p.detect(ctx)
+		detResult, err := p.detect(ctx)
 
 		detectDone()
 
 		if err != nil {
 			return result, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
+		}
+
+		findings := detResult.Findings
+
+		// Accumulate partial errors across iterations.
+		for name, detErr := range detResult.PartialErrors {
+			if result.PartialErrors == nil {
+				result.PartialErrors = make(map[string]error)
+			}
+
+			result.PartialErrors[name] = detErr
 		}
 
 		iter.FindingsFound = len(findings)
@@ -286,23 +297,41 @@ func (*Pipeline) collectAllFindings(
 	return all
 }
 
+// detectResult holds findings and optional partial errors from detection.
+type detectResult struct {
+	Findings      []finding.Finding
+	PartialErrors map[string]error
+}
+
 // detect runs all detectors and collects findings.
-func (p *Pipeline) detect(ctx context.Context) ([]finding.Finding, error) {
+func (p *Pipeline) detect(ctx context.Context) (*detectResult, error) {
 	if p.config.GracefulDegradation {
 		result, err := p.DetectPartial(ctx)
 		if err != nil {
 			return nil, err
 		}
-		// Partial detector errors are non-fatal with GracefulDegradation.
-		// Attach them to PipelineResult if callers need them.
-		return result.Findings, nil
+
+		return &detectResult{
+			Findings:      result.Findings,
+			PartialErrors: result.Errors,
+		}, nil
 	}
 
 	if p.config.ParallelDetectors {
-		return p.detectParallel(ctx)
+		findings, err := p.detectParallel(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		return &detectResult{Findings: findings}, nil
 	}
 
-	return p.detectSequential(ctx)
+	findings, err := p.detectSequential(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &detectResult{Findings: findings}, nil
 }
 
 // addFindings adds non-suppressed findings to the target slice, calling OnFinding if set.
