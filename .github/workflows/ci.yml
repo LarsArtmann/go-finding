@@ -2,41 +2,49 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [master]
+    tags: ["v*"]
   pull_request:
-    branches: [main, master]
+    branches: [master]
+
+permissions:
+  contents: read
 
 jobs:
   test:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         go-version: ["1.26"]
-
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
+      - run: go mod download
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test -race -count=1 -coverprofile=coverage.out ./...
+      - run: go tool cover -func=coverage.out
 
-      - name: Cache Go modules
-        uses: actions/cache@v4
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Download dependencies
-        run: go mod download
-
-      - name: Run tests
-        run: go test -v -race -coverprofile=coverage.out ./...
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
+          go-version: "1.26"
+      - run: go test -race -count=1 -coverprofile=coverage.out ./...
+      - name: Enforce minimum coverage (75%)
+        run: |
+          COV=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
+          echo "Total coverage: ${COV}%"
+          if [ "$(echo "$COV < 75" | bc -l)" -eq 1 ]; then
+            echo "::error::Coverage ${COV}% is below 75% threshold"
+            exit 1
+          fi
+      - uses: codecov/codecov-action@v4
         with:
           file: ./coverage.out
           fail_ci_if_error: false
@@ -45,30 +53,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.26"
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v6
         with:
           version: latest
           args: --timeout=5m
-
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-
-      - name: Build
-        run: go build -v ./...
-
-      - name: Vet
-        run: go vet ./...
