@@ -145,3 +145,19 @@ func TestReportFindByRule(t *testing.T) {
 	none := r.FindByRule("nonexistent")
 	AssertEmpty(t, none, "nonexistent rule")
 }
+
+func TestReportLen(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	if r.Len() != 0 {
+		t.Fatalf("expected 0 findings, got %d", r.Len())
+	}
+
+	r.AddFinding(Finding{ID: "1", Message: "a"})
+	r.AddFinding(Finding{ID: "2", Message: "b"})
+
+	if r.Len() != 2 {
+		t.Fatalf("expected 2 findings, got %d", r.Len())
+	}
+}

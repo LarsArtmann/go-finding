@@ -124,3 +124,8 @@ func (r *Report) FindByID(id string) *Finding {
 func (r *Report) FindByRule(rule string) []Finding {
 	return Filter(r.Findings, func(f Finding) bool { return f.Rule == rule })
 }
+
+// Len returns the number of findings in the report.
+func (r *Report) Len() int {
+	return len(r.Findings)
+}
