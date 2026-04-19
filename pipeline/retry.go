@@ -16,6 +16,13 @@ const (
 	delayMaxRetryFactor = 5
 )
 
+var (
+	errMaxRetriesNegative  = errors.New("MaxRetries must be >= 0")
+	errBaseDelayNegative   = errors.New("BaseDelay must be >= 0")
+	errMaxDelayNegative    = errors.New("MaxDelay must be >= 0")
+	errBaseDelayExceedsMax = errors.New("BaseDelay must not exceed MaxDelay")
+)
+
 // RetryConfig configures retry behavior for detectors.
 type RetryConfig struct {
 	MaxRetries int
@@ -37,19 +44,19 @@ func (c RetryConfig) Validate() error {
 	var errs []error
 
 	if c.MaxRetries < 0 {
-		errs = append(errs, errors.New("MaxRetries must be >= 0"))
+		errs = append(errs, errMaxRetriesNegative)
 	}
 
 	if c.BaseDelay < 0 {
-		errs = append(errs, errors.New("BaseDelay must be >= 0"))
+		errs = append(errs, errBaseDelayNegative)
 	}
 
 	if c.MaxDelay < 0 {
-		errs = append(errs, errors.New("MaxDelay must be >= 0"))
+		errs = append(errs, errMaxDelayNegative)
 	}
 
 	if c.BaseDelay > 0 && c.MaxDelay > 0 && c.BaseDelay > c.MaxDelay {
-		errs = append(errs, errors.New("BaseDelay must not exceed MaxDelay"))
+		errs = append(errs, errBaseDelayExceedsMax)
 	}
 
 	return errors.Join(errs...)
