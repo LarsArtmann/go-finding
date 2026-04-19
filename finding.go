@@ -84,6 +84,7 @@ func (f Finding) Clone() Finding {
 			t := *s.ExpiresAt
 			s.ExpiresAt = &t
 		}
+
 		clone.Suppression = &s
 	}
 
@@ -102,6 +103,8 @@ func (f Finding) IsSuppressed() bool {
 // HasFix returns true if this finding has a fix available.
 func (f Finding) HasFix() bool {
 	switch f.FixStrategy {
+	case FixStrategyNone:
+		return false
 	case FixStrategyDirect, FixStrategyAI:
 		return true
 	case FixStrategySuggest:
