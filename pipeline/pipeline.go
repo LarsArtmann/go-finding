@@ -274,6 +274,10 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	result.FinalFindingCount = len(p.findings)
 
+	if p.metrics != nil {
+		result.Metrics = p.metrics.Snapshot()
+	}
+
 	return result, nil
 }
 

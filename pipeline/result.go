@@ -16,6 +16,7 @@ type PipelineResult struct {
 	FinalFindingCount int
 	Verification      *VerifyResult
 	PartialErrors     map[string]error
+	Metrics           MetricsSnapshot
 }
 
 // Iteration represents one loop through the pipeline.
