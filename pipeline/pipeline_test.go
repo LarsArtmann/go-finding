@@ -1066,6 +1066,307 @@ func directFixFinding() []finding.Finding {
 	}
 }
 
+func TestApplyTriage_DirectFixesApplied(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
+	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
+		t.Fatalf("create test file: %v", err)
+	}
+
+	fix := finding.Finding{
+		ID:          "fix1",
+		Rule:        "r1",
+		ToolName:    "tool",
+		Message:     "replace old with new",
+		Severity:    finding.SeverityWarning,
+		BeforeCode:  "old()",
+		AfterCode:   "new()",
+		Position:    finding.Position{File: "fixme.go", Line: 4},
+		FixStrategy: finding.FixStrategyDirect,
+	}
+
+	det := &mockDetector{name: "tool", findings: []finding.Finding{fix}}
+	p, err := New(Config{MaxIterations: 3, ParallelDetectors: false}, tmpDir, det)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	if len(result.Iterations) == 0 {
+		t.Fatal("expected at least one iteration")
+	}
+
+	iter := result.Iterations[0]
+	if iter.DirectFixes != 1 {
+		t.Errorf("DirectFixes = %d, want 1", iter.DirectFixes)
+	}
+
+	if iter.Applied != 1 {
+		t.Errorf("Applied = %d, want 1", iter.Applied)
+	}
+}
+
+func TestApplyTriage_ConflictingFixes(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
+	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
+		t.Fatalf("create test file: %v", err)
+	}
+
+	fixes := []finding.Finding{
+		{
+			ID:          "fix1",
+			BeforeCode:  "old()",
+			AfterCode:   "new()",
+			Position:    finding.Position{File: "fixme.go", Line: 4, Column: 2},
+			Range:       finding.NewRangePtr("fixme.go", 4, 2, 4, 6),
+			FixStrategy: finding.FixStrategyDirect,
+		},
+		{
+			ID:          "fix2",
+			BeforeCode:  "old()",
+			AfterCode:   "other()",
+			Position:    finding.Position{File: "fixme.go", Line: 4, Column: 2},
+			Range:       finding.NewRangePtr("fixme.go", 4, 2, 4, 6),
+			FixStrategy: finding.FixStrategyDirect,
+		},
+	}
+
+	var conflictFindings []finding.Finding
+	var appliedFindings []finding.Finding
+
+	cfg := Config{
+		MaxIterations:       1,
+		ParallelDetectors:   false,
+		GracefulDegradation: true,
+		OnFix: func(f finding.Finding, wasApplied bool) {
+			if wasApplied {
+				appliedFindings = append(appliedFindings, f)
+			} else {
+				conflictFindings = append(conflictFindings, f)
+			}
+		},
+	}
+
+	det := &mockDetector{name: "tool", findings: fixes}
+	p, err := New(cfg, tmpDir, det)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	if len(result.Iterations) == 0 {
+		t.Fatal("expected at least one iteration")
+	}
+
+	iter := result.Iterations[0]
+	if iter.Conflicts == 0 {
+		t.Error("expected conflicts from overlapping fixes")
+	}
+
+	if len(conflictFindings) == 0 {
+		t.Error("expected OnFix callback with conflict finding")
+	}
+}
+
+func TestApplyTriage_OnFixCallback(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
+	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
+		t.Fatalf("create test file: %v", err)
+	}
+
+	fix := finding.Finding{
+		ID:          "fix1",
+		Rule:        "r1",
+		ToolName:    "tool",
+		Message:     "replace old with new",
+		BeforeCode:  "old()",
+		AfterCode:   "new()",
+		Position:    finding.Position{File: "fixme.go", Line: 4},
+		FixStrategy: finding.FixStrategyDirect,
+	}
+
+	var appliedIDs []string
+
+	cfg := Config{
+		MaxIterations:     2,
+		ParallelDetectors: false,
+		OnFix: func(f finding.Finding, wasApplied bool) {
+			if wasApplied {
+				appliedIDs = append(appliedIDs, f.ID)
+			}
+		},
+	}
+
+	det := &mockDetector{name: "tool", findings: []finding.Finding{fix}}
+	p, err := New(cfg, tmpDir, det)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	_, err = p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	if len(appliedIDs) == 0 {
+		t.Error("expected OnFix callback for applied fix")
+	}
+
+	if appliedIDs[0] != "fix1" {
+		t.Errorf("applied ID = %q, want %q", appliedIDs[0], "fix1")
+	}
+}
+
+func TestApplyTriage_EmptyFixes(t *testing.T) {
+	t.Parallel()
+
+	p := &Pipeline{config: DefaultConfig()}
+	iter := &Iteration{Number: 1}
+
+	err := p.applyTriage(context.Background(), nil, iter)
+	if err != nil {
+		t.Fatalf("applyTriage with nil fixes: %v", err)
+	}
+
+	if iter.Applied != 0 {
+		t.Errorf("Applied = %d, want 0", iter.Applied)
+	}
+
+	if iter.Conflicts != 0 {
+		t.Errorf("Conflicts = %d, want 0", iter.Conflicts)
+	}
+}
+
+func TestApplyTriage_AllConflicting(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
+	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
+		t.Fatalf("create test file: %v", err)
+	}
+
+	fixes := []finding.Finding{
+		{
+			ID:          "fix1",
+			BeforeCode:  "old()",
+			AfterCode:   "new()",
+			Position:    finding.Position{File: "fixme.go", Line: 4, Column: 2},
+			Range:       finding.NewRangePtr("fixme.go", 4, 2, 4, 6),
+			FixStrategy: finding.FixStrategyDirect,
+		},
+		{
+			ID:          "fix2",
+			BeforeCode:  "old()",
+			AfterCode:   "other()",
+			Position:    finding.Position{File: "fixme.go", Line: 4, Column: 2},
+			Range:       finding.NewRangePtr("fixme.go", 4, 2, 4, 6),
+			FixStrategy: finding.FixStrategyDirect,
+		},
+	}
+
+	p := &Pipeline{config: DefaultConfig(), rootDir: tmpDir}
+	iter := &Iteration{Number: 1}
+
+	err := p.applyTriage(context.Background(), fixes, iter)
+	if err != nil {
+		t.Fatalf("applyTriage: %v", err)
+	}
+
+	if iter.Conflicts != 1 {
+		t.Errorf("Conflicts = %d, want 1 (one filtered, one kept)", iter.Conflicts)
+	}
+
+	if iter.Applied != 1 {
+		t.Errorf("Applied = %d, want 1 (one non-conflicting fix applied)", iter.Applied)
+	}
+}
+
+func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
+	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
+		t.Fatalf("create test file: %v", err)
+	}
+
+	fix := finding.Finding{
+		ID:          "fix1",
+		Rule:        "r1",
+		ToolName:    "tool",
+		Message:     "replace old with new",
+		BeforeCode:  "old()",
+		AfterCode:   "new()",
+		Position:    finding.Position{File: "fixme.go", Line: 4},
+		FixStrategy: finding.FixStrategyDirect,
+	}
+
+	callCount := 0
+	det := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
+		callCount++
+		if callCount == 1 {
+			return []finding.Finding{fix}, nil
+		}
+
+		return nil, nil
+	})
+
+	p, err := New(Config{MaxIterations: 5, ParallelDetectors: false}, tmpDir, NamedDetectorFunc("tool", det))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	if !result.Stable {
+		t.Error("expected stable result after fix applied")
+	}
+
+	if result.TotalIterations != 2 {
+		t.Errorf("TotalIterations = %d, want 2 (detect-fix + verify)", result.TotalIterations)
+	}
+
+	content, err := readFile(testFile)
+	if err != nil {
+		t.Fatalf("read file: %v", err)
+	}
+
+	want := "package main\n\nfunc main() {\n\tnew()\n}\n"
+	if string(content) != want {
+		t.Errorf("file content:\nwant:\n%s\ngot:\n%s", want, string(content))
+	}
+}
+
 func mockDetectorWithFinding(name, id, rule, tool, msg string) *mockDetector {
 	return &mockDetector{
 		name: name,
