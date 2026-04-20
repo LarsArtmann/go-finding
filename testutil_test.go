@@ -2,6 +2,7 @@ package finding
 
 import (
 	"encoding/json"
+	"math/rand"
 	"testing"
 	"testing/quick"
 )
@@ -192,11 +193,14 @@ func assertFindingErrorFile(t *testing.T, err *FindingError, want string) {
 	}
 }
 
-// checkProperty runs a property-based test using quick.Check.
+// checkProperty runs a property-based test using quick.Check with a deterministic seed.
 func checkProperty[T any](t *testing.T, property func(T) bool) {
 	t.Helper()
 
-	err := quick.Check(property, nil)
+	err := quick.Check(property, &quick.Config{
+		MaxCount: 1000,
+		Rand:     rand.New(rand.NewSource(42)),
+	})
 	if err != nil {
 		t.Error(err)
 	}
