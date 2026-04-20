@@ -142,7 +142,6 @@ linters:
     forbidigo:
       exclude:
         - cmd/
-        - examples/
     funlen:
       lines: 120
       statements: 80
@@ -232,10 +231,6 @@ linters:
           - wrapcheck
           - unparam
       - path: cmd/
-        linters:
-          - gochecknoglobals
-          - gochecknoinits
-      - path: examples/
         linters:
           - gochecknoglobals
           - gochecknoinits
