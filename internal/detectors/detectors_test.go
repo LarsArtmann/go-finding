@@ -1,7 +1,9 @@
 package detectors
 
 import (
+	"context"
 	"testing"
+	"time"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -262,5 +264,93 @@ func TestDetectorNames(t *testing.T) {
 	sc := NewStaticcheckDetector(".")
 	if sc.Name() != "staticcheck" {
 		t.Errorf("NewStaticcheckDetector name = %q, want %q", sc.Name(), "staticcheck")
+	}
+}
+
+func TestNewGoVetDetector_CancelledContext(t *testing.T) {
+	d := NewGoVetDetector(".")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := d.Detect(ctx)
+	if err == nil {
+		t.Error("expected error for cancelled context")
+	}
+}
+
+func TestNewStaticcheckDetector_CancelledContext(t *testing.T) {
+	d := NewStaticcheckDetector(".")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := d.Detect(ctx)
+	if err == nil {
+		t.Error("expected error for cancelled context")
+	}
+}
+
+func TestNewGoVetDetector_ValidProject(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	d := NewGoVetDetector("../../")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	findings, err := d.Detect(ctx)
+	if err != nil {
+		t.Fatalf("govet: %v", err)
+	}
+
+	t.Logf("govet found %d findings", len(findings))
+}
+
+func TestParseGoVetJSON_BadEntry(t *testing.T) {
+	t.Parallel()
+
+	input := `{"github.com/example/pkg": "not an array"}`
+	findings := parseGoVetJSON([]byte(input), "")
+	if findings != nil {
+		t.Errorf("expected nil for bad entry, got %v", findings)
+	}
+}
+
+func TestStaticcheckCategory_A(t *testing.T) {
+	t.Parallel()
+
+	got := staticcheckCategory("A1000")
+	if got != finding.CategoryCorrectness {
+		t.Errorf("staticcheckCategory(A1000) = %v, want %v", got, finding.CategoryCorrectness)
+	}
+}
+
+func TestParseStaticcheckJSON_AbsolutePath(t *testing.T) {
+	t.Parallel()
+
+	input := `{"code":"S1001","severity":"warning","location":{"file":"/abs/path/main.go","line":1,"column":1},"message":"ok"}`
+	findings := parseStaticcheckJSON([]byte(input), "/project")
+	if len(findings) != 1 {
+		t.Fatalf("expected 1 finding, got %d", len(findings))
+	}
+
+	if findings[0].Position.File != "/abs/path/main.go" {
+		t.Errorf("File = %q, want %q", findings[0].Position.File, "/abs/path/main.go")
+	}
+}
+
+func TestParseStaticcheckJSON_WhitespaceLines(t *testing.T) {
+	t.Parallel()
+
+	input := "\n  \n\t\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}\n\n"
+	findings := parseStaticcheckJSON([]byte(input), "")
+	if len(findings) != 1 {
+		t.Fatalf("expected 1 finding (skip whitespace), got %d", len(findings))
+	}
+
+	if findings[0].Rule != "S1001" {
+		t.Errorf("Rule = %q, want %q", findings[0].Rule, "S1001")
 	}
 }
