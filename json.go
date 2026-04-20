@@ -13,6 +13,11 @@ var (
 	ErrInvalidReport  = errors.New("invalid report: missing tool name")
 )
 
+// FilterInvalid is a filter function for removing invalid findings.
+var FilterInvalid = func(f Finding) bool {
+	return !f.IsValid()
+}
+
 // PrettyJSON returns a formatted JSON representation of the report.
 func (r *Report) PrettyJSON() (string, error) {
 	bytes, err := json.MarshalIndent(r, "", "  ")
@@ -54,9 +59,7 @@ func ReportFromJSON(data []byte) (*Report, int, error) {
 	}
 
 	before := len(r.Findings)
-	r.Findings = slices.DeleteFunc(r.Findings, func(f Finding) bool {
-		return !f.IsValid()
-	})
+	r.Findings = slices.DeleteFunc(r.Findings, FilterInvalid)
 
 	return &r, before - len(r.Findings), nil
 }
@@ -72,9 +75,7 @@ func FindingsFromJSON(data []byte) ([]Finding, int, error) {
 	}
 
 	before := len(findings)
-	findings = slices.DeleteFunc(findings, func(f Finding) bool {
-		return !f.IsValid()
-	})
+	findings = slices.DeleteFunc(findings, FilterInvalid)
 
 	return findings, before - len(findings), nil
 }

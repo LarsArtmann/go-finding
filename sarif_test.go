@@ -334,7 +334,7 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 		Suggestion:  "fix format string",
 		Snippet:     "fmt.Sprintf(\"%d\")",
 		Metadata:    map[string]string{"custom": "value"},
-		Range:       posRange("main.go", 10, 5, 10, 20),
+		Range:       NewRangePtr("main.go", 10, 5, 10, 20),
 	}
 
 	report := NewReport(ToolInfo{Name: "govet"})
