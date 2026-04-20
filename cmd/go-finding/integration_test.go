@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -503,5 +504,85 @@ func TestOutputResults_SARIFContainsResults(t *testing.T) {
 
 	if parsed.Runs[0].Results[0].RuleID != "nilcheck" {
 		t.Errorf("ruleId = %q, want %q", parsed.Runs[0].Results[0].RuleID, "nilcheck")
+	}
+}
+
+func TestRun_BadSeverity(t *testing.T) {
+	savedCommandLine := flag.CommandLine
+	savedArgs := os.Args
+	t.Cleanup(func() {
+		flag.CommandLine = savedCommandLine
+		os.Args = savedArgs
+	})
+
+	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
+	os.Args = []string{"go-finding", "-severity", "bogus"}
+
+	got := run()
+	if got != 1 {
+		t.Errorf("run() with bad severity = %d, want 1", got)
+	}
+}
+
+func TestRun_MissingConfig(t *testing.T) {
+	savedCommandLine := flag.CommandLine
+	savedArgs := os.Args
+	t.Cleanup(func() {
+		flag.CommandLine = savedCommandLine
+		os.Args = savedArgs
+	})
+
+	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
+	os.Args = []string{"go-finding", "-config", "/nonexistent/config.yaml"}
+
+	got := run()
+	if got != 1 {
+		t.Errorf("run() with missing config = %d, want 1", got)
+	}
+}
+
+func TestRun_NoDetectors(t *testing.T) {
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "config.yaml")
+
+	content := `
+maxIterations: 1
+timeout: "30s"
+detectors: []
+`
+	if err := os.WriteFile(cfgPath, []byte(content), 0o644); err != nil {
+		t.Fatalf("write config: %v", err)
+	}
+
+	savedCommandLine := flag.CommandLine
+	savedArgs := os.Args
+	t.Cleanup(func() {
+		flag.CommandLine = savedCommandLine
+		os.Args = savedArgs
+	})
+
+	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
+	os.Args = []string{"go-finding", "-config", cfgPath, "-dir", dir}
+
+	got := run()
+	if got != 1 {
+		t.Errorf("run() with no detectors = %d, want 1", got)
+	}
+}
+
+func TestRun_BadProfilingPath(t *testing.T) {
+	savedCommandLine := flag.CommandLine
+	savedArgs := os.Args
+	t.Cleanup(func() {
+		flag.CommandLine = savedCommandLine
+		os.Args = savedArgs
+	})
+
+	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
+	os.Args = []string{"go-finding", "-cpuprof", "/nonexistent/dir/cpu.prof"}
+
+	got := run()
+	if got != 1 {
+		t.Errorf("run() with bad cpuprof = %d, want 1", got)
 	}
 }

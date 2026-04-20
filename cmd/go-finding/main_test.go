@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -195,6 +198,86 @@ func TestBuildDetectors(t *testing.T) {
 				t.Errorf("buildDetectors returned %d, want %d", len(dets), tt.wantCount)
 			}
 		})
+	}
+}
+
+func TestFatalf(t *testing.T) {
+	old := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	got := fatalf("testing", errors.New("test error"))
+
+	w.Close()
+	os.Stderr = old
+
+	var buf bytes.Buffer
+	io.Copy(&buf, r)
+
+	if got != 1 {
+		t.Errorf("fatalf returned %d, want 1", got)
+	}
+
+	want := "Error testing: test error\n"
+	if buf.String() != want {
+		t.Errorf("fatalf output = %q, want %q", buf.String(), want)
+	}
+}
+
+type failingWriter struct {
+	err error
+}
+
+func (w *failingWriter) Write(p []byte) (n int, err error) {
+	return 0, w.err
+}
+
+func TestOutputResults_WriteError(t *testing.T) {
+	report := reportWithFindings()
+
+	err := outputResults(&failingWriter{err: errors.New("disk full")}, report, "json")
+	if err == nil {
+		t.Error("expected error for JSON write failure")
+	}
+
+	if !strings.Contains(err.Error(), "writing JSON") {
+		t.Errorf("error = %v, want writing JSON", err)
+	}
+
+	err = outputResults(&failingWriter{err: errors.New("disk full")}, report, "sarif")
+	if err == nil {
+		t.Error("expected error for SARIF write failure")
+	}
+
+	if !strings.Contains(err.Error(), "writing SARIF") {
+		t.Errorf("error = %v, want writing SARIF", err)
+	}
+}
+
+func TestOutputText_WithSummary(t *testing.T) {
+	report := finding.NewReport(finding.ToolInfo{Name: "test"})
+	report.AddFinding(finding.Finding{
+		Severity: finding.SeverityError, Rule: "R1", Message: "err1",
+		Position: finding.Position{File: "a.go", Line: 1, Column: 1},
+		ID:       "test:R1:a.go:1:1",
+	})
+	report.AddFinding(finding.Finding{
+		Severity: finding.SeverityInfo, Rule: "R2", Message: "info1",
+		Position: finding.Position{File: "b.go", Line: 2, Column: 1},
+		ID:       "test:R2:b.go:2:1",
+	})
+	report.ComputeSummary()
+
+	var buf bytes.Buffer
+	outputText(&buf, report)
+
+	out := buf.String()
+	if !strings.Contains(out, "By severity:") {
+		t.Errorf("text output should contain severity summary, got: %s", out)
+	}
+
+	if !strings.Contains(out, "2 finding(s)") {
+		t.Errorf("text output should contain finding count, got: %s", out)
 	}
 }
 
