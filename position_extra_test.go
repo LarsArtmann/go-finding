@@ -12,8 +12,9 @@ type containsTest struct {
 }
 
 func runContainsTests(t *testing.T, tests []containsTest) {
+	t.Helper()
+
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -124,25 +125,30 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 	t.Run("column outside range", func(t *testing.T) {
 		t.Parallel()
 
-		runContainsTests(t, []containsTest{
-			{
-				"on end line",
-				Range{
-					Start: Position{File: "a.go", Line: 10, Column: 5},
-					End:   Position{File: "a.go", Line: 10, Column: 15},
-				},
-				Position{File: "a.go", Line: 10, Column: 20},
-				false,
-			},
-			{
-				"on start line",
-				Range{
-					Start: Position{File: "a.go", Line: 10, Column: 5},
-					End:   Position{File: "a.go", Line: 20, Column: 15},
-				},
-				Position{File: "a.go", Line: 10, Column: 3},
-				false,
-			},
+		t.Run("on end line", func(t *testing.T) {
+			t.Parallel()
+
+			rng := Range{
+				Start: Position{File: "a.go", Line: 10, Column: 5},
+				End:   Position{File: "a.go", Line: 10, Column: 15},
+			}
+			pos := Position{File: "a.go", Line: 10, Column: 20}
+			if rng.Contains(pos) {
+				t.Error("expected column 20 to be outside range 5-15")
+			}
+		})
+
+		t.Run("on start line", func(t *testing.T) {
+			t.Parallel()
+
+			r := Range{
+				Start: Position{File: "a.go", Line: 10, Column: 5},
+				End:   Position{File: "a.go", Line: 20, Column: 15},
+			}
+			p := Position{File: "a.go", Line: 10, Column: 3}
+			if r.Contains(p) {
+				t.Error("expected column 3 to be outside range starting at column 5")
+			}
 		})
 	})
 
