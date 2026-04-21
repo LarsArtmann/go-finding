@@ -176,6 +176,91 @@ func assertReportField[T comparable](t *testing.T, fieldName string, got, want T
 	}
 }
 
+// assertSummaryField asserts a Report summary field equals expected value.
+func assertSummaryField(t *testing.T, fieldName string, got, want int) {
+	assertReportField(t, "Summary."+fieldName, got, want)
+}
+
+// assertSummarySeverity asserts the count of findings with a given severity in the report summary.
+func assertSummarySeverity(t *testing.T, r *Report, sev Severity, want int) {
+	t.Helper()
+
+	if r.Summary.BySeverity[sev] != want {
+		t.Errorf("Summary.BySeverity[%v] = %d, want %d", sev, r.Summary.BySeverity[sev], want)
+	}
+}
+
+// assertSummaryFixStrategy asserts the count of findings with a given fix strategy in the report summary.
+func assertSummaryFixStrategy(t *testing.T, r *Report, fs FixStrategy, want int) {
+	t.Helper()
+
+	if r.Summary.ByFixStrategy[fs] != want {
+		t.Errorf("Summary.ByFixStrategy[%v] = %d, want %d", fs, r.Summary.ByFixStrategy[fs], want)
+	}
+}
+
+// assertSummarySuppressed asserts the suppressed count in the report summary.
+func assertSummarySuppressed(t *testing.T, r *Report, want int) {
+	t.Helper()
+
+	if r.Summary.Suppressed != want {
+		t.Errorf("Summary.Suppressed = %d, want %d", r.Summary.Suppressed, want)
+	}
+}
+
+// assertPositionOffset asserts a position's offset equals expected value.
+func assertPositionOffset(t *testing.T, pos Position, want int) {
+	t.Helper()
+
+	if pos.Offset != want {
+		t.Errorf("Offset = %d, want %d", pos.Offset, want)
+	}
+}
+
+// assertRangeStartOffset asserts a range's start offset equals expected value.
+func assertRangeStartOffset(t *testing.T, r Range, want int) {
+	t.Helper()
+
+	if r.Start.Offset != want {
+		t.Errorf("Start.Offset = %d, want %d", r.Start.Offset, want)
+	}
+}
+
+// assertRangeEndOffset asserts a range's end offset equals expected value.
+func assertRangeEndOffset(t *testing.T, r Range, want int) {
+	t.Helper()
+
+	if r.End.Offset != want {
+		t.Errorf("End.Offset = %d, want %d", r.End.Offset, want)
+	}
+}
+
+// assertFindingPosition asserts a finding's position file and line.
+func assertFindingPosition(t *testing.T, f Finding, file string, line int) {
+	t.Helper()
+
+	if f.Position.File != file {
+		t.Errorf("Position.File = %q, want %q", f.Position.File, file)
+	}
+
+	if f.Position.Line != line {
+		t.Errorf("Position.Line = %d, want %d", f.Position.Line, line)
+	}
+}
+
+// assertRelatedPosition asserts a related ref's position file and line.
+func assertRelatedPosition(t *testing.T, r RelatedRef, file string, line int) {
+	t.Helper()
+
+	if r.Position.File != file {
+		t.Errorf("Position.File = %q, want %q", r.Position.File, file)
+	}
+
+	if r.Position.Line != line {
+		t.Errorf("Position.Line = %d, want %d", r.Position.Line, line)
+	}
+}
+
 // sevFromInt maps an integer to a Severity (0=info, 1=warning, 2=error, 3=critical).
 func sevFromInt(i int) Severity {
 	sevs := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
@@ -223,16 +308,10 @@ func assertRangeContains(t *testing.T, r Range, offset int, file string, expect 
 }
 
 // checkProperty runs a property-based test using quick.Check with a deterministic seed.
+// For functions with multiple parameters, use checkPropertyAny instead.
 func checkProperty[T any](t *testing.T, property func(T) bool) {
 	t.Helper()
-
-	err := quick.Check(property, &quick.Config{
-		MaxCount: 1000,
-		Rand:     rand.New(rand.NewSource(42)),
-	})
-	if err != nil {
-		t.Error(err)
-	}
+	checkPropertyAny(t, property)
 }
 
 // checkPropertyAny runs a property-based test with any function signature.

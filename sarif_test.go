@@ -547,21 +547,8 @@ func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
 		t.Errorf("Related[0].Relation = %q, want %q", f.Related[0].Relation, "related call")
 	}
 
-	if f.Related[0].Position.File != "helper.go" {
-		t.Errorf("Related[0].Position.File = %q, want %q", f.Related[0].Position.File, "helper.go")
-	}
-
-	if f.Related[0].Position.Line != 20 {
-		t.Errorf("Related[0].Position.Line = %d, want 20", f.Related[0].Position.Line)
-	}
-
-	if f.Related[1].Position.File != "util.go" {
-		t.Errorf("Related[1].Position.File = %q, want %q", f.Related[1].Position.File, "util.go")
-	}
-
-	if f.Related[1].Position.Line != 0 {
-		t.Errorf("Related[1].Position.Line = %d, want 0 (nil region)", f.Related[1].Position.Line)
-	}
+	assertRelatedPosition(t, f.Related[0], "helper.go", 20)
+	assertRelatedPosition(t, f.Related[1], "util.go", 0)
 }
 
 func TestFindingFromSarResult_NoLocations(t *testing.T) {
@@ -650,13 +637,7 @@ func TestApplySarifPosition_NilRegion(t *testing.T) {
 
 	f := Finding{}
 	applySarifPosition(&f, r)
-	if f.Position.File != "a.go" {
-		t.Errorf("Position.File = %q, want %q", f.Position.File, "a.go")
-	}
-
-	if f.Position.Line != 0 {
-		t.Errorf("Position.Line = %d, want 0 (nil region)", f.Position.Line)
-	}
+	assertFindingPosition(t, f, "a.go", 0)
 
 	if f.Range != nil {
 		t.Error("Range should be nil with nil region")

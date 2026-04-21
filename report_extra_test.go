@@ -24,44 +24,20 @@ func TestComputeSummary(t *testing.T) {
 
 	r.ComputeSummary()
 
-	if r.Summary.Total != 3 {
-		t.Errorf("Total = %d, want 3", r.Summary.Total)
-	}
-
-	if r.Summary.BySeverity[SeverityError] != 1 {
-		t.Errorf("BySeverity[Error] = %d, want 1", r.Summary.BySeverity[SeverityError])
-	}
-
-	if r.Summary.BySeverity[SeverityWarning] != 1 {
-		t.Errorf("BySeverity[Warning] = %d, want 1", r.Summary.BySeverity[SeverityWarning])
-	}
-
-	if r.Summary.BySeverity[SeverityInfo] != 1 {
-		t.Errorf("BySeverity[Info] = %d, want 1", r.Summary.BySeverity[SeverityInfo])
-	}
+	assertSummaryField(t, "Total", r.Summary.Total, 3)
+	assertSummarySeverity(t, r, SeverityError, 1)
+	assertSummarySeverity(t, r, SeverityWarning, 1)
+	assertSummarySeverity(t, r, SeverityInfo, 1)
 
 	assertCategoryCount(t, r, CategorySecurity, 1)
 	assertCategoryCount(t, r, CategoryStyle, 1)
 
-	if r.Summary.ByFixStrategy[FixStrategyDirect] != 1 {
-		t.Errorf("ByFixStrategy[Direct] = %d, want 1", r.Summary.ByFixStrategy[FixStrategyDirect])
-	}
+	assertSummaryFixStrategy(t, r, FixStrategyDirect, 1)
+	assertSummaryFixStrategy(t, r, FixStrategySuggest, 1)
+	assertSummaryFixStrategy(t, r, FixStrategyNone, 1)
 
-	if r.Summary.ByFixStrategy[FixStrategySuggest] != 1 {
-		t.Errorf("ByFixStrategy[Suggest] = %d, want 1", r.Summary.ByFixStrategy[FixStrategySuggest])
-	}
-
-	if r.Summary.ByFixStrategy[FixStrategyNone] != 1 {
-		t.Errorf("ByFixStrategy[None] = %d, want 1", r.Summary.ByFixStrategy[FixStrategyNone])
-	}
-
-	if r.Summary.Suppressed != 1 {
-		t.Errorf("Suppressed = %d, want 1", r.Summary.Suppressed)
-	}
-
-	if r.Summary.FilesAffected != 2 {
-		t.Errorf("FilesAffected = %d, want 2", r.Summary.FilesAffected)
-	}
+	assertSummarySuppressed(t, r, 1)
+	assertSummaryField(t, "FilesAffected", r.Summary.FilesAffected, 2)
 }
 
 func TestComputeSummary_Resets(t *testing.T) {
@@ -81,9 +57,7 @@ func TestComputeSummary_Resets(t *testing.T) {
 	addFinding(r, "2", "R2", "m", SeverityWarning, "a.go", 2, CategoryStyle, FixStrategyNone)
 	r.ComputeSummary()
 
-	if r.Summary.Total != 2 {
-		t.Errorf("Total = %d, want 2", r.Summary.Total)
-	}
+	assertSummaryField(t, "Total", r.Summary.Total, 2)
 
 	assertCategoryCount(t, r, CategorySecurity, 1)
 	assertCategoryCount(t, r, CategoryStyle, 1)

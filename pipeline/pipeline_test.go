@@ -812,13 +812,7 @@ func TestIoErrorAt(t *testing.T) {
 		t.Fatal("expected FindingError")
 	}
 
-	if fe.Category != finding.ErrCategoryIO {
-		t.Errorf("category = %q, want %q", fe.Category, finding.ErrCategoryIO)
-	}
-
-	if fe.Position.File != "foo.go" {
-		t.Errorf("file = %q, want %q", fe.Position.File, "foo.go")
-	}
+	assertFindingErrorIO(t, fe, "foo.go")
 }
 
 func TestApplyDirectFixes(t *testing.T) {

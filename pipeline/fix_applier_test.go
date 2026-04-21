@@ -429,11 +429,5 @@ func TestIoErrorAt_WrapsCorrectly(t *testing.T) {
 		t.Fatal("expected FindingError")
 	}
 
-	if fe.Category != finding.ErrCategoryIO {
-		t.Errorf("category = %q, want %q", fe.Category, finding.ErrCategoryIO)
-	}
-
-	if fe.Position.File != "file.go" {
-		t.Errorf("file = %q, want %q", fe.Position.File, "file.go")
-	}
+	assertFindingErrorIO(t, fe, "file.go")
 }

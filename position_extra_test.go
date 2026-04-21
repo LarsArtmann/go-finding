@@ -242,13 +242,8 @@ func TestRangeIntersection_OffsetOnly(t *testing.T) {
 			t.Fatal("expected non-nil intersection")
 		}
 
-		if got.Start.Offset != 150 {
-			t.Errorf("Start.Offset = %d, want 150", got.Start.Offset)
-		}
-
-		if got.End.Offset != 200 {
-			t.Errorf("End.Offset = %d, want 200", got.End.Offset)
-		}
+		assertRangeStartOffset(t, *got, 150)
+		assertRangeEndOffset(t, *got, 200)
 	})
 
 	t.Run("offset with negative end defaults to start", func(t *testing.T) {
@@ -261,9 +256,7 @@ func TestRangeIntersection_OffsetOnly(t *testing.T) {
 			t.Fatal("expected non-nil intersection for same point")
 		}
 
-		if got.Start.Offset != 100 {
-			t.Errorf("Start.Offset = %d, want 100", got.Start.Offset)
-		}
+		assertRangeStartOffset(t, *got, 100)
 	})
 
 	t.Run("non-overlapping offset ranges return nil", func(t *testing.T) {

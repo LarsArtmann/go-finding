@@ -214,6 +214,18 @@ func makeFixFinding(id, before, after, file string, line int) finding.Finding {
 	}
 }
 
+func assertFindingErrorIO(t *testing.T, fe *finding.FindingError, file string) {
+	t.Helper()
+
+	if fe.Category != finding.ErrCategoryIO {
+		t.Errorf("category = %q, want %q", fe.Category, finding.ErrCategoryIO)
+	}
+
+	if fe.Position.File != file {
+		t.Errorf("file = %q, want %q", fe.Position.File, file)
+	}
+}
+
 func makeFixFindingWithRange(id, before, after, file string, line, col int) finding.Finding {
 	return finding.Finding{
 		ID:          id,

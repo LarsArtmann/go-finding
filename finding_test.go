@@ -230,13 +230,8 @@ func TestReport(t *testing.T) {
 
 	assertTotalCount(t, r, 3)
 
-	if r.Summary.FilesAffected != 2 {
-		t.Errorf("expected 2 files affected, got %d", r.Summary.FilesAffected)
-	}
-
-	if r.Summary.BySeverity[SeverityError] != 2 {
-		t.Errorf("expected 2 errors, got %d", r.Summary.BySeverity[SeverityError])
-	}
+	assertSummaryField(t, "FilesAffected", r.Summary.FilesAffected, 2)
+	assertSummarySeverity(t, r, SeverityError, 2)
 
 	errors := r.BySeverity(SeverityError)
 	assertErrorCount(t, errors, 2)
