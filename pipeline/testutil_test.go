@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -155,4 +156,34 @@ func readFile(path string) ([]byte, error) {
 	}
 
 	return result, nil
+}
+
+func testBackupRestore(t *testing.T, applier *FixApplier, original, modified string) {
+	t.Helper()
+
+	testFile := filepath.Join(t.TempDir(), "roundtrip.go")
+	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	if err := applier.backup(testFile); err != nil {
+		t.Fatalf("backup: %v", err)
+	}
+
+	if err := writeFile(testFile, []byte(modified), 0o644); err != nil {
+		t.Fatalf("write modified: %v", err)
+	}
+
+	if err := applier.restore(testFile); err != nil {
+		t.Fatalf("restore: %v", err)
+	}
+
+	data, err := readFile(testFile)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+
+	if string(data) != original {
+		t.Errorf("restored content mismatch:\ngot:  %q\nwant: %q", string(data), original)
+	}
 }

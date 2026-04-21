@@ -451,36 +451,10 @@ func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
 func TestFixApplier_Apply_RestoreOnApplyError(t *testing.T) {
 	t.Parallel()
 
-	tempDir := t.TempDir()
-	applier := NewFixApplier(tempDir)
-
-	testFile := filepath.Join(tempDir, "restore.go")
-	original := "package main\nold()\n"
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("create file: %v", err)
-	}
-
-	if err := applier.backup(testFile); err != nil {
-		t.Fatalf("backup: %v", err)
-	}
-
-	modified := "package main\nnew()\n"
-	if err := writeFile(testFile, []byte(modified), 0o644); err != nil {
-		t.Fatalf("modify: %v", err)
-	}
-
-	if err := applier.restore(testFile); err != nil {
-		t.Fatalf("restore: %v", err)
-	}
-
-	data, err := readFile(testFile)
-	if err != nil {
-		t.Fatalf("read: %v", err)
-	}
-
-	if string(data) != original {
-		t.Errorf("after restore: %q, want %q", string(data), original)
-	}
+	applier := NewFixApplier(t.TempDir())
+	testBackupRestore(t, applier,
+		"package main\nold()\n",
+		"package main\nnew()\n")
 }
 
 func TestIoErrorAt_WrapsCorrectly(t *testing.T) {

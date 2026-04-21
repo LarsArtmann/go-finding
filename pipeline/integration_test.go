@@ -14,37 +14,10 @@ import (
 func TestFixApplier_BackupRestoreRoundTrip(t *testing.T) {
 	t.Parallel()
 
-	tempDir := t.TempDir()
-	applier := NewFixApplier(tempDir)
-
-	testFile := filepath.Join(tempDir, "original.go")
-
-	original := "package main\n\nfunc main() {\n\tprintln(\"original\")\n}\n"
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("write: %v", err)
-	}
-
-	if err := applier.backup(testFile); err != nil {
-		t.Fatalf("backup: %v", err)
-	}
-
-	modified := "package main\n\nfunc main() {\n\tprintln(\"modified\")\n}\n"
-	if err := writeFile(testFile, []byte(modified), 0o644); err != nil {
-		t.Fatalf("write modified: %v", err)
-	}
-
-	if err := applier.restore(testFile); err != nil {
-		t.Fatalf("restore: %v", err)
-	}
-
-	data, err := readFile(testFile)
-	if err != nil {
-		t.Fatalf("read: %v", err)
-	}
-
-	if string(data) != original {
-		t.Errorf("restored content mismatch:\ngot:  %q\nwant: %q", string(data), original)
-	}
+	applier := NewFixApplier(t.TempDir())
+	testBackupRestore(t, applier,
+		"package main\n\nfunc main() {\n\tprintln(\"original\")\n}\n",
+		"package main\n\nfunc main() {\n\tprintln(\"modified\")\n}\n")
 }
 
 func TestFixApplier_BackupPathCollision(t *testing.T) {
