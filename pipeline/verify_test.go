@@ -2,6 +2,8 @@ package pipeline
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -118,5 +120,77 @@ func TestVerifier_Verify(t *testing.T) {
 
 	if result.Resolved != 1 {
 		t.Errorf("expected 1 resolved, got %d", result.Resolved)
+	}
+}
+
+func TestVerifier_Verify_DetectorError(t *testing.T) {
+	t.Parallel()
+
+	detector := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
+		return nil, errors.New("detector failed")
+	})
+
+	v := NewVerifier([]Detector{detector})
+	_, err := v.Verify(context.Background(), nil)
+	if err == nil {
+		t.Fatal("expected error from Verify")
+	}
+
+	if !strings.Contains(err.Error(), "verify: detector") {
+		t.Errorf("error should mention verify and detector, got: %v", err)
+	}
+}
+
+func TestVerifier_Verify_SuppressedFindingsFiltered(t *testing.T) {
+	t.Parallel()
+
+	suppressed := finding.Finding{
+		ID:         "suppressed:rule:f.go:1",
+		Message:    "suppressed issue",
+		Suppression: &finding.Suppression{Kind: "manual", Reason: "won't fix"},
+	}
+	normal := makeFinding("normal:rule:f.go:2", "normal issue")
+
+	detector := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
+		return []finding.Finding{suppressed, normal}, nil
+	})
+
+	v := NewVerifier([]Detector{detector})
+	result, err := v.Verify(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(result.NewFindings) != 1 {
+		t.Fatalf("expected 1 new finding (suppressed filtered), got %d", len(result.NewFindings))
+	}
+
+	if result.NewFindings[0].ID != "normal:rule:f.go:2" {
+		t.Errorf("expected normal finding, got %s", result.NewFindings[0].ID)
+	}
+}
+
+func TestFindingKey_EmptyID(t *testing.T) {
+	t.Parallel()
+
+	f := finding.Finding{
+		Position: finding.Position{File: "main.go"},
+		Rule:     "SA1000",
+		Message:  "unused variable",
+	}
+	key := findingKey(f)
+	expected := "main.go\x00SA1000\x00unused variable"
+	if key != expected {
+		t.Errorf("findingKey with empty ID = %q, want %q", key, expected)
+	}
+}
+
+func TestFindingKey_WithID(t *testing.T) {
+	t.Parallel()
+
+	f := finding.Finding{ID: "unique-id-123", Position: finding.Position{File: "main.go"}}
+	key := findingKey(f)
+	if key != "unique-id-123" {
+		t.Errorf("findingKey with ID = %q, want %q", key, "unique-id-123")
 	}
 }
