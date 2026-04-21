@@ -289,6 +289,64 @@ func TestRangeIntersection_LineOnly_EdgeCases(t *testing.T) {
 	})
 }
 
+func TestRangeLinesEq(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		a    Range
+		b    Range
+		want bool
+	}{
+		{
+			"equal start and end lines",
+			Range{Start: Position{Line: 10}, End: Position{Line: 20}},
+			Range{Start: Position{Line: 10}, End: Position{Line: 20}},
+			true,
+		},
+		{
+			"different start line",
+			Range{Start: Position{Line: 10}, End: Position{Line: 20}},
+			Range{Start: Position{Line: 15}, End: Position{Line: 20}},
+			false,
+		},
+		{
+			"different end line",
+			Range{Start: Position{Line: 10}, End: Position{Line: 20}},
+			Range{Start: Position{Line: 10}, End: Position{Line: 25}},
+			false,
+		},
+		{
+			"different files same lines",
+			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
+			Range{Start: Position{File: "b.go", Line: 10}, End: Position{Line: 20}},
+			true, // files are ignored by RangeLinesEq
+		},
+		{
+			"same start and end line (single line)",
+			Range{Start: Position{Line: 5}, End: Position{Line: 5}},
+			Range{Start: Position{Line: 5}, End: Position{Line: 5}},
+			true,
+		},
+		{
+			"zero lines",
+			Range{Start: Position{Line: 0}, End: Position{Line: 0}},
+			Range{Start: Position{Line: 0}, End: Position{Line: 0}},
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := RangeLinesEq(tt.a, tt.b); got != tt.want {
+				t.Errorf("RangeLinesEq() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRangeHasLineRange(t *testing.T) {
 	t.Parallel()
 
