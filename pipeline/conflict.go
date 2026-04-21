@@ -1,7 +1,7 @@
 package pipeline
 
 import (
-	"sort"
+	"slices"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -75,8 +75,8 @@ func (c *ConflictDetector) detectConflictsInFile(
 	// Sort fixes by start position
 	sorted := make([]finding.Finding, len(fixes))
 	copy(sorted, fixes)
-	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i].Position.Compare(sorted[j].Position) < 0
+	slices.SortFunc(sorted, func(a, b finding.Finding) int {
+		return a.Position.Compare(b.Position)
 	})
 
 	var (

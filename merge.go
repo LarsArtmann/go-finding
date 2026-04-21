@@ -2,7 +2,7 @@ package finding
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 )
 
 // Merge correlation constants.
@@ -172,7 +172,7 @@ func Correlate(findings []Finding) []Correlation {
 		files = append(files, f)
 	}
 
-	sort.Strings(files)
+	slices.Sort(files)
 
 	for _, file := range files {
 		fileFindings := byFile[file]
@@ -180,8 +180,8 @@ func Correlate(findings []Finding) []Correlation {
 			continue
 		}
 
-		sort.Slice(fileFindings, func(i, j int) bool {
-			return fileFindings[i].Position.Line < fileFindings[j].Position.Line
+		slices.SortFunc(fileFindings, func(a, b Finding) int {
+			return a.Position.Line - b.Position.Line
 		})
 
 		for i, f1 := range fileFindings {

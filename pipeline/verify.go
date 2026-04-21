@@ -3,7 +3,8 @@ package pipeline
 import (
 	"context"
 	"fmt"
-	"sort"
+	"cmp"
+	"slices"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -76,7 +77,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 		}
 	}
 
-	sort.Slice(fixed, func(i, j int) bool { return fixed[i].ID < fixed[j].ID })
+	slices.SortFunc(fixed, func(a, b finding.Finding) int { return cmp.Compare(a.ID, b.ID) })
 
 	var newFindings []finding.Finding
 
@@ -86,7 +87,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 		}
 	}
 
-	sort.Slice(newFindings, func(i, j int) bool { return newFindings[i].ID < newFindings[j].ID })
+	slices.SortFunc(newFindings, func(a, b finding.Finding) int { return cmp.Compare(a.ID, b.ID) })
 
 	var remaining []finding.Finding
 

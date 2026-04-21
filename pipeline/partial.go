@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
+	"slices"
 	"sync"
 	"time"
 
@@ -144,7 +144,7 @@ func FormatPartialErrors(errors map[string]error) error {
 		names = append(names, name)
 	}
 
-	sort.Strings(names)
+	slices.Sort(names)
 
 	msgs := make([]string, 0, len(errors))
 	for _, name := range names {
