@@ -83,7 +83,6 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 
 		cat := staticcheckCategory(entry.Code)
 
-		//nolint:exhaustruct
 		findings = append(findings, finding.Finding{ //nolint:exhaustruct
 			ID:          finding.GenerateID("staticcheck", entry.Code, pos),
 			Rule:        entry.Code,

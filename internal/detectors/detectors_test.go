@@ -183,7 +183,7 @@ func TestParseStaticcheckJSON(t *testing.T) {
 
 	// Second finding: S1001 = style category, error severity
 	f2 := findings[1]
-	if f2.Rule != "S1001" { //nolint:goconst // test fixture
+	if f2.Rule != "S1001" {
 		t.Errorf("Rule = %q, want %q", f2.Rule, "S1001")
 	}
 	{
@@ -207,18 +207,45 @@ func TestParseStaticcheckJSON_Empty(t *testing.T) {
 	}
 }
 
-func TestParseStaticcheckJSON_InvalidLine(t *testing.T) {
+func TestParseStaticcheckJSON_LineSkipping(t *testing.T) {
 	t.Parallel()
 
-	input := "not json at all\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}"
-
-	findings := parseStaticcheckJSON([]byte(input), "")
-	if len(findings) != 1 {
-		t.Fatalf("expected 1 finding (skip invalid line), got %d", len(findings))
+	tests := []struct {
+		name        string
+		input       string
+		wantLen     int
+		wantRule    string
+		description string
+	}{
+		{
+			name:        "invalid line skipped",
+			input:       "not json at all\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}",
+			wantLen:     1,
+			wantRule:    "S1001",
+			description: "skip invalid line",
+		},
+		{
+			name:        "whitespace lines skipped",
+			input:       "\n  \n\t\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}\n\n",
+			wantLen:     1,
+			wantRule:    "S1001",
+			description: "skip whitespace",
+		},
 	}
 
-	if findings[0].Rule != "S1001" {
-		t.Errorf("Rule = %q, want %q", findings[0].Rule, "S1001")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			findings := parseStaticcheckJSON([]byte(tt.input), "")
+			if len(findings) != tt.wantLen {
+				t.Fatalf("expected %d findings, got %d", tt.wantLen, len(findings))
+			}
+
+			if findings[0].Rule != tt.wantRule {
+				t.Errorf("Rule = %q, want %q", findings[0].Rule, tt.wantRule)
+			}
+		})
 	}
 }
 
@@ -341,19 +368,5 @@ func TestParseStaticcheckJSON_AbsolutePath(t *testing.T) {
 
 	if findings[0].Position.File != "/abs/path/main.go" {
 		t.Errorf("File = %q, want %q", findings[0].Position.File, "/abs/path/main.go")
-	}
-}
-
-func TestParseStaticcheckJSON_WhitespaceLines(t *testing.T) {
-	t.Parallel()
-
-	input := "\n  \n\t\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}\n\n"
-	findings := parseStaticcheckJSON([]byte(input), "")
-	if len(findings) != 1 {
-		t.Fatalf("expected 1 finding (skip whitespace), got %d", len(findings))
-	}
-
-	if findings[0].Rule != "S1001" {
-		t.Errorf("Rule = %q, want %q", findings[0].Rule, "S1001")
 	}
 }

@@ -27,7 +27,6 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 	if len(reports) == 1 {
 		r := reports[0]
 
-	//nolint:exhaustruct
 		result := &Report{ //nolint:exhaustruct
 			Tool:     r.Tool,
 			Findings: cloneFindings(r.Findings),

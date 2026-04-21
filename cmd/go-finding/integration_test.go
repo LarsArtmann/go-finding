@@ -13,6 +13,21 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+func runWithArgs(t *testing.T, args ...string) int {
+	t.Helper()
+	savedCommandLine := flag.CommandLine
+	savedArgs := os.Args
+	t.Cleanup(func() {
+		flag.CommandLine = savedCommandLine
+		os.Args = savedArgs
+	})
+
+	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
+	os.Args = append([]string{"go-finding"}, args...)
+
+	return run()
+}
+
 func TestLoadConfig_YAML(t *testing.T) {
 	t.Parallel()
 
@@ -511,17 +526,8 @@ func TestOutputResults_SARIFContainsResults(t *testing.T) {
 
 func TestRun_BadSeverity(t *testing.T) {
 	t.Parallel()
-	savedCommandLine := flag.CommandLine
-	savedArgs := os.Args
-	t.Cleanup(func() {
-		flag.CommandLine = savedCommandLine
-		os.Args = savedArgs
-	})
 
-	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
-	os.Args = []string{"go-finding", "-severity", "bogus"}
-
-	got := run()
+	got := runWithArgs(t, "-severity", "bogus")
 	if got != 1 {
 		t.Errorf("run() with bad severity = %d, want 1", got)
 	}
@@ -529,17 +535,8 @@ func TestRun_BadSeverity(t *testing.T) {
 
 func TestRun_MissingConfig(t *testing.T) {
 	t.Parallel()
-	savedCommandLine := flag.CommandLine
-	savedArgs := os.Args
-	t.Cleanup(func() {
-		flag.CommandLine = savedCommandLine
-		os.Args = savedArgs
-	})
 
-	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
-	os.Args = []string{"go-finding", "-config", "/nonexistent/config.yaml"}
-
-	got := run()
+	got := runWithArgs(t, "-config", "/nonexistent/config.yaml")
 	if got != 1 {
 		t.Errorf("run() with missing config = %d, want 1", got)
 	}

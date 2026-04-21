@@ -1147,24 +1147,7 @@ func TestApplyTriage_ConflictingFixes(t *testing.T) {
 		t.Fatalf("create test file: %v", err)
 	}
 
-	fixes := []finding.Finding{
-		{
-			ID:          "fix1",
-			BeforeCode:  "old()",
-			AfterCode:   "new()",
-			Position:    finding.Position{File: "fixme.go", Line: 4, Column: 2},
-			Range:       finding.NewRangePtr("fixme.go", 4, 2, 4, 6),
-			FixStrategy: finding.FixStrategyDirect,
-		},
-		{
-			ID:          "fix2",
-			BeforeCode:  "old()",
-			AfterCode:   "other()",
-			Position:    finding.Position{File: "fixme.go", Line: 4, Column: 2},
-			Range:       finding.NewRangePtr("fixme.go", 4, 2, 4, 6),
-			FixStrategy: finding.FixStrategyDirect,
-		},
-	}
+	fixes := makeConflictingFixes()
 
 	var conflictFindings []finding.Finding
 	var appliedFindings []finding.Finding
@@ -1218,16 +1201,7 @@ func TestApplyTriage_OnFixCallback(t *testing.T) {
 		t.Fatalf("create test file: %v", err)
 	}
 
-	fix := finding.Finding{
-		ID:          "fix1",
-		Rule:        "r1",
-		ToolName:    "tool",
-		Message:     "replace old with new",
-		BeforeCode:  "old()",
-		AfterCode:   "new()",
-		Position:    finding.Position{File: "fixme.go", Line: 4},
-		FixStrategy: finding.FixStrategyDirect,
-	}
+	fix := makeFixFinding("fix1", "old()", "new()", "fixme.go", 4)
 
 	var appliedIDs []string
 
@@ -1292,24 +1266,7 @@ func TestApplyTriage_AllConflicting(t *testing.T) {
 		t.Fatalf("create test file: %v", err)
 	}
 
-	fixes := []finding.Finding{
-		{
-			ID:          "fix1",
-			BeforeCode:  "old()",
-			AfterCode:   "new()",
-			Position:    finding.Position{File: "fixme.go", Line: 4, Column: 2},
-			Range:       finding.NewRangePtr("fixme.go", 4, 2, 4, 6),
-			FixStrategy: finding.FixStrategyDirect,
-		},
-		{
-			ID:          "fix2",
-			BeforeCode:  "old()",
-			AfterCode:   "other()",
-			Position:    finding.Position{File: "fixme.go", Line: 4, Column: 2},
-			Range:       finding.NewRangePtr("fixme.go", 4, 2, 4, 6),
-			FixStrategy: finding.FixStrategyDirect,
-		},
-	}
+	fixes := makeConflictingFixes()
 
 	p := &Pipeline{config: DefaultConfig(), rootDir: tmpDir}
 	iter := &Iteration{Number: 1}
@@ -1339,16 +1296,7 @@ func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
 		t.Fatalf("create test file: %v", err)
 	}
 
-	fix := finding.Finding{
-		ID:          "fix1",
-		Rule:        "r1",
-		ToolName:    "tool",
-		Message:     "replace old with new",
-		BeforeCode:  "old()",
-		AfterCode:   "new()",
-		Position:    finding.Position{File: "fixme.go", Line: 4},
-		FixStrategy: finding.FixStrategyDirect,
-	}
+	fix := makeFixFinding("fix1", "old()", "new()", "fixme.go", 4)
 
 	callCount := 0
 	det := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -1360,7 +1308,8 @@ func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
 		return nil, nil
 	})
 
-	p, err := New(Config{MaxIterations: 5, ParallelDetectors: false}, tmpDir, NamedDetectorFunc("tool", det))
+	cfg := Config{MaxIterations: 5, ParallelDetectors: false}
+	p, err := New(cfg, tmpDir, NamedDetectorFunc("tool", det))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

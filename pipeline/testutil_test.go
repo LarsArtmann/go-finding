@@ -187,3 +187,34 @@ func testBackupRestore(t *testing.T, applier *FixApplier, original, modified str
 		t.Errorf("restored content mismatch:\ngot:  %q\nwant: %q", string(data), original)
 	}
 }
+
+func makeFixFinding(id, before, after, file string, line int) finding.Finding {
+	return finding.Finding{
+		ID:          id,
+		Rule:        "r1",
+		ToolName:    "tool",
+		Message:     "replace " + before + " with " + after,
+		BeforeCode:  before,
+		AfterCode:   after,
+		Position:    finding.Position{File: file, Line: line},
+		FixStrategy: finding.FixStrategyDirect,
+	}
+}
+
+func makeFixFindingWithRange(id, before, after, file string, line, col int) finding.Finding {
+	return finding.Finding{
+		ID:          id,
+		BeforeCode:  before,
+		AfterCode:   after,
+		Position:    finding.Position{File: file, Line: line, Column: col},
+		Range:       finding.NewRangePtr(file, line, col, line, col+len(before)),
+		FixStrategy: finding.FixStrategyDirect,
+	}
+}
+
+func makeConflictingFixes() []finding.Finding {
+	return []finding.Finding{
+		makeFixFindingWithRange("fix1", "old()", "new()", "fixme.go", 4, 2),
+		makeFixFindingWithRange("fix2", "old()", "other()", "fixme.go", 4, 2),
+	}
+}

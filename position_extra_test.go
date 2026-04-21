@@ -48,7 +48,7 @@ func TestRangeLength(t *testing.T) {
 		{"missing end offset", Range{Start: Position{Offset: 10}, End: Position{Offset: -1}}, 0},
 		{"valid range", Range{Start: Position{Offset: 50}, End: Position{Offset: 100}}, 50},
 		{"zero start offset", Range{Start: Position{Offset: 0}, End: Position{Offset: 100}}, 100},
-		{"negative length (end < start)", Range{Start: Position{Offset: 100}, End: Position{Offset: 50}}, 0},
+		{"end lt start", Range{Start: Position{Offset: 100}, End: Position{Offset: 50}}, 0},
 		{"same start and end", Range{Start: Position{Offset: 50}, End: Position{Offset: 50}}, 0},
 	}
 

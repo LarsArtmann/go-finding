@@ -55,7 +55,7 @@ type LSPLocation struct {
 func (f Finding) ToLSP() LSPDiagnostic {
 	//nolint:exhaustruct
 	diag := LSPDiagnostic{
-	//nolint:exhaustruct
+		//nolint:exhaustruct
 		Range: LSPRange{
 			Start: LSPPosition{
 				Line:      toZeroBased(f.Position.Line),

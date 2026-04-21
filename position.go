@@ -322,7 +322,7 @@ func (r Range) intersectionByOffset(other Range) *Range {
 
 	return &Range{
 		Start: Position{File: r.Start.File, Offset: startOffset}, //nolint:exhaustruct
-		End:   Position{File: r.Start.File, Offset: endOffset}, //nolint:exhaustruct
+		End:   Position{File: r.Start.File, Offset: endOffset},   //nolint:exhaustruct
 	}
 }
 
@@ -382,7 +382,7 @@ func Pos(file string, line, column int) Position {
 func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
 	return Range{
 		Start: Position{File: file, Line: startLine, Column: startCol}, //nolint:exhaustruct
-		End:   Position{File: file, Line: endLine, Column: endCol}, //nolint:exhaustruct
+		End:   Position{File: file, Line: endLine, Column: endCol},     //nolint:exhaustruct
 	}
 }
 

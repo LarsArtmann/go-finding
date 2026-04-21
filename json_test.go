@@ -139,21 +139,27 @@ func TestReportFromJSON(t *testing.T) {
 		}
 	})
 
-	t.Run("invalid JSON returns error", func(t *testing.T) {
+	t.Run("invalid input returns error", func(t *testing.T) {
 		t.Parallel()
 
-		_, _, err := ReportFromJSON([]byte("{bad"))
-		if err == nil {
-			t.Error("expected error for invalid JSON")
+		tests := []struct {
+			name  string
+			input string
+			msg   string
+		}{
+			{"invalid JSON", "{bad", "error: invalid JSON"},
+			{"missing tool name", `{"tool":{"name":""},"findings":[]}`, "error: empty tool"},
 		}
-	})
 
-	t.Run("missing tool name returns error", func(t *testing.T) {
-		t.Parallel()
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
 
-		_, _, err := ReportFromJSON([]byte(`{"tool":{"name":""},"findings":[]}`))
-		if err == nil {
-			t.Error("expected validation error for missing tool name")
+				_, _, err := ReportFromJSON([]byte(tt.input))
+				if err == nil {
+					t.Error(tt.msg)
+				}
+			})
 		}
 	})
 
