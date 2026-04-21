@@ -261,6 +261,24 @@ func assertRelatedPosition(t *testing.T, r RelatedRef, file string, line int) {
 	}
 }
 
+// assertSeverityBool asserts a boolean severity comparison.
+func assertSeverityBool(t *testing.T, got bool, a, b Severity, label string) {
+	t.Helper()
+
+	if !got {
+		t.Errorf("Severity(%q).%s(%q) = false, want true (%s)", a, label, b, label)
+	}
+}
+
+// assertSeverityInt asserts an integer severity comparison result.
+func assertSeverityInt(t *testing.T, got, want int, a, b Severity, label string) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("Severity(%q).%s(%q) = %d, want %d (%s)", a, label, b, got, want, label)
+	}
+}
+
 // sevFromInt maps an integer to a Severity (0=info, 1=warning, 2=error, 3=critical).
 func sevFromInt(i int) Severity {
 	sevs := []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}

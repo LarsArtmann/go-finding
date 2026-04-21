@@ -133,9 +133,7 @@ func TestVerifier_Verify(t *testing.T) {
 func TestVerifier_Verify_DetectorError(t *testing.T) {
 	t.Parallel()
 
-	detector := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
-		return nil, errors.New("detector failed")
-	})
+	detector := makeErrorDetector("detector failed")
 
 	v := NewVerifier([]Detector{detector})
 	_, err := v.Verify(context.Background(), nil)

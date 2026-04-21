@@ -170,26 +170,26 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 		{
 			name: "valid",
 			cfg: pipelineConfigFile{
+				Detectors:     detectorSpecs("govet"),
 				MaxIterations: 5,
 				Timeout:       "10m",
-				Detectors:     detectorSpecs("govet"),
 			},
 			wantErr: false,
 		},
 		{
 			name: "negative iterations",
 			cfg: pipelineConfigFile{
-				MaxIterations: -1,
 				Detectors:     detectorSpecs("govet"),
+				MaxIterations: -1,
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid timeout",
 			cfg: pipelineConfigFile{
+				Detectors:     detectorSpecs("govet"),
 				MaxIterations: 1,
 				Timeout:       "not-a-duration",
-				Detectors:     detectorSpecs("govet"),
 			},
 			wantErr: true,
 		},

@@ -95,9 +95,7 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 
 func TestRetryDetector_ExhaustedRetries(t *testing.T) {
 	t.Parallel()
-	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
-		return nil, errors.New("permanent")
-	})
+	inner := makeErrorDetector("permanent")
 
 	rd := NewRetryDetector(inner, RetryConfig{MaxRetries: 2, BaseDelay: time.Millisecond})
 

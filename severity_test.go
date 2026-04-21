@@ -66,7 +66,8 @@ func TestSeverity_GreaterThan(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if got := tt.a.GreaterThan(tt.b); got != tt.want {
+		got := tt.a.GreaterThan(tt.b)
+		if got != tt.want {
 			t.Errorf(
 				"Severity(%q).GreaterThan(%q) = %v, want %v (%s)",
 				tt.a,
@@ -144,7 +145,8 @@ func TestSeverity_Compare(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if got := tt.a.Compare(tt.b); got != tt.want {
+		got := tt.a.Compare(tt.b)
+		if got != tt.want {
 			t.Errorf("Compare(%q, %q) = %d, want %d (%s)", tt.a, tt.b, got, tt.want, tt.label)
 		}
 	}

@@ -214,6 +214,12 @@ func makeFixFinding(id, before, after, file string, line int) finding.Finding {
 	}
 }
 
+func makeErrorDetector(errMsg string) Detector {
+	return DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
+		return nil, errors.New(errMsg)
+	})
+}
+
 func assertFindingErrorIO(t *testing.T, fe *finding.FindingError, file string) {
 	t.Helper()
 
