@@ -262,12 +262,7 @@ func TestSortByPosition(t *testing.T) {
 	SortByPosition(findings)
 
 	want := []string{"a0", "a1", "a2", "b"}
-
-	for i, f := range findings {
-		if f.ID != want[i] {
-			t.Errorf("findings[%d].ID = %q, want %q", i, f.ID, want[i])
-		}
-	}
+	AssertFindingsIDs(t, findings, want)
 }
 
 func TestSortBySeverity(t *testing.T) {
@@ -283,10 +278,5 @@ func TestSortBySeverity(t *testing.T) {
 	SortBySeverity(findings)
 
 	want := []string{"critical", "error", "warning", "info"}
-
-	for i, f := range findings {
-		if f.ID != want[i] {
-			t.Errorf("findings[%d].ID = %q, want %q", i, f.ID, want[i])
-		}
-	}
+	AssertFindingsIDs(t, findings, want)
 }

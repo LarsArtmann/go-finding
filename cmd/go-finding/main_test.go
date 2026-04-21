@@ -19,9 +19,7 @@ func TestOutputResults_JSON(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	if err := outputResults(&buf, report, "json"); err != nil {
-		t.Fatalf("outputResults(json) error: %v", err)
-	}
+	requireOutputResults(t, &buf, report, "json")
 
 	var parsed map[string]any
 	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
@@ -41,9 +39,7 @@ func TestOutputResults_SARIF(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	if err := outputResults(&buf, report, "sarif"); err != nil {
-		t.Fatalf("outputResults(sarif) error: %v", err)
-	}
+	requireOutputResults(t, &buf, report, "sarif")
 
 	var parsed map[string]any
 	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
@@ -63,9 +59,7 @@ func TestOutputResults_Text(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	if err := outputResults(&buf, report, "text"); err != nil {
-		t.Fatalf("outputResults(text) error: %v", err)
-	}
+	requireOutputResults(t, &buf, report, "text")
 
 	out := buf.String()
 	if !strings.Contains(out, "nilcheck") {

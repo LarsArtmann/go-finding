@@ -16,6 +16,8 @@ func findingKey(f finding.Finding) string {
 	return f.Position.File + "\x00" + f.Rule + "\x00" + f.Message
 }
 
+var byFindingID = func(a, b finding.Finding) int { return cmp.Compare(a.ID, b.ID) }
+
 // VerifyResult holds the outcome of verifying fixes by re-running detectors.
 type VerifyResult struct {
 	Fixed    []finding.Finding // Findings that were resolved
@@ -77,7 +79,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 		}
 	}
 
-	slices.SortFunc(fixed, func(a, b finding.Finding) int { return cmp.Compare(a.ID, b.ID) })
+	slices.SortFunc(fixed, byFindingID)
 
 	var newFindings []finding.Finding
 
@@ -87,7 +89,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 		}
 	}
 
-	slices.SortFunc(newFindings, func(a, b finding.Finding) int { return cmp.Compare(a.ID, b.ID) })
+	slices.SortFunc(newFindings, byFindingID)
 
 	var remaining []finding.Finding
 

@@ -82,13 +82,7 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 		return len(merged.Findings) == len(findings)
 	}
 
-	err := quick.Check(property, &quick.Config{
-		MaxCount: 1000,
-		Rand:     rand.New(rand.NewSource(42)),
-	})
-	if err != nil {
-		t.Error(err)
-	}
+	checkProperty(t, property)
 }
 
 func TestProperty_IDRoundTrip(t *testing.T) {

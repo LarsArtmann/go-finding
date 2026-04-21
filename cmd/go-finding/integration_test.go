@@ -28,6 +28,20 @@ func runWithArgs(t *testing.T, args ...string) int {
 	return run()
 }
 
+func writeConfig(t *testing.T, path string, content []byte) {
+	t.Helper()
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		t.Fatalf("write config: %v", err)
+	}
+}
+
+func requireOutputResults(t *testing.T, w *bytes.Buffer, report *finding.Report, format string) {
+	t.Helper()
+	if err := outputResults(w, report, format); err != nil {
+		t.Fatalf("outputResults error: %v", err)
+	}
+}
+
 func TestLoadConfig_YAML(t *testing.T) {
 	t.Parallel()
 
@@ -42,9 +56,7 @@ timeout: "5m"
 detectors:
   - name: govet
 `
-	if err := os.WriteFile(cfgPath, []byte(content), 0o644); err != nil {
-		t.Fatalf("write config: %v", err)
-	}
+	writeConfig(t, cfgPath, []byte(content))
 
 	cfg, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
 	if err != nil {
@@ -71,9 +83,7 @@ func TestLoadConfig_JSON(t *testing.T) {
 	cfgPath := filepath.Join(dir, "config.json")
 
 	content := `{"maxIterations": 7, "parallelDetectors": false, "timeout": "30s", "detectors": [{"name": "govet"}]}`
-	if err := os.WriteFile(cfgPath, []byte(content), 0o644); err != nil {
-		t.Fatalf("write config: %v", err)
-	}
+	writeConfig(t, cfgPath, []byte(content))
 
 	cfg, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
 	if err != nil {
@@ -133,9 +143,7 @@ func expectConfigError(t *testing.T, ext, content string) {
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "bad."+ext)
 
-	if err := os.WriteFile(cfgPath, []byte(content), 0o644); err != nil {
-		t.Fatalf("write config: %v", err)
-	}
+	writeConfig(t, cfgPath, []byte(content))
 
 	_, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
 	if err == nil {
@@ -355,9 +363,7 @@ timeout: "30s"
 detectors:
   - name: govet
 `
-	if err := os.WriteFile(cfgPath, []byte(content), 0o644); err != nil {
-		t.Fatalf("write config: %v", err)
-	}
+	writeConfig(t, cfgPath, []byte(content))
 
 	// Create a simple Go file for the detector to analyze.
 	goFile := filepath.Join(dir, "main.go")
@@ -409,9 +415,7 @@ maxIterations: 1
 detectors:
   - name: nonexistent-detector
 `
-	if err := os.WriteFile(cfgPath, []byte(content), 0o644); err != nil {
-		t.Fatalf("write config: %v", err)
-	}
+	writeConfig(t, cfgPath, []byte(content))
 
 	_, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
 	if err == nil {
@@ -464,9 +468,7 @@ func TestOutputResults_JSONContainsFindings(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	if err := outputResults(&buf, report, "json"); err != nil {
-		t.Fatalf("outputResults error: %v", err)
-	}
+	requireOutputResults(t, &buf, report, "json")
 
 	var parsed struct {
 		Findings []struct {
@@ -494,9 +496,7 @@ func TestOutputResults_SARIFContainsResults(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	if err := outputResults(&buf, report, "sarif"); err != nil {
-		t.Fatalf("outputResults error: %v", err)
-	}
+	requireOutputResults(t, &buf, report, "sarif")
 
 	var parsed struct {
 		Version string `json:"version"`
@@ -552,9 +552,7 @@ maxIterations: 1
 timeout: "30s"
 detectors: []
 `
-	if err := os.WriteFile(cfgPath, []byte(content), 0o644); err != nil {
-		t.Fatalf("write config: %v", err)
-	}
+	writeConfig(t, cfgPath, []byte(content))
 
 	savedCommandLine := flag.CommandLine
 	savedArgs := os.Args

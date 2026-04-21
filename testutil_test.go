@@ -123,6 +123,21 @@ func AssertEmpty[T any](t *testing.T, got []T, msg string) {
 	}
 }
 
+// AssertFindingsIDs asserts findings have expected IDs in order.
+func AssertFindingsIDs(t *testing.T, findings []Finding, want []string) {
+	t.Helper()
+
+	if len(findings) != len(want) {
+		t.Errorf("findings len = %d, want %d", len(findings), len(want))
+		return
+	}
+	for i, f := range findings {
+		if f.ID != want[i] {
+			t.Errorf("findings[%d].ID = %q, want %q", i, f.ID, want[i])
+		}
+	}
+}
+
 // RunCompareTests runs a table-driven comparison test for types with Compare methods.
 func RunCompareTests[T any](t *testing.T, tests []struct {
 	name string

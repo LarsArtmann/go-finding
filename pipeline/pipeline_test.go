@@ -658,9 +658,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 	testFile := filepath.Join(tempDir, "test.go")
 
 	content := "package main\n\nfunc old() {\n\treturn\n}\n\nfunc main() {}\n"
-	if wErr := writeFile(testFile, []byte(content), 0o644); wErr != nil {
-		t.Fatalf("create test file: %v", wErr)
-	}
+	writeTestFile(t, testFile, []byte(content))
 
 	// Replace lines 3-5 (func old) with new content.
 	fixes := []finding.Finding{
@@ -701,9 +699,7 @@ func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
 	testFile := filepath.Join(tempDir, "test.go")
 
 	content := "package main\n\nfunc old() {\n\treturn\n}\n\nfunc main() {}\n"
-	if wErr := writeFile(testFile, []byte(content), 0o644); wErr != nil {
-		t.Fatalf("create test file: %v", wErr)
-	}
+	writeTestFile(t, testFile, []byte(content))
 
 	// Replace lines 3-5 with new content using only Range + AfterCode (no BeforeCode).
 	fixes := []finding.Finding{
@@ -853,9 +849,7 @@ func TestApplyDirectFixes(t *testing.T) {
 	testFile := filepath.Join(tempDir, "fixme.go")
 
 	original := "package main\n\nfunc main() {\n\told()\n}\n" //nolint:goconst // test fixture
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("create test file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(original))
 
 	fixes := directFixFinding()
 

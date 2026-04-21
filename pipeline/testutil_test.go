@@ -129,6 +129,13 @@ func writeFile(path string, data []byte, perm uint32) error {
 	return err
 }
 
+func writeTestFile(t *testing.T, path string, data []byte) {
+	t.Helper()
+	if err := writeFile(path, data, 0o644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+}
+
 func readFile(path string) ([]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
