@@ -211,73 +211,73 @@ func TestToLSP(t *testing.T) { //nolint:gocognit,funlen // comprehensive table-d
 	t.Parallel()
 
 	t.Run("with range", func(t *testing.T) {
+		t.Run("with start/end positions", func(t *testing.T) {
+			t.Parallel()
 
-	t.Run("zero-based conversion with zero line", func(t *testing.T) {
-		t.Parallel()
+			f := Finding{
+				Rule:     "SA1000",
+				ToolName: "staticcheck",
+				Message:  "invalid printf format",
+				Severity: SeverityWarning,
+				Position: Position{File: "main.go", Line: 10, Column: 5},
+				Range:    NewRangePtr("main.go", 10, 5, 10, 20),
+			}
 
-		f := Finding{
-			Rule:     "r1",
-			ToolName: "tool",
-			Message:  "msg",
-			Severity: SeverityWarning,
-			Position: Position{File: "a.go", Line: 0, Column: 0},
-		}
+			diag := f.ToLSP()
 
-		diag := f.ToLSP()
-		if diag.Range.Start.Line != 0 {
-			t.Errorf("ToLSP with Line=0 should produce Start.Line=0, got %d", diag.Range.Start.Line)
-		}
+			if got, want := diag.Severity, LSPSeverityWarning; got != want {
+				t.Errorf("ToLSP Severity = %d, want %d", got, want)
+			}
 
-		if diag.Range.Start.Character != 0 {
-			t.Errorf("ToLSP with Column=0 should produce Start.Character=0, got %d", diag.Range.Start.Character)
-		}
-	})
+			if got, want := diag.Code, f.Rule; got != want {
+				t.Errorf("ToLSP Code = %q, want %q", got, want)
+			}
 
+			if got, want := diag.Source, "staticcheck"; got != want {
+				t.Errorf("ToLSP Source = %q, want %q", got, want)
+			}
 
-		t.Parallel()
+			if got, want := diag.Message, "invalid printf format"; got != want {
+				t.Errorf("ToLSP Message = %q, want %q", got, want)
+			}
 
-		f := Finding{
-			Rule:     "SA1000",
-			ToolName: "staticcheck",
-			Message:  "invalid printf format",
-			Severity: SeverityWarning,
-			Position: Position{File: "main.go", Line: 10, Column: 5},
-			Range:    NewRangePtr("main.go", 10, 5, 10, 20),
-		}
+			if got, want := diag.Range.Start.Line, 9; got != want {
+				t.Errorf("ToLSP Start.Line = %d, want %d (1-based→0-based)", got, want)
+			}
 
-		diag := f.ToLSP()
+			if got, want := diag.Range.Start.Character, 4; got != want {
+				t.Errorf("ToLSP Start.Character = %d, want %d (1-based→0-based)", got, want)
+			}
 
-		if got, want := diag.Severity, LSPSeverityWarning; got != want {
-			t.Errorf("ToLSP Severity = %d, want %d", got, want)
-		}
+			if got, want := diag.Range.End.Line, 9; got != want {
+				t.Errorf("ToLSP End.Line = %d, want %d", got, want)
+			}
 
-		if got, want := diag.Code, f.Rule; got != want {
-			t.Errorf("ToLSP Code = %q, want %q", got, want)
-		}
+			if got, want := diag.Range.End.Character, 19; got != want {
+				t.Errorf("ToLSP End.Character = %d, want %d", got, want)
+			}
+		})
 
-		if got, want := diag.Source, "staticcheck"; got != want {
-			t.Errorf("ToLSP Source = %q, want %q", got, want)
-		}
+		t.Run("zero-based conversion with zero line", func(t *testing.T) {
+			t.Parallel()
 
-		if got, want := diag.Message, "invalid printf format"; got != want {
-			t.Errorf("ToLSP Message = %q, want %q", got, want)
-		}
+			f := Finding{
+				Rule:     "r1",
+				ToolName: "tool",
+				Message:  "msg",
+				Severity: SeverityWarning,
+				Position: Position{File: "a.go", Line: 0, Column: 0},
+			}
 
-		if got, want := diag.Range.Start.Line, 9; got != want {
-			t.Errorf("ToLSP Start.Line = %d, want %d (1-based→0-based)", got, want)
-		}
+			diag := f.ToLSP()
+			if diag.Range.Start.Line != 0 {
+				t.Errorf("ToLSP Line=0 → Start.Line=0, got %d", diag.Range.Start.Line)
+			}
 
-		if got, want := diag.Range.Start.Character, 4; got != want {
-			t.Errorf("ToLSP Start.Character = %d, want %d (1-based→0-based)", got, want)
-		}
-
-		if got, want := diag.Range.End.Line, 9; got != want {
-			t.Errorf("ToLSP End.Line = %d, want %d", got, want)
-		}
-
-		if got, want := diag.Range.End.Character, 19; got != want {
-			t.Errorf("ToLSP End.Character = %d, want %d", got, want)
-		}
+			if diag.Range.Start.Character != 0 {
+				t.Errorf("ToLSP Column=0 → Start.Character=0, got %d", diag.Range.Start.Character)
+			}
+		})
 	})
 
 	t.Run("without range uses start position for end", func(t *testing.T) {
@@ -372,8 +372,9 @@ func TestToLSP(t *testing.T) { //nolint:gocognit,funlen // comprehensive table-d
 			t.Errorf("round-trip Start.Line = %d, want %d", got, want)
 		}
 
-		if got, want := roundTrip.Range.Start.Character, orig.Range.Start.Character; got != want {
-			t.Errorf("round-trip Start.Character = %d, want %d", got, want)
+		if roundTrip.Range.Start.Character != orig.Range.Start.Character {
+			t.Errorf("round-trip Start.Character = %d, want %d",
+				roundTrip.Range.Start.Character, orig.Range.Start.Character)
 		}
 	})
 }

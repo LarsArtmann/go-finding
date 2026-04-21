@@ -145,8 +145,8 @@ func TestVerifier_Verify_SuppressedFindingsFiltered(t *testing.T) {
 	t.Parallel()
 
 	suppressed := finding.Finding{
-		ID:         "suppressed:rule:f.go:1",
-		Message:    "suppressed issue",
+		ID:          "suppressed:rule:f.go:1",
+		Message:     "suppressed issue",
 		Suppression: &finding.Suppression{Kind: "manual", Reason: "won't fix"},
 	}
 	normal := makeFinding("normal:rule:f.go:2", "normal issue")

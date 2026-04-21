@@ -209,11 +209,11 @@ func TestFatalf(t *testing.T) {
 
 	got := fatalf("testing", errors.New("test error"))
 
-	w.Close()
+	_ = w.Close()
 	os.Stderr = old
 
 	var buf bytes.Buffer
-	io.Copy(&buf, r)
+	_, _ = io.Copy(&buf, r)
 
 	if got != 1 {
 		t.Errorf("fatalf returned %d, want 1", got)
@@ -229,7 +229,7 @@ type failingWriter struct {
 	err error
 }
 
-func (w *failingWriter) Write(_ []byte) (n int, err error) {
+func (w *failingWriter) Write(_ []byte) (int, error) {
 	return 0, w.err
 }
 

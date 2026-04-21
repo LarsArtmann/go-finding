@@ -1,9 +1,9 @@
 package pipeline
 
 import (
+	"cmp"
 	"context"
 	"fmt"
-	"cmp"
 	"slices"
 
 	"github.com/larsartmann/go-finding"
