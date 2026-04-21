@@ -10,13 +10,13 @@
 
 ### Sessions 15–17 completed work
 
-| # | Work | Commit(s) |
-|---|------|-----------|
-| 1 | Property-based tests with deterministic seed | `e2e14f9` |
-| 2 | Remove stale `examples/` from `.golangci.yml` | `2eb0d4b` |
-| 3 | 15 FixApplier error-path unit tests (511 lines) | `a0c130f` |
-| 4 | CLI error-path tests: `fatalf`, `outputResults` write errors, `outputText` with summary, 4 `run()` integration tests | `9575a0b` |
-| 5 | Detector inner-function tests: cancelled context, govet integration, parse edge cases, `staticcheckCategory('A')` | `6e656d6` |
+| #   | Work                                                                                                                 | Commit(s) |
+| --- | -------------------------------------------------------------------------------------------------------------------- | --------- |
+| 1   | Property-based tests with deterministic seed                                                                         | `e2e14f9` |
+| 2   | Remove stale `examples/` from `.golangci.yml`                                                                        | `2eb0d4b` |
+| 3   | 15 FixApplier error-path unit tests (511 lines)                                                                      | `a0c130f` |
+| 4   | CLI error-path tests: `fatalf`, `outputResults` write errors, `outputText` with summary, 4 `run()` integration tests | `9575a0b` |
+| 5   | Detector inner-function tests: cancelled context, govet integration, parse edge cases, `staticcheckCategory('A')`    | `6e656d6` |
 
 ### Project-wide achievements (all sessions)
 
@@ -38,10 +38,10 @@
 
 ## B) PARTIALLY DONE
 
-| Item | Status | What remains |
-|------|--------|-------------|
-| Deep audit codebase read | Complete | Status report (this file), prioritized plan, execution |
-| Coverage improvement | Ongoing | Several functions below 80% (see Section E) |
+| Item                      | Status           | What remains                                                                                 |
+| ------------------------- | ---------------- | -------------------------------------------------------------------------------------------- |
+| Deep audit codebase read  | Complete         | Status report (this file), prioritized plan, execution                                       |
+| Coverage improvement      | Ongoing          | Several functions below 80% (see Section E)                                                  |
 | SARIF round-trip fidelity | Known limitation | `SeverityCritical` → `SeverityError` on import, `RelatedRef.FindingID` and `BeforeCode` lost |
 
 ---
@@ -114,48 +114,48 @@ Documented as standalone, but it means the correlation feature exists without in
 
 ### High impact, low/medium work
 
-| # | Task | Impact | Work |
-|---|------|--------|------|
-| 1 | Add `applyTriage` tests with `FixStrategyDirect` findings | Critical | Medium |
-| 2 | Fix `Metrics.StageTiming` value receiver bug | High | Low |
-| 3 | Clean stale files: delete `report/`, archive status docs, handle `EXECUTION_PLAN_V2.md` | Medium | Low |
-| 4 | Add `intersectionByOffset` + `HasOffset` tests (0% → high) | Medium | Low |
-| 5 | Add `findingFromSarResult` SARIF import path tests (52.9% → higher) | Medium | Medium |
-| 6 | Add `Severity.LessThan` invalid-input test | Low | Low |
-| 7 | Add `RetryConfig.Validate` edge-case tests | Low | Low |
-| 8 | Add `Verifier.Verify` error-path tests | Low | Low |
-| 9 | Add `Range.Contains` edge-case tests (80% → 100%) | Low | Low |
+| #   | Task                                                                                    | Impact   | Work   |
+| --- | --------------------------------------------------------------------------------------- | -------- | ------ |
+| 1   | Add `applyTriage` tests with `FixStrategyDirect` findings                               | Critical | Medium |
+| 2   | Fix `Metrics.StageTiming` value receiver bug                                            | High     | Low    |
+| 3   | Clean stale files: delete `report/`, archive status docs, handle `EXECUTION_PLAN_V2.md` | Medium   | Low    |
+| 4   | Add `intersectionByOffset` + `HasOffset` tests (0% → high)                              | Medium   | Low    |
+| 5   | Add `findingFromSarResult` SARIF import path tests (52.9% → higher)                     | Medium   | Medium |
+| 6   | Add `Severity.LessThan` invalid-input test                                              | Low      | Low    |
+| 7   | Add `RetryConfig.Validate` edge-case tests                                              | Low      | Low    |
+| 8   | Add `Verifier.Verify` error-path tests                                                  | Low      | Low    |
+| 9   | Add `Range.Contains` edge-case tests (80% → 100%)                                       | Low      | Low    |
 
 ### Medium impact, low work
 
-| # | Task | Impact | Work |
-|---|------|--------|------|
-| 10 | Modernize: `slices.Contains`, `maps.Keys`, `maps.Values` | Medium | Low |
-| 11 | Add `checkColumnRange` + `hasLineRange` tests | Low | Low |
-| 12 | Add `equalTimePtr` both-nil test | Low | Low |
-| 13 | Add `severityToSARIFLevel` edge-case test | Low | Low |
-| 14 | Add LSP `toZeroBased` test for 0 Line case | Low | Low |
-| 15 | Add `cloneFindings` edge-case test | Low | Low |
-| 16 | Add `Finding.Equal` field-mismatch test | Low | Low |
-| 17 | Document SARIF round-trip losses in code comments | Low | Low |
+| #   | Task                                                     | Impact | Work |
+| --- | -------------------------------------------------------- | ------ | ---- |
+| 10  | Modernize: `slices.Contains`, `maps.Keys`, `maps.Values` | Medium | Low  |
+| 11  | Add `checkColumnRange` + `hasLineRange` tests            | Low    | Low  |
+| 12  | Add `equalTimePtr` both-nil test                         | Low    | Low  |
+| 13  | Add `severityToSARIFLevel` edge-case test                | Low    | Low  |
+| 14  | Add LSP `toZeroBased` test for 0 Line case               | Low    | Low  |
+| 15  | Add `cloneFindings` edge-case test                       | Low    | Low  |
+| 16  | Add `Finding.Equal` field-mismatch test                  | Low    | Low  |
+| 17  | Document SARIF round-trip losses in code comments        | Low    | Low  |
 
 ### Medium impact, medium work
 
-| # | Task | Impact | Work |
-|---|------|--------|------|
-| 18 | Wire `Correlate()` as optional pipeline stage | Medium | Medium |
-| 19 | Investigate `FixApplier` persistence across iterations | Medium | Medium |
-| 20 | Add `PrettyJSON` / `LineJSON` error-path tests | Low | Medium |
-| 21 | Improve `setupProfiling` coverage in CLI | Low | Medium |
+| #   | Task                                                   | Impact | Work   |
+| --- | ------------------------------------------------------ | ------ | ------ |
+| 18  | Wire `Correlate()` as optional pipeline stage          | Medium | Medium |
+| 19  | Investigate `FixApplier` persistence across iterations | Medium | Medium |
+| 20  | Add `PrettyJSON` / `LineJSON` error-path tests         | Low    | Medium |
+| 21  | Improve `setupProfiling` coverage in CLI               | Low    | Medium |
 
 ### Low impact, high work
 
-| # | Task | Impact | Work |
-|---|------|--------|------|
-| 22 | Refactor `Finding` into embedded sub-structs (breaking API change) | High | High |
-| 23 | Evaluate `go-sarif` library for SARIF generation | Medium | High |
-| 24 | Add config file support for pipeline | Medium | High |
-| 25 | Add watch mode for pipeline | Low | High |
+| #   | Task                                                               | Impact | Work |
+| --- | ------------------------------------------------------------------ | ------ | ---- |
+| 22  | Refactor `Finding` into embedded sub-structs (breaking API change) | High   | High |
+| 23  | Evaluate `go-sarif` library for SARIF generation                   | Medium | High |
+| 24  | Add config file support for pipeline                               | Medium | High |
+| 25  | Add watch mode for pipeline                                        | Low    | High |
 
 ---
 
