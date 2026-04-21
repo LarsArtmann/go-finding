@@ -25,6 +25,24 @@ func runContainsTests(t *testing.T, tests []containsTest) {
 	}
 }
 
+func rng(file string, startLine, startCol, endLine, endCol int) Range {
+	return NewRange(file, startLine, startCol, endLine, endCol)
+}
+
+func rngOffset(file string, startOffset, endOffset int) Range {
+	return Range{
+		Start: Position{File: file, Offset: startOffset},
+		End:   Position{File: file, Offset: endOffset},
+	}
+}
+
+func rngLine(file string, startLine, endLine int) Range {
+	return Range{
+		Start: Position{File: file, Line: startLine},
+		End:   Position{Line: endLine},
+	}
+}
+
 func TestRangeLineCount(t *testing.T) {
 	t.Parallel()
 
@@ -93,7 +111,7 @@ func TestPosition_HasOffset(t *testing.T) {
 		want bool
 	}{
 		{"zero offset (valid)", Position{Offset: 0}, true},
-		{"positive offset", Position{Offset: 42}, true},
+		{"Positive offset", Position{Offset: 42}, true},
 		{"negative offset (unset)", Position{Offset: -1}, false},
 		{"default zero value", Position{}, true},
 	}
@@ -128,12 +146,7 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 		t.Run("on end line", func(t *testing.T) {
 			t.Parallel()
 
-			rng := Range{
-				Start: Position{File: "a.go", Line: 10, Column: 5},
-				End:   Position{File: "a.go", Line: 10, Column: 15},
-			}
-			pos := Position{File: "a.go", Line: 10, Column: 20}
-			if rng.Contains(pos) {
+			if rng("a.go", 10, 5, 10, 15).Contains(Pos("a.go", 10, 20)) {
 				t.Error("expected column 20 to be outside range 5-15")
 			}
 		})
@@ -141,12 +154,8 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 		t.Run("on start line", func(t *testing.T) {
 			t.Parallel()
 
-			r := Range{
-				Start: Position{File: "a.go", Line: 10, Column: 5},
-				End:   Position{File: "a.go", Line: 20, Column: 15},
-			}
-			p := Position{File: "a.go", Line: 10, Column: 3}
-			if r.Contains(p) {
+			r := rng("a.go", 10, 5, 20, 15)
+			if r.Contains(Pos("a.go", 10, 3)) {
 				t.Error("expected column 3 to be outside range starting at column 5")
 			}
 		})
@@ -155,28 +164,21 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 	t.Run("offset-only range", func(t *testing.T) {
 		t.Parallel()
 
-		r := Range{
-			Start: Position{File: "a.go", Offset: 10},
-			End:   Position{File: "a.go", Offset: 50},
-		}
+		r := rngOffset("a.go", 10, 50)
 		if !r.Contains(Position{File: "a.go", Offset: 30}) {
-			t.Error("expected position at offset 30 to be in range 10-50")
+			t.Error("expected Position at offset 30 to be in range 10-50")
 		}
 
 		if r.Contains(Position{File: "a.go", Offset: 5}) {
-			t.Error("expected position at offset 5 to be outside range 10-50")
+			t.Error("expected Position at offset 5 to be outside range 10-50")
 		}
 	})
 
 	t.Run("column within range on same line", func(t *testing.T) {
 		t.Parallel()
 
-		r := Range{
-			Start: Position{File: "a.go", Line: 10, Column: 5},
-			End:   Position{File: "a.go", Line: 10, Column: 15},
-		}
-		p := Position{File: "a.go", Line: 10, Column: 10}
-		if !r.Contains(p) {
+		r := rng("a.go", 10, 5, 10, 15)
+		if !r.Contains(Pos("a.go", 10, 10)) {
 			t.Error("expected column 10 to be in range 5-15")
 		}
 	})
@@ -212,8 +214,8 @@ func TestRangeOverlaps_OffsetOnly(t *testing.T) {
 	t.Run("no end offset (zero value) defaults to start", func(t *testing.T) {
 		t.Parallel()
 
-		r1 := Range{Start: Position{File: "a.go", Offset: 50}, End: Position{Offset: 0}}
-		r2 := Range{Start: Position{File: "a.go", Offset: 0}, End: Position{Offset: 50}}
+		r1 := rngOffset("a.go", 50, 0)
+		r2 := rngOffset("a.go", 0, 50)
 		if !r1.Overlaps(r2) {
 			t.Error("ranges should overlap when one end encompasses the other start")
 		}
@@ -222,8 +224,8 @@ func TestRangeOverlaps_OffsetOnly(t *testing.T) {
 	t.Run("point range overlaps with range", func(t *testing.T) {
 		t.Parallel()
 
-		point := Range{Start: Position{File: "a.go", Offset: 50}, End: Position{Offset: -1}}
-		span := Range{Start: Position{File: "a.go", Offset: 30}, End: Position{Offset: 70}}
+		point := rngOffset("a.go", 50, -1)
+		span := rngOffset("a.go", 30, 70)
 		if !point.Overlaps(span) {
 			t.Error("point at 50 should overlap with range 30-70")
 		}
@@ -246,14 +248,8 @@ func TestRangeIntersection_OffsetOnly(t *testing.T) {
 	t.Run("overlapping offset ranges", func(t *testing.T) {
 		t.Parallel()
 
-		r1 := Range{
-			Start: Position{File: "a.go", Offset: 100},
-			End:   Position{Offset: 200},
-		}
-		r2 := Range{
-			Start: Position{File: "a.go", Offset: 150},
-			End:   Position{Offset: 250},
-		}
+		r1 := rngOffset("a.go", 100, 200)
+		r2 := rngOffset("a.go", 150, 250)
 
 		got := r1.Intersection(r2)
 		if got == nil {
@@ -272,8 +268,8 @@ func TestRangeIntersection_OffsetOnly(t *testing.T) {
 	t.Run("offset with negative end defaults to start", func(t *testing.T) {
 		t.Parallel()
 
-		r1 := Range{Start: Position{File: "a.go", Offset: 100}, End: Position{Offset: -1}}
-		r2 := Range{Start: Position{File: "a.go", Offset: 100}, End: Position{Offset: -1}}
+		r1 := rngOffset("a.go", 100, -1)
+		r2 := rngOffset("a.go", 100, -1)
 		got := r1.Intersection(r2)
 		if got == nil {
 			t.Fatal("expected non-nil intersection for same point")
@@ -287,8 +283,8 @@ func TestRangeIntersection_OffsetOnly(t *testing.T) {
 	t.Run("non-overlapping offset ranges return nil", func(t *testing.T) {
 		t.Parallel()
 
-		r1 := Range{Start: Position{File: "a.go", Offset: 100}, End: Position{Offset: 150}}
-		r2 := Range{Start: Position{File: "a.go", Offset: 200}, End: Position{Offset: 250}}
+		r1 := rngOffset("a.go", 100, 150)
+		r2 := rngOffset("a.go", 200, 250)
 		if got := r1.Intersection(r2); got != nil {
 			t.Errorf("expected nil intersection, got %v", got)
 		}
@@ -325,38 +321,38 @@ func TestRangeLinesEq(t *testing.T) {
 	}{
 		{
 			"equal start and end lines",
-			Range{Start: Position{Line: 10}, End: Position{Line: 20}},
-			Range{Start: Position{Line: 10}, End: Position{Line: 20}},
+			rngLine("", 10, 20),
+			rngLine("", 10, 20),
 			true,
 		},
 		{
 			"different start line",
-			Range{Start: Position{Line: 10}, End: Position{Line: 20}},
-			Range{Start: Position{Line: 15}, End: Position{Line: 20}},
+			rngLine("", 10, 20),
+			rngLine("", 15, 20),
 			false,
 		},
 		{
 			"different end line",
-			Range{Start: Position{Line: 10}, End: Position{Line: 20}},
-			Range{Start: Position{Line: 10}, End: Position{Line: 25}},
+			rngLine("", 10, 20),
+			rngLine("", 10, 25),
 			false,
 		},
 		{
 			"different files same lines",
-			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
-			Range{Start: Position{File: "b.go", Line: 10}, End: Position{Line: 20}},
-			true, // files are ignored by RangeLinesEq
+			rngLine("a.go", 10, 20),
+			rngLine("b.go", 10, 20),
+			true,
 		},
 		{
 			"same start and end line (single line)",
-			Range{Start: Position{Line: 5}, End: Position{Line: 5}},
-			Range{Start: Position{Line: 5}, End: Position{Line: 5}},
+			rngLine("", 5, 5),
+			rngLine("", 5, 5),
 			true,
 		},
 		{
 			"zero lines",
-			Range{Start: Position{Line: 0}, End: Position{Line: 0}},
-			Range{Start: Position{Line: 0}, End: Position{Line: 0}},
+			rngLine("", 0, 0),
+			rngLine("", 0, 0),
 			true,
 		},
 	}
@@ -377,27 +373,27 @@ func TestRangeHasLineRange(t *testing.T) {
 
 	runContainsTests(t, []containsTest{
 		{
-			"position before range",
-			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
-			Position{File: "a.go", Line: 5},
+			"Position before range",
+			rngLine("a.go", 10, 20),
+			Pos("a.go", 5, 0),
 			false,
 		},
 		{
-			"position after range",
-			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
-			Position{File: "a.go", Line: 25},
+			"Position after range",
+			rngLine("a.go", 10, 20),
+			Pos("a.go", 25, 0),
 			false,
 		},
 		{
-			"position within range no column",
-			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
-			Position{File: "a.go", Line: 15},
+			"Position within range no column",
+			rngLine("a.go", 10, 20),
+			Pos("a.go", 15, 0),
 			true,
 		},
 		{
-			"zero position line falls through to offset",
-			Range{Start: Position{File: "a.go", Line: 10}},
-			Position{File: "a.go", Line: 0},
+			"zero Position line falls through to offset",
+			rngLine("a.go", 10, 0),
+			Pos("a.go", 0, 0),
 			true,
 		},
 	})

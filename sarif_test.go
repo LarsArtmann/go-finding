@@ -6,6 +6,26 @@ import (
 	"testing"
 )
 
+func goFindingProps(id, severity, fixStrategy, toolName, category, tag string, confidence float64, suggestion, snippet string) map[string]any {
+	return map[string]any{
+		"go-finding/id":          id,
+		"go-finding/severity":    severity,
+		"go-finding/fixStrategy": fixStrategy,
+		"go-finding/toolName":    toolName,
+		"go-finding/category":    category,
+		"go-finding/tag":         tag,
+		"go-finding/confidence":  confidence,
+		"go-finding/suggestion":  suggestion,
+		"go-finding/snippet":     snippet,
+	}
+}
+
+func goFindingPropsWithCustom(id, severity, fixStrategy, toolName, category, tag string, confidence float64, suggestion, snippet, customKey, customVal string) map[string]any {
+	props := goFindingProps(id, severity, fixStrategy, toolName, category, tag, confidence, suggestion, snippet)
+	props[customKey] = customVal
+	return props
+}
+
 // unmarshalSARIF unmarshals SARIF data and fails the test on error.
 func unmarshalSARIF(t *testing.T, data []byte) *SarifLog {
 	t.Helper()
@@ -571,18 +591,7 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
 			},
 		}},
-		Properties: map[string]any{
-			"go-finding/id":          "test-id",
-			"go-finding/severity":    "critical",
-			"go-finding/fixStrategy": "direct",
-			"go-finding/toolName":    "scanner",
-			"go-finding/category":    "security",
-			"go-finding/tag":         "injection",
-			"go-finding/confidence":  0.85,
-			"go-finding/suggestion":  "fix it",
-			"go-finding/snippet":     "code here",
-			"custom-key":             "custom-val",
-		},
+		Properties: goFindingPropsWithCustom("test-id", "critical", "direct", "scanner", "security", "injection", 0.85, "fix it", "code here", "custom-key", "custom-val"),
 	}
 
 	f := findingFromSarResult(r, "default-tool")
@@ -747,18 +756,19 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 
 	props := log.Runs[0].Results[0].Properties
 
-	checks := map[string]any{
-		"go-finding/id":          "govet:printf:main.go:10:5",
-		"go-finding/severity":    "critical",
-		"go-finding/fixStrategy": "suggest",
-		"go-finding/toolName":    "govet",
-		"go-finding/category":    "correctness",
-		"go-finding/tag":         "printf",
-		"go-finding/confidence":  0.9,
-		"go-finding/suggestion":  "fix format string",
-		"go-finding/snippet":     "fmt.Sprintf(\"%d\")",
-		"custom":                 "value",
-	}
+	checks := goFindingPropsWithCustom(
+		"govet:printf:main.go:10:5",
+		"critical",
+		"suggest",
+		"govet",
+		"correctness",
+		"printf",
+		0.9,
+		"fix format string",
+		`fmt.Sprintf("%d")`,
+		"custom",
+		"value",
+	)
 
 	for key, want := range checks {
 		got, ok := props[key]

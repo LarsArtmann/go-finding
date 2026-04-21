@@ -580,13 +580,7 @@ func TestFixApplier_Apply(t *testing.T) {
 
 	// Create fix
 	fixes := []finding.Finding{
-		{
-			ID:          "1",
-			BeforeCode:  "println(\"hello\")",
-			AfterCode:   "println(\"world\")",
-			Position:    finding.Position{File: "test.go"},
-			FixStrategy: finding.FixStrategyDirect,
-		},
+		makeFixFinding("1", `println("hello")`, `println("world")`, "test.go", 0),
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)

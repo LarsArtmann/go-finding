@@ -25,13 +25,7 @@ func TestFixApplier_Apply_CancelledContext(t *testing.T) {
 	cancel()
 
 	fixes := []finding.Finding{
-		{
-			ID:          "1",
-			BeforeCode:  "package main",
-			AfterCode:   "package main // fixed",
-			Position:    finding.Position{File: "cancel.go"},
-			FixStrategy: finding.FixStrategyDirect,
-		},
+		makeFixFinding("1", "package main", "package main // fixed", "cancel.go", 0),
 	}
 
 	applied, err := applier.Apply(ctx, fixes)
@@ -407,13 +401,7 @@ func TestFixApplier_BackupDisabled(t *testing.T) {
 	}
 
 	fixes := []finding.Finding{
-		{
-			ID:          "1",
-			BeforeCode:  "old()",
-			AfterCode:   "new()",
-			Position:    finding.Position{File: "nobackup.go"},
-			FixStrategy: finding.FixStrategyDirect,
-		},
+		makeFixFinding("1", "old()", "new()", "nobackup.go", 0),
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)
