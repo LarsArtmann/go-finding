@@ -47,6 +47,7 @@ func testParseIDCase(t *testing.T, tt parseIDCase) {
 
 // runParseIDCases runs all parseIDCase tests in a subtest.
 func runParseIDCases(t *testing.T, tests []parseIDCase) {
+	t.Helper()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()

@@ -170,7 +170,7 @@ func TestReportAll(t *testing.T) {
 	r.AddFinding(Finding{ID: "2", Message: "b"})
 	r.AddFinding(Finding{ID: "3", Message: "c"})
 
-	var collected []Finding
+	collected := make([]Finding, 0, len(r.Findings))
 	for f := range r.All() {
 		collected = append(collected, f)
 	}
