@@ -329,6 +329,7 @@ func TestSetupProfiling(t *testing.T) {
 }
 
 func TestRunWithConfig(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
 
@@ -369,6 +370,7 @@ detectors:
 }
 
 func TestRunWithInvalidSeverity(t *testing.T) {
+	t.Parallel()
 	// Test that run returns error for bad severity — this exercises parseSeverity via the run() path.
 	// Since run() reads flags, test parseSeverity directly instead.
 	_, err := parseSeverity("bogus")
@@ -508,6 +510,7 @@ func TestOutputResults_SARIFContainsResults(t *testing.T) {
 }
 
 func TestRun_BadSeverity(t *testing.T) {
+	t.Parallel()
 	savedCommandLine := flag.CommandLine
 	savedArgs := os.Args
 	t.Cleanup(func() {
@@ -525,6 +528,7 @@ func TestRun_BadSeverity(t *testing.T) {
 }
 
 func TestRun_MissingConfig(t *testing.T) {
+	t.Parallel()
 	savedCommandLine := flag.CommandLine
 	savedArgs := os.Args
 	t.Cleanup(func() {
@@ -542,6 +546,7 @@ func TestRun_MissingConfig(t *testing.T) {
 }
 
 func TestRun_NoDetectors(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
 
@@ -571,6 +576,7 @@ detectors: []
 }
 
 func TestRun_BadProfilingPath(t *testing.T) {
+	t.Parallel()
 	savedCommandLine := flag.CommandLine
 	savedArgs := os.Args
 	t.Cleanup(func() {

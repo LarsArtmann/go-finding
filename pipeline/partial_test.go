@@ -17,6 +17,7 @@ func assertPartialFindingsLen(t *testing.T, result *PartialResult, want int, msg
 }
 
 func TestPartialResult_HasErrors(t *testing.T) {
+	t.Parallel()
 	r := &PartialResult{Errors: make(map[string]error)}
 	if r.HasErrors() {
 		t.Error("empty errors should not report HasErrors")
@@ -29,6 +30,7 @@ func TestPartialResult_HasErrors(t *testing.T) {
 }
 
 func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
+	t.Parallel()
 	config := Config{ParallelDetectors: false}
 	d1 := &mockDetector{name: "d1", findings: []finding.Finding{{ID: "F1"}}}
 	d2 := &mockDetector{name: "d2", findings: []finding.Finding{{ID: "F2"}}}
@@ -50,6 +52,7 @@ func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
 }
 
 func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
+	t.Parallel()
 	config := Config{ParallelDetectors: false}
 	d1 := &mockDetector{name: "good", findings: []finding.Finding{{ID: "F1"}}}
 	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
@@ -75,6 +78,7 @@ func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
 }
 
 func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {
+	t.Parallel()
 	config := Config{ParallelDetectors: true}
 	d1 := &mockDetector{name: "good", findings: []finding.Finding{{ID: "F1"}}}
 	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
@@ -96,6 +100,7 @@ func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {
 }
 
 func TestDetectPartial_AllFail(t *testing.T) {
+	t.Parallel()
 	config := Config{ParallelDetectors: false}
 	d1 := &mockDetector{name: "d1", err: errors.New("fail1")}
 	d2 := &mockDetector{name: "d2", err: errors.New("fail2")}
@@ -117,6 +122,7 @@ func TestDetectPartial_AllFail(t *testing.T) {
 }
 
 func TestFormatPartialErrors(t *testing.T) {
+	t.Parallel()
 	if err := FormatPartialErrors(nil); err != nil {
 		t.Errorf("nil map should return nil error, got %v", err)
 	}

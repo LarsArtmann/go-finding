@@ -17,6 +17,7 @@ func assertEqual[T comparable](t *testing.T, got, want T, msg string) {
 }
 
 func TestNewMetrics(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	if m == nil {
 		t.Fatal("expected non-nil metrics")
@@ -37,6 +38,7 @@ func TestNewMetrics(t *testing.T) {
 }
 
 func TestMetrics_RecordStage(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	m.RecordStage("detect", 100*time.Millisecond)
 	m.RecordStage("detect", 50*time.Millisecond)
@@ -47,6 +49,7 @@ func TestMetrics_RecordStage(t *testing.T) {
 }
 
 func TestMetrics_RecordDetector(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	m.RecordDetector("staticcheck", 50*time.Millisecond, 10)
 	m.RecordDetector("staticcheck", 30*time.Millisecond, 5)
@@ -58,6 +61,7 @@ func TestMetrics_RecordDetector(t *testing.T) {
 }
 
 func TestMetrics_RecordFix(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	m.RecordFix()
 	m.RecordFix()
@@ -69,6 +73,7 @@ func TestMetrics_RecordFix(t *testing.T) {
 }
 
 func TestMetrics_StageTiming(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	done := m.StageTiming("detect")
 
@@ -81,6 +86,7 @@ func TestMetrics_StageTiming(t *testing.T) {
 }
 
 func TestMetrics_TotalDuration(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	m.SetStart(time.Now())
 
@@ -95,6 +101,7 @@ func TestMetrics_TotalDuration(t *testing.T) {
 }
 
 func TestMetrics_Snapshot(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	m.RecordStage("detect", 100*time.Millisecond)
 	m.RecordDetector("govet", 50*time.Millisecond, 5)
@@ -133,6 +140,7 @@ func TestMetrics_Snapshot(t *testing.T) {
 }
 
 func TestPipeline_MetricsIntegration(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	count := 0
 	detector := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -182,6 +190,7 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 }
 
 func TestMetrics_TotalDuration_NoEnd(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	m.SetStart(time.Now())
 
@@ -192,6 +201,7 @@ func TestMetrics_TotalDuration_NoEnd(t *testing.T) {
 }
 
 func TestMetricsSnapshot_StageDuration(t *testing.T) {
+	t.Parallel()
 	snap := MetricsSnapshot{
 		StageDurations: map[string]time.Duration{
 			"detect": 100 * time.Millisecond,
@@ -208,6 +218,7 @@ func TestMetricsSnapshot_StageDuration(t *testing.T) {
 }
 
 func TestPipeline_NilMetricsNoPanic(t *testing.T) {
+	t.Parallel()
 	detector := &mockDetector{
 		name:     "test",
 		findings: []finding.Finding{},

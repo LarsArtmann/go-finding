@@ -10,6 +10,7 @@ import (
 )
 
 func TestRetryConfig_delay(t *testing.T) {
+	t.Parallel()
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 5 * time.Second}
 
 	tests := []struct {
@@ -32,6 +33,7 @@ func TestRetryConfig_delay(t *testing.T) {
 }
 
 func TestRetryConfig_delay_maxCap(t *testing.T) {
+	t.Parallel()
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 300 * time.Millisecond}
 
 	got := c.delay(10)
@@ -46,6 +48,7 @@ func TestRetryConfig_delay_maxCap(t *testing.T) {
 }
 
 func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
+	t.Parallel()
 	inner := &mockDetector{
 		name:     "test",
 		findings: []finding.Finding{{ID: "F1"}},
@@ -63,6 +66,7 @@ func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 }
 
 func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
+	t.Parallel()
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		calls++
@@ -90,6 +94,7 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 }
 
 func TestRetryDetector_ExhaustedRetries(t *testing.T) {
+	t.Parallel()
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		return nil, errors.New("permanent")
 	})
@@ -110,6 +115,7 @@ func TestRetryDetector_ExhaustedRetries(t *testing.T) {
 }
 
 func TestRetryDetector_ContextCancellation(t *testing.T) {
+	t.Parallel()
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		calls++
@@ -133,6 +139,7 @@ func TestRetryDetector_ContextCancellation(t *testing.T) {
 }
 
 func TestRetryDetector_Name(t *testing.T) {
+	t.Parallel()
 	inner := &mockDetector{name: "my-detector"}
 
 	rd := NewRetryDetector(inner, DefaultRetryConfig())
@@ -142,6 +149,7 @@ func TestRetryDetector_Name(t *testing.T) {
 }
 
 func TestDefaultRetryConfig(t *testing.T) {
+	t.Parallel()
 	c := DefaultRetryConfig()
 	if c.MaxRetries != 3 {
 		t.Errorf("expected MaxRetries=3, got %d", c.MaxRetries)

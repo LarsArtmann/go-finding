@@ -202,6 +202,7 @@ func TestBuildDetectors(t *testing.T) {
 }
 
 func TestFatalf(t *testing.T) {
+	t.Parallel()
 	old := os.Stderr
 	r, w, _ := os.Pipe()
 	os.Stderr = w
@@ -233,6 +234,7 @@ func (w *failingWriter) Write(p []byte) (n int, err error) {
 }
 
 func TestOutputResults_WriteError(t *testing.T) {
+	t.Parallel()
 	report := reportWithFindings()
 
 	err := outputResults(&failingWriter{err: errors.New("disk full")}, report, "json")
@@ -255,6 +257,7 @@ func TestOutputResults_WriteError(t *testing.T) {
 }
 
 func TestOutputText_WithSummary(t *testing.T) {
+	t.Parallel()
 	report := finding.NewReport(finding.ToolInfo{Name: "test"})
 	report.AddFinding(finding.Finding{
 		Severity: finding.SeverityError, Rule: "R1", Message: "err1",

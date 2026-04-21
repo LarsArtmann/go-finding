@@ -13,6 +13,7 @@ import (
 
 // TestNew tests pipeline creation.
 func TestNew(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 	detector := &mockDetector{name: "test", findings: nil}
 
@@ -40,6 +41,7 @@ func TestNew(t *testing.T) {
 
 // TestPipelineRun_NoFindings tests that pipeline completes when no findings.
 func TestPipelineRun_NoFindings(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 	detector := &mockDetector{name: "test", findings: nil}
@@ -66,6 +68,7 @@ func TestPipelineRun_NoFindings(t *testing.T) {
 
 // TestPipelineRun_WithFindings tests pipeline with findings.
 func TestPipelineRun_WithFindings(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 	config.MaxIterations = 3 // Limit to avoid running 5 iterations
@@ -129,6 +132,7 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 
 // TestPipelineRun_DetectorError tests error handling from detector.
 func TestPipelineRun_DetectorError(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 
@@ -153,6 +157,7 @@ func TestPipelineRun_DetectorError(t *testing.T) {
 
 // TestPipelineRun_ContextCancellation tests context cancellation.
 func TestPipelineRun_ContextCancellation(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 
@@ -181,6 +186,7 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 
 // TestPipelineRun_Timeout tests pipeline timeout.
 func TestPipelineRun_Timeout(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 	config.Timeout = 50 * time.Millisecond
@@ -209,6 +215,7 @@ func TestPipelineRun_Timeout(t *testing.T) {
 
 // TestPipelineRun_MaxIterations tests max iteration limit.
 func TestPipelineRun_MaxIterations(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 	config.MaxIterations = 2
 	config.ParallelDetectors = false
@@ -248,6 +255,7 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 
 // TestPipelineRun_Parallel tests parallel detection.
 func TestPipelineRun_Parallel(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 	config.ParallelDetectors = true
 
@@ -292,6 +300,7 @@ func TestPipelineRun_Parallel(t *testing.T) {
 // TestDetectParallel_SuppressionConsistency verifies that parallel and
 // sequential detection produce identical results when findings are suppressed.
 func TestDetectParallel_SuppressionConsistency(t *testing.T) {
+	t.Parallel()
 	makeFindings := func() []finding.Finding {
 		return []finding.Finding{
 			{
@@ -407,6 +416,7 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 
 // TestTriage tests the triage function.
 func TestTriage(t *testing.T) {
+	t.Parallel()
 	findings := []finding.Finding{
 		{ID: "1", FixStrategy: finding.FixStrategyDirect},
 		{ID: "2", FixStrategy: finding.FixStrategySuggest},
@@ -433,6 +443,7 @@ func TestTriage(t *testing.T) {
 
 // TestDetectorFunc tests the DetectorFunc adapter.
 func TestDetectorFunc(t *testing.T) {
+	t.Parallel()
 	called := false
 	f := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		called = true
@@ -479,6 +490,7 @@ func TestNamedDetectorFunc(t *testing.T) {
 
 // TestDefaultConfig tests default configuration.
 func TestDefaultConfig(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 
 	if config.MaxIterations != 5 {
@@ -496,6 +508,7 @@ func TestDefaultConfig(t *testing.T) {
 
 // TestFixApplier tests the FixApplier.
 func TestFixApplier(t *testing.T) {
+	t.Parallel()
 	// Create a temporary directory for testing
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
@@ -553,6 +566,7 @@ func TestFixApplier(t *testing.T) {
 
 // TestFixApplier_Apply tests actual fix application.
 func TestFixApplier_Apply(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
@@ -597,6 +611,7 @@ func TestFixApplier_Apply(t *testing.T) {
 }
 
 func TestFixApplier_RangeBasedFix(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
@@ -642,6 +657,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 }
 
 func TestFixApplier_MultiLineRangeFix(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
@@ -684,6 +700,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 }
 
 func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
@@ -964,6 +981,7 @@ func TestDryRun(t *testing.T) {
 }
 
 func TestNew_RejectsInvalidConfig(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name   string
 		config Config
@@ -975,6 +993,7 @@ func TestNew_RejectsInvalidConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			_, err := New(tt.config, t.TempDir())
 			if err == nil {
 				t.Fatal("expected error for invalid config")
@@ -984,6 +1003,7 @@ func TestNew_RejectsInvalidConfig(t *testing.T) {
 }
 
 func TestNew_ValidConfig_NoError(t *testing.T) {
+	t.Parallel()
 	config := DefaultConfig()
 	p, err := New(config, t.TempDir())
 	if err != nil {
@@ -996,6 +1016,7 @@ func TestNew_ValidConfig_NoError(t *testing.T) {
 }
 
 func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
+	t.Parallel()
 	goodDetector := mockDetectorWithFinding("good", "F1", "r", "good", "m")
 	badDetector := &mockDetector{name: "bad", err: errors.New("boom")}
 
@@ -1028,6 +1049,7 @@ func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
 }
 
 func TestPipelineRun_MetricsInResult(t *testing.T) {
+	t.Parallel()
 	m := NewMetrics()
 	config := Config{
 		MaxIterations: 1,

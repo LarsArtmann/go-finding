@@ -268,6 +268,7 @@ func TestDetectorNames(t *testing.T) {
 }
 
 func TestNewGoVetDetector_CancelledContext(t *testing.T) {
+	t.Parallel()
 	d := NewGoVetDetector(".")
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -280,6 +281,7 @@ func TestNewGoVetDetector_CancelledContext(t *testing.T) {
 }
 
 func TestNewStaticcheckDetector_CancelledContext(t *testing.T) {
+	t.Parallel()
 	d := NewStaticcheckDetector(".")
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -292,6 +294,7 @@ func TestNewStaticcheckDetector_CancelledContext(t *testing.T) {
 }
 
 func TestNewGoVetDetector_ValidProject(t *testing.T) {
+	t.Parallel()
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
