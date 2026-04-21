@@ -169,9 +169,7 @@ func testBackupRestore(t *testing.T, applier *FixApplier, original, modified str
 	t.Helper()
 
 	testFile := filepath.Join(t.TempDir(), "roundtrip.go")
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("write: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(original))
 
 	if err := applier.backup(testFile); err != nil {
 		t.Fatalf("backup: %v", err)

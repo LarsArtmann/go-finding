@@ -574,9 +574,7 @@ func TestFixApplier_Apply(t *testing.T) {
 	testFile := filepath.Join(tempDir, "test.go")
 
 	originalContent := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
-	if err := writeFile(testFile, []byte(originalContent), 0o644); err != nil {
-		t.Fatalf("failed to create test file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(originalContent))
 
 	// Create fix
 	fixes := []finding.Finding{
@@ -891,9 +889,7 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 	testFile := filepath.Join(tempDir, "fixme.go")
 
 	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("create test file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(original))
 
 	fixes := directFixFinding()
 
@@ -1083,9 +1079,7 @@ func TestApplyTriage_DirectFixesApplied(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "fixme.go")
 
 	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("create test file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(original))
 
 	fix := finding.Finding{
 		ID:          "fix1",
@@ -1131,9 +1125,7 @@ func TestApplyTriage_ConflictingFixes(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "fixme.go")
 
 	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("create test file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(original))
 
 	fixes := makeConflictingFixes()
 
@@ -1185,9 +1177,7 @@ func TestApplyTriage_OnFixCallback(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "fixme.go")
 
 	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("create test file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(original))
 
 	fix := makeFixFinding("fix1", "old()", "new()", "fixme.go", 4)
 
@@ -1250,9 +1240,7 @@ func TestApplyTriage_AllConflicting(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "fixme.go")
 
 	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("create test file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(original))
 
 	fixes := makeConflictingFixes()
 
@@ -1280,9 +1268,7 @@ func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "fixme.go")
 
 	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	if err := writeFile(testFile, []byte(original), 0o644); err != nil {
-		t.Fatalf("create test file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(original))
 
 	fix := makeFixFinding("fix1", "old()", "new()", "fixme.go", 4)
 

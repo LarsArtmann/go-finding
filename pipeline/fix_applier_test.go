@@ -17,9 +17,7 @@ func TestFixApplier_Apply_CancelledContext(t *testing.T) {
 	applier := NewFixApplier(tempDir)
 
 	testFile := filepath.Join(tempDir, "cancel.go")
-	if err := writeFile(testFile, []byte("package main\n"), 0o644); err != nil {
-		t.Fatalf("create file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte("package main\n"))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -109,9 +107,7 @@ func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 	applier := NewFixApplier(tempDir)
 
 	testFile := filepath.Join(tempDir, "nomatch.go")
-	if err := writeFile(testFile, []byte("package main\n"), 0o644); err != nil {
-		t.Fatalf("create file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte("package main\n"))
 
 	fixes := []finding.Finding{
 		{
@@ -174,13 +170,9 @@ func TestFixApplier_RollbackAll(t *testing.T) {
 	orig1 := "package a\n"
 	orig2 := "package b\n"
 
-	if err := writeFile(file1, []byte(orig1), 0o644); err != nil {
-		t.Fatalf("create a.go: %v", err)
-	}
+	writeTestFile(t, file1, []byte(orig1))
 
-	if err := writeFile(file2, []byte(orig2), 0o644); err != nil {
-		t.Fatalf("create b.go: %v", err)
-	}
+	writeTestFile(t, file2, []byte(orig2))
 
 	if err := applier.backup(file1); err != nil {
 		t.Fatalf("backup a.go: %v", err)
@@ -190,13 +182,9 @@ func TestFixApplier_RollbackAll(t *testing.T) {
 		t.Fatalf("backup b.go: %v", err)
 	}
 
-	if err := writeFile(file1, []byte("modified a\n"), 0o644); err != nil {
-		t.Fatalf("modify a.go: %v", err)
-	}
+	writeTestFile(t, file1, []byte("modified a\n"))
 
-	if err := writeFile(file2, []byte("modified b\n"), 0o644); err != nil {
-		t.Fatalf("modify b.go: %v", err)
-	}
+	writeTestFile(t, file2, []byte("modified b\n"))
 
 	if err := applier.rollbackAll([]string{file1, file2}); err != nil {
 		t.Fatalf("rollbackAll: %v", err)
@@ -228,17 +216,13 @@ func TestFixApplier_RollbackAll_PartialFailure(t *testing.T) {
 	applier := NewFixApplier(tempDir)
 
 	goodFile := filepath.Join(tempDir, "good.go")
-	if err := writeFile(goodFile, []byte("package good\n"), 0o644); err != nil {
-		t.Fatalf("create good.go: %v", err)
-	}
+	writeTestFile(t, goodFile, []byte("package good\n"))
 
 	if err := applier.backup(goodFile); err != nil {
 		t.Fatalf("backup good.go: %v", err)
 	}
 
-	if err := writeFile(goodFile, []byte("modified\n"), 0o644); err != nil {
-		t.Fatalf("modify good.go: %v", err)
-	}
+	writeTestFile(t, goodFile, []byte("modified\n"))
 
 	noBackupFile := filepath.Join(tempDir, "nobackup.go")
 	err := applier.rollbackAll([]string{goodFile, noBackupFile})
@@ -263,9 +247,7 @@ func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
 	applier := NewFixApplier(tempDir)
 
 	file1 := filepath.Join(tempDir, "first.go")
-	if err := writeFile(file1, []byte("package first\nold1()\n"), 0o644); err != nil {
-		t.Fatalf("create first.go: %v", err)
-	}
+	writeTestFile(t, file1, []byte("package first\nold1()\n"))
 
 	fixes := []finding.Finding{
 		{
@@ -341,9 +323,7 @@ func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 
 	testFile := filepath.Join(tempDir, "outofbounds.go")
 	content := "package main\n\nfunc main() {}\n"
-	if err := writeFile(testFile, []byte(content), 0o644); err != nil {
-		t.Fatalf("create file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte(content))
 
 	fixes := []finding.Finding{
 		{
@@ -396,9 +376,7 @@ func TestFixApplier_BackupDisabled(t *testing.T) {
 	applier.backupEnabled = false
 
 	testFile := filepath.Join(tempDir, "nobackup.go")
-	if err := writeFile(testFile, []byte("package main\nold()\n"), 0o644); err != nil {
-		t.Fatalf("create file: %v", err)
-	}
+	writeTestFile(t, testFile, []byte("package main\nold()\n"))
 
 	fixes := []finding.Finding{
 		makeFixFinding("1", "old()", "new()", "nobackup.go", 0),
