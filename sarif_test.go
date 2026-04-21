@@ -402,6 +402,313 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 	}
 }
 
+func TestSeverityToSARIFLevel(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		sev  Severity
+		want string
+	}{
+		{"info", SeverityInfo, "note"},
+		{"warning", SeverityWarning, "warning"},
+		{"error", SeverityError, "error"},
+		{"critical", SeverityCritical, "error"},
+		{"unknown", Severity("unknown"), "warning"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := severityToSARIFLevel(tt.sev)
+			if got != tt.want {
+				t.Errorf("severityToSARIFLevel(%v) = %q, want %q", tt.sev, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFindingFromSarResult_Rank(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		RuleID:  "r1",
+		Level:   "warning",
+		Message: SarifMessage{Text: "msg"},
+		Rank:    75.0,
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+				Region:           &SarifRegion{StartLine: 10},
+			},
+		}},
+	}
+
+	f := findingFromSarResult(r, "tool")
+	if f.Confidence != 0.75 {
+		t.Errorf("Confidence = %v, want 0.75", f.Confidence)
+	}
+}
+
+func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		RuleID:  "r1",
+		Level:   "warning",
+		Message: SarifMessage{Text: "msg"},
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+			},
+		}},
+		Fixes: []SarifFix{{
+			Description: SarifMessage{Text: "fix it"},
+			Changes: []SarifArtifactChange{{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+				Replacements: []SarifReplacement{{
+					DeletedRegion: SarifRegion{StartLine: 5, StartColumn: 1},
+					InsertedText:  SarifMessage{Text: "fixed code"},
+				}},
+			}},
+		}},
+	}
+
+	f := findingFromSarResult(r, "tool")
+	if f.Suggestion != "fix it" {
+		t.Errorf("Suggestion = %q, want %q", f.Suggestion, "fix it")
+	}
+
+	if f.AfterCode != "fixed code" {
+		t.Errorf("AfterCode = %q, want %q", f.AfterCode, "fixed code")
+	}
+
+	if f.FixStrategy != FixStrategySuggest {
+		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategySuggest)
+	}
+}
+
+func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		RuleID:  "r1",
+		Level:   "error",
+		Message: SarifMessage{Text: "main finding"},
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "main.go"},
+			},
+		}},
+		Related: []SarifRelatedLoc{
+			{
+				PhysicalLocation: SarifPhysicalLocation{
+					ArtifactLocation: SarifArtifactLocation{URI: "helper.go"},
+					Region:           &SarifRegion{StartLine: 20, StartColumn: 3},
+				},
+				Message: SarifMessage{Text: "related call"},
+			},
+			{
+				PhysicalLocation: SarifPhysicalLocation{
+					ArtifactLocation: SarifArtifactLocation{URI: "util.go"},
+				},
+				Message: SarifMessage{Text: "no region"},
+			},
+		},
+	}
+
+	f := findingFromSarResult(r, "tool")
+	if len(f.Related) != 2 {
+		t.Fatalf("Related length = %d, want 2", len(f.Related))
+	}
+
+	if f.Related[0].Relation != "related call" {
+		t.Errorf("Related[0].Relation = %q, want %q", f.Related[0].Relation, "related call")
+	}
+
+	if f.Related[0].Position.File != "helper.go" {
+		t.Errorf("Related[0].Position.File = %q, want %q", f.Related[0].Position.File, "helper.go")
+	}
+
+	if f.Related[0].Position.Line != 20 {
+		t.Errorf("Related[0].Position.Line = %d, want 20", f.Related[0].Position.Line)
+	}
+
+	if f.Related[1].Position.File != "util.go" {
+		t.Errorf("Related[1].Position.File = %q, want %q", f.Related[1].Position.File, "util.go")
+	}
+
+	if f.Related[1].Position.Line != 0 {
+		t.Errorf("Related[1].Position.Line = %d, want 0 (nil region)", f.Related[1].Position.Line)
+	}
+}
+
+func TestFindingFromSarResult_NoLocations(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		RuleID:  "r1",
+		Level:   "warning",
+		Message: SarifMessage{Text: "msg"},
+	}
+
+	f := findingFromSarResult(r, "tool")
+	if f.Position.File != "" {
+		t.Errorf("Position.File = %q, want empty (no locations)", f.Position.File)
+	}
+}
+
+func TestFindingFromSarResult_Properties(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		RuleID:  "r1",
+		Level:   "warning",
+		Message: SarifMessage{Text: "msg"},
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+			},
+		}},
+		Properties: map[string]any{
+			"go-finding/id":          "test-id",
+			"go-finding/severity":    "critical",
+			"go-finding/fixStrategy": "direct",
+			"go-finding/toolName":    "scanner",
+			"go-finding/category":    "security",
+			"go-finding/tag":         "injection",
+			"go-finding/confidence":  0.85,
+			"go-finding/suggestion":  "fix it",
+			"go-finding/snippet":     "code here",
+			"custom-key":             "custom-val",
+		},
+	}
+
+	f := findingFromSarResult(r, "default-tool")
+	if f.ID != "test-id" {
+		t.Errorf("ID = %q, want %q", f.ID, "test-id")
+	}
+
+	if f.Severity != SeverityCritical {
+		t.Errorf("Severity = %v, want %v", f.Severity, SeverityCritical)
+	}
+
+	if f.FixStrategy != FixStrategyDirect {
+		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyDirect)
+	}
+
+	if f.ToolName != "scanner" {
+		t.Errorf("ToolName = %q, want %q (should override)", f.ToolName, "scanner")
+	}
+
+	if f.Category != "security" {
+		t.Errorf("Category = %q, want %q", f.Category, "security")
+	}
+
+	if f.Tag != "injection" {
+		t.Errorf("Tag = %q, want %q", f.Tag, "injection")
+	}
+
+	if f.Confidence != 0.85 {
+		t.Errorf("Confidence = %v, want 0.85", f.Confidence)
+	}
+
+	if f.Suggestion != "fix it" {
+		t.Errorf("Suggestion = %q, want %q", f.Suggestion, "fix it")
+	}
+
+	if f.Snippet != "code here" {
+		t.Errorf("Snippet = %q, want %q", f.Snippet, "code here")
+	}
+
+	if f.Metadata["custom-key"] != "custom-val" {
+		t.Errorf("Metadata[\"custom-key\"] = %q, want %q", f.Metadata["custom-key"], "custom-val")
+	}
+}
+
+func TestApplySarifPosition_NilRegion(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+				Region:           nil,
+			},
+		}},
+	}
+
+	f := Finding{}
+	applySarifPosition(&f, r)
+	if f.Position.File != "a.go" {
+		t.Errorf("Position.File = %q, want %q", f.Position.File, "a.go")
+	}
+
+	if f.Position.Line != 0 {
+		t.Errorf("Position.Line = %d, want 0 (nil region)", f.Position.Line)
+	}
+
+	if f.Range != nil {
+		t.Error("Range should be nil with nil region")
+	}
+}
+
+func TestApplySarifPosition_WithEndPosition(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+				Region: &SarifRegion{
+					StartLine:   10,
+					StartColumn: 5,
+					EndLine:     15,
+					EndColumn:   20,
+				},
+			},
+		}},
+	}
+
+	f := Finding{}
+	applySarifPosition(&f, r)
+	if f.Range == nil {
+		t.Fatal("Range should be set with end position")
+	}
+
+	if f.Range.End.Line != 15 {
+		t.Errorf("Range.End.Line = %d, want 15", f.Range.End.Line)
+	}
+
+	if f.Range.End.Column != 20 {
+		t.Errorf("Range.End.Column = %d, want 20", f.Range.End.Column)
+	}
+}
+
+func TestApplySarifPosition_EndColumnOnly(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+				Region: &SarifRegion{
+					StartLine:   10,
+					StartColumn: 5,
+					EndColumn:   20,
+				},
+			},
+		}},
+	}
+
+	f := Finding{}
+	applySarifPosition(&f, r)
+	if f.Range == nil {
+		t.Fatal("Range should be set with EndColumn > 0")
+	}
+}
+
 func TestToSARIF_RoundTripProperties(t *testing.T) {
 	t.Parallel()
 
