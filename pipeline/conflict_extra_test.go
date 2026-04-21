@@ -6,14 +6,6 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
-func assertConflictsLen(t *testing.T, got, want int, msg string) {
-	t.Helper()
-
-	if got != want {
-		t.Errorf("%s = %d, want %d", msg, got, want)
-	}
-}
-
 func TestFilterConflictingFixes(t *testing.T) {
 	t.Parallel()
 
@@ -77,7 +69,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 		t.Parallel()
 
 		result := AnalyzeConflicts(findings("1", "a.go", 10, "2", "b.go", 20))
-		assertConflictsLen(t, len(result), 0, "no conflicts")
+		assertEqual(t, len(result), 0, "no conflicts")
 	})
 
 	t.Run("overlapping fixes detected", func(t *testing.T) {
@@ -110,7 +102,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 		t.Parallel()
 
 		result := AnalyzeConflicts(nil)
-		assertConflictsLen(t, len(result), 0, "empty input")
+		assertEqual(t, len(result), 0, "empty input")
 	})
 }
 

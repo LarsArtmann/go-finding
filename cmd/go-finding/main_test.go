@@ -30,10 +30,7 @@ func TestOutputResults_JSON(t *testing.T) {
 
 	requireOutputResults(t, &buf, report, "json")
 
-	var parsed map[string]any
-	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
-		t.Fatalf("invalid JSON output: %v\noutput: %s", err, buf.String())
-	}
+	parsed := parseJSON(t, &buf)
 
 	tool, _ := parsed["tool"].(map[string]any)
 	if tool == nil || tool["name"] != "test" {
@@ -50,10 +47,7 @@ func TestOutputResults_SARIF(t *testing.T) {
 
 	requireOutputResults(t, &buf, report, "sarif")
 
-	var parsed map[string]any
-	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
-		t.Fatalf("invalid SARIF JSON: %v\noutput: %s", err, buf.String())
-	}
+	parsed := parseJSON(t, &buf)
 
 	version, _ := parsed["$schema"].(string)
 	if !strings.Contains(version, "sarif") {

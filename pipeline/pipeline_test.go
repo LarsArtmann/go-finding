@@ -930,9 +930,7 @@ func TestDryRun(t *testing.T) {
 		t.Errorf("applied = %d, want 0 (dry run should not apply fixes)", applied)
 	}
 
-	if len(result.Iterations) != 1 {
-		t.Fatalf("iterations = %d, want 1", len(result.Iterations))
-	}
+	assertIterationsLen(t, result, 1)
 
 	iter := result.Iterations[0]
 	if iter.DirectFixes != 1 {

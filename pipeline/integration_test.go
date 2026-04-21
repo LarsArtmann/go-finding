@@ -133,9 +133,7 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 		t.Fatal("expected non-nil result")
 	}
 
-	if len(result.Iterations) != 1 {
-		t.Fatalf("iterations = %d, want 1", len(result.Iterations))
-	}
+	assertIterationsLen(t, result, 1)
 
 	assertFindingsFound(t, result, 1, "FindingsFound")
 }

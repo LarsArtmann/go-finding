@@ -484,9 +484,7 @@ func TestOutputResults_JSONContainsFindings(t *testing.T) {
 		} `json:"findings"`
 	}
 
-	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
-		t.Fatalf("JSON parse error: %v", err)
-	}
+	requireJSON(t, &buf, &parsed, "JSON parse error")
 
 	if len(parsed.Findings) != 1 {
 		t.Fatalf("expected 1 finding, got %d", len(parsed.Findings))
@@ -515,9 +513,7 @@ func TestOutputResults_SARIFContainsResults(t *testing.T) {
 		} `json:"runs"`
 	}
 
-	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
-		t.Fatalf("SARIF parse error: %v", err)
-	}
+	requireJSON(t, &buf, &parsed, "SARIF parse error")
 
 	if parsed.Version != "2.1.0" {
 		t.Errorf("SARIF version = %q, want %q", parsed.Version, "2.1.0")
@@ -532,22 +528,30 @@ func TestOutputResults_SARIFContainsResults(t *testing.T) {
 	}
 }
 
+func assertRunFails(t *testing.T, args ...string) {
+	t.Helper()
+	if got := runWithArgs(t, args...); got != 1 {
+		t.Errorf("run() with args %v = %d, want 1", args, got)
+	}
+}
+
+func requireJSON[T any](t *testing.T, buf *bytes.Buffer, parsed *T, context string) {
+	t.Helper()
+	if err := json.Unmarshal(buf.Bytes(), parsed); err != nil {
+		t.Fatalf("%s: %v", context, err)
+	}
+}
+
 func TestRun_BadSeverity(t *testing.T) {
 	t.Parallel()
 
-	got := runWithArgs(t, "-severity", "bogus")
-	if got != 1 {
-		t.Errorf("run() with bad severity = %d, want 1", got)
-	}
+	assertRunFails(t, "-severity", "bogus")
 }
 
 func TestRun_MissingConfig(t *testing.T) {
 	t.Parallel()
 
-	got := runWithArgs(t, "-config", "/nonexistent/config.yaml")
-	if got != 1 {
-		t.Errorf("run() with missing config = %d, want 1", got)
-	}
+	assertRunFails(t, "-config", "/nonexistent/config.yaml")
 }
 
 func TestRun_NoDetectors(t *testing.T) {

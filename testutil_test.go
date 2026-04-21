@@ -208,6 +208,20 @@ func assertFindingErrorFile(t *testing.T, err *FindingError, want string) {
 	}
 }
 
+// assertRangeContains asserts a Range contains an offset at the expected position.
+func assertRangeContains(t *testing.T, r Range, offset int, file string, expect bool) {
+	t.Helper()
+
+	pos := Position{File: file, Offset: offset}
+	if r.Contains(pos) != expect {
+		if expect {
+			t.Errorf("expected Range to contain Position at offset %d", offset)
+		} else {
+			t.Errorf("expected Range NOT to contain Position at offset %d", offset)
+		}
+	}
+}
+
 // checkProperty runs a property-based test using quick.Check with a deterministic seed.
 func checkProperty[T any](t *testing.T, property func(T) bool) {
 	t.Helper()

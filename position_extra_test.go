@@ -158,13 +158,8 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 		t.Parallel()
 
 		r := rngOffset("a.go", 10, 50)
-		if !r.Contains(Position{File: "a.go", Offset: 30}) {
-			t.Error("expected Position at offset 30 to be in range 10-50")
-		}
-
-		if r.Contains(Position{File: "a.go", Offset: 5}) {
-			t.Error("expected Position at offset 5 to be outside range 10-50")
-		}
+		assertRangeContains(t, r, 30, "a.go", true)
+		assertRangeContains(t, r, 5, "a.go", false)
 	})
 
 	t.Run("column within range on same line", func(t *testing.T) {
@@ -183,9 +178,7 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 			Start: Position{File: "a.go", Offset: 100},
 			End:   Position{Offset: 200},
 		}
-		if !r.Contains(Position{File: "a.go", Offset: 150}) {
-			t.Error("expected offset 150 to be in range 100-200")
-		}
+		assertRangeContains(t, r, 150, "a.go", true)
 	})
 
 	t.Run("no line no offset uses offset check", func(t *testing.T) {

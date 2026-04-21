@@ -2,6 +2,13 @@ package finding
 
 import "testing"
 
+func assertCategoryCount(t *testing.T, r *Report, cat Category, want int) {
+	t.Helper()
+	if got := r.Summary.ByCategory[cat]; got != want {
+		t.Errorf("ByCategory[%s] = %d, want %d", cat, got, want)
+	}
+}
+
 func TestComputeSummary(t *testing.T) {
 	t.Parallel()
 
@@ -33,13 +40,8 @@ func TestComputeSummary(t *testing.T) {
 		t.Errorf("BySeverity[Info] = %d, want 1", r.Summary.BySeverity[SeverityInfo])
 	}
 
-	if r.Summary.ByCategory[CategorySecurity] != 1 {
-		t.Errorf("ByCategory[Security] = %d, want 1", r.Summary.ByCategory[CategorySecurity])
-	}
-
-	if r.Summary.ByCategory[CategoryStyle] != 1 {
-		t.Errorf("ByCategory[Style] = %d, want 1", r.Summary.ByCategory[CategoryStyle])
-	}
+	assertCategoryCount(t, r, CategorySecurity, 1)
+	assertCategoryCount(t, r, CategoryStyle, 1)
 
 	if r.Summary.ByFixStrategy[FixStrategyDirect] != 1 {
 		t.Errorf("ByFixStrategy[Direct] = %d, want 1", r.Summary.ByFixStrategy[FixStrategyDirect])
@@ -83,13 +85,8 @@ func TestComputeSummary_Resets(t *testing.T) {
 		t.Errorf("Total = %d, want 2", r.Summary.Total)
 	}
 
-	if r.Summary.ByCategory[CategorySecurity] != 1 {
-		t.Errorf("ByCategory[Security] = %d, want 1", r.Summary.ByCategory[CategorySecurity])
-	}
-
-	if r.Summary.ByCategory[CategoryStyle] != 1 {
-		t.Errorf("ByCategory[Style] = %d, want 1", r.Summary.ByCategory[CategoryStyle])
-	}
+	assertCategoryCount(t, r, CategorySecurity, 1)
+	assertCategoryCount(t, r, CategoryStyle, 1)
 }
 
 func TestComputeSummary_PreservesDurationMs(t *testing.T) {

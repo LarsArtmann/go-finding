@@ -113,6 +113,14 @@ func assertFindingsFound(t *testing.T, result *PipelineResult, want int, msg str
 	}
 }
 
+func assertIterationsLen(t *testing.T, result *PipelineResult, want int) {
+	t.Helper()
+
+	if n := len(result.Iterations); n != want {
+		t.Fatalf("iterations = %d, want %d", n, want)
+	}
+}
+
 func writeFile(path string, data []byte, perm uint32) error {
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.FileMode(perm))
 	if err != nil {
