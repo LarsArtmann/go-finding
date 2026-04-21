@@ -4,6 +4,26 @@ import (
 	"testing"
 )
 
+type containsTest struct {
+	name       string
+	r          Range
+	p          Position
+	shouldCont bool
+}
+
+func runContainsTests(t *testing.T, tests []containsTest) {
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if r := tt.r.Contains(tt.p); r != tt.shouldCont {
+				t.Errorf("Contains() = %v, want %v", r, tt.shouldCont)
+			}
+		})
+	}
+}
+
 func TestRangeLineCount(t *testing.T) {
 	t.Parallel()
 
@@ -101,6 +121,31 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 		}
 	})
 
+	t.Run("column outside range", func(t *testing.T) {
+		t.Parallel()
+
+		runContainsTests(t, []containsTest{
+			{
+				"on end line",
+				Range{
+					Start: Position{File: "a.go", Line: 10, Column: 5},
+					End:   Position{File: "a.go", Line: 10, Column: 15},
+				},
+				Position{File: "a.go", Line: 10, Column: 20},
+				false,
+			},
+			{
+				"on start line",
+				Range{
+					Start: Position{File: "a.go", Line: 10, Column: 5},
+					End:   Position{File: "a.go", Line: 20, Column: 15},
+				},
+				Position{File: "a.go", Line: 10, Column: 3},
+				false,
+			},
+		})
+	})
+
 	t.Run("offset-only range", func(t *testing.T) {
 		t.Parallel()
 
@@ -127,32 +172,6 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 		p := Position{File: "a.go", Line: 10, Column: 10}
 		if !r.Contains(p) {
 			t.Error("expected column 10 to be in range 5-15")
-		}
-	})
-
-	t.Run("column outside range on end line", func(t *testing.T) {
-		t.Parallel()
-
-		r := Range{
-			Start: Position{File: "a.go", Line: 10, Column: 5},
-			End:   Position{File: "a.go", Line: 10, Column: 15},
-		}
-		p := Position{File: "a.go", Line: 10, Column: 20}
-		if r.Contains(p) {
-			t.Error("expected column 20 to be outside range 5-15")
-		}
-	})
-
-	t.Run("column outside range on start line", func(t *testing.T) {
-		t.Parallel()
-
-		r := Range{
-			Start: Position{File: "a.go", Line: 10, Column: 5},
-			End:   Position{File: "a.go", Line: 20, Column: 15},
-		}
-		p := Position{File: "a.go", Line: 10, Column: 3}
-		if r.Contains(p) {
-			t.Error("expected column 3 to be outside range starting at column 5")
 		}
 	})
 
@@ -350,48 +369,30 @@ func TestRangeLinesEq(t *testing.T) {
 func TestRangeHasLineRange(t *testing.T) {
 	t.Parallel()
 
-	t.Run("position before range", func(t *testing.T) {
-		t.Parallel()
-
-		r := Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}}
-		p := Position{File: "a.go", Line: 5}
-		if r.Contains(p) {
-			t.Error("position before range should not be contained")
-		}
-	})
-
-	t.Run("position after range", func(t *testing.T) {
-		t.Parallel()
-
-		r := Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}}
-		p := Position{File: "a.go", Line: 25}
-		if r.Contains(p) {
-			t.Error("position after range should not be contained")
-		}
-	})
-
-	t.Run("position within range no column", func(t *testing.T) {
-		t.Parallel()
-
-		r := Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}}
-		p := Position{File: "a.go", Line: 15}
-		if !r.Contains(p) {
-			t.Error("position at line 15 should be in range 10-20")
-		}
-	})
-
-	t.Run("zero position line falls through to offset", func(t *testing.T) {
-		t.Parallel()
-
-		r := Range{Start: Position{File: "a.go", Line: 10}}
-		p := Position{File: "a.go", Line: 0}
-		// Both have Offset=0 (Go zero value). containsByOffset runs because
-		// the "both have line info" check fails. Since both offsets are 0
-		// and 0 >= 0 (HasOffset is true), the offset check returns true.
-		// This is a known semantic issue: Offset defaults to 0 which looks
-		// like a valid offset.
-		if !r.Contains(p) {
-			t.Error("with default Offset=0 on both, containsByOffset returns true")
-		}
+	runContainsTests(t, []containsTest{
+		{
+			"position before range",
+			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
+			Position{File: "a.go", Line: 5},
+			false,
+		},
+		{
+			"position after range",
+			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
+			Position{File: "a.go", Line: 25},
+			false,
+		},
+		{
+			"position within range no column",
+			Range{Start: Position{File: "a.go", Line: 10}, End: Position{Line: 20}},
+			Position{File: "a.go", Line: 15},
+			true,
+		},
+		{
+			"zero position line falls through to offset",
+			Range{Start: Position{File: "a.go", Line: 10}},
+			Position{File: "a.go", Line: 0},
+			true,
+		},
 	})
 }
