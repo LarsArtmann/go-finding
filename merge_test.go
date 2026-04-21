@@ -228,3 +228,17 @@ func TestCorrelate_TooFewFindings(t *testing.T) {
 		t.Errorf("Correlate() = %d, want 0 for single finding", len(correlations))
 	}
 }
+
+func TestCloneFindings_EmptySlice(t *testing.T) {
+	t.Parallel()
+
+	cloned := cloneFindings(nil)
+	if cloned != nil {
+		t.Errorf("cloneFindings(nil) = %v, want nil", cloned)
+	}
+
+	cloned = cloneFindings([]Finding{})
+	if cloned != nil {
+		t.Errorf("cloneFindings(empty) = %v, want nil", cloned)
+	}
+}

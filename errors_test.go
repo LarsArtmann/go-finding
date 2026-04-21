@@ -256,3 +256,16 @@ func TestSentinelErrors_Wrapped(t *testing.T) {
 		t.Error("expected errors.Is to find sentinel through wrapping")
 	}
 }
+
+func TestFindingError_Is_UnknownCategory(t *testing.T) {
+	t.Parallel()
+
+	err := &FindingError{Category: ErrorCategory("custom"), Message: "custom error"}
+	if errors.Is(err, ErrValidation) {
+		t.Error("unknown category should not match ErrValidation")
+	}
+
+	if errors.Is(err, ErrInternal) {
+		t.Error("unknown category should not match ErrInternal")
+	}
+}

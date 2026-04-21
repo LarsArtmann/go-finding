@@ -211,6 +211,29 @@ func TestToLSP(t *testing.T) { //nolint:gocognit,funlen // comprehensive table-d
 	t.Parallel()
 
 	t.Run("with range", func(t *testing.T) {
+
+	t.Run("zero-based conversion with zero line", func(t *testing.T) {
+		t.Parallel()
+
+		f := Finding{
+			Rule:     "r1",
+			ToolName: "tool",
+			Message:  "msg",
+			Severity: SeverityWarning,
+			Position: Position{File: "a.go", Line: 0, Column: 0},
+		}
+
+		diag := f.ToLSP()
+		if diag.Range.Start.Line != 0 {
+			t.Errorf("ToLSP with Line=0 should produce Start.Line=0, got %d", diag.Range.Start.Line)
+		}
+
+		if diag.Range.Start.Character != 0 {
+			t.Errorf("ToLSP with Column=0 should produce Start.Character=0, got %d", diag.Range.Start.Character)
+		}
+	})
+
+
 		t.Parallel()
 
 		f := Finding{
