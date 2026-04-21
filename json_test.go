@@ -17,6 +17,16 @@ func testFinding(id, rule, tool, msg string, sev Severity, file string, line, co
 	}
 }
 
+func assertSingleFindingWithID(t *testing.T, got *Report, wantID string) {
+	t.Helper()
+	if len(got.Findings) != 1 {
+		t.Fatalf("Findings length = %d, want 1", len(got.Findings))
+	}
+	if got.Findings[0].ID != wantID {
+		t.Errorf("Findings[0].ID = %q, want %q", got.Findings[0].ID, wantID)
+	}
+}
+
 func TestFromJSON(t *testing.T) {
 	t.Parallel()
 
@@ -141,13 +151,7 @@ func TestReportFromJSON(t *testing.T) {
 			t.Errorf("Tool.Name = %q, want %q", got.Tool.Name, orig.Tool.Name)
 		}
 
-		if len(got.Findings) != 1 {
-			t.Fatalf("Findings length = %d, want 1", len(got.Findings))
-		}
-
-		if got.Findings[0].ID != "f1" {
-			t.Errorf("Findings[0].ID = %q, want %q", got.Findings[0].ID, "f1")
-		}
+		assertSingleFindingWithID(t, got, "f1")
 	})
 
 	t.Run("invalid input returns error", func(t *testing.T) {

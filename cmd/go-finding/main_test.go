@@ -12,6 +12,15 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+func parseJSON(t *testing.T, buf *bytes.Buffer) map[string]any {
+	t.Helper()
+	var parsed map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
+		t.Fatalf("invalid JSON output: %v\noutput: %s", err, buf.String())
+	}
+	return parsed
+}
+
 func TestOutputResults_JSON(t *testing.T) {
 	t.Parallel()
 

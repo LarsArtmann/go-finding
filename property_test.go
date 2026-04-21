@@ -6,16 +6,6 @@ import (
 	"testing/quick"
 )
 
-func checkProperty(t *testing.T, property func(int64) bool) {
-	err := quick.Check(property, &quick.Config{
-		MaxCount: 1000,
-		Rand:     rand.New(rand.NewSource(42)),
-	})
-	if err != nil {
-		t.Error(err)
-	}
-}
-
 func TestProperty_FilterBySeverityAtLeast(t *testing.T) {
 	t.Parallel()
 

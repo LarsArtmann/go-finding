@@ -36,13 +36,6 @@ func rngOffset(file string, startOffset, endOffset int) Range {
 	}
 }
 
-func rngLine(file string, startLine, endLine int) Range {
-	return Range{
-		Start: Position{File: file, Line: startLine},
-		End:   Position{Line: endLine},
-	}
-}
-
 func TestRangeLineCount(t *testing.T) {
 	t.Parallel()
 
@@ -321,38 +314,38 @@ func TestRangeLinesEq(t *testing.T) {
 	}{
 		{
 			"equal start and end lines",
-			rngLine("", 10, 20),
-			rngLine("", 10, 20),
+			rangeLine("", 10, 20),
+			rangeLine("", 10, 20),
 			true,
 		},
 		{
 			"different start line",
-			rngLine("", 10, 20),
-			rngLine("", 15, 20),
+			rangeLine("", 10, 20),
+			rangeLine("", 15, 20),
 			false,
 		},
 		{
 			"different end line",
-			rngLine("", 10, 20),
-			rngLine("", 10, 25),
+			rangeLine("", 10, 20),
+			rangeLine("", 10, 25),
 			false,
 		},
 		{
 			"different files same lines",
-			rngLine("a.go", 10, 20),
-			rngLine("b.go", 10, 20),
+			rangeLine("a.go", 10, 20),
+			rangeLine("b.go", 10, 20),
 			true,
 		},
 		{
 			"same start and end line (single line)",
-			rngLine("", 5, 5),
-			rngLine("", 5, 5),
+			rangeLine("", 5, 5),
+			rangeLine("", 5, 5),
 			true,
 		},
 		{
 			"zero lines",
-			rngLine("", 0, 0),
-			rngLine("", 0, 0),
+			rangeLine("", 0, 0),
+			rangeLine("", 0, 0),
 			true,
 		},
 	}
@@ -374,25 +367,25 @@ func TestRangeHasLineRange(t *testing.T) {
 	runContainsTests(t, []containsTest{
 		{
 			"Position before range",
-			rngLine("a.go", 10, 20),
+			rangeLine("a.go", 10, 20),
 			Pos("a.go", 5, 0),
 			false,
 		},
 		{
 			"Position after range",
-			rngLine("a.go", 10, 20),
+			rangeLine("a.go", 10, 20),
 			Pos("a.go", 25, 0),
 			false,
 		},
 		{
 			"Position within range no column",
-			rngLine("a.go", 10, 20),
+			rangeLine("a.go", 10, 20),
 			Pos("a.go", 15, 0),
 			true,
 		},
 		{
 			"zero Position line falls through to offset",
-			rngLine("a.go", 10, 0),
+			rangeLine("a.go", 10, 0),
 			Pos("a.go", 0, 0),
 			true,
 		},

@@ -250,20 +250,8 @@ func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
 	writeTestFile(t, file1, []byte("package first\nold1()\n"))
 
 	fixes := []finding.Finding{
-		{
-			ID:          "1",
-			BeforeCode:  "old1()",
-			AfterCode:   "new1()",
-			Position:    finding.Position{File: "first.go"},
-			FixStrategy: finding.FixStrategyDirect,
-		},
-		{
-			ID:          "2",
-			BeforeCode:  "old2()",
-			AfterCode:   "new2()",
-			Position:    finding.Position{File: "nonexistent_dir/second.go"},
-			FixStrategy: finding.FixStrategyDirect,
-		},
+		makeFixFinding("1", "old1()", "new1()", "first.go", 0),
+		makeFixFinding("2", "old2()", "new2()", "nonexistent_dir/second.go", 0),
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)

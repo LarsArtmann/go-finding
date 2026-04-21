@@ -13,6 +13,14 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+func detectorSpecs(names ...string) []detectorSpec {
+	specs := make([]detectorSpec, len(names))
+	for i, name := range names {
+		specs[i] = detectorSpec{Name: name}
+	}
+	return specs
+}
+
 func runWithArgs(t *testing.T, args ...string) int {
 	t.Helper()
 	savedCommandLine := flag.CommandLine
@@ -164,7 +172,7 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 			cfg: pipelineConfigFile{
 				MaxIterations: 5,
 				Timeout:       "10m",
-				Detectors:     []detectorSpec{{Name: "govet"}},
+				Detectors:     detectorSpecs("govet"),
 			},
 			wantErr: false,
 		},
@@ -172,7 +180,7 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 			name: "negative iterations",
 			cfg: pipelineConfigFile{
 				MaxIterations: -1,
-				Detectors:     []detectorSpec{{Name: "govet"}},
+				Detectors:     detectorSpecs("govet"),
 			},
 			wantErr: true,
 		},
@@ -181,7 +189,7 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 			cfg: pipelineConfigFile{
 				MaxIterations: 1,
 				Timeout:       "not-a-duration",
-				Detectors:     []detectorSpec{{Name: "govet"}},
+				Detectors:     detectorSpecs("govet"),
 			},
 			wantErr: true,
 		},
@@ -189,7 +197,7 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 			name: "unknown detector",
 			cfg: pipelineConfigFile{
 				MaxIterations: 1,
-				Detectors:     []detectorSpec{{Name: "nonexistent-tool"}},
+				Detectors:     detectorSpecs("nonexistent-tool"),
 			},
 			wantErr: true,
 		},
