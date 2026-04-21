@@ -164,15 +164,10 @@ func TestReport_AddFindings_Empty(t *testing.T) {
 
 	r := NewReport(ToolInfo{Name: "test"})
 	r.AddFindings(nil)
-
-	if len(r.Findings) != 0 {
-		t.Errorf("AddFindings(nil): len = %d, want 0", len(r.Findings))
-	}
+	AssertEmpty(t, r.Findings, "AddFindings(nil): Findings")
 
 	r.AddFindings([]Finding{})
-	if len(r.Findings) != 0 {
-		t.Errorf("AddFindings(empty): len = %d, want 0", len(r.Findings))
-	}
+	AssertEmpty(t, r.Findings, "AddFindings(empty): Findings")
 }
 
 func TestMerge_NilReports(t *testing.T) {

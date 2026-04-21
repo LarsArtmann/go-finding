@@ -220,3 +220,16 @@ func checkProperty[T any](t *testing.T, property func(T) bool) {
 		t.Error(err)
 	}
 }
+
+// checkPropertyAny runs a property-based test with any function signature.
+func checkPropertyAny(t *testing.T, property any) {
+	t.Helper()
+
+	err := quick.Check(property, &quick.Config{
+		MaxCount: 1000,
+		Rand:     rand.New(rand.NewSource(42)),
+	})
+	if err != nil {
+		t.Error(err)
+	}
+}

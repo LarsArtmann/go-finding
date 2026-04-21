@@ -3,7 +3,6 @@ package finding
 import (
 	"math/rand"
 	"testing"
-	"testing/quick"
 )
 
 func TestProperty_FilterBySeverityAtLeast(t *testing.T) {
@@ -119,13 +118,7 @@ func TestProperty_IDRoundTrip(t *testing.T) {
 		return true
 	}
 
-	err := quick.Check(property, &quick.Config{
-		MaxCount: 1000,
-		Rand:     rand.New(rand.NewSource(42)),
-	})
-	if err != nil {
-		t.Error(err)
-	}
+	checkPropertyAny(t, property)
 }
 
 func TestProperty_MergeDedupReducesOrPreserves(t *testing.T) {
@@ -152,13 +145,7 @@ func TestProperty_MergeDedupReducesOrPreserves(t *testing.T) {
 		return len(merged.Findings) <= len(findings)*2
 	}
 
-	err := quick.Check(property, &quick.Config{
-		MaxCount: 1000,
-		Rand:     rand.New(rand.NewSource(42)),
-	})
-	if err != nil {
-		t.Error(err)
-	}
+	checkProperty(t, property)
 }
 
 func TestProperty_FilterEmptyReturnsEmpty(t *testing.T) {
@@ -170,11 +157,5 @@ func TestProperty_FilterEmptyReturnsEmpty(t *testing.T) {
 		return len(result) == 0
 	}
 
-	err := quick.Check(property, &quick.Config{
-		MaxCount: 1000,
-		Rand:     rand.New(rand.NewSource(42)),
-	})
-	if err != nil {
-		t.Error(err)
-	}
+	checkPropertyAny(t, property)
 }

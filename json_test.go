@@ -210,13 +210,7 @@ func TestReportFromJSON(t *testing.T) {
 			t.Errorf("dropped = %d, want 1", dropped)
 		}
 
-		if len(got.Findings) != 1 {
-			t.Fatalf("Findings length = %d, want 1 (invalid filtered)", len(got.Findings))
-		}
-
-		if got.Findings[0].ID != "f1" {
-			t.Errorf("Findings[0].ID = %q, want %q", got.Findings[0].ID, "f1")
-		}
+		assertSingleFindingWithID(t, got, "f1")
 	})
 }
 
