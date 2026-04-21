@@ -56,6 +56,26 @@ func runParseIDCases(t *testing.T, tests []parseIDCase) {
 	}
 }
 
+// assertRoundTrip validates ParseID round-trip with the given parameters.
+func assertRoundTrip(t *testing.T, p *ParsedID, tool, rule, file string, line, col int) {
+	t.Helper()
+	if p.Tool != tool {
+		t.Errorf("tool = %q, want %q", p.Tool, tool)
+	}
+	if p.Rule != rule {
+		t.Errorf("rule = %q, want %q", p.Rule, rule)
+	}
+	if p.File != file {
+		t.Errorf("file = %q, want %q", p.File, file)
+	}
+	if p.Line != line {
+		t.Errorf("line = %d, want %d", p.Line, line)
+	}
+	if p.Column != col {
+		t.Errorf("col = %d, want %d", p.Column, col)
+	}
+}
+
 func TestGenerateID(t *testing.T) {
 	t.Parallel()
 
@@ -190,25 +210,7 @@ func TestGenerateID_ParseID_RoundTrip(t *testing.T) {
 				t.Fatalf("ParseID(%q) returned ok=false", id)
 			}
 
-			if p.Tool != tt.tool {
-				t.Errorf("tool = %q, want %q", p.Tool, tt.tool)
-			}
-
-			if p.Rule != tt.rule {
-				t.Errorf("rule = %q, want %q", p.Rule, tt.rule)
-			}
-
-			if p.File != tt.pos.File {
-				t.Errorf("file = %q, want %q", p.File, tt.pos.File)
-			}
-
-			if p.Line != tt.pos.Line {
-				t.Errorf("line = %d, want %d", p.Line, tt.pos.Line)
-			}
-
-			if p.Column != tt.pos.Column {
-				t.Errorf("col = %d, want %d", p.Column, tt.pos.Column)
-			}
+			assertRoundTrip(t, &p, tt.tool, tt.rule, tt.pos.File, tt.pos.Line, tt.pos.Column)
 		})
 	}
 }
@@ -240,48 +242,13 @@ func TestParseID_WindowsPaths(t *testing.T) {
 	t.Parallel()
 
 	tests := []parseIDCase{
-		{
-			name:     "Windows absolute drive letter with line and col",
-			id:       "govet:nilcheck:C:/Users/test/file.go:42:10",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "C:/Users/test/file.go", wantLine: 42, wantCol: 10, wantOK: true,
-		},
-		{
-			name:     "Windows absolute drive letter line only",
-			id:       "govet:nilcheck:C:/Users/test/file.go:42",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "C:/Users/test/file.go", wantLine: 42, wantCol: 0, wantOK: true,
-		},
-		{
-			name:     "Windows drive letter no position",
-			id:       "govet:nilcheck:C:/Users/test/file.go",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "C:/Users/test/file.go", wantLine: 0, wantCol: 0, wantOK: true,
-		},
-		{
-			name:     "Windows path with spaces",
-			id:       "govet:nilcheck:C:/Program Files/My App/main.go:15:5",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "C:/Program Files/My App/main.go", wantLine: 15, wantCol: 5, wantOK: true,
-		},
-		{
-			name:     "UNC forward-slash path",
-			id:       "govet:nilcheck://server/share/file.go:10:1",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "//server/share/file.go", wantLine: 10, wantCol: 1, wantOK: true,
-		},
-		{
-			name:     "UNC path line only",
-			id:       "govet:nilcheck://server/share/dir/file.go:7",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "//server/share/dir/file.go", wantLine: 7, wantCol: 0, wantOK: true,
-		},
-		{
-			name:     "drive root only",
-			id:       "govet:nilcheck:C:/:1:1",
-			wantTool: "govet", wantRule: "nilcheck",
-			wantFile: "C:/", wantLine: 1, wantCol: 1, wantOK: true,
-		},
+		stdIDCase("Windows absolute drive letter with line and col", "govet:nilcheck:C:/Users/test/file.go:42:10", "C:/Users/test/file.go", 42, 10, true),
+		stdIDCase("Windows absolute drive letter line only", "govet:nilcheck:C:/Users/test/file.go:42", "C:/Users/test/file.go", 42, 0, true),
+		stdIDCase("Windows drive letter no position", "govet:nilcheck:C:/Users/test/file.go", "C:/Users/test/file.go", 0, 0, true),
+		stdIDCase("Windows path with spaces", "govet:nilcheck:C:/Program Files/My App/main.go:15:5", "C:/Program Files/My App/main.go", 15, 5, true),
+		stdIDCase("UNC forward-slash path", "govet:nilcheck://server/share/file.go:10:1", "//server/share/file.go", 10, 1, true),
+		stdIDCase("UNC path line only", "govet:nilcheck://server/share/dir/file.go:7", "//server/share/dir/file.go", 7, 0, true),
+		stdIDCase("drive root only", "govet:nilcheck:C:/:1:1", "C:/", 1, 1, true),
 	}
 
 	runParseIDCases(t, tests)
@@ -316,22 +283,7 @@ func TestGenerateID_WindowsPathRoundTrip(t *testing.T) {
 				t.Fatalf("ParseID(%q) returned ok=false", id)
 			}
 
-			if p.Tool != tt.tool {
-				t.Errorf("tool = %q, want %q", p.Tool, tt.tool)
-			}
-			if p.Rule != tt.rule {
-				t.Errorf("rule = %q, want %q", p.Rule, tt.rule)
-			}
-			if p.File != tt.file {
-				t.Errorf("file = %q, want %q", p.File, tt.file)
-			}
-			if p.Line != tt.line {
-				t.Errorf("line = %d, want %d", p.Line, tt.line)
-			}
-
-			if p.Column != tt.col {
-				t.Errorf("col = %d, want %d", p.Column, tt.col)
-			}
+			assertRoundTrip(t, &p, tt.tool, tt.rule, tt.file, tt.line, tt.col)
 		})
 	}
 }

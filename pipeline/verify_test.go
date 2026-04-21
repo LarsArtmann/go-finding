@@ -29,6 +29,16 @@ func assertDiffResult(t *testing.T, result *VerifyResult, resolved, remaining, n
 	}
 }
 
+func assertNewFindingID(t *testing.T, result *VerifyResult, wantID string) {
+	t.Helper()
+	if len(result.NewFindings) == 0 {
+		t.Fatal("no new findings to check")
+	}
+	if result.NewFindings[0].ID != wantID {
+		t.Errorf("expected new finding ID %q, got %s", wantID, result.NewFindings[0].ID)
+	}
+}
+
 func TestDiffFindings_AllFixed(t *testing.T) {
 	t.Parallel()
 
@@ -58,10 +68,7 @@ func TestDiffFindings_NewFindings(t *testing.T) {
 	}
 	result := DiffFindings(original, post)
 	assertDiffResult(t, result, 0, 1, 1)
-
-	if result.NewFindings[0].ID != "c:rule:file.go:3" {
-		t.Errorf("expected new finding ID 'c:rule:file.go:3', got %s", result.NewFindings[0].ID)
-	}
+	assertNewFindingID(t, result, "c:rule:file.go:3")
 }
 
 func TestDiffFindings_Mixed(t *testing.T) {
@@ -165,9 +172,7 @@ func TestVerifier_Verify_SuppressedFindingsFiltered(t *testing.T) {
 		t.Fatalf("expected 1 new finding (suppressed filtered), got %d", len(result.NewFindings))
 	}
 
-	if result.NewFindings[0].ID != "normal:rule:f.go:2" {
-		t.Errorf("expected normal finding, got %s", result.NewFindings[0].ID)
-	}
+	assertNewFindingID(t, result, "normal:rule:f.go:2")
 }
 
 func TestFindingKey_EmptyID(t *testing.T) {

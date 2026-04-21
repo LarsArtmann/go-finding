@@ -223,3 +223,27 @@ func makeConflictingFixes() []finding.Finding {
 		makeFixFindingWithRange("fix2", "old()", "other()", "fixme.go", 4, 2),
 	}
 }
+
+var suppressedIDs = []string{"s2", "s4"}
+
+func assertNoSuppressedFindings(t *testing.T, findings []finding.Finding, mode string) {
+	t.Helper()
+	for _, f := range findings {
+		for _, sid := range suppressedIDs {
+			if f.ID == sid {
+				t.Errorf("suppressed finding %s present in %s results", f.ID, mode)
+			}
+		}
+	}
+}
+
+func assertNoSuppressedNotified(t *testing.T, notified []string, mode string) {
+	t.Helper()
+	for _, id := range notified {
+		for _, sid := range suppressedIDs {
+			if id == sid {
+				t.Errorf("OnFinding called for suppressed finding %s in %s mode", id, mode)
+			}
+		}
+	}
+}

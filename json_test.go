@@ -6,6 +6,17 @@ import (
 	"testing"
 )
 
+func testFinding(id, rule, tool, msg string, sev Severity, file string, line, col int) Finding {
+	return Finding{
+		ID:       id,
+		Rule:     rule,
+		ToolName: tool,
+		Message:  msg,
+		Severity: sev,
+		Position: Position{File: file, Line: line, Column: col},
+	}
+}
+
 func TestFromJSON(t *testing.T) {
 	t.Parallel()
 
@@ -212,22 +223,8 @@ func TestFindingsFromJSON(t *testing.T) {
 		t.Parallel()
 
 		orig := []Finding{
-			{
-				ID:       "f1",
-				Rule:     "R1",
-				ToolName: "t",
-				Message:  "msg",
-				Severity: SeverityInfo,
-				Position: Position{File: "a.go", Line: 1, Column: 1},
-			},
-			{
-				ID:       "f2",
-				Rule:     "R2",
-				ToolName: "t",
-				Message:  "msg",
-				Severity: SeverityError,
-				Position: Position{File: "b.go", Line: 2, Column: 1},
-			},
+			testFinding("f1", "R1", "t", "msg", SeverityInfo, "a.go", 1, 1),
+			testFinding("f2", "R2", "t", "msg", SeverityError, "b.go", 2, 1),
 		}
 
 		data, err := json.Marshal(orig)
@@ -262,14 +259,7 @@ func TestFindingsFromJSON(t *testing.T) {
 		t.Parallel()
 
 		orig := []Finding{
-			{
-				ID:       "f1",
-				Rule:     "R1",
-				ToolName: "t",
-				Message:  "msg",
-				Severity: SeverityInfo,
-				Position: Position{File: "a.go", Line: 1, Column: 1},
-			},
+			testFinding("f1", "R1", "t", "msg", SeverityInfo, "a.go", 1, 1),
 			{ID: "bad", Severity: SeverityWarning},
 		}
 

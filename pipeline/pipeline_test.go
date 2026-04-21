@@ -389,29 +389,10 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 		t.Errorf("sequential notified %d, parallel notified %d", len(seqNotified), len(parNotified))
 	}
 
-	for _, f := range seqFindings {
-		if f.ID == "s2" || f.ID == "s4" {
-			t.Errorf("suppressed finding %s present in sequential results", f.ID)
-		}
-	}
-
-	for _, f := range parFindings {
-		if f.ID == "s2" || f.ID == "s4" {
-			t.Errorf("suppressed finding %s present in parallel results", f.ID)
-		}
-	}
-
-	for _, id := range seqNotified {
-		if id == "s2" || id == "s4" {
-			t.Errorf("OnFinding called for suppressed finding %s in sequential mode", id)
-		}
-	}
-
-	for _, id := range parNotified {
-		if id == "s2" || id == "s4" {
-			t.Errorf("OnFinding called for suppressed finding %s in parallel mode", id)
-		}
-	}
+	assertNoSuppressedFindings(t, seqFindings, "sequential")
+	assertNoSuppressedFindings(t, parFindings, "parallel")
+	assertNoSuppressedNotified(t, seqNotified, "sequential")
+	assertNoSuppressedNotified(t, parNotified, "parallel")
 }
 
 // TestTriage tests the triage function.
