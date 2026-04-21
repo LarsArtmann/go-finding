@@ -183,7 +183,7 @@ func TestParseStaticcheckJSON(t *testing.T) {
 
 	// Second finding: S1001 = style category, error severity
 	f2 := findings[1]
-	if f2.Rule != "S1001" {
+	if f2.Rule != "S1001" { //nolint:goconst // test fixture
 		t.Errorf("Rule = %q, want %q", f2.Rule, "S1001")
 	}
 	{

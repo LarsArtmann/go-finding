@@ -101,6 +101,7 @@ func (e *FindingError) WithPosition(pos Position) *FindingError {
 
 // NewValidationError creates a validation error.
 func NewValidationError(message string, cause error) *FindingError {
+	//nolint:exhaustruct
 	return &FindingError{
 		Category: ErrCategoryValidation,
 		Message:  message,
@@ -110,6 +111,7 @@ func NewValidationError(message string, cause error) *FindingError {
 
 // NewIOError creates an IO error.
 func NewIOError(message string, cause error) *FindingError {
+	//nolint:exhaustruct
 	return &FindingError{
 		Category: ErrCategoryIO,
 		Message:  message,
@@ -119,6 +121,7 @@ func NewIOError(message string, cause error) *FindingError {
 
 // NewParseError creates a parse error.
 func NewParseError(message string, cause error) *FindingError {
+	//nolint:exhaustruct
 	return &FindingError{
 		Category: ErrCategoryParse,
 		Message:  message,
@@ -128,6 +131,7 @@ func NewParseError(message string, cause error) *FindingError {
 
 // NewConflictError creates a conflict error.
 func NewConflictError(message string, cause error) *FindingError {
+	//nolint:exhaustruct
 	return &FindingError{
 		Category: ErrCategoryConflict,
 		Message:  message,
@@ -137,6 +141,7 @@ func NewConflictError(message string, cause error) *FindingError {
 
 // NewInternalError creates an internal error.
 func NewInternalError(message string, cause error) *FindingError {
+	//nolint:exhaustruct
 	return &FindingError{
 		Category: ErrCategoryInternal,
 		Message:  message,

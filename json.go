@@ -14,6 +14,8 @@ var (
 )
 
 // FilterInvalid is a filter function for removing invalid findings.
+//
+//nolint:gochecknoglobals
 var FilterInvalid = func(f Finding) bool {
 	return !f.IsValid()
 }

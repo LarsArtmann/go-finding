@@ -16,7 +16,7 @@ func TestRangeLineCount(t *testing.T) {
 		{"single line no end", Range{Start: Position{File: "a.go", Line: 5}}, 1},
 		{"single line with end", Range{Start: Position{Line: 5}, End: Position{Line: 5}}, 1},
 		{"multi line", Range{Start: Position{Line: 10}, End: Position{Line: 20}}, 11},
-		{"negative count (end < start)", Range{Start: Position{Line: 20}, End: Position{Line: 10}}, 0},
+		{"end < start", Range{Start: Position{Line: 20}, End: Position{Line: 10}}, 0},
 		{"zero start line", Range{Start: Position{Line: 0}, End: Position{Line: 5}}, 0},
 	}
 

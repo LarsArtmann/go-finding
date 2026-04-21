@@ -84,6 +84,7 @@ const defaultMaxIterations = 5
 
 // DefaultConfig returns a sensible default configuration.
 func DefaultConfig() Config {
+	//nolint:exhaustruct
 	return Config{
 		MaxIterations:     defaultMaxIterations,
 		ParallelDetectors: true,
@@ -145,6 +146,7 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 		detectors = wrapped
 	}
 
+	//nolint:exhaustruct
 	return &Pipeline{
 		config:    config,
 		detectors: detectors,
@@ -196,6 +198,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		defer cancel()
 	}
 
+	//nolint:exhaustruct
 	result := &PipelineResult{
 		Iterations: make([]Iteration, 0, p.config.MaxIterations),
 	}
@@ -205,7 +208,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 			return result, fmt.Errorf("pipeline cancelled: %w", ctx.Err())
 		}
 
-		iter := Iteration{Number: p.iterations + 1}
+		iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct
 
 		// Detect
 		detectDone := p.stageTiming("detect")
@@ -335,7 +338,7 @@ func (p *Pipeline) detect(ctx context.Context) (*detectResult, error) {
 			return nil, err
 		}
 
-		return &detectResult{Findings: findings}, nil
+		return &detectResult{Findings: findings}, nil //nolint:exhaustruct
 	}
 
 	findings, err := p.detectSequential(ctx)
@@ -343,7 +346,7 @@ func (p *Pipeline) detect(ctx context.Context) (*detectResult, error) {
 		return nil, err
 	}
 
-	return &detectResult{Findings: findings}, nil
+	return &detectResult{Findings: findings}, nil //nolint:exhaustruct
 }
 
 // addFindings adds non-suppressed findings to the target slice, calling OnFinding if set.

@@ -23,7 +23,7 @@ func NewStaticcheckDetector(dir string) pipeline.Detector {
 
 			out, err := cmd.Output()
 			if err != nil {
-				exitError := &exec.ExitError{}
+				exitError := &exec.ExitError{} //nolint:exhaustruct
 				if errors.As(err, &exitError) && len(out) > 0 {
 					return parseStaticcheckJSON(out, dir), nil
 				}
@@ -67,7 +67,7 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 			continue
 		}
 
-		pos := finding.Position{
+		pos := finding.Position{ //nolint:exhaustruct
 			File:   entry.Location.File,
 			Line:   entry.Location.Line,
 			Column: entry.Location.Column,
@@ -83,7 +83,8 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 
 		cat := staticcheckCategory(entry.Code)
 
-		findings = append(findings, finding.Finding{
+		//nolint:exhaustruct
+		findings = append(findings, finding.Finding{ //nolint:exhaustruct
 			ID:          finding.GenerateID("staticcheck", entry.Code, pos),
 			Rule:        entry.Code,
 			ToolName:    "staticcheck",

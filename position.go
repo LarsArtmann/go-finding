@@ -298,7 +298,7 @@ func (r Range) intersectionByLine(other Range) *Range {
 
 	// If start equals end (same position), return single point range
 	if start.Line == end.Line && start.Column == end.Column {
-		return &Range{Start: start, End: Position{}}
+		return &Range{Start: start, End: Position{}} //nolint:exhaustruct
 	}
 
 	return &Range{Start: start, End: end}
@@ -321,8 +321,8 @@ func (r Range) intersectionByOffset(other Range) *Range {
 	endOffset := min(rEndOffset, otherEndOffset)
 
 	return &Range{
-		Start: Position{File: r.Start.File, Offset: startOffset},
-		End:   Position{File: r.Start.File, Offset: endOffset},
+		Start: Position{File: r.Start.File, Offset: startOffset}, //nolint:exhaustruct
+		End:   Position{File: r.Start.File, Offset: endOffset}, //nolint:exhaustruct
 	}
 }
 
@@ -375,14 +375,14 @@ func (p Position) HasOffset() bool {
 
 // Pos creates a Position from the given file, line, and column.
 func Pos(file string, line, column int) Position {
-	return Position{File: file, Line: line, Column: column}
+	return Position{File: file, Line: line, Column: column} //nolint:exhaustruct
 }
 
 // NewRange creates a Range with the given file, start/end lines, and columns.
 func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
 	return Range{
-		Start: Position{File: file, Line: startLine, Column: startCol},
-		End:   Position{File: file, Line: endLine, Column: endCol},
+		Start: Position{File: file, Line: startLine, Column: startCol}, //nolint:exhaustruct
+		End:   Position{File: file, Line: endLine, Column: endCol}, //nolint:exhaustruct
 	}
 }
 

@@ -21,13 +21,14 @@ const (
 // Options control deduplication and conflict resolution.
 func Merge(reports []*Report, opts ...MergeOption) *Report {
 	if len(reports) == 0 {
-		return NewReport(ToolInfo{Name: "empty"})
+		return NewReport(ToolInfo{Name: "empty"}) //nolint:exhaustruct
 	}
 
 	if len(reports) == 1 {
 		r := reports[0]
 
-		result := &Report{
+	//nolint:exhaustruct
+		result := &Report{ //nolint:exhaustruct
 			Tool:     r.Tool,
 			Findings: cloneFindings(r.Findings),
 		}

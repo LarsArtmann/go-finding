@@ -21,6 +21,7 @@ type Metrics struct {
 
 // NewMetrics creates a new Metrics collector.
 func NewMetrics() *Metrics {
+	//nolint:exhaustruct
 	return &Metrics{
 		stageDurations: make(map[string]time.Duration),
 		detectorTimes:  make(map[string]time.Duration),

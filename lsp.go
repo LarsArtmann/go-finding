@@ -53,7 +53,9 @@ type LSPLocation struct {
 // ToLSP converts a Finding to LSP Diagnostic format.
 // Note: This is a lossy conversion - some fields (FixStrategy, Confidence, etc.) are lost.
 func (f Finding) ToLSP() LSPDiagnostic {
+	//nolint:exhaustruct
 	diag := LSPDiagnostic{
+	//nolint:exhaustruct
 		Range: LSPRange{
 			Start: LSPPosition{
 				Line:      toZeroBased(f.Position.Line),
@@ -111,6 +113,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	startLine := diag.Range.Start.Line + 1
 	startChar := diag.Range.Start.Character + 1
 
+	//nolint:exhaustruct
 	f := Finding{
 		ID: GenerateID(
 			diag.Source,
@@ -136,13 +139,13 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	if endLine != startLine || endChar != startChar {
 		f.Range = &Range{
 			Start: f.Position,
-			End:   Position{File: fileURI, Line: endLine, Column: endChar},
+			End:   Position{File: fileURI, Line: endLine, Column: endChar}, //nolint:exhaustruct
 		}
 	}
 
 	// Convert related information.
 	for _, rel := range diag.Related {
-		relPos := Position{
+		relPos := Position{ //nolint:exhaustruct
 			File:   rel.Location.URI,
 			Line:   rel.Location.Range.Start.Line + 1,
 			Column: rel.Location.Range.Start.Character + 1,

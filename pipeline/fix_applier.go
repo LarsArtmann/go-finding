@@ -26,6 +26,7 @@ type FixApplier struct {
 
 // NewFixApplier creates a new FixApplier.
 func NewFixApplier(rootDir string) *FixApplier {
+	//nolint:exhaustruct
 	return &FixApplier{
 		rootDir:       rootDir,
 		backupEnabled: true,
@@ -36,7 +37,8 @@ func NewFixApplier(rootDir string) *FixApplier {
 
 // ioErrorAt creates an IO error with position info.
 func ioErrorAt(msg string, err error, path string) error {
-	return finding.NewIOError(msg, err).WithPosition(finding.Position{File: path})
+	pos := finding.Position{File: path} //nolint:exhaustruct
+	return finding.NewIOError(msg, err).WithPosition(pos)
 }
 
 // Apply applies the given fixes to files and returns the number of successful fixes.

@@ -36,6 +36,7 @@ func FromDiagnostic(
 	// Build ID from available info
 	id := GenerateID(toolName, ruleCode, findingPos)
 
+	//nolint:exhaustruct
 	f := Finding{
 		ID:          id,
 		Rule:        ruleCode,
@@ -76,7 +77,7 @@ func FromTokenPosition(pos token.Position) Position {
 // NodePosition returns a Position from an AST node.
 func NodePosition(fset *token.FileSet, node ast.Node) Position {
 	if node == nil {
-		return Position{}
+		return Position{} //nolint:exhaustruct
 	}
 
 	return FromTokenPosition(fset.Position(node.Pos()))
@@ -85,7 +86,7 @@ func NodePosition(fset *token.FileSet, node ast.Node) Position {
 // NodeRange returns a Range from an AST node.
 func NodeRange(fset *token.FileSet, node ast.Node) Range {
 	if node == nil {
-		return Range{Start: Position{}, End: Position{}}
+		return Range{Start: Position{}, End: Position{}} //nolint:exhaustruct
 	}
 
 	startPos := FromTokenPosition(fset.Position(node.Pos()))

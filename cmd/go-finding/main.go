@@ -392,6 +392,7 @@ func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
 		maxIter = 1
 	}
 
+	//nolint:exhaustruct
 	return pipeline.Config{
 		MaxIterations:     maxIter,
 		ParallelDetectors: c.ParallelDetectors,

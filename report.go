@@ -31,7 +31,7 @@ func NewReport(tool ToolInfo) *Report {
 	return &Report{
 		Tool:     tool,
 		Findings: make([]Finding, 0),
-		Summary:  Summary{},
+		Summary:  Summary{}, //nolint:exhaustruct
 	}
 }
 

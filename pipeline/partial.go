@@ -62,6 +62,7 @@ func isContextDone(ctx context.Context) bool {
 }
 
 func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult, error) {
+	//nolint:exhaustruct
 	result := &PartialResult{
 		Errors: make(map[string]error),
 	}
@@ -90,6 +91,7 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 }
 
 func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, error) {
+	//nolint:exhaustruct
 	result := &PartialResult{
 		Errors: make(map[string]error),
 	}

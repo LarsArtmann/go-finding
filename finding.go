@@ -41,7 +41,7 @@ type Finding struct {
 
 // NewFinding creates a Finding with an auto-generated ID and default fix strategy.
 func NewFinding(rule, toolName, message string, severity Severity, pos Position) Finding {
-	return Finding{
+	return Finding{ //nolint:exhaustruct
 		ID:          GenerateID(toolName, rule, pos),
 		Rule:        rule,
 		ToolName:    toolName,

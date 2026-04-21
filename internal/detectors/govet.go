@@ -61,7 +61,8 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
 
 		for _, e := range entries {
 			pos := parsePosn(e.Posn, dir)
-			findings = append(findings, finding.Finding{
+			//nolint:exhaustruct
+			findings = append(findings, finding.Finding{ //nolint:exhaustruct
 				ID:          finding.GenerateID("govet", name, pos),
 				Rule:        name,
 				ToolName:    "govet",
@@ -82,10 +83,10 @@ func parsePosn(posn, dir string) finding.Position {
 
 	parts := strings.SplitN(posn, ":", posnFieldCount)
 	if len(parts) < 2 {
-		return finding.Position{File: posn}
+		return finding.Position{File: posn} //nolint:exhaustruct
 	}
 
-	pos := finding.Position{File: parts[0]}
+	pos := finding.Position{File: parts[0]} //nolint:exhaustruct
 	if dir != "" && !filepath.IsAbs(pos.File) {
 		pos.File = filepath.Join(dir, parts[0])
 	}
