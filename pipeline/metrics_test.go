@@ -181,6 +181,32 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 	}
 }
 
+func TestMetrics_TotalDuration_NoEnd(t *testing.T) {
+	m := NewMetrics()
+	m.SetStart(time.Now())
+
+	d := m.TotalDuration()
+	if d != 0 {
+		t.Errorf("expected 0 when end not set, got %v", d)
+	}
+}
+
+func TestMetricsSnapshot_StageDuration(t *testing.T) {
+	snap := MetricsSnapshot{
+		StageDurations: map[string]time.Duration{
+			"detect": 100 * time.Millisecond,
+		},
+	}
+
+	if got := snap.StageDuration("detect"); got != 100*time.Millisecond {
+		t.Errorf("StageDuration(detect) = %v, want 100ms", got)
+	}
+
+	if got := snap.StageDuration("nonexistent"); got != 0 {
+		t.Errorf("StageDuration(nonexistent) = %v, want 0", got)
+	}
+}
+
 func TestPipeline_NilMetricsNoPanic(t *testing.T) {
 	detector := &mockDetector{
 		name:     "test",
