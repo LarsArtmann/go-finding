@@ -41,7 +41,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | ---------------------- | ----------------------------------------------------- |
 | `pipeline/pipeline.go` | Pipeline orchestrator: detect → triage → fix → verify |
 | `pipeline/conflict.go` | Fix conflict detection and analysis                   |
-| `pipeline/astfix.go`   | AST-aware fix application (fallback to text)          |
+| `pipeline/fix_applier.go` | Line-based fix application with backup/rollback |
 | `pipeline/verify.go`   | Verification stage: re-run detectors, diff findings   |
 | `pipeline/metrics.go`  | Timing/count metrics collection with snapshots        |
 | `pipeline/retry.go`    | Exponential backoff retry wrapper for detectors       |

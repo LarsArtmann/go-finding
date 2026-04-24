@@ -77,7 +77,7 @@ func TestFromDiagnostic_WithSuggestedFixes(t *testing.T) {
 		t.Errorf("expected FixStrategyDirect, got %v", finding.FixStrategy)
 	}
 
-	if finding.Suggestion != "fix it" { //nolint:goconst // test fixture
+	if finding.Suggestion != "fix it" {
 		t.Errorf("expected suggestion 'fix it', got %q", finding.Suggestion)
 	}
 

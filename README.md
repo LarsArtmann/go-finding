@@ -253,11 +253,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 | Package   | Coverage  |
 | --------- | --------- |
-| Root      | 91.7%     |
-| Pipeline  | 84.0%     |
-| Detectors | 71.6%     |
-| CLI       | 24.1%     |
-| **Total** | **81.1%** |
+| Root      | 98.7%     |
+| Pipeline  | 94.5%     |
+| Detectors | 95.9%     |
+| CLI       | 77.3%     |
+| **Total** | **94.8%** |
 
 ## Related Projects
 

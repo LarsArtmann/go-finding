@@ -366,7 +366,7 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		var all []finding.Finding //nolint:prealloc
+		var all []finding.Finding
 		for _, iter := range findings.Iterations {
 			all = append(all, iter.Findings()...)
 		}

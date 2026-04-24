@@ -543,19 +543,14 @@ func requireJSON[T any](t *testing.T, buf *bytes.Buffer, parsed *T, context stri
 }
 
 func TestRun_BadSeverity(t *testing.T) {
-	t.Parallel()
-
 	assertRunFails(t, "-severity", "bogus")
 }
 
 func TestRun_MissingConfig(t *testing.T) {
-	t.Parallel()
-
 	assertRunFails(t, "-config", "/nonexistent/config.yaml")
 }
 
 func TestRun_NoDetectors(t *testing.T) {
-	t.Parallel()
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
 
@@ -583,7 +578,6 @@ detectors: []
 }
 
 func TestRun_BadProfilingPath(t *testing.T) {
-	t.Parallel()
 	savedCommandLine := flag.CommandLine
 	savedArgs := os.Args
 	t.Cleanup(func() {

@@ -178,6 +178,7 @@ func assertReportField[T comparable](t *testing.T, fieldName string, got, want T
 
 // assertSummaryField asserts a Report summary field equals expected value.
 func assertSummaryField(t *testing.T, fieldName string, got, want int) {
+	t.Helper()
 	assertReportField(t, "Summary."+fieldName, got, want)
 }
 
@@ -205,15 +206,6 @@ func assertSummarySuppressed(t *testing.T, r *Report, want int) {
 
 	if r.Summary.Suppressed != want {
 		t.Errorf("Summary.Suppressed = %d, want %d", r.Summary.Suppressed, want)
-	}
-}
-
-// assertPositionOffset asserts a position's offset equals expected value.
-func assertPositionOffset(t *testing.T, pos Position, want int) {
-	t.Helper()
-
-	if pos.Offset != want {
-		t.Errorf("Offset = %d, want %d", pos.Offset, want)
 	}
 }
 
@@ -258,24 +250,6 @@ func assertRelatedPosition(t *testing.T, r RelatedRef, file string, line int) {
 
 	if r.Position.Line != line {
 		t.Errorf("Position.Line = %d, want %d", r.Position.Line, line)
-	}
-}
-
-// assertSeverityBool asserts a boolean severity comparison.
-func assertSeverityBool(t *testing.T, got bool, a, b Severity, label string) {
-	t.Helper()
-
-	if !got {
-		t.Errorf("Severity(%q).%s(%q) = false, want true (%s)", a, label, b, label)
-	}
-}
-
-// assertSeverityInt asserts an integer severity comparison result.
-func assertSeverityInt(t *testing.T, got, want int, a, b Severity, label string) {
-	t.Helper()
-
-	if got != want {
-		t.Errorf("Severity(%q).%s(%q) = %d, want %d (%s)", a, label, b, got, want, label)
 	}
 }
 

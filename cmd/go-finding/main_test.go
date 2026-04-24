@@ -199,7 +199,7 @@ func TestBuildDetectors(t *testing.T) {
 }
 
 func TestFatalf(t *testing.T) {
-	t.Parallel()
+	var buf bytes.Buffer
 	old := os.Stderr
 	r, w, _ := os.Pipe()
 	os.Stderr = w
@@ -209,7 +209,6 @@ func TestFatalf(t *testing.T) {
 	_ = w.Close()
 	os.Stderr = old
 
-	var buf bytes.Buffer
 	_, _ = io.Copy(&buf, r)
 
 	if got != 1 {

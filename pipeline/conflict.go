@@ -51,7 +51,7 @@ func (c *ConflictDetector) DetectConflicts(
 
 	var (
 		groups    = make([]FixGroup, 0, len(byFile))
-		conflicts []finding.Finding //nolint:prealloc // size depends on conflict detection results
+		conflicts []finding.Finding
 	)
 
 	for file, fileFixes := range byFile {
