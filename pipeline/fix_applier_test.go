@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFixApplier_Apply_CancelledContext(t *testing.T) {
@@ -31,9 +32,7 @@ func TestFixApplier_Apply_CancelledContext(t *testing.T) {
 		t.Fatal("expected error from cancelled context")
 	}
 
-	if !errors.Is(err, context.Canceled) {
-		t.Errorf("error = %v, want context.Canceled", err)
-	}
+	assert.ErrorIs(t, err, context.Canceled)
 
 	if applied != 0 {
 		t.Errorf("applied = %d, want 0", applied)
@@ -51,9 +50,7 @@ func TestFixApplier_Backup_NonexistentFile(t *testing.T) {
 		t.Fatal("expected error backing up nonexistent file")
 	}
 
-	if !errors.Is(err, finding.ErrIO) {
-		t.Errorf("error = %v, want ErrIO", err)
-	}
+	assert.ErrorIs(t, err, finding.ErrIO)
 }
 
 func TestFixApplier_Restore_WithoutBackup(t *testing.T) {
@@ -67,9 +64,7 @@ func TestFixApplier_Restore_WithoutBackup(t *testing.T) {
 		t.Fatal("expected error restoring without backup")
 	}
 
-	if !errors.Is(err, finding.ErrInternal) {
-		t.Errorf("error = %v, want ErrInternal", err)
-	}
+	assert.ErrorIs(t, err, finding.ErrInternal)
 }
 
 func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
@@ -91,13 +86,9 @@ func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 		t.Fatal("expected error for nonexistent file")
 	}
 
-	if !errors.Is(err, finding.ErrIO) {
-		t.Errorf("error = %v, want ErrIO", err)
-	}
+	assert.ErrorIs(t, err, finding.ErrIO)
 
-	if applied != 0 {
-		t.Errorf("applied = %d, want 0", applied)
-	}
+	assert.Equal(t, applied, 0)
 }
 
 func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
@@ -151,9 +142,7 @@ func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
 		t.Fatal("expected error writing to read-only file")
 	}
 
-	if !errors.Is(err, finding.ErrIO) {
-		t.Errorf("error = %v, want ErrIO", err)
-	}
+	assert.ErrorIs(t, err, finding.ErrIO)
 
 	_ = applied
 }
@@ -259,9 +248,7 @@ func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
 		t.Fatal("expected error from backup failure")
 	}
 
-	if !errors.Is(err, finding.ErrIO) {
-		t.Errorf("error = %v, want ErrIO", err)
-	}
+	assert.ErrorIs(t, err, finding.ErrIO)
 
 	_ = applied
 }
@@ -277,9 +264,7 @@ func TestFixApplier_Apply_EmptyFixesList(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if applied != 0 {
-		t.Errorf("applied = %d, want 0", applied)
-	}
+	assert.Equal(t, applied, 0)
 }
 
 func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
@@ -298,9 +283,7 @@ func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if applied != 0 {
-		t.Errorf("applied = %d, want 0 (no files specified)", applied)
-	}
+	assert.Equal(t, applied, 0, "no files specified")
 }
 
 func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
@@ -327,18 +310,14 @@ func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if applied != 0 {
-		t.Errorf("applied = %d, want 0 (range out of bounds)", applied)
-	}
+	assert.Equal(t, applied, 0, "range out of bounds")
 
 	data, rErr := readFile(testFile)
 	if rErr != nil {
 		t.Fatalf("read: %v", rErr)
 	}
 
-	if string(data) != content {
-		t.Errorf("file modified despite out-of-bounds range: %q", string(data))
-	}
+	assert.Equal(t, string(data), content, "file modified despite out-of-bounds range")
 }
 
 func TestFixApplier_FileHash_Deterministic(t *testing.T) {
@@ -346,14 +325,10 @@ func TestFixApplier_FileHash_Deterministic(t *testing.T) {
 
 	h1 := fileHash("test/path.go")
 	h2 := fileHash("test/path.go")
-	if h1 != h2 {
-		t.Errorf("fileHash not deterministic: %q != %q", h1, h2)
-	}
+	assert.Equal(t, h1, h2, "fileHash not deterministic")
 
 	h3 := fileHash("different/path.go")
-	if h1 == h3 {
-		t.Error("fileHash collision for different paths")
-	}
+	assert.NotEqual(t, h1, h3, "fileHash collision for different paths")
 }
 
 func TestFixApplier_BackupDisabled(t *testing.T) {
@@ -375,13 +350,8 @@ func TestFixApplier_BackupDisabled(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if applied != 1 {
-		t.Errorf("applied = %d, want 1", applied)
-	}
-
-	if len(applier.backups) != 0 {
-		t.Errorf("backups = %d, want 0 (backup disabled)", len(applier.backups))
-	}
+	assert.Equal(t, applied, 1)
+	assert.Len(t, applier.backups, 0, "backup disabled")
 }
 
 func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
@@ -389,17 +359,9 @@ func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
 
 	applier := NewFixApplier("/tmp/test")
 
-	if applier.rootDir != "/tmp/test" {
-		t.Errorf("rootDir = %q, want /tmp/test", applier.rootDir)
-	}
-
-	if !applier.backupEnabled {
-		t.Error("backupEnabled = false, want true")
-	}
-
-	if applier.backups == nil {
-		t.Error("backups map is nil")
-	}
+	assert.Equal(t, applier.rootDir, "/tmp/test")
+	assert.True(t, applier.backupEnabled, "backupEnabled should be true")
+	assert.NotNil(t, applier.backups, "backups map should not be nil")
 }
 
 func TestFixApplier_Apply_RestoreOnApplyError(t *testing.T) {
@@ -416,13 +378,8 @@ func TestIoErrorAt_WrapsCorrectly(t *testing.T) {
 
 	err := ioErrorAt("test op", os.ErrPermission, "file.go")
 
-	if !errors.Is(err, finding.ErrIO) {
-		t.Error("expected ErrIO sentinel match")
-	}
-
-	if !errors.Is(err, os.ErrPermission) {
-		t.Error("expected os.ErrPermission cause match")
-	}
+	assert.ErrorIs(t, err, finding.ErrIO, "ErrIO sentinel match")
+	assert.ErrorIs(t, err, os.ErrPermission, "os.ErrPermission cause match")
 
 	var fe *finding.FindingError
 	if !errors.As(err, &fe) {

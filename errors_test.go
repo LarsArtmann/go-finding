@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFindingErrorError(t *testing.T) {
@@ -31,9 +33,7 @@ func TestFindingErrorError(t *testing.T) {
 			t.Parallel()
 
 			got := tt.err.Error()
-			if got != tt.expected {
-				t.Errorf("Error() = %q, want %q", got, tt.expected)
-			}
+			assert.Equal(t, tt.expected, got)
 		})
 	}
 }
@@ -44,9 +44,7 @@ func TestFindingErrorUnwrap(t *testing.T) {
 	cause := errors.New("underlying error")
 	err := NewValidationError("validation failed", cause)
 
-	if !errors.Is(err, cause) {
-		t.Error("expected errors.Is to find underlying cause")
-	}
+	assert.True(t, errors.Is(err, cause))
 }
 
 func TestFindingErrorWithFinding(t *testing.T) {
@@ -59,19 +57,13 @@ func TestFindingErrorWithFinding(t *testing.T) {
 
 	err := NewValidationError("invalid finding", nil).WithFinding(f)
 
-	if err.Finding == nil {
-		t.Fatal("expected Finding to be set")
-	}
-
-	if err.Finding.ID != f.ID {
-		t.Errorf("Finding.ID = %q, want %q", err.Finding.ID, f.ID)
-	}
+	assert.NotNil(t, err.Finding)
+	assert.Equal(t, f.ID, err.Finding.ID)
 
 	assertFindingErrorFile(t, err, "test.go")
 
-	if err.Position == nil || err.Position.Line != 10 {
-		t.Error("Position not set correctly")
-	}
+	assert.NotNil(t, err.Position)
+	assert.Equal(t, 10, err.Position.Line)
 }
 
 func TestFindingErrorWithPosition(t *testing.T) {
@@ -80,13 +72,8 @@ func TestFindingErrorWithPosition(t *testing.T) {
 	pos := Position{File: "test.go", Line: 20, Column: 10}
 	err := NewIOError("read failed", nil).WithPosition(pos)
 
-	if err.Position == nil {
-		t.Fatal("expected Position to be set")
-	}
-
-	if err.Position.Line != 20 {
-		t.Errorf("Position.Line = %d, want 20", err.Position.Line)
-	}
+	assert.NotNil(t, err.Position)
+	assert.Equal(t, 20, err.Position.Line)
 
 	assertFindingErrorFile(t, err, "test.go")
 }
@@ -126,9 +113,7 @@ func TestIsFindingError(t *testing.T) {
 			t.Parallel()
 
 			got := IsFindingError(tt.err)
-			if got != tt.expected {
-				t.Errorf("IsFindingError() = %v, want %v", got, tt.expected)
-			}
+			assert.Equal(t, tt.expected, got)
 		})
 	}
 }
@@ -168,9 +153,7 @@ func TestGetCategory(t *testing.T) {
 			t.Parallel()
 
 			got := GetCategory(tt.err)
-			if got != tt.expected {
-				t.Errorf("GetCategory() = %q, want %q", got, tt.expected)
-			}
+			assert.Equal(t, tt.expected, got)
 		})
 	}
 }
@@ -180,17 +163,9 @@ func TestIsCategory(t *testing.T) {
 
 	err := NewValidationError("test", nil)
 
-	if !IsCategory(err, ErrCategoryValidation) {
-		t.Error("expected IsCategory to match validation")
-	}
-
-	if IsCategory(err, ErrCategoryIO) {
-		t.Error("expected IsCategory to not match io")
-	}
-
-	if IsCategory(errors.New("regular"), ErrCategoryValidation) {
-		t.Error("expected IsCategory to return false for regular error")
-	}
+	assert.True(t, IsCategory(err, ErrCategoryValidation))
+	assert.False(t, IsCategory(err, ErrCategoryIO))
+	assert.False(t, IsCategory(errors.New("regular"), ErrCategoryValidation))
 }
 
 func TestErrorCategoryConstructors(t *testing.T) {
@@ -212,9 +187,7 @@ func TestErrorCategoryConstructors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if tt.err.Category != tt.expected {
-				t.Errorf("Category = %q, want %q", tt.err.Category, tt.expected)
-			}
+			assert.Equal(t, tt.expected, tt.err.Category)
 		})
 	}
 }
@@ -241,9 +214,7 @@ func TestSentinelErrors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got := errors.Is(tt.err, tt.target); got != tt.want {
-				t.Errorf("errors.Is(%v, %v) = %v, want %v", tt.err, tt.target, got, tt.want)
-			}
+			assert.Equal(t, tt.want, errors.Is(tt.err, tt.target))
 		})
 	}
 }
@@ -252,20 +223,13 @@ func TestSentinelErrors_Wrapped(t *testing.T) {
 	t.Parallel()
 
 	err := fmt.Errorf("wrapped: %w", NewValidationError("test", nil))
-	if !errors.Is(err, ErrValidation) {
-		t.Error("expected errors.Is to find sentinel through wrapping")
-	}
+	assert.True(t, errors.Is(err, ErrValidation))
 }
 
 func TestFindingError_Is_UnknownCategory(t *testing.T) {
 	t.Parallel()
 
 	err := &FindingError{Category: ErrorCategory("custom"), Message: "custom error"}
-	if errors.Is(err, ErrValidation) {
-		t.Error("unknown category should not match ErrValidation")
-	}
-
-	if errors.Is(err, ErrInternal) {
-		t.Error("unknown category should not match ErrInternal")
-	}
+	assert.False(t, errors.Is(err, ErrValidation))
+	assert.False(t, errors.Is(err, ErrInternal))
 }

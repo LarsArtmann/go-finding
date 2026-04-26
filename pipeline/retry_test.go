@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRetryConfig_delay(t *testing.T) {
@@ -60,9 +61,7 @@ func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if len(findings) != 1 {
-		t.Errorf("expected 1 finding, got %d", len(findings))
-	}
+	assertIntEq(t, len(findings), 1, "findings")
 }
 
 func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
@@ -84,13 +83,9 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if len(findings) != 1 {
-		t.Errorf("expected 1 finding, got %d", len(findings))
-	}
+	assertIntEq(t, len(findings), 1, "findings")
 
-	if calls != 3 {
-		t.Errorf("expected 3 calls, got %d", calls)
-	}
+	assert.Equal(t, 3, calls)
 }
 
 func TestRetryDetector_ExhaustedRetries(t *testing.T) {
@@ -104,12 +99,7 @@ func TestRetryDetector_ExhaustedRetries(t *testing.T) {
 		t.Fatal("expected error")
 	}
 
-	if !errors.Is(err, errors.New("permanent")) {
-		// The wrapped error should contain "permanent"
-		if err.Error() == "" {
-			t.Error("expected non-empty error")
-		}
-	}
+	assert.ErrorContains(t, err, "permanent")
 }
 
 func TestRetryDetector_ContextCancellation(t *testing.T) {
@@ -131,9 +121,7 @@ func TestRetryDetector_ContextCancellation(t *testing.T) {
 		t.Fatal("expected error")
 	}
 
-	if !errors.Is(err, context.Canceled) {
-		t.Errorf("expected context.Canceled, got %v", err)
-	}
+	assert.ErrorIs(t, err, context.Canceled)
 }
 
 func TestRetryDetector_Name(t *testing.T) {
@@ -141,25 +129,15 @@ func TestRetryDetector_Name(t *testing.T) {
 	inner := &mockDetector{name: "my-detector"}
 
 	rd := NewRetryDetector(inner, DefaultRetryConfig())
-	if rd.Name() != "my-detector" {
-		t.Errorf("expected my-detector, got %s", rd.Name())
-	}
+	assert.Equal(t, "my-detector", rd.Name())
 }
 
 func TestDefaultRetryConfig(t *testing.T) {
 	t.Parallel()
 	c := DefaultRetryConfig()
-	if c.MaxRetries != 3 {
-		t.Errorf("expected MaxRetries=3, got %d", c.MaxRetries)
-	}
-
-	if c.BaseDelay != 100*time.Millisecond {
-		t.Errorf("expected BaseDelay=100ms, got %v", c.BaseDelay)
-	}
-
-	if c.MaxDelay != 5*time.Second {
-		t.Errorf("expected MaxDelay=5s, got %v", c.MaxDelay)
-	}
+	assert.Equal(t, 3, c.MaxRetries)
+	assert.Equal(t, 100*time.Millisecond, c.BaseDelay)
+	assert.Equal(t, 5*time.Second, c.MaxDelay)
 }
 
 func TestRetryConfig_Validate_BaseDelayExceedsMax(t *testing.T) {
@@ -171,9 +149,7 @@ func TestRetryConfig_Validate_BaseDelayExceedsMax(t *testing.T) {
 		t.Fatal("expected error when BaseDelay > MaxDelay")
 	}
 
-	if !errors.Is(err, errBaseDelayExceedsMax) {
-		t.Errorf("expected errBaseDelayExceedsMax, got %v", err)
-	}
+	assert.ErrorIs(t, err, errBaseDelayExceedsMax)
 }
 
 func TestRetryConfig_Validate_MaxDelayZeroWithBaseDelay(t *testing.T) {
@@ -185,9 +161,7 @@ func TestRetryConfig_Validate_MaxDelayZeroWithBaseDelay(t *testing.T) {
 		t.Fatal("expected error when MaxDelay=0 with BaseDelay>0")
 	}
 
-	if !errors.Is(err, errMaxDelayZero) {
-		t.Errorf("expected errMaxDelayZero, got %v", err)
-	}
+	assert.ErrorIs(t, err, errMaxDelayZero)
 }
 
 func TestRetryConfig_Validate_NegativeMaxRetries(t *testing.T) {
@@ -199,9 +173,7 @@ func TestRetryConfig_Validate_NegativeMaxRetries(t *testing.T) {
 		t.Fatal("expected error for negative MaxRetries")
 	}
 
-	if !errors.Is(err, errMaxRetriesNegative) {
-		t.Errorf("expected errMaxRetriesNegative, got %v", err)
-	}
+	assert.ErrorIs(t, err, errMaxRetriesNegative)
 }
 
 func TestRetryConfig_Validate_NegativeBaseDelay(t *testing.T) {
@@ -213,9 +185,7 @@ func TestRetryConfig_Validate_NegativeBaseDelay(t *testing.T) {
 		t.Fatal("expected error for negative BaseDelay")
 	}
 
-	if !errors.Is(err, errBaseDelayNegative) {
-		t.Errorf("expected errBaseDelayNegative, got %v", err)
-	}
+	assert.ErrorIs(t, err, errBaseDelayNegative)
 }
 
 func TestRetryConfig_Validate_NegativeMaxDelay(t *testing.T) {
@@ -227,16 +197,12 @@ func TestRetryConfig_Validate_NegativeMaxDelay(t *testing.T) {
 		t.Fatal("expected error for negative MaxDelay")
 	}
 
-	if !errors.Is(err, errMaxDelayNegative) {
-		t.Errorf("expected errMaxDelayNegative, got %v", err)
-	}
+	assert.ErrorIs(t, err, errMaxDelayNegative)
 }
 
 func TestRetryConfig_Validate_Valid(t *testing.T) {
 	t.Parallel()
 
 	c := RetryConfig{MaxRetries: 3, BaseDelay: 100 * time.Millisecond, MaxDelay: 5 * time.Second}
-	if err := c.Validate(); err != nil {
-		t.Errorf("expected no error, got %v", err)
-	}
+	assert.NoError(t, c.Validate())
 }

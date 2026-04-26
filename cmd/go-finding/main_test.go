@@ -6,10 +6,10 @@ import (
 	"errors"
 	"io"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/stretchr/testify/assert"
 )
 
 func parseJSON(t *testing.T, buf *bytes.Buffer) map[string]any {
@@ -33,9 +33,8 @@ func TestOutputResults_JSON(t *testing.T) {
 	parsed := parseJSON(t, &buf)
 
 	tool, _ := parsed["tool"].(map[string]any)
-	if tool == nil || tool["name"] != "test" {
-		t.Errorf("expected tool.name=test, got %v", tool)
-	}
+	assert.NotNil(t, tool)
+	assert.Equal(t, "test", tool["name"])
 }
 
 func TestOutputResults_SARIF(t *testing.T) {
@@ -50,9 +49,7 @@ func TestOutputResults_SARIF(t *testing.T) {
 	parsed := parseJSON(t, &buf)
 
 	version, _ := parsed["$schema"].(string)
-	if !strings.Contains(version, "sarif") {
-		t.Errorf("expected $schema to contain 'sarif', got %q", version)
-	}
+	assert.Contains(t, version, "sarif")
 }
 
 func TestOutputResults_Text(t *testing.T) {
@@ -65,12 +62,8 @@ func TestOutputResults_Text(t *testing.T) {
 	requireOutputResults(t, &buf, report, "text")
 
 	out := buf.String()
-	if !strings.Contains(out, "nilcheck") {
-		t.Errorf("text output should contain rule name, got: %s", out)
-	}
-	if !strings.Contains(out, "1 finding(s)") {
-		t.Errorf("text output should contain finding count, got: %s", out)
-	}
+	assert.Contains(t, out, "nilcheck")
+	assert.Contains(t, out, "1 finding(s)")
 }
 
 func TestOutputText_EmptyReport(t *testing.T) {
@@ -81,9 +74,7 @@ func TestOutputText_EmptyReport(t *testing.T) {
 
 	outputText(&buf, report)
 
-	if buf.String() != "No findings.\n" {
-		t.Errorf("empty report text = %q, want %q", buf.String(), "No findings.\n")
-	}
+	assert.Equal(t, "No findings.\n", buf.String())
 }
 
 func TestOutputText_WithSuggestion(t *testing.T) {
@@ -100,9 +91,7 @@ func TestOutputText_WithSuggestion(t *testing.T) {
 	var buf bytes.Buffer
 	outputText(&buf, report)
 
-	if !strings.Contains(buf.String(), "Suggestion: fix it") {
-		t.Errorf("text output should contain suggestion, got: %s", buf.String())
-	}
+	assert.Contains(t, buf.String(), "Suggestion: fix it")
 }
 
 func TestParseSeverity(t *testing.T) {
@@ -150,9 +139,7 @@ func TestFilterBySeverity(t *testing.T) {
 	}
 
 	filtered := filterBySeverity(findings, finding.SeverityError)
-	if len(filtered) != 2 {
-		t.Errorf("filterBySeverity(Error) returned %d findings, want 2", len(filtered))
-	}
+	assert.Len(t, filtered, 2)
 }
 
 func TestBuildDetectors(t *testing.T) {
@@ -191,9 +178,7 @@ func TestBuildDetectors(t *testing.T) {
 			t.Parallel()
 
 			dets := buildDetectors(tt.specs, ".")
-			if len(dets) != tt.wantCount {
-				t.Errorf("buildDetectors returned %d, want %d", len(dets), tt.wantCount)
-			}
+			assert.Len(t, dets, tt.wantCount)
 		})
 	}
 }
@@ -211,14 +196,10 @@ func TestFatalf(t *testing.T) {
 
 	_, _ = io.Copy(&buf, r)
 
-	if got != 1 {
-		t.Errorf("fatalf returned %d, want 1", got)
-	}
+	assert.Equal(t, 1, got)
 
 	want := "Error testing: test error\n"
-	if buf.String() != want {
-		t.Errorf("fatalf output = %q, want %q", buf.String(), want)
-	}
+	assert.Equal(t, want, buf.String())
 }
 
 type failingWriter struct {
@@ -234,22 +215,14 @@ func TestOutputResults_WriteError(t *testing.T) {
 	report := reportWithFindings()
 
 	err := outputResults(&failingWriter{err: errors.New("disk full")}, report, "json")
-	if err == nil {
-		t.Error("expected error for JSON write failure")
-	}
+	assert.Error(t, err)
 
-	if !strings.Contains(err.Error(), "writing JSON") {
-		t.Errorf("error = %v, want writing JSON", err)
-	}
+	assert.Contains(t, err.Error(), "writing JSON")
 
 	err = outputResults(&failingWriter{err: errors.New("disk full")}, report, "sarif")
-	if err == nil {
-		t.Error("expected error for SARIF write failure")
-	}
+	assert.Error(t, err)
 
-	if !strings.Contains(err.Error(), "writing SARIF") {
-		t.Errorf("error = %v, want writing SARIF", err)
-	}
+	assert.Contains(t, err.Error(), "writing SARIF")
 }
 
 func TestOutputText_WithSummary(t *testing.T) {
@@ -271,13 +244,9 @@ func TestOutputText_WithSummary(t *testing.T) {
 	outputText(&buf, report)
 
 	out := buf.String()
-	if !strings.Contains(out, "By severity:") {
-		t.Errorf("text output should contain severity summary, got: %s", out)
-	}
+	assert.Contains(t, out, "By severity:")
 
-	if !strings.Contains(out, "2 finding(s)") {
-		t.Errorf("text output should contain finding count, got: %s", out)
-	}
+	assert.Contains(t, out, "2 finding(s)")
 }
 
 func reportWithFindings() *finding.Report {

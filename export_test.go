@@ -152,9 +152,7 @@ func TestReport_AddFindings(t *testing.T) {
 		{ID: "3", Message: "third"},
 	})
 
-	if len(r.Findings) != 3 {
-		t.Fatalf("AddFindings: len = %d, want 3", len(r.Findings))
-	}
+	requireLenEq(t, len(r.Findings), 3, "Findings")
 
 	if r.Findings[0].ID != "1" || r.Findings[2].ID != "3" {
 		t.Errorf("AddFindings order = %v, want [1 2 3]", r.Findings)

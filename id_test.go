@@ -1,6 +1,10 @@
 package finding
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 // parseIDCase is a test case for ParseID.
 type parseIDCase struct {
@@ -29,20 +33,17 @@ func testParseIDCase(t *testing.T, tt parseIDCase) {
 	t.Helper()
 
 	p := ParseID(tt.id)
-	if p.OK() != tt.wantOK {
-		t.Fatalf("ParseID() ok = %v, want %v", p.OK(), tt.wantOK)
-	}
+	assert.Equal(t, tt.wantOK, p.OK())
 
 	if !tt.wantOK {
 		return
 	}
 
-	if p.Tool != tt.wantTool || p.Rule != tt.wantRule || p.File != tt.wantFile ||
-		p.Line != tt.wantLine || p.Column != tt.wantCol {
-		t.Errorf("ParseID() = (%q, %q, %q, %d, %d), want (%q, %q, %q, %d, %d)",
-			p.Tool, p.Rule, p.File, p.Line, p.Column,
-			tt.wantTool, tt.wantRule, tt.wantFile, tt.wantLine, tt.wantCol)
-	}
+	assert.Equal(t, tt.wantTool, p.Tool)
+	assert.Equal(t, tt.wantRule, p.Rule)
+	assert.Equal(t, tt.wantFile, p.File)
+	assert.Equal(t, tt.wantLine, p.Line)
+	assert.Equal(t, tt.wantCol, p.Column)
 }
 
 // runParseIDCases runs all parseIDCase tests in a subtest.
@@ -59,21 +60,11 @@ func runParseIDCases(t *testing.T, tests []parseIDCase) {
 // assertRoundTrip validates ParseID round-trip with the given parameters.
 func assertRoundTrip(t *testing.T, p *ParsedID, tool, rule, file string, line, col int) {
 	t.Helper()
-	if p.Tool != tool {
-		t.Errorf("tool = %q, want %q", p.Tool, tool)
-	}
-	if p.Rule != rule {
-		t.Errorf("rule = %q, want %q", p.Rule, rule)
-	}
-	if p.File != file {
-		t.Errorf("file = %q, want %q", p.File, file)
-	}
-	if p.Line != line {
-		t.Errorf("line = %d, want %d", p.Line, line)
-	}
-	if p.Column != col {
-		t.Errorf("col = %d, want %d", p.Column, col)
-	}
+	assert.Equal(t, tool, p.Tool)
+	assert.Equal(t, rule, p.Rule)
+	assert.Equal(t, file, p.File)
+	assert.Equal(t, line, p.Line)
+	assert.Equal(t, col, p.Column)
 }
 
 func TestGenerateID(t *testing.T) {

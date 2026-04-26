@@ -2,6 +2,8 @@ package finding
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func posLine(file string, line int) Position {
@@ -69,14 +71,10 @@ func TestRangeOverlaps(t *testing.T) {
 			t.Parallel()
 
 			got := tt.r1.Overlaps(tt.r2)
-			if got != tt.expected {
-				t.Errorf("Overlaps() = %v, want %v", got, tt.expected)
-			}
+			assert.Equal(t, tt.expected, got)
 
 			got2 := tt.r2.Overlaps(tt.r1)
-			if got2 != tt.expected {
-				t.Errorf("Overlaps() (symmetric) = %v, want %v", got2, tt.expected)
-			}
+			assert.Equal(t, tt.expected, got2)
 		})
 	}
 }
@@ -128,19 +126,11 @@ func TestRangeIntersection(t *testing.T) {
 
 			got := tt.r1.Intersection(tt.r2)
 			if tt.expected == nil {
-				if got != nil {
-					t.Errorf("Intersection() = %v, want nil", got)
-				}
-
+				assert.Nil(t, got)
 				return
 			}
 
-			if got == nil {
-				t.Errorf("Intersection() = nil, want %v", tt.expected)
-
-				return
-			}
-
+			assert.NotNil(t, got)
 			AssertRangesEq(t, *got, *tt.expected)
 		})
 	}
@@ -181,14 +171,10 @@ func TestRangeAdjacent(t *testing.T) {
 			t.Parallel()
 
 			got := tt.r1.Adjacent(tt.r2)
-			if got != tt.expected {
-				t.Errorf("Adjacent() = %v, want %v", got, tt.expected)
-			}
+			assert.Equal(t, tt.expected, got)
 
 			got2 := tt.r2.Adjacent(tt.r1)
-			if got2 != tt.expected {
-				t.Errorf("Adjacent() (symmetric) = %v, want %v", got2, tt.expected)
-			}
+			assert.Equal(t, tt.expected, got2)
 		})
 	}
 }

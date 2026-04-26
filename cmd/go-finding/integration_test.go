@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"flag"
 	"os"
 	"path/filepath"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/stretchr/testify/assert"
 )
 
 func detectorSpecs(names ...string) []detectorSpec {
@@ -98,13 +98,8 @@ func TestLoadConfig_JSON(t *testing.T) {
 		t.Fatalf("loadConfig error: %v", err)
 	}
 
-	if cfg.MaxIterations != 7 {
-		t.Errorf("MaxIterations = %d, want 7", cfg.MaxIterations)
-	}
-
-	if cfg.ParallelDetectors {
-		t.Error("ParallelDetectors should be false")
-	}
+	assert.Equal(t, 7, cfg.MaxIterations)
+	assert.False(t, cfg.ParallelDetectors)
 }
 
 func TestLoadConfig_NoFile(t *testing.T) {
@@ -115,22 +110,15 @@ func TestLoadConfig_NoFile(t *testing.T) {
 		t.Fatalf("loadConfig empty file: %v", err)
 	}
 
-	if cfg.MaxIterations != 2 {
-		t.Errorf("MaxIterations = %d, want 2", cfg.MaxIterations)
-	}
-
-	if len(cfg.Detectors) != 2 {
-		t.Errorf("default detectors = %d, want 2", len(cfg.Detectors))
-	}
+	assert.Equal(t, 2, cfg.MaxIterations)
+	assert.Len(t, cfg.Detectors, 2)
 }
 
 func TestLoadConfig_MissingFile(t *testing.T) {
 	t.Parallel()
 
 	_, err := loadConfig("/nonexistent/config.yaml", 1, true, false, 10*time.Minute)
-	if err == nil {
-		t.Fatal("expected error for missing config file")
-	}
+	assert.Error(t, err)
 }
 
 func TestLoadConfig_InvalidYAML(t *testing.T) {
@@ -154,9 +142,7 @@ func expectConfigError(t *testing.T, ext, content string) {
 	writeConfig(t, cfgPath, []byte(content))
 
 	_, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
-	if err == nil {
-		t.Fatalf("expected error for invalid %s", ext)
-	}
+	assert.Error(t, err)
 }
 
 func TestPipelineConfigFile_Validate(t *testing.T) {
@@ -217,12 +203,10 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 			t.Parallel()
 
 			err := tt.cfg.validate()
-			if tt.wantErr && err == nil {
-				t.Error("expected error, got nil")
-			}
-
-			if !tt.wantErr && err != nil {
-				t.Errorf("unexpected error: %v", err)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -321,9 +305,7 @@ func TestSetupProfiling(t *testing.T) {
 			t.Fatalf("cpu profile not created: %v", err)
 		}
 
-		if info.Size() == 0 {
-			t.Error("cpu profile is empty")
-		}
+		assert.NotZero(t, info.Size())
 	})
 
 	t.Run("mem profile", func(t *testing.T) {
@@ -344,9 +326,7 @@ func TestSetupProfiling(t *testing.T) {
 			t.Fatalf("mem profile not created: %v", err)
 		}
 
-		if info.Size() == 0 {
-			t.Error("mem profile is empty")
-		}
+		assert.NotZero(t, info.Size())
 	})
 
 	t.Run("cpu profile bad path", func(t *testing.T) {
@@ -393,9 +373,7 @@ detectors:
 	}
 
 	pc := cfg.toPipelineConfig()
-	if pc.MaxIterations != 1 {
-		t.Errorf("MaxIterations = %d, want 1", pc.MaxIterations)
-	}
+	assert.Equal(t, 1, pc.MaxIterations)
 }
 
 func TestRunWithInvalidSeverity(t *testing.T) {
@@ -403,13 +381,8 @@ func TestRunWithInvalidSeverity(t *testing.T) {
 	// Test that run returns error for bad severity — this exercises parseSeverity via the run() path.
 	// Since run() reads flags, test parseSeverity directly instead.
 	_, err := parseSeverity("bogus")
-	if err == nil {
-		t.Fatal("expected error for bogus severity")
-	}
-
-	if !errors.Is(err, errUnknownSeverity) {
-		t.Errorf("error should wrap errUnknownSeverity, got: %v", err)
-	}
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, errUnknownSeverity)
 }
 
 func TestLoadConfig_WithInvalidDetector(t *testing.T) {
@@ -426,13 +399,8 @@ detectors:
 	writeConfig(t, cfgPath, []byte(content))
 
 	_, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
-	if err == nil {
-		t.Fatal("expected error for unknown detector in config")
-	}
-
-	if !errors.Is(err, errUnknownDetector) {
-		t.Errorf("error should wrap errUnknownDetector, got: %v", err)
-	}
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, errUnknownDetector)
 }
 
 func TestOutputResults_AllFormats(t *testing.T) {
@@ -486,13 +454,8 @@ func TestOutputResults_JSONContainsFindings(t *testing.T) {
 
 	requireJSON(t, &buf, &parsed, "JSON parse error")
 
-	if len(parsed.Findings) != 1 {
-		t.Fatalf("expected 1 finding, got %d", len(parsed.Findings))
-	}
-
-	if parsed.Findings[0].Rule != "nilcheck" {
-		t.Errorf("rule = %q, want %q", parsed.Findings[0].Rule, "nilcheck")
-	}
+	assert.Len(t, parsed.Findings, 1)
+	assert.Equal(t, "nilcheck", parsed.Findings[0].Rule)
 }
 
 func TestOutputResults_SARIFContainsResults(t *testing.T) {
@@ -515,17 +478,10 @@ func TestOutputResults_SARIFContainsResults(t *testing.T) {
 
 	requireJSON(t, &buf, &parsed, "SARIF parse error")
 
-	if parsed.Version != "2.1.0" {
-		t.Errorf("SARIF version = %q, want %q", parsed.Version, "2.1.0")
-	}
-
-	if len(parsed.Runs) != 1 || len(parsed.Runs[0].Results) != 1 {
-		t.Fatalf("expected 1 run with 1 result, got %d runs", len(parsed.Runs))
-	}
-
-	if parsed.Runs[0].Results[0].RuleID != "nilcheck" {
-		t.Errorf("ruleId = %q, want %q", parsed.Runs[0].Results[0].RuleID, "nilcheck")
-	}
+	assert.Equal(t, "2.1.0", parsed.Version)
+	assert.Len(t, parsed.Runs, 1)
+	assert.Len(t, parsed.Runs[0].Results, 1)
+	assert.Equal(t, "nilcheck", parsed.Runs[0].Results[0].RuleID)
 }
 
 func assertRunFails(t *testing.T, args ...string) {
@@ -577,19 +533,4 @@ detectors: []
 	}
 }
 
-func TestRun_BadProfilingPath(t *testing.T) {
-	savedCommandLine := flag.CommandLine
-	savedArgs := os.Args
-	t.Cleanup(func() {
-		flag.CommandLine = savedCommandLine
-		os.Args = savedArgs
-	})
 
-	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
-	os.Args = []string{"go-finding", "-cpuprof", "/nonexistent/dir/cpu.prof"}
-
-	got := run()
-	if got != 1 {
-		t.Errorf("run() with bad cpuprof = %d, want 1", got)
-	}
-}

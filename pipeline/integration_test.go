@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFixApplier_BackupRestoreRoundTrip(t *testing.T) {
@@ -60,7 +61,7 @@ func TestFixApplier_BackupPathCollision(t *testing.T) {
 	}
 
 	if applier.backups[sub1] == applier.backups[sub2] {
-		t.Error("backup paths should differ for same-named files in different directories")
+		assert.Fail(t, "backup paths should differ for same-named files in different directories")
 	}
 }
 
@@ -99,9 +100,7 @@ func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
 		t.Fatalf("apply: %v", err)
 	}
 
-	if applied != 5 {
-		t.Errorf("applied = %d, want 5", applied)
-	}
+	assert.Equal(t, 5, applied)
 }
 
 func TestPipeline_GracefulDegradation(t *testing.T) {
@@ -129,9 +128,7 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 		t.Fatalf("run: %v", err)
 	}
 
-	if result == nil {
-		t.Fatal("expected non-nil result")
-	}
+	assert.NotNil(t, result)
 
 	assertIterationsLen(t, result, 1)
 
@@ -178,16 +175,9 @@ func TestPipeline_RetryConfig(t *testing.T) {
 		t.Fatalf("run: %v", err)
 	}
 
-	if result.Iterations[0].FindingsFound != 1 {
-		t.Errorf("FindingsFound = %d, want 1 (after retries)", result.Iterations[0].FindingsFound)
-	}
+	assert.Equal(t, 1, result.Iterations[0].FindingsFound)
 
-	{
-		cnt := calls.Load()
-		if cnt < 3 {
-			t.Errorf("calls = %d, want >= 3", cnt)
-		}
-	}
+	assert.GreaterOrEqual(t, calls.Load(), int32(3))
 }
 
 func TestPipeline_VerifyAfterFix(t *testing.T) {
@@ -226,9 +216,7 @@ func TestPipeline_VerifyAfterFix(t *testing.T) {
 		t.Fatalf("run: %v", err)
 	}
 
-	if result.Verification == nil {
-		t.Error("expected Verification to be non-nil")
-	}
+	assert.NotNil(t, result.Verification)
 }
 
 func TestPipeline_MetricsRecordsDetector(t *testing.T) {
@@ -255,13 +243,9 @@ func TestPipeline_MetricsRecordsDetector(t *testing.T) {
 	}
 
 	snap := metrics.Snapshot()
-	if snap.DetectorTimes["my-detector"] == 0 {
-		t.Error("expected DetectorTimes to be recorded for my-detector")
-	}
+	assert.NotZero(t, snap.DetectorTimes["my-detector"])
 
-	if snap.FindingsFound["my-detector"] != 1 {
-		t.Errorf("FindingsFound = %d, want 1", snap.FindingsFound["my-detector"])
-	}
+	assert.Equal(t, 1, snap.FindingsFound["my-detector"])
 }
 
 func TestSuppression_IsValid(t *testing.T) {
@@ -279,8 +263,10 @@ func TestSuppression_IsValid(t *testing.T) {
 		{"valid", &finding.Suppression{Kind: finding.SuppressionInSource, Rule: "SA1000"}, true},
 	}
 	for _, tt := range tests {
-		if got := tt.s.IsValid(); got != tt.want {
-			t.Errorf("%s: IsValid() = %v, want %v", tt.name, got, tt.want)
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := tt.s.IsValid()
+			assert.Equal(t, tt.want, got)
+		})
 	}
 }

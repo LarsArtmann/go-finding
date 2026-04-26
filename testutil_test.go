@@ -167,6 +167,78 @@ func assertFindingsLen(t *testing.T, name string, got, want int) {
 	}
 }
 
+// requireLenEq fails the test immediately if the slice/collection count doesn't match.
+func requireLenEq(t *testing.T, got, want int, msg string) {
+	t.Helper()
+
+	if got != want {
+		t.Fatalf("%s: got %d, want %d", msg, got, want)
+	}
+}
+
+// requireNoError fails immediately if err is not nil.
+func requireNoError(t *testing.T, err error, msg string) {
+	t.Helper()
+
+	if err != nil {
+		t.Fatalf("%s: %v", msg, err)
+	}
+}
+
+// requireCondition fails immediately if cond is false.
+func requireCondition(t *testing.T, cond bool, msg string) {
+	t.Helper()
+
+	if !cond {
+		t.Fatal(msg)
+	}
+}
+
+// assertIntEq asserts got equals want, using the provided field label.
+func assertIntEq(t *testing.T, got, want int, field string) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("%s = %d, want %d", field, got, want)
+	}
+}
+
+// assertFloatEq asserts got equals want within the specified tolerance.
+func assertFloatEq(t *testing.T, got, want float64, field string) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("%s = %v, want %v", field, got, want)
+	}
+}
+
+// assertStringEq asserts got equals want, using the provided field label.
+func assertStringEq(t *testing.T, got, want string, field string) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("%s = %q, want %q", field, got, want)
+	}
+}
+
+// assertBoolEq asserts got equals want, using the provided field label.
+func assertBoolEq(t *testing.T, got, want bool, field string) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("%s = %v, want %v", field, got, want)
+	}
+}
+
+// assertSevEq asserts the finding severity matches.
+func assertSevEq(t *testing.T, got, want Severity) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("Severity = %v, want %v", got, want)
+	}
+}
+
 // assertReportField asserts a field equals expected value using formatted output.
 func assertReportField[T comparable](t *testing.T, fieldName string, got, want T) {
 	t.Helper()

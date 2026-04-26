@@ -235,9 +235,7 @@ func TestFindingsFromJSON(t *testing.T) {
 			t.Fatalf("FindingsFromJSON: %v", err)
 		}
 
-		if len(got) != 2 {
-			t.Fatalf("length = %d, want 2", len(got))
-		}
+		requireLenEq(t, len(got), 2, "findings")
 
 		if got[0].ID != "f1" || got[1].ID != "f2" {
 			t.Errorf("IDs = [%q, %q], want [f1, f2]", got[0].ID, got[1].ID)
@@ -275,9 +273,7 @@ func TestFindingsFromJSON(t *testing.T) {
 			t.Errorf("dropped = %d, want 1", dropped)
 		}
 
-		if len(got) != 1 {
-			t.Fatalf("length = %d, want 1 (invalid finding filtered)", len(got))
-		}
+		requireLenEq(t, len(got), 1, "filtered findings")
 
 		if got[0].ID != "f1" {
 			t.Errorf("ID = %q, want %q", got[0].ID, "f1")

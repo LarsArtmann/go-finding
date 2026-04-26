@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFilterConflictingFixes(t *testing.T) {
@@ -69,7 +70,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 		t.Parallel()
 
 		result := AnalyzeConflicts(findings("1", "a.go", 10, "2", "b.go", 20))
-		assertEqual(t, len(result), 0, "no conflicts")
+		assert.Len(t, result, 0)
 	})
 
 	t.Run("overlapping fixes detected", func(t *testing.T) {
@@ -102,7 +103,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 		t.Parallel()
 
 		result := AnalyzeConflicts(nil)
-		assertEqual(t, len(result), 0, "empty input")
+		assert.Len(t, result, 0)
 	})
 }
 

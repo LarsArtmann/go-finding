@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/stretchr/testify/assert"
 )
 
 // assertRangeLinesEq asserts two ranges have equal lines in a test.
@@ -63,13 +64,8 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 			detector := NewConflictDetector()
 
 			groups, conflicts := detector.DetectConflicts(tt.fixes)
-			if len(groups) != tt.expectedGroups {
-				t.Errorf("len(groups) = %d, want %d", len(groups), tt.expectedGroups)
-			}
-
-			if len(conflicts) != tt.expectedConflicts {
-				t.Errorf("len(conflicts) = %d, want %d", len(conflicts), tt.expectedConflicts)
-			}
+			assert.Len(t, groups, tt.expectedGroups)
+			assert.Len(t, conflicts, tt.expectedConflicts)
 		})
 	}
 }
@@ -103,9 +99,7 @@ func TestPositionLess(t *testing.T) {
 			t.Parallel()
 
 			got := tt.a.Compare(tt.b) < 0
-			if got != tt.expected {
-				t.Errorf("Position.Compare() < 0 = %v, want %v", got, tt.expected)
-			}
+			assert.Equal(t, tt.expected, got)
 		})
 	}
 }

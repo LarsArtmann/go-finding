@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestNew tests pipeline creation.
@@ -26,13 +27,9 @@ func TestNew(t *testing.T) {
 		t.Fatal("expected non-nil pipeline")
 	}
 
-	if len(p.detectors) != 1 {
-		t.Errorf("expected 1 detector, got %d", len(p.detectors))
-	}
+	assert.Len(t, p.detectors, 1)
 
-	if p.rootDir != "/tmp" {
-		t.Errorf("expected rootDir /tmp, got %s", p.rootDir)
-	}
+	assert.Equal(t, "/tmp", p.rootDir)
 
 	if p.config.MaxIterations != config.MaxIterations {
 		t.Error("config not set correctly")
@@ -57,13 +54,8 @@ func TestPipelineRun_NoFindings(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if !result.Stable {
-		t.Error("expected stable result")
-	}
-	// One iteration is recorded even when no findings (the check iteration)
-	if result.TotalIterations != 1 {
-		t.Errorf("expected 1 iteration (detection check), got %d", result.TotalIterations)
-	}
+	assert.True(t, result.Stable)
+	assert.Equal(t, 1, result.TotalIterations)
 }
 
 // TestPipelineRun_WithFindings tests pipeline with findings.
@@ -97,37 +89,17 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if result.Stable {
-		t.Error("expected non-stable result (findings present but not auto-fixed)")
-	}
-	// Should run until max iterations since findings persist and can't be auto-fixed
-	{
-		iterations := result.TotalIterations
-		if iterations != config.MaxIterations {
-			t.Errorf("expected %d iterations, got %d", config.MaxIterations, iterations)
-		}
-	}
+	assert.False(t, result.Stable)
+	assert.Equal(t, config.MaxIterations, result.TotalIterations)
 
-	if len(result.Iterations) != config.MaxIterations {
-		t.Fatalf(
-			"expected %d iteration records, got %d",
-			config.MaxIterations,
-			len(result.Iterations),
-		)
-	}
-	// Check first iteration
+	assert.Len(t, result.Iterations, config.MaxIterations)
+
 	iter := result.Iterations[0]
-	if iter.FindingsFound != 1 {
-		t.Errorf("expected 1 finding found, got %d", iter.FindingsFound)
-	}
+	assert.Equal(t, 1, iter.FindingsFound)
 
-	if iter.SuggestFixes != 1 {
-		t.Errorf("expected 1 suggest-fix, got %d", iter.SuggestFixes)
-	}
+	assert.Equal(t, 1, iter.SuggestFixes)
 
-	if len(iter.SuggestedFindings()) != 1 {
-		t.Errorf("expected 1 suggested finding, got %d", len(iter.SuggestedFindings()))
-	}
+	assert.Len(t, iter.SuggestedFindings(), 1)
 }
 
 // TestPipelineRun_DetectorError tests error handling from detector.
@@ -146,13 +118,8 @@ func TestPipelineRun_DetectorError(t *testing.T) {
 	ctx := context.Background()
 
 	_, err = p.Run(ctx)
-	if err == nil {
-		t.Fatal("expected error")
-	}
-
-	if !errors.Is(err, expectedErr) {
-		t.Errorf("expected error to wrap %v, got %v", expectedErr, err)
-	}
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, expectedErr)
 }
 
 // TestPipelineRun_ContextCancellation tests context cancellation.
@@ -175,13 +142,8 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 	cancel() // Cancel immediately
 
 	_, err = p.Run(ctx)
-	if err == nil {
-		t.Fatal("expected context error")
-	}
-
-	if !errors.Is(err, context.Canceled) {
-		t.Errorf("expected context.Canceled, got %v", err)
-	}
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, context.Canceled)
 }
 
 // TestPipelineRun_Timeout tests pipeline timeout.
@@ -204,13 +166,8 @@ func TestPipelineRun_Timeout(t *testing.T) {
 	ctx := context.Background()
 
 	_, err = p.Run(ctx)
-	if err == nil {
-		t.Fatal("expected timeout error")
-	}
-
-	if !errors.Is(err, context.DeadlineExceeded) {
-		t.Errorf("expected context.DeadlineExceeded, got %v", err)
-	}
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
 }
 
 // TestPipelineRun_MaxIterations tests max iteration limit.
@@ -245,12 +202,7 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	{
-		total := result.TotalIterations
-		if total != config.MaxIterations {
-			t.Errorf("expected %d iterations, got %d", config.MaxIterations, total)
-		}
-	}
+	assert.Equal(t, config.MaxIterations, result.TotalIterations)
 }
 
 // TestPipelineRun_Parallel tests parallel detection.
@@ -290,9 +242,7 @@ func TestPipelineRun_Parallel(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if len(result.Iterations) == 0 {
-		t.Fatal("expected at least one iteration")
-	}
+	assert.NotEmpty(t, result.Iterations)
 
 	assertFindingsFound(t, result, 2, "expected 2 findings")
 }
@@ -377,17 +327,9 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 	seqFindings, seqNotified := runDetect(false)
 	parFindings, parNotified := runDetect(true)
 
-	if len(seqFindings) != len(parFindings) {
-		t.Errorf(
-			"sequential found %d findings, parallel found %d",
-			len(seqFindings),
-			len(parFindings),
-		)
-	}
+	assert.Len(t, seqFindings, len(parFindings))
 
-	if len(seqNotified) != len(parNotified) {
-		t.Errorf("sequential notified %d, parallel notified %d", len(seqNotified), len(parNotified))
-	}
+	assert.Len(t, seqNotified, len(parNotified))
 
 	assertNoSuppressedFindings(t, seqFindings, "sequential")
 	assertNoSuppressedFindings(t, parFindings, "parallel")
@@ -409,17 +351,11 @@ func TestTriage(t *testing.T) {
 	p := &Pipeline{config: DefaultConfig()}
 	result := p.triage(findings)
 
-	if len(result.Direct) != 1 {
-		t.Errorf("expected 1 direct, got %d", len(result.Direct))
-	}
+	assert.Len(t, result.Direct, 1)
 
-	if len(result.Suggest) != 2 {
-		t.Errorf("expected 2 suggest, got %d", len(result.Suggest))
-	}
+	assert.Len(t, result.Suggest, 2)
 
-	if len(result.None) != 2 {
-		t.Errorf("expected 2 none, got %d", len(result.None))
-	}
+	assert.Len(t, result.None, 2)
 }
 
 // TestDetectorFunc tests the DetectorFunc adapter.
@@ -441,9 +377,7 @@ func TestDetectorFunc(t *testing.T) {
 		t.Error("function was not called")
 	}
 
-	if f.Name() != "anonymous" {
-		t.Errorf("expected name 'anonymous', got %s", f.Name())
-	}
+	assert.Equal(t, "anonymous", f.Name())
 }
 
 func TestNamedDetectorFunc(t *testing.T) {
@@ -455,36 +389,26 @@ func TestNamedDetectorFunc(t *testing.T) {
 
 	d := NamedDetectorFunc("my-linter", fn)
 
-	if d.Name() != "my-linter" {
-		t.Errorf("expected name 'my-linter', got %s", d.Name())
-	}
+	assert.Equal(t, "my-linter", d.Name())
 
 	findings, err := d.Detect(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if len(findings) != 1 || findings[0].ID != "test" {
-		t.Errorf("expected 1 finding with ID 'test', got %v", findings)
-	}
+	assert.Len(t, findings, 1)
+	assert.Equal(t, "test", findings[0].ID)
 }
 
-// TestDefaultConfig tests default configuration.
 func TestDefaultConfig(t *testing.T) {
 	t.Parallel()
 	config := DefaultConfig()
 
-	if config.MaxIterations != 5 {
-		t.Errorf("expected MaxIterations 5, got %d", config.MaxIterations)
-	}
+	assert.Equal(t, 5, config.MaxIterations)
 
-	if !config.ParallelDetectors {
-		t.Error("expected ParallelDetectors to be true")
-	}
+	assert.True(t, config.ParallelDetectors)
 
-	if config.Timeout != 10*time.Minute {
-		t.Errorf("expected Timeout 10m, got %v", config.Timeout)
-	}
+	assert.Equal(t, 10*time.Minute, config.Timeout)
 }
 
 // TestFixApplier tests the FixApplier.
@@ -510,9 +434,7 @@ func TestFixApplier(t *testing.T) {
 
 	// Verify backup exists
 	backupPath := applier.backups[testFile]
-	if backupPath == "" {
-		t.Fatal("backup path not recorded")
-	}
+	assert.NotEmpty(t, backupPath)
 
 	// Test restore
 	err = applier.restore(testFile)
@@ -526,9 +448,7 @@ func TestFixApplier(t *testing.T) {
 		t.Fatalf("apply with nil fixes failed: %v", err)
 	}
 
-	if applied != 0 {
-		t.Errorf("expected 0 applied, got %d", applied)
-	}
+	assert.Equal(t, 0, applied)
 
 	// Test Apply with fixes that have no Position.File
 	fixes := []finding.Finding{
@@ -540,9 +460,7 @@ func TestFixApplier(t *testing.T) {
 		t.Fatalf("apply failed: %v", err)
 	}
 
-	if applied != 0 {
-		t.Errorf("expected 0 applied (no file), got %d", applied)
-	}
+	assert.Equal(t, 0, applied)
 }
 
 // TestFixApplier_Apply tests actual fix application.
@@ -567,9 +485,7 @@ func TestFixApplier_Apply(t *testing.T) {
 		t.Fatalf("apply failed: %v", err)
 	}
 
-	if applied != 1 {
-		t.Errorf("expected 1 applied, got %d", applied)
-	}
+	assert.Equal(t, 1, applied)
 
 	// Verify content changed
 	content, err := readFile(testFile)
@@ -578,9 +494,7 @@ func TestFixApplier_Apply(t *testing.T) {
 	}
 
 	expected := "package main\n\nfunc main() {\n\tprintln(\"world\")\n}\n"
-	if string(content) != expected {
-		t.Errorf("expected:\n%s\ngot:\n%s", expected, string(content))
-	}
+	assert.Equal(t, expected, string(content))
 }
 
 func TestFixApplier_RangeBasedFix(t *testing.T) {
@@ -613,9 +527,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 		t.Fatalf("apply failed: %v", err)
 	}
 
-	if applied != 1 {
-		t.Fatalf("expected 1 applied, got %d", applied)
-	}
+	assert.Equal(t, 1, applied)
 
 	got, err := readFile(testFile)
 	if err != nil {
@@ -624,9 +536,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 
 	// First println unchanged, second replaced.
 	want := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tfmt.Println(\"world\")\n}\n"
-	if string(got) != want {
-		t.Errorf("want:\n%s\ngot:\n%s", want, string(got))
-	}
+	assert.Equal(t, want, string(got))
 }
 
 func TestFixApplier_MultiLineRangeFix(t *testing.T) {
@@ -655,9 +565,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 		t.Fatalf("apply failed: %v", err)
 	}
 
-	if applied != 1 {
-		t.Fatalf("expected 1 applied, got %d", applied)
-	}
+	assert.Equal(t, 1, applied)
 
 	got, err := readFile(testFile)
 	if err != nil {
@@ -665,9 +573,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 	}
 
 	want := "package main\n\nfunc new() {\n\treturn 42\n}\n\nfunc main() {}\n"
-	if string(got) != want {
-		t.Errorf("want:\n%s\ngot:\n%s", want, string(got))
-	}
+	assert.Equal(t, want, string(got))
 }
 
 func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
@@ -695,9 +601,7 @@ func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
 		t.Fatalf("apply failed: %v", err)
 	}
 
-	if applied != 1 {
-		t.Fatalf("expected 1 applied, got %d", applied)
-	}
+	assert.Equal(t, 1, applied)
 
 	got, err := readFile(testFile)
 	if err != nil {
@@ -705,9 +609,7 @@ func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
 	}
 
 	want := "package main\n\nfunc replaced() { // inserted\n}\n\nfunc main() {}\n"
-	if string(got) != want {
-		t.Errorf("want:\n%s\ngot:\n%s", want, string(got))
-	}
+	assert.Equal(t, want, string(got))
 }
 
 // BenchmarkParallelDetection benchmarks parallel vs sequential detection.
@@ -764,42 +666,30 @@ func TestIteration_Findings(t *testing.T) {
 	}
 
 	got := iter.Findings()
-	if len(got) != 2 {
-		t.Fatalf("Findings() returned %d items, want 2", len(got))
-	}
+	assert.Len(t, got, 2)
 
 	assertFindingMessage := func(idx int, want string) {
 		t.Helper()
 
 		msg := got[idx].Message
-		if msg != want {
-			t.Errorf("Findings()[%d].Message = %q, want %q", idx, msg, want)
-		}
+		assert.Equal(t, want, msg)
 	}
 	assertFindingMessage(0, "a")
 	assertFindingMessage(1, "b")
 
 	suggested := iter.SuggestedFindings()
-	if len(suggested) != 1 {
-		t.Fatalf("SuggestedFindings() returned %d items, want 1", len(suggested))
-	}
+	assert.Len(t, suggested, 1)
 
-	if suggested[0].Message != "s" {
-		t.Errorf("SuggestedFindings()[0].Message = %q, want %q", suggested[0].Message, "s")
-	}
+	assert.Equal(t, "s", suggested[0].Message)
 }
 
 func TestIteration_Findings_Empty(t *testing.T) {
 	t.Parallel()
 
 	iter := Iteration{Number: 1}
-	if got := iter.Findings(); got != nil {
-		t.Errorf("Findings() = %v, want nil", got)
-	}
+	assert.Nil(t, iter.Findings())
 
-	if got := iter.SuggestedFindings(); got != nil {
-		t.Errorf("SuggestedFindings() = %v, want nil", got)
-	}
+	assert.Nil(t, iter.SuggestedFindings())
 }
 
 func TestIoErrorAt(t *testing.T) {
@@ -808,9 +698,7 @@ func TestIoErrorAt(t *testing.T) {
 	err := ioErrorAt("read failed", os.ErrNotExist, "foo.go")
 
 	var fe *finding.FindingError
-	if !errors.As(err, &fe) {
-		t.Fatal("expected FindingError")
-	}
+	assert.ErrorAs(t, err, &fe)
 
 	assertFindingErrorIO(t, fe, "foo.go")
 }
@@ -838,9 +726,7 @@ func TestApplyDirectFixes(t *testing.T) {
 		t.Fatalf("applyDirectFixes: %v", err)
 	}
 
-	if applied != 1 {
-		t.Fatalf("applied = %d, want 1", applied)
-	}
+	assert.Equal(t, 1, applied)
 
 	got, err := readFile(testFile)
 	if err != nil {
@@ -848,13 +734,9 @@ func TestApplyDirectFixes(t *testing.T) {
 	}
 
 	want := "package main\n\nfunc main() {\n\tnew()\n}\n"
-	if string(got) != want {
-		t.Errorf("file content:\nwant:\n%s\ngot:\n%s", want, string(got))
-	}
+	assert.Equal(t, want, string(got))
 
-	if m.TotalFixesApplied() != 1 {
-		t.Errorf("FixesApplied = %d, want 1", m.TotalFixesApplied())
-	}
+	assert.Equal(t, 1, m.TotalFixesApplied())
 }
 
 func TestApplyDirectFixes_NoMetrics(t *testing.T) {
@@ -878,9 +760,7 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 		t.Fatalf("applyDirectFixes: %v", err)
 	}
 
-	if applied != 1 {
-		t.Fatalf("applied = %d, want 1", applied)
-	}
+	assert.Equal(t, 1, applied)
 }
 
 func TestDryRun(t *testing.T) {
@@ -920,21 +800,15 @@ func TestDryRun(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	if applied != 0 {
-		t.Errorf("applied = %d, want 0 (dry run should not apply fixes)", applied)
-	}
+	assert.Equal(t, 0, applied)
 
 	assertIterationsLen(t, result, 1)
 
 	iter := result.Iterations[0]
-	if iter.DirectFixes != 1 {
-		t.Errorf("DirectFixes = %d, want 1 (triage should still run)", iter.DirectFixes)
-	}
+	assert.Equal(t, 1, iter.DirectFixes)
 
 	data, _ := os.ReadFile(testFile)
-	if string(data) != "package main\n" {
-		t.Errorf("file was modified during dry run: %q", data)
-	}
+	assert.Equal(t, "package main\n", string(data))
 }
 
 func TestNew_RejectsInvalidConfig(t *testing.T) {
@@ -952,9 +826,7 @@ func TestNew_RejectsInvalidConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			_, err := New(tt.config, t.TempDir())
-			if err == nil {
-				t.Fatal("expected error for invalid config")
-			}
+			assert.Error(t, err)
 		})
 	}
 }
@@ -967,9 +839,7 @@ func TestNew_ValidConfig_NoError(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if p == nil {
-		t.Fatal("expected non-nil pipeline")
-	}
+	assert.NotNil(t, p)
 }
 
 func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
@@ -992,17 +862,13 @@ func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if result.PartialErrors == nil {
-		t.Fatal("expected PartialErrors to be populated")
-	}
+	assert.NotNil(t, result.PartialErrors)
 
-	if _, ok := result.PartialErrors["bad"]; !ok {
-		t.Error("expected 'bad' detector in PartialErrors")
-	}
+	_, ok := result.PartialErrors["bad"]
+	assert.True(t, ok)
 
-	if _, ok := result.PartialErrors["good"]; ok {
-		t.Error("did not expect 'good' detector in PartialErrors")
-	}
+	_, ok = result.PartialErrors["good"]
+	assert.False(t, ok)
 }
 
 func TestPipelineRun_MetricsInResult(t *testing.T) {
@@ -1024,13 +890,9 @@ func TestPipelineRun_MetricsInResult(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if result.Metrics.TotalDuration == 0 {
-		t.Error("expected non-zero TotalDuration in metrics snapshot")
-	}
+	assert.NotZero(t, result.Metrics.TotalDuration)
 
-	if result.Metrics.FixesApplied != 0 {
-		t.Errorf("FixesApplied = %d, want 0", result.Metrics.FixesApplied)
-	}
+	assert.Equal(t, 0, result.Metrics.FixesApplied)
 }
 
 func directFixFinding() []finding.Finding {
@@ -1077,18 +939,12 @@ func TestApplyTriage_DirectFixesApplied(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	if len(result.Iterations) == 0 {
-		t.Fatal("expected at least one iteration")
-	}
+	assert.NotEmpty(t, result.Iterations)
 
 	iter := result.Iterations[0]
-	if iter.DirectFixes != 1 {
-		t.Errorf("DirectFixes = %d, want 1", iter.DirectFixes)
-	}
+	assert.Equal(t, 1, iter.DirectFixes)
 
-	if iter.Applied != 1 {
-		t.Errorf("Applied = %d, want 1", iter.Applied)
-	}
+	assert.Equal(t, 1, iter.Applied)
 }
 
 func TestApplyTriage_ConflictingFixes(t *testing.T) {
@@ -1129,18 +985,12 @@ func TestApplyTriage_ConflictingFixes(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	if len(result.Iterations) == 0 {
-		t.Fatal("expected at least one iteration")
-	}
+	assert.NotEmpty(t, result.Iterations)
 
 	iter := result.Iterations[0]
-	if iter.Conflicts == 0 {
-		t.Error("expected conflicts from overlapping fixes")
-	}
+	assert.NotZero(t, iter.Conflicts)
 
-	if len(conflictFindings) == 0 {
-		t.Error("expected OnFix callback with conflict finding")
-	}
+	assert.NotEmpty(t, conflictFindings)
 }
 
 func TestApplyTriage_OnFixCallback(t *testing.T) {
@@ -1177,13 +1027,9 @@ func TestApplyTriage_OnFixCallback(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	if len(appliedIDs) == 0 {
-		t.Error("expected OnFix callback for applied fix")
-	}
+	assert.NotEmpty(t, appliedIDs)
 
-	if appliedIDs[0] != "fix1" {
-		t.Errorf("applied ID = %q, want %q", appliedIDs[0], "fix1")
-	}
+	assert.Equal(t, "fix1", appliedIDs[0])
 }
 
 func TestApplyTriage_EmptyFixes(t *testing.T) {
@@ -1197,13 +1043,9 @@ func TestApplyTriage_EmptyFixes(t *testing.T) {
 		t.Fatalf("applyTriage with nil fixes: %v", err)
 	}
 
-	if iter.Applied != 0 {
-		t.Errorf("Applied = %d, want 0", iter.Applied)
-	}
+	assert.Equal(t, 0, iter.Applied)
 
-	if iter.Conflicts != 0 {
-		t.Errorf("Conflicts = %d, want 0", iter.Conflicts)
-	}
+	assert.Equal(t, 0, iter.Conflicts)
 }
 
 func TestApplyTriage_AllConflicting(t *testing.T) {
@@ -1225,13 +1067,9 @@ func TestApplyTriage_AllConflicting(t *testing.T) {
 		t.Fatalf("applyTriage: %v", err)
 	}
 
-	if iter.Conflicts != 1 {
-		t.Errorf("Conflicts = %d, want 1 (one filtered, one kept)", iter.Conflicts)
-	}
+	assert.Equal(t, 1, iter.Conflicts)
 
-	if iter.Applied != 1 {
-		t.Errorf("Applied = %d, want 1 (one non-conflicting fix applied)", iter.Applied)
-	}
+	assert.Equal(t, 1, iter.Applied)
 }
 
 func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
@@ -1266,13 +1104,9 @@ func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	if !result.Stable {
-		t.Error("expected stable result after fix applied")
-	}
+	assert.True(t, result.Stable)
 
-	if result.TotalIterations != 2 {
-		t.Errorf("TotalIterations = %d, want 2 (detect-fix + verify)", result.TotalIterations)
-	}
+	assert.Equal(t, 2, result.TotalIterations)
 
 	content, err := readFile(testFile)
 	if err != nil {
@@ -1280,9 +1114,7 @@ func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
 	}
 
 	want := "package main\n\nfunc main() {\n\tnew()\n}\n"
-	if string(content) != want {
-		t.Errorf("file content:\nwant:\n%s\ngot:\n%s", want, string(content))
-	}
+	assert.Equal(t, want, string(content))
 }
 
 func mockDetectorWithFinding(name, id, rule, tool, msg string) *mockDetector {

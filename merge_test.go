@@ -3,15 +3,15 @@ package finding
 import (
 	"slices"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMerge_Empty(t *testing.T) {
 	t.Parallel()
 
 	merged := Merge(nil)
-	if merged == nil {
-		t.Fatal("Merge(nil) = nil, want non-nil report")
-	}
+	assert.NotNil(t, merged)
 
 	assertFindingsLen(t, "Merge(nil) findings", len(merged.Findings), 0)
 }
@@ -143,9 +143,7 @@ func TestDedupKey(t *testing.T) {
 			t.Parallel()
 
 			got := dedupKey(f, MergeOptions{DeduplicateBy: tt.by})
-			if got != tt.want {
-				t.Errorf("dedupKey() = %q, want %q", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -161,13 +159,7 @@ func TestDeduplicateStrategiesDistinct(t *testing.T) {
 	posKey := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
 	ruleKey := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
 
-	if posKey == ruleKey {
-		t.Errorf(
-			"DeduplicateByPosition key %q should differ from DeduplicateByRule key %q",
-			posKey,
-			ruleKey,
-		)
-	}
+	assert.NotEqual(t, posKey, ruleKey)
 }
 
 func makeFinding(id, tool, rule, file string, line int) Finding {
@@ -189,31 +181,21 @@ func TestCorrelate(t *testing.T) {
 	}
 
 	correlations := Correlate(findings)
-	if len(correlations) != 1 {
-		t.Fatalf("Correlate() = %d correlations, want 1", len(correlations))
-	}
+	requireLenEq(t, len(correlations), 1, "correlations")
 
 	c := correlations[0]
-	if got, want := len(c.FindingIDs), 2; got != want {
-		t.Errorf("len(FindingIDs) = %d, want %d", got, want)
-	}
-
-	if c.Reason != "same file, nearby lines" {
-		t.Errorf("Reason = %q, want %q", c.Reason, "same file, nearby lines")
-	}
+	assert.Len(t, c.FindingIDs, 2)
+	assert.Equal(t, "same file, nearby lines", c.Reason)
 
 	wantConf := 1.0 - (2.0 / 5.0)
-	if c.Confidence != wantConf {
-		t.Errorf("Confidence = %f, want %f", c.Confidence, wantConf)
-	}
+	assert.InDelta(t, wantConf, c.Confidence, 0.0001)
 
 	hasID := func(id string) bool {
 		return slices.Contains(c.FindingIDs, id)
 	}
 
-	if !hasID("1") || !hasID("2") {
-		t.Errorf("FindingIDs = %v, want [1 2]", c.FindingIDs)
-	}
+	assert.True(t, hasID("1"))
+	assert.True(t, hasID("2"))
 }
 
 func TestCorrelate_TooFewFindings(t *testing.T) {
@@ -224,9 +206,7 @@ func TestCorrelate_TooFewFindings(t *testing.T) {
 	}
 
 	correlations := Correlate(findings)
-	if len(correlations) != 0 {
-		t.Errorf("Correlate() = %d, want 0 for single finding", len(correlations))
-	}
+	assert.Len(t, correlations, 0)
 }
 
 func TestCloneFindings_EmptySlice(t *testing.T) {

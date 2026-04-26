@@ -215,9 +215,7 @@ func TestGroupBy_Empty(t *testing.T) {
 	t.Parallel()
 
 	groups := GroupBy(nil, func(f Finding) string { return f.ToolName })
-	if len(groups) != 0 {
-		t.Errorf("GroupBy(nil) = %d groups, want 0", len(groups))
-	}
+	assertIntEq(t, len(groups), 0, "GroupBy(nil)")
 }
 
 func TestGroupByFile(t *testing.T) {

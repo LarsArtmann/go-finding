@@ -14,9 +14,7 @@ func TestReportActiveFindings(t *testing.T) {
 	})
 
 	active := r.ActiveFindings()
-	if len(active) != 1 {
-		t.Fatalf("expected 1 active finding, got %d", len(active))
-	}
+	requireLenEq(t, len(active), 1, "active findings")
 
 	if active[0].ID != "1" {
 		t.Errorf("expected active finding ID '1', got %q", active[0].ID)
@@ -31,9 +29,7 @@ func TestReportActiveFindings_AllActive(t *testing.T) {
 	r.AddFinding(Finding{ID: "2", Message: "b"})
 
 	active := r.ActiveFindings()
-	if len(active) != 2 {
-		t.Fatalf("expected 2 active findings, got %d", len(active))
-	}
+	requireLenEq(t, len(active), 2, "active findings")
 }
 
 func TestReportActiveFindings_None(t *testing.T) {
@@ -42,9 +38,7 @@ func TestReportActiveFindings_None(t *testing.T) {
 	r := NewReport(ToolInfo{Name: "test"})
 
 	active := r.ActiveFindings()
-	if len(active) != 0 {
-		t.Errorf("expected empty slice for empty findings, got %v", active)
-	}
+	assertIntEq(t, len(active), 0, "active findings")
 }
 
 func TestReportByCategory(t *testing.T) {
@@ -56,14 +50,10 @@ func TestReportByCategory(t *testing.T) {
 	r.AddFinding(Finding{ID: "3", Category: "security", Message: "c"})
 
 	sec := r.ByCategory("security")
-	if len(sec) != 2 {
-		t.Fatalf("expected 2 security findings, got %d", len(sec))
-	}
+	requireLenEq(t, len(sec), 2, "security findings")
 
 	style := r.ByCategory("style")
-	if len(style) != 1 {
-		t.Fatalf("expected 1 style finding, got %d", len(style))
-	}
+	requireLenEq(t, len(style), 1, "style findings")
 
 	none := r.ByCategory("nonexistent")
 	AssertEmpty(t, none, "nonexistent category")
@@ -78,14 +68,10 @@ func TestReportByFixStrategy(t *testing.T) {
 	r.AddFinding(Finding{ID: "3", FixStrategy: FixStrategyDirect, Message: "c"})
 
 	direct := r.ByFixStrategy(FixStrategyDirect)
-	if len(direct) != 2 {
-		t.Fatalf("expected 2 direct findings, got %d", len(direct))
-	}
+	requireLenEq(t, len(direct), 2, "direct findings")
 
 	none := r.ByFixStrategy(FixStrategyNone)
-	if len(none) != 1 {
-		t.Fatalf("expected 1 none finding, got %d", len(none))
-	}
+	requireLenEq(t, len(none), 1, "none findings")
 }
 
 func TestReportFindByID(t *testing.T) {
@@ -119,14 +105,10 @@ func TestReportBySeverity(t *testing.T) {
 	r.AddFinding(Finding{ID: "3", Severity: SeverityError, Message: "c"})
 
 	errors := r.BySeverity(SeverityError)
-	if len(errors) != 2 {
-		t.Fatalf("expected 2 error findings, got %d", len(errors))
-	}
+	requireLenEq(t, len(errors), 2, "error findings")
 
 	warnings := r.BySeverity(SeverityWarning)
-	if len(warnings) != 1 {
-		t.Fatalf("expected 1 warning finding, got %d", len(warnings))
-	}
+	requireLenEq(t, len(warnings), 1, "warning findings")
 }
 
 func TestReportFindByRule(t *testing.T) {
@@ -138,9 +120,7 @@ func TestReportFindByRule(t *testing.T) {
 	r.AddFinding(Finding{ID: "3", Rule: "SA1000", Message: "c"})
 
 	matches := r.FindByRule("SA1000")
-	if len(matches) != 2 {
-		t.Fatalf("expected 2 SA1000 findings, got %d", len(matches))
-	}
+	requireLenEq(t, len(matches), 2, "SA1000 findings")
 
 	none := r.FindByRule("nonexistent")
 	AssertEmpty(t, none, "nonexistent rule")
@@ -175,9 +155,7 @@ func TestReportAll(t *testing.T) {
 		collected = append(collected, f)
 	}
 
-	if len(collected) != 3 {
-		t.Fatalf("expected 3 findings, got %d", len(collected))
-	}
+	requireLenEq(t, len(collected), 3, "collected findings")
 
 	if collected[0].ID != "1" || collected[1].ID != "2" || collected[2].ID != "3" {
 		t.Errorf("unexpected order: %v", collected)

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func goFindingProps(id, severity, fixStrategy, toolName, category, tag string, confidence float64, suggestion, snippet string) map[string]any {
@@ -98,31 +100,18 @@ func TestToSARIF(t *testing.T) {
 	}
 
 	run := log.Runs[0]
+
 	if run.Tool.Driver.Name != "test-tool" {
 		t.Errorf("Driver.Name = %q, want %q", run.Tool.Driver.Name, "test-tool")
 	}
 
-	if len(run.Results) != 1 {
-		t.Fatalf("Results length = %d, want 1", len(run.Results))
-	}
+	requireLenEq(t, len(run.Results), 1, "Results")
 
 	result := run.Results[0]
-	if result.RuleID != "SA1000" {
-		t.Errorf("RuleID = %q, want %q", result.RuleID, "SA1000")
-	}
-
-	if result.Level != string(SeverityError) {
-		t.Errorf("Level = %q, want %q", result.Level, SeverityError)
-	}
-
-	if result.Message.Text != "bad code" {
-		t.Errorf("Message.Text = %q, want %q", result.Message.Text, "bad code")
-	}
-
-	uri := result.Locations[0].PhysicalLocation.ArtifactLocation.URI
-	if uri != "main.go" {
-		t.Errorf("URI = %q, want %q", uri, "main.go")
-	}
+	assert.Equal(t, result.RuleID, "SA1000")
+	assert.Equal(t, result.Level, string(SeverityError))
+	assert.Equal(t, result.Message.Text, "bad code")
+	assert.Equal(t, result.Locations[0].PhysicalLocation.ArtifactLocation.URI, "main.go")
 }
 
 func TestToSARIFFiltered(t *testing.T) {
@@ -155,12 +144,7 @@ func TestToSARIFFiltered(t *testing.T) {
 	log := unmarshalSARIF(t, data)
 
 	results := log.Runs[0].Results
-	if len(results) != 2 {
-		t.Fatalf(
-			"Results length = %d, want 2 (critical + error, excluding warning/info/suppressed)",
-			len(results),
-		)
-	}
+	requireLenEq(t, len(results), 2, "filtered results")
 
 	rules := make(map[string]struct{})
 	for _, res := range results {
@@ -215,9 +199,7 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 	log := unmarshalSARIF(t, data)
 
 	results := log.Runs[0].Results
-	if len(results) != 1 {
-		t.Fatalf("Results length = %d, want 1 (suppressed excluded)", len(results))
-	}
+	requireLenEq(t, len(results), 1, "suppressed excluded results")
 
 	if results[0].RuleID != "r1" {
 		t.Errorf("RuleID = %q, want %q", results[0].RuleID, "r1")
@@ -252,9 +234,7 @@ func TestToSARIF_WithFix(t *testing.T) {
 	log := unmarshalSARIF(t, data)
 
 	result := log.Runs[0].Results[0]
-	if len(result.Fixes) != 1 {
-		t.Fatalf("Fixes length = %d, want 1", len(result.Fixes))
-	}
+	requireLenEq(t, len(result.Fixes), 1, "Fixes")
 
 	fix := result.Fixes[0]
 	if fix.Description.Text != "replace old with new" {
@@ -369,57 +349,25 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("FindingsFromSARIF(): %v", err)
 	}
-	if len(findings) != 1 {
-		t.Fatalf("FindingsFromSARIF() got %d findings, want 1", len(findings))
-	}
+	requireLenEq(t, len(findings), 1, "round-trip findings")
 
 	got := findings[0]
 
-	if got.ID != original.ID {
-		t.Errorf("ID = %q, want %q", got.ID, original.ID)
-	}
-	if got.Rule != original.Rule {
-		t.Errorf("Rule = %q, want %q", got.Rule, original.Rule)
-	}
-	if got.ToolName != original.ToolName {
-		t.Errorf("ToolName = %q, want %q", got.ToolName, original.ToolName)
-	}
-	if got.Severity != original.Severity {
-		t.Errorf("Severity = %q, want %q", got.Severity, original.Severity)
-	}
-	if got.Message != original.Message {
-		t.Errorf("Message = %q, want %q", got.Message, original.Message)
-	}
-	if got.Category != original.Category {
-		t.Errorf("Category = %q, want %q", got.Category, original.Category)
-	}
-	if got.Tag != original.Tag {
-		t.Errorf("Tag = %q, want %q", got.Tag, original.Tag)
-	}
-	if got.FixStrategy != original.FixStrategy {
-		t.Errorf("FixStrategy = %q, want %q", got.FixStrategy, original.FixStrategy)
-	}
-	if got.Confidence != original.Confidence {
-		t.Errorf("Confidence = %v, want %v", got.Confidence, original.Confidence)
-	}
-	if got.Suggestion != original.Suggestion {
-		t.Errorf("Suggestion = %q, want %q", got.Suggestion, original.Suggestion)
-	}
-	if got.Snippet != original.Snippet {
-		t.Errorf("Snippet = %q, want %q", got.Snippet, original.Snippet)
-	}
-	if got.Position != original.Position {
-		t.Errorf("Position = %v, want %v", got.Position, original.Position)
-	}
-	if got.Range == nil {
-		t.Fatal("Range is nil, want non-nil")
-	}
-	if got.Range.End != original.Range.End {
-		t.Errorf("Range.End = %v, want %v", got.Range.End, original.Range.End)
-	}
-	if got.Metadata["custom"] != "value" {
-		t.Errorf("Metadata[\"custom\"] = %q, want %q", got.Metadata["custom"], "value")
-	}
+	assert.Equal(t, original.ID, got.ID)
+	assert.Equal(t, original.Rule, got.Rule)
+	assert.Equal(t, original.ToolName, got.ToolName)
+	assert.Equal(t, original.Severity, got.Severity)
+	assert.Equal(t, original.Message, got.Message)
+	assert.Equal(t, original.Category, got.Category)
+	assert.Equal(t, original.Tag, got.Tag)
+	assert.Equal(t, original.FixStrategy, got.FixStrategy)
+	assert.Equal(t, original.Confidence, got.Confidence)
+	assert.Equal(t, original.Suggestion, got.Suggestion)
+	assert.Equal(t, original.Snippet, got.Snippet)
+	assert.Equal(t, original.Position, got.Position)
+	assert.NotNil(t, got.Range)
+	assert.Equal(t, original.Range.End, got.Range.End)
+	assert.Equal(t, "value", got.Metadata["custom"])
 }
 
 func TestSeverityToSARIFLevel(t *testing.T) {
@@ -539,9 +487,7 @@ func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	if len(f.Related) != 2 {
-		t.Fatalf("Related length = %d, want 2", len(f.Related))
-	}
+	requireLenEq(t, len(f.Related), 2, "Related")
 
 	if f.Related[0].Relation != "related call" {
 		t.Errorf("Related[0].Relation = %q, want %q", f.Related[0].Relation, "related call")
