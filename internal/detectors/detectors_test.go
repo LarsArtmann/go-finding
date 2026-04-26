@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParsePosn(t *testing.T) {
@@ -89,44 +90,17 @@ func TestParseGoVetJSON(t *testing.T) {
 	}`
 
 	findings := parseGoVetJSON([]byte(input), "/project")
-	if len(findings) != 2 {
-		t.Fatalf("expected 2 findings, got %d", len(findings))
-	}
+	assert.Len(t, findings, 2)
 
 	f := findings[0]
-	if f.ToolName != "govet" {
-		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
-	}
-
-	if f.Rule != "github.com/example/pkg" {
-		t.Errorf("Rule = %q, want %q", f.Rule, "github.com/example/pkg")
-	}
-
-	if f.Message != "unused variable x" {
-		t.Errorf("Message = %q, want %q", f.Message, "unused variable x")
-	}
-	{
-		got := f.Severity
-		if got != finding.SeverityWarning {
-			t.Errorf("Severity = %v, want %v", got, finding.SeverityWarning)
-		}
-	}
-
-	if f.Category != finding.CategoryCorrectness {
-		t.Errorf("Category = %v, want %v", f.Category, finding.CategoryCorrectness)
-	}
-
-	if f.FixStrategy != finding.FixStrategySuggest {
-		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, finding.FixStrategySuggest)
-	}
-
-	if f.Position.File != "/project/main.go" {
-		t.Errorf("Position.File = %q, want %q", f.Position.File, "/project/main.go")
-	}
-
-	if f.Position.Line != 10 {
-		t.Errorf("Position.Line = %d, want 10", f.Position.Line)
-	}
+	assert.Equal(t, "govet", f.ToolName)
+	assert.Equal(t, "github.com/example/pkg", f.Rule)
+	assert.Equal(t, "unused variable x", f.Message)
+	assert.Equal(t, finding.SeverityWarning, f.Severity)
+	assert.Equal(t, finding.CategoryCorrectness, f.Category)
+	assert.Equal(t, finding.FixStrategySuggest, f.FixStrategy)
+	assert.Equal(t, "/project/main.go", f.Position.File)
+	assert.Equal(t, 10, f.Position.Line)
 }
 
 func TestParseGoVetJSON_Invalid(t *testing.T) {
@@ -163,39 +137,16 @@ func TestParseStaticcheckJSON(t *testing.T) {
 		t.Errorf("ToolName = %q, want %q", f.ToolName, "staticcheck")
 	}
 
-	if f.Rule != "SA1000" {
-		t.Errorf("Rule = %q, want %q", f.Rule, "SA1000")
-	}
-	{
-		actual := f.Severity
-		if actual != finding.SeverityWarning {
-			t.Errorf("Severity = %v, want %v", actual, finding.SeverityWarning)
-		}
-	}
-
-	if f.Category != finding.CategoryStyle {
-		t.Errorf("Category = %v, want %v", f.Category, finding.CategoryStyle)
-	}
-
-	if f.Confidence != 0.8 {
-		t.Errorf("Confidence = %f, want 0.8", f.Confidence)
-	}
+	assert.Equal(t, "SA1000", f.Rule)
+	assert.Equal(t, finding.SeverityWarning, f.Severity)
+	assert.Equal(t, finding.CategoryStyle, f.Category)
+	assert.InDelta(t, 0.8, f.Confidence, 0.001)
 
 	// Second finding: S1001 = style category, error severity
 	f2 := findings[1]
-	if f2.Rule != "S1001" {
-		t.Errorf("Rule = %q, want %q", f2.Rule, "S1001")
-	}
-	{
-		sev := f2.Severity
-		if sev != finding.SeverityError {
-			t.Errorf("Severity = %v, want %v", sev, finding.SeverityError)
-		}
-	}
-
-	if f2.Category != finding.CategoryStyle {
-		t.Errorf("Category = %v, want %v", f2.Category, finding.CategoryStyle)
-	}
+	assert.Equal(t, "S1001", f2.Rule)
+	assert.Equal(t, finding.SeverityError, f2.Severity)
+	assert.Equal(t, finding.CategoryStyle, f2.Category)
 }
 
 func TestParseStaticcheckJSON_Empty(t *testing.T) {

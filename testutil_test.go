@@ -203,41 +203,7 @@ func assertIntEq(t *testing.T, got, want int, field string) {
 	}
 }
 
-// assertFloatEq asserts got equals want within the specified tolerance.
-func assertFloatEq(t *testing.T, got, want float64, field string) {
-	t.Helper()
 
-	if got != want {
-		t.Errorf("%s = %v, want %v", field, got, want)
-	}
-}
-
-// assertStringEq asserts got equals want, using the provided field label.
-func assertStringEq(t *testing.T, got, want string, field string) {
-	t.Helper()
-
-	if got != want {
-		t.Errorf("%s = %q, want %q", field, got, want)
-	}
-}
-
-// assertBoolEq asserts got equals want, using the provided field label.
-func assertBoolEq(t *testing.T, got, want bool, field string) {
-	t.Helper()
-
-	if got != want {
-		t.Errorf("%s = %v, want %v", field, got, want)
-	}
-}
-
-// assertSevEq asserts the finding severity matches.
-func assertSevEq(t *testing.T, got, want Severity) {
-	t.Helper()
-
-	if got != want {
-		t.Errorf("Severity = %v, want %v", got, want)
-	}
-}
 
 // assertReportField asserts a field equals expected value using formatted output.
 func assertReportField[T comparable](t *testing.T, fieldName string, got, want T) {
