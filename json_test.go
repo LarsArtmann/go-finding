@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func testFinding(id, rule, tool, msg string, sev Severity, file string, line, col int) Finding {
@@ -294,17 +296,9 @@ func TestPrettyJSON(t *testing.T) {
 		t.Fatalf("PrettyJSON: %v", err)
 	}
 
-	if !strings.Contains(got, "\n") {
-		t.Error("PrettyJSON should contain newlines")
-	}
-
-	if !strings.Contains(got, "  ") {
-		t.Error("PrettyJSON should be indented")
-	}
-
-	if !strings.Contains(got, `"tool"`) {
-		t.Error("PrettyJSON should contain tool name")
-	}
+	assert.Contains(t, got, "\n", "PrettyJSON should contain newlines")
+	assert.Contains(t, got, "  ", "PrettyJSON should be indented")
+	assert.Contains(t, got, `"tool"`, "PrettyJSON should contain tool name")
 }
 
 func TestLineJSON(t *testing.T) {
@@ -321,13 +315,8 @@ func TestLineJSON(t *testing.T) {
 		t.Fatalf("LineJSON: %v", err)
 	}
 
-	if strings.Contains(got, "\n") {
-		t.Error("LineJSON should be single line (no newlines)")
-	}
-
-	if !strings.Contains(got, `"id"`) {
-		t.Error("LineJSON should contain JSON fields")
-	}
+	assert.NotContains(t, got, "\n", "LineJSON should be single line (no newlines)")
+	assert.Contains(t, got, `"id"`, "LineJSON should contain JSON fields")
 }
 
 func expectJSONError(t *testing.T, fn func() error, context string) {

@@ -2,6 +2,14 @@ package finding
 
 import "testing"
 
+func addCat(r *Report, id, cat, msg string) {
+	r.AddFinding(Finding{ID: id, Category: Category(cat), Message: msg})
+}
+
+func addRule(r *Report, id, rule, msg string) {
+	r.AddFinding(Finding{ID: id, Rule: rule, Message: msg})
+}
+
 func TestReportActiveFindings(t *testing.T) {
 	t.Parallel()
 
@@ -45,9 +53,9 @@ func TestReportByCategory(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: "test"})
-	r.AddFinding(Finding{ID: "1", Category: "security", Message: "a"})
-	r.AddFinding(Finding{ID: "2", Category: "style", Message: "b"})
-	r.AddFinding(Finding{ID: "3", Category: "security", Message: "c"})
+	addCat(r, "1", "security", "a")
+	addCat(r, "2", "style", "b")
+	addCat(r, "3", "security", "c")
 
 	sec := r.ByCategory("security")
 	requireLenEq(t, len(sec), 2, "security findings")
@@ -115,9 +123,9 @@ func TestReportFindByRule(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: "test"})
-	r.AddFinding(Finding{ID: "1", Rule: "SA1000", Message: "a"})
-	r.AddFinding(Finding{ID: "2", Rule: "SA2000", Message: "b"})
-	r.AddFinding(Finding{ID: "3", Rule: "SA1000", Message: "c"})
+	addRule(r, "1", "SA1000", "a")
+	addRule(r, "2", "SA2000", "b")
+	addRule(r, "3", "SA1000", "c")
 
 	matches := r.FindByRule("SA1000")
 	requireLenEq(t, len(matches), 2, "SA1000 findings")

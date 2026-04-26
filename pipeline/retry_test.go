@@ -10,6 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func newRetryDet(d interface{ Detect(context.Context) ([]finding.Finding, error) }, maxRetries int) *RetryDetector {
+	return NewRetryDetector(d, RetryConfig{MaxRetries: maxRetries, BaseDelay: time.Millisecond})
+}
+
 func TestRetryConfig_delay(t *testing.T) {
 	t.Parallel()
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 5 * time.Second}
@@ -54,7 +58,7 @@ func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 		name:     "test",
 		findings: []finding.Finding{{ID: "F1"}},
 	}
-	rd := NewRetryDetector(inner, RetryConfig{MaxRetries: 3, BaseDelay: time.Millisecond})
+	rd := newRetryDet(inner, 3)
 
 	findings, err := rd.Detect(context.Background())
 	if err != nil {
@@ -76,7 +80,7 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 		return []finding.Finding{{ID: "F1"}}, nil
 	})
 
-	rd := NewRetryDetector(inner, RetryConfig{MaxRetries: 3, BaseDelay: time.Millisecond})
+	rd := newRetryDet(inner, 3)
 
 	findings, err := rd.Detect(context.Background())
 	if err != nil {
