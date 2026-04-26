@@ -414,9 +414,7 @@ func TestFindingFromSarResult_Rank(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	if f.Confidence != 0.75 {
-		t.Errorf("Confidence = %v, want 0.75", f.Confidence)
-	}
+	assert.Equal(t, 0.75, f.Confidence)
 }
 
 func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
@@ -552,9 +550,7 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 		t.Errorf("Tag = %q, want %q", f.Tag, "injection")
 	}
 
-	if f.Confidence != 0.85 {
-		t.Errorf("Confidence = %v, want 0.85", f.Confidence)
-	}
+	assert.Equal(t, 0.85, f.Confidence)
 
 	if f.Suggestion != "fix it" {
 		t.Errorf("Suggestion = %q, want %q", f.Suggestion, "fix it")

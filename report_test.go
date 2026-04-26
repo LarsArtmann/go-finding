@@ -10,6 +10,14 @@ func addRule(r *Report, id, rule, msg string) {
 	r.AddFinding(Finding{ID: id, Rule: rule, Message: msg})
 }
 
+func addFix(r *Report, id string, fs FixStrategy, msg string) {
+	r.AddFinding(Finding{ID: id, FixStrategy: fs, Message: msg})
+}
+
+func addSev(r *Report, id string, sev Severity, msg string) {
+	r.AddFinding(Finding{ID: id, Severity: sev, Message: msg})
+}
+
 func TestReportActiveFindings(t *testing.T) {
 	t.Parallel()
 
@@ -71,9 +79,9 @@ func TestReportByFixStrategy(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: "test"})
-	r.AddFinding(Finding{ID: "1", FixStrategy: FixStrategyDirect, Message: "a"})
-	r.AddFinding(Finding{ID: "2", FixStrategy: FixStrategyNone, Message: "b"})
-	r.AddFinding(Finding{ID: "3", FixStrategy: FixStrategyDirect, Message: "c"})
+	addFix(r, "1", FixStrategyDirect, "a")
+	addFix(r, "2", FixStrategyNone, "b")
+	addFix(r, "3", FixStrategyDirect, "c")
 
 	direct := r.ByFixStrategy(FixStrategyDirect)
 	requireLenEq(t, len(direct), 2, "direct findings")
@@ -108,9 +116,9 @@ func TestReportBySeverity(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: "test"})
-	r.AddFinding(Finding{ID: "1", Severity: SeverityError, Message: "a"})
-	r.AddFinding(Finding{ID: "2", Severity: SeverityWarning, Message: "b"})
-	r.AddFinding(Finding{ID: "3", Severity: SeverityError, Message: "c"})
+	addSev(r, "1", SeverityError, "a")
+	addSev(r, "2", SeverityWarning, "b")
+	addSev(r, "3", SeverityError, "c")
 
 	errors := r.BySeverity(SeverityError)
 	requireLenEq(t, len(errors), 2, "error findings")
