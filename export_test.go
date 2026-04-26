@@ -3,6 +3,8 @@ package finding
 import (
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewFinding(t *testing.T) {
@@ -11,37 +13,15 @@ func TestNewFinding(t *testing.T) {
 	pos := Position{File: "main.go", Line: 42, Column: 5, Offset: 100}
 	f := NewFinding("nilcheck", "govet", "possible nil dereference", SeverityError, pos)
 
-	if f.Rule != "nilcheck" {
-		t.Errorf("Rule = %q, want %q", f.Rule, "nilcheck")
-	}
-
-	if f.ToolName != "govet" {
-		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
-	}
-
-	if f.Message != "possible nil dereference" {
-		t.Errorf("Message = %q, want %q", f.Message, "possible nil dereference")
-	}
-
-	if f.Severity != SeverityError {
-		t.Errorf("Severity = %v, want %v", f.Severity, SeverityError)
-	}
-
-	if f.Position != pos {
-		t.Errorf("Position = %v, want %v", f.Position, pos)
-	}
-
-	if f.FixStrategy != FixStrategyNone {
-		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyNone)
-	}
-
-	if f.ID == "" {
-		t.Error("ID should be auto-generated and non-empty")
-	}
-
-	if !strings.Contains(f.ID, "govet") || !strings.Contains(f.ID, "nilcheck") {
-		t.Errorf("ID = %q, should contain tool name and rule", f.ID)
-	}
+	assert.Equal(t, "nilcheck", f.Rule)
+	assert.Equal(t, "govet", f.ToolName)
+	assert.Equal(t, "possible nil dereference", f.Message)
+	assert.Equal(t, SeverityError, f.Severity)
+	assert.Equal(t, pos, f.Position)
+	assert.Equal(t, FixStrategyNone, f.FixStrategy)
+	assert.NotEmpty(t, f.ID)
+	assert.True(t, strings.Contains(f.ID, "govet") && strings.Contains(f.ID, "nilcheck"),
+		"ID should contain tool name and rule")
 }
 
 func TestSuppressionKind_IsValid(t *testing.T) {
