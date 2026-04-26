@@ -3,26 +3,25 @@ package finding
 import (
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func FuzzGenerateID(f *testing.F) {
 	f.Fuzz(func(t *testing.T, tool, rule, file string, line, col int) {
 		id := GenerateID(tool, rule, Position{File: file, Line: line, Column: col})
-		if id == "" {
-			t.Fatal("GenerateID returned empty string")
-		}
+		require.NotEmpty(t, id)
 
 		parts := strings.Split(id, ":")
-		if len(parts) < 2 {
-			t.Fatalf("ID too short: %q", id)
+		require.GreaterOrEqual(t, len(parts), 2, "ID too short: %q", id)
+
+		if tool != "" {
+			assert.Equal(t, tool, parts[0])
 		}
 
-		if tool != "" && parts[0] != tool {
-			t.Fatalf("tool mismatch: got %q, want %q", parts[0], tool)
-		}
-
-		if rule != "" && parts[1] != rule {
-			t.Fatalf("rule mismatch: got %q, want %q", parts[1], rule)
+		if rule != "" {
+			assert.Equal(t, rule, parts[1])
 		}
 	})
 }
@@ -53,26 +52,22 @@ func FuzzRoundTripID(f *testing.F) {
 		id := GenerateID(tool, rule, Position{File: file, Line: line, Column: col})
 
 		p := ParseID(id)
-		if !p.OK() {
-			t.Fatalf("ParseID failed for generated ID %q", id)
+		require.True(t, p.OK(), "ParseID failed for generated ID %q", id)
+
+		if tool != "" {
+			assert.Equal(t, tool, p.Tool)
 		}
 
-		parsedTool, parsedRule, parsedLine, parsedCol := p.Tool, p.Rule, p.Line, p.Column
-
-		if tool != "" && parsedTool != tool {
-			t.Fatalf("tool round-trip mismatch: got %q, want %q", parsedTool, tool)
+		if rule != "" {
+			assert.Equal(t, rule, p.Rule)
 		}
 
-		if rule != "" && parsedRule != rule {
-			t.Fatalf("rule round-trip mismatch: got %q, want %q", parsedRule, rule)
+		if line > 0 {
+			assert.Equal(t, line, p.Line)
 		}
 
-		if line > 0 && parsedLine != line {
-			t.Fatalf("line round-trip mismatch: got %d, want %d", parsedLine, line)
-		}
-
-		if col > 0 && parsedCol != col {
-			t.Fatalf("col round-trip mismatch: got %d, want %d", parsedCol, col)
+		if col > 0 {
+			assert.Equal(t, col, p.Column)
 		}
 	})
 }
@@ -83,9 +78,7 @@ func FuzzIsHashID(f *testing.F) {
 
 		parts := strings.Split(id, ":")
 		if len(parts) == 3 && len(parts[2]) == hashLength {
-			if !result {
-				t.Fatalf("IsHashID should return true for %q", id)
-			}
+			assert.True(t, result, "IsHashID should return true for %q", id)
 		}
 	})
 }

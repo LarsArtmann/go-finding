@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMerge_Empty(t *testing.T) {
@@ -181,7 +182,7 @@ func TestCorrelate(t *testing.T) {
 	}
 
 	correlations := Correlate(findings)
-	requireLenEq(t, len(correlations), 1, "correlations")
+	require.Len(t, correlations, 1, "correlations")
 
 	c := correlations[0]
 	assert.Len(t, c.FindingIDs, 2)

@@ -3,6 +3,8 @@ package finding
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // test helper functions
@@ -364,38 +366,20 @@ func TestRangeContains(t *testing.T) {
 	r := NewRange("test.go", 10, 5, 20, 10)
 
 	tests := []struct {
-		name    string
-		pos     Position
-		want    bool
-		message string
+		name string
+		pos  Position
+		want bool
 	}{
-		{"in range", Position{File: "test.go", Line: 15, Column: 7}, true, ""},
-		{
-			"before range",
-			Position{File: "test.go", Line: 5, Column: 1},
-			false,
-			"position before range should not be contained",
-		},
-		{
-			"different file",
-			Position{File: "other.go", Line: 15, Column: 7},
-			false,
-			"position in different file should not be contained",
-		},
+		{"in range", Position{File: "test.go", Line: 15, Column: 7}, true},
+		{"before range", Position{File: "test.go", Line: 5, Column: 1}, false},
+		{"different file", Position{File: "other.go", Line: 15, Column: 7}, false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := r.Contains(tt.pos)
-			if tt.want && !got {
-				t.Error(tt.message)
-			}
-
-			if !tt.want && got {
-				t.Error(tt.message)
-			}
+			assert.Equal(t, tt.want, r.Contains(tt.pos))
 		})
 	}
 }

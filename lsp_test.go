@@ -2,6 +2,9 @@ package finding
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSeverityToLSP(t *testing.T) {
@@ -23,9 +26,7 @@ func TestSeverityToLSP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got := severityToLSP(tt.severity); got != tt.want {
-				t.Errorf("severityToLSP(%v) = %d, want %d", tt.severity, got, tt.want)
-			}
+			assert.Equal(t, tt.want, severityToLSP(tt.severity), tt.name)
 		})
 	}
 }
@@ -50,9 +51,7 @@ func TestSeverityFromLSP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got := severityFromLSP(tt.sev); got != tt.want {
-				t.Errorf("severityFromLSP(%d) = %v, want %v", tt.sev, got, tt.want)
-			}
+			assert.Equal(t, tt.want, severityFromLSP(tt.sev), tt.name)
 		})
 	}
 }
@@ -136,22 +135,13 @@ func TestFromLSP(t *testing.T) {
 
 	// ID round-trips through ParseID
 	p := ParseID(f.ID)
-	if !p.OK() {
-		t.Fatalf("ParseID(%q) failed", f.ID)
-	}
+	require.True(t, p.OK(), "ParseID(%q) failed", f.ID)
 
-	if p.Tool != "golangci-lint" || p.Rule != "unused-var" {
-		t.Errorf("ParseID tool=%q rule=%q, want golangci-lint/unused-var", p.Tool, p.Rule)
-	}
-
-	if p.File != "file:///test.go" || p.Line != 5 || p.Column != 10 {
-		t.Errorf(
-			"ParseID file=%q line=%d col=%d, want file:///test.go/5/10",
-			p.File,
-			p.Line,
-			p.Column,
-		)
-	}
+	assert.Equal(t, "golangci-lint", p.Tool)
+	assert.Equal(t, "unused-var", p.Rule)
+	assert.Equal(t, "file:///test.go", p.File)
+	assert.Equal(t, 5, p.Line)
+	assert.Equal(t, 10, p.Column)
 }
 
 func TestFromLSPNoEndRange(t *testing.T) {

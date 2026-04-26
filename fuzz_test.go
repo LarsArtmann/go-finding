@@ -2,8 +2,9 @@ package finding
 
 import (
 	"fmt"
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func FuzzFilter(f *testing.F) {
@@ -44,39 +45,30 @@ func FuzzFilter(f *testing.F) {
 			},
 		}
 
-		// Property: no predicates returns all
 		all := Filter(findings)
-		if len(all) != len(findings) {
-			t.Errorf("no predicates: expected %d, got %d", len(findings), len(all))
-		}
+		assert.Len(t, all, len(findings), "no predicates")
 
 		// Property: filtered results all match the predicate
 		byCat := Filter(findings, ByCategory(Category(category)))
 		for _, f := range byCat {
-			if f.Category != Category(category) {
-				t.Errorf("ByCategory mismatch: got %q, want %q", f.Category, category)
-			}
+			assert.Equal(t, Category(category), f.Category, "ByCategory mismatch")
 		}
 
 		// Property: BySeverity results match exactly
 		bySev := Filter(findings, BySeverity(severity))
 		for _, f := range bySev {
-			if f.Severity != severity {
-				t.Errorf("BySeverity mismatch: got %v, want %v", f.Severity, severity)
-			}
+			assert.Equal(t, severity, f.Severity, "BySeverity mismatch")
 		}
 
 		// Property: combined predicates = intersection
 		both := Filter(findings, ByCategory(Category(category)), BySeverity(severity))
 		for _, f := range both {
-			if f.Category != Category(category) || f.Severity != severity {
-				t.Errorf("combined filter mismatch")
-			}
+			assert.Equal(t, Category(category), f.Category, "combined filter category")
+			assert.Equal(t, severity, f.Severity, "combined filter severity")
 		}
 
-		if len(both) > len(byCat) || len(both) > len(bySev) {
-			t.Error("combined filter should be subset of each individual filter")
-		}
+		assert.LessOrEqual(t, len(both), len(byCat), "combined <= byCat")
+		assert.LessOrEqual(t, len(both), len(bySev), "combined <= bySev")
 	})
 }
 
@@ -99,16 +91,12 @@ func FuzzGroupBy(f *testing.F) {
 			total += len(g)
 		}
 
-		if total != len(findings) {
-			t.Errorf("GroupBy total: got %d, want %d", total, len(findings))
-		}
+		assert.Equal(t, len(findings), total, "GroupBy total")
 
 		for _, g := range groups {
 			key := g[0].Category
 			for _, f := range g {
-				if f.Category != key {
-					t.Errorf("group mismatch: %q != %q", f.Category, key)
-				}
+				assert.Equal(t, key, f.Category, "group mismatch")
 			}
 		}
 	})
@@ -126,9 +114,7 @@ func FuzzFilterByFile(f *testing.F) {
 
 		result := Filter(findings, ByFile(target))
 		for _, f := range result {
-			if f.Position.File != target {
-				t.Errorf("ByFile mismatch: got %q, want %q", f.Position.File, target)
-			}
+			assert.Equal(t, target, f.Position.File, "ByFile mismatch")
 		}
 	})
 }
@@ -150,14 +136,10 @@ func FuzzGroupByFile(f *testing.F) {
 			total += len(g)
 		}
 
-		if total != len(findings) {
-			t.Errorf("GroupByFile total: got %d, want %d", total, len(findings))
-		}
+		assert.Equal(t, len(findings), total, "GroupByFile total")
 
 		if file1 == file2 && file2 == file3 {
-			if len(groups) != 1 {
-				t.Errorf("same file: expected 1 group, got %d", len(groups))
-			}
+			assert.Len(t, groups, 1, "same file")
 		}
 	})
 }
@@ -184,16 +166,12 @@ func FuzzMerge_DedupByID(f *testing.F) {
 		seen := make(map[string]int)
 		for _, f := range merged.Findings {
 			seen[f.ID]++
-			if seen[f.ID] > 1 {
-				t.Errorf("duplicate ID in merged: %q", f.ID)
-			}
+			assert.LessOrEqual(t, seen[f.ID], 1, "duplicate ID in merged: %q", f.ID)
 		}
 
 		// Without dedup: total should be sum
 		noDedup := Merge([]*Report{r1, r2}, WithDeduplication(false))
-		if len(noDedup.Findings) != 3 {
-			t.Errorf("no dedup: expected 3 findings, got %d", len(noDedup.Findings))
-		}
+		assert.Len(t, noDedup.Findings, 3, "no dedup")
 	})
 }
 
@@ -212,9 +190,7 @@ func FuzzMerge_Idempotent(f *testing.F) {
 		merged1 := Merge([]*Report{r})
 		merged2 := Merge([]*Report{merged1})
 
-		if len(merged1.Findings) != len(merged2.Findings) {
-			t.Errorf("merge not idempotent: %d vs %d", len(merged1.Findings), len(merged2.Findings))
-		}
+		assert.Equal(t, len(merged1.Findings), len(merged2.Findings), "merge not idempotent")
 	})
 }
 
@@ -231,24 +207,17 @@ func FuzzCorrelate(f *testing.F) {
 		correlations := Correlate(findings)
 
 		for _, c := range correlations {
-			conf := c.Confidence
-			if conf < 0 || conf > 1 {
-				t.Errorf("confidence out of range: %f", conf)
-			}
-
-			if len(c.FindingIDs) != 2 {
-				t.Errorf("expected 2 finding IDs, got %d", len(c.FindingIDs))
-			}
+			assert.InDelta(t, 0, c.Confidence-c.Confidence, 1, "confidence")
+			assert.GreaterOrEqual(t, c.Confidence, 0.0)
+			assert.LessOrEqual(t, c.Confidence, 1.0)
+			assert.Len(t, c.FindingIDs, 2)
 		}
 
-		// Different tools in different files should not correlate
 		diffFile := []Finding{
-			{ID: "F1", ToolName: "a", Position: Position{File: "a.go", Line: 1}},
-			{ID: "F2", ToolName: "b", Position: Position{File: "b.go", Line: 1}},
+			MakeFindingWithPos("F1", "", "a", "", SeverityInfo, "a.go", 1, 0),
+			MakeFindingWithPos("F2", "", "b", "", SeverityInfo, "b.go", 1, 0),
 		}
-		if len(Correlate(diffFile)) != 0 {
-			t.Error("different files should not correlate")
-		}
+		assert.Empty(t, Correlate(diffFile), "different files should not correlate")
 	})
 }
 
@@ -273,8 +242,8 @@ func FuzzMergeByPosition(f *testing.F) {
 		key1 := fmt.Sprintf("%s:%d:%d", file1, line1, col1)
 		key2 := fmt.Sprintf("%s:%d:%d", file2, line2, col2)
 
-		if key1 == key2 && len(merged.Findings) != 1 {
-			t.Errorf("same position should dedup: got %d findings", len(merged.Findings))
+		if key1 == key2 {
+			assert.Len(t, merged.Findings, 1, "same position should dedup")
 		}
 	})
 }
@@ -291,18 +260,12 @@ func FuzzDedupKey(f *testing.F) {
 		}
 
 		k1 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByID})
-		if !strings.Contains(k1, id) {
-			t.Error("ID key should contain ID")
-		}
+		assert.Contains(t, k1, id, "ID key should contain ID")
 
 		k2 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
-		if !strings.Contains(k2, file) {
-			t.Error("position key should contain file")
-		}
+		assert.Contains(t, k2, file, "position key should contain file")
 
 		k3 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
-		if !strings.Contains(k3, rule) {
-			t.Error("rule key should contain rule")
-		}
+		assert.Contains(t, k3, rule, "rule key should contain rule")
 	})
 }

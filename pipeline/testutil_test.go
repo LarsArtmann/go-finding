@@ -121,30 +121,6 @@ func assertIterationsLen(t *testing.T, result *PipelineResult, want int) {
 	}
 }
 
-func requireNoError(t *testing.T, err error, msg string) {
-	t.Helper()
-
-	if err != nil {
-		t.Fatalf("%s: %v", msg, err)
-	}
-}
-
-func requireLenEq(t *testing.T, got, want int, msg string) {
-	t.Helper()
-
-	if got != want {
-		t.Fatalf("%s: got %d, want %d", msg, got, want)
-	}
-}
-
-func assertIntEq(t *testing.T, got, want int, field string) {
-	t.Helper()
-
-	if got != want {
-		t.Errorf("%s = %d, want %d", field, got, want)
-	}
-}
-
 func writeFile(path string, data []byte, perm uint32) error {
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.FileMode(perm))
 	if err != nil {

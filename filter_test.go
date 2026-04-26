@@ -1,6 +1,10 @@
 package finding
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 // filterTestCase represents a filter test with input findings and expected count.
 type filterTestCase struct {
@@ -215,7 +219,7 @@ func TestGroupBy_Empty(t *testing.T) {
 	t.Parallel()
 
 	groups := GroupBy(nil, func(f Finding) string { return f.ToolName })
-	assertIntEq(t, len(groups), 0, "GroupBy(nil)")
+	assert.Empty(t, groups, "GroupBy(nil)")
 }
 
 func TestGroupByFile(t *testing.T) {

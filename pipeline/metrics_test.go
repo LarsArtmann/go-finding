@@ -7,7 +7,29 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func testConfig(maxIter int, m *Metrics) Config {
+	return Config{
+		MaxIterations:     maxIter,
+		ParallelDetectors: false,
+		Timeout:           5 * time.Second,
+		Metrics:           m,
+	}
+}
+
+func runPipelineWithMetrics(t *testing.T, config Config, det Detector) *PipelineResult {
+	t.Helper()
+
+	p, err := New(config, t.TempDir(), det)
+	require.NoError(t, err)
+
+	result, err := p.Run(context.Background())
+	require.NoError(t, err)
+
+	return result
+}
 
 func TestNewMetrics(t *testing.T) {
 	t.Parallel()
@@ -116,23 +138,7 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 		}, nil
 	})
 
-	config := Config{
-		MaxIterations:     3,
-		ParallelDetectors: false,
-		Timeout:           5 * time.Second,
-		Metrics:           m,
-	}
-
-	p, err := New(config, t.TempDir(), detector)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	result, err := p.Run(context.Background())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
+	result := runPipelineWithMetrics(t, testConfig(3, m), detector)
 	assert.True(t, result.Stable)
 
 	snap := m.Snapshot()
@@ -171,22 +177,6 @@ func TestPipeline_NilMetricsNoPanic(t *testing.T) {
 		findings: []finding.Finding{},
 	}
 
-	config := Config{
-		MaxIterations:     1,
-		ParallelDetectors: false,
-		Timeout:           5 * time.Second,
-		Metrics:           nil,
-	}
-
-	p, err := New(config, t.TempDir(), detector)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	result, err := p.Run(context.Background())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
+	result := runPipelineWithMetrics(t, testConfig(1, nil), detector)
 	assert.True(t, result.Stable)
 }

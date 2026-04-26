@@ -167,44 +167,6 @@ func assertFindingsLen(t *testing.T, name string, got, want int) {
 	}
 }
 
-// requireLenEq fails the test immediately if the slice/collection count doesn't match.
-func requireLenEq(t *testing.T, got, want int, msg string) {
-	t.Helper()
-
-	if got != want {
-		t.Fatalf("%s: got %d, want %d", msg, got, want)
-	}
-}
-
-// requireNoError fails immediately if err is not nil.
-func requireNoError(t *testing.T, err error, msg string) {
-	t.Helper()
-
-	if err != nil {
-		t.Fatalf("%s: %v", msg, err)
-	}
-}
-
-// requireCondition fails immediately if cond is false.
-func requireCondition(t *testing.T, cond bool, msg string) {
-	t.Helper()
-
-	if !cond {
-		t.Fatal(msg)
-	}
-}
-
-// assertIntEq asserts got equals want, using the provided field label.
-func assertIntEq(t *testing.T, got, want int, field string) {
-	t.Helper()
-
-	if got != want {
-		t.Errorf("%s = %d, want %d", field, got, want)
-	}
-}
-
-
-
 // assertReportField asserts a field equals expected value using formatted output.
 func assertReportField[T comparable](t *testing.T, fieldName string, got, want T) {
 	t.Helper()

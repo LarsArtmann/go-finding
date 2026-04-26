@@ -64,7 +64,7 @@ func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	assertIntEq(t, len(findings), 1, "findings")
+	assert.Len(t, findings, 1, "findings")
 }
 
 func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
@@ -86,7 +86,7 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	assertIntEq(t, len(findings), 1, "findings")
+	assert.Len(t, findings, 1, "findings")
 
 	assert.Equal(t, 3, calls)
 }

@@ -5,6 +5,14 @@ import (
 	"testing"
 )
 
+func benchPosition(fileFmt string, mod, i int) Position {
+	return Position{File: fmt.Sprintf(fileFmt, i%mod), Line: i + 1}
+}
+
+func benchReport(i int) *Report {
+	return NewReport(ToolInfo{Name: fmt.Sprintf("tool%d", i)})
+}
+
 func BenchmarkClone(b *testing.B) {
 	f := Finding{
 		ID:       "tool:rule:file.go:42",
@@ -103,7 +111,7 @@ func BenchmarkFilterMultiple(b *testing.B) {
 			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
 			Severity: sevFromInt(i % 4),
 			Category: []Category{CategoryStyle, CategorySecurity, CategoryPerformance, CategoryCorrectness}[i%4],
-			Position: Position{File: fmt.Sprintf("file%d.go", i%10), Line: i + 1},
+			Position: benchPosition("file%d.go", 10, i),
 		}
 	}
 
@@ -121,7 +129,7 @@ func BenchmarkGroupByFile(b *testing.B) {
 	findings := make([]Finding, 500)
 	for i := range findings {
 		findings[i] = Finding{
-			Position: Position{File: fmt.Sprintf("pkg/file%d.go", i%20), Line: i + 1},
+			Position: benchPosition("pkg/file%d.go", 20, i),
 		}
 	}
 
@@ -135,12 +143,12 @@ func BenchmarkGroupByFile(b *testing.B) {
 func BenchmarkMerge(b *testing.B) {
 	reports := make([]*Report, 5)
 	for i := range reports {
-		reports[i] = NewReport(ToolInfo{Name: fmt.Sprintf("tool%d", i)})
+		reports[i] = benchReport(i)
 		for j := range 200 {
 			reports[i].AddFinding(Finding{
 				ID:       fmt.Sprintf("tool%d:rule:file%d.go:%d", i, j%10, j),
 				Severity: sevFromInt(j % 4),
-				Position: Position{File: fmt.Sprintf("file%d.go", j%10), Line: j + 1},
+				Position: benchPosition("file%d.go", 10, j),
 			})
 		}
 	}
@@ -158,7 +166,7 @@ func BenchmarkCorrelate(b *testing.B) {
 		findings[i] = Finding{
 			ID:       fmt.Sprintf("tool%d:rule:file.go:%d", i%5, i),
 			ToolName: fmt.Sprintf("tool%d", i%5),
-			Position: Position{File: fmt.Sprintf("file%d.go", i%5), Line: i + 1},
+			Position: benchPosition("file%d.go", 5, i),
 		}
 	}
 
@@ -172,7 +180,7 @@ func BenchmarkCorrelate(b *testing.B) {
 func BenchmarkMergeNoDedup(b *testing.B) {
 	reports := make([]*Report, 3)
 	for i := range reports {
-		reports[i] = NewReport(ToolInfo{Name: fmt.Sprintf("tool%d", i)})
+		reports[i] = benchReport(i)
 		for j := range 500 {
 			reports[i].AddFinding(Finding{
 				ID:       fmt.Sprintf("tool%d:rule:file.go:%d:%d", i, j, i),

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewFinding(t *testing.T) {
@@ -40,9 +41,7 @@ func TestSuppressionKind_IsValid(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if got := tt.kind.IsValid(); got != tt.want {
-			t.Errorf("SuppressionKind(%q).IsValid() = %v, want %v", tt.kind, got, tt.want)
-		}
+	assert.Equal(t, tt.want, tt.kind.IsValid(), "SuppressionKind IsValid")
 	}
 }
 
@@ -66,11 +65,7 @@ func TestSeverity_GreaterThanOrEqual(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := tt.a.GreaterThanOrEqual(tt.b)
-		if got != tt.want {
-			t.Errorf("Severity(%q).GreaterThanOrEqual(%q) = %v, want %v (%s)",
-				tt.a, tt.b, got, tt.want, tt.label)
-		}
+	assert.Equal(t, tt.want, tt.a.GreaterThanOrEqual(tt.b))
 	}
 }
 
@@ -94,11 +89,7 @@ func TestSeverity_LessThanOrEqual(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := tt.a.LessThanOrEqual(tt.b)
-		if got != tt.want {
-			t.Errorf("Severity(%q).LessThanOrEqual(%q) = %v, want %v (%s)",
-				tt.a, tt.b, got, tt.want, tt.label)
-		}
+	assert.Equal(t, tt.want, tt.a.LessThanOrEqual(tt.b))
 	}
 }
 
@@ -116,9 +107,7 @@ func TestFinding_String(t *testing.T) {
 	got := f.String()
 	want := "error govet [nilcheck] main.go:42:5: possible nil dereference"
 
-	if got != want {
-		t.Errorf("String() = %q, want %q", got, want)
-	}
+	assert.Equal(t, want, got)
 }
 
 func TestReport_AddFindings(t *testing.T) {
@@ -132,11 +121,10 @@ func TestReport_AddFindings(t *testing.T) {
 		{ID: "3", Message: "third"},
 	})
 
-	requireLenEq(t, len(r.Findings), 3, "Findings")
+	require.Len(t, r.Findings, 3, "Findings")
 
-	if r.Findings[0].ID != "1" || r.Findings[2].ID != "3" {
-		t.Errorf("AddFindings order = %v, want [1 2 3]", r.Findings)
-	}
+	assert.Equal(t, "1", r.Findings[0].ID)
+	assert.Equal(t, "3", r.Findings[2].ID)
 }
 
 func TestReport_AddFindings_Empty(t *testing.T) {

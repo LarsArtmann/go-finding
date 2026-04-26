@@ -1,6 +1,10 @@
 package finding
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestPosition_Equal(t *testing.T) {
 	t.Parallel()
@@ -171,17 +175,9 @@ func TestFinding_Equal_Suppression(t *testing.T) {
 	c := Finding{ID: "a"}
 	d := Finding{ID: "a", Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R2"}}
 
-	if !a.Equal(b) {
-		t.Error("same suppression should be equal")
-	}
-
-	if a.Equal(c) {
-		t.Error("nil vs non-nil suppression should not be equal")
-	}
-
-	if a.Equal(d) {
-		t.Error("different suppression should not be equal")
-	}
+	assert.True(t, a.Equal(b), "same suppression should be equal")
+	assert.False(t, a.Equal(c), "nil vs non-nil suppression should not be equal")
+	assert.False(t, a.Equal(d), "different suppression should not be equal")
 }
 
 func TestPosition_Compare(t *testing.T) {

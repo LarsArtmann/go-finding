@@ -7,12 +7,26 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func assertPartialFindingsLen(t *testing.T, result *PartialResult, want int, msg string) {
 	t.Helper()
 
 	assert.Len(t, result.Findings, want, msg)
+}
+
+func runDetectPartial(t *testing.T, parallel bool, d1, d2 *mockDetector) *PartialResult {
+	t.Helper()
+
+	config := Config{ParallelDetectors: parallel}
+	p, err := New(config, t.TempDir(), d1, d2)
+	require.NoError(t, err)
+
+	result, err := p.DetectPartial(context.Background())
+	require.NoError(t, err)
+
+	return result
 }
 
 func TestPartialResult_HasErrors(t *testing.T) {
@@ -26,18 +40,10 @@ func TestPartialResult_HasErrors(t *testing.T) {
 
 func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
 	t.Parallel()
-	config := Config{ParallelDetectors: false}
 	d1 := &mockDetector{name: "d1", findings: []finding.Finding{{ID: "F1"}}}
 	d2 := &mockDetector{name: "d2", findings: []finding.Finding{{ID: "F2"}}}
-	p, err := New(config, t.TempDir(), d1, d2)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
 
-	result, err := p.DetectPartial(context.Background())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	result := runDetectPartial(t, false, d1, d2)
 
 	assertPartialFindingsLen(t, result, 2, "expected 2 findings")
 	assert.False(t, result.HasErrors(), "expected no errors")
@@ -45,18 +51,10 @@ func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
 
 func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
 	t.Parallel()
-	config := Config{ParallelDetectors: false}
 	d1 := &mockDetector{name: "good", findings: []finding.Finding{{ID: "F1"}}}
 	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
-	p, err := New(config, t.TempDir(), d1, d2)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
 
-	result, err := p.DetectPartial(context.Background())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	result := runDetectPartial(t, false, d1, d2)
 
 	assertPartialFindingsLen(t, result, 1, "expected 1 finding from good detector")
 	assert.True(t, result.HasErrors(), "expected errors from bad detector")
@@ -65,18 +63,10 @@ func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
 
 func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {
 	t.Parallel()
-	config := Config{ParallelDetectors: true}
 	d1 := &mockDetector{name: "good", findings: []finding.Finding{{ID: "F1"}}}
 	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
-	p, err := New(config, t.TempDir(), d1, d2)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
 
-	result, err := p.DetectPartial(context.Background())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	result := runDetectPartial(t, true, d1, d2)
 
 	assertPartialFindingsLen(t, result, 1, "expected 1 finding")
 	assert.True(t, result.HasErrors(), "expected errors")
@@ -84,18 +74,10 @@ func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {
 
 func TestDetectPartial_AllFail(t *testing.T) {
 	t.Parallel()
-	config := Config{ParallelDetectors: false}
 	d1 := &mockDetector{name: "d1", err: errors.New("fail1")}
 	d2 := &mockDetector{name: "d2", err: errors.New("fail2")}
-	p, err := New(config, t.TempDir(), d1, d2)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
 
-	result, err := p.DetectPartial(context.Background())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	result := runDetectPartial(t, false, d1, d2)
 
 	assertPartialFindingsLen(t, result, 0, "expected 0 findings")
 	assert.Len(t, result.Errors, 2)

@@ -2,13 +2,13 @@ package pipeline
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFixApplier_Apply_CancelledContext(t *testing.T) {
@@ -28,15 +28,9 @@ func TestFixApplier_Apply_CancelledContext(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(ctx, fixes)
-	if err == nil {
-		t.Fatal("expected error from cancelled context")
-	}
-
+	require.Error(t, err)
 	assert.ErrorIs(t, err, context.Canceled)
-
-	if applied != 0 {
-		t.Errorf("applied = %d, want 0", applied)
-	}
+	assert.Equal(t, 0, applied)
 }
 
 func TestFixApplier_Backup_NonexistentFile(t *testing.T) {
@@ -46,10 +40,7 @@ func TestFixApplier_Backup_NonexistentFile(t *testing.T) {
 	applier := NewFixApplier(tempDir)
 
 	err := applier.backup(filepath.Join(tempDir, "does-not-exist.go"))
-	if err == nil {
-		t.Fatal("expected error backing up nonexistent file")
-	}
-
+	require.Error(t, err)
 	assert.ErrorIs(t, err, finding.ErrIO)
 }
 
@@ -60,10 +51,7 @@ func TestFixApplier_Restore_WithoutBackup(t *testing.T) {
 	applier := NewFixApplier(tempDir)
 
 	err := applier.restore(filepath.Join(tempDir, "never-backed-up.go"))
-	if err == nil {
-		t.Fatal("expected error restoring without backup")
-	}
-
+	require.Error(t, err)
 	assert.ErrorIs(t, err, finding.ErrInternal)
 }
 
@@ -73,22 +61,12 @@ func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
-	fixes := []finding.Finding{
-		{
-			ID:         "1",
-			BeforeCode: "old",
-			AfterCode:  "new",
-		},
-	}
+	fixes := []finding.Finding{makeFixFinding("1", "old", "new", "", 0)}
 
 	applied, err := applier.applyToFile(filepath.Join(tempDir, "missing.go"), fixes)
-	if err == nil {
-		t.Fatal("expected error for nonexistent file")
-	}
-
+	require.Error(t, err)
 	assert.ErrorIs(t, err, finding.ErrIO)
-
-	assert.Equal(t, applied, 0)
+	assert.Equal(t, 0, applied)
 }
 
 func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
@@ -100,22 +78,11 @@ func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 	testFile := filepath.Join(tempDir, "nomatch.go")
 	writeTestFile(t, testFile, []byte("package main\n"))
 
-	fixes := []finding.Finding{
-		{
-			ID:         "1",
-			BeforeCode: "nonexistent_code",
-			AfterCode:  "replacement",
-		},
-	}
+	fixes := []finding.Finding{makeFixFinding("1", "nonexistent_code", "replacement", "", 0)}
 
 	applied, err := applier.applyToFile(testFile, fixes)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if applied != 0 {
-		t.Errorf("applied = %d, want 0 (no match)", applied)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, 0, applied, "no match")
 }
 
 func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
@@ -129,19 +96,10 @@ func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
 		t.Fatalf("create file: %v", err)
 	}
 
-	fixes := []finding.Finding{
-		{
-			ID:         "1",
-			BeforeCode: "old()",
-			AfterCode:  "new()",
-		},
-	}
+	fixes := []finding.Finding{makeFixFinding("1", "old()", "new()", "", 0)}
 
 	applied, err := applier.applyToFile(testFile, fixes)
-	if err == nil {
-		t.Fatal("expected error writing to read-only file")
-	}
-
+	require.Error(t, err)
 	assert.ErrorIs(t, err, finding.ErrIO)
 
 	_ = applied
@@ -163,13 +121,8 @@ func TestFixApplier_RollbackAll(t *testing.T) {
 
 	writeTestFile(t, file2, []byte(orig2))
 
-	if err := applier.backup(file1); err != nil {
-		t.Fatalf("backup a.go: %v", err)
-	}
-
-	if err := applier.backup(file2); err != nil {
-		t.Fatalf("backup b.go: %v", err)
-	}
+	require.NoError(t, applier.backup(file1))
+	require.NoError(t, applier.backup(file2))
 
 	writeTestFile(t, file1, []byte("modified a\n"))
 
@@ -207,26 +160,17 @@ func TestFixApplier_RollbackAll_PartialFailure(t *testing.T) {
 	goodFile := filepath.Join(tempDir, "good.go")
 	writeTestFile(t, goodFile, []byte("package good\n"))
 
-	if err := applier.backup(goodFile); err != nil {
-		t.Fatalf("backup good.go: %v", err)
-	}
+	require.NoError(t, applier.backup(goodFile))
 
 	writeTestFile(t, goodFile, []byte("modified\n"))
 
 	noBackupFile := filepath.Join(tempDir, "nobackup.go")
 	err := applier.rollbackAll([]string{goodFile, noBackupFile})
-	if err == nil {
-		t.Fatal("expected partial rollback error")
-	}
+	require.Error(t, err)
 
 	data, rErr := readFile(goodFile)
-	if rErr != nil {
-		t.Fatalf("read good.go: %v", rErr)
-	}
-
-	if string(data) != "package good\n" {
-		t.Errorf("good.go not restored: %q", string(data))
-	}
+	require.NoError(t, rErr)
+	assert.Equal(t, "package good\n", string(data))
 }
 
 func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
@@ -244,10 +188,7 @@ func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)
-	if err == nil {
-		t.Fatal("expected error from backup failure")
-	}
-
+	require.Error(t, err)
 	assert.ErrorIs(t, err, finding.ErrIO)
 
 	_ = applied
@@ -260,11 +201,8 @@ func TestFixApplier_Apply_EmptyFixesList(t *testing.T) {
 	applier := NewFixApplier(tempDir)
 
 	applied, err := applier.Apply(context.Background(), nil)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	assert.Equal(t, applied, 0)
+	require.NoError(t, err)
+	assert.Equal(t, 0, applied)
 }
 
 func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
@@ -279,11 +217,8 @@ func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	assert.Equal(t, applied, 0, "no files specified")
+	require.NoError(t, err)
+	assert.Equal(t, 0, applied, "no files specified")
 }
 
 func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
@@ -306,18 +241,12 @@ func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 	}
 
 	applied, err := applier.applyToFile(testFile, fixes)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	assert.Equal(t, applied, 0, "range out of bounds")
+	require.NoError(t, err)
+	assert.Equal(t, 0, applied, "range out of bounds")
 
 	data, rErr := readFile(testFile)
-	if rErr != nil {
-		t.Fatalf("read: %v", rErr)
-	}
-
-	assert.Equal(t, string(data), content, "file modified despite out-of-bounds range")
+	require.NoError(t, rErr)
+	assert.Equal(t, content, string(data), "file modified despite out-of-bounds range")
 }
 
 func TestFixApplier_FileHash_Deterministic(t *testing.T) {
@@ -346,12 +275,9 @@ func TestFixApplier_BackupDisabled(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	assert.Equal(t, applied, 1)
-	assert.Len(t, applier.backups, 0, "backup disabled")
+	require.NoError(t, err)
+	assert.Equal(t, 1, applied)
+	assert.Empty(t, applier.backups, "backup disabled")
 }
 
 func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
@@ -382,9 +308,7 @@ func TestIoErrorAt_WrapsCorrectly(t *testing.T) {
 	assert.ErrorIs(t, err, os.ErrPermission, "os.ErrPermission cause match")
 
 	var fe *finding.FindingError
-	if !errors.As(err, &fe) {
-		t.Fatal("expected FindingError")
-	}
+	require.ErrorAs(t, err, &fe, "expected FindingError")
 
 	assertFindingErrorIO(t, fe, "file.go")
 }

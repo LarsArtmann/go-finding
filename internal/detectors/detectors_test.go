@@ -7,6 +7,7 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParsePosn(t *testing.T) {
@@ -20,43 +21,11 @@ func TestParsePosn(t *testing.T) {
 		wantLine int
 		wantCol  int
 	}{
-		{
-			name:     "full position",
-			posn:     "main.go:10:5",
-			dir:      "/project",
-			wantFile: "/project/main.go",
-			wantLine: 10,
-			wantCol:  5,
-		},
-		{
-			name:     "file and line only",
-			posn:     "main.go:10",
-			dir:      "/project",
-			wantFile: "/project/main.go",
-			wantLine: 10,
-		},
-		{
-			name:     "absolute path ignored dir",
-			posn:     "/abs/path/main.go:5:1",
-			dir:      "/project",
-			wantFile: "/abs/path/main.go",
-			wantLine: 5,
-			wantCol:  1,
-		},
-		{
-			name:     "no colon returns raw string as file",
-			posn:     "just-a-file.go",
-			dir:      "",
-			wantFile: "just-a-file.go",
-		},
-		{
-			name:     "empty dir with relative path",
-			posn:     "pkg/util.go:20:3",
-			dir:      "",
-			wantFile: "pkg/util.go",
-			wantLine: 20,
-			wantCol:  3,
-		},
+		{"full position", "main.go:10:5", "/project", "/project/main.go", 10, 5},
+		{"file and line only", "main.go:10", "/project", "/project/main.go", 10, 0},
+		{"absolute path ignored dir", "/abs/path/main.go:5:1", "/project", "/abs/path/main.go", 5, 1},
+		{"no colon returns raw string as file", "just-a-file.go", "", "just-a-file.go", 0, 0},
+		{"empty dir with relative path", "pkg/util.go:20:3", "", "pkg/util.go", 20, 3},
 	}
 
 	for _, tt := range tests {
@@ -64,17 +33,9 @@ func TestParsePosn(t *testing.T) {
 			t.Parallel()
 
 			pos := parsePosn(tt.posn, tt.dir)
-			if pos.File != tt.wantFile {
-				t.Errorf("File = %q, want %q", pos.File, tt.wantFile)
-			}
-
-			if pos.Line != tt.wantLine {
-				t.Errorf("Line = %d, want %d", pos.Line, tt.wantLine)
-			}
-
-			if pos.Column != tt.wantCol {
-				t.Errorf("Column = %d, want %d", pos.Column, tt.wantCol)
-			}
+			assert.Equal(t, tt.wantFile, pos.File)
+			assert.Equal(t, tt.wantLine, pos.Line)
+			assert.Equal(t, tt.wantCol, pos.Column)
 		})
 	}
 }
@@ -107,18 +68,14 @@ func TestParseGoVetJSON_Invalid(t *testing.T) {
 	t.Parallel()
 
 	findings := parseGoVetJSON([]byte("not json"), "")
-	if findings != nil {
-		t.Errorf("expected nil for invalid JSON, got %v", findings)
-	}
+	assert.Nil(t, findings)
 }
 
 func TestParseGoVetJSON_Empty(t *testing.T) {
 	t.Parallel()
 
 	findings := parseGoVetJSON([]byte("{}"), "")
-	if len(findings) != 0 {
-		t.Errorf("expected 0 findings for empty object, got %d", len(findings))
-	}
+	assert.Empty(t, findings)
 }
 
 func TestParseStaticcheckJSON(t *testing.T) {
@@ -128,19 +85,15 @@ func TestParseStaticcheckJSON(t *testing.T) {
 {"code":"S1001","severity":"error","location":{"file":"util.go","line":20,"column":1},"message":"should use copy"}`
 
 	findings := parseStaticcheckJSON([]byte(input), "/project")
-	if len(findings) != 2 {
-		t.Fatalf("expected 2 findings, got %d", len(findings))
-	}
+	require.Len(t, findings, 2)
 
 	f := findings[0]
 	assert.Equal(t, "staticcheck", f.ToolName)
-
 	assert.Equal(t, "SA1000", f.Rule)
 	assert.Equal(t, finding.SeverityWarning, f.Severity)
 	assert.Equal(t, finding.CategoryStyle, f.Category)
 	assert.InDelta(t, 0.8, f.Confidence, 0.001)
 
-	// Second finding: S1001 = style category, error severity
 	f2 := findings[1]
 	assert.Equal(t, "S1001", f2.Rule)
 	assert.Equal(t, finding.SeverityError, f2.Severity)
@@ -151,35 +104,20 @@ func TestParseStaticcheckJSON_Empty(t *testing.T) {
 	t.Parallel()
 
 	findings := parseStaticcheckJSON(nil, "")
-	if findings != nil {
-		t.Errorf("expected nil for empty input, got %v", findings)
-	}
+	assert.Nil(t, findings)
 }
 
 func TestParseStaticcheckJSON_LineSkipping(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name        string
-		input       string
-		wantLen     int
-		wantRule    string
-		description string
+		name     string
+		input    string
+		wantLen  int
+		wantRule string
 	}{
-		{
-			name:        "invalid line skipped",
-			input:       "not json at all\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}",
-			wantLen:     1,
-			wantRule:    "S1001",
-			description: "skip invalid line",
-		},
-		{
-			name:        "whitespace lines skipped",
-			input:       "\n  \n\t\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}\n\n",
-			wantLen:     1,
-			wantRule:    "S1001",
-			description: "skip whitespace",
-		},
+		{"invalid line skipped", "not json at all\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}", 1, "S1001"},
+		{"whitespace lines skipped", "\n  \n\t\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}\n\n", 1, "S1001"},
 	}
 
 	for _, tt := range tests {
@@ -187,13 +125,8 @@ func TestParseStaticcheckJSON_LineSkipping(t *testing.T) {
 			t.Parallel()
 
 			findings := parseStaticcheckJSON([]byte(tt.input), "")
-			if len(findings) != tt.wantLen {
-				t.Fatalf("expected %d findings, got %d", tt.wantLen, len(findings))
-			}
-
-			if findings[0].Rule != tt.wantRule {
-				t.Errorf("Rule = %q, want %q", findings[0].Rule, tt.wantRule)
-			}
+			require.Len(t, findings, tt.wantLen)
+			assert.Equal(t, tt.wantRule, findings[0].Rule)
 		})
 	}
 }
@@ -221,10 +154,7 @@ func TestStaticcheckCategory(t *testing.T) {
 		t.Run(tt.code, func(t *testing.T) {
 			t.Parallel()
 
-			got := staticcheckCategory(tt.code)
-			if got != tt.want {
-				t.Errorf("staticcheckCategory(%q) = %v, want %v", tt.code, got, tt.want)
-			}
+			assert.Equal(t, tt.want, staticcheckCategory(tt.code))
 		})
 	}
 }
@@ -233,14 +163,10 @@ func TestDetectorNames(t *testing.T) {
 	t.Parallel()
 
 	govet := NewGoVetDetector(".")
-	if govet.Name() != "govet" {
-		t.Errorf("NewGoVetDetector name = %q, want %q", govet.Name(), "govet")
-	}
+	assert.Equal(t, "govet", govet.Name())
 
 	sc := NewStaticcheckDetector(".")
-	if sc.Name() != "staticcheck" {
-		t.Errorf("NewStaticcheckDetector name = %q, want %q", sc.Name(), "staticcheck")
-	}
+	assert.Equal(t, "staticcheck", sc.Name())
 }
 
 func TestNewGoVetDetector_CancelledContext(t *testing.T) {
@@ -251,9 +177,7 @@ func TestNewGoVetDetector_CancelledContext(t *testing.T) {
 	cancel()
 
 	_, err := d.Detect(ctx)
-	if err == nil {
-		t.Error("expected error for cancelled context")
-	}
+	require.Error(t, err)
 }
 
 func TestNewStaticcheckDetector_CancelledContext(t *testing.T) {
@@ -264,9 +188,7 @@ func TestNewStaticcheckDetector_CancelledContext(t *testing.T) {
 	cancel()
 
 	_, err := d.Detect(ctx)
-	if err == nil {
-		t.Error("expected error for cancelled context")
-	}
+	require.Error(t, err)
 }
 
 func TestNewGoVetDetector_ValidProject(t *testing.T) {
@@ -280,9 +202,7 @@ func TestNewGoVetDetector_ValidProject(t *testing.T) {
 	defer cancel()
 
 	findings, err := d.Detect(ctx)
-	if err != nil {
-		t.Fatalf("govet: %v", err)
-	}
+	require.NoError(t, err)
 
 	t.Logf("govet found %d findings", len(findings))
 }
@@ -292,18 +212,13 @@ func TestParseGoVetJSON_BadEntry(t *testing.T) {
 
 	input := `{"github.com/example/pkg": "not an array"}`
 	findings := parseGoVetJSON([]byte(input), "")
-	if findings != nil {
-		t.Errorf("expected nil for bad entry, got %v", findings)
-	}
+	assert.Nil(t, findings)
 }
 
 func TestStaticcheckCategory_A(t *testing.T) {
 	t.Parallel()
 
-	got := staticcheckCategory("A1000")
-	if got != finding.CategoryCorrectness {
-		t.Errorf("staticcheckCategory(A1000) = %v, want %v", got, finding.CategoryCorrectness)
-	}
+	assert.Equal(t, finding.CategoryCorrectness, staticcheckCategory("A1000"))
 }
 
 func TestParseStaticcheckJSON_AbsolutePath(t *testing.T) {
@@ -311,11 +226,7 @@ func TestParseStaticcheckJSON_AbsolutePath(t *testing.T) {
 
 	input := `{"code":"S1001","severity":"warning","location":{"file":"/abs/path/main.go","line":1,"column":1},"message":"ok"}`
 	findings := parseStaticcheckJSON([]byte(input), "/project")
-	if len(findings) != 1 {
-		t.Fatalf("expected 1 finding, got %d", len(findings))
-	}
+	require.Len(t, findings, 1)
 
-	if findings[0].Position.File != "/abs/path/main.go" {
-		t.Errorf("File = %q, want %q", findings[0].Position.File, "/abs/path/main.go")
-	}
+	assert.Equal(t, "/abs/path/main.go", findings[0].Position.File)
 }

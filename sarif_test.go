@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func goFindingProps(id, severity, fixStrategy, toolName, category, tag string, confidence float64, suggestion, snippet string) map[string]any {
@@ -105,7 +106,7 @@ func TestToSARIF(t *testing.T) {
 		t.Errorf("Driver.Name = %q, want %q", run.Tool.Driver.Name, "test-tool")
 	}
 
-	requireLenEq(t, len(run.Results), 1, "Results")
+	require.Len(t, run.Results, 1, "Results")
 
 	result := run.Results[0]
 	assert.Equal(t, result.RuleID, "SA1000")
@@ -144,7 +145,7 @@ func TestToSARIFFiltered(t *testing.T) {
 	log := unmarshalSARIF(t, data)
 
 	results := log.Runs[0].Results
-	requireLenEq(t, len(results), 2, "filtered results")
+	require.Len(t, results, 2, "filtered results")
 
 	rules := make(map[string]struct{})
 	for _, res := range results {
@@ -199,7 +200,7 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 	log := unmarshalSARIF(t, data)
 
 	results := log.Runs[0].Results
-	requireLenEq(t, len(results), 1, "suppressed excluded results")
+	require.Len(t, results, 1, "suppressed excluded results")
 
 	if results[0].RuleID != "r1" {
 		t.Errorf("RuleID = %q, want %q", results[0].RuleID, "r1")
@@ -234,7 +235,7 @@ func TestToSARIF_WithFix(t *testing.T) {
 	log := unmarshalSARIF(t, data)
 
 	result := log.Runs[0].Results[0]
-	requireLenEq(t, len(result.Fixes), 1, "Fixes")
+	require.Len(t, result.Fixes, 1, "Fixes")
 
 	fix := result.Fixes[0]
 	if fix.Description.Text != "replace old with new" {
@@ -349,7 +350,7 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("FindingsFromSARIF(): %v", err)
 	}
-	requireLenEq(t, len(findings), 1, "round-trip findings")
+	require.Len(t, findings, 1, "round-trip findings")
 
 	got := findings[0]
 
@@ -477,7 +478,7 @@ func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	requireLenEq(t, len(f.Related), 2, "Related")
+	require.Len(t, f.Related, 2, "Related")
 
 	if f.Related[0].Relation != "related call" {
 		t.Errorf("Related[0].Relation = %q, want %q", f.Related[0].Relation, "related call")

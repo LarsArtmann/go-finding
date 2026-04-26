@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func testFinding(id, rule, tool, msg string, sev Severity, file string, line, col int) Finding {
@@ -236,7 +237,7 @@ func TestFindingsFromJSON(t *testing.T) {
 			t.Fatalf("FindingsFromJSON: %v", err)
 		}
 
-		requireLenEq(t, len(got), 2, "findings")
+		require.Len(t, got, 2, "findings")
 
 		if got[0].ID != "f1" || got[1].ID != "f2" {
 			t.Errorf("IDs = [%q, %q], want [f1, f2]", got[0].ID, got[1].ID)
@@ -274,7 +275,7 @@ func TestFindingsFromJSON(t *testing.T) {
 			t.Errorf("dropped = %d, want 1", dropped)
 		}
 
-		requireLenEq(t, len(got), 1, "filtered findings")
+		require.Len(t, got, 1, "filtered findings")
 
 		if got[0].ID != "f1" {
 			t.Errorf("ID = %q, want %q", got[0].ID, "f1")

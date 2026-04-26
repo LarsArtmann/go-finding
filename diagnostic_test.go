@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -137,9 +138,7 @@ func TestFromTokenPosition(t *testing.T) {
 	}
 
 	p := FromTokenPosition(pos)
-	if p.File != "test.go" || p.Line != 10 || p.Column != 5 || p.Offset != 100 {
-		t.Errorf("unexpected position: %+v", p)
-	}
+	assert.Equal(t, Position{File: "test.go", Line: 10, Column: 5, Offset: 100}, p)
 }
 
 func TestNodePosition(t *testing.T) {
@@ -151,9 +150,7 @@ func TestNodePosition(t *testing.T) {
 		fset := token.NewFileSet()
 
 		p := NodePosition(fset, nil)
-		if p.File != "" || p.Line != 0 || p.Column != 0 {
-			t.Errorf("expected empty position for nil node, got %+v", p)
-		}
+		assert.Equal(t, Position{}, p, "expected empty position for nil node")
 	})
 
 	t.Run("valid node", func(t *testing.T) {
@@ -187,9 +184,7 @@ func TestNodeRange(t *testing.T) {
 		fset := token.NewFileSet()
 
 		r := NodeRange(fset, nil)
-		if r.Start.File != "" || r.End.File != "" {
-			t.Errorf("expected empty range for nil node, got %+v", r)
-		}
+		assert.Equal(t, Range{}, r, "expected empty range for nil node")
 	})
 
 	t.Run("valid node", func(t *testing.T) {

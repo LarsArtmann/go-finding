@@ -302,10 +302,7 @@ func TestExtractFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := extractFile(tt.parts, tt.trailingCount)
-			if got != tt.want {
-				t.Errorf("extractFile() = %q, want %q", got, tt.want)
-			}
+			assert.Equal(t, tt.want, extractFile(tt.parts, tt.trailingCount), "extractFile")
 		})
 	}
 }
