@@ -133,9 +133,7 @@ func TestParseStaticcheckJSON(t *testing.T) {
 	}
 
 	f := findings[0]
-	if f.ToolName != "staticcheck" {
-		t.Errorf("ToolName = %q, want %q", f.ToolName, "staticcheck")
-	}
+	assert.Equal(t, "staticcheck", f.ToolName)
 
 	assert.Equal(t, "SA1000", f.Rule)
 	assert.Equal(t, finding.SeverityWarning, f.Severity)

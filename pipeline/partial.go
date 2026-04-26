@@ -61,6 +61,10 @@ func isContextDone(ctx context.Context) bool {
 	}
 }
 
+func contextError(ctx context.Context, msg string) error {
+	return fmt.Errorf("%s: %w", msg, ctx.Err())
+}
+
 func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult, error) {
 	//nolint:exhaustruct
 	result := &PartialResult{
@@ -69,7 +73,7 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 
 	for _, d := range p.detectors {
 		if isContextDone(ctx) {
-			return result, fmt.Errorf("context cancelled: %w", ctx.Err())
+			return result, contextError(ctx, "context cancelled")
 		}
 
 		start := time.Now()
@@ -126,7 +130,7 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 	_ = g.Wait()
 
 	if isContextDone(ctx) {
-		return result, fmt.Errorf("context cancelled: %w", ctx.Err())
+		return result, contextError(ctx, "context cancelled")
 	}
 
 	return result, nil

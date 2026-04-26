@@ -442,17 +442,9 @@ func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	if f.Suggestion != "fix it" {
-		t.Errorf("Suggestion = %q, want %q", f.Suggestion, "fix it")
-	}
-
-	if f.AfterCode != "fixed code" {
-		t.Errorf("AfterCode = %q, want %q", f.AfterCode, "fixed code")
-	}
-
-	if f.FixStrategy != FixStrategySuggest {
-		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategySuggest)
-	}
+	assert.Equal(t, "fix it", f.Suggestion)
+	assert.Equal(t, "fixed code", f.AfterCode)
+	assert.Equal(t, FixStrategySuggest, f.FixStrategy)
 }
 
 func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
@@ -538,31 +530,13 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyDirect)
 	}
 
-	if f.ToolName != "scanner" {
-		t.Errorf("ToolName = %q, want %q (should override)", f.ToolName, "scanner")
-	}
-
-	if f.Category != "security" {
-		t.Errorf("Category = %q, want %q", f.Category, "security")
-	}
-
-	if f.Tag != "injection" {
-		t.Errorf("Tag = %q, want %q", f.Tag, "injection")
-	}
-
+	assert.Equal(t, "scanner", f.ToolName)
+	assert.Equal(t, Category("security"), f.Category)
+	assert.Equal(t, "injection", f.Tag)
 	assert.Equal(t, 0.85, f.Confidence)
-
-	if f.Suggestion != "fix it" {
-		t.Errorf("Suggestion = %q, want %q", f.Suggestion, "fix it")
-	}
-
-	if f.Snippet != "code here" {
-		t.Errorf("Snippet = %q, want %q", f.Snippet, "code here")
-	}
-
-	if f.Metadata["custom-key"] != "custom-val" {
-		t.Errorf("Metadata[\"custom-key\"] = %q, want %q", f.Metadata["custom-key"], "custom-val")
-	}
+	assert.Equal(t, "fix it", f.Suggestion)
+	assert.Equal(t, "code here", f.Snippet)
+	assert.Equal(t, "custom-val", f.Metadata["custom-key"])
 }
 
 func TestApplySarifPosition_NilRegion(t *testing.T) {

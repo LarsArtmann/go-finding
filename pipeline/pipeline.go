@@ -205,7 +205,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	for p.iterations < p.config.MaxIterations {
 		if isContextDone(ctx) {
-			return result, fmt.Errorf("pipeline cancelled: %w", ctx.Err())
+			return result, contextError(ctx, "pipeline cancelled")
 		}
 
 		iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct

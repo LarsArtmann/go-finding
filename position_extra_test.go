@@ -44,6 +44,10 @@ func posOffset(offset int) Position {
 	return Position{Offset: offset}
 }
 
+func rngPos(startLine, endLine int) Range {
+	return Range{Start: pos(startLine), End: pos(endLine)}
+}
+
 func TestRangeLineCount(t *testing.T) {
 	t.Parallel()
 
@@ -54,10 +58,10 @@ func TestRangeLineCount(t *testing.T) {
 	}{
 		{"no line info", Range{Start: Position{File: "a.go"}}, 0},
 		{"single line no end", Range{Start: Position{File: "a.go", Line: 5}}, 1},
-		{"single line with end", Range{Start: Position{Line: 5}, End: Position{Line: 5}}, 1},
-		{"multi line", Range{Start: Position{Line: 10}, End: Position{Line: 20}}, 11},
-		{"end < start", Range{Start: Position{Line: 20}, End: Position{Line: 10}}, 0},
-		{"zero start line", Range{Start: Position{Line: 0}, End: Position{Line: 5}}, 0},
+		{"single line with end", rngPos(5, 5), 1},
+		{"multi line", rngPos(10, 20), 11},
+		{"end < start", rngPos(20, 10), 0},
+		{"zero start line", rngPos(0, 5), 0},
 	}
 
 	for _, tt := range tests {
@@ -79,10 +83,10 @@ func TestRangeLength(t *testing.T) {
 		r    Range
 		want int
 	}{
-		{"no offsets", Range{Start: Position{File: "a.go", Line: 1}, End: Position{Line: 3}}, 0},
+		{"no offsets", Range{Start: Position{File: "a.go", Line: 1}, End: pos(3)}, 0},
 		{
 			"missing start offset",
-			Range{Start: Position{File: "a.go", Offset: -1}, End: Position{Offset: 100}},
+			Range{Start: Position{File: "a.go", Offset: -1}, End: posOffset(100)},
 			0,
 		},
 		{"missing end offset", Range{Start: posOffset(10), End: posOffset(-1)}, 0},
