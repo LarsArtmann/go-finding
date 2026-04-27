@@ -44,7 +44,7 @@ func TestFindingErrorUnwrap(t *testing.T) {
 	cause := errors.New("underlying error")
 	err := NewValidationError("validation failed", cause)
 
-	assert.True(t, errors.Is(err, cause))
+	assert.ErrorIs(t, err, cause)
 }
 
 func TestFindingErrorWithFinding(t *testing.T) {
@@ -223,13 +223,13 @@ func TestSentinelErrors_Wrapped(t *testing.T) {
 	t.Parallel()
 
 	err := fmt.Errorf("wrapped: %w", NewValidationError("test", nil))
-	assert.True(t, errors.Is(err, ErrValidation))
+	assert.ErrorIs(t, err, ErrValidation)
 }
 
 func TestFindingError_Is_UnknownCategory(t *testing.T) {
 	t.Parallel()
 
 	err := &FindingError{Category: ErrorCategory("custom"), Message: "custom error"}
-	assert.False(t, errors.Is(err, ErrValidation))
-	assert.False(t, errors.Is(err, ErrInternal))
+	assert.NotErrorIs(t, err, ErrValidation)
+	assert.NotErrorIs(t, err, ErrInternal)
 }

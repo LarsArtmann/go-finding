@@ -70,7 +70,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 		t.Parallel()
 
 		result := AnalyzeConflicts(findings("1", "a.go", 10, "2", "b.go", 20))
-		assert.Len(t, result, 0)
+		assert.Empty(t, result)
 	})
 
 	t.Run("overlapping fixes detected", func(t *testing.T) {
@@ -103,7 +103,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 		t.Parallel()
 
 		result := AnalyzeConflicts(nil)
-		assert.Len(t, result, 0)
+		assert.Empty(t, result)
 	})
 }
 

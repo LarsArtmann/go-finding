@@ -285,7 +285,7 @@ func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
 
 	applier := NewFixApplier("/tmp/test")
 
-	assert.Equal(t, applier.rootDir, "/tmp/test")
+	assert.Equal(t, "/tmp/test", applier.rootDir)
 	assert.True(t, applier.backupEnabled, "backupEnabled should be true")
 	assert.NotNil(t, applier.backups, "backups map should not be nil")
 }

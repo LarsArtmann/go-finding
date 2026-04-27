@@ -207,7 +207,7 @@ func TestCorrelate_TooFewFindings(t *testing.T) {
 	}
 
 	correlations := Correlate(findings)
-	assert.Len(t, correlations, 0)
+	assert.Empty(t, correlations)
 }
 
 func TestCloneFindings_EmptySlice(t *testing.T) {

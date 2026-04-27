@@ -233,12 +233,54 @@ func TestParseID_WindowsPaths(t *testing.T) {
 	t.Parallel()
 
 	tests := []parseIDCase{
-		stdIDCase("Windows absolute drive letter with line and col", "govet:nilcheck:C:/Users/test/file.go:42:10", "C:/Users/test/file.go", 42, 10, true),
-		stdIDCase("Windows absolute drive letter line only", "govet:nilcheck:C:/Users/test/file.go:42", "C:/Users/test/file.go", 42, 0, true),
-		stdIDCase("Windows drive letter no position", "govet:nilcheck:C:/Users/test/file.go", "C:/Users/test/file.go", 0, 0, true),
-		stdIDCase("Windows path with spaces", "govet:nilcheck:C:/Program Files/My App/main.go:15:5", "C:/Program Files/My App/main.go", 15, 5, true),
-		stdIDCase("UNC forward-slash path", "govet:nilcheck://server/share/file.go:10:1", "//server/share/file.go", 10, 1, true),
-		stdIDCase("UNC path line only", "govet:nilcheck://server/share/dir/file.go:7", "//server/share/dir/file.go", 7, 0, true),
+		stdIDCase(
+			"Windows absolute drive letter with line and col",
+			"govet:nilcheck:C:/Users/test/file.go:42:10",
+			"C:/Users/test/file.go",
+			42,
+			10,
+			true,
+		),
+		stdIDCase(
+			"Windows absolute drive letter line only",
+			"govet:nilcheck:C:/Users/test/file.go:42",
+			"C:/Users/test/file.go",
+			42,
+			0,
+			true,
+		),
+		stdIDCase(
+			"Windows drive letter no position",
+			"govet:nilcheck:C:/Users/test/file.go",
+			"C:/Users/test/file.go",
+			0,
+			0,
+			true,
+		),
+		stdIDCase(
+			"Windows path with spaces",
+			"govet:nilcheck:C:/Program Files/My App/main.go:15:5",
+			"C:/Program Files/My App/main.go",
+			15,
+			5,
+			true,
+		),
+		stdIDCase(
+			"UNC forward-slash path",
+			"govet:nilcheck://server/share/file.go:10:1",
+			"//server/share/file.go",
+			10,
+			1,
+			true,
+		),
+		stdIDCase(
+			"UNC path line only",
+			"govet:nilcheck://server/share/dir/file.go:7",
+			"//server/share/dir/file.go",
+			7,
+			0,
+			true,
+		),
 		stdIDCase("drive root only", "govet:nilcheck:C:/:1:1", "C:/", 1, 1, true),
 	}
 

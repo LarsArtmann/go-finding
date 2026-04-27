@@ -533,5 +533,3 @@ detectors: []
 		t.Errorf("run() with no detectors = %d, want 1", got)
 	}
 }
-
-

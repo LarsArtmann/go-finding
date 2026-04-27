@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-		"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -320,7 +320,11 @@ func TestFindingErrorIsCategory(t *testing.T) {
 	t.Parallel()
 
 	err := NewValidationError("test", nil)
-	assert.True(t, IsCategory(err, ErrCategoryValidation), "expected IsCategory to match validation")
+	assert.True(
+		t,
+		IsCategory(err, ErrCategoryValidation),
+		"expected IsCategory to match validation",
+	)
 	assert.False(t, IsCategory(err, ErrCategoryIO), "expected IsCategory to not match io")
 }
 

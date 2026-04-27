@@ -9,7 +9,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func goFindingProps(id, severity, fixStrategy, toolName, category, tag string, confidence float64, suggestion, snippet string) map[string]any {
+func goFindingProps(
+	id, severity, fixStrategy, toolName, category, tag string,
+	confidence float64,
+	suggestion, snippet string,
+) map[string]any {
 	return map[string]any{
 		"go-finding/id":          id,
 		"go-finding/severity":    severity,
@@ -23,8 +27,22 @@ func goFindingProps(id, severity, fixStrategy, toolName, category, tag string, c
 	}
 }
 
-func goFindingPropsWithCustom(id, severity, fixStrategy, toolName, category, tag string, confidence float64, suggestion, snippet, customKey, customVal string) map[string]any {
-	props := goFindingProps(id, severity, fixStrategy, toolName, category, tag, confidence, suggestion, snippet)
+func goFindingPropsWithCustom(
+	id, severity, fixStrategy, toolName, category, tag string,
+	confidence float64,
+	suggestion, snippet, customKey, customVal string,
+) map[string]any {
+	props := goFindingProps(
+		id,
+		severity,
+		fixStrategy,
+		toolName,
+		category,
+		tag,
+		confidence,
+		suggestion,
+		snippet,
+	)
 	props[customKey] = customVal
 	return props
 }
@@ -109,10 +127,10 @@ func TestToSARIF(t *testing.T) {
 	require.Len(t, run.Results, 1, "Results")
 
 	result := run.Results[0]
-	assert.Equal(t, result.RuleID, "SA1000")
+	assert.Equal(t, "SA1000", result.RuleID)
 	assert.Equal(t, result.Level, string(SeverityError))
-	assert.Equal(t, result.Message.Text, "bad code")
-	assert.Equal(t, result.Locations[0].PhysicalLocation.ArtifactLocation.URI, "main.go")
+	assert.Equal(t, "bad code", result.Message.Text)
+	assert.Equal(t, "main.go", result.Locations[0].PhysicalLocation.ArtifactLocation.URI)
 }
 
 func TestToSARIFFiltered(t *testing.T) {
@@ -512,7 +530,19 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
 			},
 		}},
-		Properties: goFindingPropsWithCustom("test-id", "critical", "direct", "scanner", "security", "injection", 0.85, "fix it", "code here", "custom-key", "custom-val"),
+		Properties: goFindingPropsWithCustom(
+			"test-id",
+			"critical",
+			"direct",
+			"scanner",
+			"security",
+			"injection",
+			0.85,
+			"fix it",
+			"code here",
+			"custom-key",
+			"custom-val",
+		),
 	}
 
 	f := findingFromSarResult(r, "default-tool")

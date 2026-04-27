@@ -41,7 +41,7 @@ func TestSuppressionKind_IsValid(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-	assert.Equal(t, tt.want, tt.kind.IsValid(), "SuppressionKind IsValid")
+		assert.Equal(t, tt.want, tt.kind.IsValid(), "SuppressionKind IsValid")
 	}
 }
 
@@ -65,7 +65,7 @@ func TestSeverity_GreaterThanOrEqual(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-	assert.Equal(t, tt.want, tt.a.GreaterThanOrEqual(tt.b))
+		assert.Equal(t, tt.want, tt.a.GreaterThanOrEqual(tt.b))
 	}
 }
 
@@ -89,7 +89,7 @@ func TestSeverity_LessThanOrEqual(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-	assert.Equal(t, tt.want, tt.a.LessThanOrEqual(tt.b))
+		assert.Equal(t, tt.want, tt.a.LessThanOrEqual(tt.b))
 	}
 }
 

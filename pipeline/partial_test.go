@@ -64,7 +64,7 @@ func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
 
 	assertPartialFindingsLen(t, result, 1, "expected 1 finding from good detector")
 	assert.True(t, result.HasErrors(), "expected errors from bad detector")
-	assert.NotNil(t, result.Errors["bad"], "expected error for bad detector")
+	assert.Error(t, result.Errors["bad"], "expected error for bad detector")
 }
 
 func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {

@@ -190,7 +190,7 @@ func FuzzMerge_Idempotent(f *testing.F) {
 		merged1 := Merge([]*Report{r})
 		merged2 := Merge([]*Report{merged1})
 
-		assert.Equal(t, len(merged1.Findings), len(merged2.Findings), "merge not idempotent")
+		assert.Len(t, merged2.Findings, len(merged1.Findings), "merge not idempotent")
 	})
 }
 

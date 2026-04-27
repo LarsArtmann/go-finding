@@ -23,7 +23,14 @@ func TestParsePosn(t *testing.T) {
 	}{
 		{"full position", "main.go:10:5", "/project", "/project/main.go", 10, 5},
 		{"file and line only", "main.go:10", "/project", "/project/main.go", 10, 0},
-		{"absolute path ignored dir", "/abs/path/main.go:5:1", "/project", "/abs/path/main.go", 5, 1},
+		{
+			"absolute path ignored dir",
+			"/abs/path/main.go:5:1",
+			"/project",
+			"/abs/path/main.go",
+			5,
+			1,
+		},
 		{"no colon returns raw string as file", "just-a-file.go", "", "just-a-file.go", 0, 0},
 		{"empty dir with relative path", "pkg/util.go:20:3", "", "pkg/util.go", 20, 3},
 	}
@@ -116,8 +123,18 @@ func TestParseStaticcheckJSON_LineSkipping(t *testing.T) {
 		wantLen  int
 		wantRule string
 	}{
-		{"invalid line skipped", "not json at all\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}", 1, "S1001"},
-		{"whitespace lines skipped", "\n  \n\t\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}\n\n", 1, "S1001"},
+		{
+			"invalid line skipped",
+			"not json at all\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}",
+			1,
+			"S1001",
+		},
+		{
+			"whitespace lines skipped",
+			"\n  \n\t\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}\n\n",
+			1,
+			"S1001",
+		},
 	}
 
 	for _, tt := range tests {
