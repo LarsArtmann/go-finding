@@ -179,7 +179,7 @@ func ExampleNewReport() {
 		Category:    finding.CategoryCorrectness,
 		FixStrategy: finding.FixStrategySuggest,
 		Suggestion:  "Remove the unused variable",
-		Position:    finding.Position{File: "main.go", Line: 5, Column: 1},
+		Position:    finding.Pos("main.go", 5, 1),
 	})
 	report.ComputeSummary()
 
@@ -193,7 +193,7 @@ func ExampleNewReport() {
 
 func ExampleReport_ToSARIF() {
 	report := finding.NewReport(finding.ToolInfo{Name: "mytool", Version: "1.0.0"})
-	pos := finding.Position{File: "main.go", Line: 1, Column: 1}
+	pos := finding.Pos("main.go", 1, 1)
 	f := finding.Finding{
 		Severity: finding.SeverityWarning,
 		ID:       "mytool:R1:main.go:1:1",
@@ -282,7 +282,7 @@ func ExamplePipeline() {
 					ToolName:    "example",
 					Message:     "example finding",
 					Severity:    finding.SeverityWarning,
-					Position:    finding.Position{File: "main.go", Line: 1, Column: 1},
+					Position:    finding.Pos("main.go", 1, 1),
 					FixStrategy: finding.FixStrategyNone,
 				},
 			}, nil

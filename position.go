@@ -326,6 +326,23 @@ func (r Range) intersectionByOffset(other Range) *Range {
 	}
 }
 
+// columnAdjacent checks if two columns represent adjacent positions.
+// Returns true if either both are 0 (line-based adjacency) or both are
+// positive and equal (column-based adjacency).
+func columnAdjacent(endCol, startCol int) bool {
+	if endCol == 0 && startCol == 0 {
+		return true
+	}
+
+	return endCol > 0 && startCol > 0 && endCol == startCol
+}
+
+// offsetAdjacent checks if two offsets represent adjacent positions.
+// Returns true if both are positive and equal.
+func offsetAdjacent(endOffset, startOffset int) bool {
+	return endOffset > 0 && startOffset > 0 && endOffset == startOffset
+}
+
 // Adjacent reports whether this range is immediately adjacent to another range.
 // Adjacent means one range ends exactly where the other begins.
 func (r Range) Adjacent(other Range) bool {
@@ -334,38 +351,20 @@ func (r Range) Adjacent(other Range) bool {
 	}
 
 	// Try line-based adjacency first
-	if r.End.Line > 0 && other.Start.Line > 0 { //nolint:nestif // symmetric adjacency check
-		if r.End.Line == other.Start.Line {
-			if r.End.Column == 0 && other.Start.Column == 0 {
-				return true
-			}
-
-			if r.End.Column > 0 && other.Start.Column > 0 && r.End.Column == other.Start.Column {
-				return true
-			}
+	if r.End.Line > 0 && other.Start.Line > 0 {
+		if r.End.Line == other.Start.Line && columnAdjacent(r.End.Column, other.Start.Column) {
+			return true
 		}
 
-		if other.End.Line == r.Start.Line {
-			if other.End.Column == 0 && r.Start.Column == 0 {
-				return true
-			}
-
-			if other.End.Column > 0 && r.Start.Column > 0 && other.End.Column == r.Start.Column {
-				return true
-			}
+		if other.End.Line == r.Start.Line && columnAdjacent(other.End.Column, r.Start.Column) {
+			return true
 		}
 	}
 
 	// Fall back to offset-based adjacency
-	if r.End.Offset > 0 && other.Start.Offset > 0 && r.End.Offset == other.Start.Offset {
-		return true
-	}
-
-	if other.End.Offset > 0 && r.Start.Offset > 0 && other.End.Offset == r.Start.Offset {
-		return true
-	}
-
-	return false
+	startMatch := offsetAdjacent(r.End.Offset, other.Start.Offset)
+	endMatch := offsetAdjacent(other.End.Offset, r.Start.Offset)
+	return startMatch || endMatch
 }
 
 // HasOffset reports whether the offset is set.

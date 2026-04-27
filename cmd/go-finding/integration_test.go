@@ -419,7 +419,7 @@ func TestOutputResults_AllFormats(t *testing.T) {
 		ToolName:    "test",
 		Message:     "integration test finding",
 		Severity:    finding.SeverityError,
-		Position:    finding.Position{File: "main.go", Line: 1, Column: 1},
+		Position:    finding.Pos("main.go", 1, 1),
 		Category:    finding.CategoryCorrectness,
 		FixStrategy: finding.FixStrategySuggest,
 		Suggestion:  "fix the issue",

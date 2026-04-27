@@ -84,7 +84,7 @@ func TestOutputText_WithSuggestion(t *testing.T) {
 	report.AddFinding(finding.Finding{
 		ID: "test:R1:main.go:1:1", Rule: "R1", ToolName: "test",
 		Message: "msg", Severity: finding.SeverityError,
-		Position:   finding.Position{File: "main.go", Line: 1, Column: 1},
+		Position:   finding.Pos("main.go", 1, 1),
 		Suggestion: "fix it",
 	})
 
@@ -224,12 +224,12 @@ func TestOutputText_WithSummary(t *testing.T) {
 	report := finding.NewReport(finding.ToolInfo{Name: "test"})
 	report.AddFinding(finding.Finding{
 		Severity: finding.SeverityError, Rule: "R1", Message: "err1",
-		Position: finding.Position{File: "a.go", Line: 1, Column: 1},
+		Position: finding.Pos("a.go", 1, 1),
 		ID:       "test:R1:a.go:1:1",
 	})
 	report.AddFinding(finding.Finding{
 		Severity: finding.SeverityInfo, Rule: "R2", Message: "info1",
-		Position: finding.Position{File: "b.go", Line: 2, Column: 1},
+		Position: finding.Pos("b.go", 2, 1),
 		ID:       "test:R2:b.go:2:1",
 	})
 	report.ComputeSummary()

@@ -18,7 +18,7 @@ func Example_basic() {
 		ToolName:    "my-linter",
 		Message:     "import \"fmt\" is unused",
 		Severity:    finding.SeverityWarning,
-		Position:    finding.Position{File: "main.go", Line: 5, Column: 2},
+		Position:    finding.Pos("main.go", 5, 2),
 		Category:    finding.CategoryStyle,
 		FixStrategy: finding.FixStrategyDirect,
 		BeforeCode:  `import "fmt"`,

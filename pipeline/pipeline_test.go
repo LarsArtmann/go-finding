@@ -12,6 +12,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// pipelineTestFinding creates a Finding with test values at the specified column.
+func pipelineTestFinding(column int) finding.Finding {
+	return finding.Finding{
+		ID:          "test:1",
+		Rule:        "test-rule",
+		ToolName:    "test-tool",
+		Message:     "test message",
+		Severity:    finding.SeverityWarning,
+		Position:    finding.Pos("test.go", 1, column),
+		FixStrategy: finding.FixStrategySuggest,
+	}
+}
+
 // TestNew tests pipeline creation.
 func TestNew(t *testing.T) {
 	t.Parallel()
@@ -65,17 +78,7 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 	config.ParallelDetectors = false
 	config.MaxIterations = 3 // Limit to avoid running 5 iterations
 
-	findings := []finding.Finding{
-		{
-			ID:          "test:1",
-			Rule:        "test-rule",
-			ToolName:    "test-tool",
-			Message:     "test message",
-			Severity:    finding.SeverityWarning,
-			Position:    finding.Position{File: "test.go", Line: 1, Column: 1},
-			FixStrategy: finding.FixStrategySuggest,
-		},
-	}
+	findings := []finding.Finding{pipelineTestFinding(1)}
 
 	detector := &mockDetector{name: "test", findings: findings}
 	p, err := New(config, t.TempDir(), detector)
@@ -178,17 +181,7 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 	config.ParallelDetectors = false
 
 	// Findings that won't be auto-fixed (suggest strategy)
-	findings := []finding.Finding{
-		{
-			ID:          "test:1",
-			Rule:        "test-rule",
-			ToolName:    "test-tool",
-			Message:     "test message",
-			Severity:    finding.SeverityWarning,
-			Position:    finding.Position{File: "test.go", Line: 1},
-			FixStrategy: finding.FixStrategySuggest,
-		},
-	}
+	findings := []finding.Finding{pipelineTestFinding(0)}
 
 	detector := &mockDetector{name: "test", findings: findings}
 	p, err := New(config, t.TempDir(), detector)
@@ -514,7 +507,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 			ID:          "fix1",
 			BeforeCode:  "println(\"hello\")",
 			AfterCode:   "fmt.Println(\"world\")",
-			Position:    finding.Position{File: "test.go", Line: 5, Column: 2},
+			Position:    finding.Pos("test.go", 5, 2),
 			Range:       finding.NewRangePtr("test.go", 5, 2, 5, 18),
 			FixStrategy: finding.FixStrategyDirect,
 		},
