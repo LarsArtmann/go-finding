@@ -23,40 +23,55 @@ func (s Severity) IsValid() bool {
 	return false
 }
 
+// comparisonOp represents a severity comparison operation.
+type comparisonOp int
+
+const (
+	cmpGreaterThan comparisonOp = iota
+	cmpLessThan
+	cmpGreaterThanOrEqual
+	cmpLessThanOrEqual
+)
+
 // GreaterThan returns true if this severity is greater than the other.
 // Order: info < warning < error < critical.
 func (s Severity) GreaterThan(other Severity) bool {
-	if !s.isValidWith(other) {
-		return false
-	}
-	return severityRank(s) > severityRank(other)
+	return s.compareOp(other, cmpGreaterThan)
 }
 
 // LessThan returns true if this severity is less than the other.
 func (s Severity) LessThan(other Severity) bool {
-	if !s.isValidWith(other) {
-		return false
-	}
-
-	return severityRank(s) < severityRank(other)
+	return s.compareOp(other, cmpLessThan)
 }
 
 // GreaterThanOrEqual returns true if this severity is greater than or equal to the other.
 func (s Severity) GreaterThanOrEqual(other Severity) bool {
-	if !s.isValidWith(other) {
-		return false
-	}
-
-	return severityRank(s) >= severityRank(other)
+	return s.compareOp(other, cmpGreaterThanOrEqual)
 }
 
 // LessThanOrEqual returns true if this severity is less than or equal to the other.
 func (s Severity) LessThanOrEqual(other Severity) bool {
+	return s.compareOp(other, cmpLessThanOrEqual)
+}
+
+// compareOp is an internal helper that performs comparison based on the given operation.
+func (s Severity) compareOp(other Severity, op comparisonOp) bool {
 	if !s.isValidWith(other) {
 		return false
 	}
-
-	return severityRank(s) <= severityRank(other)
+	c := s.Compare(other)
+	switch op {
+	case cmpGreaterThan:
+		return c > 0
+	case cmpLessThan:
+		return c < 0
+	case cmpGreaterThanOrEqual:
+		return c >= 0
+	case cmpLessThanOrEqual:
+		return c <= 0
+	default:
+		return false
+	}
 }
 
 // String returns the string representation of the severity.

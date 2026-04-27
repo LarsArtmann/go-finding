@@ -54,9 +54,7 @@ func TestRetryConfig_delay_maxCap(t *testing.T) {
 
 func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 	t.Parallel()
-	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
-		return []finding.Finding{{ID: "F1"}}, nil
-	})
+	inner := makeFindingDetectorFunc("F1")
 	rd := newRetryDet(inner, 3)
 
 	findings, err := rd.Detect(context.Background())

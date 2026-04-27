@@ -291,9 +291,7 @@ func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
 }
 
 func TestFixApplier_Apply_RestoreOnApplyError(t *testing.T) {
-	t.Parallel()
-
-	applier := NewFixApplier(t.TempDir())
+	applier := newTestApplier(t)
 	testBackupRestore(t, applier,
 		"package main\nold()\n",
 		"package main\nnew()\n")

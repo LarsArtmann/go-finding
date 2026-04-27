@@ -125,15 +125,13 @@ func ExampleMerge() {
 }
 
 func ExampleMerge_deduplication() {
+	duplicate := finding.Finding{ID: "same-id", Rule: "R1", Position: finding.Position{File: "a.go"}}
+
 	r1 := finding.NewReport(finding.ToolInfo{Name: "tool-a"})
-	r1.AddFinding(
-		finding.Finding{ID: "same-id", Rule: "R1", Position: finding.Position{File: "a.go"}},
-	)
+	r1.AddFinding(duplicate)
 
 	r2 := finding.NewReport(finding.ToolInfo{Name: "tool-b"})
-	r2.AddFinding(
-		finding.Finding{ID: "same-id", Rule: "R1", Position: finding.Position{File: "a.go"}},
-	)
+	r2.AddFinding(duplicate)
 
 	merged := finding.Merge([]*finding.Report{r1, r2})
 	fmt.Println("After dedup:", merged.Summary.Total)

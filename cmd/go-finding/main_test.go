@@ -151,19 +151,13 @@ func TestBuildDetectors(t *testing.T) {
 		wantCount int
 	}{
 		{
-			name: "known detectors",
-			specs: []detectorSpec{
-				{Name: "govet"},
-				{Name: "staticcheck"},
-			},
+			name:      "known detectors",
+			specs:     detectorSpecs("govet", "staticcheck"),
 			wantCount: 2,
 		},
 		{
-			name: "unknown detector skipped",
-			specs: []detectorSpec{
-				{Name: "govet"},
-				{Name: "nonexistent"},
-			},
+			name:      "unknown detector skipped",
+			specs:     detectorSpecs("govet", "nonexistent"),
 			wantCount: 1,
 		},
 		{

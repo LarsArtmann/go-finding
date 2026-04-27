@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/larsartmann/go-finding"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,6 +13,14 @@ func assertPartialFindingsLen(t *testing.T, result *PartialResult, want int, msg
 	t.Helper()
 
 	assert.Len(t, result.Findings, want, msg)
+}
+
+// goodThenBadDetectors returns two mock detectors: one that succeeds with a finding,
+// and one that fails with an error. Used to test partial success scenarios.
+func goodThenBadDetectors() (*mockDetector, *mockDetector) {
+	d1 := mockDet("good", "F1")
+	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
+	return d1, d2
 }
 
 func runDetectPartial(t *testing.T, parallel bool, d1, d2 *mockDetector) *PartialResult {
@@ -40,8 +47,8 @@ func TestPartialResult_HasErrors(t *testing.T) {
 
 func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
 	t.Parallel()
-	d1 := &mockDetector{name: "d1", findings: []finding.Finding{{ID: "F1"}}}
-	d2 := &mockDetector{name: "d2", findings: []finding.Finding{{ID: "F2"}}}
+	d1 := mockDet("d1", "F1")
+	d2 := mockDet("d2", "F2")
 
 	result := runDetectPartial(t, false, d1, d2)
 
@@ -51,8 +58,7 @@ func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
 
 func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
 	t.Parallel()
-	d1 := &mockDetector{name: "good", findings: []finding.Finding{{ID: "F1"}}}
-	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
+	d1, d2 := goodThenBadDetectors()
 
 	result := runDetectPartial(t, false, d1, d2)
 
@@ -63,8 +69,7 @@ func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
 
 func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {
 	t.Parallel()
-	d1 := &mockDetector{name: "good", findings: []finding.Finding{{ID: "F1"}}}
-	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
+	d1, d2 := goodThenBadDetectors()
 
 	result := runDetectPartial(t, true, d1, d2)
 

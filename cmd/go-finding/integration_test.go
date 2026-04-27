@@ -21,14 +21,17 @@ func detectorSpecs(names ...string) []detectorSpec {
 	return specs
 }
 
+func govetConfig(iterations int, timeout ...string) pipelineConfigFile {
+	cfg := pipelineConfigFile{Detectors: detectorSpecs("govet"), MaxIterations: iterations}
+	if len(timeout) > 0 {
+		cfg.Timeout = timeout[0]
+	}
+	return cfg
+}
+
 func runWithArgs(t *testing.T, args ...string) int {
 	t.Helper()
-	savedCommandLine := flag.CommandLine
-	savedArgs := os.Args
-	t.Cleanup(func() {
-		flag.CommandLine = savedCommandLine
-		os.Args = savedArgs
-	})
+	saveRestoreFlags(t)
 
 	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
 	os.Args = append([]string{"go-finding"}, args...)
@@ -41,6 +44,16 @@ func writeConfig(t *testing.T, path string, content []byte) {
 	if err := os.WriteFile(path, content, 0o644); err != nil {
 		t.Fatalf("write config: %v", err)
 	}
+}
+
+// saveRestoreFlags saves the current flag state and registers a cleanup to restore it.
+func saveRestoreFlags(t *testing.T) {
+	savedCommandLine := flag.CommandLine
+	savedArgs := os.Args
+	t.Cleanup(func() {
+		flag.CommandLine = savedCommandLine
+		os.Args = savedArgs
+	})
 }
 
 func requireOutputResults(t *testing.T, w *bytes.Buffer, report *finding.Report, format string) {
@@ -154,20 +167,13 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "valid",
-			cfg: pipelineConfigFile{
-				Detectors:     detectorSpecs("govet"),
-				MaxIterations: 5,
-				Timeout:       "10m",
-			},
+			name:    "valid",
+			cfg:     govetConfig(5, "10m"),
 			wantErr: false,
 		},
 		{
-			name: "negative iterations",
-			cfg: pipelineConfigFile{
-				Detectors:     detectorSpecs("govet"),
-				MaxIterations: -1,
-			},
+			name:    "negative iterations",
+			cfg:     govetConfig(-1),
 			wantErr: true,
 		},
 		{
@@ -517,12 +523,7 @@ detectors: []
 `
 	writeConfig(t, cfgPath, []byte(content))
 
-	savedCommandLine := flag.CommandLine
-	savedArgs := os.Args
-	t.Cleanup(func() {
-		flag.CommandLine = savedCommandLine
-		os.Args = savedArgs
-	})
+	saveRestoreFlags(t)
 
 	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
 	os.Args = []string{"go-finding", "-config", cfgPath, "-dir", dir}

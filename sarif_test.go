@@ -280,10 +280,7 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 func TestToSARIF_EmptyReport(t *testing.T) {
 	t.Parallel()
 
-	r := &Report{
-		Tool:     ToolInfo{Name: "tool"},
-		Findings: []Finding{},
-	}
+	r := MakeSimpleReport("tool")
 
 	data, err := r.ToSARIF()
 	if err != nil {

@@ -51,6 +51,10 @@ func newMockDetector(name, toolName string, findings ...finding.Finding) *mockDe
 	return &mockDetector{name: name, findings: findings}
 }
 
+func mockDet(name, findingID string) *mockDetector {
+	return &mockDetector{name: name, findings: []finding.Finding{{ID: findingID}}}
+}
+
 func testFinding(id, rule, tool, msg string, sev finding.Severity, file string) finding.Finding {
 	return finding.Finding{
 		ID:       id,
@@ -201,6 +205,12 @@ func testBackupRestore(t *testing.T, applier *FixApplier, original, modified str
 	}
 }
 
+func newTestApplier(t *testing.T) *FixApplier {
+	t.Helper()
+
+	return NewFixApplier(t.TempDir())
+}
+
 func makeFixFinding(id, before, after, file string, line int) finding.Finding {
 	return finding.Finding{
 		ID:          id,
@@ -217,6 +227,12 @@ func makeFixFinding(id, before, after, file string, line int) finding.Finding {
 func makeErrorDetector(errMsg string) Detector {
 	return DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		return nil, errors.New(errMsg)
+	})
+}
+
+func makeFindingDetectorFunc(id string) DetectorFunc {
+	return DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
+		return []finding.Finding{{ID: id}}, nil
 	})
 }
 

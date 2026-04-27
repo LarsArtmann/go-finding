@@ -286,10 +286,7 @@ func TestFindingsFromJSON(t *testing.T) {
 func TestPrettyJSON(t *testing.T) {
 	t.Parallel()
 
-	r := &Report{
-		Tool:     ToolInfo{Name: "tool"},
-		Findings: []Finding{},
-	}
+	r := MakeSimpleReport("tool")
 
 	got, err := r.PrettyJSON()
 	if err != nil {

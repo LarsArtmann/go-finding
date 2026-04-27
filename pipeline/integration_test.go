@@ -13,9 +13,7 @@ import (
 )
 
 func TestFixApplier_BackupRestoreRoundTrip(t *testing.T) {
-	t.Parallel()
-
-	applier := NewFixApplier(t.TempDir())
+	applier := newTestApplier(t)
 	testBackupRestore(t, applier,
 		"package main\n\nfunc main() {\n\tprintln(\"original\")\n}\n",
 		"package main\n\nfunc main() {\n\tprintln(\"modified\")\n}\n")

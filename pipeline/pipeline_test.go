@@ -383,9 +383,7 @@ func TestDetectorFunc(t *testing.T) {
 func TestNamedDetectorFunc(t *testing.T) {
 	t.Parallel()
 
-	fn := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
-		return []finding.Finding{{ID: "test"}}, nil
-	})
+	fn := makeFindingDetectorFunc("test")
 
 	d := NamedDetectorFunc("my-linter", fn)
 
