@@ -28,11 +28,14 @@ type Summary struct {
 
 // NewReport creates a new report with the given tool info.
 func NewReport(tool ToolInfo) *Report {
-	return &Report{
+	r := &Report{
 		Tool:     tool,
 		Findings: make([]Finding, 0),
 		Summary:  Summary{}, //nolint:exhaustruct
 	}
+	r.ComputeSummary()
+
+	return r
 }
 
 // AddFinding adds a finding to the report.

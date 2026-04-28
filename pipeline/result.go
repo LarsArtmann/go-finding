@@ -13,7 +13,9 @@ type PipelineResult struct {
 	Stable            bool
 	TotalIterations   int
 	Iterations        []Iteration
-	FinalFindingCount int
+	// TotalDetected is the total number of findings detected across all iterations.
+	// This includes findings that were fixed in subsequent iterations.
+	TotalDetected int
 	Verification      *VerifyResult
 	PartialErrors     map[string]error
 	Metrics           MetricsSnapshot

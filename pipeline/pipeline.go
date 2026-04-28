@@ -285,7 +285,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		result.Verification = verifyResult
 	}
 
-	result.FinalFindingCount = len(p.findings)
+	result.TotalDetected = len(p.findings)
 
 	metricsResult = result
 

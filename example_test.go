@@ -314,7 +314,7 @@ func ExamplePipeline() {
 	}
 
 	fmt.Println("Iterations:", result.TotalIterations)
-	fmt.Println("Findings:", result.FinalFindingCount)
+	fmt.Println("Findings:", result.TotalDetected)
 
 	// Output:
 	// Iterations: 1
