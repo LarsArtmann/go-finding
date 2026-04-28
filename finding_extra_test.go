@@ -76,3 +76,26 @@ func TestCloneEmpty(t *testing.T) {
 		t.Error("Clone of simple finding should be Equal")
 	}
 }
+
+func TestEqualTimePtr(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+
+	if !equalTimePtr(nil, nil) {
+		t.Error("equalTimePtr(nil, nil) should be true")
+	}
+
+	if equalTimePtr(&now, nil) {
+		t.Error("equalTimePtr(&now, nil) should be false")
+	}
+
+	if equalTimePtr(nil, &now) {
+		t.Error("equalTimePtr(nil, &now) should be false")
+	}
+
+	other := now
+	if !equalTimePtr(&now, &other) {
+		t.Error("equalTimePtr(&now, &same) should be true")
+	}
+}
