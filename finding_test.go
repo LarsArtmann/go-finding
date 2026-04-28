@@ -383,3 +383,27 @@ func TestRangeContains(t *testing.T) {
 		})
 	}
 }
+
+func TestClampConfidence(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		in   float64
+		want float64
+	}{
+		{"negative clamps to 0", -0.5, 0},
+		{"zero stays zero", 0, 0},
+		{"one stays one", 1, 1},
+		{"above one clamps to 1", 1.5, 1},
+		{"mid value unchanged", 0.75, 0.75},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.InDelta(t, tt.want, clampConfidence(tt.in), 1e-9)
+		})
+	}
+}

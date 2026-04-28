@@ -154,6 +154,127 @@ func TestFinding_Equal(t *testing.T) {
 			}(),
 			false,
 		},
+		{
+			"different rule",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Rule = "other-rule"
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different tool name",
+			base,
+			func() Finding {
+				f := newBase()
+				f.ToolName = "other-tool"
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different message",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Message = "other-msg"
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different category",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Category = CategoryPerformance
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different tag",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Tag = "other-tag"
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different fix strategy",
+			base,
+			func() Finding {
+				f := newBase()
+				f.FixStrategy = FixStrategySuggest
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different suggestion",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Suggestion = "other-suggestion"
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different before code",
+			base,
+			func() Finding {
+				f := newBase()
+				f.BeforeCode = "old"
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different after code",
+			base,
+			func() Finding {
+				f := newBase()
+				f.AfterCode = "new"
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different snippet",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Snippet = "other-snippet"
+
+				return f
+			}(),
+			false,
+		},
+		{
+			"different confidence",
+			base,
+			func() Finding {
+				f := newBase()
+				f.Confidence = 0.5
+
+				return f
+			}(),
+			false,
+		},
 	}
 
 	for _, tt := range tests {
