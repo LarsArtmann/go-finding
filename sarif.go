@@ -240,7 +240,7 @@ func findingToSARIF(f Finding) SarifResult {
 
 		result.Fixes = append(result.Fixes, fix)
 	} else if f.HasSuggestion() {
-		result.Fixes = append(result.Fixes, SarifFix{
+		result.Fixes = append(result.Fixes, SarifFix{ //nolint:exhaustruct // suggestion-only fix has no changes
 			Description: SarifMessage{Text: f.Suggestion},
 		})
 	}

@@ -344,9 +344,10 @@ type detectorSpec struct {
 
 // Sentinel errors for CLI validation.
 var (
-	errUnknownSeverity = errors.New("unknown severity")
-	errInvalidConfig   = errors.New("invalid config")
-	errUnknownDetector = errors.New("unknown detector")
+	errUnknownSeverity    = errors.New("unknown severity")
+	errInvalidConfig      = errors.New("invalid config")
+	errUnknownDetector    = errors.New("unknown detector")
+	errDetectorRegistered = errors.New("detector already registered")
 )
 
 var (
@@ -364,7 +365,7 @@ func RegisterDetector(name string, builder func(string) pipeline.Detector) error
 	defer knownDetectorBuildersMu.Unlock()
 
 	if _, exists := knownDetectorBuilders[name]; exists {
-		return fmt.Errorf("detector %q already registered", name)
+		return fmt.Errorf("%w: %q", errDetectorRegistered, name)
 	}
 
 	knownDetectorBuilders[name] = builder
