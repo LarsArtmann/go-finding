@@ -155,9 +155,10 @@ func (r *Report) ToSARIF() ([]byte, error) {
 	return data, nil
 }
 
-// ToSARIFFiltered converts only non-suppressed findings.
-func (r *Report) ToSARIFFiltered(severity Severity) ([]byte, error) {
-	data, err := json.MarshalIndent(r.sarifLogFiltered(severity), "", "  ")
+// ToSARIFFiltered converts non-suppressed findings with severity >= minSeverity
+// to SARIF 2.1.0 format. It filters by BOTH suppression status and severity.
+func (r *Report) ToSARIFFiltered(minSeverity Severity) ([]byte, error) {
+	data, err := json.MarshalIndent(r.sarifLogFiltered(minSeverity), "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("marshaling SARIF: %w", err)
 	}
@@ -209,7 +210,8 @@ func findingToSARIF(f Finding) SarifResult {
 		result.Locations[0].PhysicalLocation.Region.EndColumn = f.Range.End.Column
 	}
 
-	// Add fix if available
+	// Add fix or suggestion if available.
+	// Export fix description even when only a suggestion exists (no code replacement).
 	if f.HasFix() {
 		fix := SarifFix{
 			Description: SarifMessage{Text: f.Suggestion},
@@ -237,6 +239,10 @@ func findingToSARIF(f Finding) SarifResult {
 		}
 
 		result.Fixes = append(result.Fixes, fix)
+	} else if f.HasSuggestion() {
+		result.Fixes = append(result.Fixes, SarifFix{
+			Description: SarifMessage{Text: f.Suggestion},
+		})
 	}
 
 	// Add related locations
@@ -447,9 +453,7 @@ func sarifMetadataFromProps(props map[string]any) map[string]string {
 			continue
 		}
 
-		if s, ok := v.(string); ok {
-			meta[k] = s
-		}
+		meta[k] = fmt.Sprintf("%v", v)
 	}
 
 	return meta

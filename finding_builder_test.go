@@ -53,7 +53,7 @@ func TestBuilder_Full(t *testing.T) {
 	assert.Equal(t, "x.foo()", f.AfterCode)
 	assert.NotNil(t, f.Range)
 	assert.Equal(t, "x.foo\n", f.Snippet)
-	assert.Equal(t, 1.5, f.Confidence)
+	assert.Equal(t, 1.0, f.Confidence)
 	assert.Len(t, f.Related, 1)
 	assert.NotNil(t, f.Suppression)
 	assert.Equal(t, "value", f.Metadata["key"])

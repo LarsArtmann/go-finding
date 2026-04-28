@@ -78,6 +78,7 @@ func (r Range) HasEnd() bool {
 
 // LineCount returns the number of lines spanned by the range (End.Line - Start.Line + 1).
 // Returns 1 if End is not set (single-line range). Returns 0 if Start has no line info.
+// For inverted ranges (End.Line < Start.Line), returns the absolute span.
 func (r Range) LineCount() int {
 	if r.Start.Line == 0 {
 		return 0
@@ -89,7 +90,7 @@ func (r Range) LineCount() int {
 
 	count := r.End.Line - r.Start.Line + 1
 	if count < 0 {
-		return 0
+		return -count + 2
 	}
 
 	return count

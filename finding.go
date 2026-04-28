@@ -53,6 +53,16 @@ func NewFinding(rule, toolName, message string, severity Severity, pos Position)
 	}
 }
 
+func clampConfidence(c float64) float64 {
+	if c < 0 {
+		return 0
+	}
+	if c > 1 {
+		return 1
+	}
+	return c
+}
+
 // RelatedRef links to another finding.
 type RelatedRef struct {
 	FindingID string   `json:"findingId"` // ID of the related finding
@@ -128,13 +138,7 @@ func (f Finding) HasSuggestion() bool {
 
 // NormalizedConfidence returns the confidence clamped to [0.0, 1.0].
 func (f Finding) NormalizedConfidence() float64 {
-	if f.Confidence < 0 {
-		return 0
-	}
-	if f.Confidence > 1 {
-		return 1
-	}
-	return f.Confidence
+	return clampConfidence(f.Confidence)
 }
 
 // String returns a human-readable summary of the finding.

@@ -416,7 +416,7 @@ func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
 
 	maxIter := c.MaxIterations
 	if maxIter == 0 {
-		maxIter = 1
+		maxIter = pipeline.DefaultConfig().MaxIterations
 	}
 
 	//nolint:exhaustruct

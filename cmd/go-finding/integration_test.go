@@ -241,12 +241,12 @@ func TestPipelineConfigFile_ToPipelineConfig(t *testing.T) {
 			wantVerify: true,
 		},
 		{
-			name: "zero iterations defaults to 1",
+			name: "zero iterations defaults to pipeline default",
 			cfg: pipelineConfigFile{
 				MaxIterations: 0,
 				Timeout:       "",
 			},
-			wantIter: 1,
+			wantIter: 5,
 		},
 		{
 			name: "empty timeout defaults to 10m",
