@@ -8,10 +8,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
+	"sync"
 	"time"
 
 	"github.com/larsartmann/go-finding"
@@ -258,7 +258,7 @@ func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {
 	var result []pipeline.Detector
 
 	for _, spec := range specs {
-		builder, ok := knownDetectorBuilders[spec.Name]
+		builder, ok := lookupDetectorBuilder(spec.Name)
 		if !ok {
 			fmt.Fprintf(os.Stderr, "Warning: unknown detector %q, skipping\n", spec.Name)
 
@@ -349,9 +349,36 @@ var (
 	errUnknownDetector = errors.New("unknown detector")
 )
 
-var knownDetectorBuilders = map[string]func(string) pipeline.Detector{
-	"govet":       det.NewGoVetDetector,
-	"staticcheck": det.NewStaticcheckDetector,
+var (
+	knownDetectorBuildersMu sync.RWMutex
+	knownDetectorBuilders   = map[string]func(string) pipeline.Detector{
+		"govet":       det.NewGoVetDetector,
+		"staticcheck": det.NewStaticcheckDetector,
+	}
+)
+
+// RegisterDetector registers a custom detector builder by name.
+// It is safe for concurrent use. Returns an error if the name is already registered.
+func RegisterDetector(name string, builder func(string) pipeline.Detector) error {
+	knownDetectorBuildersMu.Lock()
+	defer knownDetectorBuildersMu.Unlock()
+
+	if _, exists := knownDetectorBuilders[name]; exists {
+		return fmt.Errorf("detector %q already registered", name)
+	}
+
+	knownDetectorBuilders[name] = builder
+
+	return nil
+}
+
+func lookupDetectorBuilder(name string) (func(string) pipeline.Detector, bool) {
+	knownDetectorBuildersMu.RLock()
+	defer knownDetectorBuildersMu.RUnlock()
+
+	b, ok := knownDetectorBuilders[name]
+
+	return b, ok
 }
 
 func (c pipelineConfigFile) validate() error {
@@ -370,7 +397,7 @@ func (c pipelineConfigFile) validate() error {
 	}
 
 	for _, d := range c.Detectors {
-		if _, ok := knownDetectorBuilders[d.Name]; !ok {
+		if _, ok := lookupDetectorBuilder(d.Name); !ok {
 			return fmt.Errorf("%w %q (available: govet, staticcheck)", errUnknownDetector, d.Name)
 		}
 	}
@@ -400,8 +427,4 @@ func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
 		Timeout:           t,
 		Metrics:           pipeline.NewMetrics(),
 	}
-}
-
-func init() {
-	log.SetFlags(0)
 }

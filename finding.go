@@ -3,6 +3,7 @@ package finding
 import (
 	"fmt"
 	"maps"
+	"math"
 	"time"
 )
 
@@ -157,7 +158,7 @@ func (f Finding) Equal(other Finding) bool {
 		f.FixStrategy != other.FixStrategy ||
 		f.Suggestion != other.Suggestion ||
 		f.BeforeCode != other.BeforeCode || f.AfterCode != other.AfterCode ||
-		f.Snippet != other.Snippet || f.Confidence != other.Confidence {
+		f.Snippet != other.Snippet || !floatEq(f.Confidence, other.Confidence) {
 		return false
 	}
 
@@ -222,4 +223,11 @@ func equalTimePtr(a, b *time.Time) bool {
 	}
 
 	return a.Equal(*b)
+}
+
+// floatEq returns true if a and b are equal within a small epsilon.
+func floatEq(a, b float64) bool {
+	const epsilon = 1e-9
+
+	return math.Abs(a-b) < epsilon
 }
