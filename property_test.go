@@ -94,7 +94,8 @@ func TestProperty_IDRoundTrip(t *testing.T) {
 		}
 
 		// ID format uses ':' as delimiter; skip inputs that would break parsing.
-		if strings.Contains(tool, ":") || strings.Contains(rule, ":") || strings.Contains(file, ":") {
+		if strings.Contains(tool, ":") || strings.Contains(rule, ":") ||
+			strings.Contains(file, ":") {
 			return true
 		}
 

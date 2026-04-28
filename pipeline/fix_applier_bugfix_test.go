@@ -36,7 +36,7 @@ func TestFixApplier_InsertionOnly(t *testing.T) {
 	got, err := readFile(testFile)
 	require.NoError(t, err)
 
-	want := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
+	want := helloProgram
 	assert.Equal(t, want, string(got))
 }
 
@@ -47,7 +47,7 @@ func TestFixApplier_DeletionOnly(t *testing.T) {
 
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "delete.go")
-	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
+	content := helloProgram
 	writeTestFile(t, testFile, []byte(content))
 
 	// Deletion: remove "\tprintln(\"hello\")\n".

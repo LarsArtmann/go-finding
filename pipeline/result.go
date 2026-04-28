@@ -10,15 +10,15 @@ import (
 //
 //nolint:revive // stuttering name is intentional for clarity
 type PipelineResult struct {
-	Stable            bool
-	TotalIterations   int
-	Iterations        []Iteration
+	Stable          bool
+	TotalIterations int
+	Iterations      []Iteration
 	// TotalDetected is the total number of findings detected across all iterations.
 	// This includes findings that were fixed in subsequent iterations.
 	TotalDetected int
-	Verification      *VerifyResult
-	PartialErrors     map[string]error
-	Metrics           MetricsSnapshot
+	Verification  *VerifyResult
+	PartialErrors map[string]error
+	Metrics       MetricsSnapshot
 	// Correlations holds cross-tool finding correlations when
 	// Config.CorrelateFindings is enabled.
 	Correlations []finding.Correlation

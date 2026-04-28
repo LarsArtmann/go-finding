@@ -413,7 +413,7 @@ func TestFixApplier(t *testing.T) {
 	// Create a test file
 	testFile := filepath.Join(tempDir, "test.go")
 
-	testContent := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
+	testContent := helloProgram
 	if err := writeFile(testFile, []byte(testContent), 0o644); err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
@@ -464,7 +464,7 @@ func TestFixApplier_Apply(t *testing.T) {
 	// Create test file
 	testFile := filepath.Join(tempDir, "test.go")
 
-	originalContent := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
+	originalContent := helloProgram
 	writeTestFile(t, testFile, []byte(originalContent))
 
 	// Create fix
@@ -1124,15 +1124,19 @@ func TestPipelineRun_CorrelateFindings(t *testing.T) {
 	detA := &mockDetector{
 		name: "tool-a",
 		findings: []finding.Finding{
-			{ID: "a1", Rule: "R1", ToolName: "tool-a", Message: "msg a",
-				Severity: finding.SeverityError, Position: finding.Pos("file.go", 10, 1)},
+			{
+				ID: "a1", Rule: "R1", ToolName: "tool-a", Message: "msg a",
+				Severity: finding.SeverityError, Position: finding.Pos("file.go", 10, 1),
+			},
 		},
 	}
 	detB := &mockDetector{
 		name: "tool-b",
 		findings: []finding.Finding{
-			{ID: "b1", Rule: "R2", ToolName: "tool-b", Message: "msg b",
-				Severity: finding.SeverityWarning, Position: finding.Pos("file.go", 12, 1)},
+			{
+				ID: "b1", Rule: "R2", ToolName: "tool-b", Message: "msg b",
+				Severity: finding.SeverityWarning, Position: finding.Pos("file.go", 12, 1),
+			},
 		},
 	}
 
@@ -1147,7 +1151,11 @@ func TestPipelineRun_CorrelateFindings(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	assert.NotEmpty(t, result.Correlations, "expected correlations for nearby findings from different tools")
+	assert.NotEmpty(
+		t,
+		result.Correlations,
+		"expected correlations for nearby findings from different tools",
+	)
 	assert.Equal(t, []string{"a1", "b1"}, result.Correlations[0].FindingIDs)
 }
 
@@ -1157,15 +1165,19 @@ func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {
 	detA := &mockDetector{
 		name: "tool-a",
 		findings: []finding.Finding{
-			{ID: "a1", Rule: "R1", ToolName: "tool-a", Message: "msg a",
-				Severity: finding.SeverityError, Position: finding.Pos("file.go", 10, 1)},
+			{
+				ID: "a1", Rule: "R1", ToolName: "tool-a", Message: "msg a",
+				Severity: finding.SeverityError, Position: finding.Pos("file.go", 10, 1),
+			},
 		},
 	}
 	detB := &mockDetector{
 		name: "tool-b",
 		findings: []finding.Finding{
-			{ID: "b1", Rule: "R2", ToolName: "tool-b", Message: "msg b",
-				Severity: finding.SeverityWarning, Position: finding.Pos("file.go", 12, 1)},
+			{
+				ID: "b1", Rule: "R2", ToolName: "tool-b", Message: "msg b",
+				Severity: finding.SeverityWarning, Position: finding.Pos("file.go", 12, 1),
+			},
 		},
 	}
 

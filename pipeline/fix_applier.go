@@ -128,12 +128,19 @@ func (a *FixApplier) backup(path string) error {
 		return ioErrorAt("read file for backup", err, path)
 	}
 
-	backupPath := filepath.Join(a.backupDir, fmt.Sprintf("%x_%d.bak", fileHash(path), time.Now().UnixNano()))
+	backupPath := filepath.Join(
+		a.backupDir,
+		fmt.Sprintf("%x_%d.bak", fileHash(path), time.Now().UnixNano()),
+	)
 	if err := os.MkdirAll(a.backupDir, 0o750); err != nil {
 		return finding.NewIOError("create backup dir", err)
 	}
 
-	if err := os.WriteFile(backupPath, data, 0o600); err != nil { //nolint:gosec // intentional file write in fix applier
+	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
+		backupPath,
+		data,
+		0o600,
+	); err != nil {
 		return ioErrorAt("write backup", err, path)
 	}
 
@@ -163,7 +170,11 @@ func (a *FixApplier) restore(path string) error {
 		return ioErrorAt("read backup", err, path)
 	}
 
-	if err := os.WriteFile(path, data, 0o600); err != nil { //nolint:gosec // intentional file write in fix applier
+	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
+		path,
+		data,
+		0o600,
+	); err != nil {
 		return ioErrorAt("restore file", err, path)
 	}
 
@@ -286,7 +297,11 @@ func (*FixApplier) applyToFile(
 		return 0, nil
 	}
 
-	if err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o600); err != nil { //nolint:gosec // intentional file write in fix applier
+	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
+		path,
+		[]byte(strings.Join(lines, "\n")),
+		0o600,
+	); err != nil {
 		return 0, ioErrorAt("write file", err, path)
 	}
 

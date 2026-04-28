@@ -16,7 +16,7 @@ func findingKey(f finding.Finding) string {
 	return f.Position.File + "\x00" + f.Rule + "\x00" + f.Message
 }
 
-var byFindingID = func(a, b finding.Finding) int { return cmp.Compare(a.ID, b.ID) }
+func byFindingID(a, b finding.Finding) int { return cmp.Compare(a.ID, b.ID) }
 
 // VerifyResult holds the outcome of verifying fixes by re-running detectors.
 type VerifyResult struct {

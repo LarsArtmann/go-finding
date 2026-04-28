@@ -12,6 +12,8 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+const helloProgram = "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
+
 type mockDetector struct {
 	name     string
 	findings []finding.Finding
@@ -266,12 +268,12 @@ func makeConflictingFixes() []finding.Finding {
 	}
 }
 
-var suppressedIDs = []string{"s2", "s4"}
+func suppressedIDs() []string { return []string{"s2", "s4"} }
 
 func assertNoSuppressedFindings(t *testing.T, findings []finding.Finding, mode string) {
 	t.Helper()
 	for _, f := range findings {
-		for _, sid := range suppressedIDs {
+		for _, sid := range suppressedIDs() {
 			if f.ID == sid {
 				t.Errorf("suppressed finding %s present in %s results", f.ID, mode)
 			}
@@ -282,7 +284,7 @@ func assertNoSuppressedFindings(t *testing.T, findings []finding.Finding, mode s
 func assertNoSuppressedNotified(t *testing.T, notified []string, mode string) {
 	t.Helper()
 	for _, id := range notified {
-		for _, sid := range suppressedIDs {
+		for _, sid := range suppressedIDs() {
 			if id == sid {
 				t.Errorf("OnFinding called for suppressed finding %s in %s mode", id, mode)
 			}
