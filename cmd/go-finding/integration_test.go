@@ -11,6 +11,7 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func detectorSpecs(names ...string) []detectorSpec {
@@ -48,6 +49,7 @@ func writeConfig(t *testing.T, path string, content []byte) {
 
 // saveRestoreFlags saves the current flag state and registers a cleanup to restore it.
 func saveRestoreFlags(t *testing.T) {
+	t.Helper()
 	savedCommandLine := flag.CommandLine
 	savedArgs := os.Args
 	t.Cleanup(func() {
@@ -387,8 +389,8 @@ func TestRunWithInvalidSeverity(t *testing.T) {
 	// Test that run returns error for bad severity — this exercises parseSeverity via the run() path.
 	// Since run() reads flags, test parseSeverity directly instead.
 	_, err := parseSeverity("bogus")
-	assert.Error(t, err)
-	assert.ErrorIs(t, err, errUnknownSeverity)
+	require.Error(t, err)
+	require.ErrorIs(t, err, errUnknownSeverity)
 }
 
 func TestLoadConfig_WithInvalidDetector(t *testing.T) {
@@ -405,7 +407,7 @@ detectors:
 	writeConfig(t, cfgPath, []byte(content))
 
 	_, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.ErrorIs(t, err, errUnknownDetector)
 }
 
@@ -504,14 +506,17 @@ func requireJSON[T any](t *testing.T, buf *bytes.Buffer, parsed *T, context stri
 	}
 }
 
+//nolint:paralleltest // manipulates global flag state via assertRunFails
 func TestRun_BadSeverity(t *testing.T) {
 	assertRunFails(t, "-severity", "bogus")
 }
 
+//nolint:paralleltest // manipulates global flag state via assertRunFails
 func TestRun_MissingConfig(t *testing.T) {
 	assertRunFails(t, "-config", "/nonexistent/config.yaml")
 }
 
+//nolint:paralleltest // manipulates global flag state
 func TestRun_NoDetectors(t *testing.T) {
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")

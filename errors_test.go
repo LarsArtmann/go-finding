@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFindingErrorError(t *testing.T) {
@@ -230,6 +231,6 @@ func TestFindingError_Is_UnknownCategory(t *testing.T) {
 	t.Parallel()
 
 	err := &FindingError{Category: ErrorCategory("custom"), Message: "custom error"}
-	assert.NotErrorIs(t, err, ErrValidation)
-	assert.NotErrorIs(t, err, ErrInternal)
+	require.NotErrorIs(t, err, ErrValidation)
+	require.NotErrorIs(t, err, ErrInternal)
 }

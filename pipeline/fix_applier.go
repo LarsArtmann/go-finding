@@ -295,7 +295,7 @@ func (*FixApplier) applyToFile(
 
 // replaceNearestToLine replaces the occurrence of old nearest to the given line number.
 // If targetLine is 0 or no line bias can be determined, replaces the first occurrence.
-func replaceNearestToLine(content, old, new string, targetLine int) string {
+func replaceNearestToLine(content, old, replacement string, targetLine int) string {
 	idx := strings.Index(content, old)
 	if idx < 0 {
 		return content
@@ -303,7 +303,7 @@ func replaceNearestToLine(content, old, new string, targetLine int) string {
 
 	// If no line info, use first occurrence.
 	if targetLine <= 0 {
-		return strings.Replace(content, old, new, 1)
+		return strings.Replace(content, old, replacement, 1)
 	}
 
 	// Find all occurrences and pick the one nearest to targetLine.
@@ -324,7 +324,7 @@ func replaceNearestToLine(content, old, new string, targetLine int) string {
 		}
 	}
 
-	return content[:best] + new + content[best+len(old):]
+	return content[:best] + replacement + content[best+len(old):]
 }
 
 // lineDistance counts how many newlines appear before position pos in content,

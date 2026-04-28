@@ -16,8 +16,8 @@ func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
 
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "fixme.go")
-	// File has two occurrences of "old()".
-	original := "package main\n\nfunc main() {\n\told()\n\told()\n}\n"
+	// File contains two occurrences.
+	original := "package main\n\nfunc main() {\n\told()\n\told()\n}\n" //nolint:dupword // test fixture
 	writeTestFile(t, testFile, []byte(original))
 
 	// One fix that targets the second occurrence at line 5.

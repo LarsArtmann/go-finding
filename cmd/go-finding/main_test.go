@@ -10,6 +10,7 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func parseJSON(t *testing.T, buf *bytes.Buffer) map[string]any {
@@ -178,6 +179,8 @@ func TestBuildDetectors(t *testing.T) {
 }
 
 func TestFatalf(t *testing.T) {
+	t.Parallel()
+
 	var buf bytes.Buffer
 	old := os.Stderr
 	r, w, _ := os.Pipe()
@@ -209,12 +212,12 @@ func TestOutputResults_WriteError(t *testing.T) {
 	report := reportWithFindings()
 
 	err := outputResults(&failingWriter{err: errors.New("disk full")}, report, "json")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	assert.Contains(t, err.Error(), "writing JSON")
 
 	err = outputResults(&failingWriter{err: errors.New("disk full")}, report, "sarif")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	assert.Contains(t, err.Error(), "writing SARIF")
 }

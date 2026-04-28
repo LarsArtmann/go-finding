@@ -99,6 +99,6 @@ func TestFormatPartialErrors(t *testing.T) {
 	}
 
 	err := FormatPartialErrors(errs)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.NotEmpty(t, err.Error())
 }

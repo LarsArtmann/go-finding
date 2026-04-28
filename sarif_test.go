@@ -377,7 +377,7 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 	assert.Equal(t, original.Category, got.Category)
 	assert.Equal(t, original.Tag, got.Tag)
 	assert.Equal(t, original.FixStrategy, got.FixStrategy)
-	assert.Equal(t, original.Confidence, got.Confidence)
+	assert.InDelta(t, original.Confidence, got.Confidence, 1e-9)
 	assert.Equal(t, original.Suggestion, got.Suggestion)
 	assert.Equal(t, original.Snippet, got.Snippet)
 	assert.Equal(t, original.Position, got.Position)
@@ -430,7 +430,7 @@ func TestFindingFromSarResult_Rank(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	assert.Equal(t, 0.75, f.Confidence)
+	assert.InDelta(t, 0.75, f.Confidence, 1e-9)
 }
 
 func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
@@ -561,7 +561,7 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 	assert.Equal(t, "scanner", f.ToolName)
 	assert.Equal(t, Category("security"), f.Category)
 	assert.Equal(t, "injection", f.Tag)
-	assert.Equal(t, 0.85, f.Confidence)
+	assert.InDelta(t, 0.85, f.Confidence, 1e-9)
 	assert.Equal(t, "fix it", f.Suggestion)
 	assert.Equal(t, "code here", f.Snippet)
 	assert.Equal(t, "custom-val", f.Metadata["custom-key"])

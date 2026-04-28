@@ -122,7 +122,7 @@ func TestVerifier_Verify_DetectorError(t *testing.T) {
 
 	v := NewVerifier([]Detector{detector})
 	_, err := v.Verify(context.Background(), nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "verify")
 	assert.Contains(t, err.Error(), "detector")
 }

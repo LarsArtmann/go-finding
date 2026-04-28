@@ -10,6 +10,7 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // pipelineTestFinding creates a Finding with test values at the specified column.
@@ -121,7 +122,7 @@ func TestPipelineRun_DetectorError(t *testing.T) {
 	ctx := context.Background()
 
 	_, err = p.Run(ctx)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.ErrorIs(t, err, expectedErr)
 }
 
@@ -145,7 +146,7 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 	cancel() // Cancel immediately
 
 	_, err = p.Run(ctx)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.ErrorIs(t, err, context.Canceled)
 }
 
@@ -169,7 +170,7 @@ func TestPipelineRun_Timeout(t *testing.T) {
 	ctx := context.Background()
 
 	_, err = p.Run(ctx)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.ErrorIs(t, err, context.DeadlineExceeded)
 }
 
@@ -689,7 +690,7 @@ func TestIoErrorAt(t *testing.T) {
 	err := ioErrorAt("read failed", os.ErrNotExist, "foo.go")
 
 	var fe *finding.FindingError
-	assert.ErrorAs(t, err, &fe)
+	require.ErrorAs(t, err, &fe)
 
 	assertFindingErrorIO(t, fe, "foo.go")
 }

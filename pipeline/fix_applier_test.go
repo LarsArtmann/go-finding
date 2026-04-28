@@ -29,7 +29,7 @@ func TestFixApplier_Apply_CancelledContext(t *testing.T) {
 
 	applied, err := applier.Apply(ctx, fixes)
 	require.Error(t, err)
-	assert.ErrorIs(t, err, context.Canceled)
+	require.ErrorIs(t, err, context.Canceled)
 	assert.Equal(t, 0, applied)
 }
 
@@ -65,7 +65,7 @@ func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 
 	applied, err := applier.applyToFile(filepath.Join(tempDir, "missing.go"), fixes)
 	require.Error(t, err)
-	assert.ErrorIs(t, err, finding.ErrIO)
+	require.ErrorIs(t, err, finding.ErrIO)
 	assert.Equal(t, 0, applied)
 }
 
@@ -291,6 +291,8 @@ func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
 }
 
 func TestFixApplier_Apply_RestoreOnApplyError(t *testing.T) {
+	t.Parallel()
+
 	applier := newTestApplier(t)
 	testBackupRestore(t, applier,
 		"package main\nold()\n",
@@ -302,8 +304,8 @@ func TestIoErrorAt_WrapsCorrectly(t *testing.T) {
 
 	err := ioErrorAt("test op", os.ErrPermission, "file.go")
 
-	assert.ErrorIs(t, err, finding.ErrIO, "ErrIO sentinel match")
-	assert.ErrorIs(t, err, os.ErrPermission, "os.ErrPermission cause match")
+	require.ErrorIs(t, err, finding.ErrIO, "ErrIO sentinel match")
+	require.ErrorIs(t, err, os.ErrPermission, "os.ErrPermission cause match")
 
 	var fe *finding.FindingError
 	require.ErrorAs(t, err, &fe, "expected FindingError")

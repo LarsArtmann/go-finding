@@ -4,7 +4,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -80,5 +79,5 @@ func TestRun_E2E_SARIFOutput(t *testing.T) {
 
 	data, err := os.ReadFile(outFile)
 	require.NoError(t, err)
-	assert.True(t, strings.Contains(string(data), `"version": "2.1.0"`))
+	assert.Contains(t, string(data), `"version": "2.1.0"`)
 }
