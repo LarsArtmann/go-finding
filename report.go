@@ -6,11 +6,12 @@ import (
 )
 
 // Report is the top-level container for a tool run.
+// Use NewReport to create a thread-safe instance.
 type Report struct {
-	mu       sync.Mutex
-	Tool     ToolInfo  `json:"tool"`     // Tool metadata
-	Findings []Finding `json:"findings"` // All findings from this run
-	Summary  Summary   `json:"summary"`  // Aggregated statistics
+	mu       *sync.Mutex // nil for zero-value Reports; initialized by NewReport
+	Tool     ToolInfo    `json:"tool"`     // Tool metadata
+	Findings []Finding   `json:"findings"` // All findings from this run
+	Summary  Summary     `json:"summary"`  // Aggregated statistics
 }
 
 // ToolInfo contains metadata about the tool that generated the report.
@@ -33,6 +34,7 @@ type Summary struct {
 // NewReport creates a new report with the given tool info.
 func NewReport(tool ToolInfo) *Report {
 	r := &Report{
+		mu:       &sync.Mutex{},
 		Tool:     tool,
 		Findings: make([]Finding, 0),
 		Summary:  Summary{}, //nolint:exhaustruct
@@ -45,17 +47,23 @@ func NewReport(tool ToolInfo) *Report {
 // AddFinding adds a finding to the report.
 // Safe for concurrent use.
 func (r *Report) AddFinding(f Finding) {
-	r.mu.Lock()
+	if r.mu != nil {
+		r.mu.Lock()
+		defer r.mu.Unlock()
+	}
+
 	r.Findings = append(r.Findings, f)
-	r.mu.Unlock()
 }
 
 // AddFindings adds multiple findings to the report.
 // Safe for concurrent use.
 func (r *Report) AddFindings(findings []Finding) {
-	r.mu.Lock()
+	if r.mu != nil {
+		r.mu.Lock()
+		defer r.mu.Unlock()
+	}
+
 	r.Findings = append(r.Findings, findings...)
-	r.mu.Unlock()
 }
 
 // ComputeSummary recalculates the summary from the current findings.

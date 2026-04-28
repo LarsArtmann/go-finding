@@ -3,6 +3,7 @@ package finding
 import (
 	"fmt"
 	"slices"
+	"sync"
 )
 
 // Merge correlation constants.
@@ -29,6 +30,7 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 		r := reports[0]
 
 		result := &Report{ //nolint:exhaustruct
+			mu:       new(sync.Mutex),
 			Tool:     r.Tool,
 			Findings: cloneFindings(r.Findings),
 		}
