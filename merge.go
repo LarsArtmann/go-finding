@@ -162,10 +162,10 @@ type Correlation struct {
 }
 
 // Correlate finds potentially related findings across tools.
-// Currently uses simple heuristics: same file + overlapping lines.
+// Currently uses simple heuristics: same file + nearby lines.
 //
-// This is a standalone utility — it is not wired into Pipeline.Run().
-// Call it directly on merged findings when cross-tool correlation is needed.
+// This can be used standalone or enabled in Pipeline via Config.CorrelateFindings.
+// When enabled, the pipeline populates PipelineResult.Correlations automatically.
 func Correlate(findings []Finding) []Correlation {
 	var correlations []Correlation
 

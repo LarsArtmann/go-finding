@@ -78,6 +78,9 @@ type Config struct {
 	OnIteration func(iter int, findings []finding.Finding)
 	// Metrics collects timing and count data. If nil, no metrics are collected.
 	Metrics *Metrics
+	// CorrelateFindings runs cross-tool correlation on all findings after detection.
+	// Results are stored in PipelineResult.Correlations.
+	CorrelateFindings bool
 }
 
 const defaultMaxIterations = 5
@@ -271,6 +274,11 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	}
 
 	result.TotalIterations = len(result.Iterations)
+
+	// Optional cross-tool correlation
+	if p.config.CorrelateFindings {
+		result.Correlations = finding.Correlate(p.findings)
+	}
 
 	// Optional final verification
 	if p.config.VerifyAfterFix && len(p.detectors) > 0 {

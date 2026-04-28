@@ -19,6 +19,9 @@ type PipelineResult struct {
 	Verification      *VerifyResult
 	PartialErrors     map[string]error
 	Metrics           MetricsSnapshot
+	// Correlations holds cross-tool finding correlations when
+	// Config.CorrelateFindings is enabled.
+	Correlations []finding.Correlation
 }
 
 // Iteration represents one loop through the pipeline.

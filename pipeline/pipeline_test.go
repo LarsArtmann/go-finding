@@ -1116,3 +1116,68 @@ func mockDetectorWithFinding(name, id, rule, tool, msg string) *mockDetector {
 		},
 	}
 }
+
+func TestPipelineRun_CorrelateFindings(t *testing.T) {
+	t.Parallel()
+
+	detA := &mockDetector{
+		name: "tool-a",
+		findings: []finding.Finding{
+			{ID: "a1", Rule: "R1", ToolName: "tool-a", Message: "msg a",
+				Severity: finding.SeverityError, Position: finding.Pos("file.go", 10, 1)},
+		},
+	}
+	detB := &mockDetector{
+		name: "tool-b",
+		findings: []finding.Finding{
+			{ID: "b1", Rule: "R2", ToolName: "tool-b", Message: "msg b",
+				Severity: finding.SeverityWarning, Position: finding.Pos("file.go", 12, 1)},
+		},
+	}
+
+	cfg := Config{MaxIterations: 1, ParallelDetectors: false, CorrelateFindings: true}
+	p, err := New(cfg, ".", detA, detB)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	assert.NotEmpty(t, result.Correlations, "expected correlations for nearby findings from different tools")
+	assert.Equal(t, []string{"a1", "b1"}, result.Correlations[0].FindingIDs)
+}
+
+func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {
+	t.Parallel()
+
+	detA := &mockDetector{
+		name: "tool-a",
+		findings: []finding.Finding{
+			{ID: "a1", Rule: "R1", ToolName: "tool-a", Message: "msg a",
+				Severity: finding.SeverityError, Position: finding.Pos("file.go", 10, 1)},
+		},
+	}
+	detB := &mockDetector{
+		name: "tool-b",
+		findings: []finding.Finding{
+			{ID: "b1", Rule: "R2", ToolName: "tool-b", Message: "msg b",
+				Severity: finding.SeverityWarning, Position: finding.Pos("file.go", 12, 1)},
+		},
+	}
+
+	cfg := Config{MaxIterations: 1, ParallelDetectors: false, CorrelateFindings: false}
+	p, err := New(cfg, ".", detA, detB)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	assert.Empty(t, result.Correlations, "expected no correlations when disabled")
+}
