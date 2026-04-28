@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`finding.Builder`** — Fluent API for constructing Finding values with 13 chainable `With*` methods (`WithID`, `WithCategory`, `WithFixStrategy`, `WithBeforeCode`, `WithAfterCode`, `WithRange`, `WithSnippet`, `WithConfidence`, `WithRelated`, `WithSuppression`, `WithMetadata`, etc.). `WithConfidence` clamps to `[0.0, 1.0]`.
+- **`version.go`** — Programmatic semver constants (`VersionMajor`, `VersionMinor`, `VersionPatch`, `Version`).
+- **CLI end-to-end tests** — `TestRun_E2E_DefaultDetectors`, `TestRun_E2E_ConfigFile`, `TestRun_E2E_SARIFOutput` build the binary and exercise it as a subprocess.
+- **Tests for uncovered functions** — `Finding.IsValid`, `Suppression.IsValid`, `ErrorCategory.IsValid`, `Severity.LessThan` invalid input, `equalTimePtr` both-nil, and more.
+- **`RegisterDetector`** — Thread-safe detector registration with `sync.RWMutex` protection.
+
+### Changed
+
+- **`Report.AddFinding` / `Report.AddFindings`** — Now safe for concurrent use via `*sync.Mutex` (initialized in `NewReport`, nil-safe for zero-value Reports).
+- **`Metrics.TotalDuration`** — Guards against both `endTime.IsZero()` and `startTime.IsZero()`.
+- **`Pos()` godoc** — Improved to clarify it is a convenience constructor.
+- **`maxIterations: 0`** in CLI config now defaults to `pipeline.DefaultConfig().MaxIterations` (5) instead of hardcoded 1.
+- **`Correlation` JSON tags** — Changed from snake_case (`finding_ids`) to camelCase (`findingIds`).
+- **`Range.LineCount()`** — Returns absolute span for inverted ranges instead of 0.
+- **`Severity.Compare`** — Uses string comparison as tiebreaker for two different invalid severities, ensuring total ordering.
+- **`Finding.Equal`** — Replaces direct `float64` equality with `floatEq` using 1e-9 epsilon.
+- **`DeduplicateByPosition`** key now includes `ToolName` for cross-tool deduplication.
+- **`ToSARIFFiltered`** godoc explicitly documents dual filtering (suppression + severity).
+- **`SARIF metadata round-trip`** — Preserves non-string metadata values via `fmt.Sprintf("%v", v)`.
+- **`Report.All()` and `Report.FindByID()`** godoc now explicitly states they yield copies.
+
+### Fixed
+
+- **`OnFix` callback** — Now fires only for actually-applied fixes, not for skipped/unapplied ones.
+- **FixApplier insertion-only and deletion-only fixes** — Previously unsupported; now handled correctly.
+- **`Correlate()` O(n²) hang** — Hard-limits at `maxCorrelations = 10000` to prevent unbounded execution.
+- **`FilterInvalid`** — Changed from mutable package-level `var` to an exported function, eliminating a global mutable state bug.
+- **`RetryConfig` jitter** — Switched from `math/rand` to `math/rand/v2` (`rand.Int64N`) for proper randomness.
+- **`Position.HasEnd()`** — Now checks `End.Line > 0 || End.Offset >= 0` (offset 0 is valid).
+- **`Adjacent()`** — No longer falls back to offset-based adjacency when line info is present.
+- **`govet.go` `parsePosn`** — Uses `strconv.Atoi` with proper error checking instead of unchecked conversion.
+- **`FixApplier.replaceNearestToLine`** — Finds occurrence closest to finding's line instead of first match.
+- **Backup paths** — Include nanosecond timestamp suffix to prevent collisions.
+- **`Report.FindByRule`** — Uses `ActiveFindings()` for consistency with other query methods.
+- **Removed global `log.SetFlags(0)` `init()`** — Eliminated unexpected global logger side effect.
+- **SARIF export** — Includes suggestion-only fixes as fix descriptions without replacements.
+- **Copylocks on JSON marshal** — `Report` uses `*sync.Mutex` to avoid `sync.Mutex` copy when passed to `json.Marshal`.
+
 ## [0.1.3] - 2026-04-19
 
 ### Breaking
