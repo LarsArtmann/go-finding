@@ -133,7 +133,7 @@ func (a *FixApplier) backup(path string) error {
 		return finding.NewIOError("create backup dir", err)
 	}
 
-	if err := os.WriteFile(backupPath, data, 0o600); err != nil {
+	if err := os.WriteFile(backupPath, data, 0o600); err != nil { //nolint:gosec // intentional file write in fix applier
 		return ioErrorAt("write backup", err, path)
 	}
 
@@ -163,7 +163,7 @@ func (a *FixApplier) restore(path string) error {
 		return ioErrorAt("read backup", err, path)
 	}
 
-	if err := os.WriteFile(path, data, 0o600); err != nil {
+	if err := os.WriteFile(path, data, 0o600); err != nil { //nolint:gosec // intentional file write in fix applier
 		return ioErrorAt("restore file", err, path)
 	}
 
@@ -286,7 +286,7 @@ func (*FixApplier) applyToFile(
 		return 0, nil
 	}
 
-	if err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o600); err != nil {
+	if err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o600); err != nil { //nolint:gosec // intentional file write in fix applier
 		return 0, ioErrorAt("write file", err, path)
 	}
 
