@@ -66,30 +66,30 @@ func TestRange_Equal(t *testing.T) {
 	RunEqualTests(t, tests, func(a, b Range) bool { return a.Equal(b) }, "Range")
 }
 
+func testFindingBase() Finding {
+	return Finding{
+		ID: "tool:rule:file.go:1:1", Rule: "rule", ToolName: "tool",
+		Message: "msg", Severity: SeverityError,
+		Position:    Position{File: "file.go", Line: 1},
+		Category:    CategorySecurity,
+		FixStrategy: FixStrategyDirect,
+		Suggestion:  "fix it",
+		Confidence:  0.9,
+		Metadata:    map[string]string{"key": "val"},
+	}
+}
+
+func testFindingWithRange(f Finding, line int) Finding {
+	f.Range = &Range{Start: Position{File: "f.go", Line: line}}
+
+	return f
+}
+
 func TestFinding_Equal(t *testing.T) {
 	t.Parallel()
 
-	newBase := func() Finding {
-		return Finding{
-			ID: "tool:rule:file.go:1:1", Rule: "rule", ToolName: "tool",
-			Message: "msg", Severity: SeverityError,
-			Position:    Position{File: "file.go", Line: 1},
-			Category:    CategorySecurity,
-			FixStrategy: FixStrategyDirect,
-			Suggestion:  "fix it",
-			Confidence:  0.9,
-			Metadata:    map[string]string{"key": "val"},
-		}
-	}
-
-	withRange := func(f Finding, line int) Finding {
-		f.Range = &Range{Start: Position{File: "f.go", Line: line}}
-
-		return f
-	}
-
-	base := newBase()
-	rangedFinding := withRange(newBase(), 1)
+	base := testFindingBase()
+	rangedFinding := testFindingWithRange(testFindingBase(), 1)
 
 	tests := []struct {
 		name string
@@ -101,7 +101,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different ID",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.ID = "other"
 
 				return f
@@ -112,7 +112,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different severity",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Severity = SeverityWarning
 
 				return f
@@ -123,7 +123,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different position",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Position.Line = 99
 
 				return f
@@ -134,31 +134,54 @@ func TestFinding_Equal(t *testing.T) {
 			"different metadata",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Metadata = map[string]string{"key": "val", "k2": "v2"}
 
 				return f
 			}(),
 			false,
 		},
-		{"nil vs non-nil range", base, withRange(newBase(), 0), false},
+		{"nil vs non-nil range", base, testFindingWithRange(testFindingBase(), 0), false},
 		{"same range", rangedFinding, rangedFinding, true},
 		{
 			"different related",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Related = []RelatedRef{{FindingID: "x"}}
 
 				return f
 			}(),
 			false,
 		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.a.Equal(tt.b); got != tt.want {
+				t.Errorf("Finding.Equal() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFinding_Equal_FieldMismatch(t *testing.T) {
+	t.Parallel()
+
+	base := testFindingBase()
+
+	tests := []struct {
+		name string
+		a, b Finding
+		want bool
+	}{
 		{
 			"different rule",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Rule = "other-rule"
 
 				return f
@@ -169,7 +192,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different tool name",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.ToolName = "other-tool"
 
 				return f
@@ -180,7 +203,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different message",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Message = "other-msg"
 
 				return f
@@ -191,7 +214,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different category",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Category = CategoryPerformance
 
 				return f
@@ -202,7 +225,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different tag",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Tag = "other-tag"
 
 				return f
@@ -213,18 +236,41 @@ func TestFinding_Equal(t *testing.T) {
 			"different fix strategy",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.FixStrategy = FixStrategySuggest
 
 				return f
 			}(),
 			false,
 		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.a.Equal(tt.b); got != tt.want {
+				t.Errorf("Finding.Equal() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFinding_Equal_FieldMismatch_CodeAndMeta(t *testing.T) {
+	t.Parallel()
+
+	base := testFindingBase()
+
+	tests := []struct {
+		name string
+		a, b Finding
+		want bool
+	}{
 		{
 			"different suggestion",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Suggestion = "other-suggestion"
 
 				return f
@@ -235,7 +281,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different before code",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.BeforeCode = "old"
 
 				return f
@@ -246,7 +292,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different after code",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.AfterCode = "new"
 
 				return f
@@ -257,7 +303,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different snippet",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Snippet = "other-snippet"
 
 				return f
@@ -268,7 +314,7 @@ func TestFinding_Equal(t *testing.T) {
 			"different confidence",
 			base,
 			func() Finding {
-				f := newBase()
+				f := testFindingBase()
 				f.Confidence = 0.5
 
 				return f

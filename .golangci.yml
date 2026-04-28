@@ -235,6 +235,11 @@ linters:
         linters:
           - gochecknoglobals
           - gochecknoinits
+      - path: examples/
+        linters:
+          - exhaustruct
+          - forbidigo
+          - mnd
 formatters:
   enable:
     - gci
