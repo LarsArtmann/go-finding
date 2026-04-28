@@ -81,8 +81,20 @@ func (s Severity) String() string {
 
 // Compare returns -1, 0, or 1 depending on whether s is less than, equal to,
 // or greater than other. Invalid severities rank below all valid ones.
+// Two different invalid severities are ordered lexicographically to ensure
+// a total ordering.
 func (s Severity) Compare(other Severity) int {
-	return cmp.Compare(severityRank(s), severityRank(other))
+	rankS, rankOther := severityRank(s), severityRank(other)
+	if rankS != rankOther {
+		return cmp.Compare(rankS, rankOther)
+	}
+
+	if rankS < 0 {
+		// Both invalid — use string comparison as tiebreaker.
+		return cmp.Compare(string(s), string(other))
+	}
+
+	return 0
 }
 
 func severityRank(s Severity) int {

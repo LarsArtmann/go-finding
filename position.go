@@ -15,9 +15,9 @@ type Position struct {
 	Offset int    `json:"offset,omitempty"` // 0-based byte offset; -1 = not set
 }
 
-// IsValid returns true if the position has a file set.
+// IsValid returns true if the position has a file set and non-negative line/column.
 func (p Position) IsValid() bool {
-	return p.File != ""
+	return p.File != "" && p.Line >= 0 && p.Column >= 0
 }
 
 // Equal reports whether two positions are identical.

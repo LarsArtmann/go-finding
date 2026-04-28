@@ -95,9 +95,15 @@ func (f Finding) Clone() Finding {
 	return clone
 }
 
-// IsSuppressed returns true if this finding is suppressed.
+// IsSuppressed returns true if this finding is suppressed at the current time.
 func (f Finding) IsSuppressed() bool {
-	return f.Suppression != nil && !f.Suppression.IsExpired(time.Now())
+	return f.IsSuppressedAt(time.Now())
+}
+
+// IsSuppressedAt returns true if this finding is suppressed at the given time.
+// Use this in tests for deterministic suppression checks.
+func (f Finding) IsSuppressedAt(now time.Time) bool {
+	return f.Suppression != nil && !f.Suppression.IsExpired(now)
 }
 
 // HasFix returns true if this finding has a fix available.
@@ -117,6 +123,17 @@ func (f Finding) HasFix() bool {
 // HasSuggestion returns true if this finding has a human-readable suggestion.
 func (f Finding) HasSuggestion() bool {
 	return f.Suggestion != "" || (f.BeforeCode != "" && f.AfterCode != "")
+}
+
+// NormalizedConfidence returns the confidence clamped to [0.0, 1.0].
+func (f Finding) NormalizedConfidence() float64 {
+	if f.Confidence < 0 {
+		return 0
+	}
+	if f.Confidence > 1 {
+		return 1
+	}
+	return f.Confidence
 }
 
 // String returns a human-readable summary of the finding.

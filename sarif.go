@@ -200,7 +200,7 @@ func findingToSARIF(f Finding) SarifResult {
 				},
 			},
 		}},
-		Rank: f.Confidence * sarifConfidenceScale, // SARIF uses 0-100
+		Rank: f.NormalizedConfidence() * sarifConfidenceScale, // SARIF uses 0-100
 	}
 
 	// Add end position if available

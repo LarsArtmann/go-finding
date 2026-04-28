@@ -255,6 +255,7 @@ func (*FixApplier) applyToFile(
 	// Uses line-aware matching: finds the occurrence nearest to the finding's line number.
 	if len(stringFixes) > 0 {
 		joined := strings.Join(lines, "\n")
+		joinedChanged := false
 
 		for _, f := range stringFixes {
 			if f.BeforeCode == "" {
@@ -271,11 +272,12 @@ func (*FixApplier) applyToFile(
 			newContent := replaceNearestToLine(joined, f.BeforeCode, f.AfterCode, f.Position.Line)
 			if newContent != joined {
 				joined = newContent
+				joinedChanged = true
 				applied++
 			}
 		}
 
-		if applied > 0 {
+		if joinedChanged {
 			lines = strings.Split(joined, "\n")
 		}
 	}

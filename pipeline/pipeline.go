@@ -502,8 +502,8 @@ func (p *Pipeline) applyTriage(
 	iter.Applied = applied
 
 	if p.config.OnFix != nil {
-		for _, f := range safeFixes {
-			p.config.OnFix(f, true)
+		for i := 0; i < applied && i < len(safeFixes); i++ {
+			p.config.OnFix(safeFixes[i], true)
 		}
 	}
 

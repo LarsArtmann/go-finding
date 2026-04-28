@@ -107,6 +107,9 @@ func TestSeverity_Compare(t *testing.T) {
 		{SeverityError, SeverityCritical, -1, "error < critical"},
 		{Severity("unknown"), SeverityInfo, -1, "invalid < valid"},
 		{SeverityInfo, Severity("unknown"), 1, "valid > invalid"},
+		{Severity("foo"), Severity("bar"), 1, "different invalids ordered lexicographically"},
+		{Severity("bar"), Severity("foo"), -1, "different invalids ordered lexicographically reverse"},
+		{Severity("foo"), Severity("foo"), 0, "same invalid == same invalid"},
 	}
 
 	for _, tt := range tests {
