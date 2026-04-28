@@ -185,19 +185,36 @@ func (a *FixApplier) restore(path string) error {
 // When a finding has a Range with valid end position, it uses line-based replacement
 // targeting the exact line range. Otherwise it falls back to string replacement.
 // Fixes are sorted descending by position so earlier replacements don't shift later ones.
-func (*FixApplier) applyToFile(
-	path string,
-	fixes []finding.Finding,
-) (int, error) {
+func (*FixApplier) applyToFile(path string, fixes []finding.Finding) (int, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return 0, ioErrorAt("read file", err, path)
 	}
 
 	lines := strings.Split(string(content), "\n")
-	applied := 0
+	rangeFixes, stringFixes := partitionFixes(fixes)
 
-	// Partition: range-based fixes (apply first, sorted descending) vs string-based.
+	lines, applied := applyRangeFixes(lines, rangeFixes)
+	lines, strApplied := applyStringFixes(lines, stringFixes)
+	applied += strApplied
+
+	if applied == 0 {
+		return 0, nil
+	}
+
+	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
+		path,
+		[]byte(strings.Join(lines, "\n")),
+		0o600,
+	); err != nil {
+		return 0, ioErrorAt("write file", err, path)
+	}
+
+	return applied, nil
+}
+
+// partitionFixes splits fixes into range-based and string-based categories.
+func partitionFixes(fixes []finding.Finding) ([]finding.Finding, []finding.Finding) {
 	var rangeFixes, stringFixes []finding.Finding
 
 	for _, f := range fixes {
@@ -212,8 +229,12 @@ func (*FixApplier) applyToFile(
 		}
 	}
 
-	// Sort range fixes descending so earlier edits don't shift later line numbers.
-	slices.SortFunc(rangeFixes, func(a, b finding.Finding) int {
+	return rangeFixes, stringFixes
+}
+
+// applyRangeFixes applies line-range replacements and returns the updated lines.
+func applyRangeFixes(lines []string, fixes []finding.Finding) ([]string, int) {
+	slices.SortFunc(fixes, func(a, b finding.Finding) int {
 		if a.Range.Start.Line != b.Range.Start.Line {
 			return b.Range.Start.Line - a.Range.Start.Line
 		}
@@ -221,8 +242,9 @@ func (*FixApplier) applyToFile(
 		return b.Range.Start.Column - a.Range.Start.Column
 	})
 
-	// Apply range-based fixes.
-	for _, f := range rangeFixes {
+	applied := 0
+
+	for _, f := range fixes {
 		startIdx := f.Range.Start.Line - 1 // 0-indexed
 		endIdx := f.Range.End.Line - 1
 
@@ -262,50 +284,40 @@ func (*FixApplier) applyToFile(
 		applied++
 	}
 
-	// Apply string-based fixes (fallback).
-	// Uses line-aware matching: finds the occurrence nearest to the finding's line number.
-	if len(stringFixes) > 0 {
-		joined := strings.Join(lines, "\n")
-		joinedChanged := false
+	return lines, applied
+}
 
-		for _, f := range stringFixes {
-			if f.BeforeCode == "" {
-				// Insertion: place AfterCode at the finding's line.
-				lineIdx := f.Position.Line - 1
-				if lineIdx >= 0 && lineIdx <= len(lines) {
-					lines = slices.Insert(lines, lineIdx, f.AfterCode)
-					applied++
-				}
+// applyStringFixes applies fallback string replacements and insertions.
+func applyStringFixes(lines []string, fixes []finding.Finding) ([]string, int) {
+	joined := strings.Join(lines, "\n")
+	joinedChanged := false
+	applied := 0
 
-				continue
-			}
-
-			newContent := replaceNearestToLine(joined, f.BeforeCode, f.AfterCode, f.Position.Line)
-			if newContent != joined {
-				joined = newContent
-				joinedChanged = true
+	for _, f := range fixes {
+		if f.BeforeCode == "" {
+			// Insertion: place AfterCode at the finding's line.
+			lineIdx := f.Position.Line - 1
+			if lineIdx >= 0 && lineIdx <= len(lines) {
+				lines = slices.Insert(lines, lineIdx, f.AfterCode)
 				applied++
 			}
+
+			continue
 		}
 
-		if joinedChanged {
-			lines = strings.Split(joined, "\n")
+		newContent := replaceNearestToLine(joined, f.BeforeCode, f.AfterCode, f.Position.Line)
+		if newContent != joined {
+			joined = newContent
+			joinedChanged = true
+			applied++
 		}
 	}
 
-	if applied == 0 {
-		return 0, nil
+	if joinedChanged {
+		lines = strings.Split(joined, "\n")
 	}
 
-	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
-		path,
-		[]byte(strings.Join(lines, "\n")),
-		0o600,
-	); err != nil {
-		return 0, ioErrorAt("write file", err, path)
-	}
-
-	return applied, nil
+	return lines, applied
 }
 
 // replaceNearestToLine replaces the occurrence of old nearest to the given line number.
