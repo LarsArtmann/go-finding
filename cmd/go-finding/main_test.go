@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -279,4 +281,28 @@ func makeTestFinding(
 		Severity: sev,
 		Position: finding.Position{File: file, Line: line, Column: col},
 	}
+}
+
+func TestRegisterDetector(t *testing.T) {
+	t.Parallel()
+
+	// Test registration of a new detector.
+	err := RegisterDetector("test-detector", func(dir string) pipeline.Detector {
+		return pipeline.NamedDetectorFunc("test", func(_ context.Context) ([]finding.Finding, error) {
+			return nil, nil
+		})
+	})
+	require.NoError(t, err)
+
+	// Verify it can be looked up.
+	builder, ok := lookupDetectorBuilder("test-detector")
+	require.True(t, ok)
+	require.NotNil(t, builder)
+
+	// Test duplicate registration returns error.
+	err = RegisterDetector("test-detector", func(dir string) pipeline.Detector {
+		return nil
+	})
+	require.Error(t, err)
+	require.ErrorIs(t, err, errDetectorRegistered)
 }
