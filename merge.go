@@ -7,10 +7,11 @@ import (
 
 // Merge correlation constants.
 const (
-	minFindingsInFile     = 2   // Minimum findings in a file for correlation analysis
-	maxLineDiff           = 5   // Maximum line difference for considering findings related
-	correlationScoreScale = 5.0 // For converting lineDiff to score
-	minCorrelationScore   = 0.5 // Minimum correlation score for matching
+	minFindingsInFile     = 2     // Minimum findings in a file for correlation analysis
+	maxLineDiff           = 5     // Maximum line difference for considering findings related
+	correlationScoreScale = 5.0   // For converting lineDiff to score
+	minCorrelationScore   = 0.5   // Minimum correlation score for matching
+	maxCorrelations       = 10000 // Maximum correlations to prevent O(n²) hangs
 )
 
 // Merge combines multiple reports into one.
@@ -132,7 +133,8 @@ func dedupKey(finding Finding, opts MergeOptions) string {
 		return finding.ID
 	case DeduplicateByPosition:
 		return fmt.Sprintf(
-			"%s:%d:%d",
+			"%s:%s:%d:%d",
+			finding.ToolName,
 			finding.Position.File,
 			finding.Position.Line,
 			finding.Position.Column,
@@ -202,6 +204,9 @@ func Correlate(findings []Finding) []Correlation {
 						Reason:     "same file, nearby lines",
 						Confidence: confidence,
 					})
+					if len(correlations) >= maxCorrelations {
+						return correlations
+					}
 				}
 			}
 		}

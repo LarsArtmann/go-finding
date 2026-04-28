@@ -73,7 +73,7 @@ func (r Range) IsValid() bool {
 
 // HasEnd returns true if the range has an end position set.
 func (r Range) HasEnd() bool {
-	return r.End.Line > 0
+	return r.End.Line > 0 || r.End.Offset >= 0
 }
 
 // LineCount returns the number of lines spanned by the range (End.Line - Start.Line + 1).
@@ -361,10 +361,14 @@ func (r Range) Adjacent(other Range) bool {
 		}
 	}
 
-	// Fall back to offset-based adjacency
-	startMatch := offsetAdjacent(r.End.Offset, other.Start.Offset)
-	endMatch := offsetAdjacent(other.End.Offset, r.Start.Offset)
-	return startMatch || endMatch
+	// Fall back to offset-based adjacency only when line info is not available.
+	if r.Start.Line <= 0 || other.Start.Line <= 0 {
+		startMatch := offsetAdjacent(r.End.Offset, other.Start.Offset)
+		endMatch := offsetAdjacent(other.End.Offset, r.Start.Offset)
+		return startMatch || endMatch
+	}
+
+	return false
 }
 
 // HasOffset reports whether the offset is set.

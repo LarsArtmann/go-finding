@@ -122,9 +122,9 @@ func (r *Report) FindByID(id string) *Finding {
 	return nil
 }
 
-// FindByRule returns all findings matching the given rule name.
+// FindByRule returns all non-suppressed findings matching the given rule name.
 func (r *Report) FindByRule(rule string) []Finding {
-	return Filter(r.Findings, ByRule(rule))
+	return Filter(r.ActiveFindings(), ByRule(rule))
 }
 
 // Len returns the number of findings in the report.

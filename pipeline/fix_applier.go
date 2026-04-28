@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -127,7 +128,7 @@ func (a *FixApplier) backup(path string) error {
 		return ioErrorAt("read file for backup", err, path)
 	}
 
-	backupPath := filepath.Join(a.backupDir, fmt.Sprintf("%x.bak", fileHash(path)))
+	backupPath := filepath.Join(a.backupDir, fmt.Sprintf("%x_%d.bak", fileHash(path), time.Now().UnixNano()))
 	if err := os.MkdirAll(a.backupDir, 0o750); err != nil {
 		return finding.NewIOError("create backup dir", err)
 	}
@@ -195,7 +196,7 @@ func (*FixApplier) applyToFile(
 
 		if f.Range != nil && f.Range.HasEnd() && f.Range.Start.Line > 0 && f.Range.End.Line > 0 {
 			rangeFixes = append(rangeFixes, f)
-		} else if f.BeforeCode != "" && f.AfterCode != "" {
+		} else if f.BeforeCode != "" || f.AfterCode != "" {
 			stringFixes = append(stringFixes, f)
 		}
 	}
@@ -250,19 +251,33 @@ func (*FixApplier) applyToFile(
 		applied++
 	}
 
-	// Apply string-based fixes (fallback, position-independent).
+	// Apply string-based fixes (fallback).
+	// Uses line-aware matching: finds the occurrence nearest to the finding's line number.
 	if len(stringFixes) > 0 {
 		joined := strings.Join(lines, "\n")
 
 		for _, f := range stringFixes {
-			newContent := strings.Replace(joined, f.BeforeCode, f.AfterCode, 1)
+			if f.BeforeCode == "" {
+				// Insertion: place AfterCode at the finding's line.
+				lineIdx := f.Position.Line - 1
+				if lineIdx >= 0 && lineIdx <= len(lines) {
+					lines = slices.Insert(lines, lineIdx, f.AfterCode)
+					applied++
+				}
+
+				continue
+			}
+
+			newContent := replaceNearestToLine(joined, f.BeforeCode, f.AfterCode, f.Position.Line)
 			if newContent != joined {
 				joined = newContent
 				applied++
 			}
 		}
 
-		lines = strings.Split(joined, "\n")
+		if applied > 0 {
+			lines = strings.Split(joined, "\n")
+		}
 	}
 
 	if applied == 0 {
@@ -274,4 +289,56 @@ func (*FixApplier) applyToFile(
 	}
 
 	return applied, nil
+}
+
+// replaceNearestToLine replaces the occurrence of old nearest to the given line number.
+// If targetLine is 0 or no line bias can be determined, replaces the first occurrence.
+func replaceNearestToLine(content, old, new string, targetLine int) string {
+	idx := strings.Index(content, old)
+	if idx < 0 {
+		return content
+	}
+
+	// If no line info, use first occurrence.
+	if targetLine <= 0 {
+		return strings.Replace(content, old, new, 1)
+	}
+
+	// Find all occurrences and pick the one nearest to targetLine.
+	best := idx
+	bestDist := lineDistance(content, idx, targetLine)
+
+	for {
+		next := strings.Index(content[idx+len(old):], old)
+		if next < 0 {
+			break
+		}
+
+		idx = idx + len(old) + next
+		dist := lineDistance(content, idx, targetLine)
+		if dist < bestDist {
+			bestDist = dist
+			best = idx
+		}
+	}
+
+	return content[:best] + new + content[best+len(old):]
+}
+
+// lineDistance counts how many newlines appear before position pos in content,
+// then returns the absolute difference from targetLine.
+func lineDistance(content string, pos int, targetLine int) int {
+	line := 1
+	for i := 0; i < pos && i < len(content); i++ {
+		if content[i] == '\n' {
+			line++
+		}
+	}
+
+	diff := line - targetLine
+	if diff < 0 {
+		return -diff
+	}
+
+	return diff
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/larsartmann/go-finding"
@@ -71,7 +71,7 @@ func (c RetryConfig) Validate() error {
 func (c RetryConfig) delay(attempt int) time.Duration {
 	d := min(time.Duration(1<<attempt)*c.BaseDelay, c.MaxDelay)
 	if quarter := int64(d) / delayJitterDivisor; quarter > 0 {
-		jitter := time.Duration(rand.Int63n(quarter))
+		jitter := time.Duration(rand.Int64N(quarter))
 		d += jitter
 	}
 

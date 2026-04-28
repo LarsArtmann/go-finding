@@ -13,10 +13,8 @@ var (
 	ErrInvalidReport  = errors.New("invalid report: missing tool name")
 )
 
-// FilterInvalid is a filter function for removing invalid findings.
-//
-//nolint:gochecknoglobals
-var FilterInvalid = func(f Finding) bool {
+// FilterInvalid returns true if the finding is invalid (has missing required fields).
+func FilterInvalid(f Finding) bool {
 	return !f.IsValid()
 }
 

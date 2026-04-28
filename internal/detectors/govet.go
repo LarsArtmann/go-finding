@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/larsartmann/go-finding"
@@ -91,11 +92,15 @@ func parsePosn(posn, dir string) finding.Position {
 	}
 
 	if len(parts) >= 2 {
-		_, _ = fmt.Sscanf(parts[1], "%d", &pos.Line)
+		if line, err := strconv.Atoi(parts[1]); err == nil {
+			pos.Line = line
+		}
 	}
 
 	if len(parts) >= 3 {
-		_, _ = fmt.Sscanf(parts[2], "%d", &pos.Column)
+		if col, err := strconv.Atoi(parts[2]); err == nil {
+			pos.Column = col
+		}
 	}
 
 	return pos
