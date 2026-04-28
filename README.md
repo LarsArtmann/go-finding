@@ -57,12 +57,26 @@ func main() {
 }
 ```
 
+## Builder API
+
+Construct findings fluently with the `Builder`:
+
+```go
+f := finding.NewBuilder("nilcheck", "govet", "possible nil deref",
+    finding.SeverityError, finding.Pos("main.go", 42, 5)).
+    WithFixStrategy(finding.FixStrategyDirect).
+    WithBeforeCode("x.foo").
+    WithAfterCode("x.foo()").
+    WithConfidence(0.95).
+    Build()
+```
+
 ## Core Types
 
 | Type          | Purpose                                                    |
 | ------------- | ---------------------------------------------------------- |
 | `Finding`     | A single issue: ID, rule, severity, position, fix strategy |
-| `Report`      | Container for findings with summary statistics             |
+| `Report`      | Thread-safe container for findings with summary statistics |
 | `Severity`    | `info` / `warning` / `error` / `critical`                  |
 | `FixStrategy` | `none` / `suggest` / `direct` / `ai`                       |
 | `Position`    | File, line, column location                                |
@@ -127,7 +141,7 @@ p := pipeline.New(cfg, ".", detector)
 result, err := p.Run(context.Background())
 
 fmt.Printf("Iterations: %d, Findings: %d, Stable: %v\n",
-    result.TotalIterations, result.FinalFindingCount, result.Stable)
+    result.TotalIterations, result.TotalDetected, result.Stable)
 ```
 
 ### Pipeline Features
@@ -253,10 +267,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 | Package   | Coverage  |
 | --------- | --------- |
-| Root      | 98.7%     |
-| Pipeline  | 94.5%     |
-| Detectors | 95.9%     |
-| CLI       | 77.3%     |
+| Root      | 98.5%     |
+| Pipeline  | 94.8%     |
+| Detectors | 96.1%     |
+| CLI       | 74.2%     |
 | **Total** | **94.8%** |
 
 ## Related Projects
