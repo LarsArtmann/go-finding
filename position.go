@@ -377,7 +377,8 @@ func (p Position) HasOffset() bool {
 	return p.Offset >= 0
 }
 
-// Pos creates a Position from the given file, line, and column.
+// Pos is a convenience constructor for Position.
+// It creates a Position with the given file, line, and column.
 func Pos(file string, line, column int) Position {
 	return Position{File: file, Line: line, Column: column} //nolint:exhaustruct
 }

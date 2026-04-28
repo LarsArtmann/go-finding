@@ -86,7 +86,7 @@ func (m *Metrics) TotalDuration() time.Duration {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.endTime.IsZero() {
+	if m.endTime.IsZero() || m.startTime.IsZero() {
 		return 0
 	}
 

@@ -1,9 +1,13 @@
 package finding
 
-import "iter"
+import (
+	"iter"
+	"sync"
+)
 
 // Report is the top-level container for a tool run.
 type Report struct {
+	mu       sync.Mutex
 	Tool     ToolInfo  `json:"tool"`     // Tool metadata
 	Findings []Finding `json:"findings"` // All findings from this run
 	Summary  Summary   `json:"summary"`  // Aggregated statistics
@@ -39,15 +43,19 @@ func NewReport(tool ToolInfo) *Report {
 }
 
 // AddFinding adds a finding to the report.
-// Not safe for concurrent use; callers must synchronize access.
+// Safe for concurrent use.
 func (r *Report) AddFinding(f Finding) {
+	r.mu.Lock()
 	r.Findings = append(r.Findings, f)
+	r.mu.Unlock()
 }
 
 // AddFindings adds multiple findings to the report.
-// Not safe for concurrent use; callers must synchronize access.
+// Safe for concurrent use.
 func (r *Report) AddFindings(findings []Finding) {
+	r.mu.Lock()
 	r.Findings = append(r.Findings, findings...)
+	r.mu.Unlock()
 }
 
 // ComputeSummary recalculates the summary from the current findings.
