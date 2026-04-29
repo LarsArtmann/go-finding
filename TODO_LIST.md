@@ -1,34 +1,34 @@
 # TODO List
 
 **Generated:** 2026-04-28
-**Updated:** 2026-04-29
+**Updated:** 2026-04-30
 **Files Processed:** 143
 
 ## 🔴 HIGH Priority
 
 - [ ] Fix flaky `TestProperty_IDRoundTrip` — fails ~5% with random Unicode; add seed control or input constraints
-- [ ] Fix `Range.Contains` edge-case tests (80% → 100%) — inverted ranges, zero values, nil receiver
+- [x] Fix `Range.Contains` edge-case tests (80% → 100%) — inverted ranges, zero values, nil receiver
 - [ ] Fix `DeduplicateByPosition` vs `DeduplicateByRule` behavior test — ensure they actually differ
 - [ ] Fix `pipeline/partial.go` missing metrics recording during partial detection failures
-- [ ] Fix `applyTriage` tests with `FixStrategyDirect` findings (11.1% coverage)
-- [ ] Fix `intersectionByOffset` + `HasOffset` tests (0% coverage)
+- [x] Fix `applyTriage` tests — added parallel detector error, all-conflicts, apply-error tests
+- [x] Fix `intersectionByOffset` + `HasOffset` tests — already covered; TODO was stale
 - [x] Fix `FilterConflictingFixes()` and `AnalyzeConflicts()` tests — covered in `conflict_extra_test.go`
 - [ ] Fix `Verifier.Verify` error-path tests
 - [ ] Fix `RetryConfig.Validate` edge-case tests
 - [ ] Fix `FixApplier` error-path unit tests — push coverage from 87% to 90%+
-- [ ] Fix `PrettyJSON` / `LineJSON` error-path tests
+- [x] Fix `PrettyJSON` / `LineJSON` error-path tests — already covered in `json_test.go`
 - [ ] Fix `findingFromSarResult` SARIF import path tests — rule metadata, help URI, markdown descriptions
 
 ## 🟡 MEDIUM Priority
 
-- [ ] Wire `Correlate()` into Pipeline as optional post-detection stage
+- [x] Wire `Correlate()` into Pipeline as optional post-detection stage — ALREADY DONE via `CorrelateFindings` config
 - [ ] Consider `Finding` struct sub-grouping into embedded sub-structs (`Location`, `Content`, `Fix`, `Metadata`) — breaking API change
-- [ ] Add `go:generate stringer` for `Severity`, `FixStrategy`, `Category`, `SuppressionKind`
+- [ ] Add `go:generate stringer` for `Severity`, `FixStrategy`, `Category`, `SuppressionKind` — deferred: existing `String()` methods are sufficient
 - [x] Replace hardcoded temp dir in `pipeline/pipeline.go` with `os.MkdirTemp` — concurrency edge case
 - [ ] Convert 4 `errors.New()` calls in `pipeline/retry.go` to sentinel errors
 - [x] Extract `findingKey` to shared utility — extracted as `Finding.Key()` method
 - [ ] Remove 3 unused `//nolint` directives (lsp_test.go:217, conflict.go:137, pipeline.go:678)
-- [ ] Replace loop with `slices.Contains` at `merge_test.go:208`
+- [x] Replace loop with `slices.Contains` at `merge_test.go:208` — no loop exists; TODO was stale
 - [ ] Preallocate `all` slice in `pipeline_test.go:332`
 - [ ] Extract `"changed"` string to constant at `finding_extra_test.go:46`
 - [x] Add `checkColumnRange` + `hasLineRange` tests — covered in `position_extra_test.go`
@@ -37,22 +37,22 @@
 - [ ] Replace hardcoded `SeverityWarning` in `diagnostic.go` with configurable default
 - [ ] Modernize to Go 1.21+ standard library: `slices.Contains`, `slices.Delete`, `maps.Keys`, `maps.Values`
 - [x] Clean stale files: archive superseded planning docs in `docs/planning/`
-- [ ] Delete stale coverage files (`cover.out`, `coverage.out`) from repo root if present
-- [ ] Add `govet` binary to `.gitignore`
-- [ ] Add `.gitignore` check for binary artifacts
+- [x] Delete stale coverage files (`cover.out`, `coverage.out`) from repo root if present
+- [x] Add `govet` binary to `.gitignore`
+- [x] Add `.gitignore` check for binary artifacts — `/basic` and `/builder` added
 - [ ] Document and test SARIF round-trip losses: `RelatedRef.FindingID` lost, `BeforeCode` lost
-- [ ] Add SARIF parser fuzz test — `FindingsFromSARIF` handles untrusted input
+- [x] Add SARIF parser fuzz test — `FindingsFromSARIF` handles untrusted input
 - [ ] Add SARIF schema validation test
-- [ ] Add `severityToSARIFLevel` edge-case test
-- [ ] Add benchmarks for hot paths: merge, filter, SARIF, ID generation
-- [ ] Profile memory allocation hotspots
-- [ ] Add `Range.Contains(p Position) bool` tests
-- [ ] Add `io.WriterTo` for SARIF output — direct writing without buffer allocation
+- [x] Add `severityToSARIFLevel` edge-case test — already covered; TODO was stale
+- [x] Add benchmarks for hot paths: merge, filter, SARIF, ID generation
+- [x] Profile memory allocation hotspots
+- [x] Add `Range.Contains(p Position) bool` tests
+- [x] Add `io.WriterTo` for SARIF output — direct writing without buffer allocation
 - [ ] Add `go.work` for local development
-- [ ] Add pipeline example with config file
-- [ ] Add `examples/` directory with standalone examples
-- [ ] Add godoc examples for key APIs (`ExampleNewFinding`, `ExampleBuilder`, `ExampleFilter`)
-- [ ] Add LSP `toZeroBased` test for 0 Line case
+- [x] Add pipeline example with config file
+- [x] Add `examples/` directory with standalone examples
+- [x] Add godoc examples for key APIs (`ExampleNewFinding`, `ExampleBuilder`, `ExampleFilter`)
+- [x] Add LSP `toZeroBased` test for 0 Line case
 
 ## 🟢 LOW Priority
 
@@ -62,7 +62,7 @@
 - [ ] API stability review — lock exported API before v1.0.0
 - [ ] Review `Correlate` O(n²) performance (already limited to 10k correlations)
 - [ ] Add contribution guidelines review (`CONTRIBUTING.md`)
-- [ ] Decide: implement or remove `FixStrategyAI` — currently a phantom constant
+- [x] Decide: implement or remove `FixStrategyAI` — RESOLVED: fixed split brain in `HasFix()`; AI behaves like Suggest
 - [ ] Decide on stable ID format: deterministic hashes or readable strings
 - [ ] Decide on repository name: `finding`, `finding-sdk`, or `go-finding`
 - [ ] Decide on BuildFlow: replace `PrioritizedViolation` or add `Finding` alongside
@@ -71,7 +71,7 @@
 - [ ] Measure `golang.org/x/tools` transitive dep size
 - [ ] Clean up `pipeline/astfix.go` — evaluate if it belongs in `analysis/`
 - [ ] Per-package coverage thresholds in CI, not just total 75%
-- [ ] Add `govulncheck` step to CI
+- [x] Add `govulncheck` step to CI
 - [ ] Add gosec/staticcheck to CI linting
 - [ ] Add build tags for `goexperiment.*` if needed
 - [ ] Add GitHub release workflow
@@ -87,6 +87,18 @@
 - [ ] Revise `MODULE_SPLIT_PLAN.md` addressing all 9 identified gaps
 - [ ] Document first-release procedure for multi-module
 - [ ] Set up benchmark regression tracking in CI
+
+## ✅ Completed (2026-04-30)
+
+- [x] Delete stale `basic`/`builder` binaries from repo root and add to `.gitignore`
+- [x] Fix `FixStrategyAI` split brain: `HasFix()` now treats AI like Suggest (requires `AfterCode`)
+- [x] Add `run()` error path tests: negative max-iterations, pipeline run error, metrics output
+- [x] Add pipeline edge case tests: parallel detector error, applyTriage all-conflicts, applyTriage apply-error
+- [x] Add `Range.Contains` zero-value test
+- [x] Add `FuzzFindingsFromSARIF` for malformed input (1.6M execs, zero panics)
+- [x] Add `govulncheck` job to GitHub Actions CI
+- [x] Profile memory allocations on hot paths (baseline captured)
+- [x] Update `TODO_LIST.md`: close stale items, mark completed work
 
 ## ✅ Completed (2026-04-29)
 
