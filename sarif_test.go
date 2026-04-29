@@ -409,6 +409,54 @@ func TestToSARIFFiltered_ErrorPath(t *testing.T) {
 	require.Error(t, err, "expected error for NaN confidence")
 }
 
+func TestWriteSARIF(t *testing.T) {
+	t.Parallel()
+
+	r := &Report{
+		Tool: ToolInfo{Name: "tool"},
+		Findings: []Finding{
+			{
+				ID: "f1", Rule: "r1", Message: "m",
+				Severity: SeverityError, Position: Position{File: "a.go"},
+			},
+		},
+	}
+
+	var buf strings.Builder
+	err := r.WriteSARIF(&buf)
+	require.NoError(t, err)
+
+	data := buf.String()
+	assert.Contains(t, data, `"version": "2.1.0"`)
+	assert.Contains(t, data, `"tool"`)
+}
+
+func TestWriteSARIFFiltered(t *testing.T) {
+	t.Parallel()
+
+	r := &Report{
+		Tool: ToolInfo{Name: "tool"},
+		Findings: []Finding{
+			{
+				ID: "f1", Rule: "r1", Message: "m",
+				Severity: SeverityError, Position: Position{File: "a.go"},
+			},
+			{
+				ID: "f2", Rule: "r2", Message: "m",
+				Severity: SeverityInfo, Position: Position{File: "b.go"},
+			},
+		},
+	}
+
+	var buf strings.Builder
+	err := r.WriteSARIFFiltered(&buf, SeverityWarning)
+	require.NoError(t, err)
+
+	data := buf.String()
+	assert.Contains(t, data, "f1")
+	assert.NotContains(t, data, "f2")
+}
+
 func TestFindingsFromSARIF_EmptyLog(t *testing.T) {
 	t.Parallel()
 

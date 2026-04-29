@@ -3,6 +3,7 @@ package finding
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -164,6 +165,36 @@ func (r *Report) ToSARIFFiltered(minSeverity Severity) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+// WriteSARIF writes the report in SARIF 2.1.0 format directly to w.
+// This avoids the intermediate buffer allocation of ToSARIF.
+func (r *Report) WriteSARIF(w io.Writer) error {
+	data, err := json.MarshalIndent(r.sarifLog(), "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshaling SARIF: %w", err)
+	}
+
+	if _, werr := w.Write(data); werr != nil {
+		return fmt.Errorf("writing SARIF: %w", werr)
+	}
+
+	return nil
+}
+
+// WriteSARIFFiltered writes non-suppressed findings with severity >= minSeverity
+// in SARIF 2.1.0 format directly to w.
+func (r *Report) WriteSARIFFiltered(w io.Writer, minSeverity Severity) error {
+	data, err := json.MarshalIndent(r.sarifLogFiltered(minSeverity), "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshaling SARIF: %w", err)
+	}
+
+	if _, werr := w.Write(data); werr != nil {
+		return fmt.Errorf("writing SARIF: %w", werr)
+	}
+
+	return nil
 }
 
 func (r *Report) sarifLog() SarifLog {
