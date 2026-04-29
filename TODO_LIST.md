@@ -1,6 +1,7 @@
 # TODO List
 
 **Generated:** 2026-04-28
+**Updated:** 2026-04-29
 **Files Processed:** 143
 
 ## 🔴 HIGH Priority
@@ -11,7 +12,7 @@
 - [ ] Fix `pipeline/partial.go` missing metrics recording during partial detection failures
 - [ ] Fix `applyTriage` tests with `FixStrategyDirect` findings (11.1% coverage)
 - [ ] Fix `intersectionByOffset` + `HasOffset` tests (0% coverage)
-- [ ] Fix `FilterConflictingFixes()` and `AnalyzeConflicts()` tests — 0% coverage
+- [x] Fix `FilterConflictingFixes()` and `AnalyzeConflicts()` tests — covered in `conflict_extra_test.go`
 - [ ] Fix `Verifier.Verify` error-path tests
 - [ ] Fix `RetryConfig.Validate` edge-case tests
 - [ ] Fix `FixApplier` error-path unit tests — push coverage from 87% to 90%+
@@ -23,19 +24,19 @@
 - [ ] Wire `Correlate()` into Pipeline as optional post-detection stage
 - [ ] Consider `Finding` struct sub-grouping into embedded sub-structs (`Location`, `Content`, `Fix`, `Metadata`) — breaking API change
 - [ ] Add `go:generate stringer` for `Severity`, `FixStrategy`, `Category`, `SuppressionKind`
-- [ ] Replace hardcoded temp dir in `pipeline/pipeline.go` with `os.MkdirTemp` — concurrency edge case
+- [x] Replace hardcoded temp dir in `pipeline/pipeline.go` with `os.MkdirTemp` — concurrency edge case
 - [ ] Convert 4 `errors.New()` calls in `pipeline/retry.go` to sentinel errors
-- [ ] Extract `findingKey` to shared utility — duplicated in `verify.go` and `merge.go`
+- [x] Extract `findingKey` to shared utility — extracted as `Finding.Key()` method
 - [ ] Remove 3 unused `//nolint` directives (lsp_test.go:217, conflict.go:137, pipeline.go:678)
 - [ ] Replace loop with `slices.Contains` at `merge_test.go:208`
 - [ ] Preallocate `all` slice in `pipeline_test.go:332`
 - [ ] Extract `"changed"` string to constant at `finding_extra_test.go:46`
-- [ ] Add `checkColumnRange` + `hasLineRange` tests
+- [x] Add `checkColumnRange` + `hasLineRange` tests — covered in `position_extra_test.go`
 - [ ] Add `cloneFindings` edge-case test
 - [ ] Add `Finding.Equal` field-mismatch test
 - [ ] Replace hardcoded `SeverityWarning` in `diagnostic.go` with configurable default
 - [ ] Modernize to Go 1.21+ standard library: `slices.Contains`, `slices.Delete`, `maps.Keys`, `maps.Values`
-- [ ] Clean stale files: archive superseded planning docs in `docs/planning/`, handle `EXECUTION_PLAN_V2.md`
+- [x] Clean stale files: archive superseded planning docs in `docs/planning/`
 - [ ] Delete stale coverage files (`cover.out`, `coverage.out`) from repo root if present
 - [ ] Add `govet` binary to `.gitignore`
 - [ ] Add `.gitignore` check for binary artifacts
@@ -56,7 +57,7 @@
 ## 🟢 LOW Priority
 
 - [ ] Investigate `FixApplier` not persisting across pipeline iterations — backups from iteration N don't persist to N+1
-- [ ] Add sync.Mutex to Pipeline for concurrent `Run()` safety or document limitation
+- [x] Add sync.Mutex to Pipeline for concurrent `OnFinding` callback safety
 - [ ] Disable `wsl_v5` + `nlreturn` in `.golangci.yml` — 9 pedantic style issues
 - [ ] API stability review — lock exported API before v1.0.0
 - [ ] Review `Correlate` O(n²) performance (already limited to 10k correlations)
@@ -86,6 +87,17 @@
 - [ ] Revise `MODULE_SPLIT_PLAN.md` addressing all 9 identified gaps
 - [ ] Document first-release procedure for multi-module
 - [ ] Set up benchmark regression tracking in CI
+
+## ✅ Completed (2026-04-29)
+
+- [x] Fix data race in `notifyFinding` for parallel detectors — added `callbackMu` to Pipeline
+- [x] Eliminate `detectResult` ghost type — use `PartialResult` directly
+- [x] Fix duplicate doc comments on `FindByID` and `All` in `report.go`
+- [x] Clarify `Range.LineCount()` formula for inverted ranges
+- [x] Add comprehensive `FixEngine` unit tests
+- [x] Add direct `FileBackup` unit tests
+- [x] Fix SARIF suggestion-only and related-locations tests
+- [x] Modernize `FormatPartialErrors` to use `slices.Collect(maps.Keys)`
 
 ## ✅ Completed (2026-04-28)
 
