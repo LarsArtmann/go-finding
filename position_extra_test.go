@@ -395,3 +395,12 @@ func TestRangeHasLineRange(t *testing.T) {
 		},
 	})
 }
+
+func TestRangeContains_ZeroValue(t *testing.T) {
+	t.Parallel()
+
+	var zero Range
+	if zero.Contains(Position{File: "a.go", Line: 1}) {
+		t.Error("zero-value Range should not contain any position")
+	}
+}
