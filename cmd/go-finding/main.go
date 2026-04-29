@@ -20,7 +20,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var version = "0.1.0" // overridden via -ldflags "-X main.version=..."
+var version = finding.Version // overridden via -ldflags "-X main.version=..."
 
 func main() {
 	os.Exit(run())
