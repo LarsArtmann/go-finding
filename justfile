@@ -45,8 +45,12 @@ build:
 vuln:
     govulncheck ./...
 
+# Check coverage thresholds
+threshold:
+    bash scripts/coverage-check.sh
+
 # Run all checks
-check: fmt lint test
+check: fmt lint test threshold
     @echo "All checks passed!"
 
 # Update dependencies

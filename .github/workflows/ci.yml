@@ -36,14 +36,8 @@ jobs:
         with:
           go-version: "1.26"
       - run: go test -race -count=1 -coverprofile=coverage.out ./...
-      - name: Enforce minimum coverage (75%)
-        run: |
-          COV=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
-          echo "Total coverage: ${COV}%"
-          if [ "$(echo "$COV < 75" | bc -l)" -eq 1 ]; then
-            echo "::error::Coverage ${COV}% is below 75% threshold"
-            exit 1
-          fi
+      - name: Enforce per-package coverage thresholds
+        run: bash scripts/coverage-check.sh coverage.out
       - uses: codecov/codecov-action@v4
         with:
           file: ./coverage.out
