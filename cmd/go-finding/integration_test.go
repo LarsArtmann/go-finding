@@ -2,14 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -504,6 +507,86 @@ func requireJSON[T any](t *testing.T, buf *bytes.Buffer, parsed *T, context stri
 	if err := json.Unmarshal(buf.Bytes(), parsed); err != nil {
 		t.Fatalf("%s: %v", context, err)
 	}
+}
+
+//nolint:paralleltest // manipulates global flag state
+func TestRun_NegativeMaxIterations(t *testing.T) {
+	assertRunFails(t, "-max-iterations", "-1", "-dir", t.TempDir())
+}
+
+//nolint:paralleltest // manipulates global flag state
+func TestRun_PipelineRunError(t *testing.T) {
+	err := RegisterDetector("broken-fix", func(_ string) pipeline.Detector {
+		return pipeline.NamedDetectorFunc(
+			"broken",
+			func(_ context.Context) ([]finding.Finding, error) {
+				return []finding.Finding{{
+					ID:          "broken:R1:main.go:1:1",
+					Rule:        "R1",
+					ToolName:    "broken",
+					Message:     "broken fix",
+					Severity:    finding.SeverityError,
+					Position:    finding.Position{File: "nonexistent.go", Line: 1, Column: 1},
+					FixStrategy: finding.FixStrategyDirect,
+					BeforeCode:  "old",
+					AfterCode:   "new",
+				}}, nil
+			},
+		)
+	})
+	require.NoError(t, err)
+
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "config.yaml")
+	writeConfig(t, cfgPath, []byte(
+		"maxIterations: 1\ntimeout: 30s\ndetectors:\n  - name: broken-fix\n",
+	))
+
+	assertRunFails(t, "-config", cfgPath, "-dir", dir)
+}
+
+//nolint:paralleltest // manipulates global flag state
+func TestRun_MetricsOutput(t *testing.T) {
+	err := RegisterDetector("always-find", func(_ string) pipeline.Detector {
+		return pipeline.NamedDetectorFunc(
+			"find",
+			func(_ context.Context) ([]finding.Finding, error) {
+				return []finding.Finding{{
+					ID:       "find:R1:main.go:1:1",
+					Rule:     "R1",
+					ToolName: "find",
+					Message:  "test finding",
+					Severity: finding.SeverityError,
+					Position: finding.Position{File: "main.go", Line: 1, Column: 1},
+				}}, nil
+			},
+		)
+	})
+	require.NoError(t, err)
+
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "config.yaml")
+	writeConfig(t, cfgPath, []byte(
+		"maxIterations: 1\ntimeout: 30s\ndetectors:\n  - name: always-find\n",
+	))
+
+	var buf bytes.Buffer
+	old := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	saveRestoreFlags(t)
+	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
+	os.Args = []string{"go-finding", "-config", cfgPath, "-dir", dir}
+
+	got := run()
+
+	_ = w.Close()
+	os.Stderr = old
+	_, _ = io.Copy(&buf, r)
+
+	assert.Equal(t, 0, got)
+	assert.Contains(t, buf.String(), "Metrics:")
 }
 
 //nolint:paralleltest // manipulates global flag state via assertRunFails
