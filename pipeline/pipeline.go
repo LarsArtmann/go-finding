@@ -227,7 +227,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		findings := detResult.Findings
 
 		// Accumulate partial errors across iterations.
-		for name, detErr := range detResult.PartialErrors {
+		for name, detErr := range detResult.Errors {
 			if result.PartialErrors == nil {
 				result.PartialErrors = make(map[string]error)
 			}
@@ -321,41 +321,26 @@ func (*Pipeline) collectAllFindings(
 	return all
 }
 
-// detectResult holds findings and optional partial errors from detection.
-type detectResult struct {
-	Findings      []finding.Finding
-	PartialErrors map[string]error
-}
-
 // detect runs all detectors and collects findings.
-func (p *Pipeline) detect(ctx context.Context) (*detectResult, error) {
+func (p *Pipeline) detect(ctx context.Context) (*PartialResult, error) {
 	if p.config.GracefulDegradation {
-		result, err := p.DetectPartial(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		return &detectResult{
-			Findings:      result.Findings,
-			PartialErrors: result.Errors,
-		}, nil
+		return p.DetectPartial(ctx)
 	}
+
+	var findings []finding.Finding
+	var err error
 
 	if p.config.ParallelDetectors {
-		findings, err := p.detectParallel(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		return &detectResult{Findings: findings}, nil //nolint:exhaustruct
+		findings, err = p.detectParallel(ctx)
+	} else {
+		findings, err = p.detectSequential(ctx)
 	}
 
-	findings, err := p.detectSequential(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &detectResult{Findings: findings}, nil //nolint:exhaustruct
+	return &PartialResult{Findings: findings}, nil //nolint:exhaustruct
 }
 
 // filterActive returns non-suppressed findings, calling OnFinding for each.
