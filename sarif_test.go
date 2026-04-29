@@ -2,6 +2,7 @@ package finding
 
 import (
 	"encoding/json"
+	"math"
 	"strings"
 	"testing"
 
@@ -295,6 +296,68 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 	}
 }
 
+func TestToSARIF_SuggestionOnly(t *testing.T) {
+	t.Parallel()
+
+	r := &Report{
+		Tool: ToolInfo{Name: "tool"},
+		Findings: []Finding{
+			{
+				ID:          "f1",
+				Rule:        "r1",
+				Severity:    SeverityWarning,
+				Position:    Position{File: "a.go", Line: 5},
+				FixStrategy: FixStrategySuggest,
+				Suggestion:  "do better",
+			},
+		},
+	}
+
+	data, err := r.ToSARIF()
+	require.NoError(t, err)
+
+	log := unmarshalSARIF(t, data)
+	require.Len(t, log.Runs[0].Results, 1)
+
+	result := log.Runs[0].Results[0]
+	require.Len(t, result.Fixes, 1)
+	assert.Equal(t, "do better", result.Fixes[0].Description.Text)
+	assert.Empty(t, result.Fixes[0].Changes)
+}
+
+func TestToSARIF_WithRelated(t *testing.T) {
+	t.Parallel()
+
+	r := &Report{
+		Tool: ToolInfo{Name: "tool"},
+		Findings: []Finding{
+			{
+				ID:       "f1",
+				Rule:     "r1",
+				Severity: SeverityError,
+				Position: Position{File: "a.go", Line: 10},
+				Related: []RelatedRef{
+					{
+						FindingID: "f2", Relation: "causes",
+						Position: Position{File: "b.go", Line: 20},
+					},
+				},
+			},
+		},
+	}
+
+	data, err := r.ToSARIF()
+	require.NoError(t, err)
+
+	log := unmarshalSARIF(t, data)
+	require.Len(t, log.Runs[0].Results, 1)
+
+	result := log.Runs[0].Results[0]
+	require.Len(t, result.Related, 1)
+	assert.Equal(t, "b.go", result.Related[0].PhysicalLocation.ArtifactLocation.URI)
+	assert.Equal(t, 20, result.Related[0].PhysicalLocation.Region.StartLine)
+}
+
 func TestToSARIF_EmptyReport(t *testing.T) {
 	t.Parallel()
 
@@ -310,6 +373,40 @@ func TestToSARIF_EmptyReport(t *testing.T) {
 	if len(log.Runs[0].Results) != 0 {
 		t.Errorf("Results length = %d, want 0", len(log.Runs[0].Results))
 	}
+}
+
+func TestToSARIF_ErrorPath(t *testing.T) {
+	t.Parallel()
+
+	r := &Report{
+		Tool: ToolInfo{Name: "tool"},
+		Findings: []Finding{
+			{
+				ID: "f1", Rule: "r1", Message: "m", Severity: SeverityError,
+				Position: Position{File: "a.go"}, Confidence: math.NaN(),
+			},
+		},
+	}
+
+	_, err := r.ToSARIF()
+	require.Error(t, err, "expected error for NaN confidence")
+}
+
+func TestToSARIFFiltered_ErrorPath(t *testing.T) {
+	t.Parallel()
+
+	r := &Report{
+		Tool: ToolInfo{Name: "tool"},
+		Findings: []Finding{
+			{
+				ID: "f1", Rule: "r1", Message: "m", Severity: SeverityError,
+				Position: Position{File: "a.go"}, Confidence: math.NaN(),
+			},
+		},
+	}
+
+	_, err := r.ToSARIFFiltered(SeverityError)
+	require.Error(t, err, "expected error for NaN confidence")
 }
 
 func TestFindingsFromSARIF_EmptyLog(t *testing.T) {

@@ -19,9 +19,14 @@ type FixApplier struct {
 
 // NewFixApplier creates a new FixApplier.
 func NewFixApplier(rootDir string) *FixApplier {
+	backupDir, err := os.MkdirTemp("", "go-finding-backups-*")
+	if err != nil {
+		backupDir = filepath.Join(os.TempDir(), "go-finding-backups")
+	}
+
 	return &FixApplier{
 		rootDir: rootDir,
-		backup:  NewFileBackup(filepath.Join(os.TempDir(), "go-finding-backups")),
+		backup:  NewFileBackup(backupDir),
 		engine:  NewFixEngine(),
 	}
 }
