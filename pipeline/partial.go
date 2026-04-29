@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"sync"
 
@@ -34,10 +35,18 @@ func (p *Pipeline) DetectPartial(ctx context.Context) (*PartialResult, error) {
 }
 
 // notifyFinding calls OnFinding callback if configured.
+// Safe for concurrent use when ParallelDetectors is enabled.
 func (p *Pipeline) notifyFinding(f finding.Finding) {
-	if p.config.OnFinding != nil {
-		p.config.OnFinding(f)
+	if p.config.OnFinding == nil {
+		return
 	}
+
+	if p.config.ParallelDetectors {
+		p.callbackMu.Lock()
+		defer p.callbackMu.Unlock()
+	}
+
+	p.config.OnFinding(f)
 }
 
 // isContextDone returns true if the context is done (cancelled/timed out).
@@ -125,10 +134,7 @@ func FormatPartialErrors(errors map[string]error) error {
 		return nil
 	}
 
-	names := make([]string, 0, len(errors))
-	for name := range errors {
-		names = append(names, name)
-	}
+	names := slices.Collect(maps.Keys(errors))
 
 	slices.Sort(names)
 

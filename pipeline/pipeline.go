@@ -130,6 +130,7 @@ type Pipeline struct {
 	iterations int
 	findings   []finding.Finding
 	metrics    *Metrics
+	callbackMu sync.Mutex // protects OnFinding from parallel goroutines
 }
 
 // New creates a new Pipeline with the given configuration.
