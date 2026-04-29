@@ -232,11 +232,9 @@ func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
 	applied, err := applier.Apply(context.Background(), fixes)
 	require.Error(t, err)
 	require.ErrorIs(t, err, finding.ErrConflict)
-	assert.LessOrEqual(t, applied, 1, "applied should be 0 or 1 depending on map iteration order")
+	assert.Equal(t, 1, applied, "first.go is alphabetically first and should be applied before second.go fails")
 
-	// File 1 should be unchanged regardless of iteration order:
-	// - If first.go was processed first: it was applied then rolled back.
-	// - If second.go was processed first: first.go was never touched.
+	// File 1 should have been applied then rolled back.
 	data1, rErr := readFile(file1)
 	require.NoError(t, rErr)
 	assert.Equal(t, "package first\nold1()\n", string(data1), "file1 should be restored")

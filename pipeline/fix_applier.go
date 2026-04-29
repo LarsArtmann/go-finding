@@ -3,8 +3,10 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/larsartmann/go-finding"
@@ -55,7 +57,12 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 	applied := 0
 	var modified []string
 
-	for path, fileFixes := range byFile {
+	// Sort file paths for deterministic, reproducible fix application order.
+	paths := slices.Collect(maps.Keys(byFile))
+	slices.Sort(paths)
+
+	for _, path := range paths {
+		fileFixes := byFile[path]
 		select {
 		case <-ctx.Done():
 			_ = a.backup.RollbackAll(modified)
