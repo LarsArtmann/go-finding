@@ -2,6 +2,13 @@ package finding
 
 import "maps"
 
+// ErrInvalidBuilder is returned when Builder.Build is called on a Finding
+// that is missing required fields.
+var ErrInvalidBuilder = NewValidationError(
+	"finding.Builder: cannot Build() an invalid Finding",
+	nil,
+)
+
 // Builder provides a fluent API for constructing Finding values.
 // Use NewBuilder with the required fields, then chain With* methods
 // for optional fields, and call Build to obtain the result.
@@ -107,11 +114,11 @@ func (b *Builder) WithMetadata(m map[string]string) *Builder {
 }
 
 // Build returns the constructed Finding.
-// Panics if required fields are missing (use IsValid to check beforehand).
-func (b *Builder) Build() Finding {
+// Returns an error if required fields are missing.
+func (b *Builder) Build() (Finding, error) {
 	if !b.f.IsValid() {
-		panic("finding.Builder: cannot Build() an invalid Finding — ensure required fields are set")
+		return Finding{}, ErrInvalidBuilder
 	}
 
-	return b.f.Clone()
+	return b.f.Clone(), nil
 }

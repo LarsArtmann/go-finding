@@ -9,13 +9,16 @@ import (
 )
 
 func main() {
-	f := finding.NewBuilder("staticcheck", "SA1000", "invalid regular expression", finding.SeverityError, finding.Pos("pkg/validate.go", 24, 8)).
+	f, err := finding.NewBuilder("staticcheck", "SA1000", "invalid regular expression", finding.SeverityError, finding.Pos("pkg/validate.go", 24, 8)).
 		WithCategory(finding.CategoryCorrectness).
 		WithConfidence(0.95).
 		WithBeforeCode("oldPattern").
 		WithAfterCode("newPattern").
 		WithFixStrategy(finding.FixStrategyDirect).
 		Build()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Printf("Finding: %s (%s)\n", f.ID, f.Rule)
 	fmt.Printf("Position: %s\n", f.Position)

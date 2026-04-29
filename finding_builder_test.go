@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBuilder_Minimal(t *testing.T) {
@@ -11,7 +12,8 @@ func TestBuilder_Minimal(t *testing.T) {
 
 	pos := Pos("main.go", 42, 5)
 	b := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, pos)
-	f := b.Build()
+	f, err := b.Build()
+	require.NoError(t, err)
 
 	assert.Equal(t, "nilcheck", f.Rule)
 	assert.Equal(t, "govet", f.ToolName)
@@ -28,7 +30,7 @@ func TestBuilder_Full(t *testing.T) {
 	pos := Pos("main.go", 42, 5)
 	rng := NewRange("main.go", 42, 5, 42, 10)
 
-	f := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, pos).
+	f, err := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, pos).
 		WithID("custom-id").
 		WithCategory(CategorySecurity).
 		WithTag("nil-deref").
@@ -44,6 +46,7 @@ func TestBuilder_Full(t *testing.T) {
 		WithMetadata(map[string]string{"key": "value"}).
 		Build()
 
+	require.NoError(t, err)
 	assert.Equal(t, "custom-id", f.ID)
 	assert.Equal(t, CategorySecurity, f.Category)
 	assert.Equal(t, "nil-deref", f.Tag)
@@ -63,11 +66,12 @@ func TestBuilder_Chaining(t *testing.T) {
 	t.Parallel()
 
 	pos := Pos("a.go", 1, 1)
-	f := NewBuilder("r", "t", "m", SeverityWarning, pos).
+	f, err := NewBuilder("r", "t", "m", SeverityWarning, pos).
 		WithRelated(RelatedRef{FindingID: "r1"}).
 		WithRelated(RelatedRef{FindingID: "r2"}).
 		Build()
 
+	require.NoError(t, err)
 	assert.Len(t, f.Related, 2)
 	assert.Equal(t, "r1", f.Related[0].FindingID)
 	assert.Equal(t, "r2", f.Related[1].FindingID)
@@ -81,7 +85,8 @@ func TestBuilder_MetadataMerge(t *testing.T) {
 		WithMetadata(map[string]string{"a": "1"}).
 		WithMetadata(map[string]string{"b": "2"})
 
-	f := b.Build()
+	f, err := b.Build()
+	require.NoError(t, err)
 
 	assert.Equal(t, "1", f.Metadata["a"])
 	assert.Equal(t, "2", f.Metadata["b"])
@@ -92,13 +97,9 @@ func TestBuilder_Build_InvalidPanics(t *testing.T) {
 
 	b := &Builder{f: Finding{}} // invalid: no required fields
 
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("expected Build() to panic for invalid Finding")
-		}
-	}()
-
-	b.Build()
+	_, err := b.Build()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid Finding")
 }
 
 func TestBuilder_Immutability(t *testing.T) {
@@ -108,9 +109,11 @@ func TestBuilder_Immutability(t *testing.T) {
 	b := NewBuilder("r", "t", "m", SeverityInfo, pos).
 		WithMetadata(map[string]string{"key": "original"})
 
-	f1 := b.Build()
+	f1, err := b.Build()
+	require.NoError(t, err)
 	b.f.Metadata["key"] = "mutated"
-	f2 := b.Build()
+	f2, err := b.Build()
+	require.NoError(t, err)
 
 	assert.Equal(t, "original", f1.Metadata["key"])
 	assert.Equal(t, "mutated", f2.Metadata["key"])

@@ -62,13 +62,16 @@ func main() {
 Construct findings fluently with the `Builder`:
 
 ```go
-f := finding.NewBuilder("nilcheck", "govet", "possible nil deref",
+f, err := finding.NewBuilder("nilcheck", "govet", "possible nil deref",
     finding.SeverityError, finding.Pos("main.go", 42, 5)).
     WithFixStrategy(finding.FixStrategyDirect).
     WithBeforeCode("x.foo").
     WithAfterCode("x.foo()").
     WithConfidence(0.95).
     Build()
+if err != nil {
+    log.Fatal(err)
+}
 ```
 
 ## Core Types
