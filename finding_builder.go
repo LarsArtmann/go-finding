@@ -107,6 +107,11 @@ func (b *Builder) WithMetadata(m map[string]string) *Builder {
 }
 
 // Build returns the constructed Finding.
+// Panics if required fields are missing (use IsValid to check beforehand).
 func (b *Builder) Build() Finding {
+	if !b.f.IsValid() {
+		panic("finding.Builder: cannot Build() an invalid Finding — ensure required fields are set")
+	}
+
 	return b.f.Clone()
 }

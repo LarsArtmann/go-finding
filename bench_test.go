@@ -213,6 +213,7 @@ func sarifBenchReport() *Report {
 func BenchmarkToSARIF(b *testing.B) {
 	report := sarifBenchReport()
 
+	b.ReportAllocs()
 	b.ResetTimer()
 
 	for b.Loop() {
@@ -225,9 +226,41 @@ func BenchmarkFromSARIF(b *testing.B) {
 
 	sarifData, _ := report.ToSARIF()
 
+	b.ReportAllocs()
 	b.ResetTimer()
 
 	for b.Loop() {
 		_, _ = FindingsFromSARIF(sarifData)
+	}
+}
+
+func BenchmarkFindingKey(b *testing.B) {
+	f := Finding{
+		ID:       "tool:rule:file.go:42:10",
+		Rule:     "SA1000",
+		Message:  "test finding",
+		Position: Position{File: "file.go", Line: 42, Column: 10},
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = f.Key()
+	}
+}
+
+func BenchmarkFindingKey_NoID(b *testing.B) {
+	f := Finding{
+		Rule:     "SA1000",
+		Message:  "test finding",
+		Position: Position{File: "file.go", Line: 42, Column: 10},
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = f.Key()
 	}
 }

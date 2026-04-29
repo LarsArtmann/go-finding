@@ -99,3 +99,111 @@ func TestEqualTimePtr(t *testing.T) {
 		t.Error("equalTimePtr(&now, &same) should be true")
 	}
 }
+
+func TestFindingKey(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		f    Finding
+		want string
+	}{
+		{
+			name: "returns ID when set",
+			f: Finding{
+				ID:       "my-id",
+				Rule:     "R001",
+				ToolName: "test",
+				Message:  "msg",
+				Severity: SeverityError,
+				Position: Position{File: "file.go", Line: 10, Column: 5},
+			},
+			want: "my-id",
+		},
+		{
+			name: "falls back to composite key when ID empty",
+			f: Finding{
+				Rule:     "R001",
+				ToolName: "test",
+				Message:  "msg",
+				Severity: SeverityError,
+				Position: Position{File: "file.go", Line: 10, Column: 5},
+			},
+			want: "file.go\x00R001\x00msg",
+		},
+		{
+			name: "empty file/rule/message still produces key",
+			f: Finding{
+				Rule:     "",
+				ToolName: "test",
+				Message:  "",
+				Severity: SeverityError,
+				Position: Position{File: "", Line: 0, Column: 0},
+			},
+			want: "\x00\x00",
+		},
+		{
+			name: "ID with only whitespace is used as-is",
+			f: Finding{
+				ID:       "   ",
+				Rule:     "R001",
+				ToolName: "test",
+				Message:  "msg",
+				Severity: SeverityError,
+				Position: Position{File: "file.go", Line: 10, Column: 5},
+			},
+			want: "   ",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := tt.f.Key()
+			if got != tt.want {
+				t.Errorf("Key() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFindingKeyStability(t *testing.T) {
+	t.Parallel()
+
+	// Key must be stable: same inputs → same output.
+	f := Finding{
+		Rule:     "R001",
+		ToolName: "test",
+		Message:  "msg",
+		Severity: SeverityError,
+		Position: Position{File: "file.go", Line: 10, Column: 5},
+	}
+
+	key1 := f.Key()
+	key2 := f.Key()
+	if key1 != key2 {
+		t.Error("Key() should be stable across calls")
+	}
+
+	// Different message → different key.
+	f2 := f
+	f2.Message = "other"
+	if f2.Key() == key1 {
+		t.Error("different Message should produce different Key")
+	}
+
+	// Different rule → different key.
+	f3 := f
+	f3.Rule = "R002"
+	if f3.Key() == key1 {
+		t.Error("different Rule should produce different Key")
+	}
+
+	// Different file → different key.
+	f4 := f
+	f4.Position.File = "other.go"
+	if f4.Key() == key1 {
+		t.Error("different Position.File should produce different Key")
+	}
+}

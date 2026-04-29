@@ -205,6 +205,46 @@ func TestFixApplier_Apply_EmptyFixesList(t *testing.T) {
 	assert.Equal(t, 0, applied)
 }
 
+func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	applier := NewFixApplier(tempDir)
+
+	// File 1: will be successfully modified.
+	file1 := filepath.Join(tempDir, "first.go")
+	writeTestFile(t, file1, []byte("package first\nold1()\n"))
+
+	// File 2: read-only so applyToFile write fails.
+	file2 := filepath.Join(tempDir, "second.go")
+	writeTestFile(t, file2, []byte("package second\nold2()\n"))
+	errChmod := os.Chmod(file2, 0o444) //nolint:gosec // intentional read-only for test
+	require.NoError(t, errChmod)
+	t.Cleanup(func() {
+		_ = os.Chmod(file2, 0o644) //nolint:gosec // restore permissions in cleanup
+	})
+
+	fixes := []finding.Finding{
+		makeFixFinding("1", "old1()", "new1()", "first.go", 0),
+		makeFixFinding("2", "old2()", "new2()", "second.go", 0),
+	}
+
+	applied, err := applier.Apply(context.Background(), fixes)
+	require.Error(t, err)
+	require.ErrorIs(t, err, finding.ErrConflict)
+	assert.Equal(t, 1, applied, "first file should have been applied before second failed")
+
+	// File 1 should have been rolled back.
+	data1, rErr := readFile(file1)
+	require.NoError(t, rErr)
+	assert.Equal(t, "package first\nold1()\n", string(data1), "file1 should be restored")
+
+	// File 2 should be unchanged (write failed before modification).
+	data2, rErr := readFile(file2)
+	require.NoError(t, rErr)
+	assert.Equal(t, "package second\nold2()\n", string(data2), "file2 should be unchanged")
+}
+
 func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
 	t.Parallel()
 

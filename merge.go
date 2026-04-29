@@ -2,6 +2,7 @@ package finding
 
 import (
 	"fmt"
+	"maps"
 	"slices"
 	"sync"
 )
@@ -171,10 +172,7 @@ func Correlate(findings []Finding) []Correlation {
 
 	byFile := GroupByFile(findings)
 
-	files := make([]string, 0, len(byFile))
-	for f := range byFile {
-		files = append(files, f)
-	}
+	files := slices.Collect(maps.Keys(byFile))
 
 	slices.Sort(files)
 

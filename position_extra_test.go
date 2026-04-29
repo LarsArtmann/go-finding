@@ -387,5 +387,11 @@ func TestRangeHasLineRange(t *testing.T) {
 			Pos("a.go", 0, 0),
 			true,
 		},
+		{
+			"range with no end line uses column check",
+			rangeLine("a.go", 10, 0),
+			Pos("a.go", 10, 0),
+			true,
+		},
 	})
 }

@@ -2,6 +2,7 @@ package finding
 
 import (
 	"encoding/json"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -314,6 +315,37 @@ func TestLineJSON(t *testing.T) {
 
 	assert.NotContains(t, got, "\n", "LineJSON should be single line (no newlines)")
 	assert.Contains(t, got, `"id"`, "LineJSON should contain JSON fields")
+}
+
+func TestPrettyJSON_ErrorPath(t *testing.T) {
+	t.Parallel()
+
+	r := MakeSimpleReport("tool")
+	r.AddFinding(Finding{
+		ID: "f1", Rule: "r1", ToolName: "t", Message: "m",
+		Severity: SeverityWarning, Position: Position{File: "a.go"},
+		Confidence: math.NaN(),
+	})
+
+	_, err := r.PrettyJSON()
+	require.Error(t, err, "expected error for NaN confidence")
+}
+
+func TestLineJSON_ErrorPath(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		ID:         "f1",
+		Rule:       "r1",
+		ToolName:   "t",
+		Message:    "m",
+		Severity:   SeverityWarning,
+		Position:   Position{File: "a.go"},
+		Confidence: math.NaN(),
+	}
+
+	_, err := f.LineJSON()
+	require.Error(t, err, "expected error for NaN confidence")
 }
 
 func expectJSONError(t *testing.T, fn func() error, context string) {

@@ -87,6 +87,20 @@ func TestBuilder_MetadataMerge(t *testing.T) {
 	assert.Equal(t, "2", f.Metadata["b"])
 }
 
+func TestBuilder_Build_InvalidPanics(t *testing.T) {
+	t.Parallel()
+
+	b := &Builder{f: Finding{}} // invalid: no required fields
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("expected Build() to panic for invalid Finding")
+		}
+	}()
+
+	b.Build()
+}
+
 func TestBuilder_Immutability(t *testing.T) {
 	t.Parallel()
 

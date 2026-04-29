@@ -2,6 +2,7 @@ package finding
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -24,19 +25,48 @@ func GenerateID(toolName, rule string, pos Position) string {
 	if pos.Line == 0 {
 		// Hash-based for position-less findings
 		h := sha256.New()
-		h.Write([]byte(toolName + ":" + rule + ":" + pos.File))
+		h.Write([]byte(toolName))
+		h.Write([]byte(":"))
+		h.Write([]byte(rule))
+		h.Write([]byte(":"))
+		h.Write([]byte(pos.File))
 
-		return fmt.Sprintf("%s:%s:%x", toolName, rule, h.Sum(nil)[:hashLength/2])
+		sum := h.Sum(make([]byte, 0, sha256.Size))
+		hash := hex.EncodeToString(sum[:hashLength/2])
+
+		var b strings.Builder
+		b.Grow(len(toolName) + 1 + len(rule) + 1 + len(hash))
+		b.WriteString(toolName)
+		b.WriteByte(':')
+		b.WriteString(rule)
+		b.WriteByte(':')
+		b.WriteString(hash)
+
+		return b.String()
 	}
 
 	// Normalize file path to use forward slashes
 	file := filepath.ToSlash(pos.File)
 
+	var b strings.Builder
+	lineStr := strconv.Itoa(pos.Line)
+	b.Grow(len(toolName) + 1 + len(rule) + 1 + len(file) + 1 + len(lineStr))
+	b.WriteString(toolName)
+	b.WriteByte(':')
+	b.WriteString(rule)
+	b.WriteByte(':')
+	b.WriteString(file)
+	b.WriteByte(':')
+	b.WriteString(lineStr)
+
 	if pos.Column == 0 {
-		return fmt.Sprintf("%s:%s:%s:%d", toolName, rule, file, pos.Line)
+		return b.String()
 	}
 
-	return fmt.Sprintf("%s:%s:%s:%d:%d", toolName, rule, file, pos.Line, pos.Column)
+	b.WriteByte(':')
+	b.WriteString(strconv.Itoa(pos.Column))
+
+	return b.String()
 }
 
 // extractFile extracts the file path from ID parts, excluding trailing position components.

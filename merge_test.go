@@ -224,3 +224,31 @@ func TestCloneFindings_EmptySlice(t *testing.T) {
 		t.Errorf("cloneFindings(empty) = %v, want nil", cloned)
 	}
 }
+
+func TestCloneFindings_DeepCopy(t *testing.T) {
+	t.Parallel()
+
+	original := []Finding{
+		{
+			ID: "1", Rule: "r1", ToolName: "t1", Message: "m1",
+			Severity: SeverityError, Position: Position{File: "a.go", Line: 10},
+		},
+		{
+			ID: "2", Rule: "r2", ToolName: "t2", Message: "m2",
+			Severity: SeverityWarning, Position: Position{File: "b.go", Line: 20},
+		},
+	}
+
+	cloned := cloneFindings(original)
+	require.Len(t, cloned, 2)
+
+	if !cloned[0].Equal(original[0]) {
+		t.Error("cloned[0] should be Equal to original[0]")
+	}
+
+	// Mutate clone — original should be unaffected.
+	cloned[0].Metadata = map[string]string{"key": "mutated"}
+	if original[0].Metadata != nil {
+		t.Error("mutating clone Metadata should not affect original")
+	}
+}
