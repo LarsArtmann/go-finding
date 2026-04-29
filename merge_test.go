@@ -164,6 +164,51 @@ func TestDeduplicateStrategiesDistinct(t *testing.T) {
 	assert.NotEqual(t, posKey, ruleKey)
 }
 
+func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
+	t.Parallel()
+
+	r1 := NewReport(ToolInfo{Name: "govet"})
+	r1.AddFinding(Finding{
+		ID: "1", ToolName: "govet", Rule: "nilcheck",
+		Position: Position{File: "a.go", Line: 10},
+	})
+	r1.AddFinding(Finding{
+		ID: "3", ToolName: "govet", Rule: "unused",
+		Position: Position{File: "a.go", Line: 10},
+	})
+
+	r2 := NewReport(ToolInfo{Name: "staticcheck"})
+	r2.AddFinding(Finding{
+		ID: "2", ToolName: "staticcheck", Rule: "nilcheck",
+		Position: Position{File: "a.go", Line: 10},
+	})
+
+	reports := []*Report{r1, r2}
+
+	byPos := Merge(reports, WithDeduplicateBy(DeduplicateByPosition))
+	byRule := Merge(reports, WithDeduplicateBy(DeduplicateByRule))
+
+	assert.Len(
+		t, collectIDs(byPos), 2,
+		"by position: govet:a.go:10 and staticcheck:a.go:10 are distinct",
+	)
+
+	assert.Len(
+		t, collectIDs(byRule), 2,
+		"by rule: nilcheck:a.go:10 and unused:a.go:10 are distinct",
+	)
+}
+
+func collectIDs(r *Report) []string {
+	var ids []string
+
+	for f := range r.All() {
+		ids = append(ids, f.ID)
+	}
+
+	return ids
+}
+
 func makeFinding(id, tool, rule, file string, line int) Finding {
 	return Finding{
 		ID:       id,

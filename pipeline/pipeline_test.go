@@ -126,6 +126,23 @@ func TestPipelineRun_DetectorError(t *testing.T) {
 	assert.ErrorIs(t, err, expectedErr)
 }
 
+// TestDetectSequential_ContextCancellation verifies that detectSequential
+// returns an error when the context is cancelled.
+func TestDetectSequential_ContextCancellation(t *testing.T) {
+	t.Parallel()
+
+	p := &Pipeline{
+		detectors: []Detector{&mockDetector{name: "slow", delay: time.Second}},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := p.detectSequential(ctx)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, context.Canceled)
+}
+
 // TestPipelineRun_ContextCancellation tests context cancellation.
 func TestPipelineRun_ContextCancellation(t *testing.T) {
 	t.Parallel()

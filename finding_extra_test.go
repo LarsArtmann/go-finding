@@ -3,6 +3,8 @@ package finding
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestClone(t *testing.T) {
@@ -205,5 +207,97 @@ func TestFindingKeyStability(t *testing.T) {
 	f4.Position.File = "other.go"
 	if f4.Key() == key1 {
 		t.Error("different Position.File should produce different Key")
+	}
+}
+
+func TestEqual_FieldMismatch(t *testing.T) {
+	t.Parallel()
+
+	base := Finding{
+		ID: "id", Rule: "r", ToolName: "t", Message: "m",
+		Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
+		Confidence: 0.5,
+	}
+
+	tests := []struct {
+		name string
+		a, b Finding
+	}{
+		{"equal", base, base},
+		{"different ID", base, func() Finding { f := base; f.ID = "x"; return f }()},
+		{"different Rule", base, func() Finding { f := base; f.Rule = "x"; return f }()},
+		{"different ToolName", base, func() Finding { f := base; f.ToolName = "x"; return f }()},
+		{"different Message", base, func() Finding { f := base; f.Message = "x"; return f }()},
+		{
+			"different Severity", base,
+			func() Finding { f := base; f.Severity = SeverityWarning; return f }(),
+		},
+		{"different Category", base, func() Finding { f := base; f.Category = "x"; return f }()},
+		{"different Tag", base, func() Finding { f := base; f.Tag = "x"; return f }()},
+		{
+			"different FixStrategy", base,
+			func() Finding { f := base; f.FixStrategy = FixStrategyDirect; return f }(),
+		},
+		{
+			"different Suggestion", base,
+			func() Finding { f := base; f.Suggestion = "x"; return f }(),
+		},
+		{
+			"different BeforeCode", base,
+			func() Finding { f := base; f.BeforeCode = "x"; return f }(),
+		},
+		{
+			"different AfterCode", base,
+			func() Finding { f := base; f.AfterCode = "x"; return f }(),
+		},
+		{
+			"different Snippet", base,
+			func() Finding { f := base; f.Snippet = "x"; return f }(),
+		},
+		{
+			"different Confidence", base,
+			func() Finding { f := base; f.Confidence = 0.9; return f }(),
+		},
+		{
+			"different Position", base,
+			func() Finding {
+				f := base
+				f.Position = Position{File: "b.go"}
+				return f
+			}(),
+		},
+		{
+			"different Range", base,
+			func() Finding {
+				f := base
+				f.Range = NewRangePtr("a.go", 1, 1, 1, 5)
+				return f
+			}(),
+		},
+		{
+			"different Related", base,
+			func() Finding {
+				f := base
+				f.Related = []RelatedRef{{FindingID: "x"}}
+				return f
+			}(),
+		},
+		{
+			"different Metadata", base,
+			func() Finding {
+				f := base
+				f.Metadata = map[string]string{"k": "v"}
+				return f
+			}(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			expected := tt.name == "equal"
+			assert.Equal(t, expected, tt.a.Equal(tt.b))
+		})
 	}
 }

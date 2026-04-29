@@ -99,7 +99,74 @@ func TestBuilder_Build_InvalidPanics(t *testing.T) {
 
 	_, err := b.Build()
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid Finding")
+	assert.ErrorIs(t, err, ErrInvalidBuilder)
+}
+
+func TestBuilder_Build_MissingFields(t *testing.T) {
+	t.Parallel()
+
+	pos := Pos("a.go", 1, 1)
+
+	tests := []struct {
+		name    string
+		builder *Builder
+	}{
+		{
+			"empty rule",
+			&Builder{
+				f: Finding{
+					Rule: "", ToolName: "t", Message: "m",
+					Severity: SeverityError, Position: pos,
+				},
+			},
+		},
+		{
+			"empty tool",
+			&Builder{
+				f: Finding{
+					Rule: "r", ToolName: "", Message: "m",
+					Severity: SeverityError, Position: pos,
+				},
+			},
+		},
+		{
+			"empty message",
+			&Builder{
+				f: Finding{
+					Rule: "r", ToolName: "t", Message: "",
+					Severity: SeverityError, Position: pos,
+				},
+			},
+		},
+		{
+			"empty severity",
+			&Builder{
+				f: Finding{
+					Rule: "r", ToolName: "t", Message: "m",
+					Severity: "", Position: pos,
+				},
+			},
+		},
+		{
+			"empty position",
+			&Builder{
+				f: Finding{
+					Rule: "r", ToolName: "t", Message: "m",
+					Severity: SeverityError,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := tt.builder.Build()
+			require.Error(t, err)
+			assert.ErrorIs(t, err, ErrInvalidBuilder)
+		})
+	}
 }
 
 func TestBuilder_Immutability(t *testing.T) {

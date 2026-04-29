@@ -331,6 +331,16 @@ func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
 	assert.NotEmpty(t, applier.backup.backupDir, "backupDir should be set")
 }
 
+func TestNewFixApplier_MkdirTempFallback(t *testing.T) {
+	// Cannot run in parallel: t.Setenv is incompatible with t.Parallel.
+	t.Setenv("TMPDIR", "/etc/passwd")
+
+	applier := NewFixApplier("/tmp/test")
+	assert.Equal(t, "/tmp/test", applier.rootDir)
+	assert.True(t, applier.backup.IsEnabled(), "backupEnabled should be true")
+	assert.NotEmpty(t, applier.backup.backupDir, "backupDir should be set")
+}
+
 func TestFixApplier_Apply_RestoreOnApplyError(t *testing.T) {
 	t.Parallel()
 

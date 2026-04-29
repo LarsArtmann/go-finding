@@ -11,11 +11,19 @@ import (
 // FromDiagnostic converts a go/analysis.Diagnostic to a Finding.
 // The toolName parameter identifies which analyzer produced this.
 // The ruleCode parameter provides a rule identifier (since go/analysis.Diagnostic doesn't have Code).
+// The defaultSeverity is used because go/analysis.Diagnostics don't carry severity;
+// if empty, SeverityWarning is used.
 func FromDiagnostic(
 	d *analysis.Diagnostic,
 	fset *token.FileSet,
 	toolName, ruleCode string,
+	defaultSeverity ...Severity,
 ) Finding {
+	sev := SeverityWarning
+	if len(defaultSeverity) > 0 && defaultSeverity[0].IsValid() {
+		sev = defaultSeverity[0]
+	}
+
 	pos := fset.Position(d.Pos)
 	findingPos := FromTokenPosition(pos)
 
@@ -42,7 +50,7 @@ func FromDiagnostic(
 		Rule:        ruleCode,
 		ToolName:    toolName,
 		Message:     d.Message,
-		Severity:    SeverityWarning, // go/analysis doesn't have severity
+		Severity:    sev,
 		Position:    findingPos,
 		Category:    Category(d.Category),
 		FixStrategy: fixStrategy,

@@ -1,9 +1,11 @@
 package pipeline
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/larsartmann/go-finding"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -118,4 +120,41 @@ func TestFileBackup_Disabled_DoesNotBackup(t *testing.T) {
 	// But BackupPath should be recorded
 	require.NoError(t, fb.Backup(testFile))
 	assert.NotEmpty(t, fb.BackupPath(testFile))
+}
+
+func TestFileBackup_Backup_MkdirAllError(t *testing.T) {
+	t.Parallel()
+
+	// Create a file (not a directory) to use as backupDir parent.
+	// MkdirAll will fail because it cannot create a directory inside a file.
+	badDir := filepath.Join(t.TempDir(), "not-a-dir")
+	writeTestFile(t, badDir, []byte("I am a file"))
+
+	fb := NewFileBackup(badDir)
+	testFile := filepath.Join(t.TempDir(), "test.go")
+	writeTestFile(t, testFile, []byte("content"))
+
+	err := fb.Backup(testFile)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, finding.ErrIO)
+}
+
+func TestFileBackup_Restore_ReadBackupError(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	fb := NewFileBackup(tmpDir)
+
+	testFile := filepath.Join(tmpDir, "test.go")
+	writeTestFile(t, testFile, []byte("original"))
+
+	require.NoError(t, fb.Backup(testFile))
+
+	// Delete the backup file to trigger read error on restore.
+	backupPath := fb.BackupPath(testFile)
+	require.NoError(t, os.Remove(backupPath))
+
+	err := fb.Restore(testFile)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, finding.ErrIO)
 }

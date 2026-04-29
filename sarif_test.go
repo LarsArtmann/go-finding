@@ -2,6 +2,7 @@ package finding
 
 import (
 	"encoding/json"
+	"errors"
 	"math"
 	"strings"
 	"testing"
@@ -788,6 +789,49 @@ func TestApplySarifPosition_EndColumnOnly(t *testing.T) {
 	}
 }
 
+func TestWriteSARIF_WriterError(t *testing.T) {
+	t.Parallel()
+
+	r := &Report{
+		Tool: ToolInfo{Name: "tool"},
+		Findings: []Finding{
+			{
+				ID: "f1", Rule: "r1", Message: "m",
+				Severity: SeverityError, Position: Position{File: "a.go"},
+			},
+		},
+	}
+
+	err := r.WriteSARIF(&failWriter{})
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "writing SARIF")
+}
+
+func TestWriteSARIFFiltered_WriterError(t *testing.T) {
+	t.Parallel()
+
+	r := &Report{
+		Tool: ToolInfo{Name: "tool"},
+		Findings: []Finding{
+			{
+				ID: "f1", Rule: "r1", Message: "m",
+				Severity: SeverityError, Position: Position{File: "a.go"},
+			},
+		},
+	}
+
+	err := r.WriteSARIFFiltered(&failWriter{}, SeverityWarning)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "writing SARIF")
+}
+
+// failWriter is an io.Writer that always returns an error.
+type failWriter struct{}
+
+func (failWriter) Write(_ []byte) (int, error) {
+	return 0, errors.New("write failed")
+}
+
 func TestToSARIF_RoundTripProperties(t *testing.T) {
 	t.Parallel()
 
@@ -856,4 +900,138 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 			t.Errorf("properties[%q] = %v, want %v", key, got, want)
 		}
 	}
+}
+
+func TestFindingFromSarResult_WithFix(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		RuleID:  "SA1000",
+		Level:   "warning",
+		Message: SarifMessage{Text: "unused variable"},
+		Locations: []SarifLocation{
+			{
+				PhysicalLocation: SarifPhysicalLocation{
+					ArtifactLocation: SarifArtifactLocation{URI: "main.go"},
+					Region:           &SarifRegion{StartLine: 10, StartColumn: 5},
+				},
+			},
+		},
+		Fixes: []SarifFix{
+			{
+				Description: SarifMessage{Text: "remove unused variable"},
+				Changes: []SarifArtifactChange{
+					{
+						ArtifactLocation: SarifArtifactLocation{URI: "main.go"},
+						Replacements: []SarifReplacement{
+							{
+								DeletedRegion: SarifRegion{
+									StartLine: 10, StartColumn: 5, EndLine: 10, EndColumn: 15,
+								},
+								InsertedText: SarifMessage{
+									Text: "fmt.Println()",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	f := findingFromSarResult(r, "staticcheck")
+
+	assert.Equal(t, "SA1000", f.Rule)
+	assert.Equal(t, "staticcheck", f.ToolName)
+	assert.Equal(t, "unused variable", f.Message)
+	assert.Equal(t, SeverityWarning, f.Severity)
+	assert.Equal(t, "remove unused variable", f.Suggestion)
+	assert.Equal(t, "fmt.Println()", f.AfterCode)
+	assert.Equal(t, FixStrategySuggest, f.FixStrategy)
+}
+
+func TestFindingFromSarResult_RankAsConfidence(t *testing.T) {
+	t.Parallel()
+
+	r := SarifResult{
+		RuleID:  "R1",
+		Level:   "error",
+		Message: SarifMessage{Text: "msg"},
+		Locations: []SarifLocation{
+			{
+				PhysicalLocation: SarifPhysicalLocation{
+					ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+					Region:           &SarifRegion{StartLine: 1},
+				},
+			},
+		},
+		Rank: 75.0,
+	}
+
+	f := findingFromSarResult(r, "tool")
+	assert.InDelta(t, 0.75, f.Confidence, 0.01)
+}
+
+func TestSARIF_RoundTripLosses(t *testing.T) {
+	t.Parallel()
+
+	report := NewReport(ToolInfo{Name: "test"})
+	report.AddFinding(Finding{
+		ID:          "test:R1:a.go:1:1",
+		Rule:        "R1",
+		ToolName:    "test",
+		Message:     "msg",
+		Severity:    SeverityError,
+		Position:    Pos("a.go", 1, 1),
+		BeforeCode:  "old code",
+		AfterCode:   "new code",
+		FixStrategy: FixStrategySuggest,
+		Related: []RelatedRef{{
+			FindingID: "related-123", Relation: "causes", Position: Pos("b.go", 5, 1),
+		}},
+	})
+	report.ComputeSummary()
+
+	data, err := report.ToSARIF()
+	require.NoError(t, err)
+
+	findings, err := FindingsFromSARIF(data)
+	require.NoError(t, err)
+	require.Len(t, findings, 1)
+
+	f := findings[0]
+
+	assert.Equal(t, "test:R1:a.go:1:1", f.ID, "ID preserved via properties")
+	assert.Equal(t, "R1", f.Rule, "Rule preserved")
+	assert.Equal(t, "msg", f.Message, "Message preserved")
+	assert.Equal(t, "new code", f.AfterCode, "AfterCode preserved via fix")
+
+	assert.Empty(t, f.BeforeCode, "BeforeCode is LOST in SARIF round-trip")
+
+	require.Len(t, f.Related, 1)
+	assert.Empty(t, f.Related[0].FindingID, "RelatedRef.FindingID is LOST in SARIF round-trip")
+	assert.Equal(t, "causes", f.Related[0].Relation, "RelatedRef.Relation preserved")
+}
+
+func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	report := NewReport(ToolInfo{Name: "test"})
+	report.AddFinding(Finding{
+		ID:          "test:R1:a.go:1:1",
+		Rule:        "R1",
+		ToolName:    "test",
+		Message:     "msg",
+		Severity:    SeverityError,
+		Position:    Pos("a.go", 1, 1),
+		Suppression: &Suppression{Kind: SuppressionInSource, Reason: "won't fix"},
+	})
+	report.ComputeSummary()
+
+	data, err := report.ToSARIF()
+	require.NoError(t, err)
+
+	findings, err := FindingsFromSARIF(data)
+	require.NoError(t, err)
+	assert.Empty(t, findings, "suppressed findings are LOST in SARIF round-trip")
 }

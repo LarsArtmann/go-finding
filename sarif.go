@@ -147,6 +147,14 @@ func sarifDriverFromReport(r *Report) SarifDriver {
 }
 
 // ToSARIF converts a Report to SARIF 2.1.0 format.
+//
+// Round-trip losses: SARIF export→import does not preserve:
+//   - RelatedRef.FindingID (only Position and Relation survive)
+//   - BeforeCode (only AfterCode is preserved via fix replacements)
+//   - Suppression data (suppressed findings are excluded from export)
+//   - Tag field (no SARIF equivalent; stored in properties for future use)
+//
+// All other fields are preserved via the "properties" bag.
 func (r *Report) ToSARIF() ([]byte, error) {
 	data, err := json.MarshalIndent(r.sarifLog(), "", "  ")
 	if err != nil {
