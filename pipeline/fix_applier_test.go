@@ -232,7 +232,8 @@ func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
 	applied, err := applier.Apply(context.Background(), fixes)
 	require.Error(t, err)
 	require.ErrorIs(t, err, finding.ErrConflict)
-	assert.Equal(t, 1, applied, "first.go is alphabetically first and should be applied before second.go fails")
+	assert.Equal(t, 1, applied,
+		"first.go is alphabetically first and should be applied before second.go fails")
 
 	// File 1 should have been applied then rolled back.
 	data1, rErr := readFile(file1)

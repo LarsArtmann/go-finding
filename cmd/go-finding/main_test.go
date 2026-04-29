@@ -5,8 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"flag"
 	"io"
+	"math"
 	"os"
+	"runtime/pprof"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -281,6 +284,82 @@ func makeTestFinding(
 		Severity: sev,
 		Position: finding.Position{File: file, Line: line, Column: col},
 	}
+}
+
+func TestSetupProfiling_BadCPUProfilePath(t *testing.T) {
+	t.Parallel()
+
+	stop, err := setupProfiling("/nonexistent_dir/cpu.prof", "")
+	require.Error(t, err)
+	assert.Nil(t, stop)
+}
+
+func TestSetupProfiling_CPUProfileStartFailure(t *testing.T) {
+	t.Parallel()
+
+	// Create a temp file that we can't write a valid CPU profile to
+	f, err := os.CreateTemp(t.TempDir(), "cpu.prof")
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	// Start a CPU profile already, so the second StartCPUProfile fails.
+	f2, err := os.CreateTemp(t.TempDir(), "cpu2.prof")
+	require.NoError(t, err)
+	defer func() { _ = f2.Close() }()
+
+	require.NoError(t, pprof.StartCPUProfile(f2))
+	defer pprof.StopCPUProfile()
+
+	stop, err := setupProfiling(f.Name(), "")
+	require.Error(t, err)
+	assert.Nil(t, stop)
+}
+
+func TestOutputResults_JSONSerializationError(t *testing.T) {
+	t.Parallel()
+
+	report := finding.NewReport(finding.ToolInfo{Name: "test"})
+	report.AddFinding(finding.Finding{
+		ID: "1", Rule: "r1", ToolName: "t", Message: "m",
+		Severity: finding.SeverityError, Position: finding.Position{File: "a.go"},
+		Confidence: math.NaN(),
+	})
+	var buf bytes.Buffer
+
+	err := outputResults(&buf, report, "json")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "serializing JSON")
+}
+
+func TestOutputResults_SARIFSerializationError(t *testing.T) {
+	t.Parallel()
+
+	report := finding.NewReport(finding.ToolInfo{Name: "test"})
+	report.AddFinding(finding.Finding{
+		ID: "1", Rule: "r1", ToolName: "t", Message: "m",
+		Severity: finding.SeverityError, Position: finding.Position{File: "a.go"},
+		Confidence: math.NaN(),
+	})
+	var buf bytes.Buffer
+
+	err := outputResults(&buf, report, "sarif")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "serializing SARIF")
+}
+
+func TestRun_InvalidSeverity(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
+	t.Parallel()
+
+	saveRestoreFlags(t)
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+	os.Args = []string{"go-finding", "-severity=banana"}
+
+	got := run()
+	assert.Equal(t, 1, got)
 }
 
 func TestRegisterDetector(t *testing.T) {
