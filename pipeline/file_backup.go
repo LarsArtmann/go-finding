@@ -24,6 +24,7 @@ type FileBackup struct {
 
 // NewFileBackup creates a FileBackup that stores backups in the given directory.
 func NewFileBackup(backupDir string) *FileBackup {
+	//nolint:exhaustruct
 	return &FileBackup{
 		enabled:   true,
 		backupDir: backupDir,
