@@ -10,6 +10,8 @@ import (
 	"math"
 	"os"
 	"runtime/pprof"
+	"strconv"
+	"sync/atomic"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -17,6 +19,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var testDetCounter atomic.Int64
+
+func uniqueDetName(prefix string) string {
+	return prefix + "-" + strconv.FormatInt(testDetCounter.Add(1), 10)
+}
 
 func parseJSON(t *testing.T, buf *bytes.Buffer) map[string]any {
 	t.Helper()
@@ -183,9 +191,8 @@ func TestBuildDetectors(t *testing.T) {
 	}
 }
 
+//nolint:paralleltest // mutates global os.Stderr
 func TestFatalf(t *testing.T) {
-	t.Parallel()
-
 	var buf bytes.Buffer
 	old := os.Stderr
 	r, w, _ := os.Pipe()
@@ -286,17 +293,15 @@ func makeTestFinding(
 	}
 }
 
+//nolint:paralleltest // writes to global os.Stderr; may race with TestFatalf
 func TestSetupProfiling_BadCPUProfilePath(t *testing.T) {
-	t.Parallel()
-
 	stop, err := setupProfiling("/nonexistent_dir/cpu.prof", "")
 	require.Error(t, err)
 	assert.Nil(t, stop)
 }
 
+//nolint:paralleltest // manipulates global pprof CPU profile state
 func TestSetupProfiling_CPUProfileStartFailure(t *testing.T) {
-	t.Parallel()
-
 	// Create a temp file that we can't write a valid CPU profile to
 	f, err := os.CreateTemp(t.TempDir(), "cpu.prof")
 	require.NoError(t, err)
@@ -365,8 +370,10 @@ func TestRun_InvalidSeverity(t *testing.T) {
 func TestRegisterDetector(t *testing.T) {
 	t.Parallel()
 
+	name := uniqueDetName("test-detector")
+
 	// Test registration of a new detector.
-	err := RegisterDetector("test-detector", func(_ string) pipeline.Detector {
+	err := RegisterDetector(name, func(_ string) pipeline.Detector {
 		return pipeline.NamedDetectorFunc(
 			"test",
 			func(_ context.Context) ([]finding.Finding, error) {
@@ -377,12 +384,12 @@ func TestRegisterDetector(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify it can be looked up.
-	builder, ok := lookupDetectorBuilder("test-detector")
+	builder, ok := lookupDetectorBuilder(name)
 	require.True(t, ok)
 	require.NotNil(t, builder)
 
 	// Test duplicate registration returns error.
-	err = RegisterDetector("test-detector", func(_ string) pipeline.Detector {
+	err = RegisterDetector(name, func(_ string) pipeline.Detector {
 		return nil
 	})
 	require.Error(t, err)

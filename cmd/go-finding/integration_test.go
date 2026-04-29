@@ -284,12 +284,9 @@ func TestPipelineConfigFile_ToPipelineConfig(t *testing.T) {
 	}
 }
 
+//nolint:paralleltest // manipulates global pprof CPU profile state and os.Stderr
 func TestSetupProfiling(t *testing.T) {
-	t.Parallel()
-
 	t.Run("no profiling", func(t *testing.T) {
-		t.Parallel()
-
 		stop, err := setupProfiling("", "")
 		if err != nil {
 			t.Fatalf("setupProfiling no-op error: %v", err)
@@ -299,8 +296,6 @@ func TestSetupProfiling(t *testing.T) {
 	})
 
 	t.Run("cpu profile", func(t *testing.T) {
-		t.Parallel()
-
 		dir := t.TempDir()
 		cpuPath := filepath.Join(dir, "cpu.prof")
 
@@ -320,8 +315,6 @@ func TestSetupProfiling(t *testing.T) {
 	})
 
 	t.Run("mem profile", func(t *testing.T) {
-		t.Parallel()
-
 		dir := t.TempDir()
 		memPath := filepath.Join(dir, "mem.prof")
 
@@ -341,8 +334,6 @@ func TestSetupProfiling(t *testing.T) {
 	})
 
 	t.Run("cpu profile bad path", func(t *testing.T) {
-		t.Parallel()
-
 		_, err := setupProfiling("/nonexistent/dir/cpu.prof", "")
 		if err == nil {
 			t.Fatal("expected error for bad cpu profile path")
@@ -516,7 +507,9 @@ func TestRun_NegativeMaxIterations(t *testing.T) {
 
 //nolint:paralleltest // manipulates global flag state
 func TestRun_PipelineRunError(t *testing.T) {
-	err := RegisterDetector("broken-fix", func(_ string) pipeline.Detector {
+	name := uniqueDetName("broken-fix")
+
+	err := RegisterDetector(name, func(_ string) pipeline.Detector {
 		return pipeline.NamedDetectorFunc(
 			"broken",
 			func(_ context.Context) ([]finding.Finding, error) {
@@ -539,7 +532,7 @@ func TestRun_PipelineRunError(t *testing.T) {
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
 	writeConfig(t, cfgPath, []byte(
-		"maxIterations: 1\ntimeout: 30s\ndetectors:\n  - name: broken-fix\n",
+		"maxIterations: 1\ntimeout: 30s\ndetectors:\n  - name: "+name+"\n",
 	))
 
 	assertRunFails(t, "-config", cfgPath, "-dir", dir)
@@ -547,7 +540,9 @@ func TestRun_PipelineRunError(t *testing.T) {
 
 //nolint:paralleltest // manipulates global flag state
 func TestRun_MetricsOutput(t *testing.T) {
-	err := RegisterDetector("always-find", func(_ string) pipeline.Detector {
+	name := uniqueDetName("always-find")
+
+	err := RegisterDetector(name, func(_ string) pipeline.Detector {
 		return pipeline.NamedDetectorFunc(
 			"find",
 			func(_ context.Context) ([]finding.Finding, error) {
@@ -567,7 +562,7 @@ func TestRun_MetricsOutput(t *testing.T) {
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
 	writeConfig(t, cfgPath, []byte(
-		"maxIterations: 1\ntimeout: 30s\ndetectors:\n  - name: always-find\n",
+		"maxIterations: 1\ntimeout: 30s\ndetectors:\n  - name: "+name+"\n",
 	))
 
 	var buf bytes.Buffer
