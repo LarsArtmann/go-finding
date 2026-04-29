@@ -11,6 +11,49 @@ import (
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
+func ExampleNewFinding() {
+	pos := finding.Pos("main.go", 42, 5)
+	f := finding.NewFinding(
+		"nilcheck", "govet", "possible nil dereference",
+		finding.SeverityError, pos,
+	)
+	fmt.Println(f.ID)
+	fmt.Println(f.Rule)
+	fmt.Println(f.Severity)
+	fmt.Println(f.Position)
+
+	// Output:
+	// govet:nilcheck:main.go:42:5
+	// nilcheck
+	// error
+	// main.go:42:5
+}
+
+func ExampleBuilder() {
+	f, err := finding.NewBuilder("staticcheck", "SA1000", "invalid regex", finding.SeverityError, finding.Pos("pkg.go", 24, 8)).
+		WithCategory(finding.CategoryCorrectness).
+		WithConfidence(0.95).
+		WithBeforeCode("oldPattern").
+		WithAfterCode("newPattern").
+		WithFixStrategy(finding.FixStrategyDirect).
+		Build()
+	if err != nil {
+		fmt.Println("error:", err)
+		return
+	}
+
+	fmt.Println(f.Rule)
+	fmt.Println(f.ToolName)
+	fmt.Println(f.Category)
+	fmt.Println(f.HasFix())
+
+	// Output:
+	// staticcheck
+	// SA1000
+	// correctness
+	// true
+}
+
 func ExampleGenerateID() {
 	pos := finding.Position{File: "main.go", Line: 42, Column: 5}
 	id := finding.GenerateID("govet", "printf", pos)
