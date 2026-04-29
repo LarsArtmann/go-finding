@@ -141,12 +141,9 @@ func (r Range) containsSameFile(p Position) bool {
 	return r.Start.File == p.File && (r.End.File == "" || r.End.File == p.File)
 }
 
-// hasLineRange checks if the range has defined line numbers and evaluates if p is within line bounds.
+// hasLineRange checks if p is within the range's line bounds.
+// Called only when both r.Start.Line and p.Line are greater than zero.
 func (r Range) hasLineRange(p Position) bool {
-	if r.Start.Line == 0 || p.Line == 0 {
-		return false
-	}
-
 	if p.Line < r.Start.Line {
 		return false
 	}
