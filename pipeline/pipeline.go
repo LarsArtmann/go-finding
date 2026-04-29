@@ -357,16 +357,16 @@ func (p *Pipeline) detect(ctx context.Context) (*detectResult, error) {
 	return &detectResult{Findings: findings}, nil //nolint:exhaustruct
 }
 
-// addFindings adds non-suppressed findings to the target slice, calling OnFinding if set.
-func (p *Pipeline) addFindings(target, findings []finding.Finding) []finding.Finding {
+// filterActive returns non-suppressed findings, calling OnFinding for each.
+func (p *Pipeline) filterActive(findings []finding.Finding) []finding.Finding {
+	var result []finding.Finding
 	for _, f := range findings {
 		if !f.IsSuppressed() {
-			target = append(target, f)
+			result = append(result, f)
 			p.notifyFinding(f)
 		}
 	}
-
-	return target
+	return result
 }
 
 // recordDetectorMetrics records timing metrics for a detector if metrics are enabled.
@@ -380,6 +380,24 @@ func (p *Pipeline) recordDetectorMetrics(
 	}
 }
 
+// runOneDetector executes a single detector, recording metrics and filtering
+// suppressed findings. It returns the active findings or an error.
+func (p *Pipeline) runOneDetector(ctx context.Context, d Detector) ([]finding.Finding, error) {
+	start := time.Now()
+	findings, err := d.Detect(ctx)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		p.recordDetectorMetrics(d.Name(), elapsed, nil)
+
+		return nil, fmt.Errorf("detector %s: %w", d.Name(), err)
+	}
+
+	p.recordDetectorMetrics(d.Name(), elapsed, findings)
+
+	return p.filterActive(findings), nil
+}
+
 // detectSequential runs detectors one at a time.
 func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, error) {
 	var allFindings []finding.Finding
@@ -391,17 +409,12 @@ func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, err
 		default:
 		}
 
-		start := time.Now()
-		findings, err := d.Detect(ctx)
-		elapsed := time.Since(start)
-
+		findings, err := p.runOneDetector(ctx, d)
 		if err != nil {
-			return nil, fmt.Errorf("detector %s: %w", d.Name(), err)
+			return nil, err
 		}
 
-		p.recordDetectorMetrics(d.Name(), elapsed, findings)
-
-		allFindings = p.addFindings(allFindings, findings)
+		allFindings = append(allFindings, findings...)
 	}
 
 	return allFindings, nil
@@ -418,26 +431,20 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 
 	for _, d := range p.detectors {
 		g.Go(func() error {
-			start := time.Now()
-			findings, err := d.Detect(ctx)
-			elapsed := time.Since(start)
-
+			findings, err := p.runOneDetector(ctx, d)
 			if err != nil {
-				return fmt.Errorf("detector %s: %w", d.Name(), err)
+				return err
 			}
 
-			p.recordDetectorMetrics(d.Name(), elapsed, findings)
-
 			mu.Lock()
-			allFindings = p.addFindings(allFindings, findings)
+			allFindings = append(allFindings, findings...)
 			mu.Unlock()
 
 			return nil
 		})
 	}
 
-	err := g.Wait()
-	if err != nil {
+	if err := g.Wait(); err != nil {
 		return nil, fmt.Errorf("parallel detection: %w", err)
 	}
 

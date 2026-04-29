@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"slices"
 	"sync"
-	"time"
 
 	"github.com/larsartmann/go-finding"
 	"golang.org/x/sync/errgroup"
@@ -32,16 +31,6 @@ func (p *Pipeline) DetectPartial(ctx context.Context) (*PartialResult, error) {
 	}
 
 	return p.detectPartialSequential(ctx)
-}
-
-// addFindingsToResult adds non-suppressed findings to the partial result.
-func (p *Pipeline) addFindingsToResult(result *PartialResult, findings []finding.Finding) {
-	for _, f := range findings {
-		if !f.IsSuppressed() {
-			result.Findings = append(result.Findings, f)
-			p.notifyFinding(f)
-		}
-	}
 }
 
 // notifyFinding calls OnFinding callback if configured.
@@ -76,19 +65,14 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 			return result, contextError(ctx, "context cancelled")
 		}
 
-		start := time.Now()
-		findings, err := d.Detect(ctx)
-		elapsed := time.Since(start)
-
+		findings, err := p.runOneDetector(ctx, d)
 		if err != nil {
 			result.Errors[d.Name()] = err
-			p.recordDetectorMetrics(d.Name(), elapsed, nil)
 
 			continue
 		}
 
-		p.recordDetectorMetrics(d.Name(), elapsed, findings)
-		p.addFindingsToResult(result, findings)
+		result.Findings = append(result.Findings, findings...)
 	}
 
 	return result, nil
@@ -106,22 +90,18 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 
 	for _, d := range p.detectors {
 		g.Go(func() error {
-			start := time.Now()
-			findings, err := d.Detect(gctx)
-			elapsed := time.Since(start)
+			findings, err := p.runOneDetector(gctx, d)
 
 			mu.Lock()
 			defer mu.Unlock()
 
 			if err != nil {
 				result.Errors[d.Name()] = err
-				p.recordDetectorMetrics(d.Name(), elapsed, nil)
 
 				return nil // Don't propagate — collect partial results
 			}
 
-			p.recordDetectorMetrics(d.Name(), elapsed, findings)
-			p.addFindingsToResult(result, findings)
+			result.Findings = append(result.Findings, findings...)
 
 			return nil
 		})
