@@ -9,13 +9,6 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
-func findingKey(f finding.Finding) string {
-	if f.ID != "" {
-		return f.ID
-	}
-	return f.Position.File + "\x00" + f.Rule + "\x00" + f.Message
-}
-
 func byFindingID(a, b finding.Finding) int { return cmp.Compare(a.ID, b.ID) }
 
 // VerifyResult holds the outcome of verifying fixes by re-running detectors.
@@ -63,12 +56,12 @@ func (v *Verifier) Verify(ctx context.Context, original []finding.Finding) (*Ver
 func DiffFindings(original, post []finding.Finding) *VerifyResult {
 	origSet := make(map[string]finding.Finding, len(original))
 	for _, f := range original {
-		origSet[findingKey(f)] = f
+		origSet[f.Key()] = f
 	}
 
 	postSet := make(map[string]finding.Finding, len(post))
 	for _, f := range post {
-		postSet[findingKey(f)] = f
+		postSet[f.Key()] = f
 	}
 
 	var fixed []finding.Finding
@@ -94,7 +87,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 	var remaining []finding.Finding
 
 	for _, f := range post {
-		if _, exists := origSet[findingKey(f)]; exists {
+		if _, exists := origSet[f.Key()]; exists {
 			remaining = append(remaining, f)
 		}
 	}

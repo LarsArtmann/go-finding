@@ -160,7 +160,7 @@ func TestFindingKey_EmptyID(t *testing.T) {
 		Rule:     "SA1000",
 		Message:  "unused variable",
 	}
-	key := findingKey(f)
+	key := f.Key()
 	assert.Equal(t, "main.go\x00SA1000\x00unused variable", key)
 }
 
@@ -168,6 +168,6 @@ func TestFindingKey_WithID(t *testing.T) {
 	t.Parallel()
 
 	f := finding.Finding{ID: "unique-id-123", Position: finding.Position{File: "main.go"}}
-	key := findingKey(f)
+	key := f.Key()
 	assert.Equal(t, "unique-id-123", key)
 }
