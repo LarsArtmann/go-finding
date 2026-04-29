@@ -174,7 +174,7 @@ func TestHasFix(t *testing.T) {
 	t.Parallel()
 
 	findings := makeFixStrategyFindings(FixStrategyNone, FixStrategyAI)
-	runFilterCase(t, newFilterCase("has fix", findings, HasFix, 2))
+	runFilterCase(t, newFilterCase("has fix", findings, HasFix, 1))
 }
 
 func TestHasSuggestion(t *testing.T) {

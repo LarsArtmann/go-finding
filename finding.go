@@ -123,9 +123,9 @@ func (f Finding) HasFix() bool {
 	switch f.FixStrategy {
 	case FixStrategyNone:
 		return false
-	case FixStrategyDirect, FixStrategyAI:
+	case FixStrategyDirect:
 		return true
-	case FixStrategySuggest:
+	case FixStrategySuggest, FixStrategyAI:
 		return f.AfterCode != ""
 	default:
 		return false

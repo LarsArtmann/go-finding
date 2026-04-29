@@ -129,9 +129,11 @@ func TestFindingHasFix(t *testing.T) {
 		want bool
 	}{
 		{"direct", Finding{FixStrategy: FixStrategyDirect}, true},
-		{"ai", Finding{FixStrategy: FixStrategyAI}, true},
+		{"ai-no-code", Finding{FixStrategy: FixStrategyAI}, false},
+		{"ai-with-code", Finding{FixStrategy: FixStrategyAI, AfterCode: "fixed"}, true},
 		{"none", Finding{FixStrategy: FixStrategyNone}, false},
-		{"suggest", Finding{FixStrategy: FixStrategySuggest}, false},
+		{"suggest-no-code", Finding{FixStrategy: FixStrategySuggest}, false},
+		{"suggest-with-code", Finding{FixStrategy: FixStrategySuggest, AfterCode: "fixed"}, true},
 	}
 
 	for _, tt := range tests {
