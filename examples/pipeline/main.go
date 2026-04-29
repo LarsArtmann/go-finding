@@ -4,26 +4,27 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"os"
+	"path/filepath"
 
 	finding "github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
 // staticDetector simulates a tool that always finds one issue.
-type staticDetector struct{}
+type staticDetector struct{ file string }
 
 func (staticDetector) Name() string { return "demo-detector" }
 
-func (staticDetector) Detect(_ context.Context) ([]finding.Finding, error) {
+func (d staticDetector) Detect(_ context.Context) ([]finding.Finding, error) {
 	return []finding.Finding{
 		{
-			ID:          "demo:unused-var:main.go:10:2",
+			ID:          "demo:unused-var:" + d.file + ":2:2",
 			Rule:        "unused-var",
 			ToolName:    "demo",
 			Message:     "variable x is unused",
 			Severity:    finding.SeverityWarning,
-			Position:    finding.Position{File: "main.go", Line: 10, Column: 2},
+			Position:    finding.Position{File: d.file, Line: 2, Column: 2},
 			BeforeCode:  "x := 42",
 			AfterCode:   "",
 			FixStrategy: finding.FixStrategyDirect,
@@ -32,20 +33,38 @@ func (staticDetector) Detect(_ context.Context) ([]finding.Finding, error) {
 }
 
 func main() {
+	tmpDir, err := os.MkdirTemp("", "pipeline-example-*")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+	cleanup := func() {
+		_ = os.RemoveAll(tmpDir)
+	}
+	defer cleanup()
+
+	srcFile := filepath.Join(tmpDir, "main.go")
+	if err := os.WriteFile(srcFile, []byte("package main\n\nx := 42\n"), 0o644); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+
 	cfg := pipeline.Config{
 		MaxIterations:     1,
 		VerifyAfterFix:    false,
 		ParallelDetectors: false,
 	}
 
-	p, err := pipeline.New(cfg, ".", staticDetector{})
+	p, err := pipeline.New(cfg, tmpDir, staticDetector{file: "main.go"})
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		return
 	}
 
 	result, err := p.Run(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		return
 	}
 
 	fmt.Printf("Iterations: %d\n", result.TotalIterations)
