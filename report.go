@@ -128,7 +128,6 @@ func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 	return Filter(r.ActiveFindings(), ByFixStrategy(fs))
 }
 
-// FindByID returns a finding by its ID, or nil if not found.
 // FindByID returns the finding with the given ID, or nil if not found.
 // The returned Finding is a copy; modifications do not affect the report.
 func (r *Report) FindByID(id string) *Finding {
@@ -153,8 +152,6 @@ func (r *Report) Len() int {
 	return len(r.Findings)
 }
 
-// All returns an iterator over all findings in the report.
-// Supports break via yield returning false.
 // All returns all findings in the report (including suppressed).
 // The yielded Finding values are copies; modifications do not affect the report.
 func (r *Report) All() iter.Seq[Finding] {
