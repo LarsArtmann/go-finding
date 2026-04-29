@@ -38,6 +38,8 @@ node_modules/
 # Build artifacts
 /go-finding
 /govet
+/basic
+/builder
 
 # Copy/paste detection report
 /report/jscpd-report.json
