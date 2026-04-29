@@ -39,7 +39,7 @@ func TestFixApplier_Backup_NonexistentFile(t *testing.T) {
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
-	err := applier.backup(filepath.Join(tempDir, "does-not-exist.go"))
+	err := applier.backup.Backup(filepath.Join(tempDir, "does-not-exist.go"))
 	require.Error(t, err)
 	assert.ErrorIs(t, err, finding.ErrIO)
 }
@@ -50,7 +50,7 @@ func TestFixApplier_Restore_WithoutBackup(t *testing.T) {
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
-	err := applier.restore(filepath.Join(tempDir, "never-backed-up.go"))
+	err := applier.backup.Restore(filepath.Join(tempDir, "never-backed-up.go"))
 	require.Error(t, err)
 	assert.ErrorIs(t, err, finding.ErrInternal)
 }
@@ -121,14 +121,14 @@ func TestFixApplier_RollbackAll(t *testing.T) {
 
 	writeTestFile(t, file2, []byte(orig2))
 
-	require.NoError(t, applier.backup(file1))
-	require.NoError(t, applier.backup(file2))
+	require.NoError(t, applier.backup.Backup(file1))
+	require.NoError(t, applier.backup.Backup(file2))
 
 	writeTestFile(t, file1, []byte("modified a\n"))
 
 	writeTestFile(t, file2, []byte("modified b\n"))
 
-	if err := applier.rollbackAll([]string{file1, file2}); err != nil {
+	if err := applier.backup.RollbackAll([]string{file1, file2}); err != nil {
 		t.Fatalf("rollbackAll: %v", err)
 	}
 
@@ -160,12 +160,12 @@ func TestFixApplier_RollbackAll_PartialFailure(t *testing.T) {
 	goodFile := filepath.Join(tempDir, "good.go")
 	writeTestFile(t, goodFile, []byte("package good\n"))
 
-	require.NoError(t, applier.backup(goodFile))
+	require.NoError(t, applier.backup.Backup(goodFile))
 
 	writeTestFile(t, goodFile, []byte("modified\n"))
 
 	noBackupFile := filepath.Join(tempDir, "nobackup.go")
-	err := applier.rollbackAll([]string{goodFile, noBackupFile})
+	err := applier.backup.RollbackAll([]string{goodFile, noBackupFile})
 	require.Error(t, err)
 
 	data, rErr := readFile(goodFile)
@@ -265,7 +265,7 @@ func TestFixApplier_BackupDisabled(t *testing.T) {
 
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
-	applier.backupEnabled = false
+	applier.backup.SetEnabled(false)
 
 	testFile := filepath.Join(tempDir, "nobackup.go")
 	writeTestFile(t, testFile, []byte("package main\nold()\n"))
@@ -277,7 +277,7 @@ func TestFixApplier_BackupDisabled(t *testing.T) {
 	applied, err := applier.Apply(context.Background(), fixes)
 	require.NoError(t, err)
 	assert.Equal(t, 1, applied)
-	assert.Empty(t, applier.backups, "backup disabled")
+	assert.Empty(t, applier.backup.BackupPath("nobackup.go"), "backup disabled")
 }
 
 func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
@@ -286,8 +286,8 @@ func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
 	applier := NewFixApplier("/tmp/test")
 
 	assert.Equal(t, "/tmp/test", applier.rootDir)
-	assert.True(t, applier.backupEnabled, "backupEnabled should be true")
-	assert.NotNil(t, applier.backups, "backups map should not be nil")
+	assert.True(t, applier.backup.IsEnabled(), "backupEnabled should be true")
+	assert.NotEmpty(t, applier.backup.backupDir, "backupDir should be set")
 }
 
 func TestFixApplier_Apply_RestoreOnApplyError(t *testing.T) {

@@ -2,37 +2,26 @@ package pipeline
 
 import (
 	"context"
-	"encoding/hex"
-	"errors"
 	"fmt"
-	"hash/fnv"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
-	"sync"
-	"time"
 
 	"github.com/larsartmann/go-finding"
 )
 
 // FixApplier handles application of fixes to source files.
 type FixApplier struct {
-	rootDir       string
-	backupEnabled bool
-	backupDir     string
-	backups       map[string]string // original -> backup path
-	backupsMu     sync.Mutex
+	rootDir string
+	backup  *FileBackup
 }
 
 // NewFixApplier creates a new FixApplier.
 func NewFixApplier(rootDir string) *FixApplier {
-	//nolint:exhaustruct
 	return &FixApplier{
-		rootDir:       rootDir,
-		backupEnabled: true,
-		backupDir:     filepath.Join(os.TempDir(), "go-finding-backups"),
-		backups:       make(map[string]string),
+		rootDir: rootDir,
+		backup:  NewFileBackup(filepath.Join(os.TempDir(), "go-finding-backups")),
 	}
 }
 
@@ -63,17 +52,17 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 	for path, fileFixes := range byFile {
 		select {
 		case <-ctx.Done():
-			_ = a.rollbackAll(modified)
+			_ = a.backup.RollbackAll(modified)
 
 			return applied, fmt.Errorf("fix application cancelled: %w", ctx.Err())
 		default:
 		}
 
 		// Create backup
-		if a.backupEnabled {
-			err := a.backup(path)
+		if a.backup.IsEnabled() {
+			err := a.backup.Backup(path)
 			if err != nil {
-				_ = a.rollbackAll(modified)
+				_ = a.backup.RollbackAll(modified)
 
 				return applied, finding.NewIOError("backup "+path, err)
 			}
@@ -83,12 +72,12 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 		count, err := a.applyToFile(path, fileFixes)
 		if err != nil {
 			// Restore current file from backup
-			if a.backupEnabled {
-				_ = a.restore(path)
+			if a.backup.IsEnabled() {
+				_ = a.backup.Restore(path)
 			}
 
 			// Restore all previously modified files
-			_ = a.rollbackAll(modified)
+			_ = a.backup.RollbackAll(modified)
 
 			return applied, finding.NewConflictError("apply to "+path, err)
 		}
@@ -98,87 +87,6 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 	}
 
 	return applied, nil
-}
-
-// rollbackAll restores all modified files from their backups.
-func (a *FixApplier) rollbackAll(paths []string) error {
-	var errs []error
-
-	for _, p := range paths {
-		if err := a.restore(p); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	return errors.Join(errs...)
-}
-
-// fileHash returns the hex-encoded FNV-1a 128-bit hash of s.
-func fileHash(s string) string {
-	h := fnv.New128a()
-	h.Write([]byte(s))
-
-	return hex.EncodeToString(h.Sum(nil))
-}
-
-// backup creates a backup of the given file.
-func (a *FixApplier) backup(path string) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return ioErrorAt("read file for backup", err, path)
-	}
-
-	backupPath := filepath.Join(
-		a.backupDir,
-		fmt.Sprintf("%x_%d.bak", fileHash(path), time.Now().UnixNano()),
-	)
-	if err := os.MkdirAll(a.backupDir, 0o750); err != nil {
-		return finding.NewIOError("create backup dir", err)
-	}
-
-	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
-		backupPath,
-		data,
-		0o600,
-	); err != nil {
-		return ioErrorAt("write backup", err, path)
-	}
-
-	a.backupsMu.Lock()
-	a.backups[path] = backupPath
-	a.backupsMu.Unlock()
-
-	return nil
-}
-
-// restore restores a file from its backup.
-func (a *FixApplier) restore(path string) error {
-	backupPath, ok := func() (string, bool) {
-		a.backupsMu.Lock()
-		defer a.backupsMu.Unlock()
-
-		p, exists := a.backups[path]
-
-		return p, exists
-	}()
-	if !ok {
-		return finding.NewInternalError("no backup for "+path, nil)
-	}
-
-	data, err := os.ReadFile(backupPath)
-	if err != nil {
-		return ioErrorAt("read backup", err, path)
-	}
-
-	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
-		path,
-		data,
-		0o600,
-	); err != nil {
-		return ioErrorAt("restore file", err, path)
-	}
-
-	return nil
 }
 
 // applyToFile applies fixes to a single file.

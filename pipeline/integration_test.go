@@ -50,17 +50,17 @@ func TestFixApplier_BackupPathCollision(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = applier.backup(sub1)
+	err = applier.backup.Backup(sub1)
 	if err != nil {
 		t.Fatalf("backup sub1: %v", err)
 	}
 
-	err = applier.backup(sub2)
+	err = applier.backup.Backup(sub2)
 	if err != nil {
 		t.Fatalf("backup sub2: %v", err)
 	}
 
-	if applier.backups[sub1] == applier.backups[sub2] {
+	if applier.backup.BackupPath(sub1) == applier.backup.BackupPath(sub2) {
 		assert.Fail(t, "backup paths should differ for same-named files in different directories")
 	}
 }

@@ -419,17 +419,17 @@ func TestFixApplier(t *testing.T) {
 	}
 
 	// Test backup
-	err := applier.backup(testFile)
+	err := applier.backup.Backup(testFile)
 	if err != nil {
 		t.Fatalf("backup failed: %v", err)
 	}
 
 	// Verify backup exists
-	backupPath := applier.backups[testFile]
+	backupPath := applier.backup.BackupPath(testFile)
 	assert.NotEmpty(t, backupPath)
 
 	// Test restore
-	err = applier.restore(testFile)
+	err = applier.backup.Restore(testFile)
 	if err != nil {
 		t.Fatalf("restore failed: %v", err)
 	}
