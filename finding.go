@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"math"
+	"slices"
 	"time"
 )
 
@@ -170,14 +171,8 @@ func (f Finding) Equal(other Finding) bool {
 		return false
 	}
 
-	if len(f.Related) != len(other.Related) {
+	if !slices.Equal(f.Related, other.Related) {
 		return false
-	}
-
-	for i, r := range f.Related {
-		if r != other.Related[i] {
-			return false
-		}
 	}
 
 	if !f.equalSuppression(other) {
