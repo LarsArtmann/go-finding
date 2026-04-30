@@ -1,10 +1,10 @@
 package finding
 
 import (
-	"fmt"
 	"maps"
 	"math"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -143,6 +143,11 @@ func (f Finding) HasSuggestion() bool {
 	return f.Suggestion != "" || (f.BeforeCode != "" && f.AfterCode != "")
 }
 
+// HasCategory returns true if this finding has a category set.
+func (f Finding) HasCategory() bool {
+	return f.Category != ""
+}
+
 // NormalizedConfidence returns the confidence clamped to [0.0, 1.0].
 func (f Finding) NormalizedConfidence() float64 {
 	return clampConfidence(f.Confidence)
@@ -150,8 +155,25 @@ func (f Finding) NormalizedConfidence() float64 {
 
 // String returns a human-readable summary of the finding.
 func (f Finding) String() string {
-	return fmt.Sprintf("%s %s [%s] %s: %s",
-		f.Severity, f.ToolName, f.Rule, f.Position, f.Message)
+	var b strings.Builder
+	b.Grow(64) // rough estimate
+	b.WriteString(string(f.Severity))
+	b.WriteByte(' ')
+	b.WriteString(f.ToolName)
+	b.WriteString(" [")
+	b.WriteString(f.Rule)
+	b.WriteString("] ")
+	b.WriteString(f.Position.String())
+	b.WriteString(": ")
+	b.WriteString(f.Message)
+
+	if f.Category != "" {
+		b.WriteString(" (")
+		b.WriteString(string(f.Category))
+		b.WriteByte(')')
+	}
+
+	return b.String()
 }
 
 // IsValid returns true if the finding has required fields set.

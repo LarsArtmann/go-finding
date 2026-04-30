@@ -407,3 +407,27 @@ func TestClampConfidence(t *testing.T) {
 		})
 	}
 }
+
+func TestFinding_HasCategory(t *testing.T) {
+	t.Parallel()
+
+	assert.False(t, Finding{}.HasCategory(), "empty finding has no category")
+	assert.True(t, Finding{Category: CategorySecurity}.HasCategory(), "security finding has category")
+}
+
+func TestFinding_String_WithCategory(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		Severity: SeverityError,
+		ToolName: "test",
+		Rule:     "R1",
+		Position: Position{File: "a.go", Line: 10},
+		Message:  "something broke",
+	}
+
+	assert.Equal(t, "error test [R1] a.go:10: something broke", f.String())
+
+	f.Category = CategorySecurity
+	assert.Equal(t, "error test [R1] a.go:10: something broke (security)", f.String())
+}

@@ -282,3 +282,38 @@ func TestSortBySeverity(t *testing.T) {
 	want := []string{"critical", "error", "warning", "info"}
 	AssertFindingsIDs(t, findings, want)
 }
+
+func TestFilterInPlace(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{
+		{ID: "1", Severity: SeverityError},
+		{ID: "2", Severity: SeverityInfo},
+		{ID: "3", Severity: SeverityError},
+	}
+
+	result := FilterInPlace(findings, BySeverity(SeverityError))
+
+	assert.Len(t, result, 2)
+	assert.Equal(t, "1", result[0].ID)
+	assert.Equal(t, "3", result[1].ID)
+}
+
+func TestFilterInPlace_NoPredicates(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{{ID: "1"}, {ID: "2"}}
+	result := FilterInPlace(findings)
+
+	assert.Len(t, result, 2)
+	assert.Same(t, &findings[0], &result[0], "FilterInPlace without predicates should return same slice")
+}
+
+func TestFilterInPlace_AllFiltered(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{{ID: "1", Severity: SeverityInfo}}
+	result := FilterInPlace(findings, BySeverity(SeverityError))
+
+	assert.Empty(t, result)
+}

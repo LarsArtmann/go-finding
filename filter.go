@@ -8,7 +8,12 @@ import (
 type FilterFunc func(Finding) bool
 
 // Filter returns findings that match all predicates.
+// If no predicates are provided, returns a copy of all findings.
 func Filter(findings []Finding, predicates ...FilterFunc) []Finding {
+	if len(predicates) == 0 {
+		return slices.Clone(findings)
+	}
+
 	result := make([]Finding, 0, len(findings))
 
 	for _, finding := range findings {
@@ -28,6 +33,34 @@ func Filter(findings []Finding, predicates ...FilterFunc) []Finding {
 	}
 
 	return result
+}
+
+// FilterInPlace filters findings in place, modifying the input slice.
+// Returns the filtered slice (which may be a sub-slice of the input).
+func FilterInPlace(findings []Finding, predicates ...FilterFunc) []Finding {
+	if len(predicates) == 0 {
+		return findings
+	}
+
+	n := 0
+	for _, f := range findings {
+		match := true
+
+		for _, p := range predicates {
+			if !p(f) {
+				match = false
+
+				break
+			}
+		}
+
+		if match {
+			findings[n] = f
+			n++
+		}
+	}
+
+	return findings[:n]
 }
 
 // BySeverity returns a filter for the given severity.
