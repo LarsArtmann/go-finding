@@ -1024,7 +1024,7 @@ func TestSARIF_TagsRoundTrip(t *testing.T) {
 		Message:  "msg",
 		Severity: SeverityError,
 		Position: Pos("a.go", 1, 1),
-		Tags:     []string{"security", "injection", "xss"},
+		Tags:     []Tag{TagSecurity, "injection", "xss"},
 	})
 	report.ComputeSummary()
 
@@ -1035,7 +1035,7 @@ func TestSARIF_TagsRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, findings, 1)
 
-	assert.Equal(t, []string{"security", "injection", "xss"}, findings[0].Tags)
+	assert.Equal(t, []Tag{TagSecurity, "injection", "xss"}, findings[0].Tags)
 }
 
 func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {

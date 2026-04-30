@@ -474,10 +474,10 @@ func applySarifProperties(f *Finding, props map[string]any) {
 	}
 
 	if v, ok := props[sarifPropTags].([]any); ok {
-		f.Tags = make([]string, 0, len(v))
+		f.Tags = make([]Tag, 0, len(v))
 		for _, item := range v {
 			if s, ok := item.(string); ok {
-				f.Tags = append(f.Tags, s)
+				f.Tags = append(f.Tags, Tag(s))
 			}
 		}
 	}
