@@ -45,6 +45,7 @@ func run() int {
 		configFile string
 		cpuprof    string
 		memprof    string
+		showVer    bool
 	)
 
 	flag.StringVar(&dir, "dir", ".", "root directory to analyze")
@@ -57,7 +58,14 @@ func run() int {
 	flag.StringVar(&configFile, "config", "", "YAML/JSON config file path")
 	flag.StringVar(&cpuprof, "cpuprof", "", "write CPU profile to file")
 	flag.StringVar(&memprof, "memprof", "", "write memory profile to file")
+	flag.BoolVar(&showVer, "version", false, "print version and exit")
 	flag.Parse()
+
+	if showVer {
+		fmt.Fprintln(os.Stdout, version)
+
+		return 0
+	}
 
 	stopProf, err := setupProfiling(cpuprof, memprof)
 	if err != nil {
