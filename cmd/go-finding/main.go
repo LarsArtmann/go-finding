@@ -46,6 +46,7 @@ func run() int {
 		cpuprof    string
 		memprof    string
 		showVer    bool
+		outputFile string
 	)
 
 	flag.StringVar(&dir, "dir", ".", "root directory to analyze")
@@ -59,6 +60,7 @@ func run() int {
 	flag.StringVar(&cpuprof, "cpuprof", "", "write CPU profile to file")
 	flag.StringVar(&memprof, "memprof", "", "write memory profile to file")
 	flag.BoolVar(&showVer, "version", false, "print version and exit")
+	flag.StringVar(&outputFile, "output", "", "write output to file (default: stdout)")
 	flag.Parse()
 
 	if showVer {
@@ -133,7 +135,19 @@ func run() int {
 	report.AddFindings(filtered)
 	report.ComputeSummary()
 
-	if err := outputResults(os.Stdout, report, format); err != nil {
+	w := os.Stdout
+
+	if outputFile != "" {
+		f, err := os.Create(outputFile)
+		if err != nil {
+			return fatalf("creating output file", err)
+		}
+
+		defer func() { _ = f.Close() }()
+		w = f
+	}
+
+	if err := outputResults(w, report, format); err != nil {
 		return fatalf("writing output", err)
 	}
 
