@@ -15,7 +15,7 @@ func ExampleNewFinding() {
 	pos := finding.Pos("main.go", 42, 5)
 	f := finding.NewFinding(
 		"nilcheck", "govet", "possible nil dereference",
-		finding.SeverityError, pos,
+		finding.SeverityError, pos, 0,
 	)
 	fmt.Println(f.ID)
 	fmt.Println(f.Rule)

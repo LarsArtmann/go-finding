@@ -14,7 +14,7 @@ func TestFinding_IsValid(t *testing.T) {
 		f    Finding
 		want bool
 	}{
-		{"valid", NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1)), true},
+		{"valid", NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0), true},
 		{
 			"empty id",
 			Finding{

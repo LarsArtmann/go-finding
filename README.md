@@ -46,6 +46,7 @@ func main() {
         "variable x is unused",
         finding.SeverityWarning,
         finding.Position{File: "main.go", Line: 42, Column: 5},
+        0.95,
     )
 
     report := finding.NewReport(finding.ToolInfo{Name: "my-tool", Version: "1.0.0"})
@@ -171,7 +172,7 @@ func (d *MyDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
     findings := []finding.Finding{
         finding.NewFinding("RULE001", "my-detector", "issue found",
             finding.SeverityError,
-            finding.Position{File: "main.go", Line: 10}),
+            finding.Position{File: "main.go", Line: 10}, 0.9),
     }
     return findings, nil
 }

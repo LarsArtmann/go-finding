@@ -27,7 +27,7 @@ type Builder struct {
 // NewBuilder creates a builder seeded with the required fields.
 // The ID is auto-generated from the provided arguments.
 func NewBuilder(rule, toolName, message string, severity Severity, pos Position) *Builder {
-	return &Builder{f: NewFinding(rule, toolName, message, severity, pos)}
+	return &Builder{f: NewFinding(rule, toolName, message, severity, pos, 0)}
 }
 
 // WithID overrides the auto-generated ID.

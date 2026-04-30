@@ -12,7 +12,7 @@ func TestNewFinding(t *testing.T) {
 	t.Parallel()
 
 	pos := Position{File: "main.go", Line: 42, Column: 5, Offset: 100}
-	f := NewFinding("nilcheck", "govet", "possible nil dereference", SeverityError, pos)
+	f := NewFinding("nilcheck", "govet", "possible nil dereference", SeverityError, pos, 0)
 
 	assert.Equal(t, "nilcheck", f.Rule)
 	assert.Equal(t, "govet", f.ToolName)

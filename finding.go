@@ -22,8 +22,9 @@ type Finding struct {
 
 	// Classification
 	Category Category `json:"category,omitempty"` // Domain: "security", "style", "duplication", etc.
-	Tag      string   `json:"tag,omitempty"`      // Sub-classification: "phantom-type", "clone", etc.
-	Tags     []Tag    `json:"tags,omitempty"`     // Multiple tags for richer classification
+	// Deprecated: Use Tags instead.
+	Tag  string `json:"tag,omitempty"`  // Sub-classification: "phantom-type", "clone", etc.
+	Tags []Tag  `json:"tags,omitempty"` // Multiple tags for richer classification
 
 	// Fix
 	FixStrategy FixStrategy `json:"fixStrategy"`          // none, suggest, direct, ai
@@ -42,8 +43,14 @@ type Finding struct {
 	Metadata map[string]string `json:"metadata,omitempty"` // Tool-specific key-value pairs
 }
 
-// NewFinding creates a Finding with an auto-generated ID and default fix strategy.
-func NewFinding(rule, toolName, message string, severity Severity, pos Position) Finding {
+// NewFinding creates a Finding with an auto-generated ID, default fix strategy,
+// and clamped confidence.
+func NewFinding(
+	rule, toolName, message string,
+	severity Severity,
+	pos Position,
+	confidence float64,
+) Finding {
 	return Finding{ //nolint:exhaustruct
 		ID:          GenerateID(toolName, rule, pos),
 		Rule:        rule,
@@ -52,6 +59,7 @@ func NewFinding(rule, toolName, message string, severity Severity, pos Position)
 		Severity:    severity,
 		Position:    pos,
 		FixStrategy: FixStrategyNone,
+		Confidence:  clampConfidence(confidence),
 	}
 }
 
