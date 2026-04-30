@@ -972,7 +972,7 @@ func TestFindingFromSarResult_RankAsConfidence(t *testing.T) {
 	assert.InDelta(t, 0.75, f.Confidence, 0.01)
 }
 
-func TestSARIF_RoundTripLosses(t *testing.T) {
+func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 	t.Parallel()
 
 	report := NewReport(ToolInfo{Name: "test"})
@@ -1006,10 +1006,10 @@ func TestSARIF_RoundTripLosses(t *testing.T) {
 	assert.Equal(t, "msg", f.Message, "Message preserved")
 	assert.Equal(t, "new code", f.AfterCode, "AfterCode preserved via fix")
 
-	assert.Empty(t, f.BeforeCode, "BeforeCode is LOST in SARIF round-trip")
+	assert.Equal(t, "old code", f.BeforeCode, "BeforeCode preserved via properties")
 
 	require.Len(t, f.Related, 1)
-	assert.Empty(t, f.Related[0].FindingID, "RelatedRef.FindingID is LOST in SARIF round-trip")
+	assert.Equal(t, "related-123", f.Related[0].FindingID, "RelatedRef.FindingID preserved via properties")
 	assert.Equal(t, "causes", f.Related[0].Relation, "RelatedRef.Relation preserved")
 }
 

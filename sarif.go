@@ -24,6 +24,7 @@ const (
 	sarifPropConfidence  = "go-finding/confidence"
 	sarifPropSuggestion  = "go-finding/suggestion"
 	sarifPropSnippet     = "go-finding/snippet"
+	sarifPropBeforeCode  = "go-finding/beforeCode"
 	sarifPropPrefix      = "go-finding/"
 )
 
@@ -114,6 +115,7 @@ type SarifReplacement struct {
 type SarifRelatedLoc struct {
 	PhysicalLocation SarifPhysicalLocation `json:"physicalLocation"`
 	Message          SarifMessage          `json:"message"`
+	Properties       map[string]any        `json:"properties,omitempty"`
 }
 
 func sarifResultsFromFindings(findings []Finding) []SarifResult {
@@ -150,12 +152,10 @@ func sarifDriverFromReport(r *Report) SarifDriver {
 // ToSARIF converts a Report to SARIF 2.1.0 format.
 //
 // Round-trip losses: SARIF export→import does not preserve:
-//   - RelatedRef.FindingID (only Position and Relation survive)
-//   - BeforeCode (only AfterCode is preserved via fix replacements)
 //   - Suppression data (suppressed findings are excluded from export)
-//   - Tag field (no SARIF equivalent; stored in properties for future use)
 //
-// All other fields are preserved via the "properties" bag.
+// All other fields are preserved via the "properties" bag or related
+// location properties.
 func (r *Report) ToSARIF() ([]byte, error) {
 	data, err := json.MarshalIndent(r.sarifLog(), "", "  ")
 	if err != nil {
@@ -291,7 +291,7 @@ func findingToSARIF(f Finding) SarifResult {
 
 	// Add related locations
 	for _, rel := range f.Related {
-		result.Related = append(result.Related, SarifRelatedLoc{
+		sarifRel := SarifRelatedLoc{
 			PhysicalLocation: SarifPhysicalLocation{
 				ArtifactLocation: SarifArtifactLocation{URI: rel.Position.File},
 				Region: &SarifRegion{ //nolint:exhaustruct
@@ -300,7 +300,14 @@ func findingToSARIF(f Finding) SarifResult {
 				},
 			},
 			Message: SarifMessage{Text: rel.Relation},
-		})
+		}
+		if rel.FindingID != "" {
+			if sarifRel.Properties == nil {
+				sarifRel.Properties = make(map[string]any)
+			}
+			sarifRel.Properties[sarifPropID] = rel.FindingID
+		}
+		result.Related = append(result.Related, sarifRel)
 	}
 
 	// Preserve all non-standard fields in properties for round-trip fidelity.
@@ -332,6 +339,10 @@ func findingToSARIF(f Finding) SarifResult {
 
 	if f.Snippet != "" {
 		props[sarifPropSnippet] = f.Snippet
+	}
+
+	if f.BeforeCode != "" {
+		props[sarifPropBeforeCode] = f.BeforeCode
 	}
 
 	for k, v := range f.Metadata {
@@ -396,10 +407,17 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 			pos.Column = rel.PhysicalLocation.Region.StartColumn
 		}
 
-		f.Related = append(f.Related, RelatedRef{ //nolint:exhaustruct
+		ref := RelatedRef{ //nolint:exhaustruct
 			Relation: rel.Message.Text,
 			Position: pos,
-		})
+		}
+		if rel.Properties != nil {
+			if v, ok := rel.Properties[sarifPropID].(string); ok {
+				ref.FindingID = v
+			}
+		}
+
+		f.Related = append(f.Related, ref)
 	}
 
 	if r.Properties != nil {
@@ -493,6 +511,10 @@ func applySarifProperties(f *Finding, props map[string]any) {
 
 	if v, ok := props[sarifPropSnippet].(string); ok {
 		f.Snippet = v
+	}
+
+	if v, ok := props[sarifPropBeforeCode].(string); ok {
+		f.BeforeCode = v
 	}
 
 	f.Metadata = sarifMetadataFromProps(props)
