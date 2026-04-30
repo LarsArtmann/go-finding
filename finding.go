@@ -1,6 +1,8 @@
 package finding
 
 import (
+	"errors"
+	"fmt"
 	"maps"
 	"math"
 	"slices"
@@ -205,6 +207,57 @@ func (f Finding) Preview() string {
 	}
 
 	return b.String()
+}
+
+// Validate performs comprehensive validation and returns an error if the
+// finding is invalid. It checks all fields that IsValid checks plus
+// additional constraints: FixStrategy validity, Confidence range,
+// and structural consistency.
+func (f Finding) Validate() error {
+	var errs []error
+
+	if f.ID == "" {
+		errs = append(errs, NewValidationError("finding.ID is required", nil))
+	}
+
+	if f.Rule == "" {
+		errs = append(errs, NewValidationError("finding.Rule is required", nil))
+	}
+
+	if f.ToolName == "" {
+		errs = append(errs, NewValidationError("finding.ToolName is required", nil))
+	}
+
+	if f.Message == "" {
+		errs = append(errs, NewValidationError("finding.Message is required", nil))
+	}
+
+	if !f.Severity.IsValid() {
+		errs = append(errs, NewValidationError(
+			fmt.Sprintf("finding.Severity %q is invalid", f.Severity), nil))
+	}
+
+	if !f.Position.IsValid() {
+		errs = append(errs, NewValidationError(
+			fmt.Sprintf("finding.Position %+v is invalid", f.Position), nil))
+	}
+
+	if !f.FixStrategy.IsValid() {
+		errs = append(errs, NewValidationError(
+			fmt.Sprintf("finding.FixStrategy %q is invalid", f.FixStrategy), nil))
+	}
+
+	if f.Confidence < 0 || f.Confidence > 1 {
+		errs = append(errs, NewValidationError(
+			fmt.Sprintf("finding.Confidence %f must be in [0.0, 1.0]", f.Confidence), nil))
+	}
+
+	if f.BeforeCode == "" && f.AfterCode != "" && f.FixStrategy == FixStrategyDirect {
+		errs = append(errs, NewValidationError(
+			"finding.FixStrategyDirect requires BeforeCode when AfterCode is set", nil))
+	}
+
+	return errors.Join(errs...)
 }
 
 // IsValid returns true if the finding has required fields set.

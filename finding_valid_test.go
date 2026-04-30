@@ -4,7 +4,77 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestFinding_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid finding", func(t *testing.T) {
+		t.Parallel()
+		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
+		assert.NoError(t, f.Validate())
+	})
+
+	t.Run("missing required fields", func(t *testing.T) {
+		t.Parallel()
+		f := Finding{}
+		err := f.Validate()
+		require.Error(t, err)
+		assert.True(t, IsCategory(err, ErrCategoryValidation))
+	})
+
+	t.Run("invalid severity", func(t *testing.T) {
+		t.Parallel()
+		f := NewFinding("r", "t", "m", Severity("bogus"), Pos("a.go", 1, 1), 0.5)
+		err := f.Validate()
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "Severity")
+	})
+
+	t.Run("invalid fix strategy", func(t *testing.T) {
+		t.Parallel()
+		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
+		f.FixStrategy = FixStrategy("bogus")
+		err := f.Validate()
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "FixStrategy")
+	})
+
+	t.Run("confidence out of range", func(t *testing.T) {
+		t.Parallel()
+		f := Finding{
+			ID: "1", Rule: "r", ToolName: "t", Message: "m",
+			Severity: SeverityError, Position: Pos("a.go", 1, 1),
+			Confidence: 1.5,
+		}
+		err := f.Validate()
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "Confidence")
+	})
+
+	t.Run("negative confidence", func(t *testing.T) {
+		t.Parallel()
+		f := Finding{
+			ID: "1", Rule: "r", ToolName: "t", Message: "m",
+			Severity: SeverityError, Position: Pos("a.go", 1, 1),
+			Confidence: -0.5,
+		}
+		err := f.Validate()
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "Confidence")
+	})
+
+	t.Run("direct fix without beforeCode", func(t *testing.T) {
+		t.Parallel()
+		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
+		f.FixStrategy = FixStrategyDirect
+		f.AfterCode = "new"
+		err := f.Validate()
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "BeforeCode")
+	})
+}
 
 func TestFinding_IsValid(t *testing.T) {
 	t.Parallel()

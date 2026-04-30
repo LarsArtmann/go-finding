@@ -152,6 +152,23 @@ func (r *Report) Len() int {
 	return len(r.Findings)
 }
 
+// Filter returns a new report containing only findings that match all predicates.
+func (r *Report) Filter(predicates ...FilterFunc) *Report {
+	filtered := Filter(r.Findings, predicates...)
+	result := NewReport(r.Tool)
+	result.AddFindings(filtered)
+	return result
+}
+
+// Map returns a new report with the given function applied to each finding.
+func (r *Report) Map(fn func(Finding) Finding) *Report {
+	result := NewReport(r.Tool)
+	for _, f := range r.Findings {
+		result.AddFinding(fn(f))
+	}
+	return result
+}
+
 // All returns all findings in the report (including suppressed).
 // The yielded Finding values are copies; modifications do not affect the report.
 func (r *Report) All() iter.Seq[Finding] {

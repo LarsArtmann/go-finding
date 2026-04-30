@@ -182,3 +182,55 @@ func TestReportAll_BreakEarly(t *testing.T) {
 
 	assert.Equal(t, 3, count, "iterations before break")
 }
+
+func TestReport_Filter(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	r.AddFinding(Finding{ID: "1", Severity: SeverityError, Message: "m"})
+	r.AddFinding(Finding{ID: "2", Severity: SeverityInfo, Message: "m"})
+	r.AddFinding(Finding{ID: "3", Severity: SeverityError, Message: "m"})
+
+	filtered := r.Filter(BySeverity(SeverityError))
+
+	assert.Equal(t, "test", filtered.Tool.Name)
+	assert.Len(t, filtered.Findings, 2)
+	assert.Equal(t, "1", filtered.Findings[0].ID)
+	assert.Equal(t, "3", filtered.Findings[1].ID)
+}
+
+func TestReport_Filter_Empty(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	filtered := r.Filter(BySeverity(SeverityError))
+
+	assert.Empty(t, filtered.Findings)
+}
+
+func TestReport_Map(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	r.AddFinding(Finding{ID: "1", Severity: SeverityError, Message: "m"})
+	r.AddFinding(Finding{ID: "2", Severity: SeverityInfo, Message: "m"})
+
+	mapped := r.Map(func(f Finding) Finding {
+		f.Severity = SeverityWarning
+		return f
+	})
+
+	assert.Equal(t, "test", mapped.Tool.Name)
+	assert.Len(t, mapped.Findings, 2)
+	assert.Equal(t, SeverityWarning, mapped.Findings[0].Severity)
+	assert.Equal(t, SeverityWarning, mapped.Findings[1].Severity)
+}
+
+func TestReport_Map_Empty(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	mapped := r.Map(func(f Finding) Finding { return f })
+
+	assert.Empty(t, mapped.Findings)
+}
