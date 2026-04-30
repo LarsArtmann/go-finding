@@ -3,6 +3,7 @@ package finding
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"math"
 	"testing"
 
@@ -392,4 +393,26 @@ func TestReport_WriteJSON(t *testing.T) {
 	assert.Contains(t, got, "\n", "WriteJSON should contain newlines")
 	assert.Contains(t, got, "  ", "WriteJSON should be indented")
 	assert.Contains(t, got, `"tool"`, "WriteJSON should contain tool name")
+}
+
+type failingWriter struct{ err error }
+
+func (w *failingWriter) Write([]byte) (int, error) { return 0, w.err }
+
+func TestFinding_WriteJSON_Error(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{ID: "f1", Rule: "r1", Severity: SeverityWarning}
+	err := f.WriteJSON(&failingWriter{err: errors.New("write failed")})
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "encoding finding JSON")
+}
+
+func TestReport_WriteJSON_Error(t *testing.T) {
+	t.Parallel()
+
+	r := MakeSimpleReport("tool")
+	err := r.WriteJSON(&failingWriter{err: errors.New("write failed")})
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "encoding report JSON")
 }

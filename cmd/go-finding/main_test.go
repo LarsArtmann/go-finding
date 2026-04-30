@@ -9,6 +9,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"path/filepath"
 	"runtime/pprof"
 	"strconv"
 	"sync/atomic"
@@ -394,4 +395,28 @@ func TestRegisterDetector(t *testing.T) {
 	})
 	require.Error(t, err)
 	require.ErrorIs(t, err, errDetectorRegistered)
+}
+
+func TestWriteOutput_ToFile(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	outPath := filepath.Join(tmpDir, "output.json")
+
+	report := reportWithFindings()
+	err := writeOutput(report, "json", outPath)
+	require.NoError(t, err)
+
+	data, err := os.ReadFile(outPath)
+	require.NoError(t, err)
+	assert.Contains(t, string(data), `"tool"`)
+}
+
+func TestWriteOutput_FileCreationError(t *testing.T) {
+	t.Parallel()
+
+	report := reportWithFindings()
+	err := writeOutput(report, "json", "/nonexistent/dir/out.json")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "creating output file")
 }
