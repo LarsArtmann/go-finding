@@ -34,7 +34,7 @@ func TestClone(t *testing.T) {
 			Reason:    "intentional",
 			ExpiresAt: &expires,
 		},
-		Tags:     []string{"security", "injection"},
+		Tags:     []Tag{TagSecurity, "injection"},
 		Metadata: map[string]string{"key": "value"},
 	}
 
@@ -271,7 +271,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			"different Tags", base,
 			func() Finding {
 				f := base
-				f.Tags = []string{"x"}
+				f.Tags = []Tag{"x"}
 				return f
 			}(),
 		},

@@ -49,7 +49,7 @@ func (b *Builder) WithTag(tag string) *Builder {
 }
 
 // WithTags sets multiple tags.
-func (b *Builder) WithTags(tags ...string) *Builder {
+func (b *Builder) WithTags(tags ...Tag) *Builder {
 	b.f.Tags = append(b.f.Tags, tags...)
 	return b
 }

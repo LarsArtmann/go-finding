@@ -22,8 +22,8 @@ type Finding struct {
 
 	// Classification
 	Category Category   `json:"category,omitempty"` // Domain: "security", "style", "duplication", etc.
-	Tag      string   `json:"tag,omitempty"`    // Sub-classification: "phantom-type", "clone", etc.
-	Tags     []Tag    `json:"tags,omitempty"`   // Multiple tags for richer classification
+	Tag      string     `json:"tag,omitempty"`      // Sub-classification: "phantom-type", "clone", etc.
+	Tags     []Tag      `json:"tags,omitempty"`     // Multiple tags for richer classification
 
 	// Fix
 	FixStrategy FixStrategy `json:"fixStrategy"`          // none, suggest, direct, ai
