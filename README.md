@@ -204,15 +204,14 @@ f := finding.FromLSP(lspDiag, "my-tool")
 // From go/analysis Diagnostic
 f := finding.FromDiagnostic(diag, pass.Fset, "my-analyzer")
 
-// Convert back to analysis.Diagnostic
-ad := finding.AnalysisDiagnostic(f)
+// Note: Converting back to analysis.Diagnostic is not yet supported.
 ```
 
 ## JSON
 
 ```go
-// Serialize
-data, err := f.ToJSON()
+// Serialize a single finding
+data, err := f.LineJSON()
 
 // Deserialize with validation
 f, err := finding.FromJSON(data)
@@ -270,11 +269,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 | Package   | Coverage  |
 | --------- | --------- |
-| Root      | 98.5%     |
-| Pipeline  | 94.8%     |
+| Root      | 99.4%     |
+| Pipeline  | 98.0%     |
 | Detectors | 96.1%     |
-| CLI       | 74.2%     |
-| **Total** | **94.8%** |
+| CLI       | 96.2%     |
+| **Total** | **95.5%** |
 
 ## Related Projects
 
