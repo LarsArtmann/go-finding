@@ -291,6 +291,7 @@ func findingToSARIF(f Finding) SarifResult {
 
 	// Add related locations
 	for _, rel := range f.Related {
+		//nolint:exhaustruct // Properties set conditionally below
 		sarifRel := SarifRelatedLoc{
 			PhysicalLocation: SarifPhysicalLocation{
 				ArtifactLocation: SarifArtifactLocation{URI: rel.Position.File},

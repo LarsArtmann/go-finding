@@ -1009,7 +1009,10 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 	assert.Equal(t, "old code", f.BeforeCode, "BeforeCode preserved via properties")
 
 	require.Len(t, f.Related, 1)
-	assert.Equal(t, "related-123", f.Related[0].FindingID, "RelatedRef.FindingID preserved via properties")
+	assert.Equal(
+		t, "related-123", f.Related[0].FindingID,
+		"RelatedRef.FindingID preserved via properties",
+	)
 	assert.Equal(t, "causes", f.Related[0].Relation, "RelatedRef.Relation preserved")
 }
 
