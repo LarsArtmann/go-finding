@@ -187,3 +187,18 @@ func TestBuilder_Immutability(t *testing.T) {
 	assert.Equal(t, "original", f1.Metadata["key"])
 	assert.Equal(t, "mutated", f2.Metadata["key"])
 }
+
+func TestBuilder_MustBuild(t *testing.T) {
+	t.Parallel()
+
+	pos := Pos("a.go", 1, 1)
+	f := NewBuilder("r", "t", "m", SeverityInfo, pos).MustBuild()
+	assert.Equal(t, "r", f.Rule)
+}
+
+func TestBuilder_MustBuild_PanicsOnInvalid(t *testing.T) {
+	t.Parallel()
+
+	b := &Builder{f: Finding{}}
+	assert.Panics(t, func() { b.MustBuild() })
+}

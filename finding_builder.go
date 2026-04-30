@@ -128,3 +128,14 @@ func (b *Builder) Build() (Finding, error) {
 
 	return b.f.Clone(), nil
 }
+
+// MustBuild returns the constructed Finding or panics if required fields are missing.
+// Use this only when the builder is fully configured and invalid state is a programmer error.
+func (b *Builder) MustBuild() Finding {
+	f, err := b.Build()
+	if err != nil {
+		panic(err)
+	}
+
+	return f
+}
