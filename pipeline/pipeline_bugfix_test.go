@@ -105,6 +105,64 @@ func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
 	assert.Equal(t, 0, appliedCount, "OnFix should not fire for skipped fixes")
 }
 
+// TestOnFix_ReportsCorrectAppliedFindings verifies that when some fixes fail
+// and others succeed, OnFix is called with the actually-applied findings, not
+// just the first N fixes from the input slice.
+func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+	writeTestFile(t, testFile, []byte("package main\n\nfunc main() {\n\tfirst()\n\tsecond()\n}\n"))
+
+	// fixA fails (BeforeCode not found), fixB succeeds.
+	fixA := finding.Finding{
+		ID:          "fixA",
+		Rule:        "r1",
+		ToolName:    "tool",
+		Message:     "replace first",
+		BeforeCode:  "nonexistent()",
+		AfterCode:   "newFirst()",
+		Position:    finding.Position{File: "fixme.go", Line: 4},
+		FixStrategy: finding.FixStrategyDirect,
+	}
+	fixB := finding.Finding{
+		ID:          "fixB",
+		Rule:        "r2",
+		ToolName:    "tool",
+		Message:     "replace second",
+		BeforeCode:  "second()",
+		AfterCode:   "newSecond()",
+		Position:    finding.Position{File: "fixme.go", Line: 5},
+		FixStrategy: finding.FixStrategyDirect,
+	}
+
+	var appliedIDs []string
+	cfg := Config{
+		MaxIterations:     1,
+		ParallelDetectors: false,
+		OnFix: func(f finding.Finding, wasApplied bool) {
+			if wasApplied {
+				appliedIDs = append(appliedIDs, f.ID)
+			}
+		},
+	}
+
+	det := &mockDetector{name: "tool", findings: []finding.Finding{fixA, fixB}}
+	p, err := New(cfg, tmpDir, det)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	assert.Equal(t, 1, result.Iterations[0].Applied, "expected 1 applied fix")
+	assert.Equal(t, []string{"fixB"}, appliedIDs, "OnFix should report fixB as applied, not fixA")
+}
+
 // TestPipelineRun_ParallelDetectorError verifies that a detector error in
 // parallel mode propagates correctly from detectParallel.
 func TestPipelineRun_ParallelDetectorError(t *testing.T) {

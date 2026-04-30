@@ -1013,6 +1013,31 @@ func TestSARIF_RoundTripLosses(t *testing.T) {
 	assert.Equal(t, "causes", f.Related[0].Relation, "RelatedRef.Relation preserved")
 }
 
+func TestSARIF_TagsRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	report := NewReport(ToolInfo{Name: "test"})
+	report.AddFinding(Finding{
+		ID:       "test:R1:a.go:1:1",
+		Rule:     "R1",
+		ToolName: "test",
+		Message:  "msg",
+		Severity: SeverityError,
+		Position: Pos("a.go", 1, 1),
+		Tags:     []string{"security", "injection", "xss"},
+	})
+	report.ComputeSummary()
+
+	data, err := report.ToSARIF()
+	require.NoError(t, err)
+
+	findings, err := FindingsFromSARIF(data)
+	require.NoError(t, err)
+	require.Len(t, findings, 1)
+
+	assert.Equal(t, []string{"security", "injection", "xss"}, findings[0].Tags)
+}
+
 func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 	t.Parallel()
 

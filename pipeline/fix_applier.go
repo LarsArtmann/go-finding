@@ -42,6 +42,18 @@ func ioErrorAt(msg string, err error, path string) error {
 // Apply applies the given fixes to files and returns the number of successful fixes.
 // If an error occurs, all previously modified files are rolled back to their backups.
 func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, error) {
+	applied, _, err := a.ApplyWithDetails(ctx, fixes)
+
+	return applied, err
+}
+
+// ApplyWithDetails applies the given fixes and returns the count of successful fixes,
+// the list of successfully applied findings, and any error.
+// If an error occurs, all previously modified files are rolled back to their backups.
+func (a *FixApplier) ApplyWithDetails(
+	ctx context.Context,
+	fixes []finding.Finding,
+) (int, []finding.Finding, error) {
 	// Group fixes by file
 	byFile := make(map[string][]finding.Finding)
 
@@ -54,7 +66,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 		byFile[path] = append(byFile[path], f)
 	}
 
-	applied := 0
+	var applied []finding.Finding
 	var modified []string
 
 	// Sort file paths for deterministic, reproducible fix application order.
@@ -67,7 +79,7 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 		case <-ctx.Done():
 			_ = a.backup.RollbackAll(modified)
 
-			return applied, fmt.Errorf("fix application cancelled: %w", ctx.Err())
+			return len(applied), applied, fmt.Errorf("fix application cancelled: %w", ctx.Err())
 		default:
 		}
 
@@ -77,12 +89,12 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 			if err != nil {
 				_ = a.backup.RollbackAll(modified)
 
-				return applied, finding.NewIOError("backup "+path, err)
+				return len(applied), applied, finding.NewIOError("backup "+path, err)
 			}
 		}
 
 		// Apply fixes
-		count, err := a.applyToFile(path, fileFixes)
+		fileApplied, err := a.applyToFile(path, fileFixes)
 		if err != nil {
 			// Restore current file from backup
 			if a.backup.IsEnabled() {
@@ -92,31 +104,31 @@ func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, e
 			// Restore all previously modified files
 			_ = a.backup.RollbackAll(modified)
 
-			return applied, finding.NewConflictError("apply to "+path, err)
+			return len(applied), applied, finding.NewConflictError("apply to "+path, err)
 		}
 
 		modified = append(modified, path)
-		applied += count
+		applied = append(applied, fileApplied...)
 	}
 
-	return applied, nil
+	return len(applied), applied, nil
 }
 
 // applyToFile applies fixes to a single file.
 // When a finding has a Range with valid end position, it uses line-based replacement
 // targeting the exact line range. Otherwise it falls back to string replacement.
 // Fixes are sorted descending by position so earlier replacements don't shift later ones.
-func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, error) {
+func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]finding.Finding, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return 0, ioErrorAt("read file", err, path)
+		return nil, ioErrorAt("read file", err, path)
 	}
 
 	lines := strings.Split(string(content), "\n")
-	newLines, applied := a.engine.Apply(lines, fixes)
+	newLines, applied, _ := a.engine.ApplyWithDetails(lines, fixes)
 
-	if applied == 0 {
-		return 0, nil
+	if len(applied) == 0 {
+		return nil, nil
 	}
 
 	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
@@ -124,7 +136,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) (int, err
 		[]byte(strings.Join(newLines, "\n")),
 		0o600,
 	); err != nil {
-		return 0, ioErrorAt("write file", err, path)
+		return nil, ioErrorAt("write file", err, path)
 	}
 
 	return applied, nil

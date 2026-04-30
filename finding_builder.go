@@ -48,6 +48,12 @@ func (b *Builder) WithTag(tag string) *Builder {
 	return b
 }
 
+// WithTags sets multiple tags.
+func (b *Builder) WithTags(tags ...string) *Builder {
+	b.f.Tags = append(b.f.Tags, tags...)
+	return b
+}
+
 // WithFixStrategy sets the fix strategy.
 func (b *Builder) WithFixStrategy(fs FixStrategy) *Builder {
 	b.f.FixStrategy = fs

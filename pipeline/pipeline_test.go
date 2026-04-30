@@ -735,7 +735,7 @@ func TestApplyDirectFixes(t *testing.T) {
 		t.Fatalf("applyDirectFixes: %v", err)
 	}
 
-	assert.Equal(t, 1, applied)
+	assert.Len(t, applied, 1)
 
 	got, err := readFile(testFile)
 	if err != nil {
@@ -769,7 +769,7 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 		t.Fatalf("applyDirectFixes: %v", err)
 	}
 
-	assert.Equal(t, 1, applied)
+	assert.Len(t, applied, 1)
 }
 
 func TestDryRun(t *testing.T) {

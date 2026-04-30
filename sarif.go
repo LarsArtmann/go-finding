@@ -20,6 +20,7 @@ const (
 	sarifPropToolName    = "go-finding/toolName"
 	sarifPropCategory    = "go-finding/category"
 	sarifPropTag         = "go-finding/tag"
+	sarifPropTags        = "go-finding/tags"
 	sarifPropConfidence  = "go-finding/confidence"
 	sarifPropSuggestion  = "go-finding/suggestion"
 	sarifPropSnippet     = "go-finding/snippet"
@@ -316,6 +317,10 @@ func findingToSARIF(f Finding) SarifResult {
 		props[sarifPropTag] = f.Tag
 	}
 
+	if len(f.Tags) > 0 {
+		props[sarifPropTags] = f.Tags
+	}
+
 	if f.Confidence > 0 {
 		props[sarifPropConfidence] = f.Confidence
 	}
@@ -466,6 +471,15 @@ func applySarifProperties(f *Finding, props map[string]any) {
 
 	if v, ok := props[sarifPropTag].(string); ok {
 		f.Tag = v
+	}
+
+	if v, ok := props[sarifPropTags].([]any); ok {
+		f.Tags = make([]string, 0, len(v))
+		for _, item := range v {
+			if s, ok := item.(string); ok {
+				f.Tags = append(f.Tags, s)
+			}
+		}
 	}
 
 	if v, ok := props[sarifPropConfidence].(float64); ok {

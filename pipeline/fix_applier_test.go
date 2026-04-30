@@ -66,7 +66,7 @@ func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 	applied, err := applier.applyToFile(filepath.Join(tempDir, "missing.go"), fixes)
 	require.Error(t, err)
 	require.ErrorIs(t, err, finding.ErrIO)
-	assert.Equal(t, 0, applied)
+	assert.Nil(t, applied)
 }
 
 func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
@@ -82,7 +82,7 @@ func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 
 	applied, err := applier.applyToFile(testFile, fixes)
 	require.NoError(t, err)
-	assert.Equal(t, 0, applied, "no match")
+	assert.Nil(t, applied, "no match")
 }
 
 func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
@@ -283,7 +283,7 @@ func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 
 	applied, err := applier.applyToFile(testFile, fixes)
 	require.NoError(t, err)
-	assert.Equal(t, 0, applied, "range out of bounds")
+	assert.Nil(t, applied, "range out of bounds")
 
 	data, rErr := readFile(testFile)
 	require.NoError(t, rErr)

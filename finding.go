@@ -21,8 +21,9 @@ type Finding struct {
 	Position Position `json:"position"` // Where the issue is
 
 	// Classification
-	Category Category `json:"category,omitempty"` // Domain: "security", "style", "duplication", etc.
-	Tag      string   `json:"tag,omitempty"`      // Sub-classification: "phantom-type", "clone", etc.
+	Category Category   `json:"category,omitempty"` // Domain: "security", "style", "duplication", etc.
+	Tag      string   `json:"tag,omitempty"`    // Sub-classification: "phantom-type", "clone", etc.
+	Tags     []Tag    `json:"tags,omitempty"`   // Multiple tags for richer classification
 
 	// Fix
 	FixStrategy FixStrategy `json:"fixStrategy"`          // none, suggest, direct, ai
@@ -100,6 +101,11 @@ func (f Finding) Clone() Finding {
 		clone.Suppression = &s
 	}
 
+	if len(f.Tags) > 0 {
+		clone.Tags = make([]Tag, len(f.Tags))
+		copy(clone.Tags, f.Tags)
+	}
+
 	if len(f.Metadata) > 0 {
 		clone.Metadata = maps.Clone(f.Metadata)
 	}
@@ -171,6 +177,7 @@ func (f Finding) Equal(other Finding) bool {
 		f.Message != other.Message || f.Severity != other.Severity ||
 		!f.Position.Equal(other.Position) ||
 		f.Category != other.Category || f.Tag != other.Tag ||
+		!slices.Equal(f.Tags, other.Tags) ||
 		f.FixStrategy != other.FixStrategy ||
 		f.Suggestion != other.Suggestion ||
 		f.BeforeCode != other.BeforeCode || f.AfterCode != other.AfterCode ||

@@ -34,6 +34,7 @@ func TestBuilder_Full(t *testing.T) {
 		WithID("custom-id").
 		WithCategory(CategorySecurity).
 		WithTag("nil-deref").
+		WithTags("security", "injection").
 		WithFixStrategy(FixStrategyDirect).
 		WithSuggestion("Add nil check").
 		WithBeforeCode("x.foo").
@@ -50,6 +51,7 @@ func TestBuilder_Full(t *testing.T) {
 	assert.Equal(t, "custom-id", f.ID)
 	assert.Equal(t, CategorySecurity, f.Category)
 	assert.Equal(t, "nil-deref", f.Tag)
+	assert.Equal(t, []string{"security", "injection"}, f.Tags)
 	assert.Equal(t, FixStrategyDirect, f.FixStrategy)
 	assert.Equal(t, "Add nil check", f.Suggestion)
 	assert.Equal(t, "x.foo", f.BeforeCode)

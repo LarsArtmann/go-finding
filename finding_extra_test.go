@@ -34,6 +34,7 @@ func TestClone(t *testing.T) {
 			Reason:    "intentional",
 			ExpiresAt: &expires,
 		},
+		Tags:     []string{"security", "injection"},
 		Metadata: map[string]string{"key": "value"},
 	}
 
@@ -56,6 +57,11 @@ func TestClone(t *testing.T) {
 	clone.Range.End.Line = 999
 	if original.Range.End.Line == 999 {
 		t.Error("mutating clone Range should not affect original")
+	}
+
+	clone.Tags[0] = mutated
+	if original.Tags[0] == mutated {
+		t.Error("mutating clone Tags should not affect original")
 	}
 
 	*clone.Suppression.ExpiresAt = time.Time{}
@@ -260,6 +266,14 @@ func TestEqual_FieldMismatch(t *testing.T) {
 		{
 			"different Snippet", base,
 			func() Finding { f := base; f.Snippet = "x"; return f }(),
+		},
+		{
+			"different Tags", base,
+			func() Finding {
+				f := base
+				f.Tags = []string{"x"}
+				return f
+			}(),
 		},
 		{
 			"different Confidence", base,

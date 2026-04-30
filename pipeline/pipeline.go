@@ -500,11 +500,11 @@ func (p *Pipeline) applyTriage(
 		return fmt.Errorf("apply fixes: %w", err)
 	}
 
-	iter.Applied = applied
+	iter.Applied = len(applied)
 
 	if p.config.OnFix != nil {
-		for i := 0; i < applied && i < len(safeFixes); i++ {
-			p.config.OnFix(safeFixes[i], true)
+		for _, f := range applied {
+			p.config.OnFix(f, true)
 		}
 	}
 
@@ -512,12 +512,15 @@ func (p *Pipeline) applyTriage(
 }
 
 // applyDirectFixes applies deterministic fixes to files.
-func (p *Pipeline) applyDirectFixes(ctx context.Context, fixes []finding.Finding) (int, error) {
+func (p *Pipeline) applyDirectFixes(
+	ctx context.Context,
+	fixes []finding.Finding,
+) ([]finding.Finding, error) {
 	applier := NewFixApplier(p.rootDir)
 
-	applied, err := applier.Apply(ctx, fixes)
+	applied, appliedFixes, err := applier.ApplyWithDetails(ctx, fixes)
 	if err != nil {
-		return applied, err
+		return nil, err
 	}
 
 	if p.metrics != nil {
@@ -526,5 +529,5 @@ func (p *Pipeline) applyDirectFixes(ctx context.Context, fixes []finding.Finding
 		}
 	}
 
-	return applied, nil
+	return appliedFixes, nil
 }

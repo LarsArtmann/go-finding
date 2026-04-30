@@ -161,7 +161,7 @@ func TestFindingKey_EmptyID(t *testing.T) {
 		Message:  "unused variable",
 	}
 	key := f.Key()
-	assert.Equal(t, "main.go\x00SA1000\x00unused variable", key)
+	assert.Equal(t, "\x00main.go\x00SA1000\x00unused variable", key)
 }
 
 func TestFindingKey_WithID(t *testing.T) {

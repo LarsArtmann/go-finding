@@ -116,7 +116,7 @@ func TestApplyRangeFixes_SingleLine(t *testing.T) {
 		},
 	}
 
-	result, applied := applyRangeFixes(lines, fixes)
+	result, _, applied := applyRangeFixes(lines, fixes)
 	require.Equal(t, 1, applied)
 	assert.Equal(t, "\tnew()", result[3])
 }
@@ -134,7 +134,7 @@ func TestApplyRangeFixes_MultiLine(t *testing.T) {
 		},
 	}
 
-	result, applied := applyRangeFixes(lines, fixes)
+	result, _, applied := applyRangeFixes(lines, fixes)
 	require.Equal(t, 1, applied)
 	assert.Equal(t, "func new() {", result[2])
 	assert.Equal(t, "\treturn 42", result[3])
@@ -153,7 +153,7 @@ func TestApplyRangeFixes_OutOfBounds(t *testing.T) {
 		},
 	}
 
-	result, applied := applyRangeFixes(lines, fixes)
+	result, _, applied := applyRangeFixes(lines, fixes)
 	assert.Equal(t, 0, applied)
 	assert.Equal(t, lines, result)
 }
@@ -180,7 +180,7 @@ func TestApplyRangeFixes_DescendingOrder(t *testing.T) {
 		},
 	}
 
-	result, applied := applyRangeFixes(lines, fixes)
+	result, _, applied := applyRangeFixes(lines, fixes)
 	require.Equal(t, 2, applied)
 	assert.Equal(t, "line2: fix1", result[1])
 	assert.Equal(t, "line4: fix2", result[3])
@@ -194,7 +194,7 @@ func TestApplyStringFixes_ReplaceFirst(t *testing.T) {
 		{BeforeCode: "old", AfterCode: "new", Position: finding.Pos("a.go", 1, 1)},
 	}
 
-	result, applied := applyStringFixes(lines, fixes)
+	result, _, applied := applyStringFixes(lines, fixes)
 	require.Equal(t, 1, applied)
 	assert.Equal(t, "new code here", result[0])
 }
@@ -207,7 +207,7 @@ func TestApplyStringFixes_Insertion(t *testing.T) {
 		{AfterCode: "\tinserted", Position: finding.Pos("a.go", 3, 1)},
 	}
 
-	result, applied := applyStringFixes(lines, fixes)
+	result, _, applied := applyStringFixes(lines, fixes)
 	require.Equal(t, 1, applied)
 	require.Len(t, result, 4)
 	assert.Equal(t, "\tinserted", result[2])
@@ -221,7 +221,7 @@ func TestApplyStringFixes_NotFound(t *testing.T) {
 		{BeforeCode: "nonexistent", AfterCode: "replacement", Position: finding.Pos("a.go", 1, 1)},
 	}
 
-	result, applied := applyStringFixes(lines, fixes)
+	result, _, applied := applyStringFixes(lines, fixes)
 	assert.Equal(t, 0, applied)
 	assert.Equal(t, lines, result)
 }

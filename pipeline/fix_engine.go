@@ -19,12 +19,27 @@ func NewFixEngine() *FixEngine {
 // Apply runs all applicable fixes against the given lines and returns the
 // modified lines together with the number of fixes successfully applied.
 func (*FixEngine) Apply(lines []string, fixes []finding.Finding) ([]string, int) {
+	lines, _, applied := (*FixEngine)(nil).ApplyWithDetails(lines, fixes)
+
+	return lines, applied
+}
+
+// ApplyWithDetails runs all applicable fixes and returns the modified lines,
+// the successfully applied findings, and the count.
+func (*FixEngine) ApplyWithDetails(
+	lines []string,
+	fixes []finding.Finding,
+) ([]string, []finding.Finding, int) {
 	rangeFixes, stringFixes := partitionFixes(fixes)
 
-	lines, applied := applyRangeFixes(lines, rangeFixes)
-	lines, strApplied := applyStringFixes(lines, stringFixes)
+	lines, appliedRange, rangeCount := applyRangeFixes(lines, rangeFixes)
+	lines, appliedString, stringCount := applyStringFixes(lines, stringFixes)
 
-	return lines, applied + strApplied
+	applied := make([]finding.Finding, 0, len(appliedRange)+len(appliedString))
+	applied = append(applied, appliedRange...)
+	applied = append(applied, appliedString...)
+
+	return lines, applied, rangeCount + stringCount
 }
 
 // partitionFixes splits fixes into range-based and string-based categories.
@@ -46,8 +61,9 @@ func partitionFixes(fixes []finding.Finding) ([]finding.Finding, []finding.Findi
 	return rangeFixes, stringFixes
 }
 
-// applyRangeFixes applies line-range replacements and returns the updated lines.
-func applyRangeFixes(lines []string, fixes []finding.Finding) ([]string, int) {
+// applyRangeFixes applies line-range replacements and returns the updated lines,
+// the successfully applied findings, and the count.
+func applyRangeFixes(lines []string, fixes []finding.Finding) ([]string, []finding.Finding, int) {
 	slices.SortFunc(fixes, func(a, b finding.Finding) int {
 		if a.Range.Start.Line != b.Range.Start.Line {
 			return b.Range.Start.Line - a.Range.Start.Line
@@ -56,7 +72,7 @@ func applyRangeFixes(lines []string, fixes []finding.Finding) ([]string, int) {
 		return b.Range.Start.Column - a.Range.Start.Column
 	})
 
-	applied := 0
+	var applied []finding.Finding
 
 	for _, f := range fixes {
 		startIdx := f.Range.Start.Line - 1 // 0-indexed
@@ -95,17 +111,17 @@ func applyRangeFixes(lines []string, fixes []finding.Finding) ([]string, int) {
 			lines = replacement
 		}
 
-		applied++
+		applied = append(applied, f)
 	}
 
-	return lines, applied
+	return lines, applied, len(applied)
 }
 
 // applyStringFixes applies fallback string replacements and insertions.
-func applyStringFixes(lines []string, fixes []finding.Finding) ([]string, int) {
+func applyStringFixes(lines []string, fixes []finding.Finding) ([]string, []finding.Finding, int) {
 	joined := strings.Join(lines, "\n")
 	joinedChanged := false
-	applied := 0
+	var applied []finding.Finding
 
 	for _, f := range fixes {
 		if f.BeforeCode == "" {
@@ -113,7 +129,7 @@ func applyStringFixes(lines []string, fixes []finding.Finding) ([]string, int) {
 			lineIdx := f.Position.Line - 1
 			if lineIdx >= 0 && lineIdx <= len(lines) {
 				lines = slices.Insert(lines, lineIdx, f.AfterCode)
-				applied++
+				applied = append(applied, f)
 			}
 
 			continue
@@ -123,7 +139,7 @@ func applyStringFixes(lines []string, fixes []finding.Finding) ([]string, int) {
 		if newContent != joined {
 			joined = newContent
 			joinedChanged = true
-			applied++
+			applied = append(applied, f)
 		}
 	}
 
@@ -131,7 +147,7 @@ func applyStringFixes(lines []string, fixes []finding.Finding) ([]string, int) {
 		lines = strings.Split(joined, "\n")
 	}
 
-	return lines, applied
+	return lines, applied, len(applied)
 }
 
 // replaceNearestToLine replaces the occurrence of old nearest to the given line number.
