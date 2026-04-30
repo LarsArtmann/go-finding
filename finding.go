@@ -156,7 +156,6 @@ func (f Finding) NormalizedConfidence() float64 {
 // String returns a human-readable summary of the finding.
 func (f Finding) String() string {
 	var b strings.Builder
-	b.Grow(64) // rough estimate
 	b.WriteString(string(f.Severity))
 	b.WriteByte(' ')
 	b.WriteString(f.ToolName)
@@ -184,7 +183,6 @@ func (f Finding) Preview() string {
 	}
 
 	var b strings.Builder
-	b.Grow(len(f.BeforeCode) + len(f.AfterCode) + 32)
 
 	if f.BeforeCode != "" {
 		b.WriteString("- ")

@@ -306,7 +306,10 @@ func TestFilterInPlace_NoPredicates(t *testing.T) {
 	result := FilterInPlace(findings)
 
 	assert.Len(t, result, 2)
-	assert.Same(t, &findings[0], &result[0], "FilterInPlace without predicates should return same slice")
+	assert.Same(
+		t, &findings[0], &result[0],
+		"FilterInPlace without predicates should return same slice",
+	)
 }
 
 func TestFilterInPlace_AllFiltered(t *testing.T) {

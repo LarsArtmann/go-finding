@@ -412,7 +412,11 @@ func TestFinding_HasCategory(t *testing.T) {
 	t.Parallel()
 
 	assert.False(t, Finding{}.HasCategory(), "empty finding has no category")
-	assert.True(t, Finding{Category: CategorySecurity}.HasCategory(), "security finding has category")
+	assert.True(
+		t,
+		Finding{Category: CategorySecurity}.HasCategory(),
+		"security finding has category",
+	)
 }
 
 func TestFinding_String_WithCategory(t *testing.T) {

@@ -94,7 +94,11 @@ func (f Finding) LineJSON() (string, error) {
 // WriteJSON writes compact JSON directly to w.
 // Avoids the intermediate string allocation of LineJSON.
 func (f Finding) WriteJSON(w io.Writer) error {
-	return json.NewEncoder(w).Encode(f)
+	if err := json.NewEncoder(w).Encode(f); err != nil {
+		return fmt.Errorf("encoding finding JSON: %w", err)
+	}
+
+	return nil
 }
 
 // WriteJSON writes pretty-printed JSON directly to w.
@@ -103,5 +107,9 @@ func (r *Report) WriteJSON(w io.Writer) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 
-	return enc.Encode(r)
+	if err := enc.Encode(r); err != nil {
+		return fmt.Errorf("encoding report JSON: %w", err)
+	}
+
+	return nil
 }
