@@ -156,13 +156,13 @@ func (f Finding) IsValid() bool {
 
 // Key returns a stable identifier for the finding.
 // If ID is set, it is returned; otherwise a deterministic key is built
-// from Position.File, Rule, and Message.
+// from ToolName, Position.File, Rule, and Message.
 func (f Finding) Key() string {
 	if f.ID != "" {
 		return f.ID
 	}
 
-	return f.Position.File + "\x00" + f.Rule + "\x00" + f.Message
+	return f.ToolName + "\x00" + f.Position.File + "\x00" + f.Rule + "\x00" + f.Message
 }
 
 // Equal reports whether two findings are identical, including all nested fields.

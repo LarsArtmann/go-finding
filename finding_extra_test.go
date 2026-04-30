@@ -131,7 +131,7 @@ func TestFindingKey(t *testing.T) {
 				Severity: SeverityError,
 				Position: Position{File: "file.go", Line: 10, Column: 5},
 			},
-			want: "file.go\x00R001\x00msg",
+			want: "test\x00file.go\x00R001\x00msg",
 		},
 		{
 			name: "empty file/rule/message still produces key",
@@ -142,7 +142,7 @@ func TestFindingKey(t *testing.T) {
 				Severity: SeverityError,
 				Position: Position{File: "", Line: 0, Column: 0},
 			},
-			want: "\x00\x00",
+			want: "test\x00\x00\x00",
 		},
 		{
 			name: "ID with only whitespace is used as-is",
@@ -207,6 +207,13 @@ func TestFindingKeyStability(t *testing.T) {
 	f4.Position.File = "other.go"
 	if f4.Key() == key1 {
 		t.Error("different Position.File should produce different Key")
+	}
+
+	// Different tool → different key.
+	f5 := f
+	f5.ToolName = "other-tool"
+	if f5.Key() == key1 {
+		t.Error("different ToolName should produce different Key")
 	}
 }
 
