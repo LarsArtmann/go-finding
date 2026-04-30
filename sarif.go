@@ -184,11 +184,7 @@ func (r *Report) WriteSARIF(w io.Writer) error {
 		return fmt.Errorf("marshaling SARIF: %w", err)
 	}
 
-	if _, werr := w.Write(data); werr != nil {
-		return fmt.Errorf("writing SARIF: %w", werr)
-	}
-
-	return nil
+	return writeJSON(w, data)
 }
 
 // WriteSARIFFiltered writes non-suppressed findings with severity >= minSeverity
@@ -199,6 +195,11 @@ func (r *Report) WriteSARIFFiltered(w io.Writer, minSeverity Severity) error {
 		return fmt.Errorf("marshaling SARIF: %w", err)
 	}
 
+	return writeJSON(w, data)
+}
+
+// writeJSON writes data to w and returns an error if writing fails.
+func writeJSON(w io.Writer, data []byte) error {
 	if _, werr := w.Write(data); werr != nil {
 		return fmt.Errorf("writing SARIF: %w", werr)
 	}

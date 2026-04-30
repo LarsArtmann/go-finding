@@ -47,23 +47,23 @@ func NewReport(tool ToolInfo) *Report {
 // AddFinding adds a finding to the report.
 // Safe for concurrent use.
 func (r *Report) AddFinding(f Finding) {
-	if r.mu != nil {
-		r.mu.Lock()
-		defer r.mu.Unlock()
-	}
-
+	r.lock()
 	r.Findings = append(r.Findings, f)
 }
 
 // AddFindings adds multiple findings to the report.
 // Safe for concurrent use.
 func (r *Report) AddFindings(findings []Finding) {
+	r.lock()
+	r.Findings = append(r.Findings, findings...)
+}
+
+// lock acquires the report mutex if it exists.
+func (r *Report) lock() {
 	if r.mu != nil {
 		r.mu.Lock()
 		defer r.mu.Unlock()
 	}
-
-	r.Findings = append(r.Findings, findings...)
 }
 
 // ComputeSummary recalculates the summary from the current findings.
