@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"bytes"
 	"encoding/json"
 	"math"
 	"testing"
@@ -354,4 +355,41 @@ func expectJSONError(t *testing.T, fn func() error, context string) {
 	if err := fn(); err == nil {
 		t.Errorf("expected error for %s", context)
 	}
+}
+
+func TestFinding_WriteJSON(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		ID:       "f1",
+		Rule:     "r1",
+		Severity: SeverityWarning,
+	}
+
+	var buf bytes.Buffer
+	err := f.WriteJSON(&buf)
+	if err != nil {
+		t.Fatalf("WriteJSON: %v", err)
+	}
+
+	got := buf.String()
+	assert.Contains(t, got, `"id":"f1"`, "WriteJSON should contain JSON fields")
+	assert.Contains(t, got, "\n", "WriteJSON should end with newline")
+}
+
+func TestReport_WriteJSON(t *testing.T) {
+	t.Parallel()
+
+	r := MakeSimpleReport("tool")
+
+	var buf bytes.Buffer
+	err := r.WriteJSON(&buf)
+	if err != nil {
+		t.Fatalf("WriteJSON: %v", err)
+	}
+
+	got := buf.String()
+	assert.Contains(t, got, "\n", "WriteJSON should contain newlines")
+	assert.Contains(t, got, "  ", "WriteJSON should be indented")
+	assert.Contains(t, got, `"tool"`, "WriteJSON should contain tool name")
 }

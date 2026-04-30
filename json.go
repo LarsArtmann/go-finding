@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"slices"
 )
 
@@ -88,4 +89,19 @@ func (f Finding) LineJSON() (string, error) {
 	}
 
 	return string(bytes), nil
+}
+
+// WriteJSON writes compact JSON directly to w.
+// Avoids the intermediate string allocation of LineJSON.
+func (f Finding) WriteJSON(w io.Writer) error {
+	return json.NewEncoder(w).Encode(f)
+}
+
+// WriteJSON writes pretty-printed JSON directly to w.
+// Avoids the intermediate string allocation of PrettyJSON.
+func (r *Report) WriteJSON(w io.Writer) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+
+	return enc.Encode(r)
 }
