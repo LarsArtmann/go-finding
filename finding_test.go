@@ -431,3 +431,18 @@ func TestFinding_String_WithCategory(t *testing.T) {
 	f.Category = CategorySecurity
 	assert.Equal(t, "error test [R1] a.go:10: something broke (security)", f.String())
 }
+
+func TestFinding_Preview(t *testing.T) {
+	t.Parallel()
+
+	assert.Empty(t, Finding{}.Preview(), "no fix = no preview")
+
+	f := Finding{BeforeCode: "old", AfterCode: "new"}
+	assert.Equal(t, "- old\n+ new\n", f.Preview())
+
+	insertOnly := Finding{AfterCode: "inserted"}
+	assert.Equal(t, "+ inserted\n", insertOnly.Preview())
+
+	deleteOnly := Finding{BeforeCode: "removed"}
+	assert.Equal(t, "- removed\n", deleteOnly.Preview())
+}

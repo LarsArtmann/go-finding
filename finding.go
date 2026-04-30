@@ -176,6 +176,31 @@ func (f Finding) String() string {
 	return b.String()
 }
 
+// Preview returns a unified-diff-style preview of the fix, or empty string if
+// the finding has no fixable code change (BeforeCode and AfterCode both empty).
+func (f Finding) Preview() string {
+	if f.BeforeCode == "" && f.AfterCode == "" {
+		return ""
+	}
+
+	var b strings.Builder
+	b.Grow(len(f.BeforeCode) + len(f.AfterCode) + 32)
+
+	if f.BeforeCode != "" {
+		b.WriteString("- ")
+		b.WriteString(f.BeforeCode)
+		b.WriteByte('\n')
+	}
+
+	if f.AfterCode != "" {
+		b.WriteString("+ ")
+		b.WriteString(f.AfterCode)
+		b.WriteByte('\n')
+	}
+
+	return b.String()
+}
+
 // IsValid returns true if the finding has required fields set.
 func (f Finding) IsValid() bool {
 	return f.ID != "" && f.Rule != "" && f.ToolName != "" &&
