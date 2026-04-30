@@ -64,7 +64,7 @@ func run() int {
 	flag.Parse()
 
 	if showVer {
-		fmt.Fprintln(os.Stdout, version)
+		_, _ = fmt.Fprintln(os.Stdout, version)
 
 		return 0
 	}
@@ -135,19 +135,7 @@ func run() int {
 	report.AddFindings(filtered)
 	report.ComputeSummary()
 
-	w := os.Stdout
-
-	if outputFile != "" {
-		f, err := os.Create(outputFile)
-		if err != nil {
-			return fatalf("creating output file", err)
-		}
-
-		defer func() { _ = f.Close() }()
-		w = f
-	}
-
-	if err := outputResults(w, report, format); err != nil {
+	if err := writeOutput(report, format, outputFile); err != nil {
 		return fatalf("writing output", err)
 	}
 
@@ -291,6 +279,22 @@ func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {
 	}
 
 	return result
+}
+
+func writeOutput(report *finding.Report, format, outputFile string) error {
+	w := os.Stdout
+
+	if outputFile != "" {
+		f, err := os.Create(outputFile)
+		if err != nil {
+			return fmt.Errorf("creating output file: %w", err)
+		}
+
+		defer func() { _ = f.Close() }()
+		w = f
+	}
+
+	return outputResults(w, report, format)
 }
 
 func outputResults(w io.Writer, report *finding.Report, format string) error {

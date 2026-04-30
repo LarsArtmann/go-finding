@@ -121,3 +121,11 @@ func TestSeverity_Compare(t *testing.T) {
 		assert.Equal(t, tt.want, tt.a.Compare(tt.b), tt.label)
 	}
 }
+
+func TestSeverity_CompareOp_DefaultCase(t *testing.T) {
+	t.Parallel()
+
+	// comparisonOp(99) is not a valid operation; compareOp should return false.
+	result := SeverityInfo.compareOp(SeverityWarning, comparisonOp(99))
+	assert.False(t, result, "invalid comparisonOp should return false")
+}
