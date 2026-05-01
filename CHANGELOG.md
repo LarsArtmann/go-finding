@@ -5,47 +5,85 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2026-05-01
+
+### Breaking
+
+- **`NewFinding` signature changed** — Now takes 6 parameters (added `confidence float64` as last parameter). Confidence is clamped to `[0.0, 1.0]`.
+  - Before: `NewFinding(rule, toolName, message string, severity Severity, pos Position) Finding`
+  - After: `NewFinding(rule, toolName, message string, severity Severity, pos Position, confidence float64) Finding`
+- **`Builder.Build()` returns `(Finding, error)`** — Previously panicked on invalid state. Now returns `ErrInvalidBuilder` sentinel error. Callers handling the old panic must now check error.
+  - Added `Builder.MustBuild() Finding` for panic-on-error use cases (tests, examples).
+- **`WithTags` parameter type changed** — From `...string` to `...Tag`. Use the new `Tag` type constants (`TagSecurity`, `TagPerformance`, etc.) or `Tag("custom")`.
+- **`Finding.Tag string` deprecated** — Use `Finding.Tags []Tag` instead. `Tag` field still exists for backward compatibility but will be removed in v1.0.
+- **`FixApplier` applies fixes in deterministic order** — Files are now sorted alphabetically before applying fixes. Previously, map iteration order was non-deterministic.
 
 ### Added
 
-- **`finding.Builder`** — Fluent API for constructing Finding values with 13 chainable `With*` methods (`WithID`, `WithCategory`, `WithFixStrategy`, `WithBeforeCode`, `WithAfterCode`, `WithRange`, `WithSnippet`, `WithConfidence`, `WithRelated`, `WithSuppression`, `WithMetadata`, etc.). `WithConfidence` clamps to `[0.0, 1.0]`.
-- **`version.go`** — Programmatic semver constants (`VersionMajor`, `VersionMinor`, `VersionPatch`, `Version`).
-- **CLI end-to-end tests** — `TestRun_E2E_DefaultDetectors`, `TestRun_E2E_ConfigFile`, `TestRun_E2E_SARIFOutput` build the binary and exercise it as a subprocess.
-- **Tests for uncovered functions** — `Finding.IsValid`, `Suppression.IsValid`, `ErrorCategory.IsValid`, `Severity.LessThan` invalid input, `equalTimePtr` both-nil, and more.
-- **`RegisterDetector`** — Thread-safe detector registration with `sync.RWMutex` protection.
+- **`Tag` type with standard constants** — `type Tag string` with `TagSecurity`, `TagPerformance`, `TagStyle`, `TagCorrectness`, `TagBug`, `TagDeprecated`, `TagDocumentation`, `TagComplexity`, `TagTest`, `TagBuild`.
+- **`Finding.Tags []Tag` field** — Multi-tag classification support (JSON: `"tags"`).
+- **`Finding.Validate() error`** — Comprehensive structural validation (ID, Rule, ToolName, Message, Severity, Position, FixStrategy, Confidence range).
+- **`Finding.Preview() string`** — Returns unified-diff-style preview of `BeforeCode`/`AfterCode` fix changes.
+- **`Finding.HasCategory() bool`** — Convenience check for non-empty category.
+- **`Report.Filter(predicates ...FilterFunc) *Report`** — Returns new filtered report.
+- **`Report.Map(fn func(Finding) Finding) *Report`** — Returns new report with transformed findings.
+- **`Report.WriteJSON(w io.Writer) error`** — Streaming JSON output without buffer allocation.
+- **`Finding.WriteJSON(w io.Writer) error`** — Single-finding streaming JSON output.
+- **`Builder.MustBuild() Finding`** — Panics on invalid builder; convenience for tests and examples.
+- **CLI `-output` flag** — Write output to file instead of stdout.
+- **CLI `-version` flag** — Print version and exit.
+- **`Pipeline.CorrelateFindings` config** — Optional post-detection correlation stage.
+- **`PipelineResult.Correlations`** — Correlation results when correlation is enabled.
+- **`finding.Version` constant** — Programmatic version checking via `finding.Version` (`"0.2.0"`).
+- **`examples/` directory** — Standalone examples (`basic/`, `builder/`, `pipeline/`) with compile checks.
+- **`docs/integration-guide.md`** — Real-world tool integration guide.
+- **`docs/release-procedure.md`** — Release process documentation.
+- **`docs/architecture-decisions.md`** — 5 documented architectural decisions.
+- **`FEATURES.md`** — Comprehensive, honest feature inventory.
 
 ### Changed
 
-- **`Report.AddFinding` / `Report.AddFindings`** — Now safe for concurrent use via `*sync.Mutex` (initialized in `NewReport`, nil-safe for zero-value Reports).
-- **`Metrics.TotalDuration`** — Guards against both `endTime.IsZero()` and `startTime.IsZero()`.
-- **`Pos()` godoc** — Improved to clarify it is a convenience constructor.
-- **`maxIterations: 0`** in CLI config now defaults to `pipeline.DefaultConfig().MaxIterations` (5) instead of hardcoded 1.
-- **`Correlation` JSON tags** — Changed from snake_case (`finding_ids`) to camelCase (`findingIds`).
-- **`Range.LineCount()`** — Returns absolute span for inverted ranges instead of 0.
-- **`Severity.Compare`** — Uses string comparison as tiebreaker for two different invalid severities, ensuring total ordering.
-- **`Finding.Equal`** — Replaces direct `float64` equality with `floatEq` using 1e-9 epsilon.
-- **`DeduplicateByPosition`** key now includes `ToolName` for cross-tool deduplication.
-- **`ToSARIFFiltered`** godoc explicitly documents dual filtering (suppression + severity).
-- **`SARIF metadata round-trip`** — Preserves non-string metadata values via `fmt.Sprintf("%v", v)`.
-- **`Report.All()` and `Report.FindByID()`** godoc now explicitly states they yield copies.
+- **`Merge()` performance** — 2.4x faster with pre-allocated slice and batch appending (408K → 173K ns/op for 1000 findings).
+- **`Report.AddFinding` / `Report.AddFindings`** — Now thread-safe via `*sync.Mutex`.
+- **`FixStrategyAI` in `HasFix()`** — Now treated as Suggest-equivalent (requires `AfterCode`).
+- **`Correlation` JSON tags** — Changed to camelCase (`findingIds`).
+- **`DeduplicateByPosition` key** — Now includes `ToolName` for cross-tool deduplication.
+- **`Severity.Compare`** — Total ordering for invalid severities via string comparison tiebreaker.
+- **`Finding.Equal`** — Uses `floatEq` with 1e-9 epsilon for float comparison.
+- **`Range.LineCount()`** — Returns absolute span for inverted ranges.
+- **SARIF metadata round-trip** — Preserves non-string values via `fmt.Sprintf("%v", v)`.
+- **SARIF `FindingsFromSARIF`** — Decomposed from cognitive complexity 90 to thin loop with 4 extracted helpers.
+- **`math/rand` → `math/rand/v2`** — In retry jitter.
+- **`detectResult` ghost type eliminated** — Pipeline uses `PartialResult` directly.
+- **`findingKey` extracted** — Now `Finding.Key()` method instead of duplicate helpers.
 
 ### Fixed
 
-- **`OnFix` callback** — Now fires only for actually-applied fixes, not for skipped/unapplied ones.
-- **FixApplier insertion-only and deletion-only fixes** — Previously unsupported; now handled correctly.
-- **`Correlate()` O(n²) hang** — Hard-limits at `maxCorrelations = 10000` to prevent unbounded execution.
-- **`FilterInvalid`** — Changed from mutable package-level `var` to an exported function, eliminating a global mutable state bug.
-- **`RetryConfig` jitter** — Switched from `math/rand` to `math/rand/v2` (`rand.Int64N`) for proper randomness.
-- **`Position.HasEnd()`** — Now checks `End.Line > 0 || End.Offset >= 0` (offset 0 is valid).
-- **`Adjacent()`** — No longer falls back to offset-based adjacency when line info is present.
-- **`govet.go` `parsePosn`** — Uses `strconv.Atoi` with proper error checking instead of unchecked conversion.
-- **`FixApplier.replaceNearestToLine`** — Finds occurrence closest to finding's line instead of first match.
-- **Backup paths** — Include nanosecond timestamp suffix to prevent collisions.
-- **`Report.FindByRule`** — Uses `ActiveFindings()` for consistency with other query methods.
-- **Removed global `log.SetFlags(0)` `init()`** — Eliminated unexpected global logger side effect.
-- **SARIF export** — Includes suggestion-only fixes as fix descriptions without replacements.
-- **Copylocks on JSON marshal** — `Report` uses `*sync.Mutex` to avoid `sync.Mutex` copy when passed to `json.Marshal`.
+- **`OnFix` callback accuracy** — Fires only for actually-applied fixes, not skipped ones.
+- **`Pipeline.OnFinding` data race** — Added `callbackMu sync.Mutex` for concurrent callback safety.
+- **`Report` copylocks on JSON marshal** — Uses `*sync.Mutex` instead of value `sync.Mutex`.
+- **`Correlate()` O(n²) hang** — Hard-limited at `maxCorrelations = 10000`.
+- **`FilterInvalid` global mutable state** — Changed from `var` to function.
+- **`Position.HasEnd()`** — Checks `End.Line > 0 || End.Offset >= 0` (offset 0 is valid).
+- **`Adjacent()` fallback** — No longer falls back to offset-based when line info present.
+- **`govet.go parsePosn`** — Uses `strconv.Atoi` with error checking.
+- **`FixApplier.replaceNearestToLine`** — Finds closest occurrence instead of first match.
+- **Backup path collisions** — Include nanosecond timestamp suffix.
+- **`Report.FindByRule`** — Uses `ActiveFindings()` for consistency.
+- **Global `log.SetFlags(0)` init** — Removed unexpected global logger side effect.
+- **SARIF suggestion-only fixes** — Export as fix descriptions without replacements.
+- **SARIF `BeforeCode` and `RelatedRef.FindingID` round-trip** — Now preserved in properties.
+- **`hasLineRange` dead code** — Removed unreachable branch.
+- **`FixApplier` concurrent backup paths** — Uses unique temp dir with `os.MkdirTemp`.
+- **Flaky `TestProperty_IDRoundTrip`** — Seeded with deterministic `rand.NewSource(42)`.
+
+### Testing
+
+- Coverage: **root 99.6%**, **pipeline 98.0%**, **detectors 96.1%**, **CLI 95.4%**
+- Fuzz tests for SARIF import (1.6M execs, zero panics) and merge
+- Property-based tests for ID generation round-trip
+- Comprehensive edge-case tests for FixEngine, FileBackup, FixApplier, RetryConfig, Verifier
+- CI stress test (`-count=20`) with govulncheck
 
 ## [0.1.3] - 2026-04-19
 
