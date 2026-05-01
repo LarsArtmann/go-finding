@@ -4,6 +4,6 @@ package finding
 const (
 	VersionMajor = 0
 	VersionMinor = 2
-	VersionPatch = 0
-	Version      = "0.2.0"
+	VersionPatch = 1
+	Version      = "0.2.1"
 )
