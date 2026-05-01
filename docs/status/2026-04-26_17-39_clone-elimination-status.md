@@ -2,13 +2,13 @@
 
 ## Summary
 
-| Metric | Before | After | Delta |
-|--------|--------|-------|-------|
-| Clone groups | 76 | 47 | **-29 (-38%)** |
-| Lines changed | — | -436 net | 294 add, 730 del |
-| Files modified | 0 | 23 | All test files |
-| Tests passing | ✅ | ✅ | All 4 packages green |
-| Production code changed | — | 0 | Zero |
+| Metric                  | Before | After    | Delta                |
+| ----------------------- | ------ | -------- | -------------------- |
+| Clone groups            | 76     | 47       | **-29 (-38%)**       |
+| Lines changed           | —      | -436 net | 294 add, 730 del     |
+| Files modified          | 0      | 23       | All test files       |
+| Tests passing           | ✅     | ✅       | All 4 packages green |
+| Production code changed | —      | 0        | Zero                 |
 
 ## A) FULLY DONE ✅
 
@@ -115,7 +115,7 @@ Nothing! All changes compile, all tests pass, no production code was modified, a
 21. Remove unused `assertFindingsLen` from root `testutil_test.go` (replace callers with `assert.Len`)
 22. Remove unused `assertReportField` / `assertSummaryField` / `assertSummarySeverity` etc. from root `testutil_test.go`
 23. Run final `art-dupl` count and document inherent (unfixable) clone groups
-24. Consider if `position_extra_test.go` intersectionCases could use a helper like `newRangeLine(file, start, end)` 
+24. Consider if `position_extra_test.go` intersectionCases could use a helper like `newRangeLine(file, start, end)`
 25. Write final summary status report
 
 ## G) Top #1 Question I Cannot Figure Out 🤔
@@ -129,24 +129,26 @@ These example files are in the `finding_test` package (not `finding`), so they C
 ## Clone Group Inventory (47 remaining)
 
 ### By size:
-| Group size | Count | Example |
-|------------|-------|---------|
-| 23-clone | 1 | Detector interface signature (inherent) |
-| 12-clone | 1 | Finding struct in examples/pipeline tests |
-| 8-clone | 1 | Report creation in examples/cmd |
-| 6-clone | 1 | Category constants in filter_test |
-| 4-clone | 3 | position.go methods, severity.go switch, position_extra_test.go |
-| 3-clone | 7 | bench_test.go (fixed), sarif_test.go, equal_test.go, partial_test.go, metrics_test.go |
-| 2-clone | 25 | Various small patterns across many files |
+
+| Group size | Count | Example                                                                               |
+| ---------- | ----- | ------------------------------------------------------------------------------------- |
+| 23-clone   | 1     | Detector interface signature (inherent)                                               |
+| 12-clone   | 1     | Finding struct in examples/pipeline tests                                             |
+| 8-clone    | 1     | Report creation in examples/cmd                                                       |
+| 6-clone    | 1     | Category constants in filter_test                                                     |
+| 4-clone    | 3     | position.go methods, severity.go switch, position_extra_test.go                       |
+| 3-clone    | 7     | bench_test.go (fixed), sarif_test.go, equal_test.go, partial_test.go, metrics_test.go |
+| 2-clone    | 25    | Various small patterns across many files                                              |
 
 ### By category:
-| Category | Count | Fixable? |
-|----------|-------|----------|
-| Production code (inherent) | ~8 | ❌ No — Go language patterns |
-| Table test struct data | ~12 | 🔧 Maybe — helper extraction trade-off |
-| Manual assertions → testify | ~15 | ✅ Yes — straightforward conversion |
-| Cross-file patterns | ~5 | 🔧 Harder — needs shared helpers |
-| Example/documentation | ~7 | ❓ Design decision needed |
+
+| Category                    | Count | Fixable?                               |
+| --------------------------- | ----- | -------------------------------------- |
+| Production code (inherent)  | ~8    | ❌ No — Go language patterns           |
+| Table test struct data      | ~12   | 🔧 Maybe — helper extraction trade-off |
+| Manual assertions → testify | ~15   | ✅ Yes — straightforward conversion    |
+| Cross-file patterns         | ~5    | 🔧 Harder — needs shared helpers       |
+| Example/documentation       | ~7    | ❓ Design decision needed              |
 
 ---
 

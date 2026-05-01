@@ -2,13 +2,14 @@
 
 **Date:** 2026-04-30 00:05  
 **Project:** go-finding  
-**Status:** Post-Hardening Deepening — v0.x → v1.0 Readiness  
+**Status:** Post-Hardening Deepening — v0.x → v1.0 Readiness
 
 ---
 
 ## Brutally Honest Assessment
 
 ### What Did We Forget?
+
 1. **Stale binary artifacts:** Two 3.7MB binaries (`basic`, `builder`) are sitting in the repo root, untracked and unignored.
 2. **Test stability verification:** We never ran `go test -count=100` to confirm flaky tests were truly fixed.
 3. **`FixStrategyAI` split brain:** `triage()` groups it with `FixStrategySuggest` (no auto-apply), but `HasFix()` groups it with `FixStrategyDirect` (claims it has a fix). This is a **silent contract violation**.
@@ -21,6 +22,7 @@
 10. **Security in CI:** `govulncheck` exists in `justfile` but is NOT in the GitHub Actions CI workflow.
 
 ### What's Stupid That We Do Anyway?
+
 1. **`FixStrategyAI` contradicts itself.** Users who set `FixStrategyAI` get `Suggest`-equivalent triage but `HasFix()` promises a fix exists. This is dishonest API design.
 2. **We celebrate 99.1% root-package coverage while ignoring 81.1% CLI coverage.** The CLI is the user-facing surface. It matters more.
 3. **We document phantoms instead of deciding.** `FixStrategyAI` has been "documented as placeholder" for multiple sessions. Decision paralysis is worse than a wrong decision.
@@ -28,12 +30,14 @@
 5. **We have TODO items that are already done.** This trains us to ignore the TODO list.
 
 ### What Could We Have Done Better?
+
 1. **Run `go clean` + `git status` before every commit** to catch artifacts.
 2. **Test CLI `run()` with dependency injection from the start** instead of fighting global `flag.CommandLine`.
 3. **Make `FixStrategyAI` decision immediately** when it was first flagged as phantom, not defer it across 5+ sessions.
 4. **Update `TODO_LIST.md` in the same commit** that completes the work.
 
 ### What Could Still Improve?
+
 1. **`cmd/go-finding` coverage: 81.1% → 90%+** — biggest customer-facing gap.
 2. **`pipeline` coverage: 96.4% → 98%+** — error paths in detection and triage.
 3. **Root package coverage: 99.1% → 99.5%+** — edge cases in `hasLineRange`, `compareOp`, `WriteSARIF`.
@@ -43,12 +47,14 @@
 7. **Developer experience:** Add `go:generate stringer`, modernize loops to `slices.Contains`.
 
 ### Did We Lie?
+
 - **Yes, by stale data.** We reported 9 commits ahead of origin; `git status` shows 6. The summary was from an intermediate rebase state.
 - **Yes, by omission.** We claimed `applyTriage` had 11.1% coverage. It has 88.9%. The TODO was copied from an old report without verification.
 - **Yes, by omission.** We said `Correlate()` was a ghost system. It was wired into Pipeline in a previous session via `CorrelateFindings` config field. The TODO was stale.
 - **Yes, by stale LSP cache.** The typecheck warning on `examples/builder/main.go` is a gopls cache issue — the file is correct.
 
 ### How Can We Be Less Stupid?
+
 1. **`git status && git clean -fdxn` before every planning session** — know the true state.
 2. **Update TODOs in the same PR as the fix** — never let them rot.
 3. **Run `go test -count=100` before declaring flaky tests fixed**.
@@ -56,19 +62,22 @@
 5. **Treat CLI coverage as the most important metric** — it's the user interface.
 
 ### Ghost Systems Found
-| Ghost | Location | Value | Action |
-|-------|----------|-------|--------|
-| `FixStrategyAI` contradiction | `finding.go:126`, `pipeline.go:461` | Constant exists but behavior is split-brained | **Decide and fix in one session** |
-| Stale TODOs | `TODO_LIST.md` | Completed items still marked open | **Audit and close** |
-| `govulncheck` in justfile only | `justfile` | Security check not enforced in CI | **Wire into CI workflow** |
+
+| Ghost                          | Location                            | Value                                         | Action                            |
+| ------------------------------ | ----------------------------------- | --------------------------------------------- | --------------------------------- |
+| `FixStrategyAI` contradiction  | `finding.go:126`, `pipeline.go:461` | Constant exists but behavior is split-brained | **Decide and fix in one session** |
+| Stale TODOs                    | `TODO_LIST.md`                      | Completed items still marked open             | **Audit and close**               |
+| `govulncheck` in justfile only | `justfile`                          | Security check not enforced in CI             | **Wire into CI workflow**         |
 
 ### Scope Creep Check
+
 - **NO web frameworks** (gin, templ, htmx) — this is a static analysis library.
 - **NO SQL, auth, email** (sqlc, casbin, resend) — no runtime database or HTTP surface.
 - **NO AI backend** — out of scope for v0.x. `FixStrategyAI` is a type decision, not an implementation.
 - **OpenTelemetry** — defer to v1.x. Not needed for core library stability.
 
 ### Split Brains Detected
+
 - **`FixStrategyAI`**: `triage()` → `Suggest` bucket; `HasFix()` → grouped with `Direct`. These must agree.
 - **`examples/builder/main.go` LSP warning**: gopls shows a typecheck error on correct code. This is a tooling split-brain, not a code split-brain.
 
@@ -78,32 +87,32 @@
 
 Sorted by: **Impact × Customer Value / Effort**
 
-| # | Task | Package | Effort | Impact | Customer Value | Est |
-|---|------|---------|--------|--------|----------------|-----|
-| 1 | Delete stale `basic`/`builder` binaries + update `.gitignore` | repo | Low | **High** | **High** — professionalism | 30m |
-| 2 | Fix `FixStrategyAI` split brain: decide behavior, fix `HasFix()` or `triage()` | `finding` / `pipeline` | Low | **High** | **High** — API honesty | 45m |
-| 3 | Add `run()` test: `pipeline.New` error path (invalid config) | `cmd` | Medium | **High** | **High** — CLI reliability | 60m |
-| 4 | Add `run()` test: `p.Run` error path (detector failure) | `cmd` | Medium | **High** | **High** — CLI reliability | 60m |
-| 5 | Add `run()` test: metrics output branch | `cmd` | Low | **Medium** | **Medium** — CLI completeness | 30m |
-| 6 | Add `applyTriage` edge cases: all-conflicts early return + apply error | `pipeline` | Medium | **Medium** | **Medium** — coverage | 45m |
-| 7 | Add `detectSequential` error path: context cancellation + detector error | `pipeline` | Medium | **Medium** | **Medium** — coverage | 45m |
-| 8 | Add `detectParallel` error path: goroutine detector failure | `pipeline` | Medium | **Medium** | **Medium** — coverage | 45m |
-| 9 | Add `hasLineRange` edge case test (Start.Line == 0) | `finding` | Low | **Low** | **Low** — coverage | 30m |
-| 10 | Add `severityToSARIFLevel` / `severityToLSP` default-case tests | `finding` | Low | **Low** | **Low** — coverage | 30m |
-| 11 | Add `Range.Contains` edge case: inverted ranges, nil receiver | `finding` | Medium | **Low** | **Low** — correctness | 45m |
-| 12 | Add SARIF parser fuzz test: `FindingsFromSARIF` with malformed input | `finding` | Medium | **Medium** | **Medium** — security | 60m |
-| 13 | Add `FindingsFromSARIF` schema validation test | `finding` | Medium | **Low** | **Medium** — correctness | 45m |
-| 14 | Add `govulncheck` step to GitHub Actions CI | `.github` | Low | **Medium** | **Medium** — security | 30m |
-| 15 | Add `RetryConfig.Validate` edge-case tests | `pipeline` | Low | **Low** | **Low** — coverage | 30m |
-| 16 | Profile memory allocations: run benchmarks with `-benchmem` | repo | Low | **Low** | **Low** — performance | 30m |
-| 17 | Add benchmark regression tracking script | repo | Medium | **Low** | **Low** — performance | 45m |
-| 18 | Modernize remaining loops to `slices.Contains` / `maps.Keys` | `finding` | Low | **Low** | **Low** — maintenance | 30m |
-| 19 | Add `go:generate stringer` for `Severity`, `FixStrategy`, `Category` | `finding` | Low | **Low** | **Medium** — DX | 45m |
-| 20 | Remove stale TODO items and update `TODO_LIST.md` | repo | Low | **Low** | **Medium** — hygiene | 30m |
-| 21 | Remove unused `//nolint` directives (audit all 60 matches) | repo | Low | **Low** | **Low** — hygiene | 30m |
-| 22 | Document SARIF round-trip losses (`RelatedRef.FindingID`, `BeforeCode`) | `finding` | Medium | **Low** | **Low** — docs | 30m |
-| 23 | Add per-package coverage thresholds in CI | `.github` | Medium | **Low** | **Medium** — quality gate | 45m |
-| 24 | Add `go.work` for local development | repo | Low | **Low** | **Low** — DX | 30m |
+| #   | Task                                                                           | Package                | Effort | Impact     | Customer Value                | Est |
+| --- | ------------------------------------------------------------------------------ | ---------------------- | ------ | ---------- | ----------------------------- | --- |
+| 1   | Delete stale `basic`/`builder` binaries + update `.gitignore`                  | repo                   | Low    | **High**   | **High** — professionalism    | 30m |
+| 2   | Fix `FixStrategyAI` split brain: decide behavior, fix `HasFix()` or `triage()` | `finding` / `pipeline` | Low    | **High**   | **High** — API honesty        | 45m |
+| 3   | Add `run()` test: `pipeline.New` error path (invalid config)                   | `cmd`                  | Medium | **High**   | **High** — CLI reliability    | 60m |
+| 4   | Add `run()` test: `p.Run` error path (detector failure)                        | `cmd`                  | Medium | **High**   | **High** — CLI reliability    | 60m |
+| 5   | Add `run()` test: metrics output branch                                        | `cmd`                  | Low    | **Medium** | **Medium** — CLI completeness | 30m |
+| 6   | Add `applyTriage` edge cases: all-conflicts early return + apply error         | `pipeline`             | Medium | **Medium** | **Medium** — coverage         | 45m |
+| 7   | Add `detectSequential` error path: context cancellation + detector error       | `pipeline`             | Medium | **Medium** | **Medium** — coverage         | 45m |
+| 8   | Add `detectParallel` error path: goroutine detector failure                    | `pipeline`             | Medium | **Medium** | **Medium** — coverage         | 45m |
+| 9   | Add `hasLineRange` edge case test (Start.Line == 0)                            | `finding`              | Low    | **Low**    | **Low** — coverage            | 30m |
+| 10  | Add `severityToSARIFLevel` / `severityToLSP` default-case tests                | `finding`              | Low    | **Low**    | **Low** — coverage            | 30m |
+| 11  | Add `Range.Contains` edge case: inverted ranges, nil receiver                  | `finding`              | Medium | **Low**    | **Low** — correctness         | 45m |
+| 12  | Add SARIF parser fuzz test: `FindingsFromSARIF` with malformed input           | `finding`              | Medium | **Medium** | **Medium** — security         | 60m |
+| 13  | Add `FindingsFromSARIF` schema validation test                                 | `finding`              | Medium | **Low**    | **Medium** — correctness      | 45m |
+| 14  | Add `govulncheck` step to GitHub Actions CI                                    | `.github`              | Low    | **Medium** | **Medium** — security         | 30m |
+| 15  | Add `RetryConfig.Validate` edge-case tests                                     | `pipeline`             | Low    | **Low**    | **Low** — coverage            | 30m |
+| 16  | Profile memory allocations: run benchmarks with `-benchmem`                    | repo                   | Low    | **Low**    | **Low** — performance         | 30m |
+| 17  | Add benchmark regression tracking script                                       | repo                   | Medium | **Low**    | **Low** — performance         | 45m |
+| 18  | Modernize remaining loops to `slices.Contains` / `maps.Keys`                   | `finding`              | Low    | **Low**    | **Low** — maintenance         | 30m |
+| 19  | Add `go:generate stringer` for `Severity`, `FixStrategy`, `Category`           | `finding`              | Low    | **Low**    | **Medium** — DX               | 45m |
+| 20  | Remove stale TODO items and update `TODO_LIST.md`                              | repo                   | Low    | **Low**    | **Medium** — hygiene          | 30m |
+| 21  | Remove unused `//nolint` directives (audit all 60 matches)                     | repo                   | Low    | **Low**    | **Low** — hygiene             | 30m |
+| 22  | Document SARIF round-trip losses (`RelatedRef.FindingID`, `BeforeCode`)        | `finding`              | Medium | **Low**    | **Low** — docs                | 30m |
+| 23  | Add per-package coverage thresholds in CI                                      | `.github`              | Medium | **Low**    | **Medium** — quality gate     | 45m |
+| 24  | Add `go.work` for local development                                            | repo                   | Low    | **Low**    | **Low** — DX                  | 30m |
 
 ---
 
@@ -111,19 +120,19 @@ Sorted by: **Impact × Customer Value / Effort**
 
 ### Tier 1: Cleanup & Trust (P0)
 
-| # | Task | Est | File |
-|---|------|-----|------|
-| 1.1 | Delete `basic` binary from repo root | 2m | terminal |
-| 1.2 | Delete `builder` binary from repo root | 2m | terminal |
-| 1.3 | Add `basic`, `builder` to `.gitignore` | 3m | `.gitignore` |
-| 1.4 | Verify `git status` is clean | 2m | terminal |
-| 2.1 | Decide `FixStrategyAI` behavior: Suggest-like or remove from `HasFix()` | 5m | `finding.go` |
-| 2.2 | Implement decision: fix `HasFix()` or `triage()` | 5m | `finding.go` / `pipeline.go` |
-| 2.3 | Update tests to match new behavior | 5m | `finding_test.go`, `fix_strategy_test.go` |
-| 2.4 | Update docs (`USAGE_GUIDE.md`, `README.md`) | 5m | docs |
-| 20.1 | Audit `TODO_LIST.md` for completed items | 5m | `TODO_LIST.md` |
-| 20.2 | Mark completed items, remove stale ones | 5m | `TODO_LIST.md` |
-| 20.3 | Verify all remaining TODOs are actually open | 5m | terminal |
+| #    | Task                                                                    | Est | File                                      |
+| ---- | ----------------------------------------------------------------------- | --- | ----------------------------------------- |
+| 1.1  | Delete `basic` binary from repo root                                    | 2m  | terminal                                  |
+| 1.2  | Delete `builder` binary from repo root                                  | 2m  | terminal                                  |
+| 1.3  | Add `basic`, `builder` to `.gitignore`                                  | 3m  | `.gitignore`                              |
+| 1.4  | Verify `git status` is clean                                            | 2m  | terminal                                  |
+| 2.1  | Decide `FixStrategyAI` behavior: Suggest-like or remove from `HasFix()` | 5m  | `finding.go`                              |
+| 2.2  | Implement decision: fix `HasFix()` or `triage()`                        | 5m  | `finding.go` / `pipeline.go`              |
+| 2.3  | Update tests to match new behavior                                      | 5m  | `finding_test.go`, `fix_strategy_test.go` |
+| 2.4  | Update docs (`USAGE_GUIDE.md`, `README.md`)                             | 5m  | docs                                      |
+| 20.1 | Audit `TODO_LIST.md` for completed items                                | 5m  | `TODO_LIST.md`                            |
+| 20.2 | Mark completed items, remove stale ones                                 | 5m  | `TODO_LIST.md`                            |
+| 20.3 | Verify all remaining TODOs are actually open                            | 5m  | terminal                                  |
 
 ### Tier 2: CLI Reliability (P1)
 

@@ -22,7 +22,7 @@ Our current `lsp.go` is ~170 lines of self-contained code defining exactly the t
 
 ### 3. Type mismatch overhead is identical
 
-Our `Position` is 1-based with `Offset` and `File` fields. LSP's `Position` is 0-based with just `Line`/`Character`. We handle conversion correctly via `toZeroBased()` and the `FromLSP`/`ToLSP` converters. Using `go-lsp` types would require the same conversion layer — we'd map *their* types instead of *our own*.
+Our `Position` is 1-based with `Offset` and `File` fields. LSP's `Position` is 0-based with just `Line`/`Character`. We handle conversion correctly via `toZeroBased()` and the `FromLSP`/`ToLSP` converters. Using `go-lsp` types would require the same conversion layer — we'd map _their_ types instead of _our own_.
 
 ### 4. Our types are richer
 
@@ -33,7 +33,7 @@ Our `Position` is 1-based with `Offset` and `File` fields. LSP's `Position` is 0
 
 ### 5. Violates design principle
 
-AGENTS.md states: *"Minimal dependencies — core types depend only on stdlib."* The core package currently depends on zero external libraries. Adding `go-lsp` contradicts this principle for no functional gain.
+AGENTS.md states: _"Minimal dependencies — core types depend only on stdlib."_ The core package currently depends on zero external libraries. Adding `go-lsp` contradicts this principle for no functional gain.
 
 ## What we already do well
 
@@ -49,4 +49,4 @@ If we ever build a **full language server** (not just outputting diagnostics), w
 - `go-language-server` packages (actively maintained forks)
 - Protocol types generated from the official LSP JSON schema
 
-Currently, this library *outputs* LSP diagnostics — it is not an LSP server. The hand-rolled types are sufficient and appropriate.
+Currently, this library _outputs_ LSP diagnostics — it is not an LSP server. The hand-rolled types are sufficient and appropriate.

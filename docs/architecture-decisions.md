@@ -9,11 +9,13 @@ These decisions need product input. They are documented here for visibility.
 ## 1. FixStrategyAI Semantics
 
 **Current behavior:** `FixStrategyAI` behaves identically to `FixStrategySuggest`:
+
 - `HasFix()` returns true only if `AfterCode != ""`
 - Pipeline triage treats it as a suggestion (no auto-apply)
 - `NeedsAI()` returns true (distinguishing method)
 
 **Question:** Should `FixStrategyAI` mean:
+
 - **(A)** "An AI could fix this" (capability) → `HasFix()` should always return true
 - **(B)** "An AI has generated a suggested fix" (artifact) → current behavior is correct
 
@@ -26,6 +28,7 @@ These decisions need product input. They are documented here for visibility.
 **Current:** `tool:rule:file:line:col` (human-readable)
 
 **Options:**
+
 - (A) Keep readable strings (current)
 - (B) SHA-256 hash (collision-resistant but opaque)
 - (C) Both: readable format with optional hash suffix
@@ -59,6 +62,7 @@ These decisions need product input. They are documented here for visibility.
 **Current:** v0.1.3, breaking changes still allowed.
 
 **Recommendation:** Lock the exported API after the following are resolved:
+
 - FixStrategyAI decision (#1 above)
 - Builder.Build() error return is stable
 - ID format is finalized (#2 above)

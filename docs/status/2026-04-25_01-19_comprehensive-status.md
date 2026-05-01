@@ -41,6 +41,7 @@
 **Problem:** README.md "Project Stats" table showed coverage from an earlier version (81.1% total). Actual coverage is 94.8%.
 
 **Fix:** Updated all package coverage numbers to current values:
+
 - Root: 91.7% → 98.7%
 - Pipeline: 84.0% → 94.5%
 - Detectors: 71.6% → 95.9%
@@ -60,6 +61,7 @@
 ### A6. Stale nolint Directives Cleaned
 
 **Problem:** 4 `//nolint` directives were no longer needed:
+
 - `pipeline/conflict.go:54` — `//nolint:prealloc` (prealloc doesn't flag this pattern)
 - `pipeline/pipeline_test.go:369` — `//nolint:prealloc` (same)
 - `diagnostic_test.go:80` — `//nolint:goconst` (goconst doesn't flag test fixtures in test files)
@@ -72,6 +74,7 @@
 ### A7. Full SDK Readiness Assessment
 
 **Completed a thorough audit of:**
+
 - All 16 core source files (finding.go, severity.go, fix_strategy.go, position.go, report.go, filter.go, merge.go, sarif.go, lsp.go, errors.go, category.go, id.go, json.go, suppression.go, diagnostic.go, doc.go)
 - All 8 pipeline source files (pipeline.go, result.go, conflict.go, fix_applier.go, verify.go, metrics.go, retry.go, partial.go)
 - CLI implementation (main.go, main_test.go, integration_test.go)
@@ -89,13 +92,13 @@
 
 Verified 5 TODO items are **already resolved or incorrect**:
 
-| TODO Item | Actual Status |
-|-----------|---------------|
+| TODO Item                                               | Actual Status                                                               |
+| ------------------------------------------------------- | --------------------------------------------------------------------------- |
 | "Fix DeduplicateByPosition key should NOT include Rule" | Already correct — key is `file:line:col`, distinct from `DeduplicateByRule` |
-| "Fix Metrics.StageTiming value receiver bug" | Already correct — uses pointer receiver `(m *Metrics)`, no mutex copy |
-| "Fix profiling FD leak" | Already correct — cleanup function properly closes FDs in reverse order |
-| "Fix CI Go version matrix" | Already correct — ci.yml uses Go 1.26 |
-| "Fix release workflow Go version" | Already correct — release.yml uses Go 1.26 |
+| "Fix Metrics.StageTiming value receiver bug"            | Already correct — uses pointer receiver `(m *Metrics)`, no mutex copy       |
+| "Fix profiling FD leak"                                 | Already correct — cleanup function properly closes FDs in reverse order     |
+| "Fix CI Go version matrix"                              | Already correct — ci.yml uses Go 1.26                                       |
+| "Fix release workflow Go version"                       | Already correct — release.yml uses Go 1.26                                  |
 
 ---
 
@@ -107,13 +110,13 @@ Verified 5 TODO items are **already resolved or incorrect**:
 
 **What's left:**
 
-| Linter | Count | Nature | Actionable? |
-|--------|-------|--------|-------------|
-| `paralleltest` | 5 | Intentionally removed `t.Parallel()` to fix races | Suppress with nolint comments |
-| `gosec` G703 | 3 | Path traversal in `FixApplier` — real concern but false positive for a fix tool | Add `rootDir` path validation |
-| `gochecknoglobals` | 2 | Test helpers (`suppressedIDs`, `byFindingID`) | Suppress or move to function scope |
-| `goconst` | 2 | Test fixture strings and SARIF level strings | Extract constants or suppress |
-| `golines` | 2 | Formatting in test files | Run `golines` formatter |
+| Linter             | Count | Nature                                                                          | Actionable?                        |
+| ------------------ | ----- | ------------------------------------------------------------------------------- | ---------------------------------- |
+| `paralleltest`     | 5     | Intentionally removed `t.Parallel()` to fix races                               | Suppress with nolint comments      |
+| `gosec` G703       | 3     | Path traversal in `FixApplier` — real concern but false positive for a fix tool | Add `rootDir` path validation      |
+| `gochecknoglobals` | 2     | Test helpers (`suppressedIDs`, `byFindingID`)                                   | Suppress or move to function scope |
+| `goconst`          | 2     | Test fixture strings and SARIF level strings                                    | Extract constants or suppress      |
+| `golines`          | 2     | Formatting in test files                                                        | Run `golines` formatter            |
 
 **Done:** Removed stale nolints, deleted unused helpers, fixed thelper warning.
 **Not done:** paralleltest nolints, gosec path validation, goconst extraction, golines formatting.
@@ -181,6 +184,7 @@ Verified 5 TODO items are **already resolved or incorrect**:
 ### D1. Nothing is truly catastrophic
 
 No data loss risks, no security vulnerabilities, no panics in production code. The worst issues were:
+
 - **Build-breaking unused import** — fixed
 - **Race conditions in tests** — fixed
 - **Misleading documentation** — fixed
@@ -234,33 +238,33 @@ If anyone relies on `OnFix` callback to track which fixes were actually applied 
 
 ## F) TOP #25 THINGS WE SHOULD GET DONE NEXT
 
-| Priority | # | Item | Effort | Impact |
-|----------|---|------|--------|--------|
-| P0 | 1 | **Fix OnFix callback inaccuracy** — only call for actually-applied fixes | S | M |
-| P0 | 2 | **Add `paralleltest` nolint comments** to the 5 intentionally-serial CLI tests | XS | S |
-| P0 | 3 | **Add `rootDir` path validation in FixApplier** — prevent writes outside project | S | M |
-| P1 | 4 | **Decide on FixStrategyAI** — implement, deprecate with warning, or remove | M | M |
-| P1 | 5 | **Refactor CLI `run()` for testability** — inject io.Writer, flag.FlagSet | M | L |
-| P1 | 6 | **Clean stale TODO_LIST.md items** — audit and prune ~5 confirmed-stale entries | S | S |
-| P1 | 7 | **Add CLI integration test with real govet detector** — end-to-end pipeline test | M | M |
-| P1 | 8 | **Fix property test flakiness** — add seed control to TestProperty_IDRoundTrip | S | M |
-| P2 | 9 | **Add `govulncheck` step to CI** — justfile has target, CI doesn't use it | S | M |
-| P2 | 10 | **Consolidate `findingKey` function** — duplicated in verify.go and merge.go | S | S |
-| P2 | 11 | **Add FixApplier error-path unit tests** — push coverage from 84.6% to 90%+ | M | S |
-| P2 | 12 | **Add Conflict detection dedicated tests** — FilterConflictingFixes + AnalyzeConflicts 0% | S | S |
-| P2 | 13 | **Add `Correlation` JSON tags** — fix tagliatelle violation | XS | S |
-| P2 | 14 | **Replace `math/rand` in retry** — use `math/rand/v2` or crypto/rand for jitter | S | S |
-| P2 | 15 | **Run `golines` formatter** — fix 2 formatting warnings in test files | XS | S |
-| P2 | 16 | **Add per-package coverage thresholds in CI** — not just total 75% | S | M |
-| P3 | 17 | **Document SARIF round-trip losses explicitly** — SeverityCritical, RelatedRef.FindingID, BeforeCode | S | S |
-| P3 | 18 | **API stability review** — lock exported API before v1.0.0 | L | L |
-| P3 | 19 | **Add `Report` goroutine safety** — mutex or prominent constructor-only pattern | M | M |
-| P3 | 20 | **Add benchmark regression tracking in CI** — compare against baselines | M | M |
-| P3 | 21 | **Evaluate `go-sarif` library vs hand-rolled** — spec compliance check | M | M |
-| P3 | 22 | **Add `go:generate stringer` for enums** — Severity, FixStrategy, Category, SuppressionKind | S | S |
-| P3 | 23 | **Create `examples/` directory** — standalone runnable programs for adoption | M | L |
-| P3 | 24 | **Optimize Correlate() O(n²)** — sorted+merge approach for large finding sets | M | S |
-| P3 | 25 | **Add version.go with semver constants** — programmatic version checking | S | S |
+| Priority | #   | Item                                                                                                 | Effort | Impact |
+| -------- | --- | ---------------------------------------------------------------------------------------------------- | ------ | ------ |
+| P0       | 1   | **Fix OnFix callback inaccuracy** — only call for actually-applied fixes                             | S      | M      |
+| P0       | 2   | **Add `paralleltest` nolint comments** to the 5 intentionally-serial CLI tests                       | XS     | S      |
+| P0       | 3   | **Add `rootDir` path validation in FixApplier** — prevent writes outside project                     | S      | M      |
+| P1       | 4   | **Decide on FixStrategyAI** — implement, deprecate with warning, or remove                           | M      | M      |
+| P1       | 5   | **Refactor CLI `run()` for testability** — inject io.Writer, flag.FlagSet                            | M      | L      |
+| P1       | 6   | **Clean stale TODO_LIST.md items** — audit and prune ~5 confirmed-stale entries                      | S      | S      |
+| P1       | 7   | **Add CLI integration test with real govet detector** — end-to-end pipeline test                     | M      | M      |
+| P1       | 8   | **Fix property test flakiness** — add seed control to TestProperty_IDRoundTrip                       | S      | M      |
+| P2       | 9   | **Add `govulncheck` step to CI** — justfile has target, CI doesn't use it                            | S      | M      |
+| P2       | 10  | **Consolidate `findingKey` function** — duplicated in verify.go and merge.go                         | S      | S      |
+| P2       | 11  | **Add FixApplier error-path unit tests** — push coverage from 84.6% to 90%+                          | M      | S      |
+| P2       | 12  | **Add Conflict detection dedicated tests** — FilterConflictingFixes + AnalyzeConflicts 0%            | S      | S      |
+| P2       | 13  | **Add `Correlation` JSON tags** — fix tagliatelle violation                                          | XS     | S      |
+| P2       | 14  | **Replace `math/rand` in retry** — use `math/rand/v2` or crypto/rand for jitter                      | S      | S      |
+| P2       | 15  | **Run `golines` formatter** — fix 2 formatting warnings in test files                                | XS     | S      |
+| P2       | 16  | **Add per-package coverage thresholds in CI** — not just total 75%                                   | S      | M      |
+| P3       | 17  | **Document SARIF round-trip losses explicitly** — SeverityCritical, RelatedRef.FindingID, BeforeCode | S      | S      |
+| P3       | 18  | **API stability review** — lock exported API before v1.0.0                                           | L      | L      |
+| P3       | 19  | **Add `Report` goroutine safety** — mutex or prominent constructor-only pattern                      | M      | M      |
+| P3       | 20  | **Add benchmark regression tracking in CI** — compare against baselines                              | M      | M      |
+| P3       | 21  | **Evaluate `go-sarif` library vs hand-rolled** — spec compliance check                               | M      | M      |
+| P3       | 22  | **Add `go:generate stringer` for enums** — Severity, FixStrategy, Category, SuppressionKind          | S      | S      |
+| P3       | 23  | **Create `examples/` directory** — standalone runnable programs for adoption                         | M      | L      |
+| P3       | 24  | **Optimize Correlate() O(n²)** — sorted+merge approach for large finding sets                        | M      | S      |
+| P3       | 25  | **Add version.go with semver constants** — programmatic version checking                             | S      | S      |
 
 ---
 
@@ -269,6 +273,7 @@ If anyone relies on `OnFix` callback to track which fixes were actually applied 
 **What is the intended v1.0.0 release criteria?**
 
 The codebase is at v0.1.3 with no documented API stability guarantee. I cannot determine:
+
 - Is v1.0.0 planned, or is this intentionally an "eternal v0.x" library?
 - What is the minimum bar for v1.0.0? (API lockdown? All P0/P1 items? 95% coverage? External adoption count?)
 - Should `FixStrategyAI` be removed before v1.0.0, or is it acceptable as a "reserved" constant?
@@ -296,20 +301,20 @@ ok  github.com/larsartmann/go-finding/pipeline  1.066s  (94.5% coverage)
 
 ## Files Modified This Session
 
-| File | Change |
-|------|--------|
-| `pipeline/verify_test.go` | Removed unused `"errors"` import |
-| `cmd/go-finding/integration_test.go` | Removed `t.Parallel()` from 4 data-racing tests |
-| `cmd/go-finding/main_test.go` | Removed `t.Parallel()` from `TestFatalf`, fixed var ordering |
-| `AGENTS.md` | Updated `pipeline/astfix.go` → `pipeline/fix_applier.go` |
-| `README.md` | Updated coverage stats to current values |
-| `pipeline/conflict.go` | Removed stale `//nolint:prealloc` directive |
-| `pipeline/pipeline_test.go` | Removed stale `//nolint:prealloc` directive |
-| `diagnostic_test.go` | Removed stale `//nolint:goconst` directive |
-| `sarif.go` | Removed stale `//nolint:goconst` directive |
-| `testutil_test.go` | Removed 3 unused helper functions, added `t.Helper()` to `assertSummaryField` |
-| `docs/READINESS_REPORT.md` | NEW — full SDK readiness assessment |
-| `docs/status/2026-04-25_01-19_comprehensive-status.md` | NEW — this file |
+| File                                                   | Change                                                                        |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `pipeline/verify_test.go`                              | Removed unused `"errors"` import                                              |
+| `cmd/go-finding/integration_test.go`                   | Removed `t.Parallel()` from 4 data-racing tests                               |
+| `cmd/go-finding/main_test.go`                          | Removed `t.Parallel()` from `TestFatalf`, fixed var ordering                  |
+| `AGENTS.md`                                            | Updated `pipeline/astfix.go` → `pipeline/fix_applier.go`                      |
+| `README.md`                                            | Updated coverage stats to current values                                      |
+| `pipeline/conflict.go`                                 | Removed stale `//nolint:prealloc` directive                                   |
+| `pipeline/pipeline_test.go`                            | Removed stale `//nolint:prealloc` directive                                   |
+| `diagnostic_test.go`                                   | Removed stale `//nolint:goconst` directive                                    |
+| `sarif.go`                                             | Removed stale `//nolint:goconst` directive                                    |
+| `testutil_test.go`                                     | Removed 3 unused helper functions, added `t.Helper()` to `assertSummaryField` |
+| `docs/READINESS_REPORT.md`                             | NEW — full SDK readiness assessment                                           |
+| `docs/status/2026-04-25_01-19_comprehensive-status.md` | NEW — this file                                                               |
 
 ---
 

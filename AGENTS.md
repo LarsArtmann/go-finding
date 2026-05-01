@@ -37,15 +37,15 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 #### Pipeline Package
 
-| File                   | Purpose                                               |
-| ---------------------- | ----------------------------------------------------- |
-| `pipeline/pipeline.go` | Pipeline orchestrator: detect → triage → fix → verify |
-| `pipeline/conflict.go` | Fix conflict detection and analysis                   |
-| `pipeline/fix_applier.go` | Line-based fix application with backup/rollback |
-| `pipeline/verify.go`   | Verification stage: re-run detectors, diff findings   |
-| `pipeline/metrics.go`  | Timing/count metrics collection with snapshots        |
-| `pipeline/retry.go`    | Exponential backoff retry wrapper for detectors       |
-| `pipeline/partial.go`  | Partial success: collect from failed detectors        |
+| File                      | Purpose                                               |
+| ------------------------- | ----------------------------------------------------- |
+| `pipeline/pipeline.go`    | Pipeline orchestrator: detect → triage → fix → verify |
+| `pipeline/conflict.go`    | Fix conflict detection and analysis                   |
+| `pipeline/fix_applier.go` | Line-based fix application with backup/rollback       |
+| `pipeline/verify.go`      | Verification stage: re-run detectors, diff findings   |
+| `pipeline/metrics.go`     | Timing/count metrics collection with snapshots        |
+| `pipeline/retry.go`       | Exponential backoff retry wrapper for detectors       |
+| `pipeline/partial.go`     | Partial success: collect from failed detectors        |
 
 #### CLI
 

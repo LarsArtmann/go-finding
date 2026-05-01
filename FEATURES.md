@@ -9,13 +9,13 @@
 
 ## Status Legend
 
-| Status | Meaning |
-|---|---|
-| STABLE | Fully implemented, tested, production-ready |
-| FUNCTIONAL | Works but has known limitations or rough edges |
-| EXPERIMENTAL | Implemented and tested, but API may change |
-| RESERVED | Type/constant exists, tested, but no backend implementation |
-| NOT_IMPLEMENTED | Mentioned in docs/comments but no code exists |
+| Status          | Meaning                                                     |
+| --------------- | ----------------------------------------------------------- |
+| STABLE          | Fully implemented, tested, production-ready                 |
+| FUNCTIONAL      | Works but has known limitations or rough edges              |
+| EXPERIMENTAL    | Implemented and tested, but API may change                  |
+| RESERVED        | Type/constant exists, tested, but no backend implementation |
+| NOT_IMPLEMENTED | Mentioned in docs/comments but no code exists               |
 
 ---
 
@@ -27,27 +27,27 @@
 
 The central type representing a single issue detected by a static analysis tool.
 
-| Field | Type | Purpose |
-|---|---|---|
-| ID | `string` | Stable unique identifier (`tool:rule:file:line:col`) |
-| Rule | `string` | Rule/check name (e.g., `STRONG_ID`) |
-| ToolName | `string` | Source tool name (e.g., `govet`) |
-| Message | `string` | Human-readable description |
-| Severity | `Severity` | info / warning / error / critical |
-| Position | `Position` | Where the issue is (file, line, column, offset) |
-| Category | `Category` | Domain classification (security, style, etc.) |
-| Tag | `string` | **Deprecated** — use `Tags` instead |
-| Tags | `[]Tag` | Multiple classification labels |
-| FixStrategy | `FixStrategy` | none / suggest / direct / ai |
-| Suggestion | `string` | Human-readable fix description |
-| BeforeCode | `string` | Code before the fix |
-| AfterCode | `string` | Code after the fix |
-| Range | `*Range` | Span-based findings (start/end positions) |
-| Snippet | `string` | Surrounding code context |
-| Confidence | `float64` | 0.0–1.0 |
-| Related | `[]RelatedRef` | Related findings (clone-of, wraps, causes) |
-| Suppression | `*Suppression` | If suppressed |
-| Metadata | `map[string]string` | Tool-specific key-value pairs |
+| Field       | Type                | Purpose                                              |
+| ----------- | ------------------- | ---------------------------------------------------- |
+| ID          | `string`            | Stable unique identifier (`tool:rule:file:line:col`) |
+| Rule        | `string`            | Rule/check name (e.g., `STRONG_ID`)                  |
+| ToolName    | `string`            | Source tool name (e.g., `govet`)                     |
+| Message     | `string`            | Human-readable description                           |
+| Severity    | `Severity`          | info / warning / error / critical                    |
+| Position    | `Position`          | Where the issue is (file, line, column, offset)      |
+| Category    | `Category`          | Domain classification (security, style, etc.)        |
+| Tag         | `string`            | **Deprecated** — use `Tags` instead                  |
+| Tags        | `[]Tag`             | Multiple classification labels                       |
+| FixStrategy | `FixStrategy`       | none / suggest / direct / ai                         |
+| Suggestion  | `string`            | Human-readable fix description                       |
+| BeforeCode  | `string`            | Code before the fix                                  |
+| AfterCode   | `string`            | Code after the fix                                   |
+| Range       | `*Range`            | Span-based findings (start/end positions)            |
+| Snippet     | `string`            | Surrounding code context                             |
+| Confidence  | `float64`           | 0.0–1.0                                              |
+| Related     | `[]RelatedRef`      | Related findings (clone-of, wraps, causes)           |
+| Suppression | `*Suppression`      | If suppressed                                        |
+| Metadata    | `map[string]string` | Tool-specific key-value pairs                        |
 
 Key methods: `Validate()`, `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
 
@@ -78,12 +78,12 @@ f, err := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, P
 
 ### 2.1 Position
 
-| Field | Type | Notes |
-|---|---|---|
-| File | `string` | Required |
-| Line | `int` | 1-based; 0 = not set |
-| Column | `int` | 1-based; 0 = not set |
-| Offset | `int` | 0-based byte offset; -1 = not set |
+| Field  | Type     | Notes                             |
+| ------ | -------- | --------------------------------- |
+| File   | `string` | Required                          |
+| Line   | `int`    | 1-based; 0 = not set              |
+| Column | `int`    | 1-based; 0 = not set              |
+| Offset | `int`    | 0-based byte offset; -1 = not set |
 
 Methods: `IsValid()`, `Equal()`, `Compare()`, `String()`, `HasOffset()`
 Constructor: `Pos(file, line, column)`
@@ -104,11 +104,11 @@ Constructors: `NewRange(file, startLine, startCol, endLine, endCol)`, `NewRangeP
 
 Four levels, ordered by urgency:
 
-| Level | String | SARIF Mapping |
-|---|---|---|
-| Info | `"info"` | `note` |
-| Warning | `"warning"` | `warning` |
-| Error | `"error"` | `error` |
+| Level    | String       | SARIF Mapping                             |
+| -------- | ------------ | ----------------------------------------- |
+| Info     | `"info"`     | `note`                                    |
+| Warning  | `"warning"`  | `warning`                                 |
+| Error    | `"error"`    | `error`                                   |
 | Critical | `"critical"` | `error` (lossy — preserved in Properties) |
 
 Methods: `IsValid()`, `Compare()`, `GreaterThan()`, `LessThan()`, `GreaterThanOrEqual()`, `LessThanOrEqual()`
@@ -119,12 +119,12 @@ Methods: `IsValid()`, `Compare()`, `GreaterThan()`, `LessThan()`, `GreaterThanOr
 
 **Status:** STABLE (except AI — see below)
 
-| Strategy | String | Auto-apply | Description |
-|---|---|---|---|
-| None | `"none"` | No | No fix available |
-| Suggest | `"suggest"` | No | Human-readable suggestion |
-| Direct | `"direct"` | Yes | Automatically applicable |
-| AI | `"ai"` | No | **RESERVED** — needs AI backend |
+| Strategy | String      | Auto-apply | Description                     |
+| -------- | ----------- | ---------- | ------------------------------- |
+| None     | `"none"`    | No         | No fix available                |
+| Suggest  | `"suggest"` | No         | Human-readable suggestion       |
+| Direct   | `"direct"`  | Yes        | Automatically applicable        |
+| AI       | `"ai"`      | No         | **RESERVED** — needs AI backend |
 
 Methods: `IsValid()`, `CanAutoApply()`, `NeedsAI()`
 
@@ -162,12 +162,12 @@ The `Tag` field (singular) is deprecated in favor of `Tags` (plural).
 
 Mark findings as suppressed with reason and optional expiry.
 
-| Field | Type | Purpose |
-|---|---|---|
-| Kind | `SuppressionKind` | `in-source`, `in-config`, `in-review` |
-| Rule | `string` | Which rule is suppressed |
-| Reason | `string` | Why |
-| ExpiresAt | `*time.Time` | Optional TTL |
+| Field     | Type              | Purpose                               |
+| --------- | ----------------- | ------------------------------------- |
+| Kind      | `SuppressionKind` | `in-source`, `in-config`, `in-review` |
+| Rule      | `string`          | Which rule is suppressed              |
+| Reason    | `string`          | Why                                   |
+| ExpiresAt | `*time.Time`      | Optional TTL                          |
 
 Methods: `IsExpired(now)`, `IsValid()`, `SuppressionKind.IsValid()`
 
@@ -181,22 +181,22 @@ Methods: `IsExpired(now)`, `IsValid()`, `SuppressionKind.IsValid()`
 
 Top-level container for a tool run.
 
-| Feature | Method | Thread-safe |
-|---|---|---|
-| Create | `NewReport(toolInfo)` | Yes |
-| Add single finding | `AddFinding(f)` | Yes (mutex) |
-| Add multiple findings | `AddFindings([])` | Yes (mutex) |
-| Recompute stats | `ComputeSummary()` | No |
-| Filter by severity | `BySeverity(sev)` | Read-only |
-| Filter by category | `ByCategory(cat)` | Read-only |
-| Filter by fix strategy | `ByFixStrategy(fs)` | Read-only |
-| Find by ID | `FindByID(id)` → `*Finding` (copy) | Read-only |
-| Find by rule | `FindByRule(rule)` | Read-only |
-| Active (non-suppressed) | `ActiveFindings()` | Read-only |
-| Generic filter | `Filter(predicates...)` → `*Report` | Read-only |
-| Transform | `Map(func) → *Report` | Read-only |
-| Iterate | `All()` → `iter.Seq[Finding]` | Read-only |
-| Count | `Len()` | Read-only |
+| Feature                 | Method                              | Thread-safe |
+| ----------------------- | ----------------------------------- | ----------- |
+| Create                  | `NewReport(toolInfo)`               | Yes         |
+| Add single finding      | `AddFinding(f)`                     | Yes (mutex) |
+| Add multiple findings   | `AddFindings([])`                   | Yes (mutex) |
+| Recompute stats         | `ComputeSummary()`                  | No          |
+| Filter by severity      | `BySeverity(sev)`                   | Read-only   |
+| Filter by category      | `ByCategory(cat)`                   | Read-only   |
+| Filter by fix strategy  | `ByFixStrategy(fs)`                 | Read-only   |
+| Find by ID              | `FindByID(id)` → `*Finding` (copy)  | Read-only   |
+| Find by rule            | `FindByRule(rule)`                  | Read-only   |
+| Active (non-suppressed) | `ActiveFindings()`                  | Read-only   |
+| Generic filter          | `Filter(predicates...)` → `*Report` | Read-only   |
+| Transform               | `Map(func) → *Report`               | Read-only   |
+| Iterate                 | `All()` → `iter.Seq[Finding]`       | Read-only   |
+| Count                   | `Len()`                             | Read-only   |
 
 Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffected`, `DurationMs`, `Suppressed`
 
@@ -214,9 +214,9 @@ Composable filter functions:
 
 ### 8.2 Core Operations
 
-| Operation | Function |
-|---|---|
-| Filter | `Filter(findings, predicates...)` |
+| Operation       | Function                                 |
+| --------------- | ---------------------------------------- |
+| Filter          | `Filter(findings, predicates...)`        |
 | In-place filter | `FilterInPlace(findings, predicates...)` |
 
 ### 8.3 Grouping
@@ -247,11 +247,11 @@ merged := finding.Merge(reports,
 
 ### 9.2 Deduplication Strategies
 
-| Strategy | Match By |
-|---|---|
-| `DeduplicateByID` | Exact ID match (default) |
+| Strategy                | Match By                    |
+| ----------------------- | --------------------------- |
+| `DeduplicateByID`       | Exact ID match (default)    |
 | `DeduplicateByPosition` | tool + file + line + column |
-| `DeduplicateByRule` | rule + file + line + column |
+| `DeduplicateByRule`     | rule + file + line + column |
 
 ### 9.3 Cross-Tool Correlation
 
@@ -276,6 +276,7 @@ Returns `[]Correlation` with `FindingIDs`, `Reason`, and `Confidence` score. Cap
 ### Generation
 
 `GenerateID(toolName, rule, pos)` produces:
+
 - `"tool:rule:file:line:col"` when line > 0 (human-readable)
 - `"tool:rule:<sha256hash>"` when line == 0 (hash-based)
 
@@ -293,15 +294,15 @@ Handles Windows paths with colons correctly.
 
 **Status:** STABLE
 
-| Operation | Function | Notes |
-|---|---|---|
-| Report → JSON | `report.PrettyJSON()` | Pretty-printed |
-| Report → Writer | `report.WriteJSON(w)` | Streaming, avoids allocation |
-| JSON → Report | `ReportFromJSON(data)` → `(*Report, dropped, error)` | Drops invalid findings |
-| Finding → JSON | `finding.LineJSON()` | Compact single-line |
-| Finding → Writer | `finding.WriteJSON(w)` | Streaming |
-| JSON → Finding | `FromJSON(data)` | Validates required fields |
-| JSON → []Finding | `FindingsFromJSON(data)` → `([]Finding, dropped, error)` | Drops invalid |
+| Operation        | Function                                                 | Notes                        |
+| ---------------- | -------------------------------------------------------- | ---------------------------- |
+| Report → JSON    | `report.PrettyJSON()`                                    | Pretty-printed               |
+| Report → Writer  | `report.WriteJSON(w)`                                    | Streaming, avoids allocation |
+| JSON → Report    | `ReportFromJSON(data)` → `(*Report, dropped, error)`     | Drops invalid findings       |
+| Finding → JSON   | `finding.LineJSON()`                                     | Compact single-line          |
+| Finding → Writer | `finding.WriteJSON(w)`                                   | Streaming                    |
+| JSON → Finding   | `FromJSON(data)`                                         | Validates required fields    |
+| JSON → []Finding | `FindingsFromJSON(data)` → `([]Finding, dropped, error)` | Drops invalid                |
 
 ---
 
@@ -311,12 +312,12 @@ Handles Windows paths with colons correctly.
 
 ### Export
 
-| Method | Description |
-|---|---|
-| `report.ToSARIF()` | Full report → SARIF JSON (excludes suppressed) |
-| `report.ToSARIFFiltered(minSev)` | Severity-filtered SARIF JSON |
-| `report.WriteSARIF(w)` | Streaming SARIF output |
-| `report.WriteSARIFFiltered(w, minSev)` | Streaming filtered output |
+| Method                                 | Description                                    |
+| -------------------------------------- | ---------------------------------------------- |
+| `report.ToSARIF()`                     | Full report → SARIF JSON (excludes suppressed) |
+| `report.ToSARIFFiltered(minSev)`       | Severity-filtered SARIF JSON                   |
+| `report.WriteSARIF(w)`                 | Streaming SARIF output                         |
+| `report.WriteSARIFFiltered(w, minSev)` | Streaming filtered output                      |
 
 ### Import
 
@@ -354,13 +355,13 @@ Preserves: end position as Range, related information, raw LSP severity in Metad
 
 **Status:** STABLE
 
-| Function | Purpose |
-|---|---|
+| Function                                                      | Purpose                              |
+| ------------------------------------------------------------- | ------------------------------------ |
 | `FromDiagnostic(diag, fset, toolName, ruleCode, ...severity)` | `go/analysis.Diagnostic` → `Finding` |
-| `FromTokenPosition(pos)` | `token.Position` → `Position` |
-| `NodePosition(fset, node)` | `ast.Node` → `Position` |
-| `NodeRange(fset, node)` | `ast.Node` → `Range` |
-| `FormatDiagnostic(diag, fset, name)` | Go-vet-style formatted string |
+| `FromTokenPosition(pos)`                                      | `token.Position` → `Position`        |
+| `NodePosition(fset, node)`                                    | `ast.Node` → `Position`              |
+| `NodeRange(fset, node)`                                       | `ast.Node` → `Range`                 |
+| `FormatDiagnostic(diag, fset, name)`                          | Go-vet-style formatted string        |
 
 Auto-detects suggested fixes and sets `FixStrategyDirect` with `AfterCode`.
 
@@ -372,13 +373,13 @@ Auto-detects suggested fixes and sets `FixStrategyDirect` with `AfterCode`.
 
 Category-based error types with `errors.Is` / `errors.As` support:
 
-| Error | Category | Factory |
-|---|---|---|
+| Error           | Category     | Factory                          |
+| --------------- | ------------ | -------------------------------- |
 | `ErrValidation` | `validation` | `NewValidationError(msg, cause)` |
-| `ErrIO` | `io` | `NewIOError(msg, cause)` |
-| `ErrParse` | `parse` | `NewParseError(msg, cause)` |
-| `ErrConflict` | `conflict` | `NewConflictError(msg, cause)` |
-| `ErrInternal` | `internal` | `NewInternalError(msg, cause)` |
+| `ErrIO`         | `io`         | `NewIOError(msg, cause)`         |
+| `ErrParse`      | `parse`      | `NewParseError(msg, cause)`      |
+| `ErrConflict`   | `conflict`   | `NewConflictError(msg, cause)`   |
+| `ErrInternal`   | `internal`   | `NewInternalError(msg, cause)`   |
 
 `FindingError` supports: `WithFinding()`, `WithPosition()`, `Unwrap()`, `Is()` for sentinel matching
 
@@ -405,20 +406,20 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 
 ### 16.2 Configuration
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `MaxIterations` | `int` | 5 | Prevents infinite loops |
-| `ParallelDetectors` | `bool` | `true` | Concurrent detector execution |
-| `Timeout` | `time.Duration` | 10min | Pipeline timeout |
-| `VerifyAfterFix` | `bool` | `false` | Re-run detectors post-fix |
-| `GracefulDegradation` | `bool` | `false` | Continue on detector failures |
-| `DryRun` | `bool` | `false` | Detect + triage only (no fixes) |
-| `Retry` | `*RetryConfig` | `nil` | Exponential backoff retries |
-| `Metrics` | `*Metrics` | `nil` | Timing/count collection |
-| `CorrelateFindings` | `bool` | `false` | Cross-tool correlation |
-| `OnFinding` | `func(Finding)` | `nil` | Per-finding callback |
-| `OnFix` | `func(Finding, bool)` | `nil` | Per-fix callback |
-| `OnIteration` | `func(int, []Finding)` | `nil` | Per-iteration callback |
+| Option                | Type                   | Default | Description                     |
+| --------------------- | ---------------------- | ------- | ------------------------------- |
+| `MaxIterations`       | `int`                  | 5       | Prevents infinite loops         |
+| `ParallelDetectors`   | `bool`                 | `true`  | Concurrent detector execution   |
+| `Timeout`             | `time.Duration`        | 10min   | Pipeline timeout                |
+| `VerifyAfterFix`      | `bool`                 | `false` | Re-run detectors post-fix       |
+| `GracefulDegradation` | `bool`                 | `false` | Continue on detector failures   |
+| `DryRun`              | `bool`                 | `false` | Detect + triage only (no fixes) |
+| `Retry`               | `*RetryConfig`         | `nil`   | Exponential backoff retries     |
+| `Metrics`             | `*Metrics`             | `nil`   | Timing/count collection         |
+| `CorrelateFindings`   | `bool`                 | `false` | Cross-tool correlation          |
+| `OnFinding`           | `func(Finding)`        | `nil`   | Per-finding callback            |
+| `OnFix`               | `func(Finding, bool)`  | `nil`   | Per-fix callback                |
+| `OnIteration`         | `func(int, []Finding)` | `nil`   | Per-iteration callback          |
 
 Config validation: `config.Validate()` returns joined errors for invalid values. `pipeline.New()` rejects invalid configs.
 
@@ -431,16 +432,16 @@ Config validation: `config.Validate()` returns joined errors for invalid values.
 
 ### 16.4 Pipeline Result
 
-| Field | Type | Description |
-|---|---|---|
-| `Stable` | `bool` | Reached zero findings |
-| `TotalIterations` | `int` | Iterations executed |
-| `Iterations` | `[]Iteration` | Per-iteration details |
-| `TotalDetected` | `int` | Total findings across iterations |
-| `Verification` | `*VerifyResult` | Post-fix verification |
-| `PartialErrors` | `map[string]error` | Per-detector failures |
-| `Correlations` | `[]Correlation` | Cross-tool correlations |
-| `Metrics` | `MetricsSnapshot` | Timing and counts |
+| Field             | Type               | Description                      |
+| ----------------- | ------------------ | -------------------------------- |
+| `Stable`          | `bool`             | Reached zero findings            |
+| `TotalIterations` | `int`              | Iterations executed              |
+| `Iterations`      | `[]Iteration`      | Per-iteration details            |
+| `TotalDetected`   | `int`              | Total findings across iterations |
+| `Verification`    | `*VerifyResult`    | Post-fix verification            |
+| `PartialErrors`   | `map[string]error` | Per-detector failures            |
+| `Correlations`    | `[]Correlation`    | Cross-tool correlations          |
+| `Metrics`         | `MetricsSnapshot`  | Timing and counts                |
 
 ### 16.5 Conflict Detection
 
@@ -461,6 +462,7 @@ Two-phase fix engine:
 2. **String-based** — Fallback: replaces `BeforeCode` with `AfterCode` nearest to target line
 
 Features:
+
 - File backup before modification
 - Rollback on failure (restores all modified files)
 - Context cancellation support mid-application
@@ -474,11 +476,11 @@ Features:
 
 Re-runs all detectors after fixes and categorizes findings:
 
-| Category | Meaning |
-|---|---|
-| `Fixed` | Original findings no longer detected |
-| `Remaining` | Original findings still present |
-| `NewFindings` | Fresh findings introduced by fixes |
+| Category      | Meaning                              |
+| ------------- | ------------------------------------ |
+| `Fixed`       | Original findings no longer detected |
+| `Remaining`   | Original findings still present      |
+| `NewFindings` | Fresh findings introduced by fixes   |
 
 `DiffFindings(original, post)` — standalone utility for comparing finding sets.
 
@@ -488,14 +490,14 @@ Re-runs all detectors after fixes and categorizes findings:
 
 Thread-safe metrics collection:
 
-| Metric | Method |
-|---|---|
-| Stage durations | `RecordStage()`, `StageTiming()` |
-| Detector timing | `RecordDetector()` |
-| Findings per detector | `RecordDetector()` |
-| Fixes applied | `RecordFix()` |
-| Total duration | `TotalDuration()` |
-| Point-in-time copy | `Snapshot()` → `MetricsSnapshot` |
+| Metric                | Method                           |
+| --------------------- | -------------------------------- |
+| Stage durations       | `RecordStage()`, `StageTiming()` |
+| Detector timing       | `RecordDetector()`               |
+| Findings per detector | `RecordDetector()`               |
+| Fixes applied         | `RecordFix()`                    |
+| Total duration        | `TotalDuration()`                |
+| Point-in-time copy    | `Snapshot()` → `MetricsSnapshot` |
 
 Auto-populated on `Pipeline.Run()` via `PipelineResult.Metrics`.
 
@@ -519,6 +521,7 @@ Validation: `RetryConfig.Validate()` checks constraints.
 **Status:** STABLE
 
 When `GracefulDegradation` is enabled:
+
 - `DetectPartial()` collects findings from successful detectors
 - Failed detector errors stored in `PartialResult.Errors` map
 - `PipelineResult.PartialErrors` exposes per-detector failures
@@ -571,20 +574,20 @@ Binary: `go-finding`
 
 ### Flags
 
-| Flag | Default | Description |
-|---|---|---|
-| `-dir` | `.` | Root directory to analyze |
-| `-format` | `text` | Output format: `text`, `json`, `sarif` |
-| `-severity` | `info` | Minimum severity filter |
-| `-max-iterations` | `1` | Pipeline iterations |
-| `-parallel` | `true` | Run detectors in parallel |
-| `-verify` | `false` | Re-run detectors after fixes |
-| `-timeout` | `10m` | Pipeline timeout |
-| `-config` | (none) | YAML/JSON config file |
-| `-cpuprof` | (none) | CPU profile output |
-| `-memprof` | (none) | Memory profile output |
-| `-output` | stdout | Output file path |
-| `-version` | `false` | Print version |
+| Flag              | Default | Description                            |
+| ----------------- | ------- | -------------------------------------- |
+| `-dir`            | `.`     | Root directory to analyze              |
+| `-format`         | `text`  | Output format: `text`, `json`, `sarif` |
+| `-severity`       | `info`  | Minimum severity filter                |
+| `-max-iterations` | `1`     | Pipeline iterations                    |
+| `-parallel`       | `true`  | Run detectors in parallel              |
+| `-verify`         | `false` | Re-run detectors after fixes           |
+| `-timeout`        | `10m`   | Pipeline timeout                       |
+| `-config`         | (none)  | YAML/JSON config file                  |
+| `-cpuprof`        | (none)  | CPU profile output                     |
+| `-memprof`        | (none)  | Memory profile output                  |
+| `-output`         | stdout  | Output file path                       |
+| `-version`        | `false` | Print version                          |
 
 ### Config File (YAML/JSON)
 
@@ -608,11 +611,11 @@ Without `-config`: uses govet + staticcheck with the flag values.
 
 ### Output Formats
 
-| Format | Description |
-|---|---|
-| `text` | Human-readable: `file:line:col: [severity] rule: message` |
-| `json` | Full JSON report |
-| `sarif` | SARIF 2.1.0 |
+| Format  | Description                                               |
+| ------- | --------------------------------------------------------- |
+| `text`  | Human-readable: `file:line:col: [severity] rule: message` |
+| `json`  | Full JSON report                                          |
+| `sarif` | SARIF 2.1.0                                               |
 
 Metrics summary printed to stderr when available.
 
@@ -622,14 +625,15 @@ Metrics summary printed to stderr when available.
 
 **Status:** STABLE
 
-| Package | Coverage |
-|---|---|
-| Core (`finding`) | 99.5% |
-| Pipeline | 98.0% |
-| CLI (`cmd/go-finding`) | 95.4% |
-| Detectors (`internal/detectors`) | 96.1% |
+| Package                          | Coverage |
+| -------------------------------- | -------- |
+| Core (`finding`)                 | 99.5%    |
+| Pipeline                         | 98.0%    |
+| CLI (`cmd/go-finding`)           | 95.4%    |
+| Detectors (`internal/detectors`) | 96.1%    |
 
 Test categories:
+
 - Unit tests per source file
 - Integration tests (`pipeline/integration_test.go`, `cmd/go-finding/integration_test.go`)
 - E2E tests (`cmd/go-finding/e2e_test.go`)
@@ -646,10 +650,10 @@ Test categories:
 
 Three runnable examples in `examples/`:
 
-| Example | Description |
-|---|---|
-| `basic/` | Direct Finding construction |
-| `builder/` | Builder API usage |
+| Example     | Description                   |
+| ----------- | ----------------------------- |
+| `basic/`    | Direct Finding construction   |
+| `builder/`  | Builder API usage             |
 | `pipeline/` | Pipeline with custom detector |
 
 > **Note:** Examples have no test files (compile-only check via `example_compile_test.go`).
@@ -658,41 +662,41 @@ Three runnable examples in `examples/`:
 
 ## Summary Matrix
 
-| Feature | Status | Notes |
-|---|---|---|
-| Finding type | STABLE | Core data model, 99.5% coverage |
-| Builder API | STABLE | Fluent construction with validation |
-| Position & Range | STABLE | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent) |
-| Severity (4 levels) | STABLE | With comparison operators |
-| FixStrategy (none/suggest/direct) | STABLE | Production auto-fix for `direct` |
-| FixStrategy (ai) | RESERVED | Constant exists, no AI backend |
-| Category (15 standard + custom) | STABLE | Domain classification |
-| Tags (multi-label) | STABLE | Supersedes deprecated singular Tag |
-| Suppression | STABLE | With TTL/expiry support |
-| Report container | STABLE | Thread-safe, with summary statistics |
-| Filtering & sorting | STABLE | Composable predicates + grouping |
-| Report merging | STABLE | 3 deduplication strategies |
-| Cross-tool correlation | FUNCTIONAL | Simple heuristic, capped at 10K |
-| ID generation & parsing | STABLE | Hash-based fallback, Windows path handling |
-| JSON serialization | STABLE | Streaming support, drops invalid findings |
-| SARIF 2.1.0 export/import | STABLE | Round-trip via property bag |
-| LSP conversion | STABLE | Lossy — drops fix/suppression metadata |
-| go/analysis integration | STABLE | Full diagnostic → Finding conversion |
-| Structured errors | STABLE | 5 categories, errors.Is support |
-| Pipeline (detect→fix→verify) | STABLE | Iterative loop with configurable behavior |
-| Conflict detection | STABLE | Overlapping fix detection |
-| Fix application | FUNCTIONAL | Range-based + string fallback, backup/rollback |
-| Verification | STABLE | Diff-based: fixed / remaining / new |
-| Metrics | STABLE | Thread-safe, snapshot support |
-| Retry (exponential backoff) | STABLE | With jitter |
-| Partial success | STABLE | Graceful degradation on detector failure |
-| File backup & rollback | STABLE | Automatic on fix failure |
-| Go vet detector | FUNCTIONAL | Requires `go vet` in PATH |
-| Staticcheck detector | FUNCTIONAL | Requires `staticcheck` in PATH |
-| CLI tool | FUNCTIONAL | 3 output formats, config file, profiling |
-| Plugin detector registry | STABLE | Thread-safe `RegisterDetector` |
-| Config validation | STABLE | Both pipeline and CLI configs |
-| Examples | FUNCTIONAL | 3 runnable examples, compile-tested |
+| Feature                           | Status     | Notes                                                             |
+| --------------------------------- | ---------- | ----------------------------------------------------------------- |
+| Finding type                      | STABLE     | Core data model, 99.5% coverage                                   |
+| Builder API                       | STABLE     | Fluent construction with validation                               |
+| Position & Range                  | STABLE     | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent) |
+| Severity (4 levels)               | STABLE     | With comparison operators                                         |
+| FixStrategy (none/suggest/direct) | STABLE     | Production auto-fix for `direct`                                  |
+| FixStrategy (ai)                  | RESERVED   | Constant exists, no AI backend                                    |
+| Category (15 standard + custom)   | STABLE     | Domain classification                                             |
+| Tags (multi-label)                | STABLE     | Supersedes deprecated singular Tag                                |
+| Suppression                       | STABLE     | With TTL/expiry support                                           |
+| Report container                  | STABLE     | Thread-safe, with summary statistics                              |
+| Filtering & sorting               | STABLE     | Composable predicates + grouping                                  |
+| Report merging                    | STABLE     | 3 deduplication strategies                                        |
+| Cross-tool correlation            | FUNCTIONAL | Simple heuristic, capped at 10K                                   |
+| ID generation & parsing           | STABLE     | Hash-based fallback, Windows path handling                        |
+| JSON serialization                | STABLE     | Streaming support, drops invalid findings                         |
+| SARIF 2.1.0 export/import         | STABLE     | Round-trip via property bag                                       |
+| LSP conversion                    | STABLE     | Lossy — drops fix/suppression metadata                            |
+| go/analysis integration           | STABLE     | Full diagnostic → Finding conversion                              |
+| Structured errors                 | STABLE     | 5 categories, errors.Is support                                   |
+| Pipeline (detect→fix→verify)      | STABLE     | Iterative loop with configurable behavior                         |
+| Conflict detection                | STABLE     | Overlapping fix detection                                         |
+| Fix application                   | FUNCTIONAL | Range-based + string fallback, backup/rollback                    |
+| Verification                      | STABLE     | Diff-based: fixed / remaining / new                               |
+| Metrics                           | STABLE     | Thread-safe, snapshot support                                     |
+| Retry (exponential backoff)       | STABLE     | With jitter                                                       |
+| Partial success                   | STABLE     | Graceful degradation on detector failure                          |
+| File backup & rollback            | STABLE     | Automatic on fix failure                                          |
+| Go vet detector                   | FUNCTIONAL | Requires `go vet` in PATH                                         |
+| Staticcheck detector              | FUNCTIONAL | Requires `staticcheck` in PATH                                    |
+| CLI tool                          | FUNCTIONAL | 3 output formats, config file, profiling                          |
+| Plugin detector registry          | STABLE     | Thread-safe `RegisterDetector`                                    |
+| Config validation                 | STABLE     | Both pipeline and CLI configs                                     |
+| Examples                          | FUNCTIONAL | 3 runnable examples, compile-tested                               |
 
 ---
 

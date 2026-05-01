@@ -17,69 +17,72 @@ This session focused on **research and evaluation** of `samber/ro` (reactive ext
 
 ### A) FULLY DONE ✅
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Research samber/ro library | ✅ DONE | RxGo-style reactive extensions for infinite streams |
-| Analyze error handling patterns | ✅ DONE | Current patterns are idiomatic Go |
-| Identify integration opportunities | ✅ DONE | No clear benefit for core |
-| Evaluate codebase architecture | ✅ DONE | Well-designed, minimal deps |
-| Run test suite | ✅ DONE | All tests passing |
-| Create status report | ✅ DONE | This document |
+| Task                               | Status  | Notes                                               |
+| ---------------------------------- | ------- | --------------------------------------------------- |
+| Research samber/ro library         | ✅ DONE | RxGo-style reactive extensions for infinite streams |
+| Analyze error handling patterns    | ✅ DONE | Current patterns are idiomatic Go                   |
+| Identify integration opportunities | ✅ DONE | No clear benefit for core                           |
+| Evaluate codebase architecture     | ✅ DONE | Well-designed, minimal deps                         |
+| Run test suite                     | ✅ DONE | All tests passing                                   |
+| Create status report               | ✅ DONE | This document                                       |
 
 ### B) PARTIALLY DONE ⏳
 
-| Task | Status | Notes |
-|------|--------|-------|
-| N/A | - | No partial work this session |
+| Task | Status | Notes                        |
+| ---- | ------ | ---------------------------- |
+| N/A  | -      | No partial work this session |
 
 ### C) NOT STARTED 🚫
 
-| Task | Status | Notes |
-|------|--------|-------|
+| Task                  | Status        | Notes                           |
+| --------------------- | ------------- | ------------------------------- |
 | samber/ro integration | 🚫 NOT NEEDED | Recommendation: don't integrate |
-| samber/mo integration | 🚫 NOT NEEDED | Option/Result types not needed |
+| samber/mo integration | 🚫 NOT NEEDED | Option/Result types not needed  |
 
 ### D) TOTALLY FUCKED UP! 💀
 
-| Issue | Status |
-|-------|--------|
-| None | ✅ Working tree is clean |
-| None | ✅ All tests pass |
-| None | ✅ No broken builds |
+| Issue | Status                   |
+| ----- | ------------------------ |
+| None  | ✅ Working tree is clean |
+| None  | ✅ All tests pass        |
+| None  | ✅ No broken builds      |
 
 ---
 
 ## Research Findings: samber/ro
 
 ### What is samber/ro?
+
 - RxGo-style reactive extensions for Go
 - Implements ReactiveX spec
 - Handles **infinite event streams** with operators (Map, Filter, Distinct, etc.)
 - Has rich plugin ecosystem (HTTP, File System, Logging, etc.)
 
 ### What is samber/ro NOT?
+
 - NOT a replacement for functional slice operations
 - NOT for finite batch processing
 - NOT a simpler alternative to errgroup
 
 ### Go-finding Current Design
-| Component | Pattern | Assessment |
-|-----------|---------|------------|
-| `filter.go` | `FilterFunc` + `Filter(slice, predicates...)` | ✅ Good |
-| `merge.go` | `GroupBy()` with maps | ✅ Good |
-| Pipeline | `errgroup` + callbacks | ✅ Good |
-| Error handling | `FindingError` struct | ✅ Good |
+
+| Component      | Pattern                                       | Assessment |
+| -------------- | --------------------------------------------- | ---------- |
+| `filter.go`    | `FilterFunc` + `Filter(slice, predicates...)` | ✅ Good    |
+| `merge.go`     | `GroupBy()` with maps                         | ✅ Good    |
+| Pipeline       | `errgroup` + callbacks                        | ✅ Good    |
+| Error handling | `FindingError` struct                         | ✅ Good    |
 
 ### Recommendation Matrix
 
-| Use Case | Current | samber/ro Benefit | Verdict |
-|----------|---------|-------------------|---------|
-| Batch finding processing | ✅ | ❌ | Keep current |
-| Finding deduplication | ✅ | ❌ | Keep current |
-| Parallel detection | ✅ | ❌ | Keep errgroup |
-| File watching (future) | ❌ | ✅ | Consider ro for fsnotify |
-| HTTP streaming (future) | ❌ | ✅ | Consider ro for HTTP |
-| Complex operator chains | ❌ | ✅ | Consider ro if needed |
+| Use Case                 | Current | samber/ro Benefit | Verdict                  |
+| ------------------------ | ------- | ----------------- | ------------------------ |
+| Batch finding processing | ✅      | ❌                | Keep current             |
+| Finding deduplication    | ✅      | ❌                | Keep current             |
+| Parallel detection       | ✅      | ❌                | Keep errgroup            |
+| File watching (future)   | ❌      | ✅                | Consider ro for fsnotify |
+| HTTP streaming (future)  | ❌      | ✅                | Consider ro for HTTP     |
+| Complex operator chains  | ❌      | ✅                | Consider ro if needed    |
 
 ---
 
@@ -142,12 +145,14 @@ This session focused on **research and evaluation** of `samber/ro` (reactive ext
 ### Question: What is the LONG-TERM architectural vision for go-finding?
 
 Specifically:
+
 - Is the goal **batch analysis** or **continuous monitoring**?
 - Should we optimize for **CLI** or **library** usage?
 - Are **custom detectors** a first-class concern?
 - Should we invest in **ro-based streaming** or keep slices-based?
 
 **Context:** The codebase currently supports both modes but hasn't committed to either. Understanding the long-term direction would clarify:
+
 - Whether to invest in reactive patterns (samber/ro)
 - Whether to add file watching (samber/ro plugins)
 - Whether to add HTTP API (samber/ro HTTP plugin)
@@ -165,6 +170,7 @@ Uncommitted Changes: None
 ```
 
 ### Recent Commits (Last 5)
+
 ```
 2735b3e refactor(test): add test helpers and convert to testify assertions
 5940aa2 refactor(pipeline): use DetectorFunc adapter for inline detector mocks
@@ -190,24 +196,26 @@ ok  	github.com/larsartmann/go-finding/pipeline	0.057s
 
 ## Dependencies
 
-| Dependency | Version | Status |
-|------------|---------|--------|
-| testify | v1.11.1 | ✅ |
-| golang.org/x/sync | v0.20.0 | ✅ |
-| golang.org/x/tools | v0.44.0 | ✅ |
-| gopkg.in/yaml.v3 | v3.0.1 | ✅ |
-| samber/ro | NOT ADDED | ❌ Not needed |
+| Dependency         | Version   | Status        |
+| ------------------ | --------- | ------------- |
+| testify            | v1.11.1   | ✅            |
+| golang.org/x/sync  | v0.20.0   | ✅            |
+| golang.org/x/tools | v0.44.0   | ✅            |
+| gopkg.in/yaml.v3   | v3.0.1    | ✅            |
+| samber/ro          | NOT ADDED | ❌ Not needed |
 
 ---
 
 ## Recommendations
 
 ### Immediate Actions
+
 1. ✅ Close samber/ro evaluation - **NOT NEEDED**
 2. ✅ Tests passing - no action needed
 3. ⏳ Decide on long-term architectural direction
 
 ### Future Considerations
+
 1. Consider samber/ro **only if** adding:
    - File system watching
    - HTTP streaming API
@@ -221,4 +229,4 @@ ok  	github.com/larsartmann/go-finding/pipeline	0.057s
 
 ---
 
-*Report generated by Crush AI*
+_Report generated by Crush AI_

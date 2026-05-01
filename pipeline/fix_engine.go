@@ -186,7 +186,7 @@ func replaceNearestToLine(content, old, replacement string, targetLine int) stri
 
 // lineDistance counts how many newlines appear before position pos in content,
 // then returns the absolute difference from targetLine.
-func lineDistance(content string, pos int, targetLine int) int {
+func lineDistance(content string, pos, targetLine int) int {
 	line := 1
 	for i := 0; i < pos && i < len(content); i++ {
 		if content[i] == '\n' {

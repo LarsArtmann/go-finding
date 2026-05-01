@@ -21,12 +21,12 @@ Clone elimination effort has reduced clone groups from **76 to 68** (10.5% reduc
 
 ## Clone Groups by Status
 
-| Status | Count | Groups |
-|--------|-------|--------|
-| **FULLY DONE** | 2 | Eliminated (11-clone, 5-clone groups) |
-| **PARTIALLY DONE** | 0 | - |
-| **NOT STARTED** | 64 | All remaining groups |
-| **TOTALLY FUCKED UP** | 0 | - |
+| Status                | Count | Groups                                |
+| --------------------- | ----- | ------------------------------------- |
+| **FULLY DONE**        | 2     | Eliminated (11-clone, 5-clone groups) |
+| **PARTIALLY DONE**    | 0     | -                                     |
+| **NOT STARTED**       | 64    | All remaining groups                  |
+| **TOTALLY FUCKED UP** | 0     | -                                     |
 
 ---
 
@@ -34,40 +34,40 @@ Clone elimination effort has reduced clone groups from **76 to 68** (10.5% reduc
 
 ### TIER 1: CANNOT FIX (Architectural/Inherent)
 
-| Group | Clones | Pattern | Files | Fixable? |
-|-------|--------|---------|-------|-----------|
-| Detector interface | 22 | `func(ctx context.Context) ([]finding.Finding, error)` | `pipeline/`, `internal/detectors/`, tests | **NO** - Breaking API change |
+| Group              | Clones | Pattern                                                | Files                                     | Fixable?                     |
+| ------------------ | ------ | ------------------------------------------------------ | ----------------------------------------- | ---------------------------- |
+| Detector interface | 22     | `func(ctx context.Context) ([]finding.Finding, error)` | `pipeline/`, `internal/detectors/`, tests | **NO** - Breaking API change |
 
 ### TIER 2: HIGH IMPACT (10-12 clones)
 
-| Group | Clones | Pattern | Files | Fixable? |
-|-------|--------|---------|-------|-----------|
-| Position struct literal | 12 | `Position{File: "...", Line: N}` | `cmd/`, `examples/`, `pipeline_test.go` | **HARD** - Requires production API helpers |
-| ToolInfo struct literal | 8 | `NewReport(ToolInfo{Name: "..."})` | `cmd/`, `examples/` | **HARD** - Requires production API helpers |
+| Group                   | Clones | Pattern                            | Files                                   | Fixable?                                   |
+| ----------------------- | ------ | ---------------------------------- | --------------------------------------- | ------------------------------------------ |
+| Position struct literal | 12     | `Position{File: "...", Line: N}`   | `cmd/`, `examples/`, `pipeline_test.go` | **HARD** - Requires production API helpers |
+| ToolInfo struct literal | 8      | `NewReport(ToolInfo{Name: "..."})` | `cmd/`, `examples/`                     | **HARD** - Requires production API helpers |
 
 ### TIER 3: MEDIUM IMPACT (4-8 clones)
 
-| Group | Clones | Pattern | Files | Fixable? |
-|-------|--------|---------|-------|-----------|
-| position_extra_test.go Range | 8 | `Range{Start: Position{...}, End: Position{...}}` | `position_extra_test.go` | **YES** - Refactor test |
-| position_extra_test.go Position | 6 | `Position{...}` inline declarations | `position_extra_test.go` | **YES** - Use helper |
-| cmd/+filter_test.go | 6 | `Position{...}` in Finding struct | `cmd/`, `filter_test.go` | **YES** - Use testify |
-| report_test.go struct fields | 6 | `if r.X != v { t.Errorf(...) }` | `report_test.go` | **YES** - Use testify |
-| pipeline/retry_test.go | 4 | `assertIntEq(t, len(...), N, "...")` | `pipeline/retry_test.go` | **YES** - Use testify |
+| Group                           | Clones | Pattern                                           | Files                    | Fixable?                |
+| ------------------------------- | ------ | ------------------------------------------------- | ------------------------ | ----------------------- |
+| position_extra_test.go Range    | 8      | `Range{Start: Position{...}, End: Position{...}}` | `position_extra_test.go` | **YES** - Refactor test |
+| position_extra_test.go Position | 6      | `Position{...}` inline declarations               | `position_extra_test.go` | **YES** - Use helper    |
+| cmd/+filter_test.go             | 6      | `Position{...}` in Finding struct                 | `cmd/`, `filter_test.go` | **YES** - Use testify   |
+| report_test.go struct fields    | 6      | `if r.X != v { t.Errorf(...) }`                   | `report_test.go`         | **YES** - Use testify   |
+| pipeline/retry_test.go          | 4      | `assertIntEq(t, len(...), N, "...")`              | `pipeline/retry_test.go` | **YES** - Use testify   |
 
 ### TIER 4: LOW IMPACT (3-4 clones)
 
-| Group | Clones | Pattern | Files | Fixable? |
-|-------|--------|---------|-------|-----------|
-| json_test.go | 4 | JSON field comparisons | `json_test.go` | **YES** - Use testify |
-| position.go severity | 4 | `SeverityXXX.String()` switch | `position.go` | **YES** - Production code |
-| severity.go | 4 | `SeverityFromString` switch | `severity.go` | **YES** - Production code |
-| export+severity_test.go | 4 | Table test patterns | `export_test.go`, `severity_test.go` | **YES** - Use testify |
-| position.go | 4 | `Position.HasOffset()` method | `position.go` | **YES** - Production |
-| pipeline/testutil+testutil | 4 | `assertIntEq` helper calls | `pipeline/testutil_test.go`, `testutil_test.go` | **YES** - Inline or remove |
-| verify_test.go | 4 | Table test patterns | `pipeline/verify_test.go` | **YES** - Use testify |
-| detectors_test.go + sarif | 4 | Finding field assertions | `internal/detectors/`, `sarif_test.go` | **YES** - Use testify |
-| detectors_test.go table | 3 | Table test patterns | `internal/detectors/` | **YES** - Already refactored |
+| Group                      | Clones | Pattern                       | Files                                           | Fixable?                     |
+| -------------------------- | ------ | ----------------------------- | ----------------------------------------------- | ---------------------------- |
+| json_test.go               | 4      | JSON field comparisons        | `json_test.go`                                  | **YES** - Use testify        |
+| position.go severity       | 4      | `SeverityXXX.String()` switch | `position.go`                                   | **YES** - Production code    |
+| severity.go                | 4      | `SeverityFromString` switch   | `severity.go`                                   | **YES** - Production code    |
+| export+severity_test.go    | 4      | Table test patterns           | `export_test.go`, `severity_test.go`            | **YES** - Use testify        |
+| position.go                | 4      | `Position.HasOffset()` method | `position.go`                                   | **YES** - Production         |
+| pipeline/testutil+testutil | 4      | `assertIntEq` helper calls    | `pipeline/testutil_test.go`, `testutil_test.go` | **YES** - Inline or remove   |
+| verify_test.go             | 4      | Table test patterns           | `pipeline/verify_test.go`                       | **YES** - Use testify        |
+| detectors_test.go + sarif  | 4      | Finding field assertions      | `internal/detectors/`, `sarif_test.go`          | **YES** - Use testify        |
+| detectors_test.go table    | 3      | Table test patterns           | `internal/detectors/`                           | **YES** - Already refactored |
 
 ### TIER 5: MINIMAL (2-3 clones, 40+ groups)
 
@@ -119,33 +119,33 @@ All remaining 2-clone groups. **YES** - Most can be eliminated with testify, but
 
 ## Top #25 Things To Get Done Next
 
-| # | Priority | Task | Clones Eliminated | Effort |
-|---|---------|------|-------------------|--------|
-| 1 | HIGH | Convert report_test.go to testify | 6 | LOW |
-| 2 | HIGH | Convert json_test.go to testify | 4 | LOW |
-| 3 | HIGH | Convert filter_test.go to testify | 6 (partial) | LOW |
-| 4 | MEDIUM | Convert position_extra_test.go | 18 (6+4+8) | MEDIUM |
-| 5 | MEDIUM | Convert detectors_test.go remaining | 4 | LOW |
-| 6 | MEDIUM | Convert sarif_test.go to testify | ~15 | MEDIUM |
-| 7 | MEDIUM | Convert retry_test.go to testify | 4 | LOW |
-| 8 | MEDIUM | Convert verify_test.go to testify | 4 | LOW |
-| 9 | MEDIUM | Convert fix_applier_test.go to testify | 3 | LOW |
-| 10 | MEDIUM | Convert metrics_test.go to testify | 3 | LOW |
-| 11 | MEDIUM | Convert partial_test.go to testify | 3 | LOW |
-| 12 | MEDIUM | Convert bench_test.go to testify | 3 | LOW |
-| 13 | MEDIUM | Convert cmd/go-finding tests to testify | 6 (partial) | MEDIUM |
-| 14 | MEDIUM | Convert export_test.go severity tests | 4 | LOW |
-| 15 | LOW | Convert merge_test.go to testify | 3 | LOW |
-| 16 | LOW | Convert equal_test.go to testify | 3 | LOW |
-| 17 | LOW | Convert diagnostic_test.go + lsp_test.go | 3 | LOW |
-| 18 | LOW | Convert fuzz_test.go to testify | 3 | LOW |
-| 19 | LOW | Inline/remove assertIntEq calls | 4 | LOW |
-| 20 | LOW | Convert conflict_test.go to testify | 2 | LOW |
-| 21 | LOW | Convert conflict_extra_test.go to testify | 2 | LOW |
-| 22 | LOW | Convert pipeline_test.go remaining | ~10 | MEDIUM |
-| 23 | LOW | Convert example tests (optional) | ~10 | HIGH |
-| 24 | LOW | Remove cross-package clones | ~6 | HARD |
-| 25 | LOW | Final cleanup and verification | - | LOW |
+| #   | Priority | Task                                      | Clones Eliminated | Effort |
+| --- | -------- | ----------------------------------------- | ----------------- | ------ |
+| 1   | HIGH     | Convert report_test.go to testify         | 6                 | LOW    |
+| 2   | HIGH     | Convert json_test.go to testify           | 4                 | LOW    |
+| 3   | HIGH     | Convert filter_test.go to testify         | 6 (partial)       | LOW    |
+| 4   | MEDIUM   | Convert position_extra_test.go            | 18 (6+4+8)        | MEDIUM |
+| 5   | MEDIUM   | Convert detectors_test.go remaining       | 4                 | LOW    |
+| 6   | MEDIUM   | Convert sarif_test.go to testify          | ~15               | MEDIUM |
+| 7   | MEDIUM   | Convert retry_test.go to testify          | 4                 | LOW    |
+| 8   | MEDIUM   | Convert verify_test.go to testify         | 4                 | LOW    |
+| 9   | MEDIUM   | Convert fix_applier_test.go to testify    | 3                 | LOW    |
+| 10  | MEDIUM   | Convert metrics_test.go to testify        | 3                 | LOW    |
+| 11  | MEDIUM   | Convert partial_test.go to testify        | 3                 | LOW    |
+| 12  | MEDIUM   | Convert bench_test.go to testify          | 3                 | LOW    |
+| 13  | MEDIUM   | Convert cmd/go-finding tests to testify   | 6 (partial)       | MEDIUM |
+| 14  | MEDIUM   | Convert export_test.go severity tests     | 4                 | LOW    |
+| 15  | LOW      | Convert merge_test.go to testify          | 3                 | LOW    |
+| 16  | LOW      | Convert equal_test.go to testify          | 3                 | LOW    |
+| 17  | LOW      | Convert diagnostic_test.go + lsp_test.go  | 3                 | LOW    |
+| 18  | LOW      | Convert fuzz_test.go to testify           | 3                 | LOW    |
+| 19  | LOW      | Inline/remove assertIntEq calls           | 4                 | LOW    |
+| 20  | LOW      | Convert conflict_test.go to testify       | 2                 | LOW    |
+| 21  | LOW      | Convert conflict_extra_test.go to testify | 2                 | LOW    |
+| 22  | LOW      | Convert pipeline_test.go remaining        | ~10               | MEDIUM |
+| 23  | LOW      | Convert example tests (optional)          | ~10               | HIGH   |
+| 24  | LOW      | Remove cross-package clones               | ~6                | HARD   |
+| 25  | LOW      | Final cleanup and verification            | -                 | LOW    |
 
 ---
 
@@ -160,6 +160,7 @@ All remaining 2-clone groups. **YES** - Most can be eliminated with testify, but
 The `art-dupl` semantic clone detection treats any `Position{File: "main.go", Line: 1}` as identical regardless of surrounding context. This means even if we add helper functions to the TEST package (`testutil_test.go`), example files (which are in `finding_test` package) cannot use internal test helpers.
 
 **Possible approaches:**
+
 1. Accept this as an inherent limitation of code examples
 2. Create a "test helpers" subpackage that's exported
 3. Lower the clone detection threshold (but then we miss real duplicates)
@@ -169,12 +170,12 @@ The `art-dupl` semantic clone detection treats any `Position{File: "main.go", Li
 
 ## Files Modified (Session)
 
-| File | Lines Changed | Purpose |
-|------|---------------|---------|
-| `export_test.go` | +11, -31 | testify assertions |
-| `testutil_test.go` | +17, -100 | testify + cleanup |
-| `internal/detectors/detectors_test.go` | +17, -83 | testify assertions |
-| `docs/status/2026-04-26_13-28_clone-elimination-status.md` | NEW | Status report |
+| File                                                       | Lines Changed | Purpose            |
+| ---------------------------------------------------------- | ------------- | ------------------ |
+| `export_test.go`                                           | +11, -31      | testify assertions |
+| `testutil_test.go`                                         | +17, -100     | testify + cleanup  |
+| `internal/detectors/detectors_test.go`                     | +17, -83      | testify assertions |
+| `docs/status/2026-04-26_13-28_clone-elimination-status.md` | NEW           | Status report      |
 
 ---
 

@@ -11,41 +11,41 @@
 
 ### This Session (17 commits)
 
-| Commit | What | Impact |
-|--------|------|--------|
-| `f30f791` | Delete stale `basic`/`builder` binaries, add to `.gitignore` | Cleanup — removed 7.4MB bloat |
-| `07b8c3a` | Fix `FixStrategyAI` split brain in `HasFix()` | Bug fix — AI now behaves like Suggest (requires `AfterCode`) |
-| `1de6bec` | `run()` error-path tests: negative max-iterations, pipeline failure, metrics output | Test — cmd coverage 81% → 96% |
-| `d9bcc2a` | Pipeline edge cases: parallel detector error, applyTriage all-conflicts, applyTriage apply-error | Test — pipeline 96.4% → 97.3% |
-| `61dc44e` | Zero-value `Range.Contains` test | Test |
-| `4e10e0f` | `FuzzFindingsFromSARIF` for malformed input | Fuzz — 1.6M execs, zero panics |
-| `c49665f` | Add `govulncheck` job to GitHub Actions CI | Security |
-| `d3c5b2a` | Audit and update `TODO_LIST.md` | Docs — closed 8 stale items |
-| `a043410` | Fix test flakiness under `-count=N` | Test stability — unique detector names, removed parallel from global-state tests |
+| Commit    | What                                                                                             | Impact                                                                           |
+| --------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `f30f791` | Delete stale `basic`/`builder` binaries, add to `.gitignore`                                     | Cleanup — removed 7.4MB bloat                                                    |
+| `07b8c3a` | Fix `FixStrategyAI` split brain in `HasFix()`                                                    | Bug fix — AI now behaves like Suggest (requires `AfterCode`)                     |
+| `1de6bec` | `run()` error-path tests: negative max-iterations, pipeline failure, metrics output              | Test — cmd coverage 81% → 96%                                                    |
+| `d9bcc2a` | Pipeline edge cases: parallel detector error, applyTriage all-conflicts, applyTriage apply-error | Test — pipeline 96.4% → 97.3%                                                    |
+| `61dc44e` | Zero-value `Range.Contains` test                                                                 | Test                                                                             |
+| `4e10e0f` | `FuzzFindingsFromSARIF` for malformed input                                                      | Fuzz — 1.6M execs, zero panics                                                   |
+| `c49665f` | Add `govulncheck` job to GitHub Actions CI                                                       | Security                                                                         |
+| `d3c5b2a` | Audit and update `TODO_LIST.md`                                                                  | Docs — closed 8 stale items                                                      |
+| `a043410` | Fix test flakiness under `-count=N`                                                              | Test stability — unique detector names, removed parallel from global-state tests |
 
 ### Previous Session (6 commits, carried forward)
 
-| Commit | What | Impact |
-|--------|------|--------|
-| `914ddd3` | `WriteSARIF`/`WriteSARIFFiltered` for direct `io.Writer` output | Feature |
+| Commit    | What                                                              | Impact                  |
+| --------- | ----------------------------------------------------------------- | ----------------------- |
+| `914ddd3` | `WriteSARIF`/`WriteSARIFFiltered` for direct `io.Writer` output   | Feature                 |
 | `14745da` | `Builder.Build()` returns `(Finding, error)` instead of panicking | **Breaking API change** |
-| `8cd5fef` | Godoc examples for `NewFinding` and `Builder` | Docs |
-| `7d3bbcf` | Fix pipeline example runtime crash, add compile tests | Bug fix |
-| `6efbfd4` | Error-path tests for `setupProfiling` and `outputResults` | Test |
-| `8eb6146` | Deterministic fix application order in FixApplier | Bug fix |
+| `8cd5fef` | Godoc examples for `NewFinding` and `Builder`                     | Docs                    |
+| `7d3bbcf` | Fix pipeline example runtime crash, add compile tests             | Bug fix                 |
+| `6efbfd4` | Error-path tests for `setupProfiling` and `outputResults`         | Test                    |
+| `8eb6146` | Deterministic fix application order in FixApplier                 | Bug fix                 |
 
 ### Cumulative Metrics
 
-| Metric | Value |
-|--------|-------|
-| Total coverage | **95.2%** |
-| `finding` package | 99.1% |
-| `pipeline` package | 97.3% |
-| `cmd/go-finding` | 96.2% |
-| `internal/detectors` | 96.1% |
-| Test functions | ~445+ |
-| Lint issues | 0 |
-| `-count=20` stability | ✅ PASS |
+| Metric                | Value     |
+| --------------------- | --------- |
+| Total coverage        | **95.2%** |
+| `finding` package     | 99.1%     |
+| `pipeline` package    | 97.3%     |
+| `cmd/go-finding`      | 96.2%     |
+| `internal/detectors`  | 96.1%     |
+| Test functions        | ~445+     |
+| Lint issues           | 0         |
+| `-count=20` stability | ✅ PASS   |
 
 ---
 
@@ -169,33 +169,33 @@ I made the `HasFix()` change autonomously, treating it as a straightforward bug 
 
 ## F) Top #25 Things To Do Next
 
-| # | Task | Impact | Effort | Status |
-|---|------|--------|--------|--------|
-| 1 | **Decide `FixStrategyAI` fate** (remove / implement / document) | **Critical** | 30min | Needs user decision |
-| 2 | **Add `-race` to CI workflow** | **Critical** | 15min | Not started |
-| 3 | **Delete stale status report** | **Critical** | 2min | Not started |
-| 4 | Add `RetryConfig.Validate` edge-case tests | High | 20min | Not started |
-| 5 | Add `Verifier.Verify` error-path tests | High | 20min | Not started |
-| 6 | Fix flaky `TestProperty_IDRoundTrip` | High | 30min | Not started |
-| 7 | Add `partial.go` metrics recording during failures | Med | 30min | Not started |
-| 8 | `DeduplicateByPosition` vs `DeduplicateByRule` diff test | Low | 15min | Not started |
-| 9 | Add `-count=100` stress test to CI | Med | 15min | Not started |
-| 10 | Remove `hasLineRange` dead code or justify it | Med | 10min | Not started |
-| 11 | Add per-package coverage thresholds to CI | Med | 20min | Not started |
-| 12 | API stability review before v1.0.0 | High | 120min | Not started |
-| 13 | Add `go:generate stringer` for enums | Low | 30min | Deferred |
-| 14 | Modernize to Go 1.21+ stdlib throughout | Low | 45min | Not started |
-| 15 | Convert `retry.go` `errors.New()` to sentinels | Low | 15min | Not started |
-| 16 | Document SARIF round-trip losses | Low | 30min | Not started |
-| 17 | Profile memory allocation hotspots | Med | 60min | Baseline captured |
-| 18 | Benchmark regression tracking in CI | Med | 30min | Not started |
-| 19 | Add `gosec`/`staticcheck` to CI | Med | 20min | Not started |
-| 20 | GitHub release workflow + GoReleaser | Med | 45min | Not started |
-| 21 | Real-world tool integration guide | Med | 60min | Not started |
-| 22 | Remove stale `//nolint` directives | Low | 30min | Not started |
-| 23 | `Finding` struct sub-grouping | High | 90min | Breaking change |
-| 24 | Replace hardcoded `SeverityWarning` in diagnostic.go | Low | 15min | Not started |
-| 25 | Contribution guidelines review | Low | 30min | Not started |
+| #   | Task                                                            | Impact       | Effort | Status              |
+| --- | --------------------------------------------------------------- | ------------ | ------ | ------------------- |
+| 1   | **Decide `FixStrategyAI` fate** (remove / implement / document) | **Critical** | 30min  | Needs user decision |
+| 2   | **Add `-race` to CI workflow**                                  | **Critical** | 15min  | Not started         |
+| 3   | **Delete stale status report**                                  | **Critical** | 2min   | Not started         |
+| 4   | Add `RetryConfig.Validate` edge-case tests                      | High         | 20min  | Not started         |
+| 5   | Add `Verifier.Verify` error-path tests                          | High         | 20min  | Not started         |
+| 6   | Fix flaky `TestProperty_IDRoundTrip`                            | High         | 30min  | Not started         |
+| 7   | Add `partial.go` metrics recording during failures              | Med          | 30min  | Not started         |
+| 8   | `DeduplicateByPosition` vs `DeduplicateByRule` diff test        | Low          | 15min  | Not started         |
+| 9   | Add `-count=100` stress test to CI                              | Med          | 15min  | Not started         |
+| 10  | Remove `hasLineRange` dead code or justify it                   | Med          | 10min  | Not started         |
+| 11  | Add per-package coverage thresholds to CI                       | Med          | 20min  | Not started         |
+| 12  | API stability review before v1.0.0                              | High         | 120min | Not started         |
+| 13  | Add `go:generate stringer` for enums                            | Low          | 30min  | Deferred            |
+| 14  | Modernize to Go 1.21+ stdlib throughout                         | Low          | 45min  | Not started         |
+| 15  | Convert `retry.go` `errors.New()` to sentinels                  | Low          | 15min  | Not started         |
+| 16  | Document SARIF round-trip losses                                | Low          | 30min  | Not started         |
+| 17  | Profile memory allocation hotspots                              | Med          | 60min  | Baseline captured   |
+| 18  | Benchmark regression tracking in CI                             | Med          | 30min  | Not started         |
+| 19  | Add `gosec`/`staticcheck` to CI                                 | Med          | 20min  | Not started         |
+| 20  | GitHub release workflow + GoReleaser                            | Med          | 45min  | Not started         |
+| 21  | Real-world tool integration guide                               | Med          | 60min  | Not started         |
+| 22  | Remove stale `//nolint` directives                              | Low          | 30min  | Not started         |
+| 23  | `Finding` struct sub-grouping                                   | High         | 90min  | Breaking change     |
+| 24  | Replace hardcoded `SeverityWarning` in diagnostic.go            | Low          | 15min  | Not started         |
+| 25  | Contribution guidelines review                                  | Low          | 30min  | Not started         |
 
 ---
 
@@ -206,12 +206,14 @@ I made the `HasFix()` change autonomously, treating it as a straightforward bug 
 The constant has existed for 5+ sessions as a "placeholder." It now behaves identically to `FixStrategySuggest` in both `triage()` and `HasFix()`. The only distinguishing methods are `NeedsAI()` (returns `true`) and `IsValid()` (returns `true`).
 
 **Arguments for removal:**
+
 - No AI backend exists. No timeline exists.
 - It confuses users who set `FixStrategyAI` expecting AI-powered fixes.
 - Every session has flagged it as a problem.
 - Removing it before v1.0.0 is the last chance without a deprecation cycle.
 
 **Arguments for keeping:**
+
 - Removing it is a breaking change for any consumers.
 - It reserves the value for future implementation.
 - `NeedsAI()` provides a clear semantic hook for future AI integration.
@@ -222,15 +224,15 @@ I need your decision: **remove it now**, **keep it with enhanced documentation**
 
 ## Metrics
 
-| Metric | Value | Change |
-|--------|-------|--------|
-| Coverage | **95.2%** | ↑ from 93.4% |
-| `finding` package | 99.1% | stable |
-| `pipeline` package | 97.3% | ↑ from 96.4% |
-| `cmd/go-finding` | 96.2% | ↑ from 81.1% |
-| `detectors` | 96.1% | stable |
-| Test functions | ~445+ | ↑ from ~425 |
-| `-count=20` | ✅ PASS | Fixed race |
-| `-race` | ✅ PASS | Fixed race |
-| Lint issues | 0 | ✅ |
-| Open TODOs | 48 | ↓ from 56 |
+| Metric             | Value     | Change       |
+| ------------------ | --------- | ------------ |
+| Coverage           | **95.2%** | ↑ from 93.4% |
+| `finding` package  | 99.1%     | stable       |
+| `pipeline` package | 97.3%     | ↑ from 96.4% |
+| `cmd/go-finding`   | 96.2%     | ↑ from 81.1% |
+| `detectors`        | 96.1%     | stable       |
+| Test functions     | ~445+     | ↑ from ~425  |
+| `-count=20`        | ✅ PASS   | Fixed race   |
+| `-race`            | ✅ PASS   | Fixed race   |
+| Lint issues        | 0         | ✅           |
+| Open TODOs         | 48        | ↓ from 56    |

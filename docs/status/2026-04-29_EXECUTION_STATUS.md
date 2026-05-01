@@ -8,52 +8,52 @@
 
 ## Build Health
 
-| Check | Status |
-|-------|--------|
-| `go test ./...` | PASS |
-| `just lint` | 0 issues |
-| `go build ./...` | PASS |
-| Working tree | Clean |
-| Commits ahead of origin | 3 |
+| Check                   | Status   |
+| ----------------------- | -------- |
+| `go test ./...`         | PASS     |
+| `just lint`             | 0 issues |
+| `go build ./...`        | PASS     |
+| Working tree            | Clean    |
+| Commits ahead of origin | 3        |
 
 ## Coverage by Package
 
-| Package | Coverage | Trend |
-|---------|----------|-------|
-| `github.com/larsartmann/go-finding` | 98.5% | Flat |
-| `github.com/larsartmann/go-finding/pipeline` | 94.9% | Flat |
-| `github.com/larsartmann/go-finding/internal/detectors` | 96.1% | Flat |
-| `github.com/larsartmann/go-finding/cmd/go-finding` | 78.0% | Flat |
+| Package                                                | Coverage | Trend |
+| ------------------------------------------------------ | -------- | ----- |
+| `github.com/larsartmann/go-finding`                    | 98.5%    | Flat  |
+| `github.com/larsartmann/go-finding/pipeline`           | 94.9%    | Flat  |
+| `github.com/larsartmann/go-finding/internal/detectors` | 96.1%    | Flat  |
+| `github.com/larsartmann/go-finding/cmd/go-finding`     | 78.0%    | Flat  |
 
 ### Root-Package Coverage Gaps (sorted by severity)
 
-| Function | File | Coverage | Gap |
-|----------|------|----------|-----|
-| `Key` | `finding.go:160` | 0.0% | Newly added, needs tests |
-| `PrettyJSON` | `json.go:22` | 75.0% | Error path not tested |
-| `LineJSON` | `json.go:84` | 75.0% | Error path not tested |
-| `ToSARIF` | `sarif.go:149` | 75.0% | Error path not tested |
-| `ToSARIFFiltered` | `sarif.go:160` | 75.0% | Error path not tested |
-| `hasLineRange` | `position.go:145` | 85.7% | Edge cases |
-| `compareOp` | `severity.go:58` | 88.9% | Invalid severity branch |
+| Function          | File              | Coverage | Gap                      |
+| ----------------- | ----------------- | -------- | ------------------------ |
+| `Key`             | `finding.go:160`  | 0.0%     | Newly added, needs tests |
+| `PrettyJSON`      | `json.go:22`      | 75.0%    | Error path not tested    |
+| `LineJSON`        | `json.go:84`      | 75.0%    | Error path not tested    |
+| `ToSARIF`         | `sarif.go:149`    | 75.0%    | Error path not tested    |
+| `ToSARIFFiltered` | `sarif.go:160`    | 75.0%    | Error path not tested    |
+| `hasLineRange`    | `position.go:145` | 85.7%    | Edge cases               |
+| `compareOp`       | `severity.go:58`  | 88.9%    | Invalid severity branch  |
 
 ### Pipeline-Package Coverage Gaps (sorted by severity)
 
-| Function | File | Coverage | Gap |
-|----------|------|----------|-----|
-| `Backup` | `file_backup.go:55` | 83.3% | Error paths |
-| `Restore` | `file_backup.go:85` | 84.6% | Error paths |
-| `Apply` | `fix_applier.go:37` | 84.6% | Rollback paths |
-| `detect` | `pipeline.go:330` | 85.7% | Branch combinations |
-| `detectParallel` | `pipeline.go:424` | 85.7% | Error propagation |
-| `applyDirectFixes` | `pipeline.go:529` | 87.5% | Metrics path |
-| `partitionFixes` | `fix_engine.go:31` | 88.9% | Skip branch |
-| `detectSequential` | `pipeline.go:402` | 88.9% | Context cancellation |
-| `applyTriage` | `pipeline.go:488` | 88.9% | Dry-run branch |
-| `detectPartialSequential` | `partial.go:57` | 90.0% | Context cancellation |
-| `Run` | `pipeline.go:177` | 93.8% | Correlation branch |
-| `detectPartialParallel` | `partial.go:81` | 94.1% | Context-done after wait |
-| `detectConflictsInFile` | `conflict.go:67` | 96.0% | Single-fix group |
+| Function                  | File                | Coverage | Gap                     |
+| ------------------------- | ------------------- | -------- | ----------------------- |
+| `Backup`                  | `file_backup.go:55` | 83.3%    | Error paths             |
+| `Restore`                 | `file_backup.go:85` | 84.6%    | Error paths             |
+| `Apply`                   | `fix_applier.go:37` | 84.6%    | Rollback paths          |
+| `detect`                  | `pipeline.go:330`   | 85.7%    | Branch combinations     |
+| `detectParallel`          | `pipeline.go:424`   | 85.7%    | Error propagation       |
+| `applyDirectFixes`        | `pipeline.go:529`   | 87.5%    | Metrics path            |
+| `partitionFixes`          | `fix_engine.go:31`  | 88.9%    | Skip branch             |
+| `detectSequential`        | `pipeline.go:402`   | 88.9%    | Context cancellation    |
+| `applyTriage`             | `pipeline.go:488`   | 88.9%    | Dry-run branch          |
+| `detectPartialSequential` | `partial.go:57`     | 90.0%    | Context cancellation    |
+| `Run`                     | `pipeline.go:177`   | 93.8%    | Correlation branch      |
+| `detectPartialParallel`   | `partial.go:81`     | 94.1%    | Context-done after wait |
+| `detectConflictsInFile`   | `conflict.go:67`    | 96.0%    | Single-fix group        |
 
 ---
 
@@ -129,33 +129,33 @@
 
 ## Top 25 Next Steps (Ranked by Impact / Work)
 
-| # | Task | Work | Impact | Package |
-|---|------|------|--------|---------|
-| 1 | Add `Finding.Key()` tests | 5 min | High | `finding` |
-| 2 | Add `PrettyJSON` / `LineJSON` error-path tests | 15 min | High | `finding` |
-| 3 | Add `ToSARIF` / `ToSARIFFiltered` error-path tests | 15 min | High | `finding` |
-| 4 | Add `hasLineRange` + `checkColumnRange` edge-case tests | 15 min | Medium | `finding` |
-| 5 | Add `intersectionByOffset` + `HasOffset` tests | 15 min | Medium | `finding` |
-| 6 | Add `Range.Contains` edge-case tests | 15 min | Medium | `finding` |
-| 7 | Add `Verifier.Verify` error-path tests | 20 min | Medium | `pipeline` |
-| 8 | Add `FixApplier` error-path tests | 30 min | Medium | `pipeline` |
-| 9 | Add `RetryConfig.Validate` edge-case tests | 15 min | Medium | `pipeline` |
-| 10 | Add hot-path benchmarks | 30 min | Medium | `finding` / `pipeline` |
-| 11 | Fix flaky `TestProperty_IDRoundTrip` | 15 min | Medium | `finding` |
-| 12 | Add `findingFromSarResult` import-path tests | 20 min | Medium | `finding` |
-| 13 | Finding constructor validation | 15 min | Medium | `finding` |
-| 14 | Remove stale `//nolint` directives | 10 min | Low | `finding` / `pipeline` |
-| 15 | Modernize stdlib usage | 20 min | Low | various |
-| 16 | Archive stale planning docs | 10 min | Low | `docs/` |
-| 17 | Evaluate `go-sarif` library | 45 min | Medium | `finding` |
-| 18 | Profile memory allocations | 20 min | Low | various |
-| 19 | Replace hardcoded `SeverityWarning` in `diagnostic.go` | 15 min | Low | `finding` |
-| 20 | Add `go.work` for local development | 10 min | Low | root |
-| 21 | Preallocate slices in tests | 10 min | Low | `pipeline` |
-| 22 | Extract string constants in tests | 10 min | Low | `finding` |
-| 23 | Auto-sync `Report.Summary` (incremental) | 30 min | Medium | `finding` |
-| 24 | Add `DeduplicateByPosition` vs `DeduplicateByRule` differential test | 15 min | Medium | `finding` |
-| 25 | Add `cloneFindings` edge-case test | 10 min | Low | `finding` |
+| #   | Task                                                                 | Work   | Impact | Package                |
+| --- | -------------------------------------------------------------------- | ------ | ------ | ---------------------- |
+| 1   | Add `Finding.Key()` tests                                            | 5 min  | High   | `finding`              |
+| 2   | Add `PrettyJSON` / `LineJSON` error-path tests                       | 15 min | High   | `finding`              |
+| 3   | Add `ToSARIF` / `ToSARIFFiltered` error-path tests                   | 15 min | High   | `finding`              |
+| 4   | Add `hasLineRange` + `checkColumnRange` edge-case tests              | 15 min | Medium | `finding`              |
+| 5   | Add `intersectionByOffset` + `HasOffset` tests                       | 15 min | Medium | `finding`              |
+| 6   | Add `Range.Contains` edge-case tests                                 | 15 min | Medium | `finding`              |
+| 7   | Add `Verifier.Verify` error-path tests                               | 20 min | Medium | `pipeline`             |
+| 8   | Add `FixApplier` error-path tests                                    | 30 min | Medium | `pipeline`             |
+| 9   | Add `RetryConfig.Validate` edge-case tests                           | 15 min | Medium | `pipeline`             |
+| 10  | Add hot-path benchmarks                                              | 30 min | Medium | `finding` / `pipeline` |
+| 11  | Fix flaky `TestProperty_IDRoundTrip`                                 | 15 min | Medium | `finding`              |
+| 12  | Add `findingFromSarResult` import-path tests                         | 20 min | Medium | `finding`              |
+| 13  | Finding constructor validation                                       | 15 min | Medium | `finding`              |
+| 14  | Remove stale `//nolint` directives                                   | 10 min | Low    | `finding` / `pipeline` |
+| 15  | Modernize stdlib usage                                               | 20 min | Low    | various                |
+| 16  | Archive stale planning docs                                          | 10 min | Low    | `docs/`                |
+| 17  | Evaluate `go-sarif` library                                          | 45 min | Medium | `finding`              |
+| 18  | Profile memory allocations                                           | 20 min | Low    | various                |
+| 19  | Replace hardcoded `SeverityWarning` in `diagnostic.go`               | 15 min | Low    | `finding`              |
+| 20  | Add `go.work` for local development                                  | 10 min | Low    | root                   |
+| 21  | Preallocate slices in tests                                          | 10 min | Low    | `pipeline`             |
+| 22  | Extract string constants in tests                                    | 10 min | Low    | `finding`              |
+| 23  | Auto-sync `Report.Summary` (incremental)                             | 30 min | Medium | `finding`              |
+| 24  | Add `DeduplicateByPosition` vs `DeduplicateByRule` differential test | 15 min | Medium | `finding`              |
+| 25  | Add `cloneFindings` edge-case test                                   | 10 min | Low    | `finding`              |
 
 ---
 
@@ -163,4 +163,4 @@
 
 ### #1 — How to evolve the `Finding` type without breaking every caller?
 
-**Context:** The `Finding` struct has 20+ fields. Embedded sub-structs would group them logically (`Identity`, `Location`, `Fix`, `Context`) and collapse `Equal()` from ~30 lines to ~10 lines. However, Go composite literals do not support promoted fields — every `Finding{ID: 
+**Context:** The `Finding` struct has 20+ fields. Embedded sub-structs would group them logically (`Identity`, `Location`, `Fix`, `Context`) and collapse `Equal()` from ~30 lines to ~10 lines. However, Go composite literals do not support promoted fields — every `Finding{ID:

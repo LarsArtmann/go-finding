@@ -1,0 +1,120 @@
+# PRO/CONTRA: Integrating go-output into go-finding
+
+**Date:** 2026-05-01 | **Status:** Analysis complete
+
+---
+
+## Executive Summary
+
+| Dimension        | go-finding                                                | go-output                                            |
+| ---------------- | --------------------------------------------------------- | ---------------------------------------------------- |
+| **Domain**       | Static analysis data model + pipeline                     | Output formatting (12 formats)                       |
+| **Core types**   | `Finding`, `Report`, `Severity`, `Position`               | `TableData`, `TreeNode`, `Renderer`, `Format`        |
+| **Dependencies** | 3 (testify, x/sync, x/tools)                              | 3 (lipgloss, go-faster/yaml, x/term) + 15 transitive |
+| **Consumers**    | 7 tools (art-dupl, branching-flow, etc.)                  | 2 tools (project-meta, projects-management)          |
+| **Maturity**     | v0.2.1, 95.5% coverage                                    | Production-ready, 91%+ coverage                      |
+| **Philosophy**   | "Minimal dependencies — core types depend only on stdlib" | Full-featured formatting with lipgloss styling       |
+
+---
+
+## Three Integration Models
+
+### A. go-finding depends on go-output (add output formats)
+
+go-finding's CLI gains markdown tables, terminal tables, CSV, etc. for rendering findings.
+
+### B. go-output depends on go-finding (add Finding renderers)
+
+go-output ships a `finding` subpackage with `FindingTableData()`, etc.
+
+### C. Merge into one repo/monorepo
+
+Combine both under a single module or workspace.
+
+---
+
+## PRO (all models)
+
+| #   | Argument                                                                                                                                                                                          | Weight | Model |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ----- |
+| 1   | **Richer CLI output** — go-finding's CLI currently has only `text`/`json`/`sarif`. go-output adds markdown tables, terminal tables (lipgloss), CSV, TSV, XML, YAML, DOT, Mermaid, D2 diagrams     | High   | A, C  |
+| 2   | **Deduplication of format logic** — go-finding's `sarif.go` and `json.go` hand-roll serialization. go-output has tested JSON/CSV/TSV/XML/YAML/markdown renderers with escaping. Avoid reinventing | Medium | A, C  |
+| 3   | **Single dependency for consumers** — Tools like branching-flow that already use both get one import instead of two                                                                               | Low    | C     |
+| 4   | **Finding→Table adapter is natural** — `Report` → `TableData` is a trivial adapter: headers = `[File, Line, Severity, Rule, Message]`, rows from findings. This is the obvious integration point  | Medium | A, B  |
+| 5   | **Graph visualization of correlations** — go-output's D2/Mermaid/DOT renderers could visualize `Correlation` and `RelatedRef` chains as graphs. Unique value-add                                  | Medium | A     |
+| 6   | **Consistent CLI UX across your ecosystem** — All tools using go-output get the same `Format`/`SortBy`/`ColorMode` flags. go-finding benefits from this consistency                               | Medium | A     |
+| 7   | **Co-versioning** — No version skew between "the output library" and "the finding library" when types change                                                                                      | Low    | C     |
+
+---
+
+## CONTRA (all models)
+
+| #   | Argument                                                                                                                                                                                                                                                                                                     | Weight       | Model   |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ------- |
+| 1   | **Breaks go-finding's core design principle** — AGENTS.md: "Minimal dependencies — core types depend only on stdlib." go-output brings lipgloss + 15 transitive deps. This is the strongest contra                                                                                                           | **Critical** | A, C    |
+| 2   | **Domain mismatch** — go-finding is a _data model + pipeline_. go-output is a _presentation layer_. These are separate concerns. Merging violates SRP                                                                                                                                                        | High         | B, C    |
+| 3   | **Consumer coupling** — 7 tools depend on go-finding (art-dupl, branching-flow, hierarchical-errors, etc.). Adding go-output as a dependency forces all of them to pull in lipgloss, even if they only want the data model. Library consumers who embed go-finding types don't need terminal table rendering | **Critical** | A, C    |
+| 4   | **go-output has narrow adoption** — Only 2 consumers (project-meta, projects-management-automation). The formatting library isn't battle-tested across diverse domains yet                                                                                                                                   | Medium       | A, B, C |
+| 5   | **The adapter is trivial** — `Report → TableData` is ~10 lines of code. Writing this once in go-finding's CLI package is simpler than importing a 12-format library                                                                                                                                          | Medium       | A       |
+| 6   | **go-output's dependencies are heavy for a CLI** — lipgloss v2 brings 15 transitive dependencies (charmbracelet/x/\*, clipperhouse/\*, etc.). go-finding currently has 0 transitive deps in its core                                                                                                         | High         | A, C    |
+| 7   | **Separate release cadences** — go-output is iterating on renderers and escaping. go-finding is stabilizing its API for v1.0. Coupling them creates coordination overhead                                                                                                                                    | Medium       | C       |
+| 8   | **CLI-only need** — The only place go-finding needs formatting is `cmd/go-finding/main.go`. Core types, pipeline, and library consumers never need it. The dependency would be top-heavy                                                                                                                     | High         | A, C    |
+| 9   | **SARIF is not a "format"** — SARIF is a standard interchange format with specific semantics. It shouldn't be "just another renderer" in go-output. It belongs in go-finding where the domain model lives                                                                                                    | Medium       | B, C    |
+| 10  | **go-output's `enum` package overlaps** — go-finding has its own enum patterns for Severity, FixStrategy, etc. go-output's `enum` package is generic but adopting it would create a dependency for a trivial utility                                                                                         | Low          | A       |
+
+---
+
+## Analysis by Model
+
+### Model A: go-finding → go-output (dependency)
+
+**Verdict: NO (for core) / YES (for CLI only)**
+
+The right approach is **optional CLI dependency**: go-finding's `cmd/go-finding` can import go-output, while the root `finding` package stays dependency-free. This is already the pattern — the CLI already depends on `gopkg.in/yaml.v3` while core doesn't.
+
+Implementation:
+
+```
+go-finding/
+├── finding/       # No change — zero deps
+├── pipeline/      # No change
+├── cmd/go-finding/
+│   └── main.go    # Add go-output as CLI-only dep
+```
+
+### Model B: go-output → go-finding (dependency)
+
+**Verdict: NO**
+
+go-output is a general-purpose formatting library. Adding static analysis domain types as a dependency narrows its applicability and confuses its purpose.
+
+### Model C: Monorepo merge
+
+**Verdict: NO**
+
+Two different domains, two different maturity levels, two different consumer bases. Merging creates a jack-of-all-trades package that's hard to reason about.
+
+---
+
+## Recommendation
+
+**Model A (CLI-only dependency) with an adapter pattern.**
+
+| Step | Action                                                                      | Effort |
+| ---- | --------------------------------------------------------------------------- | ------ |
+| 1    | Add `go-output` as dependency in `cmd/go-finding/` only                     | 5 min  |
+| 2    | Write `findingToTableData(report) *output.TableData` adapter in CLI package | 15 min |
+| 3    | Add `markdown`, `table`, `csv` formats to CLI's `-format` flag              | 30 min |
+| 4    | Keep core `finding` package dependency-free                                 | 0 min  |
+| 5    | Ship `D2`/`Mermaid` visualization of `Correlation` chains as bonus feature  | 1 h    |
+
+**Core principle preserved:** The library stays dependency-free. The CLI (which already has YAML as a dep) gets rich formatting. Tools that embed go-finding as a library are unaffected.
+
+---
+
+## What NOT to do
+
+- Do NOT add go-output as a dependency of the root `finding` package
+- Do NOT merge the repositories
+- Do NOT make go-output depend on go-finding
+- Do NOT try to replace SARIF with go-output renderers — SARIF has domain-specific semantics that go-output's table/tree/graph model doesn't capture

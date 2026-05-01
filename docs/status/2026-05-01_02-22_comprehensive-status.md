@@ -21,45 +21,45 @@ This session rebuilt `TODO_LIST.md` from a full audit of all 56 `.md` files in t
 
 ### Tests
 
-| Package | Status | Coverage |
-|---------|--------|----------|
-| Root (`github.com/larsartmann/go-finding`) | ✅ PASS | **99.5%** |
-| `cmd/go-finding` | ✅ PASS | **95.4%** |
-| `pipeline` | ✅ PASS | **98.0%** |
-| `internal/detectors` | ✅ PASS | **96.1%** |
-| `examples` (compile check) | ✅ PASS | N/A |
-| **Race detector** | ✅ Clean | — |
+| Package                                    | Status   | Coverage  |
+| ------------------------------------------ | -------- | --------- |
+| Root (`github.com/larsartmann/go-finding`) | ✅ PASS  | **99.5%** |
+| `cmd/go-finding`                           | ✅ PASS  | **95.4%** |
+| `pipeline`                                 | ✅ PASS  | **98.0%** |
+| `internal/detectors`                       | ✅ PASS  | **96.1%** |
+| `examples` (compile check)                 | ✅ PASS  | N/A       |
+| **Race detector**                          | ✅ Clean | —         |
 
 ### Lint
 
-| Tool | Result |
-|------|--------|
+| Tool                      | Result          |
+| ------------------------- | --------------- |
 | `golangci-lint run ./...` | ✅ **0 issues** |
 
 ### CI
 
-| Job | Status |
-|-----|--------|
+| Job                          | Status        |
+| ---------------------------- | ------------- |
 | Test (Go 1.26, ubuntu/macos) | ✅ Configured |
-| Coverage enforcement | ✅ Total ≥75% |
-| `golangci-lint` | ✅ Configured |
-| `govulncheck` | ✅ Configured |
-| Stress test (`-count=20`) | ✅ Configured |
+| Coverage enforcement         | ✅ Total ≥75% |
+| `golangci-lint`              | ✅ Configured |
+| `govulncheck`                | ✅ Configured |
+| Stress test (`-count=20`)    | ✅ Configured |
 
 ### Benchmarks
 
-| Operation | Before (ns/op) | After (ns/op) | Δ | allocs (before→after) |
-|-----------|---------------|---------------|---|----------------------|
-| `GenerateID` | 43 | 53 | baseline | 2→2 |
-| `Filter` (1000) | 49,750 | 53,722 | baseline | 1→1 |
-| **`Merge` (dedup, 5×200)** | **408,277** | **172,900** | **2.4x faster** | **46→20** |
-| **`MergeNoDedup` (3×500)** | **442,624** | **217,977** | **2.0x faster** | **24→17** |
-| `ToSARIF` | 278,814 | 349,024 | baseline | 1508→1508 |
-| `FromSARIF` | 469,279 | 575,333 | baseline | 2233→2233 |
-| `Correlate` | 55,941 | 70,008 | baseline | 37→37 |
-| `Clone` | 65 | 74 | baseline | 2→2 |
-| `FindingKey` | 3 | 3 | unchanged | 0→0 |
-| Parallel detection | 5,504,439 | 5,479,774 | unchanged | 256→256 |
+| Operation                  | Before (ns/op) | After (ns/op) | Δ               | allocs (before→after) |
+| -------------------------- | -------------- | ------------- | --------------- | --------------------- |
+| `GenerateID`               | 43             | 53            | baseline        | 2→2                   |
+| `Filter` (1000)            | 49,750         | 53,722        | baseline        | 1→1                   |
+| **`Merge` (dedup, 5×200)** | **408,277**    | **172,900**   | **2.4x faster** | **46→20**             |
+| **`MergeNoDedup` (3×500)** | **442,624**    | **217,977**   | **2.0x faster** | **24→17**             |
+| `ToSARIF`                  | 278,814        | 349,024       | baseline        | 1508→1508             |
+| `FromSARIF`                | 469,279        | 575,333       | baseline        | 2233→2233             |
+| `Correlate`                | 55,941         | 70,008        | baseline        | 37→37                 |
+| `Clone`                    | 65             | 74            | baseline        | 2→2                   |
+| `FindingKey`               | 3              | 3             | unchanged       | 0→0                   |
+| Parallel detection         | 5,504,439      | 5,479,774     | unchanged       | 256→256               |
 
 **Merge optimization:** Pre-allocated the findings slice to total capacity and skipped per-item mutex locking. Eliminated ~10 slice reallocations and 1000 mutex lock/unlock cycles per merge.
 
@@ -278,33 +278,33 @@ These items are verified complete in the current codebase — confirmed by readi
 
 Ordered by impact × effort ratio (highest first):
 
-| # | Task | Priority | Effort | Impact | Package |
-|---|------|----------|--------|--------|---------|
-| 1 | **Bump version to v0.2.0** in `version.go` | P0 | 2min | Critical | root |
-| 2 | **Release `[Unreleased]` in CHANGELOG.md** as v0.2.0 | P0 | 5min | Critical | docs |
-| 3 | **Write consumer migration guide** (v0.1.3 → v0.2.0) | P0 | 30min | High | docs |
-| 4 | **Extract `diagnostic.go` to `finding/analysis` subpackage** | P0 | 60min | High | root |
-| 5 | **Decide `NewFinding` API pattern** and document in ADR | P0 | 30min | High | root |
-| 6 | **API stability review** — audit all exported symbols | P0 | 60min | High | all |
-| 7 | **Fix `Pipeline.Run()` mutability** — single-use or copy | P1 | 30min | High | pipeline |
-| 8 | **Deprecate `WithTag()` builder method** | P1 | 5min | Medium | root |
-| 9 | **Add `Suppression.IsActive()` method** | P1 | 10min | Medium | root |
-| 10 | **Add `WriteSARIF` error-path test** (failingWriter) | P1 | 15min | Medium | root |
-| 11 | **Add `detectPartial*` context-cancel tests** | P1 | 20min | Medium | pipeline |
-| 12 | **Integration tests with real govet/staticcheck** | P1 | 60min | High | internal/detectors |
-| 13 | **Refactor CLI `run()` for testability** | P1 | 45min | Medium | cmd |
-| 14 | **Add `Properties map[string]any` to Finding** | P1 | 20min | High | root |
-| 15 | **Add per-package coverage thresholds to CI** | P2 | 20min | Medium | CI |
-| 16 | **SARIF schema validation test** | P2 | 30min | Medium | root |
-| 17 | **Benchmark regression tracking script** | P2 | 30min | Low | scripts |
-| 18 | **Confidence strong type** | P1 | 45min | Medium | root |
-| 19 | **Add Nix section to CONTRIBUTING.md** | P2 | 15min | Low | docs |
-| 20 | **Document SARIF round-trip losses in user-facing docs** | P2 | 15min | Medium | docs |
-| 21 | **`FixApplier` cross-iteration persistence design** | P1 | 60min | High | pipeline |
-| 22 | **Error wrapping consistency audit** | P2 | 30min | Medium | all |
-| 23 | **Unify `Tag` deprecation** — migrate tests to `Tags` | P1 | 45min | Medium | tests |
-| 24 | **Profile performance at 10k+ findings** | P2 | 60min | Medium | pipeline |
-| 25 | **Consumer migration guide** (v0.1.3 → v0.2.0) | P0 | 30min | Critical | docs |
+| #   | Task                                                         | Priority | Effort | Impact   | Package            |
+| --- | ------------------------------------------------------------ | -------- | ------ | -------- | ------------------ |
+| 1   | **Bump version to v0.2.0** in `version.go`                   | P0       | 2min   | Critical | root               |
+| 2   | **Release `[Unreleased]` in CHANGELOG.md** as v0.2.0         | P0       | 5min   | Critical | docs               |
+| 3   | **Write consumer migration guide** (v0.1.3 → v0.2.0)         | P0       | 30min  | High     | docs               |
+| 4   | **Extract `diagnostic.go` to `finding/analysis` subpackage** | P0       | 60min  | High     | root               |
+| 5   | **Decide `NewFinding` API pattern** and document in ADR      | P0       | 30min  | High     | root               |
+| 6   | **API stability review** — audit all exported symbols        | P0       | 60min  | High     | all                |
+| 7   | **Fix `Pipeline.Run()` mutability** — single-use or copy     | P1       | 30min  | High     | pipeline           |
+| 8   | **Deprecate `WithTag()` builder method**                     | P1       | 5min   | Medium   | root               |
+| 9   | **Add `Suppression.IsActive()` method**                      | P1       | 10min  | Medium   | root               |
+| 10  | **Add `WriteSARIF` error-path test** (failingWriter)         | P1       | 15min  | Medium   | root               |
+| 11  | **Add `detectPartial*` context-cancel tests**                | P1       | 20min  | Medium   | pipeline           |
+| 12  | **Integration tests with real govet/staticcheck**            | P1       | 60min  | High     | internal/detectors |
+| 13  | **Refactor CLI `run()` for testability**                     | P1       | 45min  | Medium   | cmd                |
+| 14  | **Add `Properties map[string]any` to Finding**               | P1       | 20min  | High     | root               |
+| 15  | **Add per-package coverage thresholds to CI**                | P2       | 20min  | Medium   | CI                 |
+| 16  | **SARIF schema validation test**                             | P2       | 30min  | Medium   | root               |
+| 17  | **Benchmark regression tracking script**                     | P2       | 30min  | Low      | scripts            |
+| 18  | **Confidence strong type**                                   | P1       | 45min  | Medium   | root               |
+| 19  | **Add Nix section to CONTRIBUTING.md**                       | P2       | 15min  | Low      | docs               |
+| 20  | **Document SARIF round-trip losses in user-facing docs**     | P2       | 15min  | Medium   | docs               |
+| 21  | **`FixApplier` cross-iteration persistence design**          | P1       | 60min  | High     | pipeline           |
+| 22  | **Error wrapping consistency audit**                         | P2       | 30min  | Medium   | all                |
+| 23  | **Unify `Tag` deprecation** — migrate tests to `Tags`        | P1       | 45min  | Medium   | tests              |
+| 24  | **Profile performance at 10k+ findings**                     | P2       | 60min  | Medium   | pipeline           |
+| 25  | **Consumer migration guide** (v0.1.3 → v0.2.0)               | P0       | 30min  | Critical | docs               |
 
 ---
 
@@ -313,11 +313,13 @@ Ordered by impact × effort ratio (highest first):
 **Should `v0.2.0` be cut NOW with the current state, or should the `diagnostic.go` extraction and `NewFinding` API decision happen first?**
 
 Arguments for cutting now:
+
 - Breaking changes are already shipped but unreleased
 - Consumers who update get breakage regardless of version number
 - A v0.2.0 tag at least signals "breaking changes here"
 
 Arguments for waiting:
+
 - Extracting `diagnostic.go` is itself a breaking change (import path changes)
 - `NewFinding` API pattern is undecided — another signature change would mean v0.3.0
 - Better to batch all breaking changes into one release
@@ -330,14 +332,14 @@ This decision blocks items 1–6 in the Top 25 list and determines whether this 
 
 The `TODO_LIST.md` was fully rebuilt this session:
 
-| Category | Count |
-|----------|-------|
-| P0 (Must Do) | 5 open |
-| P1 (Should Do) | 14 open |
-| P2 (Nice to Have) | 12 open |
-| P3 (Future/Deferred) | 22 open |
-| Verified Completed | 55 items |
-| Out of Scope | 11 items |
+| Category                   | Count            |
+| -------------------------- | ---------------- |
+| P0 (Must Do)               | 5 open           |
+| P1 (Should Do)             | 14 open          |
+| P2 (Nice to Have)          | 12 open          |
+| P3 (Future/Deferred)       | 22 open          |
+| Verified Completed         | 55 items         |
+| Out of Scope               | 11 items         |
 | **Source files processed** | **56 .md files** |
 
 All items were cross-referenced against actual code to verify completion status.
@@ -346,24 +348,24 @@ All items were cross-referenced against actual code to verify completion status.
 
 ## 10. Files Changed This Session
 
-| File | Change |
-|------|--------|
-| `TODO_LIST.md` | Rebuilt from 56-file audit. 266 insertions, 174 deletions. Deduplicated ~300+ scattered TODOs into prioritized list. |
-| `report.go` | Added `newReportWithCapacity()` and `addFindingUnchecked()` for internal batch operations |
-| `merge.go` | Optimized `Merge()`: pre-count findings, pre-allocate slice, skip per-item mutex lock |
-| `docs/status/2026-05-01_02-22_comprehensive-status.md` | This file |
+| File                                                   | Change                                                                                                               |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `TODO_LIST.md`                                         | Rebuilt from 56-file audit. 266 insertions, 174 deletions. Deduplicated ~300+ scattered TODOs into prioritized list. |
+| `report.go`                                            | Added `newReportWithCapacity()` and `addFindingUnchecked()` for internal batch operations                            |
+| `merge.go`                                             | Optimized `Merge()`: pre-count findings, pre-allocate slice, skip per-item mutex lock                                |
+| `docs/status/2026-05-01_02-22_comprehensive-status.md` | This file                                                                                                            |
 
 ---
 
 ## 11. Coverage Trend
 
-| Package | 04-28 | 04-30 | 05-01 |
-|---------|-------|-------|-------|
-| Root | 93.4% | 99.1% | **99.5%** |
-| Pipeline | 96.4% | 97.8% | **98.0%** |
-| Detectors | — | 95.8% | **96.1%** |
-| CLI | 78.0% | 81.1% | **95.4%** |
-| **Total** | — | — | **97.3%** (weighted) |
+| Package   | 04-28 | 04-30 | 05-01                |
+| --------- | ----- | ----- | -------------------- |
+| Root      | 93.4% | 99.1% | **99.5%**            |
+| Pipeline  | 96.4% | 97.8% | **98.0%**            |
+| Detectors | —     | 95.8% | **96.1%**            |
+| CLI       | 78.0% | 81.1% | **95.4%**            |
+| **Total** | —     | —     | **97.3%** (weighted) |
 
 ---
 

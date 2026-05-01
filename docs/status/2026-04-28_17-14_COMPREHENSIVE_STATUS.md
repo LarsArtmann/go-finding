@@ -10,45 +10,45 @@
 
 ## Metrics Snapshot
 
-| Metric | Value |
-|---|---|
-| Production Go LOC | 5,242 |
-| Test Go LOC | 11,654 |
-| Test:Code Ratio | 2.2:1 |
-| Total Coverage | 94.5% |
-| Root Package Coverage | 98.5% |
-| Pipeline Coverage | 94.8% |
-| Detectors Coverage | 96.1% |
-| CLI Coverage | 74.2% |
+| Metric                      | Value                      |
+| --------------------------- | -------------------------- |
+| Production Go LOC           | 5,242                      |
+| Test Go LOC                 | 11,654                     |
+| Test:Code Ratio             | 2.2:1                      |
+| Total Coverage              | 94.5%                      |
+| Root Package Coverage       | 98.5%                      |
+| Pipeline Coverage           | 94.8%                      |
+| Detectors Coverage          | 96.1%                      |
+| CLI Coverage                | 74.2%                      |
 | Lint Issues (golangci-lint) | 36 (0 errors, 36 warnings) |
-| Commits Since Origin | 15 |
-| Files Changed Since Origin | 32 |
-| Lines Added Since Origin | +1,598 |
-| Lines Removed Since Origin | -200 |
-| Net Delta | +1,398 |
+| Commits Since Origin        | 15                         |
+| Files Changed Since Origin  | 32                         |
+| Lines Added Since Origin    | +1,598                     |
+| Lines Removed Since Origin  | -200                       |
+| Net Delta                   | +1,398                     |
 
 ### Coverage By Package
 
-| Package | Coverage | Functions <100% |
-|---|---|---|
-| Root (`finding`) | 98.5% | 9 functions below 100% (see below) |
-| Pipeline | 94.8% | 10 functions below 100% |
-| Detectors | 96.1% | 2 functions below 100% |
-| CLI | 74.2% | 5 functions below 100% |
+| Package          | Coverage | Functions <100%                    |
+| ---------------- | -------- | ---------------------------------- |
+| Root (`finding`) | 98.5%    | 9 functions below 100% (see below) |
+| Pipeline         | 94.8%    | 10 functions below 100%            |
+| Detectors        | 96.1%    | 2 functions below 100%             |
+| CLI              | 74.2%    | 5 functions below 100%             |
 
 ### Functions Below 100% Coverage (Root Package)
 
-| Function | Coverage | Notes |
-|---|---|---|
-| `main()` | 0.0% | CLI entry point — tested via E2E subprocess |
-| `RegisterDetector()` | 0.0% | Public API, untested directly |
-| `run()` | 49.0% | CLI main logic — partially covered by integration tests |
-| `setupProfiling()` | 76.9% | Hard to test pprof paths |
-| `outputResults()` | 84.6% | Missing SARIF error path |
-| `clampConfidence()` | 80.0% | Negative input untested |
-| `Equal()` | 91.7% | Some field-mismatch branches untested |
-| `PrettyJSON()` / `LineJSON()` | 75.0% each | Error paths untested |
-| `ToSARIF()` / `ToSARIFFiltered()` | 75.0% each | Marshal error paths untested |
+| Function                          | Coverage   | Notes                                                   |
+| --------------------------------- | ---------- | ------------------------------------------------------- |
+| `main()`                          | 0.0%       | CLI entry point — tested via E2E subprocess             |
+| `RegisterDetector()`              | 0.0%       | Public API, untested directly                           |
+| `run()`                           | 49.0%      | CLI main logic — partially covered by integration tests |
+| `setupProfiling()`                | 76.9%      | Hard to test pprof paths                                |
+| `outputResults()`                 | 84.6%      | Missing SARIF error path                                |
+| `clampConfidence()`               | 80.0%      | Negative input untested                                 |
+| `Equal()`                         | 91.7%      | Some field-mismatch branches untested                   |
+| `PrettyJSON()` / `LineJSON()`     | 75.0% each | Error paths untested                                    |
+| `ToSARIF()` / `ToSARIFFiltered()` | 75.0% each | Marshal error paths untested                            |
 
 ---
 
@@ -56,166 +56,166 @@
 
 ### Critical Bug Fixes (5/5)
 
-| ID | File | Fix | Status |
-|---|---|---|---|
-| C-1 | `pipeline/pipeline.go` | OnFix callback fires only for actually-applied fixes | ✅ DONE |
-| C-2 | `pipeline/fix_applier.go` | Insertion-only and deletion-only fixes supported | ✅ DONE |
-| C-3 | `merge.go` | `Correlate()` hard-limits at `maxCorrelations=10000` | ✅ DONE |
-| C-4 | `json.go` | `FilterInvalid` changed from mutable `var` to exported function | ✅ DONE |
-| C-5 | `pipeline/retry.go` | Switched `math/rand` → `math/rand/v2` (`rand.Int64N`) | ✅ DONE |
+| ID  | File                      | Fix                                                             | Status  |
+| --- | ------------------------- | --------------------------------------------------------------- | ------- |
+| C-1 | `pipeline/pipeline.go`    | OnFix callback fires only for actually-applied fixes            | ✅ DONE |
+| C-2 | `pipeline/fix_applier.go` | Insertion-only and deletion-only fixes supported                | ✅ DONE |
+| C-3 | `merge.go`                | `Correlate()` hard-limits at `maxCorrelations=10000`            | ✅ DONE |
+| C-4 | `json.go`                 | `FilterInvalid` changed from mutable `var` to exported function | ✅ DONE |
+| C-5 | `pipeline/retry.go`       | Switched `math/rand` → `math/rand/v2` (`rand.Int64N`)           | ✅ DONE |
 
 ### High Bug Fixes (11/11)
 
-| ID | File | Fix | Status |
-|---|---|---|---|
-| H-1 | `position.go` | `HasEnd()` checks `End.Line > 0 \|\| End.Offset >= 0` | ✅ DONE |
-| H-2 | `severity.go` | `Compare()` total ordering for invalid severities via string tiebreaker | ✅ DONE |
-| H-3 | `position.go` | `Adjacent()` no longer falls back to offset-based when line info present | ✅ DONE |
-| H-5 | `merge.go` | `DeduplicateByPosition` key includes `ToolName` | ✅ DONE |
-| H-6 | `internal/detectors/govet.go` | `parsePosn` uses `strconv.Atoi` with error checking | ✅ DONE |
-| H-7 | `pipeline/fix_applier.go` | `replaceNearestToLine` finds occurrence closest to finding's line | ✅ DONE |
-| H-8 | `pipeline/fix_applier.go` | Backup paths include nanosecond timestamp suffix | ✅ DONE |
-| H-9 | `cmd/go-finding/main.go` | Removed global `log.SetFlags(0)` `init()` side effect | ✅ DONE |
-| H-10 | `report.go` | `FindByRule` uses `ActiveFindings()` for consistency | ✅ DONE |
-| H-11 | `cmd/go-finding/main.go` | `knownDetectorBuilders` protected with `sync.RWMutex` | ✅ DONE |
+| ID   | File                          | Fix                                                                      | Status  |
+| ---- | ----------------------------- | ------------------------------------------------------------------------ | ------- |
+| H-1  | `position.go`                 | `HasEnd()` checks `End.Line > 0 \|\| End.Offset >= 0`                    | ✅ DONE |
+| H-2  | `severity.go`                 | `Compare()` total ordering for invalid severities via string tiebreaker  | ✅ DONE |
+| H-3  | `position.go`                 | `Adjacent()` no longer falls back to offset-based when line info present | ✅ DONE |
+| H-5  | `merge.go`                    | `DeduplicateByPosition` key includes `ToolName`                          | ✅ DONE |
+| H-6  | `internal/detectors/govet.go` | `parsePosn` uses `strconv.Atoi` with error checking                      | ✅ DONE |
+| H-7  | `pipeline/fix_applier.go`     | `replaceNearestToLine` finds occurrence closest to finding's line        | ✅ DONE |
+| H-8  | `pipeline/fix_applier.go`     | Backup paths include nanosecond timestamp suffix                         | ✅ DONE |
+| H-9  | `cmd/go-finding/main.go`      | Removed global `log.SetFlags(0)` `init()` side effect                    | ✅ DONE |
+| H-10 | `report.go`                   | `FindByRule` uses `ActiveFindings()` for consistency                     | ✅ DONE |
+| H-11 | `cmd/go-finding/main.go`      | `knownDetectorBuilders` protected with `sync.RWMutex`                    | ✅ DONE |
 
 ### Medium Bug Fixes (14/14)
 
-| ID | Fix | Status |
-|---|---|---|
-| M-4 | SARIF metadata round-trip preserves non-string values via `fmt.Sprintf("%v", v)` | ✅ DONE |
-| M-6/M-7 | Document `Report.All()` and `FindByID()` yield copies | ✅ DONE |
-| M-8 | `Range.LineCount()` returns absolute span for inverted ranges | ✅ DONE |
-| M-9 | `Finding.Equal` uses `floatEq` with 1e-9 epsilon | ✅ DONE |
-| M-10 | Renamed `FinalFindingCount` → `TotalDetected` with clear docs | ✅ DONE |
-| M-12 | `Correlation` JSON tags changed to camelCase | ✅ DONE |
-| M-13 | `ToSARIFFiltered` godoc documents dual filtering | ✅ DONE |
-| M-14 | `NewReport` auto-calls `ComputeSummary()` | ✅ DONE |
-| M-15 | SARIF export includes suggestion-only fixes as descriptions | ✅ DONE |
-| M-17 | `maxIterations: 0` defaults to pipeline default (5) | ✅ DONE |
-| M-18 | `BySeverityAtLeast` godoc notes invalid exclusion | ✅ DONE |
+| ID        | Fix                                                                                                     | Status  |
+| --------- | ------------------------------------------------------------------------------------------------------- | ------- |
+| M-4       | SARIF metadata round-trip preserves non-string values via `fmt.Sprintf("%v", v)`                        | ✅ DONE |
+| M-6/M-7   | Document `Report.All()` and `FindByID()` yield copies                                                   | ✅ DONE |
+| M-8       | `Range.LineCount()` returns absolute span for inverted ranges                                           | ✅ DONE |
+| M-9       | `Finding.Equal` uses `floatEq` with 1e-9 epsilon                                                        | ✅ DONE |
+| M-10      | Renamed `FinalFindingCount` → `TotalDetected` with clear docs                                           | ✅ DONE |
+| M-12      | `Correlation` JSON tags changed to camelCase                                                            | ✅ DONE |
+| M-13      | `ToSARIFFiltered` godoc documents dual filtering                                                        | ✅ DONE |
+| M-14      | `NewReport` auto-calls `ComputeSummary()`                                                               | ✅ DONE |
+| M-15      | SARIF export includes suggestion-only fixes as descriptions                                             | ✅ DONE |
+| M-17      | `maxIterations: 0` defaults to pipeline default (5)                                                     | ✅ DONE |
+| M-18      | `BySeverityAtLeast` godoc notes invalid exclusion                                                       | ✅ DONE |
 | M-19/M-20 | `clampConfidence()` helper; `NormalizedConfidence()` and `Builder.WithConfidence()` clamp to [0.0, 1.0] | ✅ DONE |
 
 ### Features Added
 
-| Feature | Status |
-|---|---|
-| `finding.Builder` fluent API with 13 chainable methods | ✅ DONE |
+| Feature                                                                                        | Status  |
+| ---------------------------------------------------------------------------------------------- | ------- |
+| `finding.Builder` fluent API with 13 chainable methods                                         | ✅ DONE |
 | `version.go` with semver constants (`VersionMajor`, `VersionMinor`, `VersionPatch`, `Version`) | ✅ DONE |
-| `Config.CorrelateFindings` — wire `Correlate()` into Pipeline as optional stage | ✅ DONE |
-| `PipelineResult.Correlations` field | ✅ DONE |
-| `RegisterDetector()` — thread-safe detector registration | ✅ DONE |
-| `Report.AddFinding/AddFindings` thread-safe via `*sync.Mutex` | ✅ DONE |
+| `Config.CorrelateFindings` — wire `Correlate()` into Pipeline as optional stage                | ✅ DONE |
+| `PipelineResult.Correlations` field                                                            | ✅ DONE |
+| `RegisterDetector()` — thread-safe detector registration                                       | ✅ DONE |
+| `Report.AddFinding/AddFindings` thread-safe via `*sync.Mutex`                                  | ✅ DONE |
 
 ### Safety & Lint Fixes
 
-| Fix | Status |
-|---|---|
+| Fix                                                                        | Status  |
+| -------------------------------------------------------------------------- | ------- |
 | `Report` copylocks: `sync.Mutex` → `*sync.Mutex` (nil-safe for zero-value) | ✅ DONE |
-| `err113`: Added `errDetectorRegistered` sentinel in CLI | ✅ DONE |
-| `exhaustruct`: Added nolint for suggestion-only `SarifFix` | ✅ DONE |
-| `Metrics.TotalDuration` guards against `startTime.IsZero()` | ✅ DONE |
-| `Pos()` improved godoc | ✅ DONE |
+| `err113`: Added `errDetectorRegistered` sentinel in CLI                    | ✅ DONE |
+| `exhaustruct`: Added nolint for suggestion-only `SarifFix`                 | ✅ DONE |
+| `Metrics.TotalDuration` guards against `startTime.IsZero()`                | ✅ DONE |
+| `Pos()` improved godoc                                                     | ✅ DONE |
 
 ### Test Improvements
 
-| Test | Status |
-|---|---|
-| `Finding.IsValid()` tests | ✅ DONE |
-| `Suppression.IsValid()` tests | ✅ DONE |
-| `ErrorCategory.IsValid()` tests | ✅ DONE |
-| `Severity.LessThan` invalid input test | ✅ DONE |
-| `equalTimePtr` both-nil test | ✅ DONE |
-| CLI end-to-end tests (3: DefaultDetectors, ConfigFile, SARIFOutput) | ✅ DONE |
-| Pipeline correlation tests (enabled + disabled) | ✅ DONE |
+| Test                                                                              | Status  |
+| --------------------------------------------------------------------------------- | ------- |
+| `Finding.IsValid()` tests                                                         | ✅ DONE |
+| `Suppression.IsValid()` tests                                                     | ✅ DONE |
+| `ErrorCategory.IsValid()` tests                                                   | ✅ DONE |
+| `Severity.LessThan` invalid input test                                            | ✅ DONE |
+| `equalTimePtr` both-nil test                                                      | ✅ DONE |
+| CLI end-to-end tests (3: DefaultDetectors, ConfigFile, SARIFOutput)               | ✅ DONE |
+| Pipeline correlation tests (enabled + disabled)                                   | ✅ DONE |
 | Bug-specific test files (`pipeline_bugfix_test.go`, `fix_applier_bugfix_test.go`) | ✅ DONE |
 
 ### Documentation
 
-| Doc | Status |
-|---|---|
-| `CHANGELOG.md` — comprehensive `[Unreleased]` section with all changes | ✅ DONE |
-| `README.md` — Builder API section, updated coverage stats, fixed field reference | ✅ DONE |
+| Doc                                                                                     | Status  |
+| --------------------------------------------------------------------------------------- | ------- |
+| `CHANGELOG.md` — comprehensive `[Unreleased]` section with all changes                  | ✅ DONE |
+| `README.md` — Builder API section, updated coverage stats, fixed field reference        | ✅ DONE |
 | `TODO_LIST.md` — cleaned from 159 → 119 items, organized by priority, completed section | ✅ DONE |
-| `Correlate()` godoc updated to document Pipeline integration | ✅ DONE |
+| `Correlate()` godoc updated to document Pipeline integration                            | ✅ DONE |
 
 ### go-structure-linter (Cross-Repo)
 
-| Task | Status |
-|---|---|
-| Dead code removal: `file_cache.go` (215 lines), `health_service.go` (117 lines), `health_service_test.go` | ✅ DONE |
+| Task                                                                                                                                       | Status  |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| Dead code removal: `file_cache.go` (215 lines), `health_service.go` (117 lines), `health_service_test.go`                                  | ✅ DONE |
 | Removed references from `interfaces.go`, `container.go`, `types.go`, `container_test.go`, `severity_test.go`, `testutil/ginkgo_helpers.go` | ✅ DONE |
 
 ---
 
 ## B) PARTIALLY DONE
 
-| Item | Status | What's Left |
-|---|---|---|
-| Lint cleanup | 36 warnings remain | testifylint (10), paralleltest (6), gosec (7), golines (3), gochecknoglobals (2), gci (1), gocognit (1), goconst (1), gofumpt (1), dupword (1), noctx (1), predeclared (1), thelper (1) |
-| CLI coverage | 74.2% | `main()` at 0%, `RegisterDetector()` at 0%, `run()` at 49% — need more integration tests |
-| `Finding.Equal` coverage | 91.7% | Field-mismatch branches untested |
-| SARIF error-path coverage | 75% | `ToSARIF`, `ToSARIFFiltered`, `PrettyJSON`, `LineJSON` marshal error paths untested |
+| Item                      | Status             | What's Left                                                                                                                                                                             |
+| ------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lint cleanup              | 36 warnings remain | testifylint (10), paralleltest (6), gosec (7), golines (3), gochecknoglobals (2), gci (1), gocognit (1), goconst (1), gofumpt (1), dupword (1), noctx (1), predeclared (1), thelper (1) |
+| CLI coverage              | 74.2%              | `main()` at 0%, `RegisterDetector()` at 0%, `run()` at 49% — need more integration tests                                                                                                |
+| `Finding.Equal` coverage  | 91.7%              | Field-mismatch branches untested                                                                                                                                                        |
+| SARIF error-path coverage | 75%                | `ToSARIF`, `ToSARIFFiltered`, `PrettyJSON`, `LineJSON` marshal error paths untested                                                                                                     |
 
 ---
 
 ## C) NOT STARTED
 
-| Item | Priority | Effort | Impact |
-|---|---|---|---|
-| `Finding` struct sub-grouping into embedded sub-structs | P3 (breaking) | Large | Medium — cleaner API but breaking change |
-| `go-finding` adapter in `go-structure-linter` | P4 (cross-repo) | Large | High — enables migration |
-| `go:generate stringer` for Severity, FixStrategy, Category, SuppressionKind | P2 | Small | Low — nice-to-have |
-| SARIF parser fuzz test | P1 | Medium | High — handles untrusted input |
-| SARIF schema validation test | P2 | Small | Medium |
-| Replace hardcoded temp dir in pipeline with `os.MkdirTemp` | P2 | Small | Medium — concurrency safety |
-| Convert 4 `errors.New()` in `pipeline/retry.go` to sentinels | P2 | Small | Low — consistency |
-| Extract `findingKey` to shared utility (duplicated in `verify.go` and `merge.go`) | P2 | Small | Low — DRY |
-| Remove unused `//nolint` directives (3 locations) | P2 | Tiny | Low — cleanup |
-| Modernize to Go 1.21+ stdlib (`slices.Contains`, `maps.Keys`) | P2 | Medium | Low — idiom |
-| Add `go.work` for local development | P3 | Tiny | Low — DX |
-| Add `examples/` directory with standalone examples | P2 | Medium | Medium — adoptability |
-| Add godoc examples for key APIs | P2 | Medium | Medium — pkg.go.dev |
-| Pipeline example with config file | P2 | Small | Medium — adoptability |
-| Add `Range.Contains` edge-case tests | P2 | Small | Low — already 85%+ |
-| Add `checkColumnRange` + `hasLineRange` tests | P2 | Small | Low — edge cases |
-| Add `cloneFindings` edge-case test | P2 | Tiny | Low |
-| Add `Finding.Equal` field-mismatch test | P2 | Small | Low — coverage |
-| Replace hardcoded `SeverityWarning` in `diagnostic.go` | P3 | Small | Low |
-| Add `govulncheck` to CI | P3 | Small | Medium — supply chain |
-| Add GitHub release workflow | P3 | Medium | Medium — distribution |
-| Evaluate `go-sarif` library vs hand-rolled SARIF | P3 | Medium | High — spec compliance |
-| Fix `TestProperty_IDRoundTrip` flakiness | P1 | Small | Medium — reliability |
-| Fix `applyTriage` tests with `FixStrategyDirect` findings | P1 | Small | Low — coverage |
-| Add `FixApplier` error-path tests | P1 | Medium | Medium — coverage |
-| Add `FilterConflictingFixes` + `AnalyzeConflicts` tests | P1 | Small | Low — coverage |
-| Add `RetryConfig.Validate` edge-case tests | P1 | Small | Low |
-| Add `Verifier.Verify` error-path tests | P1 | Small | Low |
-| Add `PrettyJSON` / `LineJSON` error-path tests | P1 | Small | Low |
-| Add `findingFromSarResult` import path tests | P2 | Medium | Medium — SARIF fidelity |
-| Add SARIF fuzz test | P1 | Medium | High — security |
-| Delete stale coverage files from repo root | P2 | Tiny | Low |
-| Add `govet` binary to `.gitignore` | P2 | Tiny | Low |
-| Document SARIF round-trip losses | P2 | Small | Medium |
-| Fix `pipeline/partial.go` missing metrics recording | P1 | Small | Medium |
-| Add `LSP toZeroBased` test for 0 Line case | P2 | Tiny | Low |
-| Replace loop with `slices.Contains` at `merge_test.go:208` | P2 | Tiny | Low |
-| Preallocate `all` slice in `pipeline_test.go:332` | P2 | Tiny | Low |
-| Extract `"changed"` string to constant | P2 | Tiny | Low |
-| Add `intersectionByOffset` + `HasOffset` tests | P1 | Small | Low |
-| Add `severityToSARIFLevel` edge-case test | P2 | Small | Low |
-| Add benchmarks for hot paths | P2 | Medium | Medium |
-| Profile memory allocation hotspots | P3 | Medium | Low |
-| Add `io.WriterTo` for SARIF output | P3 | Small | Low |
-| Decide on `FixStrategyAI` — implement or remove | P3 | Decision | Medium |
-| Decide on repository name | P3 | Decision | Low |
-| Per-package coverage thresholds in CI | P3 | Small | Medium |
-| Nix migration (Phases 0-5) | P4 | Large | Medium |
-| Web UI prototype for pipeline monitoring | P4 | Large | Low |
-| IDE plugin stubs — VS Code | P4 | Large | Medium |
-| Watch mode with fsnotify | P4 | Large | Medium |
-| Config file support for library/pipeline | P3 | Medium | Medium |
-| Create real-world tool integration guide | P3 | Medium | High |
+| Item                                                                              | Priority        | Effort   | Impact                                   |
+| --------------------------------------------------------------------------------- | --------------- | -------- | ---------------------------------------- |
+| `Finding` struct sub-grouping into embedded sub-structs                           | P3 (breaking)   | Large    | Medium — cleaner API but breaking change |
+| `go-finding` adapter in `go-structure-linter`                                     | P4 (cross-repo) | Large    | High — enables migration                 |
+| `go:generate stringer` for Severity, FixStrategy, Category, SuppressionKind       | P2              | Small    | Low — nice-to-have                       |
+| SARIF parser fuzz test                                                            | P1              | Medium   | High — handles untrusted input           |
+| SARIF schema validation test                                                      | P2              | Small    | Medium                                   |
+| Replace hardcoded temp dir in pipeline with `os.MkdirTemp`                        | P2              | Small    | Medium — concurrency safety              |
+| Convert 4 `errors.New()` in `pipeline/retry.go` to sentinels                      | P2              | Small    | Low — consistency                        |
+| Extract `findingKey` to shared utility (duplicated in `verify.go` and `merge.go`) | P2              | Small    | Low — DRY                                |
+| Remove unused `//nolint` directives (3 locations)                                 | P2              | Tiny     | Low — cleanup                            |
+| Modernize to Go 1.21+ stdlib (`slices.Contains`, `maps.Keys`)                     | P2              | Medium   | Low — idiom                              |
+| Add `go.work` for local development                                               | P3              | Tiny     | Low — DX                                 |
+| Add `examples/` directory with standalone examples                                | P2              | Medium   | Medium — adoptability                    |
+| Add godoc examples for key APIs                                                   | P2              | Medium   | Medium — pkg.go.dev                      |
+| Pipeline example with config file                                                 | P2              | Small    | Medium — adoptability                    |
+| Add `Range.Contains` edge-case tests                                              | P2              | Small    | Low — already 85%+                       |
+| Add `checkColumnRange` + `hasLineRange` tests                                     | P2              | Small    | Low — edge cases                         |
+| Add `cloneFindings` edge-case test                                                | P2              | Tiny     | Low                                      |
+| Add `Finding.Equal` field-mismatch test                                           | P2              | Small    | Low — coverage                           |
+| Replace hardcoded `SeverityWarning` in `diagnostic.go`                            | P3              | Small    | Low                                      |
+| Add `govulncheck` to CI                                                           | P3              | Small    | Medium — supply chain                    |
+| Add GitHub release workflow                                                       | P3              | Medium   | Medium — distribution                    |
+| Evaluate `go-sarif` library vs hand-rolled SARIF                                  | P3              | Medium   | High — spec compliance                   |
+| Fix `TestProperty_IDRoundTrip` flakiness                                          | P1              | Small    | Medium — reliability                     |
+| Fix `applyTriage` tests with `FixStrategyDirect` findings                         | P1              | Small    | Low — coverage                           |
+| Add `FixApplier` error-path tests                                                 | P1              | Medium   | Medium — coverage                        |
+| Add `FilterConflictingFixes` + `AnalyzeConflicts` tests                           | P1              | Small    | Low — coverage                           |
+| Add `RetryConfig.Validate` edge-case tests                                        | P1              | Small    | Low                                      |
+| Add `Verifier.Verify` error-path tests                                            | P1              | Small    | Low                                      |
+| Add `PrettyJSON` / `LineJSON` error-path tests                                    | P1              | Small    | Low                                      |
+| Add `findingFromSarResult` import path tests                                      | P2              | Medium   | Medium — SARIF fidelity                  |
+| Add SARIF fuzz test                                                               | P1              | Medium   | High — security                          |
+| Delete stale coverage files from repo root                                        | P2              | Tiny     | Low                                      |
+| Add `govet` binary to `.gitignore`                                                | P2              | Tiny     | Low                                      |
+| Document SARIF round-trip losses                                                  | P2              | Small    | Medium                                   |
+| Fix `pipeline/partial.go` missing metrics recording                               | P1              | Small    | Medium                                   |
+| Add `LSP toZeroBased` test for 0 Line case                                        | P2              | Tiny     | Low                                      |
+| Replace loop with `slices.Contains` at `merge_test.go:208`                        | P2              | Tiny     | Low                                      |
+| Preallocate `all` slice in `pipeline_test.go:332`                                 | P2              | Tiny     | Low                                      |
+| Extract `"changed"` string to constant                                            | P2              | Tiny     | Low                                      |
+| Add `intersectionByOffset` + `HasOffset` tests                                    | P1              | Small    | Low                                      |
+| Add `severityToSARIFLevel` edge-case test                                         | P2              | Small    | Low                                      |
+| Add benchmarks for hot paths                                                      | P2              | Medium   | Medium                                   |
+| Profile memory allocation hotspots                                                | P3              | Medium   | Low                                      |
+| Add `io.WriterTo` for SARIF output                                                | P3              | Small    | Low                                      |
+| Decide on `FixStrategyAI` — implement or remove                                   | P3              | Decision | Medium                                   |
+| Decide on repository name                                                         | P3              | Decision | Low                                      |
+| Per-package coverage thresholds in CI                                             | P3              | Small    | Medium                                   |
+| Nix migration (Phases 0-5)                                                        | P4              | Large    | Medium                                   |
+| Web UI prototype for pipeline monitoring                                          | P4              | Large    | Low                                      |
+| IDE plugin stubs — VS Code                                                        | P4              | Large    | Medium                                   |
+| Watch mode with fsnotify                                                          | P4              | Large    | Medium                                   |
+| Config file support for library/pipeline                                          | P3              | Medium   | Medium                                   |
+| Create real-world tool integration guide                                          | P3              | Medium   | High                                     |
 
 ---
 
@@ -290,33 +290,33 @@ Even though we added `sync.RWMutex` protection, the global map is still mutable 
 
 ## F) TOP 25 THINGS WE SHOULD GET DONE NEXT
 
-| # | Task | Priority | Effort | Impact | Category |
-|---|---|---|---|---|---|
-| 1 | Fix `TestProperty_IDRoundTrip` flakiness (seed control) | P1 | S | M | Testing |
-| 2 | Add SARIF parser fuzz test (`FindingsFromSARIF`) | P1 | M | H | Security |
-| 3 | Fix `pipeline/partial.go` missing metrics recording during partial detection | P1 | S | M | Bug |
-| 4 | Add `FixApplier` error-path unit tests (backup/restore failure) | P1 | M | M | Testing |
-| 5 | Fix 10 testifylint `require-error` warnings | P2 | S | L | Lint |
-| 6 | Fix 6 `paralleltest` warnings (add `t.Parallel()`) | P2 | S | L | Lint |
-| 7 | Decompose `applyToFile` (cognitive complexity 42 → <35) | P2 | M | M | Code quality |
-| 8 | Add `examples/` directory with 3-5 standalone examples | P2 | M | M | Docs |
-| 9 | Add godoc examples for key APIs (`ExampleBuilder`, `ExampleFilter`) | P2 | M | M | Docs |
-| 10 | Fix 7 gosec warnings (G204 subprocess, G703 path traversal nolints) | P2 | S | M | Lint/Security |
-| 11 | Add `findingFromSarResult` import path tests (rule metadata, help URI) | P2 | M | M | Testing |
-| 12 | Add `PrettyJSON` / `LineJSON` / `ToSARIF` error-path tests | P2 | S | L | Testing |
-| 13 | Document SARIF round-trip losses prominently | P2 | S | M | Docs |
-| 14 | Replace hardcoded temp dir in `pipeline/pipeline.go` with `os.MkdirTemp` | P2 | S | M | Bug |
-| 15 | Decide on `FixStrategyAI` — document as placeholder or remove | P2 | S | M | API |
-| 16 | Add `intersectionByOffset` + `HasOffset` tests (0% coverage) | P1 | S | L | Testing |
-| 17 | Add `FilterConflictingFixes` + `AnalyzeConflicts` dedicated tests | P1 | S | L | Testing |
-| 18 | Evaluate `go-sarif` library vs hand-rolled SARIF for spec compliance | P2 | M | H | Architecture |
-| 19 | Add `govulncheck` step to CI | P2 | S | M | Security |
-| 20 | Add `go:generate stringer` for Severity, FixStrategy, Category | P2 | S | L | DX |
-| 21 | Add `RegisterDetector()` test | P2 | S | L | Testing |
-| 22 | Fix `Finding.Equal` field-mismatch test (91.7% → 100%) | P2 | S | L | Testing |
-| 23 | Extract `findingKey` to shared utility (deduplicated from verify.go + merge.go) | P2 | S | L | DRY |
-| 24 | Add `clampConfidence()` negative input test (80% → 100%) | P2 | S | L | Testing |
-| 25 | Add `setupProfiling` error-path test (76.9% → 90%+) | P2 | S | L | Testing |
+| #   | Task                                                                            | Priority | Effort | Impact | Category      |
+| --- | ------------------------------------------------------------------------------- | -------- | ------ | ------ | ------------- |
+| 1   | Fix `TestProperty_IDRoundTrip` flakiness (seed control)                         | P1       | S      | M      | Testing       |
+| 2   | Add SARIF parser fuzz test (`FindingsFromSARIF`)                                | P1       | M      | H      | Security      |
+| 3   | Fix `pipeline/partial.go` missing metrics recording during partial detection    | P1       | S      | M      | Bug           |
+| 4   | Add `FixApplier` error-path unit tests (backup/restore failure)                 | P1       | M      | M      | Testing       |
+| 5   | Fix 10 testifylint `require-error` warnings                                     | P2       | S      | L      | Lint          |
+| 6   | Fix 6 `paralleltest` warnings (add `t.Parallel()`)                              | P2       | S      | L      | Lint          |
+| 7   | Decompose `applyToFile` (cognitive complexity 42 → <35)                         | P2       | M      | M      | Code quality  |
+| 8   | Add `examples/` directory with 3-5 standalone examples                          | P2       | M      | M      | Docs          |
+| 9   | Add godoc examples for key APIs (`ExampleBuilder`, `ExampleFilter`)             | P2       | M      | M      | Docs          |
+| 10  | Fix 7 gosec warnings (G204 subprocess, G703 path traversal nolints)             | P2       | S      | M      | Lint/Security |
+| 11  | Add `findingFromSarResult` import path tests (rule metadata, help URI)          | P2       | M      | M      | Testing       |
+| 12  | Add `PrettyJSON` / `LineJSON` / `ToSARIF` error-path tests                      | P2       | S      | L      | Testing       |
+| 13  | Document SARIF round-trip losses prominently                                    | P2       | S      | M      | Docs          |
+| 14  | Replace hardcoded temp dir in `pipeline/pipeline.go` with `os.MkdirTemp`        | P2       | S      | M      | Bug           |
+| 15  | Decide on `FixStrategyAI` — document as placeholder or remove                   | P2       | S      | M      | API           |
+| 16  | Add `intersectionByOffset` + `HasOffset` tests (0% coverage)                    | P1       | S      | L      | Testing       |
+| 17  | Add `FilterConflictingFixes` + `AnalyzeConflicts` dedicated tests               | P1       | S      | L      | Testing       |
+| 18  | Evaluate `go-sarif` library vs hand-rolled SARIF for spec compliance            | P2       | M      | H      | Architecture  |
+| 19  | Add `govulncheck` step to CI                                                    | P2       | S      | M      | Security      |
+| 20  | Add `go:generate stringer` for Severity, FixStrategy, Category                  | P2       | S      | L      | DX            |
+| 21  | Add `RegisterDetector()` test                                                   | P2       | S      | L      | Testing       |
+| 22  | Fix `Finding.Equal` field-mismatch test (91.7% → 100%)                          | P2       | S      | L      | Testing       |
+| 23  | Extract `findingKey` to shared utility (deduplicated from verify.go + merge.go) | P2       | S      | L      | DRY           |
+| 24  | Add `clampConfidence()` negative input test (80% → 100%)                        | P2       | S      | L      | Testing       |
+| 25  | Add `setupProfiling` error-path test (76.9% → 90%+)                             | P2       | S      | L      | Testing       |
 
 ---
 
@@ -325,12 +325,14 @@ Even though we added `sync.RWMutex` protection, the global map is still mutable 
 **Should `Finding` be decomposed into embedded sub-structs (breaking change), or should we stabilize the current API as v0.2.0 and defer decomposition to v1.0?**
 
 The current `Finding` struct has 18 fields, which is a lot. Grouping them into:
+
 - `Location` (File, Line, Column, Range, Snippet)
 - `Fix` (FixStrategy, Suggestion, BeforeCode, AfterCode)
 - `Meta` (Confidence, Tag, Category, Metadata)
 - `Identity` (ID, Rule, ToolName)
 
 ...would make the API cleaner and more navigable. But it's a **breaking change** that affects:
+
 - Every `NewFinding()` call site
 - Every struct literal `Finding{...}`
 - Every field access `f.Position` → `f.Location.Position` (or similar)
