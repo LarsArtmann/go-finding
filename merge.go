@@ -45,12 +45,19 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 		opt(&options)
 	}
 
-	merged := NewReport(ToolInfo{
+	total := 0
+	for _, report := range reports {
+		if report != nil {
+			total += len(report.Findings)
+		}
+	}
+
+	merged := newReportWithCapacity(ToolInfo{
 		Name:    "merged",
 		Version: "",
-	})
+	}, total)
 
-	seen := make(map[string]struct{})
+	seen := make(map[string]struct{}, total)
 
 	for _, report := range reports {
 		if report == nil {
@@ -58,7 +65,6 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 		}
 
 		for _, finding := range report.Findings {
-			// Check for duplicates
 			if options.Deduplicate {
 				key := dedupKey(finding, options)
 				if _, exists := seen[key]; exists {
@@ -68,7 +74,7 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 				seen[key] = struct{}{}
 			}
 
-			merged.AddFinding(finding.Clone())
+			merged.addFindingUnchecked(finding.Clone())
 		}
 	}
 

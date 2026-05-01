@@ -44,6 +44,19 @@ func NewReport(tool ToolInfo) *Report {
 	return r
 }
 
+// newReportWithCapacity creates a new report with pre-allocated finding capacity.
+func newReportWithCapacity(tool ToolInfo, capacity int) *Report {
+	r := &Report{
+		mu:       &sync.Mutex{},
+		Tool:     tool,
+		Findings: make([]Finding, 0, capacity),
+		Summary:  Summary{}, //nolint:exhaustruct
+	}
+	r.ComputeSummary()
+
+	return r
+}
+
 // AddFinding adds a finding to the report.
 // Safe for concurrent use.
 func (r *Report) AddFinding(f Finding) {
@@ -56,6 +69,12 @@ func (r *Report) AddFinding(f Finding) {
 func (r *Report) AddFindings(findings []Finding) {
 	r.lock()
 	r.Findings = append(r.Findings, findings...)
+}
+
+// addFindingUnchecked appends a finding without acquiring the mutex.
+// Caller must hold the lock or guarantee single-goroutine access.
+func (r *Report) addFindingUnchecked(f Finding) {
+	r.Findings = append(r.Findings, f)
 }
 
 // lock acquires the report mutex if it exists.
