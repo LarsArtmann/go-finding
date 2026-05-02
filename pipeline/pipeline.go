@@ -54,6 +54,46 @@ func (n *namedDetector) Name() string {
 	return n.name
 }
 
+// FindingProcessor transforms findings between detection and triage.
+// Processors are chained in order, allowing filtering, enrichment, or transformation.
+type FindingProcessor interface {
+	// Name returns the processor's name for logging and debugging.
+	Name() string
+	// Process applies a transformation to the findings and returns the result.
+	Process(findings []finding.Finding) []finding.Finding
+}
+
+// ProcessorFunc is an adapter to use ordinary functions as FindingProcessors.
+type ProcessorFunc func(findings []finding.Finding) []finding.Finding
+
+// Process implements FindingProcessor.
+func (f ProcessorFunc) Process(findings []finding.Finding) []finding.Finding {
+	return f(findings)
+}
+
+// Name implements FindingProcessor. Returns "anonymous".
+func (f ProcessorFunc) Name() string {
+	return "anonymous"
+}
+
+// NamedProcessorFunc returns a FindingProcessor with the given name wrapping the provided function.
+func NamedProcessorFunc(name string, fn ProcessorFunc) FindingProcessor {
+	return &namedProcessor{name: name, fn: fn}
+}
+
+type namedProcessor struct {
+	name string
+	fn   ProcessorFunc
+}
+
+func (n *namedProcessor) Process(findings []finding.Finding) []finding.Finding {
+	return n.fn(findings)
+}
+
+func (n *namedProcessor) Name() string {
+	return n.name
+}
+
 // Config configures the pipeline behavior.
 type Config struct {
 	// MaxIterations prevents infinite loops.
@@ -81,6 +121,9 @@ type Config struct {
 	// CorrelateFindings runs cross-tool correlation on all findings after detection.
 	// Results are stored in PipelineResult.Correlations.
 	CorrelateFindings bool
+	// Processors are chained between detection and triage.
+	// Each processor transforms the findings before triage categorizes them.
+	Processors []FindingProcessor
 }
 
 const defaultMaxIterations = 5
@@ -225,6 +268,11 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		}
 
 		findings := detResult.Findings
+
+		// Run processors (filter, enrich, transform)
+		for _, proc := range p.config.Processors {
+			findings = proc.Process(findings)
+		}
 
 		// Accumulate partial errors across iterations.
 		for name, detErr := range detResult.Errors {
