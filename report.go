@@ -62,6 +62,7 @@ func newReportWithCapacity(tool ToolInfo, capacity int) *Report {
 func (r *Report) AddFinding(f Finding) {
 	r.lock()
 	r.Findings = append(r.Findings, f)
+	r.unlock()
 }
 
 // AddFindings adds multiple findings to the report.
@@ -69,6 +70,7 @@ func (r *Report) AddFinding(f Finding) {
 func (r *Report) AddFindings(findings []Finding) {
 	r.lock()
 	r.Findings = append(r.Findings, findings...)
+	r.unlock()
 }
 
 // addFindingUnchecked appends a finding without acquiring the mutex.
@@ -81,12 +83,22 @@ func (r *Report) addFindingUnchecked(f Finding) {
 func (r *Report) lock() {
 	if r.mu != nil {
 		r.mu.Lock()
-		defer r.mu.Unlock()
+	}
+}
+
+// unlock releases the report mutex if it exists.
+func (r *Report) unlock() {
+	if r.mu != nil {
+		r.mu.Unlock()
 	}
 }
 
 // ComputeSummary recalculates the summary from the current findings.
+// Safe for concurrent use with AddFinding/AddFindings.
 func (r *Report) ComputeSummary() {
+	r.lock()
+	defer r.unlock()
+
 	r.Summary.Total = len(r.Findings)
 	r.Summary.BySeverity = make(map[Severity]int)
 	r.Summary.ByCategory = make(map[Category]int)
