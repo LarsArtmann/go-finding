@@ -1,0 +1,108 @@
+graph TB
+    subgraph CLI["cmd/go-finding"]
+        Main["main.go"]
+        ConfigLoader["Config Loader"]
+        OutputFmt["Output Formatter<br/>(text/json/sarif)"]
+    end
+
+    subgraph Pipeline["pipeline"]
+        P["Pipeline"]
+        Detect["Detect Stage"]
+        Triage["Triage Stage<br/>(pluggable)"]
+        Apply["FixApplier<br/>(interface)"]
+        Verify["Verifier"]
+        Conflict["ConflictDetector"]
+        Retry["RetryDetector"]
+        Metrics["Metrics"]
+        Partial["Partial Detection"]
+        Registry["DetectorRegistry"]
+        FixEngine["FixEngine<br/>(in-memory adapter)"]
+        FSApply["FilesystemApplier<br/>(FS adapter)"]
+        FileBackup["FileBackup"]
+    end
+
+    subgraph Finding["finding (root)"]
+        F["Finding"]
+        Report["Report<br/>(thread-safe)"]
+        Position["Position / Range"]
+        Severity["Severity"]
+        Category["Category"]
+        FixStrategy["FixStrategy"]
+        Suppression["Suppression"]
+        Filter["Filter / Sort"]
+        Merge["Merge / Correlate"]
+        SARIF["SARIF 2.1.0"]
+        LSP["LSP Diagnostic"]
+        Diagnostic["go/analysis"]
+        JSON["JSON"]
+        Errors["Structured Errors"]
+        Builder["Builder"]
+        ID["ID Generation"]
+    end
+
+    subgraph Detectors["internal/detectors"]
+        GoVet["GoVet Detector"]
+        Staticcheck["Staticcheck Detector"]
+        ShellBase["ShellDetector<br/>(shared base)"]
+    end
+
+    Main --> ConfigLoader
+    Main --> P
+    Main --> OutputFmt
+    Main --> Registry
+
+    GoVet --> ShellBase
+    Staticcheck --> ShellBase
+    ShellBase --> F
+
+    Registry --> GoVet
+    Registry --> Staticcheck
+    Registry --> P
+
+    P --> Detect
+    P --> Triage
+    P --> Apply
+    P --> Verify
+    P --> Metrics
+    P --> Partial
+
+    Detect --> Retry
+    Detect --> Partial
+
+    Apply --> FSApply
+    Apply --> FixEngine
+    FSApply --> Conflict
+    FSApply --> FileBackup
+
+    Verify --> Detect
+
+    Triage --> FixStrategy
+
+    OutputFmt --> SARIF
+    OutputFmt --> JSON
+
+    Report --> F
+    Report --> Filter
+    Report --> Merge
+    F --> Position
+    F --> Severity
+    F --> Category
+    F --> FixStrategy
+    F --> Suppression
+    F --> Builder
+    F --> ID
+    F --> Errors
+    F --> Diagnostic
+    F --> LSP
+
+    classDef core fill:#e1f5fe,stroke:#0288d1
+    classDef pipe fill:#f3e5f5,stroke:#7b1fa2
+    classDef det fill:#fff3e0,stroke:#ef6c00
+    classDef cli fill:#e8f5e9,stroke:#2e7d32
+    classDef ideal fill:#fce4ec,stroke:#c62828
+
+    class F,Report,Position,Severity,Category,FixStrategy,Suppression,Filter,Merge,SARIF,LSP,Diagnostic,JSON,Errors,Builder,ID core
+    class P,Detect,Triage,Apply,Verify,Conflict,Retry,Metrics,Partial,FileBackup pipe
+    class GoVet,Staticcheck,ShellBase det
+    class Main,ConfigLoader,OutputFmt cli
+    class Registry,FSApply,FixEngine ideal

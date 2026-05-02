@@ -1,0 +1,102 @@
+graph TB
+    subgraph CLI["cmd/go-finding"]
+        Main["main.go"]
+        ConfigLoader["Config Loader<br/>(YAML/JSON)"]
+        PluginReg["RegisterDetector()"]
+        OutputFmt["Output Formatter<br/>(text/json/sarif)"]
+    end
+
+    subgraph Detectors["internal/detectors"]
+        GoVet["GoVet Detector"]
+        Staticcheck["Staticcheck Detector"]
+    end
+
+    subgraph Pipeline["pipeline"]
+        P["Pipeline"]
+        Detect["Detect Stage"]
+        Triage["Triage Stage"]
+        Apply["FixApplier"]
+        Verify["Verifier"]
+        Conflict["ConflictDetector"]
+        Retry["RetryDetector"]
+        Metrics["Metrics"]
+        Partial["Partial Detection"]
+        FixEngine["FixEngine<br/>(in-memory)"]
+        FileBackup["FileBackup"]
+    end
+
+    subgraph Finding["finding (root)"]
+        F["Finding"]
+        Report["Report"]
+        Position["Position / Range"]
+        Severity["Severity"]
+        Category["Category"]
+        FixStrategy["FixStrategy"]
+        Suppression["Suppression"]
+        Filter["Filter / Sort"]
+        Merge["Merge / Correlate"]
+        SARIF["SARIF 2.1.0"]
+        LSP["LSP Diagnostic"]
+        Diagnostic["go/analysis"]
+        JSON["JSON"]
+        Errors["Structured Errors"]
+        Builder["Builder"]
+        ID["ID Generation"]
+    end
+
+    Main --> ConfigLoader
+    Main --> PluginReg
+    Main --> P
+    Main --> OutputFmt
+    Main --> GoVet
+    Main --> Staticcheck
+
+    GoVet --> F
+    Staticcheck --> F
+    GoVet --> P
+    Staticcheck --> P
+
+    P --> Detect
+    P --> Triage
+    P --> Apply
+    P --> Verify
+    P --> Metrics
+    P --> Partial
+
+    Detect --> Retry
+    Detect --> Partial
+
+    Apply --> Conflict
+    Apply --> FixEngine
+    Apply --> FileBackup
+
+    Verify --> Detect
+
+    Triage --> FixStrategy
+
+    OutputFmt --> SARIF
+    OutputFmt --> JSON
+
+    Report --> F
+    Report --> Filter
+    Report --> Merge
+    F --> Position
+    F --> Severity
+    F --> Category
+    F --> FixStrategy
+    F --> Suppression
+    F --> Builder
+    F --> ID
+    F --> Errors
+    F --> Diagnostic
+    F --> LSP
+
+    classDef core fill:#e1f5fe,stroke:#0288d1
+    classDef pipe fill:#f3e5f5,stroke:#7b1fa2
+    classDef det fill:#fff3e0,stroke:#ef6c00
+    classDef cli fill:#e8f5e9,stroke:#2e7d32
+
+    class F,Report,Position,Severity,Category,FixStrategy,Suppression,Filter,Merge,SARIF,LSP,Diagnostic,JSON,Errors,Builder,ID core
+    class P,Detect,Triage,Apply,Verify,Conflict,Retry,Metrics,Partial,FixEngine,FileBackup pipe
+    class GoVet,Staticcheck det
+    class Main,ConfigLoader,PluginReg,OutputFmt cli

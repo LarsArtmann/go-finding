@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CLI `-version` flag** — Print version and exit.
 - **`Pipeline.CorrelateFindings` config** — Optional post-detection correlation stage.
 - **`PipelineResult.Correlations`** — Correlation results when correlation is enabled.
-- **`finding.Version` constant** — Programmatic version checking via `finding.Version` (`"0.2.0"`).
+- **`finding.Version` constant** — Programmatic version checking via `finding.Version` (`"0.2.1"`).
 - **`examples/` directory** — Standalone examples (`basic/`, `builder/`, `pipeline/`) with compile checks.
 - **`docs/integration-guide.md`** — Real-world tool integration guide.
 - **`docs/release-procedure.md`** — Release process documentation.

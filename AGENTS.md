@@ -75,6 +75,8 @@ golangci-lint run ./...         # Lint
 - `golang.org/x/tools` - go/analysis framework
 - `golang.org/x/sync` - errgroup for parallel detection
 - `gopkg.in/yaml.v3` - YAML config file parsing (CLI only)
+- `github.com/onsi/ginkgo/v2` - BDD testing framework
+- `github.com/onsi/gomega` - BDD test matchers
 
 ### Design Principles
 

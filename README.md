@@ -141,7 +141,10 @@ cfg := pipeline.Config{
     DryRun:            false,
 }
 
-p := pipeline.New(cfg, ".", detector)
+p, err := pipeline.New(cfg, ".", detector)
+if err != nil {
+    log.Fatal(err)
+}
 result, err := p.Run(context.Background())
 
 fmt.Printf("Iterations: %d, Findings: %d, Stable: %v\n",
@@ -270,11 +273,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 | Package   | Coverage  |
 | --------- | --------- |
-| Root      | 99.4%     |
+| Root      | 99.6%     |
 | Pipeline  | 98.0%     |
 | Detectors | 96.1%     |
-| CLI       | 96.2%     |
-| **Total** | **95.5%** |
+| CLI       | 95.4%     |
+| **Total** | **95.8%** |
 
 ## Related Projects
 

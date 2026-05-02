@@ -406,7 +406,10 @@ cfg := pipeline.Config{
     Metrics:           pipeline.NewMetrics(),
 }
 
-p := pipeline.New(cfg, ".", detector1, detector2)
+p, err := pipeline.New(cfg, ".", detector1, detector2)
+if err != nil {
+    log.Fatal(err)
+}
 result, err := p.Run(ctx)
 
 // Inspect results

@@ -136,6 +136,8 @@ linters:
           allow:
             - $gostd
             - github.com/larsartmann/go-finding
+            - github.com/onsi/ginkgo
+            - github.com/onsi/gomega
           files:
             - $test
           list-mode: lax

@@ -1,6 +1,6 @@
 # FEATURES.md — go-finding
 
-> **Version:** 0.1.3 | **Updated:** 2025-05-01
+> **Version:** 0.2.1 | **Updated:** 2026-05-02
 >
 > A unified data model and pipeline for Go static analysis tools.
 > Seven tools detect issues. Zero tools route them to remediation. This library fixes that.
@@ -138,7 +138,7 @@ Methods: `IsValid()`, `CanAutoApply()`, `NeedsAI()`
 
 **Status:** STABLE
 
-15 predefined domain categories:
+14 predefined domain categories:
 
 `security`, `style`, `performance`, `correctness`, `complexity`, `duplication`, `error-handling`, `migration`, `type-safety`, `structure`, `configuration`, `documentation`, `testing`, `unused`
 
@@ -458,10 +458,10 @@ Config validation: `config.Validate()` returns joined errors for invalid values.
 
 Two-phase fix engine:
 
-1. **Range-based** — When `Range` has valid start/end lines: replaces line span, optionally swaps `BeforeCode → AfterCode` within range
-2. **String-based** — Fallback: replaces `BeforeCode` with `AfterCode` nearest to target line
+1. **FixEngine (in-memory)** — `NewFixEngine()` provides a pure `Apply(lines, fixes)` that transforms string lines without filesystem access. Supports range-based and string-based replacement. Useful for testing and previewing changes.
+2. **FixApplier (filesystem)** — `NewFixApplier(rootDir)` applies fixes to actual files with backup/rollback support.
 
-Features:
+Both engines support:
 
 - File backup before modification
 - Rollback on failure (restores all modified files)
@@ -627,7 +627,7 @@ Metrics summary printed to stderr when available.
 
 | Package                          | Coverage |
 | -------------------------------- | -------- |
-| Core (`finding`)                 | 99.5%    |
+| Core (`finding`)                 | 99.6%    |
 | Pipeline                         | 98.0%    |
 | CLI (`cmd/go-finding`)           | 95.4%    |
 | Detectors (`internal/detectors`) | 96.1%    |
@@ -685,7 +685,7 @@ Three runnable examples in `examples/`:
 | Structured errors                 | STABLE     | 5 categories, errors.Is support                                   |
 | Pipeline (detect→fix→verify)      | STABLE     | Iterative loop with configurable behavior                         |
 | Conflict detection                | STABLE     | Overlapping fix detection                                         |
-| Fix application                   | FUNCTIONAL | Range-based + string fallback, backup/rollback                    |
+| Fix application                   | FUNCTIONAL | In-memory FixEngine + filesystem FixApplier, backup/rollback                    |
 | Verification                      | STABLE     | Diff-based: fixed / remaining / new                               |
 | Metrics                           | STABLE     | Thread-safe, snapshot support                                     |
 | Retry (exponential backoff)       | STABLE     | With jitter                                                       |

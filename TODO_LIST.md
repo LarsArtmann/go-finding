@@ -1,8 +1,8 @@
 # TODO List — go-finding
 
-**Generated:** 2026-05-01
+**Generated:** 2026-05-02
 **Source:** Comprehensive audit of 56 .md files cross-referenced with actual code
-**Project Version:** v0.1.3
+**Project Version:** v0.2.1
 
 ---
 
@@ -73,8 +73,8 @@
 
 ### Version & Release
 
-- [ ] **Bump version to v0.2.0** — Multiple breaking changes made (e.g., `NewFinding` 5→6 params). Version is still v0.1.3. (`version.go`)
-- [ ] **Release `[Unreleased]` in CHANGELOG.md** — Move unreleased section to versioned entry for v0.2.0
+- [x] **Bump version to v0.2.0** — Done. Current version is v0.2.1. (`version.go`)
+- [x] **Release `[Unreleased]` in CHANGELOG.md** — Done. v0.2.0 and v0.2.1 released.
 
 ### Architecture Decisions (blocking API lock)
 
@@ -219,7 +219,7 @@ These items were listed as TODOs across multiple planning/status docs but are **
 - [x] Document SARIF round-trip losses in code — `sarif.go` godoc on `ToSARIF()`
 - [x] Add benchmarks for hot paths — `bench_test.go` covers ID, Filter, Merge, SARIF
 - [x] Profile memory allocation hotspots — Baseline captured
-- [x] Add `version.go` with semver constants — `v0.1.3`
+- [x] Add `version.go` with semver constants — now `v0.2.1`
 - [x] Wire `Correlate()` into Pipeline — `CorrelateFindings` config field exists
 - [x] Add `CONTRIBUTING.md` — Comprehensive guide exists
 - [x] Add GitHub release workflow — `.github/workflows/release.yml` exists
