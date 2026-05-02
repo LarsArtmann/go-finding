@@ -89,7 +89,7 @@
 
 ---
 
-## 🟠 P1 — Should Do Before v0.2.0
+## 🟠 P1 — Should Do Before v1.0.0
 
 ### Code Quality
 
@@ -99,7 +99,7 @@
 
 ### Tag/Finding Cleanup
 
-- [ ] **Deprecate `WithTag` builder method** — `Tag string` field has `// Deprecated` comment but `WithTag()` builder method does not. Inconsistent deprecation. (`finding_builder.go`)
+- [x] **Deprecate `WithTag` builder method** — Done. Added `// Deprecated: Use WithTags instead.` godoc marker. (`finding_builder.go`)
 - [ ] **Unify `Tag` deprecation** — Either fully migrate tests to `Tags []Tag` or remove the deprecation. Current state is inconsistent. (Various test files)
 - [ ] **Add `Tag.IsStandard()` method** — Match the `Category.IsStandard()` pattern. (`tag.go`)
 
@@ -113,7 +113,7 @@
 
 ### Testing
 
-- [ ] **Integration tests for real `govet`/`staticcheck`** — Current tests mock everything. Test against actual tool output. (`internal/detectors/`)
+- [ ] **Add BDD tests for pipeline** — Done. 29 ginkgo BDD specs across root and pipeline packages. (`bdd_test.go`, `pipeline/bdd_test.go`)
 - [ ] **Add `WriteSARIF` error-path test** — Use `failingWriter` pattern. Currently 75% coverage. (`sarif_test.go`)
 - [ ] **Add `detectPartialSequential` context-cancel test** — 90% coverage, cancel path untested. (`pipeline/partial_test.go`)
 - [ ] **Add `detectPartialParallel` context-cancel test** — 94.1% coverage, cancel path untested. (`pipeline/partial_test.go`)
@@ -262,6 +262,11 @@ These items were listed as TODOs across multiple planning/status docs but are **
 - [x] `scripts/coverage-check.sh` — Per-package coverage thresholds
 - [x] `Tag string` deprecated with `Tags []Tag` replacement — Both fields exist on Finding
 - [x] `NewFinding` accepts confidence parameter — 6-param signature with clamping
+- [x] **Report.lock() mutex fix** — lock() was releasing mutex immediately via defer. Split into lock()/unlock(). `ComputeSummary()` now thread-safe. (`report.go`)
+- [x] **WithTag Deprecated godoc marker** — Added `// Deprecated:` godoc marker for staticcheck detection. (`finding_builder.go`)
+- [x] **FindingProcessor interface** — Added composable processor pattern (borrowed from golangci-lint) with `ProcessorFunc` adapter. (`pipeline/pipeline.go`)
+- [x] **BDD test suite** — 29 ginkgo BDD specs across root and pipeline packages. (`bdd_test.go`, `pipeline/bdd_test.go`)
+- [x] **Architecture diagrams** — Current + improved mermaid.js graphs in `docs/architecture-understanding/`
 
 ---
 
