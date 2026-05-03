@@ -70,6 +70,54 @@ func TestSuppressionKind_Constants(t *testing.T) {
 	}
 }
 
+func TestSuppression_IsActive(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	future := now.Add(24 * time.Hour)
+	past := now.Add(-1 * time.Hour)
+
+	tests := []struct {
+		name string
+		s    *Suppression
+		now  time.Time
+		want bool
+	}{
+		{"nil suppression", nil, now, false},
+		{
+			"valid and not expired",
+			&Suppression{Kind: SuppressionInSource, Rule: "SA1000"},
+			now,
+			true,
+		},
+		{
+			"valid with future expiry",
+			&Suppression{Kind: SuppressionInSource, Rule: "SA1000", ExpiresAt: &future},
+			now,
+			true,
+		},
+		{
+			"valid but expired",
+			&Suppression{Kind: SuppressionInSource, Rule: "SA1000", ExpiresAt: &past},
+			now,
+			false,
+		},
+		{"invalid missing kind", &Suppression{Rule: "SA1000"}, now, false},
+		{"invalid missing rule", &Suppression{Kind: SuppressionInSource}, now, false},
+		{"invalid empty", &Suppression{}, now, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.s.IsActive(tt.now); got != tt.want {
+				t.Errorf("IsActive() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestSuppression_Fields(t *testing.T) {
 	t.Parallel()
 
