@@ -30,10 +30,11 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `lsp.go`          | LSP Diagnostic conversion                                 |
 | `diagnostic.go`   | go/analysis integration                                   |
 | `errors.go`       | Structured error types (FindingError with categories)     |
+| `tag.go`          | Tag type with IsStandard/IsValid/String methods           |
 | `category.go`     | Category constants                                        |
 | `id.go`           | ID generation utilities                                   |
 | `json.go`         | JSON marshaling/unmarshaling                              |
-| `suppression.go`  | Suppression handling                                      |
+| `suppression.go`  | Suppression handling with IsActive convenience            |
 
 #### Pipeline Package
 
@@ -97,6 +98,7 @@ golangci-lint run ./...         # Lint
 - **Config validation** — `pipeline.New()` rejects invalid configs, returns error
 - **Partial error surfacing** — `PipelineResult.PartialErrors` exposes per-detector failures
 - **Metrics snapshot in result** — `PipelineResult.Metrics` auto-populated after `Run()`
+- **FindingProcessor** — Composable transforms run between detection and triage (`ProcessorFunc`, `NamedProcessorFunc`)
 - **Line-based FixApplier** — Range-aware fixes target exact line spans; falls back to string replacement
 
 ### CLI Features
