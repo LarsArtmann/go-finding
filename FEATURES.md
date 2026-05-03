@@ -152,7 +152,9 @@ Multi-label classification for richer filtering:
 
 `security`, `performance`, `style`, `correctness`, `bug`, `deprecated`, `documentation`, `complexity`, `test`, `build`
 
-The `Tag` field (singular) is deprecated in favor of `Tags` (plural).
+Methods: `IsStandard()`, `IsValid()`, `String()`
+
+Plus arbitrary custom tags accepted. The `Tag` field (singular) is deprecated in favor of `Tags` (plural).
 
 ---
 
@@ -169,7 +171,9 @@ Mark findings as suppressed with reason and optional expiry.
 | Reason    | `string`          | Why                                   |
 | ExpiresAt | `*time.Time`      | Optional TTL                          |
 
-Methods: `IsExpired(now)`, `IsValid()`, `SuppressionKind.IsValid()`
+Methods: `IsExpired(now)`, `IsValid()`, `IsActive(now)`, `SuppressionKind.IsValid()`
+
+> `IsActive(now)` is a convenience combining `IsValid() && !IsExpired(now)`.
 
 > **Note:** The library stores and checks suppression data. It does NOT parse `//nolint` or `//lint:ignore` directives — that is the caller's responsibility.
 
@@ -417,6 +421,7 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 | `Retry`               | `*RetryConfig`         | `nil`   | Exponential backoff retries     |
 | `Metrics`             | `*Metrics`             | `nil`   | Timing/count collection         |
 | `CorrelateFindings`   | `bool`                 | `false` | Cross-tool correlation          |
+| `Processors`       | `[]FindingProcessor`  | `nil`   | Composable finding transforms   |
 | `OnFinding`           | `func(Finding)`        | `nil`   | Per-finding callback            |
 | `OnFix`               | `func(Finding, bool)`  | `nil`   | Per-fix callback                |
 | `OnIteration`         | `func(int, []Finding)` | `nil`   | Per-iteration callback          |
@@ -426,11 +431,32 @@ Config validation: `config.Validate()` returns joined errors for invalid values.
 ### 16.3 Pipeline Loop
 
 1. **Detect** — Run detectors (parallel or sequential)
-2. **Triage** — Categorize by `FixStrategy` (direct / suggest / none)
-3. **Apply** — Apply direct fixes with conflict detection
-4. **Repeat** — Until stable (zero findings) or `MaxIterations`
+2. **Process** — Run `FindingProcessor` chain on raw findings
+3. **Triage** — Categorize by `FixStrategy` (direct / suggest / none)
+4. **Apply** — Apply direct fixes with conflict detection
+5. **Repeat** — Until stable (zero findings) or `MaxIterations`
 
-### 16.4 Pipeline Result
+### 16.4 Finding Processors
+
+**Status:** EXPERIMENTAL
+
+Composable transforms that run on findings between detection and triage.
+
+```go
+type FindingProcessor interface {
+    Process(ctx context.Context, findings []finding.Finding) ([]finding.Finding, error)
+    Name() string
+}
+```
+
+Adapters:
+
+- `ProcessorFunc(fn)` — wraps a function as a `FindingProcessor` (name: `"anonymous"`)
+- `NamedProcessorFunc(name, fn)` — wraps with a custom name
+
+Processors are executed in order from `Config.Processors`. Use cases: filtering, enrichment, normalization, severity adjustment, deduplication.
+
+### 16.5 Pipeline Result
 
 | Field             | Type               | Description                      |
 | ----------------- | ------------------ | -------------------------------- |
@@ -443,7 +469,7 @@ Config validation: `config.Validate()` returns joined errors for invalid values.
 | `Correlations`    | `[]Correlation`    | Cross-tool correlations          |
 | `Metrics`         | `MetricsSnapshot`  | Timing and counts                |
 
-### 16.5 Conflict Detection
+### 16.6 Conflict Detection
 
 **Status:** STABLE
 
@@ -452,7 +478,7 @@ Config validation: `config.Validate()` returns joined errors for invalid values.
 - `AnalyzeConflicts()` — detailed `ConflictInfo` with reasons
 - When multiple fixes overlap in same group, keeps first, marks rest as conflicts
 
-### 16.6 Fix Application
+### 16.7 Fix Application
 
 **Status:** FUNCTIONAL
 
@@ -470,7 +496,7 @@ Both engines support:
 
 > **Known limitation:** String-based replacement uses `strings.Replace` for nearest-to-line matching. If `BeforeCode` appears multiple times near the target line, it may pick the wrong occurrence.
 
-### 16.7 Verification
+### 16.8 Verification
 
 **Status:** STABLE
 
@@ -484,7 +510,7 @@ Re-runs all detectors after fixes and categorizes findings:
 
 `DiffFindings(original, post)` — standalone utility for comparing finding sets.
 
-### 16.8 Metrics
+### 16.9 Metrics
 
 **Status:** STABLE
 
@@ -501,7 +527,7 @@ Thread-safe metrics collection:
 
 Auto-populated on `Pipeline.Run()` via `PipelineResult.Metrics`.
 
-### 16.9 Retry
+### 16.10 Retry
 
 **Status:** STABLE
 
@@ -516,7 +542,7 @@ config := pipeline.DefaultRetryConfig()
 
 Validation: `RetryConfig.Validate()` checks constraints.
 
-### 16.10 Partial Success
+### 16.11 Partial Success
 
 **Status:** STABLE
 
@@ -527,7 +553,7 @@ When `GracefulDegradation` is enabled:
 - `PipelineResult.PartialErrors` exposes per-detector failures
 - `FormatPartialErrors()` formats collected errors
 
-### 16.11 File Backup & Rollback
+### 16.12 File Backup & Rollback
 
 **Status:** STABLE
 
@@ -684,6 +710,7 @@ Three runnable examples in `examples/`:
 | go/analysis integration           | STABLE     | Full diagnostic → Finding conversion                              |
 | Structured errors                 | STABLE     | 5 categories, errors.Is support                                   |
 | Pipeline (detect→fix→verify)      | STABLE     | Iterative loop with configurable behavior                         |
+| Finding processors                | EXPERIMENTAL | Composable transforms between detect and triage                |
 | Conflict detection                | STABLE     | Overlapping fix detection                                         |
 | Fix application                   | FUNCTIONAL | In-memory FixEngine + filesystem FixApplier, backup/rollback                    |
 | Verification                      | STABLE     | Diff-based: fixed / remaining / new                               |
