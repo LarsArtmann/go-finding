@@ -421,7 +421,7 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 | `Retry`               | `*RetryConfig`         | `nil`   | Exponential backoff retries     |
 | `Metrics`             | `*Metrics`             | `nil`   | Timing/count collection         |
 | `CorrelateFindings`   | `bool`                 | `false` | Cross-tool correlation          |
-| `Processors`       | `[]FindingProcessor`  | `nil`   | Composable finding transforms   |
+| `Processors`          | `[]FindingProcessor`   | `nil`   | Composable finding transforms   |
 | `OnFinding`           | `func(Finding)`        | `nil`   | Per-finding callback            |
 | `OnFix`               | `func(Finding, bool)`  | `nil`   | Per-fix callback                |
 | `OnIteration`         | `func(int, []Finding)` | `nil`   | Per-iteration callback          |
@@ -688,42 +688,42 @@ Three runnable examples in `examples/`:
 
 ## Summary Matrix
 
-| Feature                           | Status     | Notes                                                             |
-| --------------------------------- | ---------- | ----------------------------------------------------------------- |
-| Finding type                      | STABLE     | Core data model, 99.5% coverage                                   |
-| Builder API                       | STABLE     | Fluent construction with validation                               |
-| Position & Range                  | STABLE     | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent) |
-| Severity (4 levels)               | STABLE     | With comparison operators                                         |
-| FixStrategy (none/suggest/direct) | STABLE     | Production auto-fix for `direct`                                  |
-| FixStrategy (ai)                  | RESERVED   | Constant exists, no AI backend                                    |
-| Category (15 standard + custom)   | STABLE     | Domain classification                                             |
-| Tags (multi-label)                | STABLE     | Supersedes deprecated singular Tag                                |
-| Suppression                       | STABLE     | With TTL/expiry support                                           |
-| Report container                  | STABLE     | Thread-safe, with summary statistics                              |
-| Filtering & sorting               | STABLE     | Composable predicates + grouping                                  |
-| Report merging                    | STABLE     | 3 deduplication strategies                                        |
-| Cross-tool correlation            | FUNCTIONAL | Simple heuristic, capped at 10K                                   |
-| ID generation & parsing           | STABLE     | Hash-based fallback, Windows path handling                        |
-| JSON serialization                | STABLE     | Streaming support, drops invalid findings                         |
-| SARIF 2.1.0 export/import         | STABLE     | Round-trip via property bag                                       |
-| LSP conversion                    | STABLE     | Lossy — drops fix/suppression metadata                            |
-| go/analysis integration           | STABLE     | Full diagnostic → Finding conversion                              |
-| Structured errors                 | STABLE     | 5 categories, errors.Is support                                   |
-| Pipeline (detect→fix→verify)      | STABLE     | Iterative loop with configurable behavior                         |
-| Finding processors                | EXPERIMENTAL | Composable transforms between detect and triage                |
-| Conflict detection                | STABLE     | Overlapping fix detection                                         |
-| Fix application                   | FUNCTIONAL | In-memory FixEngine + filesystem FixApplier, backup/rollback                    |
-| Verification                      | STABLE     | Diff-based: fixed / remaining / new                               |
-| Metrics                           | STABLE     | Thread-safe, snapshot support                                     |
-| Retry (exponential backoff)       | STABLE     | With jitter                                                       |
-| Partial success                   | STABLE     | Graceful degradation on detector failure                          |
-| File backup & rollback            | STABLE     | Automatic on fix failure                                          |
-| Go vet detector                   | FUNCTIONAL | Requires `go vet` in PATH                                         |
-| Staticcheck detector              | FUNCTIONAL | Requires `staticcheck` in PATH                                    |
-| CLI tool                          | FUNCTIONAL | 3 output formats, config file, profiling                          |
-| Plugin detector registry          | STABLE     | Thread-safe `RegisterDetector`                                    |
-| Config validation                 | STABLE     | Both pipeline and CLI configs                                     |
-| Examples                          | FUNCTIONAL | 3 runnable examples, compile-tested                               |
+| Feature                           | Status       | Notes                                                             |
+| --------------------------------- | ------------ | ----------------------------------------------------------------- |
+| Finding type                      | STABLE       | Core data model, 99.5% coverage                                   |
+| Builder API                       | STABLE       | Fluent construction with validation                               |
+| Position & Range                  | STABLE       | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent) |
+| Severity (4 levels)               | STABLE       | With comparison operators                                         |
+| FixStrategy (none/suggest/direct) | STABLE       | Production auto-fix for `direct`                                  |
+| FixStrategy (ai)                  | RESERVED     | Constant exists, no AI backend                                    |
+| Category (15 standard + custom)   | STABLE       | Domain classification                                             |
+| Tags (multi-label)                | STABLE       | Supersedes deprecated singular Tag                                |
+| Suppression                       | STABLE       | With TTL/expiry support                                           |
+| Report container                  | STABLE       | Thread-safe, with summary statistics                              |
+| Filtering & sorting               | STABLE       | Composable predicates + grouping                                  |
+| Report merging                    | STABLE       | 3 deduplication strategies                                        |
+| Cross-tool correlation            | FUNCTIONAL   | Simple heuristic, capped at 10K                                   |
+| ID generation & parsing           | STABLE       | Hash-based fallback, Windows path handling                        |
+| JSON serialization                | STABLE       | Streaming support, drops invalid findings                         |
+| SARIF 2.1.0 export/import         | STABLE       | Round-trip via property bag                                       |
+| LSP conversion                    | STABLE       | Lossy — drops fix/suppression metadata                            |
+| go/analysis integration           | STABLE       | Full diagnostic → Finding conversion                              |
+| Structured errors                 | STABLE       | 5 categories, errors.Is support                                   |
+| Pipeline (detect→fix→verify)      | STABLE       | Iterative loop with configurable behavior                         |
+| Finding processors                | EXPERIMENTAL | Composable transforms between detect and triage                   |
+| Conflict detection                | STABLE       | Overlapping fix detection                                         |
+| Fix application                   | FUNCTIONAL   | In-memory FixEngine + filesystem FixApplier, backup/rollback      |
+| Verification                      | STABLE       | Diff-based: fixed / remaining / new                               |
+| Metrics                           | STABLE       | Thread-safe, snapshot support                                     |
+| Retry (exponential backoff)       | STABLE       | With jitter                                                       |
+| Partial success                   | STABLE       | Graceful degradation on detector failure                          |
+| File backup & rollback            | STABLE       | Automatic on fix failure                                          |
+| Go vet detector                   | FUNCTIONAL   | Requires `go vet` in PATH                                         |
+| Staticcheck detector              | FUNCTIONAL   | Requires `staticcheck` in PATH                                    |
+| CLI tool                          | FUNCTIONAL   | 3 output formats, config file, profiling                          |
+| Plugin detector registry          | STABLE       | Thread-safe `RegisterDetector`                                    |
+| Config validation                 | STABLE       | Both pipeline and CLI configs                                     |
+| Examples                          | FUNCTIONAL   | 3 runnable examples, compile-tested                               |
 
 ---
 
