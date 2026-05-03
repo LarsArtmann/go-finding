@@ -201,6 +201,70 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			Expect(found[0].Rule).To(Equal("r1"))
 		})
 	})
+
+	Describe("finding processors", func() {
+		It("ProcessorFunc adapter works", func() {
+			fn := pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
+				return findings[:1]
+			})
+			Expect(fn.Name()).To(Equal("anonymous"))
+			result := fn.Process([]finding.Finding{
+				mustBuild("r1", "t", "m", finding.SeverityError, "f.go", 1,
+					finding.FixStrategyNone, "", ""),
+				mustBuild("r2", "t", "m", finding.SeverityInfo, "f.go", 2,
+					finding.FixStrategyNone, "", ""),
+			})
+			Expect(result).To(HaveLen(1))
+			Expect(result[0].Rule).To(Equal("r1"))
+		})
+
+		It("NamedProcessorFunc sets the name", func() {
+			p := pipeline.NamedProcessorFunc("severity-filter",
+				pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
+					return findings
+				}),
+			)
+			Expect(p.Name()).To(Equal("severity-filter"))
+		})
+
+		It("chains processors between detection and triage in the pipeline", func() {
+			var processed [][]finding.Finding
+			filter := pipeline.NamedProcessorFunc("only-errors",
+				pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
+					processed = append(processed, findings)
+					return finding.Filter(findings, finding.BySeverity(finding.SeverityError))
+				}),
+			)
+
+			detector := pipeline.NamedDetectorFunc("multi",
+				func(_ context.Context) ([]finding.Finding, error) {
+					return []finding.Finding{
+						mustBuild("r1", "multi", "error", finding.SeverityError, "f.go", 1,
+							finding.FixStrategyNone, "", ""),
+						mustBuild("r2", "multi", "warning", finding.SeverityWarning, "f.go", 2,
+							finding.FixStrategyNone, "", ""),
+						mustBuild("r3", "multi", "info", finding.SeverityInfo, "f.go", 3,
+							finding.FixStrategyNone, "", ""),
+					}, nil
+				},
+			)
+
+			cfg := pipeline.DefaultConfig()
+			cfg.DryRun = true
+			cfg.MaxIterations = 1
+			cfg.Processors = []pipeline.FindingProcessor{filter}
+
+			p, err := pipeline.New(cfg, ".", detector)
+			Expect(err).NotTo(HaveOccurred())
+
+			result, err := p.Run(context.Background())
+			Expect(err).NotTo(HaveOccurred())
+			Expect(processed).To(HaveLen(1))
+			Expect(processed[0]).To(HaveLen(3))
+
+			Expect(result.TotalDetected).To(BeNumerically(">=", 1))
+		})
+	})
 })
 
 func mustBuild(

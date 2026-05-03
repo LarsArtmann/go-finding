@@ -72,7 +72,7 @@ func (f ProcessorFunc) Process(findings []finding.Finding) []finding.Finding {
 }
 
 // Name implements FindingProcessor. Returns "anonymous".
-func (f ProcessorFunc) Name() string {
+func (ProcessorFunc) Name() string {
 	return "anonymous"
 }
 
