@@ -38,6 +38,12 @@ func (s *Suppression) IsValid() bool {
 	return s.Kind != "" && s.Rule != ""
 }
 
+// IsActive returns true if the suppression is valid and not expired.
+// This combines IsValid and !IsExpired into a single check.
+func (s *Suppression) IsActive(now time.Time) bool {
+	return s.IsValid() && !s.IsExpired(now)
+}
+
 // IsValid returns true if the suppression kind is a recognized value.
 func (k SuppressionKind) IsValid() bool {
 	switch k {
