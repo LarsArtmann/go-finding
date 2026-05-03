@@ -493,8 +493,10 @@ cfg := pipeline.Config{Metrics: m, /* ... */}
 // After running
 snapshot := m.Snapshot()
 fmt.Println("Duration:", snapshot.TotalDuration)
-fmt.Println("Findings:", snapshot.TotalFindings)
-fmt.Println("Fixes:", snapshot.TotalFixes)
+fmt.Println("Fixes applied:", snapshot.FixesApplied)
+for detector, count := range snapshot.FindingsFound {
+    fmt.Printf("  %s: %d findings\n", detector, count)
+}
 ```
 
 ## Profiling

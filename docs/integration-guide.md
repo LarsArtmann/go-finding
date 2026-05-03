@@ -72,7 +72,16 @@ func main() {
     }
 
     // Output as SARIF
-    data, _ := result.Report.ToSARIF()
+    report := finding.NewReport(finding.ToolInfo{Name: "my-tool"})
+    for _, iter := range result.Iterations {
+        report.AddFindings(iter.Findings())
+    }
+    report.ComputeSummary()
+
+    data, err := report.ToSARIF()
+    if err != nil {
+        panic(err)
+    }
     fmt.Println(string(data))
 }
 ```
