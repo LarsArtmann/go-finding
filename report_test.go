@@ -2,9 +2,6 @@ package finding
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func addCat(r *Report, id, cat, msg string) {
@@ -35,8 +32,12 @@ func TestReportActiveFindings(t *testing.T) {
 	})
 
 	active := r.ActiveFindings()
-	require.Len(t, active, 1, "active findings")
-	assert.Equal(t, "1", active[0].ID)
+	if len(active) != 1 {
+		t.Fatalf("active findings = %d, want 1", len(active))
+	}
+	if active[0].ID != "1" {
+		t.Errorf("active[0].ID = %q, want %q", active[0].ID, "1")
+	}
 }
 
 func TestReportActiveFindings_AllActive(t *testing.T) {
@@ -47,7 +48,9 @@ func TestReportActiveFindings_AllActive(t *testing.T) {
 	r.AddFinding(Finding{ID: "2", Message: "b"})
 
 	active := r.ActiveFindings()
-	assert.Len(t, active, 2, "active findings")
+	if len(active) != 2 {
+		t.Errorf("active findings = %d, want 2", len(active))
+	}
 }
 
 func TestReportActiveFindings_None(t *testing.T) {
@@ -55,7 +58,9 @@ func TestReportActiveFindings_None(t *testing.T) {
 
 	r := NewReport(ToolInfo{Name: "test"})
 	active := r.ActiveFindings()
-	assert.Empty(t, active, "active findings")
+	if len(active) != 0 {
+		t.Errorf("active findings = %d, want 0", len(active))
+	}
 }
 
 func TestReportByCategory(t *testing.T) {
@@ -66,8 +71,12 @@ func TestReportByCategory(t *testing.T) {
 	addCat(r, "2", "style", "b")
 	addCat(r, "3", "security", "c")
 
-	assert.Len(t, r.ByCategory("security"), 2, "security findings")
-	assert.Len(t, r.ByCategory("style"), 1, "style findings")
+	if len(r.ByCategory("security")) != 2 {
+		t.Errorf("security findings = %d, want 2", len(r.ByCategory("security")))
+	}
+	if len(r.ByCategory("style")) != 1 {
+		t.Errorf("style findings = %d, want 1", len(r.ByCategory("style")))
+	}
 	AssertEmpty(t, r.ByCategory("nonexistent"), "nonexistent category")
 }
 
@@ -79,8 +88,12 @@ func TestReportByFixStrategy(t *testing.T) {
 	addFix(r, "2", FixStrategyNone, "b")
 	addFix(r, "3", FixStrategyDirect, "c")
 
-	assert.Len(t, r.ByFixStrategy(FixStrategyDirect), 2, "direct findings")
-	assert.Len(t, r.ByFixStrategy(FixStrategyNone), 1, "none findings")
+	if len(r.ByFixStrategy(FixStrategyDirect)) != 2 {
+		t.Errorf("direct findings = %d, want 2", len(r.ByFixStrategy(FixStrategyDirect)))
+	}
+	if len(r.ByFixStrategy(FixStrategyNone)) != 1 {
+		t.Errorf("none findings = %d, want 1", len(r.ByFixStrategy(FixStrategyNone)))
+	}
 }
 
 func TestReportFindByID(t *testing.T) {
@@ -91,10 +104,16 @@ func TestReportFindByID(t *testing.T) {
 	r.AddFinding(Finding{ID: "other", Message: "other"})
 
 	found := r.FindByID("find-me")
-	require.NotNil(t, found, "expected to find finding")
-	assert.Equal(t, "target", found.Message)
+	if found == nil {
+		t.Fatal("expected to find finding")
+	}
+	if found.Message != "target" {
+		t.Errorf("Message = %q, want %q", found.Message, "target")
+	}
 
-	assert.Nil(t, r.FindByID("nonexistent"), "expected nil for nonexistent ID")
+	if r.FindByID("nonexistent") != nil {
+		t.Error("expected nil for nonexistent ID")
+	}
 }
 
 func TestReportBySeverity(t *testing.T) {
@@ -105,8 +124,12 @@ func TestReportBySeverity(t *testing.T) {
 	addSev(r, "2", SeverityWarning, "b")
 	addSev(r, "3", SeverityError, "c")
 
-	assert.Len(t, r.BySeverity(SeverityError), 2, "error findings")
-	assert.Len(t, r.BySeverity(SeverityWarning), 1, "warning findings")
+	if len(r.BySeverity(SeverityError)) != 2 {
+		t.Errorf("error findings = %d, want 2", len(r.BySeverity(SeverityError)))
+	}
+	if len(r.BySeverity(SeverityWarning)) != 1 {
+		t.Errorf("warning findings = %d, want 1", len(r.BySeverity(SeverityWarning)))
+	}
 }
 
 func TestReportFindByRule(t *testing.T) {
@@ -117,7 +140,9 @@ func TestReportFindByRule(t *testing.T) {
 	addRule(r, "2", "SA2000", "b")
 	addRule(r, "3", "SA1000", "c")
 
-	assert.Len(t, r.FindByRule("SA1000"), 2, "SA1000 findings")
+	if len(r.FindByRule("SA1000")) != 2 {
+		t.Errorf("SA1000 findings = %d, want 2", len(r.FindByRule("SA1000")))
+	}
 	AssertEmpty(t, r.FindByRule("nonexistent"), "nonexistent rule")
 }
 
@@ -125,11 +150,15 @@ func TestReportLen(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: "test"})
-	assert.Zero(t, r.Len(), "empty report")
+	if r.Len() != 0 {
+		t.Errorf("empty report Len = %d, want 0", r.Len())
+	}
 
 	r.AddFinding(Finding{ID: "1", Message: "a"})
 	r.AddFinding(Finding{ID: "2", Message: "b"})
-	assert.Equal(t, 2, r.Len(), "report with 2 findings")
+	if r.Len() != 2 {
+		t.Errorf("report with 2 findings Len = %d, want 2", r.Len())
+	}
 }
 
 func TestReportAll(t *testing.T) {
@@ -145,10 +174,18 @@ func TestReportAll(t *testing.T) {
 		collected = append(collected, f)
 	}
 
-	assert.Len(t, collected, 3, "collected findings")
-	assert.Equal(t, "1", collected[0].ID)
-	assert.Equal(t, "2", collected[1].ID)
-	assert.Equal(t, "3", collected[2].ID)
+	if len(collected) != 3 {
+		t.Fatalf("collected findings = %d, want 3", len(collected))
+	}
+	if collected[0].ID != "1" {
+		t.Errorf("collected[0].ID = %q, want %q", collected[0].ID, "1")
+	}
+	if collected[1].ID != "2" {
+		t.Errorf("collected[1].ID = %q, want %q", collected[1].ID, "2")
+	}
+	if collected[2].ID != "3" {
+		t.Errorf("collected[2].ID = %q, want %q", collected[2].ID, "3")
+	}
 }
 
 func TestReportAll_Empty(t *testing.T) {
@@ -161,7 +198,9 @@ func TestReportAll_Empty(t *testing.T) {
 		count++
 	}
 
-	assert.Zero(t, count, "empty report iteration")
+	if count != 0 {
+		t.Errorf("empty report iteration = %d, want 0", count)
+	}
 }
 
 func TestReportAll_BreakEarly(t *testing.T) {
@@ -180,7 +219,9 @@ func TestReportAll_BreakEarly(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, 3, count, "iterations before break")
+	if count != 3 {
+		t.Errorf("iterations before break = %d, want 3", count)
+	}
 }
 
 func TestReport_Filter(t *testing.T) {
@@ -193,10 +234,18 @@ func TestReport_Filter(t *testing.T) {
 
 	filtered := r.Filter(BySeverity(SeverityError))
 
-	assert.Equal(t, "test", filtered.Tool.Name)
-	assert.Len(t, filtered.Findings, 2)
-	assert.Equal(t, "1", filtered.Findings[0].ID)
-	assert.Equal(t, "3", filtered.Findings[1].ID)
+	if filtered.Tool.Name != "test" {
+		t.Errorf("Tool.Name = %q, want %q", filtered.Tool.Name, "test")
+	}
+	if len(filtered.Findings) != 2 {
+		t.Fatalf("Findings length = %d, want 2", len(filtered.Findings))
+	}
+	if filtered.Findings[0].ID != "1" {
+		t.Errorf("Findings[0].ID = %q, want %q", filtered.Findings[0].ID, "1")
+	}
+	if filtered.Findings[1].ID != "3" {
+		t.Errorf("Findings[1].ID = %q, want %q", filtered.Findings[1].ID, "3")
+	}
 }
 
 func TestReport_Filter_Empty(t *testing.T) {
@@ -205,7 +254,9 @@ func TestReport_Filter_Empty(t *testing.T) {
 	r := NewReport(ToolInfo{Name: "test"})
 	filtered := r.Filter(BySeverity(SeverityError))
 
-	assert.Empty(t, filtered.Findings)
+	if len(filtered.Findings) != 0 {
+		t.Errorf("Findings length = %d, want 0", len(filtered.Findings))
+	}
 }
 
 func TestReport_Map(t *testing.T) {
@@ -220,10 +271,18 @@ func TestReport_Map(t *testing.T) {
 		return f
 	})
 
-	assert.Equal(t, "test", mapped.Tool.Name)
-	assert.Len(t, mapped.Findings, 2)
-	assert.Equal(t, SeverityWarning, mapped.Findings[0].Severity)
-	assert.Equal(t, SeverityWarning, mapped.Findings[1].Severity)
+	if mapped.Tool.Name != "test" {
+		t.Errorf("Tool.Name = %q, want %q", mapped.Tool.Name, "test")
+	}
+	if len(mapped.Findings) != 2 {
+		t.Fatalf("Findings length = %d, want 2", len(mapped.Findings))
+	}
+	if mapped.Findings[0].Severity != SeverityWarning {
+		t.Errorf("Findings[0].Severity = %v, want %v", mapped.Findings[0].Severity, SeverityWarning)
+	}
+	if mapped.Findings[1].Severity != SeverityWarning {
+		t.Errorf("Findings[1].Severity = %v, want %v", mapped.Findings[1].Severity, SeverityWarning)
+	}
 }
 
 func TestReport_Map_Empty(t *testing.T) {
@@ -232,5 +291,7 @@ func TestReport_Map_Empty(t *testing.T) {
 	r := NewReport(ToolInfo{Name: "test"})
 	mapped := r.Map(func(f Finding) Finding { return f })
 
-	assert.Empty(t, mapped.Findings)
+	if len(mapped.Findings) != 0 {
+		t.Errorf("Findings length = %d, want 0", len(mapped.Findings))
+	}
 }

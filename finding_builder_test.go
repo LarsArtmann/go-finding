@@ -60,7 +60,6 @@ func TestBuilder_Full(t *testing.T) {
 		WithSuppression(Suppression{Kind: SuppressionInSource, Rule: "R1"}).
 		WithMetadata(map[string]string{"key": "value"}).
 		Build()
-
 	if err != nil {
 		t.Fatalf("Build() failed: %v", err)
 	}
@@ -116,7 +115,6 @@ func TestBuilder_Chaining(t *testing.T) {
 		WithRelated(RelatedRef{FindingID: "r1"}).
 		WithRelated(RelatedRef{FindingID: "r2"}).
 		Build()
-
 	if err != nil {
 		t.Fatalf("Build() failed: %v", err)
 	}
