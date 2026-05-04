@@ -27,7 +27,7 @@ func FuzzGenerateID(f *testing.F) {
 }
 
 func FuzzParseID(f *testing.F) {
-	f.Fuzz(func(t *testing.T, id string) {
+	f.Fuzz(func(_ *testing.T, id string) {
 		_ = ParseID(id) // must not panic
 	})
 }
@@ -45,7 +45,9 @@ func FuzzRoundTripID(f *testing.F) {
 
 		// Skip inputs where tool, rule, or file contain colons — round-trip
 		// is lossy for such inputs since ID format uses colon separators.
-		if strings.Contains(tool, ":") || strings.Contains(rule, ":") || strings.Contains(file, ":") {
+		if strings.Contains(tool, ":") ||
+			strings.Contains(rule, ":") ||
+			strings.Contains(file, ":") {
 			t.Skip()
 		}
 
@@ -85,7 +87,7 @@ func FuzzRoundTripID(f *testing.F) {
 }
 
 func FuzzIsHashID(f *testing.F) {
-	f.Fuzz(func(t *testing.T, id string) {
+	f.Fuzz(func(_ *testing.T, id string) {
 		_ = IsHashID(id) // must not panic
 	})
 }
