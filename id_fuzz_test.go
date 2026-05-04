@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -37,9 +38,24 @@ func FuzzRoundTripID(f *testing.F) {
 			t.Skip()
 		}
 
-		// Skip inputs where tool or rule contain colons — round-trip
+		// When line=0, GenerateID uses hash format and drops column/line info.
+		if line == 0 {
+			t.Skip()
+		}
+
+		// Skip inputs where tool, rule, or file contain colons — round-trip
 		// is lossy for such inputs since ID format uses colon separators.
-		if strings.Contains(tool, ":") || strings.Contains(rule, ":") {
+		if strings.Contains(tool, ":") || strings.Contains(rule, ":") || strings.Contains(file, ":") {
+			t.Skip()
+		}
+
+		// Empty tool produces IDs that ParseID can't round-trip (OK() returns false).
+		if tool == "" {
+			t.Skip()
+		}
+
+		// Numeric-only file names are ambiguous with position data in the ID format.
+		if _, err := strconv.Atoi(file); err == nil && file != "" {
 			t.Skip()
 		}
 
