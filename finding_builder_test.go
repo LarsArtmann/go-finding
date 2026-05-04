@@ -15,21 +15,7 @@ func TestBuilder_Minimal(t *testing.T) {
 		t.Fatalf("Build() failed: %v", err)
 	}
 
-	if f.Rule != "nilcheck" {
-		t.Errorf("Rule = %q, want %q", f.Rule, "nilcheck")
-	}
-	if f.ToolName != "govet" {
-		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
-	}
-	if f.Message != "possible nil deref" {
-		t.Errorf("Message = %q, want %q", f.Message, "possible nil deref")
-	}
-	if f.Severity != SeverityError {
-		t.Errorf("Severity = %v, want %v", f.Severity, SeverityError)
-	}
-	if f.Position != pos {
-		t.Errorf("Position = %v, want %v", f.Position, pos)
-	}
+	AssertFindingFields(t, f, "nilcheck", "govet", "possible nil deref", SeverityError, pos)
 	if f.ID == "" {
 		t.Error("ID should not be empty")
 	}

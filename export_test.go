@@ -11,21 +11,7 @@ func TestNewFinding(t *testing.T) {
 	pos := Position{File: "main.go", Line: 42, Column: 5, Offset: 100}
 	f := NewFinding("nilcheck", "govet", "possible nil dereference", SeverityError, pos, 0)
 
-	if f.Rule != "nilcheck" {
-		t.Errorf("Rule = %q, want %q", f.Rule, "nilcheck")
-	}
-	if f.ToolName != "govet" {
-		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
-	}
-	if f.Message != "possible nil dereference" {
-		t.Errorf("Message = %q, want %q", f.Message, "possible nil dereference")
-	}
-	if f.Severity != SeverityError {
-		t.Errorf("Severity = %v, want %v", f.Severity, SeverityError)
-	}
-	if f.Position != pos {
-		t.Errorf("Position = %v, want %v", f.Position, pos)
-	}
+	AssertFindingFields(t, f, "nilcheck", "govet", "possible nil dereference", SeverityError, pos)
 	if f.FixStrategy != FixStrategyNone {
 		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyNone)
 	}

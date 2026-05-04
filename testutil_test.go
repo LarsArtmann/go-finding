@@ -306,6 +306,33 @@ func checkProperty[T any](t *testing.T, property func(T) bool) {
 	checkPropertyAny(t, property)
 }
 
+// AssertFindingFields asserts common Finding fields match expected values.
+func AssertFindingFields(
+	t *testing.T,
+	f Finding,
+	rule, tool, message string,
+	sev Severity,
+	pos Position,
+) {
+	t.Helper()
+
+	if f.Rule != rule {
+		t.Errorf("Rule = %q, want %q", f.Rule, rule)
+	}
+	if f.ToolName != tool {
+		t.Errorf("ToolName = %q, want %q", f.ToolName, tool)
+	}
+	if f.Message != message {
+		t.Errorf("Message = %q, want %q", f.Message, message)
+	}
+	if f.Severity != sev {
+		t.Errorf("Severity = %v, want %v", f.Severity, sev)
+	}
+	if f.Position != pos {
+		t.Errorf("Position = %v, want %v", f.Position, pos)
+	}
+}
+
 // checkPropertyAny runs a property-based test with any function signature.
 func checkPropertyAny(t *testing.T, property any) {
 	t.Helper()

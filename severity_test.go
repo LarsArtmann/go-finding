@@ -92,6 +92,9 @@ func TestSeverity_LessThan(t *testing.T) {
 	if SeverityInfo.LessThan(Severity("unknown")) {
 		t.Error("valid < invalid should be false")
 	}
+	if Severity("unknown").LessThan(Severity("other")) {
+		t.Error("invalid < other invalid should be false")
+	}
 }
 
 func TestSeverity_Ordering(t *testing.T) {
