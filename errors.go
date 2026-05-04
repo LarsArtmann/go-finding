@@ -99,54 +99,38 @@ func (e *FindingError) WithPosition(pos Position) *FindingError {
 	return &clone
 }
 
-// NewValidationError creates a validation error.
-func NewValidationError(message string, cause error) *FindingError {
-	//nolint:exhaustruct
-	return &FindingError{
-		Category: ErrCategoryValidation,
+// newCategorizedError creates a FindingError with the given category.
+func newCategorizedError(cat ErrorCategory, message string, cause error) *FindingError {
+	return &FindingError{ //nolint:exhaustruct
+		Category: cat,
 		Message:  message,
 		Cause:    cause,
 	}
+}
+
+// NewValidationError creates a validation error.
+func NewValidationError(message string, cause error) *FindingError {
+	return newCategorizedError(ErrCategoryValidation, message, cause)
 }
 
 // NewIOError creates an IO error.
 func NewIOError(message string, cause error) *FindingError {
-	//nolint:exhaustruct
-	return &FindingError{
-		Category: ErrCategoryIO,
-		Message:  message,
-		Cause:    cause,
-	}
+	return newCategorizedError(ErrCategoryIO, message, cause)
 }
 
 // NewParseError creates a parse error.
 func NewParseError(message string, cause error) *FindingError {
-	//nolint:exhaustruct
-	return &FindingError{
-		Category: ErrCategoryParse,
-		Message:  message,
-		Cause:    cause,
-	}
+	return newCategorizedError(ErrCategoryParse, message, cause)
 }
 
 // NewConflictError creates a conflict error.
 func NewConflictError(message string, cause error) *FindingError {
-	//nolint:exhaustruct
-	return &FindingError{
-		Category: ErrCategoryConflict,
-		Message:  message,
-		Cause:    cause,
-	}
+	return newCategorizedError(ErrCategoryConflict, message, cause)
 }
 
 // NewInternalError creates an internal error.
 func NewInternalError(message string, cause error) *FindingError {
-	//nolint:exhaustruct
-	return &FindingError{
-		Category: ErrCategoryInternal,
-		Message:  message,
-		Cause:    cause,
-	}
+	return newCategorizedError(ErrCategoryInternal, message, cause)
 }
 
 // IsFindingError returns true if err is a *FindingError.

@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
@@ -30,6 +31,17 @@ func NewFixApplier(rootDir string) *FixApplier {
 		backup:  NewFileBackup(backupDir),
 		engine:  NewFixEngine(),
 	}
+}
+
+// Close removes the temporary backup directory. Implement io.Closer.
+func (a *FixApplier) Close() error {
+	if a.backup != nil && a.backup.IsEnabled() {
+		if err := os.RemoveAll(a.backup.backupDir); err != nil {
+			return fmt.Errorf("removing backup dir: %w", err)
+		}
+	}
+
+	return nil
 }
 
 // ioErrorAt creates an IO error with position info.
