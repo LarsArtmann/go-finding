@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 )
 
 func assertRulePresent(t *testing.T, rules map[string]struct{}, ruleID string, wantPresent bool) {
@@ -102,7 +102,7 @@ func TestFromSARIFLevel(t *testing.T) {
 
 func TestToSARIF(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "test-tool", Version: "1.0"},
@@ -138,18 +138,18 @@ func TestToSARIF(t *testing.T) {
 		t.Errorf("Driver.Name = %q, want %q", run.Tool.Driver.Name, "test-tool")
 	}
 
-	g.Expect(run.Results).To(HaveLen(1))
+	g.Expect(run.Results).To(gomega.HaveLen(1))
 
 	result := run.Results[0]
-	g.Expect(result.RuleID).To(Equal("SA1000"))
-	g.Expect(string(SeverityError)).To(Equal(result.Level))
-	g.Expect(result.Message.Text).To(Equal("bad code"))
-	g.Expect(result.Locations[0].PhysicalLocation.ArtifactLocation.URI).To(Equal("main.go"))
+	g.Expect(result.RuleID).To(gomega.Equal("SA1000"))
+	g.Expect(string(SeverityError)).To(gomega.Equal(result.Level))
+	g.Expect(result.Message.Text).To(gomega.Equal("bad code"))
+	g.Expect(result.Locations[0].PhysicalLocation.ArtifactLocation.URI).To(gomega.Equal("main.go"))
 }
 
 func TestToSARIFFiltered(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	suppression := expiringSuppression(t, "test")
 
@@ -178,7 +178,7 @@ func TestToSARIFFiltered(t *testing.T) {
 	log := unmarshalSARIF(t, data)
 
 	results := log.Runs[0].Results
-	g.Expect(results).To(HaveLen(2))
+	g.Expect(results).To(gomega.HaveLen(2))
 
 	rules := make(map[string]struct{})
 	for _, res := range results {
@@ -194,7 +194,7 @@ func TestToSARIFFiltered(t *testing.T) {
 
 func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	suppression := expiringSuppression(t, "won't fix")
 
@@ -220,7 +220,7 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 	log := unmarshalSARIF(t, data)
 
 	results := log.Runs[0].Results
-	g.Expect(results).To(HaveLen(1))
+	g.Expect(results).To(gomega.HaveLen(1))
 
 	if results[0].RuleID != "r1" {
 		t.Errorf("RuleID = %q, want %q", results[0].RuleID, "r1")
@@ -229,7 +229,7 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 
 func TestToSARIF_WithFix(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -256,7 +256,7 @@ func TestToSARIF_WithFix(t *testing.T) {
 	log := unmarshalSARIF(t, data)
 
 	result := log.Runs[0].Results[0]
-	g.Expect(result.Fixes).To(HaveLen(1))
+	g.Expect(result.Fixes).To(gomega.HaveLen(1))
 
 	fix := result.Fixes[0]
 	if fix.Description.Text != "replace old with new" {
@@ -300,7 +300,7 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 
 func TestToSARIF_SuggestionOnly(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -317,20 +317,20 @@ func TestToSARIF_SuggestionOnly(t *testing.T) {
 	}
 
 	data, err := r.ToSARIF()
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	log := unmarshalSARIF(t, data)
-	g.Expect(log.Runs[0].Results).To(HaveLen(1))
+	g.Expect(log.Runs[0].Results).To(gomega.HaveLen(1))
 
 	result := log.Runs[0].Results[0]
-	g.Expect(result.Fixes).To(HaveLen(1))
-	g.Expect(result.Fixes[0].Description.Text).To(Equal("do better"))
-	g.Expect(result.Fixes[0].Changes).To(BeEmpty())
+	g.Expect(result.Fixes).To(gomega.HaveLen(1))
+	g.Expect(result.Fixes[0].Description.Text).To(gomega.Equal("do better"))
+	g.Expect(result.Fixes[0].Changes).To(gomega.BeEmpty())
 }
 
 func TestToSARIF_WithRelated(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -351,15 +351,15 @@ func TestToSARIF_WithRelated(t *testing.T) {
 	}
 
 	data, err := r.ToSARIF()
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	log := unmarshalSARIF(t, data)
-	g.Expect(log.Runs[0].Results).To(HaveLen(1))
+	g.Expect(log.Runs[0].Results).To(gomega.HaveLen(1))
 
 	result := log.Runs[0].Results[0]
-	g.Expect(result.Related).To(HaveLen(1))
-	g.Expect(result.Related[0].PhysicalLocation.ArtifactLocation.URI).To(Equal("b.go"))
-	g.Expect(result.Related[0].PhysicalLocation.Region.StartLine).To(Equal(20))
+	g.Expect(result.Related).To(gomega.HaveLen(1))
+	g.Expect(result.Related[0].PhysicalLocation.ArtifactLocation.URI).To(gomega.Equal("b.go"))
+	g.Expect(result.Related[0].PhysicalLocation.Region.StartLine).To(gomega.Equal(20))
 }
 
 func TestToSARIF_EmptyReport(t *testing.T) {
@@ -381,7 +381,7 @@ func TestToSARIF_EmptyReport(t *testing.T) {
 
 func TestToSARIF_ErrorPath(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -394,12 +394,12 @@ func TestToSARIF_ErrorPath(t *testing.T) {
 	}
 
 	_, err := r.ToSARIF()
-	g.Expect(err).To(HaveOccurred())
+	g.Expect(err).To(gomega.HaveOccurred())
 }
 
 func TestToSARIFFiltered_ErrorPath(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -412,12 +412,12 @@ func TestToSARIFFiltered_ErrorPath(t *testing.T) {
 	}
 
 	_, err := r.ToSARIFFiltered(SeverityError)
-	g.Expect(err).To(HaveOccurred())
+	g.Expect(err).To(gomega.HaveOccurred())
 }
 
 func TestWriteSARIF(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -431,16 +431,16 @@ func TestWriteSARIF(t *testing.T) {
 
 	var buf strings.Builder
 	err := r.WriteSARIF(&buf)
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	data := buf.String()
-	g.Expect(data).To(ContainSubstring(`"version": "2.1.0"`))
-	g.Expect(data).To(ContainSubstring(`"tool"`))
+	g.Expect(data).To(gomega.ContainSubstring(`"version": "2.1.0"`))
+	g.Expect(data).To(gomega.ContainSubstring(`"tool"`))
 }
 
 func TestWriteSARIFFiltered(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -458,11 +458,11 @@ func TestWriteSARIFFiltered(t *testing.T) {
 
 	var buf strings.Builder
 	err := r.WriteSARIFFiltered(&buf, SeverityWarning)
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	data := buf.String()
-	g.Expect(data).To(ContainSubstring("f1"))
-	g.Expect(data).NotTo(ContainSubstring("f2"))
+	g.Expect(data).To(gomega.ContainSubstring("f1"))
+	g.Expect(data).NotTo(gomega.ContainSubstring("f2"))
 }
 
 func TestFindingsFromSARIF_EmptyLog(t *testing.T) {
@@ -487,8 +487,8 @@ func TestFindingsFromSARIF_InvalidJSON(t *testing.T) {
 }
 
 func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	original := Finding{
 		ID:          "govet:printf:main.go:10:5",
@@ -519,25 +519,25 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("FindingsFromSARIF(): %v", err)
 	}
-	g.Expect(findings).To(HaveLen(1))
+	g.Expect(findings).To(gomega.HaveLen(1))
 
 	got := findings[0]
 
-	g.Expect(got.ID).To(Equal(original.ID))
-	g.Expect(got.Rule).To(Equal(original.Rule))
-	g.Expect(got.ToolName).To(Equal(original.ToolName))
-	g.Expect(got.Severity).To(Equal(original.Severity))
-	g.Expect(got.Message).To(Equal(original.Message))
-	g.Expect(got.Category).To(Equal(original.Category))
-	g.Expect(got.Tag).To(Equal(original.Tag))
-	g.Expect(got.FixStrategy).To(Equal(original.FixStrategy))
-	g.Expect(got.Confidence).To(BeNumerically("~", original.Confidence, 1e-9))
-	g.Expect(got.Suggestion).To(Equal(original.Suggestion))
-	g.Expect(got.Snippet).To(Equal(original.Snippet))
-	g.Expect(got.Position).To(Equal(original.Position))
-	g.Expect(got.Range).NotTo(BeNil())
-	g.Expect(got.Range.End).To(Equal(original.Range.End))
-	g.Expect(got.Metadata["custom"]).To(Equal("value"))
+	g.Expect(got.ID).To(gomega.Equal(original.ID))
+	g.Expect(got.Rule).To(gomega.Equal(original.Rule))
+	g.Expect(got.ToolName).To(gomega.Equal(original.ToolName))
+	g.Expect(got.Severity).To(gomega.Equal(original.Severity))
+	g.Expect(got.Message).To(gomega.Equal(original.Message))
+	g.Expect(got.Category).To(gomega.Equal(original.Category))
+	g.Expect(got.Tag).To(gomega.Equal(original.Tag))
+	g.Expect(got.FixStrategy).To(gomega.Equal(original.FixStrategy))
+	g.Expect(got.Confidence).To(gomega.BeNumerically("~", original.Confidence, 1e-9))
+	g.Expect(got.Suggestion).To(gomega.Equal(original.Suggestion))
+	g.Expect(got.Snippet).To(gomega.Equal(original.Snippet))
+	g.Expect(got.Position).To(gomega.Equal(original.Position))
+	g.Expect(got.Range).NotTo(gomega.BeNil())
+	g.Expect(got.Range.End).To(gomega.Equal(original.Range.End))
+	g.Expect(got.Metadata["custom"]).To(gomega.Equal("value"))
 }
 
 func TestSeverityToSARIFLevel(t *testing.T) {
@@ -568,8 +568,8 @@ func TestSeverityToSARIFLevel(t *testing.T) {
 }
 
 func TestFindingFromSarResult_Rank(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	r := SarifResult{
 		RuleID:  "r1",
@@ -585,12 +585,12 @@ func TestFindingFromSarResult_Rank(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	g.Expect(f.Confidence).To(BeNumerically("~", 0.75, 1e-9))
+	g.Expect(f.Confidence).To(gomega.BeNumerically("~", 0.75, 1e-9))
 }
 
 func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	r := SarifResult{
 		RuleID:  "r1",
@@ -614,14 +614,14 @@ func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	g.Expect(f.Suggestion).To(Equal("fix it"))
-	g.Expect(f.AfterCode).To(Equal("fixed code"))
-	g.Expect(f.FixStrategy).To(Equal(FixStrategySuggest))
+	g.Expect(f.Suggestion).To(gomega.Equal("fix it"))
+	g.Expect(f.AfterCode).To(gomega.Equal("fixed code"))
+	g.Expect(f.FixStrategy).To(gomega.Equal(FixStrategySuggest))
 }
 
 func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	r := SarifResult{
 		RuleID:  "r1",
@@ -650,7 +650,7 @@ func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	g.Expect(f.Related).To(HaveLen(2))
+	g.Expect(f.Related).To(gomega.HaveLen(2))
 
 	if f.Related[0].Relation != "related call" {
 		t.Errorf("Related[0].Relation = %q, want %q", f.Related[0].Relation, "related call")
@@ -676,8 +676,8 @@ func TestFindingFromSarResult_NoLocations(t *testing.T) {
 }
 
 func TestFindingFromSarResult_Properties(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	r := SarifResult{
 		RuleID:  "r1",
@@ -716,13 +716,13 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyDirect)
 	}
 
-	g.Expect(f.ToolName).To(Equal("scanner"))
-	g.Expect(f.Category).To(Equal(Category("security")))
-	g.Expect(f.Tag).To(Equal("injection"))
-	g.Expect(f.Confidence).To(BeNumerically("~", 0.85, 1e-9))
-	g.Expect(f.Suggestion).To(Equal("fix it"))
-	g.Expect(f.Snippet).To(Equal("code here"))
-	g.Expect(f.Metadata["custom-key"]).To(Equal("custom-val"))
+	g.Expect(f.ToolName).To(gomega.Equal("scanner"))
+	g.Expect(f.Category).To(gomega.Equal(Category("security")))
+	g.Expect(f.Tag).To(gomega.Equal("injection"))
+	g.Expect(f.Confidence).To(gomega.BeNumerically("~", 0.85, 1e-9))
+	g.Expect(f.Suggestion).To(gomega.Equal("fix it"))
+	g.Expect(f.Snippet).To(gomega.Equal("code here"))
+	g.Expect(f.Metadata["custom-key"]).To(gomega.Equal("custom-val"))
 }
 
 func TestApplySarifPosition_NilRegion(t *testing.T) {
@@ -802,8 +802,8 @@ func TestApplySarifPosition_EndColumnOnly(t *testing.T) {
 }
 
 func TestWriteSARIF_WriterError(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -816,13 +816,13 @@ func TestWriteSARIF_WriterError(t *testing.T) {
 	}
 
 	err := r.WriteSARIF(&failWriter{})
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(err).To(MatchError(ContainSubstring("writing SARIF")))
+	g.Expect(err).To(gomega.HaveOccurred())
+	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("writing SARIF")))
 }
 
 func TestWriteSARIFFiltered_WriterError(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -835,8 +835,8 @@ func TestWriteSARIFFiltered_WriterError(t *testing.T) {
 	}
 
 	err := r.WriteSARIFFiltered(&failWriter{}, SeverityWarning)
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(err).To(MatchError(ContainSubstring("writing SARIF")))
+	g.Expect(err).To(gomega.HaveOccurred())
+	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("writing SARIF")))
 }
 
 // failWriter is an io.Writer that always returns an error.
@@ -917,8 +917,8 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 }
 
 func TestFindingFromSarResult_WithFix(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	r := SarifResult{
 		RuleID:  "SA1000",
@@ -956,18 +956,18 @@ func TestFindingFromSarResult_WithFix(t *testing.T) {
 
 	f := findingFromSarResult(r, "staticcheck")
 
-	g.Expect(f.Rule).To(Equal("SA1000"))
-	g.Expect(f.ToolName).To(Equal("staticcheck"))
-	g.Expect(f.Message).To(Equal("unused variable"))
-	g.Expect(f.Severity).To(Equal(SeverityWarning))
-	g.Expect(f.Suggestion).To(Equal("remove unused variable"))
-	g.Expect(f.AfterCode).To(Equal("fmt.Println()"))
-	g.Expect(f.FixStrategy).To(Equal(FixStrategySuggest))
+	g.Expect(f.Rule).To(gomega.Equal("SA1000"))
+	g.Expect(f.ToolName).To(gomega.Equal("staticcheck"))
+	g.Expect(f.Message).To(gomega.Equal("unused variable"))
+	g.Expect(f.Severity).To(gomega.Equal(SeverityWarning))
+	g.Expect(f.Suggestion).To(gomega.Equal("remove unused variable"))
+	g.Expect(f.AfterCode).To(gomega.Equal("fmt.Println()"))
+	g.Expect(f.FixStrategy).To(gomega.Equal(FixStrategySuggest))
 }
 
 func TestFindingFromSarResult_RankAsConfidence(t *testing.T) {
+	g := gomega.NewWithT(t)
 	t.Parallel()
-	g := NewWithT(t)
 
 	r := SarifResult{
 		RuleID:  "R1",
@@ -985,12 +985,12 @@ func TestFindingFromSarResult_RankAsConfidence(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	g.Expect(f.Confidence).To(BeNumerically("~", 0.75, 0.01))
+	g.Expect(f.Confidence).To(gomega.BeNumerically("~", 0.75, 0.01))
 }
 
 func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -1010,29 +1010,29 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 	report.ComputeSummary()
 
 	data, err := report.ToSARIF()
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	findings, err := FindingsFromSARIF(data)
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(findings).To(HaveLen(1))
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.HaveLen(1))
 
 	f := findings[0]
 
-	g.Expect(f.ID).To(Equal("test:R1:a.go:1:1"))
-	g.Expect(f.Rule).To(Equal("R1"))
-	g.Expect(f.Message).To(Equal("msg"))
-	g.Expect(f.AfterCode).To(Equal("new code"))
+	g.Expect(f.ID).To(gomega.Equal("test:R1:a.go:1:1"))
+	g.Expect(f.Rule).To(gomega.Equal("R1"))
+	g.Expect(f.Message).To(gomega.Equal("msg"))
+	g.Expect(f.AfterCode).To(gomega.Equal("new code"))
 
-	g.Expect(f.BeforeCode).To(Equal("old code"))
+	g.Expect(f.BeforeCode).To(gomega.Equal("old code"))
 
-	g.Expect(f.Related).To(HaveLen(1))
-	g.Expect(f.Related[0].FindingID).To(Equal("related-123"))
-	g.Expect(f.Related[0].Relation).To(Equal("causes"))
+	g.Expect(f.Related).To(gomega.HaveLen(1))
+	g.Expect(f.Related[0].FindingID).To(gomega.Equal("related-123"))
+	g.Expect(f.Related[0].Relation).To(gomega.Equal("causes"))
 }
 
 func TestSARIF_TagsRoundTrip(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -1047,18 +1047,18 @@ func TestSARIF_TagsRoundTrip(t *testing.T) {
 	report.ComputeSummary()
 
 	data, err := report.ToSARIF()
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	findings, err := FindingsFromSARIF(data)
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(findings).To(HaveLen(1))
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.HaveLen(1))
 
-	g.Expect(findings[0].Tags).To(Equal([]Tag{TagSecurity, "injection", "xss"}))
+	g.Expect(findings[0].Tags).To(gomega.Equal([]Tag{TagSecurity, "injection", "xss"}))
 }
 
 func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
+	g := gomega.NewWithT(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -1073,9 +1073,9 @@ func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 	report.ComputeSummary()
 
 	data, err := report.ToSARIF()
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	findings, err := FindingsFromSARIF(data)
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(findings).To(BeEmpty())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.BeEmpty())
 }
