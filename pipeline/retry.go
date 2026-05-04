@@ -103,7 +103,7 @@ func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 			delay := d.config.delay(attempt - 1)
 			select {
 			case <-ctx.Done():
-				return nil, fmt.Errorf("retry cancelled: %w", ctx.Err())
+				return nil, fmt.Errorf("operation cancelled: %w", ctx.Err())
 			case <-time.After(delay):
 			}
 		}

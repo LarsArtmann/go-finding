@@ -277,11 +277,10 @@ func TestReport_Map(t *testing.T) {
 	if len(mapped.Findings) != 2 {
 		t.Fatalf("Findings length = %d, want 2", len(mapped.Findings))
 	}
-	if mapped.Findings[0].Severity != SeverityWarning {
-		t.Errorf("Findings[0].Severity = %v, want %v", mapped.Findings[0].Severity, SeverityWarning)
-	}
-	if mapped.Findings[1].Severity != SeverityWarning {
-		t.Errorf("Findings[1].Severity = %v, want %v", mapped.Findings[1].Severity, SeverityWarning)
+	for i, f := range mapped.Findings {
+		if f.Severity != SeverityWarning {
+			t.Errorf("Findings[%d].Severity = %v, want %v", i, f.Severity, SeverityWarning)
+		}
 	}
 }
 

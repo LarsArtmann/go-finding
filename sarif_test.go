@@ -11,6 +11,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func assertRulePresent(t *testing.T, rules map[string]struct{}, ruleID string, wantPresent bool) {
+	t.Helper()
+	_, ok := rules[ruleID]
+	if ok != wantPresent {
+		if wantPresent {
+			t.Errorf("expected %s in results", ruleID)
+		} else {
+			t.Errorf("%s should be excluded", ruleID)
+		}
+	}
+}
+
 func goFindingProps(
 	id, severity, fixStrategy, toolName, category, tag string,
 	confidence float64,
@@ -172,25 +184,11 @@ func TestToSARIFFiltered(t *testing.T) {
 		rules[res.RuleID] = struct{}{}
 	}
 
-	if _, ok := rules["r1"]; !ok {
-		t.Error("expected r1 in results")
-	}
-
-	if _, ok := rules["r2"]; !ok {
-		t.Error("expected r2 in results")
-	}
-
-	if _, ok := rules["r3"]; ok {
-		t.Error("r3 (warning) should be excluded")
-	}
-
-	if _, ok := rules["r4"]; ok {
-		t.Error("r4 (info) should be excluded")
-	}
-
-	if _, ok := rules["r5"]; ok {
-		t.Error("r5 (suppressed) should be excluded")
-	}
+	assertRulePresent(t, rules, "r1", true)
+	assertRulePresent(t, rules, "r2", true)
+	assertRulePresent(t, rules, "r3", false)
+	assertRulePresent(t, rules, "r4", false)
+	assertRulePresent(t, rules, "r5", false)
 }
 
 func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {

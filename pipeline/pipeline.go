@@ -439,7 +439,7 @@ func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, err
 	for _, d := range p.detectors {
 		select {
 		case <-ctx.Done():
-			return nil, fmt.Errorf("detection cancelled: %w", ctx.Err())
+			return nil, fmt.Errorf("operation cancelled: %w", ctx.Err())
 		default:
 		}
 

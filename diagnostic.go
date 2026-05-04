@@ -82,13 +82,18 @@ func FromTokenPosition(pos token.Position) Position {
 	}
 }
 
-// NodePosition returns a Position from an AST node.
-func NodePosition(fset *token.FileSet, node ast.Node) Position {
+// nodeStartPos returns the start token.Position of an AST node, or a zero position if node is nil.
+func nodeStartPos(fset *token.FileSet, node ast.Node) token.Position {
 	if node == nil {
-		return Position{} //nolint:exhaustruct
+		return token.Position{}
 	}
 
-	return FromTokenPosition(fset.Position(node.Pos()))
+	return fset.Position(node.Pos())
+}
+
+// NodePosition returns a Position from an AST node.
+func NodePosition(fset *token.FileSet, node ast.Node) Position {
+	return FromTokenPosition(nodeStartPos(fset, node))
 }
 
 // NodeRange returns a Range from an AST node.
@@ -97,10 +102,8 @@ func NodeRange(fset *token.FileSet, node ast.Node) Range {
 		return Range{Start: Position{}, End: Position{}} //nolint:exhaustruct
 	}
 
-	startPos := FromTokenPosition(fset.Position(node.Pos()))
-
 	return Range{
-		Start: startPos,
+		Start: FromTokenPosition(nodeStartPos(fset, node)),
 		End:   FromTokenPosition(fset.Position(node.End())),
 	}
 }

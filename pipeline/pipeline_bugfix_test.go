@@ -11,6 +11,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func countingOnFix(ptr *int) func(finding.Finding, bool) {
+	return func(_ finding.Finding, wasApplied bool) {
+		if wasApplied {
+			*ptr++
+		}
+	}
+}
+
+func collectingOnFix(ids *[]string) func(finding.Finding, bool) {
+	return func(f finding.Finding, wasApplied bool) {
+		if wasApplied {
+			*ids = append(*ids, f.ID)
+		}
+	}
+}
+
 // TestOnFix_FiresOnlyForAppliedFixes verifies C-1: OnFix callback fires
 // exactly once per actually-applied fix, not once per safeFix.
 func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
@@ -38,11 +54,7 @@ func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
 	cfg := Config{
 		MaxIterations:     1,
 		ParallelDetectors: false,
-		OnFix: func(_ finding.Finding, wasApplied bool) {
-			if wasApplied {
-				onFixCalls++
-			}
-		},
+		OnFix:             countingOnFix(&onFixCalls),
 	}
 
 	det := &mockDetector{name: "tool", findings: []finding.Finding{fix}}
@@ -84,11 +96,7 @@ func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
 	cfg := Config{
 		MaxIterations:     1,
 		ParallelDetectors: false,
-		OnFix: func(_ finding.Finding, wasApplied bool) {
-			if wasApplied {
-				appliedCount++
-			}
-		},
+		OnFix:             countingOnFix(&appliedCount),
 	}
 
 	det := &mockDetector{name: "tool", findings: []finding.Finding{fix}}
@@ -141,11 +149,7 @@ func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
 	cfg := Config{
 		MaxIterations:     1,
 		ParallelDetectors: false,
-		OnFix: func(f finding.Finding, wasApplied bool) {
-			if wasApplied {
-				appliedIDs = append(appliedIDs, f.ID)
-			}
-		},
+		OnFix:             collectingOnFix(&appliedIDs),
 	}
 
 	det := &mockDetector{name: "tool", findings: []finding.Finding{fixA, fixB}}

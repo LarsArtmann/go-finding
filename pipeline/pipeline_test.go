@@ -1018,11 +1018,7 @@ func TestApplyTriage_OnFixCallback(t *testing.T) {
 	cfg := Config{
 		MaxIterations:     2,
 		ParallelDetectors: false,
-		OnFix: func(f finding.Finding, wasApplied bool) {
-			if wasApplied {
-				appliedIDs = append(appliedIDs, f.ID)
-			}
-		},
+		OnFix:             collectingOnFix(&appliedIDs),
 	}
 
 	det := &mockDetector{name: "tool", findings: []finding.Finding{fix}}

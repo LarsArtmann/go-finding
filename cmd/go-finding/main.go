@@ -17,7 +17,7 @@ import (
 	"github.com/larsartmann/go-finding"
 	det "github.com/larsartmann/go-finding/internal/detectors"
 	"github.com/larsartmann/go-finding/pipeline"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 var version = finding.Version // overridden via -ldflags "-X main.version=..."

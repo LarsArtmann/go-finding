@@ -287,16 +287,7 @@ func TestFilterInPlace(t *testing.T) {
 	}
 
 	result := FilterInPlace(findings, BySeverity(SeverityError))
-
-	if len(result) != 2 {
-		t.Fatalf("FilterInPlace() = %d, want 2", len(result))
-	}
-	if result[0].ID != "1" {
-		t.Errorf("result[0].ID = %q, want %q", result[0].ID, "1")
-	}
-	if result[1].ID != "3" {
-		t.Errorf("result[1].ID = %q, want %q", result[1].ID, "3")
-	}
+	AssertFindingsLenAndIDs(t, result, []string{"1", "3"}, "FilterInPlace")
 }
 
 func TestFilterInPlace_NoPredicates(t *testing.T) {

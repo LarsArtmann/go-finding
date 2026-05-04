@@ -348,7 +348,7 @@ func (r Range) Adjacent(other Range) bool {
 		return false
 	}
 
-	// Try line-based adjacency first
+	// Check line-based adjacency if both ends have line info.
 	if r.End.Line > 0 && other.Start.Line > 0 {
 		if r.End.Line == other.Start.Line && columnAdjacent(r.End.Column, other.Start.Column) {
 			return true
@@ -359,8 +359,8 @@ func (r Range) Adjacent(other Range) bool {
 		}
 	}
 
-	// Fall back to offset-based adjacency only when line info is not available.
-	if r.Start.Line <= 0 || other.Start.Line <= 0 {
+	// Fall back to offset-based adjacency when line info is not available.
+	if !r.hasLineInfo(other) {
 		startMatch := offsetAdjacent(r.End.Offset, other.Start.Offset)
 		endMatch := offsetAdjacent(other.End.Offset, r.Start.Offset)
 		return startMatch || endMatch

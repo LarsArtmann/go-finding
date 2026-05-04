@@ -333,6 +333,21 @@ func AssertFindingFields(
 	}
 }
 
+// AssertFindingsLenAndIDs asserts a slice has the expected length and element IDs in order.
+func AssertFindingsLenAndIDs(t *testing.T, findings []Finding, wantIDs []string, context string) {
+	t.Helper()
+
+	if len(findings) != len(wantIDs) {
+		t.Fatalf("%s: len = %d, want %d", context, len(findings), len(wantIDs))
+	}
+
+	for i, f := range findings {
+		if f.ID != wantIDs[i] {
+			t.Errorf("%s: [%d].ID = %q, want %q", context, i, f.ID, wantIDs[i])
+		}
+	}
+}
+
 // checkPropertyAny runs a property-based test with any function signature.
 func checkPropertyAny(t *testing.T, property any) {
 	t.Helper()
