@@ -220,11 +220,11 @@ func TestFinding_Equal_FieldMismatch(t *testing.T) {
 			false,
 		},
 		{
-			"different tag",
+			"different tags",
 			base,
 			func() Finding {
 				f := testFindingBase()
-				f.Tag = "other-tag"
+				f.Tags = []Tag{"other-tag"}
 
 				return f
 			}(),

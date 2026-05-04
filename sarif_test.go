@@ -23,7 +23,8 @@ func assertRulePresent(t *testing.T, rules map[string]struct{}, ruleID string, w
 }
 
 func goFindingProps(
-	id, severity, fixStrategy, toolName, category, tag string,
+	id, severity, fixStrategy, toolName, category string,
+	tags []any,
 	confidence float64,
 	suggestion, snippet string,
 ) map[string]any {
@@ -33,7 +34,7 @@ func goFindingProps(
 		"go-finding/fixStrategy": fixStrategy,
 		"go-finding/toolName":    toolName,
 		"go-finding/category":    category,
-		"go-finding/tag":         tag,
+		"go-finding/tags":        tags,
 		"go-finding/confidence":  confidence,
 		"go-finding/suggestion":  suggestion,
 		"go-finding/snippet":     snippet,
@@ -41,7 +42,8 @@ func goFindingProps(
 }
 
 func goFindingPropsWithCustom(
-	id, severity, fixStrategy, toolName, category, tag string,
+	id, severity, fixStrategy, toolName, category string,
+	tags []any,
 	confidence float64,
 	suggestion, snippet, customKey, customVal string,
 ) map[string]any {
@@ -51,7 +53,7 @@ func goFindingPropsWithCustom(
 		fixStrategy,
 		toolName,
 		category,
-		tag,
+		tags,
 		confidence,
 		suggestion,
 		snippet,
@@ -277,7 +279,7 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 				Position: Position{File: "a.go"},
 				Metadata: map[string]string{"key1": "val1"},
 				Category: "security",
-				Tag:      "injection",
+				Tags:     []Tag{"injection"},
 				ToolName: "scanner",
 			},
 		},
@@ -498,7 +500,7 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 		Severity:    SeverityCritical,
 		Position:    Position{File: "main.go", Line: 10, Column: 5},
 		Category:    CategoryCorrectness,
-		Tag:         "printf",
+		Tags:        []Tag{"printf"},
 		FixStrategy: FixStrategySuggest,
 		Confidence:  0.9,
 		Suggestion:  "fix format string",
@@ -529,7 +531,7 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 	g.Expect(got.Severity).To(gomega.Equal(original.Severity))
 	g.Expect(got.Message).To(gomega.Equal(original.Message))
 	g.Expect(got.Category).To(gomega.Equal(original.Category))
-	g.Expect(got.Tag).To(gomega.Equal(original.Tag))
+	g.Expect(got.Tags).To(gomega.Equal(original.Tags))
 	g.Expect(got.FixStrategy).To(gomega.Equal(original.FixStrategy))
 	g.Expect(got.Confidence).To(gomega.BeNumerically("~", original.Confidence, 1e-9))
 	g.Expect(got.Suggestion).To(gomega.Equal(original.Suggestion))
@@ -694,7 +696,7 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 			"direct",
 			"scanner",
 			"security",
-			"injection",
+			[]any{"injection"},
 			0.85,
 			"fix it",
 			"code here",
@@ -718,7 +720,7 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 
 	g.Expect(f.ToolName).To(gomega.Equal("scanner"))
 	g.Expect(f.Category).To(gomega.Equal(Category("security")))
-	g.Expect(f.Tag).To(gomega.Equal("injection"))
+	g.Expect(f.Tags).To(gomega.Equal([]Tag{"injection"}))
 	g.Expect(f.Confidence).To(gomega.BeNumerically("~", 0.85, 1e-9))
 	g.Expect(f.Suggestion).To(gomega.Equal("fix it"))
 	g.Expect(f.Snippet).To(gomega.Equal("code here"))
@@ -857,7 +859,7 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 		Severity:    SeverityCritical,
 		Position:    Position{File: "main.go", Line: 10, Column: 5},
 		Category:    CategoryCorrectness,
-		Tag:         "printf",
+		Tags:        []Tag{"printf"},
 		FixStrategy: FixStrategySuggest,
 		Confidence:  0.9,
 		Suggestion:  "fix format string",
@@ -890,7 +892,7 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 		"suggest",
 		"govet",
 		"correctness",
-		"printf",
+		[]any{"printf"},
 		0.9,
 		"fix format string",
 		`fmt.Sprintf("%d")`,
@@ -909,6 +911,19 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 		if f64, ok := want.(float64); ok {
 			if gotFloat, ok := got.(float64); !ok || gotFloat != f64 {
 				t.Errorf("properties[%q] = %v, want %v", key, got, want)
+			}
+		} else if s, ok := want.([]any); ok {
+			gotSlice, ok := got.([]any)
+			if !ok || len(gotSlice) != len(s) {
+				t.Errorf("properties[%q] = %v, want %v", key, got, want)
+
+				continue
+			}
+
+			for i := range s {
+				if gotSlice[i] != s[i] {
+					t.Errorf("properties[%q][%d] = %v, want %v", key, i, gotSlice[i], s[i])
+				}
 			}
 		} else if got != want {
 			t.Errorf("properties[%q] = %v, want %v", key, got, want)

@@ -18,7 +18,6 @@ func TestClone(t *testing.T) {
 		Severity:    SeverityError,
 		Position:    Position{File: "file.go", Line: 10, Column: 5},
 		Category:    CategorySecurity,
-		Tag:         "injection",
 		FixStrategy: FixStrategyDirect,
 		Suggestion:  "fix it",
 		BeforeCode:  "old",
@@ -239,7 +238,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding { f := base; f.Severity = SeverityWarning; return f }(),
 		},
 		{"different Category", base, func() Finding { f := base; f.Category = "x"; return f }()},
-		{"different Tag", base, func() Finding { f := base; f.Tag = "x"; return f }()},
+		{"different Tags", base, func() Finding { f := base; f.Tags = []Tag{"x"}; return f }()},
 		{
 			"different FixStrategy", base,
 			func() Finding { f := base; f.FixStrategy = FixStrategyDirect; return f }(),

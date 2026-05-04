@@ -24,10 +24,7 @@ type Finding struct {
 
 	// Classification
 	Category Category `json:"category,omitempty"` // Domain: "security", "style", "duplication", etc.
-	// Deprecated: Use Tags instead.
-	Tag  string `json:"tag,omitempty"`  // Sub-classification: "phantom-type", "clone", etc.
-	Tags []Tag  `json:"tags,omitempty"` // Multiple tags for richer classification
-
+	Tags     []Tag    `json:"tags,omitempty"`     // Multiple tags for richer classification
 	// Fix
 	FixStrategy FixStrategy `json:"fixStrategy"`          // none, suggest, direct, ai
 	Suggestion  string      `json:"suggestion,omitempty"` // Human-readable fix description
@@ -282,7 +279,7 @@ func (f Finding) Equal(other Finding) bool {
 	if f.ID != other.ID || f.Rule != other.Rule || f.ToolName != other.ToolName ||
 		f.Message != other.Message || f.Severity != other.Severity ||
 		!f.Position.Equal(other.Position) ||
-		f.Category != other.Category || f.Tag != other.Tag ||
+		f.Category != other.Category ||
 		!slices.Equal(f.Tags, other.Tags) ||
 		f.FixStrategy != other.FixStrategy ||
 		f.Suggestion != other.Suggestion ||

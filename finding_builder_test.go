@@ -33,8 +33,7 @@ func TestBuilder_Full(t *testing.T) {
 	f, err := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, pos).
 		WithID("custom-id").
 		WithCategory(CategorySecurity).
-		WithTag("nil-deref").
-		WithTags("security", "injection").
+		WithTags(Tag("nil-deref"), Tag("security"), Tag("injection")).
 		WithFixStrategy(FixStrategyDirect).
 		WithSuggestion("Add nil check").
 		WithBeforeCode("x.foo").
@@ -55,11 +54,8 @@ func TestBuilder_Full(t *testing.T) {
 	if f.Category != CategorySecurity {
 		t.Errorf("Category = %v, want %v", f.Category, CategorySecurity)
 	}
-	if f.Tag != "nil-deref" {
-		t.Errorf("Tag = %q, want %q", f.Tag, "nil-deref")
-	}
-	if len(f.Tags) != 2 || f.Tags[0] != "security" || f.Tags[1] != "injection" {
-		t.Errorf("Tags = %v, want [security, injection]", f.Tags)
+	if len(f.Tags) != 3 || f.Tags[0] != Tag("nil-deref") || f.Tags[1] != Tag("security") || f.Tags[2] != Tag("injection") {
+		t.Errorf("Tags = %v, want [nil-deref, security, injection]", f.Tags)
 	}
 	if f.FixStrategy != FixStrategyDirect {
 		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyDirect)

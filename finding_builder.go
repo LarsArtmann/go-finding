@@ -42,14 +42,6 @@ func (b *Builder) WithCategory(cat Category) *Builder {
 	return b
 }
 
-// WithTag sets the tag.
-//
-// Deprecated: Use WithTags instead. The Tag field will be removed in v1.0.
-func (b *Builder) WithTag(tag string) *Builder {
-	b.f.Tag = tag
-	return b
-}
-
 // WithTags sets multiple tags.
 func (b *Builder) WithTags(tags ...Tag) *Builder {
 	b.f.Tags = append(b.f.Tags, tags...)
