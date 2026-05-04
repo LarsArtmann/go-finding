@@ -8,6 +8,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func makeRangeFix(file string, startLine, startCol, endLine, endCol int, before, after string) finding.Finding {
+	return finding.Finding{
+		BeforeCode: before, AfterCode: after,
+		Range:    finding.NewRangePtr(file, startLine, startCol, endLine, endCol),
+		Position: finding.Pos(file, startLine, startCol),
+	}
+}
+
 func TestFixEngine_Apply_EmptyInput(t *testing.T) {
 	t.Parallel()
 
@@ -109,11 +117,7 @@ func TestApplyRangeFixes_SingleLine(t *testing.T) {
 
 	lines := []string{"package main", "", "func main() {", "\told()", "}"}
 	fixes := []finding.Finding{
-		{
-			BeforeCode: "old()", AfterCode: "new()",
-			Range:    finding.NewRangePtr("a.go", 4, 2, 4, 7),
-			Position: finding.Pos("a.go", 4, 2),
-		},
+		makeRangeFix("a.go", 4, 2, 4, 7, "old()", "new()"),
 	}
 
 	result, _, applied := applyRangeFixes(lines, fixes)
@@ -146,11 +150,7 @@ func TestApplyRangeFixes_OutOfBounds(t *testing.T) {
 
 	lines := []string{"package main"}
 	fixes := []finding.Finding{
-		{
-			BeforeCode: "old", AfterCode: "new",
-			Range:    finding.NewRangePtr("a.go", 100, 1, 200, 1),
-			Position: finding.Pos("a.go", 100, 1),
-		},
+		makeRangeFix("a.go", 100, 1, 200, 1, "old", "new"),
 	}
 
 	result, _, applied := applyRangeFixes(lines, fixes)
@@ -168,16 +168,8 @@ func TestApplyRangeFixes_DescendingOrder(t *testing.T) {
 		"line4: old",
 	}
 	fixes := []finding.Finding{
-		{
-			BeforeCode: "old", AfterCode: "fix1",
-			Range:    finding.NewRangePtr("a.go", 2, 8, 2, 11),
-			Position: finding.Pos("a.go", 2, 8),
-		},
-		{
-			BeforeCode: "old", AfterCode: "fix2",
-			Range:    finding.NewRangePtr("a.go", 4, 8, 4, 11),
-			Position: finding.Pos("a.go", 4, 8),
-		},
+		makeRangeFix("a.go", 2, 8, 2, 11, "old", "fix1"),
+		makeRangeFix("a.go", 4, 8, 4, 11, "old", "fix2"),
 	}
 
 	result, _, applied := applyRangeFixes(lines, fixes)

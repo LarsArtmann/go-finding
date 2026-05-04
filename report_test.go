@@ -174,18 +174,7 @@ func TestReportAll(t *testing.T) {
 		collected = append(collected, f)
 	}
 
-	if len(collected) != 3 {
-		t.Fatalf("collected findings = %d, want 3", len(collected))
-	}
-	if collected[0].ID != "1" {
-		t.Errorf("collected[0].ID = %q, want %q", collected[0].ID, "1")
-	}
-	if collected[1].ID != "2" {
-		t.Errorf("collected[1].ID = %q, want %q", collected[1].ID, "2")
-	}
-	if collected[2].ID != "3" {
-		t.Errorf("collected[2].ID = %q, want %q", collected[2].ID, "3")
-	}
+	AssertFindingsLenAndIDs(t, collected, []string{"1", "2", "3"}, "collected")
 }
 
 func TestReportAll_Empty(t *testing.T) {
@@ -237,15 +226,7 @@ func TestReport_Filter(t *testing.T) {
 	if filtered.Tool.Name != string(TagTest) {
 		t.Errorf("Tool.Name = %q, want %q", filtered.Tool.Name, string(TagTest))
 	}
-	if len(filtered.Findings) != 2 {
-		t.Fatalf("Findings length = %d, want 2", len(filtered.Findings))
-	}
-	if filtered.Findings[0].ID != "1" {
-		t.Errorf("Findings[0].ID = %q, want %q", filtered.Findings[0].ID, "1")
-	}
-	if filtered.Findings[1].ID != "3" {
-		t.Errorf("Findings[1].ID = %q, want %q", filtered.Findings[1].ID, "3")
-	}
+	AssertFindingsLenAndIDs(t, filtered.Findings, []string{"1", "3"}, "filtered.Findings")
 }
 
 func TestReport_Filter_Empty(t *testing.T) {

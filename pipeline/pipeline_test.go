@@ -798,7 +798,7 @@ func TestDryRun(t *testing.T) {
 		},
 	}
 
-	det := &mockDetector{name: "tool", findings: []finding.Finding{f}}
+	det := mockDetWithFindings("tool", f)
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -937,7 +937,7 @@ func TestApplyTriage_DirectFixesApplied(t *testing.T) {
 		FixStrategy: finding.FixStrategyDirect,
 	}
 
-	det := &mockDetector{name: "tool", findings: []finding.Finding{fix}}
+	det := mockDetWithFindings("tool", fix)
 	p, err := New(Config{MaxIterations: 3, ParallelDetectors: false}, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -1021,7 +1021,7 @@ func TestApplyTriage_OnFixCallback(t *testing.T) {
 		OnFix:             collectingOnFix(&appliedIDs),
 	}
 
-	det := &mockDetector{name: "tool", findings: []finding.Finding{fix}}
+	det := mockDetWithFindings("tool", fix)
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -1131,9 +1131,7 @@ func mockDetectorWithFinding(name, id, rule, tool, msg string) *mockDetector {
 	}
 }
 
-func TestPipelineRun_CorrelateFindings(t *testing.T) {
-	t.Parallel()
-
+func correlateTestDetectors() (*mockDetector, *mockDetector) {
 	detA := &mockDetector{
 		name: "tool-a",
 		findings: []finding.Finding{
@@ -1152,6 +1150,13 @@ func TestPipelineRun_CorrelateFindings(t *testing.T) {
 			},
 		},
 	}
+	return detA, detB
+}
+
+func TestPipelineRun_CorrelateFindings(t *testing.T) {
+	t.Parallel()
+
+	detA, detB := correlateTestDetectors()
 
 	cfg := Config{MaxIterations: 1, ParallelDetectors: false, CorrelateFindings: true}
 	p, err := New(cfg, ".", detA, detB)
@@ -1175,24 +1180,7 @@ func TestPipelineRun_CorrelateFindings(t *testing.T) {
 func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {
 	t.Parallel()
 
-	detA := &mockDetector{
-		name: "tool-a",
-		findings: []finding.Finding{
-			{
-				ID: "a1", Rule: "R1", ToolName: "tool-a", Message: "msg a",
-				Severity: finding.SeverityError, Position: finding.Pos("file.go", 10, 1),
-			},
-		},
-	}
-	detB := &mockDetector{
-		name: "tool-b",
-		findings: []finding.Finding{
-			{
-				ID: "b1", Rule: "R2", ToolName: "tool-b", Message: "msg b",
-				Severity: finding.SeverityWarning, Position: finding.Pos("file.go", 12, 1),
-			},
-		},
-	}
+	detA, detB := correlateTestDetectors()
 
 	cfg := Config{MaxIterations: 1, ParallelDetectors: false, CorrelateFindings: false}
 	p, err := New(cfg, ".", detA, detB)

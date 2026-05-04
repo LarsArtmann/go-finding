@@ -57,7 +57,7 @@ func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
 		OnFix:             countingOnFix(&onFixCalls),
 	}
 
-	det := &mockDetector{name: "tool", findings: []finding.Finding{fix}}
+	det := mockDetWithFindings("tool", fix)
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -99,7 +99,7 @@ func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
 		OnFix:             countingOnFix(&appliedCount),
 	}
 
-	det := &mockDetector{name: "tool", findings: []finding.Finding{fix}}
+	det := mockDetWithFindings("tool", fix)
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -152,7 +152,7 @@ func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
 		OnFix:             collectingOnFix(&appliedIDs),
 	}
 
-	det := &mockDetector{name: "tool", findings: []finding.Finding{fixA, fixB}}
+	det := mockDetWithFindings("tool", fixA, fixB)
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/gomega"
 )
-
-// test helper functions
 
 func standardTestFinding() Finding {
 	return Finding{
@@ -32,23 +30,6 @@ func standardTestFinding() Finding {
 	}
 }
 
-func assertErrorCount(t *testing.T, findings []Finding, expected int) {
-	t.Helper()
-
-	if len(findings) != expected {
-		t.Errorf("expected %d errors, got %d", expected, len(findings))
-	}
-}
-
-func assertTotalCount(t *testing.T, r *Report, expected int) {
-	t.Helper()
-
-	if r.Summary.Total != expected {
-		t.Errorf("expected %d total, got %d", expected, r.Summary.Total)
-	}
-}
-
-// addFindingForTest is a helper to add a finding to a report with minimal boilerplate.
 func addFindingForTest(t *testing.T, r *Report, id string, sev Severity, file string) {
 	t.Helper()
 
@@ -89,61 +70,38 @@ func TestSeverity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
-			if got := tt.severity.IsValid(); got != tt.valid {
-				t.Errorf("IsValid() = %v, want %v", got, tt.valid)
-			}
+			g := NewWithT(t)
+			g.Expect(tt.severity.IsValid()).To(Equal(tt.valid))
 		})
 	}
 }
 
 func TestSeverityOrdering(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
-	if SeverityInfo.GreaterThan(SeverityWarning) {
-		t.Error("info should not be greater than warning")
-	}
-
-	if !SeverityError.GreaterThan(SeverityWarning) {
-		t.Error("error should be greater than warning")
-	}
-
-	if !SeverityCritical.GreaterThan(SeverityError) {
-		t.Error("critical should be greater than error")
-	}
+	g.Expect(SeverityInfo.GreaterThan(SeverityWarning)).To(BeFalse())
+	g.Expect(SeverityError.GreaterThan(SeverityWarning)).To(BeTrue())
+	g.Expect(SeverityCritical.GreaterThan(SeverityError)).To(BeTrue())
 }
 
 func TestFixStrategy(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
-	if !FixStrategyNone.IsValid() {
-		t.Error("none should be valid")
-	}
-
-	if !FixStrategyDirect.CanAutoApply() {
-		t.Error("direct should be auto-applicable")
-	}
-
-	if FixStrategySuggest.CanAutoApply() {
-		t.Error("suggest should not be auto-applicable")
-	}
-
-	if !FixStrategyAI.NeedsAI() {
-		t.Error("ai should need AI")
-	}
+	g.Expect(FixStrategyNone.IsValid()).To(BeTrue())
+	g.Expect(FixStrategyDirect.CanAutoApply()).To(BeTrue())
+	g.Expect(FixStrategySuggest.CanAutoApply()).To(BeFalse())
+	g.Expect(FixStrategyAI.NeedsAI()).To(BeTrue())
 }
 
 func TestPosition(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	p := Position{File: "test.go", Line: 42, Column: 5}
-	if !p.IsValid() {
-		t.Error("position should be valid")
-	}
-
-	if p.String() != "test.go:42:5" {
-		t.Errorf("String() = %s, want test.go:42:5", p.String())
-	}
+	g.Expect(p.IsValid()).To(BeTrue())
+	g.Expect(p.String()).To(Equal("test.go:42:5"))
 }
 
 func TestPositionString(t *testing.T) {
@@ -161,16 +119,15 @@ func TestPositionString(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.want, func(t *testing.T) {
 			t.Parallel()
-
-			if got := tt.pos.String(); got != tt.want {
-				t.Errorf("String() = %s, want %s", got, tt.want)
-			}
+			g := NewWithT(t)
+			g.Expect(tt.pos.String()).To(Equal(tt.want))
 		})
 	}
 }
 
 func TestFinding(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := Finding{
 		ID:          "test:rule1:file.go:10:5",
@@ -184,25 +141,15 @@ func TestFinding(t *testing.T) {
 		AfterCode:   "new",
 	}
 
-	if !f.IsValid() {
-		t.Error("finding should be valid")
-	}
-
-	if !f.HasFix() {
-		t.Error("finding should have fix")
-	}
-
-	if !f.HasSuggestion() {
-		t.Error("finding should have suggestion")
-	}
-
-	if f.IsSuppressed() {
-		t.Error("finding should not be suppressed")
-	}
+	g.Expect(f.IsValid()).To(BeTrue())
+	g.Expect(f.HasFix()).To(BeTrue())
+	g.Expect(f.HasSuggestion()).To(BeTrue())
+	g.Expect(f.IsSuppressed()).To(BeFalse())
 }
 
 func TestFindingSuppressed(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := Finding{
 		ID:          "test:rule1:file.go:10:5",
@@ -214,13 +161,12 @@ func TestFindingSuppressed(t *testing.T) {
 		Suppression: &Suppression{Kind: SuppressionInSource, Reason: "intentional"},
 	}
 
-	if !f.IsSuppressed() {
-		t.Error("finding should be suppressed")
-	}
+	g.Expect(f.IsSuppressed()).To(BeTrue())
 }
 
 func TestReport(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	r := NewReport(ToolInfo{Name: "test-tool", Version: "1.0.0"})
 
@@ -230,17 +176,17 @@ func TestReport(t *testing.T) {
 
 	r.ComputeSummary()
 
-	assertTotalCount(t, r, 3)
-
-	assertSummaryField(t, "FilesAffected", r.Summary.FilesAffected, 2)
-	assertSummarySeverity(t, r, SeverityError, 2)
+	g.Expect(r.Summary.Total).To(Equal(3))
+	g.Expect(r.Summary.FilesAffected).To(Equal(2))
+	g.Expect(r.Summary.BySeverity[SeverityError]).To(Equal(2))
 
 	errors := r.BySeverity(SeverityError)
-	assertErrorCount(t, errors, 2)
+	g.Expect(errors).To(HaveLen(2))
 }
 
 func TestReportJSON(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	r := NewReport(ToolInfo{Name: "test"})
 	r.AddFinding(Finding{
@@ -254,47 +200,31 @@ func TestReportJSON(t *testing.T) {
 	r.ComputeSummary()
 
 	data, err := json.Marshal(r)
-	if err != nil {
-		t.Fatalf("MarshalJSON failed: %v", err)
-	}
+	g.Expect(err).NotTo(HaveOccurred())
 
-	// Parse it back
 	parsed, _, err := ReportFromJSON(data)
-	if err != nil {
-		t.Fatalf("ReportFromJSON failed: %v", err)
-	}
-
-	if parsed.Tool.Name != "test" {
-		t.Errorf("expected tool name 'test', got '%s'", parsed.Tool.Name)
-	}
-
-	if len(parsed.Findings) != 1 {
-		t.Errorf("expected 1 finding, got %d", len(parsed.Findings))
-	}
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(parsed.Tool.Name).To(Equal("test"))
+	g.Expect(parsed.Findings).To(HaveLen(1))
 }
 
 func TestFindingJSON(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := standardTestFinding()
 
 	data, err := json.Marshal(f)
-	if err != nil {
-		t.Fatalf("Marshal failed: %v", err)
-	}
+	g.Expect(err).NotTo(HaveOccurred())
 
 	parsed, err := FromJSON(data)
-	if err != nil {
-		t.Fatalf("FromJSON failed: %v", err)
-	}
-
-	if parsed.ID != f.ID {
-		t.Errorf("expected ID %s, got %s", f.ID, parsed.ID)
-	}
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(parsed.ID).To(Equal(f.ID))
 }
 
 func TestSARIFConversion(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	r := NewReport(ToolInfo{Name: "test"})
 	r.AddFinding(Finding{
@@ -312,52 +242,31 @@ func TestSARIFConversion(t *testing.T) {
 	r.ComputeSummary()
 
 	sarif, err := r.ToSARIF()
-	if err != nil {
-		t.Fatalf("ToSARIF failed: %v", err)
-	}
+	g.Expect(err).NotTo(HaveOccurred())
 
-	// Basic validation - should be valid JSON
 	var log map[string]any
-
-	err = json.Unmarshal(sarif, &log)
-	if err != nil {
-		t.Fatalf("SARIF is not valid JSON: %v", err)
-	}
-
-	if log["version"] != "2.1.0" {
-		t.Errorf("expected version 2.1.0, got %v", log["version"])
-	}
+	g.Expect(json.Unmarshal(sarif, &log)).NotTo(HaveOccurred())
+	g.Expect(log["version"]).To(Equal("2.1.0"))
 }
 
 func TestLSPConversion(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := standardTestFinding()
 
 	lsp := f.ToLSP()
-	if lsp.Range.Start.Line != 9 { // 0-based
-		t.Errorf("expected line 9 (0-based), got %d", lsp.Range.Start.Line)
-	}
-
-	if lsp.Severity != 1 { // Error
-		t.Errorf("expected severity 1 (Error), got %d", lsp.Severity)
-	}
+	g.Expect(lsp.Range.Start.Line).To(Equal(9))
+	g.Expect(lsp.Severity).To(Equal(1))
 }
 
 func TestCategory(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
-	if !CategorySecurity.IsValid() {
-		t.Error("security should be a valid category")
-	}
-
-	if !Category("custom-category").IsValid() {
-		t.Error("custom-category should be valid")
-	}
-
-	if Category("custom-category").IsStandard() {
-		t.Error("custom-category should not be standard")
-	}
+	g.Expect(CategorySecurity.IsValid()).To(BeTrue())
+	g.Expect(Category("custom-category").IsValid()).To(BeTrue())
+	g.Expect(Category("custom-category").IsStandard()).To(BeFalse())
 }
 
 func TestRangeContains(t *testing.T) {
@@ -378,8 +287,8 @@ func TestRangeContains(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
-			assert.Equal(t, tt.want, r.Contains(tt.pos))
+			g := NewWithT(t)
+			g.Expect(r.Contains(tt.pos)).To(Equal(tt.want))
 		})
 	}
 }
@@ -402,25 +311,23 @@ func TestClampConfidence(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
-			assert.InDelta(t, tt.want, clampConfidence(tt.in), 1e-9)
+			g := NewWithT(t)
+			g.Expect(clampConfidence(tt.in)).To(BeNumerically("~", tt.want, 1e-9))
 		})
 	}
 }
 
 func TestFinding_HasCategory(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
-	assert.False(t, Finding{}.HasCategory(), "empty finding has no category")
-	assert.True(
-		t,
-		Finding{Category: CategorySecurity}.HasCategory(),
-		"security finding has category",
-	)
+	g.Expect(Finding{}.HasCategory()).To(BeFalse())
+	g.Expect(Finding{Category: CategorySecurity}.HasCategory()).To(BeTrue())
 }
 
 func TestFinding_String_WithCategory(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := Finding{
 		Severity: SeverityError,
@@ -430,23 +337,24 @@ func TestFinding_String_WithCategory(t *testing.T) {
 		Message:  "something broke",
 	}
 
-	assert.Equal(t, "error test [R1] a.go:10: something broke", f.String())
+	g.Expect(f.String()).To(Equal("error test [R1] a.go:10: something broke"))
 
 	f.Category = CategorySecurity
-	assert.Equal(t, "error test [R1] a.go:10: something broke (security)", f.String())
+	g.Expect(f.String()).To(Equal("error test [R1] a.go:10: something broke (security)"))
 }
 
 func TestFinding_Preview(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
-	assert.Empty(t, Finding{}.Preview(), "no fix = no preview")
+	g.Expect(Finding{}.Preview()).To(BeEmpty())
 
 	f := Finding{BeforeCode: "old", AfterCode: "new"}
-	assert.Equal(t, "- old\n+ new\n", f.Preview())
+	g.Expect(f.Preview()).To(Equal("- old\n+ new\n"))
 
 	insertOnly := Finding{AfterCode: "inserted"}
-	assert.Equal(t, "+ inserted\n", insertOnly.Preview())
+	g.Expect(insertOnly.Preview()).To(Equal("+ inserted\n"))
 
 	deleteOnly := Finding{BeforeCode: "removed"}
-	assert.Equal(t, "- removed\n", deleteOnly.Preview())
+	g.Expect(deleteOnly.Preview()).To(Equal("- removed\n"))
 }

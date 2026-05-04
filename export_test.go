@@ -125,15 +125,7 @@ func TestReport_AddFindings(t *testing.T) {
 		{ID: "3", Message: "third"},
 	})
 
-	if len(r.Findings) != 3 {
-		t.Fatalf("Findings length = %d, want 3", len(r.Findings))
-	}
-	if r.Findings[0].ID != "1" {
-		t.Errorf("Findings[0].ID = %q, want %q", r.Findings[0].ID, "1")
-	}
-	if r.Findings[2].ID != "3" {
-		t.Errorf("Findings[2].ID = %q, want %q", r.Findings[2].ID, "3")
-	}
+	AssertFindingsLenAndIDs(t, r.Findings, []string{"1", "2", "3"}, "AddFindings")
 }
 
 func TestReport_AddFindings_Empty(t *testing.T) {
