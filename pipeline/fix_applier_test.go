@@ -346,8 +346,8 @@ func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
 	g.Expect(applier.backup.backupDir).NotTo(BeEmpty())
 }
 
+//nolint:paralleltest // uses t.Setenv which is incompatible with t.Parallel
 func TestNewFixApplier_MkdirTempFallback(t *testing.T) {
-	t.Parallel()
 	g := NewWithT(t)
 	t.Setenv("TMPDIR", "/etc/passwd")
 
