@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-faster/yaml"
+	"go.yaml.in/yaml/v3"
 	"github.com/larsartmann/go-finding"
 	det "github.com/larsartmann/go-finding/internal/detectors"
 	"github.com/larsartmann/go-finding/pipeline"
