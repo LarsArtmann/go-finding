@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func assertPartialFindingsLen(t *testing.T, result *PartialResult, want int, _ string) {
+func assertPartialFindingsLen(t *testing.T, result *PartialResult, want int) {
 	t.Helper()
 	g := NewWithT(t)
 
@@ -55,7 +55,7 @@ func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
 
 	result := runDetectPartial(t, false, d1, d2)
 
-	assertPartialFindingsLen(t, result, 2, "expected 2 findings")
+	assertPartialFindingsLen(t, result, 2)
 	g.Expect(result.HasErrors()).To(BeFalse())
 }
 
@@ -66,7 +66,7 @@ func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
 
 	result := runDetectPartial(t, false, d1, d2)
 
-	assertPartialFindingsLen(t, result, 1, "expected 1 finding from good detector")
+	assertPartialFindingsLen(t, result, 1)
 	g.Expect(result.HasErrors()).To(BeTrue())
 	g.Expect(result.Errors["bad"]).To(HaveOccurred())
 }
@@ -78,7 +78,7 @@ func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {
 
 	result := runDetectPartial(t, true, d1, d2)
 
-	assertPartialFindingsLen(t, result, 1, "expected 1 finding")
+	assertPartialFindingsLen(t, result, 1)
 	g.Expect(result.HasErrors()).To(BeTrue())
 }
 
@@ -90,7 +90,7 @@ func TestDetectPartial_AllFail(t *testing.T) {
 
 	result := runDetectPartial(t, false, d1, d2)
 
-	assertPartialFindingsLen(t, result, 0, "expected 0 findings")
+	assertPartialFindingsLen(t, result, 0)
 	g.Expect(result.Errors).To(HaveLen(2))
 }
 
