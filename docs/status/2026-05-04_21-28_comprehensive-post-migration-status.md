@@ -17,49 +17,54 @@ Architecture review identified **11 quick fixes** and **6 larger refactors**. Tw
 
 ## Build & Test Health
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| `go build ./...` | PASS | ✅ |
-| `go vet ./...` | PASS | ✅ |
-| `go test -race -count=1 ./...` | ALL PASS (5 packages) | ✅ |
-| `golangci-lint run ./...` | 0 issues | ✅ |
-| Coverage: root package | 99.6% | ✅ |
-| Coverage: cmd/go-finding | 95.4% | ✅ |
-| Coverage: internal/detectors | 96.1% | ✅ |
-| Coverage: pipeline | 97.4% | ✅ |
-| Production files | 35 | — |
-| Test files | 58 | — |
-| Production LOC | 6,013 | — |
-| Test LOC | 15,209 | — |
-| Test:Code ratio | 2.5:1 | ✅ |
+| Metric                         | Value                 | Status |
+| ------------------------------ | --------------------- | ------ |
+| `go build ./...`               | PASS                  | ✅     |
+| `go vet ./...`                 | PASS                  | ✅     |
+| `go test -race -count=1 ./...` | ALL PASS (5 packages) | ✅     |
+| `golangci-lint run ./...`      | 0 issues              | ✅     |
+| Coverage: root package         | 99.6%                 | ✅     |
+| Coverage: cmd/go-finding       | 95.4%                 | ✅     |
+| Coverage: internal/detectors   | 96.1%                 | ✅     |
+| Coverage: pipeline             | 97.4%                 | ✅     |
+| Production files               | 35                    | —      |
+| Test files                     | 58                    | —      |
+| Production LOC                 | 6,013                 | —      |
+| Test LOC                       | 15,209                | —      |
+| Test:Code ratio                | 2.5:1                 | ✅     |
 
 ---
 
 ## A) FULLY DONE ✅
 
 ### 1. Testify → Gomega Migration (COMPLETE)
+
 - **All 27 test files** converted from testify to gomega
 - `sarif_test.go` was the last file — 24 `require.*` calls converted this session
 - Import `. "github.com/onsi/gomega"` + `g := NewWithT(t)` pattern established everywhere
 - All `assert.*` and `require.*` calls replaced with `g.Expect()` assertions
 
 ### 2. YAML Library Migration (COMPLETE)
+
 - `cmd/go-finding/main.go` uses `github.com/go-faster/yaml` (maintained fork)
 - `gopkg.in/yaml.v3` removed from direct dependencies
 - `go.yaml.in/yaml/v3` remains as `// indirect` (pulled by go-faster/yaml)
 
 ### 3. Testify Dependency Removal (COMPLETE)
+
 - `github.com/stretchr/testify` is `// indirect` only (via go-faster/yaml test imports)
 - **Not removable completely** until go-faster/yaml removes its own testify dependency
 - Zero production code imports testify
 - Zero test code imports testify
 
 ### 4. Build-Blocking Bugs Fixed (COMPLETE)
+
 - 3 duplicate `g := NewWithT(t)` declarations in `integration_test.go`, `main_test.go`
 - `t.Setenv` + `t.Parallel` conflict in `pipeline/fix_applier_test.go`
 - All 3 errors resolved with targeted fixes
 
 ### 5. Fuzz Test Hardening (COMPLETE)
+
 - `FuzzGenerateID` — relaxed assertions, handles empty tool/rule
 - `FuzzParseID` — simplified to just verify no panics
 - `FuzzRoundTripID` — skips inputs where round-trip is known to be lossy (empty tool, line=0, colons in paths, numeric filenames)
@@ -67,6 +72,7 @@ Architecture review identified **11 quick fixes** and **6 larger refactors**. Tw
 - All 4 fuzz tests pass with 15s fuzz time each, no failures
 
 ### 6. Pipeline Context Helper Extraction (COMPLETE)
+
 - `CheckCanceled(ctx)` — replaces inline `select { case <-ctx.Done() }` blocks
 - `CheckCanceledWithMsg(ctx, msg)` — same with custom error message
 - `WaitWithContext(ctx, done)` — replaces `select { case <-ctx.Done() / case <-done }`
@@ -74,6 +80,7 @@ Architecture review identified **11 quick fixes** and **6 larger refactors**. Tw
 - All callers updated in `partial.go`, `fix_applier.go`, `retry.go`, `pipeline.go`
 
 ### 7. Architecture Improvements (2 OF 17 IMPLEMENTED)
+
 - **FixApplier.Close()** — `pipeline/fix_applier.go:36` — cleans up temp backup dirs, implements io.Closer
 - **Error constructor consolidation** — `errors.go:102` — extracted `newCategorizedError()`, 5 constructors now delegate
 
@@ -82,11 +89,13 @@ Architecture review identified **11 quick fixes** and **6 larger refactors**. Tw
 ## B) PARTIALLY DONE 🔧
 
 ### 1. Examples Package
+
 - `examples/basic`, `examples/builder`, `examples/pipeline` exist but have **0% coverage**
 - No test files in any example subdirectory
 - `examples/example_compile_test.go` only tests that examples compile
 
 ### 2. PUBLIC_OR_PRIVATE.md (untracked)
+
 - File exists in working tree but not committed
 - Contains a decision about making the repo public
 - Status unknown — needs review
@@ -97,37 +106,37 @@ Architecture review identified **11 quick fixes** and **6 larger refactors**. Tw
 
 ### Architecture Quick Fixes (9 remaining)
 
-| # | Issue | File | Impact | Effort |
-|---|-------|------|--------|--------|
-| 1 | Tag/Tags coexistence validation | `finding.go:28-29` | Prevent invalid state | Quick |
-| 2 | Range End < Start validation | `position.go:64-67` | Prevent invalid state | Quick |
-| 3 | Confidence clamping in Validate() | `finding.go:250` | Consistency fix | Quick |
-| 4 | Position.HasLocation() method | `position.go:19-21` | API clarity | Quick |
-| 5 | Generic named-func adapter | `pipeline/pipeline.go:24-95` | DRY reduction | Quick |
-| 6 | Generic pointer-equal helper | `finding.go:309-349` | DRY reduction | Quick |
-| 7 | SARIF write method consolidation | `sarif.go:159-208` | DRY reduction | Quick |
-| 8 | ValidationBuilder type | `finding.go:216` | Reusable pattern | Quick |
-| 9 | TriageFunc customizable triage | `pipeline/pipeline.go:518` | Extensibility | Quick |
+| #   | Issue                             | File                         | Impact                | Effort |
+| --- | --------------------------------- | ---------------------------- | --------------------- | ------ |
+| 1   | Tag/Tags coexistence validation   | `finding.go:28-29`           | Prevent invalid state | Quick  |
+| 2   | Range End < Start validation      | `position.go:64-67`          | Prevent invalid state | Quick  |
+| 3   | Confidence clamping in Validate() | `finding.go:250`             | Consistency fix       | Quick  |
+| 4   | Position.HasLocation() method     | `position.go:19-21`          | API clarity           | Quick  |
+| 5   | Generic named-func adapter        | `pipeline/pipeline.go:24-95` | DRY reduction         | Quick  |
+| 6   | Generic pointer-equal helper      | `finding.go:309-349`         | DRY reduction         | Quick  |
+| 7   | SARIF write method consolidation  | `sarif.go:159-208`           | DRY reduction         | Quick  |
+| 8   | ValidationBuilder type            | `finding.go:216`             | Reusable pattern      | Quick  |
+| 9   | TriageFunc customizable triage    | `pipeline/pipeline.go:518`   | Extensibility         | Quick  |
 
 ### Architecture Larger Refactors (6 total)
 
-| # | Issue | Impact | Effort |
-|---|-------|--------|--------|
-| 1 | String-typed enums → proper enum types | Type safety | Major |
-| 2 | FindingsReader interface | Cross-format import | Major |
-| 3 | Config callbacks → composable hooks | Extensibility | Major |
-| 4 | Report splitting (data + serialization) | Single responsibility | Major |
-| 5 | Use go-sarif library instead of hand-rolled types | Spec compliance | Major |
-| 6 | Use diff-match-patch for FixEngine | Robustness | Major |
+| #   | Issue                                             | Impact                | Effort |
+| --- | ------------------------------------------------- | --------------------- | ------ |
+| 1   | String-typed enums → proper enum types            | Type safety           | Major  |
+| 2   | FindingsReader interface                          | Cross-format import   | Major  |
+| 3   | Config callbacks → composable hooks               | Extensibility         | Major  |
+| 4   | Report splitting (data + serialization)           | Single responsibility | Major  |
+| 5   | Use go-sarif library instead of hand-rolled types | Spec compliance       | Major  |
+| 6   | Use diff-match-patch for FixEngine                | Robustness            | Major  |
 
 ### Library Replacements (not started)
 
-| # | Current | Replacement | Why |
-|---|---------|-------------|-----|
-| 1 | Hand-rolled SARIF types | `github.com/owenrumney/go-sarif/v2` | Spec compliance |
-| 2 | Hand-rolled LSP types | `github.com/sourcegraph/go-lsp` | Spec compliance |
-| 3 | Manual exponential backoff | `github.com/cenkalti/backoff/v4` | Well-tested |
-| 4 | Manual diff in Preview() | `github.com/arl/diff` or `github.com/sergi/go-diff` | Robustness |
+| #   | Current                    | Replacement                                         | Why             |
+| --- | -------------------------- | --------------------------------------------------- | --------------- |
+| 1   | Hand-rolled SARIF types    | `github.com/owenrumney/go-sarif/v2`                 | Spec compliance |
+| 2   | Hand-rolled LSP types      | `github.com/sourcegraph/go-lsp`                     | Spec compliance |
+| 3   | Manual exponential backoff | `github.com/cenkalti/backoff/v4`                    | Well-tested     |
+| 4   | Manual diff in Preview()   | `github.com/arl/diff` or `github.com/sergi/go-diff` | Robustness      |
 
 ---
 
@@ -139,15 +148,15 @@ All tests pass. Linter is clean. Build is green. Race detector is clean. Fuzz te
 
 ### Previous session fuckups (now fixed)
 
-| What happened | Root cause | How it was fixed |
-|---------------|-----------|------------------|
-| `isContextDone` undefined | Deleted helper but forgot to update callers in `partial.go` | Updated all callers to use `CheckCanceled(ctx)` |
-| Unused `fmt` import in `fix_applier.go` | `fmt.Errorf` replaced by `CheckCanceledWithMsg` but import not removed | Removed import |
-| Duplicate `g := NewWithT(t)` in 3 functions | Conversion script inserted before AND after `t.Parallel()` | Removed first instance, kept one after `t.Parallel()` |
-| `t.Setenv` + `t.Parallel` crash | Go 1.26 forbids Setenv in parallel tests | Removed `t.Parallel()`, added nolint comment |
-| Fuzz tests failing on edge cases | Tests assumed round-trip was lossless for all inputs | Added skip conditions for known-lossy inputs |
-| Regex-based converter mangled strings | Shell escaping destroyed string literals with `)`, `$`, quotes | Used Python token-based converter instead |
-| Converter script lost on `/tmp` | `/tmp` is not persisted across reboots | Converter work is done; no longer needed |
+| What happened                               | Root cause                                                             | How it was fixed                                      |
+| ------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| `isContextDone` undefined                   | Deleted helper but forgot to update callers in `partial.go`            | Updated all callers to use `CheckCanceled(ctx)`       |
+| Unused `fmt` import in `fix_applier.go`     | `fmt.Errorf` replaced by `CheckCanceledWithMsg` but import not removed | Removed import                                        |
+| Duplicate `g := NewWithT(t)` in 3 functions | Conversion script inserted before AND after `t.Parallel()`             | Removed first instance, kept one after `t.Parallel()` |
+| `t.Setenv` + `t.Parallel` crash             | Go 1.26 forbids Setenv in parallel tests                               | Removed `t.Parallel()`, added nolint comment          |
+| Fuzz tests failing on edge cases            | Tests assumed round-trip was lossless for all inputs                   | Added skip conditions for known-lossy inputs          |
+| Regex-based converter mangled strings       | Shell escaping destroyed string literals with `)`, `$`, quotes         | Used Python token-based converter instead             |
+| Converter script lost on `/tmp`             | `/tmp` is not persisted across reboots                                 | Converter work is done; no longer needed              |
 
 ---
 
@@ -191,48 +200,48 @@ All tests pass. Linter is clean. Build is green. Race detector is clean. Fuzz te
 
 ### Tier 1: High Impact, Low Effort (DO FIRST)
 
-| # | Task | Why | Effort |
-|---|------|-----|--------|
-| 1 | Wire `FixApplier.Close()` in pipeline | Resource leak — temp dirs never cleaned up | 5 min |
-| 2 | Add `Tag`/`Tags` mutual exclusion in `Validate()` | Prevents invalid state | 10 min |
-| 3 | Add `Range.IsValid()` to check `End >= Start` | Prevents silent wrong behavior | 10 min |
-| 4 | Fix `Validate()` to use `NormalizedConfidence()` | Consistency with `NewFinding` | 5 min |
-| 5 | Add `Position.HasLocation() bool` | API clarity for file-only vs file+line | 5 min |
-| 6 | Consolidate SARIF write methods | DRY up 4 methods that duplicate marshaling | 30 min |
-| 7 | Generic `equalPtr[T]` helper in `Finding.Equal()` | DRY up 3 identical nil-check patterns | 20 min |
-| 8 | Generic named-func adapter with Go 1.24+ generics | DRY up DetectorFunc/ProcessorFunc duplication | 30 min |
+| #   | Task                                              | Why                                           | Effort |
+| --- | ------------------------------------------------- | --------------------------------------------- | ------ |
+| 1   | Wire `FixApplier.Close()` in pipeline             | Resource leak — temp dirs never cleaned up    | 5 min  |
+| 2   | Add `Tag`/`Tags` mutual exclusion in `Validate()` | Prevents invalid state                        | 10 min |
+| 3   | Add `Range.IsValid()` to check `End >= Start`     | Prevents silent wrong behavior                | 10 min |
+| 4   | Fix `Validate()` to use `NormalizedConfidence()`  | Consistency with `NewFinding`                 | 5 min  |
+| 5   | Add `Position.HasLocation() bool`                 | API clarity for file-only vs file+line        | 5 min  |
+| 6   | Consolidate SARIF write methods                   | DRY up 4 methods that duplicate marshaling    | 30 min |
+| 7   | Generic `equalPtr[T]` helper in `Finding.Equal()` | DRY up 3 identical nil-check patterns         | 20 min |
+| 8   | Generic named-func adapter with Go 1.24+ generics | DRY up DetectorFunc/ProcessorFunc duplication | 30 min |
 
 ### Tier 2: High Impact, Medium Effort
 
-| # | Task | Why | Effort |
-|---|------|-----|--------|
-| 9 | Customizable `TriageFunc` in Config | Extensibility for downstream consumers | 1 hr |
-| 10 | `FindingsReader` interface | Cross-format auto-detection | 2 hr |
-| 11 | `ValidationBuilder` type | Reusable across Validate() in Finding, Config, RetryConfig | 1 hr |
-| 12 | Add tests for examples/basic, examples/builder, examples/pipeline | Coverage gap | 1 hr |
-| 13 | Replace hand-rolled LSP types with `sourcegraph/go-lsp` | Spec compliance | 2 hr |
-| 14 | Use `cenkalti/backoff/v4` for retry logic | Well-tested exponential backoff | 1 hr |
+| #   | Task                                                              | Why                                                        | Effort |
+| --- | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------ |
+| 9   | Customizable `TriageFunc` in Config                               | Extensibility for downstream consumers                     | 1 hr   |
+| 10  | `FindingsReader` interface                                        | Cross-format auto-detection                                | 2 hr   |
+| 11  | `ValidationBuilder` type                                          | Reusable across Validate() in Finding, Config, RetryConfig | 1 hr   |
+| 12  | Add tests for examples/basic, examples/builder, examples/pipeline | Coverage gap                                               | 1 hr   |
+| 13  | Replace hand-rolled LSP types with `sourcegraph/go-lsp`           | Spec compliance                                            | 2 hr   |
+| 14  | Use `cenkalti/backoff/v4` for retry logic                         | Well-tested exponential backoff                            | 1 hr   |
 
 ### Tier 3: High Impact, High Effort (PLAN CAREFULLY)
 
-| # | Task | Why | Effort |
-|---|------|-----|--------|
-| 15 | Proper enum types for Severity/FixStrategy/Category | Compile-time type safety | 4 hr |
-| 16 | Replace hand-rolled SARIF types with `go-sarif/v2` | SARIF 2.1.0 spec compliance | 4 hr |
-| 17 | Split Report into data holder + renderer | Single responsibility | 3 hr |
-| 18 | Composable callback hooks (multi-caster) | Multiple consumers | 2 hr |
-| 19 | Remove deprecated `Tag` field | API cleanup (breaking change) | 3 hr |
+| #   | Task                                                | Why                           | Effort |
+| --- | --------------------------------------------------- | ----------------------------- | ------ |
+| 15  | Proper enum types for Severity/FixStrategy/Category | Compile-time type safety      | 4 hr   |
+| 16  | Replace hand-rolled SARIF types with `go-sarif/v2`  | SARIF 2.1.0 spec compliance   | 4 hr   |
+| 17  | Split Report into data holder + renderer            | Single responsibility         | 3 hr   |
+| 18  | Composable callback hooks (multi-caster)            | Multiple consumers            | 2 hr   |
+| 19  | Remove deprecated `Tag` field                       | API cleanup (breaking change) | 3 hr   |
 
 ### Tier 4: Nice-to-Have
 
-| # | Task | Why | Effort |
-|---|------|-----|--------|
-| 20 | Use diff-match-patch in FixEngine | More robust string matching | 3 hr |
-| 21 | Use diff library in `Finding.Preview()` | Proper unified diff output | 1 hr |
-| 22 | Document go-faster/yaml vs go.yaml.in/yaml coexistence | Reduce confusion | 15 min |
-| 23 | Commit or remove `PUBLIC_OR_PRIVATE.md` | Untracked file in working tree | 5 min |
-| 24 | Update FEATURES.md to reflect current state | Doc accuracy | 30 min |
-| 25 | Update TODO_LIST.md with current status | Doc accuracy | 30 min |
+| #   | Task                                                   | Why                            | Effort |
+| --- | ------------------------------------------------------ | ------------------------------ | ------ |
+| 20  | Use diff-match-patch in FixEngine                      | More robust string matching    | 3 hr   |
+| 21  | Use diff library in `Finding.Preview()`                | Proper unified diff output     | 1 hr   |
+| 22  | Document go-faster/yaml vs go.yaml.in/yaml coexistence | Reduce confusion               | 15 min |
+| 23  | Commit or remove `PUBLIC_OR_PRIVATE.md`                | Untracked file in working tree | 5 min  |
+| 24  | Update FEATURES.md to reflect current state            | Doc accuracy                   | 30 min |
+| 25  | Update TODO_LIST.md with current status                | Doc accuracy                   | 30 min |
 
 ---
 
@@ -241,6 +250,7 @@ All tests pass. Linter is clean. Build is green. Race detector is clean. Fuzz te
 **Should we make the deprecated `Tag` (string) field a hard removal in v0.3.0, or keep it indefinitely for backward compatibility?**
 
 Context:
+
 - `Tag` (string) is deprecated in favor of `Tags` ([]Tag) since v0.2.x
 - Both fields coexist and every consumer must check both
 - `Validate()` doesn't reject having both set simultaneously
@@ -269,17 +279,17 @@ github.com/larsartmann/go-finding (module root)
 
 ## Session Commits (this session)
 
-| Commit | Message |
-|--------|---------|
-| `0a3cfe9` | fix(tests): remove duplicate g := NewWithT(t) declarations |
-| `a74a772` | fix(tests): remove t.Parallel from TestNewFixApplier_MkdirTempFallback |
-| `58fdfad` | refactor(tests): convert sarif_test.go from testify to gomega |
+| Commit    | Message                                                                    |
+| --------- | -------------------------------------------------------------------------- |
+| `0a3cfe9` | fix(tests): remove duplicate g := NewWithT(t) declarations                 |
+| `a74a772` | fix(tests): remove t.Parallel from TestNewFixApplier_MkdirTempFallback     |
+| `58fdfad` | refactor(tests): convert sarif_test.go from testify to gomega              |
 | `6934d11` | feat(deps): migrate YAML library, extract context helpers, fix gomega init |
-| `bfdf57d` | chore: tidy go.mod, remove testify as direct dependency |
-| `492e6e7` | fix(tests): harden fuzz tests against ID format edge cases |
-| `b4fbfd5` | style(tests): fix lint warnings in fuzz tests |
-| `2edbd1f` | refactor: add FixApplier.Close(), consolidate error constructors |
-| `df1c41c` | docs(AGENTS): update dependency declarations, add FixApplier.Close() note |
+| `bfdf57d` | chore: tidy go.mod, remove testify as direct dependency                    |
+| `492e6e7` | fix(tests): harden fuzz tests against ID format edge cases                 |
+| `b4fbfd5` | style(tests): fix lint warnings in fuzz tests                              |
+| `2edbd1f` | refactor: add FixApplier.Close(), consolidate error constructors           |
+| `df1c41c` | docs(AGENTS): update dependency declarations, add FixApplier.Close() note  |
 
 ---
 

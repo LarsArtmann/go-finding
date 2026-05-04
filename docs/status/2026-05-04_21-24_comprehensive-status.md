@@ -6,29 +6,29 @@
 
 ## Build & Test Health
 
-| Metric | Status |
-|--------|--------|
-| `go build ./...` | PASS |
-| `go vet ./...` | CLEAN (zero warnings) |
-| `go test -race -run Test ./...` | ALL 6 PACKAGES GREEN |
-| Total coverage | **95.5%** |
-| Root package coverage | 99.4% |
-| Pipeline coverage | 97.4% |
-| Internal/detectors coverage | 96.1% |
-| cmd/go-finding coverage | 95.4% |
-| Lines of Go code | 21,222 |
-| Source files | 35 |
-| Test files | 58 |
+| Metric                          | Status                |
+| ------------------------------- | --------------------- |
+| `go build ./...`                | PASS                  |
+| `go vet ./...`                  | CLEAN (zero warnings) |
+| `go test -race -run Test ./...` | ALL 6 PACKAGES GREEN  |
+| Total coverage                  | **95.5%**             |
+| Root package coverage           | 99.4%                 |
+| Pipeline coverage               | 97.4%                 |
+| Internal/detectors coverage     | 96.1%                 |
+| cmd/go-finding coverage         | 95.4%                 |
+| Lines of Go code                | 21,222                |
+| Source files                    | 35                    |
+| Test files                      | 58                    |
 
 ### Package-by-Package Test Results
 
-| Package | Status | Coverage |
-|---------|--------|----------|
-| `github.com/larsartmann/go-finding` | PASS (BDD 23/23 + all Test*) | 99.4% |
-| `github.com/larsartmann/go-finding/cmd/go-finding` | PASS | 95.4% |
-| `github.com/larsartmann/go-finding/examples` | PASS (no statements) | N/A |
-| `github.com/larsartmann/go-finding/internal/detectors` | PASS | 96.1% |
-| `github.com/larsartmann/go-finding/pipeline` | PASS | 97.4% |
+| Package                                                | Status                        | Coverage |
+| ------------------------------------------------------ | ----------------------------- | -------- |
+| `github.com/larsartmann/go-finding`                    | PASS (BDD 23/23 + all Test\*) | 99.4%    |
+| `github.com/larsartmann/go-finding/cmd/go-finding`     | PASS                          | 95.4%    |
+| `github.com/larsartmann/go-finding/examples`           | PASS (no statements)          | N/A      |
+| `github.com/larsartmann/go-finding/internal/detectors` | PASS                          | 96.1%    |
+| `github.com/larsartmann/go-finding/pipeline`           | PASS                          | 97.4%    |
 
 ### Fuzz Tests
 
@@ -85,6 +85,7 @@ Fixed all build-breaking issues from incomplete migration:
 - Commit `693d11` claimed to migrate but only changed test file imports
 
 **Remaining work:**
+
 - Change `cmd/go-finding/main.go` import from `go-faster/yaml` to `go.yaml.in/yaml/v3` (already an indirect dep)
 - Update struct tags if needed
 - `go mod tidy` to remove `go-faster/yaml`
@@ -116,6 +117,7 @@ No generated API docs (no godoc, no pkg.go.dev readiness checklist).
 ### 4. BREAKING CHANGE: Public API Review
 
 The `PUBLIC_OR_PRIVATE.md` file (untracked) contains a thorough analysis of open-source readiness. Key items:
+
 - No semver tagging
 - No CHANGELOG
 - No CONTRIBUTING.md
@@ -125,6 +127,7 @@ The `PUBLIC_OR_PRIVATE.md` file (untracked) contains a thorough analysis of open
 ### 5. Examples Polish
 
 Examples exist in `examples/` but:
+
 - No README in examples
 - `examples/basic` and `examples/builder` have 0% test coverage
 - `examples/pipeline` also untested
@@ -148,6 +151,7 @@ The fuzz corpus contains entries that produce irreproducible IDs. Every `go test
 ### 2. go-faster/yaml Still in Production Code
 
 The migration commit (`693d11`) was misleading — it only changed test files but left `cmd/go-finding/main.go` importing `go-faster/yaml`. This means:
+
 - The library has TWO yaml libraries as dependencies
 - `go-faster/yaml` is a direct dep that should have been removed
 - The `go.yaml.in/yaml/v3` is already an indirect dep (via ginkgo)
@@ -198,48 +202,48 @@ Sorted by **impact × effort** (highest first):
 
 ### HIGH IMPACT, LOW EFFORT (Do Now)
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 1 | **Fix fuzz test edge cases** — add `t.Skip()` for empty tool/rule in `FuzzGenerateID` and `FuzzRoundTripID` | HIGH | LOW |
-| 2 | **Complete YAML migration** — change `cmd/go-finding/main.go` from `go-faster/yaml` to `go.yaml.in/yaml/v3`, then `go mod tidy` | HIGH | LOW |
-| 3 | **Delete stale fuzz corpus** — `rm -rf testdata/fuzz/` and add to `.gitignore` | MEDIUM | TRIVIAL |
-| 4 | **Add `.gitignore` entry** for `testdata/fuzz/` to prevent corpus creep | MEDIUM | TRIVIAL |
-| 5 | **Archive old status reports** — move 25+ old files to `docs/status/archive/` | LOW | TRIVIAL |
-| 6 | **Add LICENSE file** — required for any open-source release | HIGH | TRIVIAL |
-| 7 | **Add CHANGELOG.md** — start tracking changes for semver releases | MEDIUM | LOW |
+| #   | Task                                                                                                                            | Impact | Effort  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------- | ------ | ------- |
+| 1   | **Fix fuzz test edge cases** — add `t.Skip()` for empty tool/rule in `FuzzGenerateID` and `FuzzRoundTripID`                     | HIGH   | LOW     |
+| 2   | **Complete YAML migration** — change `cmd/go-finding/main.go` from `go-faster/yaml` to `go.yaml.in/yaml/v3`, then `go mod tidy` | HIGH   | LOW     |
+| 3   | **Delete stale fuzz corpus** — `rm -rf testdata/fuzz/` and add to `.gitignore`                                                  | MEDIUM | TRIVIAL |
+| 4   | **Add `.gitignore` entry** for `testdata/fuzz/` to prevent corpus creep                                                         | MEDIUM | TRIVIAL |
+| 5   | **Archive old status reports** — move 25+ old files to `docs/status/archive/`                                                   | LOW    | TRIVIAL |
+| 6   | **Add LICENSE file** — required for any open-source release                                                                     | HIGH   | TRIVIAL |
+| 7   | **Add CHANGELOG.md** — start tracking changes for semver releases                                                               | MEDIUM | LOW     |
 
 ### HIGH IMPACT, MEDIUM EFFORT (Plan For)
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 8 | **Add GitHub Actions CI** — build, vet, test, coverage on push/PR | HIGH | MEDIUM |
-| 9 | **Add `flake.nix`** — replace `justfile` per project standards | HIGH | MEDIUM |
-| 10 | **Consolidate test helpers** — move shared assertions to `internal/testutil` | MEDIUM | MEDIUM |
-| 11 | **Move pipeline config to pipeline package** — extract `pipelineConfigFile` from `cmd/` to `pipeline/` | MEDIUM | MEDIUM |
-| 12 | **Add structured logging (slog)** — replace `fmt.Fprintf` in CLI | MEDIUM | MEDIUM |
-| 13 | **Add godoc comments** — all exported types and functions | MEDIUM | MEDIUM |
-| 14 | **Write CONTRIBUTING.md** — required for open source | HIGH | MEDIUM |
+| #   | Task                                                                                                   | Impact | Effort |
+| --- | ------------------------------------------------------------------------------------------------------ | ------ | ------ |
+| 8   | **Add GitHub Actions CI** — build, vet, test, coverage on push/PR                                      | HIGH   | MEDIUM |
+| 9   | **Add `flake.nix`** — replace `justfile` per project standards                                         | HIGH   | MEDIUM |
+| 10  | **Consolidate test helpers** — move shared assertions to `internal/testutil`                           | MEDIUM | MEDIUM |
+| 11  | **Move pipeline config to pipeline package** — extract `pipelineConfigFile` from `cmd/` to `pipeline/` | MEDIUM | MEDIUM |
+| 12  | **Add structured logging (slog)** — replace `fmt.Fprintf` in CLI                                       | MEDIUM | MEDIUM |
+| 13  | **Add godoc comments** — all exported types and functions                                              | MEDIUM | MEDIUM |
+| 14  | **Write CONTRIBUTING.md** — required for open source                                                   | HIGH   | MEDIUM |
 
 ### MEDIUM IMPACT, MEDIUM EFFORT (Schedule)
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 15 | **Add benchmark regression tracking** — store bench results, compare over time | MEDIUM | MEDIUM |
-| 16 | **Example README files** — add README to each example dir | MEDIUM | LOW |
-| 17 | **Review PUBLIC_OR_PRIVATE.md action items** — execute pre-release checklist | HIGH | HIGH |
-| 18 | **Semver tagging** — tag v0.1.0 or v1.0.0 | HIGH | LOW |
-| 19 | **Add `go ref` docs** — generate API reference | MEDIUM | MEDIUM |
-| 20 | **Improve PipelineConfig validation** — move validation into pipeline package with proper error types | MEDIUM | MEDIUM |
+| #   | Task                                                                                                  | Impact | Effort |
+| --- | ----------------------------------------------------------------------------------------------------- | ------ | ------ |
+| 15  | **Add benchmark regression tracking** — store bench results, compare over time                        | MEDIUM | MEDIUM |
+| 16  | **Example README files** — add README to each example dir                                             | MEDIUM | LOW    |
+| 17  | **Review PUBLIC_OR_PRIVATE.md action items** — execute pre-release checklist                          | HIGH   | HIGH   |
+| 18  | **Semver tagging** — tag v0.1.0 or v1.0.0                                                             | HIGH   | LOW    |
+| 19  | **Add `go ref` docs** — generate API reference                                                        | MEDIUM | MEDIUM |
+| 20  | **Improve PipelineConfig validation** — move validation into pipeline package with proper error types | MEDIUM | MEDIUM |
 
 ### STRATEGIC (Longer Term)
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 21 | **Plugin system for detectors** — make detector registration more dynamic | HIGH | HIGH |
-| 22 | **LSP server implementation** — bridge findings to IDE diagnostics | HIGH | HIGH |
-| 23 | **Output format plugins** — allow custom formatters beyond text/json/sarif | MEDIUM | HIGH |
-| 24 | **Investigate `mvdan/gofumpt`** — stricter formatting than `gofmt` | LOW | LOW |
-| 25 | **Dependency audit** — review all indirect deps for necessity | MEDIUM | MEDIUM |
+| #   | Task                                                                       | Impact | Effort |
+| --- | -------------------------------------------------------------------------- | ------ | ------ |
+| 21  | **Plugin system for detectors** — make detector registration more dynamic  | HIGH   | HIGH   |
+| 22  | **LSP server implementation** — bridge findings to IDE diagnostics         | HIGH   | HIGH   |
+| 23  | **Output format plugins** — allow custom formatters beyond text/json/sarif | MEDIUM | HIGH   |
+| 24  | **Investigate `mvdan/gofumpt`** — stricter formatting than `gofmt`         | LOW    | LOW    |
+| 25  | **Dependency audit** — review all indirect deps for necessity              | MEDIUM | MEDIUM |
 
 ---
 
