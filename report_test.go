@@ -23,12 +23,12 @@ func addSev(r *Report, id string, sev Severity, msg string) {
 func TestReportActiveFindings(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	r.AddFinding(Finding{ID: "1", Message: "active"})
 	r.AddFinding(Finding{
 		ID:          "2",
 		Message:     "suppressed",
-		Suppression: &Suppression{Reason: "test"},
+		Suppression: &Suppression{Reason: string(TagTest)},
 	})
 
 	active := r.ActiveFindings()
@@ -43,7 +43,7 @@ func TestReportActiveFindings(t *testing.T) {
 func TestReportActiveFindings_AllActive(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	r.AddFinding(Finding{ID: "1", Message: "a"})
 	r.AddFinding(Finding{ID: "2", Message: "b"})
 
@@ -56,7 +56,7 @@ func TestReportActiveFindings_AllActive(t *testing.T) {
 func TestReportActiveFindings_None(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	active := r.ActiveFindings()
 	if len(active) != 0 {
 		t.Errorf("active findings = %d, want 0", len(active))
@@ -66,7 +66,7 @@ func TestReportActiveFindings_None(t *testing.T) {
 func TestReportByCategory(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	addCat(r, "1", "security", "a")
 	addCat(r, "2", "style", "b")
 	addCat(r, "3", "security", "c")
@@ -83,7 +83,7 @@ func TestReportByCategory(t *testing.T) {
 func TestReportByFixStrategy(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	addFix(r, "1", FixStrategyDirect, "a")
 	addFix(r, "2", FixStrategyNone, "b")
 	addFix(r, "3", FixStrategyDirect, "c")
@@ -99,7 +99,7 @@ func TestReportByFixStrategy(t *testing.T) {
 func TestReportFindByID(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	r.AddFinding(Finding{ID: "find-me", Message: "target"})
 	r.AddFinding(Finding{ID: "other", Message: "other"})
 
@@ -119,7 +119,7 @@ func TestReportFindByID(t *testing.T) {
 func TestReportBySeverity(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	addSev(r, "1", SeverityError, "a")
 	addSev(r, "2", SeverityWarning, "b")
 	addSev(r, "3", SeverityError, "c")
@@ -135,7 +135,7 @@ func TestReportBySeverity(t *testing.T) {
 func TestReportFindByRule(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	addRule(r, "1", "SA1000", "a")
 	addRule(r, "2", "SA2000", "b")
 	addRule(r, "3", "SA1000", "c")
@@ -149,7 +149,7 @@ func TestReportFindByRule(t *testing.T) {
 func TestReportLen(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	if r.Len() != 0 {
 		t.Errorf("empty report Len = %d, want 0", r.Len())
 	}
@@ -164,7 +164,7 @@ func TestReportLen(t *testing.T) {
 func TestReportAll(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	r.AddFinding(Finding{ID: "1", Message: "a"})
 	r.AddFinding(Finding{ID: "2", Message: "b"})
 	r.AddFinding(Finding{ID: "3", Message: "c"})
@@ -191,7 +191,7 @@ func TestReportAll(t *testing.T) {
 func TestReportAll_Empty(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 
 	count := 0
 	for range r.All() {
@@ -206,7 +206,7 @@ func TestReportAll_Empty(t *testing.T) {
 func TestReportAll_BreakEarly(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	for i := range 10 {
 		r.AddFinding(Finding{ID: string(rune('A' + i)), Message: "finding"})
 	}
@@ -227,15 +227,15 @@ func TestReportAll_BreakEarly(t *testing.T) {
 func TestReport_Filter(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	r.AddFinding(Finding{ID: "1", Severity: SeverityError, Message: "m"})
 	r.AddFinding(Finding{ID: "2", Severity: SeverityInfo, Message: "m"})
 	r.AddFinding(Finding{ID: "3", Severity: SeverityError, Message: "m"})
 
 	filtered := r.Filter(BySeverity(SeverityError))
 
-	if filtered.Tool.Name != "test" {
-		t.Errorf("Tool.Name = %q, want %q", filtered.Tool.Name, "test")
+	if filtered.Tool.Name != string(TagTest) {
+		t.Errorf("Tool.Name = %q, want %q", filtered.Tool.Name, string(TagTest))
 	}
 	if len(filtered.Findings) != 2 {
 		t.Fatalf("Findings length = %d, want 2", len(filtered.Findings))
@@ -251,7 +251,7 @@ func TestReport_Filter(t *testing.T) {
 func TestReport_Filter_Empty(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	filtered := r.Filter(BySeverity(SeverityError))
 
 	if len(filtered.Findings) != 0 {
@@ -262,7 +262,7 @@ func TestReport_Filter_Empty(t *testing.T) {
 func TestReport_Map(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	r.AddFinding(Finding{ID: "1", Severity: SeverityError, Message: "m"})
 	r.AddFinding(Finding{ID: "2", Severity: SeverityInfo, Message: "m"})
 
@@ -271,8 +271,8 @@ func TestReport_Map(t *testing.T) {
 		return f
 	})
 
-	if mapped.Tool.Name != "test" {
-		t.Errorf("Tool.Name = %q, want %q", mapped.Tool.Name, "test")
+	if mapped.Tool.Name != string(TagTest) {
+		t.Errorf("Tool.Name = %q, want %q", mapped.Tool.Name, string(TagTest))
 	}
 	if len(mapped.Findings) != 2 {
 		t.Fatalf("Findings length = %d, want 2", len(mapped.Findings))
@@ -288,7 +288,7 @@ func TestReport_Map(t *testing.T) {
 func TestReport_Map_Empty(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "test"})
+	r := NewReport(ToolInfo{Name: string(TagTest)})
 	mapped := r.Map(func(f Finding) Finding { return f })
 
 	if len(mapped.Findings) != 0 {

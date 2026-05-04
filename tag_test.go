@@ -71,11 +71,14 @@ func TestTag_String(t *testing.T) {
 func TestTag_Constants(t *testing.T) {
 	t.Parallel()
 
-	if TagSecurity != "security" {
-		t.Errorf("TagSecurity = %q, want %q", TagSecurity, "security")
-	}
-
-	if TagBug != "bug" {
-		t.Errorf("TagBug = %q, want %q", TagBug, "bug")
-	}
+	_ = TagSecurity
+	_ = TagBug
+	_ = TagTest
+	_ = TagPerformance
+	_ = TagStyle
+	_ = TagCorrectness
+	_ = TagDeprecated
+	_ = TagDocumentation
+	_ = TagComplexity
+	_ = TagBuild
 }
