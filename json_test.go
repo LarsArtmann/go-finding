@@ -7,8 +7,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func assertSingleFindingWithID(t *testing.T, got *Report, wantID string) {
@@ -211,8 +210,10 @@ func TestReportFromJSON(t *testing.T) {
 func TestFindingsFromJSON(t *testing.T) {
 	t.Parallel()
 
+
 	t.Run("valid findings slice", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 
 		orig := []Finding{
 			MakeFindingWithPos("f1", "R1", "t", "msg", SeverityInfo, "a.go", 1, 1),
@@ -229,7 +230,7 @@ func TestFindingsFromJSON(t *testing.T) {
 			t.Fatalf("FindingsFromJSON: %v", err)
 		}
 
-		require.Len(t, got, 2, "findings")
+		g.Expect(got).To(HaveLen(2))
 
 		if got[0].ID != "f1" || got[1].ID != "f2" {
 			t.Errorf("IDs = [%q, %q], want [f1, f2]", got[0].ID, got[1].ID)
@@ -247,6 +248,7 @@ func TestFindingsFromJSON(t *testing.T) {
 
 	t.Run("filters invalid findings", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 
 		orig := []Finding{
 			MakeFindingWithPos("f1", "R1", "t", "msg", SeverityInfo, "a.go", 1, 1),
@@ -267,7 +269,7 @@ func TestFindingsFromJSON(t *testing.T) {
 			t.Errorf("dropped = %d, want 1", dropped)
 		}
 
-		require.Len(t, got, 1, "filtered findings")
+		g.Expect(got).To(HaveLen(1))
 
 		if got[0].ID != "f1" {
 			t.Errorf("ID = %q, want %q", got[0].ID, "f1")
@@ -277,6 +279,7 @@ func TestFindingsFromJSON(t *testing.T) {
 
 func TestPrettyJSON(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	r := MakeSimpleReport("tool")
 
@@ -285,13 +288,14 @@ func TestPrettyJSON(t *testing.T) {
 		t.Fatalf("PrettyJSON: %v", err)
 	}
 
-	assert.Contains(t, got, "\n", "PrettyJSON should contain newlines")
-	assert.Contains(t, got, "  ", "PrettyJSON should be indented")
-	assert.Contains(t, got, `"tool"`, "PrettyJSON should contain tool name")
+	g.Expect(got).To(ContainSubstring("\n"))
+	g.Expect(got).To(ContainSubstring("  "))
+	g.Expect(got).To(ContainSubstring(`"tool"`))
 }
 
 func TestLineJSON(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := Finding{
 		ID:       "f1",
@@ -304,12 +308,13 @@ func TestLineJSON(t *testing.T) {
 		t.Fatalf("LineJSON: %v", err)
 	}
 
-	assert.NotContains(t, got, "\n", "LineJSON should be single line (no newlines)")
-	assert.Contains(t, got, `"id"`, "LineJSON should contain JSON fields")
+	g.Expect(got).NotTo(ContainSubstring("\n"))
+	g.Expect(got).To(ContainSubstring(`"id"`))
 }
 
 func TestPrettyJSON_ErrorPath(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	r := MakeSimpleReport("tool")
 	r.AddFinding(Finding{
@@ -319,11 +324,12 @@ func TestPrettyJSON_ErrorPath(t *testing.T) {
 	})
 
 	_, err := r.PrettyJSON()
-	require.Error(t, err, "expected error for NaN confidence")
+	g.Expect(err).To(HaveOccurred())
 }
 
 func TestLineJSON_ErrorPath(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := Finding{
 		ID:         "f1",
@@ -336,7 +342,7 @@ func TestLineJSON_ErrorPath(t *testing.T) {
 	}
 
 	_, err := f.LineJSON()
-	require.Error(t, err, "expected error for NaN confidence")
+	g.Expect(err).To(HaveOccurred())
 }
 
 func expectJSONError(t *testing.T, fn func() error, context string) {
@@ -349,6 +355,7 @@ func expectJSONError(t *testing.T, fn func() error, context string) {
 
 func TestFinding_WriteJSON(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := Finding{
 		ID:       "f1",
@@ -363,12 +370,13 @@ func TestFinding_WriteJSON(t *testing.T) {
 	}
 
 	got := buf.String()
-	assert.Contains(t, got, `"id":"f1"`, "WriteJSON should contain JSON fields")
-	assert.Contains(t, got, "\n", "WriteJSON should end with newline")
+	g.Expect(got).To(ContainSubstring(`"id":"f1"`))
+	g.Expect(got).To(ContainSubstring("\n"))
 }
 
 func TestReport_WriteJSON(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	r := MakeSimpleReport("tool")
 
@@ -379,9 +387,9 @@ func TestReport_WriteJSON(t *testing.T) {
 	}
 
 	got := buf.String()
-	assert.Contains(t, got, "\n", "WriteJSON should contain newlines")
-	assert.Contains(t, got, "  ", "WriteJSON should be indented")
-	assert.Contains(t, got, `"tool"`, "WriteJSON should contain tool name")
+	g.Expect(got).To(ContainSubstring("\n"))
+	g.Expect(got).To(ContainSubstring("  "))
+	g.Expect(got).To(ContainSubstring(`"tool"`))
 }
 
 type failingWriter struct{ err error }
@@ -390,18 +398,20 @@ func (w *failingWriter) Write([]byte) (int, error) { return 0, w.err }
 
 func TestFinding_WriteJSON_Error(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := Finding{ID: "f1", Rule: "r1", Severity: SeverityWarning}
 	err := f.WriteJSON(&failingWriter{err: errors.New("write failed")})
-	require.Error(t, err)
-	assert.ErrorContains(t, err, "encoding finding JSON")
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err).To(MatchError(ContainSubstring("encoding finding JSON")))
 }
 
 func TestReport_WriteJSON_Error(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	r := MakeSimpleReport("tool")
 	err := r.WriteJSON(&failingWriter{err: errors.New("write failed")})
-	require.Error(t, err)
-	assert.ErrorContains(t, err, "encoding report JSON")
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err).To(MatchError(ContainSubstring("encoding report JSON")))
 }

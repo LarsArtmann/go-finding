@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/gomega"
 )
 
 func TestFixApplier_BackupRestoreRoundTrip(t *testing.T) {
@@ -61,11 +61,12 @@ func TestFixApplier_BackupPathCollision(t *testing.T) {
 	}
 
 	if applier.backup.BackupPath(sub1) == applier.backup.BackupPath(sub2) {
-		assert.Fail(t, "backup paths should differ for same-named files in different directories")
+		t.Fatal("backup paths should differ for same-named files in different directories")
 	}
 }
 
 func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tempDir := t.TempDir()
@@ -100,10 +101,11 @@ func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
 		t.Fatalf("apply: %v", err)
 	}
 
-	assert.Equal(t, 5, applied)
+	g.Expect(applied).To(Equal(5))
 }
 
 func TestPipeline_GracefulDegradation(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	config := Config{
@@ -128,7 +130,7 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 		t.Fatalf("run: %v", err)
 	}
 
-	assert.NotNil(t, result)
+	g.Expect(result).NotTo(BeNil())
 
 	assertIterationsLen(t, result, 1)
 
@@ -136,6 +138,7 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 }
 
 func TestPipeline_RetryConfig(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	var calls atomic.Int32
@@ -175,12 +178,13 @@ func TestPipeline_RetryConfig(t *testing.T) {
 		t.Fatalf("run: %v", err)
 	}
 
-	assert.Equal(t, 1, result.Iterations[0].FindingsFound)
+	g.Expect(result.Iterations[0].FindingsFound).To(Equal(1))
 
-	assert.GreaterOrEqual(t, calls.Load(), int32(3))
+	g.Expect(calls.Load()).To(BeNumerically(">=", int32(3)))
 }
 
 func TestPipeline_VerifyAfterFix(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	var callCount atomic.Int32
@@ -216,10 +220,11 @@ func TestPipeline_VerifyAfterFix(t *testing.T) {
 		t.Fatalf("run: %v", err)
 	}
 
-	assert.NotNil(t, result.Verification)
+	g.Expect(result.Verification).NotTo(BeNil())
 }
 
 func TestPipeline_MetricsRecordsDetector(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	metrics := NewMetrics()
@@ -243,9 +248,9 @@ func TestPipeline_MetricsRecordsDetector(t *testing.T) {
 	}
 
 	snap := metrics.Snapshot()
-	assert.NotZero(t, snap.DetectorTimes["my-detector"])
+	g.Expect(snap.DetectorTimes["my-detector"]).NotTo(BeZero())
 
-	assert.Equal(t, 1, snap.FindingsFound["my-detector"])
+	g.Expect(snap.FindingsFound["my-detector"]).To(Equal(1))
 }
 
 func TestSuppression_IsValid(t *testing.T) {
@@ -265,8 +270,9 @@ func TestSuppression_IsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 			got := tt.s.IsValid()
-			assert.Equal(t, tt.want, got)
+			g.Expect(got).To(Equal(tt.want))
 		})
 	}
 }

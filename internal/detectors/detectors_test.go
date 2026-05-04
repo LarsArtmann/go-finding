@@ -6,8 +6,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func TestParsePosn(t *testing.T) {
@@ -38,17 +37,19 @@ func TestParsePosn(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
 			pos := parsePosn(tt.posn, tt.dir)
-			assert.Equal(t, tt.wantFile, pos.File)
-			assert.Equal(t, tt.wantLine, pos.Line)
-			assert.Equal(t, tt.wantCol, pos.Column)
+			g.Expect(pos.File).To(Equal(tt.wantFile))
+			g.Expect(pos.Line).To(Equal(tt.wantLine))
+			g.Expect(pos.Column).To(Equal(tt.wantCol))
 		})
 	}
 }
 
 func TestParseGoVetJSON(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	input := `{
 		"github.com/example/pkg": [
@@ -58,60 +59,64 @@ func TestParseGoVetJSON(t *testing.T) {
 	}`
 
 	findings := parseGoVetJSON([]byte(input), "/project")
-	assert.Len(t, findings, 2)
+	g.Expect(findings).To(HaveLen(2))
 
 	f := findings[0]
-	assert.Equal(t, "govet", f.ToolName)
-	assert.Equal(t, "github.com/example/pkg", f.Rule)
-	assert.Equal(t, "unused variable x", f.Message)
-	assert.Equal(t, finding.SeverityWarning, f.Severity)
-	assert.Equal(t, finding.CategoryCorrectness, f.Category)
-	assert.Equal(t, finding.FixStrategySuggest, f.FixStrategy)
-	assert.Equal(t, "/project/main.go", f.Position.File)
-	assert.Equal(t, 10, f.Position.Line)
+	g.Expect(f.ToolName).To(Equal("govet"))
+	g.Expect(f.Rule).To(Equal("github.com/example/pkg"))
+	g.Expect(f.Message).To(Equal("unused variable x"))
+	g.Expect(f.Severity).To(Equal(finding.SeverityWarning))
+	g.Expect(f.Category).To(Equal(finding.CategoryCorrectness))
+	g.Expect(f.FixStrategy).To(Equal(finding.FixStrategySuggest))
+	g.Expect(f.Position.File).To(Equal("/project/main.go"))
+	g.Expect(f.Position.Line).To(Equal(10))
 }
 
 func TestParseGoVetJSON_Invalid(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	findings := parseGoVetJSON([]byte("not json"), "")
-	assert.Nil(t, findings)
+	g.Expect(findings).To(BeNil())
 }
 
 func TestParseGoVetJSON_Empty(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	findings := parseGoVetJSON([]byte("{}"), "")
-	assert.Empty(t, findings)
+	g.Expect(findings).To(BeEmpty())
 }
 
 func TestParseStaticcheckJSON(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	input := `{"code":"SA1000","severity":"warning","location":{"file":"main.go","line":10,"column":5},"message":"invalid regex pattern"}
 {"code":"S1001","severity":"error","location":{"file":"util.go","line":20,"column":1},"message":"should use copy"}`
 
 	findings := parseStaticcheckJSON([]byte(input), "/project")
-	require.Len(t, findings, 2)
+	g.Expect(findings).To(HaveLen(2))
 
 	f := findings[0]
-	assert.Equal(t, "staticcheck", f.ToolName)
-	assert.Equal(t, "SA1000", f.Rule)
-	assert.Equal(t, finding.SeverityWarning, f.Severity)
-	assert.Equal(t, finding.CategoryStyle, f.Category)
-	assert.InDelta(t, 0.8, f.Confidence, 0.001)
+	g.Expect(f.ToolName).To(Equal("staticcheck"))
+	g.Expect(f.Rule).To(Equal("SA1000"))
+	g.Expect(f.Severity).To(Equal(finding.SeverityWarning))
+	g.Expect(f.Category).To(Equal(finding.CategoryStyle))
+	g.Expect(f.Confidence).To(BeNumerically("~", 0.8, 0.001))
 
 	f2 := findings[1]
-	assert.Equal(t, "S1001", f2.Rule)
-	assert.Equal(t, finding.SeverityError, f2.Severity)
-	assert.Equal(t, finding.CategoryStyle, f2.Category)
+	g.Expect(f2.Rule).To(Equal("S1001"))
+	g.Expect(f2.Severity).To(Equal(finding.SeverityError))
+	g.Expect(f2.Category).To(Equal(finding.CategoryStyle))
 }
 
 func TestParseStaticcheckJSON_Empty(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	findings := parseStaticcheckJSON(nil, "")
-	assert.Nil(t, findings)
+	g.Expect(findings).To(BeNil())
 }
 
 func TestParseStaticcheckJSON_LineSkipping(t *testing.T) {
@@ -140,10 +145,11 @@ func TestParseStaticcheckJSON_LineSkipping(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
 			findings := parseStaticcheckJSON([]byte(tt.input), "")
-			require.Len(t, findings, tt.wantLen)
-			assert.Equal(t, tt.wantRule, findings[0].Rule)
+			g.Expect(findings).To(HaveLen(tt.wantLen))
+			g.Expect(findings[0].Rule).To(Equal(tt.wantRule))
 		})
 	}
 }
@@ -170,46 +176,51 @@ func TestStaticcheckCategory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.code, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, staticcheckCategory(tt.code))
+			g.Expect(staticcheckCategory(tt.code)).To(Equal(tt.want))
 		})
 	}
 }
 
 func TestDetectorNames(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	govet := NewGoVetDetector(".")
-	assert.Equal(t, "govet", govet.Name())
+	g.Expect(govet.Name()).To(Equal("govet"))
 
 	sc := NewStaticcheckDetector(".")
-	assert.Equal(t, "staticcheck", sc.Name())
+	g.Expect(sc.Name()).To(Equal("staticcheck"))
 }
 
 func TestNewGoVetDetector_CancelledContext(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 	d := NewGoVetDetector(".")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
 	_, err := d.Detect(ctx)
-	require.Error(t, err)
+	g.Expect(err).To(HaveOccurred())
 }
 
 func TestNewStaticcheckDetector_CancelledContext(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 	d := NewStaticcheckDetector(".")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
 	_, err := d.Detect(ctx)
-	require.Error(t, err)
+	g.Expect(err).To(HaveOccurred())
 }
 
 func TestNewGoVetDetector_ValidProject(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
@@ -219,31 +230,34 @@ func TestNewGoVetDetector_ValidProject(t *testing.T) {
 	defer cancel()
 
 	findings, err := d.Detect(ctx)
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	t.Logf("govet found %d findings", len(findings))
 }
 
 func TestParseGoVetJSON_BadEntry(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	input := `{"github.com/example/pkg": "not an array"}`
 	findings := parseGoVetJSON([]byte(input), "")
-	assert.Nil(t, findings)
+	g.Expect(findings).To(BeNil())
 }
 
 func TestStaticcheckCategory_A(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
-	assert.Equal(t, finding.CategoryCorrectness, staticcheckCategory("A1000"))
+	g.Expect(staticcheckCategory("A1000")).To(Equal(finding.CategoryCorrectness))
 }
 
 func TestParseStaticcheckJSON_AbsolutePath(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	input := `{"code":"S1001","severity":"warning","location":{"file":"/abs/path/main.go","line":1,"column":1},"message":"ok"}`
 	findings := parseStaticcheckJSON([]byte(input), "/project")
-	require.Len(t, findings, 1)
+	g.Expect(findings).To(HaveLen(1))
 
-	assert.Equal(t, "/abs/path/main.go", findings[0].Position.File)
+	g.Expect(findings[0].Position.File).To(Equal("/abs/path/main.go"))
 }

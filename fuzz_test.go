@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/gomega"
 )
 
 func FuzzFilter(f *testing.F) {
@@ -13,6 +13,7 @@ func FuzzFilter(f *testing.F) {
 	f.Add("info", "", "", "")
 
 	f.Fuzz(func(t *testing.T, sevStr, category, file, tool string) {
+		g := NewWithT(t)
 		var severity Severity
 
 		switch sevStr {
@@ -46,29 +47,29 @@ func FuzzFilter(f *testing.F) {
 		}
 
 		all := Filter(findings)
-		assert.Len(t, all, len(findings), "no predicates")
+		g.Expect(all).To(HaveLen(len(findings)))
 
 		// Property: filtered results all match the predicate
 		byCat := Filter(findings, ByCategory(Category(category)))
 		for _, f := range byCat {
-			assert.Equal(t, Category(category), f.Category, "ByCategory mismatch")
+			g.Expect(f.Category).To(Equal(Category(category)))
 		}
 
 		// Property: BySeverity results match exactly
 		bySev := Filter(findings, BySeverity(severity))
 		for _, f := range bySev {
-			assert.Equal(t, severity, f.Severity, "BySeverity mismatch")
+			g.Expect(f.Severity).To(Equal(severity))
 		}
 
 		// Property: combined predicates = intersection
 		both := Filter(findings, ByCategory(Category(category)), BySeverity(severity))
 		for _, f := range both {
-			assert.Equal(t, Category(category), f.Category, "combined filter category")
-			assert.Equal(t, severity, f.Severity, "combined filter severity")
+			g.Expect(f.Category).To(Equal(Category(category)))
+			g.Expect(f.Severity).To(Equal(severity))
 		}
 
-		assert.LessOrEqual(t, len(both), len(byCat), "combined <= byCat")
-		assert.LessOrEqual(t, len(both), len(bySev), "combined <= bySev")
+		g.Expect(len(both)).To(BeNumerically("<=", len(byCat)))
+		g.Expect(len(both)).To(BeNumerically("<=", len(bySev)))
 	})
 }
 
@@ -78,6 +79,7 @@ func FuzzGroupBy(f *testing.F) {
 	f.Add("a", "a", "a")
 
 	f.Fuzz(func(t *testing.T, key1, key2, key3 string) {
+		g := NewWithT(t)
 		findings := []Finding{
 			{ID: "F1", Category: Category(key1)},
 			{ID: "F2", Category: Category(key2)},
@@ -87,16 +89,16 @@ func FuzzGroupBy(f *testing.F) {
 		groups := GroupBy(findings, func(f Finding) string { return string(f.Category) })
 
 		total := 0
-		for _, g := range groups {
-			total += len(g)
+		for _, grp := range groups {
+			total += len(grp)
 		}
 
-		assert.Equal(t, len(findings), total, "GroupBy total")
+		g.Expect(total).To(Equal(len(findings)))
 
-		for _, g := range groups {
-			key := g[0].Category
-			for _, f := range g {
-				assert.Equal(t, key, f.Category, "group mismatch")
+		for _, grp := range groups {
+			key := grp[0].Category
+			for _, f := range grp {
+				g.Expect(f.Category).To(Equal(key))
 			}
 		}
 	})
@@ -107,6 +109,7 @@ func FuzzFilterByFile(f *testing.F) {
 	f.Add("", "", "")
 
 	f.Fuzz(func(t *testing.T, target, file1, file2 string) {
+		g := NewWithT(t)
 		findings := []Finding{
 			{ID: "F1", Position: Position{File: file1}},
 			{ID: "F2", Position: Position{File: file2}},
@@ -114,7 +117,7 @@ func FuzzFilterByFile(f *testing.F) {
 
 		result := Filter(findings, ByFile(target))
 		for _, f := range result {
-			assert.Equal(t, target, f.Position.File, "ByFile mismatch")
+			g.Expect(f.Position.File).To(Equal(target))
 		}
 	})
 }
@@ -123,6 +126,7 @@ func FuzzGroupByFile(f *testing.F) {
 	f.Add("a.go", "b.go", "a.go")
 
 	f.Fuzz(func(t *testing.T, file1, file2, file3 string) {
+		g := NewWithT(t)
 		findings := []Finding{
 			{ID: "F1", Position: Position{File: file1}},
 			{ID: "F2", Position: Position{File: file2}},
@@ -132,14 +136,14 @@ func FuzzGroupByFile(f *testing.F) {
 		groups := GroupByFile(findings)
 
 		total := 0
-		for _, g := range groups {
-			total += len(g)
+		for _, grp := range groups {
+			total += len(grp)
 		}
 
-		assert.Equal(t, len(findings), total, "GroupByFile total")
+		g.Expect(total).To(Equal(len(findings)))
 
 		if file1 == file2 && file2 == file3 {
-			assert.Len(t, groups, 1, "same file")
+			g.Expect(groups).To(HaveLen(1))
 		}
 	})
 }
@@ -150,6 +154,7 @@ func FuzzMerge_DedupByID(f *testing.F) {
 	f.Add("", "", "")
 
 	f.Fuzz(func(t *testing.T, id1, id2, id3 string) {
+		g := NewWithT(t)
 		r1 := NewReport(ToolInfo{Name: "tool1"})
 		r1.AddFinding(Finding{ID: id1, Severity: SeverityWarning})
 		r1.AddFinding(Finding{ID: id2, Severity: SeverityError})
@@ -166,12 +171,12 @@ func FuzzMerge_DedupByID(f *testing.F) {
 		seen := make(map[string]int)
 		for _, f := range merged.Findings {
 			seen[f.ID]++
-			assert.LessOrEqual(t, seen[f.ID], 1, "duplicate ID in merged: %q", f.ID)
+			g.Expect(seen[f.ID]).To(BeNumerically("<=", 1))
 		}
 
 		// Without dedup: total should be sum
 		noDedup := Merge([]*Report{r1, r2}, WithDeduplication(false))
-		assert.Len(t, noDedup.Findings, 3, "no dedup")
+		g.Expect(noDedup.Findings).To(HaveLen(3))
 	})
 }
 
@@ -179,6 +184,7 @@ func FuzzMerge_Idempotent(f *testing.F) {
 	f.Add("F1", "F2")
 
 	f.Fuzz(func(t *testing.T, id1, id2 string) {
+		g := NewWithT(t)
 		if id1 == id2 {
 			return // Skip identical IDs for this property
 		}
@@ -190,7 +196,7 @@ func FuzzMerge_Idempotent(f *testing.F) {
 		merged1 := Merge([]*Report{r})
 		merged2 := Merge([]*Report{merged1})
 
-		assert.Len(t, merged2.Findings, len(merged1.Findings), "merge not idempotent")
+		g.Expect(merged2.Findings).To(HaveLen(len(merged1.Findings)))
 	})
 }
 
@@ -199,6 +205,7 @@ func FuzzCorrelate(f *testing.F) {
 	f.Add("a", "b", 10, 20, "x.go")
 
 	f.Fuzz(func(t *testing.T, tool1, tool2 string, line1, line2 int, file string) {
+		g := NewWithT(t)
 		findings := []Finding{
 			{ID: "F1", ToolName: tool1, Position: Position{File: file, Line: line1}},
 			{ID: "F2", ToolName: tool2, Position: Position{File: file, Line: line2}},
@@ -207,17 +214,17 @@ func FuzzCorrelate(f *testing.F) {
 		correlations := Correlate(findings)
 
 		for _, c := range correlations {
-			assert.InDelta(t, 0, c.Confidence-c.Confidence, 1, "confidence")
-			assert.GreaterOrEqual(t, c.Confidence, 0.0)
-			assert.LessOrEqual(t, c.Confidence, 1.0)
-			assert.Len(t, c.FindingIDs, 2)
+			g.Expect(c.Confidence - c.Confidence).To(BeNumerically("~", 0, 1))
+			g.Expect(c.Confidence).To(BeNumerically(">=", 0.0))
+			g.Expect(c.Confidence).To(BeNumerically("<=", 1.0))
+			g.Expect(c.FindingIDs).To(HaveLen(2))
 		}
 
 		diffFile := []Finding{
 			MakeFindingWithPos("F1", "", "a", "", SeverityInfo, "a.go", 1, 0),
 			MakeFindingWithPos("F2", "", "b", "", SeverityInfo, "b.go", 1, 0),
 		}
-		assert.Empty(t, Correlate(diffFile), "different files should not correlate")
+		g.Expect(Correlate(diffFile)).To(BeEmpty())
 	})
 }
 
@@ -226,6 +233,7 @@ func FuzzMergeByPosition(f *testing.F) {
 	f.Add("file.go", 10, 5, "other.go", 10, 5)
 
 	f.Fuzz(func(t *testing.T, file1 string, line1, col1 int, file2 string, line2, col2 int) {
+		g := NewWithT(t)
 		r1 := NewReport(ToolInfo{Name: "t1"})
 		r1.AddFinding(Finding{
 			ID:       "A",
@@ -243,7 +251,7 @@ func FuzzMergeByPosition(f *testing.F) {
 		key2 := fmt.Sprintf("%s:%d:%d", file2, line2, col2)
 
 		if key1 == key2 {
-			assert.Len(t, merged.Findings, 1, "same position should dedup")
+			g.Expect(merged.Findings).To(HaveLen(1))
 		}
 	})
 }
@@ -253,6 +261,7 @@ func FuzzDedupKey(f *testing.F) {
 	f.Add("", "", 0, 0, "")
 
 	f.Fuzz(func(t *testing.T, id, file string, line, col int, rule string) {
+		g := NewWithT(t)
 		f := Finding{
 			ID:       id,
 			Rule:     rule,
@@ -260,12 +269,12 @@ func FuzzDedupKey(f *testing.F) {
 		}
 
 		k1 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByID})
-		assert.Contains(t, k1, id, "ID key should contain ID")
+		g.Expect(k1).To(ContainSubstring(id))
 
 		k2 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
-		assert.Contains(t, k2, file, "position key should contain file")
+		g.Expect(k2).To(ContainSubstring(file))
 
 		k3 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
-		assert.Contains(t, k3, rule, "rule key should contain rule")
+		g.Expect(k3).To(ContainSubstring(rule))
 	})
 }

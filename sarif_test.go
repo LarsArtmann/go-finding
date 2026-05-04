@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/require"
 )
 
@@ -102,6 +102,7 @@ func TestFromSARIFLevel(t *testing.T) {
 }
 
 func TestToSARIF(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := &Report{
@@ -141,10 +142,10 @@ func TestToSARIF(t *testing.T) {
 	require.Len(t, run.Results, 1, "Results")
 
 	result := run.Results[0]
-	assert.Equal(t, "SA1000", result.RuleID)
-	assert.Equal(t, result.Level, string(SeverityError))
-	assert.Equal(t, "bad code", result.Message.Text)
-	assert.Equal(t, "main.go", result.Locations[0].PhysicalLocation.ArtifactLocation.URI)
+	g.Expect(result.RuleID).To(Equal("SA1000"))
+	g.Expect(string(SeverityError)).To(Equal(result.Level))
+	g.Expect(result.Message.Text).To(Equal("bad code"))
+	g.Expect(result.Locations[0].PhysicalLocation.ArtifactLocation.URI).To(Equal("main.go"))
 }
 
 func TestToSARIFFiltered(t *testing.T) {
@@ -296,6 +297,7 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 }
 
 func TestToSARIF_SuggestionOnly(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := &Report{
@@ -313,18 +315,19 @@ func TestToSARIF_SuggestionOnly(t *testing.T) {
 	}
 
 	data, err := r.ToSARIF()
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	log := unmarshalSARIF(t, data)
 	require.Len(t, log.Runs[0].Results, 1)
 
 	result := log.Runs[0].Results[0]
 	require.Len(t, result.Fixes, 1)
-	assert.Equal(t, "do better", result.Fixes[0].Description.Text)
-	assert.Empty(t, result.Fixes[0].Changes)
+	g.Expect(result.Fixes[0].Description.Text).To(Equal("do better"))
+	g.Expect(result.Fixes[0].Changes).To(BeEmpty())
 }
 
 func TestToSARIF_WithRelated(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := &Report{
@@ -346,15 +349,15 @@ func TestToSARIF_WithRelated(t *testing.T) {
 	}
 
 	data, err := r.ToSARIF()
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	log := unmarshalSARIF(t, data)
 	require.Len(t, log.Runs[0].Results, 1)
 
 	result := log.Runs[0].Results[0]
 	require.Len(t, result.Related, 1)
-	assert.Equal(t, "b.go", result.Related[0].PhysicalLocation.ArtifactLocation.URI)
-	assert.Equal(t, 20, result.Related[0].PhysicalLocation.Region.StartLine)
+	g.Expect(result.Related[0].PhysicalLocation.ArtifactLocation.URI).To(Equal("b.go"))
+	g.Expect(result.Related[0].PhysicalLocation.Region.StartLine).To(Equal(20))
 }
 
 func TestToSARIF_EmptyReport(t *testing.T) {
@@ -409,6 +412,7 @@ func TestToSARIFFiltered_ErrorPath(t *testing.T) {
 }
 
 func TestWriteSARIF(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := &Report{
@@ -423,14 +427,15 @@ func TestWriteSARIF(t *testing.T) {
 
 	var buf strings.Builder
 	err := r.WriteSARIF(&buf)
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	data := buf.String()
-	assert.Contains(t, data, `"version": "2.1.0"`)
-	assert.Contains(t, data, `"tool"`)
+	g.Expect(data).To(ContainSubstring(`"version": "2.1.0"`))
+	g.Expect(data).To(ContainSubstring(`"tool"`))
 }
 
 func TestWriteSARIFFiltered(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := &Report{
@@ -452,8 +457,8 @@ func TestWriteSARIFFiltered(t *testing.T) {
 	require.NoError(t, err)
 
 	data := buf.String()
-	assert.Contains(t, data, "f1")
-	assert.NotContains(t, data, "f2")
+	g.Expect(data).To(ContainSubstring("f1"))
+	g.Expect(data).NotTo(ContainSubstring("f2"))
 }
 
 func TestFindingsFromSARIF_EmptyLog(t *testing.T) {
@@ -478,6 +483,7 @@ func TestFindingsFromSARIF_InvalidJSON(t *testing.T) {
 }
 
 func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	original := Finding{
@@ -513,21 +519,21 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 
 	got := findings[0]
 
-	assert.Equal(t, original.ID, got.ID)
-	assert.Equal(t, original.Rule, got.Rule)
-	assert.Equal(t, original.ToolName, got.ToolName)
-	assert.Equal(t, original.Severity, got.Severity)
-	assert.Equal(t, original.Message, got.Message)
-	assert.Equal(t, original.Category, got.Category)
-	assert.Equal(t, original.Tag, got.Tag)
-	assert.Equal(t, original.FixStrategy, got.FixStrategy)
-	assert.InDelta(t, original.Confidence, got.Confidence, 1e-9)
-	assert.Equal(t, original.Suggestion, got.Suggestion)
-	assert.Equal(t, original.Snippet, got.Snippet)
-	assert.Equal(t, original.Position, got.Position)
-	assert.NotNil(t, got.Range)
-	assert.Equal(t, original.Range.End, got.Range.End)
-	assert.Equal(t, "value", got.Metadata["custom"])
+	g.Expect(got.ID).To(Equal(original.ID))
+	g.Expect(got.Rule).To(Equal(original.Rule))
+	g.Expect(got.ToolName).To(Equal(original.ToolName))
+	g.Expect(got.Severity).To(Equal(original.Severity))
+	g.Expect(got.Message).To(Equal(original.Message))
+	g.Expect(got.Category).To(Equal(original.Category))
+	g.Expect(got.Tag).To(Equal(original.Tag))
+	g.Expect(got.FixStrategy).To(Equal(original.FixStrategy))
+	g.Expect(got.Confidence).To(BeNumerically("~", original.Confidence, 1e-9))
+	g.Expect(got.Suggestion).To(Equal(original.Suggestion))
+	g.Expect(got.Snippet).To(Equal(original.Snippet))
+	g.Expect(got.Position).To(Equal(original.Position))
+	g.Expect(got.Range).NotTo(BeNil())
+	g.Expect(got.Range.End).To(Equal(original.Range.End))
+	g.Expect(got.Metadata["custom"]).To(Equal("value"))
 }
 
 func TestSeverityToSARIFLevel(t *testing.T) {
@@ -558,6 +564,7 @@ func TestSeverityToSARIFLevel(t *testing.T) {
 }
 
 func TestFindingFromSarResult_Rank(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := SarifResult{
@@ -574,10 +581,11 @@ func TestFindingFromSarResult_Rank(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	assert.InDelta(t, 0.75, f.Confidence, 1e-9)
+	g.Expect(f.Confidence).To(BeNumerically("~", 0.75, 1e-9))
 }
 
 func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := SarifResult{
@@ -602,9 +610,9 @@ func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	assert.Equal(t, "fix it", f.Suggestion)
-	assert.Equal(t, "fixed code", f.AfterCode)
-	assert.Equal(t, FixStrategySuggest, f.FixStrategy)
+	g.Expect(f.Suggestion).To(Equal("fix it"))
+	g.Expect(f.AfterCode).To(Equal("fixed code"))
+	g.Expect(f.FixStrategy).To(Equal(FixStrategySuggest))
 }
 
 func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
@@ -663,6 +671,7 @@ func TestFindingFromSarResult_NoLocations(t *testing.T) {
 }
 
 func TestFindingFromSarResult_Properties(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := SarifResult{
@@ -702,13 +711,13 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyDirect)
 	}
 
-	assert.Equal(t, "scanner", f.ToolName)
-	assert.Equal(t, Category("security"), f.Category)
-	assert.Equal(t, "injection", f.Tag)
-	assert.InDelta(t, 0.85, f.Confidence, 1e-9)
-	assert.Equal(t, "fix it", f.Suggestion)
-	assert.Equal(t, "code here", f.Snippet)
-	assert.Equal(t, "custom-val", f.Metadata["custom-key"])
+	g.Expect(f.ToolName).To(Equal("scanner"))
+	g.Expect(f.Category).To(Equal(Category("security")))
+	g.Expect(f.Tag).To(Equal("injection"))
+	g.Expect(f.Confidence).To(BeNumerically("~", 0.85, 1e-9))
+	g.Expect(f.Suggestion).To(Equal("fix it"))
+	g.Expect(f.Snippet).To(Equal("code here"))
+	g.Expect(f.Metadata["custom-key"]).To(Equal("custom-val"))
 }
 
 func TestApplySarifPosition_NilRegion(t *testing.T) {
@@ -788,6 +797,7 @@ func TestApplySarifPosition_EndColumnOnly(t *testing.T) {
 }
 
 func TestWriteSARIF_WriterError(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := &Report{
@@ -802,10 +812,11 @@ func TestWriteSARIF_WriterError(t *testing.T) {
 
 	err := r.WriteSARIF(&failWriter{})
 	require.Error(t, err)
-	assert.ErrorContains(t, err, "writing SARIF")
+	g.Expect(err).To(MatchError(ContainSubstring("writing SARIF")))
 }
 
 func TestWriteSARIFFiltered_WriterError(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := &Report{
@@ -820,7 +831,7 @@ func TestWriteSARIFFiltered_WriterError(t *testing.T) {
 
 	err := r.WriteSARIFFiltered(&failWriter{}, SeverityWarning)
 	require.Error(t, err)
-	assert.ErrorContains(t, err, "writing SARIF")
+	g.Expect(err).To(MatchError(ContainSubstring("writing SARIF")))
 }
 
 // failWriter is an io.Writer that always returns an error.
@@ -901,6 +912,7 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 }
 
 func TestFindingFromSarResult_WithFix(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := SarifResult{
@@ -939,16 +951,17 @@ func TestFindingFromSarResult_WithFix(t *testing.T) {
 
 	f := findingFromSarResult(r, "staticcheck")
 
-	assert.Equal(t, "SA1000", f.Rule)
-	assert.Equal(t, "staticcheck", f.ToolName)
-	assert.Equal(t, "unused variable", f.Message)
-	assert.Equal(t, SeverityWarning, f.Severity)
-	assert.Equal(t, "remove unused variable", f.Suggestion)
-	assert.Equal(t, "fmt.Println()", f.AfterCode)
-	assert.Equal(t, FixStrategySuggest, f.FixStrategy)
+	g.Expect(f.Rule).To(Equal("SA1000"))
+	g.Expect(f.ToolName).To(Equal("staticcheck"))
+	g.Expect(f.Message).To(Equal("unused variable"))
+	g.Expect(f.Severity).To(Equal(SeverityWarning))
+	g.Expect(f.Suggestion).To(Equal("remove unused variable"))
+	g.Expect(f.AfterCode).To(Equal("fmt.Println()"))
+	g.Expect(f.FixStrategy).To(Equal(FixStrategySuggest))
 }
 
 func TestFindingFromSarResult_RankAsConfidence(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	r := SarifResult{
@@ -967,11 +980,12 @@ func TestFindingFromSarResult_RankAsConfidence(t *testing.T) {
 	}
 
 	f := findingFromSarResult(r, "tool")
-	assert.InDelta(t, 0.75, f.Confidence, 0.01)
+	g.Expect(f.Confidence).To(BeNumerically("~", 0.75, 0.01))
 }
 
 func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -999,23 +1013,21 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 
 	f := findings[0]
 
-	assert.Equal(t, "test:R1:a.go:1:1", f.ID, "ID preserved via properties")
-	assert.Equal(t, "R1", f.Rule, "Rule preserved")
-	assert.Equal(t, "msg", f.Message, "Message preserved")
-	assert.Equal(t, "new code", f.AfterCode, "AfterCode preserved via fix")
+	g.Expect(f.ID).To(Equal("test:R1:a.go:1:1"))
+	g.Expect(f.Rule).To(Equal("R1"))
+	g.Expect(f.Message).To(Equal("msg"))
+	g.Expect(f.AfterCode).To(Equal("new code"))
 
-	assert.Equal(t, "old code", f.BeforeCode, "BeforeCode preserved via properties")
+	g.Expect(f.BeforeCode).To(Equal("old code"))
 
 	require.Len(t, f.Related, 1)
-	assert.Equal(
-		t, "related-123", f.Related[0].FindingID,
-		"RelatedRef.FindingID preserved via properties",
-	)
-	assert.Equal(t, "causes", f.Related[0].Relation, "RelatedRef.Relation preserved")
+	g.Expect(f.Related[0].FindingID).To(Equal("related-123"))
+	g.Expect(f.Related[0].Relation).To(Equal("causes"))
 }
 
 func TestSARIF_TagsRoundTrip(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -1036,11 +1048,12 @@ func TestSARIF_TagsRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, findings, 1)
 
-	assert.Equal(t, []Tag{TagSecurity, "injection", "xss"}, findings[0].Tags)
+	g.Expect(findings[0].Tags).To(Equal([]Tag{TagSecurity, "injection", "xss"}))
 }
 
 func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -1059,5 +1072,5 @@ func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 
 	findings, err := FindingsFromSARIF(data)
 	require.NoError(t, err)
-	assert.Empty(t, findings, "suppressed findings are LOST in SARIF round-trip")
+	g.Expect(findings).To(BeEmpty())
 }

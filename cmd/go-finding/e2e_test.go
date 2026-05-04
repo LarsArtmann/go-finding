@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func buildBinary(t *testing.T) string {
 	t.Helper()
+	g := NewWithT(t)
 
 	tmpDir := t.TempDir()
 	bin := filepath.Join(tmpDir, "go-finding")
@@ -25,31 +25,31 @@ func buildBinary(t *testing.T) string {
 		".",
 	)
 	cmd.Dir = "/home/lars/projects/go-finding/cmd/go-finding"
-	out, err := cmd.CombinedOutput()
-	require.NoError(t, err, "build failed: %s", out)
+	_, err := cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
 
 	return bin
 }
 
 func initGoModule(t *testing.T, dir string) {
+	g := NewWithT(t)
 	t.Helper()
 	cmd := exec.CommandContext(context.Background(), "go", "mod", "init", "testmod")
 	cmd.Dir = dir
-	out, err := cmd.CombinedOutput()
-	require.NoError(t, err, "go mod init failed: %s", out)
+	_, err := cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
 }
 
 func TestRun_E2E_DefaultDetectors(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	bin := buildBinary(t)
 	tmpDir := t.TempDir()
 	initGoModule(t, tmpDir)
 	goFile := filepath.Join(tmpDir, "main.go")
-	require.NoError(
-		t,
-		os.WriteFile(goFile, []byte("package main\n\nfunc main() {\n\tunused := 42\n}\n"), 0o644),
-	)
+	g.Expect(os.WriteFile(goFile, []byte("package main\n\nfunc main() {\n\tunused := 42\n}\n"), 0o644)).
+		NotTo(HaveOccurred())
 
 	cmd := exec.CommandContext( //nolint:gosec // E2E test
 		context.Background(),
@@ -57,24 +57,24 @@ func TestRun_E2E_DefaultDetectors(t *testing.T) {
 		"-dir="+tmpDir,
 		"-format=text",
 	)
-	out, err := cmd.CombinedOutput()
-	assert.NoError(t, err, "output: %s", out)
+	_, err := cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
 }
 
 func TestRun_E2E_ConfigFile(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	bin := buildBinary(t)
 	tmpDir := t.TempDir()
 	initGoModule(t, tmpDir)
 	cfgFile := filepath.Join(tmpDir, "config.yaml")
-	require.NoError(
-		t,
-		os.WriteFile(cfgFile, []byte("maxIterations: 1\ndetectors:\n  - name: govet\n"), 0o644),
-	)
+	g.Expect(os.WriteFile(cfgFile, []byte("maxIterations: 1\ndetectors:\n  - name: govet\n"), 0o644)).
+		NotTo(HaveOccurred())
 
 	goFile := filepath.Join(tmpDir, "main.go")
-	require.NoError(t, os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644))
+	g.Expect(os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644)).
+		NotTo(HaveOccurred())
 
 	cmd := exec.CommandContext( //nolint:gosec // E2E test
 		context.Background(),
@@ -82,18 +82,20 @@ func TestRun_E2E_ConfigFile(t *testing.T) {
 		"-config="+cfgFile,
 		"-dir="+tmpDir,
 	)
-	out, err := cmd.CombinedOutput()
-	assert.NoError(t, err, "output: %s", out)
+	_, err := cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
 }
 
 func TestRun_E2E_SARIFOutput(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	bin := buildBinary(t)
 	tmpDir := t.TempDir()
 	initGoModule(t, tmpDir)
 	goFile := filepath.Join(tmpDir, "main.go")
-	require.NoError(t, os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644))
+	g.Expect(os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644)).
+		NotTo(HaveOccurred())
 
 	outFile := filepath.Join(tmpDir, "out.sarif")
 	cmd := exec.CommandContext( //nolint:gosec // E2E test
@@ -103,10 +105,10 @@ func TestRun_E2E_SARIFOutput(t *testing.T) {
 		"-format=sarif",
 	)
 	out, err := cmd.CombinedOutput()
-	assert.NoError(t, err, "output: %s", out)
-	require.NoError(t, os.WriteFile(outFile, out, 0o644))
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(os.WriteFile(outFile, out, 0o644)).NotTo(HaveOccurred())
 
 	data, err := os.ReadFile(outFile)
-	require.NoError(t, err)
-	assert.Contains(t, string(data), `"version": "2.1.0"`)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(ContainSubstring(`"version": "2.1.0"`))
 }

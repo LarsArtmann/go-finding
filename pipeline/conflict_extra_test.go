@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/gomega"
 )
 
 func TestFilterConflictingFixes(t *testing.T) {
@@ -66,11 +66,13 @@ func TestFilterConflictingFixes(t *testing.T) {
 func TestAnalyzeConflicts(t *testing.T) {
 	t.Parallel()
 
+
 	t.Run("no conflicts returns empty", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 
 		result := AnalyzeConflicts(findings("1", "a.go", 10, "2", "b.go", 20))
-		assert.Empty(t, result)
+		g.Expect(result).To(BeEmpty())
 	})
 
 	t.Run("overlapping fixes detected", func(t *testing.T) {
@@ -101,9 +103,10 @@ func TestAnalyzeConflicts(t *testing.T) {
 
 	t.Run("empty input returns empty", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 
 		result := AnalyzeConflicts(nil)
-		assert.Empty(t, result)
+		g.Expect(result).To(BeEmpty())
 	})
 }
 

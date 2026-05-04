@@ -6,14 +6,14 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 // TestFixApplier_InsertionOnly verifies C-2: findings with only AfterCode
 // (and no BeforeCode) are treated as insertions at the finding's line.
 func TestFixApplier_InsertionOnly(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "insert.go")
@@ -30,20 +30,21 @@ func TestFixApplier_InsertionOnly(t *testing.T) {
 
 	applier := NewFixApplier(tempDir)
 	applied, err := applier.Apply(context.Background(), []finding.Finding{fix})
-	require.NoError(t, err)
-	assert.Equal(t, 1, applied)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(Equal(1))
 
 	got, err := readFile(testFile)
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	want := helloProgram
-	assert.Equal(t, want, string(got))
+	g.Expect(string(got)).To(Equal(want))
 }
 
 // TestFixApplier_DeletionOnly verifies C-2: findings with only BeforeCode
 // (and no AfterCode) are treated as deletions.
 func TestFixApplier_DeletionOnly(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "delete.go")
@@ -60,23 +61,24 @@ func TestFixApplier_DeletionOnly(t *testing.T) {
 
 	applier := NewFixApplier(tempDir)
 	applied, err := applier.Apply(context.Background(), []finding.Finding{fix})
-	require.NoError(t, err)
-	assert.Equal(t, 1, applied)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(Equal(1))
 
 	got, err := readFile(testFile)
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	// Deletion removes the BeforeCode substring but leaves the trailing newline,
 	// resulting in a blank line. To delete the entire line including newline,
 	// include "\n" in BeforeCode.
 	want := "package main\n\nfunc main() {\n\n}\n"
-	assert.Equal(t, want, string(got))
+	g.Expect(string(got)).To(Equal(want))
 }
 
 // TestFixApplier_NearestLineReplacement verifies H-7: when BeforeCode
 // appears multiple times, the occurrence nearest to the finding's line is replaced.
 func TestFixApplier_NearestLineReplacement(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "nearest.go")
@@ -95,13 +97,13 @@ func TestFixApplier_NearestLineReplacement(t *testing.T) {
 
 	applier := NewFixApplier(tempDir)
 	applied, err := applier.Apply(context.Background(), []finding.Finding{fix})
-	require.NoError(t, err)
-	assert.Equal(t, 1, applied)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(Equal(1))
 
 	got, err := readFile(testFile)
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	// Only the second "old()" at line 6 should be replaced.
 	want := "package main\n\nfunc main() {\n\told()\n\tother()\n\tnew()\n}\n"
-	assert.Equal(t, want, string(got))
+	g.Expect(string(got)).To(Equal(want))
 }

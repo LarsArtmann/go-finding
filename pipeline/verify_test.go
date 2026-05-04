@@ -5,8 +5,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func makeFinding(id, msg string) finding.Finding {
@@ -14,17 +13,19 @@ func makeFinding(id, msg string) finding.Finding {
 }
 
 func assertDiffResult(t *testing.T, result *VerifyResult, resolved, remaining, newFindings int) {
+	g := NewWithT(t)
 	t.Helper()
 
-	assert.Equal(t, resolved, result.Resolved)
-	assert.Len(t, result.Remaining, remaining)
-	assert.Len(t, result.NewFindings, newFindings)
+	g.Expect(result.Resolved).To(Equal(resolved))
+	g.Expect(result.Remaining).To(HaveLen(remaining))
+	g.Expect(result.NewFindings).To(HaveLen(newFindings))
 }
 
 func assertNewFindingID(t *testing.T, result *VerifyResult, wantID string) {
+	g := NewWithT(t)
 	t.Helper()
-	require.Len(t, result.NewFindings, 1, "no new findings to check")
-	assert.Equal(t, wantID, result.NewFindings[0].ID)
+	g.Expect(result.NewFindings).To(HaveLen(1))
+	g.Expect(result.NewFindings[0].ID).To(Equal(wantID))
 }
 
 func TestDiffFindings_AllFixed(t *testing.T) {
@@ -60,6 +61,7 @@ func TestDiffFindings_NewFindings(t *testing.T) {
 }
 
 func TestDiffFindings_Mixed(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	original := []finding.Finding{
@@ -73,8 +75,8 @@ func TestDiffFindings_Mixed(t *testing.T) {
 	result := DiffFindings(original, post)
 	assertDiffResult(t, result, 1, 1, 1)
 
-	assert.Len(t, result.Fixed, 1)
-	assert.Equal(t, "a:rule:file.go:1", result.Fixed[0].ID)
+	g.Expect(result.Fixed).To(HaveLen(1))
+	g.Expect(result.Fixed[0].ID).To(Equal("a:rule:file.go:1"))
 }
 
 func TestDiffFindings_EmptyOriginal(t *testing.T) {
@@ -93,6 +95,7 @@ func TestDiffFindings_BothEmpty(t *testing.T) {
 }
 
 func TestVerifier_Verify(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	callCount := 0
@@ -112,22 +115,24 @@ func TestVerifier_Verify(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	assert.Equal(t, 1, result.Resolved)
+	g.Expect(result.Resolved).To(Equal(1))
 }
 
 func TestVerifier_Verify_DetectorError(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	detector := makeErrorDetector("detector failed")
 
 	v := NewVerifier([]Detector{detector})
 	_, err := v.Verify(context.Background(), nil)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "verify")
-	assert.Contains(t, err.Error(), "detector")
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("verify"))
+	g.Expect(err.Error()).To(ContainSubstring("detector"))
 }
 
 func TestVerifier_Verify_SuppressedFindingsFiltered(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	suppressed := finding.Finding{
@@ -147,12 +152,13 @@ func TestVerifier_Verify_SuppressedFindingsFiltered(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	require.Len(t, result.NewFindings, 1, "suppressed filtered")
+	g.Expect(result.NewFindings).To(HaveLen(1))
 
 	assertNewFindingID(t, result, "normal:rule:f.go:2")
 }
 
 func TestFindingKey_EmptyID(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	f := finding.Finding{
@@ -161,13 +167,14 @@ func TestFindingKey_EmptyID(t *testing.T) {
 		Message:  "unused variable",
 	}
 	key := f.Key()
-	assert.Equal(t, "\x00main.go\x00SA1000\x00unused variable", key)
+	g.Expect(key).To(Equal("\x00main.go\x00SA1000\x00unused variable"))
 }
 
 func TestFindingKey_WithID(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := finding.Finding{ID: "unique-id-123", Position: finding.Position{File: "main.go"}}
 	key := f.Key()
-	assert.Equal(t, "unique-id-123", key)
+	g.Expect(key).To(Equal("unique-id-123"))
 }

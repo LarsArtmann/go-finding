@@ -58,7 +58,7 @@ func main() {
 
 	cfg := pipeline.Config{
 		MaxIterations:     1,
-		VerifyAfterFix:   false,
+		VerifyAfterFix:    false,
 		ParallelDetectors: false,
 	}
 

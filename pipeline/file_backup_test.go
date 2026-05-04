@@ -1,45 +1,49 @@
 package pipeline
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func TestNewFileBackup_Defaults(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	fb := NewFileBackup(t.TempDir())
-	assert.True(t, fb.IsEnabled())
-	assert.NotEmpty(t, fb.backupDir)
+	g.Expect(fb.IsEnabled()).To(BeTrue())
+	g.Expect(fb.backupDir).NotTo(BeEmpty())
 }
 
 func TestFileBackup_SetEnabled(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	fb := NewFileBackup(t.TempDir())
-	assert.True(t, fb.IsEnabled())
+	g.Expect(fb.IsEnabled()).To(BeTrue())
 
 	fb.SetEnabled(false)
-	assert.False(t, fb.IsEnabled())
+	g.Expect(fb.IsEnabled()).To(BeFalse())
 
 	fb.SetEnabled(true)
-	assert.True(t, fb.IsEnabled())
+	g.Expect(fb.IsEnabled()).To(BeTrue())
 }
 
 func TestFileBackup_BackupPath_NoBackup(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	fb := NewFileBackup(t.TempDir())
-	assert.Empty(t, fb.BackupPath("/nonexistent/file.go"))
+	g.Expect(fb.BackupPath("/nonexistent/file.go")).To(BeEmpty())
 }
 
 func TestFileBackup_BackupAndRestore(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tmpDir := t.TempDir()
 	fb := NewFileBackup(tmpDir)
@@ -47,38 +51,41 @@ func TestFileBackup_BackupAndRestore(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "test.go")
 	writeTestFile(t, testFile, []byte("original content"))
 
-	require.NoError(t, fb.Backup(testFile))
+	g.Expect(fb.Backup(testFile)).NotTo(HaveOccurred())
 
 	backupPath := fb.BackupPath(testFile)
-	assert.NotEmpty(t, backupPath, "backup path should be recorded")
+	g.Expect(backupPath).NotTo(BeEmpty())
 
 	writeTestFile(t, testFile, []byte("modified content"))
 
-	require.NoError(t, fb.Restore(testFile))
+	g.Expect(fb.Restore(testFile)).NotTo(HaveOccurred())
 
 	data, err := readFile(testFile)
-	require.NoError(t, err)
-	assert.Equal(t, "original content", string(data))
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(Equal("original content"))
 }
 
 func TestFileBackup_Backup_NonexistentFile(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	fb := NewFileBackup(t.TempDir())
 	err := fb.Backup(filepath.Join(t.TempDir(), "missing.go"))
-	require.Error(t, err)
+	g.Expect(err).To(HaveOccurred())
 }
 
 func TestFileBackup_Restore_NoBackup(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	fb := NewFileBackup(t.TempDir())
 	err := fb.Restore(filepath.Join(t.TempDir(), "never-backed.go"))
-	require.Error(t, err)
+	g.Expect(err).To(HaveOccurred())
 }
 
 func TestFileBackup_RollbackAll(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tmpDir := t.TempDir()
 	fb := NewFileBackup(tmpDir)
@@ -89,25 +96,26 @@ func TestFileBackup_RollbackAll(t *testing.T) {
 	writeTestFile(t, file1, []byte("original a"))
 	writeTestFile(t, file2, []byte("original b"))
 
-	require.NoError(t, fb.Backup(file1))
-	require.NoError(t, fb.Backup(file2))
+	g.Expect(fb.Backup(file1)).NotTo(HaveOccurred())
+	g.Expect(fb.Backup(file2)).NotTo(HaveOccurred())
 
 	writeTestFile(t, file1, []byte("modified a"))
 	writeTestFile(t, file2, []byte("modified b"))
 
-	require.NoError(t, fb.RollbackAll([]string{file1, file2}))
+	g.Expect(fb.RollbackAll([]string{file1, file2})).NotTo(HaveOccurred())
 
 	data1, err := readFile(file1)
-	require.NoError(t, err)
-	assert.Equal(t, "original a", string(data1))
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(data1)).To(Equal("original a"))
 
 	data2, err := readFile(file2)
-	require.NoError(t, err)
-	assert.Equal(t, "original b", string(data2))
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(data2)).To(Equal("original b"))
 }
 
 func TestFileBackup_Disabled_DoesNotBackup(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tmpDir := t.TempDir()
 	fb := NewFileBackup(tmpDir)
@@ -118,12 +126,13 @@ func TestFileBackup_Disabled_DoesNotBackup(t *testing.T) {
 
 	// Backup should still succeed (it checks enabled in the caller, not here)
 	// But BackupPath should be recorded
-	require.NoError(t, fb.Backup(testFile))
-	assert.NotEmpty(t, fb.BackupPath(testFile))
+	g.Expect(fb.Backup(testFile)).NotTo(HaveOccurred())
+	g.Expect(fb.BackupPath(testFile)).NotTo(BeEmpty())
 }
 
 func TestFileBackup_Backup_MkdirAllError(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	// Create a file (not a directory) to use as backupDir parent.
 	// MkdirAll will fail because it cannot create a directory inside a file.
@@ -135,12 +144,13 @@ func TestFileBackup_Backup_MkdirAllError(t *testing.T) {
 	writeTestFile(t, testFile, []byte("content"))
 
 	err := fb.Backup(testFile)
-	require.Error(t, err)
-	assert.ErrorIs(t, err, finding.ErrIO)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 }
 
 func TestFileBackup_Restore_ReadBackupError(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tmpDir := t.TempDir()
 	fb := NewFileBackup(tmpDir)
@@ -148,13 +158,13 @@ func TestFileBackup_Restore_ReadBackupError(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "test.go")
 	writeTestFile(t, testFile, []byte("original"))
 
-	require.NoError(t, fb.Backup(testFile))
+	g.Expect(fb.Backup(testFile)).NotTo(HaveOccurred())
 
 	// Delete the backup file to trigger read error on restore.
 	backupPath := fb.BackupPath(testFile)
-	require.NoError(t, os.Remove(backupPath))
+	g.Expect(os.Remove(backupPath)).NotTo(HaveOccurred())
 
 	err := fb.Restore(testFile)
-	require.Error(t, err)
-	assert.ErrorIs(t, err, finding.ErrIO)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 }

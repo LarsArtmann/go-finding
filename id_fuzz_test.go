@@ -4,24 +4,24 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func FuzzGenerateID(f *testing.F) {
 	f.Fuzz(func(t *testing.T, tool, rule, file string, line, col int) {
+		g := NewWithT(t)
 		id := GenerateID(tool, rule, Position{File: file, Line: line, Column: col})
-		require.NotEmpty(t, id)
+		g.Expect(id).NotTo(BeEmpty())
 
 		parts := strings.Split(id, ":")
-		require.GreaterOrEqual(t, len(parts), 2, "ID too short: %q", id)
+		g.Expect(len(parts)).To(BeNumerically(">=", 2))
 
 		if tool != "" {
-			assert.Equal(t, tool, parts[0])
+			g.Expect(parts[0]).To(Equal(tool))
 		}
 
 		if rule != "" {
-			assert.Equal(t, rule, parts[1])
+			g.Expect(parts[1]).To(Equal(rule))
 		}
 	})
 }
@@ -45,6 +45,7 @@ func FuzzParseID(f *testing.F) {
 
 func FuzzRoundTripID(f *testing.F) {
 	f.Fuzz(func(t *testing.T, tool, rule, file string, line, col int) {
+		g := NewWithT(t)
 		if line < 0 || col < 0 {
 			t.Skip()
 		}
@@ -52,33 +53,34 @@ func FuzzRoundTripID(f *testing.F) {
 		id := GenerateID(tool, rule, Position{File: file, Line: line, Column: col})
 
 		p := ParseID(id)
-		require.True(t, p.OK(), "ParseID failed for generated ID %q", id)
+		g.Expect(p.OK()).To(BeTrue())
 
 		if tool != "" {
-			assert.Equal(t, tool, p.Tool)
+			g.Expect(p.Tool).To(Equal(tool))
 		}
 
 		if rule != "" {
-			assert.Equal(t, rule, p.Rule)
+			g.Expect(p.Rule).To(Equal(rule))
 		}
 
 		if line > 0 {
-			assert.Equal(t, line, p.Line)
+			g.Expect(p.Line).To(Equal(line))
 		}
 
 		if col > 0 {
-			assert.Equal(t, col, p.Column)
+			g.Expect(p.Column).To(Equal(col))
 		}
 	})
 }
 
 func FuzzIsHashID(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id string) {
+		g := NewWithT(t)
 		result := IsHashID(id)
 
 		parts := strings.Split(id, ":")
 		if len(parts) == 3 && len(parts[2]) == hashLength {
-			assert.True(t, result, "IsHashID should return true for %q", id)
+			g.Expect(result).To(BeTrue())
 		}
 	})
 }

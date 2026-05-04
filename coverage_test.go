@@ -4,8 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func expiredSuppression() *Suppression {
@@ -114,8 +113,9 @@ func TestFindingIsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, tt.f.IsValid(), tt.name)
+			g.Expect(tt.f.IsValid()).To(Equal(tt.want))
 		})
 	}
 }
@@ -139,8 +139,9 @@ func TestFindingHasFix(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, tt.f.HasFix(), tt.name)
+			g.Expect(tt.f.HasFix()).To(Equal(tt.want))
 		})
 	}
 }
@@ -163,8 +164,9 @@ func TestFindingHasSuggestion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, tt.f.HasSuggestion(), tt.name)
+			g.Expect(tt.f.HasSuggestion()).To(Equal(tt.want))
 		})
 	}
 }
@@ -194,8 +196,9 @@ func TestFindingIsSuppressed(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, tt.f.IsSuppressed(), tt.name)
+			g.Expect(tt.f.IsSuppressed()).To(Equal(tt.want))
 		})
 	}
 }
@@ -224,8 +227,9 @@ func TestRelatedRefIsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, tt.r.IsValid(), tt.name)
+			g.Expect(tt.r.IsValid()).To(Equal(tt.want))
 		})
 	}
 }
@@ -249,8 +253,9 @@ func TestSuppressionIsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, tt.s.IsValid(), tt.name)
+			g.Expect(tt.s.IsValid()).To(Equal(tt.want))
 		})
 	}
 }
@@ -286,8 +291,9 @@ func TestSuppressionIsExpired(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, tt.s.IsExpired(now), tt.name)
+			g.Expect(tt.s.IsExpired(now)).To(Equal(tt.want))
 		})
 	}
 }
@@ -312,22 +318,20 @@ func TestErrorCategoryIsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, tt.c.IsValid(), tt.name)
+			g.Expect(tt.c.IsValid()).To(Equal(tt.want))
 		})
 	}
 }
 
 func TestFindingErrorIsCategory(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	err := NewValidationError("test", nil)
-	assert.True(
-		t,
-		IsCategory(err, ErrCategoryValidation),
-		"expected IsCategory to match validation",
-	)
-	assert.False(t, IsCategory(err, ErrCategoryIO), "expected IsCategory to not match io")
+	g.Expect(IsCategory(err, ErrCategoryValidation)).To(BeTrue())
+	g.Expect(IsCategory(err, ErrCategoryIO)).To(BeFalse())
 }
 
 func TestRangeContainsByOffset(t *testing.T) {
@@ -355,14 +359,16 @@ func TestRangeContainsByOffset(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, r.containsByOffset(tt.p), tt.name)
+			g.Expect(r.containsByOffset(tt.p)).To(Equal(tt.want))
 		})
 	}
 }
 
 func TestRangeContainsByOffsetZeroStart(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	r := Range{
 		Start: Position{File: "test.go", Line: 10, Offset: -1},
@@ -370,11 +376,12 @@ func TestRangeContainsByOffsetZeroStart(t *testing.T) {
 	}
 
 	p := Position{File: "test.go", Offset: 150}
-	assert.False(t, r.containsByOffset(p), "expected false when range start has no offset")
+	g.Expect(r.containsByOffset(p)).To(BeFalse())
 }
 
 func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := Finding{
 		ID:          "tool:rule:file.go:1:1",
@@ -390,7 +397,7 @@ func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 	report.AddFinding(f)
 
 	sarif, err := report.ToSARIF()
-	require.NoError(t, err, "ToSARIF")
+	g.Expect(err).NotTo(HaveOccurred())
 
 	t.Logf("SARIF output:\n%s", string(sarif))
 
@@ -405,15 +412,15 @@ func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 
 	unmarshalJSON(t, sarif, &log)
 
-	require.NotEmpty(t, log.Runs, "no runs in SARIF")
-	require.NotEmpty(t, log.Runs[0].Results, "no results in SARIF")
+	g.Expect(log.Runs).NotTo(BeEmpty())
+	g.Expect(log.Runs[0].Results).NotTo(BeEmpty())
 
 	result := log.Runs[0].Results[0]
-	assert.Equal(t, "error", result.Level)
+	g.Expect(result.Level).To(Equal("error"))
 
 	severity, ok := result.Properties["go-finding/severity"]
-	require.True(t, ok, "missing go-finding/severity property")
-	assert.Equal(t, "critical", severity)
+	g.Expect(ok).To(BeTrue())
+	g.Expect(severity).To(Equal("critical"))
 }
 
 func TestCategoryString(t *testing.T) {

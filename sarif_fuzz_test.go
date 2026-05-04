@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func FuzzToSARIF(f *testing.F) {
@@ -12,6 +12,7 @@ func FuzzToSARIF(f *testing.F) {
 	f.Add("", "", "", "", 0, 0, "warning")
 
 	f.Fuzz(func(t *testing.T, tool, rule, msg, file string, line, col int, level string) {
+		g := NewWithT(t)
 		if line < 0 || col < 0 {
 			t.Skip()
 		}
@@ -28,10 +29,10 @@ func FuzzToSARIF(f *testing.F) {
 		r.ComputeSummary()
 
 		data, err := r.ToSARIF()
-		require.NoError(t, err, "ToSARIF should not fail")
+		g.Expect(err).NotTo(HaveOccurred())
 
 		var log map[string]any
-		require.NoError(t, json.Unmarshal(data, &log), "SARIF output should be valid JSON")
+		g.Expect(json.Unmarshal(data, &log)).NotTo(HaveOccurred())
 
 		// Round-trip should not panic.
 		_, _ = FindingsFromSARIF(data)

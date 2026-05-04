@@ -17,8 +17,7 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/pipeline"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 var testDetCounter atomic.Int64
@@ -38,6 +37,7 @@ func parseJSON(t *testing.T, buf *bytes.Buffer) map[string]any {
 
 func TestOutputResults_JSON(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := reportWithFindings()
 
@@ -48,12 +48,13 @@ func TestOutputResults_JSON(t *testing.T) {
 	parsed := parseJSON(t, &buf)
 
 	tool, _ := parsed["tool"].(map[string]any)
-	assert.NotNil(t, tool)
-	assert.Equal(t, "test", tool["name"])
+	g.Expect(tool).NotTo(BeNil())
+	g.Expect(tool["name"]).To(Equal("test"))
 }
 
 func TestOutputResults_SARIF(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := reportWithFindings()
 
@@ -64,11 +65,12 @@ func TestOutputResults_SARIF(t *testing.T) {
 	parsed := parseJSON(t, &buf)
 
 	version, _ := parsed["$schema"].(string)
-	assert.Contains(t, version, "sarif")
+	g.Expect(version).To(ContainSubstring("sarif"))
 }
 
 func TestOutputResults_Text(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := reportWithFindings()
 
@@ -77,23 +79,25 @@ func TestOutputResults_Text(t *testing.T) {
 	requireOutputResults(t, &buf, report, "text")
 
 	out := buf.String()
-	assert.Contains(t, out, "nilcheck")
-	assert.Contains(t, out, "1 finding(s)")
+	g.Expect(out).To(ContainSubstring("nilcheck"))
+	g.Expect(out).To(ContainSubstring("1 finding(s)"))
 }
 
 func TestOutputText_EmptyReport(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := finding.NewReport(finding.ToolInfo{Name: "test"})
 	var buf bytes.Buffer
 
 	outputText(&buf, report)
 
-	assert.Equal(t, "No findings.\n", buf.String())
+	g.Expect(buf.String()).To(Equal("No findings.\n"))
 }
 
 func TestOutputText_WithSuggestion(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := finding.NewReport(finding.ToolInfo{Name: "test"})
 	report.AddFinding(finding.Finding{
@@ -106,7 +110,7 @@ func TestOutputText_WithSuggestion(t *testing.T) {
 	var buf bytes.Buffer
 	outputText(&buf, report)
 
-	assert.Contains(t, buf.String(), "Suggestion: fix it")
+	g.Expect(buf.String()).To(ContainSubstring("Suggestion: fix it"))
 }
 
 func TestParseSeverity(t *testing.T) {
@@ -144,7 +148,9 @@ func TestParseSeverity(t *testing.T) {
 }
 
 func TestFilterBySeverity(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
+		g := NewWithT(t)
 
 	findings := []finding.Finding{
 		{Severity: finding.SeverityInfo, Message: "info"},
@@ -154,7 +160,7 @@ func TestFilterBySeverity(t *testing.T) {
 	}
 
 	filtered := filterBySeverity(findings, finding.SeverityError)
-	assert.Len(t, filtered, 2)
+	g.Expect(filtered).To(HaveLen(2))
 }
 
 func TestBuildDetectors(t *testing.T) {
@@ -185,15 +191,17 @@ func TestBuildDetectors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
 			dets := buildDetectors(tt.specs, ".")
-			assert.Len(t, dets, tt.wantCount)
+			g.Expect(dets).To(HaveLen(tt.wantCount))
 		})
 	}
 }
 
 //nolint:paralleltest // mutates global os.Stderr
 func TestFatalf(t *testing.T) {
+	g := NewWithT(t)
 	var buf bytes.Buffer
 	old := os.Stderr
 	r, w, _ := os.Pipe()
@@ -206,10 +214,10 @@ func TestFatalf(t *testing.T) {
 
 	_, _ = io.Copy(&buf, r)
 
-	assert.Equal(t, 1, got)
+	g.Expect(got).To(Equal(1))
 
 	want := "Error testing: test error\n"
-	assert.Equal(t, want, buf.String())
+	g.Expect(buf.String()).To(Equal(want))
 }
 
 type failingWriter struct {
@@ -222,21 +230,23 @@ func (w *failingWriter) Write(_ []byte) (int, error) {
 
 func TestOutputResults_WriteError(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 	report := reportWithFindings()
 
 	err := outputResults(&failingWriter{err: errors.New("disk full")}, report, "json")
-	require.Error(t, err)
+	g.Expect(err).To(HaveOccurred())
 
-	assert.Contains(t, err.Error(), "writing JSON")
+	g.Expect(err.Error()).To(ContainSubstring("writing JSON"))
 
 	err = outputResults(&failingWriter{err: errors.New("disk full")}, report, "sarif")
-	require.Error(t, err)
+	g.Expect(err).To(HaveOccurred())
 
-	assert.Contains(t, err.Error(), "writing SARIF")
+	g.Expect(err.Error()).To(ContainSubstring("writing SARIF"))
 }
 
 func TestOutputText_WithSummary(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 	report := finding.NewReport(finding.ToolInfo{Name: "test"})
 	report.AddFinding(finding.Finding{
 		Severity: finding.SeverityError, Rule: "R1", Message: "err1",
@@ -254,9 +264,9 @@ func TestOutputText_WithSummary(t *testing.T) {
 	outputText(&buf, report)
 
 	out := buf.String()
-	assert.Contains(t, out, "By severity:")
+	g.Expect(out).To(ContainSubstring("By severity:"))
 
-	assert.Contains(t, out, "2 finding(s)")
+	g.Expect(out).To(ContainSubstring("2 finding(s)"))
 }
 
 func reportWithFindings() *finding.Report {
@@ -296,29 +306,31 @@ func makeTestFinding(
 
 //nolint:paralleltest // writes to global os.Stderr; may race with TestFatalf
 func TestSetupProfiling_BadCPUProfilePath(t *testing.T) {
+	g := NewWithT(t)
 	stop, err := setupProfiling("/nonexistent_dir/cpu.prof", "")
-	require.Error(t, err)
-	assert.Nil(t, stop)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(stop).To(BeNil())
 }
 
 //nolint:paralleltest // manipulates global pprof CPU profile state
 func TestSetupProfiling_CPUProfileStartFailure(t *testing.T) {
+	g := NewWithT(t)
 	// Create a temp file that we can't write a valid CPU profile to
 	f, err := os.CreateTemp(t.TempDir(), "cpu.prof")
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(f.Close()).NotTo(HaveOccurred())
 
 	// Start a CPU profile already, so the second StartCPUProfile fails.
 	f2, err := os.CreateTemp(t.TempDir(), "cpu2.prof")
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 	defer func() { _ = f2.Close() }()
 
-	require.NoError(t, pprof.StartCPUProfile(f2))
+	g.Expect(pprof.StartCPUProfile(f2)).NotTo(HaveOccurred())
 	defer pprof.StopCPUProfile()
 
 	stop, err := setupProfiling(f.Name(), "")
-	require.Error(t, err)
-	assert.Nil(t, stop)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(stop).To(BeNil())
 }
 
 func reportWithNaNConfidence() *finding.Report {
@@ -333,20 +345,22 @@ func reportWithNaNConfidence() *finding.Report {
 
 func TestOutputResults_JSONSerializationError(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	var buf bytes.Buffer
 	err := outputResults(&buf, reportWithNaNConfidence(), "json")
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "serializing JSON")
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("serializing JSON"))
 }
 
 func TestOutputResults_SARIFSerializationError(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	var buf bytes.Buffer
 	err := outputResults(&buf, reportWithNaNConfidence(), "sarif")
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "serializing SARIF")
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("serializing SARIF"))
 }
 
 func TestRun_InvalidSeverity(t *testing.T) {
@@ -355,17 +369,19 @@ func TestRun_InvalidSeverity(t *testing.T) {
 	}
 
 	t.Parallel()
+	g := NewWithT(t)
 
 	saveRestoreFlags(t)
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	os.Args = []string{"go-finding", "-severity=banana"}
 
 	got := run()
-	assert.Equal(t, 1, got)
+	g.Expect(got).To(Equal(1))
 }
 
 func TestRegisterDetector(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	name := uniqueDetName("test-detector")
 
@@ -378,41 +394,43 @@ func TestRegisterDetector(t *testing.T) {
 			},
 		)
 	})
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	// Verify it can be looked up.
 	builder, ok := lookupDetectorBuilder(name)
-	require.True(t, ok)
-	require.NotNil(t, builder)
+	g.Expect(ok).To(BeTrue())
+	g.Expect(builder).NotTo(BeNil())
 
 	// Test duplicate registration returns error.
 	err = RegisterDetector(name, func(_ string) pipeline.Detector {
 		return nil
 	})
-	require.Error(t, err)
-	require.ErrorIs(t, err, errDetectorRegistered)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, errDetectorRegistered)).To(BeTrue())
 }
 
 func TestWriteOutput_ToFile(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tmpDir := t.TempDir()
 	outPath := filepath.Join(tmpDir, "output.json")
 
 	report := reportWithFindings()
 	err := writeOutput(report, "json", outPath)
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	data, err := os.ReadFile(outPath)
-	require.NoError(t, err)
-	assert.Contains(t, string(data), `"tool"`)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(ContainSubstring(`"tool"`))
 }
 
 func TestWriteOutput_FileCreationError(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := reportWithFindings()
 	err := writeOutput(report, "json", "/nonexistent/dir/out.json")
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "creating output file")
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("creating output file"))
 }

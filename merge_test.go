@@ -4,15 +4,15 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func TestMerge_Empty(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	merged := Merge(nil)
-	assert.NotNil(t, merged)
+	g.Expect(merged).NotTo(BeNil())
 
 	assertFindingsLen(t, "Merge(nil) findings", len(merged.Findings), 0)
 }
@@ -143,14 +143,16 @@ func TestDedupKey(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
 			got := dedupKey(f, MergeOptions{DeduplicateBy: tt.by})
-			assert.Equal(t, tt.want, got)
+			g.Expect(got).To(Equal(tt.want))
 		})
 	}
 }
 
 func TestDeduplicateStrategiesDistinct(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	f := Finding{
@@ -161,11 +163,12 @@ func TestDeduplicateStrategiesDistinct(t *testing.T) {
 	posKey := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
 	ruleKey := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
 
-	assert.NotEqual(t, posKey, ruleKey)
+	g.Expect(ruleKey).NotTo(Equal(posKey))
 }
 
 func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	r1 := NewReport(ToolInfo{Name: "govet"})
 	r1.AddFinding(Finding{
@@ -188,15 +191,9 @@ func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
 	byPos := Merge(reports, WithDeduplicateBy(DeduplicateByPosition))
 	byRule := Merge(reports, WithDeduplicateBy(DeduplicateByRule))
 
-	assert.Len(
-		t, collectIDs(byPos), 2,
-		"by position: govet:a.go:10 and staticcheck:a.go:10 are distinct",
-	)
+	g.Expect(collectIDs(byPos)).To(HaveLen(2))
 
-	assert.Len(
-		t, collectIDs(byRule), 2,
-		"by rule: nilcheck:a.go:10 and unused:a.go:10 are distinct",
-	)
+	g.Expect(collectIDs(byRule)).To(HaveLen(2))
 }
 
 func collectIDs(r *Report) []string {
@@ -219,6 +216,7 @@ func makeFinding(id, tool, rule, file string, line int) Finding {
 }
 
 func TestCorrelate(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	findings := []Finding{
@@ -228,24 +226,25 @@ func TestCorrelate(t *testing.T) {
 	}
 
 	correlations := Correlate(findings)
-	require.Len(t, correlations, 1, "correlations")
+	g.Expect(correlations).To(HaveLen(1))
 
 	c := correlations[0]
-	assert.Len(t, c.FindingIDs, 2)
-	assert.Equal(t, "same file, nearby lines", c.Reason)
+	g.Expect(c.FindingIDs).To(HaveLen(2))
+	g.Expect(c.Reason).To(Equal("same file, nearby lines"))
 
 	wantConf := 1.0 - (2.0 / 5.0)
-	assert.InDelta(t, wantConf, c.Confidence, 0.0001)
+	g.Expect(c.Confidence).To(BeNumerically("~", wantConf, 0.0001))
 
 	hasID := func(id string) bool {
 		return slices.Contains(c.FindingIDs, id)
 	}
 
-	assert.True(t, hasID("1"))
-	assert.True(t, hasID("2"))
+	g.Expect(hasID("1")).To(BeTrue())
+	g.Expect(hasID("2")).To(BeTrue())
 }
 
 func TestCorrelate_TooFewFindings(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	findings := []Finding{
@@ -253,7 +252,7 @@ func TestCorrelate_TooFewFindings(t *testing.T) {
 	}
 
 	correlations := Correlate(findings)
-	assert.Empty(t, correlations)
+	g.Expect(correlations).To(BeEmpty())
 }
 
 func TestCloneFindings_EmptySlice(t *testing.T) {
@@ -271,6 +270,7 @@ func TestCloneFindings_EmptySlice(t *testing.T) {
 }
 
 func TestCloneFindings_DeepCopy(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	original := []Finding{
@@ -285,7 +285,7 @@ func TestCloneFindings_DeepCopy(t *testing.T) {
 	}
 
 	cloned := cloneFindings(original)
-	require.Len(t, cloned, 2)
+	g.Expect(cloned).To(HaveLen(2))
 
 	if !cloned[0].Equal(original[0]) {
 		t.Error("cloned[0] should be Equal to original[0]")

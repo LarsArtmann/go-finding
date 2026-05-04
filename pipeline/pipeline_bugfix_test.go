@@ -7,8 +7,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func countingOnFix(ptr *int) func(finding.Finding, bool) {
@@ -30,6 +29,7 @@ func collectingOnFix(ids *[]string) func(finding.Finding, bool) {
 // TestOnFix_FiresOnlyForAppliedFixes verifies C-1: OnFix callback fires
 // exactly once per actually-applied fix, not once per safeFix.
 func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tmpDir := t.TempDir()
@@ -69,14 +69,15 @@ func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
 	}
 
 	// One fix was applied.
-	assert.Equal(t, 1, result.Iterations[0].Applied, "expected 1 applied fix")
+	g.Expect(result.Iterations[0].Applied).To(Equal(1))
 	// OnFix should have been called exactly once for the applied fix.
-	assert.Equal(t, 1, onFixCalls, "OnFix should fire exactly once per applied fix")
+	g.Expect(onFixCalls).To(Equal(1))
 }
 
 // TestOnFix_SkipsUnappliedFixes verifies that when a fix is skipped
 // (e.g., BeforeCode not found), OnFix is not called with wasApplied=true.
 func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tmpDir := t.TempDir()
@@ -110,13 +111,14 @@ func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	assert.Equal(t, 0, appliedCount, "OnFix should not fire for skipped fixes")
+	g.Expect(appliedCount).To(Equal(0))
 }
 
 // TestOnFix_ReportsCorrectAppliedFindings verifies that when some fixes fail
 // and others succeed, OnFix is called with the actually-applied findings, not
 // just the first N fixes from the input slice.
 func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tmpDir := t.TempDir()
@@ -163,13 +165,14 @@ func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	assert.Equal(t, 1, result.Iterations[0].Applied, "expected 1 applied fix")
-	assert.Equal(t, []string{"fixB"}, appliedIDs, "OnFix should report fixB as applied, not fixA")
+	g.Expect(result.Iterations[0].Applied).To(Equal(1))
+	g.Expect(appliedIDs).To(Equal([]string{"fixB"}))
 }
 
 // TestPipelineRun_ParallelDetectorError verifies that a detector error in
 // parallel mode propagates correctly from detectParallel.
 func TestPipelineRun_ParallelDetectorError(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	config := DefaultConfig()
@@ -185,14 +188,15 @@ func TestPipelineRun_ParallelDetectorError(t *testing.T) {
 	}
 
 	_, err = p.Run(context.Background())
-	require.Error(t, err)
-	assert.ErrorContains(t, err, "parallel detection")
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err).To(MatchError(ContainSubstring("parallel detection")))
 }
 
 // TestApplyTriage_AllConflicts verifies that when all fixes are skipped by
 // FilterConflictingFixes (no file info), applyTriage returns nil without
 // calling applyDirectFixes.
 func TestApplyTriage_AllConflicts(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tmpDir := t.TempDir()
@@ -223,13 +227,14 @@ func TestApplyTriage_AllConflicts(t *testing.T) {
 		t.Fatalf("applyTriage: %v", err)
 	}
 
-	assert.Equal(t, 1, iter.Conflicts, "expected 1 conflict (fix skipped)")
-	assert.Equal(t, 0, iter.Applied, "expected 0 applied fixes")
+	g.Expect(iter.Conflicts).To(Equal(1))
+	g.Expect(iter.Applied).To(Equal(0))
 }
 
 // TestApplyTriage_ApplyError verifies that applyTriage returns an error when
 // applyDirectFixes fails (e.g., target file does not exist).
 func TestApplyTriage_ApplyError(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tmpDir := t.TempDir()
@@ -256,6 +261,6 @@ func TestApplyTriage_ApplyError(t *testing.T) {
 
 	iter := Iteration{Number: 1}
 	err = p.applyTriage(context.Background(), fixes, &iter)
-	require.Error(t, err)
-	assert.ErrorContains(t, err, "apply fixes")
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err).To(MatchError(ContainSubstring("apply fixes")))
 }

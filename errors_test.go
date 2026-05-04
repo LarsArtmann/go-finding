@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func TestFindingErrorError(t *testing.T) {
@@ -32,24 +31,27 @@ func TestFindingErrorError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
 			got := tt.err.Error()
-			assert.Equal(t, tt.expected, got)
+			g.Expect(got).To(Equal(tt.expected))
 		})
 	}
 }
 
 func TestFindingErrorUnwrap(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	cause := errors.New("underlying error")
 	err := NewValidationError("validation failed", cause)
 
-	assert.ErrorIs(t, err, cause)
+	g.Expect(errors.Is(err, cause)).To(BeTrue())
 }
 
 func TestFindingErrorWithFinding(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	f := Finding{
 		ID:       "test:1",
@@ -58,23 +60,24 @@ func TestFindingErrorWithFinding(t *testing.T) {
 
 	err := NewValidationError("invalid finding", nil).WithFinding(f)
 
-	assert.NotNil(t, err.Finding)
-	assert.Equal(t, f.ID, err.Finding.ID)
+	g.Expect(err.Finding).NotTo(BeNil())
+	g.Expect(err.Finding.ID).To(Equal(f.ID))
 
 	assertFindingErrorFile(t, err, "test.go")
 
-	assert.NotNil(t, err.Position)
-	assert.Equal(t, 10, err.Position.Line)
+	g.Expect(err.Position).NotTo(BeNil())
+	g.Expect(err.Position.Line).To(Equal(10))
 }
 
 func TestFindingErrorWithPosition(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	pos := Position{File: "test.go", Line: 20, Column: 10}
 	err := NewIOError("read failed", nil).WithPosition(pos)
 
-	assert.NotNil(t, err.Position)
-	assert.Equal(t, 20, err.Position.Line)
+	g.Expect(err.Position).NotTo(BeNil())
+	g.Expect(err.Position.Line).To(Equal(20))
 
 	assertFindingErrorFile(t, err, "test.go")
 }
@@ -112,9 +115,10 @@ func TestIsFindingError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
 			got := IsFindingError(tt.err)
-			assert.Equal(t, tt.expected, got)
+			g.Expect(got).To(Equal(tt.expected))
 		})
 	}
 }
@@ -152,21 +156,23 @@ func TestGetCategory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
 			got := GetCategory(tt.err)
-			assert.Equal(t, tt.expected, got)
+			g.Expect(got).To(Equal(tt.expected))
 		})
 	}
 }
 
 func TestIsCategory(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	err := NewValidationError("test", nil)
 
-	assert.True(t, IsCategory(err, ErrCategoryValidation))
-	assert.False(t, IsCategory(err, ErrCategoryIO))
-	assert.False(t, IsCategory(errors.New("regular"), ErrCategoryValidation))
+	g.Expect(IsCategory(err, ErrCategoryValidation)).To(BeTrue())
+	g.Expect(IsCategory(err, ErrCategoryIO)).To(BeFalse())
+	g.Expect(IsCategory(errors.New("regular"), ErrCategoryValidation)).To(BeFalse())
 }
 
 func TestErrorCategoryConstructors(t *testing.T) {
@@ -187,8 +193,9 @@ func TestErrorCategoryConstructors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.expected, tt.err.Category)
+			g.Expect(tt.err.Category).To(Equal(tt.expected))
 		})
 	}
 }
@@ -214,23 +221,26 @@ func TestSentinelErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
-			assert.Equal(t, tt.want, errors.Is(tt.err, tt.target))
+			g.Expect(errors.Is(tt.err, tt.target)).To(Equal(tt.want))
 		})
 	}
 }
 
 func TestSentinelErrors_Wrapped(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	err := fmt.Errorf("wrapped: %w", NewValidationError("test", nil))
-	assert.ErrorIs(t, err, ErrValidation)
+	g.Expect(errors.Is(err, ErrValidation)).To(BeTrue())
 }
 
 func TestFindingError_Is_UnknownCategory(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	err := &FindingError{Category: ErrorCategory("custom"), Message: "custom error"}
-	require.NotErrorIs(t, err, ErrValidation)
-	require.NotErrorIs(t, err, ErrInternal)
+	g.Expect(errors.Is(err, ErrValidation)).To(BeFalse())
+	g.Expect(errors.Is(err, ErrInternal)).To(BeFalse())
 }

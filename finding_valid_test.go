@@ -3,76 +3,83 @@ package finding
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func TestFinding_Validate(t *testing.T) {
 	t.Parallel()
 
+
 	t.Run("valid finding", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
-		assert.NoError(t, f.Validate())
+		g.Expect(f.Validate()).NotTo(HaveOccurred())
 	})
 
 	t.Run("missing required fields", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		f := Finding{}
 		err := f.Validate()
-		require.Error(t, err)
-		assert.True(t, IsCategory(err, ErrCategoryValidation))
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(IsCategory(err, ErrCategoryValidation)).To(BeTrue())
 	})
 
 	t.Run("invalid severity", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		f := NewFinding("r", "t", "m", Severity("bogus"), Pos("a.go", 1, 1), 0.5)
 		err := f.Validate()
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "Severity")
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err).To(MatchError(ContainSubstring("Severity")))
 	})
 
 	t.Run("invalid fix strategy", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
 		f.FixStrategy = FixStrategy("bogus")
 		err := f.Validate()
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "FixStrategy")
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err).To(MatchError(ContainSubstring("FixStrategy")))
 	})
 
 	t.Run("confidence out of range", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		f := Finding{
 			ID: "1", Rule: "r", ToolName: "t", Message: "m",
 			Severity: SeverityError, Position: Pos("a.go", 1, 1),
 			Confidence: 1.5,
 		}
 		err := f.Validate()
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "Confidence")
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err).To(MatchError(ContainSubstring("Confidence")))
 	})
 
 	t.Run("negative confidence", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		f := Finding{
 			ID: "1", Rule: "r", ToolName: "t", Message: "m",
 			Severity: SeverityError, Position: Pos("a.go", 1, 1),
 			Confidence: -0.5,
 		}
 		err := f.Validate()
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "Confidence")
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err).To(MatchError(ContainSubstring("Confidence")))
 	})
 
 	t.Run("direct fix without beforeCode", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
 		f.FixStrategy = FixStrategyDirect
 		f.AfterCode = "new"
 		err := f.Validate()
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "BeforeCode")
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err).To(MatchError(ContainSubstring("BeforeCode")))
 	})
 }
 
@@ -158,7 +165,8 @@ func TestFinding_IsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, tt.want, tt.f.IsValid())
+			g := NewWithT(t)
+			g.Expect(tt.f.IsValid()).To(Equal(tt.want))
 		})
 	}
 }

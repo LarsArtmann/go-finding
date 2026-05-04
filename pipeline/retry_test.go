@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/gomega"
 )
 
 func newRetryDet(d Detector, maxRetries int) *RetryDetector {
@@ -53,6 +53,7 @@ func TestRetryConfig_delay_maxCap(t *testing.T) {
 }
 
 func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 	inner := makeFindingDetectorFunc("F1")
 	rd := newRetryDet(inner, 3)
@@ -62,10 +63,11 @@ func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	assert.Len(t, findings, 1, "findings")
+	g.Expect(findings).To(HaveLen(1))
 }
 
 func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -84,12 +86,13 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	assert.Len(t, findings, 1, "findings")
+	g.Expect(findings).To(HaveLen(1))
 
-	assert.Equal(t, 3, calls)
+	g.Expect(calls).To(Equal(3))
 }
 
 func TestRetryDetector_ExhaustedRetries(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 	inner := makeErrorDetector("permanent")
 
@@ -100,10 +103,11 @@ func TestRetryDetector_ExhaustedRetries(t *testing.T) {
 		t.Fatal("expected error")
 	}
 
-	assert.ErrorContains(t, err, "permanent")
+	g.Expect(err).To(MatchError(ContainSubstring("permanent")))
 }
 
 func TestRetryDetector_ContextCancellation(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -122,26 +126,29 @@ func TestRetryDetector_ContextCancellation(t *testing.T) {
 		t.Fatal("expected error")
 	}
 
-	assert.ErrorIs(t, err, context.Canceled)
+	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
 }
 
 func TestRetryDetector_Name(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 	inner := &mockDetector{name: "my-detector"}
 
 	rd := NewRetryDetector(inner, DefaultRetryConfig())
-	assert.Equal(t, "my-detector", rd.Name())
+	g.Expect(rd.Name()).To(Equal("my-detector"))
 }
 
 func TestDefaultRetryConfig(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 	c := DefaultRetryConfig()
-	assert.Equal(t, 3, c.MaxRetries)
-	assert.Equal(t, 100*time.Millisecond, c.BaseDelay)
-	assert.Equal(t, 5*time.Second, c.MaxDelay)
+	g.Expect(c.MaxRetries).To(Equal(3))
+	g.Expect(c.BaseDelay).To(Equal(100 * time.Millisecond))
+	g.Expect(c.MaxDelay).To(Equal(5 * time.Second))
 }
 
 func TestRetryConfig_Validate_BaseDelayExceedsMax(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	c := RetryConfig{BaseDelay: 2 * time.Second, MaxDelay: 1 * time.Second}
@@ -150,10 +157,11 @@ func TestRetryConfig_Validate_BaseDelayExceedsMax(t *testing.T) {
 		t.Fatal("expected error when BaseDelay > MaxDelay")
 	}
 
-	assert.ErrorIs(t, err, errBaseDelayExceedsMax)
+	g.Expect(errors.Is(err, errBaseDelayExceedsMax)).To(BeTrue())
 }
 
 func TestRetryConfig_Validate_MaxDelayZeroWithBaseDelay(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 0}
@@ -162,10 +170,11 @@ func TestRetryConfig_Validate_MaxDelayZeroWithBaseDelay(t *testing.T) {
 		t.Fatal("expected error when MaxDelay=0 with BaseDelay>0")
 	}
 
-	assert.ErrorIs(t, err, errMaxDelayZero)
+	g.Expect(errors.Is(err, errMaxDelayZero)).To(BeTrue())
 }
 
 func TestRetryConfig_Validate_NegativeMaxRetries(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	c := RetryConfig{MaxRetries: -1}
@@ -174,10 +183,11 @@ func TestRetryConfig_Validate_NegativeMaxRetries(t *testing.T) {
 		t.Fatal("expected error for negative MaxRetries")
 	}
 
-	assert.ErrorIs(t, err, errMaxRetriesNegative)
+	g.Expect(errors.Is(err, errMaxRetriesNegative)).To(BeTrue())
 }
 
 func TestRetryConfig_Validate_NegativeBaseDelay(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	c := RetryConfig{BaseDelay: -1}
@@ -186,10 +196,11 @@ func TestRetryConfig_Validate_NegativeBaseDelay(t *testing.T) {
 		t.Fatal("expected error for negative BaseDelay")
 	}
 
-	assert.ErrorIs(t, err, errBaseDelayNegative)
+	g.Expect(errors.Is(err, errBaseDelayNegative)).To(BeTrue())
 }
 
 func TestRetryConfig_Validate_NegativeMaxDelay(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	c := RetryConfig{MaxDelay: -1}
@@ -198,12 +209,13 @@ func TestRetryConfig_Validate_NegativeMaxDelay(t *testing.T) {
 		t.Fatal("expected error for negative MaxDelay")
 	}
 
-	assert.ErrorIs(t, err, errMaxDelayNegative)
+	g.Expect(errors.Is(err, errMaxDelayNegative)).To(BeTrue())
 }
 
 func TestRetryConfig_Validate_Valid(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	c := RetryConfig{MaxRetries: 3, BaseDelay: 100 * time.Millisecond, MaxDelay: 5 * time.Second}
-	assert.NoError(t, c.Validate())
+	g.Expect(c.Validate()).NotTo(HaveOccurred())
 }

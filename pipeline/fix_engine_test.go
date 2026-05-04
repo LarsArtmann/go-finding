@@ -4,11 +4,14 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
-func makeRangeFix(file string, startLine, startCol, endLine, endCol int, before, after string) finding.Finding {
+func makeRangeFix(
+	file string,
+	startLine, startCol, endLine, endCol int,
+	before, after string,
+) finding.Finding {
 	return finding.Finding{
 		BeforeCode: before, AfterCode: after,
 		Range:    finding.NewRangePtr(file, startLine, startCol, endLine, endCol),
@@ -18,19 +21,21 @@ func makeRangeFix(file string, startLine, startCol, endLine, endCol int, before,
 
 func TestFixEngine_Apply_EmptyInput(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	engine := NewFixEngine()
 
 	lines, applied := engine.Apply(nil, nil)
-	assert.Nil(t, lines)
-	assert.Equal(t, 0, applied)
+	g.Expect(lines).To(BeNil())
+	g.Expect(applied).To(Equal(0))
 
 	lines, applied = engine.Apply([]string{}, nil)
-	assert.Empty(t, lines)
-	assert.Equal(t, 0, applied)
+	g.Expect(lines).To(BeEmpty())
+	g.Expect(applied).To(Equal(0))
 }
 
 func TestFixEngine_Apply_NoMatchingFixes(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	engine := NewFixEngine()
@@ -48,11 +53,12 @@ func TestFixEngine_Apply_NoMatchingFixes(t *testing.T) {
 	}
 
 	result, applied := engine.Apply(lines, fixes)
-	assert.Equal(t, lines, result)
-	assert.Equal(t, 0, applied)
+	g.Expect(result).To(Equal(lines))
+	g.Expect(applied).To(Equal(0))
 }
 
 func TestFixEngine_Apply_FixWithNoCode(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	engine := NewFixEngine()
@@ -63,22 +69,25 @@ func TestFixEngine_Apply_FixWithNoCode(t *testing.T) {
 	}
 
 	result, applied := engine.Apply(lines, fixes)
-	assert.Equal(t, lines, result)
-	assert.Equal(t, 0, applied)
+	g.Expect(result).To(Equal(lines))
+	g.Expect(applied).To(Equal(0))
 }
 
 func TestPartitionFixes(t *testing.T) {
 	t.Parallel()
 
+
 	t.Run("empty input", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		r, s := partitionFixes(nil)
-		assert.Nil(t, r)
-		assert.Nil(t, s)
+		g.Expect(r).To(BeNil())
+		g.Expect(s).To(BeNil())
 	})
 
 	t.Run("range fix with valid end", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		fixes := []finding.Finding{
 			{
 				BeforeCode: "old", AfterCode: "new",
@@ -87,32 +96,35 @@ func TestPartitionFixes(t *testing.T) {
 			},
 		}
 		r, s := partitionFixes(fixes)
-		assert.Len(t, r, 1)
-		assert.Empty(t, s)
+		g.Expect(r).To(HaveLen(1))
+		g.Expect(s).To(BeEmpty())
 	})
 
 	t.Run("string fix without range", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		fixes := []finding.Finding{
 			{BeforeCode: "old", AfterCode: "new", Position: finding.Pos("a.go", 1, 1)},
 		}
 		r, s := partitionFixes(fixes)
-		assert.Empty(t, r)
-		assert.Len(t, s, 1)
+		g.Expect(r).To(BeEmpty())
+		g.Expect(s).To(HaveLen(1))
 	})
 
 	t.Run("fix with no code is skipped", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		fixes := []finding.Finding{
 			{Position: finding.Pos("a.go", 1, 1)},
 		}
 		r, s := partitionFixes(fixes)
-		assert.Empty(t, r)
-		assert.Empty(t, s)
+		g.Expect(r).To(BeEmpty())
+		g.Expect(s).To(BeEmpty())
 	})
 }
 
 func TestApplyRangeFixes_SingleLine(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	lines := []string{"package main", "", "func main() {", "\told()", "}"}
@@ -121,11 +133,12 @@ func TestApplyRangeFixes_SingleLine(t *testing.T) {
 	}
 
 	result, _, applied := applyRangeFixes(lines, fixes)
-	require.Equal(t, 1, applied)
-	assert.Equal(t, "\tnew()", result[3])
+	g.Expect(applied).To(Equal(1))
+	g.Expect(result[3]).To(Equal("\tnew()"))
 }
 
 func TestApplyRangeFixes_MultiLine(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	lines := []string{"package main", "", "func old() {", "\treturn", "}", "", "func main() {}"}
@@ -139,13 +152,14 @@ func TestApplyRangeFixes_MultiLine(t *testing.T) {
 	}
 
 	result, _, applied := applyRangeFixes(lines, fixes)
-	require.Equal(t, 1, applied)
-	assert.Equal(t, "func new() {", result[2])
-	assert.Equal(t, "\treturn 42", result[3])
-	assert.Equal(t, "}", result[4])
+	g.Expect(applied).To(Equal(1))
+	g.Expect(result[2]).To(Equal("func new() {"))
+	g.Expect(result[3]).To(Equal("\treturn 42"))
+	g.Expect(result[4]).To(Equal("}"))
 }
 
 func TestApplyRangeFixes_OutOfBounds(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	lines := []string{"package main"}
@@ -154,11 +168,12 @@ func TestApplyRangeFixes_OutOfBounds(t *testing.T) {
 	}
 
 	result, _, applied := applyRangeFixes(lines, fixes)
-	assert.Equal(t, 0, applied)
-	assert.Equal(t, lines, result)
+	g.Expect(applied).To(Equal(0))
+	g.Expect(result).To(Equal(lines))
 }
 
 func TestApplyRangeFixes_DescendingOrder(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	lines := []string{
@@ -173,12 +188,13 @@ func TestApplyRangeFixes_DescendingOrder(t *testing.T) {
 	}
 
 	result, _, applied := applyRangeFixes(lines, fixes)
-	require.Equal(t, 2, applied)
-	assert.Equal(t, "line2: fix1", result[1])
-	assert.Equal(t, "line4: fix2", result[3])
+	g.Expect(applied).To(Equal(2))
+	g.Expect(result[1]).To(Equal("line2: fix1"))
+	g.Expect(result[3]).To(Equal("line4: fix2"))
 }
 
 func TestApplyStringFixes_ReplaceFirst(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	lines := []string{"old code here"}
@@ -187,11 +203,12 @@ func TestApplyStringFixes_ReplaceFirst(t *testing.T) {
 	}
 
 	result, _, applied := applyStringFixes(lines, fixes)
-	require.Equal(t, 1, applied)
-	assert.Equal(t, "new code here", result[0])
+	g.Expect(applied).To(Equal(1))
+	g.Expect(result[0]).To(Equal("new code here"))
 }
 
 func TestApplyStringFixes_Insertion(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	lines := []string{"package main", "", "func main() {}"}
@@ -200,12 +217,13 @@ func TestApplyStringFixes_Insertion(t *testing.T) {
 	}
 
 	result, _, applied := applyStringFixes(lines, fixes)
-	require.Equal(t, 1, applied)
-	require.Len(t, result, 4)
-	assert.Equal(t, "\tinserted", result[2])
+	g.Expect(applied).To(Equal(1))
+	g.Expect(result).To(HaveLen(4))
+	g.Expect(result[2]).To(Equal("\tinserted"))
 }
 
 func TestApplyStringFixes_NotFound(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	lines := []string{"package main"}
@@ -214,41 +232,46 @@ func TestApplyStringFixes_NotFound(t *testing.T) {
 	}
 
 	result, _, applied := applyStringFixes(lines, fixes)
-	assert.Equal(t, 0, applied)
-	assert.Equal(t, lines, result)
+	g.Expect(applied).To(Equal(0))
+	g.Expect(result).To(Equal(lines))
 }
 
 func TestReplaceNearestToLine(t *testing.T) {
 	t.Parallel()
 
+
 	content := "line1: X\nline2: X\nline3: X"
 
 	t.Run("first occurrence when targetLine is 0", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		result := replaceNearestToLine(content, "X", "Y", 0)
-		assert.Equal(t, "line1: Y\nline2: X\nline3: X", result)
+		g.Expect(result).To(Equal("line1: Y\nline2: X\nline3: X"))
 	})
 
 	t.Run("nearest to target line", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		result := replaceNearestToLine(content, "X", "Y", 3)
-		assert.Equal(t, "line1: X\nline2: X\nline3: Y", result)
+		g.Expect(result).To(Equal("line1: X\nline2: X\nline3: Y"))
 	})
 
 	t.Run("not found returns unchanged", func(t *testing.T) {
 		t.Parallel()
+		g := NewWithT(t)
 		result := replaceNearestToLine(content, "Z", "Y", 1)
-		assert.Equal(t, content, result)
+		g.Expect(result).To(Equal(content))
 	})
 }
 
 func TestLineDistance(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	content := "a\nb\nc"
 
-	assert.Equal(t, 0, lineDistance(content, 0, 1))
-	assert.Equal(t, 1, lineDistance(content, 0, 2))
-	assert.Equal(t, 1, lineDistance(content, 2, 1))
-	assert.Equal(t, 2, lineDistance(content, 0, 3))
+	g.Expect(lineDistance(content, 0, 1)).To(Equal(0))
+	g.Expect(lineDistance(content, 0, 2)).To(Equal(1))
+	g.Expect(lineDistance(content, 2, 1)).To(Equal(1))
+	g.Expect(lineDistance(content, 0, 3)).To(Equal(2))
 }

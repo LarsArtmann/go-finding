@@ -2,16 +2,17 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func TestFixApplier_Apply_CancelledContext(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tempDir := t.TempDir()
@@ -28,35 +29,38 @@ func TestFixApplier_Apply_CancelledContext(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(ctx, fixes)
-	require.Error(t, err)
-	require.ErrorIs(t, err, context.Canceled)
-	assert.Equal(t, 0, applied)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
+	g.Expect(applied).To(Equal(0))
 }
 
 func TestFixApplier_Backup_NonexistentFile(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
 	err := applier.backup.Backup(filepath.Join(tempDir, "does-not-exist.go"))
-	require.Error(t, err)
-	assert.ErrorIs(t, err, finding.ErrIO)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 }
 
 func TestFixApplier_Restore_WithoutBackup(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
 	err := applier.backup.Restore(filepath.Join(tempDir, "never-backed-up.go"))
-	require.Error(t, err)
-	assert.ErrorIs(t, err, finding.ErrInternal)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, finding.ErrInternal)).To(BeTrue())
 }
 
 func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
@@ -64,13 +68,14 @@ func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 	fixes := []finding.Finding{makeFixFinding("1", "old", "new", "", 0)}
 
 	applied, err := applier.applyToFile(filepath.Join(tempDir, "missing.go"), fixes)
-	require.Error(t, err)
-	require.ErrorIs(t, err, finding.ErrIO)
-	assert.Nil(t, applied)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
+	g.Expect(applied).To(BeNil())
 }
 
 func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
@@ -81,11 +86,12 @@ func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 	fixes := []finding.Finding{makeFixFinding("1", "nonexistent_code", "replacement", "", 0)}
 
 	applied, err := applier.applyToFile(testFile, fixes)
-	require.NoError(t, err)
-	assert.Nil(t, applied, "no match")
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(BeNil())
 }
 
 func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tempDir := t.TempDir()
@@ -99,14 +105,15 @@ func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
 	fixes := []finding.Finding{makeFixFinding("1", "old()", "new()", "", 0)}
 
 	applied, err := applier.applyToFile(testFile, fixes)
-	require.Error(t, err)
-	assert.ErrorIs(t, err, finding.ErrIO)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 
 	_ = applied
 }
 
 func TestFixApplier_RollbackAll(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
@@ -121,8 +128,8 @@ func TestFixApplier_RollbackAll(t *testing.T) {
 
 	writeTestFile(t, file2, []byte(orig2))
 
-	require.NoError(t, applier.backup.Backup(file1))
-	require.NoError(t, applier.backup.Backup(file2))
+	g.Expect(applier.backup.Backup(file1)).NotTo(HaveOccurred())
+	g.Expect(applier.backup.Backup(file2)).NotTo(HaveOccurred())
 
 	writeTestFile(t, file1, []byte("modified a\n"))
 
@@ -153,6 +160,7 @@ func TestFixApplier_RollbackAll(t *testing.T) {
 
 func TestFixApplier_RollbackAll_PartialFailure(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
@@ -160,20 +168,21 @@ func TestFixApplier_RollbackAll_PartialFailure(t *testing.T) {
 	goodFile := filepath.Join(tempDir, "good.go")
 	writeTestFile(t, goodFile, []byte("package good\n"))
 
-	require.NoError(t, applier.backup.Backup(goodFile))
+	g.Expect(applier.backup.Backup(goodFile)).NotTo(HaveOccurred())
 
 	writeTestFile(t, goodFile, []byte("modified\n"))
 
 	noBackupFile := filepath.Join(tempDir, "nobackup.go")
 	err := applier.backup.RollbackAll([]string{goodFile, noBackupFile})
-	require.Error(t, err)
+	g.Expect(err).To(HaveOccurred())
 
 	data, rErr := readFile(goodFile)
-	require.NoError(t, rErr)
-	assert.Equal(t, "package good\n", string(data))
+	g.Expect(rErr).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(Equal("package good\n"))
 }
 
 func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tempDir := t.TempDir()
@@ -188,25 +197,27 @@ func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)
-	require.Error(t, err)
-	assert.ErrorIs(t, err, finding.ErrIO)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 
 	_ = applied
 }
 
 func TestFixApplier_Apply_EmptyFixesList(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
 
 	applied, err := applier.Apply(context.Background(), nil)
-	require.NoError(t, err)
-	assert.Equal(t, 0, applied)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(Equal(0))
 }
 
 func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	tempDir := t.TempDir()
 	applier := NewFixApplier(tempDir)
@@ -219,7 +230,7 @@ func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
 	file2 := filepath.Join(tempDir, "second.go")
 	writeTestFile(t, file2, []byte("package second\nold2()\n"))
 	errChmod := os.Chmod(file2, 0o444) //nolint:gosec // intentional read-only for test
-	require.NoError(t, errChmod)
+	g.Expect(errChmod).NotTo(HaveOccurred())
 	t.Cleanup(func() {
 		_ = os.Chmod(file2, 0o644) //nolint:gosec // restore permissions in cleanup
 	})
@@ -230,23 +241,23 @@ func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)
-	require.Error(t, err)
-	require.ErrorIs(t, err, finding.ErrConflict)
-	assert.Equal(t, 1, applied,
-		"first.go is alphabetically first and should be applied before second.go fails")
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, finding.ErrConflict)).To(BeTrue())
+	g.Expect(applied).To(Equal(1))
 
 	// File 1 should have been applied then rolled back.
 	data1, rErr := readFile(file1)
-	require.NoError(t, rErr)
-	assert.Equal(t, "package first\nold1()\n", string(data1), "file1 should be restored")
+	g.Expect(rErr).NotTo(HaveOccurred())
+	g.Expect(string(data1)).To(Equal("package first\nold1()\n"))
 
 	// File 2 should be unchanged (write failed before modification).
 	data2, rErr := readFile(file2)
-	require.NoError(t, rErr)
-	assert.Equal(t, "package second\nold2()\n", string(data2), "file2 should be unchanged")
+	g.Expect(rErr).NotTo(HaveOccurred())
+	g.Expect(string(data2)).To(Equal("package second\nold2()\n"))
 }
 
 func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tempDir := t.TempDir()
@@ -258,11 +269,12 @@ func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)
-	require.NoError(t, err)
-	assert.Equal(t, 0, applied, "no files specified")
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(Equal(0))
 }
 
 func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tempDir := t.TempDir()
@@ -282,26 +294,28 @@ func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 	}
 
 	applied, err := applier.applyToFile(testFile, fixes)
-	require.NoError(t, err)
-	assert.Nil(t, applied, "range out of bounds")
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(BeNil())
 
 	data, rErr := readFile(testFile)
-	require.NoError(t, rErr)
-	assert.Equal(t, content, string(data), "file modified despite out-of-bounds range")
+	g.Expect(rErr).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(Equal(content))
 }
 
 func TestFixApplier_FileHash_Deterministic(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	h1 := fileHash("test/path.go")
 	h2 := fileHash("test/path.go")
-	assert.Equal(t, h1, h2, "fileHash not deterministic")
+	g.Expect(h2).To(Equal(h1))
 
 	h3 := fileHash("different/path.go")
-	assert.NotEqual(t, h1, h3, "fileHash collision for different paths")
+	g.Expect(h3).NotTo(Equal(h1))
 }
 
 func TestFixApplier_BackupDisabled(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
 
 	tempDir := t.TempDir()
@@ -316,29 +330,31 @@ func TestFixApplier_BackupDisabled(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)
-	require.NoError(t, err)
-	assert.Equal(t, 1, applied)
-	assert.Empty(t, applier.backup.BackupPath("nobackup.go"), "backup disabled")
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(Equal(1))
+	g.Expect(applier.backup.BackupPath("nobackup.go")).To(BeEmpty())
 }
 
 func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	applier := NewFixApplier("/tmp/test")
 
-	assert.Equal(t, "/tmp/test", applier.rootDir)
-	assert.True(t, applier.backup.IsEnabled(), "backupEnabled should be true")
-	assert.NotEmpty(t, applier.backup.backupDir, "backupDir should be set")
+	g.Expect(applier.rootDir).To(Equal("/tmp/test"))
+	g.Expect(applier.backup.IsEnabled()).To(BeTrue())
+	g.Expect(applier.backup.backupDir).NotTo(BeEmpty())
 }
 
 func TestNewFixApplier_MkdirTempFallback(t *testing.T) {
-	// Cannot run in parallel: t.Setenv is incompatible with t.Parallel.
+	t.Parallel()
+	g := NewWithT(t)
 	t.Setenv("TMPDIR", "/etc/passwd")
 
 	applier := NewFixApplier("/tmp/test")
-	assert.Equal(t, "/tmp/test", applier.rootDir)
-	assert.True(t, applier.backup.IsEnabled(), "backupEnabled should be true")
-	assert.NotEmpty(t, applier.backup.backupDir, "backupDir should be set")
+	g.Expect(applier.rootDir).To(Equal("/tmp/test"))
+	g.Expect(applier.backup.IsEnabled()).To(BeTrue())
+	g.Expect(applier.backup.backupDir).NotTo(BeEmpty())
 }
 
 func TestFixApplier_Apply_RestoreOnApplyError(t *testing.T) {
@@ -352,14 +368,15 @@ func TestFixApplier_Apply_RestoreOnApplyError(t *testing.T) {
 
 func TestIoErrorAt_WrapsCorrectly(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	err := ioErrorAt("test op", os.ErrPermission, "file.go")
 
-	require.ErrorIs(t, err, finding.ErrIO, "ErrIO sentinel match")
-	require.ErrorIs(t, err, os.ErrPermission, "os.ErrPermission cause match")
+	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
+	g.Expect(errors.Is(err, os.ErrPermission)).To(BeTrue())
 
 	var fe *finding.FindingError
-	require.ErrorAs(t, err, &fe, "expected FindingError")
+	g.Expect(errors.As(err, &fe)).To(BeTrue())
 
 	assertFindingErrorIO(t, fe, "file.go")
 }

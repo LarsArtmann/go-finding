@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"io"
 	"os"
@@ -13,8 +14,7 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/pipeline"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func detectorSpecs(names ...string) []detectorSpec {
@@ -103,7 +103,9 @@ detectors:
 }
 
 func TestLoadConfig_JSON(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
+		g := NewWithT(t)
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.json")
@@ -116,31 +118,35 @@ func TestLoadConfig_JSON(t *testing.T) {
 		t.Fatalf("loadConfig error: %v", err)
 	}
 
-	assert.Equal(t, 7, cfg.MaxIterations)
-	assert.False(t, cfg.ParallelDetectors)
+	g.Expect(cfg.MaxIterations).To(Equal(7))
+	g.Expect(cfg.ParallelDetectors).To(BeFalse())
 }
 
 func TestLoadConfig_NoFile(t *testing.T) {
+	g := NewWithT(t)
 	t.Parallel()
+		g := NewWithT(t)
 
 	cfg, err := loadConfig("", 2, true, true, 5*time.Minute)
 	if err != nil {
 		t.Fatalf("loadConfig empty file: %v", err)
 	}
 
-	assert.Equal(t, 2, cfg.MaxIterations)
-	assert.Len(t, cfg.Detectors, 2)
+	g.Expect(cfg.MaxIterations).To(Equal(2))
+	g.Expect(cfg.Detectors).To(HaveLen(2))
 }
 
 func TestLoadConfig_MissingFile(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	_, err := loadConfig("/nonexistent/config.yaml", 1, true, false, 10*time.Minute)
-	assert.Error(t, err)
+	g.Expect(err).To(HaveOccurred())
 }
 
 func TestLoadConfig_InvalidYAML(t *testing.T) {
 	t.Parallel()
+	
 
 	expectConfigError(t, "yaml", "{{invalid yaml")
 }
@@ -153,6 +159,7 @@ func TestLoadConfig_InvalidJSON(t *testing.T) {
 
 func expectConfigError(t *testing.T, ext, content string) {
 	t.Helper()
+	g := NewWithT(t)
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "bad."+ext)
@@ -160,7 +167,7 @@ func expectConfigError(t *testing.T, ext, content string) {
 	writeConfig(t, cfgPath, []byte(content))
 
 	_, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
-	assert.Error(t, err)
+	g.Expect(err).To(HaveOccurred())
 }
 
 func TestPipelineConfigFile_Validate(t *testing.T) {
@@ -212,12 +219,13 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			g := NewWithT(t)
 
 			err := tt.cfg.validate()
 			if tt.wantErr {
-				assert.Error(t, err)
+				g.Expect(err).To(HaveOccurred())
 			} else {
-				assert.NoError(t, err)
+				g.Expect(err).NotTo(HaveOccurred())
 			}
 		})
 	}
@@ -286,6 +294,8 @@ func TestPipelineConfigFile_ToPipelineConfig(t *testing.T) {
 
 //nolint:paralleltest // manipulates global pprof CPU profile state and os.Stderr
 func TestSetupProfiling(t *testing.T) {
+	g := NewWithT(t)
+
 	t.Run("no profiling", func(t *testing.T) {
 		stop, err := setupProfiling("", "")
 		if err != nil {
@@ -311,7 +321,7 @@ func TestSetupProfiling(t *testing.T) {
 			t.Fatalf("cpu profile not created: %v", err)
 		}
 
-		assert.NotZero(t, info.Size())
+		g.Expect(info.Size()).NotTo(BeZero())
 	})
 
 	t.Run("mem profile", func(t *testing.T) {
@@ -330,7 +340,7 @@ func TestSetupProfiling(t *testing.T) {
 			t.Fatalf("mem profile not created: %v", err)
 		}
 
-		assert.NotZero(t, info.Size())
+		g.Expect(info.Size()).NotTo(BeZero())
 	})
 
 	t.Run("cpu profile bad path", func(t *testing.T) {
@@ -343,6 +353,7 @@ func TestSetupProfiling(t *testing.T) {
 
 func TestRunWithConfig(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
 
@@ -375,20 +386,22 @@ detectors:
 	}
 
 	pc := cfg.toPipelineConfig()
-	assert.Equal(t, 1, pc.MaxIterations)
+	g.Expect(pc.MaxIterations).To(Equal(1))
 }
 
 func TestRunWithInvalidSeverity(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 	// Test that run returns error for bad severity — this exercises parseSeverity via the run() path.
 	// Since run() reads flags, test parseSeverity directly instead.
 	_, err := parseSeverity("bogus")
-	require.Error(t, err)
-	require.ErrorIs(t, err, errUnknownSeverity)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, errUnknownSeverity)).To(BeTrue())
 }
 
 func TestLoadConfig_WithInvalidDetector(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
@@ -401,8 +414,8 @@ detectors:
 	writeConfig(t, cfgPath, []byte(content))
 
 	_, err := loadConfig(cfgPath, 1, true, false, 10*time.Minute)
-	require.Error(t, err)
-	assert.ErrorIs(t, err, errUnknownDetector)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, errUnknownDetector)).To(BeTrue())
 }
 
 func TestOutputResults_AllFormats(t *testing.T) {
@@ -441,6 +454,7 @@ func TestOutputResults_AllFormats(t *testing.T) {
 
 func TestOutputResults_JSONContainsFindings(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := reportWithFindings()
 
@@ -456,12 +470,13 @@ func TestOutputResults_JSONContainsFindings(t *testing.T) {
 
 	requireJSON(t, &buf, &parsed, "JSON parse error")
 
-	assert.Len(t, parsed.Findings, 1)
-	assert.Equal(t, "nilcheck", parsed.Findings[0].Rule)
+	g.Expect(parsed.Findings).To(HaveLen(1))
+	g.Expect(parsed.Findings[0].Rule).To(Equal("nilcheck"))
 }
 
 func TestOutputResults_SARIFContainsResults(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
 	report := reportWithFindings()
 
@@ -480,10 +495,10 @@ func TestOutputResults_SARIFContainsResults(t *testing.T) {
 
 	requireJSON(t, &buf, &parsed, "SARIF parse error")
 
-	assert.Equal(t, "2.1.0", parsed.Version)
-	assert.Len(t, parsed.Runs, 1)
-	assert.Len(t, parsed.Runs[0].Results, 1)
-	assert.Equal(t, "nilcheck", parsed.Runs[0].Results[0].RuleID)
+	g.Expect(parsed.Version).To(Equal("2.1.0"))
+	g.Expect(parsed.Runs).To(HaveLen(1))
+	g.Expect(parsed.Runs[0].Results).To(HaveLen(1))
+	g.Expect(parsed.Runs[0].Results[0].RuleID).To(Equal("nilcheck"))
 }
 
 func assertRunFails(t *testing.T, args ...string) {
@@ -507,6 +522,7 @@ func TestRun_NegativeMaxIterations(t *testing.T) {
 
 //nolint:paralleltest // manipulates global flag state
 func TestRun_PipelineRunError(t *testing.T) {
+	g := NewWithT(t)
 	name := uniqueDetName("broken-fix")
 
 	err := RegisterDetector(name, func(_ string) pipeline.Detector {
@@ -527,7 +543,7 @@ func TestRun_PipelineRunError(t *testing.T) {
 			},
 		)
 	})
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
@@ -540,6 +556,7 @@ func TestRun_PipelineRunError(t *testing.T) {
 
 //nolint:paralleltest // manipulates global flag state
 func TestRun_MetricsOutput(t *testing.T) {
+	g := NewWithT(t)
 	name := uniqueDetName("always-find")
 
 	err := RegisterDetector(name, func(_ string) pipeline.Detector {
@@ -557,7 +574,7 @@ func TestRun_MetricsOutput(t *testing.T) {
 			},
 		)
 	})
-	require.NoError(t, err)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
@@ -580,8 +597,8 @@ func TestRun_MetricsOutput(t *testing.T) {
 	os.Stderr = old
 	_, _ = io.Copy(&buf, r)
 
-	assert.Equal(t, 0, got)
-	assert.Contains(t, buf.String(), "Metrics:")
+	g.Expect(got).To(Equal(0))
+	g.Expect(buf.String()).To(ContainSubstring("Metrics:"))
 }
 
 //nolint:paralleltest // manipulates global flag state via assertRunFails
