@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
@@ -75,12 +74,10 @@ func (a *FixApplier) ApplyWithDetails(
 
 	for _, path := range paths {
 		fileFixes := byFile[path]
-		select {
-		case <-ctx.Done():
+		if err := CheckCanceledWithMsg(ctx, "fix application cancelled"); err != nil {
 			_ = a.backup.RollbackAll(modified)
 
-			return len(applied), applied, fmt.Errorf("fix application cancelled: %w", ctx.Err())
-		default:
+			return len(applied), applied, err
 		}
 
 		// Create backup

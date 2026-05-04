@@ -76,7 +76,6 @@ func TestFixEngine_Apply_FixWithNoCode(t *testing.T) {
 func TestPartitionFixes(t *testing.T) {
 	t.Parallel()
 
-
 	t.Run("empty input", func(t *testing.T) {
 		t.Parallel()
 		g := NewWithT(t)
@@ -238,7 +237,6 @@ func TestApplyStringFixes_NotFound(t *testing.T) {
 
 func TestReplaceNearestToLine(t *testing.T) {
 	t.Parallel()
-
 
 	content := "line1: X\nline2: X\nline3: X"
 

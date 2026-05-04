@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func assertPartialFindingsLen(t *testing.T, result *PartialResult, want int, msg string) {
-	g := NewWithT(t)
+func assertPartialFindingsLen(t *testing.T, result *PartialResult, want int, _ string) {
 	t.Helper()
+	g := NewWithT(t)
 
 	g.Expect(result.Findings).To(HaveLen(want))
 }

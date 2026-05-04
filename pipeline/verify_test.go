@@ -13,8 +13,8 @@ func makeFinding(id, msg string) finding.Finding {
 }
 
 func assertDiffResult(t *testing.T, result *VerifyResult, resolved, remaining, newFindings int) {
-	g := NewWithT(t)
 	t.Helper()
+	g := NewWithT(t)
 
 	g.Expect(result.Resolved).To(Equal(resolved))
 	g.Expect(result.Remaining).To(HaveLen(remaining))
@@ -22,8 +22,8 @@ func assertDiffResult(t *testing.T, result *VerifyResult, resolved, remaining, n
 }
 
 func assertNewFindingID(t *testing.T, result *VerifyResult, wantID string) {
-	g := NewWithT(t)
 	t.Helper()
+	g := NewWithT(t)
 	g.Expect(result.NewFindings).To(HaveLen(1))
 	g.Expect(result.NewFindings[0].ID).To(Equal(wantID))
 }

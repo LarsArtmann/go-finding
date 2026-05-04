@@ -1,11 +1,75 @@
 package finding
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"math/rand"
 	"testing"
 	"testing/quick"
+
+	"github.com/onsi/gomega"
 )
+
+// AssertErrIsIO asserts an error is of type ErrIO using Gomega.
+func AssertErrIsIO(g *gomega.GomegaWithT, err error) {
+	g.Expect(errors.Is(err, ErrIO)).To(gomega.BeTrue())
+}
+
+// AssertErrNotIO asserts an error is NOT of type ErrIO using Gomega.
+func AssertErrNotIO(g *gomega.GomegaWithT, err error) {
+	g.Expect(errors.Is(err, ErrIO)).To(gomega.BeFalse())
+}
+
+// AssertErrIsCanceled asserts an error is context.Canceled using Gomega.
+func AssertErrIsCanceled(g *gomega.GomegaWithT, err error) {
+	g.Expect(errors.Is(err, context.Canceled)).To(gomega.BeTrue())
+}
+
+// AssertErrNotCanceled asserts an error is NOT context.Canceled using Gomega.
+func AssertErrNotCanceled(g *gomega.GomegaWithT, err error) {
+	g.Expect(errors.Is(err, context.Canceled)).To(gomega.BeFalse())
+}
+
+// AssertFindingSeverity asserts a finding has the expected severity using Gomega.
+func AssertFindingSeverity(g *gomega.GomegaWithT, f Finding, sev Severity) {
+	g.Expect(f.Severity).To(gomega.Equal(sev))
+}
+
+// AssertFindingConfidence asserts a finding has the expected confidence using Gomega.
+func AssertFindingConfidence(g *gomega.GomegaWithT, f Finding, confidence, tolerance float64) {
+	g.Expect(f.Confidence).To(gomega.BeNumerically("~", confidence, tolerance))
+}
+
+// AssertFindingPosition asserts a finding has the expected file and line using Gomega.
+func AssertFindingPosition(g *gomega.GomegaWithT, f Finding, file string, line int) {
+	g.Expect(f.Position.File).To(gomega.Equal(file))
+	g.Expect(f.Position.Line).To(gomega.Equal(line))
+}
+
+// AssertErrContains asserts an error message contains a substring using Gomega.
+func AssertErrContains(g *gomega.GomegaWithT, err error, substr string) {
+	g.Expect(err.Error()).To(gomega.ContainSubstring(substr))
+}
+
+// AssertErrIs asserts an error matches a specific error using errors.Is via Gomega.
+func AssertErrIs[T error](g *gomega.GomegaWithT, err error, target T) {
+	g.Expect(errors.Is(err, target)).To(gomega.BeTrue())
+}
+
+// MakeFindingWithID creates a Finding with just an ID and Severity.
+func MakeFindingWithID(id string, severity Severity) Finding {
+	return Finding{ID: id, Severity: severity}
+}
+
+// MakeFindingsWithIDs creates a slice of Findings with sequential IDs and given severity.
+func MakeFindingsWithIDs(count int, severity Severity) []Finding {
+	findings := make([]Finding, count)
+	for i := range count {
+		findings[i] = Finding{ID: string(rune('1' + i)), Severity: severity}
+	}
+	return findings
+}
 
 // MakeFinding creates a Finding with common fields for testing.
 func MakeFinding(id, rule, tool, message string, severity Severity) Finding {
@@ -274,6 +338,30 @@ func MakeSimpleFinding(id string, severity Severity) Finding {
 // MakeSimpleReport creates a Report with the given tool name.
 func MakeSimpleReport(toolName string) *Report {
 	return NewReport(ToolInfo{Name: toolName})
+}
+
+// MakeReport creates a Report with the given tool info.
+func MakeReport(toolName, version string) *Report {
+	return NewReport(ToolInfo{Name: toolName, Version: version})
+}
+
+// MakeNonexistentPosition returns a Position pointing to a nonexistent file at line 1, col 1.
+func MakeNonexistentPosition() Position {
+	return Position{File: "nonexistent.go", Line: 1, Column: 1}
+}
+
+// MakeFindingWithFix creates a Finding with fix-related fields.
+func MakeFindingWithFix(id, rule, tool, msg, beforeCode, afterCode, file string, line int) Finding {
+	return Finding{
+		ID:          id,
+		Rule:        rule,
+		ToolName:    tool,
+		Message:     msg,
+		BeforeCode:  beforeCode,
+		AfterCode:   afterCode,
+		Position:    Position{File: file, Line: line},
+		FixStrategy: FixStrategyDirect,
+	}
 }
 
 // assertFindingErrorFile asserts the File field of a FindingError.

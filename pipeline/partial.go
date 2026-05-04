@@ -49,20 +49,6 @@ func (p *Pipeline) notifyFinding(f finding.Finding) {
 	p.config.OnFinding(f)
 }
 
-// isContextDone returns true if the context is done (cancelled/timed out).
-func isContextDone(ctx context.Context) bool {
-	select {
-	case <-ctx.Done():
-		return true
-	default:
-		return false
-	}
-}
-
-func contextError(ctx context.Context, msg string) error {
-	return fmt.Errorf("%s: %w", msg, ctx.Err())
-}
-
 func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult, error) {
 	//nolint:exhaustruct
 	result := &PartialResult{
@@ -70,8 +56,8 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 	}
 
 	for _, d := range p.detectors {
-		if isContextDone(ctx) {
-			return result, contextError(ctx, "context cancelled")
+		if err := CheckCanceledWithMsg(ctx, "context cancelled"); err != nil {
+			return result, err
 		}
 
 		findings, err := p.runOneDetector(ctx, d)
@@ -118,8 +104,8 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 
 	_ = g.Wait()
 
-	if isContextDone(ctx) {
-		return result, contextError(ctx, "context cancelled")
+	if err := CheckCanceledWithMsg(ctx, "context cancelled"); err != nil {
+		return result, err
 	}
 
 	return result, nil

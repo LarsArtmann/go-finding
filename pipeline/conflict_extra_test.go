@@ -66,7 +66,6 @@ func TestFilterConflictingFixes(t *testing.T) {
 func TestAnalyzeConflicts(t *testing.T) {
 	t.Parallel()
 
-
 	t.Run("no conflicts returns empty", func(t *testing.T) {
 		t.Parallel()
 		g := NewWithT(t)

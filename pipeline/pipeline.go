@@ -94,6 +94,38 @@ func (n *namedProcessor) Name() string {
 	return n.name
 }
 
+// CheckCanceled checks if the context is done and returns an appropriate error.
+// Use this helper instead of inline context cancellation checks to avoid duplication.
+func CheckCanceled(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("operation cancelled: %w", ctx.Err())
+	default:
+		return nil
+	}
+}
+
+// CheckCanceledWithMsg checks if the context is done and returns an error with the given message.
+func CheckCanceledWithMsg(ctx context.Context, msg string) error {
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("%s: %w", msg, ctx.Err())
+	default:
+		return nil
+	}
+}
+
+// WaitWithContext waits for the done channel while checking for context cancellation.
+// Returns an error if context is cancelled before the done channel completes.
+func WaitWithContext(ctx context.Context, done <-chan time.Time) (bool, error) {
+	select {
+	case <-ctx.Done():
+		return false, fmt.Errorf("operation cancelled: %w", ctx.Err())
+	case <-done:
+		return true, nil
+	}
+}
+
 // Config configures the pipeline behavior.
 type Config struct {
 	// MaxIterations prevents infinite loops.
@@ -251,8 +283,8 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	}
 
 	for p.iterations < p.config.MaxIterations {
-		if isContextDone(ctx) {
-			return result, contextError(ctx, "pipeline cancelled")
+		if err := CheckCanceledWithMsg(ctx, "pipeline cancelled"); err != nil {
+			return result, err
 		}
 
 		iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct
@@ -437,10 +469,8 @@ func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, err
 	var allFindings []finding.Finding
 
 	for _, d := range p.detectors {
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("operation cancelled: %w", ctx.Err())
-		default:
+		if err := CheckCanceled(ctx); err != nil {
+			return nil, err
 		}
 
 		findings, err := p.runOneDetector(ctx, d)

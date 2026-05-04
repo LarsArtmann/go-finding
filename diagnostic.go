@@ -85,7 +85,12 @@ func FromTokenPosition(pos token.Position) Position {
 // nodeStartPos returns the start token.Position of an AST node, or a zero position if node is nil.
 func nodeStartPos(fset *token.FileSet, node ast.Node) token.Position {
 	if node == nil {
-		return token.Position{}
+		return token.Position{
+			Filename: "",
+			Offset:   0,
+			Line:     0,
+			Column:   0,
+		}
 	}
 
 	return fset.Position(node.Pos())

@@ -210,7 +210,6 @@ func TestReportFromJSON(t *testing.T) {
 func TestFindingsFromJSON(t *testing.T) {
 	t.Parallel()
 
-
 	t.Run("valid findings slice", func(t *testing.T) {
 		t.Parallel()
 		g := NewWithT(t)

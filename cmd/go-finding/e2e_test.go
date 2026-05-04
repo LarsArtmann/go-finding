@@ -32,8 +32,8 @@ func buildBinary(t *testing.T) string {
 }
 
 func initGoModule(t *testing.T, dir string) {
-	g := NewWithT(t)
 	t.Helper()
+	g := NewWithT(t)
 	cmd := exec.CommandContext(context.Background(), "go", "mod", "init", "testmod")
 	cmd.Dir = dir
 	_, err := cmd.CombinedOutput()

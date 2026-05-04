@@ -9,7 +9,6 @@ import (
 func TestFinding_Validate(t *testing.T) {
 	t.Parallel()
 
-
 	t.Run("valid finding", func(t *testing.T) {
 		t.Parallel()
 		g := NewWithT(t)

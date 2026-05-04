@@ -101,10 +101,8 @@ func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 	for attempt := 0; attempt <= d.config.MaxRetries; attempt++ {
 		if attempt > 0 {
 			delay := d.config.delay(attempt - 1)
-			select {
-			case <-ctx.Done():
-				return nil, fmt.Errorf("operation cancelled: %w", ctx.Err())
-			case <-time.After(delay):
+			if _, err := WaitWithContext(ctx, time.After(delay)); err != nil {
+				return nil, err
 			}
 		}
 
