@@ -2,11 +2,8 @@ package finding
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-// filterTestCase represents a filter test with input findings and expected count.
 type filterTestCase struct {
 	name     string
 	input    []Finding
@@ -14,12 +11,10 @@ type filterTestCase struct {
 	expected int
 }
 
-// newFilterCase creates a filter test case with a single predicate.
 func newFilterCase(name string, input []Finding, pred FilterFunc, expected int) filterTestCase {
 	return filterTestCase{name: name, input: input, preds: []FilterFunc{pred}, expected: expected}
 }
 
-// runFilterCase runs a filter test case.
 func runFilterCase(t *testing.T, tc filterTestCase) {
 	t.Helper()
 	t.Run(tc.name, func(t *testing.T) {
@@ -32,7 +27,6 @@ func runFilterCase(t *testing.T, tc filterTestCase) {
 	})
 }
 
-// makeFixStrategyFindings creates test findings with varying FixStrategy values.
 func makeFixStrategyFindings(id2, id3 FixStrategy) []Finding {
 	return []Finding{
 		{ID: "1", FixStrategy: FixStrategyDirect},
@@ -41,7 +35,6 @@ func makeFixStrategyFindings(id2, id3 FixStrategy) []Finding {
 	}
 }
 
-// makeFindingsWithSeverity creates findings with specified severities.
 func makeFindingsWithSeverity(sev ...Severity) []Finding {
 	findings := make([]Finding, len(sev))
 	for i, s := range sev {
@@ -51,7 +44,6 @@ func makeFindingsWithSeverity(sev ...Severity) []Finding {
 	return findings
 }
 
-// makeFindingsWithCategory creates findings with specified categories.
 func makeFindingsWithCategory(cats ...Category) []Finding {
 	findings := make([]Finding, len(cats))
 	for i, c := range cats {
@@ -219,7 +211,9 @@ func TestGroupBy_Empty(t *testing.T) {
 	t.Parallel()
 
 	groups := GroupBy(nil, func(f Finding) string { return f.ToolName })
-	assert.Empty(t, groups, "GroupBy(nil)")
+	if len(groups) != 0 {
+		t.Errorf("GroupBy(nil) = %d groups, want 0", len(groups))
+	}
 }
 
 func TestGroupByFile(t *testing.T) {
@@ -294,9 +288,15 @@ func TestFilterInPlace(t *testing.T) {
 
 	result := FilterInPlace(findings, BySeverity(SeverityError))
 
-	assert.Len(t, result, 2)
-	assert.Equal(t, "1", result[0].ID)
-	assert.Equal(t, "3", result[1].ID)
+	if len(result) != 2 {
+		t.Fatalf("FilterInPlace() = %d, want 2", len(result))
+	}
+	if result[0].ID != "1" {
+		t.Errorf("result[0].ID = %q, want %q", result[0].ID, "1")
+	}
+	if result[1].ID != "3" {
+		t.Errorf("result[1].ID = %q, want %q", result[1].ID, "3")
+	}
 }
 
 func TestFilterInPlace_NoPredicates(t *testing.T) {
@@ -305,11 +305,12 @@ func TestFilterInPlace_NoPredicates(t *testing.T) {
 	findings := []Finding{{ID: "1"}, {ID: "2"}}
 	result := FilterInPlace(findings)
 
-	assert.Len(t, result, 2)
-	assert.Same(
-		t, &findings[0], &result[0],
-		"FilterInPlace without predicates should return same slice",
-	)
+	if len(result) != 2 {
+		t.Fatalf("FilterInPlace() = %d, want 2", len(result))
+	}
+	if &findings[0] != &result[0] {
+		t.Error("FilterInPlace without predicates should return same slice")
+	}
 }
 
 func TestFilterInPlace_AllFiltered(t *testing.T) {
@@ -318,5 +319,7 @@ func TestFilterInPlace_AllFiltered(t *testing.T) {
 	findings := []Finding{{ID: "1", Severity: SeverityInfo}}
 	result := FilterInPlace(findings, BySeverity(SeverityError))
 
-	assert.Empty(t, result)
+	if len(result) != 0 {
+		t.Errorf("FilterInPlace() = %d, want 0", len(result))
+	}
 }

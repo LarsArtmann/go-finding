@@ -2,9 +2,6 @@ package finding
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestSeverityToLSP(t *testing.T) {
@@ -26,7 +23,9 @@ func TestSeverityToLSP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, severityToLSP(tt.severity), tt.name)
+			if got := severityToLSP(tt.severity); got != tt.want {
+				t.Errorf("severityToLSP(%v) = %d, want %d", tt.severity, got, tt.want)
+			}
 		})
 	}
 }
@@ -51,7 +50,9 @@ func TestSeverityFromLSP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, severityFromLSP(tt.sev), tt.name)
+			if got := severityFromLSP(tt.sev); got != tt.want {
+				t.Errorf("severityFromLSP(%d) = %v, want %v", tt.sev, got, tt.want)
+			}
 		})
 	}
 }
@@ -116,7 +117,7 @@ func TestFromLSP(t *testing.T) {
 	if got, want := f.FixStrategy, FixStrategyNone; got != want {
 		t.Errorf("FromLSP FixStrategy = %v, want %v", got, want)
 	}
-	// End position preserved in Range
+
 	if f.Range == nil {
 		t.Fatal("FromLSP Range = nil, want non-nil (end differs from start)")
 	}
@@ -128,20 +129,31 @@ func TestFromLSP(t *testing.T) {
 	if got, want := f.Range.End.Column, 16; got != want {
 		t.Errorf("FromLSP Range.End.Column = %d, want %d", got, want)
 	}
-	// Raw LSP severity in metadata
+
 	if got, want := f.Metadata["go-finding/lsp-severity"], "1"; got != want {
 		t.Errorf("FromLSP Metadata[lsp-severity] = %q, want %q", got, want)
 	}
 
-	// ID round-trips through ParseID
 	p := ParseID(f.ID)
-	require.True(t, p.OK(), "ParseID(%q) failed", f.ID)
+	if !p.OK() {
+		t.Fatalf("ParseID(%q) failed", f.ID)
+	}
 
-	assert.Equal(t, "golangci-lint", p.Tool)
-	assert.Equal(t, "unused-var", p.Rule)
-	assert.Equal(t, "file:///test.go", p.File)
-	assert.Equal(t, 5, p.Line)
-	assert.Equal(t, 10, p.Column)
+	if p.Tool != "golangci-lint" {
+		t.Errorf("ParseID Tool = %q, want %q", p.Tool, "golangci-lint")
+	}
+	if p.Rule != "unused-var" {
+		t.Errorf("ParseID Rule = %q, want %q", p.Rule, "unused-var")
+	}
+	if p.File != "file:///test.go" {
+		t.Errorf("ParseID File = %q, want %q", p.File, "file:///test.go")
+	}
+	if p.Line != 5 {
+		t.Errorf("ParseID Line = %d, want %d", p.Line, 5)
+	}
+	if p.Column != 10 {
+		t.Errorf("ParseID Column = %d, want %d", p.Column, 10)
+	}
 }
 
 func TestFromLSPNoEndRange(t *testing.T) {

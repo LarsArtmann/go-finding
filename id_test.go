@@ -2,11 +2,8 @@ package finding
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-// parseIDCase is a test case for ParseID.
 type parseIDCase struct {
 	name     string
 	id       string
@@ -18,7 +15,6 @@ type parseIDCase struct {
 	wantOK   bool
 }
 
-// stdIDCase creates a parseIDCase with standard tool/rule fields.
 func stdIDCase(name, id, file string, line, col int, ok bool) parseIDCase {
 	return parseIDCase{
 		name:     name,
@@ -28,25 +24,35 @@ func stdIDCase(name, id, file string, line, col int, ok bool) parseIDCase {
 	}
 }
 
-// testParseIDCase runs a parseIDCase, validating ParseID returns expected values.
 func testParseIDCase(t *testing.T, tt parseIDCase) {
 	t.Helper()
 
 	p := ParseID(tt.id)
-	assert.Equal(t, tt.wantOK, p.OK())
+	if p.OK() != tt.wantOK {
+		t.Fatalf("OK() = %v, want %v", p.OK(), tt.wantOK)
+	}
 
 	if !tt.wantOK {
 		return
 	}
 
-	assert.Equal(t, tt.wantTool, p.Tool)
-	assert.Equal(t, tt.wantRule, p.Rule)
-	assert.Equal(t, tt.wantFile, p.File)
-	assert.Equal(t, tt.wantLine, p.Line)
-	assert.Equal(t, tt.wantCol, p.Column)
+	if p.Tool != tt.wantTool {
+		t.Errorf("Tool = %q, want %q", p.Tool, tt.wantTool)
+	}
+	if p.Rule != tt.wantRule {
+		t.Errorf("Rule = %q, want %q", p.Rule, tt.wantRule)
+	}
+	if p.File != tt.wantFile {
+		t.Errorf("File = %q, want %q", p.File, tt.wantFile)
+	}
+	if p.Line != tt.wantLine {
+		t.Errorf("Line = %d, want %d", p.Line, tt.wantLine)
+	}
+	if p.Column != tt.wantCol {
+		t.Errorf("Column = %d, want %d", p.Column, tt.wantCol)
+	}
 }
 
-// runParseIDCases runs all parseIDCase tests in a subtest.
 func runParseIDCases(t *testing.T, tests []parseIDCase) {
 	t.Helper()
 	for _, tt := range tests {
@@ -57,14 +63,23 @@ func runParseIDCases(t *testing.T, tests []parseIDCase) {
 	}
 }
 
-// assertRoundTrip validates ParseID round-trip with the given parameters.
 func assertRoundTrip(t *testing.T, p *ParsedID, tool, rule, file string, line, col int) {
 	t.Helper()
-	assert.Equal(t, tool, p.Tool)
-	assert.Equal(t, rule, p.Rule)
-	assert.Equal(t, file, p.File)
-	assert.Equal(t, line, p.Line)
-	assert.Equal(t, col, p.Column)
+	if p.Tool != tool {
+		t.Errorf("Tool = %q, want %q", p.Tool, tool)
+	}
+	if p.Rule != rule {
+		t.Errorf("Rule = %q, want %q", p.Rule, rule)
+	}
+	if p.File != file {
+		t.Errorf("File = %q, want %q", p.File, file)
+	}
+	if p.Line != line {
+		t.Errorf("Line = %d, want %d", p.Line, line)
+	}
+	if p.Column != col {
+		t.Errorf("Column = %d, want %d", p.Column, col)
+	}
 }
 
 func TestGenerateID(t *testing.T) {
@@ -218,8 +233,8 @@ func TestIsHashID(t *testing.T) {
 		{"tool:rule:short", false},
 		{"tooshort", false},
 		{"a:b:c:d", false},
-		{"tool:rule:abcdefghijklmnop", false}, // 16 chars but not hex
-		{"tool:rule:0123456789ABCDEF", true},  // uppercase hex
+		{"tool:rule:abcdefghijklmnop", false},
+		{"tool:rule:0123456789ABCDEF", true},
 	}
 
 	for _, tt := range tests {
@@ -344,7 +359,9 @@ func TestExtractFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, extractFile(tt.parts, tt.trailingCount), "extractFile")
+			if got := extractFile(tt.parts, tt.trailingCount); got != tt.want {
+				t.Errorf("extractFile() = %q, want %q", got, tt.want)
+			}
 		})
 	}
 }

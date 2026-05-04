@@ -3,9 +3,6 @@ package finding
 import (
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNewFinding(t *testing.T) {
@@ -14,15 +11,30 @@ func TestNewFinding(t *testing.T) {
 	pos := Position{File: "main.go", Line: 42, Column: 5, Offset: 100}
 	f := NewFinding("nilcheck", "govet", "possible nil dereference", SeverityError, pos, 0)
 
-	assert.Equal(t, "nilcheck", f.Rule)
-	assert.Equal(t, "govet", f.ToolName)
-	assert.Equal(t, "possible nil dereference", f.Message)
-	assert.Equal(t, SeverityError, f.Severity)
-	assert.Equal(t, pos, f.Position)
-	assert.Equal(t, FixStrategyNone, f.FixStrategy)
-	assert.NotEmpty(t, f.ID)
-	assert.True(t, strings.Contains(f.ID, "govet") && strings.Contains(f.ID, "nilcheck"),
-		"ID should contain tool name and rule")
+	if f.Rule != "nilcheck" {
+		t.Errorf("Rule = %q, want %q", f.Rule, "nilcheck")
+	}
+	if f.ToolName != "govet" {
+		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
+	}
+	if f.Message != "possible nil dereference" {
+		t.Errorf("Message = %q, want %q", f.Message, "possible nil dereference")
+	}
+	if f.Severity != SeverityError {
+		t.Errorf("Severity = %v, want %v", f.Severity, SeverityError)
+	}
+	if f.Position != pos {
+		t.Errorf("Position = %v, want %v", f.Position, pos)
+	}
+	if f.FixStrategy != FixStrategyNone {
+		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyNone)
+	}
+	if f.ID == "" {
+		t.Error("ID should not be empty")
+	}
+	if !strings.Contains(f.ID, "govet") || !strings.Contains(f.ID, "nilcheck") {
+		t.Errorf("ID = %q should contain tool name and rule", f.ID)
+	}
 }
 
 func TestSuppressionKind_IsValid(t *testing.T) {
@@ -41,7 +53,9 @@ func TestSuppressionKind_IsValid(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, tt.kind.IsValid(), "SuppressionKind IsValid")
+		if tt.kind.IsValid() != tt.want {
+			t.Errorf("SuppressionKind(%q).IsValid() = %v, want %v", tt.kind, !tt.want, tt.want)
+		}
 	}
 }
 
@@ -65,7 +79,9 @@ func TestSeverity_GreaterThanOrEqual(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, tt.a.GreaterThanOrEqual(tt.b))
+		if tt.a.GreaterThanOrEqual(tt.b) != tt.want {
+			t.Errorf("GreaterThanOrEqual: %s = %v, want %v", tt.label, !tt.want, tt.want)
+		}
 	}
 }
 
@@ -89,7 +105,9 @@ func TestSeverity_LessThanOrEqual(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, tt.a.LessThanOrEqual(tt.b))
+		if tt.a.LessThanOrEqual(tt.b) != tt.want {
+			t.Errorf("LessThanOrEqual: %s = %v, want %v", tt.label, !tt.want, tt.want)
+		}
 	}
 }
 
@@ -104,10 +122,10 @@ func TestFinding_String(t *testing.T) {
 		Message:  "possible nil dereference",
 	}
 
-	got := f.String()
 	want := "error govet [nilcheck] main.go:42:5: possible nil dereference"
-
-	assert.Equal(t, want, got)
+	if f.String() != want {
+		t.Errorf("String() = %q, want %q", f.String(), want)
+	}
 }
 
 func TestReport_AddFindings(t *testing.T) {
@@ -121,10 +139,15 @@ func TestReport_AddFindings(t *testing.T) {
 		{ID: "3", Message: "third"},
 	})
 
-	require.Len(t, r.Findings, 3, "Findings")
-
-	assert.Equal(t, "1", r.Findings[0].ID)
-	assert.Equal(t, "3", r.Findings[2].ID)
+	if len(r.Findings) != 3 {
+		t.Fatalf("Findings length = %d, want 3", len(r.Findings))
+	}
+	if r.Findings[0].ID != "1" {
+		t.Errorf("Findings[0].ID = %q, want %q", r.Findings[0].ID, "1")
+	}
+	if r.Findings[2].ID != "3" {
+		t.Errorf("Findings[2].ID = %q, want %q", r.Findings[2].ID, "3")
+	}
 }
 
 func TestReport_AddFindings_Empty(t *testing.T) {

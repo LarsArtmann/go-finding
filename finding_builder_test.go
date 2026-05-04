@@ -1,10 +1,8 @@
 package finding
 
 import (
+	"errors"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestBuilder_Minimal(t *testing.T) {
@@ -13,15 +11,31 @@ func TestBuilder_Minimal(t *testing.T) {
 	pos := Pos("main.go", 42, 5)
 	b := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, pos)
 	f, err := b.Build()
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("Build() failed: %v", err)
+	}
 
-	assert.Equal(t, "nilcheck", f.Rule)
-	assert.Equal(t, "govet", f.ToolName)
-	assert.Equal(t, "possible nil deref", f.Message)
-	assert.Equal(t, SeverityError, f.Severity)
-	assert.Equal(t, pos, f.Position)
-	assert.NotEmpty(t, f.ID)
-	assert.Equal(t, FixStrategyNone, f.FixStrategy)
+	if f.Rule != "nilcheck" {
+		t.Errorf("Rule = %q, want %q", f.Rule, "nilcheck")
+	}
+	if f.ToolName != "govet" {
+		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
+	}
+	if f.Message != "possible nil deref" {
+		t.Errorf("Message = %q, want %q", f.Message, "possible nil deref")
+	}
+	if f.Severity != SeverityError {
+		t.Errorf("Severity = %v, want %v", f.Severity, SeverityError)
+	}
+	if f.Position != pos {
+		t.Errorf("Position = %v, want %v", f.Position, pos)
+	}
+	if f.ID == "" {
+		t.Error("ID should not be empty")
+	}
+	if f.FixStrategy != FixStrategyNone {
+		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyNone)
+	}
 }
 
 func TestBuilder_Full(t *testing.T) {
@@ -47,21 +61,51 @@ func TestBuilder_Full(t *testing.T) {
 		WithMetadata(map[string]string{"key": "value"}).
 		Build()
 
-	require.NoError(t, err)
-	assert.Equal(t, "custom-id", f.ID)
-	assert.Equal(t, CategorySecurity, f.Category)
-	assert.Equal(t, "nil-deref", f.Tag)
-	assert.Equal(t, []Tag{"security", "injection"}, f.Tags)
-	assert.Equal(t, FixStrategyDirect, f.FixStrategy)
-	assert.Equal(t, "Add nil check", f.Suggestion)
-	assert.Equal(t, "x.foo", f.BeforeCode)
-	assert.Equal(t, "x.foo()", f.AfterCode)
-	assert.NotNil(t, f.Range)
-	assert.Equal(t, "x.foo\n", f.Snippet)
-	assert.InDelta(t, 1.0, f.Confidence, 1e-9)
-	assert.Len(t, f.Related, 1)
-	assert.NotNil(t, f.Suppression)
-	assert.Equal(t, "value", f.Metadata["key"])
+	if err != nil {
+		t.Fatalf("Build() failed: %v", err)
+	}
+	if f.ID != "custom-id" {
+		t.Errorf("ID = %q, want %q", f.ID, "custom-id")
+	}
+	if f.Category != CategorySecurity {
+		t.Errorf("Category = %v, want %v", f.Category, CategorySecurity)
+	}
+	if f.Tag != "nil-deref" {
+		t.Errorf("Tag = %q, want %q", f.Tag, "nil-deref")
+	}
+	if len(f.Tags) != 2 || f.Tags[0] != "security" || f.Tags[1] != "injection" {
+		t.Errorf("Tags = %v, want [security, injection]", f.Tags)
+	}
+	if f.FixStrategy != FixStrategyDirect {
+		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyDirect)
+	}
+	if f.Suggestion != "Add nil check" {
+		t.Errorf("Suggestion = %q, want %q", f.Suggestion, "Add nil check")
+	}
+	if f.BeforeCode != "x.foo" {
+		t.Errorf("BeforeCode = %q, want %q", f.BeforeCode, "x.foo")
+	}
+	if f.AfterCode != "x.foo()" {
+		t.Errorf("AfterCode = %q, want %q", f.AfterCode, "x.foo()")
+	}
+	if f.Range == nil {
+		t.Error("Range should not be nil")
+	}
+	if f.Snippet != "x.foo\n" {
+		t.Errorf("Snippet = %q, want %q", f.Snippet, "x.foo\n")
+	}
+	if f.Confidence < 1.0-1e-9 || f.Confidence > 1.0+1e-9 {
+		t.Errorf("Confidence = %v, want ~1.0", f.Confidence)
+	}
+	if len(f.Related) != 1 {
+		t.Errorf("Related length = %d, want 1", len(f.Related))
+	}
+	if f.Suppression == nil {
+		t.Error("Suppression should not be nil")
+	}
+	if f.Metadata["key"] != "value" {
+		t.Errorf("Metadata[key] = %q, want %q", f.Metadata["key"], "value")
+	}
 }
 
 func TestBuilder_Chaining(t *testing.T) {
@@ -73,10 +117,18 @@ func TestBuilder_Chaining(t *testing.T) {
 		WithRelated(RelatedRef{FindingID: "r2"}).
 		Build()
 
-	require.NoError(t, err)
-	assert.Len(t, f.Related, 2)
-	assert.Equal(t, "r1", f.Related[0].FindingID)
-	assert.Equal(t, "r2", f.Related[1].FindingID)
+	if err != nil {
+		t.Fatalf("Build() failed: %v", err)
+	}
+	if len(f.Related) != 2 {
+		t.Fatalf("Related length = %d, want 2", len(f.Related))
+	}
+	if f.Related[0].FindingID != "r1" {
+		t.Errorf("Related[0] = %q, want %q", f.Related[0].FindingID, "r1")
+	}
+	if f.Related[1].FindingID != "r2" {
+		t.Errorf("Related[1] = %q, want %q", f.Related[1].FindingID, "r2")
+	}
 }
 
 func TestBuilder_MetadataMerge(t *testing.T) {
@@ -88,20 +140,30 @@ func TestBuilder_MetadataMerge(t *testing.T) {
 		WithMetadata(map[string]string{"b": "2"})
 
 	f, err := b.Build()
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("Build() failed: %v", err)
+	}
 
-	assert.Equal(t, "1", f.Metadata["a"])
-	assert.Equal(t, "2", f.Metadata["b"])
+	if f.Metadata["a"] != "1" {
+		t.Errorf("Metadata[a] = %q, want %q", f.Metadata["a"], "1")
+	}
+	if f.Metadata["b"] != "2" {
+		t.Errorf("Metadata[b] = %q, want %q", f.Metadata["b"], "2")
+	}
 }
 
 func TestBuilder_Build_InvalidPanics(t *testing.T) {
 	t.Parallel()
 
-	b := &Builder{f: Finding{}} // invalid: no required fields
+	b := &Builder{f: Finding{}}
 
 	_, err := b.Build()
-	require.Error(t, err)
-	assert.ErrorIs(t, err, ErrInvalidBuilder)
+	if err == nil {
+		t.Fatal("expected error for invalid builder")
+	}
+	if !errors.Is(err, ErrInvalidBuilder) {
+		t.Errorf("error = %v, want ErrInvalidBuilder", err)
+	}
 }
 
 func TestBuilder_Build_MissingFields(t *testing.T) {
@@ -165,8 +227,12 @@ func TestBuilder_Build_MissingFields(t *testing.T) {
 			t.Parallel()
 
 			_, err := tt.builder.Build()
-			require.Error(t, err)
-			assert.ErrorIs(t, err, ErrInvalidBuilder)
+			if err == nil {
+				t.Fatal("expected error for missing fields")
+			}
+			if !errors.Is(err, ErrInvalidBuilder) {
+				t.Errorf("error = %v, want ErrInvalidBuilder", err)
+			}
 		})
 	}
 }
@@ -179,13 +245,21 @@ func TestBuilder_Immutability(t *testing.T) {
 		WithMetadata(map[string]string{"key": "original"})
 
 	f1, err := b.Build()
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("Build() failed: %v", err)
+	}
 	b.f.Metadata["key"] = "mutated"
 	f2, err := b.Build()
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("Build() failed: %v", err)
+	}
 
-	assert.Equal(t, "original", f1.Metadata["key"])
-	assert.Equal(t, "mutated", f2.Metadata["key"])
+	if f1.Metadata["key"] != "original" {
+		t.Errorf("f1 Metadata[key] = %q, want %q", f1.Metadata["key"], "original")
+	}
+	if f2.Metadata["key"] != "mutated" {
+		t.Errorf("f2 Metadata[key] = %q, want %q", f2.Metadata["key"], "mutated")
+	}
 }
 
 func TestBuilder_MustBuild(t *testing.T) {
@@ -193,12 +267,19 @@ func TestBuilder_MustBuild(t *testing.T) {
 
 	pos := Pos("a.go", 1, 1)
 	f := NewBuilder("r", "t", "m", SeverityInfo, pos).MustBuild()
-	assert.Equal(t, "r", f.Rule)
+	if f.Rule != "r" {
+		t.Errorf("Rule = %q, want %q", f.Rule, "r")
+	}
 }
 
 func TestBuilder_MustBuild_PanicsOnInvalid(t *testing.T) {
 	t.Parallel()
 
 	b := &Builder{f: Finding{}}
-	assert.Panics(t, func() { b.MustBuild() })
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("expected panic for invalid builder")
+		}
+	}()
+	b.MustBuild()
 }

@@ -3,8 +3,6 @@ package finding
 import (
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestClone(t *testing.T) {
@@ -179,7 +177,6 @@ func TestFindingKey(t *testing.T) {
 func TestFindingKeyStability(t *testing.T) {
 	t.Parallel()
 
-	// Key must be stable: same inputs → same output.
 	f := Finding{
 		Rule:     "R001",
 		ToolName: "test",
@@ -194,28 +191,24 @@ func TestFindingKeyStability(t *testing.T) {
 		t.Error("Key() should be stable across calls")
 	}
 
-	// Different message → different key.
 	f2 := f
 	f2.Message = "other"
 	if f2.Key() == key1 {
 		t.Error("different Message should produce different Key")
 	}
 
-	// Different rule → different key.
 	f3 := f
 	f3.Rule = "R002"
 	if f3.Key() == key1 {
 		t.Error("different Rule should produce different Key")
 	}
 
-	// Different file → different key.
 	f4 := f
 	f4.Position.File = "other.go"
 	if f4.Key() == key1 {
 		t.Error("different Position.File should produce different Key")
 	}
 
-	// Different tool → different key.
 	f5 := f
 	f5.ToolName = "other-tool"
 	if f5.Key() == key1 {
@@ -318,7 +311,9 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			t.Parallel()
 
 			expected := tt.name == "equal"
-			assert.Equal(t, expected, tt.a.Equal(tt.b))
+			if tt.a.Equal(tt.b) != expected {
+				t.Errorf("Equal() = %v, want %v for case %q", !expected, expected, tt.name)
+			}
 		})
 	}
 }

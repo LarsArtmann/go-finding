@@ -6,7 +6,6 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -29,24 +28,24 @@ func TestFromDiagnostic(t *testing.T) {
 		Category: "test",
 	}
 
-	finding := FromDiagnostic(d, fset, "testtool", "R001")
-	if finding.ToolName != "testtool" {
-		t.Errorf("expected toolName 'testtool', got %q", finding.ToolName)
+	fd := FromDiagnostic(d, fset, "testtool", "R001")
+	if fd.ToolName != "testtool" {
+		t.Errorf("expected toolName 'testtool', got %q", fd.ToolName)
 	}
 
-	if finding.Rule != "R001" {
-		t.Errorf("expected rule 'R001', got %q", finding.Rule)
+	if fd.Rule != "R001" {
+		t.Errorf("expected rule 'R001', got %q", fd.Rule)
 	}
 
-	if finding.Message != "test diagnostic" {
-		t.Errorf("expected message 'test diagnostic', got %q", finding.Message)
+	if fd.Message != "test diagnostic" {
+		t.Errorf("expected message 'test diagnostic', got %q", fd.Message)
 	}
 
-	if finding.Severity != SeverityWarning {
-		t.Errorf("expected severity warning, got %v", finding.Severity)
+	if fd.Severity != SeverityWarning {
+		t.Errorf("expected severity warning, got %v", fd.Severity)
 	}
 
-	if finding.ID == "" {
+	if fd.ID == "" {
 		t.Error("expected non-empty ID")
 	}
 }
@@ -73,17 +72,17 @@ func TestFromDiagnostic_WithSuggestedFixes(t *testing.T) {
 		},
 	}
 
-	finding := FromDiagnostic(d, fset, "tool", "R001")
-	if finding.FixStrategy != FixStrategyDirect {
-		t.Errorf("expected FixStrategyDirect, got %v", finding.FixStrategy)
+	fd := FromDiagnostic(d, fset, "tool", "R001")
+	if fd.FixStrategy != FixStrategyDirect {
+		t.Errorf("expected FixStrategyDirect, got %v", fd.FixStrategy)
 	}
 
-	if finding.Suggestion != "fix it" {
-		t.Errorf("expected suggestion 'fix it', got %q", finding.Suggestion)
+	if fd.Suggestion != "fix it" {
+		t.Errorf("expected suggestion 'fix it', got %q", fd.Suggestion)
 	}
 
-	if finding.AfterCode != "fixed" {
-		t.Errorf("expected afterCode 'fixed', got %q", finding.AfterCode)
+	if fd.AfterCode != "fixed" {
+		t.Errorf("expected afterCode 'fixed', got %q", fd.AfterCode)
 	}
 }
 
@@ -109,20 +108,20 @@ func TestFromDiagnostic_WithRelated(t *testing.T) {
 		},
 	}
 
-	finding := FromDiagnostic(d, fset, "tool", "R001")
-	if len(finding.Related) != 1 {
-		t.Fatalf("expected 1 related, got %d", len(finding.Related))
+	fd := FromDiagnostic(d, fset, "tool", "R001")
+	if len(fd.Related) != 1 {
+		t.Fatalf("expected 1 related, got %d", len(fd.Related))
 	}
 
-	if finding.Related[0].Relation != "related" {
-		t.Errorf("expected relation 'related', got %q", finding.Related[0].Relation)
+	if fd.Related[0].Relation != "related" {
+		t.Errorf("expected relation 'related', got %q", fd.Related[0].Relation)
 	}
 
-	if finding.Related[0].FindingID == finding.ID {
-		t.Errorf("related ref should have unique ID, got same as parent %q", finding.ID)
+	if fd.Related[0].FindingID == fd.ID {
+		t.Errorf("related ref should have unique ID, got same as parent %q", fd.ID)
 	}
 
-	if finding.Related[0].FindingID == "" {
+	if fd.Related[0].FindingID == "" {
 		t.Error("related ref should have non-empty FindingID")
 	}
 }
@@ -138,7 +137,9 @@ func TestFromTokenPosition(t *testing.T) {
 	}
 
 	p := FromTokenPosition(pos)
-	assert.Equal(t, Position{File: "test.go", Line: 10, Column: 5, Offset: 100}, p)
+	if p != (Position{File: "test.go", Line: 10, Column: 5, Offset: 100}) {
+		t.Errorf("FromTokenPosition() = %v, want match", p)
+	}
 }
 
 func TestNodePosition(t *testing.T) {
@@ -150,7 +151,9 @@ func TestNodePosition(t *testing.T) {
 		fset := token.NewFileSet()
 
 		p := NodePosition(fset, nil)
-		assert.Equal(t, Position{}, p, "expected empty position for nil node")
+		if p != (Position{}) {
+			t.Errorf("expected empty position for nil node, got %v", p)
+		}
 	})
 
 	t.Run("valid node", func(t *testing.T) {
@@ -184,7 +187,9 @@ func TestNodeRange(t *testing.T) {
 		fset := token.NewFileSet()
 
 		r := NodeRange(fset, nil)
-		assert.Equal(t, Range{}, r, "expected empty range for nil node")
+		if r != (Range{}) {
+			t.Errorf("expected empty range for nil node, got %v", r)
+		}
 	})
 
 	t.Run("valid node", func(t *testing.T) {

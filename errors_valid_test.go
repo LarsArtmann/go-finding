@@ -2,8 +2,6 @@ package finding
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestErrorCategory_IsValid(t *testing.T) {
@@ -24,7 +22,9 @@ func TestErrorCategory_IsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(string(tt.cat), func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, tt.want, tt.cat.IsValid())
+			if tt.cat.IsValid() != tt.want {
+				t.Errorf("IsValid() = %v, want %v", !tt.want, tt.want)
+			}
 		})
 	}
 }

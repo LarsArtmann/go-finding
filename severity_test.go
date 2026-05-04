@@ -2,8 +2,6 @@ package finding
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSeverity_IsValid(t *testing.T) {
@@ -24,7 +22,9 @@ func TestSeverity_IsValid(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, tt.sev.IsValid(), "IsValid")
+		if tt.sev.IsValid() != tt.want {
+			t.Errorf("IsValid(%q) = %v, want %v", tt.sev, !tt.want, tt.want)
+		}
 	}
 }
 
@@ -42,7 +42,9 @@ func TestSeverity_Constants(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, string(tt.sev), "Severity constant")
+		if string(tt.sev) != tt.want {
+			t.Errorf("Severity constant = %q, want %q", tt.sev, tt.want)
+		}
 	}
 }
 
@@ -66,18 +68,30 @@ func TestSeverity_GreaterThan(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, tt.a.GreaterThan(tt.b), tt.label)
+		if tt.a.GreaterThan(tt.b) != tt.want {
+			t.Errorf("GreaterThan: %s = %v, want %v", tt.label, !tt.want, tt.want)
+		}
 	}
 }
 
 func TestSeverity_LessThan(t *testing.T) {
 	t.Parallel()
 
-	assert.True(t, SeverityInfo.LessThan(SeverityWarning), "info < warning")
-	assert.False(t, SeverityError.LessThan(SeverityWarning), "error < warning")
-	assert.False(t, SeverityWarning.LessThan(SeverityWarning), "warning < warning")
-	assert.False(t, Severity("unknown").LessThan(SeverityInfo), "invalid < valid")
-	assert.False(t, SeverityInfo.LessThan(Severity("unknown")), "valid < invalid")
+	if !SeverityInfo.LessThan(SeverityWarning) {
+		t.Error("info < warning should be true")
+	}
+	if SeverityError.LessThan(SeverityWarning) {
+		t.Error("error < warning should be false")
+	}
+	if SeverityWarning.LessThan(SeverityWarning) {
+		t.Error("warning < warning should be false")
+	}
+	if Severity("unknown").LessThan(SeverityInfo) {
+		t.Error("invalid < valid should be false")
+	}
+	if SeverityInfo.LessThan(Severity("unknown")) {
+		t.Error("valid < invalid should be false")
+	}
 }
 
 func TestSeverity_Ordering(t *testing.T) {
@@ -87,7 +101,10 @@ func TestSeverity_Ordering(t *testing.T) {
 
 	for i := range ordered {
 		for j := range ordered {
-			assert.Equal(t, i > j, ordered[i].GreaterThan(ordered[j]))
+			want := i > j
+			if ordered[i].GreaterThan(ordered[j]) != want {
+				t.Errorf("GreaterThan(%s, %s) = %v, want %v", ordered[i], ordered[j], !want, want)
+			}
 		}
 	}
 }
@@ -118,14 +135,17 @@ func TestSeverity_Compare(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, tt.a.Compare(tt.b), tt.label)
+		if got := tt.a.Compare(tt.b); got != tt.want {
+			t.Errorf("Compare %s: got %d, want %d", tt.label, got, tt.want)
+		}
 	}
 }
 
 func TestSeverity_CompareOp_DefaultCase(t *testing.T) {
 	t.Parallel()
 
-	// comparisonOp(99) is not a valid operation; compareOp should return false.
 	result := SeverityInfo.compareOp(SeverityWarning, comparisonOp(99))
-	assert.False(t, result, "invalid comparisonOp should return false")
+	if result {
+		t.Error("invalid comparisonOp should return false")
+	}
 }

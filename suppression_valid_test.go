@@ -2,8 +2,6 @@ package finding
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSuppression_IsValid(t *testing.T) {
@@ -25,7 +23,9 @@ func TestSuppression_IsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, tt.want, tt.s.IsValid())
+			if tt.s.IsValid() != tt.want {
+				t.Errorf("IsValid() = %v, want %v", !tt.want, tt.want)
+			}
 		})
 	}
 }

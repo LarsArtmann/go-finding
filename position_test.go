@@ -2,8 +2,6 @@ package finding
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func posLine(file string, line int) Position {
@@ -22,7 +20,6 @@ func rangeOffset(file string, startOffset, endOffset int) Range {
 	return Range{Start: Position{File: file, Offset: startOffset}, End: Position{Offset: endOffset}}
 }
 
-// overlapCase represents a test case for Overlaps/Adjacent tests.
 type overlapCase struct {
 	name     string
 	r1       Range
@@ -70,16 +67,17 @@ func TestRangeOverlaps(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := tt.r1.Overlaps(tt.r2)
-			assert.Equal(t, tt.expected, got)
+			if got := tt.r1.Overlaps(tt.r2); got != tt.expected {
+				t.Errorf("Overlaps() = %v, want %v", got, tt.expected)
+			}
 
-			got2 := tt.r2.Overlaps(tt.r1)
-			assert.Equal(t, tt.expected, got2)
+			if got := tt.r2.Overlaps(tt.r1); got != tt.expected {
+				t.Errorf("Overlaps() reversed = %v, want %v", got, tt.expected)
+			}
 		})
 	}
 }
 
-// intersectionCase represents a test case for Intersection tests.
 type intersectionCase struct {
 	name     string
 	r1       Range
@@ -126,11 +124,17 @@ func TestRangeIntersection(t *testing.T) {
 
 			got := tt.r1.Intersection(tt.r2)
 			if tt.expected == nil {
-				assert.Nil(t, got)
+				if got != nil {
+					t.Errorf("expected nil, got %v", got)
+				}
+
 				return
 			}
 
-			assert.NotNil(t, got)
+			if got == nil {
+				t.Fatalf("expected non-nil intersection")
+			}
+
 			AssertRangesEq(t, *got, *tt.expected)
 		})
 	}
@@ -170,11 +174,13 @@ func TestRangeAdjacent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := tt.r1.Adjacent(tt.r2)
-			assert.Equal(t, tt.expected, got)
+			if got := tt.r1.Adjacent(tt.r2); got != tt.expected {
+				t.Errorf("Adjacent() = %v, want %v", got, tt.expected)
+			}
 
-			got2 := tt.r2.Adjacent(tt.r1)
-			assert.Equal(t, tt.expected, got2)
+			if got := tt.r2.Adjacent(tt.r1); got != tt.expected {
+				t.Errorf("Adjacent() reversed = %v, want %v", got, tt.expected)
+			}
 		})
 	}
 }
