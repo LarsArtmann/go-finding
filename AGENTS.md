@@ -75,9 +75,10 @@ golangci-lint run ./...         # Lint
 
 - `golang.org/x/tools` - go/analysis framework
 - `golang.org/x/sync` - errgroup for parallel detection
-- `gopkg.in/yaml.v3` - YAML config file parsing (CLI only)
+- `github.com/go-faster/yaml` - YAML config file parsing (CLI only, maintained fork)
 - `github.com/onsi/ginkgo/v2` - BDD testing framework
-- `github.com/onsi/gomega` - BDD test matchers
+- `github.com/onsi/gomega` - BDD test matchers (replaces testify)
+- `github.com/stretchr/testify` - **indirect only** (via go-faster/yaml tests)
 
 ### Design Principles
 
@@ -86,6 +87,7 @@ golangci-lint run ./...         # Lint
 3. **Lossless** — Conversions (SARIF, LSP) preserve all data via Metadata
 4. **Compatible** — Works with existing Go analysis tools
 5. **Resilient** — Retry logic, partial success, nil-safe metrics
+6. **FixApplier.Close()** — Cleans up temporary backup directories; callers should defer close
 
 ### Pipeline Features
 
@@ -100,6 +102,7 @@ golangci-lint run ./...         # Lint
 - **Metrics snapshot in result** — `PipelineResult.Metrics` auto-populated after `Run()`
 - **FindingProcessor** — Composable transforms run between detection and triage (`ProcessorFunc`, `NamedProcessorFunc`)
 - **Line-based FixApplier** — Range-aware fixes target exact line spans; falls back to string replacement
+- **FixApplier.Close()** — Cleans up temporary backup directories
 
 ### CLI Features
 
