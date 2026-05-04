@@ -103,9 +103,8 @@ detectors:
 }
 
 func TestLoadConfig_JSON(t *testing.T) {
-	g := NewWithT(t)
 	t.Parallel()
-		g := NewWithT(t)
+	g := NewWithT(t)
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.json")
@@ -123,9 +122,8 @@ func TestLoadConfig_JSON(t *testing.T) {
 }
 
 func TestLoadConfig_NoFile(t *testing.T) {
-	g := NewWithT(t)
 	t.Parallel()
-		g := NewWithT(t)
+	g := NewWithT(t)
 
 	cfg, err := loadConfig("", 2, true, true, 5*time.Minute)
 	if err != nil {
@@ -146,7 +144,6 @@ func TestLoadConfig_MissingFile(t *testing.T) {
 
 func TestLoadConfig_InvalidYAML(t *testing.T) {
 	t.Parallel()
-	
 
 	expectConfigError(t, "yaml", "{{invalid yaml")
 }

@@ -148,9 +148,8 @@ func TestParseSeverity(t *testing.T) {
 }
 
 func TestFilterBySeverity(t *testing.T) {
-	g := NewWithT(t)
 	t.Parallel()
-		g := NewWithT(t)
+	g := NewWithT(t)
 
 	findings := []finding.Finding{
 		{Severity: finding.SeverityInfo, Message: "info"},
