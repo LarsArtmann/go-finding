@@ -54,7 +54,8 @@ func TestBuilder_Full(t *testing.T) {
 	if f.Category != CategorySecurity {
 		t.Errorf("Category = %v, want %v", f.Category, CategorySecurity)
 	}
-	if len(f.Tags) != 3 || f.Tags[0] != Tag("nil-deref") || f.Tags[1] != Tag("security") || f.Tags[2] != Tag("injection") {
+	if len(f.Tags) != 3 || f.Tags[0] != Tag("nil-deref") || f.Tags[1] != Tag("security") ||
+		f.Tags[2] != Tag("injection") {
 		t.Errorf("Tags = %v, want [nil-deref, security, injection]", f.Tags)
 	}
 	if f.FixStrategy != FixStrategyDirect {

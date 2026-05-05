@@ -20,12 +20,12 @@ const (
 	sarifPropToolName    = "go-finding/toolName"
 	sarifPropCategory    = "go-finding/category"
 
-	sarifPropTags        = "go-finding/tags"
-	sarifPropConfidence  = "go-finding/confidence"
-	sarifPropSuggestion  = "go-finding/suggestion"
-	sarifPropSnippet     = "go-finding/snippet"
-	sarifPropBeforeCode  = "go-finding/beforeCode"
-	sarifPropPrefix      = "go-finding/"
+	sarifPropTags       = "go-finding/tags"
+	sarifPropConfidence = "go-finding/confidence"
+	sarifPropSuggestion = "go-finding/suggestion"
+	sarifPropSnippet    = "go-finding/snippet"
+	sarifPropBeforeCode = "go-finding/beforeCode"
+	sarifPropPrefix     = "go-finding/"
 )
 
 // SarifLog represents a SARIF log file containing run results.
@@ -485,7 +485,7 @@ func applySarifProperties(f *Finding, props map[string]any) {
 		f.Category = Category(v)
 	}
 
-if v, ok := props[sarifPropTags].([]any); ok {
+	if v, ok := props[sarifPropTags].([]any); ok {
 		f.Tags = make([]Tag, 0, len(v))
 		for _, item := range v {
 			if s, ok := item.(string); ok {
