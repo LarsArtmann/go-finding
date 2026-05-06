@@ -98,3 +98,71 @@ func addFinding(
 		Category: cat, FixStrategy: fs,
 	})
 }
+
+func TestReport_Merge(t *testing.T) {
+	t.Parallel()
+
+	a := NewReport(ToolInfo{Name: "tool-a"})
+	a.AddFinding(Finding{
+		ID: "f1", Rule: "R1", Severity: SeverityError,
+		Position: Position{File: "a.go"},
+	})
+	a.AddFinding(Finding{
+		ID: "f2", Rule: "R2", Severity: SeverityWarning,
+		Position: Position{File: "b.go"},
+	})
+	a.ComputeSummary()
+
+	b := NewReport(ToolInfo{Name: "tool-b"})
+	b.AddFinding(Finding{
+		ID: "f3", Rule: "R3", Severity: SeverityInfo,
+		Position: Position{File: "a.go"},
+	})
+	b.ComputeSummary()
+
+	a.Merge(b)
+
+	if len(a.Findings) != 3 {
+		t.Errorf("Findings length = %d, want 3", len(a.Findings))
+	}
+
+	if a.Summary.Total != 3 {
+		t.Errorf("Summary.Total = %d, want 3", a.Summary.Total)
+	}
+
+	if a.Summary.BySeverity[SeverityError] != 1 {
+		t.Errorf("BySeverity[Error] = %d, want 1", a.Summary.BySeverity[SeverityError])
+	}
+
+	if a.Summary.BySeverity[SeverityWarning] != 1 {
+		t.Errorf("BySeverity[Warning] = %d, want 1", a.Summary.BySeverity[SeverityWarning])
+	}
+
+	if a.Summary.BySeverity[SeverityInfo] != 1 {
+		t.Errorf("BySeverity[Info] = %d, want 1", a.Summary.BySeverity[SeverityInfo])
+	}
+
+	if a.Tool.Name != "tool-a" {
+		t.Errorf("Tool.Name = %q, want %q", a.Tool.Name, "tool-a")
+	}
+}
+
+func TestReport_Merge_Empty(t *testing.T) {
+	t.Parallel()
+
+	a := NewReport(ToolInfo{Name: "tool-a"})
+	a.AddFinding(Finding{
+		ID: "f1", Rule: "R1", Severity: SeverityError,
+		Position: Position{File: "a.go"},
+	})
+	a.ComputeSummary()
+
+	b := NewReport(ToolInfo{Name: "tool-b"})
+	b.ComputeSummary()
+
+	a.Merge(b)
+
+	if len(a.Findings) != 1 {
+		t.Errorf("Findings length = %d, want 1", len(a.Findings))
+	}
+}

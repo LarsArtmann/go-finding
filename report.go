@@ -73,6 +73,18 @@ func (r *Report) AddFindings(findings []Finding) {
 	r.unlock()
 }
 
+// Merge merges another report's findings into this report in-place.
+// The Tool info from other is ignored — this report retains its own.
+// Summary is recomputed after merging.
+// Safe for concurrent use.
+func (r *Report) Merge(other *Report) {
+	r.lock()
+	r.Findings = append(r.Findings, other.Findings...)
+	r.unlock()
+
+	r.ComputeSummary()
+}
+
 // addFindingUnchecked appends a finding without acquiring the mutex.
 // Caller must hold the lock or guarantee single-goroutine access.
 func (r *Report) addFindingUnchecked(f Finding) {
