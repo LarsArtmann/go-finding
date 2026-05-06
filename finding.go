@@ -145,6 +145,13 @@ func (f Finding) HasFix() bool {
 	}
 }
 
+// IsAutoFixable returns true if this finding can be automatically applied
+// by the pipeline. Unlike HasFix(), this also requires BeforeCode or AfterCode
+// to be available for the FixEngine to produce byte-level edits.
+func (f Finding) IsAutoFixable() bool {
+	return f.FixStrategy == FixStrategyDirect && (f.BeforeCode != "" || f.AfterCode != "")
+}
+
 // HasSuggestion returns true if this finding has a human-readable suggestion.
 func (f Finding) HasSuggestion() bool {
 	return f.Suggestion != "" || (f.BeforeCode != "" && f.AfterCode != "")

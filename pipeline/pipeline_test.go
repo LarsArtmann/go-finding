@@ -22,6 +22,7 @@ func pipelineTestFinding(column int) finding.Finding {
 		Severity:    finding.SeverityWarning,
 		Position:    finding.Pos("test.go", 1, column),
 		FixStrategy: finding.FixStrategySuggest,
+		AfterCode:   "fixed()",
 	}
 }
 
@@ -362,9 +363,9 @@ func TestTriage(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	findings := []finding.Finding{
-		{ID: "1", FixStrategy: finding.FixStrategyDirect},
-		{ID: "2", FixStrategy: finding.FixStrategySuggest},
-		{ID: "3", FixStrategy: finding.FixStrategyAI},
+		{ID: "1", FixStrategy: finding.FixStrategyDirect, BeforeCode: "old", AfterCode: "new"},
+		{ID: "2", FixStrategy: finding.FixStrategySuggest, AfterCode: "new"},
+		{ID: "3", FixStrategy: finding.FixStrategyAI, AfterCode: "new"},
 		{ID: "4", FixStrategy: finding.FixStrategyNone},
 		{ID: "5", FixStrategy: ""},
 	}

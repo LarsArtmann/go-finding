@@ -339,7 +339,10 @@ type TriageResult struct {
 	None    []finding.Finding
 }
 
-// triage categorizes findings by their fix strategy.
+// triage categorizes findings using HasFix() as the canonical source of truth.
+// - IsAutoFixable() → Direct (auto-apply via FixEngine)
+// - HasFix() but not auto-fixable → Suggest (display suggestion)
+// - No fix available → None
 //
 //nolint:revive // receiver unused by design — method belongs to Pipeline for API cohesion
 func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
@@ -350,14 +353,11 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 	}
 
 	for _, f := range findings {
-		switch f.FixStrategy {
-		case finding.FixStrategyDirect:
+		if f.IsAutoFixable() {
 			result.Direct = append(result.Direct, f)
-		case finding.FixStrategySuggest, finding.FixStrategyAI:
+		} else if f.HasFix() {
 			result.Suggest = append(result.Suggest, f)
-		case finding.FixStrategyNone:
-			result.None = append(result.None, f)
-		default:
+		} else {
 			result.None = append(result.None, f)
 		}
 	}
