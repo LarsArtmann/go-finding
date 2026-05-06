@@ -79,7 +79,7 @@
 ### Architecture Decisions (blocking API lock)
 
 - [ ] **Decide `NewFinding` API pattern** — Functional options vs builder-only vs current 6-param approach. Breaking changes have happened without a decision. (Reference: `docs/status/2026-04-30_02-59`)
-- [x] **Extract `diagnostic.go` to `finding/analysis` subpackage** — Done. Deprecated wrappers still in root for backward compat. (`diagnostic.go`, `analysis/`)
+- [x] **Extract `diagnostic.go` to `finding/analysis` subpackage** — Done. Deprecated wrappers removed from root. Root package no longer imports `golang.org/x/tools`. (`analysis/`)
 - [ ] **API stability review** — Audit every exported symbol for v1.0.0 lock. Target: v0.2.0 = API-stable beta. (`docs/architecture-decisions.md` Decision #5)
 
 ### Correctness
@@ -101,7 +101,7 @@
 
 ### Architecture Deepening
 
-- [ ] **Centralize triage logic** — Fix categorization appears in 3 places: `Finding.HasFix()`, `Pipeline.triage()`, and `FixEngine.Apply()` filtering. These overlap but aren't identical. Consolidate. (`finding.go:135`, `pipeline/pipeline.go:528`, `pipeline/fix_engine.go:54`)
+- [x] **Centralize triage logic** — `HasFix()` is the canonical source; `IsAutoFixable()` added for pipeline auto-apply categorization. (`finding.go:135`, `pipeline/pipeline.go:346`)
 - [x] **Convert stateless structs to functions** — Removed deprecated `ConflictDetector` and `Verifier` wrapper types. Package-level functions used directly. (`pipeline/conflict.go`, `pipeline/verify.go`)
 - [x] **Make Report always thread-safe** — Changed `mu *sync.Mutex` to `mu sync.Mutex`. Zero-value `Report{}` is now safe for concurrent use. (`report.go:10`)
 
@@ -127,7 +127,7 @@
 - [x] **Add `Suppression.IsActive()` method** — Done. Exists at `suppression.go:43`. Combines `IsValid() && !IsExpired(now)`.
 - [x] **Add `Report.Merge(other *Report)` method** — Done in commit `df82906`. In-place merge for accumulating findings. (`report.go:80`)
 - [ ] **Add `io.WriterTo` for SARIF** — Direct streaming without buffer allocation. `WriteSARIF` exists but is not `io.WriterTo`. (`sarif.go`)
-- [ ] **Confidence strong type** — `type Confidence float64` with validation methods instead of bare `float64`. (`finding.go`)
+- [ ] **Confidence strong type** — Done. `type Confidence float64` with `IsValid()`/`Clamp()`/`String()` and named constants. (`confidence.go`)
 
 ### Testing
 

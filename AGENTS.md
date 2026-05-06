@@ -19,9 +19,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 | File              | Purpose                                                   |
 | ----------------- | --------------------------------------------------------- |
-| `finding.go`      | Core Finding type                                         |
-| `severity.go`     | Severity enum (info/warning/error/critical)               |
-| `fix_strategy.go` | FixStrategy enum (none/suggest/direct/ai)                 |
+
 | `position.go`     | Position, Range types with Overlaps/Intersection/Adjacent |
 | `report.go`       | Report container with summary                             |
 | `filter.go`       | Filtering and grouping utilities                          |
@@ -30,7 +28,6 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `sarif_export.go` | Report→SARIF export (ToSARIF, WriteSARIF, findingToSARIF)          |
 | `sarif_import.go` | SARIF→Finding import (FindingsFromSARIF, applySarifProperties)     |
 | `lsp.go`          | LSP Diagnostic conversion                                 |
-| `diagnostic.go`   | go/analysis integration                                   |
 | `errors.go`       | Structured error types (FindingError with categories)     |
 | `tag.go`          | Tag type with IsStandard/IsValid/String methods           |
 | `category.go`     | Category constants                                        |
@@ -82,22 +79,25 @@ golangci-lint run ./...         # Lint
 
 ### Dependencies
 
-- `golang.org/x/tools` - go/analysis framework
+- `golang.org/x/tools` - go/analysis framework (analysis/ subpackage only)
 - `golang.org/x/sync` - errgroup for parallel detection
-- `go.yaml.in/yaml/v3` - YAML config file parsing (CLI only, canonical library)
+- `github.com/go-faster/yaml` - YAML config file parsing (CLI only)
 - `github.com/onsi/ginkgo/v2` - BDD testing framework
 - `github.com/onsi/gomega` - BDD test matchers
 
 ### Design Principles
 
-1. **Minimal dependencies** — core types depend only on stdlib
+1. **Minimal dependencies** — core types depend only on stdlib (golang.org/x/tools isolated to analysis/ subpackage)
 2. **Immutable** — Findings are data, not state machines
 3. **Lossless** — Conversions (SARIF, LSP) preserve all data via Metadata/Tags
 4. **Compatible** — Works with existing Go analysis tools
 5. **Resilient** — Retry logic, partial success, nil-safe metrics
 6. **FixApplier.Close()** — Cleans up temporary backup directories; callers should defer close
 7. **Report zero-value safe** — `Report{}` uses value `sync.Mutex`, safe for concurrent use without initialization
-7. **Config.FixProviders** — Custom fix providers for domain-specific (AST-aware) transformations
+8. **Config.FixProviders** — Custom fix providers for domain-specific (AST-aware) transformations
+9. **Confidence named type** — `type Confidence float64` with `IsValid()`/`Clamp()`; prevents accidental out-of-range values
+10. **Triage centralized** — `HasFix()` is canonical "is fixable?" source; `IsAutoFixable()` for pipeline auto-apply
+11. **Root package dependency-free** — `golang.org/x/tools` only in `analysis/` subpackage
 
 ### Pipeline Features
 
