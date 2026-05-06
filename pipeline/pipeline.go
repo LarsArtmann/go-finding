@@ -156,6 +156,10 @@ type Config struct {
 	// Processors are chained between detection and triage.
 	// Each processor transforms the findings before triage categorizes them.
 	Processors []FindingProcessor
+	// FixProviders are custom fix providers for domain-specific transformations.
+	// If nil, default text-based providers (OffsetProvider, LineProvider, SubstringProvider) are used.
+	// Register domain-specific providers (e.g., Go AST, Rust syn) for production accuracy.
+	FixProviders []FixProvider
 }
 
 const defaultMaxIterations = 5
@@ -594,7 +598,12 @@ func (p *Pipeline) applyDirectFixes(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) ([]finding.Finding, error) {
-	applier := NewFixApplier(p.rootDir)
+	var applier *FixApplier
+	if len(p.config.FixProviders) > 0 {
+		applier = NewFixApplierWithProviders(p.rootDir, p.config.FixProviders...)
+	} else {
+		applier = NewFixApplier(p.rootDir)
+	}
 
 	applied, appliedFixes, err := applier.ApplyWithDetails(ctx, fixes)
 	if err != nil {

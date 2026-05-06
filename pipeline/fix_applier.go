@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -19,7 +18,7 @@ type FixApplier struct {
 	engine  *FixEngine
 }
 
-// NewFixApplier creates a new FixApplier.
+// NewFixApplier creates a new FixApplier with default text-based providers.
 func NewFixApplier(rootDir string) *FixApplier {
 	backupDir, err := os.MkdirTemp("", "go-finding-backups-*")
 	if err != nil {
@@ -30,6 +29,21 @@ func NewFixApplier(rootDir string) *FixApplier {
 		rootDir: rootDir,
 		backup:  NewFileBackup(backupDir),
 		engine:  NewFixEngine(),
+	}
+}
+
+// NewFixApplierWithProviders creates a FixApplier with custom fix providers.
+// Use this to register domain-specific providers (e.g., Go AST, Rust syn).
+func NewFixApplierWithProviders(rootDir string, providers ...FixProvider) *FixApplier {
+	backupDir, err := os.MkdirTemp("", "go-finding-backups-*")
+	if err != nil {
+		backupDir = filepath.Join(os.TempDir(), "go-finding-backups")
+	}
+
+	return &FixApplier{
+		rootDir: rootDir,
+		backup:  NewFileBackup(backupDir),
+		engine:  NewFixEngineWithProviders(providers...),
 	}
 }
 
@@ -65,7 +79,6 @@ func (a *FixApplier) ApplyWithDetails(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) (int, []finding.Finding, error) {
-	// Group fixes by file
 	byFile := make(map[string][]finding.Finding)
 
 	for _, f := range fixes {
@@ -80,7 +93,6 @@ func (a *FixApplier) ApplyWithDetails(
 	var applied []finding.Finding
 	var modified []string
 
-	// Sort file paths for deterministic, reproducible fix application order.
 	paths := slices.Collect(maps.Keys(byFile))
 	slices.Sort(paths)
 
@@ -92,7 +104,6 @@ func (a *FixApplier) ApplyWithDetails(
 			return len(applied), applied, err
 		}
 
-		// Create backup
 		if a.backup.IsEnabled() {
 			err := a.backup.Backup(path)
 			if err != nil {
@@ -102,15 +113,12 @@ func (a *FixApplier) ApplyWithDetails(
 			}
 		}
 
-		// Apply fixes
 		fileApplied, err := a.applyToFile(path, fileFixes)
 		if err != nil {
-			// Restore current file from backup
 			if a.backup.IsEnabled() {
 				_ = a.backup.Restore(path)
 			}
 
-			// Restore all previously modified files
 			_ = a.backup.RollbackAll(modified)
 
 			return len(applied), applied, finding.NewConflictError("apply to "+path, err)
@@ -123,30 +131,26 @@ func (a *FixApplier) ApplyWithDetails(
 	return len(applied), applied, nil
 }
 
-// applyToFile applies fixes to a single file.
-// When a finding has a Range with valid end position, it uses line-based replacement
-// targeting the exact line range. Otherwise it falls back to string replacement.
-// Fixes are sorted descending by position so earlier replacements don't shift later ones.
+// applyToFile applies fixes to a single file using byte-level edits.
 func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]finding.Finding, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, ioErrorAt("read file", err, path)
 	}
 
-	lines := strings.Split(string(content), "\n")
-	newLines, applied, _ := a.engine.ApplyWithDetails(lines, fixes)
+	newContent, appliedFixes, _ := a.engine.Apply(content, fixes)
 
-	if len(applied) == 0 {
+	if len(appliedFixes) == 0 {
 		return nil, nil
 	}
 
-	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
+	if err := os.WriteFile( //nolint:gosec // intentional file write
 		path,
-		[]byte(strings.Join(newLines, "\n")),
+		newContent,
 		0o600,
 	); err != nil {
 		return nil, ioErrorAt("write file", err, path)
 	}
 
-	return applied, nil
+	return appliedFixes, nil
 }
