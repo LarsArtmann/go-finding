@@ -1,6 +1,6 @@
 # FEATURES.md — go-finding
 
-> **Version:** 0.2.1 | **Updated:** 2026-05-02
+> **Version:** 0.2.1 | **Updated:** 2026-05-06
 >
 > A unified data model and pipeline for Go static analysis tools.
 > Seven tools detect issues. Zero tools route them to remediation. This library fixes that.
@@ -36,7 +36,6 @@ The central type representing a single issue detected by a static analysis tool.
 | Severity    | `Severity`          | info / warning / error / critical                    |
 | Position    | `Position`          | Where the issue is (file, line, column, offset)      |
 | Category    | `Category`          | Domain classification (security, style, etc.)        |
-| Tag         | `string`            | **Deprecated** — use `Tags` instead                  |
 | Tags        | `[]Tag`             | Multiple classification labels                       |
 | FixStrategy | `FixStrategy`       | none / suggest / direct / ai                         |
 | Suggestion  | `string`            | Human-readable fix description                       |
@@ -154,7 +153,7 @@ Multi-label classification for richer filtering:
 
 Methods: `IsStandard()`, `IsValid()`, `String()`
 
-Plus arbitrary custom tags accepted. The `Tag` field (singular) is deprecated in favor of `Tags` (plural).
+Plus arbitrary custom tags accepted.
 
 ---
 
@@ -697,7 +696,7 @@ Three runnable examples in `examples/`:
 | FixStrategy (none/suggest/direct) | STABLE       | Production auto-fix for `direct`                                  |
 | FixStrategy (ai)                  | RESERVED     | Constant exists, no AI backend                                    |
 | Category (15 standard + custom)   | STABLE       | Domain classification                                             |
-| Tags (multi-label)                | STABLE       | Supersedes deprecated singular Tag                                |
+| Tags (multi-label)                | STABLE       | Singular Tag field removed                                        |
 | Suppression                       | STABLE       | With TTL/expiry support                                           |
 | Report container                  | STABLE       | Thread-safe, with summary statistics                              |
 | Filtering & sorting               | STABLE       | Composable predicates + grouping                                  |

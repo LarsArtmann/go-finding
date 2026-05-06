@@ -1,0 +1,135 @@
+title: go-finding — Target Architecture
+layout: elk
+
+finding: {
+  shape: package
+  label: "finding (root package)\nZero external dependencies"
+
+  core_types: {
+    shape: rectangle
+    label: "Core Types"
+
+    Finding: {shape: class}
+    Position: {shape: class}
+    Range: {shape: class}
+    Severity: {shape: class}
+    FixStrategy: {shape: class}
+    Category: {shape: class}
+    Tag: {shape: class}
+    Suppression: {shape: class}
+  }
+
+  builder: {
+    shape: rectangle
+    label: "Builder\n(validated construction)"
+  }
+
+  report: {
+    shape: rectangle
+    label: "Report\n(always thread-safe)"
+  }
+
+  conversions: {
+    shape: rectangle
+    label: "Conversions"
+
+    sarif_export: {shape: rectangle; label: "SARIF Export"}
+    sarif_import: {shape: rectangle; label: "SARIF Import"}
+    sarif_types: {shape: rectangle; label: "SARIF Types"}
+    lsp_conv: {shape: rectangle; label: "LSP Conversion"}
+  }
+
+  utilities: {
+    shape: rectangle
+    label: "Utilities"
+
+    Filter: {shape: rectangle}
+    Merge: {shape: rectangle}
+    ID: {shape: rectangle}
+    JSON: {shape: rectangle}
+    Errors: {shape: rectangle}
+  }
+
+  builder -> core_types.Finding: "Build()"
+  report -> core_types.Finding: "contains []"
+  conversions.sarif_export -> report: "ToSARIF()"
+  conversions.sarif_import -> core_types.Finding: "FindingsFromSARIF()"
+  conversions.lsp_conv -> core_types.Finding: "ToLSP() / FromLSP()"
+}
+
+finding_analysis: {
+  shape: package
+  label: "finding/analysis\n(opt-in, pulls golang.org/x/tools)"
+
+  Diagnostic: {shape: rectangle; label: "FromDiagnostic()\nNodePosition()\nNodeRange()"}
+}
+
+pipeline: {
+  shape: package
+  label: "pipeline"
+
+  config: {shape: rectangle; label: "Config\n(validation)"}
+  adapters: {shape: rectangle; label: "DetectorFunc\nProcessorFunc"}
+  orchestrator: {
+    shape: rectangle
+    label: "Pipeline\n(single-use, Close() for cleanup)"
+  }
+  fix: {
+    shape: rectangle
+    label: "Fix Pipeline"
+
+    FixEngine: {shape: rectangle; label: "FixEngine\n(pure functions)"}
+    FixApplier: {shape: rectangle; label: "FixApplier\n(filesystem)"}
+    FileBackup: {shape: cylinder; label: "FileBackup\n(lifecycle-managed)"}
+  }
+  conflict: {shape: rectangle; label: "DetectConflicts()\nFilterConflictingFixes()\n(package-level functions)"}
+  verify: {shape: rectangle; label: "DiffFindings()\n(package-level function)"}
+  Metrics: {shape: rectangle}
+  RetryDetector: {shape: rectangle}
+  PartialResult: {shape: rectangle}
+
+  orchestrator -> adapters: "uses"
+  orchestrator -> fix.FixEngine: "applies via"
+  orchestrator -> conflict: "checks via"
+  orchestrator -> verify: "verifies via"
+  orchestrator -> Metrics: "records to"
+  fix.FixApplier -> fix.FixEngine: "delegates to"
+  fix.FixApplier -> fix.FileBackup: "backup/restore"
+  RetryDetector -> adapters: "wraps"
+}
+
+cli: {
+  shape: package
+  label: "cmd/go-finding"
+
+  main: {shape: rectangle; label: "main.go\n(entry point)"}
+  config: {shape: rectangle; label: "config.go\n(parsing + validation)"}
+  output: {shape: rectangle; label: "output.go\n(text/json/sarif)"}
+  detectors: {shape: rectangle; label: "registry.go\n(detector builders)"}
+
+  main -> config: "loads"
+  main -> output: "writes"
+  main -> detectors: "builds"
+}
+
+external: {
+  shape: cloud
+  label: "External Tools"
+
+  go_vet: {shape: rectangle}
+  staticcheck_bin: {shape: rectangle}
+  golang_org_x_tools: {shape: rectangle; style.stroke-dash: 3}
+}
+
+cli.main -> pipeline.orchestrator: "creates & runs"
+cli.detectors -> pipeline.adapters: "implements"
+pipeline.orchestrator -> finding.report: "produces"
+cli.detectors -> external.go_vet: "exec"
+cli.detectors -> external.staticcheck_bin: "exec"
+finding_analysis.Diagnostic -> external.golang_org_x_tools: "imports"
+finding_analysis.Diagnostic -> finding.core_types.Finding: "converts to"
+
+finding.core_types.Finding -> pipeline.fix.FixEngine: "fix data"
+pipeline.PartialResult -> pipeline.orchestrator: "graceful degradation"
+
+pipeline.orchestrator -> pipeline.config: "validated at New()"

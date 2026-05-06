@@ -1,7 +1,7 @@
 # TODO List — go-finding
 
-**Generated:** 2026-05-02
-**Source:** Comprehensive audit of 56 .md files cross-referenced with actual code
+**Generated:** 2026-05-06
+**Source:** Comprehensive audit of 56 .md files + full code review cross-referenced with actual code
 **Project Version:** v0.2.1
 
 ---
@@ -84,8 +84,18 @@
 
 ### Correctness
 
-- [ ] **Fix `Pipeline.Run()` mutability** — `Run()` mutates `p.findings` and `p.iterations` internal state. Pipeline should be safe to reuse or document that each `Run()` needs a new Pipeline. (`pipeline/pipeline.go:179-180`)
-- [ ] **Fix `FixApplier` cross-iteration persistence** — `applyDirectFixes` creates a new `FixApplier` each call, so backups from iteration N can't rollback iteration N+1. Deferred to v1.1 per previous decision but is a data-loss risk. (`pipeline/pipeline.go`)
+- [ ] **Fix `Pipeline.Run()` mutability** — `Run()` mutates `p.findings` and `p.iterations` internal state. Pipeline should be safe to reuse or document that each `Run()` needs a new Pipeline. (`pipeline/pipeline.go:253-256`)
+- [ ] **Fix `FixApplier` cross-iteration persistence** — `applyDirectFixes` creates a new `FixApplier` each call, so backups from iteration N can't rollback iteration N+1. FixApplier.Close() is never called, leaking temp directories. (`pipeline/pipeline.go:597-610`, `pipeline/fix_applier.go:24`)
+- [ ] **Split `sarif.go` into 3 files** — 570 lines, above 350 threshold. Split into `sarif_types.go`, `sarif_export.go`, `sarif_import.go`. (`sarif.go`)
+- [ ] **Split `pipeline/pipeline.go`** — 611 lines, above 350 threshold. Extract Detector/Processor adapters to `pipeline/adapters.go`, Config+helpers to `pipeline/config.go`. (`pipeline/pipeline.go`)
+- [ ] **Split `cmd/go-finding/main.go`** — 457 lines. Extract config parsing to `config.go`, output formatting to `output.go`. (`cmd/go-finding/main.go`)
+- [ ] **Document Pipeline single-use contract** — Pipeline.Run() is not safe for concurrent or repeated use. Add godoc note. (`pipeline/pipeline.go:253`)
+
+### Architecture Deepening
+
+- [ ] **Centralize triage logic** — Fix categorization appears in 3 places: `Finding.HasFix()`, `Pipeline.triage()`, `FixEngine.partitionFixes()`. These overlap but aren't identical. Consolidate. (`finding.go:135`, `pipeline/pipeline.go:528`, `pipeline/fix_engine.go:46`)
+- [ ] **Convert stateless structs to functions** — `ConflictDetector`, `FixEngine`, `Verifier` are zero-field structs. Convert to package-level functions for API honesty. (`pipeline/conflict.go:28`, `pipeline/fix_engine.go:12`, `pipeline/verify.go:25`)
+- [ ] **Make Report always thread-safe** — Zero-value `Report` has nil mutex (silently non-thread-safe). Use `sync.Once` for lazy init or document clearly. (`report.go:10-11`)
 
 ---
 
@@ -101,12 +111,12 @@
 
 - [x] **Deprecate `WithTag` builder method** — Done. Added `// Deprecated: Use WithTags instead.` godoc marker. (`finding_builder.go`)
 - [ ] **Unify `Tag` deprecation** — Either fully migrate tests to `Tags []Tag` or remove the deprecation. Current state is inconsistent. (Various test files)
-- [ ] **Add `Tag.IsStandard()` method** — Match the `Category.IsStandard()` pattern. (`tag.go`)
+- [x] **Add `Tag.IsStandard()` method** — Done. Exists at `tag.go:21`. Matches `Category.IsStandard()` pattern.
 
 ### Missing Features from Planning
 
 - [ ] **Add `Properties map[string]any`** alongside `Metadata map[string]string` — Structured round-trip data for SARIF. Currently `Metadata` is string-only. (`finding.go`)
-- [ ] **Add `Suppression.IsActive()` method** — Check expiry + validity in one call. Currently has `IsExpired()` and `IsValid()` but no combined check. (`suppression.go`)
+- [x] **Add `Suppression.IsActive()` method** — Done. Exists at `suppression.go:43`. Combines `IsValid() && !IsExpired(now)`.
 - [ ] **Add `Report.Merge(other *Report)` method** — In-place merge for accumulating findings. Currently only a package-level `Merge()` function. (`report.go`)
 - [ ] **Add `io.WriterTo` for SARIF** — Direct streaming without buffer allocation. `WriteSARIF` exists but is not `io.WriterTo`. (`sarif.go`)
 - [ ] **Confidence strong type** — `type Confidence float64` with validation methods instead of bare `float64`. (`finding.go`)
@@ -260,7 +270,7 @@ These items were listed as TODOs across multiple planning/status docs but are **
 - [x] `docs/release-procedure.md` — Release process documented
 - [x] `docs/architecture-decisions.md` — 5 open decisions documented
 - [x] `scripts/coverage-check.sh` — Per-package coverage thresholds
-- [x] `Tag string` deprecated with `Tags []Tag` replacement — Both fields exist on Finding
+- [x] `Tag string` removed, replaced with `Tags []Tag` — Singular Tag field no longer exists on Finding struct
 - [x] `NewFinding` accepts confidence parameter — 6-param signature with clamping
 - [x] **Report.lock() mutex fix** — lock() was releasing mutex immediately via defer. Split into lock()/unlock(). `ComputeSummary()` now thread-safe. (`report.go`)
 - [x] **WithTag Deprecated godoc marker** — Added `// Deprecated:` godoc marker for staticcheck detection. (`finding_builder.go`)

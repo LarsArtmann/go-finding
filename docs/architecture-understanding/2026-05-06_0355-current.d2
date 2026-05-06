@@ -1,0 +1,118 @@
+title: go-finding — Current Architecture
+layout: elk
+
+finding: {
+  shape: package
+  label: "finding (root package)"
+
+  core_types: {
+    shape: rectangle
+    label: "Core Types"
+
+    Finding: {shape: class}
+    Position: {shape: class}
+    Range: {shape: class}
+    Severity: {shape: class}
+    FixStrategy: {shape: class}
+    Category: {shape: class}
+    Tag: {shape: class}
+    Suppression: {shape: class}
+  }
+
+  builder: {
+    shape: rectangle
+    label: "Builder"
+  }
+
+  report: {
+    shape: rectangle
+    label: "Report\n(mutex-protected)"
+  }
+
+  conversions: {
+    shape: rectangle
+    label: "Conversions"
+
+    SARIF: {shape: rectangle}
+    LSP: {shape: rectangle}
+    Diagnostic: {shape: rectangle}
+  }
+
+  utilities: {
+    shape: rectangle
+    label: "Utilities"
+
+    Filter: {shape: rectangle}
+    Merge: {shape: rectangle}
+    ID: {shape: rectangle}
+    JSON: {shape: rectangle}
+    Errors: {shape: rectangle}
+  }
+
+  builder -> core_types.Finding: "Build()"
+  report -> core_types.Finding: "contains []"
+  conversions.SARIF -> report: "ToSARIF()"
+  conversions.LSP -> core_types.Finding: "ToLSP()"
+  conversions.Diagnostic -> core_types.Finding: "FromDiagnostic()"
+}
+
+pipeline: {
+  shape: package
+  label: "pipeline"
+
+  Pipeline: {
+    shape: rectangle
+    label: "Pipeline\n(orchestrator)"
+  }
+
+  Detector: {shape: hexagon}
+  FixEngine: {shape: rectangle}
+  FixApplier: {shape: rectangle}
+  FileBackup: {shape: cylinder}
+  ConflictDetector: {shape: rectangle}
+  Verifier: {shape: rectangle}
+  Metrics: {shape: rectangle}
+  RetryDetector: {shape: rectangle}
+  PartialResult: {shape: rectangle}
+
+  Pipeline -> Detector: "detect()"
+  Pipeline -> FixEngine: "apply fixes"
+  Pipeline -> ConflictDetector: "filter conflicts"
+  Pipeline -> Verifier: "verify()"
+  FixApplier -> FixEngine: "delegates to"
+  FixApplier -> FileBackup: "backup/restore"
+  RetryDetector -> Detector: "wraps"
+}
+
+cli: {
+  shape: package
+  label: "cmd/go-finding"
+
+  CLI: {
+    shape: rectangle
+    label: "CLI\n(flag-based)"
+  }
+
+  GoVet: {shape: rectangle}
+  Staticcheck: {shape: rectangle}
+}
+
+external: {
+  shape: cloud
+  label: "External Tools"
+
+  go_vet: {shape: rectangle}
+  staticcheck_bin: {shape: rectangle}
+  golang_org_x_tools: {shape: rectangle}
+}
+
+cli.CLI -> pipeline.Pipeline: "creates & runs"
+cli.GoVet -> pipeline.Detector: "implements"
+cli.Staticcheck -> pipeline.Detector: "implements"
+pipeline.Pipeline -> finding.report: "produces"
+cli.GoVet -> external.go_vet: "exec"
+cli.Staticcheck -> external.staticcheck_bin: "exec"
+finding.conversions.Diagnostic -> external.golang_org_x_tools: "imports"
+
+finding.core_types.Finding -> pipeline.FixEngine: "fix data"
+pipeline.PartialResult -> pipeline.Pipeline: "graceful degradation"
