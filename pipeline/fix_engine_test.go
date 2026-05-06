@@ -229,15 +229,17 @@ func TestFixEngine_Apply_ByteOffset(t *testing.T) {
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc main() {\n\told()\n}")
 
+	// "old()" starts at byte offset 29 (offset 28 is '\t').
+	// Line=0 prevents LineProvider from handling this — forces OffsetProvider.
 	fixes := []finding.Finding{
 		{
 			BeforeCode: "old()",
 			AfterCode:  "new()",
 			Range: &finding.Range{
-				Start: finding.Position{File: "a.go", Offset: 28},
-				End:   finding.Position{File: "a.go", Offset: 33},
+				Start: finding.Position{File: "a.go", Offset: 29},
+				End:   finding.Position{File: "a.go", Offset: 34},
 			},
-			Position: finding.Pos("a.go", 4, 2),
+			Position: finding.Pos("a.go", 0, 0),
 		},
 	}
 
