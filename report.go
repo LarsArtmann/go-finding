@@ -6,12 +6,13 @@ import (
 )
 
 // Report is the top-level container for a tool run.
-// Use NewReport to create a thread-safe instance.
+// The zero value is safe for concurrent use. Use [NewReport] to create
+// a Report with pre-allocated findings.
 type Report struct {
-	mu       *sync.Mutex // nil for zero-value Reports; initialized by NewReport
-	Tool     ToolInfo    `json:"tool"`     // Tool metadata
-	Findings []Finding   `json:"findings"` // All findings from this run
-	Summary  Summary     `json:"summary"`  // Aggregated statistics
+	mu       sync.Mutex
+	Tool     ToolInfo  `json:"tool"`     // Tool metadata
+	Findings []Finding `json:"findings"` // All findings from this run
+	Summary  Summary   `json:"summary"`  // Aggregated statistics
 }
 
 // ToolInfo contains metadata about the tool that generated the report.
@@ -34,7 +35,6 @@ type Summary struct {
 // NewReport creates a new report with the given tool info.
 func NewReport(tool ToolInfo) *Report {
 	r := &Report{
-		mu:       &sync.Mutex{},
 		Tool:     tool,
 		Findings: make([]Finding, 0),
 		Summary:  Summary{}, //nolint:exhaustruct
@@ -47,7 +47,6 @@ func NewReport(tool ToolInfo) *Report {
 // newReportWithCapacity creates a new report with pre-allocated finding capacity.
 func newReportWithCapacity(tool ToolInfo, capacity int) *Report {
 	r := &Report{
-		mu:       &sync.Mutex{},
 		Tool:     tool,
 		Findings: make([]Finding, 0, capacity),
 		Summary:  Summary{}, //nolint:exhaustruct
@@ -91,18 +90,14 @@ func (r *Report) addFindingUnchecked(f Finding) {
 	r.Findings = append(r.Findings, f)
 }
 
-// lock acquires the report mutex if it exists.
+// lock acquires the report mutex.
 func (r *Report) lock() {
-	if r.mu != nil {
-		r.mu.Lock()
-	}
+	r.mu.Lock()
 }
 
-// unlock releases the report mutex if it exists.
+// unlock releases the report mutex.
 func (r *Report) unlock() {
-	if r.mu != nil {
-		r.mu.Unlock()
-	}
+	r.mu.Unlock()
 }
 
 // ComputeSummary recalculates the summary from the current findings.
