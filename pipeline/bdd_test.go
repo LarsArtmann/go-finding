@@ -281,3 +281,260 @@ func mustBuild(
 	}
 	return f
 }
+
+var _ = Describe("FixProvider Contract", func() {
+	var content []byte
+
+	BeforeEach(func() {
+		content = []byte("package main\n\nfunc main() {\n\told()\n}")
+	})
+
+	Describe("OffsetProvider", func() {
+		var provider pipeline.OffsetProvider
+
+		BeforeEach(func() {
+			provider = pipeline.OffsetProvider{}
+		})
+
+		It("handles findings with byte-offset range info", func() {
+			f := finding.Finding{
+				BeforeCode: "old()",
+				AfterCode:  "new()",
+				Range: &finding.Range{
+					Start: finding.Position{File: "a.go", Offset: 28},
+					End:   finding.Position{File: "a.go", Offset: 33},
+				},
+				Position: finding.Pos("a.go", 4, 2),
+			}
+			Expect(provider.CanHandle(f)).To(BeTrue())
+		})
+
+		It("rejects findings without byte-offset range", func() {
+			f := finding.Finding{
+				BeforeCode: "old",
+				AfterCode:  "new",
+				Position:  finding.Pos("a.go", 4, 2),
+			}
+			Expect(provider.CanHandle(f)).To(BeFalse())
+		})
+
+		It("rejects findings with no before/after code", func() {
+			f := finding.Finding{
+				Range:    finding.NewRangePtr("a.go", 4, 2, 4, 7),
+				Position: finding.Pos("a.go", 4, 2),
+			}
+			Expect(provider.CanHandle(f)).To(BeFalse())
+		})
+
+		It("produces a byte-level edit from offset range", func() {
+			f := finding.Finding{
+				BeforeCode: "old()",
+				AfterCode:  "new()",
+				Range: &finding.Range{
+					Start: finding.Position{File: "a.go", Offset: 29},
+					End:   finding.Position{File: "a.go", Offset: 34},
+				},
+				Position: finding.Pos("a.go", 4, 2),
+			}
+			edits, err := provider.Edits(content, f)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(edits).To(HaveLen(1))
+			Expect(edits[0].Offset).To(Equal(29))
+			Expect(edits[0].Length).To(Equal(5))
+			Expect(string(edits[0].Replacement)).To(Equal("new()"))
+		})
+
+		It("returns nil when BeforeCode doesn't match content at offset", func() {
+			f := finding.Finding{
+				BeforeCode: "WRONG",
+				AfterCode:  "new()",
+				Range: &finding.Range{
+					Start: finding.Position{File: "a.go", Offset: 29},
+					End:   finding.Position{File: "a.go", Offset: 34},
+				},
+				Position: finding.Pos("a.go", 4, 2),
+			}
+			edits, err := provider.Edits(content, f)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(edits).To(BeNil())
+		})
+	})
+
+	Describe("LineProvider", func() {
+		var provider pipeline.LineProvider
+
+		BeforeEach(func() {
+			provider = pipeline.LineProvider{}
+		})
+
+		It("handles findings with line/column position", func() {
+			f := finding.Finding{
+				BeforeCode: "old()",
+				AfterCode:  "new()",
+				Position:   finding.Pos("a.go", 4, 2),
+				Range:      finding.NewRangePtr("a.go", 4, 2, 4, 7),
+			}
+			Expect(provider.CanHandle(f)).To(BeTrue())
+		})
+
+		It("rejects findings with no line number", func() {
+			f := finding.Finding{
+				BeforeCode: "old",
+				AfterCode:  "new",
+				Position:   finding.Pos("a.go", 0, 0),
+			}
+			Expect(provider.CanHandle(f)).To(BeFalse())
+		})
+
+		It("handles insertion-only fixes (no BeforeCode)", func() {
+			f := finding.Finding{
+				AfterCode: "\tinserted",
+				Position:  finding.Pos("a.go", 3, 1),
+			}
+			Expect(provider.CanHandle(f)).To(BeTrue())
+
+			edits, err := provider.Edits(content, f)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(edits).To(HaveLen(1))
+			Expect(edits[0].Length).To(Equal(0))
+			Expect(edits[0].IsInsert()).To(BeTrue())
+		})
+
+		It("produces range-based edits when Range has end", func() {
+			f := finding.Finding{
+				BeforeCode: "old()",
+				AfterCode:  "new()",
+				Range:      finding.NewRangePtr("a.go", 4, 2, 4, 7),
+				Position:   finding.Pos("a.go", 4, 2),
+			}
+			edits, err := provider.Edits(content, f)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(edits).To(HaveLen(1))
+			Expect(string(edits[0].Replacement)).To(Equal("new()"))
+		})
+
+		It("returns nil for out-of-bounds line numbers", func() {
+			f := finding.Finding{
+				BeforeCode: "old",
+				AfterCode:  "new",
+				Position:   finding.Pos("a.go", 100, 1),
+			}
+			edits, err := provider.Edits(content, f)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(edits).To(BeNil())
+		})
+	})
+
+	Describe("SubstringProvider", func() {
+		var provider pipeline.SubstringProvider
+
+		BeforeEach(func() {
+			provider = pipeline.SubstringProvider{}
+		})
+
+		It("handles findings with BeforeCode", func() {
+			f := finding.Finding{
+				BeforeCode: "old()",
+				AfterCode:  "new()",
+				Position:   finding.Pos("a.go", 1, 1),
+			}
+			Expect(provider.CanHandle(f)).To(BeTrue())
+		})
+
+		It("rejects findings without BeforeCode", func() {
+			f := finding.Finding{
+				AfterCode: "new()",
+				Position:  finding.Pos("a.go", 1, 1),
+			}
+			Expect(provider.CanHandle(f)).To(BeFalse())
+		})
+
+		It("finds substring in content and produces edit", func() {
+			f := finding.Finding{
+				BeforeCode: "old()",
+				AfterCode:  "new()",
+				Position:   finding.Pos("a.go", 1, 1),
+			}
+			edits, err := provider.Edits(content, f)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(edits).To(HaveLen(1))
+			Expect(string(edits[0].Replacement)).To(Equal("new()"))
+		})
+
+		It("returns nil when BeforeCode not found in content", func() {
+			f := finding.Finding{
+				BeforeCode: "NONEXISTENT",
+				AfterCode:  "new()",
+				Position:   finding.Pos("a.go", 1, 1),
+			}
+			edits, err := provider.Edits(content, f)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(edits).To(BeNil())
+		})
+
+		It("picks the occurrence nearest to the target line when ambiguous", func() {
+			multiContent := []byte("line1: X\nline2: X\nline3: X")
+			f := finding.Finding{
+				BeforeCode: "X",
+				AfterCode:  "Y",
+				Position:   finding.Pos("a.go", 3, 0),
+			}
+			edits, err := provider.Edits(multiContent, f)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(edits).To(HaveLen(1))
+			Expect(edits[0].Offset).To(Equal(25))
+		})
+	})
+
+	Describe("provider chain precedence", func() {
+		It("OffsetProvider takes precedence over LineProvider and SubstringProvider", func() {
+			engine := pipeline.NewFixEngine()
+
+			f := finding.Finding{
+				BeforeCode: "old()",
+				AfterCode:  "new()",
+				Range: &finding.Range{
+					Start: finding.Position{File: "a.go", Offset: 29},
+					End:   finding.Position{File: "a.go", Offset: 34},
+				},
+				Position: finding.Pos("a.go", 4, 2),
+			}
+
+			result, applied, count := engine.Apply(content, []finding.Finding{f})
+			Expect(count).To(Equal(1))
+			Expect(applied).To(HaveLen(1))
+			Expect(string(result)).To(Equal("package main\n\nfunc main() {\n\tnew()\n}"))
+		})
+
+		It("LineProvider is used when no byte offsets are available", func() {
+			engine := pipeline.NewFixEngine()
+
+			f := finding.Finding{
+				BeforeCode: "old()",
+				AfterCode:  "new()",
+				Range:      finding.NewRangePtr("a.go", 4, 2, 4, 7),
+				Position:   finding.Pos("a.go", 4, 2),
+			}
+
+			result, applied, count := engine.Apply(content, []finding.Finding{f})
+			Expect(count).To(Equal(1))
+			Expect(applied).To(HaveLen(1))
+			Expect(string(result)).To(Equal("package main\n\nfunc main() {\n\tnew()\n}"))
+		})
+
+		It("SubstringProvider is the fallback", func() {
+			engine := pipeline.NewFixEngine()
+
+			f := finding.Finding{
+				BeforeCode: "old",
+				AfterCode:  "new",
+				Position:   finding.Pos("a.go", 1, 1),
+			}
+
+			result, applied, count := engine.Apply([]byte("old code"), []finding.Finding{f})
+			Expect(count).To(Equal(1))
+			Expect(applied).To(HaveLen(1))
+			Expect(string(result)).To(Equal("new code"))
+		})
+	})
+})
