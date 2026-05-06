@@ -11,7 +11,7 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/pipeline"
-	"go.yaml.in/yaml/v3"
+	"github.com/go-faster/yaml"
 )
 
 type pipelineConfigFile struct {
