@@ -59,17 +59,17 @@ func newReportWithCapacity(tool ToolInfo, capacity int) *Report {
 // AddFinding adds a finding to the report.
 // Safe for concurrent use.
 func (r *Report) AddFinding(f Finding) {
-	r.lock()
+	r.mu.Lock()
 	r.Findings = append(r.Findings, f)
-	r.unlock()
+	r.mu.Unlock()
 }
 
 // AddFindings adds multiple findings to the report.
 // Safe for concurrent use.
 func (r *Report) AddFindings(findings []Finding) {
-	r.lock()
+	r.mu.Lock()
 	r.Findings = append(r.Findings, findings...)
-	r.unlock()
+	r.mu.Unlock()
 }
 
 // Merge merges another report's findings into this report in-place.
@@ -77,9 +77,9 @@ func (r *Report) AddFindings(findings []Finding) {
 // Summary is recomputed after merging.
 // Safe for concurrent use.
 func (r *Report) Merge(other *Report) {
-	r.lock()
+	r.mu.Lock()
 	r.Findings = append(r.Findings, other.Findings...)
-	r.unlock()
+	r.mu.Unlock()
 
 	r.ComputeSummary()
 }
@@ -90,21 +90,11 @@ func (r *Report) addFindingUnchecked(f Finding) {
 	r.Findings = append(r.Findings, f)
 }
 
-// lock acquires the report mutex.
-func (r *Report) lock() {
-	r.mu.Lock()
-}
-
-// unlock releases the report mutex.
-func (r *Report) unlock() {
-	r.mu.Unlock()
-}
-
 // ComputeSummary recalculates the summary from the current findings.
 // Safe for concurrent use with AddFinding/AddFindings.
 func (r *Report) ComputeSummary() {
-	r.lock()
-	defer r.unlock()
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	r.Summary.Total = len(r.Findings)
 	r.Summary.BySeverity = make(map[Severity]int)
