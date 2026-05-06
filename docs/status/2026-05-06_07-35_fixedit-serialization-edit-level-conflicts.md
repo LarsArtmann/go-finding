@@ -31,35 +31,35 @@ after the byte-level redesign.
 
 ## New Code
 
-| File | Lines | Change |
-|------|-------|--------|
-| `pipeline/fix_edit.go` | 165 (was 77) | +88 lines: JSON tags, `MarshalJSON`/`UnmarshalJSON`, `ToSARIFProperties`, `FixEditFromSARIFProperties` |
-| `pipeline/fix_engine.go` | 143 (was 126) | +17 lines: `ApplyWithConflicts` method, `applyEditsWithConflicts` with conflict tracking |
-| `pipeline/conflict.go` | 253 (was 224) | +29 lines: `FilterConflictingEdits` function |
+| File                          | Lines         | Change                                                                                                  |
+| ----------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- |
+| `pipeline/fix_edit.go`        | 165 (was 77)  | +88 lines: JSON tags, `MarshalJSON`/`UnmarshalJSON`, `ToSARIFProperties`, `FixEditFromSARIFProperties`  |
+| `pipeline/fix_engine.go`      | 143 (was 126) | +17 lines: `ApplyWithConflicts` method, `applyEditsWithConflicts` with conflict tracking                |
+| `pipeline/conflict.go`        | 253 (was 224) | +29 lines: `FilterConflictingEdits` function                                                            |
 | `pipeline/fix_engine_test.go` | 631 (was 435) | +196 lines: tests for `ApplyWithConflicts`, `FilterConflictingEdits`, JSON round-trip, SARIF properties |
 
 ## Modified Code
 
-| File | Change |
-|------|--------|
-| `pipeline/fix_applier.go` | `applyToFile` now uses `ApplyWithConflicts` instead of `Apply` |
-| `AGENTS.md` | Added fix_edit.go, fix_provider.go, fix_engine.go to pipeline table; added FixProvider features |
-| `FEATURES.md` | Rewrote section 16.7 for byte-level architecture; added FixEdit/FixProvider to summary matrix; added `FixProviders` to Config table |
-| `TODO_LIST.md` | Added 5 new FixProvider Architecture items; fixed stale references; marked column-shift item as resolved |
+| File                      | Change                                                                                                                              |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `pipeline/fix_applier.go` | `applyToFile` now uses `ApplyWithConflicts` instead of `Apply`                                                                      |
+| `AGENTS.md`               | Added fix_edit.go, fix_provider.go, fix_engine.go to pipeline table; added FixProvider features                                     |
+| `FEATURES.md`             | Rewrote section 16.7 for byte-level architecture; added FixEdit/FixProvider to summary matrix; added `FixProviders` to Config table |
+| `TODO_LIST.md`            | Added 5 new FixProvider Architecture items; fixed stale references; marked column-shift item as resolved                            |
 
 ---
 
 ## Verification
 
-| Check | Result |
-|-------|--------|
-| `go build ./...` | PASS |
+| Check                          | Result                           |
+| ------------------------------ | -------------------------------- |
+| `go build ./...`               | PASS                             |
 | `go test -race -count=1 ./...` | PASS — **498 tests**, 0 failures |
-| `golangci-lint run ./...` | PASS — **0 issues** |
-| FixEdit JSON round-trip tests | ALL PASS (3 tests) |
-| FixEdit SARIF property tests | ALL PASS (3 tests) |
-| ApplyWithConflicts tests | ALL PASS (2 tests) |
-| FilterConflictingEdits tests | ALL PASS (2 tests) |
+| `golangci-lint run ./...`      | PASS — **0 issues**              |
+| FixEdit JSON round-trip tests  | ALL PASS (3 tests)               |
+| FixEdit SARIF property tests   | ALL PASS (3 tests)               |
+| ApplyWithConflicts tests       | ALL PASS (2 tests)               |
+| FilterConflictingEdits tests   | ALL PASS (2 tests)               |
 
 ---
 
@@ -92,6 +92,7 @@ safeFixes := FilterConflictingEdits(content, fixes, engine)
 The `ConflictDetector` still operates at `Range.Overlaps()` level for pre-filtering
 (before file content is available). `FilterConflictingEdits` provides byte-precision
 filtering when content is available. Both are used in the pipeline:
+
 1. `FilterConflictingFixes` in `applyTriage` (Range-level, no content needed)
 2. `FixEngine.applyEditsWithConflicts` in `applyToFile` (byte-level, content available)
 
@@ -147,16 +148,16 @@ Nothing partially done — all started items are complete.
 
 - [ ] **Nothing broken** — all 498 tests pass, zero lint issues
 - [ ] **Known risk:** `FilterConflictingEdits` uses `Finding.ID` to match conflicts back to
-  the input slice. Findings without IDs (empty string) cannot be distinguished — if two
-  findings have the same empty ID, one being a conflict would filter both. In practice,
-  all pipeline findings have generated IDs via `GenerateID`, but direct construction without
-  `NewFinding` could hit this.
+      the input slice. Findings without IDs (empty string) cannot be distinguished — if two
+      findings have the same empty ID, one being a conflict would filter both. In practice,
+      all pipeline findings have generated IDs via `GenerateID`, but direct construction without
+      `NewFinding` could hit this.
 - [ ] **Known risk:** `FixEditFromSARIFProperties` stores replacement as `string(props["go-finding/edit/replacement"])`
-  which means non-UTF-8 bytes in replacements would be corrupted. The SARIF property bag is
-  `map[string]string`, so this is inherently lossy for binary content. Acceptable for source code.
+      which means non-UTF-8 bytes in replacements would be corrupted. The SARIF property bag is
+      `map[string]string`, so this is inherently lossy for binary content. Acceptable for source code.
 - [ ] **Known risk:** `applyEditsWithConflicts` doesn't populate `ConflictInfo.ConflictsWith` —
-  it only sets the `Reason`. The Range-based `AnalyzeConflicts` provides richer info about
-  which finding conflicts with which. The edit-level path could be enhanced later.
+      it only sets the `Reason`. The Range-based `AnalyzeConflicts` provides richer info about
+      which finding conflicts with which. The edit-level path could be enhanced later.
 
 ### e) WHAT WE SHOULD IMPROVE
 

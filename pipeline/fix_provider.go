@@ -259,7 +259,7 @@ func lineColToOffset(content []byte, line, col int) (int, error) {
 
 // indexLineColToOffset converts a 1-based line and column to a 0-based byte
 // offset using a pre-built line offset index for O(1) lookup.
-func indexLineColToOffset(index []int, contentLen int, line, col int) (int, error) {
+func indexLineColToOffset(index []int, contentLen, line, col int) (int, error) {
 	if line < 1 {
 		return 0, fmt.Errorf("%w: %d", errInvalidLine, line)
 	}

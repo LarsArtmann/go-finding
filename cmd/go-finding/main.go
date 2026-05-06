@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/pprof"
+	"slices"
 	"sync"
 	"time"
 
@@ -194,8 +195,8 @@ func setupProfiling(cpuprof, memprof string) (func(), error) {
 	}
 
 	return func() {
-		for i := len(stopFuncs) - 1; i >= 0; i-- {
-			stopFuncs[i]()
+		for _, v := range slices.Backward(stopFuncs) {
+			v()
 		}
 	}, nil
 }

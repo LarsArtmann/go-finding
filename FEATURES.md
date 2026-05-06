@@ -409,22 +409,22 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 
 ### 16.2 Configuration
 
-| Option                | Type                   | Default | Description                     |
-| --------------------- | ---------------------- | ------- | ------------------------------- |
-| `MaxIterations`       | `int`                  | 5       | Prevents infinite loops         |
-| `ParallelDetectors`   | `bool`                 | `true`  | Concurrent detector execution   |
-| `Timeout`             | `time.Duration`        | 10min   | Pipeline timeout                |
-| `VerifyAfterFix`      | `bool`                 | `false` | Re-run detectors post-fix       |
-| `GracefulDegradation` | `bool`                 | `false` | Continue on detector failures   |
-| `DryRun`              | `bool`                 | `false` | Detect + triage only (no fixes) |
-| `Retry`               | `*RetryConfig`         | `nil`   | Exponential backoff retries     |
-| `Metrics`             | `*Metrics`             | `nil`   | Timing/count collection         |
-| `CorrelateFindings`   | `bool`                 | `false` | Cross-tool correlation          |
-| `Processors`          | `[]FindingProcessor`   | `nil`   | Composable finding transforms   |
+| Option                | Type                   | Default | Description                      |
+| --------------------- | ---------------------- | ------- | -------------------------------- |
+| `MaxIterations`       | `int`                  | 5       | Prevents infinite loops          |
+| `ParallelDetectors`   | `bool`                 | `true`  | Concurrent detector execution    |
+| `Timeout`             | `time.Duration`        | 10min   | Pipeline timeout                 |
+| `VerifyAfterFix`      | `bool`                 | `false` | Re-run detectors post-fix        |
+| `GracefulDegradation` | `bool`                 | `false` | Continue on detector failures    |
+| `DryRun`              | `bool`                 | `false` | Detect + triage only (no fixes)  |
+| `Retry`               | `*RetryConfig`         | `nil`   | Exponential backoff retries      |
+| `Metrics`             | `*Metrics`             | `nil`   | Timing/count collection          |
+| `CorrelateFindings`   | `bool`                 | `false` | Cross-tool correlation           |
+| `Processors`          | `[]FindingProcessor`   | `nil`   | Composable finding transforms    |
 | `FixProviders`        | `[]FixProvider`        | `nil`   | Custom fix providers (e.g., AST) |
-| `OnFinding`           | `func(Finding)`        | `nil`   | Per-finding callback            |
-| `OnFix`               | `func(Finding, bool)`  | `nil`   | Per-fix callback                |
-| `OnIteration`         | `func(int, []Finding)` | `nil`   | Per-iteration callback          |
+| `OnFinding`           | `func(Finding)`        | `nil`   | Per-finding callback             |
+| `OnFix`               | `func(Finding, bool)`  | `nil`   | Per-fix callback                 |
+| `OnIteration`         | `func(int, []Finding)` | `nil`   | Per-iteration callback           |
 
 Config validation: `config.Validate()` returns joined errors for invalid values. `pipeline.New()` rejects invalid configs.
 
@@ -511,11 +511,11 @@ type FixProvider interface {
 
 **Default provider chain (tried in order):**
 
-|| Provider            | Name           | Handles                                            |
-| ------------------- | -------------- | -------------------------------------------------- |
+|                     | Provider        | Name                                                | Handles |
+| ------------------- | --------------- | --------------------------------------------------- | ------- |
 | `OffsetProvider`    | `"byte-offset"` | Findings with `Range.Start.Offset >= 0 && End >= 0` |
-| `LineProvider`      | `"line-column"` | Findings with `Position.Line > 0`                  |
-| `SubstringProvider` | `"substring"`   | Fallback for any finding with `BeforeCode`         |
+| `LineProvider`      | `"line-column"` | Findings with `Position.Line > 0`                   |
+| `SubstringProvider` | `"substring"`   | Fallback for any finding with `BeforeCode`          |
 
 Domain-specific providers (Go AST, Rust syn, etc.) can be registered via:
 
@@ -756,9 +756,9 @@ Three runnable examples in `examples/`:
 | Pipeline (detect→fix→verify)      | STABLE       | Iterative loop with configurable behavior                         |
 | Finding processors                | EXPERIMENTAL | Composable transforms between detect and triage                   |
 | Conflict detection                | STABLE       | Overlapping fix detection                                         |
-| FixEdit (byte-level edits)        | STABLE       | Offset, Length, Replacement with Overlaps/Validate               |
-| FixProvider interface             | STABLE       | Composable providers: Offset, Line, Substring + custom           |
-| Fix application                   | FUNCTIONAL   | Byte-level FixEngine + filesystem FixApplier, backup/rollback    |
+| FixEdit (byte-level edits)        | STABLE       | Offset, Length, Replacement with Overlaps/Validate                |
+| FixProvider interface             | STABLE       | Composable providers: Offset, Line, Substring + custom            |
+| Fix application                   | FUNCTIONAL   | Byte-level FixEngine + filesystem FixApplier, backup/rollback     |
 | Verification                      | STABLE       | Diff-based: fixed / remaining / new                               |
 | Metrics                           | STABLE       | Thread-safe, snapshot support                                     |
 | Retry (exponential backoff)       | STABLE       | With jitter                                                       |

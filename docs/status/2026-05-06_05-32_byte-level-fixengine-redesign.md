@@ -15,6 +15,7 @@ approach to a byte-level `[]byte` edit engine with a composable FixProvider inte
 
 **Problem:** The old engine used `strings.Split`/`strings.Join` roundtrips and
 `strings.Replace` for applying fixes — fragile because:
+
 - Line indices shift after each edit, requiring careful descending-order application
 - Substring matching is ambiguous when the same text appears multiple times
 - No extension point for domain-specific (AST-aware) providers
@@ -27,19 +28,19 @@ in descending offset order with a frontier boundary to prevent overlaps.
 
 ## New Files
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `pipeline/fix_edit.go` | 77 | `FixEdit` type — byte-level edit operations with `Overlaps`, `Validate`, `IsInsert`, `IsDelete` |
-| `pipeline/fix_provider.go` | 322 | `FixProvider` interface + 3 default providers (OffsetProvider, LineProvider, SubstringProvider) |
+| File                       | Lines | Purpose                                                                                         |
+| -------------------------- | ----- | ----------------------------------------------------------------------------------------------- |
+| `pipeline/fix_edit.go`     | 77    | `FixEdit` type — byte-level edit operations with `Overlaps`, `Validate`, `IsInsert`, `IsDelete` |
+| `pipeline/fix_provider.go` | 322   | `FixProvider` interface + 3 default providers (OffsetProvider, LineProvider, SubstringProvider) |
 
 ## Rewritten Files
 
-| File | Lines | Change |
-|------|-------|--------|
-| `pipeline/fix_engine.go` | 126 | Engine works on `[]byte`, delegates to providers, sorts edits descending by offset |
-| `pipeline/fix_applier.go` | 156 | Removed `strings.Split`/`Join`, reads/writes `[]byte` directly. Added `NewFixApplierWithProviders` |
-| `pipeline/pipeline.go` | 620 | Added `Config.FixProviders []FixProvider`, wires providers in `applyDirectFixes` |
-| `pipeline/fix_engine_test.go` | 435 | Complete rewrite for byte-based API with FixEdit, FixProvider, and helper tests |
+| File                          | Lines | Change                                                                                             |
+| ----------------------------- | ----- | -------------------------------------------------------------------------------------------------- |
+| `pipeline/fix_engine.go`      | 126   | Engine works on `[]byte`, delegates to providers, sorts edits descending by offset                 |
+| `pipeline/fix_applier.go`     | 156   | Removed `strings.Split`/`Join`, reads/writes `[]byte` directly. Added `NewFixApplierWithProviders` |
+| `pipeline/pipeline.go`        | 620   | Added `Config.FixProviders []FixProvider`, wires providers in `applyDirectFixes`                   |
+| `pipeline/fix_engine_test.go` | 435   | Complete rewrite for byte-based API with FixEdit, FixProvider, and helper tests                    |
 
 ## Unchanged Files
 
@@ -51,13 +52,13 @@ all pipeline tests except `fix_engine_test.go`, root package, CLI, detectors, ex
 
 ## Verification
 
-| Check | Result |
-|-------|--------|
-| `go build ./...` | PASS |
+| Check                          | Result                           |
+| ------------------------------ | -------------------------------- |
+| `go build ./...`               | PASS                             |
 | `go test -race -count=1 ./...` | PASS — **490 tests**, 0 failures |
-| `golangci-lint run ./...` | PASS — **0 issues** |
-| FixApplier tests (26 tests) | ALL PASS |
-| FixEngine tests (41 tests) | ALL PASS |
+| `golangci-lint run ./...`      | PASS — **0 issues**              |
+| FixApplier tests (26 tests)    | ALL PASS                         |
+| FixEngine tests (41 tests)     | ALL PASS                         |
 
 ---
 
@@ -81,6 +82,7 @@ type FixProvider interface {
    (fragile substring matching — documented as last resort)
 
 **Domain-specific providers** can be registered via:
+
 - `NewFixEngineWithProviders(providers...)` — for standalone engine use
 - `Config.FixProviders` — for pipeline integration
 - `NewFixApplierWithProviders(rootDir, providers...)` — for direct applier use
@@ -123,9 +125,9 @@ Nothing partially done — the core redesign is complete.
 
 - [ ] **Nothing broken** — all 490 tests pass, zero lint issues
 - [ ] **Known risk:** The `LineProvider.replacementEdit` uses `Position.Column` as the
-  byte offset for BeforeCode matching. If Column is 0 (not set), it defaults to 0 which
-  means the start of the line — this works but is fragile for findings without column info.
-  The SubstringProvider catches these cases.
+      byte offset for BeforeCode matching. If Column is 0 (not set), it defaults to 0 which
+      means the start of the line — this works but is fragile for findings without column info.
+      The SubstringProvider catches these cases.
 
 ### e) WHAT WE SHOULD IMPROVE
 
@@ -210,10 +212,12 @@ live INSIDE this library as `pipeline/fix/` sub-packages, or should they be
 SEPARATE modules/repositories that import go-finding as a dependency?**
 
 Arguments for inside:
+
 - Easier discovery, single dependency for users
 - Can share internal helpers (line-offset indexing, etc.)
 
 Arguments for outside:
+
 - go-finding stays minimal-dependency (core types depend only on stdlib)
 - No heavy AST parser dependencies in the core module
 - Each provider can version independently

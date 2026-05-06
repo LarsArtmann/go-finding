@@ -19,20 +19,20 @@ The build is **GREEN** (all tests pass, `go build ./...` succeeds) but `golangci
 
 ### Committed Work (12 commits since `0d00a20`)
 
-| # | Commit | Description | Impact |
-|---|--------|-------------|--------|
-| 1 | `5081eae` | **Fix temp dir leak** — `defer func() { _ = applier.Close() }()` in `applyDirectFixes` | Correctness: prevents temp directory accumulation |
-| 2 | `dc3ca37` | **Pipeline.Run() godoc** — Documented single-use contract and state-reset behavior | API clarity |
-| 3 | `7eae850` | **strconv.Atoi** — Replaced `fmt.Sscanf("%d")` in `FixEditFromSARIFProperties` | Performance: simpler, faster integer parsing |
-| 4 | `cba1b19` | **Line offset index** — `buildLineOffsetIndex` + `indexLineColToOffset` for O(1) lookup | Performance: O(n) build, O(1) per lookup |
-| 5 | `a3e4b58` | **ConflictInfo.ConflictsWith** — Tracks overlapping edits in conflict detection | Correctness: identifies which edit caused conflict |
-| 6 | `a91f948` | **Finding.Key() in FilterConflictingEdits** — Uses Key() fallback instead of empty ID | Correctness: prevents false matches on empty-ID findings |
-| 7 | `340f1f2` | **Deprecate ConflictDetector** — Package-level `DetectConflicts` function | API honesty: stateless struct → function |
-| 8 | `ad9c65a` | **Deprecate Verifier** — Package-level `Verify` function | API honesty: stateless struct → function |
-| 9 | `e97f62e` | **Split sarif.go** → `sarif_types.go` + `sarif_export.go` + `sarif_import.go` | Organization: 570 lines → 3 focused files |
-| 10 | `1bb1b1e` | **Split pipeline.go** → `pipeline.go` + `adapters.go` + `config.go` | Organization: 624 lines → 3 focused files |
-| 11 | `c946025` | **FixEngine benchmarks** — 1/10/100/1000 fixes on 10k-line file | Performance baseline |
-| 12 | `aa25f80` | **BDD specs for FixProvider** — OffsetProvider, LineProvider, SubstringProvider individually + chain precedence | Test coverage |
+| #   | Commit    | Description                                                                                                     | Impact                                                   |
+| --- | --------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| 1   | `5081eae` | **Fix temp dir leak** — `defer func() { _ = applier.Close() }()` in `applyDirectFixes`                          | Correctness: prevents temp directory accumulation        |
+| 2   | `dc3ca37` | **Pipeline.Run() godoc** — Documented single-use contract and state-reset behavior                              | API clarity                                              |
+| 3   | `7eae850` | **strconv.Atoi** — Replaced `fmt.Sscanf("%d")` in `FixEditFromSARIFProperties`                                  | Performance: simpler, faster integer parsing             |
+| 4   | `cba1b19` | **Line offset index** — `buildLineOffsetIndex` + `indexLineColToOffset` for O(1) lookup                         | Performance: O(n) build, O(1) per lookup                 |
+| 5   | `a3e4b58` | **ConflictInfo.ConflictsWith** — Tracks overlapping edits in conflict detection                                 | Correctness: identifies which edit caused conflict       |
+| 6   | `a91f948` | **Finding.Key() in FilterConflictingEdits** — Uses Key() fallback instead of empty ID                           | Correctness: prevents false matches on empty-ID findings |
+| 7   | `340f1f2` | **Deprecate ConflictDetector** — Package-level `DetectConflicts` function                                       | API honesty: stateless struct → function                 |
+| 8   | `ad9c65a` | **Deprecate Verifier** — Package-level `Verify` function                                                        | API honesty: stateless struct → function                 |
+| 9   | `e97f62e` | **Split sarif.go** → `sarif_types.go` + `sarif_export.go` + `sarif_import.go`                                   | Organization: 570 lines → 3 focused files                |
+| 10  | `1bb1b1e` | **Split pipeline.go** → `pipeline.go` + `adapters.go` + `config.go`                                             | Organization: 624 lines → 3 focused files                |
+| 11  | `c946025` | **FixEngine benchmarks** — 1/10/100/1000 fixes on 10k-line file                                                 | Performance baseline                                     |
+| 12  | `aa25f80` | **BDD specs for FixProvider** — OffsetProvider, LineProvider, SubstringProvider individually + chain precedence | Test coverage                                            |
 
 ### TODO_LIST.md Items Completed This Session
 
@@ -68,7 +68,7 @@ BenchmarkFixEngine_Apply_100     — 24.6s/op,  44MB/op,  2023 allocs
 BenchmarkFixEngine_Apply_1000    — 286s/op,  443MB/op, 20088 allocs
 ```
 
-The 1000-fix case is slow due to SubstringProvider's O(n*m) search. This is a known characteristic — domain-specific providers (Go AST, etc.) would bypass this entirely.
+The 1000-fix case is slow due to SubstringProvider's O(n\*m) search. This is a known characteristic — domain-specific providers (Go AST, etc.) would bypass this entirely.
 
 ---
 
@@ -77,6 +77,7 @@ The 1000-fix case is slow due to SubstringProvider's O(n*m) search. This is a kn
 ### From TODO_LIST.md Still Pending
 
 **P0 — Must Do:**
+
 - [ ] Decide `NewFinding` API pattern (functional options vs builder-only)
 - [ ] Extract `diagnostic.go` to `finding/analysis` subpackage (removes 12MB `golang.org/x/tools` dep)
 - [ ] API stability review for v1.0.0 lock
@@ -87,6 +88,7 @@ The 1000-fix case is slow due to SubstringProvider's O(n*m) search. This is a kn
 - [ ] Make Report always thread-safe (zero-value has nil mutex)
 
 **P1 — Should Do:**
+
 - [ ] Decompose `FindingsFromSARIF` (cognitive complexity 90)
 - [ ] Error wrapping consistency audit
 - [ ] Refactor CLI `run()` for testability (accept `io.Writer` + `*flag.FlagSet`)
@@ -99,6 +101,7 @@ The 1000-fix case is slow due to SubstringProvider's O(n*m) search. This is a kn
 - [ ] Context-cancel tests for detectPartialSequential/Parallel
 
 **P2 — Nice to Have:**
+
 - [ ] Benchmark regression tracking in CI
 - [ ] Performance benchmarks for 10k+ findings in pipeline
 - [ ] SARIF schema validation test
@@ -115,6 +118,7 @@ The 1000-fix case is slow due to SubstringProvider's O(n*m) search. This is a kn
 ### gci Formatter Not Available
 
 **Problem:** `golangci-lint` enables `gci` as a formatter but `gci` binary is:
+
 1. Not in `$PATH`
 2. Broken in nixpkgs (`gci-0.13.7` marked as broken)
 3. `go install` is blocked by security policy in the agent environment
@@ -122,6 +126,7 @@ The 1000-fix case is slow due to SubstringProvider's O(n*m) search. This is a kn
 **Impact:** Cannot fix the 1 gci lint issue on `pipeline/bdd_test.go`. The code is functionally correct and all tests pass, but lint fails.
 
 **Workaround:** Need to either:
+
 - Install gci manually on the host system
 - Add gci to the project's flake.nix or devShell
 - Manually fix import ordering (fragile without the tool)
@@ -166,33 +171,33 @@ The BDD specs initially had wrong byte offsets (28 vs 29 for "old()" in test con
 
 Sorted by impact × effort (Pareto ranking):
 
-| # | Task | Impact | Effort | Category |
-|---|------|--------|--------|----------|
-| 1 | **Fix gci lint issue** — install gci, format bdd_test.go, commit pending changes | HIGH | LOW | Unblock |
-| 2 | **Commit pending sarif_import.go + sarif_test.go** — edit property round-trip wiring | HIGH | LOW | Unblock |
-| 3 | **Update TODO_LIST.md** — mark 10+ items completed this session | MED | LOW | Housekeeping |
-| 4 | **Update AGENTS.md** — add deprecated API notes, new file structure | MED | LOW | Housekeeping |
-| 5 | **Fix byte offset test** — correct TestFixEngine_Apply_ByteOffset to use offset 29-34 | MED | LOW | Correctness |
-| 6 | **Extract diagnostic.go to finding/analysis** — remove 12MB x/tools dep from core | HIGH | MED | Architecture |
-| 7 | **Add Confidence strong type** — `type Confidence float64` with validation | MED | MED | Type model |
-| 8 | **Centralize triage logic** — single `CategorizeFix` function shared by HasFix/triage/FixEngine | MED | MED | Architecture |
-| 9 | **Add Properties map[string]any** — alongside Metadata for structured SARIF round-trip | MED | MED | Type model |
-| 10 | **Split cmd/go-finding/main.go** — config.go + output.go | MED | MED | Organization |
-| 11 | **Refactor CLI run() for testability** — accept io.Writer + *flag.FlagSet | MED | MED | Testing |
-| 12 | **Add Report.Merge(other *Report)** — in-place merge method | LOW | LOW | Feature |
-| 13 | **Add io.WriterTo for SARIF** — direct streaming | LOW | LOW | Feature |
-| 14 | **WriteSARIF error-path tests** — extend failWriter pattern | LOW | LOW | Testing |
-| 15 | **Context-cancel tests for detectPartial** — sequential + parallel cancel paths | LOW | LOW | Testing |
-| 16 | **Wire FixProviders through CLI config** — Config.FixProviders in YAML/JSON | MED | MED | Feature |
-| 17 | **Decide domain-specific provider location** — INSIDE pipeline/ or SEPARATE modules | HIGH | N/A | Decision |
-| 18 | **API stability review** — audit every exported symbol for v1.0.0 | HIGH | HIGH | Governance |
-| 19 | **SARIF schema validation test** — verify against SARIF 2.1.0 JSON schema | MED | MED | Quality |
-| 20 | **Document SARIF round-trip losses** — user-facing, not just code comments | MED | LOW | Docs |
-| 21 | **Add Nix setup path to CONTRIBUTING.md** — missing despite nix usage | LOW | LOW | Docs |
-| 22 | **Benchmark regression tracking** — scripts/bench-compare.sh or CI job | LOW | MED | Tooling |
-| 23 | **Protect Confidence in struct construction** — Finding{Confidence: 1.5} bypasses clamping | MED | MED | Type model |
-| 24 | **Pipeline.Run() immutability enforcement** — document or actually enforce single-use | MED | MED | Correctness |
-| 25 | **Evaluate go-sarif vs hand-rolled** — spec compliance assessment | MED | MED | Quality |
+| #   | Task                                                                                            | Impact | Effort | Category     |
+| --- | ----------------------------------------------------------------------------------------------- | ------ | ------ | ------------ |
+| 1   | **Fix gci lint issue** — install gci, format bdd_test.go, commit pending changes                | HIGH   | LOW    | Unblock      |
+| 2   | **Commit pending sarif_import.go + sarif_test.go** — edit property round-trip wiring            | HIGH   | LOW    | Unblock      |
+| 3   | **Update TODO_LIST.md** — mark 10+ items completed this session                                 | MED    | LOW    | Housekeeping |
+| 4   | **Update AGENTS.md** — add deprecated API notes, new file structure                             | MED    | LOW    | Housekeeping |
+| 5   | **Fix byte offset test** — correct TestFixEngine_Apply_ByteOffset to use offset 29-34           | MED    | LOW    | Correctness  |
+| 6   | **Extract diagnostic.go to finding/analysis** — remove 12MB x/tools dep from core               | HIGH   | MED    | Architecture |
+| 7   | **Add Confidence strong type** — `type Confidence float64` with validation                      | MED    | MED    | Type model   |
+| 8   | **Centralize triage logic** — single `CategorizeFix` function shared by HasFix/triage/FixEngine | MED    | MED    | Architecture |
+| 9   | **Add Properties map[string]any** — alongside Metadata for structured SARIF round-trip          | MED    | MED    | Type model   |
+| 10  | **Split cmd/go-finding/main.go** — config.go + output.go                                        | MED    | MED    | Organization |
+| 11  | **Refactor CLI run() for testability** — accept io.Writer + \*flag.FlagSet                      | MED    | MED    | Testing      |
+| 12  | **Add Report.Merge(other \*Report)** — in-place merge method                                    | LOW    | LOW    | Feature      |
+| 13  | **Add io.WriterTo for SARIF** — direct streaming                                                | LOW    | LOW    | Feature      |
+| 14  | **WriteSARIF error-path tests** — extend failWriter pattern                                     | LOW    | LOW    | Testing      |
+| 15  | **Context-cancel tests for detectPartial** — sequential + parallel cancel paths                 | LOW    | LOW    | Testing      |
+| 16  | **Wire FixProviders through CLI config** — Config.FixProviders in YAML/JSON                     | MED    | MED    | Feature      |
+| 17  | **Decide domain-specific provider location** — INSIDE pipeline/ or SEPARATE modules             | HIGH   | N/A    | Decision     |
+| 18  | **API stability review** — audit every exported symbol for v1.0.0                               | HIGH   | HIGH   | Governance   |
+| 19  | **SARIF schema validation test** — verify against SARIF 2.1.0 JSON schema                       | MED    | MED    | Quality      |
+| 20  | **Document SARIF round-trip losses** — user-facing, not just code comments                      | MED    | LOW    | Docs         |
+| 21  | **Add Nix setup path to CONTRIBUTING.md** — missing despite nix usage                           | LOW    | LOW    | Docs         |
+| 22  | **Benchmark regression tracking** — scripts/bench-compare.sh or CI job                          | LOW    | MED    | Tooling      |
+| 23  | **Protect Confidence in struct construction** — Finding{Confidence: 1.5} bypasses clamping      | MED    | MED    | Type model   |
+| 24  | **Pipeline.Run() immutability enforcement** — document or actually enforce single-use           | MED    | MED    | Correctness  |
+| 25  | **Evaluate go-sarif vs hand-rolled** — spec compliance assessment                               | MED    | MED    | Quality      |
 
 ---
 
@@ -202,11 +207,11 @@ Sorted by impact × effort (Pareto ranking):
 
 This is a permanent module structure decision with significant tradeoffs:
 
-| Approach | Pros | Cons |
-|----------|------|------|
-| **Inside `pipeline/fix/goast/`** | Easy discovery, tight integration, shared test infrastructure | Couples domain-specific deps (go/ast, etc.) to pipeline module, increases module size |
-| **Separate modules (e.g., `go-finding-provider-go`)** | Clean dependency isolation, independent versioning, consumers pick what they need | Coordination overhead, harder discovery, version skew risk |
-| **Hybrid: interface in core, implementations as plugins** | Best of both: clean deps, easy extension | Requires plugin registration mechanism, more complex initial setup |
+| Approach                                                  | Pros                                                                              | Cons                                                                                  |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Inside `pipeline/fix/goast/`**                          | Easy discovery, tight integration, shared test infrastructure                     | Couples domain-specific deps (go/ast, etc.) to pipeline module, increases module size |
+| **Separate modules (e.g., `go-finding-provider-go`)**     | Clean dependency isolation, independent versioning, consumers pick what they need | Coordination overhead, harder discovery, version skew risk                            |
+| **Hybrid: interface in core, implementations as plugins** | Best of both: clean deps, easy extension                                          | Requires plugin registration mechanism, more complex initial setup                    |
 
 This decision blocks the module structure permanently and affects how third parties contribute providers. I cannot make this call without understanding the project's target audience and dependency philosophy.
 

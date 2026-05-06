@@ -313,7 +313,7 @@ var _ = Describe("FixProvider Contract", func() {
 			f := finding.Finding{
 				BeforeCode: "old",
 				AfterCode:  "new",
-				Position:  finding.Pos("a.go", 4, 2),
+				Position:   finding.Pos("a.go", 4, 2),
 			}
 			Expect(provider.CanHandle(f)).To(BeFalse())
 		})
