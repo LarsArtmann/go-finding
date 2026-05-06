@@ -84,25 +84,25 @@
 
 ### Correctness
 
-- [ ] **Fix `Pipeline.Run()` mutability** — `Run()` mutates `p.findings` and `p.iterations` internal state. Pipeline should be safe to reuse or document that each `Run()` needs a new Pipeline. (`pipeline/pipeline.go:253-256`)
-- [ ] **Fix `FixApplier` cross-iteration persistence** — `applyDirectFixes` creates a new `FixApplier` each call, so backups from iteration N can't rollback iteration N+1. FixApplier.Close() is never called, leaking temp directories. (`pipeline/pipeline.go:597-610`, `pipeline/fix_applier.go:24`)
-- [ ] **Split `sarif.go` into 3 files** — 570 lines, above 350 threshold. Split into `sarif_types.go`, `sarif_export.go`, `sarif_import.go`. (`sarif.go`)
-- [ ] **Split `pipeline/pipeline.go`** — 611 lines, above 350 threshold. Extract Detector/Processor adapters to `pipeline/adapters.go`, Config+helpers to `pipeline/config.go`. (`pipeline/pipeline.go`)
+- [x] **Fix `Pipeline.Run()` mutability** — Documented single-use contract in godoc. Run() resets internal state but is not safe for concurrent use. (`pipeline/pipeline.go:252-258`)
+- [x] **Fix `FixApplier` cross-iteration persistence** — `defer func() { _ = applier.Close() }()` added in `applyDirectFixes`. Temp directories now cleaned up after each iteration. (`pipeline/pipeline.go:610`)
+- [x] **Split `sarif.go` into 3 files** — Split into `sarif_types.go`, `sarif_export.go`, `sarif_import.go`. (`e97f62e`)
+- [x] **Split `pipeline/pipeline.go`** — Extracted to `pipeline.go` + `adapters.go` + `config.go`. (`1bb1b1e`)
 - [ ] **Split `cmd/go-finding/main.go`** — 457 lines. Extract config parsing to `config.go`, output formatting to `output.go`. (`cmd/go-finding/main.go`)
-- [ ] **Document Pipeline single-use contract** — Pipeline.Run() is not safe for concurrent or repeated use. Add godoc note. (`pipeline/pipeline.go:253`)
+- [x] **Document Pipeline single-use contract** — Added godoc on Run() explaining single-use and state-reset behavior. (`pipeline/pipeline.go:252-258`, `dc3ca37`)
 
 ### FixProvider Architecture (from byte-level redesign)
 
-- [ ] **Wire `FixEdit.Overlaps` into conflict detection** — `FixEdit.Overlaps()` exists but conflict detection still operates at `Range.Overlaps()` level. After providers resolve to `FixEdit`s, detect conflicts at the edit level for byte-precision. (`pipeline/conflict.go`, `pipeline/fix_edit.go:48`)
-- [ ] **Make `FixEdit` serializable** — Add JSON tags and `ToSARIF`/`FromSARIF` conversion for SARIF round-tripping of edits. Currently `FixEdit` has no JSON representation. (`pipeline/fix_edit.go`)
-- [ ] **Build line-offset index** — `lineColToOffset` is O(n) per call, re-scanning from the start for each fix. Build a `[]int` line-offset index once per file for O(1) lookup. (`pipeline/fix_provider.go:250`)
-- [ ] **Add BDD tests for FixProvider** — No ginkgo BDD specs exist for the new FixProvider interface contract. (`pipeline/bdd_test.go`)
+- [x] **Wire `FixEdit.Overlaps` into conflict detection** — `ConflictInfo.ConflictsWith` now populated by checking `edit.Overlaps(prev)` against all applied edits. (`pipeline/fix_engine.go:124-129`, `a3e4b58`)
+- [x] **Make `FixEdit` serializable** — Added `MarshalJSON`/`UnmarshalJSON`, `ToSARIFProperties`/`FixEditFromSARIFProperties`. Edit properties preserved through SARIF round-trip. (`pipeline/fix_edit.go`, `e47c219`)
+- [x] **Build line-offset index** — `buildLineOffsetIndex` returns `[]int` where `index[i]` is byte offset of line `i+1`. O(n) build, O(1) per lookup. (`pipeline/fix_provider.go:287`, `cba1b19`)
+- [x] **Add BDD tests for FixProvider** — 15 BDD specs for OffsetProvider, LineProvider, SubstringProvider + chain precedence. (`pipeline/bdd_test.go`, `aa25f80`)
 - [ ] **Decide domain-specific provider location** — Should Go AST, Rust syn, etc. providers live INSIDE `pipeline/fix/` or as SEPARATE modules? Affects module structure permanently. (`docs/architecture-decisions.md`)
 
 ### Architecture Deepening
 
 - [ ] **Centralize triage logic** — Fix categorization appears in 3 places: `Finding.HasFix()`, `Pipeline.triage()`, and `FixEngine.Apply()` filtering. These overlap but aren't identical. Consolidate. (`finding.go:135`, `pipeline/pipeline.go:528`, `pipeline/fix_engine.go:54`)
-- [ ] **Convert stateless structs to functions** — `ConflictDetector`, `Verifier` are zero-field structs. `FixEngine` now has state (providers). Convert ConflictDetector/Verifier to package-level functions for API honesty. (`pipeline/conflict.go:28`, `pipeline/verify.go:25`)
+- [x] **Convert stateless structs to functions** — Added `DetectConflicts` and `Verify` package-level functions. Old structs marked `// Deprecated`. (`pipeline/conflict.go`, `pipeline/verify.go`, `340f1f2`, `ad9c65a`)
 - [ ] **Make Report always thread-safe** — Zero-value `Report` has nil mutex (silently non-thread-safe). Use `sync.Once` for lazy init or document clearly. (`report.go:10-11`)
 
 ---
@@ -131,7 +131,7 @@
 
 ### Testing
 
-- [ ] **Add BDD tests for pipeline** — Done. 29 ginkgo BDD specs across root and pipeline packages. (`bdd_test.go`, `pipeline/bdd_test.go`)
+- [x] **Add BDD tests for pipeline** — 44+ ginkgo BDD specs across root and pipeline packages including FixProvider contract. (`bdd_test.go`, `pipeline/bdd_test.go`)
 - [ ] **Add `WriteSARIF` error-path test** — Use `failingWriter` pattern. Currently 75% coverage. (`sarif_test.go`)
 - [ ] **Add `detectPartialSequential` context-cancel test** — 90% coverage, cancel path untested. (`pipeline/partial_test.go`)
 - [ ] **Add `detectPartialParallel` context-cancel test** — 94.1% coverage, cancel path untested. (`pipeline/partial_test.go`)
@@ -143,7 +143,7 @@
 ### Performance & Tooling
 
 - [ ] **Set up benchmark regression tracking** — Create `scripts/bench-compare.sh` or CI job. Baseline already captured in `bench_test.go`.
-- [ ] **Performance benchmarks for 10k+ findings** — Ensure pipeline scales to large codebases. (`bench_test.go`)
+- [ ] **Performance benchmarks for 10k+ findings** — FixEngine benchmarks added (1/10/100/1000 fixes). Pipeline-level benchmarks still needed. (`pipeline/fix_engine_bench_test.go`, `c946025`)
 - [ ] **Add `golines` to CI or justfile** — Enforce consistent line breaking automatically.
 - [ ] **Per-package coverage thresholds in CI** — Currently only total ≥75%. Individual package regressions (e.g., cmd 81%→70%) would go unnoticed. (Has `scripts/coverage-check.sh` but not wired to CI)
 
