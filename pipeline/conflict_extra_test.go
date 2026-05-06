@@ -112,14 +112,12 @@ func TestAnalyzeConflicts(t *testing.T) {
 func TestGetFindingRange(t *testing.T) {
 	t.Parallel()
 
-	cd := NewConflictDetector()
-
 	t.Run("with explicit range", func(t *testing.T) {
 		t.Parallel()
 
 		f := findingWithRange("1", "a.go", 10, 10, 20)
 
-		r := cd.getFindingRange(f)
+		r := getFindingRange(f)
 		if r.Start.Line != 10 || r.End.Line != 20 {
 			t.Errorf("range = %v-%v, want 10-20", r.Start.Line, r.End.Line)
 		}
@@ -130,7 +128,7 @@ func TestGetFindingRange(t *testing.T) {
 
 		f := findingAt("1", "a.go", 10)
 
-		r := cd.getFindingRange(f)
+		r := getFindingRange(f)
 		if r.Start.Line != 10 {
 			t.Errorf("start line = %d, want 10", r.Start.Line)
 		}

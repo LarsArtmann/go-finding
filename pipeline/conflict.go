@@ -25,25 +25,37 @@ func newFixGroup(file string, f finding.Finding, bounds finding.Range) FixGroup 
 }
 
 // ConflictDetector identifies conflicting fixes.
+//
+// Deprecated: ConflictDetector has no state. Use the package-level
+// DetectConflicts function instead.
 type ConflictDetector struct{}
 
 // NewConflictDetector creates a new conflict detector.
+//
+// Deprecated: Use the package-level DetectConflicts function instead.
 func NewConflictDetector() *ConflictDetector {
 	return &ConflictDetector{}
 }
 
 // DetectConflicts analyzes fixes and returns groups of non-conflicting fixes
 // along with any conflicting fixes that couldn't be grouped.
-func (c *ConflictDetector) DetectConflicts(
+//
+// Deprecated: Use the package-level DetectConflicts function instead.
+func (*ConflictDetector) DetectConflicts(
 	fixes []finding.Finding,
 ) ([]FixGroup, []finding.Finding) {
-	// Group by file first
+	return DetectConflicts(fixes)
+}
+
+// DetectConflicts analyzes fixes and returns groups of non-conflicting fixes
+// along with any conflicting fixes that couldn't be grouped.
+func DetectConflicts(fixes []finding.Finding) ([]FixGroup, []finding.Finding) {
 	byFile := make(map[string][]finding.Finding)
 
 	for _, f := range fixes {
 		file := f.Position.File
 		if file == "" {
-			continue // Skip fixes without file info
+			continue
 		}
 
 		byFile[file] = append(byFile[file], f)
@@ -55,7 +67,7 @@ func (c *ConflictDetector) DetectConflicts(
 	)
 
 	for file, fileFixes := range byFile {
-		fileGroups, fileConflicts := c.detectConflictsInFile(file, fileFixes)
+		fileGroups, fileConflicts := detectConflictsInFile(file, fileFixes)
 		groups = append(groups, fileGroups...)
 		conflicts = append(conflicts, fileConflicts...)
 	}
@@ -64,7 +76,7 @@ func (c *ConflictDetector) DetectConflicts(
 }
 
 // detectConflictsInFile analyzes fixes within a single file.
-func (c *ConflictDetector) detectConflictsInFile(
+func detectConflictsInFile(
 	file string,
 	fixes []finding.Finding,
 ) ([]FixGroup, []finding.Finding) {
@@ -86,7 +98,7 @@ func (c *ConflictDetector) detectConflictsInFile(
 	)
 
 	for _, f := range sorted {
-		rangeInfo := c.getFindingRange(f)
+		rangeInfo := getFindingRange(f)
 
 		if len(currentGroup.Fixes) == 0 {
 			currentGroup = newFixGroup(file, f, rangeInfo)
@@ -121,7 +133,7 @@ func (c *ConflictDetector) detectConflictsInFile(
 			finalGroups = append(finalGroups, FixGroup{
 				File:   g.File,
 				Fixes:  []finding.Finding{g.Fixes[0]},
-				Bounds: c.getFindingRange(g.Fixes[0]),
+				Bounds: getFindingRange(g.Fixes[0]),
 			})
 			conflicts = append(conflicts, g.Fixes[1:]...)
 		}
@@ -132,7 +144,7 @@ func (c *ConflictDetector) detectConflictsInFile(
 
 // getFindingRange extracts the range for a finding.
 // Falls back to a single position if no range is specified.
-func (*ConflictDetector) getFindingRange(
+func getFindingRange(
 	f finding.Finding,
 ) finding.Range {
 	if f.Range != nil && f.Range.IsValid() {
@@ -176,8 +188,7 @@ func extendRange(r1, r2 finding.Range) finding.Range {
 
 // FilterConflictingFixes returns only non-conflicting fixes.
 func FilterConflictingFixes(fixes []finding.Finding) []finding.Finding {
-	detector := NewConflictDetector()
-	groups, _ := detector.DetectConflicts(fixes)
+	groups, _ := DetectConflicts(fixes)
 
 	result := make([]finding.Finding, 0, len(groups))
 	for _, g := range groups {
@@ -226,14 +237,12 @@ type ConflictInfo struct {
 
 // AnalyzeConflicts provides detailed conflict information.
 func AnalyzeConflicts(fixes []finding.Finding) []ConflictInfo {
-	detector := NewConflictDetector()
-	groups, conflictingFixes := detector.DetectConflicts(fixes)
+	groups, conflictingFixes := DetectConflicts(fixes)
 
 	result := make([]ConflictInfo, 0, len(conflictingFixes))
 
-	// For each conflicting fix, find what it conflicts with
 	for _, cf := range conflictingFixes {
-		cfRange := detector.getFindingRange(cf)
+		cfRange := getFindingRange(cf)
 
 		var conflictsWith []finding.Finding
 
