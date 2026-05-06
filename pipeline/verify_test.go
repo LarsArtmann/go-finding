@@ -108,9 +108,7 @@ func TestVerifier_Verify(t *testing.T) {
 		return nil, nil
 	})
 	original, _ := detector.Detect(context.Background())
-	v := NewVerifier([]Detector{detector})
-
-	result, err := v.Verify(context.Background(), original)
+	result, err := Verify(context.Background(), []Detector{detector}, original)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -124,8 +122,7 @@ func TestVerifier_Verify_DetectorError(t *testing.T) {
 
 	detector := makeErrorDetector("detector failed")
 
-	v := NewVerifier([]Detector{detector})
-	_, err := v.Verify(context.Background(), nil)
+	_, err := Verify(context.Background(), []Detector{detector}, nil)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err.Error()).To(ContainSubstring("verify"))
 	g.Expect(err.Error()).To(ContainSubstring("detector"))
@@ -146,8 +143,7 @@ func TestVerifier_Verify_SuppressedFindingsFiltered(t *testing.T) {
 		return []finding.Finding{suppressed, normal}, nil
 	})
 
-	v := NewVerifier([]Detector{detector})
-	result, err := v.Verify(context.Background(), nil)
+	result, err := Verify(context.Background(), []Detector{detector}, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

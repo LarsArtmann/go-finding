@@ -24,29 +24,6 @@ func newFixGroup(file string, f finding.Finding, bounds finding.Range) FixGroup 
 	}
 }
 
-// ConflictDetector identifies conflicting fixes.
-//
-// Deprecated: ConflictDetector has no state. Use the package-level
-// DetectConflicts function instead.
-type ConflictDetector struct{}
-
-// NewConflictDetector creates a new conflict detector.
-//
-// Deprecated: Use the package-level DetectConflicts function instead.
-func NewConflictDetector() *ConflictDetector {
-	return &ConflictDetector{}
-}
-
-// DetectConflicts analyzes fixes and returns groups of non-conflicting fixes
-// along with any conflicting fixes that couldn't be grouped.
-//
-// Deprecated: Use the package-level DetectConflicts function instead.
-func (*ConflictDetector) DetectConflicts(
-	fixes []finding.Finding,
-) ([]FixGroup, []finding.Finding) {
-	return DetectConflicts(fixes)
-}
-
 // DetectConflicts analyzes fixes and returns groups of non-conflicting fixes
 // along with any conflicting fixes that couldn't be grouped.
 func DetectConflicts(fixes []finding.Finding) ([]FixGroup, []finding.Finding) {

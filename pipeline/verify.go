@@ -21,27 +21,6 @@ type VerifyResult struct {
 	NewFindings []finding.Finding
 }
 
-// Verifier re-runs detectors after fixes to verify what was resolved.
-//
-// Deprecated: Use the package-level Verify function instead.
-type Verifier struct {
-	detectors []Detector
-}
-
-// NewVerifier creates a verifier that uses the same detectors as the pipeline.
-//
-// Deprecated: Use the package-level Verify function instead.
-func NewVerifier(detectors []Detector) *Verifier {
-	return &Verifier{detectors: detectors}
-}
-
-// Verify compares original findings against a fresh detection run.
-//
-// Deprecated: Use the package-level Verify function instead.
-func (v *Verifier) Verify(ctx context.Context, original []finding.Finding) (*VerifyResult, error) {
-	return Verify(ctx, v.detectors, original)
-}
-
 // Verify compares original findings against a fresh detection run
 // by re-running all detectors and diffing the results.
 func Verify(

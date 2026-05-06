@@ -181,10 +181,9 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	// Optional final verification
 	if p.config.VerifyAfterFix && len(p.detectors) > 0 {
-		verifier := NewVerifier(p.detectors)
 		allOriginal := p.collectAllFindings(result)
 
-		verifyResult, err := verifier.Verify(ctx, allOriginal)
+		verifyResult, err := Verify(ctx, p.detectors, allOriginal)
 		if err != nil {
 			return result, fmt.Errorf("verify: %w", err)
 		}

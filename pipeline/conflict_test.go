@@ -62,9 +62,7 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 			t.Parallel()
 			g := NewWithT(t)
 
-			detector := NewConflictDetector()
-
-			groups, conflicts := detector.DetectConflicts(tt.fixes)
+			groups, conflicts := DetectConflicts(tt.fixes)
 			g.Expect(groups).To(HaveLen(tt.expectedGroups))
 			g.Expect(conflicts).To(HaveLen(tt.expectedConflicts))
 		})
