@@ -1,24 +1,30 @@
-package finding
+// Package analysis provides integration between go/analysis diagnostics
+// and finding.Finding values. Importing this package adds a dependency on
+// golang.org/x/tools — consumers that don't need go/analysis integration
+// can use the core finding package without this dependency.
+package analysis
 
 import (
 	"fmt"
 	"go/ast"
 	"go/token"
 
+	"github.com/larsartmann/go-finding"
 	"golang.org/x/tools/go/analysis"
 )
 
 // FromDiagnostic converts a go/analysis.Diagnostic to a Finding.
-//
-// Deprecated: Use [analysis.FromDiagnostic] from the finding/analysis subpackage.
-// The analysis subpackage isolates the golang.org/x/tools dependency from the core.
+// The toolName parameter identifies which analyzer produced this.
+// The ruleCode parameter provides a rule identifier (since go/analysis.Diagnostic doesn't have Code).
+// The defaultSeverity is used because go/analysis.Diagnostics don't carry severity;
+// if empty, SeverityWarning is used.
 func FromDiagnostic(
 	d *analysis.Diagnostic,
 	fset *token.FileSet,
 	toolName, ruleCode string,
-	defaultSeverity ...Severity,
-) Finding {
-	sev := SeverityWarning
+	defaultSeverity ...finding.Severity,
+) finding.Finding {
+	sev := finding.SeverityWarning
 	if len(defaultSeverity) > 0 && defaultSeverity[0].IsValid() {
 		sev = defaultSeverity[0]
 	}
@@ -26,12 +32,12 @@ func FromDiagnostic(
 	pos := fset.Position(d.Pos)
 	findingPos := FromTokenPosition(pos)
 
-	fixStrategy := FixStrategyNone
+	fixStrategy := finding.FixStrategyNone
 
 	var suggestion, afterCode string
 
 	if len(d.SuggestedFixes) > 0 {
-		fixStrategy = FixStrategyDirect
+		fixStrategy = finding.FixStrategyDirect
 
 		suggestion = d.SuggestedFixes[0].Message
 		if len(d.SuggestedFixes[0].TextEdits) > 0 {
@@ -39,17 +45,17 @@ func FromDiagnostic(
 		}
 	}
 
-	id := GenerateID(toolName, ruleCode, findingPos)
+	id := finding.GenerateID(toolName, ruleCode, findingPos)
 
 	//nolint:exhaustruct
-	f := Finding{
+	f := finding.Finding{
 		ID:          id,
 		Rule:        ruleCode,
 		ToolName:    toolName,
 		Message:     d.Message,
 		Severity:    sev,
 		Position:    findingPos,
-		Category:    Category(d.Category),
+		Category:    finding.Category(d.Category),
 		FixStrategy: fixStrategy,
 		Suggestion:  suggestion,
 		AfterCode:   afterCode,
@@ -57,8 +63,8 @@ func FromDiagnostic(
 
 	for _, info := range d.Related {
 		relatedPos := fset.Position(info.Pos)
-		relatedID := GenerateID(toolName, ruleCode, FromTokenPosition(relatedPos))
-		f.Related = append(f.Related, RelatedRef{
+		relatedID := finding.GenerateID(toolName, ruleCode, FromTokenPosition(relatedPos))
+		f.Related = append(f.Related, finding.RelatedRef{
 			FindingID: relatedID,
 			Relation:  "related",
 			Position:  FromTokenPosition(relatedPos),
@@ -69,10 +75,8 @@ func FromDiagnostic(
 }
 
 // FromTokenPosition creates a Position from a token.Position.
-//
-// Deprecated: Use [analysis.FromTokenPosition] from the finding/analysis subpackage.
-func FromTokenPosition(pos token.Position) Position {
-	return Position{
+func FromTokenPosition(pos token.Position) finding.Position {
+	return finding.Position{
 		File:   pos.Filename,
 		Line:   pos.Line,
 		Column: pos.Column,
@@ -81,29 +85,27 @@ func FromTokenPosition(pos token.Position) Position {
 }
 
 // NodePosition returns a Position from an AST node.
-//
-// Deprecated: Use [analysis.NodePosition] from the finding/analysis subpackage.
-func NodePosition(fset *token.FileSet, node ast.Node) Position {
+func NodePosition(fset *token.FileSet, node ast.Node) finding.Position {
 	return FromTokenPosition(nodeStartPos(fset, node))
 }
 
 // NodeRange returns a Range from an AST node.
-//
-// Deprecated: Use [analysis.NodeRange] from the finding/analysis subpackage.
-func NodeRange(fset *token.FileSet, node ast.Node) Range {
+func NodeRange(fset *token.FileSet, node ast.Node) finding.Range {
 	if node == nil {
-		return Range{Start: Position{}, End: Position{}} //nolint:exhaustruct
+		return finding.Range{
+			Start: finding.Position{}, //nolint:exhaustruct
+			End:   finding.Position{}, //nolint:exhaustruct
+		}
 	}
 
-	return Range{
+	return finding.Range{
 		Start: FromTokenPosition(nodeStartPos(fset, node)),
 		End:   FromTokenPosition(fset.Position(node.End())),
 	}
 }
 
 // FormatDiagnostic returns a formatted string for a go/analysis diagnostic.
-//
-// Deprecated: Use [analysis.FormatDiagnostic] from the finding/analysis subpackage.
+// Similar to how go vet formats output.
 func FormatDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, analyzerName string) string {
 	pos := fset.Position(d.Pos)
 
