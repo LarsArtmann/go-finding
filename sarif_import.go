@@ -172,11 +172,12 @@ func applySarifProperties(f *Finding, props map[string]any) {
 }
 
 // sarifMetadataFromProps extracts non-go-finding properties as metadata.
+// go-finding/edit/* properties are preserved for FixEdit round-tripping.
 func sarifMetadataFromProps(props map[string]any) map[string]string {
 	meta := make(map[string]string)
 
 	for k, v := range props {
-		if strings.HasPrefix(k, sarifPropPrefix) {
+		if strings.HasPrefix(k, sarifPropPrefix) && !strings.HasPrefix(k, "go-finding/edit/") {
 			continue
 		}
 

@@ -1094,3 +1094,36 @@ func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(findings).To(gomega.BeEmpty())
 }
+
+func TestSARIF_RoundTrip_EditProperties(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewWithT(t)
+
+	report := NewReport(ToolInfo{Name: "test"})
+	report.AddFinding(Finding{
+		ID:       "test:R1:a.go:1:1",
+		Rule:     "R1",
+		ToolName: "test",
+		Message:  "msg",
+		Severity: SeverityError,
+		Position: Pos("a.go", 1, 1),
+		Metadata: map[string]string{
+			"go-finding/edit/offset":      "42",
+			"go-finding/edit/length":      "10",
+			"go-finding/edit/replacement": "new code",
+		},
+	})
+
+	data, err := report.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	findings, err := FindingsFromSARIF(data)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.HaveLen(1))
+
+	f := findings[0]
+	g.Expect(f.Metadata).NotTo(gomega.BeNil())
+	g.Expect(f.Metadata["go-finding/edit/offset"]).To(gomega.Equal("42"))
+	g.Expect(f.Metadata["go-finding/edit/length"]).To(gomega.Equal("10"))
+	g.Expect(f.Metadata["go-finding/edit/replacement"]).To(gomega.Equal("new code"))
+}
