@@ -86,7 +86,7 @@ func (b *Builder) WithSnippet(s string) *Builder {
 
 // WithConfidence sets the confidence level (clamped to [0.0, 1.0]).
 func (b *Builder) WithConfidence(c float64) *Builder {
-	b.f.Confidence = clampConfidence(c)
+	b.f.Confidence = Confidence(c).Clamp()
 	return b
 }
 

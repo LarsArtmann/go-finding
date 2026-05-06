@@ -390,7 +390,7 @@ func TestToSARIF_ErrorPath(t *testing.T) {
 		Findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m", Severity: SeverityError,
-				Position: Position{File: "a.go"}, Confidence: math.NaN(),
+				Position: Position{File: "a.go"}, Confidence: Confidence(math.NaN()),
 			},
 		},
 	}
@@ -408,7 +408,7 @@ func TestToSARIFFiltered_ErrorPath(t *testing.T) {
 		Findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m", Severity: SeverityError,
-				Position: Position{File: "a.go"}, Confidence: math.NaN(),
+				Position: Position{File: "a.go"}, Confidence: Confidence(math.NaN()),
 			},
 		},
 	}

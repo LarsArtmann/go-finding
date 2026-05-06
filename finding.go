@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"maps"
-	"math"
 	"slices"
 	"strings"
 	"time"
@@ -34,7 +33,7 @@ type Finding struct {
 	// Context
 	Range       *Range       `json:"range,omitempty"`       // For span-based findings
 	Snippet     string       `json:"snippet,omitempty"`     // Surrounding code context
-	Confidence  float64      `json:"confidence,omitempty"`  // 0.0-1.0
+	Confidence  Confidence   `json:"confidence,omitempty"`  // 0.0-1.0
 	Related     []RelatedRef `json:"related,omitempty"`     // Related findings
 	Suppression *Suppression `json:"suppression,omitempty"` // If suppressed
 
@@ -58,18 +57,8 @@ func NewFinding(
 		Severity:    severity,
 		Position:    pos,
 		FixStrategy: FixStrategyNone,
-		Confidence:  clampConfidence(confidence),
+		Confidence:  Confidence(confidence).Clamp(),
 	}
-}
-
-func clampConfidence(c float64) float64 {
-	if c < 0 {
-		return 0
-	}
-	if c > 1 {
-		return 1
-	}
-	return c
 }
 
 // RelatedRef links to another finding.
@@ -163,8 +152,8 @@ func (f Finding) HasCategory() bool {
 }
 
 // NormalizedConfidence returns the confidence clamped to [0.0, 1.0].
-func (f Finding) NormalizedConfidence() float64 {
-	return clampConfidence(f.Confidence)
+func (f Finding) NormalizedConfidence() Confidence {
+	return f.Confidence.Clamp()
 }
 
 // String returns a human-readable summary of the finding.
@@ -253,7 +242,7 @@ func (f Finding) Validate() error {
 
 	if f.Confidence < 0 || f.Confidence > 1 {
 		errs = append(errs, NewValidationError(
-			fmt.Sprintf("finding.Confidence %f must be in [0.0, 1.0]", f.Confidence), nil))
+			fmt.Sprintf("finding.Confidence %s must be in [0.0, 1.0]", f.Confidence), nil))
 	}
 
 	if f.BeforeCode == "" && f.AfterCode != "" && f.FixStrategy == FixStrategyDirect {
@@ -291,7 +280,7 @@ func (f Finding) Equal(other Finding) bool {
 		f.FixStrategy != other.FixStrategy ||
 		f.Suggestion != other.Suggestion ||
 		f.BeforeCode != other.BeforeCode || f.AfterCode != other.AfterCode ||
-		f.Snippet != other.Snippet || !floatEq(f.Confidence, other.Confidence) {
+		f.Snippet != other.Snippet || f.Confidence != other.Confidence {
 		return false
 	}
 
@@ -353,8 +342,8 @@ func equalTimePtr(a, b *time.Time) bool {
 }
 
 // floatEq returns true if a and b are equal within a small epsilon.
-func floatEq(a, b float64) bool {
-	const epsilon = 1e-9
+func floatEq(a, b Confidence) bool {
+	const epsilon Confidence = 1e-9
 
-	return math.Abs(a-b) < epsilon
+	return a-b < epsilon && b-a < epsilon
 }

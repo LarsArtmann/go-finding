@@ -130,7 +130,7 @@ func findingToSARIF(f Finding) SarifResult {
 				},
 			},
 		}},
-		Rank: f.NormalizedConfidence() * sarifConfidenceScale,
+		Rank: float64(f.NormalizedConfidence()) * sarifConfidenceScale,
 	}
 
 	if f.Range != nil && f.Range.HasEnd() {

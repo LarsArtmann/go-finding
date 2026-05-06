@@ -42,7 +42,7 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 	applySarifPosition(&f, r)
 
 	if r.Rank > 0 {
-		f.Confidence = r.Rank / sarifConfidenceScale
+		f.Confidence = Confidence(r.Rank / sarifConfidenceScale)
 	}
 
 	if len(r.Fixes) > 0 && len(r.Fixes[0].Changes) > 0 &&
@@ -150,7 +150,7 @@ func applySarifProperties(f *Finding, props map[string]any) {
 	}
 
 	if v, ok := props[sarifPropConfidence].(float64); ok {
-		f.Confidence = v
+		f.Confidence = Confidence(v)
 	}
 
 	if v, ok := props[sarifPropSuggestion].(string); ok {

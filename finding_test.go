@@ -296,8 +296,8 @@ func TestClampConfidence(t *testing.T) {
 
 	tests := []struct {
 		name string
-		in   float64
-		want float64
+		in   Confidence
+		want Confidence
 	}{
 		{"negative clamps to 0", -0.5, 0},
 		{"zero stays zero", 0, 0},
@@ -310,7 +310,7 @@ func TestClampConfidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			g := NewWithT(t)
-			g.Expect(clampConfidence(tt.in)).To(BeNumerically("~", tt.want, 1e-9))
+			g.Expect(tt.in.Clamp()).To(BeNumerically("~", tt.want, 1e-9))
 		})
 	}
 }

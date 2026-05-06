@@ -319,7 +319,7 @@ func TestPrettyJSON_ErrorPath(t *testing.T) {
 	r.AddFinding(Finding{
 		ID: "f1", Rule: "r1", ToolName: "t", Message: "m",
 		Severity: SeverityWarning, Position: Position{File: "a.go"},
-		Confidence: math.NaN(),
+		Confidence: Confidence(math.NaN()),
 	})
 
 	_, err := r.PrettyJSON()
@@ -337,7 +337,7 @@ func TestLineJSON_ErrorPath(t *testing.T) {
 		Message:    "m",
 		Severity:   SeverityWarning,
 		Position:   Position{File: "a.go"},
-		Confidence: math.NaN(),
+		Confidence: Confidence(math.NaN()),
 	}
 
 	_, err := f.LineJSON()

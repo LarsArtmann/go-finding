@@ -337,7 +337,7 @@ func reportWithNaNConfidence() *finding.Report {
 	report.AddFinding(finding.Finding{
 		ID: "1", Rule: "r1", ToolName: "t", Message: "m",
 		Severity: finding.SeverityError, Position: finding.Position{File: "a.go"},
-		Confidence: math.NaN(),
+		Confidence: finding.Confidence(math.NaN()),
 	})
 	return report
 }
