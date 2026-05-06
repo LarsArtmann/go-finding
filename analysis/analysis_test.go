@@ -20,7 +20,7 @@ func TestFromDiagnostic(t *testing.T) {
 	fset := token.NewFileSet()
 	src := testSrcMain
 
-	f, err := parser.ParseFile(fset, "test.go", src, 0)
+	f, err := parser.ParseFile(fset, testFilename, src, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
 	}
@@ -54,7 +54,7 @@ func TestFromDiagnostic(t *testing.T) {
 	}
 
 	if got.Position.File != testFilename {
-		t.Errorf("Position.File = %q, want %q", got.Position.File, "test.go")
+		t.Errorf("Position.File = %q, want %q", got.Position.File, testFilename)
 	}
 
 	if got.FixStrategy != finding.FixStrategyNone {
@@ -66,7 +66,7 @@ func TestFromDiagnostic_WithCustomSeverity(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "test.go", testSrcMain, 0)
+	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
 	}
@@ -86,7 +86,7 @@ func TestFromDiagnostic_WithSuggestedFix(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "test.go", testSrcMain, 0)
+	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
 	}
@@ -121,7 +121,7 @@ func TestFromDiagnostic_WithRelated(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "test.go", testSrcMain, 0)
+	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
 	}
@@ -178,15 +178,15 @@ func TestNodePosition(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "test.go", testSrcMain, 0)
+	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
 	}
 
 	got := NodePosition(fset, f.Name)
 
-	if got.File != "test.go" {
-		t.Errorf("File = %q, want %q", got.File, "test.go")
+	if got.File != testFilename {
+		t.Errorf("File = %q, want %q", got.File, testFilename)
 	}
 
 	if got.Line == 0 {
@@ -209,15 +209,15 @@ func TestNodeRange(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "test.go", testSrcMain, 0)
+	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
 	}
 
 	got := NodeRange(fset, f.Name)
 
-	if got.Start.File != "test.go" {
-		t.Errorf("Start.File = %q, want %q", got.Start.File, "test.go")
+	if got.Start.File != testFilename {
+		t.Errorf("Start.File = %q, want %q", got.Start.File, testFilename)
 	}
 }
 
@@ -280,7 +280,7 @@ func TestFromDiagnostic_IDGeneration(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "test.go", testSrcMain, 0)
+	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
 	}
