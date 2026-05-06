@@ -143,17 +143,14 @@ func FixEditFromSARIFProperties(props map[string]string) *FixEdit {
 		return nil
 	}
 
-	var offset, length int
-	if v, err := strconv.Atoi(offsetStr); err != nil {
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
 		return nil
-	} else {
-		offset = v
 	}
 
-	if v, err := strconv.Atoi(lengthStr); err != nil {
+	length, err := strconv.Atoi(lengthStr)
+	if err != nil {
 		return nil
-	} else {
-		length = v
 	}
 
 	edit := FixEdit{ //nolint:exhaustruct // partial construction from SARIF props

@@ -607,7 +607,7 @@ func (p *Pipeline) applyDirectFixes(
 	} else {
 		applier = NewFixApplier(p.rootDir)
 	}
-	defer applier.Close()
+	defer func() { _ = applier.Close() }()
 
 	applied, appliedFixes, err := applier.ApplyWithDetails(ctx, fixes)
 	if err != nil {

@@ -106,6 +106,7 @@ func (*FixEngine) applyEditsWithConflicts(
 	edits []FixEdit,
 ) ([]finding.Finding, []ConflictInfo, []byte) {
 	var applied []finding.Finding
+	var appliedEdits []FixEdit
 	var conflicts []ConflictInfo
 	result := content
 	frontier := len(content) + 1
@@ -120,9 +121,16 @@ func (*FixEngine) applyEditsWithConflicts(
 		}
 
 		if edit.EndOffset() > frontier {
+			var conflictsWith []finding.Finding
+			for _, prev := range appliedEdits {
+				if edit.Overlaps(prev) {
+					conflictsWith = append(conflictsWith, prev.Source)
+				}
+			}
+
 			conflicts = append(conflicts, ConflictInfo{
 				Finding:       edit.Source,
-				ConflictsWith: nil,
+				ConflictsWith: conflictsWith,
 				Reason:        "overlapping edit",
 			})
 
@@ -137,6 +145,7 @@ func (*FixEngine) applyEditsWithConflicts(
 		frontier = edit.Offset
 
 		applied = append(applied, edit.Source)
+		appliedEdits = append(appliedEdits, edit)
 	}
 
 	return applied, conflicts, result

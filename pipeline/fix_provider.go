@@ -251,6 +251,8 @@ var (
 // lineColToOffset converts a 1-based line and column to a 0-based byte offset.
 // Builds a line offset index per call; for batch processing, prefer
 // indexLineColToOffset with a pre-built index.
+//
+//nolint:unparam // col is always 1 in current callers but is part of the general-purpose API
 func lineColToOffset(content []byte, line, col int) (int, error) {
 	return indexLineColToOffset(buildLineOffsetIndex(content), len(content), line, col)
 }
