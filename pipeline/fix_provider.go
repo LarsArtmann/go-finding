@@ -100,28 +100,30 @@ func (LineProvider) CanHandle(f finding.Finding) bool {
 
 // Edits produces byte-level edits from line/column information.
 func (LineProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	idx := buildLineOffsetIndex(content)
+
 	if f.Range != nil && f.Range.HasEnd() && f.Range.Start.Line > 0 && f.Range.End.Line > 0 {
-		return LineProvider{}.rangeEdits(content, f)
+		return lineProviderRangeEdits(content, f, idx)
 	}
 
 	if f.BeforeCode == "" && f.AfterCode != "" {
-		return LineProvider{}.insertionEdit(content, f)
+		return lineProviderInsertionEdit(content, f, idx)
 	}
 
 	if f.BeforeCode != "" {
-		return LineProvider{}.replacementEdit(content, f)
+		return lineProviderReplacementEdit(content, f, idx)
 	}
 
 	return nil, nil
 }
 
-func (LineProvider) rangeEdits(content []byte, f finding.Finding) ([]FixEdit, error) {
-	start, err := lineColToOffset(content, f.Range.Start.Line, f.Range.Start.Column)
+func lineProviderRangeEdits(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
+	start, err := indexLineColToOffset(idx, len(content), f.Range.Start.Line, f.Range.Start.Column)
 	if err != nil {
 		return nil, nil //nolint:nilerr // position unresolvable, skip finding
 	}
 
-	end, err := lineColToOffset(content, f.Range.End.Line, f.Range.End.Column)
+	end, err := indexLineColToOffset(idx, len(content), f.Range.End.Line, f.Range.End.Column)
 	if err != nil {
 		return nil, nil //nolint:nilerr // position unresolvable, skip finding
 	}
@@ -133,13 +135,13 @@ func (LineProvider) rangeEdits(content []byte, f finding.Finding) ([]FixEdit, er
 	if f.BeforeCode != "" {
 		rangeContent := content[start:end]
 		before := []byte(f.BeforeCode)
-		idx := bytes.Index(rangeContent, before)
-		if idx < 0 {
+		loc := bytes.Index(rangeContent, before)
+		if loc < 0 {
 			return nil, nil
 		}
 
 		return []FixEdit{{
-			Offset:      start + idx,
+			Offset:      start + loc,
 			Length:      len(before),
 			Replacement: []byte(f.AfterCode),
 			Source:      f,
@@ -154,8 +156,8 @@ func (LineProvider) rangeEdits(content []byte, f finding.Finding) ([]FixEdit, er
 	}}, nil
 }
 
-func (LineProvider) insertionEdit(content []byte, f finding.Finding) ([]FixEdit, error) {
-	offset, err := lineColToOffset(content, f.Position.Line, f.Position.Column)
+func lineProviderInsertionEdit(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
+	offset, err := indexLineColToOffset(idx, len(content), f.Position.Line, f.Position.Column)
 	if err != nil {
 		return nil, nil //nolint:nilerr // position unresolvable, skip finding
 	}
@@ -170,8 +172,8 @@ func (LineProvider) insertionEdit(content []byte, f finding.Finding) ([]FixEdit,
 	}}, nil
 }
 
-func (LineProvider) replacementEdit(content []byte, f finding.Finding) ([]FixEdit, error) {
-	offset, err := lineColToOffset(content, f.Position.Line, f.Position.Column)
+func lineProviderReplacementEdit(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
+	offset, err := indexLineColToOffset(idx, len(content), f.Position.Line, f.Position.Column)
 	if err != nil {
 		return nil, nil //nolint:nilerr // position unresolvable, skip finding
 	}
@@ -247,37 +249,57 @@ var (
 )
 
 // lineColToOffset converts a 1-based line and column to a 0-based byte offset.
+// Builds a line offset index per call; for batch processing, prefer
+// indexLineColToOffset with a pre-built index.
 func lineColToOffset(content []byte, line, col int) (int, error) {
+	return indexLineColToOffset(buildLineOffsetIndex(content), len(content), line, col)
+}
+
+// indexLineColToOffset converts a 1-based line and column to a 0-based byte
+// offset using a pre-built line offset index for O(1) lookup.
+func indexLineColToOffset(index []int, contentLen int, line, col int) (int, error) {
 	if line < 1 {
 		return 0, fmt.Errorf("%w: %d", errInvalidLine, line)
 	}
 
-	offset := 0
-	currentLine := 1
-
-	for offset < len(content) && currentLine < line {
-		if content[offset] == '\n' {
-			currentLine++
-		}
-
-		offset++
-	}
-
-	if currentLine != line {
+	if line > len(index) {
 		return 0, fmt.Errorf("%w: %d", errLineBeyondEOF, line)
 	}
 
+	offset := index[line-1]
 	if col > 1 {
 		offset += col - 1
 	}
 
-	if offset > len(content) {
+	if offset > contentLen {
 		return 0, fmt.Errorf(
 			"%w: %d at line %d", errColumnBeyond, col, line,
 		)
 	}
 
 	return offset, nil
+}
+
+// buildLineOffsetIndex returns a slice where index[i] is the byte offset of
+// the start of line i+1 (1-based line number → 0-based slice index).
+func buildLineOffsetIndex(content []byte) []int {
+	lineCount := 1
+	for _, b := range content {
+		if b == '\n' {
+			lineCount++
+		}
+	}
+
+	index := make([]int, 0, lineCount)
+	index = append(index, 0) // line 1 starts at offset 0
+
+	for i, b := range content {
+		if b == '\n' && i+1 < len(content) {
+			index = append(index, i+1)
+		}
+	}
+
+	return index
 }
 
 // findAllOccurrences returns all starting byte positions of needle in haystack.
