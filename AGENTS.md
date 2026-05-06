@@ -17,23 +17,23 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 #### Core Types (root package)
 
-| File              | Purpose                                                   |
-| ----------------- | --------------------------------------------------------- |
+| File | Purpose |
+| ---- | ------- |
 
-| `position.go`     | Position, Range types with Overlaps/Intersection/Adjacent |
-| `report.go`       | Report container with summary                             |
-| `filter.go`       | Filtering and grouping utilities                          |
-| `merge.go`        | Report merging with deduplication + Correlate             |
-| `sarif_types.go`  | SARIF struct types, constants, severity conversion helpers        |
-| `sarif_export.go` | Report→SARIF export (ToSARIF, WriteSARIF, findingToSARIF)          |
-| `sarif_import.go` | SARIF→Finding import (FindingsFromSARIF, applySarifProperties)     |
-| `lsp.go`          | LSP Diagnostic conversion                                 |
-| `errors.go`       | Structured error types (FindingError with categories)     |
-| `tag.go`          | Tag type with IsStandard/IsValid/String methods           |
-| `category.go`     | Category constants                                        |
-| `id.go`           | ID generation utilities                                   |
-| `json.go`         | JSON marshaling/unmarshaling                              |
-| `suppression.go`  | Suppression handling with IsActive convenience            |
+| `position.go` | Position, Range types with Overlaps/Intersection/Adjacent |
+| `report.go` | Report container with summary |
+| `filter.go` | Filtering and grouping utilities |
+| `merge.go` | Report merging with deduplication + Correlate |
+| `sarif_types.go` | SARIF struct types, constants, severity conversion helpers |
+| `sarif_export.go` | Report→SARIF export (ToSARIF, WriteSARIF, findingToSARIF) |
+| `sarif_import.go` | SARIF→Finding import (FindingsFromSARIF, applySarifProperties) |
+| `lsp.go` | LSP Diagnostic conversion |
+| `errors.go` | Structured error types (FindingError with categories) |
+| `tag.go` | Tag type with IsStandard/IsValid/String methods |
+| `category.go` | Category constants |
+| `id.go` | ID generation utilities |
+| `json.go` | JSON marshaling/unmarshaling |
+| `suppression.go` | Suppression handling with IsActive convenience |
 
 #### Pipeline Package
 
@@ -54,11 +54,11 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 #### CLI
 
-| File                     | Purpose                                                                                                      |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `cmd/go-finding/main.go` | Entry point, run(), profiling, flag parsing                                                                  |
-| `cmd/go-finding/config.go` | Config loading, severity parsing, output formatting                                                        |
-| `cmd/go-finding/registry.go` | Detector builder registry with concurrent access                                                         |
+| File                         | Purpose                                             |
+| ---------------------------- | --------------------------------------------------- |
+| `cmd/go-finding/main.go`     | Entry point, run(), profiling, flag parsing         |
+| `cmd/go-finding/config.go`   | Config loading, severity parsing, output formatting |
+| `cmd/go-finding/registry.go` | Detector builder registry with concurrent access    |
 
 #### Internal Detectors
 

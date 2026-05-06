@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/go-faster/yaml"
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/pipeline"
-	"github.com/go-faster/yaml"
 )
 
 type pipelineConfigFile struct {

@@ -5,8 +5,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/larsartmann/go-finding/pipeline"
 	det "github.com/larsartmann/go-finding/internal/detectors"
+	"github.com/larsartmann/go-finding/pipeline"
 )
 
 var (

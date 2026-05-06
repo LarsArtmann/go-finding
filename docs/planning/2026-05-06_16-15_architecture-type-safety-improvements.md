@@ -41,53 +41,53 @@
 
 ### Tier 1: Correctness (1% → 51% impact)
 
-| # | Task | Files | Effort | Impact |
-|---|------|-------|--------|--------|
-| 1 | Centralize triage: make `HasFix()` the canonical "is fixable?" source | `finding.go`, `pipeline/pipeline.go`, `pipeline/fix_engine.go` | 10m | HIGH |
-| 2 | Fix FixEngine.Apply() to use `HasFix()` instead of its own filter | `pipeline/fix_engine.go` | 5m | HIGH |
+| #   | Task                                                                  | Files                                                          | Effort | Impact |
+| --- | --------------------------------------------------------------------- | -------------------------------------------------------------- | ------ | ------ |
+| 1   | Centralize triage: make `HasFix()` the canonical "is fixable?" source | `finding.go`, `pipeline/pipeline.go`, `pipeline/fix_engine.go` | 10m    | HIGH   |
+| 2   | Fix FixEngine.Apply() to use `HasFix()` instead of its own filter     | `pipeline/fix_engine.go`                                       | 5m     | HIGH   |
 
 ### Tier 2: Type Safety (4% → 64% impact)
 
-| # | Task | Files | Effort | Impact |
-|---|------|-------|--------|--------|
-| 3 | Define `type Confidence float64` with `IsValid()`, `String()`, constants | NEW: `confidence.go` | 5m | MEDIUM |
-| 4 | Migrate `Finding.Confidence` and `Correlation.Confidence` to `Confidence` type | `finding.go`, `merge.go`, + 15 files | 10m | MEDIUM |
-| 5 | Migrate all Confidence call sites (28 occurrences across 15 files) | All production + test files | 10m | MEDIUM |
+| #   | Task                                                                           | Files                                | Effort | Impact |
+| --- | ------------------------------------------------------------------------------ | ------------------------------------ | ------ | ------ |
+| 3   | Define `type Confidence float64` with `IsValid()`, `String()`, constants       | NEW: `confidence.go`                 | 5m     | MEDIUM |
+| 4   | Migrate `Finding.Confidence` and `Correlation.Confidence` to `Confidence` type | `finding.go`, `merge.go`, + 15 files | 10m    | MEDIUM |
+| 5   | Migrate all Confidence call sites (28 occurrences across 15 files)             | All production + test files          | 10m    | MEDIUM |
 
 ### Tier 3: Policy & Cleanup (20% → 80% impact)
 
-| # | Task | Files | Effort | Impact |
-|---|------|-------|--------|--------|
-| 6 | Replace `go.yaml.in/yaml/v3` with `go-faster/yaml` | `go.mod`, `cmd/go-finding/config.go` | 10m | MEDIUM |
-| 7 | Remove deprecated `diagnostic.go` wrappers from root package | `diagnostic.go` | 5m | MEDIUM |
-| 8 | Inline `lock()`/`unlock()` wrappers — use `r.mu.Lock()`/`Unlock()` directly | `report.go` | 5m | LOW |
-| 9 | Add `WriteSARIF` error-path test with failingWriter | NEW in `sarif_test.go` | 10m | MEDIUM |
-| 10 | Add context-cancel tests for partial detection | `pipeline/partial_test.go` | 10m | MEDIUM |
+| #   | Task                                                                        | Files                                | Effort | Impact |
+| --- | --------------------------------------------------------------------------- | ------------------------------------ | ------ | ------ |
+| 6   | Replace `go.yaml.in/yaml/v3` with `go-faster/yaml`                          | `go.mod`, `cmd/go-finding/config.go` | 10m    | MEDIUM |
+| 7   | Remove deprecated `diagnostic.go` wrappers from root package                | `diagnostic.go`                      | 5m     | MEDIUM |
+| 8   | Inline `lock()`/`unlock()` wrappers — use `r.mu.Lock()`/`Unlock()` directly | `report.go`                          | 5m     | LOW    |
+| 9   | Add `WriteSARIF` error-path test with failingWriter                         | NEW in `sarif_test.go`               | 10m    | MEDIUM |
+| 10  | Add context-cancel tests for partial detection                              | `pipeline/partial_test.go`           | 10m    | MEDIUM |
 
 ### Tier 4: Documentation & Verification
 
-| # | Task | Files | Effort | Impact |
-|---|------|-------|--------|--------|
-| 11 | Update `AGENTS.md` with new Confidence type and triage centralization | `AGENTS.md` | 5m | LOW |
-| 12 | Update `TODO_LIST.md` with all completed items | `TODO_LIST.md` | 5m | LOW |
-| 13 | Full build + test + lint verification | All | 5m | HIGH |
+| #   | Task                                                                  | Files          | Effort | Impact |
+| --- | --------------------------------------------------------------------- | -------------- | ------ | ------ |
+| 11  | Update `AGENTS.md` with new Confidence type and triage centralization | `AGENTS.md`    | 5m     | LOW    |
+| 12  | Update `TODO_LIST.md` with all completed items                        | `TODO_LIST.md` | 5m     | LOW    |
+| 13  | Full build + test + lint verification                                 | All            | 5m     | HIGH   |
 
 ---
 
 ## What's NOT in This Plan (Deferred with Reason)
 
-| Item | Reason |
-|------|--------|
-| `Properties map[string]any` on Finding | Medium effort, needs design decision on Metadata vs Properties coexistence |
-| `encoding/json/v2` migration | Major migration touching every marshal/unmarshal call site |
-| Decompose `FindingsFromSARIF` (CC 90) | Code works correctly, refactoring risk without test coverage for edge cases |
-| CLI `run()` testability | Injecting io.Writer/FlagSet is good but non-blocking |
-| `Category.IsValid()` strict validation | Breaking change — custom categories like "go-vet" are valid today |
-| API stability review | Requires user decision on v1.0 criteria |
-| `NewFinding` API pattern decision | Requires user decision (functional options vs builder-only vs current) |
-| Domain-specific provider location | Architecture decision — separate module vs internal |
-| Nix flake migration | Entirely separate workstream |
-| Structured logging (`slog`) | Non-blocking improvement |
+| Item                                   | Reason                                                                      |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| `Properties map[string]any` on Finding | Medium effort, needs design decision on Metadata vs Properties coexistence  |
+| `encoding/json/v2` migration           | Major migration touching every marshal/unmarshal call site                  |
+| Decompose `FindingsFromSARIF` (CC 90)  | Code works correctly, refactoring risk without test coverage for edge cases |
+| CLI `run()` testability                | Injecting io.Writer/FlagSet is good but non-blocking                        |
+| `Category.IsValid()` strict validation | Breaking change — custom categories like "go-vet" are valid today           |
+| API stability review                   | Requires user decision on v1.0 criteria                                     |
+| `NewFinding` API pattern decision      | Requires user decision (functional options vs builder-only vs current)      |
+| Domain-specific provider location      | Architecture decision — separate module vs internal                         |
+| Nix flake migration                    | Entirely separate workstream                                                |
+| Structured logging (`slog`)            | Non-blocking improvement                                                    |
 
 ---
 
@@ -114,6 +114,7 @@
 **What is the minimum bar for shipping v1.0?**
 
 Options:
+
 - A) API lock only — decide `NewFinding` pattern, Confidence type, lock API surface
 - B) API lock + triage fix — A + centralize triage logic
 - C) Full quality gate — B + 90%+ coverage, no banned deps, all P0 done

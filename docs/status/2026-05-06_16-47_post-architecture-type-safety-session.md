@@ -5,14 +5,14 @@
 **Build:** GREEN | **Tests:** 502 PASS, 0 FAIL | **Vet:** CLEAN
 **Project:** v0.2.1 | Go 1.26.2 | Nix-based dev env
 
-| Metric | Value |
-|--------|-------|
-| Production files | 44 |
-| Test files | 59 |
-| Production LOC | 6,557 |
-| Test LOC | 16,313 |
-| Test:Code ratio | 2.49:1 |
-| Total commits | 492 |
+| Metric           | Value  |
+| ---------------- | ------ |
+| Production files | 44     |
+| Test files       | 59     |
+| Production LOC   | 6,557  |
+| Test LOC         | 16,313 |
+| Test:Code ratio  | 2.49:1 |
+| Total commits    | 492    |
 
 ---
 
@@ -20,26 +20,26 @@
 
 ### This Session (8 commits, pushed to origin)
 
-| Commit | What | Files |
-|--------|------|-------|
-| `a3fde5b` | Centralize triage logic — `HasFix()` + `IsAutoFixable()` as canonical source | `finding.go`, `pipeline/pipeline.go`, `pipeline/pipeline_test.go` |
+| Commit    | What                                                                                     | Files                                                                                                                       |
+| --------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `a3fde5b` | Centralize triage logic — `HasFix()` + `IsAutoFixable()` as canonical source             | `finding.go`, `pipeline/pipeline.go`, `pipeline/pipeline_test.go`                                                           |
 | `91b9d17` | `type Confidence float64` — named type with `Clamp()`/`IsValid()`/`String()` + constants | `confidence.go` (NEW), `finding.go`, `finding_builder.go`, `merge.go`, `sarif_export.go`, `sarif_import.go`, + 5 test files |
-| `916accf` | Replace banned `go.yaml.in/yaml/v3` with `go-faster/yaml` | `cmd/go-finding/config.go`, `go.mod`, `go.sum` |
-| `67bc818` | Remove deprecated `diagnostic.go` — 132 lines + tests deleted | `diagnostic.go` (DELETED), `diagnostic_test.go` (DELETED), `doc.go` |
-| `01a2d5c` | Inline `lock()`/`unlock()` wrappers → direct `r.mu.Lock()` | `report.go` |
-| `2a9c10c` | Context-cancel tests for partial detection (sequential + parallel) | `pipeline/partial_test.go` |
-| `d0a93e4` | Update AGENTS.md + TODO_LIST.md | `AGENTS.md`, `TODO_LIST.md` |
+| `916accf` | Replace banned `go.yaml.in/yaml/v3` with `go-faster/yaml`                                | `cmd/go-finding/config.go`, `go.mod`, `go.sum`                                                                              |
+| `67bc818` | Remove deprecated `diagnostic.go` — 132 lines + tests deleted                            | `diagnostic.go` (DELETED), `diagnostic_test.go` (DELETED), `doc.go`                                                         |
+| `01a2d5c` | Inline `lock()`/`unlock()` wrappers → direct `r.mu.Lock()`                               | `report.go`                                                                                                                 |
+| `2a9c10c` | Context-cancel tests for partial detection (sequential + parallel)                       | `pipeline/partial_test.go`                                                                                                  |
+| `d0a93e4` | Update AGENTS.md + TODO_LIST.md                                                          | `AGENTS.md`, `TODO_LIST.md`                                                                                                 |
 
 ### Previous Session (6 commits, also pushed)
 
-| Commit | What |
-|--------|------|
+| Commit    | What                                                               |
+| --------- | ------------------------------------------------------------------ |
 | `1bc1458` | Replace hardcoded `"test.go"` strings with `testFilename` constant |
-| `34d09d5` | Remove deprecated `ConflictDetector` and `Verifier` wrapper types |
-| `aacd636` | Make Report zero-value thread-safe (`sync.Mutex` value type) |
-| `e23cf8a` | Split CLI `main.go` into `main.go` + `config.go` + `registry.go` |
-| `69494ca` | Update TODO_LIST.md and AGENTS.md |
-| `58fb0d3` | Fix `go vet copylocks` regression from Report sync.Mutex change |
+| `34d09d5` | Remove deprecated `ConflictDetector` and `Verifier` wrapper types  |
+| `aacd636` | Make Report zero-value thread-safe (`sync.Mutex` value type)       |
+| `e23cf8a` | Split CLI `main.go` into `main.go` + `config.go` + `registry.go`   |
+| `69494ca` | Update TODO_LIST.md and AGENTS.md                                  |
+| `58fb0d3` | Fix `go vet copylocks` regression from Report sync.Mutex change    |
 
 ### What Changed Architecturally
 
@@ -63,38 +63,38 @@
 
 ### P0 — Must Do Before v1.0
 
-| # | Item | Location | Why It Matters |
-|---|------|----------|----------------|
-| 1 | Decide `NewFinding` API pattern | `finding.go` | 6-param positional approach vs functional options vs builder-only. Blocking API lock. |
-| 2 | API stability review | All exported symbols | Required for v1.0. Must audit every exported name. |
-| 3 | Decide domain-specific provider location | Architecture | Go AST, Rust syn providers — separate module or internal? Affects module structure permanently. |
+| #   | Item                                     | Location             | Why It Matters                                                                                  |
+| --- | ---------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------- |
+| 1   | Decide `NewFinding` API pattern          | `finding.go`         | 6-param positional approach vs functional options vs builder-only. Blocking API lock.           |
+| 2   | API stability review                     | All exported symbols | Required for v1.0. Must audit every exported name.                                              |
+| 3   | Decide domain-specific provider location | Architecture         | Go AST, Rust syn providers — separate module or internal? Affects module structure permanently. |
 
 ### P1 — Should Do Before v1.0
 
-| # | Item | Location |
-|---|------|----------|
-| 4 | `Properties map[string]any` alongside Metadata | `finding.go` |
-| 5 | Decompose `FindingsFromSARIF` (CC 90 → <35) | `sarif_import.go` |
-| 6 | Error wrapping consistency audit | Various |
-| 7 | Refactor CLI `run()` for testability | `cmd/go-finding/main.go` |
-| 8 | `Category.IsValid()` strict validation | `category.go` |
-| 9 | Unify `Tag` deprecation (remove `WithTag` fully) | Various test files |
-| 10 | SARIF schema validation test | `sarif_test.go` |
+| #   | Item                                             | Location                 |
+| --- | ------------------------------------------------ | ------------------------ |
+| 4   | `Properties map[string]any` alongside Metadata   | `finding.go`             |
+| 5   | Decompose `FindingsFromSARIF` (CC 90 → <35)      | `sarif_import.go`        |
+| 6   | Error wrapping consistency audit                 | Various                  |
+| 7   | Refactor CLI `run()` for testability             | `cmd/go-finding/main.go` |
+| 8   | `Category.IsValid()` strict validation           | `category.go`            |
+| 9   | Unify `Tag` deprecation (remove `WithTag` fully) | Various test files       |
+| 10  | SARIF schema validation test                     | `sarif_test.go`          |
 
 ### P2 — Nice to Have
 
-| # | Item |
-|---|------|
-| 11 | `io.WriterTo` for SARIF streaming |
-| 12 | Benchmark regression tracking in CI |
-| 13 | Per-package coverage thresholds |
-| 14 | Add Nix setup path to CONTRIBUTING.md |
-| 15 | Document `FixStrategyAI` semantics |
-| 16 | Finding JSON schema |
-| 17 | Consumer migration guide (v0.1 → v0.2) |
-| 18 | Structured logging (`slog`) |
-| 19 | Plugin architecture for detectors |
-| 20 | Pipeline middleware/interceptor pattern |
+| #   | Item                                    |
+| --- | --------------------------------------- |
+| 11  | `io.WriterTo` for SARIF streaming       |
+| 12  | Benchmark regression tracking in CI     |
+| 13  | Per-package coverage thresholds         |
+| 14  | Add Nix setup path to CONTRIBUTING.md   |
+| 15  | Document `FixStrategyAI` semantics      |
+| 16  | Finding JSON schema                     |
+| 17  | Consumer migration guide (v0.1 → v0.2)  |
+| 18  | Structured logging (`slog`)             |
+| 19  | Plugin architecture for detectors       |
+| 20  | Pipeline middleware/interceptor pattern |
 
 ### P3 — Future
 
@@ -150,33 +150,33 @@ The following LSP warnings are FALSE POSITIVES — `go build` and `go vet` are c
 
 ## f) Top 25 Things to Get Done Next
 
-| Priority | # | Task | Effort | Impact |
-|----------|---|------|--------|--------|
-| **P0** | 1 | Define v1.0 release criteria | S | HIGH |
-| **P0** | 2 | Decide `NewFinding` API pattern | M | HIGH |
-| **P0** | 3 | API stability review — audit all exported symbols | M | HIGH |
-| **P0** | 4 | Decide domain-specific provider location | S | HIGH |
-| **P1** | 5 | Add `Properties map[string]any` to Finding | M | MEDIUM |
-| **P1** | 6 | Decompose `FindingsFromSARIF` (CC 90→<35) | M | MEDIUM |
-| **P1** | 7 | `Category.IsValid()` strict validation | S | MEDIUM |
-| **P1** | 8 | Error wrapping consistency audit | S | MEDIUM |
-| **P1** | 9 | Refactor CLI `run()` for testability | M | MEDIUM |
-| **P1** | 10 | Remove `WithTag` from Builder fully | S | LOW |
-| **P1** | 11 | SARIF schema validation test | M | MEDIUM |
-| **P1** | 12 | Wire FixProviders through CLI config | M | MEDIUM |
-| **P2** | 13 | `io.WriterTo` for SARIF streaming | S | LOW |
-| **P2** | 14 | Benchmark regression tracking in CI | S | LOW |
-| **P2** | 15 | Per-package coverage thresholds | S | LOW |
-| **P2** | 16 | Add Nix setup path to CONTRIBUTING.md | S | LOW |
-| **P2** | 17 | Document `FixStrategyAI` semantics | S | LOW |
-| **P2** | 18 | Finding JSON schema | M | LOW |
-| **P2** | 19 | Consumer migration guide (v0.1 → v0.2) | M | LOW |
-| **P2** | 20 | Structured logging (`slog`) in cmd + pipeline | M | MEDIUM |
-| **P3** | 21 | Plugin architecture for detectors | M | MEDIUM |
-| **P3** | 22 | Pipeline middleware/interceptor pattern | M | MEDIUM |
-| **P3** | 23 | Nix flake migration (replace justfile) | L | MEDIUM |
-| **P3** | 24 | Watch mode with `fsnotify` | M | LOW |
-| **P3** | 25 | Styled CLI output (`lipgloss`) | M | LOW |
+| Priority | #   | Task                                              | Effort | Impact |
+| -------- | --- | ------------------------------------------------- | ------ | ------ |
+| **P0**   | 1   | Define v1.0 release criteria                      | S      | HIGH   |
+| **P0**   | 2   | Decide `NewFinding` API pattern                   | M      | HIGH   |
+| **P0**   | 3   | API stability review — audit all exported symbols | M      | HIGH   |
+| **P0**   | 4   | Decide domain-specific provider location          | S      | HIGH   |
+| **P1**   | 5   | Add `Properties map[string]any` to Finding        | M      | MEDIUM |
+| **P1**   | 6   | Decompose `FindingsFromSARIF` (CC 90→<35)         | M      | MEDIUM |
+| **P1**   | 7   | `Category.IsValid()` strict validation            | S      | MEDIUM |
+| **P1**   | 8   | Error wrapping consistency audit                  | S      | MEDIUM |
+| **P1**   | 9   | Refactor CLI `run()` for testability              | M      | MEDIUM |
+| **P1**   | 10  | Remove `WithTag` from Builder fully               | S      | LOW    |
+| **P1**   | 11  | SARIF schema validation test                      | M      | MEDIUM |
+| **P1**   | 12  | Wire FixProviders through CLI config              | M      | MEDIUM |
+| **P2**   | 13  | `io.WriterTo` for SARIF streaming                 | S      | LOW    |
+| **P2**   | 14  | Benchmark regression tracking in CI               | S      | LOW    |
+| **P2**   | 15  | Per-package coverage thresholds                   | S      | LOW    |
+| **P2**   | 16  | Add Nix setup path to CONTRIBUTING.md             | S      | LOW    |
+| **P2**   | 17  | Document `FixStrategyAI` semantics                | S      | LOW    |
+| **P2**   | 18  | Finding JSON schema                               | M      | LOW    |
+| **P2**   | 19  | Consumer migration guide (v0.1 → v0.2)            | M      | LOW    |
+| **P2**   | 20  | Structured logging (`slog`) in cmd + pipeline     | M      | MEDIUM |
+| **P3**   | 21  | Plugin architecture for detectors                 | M      | MEDIUM |
+| **P3**   | 22  | Pipeline middleware/interceptor pattern           | M      | MEDIUM |
+| **P3**   | 23  | Nix flake migration (replace justfile)            | L      | MEDIUM |
+| **P3**   | 24  | Watch mode with `fsnotify`                        | M      | LOW    |
+| **P3**   | 25  | Styled CLI output (`lipgloss`)                    | M      | LOW    |
 
 ---
 
@@ -202,16 +202,16 @@ The TODO list has 30+ open items across P0–P3. Without explicit v1.0 criteria,
 
 ## Session Summary
 
-| What | Count |
-|------|-------|
-| Commits this session | 7 |
-| Commits previous session | 6 |
-| Total commits both sessions | 13 |
-| Files created | 4 (`confidence.go`, `config.go`, `registry.go`, planning doc) |
-| Files deleted | 3 (`diagnostic.go`, `diagnostic_test.go`, `confidence.go` created-then-deleted) |
-| Net LOC change (both sessions) | -138 production (6,695 → 6,557) |
-| Architecture issues fixed | 4 (triage split brain, Confidence type, banned dep, deprecated wrappers) |
-| Test coverage gaps closed | 2 (WriteSARIF error, context cancel) |
+| What                           | Count                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------- |
+| Commits this session           | 7                                                                               |
+| Commits previous session       | 6                                                                               |
+| Total commits both sessions    | 13                                                                              |
+| Files created                  | 4 (`confidence.go`, `config.go`, `registry.go`, planning doc)                   |
+| Files deleted                  | 3 (`diagnostic.go`, `diagnostic_test.go`, `confidence.go` created-then-deleted) |
+| Net LOC change (both sessions) | -138 production (6,695 → 6,557)                                                 |
+| Architecture issues fixed      | 4 (triage split brain, Confidence type, banned dep, deprecated wrappers)        |
+| Test coverage gaps closed      | 2 (WriteSARIF error, context cancel)                                            |
 
 ---
 
