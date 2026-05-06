@@ -144,12 +144,16 @@ func FixEditFromSARIFProperties(props map[string]string) *FixEdit {
 	}
 
 	var offset, length int
-	if _, err := fmt.Sscanf(offsetStr, "%d", &offset); err != nil {
+	if v, err := strconv.Atoi(offsetStr); err != nil {
 		return nil
+	} else {
+		offset = v
 	}
 
-	if _, err := fmt.Sscanf(lengthStr, "%d", &length); err != nil {
+	if v, err := strconv.Atoi(lengthStr); err != nil {
 		return nil
+	} else {
+		length = v
 	}
 
 	edit := FixEdit{ //nolint:exhaustruct // partial construction from SARIF props
