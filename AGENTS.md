@@ -59,7 +59,9 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 | File                     | Purpose                                                                                                      |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `cmd/go-finding/main.go` | Functional CLI: govet+staticcheck detectors, pipeline integration, text/json/sarif output, config validation |
+| `cmd/go-finding/main.go` | Entry point, run(), profiling, flag parsing                                                                  |
+| `cmd/go-finding/config.go` | Config loading, severity parsing, output formatting                                                        |
+| `cmd/go-finding/registry.go` | Detector builder registry with concurrent access                                                         |
 
 #### Internal Detectors
 
@@ -94,6 +96,7 @@ golangci-lint run ./...         # Lint
 4. **Compatible** — Works with existing Go analysis tools
 5. **Resilient** — Retry logic, partial success, nil-safe metrics
 6. **FixApplier.Close()** — Cleans up temporary backup directories; callers should defer close
+7. **Report zero-value safe** — `Report{}` uses value `sync.Mutex`, safe for concurrent use without initialization
 7. **Config.FixProviders** — Custom fix providers for domain-specific (AST-aware) transformations
 
 ### Pipeline Features
