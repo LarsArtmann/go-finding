@@ -55,9 +55,9 @@
 //
 // # Converting from go/analysis
 //
-// Convert from the standard Go analysis framework:
+// Convert from the standard Go analysis framework using the analysis subpackage:
 //
-//	finding := finding.FromDiagnostic(diag, pass.Fset, "my-analyzer", "RULE001")
+//	f := analysis.FromDiagnostic(diag, pass.Fset, "my-analyzer", "RULE001")
 //
 // # Pipeline
 //
