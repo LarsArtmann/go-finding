@@ -203,12 +203,13 @@ func FilterConflictingEdits(
 
 	conflictIDs := make(map[string]struct{}, len(conflicts))
 	for _, c := range conflicts {
-		conflictIDs[c.Finding.ID] = struct{}{}
+		key := c.Finding.Key()
+		conflictIDs[key] = struct{}{}
 	}
 
 	result := make([]finding.Finding, 0, len(fixes)-len(conflicts))
 	for _, f := range fixes {
-		if _, isConflict := conflictIDs[f.ID]; !isConflict {
+		if _, isConflict := conflictIDs[f.Key()]; !isConflict {
 			result = append(result, f)
 		}
 	}
