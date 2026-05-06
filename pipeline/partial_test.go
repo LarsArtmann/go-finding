@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
+	"github.com/larsartmann/go-finding"
 	. "github.com/onsi/gomega"
 )
 
@@ -108,4 +110,40 @@ func TestFormatPartialErrors(t *testing.T) {
 	err := FormatPartialErrors(errs)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err.Error()).NotTo(BeEmpty())
+}
+
+func TestDetectPartial_Sequential_CancelBeforeSecond(t *testing.T) {
+	g := NewWithT(t)
+
+	d1 := mockDet("fast", "F1")
+	d2 := &mockDetector{name: "slow", delay: 5 * time.Second, findings: []finding.Finding{{ID: "F2"}}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	config := Config{ParallelDetectors: false}
+	p, err := New(config, t.TempDir(), d1, d2)
+	g.Expect(err).NotTo(HaveOccurred())
+
+	result, err := p.DetectPartial(ctx)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(result).NotTo(BeNil())
+}
+
+func TestDetectPartial_Parallel_CancelReturnsPartial(t *testing.T) {
+	g := NewWithT(t)
+
+	d1 := mockDet("fast", "F1")
+	d2 := &mockDetector{name: "slow", delay: 5 * time.Second, findings: []finding.Finding{{ID: "F2"}}}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	config := Config{ParallelDetectors: true}
+	p, err := New(config, t.TempDir(), d1, d2)
+	g.Expect(err).NotTo(HaveOccurred())
+
+	result, err := p.DetectPartial(ctx)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(result).NotTo(BeNil())
 }
