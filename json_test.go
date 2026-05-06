@@ -130,7 +130,7 @@ func TestReportFromJSON(t *testing.T) {
 			},
 		}
 
-		data, err := json.Marshal(orig)
+		data, err := json.Marshal(&orig)
 		if err != nil {
 			t.Fatalf("marshal: %v", err)
 		}
@@ -189,7 +189,7 @@ func TestReportFromJSON(t *testing.T) {
 			},
 		}
 
-		data, err := json.Marshal(orig)
+		data, err := json.Marshal(&orig)
 		if err != nil {
 			t.Fatalf("marshal: %v", err)
 		}
