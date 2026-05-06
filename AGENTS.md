@@ -26,7 +26,9 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `report.go`       | Report container with summary                             |
 | `filter.go`       | Filtering and grouping utilities                          |
 | `merge.go`        | Report merging with deduplication + Correlate             |
-| `sarif.go`        | SARIF 2.1.0 output                                        |
+| `sarif_types.go`  | SARIF struct types, constants, severity conversion helpers        |
+| `sarif_export.go` | Report→SARIF export (ToSARIF, WriteSARIF, findingToSARIF)          |
+| `sarif_import.go` | SARIF→Finding import (FindingsFromSARIF, applySarifProperties)     |
 | `lsp.go`          | LSP Diagnostic conversion                                 |
 | `diagnostic.go`   | go/analysis integration                                   |
 | `errors.go`       | Structured error types (FindingError with categories)     |
@@ -40,7 +42,9 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 | File                       | Purpose                                                                 |
 | -------------------------- | ----------------------------------------------------------------------- |
-| `pipeline/pipeline.go`     | Pipeline orchestrator: detect → triage → fix → verify                   |
+| `pipeline/pipeline.go`     | Pipeline struct, Run, detect/triage/apply methods                       |
+| `pipeline/adapters.go`     | Detector/FindingProcessor interfaces, adapter types, context helpers    |
+| `pipeline/config.go`       | Config struct, DefaultConfig, Validate, sentinel errors                 |
 | `pipeline/conflict.go`     | Fix conflict detection and analysis                                     |
 | `pipeline/fix_edit.go`     | FixEdit type — byte-level edit operations (Offset, Length, Replacement) |
 | `pipeline/fix_provider.go` | FixProvider interface + 3 default providers (Offset, Line, Substring)   |
@@ -97,7 +101,8 @@ golangci-lint run ./...         # Lint
 - **Byte-level FixEngine** — `[]byte` edit operations with `FixEdit{Offset, Length, Replacement}`, applied descending by offset with frontier boundary
 - **FixProvider interface** — Composable provider chain: OffsetProvider (byte offsets), LineProvider (line→byte), SubstringProvider (fallback)
 - **Custom provider registration** — `NewFixEngineWithProviders`, `NewFixApplierWithProviders`, `Config.FixProviders`
-- **Conflict detection** — Overlapping fixes are filtered before application
+- **Conflict detection** — Overlapping fixes filtered before application; `ConflictInfo.ConflictsWith` populated with conflicting sources
+- **Deprecated APIs** — `ConflictDetector` struct and `Verifier` struct deprecated; use `DetectConflicts()` and `Verify()` package-level functions
 - **Verification** — Optional post-fix verification by re-running detectors
 - **Metrics** — Optional timing/count collection with snapshot support
 - **Retry** — Configurable exponential backoff for flaky detectors
@@ -107,7 +112,8 @@ golangci-lint run ./...         # Lint
 - **Partial error surfacing** — `PipelineResult.PartialErrors` exposes per-detector failures
 - **Metrics snapshot in result** — `PipelineResult.Metrics` auto-populated after `Run()`
 - **FindingProcessor** — Composable transforms run between detection and triage (`ProcessorFunc`, `NamedProcessorFunc`)
-- **FixApplier.Close()** — Cleans up temporary backup directories
+- **FixApplier lifecycle** — `applyDirectFixes` defers `Close()` to prevent temp directory leaks
+- **Line offset index** — `buildLineOffsetIndex` provides O(1) line→byte offset lookup
 
 ### CLI Features
 
