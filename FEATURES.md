@@ -421,6 +421,7 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 | `Metrics`             | `*Metrics`             | `nil`   | Timing/count collection         |
 | `CorrelateFindings`   | `bool`                 | `false` | Cross-tool correlation          |
 | `Processors`          | `[]FindingProcessor`   | `nil`   | Composable finding transforms   |
+| `FixProviders`        | `[]FixProvider`        | `nil`   | Custom fix providers (e.g., AST) |
 | `OnFinding`           | `func(Finding)`        | `nil`   | Per-finding callback            |
 | `OnFix`               | `func(Finding, bool)`  | `nil`   | Per-fix callback                |
 | `OnIteration`         | `func(int, []Finding)` | `nil`   | Per-iteration callback          |
@@ -481,19 +482,63 @@ Processors are executed in order from `Config.Processors`. Use cases: filtering,
 
 **Status:** FUNCTIONAL
 
-Two-phase fix engine:
+Byte-level fix engine with composable provider architecture.
 
-1. **FixEngine (in-memory)** — `NewFixEngine()` provides a pure `Apply(lines, fixes)` that transforms string lines without filesystem access. Supports range-based and string-based replacement. Useful for testing and previewing changes.
-2. **FixApplier (filesystem)** — `NewFixApplier(rootDir)` applies fixes to actual files with backup/rollback support.
+#### FixEdit — Byte-Level Edit Operations
 
-Both engines support:
+```go
+type FixEdit struct {
+    Offset      int            // 0-based byte offset
+    Length      int            // bytes to remove (0 = insert)
+    Replacement []byte         // bytes to write
+    Source      finding.Finding
+}
+```
+
+Methods: `EndOffset()`, `IsInsert()`, `IsDelete()`, `Overlaps(FixEdit)`, `Validate()`
+
+Edits are applied in descending offset order with a frontier boundary to prevent overlapping writes.
+
+#### FixProvider Interface
+
+```go
+type FixProvider interface {
+    Name() string
+    CanHandle(f finding.Finding) bool
+    Edits(content []byte, f finding.Finding) ([]FixEdit, error)
+}
+```
+
+**Default provider chain (tried in order):**
+
+|| Provider            | Name           | Handles                                            |
+| ------------------- | -------------- | -------------------------------------------------- |
+| `OffsetProvider`    | `"byte-offset"` | Findings with `Range.Start.Offset >= 0 && End >= 0` |
+| `LineProvider`      | `"line-column"` | Findings with `Position.Line > 0`                  |
+| `SubstringProvider` | `"substring"`   | Fallback for any finding with `BeforeCode`         |
+
+Domain-specific providers (Go AST, Rust syn, etc.) can be registered via:
+
+- `NewFixEngineWithProviders(providers...)` — standalone engine
+- `Config.FixProviders` — pipeline integration
+- `NewFixApplierWithProviders(rootDir, providers...)` — direct applier
+
+> **Known limitation:** `SubstringProvider` uses substring matching — ambiguous when the same text appears multiple times. Strongly prefer domain-specific providers for production use.
+
+#### FixEngine (in-memory)
+
+`NewFixEngine()` provides pure `Apply(content []byte, fixes []Finding)` that transforms byte content without filesystem access. Delegates to providers, sorts edits descending by offset, applies with overlap protection.
+
+#### FixApplier (filesystem)
+
+`NewFixApplier(rootDir)` applies fixes to actual files with backup/rollback support.
+
+Both support:
 
 - File backup before modification
 - Rollback on failure (restores all modified files)
 - Context cancellation support mid-application
-- Deterministic application order (sorted by path, descending by position)
-
-> **Known limitation:** String-based replacement uses `strings.Replace` for nearest-to-line matching. If `BeforeCode` appears multiple times near the target line, it may pick the wrong occurrence.
+- Deterministic application order (sorted by path, descending by offset)
 
 ### 16.8 Verification
 
@@ -711,7 +756,9 @@ Three runnable examples in `examples/`:
 | Pipeline (detect→fix→verify)      | STABLE       | Iterative loop with configurable behavior                         |
 | Finding processors                | EXPERIMENTAL | Composable transforms between detect and triage                   |
 | Conflict detection                | STABLE       | Overlapping fix detection                                         |
-| Fix application                   | FUNCTIONAL   | In-memory FixEngine + filesystem FixApplier, backup/rollback      |
+| FixEdit (byte-level edits)        | STABLE       | Offset, Length, Replacement with Overlaps/Validate               |
+| FixProvider interface             | STABLE       | Composable providers: Offset, Line, Substring + custom           |
+| Fix application                   | FUNCTIONAL   | Byte-level FixEngine + filesystem FixApplier, backup/rollback    |
 | Verification                      | STABLE       | Diff-based: fixed / remaining / new                               |
 | Metrics                           | STABLE       | Thread-safe, snapshot support                                     |
 | Retry (exponential backoff)       | STABLE       | With jitter                                                       |

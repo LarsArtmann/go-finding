@@ -44,8 +44,19 @@ func (e *FixEngine) Apply(
 	content []byte,
 	fixes []finding.Finding,
 ) ([]byte, []finding.Finding, int) {
+	applied, _, result := e.ApplyWithConflicts(content, fixes)
+
+	return result, applied, len(applied)
+}
+
+// ApplyWithConflicts applies findings and returns applied findings, conflicts, and modified content.
+// Conflicts are findings whose edits overlap with earlier edits — they are skipped.
+func (e *FixEngine) ApplyWithConflicts(
+	content []byte,
+	fixes []finding.Finding,
+) ([]finding.Finding, []ConflictInfo, []byte) {
 	if len(fixes) == 0 {
-		return content, nil, 0
+		return nil, nil, content
 	}
 
 	var allEdits []FixEdit
@@ -60,7 +71,7 @@ func (e *FixEngine) Apply(
 	}
 
 	if len(allEdits) == 0 {
-		return content, nil, 0
+		return nil, nil, content
 	}
 
 	// Sort descending by offset so later edits don't shift earlier ones.
@@ -68,7 +79,7 @@ func (e *FixEngine) Apply(
 		return cmp.Compare(b.Offset, a.Offset)
 	})
 
-	return e.applyEdits(content, allEdits)
+	return e.applyEditsWithConflicts(content, allEdits)
 }
 
 // resolveEdits tries each provider in order and returns edits from the first match.
@@ -89,13 +100,13 @@ func (e *FixEngine) resolveEdits(content []byte, f finding.Finding) []FixEdit {
 	return nil
 }
 
-// applyEdits applies non-overlapping edits to content, returning the result,
-// the applied findings, and the count.
-func (*FixEngine) applyEdits(
+// applyEditsWithConflicts applies edits and tracks which were skipped due to overlaps.
+func (*FixEngine) applyEditsWithConflicts(
 	content []byte,
 	edits []FixEdit,
-) ([]byte, []finding.Finding, int) {
+) ([]finding.Finding, []ConflictInfo, []byte) {
 	var applied []finding.Finding
+	var conflicts []ConflictInfo
 	result := content
 	frontier := len(content) + 1
 
@@ -109,6 +120,12 @@ func (*FixEngine) applyEdits(
 		}
 
 		if edit.EndOffset() > frontier {
+			conflicts = append(conflicts, ConflictInfo{
+				Finding:       edit.Source,
+				ConflictsWith: nil,
+				Reason:        "overlapping edit",
+			})
+
 			continue
 		}
 
@@ -122,5 +139,5 @@ func (*FixEngine) applyEdits(
 		applied = append(applied, edit.Source)
 	}
 
-	return result, applied, len(applied)
+	return applied, conflicts, result
 }

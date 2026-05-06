@@ -187,6 +187,35 @@ func FilterConflictingFixes(fixes []finding.Finding) []finding.Finding {
 	return result
 }
 
+// FilterConflictingEdits resolves findings to byte-level edits using the engine,
+// then filters overlapping edits at the byte level. This is more precise than
+// FilterConflictingFixes because it operates on actual byte offsets rather than
+// line/column ranges.
+func FilterConflictingEdits(
+	content []byte,
+	fixes []finding.Finding,
+	engine *FixEngine,
+) []finding.Finding {
+	_, conflicts, _ := engine.ApplyWithConflicts(content, fixes)
+	if len(conflicts) == 0 {
+		return fixes
+	}
+
+	conflictIDs := make(map[string]struct{}, len(conflicts))
+	for _, c := range conflicts {
+		conflictIDs[c.Finding.ID] = struct{}{}
+	}
+
+	result := make([]finding.Finding, 0, len(fixes)-len(conflicts))
+	for _, f := range fixes {
+		if _, isConflict := conflictIDs[f.ID]; !isConflict {
+			result = append(result, f)
+		}
+	}
+
+	return result
+}
+
 // ConflictInfo provides detailed information about conflicts.
 type ConflictInfo struct {
 	Finding       finding.Finding

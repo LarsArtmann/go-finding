@@ -91,10 +91,18 @@
 - [ ] **Split `cmd/go-finding/main.go`** — 457 lines. Extract config parsing to `config.go`, output formatting to `output.go`. (`cmd/go-finding/main.go`)
 - [ ] **Document Pipeline single-use contract** — Pipeline.Run() is not safe for concurrent or repeated use. Add godoc note. (`pipeline/pipeline.go:253`)
 
+### FixProvider Architecture (from byte-level redesign)
+
+- [ ] **Wire `FixEdit.Overlaps` into conflict detection** — `FixEdit.Overlaps()` exists but conflict detection still operates at `Range.Overlaps()` level. After providers resolve to `FixEdit`s, detect conflicts at the edit level for byte-precision. (`pipeline/conflict.go`, `pipeline/fix_edit.go:48`)
+- [ ] **Make `FixEdit` serializable** — Add JSON tags and `ToSARIF`/`FromSARIF` conversion for SARIF round-tripping of edits. Currently `FixEdit` has no JSON representation. (`pipeline/fix_edit.go`)
+- [ ] **Build line-offset index** — `lineColToOffset` is O(n) per call, re-scanning from the start for each fix. Build a `[]int` line-offset index once per file for O(1) lookup. (`pipeline/fix_provider.go:250`)
+- [ ] **Add BDD tests for FixProvider** — No ginkgo BDD specs exist for the new FixProvider interface contract. (`pipeline/bdd_test.go`)
+- [ ] **Decide domain-specific provider location** — Should Go AST, Rust syn, etc. providers live INSIDE `pipeline/fix/` or as SEPARATE modules? Affects module structure permanently. (`docs/architecture-decisions.md`)
+
 ### Architecture Deepening
 
-- [ ] **Centralize triage logic** — Fix categorization appears in 3 places: `Finding.HasFix()`, `Pipeline.triage()`, `FixEngine.partitionFixes()`. These overlap but aren't identical. Consolidate. (`finding.go:135`, `pipeline/pipeline.go:528`, `pipeline/fix_engine.go:46`)
-- [ ] **Convert stateless structs to functions** — `ConflictDetector`, `FixEngine`, `Verifier` are zero-field structs. Convert to package-level functions for API honesty. (`pipeline/conflict.go:28`, `pipeline/fix_engine.go:12`, `pipeline/verify.go:25`)
+- [ ] **Centralize triage logic** — Fix categorization appears in 3 places: `Finding.HasFix()`, `Pipeline.triage()`, and `FixEngine.Apply()` filtering. These overlap but aren't identical. Consolidate. (`finding.go:135`, `pipeline/pipeline.go:528`, `pipeline/fix_engine.go:54`)
+- [ ] **Convert stateless structs to functions** — `ConflictDetector`, `Verifier` are zero-field structs. `FixEngine` now has state (providers). Convert ConflictDetector/Verifier to package-level functions for API honesty. (`pipeline/conflict.go:28`, `pipeline/verify.go:25`)
 - [ ] **Make Report always thread-safe** — Zero-value `Report` has nil mutex (silently non-thread-safe). Use `sync.Once` for lazy init or document clearly. (`report.go:10-11`)
 
 ---
@@ -182,7 +190,7 @@
 - [ ] **`finding.Diff()` function** — Compare finding sets (original vs fixed)
 - [ ] **`finding.FormatText()` and `finding.FormatMarkdown()`** — Human-readable output formats
 - [ ] **Detector timeout per-detector** — Configurable per-detector timeouts
-- [ ] **Column shift handling in `FixEngine`** — Multiple non-conflicting string fixes can interact unpredictably
+- [x] **Column shift handling in `FixEngine`** — Resolved by byte-level redesign: edits now applied descending by offset with frontier boundary, eliminating column shift issues. (`pipeline/fix_engine.go`)
 - [ ] **Semantic merge for conflicts** — In `pipeline` package
 - [ ] **Progress reporting to Pipeline** — Callback for long-running operations
 - [ ] **Styled CLI output** using `lipgloss`

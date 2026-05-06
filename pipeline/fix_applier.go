@@ -138,7 +138,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]findin
 		return nil, ioErrorAt("read file", err, path)
 	}
 
-	newContent, appliedFixes, _ := a.engine.Apply(content, fixes)
+	appliedFixes, _, newContent := a.engine.ApplyWithConflicts(content, fixes)
 
 	if len(appliedFixes) == 0 {
 		return nil, nil

@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -432,4 +433,199 @@ func TestFixEngine_Providers(t *testing.T) {
 	g.Expect(providers[0].Name()).To(Equal("byte-offset"))
 	g.Expect(providers[1].Name()).To(Equal("line-column"))
 	g.Expect(providers[2].Name()).To(Equal("substring"))
+}
+
+func TestFixEngine_ApplyWithConflicts_NoConflicts(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	engine := NewFixEngine()
+	content := []byte("line1: old\nline2: old\nline3: old")
+
+	fixes := []finding.Finding{
+		makeRangeFix("a.go", 1, 8, 1, 11, "old", "fix1"),
+		makeRangeFix("a.go", 3, 8, 3, 11, "old", "fix2"),
+	}
+
+	applied, conflicts, result := engine.ApplyWithConflicts(content, fixes)
+	g.Expect(applied).To(HaveLen(2))
+	g.Expect(conflicts).To(BeEmpty())
+	g.Expect(string(result)).To(Equal("line1: fix1\nline2: old\nline3: fix2"))
+}
+
+func TestFixEngine_ApplyWithConflicts_OverlappingEdits(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	engine := NewFixEngine()
+	content := []byte("package main\n\nfunc main() {\n\told()\n}")
+
+	fixes := []finding.Finding{
+		{
+			ID:         "fix1",
+			BeforeCode: "old",
+			AfterCode:  "new",
+			Range: &finding.Range{
+				Start: finding.Position{File: "a.go", Offset: 28},
+				End:   finding.Position{File: "a.go", Offset: 33},
+			},
+			Position: finding.Pos("a.go", 4, 2),
+		},
+		{
+			ID:         "fix2",
+			BeforeCode: "old()",
+			AfterCode:  "replaced()",
+			Range: &finding.Range{
+				Start: finding.Position{File: "a.go", Offset: 28},
+				End:   finding.Position{File: "a.go", Offset: 33},
+			},
+			Position: finding.Pos("a.go", 4, 2),
+		},
+	}
+
+	applied, conflicts, result := engine.ApplyWithConflicts(content, fixes)
+	g.Expect(applied).To(HaveLen(1))
+	g.Expect(applied[0].ID).To(Equal("fix1"))
+	g.Expect(conflicts).To(HaveLen(1))
+	g.Expect(conflicts[0].Reason).To(Equal("overlapping edit"))
+	g.Expect(conflicts[0].Finding.ID).To(Equal("fix2"))
+	g.Expect(string(result)).To(Equal("package main\n\nfunc main() {\n\tnew()\n}"))
+}
+
+func TestFixEdit_JSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("marshal and unmarshal round-trip", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+
+		edit := FixEdit{Offset: 10, Length: 5, Replacement: []byte("hello")}
+
+		data, err := json.Marshal(edit)
+		g.Expect(err).NotTo(HaveOccurred())
+
+		var got FixEdit
+		g.Expect(json.Unmarshal(data, &got)).NotTo(HaveOccurred())
+		g.Expect(got.Offset).To(Equal(10))
+		g.Expect(got.Length).To(Equal(5))
+		g.Expect(got.Replacement).To(Equal([]byte("hello")))
+	})
+
+	t.Run("pure deletion omits replacement", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+
+		edit := FixEdit{Offset: 10, Length: 5}
+		data, err := json.Marshal(edit)
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(string(data)).NotTo(ContainSubstring("replacement"))
+	})
+
+	t.Run("source not included in JSON", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+
+		edit := FixEdit{
+			Offset:      10,
+			Length:      5,
+			Replacement: []byte("x"),
+			Source:      finding.Finding{ID: "test-123"},
+		}
+		data, err := json.Marshal(edit)
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(string(data)).NotTo(ContainSubstring("test-123"))
+	})
+}
+
+func TestFixEdit_SARIFProperties(t *testing.T) {
+	t.Parallel()
+
+	t.Run("round-trip", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+
+		edit := FixEdit{Offset: 42, Length: 10, Replacement: []byte("new code")}
+		props := edit.ToSARIFProperties()
+
+		got := FixEditFromSARIFProperties(props)
+		g.Expect(got).NotTo(BeNil())
+		g.Expect(got.Offset).To(Equal(42))
+		g.Expect(got.Length).To(Equal(10))
+		g.Expect(got.Replacement).To(Equal([]byte("new code")))
+	})
+
+	t.Run("missing offset returns nil", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+
+		props := map[string]string{"go-finding/edit/length": "5"}
+		got := FixEditFromSARIFProperties(props)
+		g.Expect(got).To(BeNil())
+	})
+
+	t.Run("pure deletion has no replacement", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+
+		edit := FixEdit{Offset: 10, Length: 5}
+		props := edit.ToSARIFProperties()
+		g.Expect(props).NotTo(HaveKey("go-finding/edit/replacement"))
+
+		got := FixEditFromSARIFProperties(props)
+		g.Expect(got).NotTo(BeNil())
+		g.Expect(got.Replacement).To(BeNil())
+	})
+}
+
+func TestFilterConflictingEdits(t *testing.T) {
+	t.Parallel()
+
+	t.Run("no conflicts", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+
+		engine := NewFixEngine()
+		content := []byte("line1: old\nline2: old\nline3: old")
+		fixes := []finding.Finding{
+			makeRangeFix("a.go", 1, 8, 1, 11, "old", "fix1"),
+			makeRangeFix("a.go", 3, 8, 3, 11, "old", "fix2"),
+		}
+
+		result := FilterConflictingEdits(content, fixes, engine)
+		g.Expect(result).To(HaveLen(2))
+	})
+
+	t.Run("overlapping edits filtered", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+
+		engine := NewFixEngine()
+		content := []byte("package main\n\nfunc main() {\n\told()\n}")
+		fixes := []finding.Finding{
+			{
+				ID:         "fix1",
+				BeforeCode: "old",
+				AfterCode:  "new",
+				Range: &finding.Range{
+					Start: finding.Position{File: "a.go", Offset: 28},
+					End:   finding.Position{File: "a.go", Offset: 33},
+				},
+				Position: finding.Pos("a.go", 4, 2),
+			},
+			{
+				ID:         "fix2",
+				BeforeCode: "old()",
+				AfterCode:  "replaced()",
+				Range: &finding.Range{
+					Start: finding.Position{File: "a.go", Offset: 28},
+					End:   finding.Position{File: "a.go", Offset: 33},
+				},
+				Position: finding.Pos("a.go", 4, 2),
+			},
+		}
+
+		result := FilterConflictingEdits(content, fixes, engine)
+		g.Expect(result).To(HaveLen(1))
+		g.Expect(result[0].ID).To(Equal("fix1"))
+	})
 }

@@ -42,7 +42,10 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | ------------------------- | ----------------------------------------------------- |
 | `pipeline/pipeline.go`    | Pipeline orchestrator: detect → triage → fix → verify |
 | `pipeline/conflict.go`    | Fix conflict detection and analysis                   |
-| `pipeline/fix_applier.go` | Line-based fix application with backup/rollback       |
+| `pipeline/fix_edit.go`     | FixEdit type — byte-level edit operations (Offset, Length, Replacement) |
+| `pipeline/fix_provider.go` | FixProvider interface + 3 default providers (Offset, Line, Substring) |
+| `pipeline/fix_engine.go`   | Byte-level FixEngine with provider delegation, descending-offset apply |
+| `pipeline/fix_applier.go`  | Filesystem fix application with backup/rollback, custom providers      |
 | `pipeline/verify.go`      | Verification stage: re-run detectors, diff findings   |
 | `pipeline/metrics.go`     | Timing/count metrics collection with snapshots        |
 | `pipeline/retry.go`       | Exponential backoff retry wrapper for detectors       |
@@ -87,9 +90,13 @@ golangci-lint run ./...         # Lint
 4. **Compatible** — Works with existing Go analysis tools
 5. **Resilient** — Retry logic, partial success, nil-safe metrics
 6. **FixApplier.Close()** — Cleans up temporary backup directories; callers should defer close
+7. **Config.FixProviders** — Custom fix providers for domain-specific (AST-aware) transformations
 
 ### Pipeline Features
 
+- **Byte-level FixEngine** — `[]byte` edit operations with `FixEdit{Offset, Length, Replacement}`, applied descending by offset with frontier boundary
+- **FixProvider interface** — Composable provider chain: OffsetProvider (byte offsets), LineProvider (line→byte), SubstringProvider (fallback)
+- **Custom provider registration** — `NewFixEngineWithProviders`, `NewFixApplierWithProviders`, `Config.FixProviders`
 - **Conflict detection** — Overlapping fixes are filtered before application
 - **Verification** — Optional post-fix verification by re-running detectors
 - **Metrics** — Optional timing/count collection with snapshot support
