@@ -31,6 +31,10 @@ func Verify(
 	var postFindings []finding.Finding
 
 	for _, d := range detectors {
+		if err := CheckCanceled(ctx); err != nil {
+			return nil, err
+		}
+
 		findings, err := d.Detect(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("verify: detector %s: %w", d.Name(), err)

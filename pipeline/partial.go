@@ -62,6 +62,10 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 
 		findings, err := p.runOneDetector(ctx, d)
 		if err != nil {
+			if IsContextError(err) {
+				return result, err
+			}
+
 			result.Errors[d.Name()] = err
 
 			continue
@@ -79,7 +83,11 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 		Errors: make(map[string]error),
 	}
 
-	var mu sync.Mutex
+	var (
+		mu         sync.Mutex
+		ctxErr     error
+		hasCtxErr  bool
+	)
 
 	g, gctx := errgroup.WithContext(ctx)
 
@@ -91,9 +99,14 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 			defer mu.Unlock()
 
 			if err != nil {
+				if IsContextError(err) && !hasCtxErr {
+					ctxErr = err
+					hasCtxErr = true
+				}
+
 				result.Errors[d.Name()] = err
 
-				return nil // Don't propagate — collect partial results
+				return nil // Don't propagate to errgroup — collect partial results
 			}
 
 			result.Findings = append(result.Findings, findings...)
@@ -103,6 +116,10 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 	}
 
 	_ = g.Wait()
+
+	if hasCtxErr {
+		return result, ctxErr
+	}
 
 	if err := CheckCanceledWithMsg(ctx, "context cancelled"); err != nil {
 		return result, err

@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -87,6 +88,13 @@ func (n *namedProcessor) Process(findings []finding.Finding) []finding.Finding {
 
 func (n *namedProcessor) Name() string {
 	return n.name
+}
+
+// IsContextError reports whether the error is caused by context cancellation
+// or deadline exceeded. This is the single canonical check for context errors
+// across the pipeline — use it instead of inline errors.Is comparisons.
+func IsContextError(err error) bool {
+	return errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
 }
 
 // CheckCanceled checks if the context is done and returns an appropriate error.

@@ -111,6 +111,10 @@ func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 			return findings, nil
 		}
 
+		if IsContextError(err) {
+			return nil, err
+		}
+
 		lastErr = err
 	}
 

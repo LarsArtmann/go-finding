@@ -2,6 +2,7 @@ package pipeline_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	finding "github.com/larsartmann/go-finding"
@@ -142,7 +143,7 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			badDetector := pipeline.NamedDetectorFunc(
 				"bad",
 				func(_ context.Context) ([]finding.Finding, error) {
-					return nil, context.DeadlineExceeded
+					return nil, errors.New("detector crashed")
 				},
 			)
 

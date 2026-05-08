@@ -129,6 +129,46 @@ func TestRetryDetector_ContextCancellation(t *testing.T) {
 	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
 }
 
+func TestRetryDetector_ContextErrorFromInnerNotRetried(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	calls := 0
+	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
+		calls++
+
+		return nil, context.Canceled
+	})
+
+	rd := NewRetryDetector(inner, RetryConfig{MaxRetries: 3, BaseDelay: time.Millisecond})
+
+	_, err := rd.Detect(context.Background())
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
+
+	g.Expect(calls).To(Equal(1), "context.Canceled should not be retried")
+}
+
+func TestRetryDetector_DeadlineExceededFromInnerNotRetried(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	calls := 0
+	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
+		calls++
+
+		return nil, context.DeadlineExceeded
+	})
+
+	rd := NewRetryDetector(inner, RetryConfig{MaxRetries: 3, BaseDelay: time.Millisecond})
+
+	_, err := rd.Detect(context.Background())
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, context.DeadlineExceeded)).To(BeTrue())
+
+	g.Expect(calls).To(Equal(1), "context.DeadlineExceeded should not be retried")
+}
+
 func TestRetryDetector_Name(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)

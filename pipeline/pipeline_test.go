@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -1155,6 +1156,103 @@ func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
 
 	want := "package main\n\nfunc main() {\n\tnew()\n}\n"
 	g.Expect(string(content)).To(Equal(want))
+}
+
+func TestDetectPartialSequential_ContextErrorPropagates(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	goodDetector := &mockDetector{
+		name:     "good",
+		findings: []finding.Finding{{ID: "f1", Rule: "r", ToolName: "t", Message: "m"}},
+	}
+	badDetector := &mockDetector{
+		name: "bad",
+		err:  context.Canceled,
+	}
+
+	config := DefaultConfig()
+	config.GracefulDegradation = true
+	config.ParallelDetectors = false
+
+	p, err := New(config, t.TempDir(), goodDetector, badDetector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
+
+	g.Expect(result.PartialErrors).To(BeNil(), "context errors should not be stored as partial errors")
+}
+
+func TestDetectPartialParallel_ContextErrorPropagates(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	goodDetector := &mockDetector{
+		name:     "good",
+		findings: []finding.Finding{{ID: "f1", Rule: "r", ToolName: "t", Message: "m"}},
+	}
+	badDetector := &mockDetector{
+		name: "bad",
+		err:  context.Canceled,
+	}
+
+	config := DefaultConfig()
+	config.GracefulDegradation = true
+	config.ParallelDetectors = true
+
+	p, err := New(config, t.TempDir(), goodDetector, badDetector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
+
+	g.Expect(result.PartialErrors).To(BeNil(), "context errors should not be stored as partial errors")
+}
+
+func TestVerify_ContextCancellation(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	slowDetector := &mockDetector{name: "slow", delay: time.Second}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := Verify(ctx, []Detector{slowDetector}, nil)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
+}
+
+func TestIsContextError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{"canceled", context.Canceled, true},
+		{"deadline", context.DeadlineExceeded, true},
+		{"wrapped canceled", fmt.Errorf("wrap: %w", context.Canceled), true},
+		{"other error", errors.New("other"), false},
+		{"nil", nil, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := IsContextError(tt.err); got != tt.want {
+				t.Errorf("IsContextError(%v) = %v, want %v", tt.err, got, tt.want)
+			}
+		})
+	}
 }
 
 func mockDetectorWithFinding(name, id, rule, tool, msg string) *mockDetector {
