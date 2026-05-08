@@ -340,10 +340,3 @@ func equalTimePtr(a, b *time.Time) bool {
 
 	return a.Equal(*b)
 }
-
-// floatEq returns true if a and b are equal within a small epsilon.
-func floatEq(a, b Confidence) bool {
-	const epsilon Confidence = 1e-9
-
-	return a-b < epsilon && b-a < epsilon
-}

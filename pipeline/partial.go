@@ -84,9 +84,9 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 	}
 
 	var (
-		mu         sync.Mutex
-		ctxErr     error
-		hasCtxErr  bool
+		mu        sync.Mutex
+		ctxErr    error
+		hasCtxErr bool
 	)
 
 	g, gctx := errgroup.WithContext(ctx)

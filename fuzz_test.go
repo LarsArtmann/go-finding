@@ -214,7 +214,6 @@ func FuzzCorrelate(f *testing.F) {
 		correlations := Correlate(findings)
 
 		for _, c := range correlations {
-			g.Expect(c.Confidence - c.Confidence).To(BeNumerically("~", 0, 1))
 			g.Expect(c.Confidence).To(BeNumerically(">=", 0.0))
 			g.Expect(c.Confidence).To(BeNumerically("<=", 1.0))
 			g.Expect(c.FindingIDs).To(HaveLen(2))

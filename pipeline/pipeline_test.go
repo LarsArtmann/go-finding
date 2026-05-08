@@ -1158,9 +1158,9 @@ func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
 	g.Expect(string(content)).To(Equal(want))
 }
 
-func TestDetectPartialSequential_ContextErrorPropagates(t *testing.T) {
+func testContextErrorCancels(t *testing.T, parallel bool) {
+	t.Helper()
 	g := NewWithT(t)
-	t.Parallel()
 
 	goodDetector := &mockDetector{
 		name:     "good",
@@ -1173,7 +1173,7 @@ func TestDetectPartialSequential_ContextErrorPropagates(t *testing.T) {
 
 	config := DefaultConfig()
 	config.GracefulDegradation = true
-	config.ParallelDetectors = false
+	config.ParallelDetectors = parallel
 
 	p, err := New(config, t.TempDir(), goodDetector, badDetector)
 	if err != nil {
@@ -1184,36 +1184,18 @@ func TestDetectPartialSequential_ContextErrorPropagates(t *testing.T) {
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
 
-	g.Expect(result.PartialErrors).To(BeNil(), "context errors should not be stored as partial errors")
+	g.Expect(result.PartialErrors).
+		To(BeNil(), "context errors should not be stored as partial errors")
+}
+
+func TestDetectPartialSequential_ContextErrorPropagates(t *testing.T) {
+	t.Parallel()
+	testContextErrorCancels(t, false)
 }
 
 func TestDetectPartialParallel_ContextErrorPropagates(t *testing.T) {
-	g := NewWithT(t)
 	t.Parallel()
-
-	goodDetector := &mockDetector{
-		name:     "good",
-		findings: []finding.Finding{{ID: "f1", Rule: "r", ToolName: "t", Message: "m"}},
-	}
-	badDetector := &mockDetector{
-		name: "bad",
-		err:  context.Canceled,
-	}
-
-	config := DefaultConfig()
-	config.GracefulDegradation = true
-	config.ParallelDetectors = true
-
-	p, err := New(config, t.TempDir(), goodDetector, badDetector)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	result, err := p.Run(context.Background())
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
-
-	g.Expect(result.PartialErrors).To(BeNil(), "context errors should not be stored as partial errors")
+	testContextErrorCancels(t, true)
 }
 
 func TestVerify_ContextCancellation(t *testing.T) {

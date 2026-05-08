@@ -114,6 +114,7 @@ func TestFormatPartialErrors(t *testing.T) {
 
 func TestDetectPartial_Sequential_CancelBeforeSecond(t *testing.T) {
 	g := NewWithT(t)
+	t.Parallel()
 
 	d1 := mockDet("fast", "F1")
 	d2 := &mockDetector{
@@ -136,6 +137,7 @@ func TestDetectPartial_Sequential_CancelBeforeSecond(t *testing.T) {
 
 func TestDetectPartial_Parallel_CancelReturnsPartial(t *testing.T) {
 	g := NewWithT(t)
+	t.Parallel()
 
 	d1 := mockDet("fast", "F1")
 	d2 := &mockDetector{

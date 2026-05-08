@@ -34,7 +34,7 @@ type Summary struct {
 
 // NewReport creates a new report with the given tool info.
 func NewReport(tool ToolInfo) *Report {
-	r := &Report{
+	r := &Report{ //nolint:exhaustruct
 		Tool:     tool,
 		Findings: make([]Finding, 0),
 		Summary:  Summary{}, //nolint:exhaustruct
@@ -46,7 +46,7 @@ func NewReport(tool ToolInfo) *Report {
 
 // newReportWithCapacity creates a new report with pre-allocated finding capacity.
 func newReportWithCapacity(tool ToolInfo, capacity int) *Report {
-	r := &Report{
+	r := &Report{ //nolint:exhaustruct
 		Tool:     tool,
 		Findings: make([]Finding, 0, capacity),
 		Summary:  Summary{}, //nolint:exhaustruct
