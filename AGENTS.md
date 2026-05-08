@@ -117,6 +117,7 @@ golangci-lint run ./...         # Lint
 - **FindingProcessor** — Composable transforms run between detection and triage (`ProcessorFunc`, `NamedProcessorFunc`)
 - **FixApplier lifecycle** — `applyDirectFixes` defers `Close()` to prevent temp directory leaks
 - **Line offset index** — `buildLineOffsetIndex` provides O(1) line→byte offset lookup
+- **Context cancellation** — `IsContextError()` is the canonical check; all pipeline paths (retry, partial, verify) propagate `context.Canceled`/`context.DeadlineExceeded` immediately instead of silently swallowing them
 
 ### CLI Features
 
