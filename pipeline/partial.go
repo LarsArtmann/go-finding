@@ -99,12 +99,14 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 			defer mu.Unlock()
 
 			if err != nil {
-				if IsContextError(err) && !hasCtxErr {
-					ctxErr = err
-					hasCtxErr = true
+				if IsContextError(err) {
+					if !hasCtxErr {
+						ctxErr = err
+						hasCtxErr = true
+					}
+				} else {
+					result.Errors[d.Name()] = err
 				}
-
-				result.Errors[d.Name()] = err
 
 				return nil // Don't propagate to errgroup — collect partial results
 			}
