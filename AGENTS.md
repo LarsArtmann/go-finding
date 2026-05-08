@@ -98,6 +98,7 @@ golangci-lint run ./...         # Lint
 9. **Confidence named type** — `type Confidence float64` with `IsValid()`/`Clamp()`; prevents accidental out-of-range values
 10. **Triage centralized** — `HasFix()` is canonical "is fixable?" source; `IsAutoFixable()` for pipeline auto-apply
 11. **Root package dependency-free** — `golang.org/x/tools` only in `analysis/` subpackage
+12. **NewFixApplier returns error** — `NewFixApplier(rootDir) (*FixApplier, error)` propagates backup dir creation failures
 
 ### Pipeline Features
 
@@ -118,6 +119,11 @@ golangci-lint run ./...         # Lint
 - **FixApplier lifecycle** — `applyDirectFixes` defers `Close()` to prevent temp directory leaks
 - **Line offset index** — `buildLineOffsetIndex` provides O(1) line→byte offset lookup
 - **Context cancellation** — `IsContextError()` is the canonical check; all pipeline paths (retry, partial, verify) propagate `context.Canceled`/`context.DeadlineExceeded` immediately instead of silently swallowing them
+- **KeySeparator** — `"\x00"` is the named constant for `Finding.Key()` composite key separator
+- **SARIF import hardening** — `findingFromSarResult` generates IDs for non-go-finding SARIF; bounds-checked 3-level index access; `stringProp` helper reduces type-assertion boilerplate
+- **SARIF streaming** — `WriteSARIF`/`WriteSARIFFiltered` use `json.Encoder` for true streaming without intermediate `[]byte` allocation
+- **FixApplier error propagation** — `NewFixApplier`/`NewFixApplierWithProviders` return `(*FixApplier, error)` instead of silently swallowing `MkdirTemp` errors
+- **Partial error separation** — Context errors are propagated but excluded from `PartialResult.Errors` (they're not "partial" failures)
 
 ### CLI Features
 
