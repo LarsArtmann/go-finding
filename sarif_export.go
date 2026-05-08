@@ -65,31 +65,27 @@ func (r *Report) ToSARIFFiltered(minSeverity Severity) ([]byte, error) {
 }
 
 // WriteSARIF writes the report in SARIF 2.1.0 format directly to w.
-// This avoids the intermediate buffer allocation of ToSARIF.
+// Streams via json.Encoder, avoiding the intermediate []byte buffer of ToSARIF.
 func (r *Report) WriteSARIF(w io.Writer) error {
-	data, err := json.MarshalIndent(r.sarifLog(), "", "  ")
-	if err != nil {
-		return fmt.Errorf("marshaling SARIF: %w", err)
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+
+	if err := enc.Encode(r.sarifLog()); err != nil {
+		return fmt.Errorf("encoding SARIF: %w", err)
 	}
 
-	return writeJSON(w, data)
+	return nil
 }
 
 // WriteSARIFFiltered writes non-suppressed findings with severity >= minSeverity
 // in SARIF 2.1.0 format directly to w.
+// Streams via json.Encoder, avoiding the intermediate []byte buffer.
 func (r *Report) WriteSARIFFiltered(w io.Writer, minSeverity Severity) error {
-	data, err := json.MarshalIndent(r.sarifLogFiltered(minSeverity), "", "  ")
-	if err != nil {
-		return fmt.Errorf("marshaling SARIF: %w", err)
-	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
 
-	return writeJSON(w, data)
-}
-
-// writeJSON writes data to w and returns an error if writing fails.
-func writeJSON(w io.Writer, data []byte) error {
-	if _, werr := w.Write(data); werr != nil {
-		return fmt.Errorf("writing SARIF: %w", werr)
+	if err := enc.Encode(r.sarifLogFiltered(minSeverity)); err != nil {
+		return fmt.Errorf("encoding SARIF: %w", err)
 	}
 
 	return nil

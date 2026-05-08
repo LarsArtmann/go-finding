@@ -819,7 +819,7 @@ func TestWriteSARIF_WriterError(t *testing.T) {
 
 	err := r.WriteSARIF(&failWriter{})
 	g.Expect(err).To(gomega.HaveOccurred())
-	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("writing SARIF")))
+	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("encoding SARIF")))
 }
 
 func TestWriteSARIFFiltered_WriterError(t *testing.T) {
@@ -838,7 +838,7 @@ func TestWriteSARIFFiltered_WriterError(t *testing.T) {
 
 	err := r.WriteSARIFFiltered(&failWriter{}, SeverityWarning)
 	g.Expect(err).To(gomega.HaveOccurred())
-	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("writing SARIF")))
+	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("encoding SARIF")))
 }
 
 // failWriter is an io.Writer that always returns an error.
