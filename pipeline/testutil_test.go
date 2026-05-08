@@ -214,7 +214,12 @@ func testBackupRestore(t *testing.T, applier *FixApplier, original, modified str
 func newTestApplier(t *testing.T) *FixApplier {
 	t.Helper()
 
-	return NewFixApplier(t.TempDir())
+	a, err := NewFixApplier(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
+
+	return a
 }
 
 func makeFixFinding(id, before, after, file string, line int) finding.Finding {

@@ -441,7 +441,10 @@ func TestFixApplier(t *testing.T) {
 	t.Parallel()
 	// Create a temporary directory for testing
 	tempDir := t.TempDir()
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 
 	// Create a test file
 	testFile := filepath.Join(tempDir, "test.go")
@@ -452,7 +455,7 @@ func TestFixApplier(t *testing.T) {
 	}
 
 	// Test backup
-	err := applier.backup.Backup(testFile)
+	err = applier.backup.Backup(testFile)
 	if err != nil {
 		t.Fatalf("backup failed: %v", err)
 	}
@@ -493,7 +496,10 @@ func TestFixApplier_Apply(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	tempDir := t.TempDir()
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 
 	// Create test file
 	testFile := filepath.Join(tempDir, "test.go")
@@ -527,7 +533,10 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	tempDir := t.TempDir()
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 
 	testFile := filepath.Join(tempDir, "test.go")
 
@@ -570,7 +579,10 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	tempDir := t.TempDir()
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 
 	testFile := filepath.Join(tempDir, "test.go")
 
@@ -608,7 +620,10 @@ func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	tempDir := t.TempDir()
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 
 	testFile := filepath.Join(tempDir, "test.go")
 

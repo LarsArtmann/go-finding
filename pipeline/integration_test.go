@@ -25,12 +25,15 @@ func TestFixApplier_BackupPathCollision(t *testing.T) {
 	t.Parallel()
 
 	tempDir := t.TempDir()
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 
 	sub1 := filepath.Join(tempDir, "dirA", "file.go")
 	sub2 := filepath.Join(tempDir, "dirB", "file.go")
 
-	err := os.MkdirAll(filepath.Dir(sub1), 0o750)
+	err = os.MkdirAll(filepath.Dir(sub1), 0o750)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +73,10 @@ func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
 	t.Parallel()
 
 	tempDir := t.TempDir()
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 
 	for i := range 5 {
 		name := filepath.Join(tempDir, "file"+string(rune('A'+i))+".go")

@@ -412,10 +412,14 @@ func (p *Pipeline) applyDirectFixes(
 	fixes []finding.Finding,
 ) ([]finding.Finding, error) {
 	var applier *FixApplier
+	var err error
 	if len(p.config.FixProviders) > 0 {
-		applier = NewFixApplierWithProviders(p.rootDir, p.config.FixProviders...)
+		applier, err = NewFixApplierWithProviders(p.rootDir, p.config.FixProviders...)
 	} else {
-		applier = NewFixApplier(p.rootDir)
+		applier, err = NewFixApplier(p.rootDir)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("init fix applier: %w", err)
 	}
 	defer func() { _ = applier.Close() }()
 

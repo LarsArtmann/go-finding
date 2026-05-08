@@ -28,7 +28,10 @@ func TestFixApplier_InsertionOnly(t *testing.T) {
 		FixStrategy: finding.FixStrategyDirect,
 	}
 
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 	applied, err := applier.Apply(context.Background(), []finding.Finding{fix})
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(applied).To(Equal(1))
@@ -59,7 +62,10 @@ func TestFixApplier_DeletionOnly(t *testing.T) {
 		FixStrategy: finding.FixStrategyDirect,
 	}
 
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 	applied, err := applier.Apply(context.Background(), []finding.Finding{fix})
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(applied).To(Equal(1))
@@ -95,7 +101,10 @@ func TestFixApplier_NearestLineReplacement(t *testing.T) {
 		FixStrategy: finding.FixStrategyDirect,
 	}
 
-	applier := NewFixApplier(tempDir)
+	applier, err := NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
 	applied, err := applier.Apply(context.Background(), []finding.Finding{fix})
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(applied).To(Equal(1))

@@ -19,32 +19,32 @@ type FixApplier struct {
 }
 
 // NewFixApplier creates a new FixApplier with default text-based providers.
-func NewFixApplier(rootDir string) *FixApplier {
+func NewFixApplier(rootDir string) (*FixApplier, error) {
 	backupDir, err := os.MkdirTemp("", "go-finding-backups-*")
 	if err != nil {
-		backupDir = filepath.Join(os.TempDir(), "go-finding-backups")
+		return nil, fmt.Errorf("create backup directory: %w", err)
 	}
 
 	return &FixApplier{
 		rootDir: rootDir,
 		backup:  NewFileBackup(backupDir),
 		engine:  NewFixEngine(),
-	}
+	}, nil
 }
 
 // NewFixApplierWithProviders creates a FixApplier with custom fix providers.
 // Use this to register domain-specific providers (e.g., Go AST, Rust syn).
-func NewFixApplierWithProviders(rootDir string, providers ...FixProvider) *FixApplier {
+func NewFixApplierWithProviders(rootDir string, providers ...FixProvider) (*FixApplier, error) {
 	backupDir, err := os.MkdirTemp("", "go-finding-backups-*")
 	if err != nil {
-		backupDir = filepath.Join(os.TempDir(), "go-finding-backups")
+		return nil, fmt.Errorf("create backup directory: %w", err)
 	}
 
 	return &FixApplier{
 		rootDir: rootDir,
 		backup:  NewFileBackup(backupDir),
 		engine:  NewFixEngineWithProviders(providers...),
-	}
+	}, nil
 }
 
 // Close removes the temporary backup directory. Implement io.Closer.
