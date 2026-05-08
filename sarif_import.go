@@ -45,11 +45,13 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 		f.Confidence = Confidence(r.Rank / sarifConfidenceScale)
 	}
 
-	if len(r.Fixes) > 0 && len(r.Fixes[0].Changes) > 0 &&
-		len(r.Fixes[0].Changes[0].Replacements) > 0 {
+	if len(r.Fixes) > 0 {
 		f.Suggestion = r.Fixes[0].Description.Text
-		f.AfterCode = r.Fixes[0].Changes[0].Replacements[0].InsertedText.Text
-		f.FixStrategy = FixStrategySuggest
+
+		if len(r.Fixes[0].Changes) > 0 && len(r.Fixes[0].Changes[0].Replacements) > 0 {
+			f.AfterCode = r.Fixes[0].Changes[0].Replacements[0].InsertedText.Text
+			f.FixStrategy = FixStrategySuggest
+		}
 	}
 
 	for _, rel := range r.Related {
@@ -74,6 +76,10 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 
 	if r.Properties != nil {
 		applySarifProperties(&f, r.Properties)
+	}
+
+	if f.ID == "" {
+		f.ID = GenerateID(f.ToolName, f.Rule, f.Position)
 	}
 
 	return f

@@ -1127,3 +1127,75 @@ func TestSARIF_RoundTrip_EditProperties(t *testing.T) {
 	g.Expect(f.Metadata["go-finding/edit/length"]).To(gomega.Equal("10"))
 	g.Expect(f.Metadata["go-finding/edit/replacement"]).To(gomega.Equal("new code"))
 }
+
+func TestFindingFromSarResult_FixDescriptionWithoutReplacements(t *testing.T) {
+	g := gomega.NewWithT(t)
+	t.Parallel()
+
+	r := SarifResult{
+		RuleID:  "r1",
+		Level:   "warning",
+		Message: SarifMessage{Text: "msg"},
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+			},
+		}},
+		Fixes: []SarifFix{{
+			Description: SarifMessage{Text: "fix it"},
+			Changes:     []SarifArtifactChange{},
+		}},
+	}
+
+	f := findingFromSarResult(r, "tool")
+	g.Expect(f.Suggestion).To(gomega.Equal("fix it"))
+	g.Expect(f.AfterCode).To(gomega.BeEmpty())
+	g.Expect(f.FixStrategy).To(gomega.BeEmpty())
+}
+
+func TestFindingFromSarResult_GeneratesIDWithoutProperties(t *testing.T) {
+	g := gomega.NewWithT(t)
+	t.Parallel()
+
+	r := SarifResult{
+		RuleID:  "R1",
+		Level:   "warning",
+		Message: SarifMessage{Text: "msg"},
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+				Region:           &SarifRegion{StartLine: 10, StartColumn: 5},
+			},
+		}},
+	}
+
+	f := findingFromSarResult(r, "tool")
+	g.Expect(f.ID).NotTo(gomega.BeEmpty())
+	g.Expect(f.ID).To(gomega.ContainSubstring("tool"))
+	g.Expect(f.ID).To(gomega.ContainSubstring("R1"))
+}
+
+func TestFindingsFromSARIF_FixWithEmptyChanges(t *testing.T) {
+	g := gomega.NewWithT(t)
+	t.Parallel()
+
+	sarif := `{
+		"version": "2.1.0",
+		"runs": [{
+			"tool": {"driver": {"name": "test"}},
+			"results": [{
+				"ruleId": "R1",
+				"level": "warning",
+				"message": {"text": "msg"},
+				"locations": [{"physicalLocation": {"artifactLocation": {"uri": "a.go"}}}],
+				"fixes": [{"description": {"text": "suggestion only"}, "artifactChanges": []}]
+			}]
+		}]
+	}`
+
+	findings, err := FindingsFromSARIF([]byte(sarif))
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.HaveLen(1))
+	g.Expect(findings[0].Suggestion).To(gomega.Equal("suggestion only"))
+	g.Expect(findings[0].AfterCode).To(gomega.BeEmpty())
+}
