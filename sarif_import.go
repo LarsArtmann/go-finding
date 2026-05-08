@@ -122,27 +122,27 @@ func applySarifPosition(f *Finding, r SarifResult) {
 
 // applySarifProperties restores go-finding-specific properties for round-trip fidelity.
 func applySarifProperties(f *Finding, props map[string]any) {
-	if v, ok := props[sarifPropID].(string); ok {
+	if v, ok := stringProp(props, sarifPropID); ok {
 		f.ID = v
 	}
 
-	if v, ok := props[sarifPropSeverity].(string); ok {
+	if v, ok := stringProp(props, sarifPropSeverity); ok {
 		if s := Severity(v); s.IsValid() {
 			f.Severity = s
 		}
 	}
 
-	if v, ok := props[sarifPropFixStrategy].(string); ok {
+	if v, ok := stringProp(props, sarifPropFixStrategy); ok {
 		if fs := FixStrategy(v); fs.IsValid() {
 			f.FixStrategy = fs
 		}
 	}
 
-	if v, ok := props[sarifPropToolName].(string); ok {
+	if v, ok := stringProp(props, sarifPropToolName); ok {
 		f.ToolName = v
 	}
 
-	if v, ok := props[sarifPropCategory].(string); ok {
+	if v, ok := stringProp(props, sarifPropCategory); ok {
 		f.Category = Category(v)
 	}
 
@@ -159,15 +159,15 @@ func applySarifProperties(f *Finding, props map[string]any) {
 		f.Confidence = Confidence(v)
 	}
 
-	if v, ok := props[sarifPropSuggestion].(string); ok {
+	if v, ok := stringProp(props, sarifPropSuggestion); ok {
 		f.Suggestion = v
 	}
 
-	if v, ok := props[sarifPropSnippet].(string); ok {
+	if v, ok := stringProp(props, sarifPropSnippet); ok {
 		f.Snippet = v
 	}
 
-	if v, ok := props[sarifPropBeforeCode].(string); ok {
+	if v, ok := stringProp(props, sarifPropBeforeCode); ok {
 		f.BeforeCode = v
 	}
 
@@ -175,6 +175,12 @@ func applySarifProperties(f *Finding, props map[string]any) {
 	if len(f.Metadata) == 0 {
 		f.Metadata = nil
 	}
+}
+
+// stringProp extracts a string property from a SARIF property bag.
+func stringProp(props map[string]any, key string) (string, bool) {
+	v, ok := props[key].(string)
+	return v, ok
 }
 
 // sarifMetadataFromProps extracts non-go-finding properties as metadata.
