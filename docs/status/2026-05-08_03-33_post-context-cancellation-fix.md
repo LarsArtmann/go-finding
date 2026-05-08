@@ -8,21 +8,21 @@
 
 ## Metrics Snapshot
 
-| Metric | Value |
-|--------|-------|
-| **Total commits** | 499 |
-| **Production LOC** | 6,583 |
-| **Test LOC** | 16,443 |
-| **Test:Code ratio** | 2.50:1 |
-| **Production files** | 44 |
-| **Test files** | 59 |
-| **Test entry points** | 607 (479 unit + 17 fuzz + 21 example + 70 BDD + 20 bench) |
-| **Packages** | 9 |
-| **Dependencies (direct)** | 5 |
-| **Go version** | 1.26.2 |
-| **Build** | GREEN |
-| **Tests** | ALL PASS (race detector enabled) |
-| **go vet** | CLEAN |
+| Metric                    | Value                                                     |
+| ------------------------- | --------------------------------------------------------- |
+| **Total commits**         | 499                                                       |
+| **Production LOC**        | 6,583                                                     |
+| **Test LOC**              | 16,443                                                    |
+| **Test:Code ratio**       | 2.50:1                                                    |
+| **Production files**      | 44                                                        |
+| **Test files**            | 59                                                        |
+| **Test entry points**     | 607 (479 unit + 17 fuzz + 21 example + 70 BDD + 20 bench) |
+| **Packages**              | 9                                                         |
+| **Dependencies (direct)** | 5                                                         |
+| **Go version**            | 1.26.2                                                    |
+| **Build**                 | GREEN                                                     |
+| **Tests**                 | ALL PASS (race detector enabled)                          |
+| **go vet**                | CLEAN                                                     |
 
 ---
 
@@ -127,6 +127,7 @@ Including: benchmark tracking baseline, SARIF schema validation, JSON schema gen
 ### Nothing is fucked
 
 The codebase is in excellent shape:
+
 - Build: GREEN
 - Tests: ALL PASS (607 entry points, race detector enabled)
 - go vet: CLEAN
@@ -143,16 +144,16 @@ The codebase is in excellent shape:
 
 ### Remaining Code Smells (not fucked, but worth noting)
 
-| Location | Smell | Severity |
-|----------|-------|----------|
-| `finding.go:275-283` | `Equal()` has 9-condition compound boolean on single `if` | Low |
-| `finding.go:270` | `Key()` uses `"\x00"` separator — fragile with user-controlled data | Low |
-| `sarif_import.go:34` | `findingFromSarResult` — 3-level index chain `[0].Fixes[0].Changes[0]` with no bounds check | Medium |
-| `sarif_import.go:118` | `applySarifProperties` — 10 sequential type-assertion blocks, repetitive pattern | Medium |
-| `pipeline/fix_engine.go:114-148` | `applyEditsWithConflicts` O(n·m) allocations from repeated slice splicing | Low |
-| `pipeline/conflict.go:100-119` | `detectConflictsInFile` builds groups then immediately re-splits them | Low |
-| `pipeline/fix_applier.go:23-26` | `NewFixApplier` silently swallows `MkdirTemp` error | Low |
-| `pipeline/fix_provider.go:105-118` | `LineProvider.Edits` hidden state machine (3-way dispatch) | Low |
+| Location                           | Smell                                                                                       | Severity |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- | -------- |
+| `finding.go:275-283`               | `Equal()` has 9-condition compound boolean on single `if`                                   | Low      |
+| `finding.go:270`                   | `Key()` uses `"\x00"` separator — fragile with user-controlled data                         | Low      |
+| `sarif_import.go:34`               | `findingFromSarResult` — 3-level index chain `[0].Fixes[0].Changes[0]` with no bounds check | Medium   |
+| `sarif_import.go:118`              | `applySarifProperties` — 10 sequential type-assertion blocks, repetitive pattern            | Medium   |
+| `pipeline/fix_engine.go:114-148`   | `applyEditsWithConflicts` O(n·m) allocations from repeated slice splicing                   | Low      |
+| `pipeline/conflict.go:100-119`     | `detectConflictsInFile` builds groups then immediately re-splits them                       | Low      |
+| `pipeline/fix_applier.go:23-26`    | `NewFixApplier` silently swallows `MkdirTemp` error                                         | Low      |
+| `pipeline/fix_provider.go:105-118` | `LineProvider.Edits` hidden state machine (3-way dispatch)                                  | Low      |
 
 ---
 
@@ -191,48 +192,48 @@ The codebase is in excellent shape:
 
 ### Priority 0 — Ship Blockers
 
-| # | Task | Impact | Work |
-|---|------|--------|------|
-| 1 | **API stability review** — audit all exported symbols, lock naming conventions | High | Medium |
-| 2 | **Decide `NewFinding` API pattern** — Builder vs constructor vs literal, document the canonical way | High | Low |
-| 3 | **Decide FixProvider module location** — Where do domain-specific providers live? | High | Low |
+| #   | Task                                                                                                | Impact | Work   |
+| --- | --------------------------------------------------------------------------------------------------- | ------ | ------ |
+| 1   | **API stability review** — audit all exported symbols, lock naming conventions                      | High   | Medium |
+| 2   | **Decide `NewFinding` API pattern** — Builder vs constructor vs literal, document the canonical way | High   | Low    |
+| 3   | **Decide FixProvider module location** — Where do domain-specific providers live?                   | High   | Low    |
 
 ### Priority 1 — Quality Before v1.0
 
-| # | Task | Impact | Work |
-|---|------|--------|------|
-| 4 | **Decompose `FindingsFromSARIF`** (CC 90→<35) — Extract field mappers, reduce nesting | High | Medium |
-| 5 | **Error wrapping consistency audit** — Ensure all `%w` wraps preserve `errors.Is` chains | Medium | Medium |
-| 6 | **Add `WriteSARIF` error-path tests** — Disk full, permission denied, invalid path | Medium | Low |
-| 7 | **Add `Confidence.IsValid()` and `String()` tests** — Gap in coverage | Low | Low |
-| 8 | **Make `Key()` separator a named constant** — `const keySeparator = "\x00"` + document | Low | Low |
-| 9 | **Extract `Equal()` into readable helper** — 9-condition boolean is a maintenance hazard | Low | Low |
-| 10 | **Add bounds checks in `findingFromSARIF`** — `[0].Fixes[0].Changes[0]` chain can panic | Medium | Low |
+| #   | Task                                                                                     | Impact | Work   |
+| --- | ---------------------------------------------------------------------------------------- | ------ | ------ |
+| 4   | **Decompose `FindingsFromSARIF`** (CC 90→<35) — Extract field mappers, reduce nesting    | High   | Medium |
+| 5   | **Error wrapping consistency audit** — Ensure all `%w` wraps preserve `errors.Is` chains | Medium | Medium |
+| 6   | **Add `WriteSARIF` error-path tests** — Disk full, permission denied, invalid path       | Medium | Low    |
+| 7   | **Add `Confidence.IsValid()` and `String()` tests** — Gap in coverage                    | Low    | Low    |
+| 8   | **Make `Key()` separator a named constant** — `const keySeparator = "\x00"` + document   | Low    | Low    |
+| 9   | **Extract `Equal()` into readable helper** — 9-condition boolean is a maintenance hazard | Low    | Low    |
+| 10  | **Add bounds checks in `findingFromSARIF`** — `[0].Fixes[0].Changes[0]` chain can panic  | Medium | Low    |
 
 ### Priority 2 — Hardening
 
-| # | Task | Impact | Work |
-|---|------|--------|------|
-| 11 | **Benchmark baseline file** — Run benchmarks, commit baseline, CI regression check | Medium | Low |
-| 12 | **Coverage threshold enforcement** — `go test -cover -coverprofile=cover.out`, fail CI below 90% | Medium | Low |
-| 13 | **Fuzz corpus persistence** — Check in seed corpus files for 17 fuzz targets | Medium | Low |
-| 14 | **Fix pre-commit hook** — Make `.git/hooks/pre-commit` executable | Low | Trivial |
-| 15 | **Stale CHANGELOG cleanup** — Remove `floatEq` reference and other outdated entries | Low | Low |
-| 16 | **`NewFixApplier` error handling** — Propagate `MkdirTemp` error instead of silent fallback | Medium | Low |
-| 17 | **Refactor `applySarifProperties`** — Replace 10 type-assertion blocks with keyed struct unmarshal | Medium | Medium |
+| #   | Task                                                                                               | Impact | Work    |
+| --- | -------------------------------------------------------------------------------------------------- | ------ | ------- |
+| 11  | **Benchmark baseline file** — Run benchmarks, commit baseline, CI regression check                 | Medium | Low     |
+| 12  | **Coverage threshold enforcement** — `go test -cover -coverprofile=cover.out`, fail CI below 90%   | Medium | Low     |
+| 13  | **Fuzz corpus persistence** — Check in seed corpus files for 17 fuzz targets                       | Medium | Low     |
+| 14  | **Fix pre-commit hook** — Make `.git/hooks/pre-commit` executable                                  | Low    | Trivial |
+| 15  | **Stale CHANGELOG cleanup** — Remove `floatEq` reference and other outdated entries                | Low    | Low     |
+| 16  | **`NewFixApplier` error handling** — Propagate `MkdirTemp` error instead of silent fallback        | Medium | Low     |
+| 17  | **Refactor `applySarifProperties`** — Replace 10 type-assertion blocks with keyed struct unmarshal | Medium | Medium  |
 
 ### Priority 3 — Polish & Documentation
 
-| # | Task | Impact | Work |
-|---|------|--------|------|
-| 18 | **CLI `run()` testability refactor** — Extract business logic from `run()` into testable functions | Medium | Medium |
-| 19 | **Unify `Tag` deprecation** — Remove `WithTag` fully, standardize on `Tags` field | Low | Low |
-| 20 | **Add `Properties map[string]any`** — Structured properties alongside Metadata string map | Medium | Medium |
-| 21 | **Add `io.WriterTo` for SARIF** — Streaming SARIF output for large result sets | Low | Low |
-| 22 | **SARIF schema validation** — Validate exported SARIF against official JSON schema | Medium | Medium |
-| 23 | **Nix flake migration** — Replace justfile with flake.nix for all build automation | Medium | High |
-| 24 | **Go module doc examples** — Add runnable `Example*` functions for key APIs (21 exist, add more) | Low | Low |
-| 25 | **Archive old status reports** — Move 6 active status files to `archive/`, keep only this one | Low | Trivial |
+| #   | Task                                                                                               | Impact | Work    |
+| --- | -------------------------------------------------------------------------------------------------- | ------ | ------- |
+| 18  | **CLI `run()` testability refactor** — Extract business logic from `run()` into testable functions | Medium | Medium  |
+| 19  | **Unify `Tag` deprecation** — Remove `WithTag` fully, standardize on `Tags` field                  | Low    | Low     |
+| 20  | **Add `Properties map[string]any`** — Structured properties alongside Metadata string map          | Medium | Medium  |
+| 21  | **Add `io.WriterTo` for SARIF** — Streaming SARIF output for large result sets                     | Low    | Low     |
+| 22  | **SARIF schema validation** — Validate exported SARIF against official JSON schema                 | Medium | Medium  |
+| 23  | **Nix flake migration** — Replace justfile with flake.nix for all build automation                 | Medium | High    |
+| 24  | **Go module doc examples** — Add runnable `Example*` functions for key APIs (21 exist, add more)   | Low    | Low     |
+| 25  | **Archive old status reports** — Move 6 active status files to `archive/`, keep only this one      | Low    | Trivial |
 
 ---
 
@@ -241,12 +242,14 @@ The codebase is in excellent shape:
 **What is the minimum bar for shipping v1.0?**
 
 The TODO_LIST has 3 P0 items, 8 P1 items, and 36 P2/P3 items. The codebase is:
+
 - Build-green, test-green, vet-clean
 - 607 test entry points, 2.50:1 test ratio
 - No banned dependencies, no known bugs
 - Strong type safety, clean architecture, good documentation
 
 **Is the v1.0 bar:**
+
 - (a) "All P0 done + API lock announcement" — could ship today with ~2 hours of API review
 - (b) "All P0 + P1 done" — probably 2-3 focused sessions
 - (c) "All P0 + P1 + coverage threshold + benchmark baseline" — 4-5 sessions
