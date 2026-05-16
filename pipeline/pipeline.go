@@ -27,7 +27,7 @@ type Pipeline struct {
 // Returns an error if the configuration is invalid.
 func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error) {
 	if err := config.Validate(); err != nil {
-		return nil, fmt.Errorf("validate config: %w", err)
+		return nil, fmt.Errorf("validate config (detectors=%d): %w", len(detectors), err)
 	}
 
 	// Wrap detectors with retry if configured.

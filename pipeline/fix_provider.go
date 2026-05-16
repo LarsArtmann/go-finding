@@ -261,11 +261,11 @@ func lineColToOffset(content []byte, line, col int) (int, error) {
 // offset using a pre-built line offset index for O(1) lookup.
 func indexLineColToOffset(index []int, contentLen, line, col int) (int, error) {
 	if line < 1 {
-		return 0, fmt.Errorf("%w: %d", errInvalidLine, line)
+		return 0, fmt.Errorf("%w: %d (contentLen=%d)", errInvalidLine, line, contentLen)
 	}
 
 	if line > len(index) {
-		return 0, fmt.Errorf("%w: %d", errLineBeyondEOF, line)
+		return 0, fmt.Errorf("%w: %d (contentLen=%d)", errLineBeyondEOF, line, contentLen)
 	}
 
 	offset := index[line-1]

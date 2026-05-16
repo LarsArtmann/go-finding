@@ -43,7 +43,7 @@ func loadConfig(
 	if configFile != "" {
 		data, err := os.ReadFile(configFile)
 		if err != nil {
-			return pipelineConfigFile{}, fmt.Errorf("reading config: %w", err)
+			return pipelineConfigFile{}, fmt.Errorf("reading config %q: %w", configFile, err)
 		}
 
 		var cfg pipelineConfigFile
@@ -51,16 +51,20 @@ func loadConfig(
 		switch ext := filepath.Ext(configFile); ext {
 		case ".yaml", ".yml":
 			if err := yaml.Unmarshal(data, &cfg); err != nil {
-				return pipelineConfigFile{}, fmt.Errorf("parsing YAML config: %w", err)
+				return pipelineConfigFile{}, fmt.Errorf(
+					"parsing YAML config %q: %w",
+					configFile,
+					err,
+				)
 			}
 		default:
 			if err := json.Unmarshal(data, &cfg); err != nil {
-				return pipelineConfigFile{}, fmt.Errorf("parsing config: %w", err)
+				return pipelineConfigFile{}, fmt.Errorf("parsing config %q: %w", configFile, err)
 			}
 		}
 
 		if err := cfg.validate(); err != nil {
-			return pipelineConfigFile{}, fmt.Errorf("invalid config: %w", err)
+			return pipelineConfigFile{}, fmt.Errorf("invalid config %q: %w", configFile, err)
 		}
 
 		return cfg, nil
@@ -147,7 +151,7 @@ func writeOutput(report *finding.Report, format, outputFile string) error {
 	if outputFile != "" {
 		f, err := os.Create(outputFile)
 		if err != nil {
-			return fmt.Errorf("creating output file: %w", err)
+			return fmt.Errorf("creating output file %s: %w", outputFile, err)
 		}
 
 		defer func() { _ = f.Close() }()

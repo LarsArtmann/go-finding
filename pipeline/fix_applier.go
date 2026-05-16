@@ -37,7 +37,12 @@ func NewFixApplier(rootDir string) (*FixApplier, error) {
 func NewFixApplierWithProviders(rootDir string, providers ...FixProvider) (*FixApplier, error) {
 	backupDir, err := os.MkdirTemp("", "go-finding-backups-*")
 	if err != nil {
-		return nil, fmt.Errorf("create backup directory: %w", err)
+		return nil, fmt.Errorf(
+			"create backup directory for rootDir=%s providers=%d: %w",
+			rootDir,
+			len(providers),
+			err,
+		)
 	}
 
 	return &FixApplier{

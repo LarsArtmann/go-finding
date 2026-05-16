@@ -58,7 +58,7 @@ func (r *Report) ToSARIF() ([]byte, error) {
 func (r *Report) ToSARIFFiltered(minSeverity Severity) ([]byte, error) {
 	data, err := json.MarshalIndent(r.sarifLogFiltered(minSeverity), "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("marshaling SARIF: %w", err)
+		return nil, fmt.Errorf("marshaling SARIF filtered (minSeverity=%s): %w", minSeverity, err)
 	}
 
 	return data, nil
@@ -85,7 +85,7 @@ func (r *Report) WriteSARIFFiltered(w io.Writer, minSeverity Severity) error {
 	enc.SetIndent("", "  ")
 
 	if err := enc.Encode(r.sarifLogFiltered(minSeverity)); err != nil {
-		return fmt.Errorf("encoding SARIF: %w", err)
+		return fmt.Errorf("encoding SARIF filtered (minSeverity=%s): %w", minSeverity, err)
 	}
 
 	return nil
