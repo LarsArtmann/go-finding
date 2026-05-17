@@ -20,20 +20,12 @@ type FixApplier struct {
 
 // NewFixApplier creates a new FixApplier with default text-based providers.
 func NewFixApplier(rootDir string) (*FixApplier, error) {
-	backupDir, err := os.MkdirTemp("", "go-finding-backups-*")
-	if err != nil {
-		return nil, fmt.Errorf("create backup directory: %w", err)
-	}
-
-	return &FixApplier{
-		rootDir: rootDir,
-		backup:  NewFileBackup(backupDir),
-		engine:  NewFixEngine(),
-	}, nil
+	return NewFixApplierWithProviders(rootDir)
 }
 
 // NewFixApplierWithProviders creates a FixApplier with custom fix providers.
 // Use this to register domain-specific providers (e.g., Go AST, Rust syn).
+// When called with no providers, uses the default provider chain.
 func NewFixApplierWithProviders(rootDir string, providers ...FixProvider) (*FixApplier, error) {
 	backupDir, err := os.MkdirTemp("", "go-finding-backups-*")
 	if err != nil {
@@ -45,10 +37,15 @@ func NewFixApplierWithProviders(rootDir string, providers ...FixProvider) (*FixA
 		)
 	}
 
+	engine := NewFixEngineWithProviders(providers...)
+	if len(providers) == 0 {
+		engine = NewFixEngine()
+	}
+
 	return &FixApplier{
 		rootDir: rootDir,
 		backup:  NewFileBackup(backupDir),
-		engine:  NewFixEngineWithProviders(providers...),
+		engine:  engine,
 	}, nil
 }
 
