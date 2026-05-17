@@ -8,8 +8,19 @@ Thank you for your interest in contributing to `go-finding`. This document outli
 
 - Go 1.26 or later
 - `golangci-lint` (for linting)
-- `golang.org/x/tools` (for `go/analysis` integration)
-- `golang.org/x/sync` (for errgroup)
+
+### Nix Setup (optional)
+
+If you use [Nix](https://nixos.org/), you can get a reproducible development environment:
+
+```bash
+# Enter dev shell (if flake.nix is configured)
+nix develop
+
+# Or with direnv (auto-loads on cd)
+echo "use flake" > .envrc
+direnv allow
+```
 
 ### Getting Started
 

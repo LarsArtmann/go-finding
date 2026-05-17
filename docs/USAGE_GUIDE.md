@@ -354,7 +354,35 @@ sarif, err := report.ToSARIF()
 
 // Filtered by minimum severity
 sarif, err = report.ToSARIFFiltered(finding.SeverityWarning)
+
+// Streaming (no intermediate buffer allocation)
+err = report.WriteSARIF(os.Stdout)
+err = report.WriteSARIFFiltered(os.Stdout, finding.SeverityWarning)
 ```
+
+### SARIF Round-Trip Fidelity
+
+Importing SARIF that was exported by go-finding preserves all fields via the `properties` bag (`go-finding/*` prefix):
+
+```go
+// Export → Import round-trip
+sarif, _ := report.ToSARIF()
+findings, _ := finding.FindingsFromSARIF(sarif)
+// All fields preserved: ID, Severity, Category, Tags, Confidence, etc.
+```
+
+**Known limitations:**
+- Suppressed findings are excluded from export (lossy)
+- `SeverityCritical` maps to SARIF `"error"` (no critical level in SARIF 2.1.0); original severity preserved in properties
+- Non-go-finding SARIF (from other tools) imports with best-effort mapping; unknown fields land in `Metadata`
+
+### SARIF Import
+
+```go
+findings, err := finding.FindingsFromSARIF(sarifData)
+```
+
+Imported findings get auto-generated IDs if not present in the SARIF data.
 
 ## Pipeline
 
