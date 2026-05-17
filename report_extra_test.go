@@ -224,7 +224,7 @@ func TestReport_Validate(t *testing.T) {
 		t.Parallel()
 
 		r := NewReport(ToolInfo{Name: "test"})
-		r.AddFinding(Finding{}) //nolint:exhaustruct
+		r.AddFinding(Finding{})
 
 		err := r.Validate()
 		if err == nil {
@@ -240,8 +240,8 @@ func TestReport_Validate(t *testing.T) {
 		t.Parallel()
 
 		r := NewReport(ToolInfo{Name: "test"})
-		r.AddFinding(Finding{}) //nolint:exhaustruct
-		r.AddFinding(Finding{}) //nolint:exhaustruct
+		r.AddFinding(Finding{})
+		r.AddFinding(Finding{})
 
 		err := r.Validate()
 		if err == nil {
