@@ -113,7 +113,7 @@
 
 - [x] **Decompose `FindingsFromSARIF`** — Done. Split into `findingFromSarResult` (52 lines), `applySarifPosition` (32 lines), `applySarifProperties` (54 lines) with `stringProp` helper. Main function is 19 lines. (`sarif_import.go`) — **Still TODO:** decompose `findingToSARIF` export side (115 lines).
 - [x] **Error wrapping consistency audit** — Verified: 100% `%w` wrapping across all 44 production files. Zero violations. Every `fmt.Errorf` wraps errors. `errors.New` used only for sentinels (correct pattern).
-- [ ] **Refactor CLI `run()` for testability** — Uses global flag state (`flag.CommandLine`, `os.Args`, `os.Stderr`). Should accept `io.Writer` + `*flag.FlagSet` as parameters. (`cmd/go-finding/main.go`)
+- [x] **Refactor CLI `run()` for testability** — `outputResults(w io.Writer, report, format)` already extracted at `config.go:164`. `writeOutput()` handles file creation. Summary/metrics printing in `run()` still uses `os.Stderr` directly but is acceptable for CLI entry point.
 
 ### Tag/Finding Cleanup
 
@@ -151,12 +151,12 @@
 
 - [ ] **SARIF schema validation test** — Verify output conforms to SARIF 2.1.0 JSON schema. Requires downloading schema. (`sarif_test.go`)
 - [ ] **Evaluate `go-sarif` vs hand-rolled SARIF** — Assess migration cost for spec compliance. Deferred to post-v1.
-- [ ] **Document SARIF round-trip losses in user-facing docs** — `sarif.go` has code comments but no user-facing documentation.
+- [x] **Document SARIF round-trip losses in user-facing docs** — Done. `docs/USAGE_GUIDE.md` now has SARIF Round-Trip Fidelity section with limitations and import docs.
 - [ ] **`go/analysis` reverse conversion** — Converting back to `analysis.Diagnostic` is not yet supported. Noted in README.
 
 ### Documentation
 
-- [ ] **Add Nix setup path to `CONTRIBUTING.md`** — Currently missing despite migration proposal existing.
+- [x] **Add Nix setup path to `CONTRIBUTING.md`** — Done. Nix develop and direnv instructions added to Prerequisites section.
 - [ ] **Document `FixStrategyAI` semantics in user-facing docs** — Currently only in code comments and architecture-decisions.md.
 - [ ] **Add `Finding` JSON schema** — Formal JSON contract for API consumers.
 - [x] **Create consumer migration guide** — Done. `docs/MIGRATION_v0.1-to-v0.2.md` covers all breaking changes and new features.
@@ -164,7 +164,7 @@
 ### Type Model
 
 - [ ] **`Finding` struct sub-grouping** — Group fields into `Identity`, `Location`, `Fix`, `Context` embedded sub-structs. Breaking API change, deferred to v2.
-- [ ] **`Category.IsValid()` clarify semantics** — Current design is intentional: `IsValid()` accepts any non-empty string (custom categories are valid), `IsStandard()` checks the 14 predefined constants. Tests explicitly validate this behavior. Close or improve godoc to make the distinction clearer.
+- [x] **`Category.IsValid()` clarify semantics** — Godoc already documents the distinction clearly: `IsValid()` accepts custom categories, `IsStandard()` checks predefined constants. No change needed.
 - [ ] **Protect `Confidence` in direct struct construction** — `Finding{Confidence: 1.5}` bypasses `NewFinding` clamping. Needs design decision.
 
 ---
