@@ -85,7 +85,7 @@ sboms:
 
 brews:
   - name: go-finding
-    skip_upload: auto
+    skip_upload: true
     homepage: "https://github.com/LarsArtmann/go-finding"
     description: "Code finding tool for Go projects"
     license: MIT
@@ -131,7 +131,7 @@ nfpms:
 
 scoops:
   - name: go-finding
-    skip_upload: auto
+    skip_upload: true
     repository:
       owner: LarsArtmann
       name: homebrew-tap
