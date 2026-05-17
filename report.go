@@ -1,6 +1,8 @@
 package finding
 
 import (
+	"errors"
+	"fmt"
 	"iter"
 	"sync"
 )
@@ -15,10 +17,38 @@ type Report struct {
 	Summary  Summary   `json:"summary"`  // Aggregated statistics
 }
 
+// Validate returns an error if the Report is invalid.
+// It checks Tool info and validates each finding, returning joined errors.
+func (r *Report) Validate() error {
+	var errs []error
+
+	if err := r.Tool.Validate(); err != nil {
+		errs = append(errs, err)
+	}
+
+	for i, f := range r.Findings {
+		if err := f.Validate(); err != nil {
+			errs = append(errs, fmt.Errorf("findings[%d]: %w", i, err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
 // ToolInfo contains metadata about the tool that generated the report.
 type ToolInfo struct {
 	Name    string `json:"name"`              // Tool name
 	Version string `json:"version,omitempty"` // Tool version
+}
+
+// Validate returns an error if the ToolInfo is invalid.
+// A valid ToolInfo requires a non-empty Name.
+func (t ToolInfo) Validate() error {
+	if t.Name == "" {
+		return NewValidationError("ToolInfo.Name is required", nil)
+	}
+
+	return nil
 }
 
 // Summary contains aggregated statistics for a report.

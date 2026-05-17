@@ -1,6 +1,9 @@
 package finding
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func assertCategoryCount(t *testing.T, r *Report, cat Category, want int) {
 	t.Helper()
@@ -165,4 +168,96 @@ func TestReport_Merge_Empty(t *testing.T) {
 	if len(a.Findings) != 1 {
 		t.Errorf("Findings length = %d, want 1", len(a.Findings))
 	}
+}
+
+func TestToolInfo_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid", func(t *testing.T) {
+		t.Parallel()
+
+		if err := (ToolInfo{Name: "govet"}).Validate(); err != nil {
+			t.Errorf("Validate() = %v, want nil", err)
+		}
+	})
+
+	t.Run("empty_name", func(t *testing.T) {
+		t.Parallel()
+
+		err := ToolInfo{}.Validate()
+		if err == nil {
+			t.Fatal("Validate() = nil, want error")
+		}
+	})
+}
+
+func TestReport_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid", func(t *testing.T) {
+		t.Parallel()
+
+		r := NewReport(ToolInfo{Name: "test"})
+		r.AddFinding(validFinding("R1", "test", "msg"))
+
+		if err := r.Validate(); err != nil {
+			t.Errorf("Validate() = %v, want nil", err)
+		}
+	})
+
+	t.Run("empty_tool_name", func(t *testing.T) {
+		t.Parallel()
+
+		r := NewReport(ToolInfo{})
+
+		err := r.Validate()
+		if err == nil {
+			t.Fatal("Validate() = nil, want error")
+		}
+
+		if !strings.Contains(err.Error(), "ToolInfo.Name") {
+			t.Errorf("Validate() = %v, want ToolInfo.Name error", err)
+		}
+	})
+
+	t.Run("invalid_finding", func(t *testing.T) {
+		t.Parallel()
+
+		r := NewReport(ToolInfo{Name: "test"})
+		r.AddFinding(Finding{}) //nolint:exhaustruct
+
+		err := r.Validate()
+		if err == nil {
+			t.Fatal("Validate() = nil, want error")
+		}
+
+		if !strings.Contains(err.Error(), "findings[0]") {
+			t.Errorf("Validate() = %v, want findings[0] error", err)
+		}
+	})
+
+	t.Run("multiple_invalid_findings", func(t *testing.T) {
+		t.Parallel()
+
+		r := NewReport(ToolInfo{Name: "test"})
+		r.AddFinding(Finding{}) //nolint:exhaustruct
+		r.AddFinding(Finding{}) //nolint:exhaustruct
+
+		err := r.Validate()
+		if err == nil {
+			t.Fatal("Validate() = nil, want error")
+		}
+
+		if !strings.Contains(err.Error(), "findings[0]") {
+			t.Errorf("Validate() missing findings[0]: %v", err)
+		}
+
+		if !strings.Contains(err.Error(), "findings[1]") {
+			t.Errorf("Validate() missing findings[1]: %v", err)
+		}
+	})
+}
+
+func validFinding(rule, tool, msg string) Finding {
+	return NewFinding(rule, tool, msg, SeverityWarning, Pos("test.go", 1, 1), 0.5)
 }
