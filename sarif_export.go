@@ -100,7 +100,7 @@ func (r *Report) buildSarifLog(results []SarifResult) SarifLog {
 }
 
 func findingToSARIF(f Finding) SarifResult {
-	result := SarifResult{ //nolint:exhaustruct
+	result := SarifResult{
 		RuleID:     f.Rule,
 		Level:      severityToSARIFLevel(f.Severity),
 		Message:    SarifMessage{Text: f.Message},
@@ -115,7 +115,7 @@ func findingToSARIF(f Finding) SarifResult {
 }
 
 func sarifLocations(f Finding) []SarifLocation {
-	region := &SarifRegion{ //nolint:exhaustruct
+	region := &SarifRegion{
 		StartLine:   f.Position.Line,
 		StartColumn: f.Position.Column,
 	}
@@ -135,7 +135,7 @@ func sarifLocations(f Finding) []SarifLocation {
 
 func sarifFixes(f Finding) []SarifFix {
 	if f.HasFix() {
-		region := SarifRegion{ //nolint:exhaustruct
+		region := SarifRegion{
 			StartLine:   f.Position.Line,
 			StartColumn: f.Position.Column,
 			EndLine:     f.Position.Line,
@@ -159,7 +159,7 @@ func sarifFixes(f Finding) []SarifFix {
 	}
 
 	if f.HasSuggestion() {
-		return []SarifFix{{ //nolint:exhaustruct
+		return []SarifFix{{
 			Description: SarifMessage{Text: f.Suggestion},
 		}}
 	}
@@ -175,10 +175,10 @@ func sarifRelatedLocs(f Finding) []SarifRelatedLoc {
 	related := make([]SarifRelatedLoc, 0, len(f.Related))
 
 	for _, rel := range f.Related {
-		sarifRel := SarifRelatedLoc{ //nolint:exhaustruct
+		sarifRel := SarifRelatedLoc{
 			PhysicalLocation: SarifPhysicalLocation{
 				ArtifactLocation: SarifArtifactLocation{URI: rel.Position.File},
-				Region: &SarifRegion{ //nolint:exhaustruct
+				Region: &SarifRegion{
 					StartLine:   rel.Position.Line,
 					StartColumn: rel.Position.Column,
 				},

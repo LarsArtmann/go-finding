@@ -242,6 +242,18 @@ linters:
           - exhaustruct
           - forbidigo
           - mnd
+      - path: sarif_types\.go
+        linters:
+          - exhaustruct
+      - path: sarif_export\.go
+        linters:
+          - exhaustruct
+      - path: sarif_import\.go
+        linters:
+          - exhaustruct
+      - path: lsp\.go
+        linters:
+          - exhaustruct
 formatters:
   enable:
     - gci

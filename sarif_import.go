@@ -32,7 +32,7 @@ func FindingsFromSARIF(data []byte) ([]Finding, error) {
 
 // findingFromSarResult converts a single SarifResult into a Finding.
 func findingFromSarResult(r SarifResult, toolName string) Finding {
-	f := Finding{ //nolint:exhaustruct
+	f := Finding{
 		Rule:     r.RuleID,
 		Severity: FromSARIFLevel(r.Level),
 		Message:  r.Message.Text,
@@ -55,13 +55,13 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 	}
 
 	for _, rel := range r.Related {
-		pos := Position{File: rel.PhysicalLocation.ArtifactLocation.URI} //nolint:exhaustruct
+		pos := Position{File: rel.PhysicalLocation.ArtifactLocation.URI}
 		if rel.PhysicalLocation.Region != nil {
 			pos.Line = rel.PhysicalLocation.Region.StartLine
 			pos.Column = rel.PhysicalLocation.Region.StartColumn
 		}
 
-		ref := RelatedRef{ //nolint:exhaustruct
+		ref := RelatedRef{
 			Relation: rel.Message.Text,
 			Position: pos,
 		}
@@ -96,12 +96,12 @@ func applySarifPosition(f *Finding, r SarifResult) {
 
 	fileURI := loc.PhysicalLocation.ArtifactLocation.URI
 	if region == nil {
-		f.Position = Position{File: fileURI} //nolint:exhaustruct
+		f.Position = Position{File: fileURI}
 
 		return
 	}
 
-	f.Position = Position{ //nolint:exhaustruct
+	f.Position = Position{
 		File:   fileURI,
 		Line:   region.StartLine,
 		Column: region.StartColumn,
@@ -111,7 +111,7 @@ func applySarifPosition(f *Finding, r SarifResult) {
 		region.EndColumn > 0 {
 		f.Range = &Range{
 			Start: f.Position,
-			End: Position{ //nolint:exhaustruct
+			End: Position{
 				File:   fileURI,
 				Line:   region.EndLine,
 				Column: region.EndColumn,
