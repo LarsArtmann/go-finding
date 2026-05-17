@@ -6,20 +6,7 @@ import (
 	"io"
 )
 
-func sarifResultsFromFindings(findings []Finding) []SarifResult {
-	results := make([]SarifResult, 0, len(findings))
-	for _, f := range findings {
-		if f.IsSuppressed() {
-			continue
-		}
-
-		results = append(results, findingToSARIF(f))
-	}
-
-	return results
-}
-
-func sarifResultsFromFindingsFiltered(findings []Finding, minSeverity Severity) []SarifResult {
+func sarifResultsFromFindings(findings []Finding, minSeverity Severity) []SarifResult {
 	results := make([]SarifResult, 0, len(findings))
 
 	for _, f := range findings {
@@ -92,17 +79,17 @@ func (r *Report) WriteSARIFFiltered(w io.Writer, minSeverity Severity) error {
 }
 
 func (r *Report) sarifLog() SarifLog {
-	return r.buildSarifLog(sarifResultsFromFindings(r.Findings))
+	return r.buildSarifLog(sarifResultsFromFindings(r.Findings, SeverityInfo))
 }
 
 func (r *Report) sarifLogFiltered(severity Severity) SarifLog {
-	return r.buildSarifLog(sarifResultsFromFindingsFiltered(r.Findings, severity))
+	return r.buildSarifLog(sarifResultsFromFindings(r.Findings, severity))
 }
 
 func (r *Report) buildSarifLog(results []SarifResult) SarifLog {
 	return SarifLog{
-		Version: "2.1.0",
-		Schema:  "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+		Version: sarifVersion,
+		Schema:  sarifSchema,
 		Runs: []SarifRun{
 			{
 				Tool:    SarifTool{Driver: sarifDriverFromReport(r)},
@@ -114,64 +101,81 @@ func (r *Report) buildSarifLog(results []SarifResult) SarifLog {
 
 func findingToSARIF(f Finding) SarifResult {
 	result := SarifResult{ //nolint:exhaustruct
-		RuleID:  f.Rule,
-		Level:   severityToSARIFLevel(f.Severity),
-		Message: SarifMessage{Text: f.Message},
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: f.Position.File},
-				Region: &SarifRegion{ //nolint:exhaustruct
-					StartLine:   f.Position.Line,
-					StartColumn: f.Position.Column,
-				},
-			},
-		}},
-		Rank: float64(f.NormalizedConfidence()) * sarifConfidenceScale,
+		RuleID:     f.Rule,
+		Level:      severityToSARIFLevel(f.Severity),
+		Message:    SarifMessage{Text: f.Message},
+		Locations:  sarifLocations(f),
+		Rank:       float64(f.NormalizedConfidence()) * sarifConfidenceScale,
+		Fixes:      sarifFixes(f),
+		Related:    sarifRelatedLocs(f),
+		Properties: sarifProperties(f),
+	}
+
+	return result
+}
+
+func sarifLocations(f Finding) []SarifLocation {
+	region := &SarifRegion{ //nolint:exhaustruct
+		StartLine:   f.Position.Line,
+		StartColumn: f.Position.Column,
 	}
 
 	if f.Range != nil && f.Range.HasEnd() {
-		result.Locations[0].PhysicalLocation.Region.EndLine = f.Range.End.Line
-		result.Locations[0].PhysicalLocation.Region.EndColumn = f.Range.End.Column
+		region.EndLine = f.Range.End.Line
+		region.EndColumn = f.Range.End.Column
 	}
 
+	return []SarifLocation{{
+		PhysicalLocation: SarifPhysicalLocation{
+			ArtifactLocation: SarifArtifactLocation{URI: f.Position.File},
+			Region:           region,
+		},
+	}}
+}
+
+func sarifFixes(f Finding) []SarifFix {
 	if f.HasFix() {
-		fix := SarifFix{
-			Description: SarifMessage{Text: f.Suggestion},
-			Changes: []SarifArtifactChange{
-				{
-					ArtifactLocation: SarifArtifactLocation{URI: f.Position.File},
-					Replacements: []SarifReplacement{
-						{
-							DeletedRegion: SarifRegion{
-								StartLine:   f.Position.Line,
-								StartColumn: f.Position.Column,
-								EndLine:     f.Position.Line,
-								EndColumn:   f.Position.Column,
-							},
-							InsertedText: SarifMessage{Text: f.AfterCode},
-						},
-					},
-				},
-			},
+		region := SarifRegion{ //nolint:exhaustruct
+			StartLine:   f.Position.Line,
+			StartColumn: f.Position.Column,
+			EndLine:     f.Position.Line,
+			EndColumn:   f.Position.Column,
 		}
 		if f.Range != nil && f.Range.HasEnd() {
-			fix.Changes[0].Replacements[0].DeletedRegion.EndLine = f.Range.End.Line
-			fix.Changes[0].Replacements[0].DeletedRegion.EndColumn = f.Range.End.Column
+			region.EndLine = f.Range.End.Line
+			region.EndColumn = f.Range.End.Column
 		}
 
-		result.Fixes = append(result.Fixes, fix)
-	} else if f.HasSuggestion() {
-		result.Fixes = append(
-			result.Fixes,
-			SarifFix{ //nolint:exhaustruct // suggestion-only fix has no changes
-				Description: SarifMessage{Text: f.Suggestion},
-			},
-		)
+		return []SarifFix{{
+			Description: SarifMessage{Text: f.Suggestion},
+			Changes: []SarifArtifactChange{{
+				ArtifactLocation: SarifArtifactLocation{URI: f.Position.File},
+				Replacements: []SarifReplacement{{
+					DeletedRegion: region,
+					InsertedText:  SarifMessage{Text: f.AfterCode},
+				}},
+			}},
+		}}
 	}
 
+	if f.HasSuggestion() {
+		return []SarifFix{{ //nolint:exhaustruct
+			Description: SarifMessage{Text: f.Suggestion},
+		}}
+	}
+
+	return nil
+}
+
+func sarifRelatedLocs(f Finding) []SarifRelatedLoc {
+	if len(f.Related) == 0 {
+		return nil
+	}
+
+	related := make([]SarifRelatedLoc, 0, len(f.Related))
+
 	for _, rel := range f.Related {
-		//nolint:exhaustruct // Properties set conditionally below
-		sarifRel := SarifRelatedLoc{
+		sarifRel := SarifRelatedLoc{ //nolint:exhaustruct
 			PhysicalLocation: SarifPhysicalLocation{
 				ArtifactLocation: SarifArtifactLocation{URI: rel.Position.File},
 				Region: &SarifRegion{ //nolint:exhaustruct
@@ -181,20 +185,24 @@ func findingToSARIF(f Finding) SarifResult {
 			},
 			Message: SarifMessage{Text: rel.Relation},
 		}
+
 		if rel.FindingID != "" {
-			if sarifRel.Properties == nil {
-				sarifRel.Properties = make(map[string]any)
-			}
-			sarifRel.Properties[sarifPropID] = rel.FindingID
+			sarifRel.Properties = map[string]any{sarifPropID: rel.FindingID}
 		}
-		result.Related = append(result.Related, sarifRel)
+
+		related = append(related, sarifRel)
 	}
 
-	props := make(map[string]any)
-	props[sarifPropID] = f.ID
-	props[sarifPropSeverity] = string(f.Severity)
-	props[sarifPropFixStrategy] = string(f.FixStrategy)
-	props[sarifPropToolName] = f.ToolName
+	return related
+}
+
+func sarifProperties(f Finding) map[string]any {
+	props := map[string]any{
+		sarifPropID:          f.ID,
+		sarifPropSeverity:    string(f.Severity),
+		sarifPropFixStrategy: string(f.FixStrategy),
+		sarifPropToolName:    f.ToolName,
+	}
 
 	if f.Category != "" {
 		props[sarifPropCategory] = string(f.Category)
@@ -205,7 +213,7 @@ func findingToSARIF(f Finding) SarifResult {
 	}
 
 	if f.Confidence > 0 {
-		props[sarifPropConfidence] = f.Confidence
+		props[sarifPropConfidence] = float64(f.Confidence)
 	}
 
 	if f.Suggestion != "" {
@@ -224,7 +232,5 @@ func findingToSARIF(f Finding) SarifResult {
 		props[k] = v
 	}
 
-	result.Properties = props
-
-	return result
+	return props
 }

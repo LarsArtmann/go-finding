@@ -7,6 +7,11 @@ package finding
 const sarifConfidenceScale = 100.0
 
 const (
+	sarifVersion = "2.1.0"
+	sarifSchema  = "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
+)
+
+const (
 	sarifPropID          = "go-finding/id"
 	sarifPropSeverity    = "go-finding/severity"
 	sarifPropFixStrategy = "go-finding/fixStrategy"
