@@ -111,14 +111,14 @@
 
 ### Code Quality
 
-- [ ] **Decompose `FindingsFromSARIF`** — Cognitive complexity 90 (threshold 35). Already partially decomposed into helpers but main function may still be complex. Verify and further decompose if needed. (`sarif.go`)
-- [ ] **Error wrapping consistency audit** — Ensure all internal errors use `%w` for unwrapping. `wrapcheck` linter catches gaps in CLI. (Various)
+- [x] **Decompose `FindingsFromSARIF`** — Done. Split into `findingFromSarResult` (52 lines), `applySarifPosition` (32 lines), `applySarifProperties` (54 lines) with `stringProp` helper. Main function is 19 lines. (`sarif_import.go`) — **Still TODO:** decompose `findingToSARIF` export side (115 lines).
+- [x] **Error wrapping consistency audit** — Verified: 100% `%w` wrapping across all 44 production files. Zero violations. Every `fmt.Errorf` wraps errors. `errors.New` used only for sentinels (correct pattern).
 - [ ] **Refactor CLI `run()` for testability** — Uses global flag state (`flag.CommandLine`, `os.Args`, `os.Stderr`). Should accept `io.Writer` + `*flag.FlagSet` as parameters. (`cmd/go-finding/main.go`)
 
 ### Tag/Finding Cleanup
 
 - [x] **Deprecate `WithTag` builder method** — Done. Added `// Deprecated: Use WithTags instead.` godoc marker. (`finding_builder.go`)
-- [ ] **Unify `Tag` deprecation** — Either fully migrate tests to `Tags []Tag` or remove the deprecation. Current state is inconsistent. (Various test files)
+- [x] **Unify `Tag` deprecation** — Done. `WithTag` fully removed from builder. All tests use `WithTags` (plural). Zero `WithTag` usage in codebase.
 - [x] **Add `Tag.IsStandard()` method** — Done. Exists at `tag.go:21`. Matches `Category.IsStandard()` pattern.
 
 ### Missing Features from Planning
@@ -127,7 +127,7 @@
 - [x] **Add `Suppression.IsActive()` method** — Done. Exists at `suppression.go:43`. Combines `IsValid() && !IsExpired(now)`.
 - [x] **Add `Report.Merge(other *Report)` method** — Done in commit `df82906`. In-place merge for accumulating findings. (`report.go:80`)
 - [ ] **Add `io.WriterTo` for SARIF** — Direct streaming without buffer allocation. `WriteSARIF` exists but is not `io.WriterTo`. (`sarif.go`)
-- [ ] **Confidence strong type** — Done. `type Confidence float64` with `IsValid()`/`Clamp()`/`String()` and named constants. (`confidence.go`)
+- [x] **Confidence strong type** — Done. `type Confidence float64` with `IsValid()`/`Clamp()`/`String()` and 5 named constants. (`confidence.go`)
 
 ### Testing
 
@@ -145,7 +145,7 @@
 - [ ] **Set up benchmark regression tracking** — Create `scripts/bench-compare.sh` or CI job. Baseline already captured in `bench_test.go`.
 - [ ] **Performance benchmarks for 10k+ findings** — FixEngine benchmarks added (1/10/100/1000 fixes). Pipeline-level benchmarks still needed. (`pipeline/fix_engine_bench_test.go`, `c946025`)
 - [ ] **Add `golines` to CI or justfile** — Enforce consistent line breaking automatically.
-- [ ] **Per-package coverage thresholds in CI** — Currently only total ≥75%. Individual package regressions (e.g., cmd 81%→70%) would go unnoticed. (Has `scripts/coverage-check.sh` but not wired to CI)
+- [x] **Per-package coverage thresholds in CI** — Done. `scripts/coverage-check.sh` wired in CI via `coverage` job. Thresholds: root 98%, pipeline 95%, cmd 90%, detectors 90%, total 93%. **Note:** script has a bug — ignores its `coverage.out` argument (generates own data).
 
 ### SARIF & Output
 
@@ -159,12 +159,12 @@
 - [ ] **Add Nix setup path to `CONTRIBUTING.md`** — Currently missing despite migration proposal existing.
 - [ ] **Document `FixStrategyAI` semantics in user-facing docs** — Currently only in code comments and architecture-decisions.md.
 - [ ] **Add `Finding` JSON schema** — Formal JSON contract for API consumers.
-- [ ] **Create consumer migration guide** — No migration guide for consumers upgrading from v0.1.3 to v0.2.0.
+- [x] **Create consumer migration guide** — Done. `docs/MIGRATION_v0.1-to-v0.2.md` covers all breaking changes and new features.
 
 ### Type Model
 
 - [ ] **`Finding` struct sub-grouping** — Group fields into `Identity`, `Location`, `Fix`, `Context` embedded sub-structs. Breaking API change, deferred to v2.
-- [ ] **`Category.IsValid()` strict validation** — Currently accepts any non-empty string. Should validate against known categories.
+- [ ] **`Category.IsValid()` clarify semantics** — Current design is intentional: `IsValid()` accepts any non-empty string (custom categories are valid), `IsStandard()` checks the 14 predefined constants. Tests explicitly validate this behavior. Close or improve godoc to make the distinction clearer.
 - [ ] **Protect `Confidence` in direct struct construction** — `Finding{Confidence: 1.5}` bypasses `NewFinding` clamping. Needs design decision.
 
 ---
@@ -232,7 +232,7 @@ These items were listed as TODOs across multiple planning/status docs but are **
 - [x] Fix `FixStrategyAI` split brain — `HasFix()` now treats AI like Suggest (requires `AfterCode`)
 - [x] Add `Builder.Build()` error return — signature is `(Finding, error)`, not panic
 - [x] Add `govulncheck` step to CI — `.github/workflows/ci.yml` has govulncheck job
-- [x] Add `go.work` for local development — `go.work` exists in repo root
+- [ ] Add `go.work` for local development — Listed as done previously but file does NOT exist. Verify intent.
 - [x] Add `FuzzFindingsFromSARIF` — `sarif_fuzz_test.go` has fuzz function (1.6M execs, zero panics)
 - [x] Document SARIF round-trip losses in code — `sarif.go` godoc on `ToSARIF()`
 - [x] Add benchmarks for hot paths — `bench_test.go` covers ID, Filter, Merge, SARIF
