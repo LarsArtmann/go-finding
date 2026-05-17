@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/larsartmann/go-finding/schemas/report.schema.json",
+  "title": "Report",
+  "description": "Top-level container for a tool run.",
+  "type": "object",
+  "required": ["tool"],
+  "additionalProperties": false,
+  "properties": {
+    "tool": {
+      "$ref": "#/$defs/toolInfo",
+      "description": "Tool metadata."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "finding.schema.json"
+      },
+      "description": "All findings from this run."
+    },
+    "summary": {
+      "$ref": "#/$defs/summary",
+      "description": "Aggregated statistics."
+    }
+  },
+  "$defs": {
+    "toolInfo": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tool name."
+        },
+        "version": {
+          "type": "string",
+          "description": "Tool version."
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total findings."
+        },
+        "bySeverity": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Count by severity level."
+        },
+        "byCategory": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Count by category."
+        },
+        "byFixStrategy": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Count by fix strategy."
+        },
+        "filesAffected": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unique files with findings."
+        },
+        "durationMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Execution time in milliseconds."
+        },
+        "suppressed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of suppressed findings."
+        }
+      }
+    }
+  }
+}

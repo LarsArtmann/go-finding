@@ -200,6 +200,18 @@ finding.FixStrategyDirect  // "direct"  — can be automatically applied
 finding.FixStrategyAI      // "ai"      — requires AI assistance
 ```
 
+#### Pipeline behavior
+
+| Strategy | `HasFix()` | `IsAutoFixable()` | `CanAutoApply()` | `NeedsAI()` |
+|----------|-----------|-------------------|------------------|-------------|
+| `none` | false | false | false | false |
+| `suggest` | true (requires `AfterCode`) | false | false | false |
+| `direct` | true (requires `AfterCode`) | true | true | false |
+| `ai` | true (requires `AfterCode`) | false | false | true |
+
+- `FixStrategyAI` is a **reserved placeholder**. No AI backend exists yet. Pipeline triage treats it like `FixStrategySuggest` (no auto-apply). Set `NeedsAI()` to `true` so consumers can identify findings that need AI-powered remediation when an AI backend becomes available.
+- `FixStrategyDirect` is the only strategy the pipeline auto-applies. It requires both `BeforeCode` and `AfterCode` to be set.
+
 ### Position and Range
 
 ```go

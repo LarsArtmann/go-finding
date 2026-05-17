@@ -54,6 +54,8 @@ jobs:
         with:
           version: v2.10.1
           args: --timeout=5m
+      - name: Check formatting
+        run: golangci-lint fmt --diff ./...
 
   govulncheck:
     runs-on: ubuntu-latest

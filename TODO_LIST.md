@@ -126,7 +126,7 @@
 - [ ] **Add `Properties map[string]any`** alongside `Metadata map[string]string` — Structured round-trip data for SARIF. Currently `Metadata` is string-only. (`finding.go`)
 - [x] **Add `Suppression.IsActive()` method** — Done. Exists at `suppression.go:43`. Combines `IsValid() && !IsExpired(now)`.
 - [x] **Add `Report.Merge(other *Report)` method** — Done in commit `df82906`. In-place merge for accumulating findings. (`report.go:80`)
-- [ ] **Add `io.WriterTo` for SARIF** — Direct streaming without buffer allocation. `WriteSARIF` exists but is not `io.WriterTo`. (`sarif.go`)
+- [x] **Add `io.WriterTo` for SARIF** — Done. `Report.WriteTo(w)` implements `io.WriterTo` via streaming SARIF with byte count.
 - [x] **Confidence strong type** — Done. `type Confidence float64` with `IsValid()`/`Clamp()`/`String()` and 5 named constants. (`confidence.go`)
 
 ### Testing
@@ -142,14 +142,14 @@
 
 ### Performance & Tooling
 
-- [ ] **Set up benchmark regression tracking** — Create `scripts/bench-compare.sh` or CI job. Baseline already captured in `bench_test.go`.
-- [ ] **Performance benchmarks for 10k+ findings** — FixEngine benchmarks added (1/10/100/1000 fixes). Pipeline-level benchmarks still needed. (`pipeline/fix_engine_bench_test.go`, `c946025`)
-- [ ] **Add `golines` to CI or justfile** — Enforce consistent line breaking automatically.
+- [x] **Set up benchmark regression tracking** — Done. `scripts/bench-compare.sh` records baseline, compares with benchstat, supports --reset/--bench/--count flags.
+- [x] **Performance benchmarks for 10k+ findings** — Done. Pipeline benchmarks at 100/1k/10k findings for dry-run, correlation, and parallel detection. (`pipeline/pipeline_bench_test.go`)
+- [x] **Add `golines` to CI or justfile** — Done. `golangci-lint fmt --diff ./...` step added to CI lint job. golines already configured in `.golangci.yml` formatters.
 - [x] **Per-package coverage thresholds in CI** — Done. `scripts/coverage-check.sh` wired in CI via `coverage` job. Thresholds: root 98%, pipeline 95%, cmd 90%, detectors 90%, total 93%. **Note:** script has a bug — ignores its `coverage.out` argument (generates own data).
 
 ### SARIF & Output
 
-- [ ] **SARIF schema validation test** — Verify output conforms to SARIF 2.1.0 JSON schema. Requires downloading schema. (`sarif_test.go`)
+- [x] **SARIF schema validation test** — Done. `TestSARIF_SchemaCompliance` validates structural compliance with SARIF 2.1.0: version, schema URI, required fields (tool.driver.name, ruleId, level, message, locations), level enum, rank bounds, properties, fixes, and related locations.
 - [ ] **Evaluate `go-sarif` vs hand-rolled SARIF** — Assess migration cost for spec compliance. Deferred to post-v1.
 - [x] **Document SARIF round-trip losses in user-facing docs** — Done. `docs/USAGE_GUIDE.md` now has SARIF Round-Trip Fidelity section with limitations and import docs.
 - [ ] **`go/analysis` reverse conversion** — Converting back to `analysis.Diagnostic` is not yet supported. Noted in README.
@@ -157,8 +157,8 @@
 ### Documentation
 
 - [x] **Add Nix setup path to `CONTRIBUTING.md`** — Done. Nix develop and direnv instructions added to Prerequisites section.
-- [ ] **Document `FixStrategyAI` semantics in user-facing docs** — Currently only in code comments and architecture-decisions.md.
-- [ ] **Add `Finding` JSON schema** — Formal JSON contract for API consumers.
+- [x] **Document `FixStrategyAI` semantics in user-facing docs** — Done. USAGE_GUIDE.md now includes pipeline behavior table and semantics for all strategies.
+- [x] **Add `Finding` JSON schema** — Done. `docs/schemas/finding.schema.json` + `docs/schemas/report.schema.json` with JSON Schema Draft 2020-12. Schema round-trip test in `schema_test.go`.
 - [x] **Create consumer migration guide** — Done. `docs/MIGRATION_v0.1-to-v0.2.md` covers all breaking changes and new features.
 
 ### Type Model
@@ -195,7 +195,7 @@
 - [ ] **Progress reporting to Pipeline** — Callback for long-running operations
 - [ ] **Styled CLI output** using `lipgloss`
 - [ ] **Interactive TUI for fix review** (`bubbletea`)
-- [ ] **`FuzzFindingsFromJSON` fuzzer** — JSON import is another attack surface beyond SARIF
+- [x] **`FuzzFindingsFromJSON` fuzzer** — Done. `json_fuzz_test.go` with FuzzFindingsFromJSON, FuzzReportFromJSON, FuzzFromJSON. 1.1M+ execs, zero panics.
 
 ### Integration
 
@@ -232,7 +232,7 @@ These items were listed as TODOs across multiple planning/status docs but are **
 - [x] Fix `FixStrategyAI` split brain — `HasFix()` now treats AI like Suggest (requires `AfterCode`)
 - [x] Add `Builder.Build()` error return — signature is `(Finding, error)`, not panic
 - [x] Add `govulncheck` step to CI — `.github/workflows/ci.yml` has govulncheck job
-- [ ] Add `go.work` for local development — Listed as done previously but file does NOT exist. Verify intent.
+- [x] Add `go.work` for local development — Not needed: single-module project (no sub-modules). `go.work` is for multi-module workspaces only.
 - [x] Add `FuzzFindingsFromSARIF` — `sarif_fuzz_test.go` has fuzz function (1.6M execs, zero panics)
 - [x] Document SARIF round-trip losses in code — `sarif.go` godoc on `ToSARIF()`
 - [x] Add benchmarks for hot paths — `bench_test.go` covers ID, Filter, Merge, SARIF

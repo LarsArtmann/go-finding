@@ -78,6 +78,30 @@ func (r *Report) WriteSARIFFiltered(w io.Writer, minSeverity Severity) error {
 	return nil
 }
 
+// WriteTo writes the report in SARIF 2.1.0 format to w and returns the bytes written.
+// Implements io.WriterTo, enabling use with io.Copy for streaming SARIF output.
+func (r *Report) WriteTo(w io.Writer) (int64, error) {
+	cw := &countingWriter{w: w}
+
+	if err := r.WriteSARIF(cw); err != nil {
+		return cw.n, fmt.Errorf("writing SARIF: %w", err)
+	}
+
+	return cw.n, nil
+}
+
+type countingWriter struct {
+	w io.Writer
+	n int64
+}
+
+func (c *countingWriter) Write(p []byte) (int, error) {
+	n, err := c.w.Write(p)
+	c.n += int64(n)
+
+	return n, err //nolint:wrapcheck // passthrough writer — wrapping would be misleading
+}
+
 func (r *Report) sarifLog() SarifLog {
 	return r.buildSarifLog(sarifResultsFromFindings(r.Findings, SeverityInfo))
 }

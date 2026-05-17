@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/larsartmann/go-finding/schemas/finding.schema.json",
+  "title": "Finding",
+  "description": "A single issue detected by a static analysis tool.",
+  "type": "object",
+  "required": ["id", "rule", "toolName", "message", "severity", "position", "fixStrategy"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable unique identifier (e.g., 'tool:rule:file:42:5')."
+    },
+    "rule": {
+      "type": "string",
+      "description": "Rule/check name (e.g., 'SA1000', 'clone-detected')."
+    },
+    "toolName": {
+      "type": "string",
+      "description": "Source tool name (e.g., 'govet', 'staticcheck')."
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable description of the issue."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "critical"],
+      "description": "Severity level."
+    },
+    "position": {
+      "$ref": "#/$defs/position",
+      "description": "Where the issue is located."
+    },
+    "category": {
+      "type": "string",
+      "description": "Domain classification (e.g., 'security', 'style', 'duplication'). Standard categories: security, style, performance, correctness, testing, unused, duplication, complexity, compatibility, reliability, accessibility, deprecated, vulnerability. Custom values are valid."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tag"
+      },
+      "description": "Multiple tags for richer classification."
+    },
+    "fixStrategy": {
+      "type": "string",
+      "enum": ["none", "suggest", "direct", "ai"],
+      "description": "How the finding can be remediated."
+    },
+    "suggestion": {
+      "type": "string",
+      "description": "Human-readable fix description."
+    },
+    "beforeCode": {
+      "type": "string",
+      "description": "Code before the fix."
+    },
+    "afterCode": {
+      "type": "string",
+      "description": "Code after the fix."
+    },
+    "range": {
+      "$ref": "#/$defs/range",
+      "description": "For span-based findings."
+    },
+    "snippet": {
+      "type": "string",
+      "description": "Surrounding code context."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence score from 0.0 to 1.0."
+    },
+    "related": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/relatedRef"
+      },
+      "description": "Related findings."
+    },
+    "suppression": {
+      "$ref": "#/$defs/suppression",
+      "description": "If the finding is suppressed."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Tool-specific key-value pairs."
+    }
+  },
+  "$defs": {
+    "position": {
+      "type": "object",
+      "required": ["file"],
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "File path (required)."
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "1-based line number; 0 means not set."
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "1-based column number; 0 means not set."
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "0-based byte offset; -1 means not set."
+        }
+      }
+    },
+    "range": {
+      "type": "object",
+      "required": ["start"],
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "$ref": "#/$defs/position",
+          "description": "Start position (required)."
+        },
+        "end": {
+          "$ref": "#/$defs/position",
+          "description": "End position (optional)."
+        }
+      }
+    },
+    "relatedRef": {
+      "type": "object",
+      "required": ["findingId", "relation", "position"],
+      "additionalProperties": false,
+      "properties": {
+        "findingId": {
+          "type": "string",
+          "description": "ID of the related finding."
+        },
+        "relation": {
+          "type": "string",
+          "description": "Relationship type (e.g., 'clone-of', 'wraps', 'causes')."
+        },
+        "position": {
+          "$ref": "#/$defs/position",
+          "description": "Location of the related finding."
+        }
+      }
+    },
+    "suppression": {
+      "type": "object",
+      "required": ["kind", "rule", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["in-source", "in-config", "in-review"],
+          "description": "Where the suppression is defined."
+        },
+        "rule": {
+          "type": "string",
+          "description": "Which rule is suppressed."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why it's suppressed."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional expiry timestamp (RFC 3339)."
+        }
+      }
+    },
+    "tag": {
+      "type": "string",
+      "description": "A classification tag. Standard tags: security, performance, style, correctness, testing, unused, duplication, complexity, compatibility, reliability, accessibility, deprecated, vulnerability. Custom values are valid."
+    }
+  }
+}
