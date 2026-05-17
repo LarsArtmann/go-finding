@@ -132,9 +132,9 @@
 ### Testing
 
 - [x] **Add BDD tests for pipeline** — 44+ ginkgo BDD specs across root and pipeline packages including FixProvider contract. (`bdd_test.go`, `pipeline/bdd_test.go`)
-- [ ] **Add `WriteSARIF` error-path test** — Use `failingWriter` pattern. Currently 75% coverage. (`sarif_test.go`)
-- [ ] **Add `detectPartialSequential` context-cancel test** — 90% coverage, cancel path untested. (`pipeline/partial_test.go`)
-- [ ] **Add `detectPartialParallel` context-cancel test** — 94.1% coverage, cancel path untested. (`pipeline/partial_test.go`)
+- [x] **Add `WriteSARIF` error-path test** — Done. `TestWriteSARIF_WriterError` and `TestWriteSARIFFiltered_WriterError` use `failWriter` pattern. (`sarif_test.go:806-848`)
+- [x] **Add `detectPartialSequential` context-cancel test** — Done. `TestDetectPartial_Sequential_CancelBeforeSecond` at `pipeline/partial_test.go:115`.
+- [x] **Add `detectPartialParallel` context-cancel test** — Done. `TestDetectPartial_Parallel_CancelReturnsPartial` at `pipeline/partial_test.go:138`.
 
 ---
 
