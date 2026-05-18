@@ -108,26 +108,30 @@ func (c pipelineConfigFile) validate() error {
 }
 
 func parseSeverity(s string) (finding.Severity, error) {
-	switch s {
-	case "info":
-		return finding.SeverityInfo, nil
-	case "warning":
-		return finding.SeverityWarning, nil
-	case "error":
-		return finding.SeverityError, nil
-	case "critical":
-		return finding.SeverityCritical, nil
-	default:
-		return finding.SeverityWarning, fmt.Errorf(
-			"%w %q (use: info, warning, error, critical)",
-			errUnknownSeverity,
-			s,
-		)
+	sevMap := map[string]finding.Severity{
+		finding.SeverityInfo.String():     finding.SeverityInfo,
+		finding.SeverityWarning.String():  finding.SeverityWarning,
+		finding.SeverityError.String():    finding.SeverityError,
+		finding.SeverityCritical.String(): finding.SeverityCritical,
 	}
+
+	if sev, ok := sevMap[s]; ok {
+		return sev, nil
+	}
+
+	return finding.SeverityWarning, fmt.Errorf(
+		"%w %q (use: %s, %s, %s, %s)",
+		errUnknownSeverity,
+		s,
+		finding.SeverityInfo,
+		finding.SeverityWarning,
+		finding.SeverityError,
+		finding.SeverityCritical,
+	)
 }
 
 func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
-	t := 10 * time.Minute
+	t := pipeline.DefaultTimeout
 
 	if c.Timeout != "" {
 		if d, err := time.ParseDuration(c.Timeout); err == nil {

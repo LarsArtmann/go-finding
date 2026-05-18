@@ -131,7 +131,7 @@ func (*FixEngine) applyEditsWithConflicts(
 			conflicts = append(conflicts, ConflictInfo{
 				Finding:       edit.Source,
 				ConflictsWith: conflictsWith,
-				Reason:        "overlapping edit",
+				Reason:        ReasonOverlappingEdit,
 			})
 
 			continue

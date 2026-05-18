@@ -115,16 +115,23 @@ func (e *FixEdit) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// SARIF property keys for FixEdit round-tripping.
+const (
+	SARIFEditOffsetKey      = "go-finding/edit/offset"
+	SARIFEditLengthKey      = "go-finding/edit/length"
+	SARIFEditReplacementKey = "go-finding/edit/replacement"
+)
+
 // ToSARIFProperties converts the edit to a SARIF property bag for round-tripping.
 // Store in the finding's Metadata under keys prefixed with "go-finding/edit/".
 func (e FixEdit) ToSARIFProperties() map[string]string {
 	props := map[string]string{
-		"go-finding/edit/offset": strconv.Itoa(e.Offset),
-		"go-finding/edit/length": strconv.Itoa(e.Length),
+		SARIFEditOffsetKey: strconv.Itoa(e.Offset),
+		SARIFEditLengthKey: strconv.Itoa(e.Length),
 	}
 
 	if len(e.Replacement) > 0 {
-		props["go-finding/edit/replacement"] = string(e.Replacement)
+		props[SARIFEditReplacementKey] = string(e.Replacement)
 	}
 
 	return props
@@ -133,12 +140,12 @@ func (e FixEdit) ToSARIFProperties() map[string]string {
 // FixEditFromSARIFProperties reconstructs a FixEdit from SARIF property bag values.
 // Returns nil if the required offset/length keys are missing.
 func FixEditFromSARIFProperties(props map[string]string) *FixEdit {
-	offsetStr, ok := props["go-finding/edit/offset"]
+	offsetStr, ok := props[SARIFEditOffsetKey]
 	if !ok {
 		return nil
 	}
 
-	lengthStr, ok := props["go-finding/edit/length"]
+	lengthStr, ok := props[SARIFEditLengthKey]
 	if !ok {
 		return nil
 	}
@@ -158,7 +165,7 @@ func FixEditFromSARIFProperties(props map[string]string) *FixEdit {
 		Length: length,
 	}
 
-	if replacement, ok := props["go-finding/edit/replacement"]; ok {
+	if replacement, ok := props[SARIFEditReplacementKey]; ok {
 		edit.Replacement = []byte(replacement)
 	}
 

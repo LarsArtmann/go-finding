@@ -13,6 +13,9 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
+// DefaultRelation is the default relation type for related information.
+const DefaultRelation = "related"
+
 // FromDiagnostic converts a go/analysis.Diagnostic to a Finding.
 // The toolName parameter identifies which analyzer produced this.
 // The ruleCode parameter provides a rule identifier (since go/analysis.Diagnostic doesn't have Code).
@@ -66,7 +69,7 @@ func FromDiagnostic(
 		relatedID := finding.GenerateID(toolName, ruleCode, FromTokenPosition(relatedPos))
 		f.Related = append(f.Related, finding.RelatedRef{
 			FindingID: relatedID,
-			Relation:  "related",
+			Relation:  DefaultRelation,
 			Position:  FromTokenPosition(relatedPos),
 		})
 	}

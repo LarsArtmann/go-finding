@@ -104,9 +104,12 @@ func toZeroBased(n int) int {
 	return n - 1
 }
 
+// LSPSeverityKey is the Metadata key for preserving raw LSP severity codes.
+const LSPSeverityKey = "go-finding/lsp-severity"
+
 // FromLSP creates a Finding from an LSP Diagnostic at the given file URI.
 // Preserves end position in Range and related information when present.
-// The raw LSP severity integer is stored in Metadata under "go-finding/lsp-severity".
+// The raw LSP severity integer is stored in Metadata under LSPSeverityKey.
 func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	startLine := diag.Range.Start.Line + 1
 	startChar := diag.Range.Start.Character + 1
@@ -157,7 +160,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	// Preserve raw LSP severity for fidelity.
 	if diag.Severity > 0 {
 		f.Metadata = map[string]string{
-			"go-finding/lsp-severity": strconv.Itoa(diag.Severity),
+			LSPSeverityKey: strconv.Itoa(diag.Severity),
 		}
 	}
 

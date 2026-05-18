@@ -59,13 +59,16 @@ type Config struct {
 // DefaultMaxIterations is the default maximum number of pipeline iterations.
 const DefaultMaxIterations = 5
 
+// DefaultTimeout is the default pipeline timeout.
+const DefaultTimeout = 10 * time.Minute
+
 // DefaultConfig returns a sensible default configuration.
 func DefaultConfig() Config {
 	//nolint:exhaustruct
 	return Config{
 		MaxIterations:     DefaultMaxIterations,
 		ParallelDetectors: true,
-		Timeout:           10 * time.Minute,
+		Timeout:           DefaultTimeout,
 	}
 }
 

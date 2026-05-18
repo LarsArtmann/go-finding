@@ -6,6 +6,12 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+// Conflict reason constants.
+const (
+	ReasonOverlappingRange = "overlapping range"
+	ReasonOverlappingEdit  = "overlapping edit"
+)
+
 // FixGroup represents fixes that can be safely applied together.
 // Fixes in the same group don't conflict with each other.
 type FixGroup struct {
@@ -232,7 +238,7 @@ func AnalyzeConflicts(fixes []finding.Finding) []ConflictInfo {
 		result = append(result, ConflictInfo{
 			Finding:       cf,
 			ConflictsWith: conflictsWith,
-			Reason:        "overlapping range",
+			Reason:        ReasonOverlappingRange,
 		})
 	}
 

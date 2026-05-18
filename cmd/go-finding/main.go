@@ -42,7 +42,7 @@ func run() int {
 	flag.IntVar(&maxIter, "max-iterations", 1, "maximum pipeline iterations")
 	flag.BoolVar(&parallel, "parallel", true, "run detectors in parallel")
 	flag.BoolVar(&verify, "verify", false, "verify fixes by re-running detectors")
-	flag.DurationVar(&timeout, "timeout", 10*time.Minute, "pipeline timeout")
+	flag.DurationVar(&timeout, "timeout", pipeline.DefaultTimeout, "pipeline timeout")
 	flag.StringVar(&configFile, "config", "", "YAML/JSON config file path")
 	flag.StringVar(&cpuprof, "cpuprof", "", "write CPU profile to file")
 	flag.StringVar(&memprof, "memprof", "", "write memory profile to file")

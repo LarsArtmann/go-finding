@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"strings"
 	"sync"
 
 	"github.com/larsartmann/go-finding"
@@ -148,5 +149,5 @@ func FormatPartialErrors(errors map[string]error) error {
 		msgs = append(msgs, fmt.Sprintf("%s: %v", name, errors[name]))
 	}
 
-	return fmt.Errorf("%w: %v", ErrPartialDetection, msgs)
+	return fmt.Errorf("%w: %s", ErrPartialDetection, strings.Join(msgs, "; "))
 }
