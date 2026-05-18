@@ -34,14 +34,22 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `id.go` | ID generation utilities |
 | `json.go` | JSON marshaling/unmarshaling |
 | `suppression.go` | Suppression handling with IsActive convenience |
+| `diff.go` | Diff(before, after) compares finding sets by ID |
+| `format.go` | FormatText/FormatMarkdown for human-readable output |
+
+#### Analysis Package
+
+| File | Purpose |
+| ---- | ------- |
+| `analysis/analysis.go` | Bidirectional go/analysis.Diagnostic ↔ Finding conversion |
 
 #### Pipeline Package
 
 | File                       | Purpose                                                                 |
 | -------------------------- | ----------------------------------------------------------------------- |
-| `pipeline/pipeline.go`     | Pipeline struct, Run, detect/triage/apply methods                       |
+| `pipeline/pipeline.go`     | Pipeline struct, Run, detect/triage/apply, structured logging, OnStage |
 | `pipeline/adapters.go`     | Detector/FindingProcessor interfaces, adapter types, context helpers    |
-| `pipeline/config.go`       | Config struct, DefaultConfig, Validate, sentinel errors                 |
+| `pipeline/config.go`       | Config struct, DefaultConfig, Validate, DetectorTimeouts, Logger, OnStage |
 | `pipeline/conflict.go`     | Fix conflict detection and analysis                                     |
 | `pipeline/fix_edit.go`     | FixEdit type — byte-level edit operations (Offset, Length, Replacement) |
 | `pipeline/fix_provider.go` | FixProvider interface + 3 default providers (Offset, Line, Substring)   |
@@ -57,7 +65,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | File                         | Purpose                                             |
 | ---------------------------- | --------------------------------------------------- |
 | `cmd/go-finding/main.go`     | Entry point, run(), profiling, flag parsing         |
-| `cmd/go-finding/config.go`   | Config loading, severity parsing, output formatting |
+| `cmd/go-finding/config.go`   | Config loading, severity parsing, output formatting (text/markdown/json/sarif) |
 | `cmd/go-finding/registry.go` | Detector builder registry with concurrent access    |
 
 #### Internal Detectors
@@ -121,6 +129,9 @@ golangci-lint run ./...         # Lint
 - **FixApplier lifecycle** — `applyDirectFixes` defers `Close()` to prevent temp directory leaks
 - **Line offset index** — `buildLineOffsetIndex` provides O(1) line→byte offset lookup
 - **Context cancellation** — `IsContextError()` is the canonical check; all pipeline paths (retry, partial, verify) propagate `context.Canceled`/`context.DeadlineExceeded` immediately instead of silently swallowing them
+- **Per-detector timeouts** — `Config.DetectorTimeouts map[string]time.Duration` overrides global timeout per detector
+- **Structured logging** — `Config.Logger *slog.Logger` emits structured events for iteration start, triage, conflicts
+- **Stage progress** — `Config.OnStage func(stage, iteration, count)` fires on detect/process/triage completion
 - **KeySeparator** — `"\x00"` is the named constant for `Finding.Key()` composite key separator
 - **SARIF import hardening** — `findingFromSarResult` generates IDs for non-go-finding SARIF; bounds-checked 3-level index access; `stringProp` helper reduces type-assertion boilerplate
 - **SARIF export decomposed** — `findingToSARIF` decomposed into `sarifLocations()`, `sarifFixes()`, `sarifRelatedLocs()`, `sarifProperties()` helpers. SARIF version/schema are named constants.
@@ -135,12 +146,13 @@ golangci-lint run ./...         # Lint
 ### CLI Features
 
 - Built-in govet and staticcheck detectors
-- Text, JSON, and SARIF output formats
-- YAML/JSON config file support with validation
+- Text, markdown, JSON, and SARIF output formats
+- YAML/JSON config file support with validation (including per-detector timeouts)
 - Severity filtering, timeout, max-iterations
 - CPU/memory profiling
 - Graceful degradation on detector failures
 - Metrics summary output to stderr
+- Dynamic detector registry — `RegisterDetector` for plugin detectors
 
 ---
 
