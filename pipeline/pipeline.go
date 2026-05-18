@@ -69,6 +69,13 @@ func (p *Pipeline) log(msg string, attrs ...slog.Attr) {
 	}
 }
 
+// notifyStage fires the OnStage callback if configured.
+func (p *Pipeline) notifyStage(stage string, iteration, count int) {
+	if p.config.OnStage != nil {
+		p.config.OnStage(stage, iteration, count)
+	}
+}
+
 // Run executes the pipeline until stable or max iterations reached.
 //
 // Run is NOT safe for concurrent use. Each Pipeline instance should be used
@@ -173,6 +180,8 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		return false, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
 	}
 
+	p.notifyStage("detect", iter.Number, len(detResult.Findings))
+
 	findings := detResult.Findings
 
 	for _, proc := range p.config.Processors {
@@ -185,6 +194,10 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 				err,
 			)
 		}
+	}
+
+	if len(p.config.Processors) > 0 {
+		p.notifyStage("process", iter.Number, len(findings))
 	}
 
 	for name, detErr := range detResult.Errors {
@@ -222,6 +235,8 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		slog.Int("suggest", len(triage.Suggest)),
 		slog.Int("none", len(triage.None)),
 	)
+
+	p.notifyStage("triage", iter.Number, len(findings))
 
 	if !p.config.DryRun {
 		applyDone := p.stageTiming("apply")

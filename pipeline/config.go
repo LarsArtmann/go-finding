@@ -50,6 +50,10 @@ type Config struct {
 	// Logger provides optional structured logging for pipeline events.
 	// If nil, no logging occurs. Use slog.Default() for standard logging.
 	Logger *slog.Logger
+	// OnStage is called when a pipeline stage completes. Stage is one of:
+	// "detect", "process", "triage", "apply", "verify". Iteration is 1-based.
+	// The findings count reflects findings available after that stage.
+	OnStage func(stage string, iteration, findingsCount int)
 }
 
 // DefaultMaxIterations is the default maximum number of pipeline iterations.

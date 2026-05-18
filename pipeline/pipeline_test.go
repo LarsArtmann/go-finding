@@ -1440,6 +1440,36 @@ func TestPipelineRun_StructuredLogging(t *testing.T) {
 	g.Expect(messages["triage complete"]).To(BeTrue())
 }
 
+func TestPipelineRun_OnStage(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	var stages []string
+	cfg := DefaultConfig()
+	cfg.ParallelDetectors = false
+	cfg.MaxIterations = 1
+	cfg.OnStage = func(stage string, iteration, count int) {
+		stages = append(stages, fmt.Sprintf("%s:%d:%d", stage, iteration, count))
+	}
+
+	findings := []finding.Finding{pipelineTestFinding(1)}
+	detector := &mockDetector{name: "test", findings: findings}
+
+	p, err := New(cfg, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	_, err = p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	g.Expect(stages).NotTo(BeEmpty())
+	g.Expect(stages[0]).To(ContainSubstring("detect:1:"))
+	g.Expect(stages).To(ContainElement(ContainSubstring("triage:1:")))
+}
+
 func splitLines(s string) []string {
 	var lines []string
 	for _, line := range splitString(s, "\n") {
