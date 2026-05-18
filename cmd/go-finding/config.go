@@ -181,6 +181,8 @@ func outputResults(w io.Writer, report *finding.Report, format string) error {
 		if _, err := fmt.Fprintln(w, string(out)); err != nil {
 			return fmt.Errorf("writing SARIF: %w", err)
 		}
+	case "markdown":
+		finding.FormatMarkdown(w, report.Findings)
 	default:
 		outputText(w, report)
 	}
@@ -195,19 +197,7 @@ func outputText(w io.Writer, report *finding.Report) {
 		return
 	}
 
-	for _, f := range report.Findings {
-		_, _ = fmt.Fprintf(
-			w,
-			"%s: [%s] %s: %s\n",
-			f.Position.String(),
-			f.Severity,
-			f.Rule,
-			f.Message,
-		)
-		if f.Suggestion != "" {
-			_, _ = fmt.Fprintf(w, "  Suggestion: %s\n", f.Suggestion)
-		}
-	}
+	finding.FormatText(w, report.Findings)
 
 	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(report.Findings))
 	if report.Summary.Total > 0 {

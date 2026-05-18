@@ -37,7 +37,7 @@ func run() int {
 	)
 
 	flag.StringVar(&dir, "dir", ".", "root directory to analyze")
-	flag.StringVar(&format, "format", "text", "output format: text, json, sarif")
+	flag.StringVar(&format, "format", "text", "output format: text, markdown, json, sarif")
 	flag.StringVar(&minSev, "severity", "info", "minimum severity: info, warning, error, critical")
 	flag.IntVar(&maxIter, "max-iterations", 1, "maximum pipeline iterations")
 	flag.BoolVar(&parallel, "parallel", true, "run detectors in parallel")
