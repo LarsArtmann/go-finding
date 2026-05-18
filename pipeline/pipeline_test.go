@@ -1,9 +1,12 @@
 package pipeline
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
@@ -1381,4 +1384,95 @@ func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {
 	}
 
 	g.Expect(result.Correlations).To(BeEmpty())
+}
+
+func TestPipelineRun_StructuredLogging(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	var buf bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo}))
+
+	cfg := DefaultConfig()
+	cfg.ParallelDetectors = false
+	cfg.MaxIterations = 2
+	cfg.Logger = logger
+
+	findings := []finding.Finding{pipelineTestFinding(1)}
+	detector := &mockDetector{name: "test", findings: findings}
+
+	p, err := New(cfg, t.TempDir(), detector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	_, err = p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	output := buf.String()
+	g.Expect(output).NotTo(BeEmpty())
+
+	// Verify structured log messages are emitted
+	type logEntry struct {
+		Msg string `json:"msg"`
+	}
+
+	var entries []logEntry
+	for _, line := range splitLines(output) {
+		if line == "" {
+			continue
+		}
+
+		var entry logEntry
+		if json.Unmarshal([]byte(line), &entry) == nil {
+			entries = append(entries, entry)
+		}
+	}
+
+	messages := make(map[string]bool)
+	for _, e := range entries {
+		messages[e.Msg] = true
+	}
+
+	g.Expect(messages["iteration starting"]).To(BeTrue())
+	g.Expect(messages["triage complete"]).To(BeTrue())
+}
+
+func splitLines(s string) []string {
+	var lines []string
+	for _, line := range splitString(s, "\n") {
+		if line != "" {
+			lines = append(lines, line)
+		}
+	}
+
+	return lines
+}
+
+func splitString(s, sep string) []string {
+	var result []string
+	for {
+		idx := indexOf(s, sep)
+		if idx < 0 {
+			result = append(result, s)
+			break
+		}
+
+		result = append(result, s[:idx])
+		s = s[idx+len(sep):]
+	}
+
+	return result
+}
+
+func indexOf(s, sub string) int {
+	for i := 0; i <= len(s)-len(sub); i++ {
+		if s[i:i+len(sub)] == sub {
+			return i
+		}
+	}
+
+	return -1
 }

@@ -5,6 +5,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -61,6 +62,13 @@ func (p *Pipeline) stageTiming(name string) func() {
 	return p.metrics.StageTiming(name)
 }
 
+// log emits a structured log event if a logger is configured.
+func (p *Pipeline) log(msg string, attrs ...slog.Attr) {
+	if p.config.Logger != nil {
+		p.config.Logger.LogAttrs(context.Background(), slog.LevelInfo, msg, attrs...)
+	}
+}
+
 // Run executes the pipeline until stable or max iterations reached.
 //
 // Run is NOT safe for concurrent use. Each Pipeline instance should be used
@@ -110,6 +118,11 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		if err := CheckCanceledWithMsg(ctx, "pipeline cancelled"); err != nil {
 			return result, err
 		}
+
+		p.log("iteration starting",
+			slog.Int("iteration", p.iterations+1),
+			slog.Int("max_iterations", p.config.MaxIterations),
+		)
 
 		done, err := p.runIteration(ctx, result)
 		if err != nil {
@@ -190,6 +203,10 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		result.Stable = true
 		result.Iterations = append(result.Iterations, iter)
 
+		p.log("iteration complete: stable (no findings)",
+			slog.Int("iteration", iter.Number),
+		)
+
 		return true, nil
 	}
 
@@ -198,6 +215,13 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	iter.SuggestFixes = len(triage.Suggest)
 	iter.suggest = triage.Suggest
 	iter.NoFix = len(triage.None)
+
+	p.log("triage complete",
+		slog.Int("iteration", iter.Number),
+		slog.Int("direct", len(triage.Direct)),
+		slog.Int("suggest", len(triage.Suggest)),
+		slog.Int("none", len(triage.None)),
+	)
 
 	if !p.config.DryRun {
 		applyDone := p.stageTiming("apply")
@@ -408,6 +432,12 @@ func (p *Pipeline) applyTriage(
 	iter.Conflicts = len(fixes) - len(safeFixes)
 
 	if iter.Conflicts > 0 {
+		p.log("conflicts detected",
+			slog.Int("total", len(fixes)),
+			slog.Int("conflicts", iter.Conflicts),
+			slog.Int("safe", len(safeFixes)),
+		)
+
 		for _, c := range AnalyzeConflicts(fixes) {
 			if p.config.OnFix != nil {
 				p.config.OnFix(c.Finding, false)

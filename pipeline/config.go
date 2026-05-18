@@ -3,6 +3,7 @@ package pipeline
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/larsartmann/go-finding"
@@ -46,6 +47,9 @@ type Config struct {
 	// value is the timeout for that detector. Detectors not in the map use the
 	// global Timeout.
 	DetectorTimeouts map[string]time.Duration
+	// Logger provides optional structured logging for pipeline events.
+	// If nil, no logging occurs. Use slog.Default() for standard logging.
+	Logger *slog.Logger
 }
 
 // DefaultMaxIterations is the default maximum number of pipeline iterations.
