@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/larsartmann/go-finding"
@@ -376,4 +377,72 @@ func ExampleFindingError() {
 	// true
 	// validation
 	// [io] read file: permission denied
+}
+
+func ExampleDiff() {
+	before := []finding.Finding{
+		finding.NewFinding(
+			"rule-a", "tool", "msg a",
+			finding.SeverityError, finding.Pos("a.go", 1, 1), 0,
+		),
+		finding.NewFinding(
+			"rule-b", "tool", "msg b",
+			finding.SeverityWarning, finding.Pos("b.go", 2, 1), 0,
+		),
+	}
+	after := []finding.Finding{
+		finding.NewFinding(
+			"rule-a", "tool", "msg a",
+			finding.SeverityError, finding.Pos("a.go", 1, 1), 0,
+		),
+		finding.NewFinding(
+			"rule-c", "tool", "msg c",
+			finding.SeverityInfo, finding.Pos("c.go", 3, 1), 0,
+		),
+	}
+
+	result := finding.Diff(before, after)
+	fmt.Println("Added:", len(result.Added))
+	fmt.Println("Removed:", len(result.Removed))
+	fmt.Println("Unchanged:", len(result.Unchanged))
+
+	// Output:
+	// Added: 1
+	// Removed: 1
+	// Unchanged: 1
+}
+
+func ExampleFormatText() {
+	findings := []finding.Finding{
+		finding.NewFinding(
+			"nilcheck", "govet", "possible nil dereference",
+			finding.SeverityError, finding.Pos("main.go", 42, 5), 0,
+		),
+		finding.NewFinding(
+			"unused", "staticcheck", "unused variable",
+			finding.SeverityWarning, finding.Pos("util.go", 10, 3), 0,
+		),
+	}
+
+	finding.FormatText(os.Stdout, findings)
+
+	// Output:
+	// main.go:42:5 [ERROR] nilcheck: possible nil dereference
+	// util.go:10:3 [WARNING] unused: unused variable
+}
+
+func ExampleFormatMarkdown() {
+	findings := []finding.Finding{
+		finding.NewFinding(
+			"nilcheck", "govet", "possible nil dereference",
+			finding.SeverityError, finding.Pos("main.go", 42, 5), 0,
+		),
+	}
+
+	finding.FormatMarkdown(os.Stdout, findings)
+
+	// Output:
+	// | Location | Severity | Rule | Message |
+	// |----------|----------|------|--------|
+	// | main.go:42:5 | error | nilcheck | possible nil dereference |
 }
