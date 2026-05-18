@@ -120,12 +120,12 @@ func (LineProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) 
 func lineProviderRangeEdits(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
 	start, err := indexLineColToOffset(idx, len(content), f.Range.Start.Line, f.Range.Start.Column)
 	if err != nil {
-		return nil, nil //nolint:nilerr // position unresolvable, skip finding
+		return nil, ErrPositionUnresolvable
 	}
 
 	end, err := indexLineColToOffset(idx, len(content), f.Range.End.Line, f.Range.End.Column)
 	if err != nil {
-		return nil, nil //nolint:nilerr // position unresolvable, skip finding
+		return nil, ErrPositionUnresolvable
 	}
 
 	if end < start || end > len(content) {
@@ -159,7 +159,7 @@ func lineProviderRangeEdits(content []byte, f finding.Finding, idx []int) ([]Fix
 func lineProviderInsertionEdit(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
 	offset, err := indexLineColToOffset(idx, len(content), f.Position.Line, f.Position.Column)
 	if err != nil {
-		return nil, nil //nolint:nilerr // position unresolvable, skip finding
+		return nil, ErrPositionUnresolvable
 	}
 
 	replacement := append([]byte(f.AfterCode), '\n')
@@ -175,7 +175,7 @@ func lineProviderInsertionEdit(content []byte, f finding.Finding, idx []int) ([]
 func lineProviderReplacementEdit(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
 	offset, err := indexLineColToOffset(idx, len(content), f.Position.Line, f.Position.Column)
 	if err != nil {
-		return nil, nil //nolint:nilerr // position unresolvable, skip finding
+		return nil, ErrPositionUnresolvable
 	}
 
 	before := []byte(f.BeforeCode)
@@ -243,6 +243,9 @@ func (SubstringProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, er
 }
 
 var (
+	// ErrPositionUnresolvable indicates a line/column could not be mapped to a byte offset.
+	ErrPositionUnresolvable = errors.New("position unresolvable in content")
+
 	errInvalidLine   = errors.New("invalid line number")
 	errLineBeyondEOF = errors.New("line beyond end of file")
 	errColumnBeyond  = errors.New("column beyond end of line")

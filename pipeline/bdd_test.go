@@ -422,7 +422,7 @@ var _ = Describe("FixProvider Contract", func() {
 				Position:   finding.Pos("a.go", 100, 1),
 			}
 			edits, err := provider.Edits(content, f)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).To(MatchError(pipeline.ErrPositionUnresolvable))
 			Expect(edits).To(BeNil())
 		})
 	})
