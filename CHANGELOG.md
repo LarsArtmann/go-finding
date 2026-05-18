@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-18
+
+### Fixed
+
+- **golangci-lint issues resolved (7 → 0)** — Fixed contextcheck, exhaustruct, revive, and other lint warnings across pipeline, analysis, and CLI packages.
+- **`FormatPartialErrors` error wrapping** — Changed from `%v` with `fmt.Sprintf` to `%s` with `strings.Join` for cleaner error messages.
+- **`.golangci.yml` config** — Replaced non-existent `gomodguard_v2` with `gomodguard`.
+
+### Changed
+
+- **Named constants for magic strings** — Extracted SARIF property keys (`go-finding/edit/*`), LSP severity key, conflict reason strings, merge tool names, analysis relation constant, and parseSeverity to named constants. All previously hardcoded strings are now exported package-level constants.
+- **`ErrPositionUnresolvable` sentinel error** — Replaced 4 `//nolint:nilerr` directives in `fix_provider.go` with an explicit sentinel error. Callers already skip on error, so behavior is unchanged but now type-safe and lint-clean.
+- **`parseSeverity` refactored** — Switch/case replaced with map-based lookup using `Severity.String()`.
+
+### Added
+
+- **Per-detector timeouts** — `DetectorTimeouts` config for individual detector timeout control.
+- **`FormatText` / `FormatMarkdown`** — Human-readable and markdown table output formatters.
+- **`Finding.ToDiagnostic()`** — Reverse conversion from Finding to `analysis.Diagnostic`.
+- **`slog` logging integration** — Pipeline now accepts `*slog.Logger` for structured logging.
+- **`OnStage` callback** — Pipeline lifecycle callback for monitoring stage transitions.
+- **`FixApplier` lifecycle** — `Start()` and `Stop()` methods for provider lifecycle management.
+- **Godoc examples** — Added `ExampleDiff`, `ExampleFormatText`, `ExampleFormatMarkdown`.
+
 ## [0.2.1] - 2026-05-01
 
 ### Breaking
