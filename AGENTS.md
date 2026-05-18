@@ -90,15 +90,16 @@ golangci-lint run ./...         # Lint
 1. **Minimal dependencies** — core types depend only on stdlib (golang.org/x/tools isolated to analysis/ subpackage)
 2. **Immutable** — Findings are data, not state machines
 3. **Lossless** — Conversions (SARIF, LSP) preserve all data via Metadata/Tags
-4. **Compatible** — Works with existing Go analysis tools
-5. **Resilient** — Retry logic, partial success, nil-safe metrics
-6. **FixApplier.Close()** — Cleans up temporary backup directories; callers should defer close
-7. **Report zero-value safe** — `Report{}` uses value `sync.Mutex`, safe for concurrent use without initialization
-8. **Config.FixProviders** — Custom fix providers for domain-specific (AST-aware) transformations
-9. **Confidence named type** — `type Confidence float64` with `IsValid()`/`Clamp()`; prevents accidental out-of-range values
-10. **Triage centralized** — `HasFix()` is canonical "is fixable?" source; `IsAutoFixable()` for pipeline auto-apply
-11. **Root package dependency-free** — `golang.org/x/tools` only in `analysis/` subpackage
-12. **NewFixApplier returns error** — `NewFixApplier(rootDir) (*FixApplier, error)` propagates backup dir creation failures. `NewFixApplier` delegates to `NewFixApplierWithProviders`.
+4. **One extensibility field** — `Finding.Metadata` is `map[string]string` intentionally. NO `Properties map[string]any`. Serialize complex values to JSON strings; the type-safety and interchange simplicity outweigh the convenience of `any`.
+5. **Compatible** — Works with existing Go analysis tools
+6. **Resilient** — Retry logic, partial success, nil-safe metrics
+7. **FixApplier.Close()** — Cleans up temporary backup directories; callers should defer close
+8. **Report zero-value safe** — `Report{}` uses value `sync.Mutex`, safe for concurrent use without initialization
+9. **Config.FixProviders** — Custom fix providers for domain-specific (AST-aware) transformations
+10. **Confidence named type** — `type Confidence float64` with `IsValid()`/`Clamp()`; prevents accidental out-of-range values
+11. **Triage centralized** — `HasFix()` is canonical "is fixable?" source; `IsAutoFixable()` for pipeline auto-apply
+12. **Root package dependency-free** — `golang.org/x/tools` only in `analysis/` subpackage
+13. **NewFixApplier returns error** — `NewFixApplier(rootDir) (*FixApplier, error)` propagates backup dir creation failures. `NewFixApplier` delegates to `NewFixApplierWithProviders`.
 
 ### Pipeline Features
 

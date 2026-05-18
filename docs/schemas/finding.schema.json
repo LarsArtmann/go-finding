@@ -90,7 +90,7 @@
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Tool-specific key-value pairs."
+      "description": "Tool-specific key-value pairs. We intentionally have only string-valued metadata, NOT a separate Properties field with map[string]any. If you need complex values, JSON-serialize them into a string value. Rationale: keeps the model simple, avoids type-assertion boilerplate, and metadata is fully typed as string→string which is lossless for interchange (SARIF, JSON, CLI flags, env vars)."
     }
   },
   "$defs": {
