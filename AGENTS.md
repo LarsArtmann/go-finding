@@ -84,6 +84,7 @@ golangci-lint run ./...         # Lint
 - `github.com/go-faster/yaml` - YAML config file parsing (CLI only)
 - `github.com/onsi/ginkgo/v2` - BDD testing framework
 - `github.com/onsi/gomega` - BDD test matchers
+- `github.com/stretchr/testify` - **INDIRECT only** (transitive via go-faster/yaml). Zero source imports. Fully migrated to ginkgo/gomega.
 
 ### Design Principles
 
@@ -129,6 +130,7 @@ golangci-lint run ./...         # Lint
 - **SARIF streaming** — `WriteSARIF`/`WriteSARIFFiltered` use `json.Encoder` for true streaming without intermediate `[]byte` allocation
 - **FixApplier error propagation** — `NewFixApplier`/`NewFixApplierWithProviders` return `(*FixApplier, error)` instead of silently swallowing `MkdirTemp` errors
 - **Partial error separation** — Context errors are propagated but excluded from `PartialResult.Errors` (they're not "partial" failures)
+- **math/rand v1/v2 split** — Production code (`pipeline/retry.go`) uses `math/rand/v2` for jitter. Test code uses `math/rand` (v1) because `testing/quick.Config.Rand` requires `*math/rand.Rand` (stdlib API constraint, not removable).
 
 ### CLI Features
 
