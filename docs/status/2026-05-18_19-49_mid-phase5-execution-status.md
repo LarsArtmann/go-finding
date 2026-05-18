@@ -16,22 +16,22 @@ The 105-task execution plan is **53% complete** (56/105 tasks done). All P0 corr
 
 ## Build / Test / Lint Status
 
-| Check | Status |
-|-------|--------|
-| `go build ./...` | **PASS** — clean |
+| Check                          | Status                  |
+| ------------------------------ | ----------------------- |
+| `go build ./...`               | **PASS** — clean        |
 | `go test -race -count=1 ./...` | **PASS** — all packages |
-| `golangci-lint run ./...` | **PASS** — 0 issues |
-| `go vet ./...` | **PASS** — clean |
+| `golangci-lint run ./...`      | **PASS** — 0 issues     |
+| `go vet ./...`                 | **PASS** — clean        |
 
 ### Coverage
 
-| Package | Coverage |
-|---------|----------|
-| Root (`finding`) | **99.7%** |
-| `analysis` | **100.0%** |
-| `pipeline` | **96.0%** |
-| `cmd/go-finding` | **95.4%** |
-| `internal/detectors` | **96.1%** |
+| Package              | Coverage   |
+| -------------------- | ---------- |
+| Root (`finding`)     | **99.7%**  |
+| `analysis`           | **100.0%** |
+| `pipeline`           | **96.0%**  |
+| `cmd/go-finding`     | **95.4%**  |
+| `internal/detectors` | **96.1%**  |
 
 ---
 
@@ -41,67 +41,67 @@ The 105-task execution plan is **53% complete** (56/105 tasks done). All P0 corr
 
 All 19 tasks completed and verified.
 
-| # | Task | Status |
-|---|------|--------|
-| 1-10 | Add `RLock`/`RUnlock` to all 10 Report read methods | **DONE** |
-| 11 | Write concurrent Report read-write race test | **DONE** |
-| 12 | Run tests with `-race` to verify Report fix | **DONE** |
-| 13 | Analyze `IsAutoFixable()` vs `Validate()` contradiction | **DONE** |
-| 14 | Fix `Validate()` to allow `Direct + AfterCode`-only | **DONE** |
-| 15 | Write test proving agreement for all combos (8 cases) | **DONE** |
-| 16 | Fix `DeduplicateByID` empty-ID collision | **DONE** |
-| 17 | Write test: empty-ID findings not deduplicated | **DONE** |
-| 18 | Fix conflict detection transitive overgrouping | **DONE** |
-| 19 | Write per-member overlap tests | **DONE** |
+| #    | Task                                                    | Status   |
+| ---- | ------------------------------------------------------- | -------- |
+| 1-10 | Add `RLock`/`RUnlock` to all 10 Report read methods     | **DONE** |
+| 11   | Write concurrent Report read-write race test            | **DONE** |
+| 12   | Run tests with `-race` to verify Report fix             | **DONE** |
+| 13   | Analyze `IsAutoFixable()` vs `Validate()` contradiction | **DONE** |
+| 14   | Fix `Validate()` to allow `Direct + AfterCode`-only     | **DONE** |
+| 15   | Write test proving agreement for all combos (8 cases)   | **DONE** |
+| 16   | Fix `DeduplicateByID` empty-ID collision                | **DONE** |
+| 17   | Write test: empty-ID findings not deduplicated          | **DONE** |
+| 18   | Fix conflict detection transitive overgrouping          | **DONE** |
+| 19   | Write per-member overlap tests                          | **DONE** |
 
 ### Phase 2: P1 Design/API (#20-36) — DONE
 
 All 17 tasks completed and verified.
 
-| # | Task | Status |
-|---|------|--------|
+| #     | Task                                                          | Status   |
+| ----- | ------------------------------------------------------------- | -------- |
 | 20-24 | Add `context.Context` + `error` to `FindingProcessor.Process` | **DONE** |
-| 25 | Update pipeline.go processor loop | **DONE** |
-| 26-27 | Update test mocks, fix compilation | **DONE** |
-| 28-30 | `ComputeSummaryAt(now)` for deterministic suppression | **DONE** |
-| 31 | Export `DefaultMaxIterations`, deduplicate from CLI | **DONE** |
-| 32-34 | Confidence protection via Validate() + godoc warning | **DONE** |
-| 35-36 | FixApplier reuse across iterations | **DONE** |
+| 25    | Update pipeline.go processor loop                             | **DONE** |
+| 26-27 | Update test mocks, fix compilation                            | **DONE** |
+| 28-30 | `ComputeSummaryAt(now)` for deterministic suppression         | **DONE** |
+| 31    | Export `DefaultMaxIterations`, deduplicate from CLI           | **DONE** |
+| 32-34 | Confidence protection via Validate() + godoc warning          | **DONE** |
+| 35-36 | FixApplier reuse across iterations                            | **DONE** |
 
 ### Phase 3: Open TODO List Items (#37-41) — DONE
 
 All 5 tasks completed.
 
-| # | Task | Status |
-|---|------|--------|
-| 37 | Close `Properties map[string]any` as WONTFIX | **DONE** |
-| 38-39 | Record ADR decisions #6, #7, #8 | **DONE** |
-| 40-41 | Mark TODOs done in TODO_LIST.md | **DONE** |
+| #     | Task                                         | Status   |
+| ----- | -------------------------------------------- | -------- |
+| 37    | Close `Properties map[string]any` as WONTFIX | **DONE** |
+| 38-39 | Record ADR decisions #6, #7, #8              | **DONE** |
+| 40-41 | Mark TODOs done in TODO_LIST.md              | **DONE** |
 
 ### Phase 4: V1.0 API Audit (#42-50) — DONE
 
 All 9 tasks completed.
 
-| # | Task | Status |
-|---|------|--------|
-| 42-47 | Audit all exported symbols (317 total) | **DONE** |
+| #     | Task                                                        | Status   |
+| ----- | ----------------------------------------------------------- | -------- |
+| 42-47 | Audit all exported symbols (317 total)                      | **DONE** |
 | 48-49 | Write API stability report (STABLE/EXPERIMENTAL/DEPRECATED) | **DONE** |
-| 50 | Mark API stability review as in-progress in TODO_LIST.md | **DONE** |
+| 50    | Mark API stability review as in-progress in TODO_LIST.md    | **DONE** |
 
 ### Phase 5: P2 Quality Improvements (#51-68) — IN PROGRESS (7/18 done)
 
-| # | Task | Status | Notes |
-|---|------|--------|-------|
-| 51 | Surface SubstringProvider ambiguity | **NOT STARTED** | |
-| 52-53 | Wire `FilterConflictingEdits` as opt-in | **NOT STARTED** | |
-| 54-55 | Add `finding.Diff()` + tests | **DONE** | `diff.go` + `diff_test.go` |
-| 56-58 | Add `FormatText` + `FormatMarkdown` + tests | **DONE** | `format.go` + `format_test.go` |
-| 59 | Per-detector timeout in Config | **PARTIAL** | Field added to Config, wired into `runOneDetector`, test NOT written yet |
-| 60 | Write test for per-detector timeout | **NOT STARTED** | |
-| 61-62 | Structured logging (`slog`) | **NOT STARTED** | |
-| 63-65 | Progress reporting callback | **NOT STARTED** | |
-| 66-67 | `ToDiagnostic()` reverse conversion | **NOT STARTED** | |
-| 68 | Replace hardcoded detector builders | **NOT STARTED** | |
+| #     | Task                                        | Status          | Notes                                                                    |
+| ----- | ------------------------------------------- | --------------- | ------------------------------------------------------------------------ |
+| 51    | Surface SubstringProvider ambiguity         | **NOT STARTED** |                                                                          |
+| 52-53 | Wire `FilterConflictingEdits` as opt-in     | **NOT STARTED** |                                                                          |
+| 54-55 | Add `finding.Diff()` + tests                | **DONE**        | `diff.go` + `diff_test.go`                                               |
+| 56-58 | Add `FormatText` + `FormatMarkdown` + tests | **DONE**        | `format.go` + `format_test.go`                                           |
+| 59    | Per-detector timeout in Config              | **PARTIAL**     | Field added to Config, wired into `runOneDetector`, test NOT written yet |
+| 60    | Write test for per-detector timeout         | **NOT STARTED** |                                                                          |
+| 61-62 | Structured logging (`slog`)                 | **NOT STARTED** |                                                                          |
+| 63-65 | Progress reporting callback                 | **NOT STARTED** |                                                                          |
+| 66-67 | `ToDiagnostic()` reverse conversion         | **NOT STARTED** |                                                                          |
+| 68    | Replace hardcoded detector builders         | **NOT STARTED** |                                                                          |
 
 ### Phase 6: P3 Future/Deferred (#69-83) — NOT STARTED
 
@@ -123,17 +123,17 @@ All 9 tasks completed.
 
 ## Summary Statistics
 
-| Metric | Count |
-|--------|-------|
-| **Total tasks** | 105 |
-| **Done** | 56 (53%) |
+| Metric          | Count        |
+| --------------- | ------------ |
+| **Total tasks** | 105          |
+| **Done**        | 56 (53%)     |
 | **In progress** | 1 (task #59) |
-| **Not started** | 48 |
-| **P0 done** | 19/19 (100%) |
-| **P1 done** | 22/22 (100%) |
-| **P2 done** | 8/18 (44%) |
-| **P3 done** | 0/15 (0%) |
-| **DOC done** | 7/16 (44%) |
+| **Not started** | 48           |
+| **P0 done**     | 19/19 (100%) |
+| **P1 done**     | 22/22 (100%) |
+| **P2 done**     | 8/18 (44%)   |
+| **P3 done**     | 0/15 (0%)    |
+| **DOC done**    | 7/16 (44%)   |
 
 ---
 
@@ -141,54 +141,54 @@ All 9 tasks completed.
 
 ### Modified Production Files (17 files, +437/-46 lines)
 
-| File | Change Summary |
-|------|---------------|
-| `report.go` | `sync.RWMutex`, RLock on all read methods, `ComputeSummaryAt`, godoc |
-| `finding.go` | `Validate()` allows `Direct + AfterCode`-only |
-| `merge.go` | `dedupKey()` falls back to `Key()` for empty IDs |
-| `confidence.go` | Godoc warning about direct construction |
-| `pipeline/adapters.go` | `FindingProcessor.Process(ctx, findings) (findings, error)` |
-| `pipeline/pipeline.go` | Extracted `runIteration`, ctx+error in processor loop, `DetectorTimeouts`, FixApplier reuse |
-| `pipeline/config.go` | Exported `DefaultMaxIterations`, added `DetectorTimeouts` field |
-| `pipeline/conflict.go` | Per-member overlap check instead of extended bounds |
-| `cmd/go-finding/main.go` | Removed duplicate `defaultMaxIterations` |
-| `cmd/go-finding/config.go` | Import `pipeline.DefaultMaxIterations` |
+| File                       | Change Summary                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------- |
+| `report.go`                | `sync.RWMutex`, RLock on all read methods, `ComputeSummaryAt`, godoc                        |
+| `finding.go`               | `Validate()` allows `Direct + AfterCode`-only                                               |
+| `merge.go`                 | `dedupKey()` falls back to `Key()` for empty IDs                                            |
+| `confidence.go`            | Godoc warning about direct construction                                                     |
+| `pipeline/adapters.go`     | `FindingProcessor.Process(ctx, findings) (findings, error)`                                 |
+| `pipeline/pipeline.go`     | Extracted `runIteration`, ctx+error in processor loop, `DetectorTimeouts`, FixApplier reuse |
+| `pipeline/config.go`       | Exported `DefaultMaxIterations`, added `DetectorTimeouts` field                             |
+| `pipeline/conflict.go`     | Per-member overlap check instead of extended bounds                                         |
+| `cmd/go-finding/main.go`   | Removed duplicate `defaultMaxIterations`                                                    |
+| `cmd/go-finding/config.go` | Import `pipeline.DefaultMaxIterations`                                                      |
 
 ### New Production Files (2 files)
 
-| File | Purpose |
-|------|---------|
-| `diff.go` | `Diff(before, after) DiffResult` — finding set comparison by ID |
-| `format.go` | `FormatText(w, findings)` + `FormatMarkdown(w, findings)` |
+| File        | Purpose                                                         |
+| ----------- | --------------------------------------------------------------- |
+| `diff.go`   | `Diff(before, after) DiffResult` — finding set comparison by ID |
+| `format.go` | `FormatText(w, findings)` + `FormatMarkdown(w, findings)`       |
 
 ### Modified Test Files (7 files)
 
-| File | Change Summary |
-|------|---------------|
-| `finding_valid_test.go` | 8 agreement test cases, `AfterCode`-only valid, no-code invalid |
-| `report_extra_test.go` | Concurrent read/write test, iterator lock test, deterministic summary test |
-| `merge_test.go` | Empty-ID deduplication test |
-| `pipeline/conflict_extra_test.go` | Per-member + non-adjacent conflict tests |
-| `pipeline/bdd_test.go` | Updated `ProcessorFunc` test for new signature |
+| File                              | Change Summary                                                             |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| `finding_valid_test.go`           | 8 agreement test cases, `AfterCode`-only valid, no-code invalid            |
+| `report_extra_test.go`            | Concurrent read/write test, iterator lock test, deterministic summary test |
+| `merge_test.go`                   | Empty-ID deduplication test                                                |
+| `pipeline/conflict_extra_test.go` | Per-member + non-adjacent conflict tests                                   |
+| `pipeline/bdd_test.go`            | Updated `ProcessorFunc` test for new signature                             |
 
 ### New Test Files (2 files)
 
-| File | Purpose |
-|------|---------|
-| `diff_test.go` | 4 tests for Diff |
+| File             | Purpose                                 |
+| ---------------- | --------------------------------------- |
+| `diff_test.go`   | 4 tests for Diff                        |
 | `format_test.go` | 2 tests for FormatText + FormatMarkdown |
 
 ### Modified Documentation (2 files)
 
-| File | Change Summary |
-|------|---------------|
-| `TODO_LIST.md` | Marked done: NewFinding, provider location, Properties WONTFIX, Confidence resolved |
-| `docs/architecture-decisions.md` | Added decisions #6, #7, #8 |
+| File                             | Change Summary                                                                      |
+| -------------------------------- | ----------------------------------------------------------------------------------- |
+| `TODO_LIST.md`                   | Marked done: NewFinding, provider location, Properties WONTFIX, Confidence resolved |
+| `docs/architecture-decisions.md` | Added decisions #6, #7, #8                                                          |
 
 ### New Documentation (1 file)
 
-| File | Purpose |
-|------|---------|
+| File                           | Purpose                            |
+| ------------------------------ | ---------------------------------- |
 | `docs/api-stability-report.md` | Full audit of 317 exported symbols |
 
 ---
@@ -226,33 +226,33 @@ All 9 tasks completed.
 
 ## Top 25 Next Tasks (Prioritized)
 
-| Priority | # | Task | Effort |
-|----------|---|------|--------|
-| 1 | **59** | Write test for DetectorTimeouts wiring in runOneDetector | 8m |
-| 2 | **60** | Write per-detector timeout test in retry_test.go | 8m |
-| 3 | **51** | Surface SubstringProvider ambiguity count | 10m |
-| 4 | **52-53** | Wire FilterConflictingEdits as opt-in Config + test | 20m |
-| 5 | **61** | Add structured logging (slog) to pipeline stages | 10m |
-| 6 | **62** | Add structured logging to CLI run() | 10m |
-| 7 | **63-65** | Progress reporting callback + wire + test | 24m |
-| 8 | **66-67** | ToDiagnostic() reverse conversion + test | 20m |
-| 9 | **68** | Replace hardcoded detector builders with registry lookup | 10m |
-| 10 | **69-70** | Evaluate go-sarif vs hand-rolled + mark TODO | 13m |
-| 11 | **71-73** | Pipeline middleware/interceptor pattern + BDD tests | 30m |
-| 12 | **74-76** | Watch mode design + implementation + tests | 30m |
-| 13 | **77** | Semantic merge for conflicts design doc | 10m |
-| 14 | **78** | Styled CLI output with lipgloss | 10m |
-| 15 | **79** | Interactive TUI for fix review (bubbletea) | 10m |
-| 16 | **80** | golangci-lint detector integration | 10m |
-| 17 | **81** | errcheck detector integration | 10m |
-| 18 | **82** | LSP CodeAction support design | 10m |
-| 19 | **83** | Mark Finding struct sub-grouping as deferred-v2 | 2m |
-| 20 | **84-92** | Nix migration: flake.nix through cross-platform testing | ~60m |
-| 21 | **93-98** | Close external/out-of-scope tickets in TODO_LIST.md | ~15m |
-| 22 | **99-102** | Final verification: build, test, lint, vet | ~12m |
-| 23 | **103** | Update TODO_LIST.md with all completed items | 5m |
-| 24 | **104** | Update FEATURES.md with status changes | 5m |
-| 25 | **105** | Update AGENTS.md with session learnings | 8m |
+| Priority | #          | Task                                                     | Effort |
+| -------- | ---------- | -------------------------------------------------------- | ------ |
+| 1        | **59**     | Write test for DetectorTimeouts wiring in runOneDetector | 8m     |
+| 2        | **60**     | Write per-detector timeout test in retry_test.go         | 8m     |
+| 3        | **51**     | Surface SubstringProvider ambiguity count                | 10m    |
+| 4        | **52-53**  | Wire FilterConflictingEdits as opt-in Config + test      | 20m    |
+| 5        | **61**     | Add structured logging (slog) to pipeline stages         | 10m    |
+| 6        | **62**     | Add structured logging to CLI run()                      | 10m    |
+| 7        | **63-65**  | Progress reporting callback + wire + test                | 24m    |
+| 8        | **66-67**  | ToDiagnostic() reverse conversion + test                 | 20m    |
+| 9        | **68**     | Replace hardcoded detector builders with registry lookup | 10m    |
+| 10       | **69-70**  | Evaluate go-sarif vs hand-rolled + mark TODO             | 13m    |
+| 11       | **71-73**  | Pipeline middleware/interceptor pattern + BDD tests      | 30m    |
+| 12       | **74-76**  | Watch mode design + implementation + tests               | 30m    |
+| 13       | **77**     | Semantic merge for conflicts design doc                  | 10m    |
+| 14       | **78**     | Styled CLI output with lipgloss                          | 10m    |
+| 15       | **79**     | Interactive TUI for fix review (bubbletea)               | 10m    |
+| 16       | **80**     | golangci-lint detector integration                       | 10m    |
+| 17       | **81**     | errcheck detector integration                            | 10m    |
+| 18       | **82**     | LSP CodeAction support design                            | 10m    |
+| 19       | **83**     | Mark Finding struct sub-grouping as deferred-v2          | 2m     |
+| 20       | **84-92**  | Nix migration: flake.nix through cross-platform testing  | ~60m   |
+| 21       | **93-98**  | Close external/out-of-scope tickets in TODO_LIST.md      | ~15m   |
+| 22       | **99-102** | Final verification: build, test, lint, vet               | ~12m   |
+| 23       | **103**    | Update TODO_LIST.md with all completed items             | 5m     |
+| 24       | **104**    | Update FEATURES.md with status changes                   | 5m     |
+| 25       | **105**    | Update AGENTS.md with session learnings                  | 8m     |
 
 ---
 

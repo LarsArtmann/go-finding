@@ -21,6 +21,7 @@ These symbols are production-ready, well-tested, and their signatures will not c
 #### Root Package (finding)
 
 **Core Types:**
+
 - `Finding` struct and all methods (`Validate`, `IsValid`, `Clone`, `Equal`, `String`, `Key`, `HasFix`, `HasSuggestion`, `IsAutoFixable`, `IsSuppressed`, `IsSuppressedAt`, `HasCategory`, `NormalizedConfidence`, `Preview`, `ToLSP`)
 - `Position` struct and all methods (`IsValid`, `Equal`, `Compare`, `String`, `HasOffset`)
 - `Range` struct and all methods (`IsValid`, `HasEnd`, `LineCount`, `Length`, `Equal`, `Compare`, `Contains`, `Overlaps`, `Intersection`, `Adjacent`)
@@ -44,10 +45,12 @@ These symbols are production-ready, well-tested, and their signatures will not c
 - `LSPDiagnostic`, `LSPRange`, `LSPPosition`, `LSPRelatedInfo`, `LSPLocation` types
 
 **Constructors:**
+
 - `NewFinding`, `NewReport`, `NewBuilder`
 - `Pos`, `NewRange`, `NewRangePtr`
 
 **Functions:**
+
 - `GenerateID`, `ParseID`, `IsHashID`
 - `Filter`, `FilterInPlace`, `FilterInvalid`
 - `BySeverity`, `BySeverityAtLeast`, `ByCategory`, `ByFixStrategy`, `ByTool`, `ByRule`, `ByFile`, `NotSuppressed`, `HasFix`, `HasSuggestion`
@@ -60,19 +63,23 @@ These symbols are production-ready, well-tested, and their signatures will not c
 - `IsFindingError`, `GetCategory`, `IsCategory`
 
 **Sentinel Errors:**
+
 - `ErrValidation`, `ErrIO`, `ErrParse`, `ErrConflict`, `ErrInternal`
 - `ErrInvalidFinding`, `ErrInvalidReport`
 - `ErrInvalidBuilder`
 
 **Constants:**
+
 - `KeySeparator`, `Version`, `VersionMajor`, `VersionMinor`, `VersionPatch`
 
 **LSP Constants:**
+
 - `LSPSeverityError`, `LSPSeverityWarning`, `LSPSeverityInfo`, `LSPSeverityHint`
 
 #### Pipeline Package
 
 **STABLE:**
+
 - `Pipeline` struct, `New`, `Run`
 - `Config` struct, `DefaultConfig`, `Validate`
 - `Detector` interface, `DetectorFunc`, `NamedDetectorFunc`
@@ -98,6 +105,7 @@ These symbols are production-ready, well-tested, and their signatures will not c
 #### Analysis Package
 
 **STABLE:**
+
 - `FromDiagnostic`, `FromTokenPosition`, `NodePosition`, `NodeRange`, `FormatDiagnostic`
 
 ---
@@ -106,12 +114,12 @@ These symbols are production-ready, well-tested, and their signatures will not c
 
 These symbols work but may evolve:
 
-| Symbol | Package | Reason |
-|--------|---------|--------|
+| Symbol                                    | Package  | Reason                                         |
+| ----------------------------------------- | -------- | ---------------------------------------------- |
 | `FindingProcessor.Process(ctx, findings)` | pipeline | New ctx+error signature (changed this session) |
-| `Config.CorrelateFindings` | pipeline | Correlation heuristic may change |
-| `FixStrategyAI` | finding | No backend, semantics may evolve |
-| `Correlate()` heuristic | finding | Simple heuristic, may be replaced |
+| `Config.CorrelateFindings`                | pipeline | Correlation heuristic may change               |
+| `FixStrategyAI`                           | finding  | No backend, semantics may evolve               |
+| `Correlate()` heuristic                   | finding  | Simple heuristic, may be replaced              |
 
 ---
 

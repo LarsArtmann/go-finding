@@ -218,6 +218,7 @@ func resolveEndPos(f finding.Finding, fset *token.FileSet) token.Pos {
 
 	return token.NoPos
 }
+
 func nodeStartPos(fset *token.FileSet, node ast.Node) token.Position {
 	if node == nil {
 		return token.Position{
