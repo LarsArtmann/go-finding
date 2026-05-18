@@ -63,9 +63,9 @@ func (p *Pipeline) stageTiming(name string) func() {
 }
 
 // log emits a structured log event if a logger is configured.
-func (p *Pipeline) log(msg string, attrs ...slog.Attr) {
+func (p *Pipeline) log(ctx context.Context, msg string, attrs ...slog.Attr) {
 	if p.config.Logger != nil {
-		p.config.Logger.LogAttrs(context.Background(), slog.LevelInfo, msg, attrs...)
+		p.config.Logger.LogAttrs(ctx, slog.LevelInfo, msg, attrs...)
 	}
 }
 
@@ -126,7 +126,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 			return result, err
 		}
 
-		p.log("iteration starting",
+		p.log(ctx, "iteration starting",
 			slog.Int("iteration", p.iterations+1),
 			slog.Int("max_iterations", p.config.MaxIterations),
 		)
@@ -216,7 +216,7 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		result.Stable = true
 		result.Iterations = append(result.Iterations, iter)
 
-		p.log("iteration complete: stable (no findings)",
+		p.log(ctx, "iteration complete: stable (no findings)",
 			slog.Int("iteration", iter.Number),
 		)
 
@@ -229,7 +229,7 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	iter.suggest = triage.Suggest
 	iter.NoFix = len(triage.None)
 
-	p.log("triage complete",
+	p.log(ctx, "triage complete",
 		slog.Int("iteration", iter.Number),
 		slog.Int("direct", len(triage.Direct)),
 		slog.Int("suggest", len(triage.Suggest)),
@@ -447,7 +447,7 @@ func (p *Pipeline) applyTriage(
 	iter.Conflicts = len(fixes) - len(safeFixes)
 
 	if iter.Conflicts > 0 {
-		p.log("conflicts detected",
+		p.log(ctx, "conflicts detected",
 			slog.Int("total", len(fixes)),
 			slog.Int("conflicts", iter.Conflicts),
 			slog.Int("safe", len(safeFixes)),

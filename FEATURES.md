@@ -410,25 +410,25 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 
 ### 16.2 Configuration
 
-| Option                | Type                   | Default | Description                      |
-| --------------------- | ---------------------- | ------- | -------------------------------- |
-| `MaxIterations`       | `int`                  | 5       | Prevents infinite loops          |
-| `ParallelDetectors`   | `bool`                 | `true`  | Concurrent detector execution    |
-| `Timeout`             | `time.Duration`        | 10min   | Pipeline timeout                 |
-| `VerifyAfterFix`      | `bool`                 | `false` | Re-run detectors post-fix        |
-| `GracefulDegradation` | `bool`                 | `false` | Continue on detector failures    |
-| `DryRun`              | `bool`                 | `false` | Detect + triage only (no fixes)  |
-| `Retry`               | `*RetryConfig`         | `nil`   | Exponential backoff retries      |
-| `Metrics`             | `*Metrics`             | `nil`   | Timing/count collection          |
-| `CorrelateFindings`   | `bool`                 | `false` | Cross-tool correlation           |
-| `Processors`          | `[]FindingProcessor`   | `nil`   | Composable finding transforms    |
-| `FixProviders`        | `[]FixProvider`        | `nil`   | Custom fix providers (e.g., AST) |
-| `OnFinding`           | `func(Finding)`        | `nil`   | Per-finding callback             |
-| `OnFix`               | `func(Finding, bool)`  | `nil`   | Per-fix callback                 |
-| `OnIteration`         | `func(int, []Finding)` | `nil`   | Per-iteration callback           |
-| `OnStage`             | `func(string, int, int)` | `nil` | Per-stage callback (detect/process/triage) |
-| `DetectorTimeouts`    | `map[string]Duration`  | `nil`   | Per-detector timeout overrides   |
-| `Logger`              | `*slog.Logger`         | `nil`   | Structured logging               |
+| Option                | Type                     | Default | Description                                |
+| --------------------- | ------------------------ | ------- | ------------------------------------------ |
+| `MaxIterations`       | `int`                    | 5       | Prevents infinite loops                    |
+| `ParallelDetectors`   | `bool`                   | `true`  | Concurrent detector execution              |
+| `Timeout`             | `time.Duration`          | 10min   | Pipeline timeout                           |
+| `VerifyAfterFix`      | `bool`                   | `false` | Re-run detectors post-fix                  |
+| `GracefulDegradation` | `bool`                   | `false` | Continue on detector failures              |
+| `DryRun`              | `bool`                   | `false` | Detect + triage only (no fixes)            |
+| `Retry`               | `*RetryConfig`           | `nil`   | Exponential backoff retries                |
+| `Metrics`             | `*Metrics`               | `nil`   | Timing/count collection                    |
+| `CorrelateFindings`   | `bool`                   | `false` | Cross-tool correlation                     |
+| `Processors`          | `[]FindingProcessor`     | `nil`   | Composable finding transforms              |
+| `FixProviders`        | `[]FixProvider`          | `nil`   | Custom fix providers (e.g., AST)           |
+| `OnFinding`           | `func(Finding)`          | `nil`   | Per-finding callback                       |
+| `OnFix`               | `func(Finding, bool)`    | `nil`   | Per-fix callback                           |
+| `OnIteration`         | `func(int, []Finding)`   | `nil`   | Per-iteration callback                     |
+| `OnStage`             | `func(string, int, int)` | `nil`   | Per-stage callback (detect/process/triage) |
+| `DetectorTimeouts`    | `map[string]Duration`    | `nil`   | Per-detector timeout overrides             |
+| `Logger`              | `*slog.Logger`           | `nil`   | Structured logging                         |
 
 Config validation: `config.Validate()` returns joined errors for invalid values. `pipeline.New()` rejects invalid configs.
 
@@ -648,20 +648,20 @@ Binary: `go-finding`
 
 ### Flags
 
-| Flag              | Default | Description                            |
-| ----------------- | ------- | -------------------------------------- |
-| `-dir`            | `.`     | Root directory to analyze              |
+| Flag              | Default | Description                                        |
+| ----------------- | ------- | -------------------------------------------------- |
+| `-dir`            | `.`     | Root directory to analyze                          |
 | `-format`         | `text`  | Output format: `text`, `markdown`, `json`, `sarif` |
-| `-severity`       | `info`  | Minimum severity filter                |
-| `-max-iterations` | `1`     | Pipeline iterations                    |
-| `-parallel`       | `true`  | Run detectors in parallel              |
-| `-verify`         | `false` | Re-run detectors after fixes           |
-| `-timeout`        | `10m`   | Pipeline timeout                       |
-| `-config`         | (none)  | YAML/JSON config file                  |
-| `-cpuprof`        | (none)  | CPU profile output                     |
-| `-memprof`        | (none)  | Memory profile output                  |
-| `-output`         | stdout  | Output file path                       |
-| `-version`        | `false` | Print version                          |
+| `-severity`       | `info`  | Minimum severity filter                            |
+| `-max-iterations` | `1`     | Pipeline iterations                                |
+| `-parallel`       | `true`  | Run detectors in parallel                          |
+| `-verify`         | `false` | Re-run detectors after fixes                       |
+| `-timeout`        | `10m`   | Pipeline timeout                                   |
+| `-config`         | (none)  | YAML/JSON config file                              |
+| `-cpuprof`        | (none)  | CPU profile output                                 |
+| `-memprof`        | (none)  | Memory profile output                              |
+| `-output`         | stdout  | Output file path                                   |
+| `-version`        | `false` | Print version                                      |
 
 ### Config File (YAML/JSON)
 

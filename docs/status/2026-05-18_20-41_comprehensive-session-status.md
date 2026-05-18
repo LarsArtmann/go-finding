@@ -17,24 +17,24 @@ The project has gone from v0.2.1 with 5 P0 correctness bugs and 7 P1 API issues 
 
 ## Verification Status
 
-| Check | Status | Details |
-|-------|--------|---------|
-| `go build ./...` | **PASS** | Clean, zero errors |
-| `go vet ./...` | **PASS** | Clean |
-| `go test -race -count=1 ./...` | **PASS** | All packages pass |
-| `golangci-lint run ./...` | **PASS** | 0 issues (using `--no-config` due to `gomodguard_v2` config issue) |
-| `go vet` | **PASS** | Clean |
+| Check                          | Status   | Details                                                            |
+| ------------------------------ | -------- | ------------------------------------------------------------------ |
+| `go build ./...`               | **PASS** | Clean, zero errors                                                 |
+| `go vet ./...`                 | **PASS** | Clean                                                              |
+| `go test -race -count=1 ./...` | **PASS** | All packages pass                                                  |
+| `golangci-lint run ./...`      | **PASS** | 0 issues (using `--no-config` due to `gomodguard_v2` config issue) |
+| `go vet`                       | **PASS** | Clean                                                              |
 
 ### Coverage
 
-| Package | Coverage |
-|---------|----------|
-| Core (`finding`) | **99.7%** |
-| Analysis | **98.5%** |
-| Pipeline | **96.4%** |
+| Package                | Coverage  |
+| ---------------------- | --------- |
+| Core (`finding`)       | **99.7%** |
+| Analysis               | **98.5%** |
+| Pipeline               | **96.4%** |
 | CLI (`cmd/go-finding`) | **93.9%** |
-| Detectors | **96.1%** |
-| **Total** | **95.5%** |
+| Detectors              | **96.1%** |
+| **Total**              | **95.5%** |
 
 ---
 
@@ -97,17 +97,17 @@ The TODO_LIST notes this as "Still TODO: decompose findingToSARIF export side (1
 
 ### P3 Future Features (intentionally deferred)
 
-| Feature | Reason Deferred |
-|---------|----------------|
-| Watch mode (`fsnotify`) | No consumer yet |
+| Feature                         | Reason Deferred                              |
+| ------------------------------- | -------------------------------------------- |
+| Watch mode (`fsnotify`)         | No consumer yet                              |
 | Pipeline middleware/interceptor | `FindingProcessor` chain already covers this |
-| Styled CLI output (`lipgloss`) | Cosmetic, low priority |
-| Interactive TUI (`bubbletea`) | Major new feature |
-| LSP language server | Explicitly rejected per ADR |
-| LSP CodeAction | Depends on language server |
-| go-sarif evaluation | Hand-rolled works well, deferred to post-v1 |
-| Finding struct sub-grouping | Breaking v2 change |
-| Semantic merge for conflicts | Complex, low demand |
+| Styled CLI output (`lipgloss`)  | Cosmetic, low priority                       |
+| Interactive TUI (`bubbletea`)   | Major new feature                            |
+| LSP language server             | Explicitly rejected per ADR                  |
+| LSP CodeAction                  | Depends on language server                   |
+| go-sarif evaluation             | Hand-rolled works well, deferred to post-v1  |
+| Finding struct sub-grouping     | Breaking v2 change                           |
+| Semantic merge for conflicts    | Complex, low demand                          |
 
 ### Nix Migration
 
@@ -162,43 +162,43 @@ Sorted by impact × ease (highest first):
 
 ### Tier 1: Quick Wins (< 15 min each, high impact)
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 1 | Fix `.golangci.yml` to work without `--no-config` | High | 5 min |
-| 2 | Extract `DefaultTimeout = 10 * time.Minute` constant, share between pipeline and CLI | Medium | 5 min |
-| 3 | Use `finding.SeverityInfo.String()` etc. in `parseSeverity` | Low | 5 min |
-| 4 | Extract default detector names (`"govet"`, `"staticcheck"`) to shared constants | Low | 5 min |
-| 5 | Extract SARIF property key strings to constants (`"go-finding/edit/offset"` etc.) | Medium | 10 min |
-| 6 | Extract LSP metadata key `"go-finding/lsp-severity"` to constant | Low | 2 min |
-| 7 | Extract merge tool names (`"merged"`, `"empty"`) to constants | Low | 2 min |
-| 8 | Add `"related"` relation constant in analysis package | Low | 2 min |
-| 9 | Fix `%v` → `%w` in `FormatPartialErrors` (partial.go:151) | Medium | 5 min |
-| 10 | Add `ErrPositionUnresolvable` sentinel, remove `//nolint:nilerr` in fix_provider.go | Medium | 10 min |
+| #   | Task                                                                                 | Impact | Effort |
+| --- | ------------------------------------------------------------------------------------ | ------ | ------ |
+| 1   | Fix `.golangci.yml` to work without `--no-config`                                    | High   | 5 min  |
+| 2   | Extract `DefaultTimeout = 10 * time.Minute` constant, share between pipeline and CLI | Medium | 5 min  |
+| 3   | Use `finding.SeverityInfo.String()` etc. in `parseSeverity`                          | Low    | 5 min  |
+| 4   | Extract default detector names (`"govet"`, `"staticcheck"`) to shared constants      | Low    | 5 min  |
+| 5   | Extract SARIF property key strings to constants (`"go-finding/edit/offset"` etc.)    | Medium | 10 min |
+| 6   | Extract LSP metadata key `"go-finding/lsp-severity"` to constant                     | Low    | 2 min  |
+| 7   | Extract merge tool names (`"merged"`, `"empty"`) to constants                        | Low    | 2 min  |
+| 8   | Add `"related"` relation constant in analysis package                                | Low    | 2 min  |
+| 9   | Fix `%v` → `%w` in `FormatPartialErrors` (partial.go:151)                            | Medium | 5 min  |
+| 10  | Add `ErrPositionUnresolvable` sentinel, remove `//nolint:nilerr` in fix_provider.go  | Medium | 10 min |
 
 ### Tier 2: Medium Effort (15-60 min, medium-high impact)
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 11 | Decompose `findingFromSarResult` (complexity 28 → <20) | High | 30 min |
-| 12 | Decompose `applySarifProperties` (complexity 26 → <20) | High | 30 min |
-| 13 | Improve `LineProvider.CanHandle` coverage to 100% | Low | 10 min |
-| 14 | Improve `resolvePos` coverage to 100% | Low | 10 min |
-| 15 | Add godoc examples for `Diff`, `FormatText`, `FormatMarkdown` | Medium | 20 min |
-| 16 | Add `// Deprecated` notice for `DiffFindings` in verify.go (use `finding.Diff` instead) | Low | 5 min |
-| 17 | Add integration test: full CLI run with markdown output | Medium | 15 min |
-| 18 | Add integration test: CLI config file with detectorTimeouts | Medium | 15 min |
-| 19 | Evaluate if `finding.Diff` should replace `DiffFindings` in verify.go (currently both exist) | Medium | 20 min |
-| 20 | Extract conflict reason strings to constants | Low | 5 min |
+| #   | Task                                                                                         | Impact | Effort |
+| --- | -------------------------------------------------------------------------------------------- | ------ | ------ |
+| 11  | Decompose `findingFromSarResult` (complexity 28 → <20)                                       | High   | 30 min |
+| 12  | Decompose `applySarifProperties` (complexity 26 → <20)                                       | High   | 30 min |
+| 13  | Improve `LineProvider.CanHandle` coverage to 100%                                            | Low    | 10 min |
+| 14  | Improve `resolvePos` coverage to 100%                                                        | Low    | 10 min |
+| 15  | Add godoc examples for `Diff`, `FormatText`, `FormatMarkdown`                                | Medium | 20 min |
+| 16  | Add `// Deprecated` notice for `DiffFindings` in verify.go (use `finding.Diff` instead)      | Low    | 5 min  |
+| 17  | Add integration test: full CLI run with markdown output                                      | Medium | 15 min |
+| 18  | Add integration test: CLI config file with detectorTimeouts                                  | Medium | 15 min |
+| 19  | Evaluate if `finding.Diff` should replace `DiffFindings` in verify.go (currently both exist) | Medium | 20 min |
+| 20  | Extract conflict reason strings to constants                                                 | Low    | 5 min  |
 
 ### Tier 3: Larger Effort (1-4 hours, strategic value)
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 21 | Bump version to v0.3.0 (we've added significant features since v0.2.1) | High | 30 min |
-| 22 | Add CHANGELOG.md entry for v0.3.0 with all changes since v0.2.1 | High | 60 min |
-| 23 | Migrate justfile → flake.nix (Phase 0-1 from proposal) | High | 2 hours |
-| 24 | Add go-sarif evaluation with pros/cons document | Medium | 1 hour |
-| 25 | Add golangci-lint CI job that uses the project's `.golangci.yml` | Medium | 30 min |
+| #   | Task                                                                   | Impact | Effort  |
+| --- | ---------------------------------------------------------------------- | ------ | ------- |
+| 21  | Bump version to v0.3.0 (we've added significant features since v0.2.1) | High   | 30 min  |
+| 22  | Add CHANGELOG.md entry for v0.3.0 with all changes since v0.2.1        | High   | 60 min  |
+| 23  | Migrate justfile → flake.nix (Phase 0-1 from proposal)                 | High   | 2 hours |
+| 24  | Add go-sarif evaluation with pros/cons document                        | Medium | 1 hour  |
+| 25  | Add golangci-lint CI job that uses the project's `.golangci.yml`       | Medium | 30 min  |
 
 ---
 
@@ -210,6 +210,7 @@ Sorted by impact × ease (highest first):
 - `pipeline.DiffFindings(original, post)` — Compares by **Key()** (tool + rule + file + line + col), returns `VerifyResult{Fixed, Remaining, NewFindings}`
 
 These have different semantics:
+
 - `ID` is stable across runs (e.g., `govet:printf:main.go:10:5`)
 - `Key()` is positional (e.g., `govet\x00printf\x00main.go\x0010\x005`)
 
@@ -219,19 +220,19 @@ These have different semantics:
 
 ## Session Statistics
 
-| Metric | Value |
-|--------|-------|
-| Commits this session | 11 (8 code + 3 docs) |
-| Production files changed | 6 |
-| Test files changed | 4 |
-| New test functions | 13 |
-| Lines added | ~800 |
-| Lines removed | ~30 |
-| P0 bugs fixed | 5 |
-| P1 issues fixed | 3 |
-| P2 features implemented | 8 |
-| P3 items closed in TODO | 8 |
-| Time to push | ~45 minutes |
+| Metric                   | Value                |
+| ------------------------ | -------------------- |
+| Commits this session     | 11 (8 code + 3 docs) |
+| Production files changed | 6                    |
+| Test files changed       | 4                    |
+| New test functions       | 13                   |
+| Lines added              | ~800                 |
+| Lines removed            | ~30                  |
+| P0 bugs fixed            | 5                    |
+| P1 issues fixed          | 3                    |
+| P2 features implemented  | 8                    |
+| P3 items closed in TODO  | 8                    |
+| Time to push             | ~45 minutes          |
 
 ---
 

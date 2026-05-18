@@ -73,7 +73,7 @@ func loadConfig(
 		return cfg, nil
 	}
 
-	return pipelineConfigFile{
+	return pipelineConfigFile{ //nolint:exhaustruct
 		MaxIterations:     maxIter,
 		ParallelDetectors: parallel,
 		VerifyAfterFix:    verify,

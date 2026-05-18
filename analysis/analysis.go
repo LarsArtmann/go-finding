@@ -129,7 +129,7 @@ func FormatDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, analyzerName 
 func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 	pos := resolvePos(f.Position, fset)
 
-	diag := analysis.Diagnostic{
+	diag := analysis.Diagnostic{ //nolint:exhaustruct
 		Pos:      pos,
 		Message:  f.Message,
 		Category: string(f.Category),
@@ -158,7 +158,7 @@ func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 
 	for _, ref := range f.Related {
 		relatedPos := resolvePos(ref.Position, fset)
-		diag.Related = append(diag.Related, analysis.RelatedInformation{
+		diag.Related = append(diag.Related, analysis.RelatedInformation{ //nolint:exhaustruct
 			Pos:     relatedPos,
 			Message: ref.Relation,
 		})
