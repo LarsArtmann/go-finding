@@ -68,3 +68,49 @@ These decisions need product input. They are documented here for visibility.
 - [x] ID format is finalized (#2 above) — Resolved: keep readable format (A) for v1
 
 **Next target:** v1.0.0 = production release with API stability guarantee.
+
+---
+
+## 6. NewFinding API Pattern
+
+**Decision:** Keep the current 6-parameter constructor + Builder pattern.
+
+**Rationale:**
+
+- `NewFinding(rule, toolName, message, severity, pos, confidence)` provides required fields with auto-generated ID and clamped confidence.
+- `NewBuilder(rule, toolName, message, severity, pos)` provides a fluent API for optional fields.
+- Functional options were considered but rejected — they add allocation and complexity for no ergonomics gain over the builder.
+- The builder pattern is idiomatic Go and already in use.
+
+**Status:** Resolved — no changes needed.
+
+---
+
+## 7. Domain-Specific FixProvider Location
+
+**Decision:** Domain-specific providers (Go AST, Rust syn, etc.) should live in **separate modules** (`pipeline/fix/` is not appropriate for multi-language providers).
+
+**Rationale:**
+
+- Providers are domain-specific and would import heavy dependencies (go/ast, Rust parser, etc.).
+- Separate modules allow consumers to import only what they need.
+- The `FixProvider` interface in `pipeline/` is the contract; implementations live outside.
+- Example: `github.com/larsartmann/go-finding-provider-goast` as a separate repo.
+
+**Status:** Resolved — providers live in separate modules.
+
+---
+
+## 8. Properties map[string]any — Rejected
+
+**Decision:** NOT adding `Properties map[string]any` to the `Finding` struct. `Metadata map[string]string` is the sole extensibility field.
+
+**Rationale:**
+
+- `map[string]string` is fully typed, lossless for interchange (SARIF, JSON, CLI, env vars).
+- `map[string]any` requires type assertions at every read site, violating type safety.
+- Complex values can be JSON-serialized into string values.
+- This decision preserves the simplicity and type safety of the struct.
+- See commit `024b6a3` for the detailed rationale.
+
+**Status:** WONTFIX — intentionally rejected.

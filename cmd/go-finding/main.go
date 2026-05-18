@@ -16,8 +16,6 @@ import (
 
 var version = finding.Version // overridden via -ldflags "-X main.version=..."
 
-const defaultMaxIterations = 5
-
 func main() {
 	os.Exit(run())
 }

@@ -6,6 +6,43 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+func TestIsAutoFixable_ValidateAgreement(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name        string
+		fixStrategy FixStrategy
+		beforeCode  string
+		afterCode   string
+		autoFixable bool
+		validFix    bool
+	}{
+		{"none no code", FixStrategyNone, "", "", false, true},
+		{"suggest no code", FixStrategySuggest, "", "", false, true},
+		{"direct no code", FixStrategyDirect, "", "", false, false},
+		{"direct after only", FixStrategyDirect, "", "new", true, true},
+		{"direct before only", FixStrategyDirect, "old", "", true, true},
+		{"direct both", FixStrategyDirect, "old", "new", true, true},
+		{"suggest both", FixStrategySuggest, "old", "new", false, true},
+		{"ai no code", FixStrategyAI, "", "", false, true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+
+			f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
+			f.FixStrategy = tc.fixStrategy
+			f.BeforeCode = tc.beforeCode
+			f.AfterCode = tc.afterCode
+
+			g.Expect(f.IsAutoFixable()).To(Equal(tc.autoFixable))
+			g.Expect(f.Validate() == nil).To(Equal(tc.validFix))
+		})
+	}
+}
+
 func TestFinding_Validate(t *testing.T) {
 	t.Parallel()
 
@@ -70,15 +107,23 @@ func TestFinding_Validate(t *testing.T) {
 		g.Expect(err).To(MatchError(ContainSubstring("Confidence")))
 	})
 
-	t.Run("direct fix without beforeCode", func(t *testing.T) {
+	t.Run("direct fix with afterCode only is valid", func(t *testing.T) {
 		t.Parallel()
 		g := NewWithT(t)
 		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
 		f.FixStrategy = FixStrategyDirect
 		f.AfterCode = "new"
+		g.Expect(f.Validate()).NotTo(HaveOccurred())
+	})
+
+	t.Run("direct fix without beforeCode or afterCode is invalid", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
+		f.FixStrategy = FixStrategyDirect
 		err := f.Validate()
 		g.Expect(err).To(HaveOccurred())
-		g.Expect(err).To(MatchError(ContainSubstring("BeforeCode")))
+		g.Expect(err).To(MatchError(ContainSubstring("BeforeCode or AfterCode")))
 	})
 }
 

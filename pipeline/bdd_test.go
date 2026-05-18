@@ -209,12 +209,13 @@ var _ = Describe("Pipeline Lifecycle", func() {
 				return findings[:1]
 			})
 			Expect(fn.Name()).To(Equal("anonymous"))
-			result := fn.Process([]finding.Finding{
+			result, err := fn.Process(context.Background(), []finding.Finding{
 				mustBuild("r1", "t", "m", finding.SeverityError, "f.go", 1,
 					finding.FixStrategyNone, "", ""),
 				mustBuild("r2", "t", "m", finding.SeverityInfo, "f.go", 2,
 					finding.FixStrategyNone, "", ""),
 			})
+			Expect(err).NotTo(HaveOccurred())
 			Expect(result).To(HaveLen(1))
 			Expect(result[0].Rule).To(Equal("r1"))
 		})

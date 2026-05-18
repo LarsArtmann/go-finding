@@ -297,3 +297,34 @@ func TestCloneFindings_DeepCopy(t *testing.T) {
 		t.Error("mutating clone Metadata should not affect original")
 	}
 }
+
+func TestMerge_DeduplicateByID_EmptyIDs(t *testing.T) {
+	t.Parallel()
+
+	f1 := Finding{
+		Rule: "R1", ToolName: "tool-a", Message: "msg1",
+		Severity: SeverityError, Position: Pos("a.go", 1, 1),
+	}
+	f2 := Finding{
+		Rule: "R2", ToolName: "tool-b", Message: "msg2",
+		Severity: SeverityWarning, Position: Pos("b.go", 2, 1),
+	}
+
+	r1 := NewReport(ToolInfo{Name: "a"})
+	r1.AddFinding(f1)
+	r2 := NewReport(ToolInfo{Name: "b"})
+	r2.AddFinding(f2)
+
+	merged := Merge(
+		[]*Report{r1, r2},
+		WithDeduplication(true),
+		WithDeduplicateBy(DeduplicateByID),
+	)
+
+	if len(merged.Findings) != 2 {
+		t.Errorf(
+			"got %d findings, want 2 (empty-ID findings should NOT collide)",
+			len(merged.Findings),
+		)
+	}
+}

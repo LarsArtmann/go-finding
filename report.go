@@ -5,13 +5,17 @@ import (
 	"fmt"
 	"iter"
 	"sync"
+	"time"
 )
 
 // Report is the top-level container for a tool run.
 // The zero value is safe for concurrent use. Use [NewReport] to create
 // a Report with pre-allocated findings.
+// All methods are safe for concurrent use. Read methods (FindByID, Len,
+// ActiveFindings, etc.) acquire a read lock; write methods (AddFinding,
+// AddFindings, Merge) acquire a write lock.
 type Report struct {
-	mu       sync.Mutex
+	mu       sync.RWMutex
 	Tool     ToolInfo  `json:"tool"`     // Tool metadata
 	Findings []Finding `json:"findings"` // All findings from this run
 	Summary  Summary   `json:"summary"`  // Aggregated statistics
@@ -19,7 +23,11 @@ type Report struct {
 
 // Validate returns an error if the Report is invalid.
 // It checks Tool info and validates each finding, returning joined errors.
+// Safe for concurrent use.
 func (r *Report) Validate() error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	var errs []error
 
 	if err := r.Tool.Validate(); err != nil {
@@ -90,16 +98,18 @@ func newReportWithCapacity(tool ToolInfo, capacity int) *Report {
 // Safe for concurrent use.
 func (r *Report) AddFinding(f Finding) {
 	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	r.Findings = append(r.Findings, f)
-	r.mu.Unlock()
 }
 
 // AddFindings adds multiple findings to the report.
 // Safe for concurrent use.
 func (r *Report) AddFindings(findings []Finding) {
 	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	r.Findings = append(r.Findings, findings...)
-	r.mu.Unlock()
 }
 
 // Merge merges another report's findings into this report in-place.
@@ -121,8 +131,20 @@ func (r *Report) addFindingUnchecked(f Finding) {
 }
 
 // ComputeSummary recalculates the summary from the current findings.
+// Uses time.Now() for suppression expiry checks. For deterministic results
+// in tests, use ComputeSummaryAt.
 // Safe for concurrent use with AddFinding/AddFindings.
 func (r *Report) ComputeSummary() {
+	r.computeSummaryAt(time.Now())
+}
+
+// ComputeSummaryAt recalculates the summary using the given time for
+// suppression expiry checks. Use this in tests for deterministic results.
+func (r *Report) ComputeSummaryAt(now time.Time) {
+	r.computeSummaryAt(now)
+}
+
+func (r *Report) computeSummaryAt(now time.Time) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -146,7 +168,7 @@ func (r *Report) ComputeSummary() {
 			files[f.Position.File] = struct{}{}
 		}
 
-		if f.IsSuppressed() {
+		if f.IsSuppressedAt(now) {
 			suppressed++
 		}
 	}
@@ -156,7 +178,11 @@ func (r *Report) ComputeSummary() {
 }
 
 // ActiveFindings returns all non-suppressed findings.
+// Safe for concurrent use.
 func (r *Report) ActiveFindings() []Finding {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	active := make([]Finding, 0, len(r.Findings))
 
 	for _, f := range r.Findings {
@@ -170,25 +196,32 @@ func (r *Report) ActiveFindings() []Finding {
 
 // BySeverity returns findings filtered by severity, excluding suppressed.
 // For composable filtering, use filter.BySeverity with filter.NotSuppressed instead.
+// Safe for concurrent use.
 func (r *Report) BySeverity(sev Severity) []Finding {
 	return Filter(r.ActiveFindings(), BySeverity(sev))
 }
 
 // ByCategory returns findings filtered by category, excluding suppressed.
 // For composable filtering, use filter.ByCategory with filter.NotSuppressed instead.
+// Safe for concurrent use.
 func (r *Report) ByCategory(cat Category) []Finding {
 	return Filter(r.ActiveFindings(), ByCategory(cat))
 }
 
 // ByFixStrategy returns findings filtered by fix strategy, excluding suppressed.
 // For composable filtering, use filter.ByFixStrategy with filter.NotSuppressed instead.
+// Safe for concurrent use.
 func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 	return Filter(r.ActiveFindings(), ByFixStrategy(fs))
 }
 
 // FindByID returns the finding with the given ID, or nil if not found.
 // The returned Finding is a copy; modifications do not affect the report.
+// Safe for concurrent use.
 func (r *Report) FindByID(id string) *Finding {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	for _, f := range r.Findings {
 		if f.ID == id {
 			cp := f
@@ -201,36 +234,61 @@ func (r *Report) FindByID(id string) *Finding {
 }
 
 // FindByRule returns all non-suppressed findings matching the given rule name.
+// Safe for concurrent use.
 func (r *Report) FindByRule(rule string) []Finding {
 	return Filter(r.ActiveFindings(), ByRule(rule))
 }
 
 // Len returns the number of findings in the report.
+// Safe for concurrent use.
 func (r *Report) Len() int {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	return len(r.Findings)
 }
 
 // Filter returns a new report containing only findings that match all predicates.
+// Safe for concurrent use.
 func (r *Report) Filter(predicates ...FilterFunc) *Report {
+	r.mu.RLock()
 	filtered := Filter(r.Findings, predicates...)
+	r.mu.RUnlock()
+
 	result := NewReport(r.Tool)
 	result.AddFindings(filtered)
+
 	return result
 }
 
 // Map returns a new report with the given function applied to each finding.
+// Safe for concurrent use.
 func (r *Report) Map(fn func(Finding) Finding) *Report {
+	r.mu.RLock()
+	findings := make([]Finding, len(r.Findings))
+	copy(findings, r.Findings)
+	r.mu.RUnlock()
+
 	result := NewReport(r.Tool)
-	for _, f := range r.Findings {
+	for _, f := range findings {
 		result.AddFinding(fn(f))
 	}
+
 	return result
 }
 
 // All returns all findings in the report (including suppressed).
 // The yielded Finding values are copies; modifications do not affect the report.
+//
+// IMPORTANT: The returned iterator holds a read lock for the duration of
+// iteration. You MUST exhaust the iterator (e.g., with a break or range)
+// to release the lock. If you need a snapshot without holding the lock,
+// call ActiveFindings() or use Filter.
 func (r *Report) All() iter.Seq[Finding] {
 	return func(yield func(Finding) bool) {
+		r.mu.RLock()
+		defer r.mu.RUnlock()
+
 		for _, f := range r.Findings {
 			if !yield(f) {
 				return

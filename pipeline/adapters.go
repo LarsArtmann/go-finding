@@ -56,15 +56,19 @@ type FindingProcessor interface {
 	// Name returns the processor's name for logging and debugging.
 	Name() string
 	// Process applies a transformation to the findings and returns the result.
-	Process(findings []finding.Finding) []finding.Finding
+	// The context is used for cancellation. Return an error to abort the pipeline.
+	Process(ctx context.Context, findings []finding.Finding) ([]finding.Finding, error)
 }
 
 // ProcessorFunc is an adapter to use ordinary functions as FindingProcessors.
 type ProcessorFunc func(findings []finding.Finding) []finding.Finding
 
 // Process implements FindingProcessor.
-func (f ProcessorFunc) Process(findings []finding.Finding) []finding.Finding {
-	return f(findings)
+func (f ProcessorFunc) Process(
+	_ context.Context,
+	findings []finding.Finding,
+) ([]finding.Finding, error) {
+	return f(findings), nil
 }
 
 // Name implements FindingProcessor. Returns "anonymous".
@@ -82,8 +86,11 @@ type namedProcessor struct {
 	fn   ProcessorFunc
 }
 
-func (n *namedProcessor) Process(findings []finding.Finding) []finding.Finding {
-	return n.fn(findings)
+func (n *namedProcessor) Process(
+	_ context.Context,
+	findings []finding.Finding,
+) ([]finding.Finding, error) {
+	return n.fn(findings), nil
 }
 
 func (n *namedProcessor) Name() string {

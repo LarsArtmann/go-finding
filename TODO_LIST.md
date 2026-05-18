@@ -78,9 +78,9 @@
 
 ### Architecture Decisions (blocking API lock)
 
-- [ ] **Decide `NewFinding` API pattern** — Functional options vs builder-only vs current 6-param approach. Breaking changes have happened without a decision. (Reference: `docs/status/2026-04-30_02-59`)
+- [x] **Decide `NewFinding` API pattern** — Resolved: keep 6-param + Builder. No functional options. (See `docs/architecture-decisions.md` Decision #6)
 - [x] **Extract `diagnostic.go` to `finding/analysis` subpackage** — Done. Deprecated wrappers removed from root. Root package no longer imports `golang.org/x/tools`. (`analysis/`)
-- [ ] **API stability review** — Audit every exported symbol for v1.0.0 lock. Target: v0.2.0 = API-stable beta. (`docs/architecture-decisions.md` Decision #5)
+- [ ] **API stability review** — Audit every exported symbol for v1.0.0 lock. In progress, see `docs/planning/2026-05-18_18-50_execution-plan.md` Phase 4.
 
 ### Correctness
 
@@ -97,7 +97,7 @@
 - [x] **Make `FixEdit` serializable** — Added `MarshalJSON`/`UnmarshalJSON`, `ToSARIFProperties`/`FixEditFromSARIFProperties`. Edit properties preserved through SARIF round-trip. (`pipeline/fix_edit.go`, `e47c219`)
 - [x] **Build line-offset index** — `buildLineOffsetIndex` returns `[]int` where `index[i]` is byte offset of line `i+1`. O(n) build, O(1) per lookup. (`pipeline/fix_provider.go:287`, `cba1b19`)
 - [x] **Add BDD tests for FixProvider** — 15 BDD specs for OffsetProvider, LineProvider, SubstringProvider + chain precedence. (`pipeline/bdd_test.go`, `aa25f80`)
-- [ ] **Decide domain-specific provider location** — Should Go AST, Rust syn, etc. providers live INSIDE `pipeline/fix/` or as SEPARATE modules? Affects module structure permanently. (`docs/architecture-decisions.md`)
+- [x] **Decide domain-specific provider location** — Resolved: separate modules. `FixProvider` interface stays in `pipeline/`; implementations are external. (See `docs/architecture-decisions.md` Decision #7)
 
 ### Architecture Deepening
 
@@ -123,7 +123,7 @@
 
 ### Missing Features from Planning
 
-- [ ] **Add `Properties map[string]any`** alongside `Metadata map[string]string` — Structured round-trip data for SARIF. Currently `Metadata` is string-only. (`finding.go`)
+- [x] **Add `Properties map[string]any`** — **WONTFIX.** Intentionally rejected. `Metadata map[string]string` is the sole extensibility field. See `docs/architecture-decisions.md` Decision #8 and commit `024b6a3`.
 - [x] **Add `Suppression.IsActive()` method** — Done. Exists at `suppression.go:43`. Combines `IsValid() && !IsExpired(now)`.
 - [x] **Add `Report.Merge(other *Report)` method** — Done in commit `df82906`. In-place merge for accumulating findings. (`report.go:80`)
 - [x] **Add `io.WriterTo` for SARIF** — Done. `Report.WriteTo(w)` implements `io.WriterTo` via streaming SARIF with byte count.
@@ -165,7 +165,7 @@
 
 - [ ] **`Finding` struct sub-grouping** — Group fields into `Identity`, `Location`, `Fix`, `Context` embedded sub-structs. Breaking API change, deferred to v2.
 - [x] **`Category.IsValid()` clarify semantics** — Godoc already documents the distinction clearly: `IsValid()` accepts custom categories, `IsStandard()` checks predefined constants. No change needed.
-- [ ] **Protect `Confidence` in direct struct construction** — `Finding{Confidence: 1.5}` bypasses `NewFinding` clamping. Needs design decision.
+- [x] **Protect `Confidence` in direct struct construction** — Resolved: Validate() catches out-of-range values. Direct construction documented with warning in godoc. Builder API clamps automatically. Full compile-time protection would require unexporting the field (breaking JSON), which is not justified.
 
 ---
 

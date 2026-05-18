@@ -20,7 +20,8 @@ type Pipeline struct {
 	iterations int
 	findings   []finding.Finding
 	metrics    *Metrics
-	callbackMu sync.Mutex // protects OnFinding from parallel goroutines
+	callbackMu sync.Mutex  // protects OnFinding from parallel goroutines
+	applier    *FixApplier // reused across iterations
 }
 
 // New creates a new Pipeline with the given configuration.
@@ -79,6 +80,11 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	var metricsResult *PipelineResult
 
 	defer func() {
+		if p.applier != nil {
+			_ = p.applier.Close()
+			p.applier = nil
+		}
+
 		if p.metrics != nil {
 			p.metrics.SetEnd(time.Now())
 
@@ -105,70 +111,13 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 			return result, err
 		}
 
-		iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct
-
-		// Detect
-		detectDone := p.stageTiming("detect")
-		detResult, err := p.detect(ctx)
-
-		detectDone()
-
+		done, err := p.runIteration(ctx, result)
 		if err != nil {
-			return result, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
+			return result, err
 		}
 
-		findings := detResult.Findings
-
-		// Run processors (filter, enrich, transform)
-		for _, proc := range p.config.Processors {
-			findings = proc.Process(findings)
-		}
-
-		// Accumulate partial errors across iterations.
-		for name, detErr := range detResult.Errors {
-			if result.PartialErrors == nil {
-				result.PartialErrors = make(map[string]error)
-			}
-
-			result.PartialErrors[name] = detErr
-		}
-
-		iter.FindingsFound = len(findings)
-		iter.findings = findings
-		p.findings = append(p.findings, findings...)
-
-		// If no findings, we're done
-		if len(findings) == 0 {
-			result.Stable = true
-			result.Iterations = append(result.Iterations, iter)
-
+		if done {
 			break
-		}
-
-		// Triage
-		triage := p.triage(findings)
-		iter.DirectFixes = len(triage.Direct)
-		iter.SuggestFixes = len(triage.Suggest)
-		iter.suggest = triage.Suggest
-		iter.NoFix = len(triage.None)
-
-		// Apply fixes (with conflict detection)
-		if !p.config.DryRun {
-			applyDone := p.stageTiming("apply")
-			if err := p.applyTriage(ctx, triage.Direct, &iter); err != nil {
-				applyDone()
-
-				return result, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
-			}
-
-			applyDone()
-		}
-
-		result.Iterations = append(result.Iterations, iter)
-		p.iterations++
-
-		if p.config.OnIteration != nil {
-			p.config.OnIteration(p.iterations, findings)
 		}
 	}
 
@@ -196,6 +145,79 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	metricsResult = result
 
 	return result, nil
+}
+
+// runIteration executes one detect → triage → apply cycle.
+// Returns (true, nil) when the pipeline should stop (no findings found).
+func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bool, error) {
+	iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct
+
+	detectDone := p.stageTiming("detect")
+	detResult, err := p.detect(ctx)
+	detectDone()
+
+	if err != nil {
+		return false, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
+	}
+
+	findings := detResult.Findings
+
+	for _, proc := range p.config.Processors {
+		findings, err = proc.Process(ctx, findings)
+		if err != nil {
+			return false, fmt.Errorf(
+				"iteration %d: processor %s: %w",
+				p.iterations+1,
+				proc.Name(),
+				err,
+			)
+		}
+	}
+
+	for name, detErr := range detResult.Errors {
+		if result.PartialErrors == nil {
+			result.PartialErrors = make(map[string]error)
+		}
+
+		result.PartialErrors[name] = detErr
+	}
+
+	iter.FindingsFound = len(findings)
+	iter.findings = findings
+	p.findings = append(p.findings, findings...)
+
+	if len(findings) == 0 {
+		result.Stable = true
+		result.Iterations = append(result.Iterations, iter)
+
+		return true, nil
+	}
+
+	triage := p.triage(findings)
+	iter.DirectFixes = len(triage.Direct)
+	iter.SuggestFixes = len(triage.Suggest)
+	iter.suggest = triage.Suggest
+	iter.NoFix = len(triage.None)
+
+	if !p.config.DryRun {
+		applyDone := p.stageTiming("apply")
+		if err := p.applyTriage(ctx, triage.Direct, &iter); err != nil {
+			applyDone()
+
+			return false, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
+		}
+
+		applyDone()
+	}
+
+	result.Iterations = append(result.Iterations, iter)
+	p.iterations++
+
+	if p.config.OnIteration != nil {
+		p.config.OnIteration(p.iterations, findings)
+	}
+
+	return false, nil
 }
 
 // collectAllFindings gathers all findings from all iterations for verification.
@@ -265,7 +287,14 @@ func (p *Pipeline) recordDetectorMetrics(
 
 // runOneDetector executes a single detector, recording metrics and filtering
 // suppressed findings. It returns the active findings or an error.
+// If a per-detector timeout is configured, it takes precedence over the global timeout.
 func (p *Pipeline) runOneDetector(ctx context.Context, d Detector) ([]finding.Finding, error) {
+	if timeout, ok := p.config.DetectorTimeouts[d.Name()]; ok && timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, timeout)
+		defer cancel()
+	}
+
 	start := time.Now()
 	findings, err := d.Detect(ctx)
 	elapsed := time.Since(start)
@@ -411,19 +440,19 @@ func (p *Pipeline) applyDirectFixes(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) ([]finding.Finding, error) {
-	var applier *FixApplier
 	var err error
-	if len(p.config.FixProviders) > 0 {
-		applier, err = NewFixApplierWithProviders(p.rootDir, p.config.FixProviders...)
-	} else {
-		applier, err = NewFixApplier(p.rootDir)
+	if p.applier == nil {
+		if len(p.config.FixProviders) > 0 {
+			p.applier, err = NewFixApplierWithProviders(p.rootDir, p.config.FixProviders...)
+		} else {
+			p.applier, err = NewFixApplier(p.rootDir)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("init fix applier: %w", err)
+		}
 	}
-	if err != nil {
-		return nil, fmt.Errorf("init fix applier: %w", err)
-	}
-	defer func() { _ = applier.Close() }()
 
-	applied, appliedFixes, err := applier.ApplyWithDetails(ctx, fixes)
+	applied, appliedFixes, err := p.applier.ApplyWithDetails(ctx, fixes)
 	if err != nil {
 		return nil, err
 	}

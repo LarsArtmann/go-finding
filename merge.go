@@ -137,6 +137,10 @@ func WithDeduplicateBy(by DeduplicateBy) MergeOption {
 func dedupKey(finding Finding, opts MergeOptions) string {
 	switch opts.DeduplicateBy {
 	case DeduplicateByID:
+		if finding.ID == "" {
+			return finding.Key()
+		}
+
 		return finding.ID
 	case DeduplicateByPosition:
 		return fmt.Sprintf(

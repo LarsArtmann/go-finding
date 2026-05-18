@@ -255,9 +255,9 @@ func (f Finding) Validate() error {
 			fmt.Sprintf("finding.Confidence %s must be in [0.0, 1.0]", f.Confidence), nil))
 	}
 
-	if f.BeforeCode == "" && f.AfterCode != "" && f.FixStrategy == FixStrategyDirect {
+	if f.BeforeCode == "" && f.AfterCode == "" && f.FixStrategy == FixStrategyDirect {
 		errs = append(errs, NewValidationError(
-			"finding.FixStrategyDirect requires BeforeCode when AfterCode is set", nil))
+			"finding.FixStrategyDirect requires BeforeCode or AfterCode", nil))
 	}
 
 	return errors.Join(errs...)

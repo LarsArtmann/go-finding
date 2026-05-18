@@ -61,7 +61,6 @@ func detectConflictsInFile(
 		return nil, nil
 	}
 
-	// Sort fixes by start position
 	sorted := make([]finding.Finding, len(fixes))
 	copy(sorted, fixes)
 	slices.SortFunc(sorted, func(a, b finding.Finding) int {
@@ -71,7 +70,6 @@ func detectConflictsInFile(
 	var (
 		groups       []FixGroup
 		currentGroup FixGroup
-		conflicts    []finding.Finding
 	)
 
 	for _, f := range sorted {
@@ -80,33 +78,35 @@ func detectConflictsInFile(
 		if len(currentGroup.Fixes) == 0 {
 			currentGroup = newFixGroup(file, f, rangeInfo)
 		} else {
-			// Check if this fix conflicts with current group
-			if currentGroup.Bounds.Overlaps(rangeInfo) {
-				// Conflict detected - add to current group and extend bounds
+			overlapsAny := false
+			for _, existing := range currentGroup.Fixes {
+				if getFindingRange(existing).Overlaps(rangeInfo) {
+					overlapsAny = true
+					break
+				}
+			}
+
+			if overlapsAny {
 				currentGroup.Fixes = append(currentGroup.Fixes, f)
 				currentGroup.Bounds = extendRange(currentGroup.Bounds, rangeInfo)
 			} else {
-				// No conflict - finalize current group and start new one
 				groups = append(groups, currentGroup)
 				currentGroup = newFixGroup(file, f, rangeInfo)
 			}
 		}
 	}
 
-	// Don't forget the last group
 	if len(currentGroup.Fixes) > 0 {
 		groups = append(groups, currentGroup)
 	}
 
-	// Split groups with multiple fixes into individual fixes as conflicts
-	// (for now - we could implement merge logic later)
 	var finalGroups []FixGroup
+	var conflicts []finding.Finding
 
 	for _, g := range groups {
 		if len(g.Fixes) == 1 {
 			finalGroups = append(finalGroups, g)
 		} else {
-			// Group has conflicts - only keep the first fix, mark others as conflicts
 			finalGroups = append(finalGroups, FixGroup{
 				File:   g.File,
 				Fixes:  []finding.Finding{g.Fixes[0]},

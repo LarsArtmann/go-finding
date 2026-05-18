@@ -42,15 +42,20 @@ type Config struct {
 	// If nil, default text-based providers (OffsetProvider, LineProvider, SubstringProvider) are used.
 	// Register domain-specific providers (e.g., Go AST, Rust syn) for production accuracy.
 	FixProviders []FixProvider
+	// DetectorTimeouts configures per-detector timeouts. Map key is detector name,
+	// value is the timeout for that detector. Detectors not in the map use the
+	// global Timeout.
+	DetectorTimeouts map[string]time.Duration
 }
 
-const defaultMaxIterations = 5
+// DefaultMaxIterations is the default maximum number of pipeline iterations.
+const DefaultMaxIterations = 5
 
 // DefaultConfig returns a sensible default configuration.
 func DefaultConfig() Config {
 	//nolint:exhaustruct
 	return Config{
-		MaxIterations:     defaultMaxIterations,
+		MaxIterations:     DefaultMaxIterations,
 		ParallelDetectors: true,
 		Timeout:           10 * time.Minute,
 	}
