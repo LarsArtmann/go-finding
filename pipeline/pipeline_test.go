@@ -1283,6 +1283,65 @@ func correlateTestDetectors() (*mockDetector, *mockDetector) {
 	return detA, detB
 }
 
+func TestPipelineRun_PerDetectorTimeout(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	cfg := DefaultConfig()
+	cfg.ParallelDetectors = false
+	cfg.DetectorTimeouts = map[string]time.Duration{
+		"slow": 10 * time.Millisecond,
+	}
+
+	slowDetector := &mockDetector{
+		name:  "slow",
+		delay: 500 * time.Millisecond,
+		findings: []finding.Finding{
+			{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"},
+		},
+	}
+
+	p, err := New(cfg, t.TempDir(), slowDetector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	ctx := context.Background()
+	_, err = p.Run(ctx)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, context.DeadlineExceeded)).To(BeTrue())
+}
+
+func TestPipelineRun_PerDetectorTimeout_UnaffectedDetector(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	cfg := DefaultConfig()
+	cfg.ParallelDetectors = false
+	cfg.DetectorTimeouts = map[string]time.Duration{
+		"other": 10 * time.Millisecond, // timeout for a different detector
+	}
+
+	slowDetector := &mockDetector{
+		name:  "slow",
+		delay: 50 * time.Millisecond,
+		findings: []finding.Finding{
+			{ID: "s1", Rule: "r", ToolName: "t", Message: "m"},
+		},
+	}
+
+	p, err := New(cfg, t.TempDir(), slowDetector)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	ctx := context.Background()
+	result, err := p.Run(ctx)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(result.Iterations).NotTo(BeEmpty())
+	g.Expect(result.Iterations[0].FindingsFound).To(Equal(1))
+}
+
 func TestPipelineRun_CorrelateFindings(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
