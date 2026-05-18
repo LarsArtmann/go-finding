@@ -119,7 +119,105 @@ func FormatDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, analyzerName 
 	)
 }
 
-// nodeStartPos returns the start token.Position of an AST node, or a zero position if node is nil.
+// ToDiagnostic converts a Finding back to a go/analysis.Diagnostic.
+// The fset is used to resolve file positions back to token.Pos values.
+// If the file referenced by f.Position.File is not in fset, token.NoPos is used.
+//
+// The conversion is lossy: Severity, Confidence, Tags, Suppression, Metadata,
+// and FixStrategy are not representable in analysis.Diagnostic.
+// BeforeCode/AfterCode are converted to a SuggestedFix with TextEdit when present.
+func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
+	pos := resolvePos(f.Position, fset)
+
+	diag := analysis.Diagnostic{
+		Pos:      pos,
+		Message:  f.Message,
+		Category: string(f.Category),
+	}
+
+	if f.HasFix() && f.Position.File != "" {
+		endPos := resolveEndPos(f, fset)
+		newText := []byte(f.AfterCode)
+
+		if f.BeforeCode != "" && endPos > pos {
+			diag.SuggestedFixes = []analysis.SuggestedFix{
+				{
+					Message:   f.Suggestion,
+					TextEdits: []analysis.TextEdit{{Pos: pos, End: endPos, NewText: newText}},
+				},
+			}
+		} else if f.AfterCode != "" {
+			diag.SuggestedFixes = []analysis.SuggestedFix{
+				{
+					Message:   f.Suggestion,
+					TextEdits: []analysis.TextEdit{{Pos: pos, End: pos, NewText: newText}},
+				},
+			}
+		}
+	}
+
+	for _, ref := range f.Related {
+		relatedPos := resolvePos(ref.Position, fset)
+		diag.Related = append(diag.Related, analysis.RelatedInformation{
+			Pos:     relatedPos,
+			Message: ref.Relation,
+		})
+	}
+
+	return diag
+}
+
+// resolvePos converts a finding.Position to a token.Pos by looking up the file in fset.
+// Returns token.NoPos if the file is not in the file set or the line is invalid.
+func resolvePos(p finding.Position, fset *token.FileSet) token.Pos {
+	if p.File == "" || p.Line <= 0 {
+		return token.NoPos
+	}
+
+	var file *token.File
+
+	fset.Iterate(func(tf *token.File) bool {
+		if tf.Name() == p.File {
+			file = tf
+
+			return false
+		}
+
+		return true
+	})
+
+	if file == nil {
+		return token.NoPos
+	}
+
+	if p.Line > file.LineCount() {
+		return token.NoPos
+	}
+
+	lineStart := file.LineStart(p.Line)
+
+	if p.Column > 1 {
+		return lineStart + token.Pos(p.Column-1)
+	}
+
+	return lineStart
+}
+
+// resolveEndPos computes the end token.Pos for a finding's fix range.
+func resolveEndPos(f finding.Finding, fset *token.FileSet) token.Pos {
+	if f.Range != nil && f.Range.Start.File == f.Position.File {
+		return resolvePos(f.Range.End, fset)
+	}
+
+	if f.BeforeCode != "" {
+		start := resolvePos(f.Position, fset)
+		if start != token.NoPos {
+			return start + token.Pos(len(f.BeforeCode))
+		}
+	}
+
+	return token.NoPos
+}
 func nodeStartPos(fset *token.FileSet, node ast.Node) token.Position {
 	if node == nil {
 		return token.Position{
