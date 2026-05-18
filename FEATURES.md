@@ -361,12 +361,13 @@ Preserves: end position as Range, related information, raw LSP severity in Metad
 | Function                                                      | Purpose                              |
 | ------------------------------------------------------------- | ------------------------------------ |
 | `FromDiagnostic(diag, fset, toolName, ruleCode, ...severity)` | `go/analysis.Diagnostic` → `Finding` |
+| `ToDiagnostic(finding, fset)`                                 | `Finding` → `go/analysis.Diagnostic` |
 | `FromTokenPosition(pos)`                                      | `token.Position` → `Position`        |
 | `NodePosition(fset, node)`                                    | `ast.Node` → `Position`              |
 | `NodeRange(fset, node)`                                       | `ast.Node` → `Range`                 |
 | `FormatDiagnostic(diag, fset, name)`                          | Go-vet-style formatted string        |
 
-Auto-detects suggested fixes and sets `FixStrategyDirect` with `AfterCode`.
+Auto-detects suggested fixes and sets `FixStrategyDirect` with `AfterCode`. `ToDiagnostic` converts back with position resolution, SuggestedFix generation, and Related conversion.
 
 ---
 
@@ -425,6 +426,9 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 | `OnFinding`           | `func(Finding)`        | `nil`   | Per-finding callback             |
 | `OnFix`               | `func(Finding, bool)`  | `nil`   | Per-fix callback                 |
 | `OnIteration`         | `func(int, []Finding)` | `nil`   | Per-iteration callback           |
+| `OnStage`             | `func(string, int, int)` | `nil` | Per-stage callback (detect/process/triage) |
+| `DetectorTimeouts`    | `map[string]Duration`  | `nil`   | Per-detector timeout overrides   |
+| `Logger`              | `*slog.Logger`         | `nil`   | Structured logging               |
 
 Config validation: `config.Validate()` returns joined errors for invalid values. `pipeline.New()` rejects invalid configs.
 
@@ -647,7 +651,7 @@ Binary: `go-finding`
 | Flag              | Default | Description                            |
 | ----------------- | ------- | -------------------------------------- |
 | `-dir`            | `.`     | Root directory to analyze              |
-| `-format`         | `text`  | Output format: `text`, `json`, `sarif` |
+| `-format`         | `text`  | Output format: `text`, `markdown`, `json`, `sarif` |
 | `-severity`       | `info`  | Minimum severity filter                |
 | `-max-iterations` | `1`     | Pipeline iterations                    |
 | `-parallel`       | `true`  | Run detectors in parallel              |
@@ -666,6 +670,9 @@ maxIterations: 3
 parallelDetectors: true
 verifyAfterFix: false
 timeout: "5m"
+detectorTimeouts:
+  staticcheck: "30s"
+  govet: "10s"
 detectors:
   - name: govet
   - name: staticcheck
@@ -681,11 +688,12 @@ Without `-config`: uses govet + staticcheck with the flag values.
 
 ### Output Formats
 
-| Format  | Description                                               |
-| ------- | --------------------------------------------------------- |
-| `text`  | Human-readable: `file:line:col: [severity] rule: message` |
-| `json`  | Full JSON report                                          |
-| `sarif` | SARIF 2.1.0                                               |
+| Format     | Description                                               |
+| ---------- | --------------------------------------------------------- |
+| `text`     | Human-readable: `file:line:col: [SEVERITY] rule: message` |
+| `markdown` | Markdown table with location, severity, rule, message     |
+| `json`     | Full JSON report                                          |
+| `sarif`    | SARIF 2.1.0                                               |
 
 Metrics summary printed to stderr when available.
 
@@ -751,7 +759,7 @@ Three runnable examples in `examples/`:
 | JSON serialization                | STABLE       | Streaming support, drops invalid findings                         |
 | SARIF 2.1.0 export/import         | STABLE       | Round-trip via property bag                                       |
 | LSP conversion                    | STABLE       | Lossy — drops fix/suppression metadata                            |
-| go/analysis integration           | STABLE       | Full diagnostic → Finding conversion                              |
+| go/analysis integration           | STABLE       | Bidirectional conversion (Diagnostic ↔ Finding)                   |
 | Structured errors                 | STABLE       | 5 categories, errors.Is support                                   |
 | Pipeline (detect→fix→verify)      | STABLE       | Iterative loop with configurable behavior                         |
 | Finding processors                | EXPERIMENTAL | Composable transforms between detect and triage                   |
@@ -766,8 +774,13 @@ Three runnable examples in `examples/`:
 | File backup & rollback            | STABLE       | Automatic on fix failure                                          |
 | Go vet detector                   | FUNCTIONAL   | Requires `go vet` in PATH                                         |
 | Staticcheck detector              | FUNCTIONAL   | Requires `staticcheck` in PATH                                    |
-| CLI tool                          | FUNCTIONAL   | 3 output formats, config file, profiling                          |
+| CLI tool                          | FUNCTIONAL   | 4 output formats (text, markdown, json, sarif), config, profiling |
 | Plugin detector registry          | STABLE       | Thread-safe `RegisterDetector`                                    |
+| Per-detector timeouts             | STABLE       | `DetectorTimeouts` map in Config + CLI config file                |
+| Structured logging (slog)         | STABLE       | Optional `Logger *slog.Logger` in Config                          |
+| Stage progress callback           | STABLE       | `OnStage func(stage, iteration, count)` in Config                 |
+| Diff function                     | STABLE       | `finding.Diff(before, after)` by ID                               |
+| FormatText / FormatMarkdown       | STABLE       | `finding.FormatText(w, findings)` / `finding.FormatMarkdown`      |
 | Config validation                 | STABLE       | Both pipeline and CLI configs                                     |
 | Examples                          | FUNCTIONAL   | 3 runnable examples, compile-tested                               |
 
