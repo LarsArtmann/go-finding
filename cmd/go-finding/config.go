@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/go-faster/yaml"
@@ -96,7 +98,8 @@ func (c pipelineConfigFile) validate() error {
 
 	for _, d := range c.Detectors {
 		if _, ok := lookupDetectorBuilder(d.Name); !ok {
-			return fmt.Errorf("%w %q (available: govet, staticcheck)", errUnknownDetector, d.Name)
+			return fmt.Errorf("%w %q (available: %s)", errUnknownDetector, d.Name,
+			strings.Join(slices.Sorted(slices.Values(availableDetectorNames())), ", "))
 		}
 	}
 

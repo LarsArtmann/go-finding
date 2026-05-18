@@ -41,6 +41,18 @@ func lookupDetectorBuilder(name string) (func(string) pipeline.Detector, bool) {
 	return b, ok
 }
 
+func availableDetectorNames() []string {
+	knownDetectorBuildersMu.RLock()
+	defer knownDetectorBuildersMu.RUnlock()
+
+	names := make([]string, 0, len(knownDetectorBuilders))
+	for name := range knownDetectorBuilders {
+		names = append(names, name)
+	}
+
+	return names
+}
+
 func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {
 	var result []pipeline.Detector
 
