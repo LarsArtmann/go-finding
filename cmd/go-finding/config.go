@@ -17,11 +17,12 @@ import (
 )
 
 type pipelineConfigFile struct {
-	MaxIterations     int            `json:"maxIterations"     yaml:"maxIterations"`
-	ParallelDetectors bool           `json:"parallelDetectors" yaml:"parallelDetectors"`
-	VerifyAfterFix    bool           `json:"verifyAfterFix"    yaml:"verifyAfterFix"`
-	Timeout           string         `json:"timeout"           yaml:"timeout"`
-	Detectors         []detectorSpec `json:"detectors"         yaml:"detectors"`
+	MaxIterations     int                        `json:"maxIterations"     yaml:"maxIterations"`
+	ParallelDetectors bool                       `json:"parallelDetectors" yaml:"parallelDetectors"`
+	VerifyAfterFix    bool                       `json:"verifyAfterFix"    yaml:"verifyAfterFix"`
+	Timeout           string                     `json:"timeout"           yaml:"timeout"`
+	DetectorTimeouts  map[string]string          `json:"detectorTimeouts"  yaml:"detectorTimeouts"`
+	Detectors         []detectorSpec             `json:"detectors"         yaml:"detectors"`
 }
 
 type detectorSpec struct {
@@ -139,12 +140,20 @@ func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
 		maxIter = pipeline.DefaultMaxIterations
 	}
 
+	detectorTimeouts := make(map[string]time.Duration, len(c.DetectorTimeouts))
+	for name, durStr := range c.DetectorTimeouts {
+		if d, err := time.ParseDuration(durStr); err == nil {
+			detectorTimeouts[name] = d
+		}
+	}
+
 	return pipeline.Config{ //nolint:exhaustruct
 		MaxIterations:     maxIter,
 		ParallelDetectors: c.ParallelDetectors,
 		VerifyAfterFix:    c.VerifyAfterFix,
 		Timeout:           t,
 		Metrics:           pipeline.NewMetrics(),
+		DetectorTimeouts:  detectorTimeouts,
 	}
 }
 
