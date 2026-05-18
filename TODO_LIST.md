@@ -152,7 +152,7 @@
 - [x] **SARIF schema validation test** — Done. `TestSARIF_SchemaCompliance` validates structural compliance with SARIF 2.1.0: version, schema URI, required fields (tool.driver.name, ruleId, level, message, locations), level enum, rank bounds, properties, fixes, and related locations.
 - [ ] **Evaluate `go-sarif` vs hand-rolled SARIF** — Assess migration cost for spec compliance. Deferred to post-v1.
 - [x] **Document SARIF round-trip losses in user-facing docs** — Done. `docs/USAGE_GUIDE.md` now has SARIF Round-Trip Fidelity section with limitations and import docs.
-- [ ] **`go/analysis` reverse conversion** — Converting back to `analysis.Diagnostic` is not yet supported. Noted in README.
+- [x] **`go/analysis` reverse conversion** — Done. `ToDiagnostic(f, fset)` in `analysis/analysis.go` converts Finding → analysis.Diagnostic with position resolution, SuggestedFix generation from BeforeCode/AfterCode, and Related conversion. 98.5% coverage.
 
 ### Documentation
 
@@ -183,16 +183,16 @@
 
 ### Features
 
-- [ ] **Plugin architecture for detectors** — Replace hardcoded `knownDetectorBuilders` with runtime registration. (`pipeline/pipeline.go`)
+- [x] **Plugin architecture for detectors** — Done. `RegisterDetector(name, builder)` with thread-safe map and `lookupDetectorBuilder` in `cmd/go-finding/registry.go`. Error message dynamically lists available detectors.
 - [ ] **Pipeline middleware/interceptor pattern** — Allow custom stage injection between detect/triage/fix/verify.
 - [ ] **Watch mode** with `fsnotify` for continuous analysis
-- [ ] **Structured logging** (`slog`) — Replace `fmt.Fprintf` throughout `cmd` + `pipeline`
-- [ ] **`finding.Diff()` function** — Compare finding sets (original vs fixed)
-- [ ] **`finding.FormatText()` and `finding.FormatMarkdown()`** — Human-readable output formats
-- [ ] **Detector timeout per-detector** — Configurable per-detector timeouts
+- [x] **Structured logging** (`slog`) — Done. `Logger *slog.Logger` in Config. When set, pipeline emits structured events for iteration start, triage complete, and conflict detection. CLI keeps human-readable fmt.Fprintf for user output.
+- [x] **`finding.Diff()` function** — Done. `Diff(before, after) DiffResult` in `diff.go` compares finding sets by ID, returns Added/Removed/Unchanged sorted by ID.
+- [x] **`finding.FormatText()` and `finding.FormatMarkdown()`** — Done. `FormatText(w, findings)` and `FormatMarkdown(w, findings)` in `format.go`. Wired into CLI: `text` format uses FormatText, `markdown` format added as new output option.
+- [x] **Detector timeout per-detector** — Done. `DetectorTimeouts map[string]time.Duration` in Config. Wired in `runOneDetector` with context.WithTimeout. Configurable in CLI via `detectorTimeouts` YAML/JSON map.
 - [x] **Column shift handling in `FixEngine`** — Resolved by byte-level redesign: edits now applied descending by offset with frontier boundary, eliminating column shift issues. (`pipeline/fix_engine.go`)
 - [ ] **Semantic merge for conflicts** — In `pipeline` package
-- [ ] **Progress reporting to Pipeline** — Callback for long-running operations
+- [x] **Progress reporting to Pipeline** — Done. `OnStage func(stage, iteration, findingsCount int)` in Config. Fires for detect, process, and triage stage completions.
 - [ ] **Styled CLI output** using `lipgloss`
 - [ ] **Interactive TUI for fix review** (`bubbletea`)
 - [x] **`FuzzFindingsFromJSON` fuzzer** — Done. `json_fuzz_test.go` with FuzzFindingsFromJSON, FuzzReportFromJSON, FuzzFromJSON. 1.1M+ execs, zero panics.
