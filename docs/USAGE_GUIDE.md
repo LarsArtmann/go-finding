@@ -202,12 +202,12 @@ finding.FixStrategyAI      // "ai"      — requires AI assistance
 
 #### Pipeline behavior
 
-| Strategy | `HasFix()` | `IsAutoFixable()` | `CanAutoApply()` | `NeedsAI()` |
-|----------|-----------|-------------------|------------------|-------------|
-| `none` | false | false | false | false |
-| `suggest` | true (requires `AfterCode`) | false | false | false |
-| `direct` | true (requires `AfterCode`) | true | true | false |
-| `ai` | true (requires `AfterCode`) | false | false | true |
+| Strategy  | `HasFix()`                  | `IsAutoFixable()` | `CanAutoApply()` | `NeedsAI()` |
+| --------- | --------------------------- | ----------------- | ---------------- | ----------- |
+| `none`    | false                       | false             | false            | false       |
+| `suggest` | true (requires `AfterCode`) | false             | false            | false       |
+| `direct`  | true (requires `AfterCode`) | true              | true             | false       |
+| `ai`      | true (requires `AfterCode`) | false             | false            | true        |
 
 - `FixStrategyAI` is a **reserved placeholder**. No AI backend exists yet. Pipeline triage treats it like `FixStrategySuggest` (no auto-apply). Set `NeedsAI()` to `true` so consumers can identify findings that need AI-powered remediation when an AI backend becomes available.
 - `FixStrategyDirect` is the only strategy the pipeline auto-applies. It requires both `BeforeCode` and `AfterCode` to be set.
@@ -384,6 +384,7 @@ findings, _ := finding.FindingsFromSARIF(sarif)
 ```
 
 **Known limitations:**
+
 - Suppressed findings are excluded from export (lossy)
 - `SeverityCritical` maps to SARIF `"error"` (no critical level in SARIF 2.1.0); original severity preserved in properties
 - Non-go-finding SARIF (from other tools) imports with best-effort mapping; unknown fields land in `Metadata`
