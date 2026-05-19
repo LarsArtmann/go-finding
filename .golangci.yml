@@ -1,271 +1,271 @@
 version: "2"
 run:
-    timeout: 5m
-    go: 1.26.2
-    build-tags:
-        - goexperiment.arenas
-        - goexperiment.goroutineleakprofile
-        - goexperiment.jsonv2
-        - goexperiment.runtimesecret
-        - goexperiment.simd
-    allow-parallel-runners: true
-    allow-serial-runners: true
+  timeout: 5m
+  go: 1.26.2
+  build-tags:
+    - goexperiment.arenas
+    - goexperiment.goroutineleakprofile
+    - goexperiment.jsonv2
+    - goexperiment.runtimesecret
+    - goexperiment.simd
+  allow-parallel-runners: true
+  allow-serial-runners: true
 output:
-    formats: {}
+  formats: {}
 linters:
-    enable:
-        - arangolint
-        - asasalint
-        - asciicheck
-        - bidichk
-        - bodyclose
-        - canonicalheader
-        - containedctx
-        - contextcheck
-        - copyloopvar
-        - cyclop
-        - decorder
-        - depguard
-        - dogsled
-        - dupl
-        - dupword
-        - durationcheck
-        - embeddedstructfieldcheck
-        - err113
-        - errcheck
-        - errchkjson
-        - errname
-        - errorlint
-        - exhaustive
-        - exhaustruct
-        - exptostd
-        - fatcontext
-        - forbidigo
-        - forcetypeassert
-        - funlen
-        - ginkgolinter
-        - gocheckcompilerdirectives
-        - gochecknoglobals
-        - gochecknoinits
-        - gochecksumtype
-        - gocognit
-        - goconst
-        - gocritic
-        - gocyclo
-        - godoclint
-        - godot
-        - godox
-        - goheader
-        - gomoddirectives
-        - gomodguard_v2
-        - goprintffuncname
-        - gosec
-        - gosmopolitan
-        - govet
-        - grouper
-        - iface
-        - importas
-        - inamedparam
-        - ineffassign
-        - interfacebloat
-        - intrange
-        - iotamixing
-        - loggercheck
-        - maintidx
-        - makezero
-        - mirror
-        - misspell
-        - mnd
-        - modernize
-        - musttag
-        - nakedret
-        - nestif
-        - nilerr
-        - nilnesserr
-        - nilnil
-        - noctx
-        - nolintlint
-        - nonamedreturns
-        - nosprintfhostport
-        - paralleltest
-        - perfsprint
-        - prealloc
-        - predeclared
-        - promlinter
-        - protogetter
-        - reassign
-        - recvcheck
-        - revive
-        - rowserrcheck
-        - sloglint
-        - spancheck
-        - sqlclosecheck
-        - staticcheck
-        - tagalign
-        - tagliatelle
-        - testableexamples
-        - testifylint
-        - thelper
-        - tparallel
-        - unconvert
-        - unparam
-        - unqueryvet
-        - unused
-        - usestdlibvars
-        - usetesting
-        - wastedassign
-        - wrapcheck
-        - zerologlint
-    settings:
-        cyclop:
-            max-complexity: 25
-        depguard:
-            rules:
-                main:
-                    allow:
-                        - $gostd
-                        - github.com/larsartmann/go-finding
-                    deny:
-                        - desc: deprecated since Go 1.16, use io and os
-                          pkg: io/ioutil
-                    files:
-                        - $all
-                        - '!$test'
-                    list-mode: lax
-                test:
-                    allow:
-                        - $gostd
-                        - github.com/larsartmann/go-finding
-                        - github.com/onsi/ginkgo
-                        - github.com/onsi/gomega
-                    files:
-                        - $test
-                    list-mode: lax
-        exhaustruct:
-            exclude:
-                - os/exec.Cmd
-        forbidigo:
-            exclude:
-                - cmd/
-        funlen:
-            lines: 120
-            statements: 80
-        gocognit:
-            min-complexity: 35
-        gocritic:
-            disabled-checks:
-                - ifElseChain
-        gocyclo:
-            min-complexity: 25
-        godot:
-            require-expecting-newline: false
-        gosec:
-            excludes:
-                - G102
-                - G104
-                - G301
-                - G304
-                - G306
-                - G307
-                - G404
-                - G401
-                - G505
-        mnd:
-            ignored-functions:
-                - fmt.Errorf
-                - fmt.Fprintf
-                - fmt.Sprintf
-                - time.ParseDuration
-                - os.WriteFile
-                - os.MkdirAll
-            ignored-numbers:
-                - "0"
-                - "1"
-                - "2"
-                - "3"
-                - "10"
-        nestif:
-            min-complexity: 6
-        revive:
-            rules:
-                - disabled: false
-                  name: unused-parameter
-                  severity: warning
-                - name: unreachable-code
-                  severity: warning
-                - name: context-as-argument
-                  severity: warning
-                - name: error-return
-                  severity: warning
-                - name: error-strings
-                  severity: warning
-                - name: error-naming
-                  severity: warning
-                - name: exported
-                  severity: warning
-                - name: increment-decrement
-                  severity: warning
-                - name: var-naming
-                  severity: warning
-                - name: package-comments
-                  severity: warning
-                - name: range
-                  severity: warning
-                - name: receiver-naming
-                  severity: warning
-                - name: time-naming
-                  severity: warning
-                - name: unexported-return
-                  severity: warning
-                - name: indent-error-flow
-                  severity: warning
-                - name: errorf
-                  severity: warning
-                - name: unnecessary-stmt
-                  severity: warning
-                - name: unused-receiver
-                  severity: warning
-        wrapcheck:
-            ignore-package-globs:
-                - github.com/larsartmann/go-finding/*
-    exclusions:
-        generated: lax
-        rules:
-            - path: _test\.go
-              linters:
-                - err113
-                - exhaustruct
-                - wrapcheck
-                - unparam
-            - path: cmd/
-              linters:
-                - gochecknoglobals
-                - gochecknoinits
-            - path: examples/
-              linters:
-                - exhaustruct
-                - forbidigo
-                - mnd
-            - path: sarif_types\.go
-              linters:
-                - exhaustruct
-            - path: sarif_export\.go
-              linters:
-                - exhaustruct
-            - path: sarif_import\.go
-              linters:
-                - exhaustruct
-            - path: lsp\.go
-              linters:
-                - exhaustruct
+  enable:
+    - arangolint
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - cyclop
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - embeddedstructfieldcheck
+    - err113
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - exhaustruct
+    - exptostd
+    - fatcontext
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - gochecksumtype
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godoclint
+    - godot
+    - godox
+    - goheader
+    - gomoddirectives
+    - gomodguard_v2
+    - goprintffuncname
+    - gosec
+    - gosmopolitan
+    - govet
+    - grouper
+    - iface
+    - importas
+    - inamedparam
+    - ineffassign
+    - interfacebloat
+    - intrange
+    - iotamixing
+    - loggercheck
+    - maintidx
+    - makezero
+    - mirror
+    - misspell
+    - mnd
+    - modernize
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnesserr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - paralleltest
+    - perfsprint
+    - prealloc
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    - recvcheck
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - staticcheck
+    - tagalign
+    - tagliatelle
+    - testableexamples
+    - testifylint
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - unqueryvet
+    - unused
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - wrapcheck
+    - zerologlint
+  settings:
+    cyclop:
+      max-complexity: 25
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - github.com/larsartmann/go-finding
+          deny:
+            - desc: deprecated since Go 1.16, use io and os
+              pkg: io/ioutil
+          files:
+            - $all
+            - "!$test"
+          list-mode: lax
+        test:
+          allow:
+            - $gostd
+            - github.com/larsartmann/go-finding
+            - github.com/onsi/ginkgo
+            - github.com/onsi/gomega
+          files:
+            - $test
+          list-mode: lax
+    exhaustruct:
+      exclude:
+        - os/exec.Cmd
+    forbidigo:
+      exclude:
+        - cmd/
+    funlen:
+      lines: 120
+      statements: 80
+    gocognit:
+      min-complexity: 35
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+    gocyclo:
+      min-complexity: 25
+    godot:
+      require-expecting-newline: false
+    gosec:
+      excludes:
+        - G102
+        - G104
+        - G301
+        - G304
+        - G306
+        - G307
+        - G404
+        - G401
+        - G505
+    mnd:
+      ignored-functions:
+        - fmt.Errorf
+        - fmt.Fprintf
+        - fmt.Sprintf
+        - time.ParseDuration
+        - os.WriteFile
+        - os.MkdirAll
+      ignored-numbers:
+        - "0"
+        - "1"
+        - "2"
+        - "3"
+        - "10"
+    nestif:
+      min-complexity: 6
+    revive:
+      rules:
+        - disabled: false
+          name: unused-parameter
+          severity: warning
+        - name: unreachable-code
+          severity: warning
+        - name: context-as-argument
+          severity: warning
+        - name: error-return
+          severity: warning
+        - name: error-strings
+          severity: warning
+        - name: error-naming
+          severity: warning
+        - name: exported
+          severity: warning
+        - name: increment-decrement
+          severity: warning
+        - name: var-naming
+          severity: warning
+        - name: package-comments
+          severity: warning
+        - name: range
+          severity: warning
+        - name: receiver-naming
+          severity: warning
+        - name: time-naming
+          severity: warning
+        - name: unexported-return
+          severity: warning
+        - name: indent-error-flow
+          severity: warning
+        - name: errorf
+          severity: warning
+        - name: unnecessary-stmt
+          severity: warning
+        - name: unused-receiver
+          severity: warning
+    wrapcheck:
+      ignore-package-globs:
+        - github.com/larsartmann/go-finding/*
+  exclusions:
+    generated: lax
+    rules:
+      - path: _test\.go
+        linters:
+          - err113
+          - exhaustruct
+          - wrapcheck
+          - unparam
+      - path: cmd/
+        linters:
+          - gochecknoglobals
+          - gochecknoinits
+      - path: examples/
+        linters:
+          - exhaustruct
+          - forbidigo
+          - mnd
+      - path: sarif_types\.go
+        linters:
+          - exhaustruct
+      - path: sarif_export\.go
+        linters:
+          - exhaustruct
+      - path: sarif_import\.go
+        linters:
+          - exhaustruct
+      - path: lsp\.go
+        linters:
+          - exhaustruct
 formatters:
-    enable:
-        - gci
-        - goimports
-        - gofumpt
-        - golines
-    exclusions:
-        generated: lax
+  enable:
+    - gci
+    - goimports
+    - gofumpt
+    - golines
+  exclusions:
+    generated: lax
 issues:
-    max-issues-per-linter: 100
-    max-same-issues: 5
+  max-issues-per-linter: 100
+  max-same-issues: 5
