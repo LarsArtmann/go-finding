@@ -14,7 +14,7 @@ func standardTestFinding() Finding {
 		ToolName:    "test",
 		Message:     "test message",
 		Severity:    SeverityError,
-		Position:    Position{File: "file.go", Line: 10, Column: 5, Offset: 0},
+		Position:    Position{File: benchFile, Line: 10, Column: 5, Offset: 0},
 		Category:    "",
 		FixStrategy: FixStrategyNone,
 		Suggestion:  "",
@@ -58,10 +58,10 @@ func TestSeverity(t *testing.T) {
 		severity Severity
 		valid    bool
 	}{
-		{"info", SeverityInfo, true},
+		{SeverityInfo.String(), SeverityInfo, true},
 		{"warning", SeverityWarning, true},
-		{"error", SeverityError, true},
-		{"critical", SeverityCritical, true},
+		{SeverityError.String(), SeverityError, true},
+		{SeverityCritical.String(), SeverityCritical, true},
 		{"invalid", Severity("invalid"), false},
 	}
 
