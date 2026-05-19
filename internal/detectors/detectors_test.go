@@ -9,6 +9,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const (
+	detectorsTestProject = "/project"
+	detectorsTestS1001   = "S1001"
+)
+
 func TestParsePosn(t *testing.T) {
 	t.Parallel()
 
@@ -20,12 +25,12 @@ func TestParsePosn(t *testing.T) {
 		wantLine int
 		wantCol  int
 	}{
-		{"full position", "main.go:10:5", "/project", "/project/main.go", 10, 5},
-		{"file and line only", "main.go:10", "/project", "/project/main.go", 10, 0},
+		{"full position", "main.go:10:5", detectorsTestProject, "/project/main.go", 10, 5},
+		{"file and line only", "main.go:10", detectorsTestProject, "/project/main.go", 10, 0},
 		{
 			"absolute path ignored dir",
 			"/abs/path/main.go:5:1",
-			"/project",
+			detectorsTestProject,
 			"/abs/path/main.go",
 			5,
 			1,
@@ -132,7 +137,7 @@ func TestParseStaticcheckJSON_LineSkipping(t *testing.T) {
 			"invalid line skipped",
 			"not json at all\n{\"code\":\"S1001\",\"severity\":\"warning\",\"location\":{\"file\":\"a.go\",\"line\":1,\"column\":1},\"message\":\"ok\"}",
 			1,
-			"S1001",
+			detectorsTestS1001,
 		},
 		{
 			"whitespace lines skipped",

@@ -2,6 +2,8 @@ package finding
 
 import "testing"
 
+const diffTestKeep = "keep"
+
 func TestDiff_Empty(t *testing.T) {
 	t.Parallel()
 
@@ -50,10 +52,10 @@ func TestDiff_Mixed(t *testing.T) {
 	t.Parallel()
 
 	before := []Finding{
-		{ID: "keep"}, {ID: "remove"},
+		{ID: diffTestKeep}, {ID: "remove"},
 	}
 	after := []Finding{
-		{ID: "keep"}, {ID: "add"},
+		{ID: diffTestKeep}, {ID: "add"},
 	}
 
 	result := Diff(before, after)

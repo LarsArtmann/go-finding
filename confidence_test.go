@@ -5,6 +5,8 @@ import (
 	"testing"
 )
 
+const confTestCustom = "custom"
+
 func TestConfidence_IsValid(t *testing.T) {
 	t.Parallel()
 
@@ -75,7 +77,7 @@ func TestConfidence_String(t *testing.T) {
 		{"medium", ConfidenceMedium, "0.50"},
 		{"high", ConfidenceHigh, "0.75"},
 		{"full", ConfidenceFull, "1.00"},
-		{"custom", Confidence(0.42), "0.42"},
+		{confTestCustom, Confidence(0.42), "0.42"},
 	}
 
 	for _, tt := range tests {

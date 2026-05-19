@@ -5,6 +5,13 @@ import (
 	"testing"
 )
 
+const (
+	benchRule     = "SA1000"
+	benchFile     = "file.go"
+	benchMainFile = "main.go"
+	benchVersion  = "1.0"
+)
+
 func benchPosition(fileFmt string, mod, i int) Position {
 	return Position{File: fmt.Sprintf(fileFmt, i%mod), Line: i + 1}
 }
@@ -16,10 +23,10 @@ func benchReport(i int) *Report {
 func BenchmarkClone(b *testing.B) {
 	f := Finding{
 		ID:       "tool:rule:file.go:42",
-		Rule:     "SA1000",
+		Rule:     benchRule,
 		Message:  "test finding with a longer message",
 		Severity: SeverityError,
-		Position: Position{File: "file.go", Line: 42, Column: 10},
+		Position: Position{File: benchFile, Line: 42, Column: 10},
 		Range: &Range{
 			Start: Position{Line: 42, Column: 10},
 			End:   Position{Line: 42, Column: 20},
@@ -51,7 +58,7 @@ func BenchmarkClone_Simple(b *testing.B) {
 }
 
 func BenchmarkGenerateID(b *testing.B) {
-	pos := Position{File: "main.go", Line: 42, Column: 10}
+	pos := Position{File: benchMainFile, Line: 42, Column: 10}
 
 	b.ResetTimer()
 
@@ -61,7 +68,7 @@ func BenchmarkGenerateID(b *testing.B) {
 }
 
 func BenchmarkGenerateID_Hash(b *testing.B) {
-	pos := Position{File: "main.go"}
+	pos := Position{File: benchMainFile}
 
 	b.ResetTimer()
 
@@ -93,7 +100,7 @@ func BenchmarkFilter(b *testing.B) {
 			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
 			Severity: sevFromInt(i % 4),
 			Category: CategoryStyle,
-			Position: Position{File: "file.go", Line: i + 1},
+			Position: Position{File: benchFile, Line: i + 1},
 		}
 	}
 
@@ -197,14 +204,14 @@ func BenchmarkMergeNoDedup(b *testing.B) {
 }
 
 func sarifBenchReport() *Report {
-	report := NewReport(ToolInfo{Name: "bench", Version: "1.0"})
+	report := NewReport(ToolInfo{Name: "bench", Version: benchVersion})
 	for i := range 100 {
 		report.AddFinding(Finding{
 			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
-			Rule:     "SA1000",
+			Rule:     benchRule,
 			Message:  "test finding",
 			Severity: sevFromInt(i % 4),
-			Position: Position{File: "file.go", Line: i + 1, Column: 1},
+			Position: Position{File: benchFile, Line: i + 1, Column: 1},
 		})
 	}
 	return report
@@ -237,9 +244,9 @@ func BenchmarkFromSARIF(b *testing.B) {
 func BenchmarkFindingKey(b *testing.B) {
 	f := Finding{
 		ID:       "tool:rule:file.go:42:10",
-		Rule:     "SA1000",
+		Rule:     benchRule,
 		Message:  "test finding",
-		Position: Position{File: "file.go", Line: 42, Column: 10},
+		Position: Position{File: benchFile, Line: 42, Column: 10},
 	}
 
 	b.ReportAllocs()
@@ -252,9 +259,9 @@ func BenchmarkFindingKey(b *testing.B) {
 
 func BenchmarkFindingKey_NoID(b *testing.B) {
 	f := Finding{
-		Rule:     "SA1000",
+		Rule:     benchRule,
 		Message:  "test finding",
-		Position: Position{File: "file.go", Line: 42, Column: 10},
+		Position: Position{File: benchFile, Line: 42, Column: 10},
 	}
 
 	b.ReportAllocs()

@@ -12,7 +12,11 @@ import (
 
 const testSrcMain = `package main; func main() {}`
 
-const testFilename = "test.go"
+const (
+	testFilename    = "test.go"
+	testAnalysisCat = "test"
+	testRangeGoFile = "range.go"
+)
 
 func TestFromDiagnostic(t *testing.T) {
 	t.Parallel()

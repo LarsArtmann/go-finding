@@ -5,6 +5,13 @@ import (
 	"testing"
 )
 
+const (
+	findBuilderTestCauses    = "causes"
+	findBuilderTestKey       = "key"
+	findBuilderTestEmptyRule = "empty rule"
+	findBuilderTestMutated   = "mutated"
+)
+
 func TestBuilder_Minimal(t *testing.T) {
 	t.Parallel()
 
@@ -41,9 +48,9 @@ func TestBuilder_Full(t *testing.T) {
 		WithRange(rng).
 		WithSnippet("x.foo\n").
 		WithConfidence(1.5).
-		WithRelated(RelatedRef{FindingID: "other", Relation: "causes"}).
+		WithRelated(RelatedRef{FindingID: "other", Relation: findBuilderTestCauses}).
 		WithSuppression(Suppression{Kind: SuppressionInSource, Rule: "R1"}).
-		WithMetadata(map[string]string{"key": "value"}).
+		WithMetadata(map[string]string{findBuilderTestKey: "value"}).
 		Build()
 	if err != nil {
 		t.Fatalf("Build() failed: %v", err)

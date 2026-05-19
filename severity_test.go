@@ -33,16 +33,16 @@ func TestSeverity_Constants(t *testing.T) {
 
 	tests := []struct {
 		sev  Severity
-		want string
+		want Severity
 	}{
-		{SeverityInfo, "info"},
-		{SeverityWarning, "warning"},
-		{SeverityError, "error"},
-		{SeverityCritical, "critical"},
+		{SeverityInfo, SeverityInfo},
+		{SeverityWarning, SeverityWarning},
+		{SeverityError, SeverityError},
+		{SeverityCritical, SeverityCritical},
 	}
 
 	for _, tt := range tests {
-		if string(tt.sev) != tt.want {
+		if string(tt.sev) != string(tt.want) {
 			t.Errorf("Severity constant = %q, want %q", tt.sev, tt.want)
 		}
 	}

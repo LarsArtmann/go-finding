@@ -11,27 +11,27 @@ func TestClone(t *testing.T) {
 
 	expires := time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)
 	original := Finding{
-		ID:          "test:R001:file.go:10:5",
-		Rule:        "R001",
+		ID:          "test:" + exportTestR001 + ":" + benchFile + ":10:5",
+		Rule:        exportTestR001,
 		ToolName:    "test",
 		Message:     "test message",
 		Severity:    SeverityError,
-		Position:    Position{File: "file.go", Line: 10, Column: 5},
+		Position:    Position{File: benchFile, Line: 10, Column: 5},
 		Category:    CategorySecurity,
 		FixStrategy: FixStrategyDirect,
-		Suggestion:  "fix it",
-		BeforeCode:  "old",
-		AfterCode:   "new",
-		Range:       NewRangePtr("file.go", 10, 5, 10, 20),
+		Suggestion:  exportTestFixIt,
+		BeforeCode:  exportTestOld,
+		AfterCode:   exportTestNew,
+		Range:       NewRangePtr(benchFile, 10, 5, 10, 20),
 		Snippet:     "code here",
 		Confidence:  0.95,
-		Related:     []RelatedRef{{FindingID: "other:1", Relation: "causes"}},
+		Related:     []RelatedRef{{FindingID: "other:1", Relation: findBuilderTestCauses}},
 		Suppression: &Suppression{
 			Kind:      SuppressionInSource,
-			Reason:    "intentional",
+			Reason:    suppTestIntentional,
 			ExpiresAt: &expires,
 		},
-		Tags:     []Tag{TagSecurity, "injection"},
+		Tags:     []Tag{TagSecurity, exportTestInjection},
 		Metadata: map[string]string{"key": "value"},
 	}
 
@@ -71,9 +71,12 @@ func TestCloneEmpty(t *testing.T) {
 	t.Parallel()
 
 	f := Finding{
-		ID: "test:R001:file.go:1:1", Rule: "R001", ToolName: "test",
-		Message: "msg", Severity: SeverityInfo,
-		Position: Position{File: "file.go", Line: 1},
+		ID:       "test:" + exportTestR001 + ":" + benchFile + ":1:1",
+		Rule:     exportTestR001,
+		ToolName: "test",
+		Message:  "msg",
+		Severity: SeverityInfo,
+		Position: Position{File: benchFile, Line: 1},
 	}
 
 	clone := f.Clone()
@@ -117,22 +120,22 @@ func TestFindingKey(t *testing.T) {
 			name: "returns ID when set",
 			f: Finding{
 				ID:       "my-id",
-				Rule:     "R001",
+				Rule:     exportTestR001,
 				ToolName: "test",
 				Message:  "msg",
 				Severity: SeverityError,
-				Position: Position{File: "file.go", Line: 10, Column: 5},
+				Position: Position{File: benchFile, Line: 10, Column: 5},
 			},
 			want: "my-id",
 		},
 		{
 			name: "falls back to composite key when ID empty",
 			f: Finding{
-				Rule:     "R001",
+				Rule:     exportTestR001,
 				ToolName: "test",
 				Message:  "msg",
 				Severity: SeverityError,
-				Position: Position{File: "file.go", Line: 10, Column: 5},
+				Position: Position{File: benchFile, Line: 10, Column: 5},
 			},
 			want: "test\x00file.go\x00R001\x00msg",
 		},
@@ -151,11 +154,11 @@ func TestFindingKey(t *testing.T) {
 			name: "ID with only whitespace is used as-is",
 			f: Finding{
 				ID:       "   ",
-				Rule:     "R001",
+				Rule:     exportTestR001,
 				ToolName: "test",
 				Message:  "msg",
 				Severity: SeverityError,
-				Position: Position{File: "file.go", Line: 10, Column: 5},
+				Position: Position{File: benchFile, Line: 10, Column: 5},
 			},
 			want: "   ",
 		},
@@ -220,7 +223,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 
 	base := Finding{
 		ID: "id", Rule: "r", ToolName: "t", Message: "m",
-		Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
+		Severity: SeverityError, Position: Position{File: filterTestFileA, Line: 1},
 		Confidence: 0.5,
 	}
 
@@ -228,7 +231,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 		name string
 		a, b Finding
 	}{
-		{"equal", base, base},
+		{exportTestEqual, base, base},
 		{"different ID", base, func() Finding { f := base; f.ID = "x"; return f }()},
 		{"different Rule", base, func() Finding { f := base; f.Rule = "x"; return f }()},
 		{"different ToolName", base, func() Finding { f := base; f.ToolName = "x"; return f }()},
@@ -275,7 +278,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			"different Position", base,
 			func() Finding {
 				f := base
-				f.Position = Position{File: "b.go"}
+				f.Position = Position{File: filterTestFileB}
 				return f
 			}(),
 		},
@@ -309,7 +312,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			expected := tt.name == "equal"
+			expected := tt.name == exportTestEqual
 			if tt.a.Equal(tt.b) != expected {
 				t.Errorf("Equal() = %v, want %v for case %q", !expected, expected, tt.name)
 			}

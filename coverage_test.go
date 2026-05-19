@@ -31,7 +31,7 @@ func TestFindingIsValid(t *testing.T) {
 				ToolName: "tool",
 				Message:  "msg",
 				Severity: SeverityError,
-				Position: Position{File: "file.go", Line: 1},
+				Position: Position{File: benchFile, Line: 1},
 			},
 			want: true,
 		},
@@ -42,7 +42,7 @@ func TestFindingIsValid(t *testing.T) {
 				ToolName: "tool",
 				Message:  "msg",
 				Severity: SeverityError,
-				Position: Position{File: "file.go", Line: 1},
+				Position: Position{File: benchFile, Line: 1},
 			},
 			want: false,
 		},
@@ -53,7 +53,7 @@ func TestFindingIsValid(t *testing.T) {
 				ToolName: "tool",
 				Message:  "msg",
 				Severity: SeverityError,
-				Position: Position{File: "file.go", Line: 1},
+				Position: Position{File: benchFile, Line: 1},
 			},
 			want: false,
 		},
@@ -64,7 +64,7 @@ func TestFindingIsValid(t *testing.T) {
 				Rule:     "rule",
 				Message:  "msg",
 				Severity: SeverityError,
-				Position: Position{File: "file.go", Line: 1},
+				Position: Position{File: benchFile, Line: 1},
 			},
 			want: false,
 		},
@@ -75,7 +75,7 @@ func TestFindingIsValid(t *testing.T) {
 				Rule:     "rule",
 				ToolName: "tool",
 				Severity: SeverityError,
-				Position: Position{File: "file.go", Line: 1},
+				Position: Position{File: benchFile, Line: 1},
 			},
 			want: false,
 		},
@@ -99,7 +99,7 @@ func TestFindingIsValid(t *testing.T) {
 				ToolName: "tool",
 				Message:  "msg",
 				Severity: Severity("bogus"),
-				Position: Position{File: "file.go", Line: 1},
+				Position: Position{File: benchFile, Line: 1},
 			},
 			want: false,
 		},
@@ -130,10 +130,14 @@ func TestFindingHasFix(t *testing.T) {
 	}{
 		{"direct", Finding{FixStrategy: FixStrategyDirect}, true},
 		{"ai-no-code", Finding{FixStrategy: FixStrategyAI}, false},
-		{"ai-with-code", Finding{FixStrategy: FixStrategyAI, AfterCode: "fixed"}, true},
+		{"ai-with-code", Finding{FixStrategy: FixStrategyAI, AfterCode: exportTestFixed}, true},
 		{"none", Finding{FixStrategy: FixStrategyNone}, false},
 		{"suggest-no-code", Finding{FixStrategy: FixStrategySuggest}, false},
-		{"suggest-with-code", Finding{FixStrategy: FixStrategySuggest, AfterCode: "fixed"}, true},
+		{
+			"suggest-with-code",
+			Finding{FixStrategy: FixStrategySuggest, AfterCode: exportTestFixed},
+			true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -154,8 +158,12 @@ func TestFindingHasSuggestion(t *testing.T) {
 		f    Finding
 		want bool
 	}{
-		{"with suggestion text", Finding{Suggestion: "fix it"}, true},
-		{"with before and after code", Finding{BeforeCode: "old", AfterCode: "new"}, true},
+		{"with suggestion text", Finding{Suggestion: exportTestFixIt}, true},
+		{
+			"with before and after code",
+			Finding{BeforeCode: exportTestOld, AfterCode: exportTestNew},
+			true,
+		},
 		{"with only before code", Finding{BeforeCode: "old"}, false},
 		{"with only after code", Finding{AfterCode: "new"}, false},
 		{"empty", Finding{}, false},
@@ -217,8 +225,8 @@ func TestRelatedRefIsValid(t *testing.T) {
 			"with relation and position",
 			RelatedRef{
 				FindingID: "abc",
-				Relation:  "clone-of",
-				Position:  Position{File: "f.go", Line: 1},
+				Relation:  exportTestCloneOf,
+				Position:  Position{File: exportTestFileF, Line: 1},
 			},
 			true,
 		},
@@ -242,10 +250,10 @@ func TestSuppressionIsValid(t *testing.T) {
 		s    *Suppression
 		want bool
 	}{
-		{"valid in-source", &Suppression{Kind: SuppressionInSource, Rule: "SA1000"}, true},
+		{"valid in-source", &Suppression{Kind: SuppressionInSource, Rule: benchRule}, true},
 		{"valid in-config", &Suppression{Kind: SuppressionInConfig, Rule: "unused"}, true},
 		{"valid in-review", &Suppression{Kind: SuppressionInReview, Rule: "dup"}, true},
-		{"missing kind", &Suppression{Rule: "SA1000"}, false},
+		{"missing kind", &Suppression{Rule: benchRule}, false},
 		{"missing rule", &Suppression{Kind: SuppressionInSource}, false},
 		{"nil suppression", nil, false},
 	}
@@ -312,7 +320,7 @@ func TestErrorCategoryIsValid(t *testing.T) {
 		{"conflict", ErrCategoryConflict, true},
 		{"internal", ErrCategoryInternal, true},
 		{"empty", ErrorCategory(""), false},
-		{"custom", ErrorCategory("custom"), true},
+		{"custom", ErrorCategory(confTestCustom), true},
 	}
 
 	for _, tt := range tests {

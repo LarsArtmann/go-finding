@@ -4,6 +4,8 @@ import (
 	"testing"
 )
 
+const posTestDiffFiles = "different files"
+
 func posLine(file string, line int) Position {
 	return Position{File: file, Line: line}
 }
@@ -38,7 +40,7 @@ func overlapCases() []overlapCase {
 		{"overlapping ranges", rangeLine("a.go", 10, 20), rangeLine("a.go", 15, 25), true},
 		{"non-overlapping ranges", rangeLine("a.go", 10, 15), rangeLine("a.go", 20, 25), false},
 		{
-			"different files",
+			posTestDiffFiles,
 			Range{Start: posLine("a.go", 10)},
 			Range{Start: posLine("b.go", 10)},
 			false,
@@ -107,7 +109,7 @@ func intersectionCases() []intersectionCase {
 			new(Range{Start: Position{File: "a.go", Line: 20}}),
 		},
 		{
-			"different files",
+			posTestDiffFiles,
 			Range{Start: posLine("a.go", 10)},
 			Range{Start: posLine("b.go", 10)},
 			nil,
@@ -159,7 +161,7 @@ func adjacentCases() []overlapCase {
 		{"gap not adjacent", rangeLine("a.go", 10, 15), rangeLine("a.go", 20, 25), false},
 		{"offset adjacent", rangeOffset("a.go", 100, 200), rangeOffset("a.go", 200, 300), true},
 		{
-			"different files",
+			posTestDiffFiles,
 			Range{Start: posLineCol("a.go", 10, 5)},
 			Range{Start: posLineCol("b.go", 10, 5)},
 			false,

@@ -5,10 +5,33 @@ import (
 	"testing"
 )
 
+const (
+	exportTestMainFile      = "main.go"
+	exportTestGovet         = "govet"
+	exportTestInfoLtWarn    = "info < warning"
+	exportTestCritGtError   = "critical > error"
+	exportTestNilcheck      = "nilcheck"
+	exportTestFixIt         = "fix it"
+	exportTestCloneOf       = "clone-of"
+	exportTestFileF         = "f.go"
+	exportTestEqual         = "equal"
+	exportTestDifferentFile = "different file"
+	exportTestFixed         = "fixed"
+	exportTestIdentical     = "identical"
+	exportTestR001          = "R001"
+	exportTestInjection     = "injection"
+	exportTestGolanciLint   = "golangci-lint"
+	exportTestDupl          = "dupl"
+	exportTestOld           = "old"
+	exportTestOldFn         = "old()"
+	exportTestNew           = "new"
+	exportTestNewFn         = "new()"
+)
+
 func TestNewFinding(t *testing.T) {
 	t.Parallel()
 
-	pos := Position{File: "main.go", Line: 42, Column: 5, Offset: 100}
+	pos := Position{File: exportTestMainFile, Line: 42, Column: 5, Offset: 100}
 	f := NewFinding("nilcheck", "govet", "possible nil dereference", SeverityError, pos, 0)
 
 	AssertFindingFields(t, f, "nilcheck", "govet", "possible nil dereference", SeverityError, pos)
@@ -58,7 +81,7 @@ func TestSeverity_GreaterThanOrEqual(t *testing.T) {
 		{SeverityError, SeverityWarning, true, "error >= warning"},
 		{SeverityWarning, SeverityInfo, true, "warning >= info"},
 		{SeverityInfo, SeverityInfo, true, "info >= info"},
-		{SeverityInfo, SeverityWarning, false, "info < warning"},
+		{SeverityInfo, SeverityWarning, false, exportTestInfoLtWarn},
 		{SeverityWarning, SeverityError, false, "warning < error"},
 		{Severity("unknown"), SeverityInfo, false, "invalid >= valid returns false"},
 		{SeverityInfo, Severity("unknown"), false, "valid >= invalid returns false"},
@@ -84,7 +107,7 @@ func TestSeverity_LessThanOrEqual(t *testing.T) {
 		{SeverityWarning, SeverityError, true, "warning <= error"},
 		{SeverityError, SeverityCritical, true, "error <= critical"},
 		{SeverityCritical, SeverityCritical, true, "critical <= critical"},
-		{SeverityCritical, SeverityError, false, "critical > error"},
+		{SeverityCritical, SeverityError, false, exportTestCritGtError},
 		{SeverityError, SeverityWarning, false, "error > warning"},
 		{Severity("unknown"), SeverityInfo, false, "invalid <= valid returns false"},
 		{SeverityInfo, Severity("unknown"), false, "valid <= invalid returns false"},
@@ -102,13 +125,13 @@ func TestFinding_String(t *testing.T) {
 
 	f := Finding{
 		Severity: SeverityError,
-		ToolName: "govet",
-		Rule:     "nilcheck",
-		Position: Position{File: "main.go", Line: 42, Column: 5},
+		ToolName: exportTestGovet,
+		Rule:     exportTestNilcheck,
+		Position: Position{File: exportTestMainFile, Line: 42, Column: 5},
 		Message:  "possible nil dereference",
 	}
 
-	want := "error govet [nilcheck] main.go:42:5: possible nil dereference"
+	want := "error govet [" + exportTestNilcheck + "] main.go:42:5: possible nil dereference"
 	if f.String() != want {
 		t.Errorf("String() = %q, want %q", f.String(), want)
 	}

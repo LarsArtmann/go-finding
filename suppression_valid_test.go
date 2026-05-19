@@ -4,6 +4,8 @@ import (
 	"testing"
 )
 
+const suppValidTestEmptyRule = "empty rule"
+
 func TestSuppression_IsValid(t *testing.T) {
 	t.Parallel()
 
@@ -16,7 +18,7 @@ func TestSuppression_IsValid(t *testing.T) {
 		{"valid config", Suppression{Kind: SuppressionInConfig, Rule: "R1"}, true},
 		{"valid review", Suppression{Kind: SuppressionInReview, Rule: "R1"}, true},
 		{"empty kind", Suppression{Rule: "R1"}, false},
-		{"empty rule", Suppression{Kind: SuppressionInSource}, false},
+		{suppValidTestEmptyRule, Suppression{Kind: SuppressionInSource}, false},
 		{"nonempty kind+rule accepted", Suppression{Kind: "bogus", Rule: "R1"}, true},
 	}
 

@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const suppTestIntentional = "intentional"
+
 func TestSuppression_IsExpired_NilSuppression(t *testing.T) {
 	t.Parallel()
 
@@ -21,7 +23,7 @@ func TestSuppression_IsExpired_NilExpiresAt(t *testing.T) {
 
 	now := time.Now()
 
-	s := &Suppression{Kind: SuppressionInSource, Reason: "intentional"}
+	s := &Suppression{Kind: SuppressionInSource, Reason: suppTestIntentional}
 	if s.IsExpired(now) {
 		t.Error("suppression without ExpiresAt should not be expired")
 	}
@@ -86,23 +88,23 @@ func TestSuppression_IsActive(t *testing.T) {
 		{"nil suppression", nil, now, false},
 		{
 			"valid and not expired",
-			&Suppression{Kind: SuppressionInSource, Rule: "SA1000"},
+			&Suppression{Kind: SuppressionInSource, Rule: benchRule},
 			now,
 			true,
 		},
 		{
 			"valid with future expiry",
-			&Suppression{Kind: SuppressionInSource, Rule: "SA1000", ExpiresAt: &future},
+			&Suppression{Kind: SuppressionInSource, Rule: benchRule, ExpiresAt: &future},
 			now,
 			true,
 		},
 		{
 			"valid but expired",
-			&Suppression{Kind: SuppressionInSource, Rule: "SA1000", ExpiresAt: &past},
+			&Suppression{Kind: SuppressionInSource, Rule: benchRule, ExpiresAt: &past},
 			now,
 			false,
 		},
-		{"invalid missing kind", &Suppression{Rule: "SA1000"}, now, false},
+		{"invalid missing kind", &Suppression{Rule: benchRule}, now, false},
 		{"invalid missing rule", &Suppression{Kind: SuppressionInSource}, now, false},
 		{"invalid empty", &Suppression{}, now, false},
 	}
@@ -123,7 +125,7 @@ func TestSuppression_Fields(t *testing.T) {
 
 	s := Suppression{
 		Kind:   SuppressionInConfig,
-		Rule:   "SA1000",
+		Rule:   benchRule,
 		Reason: "accepted false positive",
 	}
 
@@ -131,8 +133,8 @@ func TestSuppression_Fields(t *testing.T) {
 		t.Errorf("Kind = %q, want %q", s.Kind, SuppressionInConfig)
 	}
 
-	if s.Rule != "SA1000" {
-		t.Errorf("Rule = %q, want %q", s.Rule, "SA1000")
+	if s.Rule != benchRule {
+		t.Errorf("Rule = %q, want %q", s.Rule, benchRule)
 	}
 
 	if s.Reason != "accepted false positive" {

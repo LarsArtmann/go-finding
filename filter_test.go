@@ -4,6 +4,11 @@ import (
 	"testing"
 )
 
+const (
+	filterTestFileA = "a.go"
+	filterTestFileB = "b.go"
+)
+
 type filterTestCase struct {
 	name     string
 	input    []Finding
@@ -146,10 +151,10 @@ func TestByFile(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
-		{ID: "1", Position: Position{File: "a.go"}},
-		{ID: "2", Position: Position{File: "b.go"}},
+		{ID: "1", Position: Position{File: filterTestFileA}},
+		{ID: "2", Position: Position{File: filterTestFileB}},
 	}
-	runFilterCase(t, newFilterCase("a.go", findings, ByFile("a.go"), 1))
+	runFilterCase(t, newFilterCase(filterTestFileA, findings, ByFile(filterTestFileA), 1))
 }
 
 func TestNotSuppressed(t *testing.T) {
@@ -220,12 +225,12 @@ func TestGroupByFile(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
-		{ID: "1", Position: Position{File: "a.go"}},
-		{ID: "2", Position: Position{File: "b.go"}},
-		{ID: "3", Position: Position{File: "a.go"}},
+		{ID: "1", Position: Position{File: filterTestFileA}},
+		{ID: "2", Position: Position{File: filterTestFileB}},
+		{ID: "3", Position: Position{File: filterTestFileA}},
 	}
 	groups := GroupByFile(findings)
-	assertGroupLen(t, groups, "a.go", 2, "GroupByFile 'a.go'")
+	assertGroupLen(t, groups, filterTestFileA, 2, "GroupByFile 'a.go'")
 }
 
 func TestGroupBySeverity(t *testing.T) {
@@ -249,10 +254,10 @@ func TestSortByPosition(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
-		{ID: "b", Position: Position{File: "b.go", Line: 5, Column: 1}},
-		{ID: "a2", Position: Position{File: "a.go", Line: 10, Column: 5}},
-		{ID: "a1", Position: Position{File: "a.go", Line: 10, Column: 1}},
-		{ID: "a0", Position: Position{File: "a.go", Line: 3, Column: 1}},
+		{ID: "b", Position: Position{File: filterTestFileB, Line: 5, Column: 1}},
+		{ID: "a2", Position: Position{File: filterTestFileA, Line: 10, Column: 5}},
+		{ID: "a1", Position: Position{File: filterTestFileA, Line: 10, Column: 1}},
+		{ID: "a0", Position: Position{File: filterTestFileA, Line: 3, Column: 1}},
 	}
 
 	SortByPosition(findings)
@@ -265,15 +270,20 @@ func TestSortBySeverity(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
-		{ID: "info", Severity: SeverityInfo},
-		{ID: "critical", Severity: SeverityCritical},
-		{ID: "warning", Severity: SeverityWarning},
-		{ID: "error", Severity: SeverityError},
+		{ID: string(SeverityInfo), Severity: SeverityInfo},
+		{ID: string(SeverityCritical), Severity: SeverityCritical},
+		{ID: string(SeverityWarning), Severity: SeverityWarning},
+		{ID: string(SeverityError), Severity: SeverityError},
 	}
 
 	SortBySeverity(findings)
 
-	want := []string{"critical", "error", "warning", "info"}
+	want := []string{
+		string(SeverityCritical),
+		string(SeverityError),
+		string(SeverityWarning),
+		string(SeverityInfo),
+	}
 	AssertFindingsIDs(t, findings, want)
 }
 
