@@ -73,6 +73,26 @@ func makeRangeFix(
 	}
 }
 
+func makeOffsetFix(id, before, after string, startOff, endOff int) finding.Finding {
+	return finding.Finding{
+		ID:         id,
+		BeforeCode: before,
+		AfterCode:  after,
+		Range: &finding.Range{
+			Start: finding.Position{File: "a.go", Offset: startOff},
+			End:   finding.Position{File: "a.go", Offset: endOff},
+		},
+		Position: finding.Pos("a.go", 4, 2),
+	}
+}
+
+func overlappingOffsetFixes() []finding.Finding {
+	return []finding.Finding{
+		makeOffsetFix("fix1", "old", "new", 28, 33),
+		makeOffsetFix("fix2", "old()", "replaced()", 28, 33),
+	}
+}
+
 func TestFixEngine_Apply_LineRange_SingleLine(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
@@ -108,7 +128,8 @@ func TestFixEngine_Apply_LineRange_MultiLine(t *testing.T) {
 	result, _, count := engine.Apply(content, fixes)
 	g.Expect(count).To(Equal(1))
 	g.Expect(string(result)).To(
-		Equal("package main\n\nfunc new() {\n\treturn 42\n}\n\nfunc main() {}"))
+		Equal("package main\n\nfunc new() {\n\treturn 42\n}\n\nfunc main() {}"),
+	)
 }
 
 func TestFixEngine_Apply_LineRange_OutOfBounds(t *testing.T) {
@@ -462,28 +483,7 @@ func TestFixEngine_ApplyWithConflicts_OverlappingEdits(t *testing.T) {
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc main() {\n\told()\n}")
 
-	fixes := []finding.Finding{
-		{
-			ID:         "fix1",
-			BeforeCode: "old",
-			AfterCode:  "new",
-			Range: &finding.Range{
-				Start: finding.Position{File: "a.go", Offset: 28},
-				End:   finding.Position{File: "a.go", Offset: 33},
-			},
-			Position: finding.Pos("a.go", 4, 2),
-		},
-		{
-			ID:         "fix2",
-			BeforeCode: "old()",
-			AfterCode:  "replaced()",
-			Range: &finding.Range{
-				Start: finding.Position{File: "a.go", Offset: 28},
-				End:   finding.Position{File: "a.go", Offset: 33},
-			},
-			Position: finding.Pos("a.go", 4, 2),
-		},
-	}
+	fixes := overlappingOffsetFixes()
 
 	applied, conflicts, result := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(applied).To(HaveLen(1))
@@ -603,28 +603,7 @@ func TestFilterConflictingEdits(t *testing.T) {
 
 		engine := NewFixEngine()
 		content := []byte("package main\n\nfunc main() {\n\told()\n}")
-		fixes := []finding.Finding{
-			{
-				ID:         "fix1",
-				BeforeCode: "old",
-				AfterCode:  "new",
-				Range: &finding.Range{
-					Start: finding.Position{File: "a.go", Offset: 28},
-					End:   finding.Position{File: "a.go", Offset: 33},
-				},
-				Position: finding.Pos("a.go", 4, 2),
-			},
-			{
-				ID:         "fix2",
-				BeforeCode: "old()",
-				AfterCode:  "replaced()",
-				Range: &finding.Range{
-					Start: finding.Position{File: "a.go", Offset: 28},
-					End:   finding.Position{File: "a.go", Offset: 33},
-				},
-				Position: finding.Pos("a.go", 4, 2),
-			},
-		}
+		fixes := overlappingOffsetFixes()
 
 		result := FilterConflictingEdits(content, fixes, engine)
 		g.Expect(result).To(HaveLen(1))

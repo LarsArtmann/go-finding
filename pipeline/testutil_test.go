@@ -222,6 +222,18 @@ func newTestApplier(t *testing.T) *FixApplier {
 	return a
 }
 
+func newTestApplierWithDir(t *testing.T) (string, *FixApplier) {
+	t.Helper()
+
+	dir := t.TempDir()
+	a, err := NewFixApplier(dir)
+	if err != nil {
+		t.Fatalf("NewFixApplier: %v", err)
+	}
+
+	return dir, a
+}
+
 func makeFixFinding(id, before, after, file string, line int) finding.Finding {
 	return finding.Finding{
 		ID:          id,

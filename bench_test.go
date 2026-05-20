@@ -125,7 +125,8 @@ func BenchmarkFilterMultiple(b *testing.B) {
 	b.ResetTimer()
 
 	for b.Loop() {
-		Filter(findings,
+		Filter(
+			findings,
 			BySeverityAtLeast(SeverityWarning),
 			ByCategory(CategorySecurity),
 		)

@@ -15,11 +15,7 @@ func TestFixApplier_Apply_CancelledContext(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
 	testFile := filepath.Join(tempDir, "cancel.go")
 	writeTestFile(t, testFile, []byte("package main\n"))
@@ -41,13 +37,9 @@ func TestFixApplier_Backup_NonexistentFile(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
-	err = applier.backup.Backup(filepath.Join(tempDir, "does-not-exist.go"))
+	err := applier.backup.Backup(filepath.Join(tempDir, "does-not-exist.go"))
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 }
@@ -56,13 +48,9 @@ func TestFixApplier_Restore_WithoutBackup(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
-	err = applier.backup.Restore(filepath.Join(tempDir, "never-backed-up.go"))
+	err := applier.backup.Restore(filepath.Join(tempDir, "never-backed-up.go"))
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, finding.ErrInternal)).To(BeTrue())
 }
@@ -71,11 +59,7 @@ func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
 	fixes := []finding.Finding{makeFixFinding("1", "old", "new", "", 0)}
 
@@ -89,11 +73,7 @@ func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
 	testFile := filepath.Join(tempDir, "nomatch.go")
 	writeTestFile(t, testFile, []byte("package main\n"))
@@ -109,11 +89,7 @@ func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
 	testFile := filepath.Join(tempDir, "readonly.go")
 	if err := writeFile(testFile, []byte("package main\nold()\n"), 0o444); err != nil {
@@ -133,11 +109,7 @@ func TestFixApplier_RollbackAll(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
 	file1 := filepath.Join(tempDir, "a.go")
 	file2 := filepath.Join(tempDir, "b.go")
@@ -183,11 +155,7 @@ func TestFixApplier_RollbackAll_PartialFailure(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
 	goodFile := filepath.Join(tempDir, "good.go")
 	writeTestFile(t, goodFile, []byte("package good\n"))
@@ -197,7 +165,7 @@ func TestFixApplier_RollbackAll_PartialFailure(t *testing.T) {
 	writeTestFile(t, goodFile, []byte("modified\n"))
 
 	noBackupFile := filepath.Join(tempDir, "nobackup.go")
-	err = applier.backup.RollbackAll([]string{goodFile, noBackupFile})
+	err := applier.backup.RollbackAll([]string{goodFile, noBackupFile})
 	g.Expect(err).To(HaveOccurred())
 
 	data, rErr := readFile(goodFile)
@@ -209,11 +177,7 @@ func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
 	file1 := filepath.Join(tempDir, "first.go")
 	writeTestFile(t, file1, []byte("package first\nold1()\n"))
@@ -234,11 +198,7 @@ func TestFixApplier_Apply_EmptyFixesList(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	applier := newTestApplier(t)
 
 	applied, err := applier.Apply(context.Background(), nil)
 	g.Expect(err).NotTo(HaveOccurred())
@@ -249,11 +209,7 @@ func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
 	// File 1: will be successfully modified.
 	file1 := filepath.Join(tempDir, "first.go")
@@ -313,11 +269,7 @@ func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 
 	testFile := filepath.Join(tempDir, "outofbounds.go")
 	content := "package main\n\nfunc main() {}\n"
@@ -357,11 +309,7 @@ func TestFixApplier_BackupDisabled(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 
-	tempDir := t.TempDir()
-	applier, err := NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("NewFixApplier: %v", err)
-	}
+	tempDir, applier := newTestApplierWithDir(t)
 	applier.backup.SetEnabled(false)
 
 	testFile := filepath.Join(tempDir, "nobackup.go")

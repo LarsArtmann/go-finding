@@ -10,7 +10,8 @@ import (
 // Each finding is formatted as: file:line:col [SEVERITY] rule: message.
 func FormatText(w io.Writer, findings []Finding) {
 	for _, f := range findings {
-		_, _ = fmt.Fprintf(w, "%s [%s] %s: %s\n",
+		_, _ = fmt.Fprintf(
+			w, "%s [%s] %s: %s\n",
 			f.Position.String(),
 			strings.ToUpper(string(f.Severity)),
 			f.Rule,
@@ -39,7 +40,8 @@ func FormatMarkdown(w io.Writer, findings []Finding) {
 		msg = strings.ReplaceAll(msg, "|", "\\|")
 		msg = strings.ReplaceAll(msg, "\n", " ")
 
-		_, _ = fmt.Fprintf(w, "| %s | %s | %s | %s |\n",
+		_, _ = fmt.Fprintf(
+			w, "| %s | %s | %s | %s |\n",
 			f.Position.String(),
 			string(f.Severity),
 			f.Rule,

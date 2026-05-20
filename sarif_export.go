@@ -139,6 +139,15 @@ func findingToSARIF(f Finding) SarifResult {
 }
 
 func sarifLocations(f Finding) []SarifLocation {
+	return []SarifLocation{{
+		PhysicalLocation: SarifPhysicalLocation{
+			ArtifactLocation: SarifArtifactLocation{URI: f.Position.File},
+			Region:           findingRegion(f),
+		},
+	}}
+}
+
+func findingRegion(f Finding) *SarifRegion {
 	region := &SarifRegion{
 		StartLine:   f.Position.Line,
 		StartColumn: f.Position.Column,
@@ -149,26 +158,21 @@ func sarifLocations(f Finding) []SarifLocation {
 		region.EndColumn = f.Range.End.Column
 	}
 
-	return []SarifLocation{{
-		PhysicalLocation: SarifPhysicalLocation{
-			ArtifactLocation: SarifArtifactLocation{URI: f.Position.File},
-			Region:           region,
-		},
-	}}
+	return region
+}
+
+func findingFixRegion(f Finding) SarifRegion {
+	return SarifRegion{
+		StartLine:   f.Position.Line,
+		StartColumn: f.Position.Column,
+		EndLine:     f.Position.Line,
+		EndColumn:   f.Position.Column,
+	}
 }
 
 func sarifFixes(f Finding) []SarifFix {
 	if f.HasFix() {
-		region := SarifRegion{
-			StartLine:   f.Position.Line,
-			StartColumn: f.Position.Column,
-			EndLine:     f.Position.Line,
-			EndColumn:   f.Position.Column,
-		}
-		if f.Range != nil && f.Range.HasEnd() {
-			region.EndLine = f.Range.End.Line
-			region.EndColumn = f.Range.End.Column
-		}
+		region := findingFixRegion(f)
 
 		return []SarifFix{{
 			Description: SarifMessage{Text: f.Suggestion},

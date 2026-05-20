@@ -29,92 +29,39 @@ func generateFindings(n int) []finding.Finding {
 	return findings
 }
 
-func benchPipelineDryRun(b *testing.B, findingCount int) {
-	b.Helper()
-	findings := generateFindings(findingCount)
-
-	cfg := Config{
-		MaxIterations:     1,
-		ParallelDetectors: false,
-		DryRun:            true,
-	}
-	det := NamedDetectorFunc("bench", func(_ context.Context) ([]finding.Finding, error) {
-		return findings, nil
-	})
-
-	p, err := New(cfg, b.TempDir(), det)
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	b.ResetTimer()
-	b.ReportAllocs()
-
-	for range b.N {
-		if _, err := p.Run(context.Background()); err != nil {
-			b.Fatal(err)
-		}
-	}
+type benchConfig struct {
+	findings          int
+	parallel          bool
+	dryRun            bool
+	correlateFindings bool
+	detectorCount     int
 }
 
-func BenchmarkPipeline_DryRun_100(b *testing.B)   { benchPipelineDryRun(b, 100) }
-func BenchmarkPipeline_DryRun_1000(b *testing.B)  { benchPipelineDryRun(b, 1000) }
-func BenchmarkPipeline_DryRun_10000(b *testing.B) { benchPipelineDryRun(b, 10000) }
-
-func benchPipelineWithCorrelation(b *testing.B, findingCount int) {
+func runBenchPipeline(b *testing.B, cfg benchConfig) {
 	b.Helper()
-	findings := generateFindings(findingCount)
+	findings := generateFindings(cfg.findings)
 
-	cfg := Config{
+	pipelineCfg := Config{
 		MaxIterations:     1,
-		ParallelDetectors: false,
-		DryRun:            true,
-		CorrelateFindings: true,
-	}
-	det := NamedDetectorFunc("bench", func(_ context.Context) ([]finding.Finding, error) {
-		return findings, nil
-	})
-
-	p, err := New(cfg, b.TempDir(), det)
-	if err != nil {
-		b.Fatal(err)
+		ParallelDetectors: cfg.parallel,
+		DryRun:            cfg.dryRun,
+		CorrelateFindings: cfg.correlateFindings,
 	}
 
-	b.ResetTimer()
-	b.ReportAllocs()
-
-	for range b.N {
-		if _, err := p.Run(context.Background()); err != nil {
-			b.Fatal(err)
+	var detectors []Detector
+	for i := range max(cfg.detectorCount, 1) {
+		name := "bench"
+		if cfg.detectorCount > 1 {
+			name = fmt.Sprintf("det-%d", i)
 		}
-	}
-}
-
-func BenchmarkPipeline_Correlate_100(b *testing.B)   { benchPipelineWithCorrelation(b, 100) }
-func BenchmarkPipeline_Correlate_1000(b *testing.B)  { benchPipelineWithCorrelation(b, 1000) }
-func BenchmarkPipeline_Correlate_10000(b *testing.B) { benchPipelineWithCorrelation(b, 10000) }
-
-func benchPipelineParallel(b *testing.B, findingCount, detectorCount int) {
-	b.Helper()
-	findings := generateFindings(findingCount)
-
-	detectors := make([]Detector, detectorCount)
-	for i := range detectors {
-		detectors[i] = NamedDetectorFunc(
-			fmt.Sprintf("det-%d", i),
+		f := findings
+		detectors = append(detectors, NamedDetectorFunc(name,
 			func(_ context.Context) ([]finding.Finding, error) {
-				return findings, nil
-			},
-		)
+				return f, nil
+			}))
 	}
 
-	cfg := Config{
-		MaxIterations:     1,
-		ParallelDetectors: true,
-		DryRun:            true,
-	}
-
-	p, err := New(cfg, b.TempDir(), detectors...)
+	p, err := New(pipelineCfg, b.TempDir(), detectors...)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -129,7 +76,51 @@ func benchPipelineParallel(b *testing.B, findingCount, detectorCount int) {
 	}
 }
 
-func BenchmarkPipeline_Parallel_5Det_1k(b *testing.B)   { benchPipelineParallel(b, 1000, 5) }
-func BenchmarkPipeline_Parallel_5Det_10k(b *testing.B)  { benchPipelineParallel(b, 10000, 5) }
-func BenchmarkPipeline_Parallel_10Det_1k(b *testing.B)  { benchPipelineParallel(b, 1000, 10) }
-func BenchmarkPipeline_Parallel_10Det_10k(b *testing.B) { benchPipelineParallel(b, 10000, 10) }
+func BenchmarkPipeline_DryRun_100(b *testing.B) {
+	runBenchPipeline(b, benchConfig{findings: 100, dryRun: true})
+}
+
+func BenchmarkPipeline_DryRun_1000(b *testing.B) {
+	runBenchPipeline(b, benchConfig{findings: 1000, dryRun: true})
+}
+
+func BenchmarkPipeline_DryRun_10000(b *testing.B) {
+	runBenchPipeline(b, benchConfig{findings: 10000, dryRun: true})
+}
+
+func BenchmarkPipeline_Correlate_100(b *testing.B) {
+	runBenchPipeline(b, benchConfig{findings: 100, dryRun: true, correlateFindings: true})
+}
+
+func BenchmarkPipeline_Correlate_1000(b *testing.B) {
+	runBenchPipeline(b, benchConfig{findings: 1000, dryRun: true, correlateFindings: true})
+}
+
+func BenchmarkPipeline_Correlate_10000(b *testing.B) {
+	runBenchPipeline(b, benchConfig{findings: 10000, dryRun: true, correlateFindings: true})
+}
+
+func BenchmarkPipeline_Parallel_5Det_1k(b *testing.B) {
+	runBenchPipeline(b, benchConfig{findings: 1000, parallel: true, dryRun: true, detectorCount: 5})
+}
+
+func BenchmarkPipeline_Parallel_5Det_10k(b *testing.B) {
+	runBenchPipeline(
+		b,
+		benchConfig{findings: 10000, parallel: true, dryRun: true, detectorCount: 5},
+	)
+}
+
+func BenchmarkPipeline_Parallel_10Det_1k(b *testing.B) {
+	runBenchPipeline(
+		b,
+		benchConfig{findings: 1000, parallel: true, dryRun: true, detectorCount: 10},
+	)
+}
+
+func BenchmarkPipeline_Parallel_10Det_10k(b *testing.B) {
+	runBenchPipeline(
+		b,
+		benchConfig{findings: 10000, parallel: true, dryRun: true, detectorCount: 10},
+	)
+}

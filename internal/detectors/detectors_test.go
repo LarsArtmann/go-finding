@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/pipeline"
 	. "github.com/onsi/gomega"
 )
 
@@ -199,28 +200,29 @@ func TestDetectorNames(t *testing.T) {
 	g.Expect(sc.Name()).To(Equal("staticcheck"))
 }
 
-func TestNewGoVetDetector_CancelledContext(t *testing.T) {
+func TestDetector_CancelledContext(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
-	d := NewGoVetDetector(".")
 
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
+	tests := []struct {
+		name string
+		det  pipeline.Detector
+	}{
+		{"govet", NewGoVetDetector(".")},
+		{"staticcheck", NewStaticcheckDetector(".")},
+	}
 
-	_, err := d.Detect(ctx)
-	g.Expect(err).To(HaveOccurred())
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
 
-func TestNewStaticcheckDetector_CancelledContext(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-	d := NewStaticcheckDetector(".")
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-
-	_, err := d.Detect(ctx)
-	g.Expect(err).To(HaveOccurred())
+			_, err := tt.det.Detect(ctx)
+			g.Expect(err).To(HaveOccurred())
+		})
+	}
 }
 
 func TestNewGoVetDetector_ValidProject(t *testing.T) {

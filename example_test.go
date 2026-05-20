@@ -112,7 +112,8 @@ func ExampleFilter() {
 	fromA := finding.Filter(findings, finding.ByFile("a.go"))
 	fmt.Println("In a.go:", len(fromA))
 
-	combined := finding.Filter(findings,
+	combined := finding.Filter(
+		findings,
 		finding.ByRule("R1"),
 		finding.ByFile("a.go"),
 	)

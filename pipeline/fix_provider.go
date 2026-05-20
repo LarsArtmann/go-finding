@@ -49,7 +49,7 @@ func (OffsetProvider) Name() string { return "byte-offset" }
 
 // CanHandle reports whether the finding has explicit byte-offset range information.
 func (OffsetProvider) CanHandle(f finding.Finding) bool {
-	if f.BeforeCode == "" && f.AfterCode == "" {
+	if !f.HasCodeChange() {
 		return false
 	}
 
@@ -74,12 +74,7 @@ func (OffsetProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error
 		}
 	}
 
-	return []FixEdit{{
-		Offset:      start,
-		Length:      end - start,
-		Replacement: []byte(f.AfterCode),
-		Source:      f,
-	}}, nil
+	return []FixEdit{newReplacementEdit(start, end-start, f)}, nil
 }
 
 // LineProvider handles findings with line/column information by converting
@@ -91,7 +86,7 @@ func (LineProvider) Name() string { return "line-column" }
 
 // CanHandle reports whether the finding has line/column position info.
 func (LineProvider) CanHandle(f finding.Finding) bool {
-	if f.BeforeCode == "" && f.AfterCode == "" {
+	if !f.HasCodeChange() {
 		return false
 	}
 
@@ -140,20 +135,10 @@ func lineProviderRangeEdits(content []byte, f finding.Finding, idx []int) ([]Fix
 			return nil, nil
 		}
 
-		return []FixEdit{{
-			Offset:      start + loc,
-			Length:      len(before),
-			Replacement: []byte(f.AfterCode),
-			Source:      f,
-		}}, nil
+		return []FixEdit{newReplacementEdit(start+loc, len(before), f)}, nil
 	}
 
-	return []FixEdit{{
-		Offset:      start,
-		Length:      end - start,
-		Replacement: []byte(f.AfterCode),
-		Source:      f,
-	}}, nil
+	return []FixEdit{newReplacementEdit(start, end-start, f)}, nil
 }
 
 func lineProviderInsertionEdit(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
@@ -164,12 +149,7 @@ func lineProviderInsertionEdit(content []byte, f finding.Finding, idx []int) ([]
 
 	replacement := append([]byte(f.AfterCode), '\n')
 
-	return []FixEdit{{
-		Offset:      offset,
-		Length:      0,
-		Replacement: replacement,
-		Source:      f,
-	}}, nil
+	return []FixEdit{{Offset: offset, Length: 0, Replacement: replacement, Source: f}}, nil
 }
 
 func lineProviderReplacementEdit(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
@@ -189,12 +169,7 @@ func lineProviderReplacementEdit(content []byte, f finding.Finding, idx []int) (
 		return nil, nil
 	}
 
-	return []FixEdit{{
-		Offset:      offset,
-		Length:      len(before),
-		Replacement: []byte(f.AfterCode),
-		Source:      f,
-	}}, nil
+	return []FixEdit{newReplacementEdit(offset, len(before), f)}, nil
 }
 
 // SubstringProvider is a fallback provider that locates BeforeCode in the content
@@ -234,12 +209,7 @@ func (SubstringProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, er
 		}
 	}
 
-	return []FixEdit{{
-		Offset:      best,
-		Length:      len(before),
-		Replacement: []byte(f.AfterCode),
-		Source:      f,
-	}}, nil
+	return []FixEdit{newReplacementEdit(best, len(before), f)}, nil
 }
 
 var (
@@ -250,6 +220,10 @@ var (
 	errLineBeyondEOF = errors.New("line beyond end of file")
 	errColumnBeyond  = errors.New("column beyond end of line")
 )
+
+func newReplacementEdit(offset, length int, f finding.Finding) FixEdit {
+	return FixEdit{Offset: offset, Length: length, Replacement: []byte(f.AfterCode), Source: f}
+}
 
 // lineColToOffset converts a 1-based line and column to a 0-based byte offset.
 // Builds a line offset index per call; for batch processing, prefer

@@ -188,10 +188,15 @@ func (f Finding) String() string {
 	return b.String()
 }
 
+// HasCodeChange reports whether the finding has any code change (BeforeCode or AfterCode).
+func (f Finding) HasCodeChange() bool {
+	return f.BeforeCode != "" || f.AfterCode != ""
+}
+
 // Preview returns a unified-diff-style preview of the fix, or empty string if
 // the finding has no fixable code change (BeforeCode and AfterCode both empty).
 func (f Finding) Preview() string {
-	if f.BeforeCode == "" && f.AfterCode == "" {
+	if !f.HasCodeChange() {
 		return ""
 	}
 
@@ -237,27 +242,32 @@ func (f Finding) Validate() error {
 
 	if !f.Severity.IsValid() {
 		errs = append(errs, NewValidationError(
-			fmt.Sprintf("finding.Severity %q is invalid", f.Severity), nil))
+			fmt.Sprintf("finding.Severity %q is invalid", f.Severity), nil,
+		))
 	}
 
 	if !f.Position.IsValid() {
 		errs = append(errs, NewValidationError(
-			fmt.Sprintf("finding.Position %+v is invalid", f.Position), nil))
+			fmt.Sprintf("finding.Position %+v is invalid", f.Position), nil,
+		))
 	}
 
 	if !f.FixStrategy.IsValid() {
 		errs = append(errs, NewValidationError(
-			fmt.Sprintf("finding.FixStrategy %q is invalid", f.FixStrategy), nil))
+			fmt.Sprintf("finding.FixStrategy %q is invalid", f.FixStrategy), nil,
+		))
 	}
 
 	if f.Confidence < 0 || f.Confidence > 1 {
 		errs = append(errs, NewValidationError(
-			fmt.Sprintf("finding.Confidence %s must be in [0.0, 1.0]", f.Confidence), nil))
+			fmt.Sprintf("finding.Confidence %s must be in [0.0, 1.0]", f.Confidence), nil,
+		))
 	}
 
 	if f.BeforeCode == "" && f.AfterCode == "" && f.FixStrategy == FixStrategyDirect {
 		errs = append(errs, NewValidationError(
-			"finding.FixStrategyDirect requires BeforeCode or AfterCode", nil))
+			"finding.FixStrategyDirect requires BeforeCode or AfterCode", nil,
+		))
 	}
 
 	return errors.Join(errs...)

@@ -258,7 +258,8 @@ var _ = Describe("Report Merging and Deduplication", func() {
 		r2.AddFinding(mustBuild("r1", "govet", "msg", finding.SeverityWarning, "a.go", 10))
 		r2.AddFinding(mustBuild("r2", "govet", "other", finding.SeverityError, "b.go", 20))
 
-		merged := finding.Merge([]*finding.Report{r1, r2},
+		merged := finding.Merge(
+			[]*finding.Report{r1, r2},
 			finding.WithDeduplication(true),
 			finding.WithDeduplicateBy(finding.DeduplicateByID),
 		)

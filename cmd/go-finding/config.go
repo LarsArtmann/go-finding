@@ -217,7 +217,8 @@ func outputText(w io.Writer, report *finding.Report) {
 
 	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(report.Findings))
 	if report.Summary.Total > 0 {
-		_, _ = fmt.Fprintf(w, "  By severity: %d info, %d warning, %d error, %d critical\n",
+		_, _ = fmt.Fprintf(
+			w, "  By severity: %d info, %d warning, %d error, %d critical\n",
 			report.Summary.BySeverity[finding.SeverityInfo],
 			report.Summary.BySeverity[finding.SeverityWarning],
 			report.Summary.BySeverity[finding.SeverityError],

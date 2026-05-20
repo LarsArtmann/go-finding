@@ -221,7 +221,8 @@ var _ = Describe("Pipeline Lifecycle", func() {
 		})
 
 		It("NamedProcessorFunc sets the name", func() {
-			p := pipeline.NamedProcessorFunc("severity-filter",
+			p := pipeline.NamedProcessorFunc(
+				"severity-filter",
 				pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
 					return findings
 				}),
@@ -231,14 +232,16 @@ var _ = Describe("Pipeline Lifecycle", func() {
 
 		It("chains processors between detection and triage in the pipeline", func() {
 			var processed [][]finding.Finding
-			filter := pipeline.NamedProcessorFunc("only-errors",
+			filter := pipeline.NamedProcessorFunc(
+				"only-errors",
 				pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
 					processed = append(processed, findings)
 					return finding.Filter(findings, finding.BySeverity(finding.SeverityError))
 				}),
 			)
 
-			detector := pipeline.NamedDetectorFunc("multi",
+			detector := pipeline.NamedDetectorFunc(
+				"multi",
 				func(_ context.Context) ([]finding.Finding, error) {
 					return []finding.Finding{
 						mustBuild("r1", "multi", "error", finding.SeverityError, "f.go", 1,
@@ -284,6 +287,26 @@ func mustBuild(
 	return f
 }
 
+func codeFix(before, after string, line, col int) finding.Finding {
+	return finding.Finding{
+		BeforeCode: before,
+		AfterCode:  after,
+		Position:   finding.Pos("a.go", line, col),
+	}
+}
+
+func offsetFix(before, after string, startOff, endOff int) finding.Finding {
+	return finding.Finding{
+		BeforeCode: before,
+		AfterCode:  after,
+		Range: &finding.Range{
+			Start: finding.Position{File: "a.go", Offset: startOff},
+			End:   finding.Position{File: "a.go", Offset: endOff},
+		},
+		Position: finding.Pos("a.go", 4, 2),
+	}
+}
+
 var _ = Describe("FixProvider Contract", func() {
 	var content []byte
 
@@ -299,24 +322,12 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("handles findings with byte-offset range info", func() {
-			f := finding.Finding{
-				BeforeCode: "old()",
-				AfterCode:  "new()",
-				Range: &finding.Range{
-					Start: finding.Position{File: "a.go", Offset: 28},
-					End:   finding.Position{File: "a.go", Offset: 33},
-				},
-				Position: finding.Pos("a.go", 4, 2),
-			}
+			f := offsetFix("old()", "new()", 28, 33)
 			Expect(provider.CanHandle(f)).To(BeTrue())
 		})
 
 		It("rejects findings without byte-offset range", func() {
-			f := finding.Finding{
-				BeforeCode: "old",
-				AfterCode:  "new",
-				Position:   finding.Pos("a.go", 4, 2),
-			}
+			f := codeFix("old", "new", 4, 2)
 			Expect(provider.CanHandle(f)).To(BeFalse())
 		})
 
@@ -329,15 +340,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("produces a byte-level edit from offset range", func() {
-			f := finding.Finding{
-				BeforeCode: "old()",
-				AfterCode:  "new()",
-				Range: &finding.Range{
-					Start: finding.Position{File: "a.go", Offset: 29},
-					End:   finding.Position{File: "a.go", Offset: 34},
-				},
-				Position: finding.Pos("a.go", 4, 2),
-			}
+			f := offsetFix("old()", "new()", 29, 34)
 			edits, err := provider.Edits(content, f)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(edits).To(HaveLen(1))
@@ -347,15 +350,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("returns nil when BeforeCode doesn't match content at offset", func() {
-			f := finding.Finding{
-				BeforeCode: "WRONG",
-				AfterCode:  "new()",
-				Range: &finding.Range{
-					Start: finding.Position{File: "a.go", Offset: 29},
-					End:   finding.Position{File: "a.go", Offset: 34},
-				},
-				Position: finding.Pos("a.go", 4, 2),
-			}
+			f := offsetFix("WRONG", "new()", 29, 34)
 			edits, err := provider.Edits(content, f)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(edits).To(BeNil())
@@ -380,11 +375,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("rejects findings with no line number", func() {
-			f := finding.Finding{
-				BeforeCode: "old",
-				AfterCode:  "new",
-				Position:   finding.Pos("a.go", 0, 0),
-			}
+			f := codeFix("old", "new", 0, 0)
 			Expect(provider.CanHandle(f)).To(BeFalse())
 		})
 
@@ -416,11 +407,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("returns nil for out-of-bounds line numbers", func() {
-			f := finding.Finding{
-				BeforeCode: "old",
-				AfterCode:  "new",
-				Position:   finding.Pos("a.go", 100, 1),
-			}
+			f := codeFix("old", "new", 100, 1)
 			edits, err := provider.Edits(content, f)
 			Expect(err).To(MatchError(pipeline.ErrPositionUnresolvable))
 			Expect(edits).To(BeNil())
@@ -435,11 +422,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("handles findings with BeforeCode", func() {
-			f := finding.Finding{
-				BeforeCode: "old()",
-				AfterCode:  "new()",
-				Position:   finding.Pos("a.go", 1, 1),
-			}
+			f := codeFix("old()", "new()", 1, 1)
 			Expect(provider.CanHandle(f)).To(BeTrue())
 		})
 
@@ -452,11 +435,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("finds substring in content and produces edit", func() {
-			f := finding.Finding{
-				BeforeCode: "old()",
-				AfterCode:  "new()",
-				Position:   finding.Pos("a.go", 1, 1),
-			}
+			f := codeFix("old()", "new()", 1, 1)
 			edits, err := provider.Edits(content, f)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(edits).To(HaveLen(1))
@@ -464,11 +443,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("returns nil when BeforeCode not found in content", func() {
-			f := finding.Finding{
-				BeforeCode: "NONEXISTENT",
-				AfterCode:  "new()",
-				Position:   finding.Pos("a.go", 1, 1),
-			}
+			f := codeFix("NONEXISTENT", "new()", 1, 1)
 			edits, err := provider.Edits(content, f)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(edits).To(BeNil())
@@ -476,11 +451,7 @@ var _ = Describe("FixProvider Contract", func() {
 
 		It("picks the occurrence nearest to the target line when ambiguous", func() {
 			multiContent := []byte("line1: X\nline2: X\nline3: X")
-			f := finding.Finding{
-				BeforeCode: "X",
-				AfterCode:  "Y",
-				Position:   finding.Pos("a.go", 3, 0),
-			}
+			f := codeFix("X", "Y", 3, 0)
 			edits, err := provider.Edits(multiContent, f)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(edits).To(HaveLen(1))
@@ -492,15 +463,7 @@ var _ = Describe("FixProvider Contract", func() {
 		It("OffsetProvider takes precedence over LineProvider and SubstringProvider", func() {
 			engine := pipeline.NewFixEngine()
 
-			f := finding.Finding{
-				BeforeCode: "old()",
-				AfterCode:  "new()",
-				Range: &finding.Range{
-					Start: finding.Position{File: "a.go", Offset: 29},
-					End:   finding.Position{File: "a.go", Offset: 34},
-				},
-				Position: finding.Pos("a.go", 4, 2),
-			}
+			f := offsetFix("old()", "new()", 29, 34)
 
 			result, applied, count := engine.Apply(content, []finding.Finding{f})
 			Expect(count).To(Equal(1))
@@ -527,11 +490,7 @@ var _ = Describe("FixProvider Contract", func() {
 		It("SubstringProvider is the fallback", func() {
 			engine := pipeline.NewFixEngine()
 
-			f := finding.Finding{
-				BeforeCode: "old",
-				AfterCode:  "new",
-				Position:   finding.Pos("a.go", 1, 1),
-			}
+			f := codeFix("old", "new", 1, 1)
 
 			result, applied, count := engine.Apply([]byte("old code"), []finding.Finding{f})
 			Expect(count).To(Equal(1))
