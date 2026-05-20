@@ -1,291 +1,251 @@
-# TODO List — go-finding
+# TODO List
 
-**Generated:** 2026-05-06
-**Source:** Comprehensive audit of 56 .md files + full code review cross-referenced with actual code
-**Project Version:** v0.2.1
+**Generated:** 2026-05-20
+**Files Processed:** 235
 
----
+## 🔴 HIGH Priority
 
-## Files Processed
+- [ ] Add bounds checks in `findingFromSARIF` — `[0].Fixes[0].Changes[0]` chain can panic (source: sarif_import.go:34)
+- [ ] Document SARIF critical round-trip loss — `SeverityCritical` → SARIF `"error"` → `SeverityError` (source: sarif.go)
+- [ ] `Finding` struct sub-grouping into embedded sub-structs (Identity, Position, Fix, Context, Metadata) — deferred to v2, breaking change (source: finding.go)
+- [ ] Add `golines` to CI for consistent line breaking (source: .golangci.yml)
+- [ ] Clean up gopls hints (~12 non-critical: rangeint, newexpr, mapsloop, stringsseq) (source: multiple)
 
-| #   | File                                                                          | Status  |
-| --- | ----------------------------------------------------------------------------- | ------- |
-| 1   | `AGENTS.md`                                                                   | ✅ Read |
-| 2   | `CONTEXT.md`                                                                  | ✅ Read |
-| 3   | `PROPOSAL.md`                                                                 | ✅ Read |
-| 4   | `README.md`                                                                   | ✅ Read |
-| 5   | `CHANGELOG.md`                                                                | ✅ Read |
-| 6   | `CONTRIBUTING.md`                                                             | ✅ Read |
-| 7   | `MIGRATION_TO_NIX_FLAKES_PROPOSAL.md`                                         | ✅ Read |
-| 8   | `docs/USAGE_GUIDE.md`                                                         | ✅ Read |
-| 9   | `docs/READINESS_REPORT.md`                                                    | ✅ Read |
-| 10  | `docs/integration-guide.md`                                                   | ✅ Read |
-| 11  | `docs/release-procedure.md`                                                   | ✅ Read |
-| 12  | `docs/architecture-decisions.md`                                              | ✅ Read |
-| 13  | `docs/planning/2026-04-30_00_05-COMPREHENSIVE_HARDENING_AND_API_STABILITY.md` | ✅ Read |
-| 14  | `docs/planning/2026-04-30_00-50_execution-plan.md`                            | ✅ Read |
-| 15  | `docs/planning/2026-04-30_00-48-coverage-and-cleanup.md`                      | ✅ Read |
-| 16  | `docs/planning/2026-04-30_01-00_adr-go-lsp-integration.md`                    | ✅ Read |
-| 17  | `docs/planning/2026-04-29_COMPREHENSIVE_DEEPENING_PLAN.md`                    | ✅ Read |
-| 18  | `docs/planning/2026-04-29_23-01_deep-codebase-hardening.md`                   | ✅ Read |
-| 19  | `docs/planning/2026-04-29_23-26-HARDENING_AND_INTEGRATION.md`                 | ✅ Read |
-| 20  | `docs/status/2026-04-30_03-40_comprehensive-status.md`                        | ✅ Read |
-| 21  | `docs/status/2026-04-30_03-33_final-session-status.md`                        | ✅ Read |
-| 22  | `docs/status/2026-04-30_02-59_comprehensive-status.md`                        | ✅ Read |
-| 23  | `docs/status/2026-04-30_02-42_comprehensive-status.md`                        | ✅ Read |
-| 24  | `docs/status/2026-04-30_01-39_comprehensive-status.md`                        | ✅ Read |
-| 25  | `docs/status/2026-04-30_01-39_session2-hardening-status.md`                   | ✅ Read |
-| 26  | `docs/status/2026-04-30_00-55_comprehensive-status.md`                        | ✅ Read |
-| 27  | `docs/status/2026-04-30_00-45_comprehensive-status.md`                        | ✅ Read |
-| 28  | `docs/status/2026-04-30_00-39_comprehensive-status.md`                        | ✅ Read |
-| 29  | `docs/status/2026-04-29_23-30_comprehensive-status.md`                        | ✅ Read |
-| 30  | `docs/status/2026-04-29_EXECUTION_STATUS.md`                                  | ✅ Read |
-| 31  | `docs/status/2026-04-28_17-14_COMPREHENSIVE_STATUS.md`                        | ✅ Read |
-| 32  | `docs/status/2026-04-28_13-41_bug_fixes_and_builder_api.md`                   | ✅ Read |
-| 33  | `docs/status/2026-04-26_19-06_clone-elimination-status.md`                    | ✅ Read |
-| 34  | `docs/status/2026-04-26_17-39_clone-elimination-status.md`                    | ✅ Read |
-| 35  | `docs/status/2026-04-26_14-28_comprehensive-status.md`                        | ✅ Read |
-| 36  | `docs/status/2026-04-26_13-52_clone-elimination-status.md`                    | ✅ Read |
-| 37  | `docs/status/2026-04-26_13-28_clone-elimination-status.md`                    | ✅ Read |
-| 38  | `docs/status/2026-04-25_01-19_comprehensive-status.md`                        | ✅ Read |
-| 39  | `docs/status/2026-04-21_20-45_session-21-status.md`                           | ✅ Read |
-| 40  | `docs/status/2026-04-15_SESSION17_COMPREHENSIVE_STATUS.md`                    | ✅ Read |
-| 41  | `docs/status/archive/2026-04-19_04-11_COMPREHENSIVE_FINAL_STATUS.md`          | ✅ Read |
-| 42  | `docs/status/archive/2026-04-19_00-18_ROUND3_STATUS_AND_AUDIT.md`             | ✅ Read |
-| 43  | `docs/status/archive/2026-04-19_07-04_SESSION12_EXECUTION_PROGRESS.md`        | ✅ Read |
-| 44  | `docs/status/archive/2026-04-19_13-53_SESSION14_COMPREHENSIVE_STATUS.md`      | ✅ Read |
-| 45  | `docs/status/archive/2026-04-19_13-43_SESSION13_COMPREHENSIVE_STATUS.md`      | ✅ Read |
-| 46  | `docs/status/archive/2026-04-19_05-04_SESSION6_LINT_FIXES_IN_PROGRESS.md`     | ✅ Read |
-| 47  | `docs/status/archive/2026-04-18_19-34_V5_COMPLETE_AND_LINT_HARDENED.md`       | ✅ Read |
-| 48  | `docs/status/archive/2026-04-16_01-13_COMPREHENSIVE_STATUS.md`                | ✅ Read |
-| 49  | `docs/status/archive/2026-04-15_18-25_COMPREHENSIVE_STATUS.md`                | ✅ Read |
-| 50  | `docs/status/archive/2026-04-15_session-9-audit-tests.md`                     | ✅ Read |
-| 51  | `docs/status/archive/2026-04-13_22-33_PIPELINE_COMPLETE.md`                   | ✅ Read |
-| 52  | `docs/status/archive/2026-04-12_10-45_COMPREHENSIVE_STATUS.md`                | ✅ Read |
-| 53  | `docs/status/archive/2026-04-28_13-41_COMPREHENSIVE_EXECUTION_PLAN.md`        | ✅ Read |
-| 54  | `docs/status/archive/EXECUTION_PLAN_V2.md`                                    | ✅ Read |
-| 55  | `docs/status/2026-04-26_13-28_clone-elimination-status.md`                    | ✅ Read |
-| 56  | `TODO_LIST.md` (previous)                                                     | ✅ Read |
+## 🟡 MEDIUM Priority
 
----
+- [ ] Fix `pipeline/partial.go:107` — undefined `isContextDone` blocks build (source: pipeline/partial.go:107)
+- [ ] Fix `pipeline/fix_applier.go` — unused `"fmt"` import blocks build (source: pipeline/fix_applier.go)
+- [ ] Fix `cmd/go-finding/integration_test.go:108` — duplicate `g := NewWithT(t)` blocks build (source: integration_test.go:108)
+- [ ] Fix `examples/builder/main.go` compile error — `Build()` returns 2 values but 1 assigned (source: examples/builder/main.go:12)
+- [ ] Fix `.golangci.yml` to work without `--no-verify` / `--no-config` flag (source: .golangci.yml)
+- [ ] Fix `.golangci.yml` indentation — auto-configure keeps reformatting 2-space to 4-space (source: .golangci.yml)
+- [ ] Fix BuildFlow `gomodguard_v2` auto-configure loop — every commit requires `--no-verify` (source: BuildFlow config)
+- [ ] Fix `IsAutoFixable()`/`Validate()` disagreement for Direct+AfterCode-only findings (source: finding.go:151,258)
+- [ ] Fix `Finding.Key()` cross-tool collision — include `ToolName` in fallback key when ID is empty (source: finding.go:270)
+- [ ] Fix `Pipeline.Run()` single-use contract — enforce programmatically, not just documented (source: pipeline/pipeline.go:99-107)
+- [ ] Fix OnFix callback inaccuracy — reports success for ALL safeFixes, even those skipped by FixApplier (source: pipeline/pipeline.go:466-481)
+- [ ] Fix partial detection missing metrics recording (source: pipeline/partial.go:63-117)
+- [ ] `Metrics.StageTiming` value receiver bug — copies `sync.Mutex` (undefined behavior) (source: pipeline/metrics.go)
+- [ ] Fix `FixEngine.Apply()` to use `HasFix()` instead of its own "has code" filter — Direct fix without code is silently dropped (source: pipeline/fix_engine.go:64-66)
+- [ ] Fix conflict detection overgrouping — change `Overlaps` to `Adjacent` check in group extension (source: pipeline/conflict.go:80)
+- [ ] Fix `DeduplicateByID` — skip findings with empty ID instead of colliding (source: merge.go:140)
+- [ ] Fix `%v` → proper error wrapping in `FormatPartialErrors` (source: pipeline/partial.go:151)
+- [ ] Fix `ToSARIFFiltered` name — document it filters by severity AND suppression (source: sarif.go:159)
+- [ ] Fix SARIF `Location` → `Locations` (plural, array) for spec compliance (source: sarif.go:43)
+- [ ] `Range.LineCount()` returns 0 for inverted ranges — document or fix (source: position.go:90-95)
+- [ ] Fix `TestProperty_IDRoundTrip` flakiness — needs seed control (~5% failure rate) (source: property_test.go)
+- [ ] Refactor CLI `run()` for testability — inject `io.Writer` + `*flag.FlagSet` instead of global state (source: cmd/go-finding/main.go)
+- [ ] Fix `NewFixApplier` error handling — propagate `MkdirTemp` error instead of silent fallback (source: pipeline/fix_applier.go:23-26)
+- [ ] Fix 10 testifylint `require-error` warnings (source: project-wide)
+- [ ] Fix 6 `paralleltest` warnings — add `t.Parallel()` (source: project-wide)
+- [ ] Update USAGE_GUIDE.md for v0.3.0 — new features not documented (source: docs/)
+- [ ] Update FEATURES.md for v0.3.0 — missing FormatText/FormatMarkdown, ToDiagnostic, etc. (source: FEATURES.md)
+- [ ] Fix `.gitignore` line 43 corruption (source: .gitignore)
+- [ ] Fix pre-commit hook failures — goconst, todo-check, library-policy all fail (source: .git/hooks/)
+- [ ] FixEngine: line-offset tracking for cumulative line shifts across multi-fix (source: pipeline/)
+- [ ] Make fix strategy composable as interface — register `FixApplier` implementations per strategy (source: pipeline/)
+- [ ] Add pipeline stage hooks — pre/post hooks for detect, triage, fix, verify (source: pipeline/)
+- [ ] Improve `README.md` — add badges, pipeline examples, API overview (source: README.md)
+- [ ] Update `AGENTS.md` with module split decision context + FixProvider architecture (source: AGENTS.md)
+- [ ] Fix 225 lint warnings in 3 batches: revive, exhaustruct+errcheck, wsl_v5+formatting (source: go-structure-linter project-wide)
+- [ ] Fix global state: inject `GitAuthorProvider` into rules (source: rule_service.go)
+- [ ] Fix pre-commit hook — make `.git/hooks/pre-commit` executable (source: .git/)
+- [ ] Interactive TUI for fix review with `bubbletea` — out of scope v1 (source: cmd/go-finding/)
+- [ ] Phase 3: Create `.envrc` for direnv, update CONTRIBUTING.md (source: project root)
 
-## 🔴 P0 — Must Do Before v0.2.0
+## 🟢 LOW Priority
 
-### Version & Release
+- [ ] API stability review — audit all exported symbols for v1.0.0 lock (source: project-wide)
+- [ ] Decide `FixStrategyAI` fate — currently no backend exists, silently treated as Suggest; remove, document as placeholder, or implement (source: fix_strategy.go)
+- [ ] Document `BySeverityAtLeast` excludes invalid severities (source: filter.go:42-44)
+- [ ] Document `Report.All()` yields copies — modifications lost (source: report.go:137-145)
+- [ ] Document `FindByID` returns copy — modifications don't affect report (source: report.go:113-123)
+- [ ] Make `Key()` NUL separator `"\x00"` a named constant and document as contract (source: finding.go:270)
+- [ ] Document SARIF round-trip losses in user-facing docs (source: docs/USAGE_GUIDE.md)
+- [ ] Document FixStrategyAI placeholder semantics in user-facing docs (source: docs/USAGE_GUIDE.md)
+- [ ] Document provider chain (OffsetProvider→LineProvider→SubstringProvider) in user-facing docs (source: docs/)
+- [ ] Consider `Position` zero-value safety — `Position{}` is ambiguous (source: position.go)
+- [ ] Consider `Range.End` zero-value ambiguity — not a pointer, "no end" unrepresentable (source: position.go)
+- [ ] Add `finding.FormatText()` — human-readable single-line format (source: new format.go)
+- [ ] Add `finding.FormatMarkdown()` — markdown table format (source: new format.go)
+- [ ] Write API stability guarantee document (Go compat promise style) (source: docs/)
+- [ ] Decide stable ID format — deterministic hashes vs readable strings (source: —)
 
-- [x] **Bump version to v0.2.0** — Done. Current version is v0.2.1. (`version.go`)
-- [x] **Release `[Unreleased]` in CHANGELOG.md** — Done. v0.2.0 and v0.2.1 released.
+## ⚪ Unknown Priority
 
-### Architecture Decisions (blocking API lock)
-
-- [x] **Decide `NewFinding` API pattern** — Resolved: keep 6-param + Builder. No functional options. (See `docs/architecture-decisions.md` Decision #6)
-- [x] **Extract `diagnostic.go` to `finding/analysis` subpackage** — Done. Deprecated wrappers removed from root. Root package no longer imports `golang.org/x/tools`. (`analysis/`)
-- [ ] **API stability review** — Audit every exported symbol for v1.0.0 lock. In progress, see `docs/planning/2026-05-18_18-50_execution-plan.md` Phase 4.
-
-### Correctness
-
-- [x] **Fix `Pipeline.Run()` mutability** — Documented single-use contract in godoc. Run() resets internal state but is not safe for concurrent use. (`pipeline/pipeline.go:252-258`)
-- [x] **Fix `FixApplier` cross-iteration persistence** — `defer func() { _ = applier.Close() }()` added in `applyDirectFixes`. Temp directories now cleaned up after each iteration. (`pipeline/pipeline.go:610`)
-- [x] **Split `sarif.go` into 3 files** — Split into `sarif_types.go`, `sarif_export.go`, `sarif_import.go`. (`e97f62e`)
-- [x] **Split `pipeline/pipeline.go`** — Extracted to `pipeline.go` + `adapters.go` + `config.go`. (`1bb1b1e`)
-- [x] **Split `cmd/go-finding/main.go`** — Extracted to main.go + config.go + registry.go. (`cmd/go-finding/`)
-- [x] **Document Pipeline single-use contract** — Added godoc on Run() explaining single-use and state-reset behavior. (`pipeline/pipeline.go:252-258`, `dc3ca37`)
-
-### FixProvider Architecture (from byte-level redesign)
-
-- [x] **Wire `FixEdit.Overlaps` into conflict detection** — `ConflictInfo.ConflictsWith` now populated by checking `edit.Overlaps(prev)` against all applied edits. (`pipeline/fix_engine.go:124-129`, `a3e4b58`)
-- [x] **Make `FixEdit` serializable** — Added `MarshalJSON`/`UnmarshalJSON`, `ToSARIFProperties`/`FixEditFromSARIFProperties`. Edit properties preserved through SARIF round-trip. (`pipeline/fix_edit.go`, `e47c219`)
-- [x] **Build line-offset index** — `buildLineOffsetIndex` returns `[]int` where `index[i]` is byte offset of line `i+1`. O(n) build, O(1) per lookup. (`pipeline/fix_provider.go:287`, `cba1b19`)
-- [x] **Add BDD tests for FixProvider** — 15 BDD specs for OffsetProvider, LineProvider, SubstringProvider + chain precedence. (`pipeline/bdd_test.go`, `aa25f80`)
-- [x] **Decide domain-specific provider location** — Resolved: separate modules. `FixProvider` interface stays in `pipeline/`; implementations are external. (See `docs/architecture-decisions.md` Decision #7)
-
-### Architecture Deepening
-
-- [x] **Centralize triage logic** — `HasFix()` is the canonical source; `IsAutoFixable()` added for pipeline auto-apply categorization. (`finding.go:135`, `pipeline/pipeline.go:346`)
-- [x] **Convert stateless structs to functions** — Removed deprecated `ConflictDetector` and `Verifier` wrapper types. Package-level functions used directly. (`pipeline/conflict.go`, `pipeline/verify.go`)
-- [x] **Make Report always thread-safe** — Changed `mu *sync.Mutex` to `mu sync.Mutex`. Zero-value `Report{}` is now safe for concurrent use. (`report.go:10`)
-
----
-
-## 🟠 P1 — Should Do Before v1.0.0
-
-### Code Quality
-
-- [x] **Decompose `FindingsFromSARIF`** — Done. Split into `findingFromSarResult` (52 lines), `applySarifPosition` (32 lines), `applySarifProperties` (54 lines) with `stringProp` helper. Main function is 19 lines. (`sarif_import.go`) — **Still TODO:** decompose `findingToSARIF` export side (115 lines).
-- [x] **Error wrapping consistency audit** — Verified: 100% `%w` wrapping across all 44 production files. Zero violations. Every `fmt.Errorf` wraps errors. `errors.New` used only for sentinels (correct pattern).
-- [x] **Refactor CLI `run()` for testability** — `outputResults(w io.Writer, report, format)` already extracted at `config.go:164`. `writeOutput()` handles file creation. Summary/metrics printing in `run()` still uses `os.Stderr` directly but is acceptable for CLI entry point.
-
-### Tag/Finding Cleanup
-
-- [x] **Deprecate `WithTag` builder method** — Done. Added `// Deprecated: Use WithTags instead.` godoc marker. (`finding_builder.go`)
-- [x] **Unify `Tag` deprecation** — Done. `WithTag` fully removed from builder. All tests use `WithTags` (plural). Zero `WithTag` usage in codebase.
-- [x] **Add `Tag.IsStandard()` method** — Done. Exists at `tag.go:21`. Matches `Category.IsStandard()` pattern.
-
-### Missing Features from Planning
-
-- [x] **Add `Properties map[string]any`** — **WONTFIX.** Intentionally rejected. `Metadata map[string]string` is the sole extensibility field. See `docs/architecture-decisions.md` Decision #8 and commit `024b6a3`.
-- [x] **Add `Suppression.IsActive()` method** — Done. Exists at `suppression.go:43`. Combines `IsValid() && !IsExpired(now)`.
-- [x] **Add `Report.Merge(other *Report)` method** — Done in commit `df82906`. In-place merge for accumulating findings. (`report.go:80`)
-- [x] **Add `io.WriterTo` for SARIF** — Done. `Report.WriteTo(w)` implements `io.WriterTo` via streaming SARIF with byte count.
-- [x] **Confidence strong type** — Done. `type Confidence float64` with `IsValid()`/`Clamp()`/`String()` and 5 named constants. (`confidence.go`)
-
-### Testing
-
-- [x] **Add BDD tests for pipeline** — 44+ ginkgo BDD specs across root and pipeline packages including FixProvider contract. (`bdd_test.go`, `pipeline/bdd_test.go`)
-- [x] **Add `WriteSARIF` error-path test** — Done. `TestWriteSARIF_WriterError` and `TestWriteSARIFFiltered_WriterError` use `failWriter` pattern. (`sarif_test.go:806-848`)
-- [x] **Add `detectPartialSequential` context-cancel test** — Done. `TestDetectPartial_Sequential_CancelBeforeSecond` at `pipeline/partial_test.go:115`.
-- [x] **Add `detectPartialParallel` context-cancel test** — Done. `TestDetectPartial_Parallel_CancelReturnsPartial` at `pipeline/partial_test.go:138`.
-
----
-
-## 🟡 P2 — Nice to Have
-
-### Performance & Tooling
-
-- [x] **Set up benchmark regression tracking** — Done. `scripts/bench-compare.sh` records baseline, compares with benchstat, supports --reset/--bench/--count flags.
-- [x] **Performance benchmarks for 10k+ findings** — Done. Pipeline benchmarks at 100/1k/10k findings for dry-run, correlation, and parallel detection. (`pipeline/pipeline_bench_test.go`)
-- [x] **Add `golines` to CI or justfile** — Done. `golangci-lint fmt --diff ./...` step added to CI lint job. golines already configured in `.golangci.yml` formatters.
-- [x] **Per-package coverage thresholds in CI** — Done. `scripts/coverage-check.sh` wired in CI via `coverage` job. Thresholds: root 98%, pipeline 95%, cmd 90%, detectors 90%, total 93%. **Note:** script has a bug — ignores its `coverage.out` argument (generates own data).
-
-### SARIF & Output
-
-- [x] **SARIF schema validation test** — Done. `TestSARIF_SchemaCompliance` validates structural compliance with SARIF 2.1.0: version, schema URI, required fields (tool.driver.name, ruleId, level, message, locations), level enum, rank bounds, properties, fixes, and related locations.
-- [ ] **Evaluate `go-sarif` vs hand-rolled SARIF** — Assess migration cost for spec compliance. Deferred to post-v1.
-- [x] **Document SARIF round-trip losses in user-facing docs** — Done. `docs/USAGE_GUIDE.md` now has SARIF Round-Trip Fidelity section with limitations and import docs.
-- [x] **`go/analysis` reverse conversion** — Done. `ToDiagnostic(f, fset)` in `analysis/analysis.go` converts Finding → analysis.Diagnostic with position resolution, SuggestedFix generation from BeforeCode/AfterCode, and Related conversion. 98.5% coverage.
-
-### Documentation
-
-- [x] **Add Nix setup path to `CONTRIBUTING.md`** — Done. Nix develop and direnv instructions added to Prerequisites section.
-- [x] **Document `FixStrategyAI` semantics in user-facing docs** — Done. USAGE_GUIDE.md now includes pipeline behavior table and semantics for all strategies.
-- [x] **Add `Finding` JSON schema** — Done. `docs/schemas/finding.schema.json` + `docs/schemas/report.schema.json` with JSON Schema Draft 2020-12. Schema round-trip test in `schema_test.go`.
-- [x] **Create consumer migration guide** — Done. `docs/MIGRATION_v0.1-to-v0.2.md` covers all breaking changes and new features.
-
-### Type Model
-
-- [ ] **`Finding` struct sub-grouping** — Group fields into `Identity`, `Location`, `Fix`, `Context` embedded sub-structs. Breaking API change, deferred to v2.
-- [x] **`Category.IsValid()` clarify semantics** — Godoc already documents the distinction clearly: `IsValid()` accepts custom categories, `IsStandard()` checks predefined constants. No change needed.
-- [x] **Protect `Confidence` in direct struct construction** — Resolved: Validate() catches out-of-range values. Direct construction documented with warning in godoc. Builder API clamps automatically. Full compile-time protection would require unexporting the field (breaking JSON), which is not justified.
-
----
-
-## 🟢 P3 — Future / Deferred
-
-### Nix Migration
-
-- [ ] **Migrate from justfile to `flake.nix`** — Full proposal in `MIGRATION_TO_NIX_FLAKES_PROPOSAL.md`. Phases 0–5.
-  - [ ] Phase 0: Install Nix, create `flake.nix`
-  - [ ] Phase 1: Verify `nix develop`, `nix build`
-  - [ ] Phase 2: Replace CI workflows with Nix-based versions
-  - [ ] Phase 3: direnv, `.envrc`, update docs
-  - [ ] Phase 4: `nix flake check` integration
-  - [ ] Phase 5: Pin nixpkgs, cross-platform testing
-
-### Features
-
-- [x] **Plugin architecture for detectors** — Done. `RegisterDetector(name, builder)` with thread-safe map and `lookupDetectorBuilder` in `cmd/go-finding/registry.go`. Error message dynamically lists available detectors.
-- [ ] **Pipeline middleware/interceptor pattern** — Allow custom stage injection between detect/triage/fix/verify.
-- [ ] **Watch mode** with `fsnotify` for continuous analysis
-- [x] **Structured logging** (`slog`) — Done. `Logger *slog.Logger` in Config. When set, pipeline emits structured events for iteration start, triage complete, and conflict detection. CLI keeps human-readable fmt.Fprintf for user output.
-- [x] **`finding.Diff()` function** — Done. `Diff(before, after) DiffResult` in `diff.go` compares finding sets by ID, returns Added/Removed/Unchanged sorted by ID.
-- [x] **`finding.FormatText()` and `finding.FormatMarkdown()`** — Done. `FormatText(w, findings)` and `FormatMarkdown(w, findings)` in `format.go`. Wired into CLI: `text` format uses FormatText, `markdown` format added as new output option.
-- [x] **Detector timeout per-detector** — Done. `DetectorTimeouts map[string]time.Duration` in Config. Wired in `runOneDetector` with context.WithTimeout. Configurable in CLI via `detectorTimeouts` YAML/JSON map.
-- [x] **Column shift handling in `FixEngine`** — Resolved by byte-level redesign: edits now applied descending by offset with frontier boundary, eliminating column shift issues. (`pipeline/fix_engine.go`)
-- [ ] **Semantic merge for conflicts** — In `pipeline` package
-- [x] **Progress reporting to Pipeline** — Done. `OnStage func(stage, iteration, findingsCount int)` in Config. Fires for detect, process, and triage stage completions.
-- [ ] **Styled CLI output** using `lipgloss`
-- [ ] **Interactive TUI for fix review** (`bubbletea`)
-- [x] **`FuzzFindingsFromJSON` fuzzer** — Done. `json_fuzz_test.go` with FuzzFindingsFromJSON, FuzzReportFromJSON, FuzzFromJSON. 1.1M+ execs, zero panics.
-
-### Integration
-
-- [ ] **Decide on BuildFlow integration** — External project dependency, deferred
-- [ ] **Decide on go-business-rules `Severity` sharing** — External project dependency, deferred
-- [ ] **More detector integrations** — golangci-lint, errcheck, etc.
-
-### LSP
-
-- [ ] **Build a full language server** — If needed. Currently rejected per ADR (`docs/planning/2026-04-30_01-00_adr-go-lsp-integration.md`). Revisit if requirement changes.
-- [ ] **Code fixes via LSP** — `CodeAction` support for direct fixes
-
-### Out of Scope for v1
-
-- [ ] Web UI prototype for pipeline monitoring
-- [ ] Distributed detection
-- [ ] IDE plugin stubs (VS Code)
-- [ ] OpenTelemetry instrumentation
-- [ ] AI backend for `FixStrategyAI`
-- [ ] Streaming/incremental analysis
-- [ ] WebSocket API for real-time finding streaming
-- [ ] Cloud integration — send findings to external systems
-- [ ] Finding classification ML
-- [ ] Finding trend analysis over time
-- [ ] Finding notification webhooks
-- [ ] Compliance reporting
-
----
-
-## ✅ Verified Completed (previously tracked, now confirmed via code audit)
-
-These items were listed as TODOs across multiple planning/status docs but are **verified done** in the current codebase:
-
-- [x] Fix `FixStrategyAI` split brain — `HasFix()` now treats AI like Suggest (requires `AfterCode`)
-- [x] Add `Builder.Build()` error return — signature is `(Finding, error)`, not panic
-- [x] Add `govulncheck` step to CI — `.github/workflows/ci.yml` has govulncheck job
-- [x] Add `go.work` for local development — Not needed: single-module project (no sub-modules). `go.work` is for multi-module workspaces only.
-- [x] Add `FuzzFindingsFromSARIF` — `sarif_fuzz_test.go` has fuzz function (1.6M execs, zero panics)
-- [x] Document SARIF round-trip losses in code — `sarif.go` godoc on `ToSARIF()`
-- [x] Add benchmarks for hot paths — `bench_test.go` covers ID, Filter, Merge, SARIF
-- [x] Profile memory allocation hotspots — Baseline captured
-- [x] Add `version.go` with semver constants — now `v0.2.1`
-- [x] Wire `Correlate()` into Pipeline — `CorrelateFindings` config field exists
-- [x] Add `CONTRIBUTING.md` — Comprehensive guide exists
-- [x] Add GitHub release workflow — `.github/workflows/release.yml` exists
-- [x] Add GoReleaser config — `.goreleaser.yml` exists
-- [x] Add `Report` goroutine safety — `sync.Mutex` on `AddFinding`/`AddFindings`
-- [x] Add sync.Mutex for `OnFinding` callback — `callbackMu` in Pipeline
-- [x] Convert retry errors to sentinels — `errMaxRetriesNegative` etc. at `retry.go:20-24`
-- [x] Replace `math/rand` with `math/rand/v2` — Done in `retry.go`
-- [x] Eliminate `detectResult` ghost type — Uses `PartialResult` directly
-- [x] Extract `findingKey` to shared utility — `Finding.Key()` method
-- [x] Add `FixEngine` unit tests — `fix_engine_test.go` exists
-- [x] Add `FileBackup` direct tests — `file_backup_test.go` exists
-- [x] Replace hardcoded `SeverityWarning` in `diagnostic.go` — Variadic `defaultSeverity` param
-- [x] Add `Range.Contains` edge-case tests — Covered in `position_extra_test.go`
-- [x] Add `DeduplicateByPosition` vs `DeduplicateByRule` behavior test — `TestDeduplicateStrategies_BehaviorDiff`
-- [x] Add `Finding.Equal` field-mismatch test — `TestEqual_FieldMismatch` with 18 cases
-- [x] Add `RetryConfig.Validate` edge-case tests — 7 comprehensive test functions
-- [x] Add `FixApplier` error-path tests — 19 comprehensive test functions
-- [x] Add `Verifier.Verify` error-path tests — `TestVerifier_Verify_DetectorError`
-- [x] Add SARIF import tests — `TestFindingFromSarResult_WithFix`, `TestFindingFromSarResult_RankAsConfidence`
-- [x] Add SARIF round-trip loss tests — `TestSARIF_RoundTripLosses`
-- [x] Add `Builder.Build()` error-path test — `TestBuilder_Build_MissingFields`
-- [x] Fix flaky `TestProperty_IDRoundTrip` — Seeded with `rand.New(rand.NewSource(42))`
-- [x] Add `Correlation` JSON tags camelCase — Fixed
-- [x] Remove `t.Parallel()` from CLI tests that mutate globals — All fixed with `//nolint:paralleltest`
-- [x] Add `examples/` with compile checks — `example_compile_test.go` exists
-- [x] Add `govet`/`builder`/`basic` to `.gitignore` — All present
-- [x] Fix examples/builder compile error — Correctly uses `f, err := Build()`
-- [x] `applyToFile` decomposed — 22-line function delegating to `FixEngine`
-- [x] FixEngine unit tests — 262 lines in `fix_engine_test.go`
-- [x] Add godoc examples for key APIs — `ExampleNewFinding`, `ExampleBuilder`, `ExampleFilter`
-- [x] Add `go:generate stringer` — Not applicable: enums are `string` types, stringer only works with `int`
-- [x] `Correlate` O(n²) limited to 10k — `maxCorrelations = 10000`
-- [x] Delete stale binaries from repo root — No stale binaries found
-- [x] CI stress test — `-count=20` job in `ci.yml`
-- [x] `examples/example_compile_test.go` — Tests all 3 example dirs compile
-- [x] `docs/integration-guide.md` — Real-world tool integration guide
-- [x] `docs/release-procedure.md` — Release process documented
-- [x] `docs/architecture-decisions.md` — 5 open decisions documented
-- [x] `scripts/coverage-check.sh` — Per-package coverage thresholds
-- [x] `Tag string` removed, replaced with `Tags []Tag` — Singular Tag field no longer exists on Finding struct
-- [x] `NewFinding` accepts confidence parameter — 6-param signature with clamping
-- [x] **Report.lock() mutex fix** — lock() was releasing mutex immediately via defer. Split into lock()/unlock(). `ComputeSummary()` now thread-safe. (`report.go`)
-- [x] **WithTag Deprecated godoc marker** — Added `// Deprecated:` godoc marker for staticcheck detection. (`finding_builder.go`)
-- [x] **FindingProcessor interface** — Added composable processor pattern (borrowed from golangci-lint) with `ProcessorFunc` adapter. (`pipeline/pipeline.go`)
-- [x] **BDD test suite** — 29 ginkgo BDD specs across root and pipeline packages. (`bdd_test.go`, `pipeline/bdd_test.go`)
-- [x] **Architecture diagrams** — Current + improved mermaid.js graphs in `docs/architecture-understanding/`
-
----
-
-_This TODO list was generated by reading all 56 .md files in the repository, extracting every actionable item, cross-referencing with the actual codebase to verify completion status, and deduplicating across all sources._
+- [ ] Decide `NewFinding` API pattern — functional options vs builder-only vs 6-param (source: finding.go)
+- [ ] Define v1.0.0 release criteria — no documented minimum bar exists (source: docs/)
+- [ ] Decide domain-specific FixProvider module location — `pipeline/` vs separate modules (source: pipeline/fix_provider.go)
+- [ ] Decide `Properties map[string]any` alongside `Metadata map[string]string` for SARIF round-trip fidelity (source: finding.go:44)
+- [ ] Decide repository structure — root package vs `pkg/finding/` sub-packages (source: project root)
+- [ ] Protect `Confidence` in direct struct construction — `Finding{Confidence: 1.5}` bypasses clamping; unexport field or validate at read sites (source: finding.go:40)
+- [ ] Clamp `Confidence` in `NewFinding` constructor and `Builder.WithConfidence` (source: finding.go:43-53, finding_builder.go:82-84)
+- [ ] Remove deprecated `Finding.Tag string` field — migrate to `Tags []Tag` (source: finding.go)
+- [ ] Remove deprecated `ConflictDetector`/`Verifier` structs — use package-level functions (source: pipeline/)
+- [ ] Remove phantom `FixStrategyAI` constant — no AI backend exists (source: fix_strategy.go:19)
+- [ ] `Correlation` JSON tags snake_case → camelCase (source: merge.go:154-158)
+- [ ] Make Metrics exported map fields unexported with accessor methods (thread-safety) (source: pipeline/metrics.go:12-14)
+- [ ] Add `Config.Validate()` method with cross-field validation (source: pipeline/pipeline.go:63-86)
+- [ ] FixApplier rollback all files on partial failure (source: pipeline/pipeline.go:522-553)
+- [ ] Lift `FixApplier` creation to Pipeline constructor — backup dirs from iteration N orphaned when N+1 creates new applier (source: pipeline/pipeline.go:597-610)
+- [ ] Centralize triage: make `HasFix()` the canonical "is fixable?" check — pipeline triage and FixEngine use different logic (source: pipeline/pipeline.go, fix_engine.go)
+- [ ] Add path validation in FixApplier to prevent writes outside `rootDir` (gosec G703) (source: pipeline/fix_applier.go)
+- [ ] Guard `TotalDuration()` against negative return when `EndTime` unset (source: pipeline/metrics.go:52-57)
+- [ ] Remove `detectParallel` dead error handling — `g.Wait()` never returns error (source: pipeline/pipeline.go:433-435)
+- [ ] Eliminate `detectResult` ghost type — identical to `PartialResult` with different field names (source: pipeline/)
+- [ ] Add `ErrPositionUnresolvable` sentinel error, remove 4 `//nolint:nilerr` in `fix_provider.go` (source: pipeline/fix_provider.go:105-118)
+- [ ] SARIF round-trip: preserve non-string metadata via JSON type assertion (source: sarif.go:450-453)
+- [ ] `FixStrategySuggest` without `AfterCode` loses suggestion in SARIF (source: finding.go:110-111, sarif.go)
+- [ ] Decompose `findingFromSarResult` — cognitive complexity exceeds gocognit threshold (source: sarif_import.go)
+- [ ] Decompose `applySarifProperties` — cognitive complexity 26 exceeds threshold of 25 (source: sarif_import.go:118)
+- [ ] Add `RLock`/`RUnlock` to all Report read methods (source: report.go)
+- [ ] Add `Report.Validate()` method + tests (source: report.go)
+- [ ] Add sync.Mutex to `Report.AddFinding` for goroutine safety (source: report.go:37-39)
+- [ ] `Report.PrettyJSON` includes suppressed — add filtered alternative (source: json.go:24-31)
+- [ ] `maxIterations: 0` CLI vs config inconsistency (source: cmd/go-finding/main.go:391-392)
+- [ ] Deduplicate `defaultMaxIterations` constant across `cmd/go-finding/main.go` and `pipeline/config.go` (source: main.go:19, config.go:47)
+- [ ] Extract `diagnostic.go` → `finding/analysis` subpackage — removes 12MB `golang.org/x/tools` transitive dep from core (source: diagnostic.go)
+- [ ] Write concurrent Report read-write race test (source: report_test.go)
+- [ ] Add SARIF parser fuzz test for untrusted/malformed input (source: sarif_fuzz_test.go)
+- [ ] Verify `ParseID` with backslash Windows paths (`C:\Users\...`) (source: id.go, id_test.go)
+- [ ] Add `-race` to CI workflow (source: .github/workflows/)
+- [ ] Tag v0.3.0 release — version bumped but no git tag exists (source: git)
+- [ ] Push unpushed commits to origin (source: git)
+- [ ] Add `Suppression.IsActive()` method — combined expiry + validity check (source: finding.go)
+- [ ] `Category.IsValid()` strict validation — currently accepts any non-empty string including typos like `"securty"` (source: category.go)
+- [ ] Clarify `HasFix` vs `HasSuggestion` boundary (source: finding.go:90-99)
+- [ ] Define `type Confidence float64` with `IsValid()`, `String()`, constants; migrate `Finding.Confidence` and `Correlation.Confidence` (source: finding.go, merge.go)
+- [ ] Deprecate `WithTag` builder method to match `Tag string` field deprecation (source: finding_builder.go)
+- [ ] Unify `Tag` deprecation — either fully migrate tests to `Tags []Tag` or remove deprecation (source: various test files)
+- [ ] Extract `Equal()` 9-condition boolean into readable helper with early returns (source: finding.go:275-283)
+- [ ] Add `context.Context` param and `error` return to `FindingProcessor.Process` (source: pipeline/adapters.go:55)
+- [ ] Decide on `PositionOffset` sentinel design — `-1` for unset vs `*int` vs `uint` (source: position.go)
+- [ ] Add `ToolInfo.Validate()` method + tests (source: report.go)
+- [ ] Add `RetryConfig.Validate()` method (source: pipeline/retry.go:19-23)
+- [ ] Wire `FilterConflictingEdits` as opt-in pipeline Config field + test (source: pipeline/conflict.go)
+- [ ] Handle empty-ID findings in `FilterConflictingEdits` — use `Key()` fallback (source: pipeline/conflict.go)
+- [ ] Populate `ConflictInfo.ConflictsWith` in edit-level conflict detection (source: pipeline/fix_engine.go)
+- [ ] Consistent structured errors in pipeline — `fix_applier.go` uses structured errors; `pipeline.go` uses raw `fmt.Errorf` (source: pipeline/)
+- [ ] Add per-detector timeout to `Config` and `RetryDetector` (source: pipeline/config.go, retry.go)
+- [ ] Customizable `TriageFunc` in Config (source: pipeline/config.go)
+- [ ] Replace hardcoded detector builders with registry lookup in CLI (source: cmd/go-finding/main.go)
+- [ ] Add pipeline integration test for OnFix callback (source: pipeline/)
+- [ ] Add pipeline integration test with multiple concurrent detectors (source: pipeline/)
+- [ ] `Report.Merge()` → return new `*Report` instead of mutating receiver (source: report.go)
+- [ ] Wire `FixProviders` through CLI config (source: cmd/go-finding/config.go)
+- [ ] Add `io.WriterTo` for SARIF streaming output (source: sarif.go)
+- [ ] Add SARIF schema validation test against SARIF 2.1.0 JSON schema (source: sarif_test.go)
+- [ ] Merge duplicate SARIF result builders — differ by 1 condition (source: sarif_export.go)
+- [ ] Extract SARIF property key strings to named constants (`"go-finding/edit/offset"` etc.) (source: sarif_export.go, sarif_import.go)
+- [ ] Remove `FindingsFromSARIF` always-error stub (source: sarif.go:281-283)
+- [ ] Split `sarif.go` (570 lines) into `sarif_types.go`, `sarif_export.go`, `sarif_import.go` (source: sarif.go)
+- [ ] Add `Range.IsValid()` to check `End >= Start` (source: position.go)
+- [ ] Add `Position.HasLocation() bool` method (source: position.go)
+- [ ] Address 100 goconst warnings — extract string literals to named constants (source: project-wide)
+- [ ] Decompose `applyToFile` — cognitive complexity 42 → under 35 (source: pipeline/fix_applier.go:177)
+- [ ] Reduce `//nolint: exhaustruct` count from 43 to <25 (source: project-wide)
+- [ ] Add `NewSummary()` constructor to eliminate 4 exhaustruct nolints (source: pipeline/metrics.go)
+- [ ] Eliminate `revive` nolints via renaming — 4 unused receiver/param directives (source: project-wide)
+- [ ] Error wrapping consistency audit — ensure all `%w` wraps preserve `errors.Is` chains (source: project-wide)
+- [ ] Add `wrapcheck` to CI to prevent `%w` regression (source: .golangci.yml)
+- [ ] Split `pipeline/pipeline.go` (611 lines) — adapters into `adapters.go`, Config into `config.go` (source: pipeline/pipeline.go)
+- [ ] Split `pipeline_test.go` — 1508 lines, complexity 171 (source: pipeline/pipeline_test.go)
+- [ ] Surface SubstringProvider ambiguity count when multiple matches found (source: pipeline/fix_provider.go)
+- [ ] Replace `go.yaml.in/yaml/v3` with `go-faster/yaml` in CLI config parsing (source: cmd/go-finding/config.go:12)
+- [ ] Complete YAML migration — verify no banned `go.yaml.in/yaml/v3` imports remain (source: cmd/go-finding/config.go)
+- [ ] Add `FilterConflictingFixes` + `AnalyzeConflicts` dedicated tests (0% coverage) (source: pipeline/conflict.go)
+- [ ] Add `Finding.Equal` field-mismatch test — push 91.7% → 100% (source: finding_test.go)
+- [ ] Add `clampConfidence()` negative input test (source: confidence.go)
+- [ ] Add `Verifier.Verify` error-path tests (source: pipeline/verify.go)
+- [ ] Add `PrettyJSON`/`LineJSON`/`ToSARIF` error-path tests (source: json.go, sarif.go)
+- [ ] Add `Range.Contains` edge-case tests (80% → 100%) (source: position.go)
+- [ ] Add `checkColumnRange` + `hasLineRange` tests (source: position.go)
+- [ ] Add `intersectionByOffset` + `HasOffset` tests (0% coverage) (source: position.go)
+- [ ] Add `findingFromSarResult` SARIF import path tests (source: sarif_test.go)
+- [ ] Add `LSP toZeroBased` test for 0 Line case (source: lsp_test.go)
+- [ ] Add `applyTriage` tests with `FixStrategyDirect` findings (source: pipeline/pipeline_test.go)
+- [ ] Add FixApplier error-path unit tests — backup/restore failure, concurrent access (source: pipeline/fix_applier_test.go)
+- [ ] Add `setupProfiling` error-path test — push 76.9% → 90%+ (source: cmd/go-finding/main_test.go)
+- [ ] Add `DeduplicateByPosition` ≠ `DeduplicateByRule` behavior test (source: merge_test.go)
+- [ ] Add context-cancel tests for partial detection (source: pipeline/partial_test.go)
+- [ ] Add `WriteSARIF` error-path test with failing writer (source: sarif_test.go)
+- [ ] Add `Finding.Key()` tests (source: finding_test.go)
+- [ ] Integration test with downstream consumer (source: project-wide)
+- [ ] CLI coverage >95% — currently 93.9% (source: cmd/go-finding/)
+- [ ] Add `govulncheck` to CI — only in justfile, not in GitHub Actions (source: .github/workflows/)
+- [ ] Wire `coverage-check.sh` into CI — script exists but not wired (source: scripts/)
+- [ ] Wire `bench-compare.sh` into CI with regression threshold (source: scripts/)
+- [ ] Add per-package coverage thresholds in CI (source: .github/workflows/ci.yml)
+- [ ] Set up GitHub Actions CI/CD — GoReleaser config exists but never tested, no workflows (source: .github/workflows/)
+- [ ] Test GoReleaser config — exists but never run (source: .goreleaser.yml)
+- [ ] Add golangci-lint CI job that uses the project's `.golangci.yml` (source: .github/workflows/)
+- [ ] Write consumer migration guide for v0.1.3 → v0.2.0+ (source: docs/)
+- [ ] Write ADR for `Properties` map type decision (source: docs/architecture-decisions.md)
+- [ ] Write ADR for FixProvider plugin architecture (source: docs/architecture-decisions.md)
+- [ ] Write ADR for `HasCodeChange()` method decision (source: docs/adr/)
+- [ ] Add CHANGELOG entry for v0.3.0 (source: CHANGELOG.md)
+- [ ] Delete stale coverage files (`cover.out`, `coverage.out`) from repo root (source: repo root)
+- [ ] Delete binary artifacts (`go-finding`, `govet`) from repo root (source: repo root)
+- [ ] Delete stale `report/jscpd-report.json` (source: root)
+- [ ] Add `.gitignore` entries for `coverage.out`, `cover.out`, `go-finding` binary, `go.work`, `go.work.sum` (source: .gitignore)
+- [ ] Add `go:generate stringer` for Severity, FixStrategy, Category, SuppressionKind (source: 4 files)
+- [ ] Add `iter.Seq[Finding]` on `Report.All()` for Go 1.26 (source: report.go)
+- [ ] Add `Position.IsZero()` helper (source: position.go)
+- [ ] Add `Range.IsSingleLine()` helper (source: position.go)
+- [ ] Add `Finding.HasRange()` helper (source: finding.go)
+- [ ] Add `Category.IsSecurity()` helper (source: category.go)
+- [ ] Add `Tag.IsStandard()` method (source: tag.go)
+- [ ] Add `Report.CountBySeverity()` convenience method (source: report.go)
+- [ ] Add `Range.Contains(p Position) bool` (verify if already exists) (source: position.go)
+- [ ] Add `finding.Diff()` — compare two finding sets (source: new diff.go)
+- [ ] Add `go/analysis` reverse conversion: `ToDiagnostic()` (source: analysis/analysis.go)
+- [ ] Evaluate `go-sarif` library vs hand-rolled SARIF for spec compliance (source: docs/)
+- [ ] Config file support for library/pipeline (YAML) (source: pipeline/)
+- [ ] Plugin architecture for external detector registration (source: pipeline/)
+- [ ] Pipeline middleware/interceptor pattern for custom stage injection (source: pipeline/)
+- [ ] Per-detector timeout configuration (source: pipeline/config.go)
+- [ ] Add structured logging (`slog`) to pipeline + CLI (source: pipeline/pipeline.go, cmd/go-finding/main.go)
+- [ ] Progress reporting callback for pipeline (source: pipeline/config.go)
+- [ ] Implement spatial index for `Correlate` — interval tree instead of O(n²) (source: merge.go)
+- [ ] Implement streaming merge — process findings one at a time instead of cloning all (source: merge.go)
+- [ ] Extract `findingKey` to shared utility — duplicated in verify.go and merge.go (source: pipeline/verify.go, merge.go)
+- [ ] Modernize to Go 1.21+ stdlib — `slices.Contains`, `slices.Delete`, `maps.Keys` (source: project-wide)
+- [ ] Replace hardcoded `SeverityWarning` in `diagnostic.go` with configurable param (source: diagnostic.go)
+- [ ] Reduce `FindingsFromSARIF` cognitive complexity (90 → 35) (source: sarif.go)
+- [ ] Consolidate SARIF write methods — DRY up 4 methods (source: sarif.go)
+- [ ] Inline `lock()`/`unlock()` wrappers in `report.go` — use `r.mu.Lock()`/`Unlock()` directly (source: report.go)
+- [ ] Remove deprecated `diagnostic.go` wrappers from root package after extracting to subpackage (source: diagnostic.go)
+- [ ] Add GitHub release workflow (source: .github/workflows/)
+- [ ] Add GoReleaser multi-module config (source: .goreleaser.yml)
+- [ ] Add gosec/staticcheck to CI linting (source: .github/workflows/)
+- [ ] Set up benchmark regression tracking in CI (source: .github/workflows/)
+- [ ] Persist fuzz corpus / seed corpus — 17 fuzz targets with no checked-in seed corpus (source: fuzz_test.go)
+- [ ] Add LICENSE file — required for open-source release (source: root)
+- [ ] Add godoc examples for key APIs (`ExampleBuilder`, `ExampleFilter`, `ExamplePipeline`) (source: root package)
+- [ ] Set up pkg.go.dev documentation (source: —)
+- [ ] Create `CONTRIBUTING.md` with PR process, test requirements, lint config (source: CONTRIBUTING.md)
+- [ ] Create real-world tool integration guide with govet example (source: docs/)
+- [ ] Comprehensive `doc.go` — current version ~40% complete (source: doc.go)
+- [ ] Add `Finding` JSON schema for API consumers (source: docs/schemas/)
+- [ ] Remove `samber/do/v2` — replace DI container with plain struct (source: container.go)
+- [ ] Remove `samber/mo` — replace `LinterResult[T]` with `(T, error)` (source: errors/errors_result.go)
+- [ ] Add tests for 15 untested rule files (source: internal/rules/)
+- [ ] Remove `replace` directive from go.mod (source: go.mod:5)
+- [ ] Delete `internal/events/events.go` and all Publish calls (source: multiple)
+- [ ] Wire go-finding pipeline into go-structure-linter as dependency (source: go.mod)
+- [ ] Remove stale `//nolint` directives — audit and clean unused (source: project-wide)
+- [ ] Archive old status reports — 20+ stale files in `docs/status/` (source: docs/status/)
+- [ ] Remove personal tool configs — `.gitignore` or delete `git-town.toml` (source: repo root)
+- [ ] Add `go.work` for local multi-module development (source: project root)
+- [ ] Watch mode with `fsnotify` for interactive development — deferred (source: new watch.go)
+- [ ] IDE plugin stubs — VS Code — out of scope v1 (source: ide/vscode/)
+- [ ] Web UI prototype for pipeline monitoring — out of scope v1 (source: web/)
+- [ ] Styled CLI output with `lipgloss` — out of scope v1 (source: cmd/go-finding/)
+- [ ] BuildFlow integration decision — external dependency, deferred (source: external)
+- [ ] go-business-rules `Severity` sharing decision — external dependency, deferred (source: external)
+- [ ] Suppression expiry enforcement — defer auto-filter to v1.1, add `IsActive()` now (source: finding.go)
+- [ ] Phase 0: Install Nix with flakes enabled, verify version ≥ 2.20 (source: MIGRATION_TO_NIX_FLAKES_PROPOSAL.md)
+- [ ] Phase 1: Create `flake.nix`, init lock file, get correct `vendorHash` (source: flake.nix)
+- [ ] Phase 2: Replace CI workflows with Nix-based versions (source: .github/workflows/)
+- [ ] Phase 4: Integrate `nix flake check` as quality gate (source: flake.nix)
+- [ ] Phase 5: Pin nixpkgs, verify vendorHash, test cross-platform (source: MIGRATION_TO_NIX_FLAKES_PROPOSAL.md)
