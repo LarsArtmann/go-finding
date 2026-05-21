@@ -152,6 +152,16 @@ golangci-lint run ./...         # Lint
 - **Finding.HasRange()** — Checks `f.Range != nil && f.Range.IsValid()`
 - **Category.IsSecurity()** — Checks if category equals `CategorySecurity`
 - **Report.CountBySeverity()** — Thread-safe count lookup using pre-computed summary
+- **FormatText/FormatMarkdown return errors** — No longer silently swallow encoding errors; `escapeMarkdownCell` handles pipes/newlines; UTF-8 safe truncation via `utf8.RuneCountInString`
+- **FilterInPlace GC safety** — Zeroes tail slice after compaction to prevent dangling pointer references
+- **Negate combinator** — `Negate(FilterFunc)` inverts a filter; named `Negate` not `Not` to avoid gomega collision
+- **Version auto-computed** — `Version` var computed via `fmt.Sprintf` from `Major`/`Minor`/`Patch` integer constants; eliminates manual sync risk
+- **NewFinding Confidence type** — `NewFinding` accepts `Confidence` type instead of raw `float64`
+- **Builder uses Validate()** — `Build()` calls `f.Validate()` for detailed per-field errors instead of `f.IsValid()` with generic error
+- **GenerateID length-prefixed hash** — Uses `writeLenField` (uint32 big-endian length + bytes) to prevent hash collision when field values contain colons
+- **Extended Validate()** — Checks Tags.IsValid(), Related.IsValid(), Suppression.IsValid(), Confidence range [0,1], non-empty FixStrategy validity; empty FixStrategy is valid (zero value)
+- **FromJSON value return** — `FromJSON` returns `Finding` value not `*Finding`; uses `Validate()` for detailed errors; `FilterInvalid` stays with `IsValid()` for backward-compatible lossy filtering
+- **DiffResult helpers** — `HasChanges()` reports additions/removals; `Stats()` returns `"+N -N =N"` summary
 
 ### CLI Features
 
