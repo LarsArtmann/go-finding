@@ -43,7 +43,7 @@ The central type representing a single issue detected by a static analysis tool.
 | AfterCode   | `string`            | Code after the fix                                   |
 | Range       | `*Range`            | Span-based findings (start/end positions)            |
 | Snippet     | `string`            | Surrounding code context                             |
-| Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                         |
+| Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                            |
 | Related     | `[]RelatedRef`      | Related findings (clone-of, wraps, causes)           |
 | Suppression | `*Suppression`      | If suppressed                                        |
 | Metadata    | `map[string]string` | Tool-specific key-value pairs                        |
@@ -217,10 +217,10 @@ Composable filter functions:
 
 ### 8.2 Core Operations
 
-| Operation       | Function                                 |
-| --------------- | ---------------------------------------- |
-| Filter          | `Filter(findings, predicates...)`        |
-|| In-place filter | `FilterInPlace(findings, predicates...)` | GC-safe: zeroes tail |
+| Operation | Function                          |
+| --------- | --------------------------------- | ---------------------------------------- | -------------------- |
+| Filter    | `Filter(findings, predicates...)` |
+|           | In-place filter                   | `FilterInPlace(findings, predicates...)` | GC-safe: zeroes tail |
 
 ### 8.3 Grouping
 
@@ -304,7 +304,7 @@ Handles Windows paths with colons correctly.
 | JSON → Report    | `ReportFromJSON(data)` → `(*Report, dropped, error)`     | Drops invalid findings       |
 | Finding → JSON   | `finding.LineJSON()`                                     | Compact single-line          |
 | Finding → Writer | `finding.WriteJSON(w)`                                   | Streaming                    |
-| JSON → Finding   | `FromJSON(data)` → `(Finding, error)`                  | Returns value, validates        |
+| JSON → Finding   | `FromJSON(data)` → `(Finding, error)`                    | Returns value, validates     |
 | JSON → []Finding | `FindingsFromJSON(data)` → `([]Finding, dropped, error)` | Drops invalid                |
 
 ---

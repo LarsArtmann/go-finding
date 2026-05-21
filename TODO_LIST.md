@@ -41,7 +41,7 @@
 - [ ] Fix 6 `paralleltest` warnings — add `t.Parallel()` (source: project-wide)
 - [ ] Update USAGE_GUIDE.md for v0.3.0 — new features not documented (source: docs/)
 - [ ] Update FEATURES.md for v0.3.0 — missing FormatText/FormatMarkdown, ToDiagnostic, etc. (source: FEATURES.md)
-- [x] Fix `.gitignore` line 43 corruption — cleaned formatting, added dist/, coverage.html, *.prof, etc. (source: .gitignore)
+- [x] Fix `.gitignore` line 43 corruption — cleaned formatting, added dist/, coverage.html, \*.prof, etc. (source: .gitignore)
 - [ ] Fix pre-commit hook failures — goconst, todo-check, library-policy all fail (source: .git/hooks/)
 - [ ] FixEngine: line-offset tracking for cumulative line shifts across multi-fix (source: pipeline/)
 - [ ] Make fix strategy composable as interface — register `FixApplier` implementations per strategy (source: pipeline/)
