@@ -201,6 +201,15 @@ func (r *Report) BySeverity(sev Severity) []Finding {
 	return Filter(r.ActiveFindings(), BySeverity(sev))
 }
 
+// CountBySeverity returns the count of findings for the given severity,
+// including suppressed findings. Uses the pre-computed summary.
+func (r *Report) CountBySeverity(sev Severity) int {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	return r.Summary.BySeverity[sev]
+}
+
 // ByCategory returns findings filtered by category, excluding suppressed.
 // For composable filtering, use filter.ByCategory with filter.NotSuppressed instead.
 // Safe for concurrent use.

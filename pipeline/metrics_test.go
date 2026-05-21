@@ -191,3 +191,27 @@ func TestPipeline_NilMetricsNoPanic(t *testing.T) {
 	result := runPipelineWithMetrics(t, testConfig(1, nil), detector)
 	g.Expect(result.Stable).To(BeTrue())
 }
+
+func TestMetrics_TotalDuration_NegativeGuard(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	m := NewMetrics()
+	m.SetStart(time.Now())
+	m.SetEnd(time.Now().Add(-1 * time.Hour))
+
+	d := m.TotalDuration()
+	g.Expect(d).To(Equal(time.Duration(0)))
+}
+
+func TestMetrics_Snapshot_NegativeGuard(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	m := NewMetrics()
+	m.SetStart(time.Now())
+	m.SetEnd(time.Now().Add(-1 * time.Hour))
+
+	snap := m.Snapshot()
+	g.Expect(snap.TotalDuration).To(Equal(time.Duration(0)))
+}

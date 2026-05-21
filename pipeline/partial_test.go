@@ -112,6 +112,19 @@ func TestFormatPartialErrors(t *testing.T) {
 	g.Expect(err.Error()).NotTo(BeEmpty())
 }
 
+func TestFormatPartialErrors_ErrorWrapping(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	inner := errors.New("inner error")
+	errs := map[string]error{"det1": inner}
+
+	wrapped := FormatPartialErrors(errs)
+	g.Expect(wrapped).To(HaveOccurred())
+	g.Expect(errors.Is(wrapped, ErrPartialDetection)).To(BeTrue())
+	g.Expect(errors.Is(wrapped, inner)).To(BeTrue())
+}
+
 func TestDetectPartial_Sequential_CancelBeforeSecond(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()

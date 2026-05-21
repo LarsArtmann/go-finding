@@ -20,6 +20,16 @@ func (p Position) IsValid() bool {
 	return p.File != "" && p.Line >= 0 && p.Column >= 0
 }
 
+// IsZero reports whether the position is the zero value (no information set).
+func (p Position) IsZero() bool {
+	return p.File == "" && p.Line == 0 && p.Column == 0 && p.Offset == 0
+}
+
+// HasLocation reports whether the position has a file and line number.
+func (p Position) HasLocation() bool {
+	return p.File != "" && p.Line > 0
+}
+
 // Equal reports whether two positions are identical.
 func (p Position) Equal(other Position) bool {
 	return p.File == other.File &&
@@ -94,6 +104,11 @@ func (r Range) LineCount() int {
 	}
 
 	return span + 1
+}
+
+// IsSingleLine reports whether the range spans exactly one line.
+func (r Range) IsSingleLine() bool {
+	return r.LineCount() == 1
 }
 
 // Length returns the byte length of the range (End.Offset - Start.Offset).

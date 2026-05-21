@@ -45,3 +45,8 @@ func (c Category) IsValid() bool {
 func (c Category) String() string {
 	return string(c)
 }
+
+// IsSecurity reports whether the category is security-related.
+func (c Category) IsSecurity() bool {
+	return c == CategorySecurity
+}

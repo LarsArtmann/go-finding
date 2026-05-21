@@ -23,6 +23,7 @@ type Pipeline struct {
 	metrics    *Metrics
 	callbackMu sync.Mutex  // protects OnFinding from parallel goroutines
 	applier    *FixApplier // reused across iterations
+	ran        bool        // prevents multiple Run calls
 }
 
 // New creates a new Pipeline with the given configuration.
@@ -85,6 +86,11 @@ func (p *Pipeline) notifyStage(stage string, iteration, count int) {
 //
 // The returned PipelineResult is safe to read concurrently after Run returns.
 func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
+	if p.ran {
+		return nil, fmt.Errorf("pipeline: Run already called; create a new Pipeline for each invocation")
+	}
+
+	p.ran = true
 	p.findings = p.findings[:0]
 	p.iterations = 0
 
@@ -476,8 +482,17 @@ func (p *Pipeline) applyTriage(
 	iter.Applied = len(applied)
 
 	if p.config.OnFix != nil {
+		appliedSet := make(map[string]struct{}, len(applied))
 		for _, f := range applied {
-			p.config.OnFix(f, true)
+			appliedSet[f.Key()] = struct{}{}
+		}
+
+		for _, f := range safeFixes {
+			if _, ok := appliedSet[f.Key()]; ok {
+				p.config.OnFix(f, true)
+			} else {
+				p.config.OnFix(f, false)
+			}
 		}
 	}
 

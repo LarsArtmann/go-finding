@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"maps"
 	"slices"
-	"strings"
 	"sync"
 
 	"github.com/larsartmann/go-finding"
@@ -135,19 +134,23 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 var ErrPartialDetection = errors.New("pipeline: partial detection failures")
 
 // FormatPartialErrors formats partial detection errors into a single error message.
-func FormatPartialErrors(errors map[string]error) error {
-	if len(errors) == 0 {
+// The returned error wraps ErrPartialDetection and supports errors.Is/As for
+// both the sentinel and each individual detector error.
+func FormatPartialErrors(errs map[string]error) error {
+	if len(errs) == 0 {
 		return nil
 	}
 
-	names := slices.Collect(maps.Keys(errors))
+	names := slices.Collect(maps.Keys(errs))
 
 	slices.Sort(names)
 
-	msgs := make([]string, 0, len(errors))
+	inner := make([]error, 0, len(errs)+1)
+	inner = append(inner, ErrPartialDetection)
+
 	for _, name := range names {
-		msgs = append(msgs, fmt.Sprintf("%s: %v", name, errors[name]))
+		inner = append(inner, fmt.Errorf("%s: %w", name, errs[name]))
 	}
 
-	return fmt.Errorf("%w: %s", ErrPartialDetection, strings.Join(msgs, "; "))
+	return errors.Join(inner...)
 }

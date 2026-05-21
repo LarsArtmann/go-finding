@@ -186,3 +186,80 @@ func TestRangeAdjacent(t *testing.T) {
 		})
 	}
 }
+
+func TestPosition_IsZero(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		pos  Position
+		want bool
+	}{
+		{"zero value", Position{}, true},
+		{"file only", Position{File: "a.go"}, false},
+		{"line only", Position{Line: 1}, false},
+		{"offset -1", Position{Offset: -1}, false},
+		{"full position", Position{File: "a.go", Line: 1, Column: 1}, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.pos.IsZero(); got != tt.want {
+				t.Errorf("IsZero() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPosition_HasLocation(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		pos  Position
+		want bool
+	}{
+		{"zero value", Position{}, false},
+		{"file only", Position{File: "a.go"}, false},
+		{"line only", Position{Line: 1}, false},
+		{"file and line", Position{File: "a.go", Line: 1}, true},
+		{"full position", Position{File: "a.go", Line: 5, Column: 3}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.pos.HasLocation(); got != tt.want {
+				t.Errorf("HasLocation() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRange_IsSingleLine(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		r    Range
+		want bool
+	}{
+		{"no start line", Range{}, false},
+		{"single position", Range{Start: Position{File: "a.go", Line: 5}}, true},
+		{"same line", Range{Start: Position{File: "a.go", Line: 5}, End: Position{Line: 5}}, true},
+		{"multi line", Range{Start: Position{File: "a.go", Line: 5}, End: Position{Line: 10}}, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.r.IsSingleLine(); got != tt.want {
+				t.Errorf("IsSingleLine() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

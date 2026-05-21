@@ -62,7 +62,7 @@ func (e *FixEngine) ApplyWithConflicts(
 	var allEdits []FixEdit
 
 	for _, f := range fixes {
-		if f.BeforeCode == "" && f.AfterCode == "" {
+		if !f.HasCodeChange() {
 			continue
 		}
 

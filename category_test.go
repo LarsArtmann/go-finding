@@ -67,3 +67,19 @@ func TestCategory_Constants(t *testing.T) {
 		t.Errorf("CategoryErrorHandling = %q, want %q", CategoryErrorHandling, "error-handling")
 	}
 }
+
+func TestCategory_IsSecurity(t *testing.T) {
+	t.Parallel()
+
+	if !CategorySecurity.IsSecurity() {
+		t.Error("CategorySecurity.IsSecurity() = false, want true")
+	}
+
+	if CategoryStyle.IsSecurity() {
+		t.Error("CategoryStyle.IsSecurity() = true, want false")
+	}
+
+	if Category("").IsSecurity() {
+		t.Error("empty Category.IsSecurity() = true, want false")
+	}
+}

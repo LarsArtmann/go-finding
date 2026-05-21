@@ -1506,3 +1506,40 @@ func indexOf(s, sub string) int {
 
 	return -1
 }
+
+func TestPipelineRun_SingleUse(t *testing.T) {
+	t.Parallel()
+
+	cfg := DefaultConfig()
+	p, err := New(cfg, t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = p.Run(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = p.Run(context.Background())
+	if err == nil {
+		t.Fatal("expected error on second Run call")
+	}
+}
+
+func TestPipelineRun_SingleUse_ErrorMessage(t *testing.T) {
+	t.Parallel()
+
+	cfg := DefaultConfig()
+	p, err := New(cfg, t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, _ = p.Run(context.Background())
+	_, err = p.Run(context.Background())
+
+	if err.Error() != "pipeline: Run already called; create a new Pipeline for each invocation" {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}

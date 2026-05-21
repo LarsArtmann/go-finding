@@ -193,6 +193,11 @@ func (f Finding) HasCodeChange() bool {
 	return f.BeforeCode != "" || f.AfterCode != ""
 }
 
+// HasRange reports whether the finding has a valid range set.
+func (f Finding) HasRange() bool {
+	return f.Range != nil && f.Range.IsValid()
+}
+
 // Preview returns a unified-diff-style preview of the fix, or empty string if
 // the finding has no fixable code change (BeforeCode and AfterCode both empty).
 func (f Finding) Preview() string {

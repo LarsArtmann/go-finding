@@ -275,3 +275,25 @@ func TestReport_Map_Empty(t *testing.T) {
 		t.Errorf("Findings length = %d, want 0", len(mapped.Findings))
 	}
 }
+
+func TestReport_CountBySeverity(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "test"})
+	r.AddFinding(Finding{Severity: SeverityError})
+	r.AddFinding(Finding{Severity: SeverityError})
+	r.AddFinding(Finding{Severity: SeverityWarning})
+	r.ComputeSummary()
+
+	if r.CountBySeverity(SeverityError) != 2 {
+		t.Errorf("CountBySeverity(Error) = %d, want 2", r.CountBySeverity(SeverityError))
+	}
+
+	if r.CountBySeverity(SeverityWarning) != 1 {
+		t.Errorf("CountBySeverity(Warning) = %d, want 1", r.CountBySeverity(SeverityWarning))
+	}
+
+	if r.CountBySeverity(SeverityInfo) != 0 {
+		t.Errorf("CountBySeverity(Info) = %d, want 0", r.CountBySeverity(SeverityInfo))
+	}
+}

@@ -116,7 +116,7 @@ golangci-lint run ./...         # Lint
 - **FixProvider interface** — Composable provider chain: OffsetProvider (byte offsets), LineProvider (line→byte), SubstringProvider (fallback)
 - **Custom provider registration** — `NewFixEngineWithProviders`, `NewFixApplierWithProviders`, `Config.FixProviders`
 - **Conflict detection** — Overlapping fixes filtered before application; `ConflictInfo.ConflictsWith` populated with conflicting sources
-- **Deprecated APIs** — `ConflictDetector` struct and `Verifier` struct deprecated; use `DetectConflicts()` and `Verify()` package-level functions
+- **Removed deprecated APIs** — `ConflictDetector` struct and `Verifier` struct removed; use `DetectConflicts()` and `Verify()` package-level functions
 - **Verification** — Optional post-fix verification by re-running detectors
 - **Metrics** — Optional timing/count collection with snapshot support
 - **Retry** — Configurable exponential backoff for flaky detectors
@@ -142,6 +142,16 @@ golangci-lint run ./...         # Lint
 - **FixApplier error propagation** — `NewFixApplier`/`NewFixApplierWithProviders` return `(*FixApplier, error)` instead of silently swallowing `MkdirTemp` errors
 - **Partial error separation** — Context errors are propagated but excluded from `PartialResult.Errors` (they're not "partial" failures)
 - **math/rand v1/v2 split** — Production code (`pipeline/retry.go`) uses `math/rand/v2` for jitter. Test code uses `math/rand` (v1) because `testing/quick.Config.Rand` requires `*math/rand.Rand` (stdlib API constraint, not removable).
+- **Pipeline single-use** — `Pipeline.Run()` enforces single invocation via `ran` bool guard; returns error on second call
+- **FixEngine uses HasCodeChange** — `FixEngine.ApplyWithConflicts` uses `Finding.HasCodeChange()` instead of inline code check
+- **OnFix accuracy** — `applyTriage` reports `false` for safeFixes not actually applied (engine couldn't resolve), not just for conflicts
+- **TotalDuration guard** — `Metrics.TotalDuration()` and `Snapshot()` return 0 for negative durations (end < start)
+- **FormatPartialErrors wrapping** — Uses `errors.Join` with `%w` per detector error; supports `errors.Is` for both `ErrPartialDetection` and inner errors
+- **Position helpers** — `Position.IsZero()`, `Position.HasLocation()` for zero-value and location checks
+- **Range helpers** — `Range.IsSingleLine()` for single-line range check
+- **Finding.HasRange()** — Checks `f.Range != nil && f.Range.IsValid()`
+- **Category.IsSecurity()** — Checks if category equals `CategorySecurity`
+- **Report.CountBySeverity()** — Thread-safe count lookup using pre-computed summary
 
 ### CLI Features
 

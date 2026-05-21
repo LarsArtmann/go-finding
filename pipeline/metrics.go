@@ -90,7 +90,12 @@ func (m *Metrics) TotalDuration() time.Duration {
 		return 0
 	}
 
-	return m.endTime.Sub(m.startTime)
+	d := m.endTime.Sub(m.startTime)
+	if d < 0 {
+		return 0
+	}
+
+	return d
 }
 
 // StageTiming returns a function that records stage duration when called.
@@ -147,8 +152,10 @@ func (m *Metrics) Snapshot() MetricsSnapshot {
 	maps.Copy(findings, m.findingsFound)
 
 	total := time.Duration(0)
-	if !m.endTime.IsZero() {
-		total = m.endTime.Sub(m.startTime)
+	if !m.endTime.IsZero() && !m.startTime.IsZero() {
+		if d := m.endTime.Sub(m.startTime); d > 0 {
+			total = d
+		}
 	}
 
 	return MetricsSnapshot{

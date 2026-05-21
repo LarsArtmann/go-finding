@@ -356,3 +356,40 @@ func TestFinding_Preview(t *testing.T) {
 	deleteOnly := Finding{BeforeCode: "removed"}
 	g.Expect(deleteOnly.Preview()).To(Equal("- removed\n"))
 }
+
+func TestFinding_HasRange(t *testing.T) {
+	t.Parallel()
+
+	t.Run("nil range", func(t *testing.T) {
+		t.Parallel()
+
+		f := Finding{Position: Position{File: "a.go", Line: 1}}
+		if f.HasRange() {
+			t.Error("HasRange() = true for nil range")
+		}
+	})
+
+	t.Run("valid range", func(t *testing.T) {
+		t.Parallel()
+
+		f := Finding{
+			Position: Position{File: "a.go", Line: 1},
+			Range:    &Range{Start: Position{File: "a.go", Line: 1}, End: Position{Line: 5}},
+		}
+		if !f.HasRange() {
+			t.Error("HasRange() = false for valid range")
+		}
+	})
+
+	t.Run("invalid range", func(t *testing.T) {
+		t.Parallel()
+
+		f := Finding{
+			Position: Position{File: "a.go", Line: 1},
+			Range:    &Range{},
+		}
+		if f.HasRange() {
+			t.Error("HasRange() = true for invalid range")
+		}
+	})
+}
