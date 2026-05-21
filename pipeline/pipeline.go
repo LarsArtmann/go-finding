@@ -4,6 +4,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -87,7 +88,9 @@ func (p *Pipeline) notifyStage(stage string, iteration, count int) {
 // The returned PipelineResult is safe to read concurrently after Run returns.
 func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	if p.ran {
-		return nil, fmt.Errorf("pipeline: Run already called; create a new Pipeline for each invocation")
+		return nil, errors.New(
+			"pipeline: Run already called; create a new Pipeline for each invocation",
+		)
 	}
 
 	p.ran = true
