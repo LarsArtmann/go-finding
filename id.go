@@ -2,8 +2,10 @@ package finding
 
 import (
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -23,13 +25,13 @@ const (
 // If line is 0, uses hash-based ID for stability.
 func GenerateID(toolName, rule string, pos Position) string {
 	if pos.Line == 0 {
-		// Hash-based for position-less findings
+		// Hash-based for position-less findings.
+		// Uses length-prefixed fields to prevent ambiguity when field
+		// values contain the separator character (e.g., toolName="a:b", rule="c").
 		h := sha256.New()
-		h.Write([]byte(toolName))
-		h.Write([]byte(":"))
-		h.Write([]byte(rule))
-		h.Write([]byte(":"))
-		h.Write([]byte(pos.File))
+		writeLenField(h, toolName)
+		writeLenField(h, rule)
+		writeLenField(h, pos.File)
 
 		sum := h.Sum(make([]byte, 0, sha256.Size))
 		hash := hex.EncodeToString(sum[:hashLength/2])
@@ -184,4 +186,14 @@ func isHexString(s string) bool {
 
 func isHexDigit(r rune) bool {
 	return (r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F')
+}
+
+// writeLenField writes a length-prefixed field to the hash.
+// Format: len(field) as uint32 big-endian, then the field bytes.
+// This prevents ambiguity when field values contain the same characters as separators.
+func writeLenField(h io.Writer, field string) {
+	var buf [4]byte
+	binary.BigEndian.PutUint32(buf[:], uint32(len(field)))
+	h.Write(buf[:])
+	h.Write([]byte(field))
 }
