@@ -147,7 +147,10 @@ func setupProfiling(cpuprof, memprof string) (func(), error) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating CPU profile: %v\n", err)
 
-			return nil, fmt.Errorf("create CPU profile %s: %w", cpuprof, err)
+			return nil, fmt.Errorf(
+				"create CPU profile %s (memprof=%q): %w",
+				cpuprof, memprof, err,
+			)
 		}
 
 		stopFuncs = append(stopFuncs, func() { _ = f.Close() })
