@@ -60,6 +60,11 @@ func FilterInPlace(findings []Finding, predicates ...FilterFunc) []Finding {
 		}
 	}
 
+	// Zero out tail to allow GC of referenced structs (Range, Suppression, etc.)
+	for i := n; i < len(findings); i++ {
+		findings[i] = Finding{}
+	}
+
 	return findings[:n]
 }
 
@@ -116,6 +121,13 @@ func ByFile(file string) FilterFunc {
 // NotSuppressed returns a filter for non-suppressed findings.
 func NotSuppressed(f Finding) bool {
 	return !f.IsSuppressed()
+}
+
+// Negate inverts a filter: returns findings that do NOT match the given predicate.
+func Negate(predicate FilterFunc) FilterFunc {
+	return func(f Finding) bool {
+		return !predicate(f)
+	}
 }
 
 // HasFix returns a filter for findings with fixes.
