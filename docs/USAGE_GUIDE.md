@@ -690,6 +690,7 @@ applied, err := applier.Apply(ctx, fixes)
 ```
 
 **Default provider chain** (tried in order):
+
 1. `OffsetProvider` — byte offset ranges
 2. `LineProvider` — line/column positions
 3. `SubstringProvider` — BeforeCode text matching
