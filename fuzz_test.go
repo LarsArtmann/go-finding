@@ -170,6 +170,10 @@ func FuzzMerge_DedupByID(f *testing.F) {
 
 		seen := make(map[string]int)
 		for _, f := range merged.Findings {
+			if f.ID == "" {
+				continue
+			}
+
 			seen[f.ID]++
 			g.Expect(seen[f.ID]).To(BeNumerically("<=", 1))
 		}
@@ -267,13 +271,13 @@ func FuzzDedupKey(f *testing.F) {
 			Position: Position{File: file, Line: line, Column: col},
 		}
 
-		k1 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByID})
+		k1, _ := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByID})
 		g.Expect(k1).To(ContainSubstring(id))
 
-		k2 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
+		k2, _ := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
 		g.Expect(k2).To(ContainSubstring(file))
 
-		k3 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
+		k3, _ := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
 		g.Expect(k3).To(ContainSubstring(rule))
 	})
 }

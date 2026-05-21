@@ -71,12 +71,13 @@ func Merge(reports []*Report, opts ...MergeOption) *Report {
 
 		for _, finding := range report.Findings {
 			if options.Deduplicate {
-				key := dedupKey(finding, options)
-				if _, exists := seen[key]; exists {
-					continue
+				key, ok := dedupKey(finding, options)
+				if ok {
+					if _, exists := seen[key]; exists {
+						continue
+					}
+					seen[key] = struct{}{}
 				}
-
-				seen[key] = struct{}{}
 			}
 
 			merged.addFindingUnchecked(finding.Clone())
@@ -141,14 +142,14 @@ func WithDeduplicateBy(by DeduplicateBy) MergeOption {
 	}
 }
 
-func dedupKey(finding Finding, opts MergeOptions) string {
+func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 	switch opts.DeduplicateBy {
 	case DeduplicateByID:
 		if finding.ID == "" {
-			return finding.Key()
+			return "", false
 		}
 
-		return finding.ID
+		return finding.ID, true
 	case DeduplicateByPosition:
 		return fmt.Sprintf(
 			"%s:%s:%d:%d",
@@ -156,7 +157,7 @@ func dedupKey(finding Finding, opts MergeOptions) string {
 			finding.Position.File,
 			finding.Position.Line,
 			finding.Position.Column,
-		)
+		), true
 	case DeduplicateByRule:
 		return fmt.Sprintf(
 			"%s:%s:%d:%d",
@@ -164,9 +165,9 @@ func dedupKey(finding Finding, opts MergeOptions) string {
 			finding.Position.File,
 			finding.Position.Line,
 			finding.Position.Column,
-		)
+		), true
 	default:
-		return finding.ID
+		return finding.ID, true
 	}
 }
 

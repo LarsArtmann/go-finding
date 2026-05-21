@@ -145,7 +145,7 @@ func TestDedupKey(t *testing.T) {
 			t.Parallel()
 			g := NewWithT(t)
 
-			got := dedupKey(f, MergeOptions{DeduplicateBy: tt.by})
+			got, _ := dedupKey(f, MergeOptions{DeduplicateBy: tt.by})
 			g.Expect(got).To(Equal(tt.want))
 		})
 	}
@@ -160,10 +160,35 @@ func TestDeduplicateStrategiesDistinct(t *testing.T) {
 		Position: Position{File: "a.go", Line: 10, Column: 5},
 	}
 
-	posKey := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
-	ruleKey := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
+	posKey, _ := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
+	ruleKey, _ := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
 
 	g.Expect(ruleKey).NotTo(Equal(posKey))
+}
+
+func TestDedupKey_EmptyID(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	f := Finding{Rule: "r", Position: Position{File: "a.go", Line: 1}}
+
+	key, ok := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByID})
+	g.Expect(ok).To(BeFalse())
+	g.Expect(key).To(BeEmpty())
+}
+
+func TestDeduplicateByID_EmptyIDNotDeduplicated(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	r1 := NewReport(ToolInfo{Name: "t1"})
+	r1.AddFinding(Finding{ID: "", Rule: "r", ToolName: "t1", Message: "m1",
+		Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1}})
+	r1.AddFinding(Finding{ID: "", Rule: "r", ToolName: "t1", Message: "m2",
+		Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1}})
+
+	merged := Merge([]*Report{r1}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByID))
+	g.Expect(merged.Len()).To(Equal(2))
 }
 
 func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
