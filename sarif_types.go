@@ -23,6 +23,8 @@ const (
 	sarifPropSuggestion = "go-finding/suggestion"
 	sarifPropSnippet    = "go-finding/snippet"
 	sarifPropBeforeCode = "go-finding/beforeCode"
+	sarifPropAfterCode  = "go-finding/afterCode"
+	sarifPropEditPrefix = "go-finding/edit/"
 	sarifPropPrefix     = "go-finding/"
 )
 

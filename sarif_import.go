@@ -189,7 +189,7 @@ func sarifMetadataFromProps(props map[string]any) map[string]string {
 	meta := make(map[string]string)
 
 	for k, v := range props {
-		if strings.HasPrefix(k, sarifPropPrefix) && !strings.HasPrefix(k, "go-finding/edit/") {
+		if strings.HasPrefix(k, sarifPropPrefix) && !strings.HasPrefix(k, sarifPropEditPrefix) {
 			continue
 		}
 
