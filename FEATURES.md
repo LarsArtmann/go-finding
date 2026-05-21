@@ -1,6 +1,6 @@
 # FEATURES.md — go-finding
 
-> **Version:** 0.2.1 | **Updated:** 2026-05-06
+> **Version:** 0.3.0 | **Updated:** 2026-05-21
 >
 > A unified data model and pipeline for Go static analysis tools.
 > Seven tools detect issues. Zero tools route them to remediation. This library fixes that.
@@ -43,12 +43,12 @@ The central type representing a single issue detected by a static analysis tool.
 | AfterCode   | `string`            | Code after the fix                                   |
 | Range       | `*Range`            | Span-based findings (start/end positions)            |
 | Snippet     | `string`            | Surrounding code context                             |
-| Confidence  | `float64`           | 0.0–1.0                                              |
+| Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                         |
 | Related     | `[]RelatedRef`      | Related findings (clone-of, wraps, causes)           |
 | Suppression | `*Suppression`      | If suppressed                                        |
 | Metadata    | `map[string]string` | Tool-specific key-value pairs                        |
 
-Key methods: `Validate()`, `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
+Key methods: `Validate()` (detailed per-field errors), `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
 
 ### 1.2 Builder API
 
@@ -84,7 +84,7 @@ f, err := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, P
 | Column | `int`    | 1-based; 0 = not set              |
 | Offset | `int`    | 0-based byte offset; -1 = not set |
 
-Methods: `IsValid()`, `Equal()`, `Compare()`, `String()`, `HasOffset()`
+Methods: `IsValid()`, `Equal()`, `Compare()`, `String()`, `HasOffset()`, `IsZero()`, `HasLocation()`
 Constructor: `Pos(file, line, column)`
 
 ### 2.2 Range
@@ -213,14 +213,14 @@ Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffec
 
 Composable filter functions:
 
-`BySeverity`, `BySeverityAtLeast`, `ByCategory`, `ByFixStrategy`, `ByTool`, `ByRule`, `ByFile`, `NotSuppressed`, `HasFix`, `HasSuggestion`
+|`BySeverity`, `BySeverityAtLeast`, `ByCategory`, `ByFixStrategy`, `ByTool`, `ByRule`, `ByFile`, `NotSuppressed`, `HasFix`, `HasSuggestion`, `Negate`
 
 ### 8.2 Core Operations
 
 | Operation       | Function                                 |
 | --------------- | ---------------------------------------- |
 | Filter          | `Filter(findings, predicates...)`        |
-| In-place filter | `FilterInPlace(findings, predicates...)` |
+|| In-place filter | `FilterInPlace(findings, predicates...)` | GC-safe: zeroes tail |
 
 ### 8.3 Grouping
 
@@ -304,7 +304,7 @@ Handles Windows paths with colons correctly.
 | JSON → Report    | `ReportFromJSON(data)` → `(*Report, dropped, error)`     | Drops invalid findings       |
 | Finding → JSON   | `finding.LineJSON()`                                     | Compact single-line          |
 | Finding → Writer | `finding.WriteJSON(w)`                                   | Streaming                    |
-| JSON → Finding   | `FromJSON(data)`                                         | Validates required fields    |
+| JSON → Finding   | `FromJSON(data)` → `(Finding, error)`                  | Returns value, validates        |
 | JSON → []Finding | `FindingsFromJSON(data)` → `([]Finding, dropped, error)` | Drops invalid                |
 
 ---
@@ -779,8 +779,8 @@ Three runnable examples in `examples/`:
 | Per-detector timeouts             | STABLE       | `DetectorTimeouts` map in Config + CLI config file                |
 | Structured logging (slog)         | STABLE       | Optional `Logger *slog.Logger` in Config                          |
 | Stage progress callback           | STABLE       | `OnStage func(stage, iteration, count)` in Config                 |
-| Diff function                     | STABLE       | `finding.Diff(before, after)` by ID                               |
-| FormatText / FormatMarkdown       | STABLE       | `finding.FormatText(w, findings)` / `finding.FormatMarkdown`      |
+| Diff function                     | STABLE       | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()` |
+| FormatText / FormatMarkdown       | STABLE       | Return errors, UTF-8 safe truncation, markdown cell escaping      |
 | Config validation                 | STABLE       | Both pipeline and CLI configs                                     |
 | Examples                          | FUNCTIONAL   | 3 runnable examples, compile-tested                               |
 
