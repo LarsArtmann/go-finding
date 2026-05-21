@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -89,6 +90,13 @@ func (a *FixApplier) ApplyWithDetails(
 		}
 
 		path := filepath.Join(a.rootDir, f.Position.File)
+
+		cleanPath := filepath.Clean(path)
+		cleanRoot := filepath.Clean(a.rootDir)
+		if cleanPath != cleanRoot && !strings.HasPrefix(cleanPath, cleanRoot+string(os.PathSeparator)) {
+			continue
+		}
+
 		byFile[path] = append(byFile[path], f)
 	}
 

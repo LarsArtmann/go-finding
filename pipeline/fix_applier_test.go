@@ -85,6 +85,35 @@ func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 	g.Expect(applied).To(BeNil())
 }
 
+func TestFixApplier_PathTraversal_Skipped(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+
+	testFile := filepath.Join(tempDir, "safe.go")
+	writeTestFile(t, testFile, []byte("package main\n"))
+
+	fixes := []finding.Finding{
+		makeFixFinding("1", "package main", "package main // fixed", "safe.go", 0),
+		{
+			ID:          "traversal",
+			Rule:        "r",
+			ToolName:    "t",
+			Message:     "path traversal",
+			Severity:    finding.SeverityInfo,
+			Position:    finding.Position{File: "../../../etc/passwd"},
+			BeforeCode:  "root:",
+			AfterCode:   "pwned:",
+			FixStrategy: finding.FixStrategyDirect,
+		},
+	}
+
+	applied, err := applier.Apply(context.Background(), fixes)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(Equal(1))
+}
+
 func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
