@@ -4,6 +4,9 @@ import "maps"
 
 // ErrInvalidBuilder is returned when Builder.Build is called on a Finding
 // that is missing required fields.
+//
+// Deprecated: Build() now returns detailed validation errors from Finding.Validate().
+// Use errors.Is(err, ErrValidation) instead.
 var ErrInvalidBuilder = NewValidationError(
 	"finding.Builder: cannot Build() an invalid Finding",
 	nil,
@@ -85,8 +88,8 @@ func (b *Builder) WithSnippet(s string) *Builder {
 }
 
 // WithConfidence sets the confidence level (clamped to [0.0, 1.0]).
-func (b *Builder) WithConfidence(c float64) *Builder {
-	b.f.Confidence = Confidence(c).Clamp()
+func (b *Builder) WithConfidence(c Confidence) *Builder {
+	b.f.Confidence = c.Clamp()
 	return b
 }
 
@@ -114,10 +117,10 @@ func (b *Builder) WithMetadata(m map[string]string) *Builder {
 }
 
 // Build returns the constructed Finding.
-// Returns an error if required fields are missing.
+// Returns a detailed validation error if required fields are missing or invalid.
 func (b *Builder) Build() (Finding, error) {
-	if !b.f.IsValid() {
-		return Finding{}, ErrInvalidBuilder
+	if err := b.f.Validate(); err != nil {
+		return Finding{}, err
 	}
 
 	return b.f.Clone(), nil

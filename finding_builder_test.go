@@ -149,8 +149,8 @@ func TestBuilder_Build_InvalidPanics(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid builder")
 	}
-	if !errors.Is(err, ErrInvalidBuilder) {
-		t.Errorf("error = %v, want ErrInvalidBuilder", err)
+	if !errors.Is(err, ErrValidation) {
+		t.Errorf("error = %v, want ErrValidation", err)
 	}
 }
 
@@ -218,8 +218,8 @@ func TestBuilder_Build_MissingFields(t *testing.T) {
 			if err == nil {
 				t.Fatal("expected error for missing fields")
 			}
-			if !errors.Is(err, ErrInvalidBuilder) {
-				t.Errorf("error = %v, want ErrInvalidBuilder", err)
+			if !errors.Is(err, ErrValidation) {
+				t.Errorf("error = %v, want ErrValidation", err)
 			}
 		})
 	}
