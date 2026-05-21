@@ -57,7 +57,7 @@ func NewFinding(
 	rule, toolName, message string,
 	severity Severity,
 	pos Position,
-	confidence float64,
+	confidence Confidence,
 ) Finding {
 	return Finding{ //nolint:exhaustruct
 		ID:          GenerateID(toolName, rule, pos),
@@ -67,7 +67,7 @@ func NewFinding(
 		Severity:    severity,
 		Position:    pos,
 		FixStrategy: FixStrategyNone,
-		Confidence:  Confidence(confidence).Clamp(),
+		Confidence:  confidence.Clamp(),
 	}
 }
 
