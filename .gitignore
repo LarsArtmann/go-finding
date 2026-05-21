@@ -10,12 +10,15 @@
 
 # Output of the go coverage tool
 *.out
+coverage.html
 
 # Dependency directories
 vendor/
+node_modules/
 
 # Go workspace file
 go.work
+go.work.sum
 
 # IDE
 .idea/
@@ -28,10 +31,6 @@ go.work
 .DS_Store
 Thumbs.db
 
-# Dependencies
-vendor/
-node_modules/
-
 # Test coverage
 /coverage
 
@@ -40,6 +39,14 @@ node_modules/
 /govet
 /basic
 /builder
+/dist/
+
+# Generated docs
+/API.md
+
+# Profiling
+*.prof
+*.pdb
 
 # Benchmark regression tracking
 .bench-baseline.txt
@@ -47,5 +54,6 @@ node_modules/
 
 # Copy/paste detection report
 /report/jscpd-report.json
+
 # Sensitive files
 *.db
