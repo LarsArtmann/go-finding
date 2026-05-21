@@ -30,19 +30,19 @@ func (r *Report) PrettyJSON() (string, error) {
 }
 
 // FromJSON parses a Finding from JSON and validates required fields.
-func FromJSON(data []byte) (*Finding, error) {
+func FromJSON(data []byte) (Finding, error) {
 	var f Finding
 
 	err := json.Unmarshal(data, &f)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal finding: %w", err)
+		return Finding{}, fmt.Errorf("unmarshal finding: %w", err)
 	}
 
-	if !f.IsValid() {
-		return nil, ErrInvalidFinding
+	if err = f.Validate(); err != nil {
+		return Finding{}, fmt.Errorf("%w: %w", ErrInvalidFinding, err)
 	}
 
-	return &f, nil
+	return f, nil
 }
 
 // ReportFromJSON parses a Report from JSON and validates required fields.
