@@ -2,16 +2,9 @@ version: "2"
 run:
   timeout: 5m
   go: 1.26.2
-  build-tags:
-    - goexperiment.arenas
-    - goexperiment.goroutineleakprofile
-    - goexperiment.jsonv2
-    - goexperiment.runtimesecret
-    - goexperiment.simd
   allow-parallel-runners: true
   allow-serial-runners: true
 output:
-  formats: {}
 linters:
   enable:
     - arangolint
@@ -38,12 +31,10 @@ linters:
     - errorlint
     - exhaustive
     - exhaustruct
-    - exptostd
     - fatcontext
     - forbidigo
     - forcetypeassert
     - funlen
-    - ginkgolinter
     - gocheckcompilerdirectives
     - gochecknoglobals
     - gochecknoinits
@@ -52,12 +43,11 @@ linters:
     - goconst
     - gocritic
     - gocyclo
-    - godoclint
     - godot
     - godox
     - goheader
     - gomoddirectives
-    - gomodguard_v2
+    - gomodguard
     - goprintffuncname
     - gosec
     - gosmopolitan
@@ -69,7 +59,6 @@ linters:
     - ineffassign
     - interfacebloat
     - intrange
-    - iotamixing
     - loggercheck
     - maintidx
     - makezero
@@ -109,7 +98,6 @@ linters:
     - tparallel
     - unconvert
     - unparam
-    - unqueryvet
     - unused
     - usestdlibvars
     - usetesting
@@ -145,7 +133,7 @@ linters:
       exclude:
         - os/exec.Cmd
     forbidigo:
-      exclude:
+      exclude-grep:
         - cmd/
     funlen:
       lines: 120
@@ -158,7 +146,7 @@ linters:
     gocyclo:
       min-complexity: 25
     godot:
-      require-expecting-newline: false
+      scope: toplevel
     gosec:
       excludes:
         - G102
