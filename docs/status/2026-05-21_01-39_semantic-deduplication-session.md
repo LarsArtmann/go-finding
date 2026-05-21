@@ -10,27 +10,28 @@
 
 ### Production Code Deduplication
 
-| File | Change | Impact |
-|------|--------|--------|
-| `finding.go:194` | Added `HasCodeChange() bool` method | Replaces 3x `BeforeCode == "" && AfterCode == ""` across codebase |
-| `pipeline/fix_provider.go` | Extracted `newReplacementEdit()` helper | Eliminates 5x repeated `FixEdit{Offset, Length, Replacement, Source}` construction |
-| `pipeline/fix_provider.go:52,94` | Used `f.HasCodeChange()` | Consistent check in OffsetProvider and LineProvider |
-| `sarif_export.go` | Extracted `findingRegion()` and `findingFixRegion()` helpers | Eliminates repeated Range→SarifRegion construction in sarifLocations and sarifFixes |
+| File                             | Change                                                       | Impact                                                                              |
+| -------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `finding.go:194`                 | Added `HasCodeChange() bool` method                          | Replaces 3x `BeforeCode == "" && AfterCode == ""` across codebase                   |
+| `pipeline/fix_provider.go`       | Extracted `newReplacementEdit()` helper                      | Eliminates 5x repeated `FixEdit{Offset, Length, Replacement, Source}` construction  |
+| `pipeline/fix_provider.go:52,94` | Used `f.HasCodeChange()`                                     | Consistent check in OffsetProvider and LineProvider                                 |
+| `sarif_export.go`                | Extracted `findingRegion()` and `findingFixRegion()` helpers | Eliminates repeated Range→SarifRegion construction in sarifLocations and sarifFixes |
 
 ### Test Code Deduplication
 
-| File | Change | Lines Saved |
-|------|--------|-------------|
-| `pipeline/fix_engine_test.go` | Added `makeOffsetFix()`, `overlappingOffsetFixes()` helpers | -42 lines |
-| `pipeline/fix_applier_test.go` | Used `newTestApplierWithDir()` from testutil | -52 lines |
-| `pipeline/bdd_test.go` | Added `codeFix()`, `offsetFix()` helpers | -50 lines |
-| `pipeline/pipeline_bench_test.go` | Unified 3 bench helpers into `runBenchPipeline()` + `benchConfig` struct | -60 lines |
-| `internal/detectors/detectors_test.go` | Table-driven cancelled context tests | -8 lines |
-| `pipeline/testutil_test.go` | Added `newTestApplierWithDir()` helper | Shared utility |
+| File                                   | Change                                                                   | Lines Saved    |
+| -------------------------------------- | ------------------------------------------------------------------------ | -------------- |
+| `pipeline/fix_engine_test.go`          | Added `makeOffsetFix()`, `overlappingOffsetFixes()` helpers              | -42 lines      |
+| `pipeline/fix_applier_test.go`         | Used `newTestApplierWithDir()` from testutil                             | -52 lines      |
+| `pipeline/bdd_test.go`                 | Added `codeFix()`, `offsetFix()` helpers                                 | -50 lines      |
+| `pipeline/pipeline_bench_test.go`      | Unified 3 bench helpers into `runBenchPipeline()` + `benchConfig` struct | -60 lines      |
+| `internal/detectors/detectors_test.go` | Table-driven cancelled context tests                                     | -8 lines       |
+| `pipeline/testutil_test.go`            | Added `newTestApplierWithDir()` helper                                   | Shared utility |
 
 ### Incidental Formatting (golangci-lint golines)
 
 Several files had long lines reformatted by the linter during the session:
+
 - `bdd_test.go`, `bench_test.go`, `example_test.go`, `format.go`, `pipeline/pipeline.go`
 - `cmd/go-finding/config.go`
 
@@ -60,6 +61,7 @@ These are inherent to Go's type system, interface satisfaction, and testing patt
 ## d) TOTALLY FUCKED UP
 
 Nothing. All changes were verified:
+
 - All tests pass (`go test -race -count=1 ./...` — green)
 - No new lint issues introduced (only pre-existing goconst warnings)
 - Build compiles cleanly
@@ -128,13 +130,13 @@ Nothing. All changes were verified:
 
 ## Session Metrics
 
-| Metric | Before | After | Delta |
-|--------|--------|-------|-------|
-| Clone groups | 158 | 151 | -7 (-4.4%) |
-| Total clones | 536 | ~510 | -26 |
+| Metric        | Before       | After      | Delta        |
+| ------------- | ------------ | ---------- | ------------ |
+| Clone groups  | 158          | 151        | -7 (-4.4%)   |
+| Total clones  | 536          | ~510       | -26          |
 | Lines of code | -339 deleted | +173 added | **-166 net** |
-| Files changed | - | 9 | - |
-| Test suites | All green | All green | ✅ |
+| Files changed | -            | 9          | -            |
+| Test suites   | All green    | All green  | ✅           |
 
 ---
 

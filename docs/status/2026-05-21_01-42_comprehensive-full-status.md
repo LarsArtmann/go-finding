@@ -20,98 +20,98 @@ go-finding is a **mature, well-tested Go library** at v0.2.1 approaching v1.0 re
 
 ### Core Library (Root Package)
 
-| Feature | Status | Coverage |
-|---------|--------|----------|
-| `Finding` type with Builder pattern | ✅ Complete | 99.7% |
-| `Position` / `Range` with Overlaps/Intersection/Adjacent | ✅ Complete | — |
-| `Severity` (Critical→Trace) with `String()` / `ParseSeverity()` | ✅ Complete | — |
-| `Confidence` named type with `IsValid()` / `Clamp()` | ✅ Complete | — |
-| `Category`, `Tag`, `Suppression`, `Correlation` types | ✅ Complete | — |
-| `Report` container with summary, filtering, grouping | ✅ Thread-safe | — |
-| `Diff(before, after)` — finding set comparison | ✅ Complete | — |
-| `FormatText` / `FormatMarkdown` — human-readable output | ✅ Complete | — |
-| SARIF 2.1.0 import (`FindingsFromSARIF`) | ✅ Hardened | — |
-| SARIF 2.1.0 export (`ToSARIF`, `WriteSARIF`, streaming) | ✅ Complete | — |
-| LSP Diagnostic conversion | ✅ Complete | — |
-| JSON marshaling/unmarshaling | ✅ Complete | — |
-| Structured errors (`FindingError` with categories) | ✅ Complete | — |
-| ID generation (`KeySeparator` constant) | ✅ Complete | — |
-| `HasCodeChange()` method | ✅ New (dedup session) | — |
+| Feature                                                         | Status                 | Coverage |
+| --------------------------------------------------------------- | ---------------------- | -------- |
+| `Finding` type with Builder pattern                             | ✅ Complete            | 99.7%    |
+| `Position` / `Range` with Overlaps/Intersection/Adjacent        | ✅ Complete            | —        |
+| `Severity` (Critical→Trace) with `String()` / `ParseSeverity()` | ✅ Complete            | —        |
+| `Confidence` named type with `IsValid()` / `Clamp()`            | ✅ Complete            | —        |
+| `Category`, `Tag`, `Suppression`, `Correlation` types           | ✅ Complete            | —        |
+| `Report` container with summary, filtering, grouping            | ✅ Thread-safe         | —        |
+| `Diff(before, after)` — finding set comparison                  | ✅ Complete            | —        |
+| `FormatText` / `FormatMarkdown` — human-readable output         | ✅ Complete            | —        |
+| SARIF 2.1.0 import (`FindingsFromSARIF`)                        | ✅ Hardened            | —        |
+| SARIF 2.1.0 export (`ToSARIF`, `WriteSARIF`, streaming)         | ✅ Complete            | —        |
+| LSP Diagnostic conversion                                       | ✅ Complete            | —        |
+| JSON marshaling/unmarshaling                                    | ✅ Complete            | —        |
+| Structured errors (`FindingError` with categories)              | ✅ Complete            | —        |
+| ID generation (`KeySeparator` constant)                         | ✅ Complete            | —        |
+| `HasCodeChange()` method                                        | ✅ New (dedup session) | —        |
 
 ### Pipeline Package
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Pipeline core (`Run`, detect/triage/apply loop) | ✅ Complete | 96.4% coverage |
-| Byte-level `FixEngine` (`FixEdit{Offset, Length, Replacement}`) | ✅ Complete | Descending-offset apply |
-| `FixProvider` interface (Offset/Line/Substring) | ✅ Complete | Composable chain |
-| Custom provider registration | ✅ Complete | `Config.FixProviders` |
-| Conflict detection (`DetectConflicts()`) | ✅ Complete | — |
-| `FixApplier` with backup/rollback | ✅ Complete | `Close()` lifecycle |
-| Verification stage | ✅ Complete | Re-run detectors, diff findings |
-| Metrics collection with snapshots | ✅ Complete | — |
-| Exponential backoff retry | ✅ Complete | `math/rand/v2` jitter |
-| Partial success collection | ✅ Complete | — |
-| Parallel detection (errgroup) | ✅ Complete | — |
-| Per-detector timeouts | ✅ Complete | `Config.DetectorTimeouts` |
-| Structured logging (`slog`) | ✅ Complete | `Config.Logger` |
-| Stage progress callback | ✅ Complete | `Config.OnStage` |
-| `FindingProcessor` composable transforms | ✅ Experimental | — |
-| Context cancellation propagation | ✅ Complete | All paths handle cancel |
+| Feature                                                         | Status          | Notes                           |
+| --------------------------------------------------------------- | --------------- | ------------------------------- |
+| Pipeline core (`Run`, detect/triage/apply loop)                 | ✅ Complete     | 96.4% coverage                  |
+| Byte-level `FixEngine` (`FixEdit{Offset, Length, Replacement}`) | ✅ Complete     | Descending-offset apply         |
+| `FixProvider` interface (Offset/Line/Substring)                 | ✅ Complete     | Composable chain                |
+| Custom provider registration                                    | ✅ Complete     | `Config.FixProviders`           |
+| Conflict detection (`DetectConflicts()`)                        | ✅ Complete     | —                               |
+| `FixApplier` with backup/rollback                               | ✅ Complete     | `Close()` lifecycle             |
+| Verification stage                                              | ✅ Complete     | Re-run detectors, diff findings |
+| Metrics collection with snapshots                               | ✅ Complete     | —                               |
+| Exponential backoff retry                                       | ✅ Complete     | `math/rand/v2` jitter           |
+| Partial success collection                                      | ✅ Complete     | —                               |
+| Parallel detection (errgroup)                                   | ✅ Complete     | —                               |
+| Per-detector timeouts                                           | ✅ Complete     | `Config.DetectorTimeouts`       |
+| Structured logging (`slog`)                                     | ✅ Complete     | `Config.Logger`                 |
+| Stage progress callback                                         | ✅ Complete     | `Config.OnStage`                |
+| `FindingProcessor` composable transforms                        | ✅ Experimental | —                               |
+| Context cancellation propagation                                | ✅ Complete     | All paths handle cancel         |
 
 ### Analysis Package
 
-| Feature | Status |
-|---------|--------|
+| Feature                                     | Status              |
+| ------------------------------------------- | ------------------- |
 | go/analysis.Diagnostic ↔ Finding conversion | ✅ Complete (98.5%) |
 
 ### CLI
 
-| Feature | Status |
-|---------|--------|
-| Text/markdown/JSON/SARIF output | ✅ Complete |
-| YAML/JSON config with validation | ✅ Complete |
-| Built-in govet + staticcheck detectors | ✅ Complete |
+| Feature                                     | Status      |
+| ------------------------------------------- | ----------- |
+| Text/markdown/JSON/SARIF output             | ✅ Complete |
+| YAML/JSON config with validation            | ✅ Complete |
+| Built-in govet + staticcheck detectors      | ✅ Complete |
 | Severity filtering, timeout, max-iterations | ✅ Complete |
-| CPU/memory profiling | ✅ Complete |
-| Dynamic detector registry | ✅ Complete |
-| Graceful degradation on detector failures | ✅ Complete |
+| CPU/memory profiling                        | ✅ Complete |
+| Dynamic detector registry                   | ✅ Complete |
+| Graceful degradation on detector failures   | ✅ Complete |
 
 ### Testing Infrastructure
 
-| Feature | Status |
-|---------|--------|
-| BDD tests (Ginkgo/Gomega) | ✅ Complete |
-| Property-based tests | ✅ Complete |
-| Fuzz tests | ✅ Complete |
-| Benchmarks (10k+ findings) | ✅ Complete |
-| Coverage enforcement | ✅ Complete |
-| SARIF schema validation | ✅ Complete |
-| Test helper deduplication | ✅ New (dedup session) |
+| Feature                    | Status                 |
+| -------------------------- | ---------------------- |
+| BDD tests (Ginkgo/Gomega)  | ✅ Complete            |
+| Property-based tests       | ✅ Complete            |
+| Fuzz tests                 | ✅ Complete            |
+| Benchmarks (10k+ findings) | ✅ Complete            |
+| Coverage enforcement       | ✅ Complete            |
+| SARIF schema validation    | ✅ Complete            |
+| Test helper deduplication  | ✅ New (dedup session) |
 
 ### Codebase Metrics
 
-| Metric | Value |
-|--------|-------|
-| Total Go LOC | 25,240 |
-| Production LOC | 7,084 |
-| Test LOC | 18,156 |
-| Production files | 46 |
-| Test files | 66 |
-| Direct dependencies | 5 |
-| Total packages | 9 |
-| Clone groups | 151 (from 158, -4.4%) |
+| Metric              | Value                 |
+| ------------------- | --------------------- |
+| Total Go LOC        | 25,240                |
+| Production LOC      | 7,084                 |
+| Test LOC            | 18,156                |
+| Production files    | 46                    |
+| Test files          | 66                    |
+| Direct dependencies | 5                     |
+| Total packages      | 9                     |
+| Clone groups        | 151 (from 158, -4.4%) |
 
 ### Test Coverage
 
-| Package | Coverage |
-|---------|----------|
-| Root (finding) | **99.7%** |
-| Analysis | **98.5%** |
-| Pipeline | **96.4%** |
-| Internal detectors | **96.1%** |
-| CLI | **93.9%** |
-| Examples | 0% (no statements / no tests) |
+| Package            | Coverage                      |
+| ------------------ | ----------------------------- |
+| Root (finding)     | **99.7%**                     |
+| Analysis           | **98.5%**                     |
+| Pipeline           | **96.4%**                     |
+| Internal detectors | **96.1%**                     |
+| CLI                | **93.9%**                     |
+| Examples           | 0% (no statements / no tests) |
 
 ---
 
@@ -119,17 +119,17 @@ go-finding is a **mature, well-tested Go library** at v0.2.1 approaching v1.0 re
 
 ### v1.0 Release Criteria (from `docs/v1.0-release-criteria.md`)
 
-| Criteria | Progress | Blockers |
-|----------|----------|----------|
-| Remove deprecated symbols | ~30% | `Finding.Tag string`, `ConflictDetector`/`Verifier` structs still exist |
-| Remove `FixStrategyAI` phantom | Not started | Constant exists, no backend, silently treated as Suggest |
-| Naming consistency audit | ~50% | Some `Pos()` vs `NewPosition()` inconsistencies remain |
-| README covers all exported types | ~60% | Major types documented, newer additions may be missing |
-| CHANGELOG for v1.0 | Not started | — |
-| API stability guarantee docs | Not started | — |
-| `doc.go` comprehensive | ~40% | Basic doc exists |
-| Integration test with downstream consumer | Not started | — |
-| FixApplier goroutine leak verification | Not verified | — |
+| Criteria                                  | Progress     | Blockers                                                                |
+| ----------------------------------------- | ------------ | ----------------------------------------------------------------------- |
+| Remove deprecated symbols                 | ~30%         | `Finding.Tag string`, `ConflictDetector`/`Verifier` structs still exist |
+| Remove `FixStrategyAI` phantom            | Not started  | Constant exists, no backend, silently treated as Suggest                |
+| Naming consistency audit                  | ~50%         | Some `Pos()` vs `NewPosition()` inconsistencies remain                  |
+| README covers all exported types          | ~60%         | Major types documented, newer additions may be missing                  |
+| CHANGELOG for v1.0                        | Not started  | —                                                                       |
+| API stability guarantee docs              | Not started  | —                                                                       |
+| `doc.go` comprehensive                    | ~40%         | Basic doc exists                                                        |
+| Integration test with downstream consumer | Not started  | —                                                                       |
+| FixApplier goroutine leak verification    | Not verified | —                                                                       |
 
 ### goconst Warnings
 
@@ -151,16 +151,16 @@ go-finding is a **mature, well-tested Go library** at v0.2.1 approaching v1.0 re
 
 ### From TODO_LIST.md — P3 (Future/Deferred)
 
-| Item | Scope |
-|------|-------|
-| Nix migration (Phases 0–5) | Full build system migration |
-| Pipeline middleware/interceptor | Architecture enhancement |
-| Watch mode (fsnotify) | Feature |
-| Semantic merge for conflicts | Feature |
-| Styled CLI (lipgloss) / TUI (bubbletea) | Feature |
-| LSP language server / CodeAction | Feature |
-| AI backend for FixStrategyAI | Feature (reserved constant exists) |
-| Web UI, OTel integration, etc. | ~12 out-of-scope items |
+| Item                                    | Scope                              |
+| --------------------------------------- | ---------------------------------- |
+| Nix migration (Phases 0–5)              | Full build system migration        |
+| Pipeline middleware/interceptor         | Architecture enhancement           |
+| Watch mode (fsnotify)                   | Feature                            |
+| Semantic merge for conflicts            | Feature                            |
+| Styled CLI (lipgloss) / TUI (bubbletea) | Feature                            |
+| LSP language server / CodeAction        | Feature                            |
+| AI backend for FixStrategyAI            | Feature (reserved constant exists) |
+| Web UI, OTel integration, etc.          | ~12 out-of-scope items             |
 
 ### Documentation Gaps
 
@@ -221,7 +221,7 @@ These are NOT blocking development but ARE blocking clean git operations without
 6. **Fix 100 goconst warnings** — All in test code, low risk but noisy
 7. **Fix OnFix callback inaccuracy** — Reports success for skipped fixes
 8. **Add path validation in FixApplier** — Close the gosec G703 finding
-9. **Refactor CLI run() for testability** — Extract io.Writer + *flag.FlagSet
+9. **Refactor CLI run() for testability** — Extract io.Writer + \*flag.FlagSet
 10. **Split pipeline_test.go** — 1508 lines, complexity 171. Split into focused files
 
 ### Architecture
@@ -254,33 +254,33 @@ These are NOT blocking development but ARE blocking clean git operations without
 
 Ranked by impact on path to v1.0:
 
-| # | Task | Impact | Effort | Package |
-|---|------|--------|--------|---------|
-| 1 | Remove deprecated `Finding.Tag string` field | High | Low | Root |
-| 2 | Remove deprecated `ConflictDetector`/`Verifier` structs | High | Low | Pipeline |
-| 3 | Remove phantom `FixStrategyAI` constant | High | Low | Root |
-| 4 | Audit exported symbol naming consistency | High | Medium | All |
-| 5 | Write CHANGELOG.md for v1.0 | High | Medium | — |
-| 6 | Write API stability guarantee doc | High | Low | Docs |
-| 7 | Integration test with downstream consumer | High | High | — |
-| 8 | Fix OnFix callback (don't report skipped as success) | Medium | Low | Pipeline |
-| 9 | Add path validation in FixApplier | Medium | Low | Pipeline |
-| 10 | Refactor CLI run() for testability | Medium | Medium | CLI |
-| 11 | Fix 100 goconst warnings | Medium | Medium | Tests |
-| 12 | Verify FixApplier goroutine leak fix | Medium | Low | Pipeline |
-| 13 | Split pipeline_test.go (1508 lines) | Medium | Medium | Pipeline |
-| 14 | Extract SARIF test builder helpers | Low | Low | Tests |
-| 15 | Add `quickBuild()` in root bdd_test.go | Low | Low | Tests |
-| 16 | Comprehensive doc.go | Medium | Medium | Root |
-| 17 | README examples for all exported types | Medium | Medium | Docs |
-| 18 | Fix pre-commit hook (goconst, todo-check, library-policy) | Medium | Medium | CI |
-| 19 | Add art-dupl CI step | Low | Low | CI |
-| 20 | Fix per-package coverage thresholds bug | Low | Low | Tests |
-| 21 | Decide domain-specific provider location | Low | Low | Pipeline |
-| 22 | Consider io.WriterTo for SARIF | Low | Low | Root |
-| 23 | Update AGENTS.md (Go 1.26.2, recent changes) | Low | Low | Docs |
-| 24 | Verify all examples compile | Low | Low | Examples |
-| 25 | Prepare v1.0.0 tag and release | High | Low | — |
+| #   | Task                                                      | Impact | Effort | Package  |
+| --- | --------------------------------------------------------- | ------ | ------ | -------- |
+| 1   | Remove deprecated `Finding.Tag string` field              | High   | Low    | Root     |
+| 2   | Remove deprecated `ConflictDetector`/`Verifier` structs   | High   | Low    | Pipeline |
+| 3   | Remove phantom `FixStrategyAI` constant                   | High   | Low    | Root     |
+| 4   | Audit exported symbol naming consistency                  | High   | Medium | All      |
+| 5   | Write CHANGELOG.md for v1.0                               | High   | Medium | —        |
+| 6   | Write API stability guarantee doc                         | High   | Low    | Docs     |
+| 7   | Integration test with downstream consumer                 | High   | High   | —        |
+| 8   | Fix OnFix callback (don't report skipped as success)      | Medium | Low    | Pipeline |
+| 9   | Add path validation in FixApplier                         | Medium | Low    | Pipeline |
+| 10  | Refactor CLI run() for testability                        | Medium | Medium | CLI      |
+| 11  | Fix 100 goconst warnings                                  | Medium | Medium | Tests    |
+| 12  | Verify FixApplier goroutine leak fix                      | Medium | Low    | Pipeline |
+| 13  | Split pipeline_test.go (1508 lines)                       | Medium | Medium | Pipeline |
+| 14  | Extract SARIF test builder helpers                        | Low    | Low    | Tests    |
+| 15  | Add `quickBuild()` in root bdd_test.go                    | Low    | Low    | Tests    |
+| 16  | Comprehensive doc.go                                      | Medium | Medium | Root     |
+| 17  | README examples for all exported types                    | Medium | Medium | Docs     |
+| 18  | Fix pre-commit hook (goconst, todo-check, library-policy) | Medium | Medium | CI       |
+| 19  | Add art-dupl CI step                                      | Low    | Low    | CI       |
+| 20  | Fix per-package coverage thresholds bug                   | Low    | Low    | Tests    |
+| 21  | Decide domain-specific provider location                  | Low    | Low    | Pipeline |
+| 22  | Consider io.WriterTo for SARIF                            | Low    | Low    | Root     |
+| 23  | Update AGENTS.md (Go 1.26.2, recent changes)              | Low    | Low    | Docs     |
+| 24  | Verify all examples compile                               | Low    | Low    | Examples |
+| 25  | Prepare v1.0.0 tag and release                            | High   | Low    | —        |
 
 ---
 
@@ -301,19 +301,19 @@ The answers to these questions determine whether the next session should be "rem
 
 ## Session History (Recent)
 
-| Date | What | Result |
-|------|------|--------|
+| Date       | What                                | Result                                  |
+| ---------- | ----------------------------------- | --------------------------------------- |
 | 2026-05-21 | Semantic deduplication (`art-dupl`) | 158→151 clone groups, helpers extracted |
-| 2026-05-18 | v0.3.0 release quality session | Comprehensive audit, formatted |
-| 2026-05-18 | Properties vs Metadata decision | WONTFIX Properties, Metadata only |
-| 2026-05-17 | 10-task execution | Multiple features completed |
-| 2026-05-08 | Context cancellation fixes | All paths propagate cancel |
-| 2026-05-06 | Byte-level FixEngine redesign | Major architecture change |
+| 2026-05-18 | v0.3.0 release quality session      | Comprehensive audit, formatted          |
+| 2026-05-18 | Properties vs Metadata decision     | WONTFIX Properties, Metadata only       |
+| 2026-05-17 | 10-task execution                   | Multiple features completed             |
+| 2026-05-08 | Context cancellation fixes          | All paths propagate cancel              |
+| 2026-05-06 | Byte-level FixEngine redesign       | Major architecture change               |
 
 ## Unpushed Commits
 
-| Hash | Message |
-|------|---------|
+| Hash      | Message                                                                  |
+| --------- | ------------------------------------------------------------------------ |
 | `88764cd` | docs(status): add semantic deduplication session report (158→151 clones) |
 
 ---
