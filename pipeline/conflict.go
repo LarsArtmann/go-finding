@@ -59,6 +59,10 @@ func DetectConflicts(fixes []finding.Finding) ([]FixGroup, []finding.Finding) {
 }
 
 // detectConflictsInFile analyzes fixes within a single file.
+// Findings are sorted by position and grouped transitively: if A overlaps B
+// and B overlaps C (even if A doesn't overlap C), all three join the same group.
+// Groups with multiple findings keep only the first; the rest are marked as conflicts.
+// This conservative strategy ensures safe application order.
 func detectConflictsInFile(
 	file string,
 	fixes []finding.Finding,

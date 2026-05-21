@@ -225,7 +225,9 @@ func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 }
 
 // FindByID returns the finding with the given ID, or nil if not found.
-// The returned Finding is a copy; modifications do not affect the report.
+// The returned Finding is a shallow copy; modifications to value fields do not
+// affect the report, but mutations to slice/map fields (Tags, Related, Metadata)
+// will be shared. Use Clone() for a deep copy.
 // Safe for concurrent use.
 func (r *Report) FindByID(id string) *Finding {
 	r.mu.RLock()
@@ -287,7 +289,9 @@ func (r *Report) Map(fn func(Finding) Finding) *Report {
 }
 
 // All returns all findings in the report (including suppressed).
-// The yielded Finding values are copies; modifications do not affect the report.
+// The yielded Finding values are shallow copies; modifications to value fields
+// do not affect the report, but mutations to slice/map fields (Tags, Related,
+// Metadata) will be shared. Use Clone() for a deep copy.
 //
 // IMPORTANT: The returned iterator holds a read lock for the duration of
 // iteration. You MUST exhaust the iterator (e.g., with a break or range)
