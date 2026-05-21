@@ -275,6 +275,28 @@ func (f Finding) Validate() error {
 		))
 	}
 
+	for i, tag := range f.Tags {
+		if !tag.IsValid() {
+			errs = append(errs, NewValidationError(
+				fmt.Sprintf("finding.Tags[%d] %q is invalid: tags must be non-empty", i, tag), nil,
+			))
+		}
+	}
+
+	for i, ref := range f.Related {
+		if !ref.IsValid() {
+			errs = append(errs, NewValidationError(
+				fmt.Sprintf("finding.Related[%d] is invalid: missing required fields", i), nil,
+			))
+		}
+	}
+
+	if f.Suppression != nil && !f.Suppression.IsValid() {
+		errs = append(errs, NewValidationError(
+			"finding.Suppression is invalid: missing Kind or Rule", nil,
+		))
+	}
+
 	return errors.Join(errs...)
 }
 
