@@ -1,7 +1,7 @@
 # TODO List
 
 **Generated:** 2026-05-20
-**Updated:** 2026-05-21
+**Updated:** 2026-05-21 (code quality session)
 **Files Processed:** 235
 
 ## 🔴 HIGH Priority
@@ -18,11 +18,11 @@
 - [x] ~~Fix `pipeline/fix_applier.go` — unused `"fmt"` import blocks build~~ — `"fmt"` is actively used (source: pipeline/fix_applier.go)
 - [x] ~~Fix `cmd/go-finding/integration_test.go:108` — duplicate `g := NewWithT(t)` blocks build~~ — no duplicate, separate functions (source: integration_test.go)
 - [x] ~~Fix `examples/builder/main.go` compile error — `Build()` returns 2 values but 1 assigned~~ — correctly handles both values (source: examples/builder/main.go)
-- [ ] Fix `.golangci.yml` to work without `--no-verify` / `--no-config` flag (source: .golangci.yml)
+- [x] Fix `.golangci.yml` to work without `--no-verify` / `--no-config` flag — removed 6 invalid linter names (source: .golangci.yml)
 - [ ] Fix `.golangci.yml` indentation — auto-configure keeps reformatting 2-space to 4-space (source: .golangci.yml)
 - [ ] Fix BuildFlow `gomodguard_v2` auto-configure loop — every commit requires `--no-verify` (source: BuildFlow config)
 - [x] ~~Fix `IsAutoFixable()`/`Validate()` disagreement for Direct+AfterCode-only findings~~ — both agree: Direct requires code (source: finding.go)
-- [ ] Fix `Finding.Key()` cross-tool collision — include `ToolName` in fallback key when ID is empty (source: finding.go:270)
+- [x] Fix `Finding.Key()` cross-tool collision — `Key()` already includes `ToolName`; real issue was `GenerateID` hash collision, now fixed with length-prefixed fields (source: finding.go, id.go)
 - [x] ~~Fix `Pipeline.Run()` single-use contract — enforce programmatically, not just documented~~ — `ran` bool guard added (source: pipeline/pipeline.go)
 - [x] ~~Fix OnFix callback inaccuracy — reports success for ALL safeFixes, even those skipped by FixApplier~~ — now reports false for skipped (source: pipeline/pipeline.go)
 - [ ] Fix partial detection missing metrics recording (source: pipeline/partial.go:63-117)
@@ -41,7 +41,7 @@
 - [ ] Fix 6 `paralleltest` warnings — add `t.Parallel()` (source: project-wide)
 - [ ] Update USAGE_GUIDE.md for v0.3.0 — new features not documented (source: docs/)
 - [ ] Update FEATURES.md for v0.3.0 — missing FormatText/FormatMarkdown, ToDiagnostic, etc. (source: FEATURES.md)
-- [ ] Fix `.gitignore` line 43 corruption (source: .gitignore)
+- [x] Fix `.gitignore` line 43 corruption — cleaned formatting, added dist/, coverage.html, *.prof, etc. (source: .gitignore)
 - [ ] Fix pre-commit hook failures — goconst, todo-check, library-policy all fail (source: .git/hooks/)
 - [ ] FixEngine: line-offset tracking for cumulative line shifts across multi-fix (source: pipeline/)
 - [ ] Make fix strategy composable as interface — register `FixApplier` implementations per strategy (source: pipeline/)
@@ -74,13 +74,13 @@
 
 ## ⚪ Unknown Priority
 
-- [ ] Decide `NewFinding` API pattern — functional options vs builder-only vs 6-param (source: finding.go)
+- [x] ~~Decide `NewFinding` API pattern~~ — accepts `Confidence` type; Builder for complex cases (source: finding.go)
 - [ ] Define v1.0.0 release criteria — no documented minimum bar exists (source: docs/)
 - [ ] Decide domain-specific FixProvider module location — `pipeline/` vs separate modules (source: pipeline/fix_provider.go)
 - [ ] Decide `Properties map[string]any` alongside `Metadata map[string]string` for SARIF round-trip fidelity (source: finding.go:44)
 - [ ] Decide repository structure — root package vs `pkg/finding/` sub-packages (source: project root)
-- [ ] Protect `Confidence` in direct struct construction — `Finding{Confidence: 1.5}` bypasses clamping; unexport field or validate at read sites (source: finding.go:40)
-- [ ] Clamp `Confidence` in `NewFinding` constructor and `Builder.WithConfidence` (source: finding.go:43-53, finding_builder.go:82-84)
+- [x] ~~Protect `Confidence` in direct struct construction~~ — `Validate()` now catches out-of-range values; `NewFinding` accepts `Confidence` type (source: finding.go)
+- [x] ~~Clamp `Confidence` in `NewFinding` constructor and `Builder.WithConfidence`~~ — `NewFinding` accepts `Confidence` type; `Builder.WithConfidence` accepts `Confidence`; `Validate()` catches out-of-range (source: finding.go, finding_builder.go)
 - [ ] Remove deprecated `Finding.Tag string` field — migrate to `Tags []Tag` (source: finding.go)
 - [x] ~~Remove deprecated `ConflictDetector`/`Verifier` structs — use package-level functions~~ — already removed (source: pipeline/)
 - [ ] Remove phantom `FixStrategyAI` constant — no AI backend exists (source: fix_strategy.go:19)
@@ -111,10 +111,11 @@
 - [ ] Verify `ParseID` with backslash Windows paths (`C:\Users\...`) (source: id.go, id_test.go)
 - [ ] Add `-race` to CI workflow (source: .github/workflows/)
 - [ ] Tag v0.3.0 release — version bumped but no git tag exists (source: git)
+- [x] ~~Fix `FromJSON` return type~~ — returns `Finding` value instead of `*Finding`; uses `Validate()` for detailed errors (source: json.go)
 - [ ] Push unpushed commits to origin (source: git)
 - [x] ~~Add `Suppression.IsActive()` method — combined expiry + validity check~~ — exists (source: suppression.go)
 - [ ] `Category.IsValid()` strict validation — currently accepts any non-empty string including typos like `"securty"` (source: category.go)
-- [ ] Clarify `HasFix` vs `HasSuggestion` boundary (source: finding.go:90-99)
+- [x] ~~Add `Finding.Validate()` extended checks~~ — now checks Tags, Related, Suppression, Confidence range, non-empty FixStrategy validity (source: finding.go)
 - [x] ~~Define `type Confidence float64` with `IsValid()`, `String()`, constants~~ — exists in `confidence.go` (source: finding.go, merge.go)
 - [ ] Deprecate `WithTag` builder method to match `Tag string` field deprecation (source: finding_builder.go)
 - [ ] Unify `Tag` deprecation — either fully migrate tests to `Tags []Tag` or remove deprecation (source: various test files)
@@ -142,6 +143,7 @@
 - [x] ~~Split `sarif.go` (570 lines) into `sarif_types.go`, `sarif_export.go`, `sarif_import.go`~~ — already split (source: sarif.go)
 - [x] ~~Add `Range.IsValid()` to check `End >= Start`~~ — exists (source: position.go)
 - [x] ~~Add `Position.HasLocation() bool` method~~ — added (source: position.go)
+- [x] ~~Add `DiffResult` convenience methods~~ — `HasChanges()` and `Stats()` added (source: diff.go)
 - [ ] Add `go:generate stringer` for Severity, FixStrategy, Category, SuppressionKind (source: 4 files)
 - [ ] Add `iter.Seq[Finding]` on `Report.All()` for Go 1.26 (source: report.go)
 - [x] ~~Add `Position.IsZero()` helper~~ — added (source: position.go)
