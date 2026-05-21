@@ -162,6 +162,12 @@ golangci-lint run ./...         # Lint
 - **Extended Validate()** — Checks Tags.IsValid(), Related.IsValid(), Suppression.IsValid(), Confidence range [0,1], non-empty FixStrategy validity; empty FixStrategy is valid (zero value)
 - **FromJSON value return** — `FromJSON` returns `Finding` value not `*Finding`; uses `Validate()` for detailed errors; `FilterInvalid` stays with `IsValid()` for backward-compatible lossy filtering
 - **DiffResult helpers** — `HasChanges()` reports additions/removals; `Stats()` returns `"+N -N =N"` summary
+- **DeduplicateByID empty ID** — `dedupKey` returns `(string, bool)`; empty ID findings are never deduplicated (no silent fallback to position)
+- **FixApplier path validation** — Rejects path traversal (e.g., `../../../etc/passwd`); checks `filepath.Clean(path)` is within `rootDir`
+- **Shallow copy semantics documented** — `FindByID` and `All()` document that slice/map fields (Tags, Related, Metadata) are shallow copies; use `Clone()` for deep copy
+- **Conflict grouping documented** — Transitive overlap grouping and conservative single-survivor resolution are documented as intentional design
+- **SARIF property constants** — All `go-finding/*` property keys are named constants in `sarif_types.go`; added `sarifPropAfterCode`, `sarifPropEditPrefix`
+- **TODO_LIST deep audit** — 97 done, 93 open; 29 items verified as already done, 14 phantoms annotated, 7 owner-decision items tagged
 
 ### CLI Features
 
