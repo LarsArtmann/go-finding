@@ -89,3 +89,42 @@ func TestDiff_SortedOutput(t *testing.T) {
 		}
 	}
 }
+
+func TestDiffResult_HasChanges(t *testing.T) {
+	t.Parallel()
+
+	if (DiffResult{}).HasChanges() {
+		t.Error("empty DiffResult should not have changes")
+	}
+
+	if (DiffResult{Unchanged: []Finding{{ID: "a"}}}).HasChanges() {
+		t.Error("DiffResult with only unchanged should not have changes")
+	}
+
+	if !(DiffResult{Added: []Finding{{ID: "a"}}}).HasChanges() {
+		t.Error("DiffResult with additions should have changes")
+	}
+
+	if !(DiffResult{Removed: []Finding{{ID: "a"}}}).HasChanges() {
+		t.Error("DiffResult with removals should have changes")
+	}
+}
+
+func TestDiffResult_Stats(t *testing.T) {
+	t.Parallel()
+
+	result := DiffResult{
+		Added:     []Finding{{ID: "a"}, {ID: "b"}},
+		Removed:   []Finding{{ID: "c"}},
+		Unchanged: []Finding{{ID: "d"}, {ID: "e"}, {ID: "f"}},
+	}
+
+	want := "+2 -1 =3"
+	if got := result.Stats(); got != want {
+		t.Errorf("Stats() = %q, want %q", got, want)
+	}
+
+	if got := (DiffResult{}).Stats(); got != "+0 -0 =0" {
+		t.Errorf("empty Stats() = %q, want +0 -0 =0", got)
+	}
+}

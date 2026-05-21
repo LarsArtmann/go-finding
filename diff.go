@@ -1,6 +1,9 @@
 package finding
 
-import "slices"
+import (
+	"fmt"
+	"slices"
+)
 
 // DiffResult holds the difference between two finding sets.
 type DiffResult struct {
@@ -53,4 +56,14 @@ func Diff(before, after []Finding) DiffResult {
 	slices.SortFunc(unchanged, byFindingID)
 
 	return DiffResult{Added: added, Removed: removed, Unchanged: unchanged}
+}
+
+// HasChanges reports whether the diff contains any additions or removals.
+func (d DiffResult) HasChanges() bool {
+	return len(d.Added) > 0 || len(d.Removed) > 0
+}
+
+// Stats returns a human-readable summary of the diff counts.
+func (d DiffResult) Stats() string {
+	return fmt.Sprintf("+%d -%d =%d", len(d.Added), len(d.Removed), len(d.Unchanged))
 }
