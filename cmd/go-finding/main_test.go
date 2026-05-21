@@ -342,24 +342,23 @@ func reportWithNaNConfidence() *finding.Report {
 	return report
 }
 
-func TestOutputResults_JSONSerializationError(t *testing.T) {
+func testOutputSerializationError(t *testing.T, format, substr string) {
+	t.Helper()
 	t.Parallel()
 	g := NewWithT(t)
 
 	var buf bytes.Buffer
-	err := outputResults(&buf, reportWithNaNConfidence(), "json")
+	err := outputResults(&buf, reportWithNaNConfidence(), format)
 	g.Expect(err).To(HaveOccurred())
-	g.Expect(err.Error()).To(ContainSubstring("serializing JSON"))
+	g.Expect(err.Error()).To(ContainSubstring(substr))
+}
+
+func TestOutputResults_JSONSerializationError(t *testing.T) {
+	testOutputSerializationError(t, "json", "serializing JSON")
 }
 
 func TestOutputResults_SARIFSerializationError(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-
-	var buf bytes.Buffer
-	err := outputResults(&buf, reportWithNaNConfidence(), "sarif")
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(err.Error()).To(ContainSubstring("serializing SARIF"))
+	testOutputSerializationError(t, "sarif", "serializing SARIF")
 }
 
 func TestRun_InvalidSeverity(t *testing.T) {

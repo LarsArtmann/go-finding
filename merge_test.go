@@ -182,10 +182,14 @@ func TestDeduplicateByID_EmptyIDNotDeduplicated(t *testing.T) {
 	g := NewWithT(t)
 
 	r1 := NewReport(ToolInfo{Name: "t1"})
-	r1.AddFinding(Finding{ID: "", Rule: "r", ToolName: "t1", Message: "m1",
-		Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1}})
-	r1.AddFinding(Finding{ID: "", Rule: "r", ToolName: "t1", Message: "m2",
-		Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1}})
+	r1.AddFinding(Finding{
+		ID: "", Rule: "r", ToolName: "t1", Message: "m1",
+		Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1},
+	})
+	r1.AddFinding(Finding{
+		ID: "", Rule: "r", ToolName: "t1", Message: "m2",
+		Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1},
+	})
 
 	merged := Merge([]*Report{r1}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByID))
 	g.Expect(merged.Len()).To(Equal(2))

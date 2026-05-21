@@ -93,20 +93,42 @@ func overlappingOffsetFixes() []finding.Finding {
 	}
 }
 
-func TestFixEngine_Apply_LineRange_SingleLine(t *testing.T) {
+func TestFixEngine_Apply_LineRange(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
 
-	engine := NewFixEngine()
-	content := []byte("package main\n\nfunc main() {\n\told()\n}")
-
-	fixes := []finding.Finding{
-		makeRangeFix("a.go", 4, 2, 4, 7, "old()", "new()"),
+	cases := []struct {
+		name       string
+		content    string
+		fix        finding.Finding
+		wantCount  int
+		wantResult string
+	}{
+		{
+			"single line",
+			"package main\n\nfunc main() {\n\told()\n}",
+			makeRangeFix("a.go", 4, 2, 4, 7, "old()", "new()"),
+			1,
+			"package main\n\nfunc main() {\n\tnew()\n}",
+		},
+		{
+			"out of bounds",
+			"package main",
+			makeRangeFix("a.go", 100, 1, 200, 1, "old", "new"),
+			0,
+			"package main",
+		},
 	}
 
-	result, _, count := engine.Apply(content, fixes)
-	g.Expect(count).To(Equal(1))
-	g.Expect(string(result)).To(Equal("package main\n\nfunc main() {\n\tnew()\n}"))
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+			engine := NewFixEngine()
+			result, _, count := engine.Apply([]byte(tt.content), []finding.Finding{tt.fix})
+			g.Expect(count).To(Equal(tt.wantCount))
+			g.Expect(string(result)).To(Equal(tt.wantResult))
+		})
+	}
 }
 
 func TestFixEngine_Apply_LineRange_MultiLine(t *testing.T) {
@@ -132,22 +154,6 @@ func TestFixEngine_Apply_LineRange_MultiLine(t *testing.T) {
 	)
 }
 
-func TestFixEngine_Apply_LineRange_OutOfBounds(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-
-	engine := NewFixEngine()
-	content := []byte("package main")
-
-	fixes := []finding.Finding{
-		makeRangeFix("a.go", 100, 1, 200, 1, "old", "new"),
-	}
-
-	result, _, count := engine.Apply(content, fixes)
-	g.Expect(count).To(Equal(0))
-	g.Expect(string(result)).To(Equal("package main"))
-}
-
 func TestFixEngine_Apply_LineRange_DescendingOrder(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
@@ -165,20 +171,34 @@ func TestFixEngine_Apply_LineRange_DescendingOrder(t *testing.T) {
 	g.Expect(string(result)).To(Equal("package main\nline2: fix1\nline3: old\nline4: fix2"))
 }
 
-func TestFixEngine_Apply_SubstringReplace(t *testing.T) {
+func TestFixEngine_Apply_Substring(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
 
-	engine := NewFixEngine()
-	content := []byte("old code here")
-
-	fixes := []finding.Finding{
-		{BeforeCode: "old", AfterCode: "new", Position: finding.Pos("a.go", 1, 1)},
+	cases := []struct {
+		name       string
+		content    string
+		before     string
+		after      string
+		wantCount  int
+		wantResult string
+	}{
+		{"replace", "old code here", "old", "new", 1, "new code here"},
+		{"not found", "package main", "nonexistent", "replacement", 0, "package main"},
 	}
 
-	result, _, count := engine.Apply(content, fixes)
-	g.Expect(count).To(Equal(1))
-	g.Expect(string(result)).To(Equal("new code here"))
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+			engine := NewFixEngine()
+			fixes := []finding.Finding{
+				{BeforeCode: tt.before, AfterCode: tt.after, Position: finding.Pos("a.go", 1, 1)},
+			}
+			result, _, count := engine.Apply([]byte(tt.content), fixes)
+			g.Expect(count).To(Equal(tt.wantCount))
+			g.Expect(string(result)).To(Equal(tt.wantResult))
+		})
+	}
 }
 
 func TestFixEngine_Apply_SubstringInsertion(t *testing.T) {
@@ -197,50 +217,33 @@ func TestFixEngine_Apply_SubstringInsertion(t *testing.T) {
 	g.Expect(string(result)).To(Equal("package main\n\n\tinserted\nfunc main() {}"))
 }
 
-func TestFixEngine_Apply_SubstringNotFound(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-
-	engine := NewFixEngine()
-	content := []byte("package main")
-
-	fixes := []finding.Finding{
-		{BeforeCode: "nonexistent", AfterCode: "replacement", Position: finding.Pos("a.go", 1, 1)},
-	}
-
-	result, _, count := engine.Apply(content, fixes)
-	g.Expect(count).To(Equal(0))
-	g.Expect(string(result)).To(Equal("package main"))
-}
-
 func TestFixEngine_Apply_NearestLineMatch(t *testing.T) {
 	t.Parallel()
 	engine := NewFixEngine()
 	content := []byte("line1: X\nline2: X\nline3: X")
 
-	t.Run("first occurrence when targetLine is 0", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+	cases := []struct {
+		name      string
+		line, col int
+		want      string
+	}{
+		{"first occurrence when targetLine is 0", 0, 0, "line1: Y\nline2: X\nline3: X"},
+		{"nearest to target line", 3, 0, "line1: X\nline2: X\nline3: Y"},
+	}
 
-		fixes := []finding.Finding{
-			{BeforeCode: "X", AfterCode: "Y", Position: finding.Pos("a.go", 0, 0)},
-		}
-		result, _, count := engine.Apply(content, fixes)
-		g.Expect(count).To(Equal(1))
-		g.Expect(string(result)).To(Equal("line1: Y\nline2: X\nline3: X"))
-	})
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
 
-	t.Run("nearest to target line", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-
-		fixes := []finding.Finding{
-			{BeforeCode: "X", AfterCode: "Y", Position: finding.Pos("a.go", 3, 0)},
-		}
-		result, _, count := engine.Apply(content, fixes)
-		g.Expect(count).To(Equal(1))
-		g.Expect(string(result)).To(Equal("line1: X\nline2: X\nline3: Y"))
-	})
+			fixes := []finding.Finding{
+				{BeforeCode: "X", AfterCode: "Y", Position: finding.Pos("a.go", tt.line, tt.col)},
+			}
+			result, _, count := engine.Apply(content, fixes)
+			g.Expect(count).To(Equal(1))
+			g.Expect(string(result)).To(Equal(tt.want))
+		})
+	}
 }
 
 func TestFixEngine_Apply_ByteOffset(t *testing.T) {
@@ -317,36 +320,31 @@ func TestLineColToOffset(t *testing.T) {
 
 	content := []byte("a\nb\nc")
 
-	t.Run("line 1, col 1", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		offset, err := lineColToOffset(content, 1, 1)
-		g.Expect(err).NotTo(HaveOccurred())
-		g.Expect(offset).To(Equal(0))
-	})
+	cases := []struct {
+		name       string
+		line, col  int
+		wantOffset int
+		wantErr    bool
+	}{
+		{"line 1, col 1", 1, 1, 0, false},
+		{"line 2, col 1", 2, 1, 2, false},
+		{"line 3, col 1", 3, 1, 4, false},
+		{"line beyond file", 10, 1, 0, true},
+	}
 
-	t.Run("line 2, col 1", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		offset, err := lineColToOffset(content, 2, 1)
-		g.Expect(err).NotTo(HaveOccurred())
-		g.Expect(offset).To(Equal(2))
-	})
-
-	t.Run("line 3, col 1", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		offset, err := lineColToOffset(content, 3, 1)
-		g.Expect(err).NotTo(HaveOccurred())
-		g.Expect(offset).To(Equal(4))
-	})
-
-	t.Run("line beyond file", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		_, err := lineColToOffset(content, 10, 1)
-		g.Expect(err).To(HaveOccurred())
-	})
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+			offset, err := lineColToOffset(content, tt.line, tt.col)
+			if tt.wantErr {
+				g.Expect(err).To(HaveOccurred())
+			} else {
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(offset).To(Equal(tt.wantOffset))
+			}
+		})
+	}
 }
 
 func TestFindAllOccurrences(t *testing.T) {
@@ -375,29 +373,28 @@ func TestOffsetLineDistance(t *testing.T) {
 func TestFixEdit_Overlaps(t *testing.T) {
 	t.Parallel()
 
-	t.Run("non-overlapping", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		a := FixEdit{Offset: 0, Length: 5}
-		b := FixEdit{Offset: 5, Length: 5}
-		g.Expect(a.Overlaps(b)).To(BeFalse())
-	})
+	cases := []struct {
+		name    string
+		a, b    FixEdit
+		overlap bool
+	}{
+		{"non-overlapping", FixEdit{Offset: 0, Length: 5}, FixEdit{Offset: 5, Length: 5}, false},
+		{"overlapping", FixEdit{Offset: 0, Length: 6}, FixEdit{Offset: 5, Length: 5}, true},
+		{
+			"zero-length at same offset",
+			FixEdit{Offset: 10, Length: 0},
+			FixEdit{Offset: 10, Length: 0},
+			true,
+		},
+	}
 
-	t.Run("overlapping", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		a := FixEdit{Offset: 0, Length: 6}
-		b := FixEdit{Offset: 5, Length: 5}
-		g.Expect(a.Overlaps(b)).To(BeTrue())
-	})
-
-	t.Run("zero-length at same offset", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		a := FixEdit{Offset: 10, Length: 0}
-		b := FixEdit{Offset: 10, Length: 0}
-		g.Expect(a.Overlaps(b)).To(BeTrue())
-	})
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+			g.Expect(tt.a.Overlaps(tt.b)).To(Equal(tt.overlap))
+		})
+	}
 }
 
 func TestFixEdit_Validate(t *testing.T) {

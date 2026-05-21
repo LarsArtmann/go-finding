@@ -381,7 +381,8 @@ func TestToSARIF_EmptyReport(t *testing.T) {
 	}
 }
 
-func TestToSARIF_ErrorPath(t *testing.T) {
+func testSARIFNaNError(t *testing.T, fn func(*Report) ([]byte, error)) {
+	t.Helper()
 	t.Parallel()
 	g := gomega.NewWithT(t)
 
@@ -395,26 +396,18 @@ func TestToSARIF_ErrorPath(t *testing.T) {
 		},
 	}
 
-	_, err := r.ToSARIF()
+	_, err := fn(r)
 	g.Expect(err).To(gomega.HaveOccurred())
 }
 
+func TestToSARIF_ErrorPath(t *testing.T) {
+	testSARIFNaNError(t, (*Report).ToSARIF)
+}
+
 func TestToSARIFFiltered_ErrorPath(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
-
-	r := &Report{
-		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
-			{
-				ID: "f1", Rule: "r1", Message: "m", Severity: SeverityError,
-				Position: Position{File: "a.go"}, Confidence: Confidence(math.NaN()),
-			},
-		},
-	}
-
-	_, err := r.ToSARIFFiltered(SeverityError)
-	g.Expect(err).To(gomega.HaveOccurred())
+	testSARIFNaNError(t, func(r *Report) ([]byte, error) {
+		return r.ToSARIFFiltered(SeverityError)
+	})
 }
 
 func TestWriteSARIF(t *testing.T) {

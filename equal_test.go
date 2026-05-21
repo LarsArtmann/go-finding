@@ -83,6 +83,35 @@ func testFindingWithRange(f Finding, line int) Finding {
 	return f
 }
 
+func testFindingEqualCase(
+	t *testing.T,
+	name string,
+	a, b Finding,
+	want bool,
+) {
+	t.Helper()
+	t.Run(name, func(t *testing.T) {
+		t.Parallel()
+
+		if got := a.Equal(b); got != want {
+			t.Errorf("Finding.Equal() = %v, want %v", got, want)
+		}
+	})
+}
+
+func testFindingEqualCases(t *testing.T, tests []struct {
+	name string
+	a, b Finding
+	want bool
+},
+) {
+	t.Helper()
+
+	for _, tt := range tests {
+		testFindingEqualCase(t, tt.name, tt.a, tt.b, tt.want)
+	}
+}
+
 func TestFinding_Equal(t *testing.T) {
 	t.Parallel()
 
@@ -154,15 +183,7 @@ func TestFinding_Equal(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			if got := tt.a.Equal(tt.b); got != tt.want {
-				t.Errorf("Finding.Equal() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	testFindingEqualCases(t, tests)
 }
 
 func TestFinding_Equal_FieldMismatch(t *testing.T) {
@@ -243,15 +264,7 @@ func TestFinding_Equal_FieldMismatch(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			if got := tt.a.Equal(tt.b); got != tt.want {
-				t.Errorf("Finding.Equal() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	testFindingEqualCases(t, tests)
 }
 
 func TestFinding_Equal_FieldMismatch_CodeAndMeta(t *testing.T) {
@@ -321,15 +334,7 @@ func TestFinding_Equal_FieldMismatch_CodeAndMeta(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			if got := tt.a.Equal(tt.b); got != tt.want {
-				t.Errorf("Finding.Equal() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	testFindingEqualCases(t, tests)
 }
 
 func TestFinding_Equal_Suppression(t *testing.T) {

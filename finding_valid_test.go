@@ -206,11 +206,5 @@ func TestFinding_IsValid(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
-			g.Expect(tt.f.IsValid()).To(Equal(tt.want))
-		})
-	}
+	runIsValidTests(t, tests)
 }

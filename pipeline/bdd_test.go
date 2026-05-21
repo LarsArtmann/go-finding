@@ -17,106 +17,86 @@ func TestPipelineBDD(t *testing.T) {
 	RunSpecs(t, "Pipeline BDD Suite")
 }
 
+func runSingleDetectorPipeline(
+	dryRun bool,
+	detector pipeline.Detector,
+) (*pipeline.PipelineResult, error) {
+	cfg := pipeline.DefaultConfig()
+	cfg.DryRun = dryRun
+	cfg.MaxIterations = 1
+
+	p, err := pipeline.New(cfg, ".", detector)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.Run(context.Background())
+}
+
 var _ = Describe("Pipeline Lifecycle", func() {
 	Describe("detect → triage → fix → verify loop", func() {
-		Context("when a detector finds auto-fixable issues", func() {
-			It("detects and triages them correctly in dry-run mode", func() {
-				detector := pipeline.NamedDetectorFunc("fixer",
-					func(_ context.Context) ([]finding.Finding, error) {
-						return []finding.Finding{
-							mustBuild(
-								"r1",
-								"fixer",
-								"unused import",
-								finding.SeverityWarning,
-								"main.go",
-								5,
-								finding.FixStrategyDirect,
-								`"os"`,
-								`""`,
-							),
-						}, nil
-					})
-
-				cfg := pipeline.DefaultConfig()
-				cfg.DryRun = true
-				cfg.MaxIterations = 1
-
-				p, err := pipeline.New(cfg, ".", detector)
-				Expect(err).NotTo(HaveOccurred())
-
-				result, err := p.Run(context.Background())
+		DescribeTable(
+			"detects and triages findings",
+			func(detector pipeline.Detector, dryRun bool) {
+				result, err := runSingleDetectorPipeline(dryRun, detector)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result.TotalDetected).To(BeNumerically(">=", 1))
-			})
-		})
-
-		Context("when a detector finds non-fixable issues", func() {
-			It("reports findings without attempting fixes", func() {
-				detector := pipeline.NamedDetectorFunc(
-					"linter",
-					func(_ context.Context) ([]finding.Finding, error) {
-						return []finding.Finding{
-							mustBuild(
-								"r1",
-								"linter",
-								"complex function",
-								finding.SeverityInfo,
-								"main.go",
-								10,
-								finding.FixStrategyNone,
-								"",
-								"",
-							),
-						}, nil
-					},
-				)
-
-				cfg := pipeline.DefaultConfig()
-				cfg.MaxIterations = 1
-
-				p, err := pipeline.New(cfg, ".", detector)
-				Expect(err).NotTo(HaveOccurred())
-
-				result, err := p.Run(context.Background())
-				Expect(err).NotTo(HaveOccurred())
-				Expect(result.TotalDetected).To(BeNumerically(">=", 1))
-			})
-		})
-
-		Context("when dry run is enabled", func() {
-			It("detects and triages but does not apply fixes", func() {
-				detector := pipeline.NamedDetectorFunc(
+			},
+			Entry(
+				"auto-fixable issues in dry-run mode",
+				singleFindingDetector(
 					"fixer",
-					func(_ context.Context) ([]finding.Finding, error) {
-						return []finding.Finding{
-							mustBuild(
-								"r1",
-								"fixer",
-								"fixable",
-								finding.SeverityWarning,
-								"main.go",
-								1,
-								finding.FixStrategyDirect,
-								"old",
-								"new",
-							),
-						}, nil
-					},
-				)
-
-				cfg := pipeline.DefaultConfig()
-				cfg.DryRun = true
-				cfg.MaxIterations = 1
-
-				p, err := pipeline.New(cfg, ".", detector)
-				Expect(err).NotTo(HaveOccurred())
-
-				result, err := p.Run(context.Background())
-				Expect(err).NotTo(HaveOccurred())
-				Expect(result.TotalDetected).To(BeNumerically(">=", 1))
-			})
-		})
+					mustBuild(
+						"r1",
+						"fixer",
+						"unused import",
+						finding.SeverityWarning,
+						"main.go",
+						5,
+						finding.FixStrategyDirect,
+						`"os"`,
+						`""`,
+					),
+				),
+				true,
+			),
+			Entry(
+				"non-fixable issues",
+				singleFindingDetector(
+					"linter",
+					mustBuild(
+						"r1",
+						"linter",
+						"complex function",
+						finding.SeverityInfo,
+						"main.go",
+						10,
+						finding.FixStrategyNone,
+						"",
+						"",
+					),
+				),
+				false,
+			),
+			Entry(
+				"dry run prevents applying fixes",
+				singleFindingDetector(
+					"fixer",
+					mustBuild(
+						"r1",
+						"fixer",
+						"fixable",
+						finding.SeverityWarning,
+						"main.go",
+						1,
+						finding.FixStrategyDirect,
+						"old",
+						"new",
+					),
+				),
+				true,
+			),
+		)
 	})
 
 	Describe("graceful degradation", func() {
@@ -179,14 +159,19 @@ var _ = Describe("Pipeline Lifecycle", func() {
 	Describe("callbacks", func() {
 		It("fires OnFinding for each detected finding", func() {
 			var found []finding.Finding
-			detector := pipeline.NamedDetectorFunc(
+			detector := singleFindingDetector(
 				"t",
-				func(_ context.Context) ([]finding.Finding, error) {
-					return []finding.Finding{
-						mustBuild("r1", "t", "msg", finding.SeverityInfo, "f.go", 1,
-							finding.FixStrategyNone, "", ""),
-					}, nil
-				},
+				mustBuild(
+					"r1",
+					"t",
+					"msg",
+					finding.SeverityInfo,
+					"f.go",
+					1,
+					finding.FixStrategyNone,
+					"",
+					"",
+				),
 			)
 
 			cfg := pipeline.DefaultConfig()
@@ -271,6 +256,12 @@ var _ = Describe("Pipeline Lifecycle", func() {
 		})
 	})
 })
+
+func singleFindingDetector(name string, f finding.Finding) pipeline.Detector {
+	return pipeline.NamedDetectorFunc(name, func(_ context.Context) ([]finding.Finding, error) {
+		return []finding.Finding{f}, nil
+	})
+}
 
 func mustBuild(
 	rule, tool, msg string, sev finding.Severity, file string, line int,

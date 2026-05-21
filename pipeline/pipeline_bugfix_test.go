@@ -26,6 +26,19 @@ func collectingOnFix(ids *[]string) func(finding.Finding, bool) {
 	}
 }
 
+func directFix(id, rule, tool, msg, before, after, file string, line int) finding.Finding {
+	return finding.Finding{
+		ID:          id,
+		Rule:        rule,
+		ToolName:    tool,
+		Message:     msg,
+		BeforeCode:  before,
+		AfterCode:   after,
+		Position:    finding.Position{File: file, Line: line},
+		FixStrategy: finding.FixStrategyDirect,
+	}
+}
+
 // TestOnFix_FiresOnlyForAppliedFixes verifies C-1: OnFix callback fires
 // exactly once per actually-applied fix, not once per safeFix.
 func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
@@ -39,16 +52,7 @@ func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
 	writeTestFile(t, testFile, []byte(original))
 
 	// One fix that targets the second occurrence at line 5.
-	fix := finding.Finding{
-		ID:          "fix1",
-		Rule:        "r1",
-		ToolName:    "tool",
-		Message:     "replace old",
-		BeforeCode:  "old()",
-		AfterCode:   "new()",
-		Position:    finding.Position{File: "fixme.go", Line: 5},
-		FixStrategy: finding.FixStrategyDirect,
-	}
+	fix := directFix("fix1", "r1", "tool", "replace old", "old()", "new()", "fixme.go", 5)
 
 	var onFixCalls int
 	cfg := Config{
@@ -85,13 +89,7 @@ func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
 	writeTestFile(t, testFile, []byte("package main\n"))
 
 	// Fix with BeforeCode that doesn't exist in the file.
-	fix := finding.Finding{
-		ID:          "fix1",
-		BeforeCode:  "nonexistent",
-		AfterCode:   "replacement",
-		Position:    finding.Position{File: "fixme.go", Line: 1},
-		FixStrategy: finding.FixStrategyDirect,
-	}
+	fix := directFix("fix1", "", "", "", "nonexistent", "replacement", "fixme.go", 1)
 
 	var appliedCount int
 	cfg := Config{
@@ -126,26 +124,26 @@ func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
 	writeTestFile(t, testFile, []byte("package main\n\nfunc main() {\n\tfirst()\n\tsecond()\n}\n"))
 
 	// fixA fails (BeforeCode not found), fixB succeeds.
-	fixA := finding.Finding{
-		ID:          "fixA",
-		Rule:        "r1",
-		ToolName:    "tool",
-		Message:     "replace first",
-		BeforeCode:  "nonexistent()",
-		AfterCode:   "newFirst()",
-		Position:    finding.Position{File: "fixme.go", Line: 4},
-		FixStrategy: finding.FixStrategyDirect,
-	}
-	fixB := finding.Finding{
-		ID:          "fixB",
-		Rule:        "r2",
-		ToolName:    "tool",
-		Message:     "replace second",
-		BeforeCode:  "second()",
-		AfterCode:   "newSecond()",
-		Position:    finding.Position{File: "fixme.go", Line: 5},
-		FixStrategy: finding.FixStrategyDirect,
-	}
+	fixA := directFix(
+		"fixA",
+		"r1",
+		"tool",
+		"replace first",
+		"nonexistent()",
+		"newFirst()",
+		"fixme.go",
+		4,
+	)
+	fixB := directFix(
+		"fixB",
+		"r2",
+		"tool",
+		"replace second",
+		"second()",
+		"newSecond()",
+		"fixme.go",
+		5,
+	)
 
 	var appliedIDs []string
 	cfg := Config{

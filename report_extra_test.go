@@ -344,15 +344,9 @@ func TestReport_All_IteratorReleasesLock(t *testing.T) {
 	}
 }
 
-func TestReport_ComputeSummaryAt_Deterministic(t *testing.T) {
-	t.Parallel()
-
-	past := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
-	future := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
-	now := time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC)
-
-	expiredSuppression := Finding{
-		ID:       "exp1",
+func suppressionFinding(id string, expiresAt *time.Time) Finding {
+	return Finding{
+		ID:       id,
 		Rule:     "rule",
 		ToolName: "tool",
 		Message:  "test",
@@ -362,24 +356,21 @@ func TestReport_ComputeSummaryAt_Deterministic(t *testing.T) {
 			Kind:      SuppressionInConfig,
 			Rule:      "rule",
 			Reason:    "expired",
-			ExpiresAt: &past,
+			ExpiresAt: expiresAt,
 		},
 	}
+}
 
-	activeSuppression := Finding{
-		ID:       "act1",
-		Rule:     "rule",
-		ToolName: "tool",
-		Message:  "test",
-		Severity: SeverityWarning,
-		Position: Pos("file.go", 2, 1),
-		Suppression: &Suppression{
-			Kind:      SuppressionInConfig,
-			Rule:      "rule",
-			Reason:    "still active",
-			ExpiresAt: &future,
-		},
-	}
+func TestReport_ComputeSummaryAt_Deterministic(t *testing.T) {
+	t.Parallel()
+
+	past := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+	future := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	now := time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC)
+
+	expiredSuppression := suppressionFinding("exp1", &past)
+
+	activeSuppression := suppressionFinding("act1", &future)
 
 	r := NewReport(ToolInfo{Name: "deterministic"})
 	r.AddFinding(expiredSuppression)

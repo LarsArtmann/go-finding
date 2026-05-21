@@ -15,6 +15,24 @@ func expiredSuppression() *Suppression {
 	}
 }
 
+func runIsValidTests(t *testing.T, tests []struct {
+	name string
+	f    Finding
+	want bool
+},
+) {
+	t.Helper()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+
+			g.Expect(tt.f.IsValid()).To(Equal(tt.want))
+		})
+	}
+}
+
 func TestFindingIsValid(t *testing.T) {
 	t.Parallel()
 
@@ -110,14 +128,7 @@ func TestFindingIsValid(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
-
-			g.Expect(tt.f.IsValid()).To(Equal(tt.want))
-		})
-	}
+	runIsValidTests(t, tests)
 }
 
 func TestFindingHasFix(t *testing.T) {

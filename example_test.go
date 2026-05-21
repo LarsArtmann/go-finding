@@ -380,26 +380,23 @@ func ExampleFindingError() {
 	// [io] read file: permission denied
 }
 
+func newExampleFinding(
+	rule, tool, msg string,
+	sev finding.Severity,
+	file string,
+	line, col int,
+) finding.Finding {
+	return finding.NewFinding(rule, tool, msg, sev, finding.Pos(file, line, col), 0)
+}
+
 func ExampleDiff() {
 	before := []finding.Finding{
-		finding.NewFinding(
-			"rule-a", "tool", "msg a",
-			finding.SeverityError, finding.Pos("a.go", 1, 1), 0,
-		),
-		finding.NewFinding(
-			"rule-b", "tool", "msg b",
-			finding.SeverityWarning, finding.Pos("b.go", 2, 1), 0,
-		),
+		newExampleFinding("rule-a", "tool", "msg a", finding.SeverityError, "a.go", 1, 1),
+		newExampleFinding("rule-b", "tool", "msg b", finding.SeverityWarning, "b.go", 2, 1),
 	}
 	after := []finding.Finding{
-		finding.NewFinding(
-			"rule-a", "tool", "msg a",
-			finding.SeverityError, finding.Pos("a.go", 1, 1), 0,
-		),
-		finding.NewFinding(
-			"rule-c", "tool", "msg c",
-			finding.SeverityInfo, finding.Pos("c.go", 3, 1), 0,
-		),
+		newExampleFinding("rule-a", "tool", "msg a", finding.SeverityError, "a.go", 1, 1),
+		newExampleFinding("rule-c", "tool", "msg c", finding.SeverityInfo, "c.go", 3, 1),
 	}
 
 	result := finding.Diff(before, after)
@@ -415,13 +412,23 @@ func ExampleDiff() {
 
 func ExampleFormatText() {
 	findings := []finding.Finding{
-		finding.NewFinding(
-			"nilcheck", "govet", "possible nil dereference",
-			finding.SeverityError, finding.Pos("main.go", 42, 5), 0,
+		newExampleFinding(
+			"nilcheck",
+			"govet",
+			"possible nil dereference",
+			finding.SeverityError,
+			"main.go",
+			42,
+			5,
 		),
-		finding.NewFinding(
-			"unused", "staticcheck", "unused variable",
-			finding.SeverityWarning, finding.Pos("util.go", 10, 3), 0,
+		newExampleFinding(
+			"unused",
+			"staticcheck",
+			"unused variable",
+			finding.SeverityWarning,
+			"util.go",
+			10,
+			3,
 		),
 	}
 

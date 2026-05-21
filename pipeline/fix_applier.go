@@ -93,7 +93,8 @@ func (a *FixApplier) ApplyWithDetails(
 
 		cleanPath := filepath.Clean(path)
 		cleanRoot := filepath.Clean(a.rootDir)
-		if cleanPath != cleanRoot && !strings.HasPrefix(cleanPath, cleanRoot+string(os.PathSeparator)) {
+		if cleanPath != cleanRoot &&
+			!strings.HasPrefix(cleanPath, cleanRoot+string(os.PathSeparator)) {
 			continue
 		}
 
