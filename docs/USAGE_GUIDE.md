@@ -588,3 +588,114 @@ The library ships with detector implementations in `internal/detectors/`:
 
 - **`govet`** — Wraps `go vet -json` output (`NewGoVetDetector(dir)`)
 - **`staticcheck`** — Wraps staticcheck JSON output (`NewStaticcheckDetector(dir)`)
+
+## Builder API
+
+For complex finding construction with validation, use the Builder:
+
+```go
+f, err := finding.NewBuilder("unused-var", "my-tool", "variable x is unused",
+    finding.SeverityWarning, finding.Pos("main.go", 5, 2)).
+    WithID("custom-id").
+    WithCategory(finding.CategoryUnused).
+    WithConfidence(finding.ConfidenceHigh).
+    WithFixStrategy(finding.FixStrategyDirect).
+    WithBeforeCode("x := 1").
+    WithAfterCode("_ = x").
+    WithTags(finding.TagUnused, finding.TagBug).
+    WithMetadata(map[string]string{"source": "staticcheck"}).
+    Build()
+
+// MustBuild panics on validation error (use in tests/init code)
+f2 := finding.NewBuilder("rule", "tool", "msg",
+    finding.SeverityError, finding.Pos("a.go", 1, 1)).MustBuild()
+```
+
+`Build()` calls `Validate()` and returns detailed per-field errors.
+
+## Suppression
+
+Findings can be suppressed with a reason and optional TTL:
+
+```go
+expiry := time.Now().Add(24 * time.Hour)
+f.Suppression = &finding.Suppression{
+    Kind:      finding.SuppressionKindInSource,
+    Rule:      "unused-var",
+    Reason:    "intentionally unused in test",
+    ExpiresAt: &expiry,
+}
+
+f.IsSuppressed()                    // true
+f.Suppression.IsActive(time.Now())  // true (not expired)
+```
+
+Three suppression kinds: `in-source`, `in-config`, `in-review`.
+
+## Confidence
+
+`Confidence` is a named float64 type on a 0.0–1.0 scale:
+
+```go
+f.Confidence = finding.ConfidenceHigh  // 0.75
+f.Confidence.IsValid()                 // true
+f.Confidence.Clamp()                   // ensures [0.0, 1.0]
+```
+
+Named constants: `ConfidenceNone` (0.0), `ConfidenceLow` (0.25), `ConfidenceMedium` (0.5), `ConfidenceHigh` (0.75), `ConfidenceFull` (1.0).
+
+## Diff
+
+Compare two finding sets:
+
+```go
+result := finding.Diff(beforeFindings, afterFindings)
+fmt.Println(result.Stats())     // "+2 -1 =3"
+fmt.Println(result.HasChanges()) // true
+```
+
+`DiffResult` contains `Added`, `Removed`, and `Unchanged` slices, sorted by ID.
+
+## Conflict Detection
+
+The pipeline subpackage provides conflict detection for overlapping fixes:
+
+```go
+groups, conflicts := pipeline.DetectConflicts(fixes)
+for _, g := range groups {
+    fmt.Printf("Safe group in %s: %d fixes\n", g.File, len(g.Fixes))
+}
+
+// Detailed conflict analysis
+infos := pipeline.AnalyzeConflicts(fixes)
+for _, info := range infos {
+    fmt.Printf("%s conflicts with %d others: %s\n",
+        info.Finding.ID, len(info.ConflictsWith), info.Reason)
+}
+```
+
+## Fix Engine and Providers
+
+The pipeline subpackage includes a byte-level fix engine with composable providers:
+
+```go
+// In-memory engine
+engine := pipeline.NewFixEngine()
+result, err := engine.Apply(content, fixes)
+
+// Filesystem applier with backup/rollback
+applier, err := pipeline.NewFixApplier(rootDir)
+defer applier.Close()
+applied, err := applier.Apply(ctx, fixes)
+```
+
+**Default provider chain** (tried in order):
+1. `OffsetProvider` — byte offset ranges
+2. `LineProvider` — line/column positions
+3. `SubstringProvider` — BeforeCode text matching
+
+**Custom providers** for domain-specific transformations (e.g., Go AST):
+
+```go
+applier, err := pipeline.NewFixApplierWithProviders(rootDir, myASTProvider)
+```
