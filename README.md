@@ -46,7 +46,7 @@ func main() {
         "variable x is unused",
         finding.SeverityWarning,
         finding.Position{File: "main.go", Line: 42, Column: 5},
-        0.95,
+        finding.ConfidenceHigh,
     )
 
     report := finding.NewReport(finding.ToolInfo{Name: "my-tool", Version: "1.0.0"})
@@ -68,7 +68,7 @@ f, err := finding.NewBuilder("nilcheck", "govet", "possible nil deref",
     WithFixStrategy(finding.FixStrategyDirect).
     WithBeforeCode("x.foo").
     WithAfterCode("x.foo()").
-    WithConfidence(0.95).
+    WithConfidence(finding.ConfidenceHigh).
     Build()
 if err != nil {
     log.Fatal(err)
@@ -175,7 +175,7 @@ func (d *MyDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
     findings := []finding.Finding{
         finding.NewFinding("RULE001", "my-detector", "issue found",
             finding.SeverityError,
-            finding.Position{File: "main.go", Line: 10}, 0.9),
+            finding.Position{File: "main.go", Line: 10}, finding.ConfidenceHigh),
     }
     return findings, nil
 }
@@ -208,7 +208,7 @@ f := finding.FromLSP(lspDiag, "my-tool")
 // From go/analysis Diagnostic
 f := finding.FromDiagnostic(diag, pass.Fset, "my-analyzer")
 
-// Note: Converting back to analysis.Diagnostic is not yet supported.
+// Note: Converting back to analysis.Diagnostic is supported via ToDiagnostic().
 ```
 
 ## JSON
@@ -217,11 +217,11 @@ f := finding.FromDiagnostic(diag, pass.Fset, "my-analyzer")
 // Serialize a single finding
 data, err := f.LineJSON()
 
-// Deserialize with validation
+// Deserialize with validation (returns value type)
 f, err := finding.FromJSON(data)
 
 // Line-delimited JSON stream
-data, dropped := finding.LineJSON(findings)
+line, err := f.LineJSON()
 
 // Pretty-printed report
 data, err := report.PrettyJSON()
