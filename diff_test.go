@@ -108,6 +108,38 @@ func TestDiffResult_HasChanges(t *testing.T) {
 	if !(DiffResult{Removed: []Finding{{ID: "a"}}}).HasChanges() {
 		t.Error("DiffResult with removals should have changes")
 	}
+
+	if !(DiffResult{Modified: []ModifiedPair{{Before: Finding{ID: "a"}, After: Finding{ID: "a"}}}}).HasChanges() {
+		t.Error("DiffResult with modifications should have changes")
+	}
+}
+
+func TestDiff_ModifiedTracksBothVersions(t *testing.T) {
+	t.Parallel()
+
+	before := []Finding{
+		{ID: "keep", Message: "original"},
+		{ID: "changed", Message: "before msg"},
+	}
+	after := []Finding{
+		{ID: "keep", Message: "original"},
+		{ID: "changed", Message: "after msg"},
+	}
+
+	result := Diff(before, after)
+
+	if len(result.Modified) != 1 {
+		t.Fatalf("Modified = %d, want 1", len(result.Modified))
+	}
+
+	pair := result.Modified[0]
+	if pair.Before.Message != "before msg" {
+		t.Errorf("Modified.Before.Message = %q, want %q", pair.Before.Message, "before msg")
+	}
+
+	if pair.After.Message != "after msg" {
+		t.Errorf("Modified.After.Message = %q, want %q", pair.After.Message, "after msg")
+	}
 }
 
 func TestDiffResult_Stats(t *testing.T) {

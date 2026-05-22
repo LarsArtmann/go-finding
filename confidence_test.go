@@ -72,11 +72,11 @@ func TestConfidence_String(t *testing.T) {
 		c    Confidence
 		want string
 	}{
-		{"none", ConfidenceNone, "0.00"},
-		{"low", ConfidenceLow, "0.25"},
-		{"medium", ConfidenceMedium, "0.50"},
-		{"high", ConfidenceHigh, "0.75"},
-		{"full", ConfidenceFull, "1.00"},
+		{"none", ConfidenceNone, "none"},
+		{"low", ConfidenceLow, "low"},
+		{"medium", ConfidenceMedium, "medium"},
+		{"high", ConfidenceHigh, "high"},
+		{"full", ConfidenceFull, "full"},
 		{confTestCustom, Confidence(0.42), "0.42"},
 	}
 
@@ -91,7 +91,32 @@ func TestConfidence_String(t *testing.T) {
 	}
 }
 
-func TestConfidence_StandardConstants(t *testing.T) {
+func TestConfidence_Compare(t *testing.T) {
+	t.Parallel()
+
+	low := ConfidenceLow
+	alsoLow := ConfidenceLow
+
+	if ConfidenceNone.Compare(low) >= 0 {
+		t.Errorf(
+			"ConfidenceNone.Compare(ConfidenceLow) = %d, want < 0",
+			ConfidenceNone.Compare(low),
+		)
+	}
+
+	if ConfidenceHigh.Compare(ConfidenceMedium) <= 0 {
+		t.Errorf(
+			"ConfidenceHigh.Compare(ConfidenceMedium) = %d, want > 0",
+			ConfidenceHigh.Compare(ConfidenceMedium),
+		)
+	}
+
+	if low.Compare(alsoLow) != 0 {
+		t.Errorf("low.Compare(alsoLow) = %d, want 0", low.Compare(alsoLow))
+	}
+}
+
+func TestConfidence_StandardConstants_Ordering(t *testing.T) {
 	t.Parallel()
 
 	if ConfidenceNone != 0.0 {

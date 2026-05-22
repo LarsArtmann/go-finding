@@ -5,12 +5,18 @@ import (
 	"slices"
 )
 
+// ModifiedPair holds both versions of a modified finding.
+type ModifiedPair struct {
+	Before Finding
+	After  Finding
+}
+
 // DiffResult holds the difference between two finding sets.
 type DiffResult struct {
-	Added     []Finding // Present in "after" but not "before"
-	Removed   []Finding // Present in "before" but not "after"
-	Modified  []Finding // Present in both but with different content
-	Unchanged []Finding // Present in both with identical content
+	Added     []Finding      // Present in "after" but not "before"
+	Removed   []Finding      // Present in "before" but not "after"
+	Modified  []ModifiedPair // Present in both but with different content
+	Unchanged []Finding      // Present in both with identical content
 }
 
 func byFindingID(a, b Finding) int {
@@ -37,14 +43,16 @@ func Diff(before, after []Finding) DiffResult {
 		afterSet[f.ID] = f
 	}
 
-	var added, removed, modified, unchanged []Finding
+	var added, removed []Finding
+	var modified []ModifiedPair
+	var unchanged []Finding
 
 	for id, beforeF := range beforeSet {
 		afterF, exists := afterSet[id]
 		if !exists {
 			removed = append(removed, beforeF)
 		} else if !beforeF.Equal(afterF) {
-			modified = append(modified, beforeF)
+			modified = append(modified, ModifiedPair{Before: beforeF, After: afterF})
 		} else {
 			unchanged = append(unchanged, beforeF)
 		}
@@ -58,7 +66,9 @@ func Diff(before, after []Finding) DiffResult {
 
 	slices.SortFunc(added, byFindingID)
 	slices.SortFunc(removed, byFindingID)
-	slices.SortFunc(modified, byFindingID)
+	slices.SortFunc(modified, func(a, b ModifiedPair) int {
+		return byFindingID(a.Before, b.Before)
+	})
 	slices.SortFunc(unchanged, byFindingID)
 
 	return DiffResult{Added: added, Removed: removed, Modified: modified, Unchanged: unchanged}

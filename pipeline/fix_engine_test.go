@@ -467,7 +467,7 @@ func TestFixEngine_ApplyWithConflicts_NoConflicts(t *testing.T) {
 		makeRangeFix("a.go", 3, 8, 3, 11, "old", "fix2"),
 	}
 
-	applied, conflicts, result := engine.ApplyWithConflicts(content, fixes)
+	applied, conflicts, result, _ := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(applied).To(HaveLen(2))
 	g.Expect(conflicts).To(BeEmpty())
 	g.Expect(string(result)).To(Equal("line1: fix1\nline2: old\nline3: fix2"))
@@ -482,7 +482,7 @@ func TestFixEngine_ApplyWithConflicts_OverlappingEdits(t *testing.T) {
 
 	fixes := overlappingOffsetFixes()
 
-	applied, conflicts, result := engine.ApplyWithConflicts(content, fixes)
+	applied, conflicts, result, _ := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(applied).To(HaveLen(1))
 	g.Expect(applied[0].ID).To(Equal("fix1"))
 	g.Expect(conflicts).To(HaveLen(1))
@@ -590,7 +590,8 @@ func TestFilterConflictingEdits(t *testing.T) {
 			makeRangeFix("a.go", 3, 8, 3, 11, "old", "fix2"),
 		}
 
-		result := FilterConflictingEdits(content, fixes, engine)
+		result, errs := FilterConflictingEdits(content, fixes, engine)
+		g.Expect(errs).To(BeEmpty())
 		g.Expect(result).To(HaveLen(2))
 	})
 
@@ -602,8 +603,53 @@ func TestFilterConflictingEdits(t *testing.T) {
 		content := []byte("package main\n\nfunc main() {\n\told()\n}")
 		fixes := overlappingOffsetFixes()
 
-		result := FilterConflictingEdits(content, fixes, engine)
+		result, errs := FilterConflictingEdits(content, fixes, engine)
+		g.Expect(errs).To(BeEmpty())
 		g.Expect(result).To(HaveLen(1))
 		g.Expect(result[0].ID).To(Equal("fix1"))
 	})
+}
+
+func TestFixEngine_MultipleLineEdits_SameFile(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	engine := NewFixEngine()
+
+	content := []byte("line1: foo\nline2: bar\nline3: baz\nline4: qux\n")
+
+	fixes := []finding.Finding{
+		makeRangeFix("a.go", 1, 7, 1, 10, "foo", "FIXED1"),
+		makeRangeFix("a.go", 2, 7, 2, 10, "bar", "FIXED2"),
+		makeRangeFix("a.go", 3, 7, 3, 10, "baz", "FIXED3"),
+		makeRangeFix("a.go", 4, 7, 4, 10, "qux", "FIXED4"),
+	}
+
+	applied, conflicts, result, providerErrors := engine.ApplyWithConflicts(content, fixes)
+	g.Expect(providerErrors).To(BeEmpty())
+	g.Expect(applied).To(HaveLen(4))
+	g.Expect(conflicts).To(BeEmpty())
+	g.Expect(string(result)).To(Equal(
+		"line1: FIXED1\nline2: FIXED2\nline3: FIXED3\nline4: FIXED4\n",
+	))
+}
+
+func TestFixEngine_LineEdits_DifferentLengths(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	engine := NewFixEngine()
+
+	content := []byte("a: short\nb: medium\nc: longer\n")
+
+	fixes := []finding.Finding{
+		makeRangeFix("a.go", 1, 3, 1, 8, "short", "MUCH-LONGER-REPLACEMENT"),
+		makeRangeFix("a.go", 3, 3, 3, 9, "longer", "X"),
+	}
+
+	applied, conflicts, result, providerErrors := engine.ApplyWithConflicts(content, fixes)
+	g.Expect(providerErrors).To(BeEmpty())
+	g.Expect(applied).To(HaveLen(2))
+	g.Expect(conflicts).To(BeEmpty())
+	g.Expect(string(result)).To(Equal("a: MUCH-LONGER-REPLACEMENT\nb: medium\nc: X\n"))
 }

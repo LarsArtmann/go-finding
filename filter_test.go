@@ -324,3 +324,72 @@ func TestFilterInPlace_AllFiltered(t *testing.T) {
 		t.Errorf("FilterInPlace() = %d, want 0", len(result))
 	}
 }
+
+func TestAnyOf(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{
+		{ID: "1", Severity: SeverityError},
+		{ID: "2", Severity: SeverityWarning},
+		{ID: "3", Severity: SeverityInfo},
+	}
+
+	result := Filter(findings, AnyOf(BySeverity(SeverityError), BySeverity(SeverityInfo)))
+	if len(result) != 2 {
+		t.Errorf("AnyOf(error, info) = %d findings, want 2", len(result))
+	}
+}
+
+func TestAnyOf_SingleMatch(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{
+		{ID: "1", Severity: SeverityError},
+		{ID: "2", Severity: SeverityWarning},
+	}
+
+	result := Filter(findings, AnyOf(BySeverity(SeverityError)))
+	AssertFindingsIDs(t, result, []string{"1"})
+}
+
+func TestNegate(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{
+		{ID: "1", Severity: SeverityError},
+		{ID: "2", Severity: SeverityWarning},
+		{ID: "3", Severity: SeverityInfo},
+	}
+
+	result := Filter(findings, Negate(BySeverity(SeverityError)))
+	if len(result) != 2 {
+		t.Errorf("Negate(BySeverity(error)) = %d, want 2", len(result))
+	}
+}
+
+func TestByConfidence(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{
+		{ID: "1", Confidence: ConfidenceHigh},
+		{ID: "2", Confidence: ConfidenceLow},
+		{ID: "3", Confidence: ConfidenceHigh},
+	}
+
+	result := Filter(findings, ByConfidence(ConfidenceHigh))
+	AssertFindingsIDs(t, result, []string{"1", "3"})
+}
+
+func TestByConfidenceAtLeast(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{
+		{ID: "1", Confidence: ConfidenceNone},
+		{ID: "2", Confidence: ConfidenceMedium},
+		{ID: "3", Confidence: ConfidenceHigh},
+		{ID: "4", Confidence: ConfidenceFull},
+	}
+
+	result := Filter(findings, ByConfidenceAtLeast(ConfidenceMedium))
+	AssertFindingsIDs(t, result, []string{"2", "3", "4"})
+}

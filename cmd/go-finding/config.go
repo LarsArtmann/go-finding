@@ -124,26 +124,19 @@ func (c pipelineConfigFile) validate() error {
 }
 
 func parseSeverity(s string) (finding.Severity, error) {
-	sevMap := map[string]finding.Severity{
-		finding.SeverityInfo.String():     finding.SeverityInfo,
-		finding.SeverityWarning.String():  finding.SeverityWarning,
-		finding.SeverityError.String():    finding.SeverityError,
-		finding.SeverityCritical.String(): finding.SeverityCritical,
+	sev, err := finding.ParseSeverity(s)
+	if err != nil {
+		return finding.SeverityWarning, fmt.Errorf(
+			"%w %q (use: %s, %s, %s, %s)",
+			errUnknownSeverity, s,
+			finding.SeverityInfo,
+			finding.SeverityWarning,
+			finding.SeverityError,
+			finding.SeverityCritical,
+		)
 	}
 
-	if sev, ok := sevMap[s]; ok {
-		return sev, nil
-	}
-
-	return finding.SeverityWarning, fmt.Errorf(
-		"%w %q (use: %s, %s, %s, %s)",
-		errUnknownSeverity,
-		s,
-		finding.SeverityInfo,
-		finding.SeverityWarning,
-		finding.SeverityError,
-		finding.SeverityCritical,
-	)
+	return sev, nil
 }
 
 func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {

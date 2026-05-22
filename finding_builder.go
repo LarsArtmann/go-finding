@@ -2,16 +2,6 @@ package finding
 
 import "maps"
 
-// ErrInvalidBuilder is returned when Builder.Build is called on a Finding
-// that is missing required fields.
-//
-// Deprecated: Build() now returns detailed validation errors from Finding.Validate().
-// Use errors.Is(err, ErrValidation) instead.
-var ErrInvalidBuilder = NewValidationError(
-	"finding.Builder: cannot Build() an invalid Finding",
-	nil,
-)
-
 // Builder provides a fluent API for constructing Finding values.
 // Use NewBuilder with the required fields, then chain With* methods
 // for optional fields, and call Build to obtain the result.

@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"cmp"
+	"fmt"
 	"slices"
 
 	"github.com/larsartmann/go-finding"
@@ -44,34 +45,39 @@ func (e *FixEngine) Apply(
 	content []byte,
 	fixes []finding.Finding,
 ) ([]byte, []finding.Finding, int) {
-	applied, _, result := e.ApplyWithConflicts(content, fixes)
+	applied, _, result, _ := e.ApplyWithConflicts(content, fixes)
 
 	return result, applied, len(applied)
 }
 
-// ApplyWithConflicts applies findings and returns applied findings, conflicts, and modified content.
+// ApplyWithConflicts applies findings and returns applied findings, conflicts, modified content,
+// and any provider errors encountered during edit resolution.
 // Conflicts are findings whose edits overlap with earlier edits — they are skipped.
 func (e *FixEngine) ApplyWithConflicts(
 	content []byte,
 	fixes []finding.Finding,
-) ([]finding.Finding, []ConflictInfo, []byte) {
+) ([]finding.Finding, []ConflictInfo, []byte, []error) {
 	if len(fixes) == 0 {
-		return nil, nil, content
+		return nil, nil, content, nil
 	}
 
 	var allEdits []FixEdit
+	var resolveErrors []error
 
 	for _, f := range fixes {
 		if !f.HasCodeChange() {
 			continue
 		}
 
-		edits := e.resolveEdits(content, f)
+		edits, err := e.resolveEdits(content, f)
+		if err != nil {
+			resolveErrors = append(resolveErrors, err)
+		}
 		allEdits = append(allEdits, edits...)
 	}
 
 	if len(allEdits) == 0 {
-		return nil, nil, content
+		return nil, nil, content, resolveErrors
 	}
 
 	// Sort descending by offset so later edits don't shift earlier ones.
@@ -79,25 +85,37 @@ func (e *FixEngine) ApplyWithConflicts(
 		return cmp.Compare(b.Offset, a.Offset)
 	})
 
-	return e.applyEditsWithConflicts(content, allEdits)
+	applied, conflicts, result := e.applyEditsWithConflicts(content, allEdits)
+
+	return applied, conflicts, result, resolveErrors
 }
 
 // resolveEdits tries each provider in order and returns edits from the first match.
-func (e *FixEngine) resolveEdits(content []byte, f finding.Finding) []FixEdit {
+// If a provider that CanHandle'd the finding returns an error, it is collected.
+// Returns the edits from the first successful provider, or the first provider error if all fail.
+func (e *FixEngine) resolveEdits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	var firstErr error
+
 	for _, p := range e.providers {
 		if !p.CanHandle(f) {
 			continue
 		}
 
 		edits, err := p.Edits(content, f)
-		if err != nil || len(edits) == 0 {
+		if err != nil {
+			if firstErr == nil {
+				firstErr = fmt.Errorf("provider %s: %w", p.Name(), err)
+			}
+
 			continue
 		}
 
-		return edits
+		if len(edits) > 0 {
+			return edits, nil
+		}
 	}
 
-	return nil
+	return nil, firstErr
 }
 
 // applyEditsWithConflicts applies edits and tracks which were skipped due to overlaps.

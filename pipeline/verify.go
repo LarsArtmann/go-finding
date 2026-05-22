@@ -19,6 +19,8 @@ type VerifyResult struct {
 	Remaining []finding.Finding
 	// New findings introduced by the fixes
 	NewFindings []finding.Finding
+	// Modified findings — same key but different content
+	Modified []finding.Finding
 }
 
 // Verify compares original findings against a fresh detection run
@@ -83,17 +85,28 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 	slices.SortFunc(newFindings, byFindingID)
 
 	var remaining []finding.Finding
+	var modified []finding.Finding
 
 	for _, f := range post {
-		if _, exists := origSet[f.Key()]; exists {
+		orig, exists := origSet[f.Key()]
+		if !exists {
+			continue
+		}
+
+		if !orig.Equal(f) {
+			modified = append(modified, f)
+		} else {
 			remaining = append(remaining, f)
 		}
 	}
+
+	slices.SortFunc(modified, byFindingID)
 
 	return &VerifyResult{
 		Fixed:       fixed,
 		Resolved:    len(fixed),
 		Remaining:   remaining,
 		NewFindings: newFindings,
+		Modified:    modified,
 	}
 }

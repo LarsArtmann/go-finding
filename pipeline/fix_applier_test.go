@@ -55,6 +55,31 @@ func TestFixApplier_Restore_WithoutBackup(t *testing.T) {
 	g.Expect(errors.Is(err, finding.ErrInternal)).To(BeTrue())
 }
 
+func TestFixApplier_ApplyToFile_PreservesPermissions(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+
+	testFile := filepath.Join(tempDir, "executable.go")
+	original := []byte("#!/usr/bin/env go run\npackage main\nold()\n")
+	g.Expect(writeFile(testFile, original, 0o755)).To(Succeed())
+
+	fixes := []finding.Finding{makeFixFinding("1", "old()", "new()", "executable.go", 0)}
+
+	applied, err := applier.Apply(context.Background(), fixes)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(Equal(1))
+
+	info, statErr := os.Stat(testFile)
+	g.Expect(statErr).NotTo(HaveOccurred())
+	g.Expect(info.Mode().Perm()).To(Equal(os.FileMode(0o755)))
+
+	data, readErr := readFile(testFile)
+	g.Expect(readErr).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(Equal("#!/usr/bin/env go run\npackage main\nnew()\n"))
+}
+
 func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)

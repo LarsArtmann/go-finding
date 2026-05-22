@@ -176,6 +176,16 @@ golangci-lint run ./...         # Lint
 - **Conflict grouping documented** — Transitive overlap grouping and conservative single-survivor resolution are documented as intentional design
 - **SARIF property constants** — All `go-finding/*` property keys are named constants in `sarif_types.go`; added `sarifPropAfterCode`, `sarifPropEditPrefix`
 - **TODO_LIST deep audit** — 97 done, 93 open; 29 items verified as already done, 14 phantoms annotated, 7 owner-decision items tagged
+- **FixApplier preserves permissions** — `applyToFile` uses `os.Stat` + original `info.Mode()` instead of hardcoded `0o600`
+- **resolveEdits surfaces provider errors** — Returns `([]FixEdit, error)` instead of silently swallowing; `ApplyWithConflicts` returns 4-tuple with `[]error` for provider errors
+- **FilterConflictingEdits returns errors** — Signature changed to `([]finding.Finding, []error)` to surface provider errors
+- **Diff.Modified tracks both versions** — `ModifiedPair{Before, After}` replaces flat `[]Finding`; enables inspecting what changed
+- **VerifyResult.Modified** — `DiffFindings` now separates modified findings (same Key, different content) from unchanged
+- **Confidence.Compare()** — `Compare(other Confidence) int` follows `Severity.Compare()` pattern
+- **Confidence.String() named labels** — Returns `"none"/"low"/"medium"/"high"/"full"` for standard levels; decimal for custom
+- **ErrInvalidBuilder removed** — Dead code eliminated; `Build()` returns `Validate()` errors directly
+- **CLI delegates to finding.ParseSeverity** — `cmd/go-finding/config.go` no longer duplicates severity parsing logic
+- **FixEngine multi-edit correctness** — Descending-offset application is correct; all edits resolve against same original content snapshot; tests prove it
 
 ### CLI Features
 

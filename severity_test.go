@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -151,4 +152,72 @@ func TestSeverity_CompareOp_DefaultCase(t *testing.T) {
 	if result {
 		t.Error("invalid comparisonOp should return false")
 	}
+}
+
+func TestParseSeverity(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		input string
+		want  Severity
+		isErr bool
+	}{
+		{"info", SeverityInfo, false},
+		{"warning", SeverityWarning, false},
+		{"error", SeverityError, false},
+		{"critical", SeverityCritical, false},
+		{"unknown", "", true},
+		{"", "", true},
+		{"INFO", "", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := ParseSeverity(tt.input)
+			if tt.isErr {
+				if err == nil {
+					t.Errorf("ParseSeverity(%q) = nil error, want error", tt.input)
+				}
+
+				if !errors.Is(err, errInvalidSeverity) {
+					t.Errorf(
+						"ParseSeverity(%q) error = %v, want wrapping errInvalidSeverity",
+						tt.input, err,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("ParseSeverity(%q) = unexpected error: %v", tt.input, err)
+				}
+
+				if got != tt.want {
+					t.Errorf("ParseSeverity(%q) = %q, want %q", tt.input, got, tt.want)
+				}
+			}
+		})
+	}
+}
+
+func TestMustParseSeverity(t *testing.T) {
+	t.Parallel()
+
+	sev := MustParseSeverity("warning")
+	if sev != SeverityWarning {
+		t.Errorf("MustParseSeverity(%q) = %q, want %q", "warning", sev, SeverityWarning)
+	}
+}
+
+func TestMustParseSeverity_Panics(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("MustParseSeverity(%q) should panic", "invalid")
+		}
+	}()
+
+	MustParseSeverity("invalid")
 }

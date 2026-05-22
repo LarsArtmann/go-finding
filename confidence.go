@@ -1,6 +1,9 @@
 package finding
 
-import "fmt"
+import (
+	"cmp"
+	"fmt"
+)
 
 // Confidence represents the certainty level of a finding on a 0.0–1.0 scale.
 // Use named constants (ConfidenceLow, ConfidenceMedium, ConfidenceHigh) for
@@ -40,7 +43,27 @@ func (c Confidence) Clamp() Confidence {
 	return c
 }
 
-// String returns the confidence as a formatted string.
+// Compare returns -1, 0, or +1 depending on whether c is less than, equal to,
+// or greater than other.
+func (c Confidence) Compare(other Confidence) int {
+	return cmp.Compare(float64(c), float64(other))
+}
+
+// String returns the confidence as a human-readable string.
+// Named levels return their label (e.g., "medium"), custom values return a decimal.
 func (c Confidence) String() string {
-	return fmt.Sprintf("%.2f", float64(c))
+	switch c {
+	case ConfidenceNone:
+		return "none"
+	case ConfidenceLow:
+		return "low"
+	case ConfidenceMedium:
+		return "medium"
+	case ConfidenceHigh:
+		return "high"
+	case ConfidenceFull:
+		return "full"
+	default:
+		return fmt.Sprintf("%.2f", float64(c))
+	}
 }

@@ -262,6 +262,9 @@ linters:
       - path: filter\.go
         linters:
           - exhaustruct
+      - path: confidence\.go
+        linters:
+          - goconst
 formatters:
   enable:
     - gci

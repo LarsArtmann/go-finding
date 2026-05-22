@@ -144,12 +144,17 @@ func (a *FixApplier) ApplyWithDetails(
 
 // applyToFile applies fixes to a single file using byte-level edits.
 func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]finding.Finding, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, ioErrorAt("stat file", err, path)
+	}
+
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, ioErrorAt("read file", err, path)
 	}
 
-	appliedFixes, _, newContent := a.engine.ApplyWithConflicts(content, fixes)
+	appliedFixes, _, newContent, _ := a.engine.ApplyWithConflicts(content, fixes)
 
 	if len(appliedFixes) == 0 {
 		return nil, nil
@@ -158,7 +163,7 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]findin
 	if err := os.WriteFile( //nolint:gosec // intentional file write
 		path,
 		newContent,
-		0o600,
+		info.Mode(),
 	); err != nil {
 		return nil, ioErrorAt("write file", err, path)
 	}
