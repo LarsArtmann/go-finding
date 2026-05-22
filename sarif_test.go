@@ -383,7 +383,6 @@ func TestToSARIF_EmptyReport(t *testing.T) {
 
 func testSARIFNaNError(t *testing.T, fn func(*Report) ([]byte, error)) {
 	t.Helper()
-	t.Parallel()
 	g := gomega.NewWithT(t)
 
 	r := &Report{
@@ -401,10 +400,12 @@ func testSARIFNaNError(t *testing.T, fn func(*Report) ([]byte, error)) {
 }
 
 func TestToSARIF_ErrorPath(t *testing.T) {
+	t.Parallel()
 	testSARIFNaNError(t, (*Report).ToSARIF)
 }
 
 func TestToSARIFFiltered_ErrorPath(t *testing.T) {
+	t.Parallel()
 	testSARIFNaNError(t, func(r *Report) ([]byte, error) {
 		return r.ToSARIFFiltered(SeverityError)
 	})

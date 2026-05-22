@@ -29,6 +29,11 @@ type detectorSpec struct {
 	Name string `json:"name" yaml:"name"`
 }
 
+const (
+	detectorNameGovet       = "govet"
+	detectorNameStaticcheck = "staticcheck"
+)
+
 // Sentinel errors for CLI validation.
 var (
 	errUnknownSeverity    = errors.New("unknown severity")
@@ -86,7 +91,10 @@ func loadConfig(
 		ParallelDetectors: parallel,
 		VerifyAfterFix:    verify,
 		Timeout:           timeout.String(),
-		Detectors:         []detectorSpec{{Name: "govet"}, {Name: "staticcheck"}},
+		Detectors: []detectorSpec{
+			{Name: detectorNameGovet},
+			{Name: detectorNameStaticcheck},
+		},
 	}, nil
 }
 
@@ -224,7 +232,7 @@ func outputText(w io.Writer, report *finding.Report) {
 	}
 
 	if err := finding.FormatText(w, report.Findings); err != nil {
-		_, _ = fmt.Fprintln(w, fmt.Sprintf("warning: %v", err))
+		_, _ = fmt.Fprintf(w, "warning: %v\n", err)
 	}
 
 	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(report.Findings))

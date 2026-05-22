@@ -760,7 +760,7 @@ func TestApplyDirectFixes(t *testing.T) {
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "fixme.go")
 
-	original := "package main\n\nfunc main() {\n\told()\n}\n" //nolint:goconst // test fixture
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
 	writeTestFile(t, testFile, []byte(original))
 
 	fixes := directFixFinding()

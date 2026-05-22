@@ -14,6 +14,12 @@ import (
 // All methods are safe for concurrent use. Read methods (FindByID, Len,
 // ActiveFindings, etc.) acquire a read lock; write methods (AddFinding,
 // AddFindings, Merge) acquire a write lock.
+//
+// IMPORTANT: Findings is a public slice for direct access and serialization.
+// DO NOT modify it directly in concurrent contexts — use AddFinding/AddFindings
+// instead. Direct reads of Findings are safe if no concurrent writes occur,
+// but for full thread safety use the accessor methods (FindByID, ActiveFindings,
+// Filter, etc.) which acquire the read lock.
 type Report struct {
 	mu       sync.RWMutex
 	Tool     ToolInfo  `json:"tool"`     // Tool metadata
@@ -117,8 +123,13 @@ func (r *Report) AddFindings(findings []Finding) {
 // Summary is recomputed after merging.
 // Safe for concurrent use.
 func (r *Report) Merge(other *Report) {
+	other.mu.RLock()
+	cloned := make([]Finding, len(other.Findings))
+	copy(cloned, other.Findings)
+	other.mu.RUnlock()
+
 	r.mu.Lock()
-	r.Findings = append(r.Findings, other.Findings...)
+	r.Findings = append(r.Findings, cloned...)
 	r.mu.Unlock()
 
 	r.ComputeSummary()
@@ -178,15 +189,18 @@ func (r *Report) computeSummaryAt(now time.Time) {
 }
 
 // ActiveFindings returns all non-suppressed findings.
+// Uses time.Now() for suppression expiry checks. For deterministic results
+// in tests, filter Findings directly with IsSuppressedAt.
 // Safe for concurrent use.
 func (r *Report) ActiveFindings() []Finding {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
+	now := time.Now()
 	active := make([]Finding, 0, len(r.Findings))
 
 	for _, f := range r.Findings {
-		if !f.IsSuppressed() {
+		if !f.IsSuppressedAt(now) {
 			active = append(active, f)
 		}
 	}

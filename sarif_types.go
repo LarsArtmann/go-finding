@@ -131,7 +131,7 @@ func severityToSARIFLevel(
 	case SeverityInfo:
 		return "note"
 	case SeverityWarning:
-		return "warning" //nolint:goconst // SARIF "warning" != SeverityWarning
+		return "warning"
 	case SeverityError, SeverityCritical:
 		return "error"
 	default:

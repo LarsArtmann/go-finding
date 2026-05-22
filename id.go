@@ -193,7 +193,11 @@ func isHexDigit(r rune) bool {
 // This prevents ambiguity when field values contain the same characters as separators.
 func writeLenField(h io.Writer, field string) {
 	var buf [4]byte
-	binary.BigEndian.PutUint32(buf[:], uint32(len(field)))
-	h.Write(buf[:])
-	h.Write([]byte(field))
+
+	// G115: field length fits in uint32 on all reasonable inputs.
+	// Strings exceeding 4GB are impossible in practice.
+	binary.BigEndian.PutUint32(buf[:], uint32(len(field))) //nolint:gosec
+
+	_, _ = h.Write(buf[:])
+	_, _ = h.Write([]byte(field))
 }

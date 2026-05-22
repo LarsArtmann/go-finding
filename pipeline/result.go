@@ -33,7 +33,6 @@ type Iteration struct {
 	NoFix         int
 	Conflicts     int
 	Applied       int
-	Failed        int
 	findings      []finding.Finding
 	suggest       []finding.Finding
 }

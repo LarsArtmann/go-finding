@@ -161,7 +161,15 @@ golangci-lint run ./...         # Lint
 - **GenerateID length-prefixed hash** — Uses `writeLenField` (uint32 big-endian length + bytes) to prevent hash collision when field values contain colons
 - **Extended Validate()** — Checks Tags.IsValid(), Related.IsValid(), Suppression.IsValid(), Confidence range [0,1], non-empty FixStrategy validity; empty FixStrategy is valid (zero value)
 - **FromJSON value return** — `FromJSON` returns `Finding` value not `*Finding`; uses `Validate()` for detailed errors; `FilterInvalid` stays with `IsValid()` for backward-compatible lossy filtering
-- **DiffResult helpers** — `HasChanges()` reports additions/removals; `Stats()` returns `"+N -N =N"` summary
+- **DiffResult helpers** — `HasChanges()` reports additions/removals/modifications; `Stats()` returns `"+N -N ~N =N"` summary; `Modified` tracks same-ID content changes via `Equal()`
+- **AnyOf filter combinator** — `AnyOf(FilterFunc...)` matches if ANY predicate matches; named `AnyOf` not `Or` to avoid gomega collision
+- **ByConfidence filters** — `ByConfidence(Confidence)` and `ByConfidenceAtLeast(Confidence)` filter constructors
+- **ParseSeverity** — `ParseSeverity(string)` and `MustParseSeverity(string)` for string→Severity conversion
+- **Report.Merge data-race fix** — `Merge()` reads `other.Findings` under `other.mu.RLock()` and copies data
+- **ActiveFindings deterministic** — Uses `IsSuppressedAt(now)` instead of `IsSuppressed()` for consistent suppression checks
+- **Confidence validation consistency** — `Finding.Validate()` uses `Confidence.IsValid()` instead of direct float comparison
+- **Dead code removed** — `Iteration.Failed` field removed (was declared but never written)
+- **Zero lint warnings** — All err113, errcheck, gosec, goconst, staticcheck, exhaustruct, golines, paralleltest, nolintlint, prealloc issues resolved; `.golangci.yml` updated with appropriate exclusions
 - **DeduplicateByID empty ID** — `dedupKey` returns `(string, bool)`; empty ID findings are never deduplicated (no silent fallback to position)
 - **FixApplier path validation** — Rejects path traversal (e.g., `../../../etc/passwd`); checks `filepath.Clean(path)` is within `rootDir`
 - **Shallow copy semantics documented** — `FindByID` and `All()` document that slice/map fields (Tags, Related, Metadata) are shallow copies; use `Clone()` for deep copy

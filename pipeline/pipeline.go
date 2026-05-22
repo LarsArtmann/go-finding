@@ -14,6 +14,11 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// errAlreadyRan is the sentinel error returned when Run is called more than once.
+var errAlreadyRan = errors.New(
+	"pipeline: Run already called; create a new Pipeline for each invocation",
+)
+
 // Pipeline orchestrates the detect → triage → fix → verify loop.
 type Pipeline struct {
 	config     Config
@@ -88,9 +93,7 @@ func (p *Pipeline) notifyStage(stage string, iteration, count int) {
 // The returned PipelineResult is safe to read concurrently after Run returns.
 func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	if p.ran {
-		return nil, errors.New(
-			"pipeline: Run already called; create a new Pipeline for each invocation",
-		)
+		return nil, errAlreadyRan
 	}
 
 	p.ran = true

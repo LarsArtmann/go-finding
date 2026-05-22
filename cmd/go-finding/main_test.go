@@ -49,7 +49,7 @@ func TestOutputResults_JSON(t *testing.T) {
 
 	tool, _ := parsed["tool"].(map[string]any)
 	g.Expect(tool).NotTo(BeNil())
-	g.Expect(tool["name"]).To(Equal("test"))
+	g.Expect(tool["name"]).To(Equal(testToolName))
 }
 
 func TestOutputResults_SARIF(t *testing.T) {
@@ -87,7 +87,7 @@ func TestOutputText_EmptyReport(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	report := finding.NewReport(finding.ToolInfo{Name: "test"})
+	report := finding.NewReport(finding.ToolInfo{Name: testToolName})
 	var buf bytes.Buffer
 
 	outputText(&buf, report)
@@ -99,9 +99,9 @@ func TestOutputText_WithSuggestion(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	report := finding.NewReport(finding.ToolInfo{Name: "test"})
+	report := finding.NewReport(finding.ToolInfo{Name: testToolName})
 	report.AddFinding(finding.Finding{
-		ID: "test:R1:main.go:1:1", Rule: "R1", ToolName: "test",
+		ID: testToolName + ":R1:main.go:1:1", Rule: "R1", ToolName: testToolName,
 		Message: "msg", Severity: finding.SeverityError,
 		Position:   finding.Pos("main.go", 1, 1),
 		Suggestion: "fix it",
@@ -246,7 +246,7 @@ func TestOutputResults_WriteError(t *testing.T) {
 func TestOutputText_WithSummary(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
-	report := finding.NewReport(finding.ToolInfo{Name: "test"})
+	report := finding.NewReport(finding.ToolInfo{Name: testToolName})
 	report.AddFinding(finding.Finding{
 		Severity: finding.SeverityError, Rule: "R1", Message: "err1",
 		Position: finding.Pos("a.go", 1, 1),
@@ -269,12 +269,12 @@ func TestOutputText_WithSummary(t *testing.T) {
 }
 
 func reportWithFindings() *finding.Report {
-	report := finding.NewReport(finding.ToolInfo{Name: "test", Version: "1.0"})
+	report := finding.NewReport(finding.ToolInfo{Name: testToolName, Version: "1.0"})
 	report.AddFinding(
 		makeTestFinding(
 			"test:nilcheck:main.go:10:5",
 			"nilcheck",
-			"test",
+			testToolName,
 			"possible nil dereference",
 			finding.SeverityWarning,
 			"main.go",
@@ -333,7 +333,7 @@ func TestSetupProfiling_CPUProfileStartFailure(t *testing.T) {
 }
 
 func reportWithNaNConfidence() *finding.Report {
-	report := finding.NewReport(finding.ToolInfo{Name: "test"})
+	report := finding.NewReport(finding.ToolInfo{Name: testToolName})
 	report.AddFinding(finding.Finding{
 		ID: "1", Rule: "r1", ToolName: "t", Message: "m",
 		Severity: finding.SeverityError, Position: finding.Position{File: "a.go"},
@@ -344,7 +344,6 @@ func reportWithNaNConfidence() *finding.Report {
 
 func testOutputSerializationError(t *testing.T, format, substr string) {
 	t.Helper()
-	t.Parallel()
 	g := NewWithT(t)
 
 	var buf bytes.Buffer
@@ -354,10 +353,12 @@ func testOutputSerializationError(t *testing.T, format, substr string) {
 }
 
 func TestOutputResults_JSONSerializationError(t *testing.T) {
+	t.Parallel()
 	testOutputSerializationError(t, "json", "serializing JSON")
 }
 
 func TestOutputResults_SARIFSerializationError(t *testing.T) {
+	t.Parallel()
 	testOutputSerializationError(t, "sarif", "serializing SARIF")
 }
 
@@ -371,7 +372,7 @@ func TestRun_InvalidSeverity(t *testing.T) {
 
 	saveRestoreFlags(t)
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
-	os.Args = []string{"go-finding", "-severity=banana"}
+	os.Args = []string{toolName, "-severity=banana"}
 
 	got := run()
 	g.Expect(got).To(Equal(1))
@@ -386,7 +387,7 @@ func TestRegisterDetector(t *testing.T) {
 	// Test registration of a new detector.
 	err := RegisterDetector(name, func(_ string) pipeline.Detector {
 		return pipeline.NamedDetectorFunc(
-			"test",
+			testToolName,
 			func(_ context.Context) ([]finding.Finding, error) {
 				return nil, nil
 			},

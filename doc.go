@@ -100,7 +100,7 @@
 // Compare two finding sets:
 //
 //	result := finding.Diff(before, after)
-//	fmt.Println(result.Stats()) // "+2 -1 =3"
+//	fmt.Println(result.Stats()) // "+2 -1 ~0 =3"
 //
 // # Error Handling
 //

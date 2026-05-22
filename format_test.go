@@ -16,7 +16,7 @@ func TestFormatText(t *testing.T) {
 	}
 
 	var buf strings.Builder
-	FormatText(&buf, findings)
+	FormatText(&buf, findings) //nolint:errcheck
 
 	output := buf.String()
 	if !strings.Contains(output, "main.go:42:5") {
@@ -47,7 +47,7 @@ func TestFormatMarkdown(t *testing.T) {
 	}
 
 	var buf strings.Builder
-	FormatMarkdown(&buf, findings)
+	FormatMarkdown(&buf, findings) //nolint:errcheck
 
 	output := buf.String()
 	if !strings.Contains(output, "| main.go:42:5 | error | nilcheck | possible nil deref |") {

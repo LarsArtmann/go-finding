@@ -9,7 +9,8 @@ import (
 type DiffResult struct {
 	Added     []Finding // Present in "after" but not "before"
 	Removed   []Finding // Present in "before" but not "after"
-	Unchanged []Finding // Present in both (by ID)
+	Modified  []Finding // Present in both but with different content
+	Unchanged []Finding // Present in both with identical content
 }
 
 func byFindingID(a, b Finding) int {
@@ -22,8 +23,9 @@ func byFindingID(a, b Finding) int {
 	return 0
 }
 
-// Diff compares two finding sets by ID and categorizes them as added, removed, or unchanged.
-// Both slices are sorted by ID in the result.
+// Diff compares two finding sets by ID and categorizes them as added, removed, modified, or unchanged.
+// Two findings with the same ID are considered "modified" if their content differs (per Equal()).
+// All result slices are sorted by ID.
 func Diff(before, after []Finding) DiffResult {
 	beforeSet := make(map[string]Finding, len(before))
 	for _, f := range before {
@@ -35,13 +37,16 @@ func Diff(before, after []Finding) DiffResult {
 		afterSet[f.ID] = f
 	}
 
-	var added, removed, unchanged []Finding
+	var added, removed, modified, unchanged []Finding
 
-	for id, f := range beforeSet {
-		if _, exists := afterSet[id]; !exists {
-			removed = append(removed, f)
+	for id, beforeF := range beforeSet {
+		afterF, exists := afterSet[id]
+		if !exists {
+			removed = append(removed, beforeF)
+		} else if !beforeF.Equal(afterF) {
+			modified = append(modified, beforeF)
 		} else {
-			unchanged = append(unchanged, f)
+			unchanged = append(unchanged, beforeF)
 		}
 	}
 
@@ -53,17 +58,21 @@ func Diff(before, after []Finding) DiffResult {
 
 	slices.SortFunc(added, byFindingID)
 	slices.SortFunc(removed, byFindingID)
+	slices.SortFunc(modified, byFindingID)
 	slices.SortFunc(unchanged, byFindingID)
 
-	return DiffResult{Added: added, Removed: removed, Unchanged: unchanged}
+	return DiffResult{Added: added, Removed: removed, Modified: modified, Unchanged: unchanged}
 }
 
-// HasChanges reports whether the diff contains any additions or removals.
+// HasChanges reports whether the diff contains any additions, removals, or modifications.
 func (d DiffResult) HasChanges() bool {
-	return len(d.Added) > 0 || len(d.Removed) > 0
+	return len(d.Added) > 0 || len(d.Removed) > 0 || len(d.Modified) > 0
 }
 
 // Stats returns a human-readable summary of the diff counts.
 func (d DiffResult) Stats() string {
-	return fmt.Sprintf("+%d -%d =%d", len(d.Added), len(d.Removed), len(d.Unchanged))
+	return fmt.Sprintf(
+		"+%d -%d ~%d =%d",
+		len(d.Added), len(d.Removed), len(d.Modified), len(d.Unchanged),
+	)
 }

@@ -231,6 +231,7 @@ linters:
         linters:
           - err113
           - exhaustruct
+          - goconst
           - wrapcheck
           - unparam
       - path: cmd/
@@ -245,6 +246,7 @@ linters:
       - path: sarif_types\.go
         linters:
           - exhaustruct
+          - goconst
       - path: sarif_export\.go
         linters:
           - exhaustruct
@@ -252,6 +254,12 @@ linters:
         linters:
           - exhaustruct
       - path: lsp\.go
+        linters:
+          - exhaustruct
+      - path: version\.go
+        linters:
+          - gochecknoglobals
+      - path: filter\.go
         linters:
           - exhaustruct
 formatters:

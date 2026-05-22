@@ -12,8 +12,8 @@ import (
 var (
 	knownDetectorBuildersMu sync.RWMutex
 	knownDetectorBuilders   = map[string]func(string) pipeline.Detector{
-		"govet":       det.NewGoVetDetector,
-		"staticcheck": det.NewStaticcheckDetector,
+		detectorNameGovet:       det.NewGoVetDetector,
+		detectorNameStaticcheck: det.NewStaticcheckDetector,
 	}
 )
 

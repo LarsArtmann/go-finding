@@ -119,12 +119,12 @@ func TestDiffResult_Stats(t *testing.T) {
 		Unchanged: []Finding{{ID: "d"}, {ID: "e"}, {ID: "f"}},
 	}
 
-	want := "+2 -1 =3"
+	want := "+2 -1 ~0 =3"
 	if got := result.Stats(); got != want {
 		t.Errorf("Stats() = %q, want %q", got, want)
 	}
 
-	if got := (DiffResult{}).Stats(); got != "+0 -0 =0" {
-		t.Errorf("empty Stats() = %q, want +0 -0 =0", got)
+	if got := (DiffResult{}).Stats(); got != "+0 -0 ~0 =0" {
+		t.Errorf("empty Stats() = %q, want +0 -0 ~0 =0", got)
 	}
 }

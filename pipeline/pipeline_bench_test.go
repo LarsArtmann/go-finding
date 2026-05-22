@@ -48,7 +48,7 @@ func runBenchPipeline(b *testing.B, cfg benchConfig) {
 		CorrelateFindings: cfg.correlateFindings,
 	}
 
-	var detectors []Detector
+	detectors := make([]Detector, 0, max(cfg.detectorCount, 1))
 	for i := range max(cfg.detectorCount, 1) {
 		name := "bench"
 		if cfg.detectorCount > 1 {

@@ -263,7 +263,7 @@ func (f Finding) Validate() error {
 		))
 	}
 
-	if f.Confidence < 0 || f.Confidence > 1 {
+	if !f.Confidence.IsValid() {
 		errs = append(errs, NewValidationError(
 			fmt.Sprintf("finding.Confidence %s must be in [0.0, 1.0]", f.Confidence), nil,
 		))

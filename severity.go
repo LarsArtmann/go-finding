@@ -1,6 +1,10 @@
 package finding
 
-import "cmp"
+import (
+	"cmp"
+	"errors"
+	"fmt"
+)
 
 // Severity represents the severity level of a finding.
 type Severity string
@@ -115,4 +119,29 @@ func severityRank(s Severity) int {
 // isValidWith returns true if both severities are valid.
 func (s Severity) isValidWith(other Severity) bool {
 	return s.IsValid() && other.IsValid()
+}
+
+// errInvalidSeverity is returned when parsing an invalid severity string.
+var errInvalidSeverity = errors.New("invalid severity")
+
+// ParseSeverity parses a string into a Severity.
+// Returns an error if the string is not a valid severity level.
+func ParseSeverity(s string) (Severity, error) {
+	sev := Severity(s)
+	if sev.IsValid() {
+		return sev, nil
+	}
+
+	return "", fmt.Errorf("%w: %q (valid: %s, %s, %s, %s)",
+		errInvalidSeverity, s, SeverityInfo, SeverityWarning, SeverityError, SeverityCritical)
+}
+
+// MustParseSeverity parses a string into a Severity, panicking on invalid input.
+func MustParseSeverity(s string) Severity {
+	sev, err := ParseSeverity(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return sev
 }

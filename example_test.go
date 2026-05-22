@@ -432,7 +432,7 @@ func ExampleFormatText() {
 		),
 	}
 
-	finding.FormatText(os.Stdout, findings)
+	finding.FormatText(os.Stdout, findings) //nolint:errcheck
 
 	// Output:
 	// main.go:42:5 [ERROR] nilcheck: possible nil dereference
@@ -447,7 +447,7 @@ func ExampleFormatMarkdown() {
 		),
 	}
 
-	finding.FormatMarkdown(os.Stdout, findings)
+	finding.FormatMarkdown(os.Stdout, findings) //nolint:errcheck
 
 	// Output:
 	// | Location | Severity | Rule | Message |

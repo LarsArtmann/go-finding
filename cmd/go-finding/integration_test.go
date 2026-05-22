@@ -17,6 +17,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const testToolName = "test"
+
 func detectorSpecs(names ...string) []detectorSpec {
 	specs := make([]detectorSpec, len(names))
 	for i, name := range names {
@@ -26,7 +28,10 @@ func detectorSpecs(names ...string) []detectorSpec {
 }
 
 func govetConfig(iterations int, timeout ...string) pipelineConfigFile {
-	cfg := pipelineConfigFile{Detectors: detectorSpecs("govet"), MaxIterations: iterations}
+	cfg := pipelineConfigFile{
+		Detectors:     detectorSpecs(detectorNameGovet),
+		MaxIterations: iterations,
+	}
 	if len(timeout) > 0 {
 		cfg.Timeout = timeout[0]
 	}
@@ -37,8 +42,8 @@ func runWithArgs(t *testing.T, args ...string) int {
 	t.Helper()
 	saveRestoreFlags(t)
 
-	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
-	os.Args = append([]string{"go-finding"}, args...)
+	flag.CommandLine = flag.NewFlagSet(toolName, flag.ContinueOnError)
+	os.Args = append([]string{toolName}, args...)
 
 	return run()
 }
@@ -420,9 +425,9 @@ func TestOutputResults_AllFormats(t *testing.T) {
 
 	report := finding.NewReport(finding.ToolInfo{Name: "integration-test", Version: "1.0"})
 	report.AddFinding(finding.Finding{
-		ID:          "test:R1:main.go:1:1",
+		ID:          testToolName + ":R1:main.go:1:1",
 		Rule:        "R1",
-		ToolName:    "test",
+		ToolName:    testToolName,
 		Message:     "integration test finding",
 		Severity:    finding.SeverityError,
 		Position:    finding.Pos("main.go", 1, 1),

@@ -118,6 +118,20 @@ func ByFile(file string) FilterFunc {
 	}
 }
 
+// ByConfidence returns a filter for the exact confidence level.
+func ByConfidence(c Confidence) FilterFunc {
+	return func(f Finding) bool {
+		return f.Confidence == c
+	}
+}
+
+// ByConfidenceAtLeast returns a filter for confidence >= the given level.
+func ByConfidenceAtLeast(c Confidence) FilterFunc {
+	return func(f Finding) bool {
+		return f.Confidence >= c
+	}
+}
+
 // NotSuppressed returns a filter for non-suppressed findings.
 func NotSuppressed(f Finding) bool {
 	return !f.IsSuppressed()
@@ -127,6 +141,20 @@ func NotSuppressed(f Finding) bool {
 func Negate(predicate FilterFunc) FilterFunc {
 	return func(f Finding) bool {
 		return !predicate(f)
+	}
+}
+
+// AnyOf returns a filter that matches if ANY of the given predicates match.
+// This is the complement of Filter, which requires ALL predicates to match.
+func AnyOf(predicates ...FilterFunc) FilterFunc {
+	return func(f Finding) bool {
+		for _, p := range predicates {
+			if p(f) {
+				return true
+			}
+		}
+
+		return len(predicates) == 0
 	}
 }
 

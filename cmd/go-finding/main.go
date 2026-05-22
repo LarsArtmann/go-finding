@@ -16,6 +16,8 @@ import (
 
 var version = finding.Version // overridden via -ldflags "-X main.version=..."
 
+const toolName = "go-finding"
+
 func main() {
 	os.Exit(run())
 }
@@ -97,7 +99,8 @@ func run() int {
 
 	fmt.Fprintf(
 		os.Stderr,
-		"go-finding v%s: analyzing %s with %d detector(s)\n",
+		"%s v%s: analyzing %s with %d detector(s)\n",
+		toolName,
 		version,
 		dir,
 		len(detectorList),
@@ -116,7 +119,7 @@ func run() int {
 	filtered := filterBySeverity(allFindings, sev)
 
 	report := finding.NewReport(finding.ToolInfo{
-		Name:    "go-finding",
+		Name:    toolName,
 		Version: version,
 	})
 	report.AddFindings(filtered)
