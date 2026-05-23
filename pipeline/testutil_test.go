@@ -66,7 +66,8 @@ func slowMockDetector(name string, delay time.Duration, findings ...finding.Find
 }
 
 func slowTestDetector(name string, delay time.Duration) *mockDetector {
-	return slowMockDetector(name, delay,
+	return slowMockDetector(
+		name, delay,
 		finding.Finding{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"},
 	)
 }
