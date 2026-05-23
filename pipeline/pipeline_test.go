@@ -186,10 +186,7 @@ func TestPipelineRun_Timeout(t *testing.T) {
 	config.ParallelDetectors = false
 	config.Timeout = 50 * time.Millisecond
 
-	detector := slowMockDetector(
-		"slow", 500*time.Millisecond,
-		finding.Finding{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"},
-	)
+	detector := slowTestDetector("slow", 500*time.Millisecond)
 
 	p, err := New(config, t.TempDir(), detector)
 	if err != nil {
@@ -1296,10 +1293,7 @@ func TestPipelineRun_PerDetectorTimeout(t *testing.T) {
 		"slow": 10 * time.Millisecond,
 	}
 
-	slowDetector := slowMockDetector(
-		"slow", 500*time.Millisecond,
-		finding.Finding{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"},
-	)
+	slowDetector := slowTestDetector("slow", 500*time.Millisecond)
 
 	p, err := New(cfg, t.TempDir(), slowDetector)
 	if err != nil {

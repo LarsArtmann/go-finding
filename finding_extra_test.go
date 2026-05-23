@@ -170,13 +170,7 @@ func TestFindingKey(t *testing.T) {
 func TestFindingKeyStability(t *testing.T) {
 	t.Parallel()
 
-	f := Finding{
-		Rule:     "R001",
-		ToolName: "test",
-		Message:  "msg",
-		Severity: SeverityError,
-		Position: Position{File: "file.go", Line: 10, Column: 5},
-	}
+	f := keyTestFinding("")
 
 	key1 := f.Key()
 	key2 := f.Key()

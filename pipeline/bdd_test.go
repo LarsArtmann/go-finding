@@ -44,20 +44,7 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			},
 			Entry(
 				"auto-fixable issues in dry-run mode",
-				singleFindingDetector(
-					"fixer",
-					mustBuild(
-						"r1",
-						"fixer",
-						"unused import",
-						finding.SeverityWarning,
-						"main.go",
-						5,
-						finding.FixStrategyDirect,
-						`"os"`,
-						`""`,
-					),
-				),
+				fixerDetector("unused import", 5, `"os"`, `""`),
 				true,
 			),
 			Entry(
@@ -80,20 +67,7 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			),
 			Entry(
 				"dry run prevents applying fixes",
-				singleFindingDetector(
-					"fixer",
-					mustBuild(
-						"r1",
-						"fixer",
-						"fixable",
-						finding.SeverityWarning,
-						"main.go",
-						1,
-						finding.FixStrategyDirect,
-						"old",
-						"new",
-					),
-				),
+				fixerDetector("fixable", 1, "old", "new"),
 				true,
 			),
 		)
@@ -278,6 +252,23 @@ func mustBuild(
 	return f
 }
 
+func fixerDetector(msg string, line int, before, after string) pipeline.Detector {
+	return singleFindingDetector("fixer", mustBuild(
+		"r1", "fixer", msg, finding.SeverityWarning, "main.go", line,
+		finding.FixStrategyDirect, before, after,
+	))
+}
+
+func assertCanHandle(
+	provider pipeline.FixProvider,
+	before, after string,
+	line, col int,
+	expected bool,
+) {
+	f := codeFix(before, after, line, col)
+	Expect(provider.CanHandle(f)).To(Equal(expected))
+}
+
 func lineRangeFix(
 	before, after, file string,
 	startLine, startCol, endLine, endCol int,
@@ -330,8 +321,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("rejects findings without byte-offset range", func() {
-			f := codeFix("old", "new", 4, 2)
-			Expect(provider.CanHandle(f)).To(BeFalse())
+			assertCanHandle(provider, "old", "new", 4, 2, false)
 		})
 
 		It("rejects findings with no before/after code", func() {
@@ -373,8 +363,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("rejects findings with no line number", func() {
-			f := codeFix("old", "new", 0, 0)
-			Expect(provider.CanHandle(f)).To(BeFalse())
+			assertCanHandle(provider, "old", "new", 0, 0, false)
 		})
 
 		It("handles insertion-only fixes (no BeforeCode)", func() {
@@ -415,8 +404,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("handles findings with BeforeCode", func() {
-			f := codeFix("old()", "new()", 1, 1)
-			Expect(provider.CanHandle(f)).To(BeTrue())
+			assertCanHandle(provider, "old()", "new()", 1, 1, true)
 		})
 
 		It("rejects findings without BeforeCode", func() {

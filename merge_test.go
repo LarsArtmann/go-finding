@@ -182,14 +182,12 @@ func TestDeduplicateByID_EmptyIDNotDeduplicated(t *testing.T) {
 	g := NewWithT(t)
 
 	r1 := NewReport(ToolInfo{Name: "t1"})
-	r1.AddFinding(Finding{
-		ID: "", Rule: "r", ToolName: "t1", Message: "m1",
-		Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1},
-	})
-	r1.AddFinding(Finding{
-		ID: "", Rule: "r", ToolName: "t1", Message: "m2",
-		Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1},
-	})
+	for _, msg := range []string{"m1", "m2"} {
+		r1.AddFinding(Finding{
+			ID: "", Rule: "r", ToolName: "t1", Message: msg,
+			Severity: SeverityInfo, Position: Position{File: "a.go", Line: 1},
+		})
+	}
 
 	merged := Merge([]*Report{r1}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByID))
 	g.Expect(merged.Len()).To(Equal(2))
@@ -200,14 +198,17 @@ func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
 	g := NewWithT(t)
 
 	r1 := NewReport(ToolInfo{Name: "govet"})
-	r1.AddFinding(Finding{
-		ID: "1", ToolName: "govet", Rule: "nilcheck",
-		Position: Position{File: "a.go", Line: 10},
-	})
-	r1.AddFinding(Finding{
-		ID: "3", ToolName: "govet", Rule: "unused",
-		Position: Position{File: "a.go", Line: 10},
-	})
+	for _, tc := range []struct {
+		id, rule string
+	}{
+		{"1", "nilcheck"},
+		{"3", "unused"},
+	} {
+		r1.AddFinding(Finding{
+			ID: tc.id, ToolName: "govet", Rule: tc.rule,
+			Position: Position{File: "a.go", Line: 10},
+		})
+	}
 
 	r2 := NewReport(ToolInfo{Name: "staticcheck"})
 	r2.AddFinding(Finding{

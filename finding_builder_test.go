@@ -19,6 +19,12 @@ func assertRelatedID(t *testing.T, f Finding, idx int, want string) {
 	}
 }
 
+func missingFieldBuilder(pos Position, zero func(*Finding)) *Builder {
+	f := Finding{Rule: "r", ToolName: "t", Message: "m", Severity: SeverityError, Position: pos}
+	zero(&f)
+	return &Builder{f: f}
+}
+
 func TestBuilder_Minimal(t *testing.T) {
 	t.Parallel()
 
@@ -166,50 +172,13 @@ func TestBuilder_Build_MissingFields(t *testing.T) {
 		name    string
 		builder *Builder
 	}{
-		{
-			"empty rule",
-			&Builder{
-				f: Finding{
-					Rule: "", ToolName: "t", Message: "m",
-					Severity: SeverityError, Position: pos,
-				},
-			},
-		},
-		{
-			"empty tool",
-			&Builder{
-				f: Finding{
-					Rule: "r", ToolName: "", Message: "m",
-					Severity: SeverityError, Position: pos,
-				},
-			},
-		},
-		{
-			"empty message",
-			&Builder{
-				f: Finding{
-					Rule: "r", ToolName: "t", Message: "",
-					Severity: SeverityError, Position: pos,
-				},
-			},
-		},
-		{
-			"empty severity",
-			&Builder{
-				f: Finding{
-					Rule: "r", ToolName: "t", Message: "m",
-					Severity: "", Position: pos,
-				},
-			},
-		},
+		{"empty rule", missingFieldBuilder(pos, func(f *Finding) { f.Rule = "" })},
+		{"empty tool", missingFieldBuilder(pos, func(f *Finding) { f.ToolName = "" })},
+		{"empty message", missingFieldBuilder(pos, func(f *Finding) { f.Message = "" })},
+		{"empty severity", missingFieldBuilder(pos, func(f *Finding) { f.Severity = "" })},
 		{
 			"empty position",
-			&Builder{
-				f: Finding{
-					Rule: "r", ToolName: "t", Message: "m",
-					Severity: SeverityError,
-				},
-			},
+			&Builder{f: Finding{Rule: "r", ToolName: "t", Message: "m", Severity: SeverityError}},
 		},
 	}
 

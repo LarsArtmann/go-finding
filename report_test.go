@@ -4,6 +4,13 @@ import (
 	"testing"
 )
 
+func assertByCategoryCount(t *testing.T, r *Report, cat string, want int) {
+	t.Helper()
+	if got := len(r.ByCategory(Category(cat))); got != want {
+		t.Errorf("%s findings = %d, want %d", cat, got, want)
+	}
+}
+
 func addCat(r *Report, id, cat, msg string) {
 	r.AddFinding(Finding{ID: id, Category: Category(cat), Message: msg})
 }
@@ -71,12 +78,8 @@ func TestReportByCategory(t *testing.T) {
 	addCat(r, "2", "style", "b")
 	addCat(r, "3", "security", "c")
 
-	if len(r.ByCategory("security")) != 2 {
-		t.Errorf("security findings = %d, want 2", len(r.ByCategory("security")))
-	}
-	if len(r.ByCategory("style")) != 1 {
-		t.Errorf("style findings = %d, want 1", len(r.ByCategory("style")))
-	}
+	assertByCategoryCount(t, r, "security", 2)
+	assertByCategoryCount(t, r, "style", 1)
 	AssertEmpty(t, r.ByCategory("nonexistent"), "nonexistent category")
 }
 

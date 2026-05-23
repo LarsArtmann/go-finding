@@ -1228,10 +1228,7 @@ func TestSARIF_SchemaCompliance(t *testing.T) {
 		FixStrategy: FixStrategyDirect, Suggestion: "fix", BeforeCode: "old", AfterCode: "new",
 		Category: CategorySecurity, Confidence: 0.9,
 		Tags: []Tag{"sec"}, Snippet: "code",
-		Range: &Range{
-			Start: Position{File: "f.go", Line: 10, Column: 5},
-			End:   Position{File: "f.go", Line: 10, Column: 10},
-		},
+		Range: NewRangePtr("f.go", 10, 5, 10, 10),
 		Related: []RelatedRef{
 			{FindingID: "other:1", Relation: "clone-of", Position: Position{File: "o.go", Line: 1}},
 		},

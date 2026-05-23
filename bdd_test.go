@@ -269,11 +269,7 @@ var _ = Describe("Report Merging and Deduplication", func() {
 	})
 
 	It("correlates findings from different tools on the same file", func() {
-		findings := []finding.Finding{
-			mustBuild("r1", "govet", "nil deref", finding.SeverityError, "main.go", 10),
-			mustBuild("r2", "staticcheck", "unused", finding.SeverityWarning, "main.go", 12),
-			mustBuild("r3", "govet", "other", finding.SeverityInfo, "other.go", 1),
-		}
+		findings := crossToolFindings("unused", 12)
 
 		correlations := finding.Correlate(findings)
 		Expect(correlations).NotTo(BeEmpty())
@@ -468,11 +464,7 @@ var _ = Describe("LSP Conversion User Stories", func() {
 
 var _ = Describe("Cross-Tool Correlation User Stories", func() {
 	It("groups findings from different tools on nearby lines", func() {
-		findings := []finding.Finding{
-			mustBuild("r1", "govet", "nil deref", finding.SeverityError, "main.go", 10),
-			mustBuild("r2", "staticcheck", "unused var", finding.SeverityWarning, "main.go", 11),
-			mustBuild("r3", "govet", "other", finding.SeverityInfo, "other.go", 1),
-		}
+		findings := crossToolFindings("unused var", 11)
 
 		correlations := finding.Correlate(findings)
 		Expect(correlations).NotTo(BeEmpty())
@@ -530,6 +522,14 @@ var _ = Describe("ID Generation User Stories", func() {
 		Expect(parsed.Column).To(Equal(5))
 	})
 })
+
+func crossToolFindings(r2Msg string, r2Line int) []finding.Finding {
+	return []finding.Finding{
+		mustBuild("r1", "govet", "nil deref", finding.SeverityError, "main.go", 10),
+		mustBuild("r2", "staticcheck", r2Msg, finding.SeverityWarning, "main.go", r2Line),
+		mustBuild("r3", "govet", "other", finding.SeverityInfo, "other.go", 1),
+	}
+}
 
 func mustBuild(
 	rule, tool, msg string, sev finding.Severity, file string, line int,

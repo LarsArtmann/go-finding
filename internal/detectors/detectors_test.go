@@ -80,19 +80,28 @@ func TestParseGoVetJSON(t *testing.T) {
 
 func TestParseGoVetJSON_InvalidAndEmpty(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
 
-	t.Run("invalid JSON", func(t *testing.T) {
-		t.Parallel()
-		findings := parseGoVetJSON([]byte("not json"), "")
-		g.Expect(findings).To(BeNil())
-	})
+	tests := []struct {
+		name  string
+		input string
+		empty bool
+	}{
+		{"invalid JSON", "not json", false},
+		{"empty JSON", "{}", true},
+	}
 
-	t.Run("empty JSON", func(t *testing.T) {
-		t.Parallel()
-		findings := parseGoVetJSON([]byte("{}"), "")
-		g.Expect(findings).To(BeEmpty())
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+			findings := parseGoVetJSON([]byte(tt.input), "")
+			if tt.empty {
+				g.Expect(findings).To(BeEmpty())
+			} else {
+				g.Expect(findings).To(BeNil())
+			}
+		})
+	}
 }
 
 func TestParseStaticcheckJSON(t *testing.T) {

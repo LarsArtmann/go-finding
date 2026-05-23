@@ -242,19 +242,16 @@ func TestPosition_HasLocation(t *testing.T) {
 func TestRange_IsSingleLine(t *testing.T) {
 	t.Parallel()
 
+	start := Position{File: "a.go", Line: 5}
 	tests := []struct {
 		name string
 		r    Range
 		want bool
 	}{
 		{"no start line", Range{}, false},
-		{"single position", Range{Start: Position{File: "a.go", Line: 5}}, true},
-		{"same line", Range{Start: Position{File: "a.go", Line: 5}, End: Position{Line: 5}}, true},
-		{
-			"multi line",
-			Range{Start: Position{File: "a.go", Line: 5}, End: Position{Line: 10}},
-			false,
-		},
+		{"single position", Range{Start: start}, true},
+		{"same line", Range{Start: start, End: Position{Line: 5}}, true},
+		{"multi line", Range{Start: start, End: Position{Line: 10}}, false},
 	}
 
 	for _, tt := range tests {

@@ -40,12 +40,9 @@ func TestFindingJSONSchema_RoundTrip(t *testing.T) {
 		Suggestion:  "fix it",
 		BeforeCode:  "old()",
 		AfterCode:   "new()",
-		Range: &Range{
-			Start: Position{File: "file.go", Line: 10, Column: 5},
-			End:   Position{File: "file.go", Line: 10, Column: 10},
-		},
-		Snippet:    "old()",
-		Confidence: 0.95,
+		Range:       NewRangePtr("file.go", 10, 5, 10, 10),
+		Snippet:     "old()",
+		Confidence:  0.95,
 		Related: []RelatedRef{
 			{
 				FindingID: "other:1",
