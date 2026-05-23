@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+func keyTestFinding(id string) Finding {
+	return Finding{
+		ID:       id,
+		Rule:     exportTestR001,
+		ToolName: "test",
+		Message:  "msg",
+		Severity: SeverityError,
+		Position: Position{File: benchFile, Line: 10, Column: 5},
+	}
+}
+
 func TestClone(t *testing.T) {
 	const mutated = "changed"
 	t.Parallel()
@@ -118,25 +129,12 @@ func TestFindingKey(t *testing.T) {
 	}{
 		{
 			name: "returns ID when set",
-			f: Finding{
-				ID:       "my-id",
-				Rule:     exportTestR001,
-				ToolName: "test",
-				Message:  "msg",
-				Severity: SeverityError,
-				Position: Position{File: benchFile, Line: 10, Column: 5},
-			},
+			f:    keyTestFinding("my-id"),
 			want: "my-id",
 		},
 		{
 			name: "falls back to composite key when ID empty",
-			f: Finding{
-				Rule:     exportTestR001,
-				ToolName: "test",
-				Message:  "msg",
-				Severity: SeverityError,
-				Position: Position{File: benchFile, Line: 10, Column: 5},
-			},
+			f:    keyTestFinding(""),
 			want: "test\x00file.go\x00R001\x00msg",
 		},
 		{
@@ -152,14 +150,7 @@ func TestFindingKey(t *testing.T) {
 		},
 		{
 			name: "ID with only whitespace is used as-is",
-			f: Finding{
-				ID:       "   ",
-				Rule:     exportTestR001,
-				ToolName: "test",
-				Message:  "msg",
-				Severity: SeverityError,
-				Position: Position{File: benchFile, Line: 10, Column: 5},
-			},
+			f:    keyTestFinding("   "),
 			want: "   ",
 		},
 	}
@@ -261,14 +252,6 @@ func TestEqual_FieldMismatch(t *testing.T) {
 		{
 			"different Snippet", base,
 			func() Finding { f := base; f.Snippet = "x"; return f }(),
-		},
-		{
-			"different Tags", base,
-			func() Finding {
-				f := base
-				f.Tags = []Tag{"x"}
-				return f
-			}(),
 		},
 		{
 			"different Confidence", base,

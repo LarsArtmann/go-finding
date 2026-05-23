@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"strings"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -17,6 +18,15 @@ const (
 	testAnalysisCat = "test"
 	testRangeGoFile = "range.go"
 )
+
+func suggestedFix(msg string) []analysis.SuggestedFix {
+	return []analysis.SuggestedFix{
+		{
+			Message:   msg,
+			TextEdits: []analysis.TextEdit{{NewText: []byte("fixed")}},
+		},
+	}
+}
 
 func TestFromDiagnostic(t *testing.T) {
 	t.Parallel()
@@ -96,14 +106,9 @@ func TestFromDiagnostic_WithSuggestedFix(t *testing.T) {
 	}
 
 	d := &analysis.Diagnostic{
-		Pos:     f.Name.Pos(),
-		Message: "fix me",
-		SuggestedFixes: []analysis.SuggestedFix{
-			{
-				Message:   "apply this fix",
-				TextEdits: []analysis.TextEdit{{NewText: []byte("fixed")}},
-			},
-		},
+		Pos:            f.Name.Pos(),
+		Message:        "fix me",
+		SuggestedFixes: suggestedFix("apply this fix"),
 	}
 
 	got := FromDiagnostic(d, fset, "tool", "R1")
@@ -257,11 +262,11 @@ func TestFormatDiagnostic(t *testing.T) {
 	}
 
 	// Should contain the analyzer name and message
-	if !contains(got, "govet") {
+	if !strings.Contains(got, "govet") {
 		t.Errorf("expected %q to contain %q", got, "govet")
 	}
 
-	if !contains(got, "unused variable") {
+	if !strings.Contains(got, "unused variable") {
 		t.Errorf("expected %q to contain %q", got, "unused variable")
 	}
 }
@@ -388,15 +393,10 @@ func TestToDiagnostic_RoundTrip(t *testing.T) {
 	}
 
 	orig := &analysis.Diagnostic{
-		Pos:      f.Name.Pos(),
-		Message:  "round trip test",
-		Category: "test",
-		SuggestedFixes: []analysis.SuggestedFix{
-			{
-				Message:   "fix it",
-				TextEdits: []analysis.TextEdit{{NewText: []byte("fixed")}},
-			},
-		},
+		Pos:            f.Name.Pos(),
+		Message:        "round trip test",
+		Category:       "test",
+		SuggestedFixes: suggestedFix("fix it"),
 	}
 
 	// Forward: Diagnostic -> Finding
@@ -582,20 +582,6 @@ func TestToDiagnostic_InsertionOnly(t *testing.T) {
 	}
 }
 
-func contains(s, sub string) bool {
-	return len(s) >= len(sub) && searchString(s, sub)
-}
-
-func searchString(s, sub string) bool {
-	for i := 0; i <= len(s)-len(sub); i++ {
-		if s[i:i+len(sub)] == sub {
-			return true
-		}
-	}
-
-	return false
-}
-
 func TestFromDiagnostic_IDGeneration(t *testing.T) {
 	t.Parallel()
 
@@ -617,7 +603,7 @@ func TestFromDiagnostic_IDGeneration(t *testing.T) {
 	}
 
 	// ID should contain tool name and rule
-	if !contains(got.ID, "govet") || !contains(got.ID, "printf") {
+	if !strings.Contains(got.ID, "govet") || !strings.Contains(got.ID, "printf") {
 		t.Errorf("ID = %q, should contain tool and rule", got.ID)
 	}
 }

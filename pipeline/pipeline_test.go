@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -185,11 +186,10 @@ func TestPipelineRun_Timeout(t *testing.T) {
 	config.ParallelDetectors = false
 	config.Timeout = 50 * time.Millisecond
 
-	detector := &mockDetector{
-		name:     "slow",
-		delay:    500 * time.Millisecond,
-		findings: []finding.Finding{{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"}},
-	}
+	detector := slowMockDetector(
+		"slow", 500*time.Millisecond,
+		finding.Finding{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"},
+	)
 
 	p, err := New(config, t.TempDir(), detector)
 	if err != nil {
@@ -1296,13 +1296,10 @@ func TestPipelineRun_PerDetectorTimeout(t *testing.T) {
 		"slow": 10 * time.Millisecond,
 	}
 
-	slowDetector := &mockDetector{
-		name:  "slow",
-		delay: 500 * time.Millisecond,
-		findings: []finding.Finding{
-			{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"},
-		},
-	}
+	slowDetector := slowMockDetector(
+		"slow", 500*time.Millisecond,
+		finding.Finding{ID: "t:r:f:1", Rule: "r", ToolName: "t", Message: "m"},
+	)
 
 	p, err := New(cfg, t.TempDir(), slowDetector)
 	if err != nil {
@@ -1325,13 +1322,10 @@ func TestPipelineRun_PerDetectorTimeout_UnaffectedDetector(t *testing.T) {
 		"other": 10 * time.Millisecond, // timeout for a different detector
 	}
 
-	slowDetector := &mockDetector{
-		name:  "slow",
-		delay: 50 * time.Millisecond,
-		findings: []finding.Finding{
-			{ID: "s1", Rule: "r", ToolName: "t", Message: "m"},
-		},
-	}
+	slowDetector := slowMockDetector(
+		"slow", 50*time.Millisecond,
+		finding.Finding{ID: "s1", Rule: "r", ToolName: "t", Message: "m"},
+	)
 
 	p, err := New(cfg, t.TempDir(), slowDetector)
 	if err != nil {
@@ -1472,39 +1466,13 @@ func TestPipelineRun_OnStage(t *testing.T) {
 
 func splitLines(s string) []string {
 	var lines []string
-	for _, line := range splitString(s, "\n") {
+	for line := range strings.SplitSeq(s, "\n") {
 		if line != "" {
 			lines = append(lines, line)
 		}
 	}
 
 	return lines
-}
-
-func splitString(s, sep string) []string {
-	var result []string
-	for {
-		idx := indexOf(s, sep)
-		if idx < 0 {
-			result = append(result, s)
-			break
-		}
-
-		result = append(result, s[:idx])
-		s = s[idx+len(sep):]
-	}
-
-	return result
-}
-
-func indexOf(s, sub string) int {
-	for i := 0; i <= len(s)-len(sub); i++ {
-		if s[i:i+len(sub)] == sub {
-			return i
-		}
-	}
-
-	return -1
 }
 
 func TestPipelineRun_SingleUse(t *testing.T) {

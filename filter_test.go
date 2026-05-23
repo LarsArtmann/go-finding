@@ -9,6 +9,12 @@ const (
 	filterTestFileB = "b.go"
 )
 
+var threeSevFindings = []Finding{
+	{ID: "1", Severity: SeverityError},
+	{ID: "2", Severity: SeverityWarning},
+	{ID: "3", Severity: SeverityInfo},
+}
+
 type filterTestCase struct {
 	name     string
 	input    []Finding
@@ -328,13 +334,7 @@ func TestFilterInPlace_AllFiltered(t *testing.T) {
 func TestAnyOf(t *testing.T) {
 	t.Parallel()
 
-	findings := []Finding{
-		{ID: "1", Severity: SeverityError},
-		{ID: "2", Severity: SeverityWarning},
-		{ID: "3", Severity: SeverityInfo},
-	}
-
-	result := Filter(findings, AnyOf(BySeverity(SeverityError), BySeverity(SeverityInfo)))
+	result := Filter(threeSevFindings, AnyOf(BySeverity(SeverityError), BySeverity(SeverityInfo)))
 	if len(result) != 2 {
 		t.Errorf("AnyOf(error, info) = %d findings, want 2", len(result))
 	}
@@ -355,13 +355,7 @@ func TestAnyOf_SingleMatch(t *testing.T) {
 func TestNegate(t *testing.T) {
 	t.Parallel()
 
-	findings := []Finding{
-		{ID: "1", Severity: SeverityError},
-		{ID: "2", Severity: SeverityWarning},
-		{ID: "3", Severity: SeverityInfo},
-	}
-
-	result := Filter(findings, Negate(BySeverity(SeverityError)))
+	result := Filter(threeSevFindings, Negate(BySeverity(SeverityError)))
 	if len(result) != 2 {
 		t.Errorf("Negate(BySeverity(error)) = %d, want 2", len(result))
 	}

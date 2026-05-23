@@ -10,6 +10,18 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+func nanConfidenceFinding() Finding {
+	return Finding{
+		ID:         "f1",
+		Rule:       "r1",
+		ToolName:   "t",
+		Message:    "m",
+		Severity:   SeverityWarning,
+		Position:   Position{File: "a.go"},
+		Confidence: Confidence(math.NaN()),
+	}
+}
+
 func assertSingleFindingWithID(t *testing.T, got *Report, wantID string) {
 	t.Helper()
 	if len(got.Findings) != 1 {
@@ -316,11 +328,7 @@ func TestPrettyJSON_ErrorPath(t *testing.T) {
 	g := NewWithT(t)
 
 	r := MakeSimpleReport("tool")
-	r.AddFinding(Finding{
-		ID: "f1", Rule: "r1", ToolName: "t", Message: "m",
-		Severity: SeverityWarning, Position: Position{File: "a.go"},
-		Confidence: Confidence(math.NaN()),
-	})
+	r.AddFinding(nanConfidenceFinding())
 
 	_, err := r.PrettyJSON()
 	g.Expect(err).To(HaveOccurred())
@@ -330,15 +338,7 @@ func TestLineJSON_ErrorPath(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	f := Finding{
-		ID:         "f1",
-		Rule:       "r1",
-		ToolName:   "t",
-		Message:    "m",
-		Severity:   SeverityWarning,
-		Position:   Position{File: "a.go"},
-		Confidence: Confidence(math.NaN()),
-	}
+	f := nanConfidenceFinding()
 
 	_, err := f.LineJSON()
 	g.Expect(err).To(HaveOccurred())

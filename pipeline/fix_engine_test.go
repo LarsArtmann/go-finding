@@ -73,6 +73,14 @@ func makeRangeFix(
 	}
 }
 
+func twoLineRangeFixes() ([]byte, []finding.Finding) {
+	return []byte("line1: old\nline2: old\nline3: old"),
+		[]finding.Finding{
+			makeRangeFix("a.go", 1, 8, 1, 11, "old", "fix1"),
+			makeRangeFix("a.go", 3, 8, 3, 11, "old", "fix2"),
+		}
+}
+
 func makeOffsetFix(id, before, after string, startOff, endOff int) finding.Finding {
 	return finding.Finding{
 		ID:         id,
@@ -460,12 +468,7 @@ func TestFixEngine_ApplyWithConflicts_NoConflicts(t *testing.T) {
 	g := NewWithT(t)
 
 	engine := NewFixEngine()
-	content := []byte("line1: old\nline2: old\nline3: old")
-
-	fixes := []finding.Finding{
-		makeRangeFix("a.go", 1, 8, 1, 11, "old", "fix1"),
-		makeRangeFix("a.go", 3, 8, 3, 11, "old", "fix2"),
-	}
+	content, fixes := twoLineRangeFixes()
 
 	applied, conflicts, result, _ := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(applied).To(HaveLen(2))
@@ -584,11 +587,7 @@ func TestFilterConflictingEdits(t *testing.T) {
 		g := NewWithT(t)
 
 		engine := NewFixEngine()
-		content := []byte("line1: old\nline2: old\nline3: old")
-		fixes := []finding.Finding{
-			makeRangeFix("a.go", 1, 8, 1, 11, "old", "fix1"),
-			makeRangeFix("a.go", 3, 8, 3, 11, "old", "fix2"),
-		}
+		content, fixes := twoLineRangeFixes()
 
 		result, errs := FilterConflictingEdits(content, fixes, engine)
 		g.Expect(errs).To(BeEmpty())

@@ -12,6 +12,13 @@ const (
 	findBuilderTestMutated   = "mutated"
 )
 
+func assertRelatedID(t *testing.T, f Finding, idx int, want string) {
+	t.Helper()
+	if f.Related[idx].FindingID != want {
+		t.Errorf("Related[%d] = %q, want %q", idx, f.Related[idx].FindingID, want)
+	}
+}
+
 func TestBuilder_Minimal(t *testing.T) {
 	t.Parallel()
 
@@ -111,12 +118,8 @@ func TestBuilder_Chaining(t *testing.T) {
 	if len(f.Related) != 2 {
 		t.Fatalf("Related length = %d, want 2", len(f.Related))
 	}
-	if f.Related[0].FindingID != "r1" {
-		t.Errorf("Related[0] = %q, want %q", f.Related[0].FindingID, "r1")
-	}
-	if f.Related[1].FindingID != "r2" {
-		t.Errorf("Related[1] = %q, want %q", f.Related[1].FindingID, "r2")
-	}
+	assertRelatedID(t, f, 0, "r1")
+	assertRelatedID(t, f, 1, "r2")
 }
 
 func TestBuilder_MetadataMerge(t *testing.T) {

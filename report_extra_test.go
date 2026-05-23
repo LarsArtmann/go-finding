@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+func addTestFinding(r *Report, id, rule string, sev Severity, file string) {
+	r.AddFinding(Finding{
+		ID: id, Rule: rule, Severity: sev,
+		Position: Position{File: file},
+	})
+}
+
 func assertCategoryCount(t *testing.T, r *Report, cat Category, want int) {
 	t.Helper()
 	if got := r.Summary.ByCategory[cat]; got != want {
@@ -108,21 +115,12 @@ func TestReport_Merge(t *testing.T) {
 	t.Parallel()
 
 	a := NewReport(ToolInfo{Name: "tool-a"})
-	a.AddFinding(Finding{
-		ID: "f1", Rule: "R1", Severity: SeverityError,
-		Position: Position{File: "a.go"},
-	})
-	a.AddFinding(Finding{
-		ID: "f2", Rule: "R2", Severity: SeverityWarning,
-		Position: Position{File: "b.go"},
-	})
+	addTestFinding(a, "f1", "R1", SeverityError, "a.go")
+	addTestFinding(a, "f2", "R2", SeverityWarning, "b.go")
 	a.ComputeSummary()
 
 	b := NewReport(ToolInfo{Name: "tool-b"})
-	b.AddFinding(Finding{
-		ID: "f3", Rule: "R3", Severity: SeverityInfo,
-		Position: Position{File: "a.go"},
-	})
+	addTestFinding(b, "f3", "R3", SeverityInfo, "a.go")
 	b.ComputeSummary()
 
 	a.Merge(b)
@@ -156,10 +154,7 @@ func TestReport_Merge_Empty(t *testing.T) {
 	t.Parallel()
 
 	a := NewReport(ToolInfo{Name: "tool-a"})
-	a.AddFinding(Finding{
-		ID: "f1", Rule: "R1", Severity: SeverityError,
-		Position: Position{File: "a.go"},
-	})
+	addTestFinding(a, "f1", "R1", SeverityError, "a.go")
 	a.ComputeSummary()
 
 	b := NewReport(ToolInfo{Name: "tool-b"})

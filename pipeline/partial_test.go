@@ -130,11 +130,7 @@ func TestDetectPartial_Sequential_CancelBeforeSecond(t *testing.T) {
 	t.Parallel()
 
 	d1 := mockDet("fast", "F1")
-	d2 := &mockDetector{
-		name:     "slow",
-		delay:    5 * time.Second,
-		findings: []finding.Finding{{ID: "F2"}},
-	}
+	d2 := slowMockDetector("slow", 5*time.Second, finding.Finding{ID: "F2"})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -153,11 +149,7 @@ func TestDetectPartial_Parallel_CancelReturnsPartial(t *testing.T) {
 	t.Parallel()
 
 	d1 := mockDet("fast", "F1")
-	d2 := &mockDetector{
-		name:     "slow",
-		delay:    5 * time.Second,
-		findings: []finding.Finding{{ID: "F2"}},
-	}
+	d2 := slowMockDetector("slow", 5*time.Second, finding.Finding{ID: "F2"})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()

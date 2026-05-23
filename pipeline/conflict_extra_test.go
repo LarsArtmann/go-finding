@@ -139,18 +139,20 @@ func TestGetFindingRange(t *testing.T) {
 	})
 }
 
+func overlappingAB() []finding.Finding {
+	return []finding.Finding{
+		findingWithRange("A", "a.go", 10, 10, 15),
+		findingWithRange("B", "a.go", 13, 13, 18),
+	}
+}
+
 func TestConflictDetection_PerMemberCheck(t *testing.T) {
 	t.Parallel()
 
-	// A(10-15) overlaps B(13-18), B overlaps C(16-20), A does NOT overlap C.
-	// B is a conflict with A. C overlaps B but NOT A.
-	// With "keep first" strategy: A is kept, B is conflict, C overlaps B in group -> C also conflict.
-	// This is the expected behavior: B and C both conflict with the group.
-	result := FilterConflictingFixes([]finding.Finding{
-		findingWithRange("A", "a.go", 10, 10, 15),
-		findingWithRange("B", "a.go", 13, 13, 18),
+	result := FilterConflictingFixes(append(
+		overlappingAB(),
 		findingWithRange("C", "a.go", 16, 16, 20),
-	})
+	))
 
 	if len(result) != 1 {
 		t.Errorf("expected 1 non-conflicting fix, got %d", len(result))
@@ -164,13 +166,10 @@ func TestConflictDetection_PerMemberCheck(t *testing.T) {
 func TestConflictDetection_NonAdjacentNotGrouped(t *testing.T) {
 	t.Parallel()
 
-	// A(10-15) and D(50-60) do NOT overlap at all.
-	// Both should survive even if B(13-18) is between them.
-	result := FilterConflictingFixes([]finding.Finding{
-		findingWithRange("A", "a.go", 10, 10, 15),
-		findingWithRange("B", "a.go", 13, 13, 18),
+	result := FilterConflictingFixes(append(
+		overlappingAB(),
 		findingWithRange("D", "a.go", 50, 50, 60),
-	})
+	))
 
 	if len(result) != 2 {
 		t.Errorf("expected 2 non-conflicting fixes (A, D), got %d", len(result))

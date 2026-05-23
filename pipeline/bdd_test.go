@@ -278,6 +278,18 @@ func mustBuild(
 	return f
 }
 
+func lineRangeFix(
+	before, after, file string,
+	startLine, startCol, endLine, endCol int,
+) finding.Finding {
+	return finding.Finding{
+		BeforeCode: before,
+		AfterCode:  after,
+		Range:      finding.NewRangePtr(file, startLine, startCol, endLine, endCol),
+		Position:   finding.Pos(file, startLine, startCol),
+	}
+}
+
 func codeFix(before, after string, line, col int) finding.Finding {
 	return finding.Finding{
 		BeforeCode: before,
@@ -356,12 +368,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("handles findings with line/column position", func() {
-			f := finding.Finding{
-				BeforeCode: "old()",
-				AfterCode:  "new()",
-				Position:   finding.Pos("a.go", 4, 2),
-				Range:      finding.NewRangePtr("a.go", 4, 2, 4, 7),
-			}
+			f := lineRangeFix("old()", "new()", "a.go", 4, 2, 4, 7)
 			Expect(provider.CanHandle(f)).To(BeTrue())
 		})
 
@@ -385,12 +392,7 @@ var _ = Describe("FixProvider Contract", func() {
 		})
 
 		It("produces range-based edits when Range has end", func() {
-			f := finding.Finding{
-				BeforeCode: "old()",
-				AfterCode:  "new()",
-				Range:      finding.NewRangePtr("a.go", 4, 2, 4, 7),
-				Position:   finding.Pos("a.go", 4, 2),
-			}
+			f := lineRangeFix("old()", "new()", "a.go", 4, 2, 4, 7)
 			edits, err := provider.Edits(content, f)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(edits).To(HaveLen(1))
@@ -465,12 +467,7 @@ var _ = Describe("FixProvider Contract", func() {
 		It("LineProvider is used when no byte offsets are available", func() {
 			engine := pipeline.NewFixEngine()
 
-			f := finding.Finding{
-				BeforeCode: "old()",
-				AfterCode:  "new()",
-				Range:      finding.NewRangePtr("a.go", 4, 2, 4, 7),
-				Position:   finding.Pos("a.go", 4, 2),
-			}
+			f := lineRangeFix("old()", "new()", "a.go", 4, 2, 4, 7)
 
 			result, applied, count := engine.Apply(content, []finding.Finding{f})
 			Expect(count).To(Equal(1))

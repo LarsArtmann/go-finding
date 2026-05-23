@@ -10,6 +10,18 @@ import (
 	"github.com/onsi/gomega"
 )
 
+func simpleSARIFReport() *Report {
+	return &Report{
+		Tool: ToolInfo{Name: "tool"},
+		Findings: []Finding{
+			{
+				ID: "f1", Rule: "r1", Message: "m",
+				Severity: SeverityError, Position: Position{File: "a.go"},
+			},
+		},
+	}
+}
+
 func assertRulePresent(t *testing.T, rules map[string]struct{}, ruleID string, wantPresent bool) {
 	t.Helper()
 	_, ok := rules[ruleID]
@@ -415,15 +427,7 @@ func TestWriteSARIF(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := &Report{
-		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
-			{
-				ID: "f1", Rule: "r1", Message: "m",
-				Severity: SeverityError, Position: Position{File: "a.go"},
-			},
-		},
-	}
+	r := simpleSARIFReport()
 
 	var buf strings.Builder
 	err := r.WriteSARIF(&buf)
@@ -801,15 +805,7 @@ func TestWriteSARIF_WriterError(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := &Report{
-		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
-			{
-				ID: "f1", Rule: "r1", Message: "m",
-				Severity: SeverityError, Position: Position{File: "a.go"},
-			},
-		},
-	}
+	r := simpleSARIFReport()
 
 	err := r.WriteSARIF(&failWriter{})
 	g.Expect(err).To(gomega.HaveOccurred())
@@ -820,15 +816,7 @@ func TestWriteSARIFFiltered_WriterError(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := &Report{
-		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
-			{
-				ID: "f1", Rule: "r1", Message: "m",
-				Severity: SeverityError, Position: Position{File: "a.go"},
-			},
-		},
-	}
+	r := simpleSARIFReport()
 
 	err := r.WriteSARIFFiltered(&failWriter{}, SeverityWarning)
 	g.Expect(err).To(gomega.HaveOccurred())
@@ -863,15 +851,7 @@ func TestWriteTo_WriterError(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := &Report{
-		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
-			{
-				ID: "f1", Rule: "r1", Message: "m",
-				Severity: SeverityError, Position: Position{File: "a.go"},
-			},
-		},
-	}
+	r := simpleSARIFReport()
 
 	n, err := r.WriteTo(&failWriter{})
 	g.Expect(err).To(gomega.HaveOccurred())

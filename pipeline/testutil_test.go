@@ -61,6 +61,10 @@ func mockDetWithFindings(name string, findings ...finding.Finding) *mockDetector
 	return &mockDetector{name: name, findings: findings}
 }
 
+func slowMockDetector(name string, delay time.Duration, findings ...finding.Finding) *mockDetector {
+	return &mockDetector{name: name, delay: delay, findings: findings}
+}
+
 func testFinding(id, rule, tool, msg string, sev finding.Severity, file string) finding.Finding {
 	return finding.Finding{
 		ID:       id,
