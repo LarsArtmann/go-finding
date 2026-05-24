@@ -1,7 +1,7 @@
 version: "2"
 run:
   timeout: 5m
-  go: 1.26.2
+  go: 1.26.3
   build-tags:
     - goexperiment.arenas
     - goexperiment.goroutineleakprofile
@@ -155,6 +155,8 @@ linters:
       min-complexity: 25
     godot:
       scope: toplevel
+    gomoddirectives:
+      replace-local: true
     gosec:
       excludes:
         - G102
@@ -265,14 +267,27 @@ linters:
       - path: confidence\.go
         linters:
           - goconst
+      - path: _test\.go
+        text: unused
+        linters:
+          - unused
+    paths:
+      - \.gen\.go$
+      - _templ\.go$
+      - vendor/
 formatters:
   enable:
     - gci
     - goimports
     - gofumpt
     - golines
+  settings:
+    golines:
+      max-len: 120
   exclusions:
     generated: lax
+    paths:
+      - _templ\.go$
 issues:
   max-issues-per-linter: 100
   max-same-issues: 5

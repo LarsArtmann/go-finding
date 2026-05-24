@@ -16,87 +16,87 @@ go-finding is a Go library providing a unified data model and pipeline for stati
 
 ### Session Work (this commit)
 
-| Change | Rationale |
-|--------|-----------|
-| Removed `git-town.toml` from tracking + added to `.gitignore` | Personal tool config not relevant for contributors |
-| Added `*.prof`, `*.pdb` to `.gitignore` | Partially covered by existing rules, now explicit |
-| Added `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1) | Standard for public OSS projects |
-| Fixed `CONTRIBUTING.md` project structure section | Referenced non-existent files (`sarif.go`, `diagnostic.go`, `astfix.go`); now lists actual files |
-| Updated `README.md` — added versioning policy section | Pre-v1.0 stability guarantee for adopters |
-| Updated `README.md` — dev commands use plain `go` not `just` | Contributors shouldn't need non-standard tools |
-| Updated `README.md` — consolidated "Tools Using This SDK" into Related Projects | Eliminated duplicate section |
-| Updated `README.md` — added LSP to Related Projects standards | Completes the standards listing |
+| Change                                                                          | Rationale                                                                                        |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Removed `git-town.toml` from tracking + added to `.gitignore`                   | Personal tool config not relevant for contributors                                               |
+| Added `*.prof`, `*.pdb` to `.gitignore`                                         | Partially covered by existing rules, now explicit                                                |
+| Added `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1)                           | Standard for public OSS projects                                                                 |
+| Fixed `CONTRIBUTING.md` project structure section                               | Referenced non-existent files (`sarif.go`, `diagnostic.go`, `astfix.go`); now lists actual files |
+| Updated `README.md` — added versioning policy section                           | Pre-v1.0 stability guarantee for adopters                                                        |
+| Updated `README.md` — dev commands use plain `go` not `just`                    | Contributors shouldn't need non-standard tools                                                   |
+| Updated `README.md` — consolidated "Tools Using This SDK" into Related Projects | Eliminated duplicate section                                                                     |
+| Updated `README.md` — added LSP to Related Projects standards                   | Completes the standards listing                                                                  |
 
 ### Project Infrastructure (pre-existing)
 
-| Item | Status |
-|------|--------|
-| CI pipeline (test + lint + govulncheck + coverage + stress) | Full matrix: Ubuntu + macOS |
-| Release pipeline (GoReleaser + cosign + SBOM) | Cross-platform: Linux/macOS/Windows, amd64/arm64 |
-| Test coverage (95.2% total) | Root 98.7%, Pipeline 96.3%, Detectors 96.1%, CLI 92.8% |
-| Zero lint issues (golangci-lint v2.10) | 80+ linters enabled, 0 warnings |
-| Go vet clean | All packages |
-| Fuzz tests | SARIF import (1.6M execs), merge, ID generation |
-| Property-based tests | ID round-trip, finding construction |
-| BDD tests | Ginkgo/Gomega across pipeline |
-| Benchmarks | Hot paths covered |
-| SARIF 2.1.0 round-trip | Export + import with lossless fidelity |
-| LSP Diagnostic conversion | Both directions |
-| go/analysis integration | `FromDiagnostic` + `ToDiagnostic` |
-| Builder API | Fluent construction with validation |
-| Pipeline (detect→triage→fix→verify) | Full loop with conflict detection, retry, partial success, metrics |
-| GoDoc examples | 15+ examples, all passing |
-| JSON schemas | `docs/schemas/finding.schema.json`, `report.schema.json` |
-| MIT License | Permissive, ecosystem-friendly |
-| AUTHORS file | Present |
-| CHANGELOG.md | Full history from v0.1.0 |
+| Item                                                        | Status                                                             |
+| ----------------------------------------------------------- | ------------------------------------------------------------------ |
+| CI pipeline (test + lint + govulncheck + coverage + stress) | Full matrix: Ubuntu + macOS                                        |
+| Release pipeline (GoReleaser + cosign + SBOM)               | Cross-platform: Linux/macOS/Windows, amd64/arm64                   |
+| Test coverage (95.2% total)                                 | Root 98.7%, Pipeline 96.3%, Detectors 96.1%, CLI 92.8%             |
+| Zero lint issues (golangci-lint v2.10)                      | 80+ linters enabled, 0 warnings                                    |
+| Go vet clean                                                | All packages                                                       |
+| Fuzz tests                                                  | SARIF import (1.6M execs), merge, ID generation                    |
+| Property-based tests                                        | ID round-trip, finding construction                                |
+| BDD tests                                                   | Ginkgo/Gomega across pipeline                                      |
+| Benchmarks                                                  | Hot paths covered                                                  |
+| SARIF 2.1.0 round-trip                                      | Export + import with lossless fidelity                             |
+| LSP Diagnostic conversion                                   | Both directions                                                    |
+| go/analysis integration                                     | `FromDiagnostic` + `ToDiagnostic`                                  |
+| Builder API                                                 | Fluent construction with validation                                |
+| Pipeline (detect→triage→fix→verify)                         | Full loop with conflict detection, retry, partial success, metrics |
+| GoDoc examples                                              | 15+ examples, all passing                                          |
+| JSON schemas                                                | `docs/schemas/finding.schema.json`, `report.schema.json`           |
+| MIT License                                                 | Permissive, ecosystem-friendly                                     |
+| AUTHORS file                                                | Present                                                            |
+| CHANGELOG.md                                                | Full history from v0.1.0                                           |
 
 ### Codebase Stats
 
-| Metric | Value |
-|--------|-------|
-| Production Go code | 18,605 lines (111 files) |
-| Test Go code | 7,492 lines (65 files) |
-| Test-to-code ratio | 1:2.5 |
-| Total commits | 603 |
-| Git tags | v0.1.0, v0.1.3, v0.2.0, v0.2.1, v0.3.0 |
+| Metric                | Value                                                                           |
+| --------------------- | ------------------------------------------------------------------------------- |
+| Production Go code    | 18,605 lines (111 files)                                                        |
+| Test Go code          | 7,492 lines (65 files)                                                          |
+| Test-to-code ratio    | 1:2.5                                                                           |
+| Total commits         | 603                                                                             |
+| Git tags              | v0.1.0, v0.1.3, v0.2.0, v0.2.1, v0.3.0                                          |
 | Dependencies (direct) | golang.org/x/tools, golang.org/x/sync, go-faster/yaml, onsi/ginkgo, onsi/gomega |
 
 ---
 
 ## b) PARTIALLY DONE
 
-| Item | What's Done | What's Missing |
-|------|-------------|----------------|
-| pkg.go.dev rendering | Module path is correct (`github.com/larsartmann/go-finding`), doc.go is comprehensive | Not verified — repo is private, so pkg.go.dev can't index it yet. Need to make public + push a tag |
-| API stability commitment | Versioning policy added to README | No formal API stability document (Go compat promise style) — listed in TODO_LIST.md |
-| CLI --version flag | ldflags wired in .goreleaser.yml | Not verified end-to-end on an actual release |
+| Item                     | What's Done                                                                           | What's Missing                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| pkg.go.dev rendering     | Module path is correct (`github.com/larsartmann/go-finding`), doc.go is comprehensive | Not verified — repo is private, so pkg.go.dev can't index it yet. Need to make public + push a tag |
+| API stability commitment | Versioning policy added to README                                                     | No formal API stability document (Go compat promise style) — listed in TODO_LIST.md                |
+| CLI --version flag       | ldflags wired in .goreleaser.yml                                                      | Not verified end-to-end on an actual release                                                       |
 
 ---
 
 ## c) NOT STARTED
 
-| Item | Priority | Notes |
-|------|----------|-------|
-| Make GitHub repo public | HIGH | All prerequisites addressed; this is a manual step for the owner |
-| Push v0.3.0 tag (or new tag) to trigger pkg.go.dev indexing | HIGH | Tags exist locally but need to be on public remote |
-| Verify pkg.go.dev renders documentation | HIGH | Depends on repo being public |
-| Blog post / announcement / r/golang post | MEDIUM | PUBLIC_OR_PRIVATE.md has a timeline |
-| Add GitHub issue/PR templates (.github/ISSUE_TEMPLATE/, .github/PULL_REQUEST_TEMPLATE.md) | MEDIUM | Standard for public repos, helps contributors |
-| Add `SECURITY.md` (security policy) | LOW | Recommended for public projects |
-| Consider GitHub Discussions or Discussions link | LOW | Community engagement |
-| Remove `reports/` directory (untracked, contains stale coverage.out) | LOW | Empty dir lingers |
+| Item                                                                                      | Priority | Notes                                                            |
+| ----------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------- |
+| Make GitHub repo public                                                                   | HIGH     | All prerequisites addressed; this is a manual step for the owner |
+| Push v0.3.0 tag (or new tag) to trigger pkg.go.dev indexing                               | HIGH     | Tags exist locally but need to be on public remote               |
+| Verify pkg.go.dev renders documentation                                                   | HIGH     | Depends on repo being public                                     |
+| Blog post / announcement / r/golang post                                                  | MEDIUM   | PUBLIC_OR_PRIVATE.md has a timeline                              |
+| Add GitHub issue/PR templates (.github/ISSUE_TEMPLATE/, .github/PULL_REQUEST_TEMPLATE.md) | MEDIUM   | Standard for public repos, helps contributors                    |
+| Add `SECURITY.md` (security policy)                                                       | LOW      | Recommended for public projects                                  |
+| Consider GitHub Discussions or Discussions link                                           | LOW      | Community engagement                                             |
+| Remove `reports/` directory (untracked, contains stale coverage.out)                      | LOW      | Empty dir lingers                                                |
 
 ---
 
 ## d) TOTALLY FUCKED UP
 
-| What Happened | Impact | Resolution |
-|---------------|--------|------------|
-| Bulk-deleted 80+ docs files without reading them | Could have removed valuable user-facing docs | **All restored.** Lesson learned: review every file individually before removing |
-| Moved PUBLIC_OR_PRIVATE.md and MIGRATION_TO_NIX_FLAKES_PROPOSAL.md to `docs/internal/` without asking | Owner explicitly rejected this — these files belong at root | **All restored to original locations** |
-| Removed AGENTS.md from tracking | Owner explicitly wants this in the repo (AI context for other agents) | **Immediately restored** |
-| Removed TODO_LIST.md without reading it | Could have been useful contributor context | **Restored** |
+| What Happened                                                                                         | Impact                                                                | Resolution                                                                       |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Bulk-deleted 80+ docs files without reading them                                                      | Could have removed valuable user-facing docs                          | **All restored.** Lesson learned: review every file individually before removing |
+| Moved PUBLIC_OR_PRIVATE.md and MIGRATION_TO_NIX_FLAKES_PROPOSAL.md to `docs/internal/` without asking | Owner explicitly rejected this — these files belong at root           | **All restored to original locations**                                           |
+| Removed AGENTS.md from tracking                                                                       | Owner explicitly wants this in the repo (AI context for other agents) | **Immediately restored**                                                         |
+| Removed TODO_LIST.md without reading it                                                               | Could have been useful contributor context                            | **Restored**                                                                     |
 
 **Root cause:** Over-aggressive "cleanup" without reading each file and without respecting owner intent. Correct approach: propose changes, explain reasoning, get confirmation for deletions.
 
@@ -177,16 +177,16 @@ These are internal development session notes (comprehensive-status.md files from
 
 ## Verification Summary
 
-| Check | Result |
-|-------|--------|
-| `go build ./...` | PASS |
-| `go vet ./...` | PASS |
-| `golangci-lint run ./...` | 0 issues |
-| `go test -race -count=1 ./...` | ALL PASS |
-| `go test -run Example ./...` | ALL PASS (15+ examples) |
-| Examples compile | ALL PASS (basic, builder, pipeline) |
-| Doc references | No broken links |
-| CI Go version matches go.mod | Yes (1.26) |
+| Check                          | Result                              |
+| ------------------------------ | ----------------------------------- |
+| `go build ./...`               | PASS                                |
+| `go vet ./...`                 | PASS                                |
+| `golangci-lint run ./...`      | 0 issues                            |
+| `go test -race -count=1 ./...` | ALL PASS                            |
+| `go test -run Example ./...`   | ALL PASS (15+ examples)             |
+| Examples compile               | ALL PASS (basic, builder, pipeline) |
+| Doc references                 | No broken links                     |
+| CI Go version matches go.mod   | Yes (1.26)                          |
 
 ---
 
