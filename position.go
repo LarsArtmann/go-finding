@@ -81,6 +81,22 @@ func (r Range) IsValid() bool {
 	return r.Start.IsValid()
 }
 
+// IsInverted returns true if the range has both Start and End lines set
+// and End is before Start.
+func (r Range) IsInverted() bool {
+	if r.Start.Line <= 0 || r.End.Line <= 0 {
+		return false
+	}
+	if r.End.Line < r.Start.Line {
+		return true
+	}
+	if r.End.Line == r.Start.Line && r.Start.Column > 0 && r.End.Column > 0 &&
+		r.End.Column < r.Start.Column {
+		return true
+	}
+	return false
+}
+
 // HasEnd returns true if the range has an end position set.
 func (r Range) HasEnd() bool {
 	return r.End.Line > 0 || r.End.Offset >= 0

@@ -4,12 +4,15 @@ import (
 	"strconv"
 )
 
+// LSPSeverity represents an LSP diagnostic severity level per the LSP specification.
+type LSPSeverity int
+
 // LSP severity level constants per the LSP specification.
 const (
-	LSPSeverityError   = 1 // Error
-	LSPSeverityWarning = 2 // Warning
-	LSPSeverityInfo    = 3 // Information
-	LSPSeverityHint    = 4 // Hint
+	LSPSeverityError   LSPSeverity = 1 // Error
+	LSPSeverityWarning LSPSeverity = 2 // Warning
+	LSPSeverityInfo    LSPSeverity = 3 // Information
+	LSPSeverityHint    LSPSeverity = 4 // Hint
 )
 
 // LSP types for conversion.
@@ -19,7 +22,7 @@ const (
 // Used for converting Finding objects to LSP diagnostic format.
 type LSPDiagnostic struct {
 	Range    LSPRange         `json:"range"`
-	Severity int              `json:"severity,omitempty"` // 1=Error, 2=Warning, 3=Info, 4=Hint
+	Severity LSPSeverity      `json:"severity,omitempty"` // 1=Error, 2=Warning, 3=Info, 4=Hint
 	Code     string           `json:"code,omitempty"`
 	Source   string           `json:"source,omitempty"`
 	Message  string           `json:"message"`
@@ -160,14 +163,14 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	// Preserve raw LSP severity for fidelity.
 	if diag.Severity > 0 {
 		f.Metadata = map[string]string{
-			LSPSeverityKey: strconv.Itoa(diag.Severity),
+			LSPSeverityKey: strconv.Itoa(int(diag.Severity)),
 		}
 	}
 
 	return f
 }
 
-func severityToLSP(s Severity) int {
+func severityToLSP(s Severity) LSPSeverity {
 	switch s {
 	case SeverityCritical, SeverityError:
 		return LSPSeverityError
@@ -180,7 +183,7 @@ func severityToLSP(s Severity) int {
 	}
 }
 
-func severityFromLSP(sev int) Severity {
+func severityFromLSP(sev LSPSeverity) Severity {
 	switch sev {
 	case LSPSeverityError:
 		return SeverityError

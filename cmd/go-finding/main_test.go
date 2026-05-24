@@ -357,9 +357,13 @@ func TestOutputResults_JSONSerializationError(t *testing.T) {
 	testOutputSerializationError(t, "json", "serializing JSON")
 }
 
-func TestOutputResults_SARIFSerializationError(t *testing.T) {
+func TestOutputResults_SARIFNaNConfidenceHandled(t *testing.T) {
 	t.Parallel()
-	testOutputSerializationError(t, "sarif", "serializing SARIF")
+	g := NewWithT(t)
+
+	var buf bytes.Buffer
+	err := outputResults(&buf, reportWithNaNConfidence(), "sarif")
+	g.Expect(err).NotTo(HaveOccurred())
 }
 
 func TestRun_InvalidSeverity(t *testing.T) {

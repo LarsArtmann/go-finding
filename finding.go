@@ -297,6 +297,17 @@ func (f Finding) Validate() error {
 		))
 	}
 
+	if f.Range != nil && f.Range.IsInverted() {
+		errs = append(errs, NewValidationError(
+			fmt.Sprintf(
+				"finding.Range is invalid: End (%+v) before Start (%+v)",
+				f.Range.End,
+				f.Range.Start,
+			),
+			nil,
+		))
+	}
+
 	return errors.Join(errs...)
 }
 

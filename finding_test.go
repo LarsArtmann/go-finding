@@ -255,7 +255,7 @@ func TestLSPConversion(t *testing.T) {
 
 	lsp := f.ToLSP()
 	g.Expect(lsp.Range.Start.Line).To(Equal(9))
-	g.Expect(lsp.Severity).To(Equal(1))
+	g.Expect(lsp.Severity).To(BeEquivalentTo(1))
 }
 
 func TestCategory(t *testing.T) {

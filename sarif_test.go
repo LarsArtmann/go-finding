@@ -393,7 +393,7 @@ func TestToSARIF_EmptyReport(t *testing.T) {
 	}
 }
 
-func testSARIFNaNError(t *testing.T, fn func(*Report) ([]byte, error)) {
+func testSARIFNaNHandled(t *testing.T, fn func(*Report) ([]byte, error)) {
 	t.Helper()
 	g := gomega.NewWithT(t)
 
@@ -407,18 +407,19 @@ func testSARIFNaNError(t *testing.T, fn func(*Report) ([]byte, error)) {
 		},
 	}
 
-	_, err := fn(r)
-	g.Expect(err).To(gomega.HaveOccurred())
+	data, err := fn(r)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(data).NotTo(gomega.BeEmpty())
 }
 
-func TestToSARIF_ErrorPath(t *testing.T) {
+func TestToSARIF_NaNConfidence(t *testing.T) {
 	t.Parallel()
-	testSARIFNaNError(t, (*Report).ToSARIF)
+	testSARIFNaNHandled(t, (*Report).ToSARIF)
 }
 
-func TestToSARIFFiltered_ErrorPath(t *testing.T) {
+func TestToSARIFFiltered_NaNConfidence(t *testing.T) {
 	t.Parallel()
-	testSARIFNaNError(t, func(r *Report) ([]byte, error) {
+	testSARIFNaNHandled(t, func(r *Report) ([]byte, error) {
 		return r.ToSARIFFiltered(SeverityError)
 	})
 }

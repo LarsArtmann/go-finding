@@ -171,6 +171,10 @@ func applySarifProperties(f *Finding, props map[string]any) {
 		f.BeforeCode = v
 	}
 
+	if v, ok := stringProp(props, sarifPropAfterCode); ok {
+		f.AfterCode = v
+	}
+
 	f.Metadata = sarifMetadataFromProps(props)
 	if len(f.Metadata) == 0 {
 		f.Metadata = nil

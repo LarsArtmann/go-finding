@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"os"
@@ -154,10 +155,10 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]findin
 		return nil, ioErrorAt("read file", err, path)
 	}
 
-	appliedFixes, _, newContent, _ := a.engine.ApplyWithConflicts(content, fixes)
+	appliedFixes, _, newContent, resolveErrors := a.engine.ApplyWithConflicts(content, fixes)
 
 	if len(appliedFixes) == 0 {
-		return nil, nil
+		return nil, errors.Join(resolveErrors...)
 	}
 
 	if err := os.WriteFile( //nolint:gosec // intentional file write
@@ -168,5 +169,5 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]findin
 		return nil, ioErrorAt("write file", err, path)
 	}
 
-	return appliedFixes, nil
+	return appliedFixes, errors.Join(resolveErrors...)
 }

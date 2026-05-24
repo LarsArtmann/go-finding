@@ -41,6 +41,8 @@ func (e *FixEngine) Providers() []FixProvider {
 
 // Apply applies findings to content and returns the modified content,
 // the successfully applied findings, and the count of applied fixes.
+// Provider errors from edit resolution are discarded; use ApplyWithConflicts
+// to access them.
 func (e *FixEngine) Apply(
 	content []byte,
 	fixes []finding.Finding,

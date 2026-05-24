@@ -199,14 +199,14 @@ Round-trip fidelity is preserved. `SeverityCritical` maps to SARIF `"error"` (SA
 lspDiag := f.ToLSP()
 
 // From LSP diagnostic
-f := finding.FromLSP(lspDiag, "my-tool")
+f := finding.FromLSP("file:///path/to/file.go", lspDiag)
 ```
 
 ## go/analysis Integration
 
 ```go
-// From go/analysis Diagnostic
-f := finding.FromDiagnostic(diag, pass.Fset, "my-analyzer")
+// From go/analysis Diagnostic (in analysis subpackage)
+f := analysis.FromDiagnostic(diag, pass.Fset, "my-analyzer", "RULE001")
 
 // Note: Converting back to analysis.Diagnostic is supported via ToDiagnostic().
 ```

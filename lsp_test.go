@@ -10,7 +10,7 @@ func TestSeverityToLSP(t *testing.T) {
 	tests := []struct {
 		name     string
 		severity Severity
-		want     int
+		want     LSPSeverity
 	}{
 		{"critical maps to error", SeverityCritical, LSPSeverityError},
 		{"error maps to error", SeverityError, LSPSeverityError},
@@ -24,7 +24,7 @@ func TestSeverityToLSP(t *testing.T) {
 			t.Parallel()
 
 			if got := severityToLSP(tt.severity); got != tt.want {
-				t.Errorf("severityToLSP(%v) = %d, want %d", tt.severity, got, tt.want)
+				t.Errorf("severityToLSP(%v) = %d, want %d", tt.severity, int(got), int(tt.want))
 			}
 		})
 	}
@@ -35,7 +35,7 @@ func TestSeverityFromLSP(t *testing.T) {
 
 	tests := []struct {
 		name string
-		sev  int
+		sev  LSPSeverity
 		want Severity
 	}{
 		{"error(1) maps to SeverityError", LSPSeverityError, SeverityError},
@@ -51,7 +51,7 @@ func TestSeverityFromLSP(t *testing.T) {
 			t.Parallel()
 
 			if got := severityFromLSP(tt.sev); got != tt.want {
-				t.Errorf("severityFromLSP(%d) = %v, want %v", tt.sev, got, tt.want)
+				t.Errorf("severityFromLSP(%d) = %v, want %v", int(tt.sev), got, tt.want)
 			}
 		})
 	}

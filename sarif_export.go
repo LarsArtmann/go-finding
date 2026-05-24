@@ -129,10 +129,13 @@ func findingToSARIF(f Finding) SarifResult {
 		Level:      severityToSARIFLevel(f.Severity),
 		Message:    SarifMessage{Text: f.Message},
 		Locations:  sarifLocations(f),
-		Rank:       float64(f.NormalizedConfidence()) * sarifConfidenceScale,
 		Fixes:      sarifFixes(f),
 		Related:    sarifRelatedLocs(f),
 		Properties: sarifProperties(f),
+	}
+
+	if f.Confidence > 0 {
+		result.Rank = float64(f.NormalizedConfidence()) * sarifConfidenceScale
 	}
 
 	return result
@@ -254,6 +257,10 @@ func sarifProperties(f Finding) map[string]any {
 
 	if f.BeforeCode != "" {
 		props[sarifPropBeforeCode] = f.BeforeCode
+	}
+
+	if f.AfterCode != "" {
+		props[sarifPropAfterCode] = f.AfterCode
 	}
 
 	for k, v := range f.Metadata {

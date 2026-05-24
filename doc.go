@@ -136,9 +136,8 @@
 // The pipeline subpackage provides an automated detect → triage → fix → verify loop:
 //
 //	p, err := pipeline.New(pipeline.Config{
-//	    Detectors: []pipeline.Detector{myDetector},
-//	    Timeout:   5 * time.Minute,
-//	})
+//	    Timeout: 5 * time.Minute,
+//	}, ".", myDetector)
 //	result, err := p.Run(ctx)
 //
 // See the pipeline subpackage for configuration, custom fix providers, metrics,

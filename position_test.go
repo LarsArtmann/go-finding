@@ -264,3 +264,40 @@ func TestRange_IsSingleLine(t *testing.T) {
 		})
 	}
 }
+
+func TestRange_IsInverted(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		r    Range
+		want bool
+	}{
+		{"zero range", Range{}, false},
+		{"start only", Range{Start: Position{Line: 1}}, false},
+		{"valid range", Range{Start: Position{Line: 1}, End: Position{Line: 5}}, false},
+		{"same line", Range{Start: Position{Line: 3}, End: Position{Line: 3}}, false},
+		{"inverted lines", Range{Start: Position{Line: 5}, End: Position{Line: 1}}, true},
+		{
+			"inverted columns",
+			Range{Start: Position{Line: 3, Column: 10}, End: Position{Line: 3, Column: 2}},
+			true,
+		},
+		{
+			"same line same column",
+			Range{Start: Position{Line: 3, Column: 5}, End: Position{Line: 3, Column: 5}},
+			false,
+		},
+		{"end line zero", Range{Start: Position{Line: 5}, End: Position{Line: 0}}, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.r.IsInverted(); got != tt.want {
+				t.Errorf("IsInverted() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

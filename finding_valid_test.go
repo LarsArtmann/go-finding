@@ -125,6 +125,31 @@ func TestFinding_Validate(t *testing.T) {
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err).To(MatchError(ContainSubstring("BeforeCode or AfterCode")))
 	})
+
+	t.Run("nil range is valid", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
+		g.Expect(f.Validate()).NotTo(HaveOccurred())
+	})
+
+	t.Run("valid range passes", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
+		f.Range = &Range{Start: Pos("a.go", 1, 1), End: Pos("a.go", 3, 1)}
+		g.Expect(f.Validate()).NotTo(HaveOccurred())
+	})
+
+	t.Run("inverted range is invalid", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
+		f.Range = &Range{Start: Pos("a.go", 5, 1), End: Pos("a.go", 1, 1)}
+		err := f.Validate()
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err).To(MatchError(ContainSubstring("Range")))
+	})
 }
 
 func TestFinding_IsValid(t *testing.T) {

@@ -186,6 +186,12 @@ golangci-lint run ./...         # Lint
 - **ErrInvalidBuilder removed** — Dead code eliminated; `Build()` returns `Validate()` errors directly
 - **CLI delegates to finding.ParseSeverity** — `cmd/go-finding/config.go` no longer duplicates severity parsing logic
 - **FixEngine multi-edit correctness** — Descending-offset application is correct; all edits resolve against same original content snapshot; tests prove it
+- **SARIF AfterCode round-trip** — `sarifProperties` exports both `BeforeCode` and `AfterCode` as properties; import reads both for full round-trip fidelity
+- **SARIF Rank omission** — `findingToSARIF` only sets `Rank` when `Confidence > 0`; NaN/zero confidence omitted per SARIF spec
+- **Range.IsInverted()** — Detects End before Start (line or column level); used in `Finding.Validate()` to reject inverted ranges
+- **DeduplicateBy edge cases** — `DeduplicateByPosition` and `DeduplicateByRule` skip findings with empty `Position.File` (return `false`), preventing false dedup of findings without file paths
+- **LSPSeverity typed constant** — `type LSPSeverity int` with constants `LSPSeverityError/Warning/Info/Hint`; `LSPDiagnostic.Severity` uses named type instead of raw `int`
+- **FixApplier resolveErrors surfaced** — `applyToFile` returns provider errors from `FixEngine.ApplyWithConflicts` via `errors.Join` instead of silently discarding
 
 ### CLI Features
 

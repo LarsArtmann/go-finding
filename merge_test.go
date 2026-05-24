@@ -79,10 +79,14 @@ func TestMerge_DeduplicateByPosition(t *testing.T) {
 	t.Parallel()
 
 	r1 := MakeSimpleReport("tool1")
-	r1.AddFinding(MakeSimpleFinding("a", SeverityError))
+	r1.AddFinding(
+		Finding{ID: "a", Severity: SeverityError, Position: Position{File: "a.go", Line: 10}},
+	)
 
 	r2 := MakeSimpleReport("tool2")
-	r2.AddFinding(MakeSimpleFinding("b", SeverityWarning))
+	r2.AddFinding(
+		Finding{ID: "b", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 10}},
+	)
 
 	merged := Merge([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByPosition))
 	merged.ComputeSummary()
@@ -224,6 +228,42 @@ func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
 	g.Expect(collectIDs(byPos)).To(HaveLen(2))
 
 	g.Expect(collectIDs(byRule)).To(HaveLen(2))
+}
+
+func TestDeduplicateByPosition_EmptyFileNotDeduplicated(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	r1 := NewReport(ToolInfo{Name: "t1"})
+	r1.AddFinding(
+		Finding{ID: "1", ToolName: "t1", Rule: "r", Message: "m1", Position: Position{Line: 1}},
+	)
+	r1.AddFinding(
+		Finding{ID: "2", ToolName: "t1", Rule: "r", Message: "m2", Position: Position{Line: 1}},
+	)
+
+	merged := Merge(
+		[]*Report{r1},
+		WithDeduplication(true),
+		WithDeduplicateBy(DeduplicateByPosition),
+	)
+	g.Expect(merged.Len()).To(Equal(2))
+}
+
+func TestDeduplicateByRule_EmptyFileNotDeduplicated(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	r1 := NewReport(ToolInfo{Name: "t1"})
+	r1.AddFinding(
+		Finding{ID: "1", ToolName: "t1", Rule: "r", Message: "m1", Position: Position{Line: 1}},
+	)
+	r1.AddFinding(
+		Finding{ID: "2", ToolName: "t1", Rule: "r", Message: "m2", Position: Position{Line: 1}},
+	)
+
+	merged := Merge([]*Report{r1}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByRule))
+	g.Expect(merged.Len()).To(Equal(2))
 }
 
 func collectIDs(r *Report) []string {

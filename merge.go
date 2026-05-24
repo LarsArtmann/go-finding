@@ -151,6 +151,10 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 
 		return finding.ID, true
 	case DeduplicateByPosition:
+		if finding.Position.File == "" {
+			return "", false
+		}
+
 		return fmt.Sprintf(
 			"%s:%s:%d:%d",
 			finding.ToolName,
@@ -159,6 +163,10 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 			finding.Position.Column,
 		), true
 	case DeduplicateByRule:
+		if finding.Position.File == "" {
+			return "", false
+		}
+
 		return fmt.Sprintf(
 			"%s:%s:%d:%d",
 			finding.Rule,
