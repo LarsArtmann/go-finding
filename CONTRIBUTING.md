@@ -81,34 +81,46 @@ go vet ./...
 
 ```
 go-finding/
-├── finding.go          # Core Finding type
-├── severity.go         # Severity enum
-├── category.go         # Category constants
-├── fix_strategy.go     # FixStrategy enum
-├── position.go         # Position and Range types
-├── report.go           # Report container
-├── filter.go           # Filtering and grouping
-├── merge.go            # Merge, dedup, correlation
-├── sarif.go            # SARIF 2.1.0 output
-├── id.go               # ID generation and parsing
-├── errors.go           # Structured error types
-├── suppression.go      # Suppression handling
-├── json.go             # JSON marshaling
-├── diagnostic.go       # go/analysis integration
-├── lsp.go              # LSP diagnostic conversion
-├── pipeline/           # Pipeline package
-│   ├── pipeline.go     # Pipeline orchestrator
-│   ├── conflict.go     # Fix conflict detection
-│   ├── astfix.go       # AST-aware fix application
-│   ├── verify.go       # Verification stage
-│   ├── metrics.go      # Metrics collection
-│   ├── retry.go        # Retry with backoff
-│   └── partial.go      # Partial success
-├── cmd/go-finding/     # CLI tool
-├── internal/detectors/ # Built-in detectors (govet, staticcheck)
-├── bench_test.go       # Benchmarks for hot paths
-├── fuzz_test.go        # Fuzz tests
-├── example_test.go     # GoDoc examples
+├── finding.go           # Core Finding type
+├── finding_builder.go   # Fluent builder API
+├── severity.go          # Severity enum with comparison
+├── confidence.go        # Confidence named type (0.0–1.0)
+├── category.go          # Category constants
+├── fix_strategy.go      # FixStrategy enum
+├── position.go          # Position and Range types
+├── report.go            # Report container (thread-safe)
+├── filter.go            # Filtering and grouping
+├── merge.go             # Merge, dedup, correlation
+├── diff.go              # Diff (before/after finding sets)
+├── format.go            # FormatText/FormatMarkdown output
+├── sarif_export.go      # SARIF 2.1.0 export
+├── sarif_import.go      # SARIF 2.1.0 import
+├── sarif_types.go       # SARIF struct types and constants
+├── id.go                # ID generation and parsing
+├── errors.go            # Structured error types
+├── tag.go               # Tag type with standard constants
+├── suppression.go       # Suppression handling with TTL
+├── json.go              # JSON marshaling/unmarshaling
+├── lsp.go               # LSP diagnostic conversion
+├── version.go           # Version constants
+├── analysis/            # go/analysis.Diagnostic integration
+│   └── analysis.go
+├── pipeline/            # Pipeline package
+│   ├── pipeline.go      # Pipeline orchestrator
+│   ├── adapters.go      # Detector/Processor interfaces
+│   ├── config.go        # Config with validation
+│   ├── conflict.go      # Fix conflict detection
+│   ├── fix_engine.go    # Byte-level edit engine
+│   ├── fix_provider.go  # Composable fix providers
+│   ├── fix_applier.go   # Filesystem fix application
+│   ├── verify.go        # Verification stage
+│   ├── metrics.go       # Metrics collection
+│   ├── retry.go         # Retry with exponential backoff
+│   └── partial.go       # Partial success
+├── cmd/go-finding/      # CLI tool
+├── internal/detectors/  # Built-in detectors (govet, staticcheck)
+├── examples/            # Standalone examples (basic, builder, pipeline)
+├── docs/                # Documentation and schemas
 ```
 
 ## Coding Standards

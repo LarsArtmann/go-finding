@@ -240,14 +240,6 @@ finding.IsFindingError(err)
 finding.GetCategory(err) // "validation", "io", "conflict", etc.
 ```
 
-## Tools Using This SDK
-
-- [art-dupl](https://github.com/larsartmann/art-dupl) — Code duplication detection
-- [branching-flow](https://github.com/larsartmann/branching-flow) — Go code quality analyzer
-- [hierarchical-errors](https://github.com/larsartmann/hierarchical-errors) — Error handling pattern detector
-- [go-auto-upgrade](https://github.com/larsartmann/go-auto-upgrade) — Dependency upgrade automation
-- [golangci-lint-auto-configure](https://github.com/larsartmann/golangci-lint-auto-configure) — Linter configuration
-
 ## CLI
 
 ```bash
@@ -260,14 +252,25 @@ go-finding run --format json --config config.yaml
 ## Development
 
 ```bash
-just test       # Run tests with -race
-just bench      # Run benchmarks
-just lint       # golangci-lint
-just cover      # Coverage report
-just check      # All checks (fmt + lint + test)
+go test -race -count=1 ./...     # Run tests with race detector
+go test -bench=. -benchmem ./... # Run benchmarks
+golangci-lint run ./...          # Lint
+go vet ./...                     # Vet
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Versioning
+
+This project follows [Semantic Versioning](https://semver.org/).
+
+**Pre-v1.0:** Until `v1.0.0` is released, minor version bumps may include breaking API changes. Patch bumps are always backward-compatible. The exported API is stable in practice — the core types (`Finding`, `Report`, `Severity`, etc.) have not changed since `v0.1.0`.
+
+The current version is available programmatically:
+
+```go
+fmt.Println(finding.Version) // "0.3.0"
+```
 
 ## Project Stats
 
@@ -281,8 +284,17 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Related Projects
 
-- [go-business-rules](https://github.com/larsartmann/go-business-rules) — Runtime validation (uses same Severity type)
+Tools using this SDK:
+
+- [art-dupl](https://github.com/larsartmann/art-dupl) — Code duplication detection
+- [branching-flow](https://github.com/larsartmann/branching-flow) — Go code quality analyzer
+- [hierarchical-errors](https://github.com/larsartmann/hierarchical-errors) — Error handling pattern detector
+- [go-auto-upgrade](https://github.com/larsartmann/go-auto-upgrade) — Dependency upgrade automation
+
+Standards:
+
 - [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) — Static Analysis Results Interchange Format
+- [LSP](https://microsoft.github.io/language-server-protocol/) — Language Server Protocol
 
 ## License
 

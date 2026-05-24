@@ -57,3 +57,8 @@ Thumbs.db
 
 # Sensitive files
 *.db
+*.prof
+*.pdb
+
+# Personal tool configs
+git-town.toml
