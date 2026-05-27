@@ -74,8 +74,8 @@ func DefaultConfig() Config {
 
 // Sentinel validation errors.
 var (
-	errMaxIterations = errors.New("max iterations must be >= 0")
-	errTimeout       = errors.New("timeout must be >= 0")
+	errMaxIterations   = errors.New("max iterations must be >= 0")
+	errTimeout         = errors.New("timeout must be >= 0")
 	errDetectorTimeout = errors.New("detector timeout must be >= 0")
 )
 
