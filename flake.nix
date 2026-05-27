@@ -22,6 +22,34 @@
       treefmt-nix,
       systems,
     }:
+    let
+      lib = nixpkgs.lib;
+
+      version = self.rev or self.dirtyRev or "dev";
+      vendorHash = "sha256-7a+AUpsSiniqaIAdrHJvBe/9wJVZu2PTUQJiWavKq5I=";
+
+      goSrc = lib.fileset.toSource {
+        root = ./.;
+        fileset = lib.fileset.gitTracked ./.;
+      };
+
+      mkGoFinding = buildGoModule:
+        buildGoModule {
+          pname = "go-finding";
+          inherit version vendorHash;
+          src = goSrc;
+          ldflags = [
+            "-s"
+            "-w"
+          ];
+          meta = {
+            description = "Code quality finding framework for Go";
+            homepage = "https://github.com/LarsArtmann/go-finding";
+            license = lib.licenses.mit;
+            mainProgram = "go-finding";
+          };
+        };
+    in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import systems;
 
@@ -33,20 +61,10 @@
         {
           config,
           pkgs,
-          system,
           ...
         }:
         let
           goPkg = pkgs.go_1_26;
-
-          version = self.rev or self.dirtyRev or "dev";
-
-          src = pkgs.lib.fileset.toSource {
-            root = ./.;
-            fileset = pkgs.lib.fileset.gitTracked ./.;
-          };
-
-          vendorHash = "sha256-DSEmCeYk/LMzlCuEAu07V60BMA2vtL7axC6AMR+h3V0=";
 
           mkApp = name: description: script: {
             type = "app";
@@ -75,20 +93,7 @@
             };
           };
 
-          packages.default = pkgs.buildGoModule {
-            pname = "go-finding";
-            inherit version src vendorHash;
-            ldflags = [
-              "-s"
-              "-w"
-            ];
-            meta = with pkgs.lib; {
-              description = "Code quality finding framework for Go";
-              homepage = "https://github.com/LarsArtmann/go-finding";
-              license = licenses.mit;
-              mainProgram = "go-finding";
-            };
-          };
+          packages.default = mkGoFinding pkgs.buildGoModule;
 
           devShells.default = pkgs.mkShell {
             packages = [
@@ -96,6 +101,7 @@
               pkgs.golangci-lint
               pkgs.gofumpt
               pkgs.golines
+              pkgs.gopls
               pkgs.gotools
               pkgs.trash-cli
             ];
@@ -123,6 +129,10 @@
               go test ./... -race -count=1 "$@"
             '';
 
+            bench = mkApp "bench" "Run benchmarks" ''
+              go test ./... -bench=. -benchmem "$@"
+            '';
+
             build = mkApp "build" "Build all packages" ''
               go build ./...
             '';
@@ -147,26 +157,8 @@
           };
         };
 
-      flake.overlays.default = final: prev: {
-        go-finding = final.buildGoModule {
-          pname = "go-finding";
-          version = self.rev or self.dirtyRev or "dev";
-          vendorHash = "sha256-DSEmCeYk/LMzlCuEAu07V60BMA2vtL7axC6AMR+h3V0=";
-          src = final.lib.fileset.toSource {
-            root = ./.;
-            fileset = final.lib.fileset.gitTracked ./.;
-          };
-          ldflags = [
-            "-s"
-            "-w"
-          ];
-          meta = with final.lib; {
-            description = "Code quality finding framework for Go";
-            homepage = "https://github.com/LarsArtmann/go-finding";
-            license = licenses.mit;
-            mainProgram = "go-finding";
-          };
-        };
+      flake.overlays.default = final: _prev: {
+        go-finding = mkGoFinding final.buildGoModule;
       };
     };
 }
