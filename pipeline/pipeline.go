@@ -87,8 +87,7 @@ func (p *Pipeline) notifyStage(stage string, iteration, count int) {
 //
 // Run is NOT safe for concurrent use. Each Pipeline instance should be used
 // for at most one Run call; create a new Pipeline for each invocation.
-// Calling Run multiple times on the same Pipeline resets internal state
-// (findings, iterations) but does not re-validate the configuration.
+// Calling Run multiple times on the same Pipeline returns errAlreadyRan.
 //
 // The returned PipelineResult is safe to read concurrently after Run returns.
 func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {

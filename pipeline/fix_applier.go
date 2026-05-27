@@ -39,9 +39,11 @@ func NewFixApplierWithProviders(rootDir string, providers ...FixProvider) (*FixA
 		)
 	}
 
-	engine := NewFixEngineWithProviders(providers...)
+	var engine *FixEngine
 	if len(providers) == 0 {
 		engine = NewFixEngine()
+	} else {
+		engine = NewFixEngineWithProviders(providers...)
 	}
 
 	return &FixApplier{

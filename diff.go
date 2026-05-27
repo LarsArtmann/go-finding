@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 )
@@ -19,15 +20,7 @@ type DiffResult struct {
 	Unchanged []Finding      // Present in both with identical content
 }
 
-func byFindingID(a, b Finding) int {
-	if a.ID < b.ID {
-		return -1
-	}
-	if a.ID > b.ID {
-		return 1
-	}
-	return 0
-}
+func byFindingID(a, b Finding) int { return cmp.Compare(a.ID, b.ID) }
 
 // Diff compares two finding sets by ID and categorizes them as added, removed, modified, or unchanged.
 // Two findings with the same ID are considered "modified" if their content differs (per Equal()).
