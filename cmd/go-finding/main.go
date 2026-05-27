@@ -129,8 +129,7 @@ func run() int {
 		return 1
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), pipelineCfg.Timeout)
-	defer cancel()
+	ctx := context.Background()
 
 	fmt.Fprintf(
 		os.Stderr,
