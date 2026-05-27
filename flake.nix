@@ -43,38 +43,10 @@
 
           src = pkgs.lib.fileset.toSource {
             root = ./.;
-            fileset = pkgs.lib.fileset.unions [
-              ./go.mod
-              ./go.sum
-              ./doc.go
-              ./version.go
-              ./category.go
-              ./confidence.go
-              ./diff.go
-              ./errors.go
-              ./filter.go
-              ./fix_strategy.go
-              ./format.go
-              ./id.go
-              ./json.go
-              ./lsp.go
-              ./merge.go
-              ./position.go
-              ./report.go
-              ./sarif_export.go
-              ./sarif_import.go
-              ./sarif_types.go
-              ./severity.go
-              ./suppression.go
-              ./tag.go
-              ./analysis
-              ./cmd
-              ./internal
-              ./pipeline
-            ];
+            fileset = pkgs.lib.fileset.gitTracked ./.;
           };
 
-          vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+          vendorHash = "sha256-DSEmCeYk/LMzlCuEAu07V60BMA2vtL7axC6AMR+h3V0=";
 
           mkApp = name: description: script: {
             type = "app";
