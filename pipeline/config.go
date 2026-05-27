@@ -76,6 +76,7 @@ func DefaultConfig() Config {
 var (
 	errMaxIterations = errors.New("max iterations must be >= 0")
 	errTimeout       = errors.New("timeout must be >= 0")
+	errDetectorTimeout = errors.New("detector timeout must be >= 0")
 )
 
 // Validate checks the configuration and returns an error if invalid.
@@ -93,6 +94,12 @@ func (c Config) Validate() error {
 	if c.Retry != nil {
 		if err := c.Retry.Validate(); err != nil {
 			errs = append(errs, fmt.Errorf("retry: %w", err))
+		}
+	}
+
+	for name, d := range c.DetectorTimeouts {
+		if d < 0 {
+			errs = append(errs, fmt.Errorf("%w: detector %q got %v", errDetectorTimeout, name, d))
 		}
 	}
 
