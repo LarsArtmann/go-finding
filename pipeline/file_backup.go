@@ -13,12 +13,17 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+type backupEntry struct {
+	path string
+	mode os.FileMode
+}
+
 // FileBackup manages backup and restore of files during fix application.
 // It is safe for concurrent use.
 type FileBackup struct {
 	enabled   bool
 	backupDir string
-	backups   map[string]string // original -> backup path
+	backups   map[string]backupEntry // original path -> backup entry
 	mu        sync.Mutex
 }
 
@@ -28,7 +33,7 @@ func NewFileBackup(backupDir string) *FileBackup {
 	return &FileBackup{
 		enabled:   true,
 		backupDir: backupDir,
-		backups:   make(map[string]string),
+		backups:   make(map[string]backupEntry),
 	}
 }
 
@@ -48,7 +53,11 @@ func (fb *FileBackup) BackupPath(original string) string {
 	fb.mu.Lock()
 	defer fb.mu.Unlock()
 
-	return fb.backups[original]
+	if e, ok := fb.backups[original]; ok {
+		return e.path
+	}
+
+	return ""
 }
 
 // Backup creates a backup of the given file.
@@ -56,6 +65,11 @@ func (fb *FileBackup) Backup(path string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return ioErrorAt("read file for backup", err, path)
+	}
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return ioErrorAt("stat file for backup", err, path)
 	}
 
 	backupPath := filepath.Join(
@@ -75,7 +89,7 @@ func (fb *FileBackup) Backup(path string) error {
 	}
 
 	fb.mu.Lock()
-	fb.backups[path] = backupPath
+	fb.backups[path] = backupEntry{path: backupPath, mode: info.Mode()}
 	fb.mu.Unlock()
 
 	return nil
@@ -83,19 +97,19 @@ func (fb *FileBackup) Backup(path string) error {
 
 // Restore restores a file from its backup.
 func (fb *FileBackup) Restore(path string) error {
-	backupPath, ok := func() (string, bool) {
+	entry, ok := func() (backupEntry, bool) {
 		fb.mu.Lock()
 		defer fb.mu.Unlock()
 
-		p, exists := fb.backups[path]
+		e, exists := fb.backups[path]
 
-		return p, exists
+		return e, exists
 	}()
 	if !ok {
 		return finding.NewInternalError("no backup for "+path, nil)
 	}
 
-	data, err := os.ReadFile(backupPath)
+	data, err := os.ReadFile(entry.path)
 	if err != nil {
 		return ioErrorAt("read backup", err, path)
 	}
@@ -103,7 +117,7 @@ func (fb *FileBackup) Restore(path string) error {
 	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
 		path,
 		data,
-		0o600,
+		entry.mode,
 	); err != nil {
 		return ioErrorAt("restore file", err, path)
 	}
