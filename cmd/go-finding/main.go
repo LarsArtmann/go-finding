@@ -22,60 +22,85 @@ func main() {
 	os.Exit(run())
 }
 
-func run() int {
-	var (
-		dir        string
-		format     string
-		minSev     string
-		maxIter    int
-		parallel   bool
-		verify     bool
-		timeout    time.Duration
-		configFile string
-		cpuprof    string
-		memprof    string
-		showVer    bool
-		outputFile string
-	)
+type cliFlags struct {
+	dir              string
+	format           string
+	minSev           string
+	maxIter          int
+	parallel         bool
+	verify           bool
+	timeout          time.Duration
+	configFile       string
+	cpuprof          string
+	memprof          string
+	showVer          bool
+	outputFile       string
+	filterGenerated  bool
+	filterGenTypes   string
+	generatedExclude string
+	generatedInclude string
+}
 
-	flag.StringVar(&dir, "dir", ".", "root directory to analyze")
-	flag.StringVar(&format, "format", "text", "output format: text, markdown, json, sarif")
-	flag.StringVar(&minSev, "severity", "info", "minimum severity: info, warning, error, critical")
-	flag.IntVar(&maxIter, "max-iterations", 1, "maximum pipeline iterations")
-	flag.BoolVar(&parallel, "parallel", true, "run detectors in parallel")
-	flag.BoolVar(&verify, "verify", false, "verify fixes by re-running detectors")
-	flag.DurationVar(&timeout, "timeout", pipeline.DefaultTimeout, "pipeline timeout")
-	flag.StringVar(&configFile, "config", "", "YAML/JSON config file path")
-	flag.StringVar(&cpuprof, "cpuprof", "", "write CPU profile to file")
-	flag.StringVar(&memprof, "memprof", "", "write memory profile to file")
-	flag.BoolVar(&showVer, "version", false, "print version and exit")
-	flag.StringVar(&outputFile, "output", "", "write output to file (default: stdout)")
+func parseFlags() cliFlags {
+	var f cliFlags
+
+	flag.StringVar(&f.dir, "dir", ".", "root directory to analyze")
+	flag.StringVar(&f.format, "format", "text", "output format: text, markdown, json, sarif")
+	flag.StringVar(&f.minSev, "severity", "info", "minimum severity: info, warning, error, critical")
+	flag.IntVar(&f.maxIter, "max-iterations", 1, "maximum pipeline iterations")
+	flag.BoolVar(&f.parallel, "parallel", true, "run detectors in parallel")
+	flag.BoolVar(&f.verify, "verify", false, "verify fixes by re-running detectors")
+	flag.DurationVar(&f.timeout, "timeout", pipeline.DefaultTimeout, "pipeline timeout")
+	flag.StringVar(&f.configFile, "config", "", "YAML/JSON config file path")
+	flag.StringVar(&f.cpuprof, "cpuprof", "", "write CPU profile to file")
+	flag.StringVar(&f.memprof, "memprof", "", "write memory profile to file")
+	flag.BoolVar(&f.showVer, "version", false, "print version and exit")
+	flag.StringVar(&f.outputFile, "output", "", "write output to file (default: stdout)")
+	flag.BoolVar(&f.filterGenerated, "filter-generated", false, "filter out findings from auto-generated files")
+	flag.StringVar(
+		&f.filterGenTypes, "filter-generated-types", "all",
+		"comma-separated generator types to filter (all, sqlc, templ, mockgen, protobuf, ...)",
+	)
+	flag.StringVar(
+		&f.generatedExclude, "generated-exclude", "",
+		"comma-separated glob patterns for files to exclude from generated filtering",
+	)
+	flag.StringVar(
+		&f.generatedInclude, "generated-include", "",
+		"comma-separated glob patterns restricting generated-filtering scope",
+	)
 	flag.Parse()
 
-	if showVer {
+	return f
+}
+
+func run() int {
+	f := parseFlags()
+
+	if f.showVer {
 		_, _ = fmt.Fprintln(os.Stdout, version)
 
 		return 0
 	}
 
-	stopProf, err := setupProfiling(cpuprof, memprof)
+	stopProf, err := setupProfiling(f.cpuprof, f.memprof)
 	if err != nil {
 		return 1
 	}
 
 	defer stopProf()
 
-	sev, err := parseSeverity(minSev)
+	sev, err := parseSeverity(f.minSev)
 	if err != nil {
 		return fatalf("parsing severity", err)
 	}
 
-	cfg, err := loadConfig(configFile, maxIter, parallel, verify, timeout)
+	cfg, err := loadConfig(f.configFile, f.maxIter, f.parallel, f.verify, f.timeout)
 	if err != nil {
 		return fatalf("loading config", err)
 	}
 
-	detectorList := buildDetectors(cfg.Detectors, dir)
+	detectorList := buildDetectors(cfg.Detectors, f.dir)
 	if len(detectorList) == 0 {
 		fmt.Fprintln(
 			os.Stderr,
@@ -87,7 +112,17 @@ func run() int {
 
 	pipelineCfg := cfg.toPipelineConfig()
 	pipelineCfg.GracefulDegradation = true
-	p, err := pipeline.New(pipelineCfg, dir, detectorList...)
+
+	if f.filterGenerated || cfg.FilterGenerated {
+		if err := addGeneratedFilter(
+			&pipelineCfg, cfg,
+			f.filterGenTypes, f.generatedExclude, f.generatedInclude,
+		); err != nil {
+			return fatalf("configuring generated file filter", err)
+		}
+	}
+
+	p, err := pipeline.New(pipelineCfg, f.dir, detectorList...)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "invalid pipeline config: %v\n", err)
 
@@ -102,7 +137,7 @@ func run() int {
 		"%s v%s: analyzing %s with %d detector(s)\n",
 		toolName,
 		version,
-		dir,
+		f.dir,
 		len(detectorList),
 	)
 
@@ -111,12 +146,21 @@ func run() int {
 		return fatalf("running pipeline", err)
 	}
 
+	return writeResults(result, sev, f.format, f.outputFile)
+}
+
+func writeResults(
+	result *pipeline.PipelineResult,
+	minSev finding.Severity,
+	format string,
+	outputFile string,
+) int {
 	var allFindings []finding.Finding
 	for _, iter := range result.Iterations {
 		allFindings = append(allFindings, iter.Findings()...)
 	}
 
-	filtered := filterBySeverity(allFindings, sev)
+	filtered := filterBySeverity(allFindings, minSev)
 
 	report := finding.NewReport(finding.ToolInfo{
 		Name:    toolName,

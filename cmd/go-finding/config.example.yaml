@@ -11,3 +11,13 @@ detectors:
     args: {}
   - name: staticcheck
     args: {}
+
+# Filter out findings from auto-generated Go source files.
+# Supported types: all, sqlc, templ, go-enum, protobuf, oapi-codegen,
+# deepcopy-gen, wire, moq, mockgen, stringer, generic
+# filterGenerated: true
+# filterGenTypes: "all"
+# generatedExclude:
+#   - "**/vendor/**"
+# generatedInclude:
+#   - "pkg/**"

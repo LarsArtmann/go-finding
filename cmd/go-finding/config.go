@@ -23,6 +23,11 @@ type pipelineConfigFile struct {
 	Timeout           string            `json:"timeout"           yaml:"timeout"`
 	DetectorTimeouts  map[string]string `json:"detectorTimeouts"  yaml:"detectorTimeouts"`
 	Detectors         []detectorSpec    `json:"detectors"         yaml:"detectors"`
+	// FilterGenerated enables filtering of findings from auto-generated Go source files.
+	FilterGenerated  bool     `json:"filterGenerated"  yaml:"filterGenerated"`
+	FilterGenTypes   string   `json:"filterGenTypes"   yaml:"filterGenTypes"`
+	GeneratedExclude []string `json:"generatedExclude" yaml:"generatedExclude"`
+	GeneratedInclude []string `json:"generatedInclude" yaml:"generatedInclude"`
 }
 
 type detectorSpec struct {

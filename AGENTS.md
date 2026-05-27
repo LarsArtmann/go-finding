@@ -59,6 +59,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `pipeline/metrics.go`      | Timing/count metrics collection with snapshots                            |
 | `pipeline/retry.go`        | Exponential backoff retry wrapper for detectors                           |
 | `pipeline/partial.go`      | Partial success: collect from failed detectors                            |
+| `pipeline/generated_filter.go` | GeneratedFileFilter processor — removes findings from auto-generated files via gogenfilter |
 
 #### CLI
 
@@ -67,6 +68,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `cmd/go-finding/main.go`     | Entry point, run(), profiling, flag parsing                                    |
 | `cmd/go-finding/config.go`   | Config loading, severity parsing, output formatting (text/markdown/json/sarif) |
 | `cmd/go-finding/registry.go` | Detector builder registry with concurrent access                               |
+| `cmd/go-finding/generated_filter.go` | CLI generated-file-filter integration (type registry, addGeneratedFilter) |
 
 #### Internal Detectors
 
@@ -93,6 +95,7 @@ golangci-lint run ./...         # Lint
 - `github.com/onsi/ginkgo/v2` - BDD testing framework
 - `github.com/onsi/gomega` - BDD test matchers
 - `github.com/stretchr/testify` - **INDIRECT only** (transitive via go-faster/yaml). Zero source imports. Fully migrated to ginkgo/gomega.
+- `github.com/LarsArtmann/gogenfilter/v3` - Auto-generated Go file detection (sqlc, protobuf, mockgen, etc.) — pipeline GeneratedFileFilter processor
 
 ### Design Principles
 
@@ -192,6 +195,7 @@ golangci-lint run ./...         # Lint
 - **DeduplicateBy edge cases** — `DeduplicateByPosition` and `DeduplicateByRule` skip findings with empty `Position.File` (return `false`), preventing false dedup of findings without file paths
 - **LSPSeverity typed constant** — `type LSPSeverity int` with constants `LSPSeverityError/Warning/Info/Hint`; `LSPDiagnostic.Severity` uses named type instead of raw `int`
 - **FixApplier resolveErrors surfaced** — `applyToFile` returns provider errors from `FixEngine.ApplyWithConflicts` via `errors.Join` instead of silently discarding
+- **GeneratedFileFilter** — `pipeline.GeneratedFileFilter` FindingProcessor removes findings from auto-generated Go files (sqlc, protobuf, mockgen, templ, etc.) via `gogenfilter/v3`; configurable per-generator type, include/exclude patterns; CLI flags `-filter-generated`, `-filter-generated-types`, `-generated-exclude`, `-generated-include`
 
 ### CLI Features
 
@@ -203,6 +207,7 @@ golangci-lint run ./...         # Lint
 - Graceful degradation on detector failures
 - Metrics summary output to stderr
 - Dynamic detector registry — `RegisterDetector` for plugin detectors
+- Generated file filtering — `-filter-generated` CLI flag + `filterGenerated` config; uses `gogenfilter/v3` to detect sqlc, protobuf, mockgen, etc. via `GeneratedFileFilter` FindingProcessor
 
 ---
 
