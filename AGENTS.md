@@ -65,7 +65,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 | File                                 | Purpose                                                                        |
 | ------------------------------------ | ------------------------------------------------------------------------------ |
-| `cmd/go-finding/main.go`             | Entry point, run(), profiling, flag parsing                                    |
+| `cmd/go-finding/main.go`             | Entry point, run(), cliFlags struct, parseFlags(), writeResults()              |
 | `cmd/go-finding/config.go`           | Config loading, severity parsing, output formatting (text/markdown/json/sarif) |
 | `cmd/go-finding/registry.go`         | Detector builder registry with concurrent access                               |
 | `cmd/go-finding/generated_filter.go` | CLI generated-file-filter integration (type registry, addGeneratedFilter)      |
@@ -196,6 +196,14 @@ golangci-lint run ./...                     # Lint
 - **LSPSeverity typed constant** — `type LSPSeverity int` with constants `LSPSeverityError/Warning/Info/Hint`; `LSPDiagnostic.Severity` uses named type instead of raw `int`
 - **FixApplier resolveErrors surfaced** — `applyToFile` returns provider errors from `FixEngine.ApplyWithConflicts` via `errors.Join` instead of silently discarding
 - **GeneratedFileFilter** — `pipeline.GeneratedFileFilter` FindingProcessor removes findings from auto-generated Go files (sqlc, protobuf, mockgen, templ, etc.) via `gogenfilter/v3`; configurable per-generator type, include/exclude patterns; CLI flags `-filter-generated`, `-filter-generated-types`, `-generated-exclude`, `-generated-include`
+- **SARIF import FixStrategy** — `findingFromSarResult` sets `FixStrategyDirect` for replacements (auto-applicable), `FixStrategySuggest` for description-only fixes
+- **FileBackup permission preservation** — `Backup()` captures original `os.FileInfo.Mode()`; `Restore()` uses stored mode instead of hardcoded `0o600`
+- **Config.DetectorTimeouts validation** — `Config.Validate()` rejects negative per-detector timeouts (would panic at runtime)
+- **CLI duration parse errors** — `toPipelineConfig()` returns `(Config, error)` and surfaces malformed duration strings instead of silently using defaults
+- **ErrorCategory.IsValid() format validation** — Same `^[a-z][a-z0-9-]*$` rune validation as `Category.IsValid()`; rejects `"Validation"`, `"has space"`
+- **Pipeline.Run() single-use** — Doc comment corrected: returns `errAlreadyRan` on second call (does not "reset internal state")
+- **byFindingID unified** — Both `diff.go` and `pipeline/verify.go` use `cmp.Compare` instead of manual comparison
+- **CLI timeout not double-wrapped** — Pipeline handles `context.WithTimeout` internally; CLI passes `context.Background()` directly
 
 ### CLI Features
 
