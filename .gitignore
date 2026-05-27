@@ -62,3 +62,5 @@ Thumbs.db
 
 # Personal tool configs
 git-town.toml
+# Nix build output
+/result

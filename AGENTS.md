@@ -45,30 +45,30 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 #### Pipeline Package
 
-| File                       | Purpose                                                                   |
-| -------------------------- | ------------------------------------------------------------------------- |
-| `pipeline/pipeline.go`     | Pipeline struct, Run, detect/triage/apply, structured logging, OnStage    |
-| `pipeline/adapters.go`     | Detector/FindingProcessor interfaces, adapter types, context helpers      |
-| `pipeline/config.go`       | Config struct, DefaultConfig, Validate, DetectorTimeouts, Logger, OnStage |
-| `pipeline/conflict.go`     | Fix conflict detection and analysis                                       |
-| `pipeline/fix_edit.go`     | FixEdit type — byte-level edit operations (Offset, Length, Replacement)   |
-| `pipeline/fix_provider.go` | FixProvider interface + 3 default providers (Offset, Line, Substring)     |
-| `pipeline/fix_engine.go`   | Byte-level FixEngine with provider delegation, descending-offset apply    |
-| `pipeline/fix_applier.go`  | Filesystem fix application with backup/rollback, custom providers         |
-| `pipeline/verify.go`       | Verification stage: re-run detectors, diff findings                       |
-| `pipeline/metrics.go`      | Timing/count metrics collection with snapshots                            |
-| `pipeline/retry.go`        | Exponential backoff retry wrapper for detectors                           |
-| `pipeline/partial.go`      | Partial success: collect from failed detectors                            |
+| File                           | Purpose                                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------ |
+| `pipeline/pipeline.go`         | Pipeline struct, Run, detect/triage/apply, structured logging, OnStage                     |
+| `pipeline/adapters.go`         | Detector/FindingProcessor interfaces, adapter types, context helpers                       |
+| `pipeline/config.go`           | Config struct, DefaultConfig, Validate, DetectorTimeouts, Logger, OnStage                  |
+| `pipeline/conflict.go`         | Fix conflict detection and analysis                                                        |
+| `pipeline/fix_edit.go`         | FixEdit type — byte-level edit operations (Offset, Length, Replacement)                    |
+| `pipeline/fix_provider.go`     | FixProvider interface + 3 default providers (Offset, Line, Substring)                      |
+| `pipeline/fix_engine.go`       | Byte-level FixEngine with provider delegation, descending-offset apply                     |
+| `pipeline/fix_applier.go`      | Filesystem fix application with backup/rollback, custom providers                          |
+| `pipeline/verify.go`           | Verification stage: re-run detectors, diff findings                                        |
+| `pipeline/metrics.go`          | Timing/count metrics collection with snapshots                                             |
+| `pipeline/retry.go`            | Exponential backoff retry wrapper for detectors                                            |
+| `pipeline/partial.go`          | Partial success: collect from failed detectors                                             |
 | `pipeline/generated_filter.go` | GeneratedFileFilter processor — removes findings from auto-generated files via gogenfilter |
 
 #### CLI
 
-| File                         | Purpose                                                                        |
-| ---------------------------- | ------------------------------------------------------------------------------ |
-| `cmd/go-finding/main.go`     | Entry point, run(), profiling, flag parsing                                    |
-| `cmd/go-finding/config.go`   | Config loading, severity parsing, output formatting (text/markdown/json/sarif) |
-| `cmd/go-finding/registry.go` | Detector builder registry with concurrent access                               |
-| `cmd/go-finding/generated_filter.go` | CLI generated-file-filter integration (type registry, addGeneratedFilter) |
+| File                                 | Purpose                                                                        |
+| ------------------------------------ | ------------------------------------------------------------------------------ |
+| `cmd/go-finding/main.go`             | Entry point, run(), profiling, flag parsing                                    |
+| `cmd/go-finding/config.go`           | Config loading, severity parsing, output formatting (text/markdown/json/sarif) |
+| `cmd/go-finding/registry.go`         | Detector builder registry with concurrent access                               |
+| `cmd/go-finding/generated_filter.go` | CLI generated-file-filter integration (type registry, addGeneratedFilter)      |
 
 #### Internal Detectors
 
