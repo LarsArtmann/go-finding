@@ -90,22 +90,22 @@ go-finding -filter-generated -generated-exclude "**/vendor/**"
 
 ## CLI Flags
 
-| Flag              | Default | Description                                              |
-| ----------------- | ------- | -------------------------------------------------------- |
-| `-dir`            | `.`     | Root directory to analyze                                |
-| `-format`         | `text`  | Output format: `text`, `json`, `sarif`                   |
-| `-severity`       | `info`  | Minimum severity: `info`, `warning`, `error`, `critical` |
-| `-max-iterations` | `5`     | Maximum pipeline iterations                              |
-| `-parallel`       | `true`  | Run detectors in parallel                                |
-| `-verify`         | `false` | Verify fixes by re-running detectors                     |
-| `-timeout`        | `10m`   | Pipeline timeout (Go duration format)                    |
-| `-config`         | `""`    | Path to YAML or JSON config file                         |
-| `-cpuprof`              | `""`    | Write CPU profile to file                                              |
-| `-memprof`              | `""`    | Write memory profile to file                                           |
-| `-filter-generated`     | `false` | Filter out findings from auto-generated files                           |
-| `-filter-generated-types` | `all` | Comma-separated generator types: `all`, `sqlc`, `templ`, `mockgen`, etc. |
-| `-generated-exclude`    | `""`    | Comma-separated glob patterns to exclude from filtering                |
-| `-generated-include`    | `""`    | Comma-separated glob patterns restricting filter scope                 |
+| Flag                      | Default | Description                                                              |
+| ------------------------- | ------- | ------------------------------------------------------------------------ |
+| `-dir`                    | `.`     | Root directory to analyze                                                |
+| `-format`                 | `text`  | Output format: `text`, `json`, `sarif`                                   |
+| `-severity`               | `info`  | Minimum severity: `info`, `warning`, `error`, `critical`                 |
+| `-max-iterations`         | `5`     | Maximum pipeline iterations                                              |
+| `-parallel`               | `true`  | Run detectors in parallel                                                |
+| `-verify`                 | `false` | Verify fixes by re-running detectors                                     |
+| `-timeout`                | `10m`   | Pipeline timeout (Go duration format)                                    |
+| `-config`                 | `""`    | Path to YAML or JSON config file                                         |
+| `-cpuprof`                | `""`    | Write CPU profile to file                                                |
+| `-memprof`                | `""`    | Write memory profile to file                                             |
+| `-filter-generated`       | `false` | Filter out findings from auto-generated files                            |
+| `-filter-generated-types` | `all`   | Comma-separated generator types: `all`, `sqlc`, `templ`, `mockgen`, etc. |
+| `-generated-exclude`      | `""`    | Comma-separated glob patterns to exclude from filtering                  |
+| `-generated-include`      | `""`    | Comma-separated glob patterns restricting filter scope                   |
 
 ## Configuration File
 
