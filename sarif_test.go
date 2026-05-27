@@ -617,6 +617,30 @@ func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
 	f := findingFromSarResult(r, "tool")
 	g.Expect(f.Suggestion).To(gomega.Equal("fix it"))
 	g.Expect(f.AfterCode).To(gomega.Equal("fixed code"))
+	g.Expect(f.FixStrategy).To(gomega.Equal(FixStrategyDirect))
+}
+
+func TestFindingFromSarResult_FixSuggestionOnly(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewWithT(t)
+
+	r := SarifResult{
+		RuleID:  "r1",
+		Level:   "warning",
+		Message: SarifMessage{Text: "consider using slices.Contains"},
+		Locations: []SarifLocation{{
+			PhysicalLocation: SarifPhysicalLocation{
+				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+			},
+		}},
+		Fixes: []SarifFix{{
+			Description: SarifMessage{Text: "use slices.Contains"},
+		}},
+	}
+
+	f := findingFromSarResult(r, "tool")
+	g.Expect(f.Suggestion).To(gomega.Equal("use slices.Contains"))
+	g.Expect(f.AfterCode).To(gomega.Equal(""))
 	g.Expect(f.FixStrategy).To(gomega.Equal(FixStrategySuggest))
 }
 
@@ -995,7 +1019,7 @@ func TestFindingFromSarResult_WithFix(t *testing.T) {
 	g.Expect(f.Severity).To(gomega.Equal(SeverityWarning))
 	g.Expect(f.Suggestion).To(gomega.Equal("remove unused variable"))
 	g.Expect(f.AfterCode).To(gomega.Equal("fmt.Println()"))
-	g.Expect(f.FixStrategy).To(gomega.Equal(FixStrategySuggest))
+	g.Expect(f.FixStrategy).To(gomega.Equal(FixStrategyDirect))
 }
 
 func TestFindingFromSarResult_RankAsConfidence(t *testing.T) {
@@ -1168,7 +1192,7 @@ func TestFindingFromSarResult_FixDescriptionWithoutReplacements(t *testing.T) {
 	f := findingFromSarResult(r, "tool")
 	g.Expect(f.Suggestion).To(gomega.Equal("fix it"))
 	g.Expect(f.AfterCode).To(gomega.BeEmpty())
-	g.Expect(f.FixStrategy).To(gomega.BeEmpty())
+	g.Expect(f.FixStrategy).To(gomega.Equal(FixStrategySuggest))
 }
 
 func TestFindingFromSarResult_GeneratesIDWithoutProperties(t *testing.T) {

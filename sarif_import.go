@@ -50,6 +50,8 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 
 		if len(r.Fixes[0].Changes) > 0 && len(r.Fixes[0].Changes[0].Replacements) > 0 {
 			f.AfterCode = r.Fixes[0].Changes[0].Replacements[0].InsertedText.Text
+			f.FixStrategy = FixStrategyDirect
+		} else {
 			f.FixStrategy = FixStrategySuggest
 		}
 	}
