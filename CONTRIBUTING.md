@@ -53,21 +53,19 @@ golangci-lint run ./...
 go vet ./...
 ```
 
-### Using Just (optional)
+### Using Nix (recommended)
 
-If you have [just](https://github.com/casey/just) installed:
+If you have [Nix](https://nixos.org/) with flakes enabled:
 
 ```bash
-just test        # Run all tests with -race
-just bench       # Run benchmarks
-just lint        # golangci-lint
-just cover       # Coverage report (coverage.out + HTML)
-just check       # All checks (fmt + lint + test)
-just vuln        # Check for known vulnerabilities
-just ci          # CI simulation (deps + check)
+nix run .#test                              # Run all tests with -race
+nix run .#bench                             # Run benchmarks
+nix run .#lint                              # golangci-lint
+nix run .#check                             # All checks (fmt + lint + test)
+nix build                                   # Build the CLI binary
 ```
 
-Without `just`, use the Go commands directly:
+### Using Go directly
 
 ```bash
 go test -race -count=1 ./...

@@ -80,11 +80,11 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 ### Testing
 
 ```bash
-just test        # Run tests
-just bench       # Run benchmarks
-just lint        # Run linter
-go test -race -count=1 ./...   # Full suite with race detector
-golangci-lint run ./...         # Lint
+nix run .#test                              # Run tests
+nix run .#bench                             # Run benchmarks
+nix run .#lint                              # Run linter
+go test -race -count=1 ./...                # Full suite with race detector
+golangci-lint run ./...                     # Lint
 ```
 
 ### Dependencies

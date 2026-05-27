@@ -1,6 +1,8 @@
 package finding
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCategory_IsValid(t *testing.T) {
 	t.Parallel()
@@ -14,7 +16,10 @@ func TestCategory_IsValid(t *testing.T) {
 		{Category(""), false},
 		{Category("custom"), true},
 		{Category("go-vet"), true},
-		{Category("Security"), true},
+		{Category("Security"), false},
+		{Category("some_thing"), false},
+		{Category("UPPERCASE"), false},
+		{Category("has space"), false},
 	}
 
 	for _, tt := range tests {

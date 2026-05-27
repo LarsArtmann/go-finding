@@ -50,11 +50,17 @@
 
           mkApp = name: description: script: {
             type = "app";
-            program = "${pkgs.writeShellApplication {
-              inherit name;
-              runtimeInputs = [ goPkg pkgs.golangci-lint pkgs.trash-cli ];
-              text = script;
-            }}/bin/${name}";
+            program = "${
+              pkgs.writeShellApplication {
+                inherit name;
+                runtimeInputs = [
+                  goPkg
+                  pkgs.golangci-lint
+                  pkgs.trash-cli
+                ];
+                text = script;
+              }
+            }/bin/${name}";
             meta = { inherit description; };
           };
         in
@@ -103,7 +109,9 @@
 
           checks = {
             build = config.packages.default;
-            test = config.packages.default.overrideAttrs (_: { doCheck = true; });
+            test = config.packages.default.overrideAttrs (_: {
+              doCheck = true;
+            });
           };
 
           apps = {
@@ -140,7 +148,25 @@
         };
 
       flake.overlays.default = final: prev: {
-        go-finding = final.callPackage ./package.nix { };
+        go-finding = final.buildGoModule {
+          pname = "go-finding";
+          version = self.rev or self.dirtyRev or "dev";
+          vendorHash = "sha256-DSEmCeYk/LMzlCuEAu07V60BMA2vtL7axC6AMR+h3V0=";
+          src = final.lib.fileset.toSource {
+            root = ./.;
+            fileset = final.lib.fileset.gitTracked ./.;
+          };
+          ldflags = [
+            "-s"
+            "-w"
+          ];
+          meta = with final.lib; {
+            description = "Code quality finding framework for Go";
+            homepage = "https://github.com/LarsArtmann/go-finding";
+            license = licenses.mit;
+            mainProgram = "go-finding";
+          };
+        };
       };
     };
 }

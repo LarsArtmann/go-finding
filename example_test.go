@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/LarsArtmann/gogenfilter/v3"
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/pipeline"
 )
@@ -453,4 +454,53 @@ func ExampleFormatMarkdown() {
 	// | Location | Severity | Rule | Message |
 	// |----------|----------|------|--------|
 	// | main.go:42:5 | error | nilcheck | possible nil dereference |
+}
+
+func ExampleGeneratedFileFilter() {
+	findings := []finding.Finding{
+		finding.NewFinding(
+			"nilcheck", "govet", "possible nil dereference",
+			finding.SeverityError, finding.Pos("main.go", 42, 5), 0,
+		),
+	}
+
+	// Without config the filter is disabled — all findings pass through.
+	noop, err := pipeline.NewGeneratedFileFilter(nil)
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println(noop.Name())
+	result, err := noop.Process(context.Background(), findings)
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println("passed:", len(result))
+
+	// With FilterAll the filter is enabled and will evaluate files.
+	optCfg, err := gogenfilter.WithFilterOptions(gogenfilter.FilterAll)
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	active, err := pipeline.NewGeneratedFileFilter(nil, optCfg)
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println(active.Name())
+
+	// Output:
+	// generated-file-filter
+	// passed: 1
+	// generated-file-filter
 }

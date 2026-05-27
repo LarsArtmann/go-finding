@@ -34,11 +34,30 @@ func (c Category) IsStandard() bool {
 	return false
 }
 
-// IsValid returns true if the category is a non-empty string.
-// Custom categories (e.g. "go-vet") are valid. Use IsStandard to check
-// for predefined constants only.
+// IsValid returns true if the category is a non-empty string matching the
+// lowercase-hyphenated convention (e.g., "security", "go-vet").
+// This rejects typos like "Security" or "SOME_CATEGORY".
+// Use IsStandard to check for predefined constants only.
 func (c Category) IsValid() bool {
-	return c != ""
+	if c == "" {
+		return false
+	}
+
+	for i, r := range c {
+		if i == 0 {
+			if r < 'a' || r > 'z' {
+				return false
+			}
+
+			continue
+		}
+
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
+			return false
+		}
+	}
+
+	return true
 }
 
 // String returns the string representation of the category.
