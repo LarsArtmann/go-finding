@@ -144,13 +144,16 @@ func parseSeverity(s string) (finding.Severity, error) {
 	return sev, nil
 }
 
-func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
+func (c pipelineConfigFile) toPipelineConfig() (pipeline.Config, error) {
 	t := pipeline.DefaultTimeout
 
 	if c.Timeout != "" {
-		if d, err := time.ParseDuration(c.Timeout); err == nil {
-			t = d
+		d, err := time.ParseDuration(c.Timeout)
+		if err != nil {
+			return pipeline.Config{}, fmt.Errorf("parse timeout %q: %w", c.Timeout, err)
 		}
+
+		t = d
 	}
 
 	maxIter := c.MaxIterations
@@ -160,9 +163,12 @@ func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
 
 	detectorTimeouts := make(map[string]time.Duration, len(c.DetectorTimeouts))
 	for name, durStr := range c.DetectorTimeouts {
-		if d, err := time.ParseDuration(durStr); err == nil {
-			detectorTimeouts[name] = d
+		d, err := time.ParseDuration(durStr)
+		if err != nil {
+			return pipeline.Config{}, fmt.Errorf("parse detector timeout %q for %q: %w", durStr, name, err)
 		}
+
+		detectorTimeouts[name] = d
 	}
 
 	return pipeline.Config{ //nolint:exhaustruct
@@ -172,7 +178,7 @@ func (c pipelineConfigFile) toPipelineConfig() pipeline.Config {
 		Timeout:           t,
 		Metrics:           pipeline.NewMetrics(),
 		DetectorTimeouts:  detectorTimeouts,
-	}
+	}, nil
 }
 
 func writeOutput(report *finding.Report, format, outputFile string) error {

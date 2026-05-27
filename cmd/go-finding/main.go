@@ -110,7 +110,11 @@ func run() int {
 		return 1
 	}
 
-	pipelineCfg := cfg.toPipelineConfig()
+	pipelineCfg, err := cfg.toPipelineConfig()
+	if err != nil {
+		return fatalf("parsing config", err)
+	}
+
 	pipelineCfg.GracefulDegradation = true
 
 	if f.filterGenerated || cfg.FilterGenerated {

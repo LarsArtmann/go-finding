@@ -277,7 +277,10 @@ func TestPipelineConfigFile_ToPipelineConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			pc := tt.cfg.toPipelineConfig()
+			pc, err := tt.cfg.toPipelineConfig()
+			if err != nil {
+				t.Fatalf("toPipelineConfig: %v", err)
+			}
 
 			if pc.MaxIterations != tt.wantIter {
 				t.Errorf("MaxIterations = %d, want %d", pc.MaxIterations, tt.wantIter)
@@ -387,7 +390,10 @@ detectors:
 		t.Fatalf("validate: %v", err)
 	}
 
-	pc := cfg.toPipelineConfig()
+	pc, err := cfg.toPipelineConfig()
+	if err != nil {
+		t.Fatalf("toPipelineConfig: %v", err)
+	}
 	g.Expect(pc.MaxIterations).To(Equal(1))
 }
 
