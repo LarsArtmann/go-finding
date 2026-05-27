@@ -15,8 +15,12 @@ func TestErrorCategory_IsValid(t *testing.T) {
 		{ErrCategoryIO, true},
 		{ErrCategoryConflict, true},
 		{ErrCategoryInternal, true},
-		{ErrorCategory(""), false},
 		{ErrorCategory("bogus"), true},
+		{ErrorCategory("some-category"), true},
+		{ErrorCategory(""), false},
+		{ErrorCategory("Bogus"), false},
+		{ErrorCategory("HAS_SPACE"), false},
+		{ErrorCategory("has space"), false},
 	}
 
 	for _, tt := range tests {
