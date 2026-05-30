@@ -33,7 +33,8 @@
         fileset = lib.fileset.gitTracked ./.;
       };
 
-      mkGoFinding = buildGoModule:
+      mkGoFinding =
+        buildGoModule:
         buildGoModule {
           pname = "go-finding";
           inherit version vendorHash;
