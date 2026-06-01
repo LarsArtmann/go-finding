@@ -10,7 +10,7 @@ import (
 // common values, or Confidence(f) for custom levels.
 // The zero value is valid and represents no confidence information.
 //
-// NOTE: Direct construction with Confidence values outside [0.0, 1.0] is
+// Be aware: Direct construction with Confidence values outside [0.0, 1.0] is
 // possible (e.g., Finding{Confidence: 1.5}). The Validate() method catches
 // this. For guaranteed-valid values, use the Builder API (WithConfidence)
 // or NewFinding (both clamp automatically).

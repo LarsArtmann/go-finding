@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-06-01
+
+### Added
+
+- **`Summary.FilesScanned`** — New field on `Summary` counting total files scanned (including clean files with no findings). Complements existing `FilesAffected` which only counts files with findings. Tools can now display "X files scanned" in success paths where `FilesAffected` is 0.
+- **`Category.IsValid()` rune-level validation** — Enforces `^[a-z][a-z0-9-]*$` format at the rune level, rejecting invalid categories like `"Security"`, `"UPPERCASE"`, or `"has space"`. Uses De Morgan's law for clarity (per staticcheck QF1001).
+
+### Fixed
+
+- **`ErrorCategory.IsValid()` format validation** — Now enforces the same lowercase-hyphenated convention as `Category.IsValid()`. Rejects typos like `"Validation"`, `"HAS_SPACE"`, `"has space"`.
+- **SARIF import FixStrategy assignment** — Results with actual code replacements (`InsertedText`) were incorrectly assigned `FixStrategySuggest`, preventing pipeline auto-application. Now: replacements → `FixStrategyDirect`, description-only → `FixStrategySuggest`.
+- **`FileBackup` permission preservation** — `Restore()` now uses the original file's `Mode()` instead of hardcoded `0o600`. Previously, restoring an executable (`0755`) would strip its execute bits.
+- **CLI config duration parse errors** — `toPipelineConfig()` now returns `(Config, error)` and reports malformed duration strings (e.g., `"abc"`) instead of silently falling back to defaults.
+- **`Config.DetectorTimeouts` negative validation** — `Config.Validate()` now rejects negative per-detector timeouts, which would previously panic at runtime via `context.WithTimeout`.
+- **CLI redundant timeout wrapping** — Removed double `context.WithTimeout` application. Pipeline already wraps `ctx` internally; the CLI's second wrap with the same value was redundant and misleading.
+
+### Changed
+
+- **Upgraded `gogenfilter/v3`** — Multiple dependency bumps to pre-release versions with critical fixes for generated-file detection edge cases.
+- **Nix flake overhaul** — Full `nix-review` improvements including `buildGoModule` with fileset source filtering, E2E sandbox fix, and added `lake.nix` configuration.
+- **Code quality improvements** — `byFindingID` uses `cmp.Compare` instead of manual three-way comparison; `FixApplier` control flow made more explicit; `gci` formatting fixed in `pipeline/config.go`.
+- **Deprecated `justfile` removed** — Build automation fully migrated to Nix flakes. `AGENTS.md` and `CONTRIBUTING.md` updated to reference `nix` commands.
+
 ## [0.4.1] - 2026-05-27
 
 ### Added

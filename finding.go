@@ -42,7 +42,7 @@ type Finding struct {
 	Suppression *Suppression `json:"suppression,omitempty"` // If suppressed
 
 	// Extensibility
-	// NOTE: We intentionally have only Metadata (map[string]string), NOT a
+	// Design decision: We intentionally have only Metadata (map[string]string), NOT a
 	// Properties map[string]any. Use string-valued metadata for extensibility.
 	// If you need complex values, JSON-serialize them into a string value.
 	// Rationale: keeps the struct simple, avoids type-assertion boilerplate,

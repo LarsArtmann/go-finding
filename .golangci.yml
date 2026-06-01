@@ -142,9 +142,6 @@ linters:
     exhaustruct:
       exclude:
         - os/exec.Cmd
-    forbidigo:
-      exclude-grep:
-        - cmd/
     funlen:
       lines: 120
       statements: 80

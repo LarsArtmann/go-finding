@@ -54,7 +54,7 @@ type LSPLocation struct {
 }
 
 // ToLSP converts a Finding to LSP Diagnostic format.
-// Note: This is a lossy conversion - some fields (FixStrategy, Confidence, etc.) are lost.
+// This is a lossy conversion - some fields (FixStrategy, Confidence, etc.) are lost.
 func (f Finding) ToLSP() LSPDiagnostic {
 	diag := LSPDiagnostic{
 		Range: LSPRange{
