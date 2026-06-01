@@ -6,7 +6,7 @@ import (
 	"slices"
 )
 
-// Merge correlation constants.
+// Correlation heuristics constants.
 const (
 	minFindingsInFile     = 2     // Minimum findings in a file for correlation analysis
 	maxLineDiff           = 5     // Maximum line difference for considering findings related
@@ -15,21 +15,19 @@ const (
 	maxCorrelations       = 10000 // Maximum correlations to prevent O(n²) hangs
 )
 
-// MergedToolName is the ToolInfo.Name used for reports produced by Merge.
+// MergedToolName is the ToolInfo.Name used for reports produced by Combine.
 const MergedToolName = "merged"
 
-// EmptyToolName is the ToolInfo.Name used for empty reports from Merge.
+// EmptyToolName is the ToolInfo.Name used for empty reports from Combine.
 const EmptyToolName = "empty"
 
 // Combine merges multiple reports into a new report with optional deduplication.
-// The merged report has:
+// The resulting report has:
 //   - Tool.Name = MergedToolName (unless there's only one report)
 //   - Findings from all reports
 //   - Summary computed from all findings
 //
-// Options control deduplication and conflict resolution.
-// Combine merges multiple reports into a new report with optional deduplication.
-// Use Report.Merge(other) to concatenate one report into another without deduplication.
+// Use Report.Merge(other) to concatenate one report into another in-place without deduplication.
 func Combine(reports []*Report, opts ...MergeOption) *Report {
 	if len(reports) == 0 {
 		return NewReport(ToolInfo{Name: EmptyToolName}) //nolint:exhaustruct
