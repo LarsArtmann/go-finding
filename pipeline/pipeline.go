@@ -18,6 +18,15 @@ var errAlreadyRan = errors.New(
 	"pipeline: Run already called; create a new Pipeline for each invocation",
 )
 
+// reasonFromContext derives a CompletionReason from the context error.
+func reasonFromContext(ctx context.Context) CompletionReason {
+	if ctx.Err() == context.DeadlineExceeded {
+		return ReasonTimeout
+	}
+
+	return ReasonCancelled
+}
+
 // Pipeline orchestrates the detect → triage → fix → verify loop.
 type Pipeline struct {
 	config     Config
@@ -133,6 +142,8 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	for p.iterations < p.config.MaxIterations {
 		if err := CheckCanceledWithMsg(ctx, "pipeline cancelled"); err != nil {
+			result.Reason = reasonFromContext(ctx)
+
 			return result, err
 		}
 
@@ -144,6 +155,8 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 		done, err := p.runIteration(ctx, result)
 		if err != nil {
+			result.Reason = ReasonError
+
 			return result, err
 		}
 

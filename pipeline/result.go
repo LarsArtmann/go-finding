@@ -14,6 +14,12 @@ const (
 	ReasonStable CompletionReason = "stable"
 	// ReasonMaxIterations means the pipeline hit the configured iteration limit.
 	ReasonMaxIterations CompletionReason = "max-iterations"
+	// ReasonCancelled means the pipeline was cancelled via context.
+	ReasonCancelled CompletionReason = "cancelled"
+	// ReasonTimeout means the pipeline exceeded its configured timeout.
+	ReasonTimeout CompletionReason = "timeout"
+	// ReasonError means the pipeline stopped due to an unrecoverable error.
+	ReasonError CompletionReason = "error"
 )
 
 // PipelineResult contains the outcome of running the pipeline.
