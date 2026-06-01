@@ -61,15 +61,17 @@ func runBenchPipeline(b *testing.B, cfg benchConfig) {
 			}))
 	}
 
-	p, err := New(pipelineCfg, b.TempDir(), detectors...)
-	if err != nil {
-		b.Fatal(err)
-	}
-
 	b.ResetTimer()
 	b.ReportAllocs()
 
 	for range b.N {
+		b.StopTimer()
+		p, err := New(pipelineCfg, b.TempDir(), detectors...)
+		if err != nil {
+			b.Fatal(err)
+		}
+		b.StartTimer()
+
 		if _, err := p.Run(context.Background()); err != nil {
 			b.Fatal(err)
 		}

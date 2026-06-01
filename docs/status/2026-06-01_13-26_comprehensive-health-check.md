@@ -16,82 +16,82 @@ go-finding is **healthy and production-ready** for a v0.x library. All tests pas
 
 ## a) FULLY DONE
 
-| Area | Status | Evidence |
-|---|---|---|
-| Core data model (Finding, Position, Range) | Complete | 98.7% coverage, STABLE |
-| Builder API | Complete | Fluent construction, validation, `MustBuild()` |
-| Severity (4 levels) | Complete | Comparison operators, SARIF mapping |
-| FixStrategy (none/suggest/direct) | Complete | Auto-fix for `direct`, RESERVED for `ai` |
-| Category (14 standard + custom) | Complete | `IsValid()`, `IsSecurity()` |
-| Tags (multi-label) | Complete | `IsStandard()`, `IsValid()` |
-| Suppression with TTL | Complete | `IsActive(now)`, expiry enforcement |
-| Report container (thread-safe) | Complete | Mutex-protected, `All()` returns `iter.Seq` |
-| Filtering & sorting | Complete | 11 predicates, `Negate`, `AnyOf`, `FilterInPlace` with GC safety |
-| Report merging & dedup | Complete | 3 strategies (ID, Position, Rule) |
-| Cross-tool correlation | Complete | Simple heuristic, capped at 10K |
-| ID generation & parsing | Complete | Hash-based fallback, Windows paths, length-prefixed collision-safe |
-| JSON serialization | Complete | Streaming, lossy `FromJSON` with `FilterInvalid` |
-| SARIF 2.1.0 export/import | Complete | Round-trip via property bag, streaming output |
-| LSP conversion | Complete | Bidirectional, documented lossiness |
-| go/analysis integration | Complete | Bidirectional Diagnostic ↔ Finding |
-| Structured errors | Complete | 5 categories, `errors.Is` support, `WithFinding`/`WithPosition` |
-| Pipeline (detect→fix→verify) | Complete | Iterative loop, configurable, single-use guard |
-| Finding processors | Complete | `ProcessorFunc`, `NamedProcessorFunc`, generated file filter |
-| Conflict detection | Complete | Overlapping fix detection, conservative resolution |
-| FixEngine (byte-level) | Complete | Descending offset, frontier boundary |
-| FixProvider chain | Complete | Offset → Line → Substring + custom |
-| FixApplier (filesystem) | Complete | Backup/rollback, path traversal protection, permission preservation |
-| Verification stage | Complete | Diff-based: fixed/remaining/new |
-| Metrics collection | Complete | Thread-safe, snapshots, `TotalDuration` guard |
-| Retry (exp backoff) | Complete | `math/rand/v2` jitter, per-detector timeouts |
-| Partial success | Complete | Graceful degradation, `FormatPartialErrors` |
-| File backup & rollback | Complete | Permission-preserving, `RollbackAll` |
-| CLI tool | Complete | 4 output formats, YAML config, profiling, plugin registry |
-| Generated file filtering | Complete | `gogenfilter/v3` integration, CLI flags |
-| Examples (3) | Complete | Basic, Builder, Pipeline — compile-tested |
-| `Confidence` named type | Complete | `IsValid()`, `Clamp()`, `Compare()`, `String()` |
-| Diff function | Complete | `DiffResult.HasChanges()`, `Stats()`, `ModifiedPair` |
-| FormatText / FormatMarkdown | Complete | Error-returning, UTF-8 safe, markdown escaping |
-| Nix flake | Complete | `flake.nix` with build, test, lint, bench |
-| All tests pass | Complete | `go test -race -count=1 ./...` — green |
-| Zero lint warnings | Complete | `nix run .#lint` — "0 issues" |
-| Open-source release prep | Complete | LICENSE, CONTRIBUTING, Code of Conduct |
-| Research: go-error-family | Complete | Decision: do not adopt (documented reasoning) |
+| Area                                       | Status   | Evidence                                                            |
+| ------------------------------------------ | -------- | ------------------------------------------------------------------- |
+| Core data model (Finding, Position, Range) | Complete | 98.7% coverage, STABLE                                              |
+| Builder API                                | Complete | Fluent construction, validation, `MustBuild()`                      |
+| Severity (4 levels)                        | Complete | Comparison operators, SARIF mapping                                 |
+| FixStrategy (none/suggest/direct)          | Complete | Auto-fix for `direct`, RESERVED for `ai`                            |
+| Category (14 standard + custom)            | Complete | `IsValid()`, `IsSecurity()`                                         |
+| Tags (multi-label)                         | Complete | `IsStandard()`, `IsValid()`                                         |
+| Suppression with TTL                       | Complete | `IsActive(now)`, expiry enforcement                                 |
+| Report container (thread-safe)             | Complete | Mutex-protected, `All()` returns `iter.Seq`                         |
+| Filtering & sorting                        | Complete | 11 predicates, `Negate`, `AnyOf`, `FilterInPlace` with GC safety    |
+| Report merging & dedup                     | Complete | 3 strategies (ID, Position, Rule)                                   |
+| Cross-tool correlation                     | Complete | Simple heuristic, capped at 10K                                     |
+| ID generation & parsing                    | Complete | Hash-based fallback, Windows paths, length-prefixed collision-safe  |
+| JSON serialization                         | Complete | Streaming, lossy `FromJSON` with `FilterInvalid`                    |
+| SARIF 2.1.0 export/import                  | Complete | Round-trip via property bag, streaming output                       |
+| LSP conversion                             | Complete | Bidirectional, documented lossiness                                 |
+| go/analysis integration                    | Complete | Bidirectional Diagnostic ↔ Finding                                  |
+| Structured errors                          | Complete | 5 categories, `errors.Is` support, `WithFinding`/`WithPosition`     |
+| Pipeline (detect→fix→verify)               | Complete | Iterative loop, configurable, single-use guard                      |
+| Finding processors                         | Complete | `ProcessorFunc`, `NamedProcessorFunc`, generated file filter        |
+| Conflict detection                         | Complete | Overlapping fix detection, conservative resolution                  |
+| FixEngine (byte-level)                     | Complete | Descending offset, frontier boundary                                |
+| FixProvider chain                          | Complete | Offset → Line → Substring + custom                                  |
+| FixApplier (filesystem)                    | Complete | Backup/rollback, path traversal protection, permission preservation |
+| Verification stage                         | Complete | Diff-based: fixed/remaining/new                                     |
+| Metrics collection                         | Complete | Thread-safe, snapshots, `TotalDuration` guard                       |
+| Retry (exp backoff)                        | Complete | `math/rand/v2` jitter, per-detector timeouts                        |
+| Partial success                            | Complete | Graceful degradation, `FormatPartialErrors`                         |
+| File backup & rollback                     | Complete | Permission-preserving, `RollbackAll`                                |
+| CLI tool                                   | Complete | 4 output formats, YAML config, profiling, plugin registry           |
+| Generated file filtering                   | Complete | `gogenfilter/v3` integration, CLI flags                             |
+| Examples (3)                               | Complete | Basic, Builder, Pipeline — compile-tested                           |
+| `Confidence` named type                    | Complete | `IsValid()`, `Clamp()`, `Compare()`, `String()`                     |
+| Diff function                              | Complete | `DiffResult.HasChanges()`, `Stats()`, `ModifiedPair`                |
+| FormatText / FormatMarkdown                | Complete | Error-returning, UTF-8 safe, markdown escaping                      |
+| Nix flake                                  | Complete | `flake.nix` with build, test, lint, bench                           |
+| All tests pass                             | Complete | `go test -race -count=1 ./...` — green                              |
+| Zero lint warnings                         | Complete | `nix run .#lint` — "0 issues"                                       |
+| Open-source release prep                   | Complete | LICENSE, CONTRIBUTING, Code of Conduct                              |
+| Research: go-error-family                  | Complete | Decision: do not adopt (documented reasoning)                       |
 
 ---
 
 ## b) PARTIALLY DONE
 
-| Area | What's Done | What's Missing |
-|---|---|---|
-| Pipeline benchmarks | FixEngine benchmarks pass (4/4) | Pipeline benchmarks broken (10/13 FAIL) — `runBenchPipeline` reuses single Pipeline instance, but `Run()` is single-use |
-| Test coverage | Root 98.7%, Pipeline 96.0%, Detectors 96.1% | CLI at 69.8% — integration test gaps |
-| Documentation | doc.go, USAGE_GUIDE, FEATURES, README, AGENTS | doc.go ~40% complete; USAGE_GUIDE not updated for v0.4.x |
-| SARIF round-trip | Export/import with property bag | `FixStrategySuggest` without `AfterCode` loses suggestion text |
-| Error consistency | `fix_applier.go` uses structured `FindingError` | `pipeline.go` still uses raw `fmt.Errorf` — inconsistent |
-| `Equal()` in Finding | Works correctly with 9-condition boolean | Complex, could use early-return helper for readability |
-| CI/CD | Nix flake for local builds | No `.github/workflows/` — no automated CI |
+| Area                 | What's Done                                     | What's Missing                                                                                                          |
+| -------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Pipeline benchmarks  | FixEngine benchmarks pass (4/4)                 | Pipeline benchmarks broken (10/13 FAIL) — `runBenchPipeline` reuses single Pipeline instance, but `Run()` is single-use |
+| Test coverage        | Root 98.7%, Pipeline 96.0%, Detectors 96.1%     | CLI at 69.8% — integration test gaps                                                                                    |
+| Documentation        | doc.go, USAGE_GUIDE, FEATURES, README, AGENTS   | doc.go ~40% complete; USAGE_GUIDE not updated for v0.4.x                                                                |
+| SARIF round-trip     | Export/import with property bag                 | `FixStrategySuggest` without `AfterCode` loses suggestion text                                                          |
+| Error consistency    | `fix_applier.go` uses structured `FindingError` | `pipeline.go` still uses raw `fmt.Errorf` — inconsistent                                                                |
+| `Equal()` in Finding | Works correctly with 9-condition boolean        | Complex, could use early-return helper for readability                                                                  |
+| CI/CD                | Nix flake for local builds                      | No `.github/workflows/` — no automated CI                                                                               |
 
 ---
 
 ## c) NOT STARTED
 
-| Item | Priority | Notes |
-|---|---|---|
-| Fix broken Pipeline benchmarks | HIGH | 10/13 fail — regression from single-use guard |
-| GitHub Actions CI | HIGH | No `.github/workflows/` exists |
-| GoReleaser multi-module config | MEDIUM | No `.goreleaser.yml` |
-| API stability review for v1.0.0 | MEDIUM | All exported symbols need audit |
-| API stability guarantee document | MEDIUM | Go compat promise style |
-| v1.0.0 release criteria | MEDIUM | No documented minimum bar |
-| `go:generate stringer` for 4 enum types | LOW | Severity, FixStrategy, Category, SuppressionKind |
-| `iter.Seq[Finding]` on `Report.All()` | LOW | Go 1.26 feature — `All()` already returns `iter.Seq` |
-| Spatial index for `Correlate` | LOW | Currently O(n²), capped at 10K |
-| Streaming merge | LOW | Process one finding at a time |
-| Plugin architecture for external detectors | LOW | Dynamic loading |
-| Pipeline middleware/interceptor pattern | LOW | Custom stage injection |
-| IDE plugin stubs | OUT OF SCOPE v1 | |
-| Web UI / Styled CLI / TUI | OUT OF SCOPE v1 | |
+| Item                                       | Priority        | Notes                                                |
+| ------------------------------------------ | --------------- | ---------------------------------------------------- |
+| Fix broken Pipeline benchmarks             | HIGH            | 10/13 fail — regression from single-use guard        |
+| GitHub Actions CI                          | HIGH            | No `.github/workflows/` exists                       |
+| GoReleaser multi-module config             | MEDIUM          | No `.goreleaser.yml`                                 |
+| API stability review for v1.0.0            | MEDIUM          | All exported symbols need audit                      |
+| API stability guarantee document           | MEDIUM          | Go compat promise style                              |
+| v1.0.0 release criteria                    | MEDIUM          | No documented minimum bar                            |
+| `go:generate stringer` for 4 enum types    | LOW             | Severity, FixStrategy, Category, SuppressionKind     |
+| `iter.Seq[Finding]` on `Report.All()`      | LOW             | Go 1.26 feature — `All()` already returns `iter.Seq` |
+| Spatial index for `Correlate`              | LOW             | Currently O(n²), capped at 10K                       |
+| Streaming merge                            | LOW             | Process one finding at a time                        |
+| Plugin architecture for external detectors | LOW             | Dynamic loading                                      |
+| Pipeline middleware/interceptor pattern    | LOW             | Custom stage injection                               |
+| IDE plugin stubs                           | OUT OF SCOPE v1 |                                                      |
+| Web UI / Styled CLI / TUI                  | OUT OF SCOPE v1 |                                                      |
 
 ---
 
@@ -114,6 +114,7 @@ The `cmd/go-finding` package has the lowest coverage. Many code paths in `config
 ### 3. No CI — Zero Automation
 
 There are no `.github/workflows/`. Every quality gate (test, lint, bench) is manual via `nix run .#*`. This means:
+
 - No PR checks
 - No benchmark regression tracking
 - No automated release validation
@@ -170,33 +171,33 @@ The config file has an ongoing fight between 2-space and 4-space indentation cau
 
 ## f) Top #25 Things to Do Next
 
-| # | Item | Priority | Impact | Effort |
-|---|---|---|---|---|
-| 1 | **Fix pipeline benchmarks** — move `New()` inside loop | P0 | Correctness | S (10 min) |
-| 2 | **GitHub Actions CI** — test + lint + race on push/PR | P0 | Reliability | M (2-4 hr) |
-| 3 | **Centralize triage logic** — make `HasFix()` canonical | P1 | Architecture | M (2 hr) |
-| 4 | **Consistent structured errors in pipeline** | P1 | Consistency | M (2 hr) |
-| 5 | **FixApplier lifecycle** — lift to Pipeline constructor | P1 | Correctness | M (3 hr) |
-| 6 | **CLI test coverage → 85%+** | P1 | Quality | M (4 hr) |
-| 7 | **API stability review** — audit all exported symbols | P1 | Release | M (4 hr) |
-| 8 | **Decompose `findingFromSarResult`** — reduce cognitive complexity | P2 | Readability | S (1 hr) |
-| 9 | **Decompose `applySarifProperties`** — reduce complexity below 25 | P2 | Readability | S (30 min) |
-| 10 | **Update USAGE_GUIDE.md for v0.4.x** | P2 | Docs | M (2 hr) |
-| 11 | **Complete `doc.go`** — currently ~40% | P2 | Docs | M (3 hr) |
-| 12 | **GoReleaser config** | P2 | DevOps | S (1 hr) |
-| 13 | **Concurrent Report race test** | P2 | Correctness | S (30 min) |
-| 14 | **`Report.Merge()` returns new `*Report`** | P2 | API | S (1 hr) |
-| 15 | **Modernize to Go 1.21+ stdlib** — `slices`, `maps` | P2 | Modernization | M (3 hr) |
-| 16 | **SARIF parser fuzz test** | P2 | Security | S (1 hr) |
-| 17 | **Fix `maxIterations` default inconsistency** — CLI vs config | P2 | Correctness | S (15 min) |
-| 18 | **Extract `Equal()` into readable helper** | P3 | Readability | S (30 min) |
-| 19 | **Document provider chain** in user-facing docs | P3 | Docs | S (1 hr) |
-| 20 | **`go:generate stringer`** for 4 enum types | P3 | DevEx | S (1 hr) |
-| 21 | **FixEngine: line-offset tracking** for cumulative shifts | P3 | Correctness | L (1 day) |
-| 22 | **`FixStrategySuggest` SARIF round-trip** — preserve suggestion | P3 | Fidelity | S (1 hr) |
-| 23 | **SARIF schema validation test** against JSON schema | P3 | Correctness | M (2 hr) |
-| 24 | **Define v1.0.0 release criteria** | P3 | Planning | S (30 min) |
-| 25 | **Persist fuzz corpus** — seed corpus for 17 targets | P3 | Reliability | M (3 hr) |
+| #   | Item                                                               | Priority | Impact        | Effort     |
+| --- | ------------------------------------------------------------------ | -------- | ------------- | ---------- |
+| 1   | **Fix pipeline benchmarks** — move `New()` inside loop             | P0       | Correctness   | S (10 min) |
+| 2   | **GitHub Actions CI** — test + lint + race on push/PR              | P0       | Reliability   | M (2-4 hr) |
+| 3   | **Centralize triage logic** — make `HasFix()` canonical            | P1       | Architecture  | M (2 hr)   |
+| 4   | **Consistent structured errors in pipeline**                       | P1       | Consistency   | M (2 hr)   |
+| 5   | **FixApplier lifecycle** — lift to Pipeline constructor            | P1       | Correctness   | M (3 hr)   |
+| 6   | **CLI test coverage → 85%+**                                       | P1       | Quality       | M (4 hr)   |
+| 7   | **API stability review** — audit all exported symbols              | P1       | Release       | M (4 hr)   |
+| 8   | **Decompose `findingFromSarResult`** — reduce cognitive complexity | P2       | Readability   | S (1 hr)   |
+| 9   | **Decompose `applySarifProperties`** — reduce complexity below 25  | P2       | Readability   | S (30 min) |
+| 10  | **Update USAGE_GUIDE.md for v0.4.x**                               | P2       | Docs          | M (2 hr)   |
+| 11  | **Complete `doc.go`** — currently ~40%                             | P2       | Docs          | M (3 hr)   |
+| 12  | **GoReleaser config**                                              | P2       | DevOps        | S (1 hr)   |
+| 13  | **Concurrent Report race test**                                    | P2       | Correctness   | S (30 min) |
+| 14  | **`Report.Merge()` returns new `*Report`**                         | P2       | API           | S (1 hr)   |
+| 15  | **Modernize to Go 1.21+ stdlib** — `slices`, `maps`                | P2       | Modernization | M (3 hr)   |
+| 16  | **SARIF parser fuzz test**                                         | P2       | Security      | S (1 hr)   |
+| 17  | **Fix `maxIterations` default inconsistency** — CLI vs config      | P2       | Correctness   | S (15 min) |
+| 18  | **Extract `Equal()` into readable helper**                         | P3       | Readability   | S (30 min) |
+| 19  | **Document provider chain** in user-facing docs                    | P3       | Docs          | S (1 hr)   |
+| 20  | **`go:generate stringer`** for 4 enum types                        | P3       | DevEx         | S (1 hr)   |
+| 21  | **FixEngine: line-offset tracking** for cumulative shifts          | P3       | Correctness   | L (1 day)  |
+| 22  | **`FixStrategySuggest` SARIF round-trip** — preserve suggestion    | P3       | Fidelity      | S (1 hr)   |
+| 23  | **SARIF schema validation test** against JSON schema               | P3       | Correctness   | M (2 hr)   |
+| 24  | **Define v1.0.0 release criteria**                                 | P3       | Planning      | S (30 min) |
+| 25  | **Persist fuzz corpus** — seed corpus for 17 targets               | P3       | Reliability   | M (3 hr)   |
 
 ---
 
@@ -216,23 +217,23 @@ This is an **owner decision** because it's an API design question with breaking-
 
 ## Project Health Dashboard
 
-| Metric | Value | Trend |
-|---|---|---|
-| Version | v0.4.2 | Stable |
-| Production Go lines | 7,905 | Growing |
-| Test lines | 19,048 | Growing (2.4:1 ratio) |
-| Go files | 114 | Growing |
-| Test pass rate | 100% (tests) / 23% (benchmarks) | Tests stable, benchmarks regressed |
-| Root coverage | 98.7% | Excellent |
-| Pipeline coverage | 96.0% | Excellent |
-| CLI coverage | 69.8% | Needs work |
-| Detectors coverage | 96.1% | Excellent |
-| Lint warnings | 0 | Clean |
-| Race detector | Clean | Clean |
-| Open TODO items | ~97 | Slowly shrinking |
-| Dependencies | 6 direct, minimal transitive | Healthy |
-| Git tags | 8 (v0.1.0 → v0.4.2) | Regular releases |
-| Unpushed commits | 0 | Up to date |
+| Metric              | Value                           | Trend                              |
+| ------------------- | ------------------------------- | ---------------------------------- |
+| Version             | v0.4.2                          | Stable                             |
+| Production Go lines | 7,905                           | Growing                            |
+| Test lines          | 19,048                          | Growing (2.4:1 ratio)              |
+| Go files            | 114                             | Growing                            |
+| Test pass rate      | 100% (tests) / 23% (benchmarks) | Tests stable, benchmarks regressed |
+| Root coverage       | 98.7%                           | Excellent                          |
+| Pipeline coverage   | 96.0%                           | Excellent                          |
+| CLI coverage        | 69.8%                           | Needs work                         |
+| Detectors coverage  | 96.1%                           | Excellent                          |
+| Lint warnings       | 0                               | Clean                              |
+| Race detector       | Clean                           | Clean                              |
+| Open TODO items     | ~97                             | Slowly shrinking                   |
+| Dependencies        | 6 direct, minimal transitive    | Healthy                            |
+| Git tags            | 8 (v0.1.0 → v0.4.2)             | Regular releases                   |
+| Unpushed commits    | 0                               | Up to date                         |
 
 ---
 
