@@ -231,11 +231,15 @@ golangci-lint run ./...                     # Lint
 - **Filter DRY** — `matchesAll(finding, predicates)` in `filter.go` shared by `Filter` and `FilterInPlace`
 - **Retry delay clamped** — `delay()` clamps result to `MaxDelay` after jitter to prevent exceeding cap
 
+- **Context error detection in iterations** — `runIteration` error path uses `IsContextError()` to distinguish `ReasonTimeout`/`ReasonCancelled` from `ReasonError`
+- **StageVerify wired** — Verify stage records timing metrics and fires `OnStage` callback
+
 ### Known Open Items
 
 - `Report.Findings` is a public slice — external code can bypass mutex (encapsulation risk)
 - `FixStrategyAI` + `NeedsAI()` are published API with no backend (vapor surface)
 - `Tag` constants partially overlap `Category` constants (TagSecurity/CategorySecurity etc.) — no structural link
+- `RecordFix()` superseded by `RecordFixes(uint)` — convenience method with no production callers
 
 ---
 
