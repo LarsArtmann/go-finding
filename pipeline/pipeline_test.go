@@ -1436,7 +1436,7 @@ func TestPipelineRun_OnStage(t *testing.T) {
 	cfg := DefaultConfig()
 	cfg.ParallelDetectors = false
 	cfg.MaxIterations = 1
-	cfg.OnStage = func(stage string, iteration, count int) {
+	cfg.OnStage = func(stage Stage, iteration, count int) {
 		stages = append(stages, fmt.Sprintf("%s:%d:%d", stage, iteration, count))
 	}
 

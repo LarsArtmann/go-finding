@@ -47,12 +47,12 @@ func TestMetrics_RecordStage(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 	m := NewMetrics()
-	m.RecordStage("detect", 100*time.Millisecond)
-	m.RecordStage("detect", 50*time.Millisecond)
-	m.RecordStage("apply", 200*time.Millisecond)
+	m.RecordStage(StageDetect, 100*time.Millisecond)
+	m.RecordStage(StageDetect, 50*time.Millisecond)
+	m.RecordStage(StageApply, 200*time.Millisecond)
 
-	g.Expect(m.StageDuration("detect")).To(Equal(150 * time.Millisecond))
-	g.Expect(m.StageDuration("apply")).To(Equal(200 * time.Millisecond))
+	g.Expect(m.StageDuration(StageDetect)).To(Equal(150 * time.Millisecond))
+	g.Expect(m.StageDuration(StageApply)).To(Equal(200 * time.Millisecond))
 }
 
 func TestMetrics_RecordDetector(t *testing.T) {
@@ -83,12 +83,12 @@ func TestMetrics_StageTiming(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 	m := NewMetrics()
-	done := m.StageTiming("detect")
+	done := m.StageTiming(StageDetect)
 
 	time.Sleep(10 * time.Millisecond)
 	done()
 
-	g.Expect(m.StageDuration("detect")).To(BeNumerically(">=", 10*time.Millisecond))
+	g.Expect(m.StageDuration(StageDetect)).To(BeNumerically(">=", 10*time.Millisecond))
 }
 
 func TestMetrics_TotalDuration(t *testing.T) {
@@ -171,12 +171,12 @@ func TestMetricsSnapshot_StageDuration(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	snap := MetricsSnapshot{
-		StageDurations: map[string]time.Duration{
-			"detect": 100 * time.Millisecond,
+		StageDurations: map[Stage]time.Duration{
+			StageDetect: 100 * time.Millisecond,
 		},
 	}
 
-	g.Expect(snap.StageDuration("detect")).To(Equal(100 * time.Millisecond))
+	g.Expect(snap.StageDuration(StageDetect)).To(Equal(100 * time.Millisecond))
 	g.Expect(snap.StageDuration("nonexistent")).To(Equal(time.Duration(0)))
 }
 

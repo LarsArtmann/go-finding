@@ -11,7 +11,7 @@ import (
 // Use Snapshot() for a point-in-time copy of all metrics.
 type Metrics struct {
 	mu             sync.Mutex
-	stageDurations map[string]time.Duration
+	stageDurations map[Stage]time.Duration
 	detectorTimes  map[string]time.Duration
 	findingsFound  map[string]int
 	fixesApplied   int
@@ -23,14 +23,14 @@ type Metrics struct {
 func NewMetrics() *Metrics {
 	//nolint:exhaustruct
 	return &Metrics{
-		stageDurations: make(map[string]time.Duration),
+		stageDurations: make(map[Stage]time.Duration),
 		detectorTimes:  make(map[string]time.Duration),
 		findingsFound:  make(map[string]int),
 	}
 }
 
 // RecordStage records the duration of a pipeline stage.
-func (m *Metrics) RecordStage(name string, d time.Duration) {
+func (m *Metrics) RecordStage(name Stage, d time.Duration) {
 	m.mu.Lock()
 	m.stageDurations[name] += d
 	m.mu.Unlock()
@@ -59,7 +59,7 @@ func (m *Metrics) RecordFixes(count uint) {
 }
 
 // StageDuration returns the total duration recorded for the named stage.
-func (m *Metrics) StageDuration(name string) time.Duration {
+func (m *Metrics) StageDuration(name Stage) time.Duration {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -106,7 +106,7 @@ func (m *Metrics) TotalDuration() time.Duration {
 }
 
 // StageTiming returns a function that records stage duration when called.
-func (m *Metrics) StageTiming(name string) func() {
+func (m *Metrics) StageTiming(name Stage) func() {
 	start := time.Now()
 
 	return func() {
@@ -118,7 +118,7 @@ func (m *Metrics) StageTiming(name string) func() {
 type MetricsSnapshot struct {
 	StartTime      time.Time
 	EndTime        time.Time
-	StageDurations map[string]time.Duration
+	StageDurations map[Stage]time.Duration
 	DetectorTimes  map[string]time.Duration
 	FindingsFound  map[string]int
 	FixesApplied   int
@@ -126,7 +126,7 @@ type MetricsSnapshot struct {
 }
 
 // StageDuration returns the duration for the named stage from the snapshot.
-func (s MetricsSnapshot) StageDuration(name string) time.Duration {
+func (s MetricsSnapshot) StageDuration(name Stage) time.Duration {
 	return s.StageDurations[name]
 }
 
@@ -149,7 +149,7 @@ func (m *Metrics) Snapshot() MetricsSnapshot {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	stages := make(map[string]time.Duration, len(m.stageDurations))
+	stages := make(map[Stage]time.Duration, len(m.stageDurations))
 	maps.Copy(stages, m.stageDurations)
 
 	detectors := make(map[string]time.Duration, len(m.detectorTimes))

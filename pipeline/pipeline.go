@@ -69,7 +69,7 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 
 // stageTiming returns a function that records stage duration when called.
 // Returns a no-op if metrics collection is disabled.
-func (p *Pipeline) stageTiming(name string) func() {
+func (p *Pipeline) stageTiming(name Stage) func() {
 	if p.metrics == nil {
 		return func() {}
 	}
@@ -85,7 +85,7 @@ func (p *Pipeline) log(ctx context.Context, msg string, attrs ...slog.Attr) {
 }
 
 // notifyStage fires the OnStage callback if configured.
-func (p *Pipeline) notifyStage(stage string, iteration, count int) {
+func (p *Pipeline) notifyStage(stage Stage, iteration, count int) {
 	if p.config.OnStage != nil {
 		p.config.OnStage(stage, iteration, count)
 	}
@@ -200,7 +200,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bool, error) {
 	iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct
 
-	detectDone := p.stageTiming("detect")
+	detectDone := p.stageTiming(StageDetect)
 	detResult, err := p.detect(ctx)
 	detectDone()
 
@@ -208,7 +208,7 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		return false, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
 	}
 
-	p.notifyStage("detect", iter.Number, len(detResult.Findings))
+	p.notifyStage(StageDetect, iter.Number, len(detResult.Findings))
 
 	findings := detResult.Findings
 
@@ -225,7 +225,7 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	}
 
 	if len(p.config.Processors) > 0 {
-		p.notifyStage("process", iter.Number, len(findings))
+		p.notifyStage(StageProcess, iter.Number, len(findings))
 	}
 
 	for name, detErr := range detResult.Errors {
@@ -266,10 +266,10 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		slog.Int("none", len(triage.None)),
 	)
 
-	p.notifyStage("triage", iter.Number, len(findings))
+	p.notifyStage(StageTriage, iter.Number, len(findings))
 
 	if !p.config.DryRun {
-		applyDone := p.stageTiming("apply")
+		applyDone := p.stageTiming(StageApply)
 		if err := p.applyTriage(ctx, triage.Direct, &iter); err != nil {
 			applyDone()
 
