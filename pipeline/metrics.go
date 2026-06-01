@@ -51,6 +51,13 @@ func (m *Metrics) RecordFix() {
 	m.mu.Unlock()
 }
 
+// RecordFixes records multiple successful fix applications in a single mutex acquisition.
+func (m *Metrics) RecordFixes(count uint) {
+	m.mu.Lock()
+	m.fixesApplied += int(count)
+	m.mu.Unlock()
+}
+
 // StageDuration returns the total duration recorded for the named stage.
 func (m *Metrics) StageDuration(name string) time.Duration {
 	m.mu.Lock()

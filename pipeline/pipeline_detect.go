@@ -252,10 +252,8 @@ func (p *Pipeline) applyDirectFixes(
 		return nil, err
 	}
 
-	if p.metrics != nil {
-		for range applied {
-			p.metrics.RecordFix()
-		}
+	if p.metrics != nil && applied > 0 {
+		p.metrics.RecordFixes(uint(applied))
 	}
 
 	return appliedFixes, nil
