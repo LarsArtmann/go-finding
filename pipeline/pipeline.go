@@ -20,7 +20,7 @@ var errAlreadyRan = errors.New(
 
 // reasonFromContext derives a CompletionReason from the context error.
 func reasonFromContext(ctx context.Context) CompletionReason {
-	if ctx.Err() == context.DeadlineExceeded {
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 		return ReasonTimeout
 	}
 
