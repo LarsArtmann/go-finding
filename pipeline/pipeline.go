@@ -184,10 +184,15 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	if p.config.VerifyAfterFix && len(p.detectors) > 0 {
 		allOriginal := p.collectAllFindings(result)
 
+		verifyDone := p.stageTiming(StageVerify)
 		verifyResult, err := Verify(ctx, p.detectors, allOriginal)
+		verifyDone()
+
 		if err != nil {
 			return result, fmt.Errorf("verify: %w", err)
 		}
+
+		p.notifyStage(StageVerify, result.TotalIterations, len(allOriginal))
 
 		result.Verification = verifyResult
 	}

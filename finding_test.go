@@ -398,9 +398,9 @@ func TestRelationKind_Constants(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name     string
-		kind     RelationKind
-		wantStr  string
+		name    string
+		kind    RelationKind
+		wantStr string
 	}{
 		{"clone-of", RelationCloneOf, "clone-of"},
 		{"causes", RelationCauses, "causes"},
