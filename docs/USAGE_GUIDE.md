@@ -348,7 +348,7 @@ Find related findings across different tools:
 correlations := finding.Correlate(allFindings)
 for _, c := range correlations {
     fmt.Printf("Related: %v (reason: %s, confidence: %.2f)\n",
-        c.FindingIDs, c.Reason, c.Confidence)
+        c.FindingIDs, c.Reason, c.Score)
 }
 ```
 

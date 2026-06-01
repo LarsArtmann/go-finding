@@ -242,7 +242,7 @@ Composable filter functions:
 Combines multiple reports into one with optional deduplication.
 
 ```go
-merged := finding.Merge(reports,
+merged := finding.Combine(reports,
     finding.WithDeduplication(true),
     finding.WithDeduplicateBy(finding.DeduplicateByID),
 )
