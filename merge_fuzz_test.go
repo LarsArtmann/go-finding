@@ -35,7 +35,7 @@ func FuzzMergeRandom(f *testing.F) {
 			opts = append(opts, WithDeduplicateBy(DeduplicateBy(dedupBy)))
 		}
 
-		merged := Merge(reports, opts...)
+		merged := Combine(reports, opts...)
 		if merged == nil {
 			t.Fatal("Merge returned nil")
 		}

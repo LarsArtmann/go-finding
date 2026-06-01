@@ -87,7 +87,7 @@ func (fb *FileBackup) Backup(path string) error {
 		return finding.NewIOError("create backup dir", err)
 	}
 
-	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
+	if err := os.WriteFile(
 		backupPath,
 		data,
 		0o600,

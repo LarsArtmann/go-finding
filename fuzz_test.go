@@ -162,7 +162,7 @@ func FuzzMerge_DedupByID(f *testing.F) {
 		r2 := NewReport(ToolInfo{Name: "tool2"})
 		r2.AddFinding(Finding{ID: id3, Severity: SeverityInfo})
 
-		merged := Merge(
+		merged := Combine(
 			[]*Report{r1, r2},
 			WithDeduplication(true),
 			WithDeduplicateBy(DeduplicateByID),
@@ -179,7 +179,7 @@ func FuzzMerge_DedupByID(f *testing.F) {
 		}
 
 		// Without dedup: total should be sum
-		noDedup := Merge([]*Report{r1, r2}, WithDeduplication(false))
+		noDedup := Combine([]*Report{r1, r2}, WithDeduplication(false))
 		g.Expect(noDedup.Findings).To(HaveLen(3))
 	})
 }
@@ -197,8 +197,8 @@ func FuzzMerge_Idempotent(f *testing.F) {
 		r.AddFinding(Finding{ID: id1})
 		r.AddFinding(Finding{ID: id2})
 
-		merged1 := Merge([]*Report{r})
-		merged2 := Merge([]*Report{merged1})
+		merged1 := Combine([]*Report{r})
+		merged2 := Combine([]*Report{merged1})
 
 		g.Expect(merged2.Findings).To(HaveLen(len(merged1.Findings)))
 	})
@@ -249,7 +249,7 @@ func FuzzMergeByPosition(f *testing.F) {
 			Position: Position{File: file2, Line: line2, Column: col2},
 		})
 
-		merged := Merge([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByPosition))
+		merged := Combine([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByPosition))
 		key1 := fmt.Sprintf("%s:%d:%d", file1, line1, col1)
 		key2 := fmt.Sprintf("%s:%d:%d", file2, line2, col2)
 

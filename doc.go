@@ -82,7 +82,7 @@
 //
 // Merge reports from multiple tools with configurable deduplication:
 //
-//	merged := finding.Merge(reports,
+//	merged := finding.Combine(reports,
 //	    finding.WithDeduplication(true),
 //	    finding.WithDeduplicateBy(finding.DeduplicateByPosition),
 //	)

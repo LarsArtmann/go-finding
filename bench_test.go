@@ -165,7 +165,7 @@ func BenchmarkMerge(b *testing.B) {
 	b.ResetTimer()
 
 	for b.Loop() {
-		Merge(reports, WithDeduplication(true))
+		Combine(reports, WithDeduplication(true))
 	}
 }
 
@@ -201,7 +201,7 @@ func BenchmarkMergeNoDedup(b *testing.B) {
 	b.ResetTimer()
 
 	for b.Loop() {
-		Merge(reports, WithDeduplication(false))
+		Combine(reports, WithDeduplication(false))
 	}
 }
 

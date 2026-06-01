@@ -184,7 +184,7 @@ func (SubstringProvider) Name() string { return "substring" }
 
 // CanHandle reports whether the finding has BeforeCode for substring matching.
 func (SubstringProvider) CanHandle(f finding.Finding) bool {
-	return f.BeforeCode != ""
+	return f.HasCodeChange() && f.BeforeCode != ""
 }
 
 // Edits locates BeforeCode in the content using substring matching and produces edits.

@@ -163,7 +163,7 @@ func ExampleMerge() {
 		Position: finding.Pos("main.go", 20, 1),
 	})
 
-	merged := finding.Merge([]*finding.Report{r1, r2})
+	merged := finding.Combine([]*finding.Report{r1, r2})
 	fmt.Println("Total:", merged.Summary.Total)
 
 	// Output:
@@ -183,7 +183,7 @@ func ExampleMerge_deduplication() {
 	r2 := finding.NewReport(finding.ToolInfo{Name: "tool-b"})
 	r2.AddFinding(duplicate)
 
-	merged := finding.Merge([]*finding.Report{r1, r2})
+	merged := finding.Combine([]*finding.Report{r1, r2})
 	fmt.Println("After dedup:", merged.Summary.Total)
 
 	// Output:

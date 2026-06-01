@@ -232,8 +232,8 @@ func sarifMetadataFromProps(props map[string]any) map[string]string {
 	meta := make(map[string]string)
 
 	for k, v := range props {
-		if strings.HasPrefix(k, sarifPropMetaPrefix) {
-			meta[strings.TrimPrefix(k, sarifPropMetaPrefix)] = fmt.Sprintf("%v", v)
+		if after, ok := strings.CutPrefix(k, sarifPropMetaPrefix); ok {
+			meta[after] = fmt.Sprintf("%v", v)
 
 			continue
 		}

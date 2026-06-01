@@ -105,7 +105,7 @@ func Example_merging() {
 	})
 
 	// Merge into unified report
-	merged := finding.Merge([]*finding.Report{toolA, toolB})
+	merged := finding.Combine([]*finding.Report{toolA, toolB})
 	merged.ComputeSummary()
 
 	fmt.Printf("Unified Report:\n")

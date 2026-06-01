@@ -11,10 +11,10 @@ func TestMerge_Empty(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	merged := Merge(nil)
+	merged := Combine(nil)
 	g.Expect(merged).NotTo(BeNil())
 
-	assertFindingsLen(t, "Merge(nil) findings", len(merged.Findings), 0)
+	assertFindingsLen(t, "Combine(nil) findings", len(merged.Findings), 0)
 }
 
 func TestMerge_SingleReport(t *testing.T) {
@@ -23,7 +23,7 @@ func TestMerge_SingleReport(t *testing.T) {
 	r := MakeSimpleReport("tool1")
 	r.AddFinding(MakeSimpleFinding("1", SeverityError))
 
-	merged := Merge([]*Report{r})
+	merged := Combine([]*Report{r})
 	assertReportField(t, "single report merge tool", merged.Tool.Name, "tool1")
 	assertFindingsLen(t, "single report merge findings", len(merged.Findings), 1)
 }
@@ -37,7 +37,7 @@ func TestMerge_MultipleReports(t *testing.T) {
 	r2 := MakeSimpleReport("tool2")
 	r2.AddFinding(Finding{ID: "2", Severity: SeverityWarning, Position: Position{File: "b.go"}})
 
-	merged := Merge([]*Report{r1, r2})
+	merged := Combine([]*Report{r1, r2})
 	merged.ComputeSummary()
 
 	assertReportField(t, "merged tool name", merged.Tool.Name, "merged")
@@ -54,7 +54,7 @@ func TestMerge_WithDeduplication(t *testing.T) {
 	r2 := MakeSimpleReport("tool2")
 	r2.AddFinding(MakeSimpleFinding("1", SeverityWarning))
 
-	merged := Merge([]*Report{r1, r2}, WithDeduplication(true))
+	merged := Combine([]*Report{r1, r2}, WithDeduplication(true))
 	merged.ComputeSummary()
 
 	assertFindingsLen(t, "deduplicated merge", len(merged.Findings), 1)
@@ -69,7 +69,7 @@ func TestMerge_WithoutDeduplication(t *testing.T) {
 	r2 := MakeSimpleReport("tool2")
 	r2.AddFinding(MakeSimpleFinding("1", SeverityWarning))
 
-	merged := Merge([]*Report{r1, r2}, WithDeduplication(false))
+	merged := Combine([]*Report{r1, r2}, WithDeduplication(false))
 	merged.ComputeSummary()
 
 	assertFindingsLen(t, "non-deduplicated merge", len(merged.Findings), 2)
@@ -88,7 +88,7 @@ func TestMerge_DeduplicateByPosition(t *testing.T) {
 		Finding{ID: "b", Severity: SeverityWarning, Position: Position{File: "a.go", Line: 10}},
 	)
 
-	merged := Merge([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByPosition))
+	merged := Combine([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByPosition))
 	merged.ComputeSummary()
 
 	assertFindingsLen(t, "dedup by position", len(merged.Findings), 1)
@@ -117,7 +117,7 @@ func TestMerge_DeduplicateByRule(t *testing.T) {
 		},
 	)
 
-	merged := Merge([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByRule))
+	merged := Combine([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByRule))
 	merged.ComputeSummary()
 
 	assertFindingsLen(t, "dedup by rule", len(merged.Findings), 1)
@@ -193,7 +193,7 @@ func TestDeduplicateByID_EmptyIDNotDeduplicated(t *testing.T) {
 		})
 	}
 
-	merged := Merge([]*Report{r1}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByID))
+	merged := Combine([]*Report{r1}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByID))
 	g.Expect(merged.Len()).To(Equal(2))
 }
 
@@ -222,8 +222,8 @@ func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
 
 	reports := []*Report{r1, r2}
 
-	byPos := Merge(reports, WithDeduplicateBy(DeduplicateByPosition))
-	byRule := Merge(reports, WithDeduplicateBy(DeduplicateByRule))
+	byPos := Combine(reports, WithDeduplicateBy(DeduplicateByPosition))
+	byRule := Combine(reports, WithDeduplicateBy(DeduplicateByRule))
 
 	g.Expect(collectIDs(byPos)).To(HaveLen(2))
 
@@ -242,7 +242,7 @@ func TestDeduplicateByPosition_EmptyFileNotDeduplicated(t *testing.T) {
 		Finding{ID: "2", ToolName: "t1", Rule: "r", Message: "m2", Position: Position{Line: 1}},
 	)
 
-	merged := Merge(
+	merged := Combine(
 		[]*Report{r1},
 		WithDeduplication(true),
 		WithDeduplicateBy(DeduplicateByPosition),
@@ -262,7 +262,7 @@ func TestDeduplicateByRule_EmptyFileNotDeduplicated(t *testing.T) {
 		Finding{ID: "2", ToolName: "t1", Rule: "r", Message: "m2", Position: Position{Line: 1}},
 	)
 
-	merged := Merge([]*Report{r1}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByRule))
+	merged := Combine([]*Report{r1}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByRule))
 	g.Expect(merged.Len()).To(Equal(2))
 }
 
@@ -385,7 +385,7 @@ func TestMerge_DeduplicateByID_EmptyIDs(t *testing.T) {
 	r2 := NewReport(ToolInfo{Name: "b"})
 	r2.AddFinding(f2)
 
-	merged := Merge(
+	merged := Combine(
 		[]*Report{r1, r2},
 		WithDeduplication(true),
 		WithDeduplicateBy(DeduplicateByID),

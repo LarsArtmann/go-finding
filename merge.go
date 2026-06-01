@@ -28,7 +28,9 @@ const EmptyToolName = "empty"
 //   - Summary computed from all findings
 //
 // Options control deduplication and conflict resolution.
-func Merge(reports []*Report, opts ...MergeOption) *Report {
+// Combine merges multiple reports into a new report with optional deduplication.
+// Use Report.Merge(other) to concatenate one report into another without deduplication.
+func Combine(reports []*Report, opts ...MergeOption) *Report {
 	if len(reports) == 0 {
 		return NewReport(ToolInfo{Name: EmptyToolName}) //nolint:exhaustruct
 	}
@@ -187,9 +189,9 @@ type CorrelationScore float64
 
 // Correlation represents a relationship between two or more findings.
 type Correlation struct {
-	FindingIDs []string        `json:"findingIds"`
-	Reason     string          `json:"reason"`     // Why they're correlated
-	Score      CorrelationScore `json:"score"`      // 0.0-1.0 correlation strength
+	FindingIDs []string         `json:"findingIds"`
+	Reason     string           `json:"reason"` // Why they're correlated
+	Score      CorrelationScore `json:"score"`  // 0.0-1.0 correlation strength
 }
 
 // Correlate finds potentially related findings across tools.

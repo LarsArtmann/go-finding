@@ -81,7 +81,7 @@ func Example_merge() {
 	})
 
 	// Merge reports
-	merged := finding.Merge([]*finding.Report{r1, r2})
+	merged := finding.Combine([]*finding.Report{r1, r2})
 	merged.ComputeSummary()
 
 	fmt.Printf("Total: %d\n", merged.Summary.Total)
