@@ -393,3 +393,24 @@ func TestFinding_HasRange(t *testing.T) {
 		}
 	})
 }
+
+func TestRelationKind_Constants(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		kind     RelationKind
+		wantStr  string
+	}{
+		{"clone-of", RelationCloneOf, "clone-of"},
+		{"causes", RelationCauses, "causes"},
+		{"wraps", RelationWraps, "wraps"},
+		{"related", RelationRelated, "related"},
+	}
+
+	for _, tt := range tests {
+		if got := string(tt.kind); got != tt.wantStr {
+			t.Errorf("RelationKind %s = %q, want %q", tt.name, got, tt.wantStr)
+		}
+	}
+}

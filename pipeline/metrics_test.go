@@ -79,6 +79,35 @@ func TestMetrics_RecordFix(t *testing.T) {
 	g.Expect(m.TotalFixesApplied()).To(Equal(3))
 }
 
+func TestMetrics_RecordFixes(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+	m := NewMetrics()
+	m.RecordFixes(5)
+
+	g.Expect(m.TotalFixesApplied()).To(Equal(5))
+}
+
+func TestMetrics_RecordFixAndFixes(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+	m := NewMetrics()
+	m.RecordFix()
+	m.RecordFixes(3)
+	m.RecordFix()
+
+	g.Expect(m.TotalFixesApplied()).To(Equal(5))
+}
+
+func TestMetrics_RecordFixes_Zero(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+	m := NewMetrics()
+	m.RecordFixes(0)
+
+	g.Expect(m.TotalFixesApplied()).To(Equal(0))
+}
+
 func TestMetrics_StageTiming(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)

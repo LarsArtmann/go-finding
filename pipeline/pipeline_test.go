@@ -1473,6 +1473,31 @@ func splitLines(s string) []string {
 	return lines
 }
 
+func TestReasonFromContext(t *testing.T) {
+	t.Parallel()
+
+	t.Run("cancelled", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+
+		got := reasonFromContext(ctx)
+		g.Expect(got).To(Equal(ReasonCancelled))
+	})
+
+	t.Run("timeout", func(t *testing.T) {
+		t.Parallel()
+		g := NewWithT(t)
+		ctx, cancel := context.WithTimeout(context.Background(), 0)
+		defer cancel()
+		<-ctx.Done()
+
+		got := reasonFromContext(ctx)
+		g.Expect(got).To(Equal(ReasonTimeout))
+	})
+}
+
 func TestPipelineRun_SingleUse(t *testing.T) {
 	t.Parallel()
 
