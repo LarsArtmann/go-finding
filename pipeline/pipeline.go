@@ -155,7 +155,11 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 		done, err := p.runIteration(ctx, result)
 		if err != nil {
-			result.Reason = ReasonError
+			if IsContextError(err) {
+				result.Reason = reasonFromContext(ctx)
+			} else {
+				result.Reason = ReasonError
+			}
 
 			return result, err
 		}

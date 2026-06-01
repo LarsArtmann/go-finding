@@ -76,6 +76,7 @@ func TestPipelineRun_NoFindings(t *testing.T) {
 	}
 
 	g.Expect(result.Stable()).To(BeTrue())
+	g.Expect(result.Reason).To(Equal(ReasonStable))
 	g.Expect(result.TotalIterations).To(Equal(1))
 }
 
@@ -173,9 +174,10 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately
 
-	_, err = p.Run(ctx)
+	result, err := p.Run(ctx)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
+	g.Expect(result.Reason).To(Equal(ReasonCancelled))
 }
 
 // TestPipelineRun_Timeout tests pipeline timeout.
@@ -194,9 +196,10 @@ func TestPipelineRun_Timeout(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	_, err = p.Run(ctx)
+	result, err := p.Run(ctx)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, context.DeadlineExceeded)).To(BeTrue())
+	g.Expect(result.Reason).To(Equal(ReasonTimeout))
 }
 
 // TestPipelineRun_MaxIterations tests max iteration limit.
@@ -223,6 +226,7 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 	}
 
 	g.Expect(result.TotalIterations).To(Equal(config.MaxIterations))
+	g.Expect(result.Reason).To(Equal(ReasonMaxIterations))
 }
 
 // TestPipelineRun_Parallel tests parallel detection.
