@@ -100,7 +100,7 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 		}
 
 		ref := RelatedRef{
-			Relation: rel.Message.Text,
+			Relation: RelationKind(rel.Message.Text),
 			Position: pos,
 		}
 		if rel.Properties != nil {

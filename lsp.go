@@ -91,7 +91,7 @@ func (f Finding) ToLSP() LSPDiagnostic {
 				URI:   rel.Position.File,
 				Range: LSPRange{Start: lspPos, End: lspPos},
 			},
-			Message: rel.Relation,
+			Message: string(rel.Relation),
 		})
 	}
 
@@ -155,7 +155,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 		}
 		f.Related = append(f.Related, RelatedRef{
 			FindingID: GenerateID(diag.Source, diag.Code, relPos),
-			Relation:  rel.Message,
+			Relation:  RelationKind(rel.Message),
 			Position:  relPos,
 		})
 	}

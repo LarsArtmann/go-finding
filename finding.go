@@ -71,11 +71,22 @@ func NewFinding(
 	}
 }
 
+// RelationKind describes the type of relationship between two findings.
+type RelationKind string
+
+// Standard relation kinds for relating findings.
+const (
+	RelationCloneOf RelationKind = "clone-of"
+	RelationCauses  RelationKind = "causes"
+	RelationWraps   RelationKind = "wraps"
+	RelationRelated RelationKind = "related"
+)
+
 // RelatedRef links to another finding.
 type RelatedRef struct {
-	FindingID string   `json:"findingId"` // ID of the related finding
-	Relation  string   `json:"relation"`  // e.g., "clone-of", "wraps", "causes"
-	Position  Position `json:"position"`  // Quick access to related location
+	FindingID string       `json:"findingId"` // ID of the related finding
+	Relation  RelationKind `json:"relation"`  // e.g., RelationCloneOf, RelationCauses
+	Position  Position     `json:"position"`  // Quick access to related location
 }
 
 // IsValid returns true if the reference has a non-empty FindingID.

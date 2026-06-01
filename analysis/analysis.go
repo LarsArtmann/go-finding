@@ -163,7 +163,7 @@ func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 		relatedPos := resolvePos(ref.Position, fset)
 		diag.Related = append(diag.Related, analysis.RelatedInformation{ //nolint:exhaustruct
 			Pos:     relatedPos,
-			Message: ref.Relation,
+			Message: string(ref.Relation),
 		})
 	}
 

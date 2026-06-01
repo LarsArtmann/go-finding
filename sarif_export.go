@@ -227,7 +227,7 @@ func sarifRelatedLocs(f Finding) []SarifRelatedLoc {
 					StartColumn: rel.Position.Column,
 				},
 			},
-			Message: SarifMessage{Text: rel.Relation},
+			Message: SarifMessage{Text: string(rel.Relation)},
 		}
 
 		if rel.FindingID != "" {

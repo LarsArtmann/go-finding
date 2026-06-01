@@ -196,7 +196,7 @@ func TestFromLSPRelated(t *testing.T) {
 		t.Fatalf("FromLSP Related length = %d, want %d", got, want)
 	}
 
-	if got, want := f.Related[0].Relation, "clone-of"; got != want {
+	if got, want := f.Related[0].Relation, RelationKind("clone-of"); got != want {
 		t.Errorf("FromLSP Related[0].Relation = %q, want %q", got, want)
 	}
 

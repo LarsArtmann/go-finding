@@ -149,7 +149,7 @@ func TestFromDiagnostic_WithRelated(t *testing.T) {
 		t.Fatalf("Related length = %d, want 1", len(got.Related))
 	}
 
-	if got.Related[0].Relation != "related" {
+	if got.Related[0].Relation != finding.RelationKind("related") {
 		t.Errorf("Related[0].Relation = %q, want %q", got.Related[0].Relation, "related")
 	}
 }

@@ -681,7 +681,7 @@ func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
 	f := findingFromSarResult(r, "tool")
 	g.Expect(f.Related).To(gomega.HaveLen(2))
 
-	if f.Related[0].Relation != "related call" {
+	if f.Related[0].Relation != RelationKind("related call") {
 		t.Errorf("Related[0].Relation = %q, want %q", f.Related[0].Relation, "related call")
 	}
 
@@ -1164,7 +1164,7 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 
 	g.Expect(f.Related).To(gomega.HaveLen(1))
 	g.Expect(f.Related[0].FindingID).To(gomega.Equal("related-123"))
-	g.Expect(f.Related[0].Relation).To(gomega.Equal("causes"))
+	g.Expect(f.Related[0].Relation).To(gomega.Equal(RelationKind("causes")))
 }
 
 func TestSARIF_TagsRoundTrip(t *testing.T) {
