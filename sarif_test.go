@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"math"
@@ -431,7 +432,7 @@ func TestWriteSARIF(t *testing.T) {
 	r := simpleSARIFReport()
 
 	var buf strings.Builder
-	err := r.WriteSARIF(&buf)
+	err := r.WriteSARIF(context.Background(), &buf)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	data := buf.String()
@@ -458,7 +459,7 @@ func TestWriteSARIFFiltered(t *testing.T) {
 	}
 
 	var buf strings.Builder
-	err := r.WriteSARIFFiltered(&buf, SeverityWarning)
+	err := r.WriteSARIFFiltered(context.Background(), &buf, SeverityWarning)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	data := buf.String()
@@ -469,7 +470,7 @@ func TestWriteSARIFFiltered(t *testing.T) {
 func TestFindingsFromSARIF_EmptyLog(t *testing.T) {
 	t.Parallel()
 
-	findings, err := FindingsFromSARIF([]byte(`{"version":"2.1.0","runs":[]}`))
+	findings, err := FindingsFromSARIF(context.Background(), []byte(`{"version":"2.1.0","runs":[]}`))
 	if err != nil {
 		t.Fatalf("FindingsFromSARIF(): %v", err)
 	}
@@ -481,7 +482,7 @@ func TestFindingsFromSARIF_EmptyLog(t *testing.T) {
 func TestFindingsFromSARIF_InvalidJSON(t *testing.T) {
 	t.Parallel()
 
-	_, err := FindingsFromSARIF([]byte(`not json`))
+	_, err := FindingsFromSARIF(context.Background(), []byte(`not json`))
 	if err == nil {
 		t.Fatal("FindingsFromSARIF() expected error for invalid JSON, got nil")
 	}
@@ -516,7 +517,7 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 		t.Fatalf("ToSARIF(): %v", err)
 	}
 
-	findings, err := FindingsFromSARIF(sarif)
+	findings, err := FindingsFromSARIF(context.Background(), sarif)
 	if err != nil {
 		t.Fatalf("FindingsFromSARIF(): %v", err)
 	}
@@ -832,7 +833,7 @@ func TestWriteSARIF_WriterError(t *testing.T) {
 
 	r := simpleSARIFReport()
 
-	err := r.WriteSARIF(&failWriter{})
+	err := r.WriteSARIF(context.Background(), &failWriter{})
 	g.Expect(err).To(gomega.HaveOccurred())
 	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("encoding SARIF")))
 }
@@ -843,7 +844,7 @@ func TestWriteSARIFFiltered_WriterError(t *testing.T) {
 
 	r := simpleSARIFReport()
 
-	err := r.WriteSARIFFiltered(&failWriter{}, SeverityWarning)
+	err := r.WriteSARIFFiltered(context.Background(), &failWriter{}, SeverityWarning)
 	g.Expect(err).To(gomega.HaveOccurred())
 	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("encoding SARIF")))
 }
@@ -881,6 +882,82 @@ func TestWriteTo_WriterError(t *testing.T) {
 	n, err := r.WriteTo(&failWriter{})
 	g.Expect(err).To(gomega.HaveOccurred())
 	g.Expect(n).To(gomega.BeNumerically("==", 0))
+}
+
+func TestWriteSARIF_CancelledContext(t *testing.T) {
+	g := gomega.NewWithT(t)
+	t.Parallel()
+
+	r := simpleSARIFReport()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	var buf strings.Builder
+	err := r.WriteSARIF(ctx, &buf)
+	g.Expect(err).To(gomega.HaveOccurred())
+	g.Expect(err.Error()).To(gomega.ContainSubstring("writing SARIF"))
+}
+
+func TestWriteSARIFFiltered_CancelledContext(t *testing.T) {
+	g := gomega.NewWithT(t)
+	t.Parallel()
+
+	r := simpleSARIFReport()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	var buf strings.Builder
+	err := r.WriteSARIFFiltered(ctx, &buf, SeverityWarning)
+	g.Expect(err).To(gomega.HaveOccurred())
+	g.Expect(err.Error()).To(gomega.ContainSubstring("writing SARIF filtered"))
+}
+
+func TestFindingsFromSARIF_CancelledContext(t *testing.T) {
+	g := gomega.NewWithT(t)
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := FindingsFromSARIF(ctx, []byte(`{"version":"2.1.0","runs":[]}`))
+	g.Expect(err).To(gomega.HaveOccurred())
+	g.Expect(err.Error()).To(gomega.ContainSubstring("reading SARIF"))
+}
+
+func TestFindingsFromReader(t *testing.T) {
+	g := gomega.NewWithT(t)
+	t.Parallel()
+
+	sarif := `{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"govet"}},"results":[{"ruleId":"printf","level":"error","message":{"text":"invalid format"}}]}]}`
+
+	findings, err := FindingsFromReader(context.Background(), strings.NewReader(sarif))
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.HaveLen(1))
+	g.Expect(findings[0].Rule).To(gomega.Equal("printf"))
+	g.Expect(findings[0].ToolName).To(gomega.Equal("govet"))
+}
+
+func TestFindingsFromReader_CancelledContext(t *testing.T) {
+	g := gomega.NewWithT(t)
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := FindingsFromReader(ctx, strings.NewReader(`{"version":"2.1.0","runs":[]}`))
+	g.Expect(err).To(gomega.HaveOccurred())
+	g.Expect(err.Error()).To(gomega.ContainSubstring("reading SARIF"))
+}
+
+func TestFindingsFromReader_InvalidJSON(t *testing.T) {
+	g := gomega.NewWithT(t)
+	t.Parallel()
+
+	_, err := FindingsFromReader(context.Background(), strings.NewReader(`not json`))
+	g.Expect(err).To(gomega.HaveOccurred())
+	g.Expect(err.Error()).To(gomega.ContainSubstring("decoding SARIF"))
 }
 
 // failWriter is an io.Writer that always returns an error.
@@ -1069,7 +1146,7 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 	data, err := report.ToSARIF()
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	findings, err := FindingsFromSARIF(data)
+	findings, err := FindingsFromSARIF(context.Background(), data)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(findings).To(gomega.HaveLen(1))
 
@@ -1106,7 +1183,7 @@ func TestSARIF_TagsRoundTrip(t *testing.T) {
 	data, err := report.ToSARIF()
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	findings, err := FindingsFromSARIF(data)
+	findings, err := FindingsFromSARIF(context.Background(), data)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(findings).To(gomega.HaveLen(1))
 
@@ -1132,7 +1209,7 @@ func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 	data, err := report.ToSARIF()
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	findings, err := FindingsFromSARIF(data)
+	findings, err := FindingsFromSARIF(context.Background(), data)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(findings).To(gomega.BeEmpty())
 }
@@ -1159,7 +1236,7 @@ func TestSARIF_RoundTrip_EditProperties(t *testing.T) {
 	data, err := report.ToSARIF()
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
-	findings, err := FindingsFromSARIF(data)
+	findings, err := FindingsFromSARIF(context.Background(), data)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(findings).To(gomega.HaveLen(1))
 
@@ -1235,7 +1312,7 @@ func TestFindingsFromSARIF_FixWithEmptyChanges(t *testing.T) {
 		}]
 	}`
 
-	findings, err := FindingsFromSARIF([]byte(sarif))
+	findings, err := FindingsFromSARIF(context.Background(), []byte(sarif))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(findings).To(gomega.HaveLen(1))
 	g.Expect(findings[0].Suggestion).To(gomega.Equal("suggestion only"))

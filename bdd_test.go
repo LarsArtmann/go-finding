@@ -1,6 +1,7 @@
 package finding_test
 
 import (
+	"context"
 	"errors"
 	"io"
 	"testing"
@@ -211,7 +212,7 @@ var _ = Describe("SARIF Round-Trip Fidelity", func() {
 		sarifData, err := report.ToSARIF()
 		Expect(err).NotTo(HaveOccurred())
 
-		parsed, err := finding.FindingsFromSARIF(sarifData)
+		parsed, err := finding.FindingsFromSARIF(context.Background(), sarifData)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(parsed).To(HaveLen(1))
 
@@ -236,7 +237,7 @@ var _ = Describe("SARIF Round-Trip Fidelity", func() {
 		sarifData, err := report.ToSARIF()
 		Expect(err).NotTo(HaveOccurred())
 
-		parsed, err := finding.FindingsFromSARIF(sarifData)
+		parsed, err := finding.FindingsFromSARIF(context.Background(), sarifData)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(parsed).To(HaveLen(1))
 		Expect(parsed[0].Rule).To(Equal("r2"))

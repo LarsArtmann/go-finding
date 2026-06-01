@@ -26,7 +26,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `merge.go` | Report merging with deduplication + Correlate |
 | `sarif_types.go` | SARIF struct types, constants, severity conversion helpers |
 | `sarif_export.go` | Report→SARIF export (ToSARIF, WriteSARIF, findingToSARIF) |
-| `sarif_import.go` | SARIF→Finding import (FindingsFromSARIF, applySarifProperties) |
+| `sarif_import.go` | SARIF→Finding import (FindingsFromSARIF, FindingsFromReader, applySarifProperties) |
 | `lsp.go` | LSP Diagnostic conversion |
 | `errors.go` | Structured error types (FindingError with categories) |
 | `tag.go` | Tag type with IsStandard/IsValid/String methods |
@@ -204,6 +204,7 @@ golangci-lint run ./...                     # Lint
 - **Pipeline.Run() single-use** — Doc comment corrected: returns `errAlreadyRan` on second call (does not "reset internal state")
 - **byFindingID unified** — Both `diff.go` and `pipeline/verify.go` use `cmp.Compare` instead of manual comparison
 - **CLI timeout not double-wrapped** — Pipeline handles `context.WithTimeout` internally; CLI passes `context.Background()` directly
+- **context.Context on I/O** — `WriteSARIF(ctx, w)`, `WriteSARIFFiltered(ctx, w, sev)`, `FindingsFromSARIF(ctx, data)`, `FindingsFromReader(ctx, r)` accept `context.Context` as first arg; cancelled context returns wrapped `ctx.Err()` before I/O begins. `WriteTo` (io.WriterTo compat) delegates with `context.Background()`. `FindingsFromReader` streams via `json.Decoder` without buffering full input.
 
 ### CLI Features
 

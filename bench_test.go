@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
@@ -238,7 +239,7 @@ func BenchmarkFromSARIF(b *testing.B) {
 	b.ResetTimer()
 
 	for b.Loop() {
-		_, _ = FindingsFromSARIF(sarifData)
+		_, _ = FindingsFromSARIF(context.Background(), sarifData)
 	}
 }
 

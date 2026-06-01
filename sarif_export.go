@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -53,7 +54,12 @@ func (r *Report) ToSARIFFiltered(minSeverity Severity) ([]byte, error) {
 
 // WriteSARIF writes the report in SARIF 2.1.0 format directly to w.
 // Streams via json.Encoder, avoiding the intermediate []byte buffer of ToSARIF.
-func (r *Report) WriteSARIF(w io.Writer) error {
+// The context is checked for cancellation before encoding begins.
+func (r *Report) WriteSARIF(ctx context.Context, w io.Writer) error {
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("writing SARIF: %w", err)
+	}
+
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 
@@ -67,7 +73,12 @@ func (r *Report) WriteSARIF(w io.Writer) error {
 // WriteSARIFFiltered writes non-suppressed findings with severity >= minSeverity
 // in SARIF 2.1.0 format directly to w.
 // Streams via json.Encoder, avoiding the intermediate []byte buffer.
-func (r *Report) WriteSARIFFiltered(w io.Writer, minSeverity Severity) error {
+// The context is checked for cancellation before encoding begins.
+func (r *Report) WriteSARIFFiltered(ctx context.Context, w io.Writer, minSeverity Severity) error {
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("writing SARIF filtered (minSeverity=%s): %w", minSeverity, err)
+	}
+
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 
@@ -80,10 +91,12 @@ func (r *Report) WriteSARIFFiltered(w io.Writer, minSeverity Severity) error {
 
 // WriteTo writes the report in SARIF 2.1.0 format to w and returns the bytes written.
 // Implements io.WriterTo, enabling use with io.Copy for streaming SARIF output.
+//
+// For context-aware cancellation, prefer WriteSARIF directly.
 func (r *Report) WriteTo(w io.Writer) (int64, error) {
 	cw := &countingWriter{w: w}
 
-	if err := r.WriteSARIF(cw); err != nil {
+	if err := r.WriteSARIF(context.Background(), cw); err != nil {
 		return cw.n, fmt.Errorf("writing SARIF: %w", err)
 	}
 

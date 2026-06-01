@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -35,7 +36,7 @@ func FuzzToSARIF(f *testing.F) {
 		g.Expect(json.Unmarshal(data, &log)).NotTo(HaveOccurred())
 
 		// Round-trip should not panic.
-		_, _ = FindingsFromSARIF(data)
+		_, _ = FindingsFromSARIF(context.Background(), data)
 	})
 }
 
@@ -61,6 +62,6 @@ func FuzzFindingsFromSARIF(f *testing.F) {
 
 	f.Fuzz(func(_ *testing.T, data []byte) {
 		// Must not panic on any input.
-		_, _ = FindingsFromSARIF(data)
+		_, _ = FindingsFromSARIF(context.Background(), data)
 	})
 }

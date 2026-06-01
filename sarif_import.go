@@ -1,21 +1,57 @@
 package finding
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 )
 
 // FindingsFromSARIF parses SARIF JSON and returns Findings.
 // It extracts go-finding-specific properties for round-trip fidelity
 // (severity, ID, tool name, etc.) and falls back to SARIF fields otherwise.
-func FindingsFromSARIF(data []byte) ([]Finding, error) {
+// The context is checked for cancellation before parsing begins.
+func FindingsFromSARIF(ctx context.Context, data []byte) ([]Finding, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, fmt.Errorf("reading SARIF: %w", err)
+	}
+
+	return findingsFromSARIFLog(data)
+}
+
+// FindingsFromReader parses SARIF JSON from an io.Reader and returns Findings.
+// It extracts go-finding-specific properties for round-trip fidelity.
+// The context is checked for cancellation before decoding begins.
+// Prefer this over FindingsFromSARIF for large payloads to avoid buffering
+// the entire input into memory.
+func FindingsFromReader(ctx context.Context, r io.Reader) ([]Finding, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, fmt.Errorf("reading SARIF: %w", err)
+	}
+
+	var log SarifLog
+
+	if err := json.NewDecoder(r).Decode(&log); err != nil {
+		return nil, fmt.Errorf("decoding SARIF: %w", err)
+	}
+
+	return findingsFromSarifLog(log), nil
+}
+
+// findingsFromSARIFLog parses SARIF JSON bytes and returns Findings.
+func findingsFromSARIFLog(data []byte) ([]Finding, error) {
 	var log SarifLog
 
 	if err := json.Unmarshal(data, &log); err != nil {
 		return nil, fmt.Errorf("parsing SARIF: %w", err)
 	}
 
+	return findingsFromSarifLog(log), nil
+}
+
+// findingsFromSarifLog extracts Findings from a parsed SarifLog.
+func findingsFromSarifLog(log SarifLog) []Finding {
 	var findings []Finding
 
 	for _, run := range log.Runs {
@@ -27,7 +63,7 @@ func FindingsFromSARIF(data []byte) ([]Finding, error) {
 		}
 	}
 
-	return findings, nil
+	return findings
 }
 
 // findingFromSarResult converts a single SarifResult into a Finding.
