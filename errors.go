@@ -33,25 +33,7 @@ const (
 // IsValid returns true if the error category is a non-empty string matching
 // the lowercase-hyphenated convention (e.g., "validation", "io").
 func (c ErrorCategory) IsValid() bool {
-	if c == "" {
-		return false
-	}
-
-	for i, r := range c {
-		if i == 0 {
-			if r < 'a' || r > 'z' {
-				return false
-			}
-
-			continue
-		}
-
-		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
-			return false
-		}
-	}
-
-	return true
+	return isValidLowercaseHyphen(string(c))
 }
 
 // FindingError provides structured error information with context.

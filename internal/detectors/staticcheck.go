@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/larsartmann/go-finding"
@@ -16,7 +15,7 @@ import (
 // NewStaticcheckDetector returns a Detector that runs `staticcheck -f json` on the given directory.
 func NewStaticcheckDetector(dir string) pipeline.Detector {
 	return pipeline.NamedDetectorFunc(
-		"staticcheck",
+		DetectorNameStaticcheck,
 		func(ctx context.Context) ([]finding.Finding, error) {
 			cmd := exec.CommandContext(ctx, "staticcheck", "-f", "json", "./...")
 			cmd.Dir = dir
@@ -68,12 +67,9 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 		}
 
 		pos := finding.Position{ //nolint:exhaustruct
-			File:   entry.Location.File,
+			File:   resolvePath(dir, entry.Location.File),
 			Line:   entry.Location.Line,
 			Column: entry.Location.Column,
-		}
-		if dir != "" && !filepath.IsAbs(pos.File) {
-			pos.File = filepath.Join(dir, entry.Location.File)
 		}
 
 		sev := finding.SeverityWarning
@@ -84,9 +80,9 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 		cat := staticcheckCategory(entry.Code)
 
 		findings = append(findings, finding.Finding{ //nolint:exhaustruct
-			ID:          finding.GenerateID("staticcheck", entry.Code, pos),
+			ID:          finding.GenerateID(DetectorNameStaticcheck, entry.Code, pos),
 			Rule:        entry.Code,
-			ToolName:    "staticcheck",
+			ToolName:    DetectorNameStaticcheck,
 			Message:     entry.Message,
 			Severity:    sev,
 			Position:    pos,
@@ -111,8 +107,6 @@ func staticcheckCategory(code string) finding.Category {
 		return finding.CategoryUnused
 	case 'P', 'R', 'F':
 		return finding.CategoryPerformance
-	case 'A':
-		return finding.CategoryCorrectness
 	default:
 		return finding.CategoryCorrectness
 	}

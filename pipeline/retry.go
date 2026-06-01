@@ -68,14 +68,15 @@ func (c RetryConfig) Validate() error {
 }
 
 // delay calculates the backoff duration for the given attempt with jitter.
+// The result is clamped to MaxDelay to prevent jitter from exceeding the cap.
 func (c RetryConfig) delay(attempt int) time.Duration {
-	d := min(time.Duration(1<<attempt)*c.BaseDelay, c.MaxDelay)
-	if quarter := int64(d) / delayJitterDivisor; quarter > 0 {
+	base := min(time.Duration(1<<attempt)*c.BaseDelay, c.MaxDelay)
+	if quarter := int64(base) / delayJitterDivisor; quarter > 0 {
 		jitter := time.Duration(rand.Int64N(quarter))
-		d += jitter
+		base += jitter
 	}
 
-	return d
+	return min(base, c.MaxDelay)
 }
 
 // RetryDetector wraps a Detector with retry logic on error.

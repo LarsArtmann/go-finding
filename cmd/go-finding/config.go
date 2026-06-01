@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-faster/yaml"
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/internal/detectors"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
@@ -34,9 +35,10 @@ type detectorSpec struct {
 	Name string `json:"name" yaml:"name"`
 }
 
+// DetectorName constants referenced from the internal detectors package.
 const (
-	detectorNameGovet       = "govet"
-	detectorNameStaticcheck = "staticcheck"
+	detectorNameGovet       = detectors.DetectorNameGovet
+	detectorNameStaticcheck = detectors.DetectorNameStaticcheck
 )
 
 // Sentinel errors for CLI validation.
@@ -165,7 +167,12 @@ func (c pipelineConfigFile) toPipelineConfig() (pipeline.Config, error) {
 	for name, durStr := range c.DetectorTimeouts {
 		d, err := time.ParseDuration(durStr)
 		if err != nil {
-			return pipeline.Config{}, fmt.Errorf("parse detector timeout %q for %q: %w", durStr, name, err)
+			return pipeline.Config{}, fmt.Errorf(
+				"parse detector timeout %q for %q: %w",
+				durStr,
+				name,
+				err,
+			)
 		}
 
 		detectorTimeouts[name] = d

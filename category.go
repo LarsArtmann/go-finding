@@ -39,25 +39,7 @@ func (c Category) IsStandard() bool {
 // This rejects typos like "Security" or "SOME_CATEGORY".
 // Use IsStandard to check for predefined constants only.
 func (c Category) IsValid() bool {
-	if c == "" {
-		return false
-	}
-
-	for i, r := range c {
-		if i == 0 {
-			if r < 'a' || r > 'z' {
-				return false
-			}
-
-			continue
-		}
-
-		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
-			return false
-		}
-	}
-
-	return true
+	return isValidLowercaseHyphen(string(c))
 }
 
 // String returns the string representation of the category.

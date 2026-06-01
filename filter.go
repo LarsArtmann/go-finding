@@ -15,20 +15,9 @@ func Filter(findings []Finding, predicates ...FilterFunc) []Finding {
 	}
 
 	result := make([]Finding, 0, len(findings))
-
-	for _, finding := range findings {
-		match := true
-
-		for _, p := range predicates {
-			if !p(finding) {
-				match = false
-
-				break
-			}
-		}
-
-		if match {
-			result = append(result, finding)
+	for _, f := range findings {
+		if matchesAll(f, predicates) {
+			result = append(result, f)
 		}
 	}
 
@@ -44,17 +33,7 @@ func FilterInPlace(findings []Finding, predicates ...FilterFunc) []Finding {
 
 	n := 0
 	for _, f := range findings {
-		match := true
-
-		for _, p := range predicates {
-			if !p(f) {
-				match = false
-
-				break
-			}
-		}
-
-		if match {
+		if matchesAll(f, predicates) {
 			findings[n] = f
 			n++
 		}
@@ -66,6 +45,17 @@ func FilterInPlace(findings []Finding, predicates ...FilterFunc) []Finding {
 	}
 
 	return findings[:n]
+}
+
+// matchesAll returns true if the finding matches all predicates.
+func matchesAll(f Finding, predicates []FilterFunc) bool {
+	for _, p := range predicates {
+		if !p(f) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // BySeverity returns a filter for the given severity.

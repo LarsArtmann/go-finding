@@ -225,13 +225,6 @@ func newReplacementEdit(offset, length int, f finding.Finding) FixEdit {
 	return FixEdit{Offset: offset, Length: length, Replacement: []byte(f.AfterCode), Source: f}
 }
 
-// lineColToOffset converts a 1-based line and column to a 0-based byte offset.
-// Builds a line offset index per call; for batch processing, prefer
-// indexLineColToOffset with a pre-built index.
-func lineColToOffset(content []byte, line, col int) (int, error) {
-	return indexLineColToOffset(buildLineOffsetIndex(content), len(content), line, col)
-}
-
 // indexLineColToOffset converts a 1-based line and column to a 0-based byte
 // offset using a pre-built line offset index for O(1) lookup.
 func indexLineColToOffset(index []int, contentLen, line, col int) (int, error) {

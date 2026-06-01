@@ -1,0 +1,123 @@
+title: go-finding — Current Architecture
+direction: down
+
+go-finding: {
+  shape: package
+  style.fill: "#E8F5E9"
+
+  Core Types: {
+    
+    style.fill: "#C8E6C9"
+    Finding: {shape: class; style.fill: "#A5D6A7"}
+    Position: {shape: class; style.fill: "#A5D6A7"}
+    Range: {shape: class; style.fill: "#A5D6A7"}
+  }
+
+  Value Types: {
+    
+    style.fill: "#E1F5FE"
+    Severity: {shape: class; style.fill: "#B3E5FC"}
+    Confidence: {shape: class; style.fill: "#B3E5FC"}
+    Category: {shape: class; style.fill: "#B3E5FC"}
+    Tag: {shape: class; style.fill: "#B3E5FC"}
+    FixStrategy: {shape: class; style.fill: "#B3E5FC"}
+    Suppression: {shape: class; style.fill: "#B3E5FC"}
+  }
+
+  Operations: {
+    
+    style.fill: "#FFF3E0"
+    Report: {shape: class; style.fill: "#FFE0B2"}
+    Filter: {shape: class; style.fill: "#FFE0B2"}
+    Merge: {shape: class; style.fill: "#FFE0B2"}
+    Diff: {shape: class; style.fill: "#FFE0B2"}
+    ID: {shape: class; style.fill: "#FFE0B2"}
+    JSON: {shape: class; style.fill: "#FFE0B2"}
+    Format: {shape: class; style.fill: "#FFE0B2"}
+    Builder: {shape: class; style.fill: "#FFE0B2"}
+  }
+
+  I/O: {
+    
+    style.fill: "#FCE4EC"
+    "SARIF Export": {shape: class; style.fill: "#F8BBD0"}
+    "SARIF Import": {shape: class; style.fill: "#F8BBD0"}
+    "SARIF Types": {shape: class; style.fill: "#F8BBD0"}
+    LSP: {shape: class; style.fill: "#F8BBD0"}
+  }
+
+  Errors: {shape: class; style.fill: "#FFCDD2"}
+}
+
+analysis: {
+  shape: package
+  style.fill: "#E8EAF6"
+  FromDiagnostic: {shape: class; style.fill: "#C5CAE9"}
+  ToDiagnostic: {shape: class; style.fill: "#C5CAE9"}
+}
+
+pipeline: {
+  shape: package
+  style.fill: "#F3E5F5"
+
+  Core: {
+    
+    style.fill: "#E1BEE7"
+    Pipeline: {shape: class; style.fill: "#CE93D8"}
+    Config: {shape: class; style.fill: "#CE93D8"}
+    Result: {shape: class; style.fill: "#CE93D8"}
+  }
+
+  "Fix Engine": {
+    
+    style.fill: "#E1BEE7"
+    FixEngine: {shape: class; style.fill: "#CE93D8"}
+    FixApplier: {shape: class; style.fill: "#CE93D8"}
+    FixProvider: {shape: class; style.fill: "#CE93D8"}
+    FixEdit: {shape: class; style.fill: "#CE93D8"}
+    FileBackup: {shape: class; style.fill: "#CE93D8"}
+  }
+
+  Support: {
+    
+    style.fill: "#E1BEE7"
+    Conflict: {shape: class; style.fill: "#CE93D8"}
+    Verify: {shape: class; style.fill: "#CE93D8"}
+    Retry: {shape: class; style.fill: "#CE93D8"}
+    Metrics: {shape: class; style.fill: "#CE93D8"}
+    Partial: {shape: class; style.fill: "#CE93D8"}
+    GeneratedFilter: {shape: class; style.fill: "#CE93D8"}
+  }
+}
+
+cli: {
+  shape: package
+  style.fill: "#ECEFF1"
+  Main: {shape: class; style.fill: "#CFD8DC"}
+  Config: {shape: class; style.fill: "#CFD8DC"}
+  Registry: {shape: class; style.fill: "#CFD8DC"}
+}
+
+detectors: {
+  shape: package
+  style.fill: "#FFF9C4"
+  GoVet: {shape: class; style.fill: "#FFF59D"}
+  Staticcheck: {shape: class; style.fill: "#FFF59D"}
+}
+
+examples: {
+  shape: package
+  style.fill: "#F5F5F5"
+  Basic: {shape: class; style.fill: "#E0E0E0"}
+  Builder: {shape: class; style.fill: "#E0E0E0"}
+  Pipeline: {shape: class; style.fill: "#E0E0E0"}
+}
+
+pipeline -> go-finding: "imports finding types"
+analysis -> go-finding: "imports finding types"
+cli -> go-finding: "imports finding + pipeline"
+cli -> pipeline: "orchestrates"
+cli -> detectors: "registers"
+pipeline -> detectors: "via Detector interface"
+examples -> go-finding: "imports"
+examples -> pipeline: "imports"

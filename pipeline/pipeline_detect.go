@@ -1,0 +1,262 @@
+package pipeline
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"sync"
+	"time"
+
+	"github.com/larsartmann/go-finding"
+	"golang.org/x/sync/errgroup"
+)
+
+// detect runs all detectors and collects findings.
+func (p *Pipeline) detect(ctx context.Context) (*PartialResult, error) {
+	if p.config.GracefulDegradation {
+		return p.DetectPartial(ctx)
+	}
+
+	var findings []finding.Finding
+
+	var err error
+
+	if p.config.ParallelDetectors {
+		findings, err = p.detectParallel(ctx)
+	} else {
+		findings, err = p.detectSequential(ctx)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &PartialResult{Findings: findings}, nil //nolint:exhaustruct
+}
+
+// filterActive returns non-suppressed findings, calling OnFinding for each.
+func (p *Pipeline) filterActive(findings []finding.Finding) []finding.Finding {
+	var result []finding.Finding
+
+	for _, f := range findings {
+		if !f.IsSuppressed() {
+			result = append(result, f)
+			p.notifyFinding(f)
+		}
+	}
+
+	return result
+}
+
+// recordDetectorMetrics records timing metrics for a detector if metrics are enabled.
+func (p *Pipeline) recordDetectorMetrics(
+	name string,
+	elapsed time.Duration,
+	findings []finding.Finding,
+) {
+	if p.metrics != nil {
+		p.metrics.RecordDetector(name, elapsed, len(findings))
+	}
+}
+
+// runOneDetector executes a single detector, recording metrics and filtering
+// suppressed findings. It returns the active findings or an error.
+// If a per-detector timeout is configured, it takes precedence over the global timeout.
+func (p *Pipeline) runOneDetector(ctx context.Context, d Detector) ([]finding.Finding, error) {
+	if timeout, ok := p.config.DetectorTimeouts[d.Name()]; ok && timeout > 0 {
+		var cancel context.CancelFunc
+
+		ctx, cancel = context.WithTimeout(ctx, timeout)
+		defer cancel()
+	}
+
+	start := time.Now()
+
+	findings, err := d.Detect(ctx)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		p.recordDetectorMetrics(d.Name(), elapsed, nil)
+
+		return nil, fmt.Errorf("detector %s: %w", d.Name(), err)
+	}
+
+	p.recordDetectorMetrics(d.Name(), elapsed, findings)
+
+	return p.filterActive(findings), nil
+}
+
+// detectSequential runs detectors one at a time.
+func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, error) {
+	var allFindings []finding.Finding
+
+	for _, d := range p.detectors {
+		if err := CheckCanceled(ctx); err != nil {
+			return nil, err
+		}
+
+		findings, err := p.runOneDetector(ctx, d)
+		if err != nil {
+			return nil, err
+		}
+
+		allFindings = append(allFindings, findings...)
+	}
+
+	return allFindings, nil
+}
+
+// detectParallel runs detectors concurrently using errgroup.
+func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error) {
+	var (
+		mu          sync.Mutex
+		allFindings []finding.Finding
+	)
+
+	g, ctx := errgroup.WithContext(ctx)
+
+	for _, d := range p.detectors {
+		g.Go(func() error {
+			findings, err := p.runOneDetector(ctx, d)
+			if err != nil {
+				return err
+			}
+
+			mu.Lock()
+			allFindings = append(allFindings, findings...)
+			mu.Unlock()
+
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, fmt.Errorf("parallel detection: %w", err)
+	}
+
+	return allFindings, nil
+}
+
+// TriageResult holds findings categorized by fix strategy.
+type TriageResult struct {
+	Direct  []finding.Finding
+	Suggest []finding.Finding
+	None    []finding.Finding
+}
+
+// triage categorizes findings using HasFix() as the canonical source of truth.
+// - IsAutoFixable() → Direct (auto-apply via FixEngine)
+// - HasFix() but not auto-fixable → Suggest (display suggestion)
+// - No fix available → None
+//
+//nolint:revive // receiver unused by design — method belongs to Pipeline for API cohesion
+func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
+	result := &TriageResult{
+		Direct:  make([]finding.Finding, 0),
+		Suggest: make([]finding.Finding, 0),
+		None:    make([]finding.Finding, 0),
+	}
+
+	for _, f := range findings {
+		if f.IsAutoFixable() {
+			result.Direct = append(result.Direct, f)
+		} else if f.HasFix() {
+			result.Suggest = append(result.Suggest, f)
+		} else {
+			result.None = append(result.None, f)
+		}
+	}
+
+	return result
+}
+
+// applyTriage handles conflict detection and fix application for one iteration.
+func (p *Pipeline) applyTriage(
+	ctx context.Context,
+	fixes []finding.Finding,
+	iter *Iteration,
+) error {
+	if len(fixes) == 0 {
+		return nil
+	}
+
+	safeFixes := FilterConflictingFixes(fixes)
+	iter.Conflicts = len(fixes) - len(safeFixes)
+
+	if iter.Conflicts > 0 {
+		p.log(
+			ctx, "conflicts detected",
+			slog.Int("total", len(fixes)),
+			slog.Int("conflicts", iter.Conflicts),
+			slog.Int("safe", len(safeFixes)),
+		)
+
+		for _, c := range AnalyzeConflicts(fixes) {
+			if p.config.OnFix != nil {
+				p.config.OnFix(c.Finding, false)
+			}
+		}
+	}
+
+	if len(safeFixes) == 0 {
+		return nil
+	}
+
+	applied, err := p.applyDirectFixes(ctx, safeFixes)
+	if err != nil {
+		return fmt.Errorf("apply fixes: %w", err)
+	}
+
+	iter.Applied = len(applied)
+
+	if p.config.OnFix != nil {
+		appliedSet := make(map[string]struct{}, len(applied))
+
+		for _, f := range applied {
+			appliedSet[f.Key()] = struct{}{}
+		}
+
+		for _, f := range safeFixes {
+			if _, ok := appliedSet[f.Key()]; ok {
+				p.config.OnFix(f, true)
+			} else {
+				p.config.OnFix(f, false)
+			}
+		}
+	}
+
+	return nil
+}
+
+// applyDirectFixes applies deterministic fixes to files.
+func (p *Pipeline) applyDirectFixes(
+	ctx context.Context,
+	fixes []finding.Finding,
+) ([]finding.Finding, error) {
+	var err error
+
+	if p.applier == nil {
+		if len(p.config.FixProviders) > 0 {
+			p.applier, err = NewFixApplierWithProviders(p.rootDir, p.config.FixProviders...)
+		} else {
+			p.applier, err = NewFixApplier(p.rootDir)
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("init fix applier: %w", err)
+		}
+	}
+
+	applied, appliedFixes, err := p.applier.ApplyWithDetails(ctx, fixes)
+	if err != nil {
+		return nil, err
+	}
+
+	if p.metrics != nil {
+		for range applied {
+			p.metrics.RecordFix()
+		}
+	}
+
+	return appliedFixes, nil
+}

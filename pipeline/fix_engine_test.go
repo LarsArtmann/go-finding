@@ -344,7 +344,8 @@ func TestLineColToOffset(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			g := NewWithT(t)
-			offset, err := lineColToOffset(content, tt.line, tt.col)
+			idx := buildLineOffsetIndex(content)
+			offset, err := indexLineColToOffset(idx, len(content), tt.line, tt.col)
 			if tt.wantErr {
 				g.Expect(err).To(HaveOccurred())
 			} else {

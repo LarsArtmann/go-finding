@@ -26,7 +26,7 @@
       lib = nixpkgs.lib;
 
       version = self.rev or self.dirtyRev or "dev";
-      vendorHash = "sha256-7a+AUpsSiniqaIAdrHJvBe/9wJVZu2PTUQJiWavKq5I=";
+      vendorHash = "sha256-Dz1lLXC/GuysM4w3gy+ua59RHawUGedhdpDnfxQRAAg=";
 
       goSrc = lib.fileset.toSource {
         root = ./.;

@@ -107,12 +107,7 @@ func IsContextError(err error) bool {
 // CheckCanceled checks if the context is done and returns an appropriate error.
 // Use this helper instead of inline context cancellation checks to avoid duplication.
 func CheckCanceled(ctx context.Context) error {
-	select {
-	case <-ctx.Done():
-		return fmt.Errorf("operation cancelled: %w", ctx.Err())
-	default:
-		return nil
-	}
+	return CheckCanceledWithMsg(ctx, "operation cancelled")
 }
 
 // CheckCanceledWithMsg checks if the context is done and returns an error with the given message.

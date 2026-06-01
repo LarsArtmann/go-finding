@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -19,7 +18,7 @@ import (
 // NewGoVetDetector returns a Detector that runs `go vet -json` on the given directory.
 func NewGoVetDetector(dir string) pipeline.Detector {
 	return pipeline.NamedDetectorFunc(
-		"govet",
+		DetectorNameGovet,
 		func(ctx context.Context) ([]finding.Finding, error) {
 			cmd := exec.CommandContext(ctx, "go", "vet", "-json", "./...")
 			cmd.Dir = dir
@@ -63,9 +62,9 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
 		for _, e := range entries {
 			pos := parsePosn(e.Posn, dir)
 			findings = append(findings, finding.Finding{ //nolint:exhaustruct
-				ID:          finding.GenerateID("govet", name, pos),
+				ID:          finding.GenerateID(DetectorNameGovet, name, pos),
 				Rule:        name,
-				ToolName:    "govet",
+				ToolName:    DetectorNameGovet,
 				Message:     e.Message,
 				Severity:    finding.SeverityWarning,
 				Position:    pos,
@@ -86,10 +85,7 @@ func parsePosn(posn, dir string) finding.Position {
 		return finding.Position{File: posn} //nolint:exhaustruct
 	}
 
-	pos := finding.Position{File: parts[0]} //nolint:exhaustruct
-	if dir != "" && !filepath.IsAbs(pos.File) {
-		pos.File = filepath.Join(dir, parts[0])
-	}
+	pos := finding.Position{File: resolvePath(dir, parts[0])} //nolint:exhaustruct
 
 	if len(parts) >= 2 {
 		if line, err := strconv.Atoi(parts[1]); err == nil {

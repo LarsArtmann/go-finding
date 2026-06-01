@@ -46,7 +46,12 @@ func parseFlags() cliFlags {
 
 	flag.StringVar(&f.dir, "dir", ".", "root directory to analyze")
 	flag.StringVar(&f.format, "format", "text", "output format: text, markdown, json, sarif")
-	flag.StringVar(&f.minSev, "severity", "info", "minimum severity: info, warning, error, critical")
+	flag.StringVar(
+		&f.minSev,
+		"severity",
+		"info",
+		"minimum severity: info, warning, error, critical",
+	)
 	flag.IntVar(&f.maxIter, "max-iterations", 1, "maximum pipeline iterations")
 	flag.BoolVar(&f.parallel, "parallel", true, "run detectors in parallel")
 	flag.BoolVar(&f.verify, "verify", false, "verify fixes by re-running detectors")
@@ -56,7 +61,12 @@ func parseFlags() cliFlags {
 	flag.StringVar(&f.memprof, "memprof", "", "write memory profile to file")
 	flag.BoolVar(&f.showVer, "version", false, "print version and exit")
 	flag.StringVar(&f.outputFile, "output", "", "write output to file (default: stdout)")
-	flag.BoolVar(&f.filterGenerated, "filter-generated", false, "filter out findings from auto-generated files")
+	flag.BoolVar(
+		&f.filterGenerated,
+		"filter-generated",
+		false,
+		"filter out findings from auto-generated files",
+	)
 	flag.StringVar(
 		&f.filterGenTypes, "filter-generated-types", "all",
 		"comma-separated generator types to filter (all, sqlc, templ, mockgen, protobuf, ...)",

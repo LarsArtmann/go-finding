@@ -470,7 +470,10 @@ func TestWriteSARIFFiltered(t *testing.T) {
 func TestFindingsFromSARIF_EmptyLog(t *testing.T) {
 	t.Parallel()
 
-	findings, err := FindingsFromSARIF(context.Background(), []byte(`{"version":"2.1.0","runs":[]}`))
+	findings, err := FindingsFromSARIF(
+		context.Background(),
+		[]byte(`{"version":"2.1.0","runs":[]}`),
+	)
 	if err != nil {
 		t.Fatalf("FindingsFromSARIF(): %v", err)
 	}

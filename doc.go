@@ -117,7 +117,7 @@
 // Findings can be suppressed with a TTL:
 //
 //	f.Suppression = &finding.Suppression{
-//	    Kind:      finding.SuppressionKindInSource,
+//	    Kind:      finding.SuppressionInSource,
 //	    Rule:      "unused-var",
 //	    Reason:    "intentionally unused in test",
 //	    ExpiresAt: &expiry,

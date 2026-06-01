@@ -218,6 +218,24 @@ golangci-lint run ./...                     # Lint
 - Dynamic detector registry — `RegisterDetector` for plugin detectors
 - Generated file filtering — `-filter-generated` CLI flag + `filterGenerated` config; uses `gogenfilter/v3` to detect sqlc, protobuf, mockgen, etc. via `GeneratedFileFilter` FindingProcessor
 
+### Architecture Decisions (2026-06-01 review)
+
+- **Shared validation helper** — `isValidLowercaseHyphen(s)` in `validate_helpers.go` used by both `Category.IsValid()` and `ErrorCategory.IsValid()`
+- **Detector name constants** — Single source of truth in `internal/detectors/helpers.go` (`DetectorNameGovet`, `DetectorNameStaticcheck`); CLI references these via `detectors.DetectorName*`
+- **Shared path resolution** — `resolvePath(dir, file)` in `internal/detectors/helpers.go` used by both govet and staticcheck
+- **Pipeline split** — `pipeline/pipeline.go` (core: Run, runIteration, collectAllFindings) + `pipeline/pipeline_detect.go` (detect, triage, apply) — both under 350 lines
+- **Filter DRY** — `matchesAll(finding, predicates)` in `filter.go` shared by `Filter` and `FilterInPlace`
+- **Retry delay clamped** — `delay()` clamps result to `MaxDelay` after jitter to prevent exceeding cap
+
+### Known Open Items
+
+- `Report.Findings` is a public slice — external code can bypass mutex (encapsulation risk)
+- `FixStrategyAI` + `NeedsAI()` are published API with no backend (vapor surface)
+- `PipelineResult.Stable bool` should be a typed enum (loses reason info)
+- `Correlation.Confidence` reuses `Confidence` type for correlation score (domain mismatch)
+- SARIF export doesn't prefix user Metadata keys — potential collision with `go-finding/*` keys
+- `Tag` constants partially overlap `Category` constants (TagSecurity/CategorySecurity etc.) — no structural link
+
 ---
 
 _Assisted-by: Crush <crush@charm.land>_
