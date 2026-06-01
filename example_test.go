@@ -210,7 +210,7 @@ func ExampleCorrelate() {
 	fmt.Println("Correlations:", len(correlations))
 
 	for _, c := range correlations {
-		fmt.Printf("%.1f: %s\n", c.Confidence, c.Reason)
+		fmt.Printf("%.1f: %s\n", c.Score, c.Reason)
 	}
 
 	// Output:

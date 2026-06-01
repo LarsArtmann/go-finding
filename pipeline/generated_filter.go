@@ -66,6 +66,10 @@ func (g *GeneratedFileFilter) Process(
 	result := make([]finding.Finding, 0, len(findings))
 
 	for _, f := range findings {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+
 		if f.Position.File == "" {
 			result = append(result, f)
 

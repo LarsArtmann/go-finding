@@ -154,6 +154,10 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	result.TotalIterations = len(result.Iterations)
 
+	if result.Reason == "" {
+		result.Reason = ReasonMaxIterations
+	}
+
 	// Optional cross-tool correlation
 	if p.config.CorrelateFindings {
 		result.Correlations = finding.Correlate(p.findings)
@@ -224,7 +228,7 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	p.findings = append(p.findings, findings...)
 
 	if len(findings) == 0 {
-		result.Stable = true
+		result.Reason = ReasonStable
 		result.Iterations = append(result.Iterations, iter)
 
 		p.log(

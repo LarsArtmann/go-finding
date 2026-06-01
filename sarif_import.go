@@ -226,12 +226,19 @@ func stringProp(props map[string]any, key string) (string, bool) {
 }
 
 // sarifMetadataFromProps extracts non-go-finding properties as metadata.
+// sarifMetadataFromProps extracts user metadata from the go-finding/meta/* namespace.
 // go-finding/edit/* properties are preserved for FixEdit round-tripping.
 func sarifMetadataFromProps(props map[string]any) map[string]string {
 	meta := make(map[string]string)
 
 	for k, v := range props {
-		if strings.HasPrefix(k, sarifPropPrefix) && !strings.HasPrefix(k, sarifPropEditPrefix) {
+		if strings.HasPrefix(k, sarifPropMetaPrefix) {
+			meta[strings.TrimPrefix(k, sarifPropMetaPrefix)] = fmt.Sprintf("%v", v)
+
+			continue
+		}
+
+		if strings.HasPrefix(k, sarifPropPrefix) {
 			continue
 		}
 

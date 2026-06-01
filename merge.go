@@ -180,10 +180,16 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 }
 
 // Correlation links related findings from different tools.
+// CorrelationScore measures the strength of a correlation between findings.
+// Unlike Confidence (which measures certainty of a single finding),
+// CorrelationScore measures how strongly two findings are related.
+type CorrelationScore float64
+
+// Correlation represents a relationship between two or more findings.
 type Correlation struct {
-	FindingIDs []string   `json:"findingIds"`
-	Reason     string     `json:"reason"`     // Why they're correlated
-	Confidence Confidence `json:"confidence"` // 0.0-1.0
+	FindingIDs []string        `json:"findingIds"`
+	Reason     string          `json:"reason"`     // Why they're correlated
+	Score      CorrelationScore `json:"score"`      // 0.0-1.0 correlation strength
 }
 
 // Correlate finds potentially related findings across tools.
@@ -226,7 +232,7 @@ func Correlate(findings []Finding) []Correlation {
 					correlations = append(correlations, Correlation{
 						FindingIDs: []string{f1.ID, f2.ID},
 						Reason:     "same file, nearby lines",
-						Confidence: Confidence(confidence),
+						Score:      CorrelationScore(confidence),
 					})
 					if len(correlations) >= maxCorrelations {
 						return correlations

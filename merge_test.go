@@ -303,7 +303,7 @@ func TestCorrelate(t *testing.T) {
 	g.Expect(c.Reason).To(Equal("same file, nearby lines"))
 
 	wantConf := 1.0 - (2.0 / 5.0)
-	g.Expect(c.Confidence).To(BeNumerically("~", wantConf, 0.0001))
+	g.Expect(c.Score).To(BeNumerically("~", wantConf, 0.0001))
 
 	hasID := func(id string) bool {
 		return slices.Contains(c.FindingIDs, id)

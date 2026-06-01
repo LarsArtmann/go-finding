@@ -277,7 +277,7 @@ func sarifProperties(f Finding) map[string]any {
 	}
 
 	for k, v := range f.Metadata {
-		props[k] = v
+		props[sarifPropMetaPrefix+k] = v
 	}
 
 	return props

@@ -6,11 +6,21 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
+// CompletionReason describes why the pipeline finished.
+type CompletionReason string
+
+const (
+	// ReasonStable means no findings were detected — the codebase is clean.
+	ReasonStable CompletionReason = "stable"
+	// ReasonMaxIterations means the pipeline hit the configured iteration limit.
+	ReasonMaxIterations CompletionReason = "max-iterations"
+)
+
 // PipelineResult contains the outcome of running the pipeline.
 //
 //nolint:revive // stuttering name is intentional for clarity
 type PipelineResult struct {
-	Stable          bool
+	Reason          CompletionReason
 	TotalIterations int
 	Iterations      []Iteration
 	// TotalDetected is the total number of findings detected across all iterations.
@@ -22,6 +32,11 @@ type PipelineResult struct {
 	// Correlations holds cross-tool finding correlations when
 	// Config.CorrelateFindings is enabled.
 	Correlations []finding.Correlation
+}
+
+// Stable reports whether the pipeline reached a clean state (no findings).
+func (r *PipelineResult) Stable() bool {
+	return r.Reason == ReasonStable
 }
 
 // Iteration represents one loop through the pipeline.

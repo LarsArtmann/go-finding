@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -62,12 +63,18 @@ func (fb *FileBackup) BackupPath(original string) string {
 
 // Backup creates a backup of the given file.
 func (fb *FileBackup) Backup(path string) error {
-	data, err := os.ReadFile(path)
+	f, err := os.Open(path)
+	if err != nil {
+		return ioErrorAt("open file for backup", err, path)
+	}
+	defer f.Close()
+
+	data, err := io.ReadAll(f)
 	if err != nil {
 		return ioErrorAt("read file for backup", err, path)
 	}
 
-	info, err := os.Stat(path)
+	info, err := f.Stat()
 	if err != nil {
 		return ioErrorAt("stat file for backup", err, path)
 	}

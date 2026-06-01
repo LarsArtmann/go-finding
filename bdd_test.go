@@ -472,8 +472,8 @@ var _ = Describe("Cross-Tool Correlation User Stories", func() {
 
 		var crossTool bool
 		for _, c := range correlations {
-			Expect(c.Confidence).To(BeNumerically(">=", 0.0))
-			Expect(c.Confidence).To(BeNumerically("<=", 1.0))
+			Expect(c.Score).To(BeNumerically(">=", 0.0))
+			Expect(c.Score).To(BeNumerically("<=", 1.0))
 			Expect(c.Reason).NotTo(BeEmpty())
 			if len(c.FindingIDs) == 2 {
 				crossTool = true

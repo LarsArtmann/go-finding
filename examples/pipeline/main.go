@@ -77,7 +77,7 @@ func main() {
 	}
 
 	fmt.Printf("Iterations: %d\n", result.TotalIterations)
-	fmt.Printf("Stable: %v\n", result.Stable)
+	fmt.Printf("Stable: %v\n", result.Stable())
 
 	for _, it := range result.Iterations {
 		fmt.Printf("  Iteration %d: %d found, %d applied, %d conflicts\n",

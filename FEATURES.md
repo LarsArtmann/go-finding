@@ -1,6 +1,6 @@
 # FEATURES.md — go-finding
 
-> **Version:** 0.4.0 | **Updated:** 2026-05-27
+> **Version:** 0.4.2 | **Updated:** 2026-06-01
 >
 > A unified data model and pipeline for Go static analysis tools.
 > Seven tools detect issues. Zero tools route them to remediation. This library fixes that.
@@ -11,11 +11,11 @@
 
 | Status          | Meaning                                                     |
 | --------------- | ----------------------------------------------------------- |
-| STABLE          | Fully implemented, tested, production-ready                 |
-| FUNCTIONAL      | Works but has known limitations or rough edges              |
-| EXPERIMENTAL    | Implemented and tested, but API may change                  |
-| RESERVED        | Type/constant exists, tested, but no backend implementation |
-| NOT_IMPLEMENTED | Mentioned in docs/comments but no code exists               |
+| FULLY_FUNCTIONAL  | Fully implemented, tested, production-ready                 |
+| PARTIALLY_FUNCTIONAL | Works but has known limitations or rough edges              |
+| PARTIALLY_FUNCTIONAL | Implemented and tested, but API may change                  |
+| PLANNED            | Type/constant exists, tested, but no backend implementation |
+| BROKEN             | Mentioned in docs/comments but no code exists               |
 
 ---
 
@@ -23,7 +23,7 @@
 
 ### 1.1 Finding Type
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 The central type representing a single issue detected by a static analysis tool.
 
@@ -52,7 +52,7 @@ Key methods: `Validate()` (detailed per-field errors), `IsValid()`, `Clone()`, `
 
 ### 1.2 Builder API
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 Fluent builder for constructing `Finding` values with validation.
 
@@ -73,7 +73,7 @@ f, err := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, P
 
 ## 2. Position & Range
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 ### 2.1 Position
 
@@ -99,7 +99,7 @@ Constructors: `NewRange(file, startLine, startCol, endLine, endCol)`, `NewRangeP
 
 ## 3. Severity
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 Four levels, ordered by urgency:
 
@@ -116,14 +116,14 @@ Methods: `IsValid()`, `Compare()`, `GreaterThan()`, `LessThan()`, `GreaterThanOr
 
 ## 4. Fix Strategy
 
-**Status:** STABLE (except AI — see below)
+**Status:** FULLY_FUNCTIONAL (except AI — see below)
 
 | Strategy | String      | Auto-apply | Description                     |
 | -------- | ----------- | ---------- | ------------------------------- |
 | None     | `"none"`    | No         | No fix available                |
 | Suggest  | `"suggest"` | No         | Human-readable suggestion       |
 | Direct   | `"direct"`  | Yes        | Automatically applicable        |
-| AI       | `"ai"`      | No         | **RESERVED** — needs AI backend |
+| AI       | `"ai"`      | No         | **PLANNED** — needs AI backend |
 
 Methods: `IsValid()`, `CanAutoApply()`, `NeedsAI()`
 
@@ -135,7 +135,7 @@ Methods: `IsValid()`, `CanAutoApply()`, `NeedsAI()`
 
 ### 5.1 Category
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 14 predefined domain categories:
 
@@ -145,7 +145,7 @@ Plus arbitrary custom categories accepted. Methods: `IsStandard()`, `IsValid()`,
 
 ### 5.2 Tags
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 Multi-label classification for richer filtering:
 
@@ -159,7 +159,7 @@ Plus arbitrary custom tags accepted.
 
 ## 6. Suppression
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 Mark findings as suppressed with reason and optional expiry.
 
@@ -180,7 +180,7 @@ Methods: `IsExpired(now)`, `IsValid()`, `IsActive(now)`, `SuppressionKind.IsVali
 
 ## 7. Report Container
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 Top-level container for a tool run.
 
@@ -207,7 +207,7 @@ Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffec
 
 ## 8. Filtering & Sorting
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 ### 8.1 Predicates
 
@@ -235,7 +235,7 @@ Composable filter functions:
 
 ## 9. Report Merging & Deduplication
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 ### 9.1 Merge
 
@@ -258,7 +258,7 @@ merged := finding.Merge(reports,
 
 ### 9.3 Cross-Tool Correlation
 
-**Status:** FUNCTIONAL
+**Status:** PARTIALLY_FUNCTIONAL
 
 Finds related findings across tools using heuristics (same file, nearby lines within 5 lines).
 
@@ -274,7 +274,7 @@ Returns `[]Correlation` with `FindingIDs`, `Reason`, and `Confidence` score. Cap
 
 ## 10. ID Generation & Parsing
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 ### Generation
 
@@ -295,7 +295,7 @@ Handles Windows paths with colons correctly.
 
 ## 11. JSON Serialization
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 | Operation        | Function                                                 | Notes                        |
 | ---------------- | -------------------------------------------------------- | ---------------------------- |
@@ -311,7 +311,7 @@ Handles Windows paths with colons correctly.
 
 ## 12. SARIF 2.1.0 Interchange
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 ### Export
 
@@ -336,7 +336,7 @@ Handles Windows paths with colons correctly.
 
 ## 13. LSP Diagnostic Conversion
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 ### Finding → LSP
 
@@ -356,7 +356,7 @@ Preserves: end position as Range, related information, raw LSP severity in Metad
 
 ## 14. go/analysis Integration
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 | Function                                                      | Purpose                              |
 | ------------------------------------------------------------- | ------------------------------------ |
@@ -373,7 +373,7 @@ Auto-detects suggested fixes and sets `FixStrategyDirect` with `AfterCode`. `ToD
 
 ## 15. Structured Errors
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 Category-based error types with `errors.Is` / `errors.As` support:
 
@@ -393,7 +393,7 @@ Helpers: `IsFindingError(err)`, `GetCategory(err)`, `IsCategory(err, cat)`
 
 ## 16. Pipeline
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 The pipeline orchestrates a detect → triage → fix → verify loop.
 
@@ -442,7 +442,7 @@ Config validation: `config.Validate()` returns joined errors for invalid values.
 
 ### 16.4 Finding Processors
 
-**Status:** EXPERIMENTAL
+**Status:** PARTIALLY_FUNCTIONAL
 
 Composable transforms that run on findings between detection and triage.
 
@@ -475,7 +475,7 @@ Processors are executed in order from `Config.Processors`. Use cases: filtering,
 
 ### 16.6 Conflict Detection
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 - Detects overlapping fixes in the same file
 - `FilterConflictingFixes()` — returns only non-conflicting fixes
@@ -484,7 +484,7 @@ Processors are executed in order from `Config.Processors`. Use cases: filtering,
 
 ### 16.7 Fix Application
 
-**Status:** FUNCTIONAL
+**Status:** PARTIALLY_FUNCTIONAL
 
 Byte-level fix engine with composable provider architecture.
 
@@ -546,7 +546,7 @@ Both support:
 
 ### 16.8 Verification
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 Re-runs all detectors after fixes and categorizes findings:
 
@@ -560,7 +560,7 @@ Re-runs all detectors after fixes and categorizes findings:
 
 ### 16.9 Metrics
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 Thread-safe metrics collection:
 
@@ -577,7 +577,7 @@ Auto-populated on `Pipeline.Run()` via `PipelineResult.Metrics`.
 
 ### 16.10 Retry
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 Configurable exponential backoff with jitter for flaky detectors:
 
@@ -592,7 +592,7 @@ Validation: `RetryConfig.Validate()` checks constraints.
 
 ### 16.11 Partial Success
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 When `GracefulDegradation` is enabled:
 
@@ -603,7 +603,7 @@ When `GracefulDegradation` is enabled:
 
 ### 16.12 File Backup & Rollback
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 - Creates backup copies before file modification
 - `Backup(path)`, `Restore(path)`, `RollbackAll(paths)`
@@ -616,7 +616,7 @@ When `GracefulDegradation` is enabled:
 
 ### 17.1 Go Vet Detector
 
-**Status:** FUNCTIONAL
+**Status:** PARTIALLY_FUNCTIONAL
 
 Runs `go vet -json ./...` and converts JSON output to Findings.
 
@@ -627,7 +627,7 @@ Runs `go vet -json ./...` and converts JSON output to Findings.
 
 ### 17.2 Staticcheck Detector
 
-**Status:** FUNCTIONAL
+**Status:** PARTIALLY_FUNCTIONAL
 
 Runs `staticcheck -f json ./...` and converts JSON output to Findings.
 
@@ -642,7 +642,7 @@ Runs `staticcheck -f json ./...` and converts JSON output to Findings.
 
 ## 18. CLI Tool
 
-**Status:** FUNCTIONAL
+**Status:** PARTIALLY_FUNCTIONAL
 
 Binary: `go-finding`
 
@@ -701,7 +701,7 @@ Metrics summary printed to stderr when available.
 
 ## 19. Testing
 
-**Status:** STABLE
+**Status:** FULLY_FUNCTIONAL
 
 | Package                          | Coverage |
 | -------------------------------- | -------- |
@@ -724,7 +724,7 @@ Test categories:
 
 ## 20. Examples
 
-**Status:** FUNCTIONAL
+**Status:** PARTIALLY_FUNCTIONAL
 
 Three runnable examples in `examples/`:
 
@@ -742,47 +742,47 @@ Three runnable examples in `examples/`:
 
 | Feature                           | Status       | Notes                                                             |
 | --------------------------------- | ------------ | ----------------------------------------------------------------- |
-| Finding type                      | STABLE       | Core data model, 99.5% coverage                                   |
-| Builder API                       | STABLE       | Fluent construction with validation                               |
-| Position & Range                  | STABLE       | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent) |
-| Severity (4 levels)               | STABLE       | With comparison operators                                         |
-| FixStrategy (none/suggest/direct) | STABLE       | Production auto-fix for `direct`                                  |
-| FixStrategy (ai)                  | RESERVED     | Constant exists, no AI backend                                    |
-| Category (15 standard + custom)   | STABLE       | Domain classification                                             |
-| Tags (multi-label)                | STABLE       | Singular Tag field removed                                        |
-| Suppression                       | STABLE       | With TTL/expiry support                                           |
-| Report container                  | STABLE       | Thread-safe, with summary statistics                              |
-| Filtering & sorting               | STABLE       | Composable predicates + grouping                                  |
-| Report merging                    | STABLE       | 3 deduplication strategies                                        |
-| Cross-tool correlation            | FUNCTIONAL   | Simple heuristic, capped at 10K                                   |
-| ID generation & parsing           | STABLE       | Hash-based fallback, Windows path handling                        |
-| JSON serialization                | STABLE       | Streaming support, drops invalid findings                         |
-| SARIF 2.1.0 export/import         | STABLE       | Round-trip via property bag                                       |
-| LSP conversion                    | STABLE       | Lossy — drops fix/suppression metadata                            |
-| go/analysis integration           | STABLE       | Bidirectional conversion (Diagnostic ↔ Finding)                   |
-| Structured errors                 | STABLE       | 5 categories, errors.Is support                                   |
-| Pipeline (detect→fix→verify)      | STABLE       | Iterative loop with configurable behavior                         |
-| Finding processors                | EXPERIMENTAL | Composable transforms between detect and triage                   |
-| Conflict detection                | STABLE       | Overlapping fix detection                                         |
-| FixEdit (byte-level edits)        | STABLE       | Offset, Length, Replacement with Overlaps/Validate                |
-| FixProvider interface             | STABLE       | Composable providers: Offset, Line, Substring + custom            |
-| Fix application                   | FUNCTIONAL   | Byte-level FixEngine + filesystem FixApplier, backup/rollback     |
-| Verification                      | STABLE       | Diff-based: fixed / remaining / new                               |
-| Metrics                           | STABLE       | Thread-safe, snapshot support                                     |
-| Retry (exponential backoff)       | STABLE       | With jitter                                                       |
-| Partial success                   | STABLE       | Graceful degradation on detector failure                          |
-| File backup & rollback            | STABLE       | Automatic on fix failure                                          |
-| Go vet detector                   | FUNCTIONAL   | Requires `go vet` in PATH                                         |
-| Staticcheck detector              | FUNCTIONAL   | Requires `staticcheck` in PATH                                    |
-| CLI tool                          | FUNCTIONAL   | 4 output formats (text, markdown, json, sarif), config, profiling |
-| Plugin detector registry          | STABLE       | Thread-safe `RegisterDetector`                                    |
-| Per-detector timeouts             | STABLE       | `DetectorTimeouts` map in Config + CLI config file                |
-| Structured logging (slog)         | STABLE       | Optional `Logger *slog.Logger` in Config                          |
-| Stage progress callback           | STABLE       | `OnStage func(stage, iteration, count)` in Config                 |
-| Diff function                     | STABLE       | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()` |
-| FormatText / FormatMarkdown       | STABLE       | Return errors, UTF-8 safe truncation, markdown cell escaping      |
-| Config validation                 | STABLE       | Both pipeline and CLI configs                                     |
-| Examples                          | FUNCTIONAL   | 3 runnable examples, compile-tested                               |
+| Finding type                      | FULLY_FUNCTIONAL | Core data model, 99.5% coverage                                   |
+| Builder API                       | FULLY_FUNCTIONAL | Fluent construction with validation                               |
+| Position & Range                  | FULLY_FUNCTIONAL | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent) |
+| Severity (4 levels)               | FULLY_FUNCTIONAL | With comparison operators                                         |
+| FixStrategy (none/suggest/direct) | FULLY_FUNCTIONAL | Production auto-fix for `direct`                                  |
+| FixStrategy (ai)                  | PLANNED                | Constant exists, no AI backend                                    |
+| Category (15 standard + custom)   | FULLY_FUNCTIONAL | Domain classification                                             |
+| Tags (multi-label)                | FULLY_FUNCTIONAL | Singular Tag field removed                                        |
+| Suppression                       | FULLY_FUNCTIONAL | With TTL/expiry support                                           |
+| Report container                  | FULLY_FUNCTIONAL | Thread-safe, with summary statistics                              |
+| Filtering & sorting               | FULLY_FUNCTIONAL | Composable predicates + grouping                                  |
+| Report merging                    | FULLY_FUNCTIONAL | 3 deduplication strategies                                        |
+| Cross-tool correlation            | PARTIALLY_FUNCTIONAL | Simple heuristic, capped at 10K                                   |
+| ID generation & parsing           | FULLY_FUNCTIONAL | Hash-based fallback, Windows path handling                        |
+| JSON serialization                | FULLY_FUNCTIONAL | Streaming support, drops invalid findings                         |
+| SARIF 2.1.0 export/import         | FULLY_FUNCTIONAL | Round-trip via property bag                                       |
+| LSP conversion                    | FULLY_FUNCTIONAL | Lossy — drops fix/suppression metadata                            |
+| go/analysis integration           | FULLY_FUNCTIONAL | Bidirectional conversion (Diagnostic ↔ Finding)                   |
+| Structured errors                 | FULLY_FUNCTIONAL | 5 categories, errors.Is support                                   |
+| Pipeline (detect→fix→verify)      | FULLY_FUNCTIONAL | Iterative loop with configurable behavior                         |
+| Finding processors                | FULLY_FUNCTIONAL       | Composable transforms between detect and triage                   |
+| Conflict detection                | FULLY_FUNCTIONAL | Overlapping fix detection                                         |
+| FixEdit (byte-level edits)        | FULLY_FUNCTIONAL | Offset, Length, Replacement with Overlaps/Validate                |
+| FixProvider interface             | FULLY_FUNCTIONAL | Composable providers: Offset, Line, Substring + custom            |
+| Fix application                   | PARTIALLY_FUNCTIONAL | Byte-level FixEngine + filesystem FixApplier, backup/rollback     |
+| Verification                      | FULLY_FUNCTIONAL | Diff-based: fixed / remaining / new                               |
+| Metrics                           | FULLY_FUNCTIONAL | Thread-safe, snapshot support                                     |
+| Retry (exponential backoff)       | FULLY_FUNCTIONAL | With jitter                                                       |
+| Partial success                   | FULLY_FUNCTIONAL | Graceful degradation on detector failure                          |
+| File backup & rollback            | FULLY_FUNCTIONAL | Automatic on fix failure                                          |
+| Go vet detector                   | PARTIALLY_FUNCTIONAL | Requires `go vet` in PATH                                         |
+| Staticcheck detector              | PARTIALLY_FUNCTIONAL | Requires `staticcheck` in PATH                                    |
+| CLI tool                          | PARTIALLY_FUNCTIONAL | 4 output formats (text, markdown, json, sarif), config, profiling |
+| Plugin detector registry          | FULLY_FUNCTIONAL | Thread-safe `RegisterDetector`                                    |
+| Per-detector timeouts             | FULLY_FUNCTIONAL | `DetectorTimeouts` map in Config + CLI config file                |
+| Structured logging (slog)         | FULLY_FUNCTIONAL | Optional `Logger *slog.Logger` in Config                          |
+| Stage progress callback           | FULLY_FUNCTIONAL | `OnStage func(stage, iteration, count)` in Config                 |
+| Diff function                     | FULLY_FUNCTIONAL | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()` |
+| FormatText / FormatMarkdown       | FULLY_FUNCTIONAL | Return errors, UTF-8 safe truncation, markdown cell escaping      |
+| Config validation                 | FULLY_FUNCTIONAL | Both pipeline and CLI configs                                     |
+| Examples                          | PARTIALLY_FUNCTIONAL | 3 runnable examples, compile-tested                               |
 
 ---
 

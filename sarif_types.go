@@ -26,6 +26,7 @@ const (
 	sarifPropAfterCode  = "go-finding/afterCode"
 	sarifPropEditPrefix = "go-finding/edit/"
 	sarifPropPrefix     = "go-finding/"
+	sarifPropMetaPrefix = "go-finding/meta/"
 )
 
 // SarifLog represents a SARIF log file containing run results.

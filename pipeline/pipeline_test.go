@@ -75,7 +75,7 @@ func TestPipelineRun_NoFindings(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	g.Expect(result.Stable).To(BeTrue())
+	g.Expect(result.Stable()).To(BeTrue())
 	g.Expect(result.TotalIterations).To(Equal(1))
 }
 
@@ -101,7 +101,7 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	g.Expect(result.Stable).To(BeFalse())
+	g.Expect(result.Stable()).To(BeFalse())
 	g.Expect(result.TotalIterations).To(Equal(config.MaxIterations))
 
 	g.Expect(result.Iterations).To(HaveLen(config.MaxIterations))
@@ -1160,7 +1160,7 @@ func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	g.Expect(result.Stable).To(BeTrue())
+	g.Expect(result.Stable()).To(BeTrue())
 
 	g.Expect(result.TotalIterations).To(Equal(2))
 

@@ -187,7 +187,7 @@ func writeResults(
 	}
 
 	fmt.Fprintf(os.Stderr, "\nDone: %d findings (%d iterations, stable=%v)\n",
-		len(filtered), result.TotalIterations, result.Stable)
+		len(filtered), result.TotalIterations, result.Stable())
 
 	if result.Metrics.TotalDuration > 0 {
 		fmt.Fprintf(os.Stderr, "Metrics: %v total, %d fixes, %d detector(s)\n",

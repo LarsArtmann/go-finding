@@ -147,7 +147,7 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 	})
 
 	result := runPipelineWithMetrics(t, testConfig(3, m), detector)
-	g.Expect(result.Stable).To(BeTrue())
+	g.Expect(result.Stable()).To(BeTrue())
 
 	snap := m.Snapshot()
 	g.Expect(snap.StartTime.IsZero()).To(BeFalse())
@@ -189,7 +189,7 @@ func TestPipeline_NilMetricsNoPanic(t *testing.T) {
 	}
 
 	result := runPipelineWithMetrics(t, testConfig(1, nil), detector)
-	g.Expect(result.Stable).To(BeTrue())
+	g.Expect(result.Stable()).To(BeTrue())
 }
 
 func TestMetrics_TotalDuration_NegativeGuard(t *testing.T) {
