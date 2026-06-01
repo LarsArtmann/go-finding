@@ -29,10 +29,12 @@ func (t Tag) IsStandard() bool {
 	return false
 }
 
-// IsValid returns true if the tag is a non-empty string.
-// Custom tags are valid. Use IsStandard to check for predefined constants only.
+// IsValid returns true if the tag is a non-empty lowercase-hyphenated string.
+// This rejects typos like "Security" or "SOME_TAG".
+// Custom tags are valid as long as they match the format.
+// Use IsStandard to check for predefined constants only.
 func (t Tag) IsValid() bool {
-	return t != ""
+	return isValidLowercaseHyphen(string(t))
 }
 
 // String returns the string representation of the tag.

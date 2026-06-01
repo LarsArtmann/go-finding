@@ -14,6 +14,9 @@ func TestTag_IsValid(t *testing.T) {
 		{Tag(""), false},
 		{Tag("custom"), true},
 		{Tag("go-vet"), true},
+		{Tag("UPPER"), false},
+		{Tag("has space"), false},
+		{Tag("under_score"), false},
 	}
 
 	for _, tt := range tests {
