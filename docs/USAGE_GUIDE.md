@@ -327,17 +327,17 @@ byRule := finding.GroupBy(findings, func(f finding.Finding) string {
 ## Merging and Deduplication
 
 ```go
-// Merge multiple reports with deduplication by ID (default)
-merged := finding.Merge([]*finding.Report{report1, report2})
+// Combine multiple reports with deduplication by ID (default)
+merged := finding.Combine([]*finding.Report{report1, report2})
 
-// Merge without deduplication
-merged = finding.Merge(reports, finding.WithDeduplication(false))
+// Combine without deduplication
+merged = finding.Combine(reports, finding.WithDeduplication(false))
 
 // Deduplicate by position instead of ID
-merged = finding.Merge(reports, finding.WithDeduplicateBy(finding.DeduplicateByPosition))
+merged = finding.Combine(reports, finding.WithDeduplicateBy(finding.DeduplicateByPosition))
 
 // Deduplicate by rule+position
-merged = finding.Merge(reports, finding.WithDeduplicateBy(finding.DeduplicateByRule))
+merged = finding.Combine(reports, finding.WithDeduplicateBy(finding.DeduplicateByRule))
 ```
 
 ## Correlation
@@ -476,9 +476,9 @@ if err != nil {
 result, err := p.Run(ctx)
 
 // Inspect results
-fmt.Println("Stable:", result.Stable)
+fmt.Println("Stable:", result.Stable())
 fmt.Println("Iterations:", result.TotalIterations)
-fmt.Println("Findings:", result.FinalFindingCount)
+fmt.Println("Findings:", result.TotalDetected)
 
 for _, iter := range result.Iterations {
     fmt.Printf("Iteration %d: %d findings, %d fixes applied\n",

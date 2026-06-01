@@ -109,7 +109,7 @@ bySeverity := finding.GroupBySeverity(findings)
 Combine reports from multiple tools with deduplication:
 
 ```go
-merged := finding.Merge([]*Report{govet, staticcheck, custom},
+merged := finding.Combine([]*finding.Report{govet, staticcheck, custom},
     finding.WithDeduplication(true),
 )
 ```
@@ -119,7 +119,7 @@ Cross-tool correlation finds related findings:
 ```go
 correlations := finding.Correlate(allFindings)
 for _, c := range correlations {
-    fmt.Printf("%.1f: %s\n", c.Confidence, c.Reason)
+    fmt.Printf("%.1f: %s\n", c.Score, c.Reason)
 }
 ```
 
@@ -148,7 +148,7 @@ if err != nil {
 result, err := p.Run(context.Background())
 
 fmt.Printf("Iterations: %d, Findings: %d, Stable: %v\n",
-    result.TotalIterations, result.TotalDetected, result.Stable)
+    result.TotalIterations, result.TotalDetected, result.Stable())
 ```
 
 ### Pipeline Features
