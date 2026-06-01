@@ -123,7 +123,7 @@ func (r *Report) AddFindings(findings []Finding) {
 // The Tool info from other is ignored — this report retains its own.
 // Summary is recomputed after merging.
 // Safe for concurrent use.
-func (r *Report) bCombine(other *Report) {
+func (r *Report) Merge(other *Report) {
 	other.mu.RLock()
 	cloned := make([]Finding, len(other.Findings))
 	copy(cloned, other.Findings)

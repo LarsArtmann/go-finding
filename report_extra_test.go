@@ -123,7 +123,7 @@ func TestReport_Merge(t *testing.T) {
 	addTestFinding(b, "f3", "R3", SeverityInfo, "a.go")
 	b.ComputeSummary()
 
-	a.bCombine(b)
+	a.Merge(b)
 
 	if len(a.Findings) != 3 {
 		t.Errorf("Findings length = %d, want 3", len(a.Findings))
@@ -160,7 +160,7 @@ func TestReport_Merge_Empty(t *testing.T) {
 	b := NewReport(ToolInfo{Name: "tool-b"})
 	b.ComputeSummary()
 
-	a.bCombine(b)
+	a.Merge(b)
 
 	if len(a.Findings) != 1 {
 		t.Errorf("Findings length = %d, want 1", len(a.Findings))
