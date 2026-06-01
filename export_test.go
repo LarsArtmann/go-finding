@@ -171,7 +171,7 @@ func TestMerge_NilReports(t *testing.T) {
 	r2 := MakeSimpleReport("tool2")
 	r2.AddFinding(MakeSimpleFinding("2", SeverityWarning))
 
-	merged := bCombine([]*Report{r1, nil, r2})
+	merged := Combine([]*Report{r1, nil, r2})
 	merged.ComputeSummary()
 
 	assertFindingsLen(t, "merge with nil reports", len(merged.Findings), 2)

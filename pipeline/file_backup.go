@@ -67,7 +67,7 @@ func (fb *FileBackup) Backup(path string) error {
 	if err != nil {
 		return ioErrorAt("open file for backup", err, path)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	data, err := io.ReadAll(f)
 	if err != nil {

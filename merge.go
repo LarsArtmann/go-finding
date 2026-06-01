@@ -21,7 +21,7 @@ const MergedToolName = "merged"
 // EmptyToolName is the ToolInfo.Name used for empty reports from Merge.
 const EmptyToolName = "empty"
 
-// Merge combines multiple reports into one.
+// Combine merges multiple reports into a new report with optional deduplication.
 // The merged report has:
 //   - Tool.Name = MergedToolName (unless there's only one report)
 //   - Findings from all reports
@@ -181,7 +181,6 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 	}
 }
 
-// Correlation links related findings from different tools.
 // CorrelationScore measures the strength of a correlation between findings.
 // Unlike Confidence (which measures certainty of a single finding),
 // CorrelationScore measures how strongly two findings are related.

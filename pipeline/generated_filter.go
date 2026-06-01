@@ -67,7 +67,7 @@ func (g *GeneratedFileFilter) Process(
 
 	for _, f := range findings {
 		if err := ctx.Err(); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("generated filter cancelled: %w", err)
 		}
 
 		if f.Position.File == "" {

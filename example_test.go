@@ -142,7 +142,7 @@ func ExampleGroupByFile() {
 	// b.go: 1
 }
 
-func ExampleMerge() {
+func ExampleCombine() {
 	r1 := finding.NewReport(finding.ToolInfo{Name: "tool-a"})
 	r1.AddFinding(finding.Finding{
 		ID:       "govet:printf:main.go:10:3",
@@ -170,7 +170,7 @@ func ExampleMerge() {
 	// Total: 2
 }
 
-func ExampleMerge_deduplication() {
+func ExampleCombine_deduplication() {
 	duplicate := finding.Finding{
 		ID:       "same-id",
 		Rule:     "R1",

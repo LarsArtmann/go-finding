@@ -304,7 +304,7 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 	}
 
 	raw := string(data)
-	if !strings.Contains(raw, `"key1"`) || !strings.Contains(raw, `"val1"`) {
+	if !strings.Contains(raw, `"go-finding/meta/key1"`) || !strings.Contains(raw, `"val1"`) {
 		t.Errorf("SARIF output should contain metadata, got: %s", raw)
 	}
 
@@ -1018,7 +1018,7 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 		0.9,
 		"fix format string",
 		`fmt.Sprintf("%d")`,
-		"custom",
+		"go-finding/meta/custom",
 		"value",
 	)
 
@@ -1403,5 +1403,5 @@ func TestSARIF_SchemaCompliance(t *testing.T) {
 	g.Expect(props["go-finding/fixStrategy"]).To(gomega.Equal("direct"))
 	g.Expect(props["go-finding/toolName"]).To(gomega.Equal("t"))
 	g.Expect(props["go-finding/category"]).To(gomega.Equal("security"))
-	g.Expect(props["key"]).To(gomega.Equal("val"))
+	g.Expect(props["go-finding/meta/key"]).To(gomega.Equal("val"))
 }
