@@ -23,7 +23,8 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `position.go` | Position, Range types with Overlaps/Intersection/Adjacent |
 | `report.go` | Report container with summary |
 | `filter.go` | Filtering and grouping utilities |
-| `merge.go` | Report merging with deduplication + Correlate |
+| `validate_helpers.go` | Shared isValidLowercaseHyphen validation for Category and Tag |
+| `merge.go` | Report combining with deduplication + Correlate |
 | `sarif_types.go` | SARIF struct types, constants, severity conversion helpers |
 | `sarif_export.go` | Report→SARIF export (ToSARIF, WriteSARIF, findingToSARIF) |
 | `sarif_import.go` | SARIF→Finding import (FindingsFromSARIF, FindingsFromReader, applySarifProperties) |
@@ -47,7 +48,10 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 | File                           | Purpose                                                                                    |
 | ------------------------------ | ------------------------------------------------------------------------------------------ |
-| `pipeline/pipeline.go`         | Pipeline struct, Run, detect/triage/apply, structured logging, OnStage                     |
+| `pipeline/pipeline_detect.go` | Detection, triage, and apply logic extracted from pipeline.go |
+| `pipeline/result.go`      | PipelineResult, CompletionReason, Iteration types                              |
+| `pipeline/stage.go`        | Stage named type with constants for pipeline stages                            |
+| `pipeline/pipeline.go`         | Pipeline struct, Run, structured logging, OnStage                     |
 | `pipeline/adapters.go`         | Detector/FindingProcessor interfaces, adapter types, context helpers                       |
 | `pipeline/config.go`           | Config struct, DefaultConfig, Validate, DetectorTimeouts, Logger, OnStage                  |
 | `pipeline/conflict.go`         | Fix conflict detection and analysis                                                        |
@@ -75,7 +79,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | File                                | Purpose                                              |
 | ----------------------------------- | ---------------------------------------------------- |
 | `internal/detectors/govet.go`       | Go vet JSON → Finding converter (Detector impl)      |
-| `internal/detectors/staticcheck.go` | Staticcheck JSON → Finding converter (Detector impl) |
+| `internal/detectors/helpers.go` | Shared constants (DetectorName*) and resolvePath helper |
 
 ### Testing
 
@@ -231,9 +235,6 @@ golangci-lint run ./...                     # Lint
 
 - `Report.Findings` is a public slice — external code can bypass mutex (encapsulation risk)
 - `FixStrategyAI` + `NeedsAI()` are published API with no backend (vapor surface)
-- `PipelineResult.Stable bool` should be a typed enum (loses reason info)
-- `Correlation.Confidence` reuses `Confidence` type for correlation score (domain mismatch)
-- SARIF export doesn't prefix user Metadata keys — potential collision with `go-finding/*` keys
 - `Tag` constants partially overlap `Category` constants (TagSecurity/CategorySecurity etc.) — no structural link
 
 ---
