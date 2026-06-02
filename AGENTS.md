@@ -234,12 +234,16 @@ golangci-lint run ./...                     # Lint
 - **Context error detection in iterations** — `runIteration` error path uses `IsContextError()` to distinguish `ReasonTimeout`/`ReasonCancelled` from `ReasonError`
 - **StageVerify wired** — Verify stage records timing metrics and fires `OnStage` callback
 
+- **CorrelationScore methods** — `IsValid()` checks [0.0, 1.0]; `String()` formats decimal; consistent with `Confidence`
+- **DurationMs caller-set** — `Summary.DurationMs` is NOT computed by `ComputeSummary()`; caller must set manually. Pipeline timing lives in `Metrics.TotalDuration`.
+
 ### Known Open Items
 
 - `Report.Findings` is a public slice — external code can bypass mutex (encapsulation risk)
 - `FixStrategyAI` + `NeedsAI()` are published API with no backend (vapor surface)
 - `Tag` constants partially overlap `Category` constants (TagSecurity/CategorySecurity etc.) — no structural link
 - `RecordFix()` superseded by `RecordFixes(uint)` — convenience method with no production callers
+- FixApplier path validation is lexical only (`filepath.Clean`) — does not resolve symlinks (acceptable for static analysis tool)
 
 ---
 
