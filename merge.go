@@ -184,6 +184,16 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 // CorrelationScore measures how strongly two findings are related.
 type CorrelationScore float64
 
+// IsValid returns true if the score is in the valid range [0.0, 1.0].
+func (s CorrelationScore) IsValid() bool {
+	return float64(s) >= 0.0 && float64(s) <= 1.0
+}
+
+// String returns a human-readable representation of the correlation score.
+func (s CorrelationScore) String() string {
+	return fmt.Sprintf("%.2f", float64(s))
+}
+
 // Correlation represents a relationship between two or more findings.
 type Correlation struct {
 	FindingIDs []string         `json:"findingIds"`
