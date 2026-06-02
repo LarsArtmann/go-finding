@@ -3,6 +3,7 @@ package pipeline
 // Stage identifies a pipeline stage for metrics and callbacks.
 type Stage string
 
+// Pipeline stage identifiers used in metrics and OnStage callbacks.
 const (
 	// StageDetect is the detection stage where detectors run.
 	StageDetect Stage = "detect"
