@@ -1,15 +1,11 @@
 package pipeline
 
 import (
-	"cmp"
 	"context"
 	"fmt"
-	"slices"
 
 	"github.com/larsartmann/go-finding"
 )
-
-func byFindingID(a, b finding.Finding) int { return cmp.Compare(a.ID, b.ID) }
 
 // VerifyResult holds the outcome of verifying fixes by re-running detectors.
 type VerifyResult struct {
@@ -72,7 +68,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 		}
 	}
 
-	slices.SortFunc(fixed, byFindingID)
+	finding.SortFindingsByID(fixed)
 
 	var newFindings []finding.Finding
 
@@ -82,7 +78,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 		}
 	}
 
-	slices.SortFunc(newFindings, byFindingID)
+	finding.SortFindingsByID(newFindings)
 
 	var remaining []finding.Finding
 	var modified []finding.Finding
@@ -100,7 +96,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 		}
 	}
 
-	slices.SortFunc(modified, byFindingID)
+	finding.SortFindingsByID(modified)
 
 	return &VerifyResult{
 		Fixed:       fixed,

@@ -20,7 +20,10 @@ type DiffResult struct {
 	Unchanged []Finding      // Present in both with identical content
 }
 
-func byFindingID(a, b Finding) int { return cmp.Compare(a.ID, b.ID) }
+// SortFindingsByID sorts a slice of findings by ID.
+func SortFindingsByID(findings []Finding) {
+	slices.SortFunc(findings, func(a, b Finding) int { return cmp.Compare(a.ID, b.ID) })
+}
 
 // Diff compares two finding sets by ID and categorizes them as added, removed, modified, or unchanged.
 // Two findings with the same ID are considered "modified" if their content differs (per Equal()).
@@ -57,12 +60,12 @@ func Diff(before, after []Finding) DiffResult {
 		}
 	}
 
-	slices.SortFunc(added, byFindingID)
-	slices.SortFunc(removed, byFindingID)
+	SortFindingsByID(added)
+	SortFindingsByID(removed)
 	slices.SortFunc(modified, func(a, b ModifiedPair) int {
-		return byFindingID(a.Before, b.Before)
+		return cmp.Compare(a.Before.ID, b.Before.ID)
 	})
-	slices.SortFunc(unchanged, byFindingID)
+	SortFindingsByID(unchanged)
 
 	return DiffResult{Added: added, Removed: removed, Modified: modified, Unchanged: unchanged}
 }

@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"maps"
 	"os"
+	"slices"
 	"sync"
 
 	det "github.com/larsartmann/go-finding/internal/detectors"
@@ -45,12 +47,7 @@ func availableDetectorNames() []string {
 	knownDetectorBuildersMu.RLock()
 	defer knownDetectorBuildersMu.RUnlock()
 
-	names := make([]string, 0, len(knownDetectorBuilders))
-	for name := range knownDetectorBuilders {
-		names = append(names, name)
-	}
-
-	return names
+	return slices.Collect(maps.Keys(knownDetectorBuilders))
 }
 
 func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {

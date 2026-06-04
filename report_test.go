@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -298,5 +299,55 @@ func TestReport_CountBySeverity(t *testing.T) {
 
 	if r.CountBySeverity(SeverityInfo) != 0 {
 		t.Errorf("CountBySeverity(Info) = %d, want 0", r.CountBySeverity(SeverityInfo))
+	}
+}
+
+func TestReportConcurrentReadWrite(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "race-test"})
+	const writers = 10
+	const readers = 10
+	const opsPerWriter = 50
+
+	start := make(chan struct{})
+	done := make(chan struct{}, writers+readers)
+
+	for i := range writers {
+		go func() {
+			<-start
+			for j := range opsPerWriter {
+				r.AddFinding(Finding{
+					ID:       fmt.Sprintf("w%d-f%d", i, j),
+					Rule:     "race",
+					Severity: SeverityWarning,
+				})
+			}
+			done <- struct{}{}
+		}()
+	}
+
+	for range readers {
+		go func() {
+			<-start
+			for range opsPerWriter {
+				_ = r.Len()
+				_ = r.ActiveFindings()
+				_ = r.CountBySeverity(SeverityWarning)
+				r.ComputeSummary()
+			}
+			done <- struct{}{}
+		}()
+	}
+
+	close(start)
+
+	for range writers + readers {
+		<-done
+	}
+
+	expected := writers * opsPerWriter
+	if r.Len() != expected {
+		t.Errorf("Len() = %d, want %d", r.Len(), expected)
 	}
 }

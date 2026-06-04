@@ -20,10 +20,41 @@ func FilterInvalid(f Finding) bool {
 }
 
 // PrettyJSON returns a formatted JSON representation of the report.
+// Includes all findings, including suppressed ones.
 func (r *Report) PrettyJSON() (string, error) {
+	r.mu.RLock()
 	bytes, err := json.MarshalIndent(r, "", "  ")
+	r.mu.RUnlock()
+
 	if err != nil {
 		return "", fmt.Errorf("marshaling JSON: %w", err)
+	}
+
+	return string(bytes), nil
+}
+
+// PrettyJSONFiltered returns a formatted JSON representation with only
+// active (non-suppressed) findings. Unlike PrettyJSON, this excludes
+// suppressed findings from the output.
+func (r *Report) PrettyJSONFiltered() (string, error) {
+	r.mu.RLock()
+	filtered := &Report{ //nolint:exhaustruct
+		Tool:     r.Tool,
+		Findings: make([]Finding, 0, len(r.Findings)),
+		Summary:  Summary{}, //nolint:exhaustruct
+	}
+	for _, f := range r.Findings {
+		if !f.IsSuppressed() {
+			filtered.Findings = append(filtered.Findings, f)
+		}
+	}
+	r.mu.RUnlock()
+
+	filtered.ComputeSummary()
+
+	bytes, err := json.MarshalIndent(filtered, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("marshaling filtered JSON: %w", err)
 	}
 
 	return string(bytes), nil

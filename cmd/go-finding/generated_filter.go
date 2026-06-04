@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"maps"
 	"os"
 	"slices"
 	"strings"
@@ -122,10 +123,7 @@ func parseFilterGenTypes(cliTypes, configTypes string) ([]gogenfilter.FilterOpti
 }
 
 func mustKeys(m map[string]gogenfilter.FilterOption) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
+	keys := slices.Collect(maps.Keys(m))
 	return keys
 }
 

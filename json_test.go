@@ -323,6 +323,29 @@ func TestLineJSON(t *testing.T) {
 	g.Expect(got).To(ContainSubstring(`"id"`))
 }
 
+func TestPrettyJSONFiltered(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	r := NewReport(ToolInfo{Name: "tool"})
+	r.AddFinding(Finding{ID: "active", Rule: "r1", Message: "m1", Severity: SeverityWarning})
+	r.AddFinding(Finding{
+		ID:          "suppressed",
+		Rule:        "r2",
+		Message:     "m2",
+		Severity:    SeverityWarning,
+		Suppression: &Suppression{Kind: SuppressionInSource},
+	})
+
+	got, err := r.PrettyJSONFiltered()
+	g.Expect(err).NotTo(HaveOccurred())
+
+	var parsed Report
+	g.Expect(json.Unmarshal([]byte(got), &parsed)).To(Succeed())
+	g.Expect(parsed.Findings).To(HaveLen(1))
+	g.Expect(parsed.Findings[0].ID).To(Equal("active"))
+}
+
 func TestPrettyJSON_ErrorPath(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
