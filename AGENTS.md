@@ -48,10 +48,10 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 | File                           | Purpose                                                                                    |
 | ------------------------------ | ------------------------------------------------------------------------------------------ |
-| `pipeline/pipeline_detect.go` | Detection, triage, and apply logic extracted from pipeline.go |
-| `pipeline/result.go`      | PipelineResult, CompletionReason, Iteration types                              |
-| `pipeline/stage.go`        | Stage named type with constants for pipeline stages                            |
-| `pipeline/pipeline.go`         | Pipeline struct, Run, structured logging, OnStage                     |
+| `pipeline/pipeline_detect.go`  | Detection, triage, and apply logic extracted from pipeline.go                              |
+| `pipeline/result.go`           | PipelineResult, CompletionReason, Iteration types                                          |
+| `pipeline/stage.go`            | Stage named type with constants for pipeline stages                                        |
+| `pipeline/pipeline.go`         | Pipeline struct, Run, structured logging, OnStage                                          |
 | `pipeline/adapters.go`         | Detector/FindingProcessor interfaces, adapter types, context helpers                       |
 | `pipeline/config.go`           | Config struct, DefaultConfig, Validate, DetectorTimeouts, Logger, OnStage                  |
 | `pipeline/conflict.go`         | Fix conflict detection and analysis                                                        |
@@ -76,10 +76,10 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 #### Internal Detectors
 
-| File                                | Purpose                                              |
-| ----------------------------------- | ---------------------------------------------------- |
-| `internal/detectors/govet.go`       | Go vet JSON → Finding converter (Detector impl)      |
-| `internal/detectors/helpers.go` | Shared constants (DetectorName*) and resolvePath helper |
+| File                            | Purpose                                                  |
+| ------------------------------- | -------------------------------------------------------- |
+| `internal/detectors/govet.go`   | Go vet JSON → Finding converter (Detector impl)          |
+| `internal/detectors/helpers.go` | Shared constants (DetectorName\*) and resolvePath helper |
 
 ### Testing
 
