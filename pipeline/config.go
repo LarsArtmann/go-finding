@@ -58,6 +58,21 @@ type Config struct {
 	// When true, FixEngine resolves each fix to actual byte offsets and detects
 	// overlapping edits. This is more accurate but requires reading file content.
 	ByteLevelConflictDetection bool
+	// TriageFunc customizes how findings are categorized during triage.
+	// If nil, DefaultTriageFunc is used: IsAutoFixable() → Direct,
+	// HasFix() → Suggest, else → None.
+	TriageFunc TriageFunc
+}
+
+// TriageFunc categorizes findings into Direct (auto-apply), Suggest (display),
+// and None (no fix). Return a TriageResult with the findings distributed.
+type TriageFunc func(findings []finding.Finding) *TriageResult
+
+// TriageResult holds findings categorized by fix strategy.
+type TriageResult struct {
+	Direct  []finding.Finding
+	Suggest []finding.Finding
+	None    []finding.Finding
 }
 
 // DefaultMaxIterations is the default maximum number of pipeline iterations.

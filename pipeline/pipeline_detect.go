@@ -139,20 +139,21 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 	return allFindings, nil
 }
 
-// TriageResult holds findings categorized by fix strategy.
-type TriageResult struct {
-	Direct  []finding.Finding
-	Suggest []finding.Finding
-	None    []finding.Finding
+// triage categorizes findings using the configured TriageFunc (or default).
+func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
+	fn := p.config.TriageFunc
+	if fn == nil {
+		fn = DefaultTriageFunc
+	}
+
+	return fn(findings)
 }
 
-// triage categorizes findings using HasFix() as the canonical source of truth.
+// DefaultTriageFunc categorizes findings using HasFix() as the canonical source of truth.
 // - IsAutoFixable() → Direct (auto-apply via FixEngine)
 // - HasFix() but not auto-fixable → Suggest (display suggestion)
 // - No fix available → None
-//
-//nolint:revive // receiver unused by design — method belongs to Pipeline for API cohesion
-func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
+func DefaultTriageFunc(findings []finding.Finding) *TriageResult {
 	result := &TriageResult{
 		Direct:  make([]finding.Finding, 0),
 		Suggest: make([]finding.Finding, 0),
