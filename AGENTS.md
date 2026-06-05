@@ -133,7 +133,7 @@ golangci-lint run ./...                     # Lint
 - **Partial error surfacing** — `PipelineResult.PartialErrors` exposes per-detector failures
 - **Metrics snapshot in result** — `PipelineResult.Metrics` auto-populated after `Run()`
 - **FindingProcessor** — Composable transforms run between detection and triage (`ProcessorFunc`, `NamedProcessorFunc`)
-- **FixApplier lifecycle** — `applyDirectFixes` defers `Close()` to prevent temp directory leaks
+- **FixApplier lifecycle** — Created eagerly in `pipeline.New()`, not lazily; errors caught at construction time
 - **Line offset index** — `buildLineOffsetIndex` provides O(1) line→byte offset lookup
 - **Context cancellation** — `IsContextError()` is the canonical check; all pipeline paths (retry, partial, verify) propagate `context.Canceled`/`context.DeadlineExceeded` immediately instead of silently swallowing them
 - **Per-detector timeouts** — `Config.DetectorTimeouts map[string]time.Duration` overrides global timeout per detector
@@ -209,6 +209,10 @@ golangci-lint run ./...                     # Lint
 - **byFindingID unified** — Both `diff.go` and `pipeline/verify.go` use `cmp.Compare` instead of manual comparison
 - **CLI timeout not double-wrapped** — Pipeline handles `context.WithTimeout` internally; CLI passes `context.Background()` directly
 - **context.Context on I/O** — `WriteSARIF(ctx, w)`, `WriteSARIFFiltered(ctx, w, sev)`, `FindingsFromSARIF(ctx, data)`, `FindingsFromReader(ctx, r)` accept `context.Context` as first arg; cancelled context returns wrapped `ctx.Err()` before I/O begins. `WriteTo` (io.WriterTo compat) delegates with `context.Background()`. `FindingsFromReader` streams via `json.Decoder` without buffering full input.
+- **Report.MergeInto immutable** — `MergeInto(other) *Report` returns a new Report without modifying receiver or other; existing `Merge()` kept for backward compat
+- **analysis.DefaultRelation consolidated** — References `finding.RelationRelated` instead of duplicating `"related"` string
+- **RecordFix deprecated** — `RecordFix()` deprecated in favor of `RecordFixes(1)`; will be removed in v1.0.0
+- **FixApplier eager construction** — Created in `pipeline.New()`, not lazily in `applyDirectFixes`; backup dir errors caught at construction time
 
 ### CLI Features
 
