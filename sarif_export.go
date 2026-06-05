@@ -7,8 +7,8 @@ import (
 	"io"
 )
 
-func sarifResultsFromFindings(findings []Finding, minSeverity Severity) []SarifResult {
-	results := make([]SarifResult, 0, len(findings))
+func sarifResultsFromFindings(findings []Finding, minSeverity Severity) []sarifResult {
+	results := make([]sarifResult, 0, len(findings))
 
 	for _, f := range findings {
 		if f.IsSuppressed() || f.Severity.LessThan(minSeverity) {
@@ -21,8 +21,8 @@ func sarifResultsFromFindings(findings []Finding, minSeverity Severity) []SarifR
 	return results
 }
 
-func sarifDriverFromReport(r *Report) SarifDriver {
-	return SarifDriver{Name: r.Tool.Name, Version: r.Tool.Version}
+func sarifDriverFromReport(r *Report) sarifDriver {
+	return sarifDriver{Name: r.Tool.Name, Version: r.Tool.Version}
 }
 
 // ToSARIF converts a Report to SARIF 2.1.0 format.
@@ -64,7 +64,7 @@ func (r *Report) WriteSARIF(ctx context.Context, w io.Writer) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 
-	err := enc.Encode(r.sarifLog())
+	err = enc.Encode(r.sarifLog())
 	if err != nil {
 		return fmt.Errorf("encoding SARIF: %w", err)
 	}
@@ -85,7 +85,7 @@ func (r *Report) WriteSARIFFiltered(ctx context.Context, w io.Writer, minSeverit
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 
-	err := enc.Encode(r.sarifLogFiltered(minSeverity))
+	err = enc.Encode(r.sarifLogFiltered(minSeverity))
 	if err != nil {
 		return fmt.Errorf("encoding SARIF filtered (minSeverity=%s): %w", minSeverity, err)
 	}
@@ -120,32 +120,32 @@ func (c *countingWriter) Write(p []byte) (int, error) {
 	return n, err //nolint:wrapcheck // passthrough writer — wrapping would be misleading
 }
 
-func (r *Report) sarifLog() SarifLog {
-	return r.buildSarifLog(sarifResultsFromFindings(r.Findings, SeverityInfo))
+func (r *Report) sarifLog() sarifLog {
+	return r.buildsarifLog(sarifResultsFromFindings(r.Findings, SeverityInfo))
 }
 
-func (r *Report) sarifLogFiltered(severity Severity) SarifLog {
-	return r.buildSarifLog(sarifResultsFromFindings(r.Findings, severity))
+func (r *Report) sarifLogFiltered(severity Severity) sarifLog {
+	return r.buildsarifLog(sarifResultsFromFindings(r.Findings, severity))
 }
 
-func (r *Report) buildSarifLog(results []SarifResult) SarifLog {
-	return SarifLog{
+func (r *Report) buildsarifLog(results []sarifResult) sarifLog {
+	return sarifLog{
 		Version: sarifVersion,
 		Schema:  sarifSchema,
-		Runs: []SarifRun{
+		Runs: []sarifRun{
 			{
-				Tool:    SarifTool{Driver: sarifDriverFromReport(r)},
+				Tool:    sarifTool{Driver: sarifDriverFromReport(r)},
 				Results: results,
 			},
 		},
 	}
 }
 
-func findingToSARIF(f Finding) SarifResult {
-	result := SarifResult{
+func findingToSARIF(f Finding) sarifResult {
+	result := sarifResult{
 		RuleID:     f.Rule,
 		Level:      severityToSARIFLevel(f.Severity),
-		Message:    SarifMessage{Text: f.Message},
+		Message:    sarifMessage{Text: f.Message},
 		Locations:  sarifLocations(f),
 		Fixes:      sarifFixes(f),
 		Related:    sarifRelatedLocs(f),
@@ -159,17 +159,17 @@ func findingToSARIF(f Finding) SarifResult {
 	return result
 }
 
-func sarifLocations(f Finding) []SarifLocation {
-	return []SarifLocation{{
-		PhysicalLocation: SarifPhysicalLocation{
-			ArtifactLocation: SarifArtifactLocation{URI: f.Position.File},
+func sarifLocations(f Finding) []sarifLocation {
+	return []sarifLocation{{
+		PhysicalLocation: sarifPhysicalLocation{
+			ArtifactLocation: sarifArtifactLocation{URI: f.Position.File},
 			Region:           findingRegion(f),
 		},
 	}}
 }
 
-func findingRegion(f Finding) *SarifRegion {
-	region := &SarifRegion{
+func findingRegion(f Finding) *sarifRegion {
+	region := &sarifRegion{
 		StartLine:   f.Position.Line,
 		StartColumn: f.Position.Column,
 	}
@@ -186,8 +186,8 @@ func findingRegion(f Finding) *SarifRegion {
 	return region
 }
 
-func findingFixRegion(f Finding) SarifRegion {
-	return SarifRegion{
+func findingFixRegion(f Finding) sarifRegion {
+	return sarifRegion{
 		StartLine:   f.Position.Line,
 		StartColumn: f.Position.Column,
 		EndLine:     f.Position.Line,
@@ -195,40 +195,40 @@ func findingFixRegion(f Finding) SarifRegion {
 	}
 }
 
-func sarifFixes(f Finding) []SarifFix {
+func sarifFixes(f Finding) []sarifFix {
 	if f.HasFix() {
 		region := findingFixRegion(f)
 
-		return []SarifFix{{
-			Description: SarifMessage{Text: f.Suggestion},
-			Changes: []SarifArtifactChange{{
-				ArtifactLocation: SarifArtifactLocation{URI: f.Position.File},
-				Replacements: []SarifReplacement{{
+		return []sarifFix{{
+			Description: sarifMessage{Text: f.Suggestion},
+			Changes: []sarifArtifactChange{{
+				ArtifactLocation: sarifArtifactLocation{URI: f.Position.File},
+				Replacements: []sarifReplacement{{
 					DeletedRegion: region,
-					InsertedText:  SarifMessage{Text: f.AfterCode},
+					InsertedText:  sarifMessage{Text: f.AfterCode},
 				}},
 			}},
 		}}
 	}
 
 	if f.HasSuggestion() {
-		return []SarifFix{{
-			Description: SarifMessage{Text: f.Suggestion},
+		return []sarifFix{{
+			Description: sarifMessage{Text: f.Suggestion},
 		}}
 	}
 
 	return nil
 }
 
-func sarifRelatedLocs(f Finding) []SarifRelatedLoc {
+func sarifRelatedLocs(f Finding) []sarifRelatedLoc {
 	if len(f.Related) == 0 {
 		return nil
 	}
 
-	related := make([]SarifRelatedLoc, 0, len(f.Related))
+	related := make([]sarifRelatedLoc, 0, len(f.Related))
 
 	for _, rel := range f.Related {
-		region := &SarifRegion{
+		region := &sarifRegion{
 			StartLine:   rel.Position.Line,
 			StartColumn: rel.Position.Column,
 		}
@@ -237,12 +237,12 @@ func sarifRelatedLocs(f Finding) []SarifRelatedLoc {
 			region.EndColumn = rel.Range.End.Column
 		}
 
-		sarifRel := SarifRelatedLoc{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: rel.Position.File},
+		sarifRel := sarifRelatedLoc{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: rel.Position.File},
 				Region:           region,
 			},
-			Message: SarifMessage{Text: string(rel.Relation)},
+			Message: sarifMessage{Text: string(rel.Relation)},
 		}
 
 		if rel.FindingID != "" {

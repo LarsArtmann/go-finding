@@ -32,30 +32,30 @@ func FindingsFromReader(ctx context.Context, r io.Reader) ([]Finding, error) {
 		return nil, fmt.Errorf("reading SARIF: %w", err)
 	}
 
-	var log SarifLog
+	var log sarifLog
 
-	err := json.NewDecoder(r).Decode(&log)
+	err = json.NewDecoder(r).Decode(&log)
 	if err != nil {
 		return nil, fmt.Errorf("decoding SARIF: %w", err)
 	}
 
-	return findingsFromSarifLog(log), nil
+	return findingsFromsarifLog(log), nil
 }
 
 // findingsFromSARIFLog parses SARIF JSON bytes and returns Findings.
 func findingsFromSARIFLog(data []byte) ([]Finding, error) {
-	var log SarifLog
+	var log sarifLog
 
 	err := json.Unmarshal(data, &log)
 	if err != nil {
 		return nil, fmt.Errorf("parsing SARIF: %w", err)
 	}
 
-	return findingsFromSarifLog(log), nil
+	return findingsFromsarifLog(log), nil
 }
 
-// findingsFromSarifLog extracts Findings from a parsed SarifLog.
-func findingsFromSarifLog(log SarifLog) []Finding {
+// findingsFromsarifLog extracts Findings from a parsed sarifLog.
+func findingsFromsarifLog(log sarifLog) []Finding {
 	var findings []Finding
 
 	for _, run := range log.Runs {
@@ -70,8 +70,8 @@ func findingsFromSarifLog(log SarifLog) []Finding {
 	return findings
 }
 
-// findingFromSarResult converts a single SarifResult into a Finding.
-func findingFromSarResult(r SarifResult, toolName string) Finding {
+// findingFromSarResult converts a single sarifResult into a Finding.
+func findingFromSarResult(r sarifResult, toolName string) Finding {
 	f := Finding{
 		Rule:     r.RuleID,
 		Severity: FromSARIFLevel(r.Level),
@@ -138,7 +138,7 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 }
 
 // applySarifPosition sets the Position and Range fields from SARIF locations.
-func applySarifPosition(f *Finding, r SarifResult) {
+func applySarifPosition(f *Finding, r sarifResult) {
 	if len(r.Locations) == 0 {
 		return
 	}

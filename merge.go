@@ -15,22 +15,22 @@ const (
 	maxCorrelations       = 10000 // Maximum correlations to prevent O(n²) hangs
 )
 
-// MergedToolName is the ToolInfo.Name used for reports produced by Combine.
-const MergedToolName = "merged"
+// mergedToolName is the ToolInfo.Name used for reports produced by Combine.
+const mergedToolName = "merged"
 
-// EmptyToolName is the ToolInfo.Name used for empty reports from Combine.
-const EmptyToolName = "empty"
+// emptyToolName is the ToolInfo.Name used for empty reports from Combine.
+const emptyToolName = "empty"
 
 // Combine merges multiple reports into a new report with optional deduplication.
 // The resulting report has:
-//   - Tool.Name = MergedToolName (unless there's only one report)
+//   - Tool.Name = mergedToolName (unless there's only one report)
 //   - Findings from all reports
 //   - Summary computed from all findings
 //
 // Use Report.Merge(other) to concatenate one report into another in-place without deduplication.
 func Combine(reports []*Report, opts ...MergeOption) *Report {
 	if len(reports) == 0 {
-		return NewReport(ToolInfo{Name: EmptyToolName}) //nolint:exhaustruct
+		return NewReport(ToolInfo{Name: emptyToolName}) //nolint:exhaustruct
 	}
 
 	if len(reports) == 1 {
@@ -59,7 +59,7 @@ func Combine(reports []*Report, opts ...MergeOption) *Report {
 	}
 
 	merged := newReportWithCapacity(ToolInfo{
-		Name:    MergedToolName,
+		Name:    mergedToolName,
 		Version: "",
 	}, total)
 

@@ -507,6 +507,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 	testFile := filepath.Join(tempDir, "test.go")
 
 	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tprintln(\"hello\")\n}\n" //nolint:dupword // test fixture intentionally duplicates println
+
 	writeErr := writeFile(testFile, []byte(content), 0o644)
 	if writeErr != nil {
 		t.Fatalf("create test file: %v", writeErr)

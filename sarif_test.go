@@ -78,10 +78,10 @@ func goFindingPropsWithCustom(
 }
 
 // unmarshalSARIF unmarshals SARIF data and fails the test on error.
-func unmarshalSARIF(t *testing.T, data []byte) *SarifLog {
+func unmarshalSARIF(t *testing.T, data []byte) *sarifLog {
 	t.Helper()
 
-	var log SarifLog
+	var log sarifLog
 
 	err := json.Unmarshal(data, &log)
 	if err != nil {
@@ -582,15 +582,15 @@ func TestFindingFromSarResult_Rank(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "r1",
 		Level:   "warning",
-		Message: SarifMessage{Text: "msg"},
+		Message: sarifMessage{Text: "msg"},
 		Rank:    75.0,
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
-				Region:           &SarifRegion{StartLine: 10},
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
+				Region:           &sarifRegion{StartLine: 10},
 			},
 		}},
 	}
@@ -603,22 +603,22 @@ func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "r1",
 		Level:   "warning",
-		Message: SarifMessage{Text: "msg"},
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+		Message: sarifMessage{Text: "msg"},
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
 			},
 		}},
-		Fixes: []SarifFix{{
-			Description: SarifMessage{Text: "fix it"},
-			Changes: []SarifArtifactChange{{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
-				Replacements: []SarifReplacement{{
-					DeletedRegion: SarifRegion{StartLine: 5, StartColumn: 1},
-					InsertedText:  SarifMessage{Text: "fixed code"},
+		Fixes: []sarifFix{{
+			Description: sarifMessage{Text: "fix it"},
+			Changes: []sarifArtifactChange{{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
+				Replacements: []sarifReplacement{{
+					DeletedRegion: sarifRegion{StartLine: 5, StartColumn: 1},
+					InsertedText:  sarifMessage{Text: "fixed code"},
 				}},
 			}},
 		}},
@@ -634,17 +634,17 @@ func TestFindingFromSarResult_FixSuggestionOnly(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewWithT(t)
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "r1",
 		Level:   "warning",
-		Message: SarifMessage{Text: "consider using slices.Contains"},
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+		Message: sarifMessage{Text: "consider using slices.Contains"},
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
 			},
 		}},
-		Fixes: []SarifFix{{
-			Description: SarifMessage{Text: "use slices.Contains"},
+		Fixes: []sarifFix{{
+			Description: sarifMessage{Text: "use slices.Contains"},
 		}},
 	}
 
@@ -658,28 +658,28 @@ func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewWithT(t)
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "r1",
 		Level:   "error",
-		Message: SarifMessage{Text: "main finding"},
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "main.go"},
+		Message: sarifMessage{Text: "main finding"},
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "main.go"},
 			},
 		}},
-		Related: []SarifRelatedLoc{
+		Related: []sarifRelatedLoc{
 			{
-				PhysicalLocation: SarifPhysicalLocation{
-					ArtifactLocation: SarifArtifactLocation{URI: "helper.go"},
-					Region:           &SarifRegion{StartLine: 20, StartColumn: 3},
+				PhysicalLocation: sarifPhysicalLocation{
+					ArtifactLocation: sarifArtifactLocation{URI: "helper.go"},
+					Region:           &sarifRegion{StartLine: 20, StartColumn: 3},
 				},
-				Message: SarifMessage{Text: "related call"},
+				Message: sarifMessage{Text: "related call"},
 			},
 			{
-				PhysicalLocation: SarifPhysicalLocation{
-					ArtifactLocation: SarifArtifactLocation{URI: "util.go"},
+				PhysicalLocation: sarifPhysicalLocation{
+					ArtifactLocation: sarifArtifactLocation{URI: "util.go"},
 				},
-				Message: SarifMessage{Text: "no region"},
+				Message: sarifMessage{Text: "no region"},
 			},
 		},
 	}
@@ -698,10 +698,10 @@ func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
 func TestFindingFromSarResult_NoLocations(t *testing.T) {
 	t.Parallel()
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "r1",
 		Level:   "warning",
-		Message: SarifMessage{Text: "msg"},
+		Message: sarifMessage{Text: "msg"},
 	}
 
 	f := findingFromSarResult(r, "tool")
@@ -714,13 +714,13 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "r1",
 		Level:   "warning",
-		Message: SarifMessage{Text: "msg"},
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+		Message: sarifMessage{Text: "msg"},
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
 			},
 		}},
 		Properties: goFindingPropsWithCustom(
@@ -763,10 +763,10 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 func TestApplySarifPosition_NilRegion(t *testing.T) {
 	t.Parallel()
 
-	r := SarifResult{
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+	r := sarifResult{
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
 				Region:           nil,
 			},
 		}},
@@ -784,11 +784,11 @@ func TestApplySarifPosition_NilRegion(t *testing.T) {
 func TestApplySarifPosition_WithEndPosition(t *testing.T) {
 	t.Parallel()
 
-	r := SarifResult{
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
-				Region: &SarifRegion{
+	r := sarifResult{
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
+				Region: &sarifRegion{
 					StartLine:   10,
 					StartColumn: 5,
 					EndLine:     15,
@@ -817,11 +817,11 @@ func TestApplySarifPosition_WithEndPosition(t *testing.T) {
 func TestApplySarifPosition_EndColumnOnly(t *testing.T) {
 	t.Parallel()
 
-	r := SarifResult{
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
-				Region: &SarifRegion{
+	r := sarifResult{
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
+				Region: &sarifRegion{
 					StartLine:   10,
 					StartColumn: 5,
 					EndColumn:   20,
@@ -1068,30 +1068,30 @@ func TestFindingFromSarResult_WithFix(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "SA1000",
 		Level:   "warning",
-		Message: SarifMessage{Text: "unused variable"},
-		Locations: []SarifLocation{
+		Message: sarifMessage{Text: "unused variable"},
+		Locations: []sarifLocation{
 			{
-				PhysicalLocation: SarifPhysicalLocation{
-					ArtifactLocation: SarifArtifactLocation{URI: "main.go"},
-					Region:           &SarifRegion{StartLine: 10, StartColumn: 5},
+				PhysicalLocation: sarifPhysicalLocation{
+					ArtifactLocation: sarifArtifactLocation{URI: "main.go"},
+					Region:           &sarifRegion{StartLine: 10, StartColumn: 5},
 				},
 			},
 		},
-		Fixes: []SarifFix{
+		Fixes: []sarifFix{
 			{
-				Description: SarifMessage{Text: "remove unused variable"},
-				Changes: []SarifArtifactChange{
+				Description: sarifMessage{Text: "remove unused variable"},
+				Changes: []sarifArtifactChange{
 					{
-						ArtifactLocation: SarifArtifactLocation{URI: "main.go"},
-						Replacements: []SarifReplacement{
+						ArtifactLocation: sarifArtifactLocation{URI: "main.go"},
+						Replacements: []sarifReplacement{
 							{
-								DeletedRegion: SarifRegion{
+								DeletedRegion: sarifRegion{
 									StartLine: 10, StartColumn: 5, EndLine: 10, EndColumn: 15,
 								},
-								InsertedText: SarifMessage{
+								InsertedText: sarifMessage{
 									Text: "fmt.Println()",
 								},
 							},
@@ -1117,15 +1117,15 @@ func TestFindingFromSarResult_RankAsConfidence(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "R1",
 		Level:   "error",
-		Message: SarifMessage{Text: "msg"},
-		Locations: []SarifLocation{
+		Message: sarifMessage{Text: "msg"},
+		Locations: []sarifLocation{
 			{
-				PhysicalLocation: SarifPhysicalLocation{
-					ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
-					Region:           &SarifRegion{StartLine: 1},
+				PhysicalLocation: sarifPhysicalLocation{
+					ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
+					Region:           &sarifRegion{StartLine: 1},
 				},
 			},
 		},
@@ -1265,18 +1265,18 @@ func TestFindingFromSarResult_FixDescriptionWithoutReplacements(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "r1",
 		Level:   "warning",
-		Message: SarifMessage{Text: "msg"},
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
+		Message: sarifMessage{Text: "msg"},
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
 			},
 		}},
-		Fixes: []SarifFix{{
-			Description: SarifMessage{Text: "fix it"},
-			Changes:     []SarifArtifactChange{},
+		Fixes: []sarifFix{{
+			Description: sarifMessage{Text: "fix it"},
+			Changes:     []sarifArtifactChange{},
 		}},
 	}
 
@@ -1290,14 +1290,14 @@ func TestFindingFromSarResult_GeneratesIDWithoutProperties(t *testing.T) {
 	g := gomega.NewWithT(t)
 	t.Parallel()
 
-	r := SarifResult{
+	r := sarifResult{
 		RuleID:  "R1",
 		Level:   "warning",
-		Message: SarifMessage{Text: "msg"},
-		Locations: []SarifLocation{{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{URI: "a.go"},
-				Region:           &SarifRegion{StartLine: 10, StartColumn: 5},
+		Message: sarifMessage{Text: "msg"},
+		Locations: []sarifLocation{{
+			PhysicalLocation: sarifPhysicalLocation{
+				ArtifactLocation: sarifArtifactLocation{URI: "a.go"},
+				Region:           &sarifRegion{StartLine: 10, StartColumn: 5},
 			},
 		}},
 	}

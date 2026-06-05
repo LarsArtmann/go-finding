@@ -224,6 +224,10 @@ func (r *Report) FindingsSnapshot() []Finding {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
+	if len(r.Findings) == 0 {
+		return nil
+	}
+
 	snapshot := make([]Finding, len(r.Findings))
 	for i, f := range r.Findings {
 		snapshot[i] = f.Clone()

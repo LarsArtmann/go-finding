@@ -262,6 +262,63 @@ func validFinding(rule, tool, msg string) Finding {
 	return NewFinding(rule, tool, msg, SeverityWarning, Pos("test.go", 1, 1), 0.5)
 }
 
+func TestReport_FindingsSnapshot(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "snapshot-test"})
+	r.AddFinding(Finding{
+		ID:       "1",
+		Rule:     "R1",
+		ToolName: "test",
+		Message:  "msg1",
+		Severity: SeverityError,
+		Position: Pos("a.go", 1, 1),
+		Tags:     []Tag{"security"},
+		Metadata: map[string]string{"key": "value"},
+	})
+	r.AddFinding(Finding{
+		ID:       "2",
+		Rule:     "R2",
+		ToolName: "test",
+		Message:  "msg2",
+		Severity: SeverityWarning,
+		Position: Pos("b.go", 2, 1),
+	})
+
+	snapshot := r.FindingsSnapshot()
+
+	if len(snapshot) != 2 {
+		t.Fatalf("FindingsSnapshot() len = %d, want 2", len(snapshot))
+	}
+
+	snapshot[0].Message = "modified"
+
+	if r.Findings[0].Message == "modified" {
+		t.Error("FindingsSnapshot() did not clone: modification leaked back to report")
+	}
+
+	snapshot[0].Tags[0] = "modified-tag"
+	if r.Findings[0].Tags[0] == "modified-tag" {
+		t.Error("FindingsSnapshot() did not deep-clone Tags")
+	}
+
+	snapshot[0].Metadata["key"] = "modified-value"
+	if r.Findings[0].Metadata["key"] == "modified-value" {
+		t.Error("FindingsSnapshot() did not deep-clone Metadata")
+	}
+}
+
+func TestReport_FindingsSnapshot_Empty(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "empty"})
+	snapshot := r.FindingsSnapshot()
+
+	if len(snapshot) != 0 {
+		t.Errorf("FindingsSnapshot() len = %d, want 0 for empty report", len(snapshot))
+	}
+}
+
 func TestReport_ConcurrentReadWrite(t *testing.T) {
 	t.Parallel()
 

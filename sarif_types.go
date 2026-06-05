@@ -29,65 +29,65 @@ const (
 	sarifPropMetaPrefix = "go-finding/meta/"
 )
 
-// SarifLog represents a SARIF log file containing run results.
-type SarifLog struct {
+// sarifLog represents a SARIF log file containing run results.
+type sarifLog struct {
 	Version string     `json:"version"`
 	Schema  string     `json:"$schema"`
-	Runs    []SarifRun `json:"runs"`
+	Runs    []sarifRun `json:"runs"`
 }
 
-// SarifRun represents a single analysis run in a SARIF log.
-type SarifRun struct {
-	Tool    SarifTool     `json:"tool"`
-	Results []SarifResult `json:"results"`
+// sarifRun represents a single analysis run in a SARIF log.
+type sarifRun struct {
+	Tool    sarifTool     `json:"tool"`
+	Results []sarifResult `json:"results"`
 }
 
-// SarifTool defines the static analysis tool that generated the results.
-type SarifTool struct {
-	Driver SarifDriver `json:"driver"`
+// sarifTool defines the static analysis tool that generated the results.
+type sarifTool struct {
+	Driver sarifDriver `json:"driver"`
 }
 
-// SarifDriver represents the main driver tool with version information.
-type SarifDriver struct {
+// sarifDriver represents the main driver tool with version information.
+type sarifDriver struct {
 	Name    string `json:"name"`
 	Version string `json:"version,omitempty"`
 }
 
-// SarifResult represents a single finding in SARIF format.
-type SarifResult struct {
+// sarifResult represents a single finding in SARIF format.
+type sarifResult struct {
 	RuleID     string            `json:"ruleId"`
 	Level      string            `json:"level"`
-	Message    SarifMessage      `json:"message"`
-	Locations  []SarifLocation   `json:"locations"`
-	Fixes      []SarifFix        `json:"fixes,omitempty"`
-	Related    []SarifRelatedLoc `json:"relatedLocations,omitempty"`
+	Message    sarifMessage      `json:"message"`
+	Locations  []sarifLocation   `json:"locations"`
+	Fixes      []sarifFix        `json:"fixes,omitempty"`
+	Related    []sarifRelatedLoc `json:"relatedLocations,omitempty"`
 	Rank       float64           `json:"rank,omitempty"`
 	Properties map[string]any    `json:"properties,omitempty"`
 }
 
-// SarifMessage represents a message in SARIF format.
-type SarifMessage struct {
+// sarifMessage represents a message in SARIF format.
+type sarifMessage struct {
 	Text string `json:"text"`
 }
 
-// SarifLocation represents a location in SARIF format.
-type SarifLocation struct {
-	PhysicalLocation SarifPhysicalLocation `json:"physicalLocation"`
+// sarifLocation represents a location in SARIF format.
+type sarifLocation struct {
+	PhysicalLocation sarifPhysicalLocation `json:"physicalLocation"`
 }
 
-// SarifPhysicalLocation represents physical details of a location.
-type SarifPhysicalLocation struct {
-	ArtifactLocation SarifArtifactLocation `json:"artifactLocation"`
-	Region           *SarifRegion          `json:"region,omitempty"`
+// sarifPhysicalLocation represents physical details of a location.
+type sarifPhysicalLocation struct {
+	ArtifactLocation sarifArtifactLocation `json:"artifactLocation"`
+	Region           *sarifRegion          `json:"region,omitempty"`
 }
 
-// SarifArtifactLocation represents the artifact URI.
-type SarifArtifactLocation struct {
+// sarifArtifactLocation represents the artifact URI.
+type sarifArtifactLocation struct {
 	URI string `json:"uri"`
 }
 
-// SarifRegion represents a code region in a text document.
-type SarifRegion struct {
+// sarifRegion represents a code region in a text document.
+type sarifRegion struct {
 	StartLine   int    `json:"startLine,omitempty"`
 	StartColumn int    `json:"startColumn,omitempty"`
 	EndLine     int    `json:"endLine,omitempty"`
@@ -95,28 +95,28 @@ type SarifRegion struct {
 	Snippet     string `json:"snippet,omitempty"`
 }
 
-// SarifFix represents a fix to be applied to the artifact.
-type SarifFix struct {
-	Description SarifMessage          `json:"description"`
-	Changes     []SarifArtifactChange `json:"artifactChanges"`
+// sarifFix represents a fix to be applied to the artifact.
+type sarifFix struct {
+	Description sarifMessage          `json:"description"`
+	Changes     []sarifArtifactChange `json:"artifactChanges"`
 }
 
-// SarifArtifactChange represents a change to an artifact.
-type SarifArtifactChange struct {
-	ArtifactLocation SarifArtifactLocation `json:"artifactLocation"`
-	Replacements     []SarifReplacement    `json:"replacements"`
+// sarifArtifactChange represents a change to an artifact.
+type sarifArtifactChange struct {
+	ArtifactLocation sarifArtifactLocation `json:"artifactLocation"`
+	Replacements     []sarifReplacement    `json:"replacements"`
 }
 
-// SarifReplacement represents a replacement of text in an artifact.
-type SarifReplacement struct {
-	DeletedRegion SarifRegion  `json:"deletedRegion"`
-	InsertedText  SarifMessage `json:"insertedText"`
+// sarifReplacement represents a replacement of text in an artifact.
+type sarifReplacement struct {
+	DeletedRegion sarifRegion  `json:"deletedRegion"`
+	InsertedText  sarifMessage `json:"insertedText"`
 }
 
-// SarifRelatedLoc represents a related location in SARIF.
-type SarifRelatedLoc struct {
-	PhysicalLocation SarifPhysicalLocation `json:"physicalLocation"`
-	Message          SarifMessage          `json:"message"`
+// sarifRelatedLoc represents a related location in SARIF.
+type sarifRelatedLoc struct {
+	PhysicalLocation sarifPhysicalLocation `json:"physicalLocation"`
+	Message          sarifMessage          `json:"message"`
 	Properties       map[string]any        `json:"properties,omitempty"`
 }
 

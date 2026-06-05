@@ -298,6 +298,7 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 
 	if !p.config.DryRun {
 		applyDone := p.stageTiming(StageApply)
+
 		err := p.applyTriage(ctx, triage.Direct, &iter)
 		if err != nil {
 			applyDone()

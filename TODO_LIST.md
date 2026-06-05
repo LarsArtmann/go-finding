@@ -19,7 +19,7 @@
 - [ ] Fix `FixApplier` lifecycle — lift creation to Pipeline constructor; prevent backup dir leaks across iterations
 - [ ] Restore `cmd/go-finding` test coverage from 70.0% toward 95%
 - [ ] Update `README.md` with badges, pipeline diagram, API overview
-- [ ] Fix pre-commit hook failures — `goconst`, `todo-check`, `library-policy`
+- [x] Fix pre-commit hook failures — `goconst`, `todo-check`, `library-policy` → All passing. Fixed `err :=` redeclaration bugs in sarif_export.go/sarif_import.go (introduced by previous commit), removed duplicate `pipeline/pipeline_new_test.go`, fixed `FindingsSnapshot()` nil-for-empty behavior.
 
 ## 🟡 MEDIUM Priority
 

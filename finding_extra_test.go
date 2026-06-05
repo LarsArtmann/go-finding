@@ -226,21 +226,25 @@ func TestEqual_FieldMismatch(t *testing.T) {
 		{"different ID", base, func() Finding {
 			f := base
 			f.ID = "x"
+
 			return f
 		}()},
 		{"different Rule", base, func() Finding {
 			f := base
 			f.Rule = "x"
+
 			return f
 		}()},
 		{"different ToolName", base, func() Finding {
 			f := base
 			f.ToolName = "x"
+
 			return f
 		}()},
 		{"different Message", base, func() Finding {
 			f := base
 			f.Message = "x"
+
 			return f
 		}()},
 		{
@@ -248,17 +252,20 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.Severity = SeverityWarning
+
 				return f
 			}(),
 		},
 		{"different Category", base, func() Finding {
 			f := base
 			f.Category = "x"
+
 			return f
 		}()},
 		{"different Tags", base, func() Finding {
 			f := base
 			f.Tags = []Tag{"x"}
+
 			return f
 		}()},
 		{
@@ -266,6 +273,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.FixStrategy = FixStrategyDirect
+
 				return f
 			}(),
 		},
@@ -274,6 +282,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.Suggestion = "x"
+
 				return f
 			}(),
 		},
@@ -282,6 +291,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.BeforeCode = "x"
+
 				return f
 			}(),
 		},
@@ -290,6 +300,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.AfterCode = "x"
+
 				return f
 			}(),
 		},
@@ -298,6 +309,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.Snippet = "x"
+
 				return f
 			}(),
 		},
@@ -306,6 +318,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.Confidence = 0.9
+
 				return f
 			}(),
 		},

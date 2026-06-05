@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-// KeySeparator is used by Key() to build deterministic composite keys.
+// keySeparator is used by Key() to build deterministic composite keys.
 // Using NUL ensures no collision with visible characters in field values.
-const KeySeparator = "\x00"
+const keySeparator = "\x00"
 
 // Finding represents a single issue detected by a static analysis tool.
 type Finding struct {
@@ -352,13 +352,13 @@ func (f Finding) IsValid() bool {
 
 // Key returns a stable identifier for the finding.
 // If ID is set, it is returned; otherwise a deterministic key is built
-// from ToolName, Position.File, Rule, and Message using KeySeparator.
+// from ToolName, Position.File, Rule, and Message using keySeparator.
 func (f Finding) Key() string {
 	if f.ID != "" {
 		return f.ID
 	}
 
-	return f.ToolName + KeySeparator + f.Position.File + KeySeparator + f.Rule + KeySeparator + f.Message
+	return f.ToolName + keySeparator + f.Position.File + keySeparator + f.Rule + keySeparator + f.Message
 }
 
 // Equal reports whether two findings are identical, including all nested fields.
