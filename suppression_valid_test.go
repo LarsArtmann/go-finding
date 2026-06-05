@@ -25,6 +25,7 @@ func TestSuppression_IsValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if tt.s.IsValid() != tt.want {
 				t.Errorf("IsValid() = %v, want %v", !tt.want, tt.want)
 			}

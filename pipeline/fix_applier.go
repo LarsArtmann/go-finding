@@ -56,7 +56,8 @@ func NewFixApplierWithProviders(rootDir string, providers ...FixProvider) (*FixA
 // Close removes the temporary backup directory. Implement io.Closer.
 func (a *FixApplier) Close() error {
 	if a.backup != nil && a.backup.IsEnabled() {
-		if err := os.RemoveAll(a.backup.backupDir); err != nil {
+		err := os.RemoveAll(a.backup.backupDir)
+		if err != nil {
 			return fmt.Errorf("removing backup dir: %w", err)
 		}
 	}
@@ -67,6 +68,7 @@ func (a *FixApplier) Close() error {
 // ioErrorAt creates an IO error with position info.
 func ioErrorAt(msg string, err error, path string) error {
 	pos := finding.Position{File: path} //nolint:exhaustruct
+
 	return finding.NewIOError(msg, err).WithPosition(pos)
 }
 
@@ -95,6 +97,7 @@ func (a *FixApplier) ApplyWithDetails(
 		path := filepath.Join(a.rootDir, f.Position.File)
 
 		cleanPath := filepath.Clean(path)
+
 		cleanRoot := filepath.Clean(a.rootDir)
 		if cleanPath != cleanRoot &&
 			!strings.HasPrefix(cleanPath, cleanRoot+string(os.PathSeparator)) {
@@ -104,14 +107,17 @@ func (a *FixApplier) ApplyWithDetails(
 		byFile[path] = append(byFile[path], f)
 	}
 
-	var applied []finding.Finding
-	var modified []string
+	var (
+		applied  []finding.Finding
+		modified []string
+	)
 
 	paths := slices.Collect(maps.Keys(byFile))
 	slices.Sort(paths)
 
 	for _, path := range paths {
 		fileFixes := byFile[path]
+
 		if err := CheckCanceledWithMsg(ctx, "fix application cancelled"); err != nil {
 			_ = a.backup.RollbackAll(modified)
 

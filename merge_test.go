@@ -382,6 +382,7 @@ func TestMerge_DeduplicateByID_EmptyIDs(t *testing.T) {
 
 	r1 := NewReport(ToolInfo{Name: "a"})
 	r1.AddFinding(f1)
+
 	r2 := NewReport(ToolInfo{Name: "b"})
 	r2.AddFinding(f2)
 

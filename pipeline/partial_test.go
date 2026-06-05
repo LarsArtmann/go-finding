@@ -22,6 +22,7 @@ func assertPartialFindingsLen(t *testing.T, result *PartialResult, want int) {
 func goodThenBadDetectors() (*mockDetector, *mockDetector) {
 	d1 := mockDet("good", "F1")
 	d2 := &mockDetector{name: "bad", err: errors.New("boom")}
+
 	return d1, d2
 }
 

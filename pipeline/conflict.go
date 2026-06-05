@@ -89,9 +89,11 @@ func detectConflictsInFile(
 			currentGroup = newFixGroup(file, f, rangeInfo)
 		} else {
 			overlapsAny := false
+
 			for _, existing := range currentGroup.Fixes {
 				if getFindingRange(existing).Overlaps(rangeInfo) {
 					overlapsAny = true
+
 					break
 				}
 			}
@@ -110,8 +112,10 @@ func detectConflictsInFile(
 		groups = append(groups, currentGroup)
 	}
 
-	var finalGroups []FixGroup
-	var conflicts []finding.Finding
+	var (
+		finalGroups []FixGroup
+		conflicts   []finding.Finding
+	)
 
 	for _, g := range groups {
 		if len(g.Fixes) == 1 {

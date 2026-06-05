@@ -16,6 +16,7 @@ func addTestFinding(r *Report, id, rule string, sev Severity, file string) {
 
 func assertCategoryCount(t *testing.T, r *Report, cat Category, want int) {
 	t.Helper()
+
 	if got := r.Summary.ByCategory[cat]; got != want {
 		t.Errorf("ByCategory[%s] = %d, want %d", cat, got, want)
 	}
@@ -173,7 +174,8 @@ func TestToolInfo_Validate(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		t.Parallel()
 
-		if err := (ToolInfo{Name: "govet"}).Validate(); err != nil {
+		err := (ToolInfo{Name: "govet"}).Validate()
+		if err != nil {
 			t.Errorf("Validate() = %v, want nil", err)
 		}
 	})
@@ -197,7 +199,8 @@ func TestReport_Validate(t *testing.T) {
 		r := NewReport(ToolInfo{Name: "test"})
 		r.AddFinding(validFinding("R1", "test", "msg"))
 
-		if err := r.Validate(); err != nil {
+		err := r.Validate()
+		if err != nil {
 			t.Errorf("Validate() = %v, want nil", err)
 		}
 	})
@@ -264,9 +267,11 @@ func TestReport_ConcurrentReadWrite(t *testing.T) {
 
 	r := NewReport(ToolInfo{Name: "race-test"})
 
-	const writers = 4
-	const readers = 8
-	const findingsPerWriter = 50
+	const (
+		writers           = 4
+		readers           = 8
+		findingsPerWriter = 50
+	)
 
 	var wg sync.WaitGroup
 
@@ -325,6 +330,7 @@ func TestReport_All_IteratorReleasesLock(t *testing.T) {
 	count := 0
 	for range r.All() {
 		count++
+
 		break
 	}
 

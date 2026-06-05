@@ -47,6 +47,7 @@ func generateOffsetFixes(n int, content []byte) []finding.Finding {
 
 func benchmarkFixEngineApply(b *testing.B, fixCount int) {
 	b.Helper()
+
 	content := generateContent(10000)
 	fixes := generateOffsetFixes(fixCount, content)
 	engine := NewFixEngine()

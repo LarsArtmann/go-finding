@@ -139,6 +139,7 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 		t.Parallel()
 
 		r := Range{Start: Position{File: "a.go", Line: 5}, End: Position{Line: 10}}
+
 		p := Position{File: "b.go", Line: 7}
 		if r.Contains(p) {
 			t.Error("expected Contains to return false for different file")
@@ -213,6 +214,7 @@ func TestRangeOverlaps_OffsetOnly(t *testing.T) {
 		t.Parallel()
 
 		r1 := rngOffset("a.go", 50, 0)
+
 		r2 := rngOffset("a.go", 0, 50)
 		if !r1.Overlaps(r2) {
 			t.Error("ranges should overlap when one end encompasses the other start")
@@ -223,6 +225,7 @@ func TestRangeOverlaps_OffsetOnly(t *testing.T) {
 		t.Parallel()
 
 		point := rngOffset("a.go", 50, -1)
+
 		span := rngOffset("a.go", 30, 70)
 		if !point.Overlaps(span) {
 			t.Error("point at 50 should overlap with range 30-70")
@@ -233,6 +236,7 @@ func TestRangeOverlaps_OffsetOnly(t *testing.T) {
 		t.Parallel()
 
 		r1 := Range{Start: Position{File: "a.go", Offset: -1}}
+
 		r2 := Range{Start: Position{File: "a.go", Offset: 50}}
 		if r1.Overlaps(r2) {
 			t.Error("negative offset should not overlap")
@@ -263,6 +267,7 @@ func TestRangeIntersection_OffsetOnly(t *testing.T) {
 
 		r1 := rngOffset("a.go", 100, -1)
 		r2 := rngOffset("a.go", 100, -1)
+
 		got := r1.Intersection(r2)
 		if got == nil {
 			t.Fatal("expected non-nil intersection for same point")
@@ -275,6 +280,7 @@ func TestRangeIntersection_OffsetOnly(t *testing.T) {
 		t.Parallel()
 
 		r1 := rngOffset("a.go", 100, 150)
+
 		r2 := rngOffset("a.go", 200, 250)
 		if got := r1.Intersection(r2); got != nil {
 			t.Errorf("expected nil intersection, got %v", got)
@@ -290,6 +296,7 @@ func TestRangeIntersection_LineOnly_EdgeCases(t *testing.T) {
 
 		r1 := Range{Start: Position{File: "a.go", Line: 10}}
 		r2 := Range{Start: Position{File: "a.go", Line: 10}}
+
 		got := r1.Intersection(r2)
 		if got == nil {
 			t.Fatal("expected non-nil intersection")

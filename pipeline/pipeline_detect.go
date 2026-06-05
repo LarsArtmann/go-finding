@@ -125,6 +125,7 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 			}
 
 			mu.Lock()
+
 			allFindings = append(allFindings, findings...)
 			mu.Unlock()
 
@@ -132,7 +133,8 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 		})
 	}
 
-	if err := g.Wait(); err != nil {
+	err := g.Wait()
+	if err != nil {
 		return nil, fmt.Errorf("parallel detection: %w", err)
 	}
 
@@ -183,8 +185,10 @@ func (p *Pipeline) applyTriage(
 		return nil
 	}
 
-	var safeFixes []finding.Finding
-	var providerErrors []error
+	var (
+		safeFixes      []finding.Finding
+		providerErrors []error
+	)
 
 	if p.config.ByteLevelConflictDetection {
 		engine := NewFixEngineWithProviders(p.config.FixProviders...)
@@ -276,11 +280,14 @@ func (p *Pipeline) filterByFileEdits(
 		byFile[f.Position.File] = append(byFile[f.Position.File], f)
 	}
 
-	var result []finding.Finding
-	var allErrors []error
+	var (
+		result    []finding.Finding
+		allErrors []error
+	)
 
 	for file, fileFixes := range byFile {
 		fullPath := filepath.Join(p.rootDir, file)
+
 		content, err := os.ReadFile(filepath.Clean(fullPath))
 		if err != nil {
 			result = append(result, fileFixes...)

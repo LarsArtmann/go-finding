@@ -123,7 +123,8 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 		return result, ctxErr
 	}
 
-	if err := CheckCanceledWithMsg(ctx, "context cancelled"); err != nil {
+	err := CheckCanceledWithMsg(ctx, "context cancelled")
+	if err != nil {
 		return result, err
 	}
 

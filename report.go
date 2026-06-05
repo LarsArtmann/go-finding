@@ -36,12 +36,14 @@ func (r *Report) Validate() error {
 
 	var errs []error
 
-	if err := r.Tool.Validate(); err != nil {
+	err := r.Tool.Validate()
+	if err != nil {
 		errs = append(errs, err)
 	}
 
 	for i, f := range r.Findings {
-		if err := f.Validate(); err != nil {
+		err := f.Validate()
+		if err != nil {
 			errs = append(errs, fmt.Errorf("findings[%d]: %w", i, err))
 		}
 	}
@@ -212,6 +214,22 @@ func (r *Report) computeSummaryAt(now time.Time) {
 
 	r.Summary.FilesAffected = len(files)
 	r.Summary.Suppressed = suppressed
+}
+
+// FindingsSnapshot returns a deep copy of all findings in the report.
+// The returned slice is safe for concurrent use without holding any lock,
+// making it suitable for v1.0 migration from direct Findings slice access.
+// Each Finding is fully cloned via Clone(), so mutations are isolated.
+func (r *Report) FindingsSnapshot() []Finding {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	snapshot := make([]Finding, len(r.Findings))
+	for i, f := range r.Findings {
+		snapshot[i] = f.Clone()
+	}
+
+	return snapshot
 }
 
 // ActiveFindings returns all non-suppressed findings.

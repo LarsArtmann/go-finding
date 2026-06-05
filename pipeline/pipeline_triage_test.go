@@ -13,6 +13,7 @@ import (
 func TestTriage(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	findings := []finding.Finding{
 		{ID: "1", FixStrategy: finding.FixStrategyDirect, BeforeCode: "old", AfterCode: "new"},
 		{ID: "2", FixStrategy: finding.FixStrategySuggest, AfterCode: "new"},
@@ -88,6 +89,7 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 	}
 
 	var err error
+
 	p.applier, err = NewFixApplier(tempDir)
 	if err != nil {
 		t.Fatalf("create fix applier: %v", err)
@@ -129,6 +131,7 @@ func TestDryRun(t *testing.T) {
 	}
 
 	det := mockDetWithFindings("tool", f)
+
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -173,6 +176,7 @@ func TestApplyTriage_DirectFixesApplied(t *testing.T) {
 	}
 
 	det := mockDetWithFindings("tool", fix)
+
 	p, err := New(Config{MaxIterations: 3, ParallelDetectors: false}, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -203,8 +207,10 @@ func TestApplyTriage_ConflictingFixes(t *testing.T) {
 
 	fixes := makeConflictingFixes()
 
-	var conflictFindings []finding.Finding
-	var appliedFindings []finding.Finding
+	var (
+		conflictFindings []finding.Finding
+		appliedFindings  []finding.Finding
+	)
 
 	cfg := Config{
 		MaxIterations:       1,
@@ -220,6 +226,7 @@ func TestApplyTriage_ConflictingFixes(t *testing.T) {
 	}
 
 	det := &mockDetector{name: "tool", findings: fixes}
+
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -259,6 +266,7 @@ func TestApplyTriage_OnFixCallback(t *testing.T) {
 	}
 
 	det := mockDetWithFindings("tool", fix)
+
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

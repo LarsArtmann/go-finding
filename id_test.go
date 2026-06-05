@@ -39,15 +39,19 @@ func testParseIDCase(t *testing.T, tt parseIDCase) {
 	if p.Tool != tt.wantTool {
 		t.Errorf("Tool = %q, want %q", p.Tool, tt.wantTool)
 	}
+
 	if p.Rule != tt.wantRule {
 		t.Errorf("Rule = %q, want %q", p.Rule, tt.wantRule)
 	}
+
 	if p.File != tt.wantFile {
 		t.Errorf("File = %q, want %q", p.File, tt.wantFile)
 	}
+
 	if p.Line != tt.wantLine {
 		t.Errorf("Line = %d, want %d", p.Line, tt.wantLine)
 	}
+
 	if p.Column != tt.wantCol {
 		t.Errorf("Column = %d, want %d", p.Column, tt.wantCol)
 	}
@@ -55,6 +59,7 @@ func testParseIDCase(t *testing.T, tt parseIDCase) {
 
 func runParseIDCases(t *testing.T, tests []parseIDCase) {
 	t.Helper()
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
@@ -65,18 +70,23 @@ func runParseIDCases(t *testing.T, tests []parseIDCase) {
 
 func assertRoundTrip(t *testing.T, p *ParsedID, tool, rule, file string, line, col int) {
 	t.Helper()
+
 	if p.Tool != tool {
 		t.Errorf("Tool = %q, want %q", p.Tool, tool)
 	}
+
 	if p.Rule != rule {
 		t.Errorf("Rule = %q, want %q", p.Rule, rule)
 	}
+
 	if p.File != file {
 		t.Errorf("File = %q, want %q", p.File, file)
 	}
+
 	if p.Line != line {
 		t.Errorf("Line = %d, want %d", p.Line, line)
 	}
+
 	if p.Column != col {
 		t.Errorf("Column = %d, want %d", p.Column, col)
 	}

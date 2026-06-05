@@ -15,6 +15,7 @@ func TestExamplesCompile(t *testing.T) {
 
 			//nolint:gosec // intentionally building known example directories
 			cmd := exec.CommandContext(t.Context(), "go", "build", "-o", "/dev/null", path)
+
 			out, err := cmd.CombinedOutput()
 			if err != nil {
 				t.Fatalf("go build %s failed: %v\n%s", path, err, out)

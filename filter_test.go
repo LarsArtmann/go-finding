@@ -317,6 +317,7 @@ func TestFilterInPlace_NoPredicates(t *testing.T) {
 	if len(result) != 2 {
 		t.Fatalf("FilterInPlace() = %d, want 2", len(result))
 	}
+
 	if &findings[0] != &result[0] {
 		t.Error("FilterInPlace without predicates should return same slice")
 	}

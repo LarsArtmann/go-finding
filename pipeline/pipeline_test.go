@@ -31,35 +31,11 @@ func pipelineTestFinding(column int) finding.Finding {
 	}
 }
 
-// TestNew tests pipeline creation.
-func TestNew(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-	config := DefaultConfig()
-	detector := &mockDetector{name: "test", findings: nil}
-
-	p, err := New(config, "/tmp", detector)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if p == nil {
-		t.Fatal("expected non-nil pipeline")
-	}
-
-	g.Expect(p.detectors).To(HaveLen(1))
-
-	g.Expect(p.rootDir).To(Equal("/tmp"))
-
-	if p.config.MaxIterations != config.MaxIterations {
-		t.Error("config not set correctly")
-	}
-}
-
 // TestPipelineRun_NoFindings tests that pipeline completes when no findings.
 func TestPipelineRun_NoFindings(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 	detector := &mockDetector{name: "test", findings: nil}
@@ -68,6 +44,7 @@ func TestPipelineRun_NoFindings(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	ctx := context.Background()
 
 	result, err := p.Run(ctx)
@@ -84,6 +61,7 @@ func TestPipelineRun_NoFindings(t *testing.T) {
 func TestPipelineRun_WithFindings(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 	config.MaxIterations = 3 // Limit to avoid running 5 iterations
@@ -91,10 +69,12 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 	findings := []finding.Finding{pipelineTestFinding(1)}
 
 	detector := &mockDetector{name: "test", findings: findings}
+
 	p, err := New(config, t.TempDir(), detector)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	ctx := context.Background()
 
 	result, err := p.Run(ctx)
@@ -119,6 +99,7 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 func TestPipelineRun_DetectorError(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 
@@ -129,6 +110,7 @@ func TestPipelineRun_DetectorError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	ctx := context.Background()
 
 	_, err = p.Run(ctx)
@@ -158,6 +140,7 @@ func TestDetectSequential_ContextCancellation(t *testing.T) {
 func TestPipelineRun_ContextCancellation(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 
@@ -171,6 +154,7 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately
 
@@ -184,6 +168,7 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 func TestPipelineRun_Timeout(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	config := DefaultConfig()
 	config.ParallelDetectors = false
 	config.Timeout = 50 * time.Millisecond
@@ -194,6 +179,7 @@ func TestPipelineRun_Timeout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	ctx := context.Background()
 
 	result, err := p.Run(ctx)
@@ -206,6 +192,7 @@ func TestPipelineRun_Timeout(t *testing.T) {
 func TestPipelineRun_MaxIterations(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	config := DefaultConfig()
 	config.MaxIterations = 2
 	config.ParallelDetectors = false
@@ -214,10 +201,12 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 	findings := []finding.Finding{pipelineTestFinding(0)}
 
 	detector := &mockDetector{name: "test", findings: findings}
+
 	p, err := New(config, t.TempDir(), detector)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	ctx := context.Background()
 
 	result, err := p.Run(ctx)
@@ -233,6 +222,7 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 func TestPipelineRun_Parallel(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	config := DefaultConfig()
 	config.ParallelDetectors = true
 
@@ -260,6 +250,7 @@ func TestPipelineRun_Parallel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	ctx := context.Background()
 
 	result, err := p.Run(ctx)
@@ -277,6 +268,7 @@ func TestPipelineRun_Parallel(t *testing.T) {
 func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	makeFindings := func() []finding.Finding {
 		return []finding.Finding{
 			{
@@ -363,32 +355,11 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 	assertNoSuppressedNotified(t, parNotified, "parallel")
 }
 
-// TestTriage tests the triage function.
-func TestTriage(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-	findings := []finding.Finding{
-		{ID: "1", FixStrategy: finding.FixStrategyDirect, BeforeCode: "old", AfterCode: "new"},
-		{ID: "2", FixStrategy: finding.FixStrategySuggest, AfterCode: "new"},
-		{ID: "3", FixStrategy: finding.FixStrategyAI, AfterCode: "new"},
-		{ID: "4", FixStrategy: finding.FixStrategyNone},
-		{ID: "5", FixStrategy: ""},
-	}
-
-	p := &Pipeline{config: DefaultConfig()}
-	result := p.triage(findings)
-
-	g.Expect(result.Direct).To(HaveLen(1))
-
-	g.Expect(result.Suggest).To(HaveLen(2))
-
-	g.Expect(result.None).To(HaveLen(2))
-}
-
 // TestDetectorFunc tests the DetectorFunc adapter.
 func TestDetectorFunc(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	called := false
 	f := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		called = true
@@ -427,24 +398,13 @@ func TestNamedDetectorFunc(t *testing.T) {
 	g.Expect(findings[0].ID).To(Equal("test"))
 }
 
-func TestDefaultConfig(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-	config := DefaultConfig()
-
-	g.Expect(config.MaxIterations).To(Equal(5))
-
-	g.Expect(config.ParallelDetectors).To(BeTrue())
-
-	g.Expect(config.Timeout).To(Equal(10 * time.Minute))
-}
-
 // TestFixApplier tests the FixApplier.
 func TestFixApplier(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	// Create a temporary directory for testing
 	tempDir := t.TempDir()
+
 	applier, err := NewFixApplier(tempDir)
 	if err != nil {
 		t.Fatalf("NewFixApplier: %v", err)
@@ -500,6 +460,7 @@ func TestFixApplier_Apply(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	tempDir := t.TempDir()
+
 	applier, err := NewFixApplier(tempDir)
 	if err != nil {
 		t.Fatalf("NewFixApplier: %v", err)
@@ -537,6 +498,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	tempDir := t.TempDir()
+
 	applier, err := NewFixApplier(tempDir)
 	if err != nil {
 		t.Fatalf("NewFixApplier: %v", err)
@@ -545,7 +507,8 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 	testFile := filepath.Join(tempDir, "test.go")
 
 	content := "package main\n\nfunc main() {\n\tprintln(\"hello\")\n\tprintln(\"hello\")\n}\n" //nolint:dupword // test fixture intentionally duplicates println
-	if writeErr := writeFile(testFile, []byte(content), 0o644); writeErr != nil {
+	writeErr := writeFile(testFile, []byte(content), 0o644)
+	if writeErr != nil {
 		t.Fatalf("create test file: %v", writeErr)
 	}
 
@@ -583,6 +546,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	tempDir := t.TempDir()
+
 	applier, err := NewFixApplier(tempDir)
 	if err != nil {
 		t.Fatalf("NewFixApplier: %v", err)
@@ -624,6 +588,7 @@ func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
 	tempDir := t.TempDir()
+
 	applier, err := NewFixApplier(tempDir)
 	if err != nil {
 		t.Fatalf("NewFixApplier: %v", err)
@@ -691,6 +656,7 @@ func BenchmarkParallelDetection(b *testing.B) {
 				if err != nil {
 					b.Fatalf("unexpected error: %v", err)
 				}
+
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				_, _ = p.Run(ctx)
 
@@ -754,161 +720,10 @@ func TestIoErrorAt(t *testing.T) {
 	assertFindingErrorIO(t, fe, "foo.go")
 }
 
-func TestApplyDirectFixes(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-
-	tempDir := t.TempDir()
-	testFile := filepath.Join(tempDir, "fixme.go")
-
-	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	writeTestFile(t, testFile, []byte(original))
-
-	fixes := directFixFinding()
-
-	m := NewMetrics()
-	p := &Pipeline{
-		config:  Config{Metrics: m},
-		rootDir: tempDir,
-		metrics: m,
-	}
-
-	p.applier, _ = NewFixApplier(tempDir)
-
-	applied, err := p.applyDirectFixes(context.Background(), fixes)
-	if err != nil {
-		t.Fatalf("applyDirectFixes: %v", err)
-	}
-
-	g.Expect(applied).To(HaveLen(1))
-
-	got, err := readFile(testFile)
-	if err != nil {
-		t.Fatalf("read file: %v", err)
-	}
-
-	want := "package main\n\nfunc main() {\n\tnew()\n}\n"
-	g.Expect(string(got)).To(Equal(want))
-
-	g.Expect(m.TotalFixesApplied()).To(Equal(1))
-}
-
-func TestApplyDirectFixes_NoMetrics(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-
-	tempDir := t.TempDir()
-	testFile := filepath.Join(tempDir, "fixme.go")
-
-	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	writeTestFile(t, testFile, []byte(original))
-
-	fixes := directFixFinding()
-
-	p := &Pipeline{
-		config:  DefaultConfig(),
-		rootDir: tempDir,
-	}
-
-	var err error
-	p.applier, err = NewFixApplier(tempDir)
-	if err != nil {
-		t.Fatalf("create fix applier: %v", err)
-	}
-
-	applied, err := p.applyDirectFixes(context.Background(), fixes)
-	if err != nil {
-		t.Fatalf("applyDirectFixes: %v", err)
-	}
-
-	g.Expect(applied).To(HaveLen(1))
-}
-
-func TestDryRun(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-
-	tmpDir := t.TempDir()
-
-	testFile := filepath.Join(tmpDir, "test.go")
-	if err := os.WriteFile(testFile, []byte("package main\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	f := testFinding("1", "r1", "tool", "msg", finding.SeverityError, testFile)
-	f.FixStrategy = finding.FixStrategyDirect
-	f.BeforeCode = "package main"
-	f.AfterCode = "package main // fixed"
-
-	applied := 0
-	cfg := Config{
-		MaxIterations: 1,
-		DryRun:        true,
-		OnFix: func(_ finding.Finding, wasApplied bool) {
-			if wasApplied {
-				applied++
-			}
-		},
-	}
-
-	det := mockDetWithFindings("tool", f)
-	p, err := New(cfg, tmpDir, det)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	result, err := p.Run(context.Background())
-	if err != nil {
-		t.Fatalf("Run: %v", err)
-	}
-
-	g.Expect(applied).To(Equal(0))
-
-	assertIterationsLen(t, result, 1)
-
-	iter := result.Iterations[0]
-	g.Expect(iter.DirectFixes).To(Equal(1))
-
-	data, _ := os.ReadFile(testFile)
-	g.Expect(string(data)).To(Equal("package main\n"))
-}
-
-func TestNew_RejectsInvalidConfig(t *testing.T) {
-	t.Parallel()
-	tests := []struct {
-		name   string
-		config Config
-	}{
-		{"negative iterations", Config{MaxIterations: -1}},
-		{"negative timeout", Config{MaxIterations: 1, Timeout: -1 * time.Second}},
-		{"invalid retry", Config{MaxIterations: 1, Retry: &RetryConfig{MaxRetries: -1}}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
-			_, err := New(tt.config, t.TempDir())
-			g.Expect(err).To(HaveOccurred())
-		})
-	}
-}
-
-func TestNew_ValidConfig_NoError(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-	config := DefaultConfig()
-	p, err := New(config, t.TempDir())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	g.Expect(p).NotTo(BeNil())
-}
-
 func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	goodDetector := mockDetectorWithFinding("good", "F1", "r", "good", "m")
 	badDetector := &mockDetector{name: "bad", err: errors.New("boom")}
 
@@ -939,6 +754,7 @@ func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
 func TestPipelineRun_MetricsInResult(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	m := NewMetrics()
 	config := Config{
 		MaxIterations: 1,
@@ -946,6 +762,7 @@ func TestPipelineRun_MetricsInResult(t *testing.T) {
 	}
 
 	detector := &mockDetector{name: "test", findings: nil}
+
 	p, err := New(config, t.TempDir(), detector)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -959,186 +776,6 @@ func TestPipelineRun_MetricsInResult(t *testing.T) {
 	g.Expect(result.Metrics.TotalDuration).NotTo(BeZero())
 
 	g.Expect(result.Metrics.FixesApplied).To(Equal(0))
-}
-
-func directFixFinding() []finding.Finding {
-	return []finding.Finding{
-		{
-			ID:          "fix1",
-			BeforeCode:  "old()",
-			AfterCode:   "new()",
-			Position:    finding.Position{File: "fixme.go", Line: 4},
-			FixStrategy: finding.FixStrategyDirect,
-		},
-	}
-}
-
-func TestApplyTriage_DirectFixesApplied(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-
-	tmpDir := t.TempDir()
-	testFile := filepath.Join(tmpDir, "fixme.go")
-
-	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	writeTestFile(t, testFile, []byte(original))
-
-	fix := finding.Finding{
-		ID:          "fix1",
-		Rule:        "r1",
-		ToolName:    "tool",
-		Message:     "replace old with new",
-		Severity:    finding.SeverityWarning,
-		BeforeCode:  "old()",
-		AfterCode:   "new()",
-		Position:    finding.Position{File: "fixme.go", Line: 4},
-		FixStrategy: finding.FixStrategyDirect,
-	}
-
-	det := mockDetWithFindings("tool", fix)
-	p, err := New(Config{MaxIterations: 3, ParallelDetectors: false}, tmpDir, det)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	result, err := p.Run(context.Background())
-	if err != nil {
-		t.Fatalf("Run: %v", err)
-	}
-
-	g.Expect(result.Iterations).NotTo(BeEmpty())
-
-	iter := result.Iterations[0]
-	g.Expect(iter.DirectFixes).To(Equal(1))
-
-	g.Expect(iter.Applied).To(Equal(1))
-}
-
-func TestApplyTriage_ConflictingFixes(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-
-	tmpDir := t.TempDir()
-	testFile := filepath.Join(tmpDir, "fixme.go")
-
-	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	writeTestFile(t, testFile, []byte(original))
-
-	fixes := makeConflictingFixes()
-
-	var conflictFindings []finding.Finding
-	var appliedFindings []finding.Finding
-
-	cfg := Config{
-		MaxIterations:       1,
-		ParallelDetectors:   false,
-		GracefulDegradation: true,
-		OnFix: func(f finding.Finding, wasApplied bool) {
-			if wasApplied {
-				appliedFindings = append(appliedFindings, f)
-			} else {
-				conflictFindings = append(conflictFindings, f)
-			}
-		},
-	}
-
-	det := &mockDetector{name: "tool", findings: fixes}
-	p, err := New(cfg, tmpDir, det)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	result, err := p.Run(context.Background())
-	if err != nil {
-		t.Fatalf("Run: %v", err)
-	}
-
-	g.Expect(result.Iterations).NotTo(BeEmpty())
-
-	iter := result.Iterations[0]
-	g.Expect(iter.Conflicts).NotTo(BeZero())
-
-	g.Expect(conflictFindings).NotTo(BeEmpty())
-}
-
-func TestApplyTriage_OnFixCallback(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-
-	tmpDir := t.TempDir()
-	testFile := filepath.Join(tmpDir, "fixme.go")
-
-	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	writeTestFile(t, testFile, []byte(original))
-
-	fix := makeFixFinding("fix1", "old()", "new()", "fixme.go", 4)
-
-	var appliedIDs []string
-
-	cfg := Config{
-		MaxIterations:     2,
-		ParallelDetectors: false,
-		OnFix:             collectingOnFix(&appliedIDs),
-	}
-
-	det := mockDetWithFindings("tool", fix)
-	p, err := New(cfg, tmpDir, det)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	_, err = p.Run(context.Background())
-	if err != nil {
-		t.Fatalf("Run: %v", err)
-	}
-
-	g.Expect(appliedIDs).NotTo(BeEmpty())
-
-	g.Expect(appliedIDs[0]).To(Equal("fix1"))
-}
-
-func TestApplyTriage_EmptyFixes(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-
-	p := &Pipeline{config: DefaultConfig()}
-	iter := &Iteration{Number: 1}
-
-	err := p.applyTriage(context.Background(), nil, iter)
-	if err != nil {
-		t.Fatalf("applyTriage with nil fixes: %v", err)
-	}
-
-	g.Expect(iter.Applied).To(Equal(0))
-
-	g.Expect(iter.Conflicts).To(Equal(0))
-}
-
-func TestApplyTriage_AllConflicting(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-
-	tmpDir := t.TempDir()
-	testFile := filepath.Join(tmpDir, "fixme.go")
-
-	original := "package main\n\nfunc main() {\n\told()\n}\n"
-	writeTestFile(t, testFile, []byte(original))
-
-	fixes := makeConflictingFixes()
-
-	p := &Pipeline{config: DefaultConfig(), rootDir: tmpDir}
-	p.applier, _ = NewFixApplier(tmpDir)
-
-	iter := &Iteration{Number: 1}
-
-	err := p.applyTriage(context.Background(), fixes, iter)
-	if err != nil {
-		t.Fatalf("applyTriage: %v", err)
-	}
-
-	g.Expect(iter.Conflicts).To(Equal(1))
-
-	g.Expect(iter.Applied).To(Equal(1))
 }
 
 func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
@@ -1164,6 +801,7 @@ func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
 	})
 
 	cfg := Config{MaxIterations: 5, ParallelDetectors: false}
+
 	p, err := New(cfg, tmpDir, NamedDetectorFunc("tool", det))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -1259,6 +897,7 @@ func TestIsContextError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := IsContextError(tt.err); got != tt.want {
 				t.Errorf("IsContextError(%v) = %v, want %v", tt.err, got, tt.want)
 			}
@@ -1294,6 +933,7 @@ func correlateTestDetectors() (*mockDetector, *mockDetector) {
 			},
 		},
 	}
+
 	return detA, detB
 }
 
@@ -1354,6 +994,7 @@ func TestPipelineRun_CorrelateFindings(t *testing.T) {
 	detA, detB := correlateTestDetectors()
 
 	cfg := Config{MaxIterations: 1, ParallelDetectors: false, CorrelateFindings: true}
+
 	p, err := New(cfg, ".", detA, detB)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -1375,6 +1016,7 @@ func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {
 	detA, detB := correlateTestDetectors()
 
 	cfg := Config{MaxIterations: 1, ParallelDetectors: false, CorrelateFindings: false}
+
 	p, err := New(cfg, ".", detA, detB)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -1393,6 +1035,7 @@ func TestPipelineRun_StructuredLogging(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
+
 	logger := slog.New(slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	cfg := DefaultConfig()
@@ -1422,6 +1065,7 @@ func TestPipelineRun_StructuredLogging(t *testing.T) {
 	}
 
 	var entries []logEntry
+
 	for _, line := range splitLines(output) {
 		if line == "" {
 			continue
@@ -1447,6 +1091,7 @@ func TestPipelineRun_OnStage(t *testing.T) {
 	t.Parallel()
 
 	var stages []string
+
 	cfg := DefaultConfig()
 	cfg.ParallelDetectors = false
 	cfg.MaxIterations = 1
@@ -1474,6 +1119,7 @@ func TestPipelineRun_OnStage(t *testing.T) {
 
 func splitLines(s string) []string {
 	var lines []string
+
 	for line := range strings.SplitSeq(s, "\n") {
 		if line != "" {
 			lines = append(lines, line)
@@ -1499,8 +1145,10 @@ func TestReasonFromContext(t *testing.T) {
 	t.Run("timeout", func(t *testing.T) {
 		t.Parallel()
 		g := NewWithT(t)
+
 		ctx, cancel := context.WithTimeout(context.Background(), 0)
 		defer cancel()
+
 		<-ctx.Done()
 
 		got := reasonFromContext(ctx)
@@ -1512,6 +1160,7 @@ func TestPipelineRun_SingleUse(t *testing.T) {
 	t.Parallel()
 
 	cfg := DefaultConfig()
+
 	p, err := New(cfg, t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -1532,6 +1181,7 @@ func TestPipelineRun_SingleUse_ErrorMessage(t *testing.T) {
 	t.Parallel()
 
 	cfg := DefaultConfig()
+
 	p, err := New(cfg, t.TempDir())
 	if err != nil {
 		t.Fatal(err)

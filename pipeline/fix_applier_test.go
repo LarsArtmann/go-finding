@@ -304,6 +304,7 @@ func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
 	t.Parallel()
 
 	tempDir := t.TempDir()
+
 	applier, err := NewFixApplier(tempDir)
 	if err != nil {
 		t.Fatalf("NewFixApplier: %v", err)

@@ -73,6 +73,7 @@ func (m *Metrics) StageDuration(name Stage) time.Duration {
 func (m *Metrics) DetectorTime(name string) time.Duration {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
 	return m.detectorTimes[name]
 }
 
@@ -80,6 +81,7 @@ func (m *Metrics) DetectorTime(name string) time.Duration {
 func (m *Metrics) DetectorFindings(name string) int {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
 	return m.findingsFound[name]
 }
 
@@ -87,6 +89,7 @@ func (m *Metrics) DetectorFindings(name string) int {
 func (m *Metrics) TotalFixesApplied() int {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
 	return m.fixesApplied
 }
 
@@ -162,6 +165,7 @@ func (m *Metrics) Snapshot() MetricsSnapshot {
 	maps.Copy(findings, m.findingsFound)
 
 	total := time.Duration(0)
+
 	if !m.endTime.IsZero() && !m.startTime.IsZero() {
 		if d := m.endTime.Sub(m.startTime); d > 0 {
 			total = d

@@ -44,6 +44,7 @@ func main() {
 
 		return
 	}
+
 	cleanup := func() {
 		_ = os.RemoveAll(tmpDir)
 	}

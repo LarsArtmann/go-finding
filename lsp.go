@@ -97,6 +97,7 @@ func (f Finding) ToLSP() LSPDiagnostic {
 			Line:      toZeroBased(rel.Position.Line),
 			Character: toZeroBased(rel.Position.Column),
 		}
+
 		lspRange := LSPRange{Start: lspPos, End: lspPos}
 		if rel.Range != nil && rel.Range.HasEnd() {
 			lspRange.End = LSPPosition{
@@ -104,6 +105,7 @@ func (f Finding) ToLSP() LSPDiagnostic {
 				Character: toZeroBased(rel.Range.End.Column),
 			}
 		}
+
 		diag.Related = append(diag.Related, LSPRelatedInfo{
 			Location: LSPLocation{
 				URI:   rel.Position.File,
@@ -180,6 +182,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 			Position:  relPos,
 		}
 		endLine := rel.Location.Range.End.Line + 1
+
 		endChar := rel.Location.Range.End.Character + 1
 		if endLine != relPos.Line || endChar != relPos.Column {
 			ref.Range = &Range{
@@ -187,6 +190,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 				End:   Position{File: rel.Location.URI, Line: endLine, Column: endChar},
 			}
 		}
+
 		f.Related = append(f.Related, ref)
 	}
 
@@ -196,11 +200,13 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 		if diag.Severity > 0 {
 			f.Metadata[LSPSeverityKey] = strconv.Itoa(int(diag.Severity))
 		}
+
 		if len(diag.Tags) > 0 {
 			tagStrs := make([]string, len(diag.Tags))
 			for i, tag := range diag.Tags {
 				tagStrs[i] = strconv.Itoa(int(tag))
 			}
+
 			f.Metadata[LSPDiagnosticTagsKey] = strings.Join(tagStrs, ",")
 		}
 	}

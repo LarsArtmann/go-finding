@@ -348,9 +348,11 @@ func TestFinding_Equal_Suppression(t *testing.T) {
 	if !a.Equal(b) {
 		t.Error("same suppression should be equal")
 	}
+
 	if a.Equal(c) {
 		t.Error("nil vs non-nil suppression should not be equal")
 	}
+
 	if a.Equal(d) {
 		t.Error("different suppression should not be equal")
 	}

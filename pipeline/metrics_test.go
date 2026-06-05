@@ -199,6 +199,7 @@ func TestMetrics_TotalDuration_NoEnd(t *testing.T) {
 func TestMetricsSnapshot_StageDuration(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	snap := MetricsSnapshot{
 		StageDurations: map[Stage]time.Duration{
 			StageDetect: 100 * time.Millisecond,
@@ -212,6 +213,7 @@ func TestMetricsSnapshot_StageDuration(t *testing.T) {
 func TestPipeline_NilMetricsNoPanic(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	detector := &mockDetector{
 		name:     "test",
 		findings: []finding.Finding{},

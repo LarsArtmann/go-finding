@@ -13,7 +13,8 @@ import (
 // (severity, ID, tool name, etc.) and falls back to SARIF fields otherwise.
 // The context is checked for cancellation before parsing begins.
 func FindingsFromSARIF(ctx context.Context, data []byte) ([]Finding, error) {
-	if err := ctx.Err(); err != nil {
+	err := ctx.Err()
+	if err != nil {
 		return nil, fmt.Errorf("reading SARIF: %w", err)
 	}
 
@@ -26,13 +27,15 @@ func FindingsFromSARIF(ctx context.Context, data []byte) ([]Finding, error) {
 // Prefer this over FindingsFromSARIF for large payloads to avoid buffering
 // the entire input into memory.
 func FindingsFromReader(ctx context.Context, r io.Reader) ([]Finding, error) {
-	if err := ctx.Err(); err != nil {
+	err := ctx.Err()
+	if err != nil {
 		return nil, fmt.Errorf("reading SARIF: %w", err)
 	}
 
 	var log SarifLog
 
-	if err := json.NewDecoder(r).Decode(&log); err != nil {
+	err := json.NewDecoder(r).Decode(&log)
+	if err != nil {
 		return nil, fmt.Errorf("decoding SARIF: %w", err)
 	}
 
@@ -43,7 +46,8 @@ func FindingsFromReader(ctx context.Context, r io.Reader) ([]Finding, error) {
 func findingsFromSARIFLog(data []byte) ([]Finding, error) {
 	var log SarifLog
 
-	if err := json.Unmarshal(data, &log); err != nil {
+	err := json.Unmarshal(data, &log)
+	if err != nil {
 		return nil, fmt.Errorf("parsing SARIF: %w", err)
 	}
 
@@ -108,6 +112,7 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 				ref.FindingID = v
 			}
 		}
+
 		if rel.PhysicalLocation.Region != nil {
 			region := rel.PhysicalLocation.Region
 			if region.EndLine > 0 || region.EndColumn > 0 {
@@ -235,6 +240,7 @@ func applySarifProperties(f *Finding, props map[string]any) {
 // stringProp extracts a string property from a SARIF property bag.
 func stringProp(props map[string]any, key string) (string, bool) {
 	v, ok := props[key].(string)
+
 	return v, ok
 }
 

@@ -87,13 +87,16 @@ func (r Range) IsInverted() bool {
 	if r.Start.Line <= 0 || r.End.Line <= 0 {
 		return false
 	}
+
 	if r.End.Line < r.Start.Line {
 		return true
 	}
+
 	if r.End.Line == r.Start.Line && r.Start.Column > 0 && r.End.Column > 0 &&
 		r.End.Column < r.Start.Column {
 		return true
 	}
+
 	return false
 }
 
@@ -394,6 +397,7 @@ func (r Range) Adjacent(other Range) bool {
 	if !r.hasLineInfo(other) {
 		startMatch := offsetAdjacent(r.End.Offset, other.Start.Offset)
 		endMatch := offsetAdjacent(other.End.Offset, r.Start.Offset)
+
 		return startMatch || endMatch
 	}
 

@@ -104,7 +104,8 @@ func (e *FixEdit) UnmarshalJSON(data []byte) error {
 	}
 
 	var j jsonEdit
-	if err := json.Unmarshal(data, &j); err != nil {
+	err := json.Unmarshal(data, &j)
+	if err != nil {
 		return fmt.Errorf("unmarshal fix edit: %w", err)
 	}
 

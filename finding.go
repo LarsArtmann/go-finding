@@ -312,6 +312,7 @@ func (f Finding) Validate() error {
 				fmt.Sprintf("finding.Related[%d] is invalid: missing required fields", i), nil,
 			))
 		}
+
 		if ref.Range != nil && ref.Range.IsInverted() {
 			errs = append(errs, NewValidationError(
 				fmt.Sprintf(
@@ -365,51 +366,67 @@ func (f Finding) Equal(other Finding) bool {
 	if f.ID != other.ID {
 		return false
 	}
+
 	if f.Rule != other.Rule {
 		return false
 	}
+
 	if f.ToolName != other.ToolName {
 		return false
 	}
+
 	if f.Message != other.Message {
 		return false
 	}
+
 	if f.Severity != other.Severity {
 		return false
 	}
+
 	if !f.Position.Equal(other.Position) {
 		return false
 	}
+
 	if f.Category != other.Category {
 		return false
 	}
+
 	if !slices.Equal(f.Tags, other.Tags) {
 		return false
 	}
+
 	if f.FixStrategy != other.FixStrategy {
 		return false
 	}
+
 	if f.Suggestion != other.Suggestion {
 		return false
 	}
+
 	if f.BeforeCode != other.BeforeCode {
 		return false
 	}
+
 	if f.AfterCode != other.AfterCode {
 		return false
 	}
+
 	if f.Snippet != other.Snippet {
 		return false
 	}
+
 	if f.Confidence != other.Confidence {
 		return false
 	}
+
 	if !f.equalRange(other) {
 		return false
 	}
+
 	if !f.equalRelated(other) {
 		return false
 	}
+
 	if !f.equalSuppression(other) {
 		return false
 	}
@@ -443,9 +460,11 @@ func (f Finding) equalRelated(other Finding) bool {
 		if a.Range == nil && b.Range == nil {
 			continue
 		}
+
 		if a.Range == nil || b.Range == nil {
 			return false
 		}
+
 		if !a.Range.Equal(*b.Range) {
 			return false
 		}

@@ -80,8 +80,10 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 
 	finding.SortFindingsByID(newFindings)
 
-	var remaining []finding.Finding
-	var modified []finding.Finding
+	var (
+		remaining []finding.Finding
+		modified  []finding.Finding
+	)
 
 	for _, f := range post {
 		orig, exists := origSet[f.Key()]

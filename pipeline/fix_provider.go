@@ -130,6 +130,7 @@ func lineProviderRangeEdits(content []byte, f finding.Finding, idx []int) ([]Fix
 	if f.BeforeCode != "" {
 		rangeContent := content[start:end]
 		before := []byte(f.BeforeCode)
+
 		loc := bytes.Index(rangeContent, before)
 		if loc < 0 {
 			return nil, nil
@@ -254,6 +255,7 @@ func indexLineColToOffset(index []int, contentLen, line, col int) (int, error) {
 // the start of line i+1 (1-based line number → 0-based slice index).
 func buildLineOffsetIndex(content []byte) []int {
 	lineCount := 1
+
 	for _, b := range content {
 		if b == '\n' {
 			lineCount++
@@ -279,6 +281,7 @@ func findAllOccurrences(haystack, needle []byte) []int {
 	}
 
 	var results []int
+
 	idx := 0
 
 	for {

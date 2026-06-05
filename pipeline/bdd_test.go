@@ -133,6 +133,7 @@ var _ = Describe("Pipeline Lifecycle", func() {
 	Describe("callbacks", func() {
 		It("fires OnFinding for each detected finding", func() {
 			var found []finding.Finding
+
 			detector := singleFindingDetector(
 				"t",
 				mustBuild(
@@ -191,10 +192,12 @@ var _ = Describe("Pipeline Lifecycle", func() {
 
 		It("chains processors between detection and triage in the pipeline", func() {
 			var processed [][]finding.Finding
+
 			filter := pipeline.NamedProcessorFunc(
 				"only-errors",
 				pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
 					processed = append(processed, findings)
+
 					return finding.Filter(findings, finding.BySeverity(finding.SeverityError))
 				}),
 			)
@@ -249,6 +252,7 @@ func mustBuild(
 	if err != nil {
 		panic(err)
 	}
+
 	return f
 }
 

@@ -203,6 +203,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 		verifyDone := p.stageTiming(StageVerify)
 		verifyResult, err := Verify(ctx, p.detectors, allOriginal)
+
 		verifyDone()
 
 		if err != nil {
@@ -228,6 +229,7 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 
 	detectDone := p.stageTiming(StageDetect)
 	detResult, err := p.detect(ctx)
+
 	detectDone()
 
 	if err != nil {
@@ -296,7 +298,8 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 
 	if !p.config.DryRun {
 		applyDone := p.stageTiming(StageApply)
-		if err := p.applyTriage(ctx, triage.Direct, &iter); err != nil {
+		err := p.applyTriage(ctx, triage.Direct, &iter)
+		if err != nil {
 			applyDone()
 
 			return false, fmt.Errorf("iteration %d: %w", p.iterations+1, err)

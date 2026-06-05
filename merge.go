@@ -51,6 +51,7 @@ func Combine(reports []*Report, opts ...MergeOption) *Report {
 	}
 
 	total := 0
+
 	for _, report := range reports {
 		if report != nil {
 			total += len(report.Findings)
@@ -76,6 +77,7 @@ func Combine(reports []*Report, opts ...MergeOption) *Report {
 					if _, exists := seen[key]; exists {
 						continue
 					}
+
 					seen[key] = struct{}{}
 				}
 			}

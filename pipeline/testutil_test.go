@@ -160,7 +160,9 @@ func writeFile(path string, data []byte, perm uint32) error {
 
 func writeTestFile(t *testing.T, path string, data []byte) {
 	t.Helper()
-	if err := writeFile(path, data, 0o644); err != nil {
+
+	err := writeFile(path, data, 0o644)
+	if err != nil {
 		t.Fatalf("write file: %v", err)
 	}
 }
@@ -237,6 +239,7 @@ func newTestApplierWithDir(t *testing.T) (string, *FixApplier) {
 	t.Helper()
 
 	dir := t.TempDir()
+
 	a, err := NewFixApplier(dir)
 	if err != nil {
 		t.Fatalf("NewFixApplier: %v", err)
@@ -304,6 +307,7 @@ func suppressedIDs() []string { return []string{"s2", "s4"} }
 
 func assertNoSuppressedFindings(t *testing.T, findings []finding.Finding, mode string) {
 	t.Helper()
+
 	for _, f := range findings {
 		for _, sid := range suppressedIDs() {
 			if f.ID == sid {
@@ -315,6 +319,7 @@ func assertNoSuppressedFindings(t *testing.T, findings []finding.Finding, mode s
 
 func assertNoSuppressedNotified(t *testing.T, notified []string, mode string) {
 	t.Helper()
+
 	for _, id := range notified {
 		for _, sid := range suppressedIDs() {
 			if id == sid {

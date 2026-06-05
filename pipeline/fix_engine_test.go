@@ -227,6 +227,7 @@ func TestFixEngine_Apply_SubstringInsertion(t *testing.T) {
 
 func TestFixEngine_Apply_NearestLineMatch(t *testing.T) {
 	t.Parallel()
+
 	engine := NewFixEngine()
 	content := []byte("line1: X\nline2: X\nline3: X")
 
@@ -345,6 +346,7 @@ func TestLineColToOffset(t *testing.T) {
 			t.Parallel()
 			g := NewWithT(t)
 			idx := buildLineOffsetIndex(content)
+
 			offset, err := indexLineColToOffset(idx, len(content), tt.line, tt.col)
 			if tt.wantErr {
 				g.Expect(err).To(HaveOccurred())

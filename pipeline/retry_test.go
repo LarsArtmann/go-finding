@@ -16,6 +16,7 @@ func newRetryDet(d Detector, maxRetries int) *RetryDetector {
 
 func TestRetryConfig_delay(t *testing.T) {
 	t.Parallel()
+
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 5 * time.Second}
 
 	tests := []struct {
@@ -39,6 +40,7 @@ func TestRetryConfig_delay(t *testing.T) {
 
 func TestRetryConfig_delay_maxCap(t *testing.T) {
 	t.Parallel()
+
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 300 * time.Millisecond}
 
 	got := c.delay(10)
@@ -55,6 +57,7 @@ func TestRetryConfig_delay_maxCap(t *testing.T) {
 func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	inner := makeFindingDetectorFunc("F1")
 	rd := newRetryDet(inner, 3)
 
@@ -69,6 +72,7 @@ func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		calls++
@@ -94,6 +98,7 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 func TestRetryDetector_ExhaustedRetries(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	inner := makeErrorDetector("permanent")
 
 	rd := NewRetryDetector(inner, RetryConfig{MaxRetries: 2, BaseDelay: time.Millisecond})
@@ -109,6 +114,7 @@ func TestRetryDetector_ExhaustedRetries(t *testing.T) {
 func TestRetryDetector_ContextCancellation(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
 		calls++
@@ -192,6 +198,7 @@ func TestRetryConfig_Validate_BaseDelayExceedsMax(t *testing.T) {
 	t.Parallel()
 
 	c := RetryConfig{BaseDelay: 2 * time.Second, MaxDelay: 1 * time.Second}
+
 	err := c.Validate()
 	if err == nil {
 		t.Fatal("expected error when BaseDelay > MaxDelay")
@@ -205,6 +212,7 @@ func TestRetryConfig_Validate_MaxDelayZeroWithBaseDelay(t *testing.T) {
 	t.Parallel()
 
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 0}
+
 	err := c.Validate()
 	if err == nil {
 		t.Fatal("expected error when MaxDelay=0 with BaseDelay>0")
@@ -218,6 +226,7 @@ func TestRetryConfig_Validate_NegativeMaxRetries(t *testing.T) {
 	t.Parallel()
 
 	c := RetryConfig{MaxRetries: -1}
+
 	err := c.Validate()
 	if err == nil {
 		t.Fatal("expected error for negative MaxRetries")
@@ -231,6 +240,7 @@ func TestRetryConfig_Validate_NegativeBaseDelay(t *testing.T) {
 	t.Parallel()
 
 	c := RetryConfig{BaseDelay: -1}
+
 	err := c.Validate()
 	if err == nil {
 		t.Fatal("expected error for negative BaseDelay")
@@ -244,6 +254,7 @@ func TestRetryConfig_Validate_NegativeMaxDelay(t *testing.T) {
 	t.Parallel()
 
 	c := RetryConfig{MaxDelay: -1}
+
 	err := c.Validate()
 	if err == nil {
 		t.Fatal("expected error for negative MaxDelay")

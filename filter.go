@@ -32,6 +32,7 @@ func FilterInPlace(findings []Finding, predicates ...FilterFunc) []Finding {
 	}
 
 	n := 0
+
 	for _, f := range findings {
 		if matchesAll(f, predicates) {
 			findings[n] = f

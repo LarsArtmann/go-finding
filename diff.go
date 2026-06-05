@@ -39,9 +39,11 @@ func Diff(before, after []Finding) DiffResult {
 		afterSet[f.ID] = f
 	}
 
-	var added, removed []Finding
-	var modified []ModifiedPair
-	var unchanged []Finding
+	var (
+		added, removed []Finding
+		modified       []ModifiedPair
+		unchanged      []Finding
+	)
 
 	for id, beforeF := range beforeSet {
 		afterF, exists := afterSet[id]

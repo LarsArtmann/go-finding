@@ -25,6 +25,7 @@ func simpleSARIFReport() *Report {
 
 func assertRulePresent(t *testing.T, rules map[string]struct{}, ruleID string, wantPresent bool) {
 	t.Helper()
+
 	_, ok := rules[ruleID]
 	if ok != wantPresent {
 		if wantPresent {
@@ -72,6 +73,7 @@ func goFindingPropsWithCustom(
 		snippet,
 	)
 	props[customKey] = customVal
+
 	return props
 }
 
@@ -432,6 +434,7 @@ func TestWriteSARIF(t *testing.T) {
 	r := simpleSARIFReport()
 
 	var buf strings.Builder
+
 	err := r.WriteSARIF(context.Background(), &buf)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
@@ -459,6 +462,7 @@ func TestWriteSARIFFiltered(t *testing.T) {
 	}
 
 	var buf strings.Builder
+
 	err := r.WriteSARIFFiltered(context.Background(), &buf, SeverityWarning)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
@@ -477,6 +481,7 @@ func TestFindingsFromSARIF_EmptyLog(t *testing.T) {
 	if err != nil {
 		t.Fatalf("FindingsFromSARIF(): %v", err)
 	}
+
 	if len(findings) != 0 {
 		t.Errorf("FindingsFromSARIF() findings = %v, want empty", findings)
 	}
@@ -524,6 +529,7 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("FindingsFromSARIF(): %v", err)
 	}
+
 	g.Expect(findings).To(gomega.HaveLen(1))
 
 	got := findings[0]
@@ -794,6 +800,7 @@ func TestApplySarifPosition_WithEndPosition(t *testing.T) {
 
 	f := Finding{}
 	applySarifPosition(&f, r)
+
 	if f.Range == nil {
 		t.Fatal("Range should be set with end position")
 	}
@@ -825,6 +832,7 @@ func TestApplySarifPosition_EndColumnOnly(t *testing.T) {
 
 	f := Finding{}
 	applySarifPosition(&f, r)
+
 	if f.Range == nil {
 		t.Fatal("Range should be set with EndColumn > 0")
 	}
@@ -867,6 +875,7 @@ func TestWriteTo(t *testing.T) {
 	}
 
 	var buf strings.Builder
+
 	n, err := r.WriteTo(&buf)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(n).To(gomega.BeNumerically(">", 0))
@@ -897,6 +906,7 @@ func TestWriteSARIF_CancelledContext(t *testing.T) {
 	cancel()
 
 	var buf strings.Builder
+
 	err := r.WriteSARIF(ctx, &buf)
 	g.Expect(err).To(gomega.HaveOccurred())
 	g.Expect(err.Error()).To(gomega.ContainSubstring("writing SARIF"))
@@ -912,6 +922,7 @@ func TestWriteSARIFFiltered_CancelledContext(t *testing.T) {
 	cancel()
 
 	var buf strings.Builder
+
 	err := r.WriteSARIFFiltered(ctx, &buf, SeverityWarning)
 	g.Expect(err).To(gomega.HaveOccurred())
 	g.Expect(err.Error()).To(gomega.ContainSubstring("writing SARIF filtered"))

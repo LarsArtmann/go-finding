@@ -108,6 +108,7 @@ func TestVerifier_Verify(t *testing.T) {
 		return nil, nil
 	})
 	original, _ := detector.Detect(context.Background())
+
 	result, err := Verify(context.Background(), []Detector{detector}, original)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

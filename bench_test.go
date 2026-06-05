@@ -216,6 +216,7 @@ func sarifBenchReport() *Report {
 			Position: Position{File: benchFile, Line: i + 1, Column: 1},
 		})
 	}
+
 	return report
 }
 

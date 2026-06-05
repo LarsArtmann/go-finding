@@ -68,6 +68,7 @@ func MakeFindingsWithIDs(count int, severity Severity) []Finding {
 	for i := range count {
 		findings[i] = Finding{ID: string(rune('1' + i)), Severity: severity}
 	}
+
 	return findings
 }
 
@@ -164,7 +165,8 @@ func RunEqualTests[T any](t *testing.T, tests []struct {
 func unmarshalJSON(t *testing.T, data []byte, v any) {
 	t.Helper()
 
-	if err := json.Unmarshal(data, v); err != nil {
+	err := json.Unmarshal(data, v)
+	if err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
 }
@@ -193,8 +195,10 @@ func AssertFindingsIDs(t *testing.T, findings []Finding, want []string) {
 
 	if len(findings) != len(want) {
 		t.Errorf("findings len = %d, want %d", len(findings), len(want))
+
 		return
 	}
+
 	for i, f := range findings {
 		if f.ID != want[i] {
 			t.Errorf("findings[%d].ID = %q, want %q", i, f.ID, want[i])
@@ -407,15 +411,19 @@ func AssertFindingFields(
 	if f.Rule != rule {
 		t.Errorf("Rule = %q, want %q", f.Rule, rule)
 	}
+
 	if f.ToolName != tool {
 		t.Errorf("ToolName = %q, want %q", f.ToolName, tool)
 	}
+
 	if f.Message != message {
 		t.Errorf("Message = %q, want %q", f.Message, message)
 	}
+
 	if f.Severity != sev {
 		t.Errorf("Severity = %v, want %v", f.Severity, sev)
 	}
+
 	if f.Position != pos {
 		t.Errorf("Position = %v, want %v", f.Position, pos)
 	}

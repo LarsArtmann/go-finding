@@ -25,6 +25,7 @@ func TestFixApplier_BackupPathCollision(t *testing.T) {
 	t.Parallel()
 
 	tempDir := t.TempDir()
+
 	applier, err := NewFixApplier(tempDir)
 	if err != nil {
 		t.Fatalf("NewFixApplier: %v", err)
@@ -73,6 +74,7 @@ func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
 	t.Parallel()
 
 	tempDir := t.TempDir()
+
 	applier, err := NewFixApplier(tempDir)
 	if err != nil {
 		t.Fatalf("NewFixApplier: %v", err)
@@ -126,6 +128,7 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 	}
 
 	tempDir := t.TempDir()
+
 	p, err := New(config, tempDir, goodDetector, badDetector)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -174,6 +177,7 @@ func TestPipeline_RetryConfig(t *testing.T) {
 	}
 
 	tempDir := t.TempDir()
+
 	p, err := New(config, tempDir, flaky)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -216,6 +220,7 @@ func TestPipeline_VerifyAfterFix(t *testing.T) {
 	}
 
 	tempDir := t.TempDir()
+
 	p, err := New(config, tempDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -243,6 +248,7 @@ func TestPipeline_MetricsRecordsDetector(t *testing.T) {
 	det := mockDetectorWithFinding("my-detector", "1", "r1", "test", "m")
 
 	tempDir := t.TempDir()
+
 	p, err := New(config, tempDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

@@ -41,6 +41,7 @@ func ExampleBuilder() {
 		Build()
 	if err != nil {
 		fmt.Println("error:", err)
+
 		return
 	}
 
@@ -473,6 +474,7 @@ func ExampleGeneratedFileFilter() {
 	}
 
 	fmt.Println(noop.Name())
+
 	result, err := noop.Process(context.Background(), findings)
 	if err != nil {
 		fmt.Println("error:", err)

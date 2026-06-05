@@ -35,12 +35,15 @@ func TestNewFinding(t *testing.T) {
 	f := NewFinding("nilcheck", "govet", "possible nil dereference", SeverityError, pos, 0)
 
 	AssertFindingFields(t, f, "nilcheck", "govet", "possible nil dereference", SeverityError, pos)
+
 	if f.FixStrategy != FixStrategyNone {
 		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyNone)
 	}
+
 	if f.ID == "" {
 		t.Error("ID should not be empty")
 	}
+
 	if !strings.Contains(f.ID, "govet") || !strings.Contains(f.ID, "nilcheck") {
 		t.Errorf("ID = %q should contain tool name and rule", f.ID)
 	}

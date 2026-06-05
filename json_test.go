@@ -24,9 +24,11 @@ func nanConfidenceFinding() Finding {
 
 func assertSingleFindingWithID(t *testing.T, got *Report, wantID string) {
 	t.Helper()
+
 	if len(got.Findings) != 1 {
 		t.Fatalf("Findings length = %d, want 1", len(got.Findings))
 	}
+
 	if got.Findings[0].ID != wantID {
 		t.Errorf("Findings[0].ID = %q, want %q", got.Findings[0].ID, wantID)
 	}
@@ -253,6 +255,7 @@ func TestFindingsFromJSON(t *testing.T) {
 
 		expectJSONError(t, func() error {
 			_, _, err := FindingsFromJSON([]byte("[]]"))
+
 			return err
 		}, "invalid JSON")
 	})
@@ -370,7 +373,8 @@ func TestLineJSON_ErrorPath(t *testing.T) {
 func expectJSONError(t *testing.T, fn func() error, context string) {
 	t.Helper()
 
-	if err := fn(); err == nil {
+	err := fn()
+	if err == nil {
 		t.Errorf("expected error for %s", context)
 	}
 }
@@ -386,6 +390,7 @@ func TestFinding_WriteJSON(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
+
 	err := f.WriteJSON(&buf)
 	if err != nil {
 		t.Fatalf("WriteJSON: %v", err)
@@ -403,6 +408,7 @@ func TestReport_WriteJSON(t *testing.T) {
 	r := MakeSimpleReport("tool")
 
 	var buf bytes.Buffer
+
 	err := r.WriteJSON(&buf)
 	if err != nil {
 		t.Fatalf("WriteJSON: %v", err)

@@ -18,6 +18,7 @@ func keyTestFinding(id string) Finding {
 
 func TestClone(t *testing.T) {
 	const mutated = "changed"
+
 	t.Parallel()
 
 	expires := time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)
@@ -173,30 +174,35 @@ func TestFindingKeyStability(t *testing.T) {
 	f := keyTestFinding("")
 
 	key1 := f.Key()
+
 	key2 := f.Key()
 	if key1 != key2 {
 		t.Error("Key() should be stable across calls")
 	}
 
 	f2 := f
+
 	f2.Message = "other"
 	if f2.Key() == key1 {
 		t.Error("different Message should produce different Key")
 	}
 
 	f3 := f
+
 	f3.Rule = "R002"
 	if f3.Key() == key1 {
 		t.Error("different Rule should produce different Key")
 	}
 
 	f4 := f
+
 	f4.Position.File = "other.go"
 	if f4.Key() == key1 {
 		t.Error("different Position.File should produce different Key")
 	}
 
 	f5 := f
+
 	f5.ToolName = "other-tool"
 	if f5.Key() == key1 {
 		t.Error("different ToolName should produce different Key")
@@ -217,45 +223,98 @@ func TestEqual_FieldMismatch(t *testing.T) {
 		a, b Finding
 	}{
 		{exportTestEqual, base, base},
-		{"different ID", base, func() Finding { f := base; f.ID = "x"; return f }()},
-		{"different Rule", base, func() Finding { f := base; f.Rule = "x"; return f }()},
-		{"different ToolName", base, func() Finding { f := base; f.ToolName = "x"; return f }()},
-		{"different Message", base, func() Finding { f := base; f.Message = "x"; return f }()},
+		{"different ID", base, func() Finding {
+			f := base
+			f.ID = "x"
+			return f
+		}()},
+		{"different Rule", base, func() Finding {
+			f := base
+			f.Rule = "x"
+			return f
+		}()},
+		{"different ToolName", base, func() Finding {
+			f := base
+			f.ToolName = "x"
+			return f
+		}()},
+		{"different Message", base, func() Finding {
+			f := base
+			f.Message = "x"
+			return f
+		}()},
 		{
 			"different Severity", base,
-			func() Finding { f := base; f.Severity = SeverityWarning; return f }(),
+			func() Finding {
+				f := base
+				f.Severity = SeverityWarning
+				return f
+			}(),
 		},
-		{"different Category", base, func() Finding { f := base; f.Category = "x"; return f }()},
-		{"different Tags", base, func() Finding { f := base; f.Tags = []Tag{"x"}; return f }()},
+		{"different Category", base, func() Finding {
+			f := base
+			f.Category = "x"
+			return f
+		}()},
+		{"different Tags", base, func() Finding {
+			f := base
+			f.Tags = []Tag{"x"}
+			return f
+		}()},
 		{
 			"different FixStrategy", base,
-			func() Finding { f := base; f.FixStrategy = FixStrategyDirect; return f }(),
+			func() Finding {
+				f := base
+				f.FixStrategy = FixStrategyDirect
+				return f
+			}(),
 		},
 		{
 			"different Suggestion", base,
-			func() Finding { f := base; f.Suggestion = "x"; return f }(),
+			func() Finding {
+				f := base
+				f.Suggestion = "x"
+				return f
+			}(),
 		},
 		{
 			"different BeforeCode", base,
-			func() Finding { f := base; f.BeforeCode = "x"; return f }(),
+			func() Finding {
+				f := base
+				f.BeforeCode = "x"
+				return f
+			}(),
 		},
 		{
 			"different AfterCode", base,
-			func() Finding { f := base; f.AfterCode = "x"; return f }(),
+			func() Finding {
+				f := base
+				f.AfterCode = "x"
+				return f
+			}(),
 		},
 		{
 			"different Snippet", base,
-			func() Finding { f := base; f.Snippet = "x"; return f }(),
+			func() Finding {
+				f := base
+				f.Snippet = "x"
+				return f
+			}(),
 		},
 		{
 			"different Confidence", base,
-			func() Finding { f := base; f.Confidence = 0.9; return f }(),
+			func() Finding {
+				f := base
+				f.Confidence = 0.9
+				return f
+			}(),
 		},
 		{
 			"different Position", base,
 			func() Finding {
 				f := base
 				f.Position = Position{File: filterTestFileB}
+
 				return f
 			}(),
 		},
@@ -264,6 +323,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.Range = NewRangePtr("a.go", 1, 1, 1, 5)
+
 				return f
 			}(),
 		},
@@ -272,6 +332,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.Related = []RelatedRef{{FindingID: "x"}}
+
 				return f
 			}(),
 		},
@@ -280,6 +341,7 @@ func TestEqual_FieldMismatch(t *testing.T) {
 			func() Finding {
 				f := base
 				f.Metadata = map[string]string{"k": "v"}
+
 				return f
 			}(),
 		},

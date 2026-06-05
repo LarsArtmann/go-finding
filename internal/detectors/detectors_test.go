@@ -94,6 +94,7 @@ func TestParseGoVetJSON_InvalidAndEmpty(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			g := NewWithT(t)
+
 			findings := parseGoVetJSON([]byte(tt.input), "")
 			if tt.empty {
 				g.Expect(findings).To(BeEmpty())
@@ -237,12 +238,14 @@ func TestDetector_CancelledContext(t *testing.T) {
 
 func TestNewGoVetDetector_ValidProject(t *testing.T) {
 	t.Parallel()
+
 	g := NewWithT(t)
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 
 	d := NewGoVetDetector("../../")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 

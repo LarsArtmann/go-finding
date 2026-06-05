@@ -63,8 +63,10 @@ func (e *FixEngine) ApplyWithConflicts(
 		return nil, nil, content, nil
 	}
 
-	var allEdits []FixEdit
-	var resolveErrors []error
+	var (
+		allEdits      []FixEdit
+		resolveErrors []error
+	)
 
 	for _, f := range fixes {
 		if !f.HasCodeChange() {
@@ -75,6 +77,7 @@ func (e *FixEngine) ApplyWithConflicts(
 		if err != nil {
 			resolveErrors = append(resolveErrors, err)
 		}
+
 		allEdits = append(allEdits, edits...)
 	}
 
@@ -125,14 +128,18 @@ func (*FixEngine) applyEditsWithConflicts(
 	content []byte,
 	edits []FixEdit,
 ) ([]finding.Finding, []ConflictInfo, []byte) {
-	var applied []finding.Finding
-	var appliedEdits []FixEdit
-	var conflicts []ConflictInfo
+	var (
+		applied      []finding.Finding
+		appliedEdits []FixEdit
+		conflicts    []ConflictInfo
+	)
+
 	result := content
 	frontier := len(content) + 1
 
 	for _, edit := range edits {
-		if err := edit.Validate(); err != nil {
+		err := edit.Validate()
+		if err != nil {
 			continue
 		}
 
@@ -142,6 +149,7 @@ func (*FixEngine) applyEditsWithConflicts(
 
 		if edit.EndOffset() > frontier {
 			var conflictsWith []finding.Finding
+
 			for _, prev := range appliedEdits {
 				if edit.Overlaps(prev) {
 					conflictsWith = append(conflictsWith, prev.Source)
@@ -158,6 +166,7 @@ func (*FixEngine) applyEditsWithConflicts(
 		}
 
 		var buf []byte
+
 		buf = append(buf, result[:edit.Offset]...)
 		buf = append(buf, edit.Replacement...)
 		buf = append(buf, result[edit.EndOffset():]...)

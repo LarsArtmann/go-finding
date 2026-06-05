@@ -7,6 +7,7 @@ import (
 
 func assertByCategoryCount(t *testing.T, r *Report, cat string, want int) {
 	t.Helper()
+
 	if got := len(r.ByCategory(Category(cat))); got != want {
 		t.Errorf("%s findings = %d, want %d", cat, got, want)
 	}
@@ -43,6 +44,7 @@ func TestReportActiveFindings(t *testing.T) {
 	if len(active) != 1 {
 		t.Fatalf("active findings = %d, want 1", len(active))
 	}
+
 	if active[0].ID != "1" {
 		t.Errorf("active[0].ID = %q, want %q", active[0].ID, "1")
 	}
@@ -65,6 +67,7 @@ func TestReportActiveFindings_None(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: string(TagTest)})
+
 	active := r.ActiveFindings()
 	if len(active) != 0 {
 		t.Errorf("active findings = %d, want 0", len(active))
@@ -95,6 +98,7 @@ func TestReportByFixStrategy(t *testing.T) {
 	if len(r.ByFixStrategy(FixStrategyDirect)) != 2 {
 		t.Errorf("direct findings = %d, want 2", len(r.ByFixStrategy(FixStrategyDirect)))
 	}
+
 	if len(r.ByFixStrategy(FixStrategyNone)) != 1 {
 		t.Errorf("none findings = %d, want 1", len(r.ByFixStrategy(FixStrategyNone)))
 	}
@@ -111,6 +115,7 @@ func TestReportFindByID(t *testing.T) {
 	if found == nil {
 		t.Fatal("expected to find finding")
 	}
+
 	if found.Message != "target" {
 		t.Errorf("Message = %q, want %q", found.Message, "target")
 	}
@@ -131,6 +136,7 @@ func TestReportBySeverity(t *testing.T) {
 	if len(r.BySeverity(SeverityError)) != 2 {
 		t.Errorf("error findings = %d, want 2", len(r.BySeverity(SeverityError)))
 	}
+
 	if len(r.BySeverity(SeverityWarning)) != 1 {
 		t.Errorf("warning findings = %d, want 1", len(r.BySeverity(SeverityWarning)))
 	}
@@ -147,6 +153,7 @@ func TestReportFindByRule(t *testing.T) {
 	if len(r.FindByRule("SA1000")) != 2 {
 		t.Errorf("SA1000 findings = %d, want 2", len(r.FindByRule("SA1000")))
 	}
+
 	AssertEmpty(t, r.FindByRule("nonexistent"), "nonexistent rule")
 }
 
@@ -160,6 +167,7 @@ func TestReportLen(t *testing.T) {
 
 	r.AddFinding(Finding{ID: "1", Message: "a"})
 	r.AddFinding(Finding{ID: "2", Message: "b"})
+
 	if r.Len() != 2 {
 		t.Errorf("report with 2 findings Len = %d, want 2", r.Len())
 	}
@@ -230,6 +238,7 @@ func TestReport_Filter(t *testing.T) {
 	if filtered.Tool.Name != string(TagTest) {
 		t.Errorf("Tool.Name = %q, want %q", filtered.Tool.Name, string(TagTest))
 	}
+
 	AssertFindingsLenAndIDs(t, filtered.Findings, []string{"1", "3"}, "filtered.Findings")
 }
 
@@ -253,15 +262,18 @@ func TestReport_Map(t *testing.T) {
 
 	mapped := r.Map(func(f Finding) Finding {
 		f.Severity = SeverityWarning
+
 		return f
 	})
 
 	if mapped.Tool.Name != string(TagTest) {
 		t.Errorf("Tool.Name = %q, want %q", mapped.Tool.Name, string(TagTest))
 	}
+
 	if len(mapped.Findings) != 2 {
 		t.Fatalf("Findings length = %d, want 2", len(mapped.Findings))
 	}
+
 	for i, f := range mapped.Findings {
 		if f.Severity != SeverityWarning {
 			t.Errorf("Findings[%d].Severity = %v, want %v", i, f.Severity, SeverityWarning)
@@ -306,9 +318,12 @@ func TestReportConcurrentReadWrite(t *testing.T) {
 	t.Parallel()
 
 	r := NewReport(ToolInfo{Name: "race-test"})
-	const writers = 10
-	const readers = 10
-	const opsPerWriter = 50
+
+	const (
+		writers      = 10
+		readers      = 10
+		opsPerWriter = 50
+	)
 
 	start := make(chan struct{})
 	done := make(chan struct{}, writers+readers)
@@ -316,6 +331,7 @@ func TestReportConcurrentReadWrite(t *testing.T) {
 	for i := range writers {
 		go func() {
 			<-start
+
 			for j := range opsPerWriter {
 				r.AddFinding(Finding{
 					ID:       fmt.Sprintf("w%d-f%d", i, j),
@@ -323,6 +339,7 @@ func TestReportConcurrentReadWrite(t *testing.T) {
 					Severity: SeverityWarning,
 				})
 			}
+
 			done <- struct{}{}
 		}()
 	}
@@ -330,12 +347,14 @@ func TestReportConcurrentReadWrite(t *testing.T) {
 	for range readers {
 		go func() {
 			<-start
+
 			for range opsPerWriter {
 				_ = r.Len()
 				_ = r.ActiveFindings()
 				_ = r.CountBySeverity(SeverityWarning)
 				r.ComputeSummary()
 			}
+
 			done <- struct{}{}
 		}()
 	}

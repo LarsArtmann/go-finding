@@ -142,15 +142,19 @@ func TestFromLSP(t *testing.T) {
 	if p.Tool != "golangci-lint" {
 		t.Errorf("ParseID Tool = %q, want %q", p.Tool, "golangci-lint")
 	}
+
 	if p.Rule != "unused-var" {
 		t.Errorf("ParseID Rule = %q, want %q", p.Rule, "unused-var")
 	}
+
 	if p.File != "file:///test.go" {
 		t.Errorf("ParseID File = %q, want %q", p.File, "file:///test.go")
 	}
+
 	if p.Line != 5 {
 		t.Errorf("ParseID Line = %d, want %d", p.Line, 5)
 	}
+
 	if p.Column != 10 {
 		t.Errorf("ParseID Column = %d, want %d", p.Column, 10)
 	}

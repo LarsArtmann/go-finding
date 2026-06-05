@@ -159,6 +159,7 @@ var _ = Describe("Report Filtering and Aggregation", func() {
 		for _, f := range findings {
 			report.AddFinding(f)
 		}
+
 		report.ComputeSummary()
 	})
 
@@ -196,6 +197,7 @@ var _ = Describe("Report Filtering and Aggregation", func() {
 		for range report.All() {
 			count++
 		}
+
 		Expect(count).To(Equal(4))
 	})
 })
@@ -276,12 +278,15 @@ var _ = Describe("Report Merging and Deduplication", func() {
 		Expect(correlations).NotTo(BeEmpty())
 
 		var found bool
+
 		for _, c := range correlations {
 			if len(c.FindingIDs) == 2 {
 				found = true
+
 				break
 			}
 		}
+
 		Expect(found).To(BeTrue())
 	})
 })
@@ -471,14 +476,17 @@ var _ = Describe("Cross-Tool Correlation User Stories", func() {
 		Expect(correlations).NotTo(BeEmpty())
 
 		var crossTool bool
+
 		for _, c := range correlations {
 			Expect(c.Score).To(BeNumerically(">=", 0.0))
 			Expect(c.Score).To(BeNumerically("<=", 1.0))
 			Expect(c.Reason).NotTo(BeEmpty())
+
 			if len(c.FindingIDs) == 2 {
 				crossTool = true
 			}
 		}
+
 		Expect(crossTool).To(BeTrue())
 	})
 
@@ -539,5 +547,6 @@ func mustBuild(
 	if err != nil {
 		panic(err)
 	}
+
 	return f
 }

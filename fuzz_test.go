@@ -14,6 +14,7 @@ func FuzzFilter(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, sevStr, category, file, tool string) {
 		g := NewWithT(t)
+
 		var severity Severity
 
 		switch sevStr {
@@ -169,6 +170,7 @@ func FuzzMerge_DedupByID(f *testing.F) {
 		)
 
 		seen := make(map[string]int)
+
 		for _, f := range merged.Findings {
 			if f.ID == "" {
 				continue
@@ -189,6 +191,7 @@ func FuzzMerge_Idempotent(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, id1, id2 string) {
 		g := NewWithT(t)
+
 		if id1 == id2 {
 			return // Skip identical IDs for this property
 		}

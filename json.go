@@ -38,6 +38,7 @@ func (r *Report) PrettyJSON() (string, error) {
 // suppressed findings from the output.
 func (r *Report) PrettyJSONFiltered() (string, error) {
 	r.mu.RLock()
+
 	filtered := &Report{ //nolint:exhaustruct
 		Tool:     r.Tool,
 		Findings: make([]Finding, 0, len(r.Findings)),
@@ -48,6 +49,7 @@ func (r *Report) PrettyJSONFiltered() (string, error) {
 			filtered.Findings = append(filtered.Findings, f)
 		}
 	}
+
 	r.mu.RUnlock()
 
 	filtered.ComputeSummary()
@@ -125,7 +127,8 @@ func (f Finding) LineJSON() (string, error) {
 // WriteJSON writes compact JSON directly to w.
 // Avoids the intermediate string allocation of LineJSON.
 func (f Finding) WriteJSON(w io.Writer) error {
-	if err := json.NewEncoder(w).Encode(f); err != nil {
+	err := json.NewEncoder(w).Encode(f)
+	if err != nil {
 		return fmt.Errorf("encoding finding JSON: %w", err)
 	}
 
@@ -138,7 +141,8 @@ func (r *Report) WriteJSON(w io.Writer) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 
-	if err := enc.Encode(r); err != nil {
+	err := enc.Encode(r)
+	if err != nil {
 		return fmt.Errorf("encoding report JSON: %w", err)
 	}
 

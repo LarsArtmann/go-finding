@@ -80,6 +80,7 @@ func TestFromDiagnostic_WithCustomSeverity(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -100,6 +101,7 @@ func TestFromDiagnostic_WithSuggestedFix(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -130,6 +132,7 @@ func TestFromDiagnostic_WithRelated(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -187,6 +190,7 @@ func TestNodePosition(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -218,6 +222,7 @@ func TestNodeRange(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -245,6 +250,7 @@ func TestFormatDiagnostic(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, "main.go", testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -275,6 +281,7 @@ func TestToDiagnostic_Basic(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -323,6 +330,7 @@ func TestToDiagnostic_WithSuggestedFix(t *testing.T) {
 	src := "package main\n\nfunc main() {\n\told()\n}\n"
 
 	fset := token.NewFileSet()
+
 	_, err := parser.ParseFile(fset, "fixme.go", src, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -387,6 +395,7 @@ func TestToDiagnostic_RoundTrip(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -415,6 +424,7 @@ func TestToDiagnostic_RoundTrip(t *testing.T) {
 
 	// Position should round-trip exactly
 	origPos := fset.Position(orig.Pos)
+
 	resultPos := fset.Position(result.Pos)
 	if origPos.Line != resultPos.Line || origPos.Column != resultPos.Column {
 		t.Errorf("Position: got %d:%d, want %d:%d",
@@ -426,6 +436,7 @@ func TestToDiagnostic_WithRelated(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -461,6 +472,7 @@ func TestResolvePos_ColumnGT1(t *testing.T) {
 	src := "package main\n\nfunc main() {}\n"
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, "col.go", src, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -490,12 +502,14 @@ func TestResolvePos_LineBeyondFile(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	_, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
 	}
 
 	p := finding.Position{File: testFilename, Line: 9999}
+
 	got := resolvePos(p, fset)
 	if got != token.NoPos {
 		t.Errorf("expected NoPos for line beyond file, got %v", got)
@@ -507,12 +521,14 @@ func TestResolvePos_EmptyFile(t *testing.T) {
 
 	fset := token.NewFileSet()
 	p := finding.Position{File: "", Line: 1}
+
 	got := resolvePos(p, fset)
 	if got != token.NoPos {
 		t.Errorf("expected NoPos for empty file, got %v", got)
 	}
 
 	p2 := finding.Position{File: "x.go", Line: 0}
+
 	got2 := resolvePos(p2, fset)
 	if got2 != token.NoPos {
 		t.Errorf("expected NoPos for line 0, got %v", got2)
@@ -525,6 +541,7 @@ func TestToDiagnostic_WithRange(t *testing.T) {
 	src := "package main\n\nfunc old() {\n\treturn\n}\n"
 
 	fset := token.NewFileSet()
+
 	_, err := parser.ParseFile(fset, "range.go", src, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -558,6 +575,7 @@ func TestToDiagnostic_InsertionOnly(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	_, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -586,6 +604,7 @@ func TestFromDiagnostic_IDGeneration(t *testing.T) {
 	t.Parallel()
 
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, testFilename, testSrcMain, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -613,6 +632,7 @@ func TestNodePosition_FullAST(t *testing.T) {
 
 	src := `package p; func foo() { var x int = 1; _ = x }`
 	fset := token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, "p.go", src, 0)
 	if err != nil {
 		t.Fatalf("parse file: %v", err)
@@ -620,9 +640,11 @@ func TestNodePosition_FullAST(t *testing.T) {
 
 	// Find the function declaration
 	var fn *ast.FuncDecl
+
 	for _, decl := range f.Decls {
 		if fd, ok := decl.(*ast.FuncDecl); ok {
 			fn = fd
+
 			break
 		}
 	}

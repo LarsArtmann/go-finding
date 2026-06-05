@@ -63,7 +63,9 @@ func (s Severity) compareOp(other Severity, op comparisonOp) bool {
 	if !s.isValidWith(other) {
 		return false
 	}
+
 	c := s.Compare(other)
+
 	switch op {
 	case cmpGreaterThan:
 		return c > 0

@@ -137,7 +137,8 @@ func (fb *FileBackup) RollbackAll(paths []string) error {
 	var errs []error
 
 	for _, p := range paths {
-		if err := fb.Restore(p); err != nil {
+		err := fb.Restore(p)
+		if err != nil {
 			errs = append(errs, err)
 		}
 	}

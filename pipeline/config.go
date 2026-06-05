@@ -111,7 +111,8 @@ func (c Config) Validate() error {
 	}
 
 	if c.Retry != nil {
-		if err := c.Retry.Validate(); err != nil {
+		err := c.Retry.Validate()
+		if err != nil {
 			errs = append(errs, fmt.Errorf("retry: %w", err))
 		}
 	}

@@ -26,6 +26,7 @@ func generateFindings(n int) []finding.Finding {
 			Category:    []finding.Category{finding.CategorySecurity, finding.CategoryStyle, finding.CategoryPerformance}[i%3],
 		}
 	}
+
 	return findings
 }
 
@@ -39,6 +40,7 @@ type benchConfig struct {
 
 func runBenchPipeline(b *testing.B, cfg benchConfig) {
 	b.Helper()
+
 	findings := generateFindings(cfg.findings)
 
 	pipelineCfg := Config{
@@ -54,7 +56,9 @@ func runBenchPipeline(b *testing.B, cfg benchConfig) {
 		if cfg.detectorCount > 1 {
 			name = fmt.Sprintf("det-%d", i)
 		}
+
 		f := findings
+
 		detectors = append(detectors, NamedDetectorFunc(name,
 			func(_ context.Context) ([]finding.Finding, error) {
 				return f, nil
@@ -66,10 +70,12 @@ func runBenchPipeline(b *testing.B, cfg benchConfig) {
 
 	for range b.N {
 		b.StopTimer()
+
 		p, err := New(pipelineCfg, b.TempDir(), detectors...)
 		if err != nil {
 			b.Fatal(err)
 		}
+
 		b.StartTimer()
 
 		if _, err := p.Run(context.Background()); err != nil {

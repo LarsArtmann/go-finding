@@ -56,14 +56,16 @@ func (r *Report) ToSARIFFiltered(minSeverity Severity) ([]byte, error) {
 // Streams via json.Encoder, avoiding the intermediate []byte buffer of ToSARIF.
 // The context is checked for cancellation before encoding begins.
 func (r *Report) WriteSARIF(ctx context.Context, w io.Writer) error {
-	if err := ctx.Err(); err != nil {
+	err := ctx.Err()
+	if err != nil {
 		return fmt.Errorf("writing SARIF: %w", err)
 	}
 
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 
-	if err := enc.Encode(r.sarifLog()); err != nil {
+	err := enc.Encode(r.sarifLog())
+	if err != nil {
 		return fmt.Errorf("encoding SARIF: %w", err)
 	}
 
@@ -75,14 +77,16 @@ func (r *Report) WriteSARIF(ctx context.Context, w io.Writer) error {
 // Streams via json.Encoder, avoiding the intermediate []byte buffer.
 // The context is checked for cancellation before encoding begins.
 func (r *Report) WriteSARIFFiltered(ctx context.Context, w io.Writer, minSeverity Severity) error {
-	if err := ctx.Err(); err != nil {
+	err := ctx.Err()
+	if err != nil {
 		return fmt.Errorf("writing SARIF filtered (minSeverity=%s): %w", minSeverity, err)
 	}
 
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 
-	if err := enc.Encode(r.sarifLogFiltered(minSeverity)); err != nil {
+	err := enc.Encode(r.sarifLogFiltered(minSeverity))
+	if err != nil {
 		return fmt.Errorf("encoding SARIF filtered (minSeverity=%s): %w", minSeverity, err)
 	}
 
@@ -96,7 +100,8 @@ func (r *Report) WriteSARIFFiltered(ctx context.Context, w io.Writer, minSeverit
 func (r *Report) WriteTo(w io.Writer) (int64, error) {
 	cw := &countingWriter{w: w}
 
-	if err := r.WriteSARIF(context.Background(), cw); err != nil {
+	err := r.WriteSARIF(context.Background(), cw)
+	if err != nil {
 		return cw.n, fmt.Errorf("writing SARIF: %w", err)
 	}
 
@@ -231,6 +236,7 @@ func sarifRelatedLocs(f Finding) []SarifRelatedLoc {
 			region.EndLine = rel.Range.End.Line
 			region.EndColumn = rel.Range.End.Column
 		}
+
 		sarifRel := SarifRelatedLoc{
 			PhysicalLocation: SarifPhysicalLocation{
 				ArtifactLocation: SarifArtifactLocation{URI: rel.Position.File},

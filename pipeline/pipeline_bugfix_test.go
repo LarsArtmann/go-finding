@@ -55,6 +55,7 @@ func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
 	fix := directFix("fix1", "r1", "tool", "replace old", "old()", "new()", "fixme.go", 5)
 
 	var onFixCalls int
+
 	cfg := Config{
 		MaxIterations:     1,
 		ParallelDetectors: false,
@@ -62,6 +63,7 @@ func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
 	}
 
 	det := mockDetWithFindings("tool", fix)
+
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -92,6 +94,7 @@ func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
 	fix := directFix("fix1", "", "", "", "nonexistent", "replacement", "fixme.go", 1)
 
 	var appliedCount int
+
 	cfg := Config{
 		MaxIterations:     1,
 		ParallelDetectors: false,
@@ -99,6 +102,7 @@ func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
 	}
 
 	det := mockDetWithFindings("tool", fix)
+
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -146,6 +150,7 @@ func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
 	)
 
 	var appliedIDs []string
+
 	cfg := Config{
 		MaxIterations:     1,
 		ParallelDetectors: false,
@@ -153,6 +158,7 @@ func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
 	}
 
 	det := mockDetWithFindings("tool", fixA, fixB)
+
 	p, err := New(cfg, tmpDir, det)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -214,12 +220,14 @@ func TestApplyTriage_AllConflicts(t *testing.T) {
 	}
 
 	cfg := DefaultConfig()
+
 	p, err := New(cfg, tmpDir)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	iter := Iteration{Number: 1}
+
 	err = p.applyTriage(context.Background(), fixes, &iter)
 	if err != nil {
 		t.Fatalf("applyTriage: %v", err)
@@ -252,6 +260,7 @@ func TestApplyTriage_ApplyError(t *testing.T) {
 	}
 
 	cfg := DefaultConfig()
+
 	p, err := New(cfg, tmpDir)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

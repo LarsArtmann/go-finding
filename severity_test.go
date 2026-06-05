@@ -81,18 +81,23 @@ func TestSeverity_LessThan(t *testing.T) {
 	if !SeverityInfo.LessThan(SeverityWarning) {
 		t.Error("info < warning should be true")
 	}
+
 	if SeverityError.LessThan(SeverityWarning) {
 		t.Error("error < warning should be false")
 	}
+
 	if SeverityWarning.LessThan(SeverityWarning) {
 		t.Error("warning < warning should be false")
 	}
+
 	if Severity("unknown").LessThan(SeverityInfo) {
 		t.Error("invalid < valid should be false")
 	}
+
 	if SeverityInfo.LessThan(Severity("unknown")) {
 		t.Error("valid < invalid should be false")
 	}
+
 	if Severity("unknown").LessThan(Severity("other")) {
 		t.Error("invalid < other invalid should be false")
 	}

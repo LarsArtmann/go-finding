@@ -10,6 +10,7 @@ import (
 func TestNew(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	config := DefaultConfig()
 	detector := &mockDetector{name: "test", findings: nil}
 
@@ -45,6 +46,7 @@ func TestDefaultConfig(t *testing.T) {
 
 func TestNew_RejectsInvalidConfig(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name   string
 		config Config
@@ -67,7 +69,9 @@ func TestNew_RejectsInvalidConfig(t *testing.T) {
 func TestNew_ValidConfig_NoError(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
+
 	config := DefaultConfig()
+
 	p, err := New(config, t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

@@ -51,6 +51,7 @@ func GenerateID(toolName, rule string, pos Position) string {
 	file := filepath.ToSlash(pos.File)
 
 	var b strings.Builder
+
 	lineStr := strconv.Itoa(pos.Line)
 	b.Grow(len(toolName) + 1 + len(rule) + 1 + len(file) + 1 + len(lineStr))
 	b.WriteString(toolName)
