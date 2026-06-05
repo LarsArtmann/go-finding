@@ -86,6 +86,32 @@ if err != nil {
 | `Position`    | File, line, column location                                |
 | `Range`       | Start and end positions with geometric operations          |
 | `Category`    | `security`, `style`, `performance`, `correctness`, etc.    |
+| `Tag`         | Multi-label classification (`security`, `performance`, ...) |
+| `Confidence`  | Named `float64` with `IsValid()`, `Clamp()`, `String()`    |
+| `Suppression` | Expiring suppression with `IsActive(now)`                  |
+
+## API Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Detectors (govet, staticcheck, custom)                     │
+│         ↓                                                   │
+│  []finding.Finding                                          │
+│         ↓                                                   │
+│  Report (thread-safe container)                             │
+│         ↓                                                   │
+│  Filter / Group / Merge / Correlate / Diff                  │
+│         ↓                                                   │
+│  SARIF / JSON / LSP / Text / Markdown                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Key packages:
+
+- `finding` — core types, filtering, grouping, merging, SARIF, LSP, formatting
+- `pipeline` — detect → triage → fix → verify loop
+- `analysis` — `go/analysis.Diagnostic` ↔ `Finding` conversion
+- `cmd/go-finding` — CLI tool with JSON/YAML config
 
 ## Filtering
 
@@ -125,7 +151,17 @@ for _, c := range correlations {
 
 ## Pipeline
 
-The `pipeline` package provides a detect → triage → fix → verify loop:
+The `pipeline` package runs a detect → process → triage → apply → verify loop:
+
+```
+ detect ──→ process ──→ triage ──→ apply ──→ verify
+   ↑                                      │
+   └────────────── repeat ────────────────┘ (until stable or max iterations)
+```
+
+Each iteration runs registered detectors, applies `FindingProcessor` transforms,
+categorizes findings by `FixStrategy`, applies direct fixes with conflict detection,
+and optionally re-runs detectors to verify.
 
 ```go
 detector := pipeline.NamedDetectorFunc("my-tool", func(ctx context.Context) ([]finding.Finding, error) {
@@ -153,16 +189,22 @@ fmt.Printf("Iterations: %d, Findings: %d, Stable: %v\n",
 
 ### Pipeline Features
 
-| Feature                | Description                                         |
-| ---------------------- | --------------------------------------------------- |
-| **Parallel detection** | errgroup-based concurrent detector execution        |
-| **Conflict detection** | Overlapping fixes filtered before application       |
-| **Fix application**    | AST-aware with text fallback, backup/rollback       |
-| **Verification**       | Re-run detectors to confirm fixes                   |
-| **Retry**              | Exponential backoff for flaky detectors             |
-| **Partial success**    | Continue with findings from successful detectors    |
-| **Metrics**            | Optional timing and count collection with snapshots |
-| **Dry run**            | Detect + triage without applying fixes              |
+| Feature                       | Description                                               |
+| ----------------------------- | --------------------------------------------------------- |
+| **Parallel detection**        | errgroup-based concurrent detector execution              |
+| **Finding processors**        | Composable transforms between detection and triage        |
+| **Custom triage**             | `Config.TriageFunc` overrides default categorization      |
+| **Byte-level conflict detection** | `Config.ByteLevelConflictDetection` filters overlapping edits |
+| **Fix provider chain**        | Offset → Line → Substring, plus custom AST-aware providers |
+| **Fix application**           | Byte-level edits with backup/rollback                     |
+| **Verification**              | Re-run detectors to confirm fixes                         |
+| **Retry**                     | Exponential backoff for flaky detectors                   |
+| **Partial success**           | Continue with findings from successful detectors          |
+| **Metrics**                   | Optional timing and count collection with snapshots       |
+| **Structured logging**        | `*slog.Logger` integration                                |
+| **Stage callbacks**           | `OnStage` for progress reporting                          |
+| **Dry run**                   | Detect + triage without applying fixes                    |
+| **Generated file filter**     | Removes findings from auto-generated Go source files      |
 
 ### Custom Detector
 
@@ -212,16 +254,28 @@ sarifJSON, err := report.ToSARIF()
 findings, err := finding.FindingsFromSARIF(sarifJSON)
 ```
 
-Round-trip fidelity is preserved. `SeverityCritical` maps to SARIF `"error"` (SARIF 2.1.0 has no critical level); the original severity is stored in `Properties["go-finding/severity"]`.
+Round-trip fidelity is preserved:
+
+- `SeverityCritical` maps to SARIF `"error"` (no critical level in SARIF 2.1.0); the original severity is stored in `Properties["go-finding/severity"]`
+- `Finding.Snippet` round-trips via `region.snippet`
+- `RelatedRef.Range` end positions round-trip via related location regions
+- Non-standard metadata preserved in the property bag with `go-finding/*` prefix
 
 ## LSP Diagnostics
 
 ```go
 lspDiag := f.ToLSP()
 
+// Related information includes proper LSPRange when RelatedRef.Range is set
+for _, rel := range lspDiag.RelatedInformation {
+    fmt.Println(rel.Range.Start.Line, rel.Range.End.Line)
+}
+
 // From LSP diagnostic
 f := finding.FromLSP("file:///path/to/file.go", lspDiag)
 ```
+
+LSP diagnostic tags (`Unnecessary`, `Deprecated`) are preserved in `Finding.Metadata["go-finding/lsp-diagnostic-tags"]`. Related information end positions reconstruct `RelatedRef.Range`.
 
 ## go/analysis Integration
 
@@ -290,18 +344,18 @@ This project follows [Semantic Versioning](https://semver.org/).
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "0.3.0"
+fmt.Println(finding.Version) // "0.4.2"
 ```
 
 ## Project Stats
 
 | Package   | Coverage  |
 | --------- | --------- |
-| Root      | 99.6%     |
-| Pipeline  | 98.0%     |
-| Detectors | 96.1%     |
-| CLI       | 95.4%     |
-| **Total** | **95.8%** |
+| Root      | 97.1%     |
+| Pipeline  | 94.0%     |
+| Detectors | 95.9%     |
+| CLI       | 70.0%     |
+| **Total** | **91.3%** |
 
 ## Related Projects
 

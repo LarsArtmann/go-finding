@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`RelatedRef.Range *Range`** — Span-based related locations with deep-copy in `Clone()`, validation in `Validate()` (rejects inverted ranges), and value equality via `equalRelated()`. Enables full geometric relationships between related findings.
+- **`LSPDiagnosticTag` type and constants** — `Unnecessary = 1` and `Deprecated = 2` per LSP spec; `Tags []LSPDiagnosticTag` field on `LSPDiagnostic`.
+- **LSP diagnostic tag round-trip** — `FromLSP()` preserves `DiagnosticTag` values in `Metadata["go-finding/lsp-diagnostic-tags"]` as comma-separated integers and reconstructs them on `ToLSP()`.
+- **LSP related information range support** — `ToLSP()` emits proper `LSPRange` end positions from `rel.Range`; `FromLSP()` reconstructs `RelatedRef.Range` from LSP related info end positions.
+- **SARIF `region.snippet` support** — `SarifRegion.Snippet` field enables native SARIF snippet round-trip. `findingRegion()` populates it on export; `applySarifPosition()` reads it back on import. The property bag `go-finding/snippet` remains as fallback.
+- **SARIF related location range round-trip** — `sarifRelatedLocs()` writes `RelatedRef.Range` end coordinates into related location regions; `findingFromSarResult()` reconstructs `RelatedRef.Range` from `physicalLocation.region` end coordinates.
+- **JSON Schema `relatedRef.range`** — `docs/schemas/finding.schema.json` now includes `range` property on the `relatedRef` definition referencing `#/$defs/range`.
+- **Comprehensive `doc.go`** — Expanded from ~40% to full package documentation covering Diff, SARIF, LSP, Formatting, JSON, ID Generation, Pipeline, Fix Providers, Filtering, Merging, Correlation, Suppression, Error Handling, and Known Limitations.
+- **`TriageFunc` config option** — Customizable triage function in `pipeline.Config`. `DefaultTriageFunc` preserves existing behavior; `TriageResult` moved to `config.go` for discovery.
+- **`ByteLevelConflictDetection` config option** — Opt-in byte-level edit conflict detection that groups fixes by file, reads content, runs `FilterConflictingEdits` per file, and gracefully degrades on read errors.
+
+### Fixed
+
+- **`Equal()` for `RelatedRef`** — Previously used `slices.Equal()` which compared `*Range` pointers by identity. Now uses `equalRelated()` for proper deep value comparison.
+- **`Clone()` for `RelatedRef`** — Previously did shallow `copy()` of the `Related` slice, sharing `*Range` pointers between original and clone. Now deep-copies each `RelatedRef` and its `Range` pointer.
+
+### Testing
+
+- Coverage: root 97.1%, analysis 98.5%, pipeline 94.0%, internal/detectors 95.9%, cmd/go-finding 70.0%. Total 91.3%.
+- 9 new tests: `TestToLSP_RelatedWithRange`, `TestFromLSP_RelatedWithRange`, `TestFromLSP_PreservesDiagnosticTags`, `TestSARIF_RoundTrip_RelatedRefRange`, `TestSARIF_RegionSnippet`, `TestFinding_Equal_RelatedRefRange`, `TestFinding_Validate_InvertedRelatedRange`, plus `TestClone` updated and schema round-trip extended.
+- `go test -race -count=1 ./...` passes; `golangci-lint run ./...` reports 0 issues.
+
 ## [0.4.2] - 2026-06-01
 
 ### Added

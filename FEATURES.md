@@ -1,6 +1,6 @@
 # FEATURES.md — go-finding
 
-> **Version:** 0.4.2 | **Updated:** 2026-06-01
+> **Version:** 0.4.2 | **Updated:** 2026-06-05
 >
 > A unified data model and pipeline for Go static analysis tools.
 > Seven tools detect issues. Zero tools route them to remediation. This library fixes that.
@@ -44,11 +44,13 @@ The central type representing a single issue detected by a static analysis tool.
 | Range       | `*Range`            | Span-based findings (start/end positions)            |
 | Snippet     | `string`            | Surrounding code context                             |
 | Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                            |
-| Related     | `[]RelatedRef`      | Related findings (clone-of, wraps, causes)           |
+| Related     | `[]RelatedRef`      | Related findings with optional `*Range` span         |
 | Suppression | `*Suppression`      | If suppressed                                        |
 | Metadata    | `map[string]string` | Tool-specific key-value pairs                        |
 
 Key methods: `Validate()` (detailed per-field errors), `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
+
+> **New in 2026-06-05:** `RelatedRef.Range *Range` enables span-based related locations with full deep-copy, validation, and SARIF/LSP round-trip support.
 
 ### 1.2 Builder API
 
@@ -329,6 +331,8 @@ Handles Windows paths with colons correctly.
 ### Round-Trip Fidelity
 
 - All non-standard fields preserved in `properties` bag (`go-finding/*` prefix)
+- `Finding.Snippet` round-trips via SARIF `region.snippet`
+- `RelatedRef.Range` end positions round-trip via related location regions
 - Suppressed findings excluded from export (lossy)
 - `SeverityCritical` maps to SARIF `"error"` (no `"critical"` level in SARIF 2.1.0); original preserved in Properties
 
@@ -342,15 +346,17 @@ Handles Windows paths with colons correctly.
 
 `finding.ToLSP()` → `LSPDiagnostic`
 
-Handles: severity mapping, 0-based conversion, Range, related information
+Handles: severity mapping, 0-based conversion, Range, related information, diagnostic tags
+
+> **New in 2026-06-05:** `LSPDiagnosticTag` constants (`Unnecessary = 1`, `Deprecated = 2`) with `Tags []LSPDiagnosticTag`. Tags round-trip via `Metadata["go-finding/lsp-diagnostic-tags"]`. Related information now includes proper end positions from `RelatedRef.Range`.
 
 ### LSP → Finding
 
 `FromLSP(fileURI, diag)` → `Finding`
 
-Preserves: end position as Range, related information, raw LSP severity in Metadata
+Preserves: end position as Range, related information, related range end positions, diagnostic tags in Metadata, raw LSP severity in Metadata
 
-> **Known limitation:** Lossy conversion — `FixStrategy`, `Confidence`, `BeforeCode`, `AfterCode`, `Suppression`, `Metadata`, `Category`, `Tags` are lost in LSP format. Only position, severity, rule, message, and related info survive.
+> **Known limitation:** Partially lossy conversion — `FixStrategy`, `Confidence`, `BeforeCode`, `AfterCode`, `Suppression`, `Category` are lost in LSP format. Position, severity, rule, message, related info (including ranges), and diagnostic tags survive via metadata.
 
 ---
 
@@ -705,10 +711,11 @@ Metrics summary printed to stderr when available.
 
 | Package                          | Coverage |
 | -------------------------------- | -------- |
-| Core (`finding`)                 | 99.6%    |
-| Pipeline                         | 98.0%    |
-| CLI (`cmd/go-finding`)           | 95.4%    |
-| Detectors (`internal/detectors`) | 96.1%    |
+| Core (`finding`)                 | 97.1%    |
+| Pipeline                         | 94.0%    |
+| CLI (`cmd/go-finding`)           | 70.0%    |
+| Detectors (`internal/detectors`) | 95.9%    |
+| **Total**                        | **91.3%** |
 
 Test categories:
 
@@ -742,7 +749,7 @@ Three runnable examples in `examples/`:
 
 | Feature                           | Status               | Notes                                                             |
 | --------------------------------- | -------------------- | ----------------------------------------------------------------- |
-| Finding type                      | FULLY_FUNCTIONAL     | Core data model, 99.5% coverage                                   |
+| Finding type                      | FULLY_FUNCTIONAL     | Core data model, 97.1% coverage                                   |
 | Builder API                       | FULLY_FUNCTIONAL     | Fluent construction with validation                               |
 | Position & Range                  | FULLY_FUNCTIONAL     | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent) |
 | Severity (4 levels)               | FULLY_FUNCTIONAL     | With comparison operators                                         |
@@ -758,7 +765,7 @@ Three runnable examples in `examples/`:
 | ID generation & parsing           | FULLY_FUNCTIONAL     | Hash-based fallback, Windows path handling                        |
 | JSON serialization                | FULLY_FUNCTIONAL     | Streaming support, drops invalid findings                         |
 | SARIF 2.1.0 export/import         | FULLY_FUNCTIONAL     | Round-trip via property bag                                       |
-| LSP conversion                    | FULLY_FUNCTIONAL     | Lossy — drops fix/suppression metadata                            |
+| LSP conversion                    | FULLY_FUNCTIONAL     | Position, severity, rule, message, related ranges, diagnostic tags survive |
 | go/analysis integration           | FULLY_FUNCTIONAL     | Bidirectional conversion (Diagnostic ↔ Finding)                   |
 | Structured errors                 | FULLY_FUNCTIONAL     | 5 categories, errors.Is support                                   |
 | Pipeline (detect→fix→verify)      | FULLY_FUNCTIONAL     | Iterative loop with configurable behavior                         |
@@ -783,6 +790,10 @@ Three runnable examples in `examples/`:
 | FormatText / FormatMarkdown       | FULLY_FUNCTIONAL     | Return errors, UTF-8 safe truncation, markdown cell escaping      |
 | Config validation                 | FULLY_FUNCTIONAL     | Both pipeline and CLI configs                                     |
 | Examples                          | PARTIALLY_FUNCTIONAL | 3 runnable examples, compile-tested                               |
+| `RelatedRef.Range`                | FULLY_FUNCTIONAL     | Span-based related locations with SARIF/LSP round-trip            |
+| LSP diagnostic tags               | FULLY_FUNCTIONAL     | `Unnecessary`/`Deprecated` preserved in metadata                  |
+| SARIF `region.snippet`            | FULLY_FUNCTIONAL     | Native SARIF snippet round-trip support                           |
+| Comprehensive `doc.go`            | FULLY_FUNCTIONAL     | Full package documentation with examples and architecture notes   |
 
 ---
 
