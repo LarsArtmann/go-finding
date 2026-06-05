@@ -62,6 +62,7 @@ These are things art-dupl needs that go-finding's type system cannot express tod
 **Problem:** art-dupl clones have a span (start line → end line). `RelatedRef` only carries a `Position` (a point). When `ToLSP()` emits related information, it creates zero-length ranges.
 
 **Current:**
+
 ```go
 type RelatedRef struct {
     FindingID string       `json:"findingId"`
@@ -71,6 +72,7 @@ type RelatedRef struct {
 ```
 
 **Proposed:**
+
 ```go
 type RelatedRef struct {
     FindingID string       `json:"findingId"`
@@ -81,6 +83,7 @@ type RelatedRef struct {
 ```
 
 **Impact:**
+
 - `ToLSP()` can emit proper ranges for related information
 - art-dupl can represent each clone's full extent
 - Backward-compatible: `*Range` is optional, zero value is `nil`
@@ -91,11 +94,11 @@ type RelatedRef struct {
 
 **Workarounds and their costs:**
 
-| Approach | Cost |
-|----------|------|
+| Approach                                  | Cost                                                                                        |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------- |
 | Link all findings via `Related[clone-of]` | O(N²) links for a group of N. No group-level metadata. SARIF doesn't reconstruct the group. |
-| Encode group JSON in `Metadata["group"]` | Works but opaque. Can't filter/sort by group. No type safety. |
-| Use one Finding per group + Related refs | Finding has one `Position` — which clone is "primary"? Arbitrary. |
+| Encode group JSON in `Metadata["group"]`  | Works but opaque. Can't filter/sort by group. No type safety.                               |
+| Use one Finding per group + Related refs  | Finding has one `Position` — which clone is "primary"? Arbitrary.                           |
 
 **Proposed:** Add `GroupID string` to `Finding`:
 
@@ -109,6 +112,7 @@ type Finding struct {
 Plus a `Report.GroupFindings() map[string][]Finding` accessor.
 
 **Impact:**
+
 - art-dupl sets `GroupID` to a deterministic hash of the clone group
 - Downstream tools can aggregate, filter, and display by group
 - SARIF exports `groupId` as a property (round-trips via property bag)
@@ -145,6 +149,7 @@ Data that exists in `Finding` but is lost during conversion to external formats.
 **Problem:** LSP 3.15+ defines `DiagnosticTag` with values `Unnecessary (1)` and `Deprecated (2)`. Code duplicates are "unnecessary" code. go-finding's `LSPDiagnostic` doesn't support this.
 
 **Current:**
+
 ```go
 type LSPDiagnostic struct {
     Range    LSPRange         `json:"range"`
@@ -157,6 +162,7 @@ type LSPDiagnostic struct {
 ```
 
 **Proposed:**
+
 ```go
 type LSPDiagnosticTag int
 
@@ -177,6 +183,7 @@ type LSPDiagnostic struct {
 ```
 
 **Impact:**
+
 - art-dupl sets `Tags: []LSPDiagnosticTag{LSPDiagnosticTagUnnecessary}` — IDEs render duplicates as faded/struck-through
 - Backward-compatible: `Tags` is `omitempty`
 - `FromLSP` should preserve these in `Finding.Metadata`
@@ -221,17 +228,17 @@ Go 1.26's `iter.Seq` would make report iteration idiomatic. The TODO list alread
 
 ## Priority Matrix
 
-| Priority | Gap | Effort | art-dupl Value | General Value |
-|----------|-----|--------|----------------|---------------|
-| **P0** | GAP-1: `RelatedRef.Range` | S | Critical — clone spans | High — any multi-location finding |
-| **P1** | GAP-2: `GroupID` | S | High — clone group identity | Medium — any batched finding set |
-| **P1** | GAP-4: `DiagnosticTag` | S | High — IDE rendering | High — "unnecessary" code everywhere |
-| **P2** | GAP-6: `ToLSP` use `RelatedRef.Range` | S | Blocked on GAP-1 | Same |
-| **P2** | GAP-5: Snippet in SARIF | S | Medium — code context round-trip | Medium |
-| **P3** | GAP-3: Per-relationship metadata | M | Low — can use Finding.Metadata | Low |
-| **P3** | GAP-7: Strict `Category.IsValid()` | S | None | High — all consumers |
-| **P3** | GAP-8: `FromLSP` preserve `DiagnosticTag` | S | None | Medium — bidirectional fidelity |
-| **P3** | GAP-9: `iter.Seq` on Report | S | None | Low — Go 1.26 only |
+| Priority | Gap                                       | Effort | art-dupl Value                   | General Value                        |
+| -------- | ----------------------------------------- | ------ | -------------------------------- | ------------------------------------ |
+| **P0**   | GAP-1: `RelatedRef.Range`                 | S      | Critical — clone spans           | High — any multi-location finding    |
+| **P1**   | GAP-2: `GroupID`                          | S      | High — clone group identity      | Medium — any batched finding set     |
+| **P1**   | GAP-4: `DiagnosticTag`                    | S      | High — IDE rendering             | High — "unnecessary" code everywhere |
+| **P2**   | GAP-6: `ToLSP` use `RelatedRef.Range`     | S      | Blocked on GAP-1                 | Same                                 |
+| **P2**   | GAP-5: Snippet in SARIF                   | S      | Medium — code context round-trip | Medium                               |
+| **P3**   | GAP-3: Per-relationship metadata          | M      | Low — can use Finding.Metadata   | Low                                  |
+| **P3**   | GAP-7: Strict `Category.IsValid()`        | S      | None                             | High — all consumers                 |
+| **P3**   | GAP-8: `FromLSP` preserve `DiagnosticTag` | S      | None                             | Medium — bidirectional fidelity      |
+| **P3**   | GAP-9: `iter.Seq` on Report               | S      | None                             | Low — Go 1.26 only                   |
 
 Effort: S = small (≤1 day), M = medium (1-3 days)
 
@@ -318,12 +325,12 @@ func cloneGroupToFindings(group *artdupl.CloneGroup) []finding.Finding {
 
 ## Appendix: What We Evaluated But Rejected
 
-| Idea | Why rejected |
-|------|-------------|
-| Make art-dupl depend on go-finding as internal representation | Domain mismatch: go-finding models *findings* (single issues), art-dupl models *clone groups* (multi-location relationships). Forcing clone groups through a finding-shaped pipe would fight the grain. |
-| Use `Finding.Metadata` for everything | Works but loses type safety, filtering, sorting, and SARIF round-trip. Metadata is for tool-specific extension, not core domain data. |
-| Build an LSP server in art-dupl | Overkill. art-dupl should produce diagnostics, not serve them. go-finding's `ToLSP()` is the right integration point. |
-| `Properties map[string]any` on `Finding` | Already decided and documented in AGENTS.md — `map[string]string` is the right choice for interchange simplicity. |
+| Idea                                                          | Why rejected                                                                                                                                                                                            |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Make art-dupl depend on go-finding as internal representation | Domain mismatch: go-finding models _findings_ (single issues), art-dupl models _clone groups_ (multi-location relationships). Forcing clone groups through a finding-shaped pipe would fight the grain. |
+| Use `Finding.Metadata` for everything                         | Works but loses type safety, filtering, sorting, and SARIF round-trip. Metadata is for tool-specific extension, not core domain data.                                                                   |
+| Build an LSP server in art-dupl                               | Overkill. art-dupl should produce diagnostics, not serve them. go-finding's `ToLSP()` is the right integration point.                                                                                   |
+| `Properties map[string]any` on `Finding`                      | Already decided and documented in AGENTS.md — `map[string]string` is the right choice for interchange simplicity.                                                                                       |
 
 ---
 
@@ -331,4 +338,4 @@ func cloneGroupToFindings(group *artdupl.CloneGroup) []finding.Finding {
 
 go-finding is 80% ready. Three small additions (`RelatedRef.Range`, `GroupID`, `DiagnosticTag`) close the gap to 95%. The remaining 5% (snippet in SARIF, per-relationship metadata) can be deferred without blocking art-dupl integration.
 
-The key insight: **go-finding should remain a *consumer* library that art-dupl outputs to, not a shared internal representation.** This preserves both projects' domain clarity while enabling clean interchange via `Finding`, SARIF, and LSP.
+The key insight: **go-finding should remain a _consumer_ library that art-dupl outputs to, not a shared internal representation.** This preserves both projects' domain clarity while enabling clean interchange via `Finding`, SARIF, and LSP.

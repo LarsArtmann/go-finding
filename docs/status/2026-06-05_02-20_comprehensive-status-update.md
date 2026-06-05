@@ -10,13 +10,13 @@
 
 ### Core Type System ( art-dupl integration gaps CLOSED )
 
-| Gap | What | Where |
-|-----|------|-------|
-| GAP-1 | `RelatedRef.Range *Range` — span for related locations | `finding.go:90` |
-| GAP-4 | `LSPDiagnosticTag` — `Unnecessary(1)` / `Deprecated(2)` | `lsp.go:22-39` |
-| GAP-5 | `Snippet` in SARIF `region.snippet` (not just property bag) | `sarif_types.go:91`, `sarif_export.go:166` |
-| GAP-6 | `ToLSP()` emits proper `LSPRange` from `rel.Range` | `lsp.go:93-106` |
-| GAP-8 | `FromLSP()` preserves `DiagnosticTag` in `Metadata["go-finding/lsp-diagnostic-tags"]` | `lsp.go:180-195` |
+| Gap   | What                                                                                  | Where                                      |
+| ----- | ------------------------------------------------------------------------------------- | ------------------------------------------ |
+| GAP-1 | `RelatedRef.Range *Range` — span for related locations                                | `finding.go:90`                            |
+| GAP-4 | `LSPDiagnosticTag` — `Unnecessary(1)` / `Deprecated(2)`                               | `lsp.go:22-39`                             |
+| GAP-5 | `Snippet` in SARIF `region.snippet` (not just property bag)                           | `sarif_types.go:91`, `sarif_export.go:166` |
+| GAP-6 | `ToLSP()` emits proper `LSPRange` from `rel.Range`                                    | `lsp.go:93-106`                            |
+| GAP-8 | `FromLSP()` preserves `DiagnosticTag` in `Metadata["go-finding/lsp-diagnostic-tags"]` | `lsp.go:180-195`                           |
 
 - `Clone()` deep-copies `RelatedRef.Range` independently
 - `Equal()` compares `RelatedRef.Range` via new `equalRelated()` helper
@@ -39,14 +39,14 @@
 
 ### Test Coverage (ALL PASS, 0 LINT ISSUES, RACE CLEAN)
 
-| Package | Coverage | Status |
-|---------|----------|--------|
-| `finding` (core) | 97.1% | PASS |
-| `analysis` | 98.5% | PASS |
-| `cmd/go-finding` | 70.0% | PASS |
-| `internal/detectors` | 95.9% | PASS |
-| `pipeline` | 94.0% | PASS |
-| **Total** | **91.3%** | **PASS** |
+| Package              | Coverage  | Status   |
+| -------------------- | --------- | -------- |
+| `finding` (core)     | 97.1%     | PASS     |
+| `analysis`           | 98.5%     | PASS     |
+| `cmd/go-finding`     | 70.0%     | PASS     |
+| `internal/detectors` | 95.9%     | PASS     |
+| `pipeline`           | 94.0%     | PASS     |
+| **Total**            | **91.3%** | **PASS** |
 
 - New tests: `TestToLSP_RelatedWithRange`, `TestFromLSP_RelatedWithRange`, `TestFromLSP_PreservesDiagnosticTags`, `TestSARIF_RoundTrip_RelatedRefRange`, `TestSARIF_RegionSnippet`, `TestFinding_Equal_RelatedRefRange`, `TestFinding_Validate_InvertedRelatedRange`
 - `TestClone` updated to verify `RelatedRef.Range` deep-copy independence
@@ -64,17 +64,17 @@
 
 ### art-dupl Integration Evaluation ( 5/6 gaps implemented )
 
-| Gap | Status | Rationale |
-|-----|--------|-----------|
-| GAP-1 `RelatedRef.Range` | ✅ DONE | Span-based related locations fully supported |
-| GAP-2 `GroupID` | ❌ DEFERRED | One-consumer justification insufficient; `Metadata["go-finding/group-id"]` convention preferred |
-| GAP-3 Per-relationship metadata | ❌ DEFERRED | Low value; `Finding.Metadata` workaround exists |
-| GAP-4 `DiagnosticTag` | ✅ DONE | `Unnecessary`/`Deprecated` tags in LSP diagnostics |
-| GAP-5 `Snippet` in SARIF | ✅ DONE | `region.snippet` round-trips properly |
-| GAP-6 `ToLSP` uses `rel.Range` | ✅ DONE | Proper LSP ranges for related info |
-| GAP-7 Strict `Category.IsValid()` | ❌ BY DESIGN | `IsValid()` checks format (open extension); `IsStandard()` checks membership |
-| GAP-8 `FromLSP` preserves tags | ✅ DONE | Tags stored in metadata as comma-separated integers |
-| GAP-9 `iter.Seq` on `Report.All()` | ✅ ALREADY DONE | Go 1.26 `iter.Seq` implemented |
+| Gap                                | Status          | Rationale                                                                                       |
+| ---------------------------------- | --------------- | ----------------------------------------------------------------------------------------------- |
+| GAP-1 `RelatedRef.Range`           | ✅ DONE         | Span-based related locations fully supported                                                    |
+| GAP-2 `GroupID`                    | ❌ DEFERRED     | One-consumer justification insufficient; `Metadata["go-finding/group-id"]` convention preferred |
+| GAP-3 Per-relationship metadata    | ❌ DEFERRED     | Low value; `Finding.Metadata` workaround exists                                                 |
+| GAP-4 `DiagnosticTag`              | ✅ DONE         | `Unnecessary`/`Deprecated` tags in LSP diagnostics                                              |
+| GAP-5 `Snippet` in SARIF           | ✅ DONE         | `region.snippet` round-trips properly                                                           |
+| GAP-6 `ToLSP` uses `rel.Range`     | ✅ DONE         | Proper LSP ranges for related info                                                              |
+| GAP-7 Strict `Category.IsValid()`  | ❌ BY DESIGN    | `IsValid()` checks format (open extension); `IsStandard()` checks membership                    |
+| GAP-8 `FromLSP` preserves tags     | ✅ DONE         | Tags stored in metadata as comma-separated integers                                             |
+| GAP-9 `iter.Seq` on `Report.All()` | ✅ ALREADY DONE | Go 1.26 `iter.Seq` implemented                                                                  |
 
 ### Pipeline
 
@@ -175,6 +175,7 @@ BuildFlow auto-generates test code that is syntactically broken (invalid Go). Th
 **Severity:** MEDIUM | **Impact:** Local quality gates broken
 
 `.git/hooks/pre-commit` runs `goconst`, `todo-check`, and `library-policy`. All three fail:
+
 - `goconst` — flags legitimate string constants
 - `todo-check` — false positives on "TODO" in comments
 - `library-policy` — checks against external policy database
@@ -206,6 +207,7 @@ BuildFlow reformats `.golangci.yml` on every run. Current file uses 2-space inde
 ### 1. Documentation is the v1.0.0 Bottleneck
 
 The codebase is functionally complete for v1.0.0. What remains is almost entirely documentation:
+
 - `doc.go` needs comprehensive package documentation
 - `USAGE_GUIDE.md` is pre-v0.4.x
 - No real-world integration guide
@@ -216,6 +218,7 @@ The codebase is functionally complete for v1.0.0. What remains is almost entirel
 ### 2. CI is the Quality Bottleneck
 
 Without CI:
+
 - No automated test runs on PR
 - No lint enforcement
 - No race detection
@@ -231,11 +234,11 @@ Hooks that always fail train developers to use `--no-verify`, defeating their pu
 
 ### 4. Coverage Regressions
 
-| Package | Previous | Current | Delta |
-|---------|----------|---------|-------|
-| `finding` | 99.6% | 97.1% | -2.5% |
-| `pipeline` | 98.0% | 94.0% | -4.0% |
-| `cmd/go-finding` | 95.4% | 70.0% | -25.4% |
+| Package          | Previous | Current | Delta  |
+| ---------------- | -------- | ------- | ------ |
+| `finding`        | 99.6%    | 97.1%   | -2.5%  |
+| `pipeline`       | 98.0%    | 94.0%   | -4.0%  |
+| `cmd/go-finding` | 95.4%    | 70.0%   | -25.4% |
 
 The `cmd/go-finding` drop is significant. Likely due to new config-file parsing paths or generated filter code not being covered by existing tests.
 
@@ -309,18 +312,21 @@ Version is 0.4.2 in `FEATURES.md` but no git tags exist. Consumers cannot pin to
 **The tension:**
 
 The codebase is functionally rich (97.1% core coverage, 0 lint issues, race clean) but structurally immature (no CI, no release tags, docs at ~40%, broken pre-commit hooks, 5 unpushed commits). The TODO list has ~30 open items, but the majority are either:
+
 - Blocked on CI/infrastructure (golines, gosec, benchmark tracking, fuzz corpus)
 - Out of scope v1 (TUI, web UI, IDE plugins)
 - Deferred external integrations (BuildFlow, go-structure-linter)
 - Documentation gaps
 
 **Argument for freeze:**
+
 - Without CI, every feature adds technical debt that must be manually verified
 - Documentation is the actual blocker for v1.0.0 per `RELEASE_CRITERIA.md`
 - 5 unpushed commits is a risk; shipping what we have is safer than adding more
 - The art-dupl integration gaps are now closed — the library is "ready enough"
 
 **Argument for continue:**
+
 - `FixApplier` lifecycle bug (backup dir leaks) is a real production issue
 - `Correlate()` is embarrassing for a "unified static analysis" library
 - CLI coverage dropped 25% — fixing that requires feature work
@@ -339,11 +345,13 @@ The codebase is functionally rich (97.1% core coverage, 0 lint issues, race clea
 **Trigger:** Review of `docs/feedback/2026-06-05_art-dupl-integration-evaluation.md`
 
 **Critique delivered:**
+
 - GAP-2 (`GroupID`) rejected as one-consumer abstraction leak
 - GAP-5 (Snippet in SARIF) corrected — maps to `region.snippet`, not `contextRegion`
 - GAP-7 (`Category.IsValid`) misdiagnosed — `IsValid()` checks format by design
 
 **Implementation:**
+
 - GAP-1: `RelatedRef.Range *Range` with deep-clone, validation, equality
 - GAP-4: `LSPDiagnosticTag` type + constants, `Tags` field on `LSPDiagnostic`
 - GAP-5: `Snippet` in `SarifRegion` for round-trip via region (not just property bag)

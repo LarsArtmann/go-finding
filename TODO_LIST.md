@@ -183,17 +183,17 @@
 
 ## art-dupl Integration Evaluation Summary
 
-| Gap | Status | Rationale |
-| --- | ------ | --------- |
-| GAP-1 `RelatedRef.Range` | ✅ DONE | Span-based related locations fully supported |
-| GAP-2 `GroupID` | ❌ DEFERRED | One-consumer justification insufficient; use `Metadata["go-finding/group-id"]` |
-| GAP-3 Per-relationship metadata | ❌ DEFERRED | Low value; `Finding.Metadata` workaround exists |
-| GAP-4 `DiagnosticTag` | ✅ DONE | `Unnecessary`/`Deprecated` tags in LSP diagnostics |
-| GAP-5 `Snippet` in SARIF | ✅ DONE | `region.snippet` round-trips properly |
-| GAP-6 `ToLSP` uses `rel.Range` | ✅ DONE | Proper LSP ranges for related info |
-| GAP-7 Strict `Category.IsValid()` | ❌ BY DESIGN | `IsValid()` checks format; `IsStandard()` checks membership |
-| GAP-8 `FromLSP` preserves tags | ✅ DONE | Tags stored in metadata as comma-separated integers |
-| GAP-9 `iter.Seq` on `Report.All()` | ✅ ALREADY DONE | Go 1.26 `iter.Seq` implemented |
+| Gap                                | Status          | Rationale                                                                      |
+| ---------------------------------- | --------------- | ------------------------------------------------------------------------------ |
+| GAP-1 `RelatedRef.Range`           | ✅ DONE         | Span-based related locations fully supported                                   |
+| GAP-2 `GroupID`                    | ❌ DEFERRED     | One-consumer justification insufficient; use `Metadata["go-finding/group-id"]` |
+| GAP-3 Per-relationship metadata    | ❌ DEFERRED     | Low value; `Finding.Metadata` workaround exists                                |
+| GAP-4 `DiagnosticTag`              | ✅ DONE         | `Unnecessary`/`Deprecated` tags in LSP diagnostics                             |
+| GAP-5 `Snippet` in SARIF           | ✅ DONE         | `region.snippet` round-trips properly                                          |
+| GAP-6 `ToLSP` uses `rel.Range`     | ✅ DONE         | Proper LSP ranges for related info                                             |
+| GAP-7 Strict `Category.IsValid()`  | ❌ BY DESIGN    | `IsValid()` checks format; `IsStandard()` checks membership                    |
+| GAP-8 `FromLSP` preserves tags     | ✅ DONE         | Tags stored in metadata as comma-separated integers                            |
+| GAP-9 `iter.Seq` on `Report.All()` | ✅ ALREADY DONE | Go 1.26 `iter.Seq` implemented                                                 |
 
 ---
 

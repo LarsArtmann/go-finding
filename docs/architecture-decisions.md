@@ -256,11 +256,11 @@ So the adapter must map `map[string]any` ↔ `*PropertyBag` at every read/write 
 
 ### 9.4 Loss of First-Class Features
 
-| Feature | Hand-rolled | go-sarif |
-|---------|-------------|----------|
-| Streaming output | `json.NewEncoder(w)` natively | `PrettyWrite(&buf)` buffers everything |
-| Context cancellation | `WriteSARIF(ctx, w)` checks `ctx.Err()` first | No context support |
-| Reader-based import | `FindingsFromReader(ctx, r)` streams via `json.Decoder` | `FromBytes(data)` requires full buffer |
+| Feature              | Hand-rolled                                             | go-sarif                               |
+| -------------------- | ------------------------------------------------------- | -------------------------------------- |
+| Streaming output     | `json.NewEncoder(w)` natively                           | `PrettyWrite(&buf)` buffers everything |
+| Context cancellation | `WriteSARIF(ctx, w)` checks `ctx.Err()` first           | No context support                     |
+| Reader-based import  | `FindingsFromReader(ctx, r)` streams via `json.Decoder` | `FromBytes(data)` requires full buffer |
 
 Adapting these would require wrapping go-sarif's API, adding even more adapter code.
 
@@ -274,29 +274,29 @@ Adding `go-sarif` means every consumer of `go-finding` transitively depends on i
 
 ### 9.6 What go-sarif Offers That We Don't Need
 
-| go-sarif "benefit" | Reality for us |
-|---|---|
-| Full SARIF 2.2 support | We only need 2.1.0. No demand for 2.2. |
-| Schema validation | Would be nice, but blocked by 7K-line schema file, not by implementation |
-| 100+ types | We use 15. The other 85 are cognitive overhead |
-| Active maintenance | Our 470 LOC need near-zero maintenance — SARIF 2.1.0 is stable |
-| "Standard" library | We are not building SARIF reports — we are converting Findings ↔ SARIF |
+| go-sarif "benefit"     | Reality for us                                                           |
+| ---------------------- | ------------------------------------------------------------------------ |
+| Full SARIF 2.2 support | We only need 2.1.0. No demand for 2.2.                                   |
+| Schema validation      | Would be nice, but blocked by 7K-line schema file, not by implementation |
+| 100+ types             | We use 15. The other 85 are cognitive overhead                           |
+| Active maintenance     | Our 470 LOC need near-zero maintenance — SARIF 2.1.0 is stable           |
+| "Standard" library     | We are not building SARIF reports — we are converting Findings ↔ SARIF   |
 
 ---
 
 ### 9.7 Summary Comparison
 
-| Dimension | Hand-rolled | go-sarif v3 |
-|-----------|-------------|-------------|
-| Extra dependencies | 0 | +1 module |
-| Lines we maintain | ~470 | ~0 (but adapter layer ~300-400) |
-| Spec coverage | Subset we use | Full 2.1.0 + 2.2.0 |
-| Schema validation | None | Built-in `Validate()` |
-| go-finding round-trip | Native (property bag designed for it) | Requires adapter |
-| Streaming I/O | Native (`json.Encoder`/`Decoder`) | Buffered (`PrettyWrite`) |
-| Context cancellation | First-class | None |
-| API shape | Finding-centric | SARIF-centric |
-| Test coverage | 100% (unit + fuzz, 1.6M execs) | External |
+| Dimension             | Hand-rolled                           | go-sarif v3                     |
+| --------------------- | ------------------------------------- | ------------------------------- |
+| Extra dependencies    | 0                                     | +1 module                       |
+| Lines we maintain     | ~470                                  | ~0 (but adapter layer ~300-400) |
+| Spec coverage         | Subset we use                         | Full 2.1.0 + 2.2.0              |
+| Schema validation     | None                                  | Built-in `Validate()`           |
+| go-finding round-trip | Native (property bag designed for it) | Requires adapter                |
+| Streaming I/O         | Native (`json.Encoder`/`Decoder`)     | Buffered (`PrettyWrite`)        |
+| Context cancellation  | First-class                           | None                            |
+| API shape             | Finding-centric                       | SARIF-centric                   |
+| Test coverage         | 100% (unit + fuzz, 1.6M execs)        | External                        |
 
 ---
 

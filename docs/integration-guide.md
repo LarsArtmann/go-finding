@@ -194,6 +194,7 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
 ```
 
 Key patterns:
+
 - `NamedDetectorFunc` wraps a function as a `Detector` interface
 - `GenerateID` creates stable, deterministic IDs from tool + rule + position
 - `exec.CommandContext` respects context cancellation

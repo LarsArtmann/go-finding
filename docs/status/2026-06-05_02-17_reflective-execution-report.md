@@ -29,37 +29,37 @@ Two-session deep audit completed. TODO_LIST.md went from 97/190 done (51%) to **
 
 ### Session 2 (commits `98d91a6`, `4e7ed34`, `a209a96`)
 
-| Change | Type | Commit |
-|---|---|---|
-| `Config.ByteLevelConflictDetection` — opt-in byte-level conflict filtering | feature | `98d91a6` |
-| `Config.TriageFunc` + `DefaultTriageFunc` — customizable triage logic | feature | `4e7ed34` |
-| `TriageResult` type moved to config.go for API discovery | refactor | `4e7ed34` |
-| `RelatedRef.Range` — span support for related findings | type model | `a209a96` |
-| RelatedRef deep-clone, validate, equalRelated | correctness | `a209a96` |
-| `docs/RELEASE_CRITERIA.md` — v1.0.0 must/should/nice-to-have | docs | `a209a96` |
-| `docs/API_STABILITY.md` — Go compat promise style | docs | `a209a96` |
-| `docs/schemas/finding.json` — JSON Schema draft 2020-12 | docs | `a209a96` |
-| 12 TODO items verified done (SARIF decomposition, GoReleaser, modernize, structured errors, etc.) | audit | `a209a96` |
+| Change                                                                                            | Type        | Commit    |
+| ------------------------------------------------------------------------------------------------- | ----------- | --------- |
+| `Config.ByteLevelConflictDetection` — opt-in byte-level conflict filtering                        | feature     | `98d91a6` |
+| `Config.TriageFunc` + `DefaultTriageFunc` — customizable triage logic                             | feature     | `4e7ed34` |
+| `TriageResult` type moved to config.go for API discovery                                          | refactor    | `4e7ed34` |
+| `RelatedRef.Range` — span support for related findings                                            | type model  | `a209a96` |
+| RelatedRef deep-clone, validate, equalRelated                                                     | correctness | `a209a96` |
+| `docs/RELEASE_CRITERIA.md` — v1.0.0 must/should/nice-to-have                                      | docs        | `a209a96` |
+| `docs/API_STABILITY.md` — Go compat promise style                                                 | docs        | `a209a96` |
+| `docs/schemas/finding.json` — JSON Schema draft 2020-12                                           | docs        | `a209a96` |
+| 12 TODO items verified done (SARIF decomposition, GoReleaser, modernize, structured errors, etc.) | audit       | `a209a96` |
 
 ### Total Items Resolved Across Both Sessions
 
-| Category | Count |
-|---|---|
-| Verified already-done | 30 |
-| Implemented (code) | 8 |
-| Verified intentional design | 5 |
-| **Total resolved** | **43** |
+| Category                    | Count  |
+| --------------------------- | ------ |
+| Verified already-done       | 30     |
+| Implemented (code)          | 8      |
+| Verified intentional design | 5      |
+| **Total resolved**          | **43** |
 
 ---
 
 ## B) PARTIALLY DONE
 
-| Item | Current State | Gap |
-|---|---|---|
-| `doc.go` | ~40% complete, has Quick Start, Builder, Pipeline basics | Missing: suppression, diff, correlation, provider chain, format functions |
-| `README.md` | Has badges, installation, basic examples | Missing: pipeline section, provider chain explanation, diff/correlation examples |
-| `USAGE_GUIDE.md` | 793 lines, covers basics | Missing: FixEdit, GeneratedFileFilter, DiffResult, CorrelationScore, TriageFunc, ByteLevelConflictDetection |
-| `cmd/go-finding` coverage | 70.0% | Integration tests cover main paths but CLI flag edge cases untested |
+| Item                      | Current State                                            | Gap                                                                                                         |
+| ------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `doc.go`                  | ~40% complete, has Quick Start, Builder, Pipeline basics | Missing: suppression, diff, correlation, provider chain, format functions                                   |
+| `README.md`               | Has badges, installation, basic examples                 | Missing: pipeline section, provider chain explanation, diff/correlation examples                            |
+| `USAGE_GUIDE.md`          | 793 lines, covers basics                                 | Missing: FixEdit, GeneratedFileFilter, DiffResult, CorrelationScore, TriageFunc, ByteLevelConflictDetection |
+| `cmd/go-finding` coverage | 70.0%                                                    | Integration tests cover main paths but CLI flag edge cases untested                                         |
 
 ---
 
@@ -90,7 +90,7 @@ Two-session deep audit completed. TODO_LIST.md went from 97/190 done (51%) to **
 
 16. Plugin architecture for external detector registration
 17. Pipeline middleware/interceptor pattern
-18. Report.Merge() → return new *Report instead of mutating
+18. Report.Merge() → return new \*Report instead of mutating
 
 ### Performance (2)
 
@@ -171,33 +171,33 @@ The code is mature and stable. The remaining 25 actionable items break down as:
 
 Sorted by impact × urgency ÷ effort:
 
-| Rank | Item | Impact | Effort | Category |
-|---|---|---|---|---|
-| 1 | **Comprehensive doc.go** — pkg.go.dev front door | High | Medium | Docs |
-| 2 | **Update USAGE_GUIDE.md for v0.3.0** | High | Medium | Docs |
-| 3 | **Improve README.md** — pipeline examples | High | Low | Docs |
-| 4 | **Tag v0.3.0 release** | High | Low | Release |
-| 5 | **Document provider chain** | Medium | Low | Docs |
-| 6 | **Create tool integration guide** (govet) | High | Medium | Docs |
-| 7 | **API stability review** | High | Medium | Release |
-| 8 | **Fix pre-commit hook** failures | Medium | Low | Tooling |
-| 9 | **Set up pkg.go.dev** | Medium | Low | Docs |
-| 10 | **Persist fuzz corpus** | Low | Low | Testing |
-| 11 | **Add go.work** for multi-module | Low | Low | Tooling |
-| 12 | **Fix FixProviders through CLI config** | Medium | Medium | Pipeline |
-| 13 | **Centralize triage** — HasFix() canonical | Medium | Medium | Code Quality |
-| 14 | **Lift FixApplier to Pipeline constructor** | Medium | Medium | Code Quality |
-| 15 | **FixApplier rollback all files** | Medium | Medium | Reliability |
-| 16 | **FixEngine line-offset tracking** | High | High | Feature |
-| 17 | **Config file support (YAML)** | Medium | Medium | Feature |
-| 18 | **Pipeline stage hooks** | Medium | Medium | Feature |
-| 19 | **Report.Merge() immutability** | Medium | Medium | API |
-| 20 | **Composable fix strategy interface** | High | High | Architecture |
-| 21 | **Spatial index for Correlate** | Medium | High | Performance |
-| 22 | **Streaming merge** | Low | High | Performance |
-| 23 | **Plugin architecture** | High | High | Architecture |
-| 24 | **Pipeline middleware pattern** | Medium | High | Architecture |
-| 25 | **CI/CD pipeline** (GitHub Actions) | High | Medium | Infra |
+| Rank | Item                                             | Impact | Effort | Category     |
+| ---- | ------------------------------------------------ | ------ | ------ | ------------ |
+| 1    | **Comprehensive doc.go** — pkg.go.dev front door | High   | Medium | Docs         |
+| 2    | **Update USAGE_GUIDE.md for v0.3.0**             | High   | Medium | Docs         |
+| 3    | **Improve README.md** — pipeline examples        | High   | Low    | Docs         |
+| 4    | **Tag v0.3.0 release**                           | High   | Low    | Release      |
+| 5    | **Document provider chain**                      | Medium | Low    | Docs         |
+| 6    | **Create tool integration guide** (govet)        | High   | Medium | Docs         |
+| 7    | **API stability review**                         | High   | Medium | Release      |
+| 8    | **Fix pre-commit hook** failures                 | Medium | Low    | Tooling      |
+| 9    | **Set up pkg.go.dev**                            | Medium | Low    | Docs         |
+| 10   | **Persist fuzz corpus**                          | Low    | Low    | Testing      |
+| 11   | **Add go.work** for multi-module                 | Low    | Low    | Tooling      |
+| 12   | **Fix FixProviders through CLI config**          | Medium | Medium | Pipeline     |
+| 13   | **Centralize triage** — HasFix() canonical       | Medium | Medium | Code Quality |
+| 14   | **Lift FixApplier to Pipeline constructor**      | Medium | Medium | Code Quality |
+| 15   | **FixApplier rollback all files**                | Medium | Medium | Reliability  |
+| 16   | **FixEngine line-offset tracking**               | High   | High   | Feature      |
+| 17   | **Config file support (YAML)**                   | Medium | Medium | Feature      |
+| 18   | **Pipeline stage hooks**                         | Medium | Medium | Feature      |
+| 19   | **Report.Merge() immutability**                  | Medium | Medium | API          |
+| 20   | **Composable fix strategy interface**            | High   | High   | Architecture |
+| 21   | **Spatial index for Correlate**                  | Medium | High   | Performance  |
+| 22   | **Streaming merge**                              | Low    | High   | Performance  |
+| 23   | **Plugin architecture**                          | High   | High   | Architecture |
+| 24   | **Pipeline middleware pattern**                  | Medium | High   | Architecture |
+| 25   | **CI/CD pipeline** (GitHub Actions)              | High   | Medium | Infra        |
 
 ---
 
@@ -210,6 +210,7 @@ The TODO list has 8 pipeline/architecture features not started (line-offset trac
 The code is already at 72% TODO completion with strong test coverage and zero lint. The biggest gap is **documentation** — users can't use features they can't discover.
 
 Two paths:
+
 1. **Documentation-first:** Freeze features, write docs, tag v1.0.0. Ship what we have.
 2. **Feature-complete first:** Implement the remaining pipeline features, then document everything, then tag v1.0.0.
 
@@ -219,23 +220,23 @@ Path 1 gets a releasable v1.0.0 faster. Path 2 delivers a more complete library 
 
 ## Project Health Dashboard
 
-| Metric | Value | Trend | Status |
-|---|---|---|---|
-| Test Coverage (root) | 97.1% | ↓ from 98.4% | ⚠️ New code needs tests |
-| Test Coverage (analysis) | 98.5% | → | ✅ |
-| Test Coverage (pipeline) | 94.0% | ↓ from 95.9% | ⚠️ |
-| Test Coverage (detectors) | 95.9% | → | ✅ |
-| Test Coverage (CLI) | 70.0% | → | ⚠️ |
-| Lint Issues | 0 | → | ✅ |
-| Race Detector | Clean | → | ✅ |
-| Go Files | 118 | ↑ +2 | — |
-| Lines of Go | 27,601 | ↑ +273 | — |
-| Test Files | 66 | → | — |
-| TODO Done | 138/192 (72%) | ↑ from 97/190 (51%) | ✅ |
-| TODO Actionable | 25 | ↓ from 36 | ✅ |
-| TODO Blocked | 13 | → | — |
-| Commits This Session | 4 | — | — |
-| All Pushed | Yes | — | ✅ |
+| Metric                    | Value         | Trend               | Status                  |
+| ------------------------- | ------------- | ------------------- | ----------------------- |
+| Test Coverage (root)      | 97.1%         | ↓ from 98.4%        | ⚠️ New code needs tests |
+| Test Coverage (analysis)  | 98.5%         | →                   | ✅                      |
+| Test Coverage (pipeline)  | 94.0%         | ↓ from 95.9%        | ⚠️                      |
+| Test Coverage (detectors) | 95.9%         | →                   | ✅                      |
+| Test Coverage (CLI)       | 70.0%         | →                   | ⚠️                      |
+| Lint Issues               | 0             | →                   | ✅                      |
+| Race Detector             | Clean         | →                   | ✅                      |
+| Go Files                  | 118           | ↑ +2                | —                       |
+| Lines of Go               | 27,601        | ↑ +273              | —                       |
+| Test Files                | 66            | →                   | —                       |
+| TODO Done                 | 138/192 (72%) | ↑ from 97/190 (51%) | ✅                      |
+| TODO Actionable           | 25            | ↓ from 36           | ✅                      |
+| TODO Blocked              | 13            | →                   | —                       |
+| Commits This Session      | 4             | —                   | —                       |
+| All Pushed                | Yes           | —                   | ✅                      |
 
 ---
 

@@ -77,18 +77,18 @@ if err != nil {
 
 ## Core Types
 
-| Type          | Purpose                                                    |
-| ------------- | ---------------------------------------------------------- |
-| `Finding`     | A single issue: ID, rule, severity, position, fix strategy |
-| `Report`      | Thread-safe container for findings with summary statistics |
-| `Severity`    | `info` / `warning` / `error` / `critical`                  |
-| `FixStrategy` | `none` / `suggest` / `direct` / `ai`                       |
-| `Position`    | File, line, column location                                |
-| `Range`       | Start and end positions with geometric operations          |
-| `Category`    | `security`, `style`, `performance`, `correctness`, etc.    |
+| Type          | Purpose                                                     |
+| ------------- | ----------------------------------------------------------- |
+| `Finding`     | A single issue: ID, rule, severity, position, fix strategy  |
+| `Report`      | Thread-safe container for findings with summary statistics  |
+| `Severity`    | `info` / `warning` / `error` / `critical`                   |
+| `FixStrategy` | `none` / `suggest` / `direct` / `ai`                        |
+| `Position`    | File, line, column location                                 |
+| `Range`       | Start and end positions with geometric operations           |
+| `Category`    | `security`, `style`, `performance`, `correctness`, etc.     |
 | `Tag`         | Multi-label classification (`security`, `performance`, ...) |
-| `Confidence`  | Named `float64` with `IsValid()`, `Clamp()`, `String()`    |
-| `Suppression` | Expiring suppression with `IsActive(now)`                  |
+| `Confidence`  | Named `float64` with `IsValid()`, `Clamp()`, `String()`     |
+| `Suppression` | Expiring suppression with `IsActive(now)`                   |
 
 ## API Overview
 
@@ -189,22 +189,22 @@ fmt.Printf("Iterations: %d, Findings: %d, Stable: %v\n",
 
 ### Pipeline Features
 
-| Feature                       | Description                                               |
-| ----------------------------- | --------------------------------------------------------- |
-| **Parallel detection**        | errgroup-based concurrent detector execution              |
-| **Finding processors**        | Composable transforms between detection and triage        |
-| **Custom triage**             | `Config.TriageFunc` overrides default categorization      |
+| Feature                           | Description                                                   |
+| --------------------------------- | ------------------------------------------------------------- |
+| **Parallel detection**            | errgroup-based concurrent detector execution                  |
+| **Finding processors**            | Composable transforms between detection and triage            |
+| **Custom triage**                 | `Config.TriageFunc` overrides default categorization          |
 | **Byte-level conflict detection** | `Config.ByteLevelConflictDetection` filters overlapping edits |
-| **Fix provider chain**        | Offset → Line → Substring, plus custom AST-aware providers |
-| **Fix application**           | Byte-level edits with backup/rollback                     |
-| **Verification**              | Re-run detectors to confirm fixes                         |
-| **Retry**                     | Exponential backoff for flaky detectors                   |
-| **Partial success**           | Continue with findings from successful detectors          |
-| **Metrics**                   | Optional timing and count collection with snapshots       |
-| **Structured logging**        | `*slog.Logger` integration                                |
-| **Stage callbacks**           | `OnStage` for progress reporting                          |
-| **Dry run**                   | Detect + triage without applying fixes                    |
-| **Generated file filter**     | Removes findings from auto-generated Go source files      |
+| **Fix provider chain**            | Offset → Line → Substring, plus custom AST-aware providers    |
+| **Fix application**               | Byte-level edits with backup/rollback                         |
+| **Verification**                  | Re-run detectors to confirm fixes                             |
+| **Retry**                         | Exponential backoff for flaky detectors                       |
+| **Partial success**               | Continue with findings from successful detectors              |
+| **Metrics**                       | Optional timing and count collection with snapshots           |
+| **Structured logging**            | `*slog.Logger` integration                                    |
+| **Stage callbacks**               | `OnStage` for progress reporting                              |
+| **Dry run**                       | Detect + triage without applying fixes                        |
+| **Generated file filter**         | Removes findings from auto-generated Go source files          |
 
 ### Custom Detector
 

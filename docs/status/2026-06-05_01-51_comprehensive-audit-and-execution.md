@@ -19,25 +19,25 @@ go-finding is in **strong shape**. 98.4% core test coverage, 0 lint issues, all 
 
 ### Code Changes (8 files modified, 191 insertions, 63 deletions)
 
-| File | Change | Type |
-|---|---|---|
-| `finding.go` | Refactored `Equal()` from 1 monolithic 14-condition `if` to 18 individual early returns | refactor |
-| `diff.go` | Extracted `SortFindingsByID` as exported utility (was private `byFindingID`) | refactor |
-| `pipeline/verify.go` | Removed duplicate `byFindingID`, now uses `finding.SortFindingsByID`; removed unused imports | refactor |
-| `json.go` | Added `PrettyJSONFiltered()` — excludes suppressed findings from JSON output | feature |
-| `json_test.go` | Added `TestPrettyJSONFiltered` — verifies suppression filtering | test |
-| `report_test.go` | Added `TestReportConcurrentReadWrite` — 10 writers + 10 readers, passes `-race` | test |
-| `cmd/go-finding/main.go` | Documented CLI vs library maxIterations difference in flag help text | fix/docs |
-| `cmd/go-finding/generated_filter.go` | Modernized `mustKeys` from manual loop to `maps.Keys`/`slices.Collect` | modernize |
-| `cmd/go-finding/registry.go` | Modernized `availableDetectorNames` from manual loop to `maps.Keys`/`slices.Collect` | modernize |
+| File                                 | Change                                                                                       | Type      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- | --------- |
+| `finding.go`                         | Refactored `Equal()` from 1 monolithic 14-condition `if` to 18 individual early returns      | refactor  |
+| `diff.go`                            | Extracted `SortFindingsByID` as exported utility (was private `byFindingID`)                 | refactor  |
+| `pipeline/verify.go`                 | Removed duplicate `byFindingID`, now uses `finding.SortFindingsByID`; removed unused imports | refactor  |
+| `json.go`                            | Added `PrettyJSONFiltered()` — excludes suppressed findings from JSON output                 | feature   |
+| `json_test.go`                       | Added `TestPrettyJSONFiltered` — verifies suppression filtering                              | test      |
+| `report_test.go`                     | Added `TestReportConcurrentReadWrite` — 10 writers + 10 readers, passes `-race`              | test      |
+| `cmd/go-finding/main.go`             | Documented CLI vs library maxIterations difference in flag help text                         | fix/docs  |
+| `cmd/go-finding/generated_filter.go` | Modernized `mustKeys` from manual loop to `maps.Keys`/`slices.Collect`                       | modernize |
+| `cmd/go-finding/registry.go`         | Modernized `availableDetectorNames` from manual loop to `maps.Keys`/`slices.Collect`         | modernize |
 
 ### TODO List Audit (26 items resolved)
 
-| Category | Count | Examples |
-|---|---|---|
-| Verified already-done | 18 | `io.WriterTo`, `iter.Seq`, SARIF fuzz tests, OnFix tests, concurrent detector tests, godoc examples, stringer (not applicable to string types) |
-| Fixed/implemented | 5 | `Equal()` refactor, `SortFindingsByID` extraction, `PrettyJSONFiltered`, race test, mapsloop modernization |
-| Verified intentional | 3 | Category.IsValid() design, maxIterations defaults, SARIF FixStrategySuggest round-trip |
+| Category              | Count | Examples                                                                                                                                       |
+| --------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Verified already-done | 18    | `io.WriterTo`, `iter.Seq`, SARIF fuzz tests, OnFix tests, concurrent detector tests, godoc examples, stringer (not applicable to string types) |
+| Fixed/implemented     | 5     | `Equal()` refactor, `SortFindingsByID` extraction, `PrettyJSONFiltered`, race test, mapsloop modernization                                     |
+| Verified intentional  | 3     | Category.IsValid() design, maxIterations defaults, SARIF FixStrategySuggest round-trip                                                         |
 
 ### Cleanup
 
@@ -48,13 +48,13 @@ go-finding is in **strong shape**. 98.4% core test coverage, 0 lint issues, all 
 
 ## B) PARTIALLY DONE — In Progress / Needs More Work
 
-| Item | Status | What's Left | Effort |
-|---|---|---|---|
-| `Modernize to Go 1.21+ stdlib` | 2 mapsloop sites fixed | Remaining: scan for `slices.Contains`, `slices.Delete`, `slices.Collect`, `maps.Keys` across all production code | Medium |
-| `Decompose findingFromSarResult` | Previous session: 4 helpers extracted | Still exceeds gocognit threshold (35) — needs further decomposition | Low |
-| `Decompose applySarifProperties` | Previous session: partially decomposed | Cognitive complexity 26 vs threshold 25 — needs 1 more extraction | Low |
-| `USAGE_GUIDE.md for v0.3.0` | FEATURES.md updated | USAGE_GUIDE still missing: FixEdit, GeneratedFileFilter, FixProviders, DiffResult, CorrelationScore | Medium |
-| `doc.go` | ~40% complete | Missing: pipeline examples, suppression guide, diff API, correlation API | Medium |
+| Item                             | Status                                 | What's Left                                                                                                      | Effort |
+| -------------------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------ |
+| `Modernize to Go 1.21+ stdlib`   | 2 mapsloop sites fixed                 | Remaining: scan for `slices.Contains`, `slices.Delete`, `slices.Collect`, `maps.Keys` across all production code | Medium |
+| `Decompose findingFromSarResult` | Previous session: 4 helpers extracted  | Still exceeds gocognit threshold (35) — needs further decomposition                                              | Low    |
+| `Decompose applySarifProperties` | Previous session: partially decomposed | Cognitive complexity 26 vs threshold 25 — needs 1 more extraction                                                | Low    |
+| `USAGE_GUIDE.md for v0.3.0`      | FEATURES.md updated                    | USAGE_GUIDE still missing: FixEdit, GeneratedFileFilter, FixProviders, DiffResult, CorrelationScore              | Medium |
+| `doc.go`                         | ~40% complete                          | Missing: pipeline examples, suppression guide, diff API, correlation API                                         | Medium |
 
 ---
 
@@ -117,18 +117,18 @@ These 36 items are genuine work items with no blockers:
 
 ### Critical
 
-| Issue | Severity | Detail |
-|---|---|---|
-| **No CI/CD** | 🔴 Critical | No `.github/workflows/` exists. All quality gates are local. No `-race` in CI, no lint in CI, no benchmark tracking. 13 TODO items blocked on this. |
-| **BuildFlow pre-commit hook broken** | 🟡 Medium | Hook runs `buildflow` which isn't always available. goconst, todo-check, library-policy checks fail. Developers may bypass with `--no-verify`. |
+| Issue                                | Severity    | Detail                                                                                                                                              |
+| ------------------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **No CI/CD**                         | 🔴 Critical | No `.github/workflows/` exists. All quality gates are local. No `-race` in CI, no lint in CI, no benchmark tracking. 13 TODO items blocked on this. |
+| **BuildFlow pre-commit hook broken** | 🟡 Medium   | Hook runs `buildflow` which isn't always available. goconst, todo-check, library-policy checks fail. Developers may bypass with `--no-verify`.      |
 
 ### Design Debt
 
-| Issue | Severity | Detail |
-|---|---|---|
-| **`Report.Findings` public slice** | 🟡 Medium | External code can bypass mutex. Encapsulation risk. Fixing requires breaking change. |
-| **`FixStrategyAI` vapor surface** | 🟢 Low | Published API with no backend. Marked RESERVED. |
-| **`RecordFix()` superseded** | 🟢 Low | Convenience method with no production callers. Dead code. |
+| Issue                               | Severity  | Detail                                                                                           |
+| ----------------------------------- | --------- | ------------------------------------------------------------------------------------------------ |
+| **`Report.Findings` public slice**  | 🟡 Medium | External code can bypass mutex. Encapsulation risk. Fixing requires breaking change.             |
+| **`FixStrategyAI` vapor surface**   | 🟢 Low    | Published API with no backend. Marked RESERVED.                                                  |
+| **`RecordFix()` superseded**        | 🟢 Low    | Convenience method with no production callers. Dead code.                                        |
 | **`cmd/go-finding` coverage 70.0%** | 🟡 Medium | Lowest coverage in the project. Integration tests cover most paths but edge cases may be missed. |
 
 ### Not Fucked Up (Verified Working)
@@ -175,33 +175,33 @@ These 36 items are genuine work items with no blockers:
 
 Sorted by impact × urgency ÷ effort:
 
-| Rank | Item | Impact | Effort | Why |
-|---|---|---|---|---|
-| 1 | **Set up GitHub Actions CI** (test+lint+race) | 🔴 Critical | Low | Unblocks 13 items, prevents regressions |
-| 2 | **Update USAGE_GUIDE.md for v0.3.0** | High | Medium | Blocks adoption; biggest doc gap |
-| 3 | **Tag v0.3.0 release** | High | Low | Code is stable; just needs tag |
-| 4 | **Push commits to origin** | High | Low | Unpushed work at risk |
-| 5 | **Decompose `findingFromSarResult`** | Medium | Low | Exceeds gocognit threshold |
-| 6 | **Decompose `applySarifProperties`** | Medium | Low | One extraction away from threshold |
-| 7 | **Improve README.md** | High | Medium | Project front door; currently bare |
-| 8 | **Consistent structured errors in pipeline** | Medium | Low | Code quality; easy win |
-| 9 | **Modernize Go 1.21+ stdlib (systematic scan)** | Medium | Medium | Code modernization; partially done |
-| 10 | **Fix pre-commit hook** | Medium | Low | Developer experience |
-| 11 | **Document provider chain in user-facing docs** | Medium | Low | Usage documentation |
-| 12 | **Comprehensive `doc.go`** | Medium | Medium | pkg.go.dev presentation |
-| 13 | **Define v1.0.0 release criteria** | High | Low | Strategic clarity |
-| 14 | **Write API stability guarantee document** | High | Low | User confidence |
-| 15 | **API stability review** | High | Medium | Pre-v1.0.0 audit |
-| 16 | **Wire `FilterConflictingEdits` as opt-in Config** | Medium | Low | Feature completeness |
-| 17 | **Add SARIF schema validation test** | Medium | Medium | Correctness |
-| 18 | **Fix `FixProviders` through CLI config** | Medium | Medium | CLI completeness |
-| 19 | **FixApplier rollback all files on partial failure** | Medium | Medium | Reliability |
-| 20 | **Lift FixApplier creation to Pipeline constructor** | Medium | Medium | Resource safety |
-| 21 | **Centralize triage logic** | Medium | Medium | Code quality |
-| 22 | **Customizable `TriageFunc` in Config** | Medium | Medium | Extensibility |
-| 23 | **Add GoReleaser config** | Medium | Medium | Release automation |
-| 24 | **Create tool integration guide (govet example)** | Medium | Medium | Adoption |
-| 25 | **FixEngine: line-offset tracking for multi-fix** | High | High | Biggest feature gap |
+| Rank | Item                                                 | Impact      | Effort | Why                                     |
+| ---- | ---------------------------------------------------- | ----------- | ------ | --------------------------------------- |
+| 1    | **Set up GitHub Actions CI** (test+lint+race)        | 🔴 Critical | Low    | Unblocks 13 items, prevents regressions |
+| 2    | **Update USAGE_GUIDE.md for v0.3.0**                 | High        | Medium | Blocks adoption; biggest doc gap        |
+| 3    | **Tag v0.3.0 release**                               | High        | Low    | Code is stable; just needs tag          |
+| 4    | **Push commits to origin**                           | High        | Low    | Unpushed work at risk                   |
+| 5    | **Decompose `findingFromSarResult`**                 | Medium      | Low    | Exceeds gocognit threshold              |
+| 6    | **Decompose `applySarifProperties`**                 | Medium      | Low    | One extraction away from threshold      |
+| 7    | **Improve README.md**                                | High        | Medium | Project front door; currently bare      |
+| 8    | **Consistent structured errors in pipeline**         | Medium      | Low    | Code quality; easy win                  |
+| 9    | **Modernize Go 1.21+ stdlib (systematic scan)**      | Medium      | Medium | Code modernization; partially done      |
+| 10   | **Fix pre-commit hook**                              | Medium      | Low    | Developer experience                    |
+| 11   | **Document provider chain in user-facing docs**      | Medium      | Low    | Usage documentation                     |
+| 12   | **Comprehensive `doc.go`**                           | Medium      | Medium | pkg.go.dev presentation                 |
+| 13   | **Define v1.0.0 release criteria**                   | High        | Low    | Strategic clarity                       |
+| 14   | **Write API stability guarantee document**           | High        | Low    | User confidence                         |
+| 15   | **API stability review**                             | High        | Medium | Pre-v1.0.0 audit                        |
+| 16   | **Wire `FilterConflictingEdits` as opt-in Config**   | Medium      | Low    | Feature completeness                    |
+| 17   | **Add SARIF schema validation test**                 | Medium      | Medium | Correctness                             |
+| 18   | **Fix `FixProviders` through CLI config**            | Medium      | Medium | CLI completeness                        |
+| 19   | **FixApplier rollback all files on partial failure** | Medium      | Medium | Reliability                             |
+| 20   | **Lift FixApplier creation to Pipeline constructor** | Medium      | Medium | Resource safety                         |
+| 21   | **Centralize triage logic**                          | Medium      | Medium | Code quality                            |
+| 22   | **Customizable `TriageFunc` in Config**              | Medium      | Medium | Extensibility                           |
+| 23   | **Add GoReleaser config**                            | Medium      | Medium | Release automation                      |
+| 24   | **Create tool integration guide (govet example)**    | Medium      | Medium | Adoption                                |
+| 25   | **FixEngine: line-offset tracking for multi-fix**    | High        | High   | Biggest feature gap                     |
 
 ---
 
@@ -221,21 +221,21 @@ This decision impacts the priority of 13+ items and whether this session's work 
 
 ## Project Health Metrics
 
-| Metric | Value | Status |
-|---|---|---|
-| Test Coverage (root) | 98.4% | ✅ Excellent |
-| Test Coverage (analysis) | 98.5% | ✅ Excellent |
-| Test Coverage (pipeline) | 95.9% | ✅ Good |
-| Test Coverage (internal/detectors) | 95.9% | ✅ Good |
-| Test Coverage (cmd/go-finding) | 70.0% | ⚠️ Needs work |
-| Lint Issues | 0 | ✅ Clean |
-| Race Detector | Clean | ✅ Clean |
-| Go Files | 118 | — |
-| Lines of Go Code | 27,428 | — |
-| Test Files | 66 | — |
-| TODO Items Done | 123/190 (65%) | — |
-| TODO Items Actionable | 36/67 | — |
-| TODO Items Blocked | 13/67 | — |
+| Metric                             | Value         | Status        |
+| ---------------------------------- | ------------- | ------------- |
+| Test Coverage (root)               | 98.4%         | ✅ Excellent  |
+| Test Coverage (analysis)           | 98.5%         | ✅ Excellent  |
+| Test Coverage (pipeline)           | 95.9%         | ✅ Good       |
+| Test Coverage (internal/detectors) | 95.9%         | ✅ Good       |
+| Test Coverage (cmd/go-finding)     | 70.0%         | ⚠️ Needs work |
+| Lint Issues                        | 0             | ✅ Clean      |
+| Race Detector                      | Clean         | ✅ Clean      |
+| Go Files                           | 118           | —             |
+| Lines of Go Code                   | 27,428        | —             |
+| Test Files                         | 66            | —             |
+| TODO Items Done                    | 123/190 (65%) | —             |
+| TODO Items Actionable              | 36/67         | —             |
+| TODO Items Blocked                 | 13/67         | —             |
 
 ---
 
