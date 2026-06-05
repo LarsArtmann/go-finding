@@ -121,46 +121,196 @@ These decisions need product input. They are documented here for visibility.
 
 **Question:** Should we replace the hand-rolled SARIF implementation with `github.com/owenrumney/go-sarif/v3`?
 
-**Current state:** Hand-rolled SARIF across 3 files (~470 LOC):
-- `sarif_types.go` — 12 struct types, constants, severity conversion
-- `sarif_export.go` — Export: `ToSARIF`, `WriteSARIF`, `WriteSARIFFiltered`, `WriteTo`
-- `sarif_import.go` — Import: `FindingsFromSARIF`, `FindingsFromReader`
+**Answer: No.** The library is well-maintained but introduces an impedance mismatch that makes our code worse, not better.
 
-**go-sarif v3 assessment:**
-- 83 stars, actively maintained (v3.3.0, Oct 2025)
-- Full SARIF 2.1.0 + 2.2.0 spec support with validation
-- Builder API (`NewRun`, `AddRule`, `CreateResultForRule`, etc.)
-- `Open` / `FromBytes` / `FromString` parsing with strict validation option
+---
 
-**Comparison:**
+### 9.1 The Core Problem: Impedance Mismatch
+
+go-sarif is **SARIF-centric**. go-finding is **Finding-centric**. The two domain models point in opposite directions.
+
+Our API asks: "I have a `Finding`. Give me SARIF."
+
+go-sarif's API asks: "I have a SARIF `Run`. Add a `Result` with a `Rule` and `Location`."
+
+This means every conversion becomes an adapter problem, not a simple mapping.
+
+---
+
+### 9.2 Concrete Code Comparison
+
+**Current export (hand-rolled):**
+
+```go
+func (r *Report) ToSARIF() ([]byte, error) {
+    data, err := json.MarshalIndent(r.sarifLog(), "", "  ")
+    return data, err
+}
+
+func findingToSARIF(f Finding) SarifResult {
+    return SarifResult{
+        RuleID:     f.Rule,
+        Level:      severityToSARIFLevel(f.Severity),
+        Message:    SarifMessage{Text: f.Message},
+        Locations:  sarifLocations(f),
+        Fixes:      sarifFixes(f),
+        Related:    sarifRelatedLocs(f),
+        Properties: sarifProperties(f),
+    }
+}
+```
+
+**Equivalent with go-sarif (what we'd have to write):**
+
+```go
+func (r *Report) ToSARIF() ([]byte, error) {
+    rep := report.NewV22Report()
+    run := sarif.NewRunWithInformationURI(r.Tool.Name, "")
+
+    for _, f := range r.Findings {
+        if f.IsSuppressed() {
+            continue
+        }
+
+        result := run.CreateResultForRule(f.Rule).
+            WithLevel(severityToSARIFLevel(f.Severity)).
+            WithMessage(sarif.NewTextMessage(f.Message))
+
+        // Location
+        result.AddLocation(sarif.NewLocationWithPhysicalLocation(
+            sarif.NewPhysicalLocation().
+                WithArtifactLocation(sarif.NewSimpleArtifactLocation(f.Position.File)).
+                WithRegion(sarif.NewRegion().
+                    WithStartLine(f.Position.Line).
+                    WithStartColumn(f.Position.Column)),
+        ))
+
+        // Property bag for round-trip
+        pb := sarif.NewPropertyBag()
+        pb.Add("go-finding/id", f.ID)
+        pb.Add("go-finding/severity", string(f.Severity))
+        pb.Add("go-finding/fixStrategy", string(f.FixStrategy))
+        pb.Add("go-finding/toolName", f.ToolName)
+        pb.Add("go-finding/category", string(f.Category))
+        // ... more properties ...
+        result.WithProperties(pb)
+
+        // Fix
+        if f.HasFix() {
+            result.AddFix(sarif.NewFix().
+                WithDescription(sarif.NewTextMessage(f.Suggestion)).
+                WithArtifactChanges([]sarif.ArtifactChange{
+                    sarif.NewArtifactChange().
+                        WithArtifactLocation(sarif.NewSimpleArtifactLocation(f.Position.File)).
+                        WithReplacements([]sarif.Replacement{
+                            sarif.NewReplacement().
+                                WithDeletedRegion(sarif.NewRegion().
+                                    WithStartLine(f.Position.Line).
+                                    WithStartColumn(f.Position.Column).
+                                    WithEndLine(f.Position.Line).
+                                    WithEndColumn(f.Position.Column)).
+                                WithInsertedText(sarif.NewMultiformatMessageString().
+                                    WithText(f.AfterCode)),
+                        }),
+                }))
+        }
+    }
+
+    rep.AddRun(run)
+
+    var buf bytes.Buffer
+    if err := rep.PrettyWrite(&buf); err != nil {
+        return nil, err
+    }
+    return buf.Bytes(), nil
+}
+```
+
+The go-sarif version is **~3x more code**, harder to read (deeply nested builder chains with `[]sarif.ArtifactChange{{...}}` soup), and loses the clarity of struct literal initialization.
+
+---
+
+### 9.3 Round-Trip Property Bag: Extra Indirection
+
+Our hand-rolled `SarifResult` has `Properties map[string]any` directly:
+
+```go
+result.Properties = map[string]any{
+    sarifPropID:       f.ID,
+    sarifPropSeverity: string(f.Severity),
+}
+```
+
+go-sarif wraps this in a `PropertyBag` struct:
+
+```go
+type PropertyBag struct {
+    Properties Properties `json:"properties,omitempty"`  // map[string]interface{}
+    Tags       []string   `json:"tags"`
+}
+```
+
+So the adapter must map `map[string]any` ↔ `*PropertyBag` at every read/write site. This is not simpler — it is an extra layer of indirection for zero benefit.
+
+---
+
+### 9.4 Loss of First-Class Features
+
+| Feature | Hand-rolled | go-sarif |
+|---------|-------------|----------|
+| Streaming output | `json.NewEncoder(w)` natively | `PrettyWrite(&buf)` buffers everything |
+| Context cancellation | `WriteSARIF(ctx, w)` checks `ctx.Err()` first | No context support |
+| Reader-based import | `FindingsFromReader(ctx, r)` streams via `json.Decoder` | `FromBytes(data)` requires full buffer |
+
+Adapting these would require wrapping go-sarif's API, adding even more adapter code.
+
+---
+
+### 9.5 Dependency Argument
+
+Adding `go-sarif` means every consumer of `go-finding` transitively depends on it. Our design principle #1 is "core types depend only on stdlib." The `finding` package currently has **zero** third-party dependencies in the root package. Breaking that for a builder API we do not need would be a regression.
+
+---
+
+### 9.6 What go-sarif Offers That We Don't Need
+
+| go-sarif "benefit" | Reality for us |
+|---|---|
+| Full SARIF 2.2 support | We only need 2.1.0. No demand for 2.2. |
+| Schema validation | Would be nice, but blocked by 7K-line schema file, not by implementation |
+| 100+ types | We use 15. The other 85 are cognitive overhead |
+| Active maintenance | Our 470 LOC need near-zero maintenance — SARIF 2.1.0 is stable |
+| "Standard" library | We are not building SARIF reports — we are converting Findings ↔ SARIF |
+
+---
+
+### 9.7 Summary Comparison
 
 | Dimension | Hand-rolled | go-sarif v3 |
 |-----------|-------------|-------------|
 | Extra dependencies | 0 | +1 module |
-| Lines we maintain | ~470 | 0 (but adapter layer ~200-300) |
+| Lines we maintain | ~470 | ~0 (but adapter layer ~300-400) |
 | Spec coverage | Subset we use | Full 2.1.0 + 2.2.0 |
 | Schema validation | None | Built-in `Validate()` |
 | go-finding round-trip | Native (property bag designed for it) | Requires adapter |
-| Streaming I/O | Native (`json.Encoder`/`Decoder`) | Unknown |
-| Context cancellation | First-class | Unknown |
+| Streaming I/O | Native (`json.Encoder`/`Decoder`) | Buffered (`PrettyWrite`) |
+| Context cancellation | First-class | None |
 | API shape | Finding-centric | SARIF-centric |
 | Test coverage | 100% (unit + fuzz, 1.6M execs) | External |
 
-**Why hand-rolled wins:**
+---
 
-1. **Dependency minimalism** — The project design principle #1 is "core types depend only on stdlib." Adding a SARIF dependency for ~470 LOC violates this.
-2. **No adapter tax** — go-sarif's API is SARIF-centric (build runs, add rules, create results). Our API is Finding-centric (`report.ToSARIF()`). A clean adapter would add ~200-300 LOC of mapping code, negating most of the "maintenance savings."
-3. **Round-trip fidelity is custom** — Our property bag namespace (`go-finding/*`) is purpose-built for Finding round-trip. Reimplementing this on go-sarif's generic `PropertyBag` is no simpler.
-4. **Streaming + context** — Our `WriteSARIF(ctx, w)` and `FindingsFromReader(ctx, r)` are first-class streaming with context cancellation. go-sarif's API shape would require wrapping.
-5. **We don't need the extra spec coverage** — We use: `Run`, `Tool`, `Driver`, `Result`, `Location`, `PhysicalLocation`, `ArtifactLocation`, `Region`, `Message`, `Fix`, `ArtifactChange`, `Replacement`, `RelatedLocation`, `PropertyBag`. That's 15 types. go-sarif exposes 100+ types we would never touch.
-
-**When to reconsider:**
+### 9.8 When to Reconsider
 
 - If we need **SARIF 2.2.0** features (currently no demand)
 - If we need **schema validation** in production (currently blocked by schema size, not implementation)
 - If we need **code flows, graphs, or taxonomies** (not on roadmap)
-- If the hand-rolled implementation grows beyond ~1000 LOC (suggests we're reimplementing too much)
+- If the hand-rolled implementation grows beyond ~1000 LOC (suggests we are reimplementing too much)
 
-**Recommendation:** Keep hand-rolled. The evaluation confirms the original decision was correct. Close the TODO.
+---
+
+### 9.9 Final Decision
+
+**Keep hand-rolled.** go-sarif is a well-maintained library for SARIF-first applications. go-finding is a Finding-first library that happens to interchange with SARIF. The adapter layer would be larger than our current implementation, harder to read, and would add a dependency we explicitly designed the project to avoid.
 
 **Status:** Resolved — keep hand-rolled.
