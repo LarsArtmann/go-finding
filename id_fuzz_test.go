@@ -7,6 +7,10 @@ import (
 )
 
 func FuzzGenerateID(f *testing.F) {
+	f.Add("govet", "nilcheck", "main.go", 42, 5)
+	f.Add("", "", "", 0, 0)
+	f.Add("tool", "rule", "file", 1, 0)
+
 	f.Fuzz(func(t *testing.T, tool, rule, file string, line, col int) {
 		id := GenerateID(tool, rule, Position{File: file, Line: line, Column: col})
 		if id == "" {
@@ -27,12 +31,21 @@ func FuzzGenerateID(f *testing.F) {
 }
 
 func FuzzParseID(f *testing.F) {
+	f.Add("govet:nilcheck:main.go:42:5")
+	f.Add("tool:rule:abc123")
+	f.Add("")
+	f.Add(":")
+	f.Add("a:b:c:d:e:f")
+
 	f.Fuzz(func(_ *testing.T, id string) {
 		_ = ParseID(id) // must not panic
 	})
 }
 
 func FuzzRoundTripID(f *testing.F) {
+	f.Add("govet", "nilcheck", "main.go", 42, 5)
+	f.Add("tool", "rule", "file.go", 10, 0)
+
 	f.Fuzz(func(t *testing.T, tool, rule, file string, line, col int) {
 		if line < 0 || col < 0 {
 			t.Skip()
@@ -87,6 +100,10 @@ func FuzzRoundTripID(f *testing.F) {
 }
 
 func FuzzIsHashID(f *testing.F) {
+	f.Add("tool:rule:abc123")
+	f.Add("tool:rule:file.go:10:5")
+	f.Add("")
+
 	f.Fuzz(func(_ *testing.T, id string) {
 		_ = IsHashID(id) // must not panic
 	})

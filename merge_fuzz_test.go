@@ -6,6 +6,10 @@ import (
 )
 
 func FuzzMergeRandom(f *testing.F) {
+	f.Add(int64(42), true, 0)
+	f.Add(int64(0), false, 1)
+	f.Add(int64(999), true, 2)
+
 	f.Fuzz(func(t *testing.T, seed int64, dedup bool, dedupBy int) {
 		rng := rand.New(rand.NewSource(seed))
 
@@ -51,6 +55,9 @@ func FuzzMergeRandom(f *testing.F) {
 }
 
 func FuzzFilterBySeverity(f *testing.F) {
+	f.Add(int64(42), 0)
+	f.Add(int64(0), 2)
+
 	f.Fuzz(func(t *testing.T, seed int64, minSev int) {
 		if minSev < 0 || minSev > 3 {
 			t.Skip()

@@ -244,7 +244,7 @@ golangci-lint run ./...                     # Lint
 ### Known Open Items
 
 - `Report.Findings` is a public slice — external code can bypass mutex (encapsulation risk)
-- `FixStrategyAI` + `NeedsAI()` are published API with no backend (vapor surface)
+- `FixStrategyAI` + `NeedsAI()` are published API with no backend — **DECISION: KEEP as reserved** for future AI-powered remediation. Zero implementation cost. Do not remove.
 - `Tag` constants partially overlap `Category` constants (TagSecurity/CategorySecurity etc.) — no structural link
 - `RecordFix()` superseded by `RecordFixes(uint)` — convenience method with no production callers
 - FixApplier path validation is lexical only (`filepath.Clean`) — does not resolve symlinks (acceptable for static analysis tool)
@@ -256,6 +256,13 @@ golangci-lint run ./...                     # Lint
 - **SARIF decomposition** — Both `findingFromSarResult` (9 decisions) and `applySarifProperties` (15 decisions) are well under gocognit threshold (35); no further decomposition needed (source: sarif_import.go)
 - **GoReleaser** — `.goreleaser.yml` exists with full config: builds, archives, checksums, changelog, cosign, SBOMs, brew, nix, nfpm, scoop (source: .goreleaser.yml)
 - **Codebase fully modernized** — uses `slices.SortFunc`, `slices.Contains`, `slices.Backward`, `maps.Keys`, `maps.Clone`, `maps.Equal`, `iter.Seq`, `errors.AsType`, `for i := range N` (source: project-wide)
+- **SARIF types unexported** — All SARIF struct types (`sarifLog`, `sarifRun`, `sarifResult`, etc.) are unexported; only `FromSARIFLevel` remains exported as a utility. Pre-v1.0 breaking change to prevent external coupling to internal representation.
+- **Internal constants unexported** — `keySeparator`, `mergedToolName`, `emptyToolName` are unexported; no external consumers existed. Pre-v1.0 cleanup.
+- **FindingsSnapshot()** — `Report.FindingsSnapshot()` returns a deep-cloned slice of all findings; safe for concurrent use without holding the lock. v1.0 migration path from direct `Findings` slice access.
+- **FixStrategyAI kept as reserved** — Decision: keep `FixStrategyAI` and `NeedsAI()` as reserved values. Zero implementation cost, documented as reserved for future AI-powered remediation. Removing would break consumers who've started using the constant.
+- **Pipeline tests split** — `pipeline_test.go` (1546 lines) split into `pipeline_new_test.go` (construction/config), `pipeline_triage_test.go` (triage/fix), keeping run tests in `pipeline_test.go`
+- **CLI test coverage 90.7%** — Up from 70%; added tests for `addGeneratedFilter`, `parseFilterGenTypes`, `mustKeys`, `splitCommaList`
+- **Fuzz seed corpus** — All 20 fuzz targets now have `f.Add()` seed values; 13 missing corpus directories created under `testdata/fuzz/`
 
 ---
 
