@@ -248,6 +248,7 @@ golangci-lint run ./...                     # Lint
 - `Tag` constants partially overlap `Category` constants (TagSecurity/CategorySecurity etc.) — no structural link
 - `RecordFix()` superseded by `RecordFixes(uint)` — convenience method with no production callers
 - FixApplier path validation is lexical only (`filepath.Clean`) — does not resolve symlinks (acceptable for static analysis tool)
+- **SARIF: hand-rolled, not go-sarif** — Evaluated `github.com/owenrumney/go-sarif/v3` (v3.3.0, 83 stars, actively maintained). Decision: keep hand-rolled. Reasons: (1) zero extra dependencies aligns with design principle #1, (2) adapter layer would be ~200-300 LOC negating maintenance savings, (3) round-trip property bag is custom-built, (4) streaming + context cancellation are first-class, (5) we use only 15 of 100+ SARIF types. Revisit if we need SARIF 2.2, schema validation, or code flows. See docs/architecture-decisions.md #9.
 - **ByteLevelConflictDetection** — `Config.ByteLevelConflictDetection bool` enables byte-level conflict filtering via `filterByFileEdits`; reads file content and uses FixEngine for precise overlap detection (source: pipeline/config.go)
 - **TriageFunc** — `Config.TriageFunc` allows custom triage logic; `DefaultTriageFunc` preserves existing behavior; `TriageResult` type in config.go (source: pipeline/config.go)
 - **Equal refactored** — `Finding.Equal()` uses individual early returns per field instead of monolithic condition; `SortFindingsByID` exported as shared utility (source: finding.go, diff.go)

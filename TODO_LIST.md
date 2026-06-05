@@ -115,7 +115,7 @@
 - [x] Add `Range.Contains(p Position) bool`
 - [x] Add `finding.Diff()`
 - [x] Add `go/analysis` reverse conversion: `ToDiagnostic()`
-- [ ] Evaluate `go-sarif` vs hand-rolled — **OWNER_DECISION** (strategic)
+- [x] Evaluate `go-sarif` vs hand-rolled — **OWNER_DECISION** (strategic) → Decision: keep hand-rolled. See docs/architecture-decisions.md #9.
 - [ ] Config file support for library/pipeline (YAML)
 - [ ] Plugin architecture for external detector registration
 - [ ] Pipeline middleware/interceptor pattern
