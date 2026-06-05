@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -180,8 +182,23 @@ func (p *Pipeline) applyTriage(
 		return nil
 	}
 
-	safeFixes := FilterConflictingFixes(fixes)
+	var safeFixes []finding.Finding
+	var providerErrors []error
+
+	if p.config.ByteLevelConflictDetection {
+		engine := NewFixEngineWithProviders(p.config.FixProviders...)
+		safeFixes, providerErrors = p.filterByFileEdits(ctx, fixes, engine)
+	} else {
+		safeFixes = FilterConflictingFixes(fixes)
+	}
+
 	iter.Conflicts = len(fixes) - len(safeFixes)
+
+	if len(providerErrors) > 0 {
+		p.log(ctx, "provider errors during conflict detection",
+			slog.Int("errors", len(providerErrors)),
+		)
+	}
 
 	if iter.Conflicts > 0 {
 		p.log(
@@ -257,4 +274,36 @@ func (p *Pipeline) applyDirectFixes(
 	}
 
 	return appliedFixes, nil
+}
+
+// filterByFileEdits groups fixes by file, reads each file's content,
+// and uses byte-level FilterConflictingEdits for precise conflict detection.
+func (p *Pipeline) filterByFileEdits(
+	_ context.Context,
+	fixes []finding.Finding,
+	engine *FixEngine,
+) ([]finding.Finding, []error) {
+	byFile := make(map[string][]finding.Finding)
+	for _, f := range fixes {
+		byFile[f.Position.File] = append(byFile[f.Position.File], f)
+	}
+
+	var result []finding.Finding
+	var allErrors []error
+
+	for file, fileFixes := range byFile {
+		fullPath := filepath.Join(p.rootDir, file)
+		content, err := os.ReadFile(filepath.Clean(fullPath))
+		if err != nil {
+			result = append(result, fileFixes...)
+
+			continue
+		}
+
+		filtered, providerErrs := FilterConflictingEdits(content, fileFixes, engine)
+		result = append(result, filtered...)
+		allErrors = append(allErrors, providerErrs...)
+	}
+
+	return result, allErrors
 }

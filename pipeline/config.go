@@ -53,6 +53,11 @@ type Config struct {
 	// OnStage is called when a pipeline stage completes. See Stage constants for values.
 	// Iteration is 1-based. The findings count reflects findings available after that stage.
 	OnStage func(stage Stage, iteration, findingsCount int)
+	// ByteLevelConflictDetection enables precise byte-level conflict detection
+	// during triage instead of the default position-based filtering.
+	// When true, FixEngine resolves each fix to actual byte offsets and detects
+	// overlapping edits. This is more accurate but requires reading file content.
+	ByteLevelConflictDetection bool
 }
 
 // DefaultMaxIterations is the default maximum number of pipeline iterations.
