@@ -136,6 +136,31 @@ func (r *Report) Merge(other *Report) {
 	r.ComputeSummary()
 }
 
+// MergeInto returns a new Report containing findings from both r and other.
+// Neither receiver nor other is modified. The new report uses r's ToolInfo.
+func (r *Report) MergeInto(other *Report) *Report {
+	r.mu.RLock()
+	rFindings := make([]Finding, len(r.Findings))
+	copy(rFindings, r.Findings)
+	rTool := r.Tool
+	r.mu.RUnlock()
+
+	other.mu.RLock()
+	oFindings := make([]Finding, len(other.Findings))
+	copy(oFindings, other.Findings)
+	other.mu.RUnlock()
+
+	merged := &Report{ //nolint:exhaustruct
+		Tool:     rTool,
+		Findings: make([]Finding, 0, len(rFindings)+len(oFindings)),
+	}
+	merged.Findings = append(merged.Findings, rFindings...)
+	merged.Findings = append(merged.Findings, oFindings...)
+	merged.ComputeSummary()
+
+	return merged
+}
+
 // addFindingUnchecked appends a finding without acquiring the mutex.
 // Caller must hold the lock or guarantee single-goroutine access.
 func (r *Report) addFindingUnchecked(f Finding) {

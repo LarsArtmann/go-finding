@@ -351,3 +351,37 @@ func TestReportConcurrentReadWrite(t *testing.T) {
 		t.Errorf("Len() = %d, want %d", r.Len(), expected)
 	}
 }
+
+func TestReport_MergeInto(t *testing.T) {
+	t.Parallel()
+
+	r1 := NewReport(ToolInfo{Name: "tool-a"})
+	r1.AddFinding(Finding{ID: "a1", Rule: "r1", Severity: SeverityError})
+	r1.ComputeSummary()
+
+	r2 := NewReport(ToolInfo{Name: "tool-b"})
+	r2.AddFinding(Finding{ID: "b1", Rule: "r2", Severity: SeverityWarning})
+	r2.ComputeSummary()
+
+	merged := r1.MergeInto(r2)
+
+	if merged.Tool.Name != "tool-a" {
+		t.Errorf("Tool.Name = %q, want %q", merged.Tool.Name, "tool-a")
+	}
+
+	if merged.Len() != 2 {
+		t.Errorf("Len() = %d, want 2", merged.Len())
+	}
+
+	if merged.Summary.Total != 2 {
+		t.Errorf("Summary.Total = %d, want 2", merged.Summary.Total)
+	}
+
+	if r1.Len() != 1 {
+		t.Errorf("r1 modified: Len() = %d, want 1", r1.Len())
+	}
+
+	if r2.Len() != 1 {
+		t.Errorf("r2 modified: Len() = %d, want 1", r2.Len())
+	}
+}
