@@ -181,6 +181,27 @@ func (d *MyDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 }
 ```
 
+### Fix Providers
+
+The pipeline resolves findings to byte-level edits via a composable provider chain:
+
+```go
+// Default chain: OffsetProvider → LineProvider → SubstringProvider
+applier, err := pipeline.NewFixApplier(rootDir)
+defer applier.Close()
+
+// Custom providers for AST-aware transformations
+applier, err = pipeline.NewFixApplierWithProviders(rootDir, myASTProvider)
+```
+
+### Diff and Compare
+
+```go
+result := finding.Diff(before, after)
+fmt.Println(result.Stats()) // "+2 -1 ~0 =3"
+fmt.Println(result.HasChanges())
+```
+
 ## SARIF
 
 ```go
