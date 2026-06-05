@@ -168,9 +168,22 @@ type Finding struct {
     BeforeCode  string            // Code before the fix
     AfterCode   string            // Code after the fix
     Range       *Range            // For span-based findings
-    Related     []RelatedRef      // Related findings
+    Related     []RelatedRef      // Related findings (with optional Range)
     Suppression *Suppression      // If suppressed
     Metadata    map[string]string // Tool-specific key-value pairs
+}
+```
+
+### RelatedRef
+
+Related findings link to issues in other locations:
+
+```go
+finding.RelatedRef{
+    ID:       "govet:printf:main.go:10:3",
+    Relation: "duplicate",
+    Message:  "same issue reported here",
+    Range:    &finding.Range{Start: pos1, End: pos2}, // optional span
 }
 ```
 
@@ -735,17 +748,38 @@ f.Confidence.Clamp()                   // ensures [0.0, 1.0]
 
 Named constants: `ConfidenceNone` (0.0), `ConfidenceLow` (0.25), `ConfidenceMedium` (0.5), `ConfidenceHigh` (0.75), `ConfidenceFull` (1.0).
 
+## Tags
+
+Tags provide multi-label classification for findings:
+
+```go
+f.Tags = finding.Tags{finding.TagSecurity, finding.TagBug}
+
+f.Tags.Contains(finding.TagSecurity) // true
+f.Tags.IsValid()                      // true (all tags are valid)
+```
+
+Standard tags: `TagSecurity`, `TagBug`, `TagPerformance`, `TagStyle`, `TagDeprecated`, `TagExperimental`, `TagUnused`, `TagDuplicate`, `TagComplexity`, `TagVulnerability`, `TagCompatibility`.
+
 ## Diff
 
 Compare two finding sets:
 
 ```go
 result := finding.Diff(beforeFindings, afterFindings)
-fmt.Println(result.Stats())     // "+2 -1 =3"
+fmt.Println(result.Stats())     // "+2 -1 ~0 =3"
 fmt.Println(result.HasChanges()) // true
 ```
 
-`DiffResult` contains `Added`, `Removed`, and `Unchanged` slices, sorted by ID.
+`DiffResult` contains `Added`, `Removed`, `Modified` (with before/after pairs), and `Unchanged` slices.
+`Modified` tracks findings with the same ID but different content via `ModifiedPair{Before, After}`.
+All slices are sorted by ID.
+
+### Sorting
+
+```go
+finding.SortFindingsByID(findings) // in-place sort by finding ID
+```
 
 ## Conflict Detection
 
@@ -764,6 +798,20 @@ for _, info := range infos {
         info.Finding.ID, len(info.ConflictsWith), info.Reason)
 }
 ```
+
+### Byte-Level Conflict Detection
+
+Enable precise byte-level conflict detection (opt-in, position-based is default):
+
+```go
+cfg := pipeline.Config{
+    ByteLevelConflictDetection: true,
+    // ...
+}
+```
+
+When enabled, the pipeline uses the FixEngine to resolve exact byte offsets and detects
+overlapping edits at the byte level rather than comparing position ranges.
 
 ## Fix Engine and Providers
 
@@ -790,4 +838,92 @@ applied, err := applier.Apply(ctx, fixes)
 
 ```go
 applier, err := pipeline.NewFixApplierWithProviders(rootDir, myASTProvider)
+```
+
+### FixEdit
+
+`FixEdit` represents a byte-level edit operation:
+
+```go
+edit := pipeline.FixEdit{
+    Offset:     120,              // byte offset in file
+    Length:     5,                // bytes to replace
+    Replacement: []byte("world"), // new content
+}
+```
+
+Edits are applied in descending offset order against the original content snapshot, so multiple edits to the same file are correct.
+
+### TriageFunc
+
+Customize how the pipeline categorizes findings into safe fixes vs conflicts:
+
+```go
+cfg := pipeline.Config{
+    TriageFunc: func(findings []finding.Finding) *pipeline.TriageResult {
+        var safe, conflicts []finding.Finding
+        for _, f := range findings {
+            if f.Confidence >= finding.ConfidenceHigh && f.HasCodeChange() {
+                safe = append(safe, f)
+            } else {
+                conflicts = append(conflicts, f)
+            }
+        }
+        return &pipeline.TriageResult{SafeFixes: safe, Conflicts: conflicts}
+    },
+}
+```
+
+`DefaultTriageFunc` preserves existing behavior (uses `HasFix()` / `IsAutoFixable()` checks).
+
+## LSP Diagnostics
+
+Convert findings to LSP Diagnostics for IDE integration:
+
+```go
+diag := f.ToLSP()
+// diag.Severity, diag.Message, diag.Range, diag.Code, diag.Source
+
+// Convert back
+f := finding.FromLSP("file:///path/to/main.go", lspDiag)
+```
+
+LSP conversion is lossy: FixStrategy, Confidence, BeforeCode, AfterCode, Suppression,
+Metadata, Category, and Tags are not preserved through LSP round-trips.
+Diagnostic tags (unnecessary, deprecated) are preserved via Metadata keys `lsp-tag-1`, `lsp-tag-2`.
+
+## Formatting
+
+Human-readable output:
+
+```go
+err := finding.FormatText(os.Stdout, findings)    // single-line per finding
+err := finding.FormatMarkdown(os.Stdout, findings) // markdown table
+```
+
+Both return errors instead of silently swallowing encoding failures.
+
+## JSON
+
+```go
+// Single finding
+f, err := finding.FromJSON(data) // validates on import
+
+// Report
+r, dropped, err := finding.ReportFromJSON(data) // drops invalid findings
+fmt.Printf("%d invalid findings dropped", dropped)
+
+// Pretty-print
+pretty, err := report.PrettyJSON()         // all findings
+pretty, err := report.PrettyJSONFiltered() // excludes suppressed
+```
+
+## go/analysis Integration
+
+Convert from the standard Go analysis framework:
+
+```go
+import "github.com/larsartmann/go-finding/analysis"
+
+f := analysis.FromDiagnostic(diag, pass.Fset, "my-analyzer", "RULE001")
 ```
