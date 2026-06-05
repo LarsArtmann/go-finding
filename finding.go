@@ -148,7 +148,9 @@ func (f Finding) IsSuppressedAt(now time.Time) bool {
 	return f.Suppression != nil && !f.Suppression.IsExpired(now)
 }
 
-// HasFix returns true if this finding has a fix available.
+// HasFix reports whether this finding has any fix available. This is the
+// canonical "is fixable?" check. Returns true for FixStrategyDirect (always),
+// and for FixStrategySuggest/FixStrategyAI when AfterCode is present.
 func (f Finding) HasFix() bool {
 	switch f.FixStrategy {
 	case FixStrategyNone:
@@ -162,9 +164,10 @@ func (f Finding) HasFix() bool {
 	}
 }
 
-// IsAutoFixable returns true if this finding can be automatically applied
-// by the pipeline. Unlike HasFix(), this also requires BeforeCode or AfterCode
-// to be available for the FixEngine to produce byte-level edits.
+// IsAutoFixable reports whether the pipeline can automatically apply this fix.
+// Stricter than HasFix: requires FixStrategyDirect AND (BeforeCode or AfterCode).
+// Use HasFix() to check if any fix exists; use IsAutoFixable() to check if
+// the pipeline will attempt auto-application.
 func (f Finding) IsAutoFixable() bool {
 	return f.FixStrategy == FixStrategyDirect && (f.BeforeCode != "" || f.AfterCode != "")
 }
@@ -206,7 +209,9 @@ func (f Finding) String() string {
 	return b.String()
 }
 
-// HasCodeChange reports whether the finding has any code change (BeforeCode or AfterCode).
+// HasCodeChange reports whether the finding carries any code change data
+// (BeforeCode or AfterCode). This is a low-level check used by the FixEngine;
+// prefer HasFix() or IsAutoFixable() for higher-level fixability decisions.
 func (f Finding) HasCodeChange() bool {
 	return f.BeforeCode != "" || f.AfterCode != ""
 }
