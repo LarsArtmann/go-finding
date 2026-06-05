@@ -37,6 +37,31 @@ These are not yet locked:
 - `SarifLog` and related SARIF types (internal representation)
 - `Summary` fields — new fields may be added
 
+## Known Pre-v1.0 Concerns
+
+### Reserved Placeholders
+
+- `FixStrategyAI` and `NeedsAI()` are published in the API but have no backend implementation. The `"ai"` string value is reserved and will not be reused for a different purpose. Pipeline triage treats `FixStrategyAI` the same as `FixStrategySuggest` (no auto-apply).
+
+### Deprecations
+
+- `RecordFix()` is superseded by `RecordFixes(uint)`. Will be removed in v1.0.0.
+
+### Encapsulation Risks
+
+- `Report.Findings` is a public slice — external code can bypass the mutex. Use `AddFinding`/`AddFindings`/`FindByID`/`All()` for thread-safe access. This will be addressed before v1.0.0.
+- `Version` is a mutable `var` for `-ldflags` override; callers should not mutate it directly.
+
+### Leaked Internals (low risk)
+
+These exported symbols are implementation details that callers should not depend on:
+
+- `KeySeparator`, `MergedToolName`, `EmptyToolName` — internal constants
+- `ReasonOverlappingRange`, `ReasonOverlappingEdit` — conflict reason strings
+- `SARIFEditOffsetKey`, `SARIFEditLengthKey`, `SARIFEditReplacementKey` — SARIF property keys
+- `LSPSeverityKey`, `LSPDiagnosticTagsKey` — LSP metadata keys
+- `analysis.DefaultRelation` — duplicates `finding.RelationRelated`
+
 ## Deprecation Policy
 
 1. Deprecated symbols get a `// Deprecated:` comment

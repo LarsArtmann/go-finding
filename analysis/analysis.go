@@ -14,7 +14,7 @@ import (
 )
 
 // DefaultRelation is the default relation type for related information.
-const DefaultRelation = "related"
+const DefaultRelation = finding.RelationRelated
 
 // FromDiagnostic converts a go/analysis.Diagnostic to a Finding.
 // The toolName parameter identifies which analyzer produced this.
