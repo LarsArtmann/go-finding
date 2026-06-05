@@ -1,0 +1,2 @@
+go test fuzz v1
+[]byte("{\"rule\":\"printf\",\"toolName\":\"govet\",\"message\":\"fmt.Printf format %d has arg of wrong type string\",\"severity\":\"warning\",\"position\":{\"file\":\"main.go\",\"line\":42,\"column\":5},\"category\":\"correctness\",\"fixStrategy\":\"suggest\",\"confidence\":0.75}")
