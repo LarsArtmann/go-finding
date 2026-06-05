@@ -57,6 +57,22 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 		detectors = wrapped
 	}
 
+	// Create FixApplier eagerly so errors are caught early.
+	var (
+		applier *FixApplier
+		err     error
+	)
+
+	if len(config.FixProviders) > 0 {
+		applier, err = NewFixApplierWithProviders(rootDir, config.FixProviders...)
+	} else {
+		applier, err = NewFixApplier(rootDir)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("init fix applier: %w", err)
+	}
+
 	//nolint:exhaustruct
 	return &Pipeline{
 		config:    config,
@@ -64,6 +80,7 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 		rootDir:   rootDir,
 		findings:  make([]finding.Finding, 0),
 		metrics:   config.Metrics,
+		applier:   applier,
 	}, nil
 }
 

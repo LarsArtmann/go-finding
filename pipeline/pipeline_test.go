@@ -773,6 +773,8 @@ func TestApplyDirectFixes(t *testing.T) {
 		metrics: m,
 	}
 
+	p.applier, _ = NewFixApplier(tempDir)
+
 	applied, err := p.applyDirectFixes(context.Background(), fixes)
 	if err != nil {
 		t.Fatalf("applyDirectFixes: %v", err)
@@ -806,6 +808,12 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 	p := &Pipeline{
 		config:  DefaultConfig(),
 		rootDir: tempDir,
+	}
+
+	var err error
+	p.applier, err = NewFixApplier(tempDir)
+	if err != nil {
+		t.Fatalf("create fix applier: %v", err)
 	}
 
 	applied, err := p.applyDirectFixes(context.Background(), fixes)
@@ -1119,6 +1127,8 @@ func TestApplyTriage_AllConflicting(t *testing.T) {
 	fixes := makeConflictingFixes()
 
 	p := &Pipeline{config: DefaultConfig(), rootDir: tmpDir}
+	p.applier, _ = NewFixApplier(tmpDir)
+
 	iter := &Iteration{Number: 1}
 
 	err := p.applyTriage(context.Background(), fixes, iter)

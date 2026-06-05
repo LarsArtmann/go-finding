@@ -252,20 +252,6 @@ func (p *Pipeline) applyDirectFixes(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) ([]finding.Finding, error) {
-	var err error
-
-	if p.applier == nil {
-		if len(p.config.FixProviders) > 0 {
-			p.applier, err = NewFixApplierWithProviders(p.rootDir, p.config.FixProviders...)
-		} else {
-			p.applier, err = NewFixApplier(p.rootDir)
-		}
-
-		if err != nil {
-			return nil, fmt.Errorf("init fix applier: %w", err)
-		}
-	}
-
 	applied, appliedFixes, err := p.applier.ApplyWithDetails(ctx, fixes)
 	if err != nil {
 		return nil, err
