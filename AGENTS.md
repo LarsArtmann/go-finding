@@ -244,6 +244,13 @@ golangci-lint run ./...                     # Lint
 - `Tag` constants partially overlap `Category` constants (TagSecurity/CategorySecurity etc.) — no structural link
 - `RecordFix()` superseded by `RecordFixes(uint)` — convenience method with no production callers
 - FixApplier path validation is lexical only (`filepath.Clean`) — does not resolve symlinks (acceptable for static analysis tool)
+- **ByteLevelConflictDetection** — `Config.ByteLevelConflictDetection bool` enables byte-level conflict filtering via `filterByFileEdits`; reads file content and uses FixEngine for precise overlap detection (source: pipeline/config.go)
+- **TriageFunc** — `Config.TriageFunc` allows custom triage logic; `DefaultTriageFunc` preserves existing behavior; `TriageResult` type in config.go (source: pipeline/config.go)
+- **Equal refactored** — `Finding.Equal()` uses individual early returns per field instead of monolithic condition; `SortFindingsByID` exported as shared utility (source: finding.go, diff.go)
+- **PrettyJSONFiltered** — `Report.PrettyJSONFiltered()` returns JSON excluding suppressed findings (source: json.go)
+- **SARIF decomposition** — Both `findingFromSarResult` (9 decisions) and `applySarifProperties` (15 decisions) are well under gocognit threshold (35); no further decomposition needed (source: sarif_import.go)
+- **GoReleaser** — `.goreleaser.yml` exists with full config: builds, archives, checksums, changelog, cosign, SBOMs, brew, nix, nfpm, scoop (source: .goreleaser.yml)
+- **Codebase fully modernized** — uses `slices.SortFunc`, `slices.Contains`, `slices.Backward`, `maps.Keys`, `maps.Clone`, `maps.Equal`, `iter.Seq`, `errors.AsType`, `for i := range N` (source: project-wide)
 
 ---
 

@@ -88,10 +88,11 @@ type SarifArtifactLocation struct {
 
 // SarifRegion represents a code region in a text document.
 type SarifRegion struct {
-	StartLine   int `json:"startLine,omitempty"`
-	StartColumn int `json:"startColumn,omitempty"`
-	EndLine     int `json:"endLine,omitempty"`
-	EndColumn   int `json:"endColumn,omitempty"`
+	StartLine   int    `json:"startLine,omitempty"`
+	StartColumn int    `json:"startColumn,omitempty"`
+	EndLine     int    `json:"endLine,omitempty"`
+	EndColumn   int    `json:"endColumn,omitempty"`
+	Snippet     string `json:"snippet,omitempty"`
 }
 
 // SarifFix represents a fix to be applied to the artifact.

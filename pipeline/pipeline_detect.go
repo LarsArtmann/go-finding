@@ -152,7 +152,7 @@ func (p *Pipeline) triage(findings []finding.Finding) *TriageResult {
 // DefaultTriageFunc categorizes findings using HasFix() as the canonical source of truth.
 // - IsAutoFixable() → Direct (auto-apply via FixEngine)
 // - HasFix() but not auto-fixable → Suggest (display suggestion)
-// - No fix available → None
+// - No fix available → None.
 func DefaultTriageFunc(findings []finding.Finding) *TriageResult {
 	result := &TriageResult{
 		Direct:  make([]finding.Finding, 0),
@@ -196,7 +196,8 @@ func (p *Pipeline) applyTriage(
 	iter.Conflicts = len(fixes) - len(safeFixes)
 
 	if len(providerErrors) > 0 {
-		p.log(ctx, "provider errors during conflict detection",
+		p.log(
+			ctx, "provider errors during conflict detection",
 			slog.Int("errors", len(providerErrors)),
 		)
 	}

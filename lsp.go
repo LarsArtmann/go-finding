@@ -2,6 +2,7 @@ package finding
 
 import (
 	"strconv"
+	"strings"
 )
 
 // LSPSeverity represents an LSP diagnostic severity level per the LSP specification.
@@ -18,15 +19,25 @@ const (
 // LSP types for conversion.
 // These are simplified representations of LSP Diagnostic types.
 
+// LSPDiagnosticTag represents a diagnostic tag per the LSP specification (3.15+).
+type LSPDiagnosticTag int
+
+// LSP diagnostic tag constants per the LSP specification.
+const (
+	LSPDiagnosticTagUnnecessary LSPDiagnosticTag = 1 // Unnecessary code (e.g., unused, duplicate)
+	LSPDiagnosticTagDeprecated  LSPDiagnosticTag = 2 // Deprecated code
+)
+
 // LSPDiagnostic represents an LSP (Language Server Protocol) diagnostic.
 // Used for converting Finding objects to LSP diagnostic format.
 type LSPDiagnostic struct {
-	Range    LSPRange         `json:"range"`
-	Severity LSPSeverity      `json:"severity,omitempty"` // 1=Error, 2=Warning, 3=Info, 4=Hint
-	Code     string           `json:"code,omitempty"`
-	Source   string           `json:"source,omitempty"`
-	Message  string           `json:"message"`
-	Related  []LSPRelatedInfo `json:"relatedInformation,omitempty"`
+	Range    LSPRange           `json:"range"`
+	Severity LSPSeverity        `json:"severity,omitempty"` // 1=Error, 2=Warning, 3=Info, 4=Hint
+	Code     string             `json:"code,omitempty"`
+	Source   string             `json:"source,omitempty"`
+	Message  string             `json:"message"`
+	Tags     []LSPDiagnosticTag `json:"tags,omitempty"`
+	Related  []LSPRelatedInfo   `json:"relatedInformation,omitempty"`
 }
 
 // LSPRange represents a 0-based character range in a text document.
@@ -86,10 +97,17 @@ func (f Finding) ToLSP() LSPDiagnostic {
 			Line:      toZeroBased(rel.Position.Line),
 			Character: toZeroBased(rel.Position.Column),
 		}
+		lspRange := LSPRange{Start: lspPos, End: lspPos}
+		if rel.Range != nil && rel.Range.HasEnd() {
+			lspRange.End = LSPPosition{
+				Line:      toZeroBased(rel.Range.End.Line),
+				Character: toZeroBased(rel.Range.End.Column),
+			}
+		}
 		diag.Related = append(diag.Related, LSPRelatedInfo{
 			Location: LSPLocation{
 				URI:   rel.Position.File,
-				Range: LSPRange{Start: lspPos, End: lspPos},
+				Range: lspRange,
 			},
 			Message: string(rel.Relation),
 		})
@@ -109,6 +127,9 @@ func toZeroBased(n int) int {
 
 // LSPSeverityKey is the Metadata key for preserving raw LSP severity codes.
 const LSPSeverityKey = "go-finding/lsp-severity"
+
+// LSPDiagnosticTagsKey is the Metadata key for preserving LSP diagnostic tags.
+const LSPDiagnosticTagsKey = "go-finding/lsp-diagnostic-tags"
 
 // FromLSP creates a Finding from an LSP Diagnostic at the given file URI.
 // Preserves end position in Range and related information when present.
@@ -153,17 +174,34 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 			Line:   rel.Location.Range.Start.Line + 1,
 			Column: rel.Location.Range.Start.Character + 1,
 		}
-		f.Related = append(f.Related, RelatedRef{
+		ref := RelatedRef{
 			FindingID: GenerateID(diag.Source, diag.Code, relPos),
 			Relation:  RelationKind(rel.Message),
 			Position:  relPos,
-		})
+		}
+		endLine := rel.Location.Range.End.Line + 1
+		endChar := rel.Location.Range.End.Character + 1
+		if endLine != relPos.Line || endChar != relPos.Column {
+			ref.Range = &Range{
+				Start: ref.Position,
+				End:   Position{File: rel.Location.URI, Line: endLine, Column: endChar},
+			}
+		}
+		f.Related = append(f.Related, ref)
 	}
 
-	// Preserve raw LSP severity for fidelity.
-	if diag.Severity > 0 {
-		f.Metadata = map[string]string{
-			LSPSeverityKey: strconv.Itoa(int(diag.Severity)),
+	// Preserve raw LSP severity and tags for fidelity.
+	if diag.Severity > 0 || len(diag.Tags) > 0 {
+		f.Metadata = make(map[string]string)
+		if diag.Severity > 0 {
+			f.Metadata[LSPSeverityKey] = strconv.Itoa(int(diag.Severity))
+		}
+		if len(diag.Tags) > 0 {
+			tagStrs := make([]string, len(diag.Tags))
+			for i, tag := range diag.Tags {
+				tagStrs[i] = strconv.Itoa(int(tag))
+			}
+			f.Metadata[LSPDiagnosticTagsKey] = strings.Join(tagStrs, ",")
 		}
 	}
 

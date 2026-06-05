@@ -67,7 +67,7 @@ func FromDiagnostic(
 	for _, info := range d.Related {
 		relatedPos := fset.Position(info.Pos)
 		relatedID := finding.GenerateID(toolName, ruleCode, FromTokenPosition(relatedPos))
-		f.Related = append(f.Related, finding.RelatedRef{
+		f.Related = append(f.Related, finding.RelatedRef{ //nolint:exhaustruct
 			FindingID: relatedID,
 			Relation:  DefaultRelation,
 			Position:  FromTokenPosition(relatedPos),

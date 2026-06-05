@@ -108,6 +108,15 @@ func findingFromSarResult(r SarifResult, toolName string) Finding {
 				ref.FindingID = v
 			}
 		}
+		if rel.PhysicalLocation.Region != nil {
+			region := rel.PhysicalLocation.Region
+			if region.EndLine > 0 || region.EndColumn > 0 {
+				ref.Range = &Range{
+					Start: pos,
+					End:   Position{File: pos.File, Line: region.EndLine, Column: region.EndColumn},
+				}
+			}
+		}
 
 		f.Related = append(f.Related, ref)
 	}
@@ -155,6 +164,10 @@ func applySarifPosition(f *Finding, r SarifResult) {
 				Column: region.EndColumn,
 			},
 		}
+	}
+
+	if region.Snippet != "" {
+		f.Snippet = region.Snippet
 	}
 }
 

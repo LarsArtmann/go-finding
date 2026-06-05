@@ -174,6 +174,10 @@ func findingRegion(f Finding) *SarifRegion {
 		region.EndColumn = f.Range.End.Column
 	}
 
+	if f.Snippet != "" {
+		region.Snippet = f.Snippet
+	}
+
 	return region
 }
 
@@ -219,13 +223,18 @@ func sarifRelatedLocs(f Finding) []SarifRelatedLoc {
 	related := make([]SarifRelatedLoc, 0, len(f.Related))
 
 	for _, rel := range f.Related {
+		region := &SarifRegion{
+			StartLine:   rel.Position.Line,
+			StartColumn: rel.Position.Column,
+		}
+		if rel.Range != nil && rel.Range.HasEnd() {
+			region.EndLine = rel.Range.End.Line
+			region.EndColumn = rel.Range.End.Column
+		}
 		sarifRel := SarifRelatedLoc{
 			PhysicalLocation: SarifPhysicalLocation{
 				ArtifactLocation: SarifArtifactLocation{URI: rel.Position.File},
-				Region: &SarifRegion{
-					StartLine:   rel.Position.Line,
-					StartColumn: rel.Position.Column,
-				},
+				Region:           region,
 			},
 			Message: SarifMessage{Text: string(rel.Relation)},
 		}

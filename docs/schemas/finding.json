@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LarsArtmann/go-finding/schemas/finding.json",
+  "title": "Finding",
+  "description": "A unified representation of a static analysis finding from any tool.",
+  "type": "object",
+  "required": ["id", "rule", "toolName", "message", "severity", "position"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable unique identifier (e.g., 'tool:rule:file.go:42:5')"
+    },
+    "rule": {
+      "type": "string",
+      "description": "Rule or check name that triggered the finding"
+    },
+    "toolName": {
+      "type": "string",
+      "description": "Name of the source tool"
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable description of the finding"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "critical"],
+      "description": "Severity level"
+    },
+    "position": {
+      "$ref": "#/$defs/position"
+    },
+    "category": {
+      "type": "string",
+      "description": "Domain classification (e.g., 'security', 'style', 'performance')"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Multiple tags for richer classification"
+    },
+    "fixStrategy": {
+      "type": "string",
+      "enum": ["none", "suggest", "direct", "ai"],
+      "description": "Fix availability: none, suggest (human-readable), direct (auto-apply), ai (reserved)"
+    },
+    "suggestion": {
+      "type": "string",
+      "description": "Human-readable fix description"
+    },
+    "beforeCode": {
+      "type": "string",
+      "description": "Code before the fix"
+    },
+    "afterCode": {
+      "type": "string",
+      "description": "Code after the fix"
+    },
+    "range": {
+      "$ref": "#/$defs/range"
+    },
+    "snippet": {
+      "type": "string",
+      "description": "Surrounding code context"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence level 0.0-1.0"
+    },
+    "related": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/relatedRef" }
+    },
+    "suppression": {
+      "$ref": "#/$defs/suppression"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Tool-specific key-value pairs"
+    }
+  },
+  "$defs": {
+    "position": {
+      "type": "object",
+      "required": ["file"],
+      "properties": {
+        "file": { "type": "string" },
+        "line": { "type": "integer", "minimum": 0 },
+        "column": { "type": "integer", "minimum": 0 },
+        "offset": { "type": "integer", "minimum": 0, "description": "0-based byte offset" }
+      }
+    },
+    "range": {
+      "type": "object",
+      "required": ["start"],
+      "properties": {
+        "start": { "$ref": "#/$defs/position" },
+        "end": { "$ref": "#/$defs/position" }
+      }
+    },
+    "relatedRef": {
+      "type": "object",
+      "properties": {
+        "findingId": { "type": "string" },
+        "relation": {
+          "type": "string",
+          "enum": ["clone-of", "causes", "wraps", "related"]
+        },
+        "position": { "$ref": "#/$defs/position" }
+      }
+    },
+    "suppression": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["in-source", "in-config", "in-review"]
+        },
+        "rule": { "type": "string" },
+        "reason": { "type": "string" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

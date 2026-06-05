@@ -151,6 +151,10 @@
         "position": {
           "$ref": "#/$defs/position",
           "description": "Location of the related finding."
+        },
+        "range": {
+          "$ref": "#/$defs/range",
+          "description": "Span of the related location."
         }
       }
     },

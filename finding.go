@@ -84,9 +84,10 @@ const (
 
 // RelatedRef links to another finding.
 type RelatedRef struct {
-	FindingID string       `json:"findingId"` // ID of the related finding
-	Relation  RelationKind `json:"relation"`  // e.g., RelationCloneOf, RelationCauses
-	Position  Position     `json:"position"`  // Quick access to related location
+	FindingID string       `json:"findingId"`       // ID of the related finding
+	Relation  RelationKind `json:"relation"`        // e.g., RelationCloneOf, RelationCauses
+	Position  Position     `json:"position"`        // Quick access to related location
+	Range     *Range       `json:"range,omitempty"` // Span of the related location
 }
 
 // IsValid returns true if the reference has a non-empty FindingID.
@@ -105,7 +106,13 @@ func (f Finding) Clone() Finding {
 
 	if len(f.Related) > 0 {
 		clone.Related = make([]RelatedRef, len(f.Related))
-		copy(clone.Related, f.Related)
+		for i, r := range f.Related {
+			clone.Related[i] = r
+			if r.Range != nil {
+				rr := *r.Range
+				clone.Related[i].Range = &rr
+			}
+		}
 	}
 
 	if f.Suppression != nil {
@@ -300,6 +307,15 @@ func (f Finding) Validate() error {
 				fmt.Sprintf("finding.Related[%d] is invalid: missing required fields", i), nil,
 			))
 		}
+		if ref.Range != nil && ref.Range.IsInverted() {
+			errs = append(errs, NewValidationError(
+				fmt.Sprintf(
+					"finding.Related[%d].Range is invalid: End (%+v) before Start (%+v)",
+					i, ref.Range.End, ref.Range.Start,
+				),
+				nil,
+			))
+		}
 	}
 
 	if f.Suppression != nil && !f.Suppression.IsValid() {
@@ -386,7 +402,7 @@ func (f Finding) Equal(other Finding) bool {
 	if !f.equalRange(other) {
 		return false
 	}
-	if !slices.Equal(f.Related, other.Related) {
+	if !f.equalRelated(other) {
 		return false
 	}
 	if !f.equalSuppression(other) {
@@ -406,6 +422,31 @@ func (f Finding) equalRange(other Finding) bool {
 	}
 
 	return f.Range.Equal(*other.Range)
+}
+
+func (f Finding) equalRelated(other Finding) bool {
+	if len(f.Related) != len(other.Related) {
+		return false
+	}
+
+	for i, a := range f.Related {
+		b := other.Related[i]
+		if a.FindingID != b.FindingID || a.Relation != b.Relation || !a.Position.Equal(b.Position) {
+			return false
+		}
+
+		if a.Range == nil && b.Range == nil {
+			continue
+		}
+		if a.Range == nil || b.Range == nil {
+			return false
+		}
+		if !a.Range.Equal(*b.Range) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (f Finding) equalSuppression(other Finding) bool {
