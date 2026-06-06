@@ -93,7 +93,8 @@ func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, err
 	var allFindings []finding.Finding
 
 	for _, d := range p.detectors {
-		if err := CheckCanceled(ctx); err != nil {
+		err := CheckCanceled(ctx)
+		if err != nil {
 			return nil, err
 		}
 

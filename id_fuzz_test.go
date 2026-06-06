@@ -70,7 +70,8 @@ func FuzzRoundTripID(f *testing.F) {
 		}
 
 		// Numeric-only file names are ambiguous with position data in the ID format.
-		if _, err := strconv.Atoi(file); err == nil && file != "" {
+		_, err := strconv.Atoi(file)
+		if err == nil && file != "" {
 			t.Skip()
 		}
 

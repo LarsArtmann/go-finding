@@ -202,15 +202,18 @@ func testBackupRestore(t *testing.T, applier *FixApplier, original, modified str
 	testFile := filepath.Join(t.TempDir(), "roundtrip.go")
 	writeTestFile(t, testFile, []byte(original))
 
-	if err := applier.backup.Backup(testFile); err != nil {
+	err := applier.backup.Backup(testFile)
+	if err != nil {
 		t.Fatalf("backup: %v", err)
 	}
 
-	if err := writeFile(testFile, []byte(modified), 0o644); err != nil {
+	err = writeFile(testFile, []byte(modified), 0o644)
+	if err != nil {
 		t.Fatalf("write modified: %v", err)
 	}
 
-	if err := applier.backup.Restore(testFile); err != nil {
+	err = applier.backup.Restore(testFile)
+	if err != nil {
 		t.Fatalf("restore: %v", err)
 	}
 

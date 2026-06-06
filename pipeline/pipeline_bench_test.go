@@ -78,7 +78,8 @@ func runBenchPipeline(b *testing.B, cfg benchConfig) {
 
 		b.StartTimer()
 
-		if _, err := p.Run(context.Background()); err != nil {
+		_, err = p.Run(context.Background())
+		if err != nil {
 			b.Fatal(err)
 		}
 	}

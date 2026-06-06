@@ -51,7 +51,9 @@ func main() {
 	defer cleanup()
 
 	srcFile := filepath.Join(tmpDir, "main.go")
-	if err := os.WriteFile(srcFile, []byte("package main\n\nx := 42\n"), 0o644); err != nil {
+
+	err = os.WriteFile(srcFile, []byte("package main\n\nx := 42\n"), 0o644)
+	if err != nil {
 		fatal(err)
 
 		return

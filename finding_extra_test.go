@@ -219,154 +219,41 @@ func TestEqual_FieldMismatch(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
-		a, b Finding
+		name      string
+		modify    func(*Finding)
+		wantEqual bool
 	}{
-		{exportTestEqual, base, base},
-		{"different ID", base, func() Finding {
-			f := base
-			f.ID = "x"
-
-			return f
-		}()},
-		{"different Rule", base, func() Finding {
-			f := base
-			f.Rule = "x"
-
-			return f
-		}()},
-		{"different ToolName", base, func() Finding {
-			f := base
-			f.ToolName = "x"
-
-			return f
-		}()},
-		{"different Message", base, func() Finding {
-			f := base
-			f.Message = "x"
-
-			return f
-		}()},
-		{
-			"different Severity", base,
-			func() Finding {
-				f := base
-				f.Severity = SeverityWarning
-
-				return f
-			}(),
-		},
-		{"different Category", base, func() Finding {
-			f := base
-			f.Category = "x"
-
-			return f
-		}()},
-		{"different Tags", base, func() Finding {
-			f := base
-			f.Tags = []Tag{"x"}
-
-			return f
-		}()},
-		{
-			"different FixStrategy", base,
-			func() Finding {
-				f := base
-				f.FixStrategy = FixStrategyDirect
-
-				return f
-			}(),
-		},
-		{
-			"different Suggestion", base,
-			func() Finding {
-				f := base
-				f.Suggestion = "x"
-
-				return f
-			}(),
-		},
-		{
-			"different BeforeCode", base,
-			func() Finding {
-				f := base
-				f.BeforeCode = "x"
-
-				return f
-			}(),
-		},
-		{
-			"different AfterCode", base,
-			func() Finding {
-				f := base
-				f.AfterCode = "x"
-
-				return f
-			}(),
-		},
-		{
-			"different Snippet", base,
-			func() Finding {
-				f := base
-				f.Snippet = "x"
-
-				return f
-			}(),
-		},
-		{
-			"different Confidence", base,
-			func() Finding {
-				f := base
-				f.Confidence = 0.9
-
-				return f
-			}(),
-		},
-		{
-			"different Position", base,
-			func() Finding {
-				f := base
-				f.Position = Position{File: filterTestFileB}
-
-				return f
-			}(),
-		},
-		{
-			"different Range", base,
-			func() Finding {
-				f := base
-				f.Range = NewRangePtr("a.go", 1, 1, 1, 5)
-
-				return f
-			}(),
-		},
-		{
-			"different Related", base,
-			func() Finding {
-				f := base
-				f.Related = []RelatedRef{{FindingID: "x"}}
-
-				return f
-			}(),
-		},
-		{
-			"different Metadata", base,
-			func() Finding {
-				f := base
-				f.Metadata = map[string]string{"k": "v"}
-
-				return f
-			}(),
-		},
+		{exportTestEqual, nil, true},
+		{"different ID", func(f *Finding) { f.ID = "x" }, false},
+		{"different Rule", func(f *Finding) { f.Rule = "x" }, false},
+		{"different ToolName", func(f *Finding) { f.ToolName = "x" }, false},
+		{"different Message", func(f *Finding) { f.Message = "x" }, false},
+		{"different Severity", func(f *Finding) { f.Severity = SeverityWarning }, false},
+		{"different Category", func(f *Finding) { f.Category = "x" }, false},
+		{"different Tags", func(f *Finding) { f.Tags = []Tag{"x"} }, false},
+		{"different FixStrategy", func(f *Finding) { f.FixStrategy = FixStrategyDirect }, false},
+		{"different Suggestion", func(f *Finding) { f.Suggestion = "x" }, false},
+		{"different BeforeCode", func(f *Finding) { f.BeforeCode = "x" }, false},
+		{"different AfterCode", func(f *Finding) { f.AfterCode = "x" }, false},
+		{"different Snippet", func(f *Finding) { f.Snippet = "x" }, false},
+		{"different Confidence", func(f *Finding) { f.Confidence = 0.9 }, false},
+		{"different Position", func(f *Finding) { f.Position = Position{File: filterTestFileB} }, false},
+		{"different Range", func(f *Finding) { f.Range = NewRangePtr("a.go", 1, 1, 1, 5) }, false},
+		{"different Related", func(f *Finding) { f.Related = []RelatedRef{{FindingID: "x"}} }, false},
+		{"different Metadata", func(f *Finding) { f.Metadata = map[string]string{"k": "v"} }, false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			expected := tt.name == exportTestEqual
-			if tt.a.Equal(tt.b) != expected {
-				t.Errorf("Equal() = %v, want %v for case %q", !expected, expected, tt.name)
+			other := base
+			if tt.modify != nil {
+				tt.modify(&other)
+			}
+
+			if got := base.Equal(other); got != tt.wantEqual {
+				t.Errorf("Equal() = %v, want %v for case %q", got, tt.wantEqual, tt.name)
 			}
 		})
 	}

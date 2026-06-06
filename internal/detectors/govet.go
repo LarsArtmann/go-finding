@@ -88,13 +88,15 @@ func parsePosn(posn, dir string) finding.Position {
 	pos := finding.Position{File: resolvePath(dir, parts[0])} //nolint:exhaustruct
 
 	if len(parts) >= 2 {
-		if line, err := strconv.Atoi(parts[1]); err == nil {
+		line, err := strconv.Atoi(parts[1])
+		if err == nil {
 			pos.Line = line
 		}
 	}
 
 	if len(parts) >= 3 {
-		if col, err := strconv.Atoi(parts[2]); err == nil {
+		col, err := strconv.Atoi(parts[2])
+		if err == nil {
 			pos.Column = col
 		}
 	}

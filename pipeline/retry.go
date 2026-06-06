@@ -102,7 +102,9 @@ func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 	for attempt := 0; attempt <= d.config.MaxRetries; attempt++ {
 		if attempt > 0 {
 			delay := d.config.delay(attempt - 1)
-			if _, err := WaitWithContext(ctx, time.After(delay)); err != nil {
+
+			_, err := WaitWithContext(ctx, time.After(delay))
+			if err != nil {
 				return nil, err
 			}
 		}

@@ -83,15 +83,18 @@ func (fb *FileBackup) Backup(path string) error {
 		fb.backupDir,
 		fmt.Sprintf("%x_%d.bak", fileHash(path), time.Now().UnixNano()),
 	)
-	if err := os.MkdirAll(fb.backupDir, 0o750); err != nil {
+
+	err = os.MkdirAll(fb.backupDir, 0o750)
+	if err != nil {
 		return finding.NewIOError("create backup dir", err)
 	}
 
-	if err := os.WriteFile(
+	err = os.WriteFile(
 		backupPath,
 		data,
 		0o600,
-	); err != nil {
+	)
+	if err != nil {
 		return ioErrorAt("write backup", err, path)
 	}
 
@@ -121,11 +124,12 @@ func (fb *FileBackup) Restore(path string) error {
 		return ioErrorAt("read backup", err, path)
 	}
 
-	if err := os.WriteFile( //nolint:gosec // intentional file write in fix applier
+	err = os.WriteFile( //nolint:gosec // intentional file write in fix applier
 		path,
 		data,
 		entry.mode,
-	); err != nil {
+	)
+	if err != nil {
 		return ioErrorAt("restore file", err, path)
 	}
 

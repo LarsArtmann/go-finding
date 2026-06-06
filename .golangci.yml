@@ -186,6 +186,8 @@ linters:
                 - anon
                 - stdlib
                 - generic
+                - github.com/larsartmann/go-finding/pipeline.Detector
+                - github.com/larsartmann/go-finding/pipeline.FindingProcessor
         mnd:
             ignored-functions:
                 - fmt.Errorf
@@ -255,6 +257,35 @@ linters:
                 - a
                 - b
                 - v
+                - r
+                - r1
+                - r2
+                - f
+                - f1
+                - f2
+                - d
+                - d1
+                - d2
+                - p
+                - s
+                - c
+                - w
+                - n
+                - h
+                - e
+                - k
+                - j
+                - id
+                - tc
+                - op
+                - fb
+                - gf
+                - fe
+                - pl
+                - cf
+                - mu
+                - wg
+                - cw
             ignore-type-assert-ok: true
         wrapcheck:
             ignore-package-globs:
@@ -269,6 +300,7 @@ linters:
                 - goconst
                 - wrapcheck
                 - unparam
+                - testpackage
             - path: cmd/
               linters:
                 - gochecknoglobals

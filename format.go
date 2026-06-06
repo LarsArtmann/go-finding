@@ -11,18 +11,20 @@ import (
 // Each finding is formatted as: file:line:col [SEVERITY] rule: message.
 func FormatText(w io.Writer, findings []Finding) error {
 	for _, f := range findings {
-		if _, err := fmt.Fprintf(
+		_, err := fmt.Fprintf(
 			w, "%s [%s] %s: %s\n",
 			f.Position.String(),
 			strings.ToUpper(string(f.Severity)),
 			f.Rule,
 			f.Message,
-		); err != nil {
+		)
+		if err != nil {
 			return fmt.Errorf("format text: %w", err)
 		}
 
 		if f.Suggestion != "" {
-			if _, err := fmt.Fprintf(w, "  Suggestion: %s\n", f.Suggestion); err != nil {
+			_, err = fmt.Fprintf(w, "  Suggestion: %s\n", f.Suggestion)
+			if err != nil {
 				return fmt.Errorf("format text suggestion: %w", err)
 			}
 		}
@@ -33,11 +35,13 @@ func FormatText(w io.Writer, findings []Finding) error {
 
 // FormatMarkdown writes a markdown table of findings to w.
 func FormatMarkdown(w io.Writer, findings []Finding) error {
-	if _, err := fmt.Fprintf(w, "| Location | Severity | Rule | Message |\n"); err != nil {
+	_, err := fmt.Fprintf(w, "| Location | Severity | Rule | Message |\n")
+	if err != nil {
 		return fmt.Errorf("format markdown header: %w", err)
 	}
 
-	if _, err := fmt.Fprintf(w, "|----------|----------|------|--------|\n"); err != nil {
+	_, err = fmt.Fprintf(w, "|----------|----------|------|--------|\n")
+	if err != nil {
 		return fmt.Errorf("format markdown separator: %w", err)
 	}
 
@@ -47,13 +51,14 @@ func FormatMarkdown(w io.Writer, findings []Finding) error {
 		msg := escapeMarkdownCell(f.Message, maxMessageLen)
 		rule := escapeMarkdownCell(f.Rule, 0)
 
-		if _, err := fmt.Fprintf(
+		_, err := fmt.Fprintf(
 			w, "| %s | %s | %s | %s |\n",
 			escapeMarkdownCell(f.Position.String(), 0),
 			string(f.Severity),
 			rule,
 			msg,
-		); err != nil {
+		)
+		if err != nil {
 			return fmt.Errorf("format markdown row: %w", err)
 		}
 	}

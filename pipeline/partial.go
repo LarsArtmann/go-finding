@@ -56,7 +56,8 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 	}
 
 	for _, d := range p.detectors {
-		if err := CheckCanceledWithMsg(ctx, "context cancelled"); err != nil {
+		err := CheckCanceledWithMsg(ctx, "context cancelled")
+		if err != nil {
 			return result, err
 		}
 

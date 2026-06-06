@@ -146,7 +146,9 @@ func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
 	tempDir, applier := newTestApplierWithDir(t)
 
 	testFile := filepath.Join(tempDir, "readonly.go")
-	if err := writeFile(testFile, []byte("package main\nold()\n"), 0o444); err != nil {
+
+	err := writeFile(testFile, []byte("package main\nold()\n"), 0o444)
+	if err != nil {
 		t.Fatalf("create file: %v", err)
 	}
 
@@ -182,7 +184,8 @@ func TestFixApplier_RollbackAll(t *testing.T) {
 
 	writeTestFile(t, file2, []byte("modified b\n"))
 
-	if err := applier.backup.RollbackAll([]string{file1, file2}); err != nil {
+	err := applier.backup.RollbackAll([]string{file1, file2})
+	if err != nil {
 		t.Fatalf("rollbackAll: %v", err)
 	}
 

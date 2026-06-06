@@ -29,7 +29,8 @@ func Verify(
 	var postFindings []finding.Finding
 
 	for _, d := range detectors {
-		if err := CheckCanceled(ctx); err != nil {
+		err := CheckCanceled(ctx)
+		if err != nil {
 			return nil, err
 		}
 

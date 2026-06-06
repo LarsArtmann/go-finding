@@ -43,10 +43,6 @@ type Pipeline struct {
 // New creates a new Pipeline with the given configuration.
 // Returns an error if the configuration is invalid.
 func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error) {
-	if err := config.Validate(); err != nil {
-		return nil, fmt.Errorf("validate config (detectors=%d): %w", len(detectors), err)
-	}
-
 	// Wrap detectors with retry if configured.
 	if config.Retry != nil {
 		wrapped := make([]Detector, len(detectors))
@@ -57,12 +53,17 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 		detectors = wrapped
 	}
 
-	// Create FixApplier eagerly so errors are caught early.
 	var (
 		applier *FixApplier
 		err     error
 	)
 
+	err = config.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("validate config (detectors=%d): %w", len(detectors), err)
+	}
+
+	// Create FixApplier eagerly so errors are caught early.
 	if len(config.FixProviders) > 0 {
 		applier, err = NewFixApplierWithProviders(rootDir, config.FixProviders...)
 	} else {
@@ -158,7 +159,8 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	}
 
 	for p.iterations < p.config.MaxIterations {
-		if err := CheckCanceledWithMsg(ctx, "pipeline cancelled"); err != nil {
+		err := CheckCanceledWithMsg(ctx, "pipeline cancelled")
+		if err != nil {
 			result.Reason = reasonFromContext(ctx)
 
 			return result, err

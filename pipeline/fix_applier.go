@@ -118,7 +118,8 @@ func (a *FixApplier) ApplyWithDetails(
 	for _, path := range paths {
 		fileFixes := byFile[path]
 
-		if err := CheckCanceledWithMsg(ctx, "fix application cancelled"); err != nil {
+		err := CheckCanceledWithMsg(ctx, "fix application cancelled")
+		if err != nil {
 			_ = a.backup.RollbackAll(modified)
 
 			return len(applied), applied, err
@@ -169,11 +170,12 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]findin
 		return nil, errors.Join(resolveErrors...)
 	}
 
-	if err := os.WriteFile( //nolint:gosec // intentional file write
+	err = os.WriteFile( //nolint:gosec // intentional file write
 		path,
 		newContent,
 		info.Mode(),
-	); err != nil {
+	)
+	if err != nil {
 		return nil, ioErrorAt("write file", err, path)
 	}
 

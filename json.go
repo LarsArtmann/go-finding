@@ -71,7 +71,8 @@ func FromJSON(data []byte) (Finding, error) {
 		return Finding{}, fmt.Errorf("unmarshal finding: %w", err)
 	}
 
-	if err = f.Validate(); err != nil {
+	err = f.Validate()
+	if err != nil {
 		return Finding{}, fmt.Errorf("%w: %w", ErrInvalidFinding, err)
 	}
 

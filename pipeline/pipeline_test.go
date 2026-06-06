@@ -414,7 +414,9 @@ func TestFixApplier(t *testing.T) {
 	testFile := filepath.Join(tempDir, "test.go")
 
 	testContent := helloProgram
-	if err := writeFile(testFile, []byte(testContent), 0o644); err != nil {
+
+	err = writeFile(testFile, []byte(testContent), 0o644)
+	if err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
 

@@ -110,7 +110,9 @@ func TestDryRun(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	testFile := filepath.Join(tmpDir, "test.go")
-	if err := os.WriteFile(testFile, []byte("package main\n"), 0o644); err != nil {
+
+	err := os.WriteFile(testFile, []byte("package main\n"), 0o644)
+	if err != nil {
 		t.Fatal(err)
 	}
 
