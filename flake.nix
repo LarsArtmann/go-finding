@@ -114,6 +114,15 @@
             '';
           };
 
+          devShells.ci = pkgs.mkShellNoCC {
+            packages = [
+              goPkg
+              pkgs.golangci-lint
+            ];
+
+            GOWORK = "off";
+          };
+
           checks = {
             build = config.packages.default;
             test = config.packages.default.overrideAttrs (_: {
