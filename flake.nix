@@ -65,7 +65,7 @@
           ...
         }:
         let
-          goPkg = pkgs.go_1_26;
+          goPkg = goPkg;
 
           mkApp = name: description: script: {
             type = "app";
@@ -94,6 +94,8 @@
             };
           };
 
+          checks.format = config.treefmt.build.check self;
+          checks.build = config.packages.default;
           packages.default = mkGoFinding pkgs.buildGoModule;
 
           devShells.default = pkgs.mkShell {
