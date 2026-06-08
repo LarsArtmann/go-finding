@@ -264,6 +264,17 @@ golangci-lint run ./...                     # Lint
 - **CLI test coverage 90.7%** — Up from 70%; added tests for `addGeneratedFilter`, `parseFilterGenTypes`, `mustKeys`, `splitCommaList`
 - **Fuzz seed corpus** — All 20 fuzz targets now have `f.Add()` seed values; 13 missing corpus directories created under `testdata/fuzz/`
 
+### Session 6 (2026-06-08)
+
+- **flake.nix infinite recursion fixed** — `goPkg = goPkg` → `goPkg = pkgs.go_1_26`; also consolidated duplicate `checks.build` into single block
+- **v0.5.0 released** — Tagged and pushed; 42+ commits since v0.4.3 justified minor bump
+- **Correlate complexity documented** — Godoc explains O(n·k) normal, O(k²) worst case, 10K cap
+- **DeduplicateBy.String()** — `String()` method added for consistency with all other named types
+- **Position semantic trap documented** — `Offset=0` means both "byte 0" (valid) and passes `HasOffset()=true` while also being `IsZero()=true`; now explicit in doc comments
+- **flake.nix maintainers** — Added `maintainers = [ lib.maintainers.larsartmann ]`
+- **CHANGELOG.md updated** — Full v0.5.0 entry with all changes
+- **TODO_LIST.md audited** — 15 stale items marked done
+
 ---
 
 _Assisted-by: Crush <crush@charm.land>_
