@@ -23,7 +23,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `position.go` | Position type with IsZero/HasOffset/HasLocation helpers |
 || `range.go` | Range type with Overlaps/Intersection/Adjacent/IsInverted/IsSingleLine |
 || `finding.go` | Finding struct definition and builder (NewFinding) |
-|| `finding_methods.go` | Finding methods: Clone, Has*, String, Preview, IsSuppressed |
+|| `finding_methods.go` | Finding methods: Clone, Has\*, String, Preview, IsSuppressed |
 || `finding_validate.go` | Finding validation: Validate, IsValid, Key |
 || `finding_equal.go` | Finding equality: Equal, equalStringSlices helpers |
 | `report.go` | Report container with summary |

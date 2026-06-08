@@ -341,11 +341,11 @@ r.Findings = append(r.Findings, f)                   // Data race with AddFindin
 
 ### Options
 
-| # | Approach | Breaking? | Effort | Safe? |
-|---|----------|-----------|--------|-------|
-| A | Make `Findings` unexported, keep everything else | Yes | Low | Yes |
-| B | Keep `Findings` exported with documented caveat | No | None | No |
-| C | Replace `Findings` with `[]Finding` getter method | Yes | Medium | Yes |
+| #   | Approach                                          | Breaking? | Effort | Safe? |
+| --- | ------------------------------------------------- | --------- | ------ | ----- |
+| A   | Make `Findings` unexported, keep everything else  | Yes       | Low    | Yes   |
+| B   | Keep `Findings` exported with documented caveat   | No        | None   | No    |
+| C   | Replace `Findings` with `[]Finding` getter method | Yes       | Medium | Yes   |
 
 ### Recommendation
 
