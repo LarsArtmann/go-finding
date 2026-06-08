@@ -48,6 +48,11 @@ type Finding struct {
 	// Rationale: keeps the struct simple, avoids type-assertion boilerplate,
 	// and Metadata is fully typed as string→string which is lossless for
 	// interchange (SARIF, JSON, CLI flags, env vars).
+	//
+	// Key namespacing: use "toolName.key" format to prevent collisions between
+	// tools. For example, "govet.category" vs "staticcheck.category". The
+	// "go-finding/" prefix is reserved for internal use (SARIF round-trip,
+	// LSP diagnostic tags, etc.).
 	Metadata map[string]string `json:"metadata,omitempty"` // Tool-specific key-value pairs
 }
 
