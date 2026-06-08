@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-08
+
 ### Added
 
 - **`RelatedRef.Range *Range`** — Span-based related locations with deep-copy in `Clone()`, validation in `Validate()` (rejects inverted ranges), and value equality via `equalRelated()`. Enables full geometric relationships between related findings.
@@ -19,16 +21,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Comprehensive `doc.go`** — Expanded from ~40% to full package documentation covering Diff, SARIF, LSP, Formatting, JSON, ID Generation, Pipeline, Fix Providers, Filtering, Merging, Correlation, Suppression, Error Handling, and Known Limitations.
 - **`TriageFunc` config option** — Customizable triage function in `pipeline.Config`. `DefaultTriageFunc` preserves existing behavior; `TriageResult` moved to `config.go` for discovery.
 - **`ByteLevelConflictDetection` config option** — Opt-in byte-level edit conflict detection that groups fixes by file, reads content, runs `FilterConflictingEdits` per file, and gracefully degrades on read errors.
+- **`DeduplicateBy.String()`** — Human-readable names for deduplication strategies (`"id"`, `"position"`, `"rule"`). Consistent with every other named type in the codebase.
+- **Correlate complexity documentation** — `Correlate` godoc now includes a `# Complexity` section explaining O(n·k) normal case, O(k²) worst case for dense clustering, and the `maxCorrelations` (10,000) cap behavior.
+- **Position semantic documentation** — `Position` doc comment now explicitly documents the `Offset=0` semantic trap where `IsZero()` and `HasOffset()` both return true for the zero value.
 
 ### Fixed
 
+- **flake.nix infinite recursion** — `goPkg = goPkg` self-reference caused `nix build` to infinite-loop. Fixed to `goPkg = pkgs.go_1_26`.
+- **flake.nix duplicate `checks.build`** — `checks.build` was defined in two separate `perSystem` blocks causing immediate Nix evaluation error. Consolidated into single `checks = { format; build; test; }` block.
+- **flake.nix stale `vendorHash`** — Updated to match current `go.sum`.
 - **`Equal()` for `RelatedRef`** — Previously used `slices.Equal()` which compared `*Range` pointers by identity. Now uses `equalRelated()` for proper deep value comparison.
 - **`Clone()` for `RelatedRef`** — Previously did shallow `copy()` of the `Related` slice, sharing `*Range` pointers between original and clone. Now deep-copies each `RelatedRef` and its `Range` pointer.
 
+### Changed
+
+- **flake.nix** — Added `maintainers = [ lib.maintainers.larsartmann ]` to meta block.
+- **`.golangci.yml`** — Normalized indentation from 4-space to 2-space YAML.
+
 ### Testing
 
-- Coverage: root 97.1%, analysis 98.5%, pipeline 94.0%, internal/detectors 95.9%, cmd/go-finding 70.0%. Total 91.3%.
-- 9 new tests: `TestToLSP_RelatedWithRange`, `TestFromLSP_RelatedWithRange`, `TestFromLSP_PreservesDiagnosticTags`, `TestSARIF_RoundTrip_RelatedRefRange`, `TestSARIF_RegionSnippet`, `TestFinding_Equal_RelatedRefRange`, `TestFinding_Validate_InvertedRelatedRange`, plus `TestClone` updated and schema round-trip extended.
+- Coverage: root 97.2%, analysis 98.5%, pipeline 93.6%, internal/detectors 95.9%, cmd/go-finding 90.7%. Total 93.4%.
+- 9+ new tests: `TestToLSP_RelatedWithRange`, `TestFromLSP_RelatedWithRange`, `TestFromLSP_PreservesDiagnosticTags`, `TestSARIF_RoundTrip_RelatedRefRange`, `TestSARIF_RegionSnippet`, `TestFinding_Equal_RelatedRefRange`, `TestFinding_Validate_InvertedRelatedRange`, `TestDeduplicateBy_String`, plus `TestClone` updated and schema round-trip extended.
 - `go test -race -count=1 ./...` passes; `golangci-lint run ./...` reports 0 issues.
 
 ## [0.4.2] - 2026-06-01
