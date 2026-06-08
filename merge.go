@@ -123,6 +123,20 @@ const (
 	DeduplicateByRule                          // Rule + position matching.
 )
 
+// String returns a human-readable name for the deduplication strategy.
+func (d DeduplicateBy) String() string {
+	switch d {
+	case DeduplicateByID:
+		return "id"
+	case DeduplicateByPosition:
+		return "position"
+	case DeduplicateByRule:
+		return "rule"
+	default:
+		return fmt.Sprintf("unknown(%d)", d)
+	}
+}
+
 func defaultMergeOptions() MergeOptions {
 	return MergeOptions{
 		Deduplicate:   true,

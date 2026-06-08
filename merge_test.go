@@ -250,6 +250,16 @@ func TestDeduplicateByPosition_EmptyFileNotDeduplicated(t *testing.T) {
 	g.Expect(merged.Len()).To(Equal(2))
 }
 
+func TestDeduplicateBy_String(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	g.Expect(DeduplicateByID.String()).To(Equal("id"))
+	g.Expect(DeduplicateByPosition.String()).To(Equal("position"))
+	g.Expect(DeduplicateByRule.String()).To(Equal("rule"))
+	g.Expect(DeduplicateBy(99).String()).To(Equal("unknown(99)"))
+}
+
 func TestDeduplicateByRule_EmptyFileNotDeduplicated(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
