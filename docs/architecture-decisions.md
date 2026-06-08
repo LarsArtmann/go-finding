@@ -314,3 +314,55 @@ Adding `go-sarif` means every consumer of `go-finding` transitively depends on i
 **Keep hand-rolled.** go-sarif is a well-maintained library for SARIF-first applications. go-finding is a Finding-first library that happens to interchange with SARIF. The adapter layer would be larger than our current implementation, harder to read, and would add a dependency we explicitly designed the project to avoid.
 
 **Status:** Resolved — keep hand-rolled.
+
+---
+
+## 10. Report.Findings Encapsulation
+
+**Date:** 2026-06-08
+**Status:** Proposed (requires v1.0 milestone)
+
+### Context
+
+`Report.Findings` is a public `[]Finding` slice. External code can bypass the `sync.RWMutex` and cause data races:
+
+```go
+r.Findings[0].Severity = finding.SeverityCritical  // No lock held
+r.Findings = append(r.Findings, f)                   // Data race with AddFinding
+```
+
+### Migration Path (Already Built)
+
+- `FindingsSnapshot()` — returns deep-cloned slice under RLock (v0.4.2+)
+- `All()` — returns `iter.Seq[Finding]` holding RLock during iteration
+- `FindByID()` — single finding lookup under RLock
+- `Filter()` — returns new filtered report
+- `Map()` — returns new transformed report
+
+### Options
+
+| # | Approach | Breaking? | Effort | Safe? |
+|---|----------|-----------|--------|-------|
+| A | Make `Findings` unexported, keep everything else | Yes | Low | Yes |
+| B | Keep `Findings` exported with documented caveat | No | None | No |
+| C | Replace `Findings` with `[]Finding` getter method | Yes | Medium | Yes |
+
+### Recommendation
+
+**Option A** for v1.0. Rename `Findings` to `findings` (unexported). The existing accessor methods (`FindingsSnapshot`, `All`, `FindByID`, `Filter`, `Map`) provide all needed access patterns. Direct mutation was never documented as safe.
+
+### Migration Guide (v1.0)
+
+```go
+// Before (v0.x)
+for _, f := range report.Findings { ... }
+
+// After (v1.0)
+for f := range report.All() { ... }
+// or
+snapshot := report.FindingsSnapshot()
+```
+
+### Decision
+
+**Deferred to v1.0.** This is a breaking change that must happen before the v1.0 stability guarantee. All necessary migration infrastructure is already in place.
