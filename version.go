@@ -6,10 +6,10 @@ import "fmt"
 const VersionMajor = 0
 
 // VersionMinor is the minor version number.
-const VersionMinor = 4
+const VersionMinor = 5
 
 // VersionPatch is the patch version number.
-const VersionPatch = 2
+const VersionPatch = 0
 
 // Version is the semantic version string, computed from components.
 var Version = fmt.Sprintf("%d.%d.%d", VersionMajor, VersionMinor, VersionPatch)
