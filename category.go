@@ -19,6 +19,8 @@ const (
 	CategoryDocumentation Category = "documentation"
 	CategoryTesting       Category = "testing"
 	CategoryUnused        Category = "unused"
+	CategoryBestPractice  Category = "best-practice"
+	CategoryNaming        Category = "naming"
 )
 
 // IsStandard returns true if the category is one of the predefined standard constants.
@@ -27,7 +29,7 @@ func (c Category) IsStandard() bool {
 	case CategorySecurity, CategoryStyle, CategoryPerformance, CategoryCorrectness,
 		CategoryComplexity, CategoryDuplication, CategoryErrorHandling, CategoryMigration,
 		CategoryTypeSafety, CategoryStructure, CategoryConfiguration, CategoryDocumentation,
-		CategoryTesting, CategoryUnused:
+		CategoryTesting, CategoryUnused, CategoryBestPractice, CategoryNaming:
 		return true
 	}
 

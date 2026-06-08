@@ -118,6 +118,54 @@ func severityRank(s Severity) int {
 	return -1
 }
 
+// Badge returns a human-readable severity badge with emoji (e.g., "🔴 CRITICAL").
+// Returns the string value unchanged for unknown severities.
+func (s Severity) Badge() string {
+	switch s {
+	case SeverityCritical:
+		return "🔴 CRITICAL"
+	case SeverityError:
+		return "🟠 ERROR"
+	case SeverityWarning:
+		return "🟡 WARNING"
+	case SeverityInfo:
+		return "🟢 INFO"
+	}
+
+	return string(s)
+}
+
+// Emoji returns the emoji representing the severity level.
+// Returns an empty string for unknown severities.
+func (s Severity) Emoji() string {
+	switch s {
+	case SeverityCritical:
+		return "🔴"
+	case SeverityError:
+		return "🟠"
+	case SeverityWarning:
+		return "🟡"
+	case SeverityInfo:
+		return "🟢"
+	}
+
+	return ""
+}
+
+// CountBySeverity counts findings by severity level.
+// Only valid severities are included in the result.
+func CountBySeverity(findings []Finding) map[Severity]int {
+	counts := make(map[Severity]int)
+
+	for _, f := range findings {
+		if f.Severity.IsValid() {
+			counts[f.Severity]++
+		}
+	}
+
+	return counts
+}
+
 // isValidWith returns true if both severities are valid.
 func (s Severity) isValidWith(other Severity) bool {
 	return s.IsValid() && other.IsValid()
