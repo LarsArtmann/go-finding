@@ -27,6 +27,7 @@
 
       version = self.rev or self.dirtyRev or "dev";
       vendorHash = "sha256-JoM0J14QkVj9+c+AEUmWsbZrjSy4+zMrpyN4F2Sz6eo=";
+      proxyVendor = true;
 
       goSrc = lib.fileset.toSource {
         root = ./.;
