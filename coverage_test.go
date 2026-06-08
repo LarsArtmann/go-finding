@@ -437,7 +437,7 @@ func TestSARIFCriticalSeverityPreserved(t *testing.T) {
 	result := log.Runs[0].Results[0]
 	g.Expect(result.Level).To(Equal("error"))
 
-	severity, ok := result.Properties["go-finding/severity"]
+	severity, ok := result.Properties[sarifPropSeverity]
 	g.Expect(ok).To(BeTrue())
 	g.Expect(severity).To(Equal("critical"))
 }

@@ -293,5 +293,3 @@ func makeFinding(id, tool, rule, file string, line int) Finding {
 		Position: Position{File: file, Line: line},
 	}
 }
-
-

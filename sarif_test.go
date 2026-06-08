@@ -43,15 +43,15 @@ func goFindingProps(
 	suggestion, snippet string,
 ) map[string]any {
 	return map[string]any{
-		"go-finding/id":          id,
-		"go-finding/severity":    severity,
-		"go-finding/fixStrategy": fixStrategy,
-		"go-finding/toolName":    toolName,
-		"go-finding/category":    category,
-		"go-finding/tags":        tags,
-		"go-finding/confidence":  confidence,
-		"go-finding/suggestion":  suggestion,
-		"go-finding/snippet":     snippet,
+		sarifPropID:          id,
+		sarifPropSeverity:    severity,
+		sarifPropFixStrategy: fixStrategy,
+		sarifPropToolName:    toolName,
+		sarifPropCategory:    category,
+		sarifPropTags:        tags,
+		sarifPropConfidence:  confidence,
+		sarifPropSuggestion:  suggestion,
+		sarifPropSnippet:     snippet,
 	}
 }
 
@@ -306,11 +306,11 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 	}
 
 	raw := string(data)
-	if !strings.Contains(raw, `"go-finding/meta/key1"`) || !strings.Contains(raw, `"val1"`) {
+	if !strings.Contains(raw, `"`+sarifPropMetaPrefix+"key1"+`"`) || !strings.Contains(raw, `"val1"`) {
 		t.Errorf("SARIF output should contain metadata, got: %s", raw)
 	}
 
-	if !strings.Contains(raw, `"go-finding/toolName"`) {
+	if !strings.Contains(raw, `"`+sarifPropToolName+`"`) {
 		t.Error("SARIF output should contain go-finding/toolName in properties")
 	}
 }
@@ -1029,7 +1029,7 @@ func TestToSARIF_RoundTripProperties(t *testing.T) {
 		0.9,
 		"fix format string",
 		`fmt.Sprintf("%d")`,
-		"go-finding/meta/custom",
+		sarifPropMetaPrefix+"custom",
 		"value",
 	)
 
@@ -1241,9 +1241,9 @@ func TestSARIF_RoundTrip_EditProperties(t *testing.T) {
 		Severity: SeverityError,
 		Position: Pos("a.go", 1, 1),
 		Metadata: map[string]string{
-			"go-finding/edit/offset":      "42",
-			"go-finding/edit/length":      "10",
-			"go-finding/edit/replacement": "new code",
+			sarifPropEditPrefix + "offset":      "42",
+			sarifPropEditPrefix + "length":      "10",
+			sarifPropEditPrefix + "replacement": "new code",
 		},
 	})
 
@@ -1256,9 +1256,9 @@ func TestSARIF_RoundTrip_EditProperties(t *testing.T) {
 
 	f := findings[0]
 	g.Expect(f.Metadata).NotTo(gomega.BeNil())
-	g.Expect(f.Metadata["go-finding/edit/offset"]).To(gomega.Equal("42"))
-	g.Expect(f.Metadata["go-finding/edit/length"]).To(gomega.Equal("10"))
-	g.Expect(f.Metadata["go-finding/edit/replacement"]).To(gomega.Equal("new code"))
+	g.Expect(f.Metadata[sarifPropEditPrefix+"offset"]).To(gomega.Equal("42"))
+	g.Expect(f.Metadata[sarifPropEditPrefix+"length"]).To(gomega.Equal("10"))
+	g.Expect(f.Metadata[sarifPropEditPrefix+"replacement"]).To(gomega.Equal("new code"))
 }
 
 func TestFindingFromSarResult_FixDescriptionWithoutReplacements(t *testing.T) {
@@ -1409,10 +1409,10 @@ func TestSARIF_SchemaCompliance(t *testing.T) {
 
 	props, ok := result["properties"].(map[string]any)
 	g.Expect(ok).To(gomega.BeTrue())
-	g.Expect(props["go-finding/id"]).To(gomega.Equal("t:r:f.go:10:5"))
-	g.Expect(props["go-finding/severity"]).To(gomega.Equal("error"))
-	g.Expect(props["go-finding/fixStrategy"]).To(gomega.Equal("direct"))
-	g.Expect(props["go-finding/toolName"]).To(gomega.Equal("t"))
-	g.Expect(props["go-finding/category"]).To(gomega.Equal("security"))
-	g.Expect(props["go-finding/meta/key"]).To(gomega.Equal("val"))
+	g.Expect(props[sarifPropID]).To(gomega.Equal("t:r:f.go:10:5"))
+	g.Expect(props[sarifPropSeverity]).To(gomega.Equal("error"))
+	g.Expect(props[sarifPropFixStrategy]).To(gomega.Equal("direct"))
+	g.Expect(props[sarifPropToolName]).To(gomega.Equal("t"))
+	g.Expect(props[sarifPropCategory]).To(gomega.Equal("security"))
+	g.Expect(props[sarifPropMetaPrefix+"key"]).To(gomega.Equal("val"))
 }
