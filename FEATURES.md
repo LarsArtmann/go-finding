@@ -1,6 +1,6 @@
 # FEATURES.md — go-finding
 
-> **Version:** 0.4.2 | **Updated:** 2026-06-05
+> **Version:** 0.5.0 | **Updated:** 2026-06-08
 >
 > A unified data model and pipeline for Go static analysis tools.
 > Seven tools detect issues. Zero tools route them to remediation. This library fixes that.
@@ -268,9 +268,9 @@ Finds related findings across tools using heuristics (same file, nearby lines wi
 correlations := finding.Correlate(allFindings)
 ```
 
-Returns `[]Correlation` with `FindingIDs`, `Reason`, and `Confidence` score. Capped at 10,000 correlations to prevent O(n²) hangs.
+Returns `[]Correlation` with `FindingIDs`, `Reason`, and `CorrelationScore`. Capped at 10,000 correlations. Complexity documented: O(n·k) normally, O(k²) worst case for dense clustering.
 
-> **Limitation:** Simple heuristic only — no semantic analysis. Good for surface-level grouping.
+> **Limitation:** Simple heuristic only — no semantic analysis, no spatial index. Good for surface-level grouping.
 
 ---
 

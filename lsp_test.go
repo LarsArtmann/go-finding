@@ -130,7 +130,7 @@ func TestFromLSP(t *testing.T) {
 		t.Errorf("FromLSP Range.End.Column = %d, want %d", got, want)
 	}
 
-	if got, want := f.Metadata["go-finding/lsp-severity"], "1"; got != want {
+	if got, want := f.Metadata[LSPSeverityKey], "1"; got != want {
 		t.Errorf("FromLSP Metadata[lsp-severity] = %q, want %q", got, want)
 	}
 

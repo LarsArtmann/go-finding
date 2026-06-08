@@ -28,7 +28,7 @@
 - [x] Fix `cmd/go-finding/integration_test.go:108` — no duplicate, separate functions
 - [x] Fix `examples/builder/main.go` compile error — correctly handles both values
 - [x] Fix `.golangci.yml` to work without `--no-verify` / `--no-config` flag — removed 6 invalid linter names
-- [ ] Fix `.golangci.yml` indentation — **DONE** (normalized to 2-space by BuildFlow auto-configure)
+- [x] Fix `.golangci.yml` indentation — normalized to 2-space by BuildFlow auto-configure
 - [ ] Fix BuildFlow auto-configure loop — **BLOCKED** (external tool)
 - [x] Fix `IsAutoFixable()`/`Validate()` agreement for Direct+AfterCode-only findings
 - [x] Fix `Finding.Key()` cross-tool collision — `GenerateID` now length-prefixed hash
@@ -131,7 +131,7 @@
 - [x] Inline `lock()`/`unlock()` wrappers in `report.go`
 - [x] Add GitHub release workflow — `.github/workflows/release.yml` exists with GoReleaser
 - [x] Add GoReleaser multi-module config
-- [ ] Add gosec/staticcheck to CI — golangci-lint already includes both
+- [x] Add gosec/staticcheck to CI — golangci-lint already includes both
 - [ ] Benchmark regression tracking — CI exists but no regression gate yet
 - [ ] Persist fuzz corpus / seed corpus — 20 fuzz targets with `f.Add()` seeds; no checked-in corpus files
 - [x] Add LICENSE file
@@ -145,7 +145,7 @@
 - [x] Add tests for 15 untested rule files — `internal/rules/` doesn't exist
 - [x] Remove `replace` directive from go.mod
 - [x] Delete `internal/events/events.go` — not in codebase
-- [ ] Wire into go-structure-linter — **DEFERRED** (external project)
+- [ ] Wire into go-structure-linter — **DEFERRED** (external project, not our repo)
 - [x] Remove stale `//nolint` directives — audited: all 80 are legitimate
 - [x] Archive old status reports
 - [x] Remove personal tool configs
