@@ -6,8 +6,14 @@ import (
 )
 
 // Position represents a location in source code.
-// Line and Column are 1-based; 0 means not set.
-// Offset is 0-based; -1 means not set (offset 0 = start of file is valid).
+//
+// Sentinel values:
+//   - Line, Column: 0 means "not set" (1-based, so 0 is never valid).
+//   - Offset: -1 means "not set" (0-based, so 0 means "start of file" which IS valid).
+//
+// This means Position{} (the zero value) has Offset=0, which IsZero() reports as true
+// but HasOffset() also reports as true. Use HasLocation() to check for a meaningful
+// position (file + line), or IsZero() to check for the completely-uninitialized state.
 type Position struct {
 	File   string `json:"file"`             // Required: file path
 	Line   int    `json:"line,omitempty"`   // 1-based line number; 0 = not set
@@ -404,7 +410,9 @@ func (r Range) Adjacent(other Range) bool {
 	return false
 }
 
-// HasOffset reports whether the offset is set.
+// HasOffset reports whether the byte offset is set (not the -1 sentinel).
+// Note: Position{} has Offset=0, which HasOffset reports as true despite
+// being the zero value. Use IsZero() to check for complete unset state.
 func (p Position) HasOffset() bool {
 	return p.Offset >= 0
 }

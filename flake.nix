@@ -47,6 +47,7 @@
             description = "Code quality finding framework for Go";
             homepage = "https://github.com/LarsArtmann/go-finding";
             license = lib.licenses.mit;
+            maintainers = [ lib.maintainers.larsartmann ];
             mainProgram = "go-finding";
           };
         };
