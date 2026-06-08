@@ -20,7 +20,12 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | File | Purpose |
 | ---- | ------- |
 
-| `position.go` | Position, Range types with Overlaps/Intersection/Adjacent |
+| `position.go` | Position type with IsZero/HasOffset/HasLocation helpers |
+|| `range.go` | Range type with Overlaps/Intersection/Adjacent/IsInverted/IsSingleLine |
+|| `finding.go` | Finding struct definition and builder (NewFinding) |
+|| `finding_methods.go` | Finding methods: Clone, Has*, String, Preview, IsSuppressed |
+|| `finding_validate.go` | Finding validation: Validate, IsValid, Key |
+|| `finding_equal.go` | Finding equality: Equal, equalStringSlices helpers |
 | `report.go` | Report container with summary |
 | `filter.go` | Filtering and grouping utilities |
 | `validate_helpers.go` | Shared isValidLowercaseHyphen validation for Category and Tag |
@@ -247,7 +252,7 @@ golangci-lint run ./...                     # Lint
 - `FixStrategyAI` + `NeedsAI()` are published API with no backend — **DECISION: KEEP as reserved** for future AI-powered remediation. Zero implementation cost. Do not remove.
 - `Tag` constants partially overlap `Category` constants (TagSecurity/CategorySecurity etc.) — no structural link
 - `RecordFix()` superseded by `RecordFixes(uint)` — convenience method with no production callers
-- FixApplier path validation is lexical only (`filepath.Clean`) — does not resolve symlinks (acceptable for static analysis tool)
+- FixApplier path validation resolves symlinks (`filepath.EvalSymlinks` + `filepath.Clean`) — prevents symlink-based path traversal
 - **SARIF: hand-rolled, not go-sarif** — Evaluated `github.com/owenrumney/go-sarif/v3` (v3.3.0, 83 stars, actively maintained). Decision: keep hand-rolled. Reasons: (1) zero extra dependencies aligns with design principle #1, (2) adapter layer would be ~200-300 LOC negating maintenance savings, (3) round-trip property bag is custom-built, (4) streaming + context cancellation are first-class, (5) we use only 15 of 100+ SARIF types. Revisit if we need SARIF 2.2, schema validation, or code flows. See docs/architecture-decisions.md #9.
 - **ByteLevelConflictDetection** — `Config.ByteLevelConflictDetection bool` enables byte-level conflict filtering via `filterByFileEdits`; reads file content and uses FixEngine for precise overlap detection (source: pipeline/config.go)
 - **TriageFunc** — `Config.TriageFunc` allows custom triage logic; `DefaultTriageFunc` preserves existing behavior; `TriageResult` type in config.go (source: pipeline/config.go)
@@ -273,7 +278,14 @@ golangci-lint run ./...                     # Lint
 - **Position semantic trap documented** — `Offset=0` means both "byte 0" (valid) and passes `HasOffset()=true` while also being `IsZero()=true`; now explicit in doc comments
 - **flake.nix maintainers** — Added `maintainers = [ lib.maintainers.larsartmann ]`
 - **CHANGELOG.md updated** — Full v0.5.0 entry with all changes
-- **TODO_LIST.md audited** — 15 stale items marked done
+- **TODO_LIST.md audited** — 18 stale items marked done
+- **finding.go split** — `finding.go` (509 lines) → `finding.go` (95) + `finding_methods.go` (162) + `finding_validate.go` (119) + `finding_equal.go` (149)
+- **position.go split** — `position.go` (444 lines) → `position.go` (78) + `range.go` (366)
+- **FixApplier symlink resolution** — Added `filepath.EvalSymlinks` to path validation preventing symlink-based traversal
+- **ADR 10** — Report.Findings encapsulation strategy written to `docs/architecture-decisions.md`
+- **lsp_test.go** — Replaced raw `"go-finding/lsp-severity"` with `LSPSeverityKey` constant
+- **Metadata namespacing** — Documented `"toolName.key"` convention and reserved `"go-finding/"` prefix in finding.go godoc
+- **GoReleaser verified** — `.github/workflows/release.yml` triggers on `v*` tags; `main.version` var exists for ldflags
 
 ---
 
