@@ -208,6 +208,20 @@ type Correlation struct {
 //
 // This can be used standalone or enabled in Pipeline via Config.CorrelateFindings.
 // When enabled, the pipeline populates PipelineResult.Correlations automatically.
+//
+// # Complexity
+//
+// Findings are grouped by file, then sorted by line. For each finding, the inner
+// loop scans forward until the line difference exceeds maxLineDiff (5 lines),
+// then breaks. For well-distributed findings this is effectively O(n) per file.
+//
+// Worst case: if many findings cluster on the same lines in one file (e.g., 1000
+// findings on line 1), the inner loop degrades to O(k²) for that file where k is
+// the number of findings in that file. The maxCorrelations constant (10,000) caps
+// total output, but silently drops correlations beyond the cap.
+//
+// For datasets exceeding ~50K findings in a single file, consider pre-filtering
+// or raising maxCorrelations (requires source modification).
 func Correlate(findings []Finding) []Correlation {
 	var correlations []Correlation
 

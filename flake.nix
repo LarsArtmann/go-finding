@@ -26,7 +26,7 @@
       lib = nixpkgs.lib;
 
       version = self.rev or self.dirtyRev or "dev";
-      vendorHash = "sha256-Dz1lLXC/GuysM4w3gy+ua59RHawUGedhdpDnfxQRAAg=";
+      vendorHash = "sha256-JoM0J14QkVj9+c+AEUmWsbZrjSy4+zMrpyN4F2Sz6eo=";
 
       goSrc = lib.fileset.toSource {
         root = ./.;
@@ -65,7 +65,7 @@
           ...
         }:
         let
-          goPkg = goPkg;
+          goPkg = pkgs.go_1_26;
 
           mkApp = name: description: script: {
             type = "app";
@@ -94,8 +94,6 @@
             };
           };
 
-          checks.format = config.treefmt.build.check self;
-          checks.build = config.packages.default;
           packages.default = mkGoFinding pkgs.buildGoModule;
 
           devShells.default = pkgs.mkShell {
@@ -126,6 +124,7 @@
           };
 
           checks = {
+            format = config.treefmt.build.check self;
             build = config.packages.default;
             test = config.packages.default.overrideAttrs (_: {
               doCheck = true;
