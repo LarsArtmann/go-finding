@@ -99,6 +99,17 @@ func (a *FixApplier) ApplyWithDetails(
 		cleanPath := filepath.Clean(path)
 
 		cleanRoot := filepath.Clean(a.rootDir)
+
+		// Resolve symlinks to prevent path traversal through symbolic links.
+		// If EvalSymlinks fails (broken symlink, permission denied), skip the file.
+		if resolved, err := filepath.EvalSymlinks(cleanPath); err == nil {
+			cleanPath = resolved
+		}
+
+		if resolvedRoot, err := filepath.EvalSymlinks(cleanRoot); err == nil {
+			cleanRoot = resolvedRoot
+		}
+
 		if cleanPath != cleanRoot &&
 			!strings.HasPrefix(cleanPath, cleanRoot+string(os.PathSeparator)) {
 			continue
