@@ -69,35 +69,45 @@ func TestCategoryForLinterCaseInsensitive(t *testing.T) {
 func TestRegisterLinterCategory(t *testing.T) {
 	t.Parallel()
 
-	original := CategoryForLinter("my-custom-linter")
-	if original != CategoryCorrectness {
-		t.Fatalf("unexpected pre-registration category: %q", original)
+	tests := []struct {
+		name           string
+		linter         string
+		preRegistered  Category
+		override       Category
+		postRegistered Category
+	}{
+		{
+			name:           "registers new mapping",
+			linter:         "my-custom-linter",
+			preRegistered:  CategoryCorrectness,
+			override:       CategorySecurity,
+			postRegistered: CategorySecurity,
+		},
+		{
+			name:           "overrides existing mapping",
+			linter:         "govet",
+			preRegistered:  CategoryCorrectness,
+			override:       CategorySecurity,
+			postRegistered: CategorySecurity,
+		},
 	}
 
-	RegisterLinterCategory("my-custom-linter", CategorySecurity)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	got := CategoryForLinter("my-custom-linter")
-	if got != CategorySecurity {
-		t.Errorf("after registration: CategoryForLinter(%q) = %q, want %q", "my-custom-linter", got, CategorySecurity)
+			if got := CategoryForLinter(tt.linter); got != tt.preRegistered {
+				t.Fatalf("unexpected pre-registration category: %q", got)
+			}
+
+			RegisterLinterCategory(tt.linter, tt.override)
+
+			if got := CategoryForLinter(tt.linter); got != tt.postRegistered {
+				t.Errorf("after registration: CategoryForLinter(%q) = %q, want %q", tt.linter, got, tt.postRegistered)
+			}
+
+			// Restore original mapping to keep the global registry pristine for other tests.
+			RegisterLinterCategory(tt.linter, tt.preRegistered)
+		})
 	}
-
-	RegisterLinterCategory("my-custom-linter", CategoryCorrectness)
-}
-
-func TestRegisterLinterCategoryOverride(t *testing.T) {
-	t.Parallel()
-
-	original := CategoryForLinter("govet")
-	if original != CategoryCorrectness {
-		t.Fatalf("unexpected pre-registration category for govet: %q", original)
-	}
-
-	RegisterLinterCategory("govet", CategorySecurity)
-
-	got := CategoryForLinter("govet")
-	if got != CategorySecurity {
-		t.Errorf("after override: CategoryForLinter(%q) = %q, want %q", "govet", got, CategorySecurity)
-	}
-
-	RegisterLinterCategory("govet", CategoryCorrectness)
 }

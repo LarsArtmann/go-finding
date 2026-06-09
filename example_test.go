@@ -443,9 +443,9 @@ func ExampleFormatText() {
 
 func ExampleFormatMarkdown() {
 	findings := []finding.Finding{
-		finding.NewFinding(
+		newExampleFinding(
 			"nilcheck", "govet", "possible nil dereference",
-			finding.SeverityError, finding.Pos("main.go", 42, 5), 0,
+			finding.SeverityError, "main.go", 42, 5,
 		),
 	}
 
@@ -459,9 +459,9 @@ func ExampleFormatMarkdown() {
 
 func ExampleGeneratedFileFilter() {
 	findings := []finding.Finding{
-		finding.NewFinding(
+		newExampleFinding(
 			"nilcheck", "govet", "possible nil dereference",
-			finding.SeverityError, finding.Pos("main.go", 42, 5), 0,
+			finding.SeverityError, "main.go", 42, 5,
 		),
 	}
 

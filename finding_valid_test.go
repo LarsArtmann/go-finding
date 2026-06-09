@@ -46,110 +46,115 @@ func TestIsAutoFixable_ValidateAgreement(t *testing.T) {
 func TestFinding_Validate(t *testing.T) {
 	t.Parallel()
 
-	t.Run("valid finding", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
-		g.Expect(f.Validate()).NotTo(HaveOccurred())
-	})
+	tests := []struct {
+		name        string
+		mutate      func(*Finding)
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:    "valid finding",
+			mutate:  func(*Finding) {},
+			wantErr: false,
+		},
+		{
+			name: "missing required fields",
+			mutate: func(f *Finding) {
+				*f = Finding{}
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid severity",
+			mutate: func(f *Finding) {
+				f.Severity = Severity("bogus")
+			},
+			wantErr:     true,
+			errContains: "Severity",
+		},
+		{
+			name: "invalid fix strategy",
+			mutate: func(f *Finding) {
+				f.FixStrategy = FixStrategy("bogus")
+			},
+			wantErr:     true,
+			errContains: "FixStrategy",
+		},
+		{
+			name: "confidence out of range",
+			mutate: func(f *Finding) {
+				f.Confidence = 1.5
+			},
+			wantErr:     true,
+			errContains: "Confidence",
+		},
+		{
+			name: "negative confidence",
+			mutate: func(f *Finding) {
+				f.Confidence = -0.5
+			},
+			wantErr:     true,
+			errContains: "Confidence",
+		},
+		{
+			name: "direct fix with afterCode only is valid",
+			mutate: func(f *Finding) {
+				f.FixStrategy = FixStrategyDirect
+				f.AfterCode = "new"
+			},
+			wantErr: false,
+		},
+		{
+			name: "direct fix without beforeCode or afterCode is invalid",
+			mutate: func(f *Finding) {
+				f.FixStrategy = FixStrategyDirect
+			},
+			wantErr:     true,
+			errContains: "BeforeCode or AfterCode",
+		},
+		{
+			name:    "nil range is valid",
+			mutate:  func(*Finding) {},
+			wantErr: false,
+		},
+		{
+			name: "valid range passes",
+			mutate: func(f *Finding) {
+				f.Range = &Range{Start: Pos("a.go", 1, 1), End: Pos("a.go", 3, 1)}
+			},
+			wantErr: false,
+		},
+		{
+			name: "inverted range is invalid",
+			mutate: func(f *Finding) {
+				f.Range = &Range{Start: Pos("a.go", 5, 1), End: Pos("a.go", 1, 1)}
+			},
+			wantErr:     true,
+			errContains: "Range",
+		},
+	}
 
-	t.Run("missing required fields", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := Finding{}
-		err := f.Validate()
-		g.Expect(err).To(HaveOccurred())
-		g.Expect(IsCategory(err, ErrCategoryValidation)).To(BeTrue())
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
 
-	t.Run("invalid severity", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := NewFinding("r", "t", "m", Severity("bogus"), Pos("a.go", 1, 1), 0.5)
-		err := f.Validate()
-		g.Expect(err).To(HaveOccurred())
-		g.Expect(err).To(MatchError(ContainSubstring("Severity")))
-	})
+			f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
+			tt.mutate(&f)
 
-	t.Run("invalid fix strategy", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
-		f.FixStrategy = FixStrategy("bogus")
-		err := f.Validate()
-		g.Expect(err).To(HaveOccurred())
-		g.Expect(err).To(MatchError(ContainSubstring("FixStrategy")))
-	})
+			err := f.Validate()
+			if tt.wantErr {
+				g.Expect(err).To(HaveOccurred())
+				g.Expect(IsCategory(err, ErrCategoryValidation)).To(BeTrue())
 
-	t.Run("confidence out of range", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := Finding{
-			ID: "1", Rule: "r", ToolName: "t", Message: "m",
-			Severity: SeverityError, Position: Pos("a.go", 1, 1),
-			Confidence: 1.5,
-		}
-		err := f.Validate()
-		g.Expect(err).To(HaveOccurred())
-		g.Expect(err).To(MatchError(ContainSubstring("Confidence")))
-	})
-
-	t.Run("negative confidence", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := Finding{
-			ID: "1", Rule: "r", ToolName: "t", Message: "m",
-			Severity: SeverityError, Position: Pos("a.go", 1, 1),
-			Confidence: -0.5,
-		}
-		err := f.Validate()
-		g.Expect(err).To(HaveOccurred())
-		g.Expect(err).To(MatchError(ContainSubstring("Confidence")))
-	})
-
-	t.Run("direct fix with afterCode only is valid", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
-		f.FixStrategy = FixStrategyDirect
-		f.AfterCode = "new"
-		g.Expect(f.Validate()).NotTo(HaveOccurred())
-	})
-
-	t.Run("direct fix without beforeCode or afterCode is invalid", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
-		f.FixStrategy = FixStrategyDirect
-		err := f.Validate()
-		g.Expect(err).To(HaveOccurred())
-		g.Expect(err).To(MatchError(ContainSubstring("BeforeCode or AfterCode")))
-	})
-
-	t.Run("nil range is valid", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
-		g.Expect(f.Validate()).NotTo(HaveOccurred())
-	})
-
-	t.Run("valid range passes", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
-		f.Range = &Range{Start: Pos("a.go", 1, 1), End: Pos("a.go", 3, 1)}
-		g.Expect(f.Validate()).NotTo(HaveOccurred())
-	})
-
-	t.Run("inverted range is invalid", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
-		f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
-		f.Range = &Range{Start: Pos("a.go", 5, 1), End: Pos("a.go", 1, 1)}
-		err := f.Validate()
-		g.Expect(err).To(HaveOccurred())
-		g.Expect(err).To(MatchError(ContainSubstring("Range")))
-	})
+				if tt.errContains != "" {
+					g.Expect(err).To(MatchError(ContainSubstring(tt.errContains)))
+				}
+			} else {
+				g.Expect(err).NotTo(HaveOccurred())
+			}
+		})
+	}
 }
 
 func TestFinding_IsValid(t *testing.T) {

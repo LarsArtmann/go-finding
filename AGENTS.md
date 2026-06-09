@@ -299,6 +299,18 @@ golangci-lint run ./...                     # Lint
 - **ToolAdapter[O] generic** — `adapter.go` with `ToolAdapter[O any]` implementing `Detector`; `NewToolAdapter(name, run, parse, convert)` wires exec→parse→convert pipeline; replaces ~30 files of duplicated adapter code across 5 consumer projects
 - **Lint fixes** — `finding_validate.go` godoc (revive), `merge.go` goconst nolint, `pipeline/fix_applier.go` noinlineerr refactor, `pipeline/retry.go` wrapcheck fix, `.golangci.yml` exclusions for severity.go and category_linter.go
 
+### Session 8 (2026-06-09) — Deduplication + Race Fix
+
+- **art-dupl @ 50: 2 → 0 clone groups** — Industry-standard threshold now reports zero real duplication in the codebase
+- **art-dupl @ 25: 16 → 11 clone groups** — Remaining 11 are all idiomatic Go patterns (struct literal test data, factory functions, separate deliverables like testable example + runnable example)
+- **`TestRegisterLinterCategory` table-driven** — Unified `TestRegisterLinterCategory` + `TestRegisterLinterCategoryOverride` into one table-driven test with `preRegistered/override/postRegistered` fields; preserves the global registry restoration in the loop
+- **`TestDeduplicateStrategies_EmptyFileNotDeduplicated` table-driven** — Unified `TestDeduplicateByPosition_EmptyFileNotDeduplicated` + `TestDeduplicateByRule_EmptyFileNotDeduplicated` into one table-driven test parameterized on `DeduplicateBy`
+- **`TestMetrics_RecordFixes` table-driven** — Unified 4 separate `RecordFix`/`RecordFixes` tests into one table-driven test covering zero, single batch, mixed deprecated/batch, and three single recordings
+- **`TestFinding_Validate` table-driven** — Converted 12 separate `t.Run` subtests into one table-driven test with `mutate func(*Finding)` + `wantErr` + `errContains`; preserves the `IsCategory(err, ErrCategoryValidation)` check for ALL error cases (was only on one case before, now stronger)
+- **`ExampleFormatMarkdown` + `ExampleGeneratedFileFilter`** — Replaced inline `finding.NewFinding(...)` calls with the existing `newExampleFinding` helper
+- **`linterCategories` thread-safe** — Added `sync.RWMutex` (`linterCategoriesMu`) guarding the global map; `CategoryForLinter` uses `RLock`, `RegisterLinterCategory` uses `Lock`. Doc updated to "Safe for concurrent use" (was "safe for concurrent use via init-time or early-program setup")
+- **Pre-existing data race fixed** — The `linterCategories` map race between `TestCategoryForLinter` (reads) and `TestRegisterLinterCategory` (writes) under `-race` was a flaky 18/20 → 20/20. Root cause: global map with no synchronization. Fix: proper RWMutex. Now `go test -race -count=1` is stable across 30 consecutive runs
+
 ---
 
 _Assisted-by: Crush <crush@charm.land>_

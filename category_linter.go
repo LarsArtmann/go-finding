@@ -1,6 +1,13 @@
 package finding
 
-import "strings"
+import (
+	"strings"
+	"sync"
+)
+
+// linterCategoriesMu guards concurrent access to linterCategories.
+// The map is read by CategoryForLinter and written by RegisterLinterCategory.
+var linterCategoriesMu sync.RWMutex
 
 // linterCategories maps well-known linter/analyzer names to their default Category.
 // Extend at runtime via RegisterLinterCategory.
@@ -95,6 +102,9 @@ var linterCategories = map[string]Category{
 // The lookup is case-insensitive. If the name is not registered, it returns CategoryCorrectness.
 // Register custom mappings with RegisterLinterCategory.
 func CategoryForLinter(name string) Category {
+	linterCategoriesMu.RLock()
+	defer linterCategoriesMu.RUnlock()
+
 	if cat, ok := linterCategories[strings.ToLower(name)]; ok {
 		return cat
 	}
@@ -104,7 +114,10 @@ func CategoryForLinter(name string) Category {
 
 // RegisterLinterCategory registers or overrides the Category for a linter name.
 // The name is stored in lowercase for case-insensitive lookup.
-// This is safe for concurrent use via init-time or early-program setup.
+// Safe for concurrent use.
 func RegisterLinterCategory(name string, cat Category) {
+	linterCategoriesMu.Lock()
+	defer linterCategoriesMu.Unlock()
+
 	linterCategories[strings.ToLower(name)] = cat
 }

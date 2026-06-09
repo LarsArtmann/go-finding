@@ -68,44 +68,38 @@ func TestMetrics_RecordDetector(t *testing.T) {
 	g.Expect(m.DetectorFindings("govet")).To(Equal(3))
 }
 
-func TestMetrics_RecordFix(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-	m := NewMetrics()
-	m.RecordFix()
-	m.RecordFix()
-	m.RecordFix()
-
-	g.Expect(m.TotalFixesApplied()).To(Equal(3))
-}
-
 func TestMetrics_RecordFixes(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
-	m := NewMetrics()
-	m.RecordFixes(5)
 
-	g.Expect(m.TotalFixesApplied()).To(Equal(5))
-}
+	tests := []struct {
+		name  string
+		fixes []uint
+		want  int
+	}{
+		{"zero", []uint{0}, 0},
+		{"single batch of 5", []uint{5}, 5},
+		{"deprecated single mixed with batch", []uint{1, 3, 1}, 5},
+		{"three single recordings", []uint{1, 1, 1}, 3},
+	}
 
-func TestMetrics_RecordFixAndFixes(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-	m := NewMetrics()
-	m.RecordFix()
-	m.RecordFixes(3)
-	m.RecordFix()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	g.Expect(m.TotalFixesApplied()).To(Equal(5))
-}
+			g := NewWithT(t)
+			m := NewMetrics()
 
-func TestMetrics_RecordFixes_Zero(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-	m := NewMetrics()
-	m.RecordFixes(0)
+			for _, count := range tt.fixes {
+				if count == 1 {
+					m.RecordFix()
+				} else {
+					m.RecordFixes(count)
+				}
+			}
 
-	g.Expect(m.TotalFixesApplied()).To(Equal(0))
+			g.Expect(m.TotalFixesApplied()).To(Equal(tt.want))
+		})
+	}
 }
 
 func TestMetrics_StageTiming(t *testing.T) {

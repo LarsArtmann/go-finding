@@ -229,24 +229,39 @@ func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
 	g.Expect(collectIDs(byRule)).To(HaveLen(2))
 }
 
-func TestDeduplicateByPosition_EmptyFileNotDeduplicated(t *testing.T) {
+func TestDeduplicateStrategies_EmptyFileNotDeduplicated(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
 
-	r1 := NewReport(ToolInfo{Name: "t1"})
-	r1.AddFinding(
-		Finding{ID: "1", ToolName: "t1", Rule: "r", Message: "m1", Position: Position{Line: 1}},
-	)
-	r1.AddFinding(
-		Finding{ID: "2", ToolName: "t1", Rule: "r", Message: "m2", Position: Position{Line: 1}},
-	)
+	tests := []struct {
+		name string
+		by   DeduplicateBy
+	}{
+		{"position", DeduplicateByPosition},
+		{"rule", DeduplicateByRule},
+	}
 
-	merged := Combine(
-		[]*Report{r1},
-		WithDeduplication(true),
-		WithDeduplicateBy(DeduplicateByPosition),
-	)
-	g.Expect(merged.Len()).To(Equal(2))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			g := NewWithT(t)
+
+			r1 := NewReport(ToolInfo{Name: "t1"})
+			r1.AddFinding(
+				Finding{ID: "1", ToolName: "t1", Rule: "r", Message: "m1", Position: Position{Line: 1}},
+			)
+			r1.AddFinding(
+				Finding{ID: "2", ToolName: "t1", Rule: "r", Message: "m2", Position: Position{Line: 1}},
+			)
+
+			merged := Combine(
+				[]*Report{r1},
+				WithDeduplication(true),
+				WithDeduplicateBy(tt.by),
+			)
+			g.Expect(merged.Len()).To(Equal(2))
+		})
+	}
 }
 
 func TestDeduplicateBy_String(t *testing.T) {
@@ -257,22 +272,6 @@ func TestDeduplicateBy_String(t *testing.T) {
 	g.Expect(DeduplicateByPosition.String()).To(Equal("position"))
 	g.Expect(DeduplicateByRule.String()).To(Equal("rule"))
 	g.Expect(DeduplicateBy(99).String()).To(Equal("unknown(99)"))
-}
-
-func TestDeduplicateByRule_EmptyFileNotDeduplicated(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-
-	r1 := NewReport(ToolInfo{Name: "t1"})
-	r1.AddFinding(
-		Finding{ID: "1", ToolName: "t1", Rule: "r", Message: "m1", Position: Position{Line: 1}},
-	)
-	r1.AddFinding(
-		Finding{ID: "2", ToolName: "t1", Rule: "r", Message: "m2", Position: Position{Line: 1}},
-	)
-
-	merged := Combine([]*Report{r1}, WithDeduplication(true), WithDeduplicateBy(DeduplicateByRule))
-	g.Expect(merged.Len()).To(Equal(2))
 }
 
 func collectIDs(r *Report) []string {
