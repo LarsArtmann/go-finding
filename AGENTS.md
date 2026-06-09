@@ -45,6 +45,9 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `suppression.go` | Suppression handling with IsActive convenience |
 | `diff.go` | Diff(before, after) compares finding sets by ID |
 | `format.go` | FormatText/FormatMarkdown for human-readable output |
+| `registry.go` | DetectorRegistry — thread-safe named detector constructor registry |
+| `interval_tree.go` | IntervalIndex[T] generic sorted-scan overlap queries |
+| `fix_strategy.go` | FixStrategy constants, FixStrategyResolver interface, DefaultResolver |
 
 #### Analysis Package
 
@@ -72,6 +75,10 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `pipeline/retry.go`            | Exponential backoff retry wrapper for detectors                                            |
 | `pipeline/partial.go`          | Partial success: collect from failed detectors                                             |
 | `pipeline/generated_filter.go` | GeneratedFileFilter processor — removes findings from auto-generated files via gogenfilter |
+| `pipeline/stage_hook.go` | StageHook interface, StageHookFunc adapter, StageEvent |
+| `pipeline/line_shift.go` | LineShiftMap — byte-offset-aware line shift tracking after edits |
+| `pipeline/config_file.go` | ConfigFile struct, ConfigFromFile/ConfigFromReader |
+| `pipeline/middleware.go` | MiddlewareFunc, ComposeMiddleware — composable pipeline middleware |
 
 #### CLI
 
@@ -323,6 +330,21 @@ golangci-lint run ./...                     # Lint
 - **CI race detection** — Verified CI already runs `-race` in both `test` and `stress` jobs
 - **gocyclo threshold** — Already configured at `min-complexity: 25` with 0 violations
 - **Property tests determinism** — Already deterministic via `rand.New(rand.NewSource(42))` seed in `checkPropertyAny`
+
+---
+
+### Session 11 (2026-06-09) — TODO Tasks 11-20
+
+- **Report.Findings deprecation (ADR 10)** — `// Deprecated:` godoc on `Findings` field; internal `readFindings()` helper; thread-safe SARIF/JSON/CLI access via `FindingsSnapshot()`; field will be unexported in v1.0
+- **StageHook interface** — `pipeline/stage_hook.go`: `StageHook` interface with `StageHookFunc` adapter; `StageEvent` struct; wired into detect/process/triage/apply/verify stages; pre-hook errors abort pipeline
+- **LineShiftMap** — `pipeline/line_shift.go`: byte-offset-aware line shift tracking after fix edits; `NewLineShiftMap(content, edits)` + `ShiftedLine(original)`; uses `buildLineOffsetIndex` for O(1) line→byte lookup
+- **IntervalIndex[T]** — `interval_tree.go`: generic sorted-scan overlap queries with O(log n + k) complexity; `NewIntervalIndex[T]` + `Query(start, end)`; uses binary search cutoff + linear scan
+- **MergeIter()** — `merge.go`: streaming `iter.Seq[Finding]` merge; reads each report under RLock via `readFindings()`; clones each finding; supports early termination
+- **ConfigFile** — `pipeline/config_file.go`: `ConfigFile` struct with `ConfigFromFile(path)` / `ConfigFromReader(r)`; YAML/JSON config loading for library use
+- **DetectorRegistry** — `registry.go`: thread-safe named detector constructor registry; `Register/Build/BuildAll/Names/Has`; `MustRegister` panics variant; sentinel errors with `%w` wrapping
+- **MiddlewareFunc/ComposeMiddleware** — `pipeline/middleware.go`: composable pipeline middleware pattern; `MiddlewareFunc func(next RunFunc) RunFunc`; `ComposeMiddleware` applies in registration order using `slices.Backward`
+- **Benchmark CI gate** — `.github/workflows/ci.yml`: separate `benchmark` job with `go test -bench`
+- **FixStrategyResolver** — `fix_strategy.go`: `FixStrategyResolver` interface + `DefaultResolver` implementation; `CanAutoApply(strategy)` delegates to `FixStrategy.CanAutoApply()`
 
 ---
 
