@@ -332,6 +332,14 @@ linters:
       - path: confidence\.go
         linters:
           - goconst
+      - path: severity\.go
+        linters:
+          - goconst
+          - gochecknoglobals
+      - path: category_linter\.go
+        linters:
+          - goconst
+          - gochecknoglobals
       - path: _test\.go
         text: unused
         linters:

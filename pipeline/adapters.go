@@ -9,46 +9,19 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
-// Detector is the interface implemented by tools that can find issues.
-type Detector interface {
-	// Name returns the detector's name.
-	Name() string
-	// Detect runs the detector and returns findings.
-	Detect(ctx context.Context) ([]finding.Finding, error)
-}
+// Detector is re-exported from the root finding package for backward compatibility.
+// New code should use finding.Detector directly.
+type Detector = finding.Detector
 
-// DetectorFunc is an adapter to use ordinary functions as Detectors.
-type DetectorFunc func(ctx context.Context) ([]finding.Finding, error)
+// DetectorFunc is re-exported from the root finding package for backward compatibility.
+// New code should use finding.DetectorFunc directly.
+type DetectorFunc = finding.DetectorFunc
 
-// Detect implements Detector.
-func (f DetectorFunc) Detect(ctx context.Context) ([]finding.Finding, error) {
-	return f(ctx)
-}
-
-// Name implements Detector. Returns "anonymous" — use NamedDetectorFunc for a custom name.
+// NamedDetectorFunc is re-exported from the root finding package for backward compatibility.
+// New code should use finding.NamedDetectorFunc directly.
 //
-//nolint:revive // receiver unused by design — method exists only to satisfy Detector interface
-func (f DetectorFunc) Name() string {
-	return "anonymous"
-}
-
-// NamedDetectorFunc returns a Detector with the given name wrapping the provided function.
-func NamedDetectorFunc(name string, fn DetectorFunc) Detector {
-	return &namedDetector{name: name, fn: fn}
-}
-
-type namedDetector struct {
-	name string
-	fn   DetectorFunc
-}
-
-func (n *namedDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
-	return n.fn(ctx)
-}
-
-func (n *namedDetector) Name() string {
-	return n.name
-}
+//nolint:gochecknoglobals // intentional: re-exported function variable for backward compatibility
+var NamedDetectorFunc = finding.NamedDetectorFunc
 
 // FindingProcessor transforms findings between detection and triage.
 // Processors are chained in order, allowing filtering, enrichment, or transformation.

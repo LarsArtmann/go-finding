@@ -115,7 +115,7 @@ func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 		}
 
 		if IsContextError(err) {
-			return nil, err
+			return nil, fmt.Errorf("detector %s detect: %w", d.inner.Name(), err)
 		}
 
 		lastErr = err

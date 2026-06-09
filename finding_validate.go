@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+// Validate checks all fields of the Finding for correctness and returns detailed
+// per-field errors. Use IsValid for a simple boolean check.
 func (f Finding) Validate() error {
 	var errs []error
 

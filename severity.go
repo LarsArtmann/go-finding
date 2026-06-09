@@ -174,12 +174,32 @@ func (s Severity) isValidWith(other Severity) bool {
 // errInvalidSeverity is returned when parsing an invalid severity string.
 var errInvalidSeverity = errors.New("invalid severity")
 
+// SeverityAliases maps common alternative severity strings to canonical Severity values.
+// Consumers can add custom aliases via this map before calling ParseSeverity.
+var SeverityAliases = map[string]Severity{
+	"warn":       SeverityWarning,
+	"high":       SeverityError,
+	"medium":     SeverityWarning,
+	"low":        SeverityInfo,
+	"fatal":      SeverityCritical,
+	"critical":   SeverityCritical,
+	"note":       SeverityInfo,
+	"advice":     SeverityInfo,
+	"suggestion": SeverityInfo,
+}
+
 // ParseSeverity parses a string into a Severity.
-// Returns an error if the string is not a valid severity level.
+// It accepts the canonical names (info, warning, error, critical) and common aliases
+// defined in SeverityAliases (warn, high, medium, low, fatal, note, advice, suggestion).
+// Returns an error if the string is not a valid severity level or alias.
 func ParseSeverity(s string) (Severity, error) {
 	sev := Severity(s)
 	if sev.IsValid() {
 		return sev, nil
+	}
+
+	if alias, ok := SeverityAliases[s]; ok {
+		return alias, nil
 	}
 
 	return "", fmt.Errorf("%w: %q (valid: %s, %s, %s, %s)",

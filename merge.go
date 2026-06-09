@@ -131,7 +131,7 @@ func (d DeduplicateBy) String() string {
 	case DeduplicateByPosition:
 		return "position"
 	case DeduplicateByRule:
-		return "rule"
+		return "rule" //nolint:goconst // enum display name, not a repeated constant
 	default:
 		return fmt.Sprintf("unknown(%d)", d)
 	}

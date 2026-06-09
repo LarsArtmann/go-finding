@@ -102,11 +102,13 @@ func (a *FixApplier) ApplyWithDetails(
 
 		// Resolve symlinks to prevent path traversal through symbolic links.
 		// If EvalSymlinks fails (broken symlink, permission denied), skip the file.
-		if resolved, err := filepath.EvalSymlinks(cleanPath); err == nil {
+		resolved, err := filepath.EvalSymlinks(cleanPath)
+		if err == nil {
 			cleanPath = resolved
 		}
 
-		if resolvedRoot, err := filepath.EvalSymlinks(cleanRoot); err == nil {
+		resolvedRoot, err := filepath.EvalSymlinks(cleanRoot)
+		if err == nil {
 			cleanRoot = resolvedRoot
 		}
 
