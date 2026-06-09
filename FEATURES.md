@@ -1,6 +1,6 @@
 # FEATURES.md — go-finding
 
-> **Version:** 0.5.0 | **Updated:** 2026-06-08
+> **Version:** 0.6.1 | **Updated:** 2026-06-09
 >
 > A unified data model and pipeline for Go static analysis tools.
 > Seven tools detect issues. Zero tools route them to remediation. This library fixes that.

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-06-09
+
+### Fixed
+
+- **FixApplier symlink-based path traversal** — Added `filepath.EvalSymlinks` to path validation, preventing malicious symlink chains from escaping the root directory (e.g., `../../../etc/passwd` via symlink).
+
+### Changed
+
+- **`finding.go` split into 4 focused files** — `finding.go` (95 lines, core struct + builder), `finding_methods.go` (162 lines, methods), `finding_validate.go` (118 lines, validation), `finding_equal.go` (149 lines, equality). No API changes.
+- **`position.go` split into 2 focused files** — `position.go` (78 lines, Position type), `range.go` (368 lines, Range type). No API changes.
+- **SARIF test constants** — Replaced raw property strings in tests with named constants for consistency.
+- **`merge_test.go` split** — Separated correlation tests into `merge_correlate_test.go` (123 lines).
+- **flake.nix `proxyVendor`** — Added `proxyVendor = true` for deterministic Go module downloads in Nix sandbox.
+
+### Added
+
+- **ADR 10** — `Report.Findings` encapsulation strategy documented in `docs/architecture-decisions.md`.
+
+## [0.6.0] - 2026-06-08
+
+(See [0.5.0] entry — v0.6.0 tag was created from same commit series as v0.5.0 release artifacts.)
+
 ## [0.5.0] - 2026-06-08
 
 ### Added
