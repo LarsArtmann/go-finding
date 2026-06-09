@@ -125,6 +125,9 @@ func (r *Report) AddFindings(findings []Finding) {
 // The Tool info from other is ignored — this report retains its own.
 // Summary is recomputed after merging.
 // Safe for concurrent use.
+//
+// Deprecated: Use [Report.MergeInto] instead, which returns a new Report
+// without modifying the receiver. Merge will be removed in v1.0.0.
 func (r *Report) Merge(other *Report) {
 	other.mu.RLock()
 	cloned := make([]Finding, len(other.Findings))

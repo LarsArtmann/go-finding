@@ -163,6 +163,14 @@
               go tool cover -func=coverage.out
             '';
 
+            art-dupl = mkApp "art-dupl" "Check code duplication with art-dupl (requires art-dupl in PATH)" ''
+              if ! command -v art-dupl &>/dev/null; then
+                echo "art-dupl not found. Install: go install github.com/LarsArtmann/art-dupl/cmd/art-dupl@latest" >&2
+                exit 1
+              fi
+              art-dupl . -t 50 "$@"
+            '';
+
             clean = mkApp "clean" "Clean build and test artifacts" ''
               trash-put coverage.out 2>/dev/null || true
               go clean -testcache

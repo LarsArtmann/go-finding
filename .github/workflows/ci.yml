@@ -78,3 +78,15 @@ jobs:
           go-version: "1.26"
       - name: Stress test (-count=20)
         run: go test -race -count=20 ./...
+
+  dupl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+      - name: Install art-dupl
+        run: go install github.com/LarsArtmann/art-dupl/cmd/art-dupl@latest
+      - name: Check duplication (threshold 50)
+        run: art-dupl . -t 50

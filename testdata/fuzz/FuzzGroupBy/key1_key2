@@ -1,0 +1,4 @@
+go test fuzz v1
+string("key1")
+string("key2")
+string("key1")

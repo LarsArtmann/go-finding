@@ -244,6 +244,37 @@ fmt.Println(result.Stats()) // "+2 -1 ~0 =3"
 fmt.Println(result.HasChanges())
 ```
 
+## Tool Adapters
+
+The `ToolAdapter[O]` generic wraps any external tool into a `Detector`:
+
+```go
+detector := finding.NewToolAdapter("staticcheck",
+    func(ctx context.Context) ([]byte, error) {
+        return exec.CommandContext(ctx, "staticcheck", "-json", "./...").Output()
+    },
+    func(data []byte) ([]staticcheckIssue, error) {
+        var issues []staticcheckIssue
+        return issues, json.Unmarshal(data, &issues)
+    },
+    func(issue staticcheckIssue) finding.Finding {
+        return finding.NewFinding(issue.Rule, "staticcheck", issue.Message,
+            finding.SeverityError, finding.Pos(issue.File, issue.Line, 0),
+            finding.ConfidenceHigh)
+    },
+)
+```
+
+### CategoryForLinter
+
+70+ built-in linter→category mappings:
+
+```go
+cat := finding.CategoryForLinter("SA1000") // CategoryCorrectness
+cat := finding.CategoryForLinter("G104")  // CategorySecurity
+finding.RegisterLinterCategory("MY-RULE", finding.CategoryPerformance)
+```
+
 ## SARIF
 
 ```go
@@ -344,18 +375,18 @@ This project follows [Semantic Versioning](https://semver.org/).
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "0.4.2"
+fmt.Println(finding.Version) // "0.6.1"
 ```
 
 ## Project Stats
 
 | Package   | Coverage  |
 | --------- | --------- |
-| Root      | 97.1%     |
-| Pipeline  | 94.0%     |
-| Detectors | 95.9%     |
-| CLI       | 70.0%     |
-| **Total** | **91.3%** |
+| Root      | 95.7%     |
+| Analysis  | 98.5%     |
+| Pipeline  | 93.7%     |
+| CLI       | 90.7%     |
+| Detectors | 96.1%     |
 
 ## Related Projects
 

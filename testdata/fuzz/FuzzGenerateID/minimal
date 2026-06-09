@@ -1,0 +1,6 @@
+go test fuzz v1
+string("tool")
+string("rule")
+string("file")
+int(1)
+int(0)

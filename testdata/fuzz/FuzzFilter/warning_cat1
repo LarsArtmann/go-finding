@@ -1,0 +1,5 @@
+go test fuzz v1
+string("warning")
+string("cat1")
+string("file1.go")
+string("tool1")

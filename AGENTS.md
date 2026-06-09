@@ -311,6 +311,19 @@ golangci-lint run ./...                     # Lint
 - **`linterCategories` thread-safe** — Added `sync.RWMutex` (`linterCategoriesMu`) guarding the global map; `CategoryForLinter` uses `RLock`, `RegisterLinterCategory` uses `Lock`. Doc updated to "Safe for concurrent use" (was "safe for concurrent use via init-time or early-program setup")
 - **Pre-existing data race fixed** — The `linterCategories` map race between `TestCategoryForLinter` (reads) and `TestRegisterLinterCategory` (writes) under `-race` was a flaky 18/20 → 20/20. Root cause: global map with no synchronization. Fix: proper RWMutex. Now `go test -race -count=1` is stable across 30 consecutive runs
 
+### Session 9 (2026-06-09) — TODO List Execution
+
+- **Report.Merge deprecated** — `// Deprecated:` godoc added; `MergeInto` is the replacement; will be removed in v1.0.0
+- **art-dupl flake app + CI job** — `nix run .#art-dupl` app and `dupl` CI job (installs via `go install`, runs with threshold 50)
+- **Fuzz seed corpus persisted** — All 20 fuzz targets have file-based seed corpus in `testdata/fuzz/` (70+ files); `.gitignore` excludes fuzzer-generated hex-hash files
+- **TestExamplesRun integration test** — New `TestExamplesRun` in `examples/example_compile_test.go` compiles and runs all 3 examples, verifying expected output strings
+- **API stability audit** — Every exported symbol across 3 packages audited and classified (stable/unstable/deprecated/reserved); `docs/API_STABILITY.md` rewritten with per-symbol tables
+- **README.md updated** — Added ToolAdapter section, CategoryForLinter section, updated project stats to v0.6.1 numbers (95.7% root, 98.5% analysis, 93.7% pipeline, 90.7% CLI)
+- **pkg.go.dev badge** — Already present in README since earlier session
+- **CI race detection** — Verified CI already runs `-race` in both `test` and `stress` jobs
+- **gocyclo threshold** — Already configured at `min-complexity: 25` with 0 violations
+- **Property tests determinism** — Already deterministic via `rand.New(rand.NewSource(42))` seed in `checkPropertyAny`
+
 ---
 
 _Assisted-by: Crush <crush@charm.land>_

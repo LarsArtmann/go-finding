@@ -27,7 +27,7 @@ const emptyToolName = "empty"
 //   - Findings from all reports
 //   - Summary computed from all findings
 //
-// Use Report.Merge(other) to concatenate one report into another in-place without deduplication.
+// Use Report.MergeInto(other) to combine two reports without mutation.
 func Combine(reports []*Report, opts ...MergeOption) *Report {
 	if len(reports) == 0 {
 		return NewReport(ToolInfo{Name: emptyToolName}) //nolint:exhaustruct

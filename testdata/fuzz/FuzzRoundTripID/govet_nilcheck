@@ -1,0 +1,6 @@
+go test fuzz v1
+string("govet")
+string("nilcheck")
+string("main.go")
+int(42)
+int(5)

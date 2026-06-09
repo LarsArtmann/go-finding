@@ -18,7 +18,7 @@
 - [x] Push 4 unpushed commits to origin — all commits pushed, v0.5.0 tagged
 - [x] Fix `FixApplier` lifecycle — lifted to Pipeline constructor; `NewFixApplier` returns error
 - [x] Restore `cmd/go-finding` test coverage from 70.0% toward 95% — now 90.7%
-- [ ] Update `README.md` with badges, pipeline diagram, API overview
+- [x] Update `README.md` with badges, pipeline diagram, API overview
 - [x] Fix pre-commit hook failures — `goconst`, `todo-check`, `library-policy` → All passing. Fixed `err :=` redeclaration bugs in sarif_export.go/sarif_import.go (introduced by previous commit), removed duplicate `pipeline/pipeline_new_test.go`, fixed `FindingsSnapshot()` nil-for-empty behavior.
 
 ## 🟡 MEDIUM Priority
@@ -60,7 +60,7 @@
 
 ## 🟢 LOW Priority
 
-- [ ] API stability review — audit all exported symbols for v1.0.0 lock
+- [x] API stability review — audit all exported symbols for v1.0.0 lock (docs/API_STABILITY.md)
 - [x] Decide `FixStrategyAI` fate — keep as RESERVED placeholder
 - [x] Document `BySeverityAtLeast` excludes invalid severities
 - [x] Document `Report.All()` yields copies — with shallow copy caveat
@@ -133,10 +133,10 @@
 - [x] Add GoReleaser multi-module config
 - [x] Add gosec/staticcheck to CI — golangci-lint already includes both
 - [ ] Benchmark regression tracking — CI exists but no regression gate yet
-- [ ] Persist fuzz corpus / seed corpus — 20 fuzz targets with `f.Add()` seeds; no checked-in corpus files
+- [x] Persist fuzz corpus / seed corpus — 20 fuzz targets with file-based corpus in testdata/fuzz/
 - [x] Add LICENSE file
 - [x] Add godoc examples for key APIs
-- [ ] Set up pkg.go.dev documentation
+- [x] Set up pkg.go.dev documentation — badge in README
 - [x] Create `CONTRIBUTING.md`
 - [x] Create real-world tool integration guide with govet example — `docs/integration-guide.md`
 - [x] Add `Finding` JSON schema
@@ -165,7 +165,7 @@
 - [ ] `PositionOffset` sentinel design — **OWNER_DECISION** (breaking change)
 - [x] Add `ToolInfo.Validate()` method + tests
 - [x] Add `RetryConfig.Validate()` method
-- [ ] `Report.Merge()` → return new `*Report` instead of mutating receiver
+- [ ] `Report.Merge()` → return new `*Report` instead of mutating receiver — **DEPRECATED**, will be removed v1.0.0; use MergeInto
 - [ ] Fix `FixProviders` through CLI config
 
 ## Recently Completed (2026-06-05)

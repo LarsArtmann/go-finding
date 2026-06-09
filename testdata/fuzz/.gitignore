@@ -1,0 +1,3 @@
+# Ignore fuzzer-generated entries (hex hash filenames)
+# Seed corpus files have human-readable names (seed_*, basic, empty, etc.)
+[0-9a-f]*

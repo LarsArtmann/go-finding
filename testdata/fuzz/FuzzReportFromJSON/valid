@@ -1,0 +1,2 @@
+go test fuzz v1
+[]byte("{\"tool\":{\"name\":\"t\"},\"findings\":[{\"id\":\"f1\",\"rule\":\"r1\",\"toolName\":\"t\",\"message\":\"m\",\"severity\":\"error\",\"position\":{\"file\":\"a.go\",\"line\":1}}]}")
