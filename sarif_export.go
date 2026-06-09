@@ -121,11 +121,11 @@ func (c *countingWriter) Write(p []byte) (int, error) {
 }
 
 func (r *Report) sarifLog() sarifLog {
-	return r.buildsarifLog(sarifResultsFromFindings(r.Findings, SeverityInfo))
+	return r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), SeverityInfo))
 }
 
 func (r *Report) sarifLogFiltered(severity Severity) sarifLog {
-	return r.buildsarifLog(sarifResultsFromFindings(r.Findings, severity))
+	return r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), severity))
 }
 
 func (r *Report) buildsarifLog(results []sarifResult) sarifLog {

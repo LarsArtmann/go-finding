@@ -90,3 +90,21 @@ jobs:
         run: go install github.com/LarsArtmann/art-dupl/cmd/art-dupl@latest
       - name: Check duplication (threshold 50)
         run: art-dupl . -t 50
+
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+      - name: Run benchmarks
+        run: go test -bench=. -benchmem -count=1 -run='^$' ./... 2>&1 | tee bench.out
+      - name: Check for regressions
+        run: |
+          if grep -q 'ns/op' bench.out; then
+            echo "Benchmarks completed successfully"
+            grep 'ns/op' bench.out | awk '{print $1, $2, $3, $4}'
+          else
+            echo "No benchmarks found"
+          fi

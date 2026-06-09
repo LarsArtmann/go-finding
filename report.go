@@ -13,18 +13,17 @@ import (
 // a Report with pre-allocated findings.
 // All methods are safe for concurrent use. Read methods (FindByID, Len,
 // ActiveFindings, etc.) acquire a read lock; write methods (AddFinding,
-// AddFindings, Merge) acquire a write lock.
-//
-// IMPORTANT: Findings is a public slice for direct access and serialization.
-// DO NOT modify it directly in concurrent contexts — use AddFinding/AddFindings
-// instead. Direct reads of Findings are safe if no concurrent writes occur,
-// but for full thread safety use the accessor methods (FindByID, ActiveFindings,
-// Filter, etc.) which acquire the read lock.
+// AddFindings, MergeInto) acquire a write lock.
 type Report struct {
-	mu       sync.RWMutex
-	Tool     ToolInfo  `json:"tool"`     // Tool metadata
-	Findings []Finding `json:"findings"` // All findings from this run
-	Summary  Summary   `json:"summary"`  // Aggregated statistics
+	mu   sync.RWMutex
+	Tool ToolInfo `json:"tool"` // Tool metadata
+	// Findings holds all findings from this run.
+	//
+	// Deprecated: Direct access is not thread-safe. Use [Report.FindingsSnapshot]
+	// for a deep copy, [Report.All] for iteration, or [Report.FindByID] for single
+	// lookups. This field will be unexported in v1.0.
+	Findings []Finding `json:"findings"`
+	Summary  Summary   `json:"summary"` // Aggregated statistics
 }
 
 // Validate returns an error if the Report is invalid.
@@ -170,6 +169,19 @@ func (r *Report) MergeInto(other *Report) *Report {
 // Caller must hold the lock or guarantee single-goroutine access.
 func (r *Report) addFindingUnchecked(f Finding) {
 	r.Findings = append(r.Findings, f)
+}
+
+// readFindings returns a shallow copy of findings under RLock.
+// Safe for concurrent use. The caller receives a snapshot that won't
+// be affected by subsequent AddFinding/AddFindings calls.
+func (r *Report) readFindings() []Finding {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	findings := make([]Finding, len(r.Findings))
+	copy(findings, r.Findings)
+
+	return findings
 }
 
 // ComputeSummary recalculates the summary from the current findings.

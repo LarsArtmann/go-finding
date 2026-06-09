@@ -2,6 +2,7 @@ package finding
 
 import (
 	"fmt"
+	"iter"
 	"maps"
 	"slices"
 )
@@ -38,7 +39,7 @@ func Combine(reports []*Report, opts ...MergeOption) *Report {
 
 		result := &Report{ //nolint:exhaustruct
 			Tool:     r.Tool,
-			Findings: cloneFindings(r.Findings),
+			Findings: cloneFindings(r.readFindings()),
 		}
 		result.ComputeSummary()
 
@@ -54,7 +55,7 @@ func Combine(reports []*Report, opts ...MergeOption) *Report {
 
 	for _, report := range reports {
 		if report != nil {
-			total += len(report.Findings)
+			total += report.Len()
 		}
 	}
 
@@ -70,7 +71,7 @@ func Combine(reports []*Report, opts ...MergeOption) *Report {
 			continue
 		}
 
-		for _, finding := range report.Findings {
+		for _, finding := range report.readFindings() {
 			if options.Deduplicate {
 				key, ok := dedupKey(finding, options)
 				if ok {
@@ -282,4 +283,48 @@ func Correlate(findings []Finding) []Correlation {
 	}
 
 	return correlations
+}
+
+// MergeIter returns an iterator that yields findings from multiple reports
+// in streaming fashion, without loading all findings into memory at once.
+// Supports optional deduplication via the same MergeOption as [Combine].
+//
+// Each report's findings are read under RLock; the iterator does not
+// hold locks across reports.
+func MergeIter(reports []*Report, opts ...MergeOption) iter.Seq[Finding] {
+	return func(yield func(Finding) bool) {
+		if len(reports) == 0 {
+			return
+		}
+
+		options := defaultMergeOptions()
+		for _, opt := range opts {
+			opt(&options)
+		}
+
+		seen := make(map[string]struct{})
+
+		for _, report := range reports {
+			if report == nil {
+				continue
+			}
+
+			for _, f := range report.readFindings() {
+				if options.Deduplicate {
+					key, ok := dedupKey(f, options)
+					if ok {
+						if _, exists := seen[key]; exists {
+							continue
+						}
+
+						seen[key] = struct{}{}
+					}
+				}
+
+				if !yield(f.Clone()) {
+					return
+				}
+			}
+		}
+	}
 }

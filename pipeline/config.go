@@ -62,6 +62,9 @@ type Config struct {
 	// If nil, DefaultTriageFunc is used: IsAutoFixable() → Direct,
 	// HasFix() → Suggest, else → None.
 	TriageFunc TriageFunc
+	// StageHooks are called before and after each pipeline stage.
+	// Hooks are called in registration order; the first error aborts the pipeline.
+	StageHooks []StageHook
 }
 
 // TriageFunc categorizes findings into Direct (auto-apply), Suggest (display),

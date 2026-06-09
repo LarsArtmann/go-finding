@@ -228,7 +228,7 @@ func outputResults(w io.Writer, report *finding.Report, format string) error {
 			return fmt.Errorf("writing SARIF: %w", err)
 		}
 	case "markdown":
-		if err := finding.FormatMarkdown(w, report.Findings); err != nil {
+		if err := finding.FormatMarkdown(w, report.FindingsSnapshot()); err != nil {
 			return fmt.Errorf("writing markdown: %w", err)
 		}
 	default:
@@ -239,17 +239,19 @@ func outputResults(w io.Writer, report *finding.Report, format string) error {
 }
 
 func outputText(w io.Writer, report *finding.Report) {
-	if len(report.Findings) == 0 {
+	findings := report.FindingsSnapshot()
+
+	if len(findings) == 0 {
 		_, _ = fmt.Fprintln(w, "No findings.")
 
 		return
 	}
 
-	if err := finding.FormatText(w, report.Findings); err != nil {
+	if err := finding.FormatText(w, findings); err != nil {
 		_, _ = fmt.Fprintf(w, "warning: %v\n", err)
 	}
 
-	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(report.Findings))
+	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(findings))
 	if report.Summary.Total > 0 {
 		_, _ = fmt.Fprintf(
 			w, "  By severity: %d info, %d warning, %d error, %d critical\n",

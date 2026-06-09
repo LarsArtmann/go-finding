@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"slices"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -331,4 +332,66 @@ func makeFinding(id, tool, rule, file string, line int) Finding {
 		Rule:     rule,
 		Position: Position{File: file, Line: line},
 	}
+}
+
+func TestMergeIter(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	r1 := NewReport(ToolInfo{Name: "a"})
+	r1.AddFinding(Finding{ID: "1", ToolName: "a", Position: Position{File: "f.go", Line: 1}})
+	r1.AddFinding(Finding{ID: "2", ToolName: "a", Position: Position{File: "f.go", Line: 2}})
+
+	r2 := NewReport(ToolInfo{Name: "b"})
+	r2.AddFinding(Finding{ID: "3", ToolName: "b", Position: Position{File: "f.go", Line: 3}})
+
+	collected := slices.Collect(MergeIter([]*Report{r1, r2}))
+
+	g.Expect(collected).To(HaveLen(3))
+	g.Expect(collected[0].ID).To(Equal("1"))
+	g.Expect(collected[2].ID).To(Equal("3"))
+}
+
+func TestMergeIter_WithDedup(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	r1 := NewReport(ToolInfo{Name: "a"})
+	r1.AddFinding(Finding{ID: "dup", ToolName: "a"})
+
+	r2 := NewReport(ToolInfo{Name: "b"})
+	r2.AddFinding(Finding{ID: "dup", ToolName: "b"})
+
+	collected := slices.Collect(MergeIter([]*Report{r1, r2}, WithDeduplication(true)))
+
+	g.Expect(collected).To(HaveLen(1))
+}
+
+func TestMergeIter_Empty(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	collected := slices.Collect(MergeIter(nil))
+	g.Expect(collected).To(BeEmpty())
+}
+
+func TestMergeIter_EarlyStop(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	r1 := NewReport(ToolInfo{Name: "a"})
+	r1.AddFinding(Finding{ID: "1"})
+	r1.AddFinding(Finding{ID: "2"})
+	r1.AddFinding(Finding{ID: "3"})
+
+	count := 0
+
+	for range MergeIter([]*Report{r1}) {
+		count++
+		if count == 1 {
+			break
+		}
+	}
+
+	g.Expect(count).To(Equal(1))
 }

@@ -138,7 +138,11 @@ func (f Finding) WriteJSON(w io.Writer) error {
 
 // WriteJSON writes pretty-printed JSON directly to w.
 // Avoids the intermediate string allocation of PrettyJSON.
+// Safe for concurrent use.
 func (r *Report) WriteJSON(w io.Writer) error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 

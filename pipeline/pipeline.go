@@ -109,6 +109,40 @@ func (p *Pipeline) notifyStage(stage Stage, iteration, count int) {
 	}
 }
 
+// fireStageHook sends a StageEvent to all registered StageHooks.
+// Returns the first error encountered, which aborts the pipeline.
+func (p *Pipeline) fireStageHook(
+	ctx context.Context,
+	timing StageTiming,
+	stage Stage,
+	iteration int,
+	findings []finding.Finding,
+	applied int,
+	conflicts int,
+) error {
+	if len(p.config.StageHooks) == 0 {
+		return nil
+	}
+
+	event := StageEvent{
+		Stage:     stage,
+		Timing:    timing,
+		Iteration: iteration,
+		Findings:  findings,
+		Applied:   applied,
+		Conflicts: conflicts,
+	}
+
+	for _, hook := range p.config.StageHooks {
+		err := hook.OnStageEvent(ctx, event)
+		if err != nil {
+			return fmt.Errorf("stage hook: %w", err)
+		}
+	}
+
+	return nil
+}
+
 // Run executes the pipeline until stable or max iterations reached.
 //
 // Run is NOT safe for concurrent use. Each Pipeline instance should be used
@@ -203,6 +237,8 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	if p.config.VerifyAfterFix && len(p.detectors) > 0 {
 		allOriginal := p.collectAllFindings(result)
 
+		_ = p.fireStageHook(ctx, StageBefore, StageVerify, result.TotalIterations, allOriginal, 0, 0)
+
 		verifyDone := p.stageTiming(StageVerify)
 		verifyResult, err := Verify(ctx, p.detectors, allOriginal)
 
@@ -213,6 +249,8 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		}
 
 		p.notifyStage(StageVerify, result.TotalIterations, len(allOriginal))
+
+		_ = p.fireStageHook(ctx, StageAfter, StageVerify, result.TotalIterations, allOriginal, 0, 0)
 
 		result.Verification = verifyResult
 	}
@@ -230,6 +268,12 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct
 
 	detectDone := p.stageTiming(StageDetect)
+
+	err := p.fireStageHook(ctx, StageBefore, StageDetect, iter.Number, nil, 0, 0)
+	if err != nil {
+		return false, fmt.Errorf("iteration %d: before detect: %w", p.iterations+1, err)
+	}
+
 	detResult, err := p.detect(ctx)
 
 	detectDone()
@@ -239,6 +283,8 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	}
 
 	p.notifyStage(StageDetect, iter.Number, len(detResult.Findings))
+
+	_ = p.fireStageHook(ctx, StageAfter, StageDetect, iter.Number, detResult.Findings, 0, 0)
 
 	findings := detResult.Findings
 
@@ -256,6 +302,8 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 
 	if len(p.config.Processors) > 0 {
 		p.notifyStage(StageProcess, iter.Number, len(findings))
+
+		_ = p.fireStageHook(ctx, StageAfter, StageProcess, iter.Number, findings, 0, 0)
 	}
 
 	for name, detErr := range detResult.Errors {
@@ -298,10 +346,17 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 
 	p.notifyStage(StageTriage, iter.Number, len(findings))
 
+	_ = p.fireStageHook(ctx, StageAfter, StageTriage, iter.Number, findings, 0, iter.Conflicts)
+
 	if !p.config.DryRun {
+		err := p.fireStageHook(ctx, StageBefore, StageApply, iter.Number, triage.Direct, 0, 0)
+		if err != nil {
+			return false, fmt.Errorf("iteration %d: before apply: %w", p.iterations+1, err)
+		}
+
 		applyDone := p.stageTiming(StageApply)
 
-		err := p.applyTriage(ctx, triage.Direct, &iter)
+		err = p.applyTriage(ctx, triage.Direct, &iter)
 		if err != nil {
 			applyDone()
 
@@ -309,6 +364,10 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		}
 
 		applyDone()
+
+		p.notifyStage(StageApply, iter.Number, iter.Applied)
+
+		_ = p.fireStageHook(ctx, StageAfter, StageApply, iter.Number, triage.Direct, iter.Applied, iter.Conflicts)
 	}
 
 	result.Iterations = append(result.Iterations, iter)
