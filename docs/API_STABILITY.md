@@ -139,6 +139,7 @@ All exported symbols are classified as:
 | `Report.PrettyJSON` / `Filtered` | stable | |
 | `Report.Filter` / `Map` | stable | Transform |
 | `Report.Len` / `CountBySeverity` | stable | Counts |
+| `CountBySeverity` (free function) | **deprecated** | Use `Report.CountBySeverity`. Removed in v1.0.0. |
 
 ### Filter Constructors
 

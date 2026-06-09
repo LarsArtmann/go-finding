@@ -192,7 +192,7 @@ func (p *Pipeline) applyTriage(
 	)
 
 	if p.config.ByteLevelConflictDetection {
-		engine := NewFixEngineWithProviders(p.config.FixProviders...)
+		engine := p.byteConflictEngine()
 		safeFixes, providerErrors = p.filterByFileEdits(ctx, fixes, engine)
 	} else {
 		safeFixes = FilterConflictingFixes(fixes)
@@ -267,6 +267,16 @@ func (p *Pipeline) applyDirectFixes(
 	}
 
 	return appliedFixes, nil
+}
+
+// byteConflictEngine returns a FixEngine with custom providers if configured,
+// otherwise the default engine with standard text-based providers.
+func (p *Pipeline) byteConflictEngine() *FixEngine {
+	if len(p.config.FixProviders) > 0 {
+		return NewFixEngineWithProviders(p.config.FixProviders...)
+	}
+
+	return NewFixEngine()
 }
 
 // filterByFileEdits groups fixes by file, reads each file's content,

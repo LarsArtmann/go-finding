@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"log/slog"
 	"maps"
@@ -66,10 +67,7 @@ func addGeneratedFilter(
 		configs = append(configs, gogenfilter.WithIncludePatterns(incl...))
 	}
 
-	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
-	if pipelineCfg.Logger != nil {
-		logger = pipelineCfg.Logger
-	}
+	logger := cmp.Or(pipelineCfg.Logger, slog.New(slog.NewTextHandler(os.Stderr, nil)))
 
 	filter, err := pipeline.NewGeneratedFileFilter(logger, configs...)
 	if err != nil {
@@ -85,13 +83,7 @@ func addGeneratedFilter(
 // If CLI types is non-empty "all", it maps to FilterAll. Otherwise it
 // parses comma-separated values from CLI or config.
 func parseFilterGenTypes(cliTypes, configTypes string) ([]gogenfilter.FilterOption, error) {
-	typeStr := cliTypes
-	if typeStr == "" {
-		typeStr = configTypes
-	}
-	if typeStr == "" {
-		typeStr = "all"
-	}
+	typeStr := cmp.Or(cliTypes, configTypes, "all")
 
 	parts := strings.Split(typeStr, ",")
 	opts := make([]gogenfilter.FilterOption, 0, len(parts))

@@ -274,13 +274,32 @@ func FuzzDedupKey(f *testing.F) {
 			Position: Position{File: file, Line: line, Column: col},
 		}
 
-		k1, _ := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByID})
-		g.Expect(k1).To(ContainSubstring(id))
+		k1, ok1 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByID}) //nolint:varnamelen
+		if id != "" {
+			g.Expect(ok1).To(BeTrue())
+			g.Expect(k1).To(Equal(id))
+		}
 
-		k2, _ := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition})
-		g.Expect(k2).To(ContainSubstring(file))
+		k2, ok2 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByPosition}) //nolint:varnamelen
+		if file != "" {
+			g.Expect(ok2).To(BeTrue())
+			g.Expect(k2).To(ContainSubstring(file))
+		} else {
+			g.Expect(ok2).To(BeFalse())
+		}
 
-		k3, _ := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule})
-		g.Expect(k3).To(ContainSubstring(rule))
+		k3, ok3 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByRule}) //nolint:varnamelen
+		if file != "" {
+			g.Expect(ok3).To(BeTrue())
+			g.Expect(k3).To(ContainSubstring(rule))
+		} else {
+			g.Expect(ok3).To(BeFalse())
+		}
+
+		if id == "" && file == "" && rule == "" {
+			g.Expect(k1).To(BeEmpty())
+			g.Expect(k2).To(BeEmpty())
+			g.Expect(k3).To(BeEmpty())
+		}
 	})
 }

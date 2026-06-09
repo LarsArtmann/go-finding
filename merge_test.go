@@ -274,6 +274,46 @@ func TestDeduplicateBy_String(t *testing.T) {
 	g.Expect(DeduplicateBy(99).String()).To(Equal("unknown(99)"))
 }
 
+func TestCorrelationScore_IsValid(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		score CorrelationScore
+		want  bool
+	}{
+		{CorrelationScore(0.0), true},
+		{CorrelationScore(0.5), true},
+		{CorrelationScore(1.0), true},
+		{CorrelationScore(-0.1), false},
+		{CorrelationScore(1.1), false},
+	}
+
+	for _, tt := range tests {
+		if tt.score.IsValid() != tt.want {
+			t.Errorf("CorrelationScore(%v).IsValid() = %v, want %v", tt.score, !tt.want, tt.want)
+		}
+	}
+}
+
+func TestCorrelationScore_String(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		score CorrelationScore
+		want  string
+	}{
+		{CorrelationScore(0.0), "0.00"},
+		{CorrelationScore(0.75), "0.75"},
+		{CorrelationScore(1.0), "1.00"},
+	}
+
+	for _, tt := range tests {
+		if tt.score.String() != tt.want {
+			t.Errorf("CorrelationScore(%v).String() = %q, want %q", tt.score, tt.score.String(), tt.want)
+		}
+	}
+}
+
 func collectIDs(r *Report) []string {
 	var ids []string
 

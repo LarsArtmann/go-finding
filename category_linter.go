@@ -1,17 +1,75 @@
 package finding
 
 import (
+	"maps"
+	"slices"
 	"strings"
 	"sync"
 )
 
-// linterCategoriesMu guards concurrent access to linterCategories.
-// The map is read by CategoryForLinter and written by RegisterLinterCategory.
-var linterCategoriesMu sync.RWMutex
+// LinterRegistry maps linter/analyzer names to Categories.
+// The zero value is ready to use. All methods are safe for concurrent use.
+//
+// Use DefaultLinterRegistry for the global registry with built-in mappings,
+// or create isolated registries for testing or custom tool chains.
+type LinterRegistry struct {
+	mu    sync.RWMutex
+	items map[string]Category
+}
 
-// linterCategories maps well-known linter/analyzer names to their default Category.
-// Extend at runtime via RegisterLinterCategory.
-var linterCategories = map[string]Category{
+// NewLinterRegistry creates a registry pre-populated with the given mappings.
+func NewLinterRegistry(items map[string]Category) *LinterRegistry {
+	r := &LinterRegistry{items: make(map[string]Category, len(items))} //nolint:exhaustruct
+	for k, v := range items {
+		r.items[strings.ToLower(k)] = v
+	}
+
+	return r
+}
+
+// Lookup returns the Category for a linter name (case-insensitive).
+// Returns the provided fallback if the name is not registered.
+func (r *LinterRegistry) Lookup(name string, fallback Category) Category {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	if cat, ok := r.items[strings.ToLower(name)]; ok {
+		return cat
+	}
+
+	return fallback
+}
+
+// Register adds or overrides a Category mapping for a linter name.
+func (r *LinterRegistry) Register(name string, cat Category) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if r.items == nil {
+		r.items = make(map[string]Category)
+	}
+
+	r.items[strings.ToLower(name)] = cat
+}
+
+// Names returns all registered linter names in sorted order.
+func (r *LinterRegistry) Names() []string {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	return slices.Sorted(maps.Keys(r.items))
+}
+
+// Clone returns a deep copy of the registry.
+func (r *LinterRegistry) Clone() *LinterRegistry {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	return &LinterRegistry{items: maps.Clone(r.items)} //nolint:exhaustruct
+}
+
+// DefaultLinterRegistry is the global registry with built-in linter→category mappings.
+var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	// Security
 	"gosec":      CategorySecurity,
 	"noctx":      CategorySecurity,
@@ -96,28 +154,18 @@ var linterCategories = map[string]Category{
 
 	// Configuration
 	"gomodguard_v2": CategoryConfiguration,
-}
+})
 
 // CategoryForLinter returns the default Category for a well-known linter or analyzer name.
 // The lookup is case-insensitive. If the name is not registered, it returns CategoryCorrectness.
 // Register custom mappings with RegisterLinterCategory.
 func CategoryForLinter(name string) Category {
-	linterCategoriesMu.RLock()
-	defer linterCategoriesMu.RUnlock()
-
-	if cat, ok := linterCategories[strings.ToLower(name)]; ok {
-		return cat
-	}
-
-	return CategoryCorrectness
+	return DefaultLinterRegistry.Lookup(name, CategoryCorrectness)
 }
 
 // RegisterLinterCategory registers or overrides the Category for a linter name.
 // The name is stored in lowercase for case-insensitive lookup.
 // Safe for concurrent use.
 func RegisterLinterCategory(name string, cat Category) {
-	linterCategoriesMu.Lock()
-	defer linterCategoriesMu.Unlock()
-
-	linterCategories[strings.ToLower(name)] = cat
+	DefaultLinterRegistry.Register(name, cat)
 }

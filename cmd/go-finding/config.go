@@ -29,6 +29,8 @@ type pipelineConfigFile struct {
 	FilterGenTypes   string   `json:"filterGenTypes"   yaml:"filterGenTypes"`
 	GeneratedExclude []string `json:"generatedExclude" yaml:"generatedExclude"`
 	GeneratedInclude []string `json:"generatedInclude" yaml:"generatedInclude"`
+	// ByteLevelConflictDetection enables precise byte-level conflict detection during triage.
+	ByteLevelConflictDetection bool `json:"byteLevelConflictDetection" yaml:"byteLevelConflictDetection"`
 }
 
 type detectorSpec struct {
@@ -179,12 +181,13 @@ func (c pipelineConfigFile) toPipelineConfig() (pipeline.Config, error) {
 	}
 
 	return pipeline.Config{ //nolint:exhaustruct
-		MaxIterations:     maxIter,
-		ParallelDetectors: c.ParallelDetectors,
-		VerifyAfterFix:    c.VerifyAfterFix,
-		Timeout:           t,
-		Metrics:           pipeline.NewMetrics(),
-		DetectorTimeouts:  detectorTimeouts,
+		MaxIterations:              maxIter,
+		ParallelDetectors:          c.ParallelDetectors,
+		VerifyAfterFix:             c.VerifyAfterFix,
+		Timeout:                    t,
+		Metrics:                    pipeline.NewMetrics(),
+		DetectorTimeouts:           detectorTimeouts,
+		ByteLevelConflictDetection: c.ByteLevelConflictDetection,
 	}, nil
 }
 

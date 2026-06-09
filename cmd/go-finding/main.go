@@ -24,22 +24,23 @@ func main() {
 }
 
 type cliFlags struct {
-	dir              string
-	format           string
-	minSev           string
-	maxIter          int
-	parallel         bool
-	verify           bool
-	timeout          time.Duration
-	configFile       string
-	cpuprof          string
-	memprof          string
-	showVer          bool
-	outputFile       string
-	filterGenerated  bool
-	filterGenTypes   string
-	generatedExclude string
-	generatedInclude string
+	dir               string
+	format            string
+	minSev            string
+	maxIter           int
+	parallel          bool
+	verify            bool
+	timeout           time.Duration
+	configFile        string
+	cpuprof           string
+	memprof           string
+	showVer           bool
+	outputFile        string
+	filterGenerated   bool
+	filterGenTypes    string
+	generatedExclude  string
+	generatedInclude  string
+	byteLevelConflict bool
 }
 
 func parseFlags() cliFlags {
@@ -79,6 +80,10 @@ func parseFlags() cliFlags {
 	flag.StringVar(
 		&f.generatedInclude, "generated-include", "",
 		"comma-separated glob patterns restricting generated-filtering scope",
+	)
+	flag.BoolVar(
+		&f.byteLevelConflict, "byte-level-conflict", false,
+		"enable precise byte-level conflict detection for overlapping fixes",
 	)
 	flag.Parse()
 
@@ -127,6 +132,10 @@ func run() int {
 	}
 
 	pipelineCfg.GracefulDegradation = true
+
+	if f.byteLevelConflict || cfg.ByteLevelConflictDetection {
+		pipelineCfg.ByteLevelConflictDetection = true
+	}
 
 	if f.filterGenerated || cfg.FilterGenerated {
 		if err := addGeneratedFilter(
