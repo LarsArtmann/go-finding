@@ -75,7 +75,7 @@ func ioErrorAt(msg string, err error, path string) error {
 // Apply applies the given fixes to files and returns the number of successful fixes.
 // If an error occurs, all previously modified files are rolled back to their backups.
 func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, error) {
-	applied, _, err := a.ApplyWithDetails(ctx, fixes)
+	applied, _, _, err := a.ApplyWithShiftMap(ctx, fixes)
 
 	return applied, err
 }
@@ -87,6 +87,71 @@ func (a *FixApplier) ApplyWithDetails(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) (int, []finding.Finding, error) {
+	applied, _, _, err := a.ApplyWithShiftMap(ctx, fixes)
+
+	return applied, fixes, err
+}
+
+// ApplyWithShiftMap applies fixes and returns the count, applied findings,
+// a per-file line shift map, and any error. The shift map can be used to
+// update remaining findings' line numbers after fixes are applied.
+func (a *FixApplier) ApplyWithShiftMap(
+	ctx context.Context,
+	fixes []finding.Finding,
+) (int, []finding.Finding, map[string]*LineShiftMap, error) {
+	byFile := a.groupFindingsBySafePath(fixes)
+
+	var (
+		applied   []finding.Finding
+		modified  []string
+		shiftMaps = make(map[string]*LineShiftMap)
+	)
+
+	paths := slices.Collect(maps.Keys(byFile))
+	slices.Sort(paths)
+
+	for _, path := range paths {
+		fileFixes := byFile[path]
+
+		err := CheckCanceledWithMsg(ctx, "fix application cancelled")
+		if err != nil {
+			_ = a.backup.RollbackAll(modified)
+
+			return len(applied), applied, shiftMaps, err
+		}
+
+		if a.backup.IsEnabled() {
+			err := a.backup.Backup(path)
+			if err != nil {
+				_ = a.backup.RollbackAll(modified)
+
+				return len(applied), applied, shiftMaps, finding.NewIOError("backup "+path, err)
+			}
+		}
+
+		fileApplied, shiftMap, err := a.applyToFile(path, fileFixes)
+		if err != nil {
+			if a.backup.IsEnabled() {
+				_ = a.backup.Restore(path)
+			}
+
+			_ = a.backup.RollbackAll(modified)
+
+			return len(applied), applied, shiftMaps, finding.NewConflictError("apply to "+path, err)
+		}
+
+		modified = append(modified, path)
+		applied = append(applied, fileApplied...)
+
+		a.recordShiftMap(shiftMap, fileFixes, shiftMaps)
+	}
+
+	return len(applied), applied, shiftMaps, nil
+}
+
+// groupFindingsBySafePath groups findings by their resolved filesystem path,
+// skipping findings without a file or with unsafe path traversal.
+func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string][]finding.Finding {
 	byFile := make(map[string][]finding.Finding)
 
 	for _, f := range fixes {
@@ -100,8 +165,6 @@ func (a *FixApplier) ApplyWithDetails(
 
 		cleanRoot := filepath.Clean(a.rootDir)
 
-		// Resolve symlinks to prevent path traversal through symbolic links.
-		// If EvalSymlinks fails (broken symlink, permission denied), skip the file.
 		resolved, err := filepath.EvalSymlinks(cleanPath)
 		if err == nil {
 			cleanPath = resolved
@@ -120,67 +183,56 @@ func (a *FixApplier) ApplyWithDetails(
 		byFile[path] = append(byFile[path], f)
 	}
 
-	var (
-		applied  []finding.Finding
-		modified []string
-	)
+	return byFile
+}
 
-	paths := slices.Collect(maps.Keys(byFile))
-	slices.Sort(paths)
-
-	for _, path := range paths {
-		fileFixes := byFile[path]
-
-		err := CheckCanceledWithMsg(ctx, "fix application cancelled")
-		if err != nil {
-			_ = a.backup.RollbackAll(modified)
-
-			return len(applied), applied, err
-		}
-
-		if a.backup.IsEnabled() {
-			err := a.backup.Backup(path)
-			if err != nil {
-				_ = a.backup.RollbackAll(modified)
-
-				return len(applied), applied, finding.NewIOError("backup "+path, err)
-			}
-		}
-
-		fileApplied, err := a.applyToFile(path, fileFixes)
-		if err != nil {
-			if a.backup.IsEnabled() {
-				_ = a.backup.Restore(path)
-			}
-
-			_ = a.backup.RollbackAll(modified)
-
-			return len(applied), applied, finding.NewConflictError("apply to "+path, err)
-		}
-
-		modified = append(modified, path)
-		applied = append(applied, fileApplied...)
+// recordShiftMap stores the shift map indexed by relative file path.
+func (*FixApplier) recordShiftMap(
+	shiftMap *LineShiftMap,
+	fileFixes []finding.Finding,
+	shiftMaps map[string]*LineShiftMap,
+) {
+	if shiftMap == nil || len(shiftMap.entries) == 0 {
+		return
 	}
 
-	return len(applied), applied, nil
+	var relPath string
+
+	for _, f := range fileFixes {
+		if f.Position.File != "" {
+			relPath = f.Position.File
+
+			break
+		}
+	}
+
+	if relPath != "" {
+		shiftMaps[relPath] = shiftMap
+	}
 }
 
 // applyToFile applies fixes to a single file using byte-level edits.
-func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]finding.Finding, error) {
+// Returns the applied findings and an optional line shift map.
+func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]finding.Finding, *LineShiftMap, error) {
 	info, err := os.Stat(path)
 	if err != nil {
-		return nil, ioErrorAt("stat file", err, path)
+		return nil, nil, ioErrorAt("stat file", err, path)
 	}
 
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return nil, ioErrorAt("read file", err, path)
+		return nil, nil, ioErrorAt("read file", err, path)
 	}
 
-	appliedFixes, _, newContent, resolveErrors := a.engine.ApplyWithConflicts(content, fixes)
+	appliedFixes, appliedEdits, _, newContent, resolveErrors := a.engine.ApplyWithConflicts(content, fixes)
 
 	if len(appliedFixes) == 0 {
-		return nil, errors.Join(resolveErrors...)
+		return nil, nil, errors.Join(resolveErrors...)
+	}
+
+	var shiftMap *LineShiftMap
+	if len(appliedEdits) > 0 {
+		shiftMap = NewLineShiftMap(content, appliedEdits)
 	}
 
 	err = os.WriteFile( //nolint:gosec // intentional file write
@@ -189,8 +241,8 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]findin
 		info.Mode(),
 	)
 	if err != nil {
-		return nil, ioErrorAt("write file", err, path)
+		return nil, nil, ioErrorAt("write file", err, path)
 	}
 
-	return appliedFixes, errors.Join(resolveErrors...)
+	return appliedFixes, shiftMap, errors.Join(resolveErrors...)
 }

@@ -47,20 +47,21 @@ func (e *FixEngine) Apply(
 	content []byte,
 	fixes []finding.Finding,
 ) ([]byte, []finding.Finding, int) {
-	applied, _, result, _ := e.ApplyWithConflicts(content, fixes)
+	applied, _, conflicts, result, _ := e.ApplyWithConflicts(content, fixes)
+	_ = conflicts
 
 	return result, applied, len(applied)
 }
 
-// ApplyWithConflicts applies findings and returns applied findings, conflicts, modified content,
-// and any provider errors encountered during edit resolution.
+// ApplyWithConflicts applies findings and returns applied findings, applied edits,
+// conflicts, modified content, and any provider errors encountered during edit resolution.
 // Conflicts are findings whose edits overlap with earlier edits — they are skipped.
 func (e *FixEngine) ApplyWithConflicts(
 	content []byte,
 	fixes []finding.Finding,
-) ([]finding.Finding, []ConflictInfo, []byte, []error) {
+) ([]finding.Finding, []FixEdit, []ConflictInfo, []byte, []error) {
 	if len(fixes) == 0 {
-		return nil, nil, content, nil
+		return nil, nil, nil, content, nil
 	}
 
 	var (
@@ -82,7 +83,7 @@ func (e *FixEngine) ApplyWithConflicts(
 	}
 
 	if len(allEdits) == 0 {
-		return nil, nil, content, resolveErrors
+		return nil, nil, nil, content, resolveErrors
 	}
 
 	// Sort descending by offset so later edits don't shift earlier ones.
@@ -90,9 +91,9 @@ func (e *FixEngine) ApplyWithConflicts(
 		return cmp.Compare(b.Offset, a.Offset)
 	})
 
-	applied, conflicts, result := e.applyEditsWithConflicts(content, allEdits)
+	applied, appliedEdits, conflicts, result := e.applyEditsWithConflicts(content, allEdits)
 
-	return applied, conflicts, result, resolveErrors
+	return applied, appliedEdits, conflicts, result, resolveErrors
 }
 
 // resolveEdits tries each provider in order and returns edits from the first match.
@@ -127,7 +128,7 @@ func (e *FixEngine) resolveEdits(content []byte, f finding.Finding) ([]FixEdit, 
 func (*FixEngine) applyEditsWithConflicts(
 	content []byte,
 	edits []FixEdit,
-) ([]finding.Finding, []ConflictInfo, []byte) {
+) ([]finding.Finding, []FixEdit, []ConflictInfo, []byte) {
 	var (
 		applied      []finding.Finding
 		appliedEdits []FixEdit
@@ -177,5 +178,5 @@ func (*FixEngine) applyEditsWithConflicts(
 		appliedEdits = append(appliedEdits, edit)
 	}
 
-	return applied, conflicts, result
+	return applied, appliedEdits, conflicts, result
 }

@@ -473,7 +473,7 @@ func TestFixEngine_ApplyWithConflicts_NoConflicts(t *testing.T) {
 	engine := NewFixEngine()
 	content, fixes := twoLineRangeFixes()
 
-	applied, conflicts, result, _ := engine.ApplyWithConflicts(content, fixes)
+	applied, _, conflicts, result, _ := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(applied).To(HaveLen(2))
 	g.Expect(conflicts).To(BeEmpty())
 	g.Expect(string(result)).To(Equal("line1: fix1\nline2: old\nline3: fix2"))
@@ -488,7 +488,7 @@ func TestFixEngine_ApplyWithConflicts_OverlappingEdits(t *testing.T) {
 
 	fixes := overlappingOffsetFixes()
 
-	applied, conflicts, result, _ := engine.ApplyWithConflicts(content, fixes)
+	applied, _, conflicts, result, _ := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(applied).To(HaveLen(1))
 	g.Expect(applied[0].ID).To(Equal("fix1"))
 	g.Expect(conflicts).To(HaveLen(1))
@@ -627,7 +627,7 @@ func TestFixEngine_MultipleLineEdits_SameFile(t *testing.T) {
 		makeRangeFix("a.go", 4, 7, 4, 10, "qux", "FIXED4"),
 	}
 
-	applied, conflicts, result, providerErrors := engine.ApplyWithConflicts(content, fixes)
+	applied, _, conflicts, result, providerErrors := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(providerErrors).To(BeEmpty())
 	g.Expect(applied).To(HaveLen(4))
 	g.Expect(conflicts).To(BeEmpty())
@@ -649,7 +649,7 @@ func TestFixEngine_LineEdits_DifferentLengths(t *testing.T) {
 		makeRangeFix("a.go", 3, 3, 3, 9, "longer", "X"),
 	}
 
-	applied, conflicts, result, providerErrors := engine.ApplyWithConflicts(content, fixes)
+	applied, _, conflicts, result, providerErrors := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(providerErrors).To(BeEmpty())
 	g.Expect(applied).To(HaveLen(2))
 	g.Expect(conflicts).To(BeEmpty())

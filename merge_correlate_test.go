@@ -7,6 +7,15 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+func makeRangeFinding(id, tool, rule, file string, startLine, endLine int) Finding {
+	return Finding{
+		ID: id, ToolName: tool, Rule: rule,
+		Severity: SeverityError, Message: "test",
+		Position: Position{File: file, Line: startLine},
+		Range:    &Range{Start: Position{File: file, Line: startLine}, End: Position{File: file, Line: endLine}},
+	}
+}
+
 func TestCorrelate(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
@@ -33,6 +42,63 @@ func TestCorrelate(t *testing.T) {
 
 	g.Expect(hasID("1")).To(BeTrue())
 	g.Expect(hasID("2")).To(BeTrue())
+}
+
+func TestCorrelate_OverlappingRanges(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	findings := []Finding{
+		makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
+		makeRangeFinding("2", "staticcheck", "r2", "a.go", 15, 25),
+		makeRangeFinding("3", "govet", "r3", "a.go", 30, 40),
+	}
+
+	correlations := Correlate(findings)
+	g.Expect(correlations).To(HaveLen(1))
+	g.Expect(correlations[0].Reason).To(Equal("overlapping ranges"))
+	g.Expect(correlations[0].Score).To(BeNumerically(">", 0.5))
+}
+
+func TestCorrelate_PointWithinRange(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	findings := []Finding{
+		makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
+		makeFinding("2", "staticcheck", "r2", "a.go", 15),
+		makeFinding("3", "staticcheck", "r3", "a.go", 50),
+	}
+
+	correlations := Correlate(findings)
+	g.Expect(correlations).To(HaveLen(1))
+	g.Expect(correlations[0].Reason).To(Equal("point within range"))
+}
+
+func TestCorrelate_NonOverlappingRanges(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	findings := []Finding{
+		makeRangeFinding("1", "govet", "r1", "a.go", 10, 15),
+		makeRangeFinding("2", "staticcheck", "r2", "a.go", 20, 25),
+	}
+
+	correlations := Correlate(findings)
+	g.Expect(correlations).To(BeEmpty())
+}
+
+func TestCorrelate_SameToolFiltered(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	findings := []Finding{
+		makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
+		makeRangeFinding("2", "govet", "r2", "a.go", 15, 25),
+	}
+
+	correlations := Correlate(findings)
+	g.Expect(correlations).To(BeEmpty())
 }
 
 func TestCorrelate_TooFewFindings(t *testing.T) {

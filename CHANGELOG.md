@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-06-09
+
+### Added
+
+- **Report.Findings deprecation (ADR 10)** — `Findings` field marked `// Deprecated:`. Internal code uses `readFindings()` helper for thread-safe access. CLI output uses `FindingsSnapshot()`. Field will be unexported in v1.0.0.
+- **Pipeline stage hooks** — `StageHook` interface with `Before`/`After` methods, `StageHookFunc` adapter, `StageEvent` struct. Wired into detect, process, triage, apply, and verify stages. Pre-hook errors abort pipeline. Configured via `Config.StageHooks`.
+- **LineShiftMap** — Byte-offset-aware line shift tracking after fix edits. `NewLineShiftMap(content, edits)` builds a shift map from `[]FixEdit`, `ShiftedLine(original)` maps original line numbers to post-edit line numbers. Uses `buildLineOffsetIndex` for O(1) line-to-byte lookup.
+- **IntervalIndex[T]** — Generic sorted-scan interval overlap queries with O(log n + k) complexity. `NewIntervalIndex[T](intervals)` + `Query(start, end)` returns all overlapping `[Start, End)` intervals. Uses binary search cutoff + linear scan.
+- **MergeIter()** — Streaming `iter.Seq[Finding]` merge that reads each report's findings under `RLock` via `readFindings()`, clones each finding, and supports early termination via iterator break.
+- **ConfigFile** — `pipeline/config_file.go` with `ConfigFile` struct, `ConfigFromFile(path)`, `ConfigFromReader(r)`. Parses YAML/JSON config for timeout, max iterations, severity filtering.
+- **DetectorRegistry** — Thread-safe named detector constructor registry with `Register`, `MustRegister`, `Build`, `BuildAll`, `Names`, `Has`. Sentinel errors with `%w` wrapping for typed error matching.
+- **MiddlewareFunc / ComposeMiddleware** — Composable pipeline middleware pattern. `MiddlewareFunc func(next RunFunc) RunFunc` wraps pipeline execution for cross-cutting concerns. `ComposeMiddleware` chains multiple middleware in registration order.
+- **FixStrategyResolver** — `FixStrategyResolver` interface with `CanAutoApply(strategy) bool`. `DefaultResolver` delegates to `FixStrategy.CanAutoApply()`.
+- **Benchmark CI job** — Separate `benchmark` job in `.github/workflows/ci.yml` running `go test -bench`.
+- **LinterRegistry** — `LinterRegistry` type for linter→category mapping inspection.
+- **AnalyzerDetector** — `analysis.AnalyzerDetector` adapter wrapping `go/analysis.Analyzer` as a `Detector`.
+- **Byte-level conflict tests** — Integration tests for `ByteLevelConflictDetection` config option.
+
+### Changed
+
+- **Detector moved to root package** — `Detector` interface, `DetectorFunc`, `NamedDetectorFunc` moved from `pipeline/` to root package. Pipeline re-exports as type aliases for zero-breaking-change backward compatibility.
+- **SeverityAliases map** — `SeverityAliases` exported map with 9 common aliases (warn, high, medium, low, fatal, critical, note, advice, suggestion). `ParseSeverity` checks aliases after canonical names.
+- **CategoryForLinter registry** — 70+ linter→category mappings with case-insensitive lookup. Thread-safe via `sync.RWMutex`.
+- **ToolAdapter[O] generic** — `NewToolAdapter(name, run, parse, convert)` wires exec→parse→convert pipeline.
+- **Pipeline single-use enforced** — `Pipeline.Run()` returns `errAlreadyRan` on second invocation.
+- **Merge deprecated** — `Report.Merge()` deprecated in favor of `MergeInto()`.
+
+### Fixed
+
+- **linterCategories data race** — Added `sync.RWMutex` guarding the global `linterCategories` map. Race detector now passes 30/30 consecutive runs.
+- **Test deduplication** — Unified 5 separate test groups into table-driven tests (RegisterLinterCategory, DeduplicateStrategies, Metrics_RecordFixes, Finding_Validate).
+- **Dead code removed** — `Iteration.Failed` field removed (declared but never written).
+- **5 lint issues fixed** — perfsprint (errors.New), revive (MiddlewareFunc rename), modernize (slices.Backward), wsl_v5, gci formatting.
+
 ## [0.6.1] - 2026-06-09
 
 ### Fixed

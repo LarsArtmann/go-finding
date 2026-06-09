@@ -88,7 +88,7 @@ func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 
 	fixes := []finding.Finding{makeFixFinding("1", "old", "new", "", 0)}
 
-	applied, err := applier.applyToFile(filepath.Join(tempDir, "missing.go"), fixes)
+	applied, _, err := applier.applyToFile(filepath.Join(tempDir, "missing.go"), fixes)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 	g.Expect(applied).To(BeNil())
@@ -105,7 +105,7 @@ func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 
 	fixes := []finding.Finding{makeFixFinding("1", "nonexistent_code", "replacement", "", 0)}
 
-	applied, err := applier.applyToFile(testFile, fixes)
+	applied, _, err := applier.applyToFile(testFile, fixes)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(applied).To(BeNil())
 }
@@ -154,7 +154,7 @@ func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
 
 	fixes := []finding.Finding{makeFixFinding("1", "old()", "new()", "", 0)}
 
-	applied, err := applier.applyToFile(testFile, fixes)
+	applied, _, err := applier.applyToFile(testFile, fixes)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 
@@ -342,7 +342,7 @@ func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 		},
 	}
 
-	applied, err := applier.applyToFile(testFile, fixes)
+	applied, _, err := applier.applyToFile(testFile, fixes)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(applied).To(BeNil())
 

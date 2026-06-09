@@ -199,7 +199,7 @@ func FilterConflictingEdits(
 	fixes []finding.Finding,
 	engine *FixEngine,
 ) ([]finding.Finding, []error) {
-	_, conflicts, _, providerErrors := engine.ApplyWithConflicts(content, fixes)
+	_, _, conflicts, _, providerErrors := engine.ApplyWithConflicts(content, fixes) //nolint:dogsled
 	if len(conflicts) == 0 && len(providerErrors) == 0 {
 		return fixes, nil
 	}

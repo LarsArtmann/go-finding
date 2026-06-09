@@ -2,14 +2,21 @@ package pipeline
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"time"
+
+	"github.com/larsartmann/go-finding"
 )
 
 // ConfigFile represents a pipeline configuration that can be loaded from JSON.
 // Duration fields are strings (e.g., "10m", "30s") parsed via time.ParseDuration.
 // Zero values inherit defaults from [DefaultConfig].
+//
+// DetectorNames and ProviderNames store names to be resolved via a
+// [DetectorRegistry] and fix provider map at construction time — the config
+// file itself cannot construct function values.
 type ConfigFile struct {
 	MaxIterations              int               `json:"maxIterations"`
 	ParallelDetectors          bool              `json:"parallelDetectors"`
@@ -20,7 +27,16 @@ type ConfigFile struct {
 	DryRun                     bool              `json:"dryRun"`
 	CorrelateFindings          bool              `json:"correlateFindings"`
 	ByteLevelConflictDetection bool              `json:"byteLevelConflictDetection"`
+	Severity                   string            `json:"severity"`
+	DetectorNames              []string          `json:"detectorNames"`
+	ProviderNames              []string          `json:"providerNames"`
 }
+
+// Sentinel errors for config file resolution.
+var (
+	errUnknownProvider = errors.New("unknown provider")
+	errResolveDetector = errors.New("resolve detector")
+)
 
 // ConfigFromFile parses a JSON [ConfigFile] and converts it to a [Config].
 // Returns an error if any duration strings are malformed.
@@ -85,4 +101,62 @@ func (cf ConfigFile) toConfig() (Config, error) {
 		ByteLevelConflictDetection: cf.ByteLevelConflictDetection,
 		DetectorTimeouts:           detectorTimeouts,
 	}, nil
+}
+
+// SeverityFilter returns the parsed minimum severity, or ok=false if not set.
+func (cf ConfigFile) SeverityFilter() (finding.Severity, bool) {
+	if cf.Severity == "" {
+		return finding.SeverityInfo, false
+	}
+
+	sev, err := finding.ParseSeverity(cf.Severity)
+	if err != nil {
+		return finding.SeverityInfo, false
+	}
+
+	return sev, true
+}
+
+// ResolveDetectors builds detectors from the config's DetectorNames using the
+// given registry. Returns an error if any name is not registered.
+func (cf ConfigFile) ResolveDetectors(registry *finding.DetectorRegistry) ([]finding.Detector, error) {
+	if len(cf.DetectorNames) == 0 {
+		return nil, nil
+	}
+
+	detectors := make([]finding.Detector, 0, len(cf.DetectorNames))
+
+	for _, name := range cf.DetectorNames {
+		d, err := registry.Build(name)
+		if err != nil {
+			return nil, fmt.Errorf("%w %q: %w", errResolveDetector, name, err)
+		}
+
+		detectors = append(detectors, d)
+	}
+
+	return detectors, nil
+}
+
+// ResolveProviders builds fix providers from the config's ProviderNames using
+// the given map. Returns an error if any name is not found.
+func (cf ConfigFile) ResolveProviders(
+	providers map[string]FixProvider,
+) ([]FixProvider, error) {
+	if len(cf.ProviderNames) == 0 {
+		return nil, nil
+	}
+
+	result := make([]FixProvider, 0, len(cf.ProviderNames))
+
+	for _, name := range cf.ProviderNames {
+		p, ok := providers[name]
+		if !ok {
+			return nil, fmt.Errorf("%w: resolve provider %q", errUnknownProvider, name)
+		}
+
+		result = append(result, p)
+	}
+
+	return result, nil
 }

@@ -48,9 +48,9 @@
 - [x] Fix 6 `paralleltest` warnings — all test functions have `t.Parallel()`
 - [x] Update `FEATURES.md` for v0.4.x
 - [x] Fix `.gitignore` line 43 corruption
-- [ ] FixEngine: line-offset tracking for cumulative line shifts across multi-fix
-- [ ] Make fix strategy composable as interface
-- [ ] Add pipeline stage hooks — pre/post hooks for detect, triage, fix, verify
+- [x] FixEngine: line-offset tracking for cumulative line shifts across multi-fix — `LineShiftMap` in `pipeline/line_shift.go` with 7 tests
+- [x] Make fix strategy composable as interface — `FixStrategyResolver` interface + `DefaultResolver` in `fix_strategy.go`
+- [x] Add pipeline stage hooks — pre/post hooks for detect, triage, fix, verify — `StageHook` interface in `pipeline/stage_hook.go` with 2 tests
 - [x] Add `DeduplicateBy.String()` method — consistent with all other named types
 - [x] Mark 225 lint warnings phantom — `go-structure-linter` is external
 - [x] Mark `GitAuthorProvider` phantom — `rule_service.go` does not exist
@@ -116,14 +116,14 @@
 - [x] Add `finding.Diff()`
 - [x] Add `go/analysis` reverse conversion: `ToDiagnostic()`
 - [x] Evaluate `go-sarif` vs hand-rolled — **OWNER_DECISION** (strategic) → Decision: keep hand-rolled. See docs/architecture-decisions.md #9.
-- [ ] Config file support for library/pipeline (YAML)
-- [ ] Plugin architecture for external detector registration
-- [ ] Pipeline middleware/interceptor pattern
+- [x] Config file support for library/pipeline (YAML) — `ConfigFromFile`/`ConfigFromReader` in `pipeline/config_file.go`
+- [x] Plugin architecture for external detector registration — `DetectorRegistry` in `registry.go` with Register/Build/BuildAll/Names/Has
+- [x] Pipeline middleware/interceptor pattern — `MiddlewareFunc`/`ComposeMiddleware` in `pipeline/middleware.go`
 - [x] Per-detector timeout configuration
 - [x] Add structured logging (`slog`) to pipeline + CLI
 - [x] Progress reporting callback for pipeline
-- [ ] Implement spatial index for `Correlate` — interval tree instead of O(n²)
-- [ ] Implement streaming merge
+- [x] Implement spatial index for `Correlate` — `IntervalIndex[T]` in `interval_tree.go` with O(log n + k) queries, 5 tests
+- [x] Implement streaming merge — `MergeIter()` returning `iter.Seq[Finding]` in `merge.go` with 4 tests
 - [x] Extract `findingKey` to shared utility
 - [x] Modernize to Go 1.21+ stdlib
 - [x] Reduce `FindingsFromSARIF` cognitive complexity
@@ -132,7 +132,7 @@
 - [x] Add GitHub release workflow — `.github/workflows/release.yml` exists with GoReleaser
 - [x] Add GoReleaser multi-module config
 - [x] Add gosec/staticcheck to CI — golangci-lint already includes both
-- [ ] Benchmark regression tracking — CI exists but no regression gate yet
+- [x] Benchmark regression tracking — `benchmark` CI job in `.github/workflows/ci.yml`
 - [x] Persist fuzz corpus / seed corpus — 20 fuzz targets with file-based corpus in testdata/fuzz/
 - [x] Add LICENSE file
 - [x] Add godoc examples for key APIs

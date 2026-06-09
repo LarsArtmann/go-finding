@@ -226,12 +226,22 @@ func (p *Pipeline) applyTriage(
 		return nil
 	}
 
-	applied, err := p.applyDirectFixes(ctx, safeFixes)
+	applied, shiftMaps, err := p.applyDirectFixes(ctx, safeFixes)
 	if err != nil {
 		return fmt.Errorf("apply fixes: %w", err)
 	}
 
 	iter.Applied = len(applied)
+
+	// Shift remaining findings' line numbers based on applied edits.
+	for file, shiftMap := range shiftMaps {
+		for i := range iter.findings {
+			f := &iter.findings[i]
+			if f.Position.File == file {
+				f.Position.Line = shiftMap.ShiftedLine(f.Position.Line)
+			}
+		}
+	}
 
 	if p.config.OnFix != nil {
 		appliedSet := make(map[string]struct{}, len(applied))
@@ -252,21 +262,22 @@ func (p *Pipeline) applyTriage(
 	return nil
 }
 
-// applyDirectFixes applies deterministic fixes to files.
+// applyDirectFixes applies deterministic fixes to files and returns the applied findings
+// and a per-file line shift map for updating remaining findings' line numbers.
 func (p *Pipeline) applyDirectFixes(
 	ctx context.Context,
 	fixes []finding.Finding,
-) ([]finding.Finding, error) {
-	applied, appliedFixes, err := p.applier.ApplyWithDetails(ctx, fixes)
+) ([]finding.Finding, map[string]*LineShiftMap, error) {
+	applied, appliedFixes, shiftMaps, err := p.applier.ApplyWithShiftMap(ctx, fixes)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if p.metrics != nil && applied > 0 {
 		p.metrics.RecordFixes(uint(applied))
 	}
 
-	return appliedFixes, nil
+	return appliedFixes, shiftMaps, nil
 }
 
 // byteConflictEngine returns a FixEngine with custom providers if configured,

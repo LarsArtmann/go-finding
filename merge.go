@@ -22,6 +22,9 @@ const mergedToolName = "merged"
 // emptyToolName is the ToolInfo.Name used for empty reports from Combine.
 const emptyToolName = "empty"
 
+// reasonOverlappingRanges is the correlation reason for overlapping range findings.
+const reasonOverlappingRanges = "overlapping ranges"
+
 // Combine merges multiple reports into a new report with optional deduplication.
 // The resulting report has:
 //   - Tool.Name = mergedToolName (unless there's only one report)
@@ -219,24 +222,19 @@ type Correlation struct {
 }
 
 // Correlate finds potentially related findings across tools.
-// Currently uses simple heuristics: same file + nearby lines.
+// Uses two strategies depending on the data:
+//   - For findings with Range: uses IntervalIndex for O(log n + k) overlap queries.
+//   - For point-only findings: uses line-proximity heuristics (same file + nearby lines).
 //
 // This can be used standalone or enabled in Pipeline via Config.CorrelateFindings.
 // When enabled, the pipeline populates PipelineResult.Correlations automatically.
 //
 // # Complexity
 //
-// Findings are grouped by file, then sorted by line. For each finding, the inner
-// loop scans forward until the line difference exceeds maxLineDiff (5 lines),
-// then breaks. For well-distributed findings this is effectively O(n) per file.
+// For range-based findings: O(n log n) to build the index, O(log n + k) per query.
+// For point-based findings: O(n) per file with sorted early-break.
 //
-// Worst case: if many findings cluster on the same lines in one file (e.g., 1000
-// findings on line 1), the inner loop degrades to O(k²) for that file where k is
-// the number of findings in that file. The maxCorrelations constant (10,000) caps
-// total output, but silently drops correlations beyond the cap.
-//
-// For datasets exceeding ~50K findings in a single file, consider pre-filtering
-// or raising maxCorrelations (requires source modification).
+// The maxCorrelations constant (10,000) caps total output across both strategies.
 func Correlate(findings []Finding) []Correlation {
 	var correlations []Correlation
 
@@ -247,42 +245,198 @@ func Correlate(findings []Finding) []Correlation {
 	slices.Sort(files)
 
 	for _, file := range files {
+		if len(correlations) >= maxCorrelations {
+			break
+		}
+
 		fileFindings := byFile[file]
 		if len(fileFindings) < minFindingsInFile {
 			continue
 		}
 
-		slices.SortFunc(fileFindings, func(a, b Finding) int {
-			return a.Position.Line - b.Position.Line
-		})
+		var withRange []Finding
 
-		for i, f1 := range fileFindings {
-			for _, f2 := range fileFindings[i+1:] {
-				if f1.ToolName == f2.ToolName {
-					continue
-				}
+		var withoutRange []Finding
 
-				lineDiff := f2.Position.Line - f1.Position.Line
-				if lineDiff > maxLineDiff {
-					break
-				}
+		for _, f := range fileFindings {
+			if f.HasRange() {
+				withRange = append(withRange, f)
+			} else {
+				withoutRange = append(withoutRange, f)
+			}
+		}
 
-				confidence := 1.0 - (float64(lineDiff) / correlationScoreScale)
-				if confidence > minCorrelationScore {
-					correlations = append(correlations, Correlation{
-						FindingIDs: []string{f1.ID, f2.ID},
-						Reason:     "same file, nearby lines",
-						Score:      CorrelationScore(confidence),
-					})
-					if len(correlations) >= maxCorrelations {
-						return correlations
-					}
+		if len(withRange) >= minFindingsInFile {
+			correlations = correlateByOverlap(withRange, correlations)
+		}
+
+		if len(withoutRange) >= minFindingsInFile {
+			correlations = correlateByProximity(withoutRange, correlations)
+		}
+
+		// Cross-correlate range and point findings.
+		if len(withRange) > 0 && len(withoutRange) > 0 {
+			correlations = correlateRangesAndPoints(withRange, withoutRange, correlations)
+		}
+	}
+
+	return correlations
+}
+
+// correlateByOverlap uses IntervalIndex to find overlapping range-based findings.
+func correlateByOverlap(findings []Finding, correlations []Correlation) []Correlation {
+	intervals := make([]Interval[int], len(findings))
+	for i, f := range findings {
+		intervals[i] = Interval[int]{
+			Start: f.Range.Start.Line,
+			End:   f.Range.End.Line + 1, // half-open
+			Value: i,
+		}
+	}
+
+	idx := NewIntervalIndex(intervals)
+
+	for i, f1 := range findings {
+		if f1.Range == nil {
+			continue
+		}
+
+		start := f1.Range.Start.Line
+		end := f1.Range.End.Line + 1
+
+		overlaps := idx.Query(start, end)
+		for _, ov := range overlaps {
+			j := ov.Value
+			if j <= i {
+				continue
+			}
+
+			f2 := findings[j]
+			if f1.ToolName == f2.ToolName {
+				continue
+			}
+
+			overlapLines := overlapLength(
+				f1.Range.Start.Line, f1.Range.End.Line,
+				f2.Range.Start.Line, f2.Range.End.Line,
+			)
+			shortest := min(f1.Range.End.Line-f1.Range.Start.Line, f2.Range.End.Line-f2.Range.Start.Line) + 1
+
+			var score float64
+			if shortest > 0 {
+				score = float64(overlapLines) / float64(shortest)
+			}
+
+			if score > minCorrelationScore {
+				correlations = append(correlations, Correlation{
+					FindingIDs: []string{f1.ID, f2.ID},
+					Reason:     reasonOverlappingRanges,
+					Score:      CorrelationScore(score),
+				})
+				if len(correlations) >= maxCorrelations {
+					return correlations
 				}
 			}
 		}
 	}
 
 	return correlations
+}
+
+// correlateByProximity uses line-proximity heuristics for point-based findings.
+func correlateByProximity(findings []Finding, correlations []Correlation) []Correlation {
+	slices.SortFunc(findings, func(a, b Finding) int {
+		return a.Position.Line - b.Position.Line
+	})
+
+	for i, f1 := range findings {
+		for _, f2 := range findings[i+1:] {
+			if f1.ToolName == f2.ToolName {
+				continue
+			}
+
+			lineDiff := f2.Position.Line - f1.Position.Line
+			if lineDiff > maxLineDiff {
+				break
+			}
+
+			confidence := 1.0 - (float64(lineDiff) / correlationScoreScale)
+			if confidence > minCorrelationScore {
+				correlations = append(correlations, Correlation{
+					FindingIDs: []string{f1.ID, f2.ID},
+					Reason:     "same file, nearby lines",
+					Score:      CorrelationScore(confidence),
+				})
+				if len(correlations) >= maxCorrelations {
+					return correlations
+				}
+			}
+		}
+	}
+
+	return correlations
+}
+
+// correlateRangesAndPoints correlates range-based findings with point-based findings.
+func correlateRangesAndPoints(
+	rangeFindings []Finding,
+	pointFindings []Finding,
+	correlations []Correlation,
+) []Correlation {
+	intervals := make([]Interval[int], len(rangeFindings))
+	for i, f := range rangeFindings {
+		intervals[i] = Interval[int]{
+			Start: f.Range.Start.Line,
+			End:   f.Range.End.Line + 1,
+			Value: i,
+		}
+	}
+
+	idx := NewIntervalIndex(intervals)
+
+	for _, pointFinding := range pointFindings {
+		line := pointFinding.Position.Line
+
+		overlaps := idx.Query(line, line+1)
+		for _, ov := range overlaps {
+			rangeFinding := rangeFindings[ov.Value]
+			if pointFinding.ToolName == rangeFinding.ToolName {
+				continue
+			}
+
+			span := rangeFinding.Range.End.Line - rangeFinding.Range.Start.Line + 1
+
+			var score float64
+			if span > 0 {
+				score = 1.0 - (1.0 / float64(span))
+			}
+
+			if score > minCorrelationScore {
+				correlations = append(correlations, Correlation{
+					FindingIDs: []string{pointFinding.ID, rangeFinding.ID},
+					Reason:     "point within range",
+					Score:      CorrelationScore(score),
+				})
+				if len(correlations) >= maxCorrelations {
+					return correlations
+				}
+			}
+		}
+	}
+
+	return correlations
+}
+
+// overlapLength returns the number of overlapping lines between two ranges.
+func overlapLength(s1, e1, s2, e2 int) int {
+	start := max(s1, s2)
+
+	end := min(e1, e2)
+	if start > end {
+		return 0
+	}
+
+	return end - start + 1
 }
 
 // MergeIter returns an iterator that yields findings from multiple reports
