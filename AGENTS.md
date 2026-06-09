@@ -36,7 +36,10 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `lsp.go` | LSP Diagnostic conversion |
 | `errors.go` | Structured error types (FindingError with categories) |
 | `tag.go` | Tag type with IsStandard/IsValid/String methods |
-| `category.go` | Category constants |
+| `category.go` | Category constants, ParseCategory, MustParseCategory |
+| `category_linter.go` | CategoryForLinter registry with 70+ linter mappings, RegisterLinterCategory |
+| `detector.go` | Detector interface, DetectorFunc, NamedDetectorFunc (moved from pipeline) |
+| `adapter.go` | ToolAdapter[O] generic tool→Finding converter |
 | `id.go` | ID generation utilities |
 | `json.go` | JSON marshaling/unmarshaling |
 | `suppression.go` | Suppression handling with IsActive convenience |
@@ -57,7 +60,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `pipeline/result.go`           | PipelineResult, CompletionReason, Iteration types                                          |
 | `pipeline/stage.go`            | Stage named type with constants for pipeline stages                                        |
 | `pipeline/pipeline.go`         | Pipeline struct, Run, structured logging, OnStage                                          |
-| `pipeline/adapters.go`         | Detector/FindingProcessor interfaces, adapter types, context helpers                       |
+| `pipeline/adapters.go`         | Type aliases to root package (Detector, DetectorFunc, NamedDetectorFunc), FindingProcessor interfaces, ProcessorFunc, NamedProcessorFunc, context helpers |
 | `pipeline/config.go`           | Config struct, DefaultConfig, Validate, DetectorTimeouts, Logger, OnStage                  |
 | `pipeline/conflict.go`         | Fix conflict detection and analysis                                                        |
 | `pipeline/fix_edit.go`         | FixEdit type — byte-level edit operations (Offset, Length, Replacement)                    |
@@ -286,6 +289,15 @@ golangci-lint run ./...                     # Lint
 - **lsp_test.go** — Replaced raw `"go-finding/lsp-severity"` with `LSPSeverityKey` constant
 - **Metadata namespacing** — Documented `"toolName.key"` convention and reserved `"go-finding/"` prefix in finding.go godoc
 - **GoReleaser verified** — `.github/workflows/release.yml` triggers on `v*` tags; `main.version` var exists for ldflags
+
+### Session 7 (2026-06-09) — Consumer Audit Adoption
+
+- **Detector moved to root package** — `Detector` interface, `DetectorFunc`, `NamedDetectorFunc` moved from `pipeline/` to root package; pipeline re-exports as type aliases for zero-breaking-change backward compatibility
+- **SeverityAliases map** — `SeverityAliases` exported map with 9 common aliases (warn, high, medium, low, fatal, critical, note, advice, suggestion); `ParseSeverity` checks aliases after canonical names; replaces 7 duplicated `mapSeverity()` switch statements across consumers
+- **CategoryForLinter registry** — `category_linter.go` with 70+ linter→category mappings (golangci-lint, go analyzers); `CategoryForLinter(name)` with case-insensitive lookup; `RegisterLinterCategory(name, cat)` for runtime overrides; defaults to `CategoryCorrectness` for unknown linters
+- **ParseCategory/MustParseCategory** — `ParseCategory(s)` and `MustParseCategory(s)` in `category.go` following same pattern as ParseSeverity; validates `^[a-z][a-z0-9-]*$` format
+- **ToolAdapter[O] generic** — `adapter.go` with `ToolAdapter[O any]` implementing `Detector`; `NewToolAdapter(name, run, parse, convert)` wires exec→parse→convert pipeline; replaces ~30 files of duplicated adapter code across 5 consumer projects
+- **Lint fixes** — `finding_validate.go` godoc (revive), `merge.go` goconst nolint, `pipeline/fix_applier.go` noinlineerr refactor, `pipeline/retry.go` wrapcheck fix, `.golangci.yml` exclusions for severity.go and category_linter.go
 
 ---
 

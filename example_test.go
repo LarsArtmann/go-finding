@@ -506,3 +506,120 @@ func ExampleGeneratedFileFilter() {
 	// passed: 1
 	// generated-file-filter
 }
+
+func ExampleParseSeverity() {
+	s, err := finding.ParseSeverity("warn")
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println(s)
+
+	s2 := finding.MustParseSeverity("high")
+	fmt.Println(s2)
+
+	// Output:
+	// warning
+	// error
+}
+
+func ExampleCategoryForLinter() {
+	cat := finding.CategoryForLinter("gosec")
+	fmt.Println(cat)
+
+	cat2 := finding.CategoryForLinter("gocyclo")
+	fmt.Println(cat2)
+
+	cat3 := finding.CategoryForLinter("unknown")
+	fmt.Println(cat3)
+
+	// Output:
+	// security
+	// complexity
+	// correctness
+}
+
+func ExampleParseCategory() {
+	cat, err := finding.ParseCategory("security")
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println(cat)
+
+	cat2 := finding.MustParseCategory("error-handling")
+	fmt.Println(cat2)
+
+	// Output:
+	// security
+	// error-handling
+}
+
+func ExampleToolAdapter() {
+	type lintOutput struct {
+		Diagnostics []struct {
+			Rule    string `json:"rule"`
+			Message string `json:"message"`
+			File    string `json:"file"`
+			Line    int    `json:"line"`
+		} `json:"diagnostics"`
+	}
+
+	parse := func(data []byte) (lintOutput, error) {
+		var out lintOutput
+
+		err := json.Unmarshal(data, &out)
+
+		return out, err
+	}
+
+	convert := func(out lintOutput) ([]finding.Finding, error) {
+		findings := make([]finding.Finding, 0, len(out.Diagnostics))
+		for _, d := range out.Diagnostics {
+			findings = append(findings, finding.Finding{
+				ID:       finding.GenerateID("mylint", d.Rule, finding.Position{File: d.File, Line: d.Line}),
+				Rule:     d.Rule,
+				ToolName: "mylint",
+				Message:  d.Message,
+				Severity: finding.SeverityError,
+				Category: finding.CategoryForLinter(d.Rule),
+				Position: finding.Position{File: d.File, Line: d.Line},
+			})
+		}
+
+		return findings, nil
+	}
+
+	run := func(_ context.Context) ([]byte, error) {
+		return json.Marshal(lintOutput{
+			Diagnostics: []struct {
+				Rule    string `json:"rule"`
+				Message string `json:"message"`
+				File    string `json:"file"`
+				Line    int    `json:"line"`
+			}{
+				{Rule: "no-unused", Message: "unused variable", File: "main.go", Line: 10},
+			},
+		})
+	}
+
+	adapter := finding.NewToolAdapter("mylint", run, parse, convert)
+
+	findings, err := adapter.Detect(context.Background())
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println("count:", len(findings))
+	fmt.Println("rule:", findings[0].Rule)
+
+	// Output:
+	// count: 1
+	// rule: no-unused
+}

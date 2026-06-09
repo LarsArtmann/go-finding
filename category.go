@@ -1,5 +1,10 @@
 package finding
 
+import (
+	"errors"
+	"fmt"
+)
+
 // Category classifies the domain of a finding.
 type Category string
 
@@ -52,4 +57,29 @@ func (c Category) String() string {
 // IsSecurity reports whether the category is security-related.
 func (c Category) IsSecurity() bool {
 	return c == CategorySecurity
+}
+
+// errInvalidCategory is returned when parsing an invalid category string.
+var errInvalidCategory = errors.New("invalid category")
+
+// ParseCategory parses a string into a Category.
+// It accepts the standard category names (e.g., "security", "style", "correctness").
+// Returns an error if the string is not a valid category.
+func ParseCategory(s string) (Category, error) {
+	cat := Category(s)
+	if cat.IsValid() {
+		return cat, nil
+	}
+
+	return "", fmt.Errorf("%w: %q must match ^[a-z][a-z0-9-]*$", errInvalidCategory, s)
+}
+
+// MustParseCategory parses a string into a Category, panicking on invalid input.
+func MustParseCategory(s string) Category {
+	cat, err := ParseCategory(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return cat
 }
