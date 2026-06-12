@@ -85,6 +85,40 @@ func (s Severity) String() string {
 	return string(s)
 }
 
+// Badge returns a human-readable severity badge with emoji (e.g., "🔴 CRITICAL").
+// Returns the string value unchanged for unknown severities.
+func (s Severity) Badge() string {
+	switch s {
+	case SeverityCritical:
+		return "🔴 CRITICAL"
+	case SeverityError:
+		return "🟠 ERROR"
+	case SeverityWarning:
+		return "🟡 WARNING"
+	case SeverityInfo:
+		return "🟢 INFO"
+	}
+
+	return string(s)
+}
+
+// Emoji returns the emoji representing the severity level.
+// Returns an empty string for unknown severities.
+func (s Severity) Emoji() string {
+	switch s {
+	case SeverityCritical:
+		return "🔴"
+	case SeverityError:
+		return "🟠"
+	case SeverityWarning:
+		return "🟡"
+	case SeverityInfo:
+		return "🟢"
+	}
+
+	return ""
+}
+
 // Compare returns -1, 0, or 1 depending on whether s is less than, equal to,
 // or greater than other. Invalid severities rank below all valid ones.
 // Two different invalid severities are ordered lexicographically to ensure
