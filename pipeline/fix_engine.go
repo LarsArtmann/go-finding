@@ -67,6 +67,7 @@ func (e *FixEngine) ApplyWithConflicts(
 	var (
 		allEdits      []FixEdit
 		resolveErrors []error
+		lineIndex     []int // lazily built by resolveEdits when a lineIndexAware provider handles a finding
 	)
 
 	for _, f := range fixes {
@@ -74,7 +75,7 @@ func (e *FixEngine) ApplyWithConflicts(
 			continue
 		}
 
-		edits, err := e.resolveEdits(content, f)
+		edits, err := e.resolveEdits(content, &lineIndex, f)
 		if err != nil {
 			resolveErrors = append(resolveErrors, err)
 		}
@@ -99,7 +100,9 @@ func (e *FixEngine) ApplyWithConflicts(
 // resolveEdits tries each provider in order and returns edits from the first match.
 // If a provider that CanHandle'd the finding returns an error, it is collected.
 // Returns the edits from the first successful provider, or the first provider error if all fail.
-func (e *FixEngine) resolveEdits(content []byte, f finding.Finding) ([]FixEdit, error) {
+// If the provider implements lineIndexAware, the line offset index is lazily built
+// on first access and reused for subsequent findings, avoiding O(n) rebuilds per finding.
+func (e *FixEngine) resolveEdits(content []byte, lineIndex *[]int, f finding.Finding) ([]FixEdit, error) {
 	var firstErr error
 
 	for _, p := range e.providers {
@@ -107,7 +110,20 @@ func (e *FixEngine) resolveEdits(content []byte, f finding.Finding) ([]FixEdit, 
 			continue
 		}
 
-		edits, err := p.Edits(content, f)
+		var edits []FixEdit
+
+		var err error
+
+		if la, ok := p.(lineIndexAware); ok {
+			if *lineIndex == nil {
+				*lineIndex = buildLineOffsetIndex(content)
+			}
+
+			edits, err = la.EditsWithLineIndex(content, *lineIndex, f)
+		} else {
+			edits, err = p.Edits(content, f)
+		}
+
 		if err != nil {
 			if firstErr == nil {
 				firstErr = fmt.Errorf("provider %s: %w", p.Name(), err)

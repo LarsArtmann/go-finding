@@ -249,7 +249,8 @@ type Correlation struct {
 //
 // The maxCorrelations constant (10,000) caps total output across both strategies.
 func Correlate(findings []Finding) []Correlation {
-	var correlations []Correlation
+	capHint := min(len(findings), maxCorrelations)
+	correlations := make([]Correlation, 0, capHint)
 
 	byFile := GroupByFile(findings)
 
@@ -267,9 +268,8 @@ func Correlate(findings []Finding) []Correlation {
 			continue
 		}
 
-		var withRange []Finding
-
-		var withoutRange []Finding
+		withRange := make([]Finding, 0, len(fileFindings))
+		withoutRange := make([]Finding, 0, len(fileFindings))
 
 		for _, f := range fileFindings {
 			if f.HasRange() {

@@ -40,6 +40,14 @@ type FixProvider interface {
 	Edits(content []byte, f finding.Finding) ([]FixEdit, error)
 }
 
+// lineIndexAware is an optional interface for FixProviders that can accept a
+// pre-built line offset index. When a provider implements this interface,
+// FixEngine builds the index once per file and passes it to every finding,
+// avoiding O(n) rebuilds per finding (where n = file size).
+type lineIndexAware interface {
+	EditsWithLineIndex(content []byte, lineIndex []int, f finding.Finding) ([]FixEdit, error)
+}
+
 // OffsetProvider handles findings with byte-offset Range information.
 // This is the most accurate text-based provider — findings with byte offsets
 // bypass line/column conversion entirely.
@@ -95,9 +103,13 @@ func (LineProvider) CanHandle(f finding.Finding) bool {
 }
 
 // Edits produces byte-level edits from line/column information.
-func (LineProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
-	idx := buildLineOffsetIndex(content)
+func (p LineProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	return p.EditsWithLineIndex(content, buildLineOffsetIndex(content), f)
+}
 
+// EditsWithLineIndex produces byte-level edits using a pre-built line offset
+// index, avoiding an O(n) rebuild per finding.
+func (LineProvider) EditsWithLineIndex(content []byte, idx []int, f finding.Finding) ([]FixEdit, error) {
 	if f.Range != nil && f.Range.HasEnd() && f.Range.Start.Line > 0 && f.Range.End.Line > 0 {
 		return lineProviderRangeEdits(content, f, idx)
 	}
@@ -190,7 +202,14 @@ func (SubstringProvider) CanHandle(f finding.Finding) bool {
 }
 
 // Edits locates BeforeCode in the content using substring matching and produces edits.
-func (SubstringProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+func (p SubstringProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	return p.EditsWithLineIndex(content, buildLineOffsetIndex(content), f)
+}
+
+// EditsWithLineIndex locates BeforeCode using a pre-built line offset index,
+// avoiding an O(n) rebuild per finding when multiple occurrences require
+// disambiguation by line proximity.
+func (SubstringProvider) EditsWithLineIndex(content []byte, lineIndex []int, f finding.Finding) ([]FixEdit, error) {
 	before := []byte(f.BeforeCode)
 
 	occurrences := findAllOccurrences(content, before)
@@ -201,11 +220,10 @@ func (SubstringProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, er
 	best := occurrences[0]
 
 	if f.Position.Line > 0 && len(occurrences) > 1 {
-		// Build the line offset index ONCE and use binary search for each
+		// Use binary search on the pre-built line offset index for each
 		// occurrence, reducing per-occurrence cost from O(F) to O(log F).
-		lineIndex := buildLineOffsetIndex(content)
-
 		bestDist := offsetLineDistance(lineIndex, best, f.Position.Line)
+
 		for _, idx := range occurrences[1:] {
 			dist := offsetLineDistance(lineIndex, idx, f.Position.Line)
 			if dist < bestDist {
@@ -259,13 +277,8 @@ func indexLineColToOffset(index []int, contentLen, line, col int) (int, error) {
 // buildLineOffsetIndex returns a slice where index[i] is the byte offset of
 // the start of line i+1 (1-based line number → 0-based slice index).
 func buildLineOffsetIndex(content []byte) []int {
-	lineCount := 1
-
-	for _, b := range content {
-		if b == '\n' {
-			lineCount++
-		}
-	}
+	// Count newlines via bytes.Count — SIMD-accelerated for single-byte needle.
+	lineCount := bytes.Count(content, []byte{'\n'}) + 1
 
 	index := make([]int, 0, lineCount)
 	index = append(index, 0) // line 1 starts at offset 0
@@ -279,13 +292,17 @@ func buildLineOffsetIndex(content []byte) []int {
 	return index
 }
 
+// defaultOccurrenceCapacity is the starting capacity for findAllOccurrences
+// results. Chosen to avoid the first 5 reallocation growth phases (0→1→2→4→8→16→32).
+const defaultOccurrenceCapacity = 32
+
 // findAllOccurrences returns all starting byte positions of needle in haystack.
 func findAllOccurrences(haystack, needle []byte) []int {
 	if len(needle) == 0 {
 		return nil
 	}
 
-	var results []int
+	results := make([]int, 0, defaultOccurrenceCapacity)
 
 	idx := 0
 
