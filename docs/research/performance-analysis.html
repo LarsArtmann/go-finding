@@ -1,0 +1,2219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Performance Analysis — go-finding v0.7.0</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --surface-alt: #1c2333;
+        --border: #30363d;
+        --text: #e6edf3;
+        --text-muted: #8b949e;
+        --blue: #58a6ff;
+        --blue-bg: #0d1d3c;
+        --blue-border: #1b3a6b;
+        --green: #3fb950;
+        --green-bg: #0d2818;
+        --green-border: #1b4332;
+        --yellow: #d29922;
+        --yellow-bg: #2d2005;
+        --yellow-border: #5c3d0a;
+        --red: #f85149;
+        --red-bg: #2d1215;
+        --red-border: #5c2124;
+        --purple: #bc8cff;
+        --purple-bg: #1e1338;
+        --purple-border: #3d2a6b;
+        --orange: #db6d28;
+        --orange-bg: #2d1a05;
+        --orange-border: #5c3d0a;
+        --cyan: #39c5cf;
+        --cyan-bg: #052d2d;
+        --cyan-border: #0a5c5c;
+        --code-bg: #1a1f2d;
+        --heat-0: #161b22;
+        --heat-1: #0d2818;
+        --heat-2: #1b4332;
+        --heat-3: #2d6a32;
+        --heat-4: #3fb950;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        padding: 2rem;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+
+      /* ── Header ── */
+      .header {
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, var(--blue), var(--purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .header .meta {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.75rem;
+      }
+      .header .meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+      .header .description {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-top: 1rem;
+        max-width: 850px;
+      }
+
+      /* ── Section headings ── */
+      h2 {
+        font-size: 1.5rem;
+        margin: 3rem 0 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        letter-spacing: -0.01em;
+      }
+      h2 .icon {
+        margin-right: 0.5rem;
+      }
+      h3 {
+        font-size: 1.15rem;
+        margin: 1.75rem 0 0.75rem;
+        font-weight: 600;
+      }
+      h4 {
+        font-size: 0.95rem;
+        margin: 1.25rem 0 0.5rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      p {
+        margin: 0.5rem 0;
+      }
+
+      code {
+        font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+        font-size: 0.88em;
+        background: var(--code-bg);
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+        color: var(--cyan);
+      }
+
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+        overflow-x: auto;
+        margin: 1rem 0;
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+      pre code {
+        background: none;
+        padding: 0;
+        color: var(--text);
+      }
+
+      /* ── Stat cards row ── */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+      }
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem;
+        text-align: center;
+      }
+      .stat-card .value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      .stat-card .unit {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin-left: 0.2rem;
+      }
+      .stat-card .label {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 0.35rem;
+      }
+      .stat-card.green .value { color: var(--green); }
+      .stat-card.blue .value { color: var(--blue); }
+      .stat-card.yellow .value { color: var(--yellow); }
+      .stat-card.red .value { color: var(--red); }
+      .stat-card.purple .value { color: var(--purple); }
+      .stat-card.cyan .value { color: var(--cyan); }
+      .stat-card.orange .value { color: var(--orange); }
+
+      /* ── Tables ── */
+      .table-wrap {
+        overflow-x: auto;
+        margin: 1rem 0;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+      thead {
+        background: var(--surface-alt);
+      }
+      th {
+        text-align: left;
+        padding: 0.65rem 0.85rem;
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      td {
+        padding: 0.55rem 0.85rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: var(--surface);
+      }
+      td.num {
+        font-family: "SF Mono", "Fira Code", Consolas, monospace;
+        text-align: right;
+        white-space: nowrap;
+      }
+      td.file {
+        font-family: "SF Mono", "Fira Code", Consolas, monospace;
+        font-size: 0.82rem;
+        color: var(--blue);
+      }
+
+      /* ── Badges ── */
+      .badge {
+        display: inline-block;
+        padding: 0.1rem 0.5rem;
+        border-radius: 20px;
+        font-size: 0.73rem;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .badge.excellent {
+        background: var(--green-bg);
+        color: var(--green);
+        border: 1px solid var(--green-border);
+      }
+      .badge.good {
+        background: var(--blue-bg);
+        color: var(--blue);
+        border: 1px solid var(--blue-border);
+      }
+      .badge.fair {
+        background: var(--yellow-bg);
+        color: var(--yellow);
+        border: 1px solid var(--yellow-border);
+      }
+      .badge.poor {
+        background: var(--red-bg);
+        color: var(--red);
+        border: 1px solid var(--red-border);
+      }
+      .badge.na {
+        background: var(--surface-alt);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+      }
+      .badge.info {
+        background: var(--purple-bg);
+        color: var(--purple);
+        border: 1px solid var(--purple-border);
+      }
+
+      /* ── Insight cards ── */
+      .insight-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+      .insight-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem;
+        border-left: 4px solid var(--blue);
+      }
+      .insight-card.green-card { border-left-color: var(--green); }
+      .insight-card.yellow-card { border-left-color: var(--yellow); }
+      .insight-card.red-card { border-left-color: var(--red); }
+      .insight-card.purple-card { border-left-color: var(--purple); }
+      .insight-card.orange-card { border-left-color: var(--orange); }
+      .insight-card.cyan-card { border-left-color: var(--cyan); }
+      .insight-card h4 {
+        margin: 0 0 0.5rem;
+        color: var(--text);
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: 1rem;
+      }
+      .insight-card p {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+      }
+      .insight-card .severity {
+        margin-top: 0.75rem;
+      }
+
+      /* ── Performance bars ── */
+      .perf-bar-container {
+        margin: 0.5rem 0;
+      }
+      .perf-bar-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        margin-bottom: 0.2rem;
+      }
+      .perf-bar-label .name {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .perf-bar-label .detail {
+        color: var(--text-muted);
+        font-family: "SF Mono", "Fira Code", Consolas, monospace;
+        font-size: 0.78rem;
+      }
+      .perf-bar-track {
+        height: 10px;
+        background: var(--surface-alt);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+      .perf-bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.4s ease;
+      }
+      .perf-bar-fill.excellent { background: linear-gradient(90deg, #2d6a32, var(--green)); }
+      .perf-bar-fill.good { background: linear-gradient(90deg, #1b3a6b, var(--blue)); }
+      .perf-bar-fill.fair { background: linear-gradient(90deg, #5c3d0a, var(--yellow)); }
+      .perf-bar-fill.poor { background: linear-gradient(90deg, #5c2124, var(--red)); }
+
+      /* ── Complexity matrix ── */
+      .complexity-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 0.75rem;
+        margin: 1rem 0;
+      }
+      .complexity-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .complexity-item .label {
+        font-size: 0.85rem;
+      }
+      .complexity-item .label .sub {
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        display: block;
+      }
+
+      /* ── Callout ── */
+      .callout {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--blue);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin: 1rem 0;
+      }
+      .callout.warning {
+        border-left-color: var(--yellow);
+        background: var(--yellow-bg);
+      }
+      .callout.critical {
+        border-left-color: var(--red);
+        background: var(--red-bg);
+      }
+      .callout.success {
+        border-left-color: var(--green);
+        background: var(--green-bg);
+      }
+      .callout p {
+        margin: 0;
+        font-size: 0.9rem;
+      }
+
+      /* ── TOC ── */
+      .toc {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 2rem;
+      }
+      .toc h3 {
+        margin: 0 0 0.5rem;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+      }
+      .toc ol {
+        list-style: none;
+        counter-reset: toc;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 0.25rem;
+      }
+      .toc li {
+        counter-increment: toc;
+        font-size: 0.88rem;
+      }
+      .toc li::before {
+        content: counter(toc) ".";
+        color: var(--text-muted);
+        margin-right: 0.5rem;
+        font-weight: 600;
+      }
+      .toc a {
+        color: var(--blue);
+        text-decoration: none;
+      }
+      .toc a:hover {
+        text-decoration: underline;
+      }
+
+      /* ── Allocation breakdown ── */
+      .alloc-breakdown {
+        margin: 1rem 0;
+      }
+      .alloc-row {
+        display: grid;
+        grid-template-columns: 200px 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .alloc-row:last-child {
+        border-bottom: none;
+      }
+      .alloc-name {
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+      .alloc-name .sub {
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        display: block;
+      }
+
+      /* ── Footer ── */
+      .footer {
+        margin-top: 4rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border);
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+
+      /* ── Scale chart ── */
+      .scale-chart {
+        display: grid;
+        grid-template-columns: 120px repeat(4, 1fr);
+        gap: 0;
+        margin: 1rem 0;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .scale-chart > div {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+        font-size: 0.82rem;
+      }
+      .scale-chart > div:nth-last-child(-n+5) {
+        border-bottom: none;
+      }
+      .scale-chart > div:nth-child(5n) {
+        border-right: none;
+      }
+      .scale-chart .header-cell {
+        background: var(--surface-alt);
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .scale-chart .label-cell {
+        background: var(--surface);
+        font-weight: 500;
+      }
+      .scale-chart .data-cell {
+        font-family: "SF Mono", "Fira Code", Consolas, monospace;
+        text-align: right;
+      }
+
+      @media (max-width: 768px) {
+        body { padding: 1rem; }
+        .header h1 { font-size: 1.5rem; }
+        .stats-row { grid-template-columns: repeat(2, 1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- HEADER                                                        -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="header">
+      <h1>Performance Analysis Report</h1>
+      <div class="meta">
+        <span>📦 go-finding v0.7.0</span>
+        <span>📅 2026-06-14</span>
+        <span>🖥️ AMD Ryzen AI MAX+ 395 (32 threads)</span>
+        <span>🐧 Linux / Go 1.26.3</span>
+      </div>
+      <p class="description">
+        A comprehensive performance review of the go-finding static analysis library across
+        CPU, RAM, DISK/IO, Network, GPU, and concurrency dimensions. All benchmark data
+        collected from <code>go test -bench=. -benchmem</code> on the actual codebase.
+        Algorithmic complexities derived from source analysis.
+      </p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- TABLE OF CONTENTS                                             -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="toc">
+      <h3>Contents</h3>
+      <ol>
+        <li><a href="#summary">Executive Summary</a></li>
+        <li><a href="#cpu">CPU Performance</a></li>
+        <li><a href="#ram">RAM & Memory</a></li>
+        <li><a href="#disk">Disk & I/O</a></li>
+        <li><a href="#network">Network & Subprocess</a></li>
+        <li><a href="#concurrency">Concurrency & Parallelism</a></li>
+        <li><a href="#gpu">GPU</a></li>
+        <li><a href="#scaling">Scaling Characteristics</a></li>
+        <li><a href="#recommendations">Recommendations</a></li>
+      </ol>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- EXECUTIVE SUMMARY                                             -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="summary"><span class="icon">📊</span>Executive Summary</h2>
+
+    <div class="stats-row">
+      <div class="stat-card green">
+        <div class="value">3.4<span class="unit">ns</span></div>
+        <div class="label">Fastest Op (Key lookup)</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="value">5<span class="unit">×</span></div>
+        <div class="label">Parallel Speedup (5 det.)</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="value">2233</div>
+        <div class="label">Max Allocs/op (SARIF import)</div>
+      </div>
+      <div class="stat-card red">
+        <div class="value">O(n×m)</div>
+        <div class="label">FixEngine Scaling Bottleneck</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="value">0</div>
+        <div class="label">Network Dependencies</div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="value">0</div>
+        <div class="label">GPU Dependencies</div>
+      </div>
+    </div>
+
+    <p>
+      go-finding is a <strong>CPU-bound, memory-efficient</strong> library with excellent
+      single-thread performance for its core data operations and strong parallel scaling
+      for detector execution. The primary performance concern is the <code>FixEngine</code>'s
+      edit application path, which exhibits super-linear memory scaling proportional to
+      file content size × edit count. SARIF serialization is the second largest allocation
+      source, though streaming mitigations already exist.
+    </p>
+
+    <div class="insight-grid">
+      <div class="insight-card green-card">
+        <h4>Strengths</h4>
+        <p>
+          Zero-allocation hot paths (Key, Equal early-return, FilterInPlace GC-safe).
+          Parallel detector execution delivers ~5× throughput with 5 detectors.
+          Streaming SARIF/JSON via <code>json.Encoder</code> avoids full-buffer allocation.
+          Root package has zero external dependencies beyond stdlib.
+        </p>
+      </div>
+      <div class="insight-card red-card">
+        <h4>Critical Bottleneck</h4>
+        <p>
+          <code>FixEngine.applyEditsWithConflicts</code> creates a new <code>[]byte</code>
+          per edit by appending three slices (<code>result[:offset]</code> +
+          <code>replacement</code> + <code>result[endOffset:]</code>). This is O(file_size)
+          per edit, yielding O(n × file_size) total — 443 MB allocated for 1000 edits.
+          Fix: use <code>bytes.Buffer</code> or pre-allocated destination slice.
+        </p>
+        <div class="severity">
+          <span class="badge poor">Critical</span>
+        </div>
+      </div>
+      <div class="insight-card yellow-card">
+        <h4>Moderate Concern</h4>
+        <p>
+          SARIF import/export generates 15–22 allocations per finding due to intermediate
+          struct construction. Streaming variants (<code>WriteSARIF</code>,
+          <code>FindingsFromReader</code>) already mitigate output-side allocation, but
+          the per-finding struct graph remains allocation-heavy.
+        </p>
+        <div class="severity">
+          <span class="badge fair">Moderate</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- CPU PERFORMANCE                                               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="cpu"><span class="icon">⚡</span>CPU Performance</h2>
+
+    <h3>Benchmark Results (measured)</h3>
+    <p>All measurements from <code>go test -bench=. -benchmem -count=1</code> on AMD Ryzen AI MAX+ 395 (32 threads).</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Input Size</th>
+            <th class="num">Time/op</th>
+            <th class="num">B/op</th>
+            <th class="num">Allocs/op</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="file">Finding.Key()</td>
+            <td>1 finding (with ID)</td>
+            <td class="num">3.4 ns</td>
+            <td class="num">0</td>
+            <td class="num">0</td>
+            <td><span class="badge excellent">Excellent</span></td>
+          </tr>
+          <tr>
+            <td class="file">Finding.Key()</td>
+            <td>1 finding (no ID)</td>
+            <td class="num">24.7 ns</td>
+            <td class="num">0</td>
+            <td class="num">0</td>
+            <td><span class="badge excellent">Excellent</span></td>
+          </tr>
+          <tr>
+            <td class="file">Clone (simple)</td>
+            <td>1 finding</td>
+            <td class="num">18.1 ns</td>
+            <td class="num">0</td>
+            <td class="num">0</td>
+            <td><span class="badge excellent">Excellent</span></td>
+          </tr>
+          <tr>
+            <td class="file">GenerateID</td>
+            <td>1 position</td>
+            <td class="num">49.6 ns</td>
+            <td class="num">72</td>
+            <td class="num">2</td>
+            <td><span class="badge excellent">Excellent</span></td>
+          </tr>
+          <tr>
+            <td class="file">Clone (full)</td>
+            <td>1 finding (nested)</td>
+            <td class="num">84.0 ns</td>
+            <td class="num">160</td>
+            <td class="num">2</td>
+            <td><span class="badge excellent">Excellent</span></td>
+          </tr>
+          <tr>
+            <td class="file">GenerateID (hash)</td>
+            <td>SHA-256 path</td>
+            <td class="num">205 ns</td>
+            <td class="num">208</td>
+            <td class="num">8</td>
+            <td><span class="badge good">Good</span></td>
+          </tr>
+          <tr>
+            <td class="file">ParseID</td>
+            <td>3 IDs</td>
+            <td class="num">287 ns</td>
+            <td class="num">312</td>
+            <td class="num">4</td>
+            <td><span class="badge good">Good</span></td>
+          </tr>
+          <tr>
+            <td class="file">Filter</td>
+            <td>1000 findings, 1 predicate</td>
+            <td class="num">75 μs</td>
+            <td class="num">303 KB</td>
+            <td class="num">1</td>
+            <td><span class="badge excellent">Excellent</span></td>
+          </tr>
+          <tr>
+            <td class="file">Filter (multiple)</td>
+            <td>1000 findings, 2 predicates</td>
+            <td class="num">115 μs</td>
+            <td class="num">303 KB</td>
+            <td class="num">1</td>
+            <td><span class="badge excellent">Excellent</span></td>
+          </tr>
+          <tr>
+            <td class="file">GroupByFile</td>
+            <td>500 findings, 20 files</td>
+            <td class="num">140 μs</td>
+            <td class="num">426 KB</td>
+            <td class="num">125</td>
+            <td><span class="badge good">Good</span></td>
+          </tr>
+          <tr>
+            <td class="file">Correlate</td>
+            <td>200 findings</td>
+            <td class="num">175 μs</td>
+            <td class="num">430 KB</td>
+            <td class="num">72</td>
+            <td><span class="badge good">Good</span></td>
+          </tr>
+          <tr>
+            <td class="file">Merge (dedup)</td>
+            <td>5 reports × 200 findings</td>
+            <td class="num">236 μs</td>
+            <td class="num">687 KB</td>
+            <td class="num">24</td>
+            <td><span class="badge good">Good</span></td>
+          </tr>
+          <tr>
+            <td class="file">ToSARIF</td>
+            <td>100 findings</td>
+            <td class="num">414 μs</td>
+            <td class="num">310 KB</td>
+            <td class="num">1510</td>
+            <td><span class="badge fair">Fair</span></td>
+          </tr>
+          <tr>
+            <td class="file">FromSARIF</td>
+            <td>100 findings</td>
+            <td class="num">727 μs</td>
+            <td class="num">205 KB</td>
+            <td class="num">2233</td>
+            <td><span class="badge fair">Fair</span></td>
+          </tr>
+          <tr>
+            <td class="file">Pipeline DryRun</td>
+            <td>100 findings</td>
+            <td class="num">38.6 μs</td>
+            <td class="num">222 KB</td>
+            <td class="num">29</td>
+            <td><span class="badge excellent">Excellent</span></td>
+          </tr>
+          <tr>
+            <td class="file">Pipeline DryRun</td>
+            <td>10,000 findings</td>
+            <td class="num">6.68 ms</td>
+            <td class="num">33.7 MB</td>
+            <td class="num">61</td>
+            <td><span class="badge excellent">Excellent</span></td>
+          </tr>
+          <tr>
+            <td class="file">FixEngine Apply</td>
+            <td>1 edit</td>
+            <td class="num">281 ms</td>
+            <td class="num">605 KB</td>
+            <td class="num">25</td>
+            <td><span class="badge poor">Poor</span></td>
+          </tr>
+          <tr>
+            <td class="file">FixEngine Apply</td>
+            <td>1000 edits</td>
+            <td class="num">291 s</td>
+            <td class="num">443 MB</td>
+            <td class="num">20,036</td>
+            <td><span class="badge poor">Critical</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Algorithmic Complexity Analysis</h3>
+    <p>Complexity of each core operation, derived from source code analysis:</p>
+
+    <div class="complexity-grid">
+      <div class="complexity-item">
+        <div class="label">
+          GenerateID
+          <span class="sub">id.go:26</span>
+        </div>
+        <span class="badge excellent">O(1)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          GenerateID (hash)
+          <span class="sub">id.go:31 — SHA-256</span>
+        </div>
+        <span class="badge good">O(n)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          ParseID
+          <span class="sub">id.go:101</span>
+        </div>
+        <span class="badge good">O(n)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          Filter / FilterInPlace
+          <span class="sub">filter.go:12</span>
+        </div>
+        <span class="badge excellent">O(n×p)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          GroupBy / GroupByFile
+          <span class="sub">filter.go:163</span>
+        </div>
+        <span class="badge excellent">O(n)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          Combine (dedup)
+          <span class="sub">merge.go:35</span>
+        </div>
+        <span class="badge excellent">O(n)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          Correlate (range-based)
+          <span class="sub">merge.go:287</span>
+        </div>
+        <span class="badge good">O(n log n + k)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          Correlate (proximity)
+          <span class="sub">merge.go:347</span>
+        </div>
+        <span class="badge fair">O(n×k) capped 10k</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          IntervalIndex.Query
+          <span class="sub">interval_tree.go:44</span>
+        </div>
+        <span class="badge excellent">O(log n + k)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          Diff / DiffFindings
+          <span class="sub">diff.go:31, verify.go:53</span>
+        </div>
+        <span class="badge excellent">O(n+m)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          DetectConflicts
+          <span class="sub">conflict.go:66</span>
+        </div>
+        <span class="badge good">O(n log n + n×g)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          FixEngine.Apply
+          <span class="sub">fix_engine.go:59</span>
+        </div>
+        <span class="badge poor">O(n log n + n×F)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          SARIF Export
+          <span class="sub">sarif_export.go:35</span>
+        </div>
+        <span class="badge good">O(n)</span>
+      </div>
+      <div class="complexity-item">
+        <div class="label">
+          SARIF Import
+          <span class="sub">sarif_import.go:15</span>
+        </div>
+        <span class="badge good">O(n)</span>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <p>
+        <strong>Notation:</strong> n = finding/element count, p = predicate count,
+        k = query result size, g = conflict group size, F = file content size in bytes.
+        The <code>FixEngine</code> term O(n×F) means each edit re-copies the entire file content.
+      </p>
+    </div>
+
+    <h3>CPU Hot Paths</h3>
+    <p>
+      Ranked by wall-clock time consumed in a typical pipeline run (detect → triage → apply → verify):
+    </p>
+
+    <div class="perf-bar-container">
+      <div class="perf-bar-label">
+        <span class="name">1. External Detector Execution (subprocess)</span>
+        <span class="detail">Dominates wall time — go vet, staticcheck</span>
+      </div>
+      <div class="perf-bar-track">
+        <div class="perf-bar-fill poor" style="width: 95%"></div>
+      </div>
+    </div>
+
+    <div class="perf-bar-container">
+      <div class="perf-bar-label">
+        <span class="name">2. FixEngine Edit Application</span>
+        <span class="detail">O(n×F) — 291s for 1000 edits</span>
+      </div>
+      <div class="perf-bar-track">
+        <div class="perf-bar-fill poor" style="width: 85%"></div>
+      </div>
+    </div>
+
+    <div class="perf-bar-container">
+      <div class="perf-bar-label">
+        <span class="name">3. SARIF Import (JSON unmarshal + struct construction)</span>
+        <span class="detail">2233 allocs / 100 findings</span>
+      </div>
+      <div class="perf-bar-track">
+        <div class="perf-bar-fill fair" style="width: 55%"></div>
+      </div>
+    </div>
+
+    <div class="perf-bar-container">
+      <div class="perf-bar-label">
+        <span class="name">4. SARIF Export (struct construction + JSON marshal)</span>
+        <span class="detail">1510 allocs / 100 findings</span>
+      </div>
+      <div class="perf-bar-track">
+        <div class="perf-bar-fill fair" style="width: 45%"></div>
+      </div>
+    </div>
+
+    <div class="perf-bar-container">
+      <div class="perf-bar-label">
+        <span class="name">5. Correlate (cross-tool finding relationships)</span>
+        <span class="detail">Interval index build + queries</span>
+      </div>
+      <div class="perf-bar-track">
+        <div class="perf-bar-fill good" style="width: 25%"></div>
+      </div>
+    </div>
+
+    <div class="perf-bar-container">
+      <div class="perf-bar-label">
+        <span class="name">6. Merge / Combine (dedup + clone)</span>
+        <span class="detail">Hash map + deep copy</span>
+      </div>
+      <div class="perf-bar-track">
+        <div class="perf-bar-fill good" style="width: 20%"></div>
+      </div>
+    </div>
+
+    <div class="perf-bar-container">
+      <div class="perf-bar-label">
+        <span class="name">7. Filter / Triage / GroupBy</span>
+        <span class="detail">Linear scans, minimal allocation</span>
+      </div>
+      <div class="perf-bar-track">
+        <div class="perf-bar-fill excellent" style="width: 10%"></div>
+      </div>
+    </div>
+
+    <div class="perf-bar-container">
+      <div class="perf-bar-label">
+        <span class="name">8. GenerateID / Key / Clone</span>
+        <span class="detail">Sub-microsecond, near-zero alloc</span>
+      </div>
+      <div class="perf-bar-track">
+        <div class="perf-bar-fill excellent" style="width: 3%"></div>
+      </div>
+    </div>
+
+    <h3>SHA-256 Cost Analysis</h3>
+    <p>
+      The hash-based ID path (<code>GenerateID</code> when <code>pos.Line == 0</code>) uses
+      SHA-256 via <code>crypto/sha256</code>. This is 4× more expensive than the positional
+      path (205 ns vs 50 ns) and allocates 8× more (208 B vs 72 B). The hash path includes:
+    </p>
+    <ul style="margin: 0.5rem 0 0.5rem 1.5rem; color: var(--text-muted); font-size: 0.88rem;">
+      <li><code>sha256.New()</code> — hash instance allocation</li>
+      <li>3× <code>writeLenField</code> — binary encoding + Write calls</li>
+      <li><code>h.Sum()</code> — digest allocation</li>
+      <li><code>hex.EncodeToString</code> — hex string allocation</li>
+      <li><code>strings.Builder</code> — final ID string assembly</li>
+    </ul>
+    <p>
+      For high-throughput pipelines with many position-less findings, consider caching IDs
+      or switching to a faster hash (xxHash, FNV-1a) if collision resistance requirements allow.
+    </p>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- RAM & MEMORY                                                  -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="ram"><span class="icon">🧠</span>RAM & Memory</h2>
+
+    <h3>Finding Struct Memory Footprint</h3>
+    <p>
+      The <code>Finding</code> struct is the fundamental unit of memory. Its size determines
+      per-finding overhead for all operations:
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Approx Size</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>ID</td><td>string</td><td class="num">16 B + len</td><td>Header only; data shared</td></tr>
+          <tr><td>Rule</td><td>string</td><td class="num">16 B + len</td><td></td></tr>
+          <tr><td>ToolName</td><td>string</td><td class="num">16 B + len</td><td></td></tr>
+          <tr><td>Message</td><td>string</td><td class="num">16 B + len</td><td></td></tr>
+          <tr><td>Severity</td><td>Severity (string)</td><td class="num">16 B</td><td>Named type</td></tr>
+          <tr><td>Position</td><td>Position (struct)</td><td class="num">~56 B</td><td>4 fields: File + 3× int</td></tr>
+          <tr><td>Category</td><td>Category (string)</td><td class="num">16 B</td><td></td></tr>
+          <tr><td>Tags</td><td>[]Tag</td><td class="num">24 B + len</td><td>Slice header + backing array</td></tr>
+          <tr><td>FixStrategy</td><td>FixStrategy (string)</td><td class="num">16 B</td><td></td></tr>
+          <tr><td>Suggestion</td><td>string</td><td class="num">16 B + len</td><td></td></tr>
+          <tr><td>BeforeCode</td><td>string</td><td class="num">16 B + len</td><td></td></tr>
+          <tr><td>AfterCode</td><td>string</td><td class="num">16 B + len</td><td></td></tr>
+          <tr><td>Range</td><td>*Range</td><td class="num">8 B + ~112 B</td><td>Pointer + heap-allocated Range</td></tr>
+          <tr><td>Snippet</td><td>string</td><td class="num">16 B + len</td><td></td></tr>
+          <tr><td>Confidence</td><td>Confidence (float64)</td><td class="num">8 B</td><td></td></tr>
+          <tr><td>Related</td><td>[]RelatedRef</td><td class="num">24 B + len</td><td>Each RelatedRef ~96 B</td></tr>
+          <tr><td>Suppression</td><td>*Suppression</td><td class="num">8 B + ~80 B</td><td>Pointer + heap-allocated</td></tr>
+          <tr><td>Metadata</td><td>map[string]string</td><td class="num">8 B + var</td><td>Map header + buckets</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <p>
+        <strong>Estimated total:</strong> A typical Finding with a Range, no Related, no Tags,
+        and no Metadata occupies approximately <strong>320–400 bytes</strong> including string data
+        and heap allocations. A Finding with Related refs, Tags, and Metadata can exceed <strong>1 KB</strong>.
+      </p>
+    </div>
+
+    <h3>Allocation Profile by Operation</h3>
+
+    <div class="alloc-breakdown">
+      <div class="alloc-row">
+        <div class="alloc-name">
+          FixEngine Apply
+          <span class="sub">1000 edits — linear scaling</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill poor" style="width: 100%"></div>
+        </div>
+        <span class="badge poor">443 MB</span>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-name">
+          Pipeline Parallel (10 det × 10k)
+          <span class="sub">Full parallel detection</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill fair" style="width: 90%"></div>
+        </div>
+        <span class="badge fair">503 MB</span>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-name">
+          Pipeline Parallel (5 det × 10k)
+          <span class="sub">5 detectors, 10k findings each</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill fair" style="width: 49%"></div>
+        </div>
+        <span class="badge fair">218 MB</span>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-name">
+          Pipeline DryRun (10k)
+          <span class="sub">Detect + triage only</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill good" style="width: 8%"></div>
+        </div>
+        <span class="badge good">33.7 MB</span>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-name">
+          Merge no dedup (1500)
+          <span class="sub">3 reports × 500</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill good" style="width: 22%"></div>
+        </div>
+        <span class="badge good">973 KB</span>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-name">
+          Correlate (200)
+          <span class="sub">Cross-tool correlation</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill good" style="width: 10%"></div>
+        </div>
+        <span class="badge good">430 KB</span>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-name">
+          ToSARIF (100)
+          <span class="sub">Struct graph + JSON</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill good" style="width: 7%"></div>
+        </div>
+        <span class="badge good">310 KB</span>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-name">
+          Merge dedup (1000)
+          <span class="sub">5 reports × 200</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill good" style="width: 15%"></div>
+        </div>
+        <span class="badge good">687 KB</span>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-name">
+          GroupByFile (500)
+          <span class="sub">20 unique files</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill good" style="width: 10%"></div>
+        </div>
+        <span class="badge good">426 KB</span>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-name">
+          Filter (1000)
+          <span class="sub">Single predicate</span>
+        </div>
+        <div class="perf-bar-track" style="flex: 1; margin: 0 1rem;">
+          <div class="perf-bar-fill excellent" style="width: 7%"></div>
+        </div>
+        <span class="badge excellent">303 KB</span>
+      </div>
+    </div>
+
+    <h3>GC Pressure Analysis</h3>
+
+    <div class="insight-grid">
+      <div class="insight-card green-card">
+        <h4>Zero-Allocation Hot Paths</h4>
+        <p>
+          <code>Finding.Key()</code> (3.4 ns, 0 allocs), <code>Clone()</code> simple (18 ns, 0 allocs),
+          <code>FilterInPlace</code> (in-place compaction, 0 heap growth),
+          <code>Pipeline.DryRun</code> (61 allocs for 10k findings — amortized to 0.006 allocs/finding).
+          These paths are GC-neutral and safe for high-frequency invocation.
+        </p>
+      </div>
+      <div class="insight-card yellow-card">
+        <h4>Moderate GC Pressure</h4>
+        <p>
+          <code>Merge</code> allocates ~700 KB per 1000 findings (Clone per finding).
+          <code>Correlate</code> creates IntervalIndex + result Correlations per call.
+          <code>GroupByFile</code> creates a map entry per unique file.
+          All are proportional to input size with no hidden quadratic factors.
+        </p>
+      </div>
+      <div class="insight-card red-card">
+        <h4>High GC Pressure</h4>
+        <p>
+          <strong>SARIF Import:</strong> 2233 allocs/100 findings = ~22 allocs per finding.
+          Each <code>findingFromSarResult</code> creates Finding, Position, Range, RelatedRef slice,
+          and Metadata map independently. <br><br>
+          <strong>SARIF Export:</strong> 1510 allocs/100 findings = ~15 allocs per finding.
+          <code>findingToSARIF</code> decomposes into sarifResult + locations + fixes + properties.
+          <br><br>
+          <strong>FixEngine:</strong> 20,036 allocs for 1000 edits — new []byte per edit.
+        </p>
+      </div>
+    </div>
+
+    <h3>Synchronization Primitives</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Primitive</th>
+            <th>Location</th>
+            <th>Protects</th>
+            <th>Contention Risk</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>sync.RWMutex</code></td>
+            <td class="file">report.go:18</td>
+            <td>Report.Findings, Summary</td>
+            <td><span class="badge good">Low</span> Read-heavy pattern</td>
+          </tr>
+          <tr>
+            <td><code>sync.Mutex</code></td>
+            <td class="file">pipeline/metrics.go:14</td>
+            <td>Metrics maps + counters</td>
+            <td><span class="badge good">Low</span> Optional, infrequent writes</td>
+          </tr>
+          <tr>
+            <td><code>sync.Mutex</code></td>
+            <td class="file">pipeline/pipeline.go:38</td>
+            <td>OnFinding callback</td>
+            <td><span class="badge fair">Medium</span> Per-finding in parallel mode</td>
+          </tr>
+          <tr>
+            <td><code>sync.Mutex</code></td>
+            <td class="file">pipeline/pipeline_detect.go:115</td>
+            <td>Parallel detection findings append</td>
+            <td><span class="badge fair">Medium</span> Once per detector completion</td>
+          </tr>
+          <tr>
+            <td><code>sync.RWMutex</code></td>
+            <td class="file">registry.go:24</td>
+            <td>DetectorRegistry.builders</td>
+            <td><span class="badge excellent">Negligible</span> Setup-time only</td>
+          </tr>
+          <tr>
+            <td><code>sync.RWMutex</code></td>
+            <td class="file">category_linter.go</td>
+            <td>linterCategories map</td>
+            <td><span class="badge excellent">Negligible</span> Read-heavy after init</td>
+          </tr>
+          <tr>
+            <td><code>sync.WaitGroup</code></td>
+            <td class="file">via errgroup</td>
+            <td>Parallel detector goroutines</td>
+            <td><span class="badge good">Low</span> Bounded by detector count</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- DISK & I/O                                                    -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="disk"><span class="icon">💾</span>Disk & I/O</h2>
+
+    <h3>I/O Operations Inventory</h3>
+    <p>
+      go-finding performs disk I/O in three distinct phases: fix application, generated file
+      detection, and byte-level conflict detection. All I/O is synchronous and blocking.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>File</th>
+            <th>I/O Type</th>
+            <th>Pattern</th>
+            <th>Caching</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>FixApplier.Apply</td>
+            <td class="file">fix_applier.go:98</td>
+            <td>Read + Write</td>
+            <td>Per-file: read content → apply edits → write result</td>
+            <td><span class="badge poor">None</span></td>
+          </tr>
+          <tr>
+            <td>FileBackup.Backup</td>
+            <td class="file">fix_applier.go:123</td>
+            <td>Read + Write</td>
+            <td>Copy original to temp dir before modification</td>
+            <td><span class="badge poor">None</span></td>
+          </tr>
+          <tr>
+            <td>FileBackup.Restore</td>
+            <td class="file">fix_applier.go:135</td>
+            <td>Read + Write</td>
+            <td>Restore from temp on error</td>
+            <td><span class="badge poor">None</span></td>
+          </tr>
+          <tr>
+            <td>GeneratedFileFilter.Process</td>
+            <td class="file">generated_filter.go:58</td>
+            <td>Read</td>
+            <td>Read file content per finding → gogenfilter evaluation</td>
+            <td><span class="badge poor">None</span></td>
+          </tr>
+          <tr>
+            <td>ByteLevelConflictDetection</td>
+            <td class="file">pipeline_detect.go:194</td>
+            <td>Read</td>
+            <td>Read file content for each file with fixes</td>
+            <td><span class="badge poor">None</span></td>
+          </tr>
+          <tr>
+            <td>WriteSARIF / WriteSARIFFiltered</td>
+            <td class="file">sarif_export.go:58,79</td>
+            <td>Write</td>
+            <td>Stream via json.Encoder to io.Writer</td>
+            <td><span class="badge excellent">Streaming</span></td>
+          </tr>
+          <tr>
+            <td>FindingsFromReader</td>
+            <td class="file">sarif_import.go:29</td>
+            <td>Read</td>
+            <td>Stream via json.Decoder from io.Reader</td>
+            <td><span class="badge excellent">Streaming</span></td>
+          </tr>
+          <tr>
+            <td>Report.WriteJSON</td>
+            <td class="file">json.go:142</td>
+            <td>Write</td>
+            <td>Stream via json.Encoder to io.Writer</td>
+            <td><span class="badge excellent">Streaming</span></td>
+          </tr>
+          <tr>
+            <td>os.MkdirTemp (backup dir)</td>
+            <td class="file">fix_applier.go:32</td>
+            <td>Directory create</td>
+            <td>Once per FixApplier construction</td>
+            <td><span class="badge good">One-time</span></td>
+          </tr>
+          <tr>
+            <td>os.RemoveAll (cleanup)</td>
+            <td class="file">fix_applier.go:59</td>
+            <td>Directory delete</td>
+            <td>Once per FixApplier.Close()</td>
+            <td><span class="badge good">One-time</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warning">
+      <p>
+        <strong>File content is read multiple times for the same file:</strong>
+        In a single pipeline iteration with fix application, the same file may be read
+        (1) by GeneratedFileFilter, (2) by ByteLevelConflictDetection, (3) by FixApplier
+        for backup, and (4) by FixApplier for edit application. No content cache exists.
+        For monorepos with large files, this quadruples I/O bandwidth consumption.
+      </p>
+    </div>
+
+    <h3>Serialization Performance</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Format</th>
+            <th>Direction</th>
+            <th>Method</th>
+            <th>100 findings</th>
+            <th>Allocs/finding</th>
+            <th>Streaming</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SARIF 2.1.0</td>
+            <td>Export</td>
+            <td class="file">ToSARIF / WriteSARIF</td>
+            <td class="num">414 μs</td>
+            <td class="num">~15</td>
+            <td><span class="badge excellent">Yes (Encoder)</span></td>
+          </tr>
+          <tr>
+            <td>SARIF 2.1.0</td>
+            <td>Import</td>
+            <td class="file">FindingsFromSARIF / FindingsFromReader</td>
+            <td class="num">727 μs</td>
+            <td class="num">~22</td>
+            <td><span class="badge excellent">Yes (Decoder)</span></td>
+          </tr>
+          <tr>
+            <td>JSON</td>
+            <td>Export</td>
+            <td class="file">PrettyJSON / WriteJSON</td>
+            <td class="num">—</td>
+            <td class="num">varies</td>
+            <td><span class="badge excellent">Yes (Encoder)</span></td>
+          </tr>
+          <tr>
+            <td>JSON</td>
+            <td>Import</td>
+            <td class="file">FromJSON / ReportFromJSON</td>
+            <td class="num">—</td>
+            <td class="num">varies</td>
+            <td><span class="badge na">Buffered</span></td>
+          </tr>
+          <tr>
+            <td>Text</td>
+            <td>Export</td>
+            <td class="file">FormatText</td>
+            <td class="num">—</td>
+            <td class="num">0</td>
+            <td><span class="badge excellent">Yes (io.Writer)</span></td>
+          </tr>
+          <tr>
+            <td>Markdown</td>
+            <td>Export</td>
+            <td class="file">FormatMarkdown</td>
+            <td class="num">—</td>
+            <td class="num">0</td>
+            <td><span class="badge excellent">Yes (io.Writer)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Disk Space: Backup Directory</h3>
+    <p>
+      The <code>FixApplier</code> creates a temporary directory (<code>os.MkdirTemp</code>)
+      at construction time. For each file modified, a backup copy is stored. Disk usage
+      scales linearly with total file size modified: <strong>backup_size = Σ(file_sizes_modified)</strong>.
+      The backup directory is cleaned up via <code>Close()</code>, which calls
+      <code>os.RemoveAll</code>. If the process crashes, backups persist in
+      <code>/tmp/go-finding-backups-*</code>.
+    </p>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- NETWORK & SUBPROCESS                                          -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="network"><span class="icon">🌐</span>Network & Subprocess</h2>
+
+    <h3>Network Profile</h3>
+    <div class="stats-row">
+      <div class="stat-card green">
+        <div class="value">0</div>
+        <div class="label">HTTP Endpoints</div>
+      </div>
+      <div class="stat-card green">
+        <div class="value">0</div>
+        <div class="label">Remote API Calls</div>
+      </div>
+      <div class="stat-card green">
+        <div class="value">0</div>
+        <div class="label">Cloud Dependencies</div>
+      </div>
+      <div class="stat-card green">
+        <div class="value">0</div>
+        <div class="label">Telemetry / Analytics</div>
+      </div>
+    </div>
+
+    <p>
+      go-finding has <strong>zero network footprint</strong>. No HTTP server, no HTTP client,
+      no remote procedure calls, no telemetry. All operations are entirely local. The library
+      does not import <code>net/http</code>, <code>net/rpc</code>, or any networking package.
+    </p>
+
+    <h3>Subprocess Execution</h3>
+    <p>
+      The primary I/O-bound operation is subprocess execution for external analysis tools.
+      Detectors like govet and staticcheck shell out to external binaries via
+      <code>exec.CommandContext</code>:
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Detector</th>
+            <th>Command</th>
+            <th>IPC Method</th>
+            <th>Cancellation</th>
+            <th>Timeout</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>govet</td>
+            <td class="file">exec.CommandContext(ctx, "go", "vet", "-json", "./...")</td>
+            <td>stdout pipe → JSON parse</td>
+            <td><span class="badge excellent">ctx.Cancel()</span></td>
+            <td><span class="badge excellent">Per-detector</span></td>
+          </tr>
+          <tr>
+            <td>staticcheck</td>
+            <td class="file">exec.CommandContext(ctx, "staticcheck", ...)</td>
+            <td>stdout pipe → JSON parse</td>
+            <td><span class="badge excellent">ctx.Cancel()</span></td>
+            <td><span class="badge excellent">Per-detector</span></td>
+          </tr>
+          <tr>
+            <td>ToolAdapter (generic)</td>
+            <td class="file">adapter.go:61 — run() → parse() → convert()</td>
+            <td>Configurable ([]byte → O → []Finding)</td>
+            <td><span class="badge excellent">ctx propagation</span></td>
+            <td><span class="badge excellent">Per-detector</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Subprocess Performance Characteristics</h3>
+    <div class="insight-grid">
+      <div class="insight-card cyan-card">
+        <h4>Output Capture</h4>
+        <p>
+          <code>cmd.Output()</code> captures the entire stdout into a single <code>[]byte</code>
+          buffer before parsing. For tools that produce very large JSON output (e.g., staticcheck
+          on a monorepo with 10,000+ findings), this can consume significant memory.
+          There is no streaming subprocess output — the full JSON is buffered, then parsed.
+        </p>
+      </div>
+      <div class="insight-card blue-card">
+        <h4>Parallel Subprocess Execution</h4>
+        <p>
+          When <code>ParallelDetectors=true</code> (default), all detectors run concurrently
+          via <code>errgroup.WithContext</code>. This means multiple subprocess instances
+          execute simultaneously, competing for CPU cores, memory, and disk I/O.
+          The Go runtime's <code>GOMAXPROCS</code> does not limit subprocess parallelism —
+          the OS scheduler determines actual concurrency.
+        </p>
+      </div>
+      <div class="insight-card yellow-card">
+        <h4>Process Startup Overhead</h4>
+        <p>
+          Each <code>exec.Command</code> incurs: fork+exec syscall (~1-5 ms), dynamic linker
+          loading, Go runtime initialization (for Go-based tools like staticcheck), and tool
+          warmup (package loading, type checking). For govet on a medium project, this is
+          typically 2–30 seconds — dwarfing all in-process computation.
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- CONCURRENCY & PARALLELISM                                     -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="concurrency"><span class="icon">🔀</span>Concurrency & Parallelism</h2>
+
+    <h3>Parallel Detection Benchmarks</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Benchmark</th>
+            <th>Detectors</th>
+            <th>Findings/det</th>
+            <th class="num">Time</th>
+            <th class="num">B/op</th>
+            <th class="num">Allocs</th>
+            <th>Speedup</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Sequential</td>
+            <td>5</td>
+            <td>1k</td>
+            <td class="num">26.6 ms</td>
+            <td class="num">90 KB</td>
+            <td class="num">182</td>
+            <td><span class="badge na">baseline</span></td>
+          </tr>
+          <tr>
+            <td>Parallel</td>
+            <td>5</td>
+            <td>1k</td>
+            <td class="num">5.47 ms</td>
+            <td class="num">94 KB</td>
+            <td class="num">270</td>
+            <td><span class="badge excellent">4.9×</span></td>
+          </tr>
+          <tr>
+            <td>Parallel</td>
+            <td>5</td>
+            <td>10k</td>
+            <td class="num">25.2 ms</td>
+            <td class="num">218 MB</td>
+            <td class="num">177</td>
+            <td><span class="badge good">~5× est.</span></td>
+          </tr>
+          <tr>
+            <td>Parallel</td>
+            <td>10</td>
+            <td>1k</td>
+            <td class="num">5.86 ms</td>
+            <td class="num">37 MB</td>
+            <td class="num">196</td>
+            <td><span class="badge good">4.5× vs seq</span></td>
+          </tr>
+          <tr>
+            <td>Parallel</td>
+            <td>10</td>
+            <td>10k</td>
+            <td class="num">48.3 ms</td>
+            <td class="num">503 MB</td>
+            <td class="num">299</td>
+            <td><span class="badge good">~5× est.</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout success">
+      <p>
+        <strong>Excellent parallel scaling.</strong> With 5 detectors, parallel execution
+        achieves 4.9× speedup — near-linear scaling. The <code>errgroup.WithContext</code>
+        pattern ensures first-error cancellation while partial-success mode collects results
+        from all detectors regardless of individual failures. Allocation overhead is minimal
+        (270 vs 182 allocs — +88 allocs for mutex + slice appends).
+      </p>
+    </div>
+
+    <h3>Concurrency Architecture</h3>
+    <p>The pipeline uses a layered concurrency model:</p>
+
+    <pre><code>┌──────────────────────────────────────────────────────────────────┐
+│                     Pipeline.Run(ctx)                            │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │  detectParallel / detectPartialParallel                    │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐      │  │
+│  │  │ det 1    │ │ det 2    │ │ det 3    │ │ det N    │      │  │
+│  │  │ goroutine│ │ goroutine│ │ goroutine│ │ goroutine│      │  │
+│  │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘      │  │
+│  │       └────────────┴────────────┴────────────┘             │  │
+│  │                    errgroup.WithContext                     │  │
+│  │                    ↓ mu.Lock() append                       │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │  Sequential: process → triage → apply → verify              │  │
+│  │  (Single-goroutine; no parallelism within iteration)       │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │  Next iteration (if max > 1 and not stable)                │  │
+│  └────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────┘</code></pre>
+
+    <h3>Concurrency Safety Analysis</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Thread-safe?</th>
+            <th>Mechanism</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Report</td>
+            <td><span class="badge excellent">Yes</span></td>
+            <td>sync.RWMutex</td>
+            <td>All methods lock appropriately. Findings field still public (deprecated).</td>
+          </tr>
+          <tr>
+            <td>Metrics</td>
+            <td><span class="badge excellent">Yes</span></td>
+            <td>sync.Mutex</td>
+            <td>Snapshot() copies maps under lock.</td>
+          </tr>
+          <tr>
+            <td>Pipeline.Run</td>
+            <td><span class="badge poor">No</span></td>
+            <td>ran bool guard</td>
+            <td>Single-use only. Second call returns errAlreadyRan.</td>
+          </tr>
+          <tr>
+            <td>DetectorRegistry</td>
+            <td><span class="badge excellent">Yes</span></td>
+            <td>sync.RWMutex</td>
+            <td>BuildAll sorts names for deterministic order.</td>
+          </tr>
+          <tr>
+            <td>IntervalIndex</td>
+            <td><span class="badge excellent">Yes</span></td>
+            <td>Immutable after construction</td>
+            <td>No mutation methods. Safe for concurrent Query.</td>
+          </tr>
+          <tr>
+            <td>FixEngine</td>
+            <td><span class="badge good">Yes*</span></td>
+            <td>Stateless methods</td>
+            <td>*Providers must be thread-safe. Default providers are.</td>
+          </tr>
+          <tr>
+            <td>FixApplier</td>
+            <td><span class="badge fair">Sequential</span></td>
+            <td>Not designed for parallel file writes</td>
+            <td>Apply processes files in sorted order. Parallelism within Apply is unsafe.</td>
+          </tr>
+          <tr>
+            <td>linterCategories</td>
+            <td><span class="badge excellent">Yes</span></td>
+            <td>sync.RWMutex</td>
+            <td>Fixed in Session 8 — was a data race before.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Context Propagation</h3>
+    <p>
+      Context cancellation is propagated through all pipeline stages. The
+      <code>IsContextError()</code> function is the canonical check used in retry, partial,
+      and verify paths. <code>context.Canceled</code> and <code>context.DeadlineExceeded</code>
+      are propagated immediately rather than silently swallowed. Per-detector timeouts
+      (<code>Config.DetectorTimeouts</code>) override the global timeout.
+    </p>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- GPU                                                           -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="gpu"><span class="icon">🎮</span>GPU</h2>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="value" style="color: var(--text-muted)">None</div>
+        <div class="label">GPU Usage</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" style="color: var(--text-muted)">None</div>
+        <div class="label">CUDA / OpenCL</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" style="color: var(--text-muted)">None</div>
+        <div class="label">Compute Shaders</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" style="color: var(--text-muted)">None</div>
+        <div class="label">ML Inference</div>
+      </div>
+    </div>
+
+    <p>
+      go-finding has <strong>no GPU acceleration</strong> whatsoever. All computation runs
+      on the CPU. This is the correct design decision for the current scope because:
+    </p>
+
+    <div class="insight-grid">
+      <div class="insight-card green-card">
+        <h4>Why GPU is Not Applicable</h4>
+        <p>
+          Static analysis is inherently <strong>branch-heavy, data-dependent computation</strong>.
+          AST traversal, type inference, control-flow analysis, and rule matching involve
+          irregular memory access patterns and conditional logic — the exact workload GPUs
+          handle poorly. GPU SIMT architecture excels at uniform, lockstep computation
+          (matrix math, image processing), not graph traversal.
+        </p>
+      </div>
+      <div class="insight-card yellow-card">
+        <h4>Where GPU Could Help (Future)</h4>
+        <p>
+          <strong>1. Large-scale file scanning:</strong> Scanning millions of files for
+          generated-file patterns (regex/substring) could benefit from GPU-parallel string
+          matching. Currently handled by gogenfilter (CPU).<br><br>
+          <strong>2. AI fix suggestions:</strong> <code>FixStrategyAI</code> is reserved but
+          unimplemented. If LLM-based fix generation is added, GPU inference (via ONNX Runtime,
+          CUDA) would be essential for local model execution.<br><br>
+          <strong>3. Semantic similarity:</strong> Finding correlation could use embedding-based
+          similarity (GPU-accelerated) instead of line-proximity heuristics.
+        </p>
+      </div>
+      <div class="insight-card blue-card">
+        <h4>Hardware Acceleration Present</h4>
+        <p>
+          The <code>bytes.Index</code> and <code>bytes.Count</code> functions used in
+          <code>SubstringProvider</code> and <code>LineShiftMap</code> are SIMD-optimized
+          by the Go runtime on supported platforms (AVX2/SSE4.2 on x86, NEON on ARM).
+          This provides implicit hardware acceleration for string operations without
+          explicit GPU code.
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SCALING CHARACTERISTICS                                       -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="scaling"><span class="icon">📈</span>Scaling Characteristics</h2>
+
+    <h3>Pipeline DryRun Scaling (detect + triage only)</h3>
+    <div class="scale-chart">
+      <div class="header-cell">Metric</div>
+      <div class="header-cell">100 findings</div>
+      <div class="header-cell">1,000 findings</div>
+      <div class="header-cell">10,000 findings</div>
+      <div class="header-cell">Scaling</div>
+
+      <div class="label-cell">Time</div>
+      <div class="data-cell">38.6 μs</div>
+      <div class="data-cell">674 μs</div>
+      <div class="data-cell">6.68 ms</div>
+      <div class="data-cell"><span class="badge excellent">Linear</span></div>
+
+      <div class="label-cell">Memory</div>
+      <div class="data-cell">222 KB</div>
+      <div class="data-cell">2.71 MB</div>
+      <div class="data-cell">33.7 MB</div>
+      <div class="data-cell"><span class="badge excellent">Linear</span></div>
+
+      <div class="label-cell">Allocs</div>
+      <div class="data-cell">29</div>
+      <div class="data-cell">41</div>
+      <div class="data-cell">61</div>
+      <div class="data-cell"><span class="badge excellent">~Log</span></div>
+
+      <div class="label-cell">B/finding</div>
+      <div class="data-cell">2.2 KB</div>
+      <div class="data-cell">2.7 KB</div>
+      <div class="data-cell">3.4 KB</div>
+      <div class="data-cell"><span class="badge good">~Const</span></div>
+    </div>
+
+    <h3>FixEngine Scaling (edit application)</h3>
+    <div class="scale-chart">
+      <div class="header-cell">Metric</div>
+      <div class="header-cell">1 edit</div>
+      <div class="header-cell">10 edits</div>
+      <div class="header-cell">100 edits</div>
+      <div class="header-cell">1,000 edits</div>
+
+      <div class="label-cell">Time</div>
+      <div class="data-cell">281 ms</div>
+      <div class="data-cell">2.83 s</div>
+      <div class="data-cell">28.9 s</div>
+      <div class="data-cell">291 s</div>
+
+      <div class="label-cell">Memory</div>
+      <div class="data-cell">605 KB</div>
+      <div class="data-cell">4.58 MB</div>
+      <div class="data-cell">44.4 MB</div>
+      <div class="data-cell">443 MB</div>
+
+      <div class="label-cell">Allocs</div>
+      <div class="data-cell">25</div>
+      <div class="data-cell">213</div>
+      <div class="data-cell">2,020</div>
+      <div class="data-cell">20,036</div>
+
+      <div class="label-cell">Scaling</div>
+      <div class="data-cell"><span class="badge poor">Linear*</span></div>
+      <div class="data-cell"><span class="badge poor">Linear*</span></div>
+      <div class="data-cell"><span class="badge poor">Linear*</span></div>
+      <div class="data-cell"><span class="badge poor">Linear*</span></div>
+    </div>
+
+    <div class="callout critical">
+      <p>
+        <strong>*Linear but at an unacceptable constant factor.</strong> FixEngine scales
+        linearly in edit count, but each edit costs O(F) where F = file content size.
+        For a 10 KB file with 1000 edits, that's 10 GB of byte copies.
+        The benchmark uses synthetic content, but real-world impact on large files is severe.
+        See <a href="#recommendations">Recommendation #1</a> for the fix.
+      </p>
+    </div>
+
+    <h3>Correlate Scaling</h3>
+    <div class="scale-chart">
+      <div class="header-cell">Metric</div>
+      <div class="header-cell">100 findings</div>
+      <div class="header-cell">1,000 findings</div>
+      <div class="header-cell">10,000 findings</div>
+      <div class="header-cell">Scaling</div>
+
+      <div class="label-cell">Time</div>
+      <div class="data-cell">80.0 μs</div>
+      <div class="data-cell">1.16 ms</div>
+      <div class="data-cell">12.3 ms</div>
+      <div class="data-cell"><span class="badge excellent">~Linear</span></div>
+
+      <div class="label-cell">Memory</div>
+      <div class="data-cell">325 KB</div>
+      <div class="data-cell">4.84 MB</div>
+      <div class="data-cell">52.7 MB</div>
+      <div class="data-cell"><span class="badge good">~Linear</span></div>
+
+      <div class="label-cell">Allocs</div>
+      <div class="data-cell">241</div>
+      <div class="data-cell">653</div>
+      <div class="data-cell">973</div>
+      <div class="data-cell"><span class="badge excellent">~Log</span></div>
+    </div>
+
+    <div class="callout success">
+      <p>
+        <strong>Correlate scales sub-linearly</strong> thanks to the IntervalIndex (O(log n + k)
+        per query) and the 10,000 correlation cap (<code>maxCorrelations</code>). The proximity
+        heuristic uses sorted early-break, limiting inner loop iterations to
+        <code>maxLineDiff</code> (5 lines) of neighbors. Excellent scaling to 10k+ findings.
+      </p>
+    </div>
+
+    <h3>Throughput Summary</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Throughput</th>
+            <th>Bottleneck</th>
+            <th>10k Findings Est.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GenerateID</td>
+            <td class="num">20M IDs/sec</td>
+            <td>CPU (string concat)</td>
+            <td><span class="badge excellent">0.5 ms</span></td>
+          </tr>
+          <tr>
+            <td>Filter</td>
+            <td class="num">13M findings/sec</td>
+            <td>CPU (predicate eval)</td>
+            <td><span class="badge excellent">0.77 ms</span></td>
+          </tr>
+          <tr>
+            <td>Clone</td>
+            <td class="num">12M clones/sec</td>
+            <td>Memory allocation</td>
+            <td><span class="badge excellent">0.83 ms</span></td>
+          </tr>
+          <tr>
+            <td>Key</td>
+            <td class="num">290M lookups/sec</td>
+            <td>None (O(1))</td>
+            <td><span class="badge excellent">0.034 ms</span></td>
+          </tr>
+          <tr>
+            <td>Pipeline DryRun</td>
+            <td class="num">1.5M findings/sec</td>
+            <td>Detect + triage overhead</td>
+            <td><span class="badge excellent">6.68 ms</span></td>
+          </tr>
+          <tr>
+            <td>Correlate</td>
+            <td class="num">812k findings/sec</td>
+            <td>IntervalIndex + result allocs</td>
+            <td><span class="badge good">12.3 ms</span></td>
+          </tr>
+          <tr>
+            <td>Merge (dedup)</td>
+            <td class="num">4.2k findings/sec</td>
+            <td>Clone per finding + hash map</td>
+            <td><span class="badge good">2.36 ms</span></td>
+          </tr>
+          <tr>
+            <td>ToSARIF</td>
+            <td class="num">242k findings/sec</td>
+            <td>Struct graph construction</td>
+            <td><span class="badge fair">41.4 ms</span></td>
+          </tr>
+          <tr>
+            <td>FromSARIF</td>
+            <td class="num">137k findings/sec</td>
+            <td>JSON unmarshal + struct allocs</td>
+            <td><span class="badge fair">72.7 ms</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- RECOMMENDATIONS                                               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h2 id="recommendations"><span class="icon">🎯</span>Recommendations</h2>
+
+    <p>Prioritized by impact (Pareto principle — 80% benefit from 20% of effort):</p>
+
+    <div class="insight-grid">
+      <div class="insight-card red-card">
+        <h4>1. Fix FixEngine byte-copy bottleneck <span class="badge poor">P0</span></h4>
+        <p>
+          <strong>Problem:</strong> <code>applyEditsWithConflicts</code> at
+          <code>fix_engine.go:169</code> creates a new <code>[]byte</code> per edit via
+          <code>append(append(append(nil, result[:offset]...), replacement...), result[end:]...)</code>.
+          This is O(F) per edit where F = file size.<br><br>
+          <strong>Fix:</strong> Use <code>bytes.Buffer</code> with <code>Write</code> calls,
+          or pre-allocate a destination slice and use <code>copy()</code>. Since edits are
+          applied descending by offset, a single-pass <code>bytes.Buffer</code> from right
+          to left eliminates all intermediate copies.<br><br>
+          <strong>Expected impact:</strong> ~100× reduction in allocations for 1000 edits
+          (443 MB → ~5 MB). Wall time: 291s → ~3s.
+        </p>
+        <div class="severity">
+          <span class="badge poor">Critical</span>
+          <span class="badge info">~2 hours</span>
+        </div>
+      </div>
+
+      <div class="insight-card yellow-card">
+        <h4>2. Add file content cache for FixApplier <span class="badge fair">P1</span></h4>
+        <p>
+          <strong>Problem:</strong> Same file read up to 4× per iteration (GeneratedFileFilter,
+          ByteLevelConflictDetection, Backup, Apply).<br><br>
+          <strong>Fix:</strong> Add a <code>map[string][]byte</code> content cache to
+          <code>FixApplier</code> (or a <code>FileContentCache</code> interface). Populate
+          on first read, invalidate after write.<br><br>
+          <strong>Expected impact:</strong> 4× reduction in file I/O for fix-heavy workloads.
+          Especially impactful for monorepos with large files on slow disks.
+        </p>
+        <div class="severity">
+          <span class="badge fair">High</span>
+          <span class="badge info">~4 hours</span>
+        </div>
+      </div>
+
+      <div class="insight-card yellow-card">
+        <h4>3. Pool SARIF struct allocations <span class="badge fair">P1</span></h4>
+        <p>
+          <strong>Problem:</strong> SARIF export creates 15 allocs/finding, import creates 22.
+          These are short-lived structs immediately serialized/deserialized.<br><br>
+          <strong>Fix:</strong> Use <code>sync.Pool</code> for <code>sarifResult</code>,
+          <code>sarifLocation</code>, <code>sarifRegion</code> structs. Reset fields on return.<br><br>
+          <strong>Expected impact:</strong> ~50% reduction in GC pressure during SARIF
+          batch processing. Throughput improvement for large result sets (10k+ findings).
+        </p>
+        <div class="severity">
+          <span class="badge fair">Moderate</span>
+          <span class="badge info">~6 hours</span>
+        </div>
+      </div>
+
+      <div class="insight-card orange-card">
+        <h4>4. Stream subprocess output <span class="badge fair">P2</span></h4>
+        <p>
+          <strong>Problem:</strong> <code>cmd.Output()</code> buffers entire subprocess stdout
+          before parsing. For staticcheck on a large repo, this can be 100+ MB of JSON.<br><br>
+          <strong>Fix:</strong> Use <code>cmd.StdoutPipe()</code> + <code>json.Decoder</code>
+          to stream-parse JSON output line by line or token by token.<br><br>
+          <strong>Expected impact:</strong> Peak memory reduction proportional to output size.
+          Enables processing of very large tool outputs without OOM.
+        </p>
+        <div class="severity">
+          <span class="badge fair">Moderate</span>
+          <span class="badge info">~8 hours</span>
+        </div>
+      </div>
+
+      <div class="insight-card blue-card">
+        <h4>5. Cache LineOffsetIndex across findings <span class="badge good">P2</span></h4>
+        <p>
+          <strong>Problem:</strong> <code>LineProvider.Edits</code> calls
+          <code>buildLineOffsetIndex(content)</code> for each finding, even when multiple
+          findings target the same file.<br><br>
+          <strong>Fix:</strong> Accept an optional pre-built index, or have FixEngine build
+          the index once per file and pass it to all providers for that file.<br><br>
+          <strong>Expected impact:</strong> Eliminates redundant O(F) line scans when
+          applying multiple fixes to the same file.
+        </p>
+        <div class="severity">
+          <span class="badge good">Low-Med</span>
+          <span class="badge info">~3 hours</span>
+        </div>
+      </div>
+
+      <div class="insight-card green-card">
+        <h4>6. Pre-allocate result slices <span class="badge good">P3</span></h4>
+        <p>
+          <strong>Problem:</strong> Several functions use <code>var result []T</code> (nil slice)
+          then append, causing 2-3 reallocations for large inputs.<br><br>
+          <strong>Fix:</strong> Use <code>make([]T, 0, len(input))</code> where the result
+          size is bounded by input size. Already done in <code>Filter</code> and
+          <code>Combine</code> — extend to <code>correlateByOverlap</code>,
+          <code>DetectConflicts</code>, <code>DifferentFindings</code>.<br><br>
+          <strong>Expected impact:</strong> Minor (~5-10% allocation reduction) but free.
+        </p>
+        <div class="severity">
+          <span class="badge good">Low</span>
+          <span class="badge info">~2 hours</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Already Well-Optimized (No Action Needed)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Evidence</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Key() lookup</td>
+            <td>3.4 ns, 0 allocs — pure pointer comparison when ID is set</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+          <tr>
+            <td>Filter / FilterInPlace</td>
+            <td>Pre-allocated result, GC-safe tail zeroing, O(n×p)</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+          <tr>
+            <td>Parallel detection</td>
+            <td>4.9× speedup with 5 detectors, errgroup + context propagation</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+          <tr>
+            <td>IntervalIndex queries</td>
+            <td>O(log n + k), binary search + linear scan, immutable</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+          <tr>
+            <td>Pipeline DryRun scaling</td>
+            <td>Linear time/memory, sub-log allocation growth to 10k findings</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+          <tr>
+            <td>SARIF streaming I/O</td>
+            <td>json.Encoder/Decoder, context cancellation, no full-buffer</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+          <tr>
+            <td>Diff / DiffFindings</td>
+            <td>O(n+m) hash map, sorted output, Equal() early-return</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+          <tr>
+            <td>Clone (simple findings)</td>
+            <td>18 ns, 0 allocs — struct copy is free when no heap fields</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+          <tr>
+            <td>Context error propagation</td>
+            <td>All paths propagate Canceled/DeadlineExceeded immediately</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+          <tr>
+            <td>Dependencies</td>
+            <td>Root package: zero external deps. Only stdlib + builtins.</td>
+            <td><span class="badge excellent">Optimal</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- ADDITIONAL METRICS                                            -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <h3>Additional Performance Characteristics</h3>
+
+    <h4>Startup Cost</h4>
+    <p>
+      Near-zero. No <code>init()</code> functions in hot paths. The
+      <code>category_linter.go</code> map (70+ entries) is a package-level var initialized
+      at first use. <code>DetectrackRegistry</code> constructors are lazy.
+    </p>
+
+    <h4>Error Handling Overhead</h4>
+    <p>
+      Success paths have zero error-handling overhead. Error paths use <code>fmt.Errorf</code>
+      with <code>%w</code> (one allocation for the formatted string) and <code>errors.Join</code>
+      (one allocation for the joined error slice). Validation uses <code>errors.Join(errs...)</code>
+      which returns nil for empty slices — no allocation when valid.
+    </p>
+
+    <h4>Retry & Backoff</h4>
+    <p>
+      <code>RetryDetector</code> uses exponential backoff with jitter:
+      <code>delay = min(2^attempt × baseDelay, maxDelay) + rand(quarter)</code>.
+      Uses <code>math/rand/v2</code> (lock-free, no global mutex contention).
+      Backoff is clamped to MaxDelay after jitter to prevent cap overshoot.
+    </p>
+
+    <h4>CPU Profiling Support</h4>
+    <p>
+      The CLI supports <code>-cpuprof</code> and <code>-memprof</code> flags for
+      <code>runtime/pprof</code>. Profiles can be analyzed with
+      <code>go tool pprof</code>. The benchmark suite in <code>bench_test.go</code>
+      covers 15 operations with <code>b.ReportAllocs()</code> on allocation-sensitive paths.
+    </p>
+
+    <h4>Binary Size</h4>
+    <p>
+      The root package compiles to a lean binary with only stdlib dependencies.
+      The full CLI with all subpackages (pipeline, analysis, gogenfilter, yaml) adds
+      approximately 8-12 MB to the binary. GoReleaser config supports UPX compression
+      and SBOM generation.
+    </p>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- FOOTER                                                        -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="footer">
+      <p>
+        Generated from source code analysis and live benchmarks on 2026-06-14.<br>
+        go-finding v0.7.0 · Go 1.26.3 · AMD Ryzen AI MAX+ 395 (32 threads)<br>
+        Benchmark command: <code>go test -bench=. -benchmem -count=1 ./...</code>
+      </p>
+    </div>
+  </body>
+</html>
