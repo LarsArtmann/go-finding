@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"math"
 	"testing"
-
-	. "github.com/onsi/gomega"
 )
 
 func nanConfidenceFinding() Finding {
