@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestFindingsFromJSON(t *testing.T) {

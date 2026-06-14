@@ -4,11 +4,6 @@ import (
 	"testing"
 )
 
-const (
-	filterTestFileA = "a.go"
-	filterTestFileB = "b.go"
-)
-
 func assertGroupLen[K comparable](
 	t *testing.T,
 	groups map[K][]Finding,

@@ -4,17 +4,6 @@ import (
 	"testing"
 )
 
-type parseIDCase struct {
-	name     string
-	id       string
-	wantTool string
-	wantRule string
-	wantFile string
-	wantLine int
-	wantCol  int
-	wantOK   bool
-}
-
 func TestGenerateID_ParseID_RoundTrip(t *testing.T) {
 	t.Parallel()
 

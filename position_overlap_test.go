@@ -4,13 +4,6 @@ import (
 	"testing"
 )
 
-type containsTest struct {
-	name       string
-	r          Range
-	p          Position
-	shouldCont bool
-}
-
 func TestRangeOverlaps_OffsetOnly(t *testing.T) {
 	t.Parallel()
 
