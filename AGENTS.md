@@ -57,28 +57,28 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 
 #### Pipeline Package
 
-| File                           | Purpose                                                                                    |
-| ------------------------------ | ------------------------------------------------------------------------------------------ |
-| `pipeline/pipeline_detect.go`  | Detection, triage, and apply logic extracted from pipeline.go                              |
-| `pipeline/result.go`           | PipelineResult, CompletionReason, Iteration types                                          |
-| `pipeline/stage.go`            | Stage named type with constants for pipeline stages                                        |
-| `pipeline/pipeline.go`         | Pipeline struct, Run, structured logging, OnStage                                          |
+| File                           | Purpose                                                                                                                                                   |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pipeline/pipeline_detect.go`  | Detection, triage, and apply logic extracted from pipeline.go                                                                                             |
+| `pipeline/result.go`           | PipelineResult, CompletionReason, Iteration types                                                                                                         |
+| `pipeline/stage.go`            | Stage named type with constants for pipeline stages                                                                                                       |
+| `pipeline/pipeline.go`         | Pipeline struct, Run, structured logging, OnStage                                                                                                         |
 | `pipeline/adapters.go`         | Type aliases to root package (Detector, DetectorFunc, NamedDetectorFunc), FindingProcessor interfaces, ProcessorFunc, NamedProcessorFunc, context helpers |
-| `pipeline/config.go`           | Config struct, DefaultConfig, Validate, DetectorTimeouts, Logger, OnStage                  |
-| `pipeline/conflict.go`         | Fix conflict detection and analysis                                                        |
-| `pipeline/fix_edit.go`         | FixEdit type — byte-level edit operations (Offset, Length, Replacement)                    |
-| `pipeline/fix_provider.go`     | FixProvider interface + 3 default providers (Offset, Line, Substring)                      |
-| `pipeline/fix_engine.go`       | Byte-level FixEngine with provider delegation, descending-offset apply                     |
-| `pipeline/fix_applier.go`      | Filesystem fix application with backup/rollback, custom providers                          |
-| `pipeline/verify.go`           | Verification stage: re-run detectors, diff findings                                        |
-| `pipeline/metrics.go`          | Timing/count metrics collection with snapshots                                             |
-| `pipeline/retry.go`            | Exponential backoff retry wrapper for detectors                                            |
-| `pipeline/partial.go`          | Partial success: collect from failed detectors                                             |
-| `pipeline/generated_filter.go` | GeneratedFileFilter processor — removes findings from auto-generated files via gogenfilter |
-| `pipeline/stage_hook.go` | StageHook interface, StageHookFunc adapter, StageEvent |
-| `pipeline/line_shift.go` | LineShiftMap — byte-offset-aware line shift tracking after edits |
-| `pipeline/config_file.go` | ConfigFile struct, ConfigFromFile/ConfigFromReader |
-| `pipeline/middleware.go` | MiddlewareFunc, ComposeMiddleware — composable pipeline middleware |
+| `pipeline/config.go`           | Config struct, DefaultConfig, Validate, DetectorTimeouts, Logger, OnStage                                                                                 |
+| `pipeline/conflict.go`         | Fix conflict detection and analysis                                                                                                                       |
+| `pipeline/fix_edit.go`         | FixEdit type — byte-level edit operations (Offset, Length, Replacement)                                                                                   |
+| `pipeline/fix_provider.go`     | FixProvider interface + 3 default providers (Offset, Line, Substring)                                                                                     |
+| `pipeline/fix_engine.go`       | Byte-level FixEngine with provider delegation, descending-offset apply                                                                                    |
+| `pipeline/fix_applier.go`      | Filesystem fix application with backup/rollback, custom providers                                                                                         |
+| `pipeline/verify.go`           | Verification stage: re-run detectors, diff findings                                                                                                       |
+| `pipeline/metrics.go`          | Timing/count metrics collection with snapshots                                                                                                            |
+| `pipeline/retry.go`            | Exponential backoff retry wrapper for detectors                                                                                                           |
+| `pipeline/partial.go`          | Partial success: collect from failed detectors                                                                                                            |
+| `pipeline/generated_filter.go` | GeneratedFileFilter processor — removes findings from auto-generated files via gogenfilter                                                                |
+| `pipeline/stage_hook.go`       | StageHook interface, StageHookFunc adapter, StageEvent                                                                                                    |
+| `pipeline/line_shift.go`       | LineShiftMap — byte-offset-aware line shift tracking after edits                                                                                          |
+| `pipeline/config_file.go`      | ConfigFile struct, ConfigFromFile/ConfigFromReader                                                                                                        |
+| `pipeline/middleware.go`       | MiddlewareFunc, ComposeMiddleware — composable pipeline middleware                                                                                        |
 
 #### CLI
 

@@ -380,13 +380,13 @@ fmt.Println(finding.Version) // "0.6.1"
 
 ## Project Stats
 
-| Package   | Coverage  |
-| --------- | --------- |
-| Root      | 95.7%     |
-| Analysis  | 98.5%     |
-| Pipeline  | 93.7%     |
-| CLI       | 90.7%     |
-| Detectors | 96.1%     |
+| Package   | Coverage |
+| --------- | -------- |
+| Root      | 95.7%    |
+| Analysis  | 98.5%    |
+| Pipeline  | 93.7%    |
+| CLI       | 90.7%    |
+| Detectors | 96.1%    |
 
 ## Related Projects
 

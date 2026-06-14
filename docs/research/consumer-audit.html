@@ -35,7 +35,11 @@
         --heat-4: #3fb950;
       }
 
-      * { margin: 0; padding: 0; box-sizing: border-box; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -101,7 +105,9 @@
         letter-spacing: 0.05em;
       }
 
-      p { margin: 0.5rem 0; }
+      p {
+        margin: 0.5rem 0;
+      }
 
       /* ── Stat cards row ── */
       .stats-row {
@@ -129,11 +135,21 @@
         letter-spacing: 0.05em;
         margin-top: 0.25rem;
       }
-      .stat-card.green .value { color: var(--green); }
-      .stat-card.blue .value { color: var(--blue); }
-      .stat-card.yellow .value { color: var(--yellow); }
-      .stat-card.red .value { color: var(--red); }
-      .stat-card.purple .value { color: var(--purple); }
+      .stat-card.green .value {
+        color: var(--green);
+      }
+      .stat-card.blue .value {
+        color: var(--blue);
+      }
+      .stat-card.yellow .value {
+        color: var(--yellow);
+      }
+      .stat-card.red .value {
+        color: var(--red);
+      }
+      .stat-card.purple .value {
+        color: var(--purple);
+      }
 
       /* ── Tables ── */
       .table-wrap {
@@ -147,7 +163,9 @@
         border-collapse: collapse;
         font-size: 0.88rem;
       }
-      thead { background: var(--surface-alt); }
+      thead {
+        background: var(--surface-alt);
+      }
       th {
         text-align: left;
         padding: 0.65rem 0.85rem;
@@ -164,8 +182,12 @@
         border-bottom: 1px solid var(--border);
         vertical-align: middle;
       }
-      tr:last-child td { border-bottom: none; }
-      tbody tr:hover { background: var(--surface); }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: var(--surface);
+      }
 
       /* ── Badges ── */
       .badge {
@@ -176,9 +198,21 @@
         font-weight: 600;
         white-space: nowrap;
       }
-      .badge.yes { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
-      .badge.no { background: var(--surface-alt); color: var(--text-muted); border: 1px solid var(--border); }
-      .badge.barely { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
+      .badge.yes {
+        background: var(--green-bg);
+        color: var(--green);
+        border: 1px solid var(--green-border);
+      }
+      .badge.no {
+        background: var(--surface-alt);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+      }
+      .badge.barely {
+        background: var(--yellow-bg);
+        color: var(--yellow);
+        border: 1px solid var(--yellow-border);
+      }
 
       /* ── Usage bar ── */
       .usage-bar {
@@ -199,9 +233,15 @@
         border-radius: 4px;
         transition: width 0.3s;
       }
-      .usage-bar .bar-fill.high { background: var(--green); }
-      .usage-bar .bar-fill.mid { background: var(--yellow); }
-      .usage-bar .bar-fill.low { background: var(--red); }
+      .usage-bar .bar-fill.high {
+        background: var(--green);
+      }
+      .usage-bar .bar-fill.mid {
+        background: var(--yellow);
+      }
+      .usage-bar .bar-fill.low {
+        background: var(--red);
+      }
       .usage-bar .count {
         font-size: 0.8rem;
         color: var(--text-muted);
@@ -223,10 +263,18 @@
         padding: 1.25rem;
         border-left: 4px solid var(--blue);
       }
-      .insight-card.green-card { border-left-color: var(--green); }
-      .insight-card.yellow-card { border-left-color: var(--yellow); }
-      .insight-card.red-card { border-left-color: var(--red); }
-      .insight-card.purple-card { border-left-color: var(--purple); }
+      .insight-card.green-card {
+        border-left-color: var(--green);
+      }
+      .insight-card.yellow-card {
+        border-left-color: var(--yellow);
+      }
+      .insight-card.red-card {
+        border-left-color: var(--red);
+      }
+      .insight-card.purple-card {
+        border-left-color: var(--purple);
+      }
       .insight-card h4 {
         margin: 0 0 0.5rem;
         color: var(--text);
@@ -329,34 +377,62 @@
         text-decoration: none;
         font-size: 0.9rem;
       }
-      .toc a:hover { text-decoration: underline; }
+      .toc a:hover {
+        text-decoration: underline;
+      }
 
       /* ── Heatmap table ── */
-      .heat-0 { background: var(--heat-0); }
-      .heat-1 { background: var(--heat-1); }
-      .heat-2 { background: var(--heat-2); color: var(--green); }
-      .heat-3 { background: var(--heat-3); }
-      .heat-4 { background: var(--heat-4); color: #000; font-weight: 600; }
+      .heat-0 {
+        background: var(--heat-0);
+      }
+      .heat-1 {
+        background: var(--heat-1);
+      }
+      .heat-2 {
+        background: var(--heat-2);
+        color: var(--green);
+      }
+      .heat-3 {
+        background: var(--heat-3);
+      }
+      .heat-4 {
+        background: var(--heat-4);
+        color: #000;
+        font-weight: 600;
+      }
 
-      .check { color: var(--green); }
-      .cross { color: var(--red); opacity: 0.5; }
+      .check {
+        color: var(--green);
+      }
+      .cross {
+        color: var(--red);
+        opacity: 0.5;
+      }
 
       /* ── Responsive ── */
       @media (max-width: 768px) {
-        body { padding: 1rem; }
-        .stats-row { grid-template-columns: repeat(2, 1fr); }
-        .insight-grid { grid-template-columns: 1fr; }
-        .toc ul { columns: 1; }
+        body {
+          padding: 1rem;
+        }
+        .stats-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .insight-grid {
+          grid-template-columns: 1fr;
+        }
+        .toc ul {
+          columns: 1;
+        }
       }
     </style>
   </head>
   <body>
-
     <div class="header">
       <h1>Consumer Audit &mdash; go-finding API Usage</h1>
       <div class="description">
         Deep analysis of how every project consuming <code>github.com/larsartmann/go-finding</code>
-        actually uses the library. Covers 15 consumer projects, ~200+ importing files, every exported symbol.
+        actually uses the library. Covers 15 consumer projects, ~200+ importing files, every
+        exported symbol.
       </div>
       <div class="meta">
         <span>&#128203; 15 consumer projects</span>
@@ -410,8 +486,9 @@
     <div class="verdict">
       <h3>Core Finding</h3>
       <p>
-        The <strong>data model</strong> &mdash; <code>Finding</code>, <code>Report</code>, <code>Severity</code>,
-        <code>Position</code>, <code>Category</code>, <code>Builder</code>, and <strong>SARIF export</strong>
+        The <strong>data model</strong> &mdash; <code>Finding</code>, <code>Report</code>,
+        <code>Severity</code>, <code>Position</code>, <code>Category</code>, <code>Builder</code>,
+        and <strong>SARIF export</strong>
         &mdash; is the real product. Everything else is either niche or dead weight.
       </p>
     </div>
@@ -438,7 +515,10 @@
             <td>~90</td>
             <td><span class="badge no">No</span></td>
             <td><span class="badge no">No</span></td>
-            <td>Monorepo with 18 sub-modules; deepest consumer. Finding, Report, SARIF, Combine, Diff, Builder</td>
+            <td>
+              Monorepo with 18 sub-modules; deepest consumer. Finding, Report, SARIF, Combine, Diff,
+              Builder
+            </td>
           </tr>
           <tr>
             <td><strong>go-structure-linter</strong></td>
@@ -462,7 +542,9 @@
             <td>12</td>
             <td><span class="badge no">No</span></td>
             <td><span class="badge no">No</span></td>
-            <td>Linter JSON → Finding conversion; Category mapping tables, GroupBy, Filter, SARIF</td>
+            <td>
+              Linter JSON → Finding conversion; Category mapping tables, GroupBy, Filter, SARIF
+            </td>
           </tr>
           <tr>
             <td><strong>go-auto-upgrade</strong></td>
@@ -558,7 +640,9 @@
             <td>4</td>
             <td><span class="badge yes">Yes</span></td>
             <td><span class="badge no">No</span></td>
-            <td>Deepest pipeline user; pipeline.New, Config, Metrics, RetryConfig, ActiveFindings</td>
+            <td>
+              Deepest pipeline user; pipeline.New, Config, Metrics, RetryConfig, ActiveFindings
+            </td>
           </tr>
         </tbody>
       </table>
@@ -566,10 +650,10 @@
 
     <!-- ════════════════════════════════════════════════ -->
     <h2 id="heatmap">API Heatmap</h2>
-    <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0.75rem;">
+    <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0.75rem">
       Every exported symbol in the root package, sorted by number of consuming projects.
-      <span style="color: var(--green);">&#9632;</span> = used &nbsp;
-      <span style="color: var(--text-muted);">&#9632;</span> = unused
+      <span style="color: var(--green)">&#9632;</span> = used &nbsp;
+      <span style="color: var(--text-muted)">&#9632;</span> = unused
     </p>
 
     <div class="table-wrap">
@@ -579,72 +663,613 @@
             <th>Symbol</th>
             <th>Kind</th>
             <th>Usage</th>
-            <th style="text-align:right;">Projects</th>
+            <th style="text-align: right">Projects</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td><code>Finding</code></td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:100%"></div></div><span class="count">15/15</span></div></td><td style="text-align:right;">15</td></tr>
-          <tr><td><code>Severity</code></td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:100%"></div></div><span class="count">15/15</span></div></td><td style="text-align:right;">15</td></tr>
-          <tr><td><code>SeverityInfo/Warning/Error/Critical</code></td><td>const</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:100%"></div></div><span class="count">15/15</span></div></td><td style="text-align:right;">15</td></tr>
-          <tr><td><code>Position</code></td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:93%"></div></div><span class="count">14/15</span></div></td><td style="text-align:right;">14</td></tr>
-          <tr><td><code>Pos()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:67%"></div></div><span class="count">10/15</span></div></td><td style="text-align:right;">10</td></tr>
-          <tr><td><code>Category</code></td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:87%"></div></div><span class="count">13/15</span></div></td><td style="text-align:right;">13</td></tr>
-          <tr><td><code>Category*</code> constants</td><td>const</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:87%"></div></div><span class="count">13/15</span></div></td><td style="text-align:right;">13</td></tr>
-          <tr><td><code>NewFinding()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:80%"></div></div><span class="count">12/15</span></div></td><td style="text-align:right;">12</td></tr>
-          <tr><td><code>FixStrategy</code></td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:80%"></div></div><span class="count">12/15</span></div></td><td style="text-align:right;">12</td></tr>
-          <tr><td><code>FixStrategyNone/Direct/Suggest</code></td><td>const</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:80%"></div></div><span class="count">12/15</span></div></td><td style="text-align:right;">12</td></tr>
-          <tr><td><code>Report</code></td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:80%"></div></div><span class="count">12/15</span></div></td><td style="text-align:right;">12</td></tr>
-          <tr><td><code>NewReport()</code> + <code>ToolInfo</code></td><td>func/type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:80%"></div></div><span class="count">12/15</span></div></td><td style="text-align:right;">12</td></tr>
-          <tr><td><code>NewBuilder()</code> + <code>Builder</code></td><td>func/type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:73%"></div></div><span class="count">11/15</span></div></td><td style="text-align:right;">11</td></tr>
-          <tr><td><code>Report.ToSARIF()</code> / <code>WriteSARIF()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:53%"></div></div><span class="count">8/15</span></div></td><td style="text-align:right;">8</td></tr>
-          <tr><td><code>Report.AddFindings()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:53%"></div></div><span class="count">8/15</span></div></td><td style="text-align:right;">8</td></tr>
-          <tr><td><code>Report.ComputeSummary()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill high" style="width:53%"></div></div><span class="count">8/15</span></div></td><td style="text-align:right;">8</td></tr>
-          <tr><td><code>Tag</code></td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:33%"></div></div><span class="count">5/15</span></div></td><td style="text-align:right;">5</td></tr>
-          <tr><td><code>Filter()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:27%"></div></div><span class="count">4/15</span></div></td><td style="text-align:right;">4</td></tr>
-          <tr><td><code>BySeverity()</code> / <code>BySeverityAtLeast()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:27%"></div></div><span class="count">4/15</span></div></td><td style="text-align:right;">4</td></tr>
-          <tr><td><code>GroupByFile/Category/Severity()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:20%"></div></div><span class="count">3/15</span></div></td><td style="text-align:right;">3</td></tr>
-          <tr><td><code>SortByPosition()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:20%"></div></div><span class="count">3/15</span></div></td><td style="text-align:right;">3</td></tr>
-          <tr><td><code>Range</code> / <code>NewRange()</code></td><td>type/func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:20%"></div></div><span class="count">3/15</span></div></td><td style="text-align:right;">3</td></tr>
-          <tr><td><code>Confidence</code> + constants</td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:20%"></div></div><span class="count">3/15</span></div></td><td style="text-align:right;">3</td></tr>
-          <tr><td><code>FormatText()</code> / <code>FormatMarkdown()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:20%"></div></div><span class="count">3/15</span></div></td><td style="text-align:right;">3</td></tr>
-          <tr><td><code>NewIOError()</code> / <code>NewParseError()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:20%"></div></div><span class="count">3/15</span></div></td><td style="text-align:right;">3</td></tr>
-          <tr><td><code>RelatedRef</code> / <code>RelationKind</code></td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:13%"></div></div><span class="count">2/15</span></div></td><td style="text-align:right;">2</td></tr>
-          <tr><td><code>Combine()</code> / <code>WithDeduplication()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:13%"></div></div><span class="count">2/15</span></div></td><td style="text-align:right;">2</td></tr>
-          <tr><td><code>Diff()</code> / <code>DiffResult</code></td><td>func/type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:13%"></div></div><span class="count">2/15</span></div></td><td style="text-align:right;">2</td></tr>
-          <tr><td><code>Report.WriteJSON()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:13%"></div></div><span class="count">2/15</span></div></td><td style="text-align:right;">2</td></tr>
-          <tr><td><code>Report.PrettyJSON()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill mid" style="width:13%"></div></div><span class="count">2/15</span></div></td><td style="text-align:right;">2</td></tr>
-          <tr><td><code>GenerateID()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill low" style="width:7%"></div></div><span class="count">1/15</span></div></td><td style="text-align:right;">1</td></tr>
-          <tr><td><code>FromJSON/ToJSON</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill low" style="width:7%"></div></div><span class="count">1/15</span></div></td><td style="text-align:right;">1</td></tr>
-          <tr><td><code>Report.WriteSARIFFiltered()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill low" style="width:7%"></div></div><span class="count">1/15</span></div></td><td style="text-align:right;">1</td></tr>
-          <tr><td><code>Report.ActiveFindings()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill low" style="width:7%"></div></div><span class="count">1/15</span></div></td><td style="text-align:right;">1</td></tr>
-          <tr><td><code>ParseSeverity()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill low" style="width:7%"></div></div><span class="count">1/15</span></div></td><td style="text-align:right;">1</td></tr>
-          <tr><td><code>NewValidationError()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill low" style="width:7%"></div></div><span class="count">1/15</span></div></td><td style="text-align:right;">1</td></tr>
-          <tr><td><code>ToLSP()</code> / <code>LSPDiagnostic</code></td><td>method/type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill low" style="width:7%"></div></div><span class="count">1/15</span></div></td><td style="text-align:right;">1</td></tr>
-          <tr><td><code>ByCategory()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill low" style="width:7%"></div></div><span class="count">1/15</span></div></td><td style="text-align:right;">1</td></tr>
-          <tr class="heat-0"><td><code>Suppression</code> / <code>SuppressionKind</code></td><td>type</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>NotSuppressed</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>ByConfidence()</code> / <code>ByConfidenceAtLeast()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>Negate()</code> / <code>AnyOf()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>FilterInPlace()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>HasFix()</code> / <code>HasSuggestion()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>ByFixStrategy()</code> / <code>ByTool()</code> / <code>ByRule()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>Severity.Badge()</code> / <code>Emoji()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>Severity.GreaterThan/LessThan/...</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>CountBySeverity()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>MergeInto()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>FindingsFromSARIF()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>Finding.Clone()</code> / <code>Key()</code> / <code>Equal()</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>ParseID()</code> / <code>IsHashID()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>Range.Overlaps/Intersection/Adjacent/...</code></td><td>method</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
-          <tr class="heat-0"><td><code>IsFindingError()</code> / <code>GetCategory()</code></td><td>func</td><td><div class="usage-bar"><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="count">0/15</span></div></td><td style="text-align:right; color: var(--text-muted);">0</td></tr>
+          <tr>
+            <td><code>Finding</code></td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 100%"></div></div>
+                <span class="count">15/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">15</td>
+          </tr>
+          <tr>
+            <td><code>Severity</code></td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 100%"></div></div>
+                <span class="count">15/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">15</td>
+          </tr>
+          <tr>
+            <td><code>SeverityInfo/Warning/Error/Critical</code></td>
+            <td>const</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 100%"></div></div>
+                <span class="count">15/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">15</td>
+          </tr>
+          <tr>
+            <td><code>Position</code></td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 93%"></div></div>
+                <span class="count">14/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">14</td>
+          </tr>
+          <tr>
+            <td><code>Pos()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 67%"></div></div>
+                <span class="count">10/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">10</td>
+          </tr>
+          <tr>
+            <td><code>Category</code></td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 87%"></div></div>
+                <span class="count">13/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">13</td>
+          </tr>
+          <tr>
+            <td><code>Category*</code> constants</td>
+            <td>const</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 87%"></div></div>
+                <span class="count">13/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">13</td>
+          </tr>
+          <tr>
+            <td><code>NewFinding()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 80%"></div></div>
+                <span class="count">12/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">12</td>
+          </tr>
+          <tr>
+            <td><code>FixStrategy</code></td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 80%"></div></div>
+                <span class="count">12/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">12</td>
+          </tr>
+          <tr>
+            <td><code>FixStrategyNone/Direct/Suggest</code></td>
+            <td>const</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 80%"></div></div>
+                <span class="count">12/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">12</td>
+          </tr>
+          <tr>
+            <td><code>Report</code></td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 80%"></div></div>
+                <span class="count">12/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">12</td>
+          </tr>
+          <tr>
+            <td><code>NewReport()</code> + <code>ToolInfo</code></td>
+            <td>func/type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 80%"></div></div>
+                <span class="count">12/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">12</td>
+          </tr>
+          <tr>
+            <td><code>NewBuilder()</code> + <code>Builder</code></td>
+            <td>func/type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 73%"></div></div>
+                <span class="count">11/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">11</td>
+          </tr>
+          <tr>
+            <td><code>Report.ToSARIF()</code> / <code>WriteSARIF()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 53%"></div></div>
+                <span class="count">8/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">8</td>
+          </tr>
+          <tr>
+            <td><code>Report.AddFindings()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 53%"></div></div>
+                <span class="count">8/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">8</td>
+          </tr>
+          <tr>
+            <td><code>Report.ComputeSummary()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill high" style="width: 53%"></div></div>
+                <span class="count">8/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">8</td>
+          </tr>
+          <tr>
+            <td><code>Tag</code></td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 33%"></div></div>
+                <span class="count">5/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">5</td>
+          </tr>
+          <tr>
+            <td><code>Filter()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 27%"></div></div>
+                <span class="count">4/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">4</td>
+          </tr>
+          <tr>
+            <td><code>BySeverity()</code> / <code>BySeverityAtLeast()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 27%"></div></div>
+                <span class="count">4/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">4</td>
+          </tr>
+          <tr>
+            <td><code>GroupByFile/Category/Severity()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 20%"></div></div>
+                <span class="count">3/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">3</td>
+          </tr>
+          <tr>
+            <td><code>SortByPosition()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 20%"></div></div>
+                <span class="count">3/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">3</td>
+          </tr>
+          <tr>
+            <td><code>Range</code> / <code>NewRange()</code></td>
+            <td>type/func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 20%"></div></div>
+                <span class="count">3/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">3</td>
+          </tr>
+          <tr>
+            <td><code>Confidence</code> + constants</td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 20%"></div></div>
+                <span class="count">3/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">3</td>
+          </tr>
+          <tr>
+            <td><code>FormatText()</code> / <code>FormatMarkdown()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 20%"></div></div>
+                <span class="count">3/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">3</td>
+          </tr>
+          <tr>
+            <td><code>NewIOError()</code> / <code>NewParseError()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 20%"></div></div>
+                <span class="count">3/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">3</td>
+          </tr>
+          <tr>
+            <td><code>RelatedRef</code> / <code>RelationKind</code></td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 13%"></div></div>
+                <span class="count">2/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">2</td>
+          </tr>
+          <tr>
+            <td><code>Combine()</code> / <code>WithDeduplication()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 13%"></div></div>
+                <span class="count">2/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">2</td>
+          </tr>
+          <tr>
+            <td><code>Diff()</code> / <code>DiffResult</code></td>
+            <td>func/type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 13%"></div></div>
+                <span class="count">2/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">2</td>
+          </tr>
+          <tr>
+            <td><code>Report.WriteJSON()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 13%"></div></div>
+                <span class="count">2/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">2</td>
+          </tr>
+          <tr>
+            <td><code>Report.PrettyJSON()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill mid" style="width: 13%"></div></div>
+                <span class="count">2/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">2</td>
+          </tr>
+          <tr>
+            <td><code>GenerateID()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill low" style="width: 7%"></div></div>
+                <span class="count">1/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">1</td>
+          </tr>
+          <tr>
+            <td><code>FromJSON/ToJSON</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill low" style="width: 7%"></div></div>
+                <span class="count">1/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">1</td>
+          </tr>
+          <tr>
+            <td><code>Report.WriteSARIFFiltered()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill low" style="width: 7%"></div></div>
+                <span class="count">1/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">1</td>
+          </tr>
+          <tr>
+            <td><code>Report.ActiveFindings()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill low" style="width: 7%"></div></div>
+                <span class="count">1/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">1</td>
+          </tr>
+          <tr>
+            <td><code>ParseSeverity()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill low" style="width: 7%"></div></div>
+                <span class="count">1/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">1</td>
+          </tr>
+          <tr>
+            <td><code>NewValidationError()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill low" style="width: 7%"></div></div>
+                <span class="count">1/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">1</td>
+          </tr>
+          <tr>
+            <td><code>ToLSP()</code> / <code>LSPDiagnostic</code></td>
+            <td>method/type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill low" style="width: 7%"></div></div>
+                <span class="count">1/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">1</td>
+          </tr>
+          <tr>
+            <td><code>ByCategory()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill low" style="width: 7%"></div></div>
+                <span class="count">1/15</span>
+              </div>
+            </td>
+            <td style="text-align: right">1</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>Suppression</code> / <code>SuppressionKind</code></td>
+            <td>type</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>NotSuppressed</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>ByConfidence()</code> / <code>ByConfidenceAtLeast()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>Negate()</code> / <code>AnyOf()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>FilterInPlace()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>HasFix()</code> / <code>HasSuggestion()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>ByFixStrategy()</code> / <code>ByTool()</code> / <code>ByRule()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>Severity.Badge()</code> / <code>Emoji()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>Severity.GreaterThan/LessThan/...</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>CountBySeverity()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>MergeInto()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>FindingsFromSARIF()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>Finding.Clone()</code> / <code>Key()</code> / <code>Equal()</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>ParseID()</code> / <code>IsHashID()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>Range.Overlaps/Intersection/Adjacent/...</code></td>
+            <td>method</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
+          <tr class="heat-0">
+            <td><code>IsFindingError()</code> / <code>GetCategory()</code></td>
+            <td>func</td>
+            <td>
+              <div class="usage-bar">
+                <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+                <span class="count">0/15</span>
+              </div>
+            </td>
+            <td style="text-align: right; color: var(--text-muted)">0</td>
+          </tr>
         </tbody>
       </table>
     </div>
 
     <!-- ════════════════════════════════════════════════ -->
     <h2 id="heavily-used">Heavily Used &mdash; The Core Product</h2>
-    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;">
-      These symbols are used by 8+ projects. They represent the validated, indispensable API surface.
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem">
+      These symbols are used by 8+ projects. They represent the validated, indispensable API
+      surface.
     </p>
 
     <div class="insight-grid">
@@ -676,14 +1301,18 @@
 
     <!-- ════════════════════════════════════════════════ -->
     <h2 id="moderately-used">Moderately Used &mdash; Niche but Validated</h2>
-    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;">
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem">
       3&ndash;7 projects. These solve real problems for multiple consumers.
     </p>
 
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>API</th><th>Projects</th><th>Who Uses It</th></tr>
+          <tr>
+            <th>API</th>
+            <th>Projects</th>
+            <th>Who Uses It</th>
+          </tr>
         </thead>
         <tbody>
           <tr>
@@ -742,63 +1371,72 @@
 
     <!-- ════════════════════════════════════════════════ -->
     <h2 id="barely-used">Barely Used &mdash; At Risk</h2>
-    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;">
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem">
       1&ndash;2 projects. These exist but have minimal validation from real usage.
     </p>
 
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>API</th><th>Projects</th><th>Who</th><th>Risk</th></tr>
+          <tr>
+            <th>API</th>
+            <th>Projects</th>
+            <th>Who</th>
+            <th>Risk</th>
+          </tr>
         </thead>
         <tbody>
           <tr>
             <td><code>pipeline</code> package</td>
             <td>3 (4 files)</td>
             <td>template-AUTHORS, template-SECURITY (interface only), oxlint-auto-configure</td>
-            <td style="color: var(--yellow);">High &mdash; massive API surface, near-zero adoption</td>
+            <td style="color: var(--yellow)">
+              High &mdash; massive API surface, near-zero adoption
+            </td>
           </tr>
           <tr>
             <td><code>analysis</code> package</td>
             <td>1 (1 file)</td>
             <td>hierarchical-errors (<code>FromTokenPosition</code>)</td>
-            <td style="color: var(--yellow);">Medium &mdash; single function used from entire package</td>
+            <td style="color: var(--yellow)">
+              Medium &mdash; single function used from entire package
+            </td>
           </tr>
           <tr>
             <td><code>GenerateID()</code></td>
             <td>1</td>
             <td>BuildFlow</td>
-            <td style="color: var(--text-muted);">Low</td>
+            <td style="color: var(--text-muted)">Low</td>
           </tr>
           <tr>
             <td><code>FromJSON/ToJSON</code></td>
             <td>1</td>
             <td>BuildFlow (baseline)</td>
-            <td style="color: var(--text-muted);">Low</td>
+            <td style="color: var(--text-muted)">Low</td>
           </tr>
           <tr>
             <td><code>WriteSARIFFiltered()</code></td>
             <td>1</td>
             <td>template-SECURITY</td>
-            <td style="color: var(--text-muted);">Low</td>
+            <td style="color: var(--text-muted)">Low</td>
           </tr>
           <tr>
             <td><code>ActiveFindings()</code></td>
             <td>1</td>
             <td>oxlint-auto-configure</td>
-            <td style="color: var(--text-muted);">Low</td>
+            <td style="color: var(--text-muted)">Low</td>
           </tr>
           <tr>
             <td><code>ParseSeverity()</code></td>
             <td>1</td>
             <td>template-readme</td>
-            <td style="color: var(--yellow);">Medium &mdash; 5+ projects re-implement this</td>
+            <td style="color: var(--yellow)">Medium &mdash; 5+ projects re-implement this</td>
           </tr>
           <tr>
             <td><code>ToLSP()</code></td>
             <td>1</td>
             <td>go-functional-fixer</td>
-            <td style="color: var(--text-muted);">Low</td>
+            <td style="color: var(--text-muted)">Low</td>
           </tr>
         </tbody>
       </table>
@@ -806,28 +1444,26 @@
 
     <!-- ════════════════════════════════════════════════ -->
     <h2 id="never-used">Never Used &mdash; Dead API Surface</h2>
-    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;">
-      Zero consumers across all 15 projects. These symbols compile, test, and ship &mdash; but nobody calls them.
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem">
+      Zero consumers across all 15 projects. These symbols compile, test, and ship &mdash; but
+      nobody calls them.
     </p>
 
     <div class="insight-grid">
       <div class="insight-card red-card">
         <h4>Suppression System &mdash; entire feature unused</h4>
         <p>
-          <code>Suppression</code>, <code>SuppressionKind</code>,
-          <code>IsActive()</code>, <code>IsSuppressed()</code>,
-          <code>NotSuppressed</code> filter. Zero consumers.
-          Nobody suppresses findings through the library.
+          <code>Suppression</code>, <code>SuppressionKind</code>, <code>IsActive()</code>,
+          <code>IsSuppressed()</code>, <code>NotSuppressed</code> filter. Zero consumers. Nobody
+          suppresses findings through the library.
         </p>
       </div>
       <div class="insight-card red-card">
         <h4>Filter Combinators &mdash; zero adoption</h4>
         <p>
-          <code>Negate()</code>, <code>AnyOf()</code>,
-          <code>FilterInPlace()</code>, <code>HasFix()</code>,
-          <code>HasSuggestion()</code>,
-          <code>ByConfidence()</code>, <code>ByFixStrategy()</code>,
-          <code>ByTool()</code>, <code>ByRule()</code>,
+          <code>Negate()</code>, <code>AnyOf()</code>, <code>FilterInPlace()</code>,
+          <code>HasFix()</code>, <code>HasSuggestion()</code>, <code>ByConfidence()</code>,
+          <code>ByFixStrategy()</code>, <code>ByTool()</code>, <code>ByRule()</code>,
           <code>ByConfidenceAtLeast()</code>. All zero.
         </p>
       </div>
@@ -849,8 +1485,7 @@
       <div class="insight-card red-card">
         <h4>Comparison &amp; Identity Helpers</h4>
         <p>
-          <code>Severity.GreaterThan/LessThan/...</code>,
-          <code>Confidence.Compare()</code>,
+          <code>Severity.GreaterThan/LessThan/...</code>, <code>Confidence.Compare()</code>,
           <code>Finding.Clone()</code>, <code>Key()</code>, <code>Equal()</code>,
           <code>ParseID()</code>, <code>IsHashID()</code>,
           <code>Range.Overlaps/Intersection/Adjacent/...</code>.
@@ -873,52 +1508,52 @@
       <div class="insight-card">
         <h4>1. The data model IS the product</h4>
         <p>
-          <code>Finding</code>, <code>Report</code>, <code>Severity</code>,
-          <code>Position</code>, <code>Category</code>, <code>Builder</code> &mdash;
-          this is what 15 projects depend on. The library succeeds as a
+          <code>Finding</code>, <code>Report</code>, <code>Severity</code>, <code>Position</code>,
+          <code>Category</code>, <code>Builder</code> &mdash; this is what 15 projects depend on.
+          The library succeeds as a
           <strong>unified type system for static analysis results</strong>.
         </p>
       </div>
       <div class="insight-card green-card">
         <h4>2. SARIF export is the killer feature</h4>
         <p>
-          8/15 projects use <code>ToSARIF()</code> or <code>WriteSARIF()</code>.
-          It's the standard interchange format. Zero projects import SARIF &mdash;
-          it's a write-only interface in practice.
+          8/15 projects use <code>ToSARIF()</code> or <code>WriteSARIF()</code>. It's the standard
+          interchange format. Zero projects import SARIF &mdash; it's a write-only interface in
+          practice.
         </p>
       </div>
       <div class="insight-card yellow-card">
-        <h4>3. Pipeline has near-zero adoption</h3>
+        <h4>3. Pipeline has near-zero adoption</h4>
         <p>
           Only <strong>oxlint-auto-configure</strong> uses the pipeline for real work.
           template-AUTHORS wraps it superficially. template-SECURITY imports just the
-          <code>Detector</code> interface. The entire fix engine, conflict detection,
-          retry, metrics, verification system is externally unused.
+          <code>Detector</code> interface. The entire fix engine, conflict detection, retry,
+          metrics, verification system is externally unused.
         </p>
       </div>
       <div class="insight-card yellow-card">
         <h4>4. Severity mapping is re-implemented everywhere</h4>
         <p>
-          5+ projects have hand-rolled <code>mapSeverity(string) Severity</code>
-          functions. <code>ParseSeverity()</code> exists but only 1 project uses it.
-          The API is there but undiscovered.
+          5+ projects have hand-rolled <code>mapSeverity(string) Severity</code> functions.
+          <code>ParseSeverity()</code> exists but only 1 project uses it. The API is there but
+          undiscovered.
         </p>
       </div>
       <div class="insight-card purple-card">
         <h4>5. Tool JSON &rarr; Finding is a repeated pattern</h4>
         <p>
-          BuildFlow (5 tool adapters), golangci-lint-auto-configure,
-          oxlint-auto-configure, Code-Quality-Agent (7 adapters), branching-flow (8 converters)
-          &mdash; all write similar "tool output &rarr; []Finding" converters.
-          A helper would eliminate significant boilerplate.
+          BuildFlow (5 tool adapters), golangci-lint-auto-configure, oxlint-auto-configure,
+          Code-Quality-Agent (7 adapters), branching-flow (8 converters) &mdash; all write similar
+          "tool output &rarr; []Finding" converters. A helper would eliminate significant
+          boilerplate.
         </p>
       </div>
       <div class="insight-card red-card">
         <h4>6. Suppression is dead</h4>
         <p>
           The entire suppression system (<code>Suppression</code>, <code>SuppressionKind</code>,
-          <code>NotSuppressed</code>, <code>IsSuppressed()</code>) has zero consumers.
-          It ships but nobody uses it.
+          <code>NotSuppressed</code>, <code>IsSuppressed()</code>) has zero consumers. It ships but
+          nobody uses it.
         </p>
       </div>
     </div>
@@ -932,8 +1567,8 @@
         <h4>Promote <code>ParseSeverity()</code> &mdash; eliminate duplicated severity mapping</h4>
         <p>
           5+ projects re-implement <code>mapSeverity(string) Severity</code>. The function exists
-          but only template-readme uses it. Add godoc examples, reference it from the README,
-          and consider auto-mapping common severity strings (<code>"fatal"</code>, <code>"warn"</code>,
+          but only template-readme uses it. Add godoc examples, reference it from the README, and
+          consider auto-mapping common severity strings (<code>"fatal"</code>, <code>"warn"</code>,
           <code>"note"</code>) to increase discoverability.
         </p>
       </div>
@@ -944,9 +1579,10 @@
       <div class="rec-body">
         <h4>Extract <code>pipeline</code> to a separate module</h4>
         <p>
-          The pipeline package adds complexity and dependency surface that 12/15 consumers don't need.
-          Move to <code>go-finding-pipeline</code> or a sub-module. This keeps the core data model
-          lean and focused. The pipeline can evolve independently without version-locking the core types.
+          The pipeline package adds complexity and dependency surface that 12/15 consumers don't
+          need. Move to <code>go-finding-pipeline</code> or a sub-module. This keeps the core data
+          model lean and focused. The pipeline can evolve independently without version-locking the
+          core types.
         </p>
       </div>
     </div>
@@ -956,10 +1592,10 @@
       <div class="rec-body">
         <h4>Add a <code>ToolConverter</code> helper for tool JSON &rarr; Finding</h4>
         <p>
-          ~30 files across 5 projects implement similar "parse tool JSON output &rarr; build Finding"
-          patterns. A <code>ToolConverter</code> or <code>Adapter</code> helper with configurable
-          field mapping (JSON path &rarr; Finding field) would eliminate hundreds of lines of
-          boilerplate.
+          ~30 files across 5 projects implement similar "parse tool JSON output &rarr; build
+          Finding" patterns. A <code>ToolConverter</code> or <code>Adapter</code> helper with
+          configurable field mapping (JSON path &rarr; Finding field) would eliminate hundreds of
+          lines of boilerplate.
         </p>
       </div>
     </div>
@@ -970,10 +1606,10 @@
         <h4>Deprecate or document dead API as "reserved"</h4>
         <p>
           <code>Suppression</code>, <code>Negate()</code>, <code>AnyOf()</code>,
-          <code>ByConfidence()</code>, <code>Severity.Emoji()</code>, <code>CountBySeverity()</code>,
-          <code>FindingsFromSARIF()</code>, etc. Either remove them (pre-v1.0 freedom),
-          mark them as deprecated, or document as "reserved for future use" to set accurate
-          expectations.
+          <code>ByConfidence()</code>, <code>Severity.Emoji()</code>,
+          <code>CountBySeverity()</code>, <code>FindingsFromSARIF()</code>, etc. Either remove them
+          (pre-v1.0 freedom), mark them as deprecated, or document as "reserved for future use" to
+          set accurate expectations.
         </p>
       </div>
     </div>
@@ -981,11 +1617,13 @@
     <div class="rec-box">
       <div class="rec-num">5</div>
       <div class="rec-body">
-        <h4>Promote <code>Combine()</code> / <code>Diff()</code> &mdash; hidden aggregation gems</h4>
+        <h4>
+          Promote <code>Combine()</code> / <code>Diff()</code> &mdash; hidden aggregation gems
+        </h4>
         <p>
           Only BuildFlow uses these, but multiple projects manually merge reports in loops
-          (Code-Quality-Agent, oxlint-auto-configure, template-SECURITY). Better docs and
-          examples would surface these utilities.
+          (Code-Quality-Agent, oxlint-auto-configure, template-SECURITY). Better docs and examples
+          would surface these utilities.
         </p>
       </div>
     </div>
@@ -995,16 +1633,25 @@
       <div class="rec-body">
         <h4>Invest in a <code>Category</code> mapping registry</h4>
         <p>
-          3 projects maintain large <code>map[string]Category</code> tables mapping linter
-          names to categories. A shared registry (e.g., <code>CategoryForLinter("gosec") &rarr; CategorySecurity</code>)
-          would centralize this knowledge and keep mappings consistent across tools.
+          3 projects maintain large <code>map[string]Category</code> tables mapping linter names to
+          categories. A shared registry (e.g.,
+          <code>CategoryForLinter("gosec") &rarr; CategorySecurity</code>) would centralize this
+          knowledge and keep mappings consistent across tools.
         </p>
       </div>
     </div>
 
-    <div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; text-align: center;">
+    <div
+      style="
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        text-align: center;
+      "
+    >
       Generated 2026-06-09 &mdash; Consumer Audit for go-finding v0.6.1
     </div>
-
   </body>
 </html>

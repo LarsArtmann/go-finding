@@ -20,18 +20,18 @@ Tasks 11-15 were fully completed and verified in the previous session segment. T
 
 ### Completed This Session (Tasks 11-20)
 
-| # | Task | Files Changed | Tests Added |
-|---|------|---------------|-------------|
-| 11 | Report.Findings encapsulation (ADR 10) | `report.go`, `sarif_export.go`, `json.go`, `merge.go`, `cmd/go-finding/config.go` | — |
-| 12 | Pipeline stage hooks | `pipeline/stage_hook.go`, `pipeline/stage_hook_test.go`, `pipeline/config.go`, `pipeline/pipeline.go` | 2 tests |
-| 13 | FixEngine line-offset tracking | `pipeline/line_shift.go`, `pipeline/line_shift_test.go` | 7 tests |
-| 14 | Interval index for Correlate | `interval_tree.go`, `interval_tree_test.go` | 5 tests |
-| 15 | Streaming merge | `merge.go`, `merge_test.go` | 4 tests |
-| 16 | Config file support for library | `pipeline/config_file.go` | — |
-| 17 | DetectorRegistry plugin architecture | `registry.go` | — |
-| 18 | Pipeline middleware pattern | `pipeline/middleware.go` | — |
-| 19 | Benchmark regression CI gate | `.github/workflows/ci.yml` | — |
-| 20 | Composable fix strategy | `fix_strategy.go` | — |
+| #   | Task                                   | Files Changed                                                                                         | Tests Added |
+| --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------- |
+| 11  | Report.Findings encapsulation (ADR 10) | `report.go`, `sarif_export.go`, `json.go`, `merge.go`, `cmd/go-finding/config.go`                     | —           |
+| 12  | Pipeline stage hooks                   | `pipeline/stage_hook.go`, `pipeline/stage_hook_test.go`, `pipeline/config.go`, `pipeline/pipeline.go` | 2 tests     |
+| 13  | FixEngine line-offset tracking         | `pipeline/line_shift.go`, `pipeline/line_shift_test.go`                                               | 7 tests     |
+| 14  | Interval index for Correlate           | `interval_tree.go`, `interval_tree_test.go`                                                           | 5 tests     |
+| 15  | Streaming merge                        | `merge.go`, `merge_test.go`                                                                           | 4 tests     |
+| 16  | Config file support for library        | `pipeline/config_file.go`                                                                             | —           |
+| 17  | DetectorRegistry plugin architecture   | `registry.go`                                                                                         | —           |
+| 18  | Pipeline middleware pattern            | `pipeline/middleware.go`                                                                              | —           |
+| 19  | Benchmark regression CI gate           | `.github/workflows/ci.yml`                                                                            | —           |
+| 20  | Composable fix strategy                | `fix_strategy.go`                                                                                     | —           |
 
 ### Summary of All Completed Work (Sessions 1-11)
 
@@ -52,38 +52,41 @@ Tasks 11-15 were fully completed and verified in the previous session segment. T
 
 ### Quantitative Metrics
 
-| Metric | Value |
-|--------|-------|
-| Total lines of Go code | 30,672 |
-| Test coverage (overall) | 90.9% |
-| Test coverage (root package) | 93.7% |
-| Test coverage (pipeline) | 92.8% |
-| Test coverage (CLI) | 90.6% |
-| Test coverage (internal/detectors) | 94.7% |
-| Test coverage (analysis) | 79.5% |
-| Lint issues | 0 |
-| Race detector issues | 0 |
-| TODO items done | 128 |
-| TODO items open | 24 |
-| Fuzz targets with seed corpus | 20 |
-| Status reports written | 13 |
-| Code duplication (art-dupl @50) | 0 clone groups |
+| Metric                             | Value          |
+| ---------------------------------- | -------------- |
+| Total lines of Go code             | 30,672         |
+| Test coverage (overall)            | 90.9%          |
+| Test coverage (root package)       | 93.7%          |
+| Test coverage (pipeline)           | 92.8%          |
+| Test coverage (CLI)                | 90.6%          |
+| Test coverage (internal/detectors) | 94.7%          |
+| Test coverage (analysis)           | 79.5%          |
+| Lint issues                        | 0              |
+| Race detector issues               | 0              |
+| TODO items done                    | 128            |
+| TODO items open                    | 24             |
+| Fuzz targets with seed corpus      | 20             |
+| Status reports written             | 13             |
+| Code duplication (art-dupl @50)    | 0 clone groups |
 
 ---
 
 ## B) PARTIALLY DONE (3 items)
 
 ### 1. FixEngine Line-Offset Tracking
+
 - **What's done:** `LineShiftMap` with `ShiftedLine()` implemented and tested (7 tests)
 - **What's partial:** Not yet wired into the actual pipeline fix application flow. The `LineShiftMap` is a standalone utility ready for integration.
 - **Why:** Needed first as a building block; integration requires careful design around cumulative edits.
 
 ### 2. ConfigFile for Library
+
 - **What's done:** `pipeline/config_file.go` with `ConfigFromFile`/`ConfigFromReader` parsing YAML/JSON
 - **What's partial:** Only supports a subset of Config fields (Timeout, MaxIterations, Severity). Does not yet parse Detectors, FixProviders, StageHooks, Processors, etc.
 - **Why:** Core config loading works; complex fields (function types) require a different approach (registry-based construction).
 
 ### 3. IntervalIndex
+
 - **What's done:** Generic `IntervalIndex[T]` with sorted-scan overlap queries, O(log n + k)
 - **What's partial:** Not yet integrated into `Correlate()` to replace the O(n²) scan. The type is published and tested but the consumer doesn't use it yet.
 - **Why:** Needed as a standalone feature first; Correlate integration requires benchmarking to prove the improvement.
@@ -94,19 +97,19 @@ Tasks 11-15 were fully completed and verified in the previous session segment. T
 
 These are open TODO items that have zero implementation:
 
-| Item | Priority | Blocker |
-|------|----------|---------|
-| `Finding` struct sub-grouping | HIGH | Breaking change, deferred to v2 |
-| Add `golines` to CI | HIGH | BLOCKED: treefmt-nix doesn't support golines |
-| Fix BuildFlow auto-configure loop | MEDIUM | BLOCKED: external tool |
-| Interactive TUI | LOW | OUT OF SCOPE v1 |
-| `.envrc` creation | LOW | BLOCKED: no Nix setup |
-| `Position` zero-value safety | LOW | OWNER_DECISION: breaking change |
-| `Range.End` zero-value ambiguity | LOW | OWNER_DECISION: breaking change |
-| SARIF schema validation | LOW | BLOCKED: 7K+ line schema |
-| Wire into go-structure-linter | LOW | DEFERRED: external project |
-| Watch mode | LOW | DEFERRED |
-| Web UI | LOW | OUT OF SCOPE v1 |
+| Item                              | Priority | Blocker                                      |
+| --------------------------------- | -------- | -------------------------------------------- |
+| `Finding` struct sub-grouping     | HIGH     | Breaking change, deferred to v2              |
+| Add `golines` to CI               | HIGH     | BLOCKED: treefmt-nix doesn't support golines |
+| Fix BuildFlow auto-configure loop | MEDIUM   | BLOCKED: external tool                       |
+| Interactive TUI                   | LOW      | OUT OF SCOPE v1                              |
+| `.envrc` creation                 | LOW      | BLOCKED: no Nix setup                        |
+| `Position` zero-value safety      | LOW      | OWNER_DECISION: breaking change              |
+| `Range.End` zero-value ambiguity  | LOW      | OWNER_DECISION: breaking change              |
+| SARIF schema validation           | LOW      | BLOCKED: 7K+ line schema                     |
+| Wire into go-structure-linter     | LOW      | DEFERRED: external project                   |
+| Watch mode                        | LOW      | DEFERRED                                     |
+| Web UI                            | LOW      | OUT OF SCOPE v1                              |
 
 ---
 
@@ -116,17 +119,17 @@ These are open TODO items that have zero implementation:
 
 The TODO list still shows these as `[ ]` but they are fully implemented and committed:
 
-| TODO Item | What Was Done | File |
-|-----------|---------------|------|
-| FixEngine: line-offset tracking | `LineShiftMap` with 7 tests | `pipeline/line_shift.go` |
-| Make fix strategy composable | `FixStrategyResolver` interface + `DefaultResolver` | `fix_strategy.go` |
-| Add pipeline stage hooks | `StageHook` interface + 2 tests | `pipeline/stage_hook.go` |
-| Config file support for library | `ConfigFromFile`/`ConfigFromReader` | `pipeline/config_file.go` |
-| Plugin architecture for detector registration | `DetectorRegistry` with full API | `registry.go` |
-| Pipeline middleware pattern | `MiddlewareFunc`/`ComposeMiddleware` | `pipeline/middleware.go` |
-| Implement spatial index for Correlate | `IntervalIndex[T]` with 5 tests | `interval_tree.go` |
-| Implement streaming merge | `MergeIter()` with 4 tests | `merge.go` |
-| Benchmark regression tracking | `benchmark` CI job added | `.github/workflows/ci.yml` |
+| TODO Item                                     | What Was Done                                       | File                       |
+| --------------------------------------------- | --------------------------------------------------- | -------------------------- |
+| FixEngine: line-offset tracking               | `LineShiftMap` with 7 tests                         | `pipeline/line_shift.go`   |
+| Make fix strategy composable                  | `FixStrategyResolver` interface + `DefaultResolver` | `fix_strategy.go`          |
+| Add pipeline stage hooks                      | `StageHook` interface + 2 tests                     | `pipeline/stage_hook.go`   |
+| Config file support for library               | `ConfigFromFile`/`ConfigFromReader`                 | `pipeline/config_file.go`  |
+| Plugin architecture for detector registration | `DetectorRegistry` with full API                    | `registry.go`              |
+| Pipeline middleware pattern                   | `MiddlewareFunc`/`ComposeMiddleware`                | `pipeline/middleware.go`   |
+| Implement spatial index for Correlate         | `IntervalIndex[T]` with 5 tests                     | `interval_tree.go`         |
+| Implement streaming merge                     | `MergeIter()` with 4 tests                          | `merge.go`                 |
+| Benchmark regression tracking                 | `benchmark` CI job added                            | `.github/workflows/ci.yml` |
 
 **Action needed:** Update TODO_LIST.md to mark these 9 items as done.
 
@@ -162,48 +165,48 @@ The TODO list still shows these as `[ ]` but they are fully implemented and comm
 
 ### Tier 1: Ship v0.7.0 (Quick Wins)
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 1 | Update TODO_LIST.md — mark 9 completed items done | Trust | 10min |
-| 2 | Bump version to v0.7.0 | Release | 5min |
-| 3 | Update CHANGELOG.md for sessions 10-11 | Documentation | 15min |
-| 4 | Wire IntervalIndex into Correlate() | Performance | 30min |
-| 5 | Wire LineShiftMap into pipeline fix flow | Feature completion | 30min |
-| 6 | Expand ConfigFile to support detector/provider names | Feature completion | 1hr |
+| #   | Task                                                 | Impact             | Effort |
+| --- | ---------------------------------------------------- | ------------------ | ------ |
+| 1   | Update TODO_LIST.md — mark 9 completed items done    | Trust              | 10min  |
+| 2   | Bump version to v0.7.0                               | Release            | 5min   |
+| 3   | Update CHANGELOG.md for sessions 10-11               | Documentation      | 15min  |
+| 4   | Wire IntervalIndex into Correlate()                  | Performance        | 30min  |
+| 5   | Wire LineShiftMap into pipeline fix flow             | Feature completion | 30min  |
+| 6   | Expand ConfigFile to support detector/provider names | Feature completion | 1hr    |
 
 ### Tier 2: Quality & Coverage
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 7 | Fix analysis/ coverage from 79.5% → 90%+ | Quality | 1hr |
-| 8 | Add godoc examples for IntervalIndex, MergeIter, LineShiftMap | Documentation | 30min |
-| 9 | Add godoc examples for DetectorRegistry, MiddlewareFunc, ConfigFile | Documentation | 30min |
-| 10 | Fix go.sum stale entries | Hygiene | 5min |
-| 11 | Add benchmark regression thresholds to CI benchmark job | CI | 30min |
-| 12 | Add integration test for full pipeline with middleware | Testing | 1hr |
-| 13 | Add integration test for DetectorRegistry → Build → Pipeline.Run | Testing | 1hr |
+| #   | Task                                                                | Impact        | Effort |
+| --- | ------------------------------------------------------------------- | ------------- | ------ |
+| 7   | Fix analysis/ coverage from 79.5% → 90%+                            | Quality       | 1hr    |
+| 8   | Add godoc examples for IntervalIndex, MergeIter, LineShiftMap       | Documentation | 30min  |
+| 9   | Add godoc examples for DetectorRegistry, MiddlewareFunc, ConfigFile | Documentation | 30min  |
+| 10  | Fix go.sum stale entries                                            | Hygiene       | 5min   |
+| 11  | Add benchmark regression thresholds to CI benchmark job             | CI            | 30min  |
+| 12  | Add integration test for full pipeline with middleware              | Testing       | 1hr    |
+| 13  | Add integration test for DetectorRegistry → Build → Pipeline.Run    | Testing       | 1hr    |
 
 ### Tier 3: Pre-v1.0 Cleanup
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 14 | Create v1.0.0 release checklist with concrete criteria | Planning | 1hr |
-| 15 | Audit all deprecated APIs for v1.0.0 removal timeline | API hygiene | 1hr |
-| 16 | Fix FixProviders CLI config support | Feature gap | 2hr |
-| 17 | Unexport Report.Findings (v1.0 breaking change plan) | Encapsulation | 1hr |
-| 18 | Remove Merge() in favor of MergeInto() | API cleanup | 30min |
-| 19 | Resolve Position zero-value semantic trap (OWNER_DECISION) | Correctness | Decision |
-| 20 | Resolve Range.End zero-value ambiguity (OWNER_DECISION) | Correctness | Decision |
+| #   | Task                                                       | Impact        | Effort   |
+| --- | ---------------------------------------------------------- | ------------- | -------- |
+| 14  | Create v1.0.0 release checklist with concrete criteria     | Planning      | 1hr      |
+| 15  | Audit all deprecated APIs for v1.0.0 removal timeline      | API hygiene   | 1hr      |
+| 16  | Fix FixProviders CLI config support                        | Feature gap   | 2hr      |
+| 17  | Unexport Report.Findings (v1.0 breaking change plan)       | Encapsulation | 1hr      |
+| 18  | Remove Merge() in favor of MergeInto()                     | API cleanup   | 30min    |
+| 19  | Resolve Position zero-value semantic trap (OWNER_DECISION) | Correctness   | Decision |
+| 20  | Resolve Range.End zero-value ambiguity (OWNER_DECISION)    | Correctness   | Decision |
 
 ### Tier 4: Future Features
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 21 | Watch mode for continuous analysis | UX | 3hr |
-| 22 | GoReleaser release with v0.7.0 tag | Release | 30min |
-| 23 | SARIF schema validation against official 2.1.0 JSON schema | Correctness | 2hr |
-| 24 | Fix golines in CI (treefmt-nix or standalone) | CI | 1hr |
-| 25 | Wire go-finding into go-structure-linter as a consumer | Ecosystem | 3hr |
+| #   | Task                                                       | Impact      | Effort |
+| --- | ---------------------------------------------------------- | ----------- | ------ |
+| 21  | Watch mode for continuous analysis                         | UX          | 3hr    |
+| 22  | GoReleaser release with v0.7.0 tag                         | Release     | 30min  |
+| 23  | SARIF schema validation against official 2.1.0 JSON schema | Correctness | 2hr    |
+| 24  | Fix golines in CI (treefmt-nix or standalone)              | CI          | 1hr    |
+| 25  | Wire go-finding into go-structure-linter as a consumer     | Ecosystem   | 3hr    |
 
 ---
 
@@ -223,16 +226,16 @@ Without knowing whether v1.0 is "next week" or "next quarter", I can't prioritiz
 
 ## Session Stats
 
-| Metric | Value |
-|--------|-------|
-| Commits this session | 2 |
-| Files changed | 20 |
-| Lines added | 1,040 |
-| Lines removed | 21 |
-| New files created | 9 |
-| Tests added | 18 |
-| Lint issues fixed | 5 → 0 |
-| Time to complete | ~15 minutes |
+| Metric               | Value       |
+| -------------------- | ----------- |
+| Commits this session | 2           |
+| Files changed        | 20          |
+| Lines added          | 1,040       |
+| Lines removed        | 21          |
+| New files created    | 9           |
+| Tests added          | 18          |
+| Lint issues fixed    | 5 → 0       |
+| Time to complete     | ~15 minutes |
 
 ---
 
