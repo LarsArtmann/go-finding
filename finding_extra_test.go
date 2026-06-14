@@ -1,260 +1,217 @@
 package finding
 
 import (
+	"encoding/json"
 	"testing"
-	"time"
+
+	. "github.com/onsi/gomega"
 )
 
-func keyTestFinding(id string) Finding {
-	return Finding{
-		ID:       id,
-		Rule:     exportTestR001,
-		ToolName: "test",
-		Message:  "msg",
-		Severity: SeverityError,
-		Position: Position{File: benchFile, Line: 10, Column: 5},
-	}
+func TestFindingJSON(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	f := standardTestFinding()
+
+	data, err := json.Marshal(f)
+	g.Expect(err).NotTo(HaveOccurred())
+
+	parsed, err := FromJSON(data)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(parsed.ID).To(Equal(f.ID))
 }
 
-func TestClone(t *testing.T) {
-	const mutated = "changed"
-
+func TestSARIFConversion(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
-	expires := time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)
-	original := Finding{
-		ID:          "test:" + exportTestR001 + ":" + benchFile + ":10:5",
-		Rule:        exportTestR001,
+	r := NewReport(ToolInfo{Name: "test"})
+	r.AddFinding(Finding{
+		ID:          "test:rule1:file.go:10:5",
+		Rule:        "rule1",
 		ToolName:    "test",
 		Message:     "test message",
 		Severity:    SeverityError,
-		Position:    Position{File: benchFile, Line: 10, Column: 5},
-		Category:    CategorySecurity,
+		Position:    Position{File: "file.go", Line: 10, Column: 5},
 		FixStrategy: FixStrategyDirect,
-		Suggestion:  exportTestFixIt,
-		BeforeCode:  exportTestOld,
-		AfterCode:   exportTestNew,
-		Range:       NewRangePtr(benchFile, 10, 5, 10, 20),
-		Snippet:     "code here",
-		Confidence:  0.95,
-		Related:     []RelatedRef{{FindingID: "other:1", Relation: findBuilderTestCauses}},
-		Suppression: &Suppression{
-			Kind:      SuppressionInSource,
-			Reason:    suppTestIntentional,
-			ExpiresAt: &expires,
-		},
-		Tags:     []Tag{TagSecurity, exportTestInjection},
-		Metadata: map[string]string{"key": "value"},
-	}
+		AfterCode:   "fixed",
+		Category:    CategoryStyle,
+		Metadata:    map[string]string{"key": "value"},
+	})
+	r.ComputeSummary()
 
-	clone := original.Clone()
+	sarif, err := r.ToSARIF()
+	g.Expect(err).NotTo(HaveOccurred())
 
-	if !clone.Equal(original) {
-		t.Error("Clone should be Equal to original")
-	}
-
-	clone.Metadata["key"] = mutated
-	if original.Metadata["key"] == mutated {
-		t.Error("mutating clone Metadata should not affect original")
-	}
-
-	clone.Related[0] = RelatedRef{FindingID: mutated}
-	if original.Related[0].FindingID == mutated {
-		t.Error("mutating clone Related should not affect original")
-	}
-
-	clone.Range.End.Line = 999
-	if original.Range.End.Line == 999 {
-		t.Error("mutating clone Range should not affect original")
-	}
-
-	clone.Tags[0] = mutated
-	if original.Tags[0] == mutated {
-		t.Error("mutating clone Tags should not affect original")
-	}
-
-	*clone.Suppression.ExpiresAt = time.Time{}
-	if original.Suppression.ExpiresAt.IsZero() {
-		t.Error("mutating clone Suppression.ExpiresAt should not affect original")
-	}
+	var log map[string]any
+	g.Expect(json.Unmarshal(sarif, &log)).NotTo(HaveOccurred())
+	g.Expect(log["version"]).To(Equal("2.1.0"))
 }
 
-func TestCloneEmpty(t *testing.T) {
+func TestLSPConversion(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	f := standardTestFinding()
+
+	lsp := f.ToLSP()
+	g.Expect(lsp.Range.Start.Line).To(Equal(9))
+	g.Expect(lsp.Severity).To(BeEquivalentTo(1))
+}
+
+func TestCategory(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	g.Expect(CategorySecurity.IsValid()).To(BeTrue())
+	g.Expect(Category("custom-category").IsValid()).To(BeTrue())
+	g.Expect(Category("custom-category").IsStandard()).To(BeFalse())
+}
+
+func TestRangeContains(t *testing.T) {
 	t.Parallel()
 
-	f := Finding{
-		ID:       "test:" + exportTestR001 + ":" + benchFile + ":1:1",
-		Rule:     exportTestR001,
-		ToolName: "test",
-		Message:  "msg",
-		Severity: SeverityInfo,
-		Position: Position{File: benchFile, Line: 1},
+	r := NewRange("test.go", 10, 5, 20, 10)
+
+	tests := []struct {
+		name string
+		pos  Position
+		want bool
+	}{
+		{"in range", Position{File: "test.go", Line: 15, Column: 7}, true},
+		{"before range", Position{File: "test.go", Line: 5, Column: 1}, false},
+		{"different file", Position{File: "other.go", Line: 15, Column: 7}, false},
 	}
 
-	clone := f.Clone()
-	if !clone.Equal(f) {
-		t.Error("Clone of simple finding should be Equal")
-	}
-}
-
-func TestEqualTimePtr(t *testing.T) {
-	t.Parallel()
-
-	now := time.Now()
-
-	if !equalTimePtr(nil, nil) {
-		t.Error("equalTimePtr(nil, nil) should be true")
-	}
-
-	if equalTimePtr(&now, nil) {
-		t.Error("equalTimePtr(&now, nil) should be false")
-	}
-
-	if equalTimePtr(nil, &now) {
-		t.Error("equalTimePtr(nil, &now) should be false")
-	}
-
-	other := now
-	if !equalTimePtr(&now, &other) {
-		t.Error("equalTimePtr(&now, &same) should be true")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+			g.Expect(r.Contains(tt.pos)).To(Equal(tt.want))
+		})
 	}
 }
 
-func TestFindingKey(t *testing.T) {
+func TestClampConfidence(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
-		f    Finding
-		want string
+		in   Confidence
+		want Confidence
 	}{
-		{
-			name: "returns ID when set",
-			f:    keyTestFinding("my-id"),
-			want: "my-id",
-		},
-		{
-			name: "falls back to composite key when ID empty",
-			f:    keyTestFinding(""),
-			want: "test\x00file.go\x00R001\x00msg",
-		},
-		{
-			name: "empty file/rule/message still produces key",
-			f: Finding{
-				Rule:     "",
-				ToolName: "test",
-				Message:  "",
-				Severity: SeverityError,
-				Position: Position{File: "", Line: 0, Column: 0},
-			},
-			want: "test\x00\x00\x00",
-		},
-		{
-			name: "ID with only whitespace is used as-is",
-			f:    keyTestFinding("   "),
-			want: "   ",
-		},
+		{"negative clamps to 0", -0.5, 0},
+		{"zero stays zero", 0, 0},
+		{"one stays one", 1, 1},
+		{"above one clamps to 1", 1.5, 1},
+		{"mid value unchanged", 0.75, 0.75},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
-			got := tt.f.Key()
-			if got != tt.want {
-				t.Errorf("Key() = %q, want %q", got, tt.want)
-			}
+			g := NewWithT(t)
+			g.Expect(tt.in.Clamp()).To(BeNumerically("~", tt.want, 1e-9))
 		})
 	}
 }
 
-func TestFindingKeyStability(t *testing.T) {
+func TestFinding_HasCategory(t *testing.T) {
 	t.Parallel()
+	g := NewWithT(t)
 
-	f := keyTestFinding("")
-
-	key1 := f.Key()
-
-	key2 := f.Key()
-	if key1 != key2 {
-		t.Error("Key() should be stable across calls")
-	}
-
-	f2 := f
-
-	f2.Message = "other"
-	if f2.Key() == key1 {
-		t.Error("different Message should produce different Key")
-	}
-
-	f3 := f
-
-	f3.Rule = "R002"
-	if f3.Key() == key1 {
-		t.Error("different Rule should produce different Key")
-	}
-
-	f4 := f
-
-	f4.Position.File = "other.go"
-	if f4.Key() == key1 {
-		t.Error("different Position.File should produce different Key")
-	}
-
-	f5 := f
-
-	f5.ToolName = "other-tool"
-	if f5.Key() == key1 {
-		t.Error("different ToolName should produce different Key")
-	}
+	g.Expect(Finding{}.HasCategory()).To(BeFalse())
+	g.Expect(Finding{Category: CategorySecurity}.HasCategory()).To(BeTrue())
 }
 
-func TestEqual_FieldMismatch(t *testing.T) {
+func TestFinding_String_WithCategory(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	f := Finding{
+		Severity: SeverityError,
+		ToolName: "test",
+		Rule:     "R1",
+		Position: Position{File: "a.go", Line: 10},
+		Message:  "something broke",
+	}
+
+	g.Expect(f.String()).To(Equal("error test [R1] a.go:10: something broke"))
+
+	f.Category = CategorySecurity
+	g.Expect(f.String()).To(Equal("error test [R1] a.go:10: something broke (security)"))
+}
+
+func TestFinding_Preview(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	g.Expect(Finding{}.Preview()).To(BeEmpty())
+
+	f := Finding{BeforeCode: "old", AfterCode: "new"}
+	g.Expect(f.Preview()).To(Equal("- old\n+ new\n"))
+
+	insertOnly := Finding{AfterCode: "inserted"}
+	g.Expect(insertOnly.Preview()).To(Equal("+ inserted\n"))
+
+	deleteOnly := Finding{BeforeCode: "removed"}
+	g.Expect(deleteOnly.Preview()).To(Equal("- removed\n"))
+}
+
+func TestFinding_HasRange(t *testing.T) {
 	t.Parallel()
 
-	base := Finding{
-		ID: "id", Rule: "r", ToolName: "t", Message: "m",
-		Severity: SeverityError, Position: Position{File: filterTestFileA, Line: 1},
-		Confidence: 0.5,
-	}
+	t.Run("nil range", func(t *testing.T) {
+		t.Parallel()
+
+		f := Finding{Position: Position{File: "a.go", Line: 1}}
+		if f.HasRange() {
+			t.Error("HasRange() = true for nil range")
+		}
+	})
+
+	t.Run("valid range", func(t *testing.T) {
+		t.Parallel()
+
+		f := Finding{
+			Position: Position{File: "a.go", Line: 1},
+			Range:    &Range{Start: Position{File: "a.go", Line: 1}, End: Position{Line: 5}},
+		}
+		if !f.HasRange() {
+			t.Error("HasRange() = false for valid range")
+		}
+	})
+
+	t.Run("invalid range", func(t *testing.T) {
+		t.Parallel()
+
+		f := Finding{
+			Position: Position{File: "a.go", Line: 1},
+			Range:    &Range{},
+		}
+		if f.HasRange() {
+			t.Error("HasRange() = true for invalid range")
+		}
+	})
+}
+
+func TestRelationKind_Constants(t *testing.T) {
+	t.Parallel()
 
 	tests := []struct {
-		name      string
-		modify    func(*Finding)
-		wantEqual bool
+		name    string
+		kind    RelationKind
+		wantStr string
 	}{
-		{exportTestEqual, nil, true},
-		{"different ID", func(f *Finding) { f.ID = "x" }, false},
-		{"different Rule", func(f *Finding) { f.Rule = "x" }, false},
-		{"different ToolName", func(f *Finding) { f.ToolName = "x" }, false},
-		{"different Message", func(f *Finding) { f.Message = "x" }, false},
-		{"different Severity", func(f *Finding) { f.Severity = SeverityWarning }, false},
-		{"different Category", func(f *Finding) { f.Category = "x" }, false},
-		{"different Tags", func(f *Finding) { f.Tags = []Tag{"x"} }, false},
-		{"different FixStrategy", func(f *Finding) { f.FixStrategy = FixStrategyDirect }, false},
-		{"different Suggestion", func(f *Finding) { f.Suggestion = "x" }, false},
-		{"different BeforeCode", func(f *Finding) { f.BeforeCode = "x" }, false},
-		{"different AfterCode", func(f *Finding) { f.AfterCode = "x" }, false},
-		{"different Snippet", func(f *Finding) { f.Snippet = "x" }, false},
-		{"different Confidence", func(f *Finding) { f.Confidence = 0.9 }, false},
-		{"different Position", func(f *Finding) { f.Position = Position{File: filterTestFileB} }, false},
-		{"different Range", func(f *Finding) { f.Range = NewRangePtr("a.go", 1, 1, 1, 5) }, false},
-		{"different Related", func(f *Finding) { f.Related = []RelatedRef{{FindingID: "x"}} }, false},
-		{"different Metadata", func(f *Finding) { f.Metadata = map[string]string{"k": "v"} }, false},
+		{"clone-of", RelationCloneOf, "clone-of"},
+		{"causes", RelationCauses, "causes"},
+		{"wraps", RelationWraps, "wraps"},
+		{"related", RelationRelated, "related"},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			other := base
-			if tt.modify != nil {
-				tt.modify(&other)
-			}
-
-			if got := base.Equal(other); got != tt.wantEqual {
-				t.Errorf("Equal() = %v, want %v for case %q", got, tt.wantEqual, tt.name)
-			}
-		})
+		if got := string(tt.kind); got != tt.wantStr {
+			t.Errorf("RelationKind %s = %q, want %q", tt.name, got, tt.wantStr)
+		}
 	}
 }

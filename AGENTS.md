@@ -377,4 +377,25 @@ golangci-lint run ./...                     # Lint
 
 ---
 
+### Session 14 (2026-06-14) — Go AST Provider + Top 25 TODO Items
+
+- **GoASTProvider** — `pipeline/goast/provider.go`: Domain-specific FixProvider for `.go` files using `go/parser` + `go/ast`. Uses AST node positions to disambiguate BeforeCode occurrences, eliminating SubstringProvider's line-proximity guessing. FNV-1a content-hash cache avoids re-parsing. Parse failures return `(nil, nil)` to let text-based providers handle the finding. Separate subpackage keeps `go/parser` as opt-in dependency.
+- **CLI fix provider wiring** — `cmd/go-finding/fix_provider_registry.go`: Name→constructor registry (`"go-ast"`). `-fix-provider` CLI flag and `fixProviders` YAML/JSON config field. Providers are prepended to default text-based chain. Validation rejects unknown provider names.
+- **Fuzz applyEditsToContent** — `pipeline/fix_engine_fuzz_test.go`: Two fuzz targets — `FuzzApplyEditsToContent` (non-overlapping, verifies fast==naive oracle) and `FuzzApplyEditsToContent_Overlapping` (no-panic). Found and fixed two bugs: (1) overlapping edits caused slice bounds panic, (2) negative `finalSize` caused `makeslice` panic.
+- **applyEditsToContent defensive hardening** — `pipeline/fix_engine.go`: Skip overlapping edits (`edit.Offset < prevEnd`) instead of panicking. Clamp `finalSize` to `max(0, finalSize)` to prevent negative capacity.
+- **Mixed-provider integration tests** — `pipeline/fix_provider_integration_test.go`: Tests Offset/Line/Substring interleaving, lazy index build (OffsetProvider-only findings don't build index), and cross-provider correctness.
+- **MergeIter pre-allocate seen map** — `merge.go`: Pre-sized `seen` map with total findings count when dedup enabled.
+- **Combine → MergeIter DRY** — `merge.go`: `Combine` now delegates to `MergeIter` for dedup+clone logic, eliminating duplicated code paths. Pre-allocates findings slice from total.
+- **findingsLocked() accessor** — `report.go`, `report_query.go`, `json.go`: Internal `findingsLocked()` method returns `Findings` slice without lock acquisition (caller must hold lock). All internal methods in `report_query.go` and `json.go` now use `findingsLocked()` instead of direct field access. Prepares for v1.0 unexport of `Findings`.
+- **Correlate range benchmark** — `correlate_bench_test.go`: Range-based and point-based Correlate benchmarks at 10/100/1000 scales.
+- **MergeIter vs Combine benchmark** — `correlate_bench_test.go`: Direct comparison at 5-10 reports × 100-1000 findings each, with/without dedup.
+- **IntervalIndex benchmarks** — `correlate_bench_test.go`: Build and Query benchmarks at 100/1K/10K intervals.
+- **benchstat CI regression** — `.github/workflows/ci.yml`: `benchmark` job now installs benchstat, runs `-count=10`, compares against `benchmarks/baseline.txt`, uploads results artifact. `scripts/bench-baseline.sh` for local baseline capture/comparison.
+- **FixProvider authoring guide** — `docs/guides/fix-providers.md`: Comprehensive guide covering interface, built-in providers, `lineIndexAware` optional interface (when/how to implement), error handling, caching patterns, testing.
+- **v1.0.0 breaking changes ADR** — `docs/architecture-decisions.md` #11: Consolidated 6-item plan (Findings unexport, Merge/RecordFix removal, Position.Offset sentinel, SARIF types). Internal migration progress documented (findingsLocked, readFindings, deprecated notices).
+- **sync.Pool evaluation** — `docs/architecture-decisions.md` #12: Evaluated sync.Pool for `[]int` line offset index. Decision: SKIP. Index allocation is <0.1% of FixEngine time. Pool complexity (reset, lifecycle) not justified.
+- **Benchmark offset bug** — Session 13 fix: `generateOffsetFixes` used Range width 4 for BeforeCode "old()" (5 chars); OffsetProvider always rejected, silently benchmarking SubstringProvider. Fixed to use actual occurrence positions via `findOldOccurrences`
+
+---
+
 _Assisted-by: Crush <crush@charm.land>_

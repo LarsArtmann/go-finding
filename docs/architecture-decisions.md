@@ -366,3 +366,78 @@ snapshot := report.FindingsSnapshot()
 ### Decision
 
 **Deferred to v1.0.** This is a breaking change that must happen before the v1.0 stability guarantee. All necessary migration infrastructure is already in place.
+
+---
+
+## 11. v1.0.0 Breaking Changes Plan
+
+**Status:** Planning — all changes are backward-compatible in v0.x.
+
+### Consolidated v1.0 Breaking Changes
+
+| #   | Change                                  | Current (v0.x)                     | v1.0                               | Migration                                           |
+| --- | --------------------------------------- | ---------------------------------- | ---------------------------------- | --------------------------------------------------- |
+| 1   | `Report.Findings` unexport              | Exported field                     | `findings` (unexported)            | Use `FindingsSnapshot()`, `All()`, `readFindings()` |
+| 2   | `Report.Merge` removed                  | Deprecated, calls `MergeInto`      | Removed                            | Use `MergeInto(other)`                              |
+| 3   | `RecordFix()` removed                   | Deprecated, calls `RecordFixes(1)` | Removed                            | Use `RecordFixes(1)`                                |
+| 4   | SARIF types remain unexported           | Unexported                         | Stays unexported                   | No change needed                                    |
+| 5   | `Position.Offset` zero-value semantics  | `0` is valid but also `IsZero()`   | Add `OffsetSet` field or sentinel  | Use `HasOffset()`                                   |
+| 6   | `findingsLocked()` becomes `findings()` | Internal accessor                  | Field unexported, accessor renamed | Internal only                                       |
+
+### Position/Range Zero-Value Decision (Item 5)
+
+**Problem:** `Position.Offset = 0` is ambiguous — it means both "byte 0" (valid)
+and passes `HasOffset() == true`, while also satisfying `IsZero() == true`.
+
+**Options:**
+
+| Option | Approach                                   | Breaking?           | Clarity |
+| ------ | ------------------------------------------ | ------------------- | ------- |
+| A      | Change `Offset` default to `-1` (sentinel) | Yes — serialization | High    |
+| B      | Add `OffsetSet bool` field                 | Yes — struct size   | Medium  |
+| C      | Keep as-is, document the trap              | No                  | Low     |
+
+**Recommendation:** Option A for v1.0. Change `Offset` to default `-1`
+(like `Column` defaults to `0` = "not set" with `Line > 0` indicating set).
+This is the cleanest approach: impossible to confuse "byte 0" with "not set".
+
+### Internal Migration Progress (v0.x → v1.0)
+
+The following refactors prepare for v1.0 without breaking consumers:
+
+1. **`findingsLocked()` accessor** — All internal code uses `r.findingsLocked()`
+   instead of `r.Findings` directly. At v1.0, only this method changes.
+2. **`readFindings()` for thread-safe reads** — External code should already
+   use `FindingsSnapshot()` or `readFindings()`.
+3. **Deprecated methods** — `Merge` and `RecordFix` have godoc deprecation
+   notices pointing to replacements.
+
+### Decision
+
+**Plan approved.** Execute all 6 items at v1.0.0 release in a single commit.
+No gradual unexporting — one clean break.
+
+---
+
+## 12. sync.Pool for Line Offset Index
+
+**Status:** Evaluated — **SKIP**.
+
+**Context:** The `[]int` line offset index is built per file by `buildLineOffsetIndex`
+and reused across all findings in that file via the `lineIndexAware` interface
+and the lazy `*[]int` pointer in `resolveEdits`.
+
+**Evaluation:**
+
+- Index size: ~8 bytes/line (int on 64-bit). A 10K-line file: ~80KB.
+- One allocation per file, immediately eligible for GC after `ApplyWithConflicts` returns.
+- `sync.Pool` would reuse the backing array across files, avoiding repeated allocation.
+- BUT: the index content is different per file (different newline positions), so the
+  array would need to be fully rewritten each time. `sync.Pool` only saves the allocation
+  overhead, not the fill cost.
+- Go's small-object allocator is highly optimized for this size class.
+- Profiling shows the index allocation is <0.1% of total FixEngine time.
+
+**Conclusion:** The complexity of pool lifecycle management (reset, Put/Get, potential
+for stale data) is not justified for a <0.1% improvement. Revisit only if profiling
+shows line index allocation as a hot path on very large batches (>100K files).

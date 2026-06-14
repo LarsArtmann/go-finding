@@ -41,6 +41,7 @@ type cliFlags struct {
 	generatedExclude  string
 	generatedInclude  string
 	byteLevelConflict bool
+	fixProviders      string
 }
 
 func parseFlags() cliFlags {
@@ -84,6 +85,10 @@ func parseFlags() cliFlags {
 	flag.BoolVar(
 		&f.byteLevelConflict, "byte-level-conflict", false,
 		"enable precise byte-level conflict detection for overlapping fixes",
+	)
+	flag.StringVar(
+		&f.fixProviders, "fix-provider", "",
+		"comma-separated fix provider names to enable (e.g., go-ast)",
 	)
 	flag.Parse()
 
@@ -129,6 +134,16 @@ func run() int {
 	pipelineCfg, err := cfg.toPipelineConfig()
 	if err != nil {
 		return fatalf("parsing config", err)
+	}
+
+	// Merge fix provider names from CLI flag and config file.
+	fixProviderNames := cfg.FixProviders
+	if f.fixProviders != "" {
+		fixProviderNames = append(fixProviderNames, splitCommaList(f.fixProviders)...)
+	}
+
+	if len(fixProviderNames) > 0 {
+		pipelineCfg.FixProviders = resolveFixProviders(fixProviderNames)
 	}
 
 	pipelineCfg.GracefulDegradation = true

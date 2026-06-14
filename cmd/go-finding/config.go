@@ -31,6 +31,8 @@ type pipelineConfigFile struct {
 	GeneratedInclude []string `json:"generatedInclude" yaml:"generatedInclude"`
 	// ByteLevelConflictDetection enables precise byte-level conflict detection during triage.
 	ByteLevelConflictDetection bool `json:"byteLevelConflictDetection" yaml:"byteLevelConflictDetection"`
+	// FixProviders enables named fix providers (e.g., "go-ast") for domain-specific edits.
+	FixProviders []string `json:"fixProviders" yaml:"fixProviders"`
 }
 
 type detectorSpec struct {
@@ -126,6 +128,13 @@ func (c pipelineConfigFile) validate() error {
 		if _, ok := lookupDetectorBuilder(d.Name); !ok {
 			return fmt.Errorf("%w %q (available: %s)", errUnknownDetector, d.Name,
 				strings.Join(slices.Sorted(slices.Values(availableDetectorNames())), ", "))
+		}
+	}
+
+	for _, name := range c.FixProviders {
+		if _, ok := lookupFixProvider(name); !ok {
+			return fmt.Errorf("%w: %q (available: %s)", ErrUnknownFixProvider, name,
+				strings.Join(slices.Sorted(slices.Values(availableFixProviderNames())), ", "))
 		}
 	}
 

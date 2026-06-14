@@ -41,10 +41,10 @@ func (r *Report) PrettyJSONFiltered() (string, error) {
 
 	filtered := &Report{ //nolint:exhaustruct
 		Tool:     r.Tool,
-		Findings: make([]Finding, 0, len(r.Findings)),
+		Findings: make([]Finding, 0, len(r.findingsLocked())),
 		Summary:  Summary{}, //nolint:exhaustruct
 	}
-	for _, f := range r.Findings {
+	for _, f := range r.findingsLocked() {
 		if !f.IsSuppressed() {
 			filtered.Findings = append(filtered.Findings, f)
 		}

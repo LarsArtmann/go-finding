@@ -200,18 +200,23 @@ func (*FixEngine) applyEditsWithConflicts(
 }
 
 // applyEditsToContent applies non-overlapping edits to content in a single pass.
-// Edits must be sorted descending by offset (highest first) and must be
-// non-conflicting (verified by the caller). The result is a new []byte
-// with exactly one allocation regardless of edit count.
+// Edits must be sorted descending by offset (highest first) and should be
+// non-conflicting (verified by the caller). Overlapping edits are skipped
+// defensively to prevent panics.
 func applyEditsToContent(content []byte, edits []FixEdit) []byte {
 	if len(edits) == 0 {
 		return content
 	}
 
 	// Pre-compute the final size to avoid reallocation.
+	// This is an upper bound; skipped overlapping edits reduce actual size.
 	finalSize := len(content)
 	for _, edit := range edits {
 		finalSize += len(edit.Replacement) - edit.Length
+	}
+
+	if finalSize < 0 {
+		finalSize = 0
 	}
 
 	result := make([]byte, 0, finalSize)
@@ -222,6 +227,11 @@ func applyEditsToContent(content []byte, edits []FixEdit) []byte {
 
 	for i := range slices.Backward(edits) {
 		edit := edits[i]
+
+		// Skip overlapping edits defensively (shouldn't happen in normal use).
+		if edit.Offset < prevEnd {
+			continue
+		}
 
 		result = append(result, content[prevEnd:edit.Offset]...)
 		result = append(result, edit.Replacement...)
