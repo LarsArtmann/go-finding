@@ -228,6 +228,11 @@ golangci-lint run ./...                     # Lint
 - **analysis.DefaultRelation consolidated** — References `finding.RelationRelated` instead of duplicating `"related"` string
 - **RecordFix deprecated** — `RecordFix()` deprecated in favor of `RecordFixes(1)`; will be removed in v1.0.0
 - **FixApplier eager construction** — Created in `pipeline.New()`, not lazily in `applyDirectFixes`; backup dir errors caught at construction time
+- **lineIndexAware lazy caching** — `FixEngine.resolveEdits` accepts `*[]int` and lazily builds the line offset index on first access by a `lineIndexAware` provider. Zero overhead for OffsetProvider-handled findings (byte offsets bypass line indexing entirely). LineProvider/SubstringProvider get O(1) index reuse across all findings in a file
+- **Benchmark offset bug** — Session 13 fix: `generateOffsetFixes` used Range width 4 for BeforeCode "old()" (5 chars); OffsetProvider always rejected, silently benchmarking SubstringProvider. Fixed to use actual occurrence positions via `findOldOccurrences`
+- **Correlate pre-allocation** — `correlations` slice pre-sized with `min(len(findings), maxCorrelations)`; `withRange`/`withoutRange` pre-sized with `len(fileFindings)`
+- **buildLineOffsetIndex SIMD** — First pass uses `bytes.Count` (SIMD for single-byte needle) instead of byte-by-byte loop
+- **findAllOccurrences capacity** — `defaultOccurrenceCapacity = 32` starting capacity; `bytes.Count` exact pre-allocation evaluated and rejected (double-scan overhead not worth it for fallback provider)
 
 ### CLI Features
 
@@ -357,6 +362,18 @@ golangci-lint run ./...                     # Lint
 - **Diff/DiffFindings pre-allocation** — `diff.go`, `pipeline/verify.go`: Pre-allocated `added`, `removed`, `modified`, `unchanged` result slices with `make([]T, 0, len(input))`
 - **Performance analysis report** — `docs/research/performance-analysis.html`: Comprehensive HTML report covering CPU, RAM, Disk/IO, Network, Concurrency, GPU, and scaling characteristics with live benchmark data
 - **Performance optimization plan** — `docs/planning/2026-06-14_16-25_PERFORMANCE-OPTIMIZATION.md`: Pareto-principle plan with 1%/4%/20% breakdown, 15 medium-granularity tasks, 55 fine-granularity tasks, mermaid.js execution graph
+
+### Session 13 (2026-06-14) — Provider Index Caching + Correlate Pre-allocation
+
+- **lineIndexAware interface** — `pipeline/fix_provider.go`: Optional interface `lineIndexAware` with `EditsWithLineIndex(content, lineIndex, f)`. `LineProvider` and `SubstringProvider` both implement it. `FixEngine.resolveEdits` accepts `*[]int` and lazily builds the line offset index on first access by a `lineIndexAware` provider — zero overhead for findings handled by `OffsetProvider` (byte offsets)
+- **LineProvider index caching** — `pipeline/fix_provider.go`: `LineProvider.Edits` delegates to `EditsWithLineIndex` with a freshly built index (backward compat). `FixEngine.ApplyWithConflicts` passes a shared `*[]int` to `resolveEdits`, building the index once instead of per finding. Benchmark: LineProvider 1000 fixes 150ms → 812μs (**185×**), 86MB → 4MB allocations
+- **SubstringProvider index caching** — `pipeline/fix_provider.go`: Same pattern. Benchmark: SubstringProvider 1000 fixes 644ms → 404ms (**1.6×**), 525MB → 361MB, 20040 → 16040 allocs
+- **buildLineOffsetIndex SIMD** — `pipeline/fix_provider.go`: First pass (newline count for pre-allocation) replaced byte-by-byte loop with `bytes.Count(content, []byte{'\n'})` — true SIMD acceleration for single-byte needle on amd64/arm64
+- **findAllOccurrences starting capacity** — `pipeline/fix_provider.go`: `defaultOccurrenceCapacity = 32` constant; eliminates first 5 reallocation growth phases. Evaluated `bytes.Count` for exact pre-allocation but reverted — double-scan overhead (12% time increase) outweighed allocation savings for this fallback provider
+- **Lazy index build** — `pipeline/fix_engine.go`: Initial eager approach (always build if any provider implements `lineIndexAware`) caused 8× regression on OffsetProvider benchmarks (22μs → 170μs for 1 fix). Fixed with lazy `*[]int` pointer — index built only when a `lineIndexAware` provider actually handles a finding
+- **Correlate pre-allocation** — `merge.go`: Pre-sized `correlations` with `min(len(findings), maxCorrelations)` capacity, and `withRange`/`withoutRange` with `len(fileFindings)`. Benchmark: 113μs → 83μs (27%), 75 → 51 allocs (32%)
+- **Benchmark offset bug fixed** — `pipeline/fix_engine_bench_test.go`: `generateOffsetFixes` used Range width 4 but BeforeCode "old()" is 5 chars — OffsetProvider always rejected, silently testing SubstringProvider. Rewrote to find actual "old()" positions via `findOldOccurrences` helper. Added `generateLineFixes` and `generateSubstringFixes` helpers with dedicated `BenchmarkFixEngine_LineProvider_*` and `BenchmarkFixEngine_Substring_*` benchmarks
+- **SARIF struct pooling evaluated** — Decision: **SKIP**. Profiling shows 312KB/100 findings where bytes are dominated by un-poolable JSON output buffer (~200KB) and per-finding strings. Pooling struct headers saves ~0.2% of total bytes. Complexity (nested slice/map reset, lifecycle management) and risk (use-after-Put) unjustified for marginal benefit
 
 ---
 

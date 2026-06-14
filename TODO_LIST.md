@@ -1,7 +1,7 @@
 # TODO List
 
 **Generated:** 2026-05-20
-**Updated:** 2026-06-08 (session 6: flake.nix fix, v0.5.0, todo cleanup)
+**Updated:** 2026-06-14 (session 13: LineProvider index caching, Correlate pre-allocation, benchmark fixes)
 **Files Processed:** 235
 
 ## 🔴 HIGH Priority
@@ -150,6 +150,11 @@
 - [x] Archive old status reports
 - [x] Remove personal tool configs
 - [x] Add `go.work` for local multi-module development — **WONTFIX** (single module, no need)
+- [x] LineProvider/SubstringProvider line offset index caching — `lineIndexAware` interface in `pipeline/fix_provider.go`, lazy build via `*[]int` in `pipeline/fix_engine.go`. LineProvider 1000 fixes: 150ms → 859μs (175×), 86MB → 4MB allocs
+- [x] Correlate pre-allocation — pre-sized `correlations` with `min(len(findings), maxCorrelations)` and `withRange`/`withoutRange` with `len(fileFindings)` in `merge.go`. 113μs → 83μs (27%), 75 → 51 allocs (32%)
+- [x] FixEngine benchmark offset bug fix — `generateOffsetFixes` used Range width 4 but BeforeCode "old()" is 5 chars; OffsetProvider always rejected, silently testing SubstringProvider. Now uses correct offsets from `findOldOccurrences`
+- [x] Dedicated LineProvider/SubstringProvider benchmarks — `BenchmarkFixEngine_LineProvider_*` and `BenchmarkFixEngine_Substring_*` in `pipeline/fix_engine_bench_test.go`
+- [x] Evaluate SARIF struct pooling — **SKIP** (312KB/100 findings; bytes dominated by un-poolable JSON buffer + per-finding strings; struct headers are ~0.2% of total; sync.Pool complexity/risk unjustified)
 - [ ] Watch mode — **DEFERRED**
 - [ ] IDE plugin stubs — **OUT OF SCOPE v1**
 - [ ] Web UI — **OUT OF SCOPE v1**
