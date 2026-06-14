@@ -125,6 +125,7 @@ func (e *FixEngine) resolveEdits(content []byte, f finding.Finding) ([]FixEdit, 
 }
 
 // applyEditsWithConflicts applies edits and tracks which were skipped due to overlaps.
+// Edits must be sorted descending by offset (highest first).
 func (*FixEngine) applyEditsWithConflicts(
 	content []byte,
 	edits []FixEdit,
@@ -135,16 +136,18 @@ func (*FixEngine) applyEditsWithConflicts(
 		conflicts    []ConflictInfo
 	)
 
-	result := content
 	frontier := len(content) + 1
 
+	// Phase 1: Walk edits in descending offset order, detecting conflicts
+	// via the frontier boundary. Non-conflicting edits are collected for
+	// a single-pass application in Phase 2.
 	for _, edit := range edits {
 		err := edit.Validate()
 		if err != nil {
 			continue
 		}
 
-		if edit.EndOffset() > len(result) {
+		if edit.EndOffset() > len(content) {
 			continue
 		}
 
@@ -166,17 +169,50 @@ func (*FixEngine) applyEditsWithConflicts(
 			continue
 		}
 
-		var buf []byte
-
-		buf = append(buf, result[:edit.Offset]...)
-		buf = append(buf, edit.Replacement...)
-		buf = append(buf, result[edit.EndOffset():]...)
-		result = buf
-		frontier = edit.Offset
-
 		applied = append(applied, edit.Source)
 		appliedEdits = append(appliedEdits, edit)
+		frontier = edit.Offset
 	}
 
+	// Phase 2: Apply all non-conflicting edits in a single buffer pass.
+	// This is O(F + R) where F = file size and R = total replacement size,
+	// instead of the previous O(N × F) which copied the entire content
+	// per edit.
+	result := applyEditsToContent(content, appliedEdits)
+
 	return applied, appliedEdits, conflicts, result
+}
+
+// applyEditsToContent applies non-overlapping edits to content in a single pass.
+// Edits must be sorted descending by offset (highest first) and must be
+// non-conflicting (verified by the caller). The result is a new []byte
+// with exactly one allocation regardless of edit count.
+func applyEditsToContent(content []byte, edits []FixEdit) []byte {
+	if len(edits) == 0 {
+		return content
+	}
+
+	// Pre-compute the final size to avoid reallocation.
+	finalSize := len(content)
+	for _, edit := range edits {
+		finalSize += len(edit.Replacement) - edit.Length
+	}
+
+	result := make([]byte, 0, finalSize)
+
+	// Edits are sorted DESCENDING by offset. Iterate in REVERSE (ascending)
+	// to build the output left-to-right in a single pass.
+	prevEnd := 0
+
+	for i := range slices.Backward(edits) {
+		edit := edits[i]
+
+		result = append(result, content[prevEnd:edit.Offset]...)
+		result = append(result, edit.Replacement...)
+		prevEnd = edit.EndOffset()
+	}
+
+	result = append(result, content[prevEnd:]...)
+
+	return result
 }

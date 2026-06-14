@@ -161,7 +161,7 @@ func HasSuggestion(f Finding) bool {
 
 // GroupBy groups findings by a key extractor function.
 func GroupBy(findings []Finding, keyFn func(Finding) string) map[string][]Finding {
-	groups := make(map[string][]Finding)
+	groups := make(map[string][]Finding, len(findings))
 
 	for _, finding := range findings {
 		key := keyFn(finding)
@@ -180,7 +180,7 @@ func GroupByFile(findings []Finding) map[string][]Finding {
 
 // GroupBySeverity groups findings by severity.
 func GroupBySeverity(findings []Finding) map[Severity][]Finding {
-	groups := make(map[Severity][]Finding)
+	groups := make(map[Severity][]Finding, len(findings))
 	for _, finding := range findings {
 		groups[finding.Severity] = append(groups[finding.Severity], finding)
 	}
@@ -190,7 +190,7 @@ func GroupBySeverity(findings []Finding) map[Severity][]Finding {
 
 // GroupByCategory groups findings by category.
 func GroupByCategory(findings []Finding) map[Category][]Finding {
-	groups := make(map[Category][]Finding)
+	groups := make(map[Category][]Finding, len(findings))
 
 	for _, f := range findings {
 		groups[f.Category] = append(groups[f.Category], f)

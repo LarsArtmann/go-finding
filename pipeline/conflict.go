@@ -48,7 +48,6 @@ func DetectConflicts(fixes []finding.Finding) ([]FixGroup, []finding.Finding) {
 		groups    = make([]FixGroup, 0, len(byFile))
 		conflicts []finding.Finding
 	)
-
 	for file, fileFixes := range byFile {
 		fileGroups, fileConflicts := detectConflictsInFile(file, fileFixes)
 		groups = append(groups, fileGroups...)

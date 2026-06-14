@@ -5,6 +5,8 @@ import (
 	"iter"
 	"maps"
 	"slices"
+	"strconv"
+	"strings"
 )
 
 // Correlation heuristics constants.
@@ -162,6 +164,9 @@ func WithDeduplicateBy(by DeduplicateBy) MergeOption {
 	}
 }
 
+// dedupKeyOverhead accounts for 3 colons + two decimal integers (up to 20 chars).
+const dedupKeyOverhead = 23
+
 func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 	switch opts.DeduplicateBy {
 	case DeduplicateByID:
@@ -175,25 +180,33 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 			return "", false
 		}
 
-		return fmt.Sprintf(
-			"%s:%s:%d:%d",
-			finding.ToolName,
-			finding.Position.File,
-			finding.Position.Line,
-			finding.Position.Column,
-		), true
+		var b strings.Builder
+		b.Grow(len(finding.ToolName) + len(finding.Position.File) + dedupKeyOverhead)
+		b.WriteString(finding.ToolName)
+		b.WriteByte(':')
+		b.WriteString(finding.Position.File)
+		b.WriteByte(':')
+		b.WriteString(strconv.Itoa(finding.Position.Line))
+		b.WriteByte(':')
+		b.WriteString(strconv.Itoa(finding.Position.Column))
+
+		return b.String(), true
 	case DeduplicateByRule:
 		if finding.Position.File == "" {
 			return "", false
 		}
 
-		return fmt.Sprintf(
-			"%s:%s:%d:%d",
-			finding.Rule,
-			finding.Position.File,
-			finding.Position.Line,
-			finding.Position.Column,
-		), true
+		var b strings.Builder
+		b.Grow(len(finding.Rule) + len(finding.Position.File) + dedupKeyOverhead)
+		b.WriteString(finding.Rule)
+		b.WriteByte(':')
+		b.WriteString(finding.Position.File)
+		b.WriteByte(':')
+		b.WriteString(strconv.Itoa(finding.Position.Line))
+		b.WriteByte(':')
+		b.WriteString(strconv.Itoa(finding.Position.Column))
+
+		return b.String(), true
 	default:
 		return finding.ID, true
 	}

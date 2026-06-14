@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -200,9 +201,13 @@ func (SubstringProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, er
 	best := occurrences[0]
 
 	if f.Position.Line > 0 && len(occurrences) > 1 {
-		bestDist := offsetLineDistance(content, best, f.Position.Line)
+		// Build the line offset index ONCE and use binary search for each
+		// occurrence, reducing per-occurrence cost from O(F) to O(log F).
+		lineIndex := buildLineOffsetIndex(content)
+
+		bestDist := offsetLineDistance(lineIndex, best, f.Position.Line)
 		for _, idx := range occurrences[1:] {
-			dist := offsetLineDistance(content, idx, f.Position.Line)
+			dist := offsetLineDistance(lineIndex, idx, f.Position.Line)
 			if dist < bestDist {
 				bestDist = dist
 				best = idx
@@ -297,16 +302,12 @@ func findAllOccurrences(haystack, needle []byte) []int {
 	return results
 }
 
-// offsetLineDistance counts newlines before a byte offset and returns the
-// absolute difference from targetLine.
-func offsetLineDistance(content []byte, offset, targetLine int) int {
-	line := 1
-
-	for i := 0; i < offset && i < len(content); i++ {
-		if content[i] == '\n' {
-			line++
-		}
-	}
+// offsetLineDistance returns the absolute difference between the line number
+// containing the given byte offset and targetLine. Uses binary search on a
+// pre-built line offset index for O(log n) lookup instead of the previous
+// O(n) byte-by-byte newline count.
+func offsetLineDistance(lineIndex []int, offset, targetLine int) int {
+	line := offsetToLine(lineIndex, offset)
 
 	diff := line - targetLine
 	if diff < 0 {
@@ -314,4 +315,21 @@ func offsetLineDistance(content []byte, offset, targetLine int) int {
 	}
 
 	return diff
+}
+
+// offsetToLine returns the 1-based line number containing the given byte offset.
+// Uses binary search on the line offset index.
+func offsetToLine(lineIndex []int, offset int) int {
+	if len(lineIndex) == 0 {
+		return 1
+	}
+
+	// Find the first line start strictly greater than offset.
+	// The number of line starts at or before offset equals the 1-based line number.
+	idx, _ := slices.BinarySearch(lineIndex, offset+1)
+	if idx == 0 {
+		return 1
+	}
+
+	return idx
 }

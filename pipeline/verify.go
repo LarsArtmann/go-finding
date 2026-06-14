@@ -61,7 +61,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 		postSet[f.Key()] = f
 	}
 
-	var fixed []finding.Finding
+	fixed := make([]finding.Finding, 0, len(original))
 
 	for id, f := range origSet {
 		if _, exists := postSet[id]; !exists {
@@ -71,7 +71,7 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 
 	finding.SortFindingsByID(fixed)
 
-	var newFindings []finding.Finding
+	newFindings := make([]finding.Finding, 0, len(post))
 
 	for id, f := range postSet {
 		if _, exists := origSet[id]; !exists {
@@ -82,8 +82,8 @@ func DiffFindings(original, post []finding.Finding) *VerifyResult {
 	finding.SortFindingsByID(newFindings)
 
 	var (
-		remaining []finding.Finding
-		modified  []finding.Finding
+		remaining = make([]finding.Finding, 0, len(post))
+		modified  = make([]finding.Finding, 0, len(post))
 	)
 
 	for _, f := range post {

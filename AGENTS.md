@@ -346,6 +346,18 @@ golangci-lint run ./...                     # Lint
 - **Benchmark CI gate** — `.github/workflows/ci.yml`: separate `benchmark` job with `go test -bench`
 - **FixStrategyResolver** — `fix_strategy.go`: `FixStrategyResolver` interface + `DefaultResolver` implementation; `CanAutoApply(strategy)` delegates to `FixStrategy.CanAutoApply()`
 
+### Session 12 (2026-06-14) — Performance Optimization
+
+- **FixEngine applyEditsToContent** — `pipeline/fix_engine.go`: Rewrote `applyEditsWithConflicts` to separate conflict detection (Phase 1) from edit application (Phase 2). New `applyEditsToContent` function uses a pre-allocated `[]byte` with single-pass descending-offset iteration, reducing complexity from O(n×F) to O(F+R). Eliminates per-edit `append(append(append(...)))` triple-copy pattern
+- **offsetLineDistance binary search** — `pipeline/fix_provider.go`: Rewrote `offsetLineDistance` from O(n) byte-by-byte newline count to O(log n) binary search on line offset index. New `offsetToLine` helper uses `slices.BinarySearch`. Signature changed from `(content []byte, ...)` to `(lineIndex []int, ...)`
+- **SubstringProvider line index cache** — `pipeline/fix_provider.go`: `SubstringProvider.Edits` now builds `lineOffsetIndex` ONCE before iterating occurrences, instead of calling the old O(n) `offsetLineDistance` per occurrence. For 10k occurrences on a 170KB file: O(F×L) → O(F + L×log F)
+- **Combined FixEngine impact** — 452× faster (291s → 644ms for 1000 edits). Memory: 443MB → 525MB (+18% from line index allocation per call, acceptable tradeoff). Pipeline benchmark suite: 350s → 31s total
+- **dedupKey strings.Builder** — `merge.go`: Replaced `fmt.Sprintf("%s:%s:%d:%d", ...)` in `DeduplicateByPosition` and `DeduplicateByRule` with `strings.Builder` + `strconv.Itoa`, avoiding format parser overhead
+- **GroupBy pre-allocation** — `filter.go`: Pre-sized `GroupBy`, `GroupByFile`, `GroupBySeverity`, `GroupByCategory` result maps with `make(map, len(findings))`
+- **Diff/DiffFindings pre-allocation** — `diff.go`, `pipeline/verify.go`: Pre-allocated `added`, `removed`, `modified`, `unchanged` result slices with `make([]T, 0, len(input))`
+- **Performance analysis report** — `docs/research/performance-analysis.html`: Comprehensive HTML report covering CPU, RAM, Disk/IO, Network, Concurrency, GPU, and scaling characteristics with live benchmark data
+- **Performance optimization plan** — `docs/planning/2026-06-14_16-25_PERFORMANCE-OPTIMIZATION.md`: Pareto-principle plan with 1%/4%/20% breakdown, 15 medium-granularity tasks, 55 fine-granularity tasks, mermaid.js execution graph
+
 ---
 
 _Assisted-by: Crush <crush@charm.land>_

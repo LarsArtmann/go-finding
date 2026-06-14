@@ -374,11 +374,12 @@ func TestOffsetLineDistance(t *testing.T) {
 	g := NewWithT(t)
 
 	content := []byte("a\nb\nc")
+	lineIndex := buildLineOffsetIndex(content)
 
-	g.Expect(offsetLineDistance(content, 0, 1)).To(Equal(0))
-	g.Expect(offsetLineDistance(content, 0, 2)).To(Equal(1))
-	g.Expect(offsetLineDistance(content, 2, 1)).To(Equal(1))
-	g.Expect(offsetLineDistance(content, 0, 3)).To(Equal(2))
+	g.Expect(offsetLineDistance(lineIndex, 0, 1)).To(Equal(0))
+	g.Expect(offsetLineDistance(lineIndex, 0, 2)).To(Equal(1))
+	g.Expect(offsetLineDistance(lineIndex, 2, 1)).To(Equal(1))
+	g.Expect(offsetLineDistance(lineIndex, 0, 3)).To(Equal(2))
 }
 
 func TestFixEdit_Overlaps(t *testing.T) {

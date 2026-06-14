@@ -40,9 +40,10 @@ func Diff(before, after []Finding) DiffResult {
 	}
 
 	var (
-		added, removed []Finding
-		modified       []ModifiedPair
-		unchanged      []Finding
+		added     = make([]Finding, 0, len(after))
+		removed   = make([]Finding, 0, len(before))
+		modified  = make([]ModifiedPair, 0, min(len(before), len(after)))
+		unchanged = make([]Finding, 0, min(len(before), len(after)))
 	)
 
 	for id, beforeF := range beforeSet {

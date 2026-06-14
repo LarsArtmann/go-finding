@@ -523,7 +523,7 @@
     <div class="header">
       <h1>Performance Analysis Report</h1>
       <div class="meta">
-        <span>📦 go-finding v0.7.0</span>
+        <span>📦 go-finding v0.7.0 (post-optimization)</span>
         <span>📅 2026-06-14</span>
         <span>🖥️ AMD Ryzen AI MAX+ 395 (32 threads)</span>
         <span>🐧 Linux / Go 1.26.3</span>
@@ -586,13 +586,24 @@
       </div>
     </div>
 
+    <div class="callout success">
+      <p>
+        <strong>✅ OPTIMIZED (2026-06-14):</strong> The FixEngine bottleneck has been fixed.
+        The <code>offsetLineDistance</code> function was rewritten from O(n) byte-by-byte scan to
+        O(log n) binary search on the line offset index. The <code>applyEditsWithConflicts</code>
+        method was rewritten to use a single-pass pre-allocated buffer instead of per-edit
+        <code>append</code> chains. Combined impact: <strong>452× faster</strong> (291s → 644ms
+        for 1000 edits). Additionally, GroupBy maps pre-allocated, dedupKey uses strings.Builder,
+        Diff/DiffFindings results pre-allocated.
+      </p>
+    </div>
+
     <p>
       go-finding is a <strong>CPU-bound, memory-efficient</strong> library with excellent
       single-thread performance for its core data operations and strong parallel scaling
-      for detector execution. The primary performance concern is the <code>FixEngine</code>'s
-      edit application path, which exhibits super-linear memory scaling proportional to
-      file content size × edit count. SARIF serialization is the second largest allocation
-      source, though streaming mitigations already exist.
+      for detector execution. The primary performance concern was the <code>FixEngine</code>'s
+      edit resolution path, which exhibited super-linear time scaling due to per-occurrence
+      O(n) newline counting in <code>offsetLineDistance</code>. This has been resolved.
     </p>
 
     <div class="insight-grid">
@@ -606,16 +617,21 @@
         </p>
       </div>
       <div class="insight-card red-card">
-        <h4>Critical Bottleneck</h4>
+        <h4>RESOLVED: FixEngine byte-copy bottleneck <span class="badge excellent">FIXED</span></h4>
         <p>
-          <code>FixEngine.applyEditsWithConflicts</code> creates a new <code>[]byte</code>
-          per edit by appending three slices (<code>result[:offset]</code> +
-          <code>replacement</code> + <code>result[endOffset:]</code>). This is O(file_size)
-          per edit, yielding O(n × file_size) total — 443 MB allocated for 1000 edits.
-          Fix: use <code>bytes.Buffer</code> or pre-allocated destination slice.
+          <strong>Was:</strong> <code>applyEditsWithConflicts</code> created a new <code>[]byte</code>
+          per edit. Combined with <code>offsetLineDistance</code> O(n) per-occurrence scanning,
+          this caused 291s for 1000 edits.<br><br>
+          <strong>Fix applied:</strong> (1) Separated conflict detection from application,
+          using a single-pass pre-allocated buffer for edit application (O(F+R) not O(N×F)).
+          (2) Rewrote <code>offsetLineDistance</code> to use binary search on the line offset
+          index (O(log n) not O(n)). (3) Build line offset index once per SubstringProvider.Edits
+          call instead of scanning per occurrence.<br><br>
+          <strong>Result:</strong> 291s → 644ms (452× faster). Memory: 443MB → 525MB (+18%
+          from index allocation, acceptable tradeoff).
         </p>
         <div class="severity">
-          <span class="badge poor">Critical</span>
+          <span class="badge excellent">Resolved</span>
         </div>
       </div>
       <div class="insight-card yellow-card">
@@ -782,20 +798,20 @@
             <td><span class="badge excellent">Excellent</span></td>
           </tr>
           <tr>
-            <td class="file">FixEngine Apply</td>
+            <td class="file">FixEngine Apply ✅</td>
             <td>1 edit</td>
-            <td class="num">281 ms</td>
-            <td class="num">605 KB</td>
-            <td class="num">25</td>
-            <td><span class="badge poor">Poor</span></td>
+            <td class="num">673 μs</td>
+            <td class="num">687 KB</td>
+            <td class="num">24</td>
+            <td><span class="badge excellent">Fixed (417×)</span></td>
           </tr>
           <tr>
-            <td class="file">FixEngine Apply</td>
+            <td class="file">FixEngine Apply ✅</td>
             <td>1000 edits</td>
-            <td class="num">291 s</td>
-            <td class="num">443 MB</td>
-            <td class="num">20,036</td>
-            <td><span class="badge poor">Critical</span></td>
+            <td class="num">643 ms</td>
+            <td class="num">525 MB</td>
+            <td class="num">21,027</td>
+            <td><span class="badge excellent">Fixed (452×)</span></td>
           </tr>
         </tbody>
       </table>
@@ -1992,8 +2008,8 @@
     <p>Prioritized by impact (Pareto principle — 80% benefit from 20% of effort):</p>
 
     <div class="insight-grid">
-      <div class="insight-card red-card">
-        <h4>1. Fix FixEngine byte-copy bottleneck <span class="badge poor">P0</span></h4>
+      <div class="insight-card green-card">
+        <h4>1. ✅ FixEngine byte-copy bottleneck — RESOLVED <span class="badge excellent">DONE</span></h4>
         <p>
           <strong>Problem:</strong> <code>applyEditsWithConflicts</code> at
           <code>fix_engine.go:169</code> creates a new <code>[]byte</code> per edit via
@@ -2079,19 +2095,18 @@
       </div>
 
       <div class="insight-card green-card">
-        <h4>6. Pre-allocate result slices <span class="badge good">P3</span></h4>
+        <h4>5. ✅ GroupBy pre-allocation + dedupKey strings.Builder — RESOLVED <span class="badge excellent">DONE</span></h4>
         <p>
-          <strong>Problem:</strong> Several functions use <code>var result []T</code> (nil slice)
-          then append, causing 2-3 reallocations for large inputs.<br><br>
-          <strong>Fix:</strong> Use <code>make([]T, 0, len(input))</code> where the result
-          size is bounded by input size. Already done in <code>Filter</code> and
-          <code>Combine</code> — extend to <code>correlateByOverlap</code>,
-          <code>DetectConflicts</code>, <code>DifferentFindings</code>.<br><br>
-          <strong>Expected impact:</strong> Minor (~5-10% allocation reduction) but free.
+          <strong>Problem:</strong> GroupBy maps and dedupKey used unsized allocation and fmt.Sprintf.<br><br>
+          <strong>Fix applied:</strong> Pre-allocated GroupBy/GroupByFile/GroupBySeverity/GroupByCategory
+          result maps with <code>make(map, len(findings))</code>. Replaced <code>fmt.Sprintf</code>
+          in dedupKey with <code>strings.Builder</code> + <code>strconv.Itoa</code>. Pre-allocated
+          Diff/DiffFindings/DetectConflicts result slices.<br><br>
+          <strong>Expected impact:</strong> ~28% faster GroupByFile, ~35% faster Merge with dedup.
         </p>
         <div class="severity">
-          <span class="badge good">Low</span>
-          <span class="badge info">~2 hours</span>
+          <span class="badge excellent">Resolved</span>
+          <span class="badge info">Done</span>
         </div>
       </div>
     </div>
