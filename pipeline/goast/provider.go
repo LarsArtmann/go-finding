@@ -71,8 +71,7 @@ func (p *Provider) Edits(content []byte, f finding.Finding) ([]pipeline.FixEdit,
 	before := []byte(f.BeforeCode)
 
 	switch {
-	case f.Range != nil && f.Range.Start.Offset >= 0 && f.Range.End.Offset >= 0 &&
-		f.Range.Start.Offset < f.Range.End.Offset:
+	case f.Range != nil && f.Range.Length() > 0:
 		return offsetRangeEdits(content, f, before)
 
 	case f.Position.Line > 0:

@@ -59,9 +59,7 @@ func (OffsetProvider) CanHandle(f finding.Finding) bool {
 		return false
 	}
 
-	return f.Range != nil &&
-		f.Range.Start.Offset >= 0 && f.Range.End.Offset >= 0 &&
-		f.Range.Start.Offset < f.Range.End.Offset
+	return f.Range != nil && f.Range.Length() > 0
 }
 
 // Edits produces byte-level edits from offset-based range information.

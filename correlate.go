@@ -102,8 +102,9 @@ func Correlate(findings []Finding) []Correlation {
 	return correlations
 }
 
-// correlateByOverlap uses IntervalIndex to find overlapping range-based findings.
-func correlateByOverlap(findings []Finding, correlations []Correlation) []Correlation {
+// buildLineIntervals converts range-based findings into line intervals for overlap queries.
+// End is half-open (End.Line + 1) so adjacent ranges don't falsely overlap.
+func buildLineIntervals(findings []Finding) []Interval[int] {
 	intervals := make([]Interval[int], len(findings))
 	for i, f := range findings {
 		intervals[i] = Interval[int]{
@@ -113,7 +114,12 @@ func correlateByOverlap(findings []Finding, correlations []Correlation) []Correl
 		}
 	}
 
-	idx := NewIntervalIndex(intervals)
+	return intervals
+}
+
+// correlateByOverlap uses IntervalIndex to find overlapping range-based findings.
+func correlateByOverlap(findings []Finding, correlations []Correlation) []Correlation {
+	idx := NewIntervalIndex(buildLineIntervals(findings))
 
 	for i, f1 := range findings {
 		if f1.Range == nil {
@@ -202,16 +208,7 @@ func correlateRangesAndPoints(
 	pointFindings []Finding,
 	correlations []Correlation,
 ) []Correlation {
-	intervals := make([]Interval[int], len(rangeFindings))
-	for i, f := range rangeFindings {
-		intervals[i] = Interval[int]{
-			Start: f.Range.Start.Line,
-			End:   f.Range.End.Line + 1,
-			Value: i,
-		}
-	}
-
-	idx := NewIntervalIndex(intervals)
+	idx := NewIntervalIndex(buildLineIntervals(rangeFindings))
 
 	for _, pointFinding := range pointFindings {
 		line := pointFinding.Position.Line

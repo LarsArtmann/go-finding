@@ -11,16 +11,18 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
+func newTestAnalyzer(name string) *analysis.Analyzer {
+	return &analysis.Analyzer{
+		Name: name,
+		Doc:  "test",
+		Run:  func(_ *analysis.Pass) (any, error) { return nil, nil },
+	}
+}
+
 func TestNewAnalyzerDetector(t *testing.T) {
 	t.Parallel()
 
-	a := &analysis.Analyzer{
-		Name: "test-analyzer",
-		Doc:  "test",
-		Run:  func(_ *analysis.Pass) (any, error) { return nil, nil }, //nolint:nilnil
-	}
-
-	d := NewAnalyzerDetector(a, []string{"."})
+	d := NewAnalyzerDetector(newTestAnalyzer("test-analyzer"), []string{"."})
 
 	if d.Name() != "test-analyzer" {
 		t.Errorf("Name() = %q, want %q", d.Name(), "test-analyzer")
@@ -30,15 +32,9 @@ func TestNewAnalyzerDetector(t *testing.T) {
 func TestNewAnalyzerDetector_WithOptions(t *testing.T) {
 	t.Parallel()
 
-	a := &analysis.Analyzer{
-		Name: "opt-test",
-		Doc:  "test",
-		Run:  func(_ *analysis.Pass) (any, error) { return nil, nil }, //nolint:nilnil
-	}
-
 	fset := token.NewFileSet()
 	d := NewAnalyzerDetector(
-		a, []string{"."},
+		newTestAnalyzer("opt-test"), []string{"."},
 		WithSeverity(finding.SeverityError),
 		WithFileSet(fset),
 	)
@@ -55,13 +51,7 @@ func TestNewAnalyzerDetector_WithOptions(t *testing.T) {
 func TestAnalyzerDetector_Detect_PackageErrors(t *testing.T) {
 	t.Parallel()
 
-	a := &analysis.Analyzer{
-		Name: "err-test",
-		Doc:  "test",
-		Run:  func(_ *analysis.Pass) (any, error) { return nil, nil }, //nolint:nilnil
-	}
-
-	d := NewAnalyzerDetector(a, []string{"./nonexistent/..."})
+	d := NewAnalyzerDetector(newTestAnalyzer("err-test"), []string{"./nonexistent/..."})
 
 	_, err := d.Detect(context.Background())
 	if err == nil {
