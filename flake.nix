@@ -26,7 +26,7 @@
       inherit (nixpkgs) lib;
 
       version = self.rev or self.dirtyRev or "dev";
-      vendorHash = "sha256-JoM0J14QkVj9+c+AEUmWsbZrjSy4+zMrpyN4F2Sz6eo=";
+      vendorHash = "sha256-ZqUGDOBvpN66W7Bm1DoAxaYUMHPb0rndnZrIdcqr1SQ=";
       proxyVendor = true;
 
       goSrc = lib.fileset.toSource {
@@ -98,7 +98,10 @@
             programs = {
               gofumpt.enable = true;
               goimports.enable = true;
-              golines.enable = true;
+              golines = {
+                enable = true;
+                maxLength = 120;
+              };
               nixfmt.enable = true;
             };
           };
