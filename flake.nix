@@ -23,7 +23,7 @@
       systems,
     }:
     let
-      lib = nixpkgs.lib;
+      inherit (nixpkgs) lib;
 
       version = self.rev or self.dirtyRev or "dev";
       vendorHash = "sha256-JoM0J14QkVj9+c+AEUmWsbZrjSy4+zMrpyN4F2Sz6eo=";
@@ -82,7 +82,14 @@
                 text = script;
               }
             }/bin/${name}";
-            meta = { inherit description; };
+            meta = {
+              description = "Unified data model and pipeline for static analysis tools";
+              mainProgram = name;
+              homepage = "https://github.com/larsartmann/go-finding";
+              license = pkgs.lib.licenses.mit;
+              platforms = pkgs.lib.platforms.unix;
+              maintainers = [ pkgs.lib.maintainers.larsartmann ];
+            };
           };
         in
         {

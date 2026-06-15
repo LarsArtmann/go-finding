@@ -21,7 +21,6 @@ package goast
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -187,18 +186,18 @@ func beforeCodeOnlyEdits(content []byte, f finding.Finding, before []byte) ([]pi
 // lineColToOffset converts a 1-based line and column to a 0-based byte offset
 // using the token.FileSet from the parsed AST.
 func lineColToOffset(fset *token.FileSet, file *ast.File, line, col, contentLen int) (int, bool) {
-	tf := fset.File(file.Pos())
-	if tf == nil {
+	tokenFile := fset.File(file.Pos())
+	if tokenFile == nil {
 		return 0, false
 	}
 
-	if line < 1 || line > tf.LineCount() {
+	if line < 1 || line > tokenFile.LineCount() {
 		return 0, false
 	}
 
-	lineStart := tf.LineStart(line)
+	lineStart := tokenFile.LineStart(line)
 
-	offset := tf.Offset(lineStart)
+	offset := tokenFile.Offset(lineStart)
 	if col > 1 {
 		offset += col - 1
 	}
@@ -213,12 +212,12 @@ func lineColToOffset(fset *token.FileSet, file *ast.File, line, col, contentLen 
 // findInnermostNode returns the deepest AST node whose [Pos, End) range
 // contains the given byte offset.
 func findInnermostNode(fset *token.FileSet, root ast.Node, byteOffset int) ast.Node {
-	tf := fset.File(root.Pos())
-	if tf == nil {
+	tokenFile := fset.File(root.Pos())
+	if tokenFile == nil {
 		return nil
 	}
 
-	pos := tf.Pos(byteOffset)
+	pos := tokenFile.Pos(byteOffset)
 
 	var result ast.Node
 
@@ -263,13 +262,13 @@ func matchInNode(
 	before []byte,
 	f finding.Finding,
 ) *pipeline.FixEdit {
-	tf := fset.File(node.Pos())
-	if tf == nil {
+	tokenFile := fset.File(node.Pos())
+	if tokenFile == nil {
 		return nil
 	}
 
-	start := tf.Offset(node.Pos())
-	end := tf.Offset(node.End())
+	start := tokenFile.Offset(node.Pos())
+	end := tokenFile.Offset(node.End())
 
 	if start < 0 || end > len(content) || start > end {
 		return nil
@@ -296,8 +295,3 @@ func newEdit(offset, length int, f finding.Finding) pipeline.FixEdit {
 
 // Compile-time interface check.
 var _ pipeline.FixProvider = (*Provider)(nil)
-
-// FormatProviderError wraps an error with provider context for diagnostics.
-func FormatProviderError(err error) error {
-	return fmt.Errorf("go-ast provider: %w", err)
-}

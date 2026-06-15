@@ -81,12 +81,16 @@ func TestFixEngine_LineIndexLazyBuild(t *testing.T) {
 		},
 	}
 
-	var result []byte
+	modified := applyAndGetModifiedContent(t, engine, content, findings)
+	g.Expect(modified).To(Equal("package main\n\nfunc main() {\n\tnew()\n}\n"))
+}
 
-	_, _, _, result, _ = engine.ApplyWithConflicts(content, findings)
+func applyAndGetModifiedContent(t *testing.T, engine *FixEngine, content []byte, findings []finding.Finding) string {
+	t.Helper()
 
-	expected := "package main\n\nfunc main() {\n\tnew()\n}\n"
-	g.Expect(string(result)).To(Equal(expected))
+	_, _, _, result, _ := engine.ApplyWithConflicts(content, findings) //nolint:dogsled // only need content
+
+	return string(result)
 }
 
 // TestFixEngine_InterleavedProviders verifies correctness when offset and

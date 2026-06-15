@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/pipeline"
 )
 
 func TestProvider_CanHandle(t *testing.T) {
@@ -59,6 +60,7 @@ func TestProvider_Name(t *testing.T) {
 	t.Parallel()
 
 	p := &Provider{}
+
 	if name := p.Name(); name != "go-ast" {
 		t.Errorf("Name() = %q, want %q", name, "go-ast")
 	}
@@ -67,18 +69,10 @@ func TestProvider_Name(t *testing.T) {
 func TestProvider_Edits_ReplaceWithPosition(t *testing.T) {
 	t.Parallel()
 
-	content := []byte(`package main
+	content := []byte(
+		"package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"hello\")\n\tfmt.Println(\"world\")\n}\n",
+	)
 
-import "fmt"
-
-func main() {
-	fmt.Println("hello")
-	fmt.Println("world")
-}
-`)
-
-	// Replace the FIRST fmt.Println (line 6, col 2)
-	// BeforeCode at the exact position: "fmt.Println"
 	f := finding.Finding{
 		Position:   finding.Position{File: "test.go", Line: 6, Column: 2},
 		BeforeCode: "fmt.Println",
@@ -102,15 +96,7 @@ func main() {
 	}
 
 	got := applyEdits(content, edits)
-	expected := `package main
-
-import "fmt"
-
-func main() {
-	log.Printf("hello")
-	fmt.Println("world")
-}
-`
+	expected := "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tlog.Printf(\"hello\")\n\tfmt.Println(\"world\")\n}\n"
 
 	if string(got) != expected {
 		t.Errorf("result mismatch:\ngot:\n%s\nwant:\n%s", got, expected)
@@ -120,13 +106,12 @@ func main() {
 func TestProvider_Edits_ReplaceSecondOccurrence(t *testing.T) {
 	t.Parallel()
 
-	content := []byte("package main\n\nfunc main() {\n\told()\n\t")
+	content := []byte("package main\n\nfunc main() {\n\tfirst()\n\tsecond()\n\tthird()\n}\n")
 
-	// Replace the SECOND old() (line 5, col 2)
 	f := finding.Finding{
 		Position:   finding.Position{File: "test.go", Line: 5, Column: 2},
-		BeforeCode: "old()",
-		AfterCode:  "new()",
+		BeforeCode: "second()",
+		AfterCode:  "replaced()",
 	}
 
 	p := &Provider{}
@@ -141,13 +126,7 @@ func TestProvider_Edits_ReplaceSecondOccurrence(t *testing.T) {
 	}
 
 	got := applyEdits(content, edits)
-	expected := `package main
-
-func main() {
-	old()
-	new()
-}
-`
+	expected := "package main\n\nfunc main() {\n\tfirst()\n\treplaced()\n\tthird()\n}\n"
 
 	if string(got) != expected {
 		t.Errorf("result mismatch:\ngot:\n%s\nwant:\n%s", got, expected)
@@ -157,13 +136,8 @@ func main() {
 func TestProvider_Edits_Insert(t *testing.T) {
 	t.Parallel()
 
-	content := []byte(`package main
+	content := []byte("package main\n\nfunc main() {\n}\n")
 
-func main() {
-}
-`)
-
-	// Insert at end of line 4 (before the closing brace)
 	f := finding.Finding{
 		Position:  finding.Position{File: "test.go", Line: 4, Column: 1},
 		AfterCode: "\tprintln(\"inserted\")",
@@ -188,26 +162,20 @@ func main() {
 func TestProvider_Edits_ByteOffsetRange(t *testing.T) {
 	t.Parallel()
 
-	content := []byte(`package main
+	content := []byte("package main\n\nfunc main() {\n\ttarget()\n}\n")
 
-func main() {
-	old()
-}
-`)
-
-	// "old()" starts at byte offset 27
-	oldIdx := bytes.Index(content, []byte("old()"))
-	if oldIdx < 0 {
-		t.Fatal("test setup: old() not found")
+	targetIdx := bytes.Index(content, []byte("target()"))
+	if targetIdx < 0 {
+		t.Fatal("test setup: target() not found")
 	}
 
 	f := finding.Finding{
 		Range: &finding.Range{
-			Start: finding.Position{Offset: oldIdx},
-			End:   finding.Position{Offset: oldIdx + len("old()")},
+			Start: finding.Position{Offset: targetIdx},
+			End:   finding.Position{Offset: targetIdx + len("target()")},
 		},
-		BeforeCode: "old()",
-		AfterCode:  "new()",
+		BeforeCode: "target()",
+		AfterCode:  "replaced()",
 		Position:   finding.Position{File: "test.go"},
 	}
 
@@ -223,7 +191,189 @@ func main() {
 	}
 
 	got := applyEdits(content, edits)
-	if !bytes.Contains(got, []byte("new()")) {
-		t.Errorf("expected new() in result, got:\n%s", got)
+	if !bytes.Contains(got, []byte("replaced()")) {
+		t.Errorf("expected replaced() in result, got:\n%s", got)
 	}
+}
+
+func TestProvider_Edits_BeforeCodeOnly(t *testing.T) {
+	t.Parallel()
+
+	content := []byte("package main\n\nfunc main() {\n\tfmt.Println(\"hello\")\n}\n")
+
+	f := finding.Finding{
+		Position:   finding.Position{File: "test.go"},
+		BeforeCode: "fmt.Println",
+		AfterCode:  "log.Printf",
+	}
+
+	p := &Provider{}
+
+	edits, err := p.Edits(content, f)
+	if err != nil {
+		t.Fatalf("Edits() error: %v", err)
+	}
+
+	if len(edits) != 1 {
+		t.Fatalf("Edits() returned %d edits, want 1", len(edits))
+	}
+}
+
+func TestProvider_Edits_ParseFailure(t *testing.T) {
+	t.Parallel()
+
+	content := []byte("package main\n\nfunc {{{ broken }}}\n")
+
+	f := finding.Finding{
+		Position:   finding.Position{File: "broken.go", Line: 3, Column: 1},
+		BeforeCode: "broken",
+		AfterCode:  "fixed",
+	}
+
+	p := &Provider{}
+
+	edits, err := p.Edits(content, f)
+	if err != nil {
+		t.Fatalf("Edits() should not return error on parse failure: %v", err)
+	}
+
+	if edits != nil {
+		t.Errorf("Edits() should return nil edits on parse failure, got %d", len(edits))
+	}
+}
+
+func TestProvider_Edits_CacheReused(t *testing.T) {
+	t.Parallel()
+
+	content := []byte("package main\n\nfunc main() {\n\talpha()\n\tbeta()\n}\n")
+
+	p := &Provider{}
+
+	f1 := finding.Finding{
+		Position:   finding.Position{File: "test.go", Line: 4, Column: 2},
+		BeforeCode: "alpha()",
+		AfterCode:  "first()",
+	}
+
+	edits1, err := p.Edits(content, f1)
+	if err != nil || len(edits1) != 1 {
+		t.Fatalf("first Edits() failed: err=%v, len=%d", err, len(edits1))
+	}
+
+	f2 := finding.Finding{
+		Position:   finding.Position{File: "test.go", Line: 5, Column: 2},
+		BeforeCode: "beta()",
+		AfterCode:  "second()",
+	}
+
+	edits2, err := p.Edits(content, f2)
+	if err != nil || len(edits2) != 1 {
+		t.Fatalf("second Edits() failed: err=%v, len=%d", err, len(edits2))
+	}
+
+	if edits1[0].Offset == edits2[0].Offset {
+		t.Errorf("expected different offsets for different lines, both at %d", edits1[0].Offset)
+	}
+
+	p.mu.Lock()
+	cacheHash := p.cache.hash
+	p.mu.Unlock()
+
+	if cacheHash == 0 {
+		t.Error("expected non-zero cache hash after parsing")
+	}
+}
+
+func TestProvider_Edits_NoMatchInASTNode(t *testing.T) {
+	t.Parallel()
+
+	content := []byte("package main\n\nfunc main() {\n\tx := 1\n}\n")
+
+	f := finding.Finding{
+		Position:   finding.Position{File: "test.go", Line: 4, Column: 2},
+		BeforeCode: "nonexistent",
+		AfterCode:  "replacement",
+	}
+
+	p := &Provider{}
+
+	edits, err := p.Edits(content, f)
+	if err != nil {
+		t.Fatalf("Edits() error: %v", err)
+	}
+
+	if edits != nil {
+		t.Errorf("expected nil edits for unmatched BeforeCode, got %d", len(edits))
+	}
+}
+
+func TestProvider_Edits_BeforeCodeMismatchAtOffset(t *testing.T) {
+	t.Parallel()
+
+	content := []byte("package main\n\nfunc main() {\n\tvalue := 42\n\tprint(value)\n}\n")
+
+	f := finding.Finding{
+		Position:   finding.Position{File: "test.go", Line: 4, Column: 2},
+		BeforeCode: "value",
+		AfterCode:  "result",
+	}
+
+	p := &Provider{}
+
+	edits, err := p.Edits(content, f)
+	if err != nil {
+		t.Fatalf("Edits() error: %v", err)
+	}
+
+	if len(edits) != 1 {
+		t.Fatalf("Edits() returned %d edits, want 1", len(edits))
+	}
+}
+
+func TestProvider_FixEngineIntegration(t *testing.T) {
+	t.Parallel()
+
+	content := []byte("package main\n\nfunc main() {\n\talpha()\n\tbeta()\n\tgamma()\n}\n")
+
+	engine := pipeline.NewFixEngineWithProviders(
+		&Provider{},
+		&pipeline.SubstringProvider{},
+	)
+
+	findings := []finding.Finding{
+		{
+			Position:   finding.Position{File: "test.go", Line: 4, Column: 2},
+			BeforeCode: "alpha()",
+			AfterCode:  "first()",
+		},
+		{
+			Position:   finding.Position{File: "test.go", Line: 6, Column: 2},
+			BeforeCode: "gamma()",
+			AfterCode:  "third()",
+		},
+	}
+
+	result, _, count := engine.Apply(content, findings)
+	if count != 2 {
+		t.Errorf("expected 2 applied fixes, got %d", count)
+	}
+
+	expected := "package main\n\nfunc main() {\n\tfirst()\n\tbeta()\n\tthird()\n}\n"
+
+	if string(result) != expected {
+		t.Errorf("result mismatch:\ngot:\n%s\nwant:\n%s", result, expected)
+	}
+}
+
+func applyEdits(content []byte, edits []pipeline.FixEdit) []byte {
+	result := content
+
+	for _, edit := range edits {
+		result = append(
+			append(append([]byte{}, result[:edit.Offset]...), edit.Replacement...),
+			result[edit.Offset+edit.Length:]...,
+		)
+	}
+
+	return result
 }
