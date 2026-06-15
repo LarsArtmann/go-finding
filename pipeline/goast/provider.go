@@ -29,6 +29,7 @@ import (
 	"sync"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/internal/gotoken"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
@@ -140,7 +141,12 @@ func (*Provider) positionEdits(
 	f finding.Finding,
 	before []byte,
 ) ([]pipeline.FixEdit, error) {
-	offset, ok := lineColToOffset(fset, file, f.Position.Line, f.Position.Column, len(content))
+	tokenFile := fset.File(file.Pos())
+	if tokenFile == nil {
+		return nil, nil
+	}
+
+	offset, ok := gotoken.LineColToOffset(tokenFile, f.Position.Line, f.Position.Column, len(content))
 	if !ok {
 		return nil, nil
 	}
@@ -150,7 +156,7 @@ func (*Provider) positionEdits(
 			return []pipeline.FixEdit{*edit}, nil
 		}
 
-		node := findInnermostNode(fset, file, offset)
+		node := gotoken.FindInnermostNode(fset, file, offset)
 		if node != nil {
 			if edit := matchInNode(content, fset, node, before, f); edit != nil {
 				return []pipeline.FixEdit{*edit}, nil
@@ -183,61 +189,6 @@ func beforeCodeOnlyEdits(content []byte, f finding.Finding, before []byte) ([]pi
 	return []pipeline.FixEdit{newEdit(idx, len(before), f)}, nil
 }
 
-// lineColToOffset converts a 1-based line and column to a 0-based byte offset
-// using the token.FileSet from the parsed AST.
-func lineColToOffset(fset *token.FileSet, file *ast.File, line, col, contentLen int) (int, bool) {
-	tokenFile := fset.File(file.Pos())
-	if tokenFile == nil {
-		return 0, false
-	}
-
-	if line < 1 || line > tokenFile.LineCount() {
-		return 0, false
-	}
-
-	lineStart := tokenFile.LineStart(line)
-
-	offset := tokenFile.Offset(lineStart)
-	if col > 1 {
-		offset += col - 1
-	}
-
-	if offset > contentLen {
-		return 0, false
-	}
-
-	return offset, true
-}
-
-// findInnermostNode returns the deepest AST node whose [Pos, End) range
-// contains the given byte offset.
-func findInnermostNode(fset *token.FileSet, root ast.Node, byteOffset int) ast.Node {
-	tokenFile := fset.File(root.Pos())
-	if tokenFile == nil {
-		return nil
-	}
-
-	pos := tokenFile.Pos(byteOffset)
-
-	var result ast.Node
-
-	ast.Inspect(root, func(n ast.Node) bool {
-		if n == nil {
-			return false
-		}
-
-		if n.Pos() <= pos && pos < n.End() {
-			result = n
-
-			return true
-		}
-
-		return false
-	})
-
-	return result
-}
-
 // matchAtOffset checks whether before matches content at exactly offset.
 func matchAtOffset(content []byte, offset int, before []byte, f finding.Finding) *pipeline.FixEdit {
 	end := offset + len(before)
@@ -262,15 +213,8 @@ func matchInNode(
 	before []byte,
 	f finding.Finding,
 ) *pipeline.FixEdit {
-	tokenFile := fset.File(node.Pos())
-	if tokenFile == nil {
-		return nil
-	}
-
-	start := tokenFile.Offset(node.Pos())
-	end := tokenFile.Offset(node.End())
-
-	if start < 0 || end > len(content) || start > end {
+	start, end, ok := gotoken.NodeByteRange(fset, node)
+	if !ok || end > len(content) || start > end {
 		return nil
 	}
 

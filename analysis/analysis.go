@@ -10,6 +10,7 @@ import (
 	"go/token"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/internal/gotoken"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -177,33 +178,12 @@ func resolvePos(p finding.Position, fset *token.FileSet) token.Pos {
 		return token.NoPos
 	}
 
-	var file *token.File
-
-	fset.Iterate(func(tf *token.File) bool {
-		if tf.Name() == p.File {
-			file = tf
-
-			return false
-		}
-
-		return true
-	})
-
+	file := gotoken.FindFileByName(fset, p.File)
 	if file == nil {
 		return token.NoPos
 	}
 
-	if p.Line > file.LineCount() {
-		return token.NoPos
-	}
-
-	lineStart := file.LineStart(p.Line)
-
-	if p.Column > 1 {
-		return lineStart + token.Pos(p.Column-1)
-	}
-
-	return lineStart
+	return gotoken.LineColToPos(file, p.Line, p.Column)
 }
 
 // resolveEndPos computes the end token.Pos for a finding's fix range.
