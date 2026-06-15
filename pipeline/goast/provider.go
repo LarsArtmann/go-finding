@@ -27,6 +27,7 @@ import (
 	"hash/fnv"
 	"strings"
 	"sync"
+	"unsafe"
 
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/internal/gotoken"
@@ -46,9 +47,10 @@ type Provider struct {
 }
 
 type parseCache struct {
-	hash uint64
-	fset *token.FileSet
-	file *ast.File
+	hash     uint64
+	fset     *token.FileSet
+	file     *ast.File
+	contentP unsafe.Pointer // pointer identity for fast cache hit without hashing
 }
 
 // Name returns the provider name used for identification and CLI registration.
@@ -88,14 +90,26 @@ func (p *Provider) Edits(content []byte, f finding.Finding) ([]pipeline.FixEdit,
 // Returns ok=false (not an error) when the file cannot be parsed — the engine
 // falls through to the next provider (e.g., SubstringProvider).
 func (p *Provider) parse(content []byte, filename string) (*token.FileSet, *ast.File, bool) {
-	h := fnv.New64a()
-	_, _ = h.Write(content)
-	hash := h.Sum64()
+	// Fast path: check pointer identity first to avoid hashing the entire
+	// content on every call. This is the common case when processing N
+	// findings in the same file within a single ApplyWithConflicts call.
+	contentPtr := unsafe.Pointer(unsafe.SliceData(content))
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	if p.cache.contentP == contentPtr && p.cache.file != nil {
+		return p.cache.fset, p.cache.file, true
+	}
+
+	// Content changed (different pointer): verify with hash.
+	h := fnv.New64a()
+	_, _ = h.Write(content)
+	hash := h.Sum64()
+
 	if p.cache.hash == hash && p.cache.file != nil {
+		p.cache.contentP = contentPtr
+
 		return p.cache.fset, p.cache.file, true
 	}
 
