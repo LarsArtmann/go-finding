@@ -11,12 +11,14 @@ Discovered and fixed a GoAST performance bottleneck (6× speedup via pointer-ide
 ## A) FULLY DONE
 
 ### 1. Treefmt Config Mismatch Fixed
+
 - **Root cause:** treefmt-nix golines defaults to `maxLength=100`; golangci-lint uses `max-len=120`
 - **Fix:** Added `maxLength = 120` to `flake.nix` treefmt config
 - **Result:** `nix flake check` now passes cleanly (was broken for weeks)
 - **Commit:** `c316d10`
 
 ### 2. Shared gotoken Utility Extracted
+
 - **Problem:** `pipeline/goast/provider.go` and `analysis/analysis.go` both independently implemented line/column→offset resolution using `go/token`
 - **Solution:** Created `internal/gotoken/` package with 5 shared functions:
   - `LineColToOffset` — line/col → byte offset
@@ -28,6 +30,7 @@ Discovered and fixed a GoAST performance bottleneck (6× speedup via pointer-ide
 - **Commit:** `5626374`
 
 ### 3. GoAST Pointer-Identity Cache + Benchmarks
+
 - **Discovery:** GoAST provider hashed entire content on EVERY `parse()` call — N findings = N O(n) hashes
 - **Fix:** Added `unsafe.Pointer` comparison as fast path (same backing array = skip hash)
 - **Impact:** 6× speedup on 100 findings in 10K-line file (6.7ms → 1.1ms)
@@ -44,12 +47,12 @@ None — all 3 completed items are fully implemented, tested, and lint-clean.
 
 ## C) NOT STARTED
 
-| Task | Reason |
-|------|--------|
-| Make GoAST default in CLI | Deferred — design decision needs user input |
-| Add FuzzGoASTProvider | Would be valuable but lower priority than DRY fixes |
-| Update performance analysis HTML | Session 14 numbers can be added later |
-| Coverage badge in README | Cosmetic |
+| Task                             | Reason                                              |
+| -------------------------------- | --------------------------------------------------- |
+| Make GoAST default in CLI        | Deferred — design decision needs user input         |
+| Add FuzzGoASTProvider            | Would be valuable but lower priority than DRY fixes |
+| Update performance analysis HTML | Session 14 numbers can be added later               |
+| Coverage badge in README         | Cosmetic                                            |
 
 ---
 
@@ -62,11 +65,13 @@ Nothing this session. Previous session's `golangci-lint --fix` corruption was al
 ## E) WHAT WE SHOULD IMPROVE
 
 ### Architecture
+
 1. **GoAST `FindInnermostNode` still traverses full AST per finding** — Could cache node lookup by offset or use a sorted interval index. Current: O(AST size) per finding. Could be O(log n) with pre-built index.
 2. **Benchmark helpers duplicated** — `findOldOccurrences`, `offsetToLineNumber`, `columnOfOffset`, `pickEvenly` exist in both `pipeline/fix_engine_bench_test.go` and `pipeline/goast/provider_bench_test.go`. Should extract to shared bench test helper.
 3. **`unsafe.Pointer` for cache identity** — Works correctly but is technically unsafe. Alternative: pass a content ID through the FixEngine. Low priority — the usage is contained and correct.
 
 ### Process
+
 4. **`nix flake check` was broken for weeks** — The treefmt config mismatch was a pre-existing issue that blocked CI and pre-commit hooks. Should have been caught and fixed immediately.
 5. **No `nix flake check` in pre-commit** — The BuildFlow hook runs `nix-flake-check` but it was failing. Need to verify the hook actually enforces this.
 
@@ -75,6 +80,7 @@ Nothing this session. Previous session's `golangci-lint --fix` corruption was al
 ## F) TOP 25 THINGS TO DO NEXT
 
 ### High Impact (Architecture)
+
 1. **Cache AST node lookup by offset** — Pre-build sorted interval index during parse; O(log n) per finding instead of O(AST size)
 2. **Make GoAST default in CLI for .go files** — Design decision: should users opt-in or get it by default?
 3. **Extract shared bench test helpers** — DRY between fix_engine_bench_test.go and goast/provider_bench_test.go
@@ -82,6 +88,7 @@ Nothing this session. Previous session's `golangci-lint --fix` corruption was al
 5. **Add GoAST fuzz target** — Property-based test for AST disambiguation correctness
 
 ### Medium Impact (Features)
+
 6. **SARIF schema validation test** — Vendor lightweight validator
 7. **Profile BenchmarkToSARIF** — Understand 1510 allocs/100 findings
 8. **Add coverage badge to README** — Track coverage trends
@@ -94,6 +101,7 @@ Nothing this session. Previous session's `golangci-lint --fix` corruption was al
 15. **Add `.gitignore` for build outputs** — Prevent future binary commits
 
 ### Polish
+
 16. **DeduplicateBy.String() edge cases** — More thorough enum testing
 17. **golines → treefmt-nix maxLength auto-sync** — Prevent future config drift
 18. **arena allocation** — When Go proposal lands
