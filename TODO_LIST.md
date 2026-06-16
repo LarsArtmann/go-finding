@@ -49,7 +49,7 @@
 - [x] Update `FEATURES.md` for v0.4.x
 - [x] Fix `.gitignore` line 43 corruption
 - [x] FixEngine: line-offset tracking for cumulative line shifts across multi-fix — `LineShiftMap` in `pipeline/line_shift.go` with 7 tests
-- [x] Make fix strategy composable as interface — `FixStrategyResolver` interface + `DefaultResolver` in `fix_strategy.go`
+- [~] ~~Make fix strategy composable as interface~~ — REMOVED: ghost system with zero consumers. `FixStrategy.CanAutoApply()` is the single source of truth.
 - [x] Add pipeline stage hooks — pre/post hooks for detect, triage, fix, verify — `StageHook` interface in `pipeline/stage_hook.go` with 2 tests
 - [x] Add `DeduplicateBy.String()` method — consistent with all other named types
 - [x] Mark 225 lint warnings phantom — `go-structure-linter` is external
@@ -118,7 +118,7 @@
 - [x] Evaluate `go-sarif` vs hand-rolled — **OWNER_DECISION** (strategic) → Decision: keep hand-rolled. See docs/architecture-decisions.md #9.
 - [x] Config file support for library/pipeline (YAML) — `ConfigFromFile`/`ConfigFromReader` in `pipeline/config_file.go`
 - [x] Plugin architecture for external detector registration — `DetectorRegistry` in `registry.go` with Register/Build/BuildAll/Names/Has
-- [x] Pipeline middleware/interceptor pattern — `MiddlewareFunc`/`ComposeMiddleware` in `pipeline/middleware.go`
+- [~] ~~Pipeline middleware/interceptor pattern~~ — REMOVED: ghost system, never wired into Config/Pipeline.Run. `StageHook` covers the same use case at finer granularity.
 - [x] Per-detector timeout configuration
 - [x] Add structured logging (`slog`) to pipeline + CLI
 - [x] Progress reporting callback for pipeline

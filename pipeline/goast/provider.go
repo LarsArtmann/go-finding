@@ -92,7 +92,7 @@ func (p *Provider) parse(content []byte, filename string) (*token.FileSet, *ast.
 	// Fast path: check pointer identity first to avoid hashing the entire
 	// content on every call. This is the common case when processing N
 	// findings in the same file within a single ApplyWithConflicts call.
-	contentPtr := unsafe.Pointer(unsafe.SliceData(content))
+	contentPtr := unsafe.Pointer(unsafe.SliceData(content)) //nolint:gosec // cache key, never dereferenced
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -121,7 +121,7 @@ func (p *Provider) parse(content []byte, filename string) (*token.FileSet, *ast.
 		return nil, nil, false
 	}
 
-	p.cache = parseCache{hash: hash, fset: fset, file: file}
+	p.cache = parseCache{hash: hash, fset: fset, file: file, contentP: contentPtr}
 
 	return fset, file, true
 }
