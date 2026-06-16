@@ -96,7 +96,7 @@ func parseFilterGenTypes(cliTypes, configTypes string) ([]gogenfilter.FilterOpti
 
 		opt, ok := filterTypeRegistry[p]
 		if !ok {
-			known := slices.Sorted(slices.Values(mustKeys(filterTypeRegistry)))
+			known := mustKeys(filterTypeRegistry)
 
 			return nil, fmt.Errorf(
 				"%w: unknown generated filter type %q (known: %s)",
@@ -115,8 +115,7 @@ func parseFilterGenTypes(cliTypes, configTypes string) ([]gogenfilter.FilterOpti
 }
 
 func mustKeys(m map[string]gogenfilter.FilterOption) []string {
-	keys := slices.Collect(maps.Keys(m))
-	return keys
+	return slices.Sorted(maps.Keys(m))
 }
 
 // splitCommaList parses comma-separated patterns. Returns nil if the string is empty.

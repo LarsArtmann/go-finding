@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"time"
 
@@ -127,14 +126,14 @@ func (c pipelineConfigFile) validate() error {
 	for _, d := range c.Detectors {
 		if _, ok := lookupDetectorBuilder(d.Name); !ok {
 			return fmt.Errorf("%w %q (available: %s)", errUnknownDetector, d.Name,
-				strings.Join(slices.Sorted(slices.Values(availableDetectorNames())), ", "))
+				strings.Join(availableDetectorNames(), ", "))
 		}
 	}
 
 	for _, name := range c.FixProviders {
 		if _, ok := lookupFixProvider(name); !ok {
 			return fmt.Errorf("%w: %q (available: %s)", ErrUnknownFixProvider, name,
-				strings.Join(slices.Sorted(slices.Values(availableFixProviderNames())), ", "))
+				strings.Join(availableFixProviderNames(), ", "))
 		}
 	}
 

@@ -47,7 +47,7 @@ func availableDetectorNames() []string {
 	knownDetectorBuildersMu.RLock()
 	defer knownDetectorBuildersMu.RUnlock()
 
-	return slices.Collect(maps.Keys(knownDetectorBuilders))
+	return slices.Sorted(maps.Keys(knownDetectorBuilders))
 }
 
 func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {

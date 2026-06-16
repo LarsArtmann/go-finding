@@ -230,3 +230,32 @@ func TestWriteOutput_FileCreationError(t *testing.T) {
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err.Error()).To(ContainSubstring("creating output file"))
 }
+
+func TestResolveFixProviders_UnknownReturnsError(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	_, err := resolveFixProviders([]string{"nonexistent-provider"})
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, ErrUnknownFixProvider)).To(BeTrue())
+}
+
+func TestResolveFixProviders_KnownAndDefaults(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	providers, err := resolveFixProviders([]string{"go-ast"})
+	g.Expect(err).NotTo(HaveOccurred())
+	// go-ast + 3 default providers (offset, line, substring)
+	g.Expect(providers).To(HaveLen(4))
+	g.Expect(providers[0].Name()).To(Equal("go-ast"))
+}
+
+func TestResolveFixProviders_Empty(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	providers, err := resolveFixProviders(nil)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(providers).To(BeNil())
+}

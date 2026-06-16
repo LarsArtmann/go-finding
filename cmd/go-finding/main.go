@@ -143,7 +143,12 @@ func run() int {
 	}
 
 	if len(fixProviderNames) > 0 {
-		pipelineCfg.FixProviders = resolveFixProviders(fixProviderNames)
+		providers, err := resolveFixProviders(fixProviderNames)
+		if err != nil {
+			return fatalf("resolving fix providers", err)
+		}
+
+		pipelineCfg.FixProviders = providers
 	}
 
 	pipelineCfg.GracefulDegradation = true

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"strings"
 	"sync"
 
 	"github.com/larsartmann/go-finding/pipeline"
@@ -38,15 +39,16 @@ func availableFixProviderNames() []string {
 	knownFixProvidersMu.RLock()
 	defer knownFixProvidersMu.RUnlock()
 
-	return slices.Collect(maps.Keys(knownFixProviders))
+	return slices.Sorted(maps.Keys(knownFixProviders))
 }
 
 // resolveFixProviders converts provider names into a []pipeline.FixProvider slice.
 // When non-empty, the returned slice prepends the named providers to the default
 // text-based providers (OffsetProvider, LineProvider, SubstringProvider).
-func resolveFixProviders(names []string) []pipeline.FixProvider {
+// Returns an error listing the valid names if any name is unknown.
+func resolveFixProviders(names []string) ([]pipeline.FixProvider, error) {
 	if len(names) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	providers := make([]pipeline.FixProvider, 0, len(names)+3)
@@ -54,7 +56,9 @@ func resolveFixProviders(names []string) []pipeline.FixProvider {
 	for _, name := range names {
 		builder, ok := lookupFixProvider(name)
 		if !ok {
-			continue
+			return nil, fmt.Errorf("%w: %q (available: %s)",
+				ErrUnknownFixProvider, name,
+				strings.Join(availableFixProviderNames(), ", "))
 		}
 
 		providers = append(providers, builder())
@@ -68,5 +72,5 @@ func resolveFixProviders(names []string) []pipeline.FixProvider {
 		&pipeline.SubstringProvider{},
 	)
 
-	return providers
+	return providers, nil
 }

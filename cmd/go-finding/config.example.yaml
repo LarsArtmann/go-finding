@@ -21,3 +21,12 @@ detectors:
 #   - "**/vendor/**"
 # generatedInclude:
 #   - "pkg/**"
+
+# Enable domain-specific fix providers (prepended to default text-based chain).
+# Available: go-ast
+# Can also be set via -fix-provider CLI flag.
+# fixProviders:
+#   - go-ast
+
+# Enable precise byte-level conflict detection for overlapping fixes.
+# byteLevelConflictDetection: false
