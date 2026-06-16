@@ -243,6 +243,38 @@
 //
 //	applier, err := pipeline.NewFixApplierWithProviders(rootDir, myASTProvider)
 //
+// A Go AST-aware provider (pipeline/goast.Provider) is available for .go files,
+// using go/parser to disambiguate BeforeCode occurrences structurally.
+//
+// # Detector Registry
+//
+// Register named detector constructors for plugin-style extensibility:
+//
+//	registry := finding.NewDetectorRegistry()
+//	registry.MustRegister("my-tool", func() finding.Detector { ... })
+//	det, err := registry.Build("my-tool")
+//	all, err := registry.BuildAll() // sorted by name
+//
+// Thread-safe. Use with ConfigFile.ResolveDetectors for config-driven pipelines.
+//
+// # Interval Index
+//
+// Efficient overlap queries over half-open ranges in O(log n + k):
+//
+//	idx := finding.NewIntervalIndex(intervals)
+//	overlaps := idx.Query(start, end)
+//
+// Used internally by Correlate for spatial finding correlation.
+//
+// # Streaming Merge
+//
+// MergeIter yields findings from multiple reports as an iterator,
+// avoiding intermediate slice allocation:
+//
+//	for f := range finding.MergeIter(reports, finding.WithDeduplication(true)) {
+//	    process(f)
+//	}
+//
 // # Converting from go/analysis
 //
 // Convert from the standard Go analysis framework using the analysis subpackage:

@@ -1,7 +1,5 @@
 # FEATURES.md — go-finding
 
-> **Version:** 0.6.1 | **Updated:** 2026-06-09
->
 > A unified data model and pipeline for Go static analysis tools.
 > Seven tools detect issues. Zero tools route them to remediation. This library fixes that.
 
@@ -666,8 +664,6 @@ Binary: `go-finding`
 | `-config`         | (none)  | YAML/JSON config file                              |
 | `-cpuprof`        | (none)  | CPU profile output                                 |
 | `-memprof`        | (none)  | Memory profile output                              |
-| `-output`         | stdout  | Output file path                                   |
-| `-version`        | `false` | Print version                                      |
 
 ### Config File (YAML/JSON)
 
@@ -705,18 +701,6 @@ Metrics summary printed to stderr when available.
 
 ---
 
-## 19. Testing
-
-**Status:** FULLY_FUNCTIONAL
-
-| Package                          | Coverage  |
-| -------------------------------- | --------- |
-| Core (`finding`)                 | 97.1%     |
-| Pipeline                         | 94.0%     |
-| CLI (`cmd/go-finding`)           | 70.0%     |
-| Detectors (`internal/detectors`) | 95.9%     |
-| **Total**                        | **91.3%** |
-
 Test categories:
 
 - Unit tests per source file
@@ -742,6 +726,151 @@ Three runnable examples in `examples/`:
 | `pipeline/` | Pipeline with custom detector |
 
 > **Note:** Examples have no test files (compile-only check via `example_compile_test.go`).
+
+---
+
+## 21. Extensibility & Advanced Features (v0.7.0+)
+
+### 21.1 DetectorRegistry
+
+**Status:** FULLY_FUNCTIONAL
+
+Thread-safe named detector constructor registry for plugin-style architecture:
+
+```go
+registry := finding.NewDetectorRegistry()
+registry.MustRegister("my-tool", func() finding.Detector { ... })
+det, err := registry.Build("my-tool")
+all, err := registry.BuildAll() // sorted by name
+```
+
+Methods: `Register`, `MustRegister`, `Build`, `BuildAll`, `Names`, `Has`. Thread-safe via RWMutex.
+
+### 21.2 IntervalIndex[T]
+
+**Status:** FULLY_FUNCTIONAL
+
+Generic interval index for O(log n + k) overlap queries:
+
+```go
+idx := finding.NewIntervalIndex(intervals)
+overlaps := idx.Query(start, end)
+```
+
+Used internally by Correlate for spatial finding correlation.
+
+### 21.3 LineShiftMap
+
+**Status:** FULLY_FUNCTIONAL
+
+Tracks how line numbers and columns shift after byte-level edits:
+
+```go
+shiftMap := pipeline.NewLineShiftMap(originalContent, edits)
+newLine := shiftMap.ShiftedLine(originalLine)
+newPos := shiftMap.ShiftedPosition(pos) // shifts Line + Column
+newRange := shiftMap.ShiftedRange(r)    // shifts both endpoints
+```
+
+Column shifting applies to single-line edits (no line-count change) on the same line. Multi-line edits shift subsequent lines only.
+
+### 21.4 MergeIter
+
+**Status:** FULLY_FUNCTIONAL
+
+Streaming merge via `iter.Seq[Finding]`, avoiding intermediate slice allocation:
+
+```go
+for f := range finding.MergeIter(reports, finding.WithDeduplication(true)) {
+    process(f)
+}
+```
+
+### 21.5 ConfigFile (Pipeline)
+
+**Status:** FULLY_FUNCTIONAL
+
+JSON config loading for library use:
+
+```go
+cfg, err := pipeline.ConfigFromFile(data)
+detectors, err := configFile.ResolveDetectors(registry)
+providers, err := configFile.ResolveProviders(providerMap)
+```
+
+### 21.6 StageHook
+
+**Status:** FULLY_FUNCTIONAL
+
+Per-stage before/after hooks with abort capability (replaces deprecated `OnStage`):
+
+```go
+config.StageHooks = []pipeline.StageHook{
+    pipeline.StageHookFunc(func(e pipeline.StageEvent) error {
+        if e.Stage == pipeline.StageDetect {
+            log.Println("detection complete")
+        }
+        return nil
+    })
+}
+```
+
+### 21.7 GoASTProvider
+
+**Status:** FULLY_FUNCTIONAL
+
+AST-aware fix provider for `.go` files using `go/parser`. Disambiguates BeforeCode occurrences structurally rather than via substring matching:
+
+```go
+applier, err := pipeline.NewFixApplierWithProviders(rootDir, &goast.Provider{})
+```
+
+Separate subpackage (`pipeline/goast`) keeps `go/parser` as opt-in dependency.
+
+### 21.8 GeneratedFileFilter
+
+**Status:** FULLY_FUNCTIONAL
+
+FindingProcessor that removes findings from auto-generated Go files (sqlc, protobuf, mockgen, templ, etc.) via `gogenfilter/v3`:
+
+```go
+config.Processors = []pipeline.FindingProcessor{
+    pipeline.NewGeneratedFileFilter(),
+}
+```
+
+Configurable per-generator type, include/exclude patterns.
+
+### 21.9 ToolAdapter[O]
+
+**Status:** FULLY_FUNCTIONAL
+
+Generic adapter converting any tool's output type to Findings:
+
+```go
+adapter := finding.NewToolAdapter("my-tool", runFunc, parseFunc, convertFunc)
+```
+
+### 21.10 CategoryForLinter / LinterRegistry
+
+**Status:** FULLY_FUNCTIONAL
+
+70+ linter→category mappings with case-insensitive lookup:
+
+```go
+cat := finding.CategoryForLinter("gosec") // CategorySecurity
+finding.RegisterLinterCategory("my-linter", finding.CategoryPerformance)
+```
+
+### 21.11 SeverityAliases / ParseSeverity
+
+**Status:** FULLY_FUNCTIONAL
+
+9 common severity aliases (warn, high, medium, low, fatal, critical, note, advice, suggestion):
+
+```go
+sev, err := finding.ParseSeverity("warn") // SeverityWarning
+```
 
 ---
 
@@ -794,6 +923,18 @@ Three runnable examples in `examples/`:
 | LSP diagnostic tags               | FULLY_FUNCTIONAL     | `Unnecessary`/`Deprecated` preserved in metadata                           |
 | SARIF `region.snippet`            | FULLY_FUNCTIONAL     | Native SARIF snippet round-trip support                                    |
 | Comprehensive `doc.go`            | FULLY_FUNCTIONAL     | Full package documentation with examples and architecture notes            |
+| DetectorRegistry                  | FULLY_FUNCTIONAL     | Thread-safe plugin-style detector constructor registry                     |
+| IntervalIndex[T]                  | FULLY_FUNCTIONAL     | Generic O(log n + k) overlap queries; used by Correlate                    |
+| LineShiftMap                      | FULLY_FUNCTIONAL     | Byte-offset-aware line+column shift tracking after edits                   |
+| MergeIter                         | FULLY_FUNCTIONAL     | Streaming iter.Seq merge with deduplication                                |
+| ConfigFile (pipeline)             | FULLY_FUNCTIONAL     | JSON config loading + ResolveDetectors/ResolveProviders                    |
+| StageHook                         | FULLY_FUNCTIONAL     | Per-stage before/after hooks with abort (replaces OnStage)                 |
+| GoASTProvider                     | FULLY_FUNCTIONAL     | AST-aware fix provider for .go files (go/parser)                           |
+| GeneratedFileFilter               | FULLY_FUNCTIONAL     | Removes findings from auto-generated files (sqlc, protobuf, etc.)          |
+| ToolAdapter[O]                    | FULLY_FUNCTIONAL     | Generic tool→Finding converter adapter                                     |
+| CategoryForLinter                 | FULLY_FUNCTIONAL     | 70+ linter→category mappings, case-insensitive                             |
+| SeverityAliases                   | FULLY_FUNCTIONAL     | 9 severity aliases (warn, high, medium, low, fatal, etc.)                  |
+| SubstringProvider column-aware    | FULLY_FUNCTIONAL     | Nearest-position heuristic with line+column disambiguation                 |
 
 ---
 

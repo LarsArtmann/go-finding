@@ -236,6 +236,17 @@ defer applier.Close()
 applier, err = pipeline.NewFixApplierWithProviders(rootDir, myASTProvider)
 ```
 
+A built-in Go AST provider disambiguates BeforeCode occurrences structurally:
+
+```go
+import "github.com/larsartmann/go-finding/pipeline/goast"
+
+applier, err := pipeline.NewFixApplierWithProviders(rootDir, &goast.Provider{})
+```
+
+The SubstringProvider fallback uses nearest-position matching (line + column distance)
+to disambiguate multiple occurrences of the same text.
+
 ### Diff and Compare
 
 ```go
@@ -375,18 +386,8 @@ This project follows [Semantic Versioning](https://semver.org/).
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "0.6.1"
+fmt.Println(finding.Version) // "0.7.0"
 ```
-
-## Project Stats
-
-| Package   | Coverage |
-| --------- | -------- |
-| Root      | 95.7%    |
-| Analysis  | 98.5%    |
-| Pipeline  | 93.7%    |
-| CLI       | 90.7%    |
-| Detectors | 96.1%    |
 
 ## Related Projects
 

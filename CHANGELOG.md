@@ -7,14 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Category.Compare()** — Lexicographic comparison method matching the Severity/Confidence pattern, for deterministic sorting.
+- **SubstringProvider column-aware disambiguation** — When multiple occurrences of BeforeCode exist and Position.Column is set, picks the occurrence closest to the target byte offset (line + column). Previously used line-distance only.
+- **LineShiftMap.ShiftedPosition / ShiftedRange** — Extends line shifting to full positions (line + column) and ranges (both endpoints). Single-line edits shift columns; multi-line edits shift subsequent lines.
+- **ConfigFile integration tests** — End-to-end proof that ConfigFile → ResolveDetectors → Pipeline.Run works.
+- **DetectorRegistry integration tests** — End-to-end proof that BuildAll → Pipeline.Run works.
+- **Type alias backward compat test** — Verifies pipeline.Detector == finding.Detector compile-time identity.
+- **FuzzCategoryForLinter** — Fuzz target for case-insensitive linter lookup with seed corpus.
+- **Godoc examples** — IntervalIndex, MergeIter, DetectorRegistry, ConfigFile, LineShiftMap.
+- **v1.0 Migration Guide** — `docs/MIGRATION_v1.0.md` with per-API migration instructions.
+- **Benchmark regression CI gate** — `scripts/bench-check.sh` + CI job fails on >25% regression vs baseline.
+- **Dependabot** — `.github/dependabot.yml` for gomod + github-actions.
+- **CLI resolveFixProviders error surfacing** — Unknown fix provider names now return an error instead of being silently skipped.
+
+### Changed
+
+- **resolveFixProviders returns error** — Signature changed to `([]pipeline.FixProvider, error)`; unknown provider names surface `ErrUnknownFixProvider` with available names listed.
+- **slices.Sorted modernization** — Replaced `slices.Collect(maps.Keys(m))` + `slices.Sort()` with `slices.Sorted(maps.Keys(m))` in 6 locations (correlate, fix_applier, partial, CLI registries).
+- **LineShiftEntry.ByteDelta** — Added byte-delta tracking to LineShiftEntry for column shifting on single-line edits.
+- **Pipeline shifts Position + Range** — `pipeline_detect.go` now calls `ShiftedPosition` and `ShiftedRange` instead of only `ShiftedLine`.
+- **AGENTS.md trimmed** — Reduced from 399 → 115 lines by removing session changelogs (kept in git history + CHANGELOG.md).
+- **RELEASE_CRITERIA.md rewritten** — Concrete pass/fail thresholds, owner-decision blockers documented.
+- **OnStage unified into fireStageHook** — Eliminated the split brain where every stage boundary called both `notifyStage()` (legacy `OnStage` callback) and `fireStageHook()` (`StageHooks`). Now `fireStageHook` fires the legacy `OnStage` callback internally on `StageAfter` events, giving a single notification call per stage boundary. `Config.OnStage` is marked deprecated in favor of `Config.StageHooks` which provides before/after events with context and abort capability.
+
 ### Removed
 
 - **FixStrategyResolver + DefaultResolver** — Removed unused interface and its only implementation. `DefaultResolver.CanAutoApply` merely delegated to the existing `FixStrategy.CanAutoApply()` method, and the pipeline triage path never referenced the resolver (it calls `Finding.IsAutoFixable()` directly). Zero consumers, zero tests. Pre-v1.0 cleanup.
 - **MiddlewareFunc / ComposeMiddleware / RunFunc** — Removed `pipeline/middleware.go` entirely. The middleware pattern was never wired into `Config` or `Pipeline.Run`, had zero consumers, and no test file existed. `StageHook` (per-stage before/after with abort capability) already covers the same cross-cutting concerns at finer granularity. Pre-v1.0 cleanup.
-
-### Changed
-
-- **OnStage unified into fireStageHook** — Eliminated the split brain where every stage boundary called both `notifyStage()` (legacy `OnStage` callback) and `fireStageHook()` (`StageHooks`). Now `fireStageHook` fires the legacy `OnStage` callback internally on `StageAfter` events, giving a single notification call per stage boundary. `Config.OnStage` is marked deprecated in favor of `Config.StageHooks` which provides before/after events with context and abort capability.
 
 ## [0.7.0] - 2026-06-09
 
