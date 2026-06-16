@@ -26,7 +26,7 @@
       inherit (nixpkgs) lib;
 
       version = self.rev or self.dirtyRev or "dev";
-      vendorHash = "sha256-ZqUGDOBvpN66W7Bm1DoAxaYUMHPb0rndnZrIdcqr1SQ=";
+      vendorHash = "sha256-VfIcwelBWyCoDVhqCgIXYDWNZQb4WI9tPJrU6tTxdWI=";
       proxyVendor = true;
 
       goSrc = lib.fileset.toSource {
