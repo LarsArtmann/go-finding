@@ -233,12 +233,13 @@ func (p *Pipeline) applyTriage(
 
 	iter.Applied = len(applied)
 
-	// Shift remaining findings' line numbers based on applied edits.
+	// Shift remaining findings' positions and ranges based on applied edits.
 	for file, shiftMap := range shiftMaps {
 		for i := range iter.findings {
 			f := &iter.findings[i]
 			if f.Position.File == file {
-				f.Position.Line = shiftMap.ShiftedLine(f.Position.Line)
+				f.Position = shiftMap.ShiftedPosition(f.Position)
+				f.Range = shiftMap.ShiftedRange(f.Range)
 			}
 		}
 	}

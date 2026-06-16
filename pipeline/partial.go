@@ -143,9 +143,7 @@ func FormatPartialErrors(errs map[string]error) error {
 		return nil
 	}
 
-	names := slices.Collect(maps.Keys(errs))
-
-	slices.Sort(names)
+	names := slices.Sorted(maps.Keys(errs))
 
 	inner := make([]error, 0, len(errs)+1)
 	inner = append(inner, ErrPartialDetection)

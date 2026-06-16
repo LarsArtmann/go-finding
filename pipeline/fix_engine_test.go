@@ -254,6 +254,38 @@ func TestFixEngine_Apply_NearestLineMatch(t *testing.T) {
 	}
 }
 
+func TestFixEngine_Apply_NearestColumnMatch(t *testing.T) {
+	t.Parallel()
+
+	// Two occurrences of "X" on the SAME line; column must disambiguate.
+	content := []byte("X and X here")
+
+	engine := NewFixEngine()
+
+	cases := []struct {
+		name string
+		col  int
+		want string
+	}{
+		{"first X via column 1", 1, "Y and X here"},
+		{"second X via column 7", 7, "X and Y here"},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+
+			fixes := []finding.Finding{
+				{BeforeCode: "X", AfterCode: "Y", Position: finding.Pos("a.go", 1, tt.col)},
+			}
+			result, _, count := engine.Apply(content, fixes)
+			g.Expect(count).To(Equal(1))
+			g.Expect(string(result)).To(Equal(tt.want))
+		})
+	}
+}
+
 func TestFixEngine_Apply_ByteOffset(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)

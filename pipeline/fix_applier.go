@@ -107,8 +107,7 @@ func (a *FixApplier) ApplyWithShiftMap(
 		shiftMaps = make(map[string]*LineShiftMap)
 	)
 
-	paths := slices.Collect(maps.Keys(byFile))
-	slices.Sort(paths)
+	paths := slices.Sorted(maps.Keys(byFile))
 
 	for _, path := range paths {
 		fileFixes := byFile[path]

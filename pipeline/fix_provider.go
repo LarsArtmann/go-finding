@@ -203,7 +203,14 @@ func (p SubstringProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, 
 
 // EditsWithLineIndex locates BeforeCode using a pre-built line offset index,
 // avoiding an O(n) rebuild per finding when multiple occurrences require
-// disambiguation by line proximity.
+// disambiguation by position proximity.
+//
+// Disambiguation priority when multiple occurrences exist:
+//  1. If Position.Line > 0 AND Position.Column > 0: the occurrence whose byte
+//     offset is closest to the target line+column offset wins. This resolves
+//     ambiguity between occurrences on the same line.
+//  2. Else if Position.Line > 0: the occurrence on the closest line wins.
+//  3. Otherwise: the first occurrence wins.
 func (SubstringProvider) EditsWithLineIndex(content []byte, lineIndex []int, f finding.Finding) ([]FixEdit, error) {
 	before := []byte(f.BeforeCode)
 
@@ -212,21 +219,62 @@ func (SubstringProvider) EditsWithLineIndex(content []byte, lineIndex []int, f f
 		return nil, nil
 	}
 
+	if len(occurrences) == 1 {
+		return []FixEdit{newReplacementEdit(occurrences[0], len(before), f)}, nil
+	}
+
+	best := pickNearestOccurrence(lineIndex, occurrences, f)
+
+	return []FixEdit{newReplacementEdit(best, len(before), f)}, nil
+}
+
+// pickNearestOccurrence selects the occurrence closest to the finding's position.
+// When both line and column are available, distance is measured in bytes from
+// the target offset — this disambiguates occurrences on the same line.
+// When only line is available, distance is measured in lines.
+// When neither is available, the first occurrence is returned.
+func pickNearestOccurrence(lineIndex, occurrences []int, f finding.Finding) int {
 	best := occurrences[0]
 
-	if f.Position.Line > 0 && len(occurrences) > 1 {
-		// Use binary search on the pre-built line offset index for each
-		// occurrence, reducing per-occurrence cost from O(F) to O(log F).
-		bestDist := offsetLineDistance(lineIndex, best, f.Position.Line)
+	if f.Position.Line <= 0 || f.Position.Line > len(lineIndex) {
+		return best
+	}
 
-		for _, idx := range occurrences[1:] {
-			dist := offsetLineDistance(lineIndex, idx, f.Position.Line)
-			if dist < bestDist {
-				bestDist = dist
-				best = idx
+	// When column is known, use byte-offset distance to the target point.
+	// This naturally accounts for intra-line proximity.
+	if f.Position.Column > 0 {
+		target := lineIndex[f.Position.Line-1] + (f.Position.Column - 1)
+		bestDist := absInt(occurrences[0] - target)
+
+		for _, off := range occurrences[1:] {
+			d := absInt(off - target)
+			if d < bestDist {
+				bestDist = d
+				best = off
 			}
+		}
+
+		return best
+	}
+
+	// Line-only fallback: minimize line distance.
+	bestDist := offsetLineDistance(lineIndex, occurrences[0], f.Position.Line)
+
+	for _, off := range occurrences[1:] {
+		d := offsetLineDistance(lineIndex, off, f.Position.Line)
+		if d < bestDist {
+			bestDist = d
+			best = off
 		}
 	}
 
-	return []FixEdit{newReplacementEdit(best, len(before), f)}, nil
+	return best
+}
+
+func absInt(n int) int {
+	if n < 0 {
+		return -n
+	}
+
+	return n
 }
