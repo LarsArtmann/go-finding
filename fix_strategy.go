@@ -41,21 +41,3 @@ func (f FixStrategy) NeedsAI() bool {
 func (f FixStrategy) String() string {
 	return string(f)
 }
-
-// FixStrategyResolver determines whether a finding can be auto-applied.
-// Implement this interface to customize fix strategy behavior beyond the
-// built-in FixStrategy constants.
-type FixStrategyResolver interface {
-	// CanAutoApply reports whether findings with the given strategy can be
-	// automatically applied by the pipeline.
-	CanAutoApply(strategy FixStrategy) bool
-}
-
-// DefaultResolver is the standard FixStrategyResolver that matches
-// [FixStrategy.CanAutoApply].
-type DefaultResolver struct{}
-
-// CanAutoApply returns true only for [FixStrategyDirect].
-func (DefaultResolver) CanAutoApply(strategy FixStrategy) bool {
-	return strategy.CanAutoApply()
-}

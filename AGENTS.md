@@ -47,7 +47,7 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `format.go` | FormatText/FormatMarkdown for human-readable output |
 | `registry.go` | DetectorRegistry — thread-safe named detector constructor registry |
 | `interval_tree.go` | IntervalIndex[T] generic sorted-scan overlap queries |
-| `fix_strategy.go` | FixStrategy constants, FixStrategyResolver interface, DefaultResolver |
+| `fix_strategy.go` | FixStrategy constants, CanAutoApply, NeedsAI |
 
 #### Analysis Package
 
@@ -78,7 +78,6 @@ Seven tools detect issues. Zero tools route them to remediation. This library so
 | `pipeline/stage_hook.go`       | StageHook interface, StageHookFunc adapter, StageEvent                                                                                                    |
 | `pipeline/line_shift.go`       | LineShiftMap — byte-offset-aware line shift tracking after edits                                                                                          |
 | `pipeline/config_file.go`      | ConfigFile struct, ConfigFromFile/ConfigFromReader                                                                                                        |
-| `pipeline/middleware.go`       | MiddlewareFunc, ComposeMiddleware — composable pipeline middleware                                                                                        |
 
 #### CLI
 
@@ -347,9 +346,7 @@ golangci-lint run ./...                     # Lint
 - **MergeIter()** — `merge.go`: streaming `iter.Seq[Finding]` merge; reads each report under RLock via `readFindings()`; clones each finding; supports early termination
 - **ConfigFile** — `pipeline/config_file.go`: `ConfigFile` struct with `ConfigFromFile(path)` / `ConfigFromReader(r)`; YAML/JSON config loading for library use
 - **DetectorRegistry** — `registry.go`: thread-safe named detector constructor registry; `Register/Build/BuildAll/Names/Has`; `MustRegister` panics variant; sentinel errors with `%w` wrapping
-- **MiddlewareFunc/ComposeMiddleware** — `pipeline/middleware.go`: composable pipeline middleware pattern; `MiddlewareFunc func(next RunFunc) RunFunc`; `ComposeMiddleware` applies in registration order using `slices.Backward`
 - **Benchmark CI gate** — `.github/workflows/ci.yml`: separate `benchmark` job with `go test -bench`
-- **FixStrategyResolver** — `fix_strategy.go`: `FixStrategyResolver` interface + `DefaultResolver` implementation; `CanAutoApply(strategy)` delegates to `FixStrategy.CanAutoApply()`
 
 ### Session 12 (2026-06-14) — Performance Optimization
 
