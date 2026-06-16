@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 )
@@ -57,6 +58,14 @@ func (c Category) String() string {
 // IsSecurity reports whether the category is security-related.
 func (c Category) IsSecurity() bool {
 	return c == CategorySecurity
+}
+
+// Compare returns -1, 0, or +1 depending on whether c is less than, equal to,
+// or greater than other. Categories have no inherent priority ordering, so the
+// comparison is lexicographic by string value, providing a stable total ordering
+// suitable for deterministic sorting.
+func (c Category) Compare(other Category) int {
+	return cmp.Compare(string(c), string(other))
 }
 
 // errInvalidCategory is returned when parsing an invalid category string.

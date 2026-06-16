@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -110,4 +111,36 @@ func TestRegisterLinterCategory(t *testing.T) {
 			RegisterLinterCategory(tt.linter, tt.preRegistered)
 		})
 	}
+}
+
+// FuzzCategoryForLinter verifies that CategoryForLinter never panics on
+// arbitrary input and always returns a valid Category. It also checks
+// case-insensitivity against an isolated registry (not the global one, which
+// other tests mutate concurrently).
+func FuzzCategoryForLinter(f *testing.F) {
+	f.Add("gosec")
+	f.Add("GOVET")
+	f.Add("")
+	f.Add("golangci-lint")
+	f.Add("some-very-long-linter-name-with-unicode-→")
+
+	f.Fuzz(func(t *testing.T, name string) {
+		// Global lookup must never panic and always return a valid category.
+		cat := CategoryForLinter(name)
+		if !cat.IsValid() && cat != "" {
+			t.Fatalf("CategoryForLinter(%q) = %q: not valid and not empty", name, cat)
+		}
+
+		// Case-insensitivity property on an isolated registry.
+		reg := NewLinterRegistry(map[string]Category{
+			"samplelinter": CategoryPerformance,
+		})
+
+		lower := reg.Lookup(strings.ToLower(name), CategoryCorrectness)
+		orig := reg.Lookup(name, CategoryCorrectness)
+
+		if lower != orig {
+			t.Fatalf("Lookup not case-insensitive for %q: lower=%q orig=%q", name, lower, orig)
+		}
+	})
 }

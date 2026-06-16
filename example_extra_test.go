@@ -328,3 +328,60 @@ func ExampleToolAdapter() {
 	// count: 1
 	// rule: no-unused
 }
+
+func ExampleNewIntervalIndex() {
+	type Item struct{ Name string }
+
+	idx := finding.NewIntervalIndex([]finding.Interval[Item]{
+		{Start: 1, End: 10, Value: Item{"alpha"}},
+		{Start: 5, End: 15, Value: Item{"beta"}},
+		{Start: 20, End: 30, Value: Item{"gamma"}},
+	})
+
+	overlaps := idx.Query(8, 12)
+	for _, iv := range overlaps {
+		fmt.Println(iv.Value.Name)
+	}
+
+	// Output:
+	// alpha
+	// beta
+}
+
+func ExampleMergeIter() {
+	r1 := finding.NewReport(finding.ToolInfo{Name: "tool-a"})
+	r1.AddFinding(finding.Finding{ID: "1", Rule: "r1", ToolName: "tool-a", Severity: finding.SeverityWarning})
+
+	r2 := finding.NewReport(finding.ToolInfo{Name: "tool-b"})
+	r2.AddFinding(finding.Finding{ID: "2", Rule: "r2", ToolName: "tool-b", Severity: finding.SeverityError})
+
+	for f := range finding.MergeIter([]*finding.Report{r1, r2}) {
+		fmt.Printf("%s: %s\n", f.ToolName, f.ID)
+	}
+
+	// Output:
+	// tool-a: 1
+	// tool-b: 2
+}
+
+func ExampleNewDetectorRegistry() {
+	registry := finding.NewDetectorRegistry()
+	registry.MustRegister("govet", func() finding.Detector {
+		return finding.NamedDetectorFunc("govet", func(_ context.Context) ([]finding.Finding, error) {
+			return []finding.Finding{{ID: "v1", Rule: "printf", Severity: finding.SeverityError}}, nil
+		})
+	})
+
+	fmt.Println(registry.Has("govet"))
+	fmt.Println(registry.Has("ghost"))
+	fmt.Println(registry.Names())
+
+	det, _ := registry.Build("govet")
+	fmt.Println(det.Name())
+
+	// Output:
+	// true
+	// false
+	// [govet]
+	// govet
+}

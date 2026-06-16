@@ -60,9 +60,7 @@ func Correlate(findings []Finding) []Correlation {
 
 	byFile := GroupByFile(findings)
 
-	files := slices.Collect(maps.Keys(byFile))
-
-	slices.Sort(files)
+	files := slices.Sorted(maps.Keys(byFile))
 
 	for _, file := range files {
 		if len(correlations) >= maxCorrelations {

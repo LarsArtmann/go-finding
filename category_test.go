@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"slices"
 	"testing"
 )
 
@@ -158,4 +159,58 @@ func TestMustParseCategory(t *testing.T) {
 
 		MustParseCategory("INVALID")
 	})
+}
+
+func TestCategory_Compare(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		c     Category
+		other Category
+		want  int
+	}{
+		{"less than", CategoryCorrectness, CategorySecurity, -1},
+		{"equal", CategorySecurity, CategorySecurity, 0},
+		{"greater than", CategoryStyle, CategorySecurity, 1},
+		{"empty less than", Category(""), CategorySecurity, -1},
+		{"both empty equal", Category(""), Category(""), 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.c.Compare(tt.other); got != tt.want {
+				t.Errorf("Category(%q).Compare(%q) = %d, want %d", tt.c, tt.other, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCategory_Compare_SortStable(t *testing.T) {
+	t.Parallel()
+
+	cats := []Category{
+		CategorySecurity,
+		CategoryCorrectness,
+		CategoryStyle,
+		CategoryDocumentation,
+		CategoryBestPractice,
+	}
+	want := []Category{
+		CategoryBestPractice,
+		CategoryCorrectness,
+		CategoryDocumentation,
+		CategorySecurity,
+		CategoryStyle,
+	}
+
+	slices.SortFunc(cats, func(a, b Category) int { return a.Compare(b) })
+
+	for i, c := range cats {
+		if c != want[i] {
+			t.Fatalf("index %d: got %q, want %q", i, c, want[i])
+		}
+	}
 }
