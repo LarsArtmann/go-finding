@@ -105,7 +105,7 @@ jobs:
       - name: Check for regressions vs baseline (fail if >25% slower)
         run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 25
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: benchmark-results
