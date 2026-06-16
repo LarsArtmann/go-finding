@@ -152,7 +152,7 @@ golangci-lint run ./...                     # Lint
 - **Context cancellation** — `IsContextError()` is the canonical check; all pipeline paths (retry, partial, verify) propagate `context.Canceled`/`context.DeadlineExceeded` immediately instead of silently swallowing them
 - **Per-detector timeouts** — `Config.DetectorTimeouts map[string]time.Duration` overrides global timeout per detector
 - **Structured logging** — `Config.Logger *slog.Logger` emits structured events for iteration start, triage, conflicts
-- **Stage progress** — `Config.OnStage func(stage, iteration, count)` fires on detect/process/triage completion
+- **Stage progress** — `Config.OnStage` (deprecated; use `StageHooks`) fires on detect/process/triage completion via `fireStageHook`
 - **KeySeparator** — `"\x00"` is the named constant for `Finding.Key()` composite key separator
 - **SARIF import hardening** — `findingFromSarResult` generates IDs for non-go-finding SARIF; bounds-checked 3-level index access; `stringProp` helper reduces type-assertion boilerplate
 - **SARIF export decomposed** — `findingToSARIF` decomposed into `sarifLocations()`, `sarifFixes()`, `sarifRelatedLocs()`, `sarifProperties()` helpers. SARIF version/schema are named constants.
@@ -255,7 +255,7 @@ golangci-lint run ./...                     # Lint
 - **Retry delay clamped** — `delay()` clamps result to `MaxDelay` after jitter to prevent exceeding cap
 
 - **Context error detection in iterations** — `runIteration` error path uses `IsContextError()` to distinguish `ReasonTimeout`/`ReasonCancelled` from `ReasonError`
-- **StageVerify wired** — Verify stage records timing metrics and fires `OnStage` callback
+- **StageVerify wired** — Verify stage records timing metrics and fires stage hooks
 
 - **CorrelationScore methods** — `IsValid()` checks [0.0, 1.0]; `String()` formats decimal; consistent with `Confidence`
 - **DurationMs caller-set** — `Summary.DurationMs` is NOT computed by `ComputeSummary()`; caller must set manually. Pipeline timing lives in `Metrics.TotalDuration`.
@@ -279,6 +279,7 @@ golangci-lint run ./...                     # Lint
 - **Internal constants unexported** — `keySeparator`, `mergedToolName`, `emptyToolName` are unexported; no external consumers existed. Pre-v1.0 cleanup.
 - **FindingsSnapshot()** — `Report.FindingsSnapshot()` returns a deep-cloned slice of all findings; safe for concurrent use without holding the lock. v1.0 migration path from direct `Findings` slice access.
 - **FixStrategyAI kept as reserved** — Decision: keep `FixStrategyAI` and `NeedsAI()` as reserved values. Zero implementation cost, documented as reserved for future AI-powered remediation. Removing would break consumers who've started using the constant.
+- **OnStage unified into fireStageHook** — `notifyStage()` removed; `fireStageHook` fires the legacy `OnStage` callback internally on `StageAfter` events. Single notification call per stage boundary. `OnStage` marked deprecated in favor of `StageHooks`.
 - **Pipeline tests split** — `pipeline_test.go` (1546 lines) split into `pipeline_new_test.go` (construction/config), `pipeline_triage_test.go` (triage/fix), keeping run tests in `pipeline_test.go`
 - **CLI test coverage 90.7%** — Up from 70%; added tests for `addGeneratedFilter`, `parseFilterGenTypes`, `mustKeys`, `splitCommaList`
 - **Fuzz seed corpus** — All 20 fuzz targets now have `f.Add()` seed values; 13 missing corpus directories created under `testdata/fuzz/`

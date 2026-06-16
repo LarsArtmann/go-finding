@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FixStrategyResolver + DefaultResolver** — Removed unused interface and its only implementation. `DefaultResolver.CanAutoApply` merely delegated to the existing `FixStrategy.CanAutoApply()` method, and the pipeline triage path never referenced the resolver (it calls `Finding.IsAutoFixable()` directly). Zero consumers, zero tests. Pre-v1.0 cleanup.
 - **MiddlewareFunc / ComposeMiddleware / RunFunc** — Removed `pipeline/middleware.go` entirely. The middleware pattern was never wired into `Config` or `Pipeline.Run`, had zero consumers, and no test file existed. `StageHook` (per-stage before/after with abort capability) already covers the same cross-cutting concerns at finer granularity. Pre-v1.0 cleanup.
 
+### Changed
+
+- **OnStage unified into fireStageHook** — Eliminated the split brain where every stage boundary called both `notifyStage()` (legacy `OnStage` callback) and `fireStageHook()` (`StageHooks`). Now `fireStageHook` fires the legacy `OnStage` callback internally on `StageAfter` events, giving a single notification call per stage boundary. `Config.OnStage` is marked deprecated in favor of `Config.StageHooks` which provides before/after events with context and abort capability.
+
 ## [0.7.0] - 2026-06-09
 
 ### Added
