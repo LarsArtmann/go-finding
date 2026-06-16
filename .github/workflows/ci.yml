@@ -102,16 +102,8 @@ jobs:
         run: go install golang.org/x/perf/cmd/benchstat@latest
       - name: Run benchmarks (count=10 for statistical significance)
         run: go test -bench=. -benchmem -count=10 -run='^$' ./... 2>&1 | tee bench-current.txt
-      - name: Check for regressions vs baseline
-        run: |
-          if [ -f benchmarks/baseline.txt ]; then
-            echo "Comparing against baseline..."
-            benchstat benchmarks/baseline.txt bench-current.txt || true
-          else
-            echo "No baseline found. Current results:"
-            benchstat bench-current.txt || true
-            echo "To create a baseline: cp bench-current.txt benchmarks/baseline.txt"
-          fi
+      - name: Check for regressions vs baseline (fail if >25% slower)
+        run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 25
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         if: always()
