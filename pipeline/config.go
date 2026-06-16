@@ -52,6 +52,10 @@ type Config struct {
 	Logger *slog.Logger
 	// OnStage is called when a pipeline stage completes. See Stage constants for values.
 	// Iteration is 1-based. The findings count reflects findings available after that stage.
+	//
+	// Deprecated: Use [StageHooks] instead. OnStage only fires after stage completion
+	// and cannot abort the pipeline. StageHooks provides before/after events with
+	// context and abort capability.
 	OnStage func(stage Stage, iteration, findingsCount int)
 	// ByteLevelConflictDetection enables precise byte-level conflict detection
 	// during triage instead of the default position-based filtering.
