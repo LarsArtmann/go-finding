@@ -42,7 +42,7 @@ func runFilterCase(t *testing.T, tc filterTestCase) {
 
 func makeFixStrategyFindings(id2, id3 FixStrategy) []Finding {
 	return []Finding{
-		{ID: "1", FixStrategy: FixStrategyDirect},
+		{ID: "1", FixStrategy: FixStrategyDirect, AfterCode: "fixed()"},
 		{ID: "2", FixStrategy: id2},
 		{ID: "3", FixStrategy: id3},
 	}

@@ -66,6 +66,36 @@ func (f Finding) Validate() error {
 		}
 	}
 
+	// Category/Tags consistency: if both Category and Tags are set, the Category
+	// value must appear in Tags (or Tags must not contain a conflicting standard
+	// category). This prevents the split-brain where Category says "security" but
+	// Tags only contains "performance".
+	if f.Category != "" && len(f.Tags) > 0 && f.Category.IsStandard() {
+		categoryTag := Tag(f.Category)
+		hasCategoryTag := false
+		hasOtherStandardCategory := false
+
+		for _, tag := range f.Tags {
+			if tag == categoryTag {
+				hasCategoryTag = true
+			} else if tag.IsStandard() && Category(tag).IsStandard() &&
+				Category(tag) != f.Category {
+				hasOtherStandardCategory = true
+			}
+		}
+
+		if !hasCategoryTag && hasOtherStandardCategory {
+			errs = append(errs, NewValidationError(
+				fmt.Sprintf(
+					"finding.Category %q conflicts with Tags: when Category is a standard category "+
+						"and Tags contain a different standard category, Category must also appear in Tags",
+					f.Category,
+				),
+				nil,
+			))
+		}
+	}
+
 	for i, ref := range f.Related {
 		if !ref.IsValid() {
 			errs = append(errs, NewValidationError(
@@ -111,8 +141,16 @@ func (f Finding) IsValid() bool {
 }
 
 // Key returns a stable identifier for the finding.
-// If ID is set, it is returned; otherwise a deterministic key is built
-// from ToolName, Position.File, Rule, and Message using keySeparator.
+//
+// Canonical identity: Two findings are identical iff their GenerateID outputs
+// are equal (see ADR #12). Key() is a fallback for findings without an ID,
+// building a composite key from ToolName, Position.File, Rule, and Message.
+//
+// Note: Key() includes Message in the fallback key, while GenerateID does not.
+// This means two findings with different messages but the same position will
+// have different Keys but the same GenerateID. Prefer ID (and thus GenerateID)
+// as the canonical identity. Key() is primarily used by external dedup logic
+// that predates GenerateID.
 func (f Finding) Key() string {
 	if f.ID != "" {
 		return f.ID

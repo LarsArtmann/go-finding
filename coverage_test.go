@@ -139,7 +139,8 @@ func TestFindingHasFix(t *testing.T) {
 		f    Finding
 		want bool
 	}{
-		{"direct", Finding{FixStrategy: FixStrategyDirect}, true},
+		{"direct", Finding{FixStrategy: FixStrategyDirect, AfterCode: exportTestFixed}, true},
+		{"direct-no-code", Finding{FixStrategy: FixStrategyDirect}, false},
 		{"ai-no-code", Finding{FixStrategy: FixStrategyAI}, false},
 		{"ai-with-code", Finding{FixStrategy: FixStrategyAI, AfterCode: exportTestFixed}, true},
 		{"none", Finding{FixStrategy: FixStrategyNone}, false},

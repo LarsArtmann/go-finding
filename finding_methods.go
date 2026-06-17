@@ -60,14 +60,27 @@ func (f Finding) IsSuppressedAt(now time.Time) bool {
 }
 
 // HasFix reports whether this finding has any fix available. This is the
-// canonical "is fixable?" check. Returns true for FixStrategyDirect (always),
-// and for FixStrategySuggest/FixStrategyAI when AfterCode is present.
+// canonical "is fixable?" check.
+//
+// Fixability lattice:
+//   - IsAutoFixable() ⟹ HasFix()  (strict subset)
+//   - HasFix() requires a valid FixStrategy AND code data where applicable
+//
+// Returns true for FixStrategyDirect when BeforeCode or AfterCode is present.
+// Returns true for FixStrategySuggest/FixStrategyAI when AfterCode is present.
+// Returns false for FixStrategyNone, empty strategy, or any strategy missing
+// required code data.
+//
+// Note: HasFix() respects Validate() semantics — a FixStrategyDirect finding
+// without code data returns false (it would fail validation).
 func (f Finding) HasFix() bool {
-	switch f.FixStrategy {
+	strategy := NormalizeFixStrategy(f.FixStrategy)
+
+	switch strategy {
 	case FixStrategyNone:
 		return false
 	case FixStrategyDirect:
-		return true
+		return f.BeforeCode != "" || f.AfterCode != ""
 	case FixStrategySuggest, FixStrategyAI:
 		return f.AfterCode != ""
 	default:
