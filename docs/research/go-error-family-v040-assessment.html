@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PRO / CONTRA — go-error-family v0.4.0 Review for go-finding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #fafaf8;
+        --fg: #1a1a1a;
+        --muted: #6b6b6b;
+        --pro: #1a5c3a;
+        --pro-bg: #f2f9f5;
+        --pro-border: #c0ddd0;
+        --contra: #c23a22;
+        --contra-bg: #fdf5f4;
+        --contra-border: #e8c4c0;
+        --neutral: #8a5a00;
+        --neutral-bg: #fffbf0;
+        --neutral-border: #e8d5a8;
+        --border: #d4d4d0;
+        --card: #ffffff;
+        --code-bg: #f0f0ec;
+        --highlight: #fff3cd;
+        --serif: "Instrument Serif", Georgia, serif;
+        --sans: "Geist", -apple-system, sans-serif;
+        --mono: "Geist Mono", "SF Mono", monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--sans);
+        color: var(--fg);
+        background: var(--bg);
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      ::selection {
+        background: var(--highlight);
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      header {
+        padding: 5rem 0 3rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .hero-title {
+        font-family: var(--serif);
+        font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-title em {
+        font-style: italic;
+        color: var(--muted);
+      }
+
+      .hero-meta {
+        margin-top: 1.5rem;
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--muted);
+        letter-spacing: 0.02em;
+      }
+
+      .hero-subtitle {
+        margin-top: 1.5rem;
+        font-size: 1.1rem;
+        color: var(--muted);
+        max-width: 680px;
+        line-height: 1.7;
+      }
+
+      section {
+        padding: 3.5rem 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .section-label {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 1rem;
+      }
+
+      .section-title {
+        font-family: var(--serif);
+        font-size: clamp(1.7rem, 3vw, 2.3rem);
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+      }
+
+      h3 {
+        font-size: 1.15rem;
+        margin: 2rem 0 0.75rem;
+      }
+
+      h4 {
+        font-size: 1rem;
+        margin: 1.25rem 0 0.5rem;
+      }
+
+      p {
+        margin: 0.75rem 0;
+        color: #333;
+      }
+
+      ul,
+      ol {
+        margin: 0.75rem 0 0.75rem 1.5rem;
+      }
+
+      li {
+        margin: 0.35rem 0;
+      }
+
+      code {
+        font-family: var(--mono);
+        font-size: 0.85em;
+        background: var(--code-bg);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+      }
+
+      pre {
+        background: var(--code-bg);
+        padding: 1rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        line-height: 1.6;
+        margin: 1rem 0;
+      }
+
+      .verdict-box {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1.75rem;
+        margin: 1.5rem 0;
+      }
+
+      .verdict-box.recommend {
+        border-left: 4px solid var(--neutral);
+        background: var(--neutral-bg);
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+      }
+
+      .card.pro {
+        border-left: 4px solid var(--pro);
+        background: var(--pro-bg);
+      }
+
+      .card.contra {
+        border-left: 4px solid var(--contra);
+        background: var(--contra-bg);
+      }
+
+      .card.neutral {
+        border-left: 4px solid var(--neutral);
+        background: var(--neutral-bg);
+      }
+
+      .card h4 {
+        margin-top: 0;
+        font-size: 1.05rem;
+      }
+
+      .card.pro h4 {
+        color: var(--pro);
+      }
+
+      .card.contra h4 {
+        color: var(--contra);
+      }
+
+      .card.neutral h4 {
+        color: var(--neutral);
+      }
+
+      .card p,
+      .card li {
+        font-size: 0.95rem;
+      }
+
+      .impact-bar {
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.08);
+        margin-top: 0.75rem;
+        overflow: hidden;
+      }
+
+      .impact-fill {
+        height: 100%;
+        border-radius: 3px;
+      }
+
+      .impact-fill.pro {
+        background: var(--pro);
+      }
+
+      .impact-fill.contra {
+        background: var(--contra);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.25rem 0;
+        font-size: 0.9rem;
+      }
+
+      th,
+      td {
+        padding: 0.7rem 0.9rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+
+      th {
+        background: var(--code-bg);
+        font-weight: 600;
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+      }
+
+      td {
+        background: var(--card);
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 0.15rem 0.55rem;
+        border-radius: 12px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        margin-right: 0.3rem;
+        font-family: var(--sans);
+      }
+
+      .tag-pro {
+        background: var(--pro-bg);
+        color: var(--pro);
+        border: 1px solid var(--pro-border);
+      }
+
+      .tag-contra {
+        background: var(--contra-bg);
+        color: var(--contra);
+        border: 1px solid var(--contra-border);
+      }
+
+      .tag-neutral {
+        background: var(--neutral-bg);
+        color: var(--neutral);
+        border: 1px solid var(--neutral-border);
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+
+      .pull-quote {
+        font-family: var(--serif);
+        font-size: 1.35rem;
+        line-height: 1.5;
+        color: var(--muted);
+        max-width: 680px;
+        margin: 2rem 0;
+        padding-left: 1.25rem;
+        border-left: 3px solid var(--fg);
+      }
+
+      footer {
+        padding: 2.5rem 0;
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-family: var(--mono);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 0 1.2rem;
+        }
+
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+
+        header {
+          padding: 3rem 0 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1 class="hero-title">
+          go-error-family <em>v0.4.0</em><br />
+          PRO / CONTRA Review
+        </h1>
+        <div class="hero-meta">
+          github.com/larsartmann/go-error-family &mdash; reviewed for go-finding &mdash;
+          2026-06-17
+        </div>
+        <p class="hero-subtitle">
+          A protocol-first structured error library for Go. This report evaluates its design,
+          implementation quality, maturity, and fit for the go-finding static-analysis project.
+        </p>
+      </header>
+
+      <section>
+        <div class="section-label">00 &mdash; Executive Verdict</div>
+        <h2 class="section-title">Well-designed library, narrow fit for go-finding</h2>
+
+        <div class="verdict-box recommend">
+          <h4>Overall assessment: 7.5 / 10 as a library; 5 / 10 as a go-finding dependency</h4>
+          <p>
+            <strong>go-error-family is a thoughtful, well-executed library.</strong> Its protocol of
+            small interfaces (<code>Coded</code>, <code>Classified</code>, <code>Contextual</code>,
+            <code>Retryable</code>) is the right abstraction for behavioral error handling at
+            CLI/HTTP boundaries. The code is clean, tested, lint-free, and documented.
+          </p>
+          <p>
+            For <strong>go-finding</strong>, however, the value is limited. The library's Families,
+            diagnostics, and agent are aimed at runtime services, not static-analysis tooling. The
+            most useful parts (interfaces + CLI boundary) can be adopted without importing the
+            library into the root package.
+          </p>
+          <p style="margin-top: 0.75rem">
+            <strong>Recommendation:</strong> do not add a root-package dependency. Keep the existing
+            <code>FindingError</code> and consider implementing go-error-family's consumer
+            interfaces in a bridge subpackage, or adopt <code>HandleError</code> only in
+            <code>cmd/go-finding/main.go</code>.
+          </p>
+        </div>
+
+        <div class="two-col">
+          <div class="card pro">
+            <h4>Library strengths</h4>
+            <ul>
+              <li>Zero dependencies in root module</li>
+              <li>Clean protocol of small, composable interfaces</li>
+              <li>High test coverage + fuzz tests + race-clean</li>
+              <li>Honest, boundary-aware API design</li>
+              <li>Good documentation and domain language</li>
+            </ul>
+          </div>
+          <div class="card contra">
+            <h4>Concerns for go-finding</h4>
+            <ul>
+              <li>Requires Go 1.26+ (<code>errors.AsType</code>)</li>
+              <li>Domain mismatch: Families target runtime services</li>
+              <li>Most features unused in a static-analysis library</li>
+              <li>Would violate go-finding's root-package-dependency-free rule</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-label">01 &mdash; Library Overview</div>
+        <h2 class="section-title">What go-error-family is</h2>
+
+        <p>
+          go-error-family is a Go library that gives every error a behavioral
+          <strong>Family</strong>: <code>Rejection</code>, <code>Conflict</code>,
+          <code>Transient</code>, <code>Corruption</code>, or <code>Infrastructure</code>. From that
+          Family, the library derives retry decisions, process exit codes, presentation tone, and
+          audience targeting.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Family</th>
+              <th>Retry?</th>
+              <th>Exit</th>
+              <th>Audience</th>
+              <th>Designed for</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Rejection</code></td>
+              <td>No</td>
+              <td>1</td>
+              <td>User</td>
+              <td>Bad input, unauthorized, not found</td>
+            </tr>
+            <tr>
+              <td><code>Conflict</code></td>
+              <td>No</td>
+              <td>1</td>
+              <td>User</td>
+              <td>Version mismatch, duplicate, state clash</td>
+            </tr>
+            <tr>
+              <td><code>Transient</code></td>
+              <td><strong>Yes</strong></td>
+              <td>75</td>
+              <td>All</td>
+              <td>Temporary infrastructure failure</td>
+            </tr>
+            <tr>
+              <td><code>Corruption</code></td>
+              <td>No</td>
+              <td>65</td>
+              <td>Ops</td>
+              <td>Damaged source of truth</td>
+            </tr>
+            <tr>
+              <td><code>Infrastructure</code></td>
+              <td>No</td>
+              <td>69</td>
+              <td>Ops</td>
+              <td>System cannot serve</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>The library is organized as a Go workspace:</p>
+        <ul>
+          <li><strong>root</strong> &mdash; core types, classification, constructors, CLI boundary</li>
+          <li><strong>diagnose/</strong> &mdash; concurrent diagnostic rules (filesystem, network)</li>
+          <li><strong>diagnose/git</strong> &mdash; opt-in GitRule submodule</li>
+          <li><strong>diagnose/postgres</strong> &mdash; opt-in PostgresRule submodule</li>
+          <li><strong>agent/</strong> &mdash; deterministic root-cause analysis + FixSteps</li>
+          <li><strong>bridge/</strong> &mdash; separate module integrating samber/oops</li>
+        </ul>
+
+        <p class="pull-quote">
+          The central idea is sound: share the <em>protocol</em> (what an error means) without
+          forcing consumers to share the <em>implementation</em>.
+        </p>
+      </section>
+
+      <section>
+        <div class="section-label">02 &mdash; PRO Arguments</div>
+        <h2 class="section-title">What go-error-family does well</h2>
+
+        <div class="card pro">
+          <h4>P1. Protocol-first, interface-driven design</h4>
+          <p>
+            The library exposes four tiny interfaces that any error type can implement. This lets
+            consumers classify and handle errors without importing the library's concrete
+            <code>Error</code> type. It is the Go idiom: accept interfaces, return structs.
+          </p>
+          <pre>type Classified interface {
+    error
+    ErrorFamily() Family
+}</pre>
+          <div class="impact-bar"><div class="impact-fill pro" style="width: 95%"></div></div>
+        </div>
+
+        <div class="card pro">
+          <h4>P2. Zero dependencies in the root module</h4>
+          <p>
+            The core package depends only on the standard library. Submodules (git, postgres, bridge)
+            carry their own dependencies, so consumers pay only for what they use. This aligns well
+            with go-finding's minimal-dependency philosophy.
+          </p>
+          <div class="impact-bar"><div class="impact-fill pro" style="width: 90%"></div></div>
+        </div>
+
+        <div class="card pro">
+          <h4>P3. Classification cascade is deliberate and well documented</h4>
+          <p>The precedence chain is clear and deterministic:</p>
+          <ol>
+            <li>Multi-error (<code>errors.Join</code>) &mdash; first non-<code>Transient</code> wins</li>
+            <li><code>Classified</code> interface</li>
+            <li><code>Retryable</code> interface</li>
+            <li>Registered sentinels</li>
+            <li>Default <code>Transient</code> (fail-open)</li>
+          </ol>
+          <p>
+            The fail-open default is a deliberate product decision: unknown errors are retried
+            rather than rejected, which is usually safer at boundaries.
+          </p>
+          <div class="impact-bar"><div class="impact-fill pro" style="width: 85%"></div></div>
+        </div>
+
+        <div class="card pro">
+          <h4>P4. Honest, boundary-aware API</h4>
+          <p>Several choices show architectural discipline:</p>
+          <ul>
+            <li>
+              The agent only <em>analyzes</em>; it does not execute shell commands. The consumer
+              decides what to do with <code>FixStep.Command</code>.
+            </li>
+            <li>
+              <code>HandleErrorWithContext</code> is the canonical entry point; other handlers
+              delegate to it.
+            </li>
+            <li>A disabled agent returns an error instead of a synthetic result.</li>
+            <li>
+              The sentinel registry is snapshotted before iteration, so <code>errors.Is</code> runs
+              without holding a lock.
+            </li>
+          </ul>
+          <div class="impact-bar"><div class="impact-fill pro" style="width: 85%"></div></div>
+        </div>
+
+        <div class="card pro">
+          <h4>P5. Strong test coverage and quality gates</h4>
+          <p>
+            The project ships with table-driven tests, fuzz tests, benchmarks, and integration tests
+            for diagnostic rules. Running the full suite (root + all submodules) passes cleanly:
+          </p>
+          <pre>go test ./... -count=1 -timeout 120s   # ok all modules
+golangci-lint run ./...                 # 0 issues</pre>
+          <div class="impact-bar"><div class="impact-fill pro" style="width: 80%"></div></div>
+        </div>
+
+        <div class="card pro">
+          <h4>P6. Useful bridge to samber/oops</h4>
+          <p>
+            The <code>bridge/</code> submodule lets a project use oops for rich observability
+            (stack traces, source fragments, trace IDs) and still get go-error-family classification.
+            This shows the library is designed to coexist, not conquer.
+          </p>
+          <div class="impact-bar"><div class="impact-fill pro" style="width: 75%"></div></div>
+        </div>
+
+        <div class="card pro">
+          <h4>P7. CLI boundary handler is genuinely useful</h4>
+          <p>
+            <code>HandleError</code> turns a one-liner in <code>main()</code> into structured,
+            user-facing output with What/Why/Fix/WayOut templates and a correct exit code. For
+            command-line tools this removes boilerplate and improves UX.
+          </p>
+          <div class="impact-bar"><div class="impact-fill pro" style="width: 80%"></div></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-label">03 &mdash; CONTRA Arguments</div>
+        <h2 class="section-title">Where it falls short or introduces risk</h2>
+
+        <div class="card contra">
+          <h4>C1. Go 1.26 requirement is aggressive</h4>
+          <p>
+            The library uses <code>errors.AsType[T]()</code>, which is new in Go 1.26. At the time
+            of review, Go 1.26 has only recently released. This sharply limits adoption and forces
+            consumers to upgrade their toolchain. It also means the library cannot be used in
+            projects that must support older Go versions.
+          </p>
+          <div class="impact-bar"><div class="impact-fill contra" style="width: 85%"></div></div>
+        </div>
+
+        <div class="card contra">
+          <h4>C2. Young project with unproven ecosystem traction</h4>
+          <p>
+            v0.4.0 is pre-1.0. There is no broad production track record, few external consumers, and
+            APIs may still change. The comparison with samber/oops notes oops has 41 releases and
+            ~1k GitHub stars; go-error-family is niche by comparison.
+          </p>
+          <div class="impact-bar"><div class="impact-fill contra" style="width: 70%"></div></div>
+        </div>
+
+        <div class="card contra">
+          <h4>C3. Context values are string-only</h4>
+          <p>
+            <code>ErrorContext() map[string]string</code> is simple and serializable, but it forces
+            callers to stringify structured values. For richer observability (integers, nested
+            objects, request bodies), consumers still need something like samber/oops or a custom
+            type.
+          </p>
+          <div class="impact-bar"><div class="impact-fill contra" style="width: 55%"></div></div>
+        </div>
+
+        <div class="card contra">
+          <h4>C4. No built-in stack traces or rich debugging context</h4>
+          <p>
+            Unlike samber/oops, the library does not capture stack traces, source fragments, or
+            trace/span IDs. The diagnostic rules and agent help, but they are no replacement for a
+            captured stack trace when debugging a production failure.
+          </p>
+          <div class="impact-bar"><div class="impact-fill contra" style="width: 60%"></div></div>
+        </div>
+
+        <div class="card contra">
+          <h4>C5. Template substitution has an XSS footgun</h4>
+          <p>
+            The <code>applyContext</code> helper uses <code>strings.ReplaceAll</code>, not
+            <code>html/template</code>. This is fine for stderr output but unsafe if the rendered
+            message is ever embedded in HTML. The limitation is documented, but it means the library
+            is not boundary-agnostic: consumers must escape values themselves for web output.
+          </p>
+          <div class="impact-bar"><div class="impact-fill contra" style="width: 50%"></div></div>
+        </div>
+
+        <div class="card contra">
+          <h4>C6. Root package mixes protocol and presentation</h4>
+          <p>
+            <code>HandleError</code>, templates, and the CLI boundary live in the root package. The
+            project's own earlier "top-5 stupidest things" doc flagged this as a structural issue
+            (item #3) and proposed moving it to a <code>cli</code> subpackage. It was not moved, so
+            the root package still couples protocol semantics with presentation concerns.
+          </p>
+          <div class="impact-bar"><div class="impact-fill contra" style="width: 45%"></div></div>
+        </div>
+
+        <div class="card contra">
+          <h4>C7. Fail-open default can surprise</h4>
+          <p>
+            Unknown errors classify as <code>Transient</code>, which means
+            <code>IsRetryable(err)</code> returns <code>true</code> for any unrecognized error. This
+            is safe for many boundaries but can lead to infinite retry loops if a caller blindly
+            retries every <code>Transient</code> error without inspecting the code or message.
+          </p>
+          <div class="impact-bar"><div class="impact-fill contra" style="width: 50%"></div></div>
+        </div>
+
+        <div class="card contra">
+          <h4>C8. Many features are dead weight for library consumers</h4>
+          <p>
+            Diagnostics, Git/Postgres rules, agent analysis, and audience/tone metadata are designed
+            for applications at runtime boundaries. A library like go-finding has no use for most of
+            them; importing the root package still brings the conceptual weight even if the code is
+            unused.
+          </p>
+          <div class="impact-bar"><div class="impact-fill contra" style="width: 65%"></div></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-label">04 &mdash; Domain Fit for go-finding</div>
+        <h2 class="section-title">How well does it map to static analysis?</h2>
+
+        <p>
+          go-finding's existing error system is built around static-analysis semantics:
+          <code>FindingError</code> carries <code>Category</code>, <code>Finding</code>,
+          <code>File</code>, and <code>Position</code>. go-error-family is built around runtime
+          service semantics: retry, exit code, audience, tone.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>go-finding concern</th>
+              <th>go-error-family fit</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Machine-readable error codes</td>
+              <td><code>Coded</code> interface / <code>code string</code></td>
+              <td><span class="tag tag-pro">Good fit</span></td>
+            </tr>
+            <tr>
+              <td>Static-analysis categories</td>
+              <td>5 Families aimed at runtime behavior</td>
+              <td><span class="tag tag-contra">Poor fit</span></td>
+            </tr>
+            <tr>
+              <td>Finding / Position / File context</td>
+              <td>Generic <code>map[string]string</code> only</td>
+              <td><span class="tag tag-contra">Lossy</span></td>
+            </tr>
+            <tr>
+              <td>CLI exit codes</td>
+              <td><code>ExitCode(err)</code> maps Family to sysexits</td>
+              <td><span class="tag tag-pro">Useful in cmd/</span></td>
+            </tr>
+            <tr>
+              <td>Retry semantics</td>
+              <td>Only <code>Transient</code> is retryable</td>
+              <td><span class="tag tag-neutral">Marginal</span></td>
+            </tr>
+            <tr>
+              <td>Root package dependency-free</td>
+              <td>Importing root would add first non-stdlib dep</td>
+              <td><span class="tag tag-contra">Violation</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          The best mapping is <strong>interfaces, not replacement</strong>:
+          <code>FindingError</code> can implement <code>Coded</code>,
+          <code>Classified</code>, and <code>Contextual</code> without changing its shape, and
+          <code>cmd/go-finding/main.go</code> can call <code>errorfamily.HandleError</code> at the
+          boundary.
+        </p>
+      </section>
+
+      <section>
+        <div class="section-label">05 &mdash; Competitive Position</div>
+        <h2 class="section-title">How it compares to alternatives</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Library</th>
+              <th>Strength</th>
+              <th>Weakness vs. go-error-family</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>go-error-family</strong></td>
+              <td>Behavioral classification, exit codes, CLI boundary</td>
+              <td>&mdash;</td>
+            </tr>
+            <tr>
+              <td><strong>samber/oops</strong></td>
+              <td>Rich context, stack traces, observability</td>
+              <td>No classification / retry / exit-code model</td>
+            </tr>
+            <tr>
+              <td><strong>pkg/errors</strong> (archived)</td>
+              <td>Stack traces, simple wrapping</td>
+              <td>No classification or context model</td>
+            </tr>
+            <tr>
+              <td><strong>std <code>fmt.Errorf("%w")</code></strong></td>
+              <td>Zero deps, idiomatic</td>
+              <td>No structured behavior beyond chain walking</td>
+            </tr>
+            <tr>
+              <td><strong>cockroachdb/errors</strong></td>
+              <td>Rich errors, telemetry, multi-error</td>
+              <td>Heavy dependency tree</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          go-error-family occupies a clear niche: it is lighter than oops/cockroachdb and more
+          opinionated than stdlib. It is not a replacement for rich observability libraries, but it
+          can complement them (as the <code>bridge/</code> module demonstrates).
+        </p>
+      </section>
+
+      <section>
+        <div class="section-label">06 &mdash; Recommendations</div>
+        <h2 class="section-title">What go-finding should do</h2>
+
+        <div class="card pro">
+          <h4>Recommended: interface-level adoption only</h4>
+          <p>
+            Implement go-error-family's consumer interfaces on <code>FindingError</code> in a
+            separate bridge subpackage (e.g., <code>finding/errorfamily/</code>) so the root package
+            remains dependency-free. Adopt <code>HandleError</code> only in
+            <code>cmd/go-finding/main.go</code>.
+          </p>
+          <p><strong>Effort:</strong> low. <strong>Risk:</strong> minimal. <strong>Breaking changes:</strong> none.</p>
+        </div>
+
+        <div class="card contra">
+          <h4>Not recommended: full replacement of FindingError</h4>
+          <p>
+            Replacing <code>FindingError</code> with <code>errorfamily.Error</code> would discard
+            domain-specific fields (<code>Finding</code>, <code>Position</code>, <code>File</code>)
+            and force static-analysis errors into runtime Families. The cost far exceeds the
+            benefit.
+          </p>
+        </div>
+
+        <div class="card neutral">
+          <h4>Alternative: no adoption</h4>
+          <p>
+            go-finding's current error system is already idiomatic and domain-appropriate. Doing
+            nothing is acceptable, though it leaves machine-readable codes and richer CLI output on
+            the table.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-label">07 &mdash; Scorecard</div>
+        <h2 class="section-title">Final scores</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Criterion</th>
+              <th>Score</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Design quality</td>
+              <td><span class="tag tag-pro">9 / 10</span></td>
+              <td>Protocol-first, small interfaces, clear domain language</td>
+            </tr>
+            <tr>
+              <td>Implementation quality</td>
+              <td><span class="tag tag-pro">8 / 10</span></td>
+              <td>Clean, tested, lint-free; minor presentation/protocol coupling</td>
+            </tr>
+            <tr>
+              <td>Documentation</td>
+              <td><span class="tag tag-pro">9 / 10</span></td>
+              <td>Excellent README, AGENTS.md, DOMAIN_LANGUAGE.md, SKILL.md</td>
+            </tr>
+            <tr>
+              <td>Maturity / ecosystem</td>
+              <td><span class="tag tag-neutral">5 / 10</span></td>
+              <td>v0.4.0, Go 1.26 gate, limited external adoption</td>
+            </tr>
+            <tr>
+              <td>Fit for go-finding</td>
+              <td><span class="tag tag-neutral">5 / 10</span></td>
+              <td>Useful interfaces and CLI boundary; poor domain alignment</td>
+            </tr>
+            <tr>
+              <td><strong>Overall</strong></td>
+              <td><span class="tag tag-pro"><strong>7.5 / 10</strong></span></td>
+              <td>Strong library, narrow but valuable integration path</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer>
+        <p>
+          Review generated 2026-06-17 &middot; go-error-family v0.4.0 &middot; all tests and lint
+          passed at time of review
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

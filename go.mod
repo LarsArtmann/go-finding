@@ -3,7 +3,7 @@ module github.com/larsartmann/go-finding
 go 1.26.3
 
 require (
-	github.com/LarsArtmann/gogenfilter/v3 v3.1.0
+	github.com/LarsArtmann/gogenfilter/v3 v3.2.0
 	github.com/go-faster/yaml v0.4.6
 	github.com/onsi/ginkgo/v2 v2.31.0
 	github.com/onsi/gomega v1.42.0
