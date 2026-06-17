@@ -41,6 +41,9 @@ func TestMustKeys(t *testing.T) {
 	g.Expect(keys).NotTo(BeEmpty())
 	g.Expect(keys).To(ContainElement("all"))
 	g.Expect(keys).To(ContainElement("sqlc"))
+	g.Expect(keys).To(ContainElement("mockery"))
+	g.Expect(keys).To(ContainElement("go-swagger"))
+	g.Expect(keys).To(HaveLen(19))
 }
 
 func TestParseFilterGenTypes(t *testing.T) {
@@ -56,6 +59,7 @@ func TestParseFilterGenTypes(t *testing.T) {
 		{"cli all", "all", "", false, 1},
 		{"single type", "sqlc", "", false, 1},
 		{"multiple types", "sqlc,mockgen", "", false, 2},
+		{"v3.2.0 new types", "counterfeiter,easyjson,ent,go-swagger,gqlgen,mockery,msgp", "", false, 7},
 		{"config fallback", "", "protobuf", false, 1},
 		{"unknown type", "nonexistent", "", true, 0},
 		{"with spaces", " sqlc , mockgen ", "", false, 2},

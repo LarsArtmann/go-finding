@@ -15,18 +15,25 @@ import (
 
 // filterTypeRegistry maps user-facing type strings to gogenfilter.FilterOption values.
 var filterTypeRegistry = map[string]gogenfilter.FilterOption{
-	"all":          gogenfilter.FilterAll,
-	"sqlc":         gogenfilter.FilterSQLC,
-	"templ":        gogenfilter.FilterTempl,
-	"go-enum":      gogenfilter.FilterGoEnum,
-	"protobuf":     gogenfilter.FilterProtobuf,
-	"oapi-codegen": gogenfilter.FilterOapi,
-	"deepcopy-gen": gogenfilter.FilterDeepcopy,
-	"wire":         gogenfilter.FilterWire,
-	"moq":          gogenfilter.FilterMoq,
-	"mockgen":      gogenfilter.FilterMockgen,
-	"stringer":     gogenfilter.FilterStringer,
-	"generic":      gogenfilter.FilterGeneric,
+	"all":           gogenfilter.FilterAll,
+	"counterfeiter": gogenfilter.FilterCounterfeiter,
+	"deepcopy-gen":  gogenfilter.FilterDeepcopy,
+	"easyjson":      gogenfilter.FilterEasyjson,
+	"ent":           gogenfilter.FilterEnt,
+	"generic":       gogenfilter.FilterGeneric,
+	"go-enum":       gogenfilter.FilterGoEnum,
+	"go-swagger":    gogenfilter.FilterGoSwagger,
+	"gqlgen":        gogenfilter.FilterGqlgen,
+	"mockgen":       gogenfilter.FilterMockgen,
+	"mockery":       gogenfilter.FilterMockery,
+	"moq":           gogenfilter.FilterMoq,
+	"msgp":          gogenfilter.FilterMsgp,
+	"oapi-codegen":  gogenfilter.FilterOapi,
+	"protobuf":      gogenfilter.FilterProtobuf,
+	"sqlc":          gogenfilter.FilterSQLC,
+	"stringer":      gogenfilter.FilterStringer,
+	"templ":         gogenfilter.FilterTempl,
+	"wire":          gogenfilter.FilterWire,
 }
 
 // addGeneratedFilter creates a GeneratedFileFilter processor and appends it

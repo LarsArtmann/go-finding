@@ -337,8 +337,7 @@
           PRO / CONTRA Review
         </h1>
         <div class="hero-meta">
-          github.com/larsartmann/go-error-family &mdash; reviewed for go-finding &mdash;
-          2026-06-17
+          github.com/larsartmann/go-error-family &mdash; reviewed for go-finding &mdash; 2026-06-17
         </div>
         <p class="hero-subtitle">
           A protocol-first structured error library for Go. This report evaluates its design,
@@ -458,8 +457,12 @@
 
         <p>The library is organized as a Go workspace:</p>
         <ul>
-          <li><strong>root</strong> &mdash; core types, classification, constructors, CLI boundary</li>
-          <li><strong>diagnose/</strong> &mdash; concurrent diagnostic rules (filesystem, network)</li>
+          <li>
+            <strong>root</strong> &mdash; core types, classification, constructors, CLI boundary
+          </li>
+          <li>
+            <strong>diagnose/</strong> &mdash; concurrent diagnostic rules (filesystem, network)
+          </li>
           <li><strong>diagnose/git</strong> &mdash; opt-in GitRule submodule</li>
           <li><strong>diagnose/postgres</strong> &mdash; opt-in PostgresRule submodule</li>
           <li><strong>agent/</strong> &mdash; deterministic root-cause analysis + FixSteps</li>
@@ -483,19 +486,21 @@
             consumers classify and handle errors without importing the library's concrete
             <code>Error</code> type. It is the Go idiom: accept interfaces, return structs.
           </p>
-          <pre>type Classified interface {
+          <pre>
+type Classified interface {
     error
     ErrorFamily() Family
-}</pre>
+}</pre
+          >
           <div class="impact-bar"><div class="impact-fill pro" style="width: 95%"></div></div>
         </div>
 
         <div class="card pro">
           <h4>P2. Zero dependencies in the root module</h4>
           <p>
-            The core package depends only on the standard library. Submodules (git, postgres, bridge)
-            carry their own dependencies, so consumers pay only for what they use. This aligns well
-            with go-finding's minimal-dependency philosophy.
+            The core package depends only on the standard library. Submodules (git, postgres,
+            bridge) carry their own dependencies, so consumers pay only for what they use. This
+            aligns well with go-finding's minimal-dependency philosophy.
           </p>
           <div class="impact-bar"><div class="impact-fill pro" style="width: 90%"></div></div>
         </div>
@@ -504,7 +509,9 @@
           <h4>P3. Classification cascade is deliberate and well documented</h4>
           <p>The precedence chain is clear and deterministic:</p>
           <ol>
-            <li>Multi-error (<code>errors.Join</code>) &mdash; first non-<code>Transient</code> wins</li>
+            <li>
+              Multi-error (<code>errors.Join</code>) &mdash; first non-<code>Transient</code> wins
+            </li>
             <li><code>Classified</code> interface</li>
             <li><code>Retryable</code> interface</li>
             <li>Registered sentinels</li>
@@ -544,17 +551,19 @@
             The project ships with table-driven tests, fuzz tests, benchmarks, and integration tests
             for diagnostic rules. Running the full suite (root + all submodules) passes cleanly:
           </p>
-          <pre>go test ./... -count=1 -timeout 120s   # ok all modules
-golangci-lint run ./...                 # 0 issues</pre>
+          <pre>
+go test ./... -count=1 -timeout 120s   # ok all modules
+golangci-lint run ./...                 # 0 issues</pre
+          >
           <div class="impact-bar"><div class="impact-fill pro" style="width: 80%"></div></div>
         </div>
 
         <div class="card pro">
           <h4>P6. Useful bridge to samber/oops</h4>
           <p>
-            The <code>bridge/</code> submodule lets a project use oops for rich observability
-            (stack traces, source fragments, trace IDs) and still get go-error-family classification.
-            This shows the library is designed to coexist, not conquer.
+            The <code>bridge/</code> submodule lets a project use oops for rich observability (stack
+            traces, source fragments, trace IDs) and still get go-error-family classification. This
+            shows the library is designed to coexist, not conquer.
           </p>
           <div class="impact-bar"><div class="impact-fill pro" style="width: 75%"></div></div>
         </div>
@@ -588,9 +597,9 @@ golangci-lint run ./...                 # 0 issues</pre>
         <div class="card contra">
           <h4>C2. Young project with unproven ecosystem traction</h4>
           <p>
-            v0.4.0 is pre-1.0. There is no broad production track record, few external consumers, and
-            APIs may still change. The comparison with samber/oops notes oops has 41 releases and
-            ~1k GitHub stars; go-error-family is niche by comparison.
+            v0.4.0 is pre-1.0. There is no broad production track record, few external consumers,
+            and APIs may still change. The comparison with samber/oops notes oops has 41 releases
+            and ~1k GitHub stars; go-error-family is niche by comparison.
           </p>
           <div class="impact-bar"><div class="impact-fill contra" style="width: 70%"></div></div>
         </div>
@@ -716,8 +725,8 @@ golangci-lint run ./...                 # 0 issues</pre>
 
         <p>
           The best mapping is <strong>interfaces, not replacement</strong>:
-          <code>FindingError</code> can implement <code>Coded</code>,
-          <code>Classified</code>, and <code>Contextual</code> without changing its shape, and
+          <code>FindingError</code> can implement <code>Coded</code>, <code>Classified</code>, and
+          <code>Contextual</code> without changing its shape, and
           <code>cmd/go-finding/main.go</code> can call <code>errorfamily.HandleError</code> at the
           boundary.
         </p>
@@ -752,7 +761,9 @@ golangci-lint run ./...                 # 0 issues</pre>
               <td>No classification or context model</td>
             </tr>
             <tr>
-              <td><strong>std <code>fmt.Errorf("%w")</code></strong></td>
+              <td>
+                <strong>std <code>fmt.Errorf("%w")</code></strong>
+              </td>
               <td>Zero deps, idiomatic</td>
               <td>No structured behavior beyond chain walking</td>
             </tr>
@@ -783,7 +794,10 @@ golangci-lint run ./...                 # 0 issues</pre>
             remains dependency-free. Adopt <code>HandleError</code> only in
             <code>cmd/go-finding/main.go</code>.
           </p>
-          <p><strong>Effort:</strong> low. <strong>Risk:</strong> minimal. <strong>Breaking changes:</strong> none.</p>
+          <p>
+            <strong>Effort:</strong> low. <strong>Risk:</strong> minimal.
+            <strong>Breaking changes:</strong> none.
+          </p>
         </div>
 
         <div class="card contra">
@@ -846,7 +860,9 @@ golangci-lint run ./...                 # 0 issues</pre>
             </tr>
             <tr>
               <td><strong>Overall</strong></td>
-              <td><span class="tag tag-pro"><strong>7.5 / 10</strong></span></td>
+              <td>
+                <span class="tag tag-pro"><strong>7.5 / 10</strong></span>
+              </td>
               <td>Strong library, narrow but valuable integration path</td>
             </tr>
           </tbody>

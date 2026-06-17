@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Benchmark regression CI gate** — `scripts/bench-check.sh` + CI job fails on >25% regression vs baseline.
 - **Dependabot** — `.github/dependabot.yml` for gomod + github-actions.
 - **CLI resolveFixProviders error surfacing** — Unknown fix provider names now return an error instead of being silently skipped.
+- **CLI `-filter-generated-types` new detectors** — Added 7 new generator types from gogenfilter v3.2.0: `counterfeiter`, `easyjson`, `ent`, `go-swagger`, `gqlgen`, `mockery`, `msgp`. Registry now covers all 19 upstream `FilterOption` values.
 
 ### Changed
 
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AGENTS.md trimmed** — Reduced from 399 → 115 lines by removing session changelogs (kept in git history + CHANGELOG.md).
 - **RELEASE_CRITERIA.md rewritten** — Concrete pass/fail thresholds, owner-decision blockers documented.
 - **OnStage unified into fireStageHook** — Eliminated the split brain where every stage boundary called both `notifyStage()` (legacy `OnStage` callback) and `fireStageHook()` (`StageHooks`). Now `fireStageHook` fires the legacy `OnStage` callback internally on `StageAfter` events, giving a single notification call per stage boundary. `Config.OnStage` is marked deprecated in favor of `Config.StageHooks` which provides before/after events with context and abort capability.
+- **gogenfilter v3.1.0 → v3.2.0** — Picks up 7 new generator detectors (counterfeiter, easyjson, ent, go-swagger, gqlgen, mockery, msgp), absolute-path content detection fix, new `FilterWithContent`/`FilterDetailedWithContent` APIs (pre-read content to avoid redundant I/O), and `FilterResult.Is()` helper. `flake.nix` vendorHash updated.
 
 ### Removed
 

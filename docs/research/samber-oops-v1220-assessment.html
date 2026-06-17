@@ -423,8 +423,8 @@
             <code>any</code> values and lazy <code>func() any</code> evaluation
           </li>
           <li>
-            <strong>Identity metadata</strong> &mdash; <code>.Code()</code>,
-            <code>.Trace()</code>, <code>.Span()</code>, <code>.In()</code>,
+            <strong>Identity metadata</strong> &mdash; <code>.Code()</code>, <code>.Trace()</code>,
+            <code>.Span()</code>, <code>.In()</code>,
             <code>.Tags()</code>
           </li>
           <li>
@@ -449,17 +449,20 @@
             <code>.Assert()</code>, <code>.Assertf()</code>
           </li>
           <li>
-            <strong>Serialization</strong> &mdash; <code>MarshalJSON()</code>,
-            <code>ToMap()</code>, <code>LogValuer</code> for slog
+            <strong>Serialization</strong> &mdash; <code>MarshalJSON()</code>, <code>ToMap()</code>,
+            <code>LogValuer</code> for slog
           </li>
         </ul>
 
-        <p>v1.22.0 (May 2026) refactored the builder to a functional-options linked list, claiming:</p>
+        <p>
+          v1.22.0 (May 2026) refactored the builder to a functional-options linked list, claiming:
+        </p>
         <ul>
           <li>-90% error build time, zero allocations when wrapping nil</li>
           <li>-30% to -90% build time and memory for real errors</li>
-          <li>New: <code>CallerSkip()</code>, <code>FrameSkip()</code>,
-            <code>AsError[T]()</code>, <code>Layers()</code>, identity-based <code>Is()</code>
+          <li>
+            New: <code>CallerSkip()</code>, <code>FrameSkip()</code>, <code>AsError[T]()</code>,
+            <code>Layers()</code>, identity-based <code>Is()</code>
           </li>
         </ul>
 
@@ -477,9 +480,8 @@
           <h4>P1. Drop-in replacement for standard errors</h4>
           <p>
             <code>OopsError</code> implements the <code>error</code> interface and composes with
-            <code>fmt.Errorf("%w")</code>, <code>errors.Is</code>, and
-            <code>errors.As</code>. Existing code can adopt it incrementally without a full
-            rewrite.
+            <code>fmt.Errorf("%w")</code>, <code>errors.Is</code>, and <code>errors.As</code>.
+            Existing code can adopt it incrementally without a full rewrite.
           </p>
           <pre>return oops.Wrapf(dbErr, "could not fetch user %d", id)  // nil if dbErr is nil</pre>
           <div class="impact-bar"><div class="impact-fill pro" style="width: 90%"></div></div>
@@ -489,8 +491,8 @@
           <h4>P2. Automatic stack traces with rich formatting</h4>
           <p>
             Every oops error captures a stack trace. <code>.Stacktrace()</code> pretty-prints it,
-            and <code>.StackFrames()</code> provides raw frames for Sentry-like consumers.
-            Wrapped errors produce annotated multi-layer traces.
+            and <code>.StackFrames()</code> provides raw frames for Sentry-like consumers. Wrapped
+            errors produce annotated multi-layer traces.
           </p>
           <div class="impact-bar"><div class="impact-fill pro" style="width: 95%"></div></div>
         </div>
@@ -584,9 +586,9 @@
         <div class="card contra">
           <h4>C2. No behavioral classification</h4>
           <p>
-            oops answers "what do I know?" but not "what should the system do?" There is no
-            built-in retry/exit-code/audience/tone model. A consumer still has to build that logic
-            around the error metadata.
+            oops answers "what do I know?" but not "what should the system do?" There is no built-in
+            retry/exit-code/audience/tone model. A consumer still has to build that logic around the
+            error metadata.
           </p>
           <div class="impact-bar"><div class="impact-fill contra" style="width: 80%"></div></div>
         </div>
@@ -594,9 +596,9 @@
         <div class="card contra">
           <h4>C3. Heavy API surface for simple use cases</h4>
           <p>
-            The builder exposes 20+ methods. For a project that just needs stack traces and
-            context, this is overkill. The learning curve and cognitive load are higher than
-            pkg/errors or a small custom type.
+            The builder exposes 20+ methods. For a project that just needs stack traces and context,
+            this is overkill. The learning curve and cognitive load are higher than pkg/errors or a
+            small custom type.
           </p>
           <div class="impact-bar"><div class="impact-fill contra" style="width: 60%"></div></div>
         </div>
@@ -627,8 +629,7 @@
             <code>oops.Wrapf(err, "msg: %w", otherErr)</code> uses <code>%w</code> only for string
             formatting; it does not chain <code>otherErr</code>. The chain is always
             <code>result &rarr; err</code>. The README explicitly warns about this, but it is a
-            subtle distinction that can surprise users migrating from
-            <code>fmt.Errorf("%w")</code>.
+            subtle distinction that can surprise users migrating from <code>fmt.Errorf("%w")</code>.
           </p>
           <div class="impact-bar"><div class="impact-fill contra" style="width: 60%"></div></div>
         </div>
@@ -747,7 +748,9 @@
               <td>No context model, archived</td>
             </tr>
             <tr>
-              <td><strong>stdlib <code>fmt.Errorf("%w")</code></strong></td>
+              <td>
+                <strong>stdlib <code>fmt.Errorf("%w")</code></strong>
+              </td>
               <td>Zero deps, idiomatic</td>
               <td>No structured context or traces</td>
             </tr>
@@ -803,9 +806,9 @@
         <div class="card neutral">
           <h4>When oops would become relevant</h4>
           <p>
-            If go-finding evolves into a long-running service (e.g., a Language Server, a CI
-            daemon, or a hosted API) with production observability needs, oops would be a strong
-            candidate. Until then, it is premature.
+            If go-finding evolves into a long-running service (e.g., a Language Server, a CI daemon,
+            or a hosted API) with production observability needs, oops would be a strong candidate.
+            Until then, it is premature.
           </p>
         </div>
       </section>
@@ -850,7 +853,9 @@
             </tr>
             <tr>
               <td><strong>Overall</strong></td>
-              <td><span class="tag tag-pro"><strong>8.5 / 10</strong></span></td>
+              <td>
+                <span class="tag tag-pro"><strong>8.5 / 10</strong></span>
+              </td>
               <td>Strong library for the right problem; wrong problem for go-finding</td>
             </tr>
           </tbody>

@@ -157,6 +157,9 @@ linters:
     funlen:
       lines: 120
       statements: 80
+    ginkgolinter:
+      forbid-focus-container: true
+      forbid-spec-pollution: true
     gocognit:
       min-complexity: 35
     gocritic:
@@ -243,6 +246,10 @@ linters:
           severity: warning
         - name: unused-receiver
           severity: warning
+    testifylint:
+      disable:
+        - go-require
+      enable-all: true
     varnamelen:
       ignore-map-index-ok: true
       ignore-names:
@@ -270,7 +277,7 @@ linters:
         - s
         - c
         - w
-        - n
+        - "n"
         - h
         - e
         - k
@@ -355,6 +362,7 @@ formatters:
     - goimports
     - gofumpt
     - golines
+    - swaggo
   settings:
     golines:
       max-len: 120
