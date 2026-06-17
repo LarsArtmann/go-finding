@@ -40,35 +40,38 @@
 
 ---
 
-## Release Blockers (OWNER DECISIONS REQUIRED)
+## Release Blockers — RESOLVED ✅
 
-These three items require an explicit decision from the project owner. They are
-irreversible breaking changes that affect every consumer. **Pick a direction
-before tagging v1.0.0.**
+All three blockers have been resolved. The decisions and implementations are
+documented below for reference.
 
-### Blocker 1: Position zero-value semantics (#1)
+### Blocker 1: Position zero-value semantics (#1) — RESOLVED ✅
 
-**Problem:** `Position.Offset = 0` means both "byte offset 0" (valid) and "unset"
-(the zero value). `Position{}.HasOffset()` returns `true` while
-`Position{}.IsZero()` also returns `true`. The struct lies about its own state.
+**Decision:** Option A — use `-1` sentinel for "unset" offset.
 
-**Recommendation:** Option A — use `-1` sentinel for "unset" offset.
+**Implementation:**
 
-- Pro: least invasive, no field-type change
-- Con: negative offset is a footgun; `uint` can't represent it; needs validation
+- `Position.IsZero()` now checks `Offset < 0` instead of `Offset == 0`
+- All constructors (Pos, NewRange, FromLSP, SARIF import) set `Offset: -1`
+- `Position{}` (zero value) has `Offset=0` = "byte 0" (valid) = `IsZero()=false`
+- `HasOffset()` unchanged (`>= 0`)
+- No more contradiction between IsZero() and HasOffset()
 
 **Alternatives:** Option B (`*int` pointers — nil-safe but nil-deref risk), Option C
 (separate `HasOffset bool` — explicit but struct grows).
 
 **Cascades to:** `Range.End` (same ambiguity), `Position.Line == 0`.
 
-### Blocker 2: FixStrategy "" vs FixStrategyNone (#24)
+### Blocker 2: FixStrategy "" vs FixStrategyNone (#24) — RESOLVED ✅
 
-**Problem:** Two valid "no fix" states: the empty string `""` (zero value) and
-`FixStrategyNone` (`"none"`). `Finding.Validate()` accepts both. This is a type smell.
+**Decision:** Normalize `""` to `FixStrategyNone` via `NormalizeFixStrategy()`.
 
-**Recommendation:** Normalize `""` to `FixStrategyNone` in `Validate()` or
-normalize on construction in the Builder. Document that `""` is treated as `"none"`.
+**Implementation:**
+
+- `NormalizeFixStrategy()` helper added to fix_strategy.go
+- Called by `Builder.Build()`, `findingFromSarResult()`, and `Finding.Equal()`
+- `Validate()` treats `""` as valid but normalizes to `"none"`
+- One canonical "no fix" state: `FixStrategyNone`
 
 ### Blocker 3: Report.Findings unexport timing (#25)
 
@@ -79,6 +82,8 @@ mutex (encapsulation risk). Internal migration is done (`findingsLocked()`,
 **Recommendation:** Unexport to `findings` in v1.0.0. Consumers use
 `FindingsSnapshot()`, `All()`, `FindByID()`, `AddFinding()`. This is the
 documented migration path (ADR #11).
+
+**Status:** Internal migration complete. Unexport scheduled for v1.0.0 tag.
 
 ---
 

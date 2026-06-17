@@ -176,15 +176,15 @@ func (p Position) HasOffset() bool {
 // It creates a Position with the given file, line, and column.
 // Offset is set to -1 (unset) since byte offset is not provided.
 func Pos(file string, line, column int) Position {
-	return Position{File: file, Line: line, Column: column, Offset: -1} //nolint:exhaustruct
+	return Position{File: file, Line: line, Column: column, Offset: -1}
 }
 
 // NewRange creates a Range with the given file, start/end lines, and columns.
 // Offsets are set to -1 (unset) since byte offsets are not provided.
 func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
 	return Range{
-		Start: Position{File: file, Line: startLine, Column: startCol, Offset: -1}, //nolint:exhaustruct
-		End:   Position{File: file, Line: endLine, Column: endCol, Offset: -1},     //nolint:exhaustruct
+		Start: Position{File: file, Line: startLine, Column: startCol, Offset: -1},
+		End:   Position{File: file, Line: endLine, Column: endCol, Offset: -1},
 	}
 }
 

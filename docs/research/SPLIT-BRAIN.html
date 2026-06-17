@@ -558,13 +558,13 @@
         <span>✅ All claims verified by runnable Go programs</span>
       </div>
       <p class="description">
-        A <strong>split-brain</strong> is when one concept has two or more competing representations
-        in the code, and they disagree. This report catalogs
-        <strong>11 split-brain issues</strong> in the data model, ranked by impact. Every claim was
-        verified by compiling and running Go code against the actual types. Each issue includes
-        exact <code>file:line</code> references, runnable reproduction, impact analysis, and
-        concrete fix steps with tradeoffs — enough detail for a junior developer to fix it without
-        further research.
+        <strong>✅ ALL 11 ISSUES RESOLVED</strong> — A <strong>split-brain</strong> is when one
+        concept has two or more competing representations in the code, and they disagree. This
+        report cataloged <strong>11 split-brain issues</strong> in the data model, ranked by impact.
+        Every claim was verified by compiling and running Go code against the actual types. Every
+        issue has been fixed, tested with race detector, and committed. See the
+        <a href="../planning/2026-06-17_22-59_SPLIT-BRAIN-RESOLUTION.md">execution plan</a> for
+        details.
       </p>
     </div>
 
@@ -632,7 +632,7 @@
           <td>1</td>
           <td><a href="#issue-1">Position zero-value lies about its own state</a></td>
           <td><span class="badge badge-critical">Critical</span></td>
-          <td><span class="badge badge-status">Known blocker</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Adopt <code>-1</code> sentinel; remove zero-value ambiguity</td>
         </tr>
         <tr>
@@ -643,42 +643,42 @@
             >
           </td>
           <td><span class="badge badge-critical">Critical</span></td>
-          <td><span class="badge badge-status">Known blocker</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Normalize <code>""</code> → <code>"none"</code> in <code>Validate()</code></td>
         </tr>
         <tr>
           <td>3</td>
           <td><a href="#issue-3">Four "is this fixable?" predicates disagree</a></td>
           <td><span class="badge badge-high">High</span></td>
-          <td><span class="badge badge-status">New finding</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Document the lattice; make <code>HasFix()</code> respect <code>Validate()</code></td>
         </tr>
         <tr>
           <td>4</td>
           <td><a href="#issue-4">Category and Tags share vocabulary, can conflict</a></td>
           <td><span class="badge badge-high">High</span></td>
-          <td><span class="badge badge-status">New finding</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Deprecate single-value <code>Category</code>; keep <code>Tags</code></td>
         </tr>
         <tr>
           <td>5</td>
           <td><a href="#issue-5">Three duration fields, none authoritative</a></td>
           <td><span class="badge badge-high">High</span></td>
-          <td><span class="badge badge-status">New finding</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Compute <code>Summary.DurationMs</code> from <code>Metrics</code> or remove it</td>
         </tr>
         <tr>
           <td>6</td>
           <td><a href="#issue-6">Three different "finding identity" definitions</a></td>
           <td><span class="badge badge-medium">Medium</span></td>
-          <td><span class="badge badge-status">New finding</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Document; pick one canonical key for dedup</td>
         </tr>
         <tr>
           <td>7</td>
           <td><a href="#issue-7">SARIF exports two disagreeing regions per finding</a></td>
           <td><span class="badge badge-medium">Medium</span></td>
-          <td><span class="badge badge-status">New finding</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td><code>findingFixRegion()</code> should respect <code>Range.End</code></td>
         </tr>
         <tr>
@@ -689,14 +689,14 @@
             >
           </td>
           <td><span class="badge badge-medium">Medium</span></td>
-          <td><span class="badge badge-status">New finding</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Internal-only; add comment linking doctrine</td>
         </tr>
         <tr>
           <td>9</td>
           <td><a href="#issue-9">Suppression validation accepts unknown kinds</a></td>
           <td><span class="badge badge-low">Low</span></td>
-          <td><span class="badge badge-status">New finding</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td><code>Validate()</code> should call <code>Kind.IsValid()</code></td>
         </tr>
         <tr>
@@ -707,7 +707,7 @@
             >
           </td>
           <td><span class="badge badge-low">Low</span></td>
-          <td><span class="badge badge-status">New finding</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Document which to call when; consider unifying</td>
         </tr>
         <tr>
@@ -719,7 +719,7 @@
             >
           </td>
           <td><span class="badge badge-cosmetic">Cosmetic</span></td>
-          <td><span class="badge badge-status">New finding</span></td>
+          <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Rename free functions to <code>WithFix</code> / <code>WithSuggestion</code></td>
         </tr>
       </tbody>
@@ -753,7 +753,7 @@
         >
         <span class="issue-badges">
           <span class="badge badge-critical">Critical</span>
-          <span class="badge badge-status">v1.0.0 Blocker</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -896,7 +896,7 @@ fmt.Println(p.Offset)       // → 0</code></pre>
         >
         <span class="issue-badges">
           <span class="badge badge-critical">Critical</span>
-          <span class="badge badge-status">v1.0.0 Blocker</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -1041,7 +1041,7 @@ f3.FixStrategy.IsValid()  // → <span class="true">true</span></code></pre>
         >
         <span class="issue-badges">
           <span class="badge badge-high">High</span>
-          <span class="badge badge-status">New finding</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -1207,7 +1207,7 @@ default:
         >
         <span class="issue-badges">
           <span class="badge badge-high">High</span>
-          <span class="badge badge-status">New finding</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -1338,7 +1338,7 @@ TagDocumentation = "documentation"
         >
         <span class="issue-badges">
           <span class="badge badge-high">High</span>
-          <span class="badge badge-status">New finding</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -1474,7 +1474,7 @@ TagDocumentation = "documentation"
         >
         <span class="issue-badges">
           <span class="badge badge-medium">Medium</span>
-          <span class="badge badge-status">New finding</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -1602,7 +1602,7 @@ TagDocumentation = "documentation"
         >
         <span class="issue-badges">
           <span class="badge badge-medium">Medium</span>
-          <span class="badge badge-status">New finding</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -1736,7 +1736,7 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
         >
         <span class="issue-badges">
           <span class="badge badge-medium">Medium</span>
-          <span class="badge badge-status">New finding</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -1846,7 +1846,7 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
         >
         <span class="issue-badges">
           <span class="badge badge-low">Low</span>
-          <span class="badge badge-status">New finding</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -1926,7 +1926,7 @@ func (s *Suppression) IsValid() bool {
         >
         <span class="issue-badges">
           <span class="badge badge-low">Low</span>
-          <span class="badge badge-status">New finding</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>
@@ -2021,7 +2021,7 @@ func (s *Suppression) IsValid() bool {
         >
         <span class="issue-badges">
           <span class="badge badge-cosmetic">Cosmetic</span>
-          <span class="badge badge-status">New finding</span>
+          <span class="badge badge-verified">✅ Resolved</span>
           <span class="badge badge-verified">Verified</span>
         </span>
       </div>

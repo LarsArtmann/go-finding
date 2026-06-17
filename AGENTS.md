@@ -64,10 +64,10 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **Confidence is a named type** — `type Confidence float64` with `IsValid()`/`Clamp()`
 - **NewFinding accepts Confidence** — Not raw `float64`
 - **FixStrategyAI is reserved** — No backend; kept as marker for future AI remediation
-- **DurationMs is caller-set** — `Summary.DurationMs` is NOT computed by `ComputeSummary()`; pipeline timing is in `Metrics.TotalDuration`
 - **GenerateID is length-prefixed** — Uses `writeLenField` (uint32 big-endian) to prevent hash collisions when field values contain colons
-- **Position.Offset=0 ambiguity** — Means both "byte 0" and "unset". `HasOffset()` returns true for both. OWNER DECISION for v1.0.0 (see RELEASE_CRITERIA.md)
-- **FixStrategy "" vs "none"** — Two valid "no fix" states. OWNER DECISION for v1.0.0
+- **Position.Offset uses -1 sentinel** — `Position{}` (zero value) has Offset=0 meaning "byte 0". Constructors (Pos, NewRange, FromLSP, SARIF import) set Offset=-1 for "unset". Use `HasOffset()` (>= 0) to check.
+- **FixStrategy normalized** — `NormalizeFixStrategy()` converts "" to "none". Called by Builder.Build(), SARIF import, and Equal().
+- **HasFix() requires code for Direct** — `FixStrategyDirect` needs BeforeCode or AfterCode for HasFix()=true, aligning with Validate().
 - **math/rand v1/v2 split** — Production uses `math/rand/v2`; tests use `math/rand` (v1) due to `testing/quick` API constraint
 - **FixEngine descending-offset** — All edits resolve against the same original content snapshot; multi-edit correctness proven by tests
 - **LineShiftMap shifts Position + Range** — `ShiftedPosition` shifts line + column (single-line edits); `ShiftedRange` shifts both endpoints
