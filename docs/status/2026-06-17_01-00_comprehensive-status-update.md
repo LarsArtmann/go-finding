@@ -3,7 +3,7 @@
 **Date:** 2026-06-17 01:00 CEST  
 **Branch:** master  
 **Ahead of origin:** 0 (pushed)  
-**Commit range since last sync:** `e9b5d83..9e67a92` (8 commits)  
+**Commit range since last sync:** `e9b5d83..9e67a92` (8 commits)
 
 ---
 
@@ -23,54 +23,54 @@ Two pre-existing status-file modifications were **left unstaged** because they w
 
 All 23 tracked TODO items from `docs/status/2026-06-16_23-31_session16-ghost-system-cleanup-and-split-brain-fix.md` are done.
 
-| # | Item | Status | Evidence |
-|---|------|--------|----------|
-| 1 | `Category.Compare()` method | Done | `category.go`, `category_test.go` |
-| 2 | Fuzz `CategoryForLinter` | Done | `category_linter_test.go` + seed corpus |
-| 3 | Dependabot config | Done | `.github/dependabot.yml` |
-| 4 | `slices.Sorted` modernization | Done | `correlate.go`, `partial.go`, `fix_applier.go`, `cmd/go-finding/*.go` |
-| 5 | Godoc examples for IntervalIndex, MergeIter, DetectorRegistry | Done | `example_extra_test.go` |
-| 6 | Column-aware `SubstringProvider` | Done | `pipeline/fix_provider.go` |
-| 7 | `ShiftedPosition` / `ShiftedRange` / `ByteDelta` | Done | `pipeline/line_shift.go`, `pipeline/line_shift_test.go` |
-| 8 | `pipeline_detect.go` uses shifted position/range | Done | `pipeline/pipeline_detect.go` |
-| 9 | ConfigFile integration tests | Done | `pipeline/integration_endtoend_test.go` |
-| 10 | DetectorRegistry integration tests | Done | `pipeline/integration_endtoend_test.go` |
-| 11 | Pipeline type-alias coverage | Done | `pipeline/integration_endtoend_test.go` |
-| 12 | Coverage for ConfigFile methods | Done | `pipeline/coverage_config_file_test.go` |
-| 13 | Coverage for `ApplyWithDetails` | Done | `pipeline/coverage_config_file_test.go` |
-| 14 | Coverage for `pickNearestOccurrence` branches | Done | `pipeline/coverage_config_file_test.go` |
-| 15 | Godoc examples for ConfigFile, LineShiftMap, DetectorRegistry | Done | `pipeline/example_test.go` |
-| 16 | CLI fix provider error surfacing | Done | `cmd/go-finding/fix_provider_registry.go`, `cmd/go-finding/main.go` |
-| 17 | CLI coverage to 90%+ | Done | `cmd/go-finding/coverage_extra_test.go`, `cmd/go-finding/main_extra_test.go` |
-| 18 | `slices.Sorted` in CLI | Done | `cmd/go-finding/config.go`, `generated_filter.go`, `registry.go` |
-| 19 | `config.example.yaml` fix provider examples | Done | `cmd/go-finding/config.example.yaml` |
-| 20 | CI benchmark regression gate | Done | `.github/workflows/ci.yml`, `scripts/bench-check.sh` |
-| 21 | v0.7.0+ documentation refresh | Done | `doc.go`, `FEATURES.md`, `README.md`, `AGENTS.md` |
-| 22 | Release criteria document | Done | `docs/RELEASE_CRITERIA.md` |
-| 23 | v1.0 migration guide | Done | `docs/MIGRATION_v1.0.md` |
+| #   | Item                                                          | Status | Evidence                                                                     |
+| --- | ------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------- |
+| 1   | `Category.Compare()` method                                   | Done   | `category.go`, `category_test.go`                                            |
+| 2   | Fuzz `CategoryForLinter`                                      | Done   | `category_linter_test.go` + seed corpus                                      |
+| 3   | Dependabot config                                             | Done   | `.github/dependabot.yml`                                                     |
+| 4   | `slices.Sorted` modernization                                 | Done   | `correlate.go`, `partial.go`, `fix_applier.go`, `cmd/go-finding/*.go`        |
+| 5   | Godoc examples for IntervalIndex, MergeIter, DetectorRegistry | Done   | `example_extra_test.go`                                                      |
+| 6   | Column-aware `SubstringProvider`                              | Done   | `pipeline/fix_provider.go`                                                   |
+| 7   | `ShiftedPosition` / `ShiftedRange` / `ByteDelta`              | Done   | `pipeline/line_shift.go`, `pipeline/line_shift_test.go`                      |
+| 8   | `pipeline_detect.go` uses shifted position/range              | Done   | `pipeline/pipeline_detect.go`                                                |
+| 9   | ConfigFile integration tests                                  | Done   | `pipeline/integration_endtoend_test.go`                                      |
+| 10  | DetectorRegistry integration tests                            | Done   | `pipeline/integration_endtoend_test.go`                                      |
+| 11  | Pipeline type-alias coverage                                  | Done   | `pipeline/integration_endtoend_test.go`                                      |
+| 12  | Coverage for ConfigFile methods                               | Done   | `pipeline/coverage_config_file_test.go`                                      |
+| 13  | Coverage for `ApplyWithDetails`                               | Done   | `pipeline/coverage_config_file_test.go`                                      |
+| 14  | Coverage for `pickNearestOccurrence` branches                 | Done   | `pipeline/coverage_config_file_test.go`                                      |
+| 15  | Godoc examples for ConfigFile, LineShiftMap, DetectorRegistry | Done   | `pipeline/example_test.go`                                                   |
+| 16  | CLI fix provider error surfacing                              | Done   | `cmd/go-finding/fix_provider_registry.go`, `cmd/go-finding/main.go`          |
+| 17  | CLI coverage to 90%+                                          | Done   | `cmd/go-finding/coverage_extra_test.go`, `cmd/go-finding/main_extra_test.go` |
+| 18  | `slices.Sorted` in CLI                                        | Done   | `cmd/go-finding/config.go`, `generated_filter.go`, `registry.go`             |
+| 19  | `config.example.yaml` fix provider examples                   | Done   | `cmd/go-finding/config.example.yaml`                                         |
+| 20  | CI benchmark regression gate                                  | Done   | `.github/workflows/ci.yml`, `scripts/bench-check.sh`                         |
+| 21  | v0.7.0+ documentation refresh                                 | Done   | `doc.go`, `FEATURES.md`, `README.md`, `AGENTS.md`                            |
+| 22  | Release criteria document                                     | Done   | `docs/RELEASE_CRITERIA.md`                                                   |
+| 23  | v1.0 migration guide                                          | Done   | `docs/MIGRATION_v1.0.md`                                                     |
 
 ### Quality Gates — All Green
 
-| Gate | Result |
-|------|--------|
-| `go test -race -count=1 ./...` | PASS all packages |
-| `golangci-lint run --timeout=5m ./...` | 0 issues |
-| `go vet ./...` | PASS |
-| `go build ./...` | PASS |
-| BuildFlow pre-commit (Go) | 34/34 checks pass |
-| BuildFlow pre-commit (Nix) | 21/21 checks pass (after vendorHash fix) |
+| Gate                                   | Result                                   |
+| -------------------------------------- | ---------------------------------------- |
+| `go test -race -count=1 ./...`         | PASS all packages                        |
+| `golangci-lint run --timeout=5m ./...` | 0 issues                                 |
+| `go vet ./...`                         | PASS                                     |
+| `go build ./...`                       | PASS                                     |
+| BuildFlow pre-commit (Go)              | 34/34 checks pass                        |
+| BuildFlow pre-commit (Nix)             | 21/21 checks pass (after vendorHash fix) |
 
 ### Coverage — Targets Met or Exceeded
 
-| Package | Coverage | Target |
-|---------|----------|--------|
-| `github.com/larsartmann/go-finding` | 93.7% | 90%+ |
-| `analysis` | 94.1% | 90%+ |
-| `cmd/go-finding` | 91.2% | 90%+ |
-| `internal/detectors` | 96.1% | 90%+ |
-| `internal/gotoken` | 92.7% | 90%+ |
-| `pipeline` | 95.2% | 93%+ |
-| `pipeline/goast` | 80.8% | new package, acceptable |
+| Package                             | Coverage | Target                  |
+| ----------------------------------- | -------- | ----------------------- |
+| `github.com/larsartmann/go-finding` | 93.7%    | 90%+                    |
+| `analysis`                          | 94.1%    | 90%+                    |
+| `cmd/go-finding`                    | 91.2%    | 90%+                    |
+| `internal/detectors`                | 96.1%    | 90%+                    |
+| `internal/gotoken`                  | 92.7%    | 90%+                    |
+| `pipeline`                          | 95.2%    | 93%+                    |
+| `pipeline/goast`                    | 80.8%    | new package, acceptable |
 
 ### Commits Pushed to `origin/master`
 
@@ -160,6 +160,7 @@ The three blockers above are the only thing preventing a clean v1.0 roadmap. Pic
 ### 2. Raise `pipeline/goast` Coverage to 90%+
 
 Focus on:
+
 - Parse failure fallback paths.
 - Multi-occurrence disambiguation with identical BeforeCode.
 - Cache hit/miss paths for the FNV content-hash cache.

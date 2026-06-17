@@ -19,39 +19,39 @@ All three issues were fixed, committed, and pushed. Zero lint issues. All tests 
 
 ### This Session's Work
 
-| Commit | Title | Impact |
-|--------|-------|--------|
-| `ca958f1` | Remove two ghost systems: FixStrategyResolver and MiddlewareFunc | Deleted 52 lines of dead code that looked like features |
+| Commit    | Title                                                             | Impact                                                                   |
+| --------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `ca958f1` | Remove two ghost systems: FixStrategyResolver and MiddlewareFunc  | Deleted 52 lines of dead code that looked like features                  |
 | `3985edf` | Fix lint warnings in goast provider and update stale TODO entries | 2 pre-existing lint issues resolved; 2 stale TODO entries marked REMOVED |
-| `f687179` | Eliminate OnStage/StageHooks split brain: unify notification path | Removed `notifyStage()`, folded OnStage into `fireStageHook()` |
-| `3ebbb30` | Document OnStage deprecation and split-brain elimination in docs | AGENTS.md + CHANGELOG.md updated |
+| `f687179` | Eliminate OnStage/StageHooks split brain: unify notification path | Removed `notifyStage()`, folded OnStage into `fireStageHook()`           |
+| `3ebbb30` | Document OnStage deprecation and split-brain elimination in docs  | AGENTS.md + CHANGELOG.md updated                                         |
 
 ### Codebase Health Metrics (as of this session)
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| **Production LOC** | 10,492 (181 files, excl. tests/examples) | — |
-| **Test LOC** | 22,534 | 2.15× test-to-code ratio |
-| **Test functions** | 631 | Comprehensive |
-| **Benchmarks** | 48 | Comprehensive |
-| **Example functions** | 29 | Good |
-| **Fuzz targets** | 22 (all with seed corpus) | Comprehensive |
-| **Direct dependencies** | 6 | Minimal ✅ |
-| **Lint issues** | 0 | ✅ |
-| **Build** | Passes | ✅ |
-| **Race detector** | Passes (stable across 30+ runs) | ✅ |
+| Metric                  | Value                                    | Status                   |
+| ----------------------- | ---------------------------------------- | ------------------------ |
+| **Production LOC**      | 10,492 (181 files, excl. tests/examples) | —                        |
+| **Test LOC**            | 22,534                                   | 2.15× test-to-code ratio |
+| **Test functions**      | 631                                      | Comprehensive            |
+| **Benchmarks**          | 48                                       | Comprehensive            |
+| **Example functions**   | 29                                       | Good                     |
+| **Fuzz targets**        | 22 (all with seed corpus)                | Comprehensive            |
+| **Direct dependencies** | 6                                        | Minimal ✅               |
+| **Lint issues**         | 0                                        | ✅                       |
+| **Build**               | Passes                                   | ✅                       |
+| **Race detector**       | Passes (stable across 30+ runs)          | ✅                       |
 
 ### Test Coverage by Package
 
-| Package | Coverage | Trend |
-|---------|----------|-------|
-| `analysis/` | 94.1% | ↑ from 79.5% (Session 14 fixes) |
-| `internal/detectors/` | 96.1% | Stable |
-| `internal/gotoken/` | 92.7% | Stable |
-| Root package (`finding`) | 92.3% | ↑ from 95.7% v0.6.1 (new code dilution) |
-| `pipeline/` | 90.4% | ↓ from 92.8% (Session 11 new code) |
-| `cmd/go-finding/` | 83.5% | ↓ from 90.7% (new features) |
-| `pipeline/goast/` | 80.8% | New package, needs more tests |
+| Package                  | Coverage | Trend                                   |
+| ------------------------ | -------- | --------------------------------------- |
+| `analysis/`              | 94.1%    | ↑ from 79.5% (Session 14 fixes)         |
+| `internal/detectors/`    | 96.1%    | Stable                                  |
+| `internal/gotoken/`      | 92.7%    | Stable                                  |
+| Root package (`finding`) | 92.3%    | ↑ from 95.7% v0.6.1 (new code dilution) |
+| `pipeline/`              | 90.4%    | ↓ from 92.8% (Session 11 new code)      |
+| `cmd/go-finding/`        | 83.5%    | ↓ from 90.7% (new features)             |
+| `pipeline/goast/`        | 80.8%    | New package, needs more tests           |
 
 ### Core Architecture (All Complete)
 
@@ -79,13 +79,13 @@ All three issues were fixed, committed, and pushed. Zero lint issues. All tests 
 
 ### Deprecated APIs (Scheduled for v1.0.0 Removal)
 
-| API | Replacement | Status |
-|-----|-------------|--------|
-| `Report.Findings` (public field) | `Report.FindingsSnapshot()` | Deprecated, internal migration done (`findingsLocked()`, `readFindings()`) |
-| `Report.Merge()` | `Report.MergeInto()` | Deprecated |
-| `OnStage` callback | `StageHooks` | Deprecated this session — now fires inside `fireStageHook` |
-| `Metrics.RecordFix()` | `Metrics.RecordFixes(1)` | Deprecated |
-| `CountBySeverity()` free function | `Report.CountBySeverity()` method | Deprecated |
+| API                               | Replacement                       | Status                                                                     |
+| --------------------------------- | --------------------------------- | -------------------------------------------------------------------------- |
+| `Report.Findings` (public field)  | `Report.FindingsSnapshot()`       | Deprecated, internal migration done (`findingsLocked()`, `readFindings()`) |
+| `Report.Merge()`                  | `Report.MergeInto()`              | Deprecated                                                                 |
+| `OnStage` callback                | `StageHooks`                      | Deprecated this session — now fires inside `fireStageHook`                 |
+| `Metrics.RecordFix()`             | `Metrics.RecordFixes(1)`          | Deprecated                                                                 |
+| `CountBySeverity()` free function | `Report.CountBySeverity()` method | Deprecated                                                                 |
 
 These are all tracked in `docs/architecture-decisions.md` ADR #11 for the v1.0.0 breaking change batch.
 
@@ -108,11 +108,11 @@ These are all tracked in `docs/architecture-decisions.md` ADR #11 for the v1.0.0
 
 ### Integration Tests (High Value, Never Done)
 
-| # | What | Why It Matters |
-|---|------|----------------|
-| 14 | ConfigFile → ResolveDetectors → Pipeline.Run | Pieces exist but never assembled end-to-end |
-| 15 | DetectorRegistry → Build → Pipeline.Run | Registry tested in isolation only |
-| 17 | Type alias backward compat | Verify `pipeline.Detector == finding.Detector` |
+| #   | What                                         | Why It Matters                                 |
+| --- | -------------------------------------------- | ---------------------------------------------- |
+| 14  | ConfigFile → ResolveDetectors → Pipeline.Run | Pieces exist but never assembled end-to-end    |
+| 15  | DetectorRegistry → Build → Pipeline.Run      | Registry tested in isolation only              |
+| 17  | Type alias backward compat                   | Verify `pipeline.Detector == finding.Detector` |
 
 ### v1.0.0 Release Preparation
 
@@ -176,43 +176,43 @@ Sorted by **impact / effort ratio** (highest first).
 
 ### Tier A: High Impact, Low Effort (Do First)
 
-| # | Task | Impact | Effort | Why |
-|---|------|--------|--------|-----|
-| 1 | **Resolve Position zero-value semantics** (OWNER DECISION) | Critical | Decision | Blocks v1.0.0; affects every type. Pick `-1` sentinel or `*int` and commit. |
-| 2 | **Integration test: ConfigFile → ResolveDetectors → Pipeline.Run** | High | 1hr | Prove the ConfigFile feature actually works end-to-end. Currently zero proof. |
-| 3 | **Integration test: DetectorRegistry → Build → Pipeline.Run** | High | 1hr | Registry tested in isolation only. Needs end-to-end proof. |
-| 4 | **v1.0 Migration Guide** | High | 1hr | Consumers need guidance for FindingsSnapshot, unexported types, deprecated APIs. |
-| 5 | **Fix CLI coverage: 83.5% → 90%+** | Medium | 1hr | Biggest coverage gap. Target new features (fix_provider_registry, generated_filter). |
-| 6 | **Fix pipeline coverage: 90.4% → 93%+** | Medium | 1hr | Test ApplyWithShiftMap, groupFindingsBySafePath, recordShiftMap. |
-| 7 | **Trim AGENTS.md to <200 lines** | Medium | 30min | 399 lines violates its own purpose. Move session logs to CHANGELOG. |
-| 8 | **Update FEATURES.md** | Low | 30min | Missing v0.7.0 features. One-file update. |
-| 9 | **Godoc examples: IntervalIndex, MergeIter, LineShiftMap, DetectorRegistry, ConfigFile** | Medium | 30min | Zero discoverable examples for 5 features. |
-| 10 | **Add `Category.Compare()` method** | Low | 15min | Follows established Severity/Confidence pattern. |
+| #   | Task                                                                                     | Impact   | Effort   | Why                                                                                  |
+| --- | ---------------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------ |
+| 1   | **Resolve Position zero-value semantics** (OWNER DECISION)                               | Critical | Decision | Blocks v1.0.0; affects every type. Pick `-1` sentinel or `*int` and commit.          |
+| 2   | **Integration test: ConfigFile → ResolveDetectors → Pipeline.Run**                       | High     | 1hr      | Prove the ConfigFile feature actually works end-to-end. Currently zero proof.        |
+| 3   | **Integration test: DetectorRegistry → Build → Pipeline.Run**                            | High     | 1hr      | Registry tested in isolation only. Needs end-to-end proof.                           |
+| 4   | **v1.0 Migration Guide**                                                                 | High     | 1hr      | Consumers need guidance for FindingsSnapshot, unexported types, deprecated APIs.     |
+| 5   | **Fix CLI coverage: 83.5% → 90%+**                                                       | Medium   | 1hr      | Biggest coverage gap. Target new features (fix_provider_registry, generated_filter). |
+| 6   | **Fix pipeline coverage: 90.4% → 93%+**                                                  | Medium   | 1hr      | Test ApplyWithShiftMap, groupFindingsBySafePath, recordShiftMap.                     |
+| 7   | **Trim AGENTS.md to <200 lines**                                                         | Medium   | 30min    | 399 lines violates its own purpose. Move session logs to CHANGELOG.                  |
+| 8   | **Update FEATURES.md**                                                                   | Low      | 30min    | Missing v0.7.0 features. One-file update.                                            |
+| 9   | **Godoc examples: IntervalIndex, MergeIter, LineShiftMap, DetectorRegistry, ConfigFile** | Medium   | 30min    | Zero discoverable examples for 5 features.                                           |
+| 10  | **Add `Category.Compare()` method**                                                      | Low      | 15min    | Follows established Severity/Confidence pattern.                                     |
 
 ### Tier B: Medium Impact, Medium Effort
 
-| # | Task | Impact | Effort | Why |
-|---|------|--------|--------|-----|
-| 11 | **Complete FixProviders through CLI config** (TODO #18a-d) | Medium | 2hr | Users can't specify custom providers without writing Go code. |
-| 12 | **v1.0.0 release criteria checklist** | High | 1hr | `docs/RELEASE_CRITERIA.md` needs concrete pass/fail thresholds. |
-| 13 | **LineShiftMap: extend to Range + Column shifting** | Medium | 30min | Post-fix finding positions can be wrong for multi-line ranges. |
-| 14 | **SubstringProvider nearest-position heuristic** | Medium | 30min | First-match `strings.Index` is ambiguous with multiple occurrences. |
-| 15 | **Integration test: type alias backward compat** | Low | 15min | Verify pipeline type aliases compile-match root package. |
-| 16 | **Update README.md for v0.7.0+** | Medium | 30min | Missing GoASTProvider, updated stats, new feature sections. |
-| 17 | **Update doc.go with new feature examples** | Medium | 30min | Package docs miss several features. |
-| 18 | **Audit deprecated APIs for v1.0.0 removal timeline** | Medium | 1hr | 5 deprecated APIs need concrete removal dates. |
-| 19 | **Benchmark regression thresholds in CI** | Medium | 30min | Benchmark job exists but never fails on regression. |
-| 20 | **Fuzz CategoryForLinter** | Low | 15min | Case-insensitive lookup edge cases. |
+| #   | Task                                                       | Impact | Effort | Why                                                                 |
+| --- | ---------------------------------------------------------- | ------ | ------ | ------------------------------------------------------------------- |
+| 11  | **Complete FixProviders through CLI config** (TODO #18a-d) | Medium | 2hr    | Users can't specify custom providers without writing Go code.       |
+| 12  | **v1.0.0 release criteria checklist**                      | High   | 1hr    | `docs/RELEASE_CRITERIA.md` needs concrete pass/fail thresholds.     |
+| 13  | **LineShiftMap: extend to Range + Column shifting**        | Medium | 30min  | Post-fix finding positions can be wrong for multi-line ranges.      |
+| 14  | **SubstringProvider nearest-position heuristic**           | Medium | 30min  | First-match `strings.Index` is ambiguous with multiple occurrences. |
+| 15  | **Integration test: type alias backward compat**           | Low    | 15min  | Verify pipeline type aliases compile-match root package.            |
+| 16  | **Update README.md for v0.7.0+**                           | Medium | 30min  | Missing GoASTProvider, updated stats, new feature sections.         |
+| 17  | **Update doc.go with new feature examples**                | Medium | 30min  | Package docs miss several features.                                 |
+| 18  | **Audit deprecated APIs for v1.0.0 removal timeline**      | Medium | 1hr    | 5 deprecated APIs need concrete removal dates.                      |
+| 19  | **Benchmark regression thresholds in CI**                  | Medium | 30min  | Benchmark job exists but never fails on regression.                 |
+| 20  | **Fuzz CategoryForLinter**                                 | Low    | 15min  | Case-insensitive lookup edge cases.                                 |
 
 ### Tier C: Lower Priority / Blocked
 
-| # | Task | Impact | Effort | Why |
-|---|------|--------|--------|-----|
-| 21 | **GoReleaser release with latest tag** | Medium | 30min | 20 commits ahead of last tag (v0.6.1). Should cut v0.7.0 or v0.8.0. |
-| 22 | **slices.Collect modernization pass** | Low | 30min | 12 candidates. Code polish, no behavior change. |
-| 23 | **Add .github/dependabot.yml** | Low | 15min | Auto-dependency updates for golang.org/x. |
-| 24 | **Fix FixStrategy "" vs FixStrategyNone normalization** (OWNER DECISION) | Medium | Decision | Two valid "no fix" states is a type smell. |
-| 25 | **Decide Report.Findings unexport timing** (OWNER DECISION) | High | Decision | Field is deprecated but still public. When to pull the trigger? |
+| #   | Task                                                                     | Impact | Effort   | Why                                                                 |
+| --- | ------------------------------------------------------------------------ | ------ | -------- | ------------------------------------------------------------------- |
+| 21  | **GoReleaser release with latest tag**                                   | Medium | 30min    | 20 commits ahead of last tag (v0.6.1). Should cut v0.7.0 or v0.8.0. |
+| 22  | **slices.Collect modernization pass**                                    | Low    | 30min    | 12 candidates. Code polish, no behavior change.                     |
+| 23  | **Add .github/dependabot.yml**                                           | Low    | 15min    | Auto-dependency updates for golang.org/x.                           |
+| 24  | **Fix FixStrategy "" vs FixStrategyNone normalization** (OWNER DECISION) | Medium | Decision | Two valid "no fix" states is a type smell.                          |
+| 25  | **Decide Report.Findings unexport timing** (OWNER DECISION)              | High   | Decision | Field is deprecated but still public. When to pull the trigger?     |
 
 ---
 
@@ -223,6 +223,7 @@ Sorted by **impact / effort ratio** (highest first).
 `Position{}` has a fundamental ambiguity that I cannot resolve without your input because every option is a breaking change with different tradeoffs:
 
 **The problem:** `Position.Offset = 0` means both:
+
 - "byte offset 0" (valid — the first byte of the file)
 - "unset" (the zero value of the struct)
 
@@ -230,11 +231,11 @@ This means `Position{}.HasOffset()` returns `true` (0 is set), but `Position{}.I
 
 **Three options, all breaking:**
 
-| Option | Pro | Con |
-|--------|-----|-----|
-| **A: Use `-1` sentinel** | Simple, no API change to field types | Negative offset is a footgun; `uint` can't represent it; needs validation everywhere |
-| **B: Use `*int` pointers** | Makes zero-value truly "unset"; null is honest | Nil dereference risk; API ergonomics worse; breaks JSON serialization |
-| **C: Separate `HasOffset bool` field** | Explicit; no magic values | Redundant with the existence of a value; struct grows |
+| Option                                 | Pro                                            | Con                                                                                  |
+| -------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **A: Use `-1` sentinel**               | Simple, no API change to field types           | Negative offset is a footgun; `uint` can't represent it; needs validation everywhere |
+| **B: Use `*int` pointers**             | Makes zero-value truly "unset"; null is honest | Nil dereference risk; API ergonomics worse; breaks JSON serialization                |
+| **C: Separate `HasOffset bool` field** | Explicit; no magic values                      | Redundant with the existence of a value; struct grows                                |
 
 This decision cascades to `Range.End` (same ambiguity: `Line == 0` means "unset" but 0 is a valid line in some systems), `FixStrategy ""` vs `FixStrategyNone`, and the v1.0.0 `Report.Findings` unexport.
 
