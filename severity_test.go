@@ -225,12 +225,7 @@ func TestMustParseSeverity(t *testing.T) {
 func TestMustParseSeverity_Panics(t *testing.T) {
 	t.Parallel()
 
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Errorf("MustParseSeverity(%q) should panic", "invalid")
-		}
-	}()
-
-	MustParseSeverity("invalid")
+	AssertPanics(t, "MustParseSeverity(\"invalid\") should panic", func() {
+		MustParseSeverity("invalid")
+	})
 }

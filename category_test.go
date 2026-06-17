@@ -150,14 +150,9 @@ func TestMustParseCategory(t *testing.T) {
 	t.Run("panics on invalid", func(t *testing.T) {
 		t.Parallel()
 
-		defer func() {
-			r := recover()
-			if r == nil {
-				t.Errorf("MustParseCategory(%q) expected panic", "INVALID")
-			}
-		}()
-
-		MustParseCategory("INVALID")
+		AssertPanics(t, "MustParseCategory(\"INVALID\") expected panic", func() {
+			MustParseCategory("INVALID")
+		})
 	})
 }
 
