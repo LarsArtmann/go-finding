@@ -81,7 +81,7 @@
 //
 // Combine with Negate for inverse filters, AnyOf for union:
 //
-//	nonAuto := finding.Filter(findings, finding.Negate(finding.HasFix))
+//	nonAuto := finding.Filter(findings, finding.Negate(finding.WithFix))
 //	warnOrErr := finding.Filter(findings, finding.AnyOf(
 //	    finding.BySeverity(finding.SeverityWarning),
 //	    finding.BySeverity(finding.SeverityError),

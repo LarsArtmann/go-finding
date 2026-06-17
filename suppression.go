@@ -29,13 +29,16 @@ func (s *Suppression) IsExpired(now time.Time) bool {
 	return now.After(*s.ExpiresAt)
 }
 
-// IsValid returns true if the suppression has a kind and rule.
+// IsValid returns true if the suppression has a valid kind and a non-empty rule.
+// The kind must be one of the predefined SuppressionKind constants (checked
+// via Kind.IsValid), not just any non-empty string. This prevents typos like
+// "in-soruce" from silently passing validation.
 func (s *Suppression) IsValid() bool {
 	if s == nil {
 		return false
 	}
 
-	return s.Kind != "" && s.Rule != ""
+	return s.Kind.IsValid() && s.Rule != ""
 }
 
 // IsActive returns true if the suppression is valid and not expired.

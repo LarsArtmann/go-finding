@@ -30,6 +30,8 @@ const (
 )
 
 // IsStandard returns true if the category is one of the predefined standard constants.
+// Use IsStandard for allow-list filtering (e.g., "only show findings in known categories").
+// Use IsValid for input validation (accepts any well-formed custom category).
 func (c Category) IsStandard() bool {
 	switch c {
 	case CategorySecurity, CategoryStyle, CategoryPerformance, CategoryCorrectness,
@@ -45,7 +47,8 @@ func (c Category) IsStandard() bool {
 // IsValid returns true if the category is a non-empty string matching the
 // lowercase-hyphenated convention (e.g., "security", "go-vet").
 // This rejects typos like "Security" or "SOME_CATEGORY".
-// Use IsStandard to check for predefined constants only.
+// Use IsValid for input validation (accepts custom categories).
+// Use IsStandard to check for predefined constants only (allow-list filtering).
 func (c Category) IsValid() bool {
 	return isValidLowercaseHyphen(string(c))
 }

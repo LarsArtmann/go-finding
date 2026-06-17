@@ -19,7 +19,7 @@ func TestSuppression_IsValid(t *testing.T) {
 		{"valid review", Suppression{Kind: SuppressionInReview, Rule: "R1"}, true},
 		{"empty kind", Suppression{Rule: "R1"}, false},
 		{suppValidTestEmptyRule, Suppression{Kind: SuppressionInSource}, false},
-		{"nonempty kind+rule accepted", Suppression{Kind: "bogus", Rule: "R1"}, true},
+		{"nonempty kind+rule accepted", Suppression{Kind: "bogus", Rule: "R1"}, false},
 	}
 
 	for _, tt := range tests {

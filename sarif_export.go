@@ -187,12 +187,20 @@ func findingRegion(f Finding) *sarifRegion {
 }
 
 func findingFixRegion(f Finding) sarifRegion {
-	return sarifRegion{
+	region := sarifRegion{
 		StartLine:   f.Position.Line,
 		StartColumn: f.Position.Column,
-		EndLine:     f.Position.Line,
-		EndColumn:   f.Position.Column,
 	}
+
+	if f.Range != nil && f.Range.HasEnd() {
+		region.EndLine = f.Range.End.Line
+		region.EndColumn = f.Range.End.Column
+	} else {
+		region.EndLine = f.Position.Line
+		region.EndColumn = f.Position.Column
+	}
+
+	return region
 }
 
 func sarifFixes(f Finding) []sarifFix {

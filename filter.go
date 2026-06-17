@@ -150,12 +150,33 @@ func AnyOf(predicates ...FilterFunc) FilterFunc {
 }
 
 // HasFix returns a filter for findings with fixes.
+//
+// Deprecated: Use [WithFix] instead. This free function shadows the
+// [Finding.HasFix] method, causing naming ambiguity in auto-complete and
+// grep. WithFix uses the same naming convention as BySeverity, ByCategory, etc.
 func HasFix(f Finding) bool {
 	return f.HasFix()
 }
 
+// WithFix returns a filter for findings with fixes.
+// This is the canonical FilterFunc for fixable findings, replacing the
+// deprecated HasFix free function.
+func WithFix(f Finding) bool {
+	return f.HasFix()
+}
+
 // HasSuggestion returns a filter for findings with suggestions.
+//
+// Deprecated: Use [WithSuggestion] instead. This free function shadows the
+// [Finding.HasSuggestion] method.
 func HasSuggestion(f Finding) bool {
+	return f.HasSuggestion()
+}
+
+// WithSuggestion returns a filter for findings with suggestions.
+// This is the canonical FilterFunc for findings with suggestions, replacing
+// the deprecated HasSuggestion free function.
+func WithSuggestion(f Finding) bool {
 	return f.HasSuggestion()
 }
 
