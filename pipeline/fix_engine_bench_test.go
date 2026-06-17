@@ -1,12 +1,12 @@
 package pipeline
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/internal/benchutil"
 )
 
 // generateContent creates n lines of Go-like code for benchmarking.
@@ -22,76 +22,10 @@ func generateContent(lines int) []byte {
 	return []byte(b.String())
 }
 
-// findOldOccurrences returns byte offsets of all "old()" in content.
-func findOldOccurrences(content []byte) []int {
-	needle := []byte("old()")
-
-	var positions []int
-
-	start := 0
-
-	for {
-		i := bytes.Index(content[start:], needle)
-		if i < 0 {
-			break
-		}
-
-		positions = append(positions, start+i)
-		start += i + len(needle)
-	}
-
-	return positions
-}
-
-// offsetToLineNumber returns the 1-based line number for a byte offset in content.
-func offsetToLineNumber(content []byte, offset int) int {
-	return bytes.Count(content[:offset], []byte{'\n'}) + 1
-}
-
-// columnOfOffset returns the 1-based column for a byte offset within its line.
-func columnOfOffset(content []byte, offset int) int {
-	col := 1
-
-	for i := offset - 1; i >= 0; i-- {
-		if content[i] == '\n' {
-			break
-		}
-
-		col++
-	}
-
-	return col
-}
-
-// pickEvenly returns up to n evenly-spaced indices from positions.
-func pickEvenly(positions []int, n int) []int {
-	if len(positions) == 0 || n <= 0 {
-		return nil
-	}
-
-	step := len(positions) / n
-	if step == 0 {
-		step = 1
-	}
-
-	var result []int
-
-	for i := range n {
-		idx := i * step
-		if idx >= len(positions) {
-			break
-		}
-
-		result = append(result, positions[idx])
-	}
-
-	return result
-}
-
 // generateOffsetFixes creates n non-overlapping offset-based fixes pointing
 // to actual "old()" occurrences in the content. Uses OffsetProvider.
 func generateOffsetFixes(n int, content []byte) []finding.Finding {
-	positions := pickEvenly(findOldOccurrences(content), n)
+	positions := benchutil.PickEvenly(benchutil.FindOldOccurrences(content), n)
 	fixes := make([]finding.Finding, 0, len(positions))
 
 	for _, pos := range positions {
@@ -102,7 +36,7 @@ func generateOffsetFixes(n int, content []byte) []finding.Finding {
 				Start: finding.Position{File: "bench.go", Offset: pos},
 				End:   finding.Position{File: "bench.go", Offset: pos + 5},
 			},
-			Position: finding.Pos("bench.go", offsetToLineNumber(content, pos), 1),
+			Position: finding.Pos("bench.go", benchutil.OffsetToLineNumber(content, pos), 1),
 		})
 	}
 
@@ -112,12 +46,12 @@ func generateOffsetFixes(n int, content []byte) []finding.Finding {
 // generateLineFixes creates n non-overlapping line/column-based fixes.
 // No byte-offset Range — exercises LineProvider exclusively.
 func generateLineFixes(n int, content []byte) []finding.Finding {
-	positions := pickEvenly(findOldOccurrences(content), n)
+	positions := benchutil.PickEvenly(benchutil.FindOldOccurrences(content), n)
 	fixes := make([]finding.Finding, 0, len(positions))
 
 	for _, pos := range positions {
-		line := offsetToLineNumber(content, pos)
-		col := columnOfOffset(content, pos)
+		line := benchutil.OffsetToLineNumber(content, pos)
+		col := benchutil.ColumnOfOffset(content, pos)
 
 		fixes = append(fixes, finding.Finding{
 			BeforeCode: "old()",
@@ -132,14 +66,14 @@ func generateLineFixes(n int, content []byte) []finding.Finding {
 // generateSubstringFixes creates n fixes with BeforeCode but line=1 (mismatched).
 // Exercises SubstringProvider with occurrence disambiguation.
 func generateSubstringFixes(n int, content []byte) []finding.Finding {
-	positions := pickEvenly(findOldOccurrences(content), n)
+	positions := benchutil.PickEvenly(benchutil.FindOldOccurrences(content), n)
 	fixes := make([]finding.Finding, 0, len(positions))
 
 	for _, pos := range positions {
 		fixes = append(fixes, finding.Finding{
 			BeforeCode: "old()",
 			AfterCode:  "new()",
-			Position:   finding.Pos("bench.go", offsetToLineNumber(content, pos), 1),
+			Position:   finding.Pos("bench.go", benchutil.OffsetToLineNumber(content, pos), 1),
 		})
 	}
 

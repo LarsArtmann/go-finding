@@ -224,4 +224,15 @@ func RunCompareTests[T any](t *testing.T, tests []struct {
 	}
 }
 
-// assertFindingsLen asserts the length of a findings slice matches expected.
+// AssertPanics asserts that fn panics when executed, reporting msg on failure.
+func AssertPanics(t *testing.T, msg string, fn func()) {
+	t.Helper()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error(msg)
+		}
+	}()
+
+	fn()
+}

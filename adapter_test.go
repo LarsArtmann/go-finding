@@ -157,36 +157,24 @@ func TestToolAdapter_NilPanics(t *testing.T) {
 	t.Run("nil run", func(t *testing.T) {
 		t.Parallel()
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic for nil function")
-			}
-		}()
-
-		NewToolAdapter[testOutput]("x", nil, testParse, testConvert)
+		AssertPanics(t, "expected panic for nil function", func() {
+			NewToolAdapter[testOutput]("x", nil, testParse, testConvert)
+		})
 	})
 
 	t.Run("nil parse", func(t *testing.T) {
 		t.Parallel()
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic for nil function")
-			}
-		}()
-
-		NewToolAdapter[testOutput]("x", run, nil, testConvert)
+		AssertPanics(t, "expected panic for nil function", func() {
+			NewToolAdapter[testOutput]("x", run, nil, testConvert)
+		})
 	})
 
 	t.Run("nil convert", func(t *testing.T) {
 		t.Parallel()
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic for nil function")
-			}
-		}()
-
-		NewToolAdapter[testOutput]("x", run, testParse, nil)
+		AssertPanics(t, "expected panic for nil function", func() {
+			NewToolAdapter[testOutput]("x", run, testParse, nil)
+		})
 	})
 }

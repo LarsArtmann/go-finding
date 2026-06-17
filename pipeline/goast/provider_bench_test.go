@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/internal/benchutil"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
@@ -24,76 +25,14 @@ func generateGoContent(lines int) []byte {
 	return b.Bytes()
 }
 
-func findOldOccurrences(content []byte) []int {
-	needle := []byte("old()")
-
-	var positions []int
-
-	start := 0
-
-	for {
-		i := bytes.Index(content[start:], needle)
-		if i < 0 {
-			break
-		}
-
-		positions = append(positions, start+i)
-		start += i + len(needle)
-	}
-
-	return positions
-}
-
-func offsetToLineNumber(content []byte, offset int) int {
-	return bytes.Count(content[:offset], []byte{'\n'}) + 1
-}
-
-func columnOfOffset(content []byte, offset int) int {
-	col := 1
-
-	for i := offset - 1; i >= 0; i-- {
-		if content[i] == '\n' {
-			break
-		}
-
-		col++
-	}
-
-	return col
-}
-
-func pickEvenly(positions []int, n int) []int {
-	if len(positions) == 0 || n <= 0 {
-		return nil
-	}
-
-	step := len(positions) / n
-	if step == 0 {
-		step = 1
-	}
-
-	var result []int
-
-	for i := range n {
-		idx := i * step
-		if idx >= len(positions) {
-			break
-		}
-
-		result = append(result, positions[idx])
-	}
-
-	return result
-}
-
 func generateGoASTFixes(n int, content []byte) []finding.Finding {
-	occurrences := findOldOccurrences(content)
-	selected := pickEvenly(occurrences, n)
+	occurrences := benchutil.FindOldOccurrences(content)
+	selected := benchutil.PickEvenly(occurrences, n)
 	fixes := make([]finding.Finding, 0, len(selected))
 
 	for _, pos := range selected {
-		line := offsetToLineNumber(content, pos)
-		col := columnOfOffset(content, pos)
+		line := benchutil.OffsetToLineNumber(content, pos)
+		col := benchutil.ColumnOfOffset(content, pos)
 
 		fixes = append(fixes, finding.Finding{
 			Position:   finding.Position{File: "bench.go", Line: line, Column: col},

@@ -8,6 +8,16 @@ import (
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
+// beforeAfterFinding builds a Finding with only position + before/after code set.
+// Common shape used across the Edits tests below.
+func beforeAfterFinding(file string, line, col int, before, after string) finding.Finding {
+	return finding.Finding{
+		Position:   finding.Position{File: file, Line: line, Column: col},
+		BeforeCode: before,
+		AfterCode:  after,
+	}
+}
+
 func TestProvider_CanHandle(t *testing.T) {
 	t.Parallel()
 
@@ -73,11 +83,7 @@ func TestProvider_Edits_ReplaceWithPosition(t *testing.T) {
 		"package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"hello\")\n\tfmt.Println(\"world\")\n}\n",
 	)
 
-	f := finding.Finding{
-		Position:   finding.Position{File: "test.go", Line: 6, Column: 2},
-		BeforeCode: "fmt.Println",
-		AfterCode:  "log.Printf",
-	}
+	f := beforeAfterFinding("test.go", 6, 2, "fmt.Println", "log.Printf")
 
 	p := &Provider{}
 
@@ -108,11 +114,7 @@ func TestProvider_Edits_ReplaceSecondOccurrence(t *testing.T) {
 
 	content := []byte("package main\n\nfunc main() {\n\tfirst()\n\tsecond()\n\tthird()\n}\n")
 
-	f := finding.Finding{
-		Position:   finding.Position{File: "test.go", Line: 5, Column: 2},
-		BeforeCode: "second()",
-		AfterCode:  "replaced()",
-	}
+	f := beforeAfterFinding("test.go", 5, 2, "second()", "replaced()")
 
 	p := &Provider{}
 
@@ -224,11 +226,7 @@ func TestProvider_Edits_ParseFailure(t *testing.T) {
 
 	content := []byte("package main\n\nfunc {{{ broken }}}\n")
 
-	f := finding.Finding{
-		Position:   finding.Position{File: "broken.go", Line: 3, Column: 1},
-		BeforeCode: "broken",
-		AfterCode:  "fixed",
-	}
+	f := beforeAfterFinding("broken.go", 3, 1, "broken", "fixed")
 
 	p := &Provider{}
 
@@ -249,22 +247,14 @@ func TestProvider_Edits_CacheReused(t *testing.T) {
 
 	p := &Provider{}
 
-	f1 := finding.Finding{
-		Position:   finding.Position{File: "test.go", Line: 4, Column: 2},
-		BeforeCode: "alpha()",
-		AfterCode:  "first()",
-	}
+	f1 := beforeAfterFinding("test.go", 4, 2, "alpha()", "first()")
 
 	edits1, err := p.Edits(content, f1)
 	if err != nil || len(edits1) != 1 {
 		t.Fatalf("first Edits() failed: err=%v, len=%d", err, len(edits1))
 	}
 
-	f2 := finding.Finding{
-		Position:   finding.Position{File: "test.go", Line: 5, Column: 2},
-		BeforeCode: "beta()",
-		AfterCode:  "second()",
-	}
+	f2 := beforeAfterFinding("test.go", 5, 2, "beta()", "second()")
 
 	edits2, err := p.Edits(content, f2)
 	if err != nil || len(edits2) != 1 {
@@ -289,11 +279,7 @@ func TestProvider_Edits_NoMatchInASTNode(t *testing.T) {
 
 	content := []byte("package main\n\nfunc main() {\n\tx := 1\n}\n")
 
-	f := finding.Finding{
-		Position:   finding.Position{File: "test.go", Line: 4, Column: 2},
-		BeforeCode: "nonexistent",
-		AfterCode:  "replacement",
-	}
+	f := beforeAfterFinding("test.go", 4, 2, "nonexistent", "replacement")
 
 	p := &Provider{}
 
@@ -312,11 +298,7 @@ func TestProvider_Edits_BeforeCodeMismatchAtOffset(t *testing.T) {
 
 	content := []byte("package main\n\nfunc main() {\n\tvalue := 42\n\tprint(value)\n}\n")
 
-	f := finding.Finding{
-		Position:   finding.Position{File: "test.go", Line: 4, Column: 2},
-		BeforeCode: "value",
-		AfterCode:  "result",
-	}
+	f := beforeAfterFinding("test.go", 4, 2, "value", "result")
 
 	p := &Provider{}
 

@@ -265,11 +265,7 @@ func TestBuilder_MustBuild_PanicsOnInvalid(t *testing.T) {
 
 	b := &Builder{f: Finding{}}
 
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("expected panic for invalid builder")
-		}
-	}()
-
-	b.MustBuild()
+	AssertPanics(t, "expected panic for invalid builder", func() {
+		b.MustBuild()
+	})
 }

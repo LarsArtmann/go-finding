@@ -7,25 +7,25 @@
 
 ## Project Health Snapshot
 
-| Metric                          | Value                                             |
-| ------------------------------- | ------------------------------------------------- |
-| Latest git tag                  | `v0.7.0` (tagged this session at `8909bc1`)       |
-| HEAD version (`version.go`)     | `0.7.0`                                           |
-| Commits since `v0.7.0`          | 35 (substantial unreleased work — v0.8.0 ready)   |
-| Commits since `v0.6.1`          | 47                                                |
-| Total commits                   | 771                                               |
-| Go files                        | 189                                               |
-| Production LOC                  | 10,834                                            |
-| Test LOC                        | 23,347 (2.15:1 test-to-code ratio)                |
-| Test coverage (weighted avg)    | ~93.5% (root 93.7%, analysis 94.1%, pipeline 95.2%, CLI 91.2%, detectors 96.1%, goast 80.8%) |
-| Lint (`golangci-lint`)          | 0 issues                                          |
-| Race detector                   | Clean (`-race -count=1`)                          |
-| `nix flake check`               | All checks passed                                 |
-| `nix fmt` (treefmt)             | 0 changed                                         |
-| Fuzz targets                    | 7                                                 |
-| Benchmark functions             | 6 files                                           |
-| Godoc examples                  | 5 files (29+ `Example*` functions)                |
-| Open Dependabot PRs             | 5 (all GitHub Actions bumps)                      |
+| Metric                       | Value                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------- |
+| Latest git tag               | `v0.7.0` (tagged this session at `8909bc1`)                                                  |
+| HEAD version (`version.go`)  | `0.7.0`                                                                                      |
+| Commits since `v0.7.0`       | 35 (substantial unreleased work — v0.8.0 ready)                                              |
+| Commits since `v0.6.1`       | 47                                                                                           |
+| Total commits                | 771                                                                                          |
+| Go files                     | 189                                                                                          |
+| Production LOC               | 10,834                                                                                       |
+| Test LOC                     | 23,347 (2.15:1 test-to-code ratio)                                                           |
+| Test coverage (weighted avg) | ~93.5% (root 93.7%, analysis 94.1%, pipeline 95.2%, CLI 91.2%, detectors 96.1%, goast 80.8%) |
+| Lint (`golangci-lint`)       | 0 issues                                                                                     |
+| Race detector                | Clean (`-race -count=1`)                                                                     |
+| `nix flake check`            | All checks passed                                                                            |
+| `nix fmt` (treefmt)          | 0 changed                                                                                    |
+| Fuzz targets                 | 7                                                                                            |
+| Benchmark functions          | 6 files                                                                                      |
+| Godoc examples               | 5 files (29+ `Example*` functions)                                                           |
+| Open Dependabot PRs          | 5 (all GitHub Actions bumps)                                                                 |
 
 ---
 
@@ -123,11 +123,11 @@
 
 ### Test Coverage Gaps
 
-| Package          | Coverage | Gap Analysis                              |
-| ---------------- | -------- | ----------------------------------------- |
-| `pipeline/goast` | 80.8%    | Lowest coverage — needs more edge cases   |
-| `cmd/go-finding` | 91.2%    | Good but e2e paths could expand           |
-| `internal/gotoken` | 92.7%  | Minor — shared utility, low risk          |
+| Package            | Coverage | Gap Analysis                            |
+| ------------------ | -------- | --------------------------------------- |
+| `pipeline/goast`   | 80.8%    | Lowest coverage — needs more edge cases |
+| `cmd/go-finding`   | 91.2%    | Good but e2e paths could expand         |
+| `internal/gotoken` | 92.7%    | Minor — shared utility, low risk        |
 
 ### Documentation
 
@@ -139,13 +139,13 @@
 
 5 deprecated APIs are marked but not yet removed (scheduled for v1.0.0):
 
-| API                           | Replacement                 | Deprecated Since |
-| ----------------------------- | --------------------------- | ---------------- |
-| `Report.Findings` (public)    | `FindingsSnapshot()`        | v0.7.0           |
-| `Report.Merge()`              | `MergeInto()`               | v0.6.0           |
-| `OnStage` callback            | `StageHooks`                | v0.7.0           |
-| `Metrics.RecordFix()`         | `RecordFixes(1)`            | v0.6.0           |
-| `CountBySeverity()` free func | `Report.CountBySeverity()`  | v0.6.0           |
+| API                           | Replacement                | Deprecated Since |
+| ----------------------------- | -------------------------- | ---------------- |
+| `Report.Findings` (public)    | `FindingsSnapshot()`       | v0.7.0           |
+| `Report.Merge()`              | `MergeInto()`              | v0.6.0           |
+| `OnStage` callback            | `StageHooks`               | v0.7.0           |
+| `Metrics.RecordFix()`         | `RecordFixes(1)`           | v0.6.0           |
+| `CountBySeverity()` free func | `Report.CountBySeverity()` | v0.6.0           |
 
 ---
 
@@ -184,6 +184,7 @@ These are documented in `docs/RELEASE_CRITERIA.md:43-82` and `docs/architecture-
 ### Concurrent Session Collision (BENIGN)
 
 During this session, a concurrent Crush session (`MiniMax-M2.7-highspeed`) committed `cf28bd91` which:
+
 - Absorbed my `go.mod`/`go.sum`/`flake.nix` changes (identical vendorHash — no conflict)
 - Added 2 HTML research files that failed treefmt formatting (2-space indent)
 - Left `.golangci.yml` reformatted by treefmt as uncommitted artifact
@@ -289,13 +290,13 @@ go vet ./...                        → clean
 
 ## Dependency State
 
-| Dependency                       | Version  | Notes                                    |
-| -------------------------------- | -------- | ---------------------------------------- |
-| `golang.org/x/tools`             | latest   | analysis/ subpackage only                |
-| `golang.org/x/sync`             | v0.21.0  | errgroup for parallel detection          |
-| `github.com/go-faster/yaml`      | v0.4.6   | YAML config (CLI only)                   |
-| `github.com/onsi/ginkgo/v2`      | v2.31.0  | BDD testing                              |
-| `github.com/onsi/gomega`         | latest   | Matchers                                 |
+| Dependency                              | Version    | Notes                              |
+| --------------------------------------- | ---------- | ---------------------------------- |
+| `golang.org/x/tools`                    | latest     | analysis/ subpackage only          |
+| `golang.org/x/sync`                     | v0.21.0    | errgroup for parallel detection    |
+| `github.com/go-faster/yaml`             | v0.4.6     | YAML config (CLI only)             |
+| `github.com/onsi/ginkgo/v2`             | v2.31.0    | BDD testing                        |
+| `github.com/onsi/gomega`                | latest     | Matchers                           |
 | `github.com/LarsArtmann/gogenfilter/v3` | **v3.2.0** | Updated this session (from v3.1.0) |
 
 ---
