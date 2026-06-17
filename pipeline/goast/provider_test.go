@@ -221,22 +221,58 @@ func TestProvider_Edits_BeforeCodeOnly(t *testing.T) {
 	}
 }
 
-func TestProvider_Edits_ParseFailure(t *testing.T) {
+func TestProvider_Edits_NoEditsWhenNoMatch(t *testing.T) {
 	t.Parallel()
 
-	content := []byte("package main\n\nfunc {{{ broken }}}\n")
-
-	f := beforeAfterFinding("broken.go", 3, 1, "broken", "fixed")
-
-	p := &Provider{}
-
-	edits, err := p.Edits(content, f)
-	if err != nil {
-		t.Fatalf("Edits() should not return error on parse failure: %v", err)
+	tests := []struct {
+		name    string
+		content []byte
+		file    string
+		line    int
+		col     int
+		before  string
+		after   string
+		why     string
+	}{
+		{
+			name:    "ParseFailure",
+			content: []byte("package main\n\nfunc {{{ broken }}}\n"),
+			file:    "broken.go",
+			line:    3,
+			col:     1,
+			before:  "broken",
+			after:   "fixed",
+			why:     "parse failure",
+		},
+		{
+			name:    "NoMatchInASTNode",
+			content: []byte("package main\n\nfunc main() {\n\tx := 1\n}\n"),
+			file:    "test.go",
+			line:    4,
+			col:     2,
+			before:  "nonexistent",
+			after:   "replacement",
+			why:     "unmatched BeforeCode",
+		},
 	}
 
-	if edits != nil {
-		t.Errorf("Edits() should return nil edits on parse failure, got %d", len(edits))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			f := beforeAfterFinding(tt.file, tt.line, tt.col, tt.before, tt.after)
+
+			p := &Provider{}
+
+			edits, err := p.Edits(tt.content, f)
+			if err != nil {
+				t.Fatalf("Edits() error: %v", err)
+			}
+
+			if edits != nil {
+				t.Errorf("expected nil edits for %s, got %d", tt.why, len(edits))
+			}
+		})
 	}
 }
 
@@ -271,25 +307,6 @@ func TestProvider_Edits_CacheReused(t *testing.T) {
 
 	if cacheHash == 0 {
 		t.Error("expected non-zero cache hash after parsing")
-	}
-}
-
-func TestProvider_Edits_NoMatchInASTNode(t *testing.T) {
-	t.Parallel()
-
-	content := []byte("package main\n\nfunc main() {\n\tx := 1\n}\n")
-
-	f := beforeAfterFinding("test.go", 4, 2, "nonexistent", "replacement")
-
-	p := &Provider{}
-
-	edits, err := p.Edits(content, f)
-	if err != nil {
-		t.Fatalf("Edits() error: %v", err)
-	}
-
-	if edits != nil {
-		t.Errorf("expected nil edits for unmatched BeforeCode, got %d", len(edits))
 	}
 }
 

@@ -91,24 +91,41 @@ func TestConfigFile_ConfigFromReader_Error(t *testing.T) {
 	g.Expect(err).To(HaveOccurred())
 }
 
-// TestConfigFile_ConfigFromFile_BadTimeout covers the timeout parse error.
-func TestConfigFile_ConfigFromFile_BadTimeout(t *testing.T) {
+// TestConfigFile_ConfigFromFile_BadDurations covers every variant of bad
+// duration strings accepted by ConfigFromFile: the top-level `timeout` field
+// and the per-detector `detectorTimeouts` map. Each case is checked against
+// the substring that the error message is expected to carry.
+func TestConfigFile_ConfigFromFile_BadDurations(t *testing.T) {
 	t.Parallel()
-	g := NewWithT(t)
 
-	_, err := ConfigFromFile([]byte(`{"timeout": "not-a-duration"}`))
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(err.Error()).To(ContainSubstring("parse timeout"))
-}
+	tests := []struct {
+		name        string
+		input       string
+		errContains string
+	}{
+		{
+			name:        "BadTimeout",
+			input:       `{"timeout": "not-a-duration"}`,
+			errContains: "parse timeout",
+		},
+		{
+			name:        "BadDetectorTimeout",
+			input:       `{"detectorTimeouts": {"govet": "bad"}}`,
+			errContains: "parse detector timeout",
+		},
+	}
 
-// TestConfigFile_ConfigFromFile_BadDetectorTimeout covers detector timeout error.
-func TestConfigFile_ConfigFromFile_BadDetectorTimeout(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	_, err := ConfigFromFile([]byte(`{"detectorTimeouts": {"govet": "bad"}}`))
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(err.Error()).To(ContainSubstring("parse detector timeout"))
+			g := NewWithT(t)
+
+			_, err := ConfigFromFile([]byte(tt.input))
+			g.Expect(err).To(HaveOccurred())
+			g.Expect(err.Error()).To(ContainSubstring(tt.errContains))
+		})
+	}
 }
 
 // TestFixApplier_ApplyWithDetails covers the ApplyWithDetails wrapper.

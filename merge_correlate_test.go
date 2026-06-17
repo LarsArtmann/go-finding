@@ -75,30 +75,39 @@ func TestCorrelate_PointWithinRange(t *testing.T) {
 	g.Expect(correlations[0].Reason).To(Equal("point within range"))
 }
 
-func TestCorrelate_NonOverlappingRanges(t *testing.T) {
-	g := NewWithT(t)
+func TestCorrelate_NoCorrelations(t *testing.T) {
 	t.Parallel()
 
-	findings := []Finding{
-		makeRangeFinding("1", "govet", "r1", "a.go", 10, 15),
-		makeRangeFinding("2", "staticcheck", "r2", "a.go", 20, 25),
+	tests := []struct {
+		name     string
+		findings []Finding
+	}{
+		{
+			name: "NonOverlappingRanges",
+			findings: []Finding{
+				makeRangeFinding("1", "govet", "r1", "a.go", 10, 15),
+				makeRangeFinding("2", "staticcheck", "r2", "a.go", 20, 25),
+			},
+		},
+		{
+			name: "SameToolFiltered",
+			findings: []Finding{
+				makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
+				makeRangeFinding("2", "govet", "r2", "a.go", 15, 25),
+			},
+		},
 	}
 
-	correlations := Correlate(findings)
-	g.Expect(correlations).To(BeEmpty())
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-func TestCorrelate_SameToolFiltered(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+			g := NewWithT(t)
 
-	findings := []Finding{
-		makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
-		makeRangeFinding("2", "govet", "r2", "a.go", 15, 25),
+			correlations := Correlate(tt.findings)
+			g.Expect(correlations).To(BeEmpty())
+		})
 	}
-
-	correlations := Correlate(findings)
-	g.Expect(correlations).To(BeEmpty())
 }
 
 func TestCorrelate_TooFewFindings(t *testing.T) {

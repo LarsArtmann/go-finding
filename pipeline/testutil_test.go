@@ -83,6 +83,15 @@ func testFinding(id, rule, tool, msg string, sev finding.Severity, file string) 
 	}
 }
 
+// registerFindingDetector registers a single-finding detector factory with the
+// given registry under `name`, producing findings tagged with the provided
+// `tool`. Both fields that the mocks and production detectors care about.
+func registerFindingDetector(registry *finding.DetectorRegistry, name, tool string, f finding.Finding) {
+	registry.MustRegister(name, func() finding.Detector {
+		return newMockDetector(name, tool, f)
+	})
+}
+
 func findingWithRange(id, file string, line, startLine, endLine int) finding.Finding {
 	return finding.Finding{
 		ID:       id,

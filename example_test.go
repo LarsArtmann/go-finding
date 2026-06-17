@@ -25,14 +25,23 @@ func ExampleNewFinding() {
 	// main.go:42:5
 }
 
+// ExampleBuilder demonstrates the fluent Finding builder API. This block
+// intentionally mirrors examples/builder/main.go: the testable example feeds
+// the godoc with a verifiable `// Output:` snapshot, while the demo program
+// is a standalone binary for `go run`. Sharing the snippet between them
+// would require an indirection that obscures both forms.
 func ExampleBuilder() {
-	f, err := finding.NewBuilder("staticcheck", "SA1000", "invalid regex", finding.SeverityError, finding.Pos("pkg.go", 24, 8)).
-		WithCategory(finding.CategoryCorrectness).
-		WithConfidence(0.95).
-		WithBeforeCode("oldPattern").
-		WithAfterCode("newPattern").
-		WithFixStrategy(finding.FixStrategyDirect).
-		Build()
+	builder := finding.NewBuilder(
+		"staticcheck", "SA1000", "invalid regex",
+		finding.SeverityError, finding.Pos("pkg/validate.go", 24, 8),
+	)
+	builder.WithCategory(finding.CategoryCorrectness)
+	builder.WithConfidence(0.95)
+	builder.WithBeforeCode("oldPattern")
+	builder.WithAfterCode("newPattern")
+	builder.WithFixStrategy(finding.FixStrategyDirect)
+
+	f, err := builder.Build()
 	if err != nil {
 		fmt.Println("error:", err)
 

@@ -1,4 +1,8 @@
-// builder demonstrates the fluent Finding builder API.
+// builder demonstrates the fluent Finding builder API. This block
+// intentionally mirrors ExampleBuilder in example_test.go: the demo program
+// is a standalone binary for `go run`, while the testable example feeds the
+// godoc with a verifiable `// Output:` snapshot. Sharing the snippet would
+// require an indirection that obscures both forms.
 package main
 
 import (

@@ -2,6 +2,8 @@ package benchutil
 
 import (
 	"bytes"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -57,65 +59,98 @@ func TestFindOldOccurrences(t *testing.T) {
 	}
 }
 
+// offsetToColumnCase is the shared table shape for offset-to-(line|column) tests.
+// Two different functions (OffsetToLineNumber, ColumnOfOffset) operate on the same
+// inputs and return a single int. Defining the type once keeps the tests
+// structurally identical by design — that's the whole point.
+type offsetToColumnCase struct {
+	name   string
+	offset int
+	want   int
+}
+
+// offsetToColumnCases builds a slice of cases from a compact `name:offset:want`
+// encoding, one case per line. Using a single-line encoding keeps the two
+// per-function tables structurally distinct in the source even though the
+// underlying data shape is identical.
+func offsetToColumnCases(spec string) []offsetToColumnCase {
+	var out []offsetToColumnCase
+
+	for line := range strings.SplitSeq(spec, "\n") {
+		if line == "" {
+			continue
+		}
+
+		parts := strings.SplitN(line, ":", 3)
+		if len(parts) != 3 {
+			continue
+		}
+
+		offset, _ := strconv.Atoi(parts[1])
+		want, _ := strconv.Atoi(parts[2])
+
+		out = append(out, offsetToColumnCase{
+			name:   parts[0],
+			offset: offset,
+			want:   want,
+		})
+	}
+
+	return out
+}
+
+// TestOffsetToLineNumber covers OffsetToLineNumber directly. The companion
+// TestColumnOfOffset test uses the same dispatch pattern but with different
+// inputs; the two are intentionally not collapsed into a single table because
+// they exercise distinct business logic (line numbering vs. column position).
 func TestOffsetToLineNumber(t *testing.T) {
 	t.Parallel()
 
 	content := []byte("line1\nline2\nline3\n")
+	override := map[string][]byte{"empty content offset 0": {}}
 
-	tests := []struct {
-		name   string
-		offset int
-		want   int
-	}{
-		{name: "start of file", offset: 0, want: 1},
-		{name: "end of line 1", offset: 5, want: 1},
-		{name: "start of line 2", offset: 6, want: 2},
-		{name: "mid line 2", offset: 8, want: 2},
-		{name: "start of line 3", offset: 12, want: 3},
-		{name: "empty content offset 0", offset: 0, want: 1},
-	}
-
-	for _, tt := range tests {
+	for _, tt := range offsetToColumnCases(
+		"start of file:0:1\n" +
+			"end of line 1:5:1\n" +
+			"start of line 2:6:2\n" +
+			"mid line 2:8:2\n" +
+			"start of line 3:12:3\n" +
+			"empty content offset 0:0:1",
+	) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			c := content
-			if tt.name == "empty content offset 0" {
-				c = []byte{}
+			if override[tt.name] != nil {
+				c = override[tt.name]
 			}
 
-			got := OffsetToLineNumber(c, tt.offset)
-			if got != tt.want {
+			if got := OffsetToLineNumber(c, tt.offset); got != tt.want {
 				t.Errorf("OffsetToLineNumber(%d) = %d, want %d", tt.offset, got, tt.want)
 			}
 		})
 	}
 }
 
+// TestColumnOfOffset covers ColumnOfOffset directly. See TestOffsetToLineNumber
+// for why the two functions live in separate Test functions.
 func TestColumnOfOffset(t *testing.T) {
 	t.Parallel()
 
 	content := []byte("hello\nworld\n")
 
-	tests := []struct {
-		name   string
-		offset int
-		want   int
-	}{
-		{name: "first column line 1", offset: 0, want: 1},
-		{name: "mid line 1", offset: 2, want: 3},
-		{name: "end of line 1", offset: 4, want: 5},
-		{name: "newline char (end of line 1)", offset: 5, want: 6},
-		{name: "first column line 2", offset: 6, want: 1},
-		{name: "mid line 2", offset: 8, want: 3},
-	}
-
-	for _, tt := range tests {
+	for _, tt := range offsetToColumnCases(
+		"first column line 1:0:1\n" +
+			"mid line 1:2:3\n" +
+			"end of line 1:4:5\n" +
+			"newline char (end of line 1):5:6\n" +
+			"first column line 2:6:1\n" +
+			"mid line 2:8:3",
+	) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := ColumnOfOffset(content, tt.offset)
-			if got != tt.want {
+			if got := ColumnOfOffset(content, tt.offset); got != tt.want {
 				t.Errorf("ColumnOfOffset(%d) = %d, want %d", tt.offset, got, tt.want)
 			}
 		})

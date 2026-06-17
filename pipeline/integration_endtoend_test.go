@@ -21,23 +21,13 @@ func TestIntegration_ConfigFileToPipelineRun(t *testing.T) {
 
 	// 1. Register detectors in a registry.
 	registry := finding.NewDetectorRegistry()
-	registry.MustRegister("alpha", func() finding.Detector {
-		return newMockDetector("alpha", "alpha-tool", finding.Finding{
-			ID:       "alpha-1",
-			Rule:     "unused-var",
-			ToolName: "alpha-tool",
-			Message:  "unused variable x",
-			Severity: finding.SeverityWarning,
-		})
+	registerFindingDetector(registry, "alpha", "alpha-tool", finding.Finding{
+		ID: "alpha-1", Rule: "unused-var", ToolName: "alpha-tool",
+		Message: "unused variable x", Severity: finding.SeverityWarning,
 	})
-	registry.MustRegister("beta", func() finding.Detector {
-		return newMockDetector("beta", "beta-tool", finding.Finding{
-			ID:       "beta-1",
-			Rule:     "ineffassign",
-			ToolName: "beta-tool",
-			Message:  "ineffectual assignment",
-			Severity: finding.SeverityError,
-		})
+	registerFindingDetector(registry, "beta", "beta-tool", finding.Finding{
+		ID: "beta-1", Rule: "ineffassign", ToolName: "beta-tool",
+		Message: "ineffectual assignment", Severity: finding.SeverityError,
 	})
 
 	// 2. Parse config file (keep the ConfigFile to resolve detectors).
@@ -97,23 +87,13 @@ func TestIntegration_DetectorRegistryBuildAllToPipelineRun(t *testing.T) {
 	t.Parallel()
 
 	registry := finding.NewDetectorRegistry()
-	registry.MustRegister("govet", func() finding.Detector {
-		return newMockDetector("govet", "vet", finding.Finding{
-			ID:       "vet-1",
-			Rule:     "printf",
-			ToolName: "vet",
-			Message:  "invalid format string",
-			Severity: finding.SeverityError,
-		})
+	registerFindingDetector(registry, "govet", "vet", finding.Finding{
+		ID: "vet-1", Rule: "printf", ToolName: "vet",
+		Message: "invalid format string", Severity: finding.SeverityError,
 	})
-	registry.MustRegister("staticcheck", func() finding.Detector {
-		return newMockDetector("staticcheck", "sc", finding.Finding{
-			ID:       "sc-1",
-			Rule:     "SA1000",
-			ToolName: "sc",
-			Message:  "invalid regular expression",
-			Severity: finding.SeverityWarning,
-		})
+	registerFindingDetector(registry, "staticcheck", "sc", finding.Finding{
+		ID: "sc-1", Rule: "SA1000", ToolName: "sc",
+		Message: "invalid regular expression", Severity: finding.SeverityWarning,
 	})
 
 	// BuildAll returns detectors in sorted name order.
