@@ -74,26 +74,6 @@ func TestComputeSummary_Resets(t *testing.T) {
 	assertCategoryCount(t, r, CategoryStyle, 1)
 }
 
-func TestComputeSummary_PreservesDurationMs(t *testing.T) {
-	t.Parallel()
-
-	r := NewReport(ToolInfo{Name: "test"})
-	r.AddFinding(Finding{
-		ID: "1", Rule: "R1", ToolName: "test", Message: "m",
-		Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
-	})
-
-	r.Summary.DurationMs = 1234
-	r.ComputeSummary()
-
-	if r.Summary.DurationMs != 1234 {
-		t.Errorf(
-			"DurationMs = %d, want 1234 (externally set value should be preserved)",
-			r.Summary.DurationMs,
-		)
-	}
-}
-
 func addFinding(
 	r *Report,
 	id, rule, msg string,

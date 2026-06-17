@@ -32,7 +32,7 @@ func (s *Suppression) IsExpired(now time.Time) bool {
 // IsValid returns true if the suppression has a valid kind and a non-empty rule.
 // The kind must be one of the predefined SuppressionKind constants (checked
 // via Kind.IsValid), not just any non-empty string. This prevents typos like
-// "in-soruce" from silently passing validation.
+// "in-source" from silently passing validation.
 func (s *Suppression) IsValid() bool {
 	if s == nil {
 		return false

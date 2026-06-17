@@ -38,7 +38,9 @@ func (f Finding) Validate() error {
 		))
 	}
 
-	if f.FixStrategy != "" && !f.FixStrategy.IsValid() {
+	if f.FixStrategy == "" {
+		f.FixStrategy = FixStrategyNone
+	} else if !f.FixStrategy.IsValid() {
 		errs = append(errs, NewValidationError(
 			fmt.Sprintf("finding.FixStrategy %q is invalid", f.FixStrategy), nil,
 		))

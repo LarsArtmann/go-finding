@@ -120,7 +120,10 @@ func (b *Builder) WithMetadata(m map[string]string) *Builder {
 
 // Build returns the constructed Finding.
 // Returns a detailed validation error if required fields are missing or invalid.
+// FixStrategy is normalized: empty string becomes FixStrategyNone.
 func (b *Builder) Build() (Finding, error) {
+	b.f.FixStrategy = NormalizeFixStrategy(b.f.FixStrategy)
+
 	err := b.f.Validate()
 	if err != nil {
 		return Finding{}, err

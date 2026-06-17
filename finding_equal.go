@@ -40,7 +40,7 @@ func (f Finding) Equal(other Finding) bool {
 		return false
 	}
 
-	if f.FixStrategy != other.FixStrategy {
+	if NormalizeFixStrategy(f.FixStrategy) != NormalizeFixStrategy(other.FixStrategy) {
 		return false
 	}
 

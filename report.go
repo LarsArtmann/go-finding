@@ -73,7 +73,6 @@ type Summary struct {
 	ByFixStrategy map[FixStrategy]int `json:"byFixStrategy,omitempty"` // Count by fix strategy
 	FilesAffected int                 `json:"filesAffected,omitempty"` // Unique files with findings
 	FilesScanned  int                 `json:"filesScanned,omitempty"`  // Total files scanned (including clean files)
-	DurationMs    int64               `json:"durationMs,omitempty"`    // Execution time (caller-set; not computed by ComputeSummary)
 	Suppressed    int                 `json:"suppressed,omitempty"`    // Count of suppressed findings
 }
 

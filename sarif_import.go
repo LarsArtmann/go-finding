@@ -134,6 +134,8 @@ func findingFromSarResult(r sarifResult, toolName string) Finding {
 		f.ID = GenerateID(f.ToolName, f.Rule, f.Position)
 	}
 
+	f.FixStrategy = NormalizeFixStrategy(f.FixStrategy)
+
 	return f
 }
 

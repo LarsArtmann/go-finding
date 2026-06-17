@@ -41,3 +41,16 @@ func (f FixStrategy) NeedsAI() bool {
 func (f FixStrategy) String() string {
 	return string(f)
 }
+
+// NormalizeFixStrategy converts the empty string (the zero value) to
+// FixStrategyNone. This ensures there is exactly one canonical "no fix"
+// state, eliminating the split-brain where "" and "none" both meant "no fix"
+// but compared unequal. All public entry points (Validate, Builder.Build,
+// FromLSP, SARIF import) should call this.
+func NormalizeFixStrategy(f FixStrategy) FixStrategy {
+	if f == "" {
+		return FixStrategyNone
+	}
+
+	return f
+}

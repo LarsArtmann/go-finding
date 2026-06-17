@@ -54,6 +54,13 @@ type sarifDriver struct {
 }
 
 // sarifResult represents a single finding in SARIF format.
+//
+// Doctrine boundary: Properties uses map[string]any because the SARIF 2.1.0
+// specification requires propertyBag.properties to accept arbitrary JSON values.
+// This is the ONLY place in go-finding where map[string]any is used; the public
+// Finding.Metadata type is map[string]string by design (see finding.go).
+// The coercion between these two representations is centralized in
+// sarifProperties() (export) and applySarifProperties() (import).
 type sarifResult struct {
 	RuleID     string            `json:"ruleId"`
 	Level      string            `json:"level"`
