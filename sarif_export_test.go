@@ -170,7 +170,7 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 		ToolName:    "govet",
 		Message:     "invalid format",
 		Severity:    SeverityCritical,
-		Position:    Position{File: "main.go", Line: 10, Column: 5},
+		Position:    Pos("main.go", 10, 5),
 		Category:    CategoryCorrectness,
 		Tags:        []Tag{"printf"},
 		FixStrategy: FixStrategySuggest,

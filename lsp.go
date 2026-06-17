@@ -144,7 +144,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 		ID: GenerateID(
 			diag.Source,
 			diag.Code,
-			Position{File: fileURI, Line: startLine, Column: startChar},
+			Position{File: fileURI, Line: startLine, Column: startChar, Offset: -1}, //nolint:exhaustruct
 		),
 		Rule:     diag.Code,
 		ToolName: diag.Source,
@@ -154,6 +154,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 			File:   fileURI,
 			Line:   startLine,
 			Column: startChar,
+			Offset: -1,
 		},
 		FixStrategy: FixStrategyNone,
 	}
@@ -165,7 +166,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	if endLine != startLine || endChar != startChar {
 		f.Range = &Range{
 			Start: f.Position,
-			End:   Position{File: fileURI, Line: endLine, Column: endChar},
+			End:   Position{File: fileURI, Line: endLine, Column: endChar, Offset: -1}, //nolint:exhaustruct
 		}
 	}
 
@@ -175,6 +176,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 			File:   rel.Location.URI,
 			Line:   rel.Location.Range.Start.Line + 1,
 			Column: rel.Location.Range.Start.Character + 1,
+			Offset: -1,
 		}
 		ref := RelatedRef{
 			FindingID: GenerateID(diag.Source, diag.Code, relPos),
@@ -187,7 +189,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 		if endLine != relPos.Line || endChar != relPos.Column {
 			ref.Range = &Range{
 				Start: ref.Position,
-				End:   Position{File: rel.Location.URI, Line: endLine, Column: endChar},
+				End:   Position{File: rel.Location.URI, Line: endLine, Column: endChar, Offset: -1}, //nolint:exhaustruct
 			}
 		}
 

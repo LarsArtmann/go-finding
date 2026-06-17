@@ -97,8 +97,8 @@ func NodePosition(fset *token.FileSet, node ast.Node) finding.Position {
 func NodeRange(fset *token.FileSet, node ast.Node) finding.Range {
 	if node == nil {
 		return finding.Range{
-			Start: finding.Position{}, //nolint:exhaustruct
-			End:   finding.Position{}, //nolint:exhaustruct
+			Start: finding.Position{Offset: -1}, //nolint:exhaustruct
+			End:   finding.Position{Offset: -1}, //nolint:exhaustruct
 		}
 	}
 

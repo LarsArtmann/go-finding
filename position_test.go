@@ -15,7 +15,7 @@ func posLineCol(file string, line, col int) Position {
 }
 
 func rangeLine(file string, startLine, endLine int) Range {
-	return Range{Start: Position{File: file, Line: startLine}, End: Position{Line: endLine}}
+	return Range{Start: Position{File: file, Line: startLine, Offset: -1}, End: Position{Line: endLine, Offset: -1}}
 }
 
 func rangeOffset(file string, startOffset, endOffset int) Range {
@@ -195,10 +195,11 @@ func TestPosition_IsZero(t *testing.T) {
 		pos  Position
 		want bool
 	}{
-		{"zero value", Position{}, true},
+		{"zero value has offset 0", Position{}, false},
 		{"file only", Position{File: "a.go"}, false},
 		{"line only", Position{Line: 1}, false},
-		{"offset -1", Position{Offset: -1}, false},
+		{"offset -1 unset", Position{Offset: -1}, true},
+		{"all unset sentinel", Position{File: "", Line: 0, Column: 0, Offset: -1}, true},
 		{"full position", Position{File: "a.go", Line: 1, Column: 1}, false},
 	}
 

@@ -165,23 +165,26 @@ func (r Range) Contains(p Position) bool {
 }
 
 // HasOffset reports whether the byte offset is set (not the -1 sentinel).
-// Note: Position{} has Offset=0, which HasOffset reports as true despite
-// being the zero value. Use IsZero() to check for complete unset state.
+// Position{} (the Go zero value) has Offset=0, which HasOffset reports as true —
+// byte 0 is a valid offset. Constructors (Pos, NewRange, FromLSP, SARIF import)
+// set Offset to -1 when no byte offset is available, so HasOffset returns false.
 func (p Position) HasOffset() bool {
 	return p.Offset >= 0
 }
 
 // Pos is a convenience constructor for Position.
 // It creates a Position with the given file, line, and column.
+// Offset is set to -1 (unset) since byte offset is not provided.
 func Pos(file string, line, column int) Position {
-	return Position{File: file, Line: line, Column: column} //nolint:exhaustruct
+	return Position{File: file, Line: line, Column: column, Offset: -1} //nolint:exhaustruct
 }
 
 // NewRange creates a Range with the given file, start/end lines, and columns.
+// Offsets are set to -1 (unset) since byte offsets are not provided.
 func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
 	return Range{
-		Start: Position{File: file, Line: startLine, Column: startCol}, //nolint:exhaustruct
-		End:   Position{File: file, Line: endLine, Column: endCol},     //nolint:exhaustruct
+		Start: Position{File: file, Line: startLine, Column: startCol, Offset: -1}, //nolint:exhaustruct
+		End:   Position{File: file, Line: endLine, Column: endCol, Offset: -1},     //nolint:exhaustruct
 	}
 }
 

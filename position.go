@@ -11,9 +11,16 @@ import (
 //   - Line, Column: 0 means "not set" (1-based, so 0 is never valid).
 //   - Offset: -1 means "not set" (0-based, so 0 means "start of file" which IS valid).
 //
-// This means Position{} (the zero value) has Offset=0, which IsZero() reports as true
-// but HasOffset() also reports as true. Use HasLocation() to check for a meaningful
-// position (file + line), or IsZero() to check for the completely-uninitialized state.
+// Constructors (Pos, NewRange, NewFinding, FromLSP, SARIF import) set Offset to -1
+// when no byte offset is available. The zero value Position{} has Offset=0, which
+// means "byte offset 0" (start of file) — NOT "unset". This is a deliberate design
+// choice: Offset=0 is a valid byte position, and the zero value should not lie about
+// having data.
+//
+// Use HasLocation() to check for a meaningful position (file + line).
+// Use HasOffset() to check whether a byte offset is set (Offset >= 0).
+// Use IsZero() to check for the completely-uninitialized state (all fields at their
+// "unset" sentinels: empty File, Line=0, Column=0, Offset=-1).
 type Position struct {
 	File   string `json:"file"`             // Required: file path
 	Line   int    `json:"line,omitempty"`   // 1-based line number; 0 = not set
@@ -26,9 +33,15 @@ func (p Position) IsValid() bool {
 	return p.File != "" && p.Line >= 0 && p.Column >= 0
 }
 
-// IsZero reports whether the position is the zero value (no information set).
+// IsZero reports whether the position is completely uninitialized (all fields
+// at their "unset" sentinel values: empty File, Line=0, Column=0, Offset=-1).
+//
+// Note: Position{} (the Go zero value) has Offset=0 (byte 0), NOT Offset=-1 (unset),
+// so Position{}.IsZero() returns false. This is correct: Position{} has a valid byte
+// offset of 0, even though it lacks a file path. Use HasLocation() or IsValid() to
+// check for a meaningful position.
 func (p Position) IsZero() bool {
-	return p.File == "" && p.Line == 0 && p.Column == 0 && p.Offset == 0
+	return p.File == "" && p.Line == 0 && p.Column == 0 && p.Offset < 0
 }
 
 // HasLocation reports whether the position has a file and line number.

@@ -67,7 +67,7 @@ func (a *FixApplier) Close() error {
 
 // ioErrorAt creates an IO error with position info.
 func ioErrorAt(msg string, err error, path string) error {
-	pos := finding.Position{File: path} //nolint:exhaustruct
+	pos := finding.Position{File: path, Offset: -1} //nolint:exhaustruct
 
 	return finding.NewIOError(msg, err).WithPosition(pos)
 }

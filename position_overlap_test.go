@@ -186,10 +186,10 @@ func TestRangeHasLineRange(t *testing.T) {
 			true,
 		},
 		{
-			"zero Position line falls through to offset",
+			"Position with no line and no offset cannot be contained",
 			rangeLine("a.go", 10, 0),
 			Pos("a.go", 0, 0),
-			true,
+			false,
 		},
 		{
 			"range with no end line uses column check",
