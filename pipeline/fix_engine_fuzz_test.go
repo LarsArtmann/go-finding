@@ -2,8 +2,6 @@ package pipeline
 
 import (
 	"bytes"
-	"cmp"
-	"slices"
 	"testing"
 )
 
@@ -30,10 +28,7 @@ func FuzzApplyEditsToContent(f *testing.F) {
 			return
 		}
 
-		// Sort descending by offset (required by applyEditsToContent)
-		slices.SortFunc(edits, func(a, b FixEdit) int {
-			return cmp.Compare(b.Offset, a.Offset)
-		})
+		sortEditsDescending(edits)
 
 		result := applyEditsToContent(content, edits)
 
@@ -82,9 +77,7 @@ func FuzzApplyOverlappingEdits(f *testing.F) {
 			return
 		}
 
-		slices.SortFunc(edits, func(a, b FixEdit) int {
-			return cmp.Compare(b.Offset, a.Offset)
-		})
+		sortEditsDescending(edits)
 
 		// Must not panic
 		_ = applyEditsToContent(content, edits)

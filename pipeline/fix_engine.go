@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"cmp"
 	"fmt"
 	"slices"
 
@@ -88,9 +87,7 @@ func (e *FixEngine) ApplyWithConflicts(
 	}
 
 	// Sort descending by offset so later edits don't shift earlier ones.
-	slices.SortFunc(allEdits, func(a, b FixEdit) int {
-		return cmp.Compare(b.Offset, a.Offset)
-	})
+	sortEditsDescending(allEdits)
 
 	applied, appliedEdits, conflicts, result := e.applyEditsWithConflicts(content, allEdits)
 

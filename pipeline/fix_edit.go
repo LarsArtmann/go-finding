@@ -1,13 +1,24 @@
 package pipeline
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/larsartmann/go-finding"
 )
+
+// sortEditsDescending sorts FixEdits in descending offset order, which is
+// required by applyEditsToContent so later (lower-offset) edits don't shift
+// the byte positions of earlier (higher-offset) ones.
+func sortEditsDescending(edits []FixEdit) {
+	slices.SortFunc(edits, func(a, b FixEdit) int {
+		return cmp.Compare(b.Offset, a.Offset)
+	})
+}
 
 // FixEdit represents a single byte-level edit operation. //nolint:recvcheck // value receivers for read-only, pointer for UnmarshalJSON
 // Edits are applied to file content at specific byte offsets,
