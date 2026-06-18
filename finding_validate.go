@@ -38,9 +38,11 @@ func (f Finding) Validate() error {
 		))
 	}
 
-	if f.FixStrategy == "" {
-		f.FixStrategy = FixStrategyNone
-	} else if !f.FixStrategy.IsValid() {
+	// FixStrategy: accept "" as equivalent to FixStrategyNone (documented).
+	// Use Normalized() to get a copy with "" converted to "none".
+	// Validate cannot mutate (value receiver), so we check both.
+	fs := NormalizeFixStrategy(f.FixStrategy)
+	if !fs.IsValid() {
 		errs = append(errs, NewValidationError(
 			fmt.Sprintf("finding.FixStrategy %q is invalid", f.FixStrategy), nil,
 		))
@@ -52,7 +54,7 @@ func (f Finding) Validate() error {
 		))
 	}
 
-	if f.BeforeCode == "" && f.AfterCode == "" && f.FixStrategy == FixStrategyDirect {
+	if f.BeforeCode == "" && f.AfterCode == "" && fs == FixStrategyDirect {
 		errs = append(errs, NewValidationError(
 			"finding.FixStrategyDirect requires BeforeCode or AfterCode", nil,
 		))

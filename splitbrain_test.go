@@ -173,6 +173,7 @@ func TestSplitBrain_CategoryTagsConsistency(t *testing.T) {
 		Tags:        []Tag{TagPerformance},
 		FixStrategy: FixStrategyNone,
 	}
+
 	err := conflicting.Validate()
 	if err == nil {
 		t.Error("conflicting Category/Tags: Validate() = nil, want error")
@@ -190,6 +191,7 @@ func TestSplitBrain_CategoryTagsConsistency(t *testing.T) {
 		Tags:        []Tag{TagSecurity, TagPerformance},
 		FixStrategy: FixStrategyNone,
 	}
+
 	err = consistent.Validate()
 	if err != nil {
 		t.Errorf("consistent Category/Tags: Validate() = %v, want nil", err)

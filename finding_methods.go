@@ -6,6 +6,17 @@ import (
 	"time"
 )
 
+// Normalized returns a copy of the finding with FixStrategy normalized
+// (empty string converted to FixStrategyNone). Use this when you need
+// the canonical form after direct struct construction, since Validate()
+// has a value receiver and cannot mutate the original.
+func (f Finding) Normalized() Finding {
+	result := f
+	result.FixStrategy = NormalizeFixStrategy(f.FixStrategy)
+
+	return result
+}
+
 // Clone returns a deep copy of the finding.
 func (f Finding) Clone() Finding {
 	clone := f
