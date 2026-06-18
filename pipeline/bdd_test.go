@@ -277,12 +277,7 @@ func lineRangeFix(
 	before, after, file string,
 	startLine, startCol, endLine, endCol int,
 ) finding.Finding {
-	return finding.Finding{
-		BeforeCode: before,
-		AfterCode:  after,
-		Range:      finding.NewRangePtr(file, startLine, startCol, endLine, endCol),
-		Position:   finding.Pos(file, startLine, startCol),
-	}
+	return pipeline.ExportRangeFix(file, startLine, startCol, endLine, endCol, before, after)
 }
 
 func codeFix(before, after string, line, col int) finding.Finding {
@@ -294,13 +289,5 @@ func codeFix(before, after string, line, col int) finding.Finding {
 }
 
 func offsetFix(before, after string, startOff, endOff int) finding.Finding {
-	return finding.Finding{
-		BeforeCode: before,
-		AfterCode:  after,
-		Range: &finding.Range{
-			Start: finding.Position{File: "a.go", Offset: startOff},
-			End:   finding.Position{File: "a.go", Offset: endOff},
-		},
-		Position: finding.Pos("a.go", 4, 2),
-	}
+	return pipeline.ExportOffsetFix(before, after, startOff, endOff)
 }

@@ -65,11 +65,7 @@ func makeRangeFix(
 	startLine, startCol, endLine, endCol int,
 	before, after string,
 ) finding.Finding {
-	return finding.Finding{
-		BeforeCode: before, AfterCode: after,
-		Range:    finding.NewRangePtr(file, startLine, startCol, endLine, endCol),
-		Position: finding.Pos(file, startLine, startCol),
-	}
+	return rangeFix(file, startLine, startCol, endLine, endCol, before, after)
 }
 
 func twoLineRangeFixes() ([]byte, []finding.Finding) {
@@ -81,16 +77,7 @@ func twoLineRangeFixes() ([]byte, []finding.Finding) {
 }
 
 func makeOffsetFix(id, before, after string, startOff, endOff int) finding.Finding {
-	return finding.Finding{
-		ID:         id,
-		BeforeCode: before,
-		AfterCode:  after,
-		Range: &finding.Range{
-			Start: finding.Position{File: "a.go", Offset: startOff},
-			End:   finding.Position{File: "a.go", Offset: endOff},
-		},
-		Position: finding.Pos("a.go", 4, 2),
-	}
+	return offsetFixWithID(id, before, after, startOff, endOff)
 }
 
 func overlappingOffsetFixes() []finding.Finding {

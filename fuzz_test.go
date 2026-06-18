@@ -256,8 +256,15 @@ func FuzzMergeByPosition(f *testing.F) {
 		key1 := fmt.Sprintf("%s:%d:%d", file1, line1, col1)
 		key2 := fmt.Sprintf("%s:%d:%d", file2, line2, col2)
 
-		if key1 == key2 {
+		// DeduplicateByPosition intentionally skips findings whose Position.File
+		// is empty (see dedupKey in merge.go): a position without a file is not a
+		// meaningful dedup key. So two findings merge only when they share a key
+		// AND that key is backed by a non-empty file. When they do not merge,
+		// both are retained (IDs "A"/"B" differ, so no other strategy applies).
+		if key1 == key2 && file1 != "" && file2 != "" {
 			g.Expect(merged.Findings).To(HaveLen(1))
+		} else {
+			g.Expect(merged.Findings).To(HaveLen(2))
 		}
 	})
 }
