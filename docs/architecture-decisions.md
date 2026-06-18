@@ -442,7 +442,6 @@ and the lazy `*[]int` pointer in `resolveEdits`.
 for stale data) is not justified for a <0.1% improvement. Revisit only if profiling
 shows line index allocation as a hot path on very large batches (>100K files).
 
-
 ---
 
 ## 12. Canonical Finding Identity
