@@ -23,69 +23,69 @@ This session executed a **full split-brain audit and resolution** of the go-find
 
 ### Split-Brain Resolution — All 11 Issues
 
-| # | Issue | Severity | Commit | Resolution |
-|---|---|---|---|---|
-| 1 | Position zero-value lies about its own state | Critical | `b0eadc6` | Adopted `-1` sentinel for "unset" offset. `Position{}.IsZero()`=false (Offset=0 is valid byte 0). All constructors set Offset=-1. |
-| 2 | Two valid "no fix" states: `""` vs `"none"` | Critical | `5f0af9b` | `NormalizeFixStrategy()` helper. `Finding.Normalized()` method. Called by Builder, SARIF import, Equal(). |
-| 3 | Four fixability predicates disagree | High | `a314808` | `HasFix()` now requires code for `FixStrategyDirect`. Documented fixability lattice: `IsAutoFixable() ⟹ HasFix()`. |
-| 4 | Category and Tags share vocabulary, can conflict | High | `a314808` | Validation invariant: rejects conflicting standard Category/Tags. ADR #13 for full deprecation plan. |
-| 5 | Three duration fields, none authoritative | High | `5f0af9b` | Removed `Summary.DurationMs`. `Metrics.TotalDuration()` is single source of truth. |
-| 6 | Three different finding identity definitions | Medium | `a314808` | ADR #12: GenerateID output is canonical. Key() documented as fallback. |
-| 7 | SARIF exports two disagreeing regions per finding | Medium | `539151a` | `findingFixRegion()` now respects `Range.End`, matching location region. |
-| 8 | SARIF property bag uses `map[string]any` against doctrine | Medium | `5f0af9b` | Documented doctrine boundary in `sarifResult.Properties` doc. |
-| 9 | Suppression validation accepts unknown kinds | Low | `539151a` | `Suppression.IsValid()` now calls `Kind.IsValid()`. |
-| 10 | Category/Tag twin IsValid/IsStandard methods | Low | `539151a` | Documented clear "when to use which" contract. |
-| 11 | HasFix/HasSuggestion free-function name shadowing | Cosmetic | `539151a` | Added `WithFix`/`WithSuggestion`. Deprecated old functions. |
+| #   | Issue                                                     | Severity | Commit    | Resolution                                                                                                                        |
+| --- | --------------------------------------------------------- | -------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Position zero-value lies about its own state              | Critical | `b0eadc6` | Adopted `-1` sentinel for "unset" offset. `Position{}.IsZero()`=false (Offset=0 is valid byte 0). All constructors set Offset=-1. |
+| 2   | Two valid "no fix" states: `""` vs `"none"`               | Critical | `5f0af9b` | `NormalizeFixStrategy()` helper. `Finding.Normalized()` method. Called by Builder, SARIF import, Equal().                         |
+| 3   | Four fixability predicates disagree                       | High     | `a314808` | `HasFix()` now requires code for `FixStrategyDirect`. Documented fixability lattice: `IsAutoFixable() ⟹ HasFix()`.                |
+| 4   | Category and Tags share vocabulary, can conflict          | High     | `a314808` | Validation invariant: rejects conflicting standard Category/Tags. ADR #13 for full deprecation plan.                              |
+| 5   | Three duration fields, none authoritative                 | High     | `5f0af9b` | Removed `Summary.DurationMs`. `Metrics.TotalDuration()` is single source of truth.                                                |
+| 6   | Three different finding identity definitions              | Medium   | `a314808` | ADR #12: GenerateID output is canonical. Key() documented as fallback.                                                            |
+| 7   | SARIF exports two disagreeing regions per finding         | Medium   | `539151a` | `findingFixRegion()` now respects `Range.End`, matching location region.                                                          |
+| 8   | SARIF property bag uses `map[string]any` against doctrine | Medium   | `5f0af9b` | Documented doctrine boundary in `sarifResult.Properties` doc.                                                                     |
+| 9   | Suppression validation accepts unknown kinds              | Low      | `539151a` | `Suppression.IsValid()` now calls `Kind.IsValid()`.                                                                               |
+| 10  | Category/Tag twin IsValid/IsStandard methods              | Low      | `539151a` | Documented clear "when to use which" contract.                                                                                    |
+| 11  | HasFix/HasSuggestion free-function name shadowing         | Cosmetic | `539151a` | Added `WithFix`/`WithSuggestion`. Deprecated old functions.                                                                       |
 
 ### Documentation & Testing
 
-| Deliverable | Status | File |
-|---|---|---|
-| SPLIT-BRAIN.html audit report (80KB) | ✅ | `docs/research/SPLIT-BRAIN.html` |
-| Pareto execution plan with mermaid graph | ✅ | `docs/planning/2026-06-17_22-59_SPLIT-BRAIN-RESOLUTION.md` |
-| 6 integration tests for split-brain fixes | ✅ | `splitbrain_test.go` |
-| ADR #12: Canonical Finding Identity | ✅ | `docs/architecture-decisions.md` |
-| ADR #13: Category/Tags Deprecation Plan | ✅ | `docs/architecture-decisions.md` |
-| CHANGELOG entries for all 11 fixes | ✅ | `CHANGELOG.md` |
-| DOMAIN_LANGUAGE.md identity definitions | ✅ | `docs/DOMAIN_LANGUAGE.md` |
-| RELEASE_CRITERIA.md blockers marked resolved | ✅ | `docs/RELEASE_CRITERIA.md` |
-| AGENTS.md gotchas updated | ✅ | `AGENTS.md` |
-| JSON schema (durationMs removed) | ✅ | `docs/schemas/report.schema.json` |
-| SPLIT-BRAIN.html status badges (44 "✅ Resolved") | ✅ | `docs/research/SPLIT-BRAIN.html` |
+| Deliverable                                       | Status | File                                                       |
+| ------------------------------------------------- | ------ | ---------------------------------------------------------- |
+| SPLIT-BRAIN.html audit report (80KB)              | ✅     | `docs/research/SPLIT-BRAIN.html`                           |
+| Pareto execution plan with mermaid graph          | ✅     | `docs/planning/2026-06-17_22-59_SPLIT-BRAIN-RESOLUTION.md` |
+| 6 integration tests for split-brain fixes         | ✅     | `splitbrain_test.go`                                       |
+| ADR #12: Canonical Finding Identity               | ✅     | `docs/architecture-decisions.md`                           |
+| ADR #13: Category/Tags Deprecation Plan           | ✅     | `docs/architecture-decisions.md`                           |
+| CHANGELOG entries for all 11 fixes                | ✅     | `CHANGELOG.md`                                             |
+| DOMAIN_LANGUAGE.md identity definitions           | ✅     | `docs/DOMAIN_LANGUAGE.md`                                  |
+| RELEASE_CRITERIA.md blockers marked resolved      | ✅     | `docs/RELEASE_CRITERIA.md`                                 |
+| AGENTS.md gotchas updated                         | ✅     | `AGENTS.md`                                                |
+| JSON schema (durationMs removed)                  | ✅     | `docs/schemas/report.schema.json`                          |
+| SPLIT-BRAIN.html status badges (44 "✅ Resolved") | ✅     | `docs/research/SPLIT-BRAIN.html`                           |
 
 ### Codebase Health Metrics
 
-| Metric | Value | Trend |
-|---|---|---|
-| **Production LOC** | 11,068 (192 files) | — |
-| **Test LOC** | 23,666 | 2.14× test-to-code ratio |
-| **Test functions** | 1,506 | ↑ (added 6 split-brain tests) |
-| **Direct dependencies** | 6 | Minimal ✅ |
-| **Lint issues** | 0 | ✅ |
-| **Build** | Passes | ✅ |
-| **Race detector** | Passes (stable) | ✅ |
-| **go vet** | Passes | ✅ |
+| Metric                  | Value              | Trend                         |
+| ----------------------- | ------------------ | ----------------------------- |
+| **Production LOC**      | 11,068 (192 files) | —                             |
+| **Test LOC**            | 23,666             | 2.14× test-to-code ratio      |
+| **Test functions**      | 1,506              | ↑ (added 6 split-brain tests) |
+| **Direct dependencies** | 6                  | Minimal ✅                    |
+| **Lint issues**         | 0                  | ✅                            |
+| **Build**               | Passes             | ✅                            |
+| **Race detector**       | Passes (stable)    | ✅                            |
+| **go vet**              | Passes             | ✅                            |
 
 ### Test Coverage by Package
 
-| Package | Coverage | Trend |
-|---|---|---|
-| `internal/benchutil/` | 100.0% | — |
-| `analysis/` | 94.1% | — |
-| `internal/detectors/` | 96.1% | — |
-| `internal/gotoken/` | 92.7% | — |
-| Root package (`finding`) | 93.6% | ↑ (from 92.3%) |
-| `pipeline/` | 95.2% | — |
-| `cmd/go-finding/` | 91.2% | — |
-| `pipeline/goast/` | 80.8% | Needs more tests |
+| Package                  | Coverage | Trend            |
+| ------------------------ | -------- | ---------------- |
+| `internal/benchutil/`    | 100.0%   | —                |
+| `analysis/`              | 94.1%    | —                |
+| `internal/detectors/`    | 96.1%    | —                |
+| `internal/gotoken/`      | 92.7%    | —                |
+| Root package (`finding`) | 93.6%    | ↑ (from 92.3%)   |
+| `pipeline/`              | 95.2%    | —                |
+| `cmd/go-finding/`        | 91.2%    | —                |
+| `pipeline/goast/`        | 80.8%    | Needs more tests |
 
 ### v1.0.0 Release Blockers — ALL RESOLVED ✅
 
-| Blocker | Decision | Status |
-|---|---|---|
-| #1 Position zero-value semantics | Option A: `-1` sentinel | ✅ Resolved |
-| #2 FixStrategy "" vs "none" | Normalize via `NormalizeFixStrategy()` | ✅ Resolved |
-| #3 Report.Findings unexport | Internal migration done; unexport at v1.0.0 tag | ✅ Resolved (internal) |
+| Blocker                          | Decision                                        | Status                 |
+| -------------------------------- | ----------------------------------------------- | ---------------------- |
+| #1 Position zero-value semantics | Option A: `-1` sentinel                         | ✅ Resolved            |
+| #2 FixStrategy "" vs "none"      | Normalize via `NormalizeFixStrategy()`          | ✅ Resolved            |
+| #3 Report.Findings unexport      | Internal migration done; unexport at v1.0.0 tag | ✅ Resolved (internal) |
 
 ---
 
@@ -93,16 +93,16 @@ This session executed a **full split-brain audit and resolution** of the go-find
 
 ### Deprecated APIs (Scheduled for v1.0.0 Removal)
 
-| API | Replacement | Status |
-|---|---|---|
-| `Report.Findings` (public field) | `Report.FindingsSnapshot()` | Deprecated, internal migration done |
-| `Report.Merge()` | `Report.MergeInto()` | Deprecated |
-| `OnStage` callback | `StageHooks` | Deprecated |
-| `Metrics.RecordFix()` | `Metrics.RecordFixes(1)` | Deprecated |
-| `CountBySeverity()` free function | `Report.CountBySeverity()` method | Deprecated |
-| `HasFix()` free function | `WithFix()` | Deprecated this session |
-| `HasSuggestion()` free function | `WithSuggestion()` | Deprecated this session |
-| `Finding.Category` field | `Finding.Tags` (ADR #13) | Deprecation planned for v1.0.0 |
+| API                               | Replacement                       | Status                              |
+| --------------------------------- | --------------------------------- | ----------------------------------- |
+| `Report.Findings` (public field)  | `Report.FindingsSnapshot()`       | Deprecated, internal migration done |
+| `Report.Merge()`                  | `Report.MergeInto()`              | Deprecated                          |
+| `OnStage` callback                | `StageHooks`                      | Deprecated                          |
+| `Metrics.RecordFix()`             | `Metrics.RecordFixes(1)`          | Deprecated                          |
+| `CountBySeverity()` free function | `Report.CountBySeverity()` method | Deprecated                          |
+| `HasFix()` free function          | `WithFix()`                       | Deprecated this session             |
+| `HasSuggestion()` free function   | `WithSuggestion()`                | Deprecated this session             |
+| `Finding.Category` field          | `Finding.Tags` (ADR #13)          | Deprecation planned for v1.0.0      |
 
 ### Category/Tags Deprecation (ADR #13)
 
@@ -190,43 +190,43 @@ Sorted by **impact / effort** ratio (highest first).
 
 ### Tier A: High Impact, Low Effort (Do First)
 
-| # | Task | Impact | Effort | Why |
-|---|---|---|---|---|
-| 1 | **Update FEATURES.md with v0.8.0 features** | High | 30min | Anyone reading FEATURES.md doesn't know about split-brain fixes, Normalized(), ADRs |
-| 2 | **Update README.md for v0.8.0** | High | 30min | Position sentinel changes and HasFix semantics are consumer-visible breaking changes |
-| 3 | **Add godoc examples: Normalized, WithFix, NormalizeFixStrategy** | Medium | 30min | New API surface has zero discoverable examples |
-| 4 | **Clean up working directory binaries (`go-finding`, `result`)** | Low | 5min | Triggers linter warnings; add to .gitignore |
-| 5 | **Add `Summary.ByTag` map** | Medium | 30min | Completes the Tags-as-primary-classification path from ADR #13 |
-| 6 | **Fuzz test for Position sentinel consistency** | Medium | 30min | Property: `Position{}.HasOffset() && !Position{}.IsZero()` always holds |
-| 7 | **Fuzz test for FixStrategy normalization idempotency** | Medium | 30min | Property: `NormalizeFixStrategy(NormalizeFixStrategy(x)) == NormalizeFixStrategy(x)` |
-| 8 | **Property test: HasFix ⊇ IsAutoFixable invariant** | Medium | 15min | Proves the lattice property for all FixStrategy + code combinations |
+| #   | Task                                                              | Impact | Effort | Why                                                                                  |
+| --- | ----------------------------------------------------------------- | ------ | ------ | ------------------------------------------------------------------------------------ |
+| 1   | **Update FEATURES.md with v0.8.0 features**                       | High   | 30min  | Anyone reading FEATURES.md doesn't know about split-brain fixes, Normalized(), ADRs  |
+| 2   | **Update README.md for v0.8.0**                                   | High   | 30min  | Position sentinel changes and HasFix semantics are consumer-visible breaking changes |
+| 3   | **Add godoc examples: Normalized, WithFix, NormalizeFixStrategy** | Medium | 30min  | New API surface has zero discoverable examples                                       |
+| 4   | **Clean up working directory binaries (`go-finding`, `result`)**  | Low    | 5min   | Triggers linter warnings; add to .gitignore                                          |
+| 5   | **Add `Summary.ByTag` map**                                       | Medium | 30min  | Completes the Tags-as-primary-classification path from ADR #13                       |
+| 6   | **Fuzz test for Position sentinel consistency**                   | Medium | 30min  | Property: `Position{}.HasOffset() && !Position{}.IsZero()` always holds              |
+| 7   | **Fuzz test for FixStrategy normalization idempotency**           | Medium | 30min  | Property: `NormalizeFixStrategy(NormalizeFixStrategy(x)) == NormalizeFixStrategy(x)` |
+| 8   | **Property test: HasFix ⊇ IsAutoFixable invariant**               | Medium | 15min  | Proves the lattice property for all FixStrategy + code combinations                  |
 
 ### Tier B: Medium Impact, Medium Effort
 
-| # | Task | Impact | Effort | Why |
-|---|---|---|---|---|
-| 9 | **Named string types: ToolName, RuleName, FindingID** | High | 2hr | Prevents parameter mixing at call sites; type safety improvement |
-| 10 | **v1.0.0 release: remove all deprecated APIs** | Critical | 2hr | Breaking change batch; clears the deprecation debt |
-| 11 | **v1.0.0 release: unexport Report.Findings** | High | 1hr | Final step of internal migration |
-| 12 | **Cut v1.0.0 tag and GitHub release** | Critical | 1hr | The finish line |
-| 13 | **Complete FixProviders through CLI config** | Medium | 2hr | Users can't specify custom providers without writing Go code |
-| 14 | **LineShiftMap: extend to full Range + Column shifting** | Medium | 1hr | Post-fix finding positions can be wrong for multi-line ranges |
-| 15 | **Integration test: full pipeline with all split-brain fixes** | Medium | 1hr | End-to-end proof that the fixes work together |
-| 16 | **SubstringProvider nearest-position heuristic** | Medium | 1hr | First-match is ambiguous with multiple occurrences |
-| 17 | **Update USAGE_GUIDE.md for v0.8.0+** | Medium | 1hr | Consumers need guidance for new APIs |
-| 18 | **Add Category/Tags conflict resolution guide to migration doc** | Low | 30min | Consumers with existing Category+Tags data need migration path |
+| #   | Task                                                             | Impact   | Effort | Why                                                              |
+| --- | ---------------------------------------------------------------- | -------- | ------ | ---------------------------------------------------------------- |
+| 9   | **Named string types: ToolName, RuleName, FindingID**            | High     | 2hr    | Prevents parameter mixing at call sites; type safety improvement |
+| 10  | **v1.0.0 release: remove all deprecated APIs**                   | Critical | 2hr    | Breaking change batch; clears the deprecation debt               |
+| 11  | **v1.0.0 release: unexport Report.Findings**                     | High     | 1hr    | Final step of internal migration                                 |
+| 12  | **Cut v1.0.0 tag and GitHub release**                            | Critical | 1hr    | The finish line                                                  |
+| 13  | **Complete FixProviders through CLI config**                     | Medium   | 2hr    | Users can't specify custom providers without writing Go code     |
+| 14  | **LineShiftMap: extend to full Range + Column shifting**         | Medium   | 1hr    | Post-fix finding positions can be wrong for multi-line ranges    |
+| 15  | **Integration test: full pipeline with all split-brain fixes**   | Medium   | 1hr    | End-to-end proof that the fixes work together                    |
+| 16  | **SubstringProvider nearest-position heuristic**                 | Medium   | 1hr    | First-match is ambiguous with multiple occurrences               |
+| 17  | **Update USAGE_GUIDE.md for v0.8.0+**                            | Medium   | 1hr    | Consumers need guidance for new APIs                             |
+| 18  | **Add Category/Tags conflict resolution guide to migration doc** | Low      | 30min  | Consumers with existing Category+Tags data need migration path   |
 
 ### Tier C: Lower Impact or Higher Effort
 
-| # | Task | Impact | Effort | Why |
-|---|---|---|---|---|
-| 19 | **Benchmark regression check after Position changes** | Medium | 1hr | Verify no performance regression from Offset=-1 default |
-| 20 | **Consider `sync.Pool` for line offset index** | Low | 2hr | Evaluated in ADR #11 as skip; revisit if profiling shows need |
-| 21 | **`slices.Collect` modernization pass** | Low | 1hr | 12 candidates identified; mechanical modernization |
-| 22 | **Add `FindingID` type and use in RelatedRef, Correlation** | Medium | 2hr | Part of named types effort (#9); separate if needed |
-| 23 | **Position as value object (unexport fields, With* methods)** | High | 4hr | Would have prevented split-brain #1 entirely; large refactor |
-| 24 | **Explore `cmp.Ordered` for Compare methods** | Low | 1hr | Modernize Severity/Confidence/Category Compare implementations |
-| 25 | **Add OpenAPI/JSON Schema generation from Go types** | Low | 2hr | Currently hand-maintained schemas; could auto-generate |
+| #   | Task                                                           | Impact | Effort | Why                                                            |
+| --- | -------------------------------------------------------------- | ------ | ------ | -------------------------------------------------------------- |
+| 19  | **Benchmark regression check after Position changes**          | Medium | 1hr    | Verify no performance regression from Offset=-1 default        |
+| 20  | **Consider `sync.Pool` for line offset index**                 | Low    | 2hr    | Evaluated in ADR #11 as skip; revisit if profiling shows need  |
+| 21  | **`slices.Collect` modernization pass**                        | Low    | 1hr    | 12 candidates identified; mechanical modernization             |
+| 22  | **Add `FindingID` type and use in RelatedRef, Correlation**    | Medium | 2hr    | Part of named types effort (#9); separate if needed            |
+| 23  | **Position as value object (unexport fields, With\* methods)** | High   | 4hr    | Would have prevented split-brain #1 entirely; large refactor   |
+| 24  | **Explore `cmp.Ordered` for Compare methods**                  | Low    | 1hr    | Modernize Severity/Confidence/Category Compare implementations |
+| 25  | **Add OpenAPI/JSON Schema generation from Go types**           | Low    | 2hr    | Currently hand-maintained schemas; could auto-generate         |
 
 ---
 
@@ -235,6 +235,7 @@ Sorted by **impact / effort** ratio (highest first).
 **Should we cut v1.0.0 now, or do one more minor release (v0.9.0) to let consumers test the breaking changes?**
 
 The split-brain fixes changed consumer-visible behavior:
+
 - `Position{}.IsZero()` now returns `false` (was `true`)
 - `HasFix()` returns `false` for `FixStrategyDirect` without code (was `true`)
 - `Summary.DurationMs` field removed
@@ -250,17 +251,17 @@ These are all correct fixes, but they ARE behavioral changes. A v0.9.0 would let
 
 ## Session Statistics
 
-| Metric | Value |
-|---|---|
-| Commits | 10 |
-| Files changed | ~25 |
-| Lines added | ~2,500 |
-| Lines removed | ~200 |
-| Issues resolved | 11 (all split-brain) |
-| Tests added | 6 integration + updated ~10 existing |
-| ADRs written | 2 (#12, #13) |
-| BuildFlow checks | 34/34 passing |
-| Race detector | Clean |
+| Metric           | Value                                |
+| ---------------- | ------------------------------------ |
+| Commits          | 10                                   |
+| Files changed    | ~25                                  |
+| Lines added      | ~2,500                               |
+| Lines removed    | ~200                                 |
+| Issues resolved  | 11 (all split-brain)                 |
+| Tests added      | 6 integration + updated ~10 existing |
+| ADRs written     | 2 (#12, #13)                         |
+| BuildFlow checks | 34/34 passing                        |
+| Race detector    | Clean                                |
 
 ---
 
