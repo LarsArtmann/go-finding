@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-06-18
+
 ### Fixed — Split-Brain Resolution (11 issues)
 
 - **Position zero-value semantics (#1)** — `Position.Offset` now uses `-1` as the explicit "unset" sentinel. `Position{}` (zero value) has `Offset=0` meaning "byte 0" (valid). `IsZero()` and `HasOffset()` no longer return contradictory results. All constructors updated.
