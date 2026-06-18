@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-06-18
+
+### Fixed
+
+- **Fuzz target naming collisions** — Three fuzz function names were regex substrings of other names, causing Go's `-fuzz` flag (which uses regex matching) to match multiple targets and refuse to run. `FuzzFilter` → `FuzzFilterPredicates`, `FuzzGroupBy` → `FuzzGroupByKey`, `FuzzApplyEditsToContent_Overlapping` → `FuzzApplyOverlappingEdits`. Seed corpus directories renamed to match. This broke `buildflow check test-fuzz` (20/23 targets failed).
+- **FuzzMergeByPosition oracle** — The fuzz test asserted that equal dedup keys always merge to one finding. This was wrong: `DeduplicateByPosition` intentionally skips findings with empty `Position.File` (a position without a file is not a meaningful dedup key, see `merge.go:146`). Corrected the oracle to assert the real two-case semantics: merge only when keys match AND both files are non-empty.
+
+### Changed
+
+- **`sortEditsDescending` extracted** — Moved from inline `slices.SortFunc` call in `fix_engine.go` to a named helper in `fix_edit.go`. Pure internal refactor; no behavior change. The helper is used by both `FixEngine.ApplyWithConflicts` and the fuzz test harness.
+
+### Added
+
+- **`pipeline/export_test.go`** — Standard Go `export_test.go` bridge pattern. Centralizes the `rangeFix`, `offsetFix`, `offsetFixWithID` test helpers and exposes them to the external `pipeline_test` package via `ExportRangeFix` / `ExportOffsetFix` / `ExportOffsetFixWithID` wrappers. Eliminates helper duplication across `bdd_test.go` and `fix_engine_test.go`.
+
+### Removed
+
+- **9 unused transitive test dependencies from `go.sum`** — `testify`, `go-spew`, `gkampitakis/*`, `joshdk/go-junit`, `kr/*`, `maruel/natural`, `mfridman/tparse`, `pmezard/go-difflib`, `tidwall/gjson`. Canonicalized via BuildFlow's `go-mod-tidy` step (verified deterministic across two independent runs).
+
 ## [0.9.0] - 2026-06-18
 
 ### Fixed — Split-Brain Resolution (11 issues)

@@ -386,7 +386,7 @@ This project follows [Semantic Versioning](https://semver.org/).
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "0.7.0"
+fmt.Println(finding.Version) // "0.9.1"
 ```
 
 ## Related Projects
