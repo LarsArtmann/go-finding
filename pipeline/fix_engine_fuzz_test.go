@@ -66,7 +66,7 @@ func FuzzApplyEditsToContent(f *testing.F) {
 // FuzzApplyEditsToContent_Overlapping verifies that applyEditsToContent does not
 // panic even when edits overlap (it is not required to produce correct results
 // for overlapping edits, but it must not crash).
-func FuzzApplyEditsToContent_Overlapping(f *testing.F) {
+func FuzzApplyOverlappingEdits(f *testing.F) {
 	f.Add([]byte("hello"), []byte{0, 3, 1, 3})
 	f.Add([]byte("test"), []byte{0, 2, 1, 2, 2, 1})
 

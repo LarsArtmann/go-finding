@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func FuzzFilter(f *testing.F) {
+func FuzzFilterPredicates(f *testing.F) {
 	f.Add("warning", "cat1", "file1.go", "tool1")
 	f.Add("error", "cat2", "file2.go", "tool2")
 	f.Add("info", "", "", "")
@@ -74,7 +74,7 @@ func FuzzFilter(f *testing.F) {
 	})
 }
 
-func FuzzGroupBy(f *testing.F) {
+func FuzzGroupByKey(f *testing.F) {
 	f.Add("key1", "key2", "key1")
 	f.Add("", "", "")
 	f.Add("a", "a", "a")
