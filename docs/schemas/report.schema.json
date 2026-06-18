@@ -77,11 +77,6 @@
           "minimum": 0,
           "description": "Unique files with findings."
         },
-        "durationMs": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Execution time in milliseconds."
-        },
         "suppressed": {
           "type": "integer",
           "minimum": 0,

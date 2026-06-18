@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — Split-Brain Resolution (11 issues)
+
+- **Position zero-value semantics (#1)** — `Position.Offset` now uses `-1` as the explicit "unset" sentinel. `Position{}` (zero value) has `Offset=0` meaning "byte 0" (valid). `IsZero()` and `HasOffset()` no longer return contradictory results. All constructors updated.
+- **FixStrategy `""` vs `"none"` (#2)** — `NormalizeFixStrategy()` helper converts empty string to `FixStrategyNone`. Called by `Builder.Build()`, `Equal()`, and SARIF import. `Finding.Normalized()` method added for explicit normalization.
+- **HasFix/Validate alignment (#3)** — `HasFix()` now requires `BeforeCode` or `AfterCode` for `FixStrategyDirect`, aligning with `Validate()`. Documented fixability lattice: `IsAutoFixable() ⟹ HasFix()`.
+- **Category/Tags consistency (#4)** — `Validate()` now rejects findings where `Category` and `Tags` contain conflicting standard categories.
+- **Summary.DurationMs removed (#5)** — Vestigial caller-set field removed. `Metrics.TotalDuration()` is the single source of truth for timing.
+- **Finding identity documented (#6)** — `GenerateID()` output is canonical identity (ADR #12). `Key()` documented as fallback.
+- **SARIF fix-region consistency (#7)** — `findingFixRegion()` now respects `Range.End` coordinates, matching the location region for multi-line findings.
+- **SARIF property bag doctrine (#8)** — Documented boundary between `map[string]string` (public API) and `map[string]any` (SARIF wire format requirement).
+- **Suppression validation (#9)** — `Suppression.IsValid()` now calls `Kind.IsValid()`, rejecting unknown kinds like `"bogus"`.
+- **Category/Tag twin methods (#10)** — Documented `IsValid` (input validation) vs `IsStandard` (allow-list filtering) contract.
+- **HasFix name shadowing (#11)** — Added `WithFix`/`WithSuggestion` as canonical `FilterFunc` names. Deprecated `HasFix`/`HasSuggestion` free functions.
+
+### Added
+
+- **Finding.Normalized()** — Returns a copy with `FixStrategy` canonicalized (empty → "none").
+- **NormalizeFixStrategy()** — Helper that converts `""` to `FixStrategyNone`.
+- **WithFix / WithSuggestion FilterFuncs** — Canonical replacements for deprecated `HasFix`/`HasSuggestion` free functions.
+- **ADR #12** — Canonical finding identity definition.
+- **ADR #13** — Category/Tags deprecation plan for v1.0.0.
+- **splitbrain_test.go** — 6 integration tests verifying all critical split-brain fixes.
+
+### Removed
+
+- **Summary.DurationMs** — Field was caller-set, never computed by `ComputeSummary()`. Use `Metrics.TotalDuration()` instead.
+
+### Changed
+
+- **Position.IsZero()** — Now checks `Offset < 0` instead of `Offset == 0`. `Position{}.IsZero()` returns `false` (Offset=0 is valid byte offset).
+- **Position.Offset** — Constructors (`Pos`, `NewRange`, `FromLSP`, SARIF import) now set `Offset: -1` when no byte offset is available.
+- **HasFix()** — Returns `false` for `FixStrategyDirect` without code data (was `true`). Aligns with `Validate()`.
+
 ## [0.8.0] - 2026-06-17
 
 ### Added

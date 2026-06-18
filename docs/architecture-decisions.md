@@ -441,3 +441,45 @@ and the lazy `*[]int` pointer in `resolveEdits`.
 **Conclusion:** The complexity of pool lifecycle management (reset, Put/Get, potential
 for stale data) is not justified for a <0.1% improvement. Revisit only if profiling
 shows line index allocation as a hot path on very large batches (>100K files).
+
+
+---
+
+## 12. Canonical Finding Identity
+
+**Decision:** `GenerateID()` output is the canonical finding identity. Two findings are identical if and only if their IDs are equal.
+
+**Rationale:**
+
+- `GenerateID` uses `tool:rule:file:line:col` — deterministic and collision-resistant.
+- `Key()` is a fallback for findings without an ID; it includes `Message` in the composite key, which is a deliberate difference (pre-GenerateID consumers needed message-based fallback).
+- `dedupKey()` strategies (ByID, ByPosition, ByRule) are deliberate relaxations of canonical identity for merge scenarios, not competing definitions.
+
+**Implementation:**
+
+- `Finding.Key()` documented as fallback only; references this ADR.
+- `Finding.Equal()` compares all fields including ID.
+- `Diff()` and `MergeIter()` use ID as the primary key.
+
+**Status:** Resolved — GenerateID is canonical.
+
+---
+
+## 13. Category/Tags Relationship — Deprecation Plan
+
+**Decision:** Category and Tags will coexist until v1.0.0. Category will be deprecated in favor of Tags (strictly more expressive). The validation invariant (added in this session) prevents conflicts in the meantime.
+
+**Current behavior:**
+
+- `Finding.Category` is a single-value classification (one domain).
+- `Finding.Tags` is a multi-value classification (multiple labels).
+- Six values are defined as constants in both types (security, style, performance, correctness, complexity, documentation).
+- `Validate()` now rejects findings where Category and Tags contain conflicting standard categories.
+
+**Migration plan (v1.0.0):**
+
+1. v0.8.0: Add `// Deprecated:` comment to `Finding.Category` field. (Done — invariant active.)
+2. v0.9.0: Add `Finding.PrimaryCategory()` method that returns `Tags[0]` or derived primary.
+3. v1.0.0: Remove `Category` field. Consumers migrate to `Tags`. `Summary.ByCategory` becomes `Summary.ByTag`.
+
+**Status:** Open — invariant active, full deprecation deferred to v1.0.0 batch.

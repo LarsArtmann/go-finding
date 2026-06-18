@@ -71,3 +71,11 @@ Subsystems with distinct vocabulary (e.g., Billing vs. Shipping).
 > - Update when new domain concepts emerge
 > - Use these terms consistently in code, docs, and conversations
 > - When in doubt about a word's meaning, check here first
+
+## Finding Identity
+
+**Finding ID** — The stable unique identifier for a finding, produced by `GenerateID(tool, rule, pos)`. Format: `tool:rule:file:line:col` (human-readable). Two findings are identical if and only if their IDs are equal (ADR #12).
+
+**Key** — A fallback identifier for findings without an ID, built from `ToolName + File + Rule + Message`. Includes Message (unlike GenerateID), so two findings with different messages have different Keys even at the same position. Prefer ID as canonical identity.
+
+**Dedup Key** — A merge-time identifier used by `MergeIter` and `Combine`. Three strategies: ByID (exact), ByPosition (tool+file+line+col), ByRule (rule+file+line+col). These are deliberate relaxations of canonical identity, not competing definitions.
