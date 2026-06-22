@@ -1,6 +1,6 @@
 # PRO/CONTRA: Integrating go-output into go-finding
 
-**Date:** 2026-05-01 | **Status:** Analysis complete
+**Date:** 2026-05-01 | **Status:** Implemented 2026-06-23
 
 ---
 
@@ -98,17 +98,31 @@ Two different domains, two different maturity levels, two different consumer bas
 
 ## Recommendation
 
-**Model A (CLI-only dependency) with an adapter pattern.**
+**Model A (CLI-only dependency) with an adapter pattern — IMPLEMENTED.**
 
-| Step | Action                                                                      | Effort |
+| Step | Action                                                                      | Status |
 | ---- | --------------------------------------------------------------------------- | ------ |
-| 1    | Add `go-output` as dependency in `cmd/go-finding/` only                     | 5 min  |
-| 2    | Write `findingToTableData(report) *output.TableData` adapter in CLI package | 15 min |
-| 3    | Add `markdown`, `table`, `csv` formats to CLI's `-format` flag              | 30 min |
-| 4    | Keep core `finding` package dependency-free                                 | 0 min  |
-| 5    | Ship `D2`/`Mermaid` visualization of `Correlation` chains as bonus feature  | 1 h    |
+| 1    | Add `go-output` (root + markdown + delimited) as CLI-only deps              | Done   |
+| 2    | Write `findingToTableData(findings) *output.TableData` adapter in CLI        | Done   |
+| 3    | Add `csv`, `tsv` formats; replace hand-rolled markdown with go-output        | Done   |
+| 4    | Keep core `finding` package dependency-free                                 | Done   |
+| 5    | Ship `D2`/`Mermaid` visualization of `Correlation` chains as bonus feature  | Future |
 
-**Core principle preserved:** The library stays dependency-free. The CLI (which already has YAML as a dep) gets rich formatting. Tools that embed go-finding as a library are unaffected.
+### What was implemented (2026-06-23)
+
+- **Deps:** `go-output` v0.17.2, `go-output/markdown` v0.17.2, `go-output/delimited` v0.17.2 — all lightweight (root has only `x/term`, no lipgloss/bubbletea).
+- **Adapter:** `cmd/go-finding/output_adapter.go` — `findingToTableData()` converts `[]Finding` → `*output.TableData` with columns: Location, Severity, Rule, Message.
+- **New formats:** `csv` (streaming writer, auto-quoting), `tsv` (tab-separated). Both include a footer row with finding count.
+- **Improved markdown:** go-output's `MarkdownTable` provides auto-aligned column widths, replacing the hand-rolled `finding.FormatMarkdown` in the CLI path.
+- **Unchanged:** `text`, `json`, `sarif` remain hand-rolled (domain-specific). `finding.FormatText` and `finding.FormatMarkdown` stay in root package for library consumers.
+
+### Original concerns, now mitigated
+
+| Original concern | Resolution |
+| --- | --- |
+| lipgloss + 15 transitive deps | go-output restructured to multi-module; root has only `x/term`. Only `markdown` and `delimited` sub-modules imported — neither pulls lipgloss. |
+| API stability | go-output v0.17.2, API frozen via ADR 006 |
+| Narrow adoption | Now at v0.17.2 with 16 formats, integration + BDD test suites |
 
 ---
 

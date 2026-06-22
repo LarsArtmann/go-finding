@@ -670,7 +670,7 @@ Binary: `go-finding`
 | Flag                      | Default | Description                                                         |
 | ------------------------- | ------- | ------------------------------------------------------------------- |
 | `-dir`                    | `.`     | Root directory to analyze                                           |
-| `-format`                 | `text`  | Output format: `text`, `markdown`, `json`, `sarif`                  |
+| `-format`                 | `text`  | Output format: `text`, `markdown`, `csv`, `tsv`, `json`, `sarif`    |
 | `-severity`               | `info`  | Minimum severity filter                                             |
 | `-max-iterations`         | `1`     | Pipeline iterations                                                 |
 | `-parallel`               | `true`  | Run detectors in parallel                                           |
@@ -720,8 +720,10 @@ Without `-config`: uses govet + staticcheck with the flag values.
 | Format     | Description                                               |
 | ---------- | --------------------------------------------------------- |
 | `text`     | Human-readable: `file:line:col: [SEVERITY] rule: message` |
-| `markdown` | Markdown table with location, severity, rule, message     |
+| `markdown` | Markdown table with auto-aligned columns (via go-output)   |
 | `json`     | Full JSON report                                          |
+| `csv`      | CSV with auto-quoting and footer row (via go-output)       |
+| `tsv`      | Tab-separated with footer row (via go-output)             |
 | `sarif`    | SARIF 2.1.0                                               |
 
 Metrics summary printed to stderr when available.
@@ -942,7 +944,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 | File backup & rollback            | FULLY_FUNCTIONAL     | Automatic on fix failure                                                   |
 | Go vet detector                   | PARTIALLY_FUNCTIONAL | Requires `go vet` in PATH                                                  |
 | Staticcheck detector              | PARTIALLY_FUNCTIONAL | Requires `staticcheck` in PATH                                             |
-| CLI tool                          | PARTIALLY_FUNCTIONAL | 4 output formats (text, markdown, json, sarif), config, profiling          |
+| CLI tool                          | PARTIALLY_FUNCTIONAL | 6 output formats (text, markdown, csv, tsv, json, sarif), config, profiling  |
 | Plugin detector registry          | FULLY_FUNCTIONAL     | Thread-safe `RegisterDetector`                                             |
 | Per-detector timeouts             | FULLY_FUNCTIONAL     | `DetectorTimeouts` map in Config + CLI config file                         |
 | Structured logging (slog)         | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                   |

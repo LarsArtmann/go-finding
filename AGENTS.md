@@ -23,7 +23,7 @@
 | **Pipeline extras** | `pipeline/stage_hook.go`, `pipeline/line_shift.go`, `pipeline/metrics.go`, `pipeline/retry.go`, `pipeline/partial.go`, `pipeline/generated_filter.go`                                                   |
 | **Analysis**        | `analysis/analysis.go` (go/analysis ↔ Finding)                                                                                                                                                          |
 | **Detectors**       | `internal/detectors/govet.go`, `internal/detectors/staticcheck.go`, `internal/detectors/helpers.go`                                                                                                     |
-| **CLI**             | `cmd/go-finding/main.go`, `config.go`, `registry.go`, `fix_provider_registry.go`, `generated_filter.go`                                                                                                 |
+| **CLI**             | `cmd/go-finding/main.go`, `config.go`, `registry.go`, `fix_provider_registry.go`, `generated_filter.go`, `output_adapter.go` (go-output adapter)                                                                          |
 
 ## Testing & Build
 
@@ -44,6 +44,7 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - `github.com/onsi/ginkgo/v2` + `gomega` — BDD testing
 - `github.com/stretchr/testify` — INDIRECT only (transitive via go-faster/yaml)
 - `github.com/LarsArtmann/gogenfilter/v3` — Auto-generated Go file detection
+- `github.com/larsartmann/go-output` — CLI output formatting: markdown tables, CSV, TSV (CLI only; root `finding` package stays dependency-free)
 
 ## Design Principles
 
@@ -78,7 +79,7 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 ## CLI Features
 
 - Built-in govet and staticcheck detectors
-- Text, markdown, JSON, SARIF output
+- Text, markdown, CSV, TSV, JSON, SARIF output (markdown/CSV/TSV via go-output adapter)
 - YAML/JSON config (`-config`), severity filter, profiling
 - `-filter-generated` — removes findings from auto-generated files (sqlc, protobuf, etc.)
 - `-fix-provider go-ast` — enables AST-aware fix provider
@@ -97,6 +98,7 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **DetectorRegistry** — Thread-safe plugin architecture with `Register`/`Build`/`BuildAll`
 - **MergeIter** — Streaming `iter.Seq[Finding]` merge with dedup
 - **ConfigFile** — JSON config loading with `ResolveDetectors`/`ResolveProviders`
+- **go-output CLI adapter** — `cmd/go-finding/output_adapter.go` adapts `[]Finding` → `output.TableData` for markdown/CSV/TSV. Root `finding` package stays dependency-free. See `docs/PRO_CONTRA_go-output-integration.md`.
 
 ## Deprecated APIs (v1.0.0 Removal)
 

@@ -48,7 +48,7 @@ func parseFlags() cliFlags {
 	var f cliFlags
 
 	flag.StringVar(&f.dir, "dir", ".", "root directory to analyze")
-	flag.StringVar(&f.format, "format", "text", "output format: text, markdown, json, sarif")
+	flag.StringVar(&f.format, "format", "text", "output format: text, markdown, csv, tsv, json, sarif")
 	flag.StringVar(
 		&f.minSev,
 		"severity",
