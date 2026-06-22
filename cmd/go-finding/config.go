@@ -215,7 +215,33 @@ func writeOutput(report *finding.Report, format, outputFile string) error {
 	return outputResults(w, report, format)
 }
 
+// supportedFormats is the complete set of CLI output format names.
+var supportedFormats = []string{"text", "markdown", "csv", "tsv", "json", "sarif"}
+
+// isValidFormat returns true if the format string is a recognized output format.
+func isValidFormat(format string) bool {
+	for _, f := range supportedFormats {
+		if f == format {
+			return true
+		}
+	}
+
+	return false
+}
+
 func outputResults(w io.Writer, report *finding.Report, format string) error {
+	if !isValidFormat(format) {
+		return fmt.Errorf("unsupported format %q (supported: %s)", format, strings.Join(supportedFormats, ", "))
+	}
+
+	if isGoOutputFormat(format) {
+		if err := renderGoOutput(w, report, format); err != nil {
+			return fmt.Errorf("writing %s: %w", format, err)
+		}
+
+		return nil
+	}
+
 	switch format {
 	case "json":
 		out, err := report.PrettyJSON()
@@ -234,10 +260,6 @@ func outputResults(w io.Writer, report *finding.Report, format string) error {
 
 		if _, err := fmt.Fprintln(w, string(out)); err != nil {
 			return fmt.Errorf("writing SARIF: %w", err)
-		}
-	case "markdown":
-		if err := finding.FormatMarkdown(w, report.FindingsSnapshot()); err != nil {
-			return fmt.Errorf("writing markdown: %w", err)
 		}
 	default:
 		outputText(w, report)

@@ -3,11 +3,13 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"flag"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -32,7 +34,7 @@ func TestOutputResults_AllFormats(t *testing.T) {
 	})
 	report.ComputeSummary()
 
-	for _, format := range []string{"text", "json", "sarif"} {
+	for _, format := range []string{"text", "markdown", "csv", "tsv", "json", "sarif"} {
 		t.Run(format, func(t *testing.T) {
 			t.Parallel()
 
@@ -228,5 +230,148 @@ detectors: []
 	got := run()
 	if got != 1 {
 		t.Errorf("run() with no detectors = %d, want 1", got)
+	}
+}
+
+func TestOutputResults_CSV(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	report := reportWithFindings()
+
+	var buf bytes.Buffer
+	requireOutputResults(t, &buf, report, "csv")
+
+	records, err := csv.NewReader(&buf).ReadAll()
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(records).To(HaveLen(2)) // header + 1 data row, no footer
+
+	g.Expect(records[0]).To(Equal([]string{"Location", "Severity", "Rule", "Message"}))
+	g.Expect(records[1][2]).To(Equal("nilcheck"))
+}
+
+func TestOutputResults_TSV(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	report := reportWithFindings()
+
+	var buf bytes.Buffer
+	requireOutputResults(t, &buf, report, "tsv")
+
+	reader := csv.NewReader(&buf)
+	reader.Comma = '\t'
+
+	records, err := reader.ReadAll()
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(records).To(HaveLen(2)) // header + 1 data row, no footer
+
+	g.Expect(records[0]).To(Equal([]string{"Location", "Severity", "Rule", "Message"}))
+	g.Expect(records[1][2]).To(Equal("nilcheck"))
+}
+
+func TestOutputResults_MarkdownHasAlignedTable(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	report := reportWithFindings()
+
+	var buf bytes.Buffer
+	requireOutputResults(t, &buf, report, "markdown")
+
+	out := buf.String()
+	g.Expect(out).To(ContainSubstring("|"))
+	g.Expect(out).To(ContainSubstring("Location"))
+	g.Expect(out).To(ContainSubstring("Severity"))
+	g.Expect(out).To(ContainSubstring("Rule"))
+	g.Expect(out).To(ContainSubstring("Message"))
+	g.Expect(out).To(ContainSubstring("nilcheck"))
+	g.Expect(out).To(ContainSubstring("Findings (1)"))
+}
+
+func TestOutputResults_GoOutputEmptyFindings(t *testing.T) {
+	t.Parallel()
+
+	report := finding.NewReport(finding.ToolInfo{Name: "empty", Version: "1.0"})
+	report.ComputeSummary()
+
+	for _, format := range []string{"markdown", "csv", "tsv"} {
+		t.Run(format, func(t *testing.T) {
+			t.Parallel()
+
+			var buf bytes.Buffer
+
+			if err := outputResults(&buf, report, format); err != nil {
+				t.Fatalf("outputResults(%s) error: %v", format, err)
+			}
+
+			if buf.Len() != 0 {
+				t.Errorf("outputResults(%s) with no findings should produce empty output, got %q", format, buf.String())
+			}
+		})
+	}
+}
+
+func TestFindingToTableData(t *testing.T) {
+	t.Parallel()
+
+	findings := []finding.Finding{
+		{
+			Rule:     "R1",
+			Message:  "first issue",
+			Severity: finding.SeverityError,
+			Position: finding.Pos("main.go", 10, 5),
+		},
+		{
+			Rule:     "R2",
+			Message:  "second issue",
+			Severity: finding.SeverityWarning,
+			Position: finding.Pos("util.go", 3, 1),
+		},
+	}
+
+	data := findingToTableData(findings)
+
+	if got := data.RowCount(); got != 2 {
+		t.Errorf("RowCount = %d, want 2", got)
+	}
+
+	if got := data.ColCount(); got != 4 {
+		t.Errorf("ColCount = %d, want 4", got)
+	}
+
+	headers := data.GetHeaders()
+	if headers[0] != "Location" || headers[1] != "Severity" || headers[2] != "Rule" || headers[3] != "Message" {
+		t.Errorf("headers = %v, want [Location Severity Rule Message]", headers)
+	}
+
+	rows := data.GetRows()
+	if rows[0][2] != "R1" || rows[1][2] != "R2" {
+		t.Errorf("rule column = %v / %v, want R1 / R2", rows[0][2], rows[1][2])
+	}
+
+	if rows[0][1] != "ERROR" || rows[1][1] != "WARNING" {
+		t.Errorf("severity column = %v / %v, want ERROR / WARNING", rows[0][1], rows[1][1])
+	}
+}
+
+func TestOutputResults_UnknownFormat(t *testing.T) {
+	t.Parallel()
+
+	report := finding.NewReport(finding.ToolInfo{Name: "test", Version: "1.0"})
+	report.ComputeSummary()
+
+	var buf bytes.Buffer
+	err := outputResults(&buf, report, "xml")
+	if err == nil {
+		t.Fatal("expected error for unknown format, got nil")
+	}
+
+	if !strings.Contains(err.Error(), "unsupported format") {
+		t.Errorf("error should mention 'unsupported format', got: %v", err)
+	}
+
+	if !strings.Contains(err.Error(), "text") {
+		t.Errorf("error should list supported formats, got: %v", err)
 	}
 }
