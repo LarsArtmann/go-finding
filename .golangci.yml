@@ -134,6 +134,7 @@ linters:
             - $gostd
             - github.com/LarsArtmann/gogenfilter
             - github.com/larsartmann/go-finding
+            - github.com/larsartmann/go-output
           deny:
             - desc: deprecated since Go 1.16, use io and os
               pkg: io/ioutil
@@ -146,6 +147,7 @@ linters:
             - $gostd
             - github.com/LarsArtmann/gogenfilter
             - github.com/larsartmann/go-finding
+            - github.com/larsartmann/go-output
             - github.com/onsi/ginkgo
             - github.com/onsi/gomega
           files:
