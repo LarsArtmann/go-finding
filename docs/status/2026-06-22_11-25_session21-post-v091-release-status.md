@@ -18,48 +18,49 @@ v0.9.1 shipped — the broken fuzz suite from v0.9.0 is fixed, all 23 targets pa
 
 ### 1. v0.9.1 Released and Pushed
 
-| Item | Status |
-| --- | --- |
-| `version.go` — `VersionPatch` 0→1 | ✅ |
-| `CHANGELOG.md` — `[0.9.1]` section (Fixed/Changed/Added/Removed) | ✅ |
-| `README.md` — doc rot fixed (`"0.7.0"` → `"0.9.1"`) | ✅ |
-| `docs/PRO_CONTRA_go-workflow-adoption.md` — maturity `v0.9.0` → `v0.9.1` | ✅ |
-| Tag `v0.9.1` (annotated, SSH-signed) | ✅ |
-| Pushed to `origin/master` | ✅ |
-| Full `-race` suite green | ✅ |
+| Item                                                                     | Status |
+| ------------------------------------------------------------------------ | ------ |
+| `version.go` — `VersionPatch` 0→1                                        | ✅     |
+| `CHANGELOG.md` — `[0.9.1]` section (Fixed/Changed/Added/Removed)         | ✅     |
+| `README.md` — doc rot fixed (`"0.7.0"` → `"0.9.1"`)                      | ✅     |
+| `docs/PRO_CONTRA_go-workflow-adoption.md` — maturity `v0.9.0` → `v0.9.1` | ✅     |
+| Tag `v0.9.1` (annotated, SSH-signed)                                     | ✅     |
+| Pushed to `origin/master`                                                | ✅     |
+| Full `-race` suite green                                                 | ✅     |
 
 ### 2. v0.9.0 Fuzz Bug Definitively Fixed
 
 Both root causes of the original `test-fuzz: [Failed] 20 fuzz tests failed (3 passed)` are resolved:
+
 - **Naming collision** (Session 19): 3 fuzz targets renamed for regex uniqueness
 - **Wrong oracle** (Session 20): `FuzzMergeByPosition` corrected for empty-file semantics
 
 ### 3. Health Metrics (Best Ever)
 
-| Metric | Value |
-| --- | --- |
-| Test functions | 667 |
-| Fuzz targets | 23 |
-| Benchmarks | 48 |
-| Features FULLY_FUNCTIONAL | 35 |
-| Features PARTIALLY_FUNCTIONAL | 7 |
-| Features PLANNED / BROKEN | 0 / 0 |
-| TODO/FIXME in production code | 0 |
-| gofmt issues | 0 |
-| Full `-race` suite | green |
+| Metric                         | Value                        |
+| ------------------------------ | ---------------------------- |
+| Test functions                 | 667                          |
+| Fuzz targets                   | 23                           |
+| Benchmarks                     | 48                           |
+| Features FULLY_FUNCTIONAL      | 35                           |
+| Features PARTIALLY_FUNCTIONAL  | 7                            |
+| Features PLANNED / BROKEN      | 0 / 0                        |
+| TODO/FIXME in production code  | 0                            |
+| gofmt issues                   | 0                            |
+| Full `-race` suite             | green                        |
 | `golangci-lint run ./...` exit | 0 (3 warnings, non-blocking) |
 
 ---
 
 ## b) PARTIALLY DONE 🟡
 
-| Item | Status | Detail |
-| --- | --- | --- |
-| Lint cleanliness | 3 warnings | `gocyclo` on `Validate()` (complexity 32 > 25), `varnamelen` on `fs` (`finding_validate.go:44`) and `rt` (`splitbrain_test.go:101`). Pre-existing, non-blocking, but block a "lint clean" claim. |
-| Deprecated APIs | 7 entries | `Report.Findings`, `Report.Merge()`, `OnStage`, `Metrics.RecordFix()`, `CountBySeverity()`, `Finding.Tag`, `ConflictDetector`/`Verifier` structs. All scheduled for v1.0.0 removal. |
-| CLI FixProviders config | Incomplete | ConfigFile → ResolveProviders path exists but error handling for unknown providers is rough. |
-| Category/Tags deprecation | ADR #13 planned | Twin-method contract documented but migration path not yet enforced. |
-| LSP diagnostics | Stale phantom warnings | `golangci_lint_ls` reports `gochecknoglobals` on `export_test.go` Export* funcs that are actually `func`s (not `var`s). `golangci-lint` CLI does not reproduce. LSP restart failed in prior session. |
+| Item                      | Status                 | Detail                                                                                                                                                                                                |
+| ------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lint cleanliness          | 3 warnings             | `gocyclo` on `Validate()` (complexity 32 > 25), `varnamelen` on `fs` (`finding_validate.go:44`) and `rt` (`splitbrain_test.go:101`). Pre-existing, non-blocking, but block a "lint clean" claim.      |
+| Deprecated APIs           | 7 entries              | `Report.Findings`, `Report.Merge()`, `OnStage`, `Metrics.RecordFix()`, `CountBySeverity()`, `Finding.Tag`, `ConflictDetector`/`Verifier` structs. All scheduled for v1.0.0 removal.                   |
+| CLI FixProviders config   | Incomplete             | ConfigFile → ResolveProviders path exists but error handling for unknown providers is rough.                                                                                                          |
+| Category/Tags deprecation | ADR #13 planned        | Twin-method contract documented but migration path not yet enforced.                                                                                                                                  |
+| LSP diagnostics           | Stale phantom warnings | `golangci_lint_ls` reports `gochecknoglobals` on `export_test.go` Export\* funcs that are actually `func`s (not `var`s). `golangci-lint` CLI does not reproduce. LSP restart failed in prior session. |
 
 ---
 
@@ -67,12 +68,12 @@ Both root causes of the original `test-fuzz: [Failed] 20 fuzz tests failed (3 pa
 
 ### v1.0.0 Release (17 unchecked items in `docs/v1.0-release-criteria.md`)
 
-| Category | Open Items |
-| --- | --- |
-| API Stability | Remove deprecated symbols, remove phantom `FixStrategyAI`, finalize `NewFinding` signature, audit naming consistency, decide on `Properties map[string]any` |
-| Documentation | README covers all types, CHANGELOG for v1.0, API stability guarantee documented, godoc comprehensive, examples compile |
-| Testing | Coverage ≥ 95% (currently met), all fuzz tests pass (✅ met), property tests pass, integration test with downstream consumer |
-| Pipeline Module | Provider location decision, FixApplier goroutine leak verified, Pipeline.Run() reusability confirmed |
+| Category        | Open Items                                                                                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API Stability   | Remove deprecated symbols, remove phantom `FixStrategyAI`, finalize `NewFinding` signature, audit naming consistency, decide on `Properties map[string]any` |
+| Documentation   | README covers all types, CHANGELOG for v1.0, API stability guarantee documented, godoc comprehensive, examples compile                                      |
+| Testing         | Coverage ≥ 95% (currently met), all fuzz tests pass (✅ met), property tests pass, integration test with downstream consumer                                |
+| Pipeline Module | Provider location decision, FixApplier goroutine leak verified, Pipeline.Run() reusability confirmed                                                        |
 
 ### Other Not-Started
 
@@ -129,33 +130,33 @@ The v0.9.0 tag contains the fuzz naming collision bug. Anyone who pins v0.9.0 an
 
 ## f) TOP 25 THINGS TO GET DONE NEXT 🎯
 
-| # | Task | Impact | Effort | Category |
-| --- | --- | --- | --- | --- |
-| 1 | **Fix go.sum ping-pong in BuildFlow** (disable go-mod-ignore-check or fix stripping) | Critical | 1hr | BuildFlow |
-| 2 | **Remove 7 deprecated APIs** for v1.0.0 | Critical | 2hr | v1.0.0 |
-| 3 | **Unexport `Report.Findings`** (use `FindingsSnapshot()`) | Critical | 1hr | v1.0.0 |
-| 4 | **Cut v1.0.0 tag** | Critical | 1hr | Release |
-| 5 | Add `scripts/fuzz-check.sh` (kill ambiguous error) | High | 30min | Testing |
-| 6 | Fix 3 lint warnings (gocyclo, varnamelen ×2) | High | 15min | Quality |
-| 7 | Add CI fuzz job to `ci.yml` | High | 30min | CI |
-| 8 | Audit all 23 fuzz oracles for empty/zero assumptions | High | 1hr | Testing |
-| 9 | Named string types: `ToolName`, `RuleName`, `FindingID` | High | 2hr | Types |
-| 10 | Integration test with downstream consumer (BuildFlow/hierarchical-errors) | High | 2hr | Testing |
-| 11 | Update FEATURES.md for v0.9.1 | Medium | 30min | Docs |
-| 12 | Document API stability guarantee (Go compat promise style) | Medium | 1hr | Docs |
-| 13 | Add godoc examples: `Normalized`, `WithFix` | Medium | 30min | Docs |
-| 14 | Remove phantom `FixStrategyAI` constant | Medium | 15min | Cleanup |
-| 15 | Decide `Properties map[string]any` vs `Metadata` for SARIF | Medium | 2hr | Design |
-| 16 | Document `-fuzz` regex+cache behavior in CONTRIBUTING.md | Low | 15min | Docs |
-| 17 | Complete CLI FixProviders config | Medium | 2hr | CLI |
-| 18 | Summary.ByTag map | Medium | 30min | Feature |
-| 19 | Benchmark regression check vs baseline | Medium | 1hr | Perf |
-| 20 | Property test: `HasFix ⊇ IsAutoFixable` | Medium | 15min | Testing |
-| 21 | LineShiftMap Range/Column completeness | Medium | 1hr | Pipeline |
-| 22 | SubstringProvider nearest-position heuristic | Medium | 1hr | Pipeline |
-| 23 | Fix golangci-lint LSP phantom warnings | Low | 15min | Tooling |
-| 24 | Position as value object refactor (v2) | High | 4hr | v2.0 |
-| 25 | Explore sync.Pool for line offset index | Low | 2hr | Perf |
+| #   | Task                                                                                 | Impact   | Effort | Category  |
+| --- | ------------------------------------------------------------------------------------ | -------- | ------ | --------- |
+| 1   | **Fix go.sum ping-pong in BuildFlow** (disable go-mod-ignore-check or fix stripping) | Critical | 1hr    | BuildFlow |
+| 2   | **Remove 7 deprecated APIs** for v1.0.0                                              | Critical | 2hr    | v1.0.0    |
+| 3   | **Unexport `Report.Findings`** (use `FindingsSnapshot()`)                            | Critical | 1hr    | v1.0.0    |
+| 4   | **Cut v1.0.0 tag**                                                                   | Critical | 1hr    | Release   |
+| 5   | Add `scripts/fuzz-check.sh` (kill ambiguous error)                                   | High     | 30min  | Testing   |
+| 6   | Fix 3 lint warnings (gocyclo, varnamelen ×2)                                         | High     | 15min  | Quality   |
+| 7   | Add CI fuzz job to `ci.yml`                                                          | High     | 30min  | CI        |
+| 8   | Audit all 23 fuzz oracles for empty/zero assumptions                                 | High     | 1hr    | Testing   |
+| 9   | Named string types: `ToolName`, `RuleName`, `FindingID`                              | High     | 2hr    | Types     |
+| 10  | Integration test with downstream consumer (BuildFlow/hierarchical-errors)            | High     | 2hr    | Testing   |
+| 11  | Update FEATURES.md for v0.9.1                                                        | Medium   | 30min  | Docs      |
+| 12  | Document API stability guarantee (Go compat promise style)                           | Medium   | 1hr    | Docs      |
+| 13  | Add godoc examples: `Normalized`, `WithFix`                                          | Medium   | 30min  | Docs      |
+| 14  | Remove phantom `FixStrategyAI` constant                                              | Medium   | 15min  | Cleanup   |
+| 15  | Decide `Properties map[string]any` vs `Metadata` for SARIF                           | Medium   | 2hr    | Design    |
+| 16  | Document `-fuzz` regex+cache behavior in CONTRIBUTING.md                             | Low      | 15min  | Docs      |
+| 17  | Complete CLI FixProviders config                                                     | Medium   | 2hr    | CLI       |
+| 18  | Summary.ByTag map                                                                    | Medium   | 30min  | Feature   |
+| 19  | Benchmark regression check vs baseline                                               | Medium   | 1hr    | Perf      |
+| 20  | Property test: `HasFix ⊇ IsAutoFixable`                                              | Medium   | 15min  | Testing   |
+| 21  | LineShiftMap Range/Column completeness                                               | Medium   | 1hr    | Pipeline  |
+| 22  | SubstringProvider nearest-position heuristic                                         | Medium   | 1hr    | Pipeline  |
+| 23  | Fix golangci-lint LSP phantom warnings                                               | Low      | 15min  | Tooling   |
+| 24  | Position as value object refactor (v2)                                               | High     | 4hr    | v2.0      |
+| 25  | Explore sync.Pool for line offset index                                              | Low      | 2hr    | Perf      |
 
 ---
 
@@ -174,12 +175,12 @@ I need to know which approach you want before I touch `.buildflow.yml` or submit
 
 ## Session History (Sessions 18-21)
 
-| Session | Date | Headline | Key Outcome |
-| --- | --- | --- | --- |
-| 18 | 2026-06-18 08:30 | Split-brain resolution complete | 11 issues fixed, v0.9.0 prepped |
-| 19 | 2026-06-18 10:10 | Fuzz naming collision fix | 3 targets renamed, v0.9.0 released (broken) |
-| 20 | 2026-06-18 19:01 | Fuzz oracle fix & BuildFlow mechanism | `FuzzMergeByPosition` oracle fixed, 23/23 pass |
-| 21 | 2026-06-22 11:25 | Post-v0.9.1 release status | v0.9.1 shipped, go.sum war documented |
+| Session | Date             | Headline                              | Key Outcome                                    |
+| ------- | ---------------- | ------------------------------------- | ---------------------------------------------- |
+| 18      | 2026-06-18 08:30 | Split-brain resolution complete       | 11 issues fixed, v0.9.0 prepped                |
+| 19      | 2026-06-18 10:10 | Fuzz naming collision fix             | 3 targets renamed, v0.9.0 released (broken)    |
+| 20      | 2026-06-18 19:01 | Fuzz oracle fix & BuildFlow mechanism | `FuzzMergeByPosition` oracle fixed, 23/23 pass |
+| 21      | 2026-06-22 11:25 | Post-v0.9.1 release status            | v0.9.1 shipped, go.sum war documented          |
 
 ---
 

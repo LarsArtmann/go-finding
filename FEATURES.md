@@ -11,7 +11,7 @@
 | -------------------- | ----------------------------------------------------------- |
 | FULLY_FUNCTIONAL     | Fully implemented, tested, production-ready                 |
 | PARTIALLY_FUNCTIONAL | Works but has known limitations or rough edges              |
-| PARTIALLY_FUNCTIONAL | Implemented and tested, but API may change                  |
+| EXPERIMENTAL         | Implemented and tested, but API may change                  |
 | PLANNED              | Type/constant exists, tested, but no backend implementation |
 | BROKEN               | Mentioned in docs/comments but no code exists               |
 
@@ -47,8 +47,6 @@ The central type representing a single issue detected by a static analysis tool.
 | Metadata    | `map[string]string` | Tool-specific key-value pairs                        |
 
 Key methods: `Validate()` (detailed per-field errors), `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
-
-> **New in 2026-06-05:** `RelatedRef.Range *Range` enables span-based related locations with full deep-copy, validation, and SARIF/LSP round-trip support.
 
 ### 1.2 Builder API
 
@@ -137,11 +135,11 @@ Methods: `IsValid()`, `CanAutoApply()`, `NeedsAI()`
 
 **Status:** FULLY_FUNCTIONAL
 
-14 predefined domain categories:
+16 predefined domain categories:
 
-`security`, `style`, `performance`, `correctness`, `complexity`, `duplication`, `error-handling`, `migration`, `type-safety`, `structure`, `configuration`, `documentation`, `testing`, `unused`
+`security`, `style`, `performance`, `correctness`, `complexity`, `duplication`, `error-handling`, `migration`, `type-safety`, `structure`, `configuration`, `documentation`, `testing`, `unused`, `best-practice`, `naming`
 
-Plus arbitrary custom categories accepted. Methods: `IsStandard()`, `IsValid()`, `String()`
+Plus arbitrary custom categories accepted. Methods: `IsStandard()`, `IsValid()`, `String()`, `Compare()`, `IsSecurity()`. Parsing: `ParseCategory(s)` (returns error), `MustParseCategory(s)` (panics).
 
 ### 5.2 Tags
 
@@ -346,7 +344,7 @@ Handles Windows paths with colons correctly.
 
 Handles: severity mapping, 0-based conversion, Range, related information, diagnostic tags
 
-> **New in 2026-06-05:** `LSPDiagnosticTag` constants (`Unnecessary = 1`, `Deprecated = 2`) with `Tags []LSPDiagnosticTag`. Tags round-trip via `Metadata["go-finding/lsp-diagnostic-tags"]`. Related information now includes proper end positions from `RelatedRef.Range`.
+`LSPDiagnosticTag` constants (`Unnecessary = 1`, `Deprecated = 2`) with `Tags []LSPDiagnosticTag`. Tags round-trip via `Metadata["go-finding/lsp-diagnostic-tags"]`. Related information includes proper end positions from `RelatedRef.Range`.
 
 ### LSP → Finding
 
@@ -372,6 +370,20 @@ Preserves: end position as Range, related information, related range end positio
 | `FormatDiagnostic(diag, fset, name)`                          | Go-vet-style formatted string        |
 
 Auto-detects suggested fixes and sets `FixStrategyDirect` with `AfterCode`. `ToDiagnostic` converts back with position resolution, SuggestedFix generation, and Related conversion.
+
+### 14.1 AnalyzerDetector
+
+**Status:** FULLY_FUNCTIONAL
+
+`analysis.AnalyzerDetector` wraps any `go/analysis.Analyzer` as a `finding.Detector`, running it against Go source and converting its diagnostics to Findings:
+
+```go
+det := analysis.NewAnalyzerDetector(analyzer,
+    analysis.WithSeverity(finding.SeverityWarning),
+    analysis.WithFileSet(fset),
+)
+findings, err := det.Detect(ctx)
+```
 
 ---
 
@@ -414,25 +426,28 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 
 ### 16.2 Configuration
 
-| Option                | Type                     | Default | Description                                |
-| --------------------- | ------------------------ | ------- | ------------------------------------------ |
-| `MaxIterations`       | `int`                    | 5       | Prevents infinite loops                    |
-| `ParallelDetectors`   | `bool`                   | `true`  | Concurrent detector execution              |
-| `Timeout`             | `time.Duration`          | 10min   | Pipeline timeout                           |
-| `VerifyAfterFix`      | `bool`                   | `false` | Re-run detectors post-fix                  |
-| `GracefulDegradation` | `bool`                   | `false` | Continue on detector failures              |
-| `DryRun`              | `bool`                   | `false` | Detect + triage only (no fixes)            |
-| `Retry`               | `*RetryConfig`           | `nil`   | Exponential backoff retries                |
-| `Metrics`             | `*Metrics`               | `nil`   | Timing/count collection                    |
-| `CorrelateFindings`   | `bool`                   | `false` | Cross-tool correlation                     |
-| `Processors`          | `[]FindingProcessor`     | `nil`   | Composable finding transforms              |
-| `FixProviders`        | `[]FixProvider`          | `nil`   | Custom fix providers (e.g., AST)           |
-| `OnFinding`           | `func(Finding)`          | `nil`   | Per-finding callback                       |
-| `OnFix`               | `func(Finding, bool)`    | `nil`   | Per-fix callback                           |
-| `OnIteration`         | `func(int, []Finding)`   | `nil`   | Per-iteration callback                     |
-| `OnStage`             | `func(string, int, int)` | `nil`   | Per-stage callback (detect/process/triage) |
-| `DetectorTimeouts`    | `map[string]Duration`    | `nil`   | Per-detector timeout overrides             |
-| `Logger`              | `*slog.Logger`           | `nil`   | Structured logging                         |
+| Option                       | Type                    | Default | Description                                            |
+| ---------------------------- | ----------------------- | ------- | ------------------------------------------------------ |
+| `MaxIterations`              | `int`                   | 5       | Prevents infinite loops                                |
+| `ParallelDetectors`          | `bool`                  | `true`  | Concurrent detector execution                          |
+| `Timeout`                    | `time.Duration`         | 10min   | Pipeline timeout                                       |
+| `VerifyAfterFix`             | `bool`                  | `false` | Re-run detectors post-fix                              |
+| `GracefulDegradation`        | `bool`                  | `false` | Continue on detector failures                          |
+| `DryRun`                     | `bool`                  | `false` | Detect + triage only (no fixes)                        |
+| `Retry`                      | `*RetryConfig`          | `nil`   | Exponential backoff retries                            |
+| `Metrics`                    | `*Metrics`              | `nil`   | Timing/count collection                                |
+| `CorrelateFindings`          | `bool`                  | `false` | Cross-tool correlation                                 |
+| `Processors`                 | `[]FindingProcessor`    | `nil`   | Composable finding transforms                          |
+| `FixProviders`               | `[]FixProvider`         | `nil`   | Custom fix providers (e.g., AST)                       |
+| `OnFinding`                  | `func(Finding)`         | `nil`   | Per-finding callback                                   |
+| `OnFix`                      | `func(Finding, bool)`   | `nil`   | Per-fix callback                                       |
+| `OnIteration`                | `func(int, []Finding)`  | `nil`   | Per-iteration callback                                 |
+| `OnStage`                    | `func(Stage, int, int)` | `nil`   | Per-stage callback (**deprecated** — use `StageHooks`) |
+| `StageHooks`                 | `[]StageHook`           | `nil`   | Per-stage before/after hooks with abort                |
+| `DetectorTimeouts`           | `map[string]Duration`   | `nil`   | Per-detector timeout overrides                         |
+| `Logger`                     | `*slog.Logger`          | `nil`   | Structured logging                                     |
+| `TriageFunc`                 | `TriageFunc`            | `nil`   | Custom triage categorization                           |
+| `ByteLevelConflictDetection` | `bool`                  | `false` | Byte-level (vs position) conflict detection            |
 
 Config validation: `config.Validate()` returns joined errors for invalid values. `pipeline.New()` rejects invalid configs.
 
@@ -573,7 +588,7 @@ Thread-safe metrics collection:
 | Stage durations       | `RecordStage()`, `StageTiming()` |
 | Detector timing       | `RecordDetector()`               |
 | Findings per detector | `RecordDetector()`               |
-| Fixes applied         | `RecordFix()`                    |
+| Fixes applied         | `RecordFixes(count)`             |
 | Total duration        | `TotalDuration()`                |
 | Point-in-time copy    | `Snapshot()` → `MetricsSnapshot` |
 
@@ -652,18 +667,26 @@ Binary: `go-finding`
 
 ### Flags
 
-| Flag              | Default | Description                                        |
-| ----------------- | ------- | -------------------------------------------------- |
-| `-dir`            | `.`     | Root directory to analyze                          |
-| `-format`         | `text`  | Output format: `text`, `markdown`, `json`, `sarif` |
-| `-severity`       | `info`  | Minimum severity filter                            |
-| `-max-iterations` | `1`     | Pipeline iterations                                |
-| `-parallel`       | `true`  | Run detectors in parallel                          |
-| `-verify`         | `false` | Re-run detectors after fixes                       |
-| `-timeout`        | `10m`   | Pipeline timeout                                   |
-| `-config`         | (none)  | YAML/JSON config file                              |
-| `-cpuprof`        | (none)  | CPU profile output                                 |
-| `-memprof`        | (none)  | Memory profile output                              |
+| Flag                      | Default | Description                                                         |
+| ------------------------- | ------- | ------------------------------------------------------------------- |
+| `-dir`                    | `.`     | Root directory to analyze                                           |
+| `-format`                 | `text`  | Output format: `text`, `markdown`, `json`, `sarif`                  |
+| `-severity`               | `info`  | Minimum severity filter                                             |
+| `-max-iterations`         | `1`     | Pipeline iterations                                                 |
+| `-parallel`               | `true`  | Run detectors in parallel                                           |
+| `-verify`                 | `false` | Re-run detectors after fixes                                        |
+| `-timeout`                | `10m`   | Pipeline timeout                                                    |
+| `-config`                 | (none)  | YAML/JSON config file                                               |
+| `-output`                 | (none)  | Write output to file (default: stdout)                              |
+| `-version`                | `false` | Print version and exit                                              |
+| `-cpuprof`                | (none)  | CPU profile output                                                  |
+| `-memprof`                | (none)  | Memory profile output                                               |
+| `-filter-generated`       | `false` | Filter out findings from auto-generated files                       |
+| `-filter-generated-types` | `all`   | Comma-separated generator types (sqlc, templ, mockgen, protobuf, …) |
+| `-generated-exclude`      | (none)  | Comma-separated glob patterns to exclude from generated filtering   |
+| `-generated-include`      | (none)  | Comma-separated glob patterns restricting generated-filtering scope |
+| `-byte-level-conflict`    | `false` | Enable precise byte-level conflict detection for overlapping fixes  |
+| `-fix-provider`           | (none)  | Comma-separated fix provider names to enable (e.g., `go-ast`)       |
 
 ### Config File (YAML/JSON)
 
@@ -678,6 +701,10 @@ detectorTimeouts:
 detectors:
   - name: govet
   - name: staticcheck
+fixProviders:
+  - go-ast
+filterGenerated: true
+filterGenTypes: "all"
 ```
 
 ### Default Behavior
@@ -700,6 +727,10 @@ Without `-config`: uses govet + staticcheck with the flag values.
 Metrics summary printed to stderr when available.
 
 ---
+
+## 19. Testing
+
+**Status:** FULLY_FUNCTIONAL
 
 Test categories:
 
@@ -884,7 +915,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 | Severity (4 levels)               | FULLY_FUNCTIONAL     | With comparison operators                                                  |
 | FixStrategy (none/suggest/direct) | FULLY_FUNCTIONAL     | Production auto-fix for `direct`                                           |
 | FixStrategy (ai)                  | PLANNED              | Constant exists, no AI backend                                             |
-| Category (15 standard + custom)   | FULLY_FUNCTIONAL     | Domain classification                                                      |
+| Category (16 standard + custom)   | FULLY_FUNCTIONAL     | Domain classification                                                      |
 | Tags (multi-label)                | FULLY_FUNCTIONAL     | Singular Tag field removed                                                 |
 | Suppression                       | FULLY_FUNCTIONAL     | With TTL/expiry support                                                    |
 | Report container                  | FULLY_FUNCTIONAL     | Thread-safe, with summary statistics                                       |
@@ -896,6 +927,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 | SARIF 2.1.0 export/import         | FULLY_FUNCTIONAL     | Round-trip via property bag                                                |
 | LSP conversion                    | FULLY_FUNCTIONAL     | Position, severity, rule, message, related ranges, diagnostic tags survive |
 | go/analysis integration           | FULLY_FUNCTIONAL     | Bidirectional conversion (Diagnostic ↔ Finding)                            |
+| AnalyzerDetector                  | FULLY_FUNCTIONAL     | Wraps `go/analysis.Analyzer` as a `Detector`                               |
 | Structured errors                 | FULLY_FUNCTIONAL     | 5 categories, errors.Is support                                            |
 | Pipeline (detect→fix→verify)      | FULLY_FUNCTIONAL     | Iterative loop with configurable behavior                                  |
 | Finding processors                | FULLY_FUNCTIONAL     | Composable transforms between detect and triage                            |
@@ -914,7 +946,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 | Plugin detector registry          | FULLY_FUNCTIONAL     | Thread-safe `RegisterDetector`                                             |
 | Per-detector timeouts             | FULLY_FUNCTIONAL     | `DetectorTimeouts` map in Config + CLI config file                         |
 | Structured logging (slog)         | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                   |
-| Stage progress callback           | FULLY_FUNCTIONAL     | `OnStage func(stage, iteration, count)` in Config                          |
+| Stage hooks/callbacks             | FULLY_FUNCTIONAL     | `StageHooks` (preferred) + deprecated `OnStage`                            |
 | Diff function                     | FULLY_FUNCTIONAL     | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()`          |
 | FormatText / FormatMarkdown       | FULLY_FUNCTIONAL     | Return errors, UTF-8 safe truncation, markdown cell escaping               |
 | Config validation                 | FULLY_FUNCTIONAL     | Both pipeline and CLI configs                                              |

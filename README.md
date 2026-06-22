@@ -189,22 +189,22 @@ fmt.Printf("Iterations: %d, Findings: %d, Stable: %v\n",
 
 ### Pipeline Features
 
-| Feature                           | Description                                                   |
-| --------------------------------- | ------------------------------------------------------------- |
-| **Parallel detection**            | errgroup-based concurrent detector execution                  |
-| **Finding processors**            | Composable transforms between detection and triage            |
-| **Custom triage**                 | `Config.TriageFunc` overrides default categorization          |
-| **Byte-level conflict detection** | `Config.ByteLevelConflictDetection` filters overlapping edits |
-| **Fix provider chain**            | Offset → Line → Substring, plus custom AST-aware providers    |
-| **Fix application**               | Byte-level edits with backup/rollback                         |
-| **Verification**                  | Re-run detectors to confirm fixes                             |
-| **Retry**                         | Exponential backoff for flaky detectors                       |
-| **Partial success**               | Continue with findings from successful detectors              |
-| **Metrics**                       | Optional timing and count collection with snapshots           |
-| **Structured logging**            | `*slog.Logger` integration                                    |
-| **Stage callbacks**               | `OnStage` for progress reporting                              |
-| **Dry run**                       | Detect + triage without applying fixes                        |
-| **Generated file filter**         | Removes findings from auto-generated Go source files          |
+| Feature                           | Description                                                      |
+| --------------------------------- | ---------------------------------------------------------------- |
+| **Parallel detection**            | errgroup-based concurrent detector execution                     |
+| **Finding processors**            | Composable transforms between detection and triage               |
+| **Custom triage**                 | `Config.TriageFunc` overrides default categorization             |
+| **Byte-level conflict detection** | `Config.ByteLevelConflictDetection` filters overlapping edits    |
+| **Fix provider chain**            | Offset → Line → Substring, plus custom AST-aware providers       |
+| **Fix application**               | Byte-level edits with backup/rollback                            |
+| **Verification**                  | Re-run detectors to confirm fixes                                |
+| **Retry**                         | Exponential backoff for flaky detectors                          |
+| **Partial success**               | Continue with findings from successful detectors                 |
+| **Metrics**                       | Optional timing and count collection with snapshots              |
+| **Structured logging**            | `*slog.Logger` integration                                       |
+| **Stage hooks**                   | `StageHooks` before/after events with abort (replaces `OnStage`) |
+| **Dry run**                       | Detect + triage without applying fixes                           |
+| **Generated file filter**         | Removes findings from auto-generated Go source files             |
 
 ### Custom Detector
 
@@ -362,9 +362,12 @@ finding.GetCategory(err) // "validation", "io", "conflict", etc.
 ```bash
 go install github.com/larsartmann/go-finding/cmd/go-finding@latest
 
-go-finding run --format sarif --output results.sarif
-go-finding run --format json --config config.yaml
+go-finding -format sarif -output results.sarif
+go-finding -format json -config config.yaml
+go-finding -filter-generated -fix-provider go-ast
 ```
+
+Key flags: `-format` (text/markdown/json/sarif), `-severity`, `-config`, `-filter-generated`, `-fix-provider`, `-byte-level-conflict`. Use `-help` for the full list.
 
 ## Development
 
@@ -388,6 +391,17 @@ The current version is available programmatically:
 ```go
 fmt.Println(finding.Version) // "0.9.1"
 ```
+
+## Documentation
+
+| Document                                         | Purpose                              |
+| ------------------------------------------------ | ------------------------------------ |
+| [FEATURES.md](FEATURES.md)                       | Honest feature inventory with status |
+| [ROADMAP.md](ROADMAP.md)                         | Long-term direction and future ideas |
+| [TODO_LIST.md](TODO_LIST.md)                     | Short-term actionable tasks          |
+| [CHANGELOG.md](CHANGELOG.md)                     | Versioned change history             |
+| [docs/USAGE_GUIDE.md](docs/USAGE_GUIDE.md)       | Comprehensive usage guide            |
+| [docs/MIGRATION_v1.0.md](docs/MIGRATION_v1.0.md) | v1.0 migration instructions          |
 
 ## Related Projects
 

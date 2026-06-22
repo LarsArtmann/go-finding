@@ -188,6 +188,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 9+ new tests: `TestToLSP_RelatedWithRange`, `TestFromLSP_RelatedWithRange`, `TestFromLSP_PreservesDiagnosticTags`, `TestSARIF_RoundTrip_RelatedRefRange`, `TestSARIF_RegionSnippet`, `TestFinding_Equal_RelatedRefRange`, `TestFinding_Validate_InvertedRelatedRange`, `TestDeduplicateBy_String`, plus `TestClone` updated and schema round-trip extended.
 - `go test -race -count=1 ./...` passes; `golangci-lint run ./...` reports 0 issues.
 
+## [0.4.3] - 2026-06-01
+
+### Changed — Breaking
+
+- **`context.Context` added to SARIF I/O functions** — All SARIF export and import functions that perform I/O now accept `context.Context` as their first parameter, enabling cancellation and timeout control in production pipelines. Affected signatures:
+  - `Report.WriteSARIF(ctx context.Context, w io.Writer) error`
+  - `Report.WriteSARIFFiltered(ctx context.Context, w io.Writer, minSeverity Severity) error`
+  - `FindingsFromSARIF(ctx context.Context, data []byte) ([]Finding, error)`
+  - `FindingsFromReader(ctx context.Context, r io.Reader) ([]Finding, error)`
+  - `Report.WriteTo(w io.Writer)` unchanged (already satisfies `io.WriterTo`).
+
 ## [0.4.2] - 2026-06-01
 
 ### Added

@@ -1,7 +1,7 @@
 # TODO List
 
 **Generated:** 2026-05-20
-**Updated:** 2026-06-14 (session 13: LineProvider index caching, Correlate pre-allocation, benchmark fixes)
+**Updated:** 2026-06-22 (session 21: documentation refresh — verified all items against code)
 **Files Processed:** 235
 
 ## 🔴 HIGH Priority
@@ -9,7 +9,7 @@
 - [x] Add bounds checks in `findingFromSARIF` — bounds checks exist via `applySarifPosition`
 - [x] Document SARIF critical round-trip loss — documented in doc.go, USAGE_GUIDE.md, FEATURES.md
 - [ ] `Finding` struct sub-grouping — **DEFERRED v2** (breaking change)
-- [ ] Add `golines` to CI — **BLOCKED** (treefmt-nix doesn't support golines yet)
+- [x] Add `golines` to CI — treefmt-nix now supports golines; configured in `flake.nix` with maxLength=120
 - [x] Clean up gopls hints (~12 non-critical) — production code: 0 rangeint, 0 newexpr, 2 mapsloop fixed
 - [x] Implement art-dupl integration gaps (GAP-1, GAP-4, GAP-5, GAP-6, GAP-8) — fully implemented, tested, lint clean
 - [x] Expand `doc.go` to comprehensive package documentation
@@ -55,8 +55,8 @@
 - [x] Mark 225 lint warnings phantom — `go-structure-linter` is external
 - [x] Mark `GitAuthorProvider` phantom — `rule_service.go` does not exist
 - [x] Mark `.git/hooks/pre-commit` executable — already executable
-- [ ] Interactive TUI — **OUT OF SCOPE v1**
-- [ ] Phase 3: Create `.envrc` — **BLOCKED** (no Nix setup)
+- [ ] Interactive TUI — **OUT OF SCOPE v1** (see [ROADMAP.md](ROADMAP.md#tooling-integrations))
+- [ ] Phase 3: Create `.envrc` — **WONTFIX** (project uses Nix flakes, not direnv)
 
 ## 🟢 LOW Priority
 
@@ -69,8 +69,8 @@
 - [x] Document SARIF round-trip losses in user-facing docs
 - [x] Document FixStrategyAI placeholder semantics
 - [x] Document Correlate complexity — O(n·k) normal, O(k²) worst case, 10K cap
-- [ ] `Position` zero-value safety — **OWNER_DECISION** (breaking change)
-- [ ] `Range.End` zero-value ambiguity — **OWNER_DECISION** (breaking change)
+- [x] `Position` zero-value safety — **RESOLVED v0.9.0** (Offset uses -1 sentinel; constructors set it)
+- [x] `Range.End` zero-value ambiguity — **RESOLVED v0.9.0** (cascaded from Position sentinel fix)
 - [x] Add `finding.FormatText()`
 - [x] Add `finding.FormatMarkdown()`
 - [x] Write API stability guarantee document — `docs/API_STABILITY.md`
@@ -155,9 +155,9 @@
 - [x] FixEngine benchmark offset bug fix — `generateOffsetFixes` used Range width 4 but BeforeCode "old()" is 5 chars; OffsetProvider always rejected, silently testing SubstringProvider. Now uses correct offsets from `findOldOccurrences`
 - [x] Dedicated LineProvider/SubstringProvider benchmarks — `BenchmarkFixEngine_LineProvider_*` and `BenchmarkFixEngine_Substring_*` in `pipeline/fix_engine_bench_test.go`
 - [x] Evaluate SARIF struct pooling — **SKIP** (312KB/100 findings; bytes dominated by un-poolable JSON buffer + per-finding strings; struct headers are ~0.2% of total; sync.Pool complexity/risk unjustified)
-- [ ] Watch mode — **DEFERRED**
-- [ ] IDE plugin stubs — **OUT OF SCOPE v1**
-- [ ] Web UI — **OUT OF SCOPE v1**
+- [ ] Watch mode — **DEFERRED** (see [ROADMAP.md](ROADMAP.md#tooling-integrations))
+- [ ] IDE plugin stubs — **OUT OF SCOPE v1** (see [ROADMAP.md](ROADMAP.md#tooling-integrations))
+- [ ] Web UI — **OUT OF SCOPE v1** (see [ROADMAP.md](ROADMAP.md#out-of-scope-v1))
 
 ## ⚪ Unknown / Owner Decision
 
@@ -167,11 +167,11 @@
 - [x] Decide `Properties map[string]any` — WONTFIX, intentionally rejected
 - [x] Repository structure — flat root package is intentional for a library (not an application)
 - [x] `Correlation` JSON tags camelCase
-- [ ] `PositionOffset` sentinel design — **OWNER_DECISION** (breaking change)
+- [x] `PositionOffset` sentinel design — **RESOLVED v0.9.0** (Offset=-1 sentinel; see CHANGELOG [0.9.0])
 - [x] Add `ToolInfo.Validate()` method + tests
 - [x] Add `RetryConfig.Validate()` method
 - [ ] `Report.Merge()` → return new `*Report` instead of mutating receiver — **DEPRECATED**, will be removed v1.0.0; use MergeInto
-- [ ] Fix `FixProviders` through CLI config
+- [x] Fix `FixProviders` through CLI config — `-fix-provider` flag + `fixProviders` config field implemented (v0.8.0)
 
 ## Recently Completed (2026-06-05)
 
