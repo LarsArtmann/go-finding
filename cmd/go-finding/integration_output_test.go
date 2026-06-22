@@ -246,8 +246,8 @@ func TestOutputResults_CSV(t *testing.T) {
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(records).To(HaveLen(2)) // header + 1 data row, no footer
 
-	g.Expect(records[0]).To(Equal([]string{"Location", "Severity", "Rule", "Message"}))
-	g.Expect(records[1][2]).To(Equal("nilcheck"))
+	g.Expect(records[0]).To(Equal([]string{"Location", "Severity", "Category", "Rule", "Message", "Fix"}))
+	g.Expect(records[1][3]).To(Equal("nilcheck"))
 }
 
 func TestOutputResults_TSV(t *testing.T) {
@@ -266,8 +266,8 @@ func TestOutputResults_TSV(t *testing.T) {
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(records).To(HaveLen(2)) // header + 1 data row, no footer
 
-	g.Expect(records[0]).To(Equal([]string{"Location", "Severity", "Rule", "Message"}))
-	g.Expect(records[1][2]).To(Equal("nilcheck"))
+	g.Expect(records[0]).To(Equal([]string{"Location", "Severity", "Category", "Rule", "Message", "Fix"}))
+	g.Expect(records[1][3]).To(Equal("nilcheck"))
 }
 
 func TestOutputResults_MarkdownHasAlignedTable(t *testing.T) {
@@ -317,16 +317,20 @@ func TestFindingToTableData(t *testing.T) {
 
 	findings := []finding.Finding{
 		{
-			Rule:     "R1",
-			Message:  "first issue",
-			Severity: finding.SeverityError,
-			Position: finding.Pos("main.go", 10, 5),
+			Rule:        "R1",
+			Message:     "first issue",
+			Severity:    finding.SeverityError,
+			Position:    finding.Pos("main.go", 10, 5),
+			Category:    finding.CategorySecurity,
+			FixStrategy: finding.FixStrategyDirect,
 		},
 		{
-			Rule:     "R2",
-			Message:  "second issue",
-			Severity: finding.SeverityWarning,
-			Position: finding.Pos("util.go", 3, 1),
+			Rule:        "R2",
+			Message:     "second issue",
+			Severity:    finding.SeverityWarning,
+			Position:    finding.Pos("util.go", 3, 1),
+			Category:    finding.CategoryStyle,
+			FixStrategy: finding.FixStrategySuggest,
 		},
 	}
 
@@ -336,22 +340,33 @@ func TestFindingToTableData(t *testing.T) {
 		t.Errorf("RowCount = %d, want 2", got)
 	}
 
-	if got := data.ColCount(); got != 4 {
-		t.Errorf("ColCount = %d, want 4", got)
+	if got := data.ColCount(); got != 6 {
+		t.Errorf("ColCount = %d, want 6", got)
 	}
 
 	headers := data.GetHeaders()
-	if headers[0] != "Location" || headers[1] != "Severity" || headers[2] != "Rule" || headers[3] != "Message" {
-		t.Errorf("headers = %v, want [Location Severity Rule Message]", headers)
+	want := []string{"Location", "Severity", "Category", "Rule", "Message", "Fix"}
+	for i, h := range want {
+		if headers[i] != h {
+			t.Errorf("header[%d] = %q, want %q", i, headers[i], h)
+		}
 	}
 
 	rows := data.GetRows()
-	if rows[0][2] != "R1" || rows[1][2] != "R2" {
-		t.Errorf("rule column = %v / %v, want R1 / R2", rows[0][2], rows[1][2])
+	if rows[0][3] != "R1" || rows[1][3] != "R2" {
+		t.Errorf("rule column = %v / %v, want R1 / R2", rows[0][3], rows[1][3])
 	}
 
 	if rows[0][1] != "ERROR" || rows[1][1] != "WARNING" {
 		t.Errorf("severity column = %v / %v, want ERROR / WARNING", rows[0][1], rows[1][1])
+	}
+
+	if rows[0][2] != "security" || rows[1][2] != "style" {
+		t.Errorf("category column = %v / %v, want security / style", rows[0][2], rows[1][2])
+	}
+
+	if rows[0][5] != "direct" || rows[1][5] != "suggest" {
+		t.Errorf("fix column = %v / %v, want direct / suggest", rows[0][5], rows[1][5])
 	}
 }
 

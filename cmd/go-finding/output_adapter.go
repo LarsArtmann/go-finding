@@ -27,14 +27,16 @@ func isGoOutputFormat(format string) bool {
 // findingToTableData converts a slice of Findings to go-output's TableData.
 // This is the adapter between go-finding's domain model and go-output's presentation layer.
 func findingToTableData(findings []finding.Finding) *output.TableData {
-	data := output.NewTableData([]string{"Location", "Severity", "Rule", "Message"})
+	data := output.NewTableData([]string{"Location", "Severity", "Category", "Rule", "Message", "Fix"})
 
 	for _, f := range findings {
 		data.AddRow([]string{
 			f.Position.String(),
 			strings.ToUpper(string(f.Severity)),
+			string(f.Category),
 			f.Rule,
 			f.Message,
+			string(f.FixStrategy),
 		})
 	}
 
