@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **CSV and TSV output formats** — CLI `-format csv` and `-format tsv` produce clean, machine-readable data exports via go-output's delimited writers. No footer rows — safe for downstream parsing.
+- **Markdown output via go-output** — CLI `-format markdown` now uses go-output's `MarkdownTable` renderer with auto-aligned column widths and a finding-count title header. Replaces the hand-rolled `FormatMarkdown` in the CLI path.
+- **Format validation** — Unknown `-format` values now return a clear error listing all supported formats instead of silently falling through to text.
+
+### Changed
+
+- **CLI adapter pattern** — `cmd/go-finding/output_adapter.go` adapts `[]Finding` → go-output's `TableData` with 6 columns: Location, Severity, Category, Rule, Message, Fix. Root `finding` package stays dependency-free.
+- **go-output dependency** — Added `github.com/larsartmann/go-output` v0.17.2, `go-output/markdown` v0.17.2, `go-output/delimited` v0.17.2 as CLI-only deps. Root `finding` package unaffected.
+
 ## [0.9.1] - 2026-06-18
 
 ### Fixed
