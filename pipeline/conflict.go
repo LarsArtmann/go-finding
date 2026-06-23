@@ -219,18 +219,18 @@ func FilterConflictingEdits(
 	return result, providerErrors
 }
 
-// ConflictInfo provides detailed information about conflicts.
-type ConflictInfo struct {
+// Conflict provides detailed information about conflicts.
+type Conflict struct {
 	Finding       finding.Finding
 	ConflictsWith []finding.Finding
 	Reason        string
 }
 
 // AnalyzeConflicts provides detailed conflict information.
-func AnalyzeConflicts(fixes []finding.Finding) []ConflictInfo {
+func AnalyzeConflicts(fixes []finding.Finding) []Conflict {
 	groups, conflictingFixes := DetectConflicts(fixes)
 
-	result := make([]ConflictInfo, 0, len(conflictingFixes))
+	result := make([]Conflict, 0, len(conflictingFixes))
 
 	for _, cf := range conflictingFixes {
 		cfRange := getFindingRange(cf)
@@ -243,7 +243,7 @@ func AnalyzeConflicts(fixes []finding.Finding) []ConflictInfo {
 			}
 		}
 
-		result = append(result, ConflictInfo{
+		result = append(result, Conflict{
 			Finding:       cf,
 			ConflictsWith: conflictsWith,
 			Reason:        ReasonOverlappingRange,

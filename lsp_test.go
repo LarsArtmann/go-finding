@@ -184,7 +184,7 @@ func TestFromLSPRelated(t *testing.T) {
 	diag.Code = "dupl"
 	diag.Source = "dupl"
 	diag.Message = "clone detected"
-	diag.Related = []LSPRelatedInfo{
+	diag.Related = []LSPRelated{
 		{
 			Location: LSPLocation{
 				URI:   "file:///other.go",

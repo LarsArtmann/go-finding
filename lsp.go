@@ -37,7 +37,7 @@ type LSPDiagnostic struct {
 	Source   string             `json:"source,omitempty"`
 	Message  string             `json:"message"`
 	Tags     []LSPDiagnosticTag `json:"tags,omitempty"`
-	Related  []LSPRelatedInfo   `json:"relatedInformation,omitempty"`
+	Related  []LSPRelated       `json:"relatedInformation,omitempty"`
 }
 
 // LSPRange represents a 0-based character range in a text document.
@@ -52,8 +52,8 @@ type LSPPosition struct {
 	Character int `json:"character"` // 0-based
 }
 
-// LSPRelatedInfo provides related information for a diagnostic.
-type LSPRelatedInfo struct {
+// LSPRelated provides related information for a diagnostic.
+type LSPRelated struct {
 	Location LSPLocation `json:"location"`
 	Message  string      `json:"message"`
 }
@@ -106,7 +106,7 @@ func (f Finding) ToLSP() LSPDiagnostic {
 			}
 		}
 
-		diag.Related = append(diag.Related, LSPRelatedInfo{
+		diag.Related = append(diag.Related, LSPRelated{
 			Location: LSPLocation{
 				URI:   rel.Position.File,
 				Range: lspRange,

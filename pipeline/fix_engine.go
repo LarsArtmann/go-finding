@@ -58,7 +58,7 @@ func (e *FixEngine) Apply(
 func (e *FixEngine) ApplyWithConflicts(
 	content []byte,
 	fixes []finding.Finding,
-) ([]finding.Finding, []FixEdit, []ConflictInfo, []byte, []error) {
+) ([]finding.Finding, []FixEdit, []Conflict, []byte, []error) {
 	if len(fixes) == 0 {
 		return nil, nil, nil, content, nil
 	}
@@ -142,11 +142,11 @@ func (e *FixEngine) resolveEdits(content []byte, lineIndex *[]int, f finding.Fin
 func (*FixEngine) applyEditsWithConflicts(
 	content []byte,
 	edits []FixEdit,
-) ([]finding.Finding, []FixEdit, []ConflictInfo, []byte) {
+) ([]finding.Finding, []FixEdit, []Conflict, []byte) {
 	var (
 		applied      []finding.Finding
 		appliedEdits []FixEdit
-		conflicts    []ConflictInfo
+		conflicts    []Conflict
 	)
 
 	frontier := len(content) + 1
@@ -173,7 +173,7 @@ func (*FixEngine) applyEditsWithConflicts(
 				}
 			}
 
-			conflicts = append(conflicts, ConflictInfo{
+			conflicts = append(conflicts, Conflict{
 				Finding:       edit.Source,
 				ConflictsWith: conflictsWith,
 				Reason:        ReasonOverlappingEdit,
