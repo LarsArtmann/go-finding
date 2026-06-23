@@ -23,7 +23,7 @@
 | **Pipeline extras** | `pipeline/stage_hook.go`, `pipeline/line_shift.go`, `pipeline/metrics.go`, `pipeline/retry.go`, `pipeline/partial.go`, `pipeline/generated_filter.go`                                                   |
 | **Analysis**        | `analysis/analysis.go` (go/analysis ↔ Finding)                                                                                                                                                          |
 | **Detectors**       | `internal/detectors/govet.go`, `internal/detectors/staticcheck.go`, `internal/detectors/helpers.go`                                                                                                     |
-| **CLI**             | `cmd/go-finding/main.go`, `config.go`, `registry.go`, `fix_provider_registry.go`, `generated_filter.go`, `output_adapter.go` (go-output adapter)                                                                          |
+| **CLI**             | `cmd/go-finding/main.go`, `config.go`, `registry.go`, `fix_provider_registry.go`, `generated_filter.go`, `output_adapter.go` (go-output adapter)                                                        |
 
 ## Testing & Build
 

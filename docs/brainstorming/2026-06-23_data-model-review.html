@@ -1,0 +1,1420 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>go-finding — Data Model Review (2026-06-23)</title>
+    <style>
+      /* =========================================================================
+         BAUHAUS LIGHT — Editorial template
+         Design language: form follows function. Primary colors on warm paper.
+         Zero external dependencies: system fonts, no CDN, no build step.
+         Token architecture: see references/bauhaus-tokens.md
+         ========================================================================= */
+
+      :root {
+        /* --- Primitive palette (Bauhaus Light) --- */
+        --color-paper: #f4f4f0;
+        --color-paper-2: #ffffff;
+        --color-paper-3: #e8e8e2;
+        --color-ink: #111111;
+        --color-red: #e63946;
+        --color-blue: #1d3557;
+        --color-yellow: #f4d35e;
+        --color-hairline: rgba(17, 17, 17, 0.14);
+        --color-hairline-strong: rgba(17, 17, 17, 0.3);
+
+        /* --- Semantic layer (shared vocabulary with dark template) --- */
+        --surface: var(--color-paper);
+        --surface-raised: var(--color-paper-2);
+        --surface-sunken: var(--color-paper-3);
+        --text: var(--color-ink);
+        --text-muted: rgba(17, 17, 17, 0.72);
+        --text-faint: rgba(17, 17, 17, 0.5);
+        --border: var(--color-hairline);
+        --border-strong: var(--color-hairline-strong);
+        --accent: var(--color-red);
+        --problem: var(--color-red);
+        --solution: var(--color-blue);
+        --warning: var(--color-yellow);
+
+        /* --- Backward-compatible aliases (do not break consumer skills) --- */
+        --bg: var(--surface);
+        --bg-elevated: var(--surface-raised);
+        --bg-sunken: var(--surface-sunken);
+        --bg-card: var(--surface-raised);
+        --bg-code: var(--surface-sunken);
+        --ink: var(--text);
+        --ink-secondary: var(--text-muted);
+        --ink-muted: var(--text-faint);
+        --rose: var(--problem);
+        --rose-glow: color-mix(in srgb, var(--problem) 15%, transparent);
+        --emerald: var(--solution);
+        --emerald-glow: color-mix(in srgb, var(--solution) 15%, transparent);
+        --amber: var(--warning);
+        --amber-glow: color-mix(in srgb, var(--warning) 15%, transparent);
+        --amber-light: color-mix(in srgb, var(--warning) 22%, transparent);
+        --coral: var(--problem);
+        --coral-light: color-mix(in srgb, var(--problem) 12%, transparent);
+        --teal: var(--solution);
+        --teal-light: color-mix(in srgb, var(--solution) 12%, transparent);
+
+        /* --- Shape --- */
+        --radius: 0px;
+        --radius-sm: 0px;
+
+        /* --- Type stacks (system only — zero external fonts) --- */
+        --font-heading:
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        --font-body:
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        --font-mono:
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
+          monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      section[id],
+      [id] {
+        scroll-margin-top: 60px;
+      }
+
+      body {
+        background: var(--surface);
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* --- Full-bleed top bar --- */
+      .top-bar {
+        background: var(--text);
+        color: var(--surface);
+        padding: 0.6rem 2rem;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* --- Layout: optional sticky sidebar TOC --- */
+      .layout {
+        display: flex;
+        gap: 2.5rem;
+        padding: 2rem;
+      }
+      .sidebar {
+        width: 220px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 1rem;
+        align-self: flex-start;
+        height: calc(100vh - 2rem);
+        overflow-y: auto;
+        display: none;
+      }
+      .sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .sidebar .label {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--accent);
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid var(--text);
+      }
+      .sidebar a {
+        font-size: 0.86rem;
+        color: var(--text);
+        text-decoration: none;
+        padding: 0.5rem 0.75rem;
+        border-left: 4px solid transparent;
+        font-weight: 600;
+        transition: all 0.15s ease;
+        line-height: 1.4;
+      }
+      .sidebar a:hover,
+      .sidebar a.active {
+        border-left-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 8%, transparent);
+        color: var(--accent);
+      }
+      .main {
+        flex: 1;
+        min-width: 0;
+      }
+
+      /* --- Headings --- */
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--font-heading);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        color: var(--text);
+      }
+      h1 {
+        font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+        line-height: 1.05;
+        margin: 0 0 0.6rem;
+      }
+      h2 {
+        font-size: 1.5rem;
+        margin: 2.5rem 0 1rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 3px solid var(--text);
+        display: flex;
+        align-items: baseline;
+        gap: 0.7rem;
+      }
+      h2 .num {
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        color: var(--accent);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+      h3 {
+        font-size: 1.15rem;
+        margin: 0 0 0.4rem;
+        font-weight: 700;
+      }
+      h4 {
+        font-size: 1rem;
+        margin: 0 0 0.3rem;
+        font-weight: 700;
+      }
+      p {
+        margin: 0 0 1rem;
+      }
+
+      /* --- Hero --- */
+      .hero {
+        padding: 1.5rem 0 2rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 3px solid var(--text);
+      }
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--accent);
+        margin-bottom: 0.9rem;
+      }
+      .subtitle {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        max-width: 70ch;
+        margin: 0 0 1rem;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .tag {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 0.25rem 0.6rem;
+        background: var(--surface-sunken);
+        color: var(--text);
+        border: 1px solid var(--border-strong);
+      }
+      .tag.amber {
+        background: var(--warning);
+        border-color: var(--warning);
+        color: var(--text);
+      }
+      .tag.teal {
+        background: var(--solution);
+        border-color: var(--solution);
+        color: var(--surface);
+      }
+
+      /* Bauhaus signature: geometric shape cluster (optional) */
+      .hero-shapes {
+        position: relative;
+        height: 90px;
+        margin-bottom: 1.2rem;
+      }
+      .hero-shapes .circle {
+        position: absolute;
+        top: 0;
+        right: 180px;
+        width: 64px;
+        height: 64px;
+        background: var(--problem);
+        border-radius: 50%;
+      }
+      .hero-shapes .square {
+        position: absolute;
+        top: 26px;
+        right: 90px;
+        width: 56px;
+        height: 56px;
+        background: var(--solution);
+      }
+      .hero-shapes .tri {
+        position: absolute;
+        top: 8px;
+        right: 0;
+        width: 0;
+        height: 0;
+        border-left: 32px solid transparent;
+        border-right: 32px solid transparent;
+        border-bottom: 56px solid var(--warning);
+      }
+      .hero-shapes .bar {
+        position: absolute;
+        bottom: 0;
+        right: 230px;
+        width: 100px;
+        height: 14px;
+        background: var(--text);
+      }
+
+      /* --- Scorecard / stat cards --- */
+      .scorecard,
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0;
+        margin: 1.5rem 0 2rem;
+        border: 3px solid var(--text);
+      }
+      .score-card,
+      .stat-card {
+        padding: 1.3rem 1rem;
+        text-align: center;
+        border-right: 3px solid var(--text);
+        background: var(--surface-raised);
+      }
+      .score-card:last-child,
+      .stat-card:last-child {
+        border-right: none;
+      }
+      /* Bauhaus color blocks */
+      .score-card:nth-child(1),
+      .stat-card:nth-child(1) {
+        background: var(--problem);
+        color: var(--surface);
+      }
+      .score-card:nth-child(2),
+      .stat-card:nth-child(2) {
+        background: var(--solution);
+        color: var(--surface);
+      }
+      .score-card:nth-child(3),
+      .stat-card:nth-child(3) {
+        background: var(--warning);
+        color: var(--text);
+      }
+      .score-card:nth-child(4),
+      .stat-card:nth-child(4) {
+        background: var(--text);
+        color: var(--surface);
+      }
+      .score-card:nth-child(5),
+      .stat-card:nth-child(5) {
+        background: var(--surface-raised);
+      }
+      .score-card:nth-child(6),
+      .stat-card:nth-child(6) {
+        background: var(--surface-raised);
+      }
+
+      .score,
+      .stat-value {
+        font-family: var(--font-heading);
+        font-size: 2.6rem;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+      .score-card .label,
+      .stat-label {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-top: 0.5rem;
+      }
+      /* State classes override the nth-child coloring */
+      .score-good,
+      .stat-good {
+        background: var(--solution) !important;
+        color: var(--surface) !important;
+      }
+      .score-warn,
+      .stat-warn {
+        background: var(--warning) !important;
+        color: var(--text) !important;
+      }
+      .score-bad,
+      .stat-bad {
+        background: var(--problem) !important;
+        color: var(--surface) !important;
+      }
+
+      /* --- General cards --- */
+      .card {
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        padding: 1.2rem 1.4rem;
+        margin-bottom: 1rem;
+        border-left: 8px solid var(--border-strong);
+      }
+      .card-problem {
+        border-left-color: var(--problem);
+      }
+      .card-solution {
+        border-left-color: var(--solution);
+      }
+      .card-warning {
+        border-left-color: var(--warning);
+      }
+
+      /* --- Issue cards --- */
+      .issue {
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        padding: 1.2rem 1.4rem;
+        margin-bottom: 1rem;
+        border-left: 8px solid var(--border-strong);
+      }
+      .issue-critical {
+        border-left-color: var(--problem);
+      }
+      .issue-important {
+        border-left-color: var(--warning);
+      }
+      .issue-nice {
+        border-left-color: var(--solution);
+      }
+      .issue h3 {
+        margin-bottom: 0.3rem;
+      }
+      .issue .where {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--text-faint);
+        margin: 0.2rem 0 0.6rem;
+      }
+      .issue p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* --- Severity badges --- */
+      .severity {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.22rem 0.6rem;
+        margin-bottom: 0.6rem;
+        color: var(--surface);
+      }
+      .severity-critical {
+        background: var(--problem);
+      }
+      .severity-important {
+        background: var(--warning);
+        color: var(--text);
+      }
+      .severity-nice {
+        background: var(--solution);
+      }
+
+      /* --- Inline badges --- */
+      .badge {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.55rem;
+        border: 1px solid var(--text);
+        color: var(--text);
+      }
+      .badge-critical {
+        background: var(--problem);
+        color: var(--surface);
+      }
+      .badge-high {
+        background: var(--warning);
+      }
+      .badge-medium {
+        background: var(--surface-sunken);
+      }
+      .badge-low {
+        background: var(--surface-raised);
+        color: var(--text-muted);
+      }
+      .badge-fixed {
+        background: var(--solution);
+        color: var(--surface);
+      }
+
+      /* --- Callouts --- */
+      .callout {
+        margin: 0.8rem 0 0;
+        padding: 0.8rem 1rem;
+        border: 1px solid var(--border-strong);
+        border-left: 4px solid var(--border-strong);
+        background: var(--surface-sunken);
+        font-size: 0.92rem;
+      }
+      .callout strong {
+        display: inline-block;
+        margin-right: 0.4rem;
+      }
+      .callout-teal,
+      .callout-solution {
+        border-left-color: var(--solution);
+        background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised));
+      }
+      .callout-amber,
+      .callout-warning {
+        border-left-color: var(--warning);
+        background: color-mix(in srgb, var(--warning) 18%, var(--surface-raised));
+      }
+
+      /* --- Strengths --- */
+      .strengths {
+        display: grid;
+        gap: 0.5rem;
+        margin: 1rem 0 1.5rem;
+      }
+      .strength {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.9rem;
+        padding: 0.75rem 0;
+        border-bottom: 2px solid var(--border);
+      }
+      .strength .check {
+        font-family: var(--font-mono);
+        font-weight: 900;
+        color: var(--solution);
+        font-size: 1.3rem;
+        line-height: 1.3;
+      }
+      .strength .text strong {
+        display: block;
+        margin-bottom: 0.15rem;
+      }
+      .strength .text span {
+        color: var(--text-muted);
+        font-size: 0.92rem;
+      }
+
+      /* --- Tables --- */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0 1.5rem;
+        font-size: 0.92rem;
+        border: 2px solid var(--text);
+      }
+      th {
+        text-align: left;
+        padding: 0.6rem 0.9rem;
+        background: var(--text);
+        color: var(--surface);
+        font-family: var(--font-mono);
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border-right: 1px solid var(--border-strong);
+      }
+      th:last-child {
+        border-right: none;
+      }
+      td {
+        padding: 0.6rem 0.9rem;
+        border-top: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+      td:last-child {
+        border-right: none;
+      }
+      tr:nth-child(even) td {
+        background: var(--surface-sunken);
+      }
+      table.compare td.yes {
+        color: var(--solution);
+        font-weight: 700;
+      }
+      table.compare td.no {
+        color: var(--problem);
+        font-weight: 700;
+      }
+
+      /* --- Code blocks + syntax highlighting --- */
+      pre {
+        background: var(--text);
+        color: var(--surface);
+        padding: 1rem 1.2rem;
+        margin: 1rem 0;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.65;
+        overflow-x: auto;
+        border: 2px solid var(--text);
+      }
+      code {
+        font-family: var(--font-mono);
+      }
+      .tok-keyword {
+        color: var(--warning);
+      }
+      .tok-type {
+        color: var(--warning);
+      }
+      .tok-string {
+        color: #95e1d3;
+      }
+      .tok-comment {
+        color: rgba(244, 244, 240, 0.45);
+        font-style: italic;
+      }
+      .tok-func {
+        color: #6eb5ff;
+      }
+      .tok-number {
+        color: var(--warning);
+      }
+      .tok-generic {
+        color: var(--problem);
+      }
+      .tok-builtin {
+        color: #6eb5ff;
+      }
+      .tok-punct {
+        color: rgba(244, 244, 240, 0.7);
+      }
+      .tok-attr {
+        color: var(--warning);
+      }
+
+      /* --- Dependency tree / ASCII diagrams --- */
+      .dep-tree {
+        background: var(--surface-sunken);
+        border: 2px solid var(--text);
+        padding: 1rem 1.2rem;
+        margin: 1rem 0;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.7;
+        white-space: pre;
+        overflow-x: auto;
+      }
+      .dep-tree .root {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .dep-tree .ok {
+        color: var(--solution);
+      }
+      .dep-tree .unwanted {
+        color: var(--problem);
+      }
+
+      /* --- Inline node-and-arrow diagrams --- */
+      .diagram {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        margin: 1rem 0;
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+      }
+      .node {
+        display: inline-block;
+        padding: 0.4rem 0.75rem;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 700;
+        background: var(--surface-sunken);
+        border: 1px solid var(--text);
+      }
+      .node-core {
+        background: var(--accent);
+        color: var(--surface);
+      }
+      .node-problem {
+        background: var(--problem);
+        color: var(--surface);
+      }
+      .node-good {
+        background: var(--solution);
+        color: var(--surface);
+      }
+      .arrow {
+        color: var(--text-faint);
+        font-family: var(--font-mono);
+      }
+
+      /* --- Grids --- */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+
+      /* --- Inline TOC --- */
+      .toc {
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        border-left: 6px solid var(--accent);
+        padding: 1rem 1.3rem;
+        margin: 1rem 0 1.5rem;
+      }
+      .toc h3 {
+        margin-bottom: 0.5rem;
+      }
+      .toc ul {
+        list-style: none;
+        padding: 0;
+      }
+      .toc li {
+        margin: 0.25rem 0;
+      }
+      .toc a {
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.92rem;
+        font-weight: 600;
+      }
+      .toc a:hover {
+        color: var(--accent);
+      }
+
+      /* --- Migration / numbered steps --- */
+      .migration-step {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        gap: 1rem;
+        margin: 1rem 0;
+        padding: 1.1rem;
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        border-left: 6px solid var(--accent);
+      }
+      .migration-num {
+        font-family: var(--font-mono);
+        font-weight: 900;
+        font-size: 1.8rem;
+        color: var(--accent);
+        line-height: 1;
+      }
+      .migration-content h4 {
+        margin-bottom: 0.2rem;
+      }
+      .migration-content p {
+        margin-bottom: 0;
+        color: var(--text-muted);
+        font-size: 0.94rem;
+      }
+
+      /* --- Before/After comparison --- */
+      .compare-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin: 1rem 0 0.5rem;
+      }
+      .compare-before,
+      .compare-after {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 0.4rem 0.7rem;
+        color: var(--surface);
+      }
+      .compare-before {
+        background: var(--problem);
+      }
+      .compare-after {
+        background: var(--solution);
+      }
+      .compare-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .compare-row pre {
+        margin: 0;
+      }
+
+      /* --- Footer --- */
+      .footer {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 3px solid var(--text);
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+      }
+
+      /* --- Responsive --- */
+      @media (min-width: 1024px) {
+        .sidebar {
+          display: block;
+        }
+      }
+      @media (max-width: 768px) {
+        .layout {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .top-bar {
+          padding: 0.6rem 1rem;
+          flex-wrap: wrap;
+          gap: 0.3rem;
+        }
+        .grid-2,
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+        .compare-header,
+        .compare-row {
+          grid-template-columns: 1fr;
+        }
+        .scorecard,
+        .stat-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .score-card:nth-child(2),
+        .stat-card:nth-child(2) {
+          border-right: none;
+        }
+        .score-card:nth-child(1),
+        .stat-card:nth-child(1),
+        .score-card:nth-child(2),
+        .stat-card:nth-child(2) {
+          border-bottom: 3px solid var(--text);
+        }
+        .migration-step {
+          grid-template-columns: 1fr;
+        }
+        .hero-shapes {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Full-bleed top bar (optional — remove for quieter reports) -->
+    <div class="top-bar">
+      <span>REPORT TYPE</span>
+      <span>2026-06-23</span>
+      <span>Crush &middot; architecture-review skill pack</span>
+    </div>
+
+    <div class="layout">
+      <!-- Sidebar TOC (hidden below 1024px; use inline .toc if you prefer) -->
+      <aside class="sidebar" data-nav>
+        <nav>
+          <div class="label">Contents</div>
+          <a href="#summary">Summary</a>
+          <a href="#scorecard">Scorecard</a>
+          <a href="#strengths">Strengths</a>
+          <a href="#findings">Problem Catalog</a>
+          <a href="#proposal">Redesign</a>
+          <a href="#appendix">Priority Matrix</a>
+        </nav>
+      </aside>
+
+      <!-- Main content -->
+      <main class="main">
+        <!-- Hero -->
+        <header class="hero">
+          <!-- Optional Bauhaus signature: geometric shape cluster. Remove for quieter hero. -->
+          <div class="hero-shapes">
+            <div class="bar"></div>
+            <div class="circle"></div>
+            <div class="square"></div>
+            <div class="tri"></div>
+          </div>
+          <div class="eyebrow">DATA MODEL REVIEW &middot; 2026-06-23</div>
+          <h1>go-finding — Type System Audit</h1>
+          <p class="subtitle">
+            A first-principles review of the Finding, Position, Range, Severity, FixStrategy and
+            supporting types. Catalogs every type-level weakness and designs a Go-idiomatic model
+            where invalid states are unrepresentable.
+          </p>
+          <div class="meta">
+            <span class="tag amber">Scope: root package types</span>
+            <span class="tag">Version: v0.x (pre-v1.0 lock)</span>
+            <span class="tag teal">Status: proposal</span>
+          </div>
+        </header>
+
+        <!-- Scorecard -->
+        <section id="scorecard" class="scorecard">
+          <div class="score-card score-good">
+            <div class="score">16</div>
+            <div class="label">Named domain types</div>
+          </div>
+          <div class="score-card score-warn">
+            <div class="score">7</div>
+            <div class="label">Stringly-typed enums</div>
+          </div>
+          <div class="score-card score-bad">
+            <div class="score">3</div>
+            <div class="label">Split-brain sentinels</div>
+          </div>
+          <div class="score-card score-bad">
+            <div class="score">5</div>
+            <div class="label">Pointer-as-state fields</div>
+          </div>
+          <div class="score-card score-warn">
+            <div class="score">6</div>
+            <div class="label">Primitive obsession sites</div>
+          </div>
+          <div class="score-card score-good">
+            <div class="score">2</div>
+            <div class="label">Generic types (Interval[T], Adapter[O])</div>
+          </div>
+        </section>
+
+        <!-- Summary -->
+        <section id="summary">
+          <h2><span class="num">00</span>Summary</h2>
+          <p>
+            The model is honest and well-documented — every "gotcha" is called out in
+            <code>AGENTS.md</code> and field doc-comments. That said, the
+            <code>Finding</code> struct mixes six conceptual responsibilities (identity, location,
+            classification, fix, context, extensibility) into one flat shape, and several named
+            types still encode optional state through pointers or asymmetric sentinels. None of
+            these are blocking for v1.0, but two — the <code>Position</code> sentinel split-brain
+            and <code>FixStrategy</code> zero-value normalization — will keep biting consumers until
+            they are type-level invariants rather than runtime conventions.
+          </p>
+          <div class="callout callout-amber">
+            <strong>The bottom line</strong>
+            Adopt branded primitive types (<code>Rule</code>, <code>ToolName</code>,
+            <code>FilePath</code>, <code>FindingID</code>) before v1.0 — cheap, breaking-once,
+            prevents a class of mixups forever. Defer the <code>FixStrategy</code> interface-union
+            and <code>Position</code> redesign to v2.0; document them as known type-level debt.
+          </div>
+        </section>
+
+        <!-- Strengths -->
+        <section id="strengths">
+          <h2><span class="num">&#9670;</span>What's already excellent</h2>
+          <p>
+            Before cataloging problems: the model is unusually disciplined for an organically-grown
+            Go library. Several design choices are exactly right.
+          </p>
+
+          <div class="strengths">
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Named types everywhere a concept matters</strong>
+                <span
+                  ><code>Severity</code>, <code>Category</code>, <code>Confidence</code>,
+                  <code>FixStrategy</code>, <code>Tag</code>, <code>SuppressionKind</code>,
+                  <code>RelationKind</code> are all named — not raw strings.
+                  <code>Confidence</code> even has <code>Clamp()</code> +
+                  <code>IsValid()</code>.</span
+                >
+              </div>
+            </div>
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Single extensibility escape hatch, intentionally restricted</strong>
+                <span
+                  ><code>Metadata map[string]string</code> (NOT <code>map[string]any</code>).
+                  Documented in <code>finding.go:36-46</code> with a key-namespacing convention.
+                  Lossless for SARIF/JSON interchange.</span
+                >
+              </div>
+            </div>
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Structured errors with <code>errors.Is</code> support</strong>
+                <span
+                  ><code>FindingError</code> implements <code>Is()</code>/<code>Unwrap()</code>, has
+                  an <code>ErrorCategory</code> enum, and five sentinel roots. Composes with
+                  <code>errors.Join</code> in <code>Validate()</code>.</span
+                >
+              </div>
+            </div>
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Builder enforces invariants at construction</strong>
+                <span
+                  ><code>Builder.Build()</code> validates and normalizes (<code>FixStrategy</code>
+                  "" → "none", clamps Confidence). Consumers who use the Builder get
+                  guaranteed-valid findings.</span
+                >
+              </div>
+            </div>
+            <div class="strength">
+              <div class="check">+</div>
+              <div class="text">
+                <strong>Generics where they pay off</strong>
+                <span
+                  ><code>IntervalIndex[T]</code> for O(log n + k) overlap queries.
+                  <code>ToolAdapter[O any]</code> for tool-output-agnostic adapters. No premature
+                  genericization of simple types.</span
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Findings -->
+        <section id="findings">
+          <h2><span class="num">01</span>Problem Catalog</h2>
+          <p>Seventeen issues across six categories, ordered by severity × systemicity.</p>
+
+          <!-- Issue 1 -->
+          <div class="issue issue-critical" id="issue-position-sentinel">
+            <span class="severity severity-critical">Blocking &middot; Type-level bug magnet</span>
+            <h3>P1 — Position has three different sentinel conventions</h3>
+            <div class="where">
+              position.go:23-29 &middot; cascades into Range, Finding, RelatedRef
+            </div>
+            <p>
+              <code>Line</code>/<code>Column</code> use 0 = "not set" (1-based).
+              <code>Offset</code> uses -1 = "not set" (0-based, so 0 IS valid). The zero value
+              <code>Position{}</code> therefore has <code>Offset=0</code> (a valid byte position!)
+              but <code>File=""</code> (invalid). <code>Position{}.IsZero()</code> returns
+              <strong>false</strong>. Every consumer must remember to call
+              <code>HasOffset()</code> rather than <code>Offset &gt; 0</code>. Three conventions in
+              four fields.
+            </p>
+            <pre><code><span class="tok-comment">// Position{} has Offset=0 (valid byte!) but no file.</span>
+<span class="tok-comment">// IsZero() returns false. HasLocation() returns false.</span>
+<span class="tok-comment">// IsValid() returns false (File is empty).</span>
+<span class="tok-comment">// Three predicates, three answers about the same value.</span>
+p := finding.Position{}
+p.IsZero()     <span class="tok-comment">// false</span>
+p.HasOffset()  <span class="tok-comment">// true</span>
+p.IsValid()    <span class="tok-comment">// false</span></code></pre>
+            <div class="callout callout-teal">
+              <strong>Fix (v2.0, breaking)</strong>
+              Use <code>*int</code> (nil = unset) for all three numeric fields, OR adopt a single
+              <code>type Option[T any] struct{ V T; Ok bool }</code> helper. This collapses three
+              conventions to one and makes <code>Position{}</code> mean "unset everywhere".
+            </div>
+          </div>
+
+          <!-- Issue 2 -->
+          <div class="issue issue-critical" id="issue-fs-zero">
+            <span class="severity severity-critical"
+              >Important &middot; Split-brain that NormalizeFixStrategy papers over</span
+            >
+            <h3>P2 — FixStrategy "" vs "none" is a runtime convention, not a type invariant</h3>
+            <div class="where">
+              fix_strategy.go:50-56 &middot; called from Validate, Builder.Build, FromLSP, SARIF
+              import
+            </div>
+            <p>
+              The zero value <code>FixStrategy("")</code> is invalid; consumers must call
+              <code>NormalizeFixStrategy</code> to convert it to <code>"none"</code>. Four entry
+              points do this manually. A fifth entry point — direct struct literal construction —
+              silently produces invalid findings. The existence of
+              <code>NormalizeFixStrategy</code> is itself the smell: it is runtime correction for
+              what should be a type-level invariant.
+            </p>
+            <div class="callout callout-teal">
+              <strong>Fix (v2.0, breaking)</strong>
+              Redesign <code>FixStrategy</code> as an interface-based closed union:
+              <code>type Fix interface{ fixStrategy() }</code> with <code>NoFix</code>,
+              <code>Suggestion{Text string}</code>, <code>Direct{Before, After string}</code>,
+              <code>AIReserved</code> — each constructor validates its own invariants. The "Direct
+              requires BeforeCode" rule becomes a constructor check, not a Validate() clause.
+            </div>
+          </div>
+
+          <!-- Issue 3 -->
+          <div class="issue issue-important" id="issue-primitive">
+            <span class="severity severity-important">Important &middot; High systemicity</span>
+            <h3>P3 — Primitive obsession: Rule, ToolName, File, Message, ID are raw strings</h3>
+            <div class="where">
+              finding.go:10-47 &middot; 6 distinct domain concepts share the same type
+            </div>
+            <p>
+              All six are <code>string</code>. Nothing prevents <code>f.Rule = f.ToolName</code> or
+              <code>ref.FindingID = "some random text"</code>. They are conceptually distinct and
+              never interchangeable — exactly the case branded types exist for.
+            </p>
+            <pre><code><span class="tok-comment">// Current — all interchangeable at compile time</span>
+<span class="tok-keyword">type</span> <span class="tok-type">Finding</span> <span class="tok-keyword">struct</span> {
+    ID       <span class="tok-type">string</span> <span class="tok-comment">// really a FindingID</span>
+    Rule     <span class="tok-type">string</span> <span class="tok-comment">// really a RuleName</span>
+    ToolName <span class="tok-type">string</span> <span class="tok-comment">// really a ToolName</span>
+    Message  <span class="tok-type">string</span> <span class="tok-comment">// really a HumanMessage</span>
+    Position <span class="tok-type">Position</span> <span class="tok-comment">// File is really a FilePath</span>
+}</code></pre>
+            <div class="callout callout-teal">
+              <strong>Fix (v1.0, cheap — DO THIS)</strong>
+              Add branded types: <code>type FindingID string</code>,
+              <code>type RuleName string</code>, <code>type ToolName string</code>,
+              <code>type FilePath string</code>. JSON tags stay identical (branded string marshals
+              as string). Compile-time mixup prevention; zero runtime cost; one-time breaking change
+              before the v1.0 API lock.
+            </div>
+          </div>
+
+          <!-- Issue 4 -->
+          <div class="issue issue-important" id="issue-pointer-state">
+            <span class="severity severity-important">Important &middot; Five sites</span>
+            <h3>P4 — Pointer fields encode optional state implicitly</h3>
+            <div class="where">
+              finding.go:29-33 &middot; suppression.go:20 &middot; errors.go:44-48
+            </div>
+            <p>
+              Five pointer fields encode three states (nil / zero / valid):
+              <code>Range *Range</code>, <code>Suppression *Suppression</code>,
+              <code>Suppression.ExpiresAt *time.Time</code>, <code>RelatedRef.Range *Range</code>,
+              <code>FindingError.Finding *Finding</code>. Each is a potential nil-dereference site
+              and forces defensive checks throughout.
+            </p>
+            <div class="callout callout-teal">
+              <strong>Fix (mixed — some v1.0, some v2.0)</strong>
+              v1.0: Keep pointers but document nil-semantics per field (most are already
+              documented). v2.0: Replace <code>*time.Time</code> with
+              <code>ExpiresAt time.Time</code> + <code>HasExpiry bool</code>; replace
+              <code>*Range</code> on Finding with <code>Range</code> +
+              <code>HasRange bool</code> (Range already has <code>IsValid()</code>).
+            </div>
+          </div>
+
+          <!-- Issue 5 -->
+          <div class="issue issue-important" id="issue-aliases-mutable">
+            <span class="severity severity-important">Important &middot; Concurrency footgun</span>
+            <h3>P5 — SeverityAliases is a mutable global map</h3>
+            <div class="where">severity.go:181-191 &middot; consumed by ParseSeverity</div>
+            <p>
+              <code>var SeverityAliases = map[string]Severity{...}</code> is a package-level mutable
+              map. The doc-comment invites mutation ("Consumers can add custom aliases via this map
+              before calling ParseSeverity"). Concurrent read-after-write on a Go map is a runtime
+              panic. Library consumers who customize aliases cannot do so safely.
+            </p>
+            <div class="callout callout-teal">
+              <strong>Fix (v1.0, low risk)</strong>
+              Replace with a
+              <code>func RegisterSeverityAlias(name string, sev Severity)</code> guarded by a
+              <code>sync.RWMutex</code>. Or accept aliases as a parameter to a new
+              <code>ParseSeverityWithAliases(s, aliases)</code>. Either way, kill the global mutable
+              map.
+            </div>
+          </div>
+
+          <!-- Issue 6 -->
+          <div class="issue issue-nice" id="issue-flat-struct">
+            <span class="severity severity-nice">Nice to have &middot; Readability</span>
+            <h3>P6 — Finding is a 17-field flat struct mixing six concerns</h3>
+            <div class="where">
+              finding.go:8-48 &middot; identity / location / classification / fix / context /
+              extensibility
+            </div>
+            <p>
+              The field-grouping comments help, but the compiler doesn't enforce them. Composition
+              via embedded structs (<code>Identity</code>, <code>Location</code>,
+              <code>Classification</code>, <code>Fix</code>) would let consumers pass sub-structs to
+              focused functions.
+            </p>
+            <div class="callout callout-amber">
+              <strong>Decision: DEFER to v2.0</strong>
+              Listed in TODO_LIST.md as "DEFERRED v2 (breaking change)". Composition changes JSON
+              serialization shape — must be batched with other v2.0 breaks.
+            </div>
+          </div>
+
+          <div class="issue issue-nice" id="issue-relatedref-id">
+            <span class="severity severity-nice">Nice to have &middot; Type safety</span>
+            <h3>P7 — RelatedRef.FindingID is raw string, not branded FindingID</h3>
+            <div class="where">finding.go:83 &middot; Correlation.FindingIDs []string</div>
+            <p>
+              Once <code>FindingID</code> is a branded type (issue P3),
+              <code>RelatedRef.FindingID</code> and <code>Correlation.FindingIDs</code> should use
+              it. This makes it impossible to put a rule name where a finding ID belongs.
+            </p>
+          </div>
+
+          <div class="issue issue-nice" id="issue-tags-set">
+            <span class="severity severity-nice">Nice to have &middot; Semantic clarity</span>
+            <h3>P8 — Tags []Tag is a slice, not a set</h3>
+            <div class="where">
+              finding.go:21 &middot; order-sensitive equality via finding_equal.go
+            </div>
+            <p>
+              Conceptually Tags is a set (no semantic meaning to order, duplicates are noise). It's
+              a slice. <code>finding_equal.go</code> must therefore do order-insensitive comparison.
+              Constructors don't dedup. A <code>type TagSet map[Tag]struct{}</code> would encode the
+              invariant at the type level.
+            </p>
+          </div>
+        </section>
+
+        <!-- Proposal -->
+        <section id="proposal">
+          <h2><span class="num">02</span>Target model (sketch)</h2>
+          <p>
+            The redesign is staged: cheap branded types land in v1.0, structural changes wait for
+            v2.0. The sketch below shows the target end-state.
+          </p>
+          <pre><code><span class="tok-comment">// v1.0 — branded primitive types (no struct shape change)</span>
+<span class="tok-keyword">type</span> (
+    FindingID <span class="tok-type">string</span>
+    RuleName  <span class="tok-type">string</span>
+    ToolName  <span class="tok-type">string</span>
+    FilePath  <span class="tok-type">string</span>
+)
+
+<span class="tok-keyword">type</span> <span class="tok-type">Finding</span> <span class="tok-keyword">struct</span> {
+    ID       <span class="tok-type">FindingID</span> <span class="tok-attr">`json:"id"`</span>
+    Rule     <span class="tok-type">RuleName</span>  <span class="tok-attr">`json:"rule"`</span>
+    ToolName <span class="tok-type">ToolName</span> <span class="tok-attr">`json:"toolName"`</span>
+    <span class="tok-comment">// ... Message stays string (human text, not identity)</span>
+    Position <span class="tok-type">Position</span>  <span class="tok-comment">// Position.File becomes FilePath</span>
+}
+
+<span class="tok-comment">// v2.0 — FixStrategy as closed interface union</span>
+<span class="tok-keyword">type</span> <span class="tok-type">Fix</span> <span class="tok-keyword">interface</span> { isFix() }
+
+<span class="tok-keyword">type</span> <span class="tok-type">NoFix</span> <span class="tok-keyword">struct</span>{}                   <span class="tok-keyword">func</span> (<span class="tok-type">NoFix</span>) isFix() {}
+<span class="tok-keyword">type</span> <span class="tok-type">Suggestion</span> <span class="tok-keyword">struct</span>{ Text <span class="tok-type">string</span> } <span class="tok-keyword">func</span> (<span class="tok-type">Suggestion</span>) isFix() {}
+<span class="tok-keyword">type</span> <span class="tok-type">Direct</span> <span class="tok-keyword">struct</span> {
+    Before <span class="tok-type">string</span> <span class="tok-comment">// required</span>
+    After  <span class="tok-type">string</span> <span class="tok-comment">// required</span>
+}                          <span class="tok-keyword">func</span> (<span class="tok-type">Direct</span>) isFix() {}
+<span class="tok-keyword">type</span> <span class="tok-type">AIReserved</span> <span class="tok-keyword">struct</span>{}            <span class="tok-keyword">func</span> (<span class="tok-type">AIReserved</span>) isFix() {}
+
+<span class="tok-comment">// "Direct requires Before/After" becomes a constructor invariant:</span>
+<span class="tok-keyword">func</span> <span class="tok-func">NewDirect</span>(before, after <span class="tok-type">string</span>) (<span class="tok-type">Direct</span>, <span class="tok-type">error</span>) {
+    <span class="tok-keyword">if</span> before == <span class="tok-string">""</span> &amp;&amp; after == <span class="tok-string">""</span> {
+        <span class="tok-keyword">return</span> <span class="tok-type">Direct</span>{}, <span class="tok-type">ErrValidation</span>
+    }
+    <span class="tok-keyword">return</span> <span class="tok-type">Direct</span>{before, after}, <span class="tok-keyword">nil</span>
+}
+
+<span class="tok-comment">// v2.0 — Position with one sentinel convention</span>
+<span class="tok-keyword">type</span> <span class="tok-type">Position</span> <span class="tok-keyword">struct</span> {
+    File   <span class="tok-type">FilePath</span>
+    Line   <span class="tok-type">Option</span>[<span class="tok-type">int</span>] <span class="tok-comment">// absent for "unset"</span>
+    Column <span class="tok-type">Option</span>[<span class="tok-type">int</span>]
+    Offset <span class="tok-type">Option</span>[<span class="tok-type">int</span>] <span class="tok-comment">// no more -1 sentinel</span>
+}</code></pre>
+          <div class="callout callout-teal">
+            <strong>Why this state is better</strong>
+            Three sentinel conventions collapse to one (<code>Option[T]</code>). The "Direct
+            requires code" rule becomes unrepresentable-as-invalid at construction.
+            <code>FindingID</code> mixups become compile errors.
+            <code>SeverityAliases</code> mutation becomes safe.
+          </div>
+
+          <h3>Decision log</h3>
+          <table class="compare">
+            <thead>
+              <tr>
+                <th>Decision</th>
+                <th>Choice</th>
+                <th>Rejected alternative</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>v1.0 branded primitives</td>
+                <td class="yes">Do it — cheap, one-time break</td>
+                <td class="no">Keep raw <code>string</code> — accept forever mixups</td>
+              </tr>
+              <tr>
+                <td>v1.0 SeverityAliases mutex</td>
+                <td class="yes">Wrap in <code>sync.RWMutex</code></td>
+                <td class="no">Freeze as immutable — loses extensibility</td>
+              </tr>
+              <tr>
+                <td>v2.0 Fix union</td>
+                <td class="yes">Closed interface with private tag method</td>
+                <td class="no">
+                  Generics — Go interfaces can't combine with type params cleanly here
+                </td>
+              </tr>
+              <tr>
+                <td>v2.0 Position Option[T]</td>
+                <td class="yes">Generic <code>Option[T]</code> struct</td>
+                <td class="no"><code>*int</code> — escapes to heap, nil-deref risk remains</td>
+              </tr>
+              <tr>
+                <td>v2.0 Finding composition</td>
+                <td class="yes">
+                  Embed <code>Identity</code>, <code>Location</code>, <code>Fix</code>
+                </td>
+                <td class="no">Keep flat — conflicts with Focus-on-substruct API ergonomics</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Appendix -->
+        <section id="appendix">
+          <h2><span class="num">03</span>Priority Matrix</h2>
+          <p>Sorted by impact × cost. v1.0 items should land before the API lock.</p>
+          <table class="compare">
+            <thead>
+              <tr>
+                <th>Issue</th>
+                <th>Severity</th>
+                <th>Effort</th>
+                <th>Target</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>P3 Branded primitives (ID/Rule/Tool/File)</td>
+                <td class="no">Important</td>
+                <td>Low</td>
+                <td class="yes">v1.0</td>
+              </tr>
+              <tr>
+                <td>P5 SeverityAliases mutex</td>
+                <td class="no">Important</td>
+                <td>Low</td>
+                <td class="yes">v1.0</td>
+              </tr>
+              <tr>
+                <td>P1 Position sentinel split-brain</td>
+                <td class="no">Critical</td>
+                <td>High</td>
+                <td class="no">v2.0</td>
+              </tr>
+              <tr>
+                <td>P2 FixStrategy interface union</td>
+                <td class="no">Critical</td>
+                <td>High</td>
+                <td class="no">v2.0</td>
+              </tr>
+              <tr>
+                <td>P4 Pointer-as-state cleanup</td>
+                <td class="no">Important</td>
+                <td>Medium</td>
+                <td class="no">v2.0</td>
+              </tr>
+              <tr>
+                <td>P6 Finding composition</td>
+                <td>Low</td>
+                <td>High</td>
+                <td class="no">v2.0</td>
+              </tr>
+              <tr>
+                <td>P7 RelatedRef uses FindingID</td>
+                <td>Low</td>
+                <td>Trivial (after P3)</td>
+                <td class="yes">v1.0</td>
+              </tr>
+              <tr>
+                <td>P8 TagSet vs []Tag</td>
+                <td>Low</td>
+                <td>Medium</td>
+                <td class="no">v2.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <p>
+            Generated 2026-06-23 &middot; Reviewed against <code>finding.go</code>,
+            <code>position.go</code>, <code>fix_strategy.go</code>, <code>severity.go</code>,
+            <code>suppression.go</code>, <code>errors.go</code>, <code>diff.go</code>,
+            <code>correlate.go</code> &middot; All claims verified against source code
+          </p>
+        </footer>
+      </main>
+    </div>
+
+    <!-- Progressive-enhancement scrollspy. Nav still works without JS via anchor links. -->
+    <script>
+      (function () {
+        if (!("IntersectionObserver" in window)) return;
+        var nav = document.querySelector("[data-nav]");
+        if (!nav) return;
+        var links = nav.querySelectorAll('a[href^="#"]');
+        var ids = Array.from(links).map(function (l) {
+          return l.getAttribute("href").slice(1);
+        });
+        var sections = ids
+          .map(function (id) {
+            return document.getElementById(id);
+          })
+          .filter(Boolean);
+        if (!sections.length) return;
+        var observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                links.forEach(function (link) {
+                  link.classList.toggle(
+                    "active",
+                    link.getAttribute("href") === "#" + entry.target.id,
+                  );
+                });
+              }
+            });
+          },
+          { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
+        );
+        sections.forEach(function (s) {
+          observer.observe(s);
+        });
+      })();
+    </script>
+  </body>
+</html>

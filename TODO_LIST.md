@@ -1,7 +1,7 @@
 # TODO List
 
 **Generated:** 2026-05-20
-**Updated:** 2026-06-22 (session 21: documentation refresh — verified all items against code)
+**Updated:** 2026-06-23 (session 24: multi-skill audit — added findings from code-quality-scan, data-model-review, naming-review)
 **Files Processed:** 235
 
 ## 🔴 HIGH Priority
@@ -9,6 +9,8 @@
 - [x] Add bounds checks in `findingFromSARIF` — bounds checks exist via `applySarifPosition`
 - [x] Document SARIF critical round-trip loss — documented in doc.go, USAGE_GUIDE.md, FEATURES.md
 - [ ] `Finding` struct sub-grouping — **DEFERRED v2** (breaking change)
+- [ ] **Fix `nix build .#` vendorHash mismatch** — `flake.nix:29` declares `sha256-xYzX2FPGjqMYIZrNnRlHtIMf2uSfs6Gj2rfbxotrbZs=` but Nix computes `sha256-wISSq/3DR5Bn1j/HvSwLMMpf0SB08znymQEo5bWRaXY=`. CI/release pipelines using Nix fail. Found by code-quality-scan 2026-06-23.
+- [ ] **Decompose `Finding.Validate()` to satisfy gocyclo** — `finding_validate.go:10` has cyclomatic complexity 32 (threshold 25). Extract per-field validators (`validateSeverity`, `validatePosition`, `validateRange`, `validateFix`, `validateMetadata`). Behavior unchanged; complexity drops below 15.
 - [x] Add `golines` to CI — treefmt-nix now supports golines; configured in `flake.nix` with maxLength=120
 - [x] Clean up gopls hints (~12 non-critical) — production code: 0 rangeint, 0 newexpr, 2 mapsloop fixed
 - [x] Implement art-dupl integration gaps (GAP-1, GAP-4, GAP-5, GAP-6, GAP-8) — fully implemented, tested, lint clean
@@ -20,6 +22,19 @@
 - [x] Restore `cmd/go-finding` test coverage from 70.0% toward 95% — now 90.7%
 - [x] Update `README.md` with badges, pipeline diagram, API overview
 - [x] Fix pre-commit hook failures — `goconst`, `todo-check`, `library-policy` → All passing. Fixed `err :=` redeclaration bugs in sarif_export.go/sarif_import.go (introduced by previous commit), removed duplicate `pipeline/pipeline_new_test.go`, fixed `FindingsSnapshot()` nil-for-empty behavior.
+
+## 🟡 MEDIUM Priority — v1.0 API Cleanup (from data-model-review + naming-review, 2026-06-23)
+
+These are breaking changes that should land before the v1.0 API lock. Each is small in isolation but becomes permanent post-1.0.
+
+- [ ] Add branded primitive types — `type FindingID string`, `type RuleName string`, `type ToolName string`, `type FilePath string`. JSON tags unchanged. Prevents ID/Rule/ToolName/File mixups at compile time. (`finding.go:10-47`, `position.go:25`)
+- [ ] Wrap `SeverityAliases` in `sync.RWMutex` — `severity.go:181` exposes a mutable global map; concurrent read-after-write panics. Provide `RegisterSeverityAlias(name, sev)` instead.
+- [ ] Rename `FindingProcessor` → `FindingTransformer` and `Process()` → `Transform()` — `pipeline/adapters.go:28-34`. Current name is a trash-can verb. Updates 4 files.
+- [ ] Rename `(*GeneratedFileFilter).Process()` → `Filter()` — `pipeline/generated_filter.go`. Align method name with type purpose.
+- [ ] Rename `GetCategory(err)` → `CategoryOf(err)` — `errors.go:144`. Go getter convention (no `Get` prefix). Five references to update.
+- [ ] Rename `ConflictInfo` → `Conflict` — `pipeline/conflict.go:223`. Drop vague `Info` suffix. `AnalyzeConflicts() []Conflict` reads cleaner.
+- [ ] Rename `LSPRelatedInfo` → `LSPRelated` — `lsp.go:56`. Drop vague `Info` suffix. Parallel to root `RelatedRef`.
+- [ ] Apply `FindingID` branded type to `RelatedRef.FindingID` and `Correlation.FindingIDs` — once `FindingID` exists (`finding.go:83`, `correlate.go:38`).
 
 ## 🟡 MEDIUM Priority
 
@@ -62,6 +77,8 @@
 
 - [x] API stability review — audit all exported symbols for v1.0.0 lock (docs/API_STABILITY.md)
 - [x] Decide `FixStrategyAI` fate — keep as RESERVED placeholder
+- [ ] **Rename `fs` → `strategy` in `finding_validate.go:44`** — varnamelen warning (from code-quality-scan + naming-review, 2026-06-23). Trivial.
+- [ ] **Rename `rt` → `result` in `splitbrain_test.go:101`** — varnamelen warning. Trivial.
 - [x] Document `BySeverityAtLeast` excludes invalid severities
 - [x] Document `Report.All()` yields copies — with shallow copy caveat
 - [x] Document `FindByID` returns copy — with shallow copy caveat
@@ -172,6 +189,16 @@
 - [x] Add `RetryConfig.Validate()` method
 - [ ] `Report.Merge()` → return new `*Report` instead of mutating receiver — **DEPRECATED**, will be removed v1.0.0; use MergeInto
 - [x] Fix `FixProviders` through CLI config — `-fix-provider` flag + `fixProviders` config field implemented (v0.8.0)
+
+## ⚪ DEFERRED v2.0 (from data-model-review 2026-06-23)
+
+Structural breaking changes that should batch into v2.0 alongside the `Finding` sub-grouping already deferred.
+
+- [ ] Redesign `Position` sentinel conventions — `position.go:23-29` mixes three conventions (0=unset for Line/Column, -1=unset for Offset, zero-value `Position{}` has Offset=0 = valid). Adopt `Option[T]` generic helper for one convention. Cascades into `Range`, `Finding`, `RelatedRef`.
+- [ ] Redesign `FixStrategy` as interface-based closed union — `type Fix interface { isFix() }` with `NoFix`, `Suggestion{Text}`, `Direct{Before,After}`, `AIReserved`. Eliminates `NormalizeFixStrategy` workaround; "Direct requires BeforeCode" becomes constructor invariant.
+- [ ] Cleanup pointer-as-state fields — `Range *Range`, `Suppression *Suppression`, `Suppression.ExpiresAt *time.Time`, `RelatedRef.Range *Range`, `FindingError.Finding *Finding` all encode three states (nil/zero/valid). Replace with value+bool pairs where possible.
+- [ ] Convert `Tags []Tag` to `TagSet map[Tag]struct{}` — `finding.go:21`. Encodes set semantics at type level; eliminates need for order-insensitive equality in `finding_equal.go`.
+- [ ] Compose `Finding` from embedded sub-structs — `Identity{ID,Rule,ToolName}`, `Location{Position,Range}`, `Classification{Category,Tags,Confidence}`, `Fix{FixStrategy,Suggestion,BeforeCode,AfterCode}`. Allows passing substructs to focused functions. Changes JSON shape — must batch with other v2.0 breaks.
 
 ## Recently Completed (2026-06-05)
 

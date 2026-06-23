@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -220,13 +221,7 @@ var supportedFormats = []string{"text", "markdown", "csv", "tsv", "json", "sarif
 
 // isValidFormat returns true if the format string is a recognized output format.
 func isValidFormat(format string) bool {
-	for _, f := range supportedFormats {
-		if f == format {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(supportedFormats, format)
 }
 
 func outputResults(w io.Writer, report *finding.Report, format string) error {

@@ -419,31 +419,6 @@ No gradual unexporting — one clean break.
 
 ---
 
-## 12. sync.Pool for Line Offset Index
-
-**Status:** Evaluated — **SKIP**.
-
-**Context:** The `[]int` line offset index is built per file by `buildLineOffsetIndex`
-and reused across all findings in that file via the `lineIndexAware` interface
-and the lazy `*[]int` pointer in `resolveEdits`.
-
-**Evaluation:**
-
-- Index size: ~8 bytes/line (int on 64-bit). A 10K-line file: ~80KB.
-- One allocation per file, immediately eligible for GC after `ApplyWithConflicts` returns.
-- `sync.Pool` would reuse the backing array across files, avoiding repeated allocation.
-- BUT: the index content is different per file (different newline positions), so the
-  array would need to be fully rewritten each time. `sync.Pool` only saves the allocation
-  overhead, not the fill cost.
-- Go's small-object allocator is highly optimized for this size class.
-- Profiling shows the index allocation is <0.1% of total FixEngine time.
-
-**Conclusion:** The complexity of pool lifecycle management (reset, Put/Get, potential
-for stale data) is not justified for a <0.1% improvement. Revisit only if profiling
-shows line index allocation as a hot path on very large batches (>100K files).
-
----
-
 ## 12. Canonical Finding Identity
 
 **Decision:** `GenerateID()` output is the canonical finding identity. Two findings are identical if and only if their IDs are equal.
@@ -482,3 +457,28 @@ shows line index allocation as a hot path on very large batches (>100K files).
 3. v1.0.0: Remove `Category` field. Consumers migrate to `Tags`. `Summary.ByCategory` becomes `Summary.ByTag`.
 
 **Status:** Open — invariant active, full deprecation deferred to v1.0.0 batch.
+
+---
+
+## 14. sync.Pool for Line Offset Index
+
+**Status:** Evaluated — **SKIP**.
+
+**Context:** The `[]int` line offset index is built per file by `buildLineOffsetIndex`
+and reused across all findings in that file via the `lineIndexAware` interface
+and the lazy `*[]int` pointer in `resolveEdits`.
+
+**Evaluation:**
+
+- Index size: ~8 bytes/line (int on 64-bit). A 10K-line file: ~80KB.
+- One allocation per file, immediately eligible for GC after `ApplyWithConflicts` returns.
+- `sync.Pool` would reuse the backing array across files, avoiding repeated allocation.
+- BUT: the index content is different per file (different newline positions), so the
+  array would need to be fully rewritten each time. `sync.Pool` only saves the allocation
+  overhead, not the fill cost.
+- Go's small-object allocator is highly optimized for this size class.
+- Profiling shows the index allocation is <0.1% of total FixEngine time.
+
+**Conclusion:** The complexity of pool lifecycle management (reset, Put/Get, potential
+for stale data) is not justified for a <0.1% improvement. Revisit only if profiling
+shows line index allocation as a hot path on very large batches (>100K files).

@@ -100,13 +100,13 @@ Two different domains, two different maturity levels, two different consumer bas
 
 **Model A (CLI-only dependency) with an adapter pattern — IMPLEMENTED.**
 
-| Step | Action                                                                      | Status |
-| ---- | --------------------------------------------------------------------------- | ------ |
-| 1    | Add `go-output` (root + markdown + delimited) as CLI-only deps              | Done   |
-| 2    | Write `findingToTableData(findings) *output.TableData` adapter in CLI        | Done   |
-| 3    | Add `csv`, `tsv` formats; replace hand-rolled markdown with go-output        | Done   |
-| 4    | Keep core `finding` package dependency-free                                 | Done   |
-| 5    | Ship `D2`/`Mermaid` visualization of `Correlation` chains as bonus feature  | Future |
+| Step | Action                                                                     | Status |
+| ---- | -------------------------------------------------------------------------- | ------ |
+| 1    | Add `go-output` (root + markdown + delimited) as CLI-only deps             | Done   |
+| 2    | Write `findingToTableData(findings) *output.TableData` adapter in CLI      | Done   |
+| 3    | Add `csv`, `tsv` formats; replace hand-rolled markdown with go-output      | Done   |
+| 4    | Keep core `finding` package dependency-free                                | Done   |
+| 5    | Ship `D2`/`Mermaid` visualization of `Correlation` chains as bonus feature | Future |
 
 ### What was implemented (2026-06-23)
 
@@ -118,11 +118,11 @@ Two different domains, two different maturity levels, two different consumer bas
 
 ### Original concerns, now mitigated
 
-| Original concern | Resolution |
-| --- | --- |
+| Original concern              | Resolution                                                                                                                                     |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | lipgloss + 15 transitive deps | go-output restructured to multi-module; root has only `x/term`. Only `markdown` and `delimited` sub-modules imported — neither pulls lipgloss. |
-| API stability | go-output v0.17.2, API frozen via ADR 006 |
-| Narrow adoption | Now at v0.17.2 with 16 formats, integration + BDD test suites |
+| API stability                 | go-output v0.17.2, API frozen via ADR 006                                                                                                      |
+| Narrow adoption               | Now at v0.17.2 with 16 formats, integration + BDD test suites                                                                                  |
 
 ---
 
