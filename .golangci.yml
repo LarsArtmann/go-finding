@@ -192,7 +192,7 @@ linters:
                 - stdlib
                 - generic
                 - github.com/larsartmann/go-finding/pipeline.Detector
-                - github.com/larsartmann/go-finding/pipeline.FindingProcessor
+                - github.com/larsartmann/go-finding/pipeline.FindingTransformer
         mnd:
             ignored-functions:
                 - fmt.Errorf

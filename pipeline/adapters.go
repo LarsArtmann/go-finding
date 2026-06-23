@@ -23,50 +23,50 @@ type DetectorFunc = finding.DetectorFunc
 //nolint:gochecknoglobals // intentional: re-exported function variable for backward compatibility
 var NamedDetectorFunc = finding.NamedDetectorFunc
 
-// FindingProcessor transforms findings between detection and triage.
+// FindingTransformer transforms findings between detection and triage.
 // Processors are chained in order, allowing filtering, enrichment, or transformation.
-type FindingProcessor interface {
+type FindingTransformer interface {
 	// Name returns the processor's name for logging and debugging.
 	Name() string
-	// Process applies a transformation to the findings and returns the result.
+	// Transform applies a transformation to the findings and returns the result.
 	// The context is used for cancellation. Return an error to abort the pipeline.
-	Process(ctx context.Context, findings []finding.Finding) ([]finding.Finding, error)
+	Transform(ctx context.Context, findings []finding.Finding) ([]finding.Finding, error)
 }
 
-// ProcessorFunc is an adapter to use ordinary functions as FindingProcessors.
-type ProcessorFunc func(findings []finding.Finding) []finding.Finding
+// TransformerFunc is an adapter to use ordinary functions as FindingTransformers.
+type TransformerFunc func(findings []finding.Finding) []finding.Finding
 
-// Process implements FindingProcessor.
-func (f ProcessorFunc) Process(
+// Transform implements FindingTransformer.
+func (f TransformerFunc) Transform(
 	_ context.Context,
 	findings []finding.Finding,
 ) ([]finding.Finding, error) {
 	return f(findings), nil
 }
 
-// Name implements FindingProcessor. Returns "anonymous".
-func (ProcessorFunc) Name() string {
+// Name implements FindingTransformer. Returns "anonymous".
+func (TransformerFunc) Name() string {
 	return "anonymous"
 }
 
-// NamedProcessorFunc returns a FindingProcessor with the given name wrapping the provided function.
-func NamedProcessorFunc(name string, fn ProcessorFunc) FindingProcessor {
-	return &namedProcessor{name: name, fn: fn}
+// NamedTransformerFunc returns a FindingTransformer with the given name wrapping the provided function.
+func NamedTransformerFunc(name string, fn TransformerFunc) FindingTransformer {
+	return &namedTransformer{name: name, fn: fn}
 }
 
-type namedProcessor struct {
+type namedTransformer struct {
 	name string
-	fn   ProcessorFunc
+	fn   TransformerFunc
 }
 
-func (n *namedProcessor) Process(
+func (n *namedTransformer) Transform(
 	_ context.Context,
 	findings []finding.Finding,
 ) ([]finding.Finding, error) {
 	return n.fn(findings), nil
 }
 
-func (n *namedProcessor) Name() string {
+func (n *namedTransformer) Name() string {
 	return n.name
 }
 

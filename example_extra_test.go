@@ -180,7 +180,7 @@ func ExampleGeneratedFileFilter() {
 
 	fmt.Println(noop.Name())
 
-	result, err := noop.Process(context.Background(), findings)
+	result, err := noop.Transform(context.Background(), findings)
 	if err != nil {
 		fmt.Println("error:", err)
 

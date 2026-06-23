@@ -33,10 +33,10 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	findings := detResult.Findings
 
 	for _, proc := range p.config.Processors {
-		findings, err = proc.Process(ctx, findings)
+		findings, err = proc.Transform(ctx, findings)
 		if err != nil {
 			return false, fmt.Errorf(
-				"iteration %d: processor %s: %w",
+				"iteration %d: transformer %s: %w",
 				p.iterations+1,
 				proc.Name(),
 				err,

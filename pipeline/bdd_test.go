@@ -164,12 +164,12 @@ var _ = Describe("Pipeline Lifecycle", func() {
 	})
 
 	Describe("finding processors", func() {
-		It("ProcessorFunc adapter works", func() {
-			fn := pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
+		It("TransformerFunc adapter works", func() {
+			fn := pipeline.TransformerFunc(func(findings []finding.Finding) []finding.Finding {
 				return findings[:1]
 			})
 			Expect(fn.Name()).To(Equal("anonymous"))
-			result, err := fn.Process(context.Background(), []finding.Finding{
+			result, err := fn.Transform(context.Background(), []finding.Finding{
 				mustBuild("r1", "t", "m", finding.SeverityError, "f.go", 1,
 					finding.FixStrategyNone, "", ""),
 				mustBuild("r2", "t", "m", finding.SeverityInfo, "f.go", 2,
@@ -180,10 +180,10 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			Expect(result[0].Rule).To(Equal("r1"))
 		})
 
-		It("NamedProcessorFunc sets the name", func() {
-			p := pipeline.NamedProcessorFunc(
+		It("NamedTransformerFunc sets the name", func() {
+			p := pipeline.NamedTransformerFunc(
 				"severity-filter",
-				pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
+				pipeline.TransformerFunc(func(findings []finding.Finding) []finding.Finding {
 					return findings
 				}),
 			)
@@ -193,9 +193,9 @@ var _ = Describe("Pipeline Lifecycle", func() {
 		It("chains processors between detection and triage in the pipeline", func() {
 			var processed [][]finding.Finding
 
-			filter := pipeline.NamedProcessorFunc(
+			filter := pipeline.NamedTransformerFunc(
 				"only-errors",
-				pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
+				pipeline.TransformerFunc(func(findings []finding.Finding) []finding.Finding {
 					processed = append(processed, findings)
 
 					return finding.Filter(findings, finding.BySeverity(finding.SeverityError))
@@ -219,7 +219,7 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			cfg := pipeline.DefaultConfig()
 			cfg.DryRun = true
 			cfg.MaxIterations = 1
-			cfg.Processors = []pipeline.FindingProcessor{filter}
+			cfg.Processors = []pipeline.FindingTransformer{filter}
 
 			p, err := pipeline.New(cfg, ".", detector)
 			Expect(err).NotTo(HaveOccurred())

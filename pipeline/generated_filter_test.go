@@ -22,7 +22,7 @@ func TestGeneratedFileFilter_Disabled(t *testing.T) {
 		{ID: "2", Position: finding.Position{File: "b.go"}},
 	}
 
-	result, err := gf.Process(t.Context(), findings)
+	result, err := gf.Transform(t.Context(), findings)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
 	}
@@ -62,7 +62,7 @@ func TestGeneratedFileFilter_FiltersGeneratedFiles(t *testing.T) {
 		{ID: "4", Position: finding.Position{File: ""}},
 	}
 
-	result, err := gf.Process(t.Context(), findings)
+	result, err := gf.Transform(t.Context(), findings)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
 	}
@@ -112,7 +112,7 @@ func TestGeneratedFileFilter_FiltersSpecificGenerator(t *testing.T) {
 		{ID: "3", Position: finding.Position{File: "cmd/main.go"}},
 	}
 
-	result, err := gf.Process(t.Context(), findings)
+	result, err := gf.Transform(t.Context(), findings)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
 	}
@@ -178,7 +178,7 @@ func TestGeneratedFileFilter_KeepOnMissingFile(t *testing.T) {
 		{ID: "1", Position: finding.Position{File: "missing.go"}},
 	}
 
-	result, err := gf.Process(t.Context(), findings)
+	result, err := gf.Transform(t.Context(), findings)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
 	}

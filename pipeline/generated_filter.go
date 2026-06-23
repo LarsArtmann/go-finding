@@ -9,7 +9,7 @@ import (
 	"github.com/larsartmann/go-finding"
 )
 
-// GeneratedFileFilter is a FindingProcessor that removes findings from
+// GeneratedFileFilter is a FindingTransformer that removes findings from
 // auto-generated Go source files (sqlc, protobuf, mockgen, stringer, etc.).
 //
 // It wraps gogenfilter.Filter and evaluates each finding's Position.File.
@@ -24,7 +24,7 @@ type GeneratedFileFilter struct {
 	logger *slog.Logger
 }
 
-// NewGeneratedFileFilter creates a FindingProcessor that filters out findings
+// NewGeneratedFileFilter creates a FindingTransformer that filters out findings
 // from generated Go source files.
 //
 // Pass gogenfilter configuration options via configs. Common configs:
@@ -54,8 +54,8 @@ func (*GeneratedFileFilter) Name() string {
 	return "generated-file-filter"
 }
 
-// Process filters out findings whose source file is auto-generated.
-func (g *GeneratedFileFilter) Process(
+// Transform filters out findings whose source file is auto-generated.
+func (g *GeneratedFileFilter) Transform(
 	ctx context.Context,
 	findings []finding.Finding,
 ) ([]finding.Finding, error) {

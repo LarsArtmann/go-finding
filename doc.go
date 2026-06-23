@@ -220,7 +220,7 @@
 // Pipeline features:
 //   - Configurable iterations with early termination
 //   - Parallel or sequential detector execution
-//   - FindingProcessor chain between detection and triage
+//   - FindingTransformer chain between detection and triage
 //   - Customizable TriageFunc for categorizing findings
 //   - Byte-level FixEngine with composable FixProvider chain
 //   - Conflict detection (position-based or byte-level)

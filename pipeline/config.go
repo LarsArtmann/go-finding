@@ -38,7 +38,7 @@ type Config struct {
 	CorrelateFindings bool
 	// Processors are chained between detection and triage.
 	// Each processor transforms the findings before triage categorizes them.
-	Processors []FindingProcessor
+	Processors []FindingTransformer
 	// FixProviders are custom fix providers for domain-specific transformations.
 	// If nil, default text-based providers (OffsetProvider, LineProvider, SubstringProvider) are used.
 	// Register domain-specific providers (e.g., Go AST, Rust syn) for production accuracy.
