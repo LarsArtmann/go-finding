@@ -80,8 +80,8 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 		cat := staticcheckCategory(entry.Code)
 
 		findings = append(findings, finding.Finding{ //nolint:exhaustruct
-			ID:          finding.GenerateID(DetectorNameStaticcheck, entry.Code, pos),
-			Rule:        entry.Code,
+			ID:          finding.GenerateID(DetectorNameStaticcheck, finding.RuleName(entry.Code), pos),
+			Rule:        finding.RuleName(entry.Code),
 			ToolName:    DetectorNameStaticcheck,
 			Message:     entry.Message,
 			Severity:    sev,

@@ -44,7 +44,7 @@ func TestNewFinding(t *testing.T) {
 		t.Error("ID should not be empty")
 	}
 
-	if !strings.Contains(f.ID, "govet") || !strings.Contains(f.ID, "nilcheck") {
+	if !strings.Contains(string(f.ID), "govet") || !strings.Contains(string(f.ID), "nilcheck") {
 		t.Errorf("ID = %q should contain tool name and rule", f.ID)
 	}
 }

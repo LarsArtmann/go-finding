@@ -49,13 +49,13 @@ func FromDiagnostic(
 		}
 	}
 
-	id := finding.GenerateID(toolName, ruleCode, findingPos)
+	id := finding.GenerateID(finding.ToolName(toolName), finding.RuleName(ruleCode), findingPos)
 
 	//nolint:exhaustruct
 	f := finding.Finding{
 		ID:          id,
-		Rule:        ruleCode,
-		ToolName:    toolName,
+		Rule:        finding.RuleName(ruleCode),
+		ToolName:    finding.ToolName(toolName),
 		Message:     d.Message,
 		Severity:    sev,
 		Position:    findingPos,
@@ -67,7 +67,11 @@ func FromDiagnostic(
 
 	for _, info := range d.Related {
 		relatedPos := fset.Position(info.Pos)
-		relatedID := finding.GenerateID(toolName, ruleCode, FromTokenPosition(relatedPos))
+		relatedID := finding.GenerateID(
+			finding.ToolName(toolName),
+			finding.RuleName(ruleCode),
+			FromTokenPosition(relatedPos),
+		)
 		f.Related = append(f.Related, finding.RelatedRef{ //nolint:exhaustruct
 			FindingID: relatedID,
 			Relation:  DefaultRelation,

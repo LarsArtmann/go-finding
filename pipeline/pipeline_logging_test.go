@@ -19,7 +19,13 @@ func mockDetectorWithFinding(name, id, rule, tool, msg string) *mockDetector {
 	return &mockDetector{
 		name: name,
 		findings: []finding.Finding{
-			{ID: id, Rule: rule, ToolName: tool, Message: msg, Severity: finding.SeverityError},
+			{
+				ID:       finding.FindingID(id),
+				Rule:     finding.RuleName(rule),
+				ToolName: finding.ToolName(tool),
+				Message:  msg,
+				Severity: finding.SeverityError,
+			},
 		},
 	}
 }
@@ -116,7 +122,7 @@ func TestPipelineRun_CorrelateFindings(t *testing.T) {
 	}
 
 	g.Expect(result.Correlations).NotTo(BeEmpty())
-	g.Expect(result.Correlations[0].FindingIDs).To(Equal([]string{"a1", "b1"}))
+	g.Expect(result.Correlations[0].FindingIDs).To(Equal([]finding.FindingID{"a1", "b1"}))
 }
 
 func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {

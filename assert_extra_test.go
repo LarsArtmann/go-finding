@@ -113,7 +113,7 @@ func sevFromInt(i int) Severity {
 // MakeSimpleFinding creates a Finding with minimal required fields.
 func MakeSimpleFinding(id string, severity Severity) Finding {
 	return Finding{
-		ID:       id,
+		ID:       FindingID(id),
 		Severity: severity,
 	}
 }
@@ -136,9 +136,9 @@ func MakeNonexistentPosition() Position {
 // MakeFindingWithFix creates a Finding with fix-related fields.
 func MakeFindingWithFix(id, rule, tool, msg, beforeCode, afterCode, file string, line int) Finding {
 	return Finding{
-		ID:          id,
-		Rule:        rule,
-		ToolName:    tool,
+		ID:          FindingID(id),
+		Rule:        RuleName(rule),
+		ToolName:    ToolName(tool),
 		Message:     msg,
 		BeforeCode:  beforeCode,
 		AfterCode:   afterCode,
@@ -187,11 +187,11 @@ func AssertFindingFields(
 ) {
 	t.Helper()
 
-	if f.Rule != rule {
+	if string(f.Rule) != rule {
 		t.Errorf("Rule = %q, want %q", f.Rule, rule)
 	}
 
-	if f.ToolName != tool {
+	if string(f.ToolName) != tool {
 		t.Errorf("ToolName = %q, want %q", f.ToolName, tool)
 	}
 
@@ -217,7 +217,7 @@ func AssertFindingsLenAndIDs(t *testing.T, findings []Finding, wantIDs []string,
 	}
 
 	for i, f := range findings {
-		if f.ID != wantIDs[i] {
+		if string(f.ID) != wantIDs[i] {
 			t.Errorf("%s: [%d].ID = %q, want %q", context, i, f.ID, wantIDs[i])
 		}
 	}

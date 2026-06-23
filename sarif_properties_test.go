@@ -38,7 +38,7 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 
 	f := findings[0]
 
-	g.Expect(f.ID).To(gomega.Equal("test:R1:a.go:1:1"))
+	g.Expect(f.ID).To(gomega.Equal(FindingID("test:R1:a.go:1:1")))
 	g.Expect(f.Rule).To(gomega.Equal("R1"))
 	g.Expect(f.Message).To(gomega.Equal("msg"))
 	g.Expect(f.AfterCode).To(gomega.Equal("new code"))

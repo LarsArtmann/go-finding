@@ -21,16 +21,16 @@ func countingOnFix(ptr *int) func(finding.Finding, bool) {
 func collectingOnFix(ids *[]string) func(finding.Finding, bool) {
 	return func(f finding.Finding, wasApplied bool) {
 		if wasApplied {
-			*ids = append(*ids, f.ID)
+			*ids = append(*ids, string(f.ID))
 		}
 	}
 }
 
 func directFix(id, rule, tool, msg, before, after, file string, line int) finding.Finding {
 	return finding.Finding{
-		ID:          id,
-		Rule:        rule,
-		ToolName:    tool,
+		ID:          finding.FindingID(id),
+		Rule:        finding.RuleName(rule),
+		ToolName:    finding.ToolName(tool),
 		Message:     msg,
 		BeforeCode:  before,
 		AfterCode:   after,

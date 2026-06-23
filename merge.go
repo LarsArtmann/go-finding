@@ -141,7 +141,7 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 			return "", false
 		}
 
-		return finding.ID, true
+		return string(finding.ID), true
 	case DeduplicateByPosition:
 		if finding.Position.File == "" {
 			return "", false
@@ -149,7 +149,7 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 
 		var b strings.Builder
 		b.Grow(len(finding.ToolName) + len(finding.Position.File) + dedupKeyOverhead)
-		b.WriteString(finding.ToolName)
+		b.WriteString(string(finding.ToolName))
 		b.WriteByte(':')
 		b.WriteString(finding.Position.File)
 		b.WriteByte(':')
@@ -165,7 +165,7 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 
 		var b strings.Builder
 		b.Grow(len(finding.Rule) + len(finding.Position.File) + dedupKeyOverhead)
-		b.WriteString(finding.Rule)
+		b.WriteString(string(finding.Rule))
 		b.WriteByte(':')
 		b.WriteString(finding.Position.File)
 		b.WriteByte(':')
@@ -175,7 +175,7 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 
 		return b.String(), true
 	default:
-		return finding.ID, true
+		return string(finding.ID), true
 	}
 }
 

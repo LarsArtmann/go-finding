@@ -9,7 +9,7 @@ import (
 )
 
 func makeFinding(id, msg string) finding.Finding {
-	return finding.Finding{ID: id, Message: msg}
+	return finding.Finding{ID: finding.FindingID(id), Message: msg}
 }
 
 func assertDiffResult(t *testing.T, result *VerifyResult, resolved, remaining, newFindings int) {
@@ -21,11 +21,11 @@ func assertDiffResult(t *testing.T, result *VerifyResult, resolved, remaining, n
 	g.Expect(result.NewFindings).To(HaveLen(newFindings))
 }
 
-func assertNewFindingID(t *testing.T, result *VerifyResult, wantID string) {
+func assertNewFinding(t *testing.T, result *VerifyResult, wantID string) {
 	t.Helper()
 	g := NewWithT(t)
 	g.Expect(result.NewFindings).To(HaveLen(1))
-	g.Expect(result.NewFindings[0].ID).To(Equal(wantID))
+	g.Expect(result.NewFindings[0].ID).To(Equal(finding.FindingID(wantID)))
 }
 
 func TestDiffFindings_AllFixed(t *testing.T) {
@@ -57,7 +57,7 @@ func TestDiffFindings_NewFindings(t *testing.T) {
 	}
 	result := DiffFindings(original, post)
 	assertDiffResult(t, result, 0, 1, 1)
-	assertNewFindingID(t, result, "c:rule:file.go:3")
+	assertNewFinding(t, result, "c:rule:file.go:3")
 }
 
 func TestDiffFindings_Mixed(t *testing.T) {
@@ -76,7 +76,7 @@ func TestDiffFindings_Mixed(t *testing.T) {
 	assertDiffResult(t, result, 1, 1, 1)
 
 	g.Expect(result.Fixed).To(HaveLen(1))
-	g.Expect(result.Fixed[0].ID).To(Equal("a:rule:file.go:1"))
+	g.Expect(result.Fixed[0].ID).To(Equal(finding.FindingID("a:rule:file.go:1")))
 }
 
 func TestDiffFindings_EmptyOriginal(t *testing.T) {
@@ -151,7 +151,7 @@ func TestVerifier_Verify_SuppressedFindingsFiltered(t *testing.T) {
 
 	g.Expect(result.NewFindings).To(HaveLen(1))
 
-	assertNewFindingID(t, result, "normal:rule:f.go:2")
+	assertNewFinding(t, result, "normal:rule:f.go:2")
 }
 
 func TestFindingKey_EmptyID(t *testing.T) {

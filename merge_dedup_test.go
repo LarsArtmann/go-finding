@@ -19,7 +19,7 @@ func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
 		{"3", "unused"},
 	} {
 		r1.AddFinding(Finding{
-			ID: tc.id, ToolName: "govet", Rule: tc.rule,
+			ID: FindingID(tc.id), ToolName: "govet", Rule: RuleName(tc.rule),
 			Position: Position{File: "a.go", Line: 10},
 		})
 	}
@@ -129,7 +129,7 @@ func collectIDs(r *Report) []string {
 	var ids []string
 
 	for f := range r.All() {
-		ids = append(ids, f.ID)
+		ids = append(ids, string(f.ID))
 	}
 
 	return ids
@@ -137,9 +137,9 @@ func collectIDs(r *Report) []string {
 
 func makeFinding(id, tool, rule, file string, line int) Finding {
 	return Finding{
-		ID:       id,
-		ToolName: tool,
-		Rule:     rule,
+		ID:       FindingID(id),
+		ToolName: ToolName(tool),
+		Rule:     RuleName(rule),
 		Position: Position{File: file, Line: line},
 	}
 }
@@ -158,8 +158,8 @@ func TestMergeIter(t *testing.T) {
 	collected := slices.Collect(MergeIter([]*Report{r1, r2}))
 
 	g.Expect(collected).To(HaveLen(3))
-	g.Expect(collected[0].ID).To(Equal("1"))
-	g.Expect(collected[2].ID).To(Equal("3"))
+	g.Expect(collected[0].ID).To(Equal(FindingID("1")))
+	g.Expect(collected[2].ID).To(Equal(FindingID("3")))
 }
 
 func TestMergeIter_WithDedup(t *testing.T) {

@@ -127,9 +127,9 @@ func (f Finding) String() string {
 	var b strings.Builder
 	b.WriteString(string(f.Severity))
 	b.WriteByte(' ')
-	b.WriteString(f.ToolName)
+	b.WriteString(string(f.ToolName))
 	b.WriteString(" [")
-	b.WriteString(f.Rule)
+	b.WriteString(string(f.Rule))
 	b.WriteString("] ")
 	b.WriteString(f.Position.String())
 	b.WriteString(": ")

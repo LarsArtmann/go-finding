@@ -234,14 +234,14 @@ var _ = Describe("ID Generation User Stories", func() {
 		pos := finding.Pos("main.go", 0, 0)
 		id := finding.GenerateID("govet", "nilcheck", pos)
 
-		Expect(finding.IsHashID(id)).To(BeTrue())
+		Expect(finding.IsHashID(string(id))).To(BeTrue())
 	})
 
 	It("parses IDs back into components", func() {
 		pos := finding.Pos("main.go", 42, 5)
 		id := finding.GenerateID("govet", "nilcheck", pos)
 
-		parsed := finding.ParseID(id)
+		parsed := finding.ParseID(finding.FindingID(id))
 		Expect(parsed.OK()).To(BeTrue())
 		Expect(parsed.Tool).To(Equal("govet"))
 		Expect(parsed.Rule).To(Equal("nilcheck"))
@@ -261,7 +261,8 @@ func crossToolFindings(r2Msg string, r2Line int) []finding.Finding {
 func mustBuild(
 	rule, tool, msg string, sev finding.Severity, file string, line int,
 ) finding.Finding {
-	f, err := finding.NewBuilder(rule, tool, msg, sev, finding.Pos(file, line, 1)).Build()
+	f, err := finding.NewBuilder(finding.RuleName(rule), finding.ToolName(tool), msg, sev, finding.Pos(file, line, 1)).
+		Build()
 	if err != nil {
 		panic(err)
 	}

@@ -68,8 +68,8 @@ func TestParseGoVetJSON(t *testing.T) {
 	g.Expect(findings).To(HaveLen(2))
 
 	f := findings[0]
-	g.Expect(f.ToolName).To(Equal("govet"))
-	g.Expect(f.Rule).To(Equal("github.com/example/pkg"))
+	g.Expect(f.ToolName).To(Equal(finding.ToolName("govet")))
+	g.Expect(f.Rule).To(Equal(finding.RuleName("github.com/example/pkg")))
 	g.Expect(f.Message).To(Equal("unused variable x"))
 	g.Expect(f.Severity).To(Equal(finding.SeverityWarning))
 	g.Expect(f.Category).To(Equal(finding.CategoryCorrectness))
@@ -116,14 +116,14 @@ func TestParseStaticcheckJSON(t *testing.T) {
 	g.Expect(findings).To(HaveLen(2))
 
 	f := findings[0]
-	g.Expect(f.ToolName).To(Equal("staticcheck"))
-	g.Expect(f.Rule).To(Equal("SA1000"))
+	g.Expect(f.ToolName).To(Equal(finding.ToolName("staticcheck")))
+	g.Expect(f.Rule).To(Equal(finding.RuleName("SA1000")))
 	g.Expect(f.Severity).To(Equal(finding.SeverityWarning))
 	g.Expect(f.Category).To(Equal(finding.CategoryStyle))
 	g.Expect(f.Confidence).To(BeNumerically("~", 0.8, 0.001))
 
 	f2 := findings[1]
-	g.Expect(f2.Rule).To(Equal("S1001"))
+	g.Expect(f2.Rule).To(Equal(finding.RuleName("S1001")))
 	g.Expect(f2.Severity).To(Equal(finding.SeverityError))
 	g.Expect(f2.Category).To(Equal(finding.CategoryStyle))
 }
@@ -166,7 +166,7 @@ func TestParseStaticcheckJSON_LineSkipping(t *testing.T) {
 
 			findings := parseStaticcheckJSON([]byte(tt.input), "")
 			g.Expect(findings).To(HaveLen(tt.wantLen))
-			g.Expect(findings[0].Rule).To(Equal(tt.wantRule))
+			g.Expect(findings[0].Rule).To(Equal(finding.RuleName(tt.wantRule)))
 		})
 	}
 }

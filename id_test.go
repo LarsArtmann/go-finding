@@ -27,7 +27,7 @@ func stdIDCase(name, id, file string, line, col int, ok bool) parseIDCase {
 func testParseIDCase(t *testing.T, tt parseIDCase) {
 	t.Helper()
 
-	p := ParseID(tt.id)
+	p := ParseID(FindingID(tt.id))
 	if p.OK() != tt.wantOK {
 		t.Fatalf("OK() = %v, want %v", p.OK(), tt.wantOK)
 	}
@@ -36,15 +36,15 @@ func testParseIDCase(t *testing.T, tt parseIDCase) {
 		return
 	}
 
-	if p.Tool != tt.wantTool {
+	if string(p.Tool) != tt.wantTool {
 		t.Errorf("Tool = %q, want %q", p.Tool, tt.wantTool)
 	}
 
-	if p.Rule != tt.wantRule {
+	if string(p.Rule) != tt.wantRule {
 		t.Errorf("Rule = %q, want %q", p.Rule, tt.wantRule)
 	}
 
-	if p.File != tt.wantFile {
+	if string(p.File) != tt.wantFile {
 		t.Errorf("File = %q, want %q", p.File, tt.wantFile)
 	}
 
@@ -71,15 +71,15 @@ func runParseIDCases(t *testing.T, tests []parseIDCase) {
 func assertRoundTrip(t *testing.T, p *ParsedID, tool, rule, file string, line, col int) {
 	t.Helper()
 
-	if p.Tool != tool {
+	if string(p.Tool) != tool {
 		t.Errorf("Tool = %q, want %q", p.Tool, tool)
 	}
 
-	if p.Rule != rule {
+	if string(p.Rule) != rule {
 		t.Errorf("Rule = %q, want %q", p.Rule, rule)
 	}
 
-	if p.File != file {
+	if string(p.File) != file {
 		t.Errorf("File = %q, want %q", p.File, file)
 	}
 
@@ -136,14 +136,14 @@ func TestGenerateID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := GenerateID(tt.tool, tt.rule, tt.pos)
+			got := GenerateID(ToolName(tt.tool), RuleName(tt.rule), tt.pos)
 			if tt.check != nil {
-				tt.check(t, got)
+				tt.check(t, string(got))
 
 				return
 			}
 
-			if got != tt.wantPrefix {
+			if string(got) != tt.wantPrefix {
 				t.Errorf("GenerateID() = %q, want %q", got, tt.wantPrefix)
 			}
 		})

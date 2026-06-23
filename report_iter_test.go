@@ -10,7 +10,7 @@ func TestReportAll_BreakEarly(t *testing.T) {
 
 	r := NewReport(ToolInfo{Name: string(TagTest)})
 	for i := range 10 {
-		r.AddFinding(Finding{ID: string(rune('A' + i)), Message: "finding"})
+		r.AddFinding(Finding{ID: FindingID(string(rune('A' + i))), Message: "finding"})
 	}
 
 	count := 0
@@ -135,7 +135,7 @@ func TestReportConcurrentReadWrite(t *testing.T) {
 
 			for j := range opsPerWriter {
 				r.AddFinding(Finding{
-					ID:       fmt.Sprintf("w%d-f%d", i, j),
+					ID:       FindingID(fmt.Sprintf("w%d-f%d", i, j)),
 					Rule:     "race",
 					Severity: SeverityWarning,
 				})

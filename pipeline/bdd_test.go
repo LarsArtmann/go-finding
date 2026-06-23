@@ -159,7 +159,7 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			_, err := p.Run(context.Background())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(HaveLen(1))
-			Expect(found[0].Rule).To(Equal("r1"))
+			Expect(found[0].Rule).To(Equal(finding.RuleName("r1")))
 		})
 	})
 
@@ -177,7 +177,7 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(result).To(HaveLen(1))
-			Expect(result[0].Rule).To(Equal("r1"))
+			Expect(result[0].Rule).To(Equal(finding.RuleName("r1")))
 		})
 
 		It("NamedTransformerFunc sets the name", func() {
@@ -244,7 +244,7 @@ func mustBuild(
 	rule, tool, msg string, sev finding.Severity, file string, line int,
 	fs finding.FixStrategy, before, after string,
 ) finding.Finding {
-	f, err := finding.NewBuilder(rule, tool, msg, sev, finding.Pos(file, line, 1)).
+	f, err := finding.NewBuilder(finding.RuleName(rule), finding.ToolName(tool), msg, sev, finding.Pos(file, line, 1)).
 		WithFixStrategy(fs).
 		WithBeforeCode(before).
 		WithAfterCode(after).

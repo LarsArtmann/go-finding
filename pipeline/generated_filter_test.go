@@ -73,7 +73,7 @@ func TestGeneratedFileFilter_FiltersGeneratedFiles(t *testing.T) {
 
 	ids := make([]string, len(result))
 	for i, f := range result {
-		ids[i] = f.ID
+		ids[i] = string(f.ID)
 	}
 
 	want := []string{"3", "4"}
@@ -123,7 +123,7 @@ func TestGeneratedFileFilter_FiltersSpecificGenerator(t *testing.T) {
 
 	ids := make([]string, len(result))
 	for i, f := range result {
-		ids[i] = f.ID
+		ids[i] = string(f.ID)
 	}
 
 	want := []string{"2", "3"}

@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	f, err := finding.NewBuilder("staticcheck", "SA1000", "invalid regular expression", finding.SeverityError, finding.Pos("pkg/validate.go", 24, 8)).
+	f, err := finding.NewBuilder(finding.RuleName("SA1000"), finding.ToolName("staticcheck"), "invalid regular expression", finding.SeverityError, finding.Pos("pkg/validate.go", 24, 8)).
 		WithCategory(finding.CategoryCorrectness).
 		WithConfidence(0.95).
 		WithBeforeCode("oldPattern").

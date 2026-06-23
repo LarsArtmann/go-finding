@@ -75,8 +75,8 @@ func (f Finding) ToLSP() LSPDiagnostic {
 			},
 		},
 		Severity: severityToLSP(f.Severity),
-		Code:     f.Rule,
-		Source:   f.ToolName,
+		Code:     string(f.Rule),
+		Source:   string(f.ToolName),
 		Message:  f.Message,
 	}
 
@@ -142,12 +142,12 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 
 	f := Finding{
 		ID: GenerateID(
-			diag.Source,
-			diag.Code,
+			ToolName(diag.Source),
+			RuleName(diag.Code),
 			Position{File: fileURI, Line: startLine, Column: startChar, Offset: -1},
 		),
-		Rule:     diag.Code,
-		ToolName: diag.Source,
+		Rule:     RuleName(diag.Code),
+		ToolName: ToolName(diag.Source),
 		Message:  diag.Message,
 		Severity: severityFromLSP(diag.Severity),
 		Position: Position{
@@ -179,7 +179,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 			Offset: -1,
 		}
 		ref := RelatedRef{
-			FindingID: GenerateID(diag.Source, diag.Code, relPos),
+			FindingID: GenerateID(ToolName(diag.Source), RuleName(diag.Code), relPos),
 			Relation:  RelationKind(rel.Message),
 			Position:  relPos,
 		}

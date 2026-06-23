@@ -80,7 +80,7 @@ func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 // affect the report, but mutations to slice/map fields (Tags, Related, Metadata)
 // will be shared. Use Clone() for a deep copy.
 // Safe for concurrent use.
-func (r *Report) FindByID(id string) *Finding {
+func (r *Report) FindByID(id FindingID) *Finding {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -97,7 +97,7 @@ func (r *Report) FindByID(id string) *Finding {
 
 // FindByRule returns all non-suppressed findings matching the given rule name.
 // Safe for concurrent use.
-func (r *Report) FindByRule(rule string) []Finding {
+func (r *Report) FindByRule(rule RuleName) []Finding {
 	return Filter(r.ActiveFindings(), ByRule(rule))
 }
 

@@ -23,14 +23,14 @@ const (
 // GenerateID creates a stable, unique identifier for a finding.
 // Format: "tool:rule:file:line:col" (human-readable)
 // If line is 0, uses hash-based ID for stability.
-func GenerateID(toolName, rule string, pos Position) string {
+func GenerateID(toolName ToolName, rule RuleName, pos Position) FindingID {
 	if pos.Line == 0 {
 		// Hash-based for position-less findings.
 		// Uses length-prefixed fields to prevent ambiguity when field
 		// values contain the separator character (e.g., toolName="a:b", rule="c").
 		h := sha256.New()
-		writeLenField(h, toolName)
-		writeLenField(h, rule)
+		writeLenField(h, string(toolName))
+		writeLenField(h, string(rule))
 		writeLenField(h, pos.File)
 
 		sum := h.Sum(make([]byte, 0, sha256.Size))
@@ -38,13 +38,13 @@ func GenerateID(toolName, rule string, pos Position) string {
 
 		var b strings.Builder
 		b.Grow(len(toolName) + 1 + len(rule) + 1 + len(hash))
-		b.WriteString(toolName)
+		b.WriteString(string(toolName))
 		b.WriteByte(':')
-		b.WriteString(rule)
+		b.WriteString(string(rule))
 		b.WriteByte(':')
 		b.WriteString(hash)
 
-		return b.String()
+		return FindingID(b.String())
 	}
 
 	// Normalize file path to use forward slashes
@@ -54,22 +54,22 @@ func GenerateID(toolName, rule string, pos Position) string {
 
 	lineStr := strconv.Itoa(pos.Line)
 	b.Grow(len(toolName) + 1 + len(rule) + 1 + len(file) + 1 + len(lineStr))
-	b.WriteString(toolName)
+	b.WriteString(string(toolName))
 	b.WriteByte(':')
-	b.WriteString(rule)
+	b.WriteString(string(rule))
 	b.WriteByte(':')
 	b.WriteString(file)
 	b.WriteByte(':')
 	b.WriteString(lineStr)
 
 	if pos.Column == 0 {
-		return b.String()
+		return FindingID(b.String())
 	}
 
 	b.WriteByte(':')
 	b.WriteString(strconv.Itoa(pos.Column))
 
-	return b.String()
+	return FindingID(b.String())
 }
 
 // extractFile extracts the file path from ID parts, excluding trailing position components.
@@ -85,9 +85,9 @@ func extractFile(parts []string, trailingCount int) string {
 
 // ParsedID holds the components of a parsed finding ID.
 type ParsedID struct {
-	Tool   string
-	Rule   string
-	File   string
+	Tool   ToolName
+	Rule   RuleName
+	File   FilePath
 	Line   int
 	Column int
 }
@@ -98,15 +98,15 @@ func (p ParsedID) OK() bool {
 }
 
 // ParseID parses a finding ID and extracts its components.
-func ParseID(id string) ParsedID {
-	parts := strings.Split(id, ":")
+func ParseID(id FindingID) ParsedID {
+	parts := strings.Split(string(id), ":")
 
 	if len(parts) < idPartCount {
 		return ParsedID{} //nolint:exhaustruct
 	}
 
-	tool := parts[0]
-	rule := parts[1]
+	tool := ToolName(parts[0])
+	rule := RuleName(parts[1])
 
 	// Handle hash-based IDs
 	if len(parts) == idPartCount && len(parts[2]) == hashLength { // hex encoded hash
@@ -131,7 +131,7 @@ func ParseID(id string) ParsedID {
 			if err2 == nil {
 				file := extractFile(parts, positionPartsTwo)
 
-				return ParsedID{Tool: tool, Rule: rule, File: file, Line: lineTest, Column: colTest}
+				return ParsedID{Tool: tool, Rule: rule, File: FilePath(file), Line: lineTest, Column: colTest}
 			}
 		}
 
@@ -142,14 +142,14 @@ func ParseID(id string) ParsedID {
 		if err == nil {
 			file := extractFile(parts, positionPartsOne)
 
-			return ParsedID{Tool: tool, Rule: rule, File: file, Line: line} //nolint:exhaustruct
+			return ParsedID{Tool: tool, Rule: rule, File: FilePath(file), Line: line} //nolint:exhaustruct
 		}
 	}
 
 	// Just file, no position
 	file := strings.Join(parts[2:], ":")
 
-	return ParsedID{Tool: tool, Rule: rule, File: file} //nolint:exhaustruct
+	return ParsedID{Tool: tool, Rule: rule, File: FilePath(file)} //nolint:exhaustruct
 }
 
 // parseInt is a helper to parse a string to int, returning nil on success.

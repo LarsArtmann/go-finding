@@ -12,19 +12,19 @@ func FuzzGenerateID(f *testing.F) {
 	f.Add("tool", "rule", "file", 1, 0)
 
 	f.Fuzz(func(t *testing.T, tool, rule, file string, line, col int) {
-		id := GenerateID(tool, rule, Position{File: file, Line: line, Column: col})
+		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: file, Line: line, Column: col})
 		if id == "" {
 			t.Fatal("GenerateID returned empty")
 		}
 
-		parts := strings.Split(id, ":")
+		parts := strings.Split(string(id), ":")
 		if len(parts) < 2 {
 			t.Fatalf("ID has fewer than 2 parts: %q", id)
 		}
 
 		// Tool and rule may contain colons, so exact part matching is not reliable.
 		// Just verify the ID is non-empty and parseable.
-		if !strings.Contains(id, tool) && tool != "" {
+		if !strings.Contains(string(id), tool) && tool != "" {
 			t.Fatalf("ID %q should contain tool %q", id, tool)
 		}
 	})
@@ -38,7 +38,7 @@ func FuzzParseID(f *testing.F) {
 	f.Add("a:b:c:d:e:f")
 
 	f.Fuzz(func(_ *testing.T, id string) {
-		_ = ParseID(id) // must not panic
+		_ = ParseID(FindingID(id)) // must not panic
 	})
 }
 
@@ -75,18 +75,18 @@ func FuzzRoundTripID(f *testing.F) {
 			t.Skip()
 		}
 
-		id := GenerateID(tool, rule, Position{File: file, Line: line, Column: col})
+		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: file, Line: line, Column: col})
 
-		p := ParseID(id)
+		p := ParseID(FindingID(id))
 		if !p.OK() {
 			t.Fatalf("ParseID(%q) failed", id)
 		}
 
-		if tool != "" && p.Tool != tool {
+		if tool != "" && string(p.Tool) != tool {
 			t.Fatalf("Tool: got %q, want %q", p.Tool, tool)
 		}
 
-		if rule != "" && p.Rule != rule {
+		if rule != "" && string(p.Rule) != rule {
 			t.Fatalf("Rule: got %q, want %q", p.Rule, rule)
 		}
 

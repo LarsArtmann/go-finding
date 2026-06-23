@@ -73,10 +73,10 @@ func findingsFromsarifLog(log sarifLog) []Finding {
 // findingFromSarResult converts a single sarifResult into a Finding.
 func findingFromSarResult(r sarifResult, toolName string) Finding {
 	f := Finding{
-		Rule:     r.RuleID,
+		Rule:     RuleName(r.RuleID),
 		Severity: FromSARIFLevel(r.Level),
 		Message:  r.Message.Text,
-		ToolName: toolName,
+		ToolName: ToolName(toolName),
 	}
 
 	applySarifPosition(&f, r)
@@ -109,7 +109,7 @@ func findingFromSarResult(r sarifResult, toolName string) Finding {
 		}
 		if rel.Properties != nil {
 			if v, ok := rel.Properties[sarifPropID].(string); ok {
-				ref.FindingID = v
+				ref.FindingID = FindingID(v)
 			}
 		}
 
@@ -188,7 +188,7 @@ func applySarifPosition(f *Finding, r sarifResult) {
 // applySarifProperties restores go-finding-specific properties for round-trip fidelity.
 func applySarifProperties(f *Finding, props map[string]any) {
 	if v, ok := stringProp(props, sarifPropID); ok {
-		f.ID = v
+		f.ID = FindingID(v)
 	}
 
 	if v, ok := stringProp(props, sarifPropSeverity); ok {
@@ -204,7 +204,7 @@ func applySarifProperties(f *Finding, props map[string]any) {
 	}
 
 	if v, ok := stringProp(props, sarifPropToolName); ok {
-		f.ToolName = v
+		f.ToolName = ToolName(v)
 	}
 
 	if v, ok := stringProp(props, sarifPropCategory); ok {

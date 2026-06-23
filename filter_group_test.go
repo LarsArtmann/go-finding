@@ -26,7 +26,7 @@ func TestGroupByCustom(t *testing.T) {
 		{ID: "2", ToolName: "b"},
 		{ID: "3", ToolName: "a"},
 	}
-	groups := GroupBy(findings, func(f Finding) string { return f.ToolName })
+	groups := GroupBy(findings, func(f Finding) string { return string(f.ToolName) })
 	assertGroupLen(t, groups, "a", 2, "GroupBy tool 'a'")
 	assertGroupLen(t, groups, "b", 1, "GroupBy tool 'b'")
 }
@@ -34,7 +34,7 @@ func TestGroupByCustom(t *testing.T) {
 func TestGroupBy_Empty(t *testing.T) {
 	t.Parallel()
 
-	groups := GroupBy(nil, func(f Finding) string { return f.ToolName })
+	groups := GroupBy(nil, func(f Finding) string { return string(f.ToolName) })
 	if len(groups) != 0 {
 		t.Errorf("GroupBy(nil) = %d groups, want 0", len(groups))
 	}
@@ -89,10 +89,10 @@ func TestSortBySeverity(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
-		{ID: string(SeverityInfo), Severity: SeverityInfo},
-		{ID: string(SeverityCritical), Severity: SeverityCritical},
-		{ID: string(SeverityWarning), Severity: SeverityWarning},
-		{ID: string(SeverityError), Severity: SeverityError},
+		{ID: FindingID(string(SeverityInfo)), Severity: SeverityInfo},
+		{ID: FindingID(string(SeverityCritical)), Severity: SeverityCritical},
+		{ID: FindingID(string(SeverityWarning)), Severity: SeverityWarning},
+		{ID: FindingID(string(SeverityError)), Severity: SeverityError},
 	}
 
 	SortBySeverity(findings)

@@ -7,7 +7,7 @@ import (
 )
 
 func validFinding(rule, tool, msg string) Finding {
-	return NewFinding(rule, tool, msg, SeverityWarning, Pos("test.go", 1, 1), 0.5)
+	return NewFinding(RuleName(rule), ToolName(tool), msg, SeverityWarning, Pos("test.go", 1, 1), 0.5)
 }
 
 func TestReport_FindingsSnapshot(t *testing.T) {
@@ -152,7 +152,7 @@ func TestReport_All_IteratorReleasesLock(t *testing.T) {
 
 func suppressionFinding(id string, expiresAt *time.Time) Finding {
 	return Finding{
-		ID:       id,
+		ID:       FindingID(id),
 		Rule:     "rule",
 		ToolName: "tool",
 		Message:  "test",

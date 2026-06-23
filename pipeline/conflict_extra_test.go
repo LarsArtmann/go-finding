@@ -177,7 +177,7 @@ func TestConflictDetection_NonAdjacentNotGrouped(t *testing.T) {
 
 	ids := make(map[string]bool)
 	for _, f := range result {
-		ids[f.ID] = true
+		ids[string(f.ID)] = true
 	}
 
 	if !ids["D"] {

@@ -89,14 +89,14 @@ func ByFixStrategy(fs FixStrategy) FilterFunc {
 }
 
 // ByTool returns a filter for the given tool name.
-func ByTool(tool string) FilterFunc {
+func ByTool(tool ToolName) FilterFunc {
 	return func(f Finding) bool {
 		return f.ToolName == tool
 	}
 }
 
 // ByRule returns a filter for the given rule.
-func ByRule(rule string) FilterFunc {
+func ByRule(rule RuleName) FilterFunc {
 	return func(f Finding) bool {
 		return f.Rule == rule
 	}

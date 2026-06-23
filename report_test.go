@@ -13,19 +13,19 @@ func assertByCategoryCount(t *testing.T, r *Report, cat string, want int) {
 }
 
 func addCat(r *Report, id, cat, msg string) {
-	r.AddFinding(Finding{ID: id, Category: Category(cat), Message: msg})
+	r.AddFinding(Finding{ID: FindingID(id), Category: Category(cat), Message: msg})
 }
 
 func addRule(r *Report, id, rule, msg string) {
-	r.AddFinding(Finding{ID: id, Rule: rule, Message: msg})
+	r.AddFinding(Finding{ID: FindingID(id), Rule: RuleName(rule), Message: msg})
 }
 
 func addFix(r *Report, id string, fs FixStrategy, msg string) {
-	r.AddFinding(Finding{ID: id, FixStrategy: fs, Message: msg})
+	r.AddFinding(Finding{ID: FindingID(id), FixStrategy: fs, Message: msg})
 }
 
 func addSev(r *Report, id string, sev Severity, msg string) {
-	r.AddFinding(Finding{ID: id, Severity: sev, Message: msg})
+	r.AddFinding(Finding{ID: FindingID(id), Severity: sev, Message: msg})
 }
 
 func TestReportActiveFindings(t *testing.T) {

@@ -35,7 +35,7 @@ func (s CorrelationScore) String() string {
 
 // Correlation represents a relationship between two or more findings.
 type Correlation struct {
-	FindingIDs []string         `json:"findingIds"`
+	FindingIDs []FindingID      `json:"findingIds"`
 	Reason     string           `json:"reason"` // Why they're correlated
 	Score      CorrelationScore `json:"score"`  // 0.0-1.0 correlation strength
 }
@@ -152,7 +152,7 @@ func correlateByOverlap(findings []Finding, correlations []Correlation) []Correl
 
 			if score > minCorrelationScore {
 				correlations = append(correlations, Correlation{
-					FindingIDs: []string{f1.ID, f2.ID},
+					FindingIDs: []FindingID{f1.ID, f2.ID},
 					Reason:     reasonOverlappingRanges,
 					Score:      CorrelationScore(score),
 				})
@@ -186,7 +186,7 @@ func correlateByProximity(findings []Finding, correlations []Correlation) []Corr
 			confidence := 1.0 - (float64(lineDiff) / correlationScoreScale)
 			if confidence > minCorrelationScore {
 				correlations = append(correlations, Correlation{
-					FindingIDs: []string{f1.ID, f2.ID},
+					FindingIDs: []FindingID{f1.ID, f2.ID},
 					Reason:     "same file, nearby lines",
 					Score:      CorrelationScore(confidence),
 				})
@@ -227,7 +227,7 @@ func correlateRangesAndPoints(
 
 			if score > minCorrelationScore {
 				correlations = append(correlations, Correlation{
-					FindingIDs: []string{pointFinding.ID, rangeFinding.ID},
+					FindingIDs: []FindingID{pointFinding.ID, rangeFinding.ID},
 					Reason:     "point within range",
 					Score:      CorrelationScore(score),
 				})

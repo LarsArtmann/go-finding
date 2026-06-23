@@ -34,7 +34,7 @@ func findingToTableData(findings []finding.Finding) *output.TableData {
 			f.Position.String(),
 			strings.ToUpper(string(f.Severity)),
 			string(f.Category),
-			f.Rule,
+			string(f.Rule),
 			f.Message,
 			string(f.FixStrategy),
 		})

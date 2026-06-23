@@ -175,10 +175,10 @@ func TestFixEngine_ApplyWithConflicts_OverlappingEdits(t *testing.T) {
 
 	applied, _, conflicts, result, _ := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(applied).To(HaveLen(1))
-	g.Expect(applied[0].ID).To(Equal("fix1"))
+	g.Expect(applied[0].ID).To(Equal(finding.FindingID("fix1")))
 	g.Expect(conflicts).To(HaveLen(1))
 	g.Expect(conflicts[0].Reason).To(Equal("overlapping edit"))
-	g.Expect(conflicts[0].Finding.ID).To(Equal("fix2"))
+	g.Expect(conflicts[0].Finding.ID).To(Equal(finding.FindingID("fix2")))
 	g.Expect(string(result)).To(Equal("package main\n\nfunc main() {\n\tnew()\n}"))
 }
 
@@ -293,7 +293,7 @@ func TestFilterConflictingEdits(t *testing.T) {
 		result, errs := FilterConflictingEdits(content, fixes, engine)
 		g.Expect(errs).To(BeEmpty())
 		g.Expect(result).To(HaveLen(1))
-		g.Expect(result[0].ID).To(Equal("fix1"))
+		g.Expect(result[0].ID).To(Equal(finding.FindingID("fix1")))
 	})
 }
 

@@ -25,7 +25,7 @@ func assertSingleFindingWithID(t *testing.T, got *Report, wantID string) {
 		t.Fatalf("Findings length = %d, want 1", len(got.Findings))
 	}
 
-	if got.Findings[0].ID != wantID {
+	if string(got.Findings[0].ID) != wantID {
 		t.Errorf("Findings[0].ID = %q, want %q", got.Findings[0].ID, wantID)
 	}
 }

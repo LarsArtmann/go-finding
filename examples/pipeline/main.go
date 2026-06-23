@@ -19,7 +19,7 @@ func (staticDetector) Name() string { return "demo-detector" }
 func (d staticDetector) Detect(_ context.Context) ([]finding.Finding, error) {
 	return []finding.Finding{
 		{
-			ID:          "demo:unused-var:" + d.file + ":2:2",
+			ID:          finding.FindingID("demo:unused-var:" + d.file + ":2:2"),
 			Rule:        "unused-var",
 			ToolName:    "demo",
 			Message:     "variable x is unused",

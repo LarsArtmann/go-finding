@@ -21,8 +21,8 @@ func FuzzToSARIF(f *testing.F) {
 		r := NewReport(ToolInfo{Name: tool})
 		r.AddFinding(Finding{
 			ID:       "id",
-			Rule:     rule,
-			ToolName: tool,
+			Rule:     RuleName(rule),
+			ToolName: ToolName(tool),
 			Message:  msg,
 			Severity: FromSARIFLevel(level),
 			Position: Position{File: file, Line: line, Column: col},

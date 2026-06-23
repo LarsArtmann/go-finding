@@ -57,14 +57,14 @@ func AssertErrIs[T error](g *gomega.GomegaWithT, err error, target T) {
 
 // MakeFindingWithID creates a Finding with just an ID and Severity.
 func MakeFindingWithID(id string, severity Severity) Finding {
-	return Finding{ID: id, Severity: severity}
+	return Finding{ID: FindingID(id), Severity: severity}
 }
 
 // MakeFindingsWithIDs creates a slice of Findings with sequential IDs and given severity.
 func MakeFindingsWithIDs(count int, severity Severity) []Finding {
 	findings := make([]Finding, count)
 	for i := range count {
-		findings[i] = Finding{ID: string(rune('1' + i)), Severity: severity}
+		findings[i] = Finding{ID: FindingID(string(rune('1' + i))), Severity: severity}
 	}
 
 	return findings
@@ -73,9 +73,9 @@ func MakeFindingsWithIDs(count int, severity Severity) []Finding {
 // MakeFinding creates a Finding with common fields for testing.
 func MakeFinding(id, rule, tool, message string, severity Severity) Finding {
 	return Finding{
-		ID:       id,
-		Rule:     rule,
-		ToolName: tool,
+		ID:       FindingID(id),
+		Rule:     RuleName(rule),
+		ToolName: ToolName(tool),
 		Message:  message,
 		Severity: severity,
 	}
@@ -89,9 +89,9 @@ func MakeFindingWithPos(
 	line, col int,
 ) Finding {
 	return Finding{
-		ID:       id,
-		Rule:     rule,
-		ToolName: tool,
+		ID:       FindingID(id),
+		Rule:     RuleName(rule),
+		ToolName: ToolName(tool),
 		Message:  message,
 		Severity: severity,
 		Position: Position{File: file, Line: line, Column: col},
@@ -198,7 +198,7 @@ func AssertFindingsIDs(t *testing.T, findings []Finding, want []string) {
 	}
 
 	for i, f := range findings {
-		if f.ID != want[i] {
+		if string(f.ID) != want[i] {
 			t.Errorf("findings[%d].ID = %q, want %q", i, f.ID, want[i])
 		}
 	}

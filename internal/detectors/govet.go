@@ -62,8 +62,8 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
 		for _, e := range entries {
 			pos := parsePosn(e.Posn, dir)
 			findings = append(findings, finding.Finding{ //nolint:exhaustruct
-				ID:          finding.GenerateID(DetectorNameGovet, name, pos),
-				Rule:        name,
+				ID:          finding.GenerateID(DetectorNameGovet, finding.RuleName(name), pos),
+				Rule:        finding.RuleName(name),
 				ToolName:    DetectorNameGovet,
 				Message:     e.Message,
 				Severity:    finding.SeverityWarning,

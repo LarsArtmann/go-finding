@@ -167,7 +167,7 @@ func TestFromDiagnostic_IDGeneration(t *testing.T) {
 	}
 
 	// ID should contain tool name and rule
-	if !strings.Contains(got.ID, "govet") || !strings.Contains(got.ID, "printf") {
+	if !strings.Contains(string(got.ID), "govet") || !strings.Contains(string(got.ID), "printf") {
 		t.Errorf("ID = %q, should contain tool and rule", got.ID)
 	}
 }

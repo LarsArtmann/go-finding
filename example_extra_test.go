@@ -93,7 +93,7 @@ func newExampleFinding(
 	file string,
 	line, col int,
 ) finding.Finding {
-	return finding.NewFinding(rule, tool, msg, sev, finding.Pos(file, line, col), 0)
+	return finding.NewFinding(finding.RuleName(rule), finding.ToolName(tool), msg, sev, finding.Pos(file, line, col), 0)
 }
 
 func ExampleDiff() {
@@ -286,8 +286,12 @@ func ExampleToolAdapter() {
 		findings := make([]finding.Finding, 0, len(out.Diagnostics))
 		for _, d := range out.Diagnostics {
 			findings = append(findings, finding.Finding{
-				ID:       finding.GenerateID("mylint", d.Rule, finding.Position{File: d.File, Line: d.Line}),
-				Rule:     d.Rule,
+				ID: finding.GenerateID(
+					"mylint",
+					finding.RuleName(d.Rule),
+					finding.Position{File: d.File, Line: d.Line},
+				),
+				Rule:     finding.RuleName(d.Rule),
 				ToolName: "mylint",
 				Message:  d.Message,
 				Severity: finding.SeverityError,

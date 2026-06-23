@@ -61,7 +61,7 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 		config := DefaultConfig()
 		config.ParallelDetectors = parallel
 		config.OnFinding = func(f finding.Finding) {
-			notified = append(notified, f.ID)
+			notified = append(notified, string(f.ID))
 		}
 
 		d1 := &mockDetector{name: "d1", findings: makeFindings()}
@@ -138,7 +138,7 @@ func TestNamedDetectorFunc(t *testing.T) {
 	}
 
 	g.Expect(findings).To(HaveLen(1))
-	g.Expect(findings[0].ID).To(Equal("test"))
+	g.Expect(findings[0].ID).To(Equal(finding.FindingID("test")))
 }
 
 // TestFixApplier tests the FixApplier.

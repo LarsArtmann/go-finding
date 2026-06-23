@@ -67,11 +67,11 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 		findings := make([]Finding, n)
 		for i := range findings {
 			findings[i] = Finding{
-				ID: randomSeedRule(
+				ID: FindingID(randomSeedRule(
 					rng,
 				) + ":" + randomSeedFile(
 					rng,
-				) + ":" + string(rune('A')+rune(rng.Intn(26))), //nolint:gosec // test-only random character generation
+				) + ":" + string(rune('A')+rune(rng.Intn(26)))), //nolint:gosec // test-only random character generation
 				Severity: sevFromInt(rng.Intn(4)),
 			}
 		}
@@ -99,18 +99,18 @@ func TestProperty_IDRoundTrip(t *testing.T) {
 			return true
 		}
 
-		id := GenerateID(tool, rule, Position{File: file, Line: int(line), Column: int(col)})
+		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: file, Line: int(line), Column: int(col)})
 
-		p := ParseID(id)
+		p := ParseID(FindingID(id))
 		if !p.OK() {
 			return false
 		}
 
-		if p.Tool != tool {
+		if string(p.Tool) != tool {
 			return false
 		}
 
-		if p.Rule != rule {
+		if string(p.Rule) != rule {
 			return false
 		}
 

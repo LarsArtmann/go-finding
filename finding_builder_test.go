@@ -15,7 +15,7 @@ const (
 func assertRelatedID(t *testing.T, f Finding, idx int, want string) {
 	t.Helper()
 
-	if f.Related[idx].FindingID != want {
+	if string(f.Related[idx].FindingID) != want {
 		t.Errorf("Related[%d] = %q, want %q", idx, f.Related[idx].FindingID, want)
 	}
 }

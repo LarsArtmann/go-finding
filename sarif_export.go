@@ -143,7 +143,7 @@ func (r *Report) buildsarifLog(results []sarifResult) sarifLog {
 
 func findingToSARIF(f Finding) sarifResult {
 	result := sarifResult{
-		RuleID:     f.Rule,
+		RuleID:     string(f.Rule),
 		Level:      severityToSARIFLevel(f.Severity),
 		Message:    sarifMessage{Text: f.Message},
 		Locations:  sarifLocations(f),
@@ -254,7 +254,7 @@ func sarifRelatedLocs(f Finding) []sarifRelatedLoc {
 		}
 
 		if rel.FindingID != "" {
-			sarifRel.Properties = map[string]any{sarifPropID: rel.FindingID}
+			sarifRel.Properties = map[string]any{sarifPropID: string(rel.FindingID)}
 		}
 
 		related = append(related, sarifRel)
@@ -265,10 +265,10 @@ func sarifRelatedLocs(f Finding) []sarifRelatedLoc {
 
 func sarifProperties(f Finding) map[string]any {
 	props := map[string]any{
-		sarifPropID:          f.ID,
+		sarifPropID:          string(f.ID),
 		sarifPropSeverity:    string(f.Severity),
 		sarifPropFixStrategy: string(f.FixStrategy),
-		sarifPropToolName:    f.ToolName,
+		sarifPropToolName:    string(f.ToolName),
 	}
 
 	if f.Category != "" {

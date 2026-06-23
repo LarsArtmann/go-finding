@@ -199,8 +199,12 @@ func (f Finding) IsValid() bool {
 // that predates GenerateID.
 func (f Finding) Key() string {
 	if f.ID != "" {
-		return f.ID
+		return string(f.ID)
 	}
 
-	return f.ToolName + keySeparator + f.Position.File + keySeparator + f.Rule + keySeparator + f.Message
+	return string(
+		f.ToolName,
+	) + keySeparator + f.Position.File + keySeparator + string(
+		f.Rule,
+	) + keySeparator + f.Message
 }

@@ -15,7 +15,7 @@ func FormatText(w io.Writer, findings []Finding) error {
 			w, "%s [%s] %s: %s\n",
 			f.Position.String(),
 			strings.ToUpper(string(f.Severity)),
-			f.Rule,
+			string(f.Rule),
 			f.Message,
 		)
 		if err != nil {
@@ -49,7 +49,7 @@ func FormatMarkdown(w io.Writer, findings []Finding) error {
 
 	for _, f := range findings {
 		msg := escapeMarkdownCell(f.Message, maxMessageLen)
-		rule := escapeMarkdownCell(f.Rule, 0)
+		rule := escapeMarkdownCell(string(f.Rule), 0)
 
 		_, err := fmt.Fprintf(
 			w, "| %s | %s | %s | %s |\n",

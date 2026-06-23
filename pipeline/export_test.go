@@ -37,7 +37,7 @@ func offsetFix(before, after string, startOff, endOff int) finding.Finding {
 // offsetFixWithID is offsetFix with an explicit Finding.ID.
 func offsetFixWithID(id, before, after string, startOff, endOff int) finding.Finding {
 	f := offsetFix(before, after, startOff, endOff)
-	f.ID = id
+	f.ID = finding.FindingID(id)
 
 	return f
 }

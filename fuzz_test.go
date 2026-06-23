@@ -35,7 +35,7 @@ func FuzzFilterPredicates(f *testing.F) {
 				ID:       "F1",
 				Severity: severity,
 				Category: Category(category),
-				ToolName: tool,
+				ToolName: ToolName(tool),
 				Position: Position{File: file, Line: 1},
 			},
 			{
@@ -157,11 +157,11 @@ func FuzzMerge_DedupByID(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id1, id2, id3 string) {
 		g := NewWithT(t)
 		r1 := NewReport(ToolInfo{Name: "tool1"})
-		r1.AddFinding(Finding{ID: id1, Severity: SeverityWarning})
-		r1.AddFinding(Finding{ID: id2, Severity: SeverityError})
+		r1.AddFinding(Finding{ID: FindingID(id1), Severity: SeverityWarning})
+		r1.AddFinding(Finding{ID: FindingID(id2), Severity: SeverityError})
 
 		r2 := NewReport(ToolInfo{Name: "tool2"})
-		r2.AddFinding(Finding{ID: id3, Severity: SeverityInfo})
+		r2.AddFinding(Finding{ID: FindingID(id3), Severity: SeverityInfo})
 
 		merged := Combine(
 			[]*Report{r1, r2},
@@ -176,8 +176,8 @@ func FuzzMerge_DedupByID(f *testing.F) {
 				continue
 			}
 
-			seen[f.ID]++
-			g.Expect(seen[f.ID]).To(BeNumerically("<=", 1))
+			seen[string(f.ID)]++
+			g.Expect(seen[string(f.ID)]).To(BeNumerically("<=", 1))
 		}
 
 		// Without dedup: total should be sum
@@ -197,8 +197,8 @@ func FuzzMerge_Idempotent(f *testing.F) {
 		}
 
 		r := NewReport(ToolInfo{Name: "tool"})
-		r.AddFinding(Finding{ID: id1})
-		r.AddFinding(Finding{ID: id2})
+		r.AddFinding(Finding{ID: FindingID(id1)})
+		r.AddFinding(Finding{ID: FindingID(id2)})
 
 		merged1 := Combine([]*Report{r})
 		merged2 := Combine([]*Report{merged1})
@@ -214,8 +214,8 @@ func FuzzCorrelate(f *testing.F) {
 	f.Fuzz(func(t *testing.T, tool1, tool2 string, line1, line2 int, file string) {
 		g := NewWithT(t)
 		findings := []Finding{
-			{ID: "F1", ToolName: tool1, Position: Position{File: file, Line: line1}},
-			{ID: "F2", ToolName: tool2, Position: Position{File: file, Line: line2}},
+			{ID: "F1", ToolName: ToolName(tool1), Position: Position{File: file, Line: line1}},
+			{ID: "F2", ToolName: ToolName(tool2), Position: Position{File: file, Line: line2}},
 		}
 
 		correlations := Correlate(findings)
@@ -276,8 +276,8 @@ func FuzzDedupKey(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id, file string, line, col int, rule string) {
 		g := NewWithT(t)
 		f := Finding{
-			ID:       id,
-			Rule:     rule,
+			ID:       FindingID(id),
+			Rule:     RuleName(rule),
 			Position: Position{File: file, Line: line, Column: col},
 		}
 
