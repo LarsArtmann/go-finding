@@ -140,8 +140,8 @@ func IsFindingError(err error) bool {
 	return ok
 }
 
-// GetCategory returns the category of the error, or empty string if not a FindingError.
-func GetCategory(err error) ErrorCategory {
+// CategoryOf returns the category of the error, or empty string if not a FindingError.
+func CategoryOf(err error) ErrorCategory {
 	if findingErr, ok := errors.AsType[*FindingError](err); ok {
 		return findingErr.Category
 	}
@@ -149,7 +149,14 @@ func GetCategory(err error) ErrorCategory {
 	return ""
 }
 
+// GetCategory returns the category of the error, or empty string if not a FindingError.
+//
+// Deprecated: Use [CategoryOf] instead. Go convention does not use the Get prefix.
+func GetCategory(err error) ErrorCategory {
+	return CategoryOf(err)
+}
+
 // IsCategory returns true if err is a FindingError with the given category.
 func IsCategory(err error, cat ErrorCategory) bool {
-	return GetCategory(err) == cat
+	return CategoryOf(err) == cat
 }
