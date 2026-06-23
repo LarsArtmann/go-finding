@@ -80,7 +80,7 @@ func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 // affect the report, but mutations to slice/map fields (Tags, Related, Metadata)
 // will be shared. Use Clone() for a deep copy.
 // Safe for concurrent use.
-func (r *Report) FindByID(id FindingID) *Finding {
+func (r *Report) FindByID(id ID) *Finding {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

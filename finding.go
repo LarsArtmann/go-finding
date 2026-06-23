@@ -7,9 +7,9 @@ const keySeparator = "\x00"
 // Finding represents a single issue detected by a static analysis tool.
 type Finding struct {
 	// Identity
-	ID       FindingID `json:"id"`       // Stable unique identifier (e.g., "tool:rule:file:42:5")
-	Rule     RuleName  `json:"rule"`     // Rule/check name (e.g., "STRONG_ID", "clone-detected")
-	ToolName ToolName  `json:"toolName"` // Source tool name (e.g., "branching-flow", "art-dupl")
+	ID       ID       `json:"id"`       // Stable unique identifier (e.g., "tool:rule:file:42:5")
+	Rule     RuleName `json:"rule"`     // Rule/check name (e.g., "STRONG_ID", "clone-detected")
+	ToolName ToolName `json:"toolName"` // Source tool name (e.g., "branching-flow", "art-dupl")
 
 	// Core
 	Message  string   `json:"message"`  // Human-readable description
@@ -80,7 +80,7 @@ const (
 
 // RelatedRef links to another finding.
 type RelatedRef struct {
-	FindingID FindingID    `json:"findingId"`       // ID of the related finding
+	FindingID ID           `json:"findingId"`       // ID of the related finding
 	Relation  RelationKind `json:"relation"`        // e.g., RelationCloneOf, RelationCauses
 	Position  Position     `json:"position"`        // Quick access to related location
 	Range     *Range       `json:"range,omitempty"` // Span of the related location

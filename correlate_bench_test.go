@@ -159,7 +159,7 @@ func generateRangeFindings(n int) []Finding {
 		endLine := startLine + (i % 10) + 1
 
 		findings[i] = Finding{
-			ID:       FindingID(fmt.Sprintf("f%d", i)),
+			ID:       ID(fmt.Sprintf("f%d", i)),
 			Rule:     "test-rule",
 			ToolName: ToolName(tools[i%len(tools)]),
 			Position: Position{File: "test.go", Line: startLine},
@@ -179,7 +179,7 @@ func generatePointFindings(n int) []Finding {
 
 	for i := range n {
 		findings[i] = Finding{
-			ID:       FindingID(fmt.Sprintf("f%d", i)),
+			ID:       ID(fmt.Sprintf("f%d", i)),
 			Rule:     "test-rule",
 			ToolName: ToolName(tools[i%len(tools)]),
 			Position: Position{File: "test.go", Line: (i % 100) + 1, Column: 1},
@@ -198,7 +198,7 @@ func makeReports(count, perReport int) []*Report {
 
 		for j := range perReport {
 			findings[j] = Finding{
-				ID:       FindingID(fmt.Sprintf("tool-%d:f%d", i, j)),
+				ID:       ID(fmt.Sprintf("tool-%d:f%d", i, j)),
 				Rule:     "rule",
 				ToolName: ToolName(fmt.Sprintf("tool-%d", i)),
 				Position: Position{File: "test.go", Line: j + 1, Column: 1},

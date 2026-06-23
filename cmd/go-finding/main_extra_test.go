@@ -87,7 +87,7 @@ func makeTestFinding(
 	line, col int,
 ) finding.Finding {
 	return finding.Finding{
-		ID:       finding.FindingID(id),
+		ID:       finding.ID(id),
 		Rule:     finding.RuleName(rule),
 		ToolName: finding.ToolName(tool),
 		Message:  msg,

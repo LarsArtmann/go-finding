@@ -8,7 +8,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
+func TestSARIF_RoundTripPreservesBeforeCodeAndID(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewWithT(t)
 
@@ -38,7 +38,7 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 
 	f := findings[0]
 
-	g.Expect(f.ID).To(gomega.Equal(FindingID("test:R1:a.go:1:1")))
+	g.Expect(f.ID).To(gomega.Equal(ID("test:R1:a.go:1:1")))
 	g.Expect(f.Rule).To(gomega.Equal(RuleName("R1")))
 	g.Expect(f.Message).To(gomega.Equal("msg"))
 	g.Expect(f.AfterCode).To(gomega.Equal("new code"))
@@ -46,7 +46,7 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 	g.Expect(f.BeforeCode).To(gomega.Equal("old code"))
 
 	g.Expect(f.Related).To(gomega.HaveLen(1))
-	g.Expect(f.Related[0].FindingID).To(gomega.Equal(FindingID("related-123")))
+	g.Expect(f.Related[0].FindingID).To(gomega.Equal(ID("related-123")))
 	g.Expect(f.Related[0].Relation).To(gomega.Equal(RelationKind("causes")))
 }
 

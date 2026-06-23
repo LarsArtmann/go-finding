@@ -109,7 +109,7 @@ func findingFromSarResult(r sarifResult, toolName string) Finding {
 		}
 		if rel.Properties != nil {
 			if v, ok := rel.Properties[sarifPropID].(string); ok {
-				ref.FindingID = FindingID(v)
+				ref.FindingID = ID(v)
 			}
 		}
 
@@ -188,7 +188,7 @@ func applySarifPosition(f *Finding, r sarifResult) {
 // applySarifProperties restores go-finding-specific properties for round-trip fidelity.
 func applySarifProperties(f *Finding, props map[string]any) {
 	if v, ok := stringProp(props, sarifPropID); ok {
-		f.ID = FindingID(v)
+		f.ID = ID(v)
 	}
 
 	if v, ok := stringProp(props, sarifPropSeverity); ok {

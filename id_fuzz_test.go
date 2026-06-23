@@ -38,7 +38,7 @@ func FuzzParseID(f *testing.F) {
 	f.Add("a:b:c:d:e:f")
 
 	f.Fuzz(func(_ *testing.T, id string) {
-		_ = ParseID(FindingID(id)) // must not panic
+		_ = ParseID(ID(id)) // must not panic
 	})
 }
 
@@ -77,7 +77,7 @@ func FuzzRoundTripID(f *testing.F) {
 
 		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: file, Line: line, Column: col})
 
-		p := ParseID(FindingID(id))
+		p := ParseID(id)
 		if !p.OK() {
 			t.Fatalf("ParseID(%q) failed", id)
 		}

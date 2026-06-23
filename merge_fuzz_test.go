@@ -18,7 +18,7 @@ func FuzzMergeRandom(f *testing.F) {
 		findings := make([]Finding, n)
 		for i := range findings {
 			findings[i] = Finding{
-				ID:       FindingID(randomSeedID(rng)),
+				ID:       ID(randomSeedID(rng)),
 				Rule:     RuleName(randomSeedRule(rng)),
 				Severity: randomSeverity(rng),
 				Position: Position{

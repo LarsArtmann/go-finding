@@ -23,7 +23,7 @@ const (
 // GenerateID creates a stable, unique identifier for a finding.
 // Format: "tool:rule:file:line:col" (human-readable)
 // If line is 0, uses hash-based ID for stability.
-func GenerateID(toolName ToolName, rule RuleName, pos Position) FindingID {
+func GenerateID(toolName ToolName, rule RuleName, pos Position) ID {
 	if pos.Line == 0 {
 		// Hash-based for position-less findings.
 		// Uses length-prefixed fields to prevent ambiguity when field
@@ -44,7 +44,7 @@ func GenerateID(toolName ToolName, rule RuleName, pos Position) FindingID {
 		b.WriteByte(':')
 		b.WriteString(hash)
 
-		return FindingID(b.String())
+		return ID(b.String())
 	}
 
 	// Normalize file path to use forward slashes
@@ -63,13 +63,13 @@ func GenerateID(toolName ToolName, rule RuleName, pos Position) FindingID {
 	b.WriteString(lineStr)
 
 	if pos.Column == 0 {
-		return FindingID(b.String())
+		return ID(b.String())
 	}
 
 	b.WriteByte(':')
 	b.WriteString(strconv.Itoa(pos.Column))
 
-	return FindingID(b.String())
+	return ID(b.String())
 }
 
 // extractFile extracts the file path from ID parts, excluding trailing position components.
@@ -98,7 +98,7 @@ func (p ParsedID) OK() bool {
 }
 
 // ParseID parses a finding ID and extracts its components.
-func ParseID(id FindingID) ParsedID {
+func ParseID(id ID) ParsedID {
 	parts := strings.Split(string(id), ":")
 
 	if len(parts) < idPartCount {

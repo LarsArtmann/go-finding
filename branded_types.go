@@ -2,12 +2,12 @@ package finding
 
 // Branded primitive types for compile-time safety.
 // These prevent accidental mixing of string fields that represent
-// distinct domain concepts (e.g., putting a Rule where a FindingID belongs).
+// distinct domain concepts (e.g., putting a Rule where an ID belongs).
 // JSON serialization is identical to raw string — branded types marshal
 // as strings with no overhead.
 
-// FindingID is the stable unique identifier for a finding (tool:rule:file:line:col).
-type FindingID string
+// ID is the stable unique identifier for a finding (tool:rule:file:line:col).
+type ID string
 
 // RuleName is the rule or check name (e.g., "nilcheck", "STRONG_ID").
 type RuleName string

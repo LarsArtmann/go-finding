@@ -138,7 +138,7 @@ func TestNamedDetectorFunc(t *testing.T) {
 	}
 
 	g.Expect(findings).To(HaveLen(1))
-	g.Expect(findings[0].ID).To(Equal(finding.FindingID("test")))
+	g.Expect(findings[0].ID).To(Equal(finding.ID("test")))
 }
 
 // TestFixApplier tests the FixApplier.

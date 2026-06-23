@@ -33,7 +33,7 @@ func addFindingForTest(t *testing.T, r *Report, id string, sev Severity, file st
 	t.Helper()
 
 	r.AddFinding(Finding{
-		ID:          FindingID(id),
+		ID:          ID(id),
 		Severity:    sev,
 		Position:    Position{File: file, Line: 0, Column: 0, Offset: 0},
 		Category:    "",

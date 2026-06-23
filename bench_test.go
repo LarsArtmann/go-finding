@@ -32,7 +32,7 @@ func BenchmarkClone(b *testing.B) {
 			Start: Position{Line: 42, Column: 10},
 			End:   Position{Line: 42, Column: 20},
 		},
-		Related:  []RelatedRef{{FindingID: FindingID("related1"), Relation: "related"}},
+		Related:  []RelatedRef{{FindingID: ID("related1"), Relation: "related"}},
 		Category: CategorySecurity,
 	}
 
@@ -89,7 +89,7 @@ func BenchmarkParseID(b *testing.B) {
 
 	for b.Loop() {
 		for _, id := range ids {
-			ParseID(FindingID(id))
+			ParseID(ID(id))
 		}
 	}
 }
@@ -98,7 +98,7 @@ func BenchmarkFilter(b *testing.B) {
 	findings := make([]Finding, 1000)
 	for i := range findings {
 		findings[i] = Finding{
-			ID:       FindingID(fmt.Sprintf("tool:rule:file.go:%d", i)),
+			ID:       ID(fmt.Sprintf("tool:rule:file.go:%d", i)),
 			Severity: sevFromInt(i % 4),
 			Category: CategoryStyle,
 			Position: Position{File: benchFile, Line: i + 1},
@@ -116,7 +116,7 @@ func BenchmarkFilterMultiple(b *testing.B) {
 	findings := make([]Finding, 1000)
 	for i := range findings {
 		findings[i] = Finding{
-			ID:       FindingID(fmt.Sprintf("tool:rule:file.go:%d", i)),
+			ID:       ID(fmt.Sprintf("tool:rule:file.go:%d", i)),
 			Severity: sevFromInt(i % 4),
 			Category: []Category{CategoryStyle, CategorySecurity, CategoryPerformance, CategoryCorrectness}[i%4],
 			Position: benchPosition("file%d.go", 10, i),
@@ -155,7 +155,7 @@ func BenchmarkMerge(b *testing.B) {
 		reports[i] = benchReport(i)
 		for j := range 200 {
 			reports[i].AddFinding(Finding{
-				ID:       FindingID(fmt.Sprintf("tool%d:rule:file%d.go:%d", i, j%10, j)),
+				ID:       ID(fmt.Sprintf("tool%d:rule:file%d.go:%d", i, j%10, j)),
 				Severity: sevFromInt(j % 4),
 				Position: benchPosition("file%d.go", 10, j),
 			})
@@ -173,7 +173,7 @@ func BenchmarkCorrelate(b *testing.B) {
 	findings := make([]Finding, 200)
 	for i := range findings {
 		findings[i] = Finding{
-			ID:       FindingID(fmt.Sprintf("tool%d:rule:file.go:%d", i%5, i)),
+			ID:       ID(fmt.Sprintf("tool%d:rule:file.go:%d", i%5, i)),
 			ToolName: ToolName(fmt.Sprintf("tool%d", i%5)),
 			Position: benchPosition("file%d.go", 5, i),
 		}
@@ -192,7 +192,7 @@ func BenchmarkMergeNoDedup(b *testing.B) {
 		reports[i] = benchReport(i)
 		for j := range 500 {
 			reports[i].AddFinding(Finding{
-				ID:       FindingID(fmt.Sprintf("tool%d:rule:file.go:%d:%d", i, j, i)),
+				ID:       ID(fmt.Sprintf("tool%d:rule:file.go:%d:%d", i, j, i)),
 				Severity: sevFromInt(j % 4),
 			})
 		}
@@ -209,7 +209,7 @@ func sarifBenchReport() *Report {
 	report := NewReport(ToolInfo{Name: "bench", Version: benchVersion})
 	for i := range 100 {
 		report.AddFinding(Finding{
-			ID:       FindingID(fmt.Sprintf("tool:rule:file.go:%d", i)),
+			ID:       ID(fmt.Sprintf("tool:rule:file.go:%d", i)),
 			Rule:     benchRule,
 			Message:  "test finding",
 			Severity: sevFromInt(i % 4),

@@ -24,7 +24,7 @@ func NewBuilder(rule RuleName, toolName ToolName, message string, severity Sever
 }
 
 // WithID overrides the auto-generated ID.
-func (b *Builder) WithID(id FindingID) *Builder {
+func (b *Builder) WithID(id ID) *Builder {
 	b.f.ID = id
 
 	return b

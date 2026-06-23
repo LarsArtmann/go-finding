@@ -53,7 +53,7 @@ func newMockDetector(name, toolName string, findings ...finding.Finding) *mockDe
 	return &mockDetector{name: name, findings: findings}
 }
 
-func mockDet(name string, findingID finding.FindingID) *mockDetector {
+func mockDet(name string, findingID finding.ID) *mockDetector {
 	return &mockDetector{name: name, findings: []finding.Finding{{ID: findingID}}}
 }
 
@@ -74,7 +74,7 @@ func slowTestDetector(name string, delay time.Duration) *mockDetector {
 
 func testFinding(id, rule, tool, msg string, sev finding.Severity, file string) finding.Finding {
 	return finding.Finding{
-		ID:       finding.FindingID(id),
+		ID:       finding.ID(id),
 		Rule:     finding.RuleName(rule),
 		ToolName: finding.ToolName(tool),
 		Message:  msg,
@@ -94,7 +94,7 @@ func registerFindingDetector(registry *finding.DetectorRegistry, name, tool stri
 
 func findingWithRange(id, file string, line, startLine, endLine int) finding.Finding {
 	return finding.Finding{
-		ID:       finding.FindingID(id),
+		ID:       finding.ID(id),
 		Position: finding.Position{File: file, Line: line},
 		Range: &finding.Range{
 			Start: finding.Position{File: file, Line: startLine},
@@ -104,7 +104,7 @@ func findingWithRange(id, file string, line, startLine, endLine int) finding.Fin
 }
 
 func findingAt(id, file string, line int) finding.Finding {
-	return finding.Finding{ID: finding.FindingID(id), Position: finding.Position{File: file, Line: line}}
+	return finding.Finding{ID: finding.ID(id), Position: finding.Position{File: file, Line: line}}
 }
 
 func findings(fixSpecs ...any) []finding.Finding {
@@ -262,7 +262,7 @@ func newTestApplierWithDir(t *testing.T) (string, *FixApplier) {
 
 func makeFixFinding(id, before, after, file string, line int) finding.Finding {
 	return finding.Finding{
-		ID:          finding.FindingID(id),
+		ID:          finding.ID(id),
 		Rule:        "r1",
 		ToolName:    "tool",
 		Message:     "replace " + before + " with " + after,
@@ -281,7 +281,7 @@ func makeErrorDetector(errMsg string) Detector {
 
 func makeFindingDetectorFunc(id string) DetectorFunc {
 	return DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
-		return []finding.Finding{{ID: finding.FindingID(id)}}, nil
+		return []finding.Finding{{ID: finding.ID(id)}}, nil
 	})
 }
 
@@ -299,7 +299,7 @@ func assertFindingErrorIO(t *testing.T, fe *finding.FindingError, file string) {
 
 func makeFixFindingWithRange(id, before, after, file string, line, col int) finding.Finding {
 	return finding.Finding{
-		ID:          finding.FindingID(id),
+		ID:          finding.ID(id),
 		BeforeCode:  before,
 		AfterCode:   after,
 		Position:    finding.Position{File: file, Line: line, Column: col},

@@ -89,10 +89,10 @@ func TestSortBySeverity(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
-		{ID: FindingID(string(SeverityInfo)), Severity: SeverityInfo},
-		{ID: FindingID(string(SeverityCritical)), Severity: SeverityCritical},
-		{ID: FindingID(string(SeverityWarning)), Severity: SeverityWarning},
-		{ID: FindingID(string(SeverityError)), Severity: SeverityError},
+		{ID: ID(string(SeverityInfo)), Severity: SeverityInfo},
+		{ID: ID(string(SeverityCritical)), Severity: SeverityCritical},
+		{ID: ID(string(SeverityWarning)), Severity: SeverityWarning},
+		{ID: ID(string(SeverityError)), Severity: SeverityError},
 	}
 
 	SortBySeverity(findings)

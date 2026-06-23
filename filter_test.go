@@ -51,7 +51,7 @@ func makeFixStrategyFindings(id2, id3 FixStrategy) []Finding {
 func makeFindingsWithSeverity(sev ...Severity) []Finding {
 	findings := make([]Finding, len(sev))
 	for i, s := range sev {
-		findings[i] = Finding{ID: FindingID(string(rune('1' + i))), Severity: s}
+		findings[i] = Finding{ID: ID(string(rune('1' + i))), Severity: s}
 	}
 
 	return findings
@@ -60,7 +60,7 @@ func makeFindingsWithSeverity(sev ...Severity) []Finding {
 func makeFindingsWithCategory(cats ...Category) []Finding {
 	findings := make([]Finding, len(cats))
 	for i, c := range cats {
-		findings[i] = Finding{ID: FindingID(string(rune('1' + i))), Category: c}
+		findings[i] = Finding{ID: ID(string(rune('1' + i))), Category: c}
 	}
 
 	return findings

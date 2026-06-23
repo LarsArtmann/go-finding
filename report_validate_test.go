@@ -152,7 +152,7 @@ func TestReport_All_IteratorReleasesLock(t *testing.T) {
 
 func suppressionFinding(id string, expiresAt *time.Time) Finding {
 	return Finding{
-		ID:       FindingID(id),
+		ID:       ID(id),
 		Rule:     "rule",
 		ToolName: "tool",
 		Message:  "test",

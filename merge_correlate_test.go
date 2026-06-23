@@ -9,7 +9,7 @@ import (
 
 func makeRangeFinding(id, tool, rule, file string, startLine, endLine int) Finding {
 	return Finding{
-		ID: FindingID(id), ToolName: ToolName(tool), Rule: RuleName(rule),
+		ID: ID(id), ToolName: ToolName(tool), Rule: RuleName(rule),
 		Severity: SeverityError, Message: "test",
 		Position: Position{File: file, Line: startLine},
 		Range:    &Range{Start: Position{File: file, Line: startLine}, End: Position{File: file, Line: endLine}},
@@ -37,7 +37,7 @@ func TestCorrelate(t *testing.T) {
 	g.Expect(c.Score).To(BeNumerically("~", wantConf, 0.0001))
 
 	hasID := func(id string) bool {
-		return slices.Contains(c.FindingIDs, FindingID(id))
+		return slices.Contains(c.FindingIDs, ID(id))
 	}
 
 	g.Expect(hasID("1")).To(BeTrue())

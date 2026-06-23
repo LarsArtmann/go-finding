@@ -29,12 +29,12 @@ func SortFindingsByID(findings []Finding) {
 // Two findings with the same ID are considered "modified" if their content differs (per Equal()).
 // All result slices are sorted by ID.
 func Diff(before, after []Finding) DiffResult {
-	beforeSet := make(map[FindingID]Finding, len(before))
+	beforeSet := make(map[ID]Finding, len(before))
 	for _, f := range before {
 		beforeSet[f.ID] = f
 	}
 
-	afterSet := make(map[FindingID]Finding, len(after))
+	afterSet := make(map[ID]Finding, len(after))
 	for _, f := range after {
 		afterSet[f.ID] = f
 	}

@@ -224,10 +224,10 @@ var _ = Describe("ID Generation User Stories", func() {
 		pos := finding.Pos("main.go", 42, 5)
 		id := finding.GenerateID("govet", "nilcheck", pos)
 
-		Expect(id).To(ContainSubstring("govet"))
-		Expect(id).To(ContainSubstring("nilcheck"))
-		Expect(id).To(ContainSubstring("main.go"))
-		Expect(id).To(ContainSubstring("42"))
+		Expect(string(id)).To(ContainSubstring("govet"))
+		Expect(string(id)).To(ContainSubstring("nilcheck"))
+		Expect(string(id)).To(ContainSubstring("main.go"))
+		Expect(string(id)).To(ContainSubstring("42"))
 	})
 
 	It("generates hash-based IDs for position-less findings", func() {
@@ -241,9 +241,9 @@ var _ = Describe("ID Generation User Stories", func() {
 		pos := finding.Pos("main.go", 42, 5)
 		id := finding.GenerateID("govet", "nilcheck", pos)
 
-		parsed := finding.ParseID(finding.FindingID(id))
+		parsed := finding.ParseID(id)
 		Expect(parsed.OK()).To(BeTrue())
-		Expect(parsed.Tool).To(Equal("govet"))
+		Expect(parsed.Tool).To(Equal(finding.ToolName("govet")))
 		Expect(parsed.Rule).To(Equal(finding.RuleName("nilcheck")))
 		Expect(parsed.Line).To(Equal(42))
 		Expect(parsed.Column).To(Equal(5))

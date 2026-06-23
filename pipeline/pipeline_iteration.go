@@ -122,7 +122,7 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 func (*Pipeline) collectAllFindings(
 	result *PipelineResult,
 ) []finding.Finding {
-	seen := make(map[finding.FindingID]struct{})
+	seen := make(map[finding.ID]struct{})
 
 	var all []finding.Finding
 

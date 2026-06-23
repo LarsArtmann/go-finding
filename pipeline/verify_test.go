@@ -9,7 +9,7 @@ import (
 )
 
 func makeFinding(id, msg string) finding.Finding {
-	return finding.Finding{ID: finding.FindingID(id), Message: msg}
+	return finding.Finding{ID: finding.ID(id), Message: msg}
 }
 
 func assertDiffResult(t *testing.T, result *VerifyResult, resolved, remaining, newFindings int) {
@@ -25,7 +25,7 @@ func assertNewFinding(t *testing.T, result *VerifyResult, wantID string) {
 	t.Helper()
 	g := NewWithT(t)
 	g.Expect(result.NewFindings).To(HaveLen(1))
-	g.Expect(result.NewFindings[0].ID).To(Equal(finding.FindingID(wantID)))
+	g.Expect(result.NewFindings[0].ID).To(Equal(finding.ID(wantID)))
 }
 
 func TestDiffFindings_AllFixed(t *testing.T) {
@@ -76,7 +76,7 @@ func TestDiffFindings_Mixed(t *testing.T) {
 	assertDiffResult(t, result, 1, 1, 1)
 
 	g.Expect(result.Fixed).To(HaveLen(1))
-	g.Expect(result.Fixed[0].ID).To(Equal(finding.FindingID("a:rule:file.go:1")))
+	g.Expect(result.Fixed[0].ID).To(Equal(finding.ID("a:rule:file.go:1")))
 }
 
 func TestDiffFindings_EmptyOriginal(t *testing.T) {

@@ -28,7 +28,7 @@ func collectingOnFix(ids *[]string) func(finding.Finding, bool) {
 
 func directFix(id, rule, tool, msg, before, after, file string, line int) finding.Finding {
 	return finding.Finding{
-		ID:          finding.FindingID(id),
+		ID:          finding.ID(id),
 		Rule:        finding.RuleName(rule),
 		ToolName:    finding.ToolName(tool),
 		Message:     msg,

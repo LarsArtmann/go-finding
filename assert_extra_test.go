@@ -113,7 +113,7 @@ func sevFromInt(i int) Severity {
 // MakeSimpleFinding creates a Finding with minimal required fields.
 func MakeSimpleFinding(id string, severity Severity) Finding {
 	return Finding{
-		ID:       FindingID(id),
+		ID:       ID(id),
 		Severity: severity,
 	}
 }
@@ -136,7 +136,7 @@ func MakeNonexistentPosition() Position {
 // MakeFindingWithFix creates a Finding with fix-related fields.
 func MakeFindingWithFix(id, rule, tool, msg, beforeCode, afterCode, file string, line int) Finding {
 	return Finding{
-		ID:          FindingID(id),
+		ID:          ID(id),
 		Rule:        RuleName(rule),
 		ToolName:    ToolName(tool),
 		Message:     msg,

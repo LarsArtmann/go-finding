@@ -67,7 +67,7 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 		findings := make([]Finding, n)
 		for i := range findings {
 			findings[i] = Finding{
-				ID: FindingID(randomSeedRule(
+				ID: ID(randomSeedRule(
 					rng,
 				) + ":" + randomSeedFile(
 					rng,
@@ -101,7 +101,7 @@ func TestProperty_IDRoundTrip(t *testing.T) {
 
 		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: file, Line: int(line), Column: int(col)})
 
-		p := ParseID(FindingID(id))
+		p := ParseID(id)
 		if !p.OK() {
 			return false
 		}

@@ -134,7 +134,7 @@ func TestPrettyJSONFiltered(t *testing.T) {
 	var parsed Report
 	g.Expect(json.Unmarshal([]byte(got), &parsed)).To(Succeed())
 	g.Expect(parsed.Findings).To(HaveLen(1))
-	g.Expect(parsed.Findings[0].ID).To(Equal(FindingID("active")))
+	g.Expect(parsed.Findings[0].ID).To(Equal(ID("active")))
 }
 
 func TestPrettyJSON_ErrorPath(t *testing.T) {

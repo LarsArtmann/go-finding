@@ -96,7 +96,7 @@ func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
 	findings := make([]finding.Finding, 5)
 	for i := range findings {
 		findings[i] = finding.Finding{
-			ID:          finding.FindingID(string(rune('A' + i))),
+			ID:          finding.ID(string(rune('A' + i))),
 			BeforeCode:  "old" + string(rune('A'+i)),
 			AfterCode:   "new" + string(rune('A'+i)),
 			Position:    finding.Position{File: "file" + string(rune('A'+i)) + ".go"},

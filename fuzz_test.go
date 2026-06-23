@@ -157,11 +157,11 @@ func FuzzMerge_DedupByID(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id1, id2, id3 string) {
 		g := NewWithT(t)
 		r1 := NewReport(ToolInfo{Name: "tool1"})
-		r1.AddFinding(Finding{ID: FindingID(id1), Severity: SeverityWarning})
-		r1.AddFinding(Finding{ID: FindingID(id2), Severity: SeverityError})
+		r1.AddFinding(Finding{ID: ID(id1), Severity: SeverityWarning})
+		r1.AddFinding(Finding{ID: ID(id2), Severity: SeverityError})
 
 		r2 := NewReport(ToolInfo{Name: "tool2"})
-		r2.AddFinding(Finding{ID: FindingID(id3), Severity: SeverityInfo})
+		r2.AddFinding(Finding{ID: ID(id3), Severity: SeverityInfo})
 
 		merged := Combine(
 			[]*Report{r1, r2},
@@ -197,8 +197,8 @@ func FuzzMerge_Idempotent(f *testing.F) {
 		}
 
 		r := NewReport(ToolInfo{Name: "tool"})
-		r.AddFinding(Finding{ID: FindingID(id1)})
-		r.AddFinding(Finding{ID: FindingID(id2)})
+		r.AddFinding(Finding{ID: ID(id1)})
+		r.AddFinding(Finding{ID: ID(id2)})
 
 		merged1 := Combine([]*Report{r})
 		merged2 := Combine([]*Report{merged1})
@@ -276,7 +276,7 @@ func FuzzDedupKey(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id, file string, line, col int, rule string) {
 		g := NewWithT(t)
 		f := Finding{
-			ID:       FindingID(id),
+			ID:       ID(id),
 			Rule:     RuleName(rule),
 			Position: Position{File: file, Line: line, Column: col},
 		}

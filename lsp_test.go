@@ -134,7 +134,7 @@ func TestFromLSP(t *testing.T) {
 		t.Errorf("FromLSP Metadata[lsp-severity] = %q, want %q", got, want)
 	}
 
-	p := ParseID(FindingID(f.ID))
+	p := ParseID(f.ID)
 	if !p.OK() {
 		t.Fatalf("ParseID(%q) failed", f.ID)
 	}

@@ -12,7 +12,7 @@ func generateFindings(n int) []finding.Finding {
 	findings := make([]finding.Finding, n)
 	for i := range findings {
 		findings[i] = finding.Finding{
-			ID:       finding.FindingID(fmt.Sprintf("tool:rule:file.go:%d:1", i)),
+			ID:       finding.ID(fmt.Sprintf("tool:rule:file.go:%d:1", i)),
 			Rule:     "SA1000",
 			ToolName: "bench",
 			Message:  fmt.Sprintf("benchmark finding %d", i),

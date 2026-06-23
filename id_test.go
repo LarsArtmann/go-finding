@@ -27,7 +27,7 @@ func stdIDCase(name, id, file string, line, col int, ok bool) parseIDCase {
 func testParseIDCase(t *testing.T, tt parseIDCase) {
 	t.Helper()
 
-	p := ParseID(FindingID(tt.id))
+	p := ParseID(ID(tt.id))
 	if p.OK() != tt.wantOK {
 		t.Fatalf("OK() = %v, want %v", p.OK(), tt.wantOK)
 	}
