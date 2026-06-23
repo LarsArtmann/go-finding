@@ -4,6 +4,8 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"maps"
+	"sync"
 )
 
 // Severity represents the severity level of a finding.
@@ -176,18 +178,57 @@ func (s Severity) isValidWith(other Severity) bool {
 // errInvalidSeverity is returned when parsing an invalid severity string.
 var errInvalidSeverity = errors.New("invalid severity")
 
-// SeverityAliases maps common alternative severity strings to canonical Severity values.
-// Consumers can add custom aliases via this map before calling ParseSeverity.
-var SeverityAliases = map[string]Severity{
-	"warn":       SeverityWarning,
-	"high":       SeverityError,
-	"medium":     SeverityWarning,
-	"low":        SeverityInfo,
-	"fatal":      SeverityCritical,
-	"critical":   SeverityCritical,
-	"note":       SeverityInfo,
-	"advice":     SeverityInfo,
-	"suggestion": SeverityInfo,
+// severityAliases maps common alternative severity strings to canonical Severity values.
+// Guarded by severityAliasesMu for concurrent read/write safety.
+var (
+	severityAliases = map[string]Severity{
+		"warn":       SeverityWarning,
+		"high":       SeverityError,
+		"medium":     SeverityWarning,
+		"low":        SeverityInfo,
+		"fatal":      SeverityCritical,
+		"critical":   SeverityCritical,
+		"note":       SeverityInfo,
+		"advice":     SeverityInfo,
+		"suggestion": SeverityInfo,
+	}
+	severityAliasesMu sync.RWMutex
+)
+
+// RegisterSeverityAlias adds a custom severity alias for use by ParseSeverity.
+// This is safe to call concurrently. If the alias already exists, it is overwritten.
+func RegisterSeverityAlias(name string, sev Severity) {
+	severityAliasesMu.Lock()
+	defer severityAliasesMu.Unlock()
+
+	severityAliases[name] = sev
+}
+
+// LookupSeverityAlias returns the canonical Severity for the given alias, if it exists.
+// This is safe to call concurrently.
+func LookupSeverityAlias(name string) (Severity, bool) {
+	severityAliasesMu.RLock()
+	defer severityAliasesMu.RUnlock()
+
+	sev, ok := severityAliases[name]
+
+	return sev, ok
+}
+
+// SeverityAliases returns a snapshot copy of all registered severity aliases.
+// This is safe to call concurrently. Mutating the returned map does not affect
+// the internal registry.
+//
+// Deprecated: Use [RegisterSeverityAlias] to add aliases and [LookupSeverityAlias]
+// to look them up. This function exists for backward compatibility.
+func SeverityAliases() map[string]Severity {
+	severityAliasesMu.RLock()
+	defer severityAliasesMu.RUnlock()
+
+	result := make(map[string]Severity, len(severityAliases))
+	maps.Copy(result, severityAliases)
+
+	return result
 }
 
 // ParseSeverity parses a string into a Severity.
@@ -200,7 +241,7 @@ func ParseSeverity(s string) (Severity, error) {
 		return sev, nil
 	}
 
-	if alias, ok := SeverityAliases[s]; ok {
+	if alias, ok := LookupSeverityAlias(s); ok {
 		return alias, nil
 	}
 
