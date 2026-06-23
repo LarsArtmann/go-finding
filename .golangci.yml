@@ -75,7 +75,6 @@ linters:
         - ireturn
         - loggercheck
         - maintidx
-        - makezero
         - mirror
         - misspell
         - mnd
@@ -194,8 +193,6 @@ linters:
                 - generic
                 - github.com/larsartmann/go-finding/pipeline.Detector
                 - github.com/larsartmann/go-finding/pipeline.FindingProcessor
-        makezero:
-            always: true
         mnd:
             ignored-functions:
                 - fmt.Errorf

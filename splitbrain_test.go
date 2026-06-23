@@ -98,17 +98,17 @@ func TestSplitBrain_SARIFRegionConsistency(t *testing.T) {
 		t.Fatalf("expected 1 finding, got %d", len(findings))
 	}
 
-	rt := findings[0]
-	if rt.Range == nil {
+	result := findings[0]
+	if result.Range == nil {
 		t.Fatal("round-tripped Range is nil")
 	}
 
-	if rt.Range.End.Line != 20 {
-		t.Errorf("round-tripped Range.End.Line = %d, want 20", rt.Range.End.Line)
+	if result.Range.End.Line != 20 {
+		t.Errorf("round-tripped Range.End.Line = %d, want 20", result.Range.End.Line)
 	}
 
-	if rt.Range.End.Column != 10 {
-		t.Errorf("round-tripped Range.End.Column = %d, want 10", rt.Range.End.Column)
+	if result.Range.End.Column != 10 {
+		t.Errorf("round-tripped Range.End.Column = %d, want 10", result.Range.End.Column)
 	}
 }
 
