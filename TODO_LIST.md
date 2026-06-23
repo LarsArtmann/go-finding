@@ -1,7 +1,7 @@
 # TODO List
 
 **Generated:** 2026-05-20
-**Updated:** 2026-06-23 (session 24: multi-skill audit — added findings from code-quality-scan, data-model-review, naming-review)
+**Updated:** 2026-06-23 (session 24: all v1.0 API cleanup items completed — branded types, renames, validator decomposition)
 **Files Processed:** 235
 
 ## 🔴 HIGH Priority
@@ -9,8 +9,8 @@
 - [x] Add bounds checks in `findingFromSARIF` — bounds checks exist via `applySarifPosition`
 - [x] Document SARIF critical round-trip loss — documented in doc.go, USAGE_GUIDE.md, FEATURES.md
 - [ ] `Finding` struct sub-grouping — **DEFERRED v2** (breaking change)
-- [ ] **Fix `nix build .#` vendorHash mismatch** — `flake.nix:29` declares `sha256-xYzX2FPGjqMYIZrNnRlHtIMf2uSfs6Gj2rfbxotrbZs=` but Nix computes `sha256-wISSq/3DR5Bn1j/HvSwLMMpf0SB08znymQEo5bWRaXY=`. CI/release pipelines using Nix fail. Found by code-quality-scan 2026-06-23.
-- [ ] **Decompose `Finding.Validate()` to satisfy gocyclo** — `finding_validate.go:10` has cyclomatic complexity 32 (threshold 25). Extract per-field validators (`validateSeverity`, `validatePosition`, `validateRange`, `validateFix`, `validateMetadata`). Behavior unchanged; complexity drops below 15.
+- [x] **Fix `nix build .#` vendorHash mismatch** — `flake.nix:29` now declares correct hash `sha256-wISSq/...`. Commit `9d71627`.
+- [x] **Decompose `Finding.Validate()` to satisfy gocyclo** — Split into 6 validators: `validateIdentity`, `validateClassification`, `validateFix`, `validateReferences`, `validateSpatial`, `validateSuppression`. Commit `ded53c2`.
 - [x] Add `golines` to CI — treefmt-nix now supports golines; configured in `flake.nix` with maxLength=120
 - [x] Clean up gopls hints (~12 non-critical) — production code: 0 rangeint, 0 newexpr, 2 mapsloop fixed
 - [x] Implement art-dupl integration gaps (GAP-1, GAP-4, GAP-5, GAP-6, GAP-8) — fully implemented, tested, lint clean
@@ -27,14 +27,14 @@
 
 These are breaking changes that should land before the v1.0 API lock. Each is small in isolation but becomes permanent post-1.0.
 
-- [ ] Add branded primitive types — `type FindingID string`, `type RuleName string`, `type ToolName string`, `type FilePath string`. JSON tags unchanged. Prevents ID/Rule/ToolName/File mixups at compile time. (`finding.go:10-47`, `position.go:25`)
-- [ ] Wrap `SeverityAliases` in `sync.RWMutex` — `severity.go:181` exposes a mutable global map; concurrent read-after-write panics. Provide `RegisterSeverityAlias(name, sev)` instead.
-- [ ] Rename `FindingProcessor` → `FindingTransformer` and `Process()` → `Transform()` — `pipeline/adapters.go:28-34`. Current name is a trash-can verb. Updates 4 files.
-- [ ] Rename `(*GeneratedFileFilter).Process()` → `Filter()` — `pipeline/generated_filter.go`. Align method name with type purpose.
-- [ ] Rename `GetCategory(err)` → `CategoryOf(err)` — `errors.go:144`. Go getter convention (no `Get` prefix). Five references to update.
-- [ ] Rename `ConflictInfo` → `Conflict` — `pipeline/conflict.go:223`. Drop vague `Info` suffix. `AnalyzeConflicts() []Conflict` reads cleaner.
-- [ ] Rename `LSPRelatedInfo` → `LSPRelated` — `lsp.go:56`. Drop vague `Info` suffix. Parallel to root `RelatedRef`.
-- [ ] Apply `FindingID` branded type to `RelatedRef.FindingID` and `Correlation.FindingIDs` — once `FindingID` exists (`finding.go:83`, `correlate.go:38`).
+- [x] Add branded primitive types — `type ID string`, `type RuleName string`, `type ToolName string`, `type FilePath string` in `branded_types.go`. Applied to `Finding`, `RelatedRef`, `Correlation`, `ParsedID`. Type named `ID` (not `FindingID`) to avoid revive stutter. Commits `bce09ef`, `fbf0161`.
+- [x] Wrap `SeverityAliases` in `sync.RWMutex` — `severity.go` now has `severityAliasesMu` + `RegisterSeverityAlias()` + `LookupSeverityAlias()`. Old `SeverityAliases()` deprecated as snapshot. Commit `fc3080b`.
+- [x] Rename `FindingProcessor` → `FindingTransformer` and `Process()` → `Transform()` — `pipeline/adapters.go`. Commit `2811f1a`.
+- [x] Rename `(*GeneratedFileFilter).Process()` → `Transform()` — `pipeline/generated_filter.go`. Implements `FindingTransformer`. Commit `2811f1a`.
+- [x] Rename `GetCategory(err)` → `CategoryOf(err)` — `errors.go`. Old `GetCategory()` deprecated as wrapper. Commit `7577bd2`.
+- [x] Rename `ConflictInfo` → `Conflict` — `pipeline/conflict.go`. `AnalyzeConflicts() []Conflict`. Commit `cd888a3`.
+- [x] Rename `LSPRelatedInfo` → `LSPRelated` — `lsp.go`. Commit `cd888a3`.
+- [x] Apply branded types to `RelatedRef.FindingID` and `Correlation.FindingIDs` — `finding.go:83`, `correlate.go:38`. Commit `bce09ef`.
 
 ## 🟡 MEDIUM Priority
 
@@ -77,8 +77,8 @@ These are breaking changes that should land before the v1.0 API lock. Each is sm
 
 - [x] API stability review — audit all exported symbols for v1.0.0 lock (docs/API_STABILITY.md)
 - [x] Decide `FixStrategyAI` fate — keep as RESERVED placeholder
-- [ ] **Rename `fs` → `strategy` in `finding_validate.go:44`** — varnamelen warning (from code-quality-scan + naming-review, 2026-06-23). Trivial.
-- [ ] **Rename `rt` → `result` in `splitbrain_test.go:101`** — varnamelen warning. Trivial.
+- [x] **Rename `fs` → `strategy` in `finding_validate.go`** — Done. Commit `d7dc292`.
+- [x] **Rename `rt` → `result` in `splitbrain_test.go`** — Done. Commit `d7dc292`.
 - [x] Document `BySeverityAtLeast` excludes invalid severities
 - [x] Document `Report.All()` yields copies — with shallow copy caveat
 - [x] Document `FindByID` returns copy — with shallow copy caveat

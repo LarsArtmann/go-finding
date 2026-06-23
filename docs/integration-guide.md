@@ -203,7 +203,7 @@ Key patterns:
 
 See `internal/detectors/govet.go` for the production implementation.
 
-## Using FindingProcessor for Preprocessing
+## Using FindingTransformer for Preprocessing
 
 Run transforms between detection and triage:
 
@@ -211,11 +211,11 @@ Run transforms between detection and triage:
 filter, _ := pipeline.NewGeneratedFileFilter(nil, gogenfilter.WithFilterOptions(gogenfilter.FilterAll))
 
 cfg := pipeline.Config{
-    Processors: []pipeline.FindingProcessor{filter},
+    Processors: []pipeline.FindingTransformer{filter},
 }
 ```
 
-Processors run in order. `ProcessorFunc` wraps a simple function; `NamedProcessorFunc` adds a name for logging.
+Processors run in order. `TransformerFunc` wraps a simple function; `NamedTransformerFunc` adds a name for logging.
 
 ## Using FixProvider for Custom Fix Resolution
 

@@ -63,7 +63,7 @@ func main() {
 Construct findings fluently with the `Builder`:
 
 ```go
-f, err := finding.NewBuilder("nilcheck", "govet", "possible nil deref",
+f, err := finding.NewBuilder(finding.RuleName("nilcheck"), finding.ToolName("govet"), "possible nil deref",
     finding.SeverityError, finding.Pos("main.go", 42, 5)).
     WithFixStrategy(finding.FixStrategyDirect).
     WithBeforeCode("x.foo").
@@ -89,6 +89,7 @@ if err != nil {
 | `Tag`         | Multi-label classification (`security`, `performance`, ...) |
 | `Confidence`  | Named `float64` with `IsValid()`, `Clamp()`, `String()`     |
 | `Suppression` | Expiring suppression with `IsActive(now)`                   |
+| `ID`/`RuleName`/`ToolName`/`FilePath` | Branded string types preventing field mixups at compile time |
 
 ## API Overview
 
@@ -159,7 +160,7 @@ The `pipeline` package runs a detect → process → triage → apply → verify
    └────────────── repeat ────────────────┘ (until stable or max iterations)
 ```
 
-Each iteration runs registered detectors, applies `FindingProcessor` transforms,
+Each iteration runs registered detectors, applies `FindingTransformer` transforms,
 categorizes findings by `FixStrategy`, applies direct fixes with conflict detection,
 and optionally re-runs detectors to verify.
 
@@ -354,7 +355,7 @@ err := finding.NewIOError("read file", cause).WithPosition(pos)
 err := finding.NewConflictError("overlapping fixes", cause)
 
 finding.IsFindingError(err)
-finding.GetCategory(err) // "validation", "io", "conflict", etc.
+finding.CategoryOf(err) // "validation", "io", "conflict", etc.
 ```
 
 ## CLI

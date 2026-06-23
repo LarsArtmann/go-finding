@@ -82,7 +82,7 @@ All exported symbols are classified as:
 | `LSPPosition`    | stable |                     |
 | `LSPRange`       | stable |                     |
 | `LSPLocation`    | stable |                     |
-| `LSPRelatedInfo` | stable |                     |
+| `LSPRelated` | stable |                     |
 
 ### Error Types
 
@@ -94,7 +94,7 @@ All exported symbols are classified as:
 | `NewIOError`         | stable | Constructor                          |
 | `NewConflictError`   | stable | Constructor                          |
 | `NewInternalError`   | stable | Constructor                          |
-| `GetCategory`        | stable | Extract ErrorCategory from error     |
+| `CategoryOf`        | stable | Extract ErrorCategory from error     |
 | `IsCategory`         | stable | Check error category                 |
 | `IsFindingError`     | stable | Type assertion                       |
 
@@ -178,12 +178,12 @@ All exported symbols are classified as:
 | `Pipeline`, `Config`, `CompletionReason`, `Stage`               | stable |
 | `Iteration`, `PipelineResult`, `PartialResult`                  | stable |
 | `FixApplier`, `FixEngine`, `FixEdit`, `FixProvider`, `FixGroup` | stable |
-| `ConflictInfo`, `VerifyResult`, `TriageResult`                  | stable |
+| `Conflict`, `VerifyResult`, `TriageResult`                  | stable |
 | `Metrics`, `MetricsSnapshot`                                    | stable |
 | `FileBackup`                                                    | stable |
 | `RetryDetector`, `RetryConfig`                                  | stable |
 | `GeneratedFileFilter`                                           | stable |
-| `FindingProcessor`, `ProcessorFunc`                             | stable |
+| `FindingTransformer`, `TransformerFunc`                             | stable |
 | `Detector`, `DetectorFunc` (type aliases)                       | stable |
 | `OffsetProvider`, `LineProvider`, `SubstringProvider`           | stable |
 

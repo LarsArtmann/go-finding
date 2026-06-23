@@ -27,9 +27,9 @@ The central type representing a single issue detected by a static analysis tool.
 
 | Field       | Type                | Purpose                                              |
 | ----------- | ------------------- | ---------------------------------------------------- |
-| ID          | `string`            | Stable unique identifier (`tool:rule:file:line:col`) |
-| Rule        | `string`            | Rule/check name (e.g., `STRONG_ID`)                  |
-| ToolName    | `string`            | Source tool name (e.g., `govet`)                     |
+| ID          | `ID`                | Stable unique identifier (`tool:rule:file:line:col`) |
+| Rule        | `RuleName`          | Rule/check name (e.g., `STRONG_ID`)                  |
+| ToolName    | `ToolName`          | Source tool name (e.g., `govet`)                     |
 | Message     | `string`            | Human-readable description                           |
 | Severity    | `Severity`          | info / warning / error / critical                    |
 | Position    | `Position`          | Where the issue is (file, line, column, offset)      |
@@ -46,7 +46,7 @@ The central type representing a single issue detected by a static analysis tool.
 | Suppression | `*Suppression`      | If suppressed                                        |
 | Metadata    | `map[string]string` | Tool-specific key-value pairs                        |
 
-Key methods: `Validate()` (detailed per-field errors), `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
+Key methods: `Validate()` (decomposed into 6 per-field validators for low complexity), `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
 
 ### 1.2 Builder API
 
@@ -55,14 +55,14 @@ Key methods: `Validate()` (detailed per-field errors), `IsValid()`, `Clone()`, `
 Fluent builder for constructing `Finding` values with validation.
 
 ```go
-f, err := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, Pos("main.go", 42, 5)).
+f, err := NewBuilder(RuleName("nilcheck"), ToolName("govet"), "possible nil deref", SeverityError, Pos("main.go", 42, 5)).
     WithFixStrategy(FixStrategyDirect).
     WithBeforeCode("x.foo").
     WithAfterCode("x.foo()").
     Build()
 ```
 
-- `NewBuilder(rule, toolName, message, severity, pos)` — required fields
+- `NewBuilder(rule RuleName, toolName ToolName, message, severity, pos)` — required fields (branded types prevent ID/Rule/Tool mixups at compile time)
 - `WithID()`, `WithCategory()`, `WithTags()`, `WithFixStrategy()`, `WithSuggestion()`, `WithBeforeCode()`, `WithAfterCode()`, `WithRange()`, `WithSnippet()`, `WithConfidence()`, `WithRelated()`, `WithSuppression()`, `WithMetadata()` — optional
 - `Build()` — returns validated `Finding` or error
 - `MustBuild()` — panics on invalid state
@@ -407,7 +407,7 @@ Category-based error types with `errors.Is` / `errors.As` support:
 
 `FindingError` supports: `WithFinding()`, `WithPosition()`, `Unwrap()`, `Is()` for sentinel matching
 
-Helpers: `IsFindingError(err)`, `GetCategory(err)`, `IsCategory(err, cat)`
+Helpers: `IsFindingError(err)`, `CategoryOf(err)`, `IsCategory(err, cat)`
 
 ---
 
@@ -441,7 +441,7 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 | `Retry`                      | `*RetryConfig`          | `nil`   | Exponential backoff retries                            |
 | `Metrics`                    | `*Metrics`              | `nil`   | Timing/count collection                                |
 | `CorrelateFindings`          | `bool`                  | `false` | Cross-tool correlation                                 |
-| `Processors`                 | `[]FindingProcessor`    | `nil`   | Composable finding transforms                          |
+| `Processors`                 | `[]FindingTransformer`    | `nil`   | Composable finding transforms                          |
 | `FixProviders`               | `[]FixProvider`         | `nil`   | Custom fix providers (e.g., AST)                       |
 | `OnFinding`                  | `func(Finding)`         | `nil`   | Per-finding callback                                   |
 | `OnFix`                      | `func(Finding, bool)`   | `nil`   | Per-fix callback                                       |
@@ -458,7 +458,7 @@ Config validation: `config.Validate()` returns joined errors for invalid values.
 ### 16.3 Pipeline Loop
 
 1. **Detect** — Run detectors (parallel or sequential)
-2. **Process** — Run `FindingProcessor` chain on raw findings
+2. **Transform** — Run `FindingTransformer` chain on raw findings
 3. **Triage** — Categorize by `FixStrategy` (direct / suggest / none)
 4. **Apply** — Apply direct fixes with conflict detection
 5. **Repeat** — Until stable (zero findings) or `MaxIterations`
@@ -470,7 +470,7 @@ Config validation: `config.Validate()` returns joined errors for invalid values.
 Composable transforms that run on findings between detection and triage.
 
 ```go
-type FindingProcessor interface {
+type FindingTransformer interface {
     Process(ctx context.Context, findings []finding.Finding) ([]finding.Finding, error)
     Name() string
 }
@@ -478,8 +478,8 @@ type FindingProcessor interface {
 
 Adapters:
 
-- `ProcessorFunc(fn)` — wraps a function as a `FindingProcessor` (name: `"anonymous"`)
-- `NamedProcessorFunc(name, fn)` — wraps with a custom name
+- `TransformerFunc(fn)` — wraps a function as a `FindingTransformer` (name: `"anonymous"`)
+- `NamedTransformerFunc(name, fn)` — wraps with a custom name
 
 Processors are executed in order from `Config.Processors`. Use cases: filtering, enrichment, normalization, severity adjustment, deduplication.
 
@@ -502,7 +502,7 @@ Processors are executed in order from `Config.Processors`. Use cases: filtering,
 
 - Detects overlapping fixes in the same file
 - `FilterConflictingFixes()` — returns only non-conflicting fixes
-- `AnalyzeConflicts()` — detailed `ConflictInfo` with reasons
+- `AnalyzeConflicts()` — detailed `Conflict` with reasons
 - When multiple fixes overlap in same group, keeps first, marks rest as conflicts
 
 ### 16.7 Fix Application
@@ -868,10 +868,10 @@ Separate subpackage (`pipeline/goast`) keeps `go/parser` as opt-in dependency.
 
 **Status:** FULLY_FUNCTIONAL
 
-FindingProcessor that removes findings from auto-generated Go files (sqlc, protobuf, mockgen, templ, etc.) via `gogenfilter/v3`:
+FindingTransformer that removes findings from auto-generated Go files (sqlc, protobuf, mockgen, templ, etc.) via `gogenfilter/v3`:
 
 ```go
-config.Processors = []pipeline.FindingProcessor{
+config.Processors = []pipeline.FindingTransformer{
     pipeline.NewGeneratedFileFilter(),
 }
 ```
@@ -915,7 +915,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 
 | Feature                           | Status               | Notes                                                                       |
 | --------------------------------- | -------------------- | --------------------------------------------------------------------------- |
-| Finding type                      | FULLY_FUNCTIONAL     | Core data model, 97.1% coverage                                             |
+| Finding type                      | FULLY_FUNCTIONAL     | Core data model with branded types (ID, RuleName, ToolName, FilePath), 97.1% coverage
 | Builder API                       | FULLY_FUNCTIONAL     | Fluent construction with validation                                         |
 | Position & Range                  | FULLY_FUNCTIONAL     | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent)           |
 | Severity (4 levels)               | FULLY_FUNCTIONAL     | With comparison operators                                                   |
@@ -936,7 +936,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 | AnalyzerDetector                  | FULLY_FUNCTIONAL     | Wraps `go/analysis.Analyzer` as a `Detector`                                |
 | Structured errors                 | FULLY_FUNCTIONAL     | 5 categories, errors.Is support                                             |
 | Pipeline (detect→fix→verify)      | FULLY_FUNCTIONAL     | Iterative loop with configurable behavior                                   |
-| Finding processors                | FULLY_FUNCTIONAL     | Composable transforms between detect and triage                             |
+| Finding transformers              | FULLY_FUNCTIONAL     | Composable transforms between detect and triage (FindingTransformer)        |
 | Conflict detection                | FULLY_FUNCTIONAL     | Overlapping fix detection                                                   |
 | FixEdit (byte-level edits)        | FULLY_FUNCTIONAL     | Offset, Length, Replacement with Overlaps/Validate                          |
 | FixProvider interface             | FULLY_FUNCTIONAL     | Composable providers: Offset, Line, Substring + custom                      |

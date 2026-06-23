@@ -14,7 +14,7 @@
 | Area                | Files                                                                                                                                                                                                   |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Core types**      | `finding.go`, `finding_methods.go`, `finding_validate.go`, `finding_equal.go`, `position.go`, `range.go`, `report.go`, `filter.go`, `merge.go`, `diff.go`, `format.go`, `json.go`, `id.go`, `errors.go` |
-| **Named types**     | `severity.go`, `confidence.go`, `category.go`, `category_linter.go`, `tag.go`, `fix_strategy.go`, `suppression.go`                                                                                      |
+| **Named types**     | `severity.go`, `confidence.go`, `category.go`, `category_linter.go`, `tag.go`, `fix_strategy.go`, `suppression.go`, `branded_types.go`                                                                       |
 | **SARIF**           | `sarif_types.go`, `sarif_export.go`, `sarif_import.go` (hand-rolled, not go-sarif — see ADR #9)                                                                                                         |
 | **LSP**             | `lsp.go`                                                                                                                                                                                                |
 | **Extensibility**   | `detector.go`, `adapter.go` (ToolAdapter[O]), `registry.go` (DetectorRegistry), `interval_tree.go` (IntervalIndex[T])                                                                                   |
@@ -42,7 +42,7 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - `golang.org/x/sync` — errgroup for parallel detection
 - `github.com/go-faster/yaml` — YAML config (CLI only)
 - `github.com/onsi/ginkgo/v2` + `gomega` — BDD testing
-- `github.com/stretchr/testify` — INDIRECT only (transitive via go-faster/yaml)
+- ~~`github.com/stretchr/testify`~~ — REMOVED (was banned dep, confirmed unused via `go mod why`)
 - `github.com/LarsArtmann/gogenfilter/v3` — Auto-generated Go file detection
 - `github.com/larsartmann/go-output` — CLI output formatting: markdown tables, CSV, TSV (CLI only; root `finding` package stays dependency-free)
 
@@ -75,6 +75,10 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **SubstringProvider column-aware** — Disambiguates multiple occurrences by line + column distance
 - **context.Context on I/O** — `WriteSARIF`, `FindingsFromSARIF`, etc. accept context as first arg
 - **OnStage deprecated** — Use `StageHooks` for before/after events with abort capability
+- **Branded types prevent mixups** — `ID`, `RuleName`, `ToolName`, `FilePath` are distinct string types. Use `finding.ID("x")` not raw `"x"` for fields. JSON marshals identically to string.
+- **Validate() decomposed** — `finding_validate.go` delegates to 6 per-field validators (`validateIdentity`, `validateClassification`, `validateFix`, `validateReferences`, `validateSpatial`, `validateSuppression`). Complexity per validator < 10.
+- **SeverityAliases thread-safe** — Global map guarded by `sync.RWMutex`. Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`. Old `SeverityAliases()` returns a snapshot copy.
+- **GetCategory deprecated** — Use `CategoryOf(err)` (Go convention: no `Get` prefix)
 
 ## CLI Features
 
@@ -99,6 +103,12 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **MergeIter** — Streaming `iter.Seq[Finding]` merge with dedup
 - **ConfigFile** — JSON config loading with `ResolveDetectors`/`ResolveProviders`
 - **go-output CLI adapter** — `cmd/go-finding/output_adapter.go` adapts `[]Finding` → `output.TableData` for markdown/CSV/TSV. Root `finding` package stays dependency-free. See `docs/PRO_CONTRA_go-output-integration.md`.
+- **Branded primitive types** — `type ID/RuleName/ToolName/FilePath string` in `branded_types.go`. Compile-time type safety preventing ID/Rule/Tool/File mixups. JSON marshals as string. Named `ID` not `FindingID` to avoid revive stutter (`finding.FindingID`).
+- **Validate decomposition** — Monolithic `Validate()` split into 6 per-field validators. Each returns `[]error`, aggregated by `Validate()`.
+- **SeverityAliases thread-safe** — `sync.RWMutex` guarded global map; `RegisterSeverityAlias()` / `LookupSeverityAlias()` API.
+- **FindingTransformer** — Renamed from `FindingProcessor`/`Process()`. Pipeline uses `Config.Processors []FindingTransformer`.
+- **Conflict** — Renamed from `ConflictInfo`. `AnalyzeConflicts() []Conflict`.
+- **LSPRelated** — Renamed from `LSPRelatedInfo`.
 
 ## Deprecated APIs (v1.0.0 Removal)
 
@@ -109,6 +119,11 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 | `OnStage`                     | `StageHooks`                |
 | `Metrics.RecordFix()`         | `Metrics.RecordFixes(1)`    |
 | `CountBySeverity()` free func | `Report.CountBySeverity()`  |
+| `GetCategory(err)`            | `CategoryOf(err)`           |
+| `SeverityAliases()`           | `LookupSeverityAlias()`     |
+| `FindingProcessor`            | `FindingTransformer`        |
+| `ConflictInfo`                | `Conflict`                  |
+| `LSPRelatedInfo`              | `LSPRelated`                |
 
 See `docs/MIGRATION_v1.0.md` and `docs/RELEASE_CRITERIA.md`.
 

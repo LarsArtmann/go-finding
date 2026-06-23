@@ -600,7 +600,7 @@ if err != nil {
 
 // Add to pipeline config
 cfg := pipeline.Config{
-    Processors: []pipeline.FindingProcessor{filter},
+    Processors: []pipeline.FindingTransformer{filter},
     // ...
 }
 
@@ -676,7 +676,7 @@ err = err.WithFinding(f)
 
 // Inspect
 finding.IsFindingError(err)          // true
-finding.GetCategory(err)             // "validation"
+finding.CategoryOf(err)             // "validation"
 finding.IsCategory(err, finding.ErrCategoryIO) // false
 
 // Type assertion
