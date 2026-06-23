@@ -39,14 +39,14 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 	f := findings[0]
 
 	g.Expect(f.ID).To(gomega.Equal(FindingID("test:R1:a.go:1:1")))
-	g.Expect(f.Rule).To(gomega.Equal("R1"))
+	g.Expect(f.Rule).To(gomega.Equal(RuleName("R1")))
 	g.Expect(f.Message).To(gomega.Equal("msg"))
 	g.Expect(f.AfterCode).To(gomega.Equal("new code"))
 
 	g.Expect(f.BeforeCode).To(gomega.Equal("old code"))
 
 	g.Expect(f.Related).To(gomega.HaveLen(1))
-	g.Expect(f.Related[0].FindingID).To(gomega.Equal("related-123"))
+	g.Expect(f.Related[0].FindingID).To(gomega.Equal(FindingID("related-123")))
 	g.Expect(f.Related[0].Relation).To(gomega.Equal(RelationKind("causes")))
 }
 
@@ -176,8 +176,8 @@ func TestFindingFromSarResult_GeneratesIDWithoutProperties(t *testing.T) {
 
 	f := findingFromSarResult(r, "tool")
 	g.Expect(f.ID).NotTo(gomega.BeEmpty())
-	g.Expect(f.ID).To(gomega.ContainSubstring("tool"))
-	g.Expect(f.ID).To(gomega.ContainSubstring("R1"))
+	g.Expect(string(f.ID)).To(gomega.ContainSubstring("tool"))
+	g.Expect(string(f.ID)).To(gomega.ContainSubstring("R1"))
 }
 
 func TestFindingsFromSARIF_FixWithEmptyChanges(t *testing.T) {

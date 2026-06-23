@@ -121,8 +121,8 @@ func TestFindingsFromReader(t *testing.T) {
 	findings, err := FindingsFromReader(context.Background(), strings.NewReader(sarif))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(findings).To(gomega.HaveLen(1))
-	g.Expect(findings[0].Rule).To(gomega.Equal("printf"))
-	g.Expect(findings[0].ToolName).To(gomega.Equal("govet"))
+	g.Expect(findings[0].Rule).To(gomega.Equal(RuleName("printf")))
+	g.Expect(findings[0].ToolName).To(gomega.Equal(ToolName("govet")))
 }
 
 func TestFindingsFromReader_CancelledContext(t *testing.T) {
@@ -276,8 +276,8 @@ func TestFindingFromSarResult_WithFix(t *testing.T) {
 
 	f := findingFromSarResult(r, "staticcheck")
 
-	g.Expect(f.Rule).To(gomega.Equal("SA1000"))
-	g.Expect(f.ToolName).To(gomega.Equal("staticcheck"))
+	g.Expect(f.Rule).To(gomega.Equal(RuleName("SA1000")))
+	g.Expect(f.ToolName).To(gomega.Equal(ToolName("staticcheck")))
 	g.Expect(f.Message).To(gomega.Equal("unused variable"))
 	g.Expect(f.Severity).To(gomega.Equal(SeverityWarning))
 	g.Expect(f.Suggestion).To(gomega.Equal("remove unused variable"))

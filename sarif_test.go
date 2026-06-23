@@ -40,7 +40,7 @@ func goFindingProps(
 	suggestion, snippet string,
 ) map[string]any {
 	return map[string]any{
-		sarifPropID:          FindingID(id),
+		sarifPropID:          id,
 		sarifPropSeverity:    severity,
 		sarifPropFixStrategy: fixStrategy,
 		sarifPropToolName:    toolName,

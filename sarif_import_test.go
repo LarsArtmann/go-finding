@@ -179,7 +179,7 @@ func TestFindingFromSarResult_Properties(t *testing.T) {
 		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyDirect)
 	}
 
-	g.Expect(f.ToolName).To(gomega.Equal("scanner"))
+	g.Expect(f.ToolName).To(gomega.Equal(ToolName("scanner")))
 	g.Expect(f.Category).To(gomega.Equal(Category("security")))
 	g.Expect(f.Tags).To(gomega.Equal([]Tag{"injection"}))
 	g.Expect(f.Confidence).To(gomega.BeNumerically("~", 0.85, 1e-9))

@@ -244,7 +244,7 @@ var _ = Describe("ID Generation User Stories", func() {
 		parsed := finding.ParseID(finding.FindingID(id))
 		Expect(parsed.OK()).To(BeTrue())
 		Expect(parsed.Tool).To(Equal("govet"))
-		Expect(parsed.Rule).To(Equal("nilcheck"))
+		Expect(parsed.Rule).To(Equal(finding.RuleName("nilcheck")))
 		Expect(parsed.Line).To(Equal(42))
 		Expect(parsed.Column).To(Equal(5))
 	})

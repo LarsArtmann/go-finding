@@ -27,8 +27,8 @@ var _ = Describe("Finding Lifecycle", func() {
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(f.IsValid()).To(BeTrue())
-				Expect(f.Rule).To(Equal("nilcheck"))
-				Expect(f.ToolName).To(Equal("govet"))
+				Expect(f.Rule).To(Equal(finding.RuleName("nilcheck")))
+				Expect(f.ToolName).To(Equal(finding.ToolName("govet")))
 				Expect(f.Severity).To(Equal(finding.SeverityError))
 				Expect(f.Position.File).To(Equal("main.go"))
 				Expect(f.Position.Line).To(Equal(42))
@@ -41,8 +41,8 @@ var _ = Describe("Finding Lifecycle", func() {
 				).Build()
 
 				Expect(f.ID).NotTo(BeEmpty())
-				Expect(f.ID).To(ContainSubstring("tool"))
-				Expect(f.ID).To(ContainSubstring("rule"))
+				Expect(string(f.ID)).To(ContainSubstring("tool"))
+				Expect(string(f.ID)).To(ContainSubstring("rule"))
 			})
 
 			It("clamps confidence to [0.0, 1.0]", func() {
@@ -169,7 +169,7 @@ var _ = Describe("Report Filtering and Aggregation", func() {
 	It("filters by severity", func() {
 		errors := report.BySeverity(finding.SeverityError)
 		Expect(errors).To(HaveLen(1))
-		Expect(errors[0].Rule).To(Equal("r1"))
+		Expect(errors[0].Rule).To(Equal(finding.RuleName("r1")))
 	})
 
 	It("filters by tool", func() {
@@ -216,8 +216,8 @@ var _ = Describe("SARIF Round-Trip Fidelity", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(parsed).To(HaveLen(1))
 
-		Expect(parsed[0].Rule).To(Equal("SA1000"))
-		Expect(parsed[0].ToolName).To(Equal("staticcheck"))
+		Expect(parsed[0].Rule).To(Equal(finding.RuleName("SA1000")))
+		Expect(parsed[0].ToolName).To(Equal(finding.ToolName("staticcheck")))
 		Expect(parsed[0].Message).To(Equal("use fmt.Sprintf"))
 		Expect(parsed[0].Position.File).To(Equal("main.go"))
 		Expect(parsed[0].Position.Line).To(Equal(42))
@@ -240,7 +240,7 @@ var _ = Describe("SARIF Round-Trip Fidelity", func() {
 		parsed, err := finding.FindingsFromSARIF(context.Background(), sarifData)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(parsed).To(HaveLen(1))
-		Expect(parsed[0].Rule).To(Equal("r2"))
+		Expect(parsed[0].Rule).To(Equal(finding.RuleName("r2")))
 	})
 
 	It("maps SARIF levels back to severity", func() {
