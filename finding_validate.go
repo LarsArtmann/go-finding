@@ -8,6 +8,21 @@ import (
 // Validate checks all fields of the Finding for correctness and returns detailed
 // per-field errors. Use IsValid for a simple boolean check.
 func (f Finding) Validate() error {
+	//nolint:prealloc // error count is small (0-5); prealloc would require calling all validators twice
+	var errs []error
+
+	errs = append(errs, f.validateIdentity()...)
+	errs = append(errs, f.validateClassification()...)
+	errs = append(errs, f.validateFix()...)
+	errs = append(errs, f.validateReferences()...)
+	errs = append(errs, f.validateSpatial()...)
+	errs = append(errs, f.validateSuppression()...)
+
+	return errors.Join(errs...)
+}
+
+// validateIdentity checks required identity and core fields.
+func (f Finding) validateIdentity() []error {
 	var errs []error
 
 	if f.ID == "" {
@@ -38,27 +53,18 @@ func (f Finding) Validate() error {
 		))
 	}
 
-	// FixStrategy: accept "" as equivalent to FixStrategyNone (documented).
-	// Use Normalized() to get a copy with "" converted to "none".
-	// Validate cannot mutate (value receiver), so we check both.
-	strategy := NormalizeFixStrategy(f.FixStrategy)
-	if !strategy.IsValid() {
-		errs = append(errs, NewValidationError(
-			fmt.Sprintf("finding.FixStrategy %q is invalid", f.FixStrategy), nil,
-		))
-	}
-
 	if !f.Confidence.IsValid() {
 		errs = append(errs, NewValidationError(
 			fmt.Sprintf("finding.Confidence %s must be in [0.0, 1.0]", f.Confidence), nil,
 		))
 	}
 
-	if f.BeforeCode == "" && f.AfterCode == "" && strategy == FixStrategyDirect {
-		errs = append(errs, NewValidationError(
-			"finding.FixStrategyDirect requires BeforeCode or AfterCode", nil,
-		))
-	}
+	return errs
+}
+
+// validateClassification checks Category/Tags consistency.
+func (f Finding) validateClassification() []error {
+	var errs []error
 
 	for i, tag := range f.Tags {
 		if !tag.IsValid() {
@@ -98,6 +104,34 @@ func (f Finding) Validate() error {
 		}
 	}
 
+	return errs
+}
+
+// validateFix checks FixStrategy validity and code-data requirements.
+func (f Finding) validateFix() []error {
+	var errs []error
+
+	// FixStrategy: accept "" as equivalent to FixStrategyNone (documented).
+	strategy := NormalizeFixStrategy(f.FixStrategy)
+	if !strategy.IsValid() {
+		errs = append(errs, NewValidationError(
+			fmt.Sprintf("finding.FixStrategy %q is invalid", f.FixStrategy), nil,
+		))
+	}
+
+	if f.BeforeCode == "" && f.AfterCode == "" && strategy == FixStrategyDirect {
+		errs = append(errs, NewValidationError(
+			"finding.FixStrategyDirect requires BeforeCode or AfterCode", nil,
+		))
+	}
+
+	return errs
+}
+
+// validateReferences checks RelatedRef entries for validity and range correctness.
+func (f Finding) validateReferences() []error {
+	var errs []error
+
 	for i, ref := range f.Related {
 		if !ref.IsValid() {
 			errs = append(errs, NewValidationError(
@@ -116,24 +150,34 @@ func (f Finding) Validate() error {
 		}
 	}
 
-	if f.Suppression != nil && !f.Suppression.IsValid() {
-		errs = append(errs, NewValidationError(
-			"finding.Suppression is invalid: missing Kind or Rule", nil,
-		))
-	}
+	return errs
+}
 
+// validateSpatial checks the optional Range for inversion.
+func (f Finding) validateSpatial() []error {
 	if f.Range != nil && f.Range.IsInverted() {
-		errs = append(errs, NewValidationError(
+		return []error{NewValidationError(
 			fmt.Sprintf(
 				"finding.Range is invalid: End (%+v) before Start (%+v)",
 				f.Range.End,
 				f.Range.Start,
 			),
 			nil,
-		))
+		)}
 	}
 
-	return errors.Join(errs...)
+	return nil
+}
+
+// validateSuppression checks the optional Suppression for validity.
+func (f Finding) validateSuppression() []error {
+	if f.Suppression != nil && !f.Suppression.IsValid() {
+		return []error{NewValidationError(
+			"finding.Suppression is invalid: missing Kind or Rule", nil,
+		)}
+	}
+
+	return nil
 }
 
 // IsValid returns true if the finding has required fields set.
