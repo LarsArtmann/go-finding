@@ -105,17 +105,17 @@ documented migration path (ADR #11).
 
 All deprecated APIs have been removed in v1.0.0:
 
-| API                               | Replacement                       | Action Taken    |
-| --------------------------------- | --------------------------------- | --------------- |
-| `Report.Findings` (public field)  | `Report.FindingsSnapshot()`       | **Unexported**  |
-| `Report.Merge()`                  | `Report.MergeInto()`              | **Removed**     |
-| `Config.OnStage` callback         | `Config.StageHooks`               | **Removed**     |
-| `Metrics.RecordFix()`             | `Metrics.RecordFixes(1)`          | **Removed**     |
-| `CountBySeverity()` free function | `Report.CountBySeverity()`        | **Removed**     |
-| `SeverityAliases()`               | `LookupSeverityAlias()`           | **Removed**     |
-| `GetCategory()`                   | `CategoryOf()`                    | **Removed**     |
-| `HasFix` free function            | `WithFix`                         | **Removed**     |
-| `HasSuggestion` free function     | `WithSuggestion`                  | **Removed**     |
+| API                               | Replacement                 | Action Taken   |
+| --------------------------------- | --------------------------- | -------------- |
+| `Report.Findings` (public field)  | `Report.FindingsSnapshot()` | **Unexported** |
+| `Report.Merge()`                  | `Report.MergeInto()`        | **Removed**    |
+| `Config.OnStage` callback         | `Config.StageHooks`         | **Removed**    |
+| `Metrics.RecordFix()`             | `Metrics.RecordFixes(1)`    | **Removed**    |
+| `CountBySeverity()` free function | `Report.CountBySeverity()`  | **Removed**    |
+| `SeverityAliases()`               | `LookupSeverityAlias()`     | **Removed**    |
+| `GetCategory()`                   | `CategoryOf()`              | **Removed**    |
+| `HasFix` free function            | `WithFix`                   | **Removed**    |
+| `HasSuggestion` free function     | `WithSuggestion`            | **Removed**    |
 
 ---
 

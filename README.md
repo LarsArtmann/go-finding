@@ -77,18 +77,18 @@ if err != nil {
 
 ## Core Types
 
-| Type          | Purpose                                                     |
-| ------------- | ----------------------------------------------------------- |
-| `Finding`     | A single issue: ID, rule, severity, position, fix strategy  |
-| `Report`      | Thread-safe container for findings with summary statistics  |
-| `Severity`    | `info` / `warning` / `error` / `critical`                   |
-| `FixStrategy` | `none` / `suggest` / `direct` / `ai`                        |
-| `Position`    | File, line, column location                                 |
-| `Range`       | Start and end positions with geometric operations           |
-| `Category`    | `security`, `style`, `performance`, `correctness`, etc.     |
-| `Tag`         | Multi-label classification (`security`, `performance`, ...) |
-| `Confidence`  | Named `float64` with `IsValid()`, `Clamp()`, `String()`     |
-| `Suppression` | Expiring suppression with `IsActive(now)`                   |
+| Type                                  | Purpose                                                      |
+| ------------------------------------- | ------------------------------------------------------------ |
+| `Finding`                             | A single issue: ID, rule, severity, position, fix strategy   |
+| `Report`                              | Thread-safe container for findings with summary statistics   |
+| `Severity`                            | `info` / `warning` / `error` / `critical`                    |
+| `FixStrategy`                         | `none` / `suggest` / `direct` / `ai`                         |
+| `Position`                            | File, line, column location                                  |
+| `Range`                               | Start and end positions with geometric operations            |
+| `Category`                            | `security`, `style`, `performance`, `correctness`, etc.      |
+| `Tag`                                 | Multi-label classification (`security`, `performance`, ...)  |
+| `Confidence`                          | Named `float64` with `IsValid()`, `Clamp()`, `String()`      |
+| `Suppression`                         | Expiring suppression with `IsActive(now)`                    |
 | `ID`/`RuleName`/`ToolName`/`FilePath` | Branded string types preventing field mixups at compile time |
 
 ## API Overview

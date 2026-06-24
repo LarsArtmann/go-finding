@@ -138,16 +138,16 @@ v1.0.0 resolves the `Position.Offset = 0` ambiguity. The chosen approach (sentin
 
 Identity fields now use branded types that prevent accidental mixing at compile time:
 
-| Field     | Old Type  | New Type   |
-| --------- | --------- | ---------- |
-| `Finding.ID` | `string`  | `ID`       |
-| `Finding.Rule` | `string`  | `RuleName` |
-| `Finding.ToolName` | `string`  | `ToolName` |
-| `RelatedRef.FindingID` | `string`  | `ID`       |
+| Field                    | Old Type   | New Type   |
+| ------------------------ | ---------- | ---------- |
+| `Finding.ID`             | `string`   | `ID`       |
+| `Finding.Rule`           | `string`   | `RuleName` |
+| `Finding.ToolName`       | `string`   | `ToolName` |
+| `RelatedRef.FindingID`   | `string`   | `ID`       |
 | `Correlation.FindingIDs` | `[]string` | `[]ID`     |
-| `ParsedID.Tool` | `string`  | `ToolName` |
-| `ParsedID.Rule` | `string`  | `RuleName` |
-| `ParsedID.File` | `string`  | `FilePath` |
+| `ParsedID.Tool`          | `string`   | `ToolName` |
+| `ParsedID.Rule`          | `string`   | `RuleName` |
+| `ParsedID.File`          | `string`   | `FilePath` |
 
 **Before:**
 
@@ -171,25 +171,25 @@ JSON serialization is identical (marshals as plain string). The type named `ID` 
 
 Renamed for clarity. `Process()` is now `Transform()`.
 
-| Old API              | New API               |
-| -------------------- | --------------------- |
-| `FindingProcessor`   | `FindingTransformer`  |
-| `ProcessorFunc`      | `TransformerFunc`     |
-| `NamedProcessorFunc` | `NamedTransformerFunc`|
-| `.Process(ctx, fs)`  | `.Transform(ctx, fs)` |
+| Old API              | New API                                                      |
+| -------------------- | ------------------------------------------------------------ |
+| `FindingProcessor`   | `FindingTransformer`                                         |
+| `ProcessorFunc`      | `TransformerFunc`                                            |
+| `NamedProcessorFunc` | `NamedTransformerFunc`                                       |
+| `.Process(ctx, fs)`  | `.Transform(ctx, fs)`                                        |
 | `Config.Processors`  | `Config.Processors` (type changed to `[]FindingTransformer`) |
 
 ---
 
 ## 9. Other API Renames
 
-| Old API             | New API             | Location              |
-| ------------------- | ------------------- | --------------------- |
-| `GetCategory(err)`  | `CategoryOf(err)`   | `errors.go`           |
-| `ConflictInfo`      | `Conflict`          | `pipeline/conflict.go`|
-| `LSPRelatedInfo`    | `LSPRelated`        | `lsp.go`              |
-| `SeverityAliases()` | `LookupSeverityAlias(name)` | `severity.go` |
-| (direct map edit)   | `RegisterSeverityAlias(name, sev)` | `severity.go` |
+| Old API             | New API                            | Location               |
+| ------------------- | ---------------------------------- | ---------------------- |
+| `GetCategory(err)`  | `CategoryOf(err)`                  | `errors.go`            |
+| `ConflictInfo`      | `Conflict`                         | `pipeline/conflict.go` |
+| `LSPRelatedInfo`    | `LSPRelated`                       | `lsp.go`               |
+| `SeverityAliases()` | `LookupSeverityAlias(name)`        | `severity.go`          |
+| (direct map edit)   | `RegisterSeverityAlias(name, sev)` | `severity.go`          |
 
 `GetCategory()`, `ConflictInfo`, and `LSPRelatedInfo` are kept as deprecated wrappers until v1.0.0 final.
 

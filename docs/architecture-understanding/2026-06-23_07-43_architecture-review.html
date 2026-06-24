@@ -814,7 +814,10 @@
           </div>
           <div class="hero-badge">ARCHITECTURE REVIEW</div>
           <h1>go-finding — Modularity &amp; Coupling Audit</h1>
-          <p class="hero-subtitle">Reviews scalability, modularity, service-orientation, and composability of the go-finding library. 5 packages, 58 production source files, ~29K LOC.</p>
+          <p class="hero-subtitle">
+            Reviews scalability, modularity, service-orientation, and composability of the
+            go-finding library. 5 packages, 58 production source files, ~29K LOC.
+          </p>
         </div>
 
         <!-- Inline TOC (alternative to sidebar; pick one) -->
@@ -855,8 +858,18 @@
         </div>
 
         <div class="card card-solution">
-          <h4>Bottom line: architecture is sound, two surgical improvements unlock the next stage</h4>
-          <p>Layering is correct (CLI → pipeline → root, no cycles). Root package stays dependency-free as designed. Plugin architecture (<code>DetectorRegistry</code>, <code>FixProvider</code>, <code>FindingProcessor</code>) makes the system composable without code changes. Two issues prevent an A grade: <strong>pipeline/ is a 22-file mega-package</strong> that should split by concern, and <strong><code>pipeline/adapters.go</code> re-exports root types</strong> for backward compat — a leaky boundary. Neither is urgent; both are batchable into v1.0.</p>
+          <h4>
+            Bottom line: architecture is sound, two surgical improvements unlock the next stage
+          </h4>
+          <p>
+            Layering is correct (CLI → pipeline → root, no cycles). Root package stays
+            dependency-free as designed. Plugin architecture (<code>DetectorRegistry</code>,
+            <code>FixProvider</code>, <code>FindingProcessor</code>) makes the system composable
+            without code changes. Two issues prevent an A grade:
+            <strong>pipeline/ is a 22-file mega-package</strong> that should split by concern, and
+            <strong><code>pipeline/adapters.go</code> re-exports root types</strong> for backward
+            compat — a leaky boundary. Neither is urgent; both are batchable into v1.0.
+          </p>
         </div>
 
         <h3>Package dependency map</h3>
@@ -866,33 +879,64 @@
           <span class="ok">├── pipeline</span>
           <span class="ok">├── pipeline/goast</span>
           <span class="ok">└── internal/detectors</span>
-          <br>
+          <br />
           <span class="root">pipeline</span> <span class="ok">└── finding (root)</span>
-          <br>
+          <br />
           <span class="root">analysis</span> <span class="ok">└── finding (root)</span>
           <span class="ok">└── internal/gotoken</span>
-          <br>
+          <br />
           <span class="root">finding</span> <span class="ok">└── (stdlib only)</span>
         </div>
 
-        <p>Strict bottom-up direction. Zero cycles. Root package is the dependency sink — exactly what a domain library should be.</p>
+        <p>
+          Strict bottom-up direction. Zero cycles. Root package is the dependency sink — exactly
+          what a domain library should be.
+        </p>
 
         <!-- Findings as Cards -->
         <h2 id="findings"><span class="num">01</span>Findings</h2>
 
         <div class="card card-warning">
           <h4>pipeline/ is a 22-file mega-package</h4>
-          <p><code>pipeline/</code> holds 22 production <code>.go</code> files (~11K LOC) covering six distinct concerns: orchestration (<code>pipeline.go</code>, <code>pipeline_detect.go</code>, <code>pipeline_iteration.go</code>), config (<code>config.go</code>, <code>config_file.go</code>), fix engine (<code>fix_engine.go</code>, <code>fix_provider.go</code>, <code>fix_applier.go</code>, <code>fix_edit.go</code>, <code>fix_provider_helpers.go</code>), conflict (<code>conflict.go</code>), infrastructure (<code>file_backup.go</code>, <code>line_shift.go</code>, <code>retry.go</code>, <code>partial.go</code>, <code>metrics.go</code>), and stages/hooks (<code>stage.go</code>, <code>stage_hook.go</code>, <code>verify.go</code>, <code>adapters.go</code>, <code>generated_filter.go</code>, <code>result.go</code>). Each file is well-named; the problem is they all share one package namespace. A reader looking for "how fixes are applied" must search 5 files in one flat directory.</p>
+          <p>
+            <code>pipeline/</code> holds 22 production <code>.go</code> files (~11K LOC) covering
+            six distinct concerns: orchestration (<code>pipeline.go</code>,
+            <code>pipeline_detect.go</code>, <code>pipeline_iteration.go</code>), config
+            (<code>config.go</code>, <code>config_file.go</code>), fix engine
+            (<code>fix_engine.go</code>, <code>fix_provider.go</code>, <code>fix_applier.go</code>,
+            <code>fix_edit.go</code>, <code>fix_provider_helpers.go</code>), conflict
+            (<code>conflict.go</code>), infrastructure (<code>file_backup.go</code>,
+            <code>line_shift.go</code>, <code>retry.go</code>, <code>partial.go</code>,
+            <code>metrics.go</code>), and stages/hooks (<code>stage.go</code>,
+            <code>stage_hook.go</code>, <code>verify.go</code>, <code>adapters.go</code>,
+            <code>generated_filter.go</code>, <code>result.go</code>). Each file is well-named; the
+            problem is they all share one package namespace. A reader looking for "how fixes are
+            applied" must search 5 files in one flat directory.
+          </p>
         </div>
 
         <div class="card card-problem">
           <h4>pipeline/adapters.go leaks root types across the boundary</h4>
-          <p>Lines 12-24 of <code>pipeline/adapters.go</code> re-export <code>Detection</code>, <code>DetectorFunc</code>, and <code>NamedDetectorFunc</code> from the root package via type aliases and a var alias. Comment says "for backward compatibility." This means import paths are ambiguous (<code>finding.Detector</code> vs <code>pipeline.Detector</code>) and the pipeline package re-exposes the root package's surface area.</p>
+          <p>
+            Lines 12-24 of <code>pipeline/adapters.go</code> re-export <code>Detection</code>,
+            <code>DetectorFunc</code>, and <code>NamedDetectorFunc</code> from the root package via
+            type aliases and a var alias. Comment says "for backward compatibility." This means
+            import paths are ambiguous (<code>finding.Detector</code> vs
+            <code>pipeline.Detector</code>) and the pipeline package re-exposes the root package's
+            surface area.
+          </p>
         </div>
 
         <div class="card card-solution">
           <h4>Composition via interfaces is exemplary</h4>
-          <p>Four interfaces define every extension point: <code>Detector</code> (produces findings), <code>FixProvider</code> (produces edits), <code>FindingProcessor</code> (transforms findings), <code>StageHook</code> (observes pipeline events). Combined with <code>DetectorRegistry</code> (thread-safe plugin registry) and <code>ToolAdapter[O]</code> (generic output converter), the library achieves composability without DI frameworks. Service-orientation at the package level.</p>
+          <p>
+            Four interfaces define every extension point: <code>Detector</code> (produces findings),
+            <code>FixProvider</code> (produces edits), <code>FindingProcessor</code> (transforms
+            findings), <code>StageHook</code> (observes pipeline events). Combined with
+            <code>DetectorRegistry</code> (thread-safe plugin registry) and
+            <code>ToolAdapter[O]</code> (generic output converter), the library achieves
+            composability without DI frameworks. Service-orientation at the package level.
+          </p>
         </div>
 
         <!-- Issue Cards -->
@@ -902,18 +946,32 @@
           <span class="severity severity-important">Important &middot; Modularity blocker</span>
           <h3>pipeline/ mega-package</h3>
           <div class="where">pipeline/*.go &middot; 22 files &middot; ~11K LOC</div>
-          <p>Single package covering six concerns. Forces flat file browsing; couples unrelated changes (a conflict-detection edit touches the same package as a metrics change).</p>
+          <p>
+            Single package covering six concerns. Forces flat file browsing; couples unrelated
+            changes (a conflict-detection edit touches the same package as a metrics change).
+          </p>
           <div class="callout callout-solution">
-            <strong>Fix (v1.0, mechanical, non-breaking for imports of <code>pipeline</code> root types)</strong>
+            <strong
+              >Fix (v1.0, mechanical, non-breaking for imports of <code>pipeline</code> root
+              types)</strong
+            >
             Split into subpackages keeping <code>pipeline</code> as the facade:
             <ul>
-              <li><code>pipeline/fix</code> — fix_engine, fix_provider, fix_applier, fix_edit, fix_provider_helpers, line_shift</li>
+              <li>
+                <code>pipeline/fix</code> — fix_engine, fix_provider, fix_applier, fix_edit,
+                fix_provider_helpers, line_shift
+              </li>
               <li><code>pipeline/conflict</code> — conflict</li>
               <li><code>pipeline/config</code> — config, config_file</li>
               <li><code>pipeline/infra</code> — file_backup, retry, partial, metrics</li>
-              <li><code>pipeline</code> (root) — pipeline.go, pipeline_detect.go, pipeline_iteration.go, stage.go, stage_hook.go, verify.go, adapters.go, generated_filter.go, result.go</li>
+              <li>
+                <code>pipeline</code> (root) — pipeline.go, pipeline_detect.go,
+                pipeline_iteration.go, stage.go, stage_hook.go, verify.go, adapters.go,
+                generated_filter.go, result.go
+              </li>
             </ul>
-            Use re-export type aliases in <code>pipeline</code> for backward compatibility. Net: package count goes from 5 to 9, each under 1K LOC.
+            Use re-export type aliases in <code>pipeline</code> for backward compatibility. Net:
+            package count goes from 5 to 9, each under 1K LOC.
           </div>
         </div>
 
@@ -921,18 +979,33 @@
           <span class="severity severity-nice">Nice to have &middot; Boundary hygiene</span>
           <h3>adapters.go backward-compat re-exports</h3>
           <div class="where">pipeline/adapters.go:12-24</div>
-          <p>Three re-exports of root types: <code>type Detector = finding.Detector</code>, <code>type DetectorFunc = finding.DetectorFunc</code>, <code>var NamedDetectorFunc = finding.NamedDetectorFunc</code>. The comment marks them deprecated but they remain.</p>
+          <p>
+            Three re-exports of root types: <code>type Detector = finding.Detector</code>,
+            <code>type DetectorFunc = finding.DetectorFunc</code>,
+            <code>var NamedDetectorFunc = finding.NamedDetectorFunc</code>. The comment marks them
+            deprecated but they remain.
+          </p>
           <div class="callout callout-solution">
             <strong>Fix (v1.0)</strong>
-            Remove the re-exports when the v1.0 API lock happens. Update internal callers (3 sites). Document in <code>MIGRATION_v1.0.md</code>. Cuts the pipeline→root leak entirely.
+            Remove the re-exports when the v1.0 API lock happens. Update internal callers (3 sites).
+            Document in <code>MIGRATION_v1.0.md</code>. Cuts the pipeline→root leak entirely.
           </div>
         </div>
 
         <div class="issue issue-nice">
           <span class="severity severity-nice">Strength &middot; Service-orientation</span>
           <h3>Plugin architecture achieves SOA at library level</h3>
-          <div class="where">registry.go &middot; detector.go &middot; pipeline/adapters.go &middot; pipeline/fix_provider.go</div>
-          <p>Each detector is a service implementing <code>Name() + Detect(ctx)</code>. Each fix provider is a service implementing <code>Name() + CanHandle() + Edits()</code>. Services register themselves into <code>DetectorRegistry</code> at runtime. The pipeline is the orchestrator that consumes them. This is textbook service-orientation without the network.</p>
+          <div class="where">
+            registry.go &middot; detector.go &middot; pipeline/adapters.go &middot;
+            pipeline/fix_provider.go
+          </div>
+          <p>
+            Each detector is a service implementing <code>Name() + Detect(ctx)</code>. Each fix
+            provider is a service implementing <code>Name() + CanHandle() + Edits()</code>. Services
+            register themselves into <code>DetectorRegistry</code> at runtime. The pipeline is the
+            orchestrator that consumes them. This is textbook service-orientation without the
+            network.
+          </p>
         </div>
 
         <!-- Strengths -->
@@ -942,42 +1015,65 @@
             <div class="check">+</div>
             <div class="text">
               <strong>Zero import cycles</strong>
-              <span>Verified by tracing every <code>larsartmann/go-finding</code> import. Direction is strictly CLI → pipeline → root.</span>
+              <span
+                >Verified by tracing every <code>larsartmann/go-finding</code> import. Direction is
+                strictly CLI → pipeline → root.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Root package is the dependency sink</strong>
-              <span>Domain types (<code>Finding</code>, <code>Severity</code>, <code>Position</code>, etc.) import only stdlib. Anyone can consume the model without paying for the pipeline.</span>
+              <span
+                >Domain types (<code>Finding</code>, <code>Severity</code>, <code>Position</code>,
+                etc.) import only stdlib. Anyone can consume the model without paying for the
+                pipeline.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Optional deps isolated</strong>
-              <span><code>go/parser</code> lives in <code>pipeline/goast</code> only. <code>golang.org/x/tools</code> lives in <code>analysis/</code> only. <code>gogenfilter</code> lives in <code>pipeline/generated_filter.go</code> only. Each is opt-in.</span>
+              <span
+                ><code>go/parser</code> lives in <code>pipeline/goast</code> only.
+                <code>golang.org/x/tools</code> lives in <code>analysis/</code> only.
+                <code>gogenfilter</code> lives in <code>pipeline/generated_filter.go</code> only.
+                Each is opt-in.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Composable via small interfaces</strong>
-              <span>Four interfaces, all single-purpose. <code>DetectorRegistry</code> + <code>ToolAdapter[O]</code> turn the library into a plugin host.</span>
+              <span
+                >Four interfaces, all single-purpose. <code>DetectorRegistry</code> +
+                <code>ToolAdapter[O]</code> turn the library into a plugin host.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Pipeline orchestration is decoupled from stages</strong>
-              <span><code>pipeline.go</code> + <code>pipeline_detect.go</code> + <code>pipeline_iteration.go</code> form a tiny orchestrator. Each stage (detect, triage, apply, verify) is independently testable. <code>stage_hook.go</code> lets external code observe every stage transition.</span>
+              <span
+                ><code>pipeline.go</code> + <code>pipeline_detect.go</code> +
+                <code>pipeline_iteration.go</code> form a tiny orchestrator. Each stage (detect,
+                triage, apply, verify) is independently testable. <code>stage_hook.go</code> lets
+                external code observe every stage transition.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>CLI is a thin composition root</strong>
-              <span><code>cmd/go-finding</code> only wires together the pipeline, detectors, providers, and output formats. No business logic. Exactly what a CLI should be.</span>
+              <span
+                ><code>cmd/go-finding</code> only wires together the pipeline, detectors, providers,
+                and output formats. No business logic. Exactly what a CLI should be.</span
+              >
             </div>
           </div>
         </div>
@@ -1003,7 +1099,10 @@
               <td>Source of fixes</td>
               <td><code>FixProvider</code></td>
               <td><code>Config.FixProviders</code> slice</td>
-              <td><code>OffsetProvider</code>, <code>LineProvider</code>, <code>SubstringProvider</code>, <code>goast.Provider</code></td>
+              <td>
+                <code>OffsetProvider</code>, <code>LineProvider</code>,
+                <code>SubstringProvider</code>, <code>goast.Provider</code>
+              </td>
             </tr>
             <tr>
               <td>Mid-pipeline transform</td>
@@ -1095,7 +1194,9 @@
 
         <div class="callout callout-solution">
           <strong>Backward compatibility preserved</strong>
-          The <code>pipeline</code> root package keeps re-export type aliases for everything moved into subpackages. Existing consumers see no break. New consumers get cleaner package boundaries.
+          The <code>pipeline</code> root package keeps re-export type aliases for everything moved
+          into subpackages. Existing consumers see no break. New consumers get cleaner package
+          boundaries.
         </div>
 
         <!-- Numbered Steps -->
@@ -1104,26 +1205,38 @@
           <div class="migration-num">1</div>
           <div class="migration-content">
             <h4>v1.0: Remove <code>pipeline/adapters.go</code> backward-compat re-exports</h4>
-            <p>Delete <code>type Detector = finding.Detector</code> + 2 siblings. Update 3 internal call sites. Document in MIGRATION_v1.0.md.</p>
+            <p>
+              Delete <code>type Detector = finding.Detector</code> + 2 siblings. Update 3 internal
+              call sites. Document in MIGRATION_v1.0.md.
+            </p>
           </div>
         </div>
         <div class="migration-step">
           <div class="migration-num">2</div>
           <div class="migration-content">
             <h4>v1.0: Split <code>pipeline/</code> into subpackages</h4>
-            <p>Five subpackages (fix, conflict, config, infra, plus the existing goast). <code>pipeline</code> root stays as orchestrator + re-export facade. Mechanical change; tests stay in their subpackages.</p>
+            <p>
+              Five subpackages (fix, conflict, config, infra, plus the existing goast).
+              <code>pipeline</code> root stays as orchestrator + re-export facade. Mechanical
+              change; tests stay in their subpackages.
+            </p>
           </div>
         </div>
         <div class="migration-step">
           <div class="migration-num">3</div>
           <div class="migration-content">
             <h4>v1.0: Rename <code>FindingProcessor</code> → <code>FindingTransformer</code></h4>
-            <p>Per naming-review. Aligns interface name with its actual purpose (transform, not "process"). Pairs naturally with the package split — <code>FindingTransformer</code> lives in <code>pipeline</code> root.</p>
+            <p>
+              Per naming-review. Aligns interface name with its actual purpose (transform, not
+              "process"). Pairs naturally with the package split —
+              <code>FindingTransformer</code> lives in <code>pipeline</code> root.
+            </p>
           </div>
         </div>
 
         <footer class="footer">
-          Generated 2026-06-23 &middot; All structural claims verified by tracing every internal import; LOC numbers from <code>wc -l</code>
+          Generated 2026-06-23 &middot; All structural claims verified by tracing every internal
+          import; LOC numbers from <code>wc -l</code>
         </footer>
       </main>
     </div>

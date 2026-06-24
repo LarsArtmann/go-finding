@@ -76,13 +76,13 @@ All exported symbols are classified as:
 
 ### LSP Wire Types
 
-| Type             | Status | Notes               |
-| ---------------- | ------ | ------------------- |
-| `LSPDiagnostic`  | stable | Full LSP diagnostic |
-| `LSPPosition`    | stable |                     |
-| `LSPRange`       | stable |                     |
-| `LSPLocation`    | stable |                     |
-| `LSPRelated` | stable |                     |
+| Type            | Status | Notes               |
+| --------------- | ------ | ------------------- |
+| `LSPDiagnostic` | stable | Full LSP diagnostic |
+| `LSPPosition`   | stable |                     |
+| `LSPRange`      | stable |                     |
+| `LSPLocation`   | stable |                     |
+| `LSPRelated`    | stable |                     |
 
 ### Error Types
 
@@ -94,7 +94,7 @@ All exported symbols are classified as:
 | `NewIOError`         | stable | Constructor                          |
 | `NewConflictError`   | stable | Constructor                          |
 | `NewInternalError`   | stable | Constructor                          |
-| `CategoryOf`        | stable | Extract ErrorCategory from error     |
+| `CategoryOf`         | stable | Extract ErrorCategory from error     |
 | `IsCategory`         | stable | Check error category                 |
 | `IsFindingError`     | stable | Type assertion                       |
 
@@ -127,24 +127,24 @@ All exported symbols are classified as:
 | Method                              | Status | Notes                           |
 | ----------------------------------- | ------ | ------------------------------- |
 | `Report.MergeInto`                  | stable | Returns new Report, no mutation |
-| `Report.AddFinding` / `AddFindings` | stable         | Thread-safe                                      |
-| `Report.All`                        | stable         | `iter.Seq[Finding]`                              |
-| `Report.ActiveFindings`             | stable         | Non-suppressed                                   |
-| `Report.ComputeSummary` / `At`      | stable         |                                                  |
-| `Report.FindByID` / `FindByRule`    | stable         |                                                  |
-| `Report.FindingsSnapshot`           | stable         | Deep-cloned                                      |
-| `Report.Validate`                   | stable         |                                                  |
-| `Report.ToSARIF` / `WriteSARIF`     | stable         |                                                  |
-| `Report.PrettyJSON` / `Filtered`    | stable         |                                                  |
-| `Report.Filter` / `Map`             | stable         | Transform                                        |
-| `Report.Len` / `CountBySeverity`    | stable | Counts                           |
+| `Report.AddFinding` / `AddFindings` | stable | Thread-safe                     |
+| `Report.All`                        | stable | `iter.Seq[Finding]`             |
+| `Report.ActiveFindings`             | stable | Non-suppressed                  |
+| `Report.ComputeSummary` / `At`      | stable |                                 |
+| `Report.FindByID` / `FindByRule`    | stable |                                 |
+| `Report.FindingsSnapshot`           | stable | Deep-cloned                     |
+| `Report.Validate`                   | stable |                                 |
+| `Report.ToSARIF` / `WriteSARIF`     | stable |                                 |
+| `Report.PrettyJSON` / `Filtered`    | stable |                                 |
+| `Report.Filter` / `Map`             | stable | Transform                       |
+| `Report.Len` / `CountBySeverity`    | stable | Counts                          |
 
 ### Filter Constructors
 
 | Constructor                                                                                                                           | Status |
 | ------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | `ByCategory`, `ByConfidence`, `ByConfidenceAtLeast`, `ByFile`, `ByFixStrategy`, `ByRule`, `BySeverity`, `BySeverityAtLeast`, `ByTool` | stable |
-| `AnyOf`, `Negate`, `FilterInvalid`, `NotSuppressed`, `WithFix`, `WithSuggestion`                                                     | stable |
+| `AnyOf`, `Negate`, `FilterInvalid`, `NotSuppressed`, `WithFix`, `WithSuggestion`                                                      | stable |
 
 ### Constants
 
@@ -161,10 +161,10 @@ All exported symbols are classified as:
 
 ### Functions
 
-| Function                | Status | Notes                           |
-| ----------------------- | ------ | ------------------------------- |
-| `RegisterSeverityAlias` | stable | Add custom severity alias       |
-| `LookupSeverityAlias`   | stable | Look up canonical Severity      |
+| Function                | Status | Notes                                        |
+| ----------------------- | ------ | -------------------------------------------- |
+| `RegisterSeverityAlias` | stable | Add custom severity alias                    |
+| `LookupSeverityAlias`   | stable | Look up canonical Severity                   |
 | `CategoryOf`            | stable | Category from error (replaces `GetCategory`) |
 
 ---
@@ -178,12 +178,12 @@ All exported symbols are classified as:
 | `Pipeline`, `Config`, `CompletionReason`, `Stage`               | stable |
 | `Iteration`, `PipelineResult`, `PartialResult`                  | stable |
 | `FixApplier`, `FixEngine`, `FixEdit`, `FixProvider`, `FixGroup` | stable |
-| `Conflict`, `VerifyResult`, `TriageResult`                  | stable |
+| `Conflict`, `VerifyResult`, `TriageResult`                      | stable |
 | `Metrics`, `MetricsSnapshot`                                    | stable |
 | `FileBackup`                                                    | stable |
 | `RetryDetector`, `RetryConfig`                                  | stable |
 | `GeneratedFileFilter`                                           | stable |
-| `FindingTransformer`, `TransformerFunc`                             | stable |
+| `FindingTransformer`, `TransformerFunc`                         | stable |
 | `Detector`, `DetectorFunc` (type aliases)                       | stable |
 | `OffsetProvider`, `LineProvider`, `SubstringProvider`           | stable |
 
