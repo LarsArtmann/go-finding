@@ -35,6 +35,30 @@ func (r Range) HasEnd() bool {
 	return r.End.Line > 0 || r.End.Offset >= 0
 }
 
+// EndOrStart returns the effective end position of the range.
+// A range with no end (End.Line == 0) is treated as a single point
+// at Start. This matches the convention used for line-based range
+// arithmetic (overlap, intersection, extension), where a single-point
+// range's effective end equals its start.
+func (r Range) EndOrStart() Position {
+	if r.End.Line == 0 {
+		return r.Start
+	}
+
+	return r.End
+}
+
+// EndOffsetOrStart returns the effective end byte offset of the range.
+// A range with no offset end (End.Offset < 0) is treated as a single
+// point at Start. This is the offset-based counterpart to EndOrStart.
+func (r Range) EndOffsetOrStart() int {
+	if r.End.Offset < 0 {
+		return r.Start.Offset
+	}
+
+	return r.End.Offset
+}
+
 // LineCount returns the number of lines spanned by the range.
 // Returns 1 if End is not set (single-line range). Returns 0 if Start has no line info.
 // For inverted ranges (End.Line < Start.Line), returns the absolute span.
@@ -68,11 +92,8 @@ func (r Range) Length() int {
 	}
 
 	length := r.End.Offset - r.Start.Offset
-	if length < 0 {
-		return 0
-	}
 
-	return length
+	return max(length, 0)
 }
 
 // Equal reports whether two ranges are identical.

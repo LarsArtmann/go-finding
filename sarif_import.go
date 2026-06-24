@@ -13,9 +13,9 @@ import (
 // (severity, ID, tool name, etc.) and falls back to SARIF fields otherwise.
 // The context is checked for cancellation before parsing begins.
 func FindingsFromSARIF(ctx context.Context, data []byte) ([]Finding, error) {
-	err := ctx.Err()
+	err := checkSARIFReadContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("reading SARIF: %w", err)
+		return nil, err
 	}
 
 	return findingsFromSARIFLog(data)
@@ -27,9 +27,9 @@ func FindingsFromSARIF(ctx context.Context, data []byte) ([]Finding, error) {
 // Prefer this over FindingsFromSARIF for large payloads to avoid buffering
 // the entire input into memory.
 func FindingsFromReader(ctx context.Context, r io.Reader) ([]Finding, error) {
-	err := ctx.Err()
+	err := checkSARIFReadContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("reading SARIF: %w", err)
+		return nil, err
 	}
 
 	var log sarifLog
@@ -40,6 +40,17 @@ func FindingsFromReader(ctx context.Context, r io.Reader) ([]Finding, error) {
 	}
 
 	return findingsFromsarifLog(log), nil
+}
+
+// checkSARIFReadContext returns a "reading SARIF" context error if ctx is cancelled.
+// Consolidates the cancellation check at the top of every SARIF read entry point.
+func checkSARIFReadContext(ctx context.Context) error {
+	err := ctx.Err()
+	if err != nil {
+		return fmt.Errorf("reading SARIF: %w", err)
+	}
+
+	return nil
 }
 
 // findingsFromSARIFLog parses SARIF JSON bytes and returns Findings.

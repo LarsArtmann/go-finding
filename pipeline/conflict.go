@@ -158,15 +158,8 @@ func extendRange(r1, r2 finding.Range) finding.Range {
 	}
 
 	// Determine effective end positions (single-point ranges end at their start)
-	r1End := r1.End
-	if r1End.Line == 0 {
-		r1End = r1.Start
-	}
-
-	r2End := r2.End
-	if r2End.Line == 0 {
-		r2End = r2.Start
-	}
+	r1End := r1.EndOrStart()
+	r2End := r2.EndOrStart()
 
 	// Extend end if r2 ends later
 	if r2End.Compare(r1End) > 0 {

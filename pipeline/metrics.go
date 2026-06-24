@@ -94,11 +94,8 @@ func (m *Metrics) TotalDuration() time.Duration {
 	}
 
 	d := m.endTime.Sub(m.startTime)
-	if d < 0 {
-		return 0
-	}
 
-	return d
+	return max(d, 0)
 }
 
 // StageTiming returns a function that records stage duration when called.

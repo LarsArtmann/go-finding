@@ -19,20 +19,13 @@ func (r Range) Overlaps(other Range) bool {
 // overlapsByLine checks overlap using line/column coordinates.
 func (r Range) overlapsByLine(other Range) bool {
 	// Get effective end positions
-	rEndLine := r.End.Line
-	if rEndLine == 0 {
-		rEndLine = r.Start.Line
-	}
-
-	otherEndLine := other.End.Line
-	if otherEndLine == 0 {
-		otherEndLine = other.Start.Line
-	}
+	rEnd := r.EndOrStart()
+	otherEnd := other.EndOrStart()
 
 	// Ranges overlap if:
 	// - This range starts before or at the end of other range
 	// - AND this range ends after or at the start of other range
-	return r.Start.Line <= otherEndLine && rEndLine >= other.Start.Line
+	return r.Start.Line <= otherEnd.Line && rEnd.Line >= other.Start.Line
 }
 
 // overlapsByOffset checks overlap using byte offsets.
@@ -42,15 +35,8 @@ func (r Range) overlapsByOffset(other Range) bool {
 		return false
 	}
 
-	rEndOffset := r.End.Offset
-	if rEndOffset < 0 {
-		rEndOffset = r.Start.Offset
-	}
-
-	otherEndOffset := other.End.Offset
-	if otherEndOffset < 0 {
-		otherEndOffset = other.Start.Offset
-	}
+	rEndOffset := r.EndOffsetOrStart()
+	otherEndOffset := other.EndOffsetOrStart()
 
 	return r.Start.Offset <= otherEndOffset && rEndOffset >= other.Start.Offset
 }
@@ -79,16 +65,9 @@ func (r Range) intersectionByLine(other Range) *Range {
 		start = other.Start
 	}
 
-	// Determine min end
-	end := r.End
-	if end.Line == 0 {
-		end = r.Start
-	}
-
-	otherEnd := other.End
-	if otherEnd.Line == 0 {
-		otherEnd = other.Start
-	}
+	// Determine min end using the effective end (single-point ranges end at their start)
+	end := r.EndOrStart()
+	otherEnd := other.EndOrStart()
 
 	if otherEnd.Line < end.Line || (otherEnd.Line == end.Line && otherEnd.Column < end.Column) {
 		end = otherEnd
@@ -105,18 +84,7 @@ func (r Range) intersectionByLine(other Range) *Range {
 // intersectionByOffset computes intersection using byte offsets.
 func (r Range) intersectionByOffset(other Range) *Range {
 	startOffset := max(r.Start.Offset, other.Start.Offset)
-
-	rEndOffset := r.End.Offset
-	if rEndOffset < 0 {
-		rEndOffset = r.Start.Offset
-	}
-
-	otherEndOffset := other.End.Offset
-	if otherEndOffset < 0 {
-		otherEndOffset = other.Start.Offset
-	}
-
-	endOffset := min(rEndOffset, otherEndOffset)
+	endOffset := min(r.EndOffsetOrStart(), other.EndOffsetOrStart())
 
 	return &Range{
 		Start: Position{File: r.Start.File, Offset: startOffset}, //nolint:exhaustruct

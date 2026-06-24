@@ -121,14 +121,14 @@ func (LineProvider) EditsWithLineIndex(content []byte, idx []int, f finding.Find
 }
 
 func lineProviderRangeEdits(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
-	start, err := indexLineColToOffset(idx, len(content), f.Range.Start.Line, f.Range.Start.Column)
+	start, err := resolveLineCol(idx, len(content), f.Range.Start.Line, f.Range.Start.Column)
 	if err != nil {
-		return nil, ErrPositionUnresolvable
+		return nil, err
 	}
 
-	end, err := indexLineColToOffset(idx, len(content), f.Range.End.Line, f.Range.End.Column)
+	end, err := resolveLineCol(idx, len(content), f.Range.End.Line, f.Range.End.Column)
 	if err != nil {
-		return nil, ErrPositionUnresolvable
+		return nil, err
 	}
 
 	if end < start || end > len(content) {
@@ -151,9 +151,9 @@ func lineProviderRangeEdits(content []byte, f finding.Finding, idx []int) ([]Fix
 }
 
 func lineProviderInsertionEdit(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
-	offset, err := indexLineColToOffset(idx, len(content), f.Position.Line, f.Position.Column)
+	offset, err := resolveLineCol(idx, len(content), f.Position.Line, f.Position.Column)
 	if err != nil {
-		return nil, ErrPositionUnresolvable
+		return nil, err
 	}
 
 	replacement := append([]byte(f.AfterCode), '\n')
@@ -162,9 +162,9 @@ func lineProviderInsertionEdit(content []byte, f finding.Finding, idx []int) ([]
 }
 
 func lineProviderReplacementEdit(content []byte, f finding.Finding, idx []int) ([]FixEdit, error) {
-	offset, err := indexLineColToOffset(idx, len(content), f.Position.Line, f.Position.Column)
+	offset, err := resolveLineCol(idx, len(content), f.Position.Line, f.Position.Column)
 	if err != nil {
-		return nil, ErrPositionUnresolvable
+		return nil, err
 	}
 
 	before := []byte(f.BeforeCode)

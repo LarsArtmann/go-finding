@@ -5,9 +5,9 @@ go 1.26.3
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.2.0
 	github.com/go-faster/yaml v0.4.6
-	github.com/larsartmann/go-output v0.17.2
-	github.com/larsartmann/go-output/delimited v0.17.2
-	github.com/larsartmann/go-output/markdown v0.17.2
+	github.com/larsartmann/go-output v0.18.0
+	github.com/larsartmann/go-output/delimited v0.18.0
+	github.com/larsartmann/go-output/markdown v0.18.0
 	github.com/onsi/ginkgo/v2 v2.31.0
 	github.com/onsi/gomega v1.42.0
 	golang.org/x/sync v0.21.0
@@ -25,8 +25,6 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20260604005048-7023385849c0 // indirect
 	github.com/larsartmann/go-branded-id v0.3.1 // indirect
-	github.com/larsartmann/go-output/enum v0.17.1 // indirect
-	github.com/larsartmann/go-output/envdetect v0.17.1 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect

@@ -206,3 +206,75 @@ func TestRangeContains_EdgeCases(t *testing.T) {
 		}
 	})
 }
+
+func TestRangeEndOrStart(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		r    Range
+		want Position
+	}{
+		{
+			name: "end set with line info returns end",
+			r:    Range{Start: Pos("a.go", 1, 1), End: Pos("a.go", 2, 5)},
+			want: Pos("a.go", 2, 5),
+		},
+		{
+			name: "end unset (Line=0) returns start",
+			r:    Range{Start: Pos("a.go", 1, 1)},
+			want: Pos("a.go", 1, 1),
+		},
+		{
+			name: "end with line=0 but offset set still returns start (line check)",
+			r:    Range{Start: Pos("a.go", 1, 1), End: Position{Offset: 10}},
+			want: Pos("a.go", 1, 1),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.r.EndOrStart(); !got.Equal(tt.want) {
+				t.Errorf("EndOrStart() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRangeEndOffsetOrStart(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		r    Range
+		want int
+	}{
+		{
+			name: "end with offset returns end offset",
+			r:    Range{Start: Position{File: "a.go", Offset: 5}, End: Position{File: "a.go", Offset: 15}},
+			want: 15,
+		},
+		{
+			name: "end unset (Offset=-1) returns start offset",
+			r:    Range{Start: Position{File: "a.go", Offset: 5}, End: Position{File: "a.go", Offset: -1}},
+			want: 5,
+		},
+		{
+			name: "end with offset=0 returns 0",
+			r:    Range{Start: Position{File: "a.go", Offset: 5}, End: Position{File: "a.go", Offset: 0}},
+			want: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.r.EndOffsetOrStart(); got != tt.want {
+				t.Errorf("EndOffsetOrStart() = %d, want %d", got, tt.want)
+			}
+		})
+	}
+}
