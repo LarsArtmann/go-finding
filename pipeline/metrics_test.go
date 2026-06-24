@@ -91,7 +91,7 @@ func TestMetrics_RecordFixes(t *testing.T) {
 
 			for _, count := range tt.fixes {
 				if count == 1 {
-					m.RecordFix()
+					m.RecordFixes(1)
 				} else {
 					m.RecordFixes(count)
 				}
@@ -134,7 +134,7 @@ func TestMetrics_Snapshot(t *testing.T) {
 	m := NewMetrics()
 	m.RecordStage("detect", 100*time.Millisecond)
 	m.RecordDetector("govet", 50*time.Millisecond, 5)
-	m.RecordFix()
+	m.RecordFixes(1)
 	m.SetStart(time.Now().Add(-1 * time.Second))
 	m.SetEnd(time.Now())
 

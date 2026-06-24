@@ -44,16 +44,6 @@ func (m *Metrics) RecordDetector(name string, d time.Duration, findings int) {
 	m.mu.Unlock()
 }
 
-// RecordFix records a successful fix application.
-//
-// Deprecated: Use RecordFixes(1) instead. RecordFixes batches multiple
-// recordings in a single mutex acquisition.
-func (m *Metrics) RecordFix() {
-	m.mu.Lock()
-	m.fixesApplied++
-	m.mu.Unlock()
-}
-
 // RecordFixes records multiple successful fix applications in a single mutex acquisition.
 func (m *Metrics) RecordFixes(count uint) {
 	m.mu.Lock()

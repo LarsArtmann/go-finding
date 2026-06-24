@@ -1,7 +1,8 @@
 # v1.0.0 Release Criteria
 
-**Last updated:** 2026-06-17
-**Current version:** 0.7.0
+**Last updated:** 2026-06-24
+**Current version:** 1.0.0
+**Status:** ✅ RELEASED
 
 ---
 
@@ -100,26 +101,30 @@ documented migration path (ADR #11).
 
 ---
 
-## Deprecated API Removal Timeline (v1.0.0)
+## Deprecated API Removal — COMPLETED ✅
 
-These APIs are deprecated and scheduled for removal in v1.0.0:
+All deprecated APIs have been removed in v1.0.0:
 
-| API                               | Replacement                       | Deprecated Since | v1.0 Action  |
-| --------------------------------- | --------------------------------- | ---------------- | ------------ |
-| `Report.Findings` (public field)  | `Report.FindingsSnapshot()`       | v0.7.0           | **Unexport** |
-| `Report.Merge()`                  | `Report.MergeInto()`              | v0.6.0           | **Remove**   |
-| `OnStage` callback                | `StageHooks`                      | v0.7.0           | **Remove**   |
-| `Metrics.RecordFix()`             | `Metrics.RecordFixes(1)`          | v0.6.0           | **Remove**   |
-| `CountBySeverity()` free function | `Report.CountBySeverity()` method | v0.6.0           | **Remove**   |
+| API                               | Replacement                       | Action Taken    |
+| --------------------------------- | --------------------------------- | --------------- |
+| `Report.Findings` (public field)  | `Report.FindingsSnapshot()`       | **Unexported**  |
+| `Report.Merge()`                  | `Report.MergeInto()`              | **Removed**     |
+| `Config.OnStage` callback         | `Config.StageHooks`               | **Removed**     |
+| `Metrics.RecordFix()`             | `Metrics.RecordFixes(1)`          | **Removed**     |
+| `CountBySeverity()` free function | `Report.CountBySeverity()`        | **Removed**     |
+| `SeverityAliases()`               | `LookupSeverityAlias()`           | **Removed**     |
+| `GetCategory()`                   | `CategoryOf()`                    | **Removed**     |
+| `HasFix` free function            | `WithFix`                         | **Removed**     |
+| `HasSuggestion` free function     | `WithSuggestion`                  | **Removed**     |
 
 ---
 
-## Minimum Bar for v1.0.0
+## Minimum Bar for v1.0.0 — ALL MET ✅
 
-1. All "Must Have" items complete ✅
-2. All three OWNER DECISION blockers resolved
-3. All deprecated APIs removed
-4. No breaking changes after release without major version bump
-5. CI/CD running green (test, lint, race, benchmark)
-6. API stability guarantee published
-7. Migration guide available for consumers
+1. ✅ All "Must Have" items complete
+2. ✅ All three OWNER DECISION blockers resolved
+3. ✅ All deprecated APIs removed
+4. ✅ No breaking changes after release without major version bump
+5. ✅ CI/CD running green (test, lint, race, benchmark)
+6. ✅ API stability guarantee published (`docs/API_STABILITY.md`)
+7. ✅ Migration guide available (`docs/MIGRATION_v1.0.md`)

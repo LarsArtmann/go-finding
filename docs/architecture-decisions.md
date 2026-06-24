@@ -320,7 +320,7 @@ Adding `go-sarif` means every consumer of `go-finding` transitively depends on i
 ## 10. Report.Findings Encapsulation
 
 **Date:** 2026-06-08
-**Status:** Proposed (requires v1.0 milestone)
+**Status:** Implemented in v1.0.0 — Option A adopted.
 
 ### Context
 
@@ -349,7 +349,7 @@ r.Findings = append(r.Findings, f)                   // Data race with AddFindin
 
 ### Recommendation
 
-**Option A** for v1.0. Rename `Findings` to `findings` (unexported). The existing accessor methods (`FindingsSnapshot`, `All`, `FindByID`, `Filter`, `Map`) provide all needed access patterns. Direct mutation was never documented as safe.
+**Option A adopted in v1.0.0.** `Findings` renamed to `findings` (unexported). The existing accessor methods (`FindingsSnapshot`, `All`, `FindByID`, `Filter`, `Map`) provide all needed access patterns. Direct mutation was never documented as safe.
 
 ### Migration Guide (v1.0)
 
@@ -365,24 +365,30 @@ snapshot := report.FindingsSnapshot()
 
 ### Decision
 
-**Deferred to v1.0.** This is a breaking change that must happen before the v1.0 stability guarantee. All necessary migration infrastructure is already in place.
+**Implemented in v1.0.0.** All necessary migration infrastructure was in place since v0.7.0.
 
 ---
 
 ## 11. v1.0.0 Breaking Changes Plan
 
-**Status:** Planning — all changes are backward-compatible in v0.x.
+**Status:** Implemented in v1.0.0.
 
 ### Consolidated v1.0 Breaking Changes
 
-| #   | Change                                  | Current (v0.x)                     | v1.0                               | Migration                                           |
-| --- | --------------------------------------- | ---------------------------------- | ---------------------------------- | --------------------------------------------------- |
-| 1   | `Report.Findings` unexport              | Exported field                     | `findings` (unexported)            | Use `FindingsSnapshot()`, `All()`, `readFindings()` |
-| 2   | `Report.Merge` removed                  | Deprecated, calls `MergeInto`      | Removed                            | Use `MergeInto(other)`                              |
-| 3   | `RecordFix()` removed                   | Deprecated, calls `RecordFixes(1)` | Removed                            | Use `RecordFixes(1)`                                |
-| 4   | SARIF types remain unexported           | Unexported                         | Stays unexported                   | No change needed                                    |
-| 5   | `Position.Offset` zero-value semantics  | `0` is valid but also `IsZero()`   | Add `OffsetSet` field or sentinel  | Use `HasOffset()`                                   |
-| 6   | `findingsLocked()` becomes `findings()` | Internal accessor                  | Field unexported, accessor renamed | Internal only                                       |
+All changes below have been implemented:
+
+| #   | Change                                  | Status      | Migration                                           |
+| --- | --------------------------------------- | ----------- | --------------------------------------------------- |
+| 1   | `Report.Findings` unexported            | ✅ Done      | Use `FindingsSnapshot()`, `All()`, `FindByID()`      |
+| 2   | `Report.Merge` removed                  | ✅ Done      | Use `MergeInto(other)`                              |
+| 3   | `RecordFix()` removed                   | ✅ Done      | Use `RecordFixes(1)`                                |
+| 4   | SARIF types remain unexported           | ✅ Done      | No change needed                                    |
+| 5   | `Position.Offset` zero-value semantics  | ✅ Done      | Use `HasOffset()`; `-1` sentinel for unset          |
+| 6   | `Config.OnStage` removed                | ✅ Done      | Use `StageHooks`                                    |
+| 7   | `CountBySeverity()` free function       | ✅ Done      | Use `Report.CountBySeverity()`                      |
+| 8   | `SeverityAliases()` removed             | ✅ Done      | Use `LookupSeverityAlias()`                         |
+| 9   | `GetCategory()` removed                 | ✅ Done      | Use `CategoryOf()`                                  |
+| 10  | `HasFix`/`HasSuggestion` free functions | ✅ Done      | Use `WithFix`/`WithSuggestion`                      |
 
 ### Position/Range Zero-Value Decision (Item 5)
 
@@ -397,9 +403,7 @@ and passes `HasOffset() == true`, while also satisfying `IsZero() == true`.
 | B      | Add `OffsetSet bool` field                 | Yes — struct size   | Medium  |
 | C      | Keep as-is, document the trap              | No                  | Low     |
 
-**Recommendation:** Option A for v1.0. Change `Offset` to default `-1`
-(like `Column` defaults to `0` = "not set" with `Line > 0` indicating set).
-This is the cleanest approach: impossible to confuse "byte 0" with "not set".
+**Recommendation adopted:** Option A in v0.9.0/v1.0.0. `Offset` defaults to `-1` (sentinel for unset).
 
 ### Internal Migration Progress (v0.x → v1.0)
 
@@ -414,8 +418,7 @@ The following refactors prepare for v1.0 without breaking consumers:
 
 ### Decision
 
-**Plan approved.** Execute all 6 items at v1.0.0 release in a single commit.
-No gradual unexporting — one clean break.
+**Plan executed in v1.0.0.** All items implemented in a single release.
 
 ---
 

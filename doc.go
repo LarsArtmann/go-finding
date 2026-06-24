@@ -289,6 +289,6 @@
 // LSP conversion is lossy: FixStrategy, Confidence, BeforeCode, AfterCode, Suppression,
 // Metadata, Category, and Tags are not preserved through LSP round-trips.
 //
-// Report.Findings is a public slice — external code can bypass the mutex.
-// Use AddFinding/AddFindings for thread-safe access.
+// Report.findings is unexported for thread safety. Use AddFinding/AddFindings
+// for writes, FindingsSnapshot/All/FindByID for reads.
 package finding

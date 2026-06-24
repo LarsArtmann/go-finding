@@ -11,7 +11,7 @@ import (
 func simpleSARIFReport() *Report {
 	return &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m",
 				Severity: SeverityError, Position: Position{File: "a.go"},
@@ -120,7 +120,7 @@ func TestToSARIF(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "test-tool", Version: "1.0"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:       "f1",
 				Rule:     "SA1000",
@@ -169,7 +169,7 @@ func TestToSARIFFiltered(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{ID: "f1", Severity: SeverityCritical, Rule: "r1", Position: Position{File: "a.go"}},
 			{ID: "f2", Severity: SeverityError, Rule: "r2", Position: Position{File: "a.go"}},
 			{ID: "f3", Severity: SeverityWarning, Rule: "r3", Position: Position{File: "a.go"}},
@@ -214,7 +214,7 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{ID: "f1", Rule: "r1", Severity: SeverityError, Position: Position{File: "a.go"}},
 			{
 				ID:          "f2",
@@ -247,7 +247,7 @@ func TestToSARIF_WithFix(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:          "f1",
 				Rule:        "fix-rule",
@@ -283,7 +283,7 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:       "f1",
 				Rule:     "r1",
@@ -318,7 +318,7 @@ func TestToSARIF_SuggestionOnly(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:          "f1",
 				Rule:        "r1",

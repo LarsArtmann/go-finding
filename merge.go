@@ -30,7 +30,7 @@ func Combine(reports []*Report, opts ...MergeOption) *Report {
 
 		result := &Report{ //nolint:exhaustruct
 			Tool:     r.Tool,
-			Findings: cloneFindings(r.readFindings()),
+			findings: cloneFindings(r.readFindings()),
 		}
 		result.ComputeSummary()
 
@@ -57,7 +57,7 @@ func Combine(reports []*Report, opts ...MergeOption) *Report {
 			Name:    mergedToolName,
 			Version: "",
 		},
-		Findings: findings,
+		findings: findings,
 	}
 	merged.ComputeSummary()
 

@@ -189,10 +189,10 @@ func TestMerge_DeduplicateByID_EmptyIDs(t *testing.T) {
 		WithDeduplicateBy(DeduplicateByID),
 	)
 
-	if len(merged.Findings) != 2 {
+	if len(merged.findings) != 2 {
 		t.Errorf(
 			"got %d findings, want 2 (empty-ID findings should NOT collide)",
-			len(merged.Findings),
+			len(merged.findings),
 		)
 	}
 }

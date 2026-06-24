@@ -7,16 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-24
+
+First stable release. The API is now frozen — future breaking changes require a major version bump.
+
+### Breaking Changes — Deprecated APIs Removed
+
+All APIs deprecated since v0.6.0–v0.9.0 have been removed. See `docs/MIGRATION_v1.0.md` for the full migration guide.
+
+- **`Report.Findings` field unexported** → `findings`. Use `FindingsSnapshot()` for a deep copy, `All()` for iteration, `FindByID()` for single lookups, or `Len()` for count.
+- **`Report.Merge()` removed** → Use `Report.MergeInto()` which returns a new Report without mutating the receiver.
+- **`Config.OnStage` removed** → Use `Config.StageHooks` with `StageHook`/`StageHookFunc` for before/after events with abort capability.
+- **`Metrics.RecordFix()` removed** → Use `Metrics.RecordFixes(1)` which batches multiple recordings in a single mutex acquisition.
+- **`CountBySeverity()` free function removed** → Use `Report.CountBySeverity(sev)` method.
+- **`SeverityAliases()` removed** → Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`.
+- **`GetCategory()` removed** → Use `CategoryOf()` (Go convention: no `Get` prefix).
+- **`HasFix` free function removed** → Use `WithFix` (consistent with `BySeverity`, `ByCategory` naming).
+- **`HasSuggestion` free function removed** → Use `WithSuggestion`.
+
 ### Added
 
-- **CSV and TSV output formats** — CLI `-format csv` and `-format tsv` produce clean, machine-readable data exports via go-output's delimited writers. No footer rows — safe for downstream parsing.
-- **Markdown output via go-output** — CLI `-format markdown` now uses go-output's `MarkdownTable` renderer with auto-aligned column widths and a finding-count title header. Replaces the hand-rolled `FormatMarkdown` in the CLI path.
-- **Format validation** — Unknown `-format` values now return a clear error listing all supported formats instead of silently falling through to text.
+- **Branded primitive types** — `ID`, `RuleName`, `ToolName`, `FilePath` in `branded_types.go`. Compile-time type safety preventing ID/Rule/Tool/File mixups. JSON marshals identically to string.
+- **`Validate()` decomposition** — Monolithic `Validate()` split into 6 per-field validators (`validateIdentity`, `validateClassification`, `validateFix`, `validateReferences`, `validateSpatial`, `validateSuppression`).
+- **Thread-safe `SeverityAliases`** — Global alias map guarded by `sync.RWMutex`. Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`.
+- **`FindingTransformer`** — Renamed from `FindingProcessor`/`Process()`. Pipeline uses `Config.Processors []FindingTransformer`.
+- **`CategoryOf`** — Renamed from `GetCategory` (Go convention: no `Get` prefix).
+- **`Conflict`** — Renamed from `ConflictInfo`. `AnalyzeConflicts() []Conflict`.
+- **`LSPRelated`** — Renamed from `LSPRelatedInfo`.
+- **CSV and TSV output formats** — CLI `-format csv` and `-format tsv` produce clean, machine-readable data exports via go-output's delimited writers.
+- **Markdown output via go-output** — CLI `-format markdown` uses go-output's `MarkdownTable` renderer with auto-aligned column widths.
+- **Format validation** — Unknown `-format` values now return a clear error listing all supported formats.
 
 ### Changed
 
-- **CLI adapter pattern** — `cmd/go-finding/output_adapter.go` adapts `[]Finding` → go-output's `TableData` with 6 columns: Location, Severity, Category, Rule, Message, Fix. Root `finding` package stays dependency-free.
-- **go-output dependency** — Added `github.com/larsartmann/go-output` v0.17.2, `go-output/markdown` v0.17.2, `go-output/delimited` v0.17.2 as CLI-only deps. Root `finding` package unaffected.
+- **`Report` custom JSON marshaling** — `MarshalJSON`/`UnmarshalJSON` implemented via internal `reportJSON` DTO to support the unexported `findings` field.
+- **CLI adapter pattern** — `cmd/go-finding/output_adapter.go` adapts `[]Finding` → go-output's `TableData`. Root `finding` package stays dependency-free.
+- **go-output dependency** — Added `github.com/larsartmann/go-output` v0.17.2 as CLI-only dep. Root `finding` package unaffected.
 
 ## [0.9.1] - 2026-06-18
 

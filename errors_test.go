@@ -158,7 +158,7 @@ func TestGetCategory(t *testing.T) {
 			t.Parallel()
 			g := NewWithT(t)
 
-			got := GetCategory(tt.err)
+			got := CategoryOf(tt.err)
 			g.Expect(got).To(Equal(tt.expected))
 		})
 	}

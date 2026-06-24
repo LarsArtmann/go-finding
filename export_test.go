@@ -151,7 +151,7 @@ func TestReport_AddFindings(t *testing.T) {
 		{ID: "3", Message: "third"},
 	})
 
-	AssertFindingsLenAndIDs(t, r.Findings, []string{"1", "2", "3"}, "AddFindings")
+	AssertFindingsLenAndIDs(t, r.findings, []string{"1", "2", "3"}, "AddFindings")
 }
 
 func TestReport_AddFindings_Empty(t *testing.T) {
@@ -159,10 +159,10 @@ func TestReport_AddFindings_Empty(t *testing.T) {
 
 	r := NewReport(ToolInfo{Name: "test"})
 	r.AddFindings(nil)
-	AssertEmpty(t, r.Findings, "AddFindings(nil): Findings")
+	AssertEmpty(t, r.findings, "AddFindings(nil): Findings")
 
 	r.AddFindings([]Finding{})
-	AssertEmpty(t, r.Findings, "AddFindings(empty): Findings")
+	AssertEmpty(t, r.findings, "AddFindings(empty): Findings")
 }
 
 func TestMerge_NilReports(t *testing.T) {
@@ -177,5 +177,5 @@ func TestMerge_NilReports(t *testing.T) {
 	merged := Combine([]*Report{r1, nil, r2})
 	merged.ComputeSummary()
 
-	assertFindingsLen(t, "merge with nil reports", len(merged.Findings), 2)
+	assertFindingsLen(t, "merge with nil reports", len(merged.findings), 2)
 }

@@ -203,5 +203,5 @@ func TestReportJSON(t *testing.T) {
 	parsed, _, err := ReportFromJSON(data)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(parsed.Tool.Name).To(Equal("test"))
-	g.Expect(parsed.Findings).To(HaveLen(1))
+	g.Expect(parsed.FindingsSnapshot()).To(HaveLen(1))
 }

@@ -79,7 +79,7 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 		reports := splitSeedFindings(findings, rng)
 		merged := Combine(reports, WithDeduplication(false))
 
-		return len(merged.Findings) == len(findings)
+		return len(merged.findings) == len(findings)
 	}
 
 	checkProperty(t, property)
@@ -149,7 +149,7 @@ func TestProperty_MergeDedupReducesOrPreserves(t *testing.T) {
 
 		merged := Combine([]*Report{report, report}, WithDeduplication(true))
 
-		return len(merged.Findings) <= len(findings)*2
+		return len(merged.findings) <= len(findings)*2
 	}
 
 	checkProperty(t, property)

@@ -40,7 +40,7 @@ func TestReport_Filter(t *testing.T) {
 		t.Errorf("Tool.Name = %q, want %q", filtered.Tool.Name, string(TagTest))
 	}
 
-	AssertFindingsLenAndIDs(t, filtered.Findings, []string{"1", "3"}, "filtered.Findings")
+	AssertFindingsLenAndIDs(t, filtered.findings, []string{"1", "3"}, "filtered.findings")
 }
 
 func TestReport_Filter_Empty(t *testing.T) {
@@ -49,8 +49,8 @@ func TestReport_Filter_Empty(t *testing.T) {
 	r := NewReport(ToolInfo{Name: string(TagTest)})
 	filtered := r.Filter(BySeverity(SeverityError))
 
-	if len(filtered.Findings) != 0 {
-		t.Errorf("Findings length = %d, want 0", len(filtered.Findings))
+	if len(filtered.findings) != 0 {
+		t.Errorf("Findings length = %d, want 0", len(filtered.findings))
 	}
 }
 
@@ -71,11 +71,11 @@ func TestReport_Map(t *testing.T) {
 		t.Errorf("Tool.Name = %q, want %q", mapped.Tool.Name, string(TagTest))
 	}
 
-	if len(mapped.Findings) != 2 {
-		t.Fatalf("Findings length = %d, want 2", len(mapped.Findings))
+	if len(mapped.findings) != 2 {
+		t.Fatalf("Findings length = %d, want 2", len(mapped.findings))
 	}
 
-	for i, f := range mapped.Findings {
+	for i, f := range mapped.findings {
 		if f.Severity != SeverityWarning {
 			t.Errorf("Findings[%d].Severity = %v, want %v", i, f.Severity, SeverityWarning)
 		}
@@ -88,8 +88,8 @@ func TestReport_Map_Empty(t *testing.T) {
 	r := NewReport(ToolInfo{Name: string(TagTest)})
 	mapped := r.Map(func(f Finding) Finding { return f })
 
-	if len(mapped.Findings) != 0 {
-		t.Errorf("Findings length = %d, want 0", len(mapped.Findings))
+	if len(mapped.findings) != 0 {
+		t.Errorf("Findings length = %d, want 0", len(mapped.findings))
 	}
 }
 

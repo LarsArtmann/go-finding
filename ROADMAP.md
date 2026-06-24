@@ -14,13 +14,13 @@ All [v1.0.0 release criteria](docs/RELEASE_CRITERIA.md) are met: core types stab
 
 ---
 
-## v1.0.0 — API lock
+## v1.0.0 — API lock ✅
 
-The single goal: cut the deprecated surface and lock the API.
+**Status: Released 2026-06-24.**
 
-- **Remove deprecated APIs** — `Report.Findings` (unexport), `Report.Merge()`, `OnStage`, `Metrics.RecordFix()`, `CountBySeverity()` free function. See [deprecated API table](docs/RELEASE_CRITERIA.md#deprecated-api-removal-timeline-v100).
-- **Position/Range zero-value redesign** — owner decision on whether to keep the `-1` offset sentinel (v0.9.0) or move to a fully type-safe representation. This is the last potential breaking change before v1.0.0.
-- **`FixStrategyAI` fate** — keep as reserved marker, or remove until a real AI backend exists.
+- ✅ **Remove deprecated APIs** — All deprecated APIs removed: `Report.Findings` (unexported), `Report.Merge()`, `OnStage`, `Metrics.RecordFix()`, `CountBySeverity()` free function, `SeverityAliases()`, `GetCategory()`, `HasFix`/`HasSuggestion` free functions. See [removed API table](docs/RELEASE_CRITERIA.md#deprecated-api-removal--completed-).
+- ✅ **Position/Range zero-value redesign** — `-1` offset sentinel adopted (v0.9.0, confirmed in v1.0.0).
+- ✅ **`FixStrategyAI` fate** — kept as reserved marker.
 
 After v1.0.0, breaking changes require a major version bump per SemVer.
 

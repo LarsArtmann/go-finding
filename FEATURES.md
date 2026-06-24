@@ -211,7 +211,7 @@ Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffec
 
 Composable filter functions:
 
-|`BySeverity`, `BySeverityAtLeast`, `ByCategory`, `ByFixStrategy`, `ByTool`, `ByRule`, `ByFile`, `NotSuppressed`, `HasFix`, `HasSuggestion`, `Negate`
+|`BySeverity`, `BySeverityAtLeast`, `ByCategory`, `ByFixStrategy`, `ByTool`, `ByRule`, `ByFile`, `NotSuppressed`, `WithFix`, `WithSuggestion`, `Negate`
 
 ### 8.2 Core Operations
 
@@ -446,7 +446,6 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 | `OnFinding`                  | `func(Finding)`         | `nil`   | Per-finding callback                                   |
 | `OnFix`                      | `func(Finding, bool)`   | `nil`   | Per-fix callback                                       |
 | `OnIteration`                | `func(int, []Finding)`  | `nil`   | Per-iteration callback                                 |
-| `OnStage`                    | `func(Stage, int, int)` | `nil`   | Per-stage callback (**deprecated** — use `StageHooks`) |
 | `StageHooks`                 | `[]StageHook`           | `nil`   | Per-stage before/after hooks with abort                |
 | `DetectorTimeouts`           | `map[string]Duration`   | `nil`   | Per-detector timeout overrides                         |
 | `Logger`                     | `*slog.Logger`          | `nil`   | Structured logging                                     |
@@ -839,7 +838,7 @@ providers, err := configFile.ResolveProviders(providerMap)
 
 **Status:** FULLY_FUNCTIONAL
 
-Per-stage before/after hooks with abort capability (replaces deprecated `OnStage`):
+Per-stage before/after hooks with abort capability:
 
 ```go
 config.StageHooks = []pipeline.StageHook{
@@ -899,7 +898,7 @@ cat := finding.CategoryForLinter("gosec") // CategorySecurity
 finding.RegisterLinterCategory("my-linter", finding.CategoryPerformance)
 ```
 
-### 21.11 SeverityAliases / ParseSeverity
+### 21.11 Severity Aliases / ParseSeverity
 
 **Status:** FULLY_FUNCTIONAL
 
@@ -952,7 +951,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 | Plugin detector registry          | FULLY_FUNCTIONAL     | Thread-safe `RegisterDetector`                                              |
 | Per-detector timeouts             | FULLY_FUNCTIONAL     | `DetectorTimeouts` map in Config + CLI config file                          |
 | Structured logging (slog)         | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                    |
-| Stage hooks/callbacks             | FULLY_FUNCTIONAL     | `StageHooks` (preferred) + deprecated `OnStage`                             |
+| Stage hooks/callbacks             | FULLY_FUNCTIONAL     | `StageHooks` with abort capability                                         |
 | Diff function                     | FULLY_FUNCTIONAL     | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()`           |
 | FormatText / FormatMarkdown       | FULLY_FUNCTIONAL     | Return errors, UTF-8 safe truncation, markdown cell escaping                |
 | Config validation                 | FULLY_FUNCTIONAL     | Both pipeline and CLI configs                                               |
@@ -966,12 +965,12 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 | LineShiftMap                      | FULLY_FUNCTIONAL     | Byte-offset-aware line+column shift tracking after edits                    |
 | MergeIter                         | FULLY_FUNCTIONAL     | Streaming iter.Seq merge with deduplication                                 |
 | ConfigFile (pipeline)             | FULLY_FUNCTIONAL     | JSON config loading + ResolveDetectors/ResolveProviders                     |
-| StageHook                         | FULLY_FUNCTIONAL     | Per-stage before/after hooks with abort (replaces OnStage)                  |
+| StageHook                         | FULLY_FUNCTIONAL     | Per-stage before/after hooks with abort capability                          |
 | GoASTProvider                     | FULLY_FUNCTIONAL     | AST-aware fix provider for .go files (go/parser)                            |
 | GeneratedFileFilter               | FULLY_FUNCTIONAL     | Removes findings from auto-generated files (sqlc, protobuf, etc.)           |
 | ToolAdapter[O]                    | FULLY_FUNCTIONAL     | Generic tool→Finding converter adapter                                      |
 | CategoryForLinter                 | FULLY_FUNCTIONAL     | 70+ linter→category mappings, case-insensitive                              |
-| SeverityAliases                   | FULLY_FUNCTIONAL     | 9 severity aliases (warn, high, medium, low, fatal, etc.)                   |
+| Severity aliases                 | FULLY_FUNCTIONAL     | 9 severity aliases via RegisterSeverityAlias/LookupSeverityAlias            |
 | SubstringProvider column-aware    | FULLY_FUNCTIONAL     | Nearest-position heuristic with line+column disambiguation                  |
 
 ---

@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
-	"maps"
 	"sync"
 )
 
@@ -154,22 +153,6 @@ func severityRank(s Severity) int {
 	return -1
 }
 
-// CountBySeverity counts findings by severity level.
-// Only valid severities are included in the result.
-//
-// Deprecated: Use Report.CountBySeverity instead.
-func CountBySeverity(findings []Finding) map[Severity]int {
-	counts := make(map[Severity]int)
-
-	for _, f := range findings {
-		if f.Severity.IsValid() {
-			counts[f.Severity]++
-		}
-	}
-
-	return counts
-}
-
 // isValidWith returns true if both severities are valid.
 func (s Severity) isValidWith(other Severity) bool {
 	return s.IsValid() && other.IsValid()
@@ -215,25 +198,10 @@ func LookupSeverityAlias(name string) (Severity, bool) {
 	return sev, ok
 }
 
-// SeverityAliases returns a snapshot copy of all registered severity aliases.
-// This is safe to call concurrently. Mutating the returned map does not affect
-// the internal registry.
-//
-// Deprecated: Use [RegisterSeverityAlias] to add aliases and [LookupSeverityAlias]
-// to look them up. This function exists for backward compatibility.
-func SeverityAliases() map[string]Severity {
-	severityAliasesMu.RLock()
-	defer severityAliasesMu.RUnlock()
-
-	result := make(map[string]Severity, len(severityAliases))
-	maps.Copy(result, severityAliases)
-
-	return result
-}
-
 // ParseSeverity parses a string into a Severity.
 // It accepts the canonical names (info, warning, error, critical) and common aliases
-// defined in SeverityAliases (warn, high, medium, low, fatal, note, advice, suggestion).
+// (warn, high, medium, low, fatal, note, advice, suggestion) registered via
+// RegisterSeverityAlias.
 // Returns an error if the string is not a valid severity level or alias.
 func ParseSeverity(s string) (Severity, error) {
 	sev := Severity(s)

@@ -14,15 +14,10 @@ import (
 // ActiveFindings, etc.) acquire a read lock; write methods (AddFinding,
 // AddFindings, MergeInto) acquire a write lock.
 type Report struct {
-	mu   sync.RWMutex
-	Tool ToolInfo `json:"tool"` // Tool metadata
-	// Findings holds all findings from this run.
-	//
-	// Deprecated: Direct access is not thread-safe. Use [Report.FindingsSnapshot]
-	// for a deep copy, [Report.All] for iteration, or [Report.FindByID] for single
-	// lookups. This field will be unexported in v1.0.
-	Findings []Finding `json:"findings"`
-	Summary  Summary   `json:"summary"` // Aggregated statistics
+	mu       sync.RWMutex
+	Tool     ToolInfo `json:"tool"` // Tool metadata
+	findings []Finding
+	Summary  Summary `json:"summary"` // Aggregated statistics
 }
 
 // Validate returns an error if the Report is invalid.
@@ -39,7 +34,7 @@ func (r *Report) Validate() error {
 		errs = append(errs, err)
 	}
 
-	for i, f := range r.Findings {
+	for i, f := range r.findings {
 		err := f.Validate()
 		if err != nil {
 			errs = append(errs, fmt.Errorf("findings[%d]: %w", i, err))
@@ -80,7 +75,7 @@ type Summary struct {
 func NewReport(tool ToolInfo) *Report {
 	r := &Report{ //nolint:exhaustruct
 		Tool:     tool,
-		Findings: make([]Finding, 0),
+		findings: make([]Finding, 0),
 		Summary:  Summary{}, //nolint:exhaustruct
 	}
 	r.ComputeSummary()
@@ -94,7 +89,7 @@ func (r *Report) AddFinding(f Finding) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.Findings = append(r.Findings, f)
+	r.findings = append(r.findings, f)
 }
 
 // AddFindings adds multiple findings to the report.
@@ -103,49 +98,29 @@ func (r *Report) AddFindings(findings []Finding) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.Findings = append(r.Findings, findings...)
-}
-
-// Merge merges another report's findings into this report in-place.
-// The Tool info from other is ignored — this report retains its own.
-// Summary is recomputed after merging.
-// Safe for concurrent use.
-//
-// Deprecated: Use [Report.MergeInto] instead, which returns a new Report
-// without modifying the receiver. Merge will be removed in v1.0.0.
-func (r *Report) Merge(other *Report) {
-	other.mu.RLock()
-	cloned := make([]Finding, len(other.Findings))
-	copy(cloned, other.Findings)
-	other.mu.RUnlock()
-
-	r.mu.Lock()
-	r.Findings = append(r.Findings, cloned...)
-	r.mu.Unlock()
-
-	r.ComputeSummary()
+	r.findings = append(r.findings, findings...)
 }
 
 // MergeInto returns a new Report containing findings from both r and other.
 // Neither receiver nor other is modified. The new report uses r's ToolInfo.
 func (r *Report) MergeInto(other *Report) *Report {
 	r.mu.RLock()
-	rFindings := make([]Finding, len(r.Findings))
-	copy(rFindings, r.Findings)
+	rFindings := make([]Finding, len(r.findings))
+	copy(rFindings, r.findings)
 	rTool := r.Tool
 	r.mu.RUnlock()
 
 	other.mu.RLock()
-	oFindings := make([]Finding, len(other.Findings))
-	copy(oFindings, other.Findings)
+	oFindings := make([]Finding, len(other.findings))
+	copy(oFindings, other.findings)
 	other.mu.RUnlock()
 
 	merged := &Report{ //nolint:exhaustruct
 		Tool:     rTool,
-		Findings: make([]Finding, 0, len(rFindings)+len(oFindings)),
+		findings: make([]Finding, 0, len(rFindings)+len(oFindings)),
 	}
-	merged.Findings = append(merged.Findings, rFindings...)
-	merged.Findings = append(merged.Findings, oFindings...)
+	merged.findings = append(merged.findings, rFindings...)
+	merged.findings = append(merged.findings, oFindings...)
 	merged.ComputeSummary()
 
 	return merged
@@ -158,17 +133,16 @@ func (r *Report) readFindings() []Finding {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	findings := make([]Finding, len(r.Findings))
-	copy(findings, r.Findings)
+	findings := make([]Finding, len(r.findings))
+	copy(findings, r.findings)
 
 	return findings
 }
 
 // findingsLocked returns the findings slice without acquiring the lock.
-// Caller MUST hold r.mu (RLock or Lock). Used internally to prepare for
-// v1.0 unexport of the Findings field.
+// Caller MUST hold r.mu (RLock or Lock).
 func (r *Report) findingsLocked() []Finding {
-	return r.Findings
+	return r.findings
 }
 
 // ComputeSummary recalculates the summary from the current findings.
@@ -189,7 +163,7 @@ func (r *Report) computeSummaryAt(now time.Time) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.Summary.Total = len(r.Findings)
+	r.Summary.Total = len(r.findings)
 	r.Summary.BySeverity = make(map[Severity]int)
 	r.Summary.ByCategory = make(map[Category]int)
 	r.Summary.ByFixStrategy = make(map[FixStrategy]int)
@@ -197,7 +171,7 @@ func (r *Report) computeSummaryAt(now time.Time) {
 	files := make(map[string]struct{})
 	suppressed := 0
 
-	for _, f := range r.Findings {
+	for _, f := range r.findings {
 		r.Summary.BySeverity[f.Severity]++
 
 		r.Summary.ByFixStrategy[f.FixStrategy]++

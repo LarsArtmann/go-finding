@@ -124,7 +124,7 @@ autoFixable := finding.Filter(findings, finding.ByFixStrategy(finding.FixStrateg
 important := finding.Filter(findings,
     finding.BySeverityAtLeast(finding.SeverityWarning),
     finding.NotSuppressed,
-    finding.HasFix,
+    finding.WithFix,
 )
 
 byFile := finding.GroupByFile(findings)

@@ -94,7 +94,7 @@ var _ = Describe("Error Handling User Stories", func() {
 
 			Expect(err.Error()).To(ContainSubstring("validation"))
 			Expect(errors.Is(err, finding.ErrValidation)).To(BeTrue())
-			Expect(finding.GetCategory(err)).To(Equal(finding.ErrCategoryValidation))
+			Expect(finding.CategoryOf(err)).To(Equal(finding.ErrCategoryValidation))
 		})
 
 		It("wraps underlying causes for error chain inspection", func() {

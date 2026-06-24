@@ -171,7 +171,7 @@ func FuzzMerge_DedupByID(f *testing.F) {
 
 		seen := make(map[string]int)
 
-		for _, f := range merged.Findings {
+		for _, f := range merged.findings {
 			if f.ID == "" {
 				continue
 			}
@@ -182,7 +182,7 @@ func FuzzMerge_DedupByID(f *testing.F) {
 
 		// Without dedup: total should be sum
 		noDedup := Combine([]*Report{r1, r2}, WithDeduplication(false))
-		g.Expect(noDedup.Findings).To(HaveLen(3))
+		g.Expect(noDedup.findings).To(HaveLen(3))
 	})
 }
 
@@ -203,7 +203,7 @@ func FuzzMerge_Idempotent(f *testing.F) {
 		merged1 := Combine([]*Report{r})
 		merged2 := Combine([]*Report{merged1})
 
-		g.Expect(merged2.Findings).To(HaveLen(len(merged1.Findings)))
+		g.Expect(merged2.findings).To(HaveLen(len(merged1.findings)))
 	})
 }
 
@@ -262,9 +262,9 @@ func FuzzMergeByPosition(f *testing.F) {
 		// AND that key is backed by a non-empty file. When they do not merge,
 		// both are retained (IDs "A"/"B" differ, so no other strategy applies).
 		if key1 == key2 && file1 != "" && file2 != "" {
-			g.Expect(merged.Findings).To(HaveLen(1))
+			g.Expect(merged.findings).To(HaveLen(1))
 		} else {
-			g.Expect(merged.Findings).To(HaveLen(2))
+			g.Expect(merged.findings).To(HaveLen(2))
 		}
 	})
 }

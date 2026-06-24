@@ -13,12 +13,12 @@ func (r *Report) FindingsSnapshot() []Finding {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	if len(r.Findings) == 0 {
+	if len(r.findings) == 0 {
 		return nil
 	}
 
-	snapshot := make([]Finding, len(r.Findings))
-	for i, f := range r.Findings {
+	snapshot := make([]Finding, len(r.findings))
+	for i, f := range r.findings {
 		snapshot[i] = f.Clone()
 	}
 

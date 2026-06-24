@@ -102,30 +102,30 @@ func TestReport_Merge(t *testing.T) {
 	addTestFinding(b, "f3", "R3", SeverityInfo, "a.go")
 	b.ComputeSummary()
 
-	a.Merge(b)
+	merged := a.MergeInto(b)
 
-	if len(a.Findings) != 3 {
-		t.Errorf("Findings length = %d, want 3", len(a.Findings))
+	if len(merged.findings) != 3 {
+		t.Errorf("Findings length = %d, want 3", len(merged.findings))
 	}
 
-	if a.Summary.Total != 3 {
-		t.Errorf("Summary.Total = %d, want 3", a.Summary.Total)
+	if merged.Summary.Total != 3 {
+		t.Errorf("Summary.Total = %d, want 3", merged.Summary.Total)
 	}
 
-	if a.Summary.BySeverity[SeverityError] != 1 {
-		t.Errorf("BySeverity[Error] = %d, want 1", a.Summary.BySeverity[SeverityError])
+	if merged.Summary.BySeverity[SeverityError] != 1 {
+		t.Errorf("BySeverity[Error] = %d, want 1", merged.Summary.BySeverity[SeverityError])
 	}
 
-	if a.Summary.BySeverity[SeverityWarning] != 1 {
-		t.Errorf("BySeverity[Warning] = %d, want 1", a.Summary.BySeverity[SeverityWarning])
+	if merged.Summary.BySeverity[SeverityWarning] != 1 {
+		t.Errorf("BySeverity[Warning] = %d, want 1", merged.Summary.BySeverity[SeverityWarning])
 	}
 
-	if a.Summary.BySeverity[SeverityInfo] != 1 {
-		t.Errorf("BySeverity[Info] = %d, want 1", a.Summary.BySeverity[SeverityInfo])
+	if merged.Summary.BySeverity[SeverityInfo] != 1 {
+		t.Errorf("BySeverity[Info] = %d, want 1", merged.Summary.BySeverity[SeverityInfo])
 	}
 
-	if a.Tool.Name != "tool-a" {
-		t.Errorf("Tool.Name = %q, want %q", a.Tool.Name, "tool-a")
+	if merged.Tool.Name != "tool-a" {
+		t.Errorf("Tool.Name = %q, want %q", merged.Tool.Name, "tool-a")
 	}
 }
 
@@ -139,10 +139,10 @@ func TestReport_Merge_Empty(t *testing.T) {
 	b := NewReport(ToolInfo{Name: "tool-b"})
 	b.ComputeSummary()
 
-	a.Merge(b)
+	merged := a.MergeInto(b)
 
-	if len(a.Findings) != 1 {
-		t.Errorf("Findings length = %d, want 1", len(a.Findings))
+	if len(merged.findings) != 1 {
+		t.Errorf("Findings length = %d, want 1", len(a.findings))
 	}
 }
 

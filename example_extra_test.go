@@ -76,7 +76,7 @@ func ExamplePipeline() {
 func ExampleFindingError() {
 	err := finding.NewValidationError("invalid input", nil)
 	fmt.Println(finding.IsFindingError(err))
-	fmt.Println(finding.GetCategory(err))
+	fmt.Println(finding.CategoryOf(err))
 
 	ioErr := finding.NewIOError("read file", errors.New("permission denied"))
 	fmt.Println(ioErr.Error())

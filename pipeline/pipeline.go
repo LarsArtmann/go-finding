@@ -103,7 +103,6 @@ func (p *Pipeline) log(ctx context.Context, msg string, attrs ...slog.Attr) {
 }
 
 // fireStageHook sends a StageEvent to all registered StageHooks.
-// It also fires the legacy OnStage callback on StageAfter events.
 // Returns the first error encountered, which aborts the pipeline.
 func (p *Pipeline) fireStageHook(
 	ctx context.Context,
@@ -114,16 +113,6 @@ func (p *Pipeline) fireStageHook(
 	applied int,
 	conflicts int,
 ) error {
-	// Legacy OnStage callback fires after each stage completion.
-	if timing == StageAfter && p.config.OnStage != nil {
-		count := len(findings)
-		if stage == StageApply {
-			count = applied
-		}
-
-		p.config.OnStage(stage, iteration, count)
-	}
-
 	if len(p.config.StageHooks) == 0 {
 		return nil
 	}

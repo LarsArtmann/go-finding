@@ -124,10 +124,9 @@ All exported symbols are classified as:
 
 ### Report Methods
 
-| Method                              | Status         | Notes                                            |
-| ----------------------------------- | -------------- | ------------------------------------------------ |
-| `Report.Merge`                      | **deprecated** | Use `MergeInto`. Removed in v1.0.0.              |
-| `Report.MergeInto`                  | stable         | Returns new Report, no mutation                  |
+| Method                              | Status | Notes                           |
+| ----------------------------------- | ------ | ------------------------------- |
+| `Report.MergeInto`                  | stable | Returns new Report, no mutation |
 | `Report.AddFinding` / `AddFindings` | stable         | Thread-safe                                      |
 | `Report.All`                        | stable         | `iter.Seq[Finding]`                              |
 | `Report.ActiveFindings`             | stable         | Non-suppressed                                   |
@@ -138,15 +137,14 @@ All exported symbols are classified as:
 | `Report.ToSARIF` / `WriteSARIF`     | stable         |                                                  |
 | `Report.PrettyJSON` / `Filtered`    | stable         |                                                  |
 | `Report.Filter` / `Map`             | stable         | Transform                                        |
-| `Report.Len` / `CountBySeverity`    | stable         | Counts                                           |
-| `CountBySeverity` (free function)   | **deprecated** | Use `Report.CountBySeverity`. Removed in v1.0.0. |
+| `Report.Len` / `CountBySeverity`    | stable | Counts                           |
 
 ### Filter Constructors
 
 | Constructor                                                                                                                           | Status |
 | ------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | `ByCategory`, `ByConfidence`, `ByConfidenceAtLeast`, `ByFile`, `ByFixStrategy`, `ByRule`, `BySeverity`, `BySeverityAtLeast`, `ByTool` | stable |
-| `AnyOf`, `Negate`, `FilterInvalid`, `NotSuppressed`, `HasFix`, `HasSuggestion`                                                        | stable |
+| `AnyOf`, `Negate`, `FilterInvalid`, `NotSuppressed`, `WithFix`, `WithSuggestion`                                                     | stable |
 
 ### Constants
 
@@ -161,11 +159,13 @@ All exported symbols are classified as:
 | `LSPSeverity*`, `LSPDiagnosticTag*`         | stable       |                               |
 | `LSPSeverityKey`, `LSPDiagnosticTagsKey`    | stable       | Metadata keys                 |
 
-### Variables
+### Functions
 
-| Variable          | Status | Notes                 |
-| ----------------- | ------ | --------------------- |
-| `SeverityAliases` | stable | Map of alias→Severity |
+| Function                | Status | Notes                           |
+| ----------------------- | ------ | ------------------------------- |
+| `RegisterSeverityAlias` | stable | Add custom severity alias       |
+| `LookupSeverityAlias`   | stable | Look up canonical Severity      |
+| `CategoryOf`            | stable | Category from error (replaces `GetCategory`) |
 
 ---
 
@@ -208,27 +208,22 @@ These are not yet locked:
 - `FixEdit` internal representation (JSON format may evolve)
 - SARIF internal types (unexported) — not part of public API
 
-## Known Pre-v1.0 Concerns
-
-### Reserved Placeholders
+## Reserved Placeholders
 
 - `FixStrategyAI` and `NeedsAI()` are published with no backend. Pipeline triage treats `FixStrategyAI` the same as `FixStrategySuggest` (no auto-apply).
 
-### Deprecations
+## Removed APIs (v1.0.0)
 
-- `Report.Merge()` — deprecated in favor of `MergeInto()`. Will be removed in v1.0.0.
-- `RecordFix()` — superseded by `RecordFixes(uint)`. Will be removed in v1.0.0.
+All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migration details.
 
-### Encapsulation Risks
-
-- `Report.Findings` is a public slice. Use `AddFinding`/`AddFindings`/`FindByID`/`All()` for thread-safe access. ADR 10 documents the migration path via `FindingsSnapshot()`.
-
-### Owner Decisions (pre-v1.0)
-
-1. `Position` zero-value safety — Is `Position{}` valid or an error?
-2. `Range.End` zero-value ambiguity — Required vs optional?
-3. `PositionOffset` sentinel design — Need `OffsetUndefined`?
-4. `Report.Merge()` semantics — Should be removed after deprecation period.
+- `Report.Findings` field → unexported (`findings`). Use `FindingsSnapshot()`, `All()`, `FindByID()`.
+- `Report.Merge()` → Use `MergeInto()`.
+- `Config.OnStage` → Use `StageHooks`.
+- `Metrics.RecordFix()` → Use `RecordFixes(1)`.
+- `CountBySeverity()` free function → Use `Report.CountBySeverity()`.
+- `SeverityAliases()` → Use `LookupSeverityAlias()`.
+- `GetCategory()` → Use `CategoryOf()`.
+- `HasFix` / `HasSuggestion` free functions → Use `WithFix` / `WithSuggestion`.
 
 ## Deprecation Policy
 

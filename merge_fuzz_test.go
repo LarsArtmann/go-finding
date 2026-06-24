@@ -44,10 +44,10 @@ func FuzzMergeRandom(f *testing.F) {
 			t.Fatal("Merge returned nil")
 		}
 
-		if !dedup && len(merged.Findings) != len(findings) {
+		if !dedup && len(merged.findings) != len(findings) {
 			t.Fatalf(
 				"merge without dedup: got %d findings, want %d",
-				len(merged.Findings),
+				len(merged.findings),
 				len(findings),
 			)
 		}

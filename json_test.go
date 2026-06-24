@@ -21,12 +21,12 @@ func nanConfidenceFinding() Finding {
 func assertSingleFindingWithID(t *testing.T, got *Report, wantID string) {
 	t.Helper()
 
-	if len(got.Findings) != 1 {
-		t.Fatalf("Findings length = %d, want 1", len(got.Findings))
+	if len(got.findings) != 1 {
+		t.Fatalf("Findings length = %d, want 1", len(got.findings))
 	}
 
-	if string(got.Findings[0].ID) != wantID {
-		t.Errorf("Findings[0].ID = %q, want %q", got.Findings[0].ID, wantID)
+	if string(got.findings[0].ID) != wantID {
+		t.Errorf("Findings[0].ID = %q, want %q", got.findings[0].ID, wantID)
 	}
 }
 
@@ -128,7 +128,7 @@ func TestReportFromJSON(t *testing.T) {
 
 		orig := Report{
 			Tool: ToolInfo{Name: "test-tool", Version: "1.0"},
-			Findings: []Finding{
+			findings: []Finding{
 				{
 					ID:       "f1",
 					Rule:     "R1",
@@ -186,7 +186,7 @@ func TestReportFromJSON(t *testing.T) {
 
 		orig := Report{
 			Tool: ToolInfo{Name: "test-tool"},
-			Findings: []Finding{
+			findings: []Finding{
 				{
 					ID:       "f1",
 					Rule:     "R1",

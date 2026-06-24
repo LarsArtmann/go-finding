@@ -187,7 +187,7 @@ These are breaking changes that should land before the v1.0 API lock. Each is sm
 - [x] `PositionOffset` sentinel design — **RESOLVED v0.9.0** (Offset=-1 sentinel; see CHANGELOG [0.9.0])
 - [x] Add `ToolInfo.Validate()` method + tests
 - [x] Add `RetryConfig.Validate()` method
-- [ ] `Report.Merge()` → return new `*Report` instead of mutating receiver — **DEPRECATED**, will be removed v1.0.0; use MergeInto
+- [x] `Report.Merge()` → removed in v1.0.0; use `MergeInto` (returns new `*Report`)
 - [x] Fix `FixProviders` through CLI config — `-fix-provider` flag + `fixProviders` config field implemented (v0.8.0)
 
 ## ⚪ DEFERRED v2.0 (from data-model-review 2026-06-23)

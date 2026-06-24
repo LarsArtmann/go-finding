@@ -38,7 +38,7 @@ func TestWriteTo(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m",
 				Severity: SeverityError, Position: Position{File: "a.go", Line: 1},

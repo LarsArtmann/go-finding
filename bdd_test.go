@@ -178,14 +178,14 @@ var _ = Describe("Report Filtering and Aggregation", func() {
 	})
 
 	It("groups by file", func() {
-		groups := finding.GroupByFile(report.Findings)
+		groups := finding.GroupByFile(report.FindingsSnapshot())
 		Expect(groups).To(HaveLen(3))
 		Expect(groups["a.go"]).To(HaveLen(2))
 	})
 
 	It("sorts by severity (most severe first)", func() {
-		sorted := make([]finding.Finding, len(report.Findings))
-		copy(sorted, report.Findings)
+		sorted := make([]finding.Finding, len(report.FindingsSnapshot()))
+		copy(sorted, report.FindingsSnapshot())
 		finding.SortBySeverity(sorted)
 		Expect(sorted[0].Severity).To(Equal(finding.SeverityCritical))
 	})

@@ -58,8 +58,8 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 
 ## Important Behaviors (Gotchas)
 
-- **Report.Findings is public but deprecated** — Use `FindingsSnapshot()` for thread-safe access. Internal code uses `findingsLocked()`/`readFindings()`. Will be unexported in v1.0.0.
 - **Report{} zero-value safe** — Uses value `sync.Mutex`, safe for concurrent use without initialization
+- **Report.findings is unexported** — Use `FindingsSnapshot()` for a deep copy, `All()` for iteration, or `FindByID()` for single lookups
 - **Pipeline.Run() is single-use** — Returns `errAlreadyRan` on second call
 - **NewFixApplier returns error** — Propagates backup dir creation failures
 - **Confidence is a named type** — `type Confidence float64` with `IsValid()`/`Clamp()`
@@ -74,11 +74,11 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **LineShiftMap shifts Position + Range** — `ShiftedPosition` shifts line + column (single-line edits); `ShiftedRange` shifts both endpoints
 - **SubstringProvider column-aware** — Disambiguates multiple occurrences by line + column distance
 - **context.Context on I/O** — `WriteSARIF`, `FindingsFromSARIF`, etc. accept context as first arg
-- **OnStage deprecated** — Use `StageHooks` for before/after events with abort capability
+- **StageHooks replace OnStage** — Use `Config.StageHooks` with `StageHook`/`StageHookFunc` for before/after events with abort capability
 - **Branded types prevent mixups** — `ID`, `RuleName`, `ToolName`, `FilePath` are distinct string types. Use `finding.ID("x")` not raw `"x"` for fields. JSON marshals identically to string.
 - **Validate() decomposed** — `finding_validate.go` delegates to 6 per-field validators (`validateIdentity`, `validateClassification`, `validateFix`, `validateReferences`, `validateSpatial`, `validateSuppression`). Complexity per validator < 10.
-- **SeverityAliases thread-safe** — Global map guarded by `sync.RWMutex`. Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`. Old `SeverityAliases()` returns a snapshot copy.
-- **GetCategory deprecated** — Use `CategoryOf(err)` (Go convention: no `Get` prefix)
+- **SeverityAliases removed** — Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`. Global map guarded by `sync.RWMutex`.
+- **CategoryOf is canonical** — `CategoryOf(err)` returns the category (old `GetCategory` removed)
 
 ## CLI Features
 
@@ -110,22 +110,11 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **Conflict** — Renamed from `ConflictInfo`. `AnalyzeConflicts() []Conflict`.
 - **LSPRelated** — Renamed from `LSPRelatedInfo`.
 
-## Deprecated APIs (v1.0.0 Removal)
+## Removed APIs (v1.0.0)
 
-| API                           | Replacement                 |
-| ----------------------------- | --------------------------- |
-| `Report.Findings`             | `Report.FindingsSnapshot()` |
-| `Report.Merge()`              | `Report.MergeInto()`        |
-| `OnStage`                     | `StageHooks`                |
-| `Metrics.RecordFix()`         | `Metrics.RecordFixes(1)`    |
-| `CountBySeverity()` free func | `Report.CountBySeverity()`  |
-| `GetCategory(err)`            | `CategoryOf(err)`           |
-| `SeverityAliases()`           | `LookupSeverityAlias()`     |
-| `FindingProcessor`            | `FindingTransformer`        |
-| `ConflictInfo`                | `Conflict`                  |
-| `LSPRelatedInfo`              | `LSPRelated`                |
+All deprecated APIs from v0.6.0–v0.9.0 have been removed. No deprecated APIs remain.
 
-See `docs/MIGRATION_v1.0.md` and `docs/RELEASE_CRITERIA.md`.
+See `docs/MIGRATION_v1.0.md` for migration details.
 
 ---
 

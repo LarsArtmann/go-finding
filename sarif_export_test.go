@@ -15,7 +15,7 @@ func TestToSARIF_WithRelated(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:       "f1",
 				Rule:     "r1",
@@ -66,7 +66,7 @@ func testSARIFNaNHandled(t *testing.T, fn func(*Report) ([]byte, error)) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m", Severity: SeverityError,
 				Position: Position{File: "a.go"}, Confidence: Confidence(math.NaN()),
@@ -113,7 +113,7 @@ func TestWriteSARIFFiltered(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m",
 				Severity: SeverityError, Position: Position{File: "a.go"},

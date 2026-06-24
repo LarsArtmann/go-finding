@@ -14,6 +14,48 @@ var (
 	ErrInvalidReport  = errors.New("invalid report: missing tool name")
 )
 
+// reportJSON is the JSON representation of Report. It exists because
+// Report.findings is unexported for thread safety; encoding/json cannot
+// access unexported fields.
+type reportJSON struct {
+	Tool     ToolInfo  `json:"tool"`
+	Findings []Finding `json:"findings"`
+	Summary  Summary   `json:"summary"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (r *Report) MarshalJSON() ([]byte, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	data, err := json.Marshal(reportJSON{
+		Tool:     r.Tool,
+		Findings: r.findings,
+		Summary:  r.Summary,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("marshal report: %w", err)
+	}
+
+	return data, nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (r *Report) UnmarshalJSON(data []byte) error {
+	var dto reportJSON
+
+	err := json.Unmarshal(data, &dto)
+	if err != nil {
+		return fmt.Errorf("unmarshal report: %w", err)
+	}
+
+	r.Tool = dto.Tool
+	r.findings = dto.Findings
+	r.Summary = dto.Summary
+
+	return nil
+}
+
 // FilterInvalid returns true if the finding is invalid (has missing required fields).
 func FilterInvalid(f Finding) bool {
 	return !f.IsValid()
@@ -22,10 +64,7 @@ func FilterInvalid(f Finding) bool {
 // PrettyJSON returns a formatted JSON representation of the report.
 // Includes all findings, including suppressed ones.
 func (r *Report) PrettyJSON() (string, error) {
-	r.mu.RLock()
 	bytes, err := json.MarshalIndent(r, "", "  ")
-	r.mu.RUnlock()
-
 	if err != nil {
 		return "", fmt.Errorf("marshaling JSON: %w", err)
 	}
@@ -41,12 +80,12 @@ func (r *Report) PrettyJSONFiltered() (string, error) {
 
 	filtered := &Report{ //nolint:exhaustruct
 		Tool:     r.Tool,
-		Findings: make([]Finding, 0, len(r.findingsLocked())),
+		findings: make([]Finding, 0, len(r.findingsLocked())),
 		Summary:  Summary{}, //nolint:exhaustruct
 	}
 	for _, f := range r.findingsLocked() {
 		if !f.IsSuppressed() {
-			filtered.Findings = append(filtered.Findings, f)
+			filtered.findings = append(filtered.findings, f)
 		}
 	}
 
@@ -93,10 +132,10 @@ func ReportFromJSON(data []byte) (*Report, int, error) {
 		return nil, 0, ErrInvalidReport
 	}
 
-	before := len(r.Findings)
-	r.Findings = slices.DeleteFunc(r.Findings, FilterInvalid)
+	before := len(r.findings)
+	r.findings = slices.DeleteFunc(r.findings, FilterInvalid)
 
-	return &r, before - len(r.Findings), nil
+	return &r, before - len(r.findings), nil
 }
 
 // FindingsFromJSON parses a slice of Findings from JSON and validates each one.
@@ -140,9 +179,6 @@ func (f Finding) WriteJSON(w io.Writer) error {
 // Avoids the intermediate string allocation of PrettyJSON.
 // Safe for concurrent use.
 func (r *Report) WriteJSON(w io.Writer) error {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 

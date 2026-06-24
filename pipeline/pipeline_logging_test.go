@@ -211,9 +211,21 @@ func TestPipelineRun_OnStage(t *testing.T) {
 	cfg := DefaultConfig()
 	cfg.ParallelDetectors = false
 	cfg.MaxIterations = 1
-	cfg.OnStage = func(stage Stage, iteration, count int) {
-		stages = append(stages, fmt.Sprintf("%s:%d:%d", stage, iteration, count))
-	}
+	cfg.StageHooks = []StageHook{StageHookFunc(func(_ context.Context, event StageEvent) error {
+		if event.Timing != StageAfter {
+			return nil
+		}
+
+		count := len(event.Findings)
+
+		if event.Stage == StageApply {
+			count = event.Applied
+		}
+
+		stages = append(stages, fmt.Sprintf("%s:%d:%d", event.Stage, event.Iteration, count))
+
+		return nil
+	})}
 
 	findings := []finding.Finding{pipelineTestFinding(1)}
 	detector := &mockDetector{name: "test", findings: findings}
