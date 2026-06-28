@@ -1,17 +1,17 @@
 module github.com/larsartmann/go-finding
 
-go 1.26.3
+go 1.26.4
 
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.2.0
 	github.com/go-faster/yaml v0.4.6
-	github.com/larsartmann/go-output v0.18.0
+	github.com/larsartmann/go-output v0.19.0
 	github.com/larsartmann/go-output/delimited v0.18.0
 	github.com/larsartmann/go-output/markdown v0.18.0
 	github.com/onsi/ginkgo/v2 v2.31.0
 	github.com/onsi/gomega v1.42.0
 	golang.org/x/sync v0.21.0
-	golang.org/x/tools v0.46.0
+	golang.org/x/tools v0.47.0
 )
 
 require (
