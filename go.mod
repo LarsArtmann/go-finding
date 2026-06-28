@@ -5,7 +5,7 @@ go 1.26.3
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.2.0
 	github.com/go-faster/yaml v0.4.6
-	github.com/larsartmann/go-output v0.18.0
+	github.com/larsartmann/go-output v0.19.0
 	github.com/larsartmann/go-output/delimited v0.18.0
 	github.com/larsartmann/go-output/markdown v0.18.0
 	github.com/onsi/ginkgo/v2 v2.31.0
