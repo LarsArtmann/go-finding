@@ -13,26 +13,26 @@ import (
 
 	"github.com/go-faster/yaml"
 	"github.com/larsartmann/go-finding"
-	"github.com/larsartmann/go-finding/internal/detectors"
+	"github.com/larsartmann/go-finding/cmd/go-finding/internal/detectors"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
 type pipelineConfigFile struct {
-	MaxIterations     int               `json:"maxIterations"     yaml:"maxIterations"`
-	ParallelDetectors bool              `json:"parallelDetectors" yaml:"parallelDetectors"`
-	VerifyAfterFix    bool              `json:"verifyAfterFix"    yaml:"verifyAfterFix"`
-	Timeout           string            `json:"timeout"           yaml:"timeout"`
-	DetectorTimeouts  map[string]string `json:"detectorTimeouts"  yaml:"detectorTimeouts"`
-	Detectors         []detectorSpec    `json:"detectors"         yaml:"detectors"`
+	MaxIterations     int               `json:"maxIterations"              yaml:"maxIterations"`
+	ParallelDetectors bool              `json:"parallelDetectors"          yaml:"parallelDetectors"`
+	VerifyAfterFix    bool              `json:"verifyAfterFix"             yaml:"verifyAfterFix"`
+	Timeout           string            `json:"timeout"                    yaml:"timeout"`
+	DetectorTimeouts  map[string]string `json:"detectorTimeouts"           yaml:"detectorTimeouts"`
+	Detectors         []detectorSpec    `json:"detectors"                  yaml:"detectors"`
 	// FilterGenerated enables filtering of findings from auto-generated Go source files.
-	FilterGenerated  bool     `json:"filterGenerated"  yaml:"filterGenerated"`
-	FilterGenTypes   string   `json:"filterGenTypes"   yaml:"filterGenTypes"`
-	GeneratedExclude []string `json:"generatedExclude" yaml:"generatedExclude"`
-	GeneratedInclude []string `json:"generatedInclude" yaml:"generatedInclude"`
+	FilterGenerated  bool     `json:"filterGenerated"            yaml:"filterGenerated"`
+	FilterGenTypes   string   `json:"filterGenTypes"             yaml:"filterGenTypes"`
+	GeneratedExclude []string `json:"generatedExclude"           yaml:"generatedExclude"`
+	GeneratedInclude []string `json:"generatedInclude"           yaml:"generatedInclude"`
 	// ByteLevelConflictDetection enables precise byte-level conflict detection during triage.
 	ByteLevelConflictDetection bool `json:"byteLevelConflictDetection" yaml:"byteLevelConflictDetection"`
 	// FixProviders enables named fix providers (e.g., "go-ast") for domain-specific edits.
-	FixProviders []string `json:"fixProviders" yaml:"fixProviders"`
+	FixProviders []string `json:"fixProviders"               yaml:"fixProviders"`
 }
 
 type detectorSpec struct {

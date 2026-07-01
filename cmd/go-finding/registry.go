@@ -7,7 +7,7 @@ import (
 	"slices"
 	"sync"
 
-	det "github.com/larsartmann/go-finding/internal/detectors"
+	det "github.com/larsartmann/go-finding/cmd/go-finding/internal/detectors"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
