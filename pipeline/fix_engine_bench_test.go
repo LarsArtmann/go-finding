@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/larsartmann/go-finding/internal/benchutil"
+	"github.com/larsartmann/go-finding/pipeline/internal/benchutil"
 )
 
 // generateContent creates n lines of Go-like code for benchmarking.

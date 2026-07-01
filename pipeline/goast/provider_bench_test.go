@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/larsartmann/go-finding/internal/benchutil"
 	"github.com/larsartmann/go-finding/pipeline"
+	"github.com/larsartmann/go-finding/pipeline/internal/benchutil"
 )
 
 // generateGoContent produces valid Go source with n lines, each containing old().
