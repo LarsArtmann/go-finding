@@ -115,9 +115,9 @@ go-finding/
 │   ├── metrics.go       # Metrics collection
 │   ├── retry.go         # Retry with exponential backoff
 │   └── partial.go       # Partial success
-├── cmd/go-finding/      # CLI tool
-├── internal/detectors/  # Built-in detectors (govet, staticcheck)
-├── examples/            # Standalone examples (basic, builder, pipeline)
+├── cmd/go-finding/      # CLI tool (own module: yaml, go-output deps)
+│   └── internal/detectors/  # Built-in detectors (govet, staticcheck)
+├── examples/            # Standalone examples (basic, builder)
 ├── docs/                # Documentation and schemas
 ```
 

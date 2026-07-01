@@ -24,11 +24,25 @@ Each tool invents its own types for findings. There is no standardized way to ap
 
 ## Installation
 
+**Core types only** (zero external dependencies):
+
 ```bash
 go get github.com/larsartmann/go-finding
 ```
 
-Requires Go 1.26 or later.
+**With pipeline** (adds `x/sync`, `gogenfilter`):
+
+```bash
+go get github.com/larsartmann/go-finding/pipeline
+```
+
+**CLI tool**:
+
+```bash
+go install github.com/larsartmann/go-finding/cmd/go-finding@latest
+```
+
+Requires Go 1.26 or later. Each module is independently versioned via shared `v*` git tags.
 
 ## Quick Start
 
