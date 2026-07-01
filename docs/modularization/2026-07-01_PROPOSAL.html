@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>go-finding Modularization Proposal — Unix-Style Decomposition</title>
+    <style>
+      :root {
+        --color-paper: #f4f4f0;
+        --color-paper-2: #ffffff;
+        --color-paper-3: #e8e8e2;
+        --color-ink: #111111;
+        --color-red: #e63946;
+        --color-blue: #1d3557;
+        --color-yellow: #f4d35e;
+        --color-hairline: rgba(17, 17, 17, 0.14);
+        --color-hairline-strong: rgba(17, 17, 17, 0.3);
+        --surface: var(--color-paper);
+        --surface-raised: var(--color-paper-2);
+        --surface-sunken: var(--color-paper-3);
+        --text: var(--color-ink);
+        --text-muted: rgba(17, 17, 17, 0.72);
+        --text-faint: rgba(17, 17, 17, 0.5);
+        --border: var(--color-hairline);
+        --border-strong: var(--color-hairline-strong);
+        --accent: var(--color-red);
+        --problem: var(--color-red);
+        --solution: var(--color-blue);
+        --warning: var(--color-yellow);
+        --radius: 0px;
+        --radius-sm: 0px;
+        --font-heading:
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        --font-body:
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        --font-mono:
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
+          monospace;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      section[id],
+      [id] {
+        scroll-margin-top: 60px;
+      }
+      body {
+        background: var(--surface);
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .top-bar {
+        background: var(--text);
+        color: var(--surface);
+        padding: 0.6rem 2rem;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .layout {
+        display: flex;
+        gap: 2.5rem;
+        padding: 2rem;
+      }
+      .sidebar {
+        width: 220px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 1rem;
+        align-self: flex-start;
+        height: calc(100vh - 2rem);
+        overflow-y: auto;
+        display: none;
+      }
+      .sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .sidebar .label {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--accent);
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid var(--text);
+      }
+      .sidebar a {
+        font-size: 0.86rem;
+        color: var(--text);
+        text-decoration: none;
+        padding: 0.5rem 0.75rem;
+        border-left: 4px solid transparent;
+        font-weight: 600;
+        transition: all 0.15s ease;
+        line-height: 1.4;
+      }
+      .sidebar a:hover,
+      .sidebar a.active {
+        border-left-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 8%, transparent);
+        color: var(--accent);
+      }
+      .main {
+        flex: 1;
+        min-width: 0;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--font-heading);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        color: var(--text);
+      }
+      h1 {
+        font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+        line-height: 1.05;
+        margin: 0 0 0.6rem;
+      }
+      h2 {
+        font-size: 1.5rem;
+        margin: 2.5rem 0 1rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 3px solid var(--text);
+        display: flex;
+        align-items: baseline;
+        gap: 0.7rem;
+      }
+      h2 .num {
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        color: var(--accent);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+      h3 {
+        font-size: 1.15rem;
+        margin: 1.5rem 0 0.5rem;
+      }
+      h4 {
+        font-size: 1rem;
+        margin: 1rem 0 0.4rem;
+      }
+      p {
+        margin: 0.5rem 0;
+      }
+      a {
+        color: var(--solution);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      ul,
+      ol {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+      }
+      li {
+        margin: 0.25rem 0;
+      }
+      code {
+        font-family: var(--font-mono);
+      }
+      p code,
+      li code,
+      td code {
+        font-size: 0.88em;
+        background: var(--surface-sunken);
+        padding: 0.1rem 0.35rem;
+      }
+      pre {
+        background: var(--text);
+        color: var(--surface);
+        padding: 1rem 1.2rem;
+        margin: 1rem 0;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.65;
+        overflow-x: auto;
+        border: 2px solid var(--text);
+      }
+      .hero {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 3px solid var(--text);
+      }
+      .hero .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--accent);
+        margin-bottom: 0.5rem;
+      }
+      .hero .subtitle {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        max-width: 60ch;
+        margin: 0.5rem 0;
+      }
+      .hero .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+      .tag {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.2rem 0.55rem;
+        border: 1px solid var(--text);
+      }
+      .tag.amber {
+        background: var(--warning);
+      }
+      .tag.teal {
+        background: var(--solution);
+        color: var(--surface);
+      }
+      .callout {
+        margin: 0.8rem 0 0;
+        padding: 0.8rem 1rem;
+        border: 1px solid var(--border-strong);
+        border-left: 4px solid var(--border-strong);
+        background: var(--surface-sunken);
+        font-size: 0.92rem;
+      }
+      .callout strong {
+        display: inline-block;
+        margin-right: 0.4rem;
+      }
+      .callout-teal,
+      .callout-solution {
+        border-left-color: var(--solution);
+        background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised));
+      }
+      .callout-amber,
+      .callout-warning {
+        border-left-color: var(--warning);
+        background: color-mix(in srgb, var(--warning) 18%, var(--surface-raised));
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0 1.5rem;
+        font-size: 0.92rem;
+        border: 2px solid var(--text);
+      }
+      th {
+        text-align: left;
+        padding: 0.6rem 0.9rem;
+        background: var(--text);
+        color: var(--surface);
+        font-family: var(--font-mono);
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border-right: 1px solid var(--border-strong);
+      }
+      th:last-child {
+        border-right: none;
+      }
+      td {
+        padding: 0.6rem 0.9rem;
+        border-top: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+      td:last-child {
+        border-right: none;
+      }
+      tr:nth-child(even) td {
+        background: var(--surface-sunken);
+      }
+      table.compare td.yes {
+        color: var(--solution);
+        font-weight: 700;
+      }
+      table.compare td.no {
+        color: var(--problem);
+        font-weight: 700;
+      }
+      .dep-tree {
+        background: var(--surface-sunken);
+        border: 2px solid var(--text);
+        padding: 1rem 1.2rem;
+        margin: 1rem 0;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.7;
+        white-space: pre;
+        overflow-x: auto;
+      }
+      .dep-tree .root {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .dep-tree .ok {
+        color: var(--solution);
+      }
+      .dep-tree .unwanted {
+        color: var(--problem);
+      }
+      .migration-step {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        gap: 1rem;
+        margin: 1rem 0;
+        padding: 1.1rem;
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        border-left: 6px solid var(--accent);
+      }
+      .migration-num {
+        font-family: var(--font-mono);
+        font-weight: 900;
+        font-size: 1.8rem;
+        color: var(--accent);
+        line-height: 1;
+      }
+      .migration-content h4 {
+        margin-bottom: 0.2rem;
+      }
+      .migration-content p {
+        margin-bottom: 0;
+        color: var(--text-muted);
+        font-size: 0.94rem;
+      }
+      .badge {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.55rem;
+        border: 1px solid var(--text);
+        color: var(--text);
+      }
+      .badge-critical {
+        background: var(--problem);
+        color: var(--surface);
+      }
+      .badge-high {
+        background: var(--warning);
+      }
+      .badge-medium {
+        background: var(--surface-sunken);
+      }
+      .badge-fixed {
+        background: var(--solution);
+        color: var(--surface);
+      }
+      .footer {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 3px solid var(--text);
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+      }
+      .toc {
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        border-left: 6px solid var(--accent);
+        padding: 1rem 1.3rem;
+        margin: 1rem 0 1.5rem;
+      }
+      .toc h3 {
+        margin-bottom: 0.5rem;
+      }
+      .toc ul {
+        list-style: none;
+        padding: 0;
+      }
+      .toc li {
+        margin: 0.25rem 0;
+      }
+      .toc a {
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.92rem;
+        font-weight: 600;
+      }
+      .toc a:hover {
+        color: var(--accent);
+      }
+      @media (min-width: 1024px) {
+        .sidebar {
+          display: block;
+        }
+      }
+      @media (max-width: 768px) {
+        .layout {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .migration-step {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-bar">
+      <span>Modularization Proposal</span>
+      <span>2026-07-01</span>
+      <span>go-finding v1.0.0</span>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar" data-nav>
+        <nav>
+          <div class="label">Contents</div>
+          <a href="#summary">Summary</a>
+          <a href="#current-state">Current State</a>
+          <a href="#proposed-structure">Proposed Structure</a>
+          <a href="#dag">DAG Verification</a>
+          <a href="#dependency-isolation">Dependency Isolation</a>
+          <a href="#strategy">Replace &amp; Workspace</a>
+          <a href="#error-placement">Error Placement</a>
+          <a href="#versioning">Versioning</a>
+          <a href="#breaking-changes">Breaking Changes</a>
+          <a href="#migration">Migration Steps</a>
+          <a href="#risks">Risk Assessment</a>
+          <a href="#build-system">Build System</a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <header class="hero">
+          <div class="eyebrow">Modularization Proposal &middot; 2026-07-01</div>
+          <h1>Unix-Style Module Decomposition</h1>
+          <p class="subtitle">
+            Split the go-finding monolith into four independently versioned Go modules, each with a
+            single clear purpose and zero unnecessary dependencies. Consumers import only what they
+            need — the core Finding type, the pipeline, the analysis bridge, or the CLI.
+          </p>
+          <div class="meta">
+            <span class="tag amber">Scope: full modularization</span>
+            <span class="tag">Base: v1.0.0</span>
+            <span class="tag teal">Status: ready for execution</span>
+          </div>
+        </header>
+
+        <section id="summary">
+          <h2><span class="num">00</span>Executive Summary</h2>
+          <p>
+            go-finding is a single-module Go library
+            (<code>github.com/larsartmann/go-finding</code>) with 12 packages and 37 production
+            files in the root alone. Every consumer who imports the core Finding type transitively
+            pulls in <code>golang.org/x/tools</code>, <code>golang.org/x/sync</code>,
+            <code>gogenfilter</code>, <code>go-faster/yaml</code>, and <code>go-output</code> — even
+            if they only need the type definitions.
+          </p>
+          <p>
+            The root package itself is <strong>zero-dependency</strong> (stdlib only). All external
+            dependencies live in sub-packages. This is the ideal starting point for Unix-style
+            decomposition: each concern becomes its own module, and consumers compose only what they
+            need.
+          </p>
+          <div class="callout callout-teal">
+            <strong>The bottom line</strong>
+            Split into 4 modules: <strong>core</strong> (zero deps),
+            <strong>pipeline</strong> (x/sync + gogenfilter), <strong>analysis</strong> (x/tools),
+            and <strong>CLI</strong>
+            (yaml + go-output). No import path changes. No breaking changes for consumers. Dual
+            go.work + replace strategy for development and CI isolation.
+          </div>
+        </section>
+
+        <section id="current-state">
+          <h2><span class="num">01</span>Current State Analysis</h2>
+
+          <h3>Monolith Structure</h3>
+          <p>
+            Single <code>go.mod</code> at <code>github.com/larsartmann/go-finding</code>. 12
+            packages, 1 module.
+          </p>
+
+          <div class="dep-tree">
+            <span class="root">github.com/larsartmann/go-finding</span> (root, 37 files, 18K lines)
+            ├── <span class="ok">.</span> stdlib ONLY — Finding, Position, Range, Report, SARIF,
+            LSP, errors ├── analysis/ <span class="unwanted">golang.org/x/tools</span> — go/analysis
+            ↔ Finding bridge ├── pipeline/
+            <span class="unwanted">golang.org/x/sync + gogenfilter</span> — detect→triage→fix→verify
+            │ └── goast/ stdlib (go/parser) — AST-aware fix provider ├── cmd/go-finding/
+            <span class="unwanted">yaml + go-output + gogenfilter</span> — CLI binary ├──
+            internal/detectors/ stdlib — govet + staticcheck (used by cmd only) ├──
+            internal/gotoken/ stdlib (go/token) — shared position resolution ├── internal/benchutil/
+            stdlib (bytes) — benchmark helpers (test-only) └── examples/ stdlib — basic, builder,
+            pipeline examples
+          </div>
+
+          <h3>Dependency Graph (production imports)</h3>
+          <div class="dep-tree">
+            <span class="root">root (stdlib only)</span>
+            / | | \
+            <span class="ok">analysis</span> <span class="ok">pipeline</span> examples/* (none) / \
+            | \ gotoken root goast internal/detectors / | \ | gotoken pipeline root, pipeline |
+            root, pipeline
+          </div>
+
+          <h3>The Problem: Transitive Dependency Bloat</h3>
+          <p>
+            Every consumer of <code>github.com/larsartmann/go-finding</code> gets ALL dependencies
+            transitively:
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Dependency</th>
+                  <th>Used by</th>
+                  <th>Needed by core consumer?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>golang.org/x/tools</code></td>
+                  <td>analysis only</td>
+                  <td class="no">No</td>
+                </tr>
+                <tr>
+                  <td><code>golang.org/x/sync</code></td>
+                  <td>pipeline only</td>
+                  <td class="no">No</td>
+                </tr>
+                <tr>
+                  <td><code>gogenfilter/v3</code></td>
+                  <td>pipeline + cmd</td>
+                  <td class="no">No</td>
+                </tr>
+                <tr>
+                  <td><code>go-faster/yaml</code></td>
+                  <td>cmd only</td>
+                  <td class="no">No</td>
+                </tr>
+                <tr>
+                  <td><code>go-output</code></td>
+                  <td>cmd only</td>
+                  <td class="no">No</td>
+                </tr>
+                <tr>
+                  <td><code>ginkgo/v2 + gomega</code></td>
+                  <td>test files</td>
+                  <td class="no">No</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Internal Package Access (FM#6 risk)</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Internal Package</th>
+                  <th>Consumers</th>
+                  <th>Post-split problem</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>internal/gotoken</code></td>
+                  <td>analysis, pipeline/goast</td>
+                  <td>Cross-module — must move to public</td>
+                </tr>
+                <tr>
+                  <td><code>internal/detectors</code></td>
+                  <td>cmd/go-finding</td>
+                  <td>Move into cmd module</td>
+                </tr>
+                <tr>
+                  <td><code>internal/benchutil</code></td>
+                  <td>pipeline tests</td>
+                  <td>Move into pipeline module</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="proposed-structure">
+          <h2><span class="num">02</span>Proposed Module Structure</h2>
+          <p>Four modules, each doing one thing well, composable like Unix pipes.</p>
+
+          <div class="dep-tree">
+            github.com/larsartmann/go-finding/ ├── go.work workspace: . + pipeline + analysis +
+            cmd/go-finding ├── go.mod <span class="root">MODULE 1: core</span> — stdlib ONLY ├──
+            finding.go, position.go, ... 37 prod files — domain types, SARIF, LSP, ops ├── gotoken/
+            moved from internal/ — shared go/token utils (stdlib) ├── examples/ basic + builder
+            (root-only examples) │ ├── pipeline/ │ ├── go.mod
+            <span class="root">MODULE 2: pipeline</span> — x/sync, gogenfilter │ ├── pipeline.go,
+            fix_engine.go, … 22 prod files — detect→triage→fix→verify │ ├── goast/ AST fix provider
+            (stdlib) │ ├── internal/benchutil/ moved from root internal/ — bench helpers │ └──
+            examples/ pipeline example │ ├── analysis/ │ └── go.mod
+            <span class="root">MODULE 3: analysis</span> — x/tools │ analysis.go, adapter.go
+            go/analysis ↔ Finding bridge │ └── cmd/go-finding/ └── go.mod
+            <span class="root">MODULE 4: CLI</span> — yaml, go-output, gogenfilter main.go,
+            config.go, … 6 prod files — CLI binary internal/detectors/ moved from root internal/ —
+            govet + staticcheck
+          </div>
+
+          <h3>Module Definitions</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Module</th>
+                  <th>Path</th>
+                  <th>Purpose</th>
+                  <th>External Deps</th>
+                  <th>Depends on</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>core</strong></td>
+                  <td><code>github.com/larsartmann/go-finding</code></td>
+                  <td>Finding types, SARIF, LSP, filter/merge/diff, errors, extensibility</td>
+                  <td><strong>None</strong> (stdlib only)</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td><strong>pipeline</strong></td>
+                  <td><code>github.com/larsartmann/go-finding/pipeline</code></td>
+                  <td>Detect→triage→fix→verify loop with fix engine</td>
+                  <td>x/sync, gogenfilter</td>
+                  <td>core</td>
+                </tr>
+                <tr>
+                  <td><strong>analysis</strong></td>
+                  <td><code>github.com/larsartmann/go-finding/analysis</code></td>
+                  <td>go/analysis framework ↔ Finding adapter</td>
+                  <td>x/tools</td>
+                  <td>core</td>
+                </tr>
+                <tr>
+                  <td><strong>CLI</strong></td>
+                  <td><code>github.com/larsartmann/go-finding/cmd/go-finding</code></td>
+                  <td>Command-line tool wiring detectors + pipeline + output</td>
+                  <td>yaml, go-output, gogenfilter</td>
+                  <td>core, pipeline</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Unix Principle Test</h3>
+          <div class="table-wrap">
+            <table class="compare">
+              <thead>
+                <tr>
+                  <th>Principle</th>
+                  <th>Core</th>
+                  <th>Pipeline</th>
+                  <th>Analysis</th>
+                  <th>CLI</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Does one thing well?</td>
+                  <td class="yes">Types + SARIF</td>
+                  <td class="yes">Fix loop</td>
+                  <td class="yes">go/analysis</td>
+                  <td class="yes">CLI wiring</td>
+                </tr>
+                <tr>
+                  <td>Composable independently?</td>
+                  <td class="yes">Always needed</td>
+                  <td class="yes">Without analysis</td>
+                  <td class="yes">Without pipeline</td>
+                  <td class="yes">Leaf node</td>
+                </tr>
+                <tr>
+                  <td>Mechanism not policy?</td>
+                  <td class="yes">Types only</td>
+                  <td class="yes">Engine</td>
+                  <td class="yes">Bridge</td>
+                  <td class="yes">Policy</td>
+                </tr>
+                <tr>
+                  <td>Thin interface?</td>
+                  <td class="yes">Public API</td>
+                  <td class="yes">Config</td>
+                  <td class="yes">Adapter</td>
+                  <td class="yes">Flags</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="dag">
+          <h2><span class="num">03</span>DAG Verification</h2>
+          <p>The proposed dependency graph is a strict DAG — no cycles possible:</p>
+          <div class="dep-tree">
+            Layer 0 Layer 1 Layer 2 ┌─────────┐ ┌──────────┐ ┌─────────────┐ │
+            <span class="root">core</span> │ ←── │ pipeline │ ←── │ CLI │ │(stdlib) │ ←── │ analysis
+            │ │ (yaml, ...) │ └─────────┘ └──────────┘ └─────────────┘ ↑ ↑ │ pipeline/goast (in
+            pipeline module) │ gotoken (in core module)
+          </div>
+
+          <div class="callout callout-teal">
+            <strong>Acyclic proof</strong>
+            core → nothing. pipeline → core. analysis → core. CLI → core + pipeline. No module
+            depends upward. No module depends on a leaf. The graph is trivially acyclic.
+          </div>
+        </section>
+
+        <section id="dependency-isolation">
+          <h2><span class="num">04</span>Dependency Isolation</h2>
+          <p>The primary benefit: each module carries only the dependencies it actually needs.</p>
+
+          <div class="table-wrap">
+            <table class="compare">
+              <thead>
+                <tr>
+                  <th>Dependency</th>
+                  <th>Monolith (current)</th>
+                  <th>After split</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>golang.org/x/tools</code></td>
+                  <td class="no">In shared go.mod</td>
+                  <td class="yes">analysis module only</td>
+                </tr>
+                <tr>
+                  <td><code>golang.org/x/sync</code></td>
+                  <td class="no">In shared go.mod</td>
+                  <td class="yes">pipeline module only</td>
+                </tr>
+                <tr>
+                  <td><code>gogenfilter</code></td>
+                  <td class="no">In shared go.mod</td>
+                  <td class="yes">pipeline + CLI only</td>
+                </tr>
+                <tr>
+                  <td><code>go-faster/yaml</code></td>
+                  <td class="no">In shared go.mod</td>
+                  <td class="yes">CLI module only</td>
+                </tr>
+                <tr>
+                  <td><code>go-output</code></td>
+                  <td class="no">In shared go.mod</td>
+                  <td class="yes">CLI module only</td>
+                </tr>
+                <tr>
+                  <td><strong>Core consumer gets</strong></td>
+                  <td class="no">ALL of the above</td>
+                  <td class="yes">ZERO external deps</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Test Dependencies</h3>
+          <p>
+            <code>ginkgo/v2</code> and <code>gomega</code> are used in BDD tests across root and
+            pipeline. Go has no test-only <code>require</code> block, so these appear in each
+            module's go.mod that has BDD tests. This is acceptable — most modules should have zero
+            test framework deps in production builds.
+          </p>
+        </section>
+
+        <section id="strategy">
+          <h2><span class="num">05</span>Replace &amp; Workspace Strategy</h2>
+          <p>
+            <strong>Dual strategy</strong> — both <code>go.work</code> and
+            <code>replace</code> directives.
+          </p>
+
+          <h3>go.work (development)</h3>
+          <pre><code>go 1.26.4
+
+use (
+    .
+    ./pipeline
+    ./analysis
+    ./cmd/go-finding
+)</code></pre>
+
+          <h3>Replace directives (GOWORK=off CI/consumer builds)</h3>
+          <p>Each sub-module that depends on a sibling gets a replace directive:</p>
+          <pre><code># pipeline/go.mod
+require github.com/larsartmann/go-finding v0.0.0
+replace github.com/larsartmann/go-finding => ../
+
+# analysis/go.mod
+require github.com/larsartmann/go-finding v0.0.0
+replace github.com/larsartmann/go-finding => ../
+
+# cmd/go-finding/go.mod
+require github.com/larsartmann/go-finding v0.0.0
+require github.com/larsartmann/go-finding/pipeline v0.0.0
+replace github.com/larsartmann/go-finding => ../
+replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
+
+          <div class="callout callout-amber">
+            <strong>v0.0.0 normalization</strong>
+            All internal requires use <code>v0.0.0</code> — replace makes the version irrelevant for
+            resolution, eliminating pseudo-version churn.
+          </div>
+        </section>
+
+        <section id="error-placement">
+          <h2><span class="num">06</span>Error Type Placement</h2>
+          <p>
+            All error types (<code>FindingError</code>, <code>ErrValidation</code>,
+            <code>ErrIO</code>, etc.) live in the <strong>core module</strong>. This is correct:
+            they are part of the Finding domain contract, and every consumer already imports core.
+            No cross-module <code>errors.Is</code>/<code>errors.As</code> issues.
+          </p>
+          <p>
+            Pipeline-specific errors (e.g., <code>errAlreadyRan</code>) stay in the pipeline module.
+            They are implementation details, not contract errors.
+          </p>
+        </section>
+
+        <section id="versioning">
+          <h2><span class="num">07</span>Versioning Strategy</h2>
+          <p>
+            <strong>Shared versioning</strong> — single <code>v*</code> git tag bumps all modules
+            together. Appropriate because:
+          </p>
+          <ul>
+            <li>Single team, single repo</li>
+            <li>Modules are tightly coupled (pipeline always tracks core changes)</li>
+            <li>Currently at v1.0.0 — no major version suffix needed in paths</li>
+          </ul>
+        </section>
+
+        <section id="breaking-changes">
+          <h2><span class="num">08</span>Breaking Change Analysis</h2>
+          <div class="table-wrap">
+            <table class="compare">
+              <thead>
+                <tr>
+                  <th>Import path</th>
+                  <th>Before</th>
+                  <th>After</th>
+                  <th>Breaking?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>go-finding</code></td>
+                  <td>Has all deps</td>
+                  <td>Zero deps</td>
+                  <td class="no">No (additive improvement)</td>
+                </tr>
+                <tr>
+                  <td><code>go-finding/pipeline</code></td>
+                  <td>Same module</td>
+                  <td>Own module</td>
+                  <td class="no">No (path unchanged)</td>
+                </tr>
+                <tr>
+                  <td><code>go-finding/analysis</code></td>
+                  <td>Same module</td>
+                  <td>Own module</td>
+                  <td class="no">No (path unchanged)</td>
+                </tr>
+                <tr>
+                  <td><code>go-finding/pipeline/goast</code></td>
+                  <td>Same module</td>
+                  <td>In pipeline module</td>
+                  <td class="no">No (path unchanged)</td>
+                </tr>
+                <tr>
+                  <td><code>go-finding/internal/*</code></td>
+                  <td>Internal</td>
+                  <td>Moved</td>
+                  <td class="no">No (internal = not public API)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout callout-teal">
+            <strong>Zero breaking changes</strong>
+            All public import paths remain identical. Consumers who <code>go mod tidy</code> after
+            the split automatically get the right module dependencies.
+          </div>
+        </section>
+
+        <section id="migration">
+          <h2><span class="num">09</span>Migration Strategy</h2>
+          <p>
+            Each step leaves the project buildable and testable. Each step is independently
+            revertable.
+          </p>
+
+          <div class="migration-step">
+            <div class="migration-num">1</div>
+            <div class="migration-content">
+              <h4>Move gotoken out of internal/</h4>
+              <p>
+                <code>internal/gotoken/</code> → <code>gotoken/</code>. Update 2 import sites
+                (analysis, pipeline/goast). <span class="badge badge-medium">Prep</span>
+              </p>
+            </div>
+          </div>
+          <div class="migration-step">
+            <div class="migration-num">2</div>
+            <div class="migration-content">
+              <h4>Move detectors into cmd module tree</h4>
+              <p>
+                <code>internal/detectors/</code> → <code>cmd/go-finding/internal/detectors/</code>.
+                Update 2 import sites. <span class="badge badge-medium">Prep</span>
+              </p>
+            </div>
+          </div>
+          <div class="migration-step">
+            <div class="migration-num">3</div>
+            <div class="migration-content">
+              <h4>Move benchutil into pipeline tree</h4>
+              <p>
+                <code>internal/benchutil/</code> → <code>pipeline/internal/benchutil/</code>. Update
+                2 test import sites. <span class="badge badge-medium">Prep</span>
+              </p>
+            </div>
+          </div>
+          <div class="migration-step">
+            <div class="migration-num">4</div>
+            <div class="migration-content">
+              <h4>Relocate pipeline-dependent examples</h4>
+              <p>
+                Move <code>ExamplePipeline</code> and <code>ExampleGeneratedFileFilter</code> from
+                root <code>example_extra_test.go</code> to pipeline module. Move
+                <code>examples/pipeline/</code> to pipeline module. Update root
+                <code>example_compile_test.go</code>. <span class="badge badge-medium">Prep</span>
+              </p>
+            </div>
+          </div>
+          <div class="migration-step">
+            <div class="migration-num">5</div>
+            <div class="migration-content">
+              <h4>Create pipeline/go.mod — extract pipeline module</h4>
+              <p>
+                Module path: <code>github.com/larsartmann/go-finding/pipeline</code>. Add replace
+                for core. Remove pipeline deps from root go.mod.
+                <span class="badge badge-high">Tier 1 — Domain</span>
+              </p>
+            </div>
+          </div>
+          <div class="migration-step">
+            <div class="migration-num">6</div>
+            <div class="migration-content">
+              <h4>Create analysis/go.mod — extract analysis module</h4>
+              <p>
+                Module path: <code>github.com/larsartmann/go-finding/analysis</code>. Add replace
+                for core. Remove x/tools from root go.mod.
+                <span class="badge badge-high">Tier 2 — Untangle</span>
+              </p>
+            </div>
+          </div>
+          <div class="migration-step">
+            <div class="migration-num">7</div>
+            <div class="migration-content">
+              <h4>Create cmd/go-finding/go.mod — extract CLI module</h4>
+              <p>
+                Module path: <code>github.com/larsartmann/go-finding/cmd/go-finding</code>. Add
+                replace for core + pipeline. Remove yaml/go-output from root go.mod.
+                <span class="badge badge-high">Tier 3 — Infrastructure</span>
+              </p>
+            </div>
+          </div>
+          <div class="migration-step">
+            <div class="migration-num">8</div>
+            <div class="migration-content">
+              <h4>Create go.work + tidy all modules</h4>
+              <p>
+                Write <code>go.work</code> listing all 4 modules. Run <code>go mod tidy</code> in
+                each. Update vendorHash in flake.nix.
+                <span class="badge badge-high">Tier 3 — Infrastructure</span>
+              </p>
+            </div>
+          </div>
+          <div class="migration-step">
+            <div class="migration-num">9</div>
+            <div class="migration-content">
+              <h4>Update docs and build system</h4>
+              <p>
+                AGENTS.md, flake.nix, CI workflows. Per-module test/lint commands.
+                <span class="badge badge-medium">Tier 4 — Polish</span>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="risks">
+          <h2><span class="num">10</span>Risk Assessment</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Failure Mode</th>
+                  <th>Risk Level</th>
+                  <th>Mitigation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>FM#1 Import cycles</strong></td>
+                  <td><span class="badge badge-fixed">Very low</span></td>
+                  <td>DAG is trivially acyclic (core ← pipeline ← CLI). Verified in §3.</td>
+                </tr>
+                <tr>
+                  <td><strong>FM#3 Test dep leaks</strong></td>
+                  <td><span class="badge badge-medium">Medium</span></td>
+                  <td>ginkgo/gomega in core go.mod for BDD tests. Acceptable per patterns doc.</td>
+                </tr>
+                <tr>
+                  <td><strong>FM#4 go.work/replace drift</strong></td>
+                  <td><span class="badge badge-medium">Medium</span></td>
+                  <td>Dual strategy: both go.work AND replace. CI tests both modes.</td>
+                </tr>
+                <tr>
+                  <td><strong>FM#6 internal/ access</strong></td>
+                  <td><span class="badge badge-fixed">Handled</span></td>
+                  <td>gotoken → public, detectors → cmd tree, benchutil → pipeline tree.</td>
+                </tr>
+                <tr>
+                  <td><strong>FM#9 Stale go.work</strong></td>
+                  <td><span class="badge badge-medium">Medium</span></td>
+                  <td><code>go work sync</code> after each structural change.</td>
+                </tr>
+                <tr>
+                  <td><strong>FM#10 Build system breakage</strong></td>
+                  <td><span class="badge badge-high">High</span></td>
+                  <td>
+                    flake.nix uses <code>GOWORK=off</code> + replace. Must update vendorHash. Build
+                    after each step.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>FM#12 Workspace-only testing</strong></td>
+                  <td><span class="badge badge-medium">Medium</span></td>
+                  <td>Test each module with <code>GOWORK=off</code> after extraction.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="build-system">
+          <h2><span class="num">11</span>Build System Impact</h2>
+          <h3>flake.nix</h3>
+          <p>
+            The current <code>flake.nix</code> builds with <code>buildGoModule</code> using a single
+            <code>src</code> and <code>vendorHash</code>. With <code>GOWORK=off</code> set in
+            devShells, the replace directives resolve sibling modules from the source tree. The
+            <code>vendorHash</code> will change after modularization — update after
+            <code>go mod tidy</code>.
+          </p>
+          <h3>CI (GitHub Actions)</h3>
+          <p>
+            Current CI runs <code>go build ./...</code> and <code>go test ./...</code> from root.
+            With <code>go.work</code>, these commands still work from root (workspace mode). For
+            per-module isolation, add a CI job running <code>GOWORK=off go build ./...</code> in
+            each module directory.
+          </p>
+          <h3>goreleaser</h3>
+          <p>
+            goreleaser builds <code>./cmd/go-finding</code>. After modularization, this still works
+            with go.work. For <code>GOWORK=off</code> release builds, replace directives resolve the
+            sibling modules. No goreleaser config changes needed.
+          </p>
+        </section>
+
+        <footer class="footer">
+          <p>
+            Generated 2026-07-01 &middot; Analyzed against go-finding v1.0.0 &middot; All dependency
+            claims verified via <code>go list</code> and <code>go mod graph</code>
+          </p>
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+        if (!("IntersectionObserver" in window)) return;
+        var nav = document.querySelector("[data-nav]");
+        if (!nav) return;
+        var links = nav.querySelectorAll('a[href^="#"]');
+        var ids = Array.from(links).map(function (l) {
+          return l.getAttribute("href").slice(1);
+        });
+        var sections = ids
+          .map(function (id) {
+            return document.getElementById(id);
+          })
+          .filter(Boolean);
+        if (!sections.length) return;
+        var observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                links.forEach(function (link) {
+                  link.classList.toggle(
+                    "active",
+                    link.getAttribute("href") === "#" + entry.target.id,
+                  );
+                });
+              }
+            });
+          },
+          { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
+        );
+        sections.forEach(function (s) {
+          observer.observe(s);
+        });
+      })();
+    </script>
+  </body>
+</html>
