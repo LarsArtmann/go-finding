@@ -64,3 +64,37 @@ Thumbs.db
 git-town.toml
 # Nix build output
 /result
+
+# >>> buildflow-managed (.gitignore) >>>
+# Auto-managed by buildflow. Edit outside these markers; this block is regenerated on `buildflow --fix`.
+
+## Secrets and environment
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+## Databases
+*.db-shm
+*.db-wal
+
+## Operating systems
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+## Logs and temporaries
+*.log
+*.tmp
+*.temp
+
+## Reports and coverage
+reports/
+
+## Nix
+result-*
+.envrc
+.direnv/
+# <<< buildflow-managed (.gitignore) <<<
