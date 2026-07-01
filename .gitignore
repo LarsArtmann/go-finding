@@ -98,3 +98,4 @@ result-*
 .envrc
 .direnv/
 # <<< buildflow-managed (.gitignore) <<<
+.buildflow-resume.json
