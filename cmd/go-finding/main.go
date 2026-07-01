@@ -55,7 +55,14 @@ func parseFlags() cliFlags {
 		"info",
 		"minimum severity: info, warning, error, critical",
 	)
-	flag.IntVar(&f.maxIter, "max-iterations", 1, "maximum pipeline iterations (default: 1 for CLI, library uses "+strconv.Itoa(pipeline.DefaultMaxIterations)+")")
+	flag.IntVar(
+		&f.maxIter,
+		"max-iterations",
+		1,
+		"maximum pipeline iterations (default: 1 for CLI, library uses "+strconv.Itoa(
+			pipeline.DefaultMaxIterations,
+		)+")",
+	)
 	flag.BoolVar(&f.parallel, "parallel", true, "run detectors in parallel")
 	flag.BoolVar(&f.verify, "verify", false, "verify fixes by re-running detectors")
 	flag.DurationVar(&f.timeout, "timeout", pipeline.DefaultTimeout, "pipeline timeout")
