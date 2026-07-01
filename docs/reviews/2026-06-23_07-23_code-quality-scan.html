@@ -814,7 +814,10 @@
           </div>
           <div class="hero-badge">CODE QUALITY SCAN</div>
           <h1>go-finding Code Quality Scan</h1>
-          <p class="hero-subtitle">Build, lint, vet, tests, and duplication analysis of the go-finding library on 2026-06-23.</p>
+          <p class="hero-subtitle">
+            Build, lint, vet, tests, and duplication analysis of the go-finding library on
+            2026-06-23.
+          </p>
         </div>
 
         <!-- Inline TOC (alternative to sidebar; pick one) -->
@@ -904,17 +907,32 @@
 
         <div class="card card-problem">
           <h4>Nix build broken — vendorHash mismatch</h4>
-          <p><code>nix build .#</code> fails with a fixed-output hash mismatch. The <code>vendorHash</code> in <code>flake.nix:29</code> is stale: declared <code>sha256-xYzX2FPGjqMYIZrNnRlHtIMf2uSfs6Gj2rfbxotrbZs=</code>, actual <code>sha256-wISSq/3DR5Bn1j/HvSwLMMpf0SB08znymQEo5bWRaXY=</code>. Likely a dependency change since the hash was last regenerated. Tests/build/vet all pass via <code>go</code> directly, so this only affects Nix-based consumers.</p>
+          <p>
+            <code>nix build .#</code> fails with a fixed-output hash mismatch. The
+            <code>vendorHash</code> in <code>flake.nix:29</code> is stale: declared
+            <code>sha256-xYzX2FPGjqMYIZrNnRlHtIMf2uSfs6Gj2rfbxotrbZs=</code>, actual
+            <code>sha256-wISSq/3DR5Bn1j/HvSwLMMpf0SB08znymQEo5bWRaXY=</code>. Likely a dependency
+            change since the hash was last regenerated. Tests/build/vet all pass via
+            <code>go</code> directly, so this only affects Nix-based consumers.
+          </p>
         </div>
 
         <div class="card card-warning">
           <h4>Validate() cyclomatic complexity above threshold</h4>
-          <p><code>finding.Validate()</code> in <code>finding_validate.go:10</code> has cyclomatic complexity <strong>32</strong>, above the golangci-lint threshold of 25. This is the only lint warning at <code>gocyclo</code> severity. The function is a large per-field validator; it is correct but difficult to extend safely.</p>
+          <p>
+            <code>finding.Validate()</code> in <code>finding_validate.go:10</code> has cyclomatic
+            complexity <strong>32</strong>, above the golangci-lint threshold of 25. This is the
+            only lint warning at <code>gocyclo</code> severity. The function is a large per-field
+            validator; it is correct but difficult to extend safely.
+          </p>
         </div>
 
         <div class="card card-solution">
           <h4>Zero code duplication detected</h4>
-          <p><code>art-dupl</code> with thresholds 30 and 50 reports <strong>0 clone groups</strong>. The codebase is free of harmful duplication.</p>
+          <p>
+            <code>art-dupl</code> with thresholds 30 and 50 reports <strong>0 clone groups</strong>.
+            The codebase is free of harmful duplication.
+          </p>
         </div>
 
         <!-- Issue Cards -->
@@ -924,10 +942,19 @@
           <span class="severity severity-critical">Blocking</span>
           <h3>nix build .# fails with stale vendorHash</h3>
           <div class="where">flake.nix:29</div>
-          <p>The <code>vendorHash</code> field no longer matches the <code>go.sum</code> contents. CI/release pipelines that depend on <code>nix build</code> will fail.</p>
+          <p>
+            The <code>vendorHash</code> field no longer matches the <code>go.sum</code> contents.
+            CI/release pipelines that depend on <code>nix build</code> will fail.
+          </p>
           <div class="callout callout-solution">
             <strong>Fix</strong>
-            Run <code>nix run nixpkgs#nix-prefetch -- "{ vendorHash }: buildGoModule { pname = \"go-finding\"; ... }"</code> or update to <code>sha256-wISSq/3DR5Bn1j/HvSwLMMpf0SB08znymQEo5bWRaXY=</code> (the value Nix reported). Then run <code>nix build .#</code> to confirm.
+            Run
+            <code
+              >nix run nixpkgs#nix-prefetch -- "{ vendorHash }: buildGoModule { pname =
+              \"go-finding\"; ... }"</code
+            >
+            or update to <code>sha256-wISSq/3DR5Bn1j/HvSwLMMpf0SB08znymQEo5bWRaXY=</code> (the value
+            Nix reported). Then run <code>nix build .#</code> to confirm.
           </div>
         </div>
 
@@ -935,10 +962,16 @@
           <span class="severity severity-important">Important</span>
           <h3>gocyclo: Validate() complexity 32 &gt; 25</h3>
           <div class="where">finding_validate.go:10</div>
-          <p>Single function validates 15+ fields with branching error construction. Gocyclo flags this as risky to maintain.</p>
+          <p>
+            Single function validates 15+ fields with branching error construction. Gocyclo flags
+            this as risky to maintain.
+          </p>
           <div class="callout callout-solution">
             <strong>Fix</strong>
-            Extract per-field validators (e.g. <code>validateSeverity</code>, <code>validatePosition</code>, <code>validateRange</code>, <code>validateFixStrategy</code>) and have <code>Validate()</code> aggregate their errors. Preserves behavior; drops complexity below 15.
+            Extract per-field validators (e.g. <code>validateSeverity</code>,
+            <code>validatePosition</code>, <code>validateRange</code>,
+            <code>validateFixStrategy</code>) and have <code>Validate()</code> aggregate their
+            errors. Preserves behavior; drops complexity below 15.
           </div>
         </div>
 
@@ -949,7 +982,9 @@
           <p>Two cases of variables too short for their scope. Cosmetic; no behavioral risk.</p>
           <div class="callout callout-solution">
             <strong>Fix</strong>
-            Rename <code>fs</code> → <code>strategy</code> in <code>finding_validate.go</code>; rename <code>rt</code> → <code>result</code> (or just disable varnamelen in tests via inline <code>//nolint:varnamelen</code>).</p>
+            Rename <code>fs</code> &rarr; <code>strategy</code> in <code>finding_validate.go</code>;
+            rename <code>rt</code> &rarr; <code>result</code> (or just disable varnamelen in tests
+            via inline <code>//nolint:varnamelen</code>).
           </div>
         </div>
 
@@ -960,28 +995,39 @@
             <div class="check">+</div>
             <div class="text">
               <strong>All 9 packages pass tests</strong>
-              <span>Root, analysis, cmd, examples, internal/detectors, pipeline, pipeline/goast — green across the board.</span>
+              <span
+                >Root, analysis, cmd, examples, internal/detectors, pipeline, pipeline/goast — green
+                across the board.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>go vet clean</strong>
-              <span>No correctness or shadowing issues flagged by the compiler-backed analyzer.</span>
+              <span
+                >No correctness or shadowing issues flagged by the compiler-backed analyzer.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Zero duplication</strong>
-              <span><code>art-dupl</code> at threshold 30 reports 0 clone groups — extraction work in prior sessions paid off.</span>
+              <span
+                ><code>art-dupl</code> at threshold 30 reports 0 clone groups — extraction work in
+                prior sessions paid off.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Only 3 lint issues total</strong>
-              <span>Down from a known baseline of dozens; remaining items are low-severity polish.</span>
+              <span
+                >Down from a known baseline of dozens; remaining items are low-severity
+                polish.</span
+              >
             </div>
           </div>
         </div>
@@ -1006,7 +1052,9 @@
               <td><code>finding_validate.go</code></td>
               <td>10</td>
               <td>gocyclo</td>
-              <td>cyclomatic complexity 32 of func <code>(Finding).Validate</code> is high (&gt; 25)</td>
+              <td>
+                cyclomatic complexity 32 of func <code>(Finding).Validate</code> is high (&gt; 25)
+              </td>
             </tr>
             <tr>
               <td>2</td>
@@ -1064,21 +1112,33 @@
           <div class="migration-num">1</div>
           <div class="migration-content">
             <h4>Fix the Nix vendorHash (BLOCKING)</h4>
-            <p>Update <code>flake.nix:29</code> to <code>sha256-wISSq/3DR5Bn1j/HvSwLMMpf0SB08znymQEo5bWRaXY=</code> and run <code>nix build .#</code> to confirm.</p>
+            <p>
+              Update <code>flake.nix:29</code> to
+              <code>sha256-wISSq/3DR5Bn1j/HvSwLMMpf0SB08znymQEo5bWRaXY=</code> and run
+              <code>nix build .#</code> to confirm.
+            </p>
           </div>
         </div>
         <div class="migration-step">
           <div class="migration-num">2</div>
           <div class="migration-content">
             <h4>Decompose Validate() to satisfy gocyclo</h4>
-            <p>Extract per-field validators. Keeps the public API identical; only the function body changes. Add a quick test asserting the error set is unchanged.</p>
+            <p>
+              Extract per-field validators. Keeps the public API identical; only the function body
+              changes. Add a quick test asserting the error set is unchanged.
+            </p>
           </div>
         </div>
         <div class="migration-step">
           <div class="migration-num">3</div>
           <div class="migration-content">
             <h4>Rename short variables (cosmetic)</h4>
-            <p>Rename <code>fs</code> → <code>strategy</code> in <code>finding_validate.go:44</code> and <code>rt</code> → <code>result</code> in <code>splitbrain_test.go:101</code>. Optional: disable <code>varnamelen</code> in test scope via <code>//nolint:varnamelen</code>.</p>
+            <p>
+              Rename <code>fs</code> → <code>strategy</code> in
+              <code>finding_validate.go:44</code> and <code>rt</code> → <code>result</code> in
+              <code>splitbrain_test.go:101</code>. Optional: disable <code>varnamelen</code> in test
+              scope via <code>//nolint:varnamelen</code>.
+            </p>
           </div>
         </div>
 
