@@ -59,6 +59,9 @@ func (d *AnalyzerDetector) Name() string {
 	return d.analyzer.Name
 }
 
+// Compile-time interface assertion — catches missing methods at build time.
+var _ finding.Detector = (*AnalyzerDetector)(nil)
+
 // Detect runs the analyzer on the configured packages and converts
 // diagnostics to findings.
 func (d *AnalyzerDetector) Detect(ctx context.Context) ([]finding.Finding, error) {

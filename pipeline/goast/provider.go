@@ -61,6 +61,9 @@ func (*Provider) CanHandle(f finding.Finding) bool {
 	return f.HasCodeChange() && strings.HasSuffix(f.Position.File, ".go")
 }
 
+// Compile-time interface assertion — catches missing methods at build time.
+var _ pipeline.FixProvider = (*Provider)(nil)
+
 // Edits converts a finding into byte-level edits using the parsed Go AST.
 func (p *Provider) Edits(content []byte, f finding.Finding) ([]pipeline.FixEdit, error) {
 	fset, file, ok := p.parse(content, f.Position.File)
