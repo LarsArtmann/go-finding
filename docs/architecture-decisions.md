@@ -95,9 +95,8 @@ These decisions need product input. They are documented here for visibility.
 - Providers are domain-specific and would import heavy dependencies (go/ast, Rust parser, etc.).
 - Separate modules allow consumers to import only what they need.
 - The `FixProvider` interface in `pipeline/` is the contract; implementations live outside.
-- Example: `github.com/larsartmann/go-finding-provider-goast` as a separate repo.
 
-**Status:** Resolved — providers live in separate modules.
+**Status:** Resolved — GoAST provider lives at `pipeline/goast/` within the pipeline module (uses only stdlib `go/parser`, no external deps). Future non-Go providers should be separate repos.
 
 ---
 

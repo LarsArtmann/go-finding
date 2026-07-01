@@ -7,7 +7,7 @@ project_name: go-finding
 
 before:
   hooks:
-    - go mod tidy
+    - go mod download
 
 builds:
   - id: go-finding
