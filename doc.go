@@ -8,11 +8,11 @@
 //   - Position tracking with range support
 //   - SARIF 2.1.0 output generation and import
 //   - LSP Diagnostic conversion
-//   - go/analysis integration (see analysis subpackage)
+//   - go/analysis integration (see github.com/larsartmann/go-finding/analysis module)
 //   - Report merging, deduplication, and cross-tool correlation
 //   - Diff to compare finding sets
 //   - Human-readable text and markdown formatting
-//   - A pipeline for automated detect → triage → fix → verify loops
+//   - A pipeline for automated detect → triage → fix → verify loops (see github.com/larsartmann/go-finding/pipeline module)
 //
 // # Quick Start
 //
@@ -206,8 +206,8 @@
 //
 // # Pipeline
 //
-// The pipeline subpackage (github.com/larsartmann/go-finding/pipeline) provides an
-// automated detect → triage → fix → verify loop:
+// The pipeline module (github.com/larsartmann/go-finding/pipeline) provides an
+// automated detect → triage → fix → verify loop. Import it separately:
 //
 //	p, err := pipeline.New(pipeline.Config{
 //	    MaxIterations:     3,
@@ -277,7 +277,8 @@
 //
 // # Converting from go/analysis
 //
-// Convert from the standard Go analysis framework using the analysis subpackage:
+// Convert from the standard Go analysis framework using the analysis module
+// (github.com/larsartmann/go-finding/analysis), imported separately:
 //
 //	f := analysis.FromDiagnostic(diag, pass.Fset, "my-analyzer", "RULE001")
 //
