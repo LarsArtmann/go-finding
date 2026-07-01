@@ -69,6 +69,26 @@ jobs:
       - name: Run govulncheck
         run: govulncheck ./...
 
+  module-isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+      - name: Build each module standalone (GOWORK=off)
+        run: |
+          for mod in . pipeline analysis cmd/go-finding; do
+            echo "=== $mod ==="
+            (cd "$mod" && GOWORK=off go build ./...)
+          done
+      - name: Test each module standalone (GOWORK=off)
+        run: |
+          for mod in . pipeline analysis cmd/go-finding; do
+            echo "=== $mod ==="
+            (cd "$mod" && GOWORK=off go test -count=1 ./...)
+          done
+
   stress:
     runs-on: ubuntu-latest
     steps:
