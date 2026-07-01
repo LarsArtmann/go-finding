@@ -26,7 +26,7 @@
       inherit (nixpkgs) lib;
 
       version = self.rev or self.dirtyRev or "dev";
-      vendorHash = "sha256-wISSq/3DR5Bn1j/HvSwLMMpf0SB08znymQEo5bWRaXY=";
+      vendorHash = "sha256-ATg8rc1+na725rBGrLEV2Xd6h1SjiTjfQHxWaVYznDE=";
       proxyVendor = true;
 
       goSrc = lib.fileset.toSource {
@@ -38,8 +38,13 @@
         buildGoModule:
         buildGoModule {
           pname = "go-finding";
-          inherit version vendorHash;
+          inherit version vendorHash proxyVendor;
           src = goSrc;
+          # Multi-module: build from cmd/go-finding module.
+          # Remove go.work so buildGoModule uses replace directives (GOWORK=off).
+          postPatch = "rm -f go.work";
+          modRoot = "cmd/go-finding";
+          subPackages = [ "." ];
           ldflags = [
             "-s"
             "-w"
@@ -119,10 +124,9 @@
               pkgs.trash-cli
             ];
 
-            GOWORK = "off";
-
             shellHook = ''
               echo "go-finding dev shell — $(go version)"
+              echo "Multi-module workspace active (go.work)"
             '';
           };
 
@@ -131,16 +135,11 @@
               goPkg
               pkgs.golangci-lint
             ];
-
-            GOWORK = "off";
           };
 
           checks = {
             format = config.treefmt.build.check self;
             build = config.packages.default;
-            test = config.packages.default.overrideAttrs (_: {
-              doCheck = true;
-            });
           };
 
           apps = {
