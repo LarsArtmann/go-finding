@@ -16,9 +16,8 @@ coverage.html
 vendor/
 node_modules/
 
-# Go workspace file
-go.work
-go.work.sum
+# Go workspace (committed — multi-module workspace for development)
+# go.work and go.work.sum are tracked for collaborative development
 
 # IDE
 .idea/
@@ -93,9 +92,14 @@ ehthumbs.db
 ## Reports and coverage
 reports/
 
+## Go
+go.work
+go.work.sum
+
 ## Nix
 result-*
 .envrc
 .direnv/
 # <<< buildflow-managed (.gitignore) <<<
+
 .buildflow-resume.json

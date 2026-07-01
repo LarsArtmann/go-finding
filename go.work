@@ -1,0 +1,8 @@
+go 1.26.4
+
+use (
+	.
+	./analysis
+	./cmd/go-finding
+	./pipeline
+)
