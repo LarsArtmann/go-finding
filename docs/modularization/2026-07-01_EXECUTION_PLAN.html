@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>go-finding Modularization Execution Plan</title>
+    <style>
+      :root {
+        --color-paper: #f4f4f0;
+        --color-paper-2: #ffffff;
+        --color-paper-3: #e8e8e2;
+        --color-ink: #111;
+        --color-red: #e63946;
+        --color-blue: #1d3557;
+        --color-yellow: #f4d35e;
+        --color-hairline: rgba(17, 17, 17, 0.14);
+        --color-hairline-strong: rgba(17, 17, 17, 0.3);
+        --surface: var(--color-paper);
+        --surface-raised: var(--color-paper-2);
+        --surface-sunken: var(--color-paper-3);
+        --text: var(--color-ink);
+        --text-muted: rgba(17, 17, 17, 0.72);
+        --text-faint: rgba(17, 17, 17, 0.5);
+        --border: var(--color-hairline);
+        --border-strong: var(--color-hairline-strong);
+        --accent: var(--color-red);
+        --problem: var(--color-red);
+        --solution: var(--color-blue);
+        --font-heading: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        --font-body: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", monospace;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--surface);
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.65;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      h1 {
+        font-family: var(--font-heading);
+        font-weight: 900;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+      h2 {
+        font-family: var(--font-heading);
+        font-weight: 900;
+        font-size: 1.4rem;
+        margin: 2rem 0 0.8rem;
+        padding-bottom: 0.3rem;
+        border-bottom: 3px solid var(--text);
+      }
+      h3 {
+        font-size: 1.1rem;
+        margin: 1.2rem 0 0.4rem;
+      }
+      p {
+        margin: 0.4rem 0;
+      }
+      code {
+        font-family: var(--font-mono);
+        background: var(--surface-sunken);
+        padding: 0.1rem 0.35rem;
+        font-size: 0.88em;
+      }
+      pre {
+        background: var(--text);
+        color: var(--surface);
+        padding: 1rem;
+        margin: 0.8rem 0;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+        border: 2px solid var(--text);
+      }
+      th {
+        text-align: left;
+        padding: 0.5rem 0.7rem;
+        background: var(--text);
+        color: var(--surface);
+        font-family: var(--font-mono);
+        font-size: 0.66rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      td {
+        padding: 0.5rem 0.7rem;
+        border-top: 1px solid var(--border);
+      }
+      tr:nth-child(even) td {
+        background: var(--surface-sunken);
+      }
+      .tier {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.15rem 0.5rem;
+        color: var(--surface);
+      }
+      .tier-1 {
+        background: var(--problem);
+      }
+      .tier-2 {
+        background: var(--color-yellow);
+        color: var(--text);
+      }
+      .tier-3 {
+        background: var(--solution);
+      }
+      .tier-4 {
+        background: var(--surface-sunken);
+        color: var(--text-muted);
+        border: 1px solid var(--border-strong);
+      }
+      .footer {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 3px solid var(--text);
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+      }
+      .done {
+        color: var(--solution);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Execution Plan — Unix-Style Modularization</h1>
+      <p>2026-07-01 · go-finding v1.0.0 → multi-module</p>
+
+      <h2>Completed Steps</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Tier</th>
+            <th>Task</th>
+            <th>Verification</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><span class="tier tier-1">Prep</span></td>
+            <td>Move gotoken from internal/ to public</td>
+            <td>go build + analysis/goast tests pass</td>
+            <td class="done">DONE</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><span class="tier tier-1">Prep</span></td>
+            <td>Move detectors into cmd/go-finding/internal/</td>
+            <td>go build + cmd tests pass</td>
+            <td class="done">DONE</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><span class="tier tier-1">Prep</span></td>
+            <td>Move benchutil into pipeline/internal/</td>
+            <td>go build + pipeline bench tests pass</td>
+            <td class="done">DONE</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><span class="tier tier-1">Prep</span></td>
+            <td>Relocate pipeline-dependent examples</td>
+            <td>Root no longer imports pipeline</td>
+            <td class="done">DONE</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><span class="tier tier-2">Domain</span></td>
+            <td>Create pipeline/go.mod</td>
+            <td>GOWORK=off go build in pipeline/</td>
+            <td class="done">DONE</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td><span class="tier tier-2">Untangle</span></td>
+            <td>Create analysis/go.mod</td>
+            <td>GOWORK=off go build in analysis/</td>
+            <td class="done">DONE</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td><span class="tier tier-3">Infra</span></td>
+            <td>Create cmd/go-finding/go.mod</td>
+            <td>GOWORK=off go build in cmd/go-finding/</td>
+            <td class="done">DONE</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td><span class="tier tier-3">Infra</span></td>
+            <td>Create go.work + tidy all modules</td>
+            <td>All modules build standalone</td>
+            <td class="done">DONE</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td><span class="tier tier-4">Polish</span></td>
+            <td>Update flake.nix, AGENTS.md, CI</td>
+            <td>nix build passes</td>
+            <td class="done">DONE</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Result Summary</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Production Deps</th>
+            <th>Test Deps</th>
+            <th>Lines (prod)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Core</strong> (<code>.</code>)</td>
+            <td>Zero — stdlib only</td>
+            <td>ginkgo, gomega</td>
+            <td>~18,200</td>
+          </tr>
+          <tr>
+            <td><strong>Pipeline</strong> (<code>pipeline/</code>)</td>
+            <td>x/sync, gogenfilter</td>
+            <td>ginkgo, gomega</td>
+            <td>~3,500</td>
+          </tr>
+          <tr>
+            <td><strong>Analysis</strong> (<code>analysis/</code>)</td>
+            <td>x/tools</td>
+            <td>stdlib testing</td>
+            <td>~200</td>
+          </tr>
+          <tr>
+            <td><strong>CLI</strong> (<code>cmd/go-finding/</code>)</td>
+            <td>yaml, go-output, gogenfilter</td>
+            <td>gomega</td>
+            <td>~600</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Verification Checklist</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Check</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Workspace build (<code>go build ./...</code>)</td>
+            <td class="done">PASS</td>
+          </tr>
+          <tr>
+            <td>Workspace tests (<code>go test ./... -short</code>)</td>
+            <td class="done">PASS</td>
+          </tr>
+          <tr>
+            <td>Core standalone (<code>GOWORK=off</code>)</td>
+            <td class="done">PASS</td>
+          </tr>
+          <tr>
+            <td>Pipeline standalone (<code>GOWORK=off</code>)</td>
+            <td class="done">PASS</td>
+          </tr>
+          <tr>
+            <td>Analysis standalone (<code>GOWORK=off</code>)</td>
+            <td class="done">PASS</td>
+          </tr>
+          <tr>
+            <td>CLI standalone (<code>GOWORK=off</code>)</td>
+            <td class="done">PASS</td>
+          </tr>
+          <tr>
+            <td>Nix build (<code>nix build .#default</code>)</td>
+            <td class="done">PASS</td>
+          </tr>
+          <tr>
+            <td>DAG verification (no cycles)</td>
+            <td class="done">PASS</td>
+          </tr>
+          <tr>
+            <td>Breaking change analysis</td>
+            <td class="done">Zero breaking changes</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="footer">Generated 2026-07-01 · All verification verified against source code</div>
+    </div>
+  </body>
+</html>
