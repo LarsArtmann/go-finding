@@ -30,7 +30,7 @@ import (
 	"unsafe"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/larsartmann/go-finding/internal/gotoken"
+	"github.com/larsartmann/go-finding/gotoken"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
