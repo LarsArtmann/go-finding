@@ -12,7 +12,7 @@ declare -A THRESHOLDS=(
     ["github.com/larsartmann/go-finding"]=98.0
     ["github.com/larsartmann/go-finding/pipeline"]=95.0
     ["github.com/larsartmann/go-finding/cmd/go-finding"]=90.0
-    ["github.com/larsartmann/go-finding/internal/detectors"]=90.0
+    ["github.com/larsartmann/go-finding/cmd/go-finding/internal/detectors"]=90.0
 )
 
 TOTAL_THRESHOLD=93.0

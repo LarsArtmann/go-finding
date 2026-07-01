@@ -201,7 +201,7 @@ Key patterns:
 - Non-zero exit with output is treated as partial success, not hard failure
 - `Category`, `FixStrategy`, and `Confidence` are set from domain knowledge
 
-See `internal/detectors/govet.go` for the production implementation.
+See `cmd/go-finding/internal/detectors/govet.go` for the production implementation.
 
 ## Using FindingTransformer for Preprocessing
 
