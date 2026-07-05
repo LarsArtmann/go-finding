@@ -323,3 +323,59 @@ func (p *ASTProvider) Resolve(ctx context.Context, content []byte, f finding.Fin
 
 applier, _ := pipeline.NewFixApplierWithProviders(rootDir, &ASTProvider{})
 ```
+
+## SARIF Export with Suppressed Findings
+
+By default, `ToSARIF()` excludes suppressed findings. Use `WithIncludeSuppressed()`
+to emit them with SARIF suppression arrays for full round-trip fidelity:
+
+```go
+// Default: suppressed findings dropped
+data, _ := report.ToSARIF()
+
+// Include suppressed findings with suppression metadata
+data, _ := report.ToSARIFWithOpts(finding.WithIncludeSuppressed())
+
+// Combined with severity filtering
+data, _ := report.ToSARIFWithOpts(
+    finding.WithIncludeSuppressed(),
+    finding.WithMinSeverity(finding.SeverityWarning),
+)
+```
+
+## LSP Conversion with Full Fidelity
+
+`Finding.ToLSP()` populates `LSPDiagnostic.Data` with all go-finding-specific fields
+(ID, FixStrategy, Confidence, Category, Tags, code data). `FromLSP()` restores them:
+
+```go
+diag := finding.ToLSP(myFinding)
+// diag.Data.ID, diag.Data.FixStrategy, diag.Data.Confidence all preserved
+
+restored := finding.FromLSP("file:///main.go", diag)
+// restored.ID, restored.FixStrategy, restored.Confidence all match original
+```
+
+For plain LSP diagnostics without Data (e.g., from gopls), `FromLSP` works normally
+with sensible defaults (FixStrategyNone, auto-generated ID).
+
+## FilePath Branded Type
+
+`Position.File` uses `FilePath` (a named `string` type), not raw `string`. This provides
+compile-time safety preventing accidental assignment of IDs, rule names, or tool names
+to file path fields.
+
+```go
+// Correct — string literal auto-converts
+pos := finding.Position{File: "main.go", Line: 10}
+
+// Correct — explicit conversion for string variables
+path := getPath()
+pos := finding.Position{File: finding.FilePath(path), Line: 10}
+
+// Constructors accept FilePath
+pos := finding.Pos(finding.FilePath("main.go"), 10, 5)
+r := finding.NewRange(finding.FilePath("main.go"), 1, 1, 5, 10)
+```
+
+JSON serialization is identical to plain string — `FilePath` marshals as `"main.go"`.

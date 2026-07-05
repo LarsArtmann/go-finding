@@ -398,11 +398,11 @@ go install github.com/larsartmann/go-finding/cmd/go-finding@latest
 go-finding -format sarif -output results.sarif
 go-finding -format json -config config.yaml
 go-finding -format csv -output findings.csv
-go-finding -format markdown -severity warning
+go-finding -format markdown -min-severity warning
 go-finding -filter-generated -fix-provider go-ast
 ```
 
-Key flags: `-format` (text/markdown/csv/tsv/json/sarif), `-severity`, `-config`, `-filter-generated`, `-fix-provider`, `-byte-level-conflict`. Use `-help` for the full list.
+Key flags: `-format` (text/markdown/csv/tsv/json/sarif), `-min-severity`, `-config`, `-filter-generated`, `-fix-provider`, `-byte-level-conflict`. Use `-help` for the full list.
 
 ## Development
 
