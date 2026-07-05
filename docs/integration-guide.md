@@ -26,17 +26,48 @@ func (d *MyDetector) Name() string {
 }
 
 func (d *MyDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
-    // Run your tool, parse output, return findings
-    return []finding.Finding{
-        {
-            ID:       finding.GenerateID("mytool", "RULE001", finding.Pos("main.go", 10, 5)),
-            Rule:     "RULE001",
-            ToolName: "mytool",
-            Message:  "potential nil dereference",
-            Severity: finding.SeverityError,
-            Position: finding.Pos("main.go", 10, 5),
-        },
-    }, nil
+    // Use the Builder API for validated findings (recommended).
+    f, err := finding.NewBuilder(
+        finding.RuleName("RULE001"), finding.ToolName("mytool"),
+        "potential nil dereference",
+        finding.SeverityError,
+        finding.Pos("main.go", 10, 5),
+    ).
+        WithCategory(finding.CategoryCorrectness).
+        WithConfidence(finding.ConfidenceHigh).
+        Build()
+    if err != nil {
+        return nil, err
+    }
+
+    return []finding.Finding{f}, nil
+}
+```
+
+## Quick Detection (no fix loop)
+
+For tools that only need detection and output (no automated fixing), use the
+convenience function:
+
+```go
+findings, err := pipeline.Detect(ctx, detector1, detector2)
+// → []finding.Finding, ready for Report/SARIF/LSP output
+```
+
+This runs detectors concurrently, filters suppressed findings, and returns the
+combined result. For fix application, retry logic, metrics, or stage hooks,
+use the full [Pipeline](#using-with-the-pipeline) instead.
+
+## Applying Fixes to In-Memory Content
+
+If you already have file content in memory (e.g. from a git blob or editor buffer),
+use `ApplyToContent` instead of the filesystem-bound `FixApplier`:
+
+```go
+content, _ := os.ReadFile(path)
+result, applied := pipeline.ApplyToContent(content, findings)
+if applied > 0 {
+    _ = os.WriteFile(path, result, 0o644)
 }
 ```
 
