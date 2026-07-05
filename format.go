@@ -73,7 +73,7 @@ func escapeMarkdownCell(s string, maxLen int) string {
 	s = strings.ReplaceAll(s, "\n", " ")
 	s = strings.ReplaceAll(s, "\r", "")
 
-	if maxLen > 0 && utf8.RuneCountInString(s) > maxLen {
+	if maxLen > 3 && utf8.RuneCountInString(s) > maxLen {
 		runes := []rune(s)
 		s = string(runes[:maxLen-3]) + "..."
 	}

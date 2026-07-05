@@ -121,11 +121,6 @@ func TestFindInnermostNode(t *testing.T) {
 		t.Fatal("expected non-nil node at offset 25")
 	}
 
-	// Should be some AST node containing that position (e.g., FuncDecl, CallExpr, Ident)
-	if node == nil {
-		t.Errorf("expected non-nil node, got nil")
-	}
-
 	// Out of range offset
 	node = FindInnermostNode(fset, file, 9999)
 	if node != nil {

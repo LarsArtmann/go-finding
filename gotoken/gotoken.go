@@ -107,5 +107,9 @@ func NodeByteRange(fset *token.FileSet, node ast.Node) (int, int, bool) {
 	start := tokenFile.Offset(node.Pos())
 	end := tokenFile.Offset(node.End())
 
+	if start > end {
+		return 0, 0, false
+	}
+
 	return start, end, true
 }

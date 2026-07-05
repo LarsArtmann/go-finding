@@ -119,7 +119,7 @@ func TestDetectorFunc(t *testing.T) {
 		t.Error("function was not called")
 	}
 
-	g.Expect(f.Name()).To(Equal("anonymous"))
+	g.Expect(f.Name()).To(Equal(""))
 }
 
 func TestNamedDetectorFunc(t *testing.T) {

@@ -168,7 +168,7 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			fn := pipeline.TransformerFunc(func(findings []finding.Finding) []finding.Finding {
 				return findings[:1]
 			})
-			Expect(fn.Name()).To(Equal("anonymous"))
+			Expect(fn.Name()).To(Equal(""))
 			result, err := fn.Transform(context.Background(), []finding.Finding{
 				mustBuild("r1", "t", "m", finding.SeverityError, "f.go", 1,
 					finding.FixStrategyNone, "", ""),

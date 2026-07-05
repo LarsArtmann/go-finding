@@ -44,9 +44,9 @@ func (f TransformerFunc) Transform(
 	return f(findings), nil
 }
 
-// Name implements FindingTransformer. Returns "anonymous".
+// Name implements FindingTransformer. Returns "".
 func (TransformerFunc) Name() string {
-	return "anonymous"
+	return ""
 }
 
 // NamedTransformerFunc returns a FindingTransformer with the given name wrapping the provided function.

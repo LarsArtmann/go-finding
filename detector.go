@@ -18,11 +18,11 @@ func (f DetectorFunc) Detect(ctx context.Context) ([]Finding, error) {
 	return f(ctx)
 }
 
-// Name implements Detector. Returns "anonymous" — use NamedDetectorFunc for a custom name.
+// Name implements Detector. Returns "" — use NamedDetectorFunc for a named detector.
 //
 //nolint:revive // receiver unused by design — method exists only to satisfy Detector interface
 func (f DetectorFunc) Name() string {
-	return "anonymous"
+	return ""
 }
 
 // NamedDetectorFunc returns a Detector with the given name wrapping the provided function.

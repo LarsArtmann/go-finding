@@ -153,6 +153,13 @@ func (a *FixApplier) ApplyWithShiftMap(
 func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string][]finding.Finding {
 	byFile := make(map[string][]finding.Finding)
 
+	// Resolve root once instead of per-finding (was O(N) syscalls).
+	cleanRoot := filepath.Clean(a.rootDir)
+
+	if resolved, err := filepath.EvalSymlinks(cleanRoot); err == nil {
+		cleanRoot = resolved
+	}
+
 	for _, f := range fixes {
 		if f.Position.File == "" {
 			continue
@@ -162,16 +169,9 @@ func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string
 
 		cleanPath := filepath.Clean(path)
 
-		cleanRoot := filepath.Clean(a.rootDir)
-
 		resolved, err := filepath.EvalSymlinks(cleanPath)
 		if err == nil {
 			cleanPath = resolved
-		}
-
-		resolvedRoot, err := filepath.EvalSymlinks(cleanRoot)
-		if err == nil {
-			cleanRoot = resolvedRoot
 		}
 
 		if cleanPath != cleanRoot &&
