@@ -87,9 +87,9 @@ func (a *FixApplier) ApplyWithDetails(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) (int, []finding.Finding, error) {
-	applied, _, _, err := a.ApplyWithShiftMap(ctx, fixes)
+	applied, appliedFixes, _, err := a.ApplyWithShiftMap(ctx, fixes)
 
-	return applied, fixes, err
+	return applied, appliedFixes, err
 }
 
 // ApplyWithShiftMap applies fixes and returns the count, applied findings,

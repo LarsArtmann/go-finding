@@ -126,6 +126,35 @@ func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
 	g.Expect(applied).To(Equal(0))
 }
 
+// TestFixApplier_ApplyWithDetails_ReturnsOnlyApplied is a regression test for
+// a bug where ApplyWithDetails returned the input fixes slice instead of the
+// actually-applied findings. Findings without a file are silently skipped by
+// groupFindingsBySafePath, so they must NOT appear in the returned slice.
+func TestFixApplier_ApplyWithDetails_ReturnsOnlyApplied(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+
+	writeTestFile(t, filepath.Join(tempDir, "real.go"), []byte("package real\nold()\n"))
+
+	fixes := []finding.Finding{
+		makeFixFinding("applies", "old()", "new()", "real.go", 0),
+		{
+			ID:         "skipped",
+			BeforeCode: "old",
+			AfterCode:  "new",
+			Position:   finding.Position{File: ""},
+		}, // no file -> skipped
+	}
+
+	count, appliedFixes, err := applier.ApplyWithDetails(context.Background(), fixes)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(count).To(Equal(1))
+	g.Expect(appliedFixes).To(HaveLen(1))
+	g.Expect(string(appliedFixes[0].ID)).To(Equal("applies"))
+}
+
 func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 	g := NewWithT(t)
 	t.Parallel()
