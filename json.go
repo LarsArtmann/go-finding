@@ -56,9 +56,19 @@ func (r *Report) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// FilterInvalid returns true if the finding is invalid (has missing required fields).
-func FilterInvalid(f Finding) bool {
+// IsInvalid returns true if the finding is invalid (has missing required fields).
+// Intended for use with [slices.DeleteFunc].
+func IsInvalid(f Finding) bool {
 	return !f.IsValid()
+}
+
+// FilterInvalid is a deprecated alias for [IsInvalid]. The name was misleading:
+// it returns true when the finding IS invalid (should be filtered out), not
+// when it should be kept.
+//
+// Deprecated: Use [IsInvalid] instead.
+func FilterInvalid(f Finding) bool {
+	return IsInvalid(f)
 }
 
 // PrettyJSON returns a formatted JSON representation of the report.
@@ -78,12 +88,14 @@ func (r *Report) PrettyJSON() (string, error) {
 func (r *Report) PrettyJSONFiltered() (string, error) {
 	r.mu.RLock()
 
+	snapshot := r.findingsLocked()
+
 	filtered := &Report{ //nolint:exhaustruct
 		Tool:     r.Tool,
-		findings: make([]Finding, 0, len(r.findingsLocked())),
+		findings: make([]Finding, 0, len(snapshot)),
 		Summary:  Summary{}, //nolint:exhaustruct
 	}
-	for _, f := range r.findingsLocked() {
+	for _, f := range snapshot {
 		if !f.IsSuppressed() {
 			filtered.findings = append(filtered.findings, f)
 		}

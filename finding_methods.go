@@ -104,7 +104,7 @@ func (f Finding) HasFix() bool {
 // Use HasFix() to check if any fix exists; use IsAutoFixable() to check if
 // the pipeline will attempt auto-application.
 func (f Finding) IsAutoFixable() bool {
-	return f.FixStrategy == FixStrategyDirect && (f.BeforeCode != "" || f.AfterCode != "")
+	return f.Normalized().FixStrategy == FixStrategyDirect && (f.BeforeCode != "" || f.AfterCode != "")
 }
 
 // HasSuggestion returns true if this finding has a human-readable suggestion.

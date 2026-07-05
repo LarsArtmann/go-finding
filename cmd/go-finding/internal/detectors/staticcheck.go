@@ -100,6 +100,11 @@ func staticcheckCategory(code string) finding.Category {
 		return finding.CategoryCorrectness
 	}
 
+	// SA codes are static-analysis correctness checks, not style.
+	if len(code) >= 2 && code[0] == 'S' && code[1] == 'A' {
+		return finding.CategoryCorrectness
+	}
+
 	switch code[0] {
 	case 'S', 'Q':
 		return finding.CategoryStyle

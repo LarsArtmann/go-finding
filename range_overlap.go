@@ -92,10 +92,10 @@ func (r Range) intersectionByOffset(other Range) *Range {
 	}
 }
 
-// columnAdjacent checks if two columns represent adjacent positions.
-// Returns true if either both are 0 (line-based adjacency) or both are
-// positive and equal (column-based adjacency).
-func columnAdjacent(endCol, startCol int) bool {
+// columnCoincident checks if two columns are in the same column position.
+// Returns true if either both are 0 (line-based, no column info) or both are
+// positive and equal (column-based coincidence).
+func columnCoincident(endCol, startCol int) bool {
 	if endCol == 0 && startCol == 0 {
 		return true
 	}
@@ -103,10 +103,10 @@ func columnAdjacent(endCol, startCol int) bool {
 	return endCol > 0 && startCol > 0 && endCol == startCol
 }
 
-// offsetAdjacent checks if two offsets represent adjacent positions.
-// Returns true if both are positive and equal.
-func offsetAdjacent(endOffset, startOffset int) bool {
-	return endOffset > 0 && startOffset > 0 && endOffset == startOffset
+// offsetCoincident checks if two offsets are in the same position.
+// Returns true if both are set (>= 0) and equal.
+func offsetCoincident(endOffset, startOffset int) bool {
+	return endOffset >= 0 && startOffset >= 0 && endOffset == startOffset
 }
 
 // Adjacent reports whether this range is immediately adjacent to another range.
@@ -118,19 +118,19 @@ func (r Range) Adjacent(other Range) bool {
 
 	// Check line-based adjacency if both ends have line info.
 	if r.End.Line > 0 && other.Start.Line > 0 {
-		if r.End.Line == other.Start.Line && columnAdjacent(r.End.Column, other.Start.Column) {
+		if r.End.Line == other.Start.Line && columnCoincident(r.End.Column, other.Start.Column) {
 			return true
 		}
 
-		if other.End.Line == r.Start.Line && columnAdjacent(other.End.Column, r.Start.Column) {
+		if other.End.Line == r.Start.Line && columnCoincident(other.End.Column, r.Start.Column) {
 			return true
 		}
 	}
 
 	// Fall back to offset-based adjacency when line info is not available.
 	if !r.hasLineInfo(other) {
-		startMatch := offsetAdjacent(r.End.Offset, other.Start.Offset)
-		endMatch := offsetAdjacent(other.End.Offset, r.Start.Offset)
+		startMatch := offsetCoincident(r.End.Offset, other.Start.Offset)
+		endMatch := offsetCoincident(other.End.Offset, r.Start.Offset)
 
 		return startMatch || endMatch
 	}

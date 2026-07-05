@@ -119,7 +119,7 @@ func TestParseStaticcheckJSON(t *testing.T) {
 	g.Expect(f.ToolName).To(Equal(finding.ToolName("staticcheck")))
 	g.Expect(f.Rule).To(Equal(finding.RuleName("SA1000")))
 	g.Expect(f.Severity).To(Equal(finding.SeverityWarning))
-	g.Expect(f.Category).To(Equal(finding.CategoryStyle))
+	g.Expect(f.Category).To(Equal(finding.CategoryCorrectness))
 	g.Expect(f.Confidence).To(BeNumerically("~", 0.8, 0.001))
 
 	f2 := findings[1]
@@ -178,14 +178,14 @@ func TestStaticcheckCategory(t *testing.T) {
 		code string
 		want finding.Category
 	}{
-		{"SA1000", finding.CategoryStyle},
+		{"SA1000", finding.CategoryCorrectness},
 		{"S1001", finding.CategoryStyle},
 		{"QF1001", finding.CategoryStyle},
 		{"U1000", finding.CategoryUnused},
 		{"PERF1001", finding.CategoryPerformance},
 		{"R1001", finding.CategoryPerformance},
 		{"F1001", finding.CategoryPerformance},
-		{"SA", finding.CategoryStyle},
+		{"SA", finding.CategoryCorrectness},
 		{"", finding.CategoryCorrectness},
 		{"X9999", finding.CategoryCorrectness},
 	}

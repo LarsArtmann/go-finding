@@ -8,10 +8,15 @@ import (
 	"sync"
 )
 
-// Sentinel errors for the detector registry.
+// Sentinel errors for the detector registry. Exported so callers can use
+// errors.Is to distinguish registration conflicts from unknown detectors.
 var (
-	errDetectorRegistered = errors.New("detector already registered")
-	errUnknownDetector    = errors.New("unknown detector")
+	ErrDetectorRegistered = errors.New("detector already registered")
+	ErrUnknownDetector    = errors.New("unknown detector")
+
+	// Deprecated aliases kept for internal backward compatibility.
+	errDetectorRegistered = ErrDetectorRegistered
+	errUnknownDetector    = ErrUnknownDetector
 )
 
 // DetectorRegistry manages named detector constructors.

@@ -12,8 +12,14 @@ type Interval[T any] struct {
 	Value T
 }
 
-// IntervalIndex supports efficient O(log n + k) overlap queries over intervals.
+// IntervalIndex supports efficient overlap queries over intervals.
 // Create one with [NewIntervalIndex]. The index is immutable after construction.
+//
+// Query complexity is O(n + k) where n is the number of intervals and k is
+// the number of matching results. This is a sorted-slice implementation
+// (not an augmented interval tree), which is fast enough for typical finding
+// counts. For very large interval sets with adversarial distributions,
+// consider implementing a true O(log n + k) interval tree.
 //
 // Use cases include finding overlapping findings by line range, conflict
 // detection, and spatial correlation queries.

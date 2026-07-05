@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/larsartmann/go-finding"
@@ -22,7 +23,7 @@ type backupEntry struct {
 // FileBackup manages backup and restore of files during fix application.
 // It is safe for concurrent use.
 type FileBackup struct {
-	enabled   bool
+	enabled   atomic.Bool
 	backupDir string
 	backups   map[string]backupEntry // original path -> backup entry
 	mu        sync.Mutex
@@ -30,22 +31,23 @@ type FileBackup struct {
 
 // NewFileBackup creates a FileBackup that stores backups in the given directory.
 func NewFileBackup(backupDir string) *FileBackup {
-	//nolint:exhaustruct
-	return &FileBackup{
-		enabled:   true,
+	fb := &FileBackup{ //nolint:exhaustruct
 		backupDir: backupDir,
 		backups:   make(map[string]backupEntry),
 	}
+	fb.enabled.Store(true)
+
+	return fb
 }
 
 // IsEnabled reports whether backup is enabled.
 func (fb *FileBackup) IsEnabled() bool {
-	return fb.enabled
+	return fb.enabled.Load()
 }
 
 // SetEnabled controls whether backups are created.
 func (fb *FileBackup) SetEnabled(v bool) {
-	fb.enabled = v
+	fb.enabled.Store(v)
 }
 
 // BackupPath returns the backup path for the given original file, or empty
