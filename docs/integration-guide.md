@@ -71,6 +71,61 @@ if applied > 0 {
 }
 ```
 
+## Recommended: Type-Alias Pattern
+
+For tools with their own domain types (e.g. `Issue`, `Violation`), the cleanest
+integration is Go type aliases. This eliminates all conversion boilerplate:
+
+```go
+package mytool
+
+import "github.com/larsartmann/go-finding"
+
+// Alias go-finding types to your domain names — zero conversion overhead.
+type Issue = finding.Finding
+type Severity = finding.Severity
+type RuleCategory = finding.Category
+
+// Your rule system produces go-finding types directly.
+func DetectIssue(file string, line int) Issue {
+    return Issue{
+        ID:       finding.GenerateID("mytool", "RULE001", finding.Pos(file, line, 0)),
+        Rule:     "RULE001",
+        ToolName: "mytool",
+        Severity: Severity(finding.SeverityWarning),
+        Position: finding.Pos(file, line, 0),
+    }
+}
+```
+
+This pattern means your `[]Issue` IS `[]finding.Finding` — no conversion needed
+when passing to `Report.AddFindings()`, `WriteSARIF()`, or `pipeline.Detect()`.
+
+## Migration: Types-Only to Pipeline
+
+If you start with just the data types and later want the pipeline:
+
+1. Implement `finding.Detector` on your analyzer
+2. Replace manual orchestration with `pipeline.Detect(ctx, detectors...)`
+3. Optionally upgrade to full `pipeline.New()` + `Run()` for fix application
+
+```go
+// Before: manual orchestration
+findings := myAnalyzer.Run()
+report := finding.NewReport(toolInfo)
+report.AddFindings(findings)
+
+// After: pipeline convenience (same result, plus parallel + cancellation)
+findings, _ := pipeline.Detect(ctx, myDetector)
+report := finding.NewReport(toolInfo)
+report.AddFindings(findings)
+
+// Later: full pipeline with fix application
+cfg := pipeline.DefaultConfig()
+p, _ := pipeline.New(cfg, ".", myDetector)
+result, _ := p.Run(ctx)
+```
+
 ## Using with the Pipeline
 
 ```go

@@ -134,8 +134,8 @@ func TestBuilder_Chaining(t *testing.T) {
 	pos := Pos("a.go", 1, 1)
 
 	f, err := NewBuilder("r", "t", "m", SeverityWarning, pos).
-		WithRelated(RelatedRef{FindingID: "r1"}).
-		WithRelated(RelatedRef{FindingID: "r2"}).
+		WithRelated(RelatedRef{FindingID: "r1", Relation: RelationRelated}).
+		WithRelated(RelatedRef{FindingID: "r2", Relation: RelationRelated}).
 		Build()
 	if err != nil {
 		t.Fatalf("Build() failed: %v", err)

@@ -6,9 +6,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"runtime/pprof"
 	"slices"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/larsartmann/go-finding"
@@ -180,7 +182,8 @@ func run() int {
 		return 1
 	}
 
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
 
 	fmt.Fprintf(
 		os.Stderr,

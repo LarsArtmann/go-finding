@@ -15,7 +15,7 @@ const (
 // Suppression represents a suppressed finding.
 type Suppression struct {
 	Kind      SuppressionKind `json:"kind"`                // Where the suppression is defined
-	Rule      string          `json:"rule"`                // Which rule is suppressed
+	Rule      RuleName        `json:"rule"`                // Which rule is suppressed
 	Reason    string          `json:"reason"`              // Why it's suppressed
 	ExpiresAt *time.Time      `json:"expiresAt,omitempty"` // Optional expiry
 }

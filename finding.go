@@ -78,6 +78,16 @@ const (
 	RelationRelated RelationKind = "related"
 )
 
+// IsValid returns true if the relation kind is a recognized standard value.
+func (r RelationKind) IsValid() bool {
+	switch r {
+	case RelationCloneOf, RelationCauses, RelationWraps, RelationRelated:
+		return true
+	}
+
+	return false
+}
+
 // RelatedRef links to another finding.
 type RelatedRef struct {
 	FindingID ID           `json:"findingId"`       // ID of the related finding
@@ -86,7 +96,7 @@ type RelatedRef struct {
 	Range     *Range       `json:"range,omitempty"` // Span of the related location
 }
 
-// IsValid returns true if the reference has a non-empty FindingID.
+// IsValid returns true if the reference has a non-empty FindingID and a valid Relation.
 func (r RelatedRef) IsValid() bool {
-	return r.FindingID != ""
+	return r.FindingID != "" && r.Relation.IsValid()
 }

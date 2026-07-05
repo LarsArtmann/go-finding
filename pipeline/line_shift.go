@@ -191,6 +191,3 @@ func countNewlines(content []byte, start, end int) int {
 
 	return bytes.Count(content[start:end], []byte{'\n'})
 }
-
-// Compile-time check.
-var _ = (*LineShiftMap)(nil)

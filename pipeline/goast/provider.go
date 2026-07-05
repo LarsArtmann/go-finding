@@ -253,5 +253,4 @@ func newEdit(offset, length int, f finding.Finding) pipeline.FixEdit {
 	}
 }
 
-// Compile-time interface check.
 var _ pipeline.FixProvider = (*Provider)(nil)

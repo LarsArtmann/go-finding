@@ -201,19 +201,27 @@ func (c pipelineConfigFile) toPipelineConfig() (pipeline.Config, error) {
 }
 
 func writeOutput(report *finding.Report, format, outputFile string) error {
-	w := os.Stdout
-
-	if outputFile != "" {
-		f, err := os.Create(outputFile)
-		if err != nil {
-			return fmt.Errorf("creating output file %s: %w", outputFile, err)
-		}
-
-		defer func() { _ = f.Close() }()
-		w = f
+	if outputFile == "" {
+		return outputResults(os.Stdout, report, format)
 	}
 
-	return outputResults(w, report, format)
+	f, err := os.Create(outputFile)
+	if err != nil {
+		return fmt.Errorf("creating output file %s: %w", outputFile, err)
+	}
+
+	writeErr := outputResults(f, report, format)
+	closeErr := f.Close()
+
+	if writeErr != nil {
+		return writeErr
+	}
+
+	if closeErr != nil {
+		return fmt.Errorf("closing output file %s: %w", outputFile, closeErr)
+	}
+
+	return nil
 }
 
 // supportedFormats is the complete set of CLI output format names.

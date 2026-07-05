@@ -231,7 +231,7 @@ func TestRelatedRefIsValid(t *testing.T) {
 		r    RelatedRef
 		want bool
 	}{
-		{"with finding ID", RelatedRef{FindingID: "abc123"}, true},
+		{"with finding ID", RelatedRef{FindingID: "abc123", Relation: RelationRelated}, true},
 		{"empty finding ID", RelatedRef{FindingID: ""}, false},
 		{
 			"with relation and position",
