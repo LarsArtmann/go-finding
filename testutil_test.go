@@ -41,7 +41,7 @@ func AssertFindingConfidence(g *gomega.GomegaWithT, f Finding, confidence, toler
 
 // AssertFindingPosition asserts a finding has the expected file and line using Gomega.
 func AssertFindingPosition(g *gomega.GomegaWithT, f Finding, file string, line int) {
-	g.Expect(f.Position.File).To(gomega.Equal(file))
+	g.Expect(f.Position.File).To(gomega.Equal(FilePath(file)))
 	g.Expect(f.Position.Line).To(gomega.Equal(line))
 }
 

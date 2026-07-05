@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 )
 
 // FindingsFromSARIF parses SARIF JSON and returns Findings.
@@ -267,6 +268,23 @@ func applySarifProperties(f *Finding, props map[string]any) {
 		}
 	}
 
+	// Restore suppression Rule from finding's own Rule field.
+	if f.Suppression != nil && f.Suppression.Rule == "" {
+		f.Suppression.Rule = f.Rule
+	}
+
+	// Restore suppression expiry timestamp.
+	if v, ok := stringProp(props, sarifPropSuppressionExpiry); ok {
+		t, err := time.Parse("2006-01-02T15:04:05Z07:00", v)
+		if err == nil {
+			if f.Suppression == nil {
+				f.Suppression = &Suppression{}
+			}
+
+			f.Suppression.ExpiresAt = &t
+		}
+	}
+
 	f.Metadata = sarifMetadataFromProps(props)
 	if len(f.Metadata) == 0 {
 		f.Metadata = nil
@@ -316,11 +334,11 @@ func sarifSuppressionToFinding(s sarifSuppression) *Suppression {
 
 // sarifKindToSuppression maps SARIF kind+status back to go-finding SuppressionKind.
 func sarifKindToSuppression(kind, status string) SuppressionKind {
-	if status == "underReview" {
+	if status == sarifSuppressionStatusReview {
 		return SuppressionInReview
 	}
 
-	if kind == "inExternalConfiguration" {
+	if kind == sarifSuppressionKindExternal {
 		return SuppressionInConfig
 	}
 

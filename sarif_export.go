@@ -178,12 +178,6 @@ func (c *countingWriter) Write(p []byte) (int, error) {
 	return n, err //nolint:wrapcheck // passthrough writer — wrapping would be misleading
 }
 
-func (r *Report) sarifLog() sarifLog {
-	cfg := defaultSarifConfig()
-
-	return r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg))
-}
-
 func (r *Report) sarifLogFiltered(severity Severity) sarifLog {
 	cfg := defaultSarifConfig()
 	cfg.minSeverity = severity
@@ -241,11 +235,11 @@ func sarifSuppressions(f Finding) []sarifSuppression {
 func suppressionKindToSARIF(kind SuppressionKind) string {
 	switch kind {
 	case SuppressionInSource:
-		return "inSource"
+		return sarifSuppressionKindSource
 	case SuppressionInConfig, SuppressionInReview:
-		return "inExternalConfiguration"
+		return sarifSuppressionKindExternal
 	default:
-		return "inSource"
+		return sarifSuppressionKindSource
 	}
 }
 
@@ -253,9 +247,11 @@ func suppressionKindToSARIF(kind SuppressionKind) string {
 func suppressionStatusToSARIF(kind SuppressionKind) string {
 	switch kind {
 	case SuppressionInReview:
-		return "underReview"
+		return sarifSuppressionStatusReview
+	case SuppressionInSource, SuppressionInConfig:
+		return sarifSuppressionStatusAccepted
 	default:
-		return "accepted"
+		return sarifSuppressionStatusAccepted
 	}
 }
 
