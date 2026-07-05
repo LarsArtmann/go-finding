@@ -73,7 +73,7 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 
 1. **Minimal dependencies** — core module depends only on stdlib (zero external deps in production go.mod)
 2. **Immutable** — Findings are data, not state machines
-3. **Lossless** — Conversions (SARIF, LSP) preserve all data via Metadata/Tags
+3. **Lossless** — Conversions (SARIF, LSP) preserve all data via Metadata/Tags/Data fields
 4. **One extensibility field** — `Finding.Metadata` is `map[string]string`. NO `Properties map[string]any`
 5. **Compatible** — Works with existing Go analysis tools
 6. **Resilient** — Retry logic, partial success, nil-safe metrics
@@ -104,12 +104,17 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **SeverityAliases removed** — Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`. Global map guarded by `sync.RWMutex`.
 - **CategoryOf is canonical** — `CategoryOf(err)` returns the category (old `GetCategory` removed)
 - **testify in go.mod is transitive** — `stretchr/testify` appears as `// indirect` in core go.mod because ginkgo/slim-sprig depends on it. It is NOT used directly. Banned per how-to-golang but unavoidable as a transitive dep of ginkgo.
+- **Position.File is FilePath** — Changed from `string` to `FilePath` branded type. Use `finding.FilePath("path")` for string vars; string literals auto-convert. Constructors `Pos`, `NewRange`, `NewRangePtr` accept `FilePath`.
+- **SARIFOption pattern** — Use `ToSARIFWithOpts(WithIncludeSuppressed(), WithMinSeverity(sev))` instead of deprecated `ToSARIFFiltered`. Suppressed findings can now be emitted with SARIF suppression arrays.
+- **LSPDiagnosticData** — `ToLSP()` populates `diag.Data` with ID, FixStrategy, Confidence, Category, Tags, code data. `FromLSP` restores them. Round-trip is now lossless.
+- **Analysis BeforeCode** — `analysis.FromDiagnostic` now extracts `BeforeCode` from TextEdits by reading source file from disk.
+- **GroupByFile returns map[FilePath][]Finding** — Updated to use branded type as map key.
 
 ## CLI Features
 
 - Built-in govet and staticcheck detectors
 - Text, markdown, CSV, TSV, JSON, SARIF output (markdown/CSV/TSV via go-output adapter)
-- YAML/JSON config (`-config`), severity filter, profiling
+- YAML/JSON config (`-config`), severity filter (`-min-severity`), profiling
 - `-filter-generated` — removes findings from auto-generated files (sqlc, protobuf, etc.)
 - `-fix-provider go-ast` — enables AST-aware fix provider
 - `-byte-level-conflict` — precise overlap detection
@@ -133,7 +138,12 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **SeverityAliases thread-safe** — `sync.RWMutex` guarded global map; `RegisterSeverityAlias()` / `LookupSeverityAlias()` API.
 - **FindingTransformer** — Renamed from `FindingProcessor`/`Process()`. Pipeline uses `Config.Processors []FindingTransformer`.
 - **Conflict** — Renamed from `ConflictInfo`. `AnalyzeConflicts() []Conflict`.
-- **LSPRelated** — Renamed from `LSPRelatedInfo`.
+- **SARIFOption pattern** — Functional options (`WithIncludeSuppressed`, `WithMinSeverity`) for SARIF export. `ToSARIF`/`WriteSARIF` delegate to `ToSARIFWithOpts`/`WriteSARIFWithOpts`. Deprecated `ToSARIFFiltered`/`WriteSARIFFiltered` retained as aliases.
+- **LSP data fidelity** — `LSPDiagnosticData` struct on `LSPDiagnostic.Data` preserves go-finding-specific fields (ID, FixStrategy, Confidence, Category, Tags, code data) through LSP round-trip.
+- **CLI flag rename** — `-severity` renamed to `-min-severity` with deprecated alias retained for backward compat.
+- **Analysis BeforeCode extraction** — `analysis.FromDiagnostic` reads source files to extract `BeforeCode` from TextEdit ranges, enabling full fix data on go/analysis findings.
+- **Pipeline convenience functions** — `pipeline.Detect(ctx, detectors...)` for one-shot detection; `pipeline.ApplyToContent(content, fixes)` for content-level fix application without filesystem.
+- **FixEngine guide** — `docs/guides/fix-engine.md` covers all FixEngine usage patterns.
 
 ## Removed APIs (v1.0.0)
 
