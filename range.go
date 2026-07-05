@@ -196,13 +196,13 @@ func (p Position) HasOffset() bool {
 // Pos is a convenience constructor for Position.
 // It creates a Position with the given file, line, and column.
 // Offset is set to -1 (unset) since byte offset is not provided.
-func Pos(file string, line, column int) Position {
+func Pos(file FilePath, line, column int) Position {
 	return Position{File: file, Line: line, Column: column, Offset: -1}
 }
 
 // NewRange creates a Range with the given file, start/end lines, and columns.
 // Offsets are set to -1 (unset) since byte offsets are not provided.
-func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
+func NewRange(file FilePath, startLine, startCol, endLine, endCol int) Range {
 	return Range{
 		Start: Position{File: file, Line: startLine, Column: startCol, Offset: -1},
 		End:   Position{File: file, Line: endLine, Column: endCol, Offset: -1},
@@ -210,7 +210,7 @@ func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
 }
 
 // NewRangePtr creates a pointer to a Range with the given file, start/end lines, and columns.
-func NewRangePtr(file string, startLine, startCol, endLine, endCol int) *Range {
+func NewRangePtr(file FilePath, startLine, startCol, endLine, endCol int) *Range {
 	r := NewRange(file, startLine, startCol, endLine, endCol)
 
 	return &r

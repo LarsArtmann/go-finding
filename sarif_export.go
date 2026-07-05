@@ -7,11 +7,43 @@ import (
 	"io"
 )
 
-func sarifResultsFromFindings(findings []Finding, minSeverity Severity) []sarifResult {
+// SARIFOption configures SARIF export behavior.
+type SARIFOption func(*sarifExportConfig)
+
+type sarifExportConfig struct {
+	includeSuppressed bool
+	minSeverity       Severity
+}
+
+// WithIncludeSuppressed causes SARIF export to include suppressed findings
+// with their suppression metadata emitted as SARIF suppression entries,
+// rather than dropping them entirely. This enables full round-trip fidelity
+// for suppression data through SARIF export→import.
+func WithIncludeSuppressed() SARIFOption {
+	return func(c *sarifExportConfig) { c.includeSuppressed = true }
+}
+
+// WithMinSeverity filters findings below the given severity level.
+func WithMinSeverity(sev Severity) SARIFOption {
+	return func(c *sarifExportConfig) { c.minSeverity = sev }
+}
+
+func defaultSarifConfig() sarifExportConfig {
+	return sarifExportConfig{
+		includeSuppressed: false,
+		minSeverity:       SeverityInfo,
+	}
+}
+
+func sarifResultsFromFindings(findings []Finding, cfg sarifExportConfig) []sarifResult {
 	results := make([]sarifResult, 0, len(findings))
 
 	for _, f := range findings {
-		if f.IsSuppressed() || f.Severity.LessThan(minSeverity) {
+		if f.Severity.LessThan(cfg.minSeverity) {
+			continue
+		}
+
+		if f.IsSuppressed() && !cfg.includeSuppressed {
 			continue
 		}
 
@@ -26,14 +58,24 @@ func sarifDriverFromReport(r *Report) sarifDriver {
 }
 
 // ToSARIF converts a Report to SARIF 2.1.0 format.
+// Suppressed findings are excluded by default.
 //
-// Round-trip losses: SARIF export→import does not preserve:
-//   - Suppression data (suppressed findings are excluded from export)
-//
-// All other fields are preserved via the "properties" bag or related
-// location properties.
+// For full round-trip fidelity including suppression data, use ToSARIFWithOpts(WithIncludeSuppressed()).
 func (r *Report) ToSARIF() ([]byte, error) {
-	data, err := json.MarshalIndent(r.sarifLog(), "", "  ")
+	return r.ToSARIFWithOpts()
+}
+
+// ToSARIFWithOpts converts a Report to SARIF 2.1.0 format with the given options.
+// See [WithIncludeSuppressed] and [WithMinSeverity].
+func (r *Report) ToSARIFWithOpts(opts ...SARIFOption) ([]byte, error) {
+	cfg := defaultSarifConfig()
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+
+	log := r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg))
+
+	data, err := json.MarshalIndent(log, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("marshaling SARIF: %w", err)
 	}
@@ -43,6 +85,8 @@ func (r *Report) ToSARIF() ([]byte, error) {
 
 // ToSARIFFiltered converts non-suppressed findings with severity >= minSeverity
 // to SARIF 2.1.0 format. It filters by BOTH suppression status and severity.
+//
+// Deprecated: Use ToSARIFWithOpts(WithMinSeverity(sev)) instead for a unified API.
 func (r *Report) ToSARIFFiltered(minSeverity Severity) ([]byte, error) {
 	data, err := json.MarshalIndent(r.sarifLogFiltered(minSeverity), "", "  ")
 	if err != nil {
@@ -55,16 +99,30 @@ func (r *Report) ToSARIFFiltered(minSeverity Severity) ([]byte, error) {
 // WriteSARIF writes the report in SARIF 2.1.0 format directly to w.
 // Streams via json.Encoder, avoiding the intermediate []byte buffer of ToSARIF.
 // The context is checked for cancellation before encoding begins.
+// Suppressed findings are excluded by default.
+//
+// For full round-trip fidelity including suppression data, use WriteSARIFWithOpts(w, WithIncludeSuppressed()).
 func (r *Report) WriteSARIF(ctx context.Context, w io.Writer) error {
+	return r.WriteSARIFWithOpts(ctx, w)
+}
+
+// WriteSARIFWithOpts writes the report in SARIF 2.1.0 format with the given options.
+// See [WithIncludeSuppressed] and [WithMinSeverity].
+func (r *Report) WriteSARIFWithOpts(ctx context.Context, w io.Writer, opts ...SARIFOption) error {
 	err := ctx.Err()
 	if err != nil {
 		return fmt.Errorf("writing SARIF: %w", err)
 	}
 
+	cfg := defaultSarifConfig()
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 
-	err = enc.Encode(r.sarifLog())
+	err = enc.Encode(r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg)))
 	if err != nil {
 		return fmt.Errorf("encoding SARIF: %w", err)
 	}
@@ -74,8 +132,8 @@ func (r *Report) WriteSARIF(ctx context.Context, w io.Writer) error {
 
 // WriteSARIFFiltered writes non-suppressed findings with severity >= minSeverity
 // in SARIF 2.1.0 format directly to w.
-// Streams via json.Encoder, avoiding the intermediate []byte buffer.
-// The context is checked for cancellation before encoding begins.
+//
+// Deprecated: Use WriteSARIFWithOpts(w, WithMinSeverity(sev)) instead for a unified API.
 func (r *Report) WriteSARIFFiltered(ctx context.Context, w io.Writer, minSeverity Severity) error {
 	err := ctx.Err()
 	if err != nil {
@@ -121,11 +179,16 @@ func (c *countingWriter) Write(p []byte) (int, error) {
 }
 
 func (r *Report) sarifLog() sarifLog {
-	return r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), SeverityInfo))
+	cfg := defaultSarifConfig()
+
+	return r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg))
 }
 
 func (r *Report) sarifLogFiltered(severity Severity) sarifLog {
-	return r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), severity))
+	cfg := defaultSarifConfig()
+	cfg.minSeverity = severity
+
+	return r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg))
 }
 
 func (r *Report) buildsarifLog(results []sarifResult) sarifLog {
@@ -143,13 +206,14 @@ func (r *Report) buildsarifLog(results []sarifResult) sarifLog {
 
 func findingToSARIF(f Finding) sarifResult {
 	result := sarifResult{
-		RuleID:     string(f.Rule),
-		Level:      severityToSARIFLevel(f.Severity),
-		Message:    sarifMessage{Text: f.Message},
-		Locations:  sarifLocations(f),
-		Fixes:      sarifFixes(f),
-		Related:    sarifRelatedLocs(f),
-		Properties: sarifProperties(f),
+		RuleID:       string(f.Rule),
+		Level:        severityToSARIFLevel(f.Severity),
+		Message:      sarifMessage{Text: f.Message},
+		Locations:    sarifLocations(f),
+		Fixes:        sarifFixes(f),
+		Related:      sarifRelatedLocs(f),
+		Properties:   sarifProperties(f),
+		Suppressions: sarifSuppressions(f),
 	}
 
 	if f.Confidence > 0 {
@@ -159,10 +223,46 @@ func findingToSARIF(f Finding) sarifResult {
 	return result
 }
 
+// sarifSuppressions converts a Finding's Suppression to SARIF suppression entries.
+// Returns nil if the finding is not suppressed.
+func sarifSuppressions(f Finding) []sarifSuppression {
+	if f.Suppression == nil {
+		return nil
+	}
+
+	return []sarifSuppression{{
+		Kind:          suppressionKindToSARIF(f.Suppression.Kind),
+		Status:        suppressionStatusToSARIF(f.Suppression.Kind),
+		Justification: f.Suppression.Reason,
+	}}
+}
+
+// suppressionKindToSARIF maps go-finding SuppressionKind to SARIF suppression kind.
+func suppressionKindToSARIF(kind SuppressionKind) string {
+	switch kind {
+	case SuppressionInSource:
+		return "inSource"
+	case SuppressionInConfig, SuppressionInReview:
+		return "inExternalConfiguration"
+	default:
+		return "inSource"
+	}
+}
+
+// suppressionStatusToSARIF maps go-finding SuppressionKind to SARIF suppression status.
+func suppressionStatusToSARIF(kind SuppressionKind) string {
+	switch kind {
+	case SuppressionInReview:
+		return "underReview"
+	default:
+		return "accepted"
+	}
+}
+
 func sarifLocations(f Finding) []sarifLocation {
 	return []sarifLocation{{
 		PhysicalLocation: sarifPhysicalLocation{
-			ArtifactLocation: sarifArtifactLocation{URI: f.Position.File},
+			ArtifactLocation: sarifArtifactLocation{URI: string(f.Position.File)},
 			Region:           findingRegion(f),
 		},
 	}}
@@ -210,7 +310,7 @@ func sarifFixes(f Finding) []sarifFix {
 		return []sarifFix{{
 			Description: sarifMessage{Text: f.Suggestion},
 			Changes: []sarifArtifactChange{{
-				ArtifactLocation: sarifArtifactLocation{URI: f.Position.File},
+				ArtifactLocation: sarifArtifactLocation{URI: string(f.Position.File)},
 				Replacements: []sarifReplacement{{
 					DeletedRegion: region,
 					InsertedText:  sarifMessage{Text: f.AfterCode},
@@ -247,7 +347,7 @@ func sarifRelatedLocs(f Finding) []sarifRelatedLoc {
 
 		sarifRel := sarifRelatedLoc{
 			PhysicalLocation: sarifPhysicalLocation{
-				ArtifactLocation: sarifArtifactLocation{URI: rel.Position.File},
+				ArtifactLocation: sarifArtifactLocation{URI: string(rel.Position.File)},
 				Region:           region,
 			},
 			Message: sarifMessage{Text: string(rel.Relation)},
@@ -297,6 +397,13 @@ func sarifProperties(f Finding) map[string]any {
 
 	if f.AfterCode != "" {
 		props[sarifPropAfterCode] = f.AfterCode
+	}
+
+	if f.Suppression != nil {
+		props[sarifPropSuppressionKind] = string(f.Suppression.Kind)
+		if f.Suppression.ExpiresAt != nil {
+			props[sarifPropSuppressionExpiry] = f.Suppression.ExpiresAt.Format("2006-01-02T15:04:05Z07:00")
+		}
 	}
 
 	for k, v := range f.Metadata {

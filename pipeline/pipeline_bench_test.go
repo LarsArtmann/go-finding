@@ -18,7 +18,7 @@ func generateFindings(n int) []finding.Finding {
 			Message:  fmt.Sprintf("benchmark finding %d", i),
 			Severity: []finding.Severity{finding.SeverityInfo, finding.SeverityWarning, finding.SeverityError, finding.SeverityCritical}[i%4],
 			Position: finding.Position{
-				File:   fmt.Sprintf("file%d.go", i%50),
+				File:   finding.FilePath(fmt.Sprintf("file%d.go", i%50)),
 				Line:   i + 1,
 				Column: 1,
 			},

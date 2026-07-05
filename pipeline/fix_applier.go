@@ -67,7 +67,7 @@ func (a *FixApplier) Close() error {
 
 // ioErrorAt creates an IO error with position info.
 func ioErrorAt(msg string, err error, path string) error {
-	pos := finding.Position{File: path, Offset: -1} //nolint:exhaustruct
+	pos := finding.Position{File: finding.FilePath(path), Offset: -1} //nolint:exhaustruct
 
 	return finding.NewIOError(msg, err).WithPosition(pos)
 }
@@ -165,7 +165,7 @@ func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string
 			continue
 		}
 
-		path := filepath.Join(a.rootDir, f.Position.File)
+		path := filepath.Join(a.rootDir, string(f.Position.File))
 
 		cleanPath := filepath.Clean(path)
 
@@ -199,7 +199,7 @@ func (*FixApplier) recordShiftMap(
 
 	for _, f := range fileFixes {
 		if f.Position.File != "" {
-			relPath = f.Position.File
+			relPath = string(f.Position.File)
 
 			break
 		}

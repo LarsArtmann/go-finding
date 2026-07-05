@@ -33,12 +33,12 @@ func testConvert(out testOutput) ([]Finding, error) {
 	findings := make([]Finding, 0, len(out.Issues))
 	for _, issue := range out.Issues {
 		findings = append(findings, Finding{
-			ID:       GenerateID("test", RuleName(issue.Rule), Position{File: issue.File, Line: issue.Line}),
+			ID:       GenerateID("test", RuleName(issue.Rule), Position{File: FilePath(issue.File), Line: issue.Line}),
 			Rule:     RuleName(issue.Rule),
 			ToolName: "test-tool",
 			Message:  issue.Message,
 			Severity: SeverityError,
-			Position: Position{File: issue.File, Line: issue.Line},
+			Position: Position{File: FilePath(issue.File), Line: issue.Line},
 		})
 	}
 

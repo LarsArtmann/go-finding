@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"os"
 
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/gotoken"
@@ -22,6 +23,11 @@ const DefaultRelation = finding.RelationRelated
 // The ruleCode parameter provides a rule identifier (since go/analysis.Diagnostic doesn't have Code).
 // The defaultSeverity is used because go/analysis.Diagnostics don't carry severity;
 // if empty, SeverityWarning is used.
+//
+// Data loss: go/analysis.Diagnostic does not carry Confidence, Tags, or Suppression.
+// The Category is mapped from d.Category (which may be empty for analyzers that
+// don't set it). go/analysis pass/fact results (d.PackageFact, d.FileFact) are not
+// represented — only message-level diagnostics are converted.
 func FromDiagnostic(
 	d *analysis.Diagnostic,
 	fset *token.FileSet,
@@ -38,14 +44,34 @@ func FromDiagnostic(
 
 	fixStrategy := finding.FixStrategyNone
 
-	var suggestion, afterCode string
+	var suggestion, beforeCode, afterCode string
 
 	if len(d.SuggestedFixes) > 0 {
 		fixStrategy = finding.FixStrategyDirect
 
 		suggestion = d.SuggestedFixes[0].Message
+
 		if len(d.SuggestedFixes[0].TextEdits) > 0 {
-			afterCode = string(d.SuggestedFixes[0].TextEdits[0].NewText)
+			edit := d.SuggestedFixes[0].TextEdits[0]
+			afterCode = string(edit.NewText)
+
+			// Extract BeforeCode from the text being replaced.
+			if edit.End > edit.Pos {
+				startPos := fset.Position(edit.Pos)
+				endPos := fset.Position(edit.End)
+
+				if startPos.IsValid() && endPos.IsValid() && startPos.Offset < endPos.Offset {
+					src, err := os.ReadFile(startPos.Filename)
+					if err == nil {
+						startOff := startPos.Offset
+						endOff := endPos.Offset
+
+						if startOff >= 0 && endOff <= len(src) && startOff < endOff {
+							beforeCode = string(src[startOff:endOff])
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -62,6 +88,7 @@ func FromDiagnostic(
 		Category:    finding.Category(d.Category),
 		FixStrategy: fixStrategy,
 		Suggestion:  suggestion,
+		BeforeCode:  beforeCode,
 		AfterCode:   afterCode,
 	}
 
@@ -85,7 +112,7 @@ func FromDiagnostic(
 // FromTokenPosition creates a Position from a token.Position.
 func FromTokenPosition(pos token.Position) finding.Position {
 	return finding.Position{
-		File:   pos.Filename,
+		File:   finding.FilePath(pos.Filename),
 		Line:   pos.Line,
 		Column: pos.Column,
 		Offset: pos.Offset,
@@ -182,7 +209,7 @@ func resolvePos(p finding.Position, fset *token.FileSet) token.Pos {
 		return token.NoPos
 	}
 
-	file := gotoken.FindFileByName(fset, p.File)
+	file := gotoken.FindFileByName(fset, string(p.File))
 	if file == nil {
 		return token.NoPos
 	}

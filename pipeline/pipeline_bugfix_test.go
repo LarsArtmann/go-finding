@@ -34,7 +34,7 @@ func directFix(id, rule, tool, msg, before, after, file string, line int) findin
 		Message:     msg,
 		BeforeCode:  before,
 		AfterCode:   after,
-		Position:    finding.Position{File: file, Line: line},
+		Position:    finding.Position{File: finding.FilePath(file), Line: line},
 		FixStrategy: finding.FixStrategyDirect,
 	}
 }

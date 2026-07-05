@@ -22,7 +22,7 @@ func FuzzMergeRandom(f *testing.F) {
 				Rule:     RuleName(randomSeedRule(rng)),
 				Severity: randomSeverity(rng),
 				Position: Position{
-					File:   randomSeedFile(rng),
+					File:   FilePath(randomSeedFile(rng)),
 					Line:   rng.Intn(1000),
 					Column: rng.Intn(200),
 				},

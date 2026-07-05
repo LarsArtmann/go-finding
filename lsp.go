@@ -30,6 +30,10 @@ const (
 
 // LSPDiagnostic represents an LSP (Language Server Protocol) diagnostic.
 // Used for converting Finding objects to LSP diagnostic format.
+//
+// The Data field carries go-finding-specific metadata (finding ID, fix strategy,
+// confidence, category, tags) for round-trip fidelity through LSP conversion.
+// LSP clients that don't understand Data will simply ignore it.
 type LSPDiagnostic struct {
 	Range    LSPRange           `json:"range"`
 	Severity LSPSeverity        `json:"severity,omitempty"` // 1=Error, 2=Warning, 3=Info, 4=Hint
@@ -38,6 +42,21 @@ type LSPDiagnostic struct {
 	Message  string             `json:"message"`
 	Tags     []LSPDiagnosticTag `json:"tags,omitempty"`
 	Related  []LSPRelated       `json:"relatedInformation,omitempty"`
+	Data     *LSPDiagnosticData `json:"data,omitempty"`
+}
+
+// LSPDiagnosticData carries go-finding-specific fields in the LSP diagnostic's
+// data property. This enables round-trip fidelity for fields that the standard
+// LSP diagnostic type cannot represent.
+type LSPDiagnosticData struct {
+	ID          ID          `json:"id,omitempty"`
+	FixStrategy FixStrategy `json:"fixStrategy,omitempty"`
+	Confidence  Confidence  `json:"confidence,omitempty"`
+	Category    Category    `json:"category,omitempty"`
+	Tags        []Tag       `json:"tags,omitempty"`
+	BeforeCode  string      `json:"beforeCode,omitempty"`
+	AfterCode   string      `json:"afterCode,omitempty"`
+	Suggestion  string      `json:"suggestion,omitempty"`
 }
 
 // LSPRange represents a 0-based character range in a text document.
@@ -65,7 +84,8 @@ type LSPLocation struct {
 }
 
 // ToLSP converts a Finding to LSP Diagnostic format.
-// This is a lossy conversion - some fields (FixStrategy, Confidence, etc.) are lost.
+// The Data field carries go-finding-specific fields (ID, FixStrategy, Confidence,
+// Category, Tags, code data) for round-trip fidelity via [FromLSP].
 func (f Finding) ToLSP() LSPDiagnostic {
 	diag := LSPDiagnostic{
 		Range: LSPRange{
@@ -78,6 +98,16 @@ func (f Finding) ToLSP() LSPDiagnostic {
 		Code:     string(f.Rule),
 		Source:   string(f.ToolName),
 		Message:  f.Message,
+		Data: &LSPDiagnosticData{
+			ID:          f.ID,
+			FixStrategy: f.FixStrategy,
+			Confidence:  f.Confidence,
+			Category:    f.Category,
+			Tags:        f.Tags,
+			BeforeCode:  f.BeforeCode,
+			AfterCode:   f.AfterCode,
+			Suggestion:  f.Suggestion,
+		},
 	}
 
 	// Set end position if available
@@ -108,7 +138,7 @@ func (f Finding) ToLSP() LSPDiagnostic {
 
 		diag.Related = append(diag.Related, LSPRelated{
 			Location: LSPLocation{
-				URI:   rel.Position.File,
+				URI:   string(rel.Position.File),
 				Range: lspRange,
 			},
 			Message: string(rel.Relation),
@@ -135,8 +165,10 @@ const LSPDiagnosticTagsKey = "go-finding/lsp-diagnostic-tags"
 
 // FromLSP creates a Finding from an LSP Diagnostic at the given file URI.
 // Preserves end position in Range and related information when present.
+// When the diagnostic's Data field is populated (by ToLSP), restores the
+// original ID, FixStrategy, Confidence, Category, Tags, and code data.
 // The raw LSP severity integer is stored in Metadata under LSPSeverityKey.
-func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
+func FromLSP(fileURI FilePath, diag LSPDiagnostic) Finding {
 	startLine := diag.Range.Start.Line + 1
 	startChar := diag.Range.Start.Character + 1
 
@@ -146,17 +178,32 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 			RuleName(diag.Code),
 			Position{File: fileURI, Line: startLine, Column: startChar, Offset: -1},
 		),
-		Rule:     RuleName(diag.Code),
-		ToolName: ToolName(diag.Source),
-		Message:  diag.Message,
-		Severity: severityFromLSP(diag.Severity),
+		Rule:        RuleName(diag.Code),
+		ToolName:    ToolName(diag.Source),
+		Message:     diag.Message,
+		Severity:    severityFromLSP(diag.Severity),
+		FixStrategy: FixStrategyNone,
 		Position: Position{
 			File:   fileURI,
 			Line:   startLine,
 			Column: startChar,
 			Offset: -1,
 		},
-		FixStrategy: FixStrategyNone,
+	}
+
+	// Restore go-finding-specific fields from Data (populated by ToLSP).
+	if diag.Data != nil {
+		if diag.Data.ID != "" {
+			f.ID = diag.Data.ID
+		}
+
+		f.FixStrategy = diag.Data.FixStrategy
+		f.Confidence = diag.Data.Confidence
+		f.Category = diag.Data.Category
+		f.Tags = diag.Data.Tags
+		f.BeforeCode = diag.Data.BeforeCode
+		f.AfterCode = diag.Data.AfterCode
+		f.Suggestion = diag.Data.Suggestion
 	}
 
 	// Preserve end position as Range when it differs from start.
@@ -173,7 +220,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 	// Convert related information.
 	for _, rel := range diag.Related {
 		relPos := Position{
-			File:   rel.Location.URI,
+			File:   FilePath(rel.Location.URI),
 			Line:   rel.Location.Range.Start.Line + 1,
 			Column: rel.Location.Range.Start.Character + 1,
 			Offset: -1,
@@ -190,7 +237,7 @@ func FromLSP(fileURI string, diag LSPDiagnostic) Finding {
 			ref.Range = &Range{
 				Start: ref.Position,
 				End: Position{
-					File:   rel.Location.URI,
+					File:   FilePath(rel.Location.URI),
 					Line:   endLine,
 					Column: endChar,
 					Offset: -1,

@@ -12,7 +12,7 @@ import (
 // Common shape used across the Edits tests below.
 func beforeAfterFinding(file string, line, col int, before, after string) finding.Finding {
 	return finding.Finding{
-		Position:   finding.Position{File: file, Line: line, Column: col},
+		Position:   finding.Position{File: finding.FilePath(file), Line: line, Column: col},
 		BeforeCode: before,
 		AfterCode:  after,
 	}

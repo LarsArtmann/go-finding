@@ -204,7 +204,7 @@ func (f Finding) Key() string {
 
 	return string(
 		f.ToolName,
-	) + keySeparator + f.Position.File + keySeparator + string(
+	) + keySeparator + string(f.Position.File) + keySeparator + string(
 		f.Rule,
 	) + keySeparator + f.Message
 }

@@ -111,7 +111,7 @@ var _ = Describe("Error Handling User Stories", func() {
 			enriched := baseErr.WithFinding(f)
 
 			Expect(enriched.Finding).NotTo(BeNil())
-			Expect(enriched.File).To(Equal("main.go"))
+			Expect(enriched.File).To(Equal(finding.FilePath("main.go")))
 			Expect(enriched.Position).NotTo(BeNil())
 			Expect(enriched.Position.Line).To(Equal(42))
 		})
@@ -180,7 +180,7 @@ var _ = Describe("LSP Conversion User Stories", func() {
 			diag := original.ToLSP()
 			restored := finding.FromLSP("f.go", diag)
 
-			Expect(restored.Position.File).To(Equal("f.go"))
+			Expect(restored.Position.File).To(Equal(finding.FilePath("f.go")))
 			Expect(restored.Position.Line).To(Equal(10))
 		})
 	})
@@ -261,7 +261,7 @@ func crossToolFindings(r2Msg string, r2Line int) []finding.Finding {
 func mustBuild(
 	rule, tool, msg string, sev finding.Severity, file string, line int,
 ) finding.Finding {
-	f, err := finding.NewBuilder(finding.RuleName(rule), finding.ToolName(tool), msg, sev, finding.Pos(file, line, 1)).
+	f, err := finding.NewBuilder(finding.RuleName(rule), finding.ToolName(tool), msg, sev, finding.Pos(finding.FilePath(file), line, 1)).
 		Build()
 	if err != nil {
 		panic(err)

@@ -1,5 +1,16 @@
 # SUPERB Improvement Plan — go-finding
 
+> **Status: ALL 22 TASKS COMPLETE** ✅
+>
+> | Tier              | Tasks             | Status  |
+> | ----------------- | ----------------- | ------- |
+> | Tier 0 (1%→51%)   | M01, M02, M03     | ✅ Done |
+> | Tier 1 (4%→64%)   | M05-M09, M11      | ✅ Done |
+> | Tier 2 (20%→80%)  | M04, M10, M12-M17 | ✅ Done |
+> | Tier 3 (80%→100%) | M18-M22           | ✅ Done |
+>
+> **Verification:** Build, vet, race tests, and GOWORK=off isolation all pass across all 4 modules.
+
 > **Date:** 2026-07-05  
 > **Branch:** `modularize/unix-style`  
 > **Base:** `dddb2c7` (fix: ApplyWithDetails now returns applied findings instead of input)  

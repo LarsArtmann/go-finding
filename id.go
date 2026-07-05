@@ -31,7 +31,7 @@ func GenerateID(toolName ToolName, rule RuleName, pos Position) ID {
 		h := sha256.New()
 		writeLenField(h, string(toolName))
 		writeLenField(h, string(rule))
-		writeLenField(h, pos.File)
+		writeLenField(h, string(pos.File))
 
 		sum := h.Sum(make([]byte, 0, sha256.Size))
 		hash := hex.EncodeToString(sum[:hashLength/2])
@@ -48,7 +48,7 @@ func GenerateID(toolName ToolName, rule RuleName, pos Position) ID {
 	}
 
 	// Normalize file path to use forward slashes
-	file := filepath.ToSlash(pos.File)
+	file := filepath.ToSlash(string(pos.File))
 
 	var b strings.Builder
 

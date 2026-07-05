@@ -15,14 +15,14 @@ const (
 // FixGroup represents fixes that can be safely applied together.
 // Fixes in the same group don't conflict with each other.
 type FixGroup struct {
-	File  string
+	File  finding.FilePath
 	Fixes []finding.Finding
 	// Bounds is the combined range covering all fixes in this group
 	Bounds finding.Range
 }
 
 // newFixGroup creates a FixGroup with a single fix.
-func newFixGroup(file string, f finding.Finding, bounds finding.Range) FixGroup {
+func newFixGroup(file finding.FilePath, f finding.Finding, bounds finding.Range) FixGroup {
 	return FixGroup{
 		File:   file,
 		Fixes:  []finding.Finding{f},
@@ -33,7 +33,7 @@ func newFixGroup(file string, f finding.Finding, bounds finding.Range) FixGroup 
 // DetectConflicts analyzes fixes and returns groups of non-conflicting fixes
 // along with any conflicting fixes that couldn't be grouped.
 func DetectConflicts(fixes []finding.Finding) ([]FixGroup, []finding.Finding) {
-	byFile := make(map[string][]finding.Finding)
+	byFile := make(map[finding.FilePath][]finding.Finding, len(fixes))
 
 	for _, f := range fixes {
 		file := f.Position.File
@@ -63,7 +63,7 @@ func DetectConflicts(fixes []finding.Finding) ([]FixGroup, []finding.Finding) {
 // Groups with multiple findings keep only the first; the rest are marked as conflicts.
 // This conservative strategy ensures safe application order.
 func detectConflictsInFile(
-	file string,
+	file finding.FilePath,
 	fixes []finding.Finding,
 ) ([]FixGroup, []finding.Finding) {
 	if len(fixes) == 0 {

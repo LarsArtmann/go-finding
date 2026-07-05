@@ -26,10 +26,10 @@ const OffsetUnknown = -1
 // Use IsZero() to check for the completely-uninitialized state (all fields at their
 // "unset" sentinels: empty File, Line=0, Column=0, Offset=-1).
 type Position struct {
-	File   string `json:"file"`             // Required: file path
-	Line   int    `json:"line,omitempty"`   // 1-based line number; 0 = not set
-	Column int    `json:"column,omitempty"` // 1-based column number; 0 = not set
-	Offset int    `json:"offset,omitempty"` // 0-based byte offset; -1 = not set
+	File   FilePath `json:"file"`             // Required: file path
+	Line   int      `json:"line,omitempty"`   // 1-based line number; 0 = not set
+	Column int      `json:"column,omitempty"` // 1-based column number; 0 = not set
+	Offset int      `json:"offset,omitempty"` // 0-based byte offset; -1 = not set
 }
 
 // IsValid returns true if the position has a file set and a non-zero line number.
@@ -93,7 +93,7 @@ func (p Position) Compare(other Position) int {
 // String returns a human-readable representation.
 func (p Position) String() string {
 	if p.Line == 0 {
-		return p.File
+		return string(p.File)
 	}
 
 	if p.Column == 0 {

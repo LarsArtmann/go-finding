@@ -46,7 +46,7 @@ func TestParsePosn(t *testing.T) {
 			g := NewWithT(t)
 
 			pos := parsePosn(tt.posn, tt.dir)
-			g.Expect(pos.File).To(Equal(tt.wantFile))
+			g.Expect(pos.File).To(Equal(finding.FilePath(tt.wantFile)))
 			g.Expect(pos.Line).To(Equal(tt.wantLine))
 			g.Expect(pos.Column).To(Equal(tt.wantCol))
 		})
@@ -74,7 +74,7 @@ func TestParseGoVetJSON(t *testing.T) {
 	g.Expect(f.Severity).To(Equal(finding.SeverityWarning))
 	g.Expect(f.Category).To(Equal(finding.CategoryCorrectness))
 	g.Expect(f.FixStrategy).To(Equal(finding.FixStrategySuggest))
-	g.Expect(f.Position.File).To(Equal("/project/main.go"))
+	g.Expect(f.Position.File).To(Equal(finding.FilePath("/project/main.go")))
 	g.Expect(f.Position.Line).To(Equal(10))
 }
 
@@ -279,5 +279,5 @@ func TestParseStaticcheckJSON_AbsolutePath(t *testing.T) {
 	findings := parseStaticcheckJSON([]byte(input), "/project")
 	g.Expect(findings).To(HaveLen(1))
 
-	g.Expect(findings[0].Position.File).To(Equal("/abs/path/main.go"))
+	g.Expect(findings[0].Position.File).To(Equal(finding.FilePath("/abs/path/main.go")))
 }

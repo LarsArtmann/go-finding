@@ -36,7 +36,7 @@ func FuzzFilterPredicates(f *testing.F) {
 				Severity: severity,
 				Category: Category(category),
 				ToolName: ToolName(tool),
-				Position: Position{File: file, Line: 1},
+				Position: Position{File: FilePath(file), Line: 1},
 			},
 			{
 				ID:       "F2",
@@ -112,13 +112,13 @@ func FuzzFilterByFile(f *testing.F) {
 	f.Fuzz(func(t *testing.T, target, file1, file2 string) {
 		g := NewWithT(t)
 		findings := []Finding{
-			{ID: "F1", Position: Position{File: file1}},
-			{ID: "F2", Position: Position{File: file2}},
+			{ID: "F1", Position: Position{File: FilePath(file1)}},
+			{ID: "F2", Position: Position{File: FilePath(file2)}},
 		}
 
-		result := Filter(findings, ByFile(target))
+		result := Filter(findings, ByFile(FilePath(target)))
 		for _, f := range result {
-			g.Expect(f.Position.File).To(Equal(target))
+			g.Expect(f.Position.File).To(Equal(FilePath(target)))
 		}
 	})
 }
@@ -129,9 +129,9 @@ func FuzzGroupByFile(f *testing.F) {
 	f.Fuzz(func(t *testing.T, file1, file2, file3 string) {
 		g := NewWithT(t)
 		findings := []Finding{
-			{ID: "F1", Position: Position{File: file1}},
-			{ID: "F2", Position: Position{File: file2}},
-			{ID: "F3", Position: Position{File: file3}},
+			{ID: "F1", Position: Position{File: FilePath(file1)}},
+			{ID: "F2", Position: Position{File: FilePath(file2)}},
+			{ID: "F3", Position: Position{File: FilePath(file3)}},
 		}
 
 		groups := GroupByFile(findings)
@@ -214,8 +214,8 @@ func FuzzCorrelate(f *testing.F) {
 	f.Fuzz(func(t *testing.T, tool1, tool2 string, line1, line2 int, file string) {
 		g := NewWithT(t)
 		findings := []Finding{
-			{ID: "F1", ToolName: ToolName(tool1), Position: Position{File: file, Line: line1}},
-			{ID: "F2", ToolName: ToolName(tool2), Position: Position{File: file, Line: line2}},
+			{ID: "F1", ToolName: ToolName(tool1), Position: Position{File: FilePath(file), Line: line1}},
+			{ID: "F2", ToolName: ToolName(tool2), Position: Position{File: FilePath(file), Line: line2}},
 		}
 
 		correlations := Correlate(findings)
@@ -243,13 +243,13 @@ func FuzzMergeByPosition(f *testing.F) {
 		r1 := NewReport(ToolInfo{Name: "t1"})
 		r1.AddFinding(Finding{
 			ID:       "A",
-			Position: Position{File: file1, Line: line1, Column: col1},
+			Position: Position{File: FilePath(file1), Line: line1, Column: col1},
 		})
 
 		r2 := NewReport(ToolInfo{Name: "t2"})
 		r2.AddFinding(Finding{
 			ID:       "B",
-			Position: Position{File: file2, Line: line2, Column: col2},
+			Position: Position{File: FilePath(file2), Line: line2, Column: col2},
 		})
 
 		merged := Combine([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByPosition))
@@ -278,7 +278,7 @@ func FuzzDedupKey(f *testing.F) {
 		f := Finding{
 			ID:       ID(id),
 			Rule:     RuleName(rule),
-			Position: Position{File: file, Line: line, Column: col},
+			Position: Position{File: FilePath(file), Line: line, Column: col},
 		}
 
 		k1, ok1 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByID}) //nolint:varnamelen

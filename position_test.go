@@ -7,19 +7,22 @@ import (
 const posTestDiffFiles = "different files"
 
 func posLine(file string, line int) Position {
-	return Position{File: file, Line: line}
+	return Position{File: FilePath(file), Line: line}
 }
 
 func posLineCol(file string, line, col int) Position {
-	return Position{File: file, Line: line, Column: col}
+	return Position{File: FilePath(file), Line: line, Column: col}
 }
 
 func rangeLine(file string, startLine, endLine int) Range {
-	return Range{Start: Position{File: file, Line: startLine, Offset: -1}, End: Position{Line: endLine, Offset: -1}}
+	return Range{
+		Start: Position{File: FilePath(file), Line: startLine, Offset: -1},
+		End:   Position{Line: endLine, Offset: -1},
+	}
 }
 
 func rangeOffset(file string, startOffset, endOffset int) Range {
-	return Range{Start: Position{File: file, Offset: startOffset}, End: Position{Offset: endOffset}}
+	return Range{Start: Position{File: FilePath(file), Offset: startOffset}, End: Position{Offset: endOffset}}
 }
 
 type overlapCase struct {

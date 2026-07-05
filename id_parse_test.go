@@ -28,7 +28,7 @@ func TestGenerateID_ParseID_RoundTrip(t *testing.T) {
 				t.Fatalf("ParseID(%q) returned ok=false", id)
 			}
 
-			assertRoundTrip(t, &p, tt.tool, tt.rule, tt.pos.File, tt.pos.Line, tt.pos.Column)
+			assertRoundTrip(t, &p, tt.tool, tt.rule, string(tt.pos.File), tt.pos.Line, tt.pos.Column)
 		})
 	}
 }
@@ -135,7 +135,7 @@ func TestGenerateID_WindowsPathRoundTrip(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			pos := Position{File: tt.file, Line: tt.line, Column: tt.col}
+			pos := Position{File: FilePath(tt.file), Line: tt.line, Column: tt.col}
 			id := GenerateID(ToolName(tt.tool), RuleName(tt.rule), pos)
 
 			p := ParseID(id)

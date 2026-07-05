@@ -140,7 +140,7 @@ func makeFinding(id, tool, rule, file string, line int) Finding {
 		ID:       ID(id),
 		ToolName: ToolName(tool),
 		Rule:     RuleName(rule),
-		Position: Position{File: file, Line: line},
+		Position: Position{File: FilePath(file), Line: line},
 	}
 }
 

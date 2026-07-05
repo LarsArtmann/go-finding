@@ -39,7 +39,7 @@ func TestProperty_GroupByFileCoversAll(t *testing.T) {
 	property := func(files []string) bool {
 		findings := make([]Finding, len(files))
 		for i, f := range files {
-			findings[i] = Finding{Position: Position{File: f}}
+			findings[i] = Finding{Position: Position{File: FilePath(f)}}
 		}
 
 		groups := GroupByFile(findings)
@@ -99,7 +99,11 @@ func TestProperty_IDRoundTrip(t *testing.T) {
 			return true
 		}
 
-		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: file, Line: int(line), Column: int(col)})
+		id := GenerateID(
+			ToolName(tool),
+			RuleName(rule),
+			Position{File: FilePath(file), Line: int(line), Column: int(col)},
+		)
 
 		p := ParseID(id)
 		if !p.OK() {

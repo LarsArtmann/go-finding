@@ -16,8 +16,8 @@ func rangeFix(
 	return finding.Finding{
 		BeforeCode: before,
 		AfterCode:  after,
-		Range:      finding.NewRangePtr(file, startLine, startCol, endLine, endCol),
-		Position:   finding.Pos(file, startLine, startCol),
+		Range:      finding.NewRangePtr(finding.FilePath(file), startLine, startCol, endLine, endCol),
+		Position:   finding.Pos(finding.FilePath(file), startLine, startCol),
 	}
 }
 

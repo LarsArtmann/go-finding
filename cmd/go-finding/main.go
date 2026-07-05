@@ -53,9 +53,15 @@ func parseFlags() cliFlags {
 	flag.StringVar(&f.format, "format", "text", "output format: text, markdown, csv, tsv, json, sarif")
 	flag.StringVar(
 		&f.minSev,
-		"severity",
+		"min-severity",
 		"info",
 		"minimum severity: info, warning, error, critical",
+	)
+	flag.StringVar(
+		&f.minSev,
+		"severity",
+		"info",
+		"deprecated alias for -min-severity",
 	)
 	flag.IntVar(
 		&f.maxIter,
@@ -145,11 +151,8 @@ func run() int {
 		return fatalf("parsing config", err)
 	}
 
-	// Merge fix provider names from CLI flag and config file.
-	fixProviderNames := cfg.FixProviders
-	if f.fixProviders != "" {
-		fixProviderNames = append(fixProviderNames, splitCommaList(f.fixProviders)...)
-	}
+	// Merge fix provider names from CLI flag and config file, deduplicating.
+	fixProviderNames := uniqueStrings(append(slices.Clone(cfg.FixProviders), splitCommaList(f.fixProviders)...))
 
 	if len(fixProviderNames) > 0 {
 		providers, err := resolveFixProviders(fixProviderNames)

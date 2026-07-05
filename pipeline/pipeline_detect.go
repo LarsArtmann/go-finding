@@ -237,7 +237,7 @@ func (p *Pipeline) applyTriage(
 	for file, shiftMap := range shiftMaps {
 		for i := range iter.findings {
 			f := &iter.findings[i]
-			if f.Position.File == file {
+			if f.Position.File == finding.FilePath(file) {
 				f.Position = shiftMap.ShiftedPosition(f.Position)
 				f.Range = shiftMap.ShiftedRange(f.Range)
 			}
@@ -298,7 +298,7 @@ func (p *Pipeline) filterByFileEdits(
 	fixes []finding.Finding,
 	engine *FixEngine,
 ) ([]finding.Finding, []error) {
-	byFile := make(map[string][]finding.Finding)
+	byFile := make(map[finding.FilePath][]finding.Finding, len(fixes))
 	for _, f := range fixes {
 		byFile[f.Position.File] = append(byFile[f.Position.File], f)
 	}
@@ -309,7 +309,7 @@ func (p *Pipeline) filterByFileEdits(
 	)
 
 	for file, fileFixes := range byFile {
-		fullPath := filepath.Join(p.rootDir, file)
+		fullPath := filepath.Join(p.rootDir, string(file))
 
 		content, err := os.ReadFile(filepath.Clean(fullPath))
 		if err != nil {

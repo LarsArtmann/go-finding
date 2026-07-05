@@ -110,7 +110,7 @@ func TestFromLSP(t *testing.T) {
 		t.Errorf("FromLSP Position.Column = %d, want %d (0-based→1-based)", got, want)
 	}
 
-	if got, want := f.Position.File, "file:///test.go"; got != want {
+	if got, want := string(f.Position.File), "file:///test.go"; got != want {
 		t.Errorf("FromLSP Position.File = %q, want %q", got, want)
 	}
 
@@ -204,7 +204,7 @@ func TestFromLSPRelated(t *testing.T) {
 		t.Errorf("FromLSP Related[0].Relation = %q, want %q", got, want)
 	}
 
-	if got, want := f.Related[0].Position.File, "file:///other.go"; got != want {
+	if got, want := string(f.Related[0].Position.File), "file:///other.go"; got != want {
 		t.Errorf("FromLSP Related[0].File = %q, want %q", got, want)
 	}
 

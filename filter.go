@@ -103,7 +103,7 @@ func ByRule(rule RuleName) FilterFunc {
 }
 
 // ByFile returns a filter for findings in the given file.
-func ByFile(file string) FilterFunc {
+func ByFile(file FilePath) FilterFunc {
 	return func(f Finding) bool {
 		return f.Position.File == file
 	}
@@ -172,10 +172,13 @@ func GroupBy(findings []Finding, keyFn func(Finding) string) map[string][]Findin
 }
 
 // GroupByFile groups findings by file path.
-func GroupByFile(findings []Finding) map[string][]Finding {
-	return GroupBy(findings, func(finding Finding) string {
-		return finding.Position.File
-	})
+func GroupByFile(findings []Finding) map[FilePath][]Finding {
+	groups := make(map[FilePath][]Finding, len(findings))
+	for _, f := range findings {
+		groups[f.Position.File] = append(groups[f.Position.File], f)
+	}
+
+	return groups
 }
 
 // GroupBySeverity groups findings by severity.

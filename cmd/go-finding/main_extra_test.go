@@ -92,7 +92,7 @@ func makeTestFinding(
 		ToolName: finding.ToolName(tool),
 		Message:  msg,
 		Severity: sev,
-		Position: finding.Position{File: file, Line: line, Column: col},
+		Position: finding.Position{File: finding.FilePath(file), Line: line, Column: col},
 	}
 }
 

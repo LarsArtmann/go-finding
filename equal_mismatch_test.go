@@ -200,7 +200,7 @@ func TestRange_Compare(t *testing.T) {
 	t.Parallel()
 
 	rng := func(f string, sl, el int) Range {
-		return NewRange(f, sl, 0, el, 0)
+		return NewRange(FilePath(f), sl, 0, el, 0)
 	}
 
 	tests := []struct {

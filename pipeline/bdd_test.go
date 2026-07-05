@@ -244,7 +244,7 @@ func mustBuild(
 	rule, tool, msg string, sev finding.Severity, file string, line int,
 	fs finding.FixStrategy, before, after string,
 ) finding.Finding {
-	f, err := finding.NewBuilder(finding.RuleName(rule), finding.ToolName(tool), msg, sev, finding.Pos(file, line, 1)).
+	f, err := finding.NewBuilder(finding.RuleName(rule), finding.ToolName(tool), msg, sev, finding.Pos(finding.FilePath(file), line, 1)).
 		WithFixStrategy(fs).
 		WithBeforeCode(before).
 		WithAfterCode(after).

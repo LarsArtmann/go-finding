@@ -99,7 +99,7 @@ func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
 			ID:          finding.ID(string(rune('A' + i))),
 			BeforeCode:  "old" + string(rune('A'+i)),
 			AfterCode:   "new" + string(rune('A'+i)),
-			Position:    finding.Position{File: "file" + string(rune('A'+i)) + ".go"},
+			Position:    finding.Position{File: finding.FilePath("file" + string(rune('A'+i)) + ".go")},
 			FixStrategy: finding.FixStrategyDirect,
 		}
 	}

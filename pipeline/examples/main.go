@@ -24,7 +24,7 @@ func (d staticDetector) Detect(_ context.Context) ([]finding.Finding, error) {
 			ToolName:    "demo",
 			Message:     "variable x is unused",
 			Severity:    finding.SeverityWarning,
-			Position:    finding.Position{File: d.file, Line: 2, Column: 2},
+			Position:    finding.Position{File: finding.FilePath(d.file), Line: 2, Column: 2},
 			BeforeCode:  "x := 42",
 			AfterCode:   "",
 			FixStrategy: finding.FixStrategyDirect,

@@ -26,13 +26,13 @@ func runContainsTests(t *testing.T, tests []containsTest) {
 }
 
 func rng(file string, startLine, startCol, endLine, endCol int) Range {
-	return NewRange(file, startLine, startCol, endLine, endCol)
+	return NewRange(FilePath(file), startLine, startCol, endLine, endCol)
 }
 
 func rngOffset(file string, startOffset, endOffset int) Range {
 	return Range{
-		Start: Position{File: file, Offset: startOffset},
-		End:   Position{File: file, Offset: endOffset},
+		Start: Position{File: FilePath(file), Offset: startOffset},
+		End:   Position{File: FilePath(file), Offset: endOffset},
 	}
 }
 

@@ -77,9 +77,9 @@ func (g *GeneratedFileFilter) Transform(
 			continue
 		}
 
-		filtered, err := g.filter.Filter(f.Position.File)
+		filtered, err := g.filter.Filter(string(f.Position.File))
 		if err != nil {
-			g.logFilterError(ctx, f.Position.File, err)
+			g.logFilterError(ctx, string(f.Position.File), err)
 			result = append(result, f)
 
 			continue

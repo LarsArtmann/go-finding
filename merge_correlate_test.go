@@ -11,8 +11,11 @@ func makeRangeFinding(id, tool, rule, file string, startLine, endLine int) Findi
 	return Finding{
 		ID: ID(id), ToolName: ToolName(tool), Rule: RuleName(rule),
 		Severity: SeverityError, Message: "test",
-		Position: Position{File: file, Line: startLine},
-		Range:    &Range{Start: Position{File: file, Line: startLine}, End: Position{File: file, Line: endLine}},
+		Position: Position{File: FilePath(file), Line: startLine},
+		Range: &Range{
+			Start: Position{File: FilePath(file), Line: startLine},
+			End:   Position{File: FilePath(file), Line: endLine},
+		},
 	}
 }
 

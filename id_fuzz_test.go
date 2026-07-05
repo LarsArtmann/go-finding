@@ -12,7 +12,7 @@ func FuzzGenerateID(f *testing.F) {
 	f.Add("tool", "rule", "file", 1, 0)
 
 	f.Fuzz(func(t *testing.T, tool, rule, file string, line, col int) {
-		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: file, Line: line, Column: col})
+		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: FilePath(file), Line: line, Column: col})
 		if id == "" {
 			t.Fatal("GenerateID returned empty")
 		}
@@ -75,7 +75,7 @@ func FuzzRoundTripID(f *testing.F) {
 			t.Skip()
 		}
 
-		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: file, Line: line, Column: col})
+		id := GenerateID(ToolName(tool), RuleName(rule), Position{File: FilePath(file), Line: line, Column: col})
 
 		p := ParseID(id)
 		if !p.OK() {

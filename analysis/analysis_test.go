@@ -295,7 +295,7 @@ func TestToDiagnostic_Basic(t *testing.T) {
 		Message:  "test message",
 		Severity: finding.SeverityError,
 		Position: finding.Position{
-			File:   origPos.Filename,
+			File:   finding.FilePath(origPos.Filename),
 			Line:   origPos.Line,
 			Column: origPos.Column,
 		},

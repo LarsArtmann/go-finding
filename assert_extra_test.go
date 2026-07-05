@@ -78,7 +78,7 @@ func assertRangeEndOffset(t *testing.T, r Range, want int) {
 func assertFindingPosition(t *testing.T, f Finding, file string, line int) {
 	t.Helper()
 
-	if f.Position.File != file {
+	if string(f.Position.File) != file {
 		t.Errorf("Position.File = %q, want %q", f.Position.File, file)
 	}
 
@@ -91,7 +91,7 @@ func assertFindingPosition(t *testing.T, f Finding, file string, line int) {
 func assertRelatedPosition(t *testing.T, r RelatedRef, file string, line int) {
 	t.Helper()
 
-	if r.Position.File != file {
+	if string(r.Position.File) != file {
 		t.Errorf("Position.File = %q, want %q", r.Position.File, file)
 	}
 
@@ -142,7 +142,7 @@ func MakeFindingWithFix(id, rule, tool, msg, beforeCode, afterCode, file string,
 		Message:     msg,
 		BeforeCode:  beforeCode,
 		AfterCode:   afterCode,
-		Position:    Position{File: file, Line: line},
+		Position:    Position{File: FilePath(file), Line: line},
 		FixStrategy: FixStrategyDirect,
 	}
 }
@@ -151,7 +151,7 @@ func MakeFindingWithFix(id, rule, tool, msg, beforeCode, afterCode, file string,
 func assertFindingErrorFile(t *testing.T, err *FindingError, want string) {
 	t.Helper()
 
-	if err.File != want {
+	if string(err.File) != want {
 		t.Errorf("File = %q, want %q", err.File, want)
 	}
 }
@@ -160,7 +160,7 @@ func assertFindingErrorFile(t *testing.T, err *FindingError, want string) {
 func assertRangeContains(t *testing.T, r Range, offset int, file string, expect bool) {
 	t.Helper()
 
-	pos := Position{File: file, Offset: offset}
+	pos := Position{File: FilePath(file), Offset: offset}
 	if r.Contains(pos) != expect {
 		if expect {
 			t.Errorf("expected Range to contain Position at offset %d", offset)

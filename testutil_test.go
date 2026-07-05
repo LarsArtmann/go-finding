@@ -94,7 +94,7 @@ func MakeFindingWithPos(
 		ToolName: ToolName(tool),
 		Message:  message,
 		Severity: severity,
-		Position: Position{File: file, Line: line, Column: col},
+		Position: Position{File: FilePath(file), Line: line, Column: col},
 	}
 }
 

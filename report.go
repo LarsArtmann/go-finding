@@ -180,7 +180,7 @@ func (r *Report) computeSummaryAt(now time.Time) {
 		}
 
 		if f.Position.File != "" {
-			files[f.Position.File] = struct{}{}
+			files[string(f.Position.File)] = struct{}{}
 		}
 
 		if f.IsSuppressedAt(now) {

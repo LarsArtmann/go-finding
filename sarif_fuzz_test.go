@@ -25,7 +25,7 @@ func FuzzToSARIF(f *testing.F) {
 			ToolName: ToolName(tool),
 			Message:  msg,
 			Severity: FromSARIFLevel(level),
-			Position: Position{File: file, Line: line, Column: col},
+			Position: Position{File: FilePath(file), Line: line, Column: col},
 		})
 		r.ComputeSummary()
 

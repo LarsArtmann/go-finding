@@ -108,7 +108,7 @@ func findingFromSarResult(r sarifResult, toolName string) Finding {
 	}
 
 	for _, rel := range r.Related {
-		pos := Position{File: rel.PhysicalLocation.ArtifactLocation.URI, Offset: -1}
+		pos := Position{File: FilePath(rel.PhysicalLocation.ArtifactLocation.URI), Offset: -1}
 		if rel.PhysicalLocation.Region != nil {
 			pos.Line = rel.PhysicalLocation.Region.StartLine
 			pos.Column = rel.PhysicalLocation.Region.StartColumn
@@ -142,6 +142,10 @@ func findingFromSarResult(r sarifResult, toolName string) Finding {
 		f.Related = append(f.Related, ref)
 	}
 
+	if len(r.Suppressions) > 0 {
+		f.Suppression = sarifSuppressionToFinding(r.Suppressions[0])
+	}
+
 	if r.Properties != nil {
 		applySarifProperties(&f, r.Properties)
 	}
@@ -164,7 +168,7 @@ func applySarifPosition(f *Finding, r sarifResult) {
 	loc := r.Locations[0]
 	region := loc.PhysicalLocation.Region
 
-	fileURI := loc.PhysicalLocation.ArtifactLocation.URI
+	fileURI := FilePath(loc.PhysicalLocation.ArtifactLocation.URI)
 	if region == nil {
 		f.Position = Position{File: fileURI, Offset: -1}
 
@@ -251,6 +255,18 @@ func applySarifProperties(f *Finding, props map[string]any) {
 		f.AfterCode = v
 	}
 
+	// Restore exact suppression kind from property (overrides SARIF kind mapping).
+	if v, ok := stringProp(props, sarifPropSuppressionKind); ok {
+		if f.Suppression == nil {
+			f.Suppression = &Suppression{}
+		}
+
+		f.Suppression.Kind = SuppressionKind(v)
+		if f.Suppression.Reason == "" {
+			f.Suppression.Reason = v // fallback if no reason set
+		}
+	}
+
 	f.Metadata = sarifMetadataFromProps(props)
 	if len(f.Metadata) == 0 {
 		f.Metadata = nil
@@ -285,4 +301,28 @@ func sarifMetadataFromProps(props map[string]any) map[string]string {
 	}
 
 	return meta
+}
+
+// sarifSuppressionToFinding converts a SARIF suppression entry back to a Suppression.
+// Maps SARIF kind/status back to go-finding's SuppressionKind.
+func sarifSuppressionToFinding(s sarifSuppression) *Suppression {
+	kind := sarifKindToSuppression(s.Kind, s.Status)
+
+	return &Suppression{
+		Kind:   kind,
+		Reason: s.Justification,
+	}
+}
+
+// sarifKindToSuppression maps SARIF kind+status back to go-finding SuppressionKind.
+func sarifKindToSuppression(kind, status string) SuppressionKind {
+	if status == "underReview" {
+		return SuppressionInReview
+	}
+
+	if kind == "inExternalConfiguration" {
+		return SuppressionInConfig
+	}
+
+	return SuppressionInSource
 }

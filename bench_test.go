@@ -14,7 +14,7 @@ const (
 )
 
 func benchPosition(fileFmt string, mod, i int) Position {
-	return Position{File: fmt.Sprintf(fileFmt, i%mod), Line: i + 1}
+	return Position{File: FilePath(fmt.Sprintf(fileFmt, i%mod)), Line: i + 1}
 }
 
 func benchReport(i int) *Report {

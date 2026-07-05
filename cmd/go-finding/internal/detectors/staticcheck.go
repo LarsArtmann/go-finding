@@ -67,7 +67,7 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 		}
 
 		pos := finding.Position{ //nolint:exhaustruct
-			File:   resolvePath(dir, entry.Location.File),
+			File:   finding.FilePath(resolvePath(dir, entry.Location.File)),
 			Line:   entry.Location.Line,
 			Column: entry.Location.Column,
 		}

@@ -30,7 +30,7 @@ var _ = Describe("Finding Lifecycle", func() {
 				Expect(f.Rule).To(Equal(finding.RuleName("nilcheck")))
 				Expect(f.ToolName).To(Equal(finding.ToolName("govet")))
 				Expect(f.Severity).To(Equal(finding.SeverityError))
-				Expect(f.Position.File).To(Equal("main.go"))
+				Expect(f.Position.File).To(Equal(finding.FilePath("main.go")))
 				Expect(f.Position.Line).To(Equal(42))
 			})
 
@@ -219,7 +219,7 @@ var _ = Describe("SARIF Round-Trip Fidelity", func() {
 		Expect(parsed[0].Rule).To(Equal(finding.RuleName("SA1000")))
 		Expect(parsed[0].ToolName).To(Equal(finding.ToolName("staticcheck")))
 		Expect(parsed[0].Message).To(Equal("use fmt.Sprintf"))
-		Expect(parsed[0].Position.File).To(Equal("main.go"))
+		Expect(parsed[0].Position.File).To(Equal(finding.FilePath("main.go")))
 		Expect(parsed[0].Position.Line).To(Equal(42))
 	})
 

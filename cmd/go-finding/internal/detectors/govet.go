@@ -82,10 +82,10 @@ func parsePosn(posn, dir string) finding.Position {
 
 	parts := strings.SplitN(posn, ":", posnFieldCount)
 	if len(parts) < 2 {
-		return finding.Position{File: posn} //nolint:exhaustruct
+		return finding.Position{File: finding.FilePath(posn)} //nolint:exhaustruct
 	}
 
-	pos := finding.Position{File: resolvePath(dir, parts[0])} //nolint:exhaustruct
+	pos := finding.Position{File: finding.FilePath(resolvePath(dir, parts[0]))} //nolint:exhaustruct
 
 	if len(parts) >= 2 {
 		line, err := strconv.Atoi(parts[1])

@@ -44,7 +44,14 @@ func newExampleFinding(
 	file string,
 	line, col int,
 ) finding.Finding {
-	return finding.NewFinding(finding.RuleName(rule), finding.ToolName(tool), msg, sev, finding.Pos(file, line, col), 0)
+	return finding.NewFinding(
+		finding.RuleName(rule),
+		finding.ToolName(tool),
+		msg,
+		sev,
+		finding.Pos(finding.FilePath(file), line, col),
+		0,
+	)
 }
 
 func ExampleDiff() {
@@ -190,14 +197,14 @@ func ExampleToolAdapter() {
 				ID: finding.GenerateID(
 					"mylint",
 					finding.RuleName(d.Rule),
-					finding.Position{File: d.File, Line: d.Line},
+					finding.Position{File: finding.FilePath(d.File), Line: d.Line},
 				),
 				Rule:     finding.RuleName(d.Rule),
 				ToolName: "mylint",
 				Message:  d.Message,
 				Severity: finding.SeverityError,
 				Category: finding.CategoryForLinter(d.Rule),
-				Position: finding.Position{File: d.File, Line: d.Line},
+				Position: finding.Position{File: finding.FilePath(d.File), Line: d.Line},
 			})
 		}
 

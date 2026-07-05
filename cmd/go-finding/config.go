@@ -62,10 +62,7 @@ func loadConfig(
 	if configFile != "" {
 		data, err := os.ReadFile(configFile)
 		if err != nil {
-			return pipelineConfigFile{}, fmt.Errorf(
-				"reading config %q (maxIter=%d, timeout=%v, parallel=%v, verify=%v): %w",
-				configFile, maxIter, timeout, parallel, verify, err,
-			)
+			return pipelineConfigFile{}, fmt.Errorf("reading config %q: %w", configFile, err)
 		}
 
 		var cfg pipelineConfigFile
@@ -74,24 +71,21 @@ func loadConfig(
 		case ".yaml", ".yml":
 			if err := yaml.Unmarshal(data, &cfg); err != nil {
 				return pipelineConfigFile{}, fmt.Errorf(
-					"parsing YAML config %q (maxIter=%d, timeout=%v, parallel=%v, verify=%v): %w",
-					configFile, maxIter, timeout, parallel, verify, err,
+					"parsing YAML config %q %w",
+					configFile, err,
 				)
 			}
 		default:
 			if err := json.Unmarshal(data, &cfg); err != nil {
 				return pipelineConfigFile{}, fmt.Errorf(
-					"parsing config %q (maxIter=%d, timeout=%v, parallel=%v, verify=%v): %w",
-					configFile, maxIter, timeout, parallel, verify, err,
+					"parsing config %q %w",
+					configFile, err,
 				)
 			}
 		}
 
 		if err := cfg.validate(); err != nil {
-			return pipelineConfigFile{}, fmt.Errorf(
-				"invalid config %q (maxIter=%d, timeout=%v, parallel=%v, verify=%v): %w",
-				configFile, maxIter, timeout, parallel, verify, err,
-			)
+			return pipelineConfigFile{}, fmt.Errorf("invalid config %q: %w", configFile, err)
 		}
 
 		return cfg, nil

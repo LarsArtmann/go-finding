@@ -44,7 +44,7 @@ type FindingError struct {
 	Finding  *Finding      // Associated finding (may be nil)
 	Message  string        // Human-readable message
 	Cause    error         // Underlying cause (may be nil)
-	File     string        // File path (if applicable)
+	File     FilePath      // File path (if applicable)
 	Position *Position     // Position in file (if applicable)
 }
 

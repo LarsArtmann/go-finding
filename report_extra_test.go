@@ -8,7 +8,7 @@ import (
 func addTestFinding(r *Report, id, rule string, sev Severity, file string) {
 	r.AddFinding(Finding{
 		ID: ID(id), Rule: RuleName(rule), Severity: sev,
-		Position: Position{File: file},
+		Position: Position{File: FilePath(file)},
 	})
 }
 
@@ -85,7 +85,7 @@ func addFinding(
 ) {
 	r.AddFinding(Finding{
 		ID: ID(id), Rule: RuleName(rule), ToolName: "test", Message: msg,
-		Severity: sev, Position: Position{File: file, Line: line},
+		Severity: sev, Position: Position{File: FilePath(file), Line: line},
 		Category: cat, FixStrategy: fs,
 	})
 }

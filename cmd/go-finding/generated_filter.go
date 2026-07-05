@@ -140,3 +140,24 @@ func splitCommaList(s string) []string {
 	}
 	return result
 }
+
+// uniqueStrings returns the input slice with duplicates removed, preserving order.
+func uniqueStrings(in []string) []string {
+	if len(in) <= 1 {
+		return in
+	}
+
+	seen := make(map[string]struct{}, len(in))
+	result := make([]string, 0, len(in))
+
+	for _, s := range in {
+		if _, ok := seen[s]; ok {
+			continue
+		}
+
+		seen[s] = struct{}{}
+		result = append(result, s)
+	}
+
+	return result
+}

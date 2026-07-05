@@ -79,7 +79,7 @@ func testFinding(id, rule, tool, msg string, sev finding.Severity, file string) 
 		ToolName: finding.ToolName(tool),
 		Message:  msg,
 		Severity: sev,
-		Position: finding.Position{File: file},
+		Position: finding.Position{File: finding.FilePath(file)},
 	}
 }
 
@@ -95,16 +95,16 @@ func registerFindingDetector(registry *finding.DetectorRegistry, name, tool stri
 func findingWithRange(id, file string, line, startLine, endLine int) finding.Finding {
 	return finding.Finding{
 		ID:       finding.ID(id),
-		Position: finding.Position{File: file, Line: line},
+		Position: finding.Position{File: finding.FilePath(file), Line: line},
 		Range: &finding.Range{
-			Start: finding.Position{File: file, Line: startLine},
-			End:   finding.Position{File: file, Line: endLine},
+			Start: finding.Position{File: finding.FilePath(file), Line: startLine},
+			End:   finding.Position{File: finding.FilePath(file), Line: endLine},
 		},
 	}
 }
 
 func findingAt(id, file string, line int) finding.Finding {
-	return finding.Finding{ID: finding.ID(id), Position: finding.Position{File: file, Line: line}}
+	return finding.Finding{ID: finding.ID(id), Position: finding.Position{File: finding.FilePath(file), Line: line}}
 }
 
 func findings(fixSpecs ...any) []finding.Finding {
@@ -268,7 +268,7 @@ func makeFixFinding(id, before, after, file string, line int) finding.Finding {
 		Message:     "replace " + before + " with " + after,
 		BeforeCode:  before,
 		AfterCode:   after,
-		Position:    finding.Position{File: file, Line: line},
+		Position:    finding.Position{File: finding.FilePath(file), Line: line},
 		FixStrategy: finding.FixStrategyDirect,
 	}
 }
@@ -292,7 +292,7 @@ func assertFindingErrorIO(t *testing.T, fe *finding.FindingError, file string) {
 		t.Errorf("category = %q, want %q", fe.Category, finding.ErrCategoryIO)
 	}
 
-	if fe.Position.File != file {
+	if string(fe.Position.File) != file {
 		t.Errorf("file = %q, want %q", fe.Position.File, file)
 	}
 }
@@ -302,8 +302,8 @@ func makeFixFindingWithRange(id, before, after, file string, line, col int) find
 		ID:          finding.ID(id),
 		BeforeCode:  before,
 		AfterCode:   after,
-		Position:    finding.Position{File: file, Line: line, Column: col},
-		Range:       finding.NewRangePtr(file, line, col, line, col+len(before)),
+		Position:    finding.Position{File: finding.FilePath(file), Line: line, Column: col},
+		Range:       finding.NewRangePtr(finding.FilePath(file), line, col, line, col+len(before)),
 		FixStrategy: finding.FixStrategyDirect,
 	}
 }
