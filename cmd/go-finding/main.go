@@ -44,6 +44,7 @@ type cliFlags struct {
 	generatedInclude  string
 	byteLevelConflict bool
 	fixProviders      string
+	includeSuppressed bool
 }
 
 func parseFlags() cliFlags {
@@ -104,6 +105,10 @@ func parseFlags() cliFlags {
 	flag.StringVar(
 		&f.fixProviders, "fix-provider", "",
 		"comma-separated fix provider names to enable (e.g., go-ast)",
+	)
+	flag.BoolVar(
+		&f.includeSuppressed, "include-suppressed", true,
+		"include suppressed findings in SARIF output",
 	)
 	flag.Parse()
 
@@ -202,7 +207,7 @@ func run() int {
 		return fatalf("running pipeline", err)
 	}
 
-	return writeResults(result, sev, f.format, f.outputFile)
+	return writeResults(result, sev, f.format, f.outputFile, f.includeSuppressed)
 }
 
 func writeResults(
@@ -210,6 +215,7 @@ func writeResults(
 	minSev finding.Severity,
 	format string,
 	outputFile string,
+	includeSuppressed bool,
 ) int {
 	var allFindings []finding.Finding
 	for _, iter := range result.Iterations {
@@ -225,7 +231,7 @@ func writeResults(
 	report.AddFindings(filtered)
 	report.ComputeSummary()
 
-	if err := writeOutput(report, format, outputFile); err != nil {
+	if err := writeOutput(report, format, outputFile, includeSuppressed); err != nil {
 		return fatalf("writing output", err)
 	}
 

@@ -6,6 +6,12 @@ type Range struct {
 	End   Position `json:"end"`   // Optional: end position
 }
 
+// SameFile reports whether the range's Start and End are in the same file.
+// Returns true when End.File is empty (single-file convention) or matches Start.File.
+func (r Range) SameFile() bool {
+	return r.End.File == "" || r.End.File == r.Start.File
+}
+
 // IsValid returns true if the range has a valid start position.
 func (r Range) IsValid() bool {
 	return r.Start.IsValid()

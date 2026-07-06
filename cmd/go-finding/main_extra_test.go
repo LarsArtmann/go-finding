@@ -25,12 +25,12 @@ func TestOutputResults_WriteError(t *testing.T) {
 	g := NewWithT(t)
 	report := reportWithFindings()
 
-	err := outputResults(&failingWriter{err: errors.New("disk full")}, report, "json")
+	err := outputResults(&failingWriter{err: errors.New("disk full")}, report, "json", true)
 	g.Expect(err).To(HaveOccurred())
 
 	g.Expect(err.Error()).To(ContainSubstring("writing JSON"))
 
-	err = outputResults(&failingWriter{err: errors.New("disk full")}, report, "sarif")
+	err = outputResults(&failingWriter{err: errors.New("disk full")}, report, "sarif", true)
 	g.Expect(err).To(HaveOccurred())
 
 	g.Expect(err.Error()).To(ContainSubstring("writing SARIF"))
@@ -140,7 +140,7 @@ func testOutputSerializationError(t *testing.T, format, substr string) {
 	g := NewWithT(t)
 
 	var buf bytes.Buffer
-	err := outputResults(&buf, reportWithNaNConfidence(), format)
+	err := outputResults(&buf, reportWithNaNConfidence(), format, true)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err.Error()).To(ContainSubstring(substr))
 }
@@ -155,7 +155,7 @@ func TestOutputResults_SARIFNaNConfidenceHandled(t *testing.T) {
 	g := NewWithT(t)
 
 	var buf bytes.Buffer
-	err := outputResults(&buf, reportWithNaNConfidence(), "sarif")
+	err := outputResults(&buf, reportWithNaNConfidence(), "sarif", true)
 	g.Expect(err).NotTo(HaveOccurred())
 }
 
@@ -213,7 +213,7 @@ func TestWriteOutput_ToFile(t *testing.T) {
 	outPath := filepath.Join(tmpDir, "output.json")
 
 	report := reportWithFindings()
-	err := writeOutput(report, "json", outPath)
+	err := writeOutput(report, "json", outPath, true)
 	g.Expect(err).NotTo(HaveOccurred())
 
 	data, err := os.ReadFile(outPath)
@@ -226,7 +226,7 @@ func TestWriteOutput_FileCreationError(t *testing.T) {
 	g := NewWithT(t)
 
 	report := reportWithFindings()
-	err := writeOutput(report, "json", "/nonexistent/dir/out.json")
+	err := writeOutput(report, "json", "/nonexistent/dir/out.json", true)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err.Error()).To(ContainSubstring("creating output file"))
 }

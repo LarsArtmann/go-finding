@@ -28,9 +28,26 @@ const DefaultRelation = finding.RelationRelated
 // The Category is mapped from d.Category (which may be empty for analyzers that
 // don't set it). go/analysis pass/fact results (d.PackageFact, d.FileFact) are not
 // represented — only message-level diagnostics are converted.
+//
+// BeforeCode extraction reads the source file from disk. For in-memory or test
+// scenarios, use FromDiagnosticWithSource instead.
 func FromDiagnostic(
 	d *analysis.Diagnostic,
 	fset *token.FileSet,
+	toolName, ruleCode string,
+	defaultSeverity ...finding.Severity,
+) finding.Finding {
+	return FromDiagnosticWithSource(d, fset, nil, toolName, ruleCode, defaultSeverity...)
+}
+
+// FromDiagnosticWithSource converts a go/analysis.Diagnostic to a Finding using
+// the provided source bytes for BeforeCode extraction. When source is nil, reads
+// the file from disk (same behavior as FromDiagnostic). When source is non-nil,
+// uses it directly — no filesystem access.
+func FromDiagnosticWithSource(
+	d *analysis.Diagnostic,
+	fset *token.FileSet,
+	source []byte,
 	toolName, ruleCode string,
 	defaultSeverity ...finding.Severity,
 ) finding.Finding {
@@ -55,23 +72,7 @@ func FromDiagnostic(
 			edit := d.SuggestedFixes[0].TextEdits[0]
 			afterCode = string(edit.NewText)
 
-			// Extract BeforeCode from the text being replaced.
-			if edit.End > edit.Pos {
-				startPos := fset.Position(edit.Pos)
-				endPos := fset.Position(edit.End)
-
-				if startPos.IsValid() && endPos.IsValid() && startPos.Offset < endPos.Offset {
-					src, err := os.ReadFile(startPos.Filename)
-					if err == nil {
-						startOff := startPos.Offset
-						endOff := endPos.Offset
-
-						if startOff >= 0 && endOff <= len(src) && startOff < endOff {
-							beforeCode = string(src[startOff:endOff])
-						}
-					}
-				}
-			}
+			beforeCode = extractBeforeCode(fset, edit, source)
 		}
 	}
 
@@ -244,4 +245,41 @@ func nodeStartPos(fset *token.FileSet, node ast.Node) token.Position {
 	}
 
 	return fset.Position(node.Pos())
+}
+
+// extractBeforeCode reads the text being replaced by a TextEdit.
+// Uses source bytes when provided; falls back to reading from disk.
+func extractBeforeCode(fset *token.FileSet, edit analysis.TextEdit, source []byte) string {
+	if edit.End <= edit.Pos {
+		return ""
+	}
+
+	startPos := fset.Position(edit.Pos)
+	endPos := fset.Position(edit.End)
+
+	if !startPos.IsValid() || !endPos.IsValid() || startPos.Offset >= endPos.Offset {
+		return ""
+	}
+
+	startOff := startPos.Offset
+	endOff := endPos.Offset
+
+	if source != nil {
+		if startOff >= 0 && endOff <= len(source) && startOff < endOff {
+			return string(source[startOff:endOff])
+		}
+
+		return ""
+	}
+
+	src, err := os.ReadFile(startPos.Filename)
+	if err != nil {
+		return ""
+	}
+
+	if startOff >= 0 && endOff <= len(src) && startOff < endOff {
+		return string(src[startOff:endOff])
+	}
+
+	return ""
 }

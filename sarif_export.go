@@ -83,19 +83,6 @@ func (r *Report) ToSARIFWithOpts(opts ...SARIFOption) ([]byte, error) {
 	return data, nil
 }
 
-// ToSARIFFiltered converts non-suppressed findings with severity >= minSeverity
-// to SARIF 2.1.0 format. It filters by BOTH suppression status and severity.
-//
-// Deprecated: Use ToSARIFWithOpts(WithMinSeverity(sev)) instead for a unified API.
-func (r *Report) ToSARIFFiltered(minSeverity Severity) ([]byte, error) {
-	data, err := json.MarshalIndent(r.sarifLogFiltered(minSeverity), "", "  ")
-	if err != nil {
-		return nil, fmt.Errorf("marshaling SARIF filtered (minSeverity=%s): %w", minSeverity, err)
-	}
-
-	return data, nil
-}
-
 // WriteSARIF writes the report in SARIF 2.1.0 format directly to w.
 // Streams via json.Encoder, avoiding the intermediate []byte buffer of ToSARIF.
 // The context is checked for cancellation before encoding begins.
@@ -130,27 +117,6 @@ func (r *Report) WriteSARIFWithOpts(ctx context.Context, w io.Writer, opts ...SA
 	return nil
 }
 
-// WriteSARIFFiltered writes non-suppressed findings with severity >= minSeverity
-// in SARIF 2.1.0 format directly to w.
-//
-// Deprecated: Use WriteSARIFWithOpts(w, WithMinSeverity(sev)) instead for a unified API.
-func (r *Report) WriteSARIFFiltered(ctx context.Context, w io.Writer, minSeverity Severity) error {
-	err := ctx.Err()
-	if err != nil {
-		return fmt.Errorf("writing SARIF filtered (minSeverity=%s): %w", minSeverity, err)
-	}
-
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
-
-	err = enc.Encode(r.sarifLogFiltered(minSeverity))
-	if err != nil {
-		return fmt.Errorf("encoding SARIF filtered (minSeverity=%s): %w", minSeverity, err)
-	}
-
-	return nil
-}
-
 // WriteTo writes the report in SARIF 2.1.0 format to w and returns the bytes written.
 // Implements io.WriterTo, enabling use with io.Copy for streaming SARIF output.
 //
@@ -176,13 +142,6 @@ func (c *countingWriter) Write(p []byte) (int, error) {
 	c.n += int64(n)
 
 	return n, err //nolint:wrapcheck // passthrough writer — wrapping would be misleading
-}
-
-func (r *Report) sarifLogFiltered(severity Severity) sarifLog {
-	cfg := defaultSarifConfig()
-	cfg.minSeverity = severity
-
-	return r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg))
 }
 
 func (r *Report) buildsarifLog(results []sarifResult) sarifLog {

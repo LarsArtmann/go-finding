@@ -40,7 +40,7 @@ func TestOutputResults_AllFormats(t *testing.T) {
 
 			var buf bytes.Buffer
 
-			if err := outputResults(&buf, report, format); err != nil {
+			if err := outputResults(&buf, report, format, true); err != nil {
 				t.Fatalf("outputResults(%s) error: %v", format, err)
 			}
 
@@ -301,7 +301,7 @@ func TestOutputResults_GoOutputEmptyFindings(t *testing.T) {
 
 			var buf bytes.Buffer
 
-			if err := outputResults(&buf, report, format); err != nil {
+			if err := outputResults(&buf, report, format, true); err != nil {
 				t.Fatalf("outputResults(%s) error: %v", format, err)
 			}
 
@@ -377,7 +377,7 @@ func TestOutputResults_UnknownFormat(t *testing.T) {
 	report.ComputeSummary()
 
 	var buf bytes.Buffer
-	err := outputResults(&buf, report, "xml")
+	err := outputResults(&buf, report, "xml", true)
 	if err == nil {
 		t.Fatal("expected error for unknown format, got nil")
 	}

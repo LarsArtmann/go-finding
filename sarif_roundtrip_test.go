@@ -27,7 +27,7 @@ func TestWriteSARIFFiltered_WriterError(t *testing.T) {
 
 	r := simpleSARIFReport()
 
-	err := r.WriteSARIFFiltered(context.Background(), &failWriter{}, SeverityWarning)
+	err := r.WriteSARIFWithOpts(context.Background(), &failWriter{}, WithMinSeverity(SeverityWarning))
 	g.Expect(err).To(gomega.HaveOccurred())
 	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("encoding SARIF")))
 }
@@ -95,9 +95,9 @@ func TestWriteSARIFFiltered_CancelledContext(t *testing.T) {
 
 	var buf strings.Builder
 
-	err := r.WriteSARIFFiltered(ctx, &buf, SeverityWarning)
+	err := r.WriteSARIFWithOpts(ctx, &buf, WithMinSeverity(SeverityWarning))
 	g.Expect(err).To(gomega.HaveOccurred())
-	g.Expect(err.Error()).To(gomega.ContainSubstring("writing SARIF filtered"))
+	g.Expect(err.Error()).To(gomega.ContainSubstring("writing SARIF"))
 }
 
 func TestFindingsFromSARIF_CancelledContext(t *testing.T) {

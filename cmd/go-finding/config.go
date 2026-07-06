@@ -194,9 +194,9 @@ func (c pipelineConfigFile) toPipelineConfig() (pipeline.Config, error) {
 	}, nil
 }
 
-func writeOutput(report *finding.Report, format, outputFile string) error {
+func writeOutput(report *finding.Report, format, outputFile string, includeSuppressed bool) error {
 	if outputFile == "" {
-		return outputResults(os.Stdout, report, format)
+		return outputResults(os.Stdout, report, format, includeSuppressed)
 	}
 
 	f, err := os.Create(outputFile)
@@ -204,7 +204,7 @@ func writeOutput(report *finding.Report, format, outputFile string) error {
 		return fmt.Errorf("creating output file %s: %w", outputFile, err)
 	}
 
-	writeErr := outputResults(f, report, format)
+	writeErr := outputResults(f, report, format, includeSuppressed)
 	closeErr := f.Close()
 
 	if writeErr != nil {
@@ -226,7 +226,7 @@ func isValidFormat(format string) bool {
 	return slices.Contains(supportedFormats, format)
 }
 
-func outputResults(w io.Writer, report *finding.Report, format string) error {
+func outputResults(w io.Writer, report *finding.Report, format string, includeSuppressed bool) error {
 	if !isValidFormat(format) {
 		return fmt.Errorf("unsupported format %q (supported: %s)", format, strings.Join(supportedFormats, ", "))
 	}
@@ -250,7 +250,12 @@ func outputResults(w io.Writer, report *finding.Report, format string) error {
 			return fmt.Errorf("writing JSON: %w", err)
 		}
 	case "sarif":
-		out, err := report.ToSARIFWithOpts(finding.WithIncludeSuppressed())
+		var opts []finding.SARIFOption
+		if includeSuppressed {
+			opts = append(opts, finding.WithIncludeSuppressed())
+		}
+
+		out, err := report.ToSARIFWithOpts(opts...)
 		if err != nil {
 			return fmt.Errorf("serializing SARIF: %w", err)
 		}

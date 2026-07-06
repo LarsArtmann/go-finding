@@ -184,9 +184,9 @@ func TestToSARIFFiltered(t *testing.T) {
 		},
 	}
 
-	data, err := r.ToSARIFFiltered(SeverityError)
+	data, err := r.ToSARIFWithOpts(WithMinSeverity(SeverityError))
 	if err != nil {
-		t.Fatalf("ToSARIFFiltered: %v", err)
+		t.Fatalf("ToSARIFWithOpts: %v", err)
 	}
 
 	log := unmarshalSARIF(t, data)

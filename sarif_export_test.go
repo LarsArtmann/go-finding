@@ -87,7 +87,7 @@ func TestToSARIF_NaNConfidence(t *testing.T) {
 func TestToSARIFFiltered_NaNConfidence(t *testing.T) {
 	t.Parallel()
 	testSARIFNaNHandled(t, func(r *Report) ([]byte, error) {
-		return r.ToSARIFFiltered(SeverityError)
+		return r.ToSARIFWithOpts(WithMinSeverity(SeverityError))
 	})
 }
 
@@ -127,7 +127,7 @@ func TestWriteSARIFFiltered(t *testing.T) {
 
 	var buf strings.Builder
 
-	err := r.WriteSARIFFiltered(context.Background(), &buf, SeverityWarning)
+	err := r.WriteSARIFWithOpts(context.Background(), &buf, WithMinSeverity(SeverityWarning))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	data := buf.String()

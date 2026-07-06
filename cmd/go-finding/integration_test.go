@@ -63,7 +63,7 @@ func saveRestoreFlags(t *testing.T) {
 
 func requireOutputResults(t *testing.T, w *bytes.Buffer, report *finding.Report, format string) {
 	t.Helper()
-	if err := outputResults(w, report, format); err != nil {
+	if err := outputResults(w, report, format, true); err != nil {
 		t.Fatalf("outputResults error: %v", err)
 	}
 }

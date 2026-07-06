@@ -51,7 +51,7 @@ func TestOutputResults_Markdown(t *testing.T) {
 	var buf bytes.Buffer
 	report := reportWithFindings()
 
-	err := outputResults(&buf, report, "markdown")
+	err := outputResults(&buf, report, "markdown", true)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(buf.String()).To(ContainSubstring("nil dereference"))
 }
