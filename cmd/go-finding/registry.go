@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	det "github.com/larsartmann/go-finding/cmd/go-finding/internal/detectors"
+	"github.com/larsartmann/go-finding/lockutil"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
@@ -22,32 +23,36 @@ var (
 // RegisterDetector registers a custom detector builder by name.
 // It is safe for concurrent use. Returns an error if the name is already registered.
 func RegisterDetector(name string, builder func(string) pipeline.Detector) error {
-	knownDetectorBuildersMu.Lock()
-	defer knownDetectorBuildersMu.Unlock()
+	return lockutil.Locked(&knownDetectorBuildersMu, func() error {
+		if _, exists := knownDetectorBuilders[name]; exists {
+			return fmt.Errorf("%w: %q", errDetectorRegistered, name)
+		}
 
-	if _, exists := knownDetectorBuilders[name]; exists {
-		return fmt.Errorf("%w: %q", errDetectorRegistered, name)
-	}
+		knownDetectorBuilders[name] = builder
 
-	knownDetectorBuilders[name] = builder
-
-	return nil
+		return nil
+	})
 }
 
 func lookupDetectorBuilder(name string) (func(string) pipeline.Detector, bool) {
-	knownDetectorBuildersMu.RLock()
-	defer knownDetectorBuildersMu.RUnlock()
+	type lookup struct {
+		builder func(string) pipeline.Detector
+		ok      bool
+	}
 
-	b, ok := knownDetectorBuilders[name]
+	res := lockutil.RLocked(&knownDetectorBuildersMu, func() lookup {
+		b, ok := knownDetectorBuilders[name]
 
-	return b, ok
+		return lookup{builder: b, ok: ok}
+	})
+
+	return res.builder, res.ok
 }
 
 func availableDetectorNames() []string {
-	knownDetectorBuildersMu.RLock()
-	defer knownDetectorBuildersMu.RUnlock()
-
-	return slices.Sorted(maps.Keys(knownDetectorBuilders))
+	return lockutil.RLocked(&knownDetectorBuildersMu, func() []string {
+		return slices.Sorted(maps.Keys(knownDetectorBuilders))
+	})
 }
 
 func buildDetectors(specs []detectorSpec, dir string) []pipeline.Detector {

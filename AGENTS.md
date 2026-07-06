@@ -32,6 +32,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 | **LSP**             | `lsp.go`                                                                                                                                                                                                |
 | **Extensibility**   | `detector.go`, `adapter.go` (ToolAdapter[O]), `registry.go` (DetectorRegistry), `interval_tree.go` (IntervalIndex[T])                                                                                   |
 | **gotoken**         | `gotoken/gotoken.go` (shared go/token utilities, public package, stdlib only)                                                                                                                           |
+| **lockutil**        | `lockutil/lockutil.go` (shared sync.Locker helpers — `Locked`, `RLocked` — for generic mutex-guarded critical sections, stdlib only)                                                                    |
 | **Pipeline**        | `pipeline/pipeline.go` (Run), `pipeline/pipeline_detect.go`, `pipeline/pipeline_iteration.go`, `pipeline/config.go`, `pipeline/config_file.go`                                                          |
 | **Fix engine**      | `pipeline/fix_engine.go`, `pipeline/fix_provider.go`, `pipeline/fix_applier.go`, `pipeline/fix_edit.go`, `pipeline/conflict.go`, `pipeline/goast/provider.go`                                           |
 | **Pipeline extras** | `pipeline/stage_hook.go`, `pipeline/line_shift.go`, `pipeline/metrics.go`, `pipeline/retry.go`, `pipeline/partial.go`, `pipeline/generated_filter.go`                                                   |
@@ -109,6 +110,7 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **LSPDiagnosticData** — `ToLSP()` populates `diag.Data` with ID, FixStrategy, Confidence, Category, Tags, code data. `FromLSP` restores them. Round-trip is now lossless.
 - **Analysis BeforeCode** — `analysis.FromDiagnostic` now extracts `BeforeCode` from TextEdits by reading source file from disk.
 - **GroupByFile returns map[FilePath][]Finding** — Updated to use branded type as map key.
+- **lockutil.Locked/RLocked for mutex boilerplate** — Generic helpers `lockutil.Locked(sync.Locker, fn)` and `lockutil.RLocked(*sync.RWMutex, fn)` consolidate the m.mu.Lock()/defer m.mu.Unlock() pattern. Returns generic T; use `struct{}` for side-effect-only sections. Report/metrics/file_backup/registry/category_linter/etc. all use these.
 
 ## CLI Features
 
@@ -144,6 +146,7 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **Analysis BeforeCode extraction** — `analysis.FromDiagnostic` reads source files to extract `BeforeCode` from TextEdit ranges, enabling full fix data on go/analysis findings.
 - **Pipeline convenience functions** — `pipeline.Detect(ctx, detectors...)` for one-shot detection; `pipeline.ApplyToContent(content, fixes)` for content-level fix application without filesystem.
 - **FixEngine guide** — `docs/guides/fix-engine.md` covers all FixEngine usage patterns.
+- **lockutil package** — Generic `lockutil.Locked(sync.Locker, fn) T` and `lockutil.RLocked(*sync.RWMutex, fn) T` helpers eliminate m.mu.Lock()/defer m.mu.Unlock() boilerplate across Report, Metrics, FileBackup, registries, and AST provider. Stdlib only, follows `gotoken` precedent.
 
 ## Removed APIs (v1.0.0)
 

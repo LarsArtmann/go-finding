@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/larsartmann/go-finding/lockutil"
 )
 
 // Report is the top-level container for a tool run.
@@ -24,24 +26,23 @@ type Report struct {
 // It checks Tool info and validates each finding, returning joined errors.
 // Safe for concurrent use.
 func (r *Report) Validate() error {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return withReadLock(r, func() error {
+		var errs []error
 
-	var errs []error
-
-	err := r.Tool.Validate()
-	if err != nil {
-		errs = append(errs, err)
-	}
-
-	for i, f := range r.findings {
-		err := f.Validate()
+		err := r.Tool.Validate()
 		if err != nil {
-			errs = append(errs, fmt.Errorf("findings[%d]: %w", i, err))
+			errs = append(errs, err)
 		}
-	}
 
-	return errors.Join(errs...)
+		for i, f := range r.findings {
+			err := f.Validate()
+			if err != nil {
+				errs = append(errs, fmt.Errorf("findings[%d]: %w", i, err))
+			}
+		}
+
+		return errors.Join(errs...)
+	})
 }
 
 // ToolInfo contains metadata about the tool that generated the report.
@@ -86,19 +87,21 @@ func NewReport(tool ToolInfo) *Report {
 // AddFinding adds a finding to the report.
 // Safe for concurrent use.
 func (r *Report) AddFinding(f Finding) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	withLock(r, func() struct{} {
+		r.findings = append(r.findings, f)
 
-	r.findings = append(r.findings, f)
+		return struct{}{}
+	})
 }
 
 // AddFindings adds multiple findings to the report.
 // Safe for concurrent use.
 func (r *Report) AddFindings(findings []Finding) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	withLock(r, func() struct{} {
+		r.findings = append(r.findings, findings...)
 
-	r.findings = append(r.findings, findings...)
+		return struct{}{}
+	})
 }
 
 // MergeInto returns a new Report containing findings from both r and other.
@@ -130,13 +133,45 @@ func (r *Report) MergeInto(other *Report) *Report {
 // Safe for concurrent use. The caller receives a snapshot that won't
 // be affected by subsequent AddFinding/AddFindings calls.
 func (r *Report) readFindings() []Finding {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return withReadLock(r, func() []Finding {
+		findings := make([]Finding, len(r.findings))
+		copy(findings, r.findings)
 
-	findings := make([]Finding, len(r.findings))
-	copy(findings, r.findings)
+		return findings
+	})
+}
 
-	return findings
+// withReadLock runs fn while holding r.mu.RLock and returns its result.
+// Consolidates the r.mu.RLock()/defer r.mu.RUnlock() boilerplate around
+// short read-side computations on Report.
+func withReadLock[T any](r *Report, fn func() T) T {
+	return lockutil.RLocked(&r.mu, fn)
+}
+
+// withReadLockErr is the (T, error)-returning counterpart to withReadLock.
+// Use it for read paths that may fail mid-flight (e.g., serialization).
+// Implemented via withReadLock + a closure that returns a (T, error)-shaped
+// tuple to avoid duplicating the lock boilerplate.
+func withReadLockErr[T any](r *Report, fn func() (T, error)) (T, error) {
+	type result struct {
+		value T
+		err   error
+	}
+
+	res := withReadLock(r, func() result {
+		v, err := fn()
+
+		return result{value: v, err: err}
+	})
+
+	return res.value, res.err
+}
+
+// withLock runs fn while holding r.mu.Lock and returns its result.
+// Consolidates the r.mu.Lock()/defer r.mu.Unlock() boilerplate around
+// short write-side mutations on Report.
+func withLock[T any](r *Report, fn func() T) T {
+	return lockutil.Locked(&r.mu, fn)
 }
 
 // findingsLocked returns the findings slice without acquiring the lock.
@@ -160,34 +195,35 @@ func (r *Report) ComputeSummaryAt(now time.Time) {
 }
 
 func (r *Report) computeSummaryAt(now time.Time) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	withLock(r, func() struct{} {
+		r.Summary.Total = len(r.findings)
+		r.Summary.BySeverity = make(map[Severity]int)
+		r.Summary.ByCategory = make(map[Category]int)
+		r.Summary.ByFixStrategy = make(map[FixStrategy]int)
 
-	r.Summary.Total = len(r.findings)
-	r.Summary.BySeverity = make(map[Severity]int)
-	r.Summary.ByCategory = make(map[Category]int)
-	r.Summary.ByFixStrategy = make(map[FixStrategy]int)
+		files := make(map[string]struct{})
+		suppressed := 0
 
-	files := make(map[string]struct{})
-	suppressed := 0
+		for _, f := range r.findings {
+			r.Summary.BySeverity[f.Severity]++
 
-	for _, f := range r.findings {
-		r.Summary.BySeverity[f.Severity]++
+			r.Summary.ByFixStrategy[f.FixStrategy]++
+			if f.Category != "" {
+				r.Summary.ByCategory[f.Category]++
+			}
 
-		r.Summary.ByFixStrategy[f.FixStrategy]++
-		if f.Category != "" {
-			r.Summary.ByCategory[f.Category]++
+			if f.Position.File != "" {
+				files[string(f.Position.File)] = struct{}{}
+			}
+
+			if f.IsSuppressedAt(now) {
+				suppressed++
+			}
 		}
 
-		if f.Position.File != "" {
-			files[string(f.Position.File)] = struct{}{}
-		}
+		r.Summary.FilesAffected = len(files)
+		r.Summary.Suppressed = suppressed
 
-		if f.IsSuppressedAt(now) {
-			suppressed++
-		}
-	}
-
-	r.Summary.FilesAffected = len(files)
-	r.Summary.Suppressed = suppressed
+		return struct{}{}
+	})
 }

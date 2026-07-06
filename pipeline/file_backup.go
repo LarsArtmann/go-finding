@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/larsartmann/go-finding/lockutil"
 )
 
 type backupEntry struct {
@@ -53,14 +54,13 @@ func (fb *FileBackup) SetEnabled(v bool) {
 // BackupPath returns the backup path for the given original file, or empty
 // string if no backup exists.
 func (fb *FileBackup) BackupPath(original string) string {
-	fb.mu.Lock()
-	defer fb.mu.Unlock()
+	return lockutil.Locked(&fb.mu, func() string {
+		if e, ok := fb.backups[original]; ok {
+			return e.path
+		}
 
-	if e, ok := fb.backups[original]; ok {
-		return e.path
-	}
-
-	return ""
+		return ""
+	})
 }
 
 // Backup creates a backup of the given file.
@@ -100,28 +100,32 @@ func (fb *FileBackup) Backup(path string) error {
 		return ioErrorAt("write backup", err, path)
 	}
 
-	fb.mu.Lock()
-	fb.backups[path] = backupEntry{path: backupPath, mode: info.Mode()}
-	fb.mu.Unlock()
+	lockutil.Locked(&fb.mu, func() struct{} {
+		fb.backups[path] = backupEntry{path: backupPath, mode: info.Mode()}
+
+		return struct{}{}
+	})
 
 	return nil
 }
 
 // Restore restores a file from its backup.
 func (fb *FileBackup) Restore(path string) error {
-	entry, ok := func() (backupEntry, bool) {
-		fb.mu.Lock()
-		defer fb.mu.Unlock()
+	type lookup struct {
+		entry backupEntry
+		ok    bool
+	}
 
+	res := lockutil.Locked(&fb.mu, func() lookup {
 		e, exists := fb.backups[path]
 
-		return e, exists
-	}()
-	if !ok {
+		return lookup{entry: e, ok: exists}
+	})
+	if !res.ok {
 		return finding.NewInternalError("no backup for "+path, nil)
 	}
 
-	data, err := os.ReadFile(entry.path)
+	data, err := os.ReadFile(res.entry.path)
 	if err != nil {
 		return ioErrorAt("read backup", err, path)
 	}
@@ -129,7 +133,7 @@ func (fb *FileBackup) Restore(path string) error {
 	err = os.WriteFile( //nolint:gosec // intentional file write in fix applier
 		path,
 		data,
-		entry.mode,
+		res.entry.mode,
 	)
 	if err != nil {
 		return ioErrorAt("restore file", err, path)

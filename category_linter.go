@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/larsartmann/go-finding/lockutil"
 )
 
 // LinterRegistry maps linter/analyzer names to Categories.
@@ -30,42 +32,50 @@ func NewLinterRegistry(items map[string]Category) *LinterRegistry {
 // Lookup returns the Category for a linter name (case-insensitive).
 // Returns the provided fallback if the name is not registered.
 func (r *LinterRegistry) Lookup(name string, fallback Category) Category {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return readLinter(r, func() Category {
+		if cat, ok := r.items[strings.ToLower(name)]; ok {
+			return cat
+		}
 
-	if cat, ok := r.items[strings.ToLower(name)]; ok {
-		return cat
-	}
-
-	return fallback
+		return fallback
+	})
 }
 
 // Register adds or overrides a Category mapping for a linter name.
 func (r *LinterRegistry) Register(name string, cat Category) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	writeLinter(r, func() struct{} {
+		if r.items == nil {
+			r.items = make(map[string]Category)
+		}
 
-	if r.items == nil {
-		r.items = make(map[string]Category)
-	}
+		r.items[strings.ToLower(name)] = cat
 
-	r.items[strings.ToLower(name)] = cat
+		return struct{}{}
+	})
 }
 
 // Names returns all registered linter names in sorted order.
 func (r *LinterRegistry) Names() []string {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	return slices.Sorted(maps.Keys(r.items))
+	return readLinter(r, func() []string {
+		return slices.Sorted(maps.Keys(r.items))
+	})
 }
 
 // Clone returns a deep copy of the registry.
 func (r *LinterRegistry) Clone() *LinterRegistry {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return readLinter(r, func() *LinterRegistry {
+		return &LinterRegistry{items: maps.Clone(r.items)} //nolint:exhaustruct
+	})
+}
 
-	return &LinterRegistry{items: maps.Clone(r.items)} //nolint:exhaustruct
+// readLinter runs fn while holding r.mu.RLock and returns its result.
+func readLinter[T any](r *LinterRegistry, fn func() T) T {
+	return lockutil.RLocked(&r.mu, fn)
+}
+
+// writeLinter runs fn while holding r.mu.Lock and returns its result.
+func writeLinter[T any](r *LinterRegistry, fn func() T) T {
+	return lockutil.Locked(&r.mu, fn)
 }
 
 // DefaultLinterRegistry is the global registry with built-in linter→category mappings.

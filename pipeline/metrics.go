@@ -4,6 +4,8 @@ import (
 	"maps"
 	"sync"
 	"time"
+
+	"github.com/larsartmann/go-finding/lockutil"
 )
 
 // Metrics collects timing and count data from pipeline execution.
@@ -29,73 +31,85 @@ func NewMetrics() *Metrics {
 	}
 }
 
+// record runs fn while holding m.mu and returns its result. Consolidates
+// the m.mu.Lock()/m.mu.Unlock() boilerplate for write-side Metrics
+// mutations. Returns struct{} when no value is needed.
+func record[T any](m *Metrics, fn func() T) T {
+	return lockutil.Locked(&m.mu, fn)
+}
+
+// read runs fn while holding m.mu and returns its result. Consolidates
+// the read-side m.mu.Lock()/defer m.mu.Unlock() boilerplate for Metrics.
+func readMetrics[T any](m *Metrics, fn func() T) T {
+	return lockutil.Locked(&m.mu, fn)
+}
+
 // RecordStage records the duration of a pipeline stage.
 func (m *Metrics) RecordStage(name Stage, d time.Duration) {
-	m.mu.Lock()
-	m.stageDurations[name] += d
-	m.mu.Unlock()
+	record(m, func() struct{} {
+		m.stageDurations[name] += d
+
+		return struct{}{}
+	})
 }
 
 // RecordDetector records the duration and findings count for a detector.
 func (m *Metrics) RecordDetector(name string, d time.Duration, findings int) {
-	m.mu.Lock()
-	m.detectorTimes[name] += d
-	m.findingsFound[name] += findings
-	m.mu.Unlock()
+	record(m, func() struct{} {
+		m.detectorTimes[name] += d
+		m.findingsFound[name] += findings
+
+		return struct{}{}
+	})
 }
 
 // RecordFixes records multiple successful fix applications in a single mutex acquisition.
 func (m *Metrics) RecordFixes(count uint) {
-	m.mu.Lock()
-	m.fixesApplied += int(count)
-	m.mu.Unlock()
+	record(m, func() struct{} {
+		m.fixesApplied += int(count)
+
+		return struct{}{}
+	})
 }
 
 // StageDuration returns the total duration recorded for the named stage.
 func (m *Metrics) StageDuration(name Stage) time.Duration {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	return m.stageDurations[name]
+	return readMetrics(m, func() time.Duration {
+		return m.stageDurations[name]
+	})
 }
 
 // DetectorTime returns the total duration recorded for the named detector.
 func (m *Metrics) DetectorTime(name string) time.Duration {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	return m.detectorTimes[name]
+	return readMetrics(m, func() time.Duration {
+		return m.detectorTimes[name]
+	})
 }
 
 // DetectorFindings returns the total findings count for the named detector.
 func (m *Metrics) DetectorFindings(name string) int {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	return m.findingsFound[name]
+	return readMetrics(m, func() int {
+		return m.findingsFound[name]
+	})
 }
 
 // TotalFixesApplied returns the total number of fixes applied.
 func (m *Metrics) TotalFixesApplied() int {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	return m.fixesApplied
+	return readMetrics(m, func() int {
+		return m.fixesApplied
+	})
 }
 
 // TotalDuration returns the total pipeline execution time.
 // Returns 0 if the pipeline has not completed.
 func (m *Metrics) TotalDuration() time.Duration {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	return readMetrics(m, func() time.Duration {
+		if m.endTime.IsZero() || m.startTime.IsZero() {
+			return 0
+		}
 
-	if m.endTime.IsZero() || m.startTime.IsZero() {
-		return 0
-	}
-
-	d := m.endTime.Sub(m.startTime)
-
-	return max(d, 0)
+		return max(m.endTime.Sub(m.startTime), 0)
+	})
 }
 
 // StageTiming returns a function that records stage duration when called.
@@ -125,47 +139,50 @@ func (s MetricsSnapshot) StageDuration(name Stage) time.Duration {
 
 // SetStart records the pipeline start time.
 func (m *Metrics) SetStart(t time.Time) {
-	m.mu.Lock()
-	m.startTime = t
-	m.mu.Unlock()
+	record(m, func() struct{} {
+		m.startTime = t
+
+		return struct{}{}
+	})
 }
 
 // SetEnd records the pipeline end time.
 func (m *Metrics) SetEnd(t time.Time) {
-	m.mu.Lock()
-	m.endTime = t
-	m.mu.Unlock()
+	record(m, func() struct{} {
+		m.endTime = t
+
+		return struct{}{}
+	})
 }
 
 // Snapshot returns a point-in-time copy of the metrics.
 func (m *Metrics) Snapshot() MetricsSnapshot {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	return readMetrics(m, func() MetricsSnapshot {
+		stages := make(map[Stage]time.Duration, len(m.stageDurations))
+		maps.Copy(stages, m.stageDurations)
 
-	stages := make(map[Stage]time.Duration, len(m.stageDurations))
-	maps.Copy(stages, m.stageDurations)
+		detectors := make(map[string]time.Duration, len(m.detectorTimes))
+		maps.Copy(detectors, m.detectorTimes)
 
-	detectors := make(map[string]time.Duration, len(m.detectorTimes))
-	maps.Copy(detectors, m.detectorTimes)
+		findings := make(map[string]int, len(m.findingsFound))
+		maps.Copy(findings, m.findingsFound)
 
-	findings := make(map[string]int, len(m.findingsFound))
-	maps.Copy(findings, m.findingsFound)
+		total := time.Duration(0)
 
-	total := time.Duration(0)
-
-	if !m.endTime.IsZero() && !m.startTime.IsZero() {
-		if d := m.endTime.Sub(m.startTime); d > 0 {
-			total = d
+		if !m.endTime.IsZero() && !m.startTime.IsZero() {
+			if d := m.endTime.Sub(m.startTime); d > 0 {
+				total = d
+			}
 		}
-	}
 
-	return MetricsSnapshot{
-		StartTime:      m.startTime,
-		EndTime:        m.endTime,
-		StageDurations: stages,
-		DetectorTimes:  detectors,
-		FindingsFound:  findings,
-		FixesApplied:   m.fixesApplied,
-		TotalDuration:  total,
-	}
+		return MetricsSnapshot{
+			StartTime:      m.startTime,
+			EndTime:        m.endTime,
+			StageDurations: stages,
+			DetectorTimes:  detectors,
+			FindingsFound:  findings,
+			FixesApplied:   m.fixesApplied,
+			TotalDuration:  total,
+		}
+	})
 }

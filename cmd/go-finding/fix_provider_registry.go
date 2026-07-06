@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/larsartmann/go-finding/lockutil"
 	"github.com/larsartmann/go-finding/pipeline"
 	"github.com/larsartmann/go-finding/pipeline/goast"
 )
@@ -27,19 +28,24 @@ var (
 var ErrUnknownFixProvider = fmt.Errorf("unknown fix provider")
 
 func lookupFixProvider(name string) (func() pipeline.FixProvider, bool) {
-	knownFixProvidersMu.RLock()
-	defer knownFixProvidersMu.RUnlock()
+	type lookup struct {
+		builder func() pipeline.FixProvider
+		ok      bool
+	}
 
-	b, ok := knownFixProviders[name]
+	res := lockutil.RLocked(&knownFixProvidersMu, func() lookup {
+		b, ok := knownFixProviders[name]
 
-	return b, ok
+		return lookup{builder: b, ok: ok}
+	})
+
+	return res.builder, res.ok
 }
 
 func availableFixProviderNames() []string {
-	knownFixProvidersMu.RLock()
-	defer knownFixProvidersMu.RUnlock()
-
-	return slices.Sorted(maps.Keys(knownFixProviders))
+	return lockutil.RLocked(&knownFixProvidersMu, func() []string {
+		return slices.Sorted(maps.Keys(knownFixProviders))
+	})
 }
 
 // resolveFixProviders converts provider names into a []pipeline.FixProvider slice.

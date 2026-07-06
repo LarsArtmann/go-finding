@@ -10,19 +10,18 @@ import (
 // making it suitable for v1.0 migration from direct Findings slice access.
 // Each Finding is fully cloned via Clone(), so mutations are isolated.
 func (r *Report) FindingsSnapshot() []Finding {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return withReadLock(r, func() []Finding {
+		if len(r.findings) == 0 {
+			return nil
+		}
 
-	if len(r.findings) == 0 {
-		return nil
-	}
+		snapshot := make([]Finding, len(r.findings))
+		for i, f := range r.findings {
+			snapshot[i] = f.Clone()
+		}
 
-	snapshot := make([]Finding, len(r.findings))
-	for i, f := range r.findings {
-		snapshot[i] = f.Clone()
-	}
-
-	return snapshot
+		return snapshot
+	})
 }
 
 // ActiveFindings returns all non-suppressed findings.
@@ -30,19 +29,18 @@ func (r *Report) FindingsSnapshot() []Finding {
 // in tests, filter Findings directly with IsSuppressedAt.
 // Safe for concurrent use.
 func (r *Report) ActiveFindings() []Finding {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return withReadLock(r, func() []Finding {
+		now := time.Now()
+		active := make([]Finding, 0, len(r.findings))
 
-	now := time.Now()
-	active := make([]Finding, 0, len(r.findingsLocked()))
-
-	for _, f := range r.findingsLocked() {
-		if !f.IsSuppressedAt(now) {
-			active = append(active, f)
+		for _, f := range r.findings {
+			if !f.IsSuppressedAt(now) {
+				active = append(active, f)
+			}
 		}
-	}
 
-	return active
+		return active
+	})
 }
 
 // BySeverity returns findings filtered by severity, excluding suppressed.
@@ -55,10 +53,9 @@ func (r *Report) BySeverity(sev Severity) []Finding {
 // CountBySeverity returns the count of findings for the given severity,
 // including suppressed findings. Uses the pre-computed summary.
 func (r *Report) CountBySeverity(sev Severity) int {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	return r.Summary.BySeverity[sev]
+	return withReadLock(r, func() int {
+		return r.Summary.BySeverity[sev]
+	})
 }
 
 // ByCategory returns findings filtered by category, excluding suppressed.
@@ -81,18 +78,17 @@ func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 // will be shared. Use Clone() for a deep copy.
 // Safe for concurrent use.
 func (r *Report) FindByID(id ID) *Finding {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return withReadLock(r, func() *Finding {
+		for i, f := range r.findings {
+			if f.ID == id {
+				cp := r.findings[i]
 
-	for _, f := range r.findingsLocked() {
-		if f.ID == id {
-			cp := f
-
-			return &cp
+				return &cp
+			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 // FindByRule returns all non-suppressed findings matching the given rule name.
@@ -104,18 +100,28 @@ func (r *Report) FindByRule(rule RuleName) []Finding {
 // Len returns the number of findings in the report.
 // Safe for concurrent use.
 func (r *Report) Len() int {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return withReadLock(r, func() int {
+		return len(r.findings)
+	})
+}
 
-	return len(r.findingsLocked())
+// snapshotFindings returns a copy of the current findings under RLock.
+// Callers receive an isolated slice they can mutate without affecting r.
+func (r *Report) snapshotFindings() []Finding {
+	return withReadLock(r, func() []Finding {
+		findings := make([]Finding, len(r.findings))
+		copy(findings, r.findings)
+
+		return findings
+	})
 }
 
 // Filter returns a new report containing only findings that match all predicates.
 // Safe for concurrent use.
 func (r *Report) Filter(predicates ...FilterFunc) *Report {
-	r.mu.RLock()
-	filtered := Filter(r.findingsLocked(), predicates...)
-	r.mu.RUnlock()
+	filtered := withReadLock(r, func() []Finding {
+		return Filter(r.findings, predicates...)
+	})
 
 	result := NewReport(r.Tool)
 	result.AddFindings(filtered)
@@ -126,10 +132,7 @@ func (r *Report) Filter(predicates ...FilterFunc) *Report {
 // Map returns a new report with the given function applied to each finding.
 // Safe for concurrent use.
 func (r *Report) Map(fn func(Finding) Finding) *Report {
-	r.mu.RLock()
-	findings := make([]Finding, len(r.findingsLocked()))
-	copy(findings, r.findingsLocked())
-	r.mu.RUnlock()
+	findings := r.snapshotFindings()
 
 	result := NewReport(r.Tool)
 	for _, f := range findings {

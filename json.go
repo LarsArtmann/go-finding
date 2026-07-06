@@ -25,13 +25,12 @@ type reportJSON struct {
 
 // MarshalJSON implements json.Marshaler.
 func (r *Report) MarshalJSON() ([]byte, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	data, err := json.Marshal(reportJSON{
-		Tool:     r.Tool,
-		Findings: r.findings,
-		Summary:  r.Summary,
+	data, err := withReadLockErr(r, func() ([]byte, error) {
+		return json.Marshal(reportJSON{
+			Tool:     r.Tool,
+			Findings: r.findings,
+			Summary:  r.Summary,
+		})
 	})
 	if err != nil {
 		return nil, fmt.Errorf("marshal report: %w", err)
@@ -86,22 +85,20 @@ func (r *Report) PrettyJSON() (string, error) {
 // active (non-suppressed) findings. Unlike PrettyJSON, this excludes
 // suppressed findings from the output.
 func (r *Report) PrettyJSONFiltered() (string, error) {
-	r.mu.RLock()
-
-	snapshot := r.findingsLocked()
-
-	filtered := &Report{ //nolint:exhaustruct
-		Tool:     r.Tool,
-		findings: make([]Finding, 0, len(snapshot)),
-		Summary:  Summary{}, //nolint:exhaustruct
-	}
-	for _, f := range snapshot {
-		if !f.IsSuppressed() {
-			filtered.findings = append(filtered.findings, f)
+	filtered := withReadLock(r, func() *Report {
+		result := &Report{ //nolint:exhaustruct
+			Tool:     r.Tool,
+			findings: make([]Finding, 0, len(r.findings)),
+			Summary:  Summary{}, //nolint:exhaustruct
 		}
-	}
+		for _, f := range r.findings {
+			if !f.IsSuppressed() {
+				result.findings = append(result.findings, f)
+			}
+		}
 
-	r.mu.RUnlock()
+		return result
+	})
 
 	filtered.ComputeSummary()
 

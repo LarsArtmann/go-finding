@@ -31,6 +31,7 @@ import (
 
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/gotoken"
+	"github.com/larsartmann/go-finding/lockutil"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
@@ -97,36 +98,43 @@ func (p *Provider) parse(content []byte, filename string) (*token.FileSet, *ast.
 	// findings in the same file within a single ApplyWithConflicts call.
 	contentPtr := unsafe.Pointer(unsafe.SliceData(content)) //nolint:gosec // cache key, never dereferenced
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	if p.cache.contentP == contentPtr && p.cache.file != nil {
-		return p.cache.fset, p.cache.file, true
+	type result struct {
+		fset *token.FileSet
+		file *ast.File
+		ok   bool
 	}
 
-	// Content changed (different pointer): verify with hash.
-	h := fnv.New64a()
-	_, _ = h.Write(content)
-	hash := h.Sum64()
+	res := lockutil.Locked(&p.mu, func() result {
+		if p.cache.contentP == contentPtr && p.cache.file != nil {
+			return result{fset: p.cache.fset, file: p.cache.file, ok: true}
+		}
 
-	if p.cache.hash == hash && p.cache.file != nil {
-		p.cache.contentP = contentPtr
+		// Content changed (different pointer): verify with hash.
+		h := fnv.New64a()
+		_, _ = h.Write(content)
+		hash := h.Sum64()
 
-		return p.cache.fset, p.cache.file, true
-	}
+		if p.cache.hash == hash && p.cache.file != nil {
+			p.cache.contentP = contentPtr
 
-	fset := token.NewFileSet()
+			return result{fset: p.cache.fset, file: p.cache.file, ok: true}
+		}
 
-	file, err := parser.ParseFile(fset, filename, content, parser.ParseComments)
-	if err != nil || file == nil {
-		p.cache = parseCache{} //nolint:exhaustruct // intentionally zero: reset to avoid re-attempting known-bad content
+		fset := token.NewFileSet()
 
-		return nil, nil, false
-	}
+		file, err := parser.ParseFile(fset, filename, content, parser.ParseComments)
+		if err != nil || file == nil {
+			p.cache = parseCache{} //nolint:exhaustruct // intentionally zero: reset to avoid re-attempting known-bad content
 
-	p.cache = parseCache{hash: hash, fset: fset, file: file, contentP: contentPtr}
+			return result{ok: false}
+		}
 
-	return fset, file, true
+		p.cache = parseCache{hash: hash, fset: fset, file: file, contentP: contentPtr}
+
+		return result{fset: fset, file: file, ok: true}
+	})
+
+	return res.fset, res.file, res.ok
 }
 
 // offsetRangeEdits handles findings with explicit byte-offset ranges.

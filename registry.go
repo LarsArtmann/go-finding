@@ -6,6 +6,8 @@ import (
 	"maps"
 	"slices"
 	"sync"
+
+	"github.com/larsartmann/go-finding/lockutil"
 )
 
 // Sentinel errors for the detector registry. Exported so callers can use
@@ -38,16 +40,15 @@ func NewDetectorRegistry() *DetectorRegistry {
 // Register adds a detector constructor under the given name.
 // Returns an error if a detector with the same name is already registered.
 func (r *DetectorRegistry) Register(name string, builder func() Detector) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	return writeDetector(r, func() error {
+		if _, exists := r.builders[name]; exists {
+			return fmt.Errorf("%w: %s", errDetectorRegistered, name)
+		}
 
-	if _, exists := r.builders[name]; exists {
-		return fmt.Errorf("%w: %s", errDetectorRegistered, name)
-	}
+		r.builders[name] = builder
 
-	r.builders[name] = builder
-
-	return nil
+		return nil
+	})
 }
 
 // MustRegister panics if registration fails.
@@ -62,22 +63,28 @@ func (r *DetectorRegistry) MustRegister(name string, builder func() Detector) {
 //
 //nolint:ireturn
 func (r *DetectorRegistry) Build(name string) (Detector, error) {
-	r.mu.RLock()
-	builder, ok := r.builders[name]
-	r.mu.RUnlock()
+	type lookup struct {
+		builder func() Detector
+		ok      bool
+	}
 
-	if !ok {
+	res := readDetector(r, func() lookup {
+		b, ok := r.builders[name]
+
+		return lookup{builder: b, ok: ok}
+	})
+	if !res.ok {
 		return nil, fmt.Errorf("%w: %s", errUnknownDetector, name)
 	}
 
-	return builder(), nil
+	return res.builder(), nil
 }
 
 // BuildAll instantiates all registered detectors in sorted name order.
 func (r *DetectorRegistry) BuildAll() ([]Detector, error) {
-	r.mu.RLock()
-	names := slices.Sorted(maps.Keys(r.builders))
-	r.mu.RUnlock()
+	names := readDetector(r, func() []string {
+		return slices.Sorted(maps.Keys(r.builders))
+	})
 
 	detectors := make([]Detector, 0, len(names))
 
@@ -95,18 +102,26 @@ func (r *DetectorRegistry) BuildAll() ([]Detector, error) {
 
 // Names returns registered detector names in sorted order.
 func (r *DetectorRegistry) Names() []string {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	return slices.Sorted(maps.Keys(r.builders))
+	return readDetector(r, func() []string {
+		return slices.Sorted(maps.Keys(r.builders))
+	})
 }
 
 // Has reports whether a detector with the given name is registered.
 func (r *DetectorRegistry) Has(name string) bool {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return readDetector(r, func() bool {
+		_, ok := r.builders[name]
 
-	_, ok := r.builders[name]
+		return ok
+	})
+}
 
-	return ok
+// readDetector runs fn while holding r.mu.RLock and returns its result.
+func readDetector[T any](r *DetectorRegistry, fn func() T) T {
+	return lockutil.RLocked(&r.mu, fn)
+}
+
+// writeDetector runs fn while holding r.mu.Lock and returns its result.
+func writeDetector[T any](r *DetectorRegistry, fn func() T) T {
+	return lockutil.Locked(&r.mu, fn)
 }
