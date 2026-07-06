@@ -7,6 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-06
+
+Multi-module workspace split, type safety improvements, and SARIF/LSP fidelity.
+
+### Breaking Changes
+
+- **`Position.File` type changed from `string` to `FilePath`** — Compile-time safety preventing file path mixups with IDs, rule names, and tool names. String literals auto-convert (`Position{File: "main.go"}` still compiles). String variables need explicit wrapping: `Position{File: FilePath(someVar)}`. Constructors `Pos`, `NewRange`, `NewRangePtr` now accept `FilePath`. JSON serialization unchanged.
+- **`GroupByFile` return type changed** — Now returns `map[FilePath][]Finding` instead of `map[string][]Finding`.
+- **`ByFile` parameter type changed** — Now accepts `FilePath` instead of `string`.
+- **`FindingError.File` type changed** — Now `FilePath` instead of `string`.
+- **`FixGroup.File` type changed** — Now `FilePath` instead of `string`.
+- **`Suppression.Rule` type changed** — Now `RuleName` instead of `string`.
+- **CLI `-severity` renamed to `-min-severity`** — Deprecated alias `-severity` retained for backward compatibility.
+- **`ToSARIFFiltered` / `WriteSARIFFiltered` removed** — Use `ToSARIFWithOpts(WithMinSeverity(sev))` / `WriteSARIFWithOpts(w, WithMinSeverity(sev))` instead.
+- **`FromLSP` parameter changed** — First parameter is now `FilePath` instead of `string`.
+
+### Added
+
+- **Multi-module Go workspace** — Project split into 4 independently versioned modules coordinated via `go.work` + `replace` directives:
+  - Core (`.`): stdlib-only Finding domain model (zero external production deps)
+  - Pipeline (`pipeline/`): detect→triage→fix→verify loop
+  - Analysis (`analysis/`): go/analysis adapter
+  - CLI (`cmd/go-finding/`): govet + staticcheck detectors
+- **`pipeline.Detect()`** — One-shot concurrent detection without the full pipeline. The simplest entry point for running detectors.
+- **`pipeline.ApplyToContent()`** — Apply fixes to in-memory `[]byte` content without filesystem operations.
+- **`SARIFOption` pattern** — Functional options for SARIF export: `WithIncludeSuppressed()`, `WithMinSeverity(sev)`. New APIs: `ToSARIFWithOpts()`, `WriteSARIFWithOpts()`.
+- **SARIF suppression round-trip** — Suppressed findings now emit SARIF `suppressions` arrays when `WithIncludeSuppressed()` is used, instead of being silently dropped. Full round-trip preserves Kind, Reason, Rule, and ExpiresAt.
+- **`LSPDiagnosticData`** — `LSPDiagnostic.Data` field carries go-finding-specific data (ID, FixStrategy, Confidence, Category, Tags, code data) for lossless LSP round-trip.
+- **`RelationKind.IsValid()`** — Validates relation kind against standard values.
+- **`RelatedRef.IsValid()`** — Now checks both FindingID and Relation validity.
+- **`Position.HasFile()`** — Check whether a file path is set, independent of line completeness.
+- **`Position.OffsetUnknown = -1`** — Named constant for the "no offset" sentinel.
+- **`Finding.IsInvalid()`** — Inverse of IsValid, deprecated `FilterInvalid` as alias.
+- **Exported registry errors** — `ErrDetectorRegistered`, `ErrUnknownDetector` now exported for `errors.Is`.
+- **CLI `--include-suppressed`** — Controls whether suppressed findings appear in SARIF output.
+- **`docs/guides/fix-engine.md`** — Full guide covering standalone FixEngine, FixApplier, custom providers, and conflict detection.
+
+### Fixed
+
+- **`IsAutoFixable()` now normalizes FixStrategy first** — Was checking raw strategy, missing findings with empty strategy.
+- **`Position.IsValid()` requires `Line > 0`** — Was returning true for positions with only a file path.
+- **`columnCoincident` / `offsetCoincident`** — Renamed from `columnAdjacent`/`offsetAdjacent`. Fixed `> 0` to `>= 0` for inclusive boundary.
+- **Staticcheck SA codes map to `CategoryCorrectness`** — Were incorrectly mapped to `CategoryStyle`.
+- **`file_backup.go` race condition** — Changed `enabled bool` to `enabled atomic.Bool`.
+- **`PrettyJSONFiltered` TOCTOU** — Now snapshots findings once instead of twice.
+- **`FixApplier.ApplyWithDetails`** — Now returns only applied fixes instead of input fixes.
+- **`groupFindingsBySafePath` O(N) syscalls** — Cached resolved root (O(N) → O(1)).
+- **`escapeMarkdownCell` panic** — Fixed `maxLen > 0` to `maxLen > 3`.
+- **`DetectorFunc.Name()` / `TransformerFunc.Name()`** — Changed from `"anonymous"` to `""`.
+- **`retry.Config` validation** — `BaseDelay > 0` required when `MaxRetries > 0`.
+- **`writeOutput` Close() error** — Now checked and propagated.
+- **CLI SIGINT/SIGTERM handling** — Added `signal.NotifyContext` for graceful shutdown.
+- **`gotoken.NodeByteRange`** — Added `start <= end` validation.
+- **IntervalIndex complexity doc** — Corrected O(log n+k) to O(n+k).
+
+### Deprecated
+
+- **`ToSARIFFiltered(minSeverity)`** — Removed. Use `ToSARIFWithOpts(WithMinSeverity(sev))`.
+- **`WriteSARIFFiltered(ctx, w, minSeverity)`** — Removed. Use `WriteSARIFWithOpts(ctx, w, WithMinSeverity(sev))`.
+- **`FilterInvalid`** — Deprecated as alias for `Filter(IsInvalid)`.
+
+### Removed
+
+- `Report.Findings` field (use `FindingsSnapshot()`)
+- `Report.Merge()` (use `MergeInto()`)
+- `Config.OnStage` (use `StageHooks`)
+- `Metrics.RecordFix()` (use `RecordFixes(1)`)
+- `CountBySeverity()` free function (use `Report.CountBySeverity()`)
+- `SeverityAliases()` (use `RegisterSeverityAlias()`/`LookupSeverityAlias()`)
+- `GetCategory()` (use `CategoryOf()`)
+- `ConflictInfo` (use `Conflict`)
+- `LSPRelatedInfo` (use `LSPRelated`)
+- `FindingProcessor` (use `FindingTransformer`)
+
 ## [1.0.0] - 2026-06-24
 
 First stable release. The API is now frozen — future breaking changes require a major version bump.

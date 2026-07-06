@@ -143,6 +143,10 @@ Identity fields now use branded types that prevent accidental mixing at compile 
 | `Finding.ID`             | `string`   | `ID`       |
 | `Finding.Rule`           | `string`   | `RuleName` |
 | `Finding.ToolName`       | `string`   | `ToolName` |
+| `Position.File`          | `string`   | `FilePath` |
+| `FindingError.File`      | `string`   | `FilePath` |
+| `FixGroup.File`          | `string`   | `FilePath` |
+| `Suppression.Rule`       | `string`   | `RuleName` |
 | `RelatedRef.FindingID`   | `string`   | `ID`       |
 | `Correlation.FindingIDs` | `[]string` | `[]ID`     |
 | `ParsedID.Tool`          | `string`   | `ToolName` |
@@ -161,6 +165,51 @@ f, err := finding.NewBuilder("nilcheck", "govet", "msg", finding.SeverityError, 
 f, err := finding.NewBuilder(
     finding.RuleName("nilcheck"), finding.ToolName("govet"), "msg", finding.SeverityError, pos,
 ).Build()
+```
+
+### Position.File → FilePath
+
+`Position.File` is now `FilePath` (a named `string` type). This prevents accidentally assigning an ID, rule name, or tool name to a file path field.
+
+**String literals auto-convert** — no change needed:
+
+```go
+pos := finding.Position{File: "main.go", Line: 10} // still compiles
+```
+
+**String variables need wrapping:**
+
+```go
+path := getPath()
+pos := finding.Position{File: finding.FilePath(path), Line: 10}
+```
+
+**Constructors accept `FilePath`:**
+
+```go
+pos := finding.Pos(finding.FilePath("main.go"), 10, 5)
+r := finding.NewRange(finding.FilePath("main.go"), 1, 1, 5, 10)
+```
+
+**`ByFile` filter accepts `FilePath`:**
+
+```go
+filtered := finding.Filter(findings, finding.ByFile(finding.FilePath("main.go")))
+```
+
+**`GroupByFile` returns `map[FilePath][]Finding`:**
+
+```go
+groups := finding.GroupByFile(findings) // map[FilePath][]Finding
+for file, fs := range groups {
+    fmt.Println(string(file), len(fs)) // cast only for non-string APIs
+}
+```
+
+**`FromLSP` accepts `FilePath`:**
+
+```go
+f := finding.FromLSP(finding.FilePath("file:///main.go"), diag)
 ```
 
 JSON serialization is identical (marshals as plain string). The type named `ID` (not `FindingID`) avoids the `finding.FindingID` stutter.
@@ -199,6 +248,55 @@ Renamed for clarity. `Process()` is now `Transform()`.
 
 v1.0.0 will normalize the empty string `""` to `FixStrategyNone` (`"none"`). See
 `docs/RELEASE_CRITERIA.md` Blocker 2.
+
+---
+
+## 11. SARIF Export API (v1.1.0)
+
+`ToSARIFFiltered` and `WriteSARIFFiltered` are removed in v1.1.0. Use the functional
+options pattern instead:
+
+**Before:**
+
+```go
+data, err := report.ToSARIFFiltered(finding.SeverityWarning)
+err = report.WriteSARIFFiltered(ctx, w, finding.SeverityWarning)
+```
+
+**After:**
+
+```go
+data, err := report.ToSARIFWithOpts(finding.WithMinSeverity(finding.SeverityWarning))
+err = report.WriteSARIFWithOpts(ctx, w, finding.WithMinSeverity(finding.SeverityWarning))
+
+// Include suppressed findings in SARIF output:
+data, err := report.ToSARIFWithOpts(
+    finding.WithIncludeSuppressed(),
+    finding.WithMinSeverity(finding.SeverityWarning),
+)
+```
+
+---
+
+## 12. CLI Flag Rename (v1.1.0)
+
+`-severity` renamed to `-min-severity` for honesty (it's a minimum, not an exact match).
+Deprecated alias `-severity` retained.
+
+---
+
+## 13. Multi-Module Workspace (v1.1.0)
+
+The project is now split into 4 independently versioned Go modules:
+
+| Module   | Path                                               | Dependencies        |
+| -------- | -------------------------------------------------- | ------------------- |
+| Core     | `github.com/larsartmann/go-finding`                | stdlib only         |
+| Pipeline | `github.com/larsartmann/go-finding/pipeline`       | x/sync, gogenfilter |
+| Analysis | `github.com/larsartmann/go-finding/analysis`       | x/tools             |
+| CLI      | `github.com/larsartmann/go-finding/cmd/go-finding` | yaml, go-output     |
+
+Consumers import only what they need. The core module has zero external production dependencies.
 
 ---
 
