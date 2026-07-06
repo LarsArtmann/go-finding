@@ -148,6 +148,16 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **FixEngine guide** — `docs/guides/fix-engine.md` covers all FixEngine usage patterns.
 - **lockutil package** — Generic `lockutil.Locked(sync.Locker, fn) T` and `lockutil.RLocked(*sync.RWMutex, fn) T` helpers eliminate m.mu.Lock()/defer m.mu.Unlock() boilerplate across Report, Metrics, FileBackup, registries, and AST provider. Stdlib only, follows `gotoken` precedent.
 
+## Test Organization
+
+**One test file per production file.** No `_extra_test.go`, `_bugfix_test.go`, or `coverage_test.go` files. All tests for a subject live in `<subject>_test.go`.
+
+- **No `_extra` suffix files** — If a test file gets too large, split by subject (e.g., `finding_test.go` + `finding_validate_test.go`), not by arbitrary "\_extra" suffix
+- **No `_bugfix` suffix files** — Regression tests belong in the parent test file alongside the behavior they protect
+- **No `coverage_test.go`** — Never name files after a metric. Name them after what they test (`validate_test.go`, `config_file_test.go`)
+- **Shared helpers** go in `testutil_test.go` (or `assert_extra_test.go` folded into it)
+- **Examples** — One `example_test.go` per package; don't fragment into `example_basic_test.go` + `example_cli_test.go` + `example_extra_test.go`
+
 ## Removed APIs (v1.0.0)
 
 All deprecated APIs from v0.6.0–v0.9.0 have been removed. No deprecated APIs remain.

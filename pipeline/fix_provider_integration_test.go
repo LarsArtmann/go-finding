@@ -135,3 +135,44 @@ func TestFixEngine_InterleavedProviders(t *testing.T) {
 	g.Expect(string(result)).NotTo(ContainSubstring("old1"))
 	g.Expect(string(result)).NotTo(ContainSubstring("old2"))
 }
+
+func TestPickNearestOccurrence_Branches(t *testing.T) {
+	t.Parallel()
+
+	content := []byte("X here\nX there\nX everywhere")
+	idx := buildLineOffsetIndex(content)
+	occurrences := findAllOccurrences(content, []byte("X")) // offsets 0, 7, 15
+
+	t.Run("line only fallback", func(t *testing.T) {
+		t.Parallel()
+
+		f := finding.Finding{Position: finding.Position{Line: 2}}
+
+		best := pickNearestOccurrence(idx, occurrences, f)
+		if best != 7 {
+			t.Fatalf("line-only: got %d, want 7", best)
+		}
+	})
+
+	t.Run("line out of range returns first", func(t *testing.T) {
+		t.Parallel()
+
+		f := finding.Finding{Position: finding.Position{Line: 99}}
+
+		best := pickNearestOccurrence(idx, occurrences, f)
+		if best != occurrences[0] {
+			t.Fatalf("out-of-range: got %d, want %d", best, occurrences[0])
+		}
+	})
+
+	t.Run("column nearest", func(t *testing.T) {
+		t.Parallel()
+
+		f := finding.Finding{Position: finding.Position{Line: 1, Column: 1}}
+
+		best := pickNearestOccurrence(idx, occurrences, f)
+		if best != 0 {
+			t.Fatalf("col1: got %d, want 0", best)
+		}
+	})
+}

@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"context"
 	"errors"
 	"strings"
 	"testing"
@@ -126,65 +125,4 @@ func TestConfigFile_ConfigFromFile_BadDurations(t *testing.T) {
 			g.Expect(err.Error()).To(ContainSubstring(tt.errContains))
 		})
 	}
-}
-
-// TestFixApplier_ApplyWithDetails covers the ApplyWithDetails wrapper.
-func TestFixApplier_ApplyWithDetails(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-
-	applier, err := NewFixApplier(t.TempDir())
-	g.Expect(err).NotTo(HaveOccurred())
-
-	count, fixes, err := applier.ApplyWithDetails(context.Background(), nil)
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(count).To(Equal(0))
-	g.Expect(fixes).To(BeEmpty())
-}
-
-// TestPickNearestOccurrence_Branches covers the remaining branches of
-// pickNearestOccurrence: line-only fallback, column path, and the
-// line-out-of-range early return.
-func TestPickNearestOccurrence_Branches(t *testing.T) {
-	t.Parallel()
-
-	content := []byte("X here\nX there\nX everywhere")
-	idx := buildLineOffsetIndex(content)
-	occurrences := findAllOccurrences(content, []byte("X")) // offsets 0, 7, 15
-
-	t.Run("line only fallback", func(t *testing.T) {
-		t.Parallel()
-
-		// Target line 2; closest occurrence is offset 7 (line 2).
-		f := finding.Finding{Position: finding.Position{Line: 2}}
-
-		best := pickNearestOccurrence(idx, occurrences, f)
-		if best != 7 {
-			t.Fatalf("line-only: got %d, want 7", best)
-		}
-	})
-
-	t.Run("line out of range returns first", func(t *testing.T) {
-		t.Parallel()
-
-		f := finding.Finding{Position: finding.Position{Line: 99}}
-
-		best := pickNearestOccurrence(idx, occurrences, f)
-		if best != occurrences[0] {
-			t.Fatalf("out-of-range: got %d, want %d", best, occurrences[0])
-		}
-	})
-
-	t.Run("column nearest", func(t *testing.T) {
-		t.Parallel()
-
-		// Two X's could be close; column helps disambiguate.
-		// On line 1, column 1 → offset 0 is closest.
-		f := finding.Finding{Position: finding.Position{Line: 1, Column: 1}}
-
-		best := pickNearestOccurrence(idx, occurrences, f)
-		if best != 0 {
-			t.Fatalf("col1: got %d, want 0", best)
-		}
-	})
 }
