@@ -50,6 +50,7 @@ Thumbs.db
 # Benchmark regression tracking
 .bench-baseline.txt
 .bench-current.txt
+/benchmarks/
 
 # Copy/paste detection report
 /report/jscpd-report.json
