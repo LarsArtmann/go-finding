@@ -65,6 +65,10 @@ git-town.toml
 # Nix build output
 /result
 
+# Override buildflow-managed ignores: go.work is tracked for multi-module dev
+!go.work
+!go.work.sum
+
 # >>> buildflow-managed (.gitignore) >>>
 # Auto-managed by buildflow. Edit outside these markers; this block is regenerated on `buildflow --fix`.
 
