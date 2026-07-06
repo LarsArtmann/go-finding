@@ -250,7 +250,7 @@ func outputResults(w io.Writer, report *finding.Report, format string) error {
 			return fmt.Errorf("writing JSON: %w", err)
 		}
 	case "sarif":
-		out, err := report.ToSARIF()
+		out, err := report.ToSARIFWithOpts(finding.WithIncludeSuppressed())
 		if err != nil {
 			return fmt.Errorf("serializing SARIF: %w", err)
 		}
