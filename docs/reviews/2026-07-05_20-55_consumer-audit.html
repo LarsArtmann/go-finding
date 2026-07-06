@@ -6,82 +6,410 @@
     <title>go-finding — Consumer Audit</title>
     <style>
       :root {
-        --color-paper: #f4f4f0; --color-paper-2: #ffffff; --color-paper-3: #e8e8e2;
-        --color-ink: #111111; --color-red: #e63946; --color-blue: #1d3557; --color-yellow: #f4d35e;
-        --color-hairline: rgba(17,17,17,0.14); --color-hairline-strong: rgba(17,17,17,0.3);
-        --surface: var(--color-paper); --surface-raised: var(--color-paper-2); --surface-sunken: var(--color-paper-3);
-        --text: var(--color-ink); --text-muted: rgba(17,17,17,0.72); --text-faint: rgba(17,17,17,0.5);
-        --border: var(--color-hairline); --border-strong: var(--color-hairline-strong);
-        --accent: var(--color-red); --problem: var(--color-red); --solution: var(--color-blue); --warning: var(--color-yellow);
-        --font-heading: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        --font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas, monospace;
+        --color-paper: #f4f4f0;
+        --color-paper-2: #ffffff;
+        --color-paper-3: #e8e8e2;
+        --color-ink: #111111;
+        --color-red: #e63946;
+        --color-blue: #1d3557;
+        --color-yellow: #f4d35e;
+        --color-hairline: rgba(17, 17, 17, 0.14);
+        --color-hairline-strong: rgba(17, 17, 17, 0.3);
+        --surface: var(--color-paper);
+        --surface-raised: var(--color-paper-2);
+        --surface-sunken: var(--color-paper-3);
+        --text: var(--color-ink);
+        --text-muted: rgba(17, 17, 17, 0.72);
+        --text-faint: rgba(17, 17, 17, 0.5);
+        --border: var(--color-hairline);
+        --border-strong: var(--color-hairline-strong);
+        --accent: var(--color-red);
+        --problem: var(--color-red);
+        --solution: var(--color-blue);
+        --warning: var(--color-yellow);
+        --font-heading:
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        --font-body:
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        --font-mono:
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
+          monospace;
       }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      html { scroll-behavior: smooth; }
-      body { background: var(--surface); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
-      .top-bar { background: var(--text); color: var(--surface); padding: 0.6rem 2rem; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
-      .layout { display: flex; gap: 2.5rem; padding: 2rem; }
-      .sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 1rem; align-self: flex-start; height: calc(100vh - 2rem); overflow-y: auto; display: none; }
-      .sidebar nav { display: flex; flex-direction: column; }
-      .sidebar .label { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); margin-bottom: 0.75rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--text); }
-      .sidebar a { font-size: 0.86rem; color: var(--text); text-decoration: none; padding: 0.4rem 0.75rem; border-left: 4px solid transparent; font-weight: 600; }
-      .sidebar a:hover, .sidebar a.active { border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); color: var(--accent); }
-      .main { flex: 1; min-width: 0; }
-      h1,h2,h3,h4 { font-family: var(--font-heading); font-weight: 900; letter-spacing: -0.02em; }
-      h1 { font-size: clamp(1.9rem,4.5vw,2.8rem); line-height: 1.05; margin: 0 0 0.6rem; }
-      h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 3px solid var(--text); display: flex; align-items: baseline; gap: 0.7rem; }
-      h2 .num { font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent); font-weight: 700; }
-      h3 { font-size: 1.15rem; margin: 0 0 0.4rem; font-weight: 700; }
-      p { margin: 0 0 1rem; }
-      .hero { padding: 1.5rem 0 2rem; margin-bottom: 1.5rem; border-bottom: 3px solid var(--text); }
-      .eyebrow { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent); margin-bottom: 0.9rem; }
-      .subtitle { font-size: 1.1rem; color: var(--text-muted); max-width: 70ch; margin: 0 0 1rem; }
-      .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-      .tag { display: inline-block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem; background: var(--surface-sunken); border: 1px solid var(--border-strong); }
-      .tag.amber { background: var(--warning); border-color: var(--warning); }
-      .tag.teal { background: var(--solution); border-color: var(--solution); color: var(--surface); }
-      .scorecard { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin: 1.5rem 0 2rem; border: 3px solid var(--text); }
-      .score-card { padding: 1.3rem 1rem; text-align: center; border-right: 3px solid var(--text); background: var(--surface-raised); }
-      .score-card:last-child { border-right: none; }
-      .score { font-family: var(--font-heading); font-size: 2.6rem; font-weight: 900; line-height: 1; }
-      .score-card .label { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 0.5rem; }
-      .score-good { background: var(--solution); color: var(--surface); }
-      .score-warn { background: var(--warning); }
-      .score-bad { background: var(--problem); color: var(--surface); }
-      .card { background: var(--surface-raised); border: 2px solid var(--text); padding: 1.2rem 1.4rem; margin-bottom: 1rem; border-left: 8px solid var(--border-strong); }
-      .card-problem { border-left-color: var(--problem); }
-      .card-solution { border-left-color: var(--solution); }
-      .card-warning { border-left-color: var(--warning); }
-      .issue { background: var(--surface-raised); border: 2px solid var(--text); padding: 1.1rem 1.3rem; margin-bottom: 0.8rem; border-left: 8px solid var(--border-strong); }
-      .issue-critical { border-left-color: var(--problem); }
-      .issue-important { border-left-color: var(--warning); }
-      .issue-nice { border-left-color: var(--solution); }
-      .issue h3 { margin-bottom: 0.3rem; font-size: 1.05rem; }
-      .issue .where { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-faint); margin: 0.2rem 0 0.4rem; }
-      .severity { display: inline-block; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.55rem; margin-bottom: 0.5rem; color: var(--surface); }
-      .severity-critical { background: var(--problem); }
-      .severity-important { background: var(--warning); color: var(--text); }
-      .severity-nice { background: var(--solution); }
-      .callout { margin: 0.8rem 0 0; padding: 0.8rem 1rem; border: 1px solid var(--border-strong); border-left: 4px solid var(--border-strong); background: var(--surface-sunken); font-size: 0.92rem; }
-      .callout strong { margin-right: 0.4rem; }
-      .callout-teal { border-left-color: var(--solution); background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised)); }
-      .callout-amber { border-left-color: var(--warning); background: color-mix(in srgb, var(--warning) 18%, var(--surface-raised)); }
-      .table-wrap { overflow-x: auto; }
-      table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.88rem; border: 2px solid var(--text); }
-      th { text-align: left; padding: 0.5rem 0.8rem; background: var(--text); color: var(--surface); font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-right: 1px solid var(--border-strong); }
-      th:last-child { border-right: none; }
-      td { padding: 0.5rem 0.8rem; border-top: 1px solid var(--border); border-right: 1px solid var(--border); vertical-align: top; }
-      td:last-child { border-right: none; }
-      tr:nth-child(even) td { background: var(--surface-sunken); }
-      .yes { color: var(--solution); font-weight: 700; }
-      .no { color: var(--problem); font-weight: 700; }
-      pre { background: var(--text); color: var(--surface); padding: 1rem 1.2rem; margin: 1rem 0; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.65; overflow-x: auto; border: 2px solid var(--text); }
-      code { font-family: var(--font-mono); }
-      p code, li code, td code { font-size: 0.88em; background: var(--surface-sunken); padding: 0.1rem 0.35rem; }
-      .footer { margin-top: 2rem; padding-top: 1rem; border-top: 3px solid var(--text); font-size: 0.82rem; color: var(--text-muted); font-family: var(--font-mono); }
-      @media (min-width: 1024px) { .sidebar { display: block; } }
-      @media (max-width: 768px) { .layout { flex-direction: column; padding: 1rem; } .scorecard { grid-template-columns: repeat(2, 1fr); } .score-card:nth-child(2) { border-right: none; } .score-card:nth-child(1),.score-card:nth-child(2) { border-bottom: 3px solid var(--text); } }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        background: var(--surface);
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+      .top-bar {
+        background: var(--text);
+        color: var(--surface);
+        padding: 0.6rem 2rem;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .layout {
+        display: flex;
+        gap: 2.5rem;
+        padding: 2rem;
+      }
+      .sidebar {
+        width: 220px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 1rem;
+        align-self: flex-start;
+        height: calc(100vh - 2rem);
+        overflow-y: auto;
+        display: none;
+      }
+      .sidebar nav {
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar .label {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--accent);
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid var(--text);
+      }
+      .sidebar a {
+        font-size: 0.86rem;
+        color: var(--text);
+        text-decoration: none;
+        padding: 0.4rem 0.75rem;
+        border-left: 4px solid transparent;
+        font-weight: 600;
+      }
+      .sidebar a:hover,
+      .sidebar a.active {
+        border-left-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 8%, transparent);
+        color: var(--accent);
+      }
+      .main {
+        flex: 1;
+        min-width: 0;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--font-heading);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+      }
+      h1 {
+        font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+        line-height: 1.05;
+        margin: 0 0 0.6rem;
+      }
+      h2 {
+        font-size: 1.5rem;
+        margin: 2.5rem 0 1rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 3px solid var(--text);
+        display: flex;
+        align-items: baseline;
+        gap: 0.7rem;
+      }
+      h2 .num {
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      h3 {
+        font-size: 1.15rem;
+        margin: 0 0 0.4rem;
+        font-weight: 700;
+      }
+      p {
+        margin: 0 0 1rem;
+      }
+      .hero {
+        padding: 1.5rem 0 2rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 3px solid var(--text);
+      }
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--accent);
+        margin-bottom: 0.9rem;
+      }
+      .subtitle {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        max-width: 70ch;
+        margin: 0 0 1rem;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .tag {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 0.25rem 0.6rem;
+        background: var(--surface-sunken);
+        border: 1px solid var(--border-strong);
+      }
+      .tag.amber {
+        background: var(--warning);
+        border-color: var(--warning);
+      }
+      .tag.teal {
+        background: var(--solution);
+        border-color: var(--solution);
+        color: var(--surface);
+      }
+      .scorecard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        margin: 1.5rem 0 2rem;
+        border: 3px solid var(--text);
+      }
+      .score-card {
+        padding: 1.3rem 1rem;
+        text-align: center;
+        border-right: 3px solid var(--text);
+        background: var(--surface-raised);
+      }
+      .score-card:last-child {
+        border-right: none;
+      }
+      .score {
+        font-family: var(--font-heading);
+        font-size: 2.6rem;
+        font-weight: 900;
+        line-height: 1;
+      }
+      .score-card .label {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-top: 0.5rem;
+      }
+      .score-good {
+        background: var(--solution);
+        color: var(--surface);
+      }
+      .score-warn {
+        background: var(--warning);
+      }
+      .score-bad {
+        background: var(--problem);
+        color: var(--surface);
+      }
+      .card {
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        padding: 1.2rem 1.4rem;
+        margin-bottom: 1rem;
+        border-left: 8px solid var(--border-strong);
+      }
+      .card-problem {
+        border-left-color: var(--problem);
+      }
+      .card-solution {
+        border-left-color: var(--solution);
+      }
+      .card-warning {
+        border-left-color: var(--warning);
+      }
+      .issue {
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        padding: 1.1rem 1.3rem;
+        margin-bottom: 0.8rem;
+        border-left: 8px solid var(--border-strong);
+      }
+      .issue-critical {
+        border-left-color: var(--problem);
+      }
+      .issue-important {
+        border-left-color: var(--warning);
+      }
+      .issue-nice {
+        border-left-color: var(--solution);
+      }
+      .issue h3 {
+        margin-bottom: 0.3rem;
+        font-size: 1.05rem;
+      }
+      .issue .where {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--text-faint);
+        margin: 0.2rem 0 0.4rem;
+      }
+      .severity {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.55rem;
+        margin-bottom: 0.5rem;
+        color: var(--surface);
+      }
+      .severity-critical {
+        background: var(--problem);
+      }
+      .severity-important {
+        background: var(--warning);
+        color: var(--text);
+      }
+      .severity-nice {
+        background: var(--solution);
+      }
+      .callout {
+        margin: 0.8rem 0 0;
+        padding: 0.8rem 1rem;
+        border: 1px solid var(--border-strong);
+        border-left: 4px solid var(--border-strong);
+        background: var(--surface-sunken);
+        font-size: 0.92rem;
+      }
+      .callout strong {
+        margin-right: 0.4rem;
+      }
+      .callout-teal {
+        border-left-color: var(--solution);
+        background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised));
+      }
+      .callout-amber {
+        border-left-color: var(--warning);
+        background: color-mix(in srgb, var(--warning) 18%, var(--surface-raised));
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0 1.5rem;
+        font-size: 0.88rem;
+        border: 2px solid var(--text);
+      }
+      th {
+        text-align: left;
+        padding: 0.5rem 0.8rem;
+        background: var(--text);
+        color: var(--surface);
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border-right: 1px solid var(--border-strong);
+      }
+      th:last-child {
+        border-right: none;
+      }
+      td {
+        padding: 0.5rem 0.8rem;
+        border-top: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+        vertical-align: top;
+      }
+      td:last-child {
+        border-right: none;
+      }
+      tr:nth-child(even) td {
+        background: var(--surface-sunken);
+      }
+      .yes {
+        color: var(--solution);
+        font-weight: 700;
+      }
+      .no {
+        color: var(--problem);
+        font-weight: 700;
+      }
+      pre {
+        background: var(--text);
+        color: var(--surface);
+        padding: 1rem 1.2rem;
+        margin: 1rem 0;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.65;
+        overflow-x: auto;
+        border: 2px solid var(--text);
+      }
+      code {
+        font-family: var(--font-mono);
+      }
+      p code,
+      li code,
+      td code {
+        font-size: 0.88em;
+        background: var(--surface-sunken);
+        padding: 0.1rem 0.35rem;
+      }
+      .footer {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 3px solid var(--text);
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+      }
+      @media (min-width: 1024px) {
+        .sidebar {
+          display: block;
+        }
+      }
+      @media (max-width: 768px) {
+        .layout {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .scorecard {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .score-card:nth-child(2) {
+          border-right: none;
+        }
+        .score-card:nth-child(1),
+        .score-card:nth-child(2) {
+          border-bottom: 3px solid var(--text);
+        }
+      }
     </style>
   </head>
   <body>
@@ -111,8 +439,8 @@
           <div class="eyebrow">Consumer Audit &middot; 2026-07-05</div>
           <h1>go-finding Consumer Audit</h1>
           <p class="subtitle">
-            How 20 consumer projects use go-finding v1.0.0 &mdash; which API surfaces, which patterns,
-            what's broken, and what go-finding should change based on real-world usage.
+            How 20 consumer projects use go-finding v1.0.0 &mdash; which API surfaces, which
+            patterns, what's broken, and what go-finding should change based on real-world usage.
           </p>
           <div class="meta">
             <span class="tag amber">16 direct consumers</span>
@@ -134,10 +462,22 @@
         </section>
 
         <section id="scorecard" class="scorecard">
-          <div class="score-card score-good"><div class="score">15</div><div class="label">Actual consumers</div></div>
-          <div class="score-card score-warn"><div class="score">3</div><div class="label">Use full pipeline</div></div>
-          <div class="score-card"><div class="score">9</div><div class="label">Implement Detector</div></div>
-          <div class="score-card score-bad"><div class="score">5</div><div class="label">Have issues</div></div>
+          <div class="score-card score-good">
+            <div class="score">15</div>
+            <div class="label">Actual consumers</div>
+          </div>
+          <div class="score-card score-warn">
+            <div class="score">3</div>
+            <div class="label">Use full pipeline</div>
+          </div>
+          <div class="score-card">
+            <div class="score">9</div>
+            <div class="label">Implement Detector</div>
+          </div>
+          <div class="score-card score-bad">
+            <div class="score">5</div>
+            <div class="label">Have issues</div>
+          </div>
         </section>
 
         <section id="matrix">
@@ -147,36 +487,308 @@
             <table>
               <thead>
                 <tr>
-                  <th>Consumer</th><th>Role</th><th>Pkgs</th><th>Pipeline</th><th>Detector</th><th>Builder</th><th>SARIF</th><th>LSP</th><th>Merge</th><th>Filter</th><th>Branded</th><th>Issues</th>
+                  <th>Consumer</th>
+                  <th>Role</th>
+                  <th>Pkgs</th>
+                  <th>Pipeline</th>
+                  <th>Detector</th>
+                  <th>Builder</th>
+                  <th>SARIF</th>
+                  <th>LSP</th>
+                  <th>Merge</th>
+                  <th>Filter</th>
+                  <th>Branded</th>
+                  <th>Issues</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td><strong>go-structure-linter</strong></td><td>Core</td><td>core+pipeline</td><td class="yes">Full</td><td class="yes">Active</td><td class="yes">Pos</td><td class="yes">W</td><td>&mdash;</td><td>&mdash;</td><td class="yes">F+Sort</td><td class="yes">Full</td><td>&mdash;</td></tr>
-                <tr><td><strong>oxlint-auto-configure</strong></td><td>Core</td><td>core+pipeline</td><td class="yes">Full</td><td class="yes">Active</td><td class="yes">NewF</td><td class="yes">W</td><td>&mdash;</td><td class="yes">Combine</td><td class="yes">F+Group</td><td class="yes">Full</td><td>&mdash;</td></tr>
-                <tr><td><strong>BuildFlow</strong></td><td>Core</td><td>core</td><td>&mdash;</td><td>&mdash;</td><td class="yes">Builder</td><td class="yes">W</td><td>&mdash;</td><td class="yes">Combine+Dedup</td><td>manual</td><td>Mixed</td><td>Reinvents FixEngine</td></tr>
-                <tr><td><strong>branching-flow</strong></td><td>Important</td><td>core</td><td>&mdash;</td><td>&mdash;</td><td class="yes">Builder</td><td class="yes">W</td><td>&mdash;</td><td>&mdash;</td><td>own filter</td><td class="yes">Correct</td><td>Inconsistent builder use</td></tr>
-                <tr><td><strong>Code-Quality-Agent</strong></td><td>Core</td><td>core</td><td>&mdash;</td><td>&mdash;</td><td>NewF</td><td class="yes">ToSARIF</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>Raw strings</td><td>No builder, hardcoded conf</td></tr>
-                <tr><td><strong>go-auto-upgrade</strong></td><td>Important</td><td>core</td><td>&mdash;</td><td>&mdash;</td><td class="yes">Builder</td><td class="yes">W</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td class="yes">Correct</td><td>MustBuild panics</td></tr>
-                <tr><td><strong>go-functional-fixer</strong></td><td>Important</td><td>core</td><td>&mdash;</td><td class="yes">Unused</td><td class="yes">Builder</td><td class="yes">ToSARIF</td><td class="yes">ToLSP</td><td>&mdash;</td><td>&mdash;</td><td>Partial</td><td>Detector never wired, range bug</td></tr>
-                <tr><td><strong>golangci-lint-auto-configure</strong></td><td>Important</td><td>core</td><td>&mdash;</td><td class="yes">Unused</td><td class="yes">Builder</td><td class="yes">ToSARIF</td><td class="yes">ToLSP</td><td class="yes">Combine</td><td class="yes">F+Group</td><td class="yes">Full</td><td>&mdash;</td></tr>
-                <tr><td><strong>hierarchical-errors</strong></td><td>Important</td><td>core+analysis</td><td>&mdash;</td><td>&mdash;</td><td class="yes">Builder</td><td class="yes">W</td><td>&mdash;</td><td>&mdash;</td><td class="yes">Sort+Group</td><td class="yes">Full</td><td>&mdash;</td></tr>
-                <tr><td><strong>library-policy</strong></td><td>Core</td><td>core</td><td>&mdash;</td><td>&mdash;</td><td>NewF+mutate</td><td class="yes">ToSARIF</td><td>&mdash;</td><td class="yes">MergeInto</td><td class="yes">F+ByCat</td><td>Partial</td><td>Local replace, no builder</td></tr>
-                <tr><td><strong>template-AUTHORS</strong></td><td>Core</td><td>core+pipeline</td><td class="yes">Full</td><td class="yes">Active (3)</td><td class="yes">NewF</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>Correct</td><td>report.Findings (unexported)</td></tr>
-                <tr><td><strong>template-LICENSE</strong></td><td>Core</td><td>core</td><td>&mdash;</td><td class="yes">Unused</td><td class="yes">NewF</td><td class="yes">ToSARIF</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td class="yes">Correct</td><td>Best adapter pattern</td></tr>
-                <tr><td><strong>template-CLI</strong></td><td>Incidental</td><td>core</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td class="yes">ToSARIF</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>Aliases</td><td>&mdash;</td></tr>
-                <tr><td><strong>template-SECURITY</strong></td><td>Core</td><td>core(+pipeline)</td><td>&mdash;</td><td class="yes">Unused</td><td class="yes">Builder</td><td class="yes">WF</td><td>&mdash;</td><td>&mdash;</td><td class="yes">F+NotSupp</td><td class="yes">Correct</td><td>Unused pipeline import</td></tr>
-                <tr><td><strong>template-readme</strong></td><td>Core (report)</td><td>core</td><td>&mdash;</td><td>&mdash;</td><td class="yes">Builder</td><td class="yes">W</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>Aliases</td><td>Mislabeled indirect</td></tr>
-                <tr><td><strong>md-go-validator</strong></td><td>Incidental</td><td>core</td><td>&mdash;</td><td>&mdash;</td><td class="yes">NewF</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td class="yes">Correct</td><td>&mdash;</td></tr>
-                <tr><td><strong>go-business-rules</strong></td><td>Incidental</td><td>core</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>Only Severity alias</td></tr>
-                <tr><td><strong>gomend</strong></td><td>Transitive</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>go.sum only</td></tr>
-                <tr><td><strong>projects-management-automation</strong></td><td>Not real</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>No go-finding at all</td></tr>
-                <tr><td><strong>go-wizard-sdk</strong></td><td>Not real</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>No go-finding at all</td></tr>
+                <tr>
+                  <td><strong>go-structure-linter</strong></td>
+                  <td>Core</td>
+                  <td>core+pipeline</td>
+                  <td class="yes">Full</td>
+                  <td class="yes">Active</td>
+                  <td class="yes">Pos</td>
+                  <td class="yes">W</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">F+Sort</td>
+                  <td class="yes">Full</td>
+                  <td>&mdash;</td>
+                </tr>
+                <tr>
+                  <td><strong>oxlint-auto-configure</strong></td>
+                  <td>Core</td>
+                  <td>core+pipeline</td>
+                  <td class="yes">Full</td>
+                  <td class="yes">Active</td>
+                  <td class="yes">NewF</td>
+                  <td class="yes">W</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Combine</td>
+                  <td class="yes">F+Group</td>
+                  <td class="yes">Full</td>
+                  <td>&mdash;</td>
+                </tr>
+                <tr>
+                  <td><strong>BuildFlow</strong></td>
+                  <td>Core</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Builder</td>
+                  <td class="yes">W</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Combine+Dedup</td>
+                  <td>manual</td>
+                  <td>Mixed</td>
+                  <td>Reinvents FixEngine</td>
+                </tr>
+                <tr>
+                  <td><strong>branching-flow</strong></td>
+                  <td>Important</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Builder</td>
+                  <td class="yes">W</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>own filter</td>
+                  <td class="yes">Correct</td>
+                  <td>Inconsistent builder use</td>
+                </tr>
+                <tr>
+                  <td><strong>Code-Quality-Agent</strong></td>
+                  <td>Core</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>NewF</td>
+                  <td class="yes">ToSARIF</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>Raw strings</td>
+                  <td>No builder, hardcoded conf</td>
+                </tr>
+                <tr>
+                  <td><strong>go-auto-upgrade</strong></td>
+                  <td>Important</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Builder</td>
+                  <td class="yes">W</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Correct</td>
+                  <td>MustBuild panics</td>
+                </tr>
+                <tr>
+                  <td><strong>go-functional-fixer</strong></td>
+                  <td>Important</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Unused</td>
+                  <td class="yes">Builder</td>
+                  <td class="yes">ToSARIF</td>
+                  <td class="yes">ToLSP</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>Partial</td>
+                  <td>Detector never wired, range bug</td>
+                </tr>
+                <tr>
+                  <td><strong>golangci-lint-auto-configure</strong></td>
+                  <td>Important</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Unused</td>
+                  <td class="yes">Builder</td>
+                  <td class="yes">ToSARIF</td>
+                  <td class="yes">ToLSP</td>
+                  <td class="yes">Combine</td>
+                  <td class="yes">F+Group</td>
+                  <td class="yes">Full</td>
+                  <td>&mdash;</td>
+                </tr>
+                <tr>
+                  <td><strong>hierarchical-errors</strong></td>
+                  <td>Important</td>
+                  <td>core+analysis</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Builder</td>
+                  <td class="yes">W</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Sort+Group</td>
+                  <td class="yes">Full</td>
+                  <td>&mdash;</td>
+                </tr>
+                <tr>
+                  <td><strong>library-policy</strong></td>
+                  <td>Core</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>NewF+mutate</td>
+                  <td class="yes">ToSARIF</td>
+                  <td>&mdash;</td>
+                  <td class="yes">MergeInto</td>
+                  <td class="yes">F+ByCat</td>
+                  <td>Partial</td>
+                  <td>Local replace, no builder</td>
+                </tr>
+                <tr>
+                  <td><strong>template-AUTHORS</strong></td>
+                  <td>Core</td>
+                  <td>core+pipeline</td>
+                  <td class="yes">Full</td>
+                  <td class="yes">Active (3)</td>
+                  <td class="yes">NewF</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>Correct</td>
+                  <td>report.Findings (unexported)</td>
+                </tr>
+                <tr>
+                  <td><strong>template-LICENSE</strong></td>
+                  <td>Core</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Unused</td>
+                  <td class="yes">NewF</td>
+                  <td class="yes">ToSARIF</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Correct</td>
+                  <td>Best adapter pattern</td>
+                </tr>
+                <tr>
+                  <td><strong>template-CLI</strong></td>
+                  <td>Incidental</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">ToSARIF</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>Aliases</td>
+                  <td>&mdash;</td>
+                </tr>
+                <tr>
+                  <td><strong>template-SECURITY</strong></td>
+                  <td>Core</td>
+                  <td>core(+pipeline)</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Unused</td>
+                  <td class="yes">Builder</td>
+                  <td class="yes">WF</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">F+NotSupp</td>
+                  <td class="yes">Correct</td>
+                  <td>Unused pipeline import</td>
+                </tr>
+                <tr>
+                  <td><strong>template-readme</strong></td>
+                  <td>Core (report)</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Builder</td>
+                  <td class="yes">W</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>Aliases</td>
+                  <td>Mislabeled indirect</td>
+                </tr>
+                <tr>
+                  <td><strong>md-go-validator</strong></td>
+                  <td>Incidental</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">NewF</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td class="yes">Correct</td>
+                  <td>&mdash;</td>
+                </tr>
+                <tr>
+                  <td><strong>go-business-rules</strong></td>
+                  <td>Incidental</td>
+                  <td>core</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>Only Severity alias</td>
+                </tr>
+                <tr>
+                  <td><strong>gomend</strong></td>
+                  <td>Transitive</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>go.sum only</td>
+                </tr>
+                <tr>
+                  <td><strong>projects-management-automation</strong></td>
+                  <td>Not real</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>No go-finding at all</td>
+                </tr>
+                <tr>
+                  <td><strong>go-wizard-sdk</strong></td>
+                  <td>Not real</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>&mdash;</td>
+                  <td>No go-finding at all</td>
+                </tr>
               </tbody>
             </table>
           </div>
-          <p style="font-size:0.85rem;color:var(--text-muted);">
-            Legend: W=WriteSARIF, WF=WriteSARIFFiltered, NewF=NewFinding, F=Filter, Sort=SortByPosition,
-            Group=GroupBy*, NotSupp=NotSuppressed, Correct/Full/Mixed/Partial/Raw=branded type usage quality.
+          <p style="font-size: 0.85rem; color: var(--text-muted)">
+            Legend: W=WriteSARIF, WF=WriteSARIFFiltered, NewF=NewFinding, F=Filter,
+            Sort=SortByPosition, Group=GroupBy*, NotSupp=NotSuppressed,
+            Correct/Full/Mixed/Partial/Raw=branded type usage quality.
           </p>
         </section>
 
@@ -185,48 +797,69 @@
 
           <div class="card card-problem">
             <h3>Tier 1: Deep integration (Pipeline + Detector + Types)</h3>
-            <p><strong>go-structure-linter</strong> &mdash; The exemplar consumer. Type aliases
-            (<code>type Issue = finding.Finding</code>) eliminate all conversion boilerplate. Full
-            pipeline with custom TriageFunc, FindingTransformer, StageHook bridge. Uses
-            <code>finding.Pos()</code> across 65+ call sites. This is the gold-standard integration pattern.</p>
+            <p>
+              <strong>go-structure-linter</strong> &mdash; The exemplar consumer. Type aliases
+              (<code>type Issue = finding.Finding</code>) eliminate all conversion boilerplate. Full
+              pipeline with custom TriageFunc, FindingTransformer, StageHook bridge. Uses
+              <code>finding.Pos()</code> across 65+ call sites. This is the gold-standard
+              integration pattern.
+            </p>
           </div>
 
           <div class="card card-problem">
             <h3>Tier 1: Deep integration</h3>
-            <p><strong>oxlint-auto-configure</strong> &mdash; Full pipeline with RetryConfig, Metrics,
-            OnFinding/OnIteration callbacks, Combine+Dedup. Implements <code>finding.Detector</code>.
-            Uses structured errors (NewIOError, NewParseError). Cleanest pipeline wiring.</p>
+            <p>
+              <strong>oxlint-auto-configure</strong> &mdash; Full pipeline with RetryConfig,
+              Metrics, OnFinding/OnIteration callbacks, Combine+Dedup. Implements
+              <code>finding.Detector</code>. Uses structured errors (NewIOError, NewParseError).
+              Cleanest pipeline wiring.
+            </p>
           </div>
 
           <div class="card card-warning">
             <h3>Tier 2: Core data model (Types + Report + SARIF, no pipeline)</h3>
-            <p><strong>BuildFlow, branching-flow, Code-Quality-Agent, hierarchical-errors, library-policy</strong>
-            &mdash; These use go-finding as the canonical Finding/Report/SARIF data model but run their own
-            orchestration. BuildFlow is the most sophisticated (Combine+Dedup+Diff+Sort).
-            hierarchical-errors is the only consumer using RelatedRef, Suppression, and the
-            <code>analysis</code> subpackage.</p>
+            <p>
+              <strong
+                >BuildFlow, branching-flow, Code-Quality-Agent, hierarchical-errors,
+                library-policy</strong
+              >
+              &mdash; These use go-finding as the canonical Finding/Report/SARIF data model but run
+              their own orchestration. BuildFlow is the most sophisticated
+              (Combine+Dedup+Diff+Sort). hierarchical-errors is the only consumer using RelatedRef,
+              Suppression, and the
+              <code>analysis</code> subpackage.
+            </p>
           </div>
 
           <div class="card card-warning">
             <h3>Tier 3: Output/adapter (Report + SARIF only)</h3>
-            <p><strong>go-auto-upgrade, golangci-lint-auto-configure, template-CLI, template-LICENSE,
-            template-SECURITY, template-readme</strong> &mdash; Produce findings for SARIF/LSP output,
-            implement Detector for composability but don't always wire a pipeline. Two (go-functional-fixer,
-            golangci-lint-auto-configure) implement Detector but never call pipeline.Run().</p>
+            <p>
+              <strong
+                >go-auto-upgrade, golangci-lint-auto-configure, template-CLI, template-LICENSE,
+                template-SECURITY, template-readme</strong
+              >
+              &mdash; Produce findings for SARIF/LSP output, implement Detector for composability
+              but don't always wire a pipeline. Two (go-functional-fixer,
+              golangci-lint-auto-configure) implement Detector but never call pipeline.Run().
+            </p>
           </div>
 
           <div class="card">
             <h3>Tier 4: Minimal / incidental</h3>
-            <p><strong>md-go-validator</strong> (single adapter function),
-            <strong>go-business-rules</strong> (aliases <code>Severity</code> only &mdash; pulling
-            the entire library for 4 constants),
-            <strong>gomend</strong> (transitive only, no code).</p>
+            <p>
+              <strong>md-go-validator</strong> (single adapter function),
+              <strong>go-business-rules</strong> (aliases <code>Severity</code> only &mdash; pulling
+              the entire library for 4 constants), <strong>gomend</strong> (transitive only, no
+              code).
+            </p>
           </div>
 
           <div class="card">
             <h3>Not real consumers</h3>
-            <p><strong>projects-management-automation, go-wizard-sdk</strong> &mdash; No go-finding in
-            go.mod, go.sum, or any .go file. The dependency tree listing is incorrect.</p>
+            <p>
+              <strong>projects-management-automation, go-wizard-sdk</strong> &mdash; No go-finding
+              in go.mod, go.sum, or any .go file. The dependency tree listing is incorrect.
+            </p>
           </div>
         </section>
 
@@ -239,14 +872,16 @@
 type Severity = finding.Severity
 type RuleCategory = finding.Category</code></pre>
           <p>
-            This eliminates all conversion boilerplate. Rules produce <code>finding.Finding</code>
-            directly via <code>finding.Pos()</code>. No wrapping, no mapping. <strong>This should be
-            the documented recommended pattern.</strong>
+            This eliminates all conversion boilerplate. Rules produce
+            <code>finding.Finding</code> directly via <code>finding.Pos()</code>. No wrapping, no
+            mapping. <strong>This should be the documented recommended pattern.</strong>
           </p>
 
           <h3>The converter/violation pattern</h3>
-          <p>Used by <strong>branching-flow</strong> (12 converter files), <strong>BuildFlow</strong>,
-          <strong>Code-Quality-Agent</strong>:</p>
+          <p>
+            Used by <strong>branching-flow</strong> (12 converter files),
+            <strong>BuildFlow</strong>, <strong>Code-Quality-Agent</strong>:
+          </p>
           <p>
             Domain violation types &rarr; <code>[]finding.Finding</code> via per-type converter
             functions. Each converter repeats severity/category/confidence mapping. Branching-flow's
@@ -254,8 +889,10 @@ type RuleCategory = finding.Category</code></pre>
           </p>
 
           <h3>The Detector-standalone pattern</h3>
-          <p>Used by <strong>template-LICENSE</strong>, <strong>go-functional-fixer</strong>,
-          <strong>golangci-lint-auto-configure</strong>:</p>
+          <p>
+            Used by <strong>template-LICENSE</strong>, <strong>go-functional-fixer</strong>,
+            <strong>golangci-lint-auto-configure</strong>:
+          </p>
           <p>
             Implements <code>finding.Detector</code> for composability, with
             <code>DetectReport(ctx) (*Report, error)</code> as a standalone entry point. Good for
@@ -277,34 +914,41 @@ type RuleCategory = finding.Category</code></pre>
           <div class="issue issue-critical">
             <span class="severity severity-critical">Critical &middot; Compile-breaking</span>
             <h3>3 templates access the unexported Report.findings field</h3>
-            <div class="where">template-AUTHORS main.go:146 &middot; template-SECURITY security_validator.go:52, validate.go:176 &middot; template-readme core_functions.go:160</div>
+            <div class="where">
+              template-AUTHORS main.go:146 &middot; template-SECURITY security_validator.go:52,
+              validate.go:176 &middot; template-readme core_functions.go:160
+            </div>
             <p>
               These access <code>report.Findings</code> directly, but at v1.0.0 the field is
-              <strong>unexported</strong> (<code>findings</code>). Either these projects don't compile
-              against the actual published v1.0.0 tag, or they depend on a pre-release where the field
-              was public. They should use <code>FindingsSnapshot()</code> or <code>ActiveFindings()</code>.
+              <strong>unexported</strong> (<code>findings</code>). Either these projects don't
+              compile against the actual published v1.0.0 tag, or they depend on a pre-release where
+              the field was public. They should use <code>FindingsSnapshot()</code> or
+              <code>ActiveFindings()</code>.
             </p>
             <div class="callout callout-teal">
               <strong>Action for go-finding:</strong>
-              This is an API migration pain point. Consider a deprecation guide or a compatibility shim.
-              Also: is the field truly unexported at the tagged v1.0.0? Verify the release.
+              This is an API migration pain point. Consider a deprecation guide or a compatibility
+              shim. Also: is the field truly unexported at the tagged v1.0.0? Verify the release.
             </div>
           </div>
 
           <div class="issue issue-important">
             <span class="severity severity-important">Important &middot; Reinvention</span>
             <h3>BuildFlow reinvents the FixEngine with manual BeforeCode/AfterCode replacement</h3>
-            <div class="where">BuildFlow modules/checker-helpers/helpers.go:190 (ApplyTextFixes)</div>
+            <div class="where">
+              BuildFlow modules/checker-helpers/helpers.go:190 (ApplyTextFixes)
+            </div>
             <p>
-              BuildFlow reads <code>f.FixStrategy == FixStrategyDirect</code> + <code>f.BeforeCode</code>
-              + <code>f.AfterCode</code> and performs manual <code>strings.Replace</code>. This is exactly
-              what go-finding's FixEngine/FixApplier provides. The consumer either doesn't know the
-              FixEngine exists, or it doesn't meet their needs.
+              BuildFlow reads <code>f.FixStrategy == FixStrategyDirect</code> +
+              <code>f.BeforeCode</code> + <code>f.AfterCode</code> and performs manual
+              <code>strings.Replace</code>. This is exactly what go-finding's FixEngine/FixApplier
+              provides. The consumer either doesn't know the FixEngine exists, or it doesn't meet
+              their needs.
             </p>
             <div class="callout callout-amber">
               <strong>Action for go-finding:</strong>
-              Document the FixEngine better. If it doesn't meet real-world needs (e.g. BuildFlow needs
-              file-system-aware multi-file fixes), understand the gap and close it.
+              Document the FixEngine better. If it doesn't meet real-world needs (e.g. BuildFlow
+              needs file-system-aware multi-file fixes), understand the gap and close it.
             </div>
           </div>
 
@@ -313,21 +957,26 @@ type RuleCategory = finding.Category</code></pre>
             <h3>Code-Quality-Agent + library-policy skip the Builder entirely</h3>
             <div class="where">CQA: all 6 adapters &middot; library-policy: types.go:131-142</div>
             <p>
-              These use <code>NewFinding()</code> then directly mutate fields
-              (<code>f.Category = ...</code>, <code>f.Metadata = ...</code>), bypassing the Builder's
-              validation. CQA also passes raw strings for RuleName/ToolName, defeating the branded-type
-              safety. CQA hardcodes <code>Confidence: 1.0</code> across all adapters.
+              These use <code>NewFinding()</code> then directly mutate fields (<code
+                >f.Category = ...</code
+              >, <code>f.Metadata = ...</code>), bypassing the Builder's validation. CQA also passes
+              raw strings for RuleName/ToolName, defeating the branded-type safety. CQA hardcodes
+              <code>Confidence: 1.0</code> across all adapters.
             </p>
           </div>
 
           <div class="issue issue-important">
             <span class="severity severity-important">Important &middot; Dead interface impl</span>
             <h3>2 projects implement Detector but never wire a pipeline</h3>
-            <div class="where">go-functional-fixer (detector.go:11) &middot; golangci-lint-auto-configure (detector.go:16)</div>
+            <div class="where">
+              go-functional-fixer (detector.go:11) &middot; golangci-lint-auto-configure
+              (detector.go:16)
+            </div>
             <p>
               The Detector implementation exists for pipeline-readiness but is never used with
-              <code>pipeline.New()</code> + <code>Run()</code>. This suggests the pipeline integration
-              story isn't clear enough, or the pipeline doesn't meet their orchestration needs.
+              <code>pipeline.New()</code> + <code>Run()</code>. This suggests the pipeline
+              integration story isn't clear enough, or the pipeline doesn't meet their orchestration
+              needs.
             </p>
           </div>
 
@@ -337,8 +986,8 @@ type RuleCategory = finding.Category</code></pre>
             <div class="where">go-functional-fixer pkg/analyzer/finding_adapter.go:19,29</div>
             <p>
               <code>endLine</code> is set to the same value as <code>lineNum</code>, so multi-line
-              ranges are structurally created but never span multiple lines. A real consumer bug, but
-              also reveals that go-finding's Range API doesn't prevent this footgun.
+              ranges are structurally created but never span multiple lines. A real consumer bug,
+              but also reveals that go-finding's Range API doesn't prevent this footgun.
             </p>
           </div>
 
@@ -358,11 +1007,13 @@ type RuleCategory = finding.Category</code></pre>
             <h3>Inconsistent Detector interface source &amp; construction patterns</h3>
             <div class="where">Across all 9 Detector implementors</div>
             <p>
-              2 use <code>pipeline.Detector</code> (type alias), 4 use <code>finding.Detector</code>
-              (canonical). 4 use <code>NewFinding()</code>, 5 use <code>NewBuilder()</code>, 2 alias
-              the types. <code>NewBuilder()</code> + <code>.Build()</code> is the recommended modern
-              path with validation, but only 5 of 15 consumers use it. Only template-LICENSE has a
-              compile-time assertion (<code>var _ finding.Detector = (*X)(nil)</code>).
+              2 use <code>pipeline.Detector</code> (type alias), 4 use
+              <code>finding.Detector</code> (canonical). 4 use <code>NewFinding()</code>, 5 use
+              <code>NewBuilder()</code>, 2 alias the types. <code>NewBuilder()</code> +
+              <code>.Build()</code> is the recommended modern path with validation, but only 5 of 15
+              consumers use it. Only template-LICENSE has a compile-time assertion (<code
+                >var _ finding.Detector = (*X)(nil)</code
+              >).
             </p>
           </div>
         </section>
@@ -374,29 +1025,33 @@ type RuleCategory = finding.Category</code></pre>
           <div class="card card-problem">
             <h3>1. Nobody uses FindingsFromSARIF (SARIF import)</h3>
             <p>
-              <strong>All 15 consumers use SARIF as output only.</strong> Not a single consumer parses
-              SARIF to import findings. The SARIF import path (with its silent data-loss bugs found in
-              the code review) is <strong>completely untested by real usage</strong>. This is either
-              a YAGNI feature, or it needs promotion / documentation / integration examples.
+              <strong>All 15 consumers use SARIF as output only.</strong> Not a single consumer
+              parses SARIF to import findings. The SARIF import path (with its silent data-loss bugs
+              found in the code review) is <strong>completely untested by real usage</strong>. This
+              is either a YAGNI feature, or it needs promotion / documentation / integration
+              examples.
             </p>
           </div>
 
           <div class="card card-problem">
             <h3>2. Only 3 of 15 use the Pipeline</h3>
             <p>
-              The pipeline is go-finding's flagship feature (detect&rarr;triage&rarr;fix&rarr;verify),
-              but only go-structure-linter, oxlint-auto-configure, and template-AUTHORS actually use it.
-              The other 12 have their own orchestration. This suggests either the pipeline is too
-              opinionated, too hard to adopt incrementally, or consumers don't know it exists.
-              <strong>Action:</strong> Document a migration path from "just types" to "full pipeline."
+              The pipeline is go-finding's flagship feature
+              (detect&rarr;triage&rarr;fix&rarr;verify), but only go-structure-linter,
+              oxlint-auto-configure, and template-AUTHORS actually use it. The other 12 have their
+              own orchestration. This suggests either the pipeline is too opinionated, too hard to
+              adopt incrementally, or consumers don't know it exists.
+              <strong>Action:</strong> Document a migration path from "just types" to "full
+              pipeline."
             </p>
           </div>
 
           <div class="card card-warning">
             <h3>3. Provide a shared Severity mapper</h3>
             <p>
-              Every multi-detector consumer reinvents <code>MapSeverity(string) finding.Severity</code>.
-              This is pure boilerplate. A configurable mapper or registry (similar to the existing
+              Every multi-detector consumer reinvents
+              <code>MapSeverity(string) finding.Severity</code>. This is pure boilerplate. A
+              configurable mapper or registry (similar to the existing
               <code>RegisterSeverityAlias</code>) would eliminate this across 5+ projects.
             </p>
           </div>
@@ -406,27 +1061,28 @@ type RuleCategory = finding.Category</code></pre>
             <p>
               BuildFlow reinvents FixEngine functionality with manual text replacement. Either the
               FixEngine isn't discoverable, or it doesn't meet real multi-file fix needs.
-              <strong>Action:</strong> Document FixEngine usage with a real-world example. Investigate
-              why BuildFlow couldn't use it.
+              <strong>Action:</strong> Document FixEngine usage with a real-world example.
+              Investigate why BuildFlow couldn't use it.
             </p>
           </div>
 
           <div class="card card-warning">
             <h3>5. The <code>Report.findings</code> unexporting broke consumers</h3>
             <p>
-              At least 3 template projects access <code>report.Findings</code> which is now unexported.
-              The migration path (<code>FindingsSnapshot()</code> / <code>ActiveFindings()</code>) exists
-              but isn't obvious. <strong>Action:</strong> Add a migration note to docs/MIGRATION_v1.0.md
-              and verify these consumers compile.
+              At least 3 template projects access <code>report.Findings</code> which is now
+              unexported. The migration path (<code>FindingsSnapshot()</code> /
+              <code>ActiveFindings()</code>) exists but isn't obvious. <strong>Action:</strong> Add
+              a migration note to docs/MIGRATION_v1.0.md and verify these consumers compile.
             </p>
           </div>
 
           <div class="card card-solution">
             <h3>6. The type-alias pattern should be the documented default</h3>
             <p>
-              go-structure-linter's pattern (<code>type Issue = finding.Finding</code>) eliminates all
-              conversion boilerplate and is the cleanest integration. <strong>Action:</strong> Add this
-              to the README as the recommended integration pattern, with a before/after example.
+              go-structure-linter's pattern (<code>type Issue = finding.Finding</code>) eliminates
+              all conversion boilerplate and is the cleanest integration.
+              <strong>Action:</strong> Add this to the README as the recommended integration
+              pattern, with a before/after example.
             </p>
           </div>
 
@@ -434,9 +1090,9 @@ type RuleCategory = finding.Category</code></pre>
             <h3>7. The Builder pattern works &mdash; promote it</h3>
             <p>
               Consumers using <code>NewBuilder()</code> + <code>.Build()</code> have fewer bugs than
-              those using <code>NewFinding()</code> + field mutation. template-LICENSE's compile-time
-              assertion pattern should be documented. <strong>Action:</strong> Deprecation-path
-              <code>NewFinding</code> or add a lint rule.
+              those using <code>NewFinding()</code> + field mutation. template-LICENSE's
+              compile-time assertion pattern should be documented.
+              <strong>Action:</strong> Deprecation-path <code>NewFinding</code> or add a lint rule.
             </p>
           </div>
 
@@ -444,10 +1100,10 @@ type RuleCategory = finding.Category</code></pre>
             <h3>8. Advanced features (RelatedRef, Suppression) are barely used</h3>
             <p>
               Only hierarchical-errors uses <code>RelatedRef</code>, <code>Suppression</code>,
-              <code>ActiveFindings()</code>, and the <code>analysis</code> subpackage. These features
-              work and are correctly designed, but adoption is minimal. This validates their existence
-              (at least one sophisticated consumer needs them) but suggests the docs should showcase
-              them.
+              <code>ActiveFindings()</code>, and the <code>analysis</code> subpackage. These
+              features work and are correctly designed, but adoption is minimal. This validates
+              their existence (at least one sophisticated consumer needs them) but suggests the docs
+              should showcase them.
             </p>
           </div>
 
@@ -465,11 +1121,12 @@ type RuleCategory = finding.Category</code></pre>
 
           <h3>go-structure-linter &mdash; the exemplar</h3>
           <p>
-            <strong>Why it's the gold standard:</strong> Type aliases (<code>type Issue =
-            finding.Finding</code>) mean the linter's entire rule system produces go-finding types
-            directly &mdash; zero conversion boilerplate. Full pipeline integration with custom
-            TriageFunc, FindingTransformer (severity filter), StageHook bridge to event system. The
-            SDK exposes <code>LintWithPipeline()</code>, <code>FixWithPipeline()</code>,
+            <strong>Why it's the gold standard:</strong> Type aliases (<code
+              >type Issue = finding.Finding</code
+            >) mean the linter's entire rule system produces go-finding types directly &mdash; zero
+            conversion boilerplate. Full pipeline integration with custom TriageFunc,
+            FindingTransformer (severity filter), StageHook bridge to event system. The SDK exposes
+            <code>LintWithPipeline()</code>, <code>FixWithPipeline()</code>,
             <code>GetMetrics()</code>. 65+ <code>finding.Pos()</code> call sites. This is the
             integration pattern go-finding should document and promote.
           </p>
@@ -487,27 +1144,33 @@ type RuleCategory = finding.Category</code></pre>
 
           <h3>hierarchical-errors &mdash; the advanced-feature consumer</h3>
           <p>
-            The only consumer using <code>RelatedRef</code> (parent-child error hierarchy for SARIF),
-            <code>Suppression</code> (<code>//nolint</code> handling), <code>ActiveFindings()</code>
-            (correct SARIF suppression semantics), <code>analysis.FromTokenPosition()</code> (the
-            analysis subpackage), and <code>Finding.Key()</code> for deduplication. Uses namespaced
-            metadata keys following go-finding's convention. Validates that advanced features work
-            correctly for at least one real consumer.
+            The only consumer using <code>RelatedRef</code> (parent-child error hierarchy for
+            SARIF), <code>Suppression</code> (<code>//nolint</code> handling),
+            <code>ActiveFindings()</code> (correct SARIF suppression semantics),
+            <code>analysis.FromTokenPosition()</code> (the analysis subpackage), and
+            <code>Finding.Key()</code> for deduplication. Uses namespaced metadata keys following
+            go-finding's convention. Validates that advanced features work correctly for at least
+            one real consumer.
           </p>
 
           <h3>Code-Quality-Agent &mdash; the anti-pattern</h3>
           <p>
-            Uses <code>NewFinding()</code> + direct field mutation everywhere (no Builder), raw strings
-            for branded types (defeats type safety), hardcoded <code>Confidence: 1.0</code> across all
-            adapters, inconsistent category assignment per adapter. Also has its own Adapter interface
-            that's conceptually parallel to finding.Detector but doesn't implement it. Has a health
-            score that manually counts severities instead of using <code>report.Summary.BySeverity</code>
-            (which is already computed). This consumer would benefit most from go-finding API guidance.
+            Uses <code>NewFinding()</code> + direct field mutation everywhere (no Builder), raw
+            strings for branded types (defeats type safety), hardcoded
+            <code>Confidence: 1.0</code> across all adapters, inconsistent category assignment per
+            adapter. Also has its own Adapter interface that's conceptually parallel to
+            finding.Detector but doesn't implement it. Has a health score that manually counts
+            severities instead of using <code>report.Summary.BySeverity</code>
+            (which is already computed). This consumer would benefit most from go-finding API
+            guidance.
           </p>
         </section>
 
         <footer class="footer">
-          <p>Generated 2026-07-05 &middot; 20 consumer projects audited &middot; All findings verified against source code &middot; Companion to the full-code-review report</p>
+          <p>
+            Generated 2026-07-05 &middot; 20 consumer projects audited &middot; All findings
+            verified against source code &middot; Companion to the full-code-review report
+          </p>
         </footer>
       </main>
     </div>
@@ -518,17 +1181,33 @@ type RuleCategory = finding.Category</code></pre>
         var nav = document.querySelector("[data-nav]");
         if (!nav) return;
         var links = nav.querySelectorAll('a[href^="#"]');
-        var ids = Array.from(links).map(function (l) { return l.getAttribute("href").slice(1); });
-        var sections = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+        var ids = Array.from(links).map(function (l) {
+          return l.getAttribute("href").slice(1);
+        });
+        var sections = ids
+          .map(function (id) {
+            return document.getElementById(id);
+          })
+          .filter(Boolean);
         if (!sections.length) return;
-        var observer = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              links.forEach(function (link) { link.classList.toggle("active", link.getAttribute("href") === "#" + entry.target.id); });
-            }
-          });
-        }, { rootMargin: "-80px 0px -60% 0px", threshold: 0 });
-        sections.forEach(function (s) { observer.observe(s); });
+        var observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                links.forEach(function (link) {
+                  link.classList.toggle(
+                    "active",
+                    link.getAttribute("href") === "#" + entry.target.id,
+                  );
+                });
+              }
+            });
+          },
+          { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
+        );
+        sections.forEach(function (s) {
+          observer.observe(s);
+        });
       })();
     </script>
   </body>
