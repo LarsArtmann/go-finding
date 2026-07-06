@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-06
+
+Internal refactor release: new shared `lockutil` package, test suite defragmentation, and version constant sync.
+
+### Added
+
+- **`lockutil` package** — Generic helpers `lockutil.Locked(sync.Locker, fn) T` and `lockutil.RLocked(*sync.RWMutex, fn) T` that eliminate `m.mu.Lock()/defer m.mu.Unlock()` boilerplate around short critical sections. Returns generic `T` so callers can return values directly; use `struct{}` for side-effect-only sections. Stdlib-only, follows `gotoken` precedent as a public shared utility subpackage.
+
+### Changed
+
+- **Mutex boilerplate migrated to `lockutil`** — Report, Metrics, DetectorRegistry, LinterRegistry, FileBackup, GoASTProvider, CLI detector/fix-provider registries, and SARIF import now use `Locked`/`RLocked` instead of manual `Lock()/defer Unlock()` patterns. Behavior-preserving refactor; no public API changes beyond the new `lockutil` import.
+- **`PrettyJSONFiltered` TOCTOU fixed (again)** — Consolidated the previous manual fix into the `withReadLock` helper, making the single-snapshot guarantee structural rather than convention-based.
+- **SARIF import guard inlined** — `checkSARIFReadContext` unexported helper replaced with direct `ctx.Err()` guard at each entry point. No API change.
+- **`lineProviderOffset` extracted** — Shared helper deduplicating offset resolution between insertion and replacement edit builders in the fix provider chain.
+
+### Fixed
+
+- **`version.go` synced to 1.2.0** — Was stale at `1.0.0` despite the v1.1.0 release. The `Version` constant now reflects the actual release.
+
+### Test Suite
+
+- **Test defragmentation** — Eliminated `_extra_test.go`, `_bugfix_test.go`, and `coverage_test.go` naming. All tests consolidated into canonical `<subject>_test.go` files (e.g., `assert_extra_test.go` → `testutil_test.go`, `coverage_test.go` → `validate_test.go`). Shared helpers centralized in `testutil_test.go`. No production code affected.
+
 ## [1.1.0] - 2026-07-06
 
 Multi-module workspace split, type safety improvements, and SARIF/LSP fidelity.

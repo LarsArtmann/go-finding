@@ -6,11 +6,11 @@
 
 ---
 
-## Current Phase: Pre-v1.0 stabilization
+## Current Phase: Post-v1 stabilization
 
-**Current version:** 0.9.1
+**Current version:** 1.2.0
 
-All [v1.0.0 release criteria](docs/RELEASE_CRITERIA.md) are met: core types stable, full SARIF round-trip, byte-level fix engine, 90%+ coverage, zero lint warnings, race-clean. The library is production-ready in practice — the remaining work is removing deprecated APIs that were held for backward compatibility.
+v1.0.0 locked the API (2026-06-24). v1.1.0 added the multi-module workspace, branded type safety (`FilePath`), SARIF suppression round-trip, and LSP data fidelity. v1.2.0 extracted the shared `lockutil` package and defragmented the test suite. The library is production-ready and API-stable.
 
 ---
 
