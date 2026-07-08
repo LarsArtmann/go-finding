@@ -2,6 +2,7 @@ package finding
 
 import (
 	"testing"
+	"time"
 )
 
 func TestSeverityToLSP(t *testing.T) {
@@ -210,5 +211,114 @@ func TestFromLSPRelated(t *testing.T) {
 
 	if got, want := f.Related[0].Position.Line, 10; got != want {
 		t.Errorf("FromLSP Related[0].Line = %d, want %d", got, want)
+	}
+}
+
+// TestLSPRoundTrip_SeverityCritical verifies that SeverityCritical survives an
+// LSP round-trip. LSP collapses critical → error, so the exact severity must be
+// carried in LSPDiagnosticData. Regression for lsp.go:51.
+func TestLSPRoundTrip_SeverityCritical(t *testing.T) {
+	t.Parallel()
+
+	original := Finding{
+		ID:         ID("crit-1"),
+		Rule:       "critical-rule",
+		ToolName:   "tool",
+		Message:    "critical issue",
+		Severity:   SeverityCritical,
+		Position:   Position{File: FilePath("main.go"), Line: 5},
+		Confidence: ConfidenceHigh,
+	}
+
+	diag := original.ToLSP()
+
+	// LSP diagnostic severity must be Error (critical is not representable).
+	if diag.Severity != LSPSeverityError {
+		t.Errorf("LSP severity: got %d, want %d (LSPSeverityError)", int(diag.Severity), int(LSPSeverityError))
+	}
+
+	restored := FromLSP("file:///main.go", diag)
+
+	if restored.Severity != SeverityCritical {
+		t.Errorf("round-trip severity: got %q, want %q (SeverityCritical)",
+			restored.Severity, SeverityCritical)
+	}
+}
+
+// TestLSPRoundTrip_SnippetMetadataSuppression verifies that Snippet, Metadata,
+// and Suppression survive the LSP round-trip via LSPDiagnosticData.
+func TestLSPRoundTrip_SnippetMetadataSuppression(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now().UTC().Truncate(time.Second)
+	original := Finding{
+		ID:       ID("full-1"),
+		Rule:     "rule-x",
+		ToolName: "tool",
+		Message:  "test",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("main.go"), Line: 3},
+		Snippet:  "var x = unused",
+		Metadata: map[string]string{"custom-key": "custom-val"},
+		Suppression: &Suppression{
+			Kind:   SuppressionInSource,
+			Rule:   "rule-x",
+			Reason: "intentional",
+		},
+	}
+
+	restored := FromLSP("file:///main.go", original.ToLSP())
+
+	if restored.Snippet != "var x = unused" {
+		t.Errorf("Snippet: got %q, want %q", restored.Snippet, "var x = unused")
+	}
+
+	if restored.Metadata["custom-key"] != "custom-val" {
+		t.Errorf("Metadata[custom-key]: got %q, want %q", restored.Metadata["custom-key"], "custom-val")
+	}
+
+	if restored.Suppression == nil {
+		t.Fatal("expected Suppression to survive round-trip")
+	}
+
+	if restored.Suppression.Kind != SuppressionInSource {
+		t.Errorf("Suppression.Kind: got %q, want %q", restored.Suppression.Kind, SuppressionInSource)
+	}
+
+	if restored.Suppression.Rule != "rule-x" {
+		t.Errorf("Suppression.Rule: got %q, want %q", restored.Suppression.Rule, "rule-x")
+	}
+
+	_ = now // expiry not tested here; IsExpired boundary tested separately
+}
+
+// TestLSPRoundTrip_RelatedFindingID verifies that RelatedRef.FindingID survives
+// the LSP round-trip instead of being regenerated.
+func TestLSPRoundTrip_RelatedFindingID(t *testing.T) {
+	t.Parallel()
+
+	original := Finding{
+		ID:       ID("main-1"),
+		Rule:     "rule-a",
+		ToolName: "tool",
+		Message:  "main",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("main.go"), Line: 1},
+		Related: []RelatedRef{{
+			FindingID: ID("original-related-id"),
+			Relation:  "caused-by",
+			Position:  Position{File: FilePath("other.go"), Line: 5},
+		}},
+	}
+
+	restored := FromLSP("file:///main.go", original.ToLSP())
+
+	if len(restored.Related) != 1 {
+		t.Fatalf("Related length: got %d, want 1", len(restored.Related))
+	}
+
+	if restored.Related[0].FindingID != ID("original-related-id") {
+		t.Errorf("Related[0].FindingID: got %q, want %q (should NOT be regenerated)",
+			restored.Related[0].FindingID, ID("original-related-id"))
 	}
 }

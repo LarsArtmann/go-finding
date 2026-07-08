@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`Range.containsByOffset` respected Offset=0 sentinel** — Previously used `> 0` instead of `>= 0` for the end offset upper bound, causing single-point ranges at offset 0 and ranges with `End.Offset = -1` (unset sentinel) to incorrectly contain all higher offsets. Now uses `EndOffsetOrStart()` for consistency with overlap/intersection logic.
+- **`Report.UnmarshalJSON` data race** — Wrote to struct fields without acquiring the write lock. Now uses `withLock` for thread safety, consistent with all other Report methods.
+- **`Finding.IsSuppressedAt` inconsistent with `Suppression.IsActive`** — `IsSuppressedAt` didn't validate the suppression (missing `IsValid` check), so findings with invalid suppressions (e.g., missing `Rule`) were incorrectly treated as suppressed. Now delegates to `Suppression.IsActive`.
+- **SARIF `Suppression.Rule` lost in round-trip** — Export didn't include `Suppression.Rule`; import fabricated it from `Finding.Rule`. Now exports/imports via `go-finding/suppression-rule` property.
+- **SARIF `Suppression.Reason` fabricated from Kind** — Import used the Kind string as Reason when Reason was empty. Now exports/imports the actual Reason via `go-finding/suppression-reason` property.
+- **SARIF `Confidence` stored unclamped** — Export property used raw `f.Confidence` instead of `f.NormalizedConfidence()`, allowing invalid values (>1.0) to round-trip. Now clamps to [0.0, 1.0].
+- **LSP `SeverityCritical` lost in round-trip** — LSP collapses `critical` and `error` into the same severity. Now stores the exact severity in `LSPDiagnosticData.Severity` and restores it in `FromLSP`.
+- **`correlateByProximity` false correlations at Line=0** — Findings with `Position.Line == 0` (unset) correlated with confidence 1.0 due to zero line difference. Now skips findings without line info.
+- **Pipeline metrics dropped on error/cancel paths** — `metricsResult` was only set on the success path. Now set before every early return so metrics are available for debugging failures.
+- **Pipeline `TotalIterations` zero on error/cancel** — Was only set after the loop exited normally. Now set before every early return.
+- **Pipeline `TotalDetected` counted duplicates** — Used raw `p.findings` (accumulated across iterations) instead of the deduplicated set. Now uses `collectAllFindings` for accurate unique count.
+- **Pipeline StageAfter hook errors silently discarded** — All `StageAfter` and `StageBefore Verify` hook errors were swallowed with `_ =`. Now propagated, aborting the pipeline per documented contract.
+- **Pipeline `StageAfter Triage` conflicts always 0** — Passed `iter.Conflicts` before conflict detection ran. Conflicts are now correctly reported in `StageAfter Apply` (where they're computed), and the `Conflicts` field doc updated.
+- **Pipeline suggest findings not shifted after direct fixes** — Only `iter.findings` was shifted; `iter.suggest` retained stale line numbers. Now both are shifted.
+- **Pipeline provider errors during byte-level conflict detection swallowed** — Errors were logged but never surfaced to callers. Now recorded in `result.PartialErrors`.
+- **Pipeline silent file read failure in conflict detection** — When a file couldn't be read, all fixes bypassed conflict detection with no log entry. Now logs a warning.
+- **SARIF `Position.Offset` lost in round-trip** — Byte offsets were not preserved through SARIF export/import. Now carried via `go-finding/start-offset` and `go-finding/end-offset` properties.
+- **LSP round-trip lost Snippet, Suppression, Metadata, RelatedRef.FindingID** — `LSPDiagnosticData` now carries these fields; `FromLSP` restores them. `RelatedRef.FindingID` is preserved instead of regenerated.
+- **`resolveLineCol` discarded underlying error** — Replaced detailed error (line/col/contentLen context) with bare sentinel. Now wraps with `fmt.Errorf("%w: %w", ...)`.
+- **Provider errors lack finding context** — FixEngine `resolveErrors` now include the finding ID in the error message.
+- **Pipeline `collectAllFindings` called twice** — When `VerifyAfterFix` was enabled, findings were collected once for verification and again for `TotalDetected`. Now cached.
+
+### Changed
+
+- **`applyTriage` signature updated** — Now accepts `*PipelineResult` to record provider errors in `PartialErrors`.
+- **Error messages normalized** — Retry config errors now use lowercase field names consistent with config errors. Missing colons added to error wrapping in CLI config and pipeline config file.
+- **`dedupKey` duplication eliminated** — Extracted `positionDedupKey` helper in `merge.go`.
+- **`Suppression.IsExpired` boundary documented** — At the exact `ExpiresAt` instant, the suppression is still active (expired only strictly after). Documented and tested.
+- **SARIF `sarifRegion.Snippet` spec deviation documented** — Typed as `string` for simplicity; SARIF 2.1.0 §3.30.13 requires an `artifactContent` object. Snippet value also carried in `go-finding/snippet` property for lossless round-trip.
+
 ## [1.2.0] - 2026-07-06
 
 Internal refactor release: new shared `lockutil` package, test suite defragmentation, and version constant sync.

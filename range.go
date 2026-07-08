@@ -160,20 +160,23 @@ func (r Range) checkColumnRange(p Position) bool {
 }
 
 // containsByOffset checks if position is within range using byte offsets.
+// Respects the Offset sentinel convention: End.Offset < 0 means "unset", so a
+// range without an end offset is treated as a single point at Start.Offset
+// (via [Range.EndOffsetOrStart]). Offset 0 is a valid byte offset (start of file).
 func (r Range) containsByOffset(p Position) bool {
-	if r.Start.Offset >= 0 && p.Offset >= 0 {
-		if p.Offset < r.Start.Offset {
-			return false
-		}
-
-		if r.End.Offset > 0 && p.Offset > r.End.Offset {
-			return false
-		}
-
-		return true
+	if r.Start.Offset < 0 || p.Offset < 0 {
+		return false
 	}
 
-	return false
+	if p.Offset < r.Start.Offset {
+		return false
+	}
+
+	if p.Offset > r.EndOffsetOrStart() {
+		return false
+	}
+
+	return true
 }
 
 // Contains reports whether the position is within the range.

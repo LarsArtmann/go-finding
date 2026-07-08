@@ -235,7 +235,7 @@ func findingRegion(f Finding) *sarifRegion {
 	}
 
 	if f.Snippet != "" {
-		region.Snippet = f.Snippet
+		region.Snippet = &sarifArtifactContent{Text: f.Snippet}
 	}
 
 	return region
@@ -335,7 +335,7 @@ func sarifProperties(f Finding) map[string]any {
 	}
 
 	if f.Confidence > 0 {
-		props[sarifPropConfidence] = float64(f.Confidence)
+		props[sarifPropConfidence] = float64(f.NormalizedConfidence())
 	}
 
 	if f.Suggestion != "" {
@@ -354,8 +354,25 @@ func sarifProperties(f Finding) map[string]any {
 		props[sarifPropAfterCode] = f.AfterCode
 	}
 
+	if f.Position.HasOffset() {
+		props[sarifPropStartOffset] = f.Position.Offset
+	}
+
+	if f.Range != nil && f.Range.End.HasOffset() {
+		props[sarifPropEndOffset] = f.Range.End.Offset
+	}
+
 	if f.Suppression != nil {
 		props[sarifPropSuppressionKind] = string(f.Suppression.Kind)
+
+		if f.Suppression.Rule != "" {
+			props[sarifPropSuppressionRule] = string(f.Suppression.Rule)
+		}
+
+		if f.Suppression.Reason != "" {
+			props[sarifPropSuppressionReason] = f.Suppression.Reason
+		}
+
 		if f.Suppression.ExpiresAt != nil {
 			props[sarifPropSuppressionExpiry] = f.Suppression.ExpiresAt.Format("2006-01-02T15:04:05Z07:00")
 		}

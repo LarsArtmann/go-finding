@@ -199,3 +199,21 @@ func TestMerge_DeduplicateByID_EmptyIDs(t *testing.T) {
 		)
 	}
 }
+
+// TestCorrelate_ZeroLineFindings verifies that findings with Line == 0 (no line
+// info) are NOT correlated by proximity. Regression for correlate.go:175 —
+// before the fix, zero-line findings correlated at confidence 1.0 because the
+// line-diff was 0.
+func TestCorrelate_ZeroLineFindings(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	// Two findings from different tools, both with Line == 0.
+	findings := []Finding{
+		makeFinding("1", "govet", "rule-a", "a.go", 0),
+		makeFinding("2", "staticcheck", "rule-b", "a.go", 0),
+	}
+
+	correlations := Correlate(findings)
+	g.Expect(correlations).To(BeEmpty(), "findings without line info must not correlate")
+}

@@ -10,6 +10,7 @@ func expiringSuppression(t *testing.T, reason string) *Suppression {
 
 	return &Suppression{
 		Kind:   SuppressionInSource,
+		Rule:   "test-rule",
 		Reason: reason,
 		ExpiresAt: func() *time.Time {
 			t := time.Now().Add(1 * time.Hour)

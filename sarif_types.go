@@ -1,5 +1,11 @@
 package finding
 
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+)
+
 // SARIF types for Report generation.
 // These are simplified representations of SARIF 2.1.0.
 
@@ -37,7 +43,12 @@ const (
 	sarifPropMetaPrefix = "go-finding/meta/"
 
 	sarifPropSuppressionKind   = "go-finding/suppression-kind"
+	sarifPropSuppressionRule   = "go-finding/suppression-rule"
+	sarifPropSuppressionReason = "go-finding/suppression-reason"
 	sarifPropSuppressionExpiry = "go-finding/suppression-expiry"
+
+	sarifPropStartOffset = "go-finding/start-offset"
+	sarifPropEndOffset   = "go-finding/end-offset"
 )
 
 // sarifLog represents a SARIF log file containing run results.
@@ -113,13 +124,48 @@ type sarifArtifactLocation struct {
 	URI string `json:"uri"`
 }
 
+// sarifArtifactContent represents the SARIF artifactContent object,
+// used for region.snippet per SARIF 2.1.0 §3.30.13.
+type sarifArtifactContent struct {
+	Text string `json:"text,omitempty"`
+}
+
+// UnmarshalJSON accepts both the spec-compliant object form ({"text":"..."})
+// and the common bare-string shorthand ("snippet"), ensuring backward
+// compatibility with SARIF producers that emit bare strings.
+func (s *sarifArtifactContent) UnmarshalJSON(data []byte) error {
+	// Try object form first (anonymous struct avoids infinite recursion).
+	var obj struct {
+		Text string `json:"text,omitempty"`
+	}
+
+	objErr := json.Unmarshal(data, &obj)
+	if objErr == nil {
+		s.Text = obj.Text
+
+		return nil
+	}
+
+	// Fall back to bare string.
+	strErr := json.Unmarshal(data, &s.Text)
+	if strErr != nil {
+		return fmt.Errorf("unmarshal snippet: %w", errors.Join(objErr, strErr))
+	}
+
+	return nil
+}
+
 // sarifRegion represents a code region in a text document.
+//
+// Snippet is a *sarifArtifactContent per SARIF 2.1.0 §3.30.13. The snippet
+// value is also carried in the go-finding/snippet property for lossless
+// round-trip. See ADR #9.
 type sarifRegion struct {
-	StartLine   int    `json:"startLine,omitempty"`
-	StartColumn int    `json:"startColumn,omitempty"`
-	EndLine     int    `json:"endLine,omitempty"`
-	EndColumn   int    `json:"endColumn,omitempty"`
-	Snippet     string `json:"snippet,omitempty"`
+	StartLine   int                   `json:"startLine,omitempty"`
+	StartColumn int                   `json:"startColumn,omitempty"`
+	EndLine     int                   `json:"endLine,omitempty"`
+	EndColumn   int                   `json:"endColumn,omitempty"`
+	Snippet     *sarifArtifactContent `json:"snippet,omitempty"`
 }
 
 // sarifFix represents a fix to be applied to the artifact.

@@ -356,7 +356,7 @@ Handles: severity mapping, 0-based conversion, Range, related information, diagn
 
 Preserves: end position as Range, related information, related range end positions, diagnostic tags in Metadata, raw LSP severity in Metadata
 
-> **Known limitation:** Partially lossy conversion — `FixStrategy`, `Confidence`, `BeforeCode`, `AfterCode`, `Suppression`, `Category` are lost in LSP format. Position, severity, rule, message, related info (including ranges), and diagnostic tags survive via metadata.
+**Full round-trip fidelity via `LSPDiagnosticData`:** When `ToLSP()` populates `diag.Data`, `FromLSP()` restores: ID, Severity (including SeverityCritical), FixStrategy, Confidence, Category, Tags, BeforeCode, AfterCode, Suggestion, Snippet, Suppression, Metadata, and RelatedRef.FindingID (preserved, not regenerated).
 
 ---
 

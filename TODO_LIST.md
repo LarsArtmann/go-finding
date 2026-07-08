@@ -1,7 +1,7 @@
 # TODO List
 
 **Generated:** 2026-05-20
-**Updated:** 2026-06-23 (session 24: all v1.0 API cleanup items completed — branded types, renames, validator decomposition)
+**Updated:** 2026-07-07 (session 25: correctness sweep — containsByOffset sentinel bug, UnmarshalJSON data race, IsSuppressedAt consistency, SARIF suppression/LSP severity round-trip, pipeline metrics/hooks/suggest-shift fixes)
 **Files Processed:** 235
 
 ## 🔴 HIGH Priority

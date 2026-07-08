@@ -23,7 +23,9 @@ type StageEvent struct {
 	Iteration int
 	Findings  []finding.Finding
 	Applied   int // Fixes applied (StageAfter + StageApply only)
-	Conflicts int // Conflicts detected (StageAfter + StageTriage only)
+	// Conflicts holds the number of conflicts detected during fix application
+	// (StageAfter + StageApply only).
+	Conflicts int
 }
 
 // StageHook receives stage boundary notifications. Implementations must be

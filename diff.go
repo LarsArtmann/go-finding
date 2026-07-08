@@ -27,6 +27,10 @@ func SortFindingsByID(findings []Finding) {
 
 // Diff compares two finding sets by ID and categorizes them as added, removed, modified, or unchanged.
 // Two findings with the same ID are considered "modified" if their content differs (per Equal()).
+//
+// Note: Findings are keyed by ID. If the input contains duplicate IDs, only the
+// last occurrence per ID is used (standard Go map semantics). Callers should
+// deduplicate by ID before diffing if duplicates are expected.
 // All result slices are sorted by ID.
 func Diff(before, after []Finding) DiffResult {
 	beforeSet := make(map[ID]Finding, len(before))

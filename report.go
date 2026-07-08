@@ -94,6 +94,14 @@ func (r *Report) AddFinding(f Finding) {
 	})
 }
 
+// WithFinding adds a finding and returns the report for chaining.
+// Example: report.WithFinding(f1).WithFinding(f2).
+func (r *Report) WithFinding(f Finding) *Report {
+	r.AddFinding(f)
+
+	return r
+}
+
 // AddFindings adds multiple findings to the report.
 // Safe for concurrent use.
 func (r *Report) AddFindings(findings []Finding) {

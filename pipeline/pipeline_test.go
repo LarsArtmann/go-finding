@@ -477,7 +477,7 @@ func TestApplyTriage_AllConflicts(t *testing.T) {
 
 	iter := Iteration{Number: 1}
 
-	err = p.applyTriage(context.Background(), fixes, &iter)
+	err = p.applyTriage(context.Background(), fixes, &iter, &PipelineResult{})
 	if err != nil {
 		t.Fatalf("applyTriage: %v", err)
 	}
@@ -516,7 +516,155 @@ func TestApplyTriage_ApplyError(t *testing.T) {
 	}
 
 	iter := Iteration{Number: 1}
-	err = p.applyTriage(context.Background(), fixes, &iter)
+	err = p.applyTriage(context.Background(), fixes, &iter, &PipelineResult{})
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err).To(MatchError(ContainSubstring("apply fixes")))
+}
+
+// TestPipeline_MetricsAvailableOnErrorPath verifies that metrics are populated
+// even when the pipeline stops due to an error. Regression for pipeline.go:193 —
+// metrics were only set on the success path.
+func TestPipeline_MetricsAvailableOnErrorPath(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	detectorErr := errors.New("detector exploded")
+	d := &mockDetector{name: "broken", err: detectorErr}
+
+	cfg := DefaultConfig()
+	cfg.MaxIterations = 3
+	cfg.Metrics = NewMetrics()
+
+	p, err := New(cfg, t.TempDir(), d)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	result, runErr := p.Run(context.Background())
+	g.Expect(runErr).To(HaveOccurred())
+
+	// Metrics must be populated despite the error.
+	g.Expect(result.Metrics.StartTime).ToNot(BeZero())
+	g.Expect(result.Metrics.EndTime).ToNot(BeZero())
+	g.Expect(result.Reason).To(Equal(ReasonError))
+}
+
+// TestPipeline_StageAfterHookErrorAborts verifies that a StageAfter hook error
+// aborts the pipeline. Regression for pipeline_iteration.go:31 — StageAfter
+// errors were silently discarded with `_ =`.
+func TestPipeline_StageAfterHookErrorAborts(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	abortErr := errors.New("after-hook-abort")
+
+	hook := StageHookFunc(func(_ context.Context, event StageEvent) error {
+		if event.Timing == StageAfter && event.Stage == StageDetect {
+			return abortErr
+		}
+
+		return nil
+	})
+
+	d := newMockDetector("test", "tool", finding.NewFinding(
+		"rule", "tool", "msg", finding.SeverityInfo,
+		finding.Position{}, finding.ConfidenceHigh,
+	))
+
+	cfg := DefaultConfig()
+	cfg.MaxIterations = 1
+	cfg.StageHooks = []StageHook{hook}
+
+	p, err := New(cfg, t.TempDir(), d)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	_, runErr := p.Run(context.Background())
+	g.Expect(runErr).To(HaveOccurred())
+	g.Expect(runErr).To(MatchError(ContainSubstring("after")))
+}
+
+// TestPipeline_TotalDetectedDeduplicated verifies that TotalDetected counts
+// unique findings only, not duplicates across iterations. Regression for
+// pipeline.go:249 — previously used raw p.findings (accumulated, not deduped).
+func TestPipeline_TotalDetectedDeduplicated(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	// Same finding returned every iteration.
+	sameFinding := finding.NewFinding(
+		"rule-x", "tool", "msg", finding.SeverityInfo,
+		finding.Position{File: "a.go", Line: 1}, finding.ConfidenceHigh,
+	)
+
+	d := newMockDetector("test", "tool", sameFinding)
+
+	cfg := DefaultConfig()
+	cfg.MaxIterations = 3
+
+	p, err := New(cfg, t.TempDir(), d)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	result, err := p.Run(context.Background())
+	g.Expect(err).ToNot(HaveOccurred())
+
+	// The same finding is detected 3 times (once per iteration) but
+	// TotalDetected must report 1 (deduplicated).
+	g.Expect(result.TotalDetected).To(Equal(1), "TotalDetected must count unique findings only")
+}
+
+// TestPipeline_SuggestFindingsShiftedAfterDirectFix verifies that suggest
+// findings have their positions shifted when a direct fix in the same iteration
+// adds lines. Regression for pipeline_detect.go:237 — previously only
+// iter.findings was shifted, not iter.suggest.
+func TestPipeline_SuggestFindingsShiftedAfterDirectFix(t *testing.T) {
+	g := NewWithT(t)
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+
+	// "line1\nold\nline3\nline4\n" — replacing "old" (1 line) with 3 lines
+	// shifts everything after line 2 by +2.
+	content := []byte("line1\nold\nline3\nline4\n")
+	writeTestFile(t, filepath.Join(tmpDir, "test.go"), content)
+
+	directFix := finding.Finding{
+		ID:          "fix-1",
+		Rule:        "r1",
+		ToolName:    "tool",
+		Message:     "replace old",
+		Severity:    finding.SeverityInfo,
+		Position:    finding.Pos("test.go", 2, 1),
+		FixStrategy: finding.FixStrategyDirect,
+		BeforeCode:  "old",
+		AfterCode:   "new1\nnew2\nnew3",
+	}
+
+	// Suggest finding at line 3 — should shift to line 5 (+2) after fix.
+	suggestFinding := finding.Finding{
+		ID:          "suggest-1",
+		Rule:        "r2",
+		ToolName:    "tool",
+		Message:     "consider refactoring",
+		Severity:    finding.SeverityInfo,
+		Position:    finding.Pos("test.go", 3, 1),
+		FixStrategy: finding.FixStrategySuggest,
+		Suggestion:  "use a helper function",
+	}
+
+	cfg := DefaultConfig()
+
+	p, err := New(cfg, tmpDir)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	iter := Iteration{
+		Number:  1,
+		suggest: []finding.Finding{suggestFinding},
+	}
+
+	err = p.applyTriage(context.Background(), []finding.Finding{directFix}, &iter, &PipelineResult{})
+	g.Expect(err).ToNot(HaveOccurred())
+
+	g.Expect(iter.suggest).To(HaveLen(1))
+	g.Expect(iter.suggest[0].Position.Line).To(
+		Equal(5),
+		"suggest finding line should shift +2 after direct fix added 2 lines",
+	)
 }

@@ -173,8 +173,16 @@ func correlateByProximity(findings []Finding, correlations []Correlation) []Corr
 	})
 
 	for i, f1 := range findings {
+		if f1.Position.Line == 0 {
+			continue
+		}
+
 		for _, f2 := range findings[i+1:] {
 			if f1.ToolName == f2.ToolName {
+				continue
+			}
+
+			if f2.Position.Line == 0 {
 				continue
 			}
 

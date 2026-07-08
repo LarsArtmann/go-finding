@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"maps"
 	"slices"
@@ -25,7 +26,7 @@ var (
 )
 
 // ErrUnknownFixProvider is returned when a fix provider name is not recognized.
-var ErrUnknownFixProvider = fmt.Errorf("unknown fix provider")
+var ErrUnknownFixProvider = errors.New("unknown fix provider")
 
 func lookupFixProvider(name string) (func() pipeline.FixProvider, bool) {
 	type lookup struct {

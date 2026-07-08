@@ -66,8 +66,10 @@ func (f Finding) IsSuppressed() bool {
 
 // IsSuppressedAt returns true if this finding is suppressed at the given time.
 // Use this in tests for deterministic suppression checks.
+// A finding is suppressed only if its Suppression is valid (correct Kind and
+// non-empty Rule) and not expired, consistent with [Suppression.IsActive].
 func (f Finding) IsSuppressedAt(now time.Time) bool {
-	return f.Suppression != nil && !f.Suppression.IsExpired(now)
+	return f.Suppression != nil && f.Suppression.IsActive(now)
 }
 
 // HasFix reports whether this finding has any fix available. This is the

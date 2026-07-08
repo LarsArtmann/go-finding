@@ -111,6 +111,65 @@ func TestSARIFSuppressionKindMapping(t *testing.T) {
 	}
 }
 
+// TestSARIFSuppressionRoundTrip_DifferentRule verifies that Suppression.Rule is
+// preserved when it differs from Finding.Rule. Regression for the SARIF
+// Suppression.Rule loss bug (sarif_export.go:357 / sarif_import.go:247).
+// The existing TestSARIFSuppressionRoundTrip has Rule == Finding.Rule, so the
+// import fallback (Rule := Finding.Rule) masks the bug.
+func TestSARIFSuppressionRoundTrip_DifferentRule(t *testing.T) {
+	t.Parallel()
+
+	const (
+		findingRule       = RuleName("finding-rule")
+		suppressionRule   = RuleName("suppression-rule")
+		suppressionReason = "waived by different rule"
+	)
+
+	report := NewReport(ToolInfo{Name: "test-tool", Version: "1.0"})
+	report.AddFinding(Finding{
+		ID:          GenerateID("test-tool", findingRule, Position{File: "main.go", Line: 10}),
+		Rule:        findingRule,
+		ToolName:    "test-tool",
+		Message:     "test",
+		Severity:    SeverityWarning,
+		Position:    Position{File: FilePath("main.go"), Line: 10},
+		FixStrategy: FixStrategyNone,
+		Suppression: &Suppression{
+			Kind:   SuppressionInConfig,
+			Rule:   suppressionRule,
+			Reason: suppressionReason,
+		},
+	})
+
+	data, err := report.ToSARIFWithOpts(WithIncludeSuppressed())
+	if err != nil {
+		t.Fatalf("ToSARIFWithOpts: %v", err)
+	}
+
+	findings, err := FindingsFromSARIF(context.Background(), data)
+	if err != nil {
+		t.Fatalf("FindingsFromSARIF: %v", err)
+	}
+
+	if len(findings) != 1 {
+		t.Fatalf("expected 1 finding, got %d", len(findings))
+	}
+
+	f := findings[0]
+	if f.Suppression == nil {
+		t.Fatal("expected Suppression to be non-nil")
+	}
+
+	if f.Suppression.Rule != suppressionRule {
+		t.Errorf("Suppression.Rule: got %q, want %q (must NOT fall back to Finding.Rule %q)",
+			f.Suppression.Rule, suppressionRule, findingRule)
+	}
+
+	if f.Suppression.Reason != suppressionReason {
+		t.Errorf("Suppression.Reason: got %q, want %q", f.Suppression.Reason, suppressionReason)
+	}
+}
+
 func TestSARIFWriteWithIncludeSuppressed(t *testing.T) {
 	t.Parallel()
 

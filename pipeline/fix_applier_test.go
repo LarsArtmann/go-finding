@@ -582,3 +582,70 @@ func TestFixApplier_ApplyWithDetails(t *testing.T) {
 	g.Expect(count).To(Equal(0))
 	g.Expect(fixes).To(BeEmpty())
 }
+
+// saboteurProvider is a test FixProvider that deletes the backup .bak file
+// when Edits is called, then returns an error. This simulates a TOCTOU
+// scenario where the backup becomes unavailable between backup and restore.
+type saboteurProvider struct {
+	backup     *FileBackup
+	targetPath string
+}
+
+func (s *saboteurProvider) Name() string { return "saboteur" }
+func (s *saboteurProvider) CanHandle(f finding.Finding) bool {
+	return f.HasCodeChange()
+}
+
+func (s *saboteurProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error) {
+	bakPath := s.backup.BackupPath(s.targetPath)
+	if bakPath != "" {
+		_ = os.Remove(bakPath)
+	}
+
+	return nil, errors.New("sabotaged by test provider")
+}
+
+// TestFixApplier_RollbackErrorNotSwallowed verifies that when both applyToFile
+// fails AND Restore fails (because the .bak file was deleted), the returned
+// error includes BOTH the apply failure and the rollback failure — proving
+// rollback errors are no longer silently swallowed.
+func TestFixApplier_RollbackErrorNotSwallowed(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	root := t.TempDir()
+
+	testFile := filepath.Join(root, "target.go")
+	writeTestFile(t, testFile, []byte("package main\n"))
+
+	resolvedPath, ok := resolveSafePath(root, "target.go")
+	g.Expect(ok).To(BeTrue())
+
+	backupDir := t.TempDir()
+	backup := NewFileBackup(backupDir)
+
+	provider := &saboteurProvider{backup: backup, targetPath: resolvedPath}
+
+	applier := &FixApplier{
+		rootDir: root,
+		backup:  backup,
+		engine:  NewFixEngineWithProviders(provider),
+	}
+
+	fix := finding.Finding{
+		ID:          "rollback-test",
+		BeforeCode:  "package main",
+		AfterCode:   "package main // fixed",
+		Position:    finding.Position{File: "target.go", Line: 1},
+		FixStrategy: finding.FixStrategyDirect,
+	}
+
+	_, err := applier.Apply(context.Background(), []finding.Finding{fix})
+	g.Expect(err).To(HaveOccurred())
+
+	errMsg := err.Error()
+	g.Expect(errMsg).To(ContainSubstring("rollback also failed"),
+		"error should mention rollback failure: %s", errMsg)
+	g.Expect(errMsg).To(ContainSubstring("restore"),
+		"error should mention restore failure: %s", errMsg)
+}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -177,10 +176,12 @@ func DefaultTriageFunc(findings []finding.Finding) *TriageResult {
 }
 
 // applyTriage handles conflict detection and fix application for one iteration.
+// Provider errors from byte-level conflict detection are recorded in result.PartialErrors.
 func (p *Pipeline) applyTriage(
 	ctx context.Context,
 	fixes []finding.Finding,
 	iter *Iteration,
+	result *PipelineResult,
 ) error {
 	if len(fixes) == 0 {
 		return nil
@@ -205,6 +206,14 @@ func (p *Pipeline) applyTriage(
 			ctx, "provider errors during conflict detection",
 			slog.Int("errors", len(providerErrors)),
 		)
+
+		if result.PartialErrors == nil {
+			result.PartialErrors = make(map[string]error)
+		}
+
+		for i, providerErr := range providerErrors {
+			result.PartialErrors[fmt.Sprintf("provider-%d", i)] = providerErr
+		}
 	}
 
 	if iter.Conflicts > 0 {
@@ -237,6 +246,14 @@ func (p *Pipeline) applyTriage(
 	for file, shiftMap := range shiftMaps {
 		for i := range iter.findings {
 			f := &iter.findings[i]
+			if f.Position.File == finding.FilePath(file) {
+				f.Position = shiftMap.ShiftedPosition(f.Position)
+				f.Range = shiftMap.ShiftedRange(f.Range)
+			}
+		}
+
+		for i := range iter.suggest {
+			f := &iter.suggest[i]
 			if f.Position.File == finding.FilePath(file) {
 				f.Position = shiftMap.ShiftedPosition(f.Position)
 				f.Range = shiftMap.ShiftedRange(f.Range)
@@ -293,8 +310,9 @@ func (p *Pipeline) byteConflictEngine() *FixEngine {
 
 // filterByFileEdits groups fixes by file, reads each file's content,
 // and uses byte-level FilterConflictingEdits for precise conflict detection.
+// All file paths are validated against rootDir to prevent path traversal.
 func (p *Pipeline) filterByFileEdits(
-	_ context.Context,
+	ctx context.Context,
 	fixes []finding.Finding,
 	engine *FixEngine,
 ) ([]finding.Finding, []error) {
@@ -309,10 +327,25 @@ func (p *Pipeline) filterByFileEdits(
 	)
 
 	for file, fileFixes := range byFile {
-		fullPath := filepath.Join(p.rootDir, string(file))
+		safePath, ok := resolveSafePath(p.rootDir, string(file))
+		if !ok {
+			p.log(
+				ctx, "skipping unsafe file path for conflict detection",
+				slog.String("file", string(file)),
+				slog.Int("fixes", len(fileFixes)),
+			)
 
-		content, err := os.ReadFile(filepath.Clean(fullPath))
+			continue
+		}
+
+		content, err := os.ReadFile(safePath)
 		if err != nil {
+			p.log(
+				ctx, "could not read file for conflict detection; including all fixes",
+				slog.String("file", string(file)),
+				slog.String("error", err.Error()),
+				slog.Int("fixes", len(fileFixes)),
+			)
 			result = append(result, fileFixes...)
 
 			continue

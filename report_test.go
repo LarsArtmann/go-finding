@@ -37,7 +37,7 @@ func TestReportActiveFindings(t *testing.T) {
 	r.AddFinding(Finding{
 		ID:          "2",
 		Message:     "suppressed",
-		Suppression: &Suppression{Reason: string(TagTest)},
+		Suppression: &Suppression{Kind: SuppressionInSource, Rule: "test", Reason: string(TagTest)},
 	})
 
 	active := r.ActiveFindings()
@@ -229,7 +229,7 @@ func TestComputeSummary(t *testing.T) {
 		ID: "3", Rule: "R3", ToolName: "test", Message: "m3",
 		Severity: SeverityInfo, Position: Position{File: "b.go", Line: 1},
 		FixStrategy: FixStrategyNone,
-		Suppression: &Suppression{Kind: SuppressionInSource, Reason: "intentional"},
+		Suppression: &Suppression{Kind: SuppressionInSource, Rule: "rule1", Reason: "intentional"},
 	})
 
 	r.ComputeSummary()

@@ -71,14 +71,14 @@ func loadConfig(
 		case ".yaml", ".yml":
 			if err := yaml.Unmarshal(data, &cfg); err != nil {
 				return pipelineConfigFile{}, fmt.Errorf(
-					"parsing YAML config %q %w",
+					"parsing YAML config %q: %w",
 					configFile, err,
 				)
 			}
 		default:
 			if err := json.Unmarshal(data, &cfg); err != nil {
 				return pipelineConfigFile{}, fmt.Errorf(
-					"parsing config %q %w",
+					"parsing config %q: %w",
 					configFile, err,
 				)
 			}
@@ -120,7 +120,7 @@ func (c pipelineConfigFile) validate() error {
 
 	for _, d := range c.Detectors {
 		if _, ok := lookupDetectorBuilder(d.Name); !ok {
-			return fmt.Errorf("%w %q (available: %s)", errUnknownDetector, d.Name,
+			return fmt.Errorf("%w: %q (available: %s)", errUnknownDetector, d.Name,
 				strings.Join(availableDetectorNames(), ", "))
 		}
 	}

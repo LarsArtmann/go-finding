@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"sync"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -337,7 +338,7 @@ func TestPrettyJSONFiltered(t *testing.T) {
 		Rule:        "r2",
 		Message:     "m2",
 		Severity:    SeverityWarning,
-		Suppression: &Suppression{Kind: SuppressionInSource},
+		Suppression: &Suppression{Kind: SuppressionInSource, Rule: "r2"},
 	})
 
 	got, err := r.PrettyJSONFiltered()
@@ -442,4 +443,47 @@ func TestReport_WriteJSON_Error(t *testing.T) {
 	err := r.WriteJSON(&failingWriter{err: errors.New("write failed")})
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err).To(MatchError(ContainSubstring("encoding report JSON")))
+}
+
+// TestReport_UnmarshalJSON_ConcurrentSafety verifies that UnmarshalJSON is safe
+// for concurrent use. Run with -race to detect data races.
+// Regression for the UnmarshalJSON data race (json.go:43).
+func TestReport_UnmarshalJSON_ConcurrentSafety(t *testing.T) {
+	t.Parallel()
+
+	report := NewReport(ToolInfo{Name: "concurrent", Version: "1.0"})
+	report.AddFinding(Finding{
+		ID:         "f1",
+		Rule:       "rule-a",
+		ToolName:   "concurrent",
+		Message:    "test",
+		Severity:   SeverityWarning,
+		Position:   Position{File: FilePath("main.go"), Line: 1},
+		Confidence: ConfidenceHigh,
+	})
+
+	data, err := json.Marshal(report)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+
+	target := NewReport(ToolInfo{})
+
+	var wg sync.WaitGroup
+
+	// Concurrent writers — all unmarshalling into the same *Report.
+	for range 10 {
+		wg.Go(func() {
+			_ = target.UnmarshalJSON(data)
+		})
+	}
+
+	// Concurrent readers — snapshot while writers may be active.
+	for range 10 {
+		wg.Go(func() {
+			_ = target.FindingsSnapshot()
+		})
+	}
+
+	wg.Wait()
 }

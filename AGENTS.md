@@ -99,7 +99,8 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **LineShiftMap shifts Position + Range** — `ShiftedPosition` shifts line + column (single-line edits); `ShiftedRange` shifts both endpoints
 - **SubstringProvider column-aware** — Disambiguates multiple occurrences by line + column distance
 - **context.Context on I/O** — `WriteSARIF`, `FindingsFromSARIF`, etc. accept context as first arg
-- **StageHooks replace OnStage** — Use `Config.StageHooks` with `StageHook`/`StageHookFunc` for before/after events with abort capability
+- **StageHooks replace OnStage** — Use `Config.StageHooks` with `StageHook`/`StageHookFunc` for before/after events with abort capability. Both StageBefore and StageAfter errors abort the pipeline.
+- **IsSuppressedAt validates Suppression** — Uses `Suppression.IsActive(now)` which checks `IsValid()` (valid Kind + non-empty Rule) AND not expired. Invalid suppressions are treated as inactive.
 - **Branded types prevent mixups** — `ID`, `RuleName`, `ToolName`, `FilePath` are distinct string types. Use `finding.ID("x")` not raw `"x"` for fields. JSON marshals identically to string.
 - **Validate() decomposed** — `finding_validate.go` delegates to 6 per-field validators (`validateIdentity`, `validateClassification`, `validateFix`, `validateReferences`, `validateSpatial`, `validateSuppression`). Complexity per validator < 10.
 - **SeverityAliases removed** — Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`. Global map guarded by `sync.RWMutex`.
@@ -107,7 +108,7 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **testify in go.mod is transitive** — `stretchr/testify` appears as `// indirect` in core go.mod because ginkgo/slim-sprig depends on it. It is NOT used directly. Banned per how-to-golang but unavoidable as a transitive dep of ginkgo.
 - **Position.File is FilePath** — Changed from `string` to `FilePath` branded type. Use `finding.FilePath("path")` for string vars; string literals auto-convert. Constructors `Pos`, `NewRange`, `NewRangePtr` accept `FilePath`.
 - **SARIFOption pattern** — Use `ToSARIFWithOpts(WithIncludeSuppressed(), WithMinSeverity(sev))` instead of deprecated `ToSARIFFiltered`. Suppressed findings can now be emitted with SARIF suppression arrays.
-- **LSPDiagnosticData** — `ToLSP()` populates `diag.Data` with ID, FixStrategy, Confidence, Category, Tags, code data. `FromLSP` restores them. Round-trip is now lossless.
+- **LSPDiagnosticData** — `ToLSP()` populates `diag.Data` with ID, Severity, FixStrategy, Confidence, Category, Tags, code data, Snippet, Suppression, Metadata, and RelatedFindingIDs. `FromLSP` restores them. Round-trip is lossless including SeverityCritical (which LSP collapses to Error) and RelatedRef.FindingID (which is preserved instead of regenerated).
 - **Analysis BeforeCode** — `analysis.FromDiagnostic` now extracts `BeforeCode` from TextEdits by reading source file from disk.
 - **GroupByFile returns map[FilePath][]Finding** — Updated to use branded type as map key.
 - **lockutil.Locked/RLocked for mutex boilerplate** — Generic helpers `lockutil.Locked(sync.Locker, fn)` and `lockutil.RLocked(*sync.RWMutex, fn)` consolidate the m.mu.Lock()/defer m.mu.Unlock() pattern. Returns generic T; use `struct{}` for side-effect-only sections. Report/metrics/file_backup/registry/category_linter/etc. all use these.

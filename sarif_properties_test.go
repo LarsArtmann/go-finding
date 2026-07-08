@@ -88,7 +88,7 @@ func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 		Message:     "msg",
 		Severity:    SeverityError,
 		Position:    Pos("a.go", 1, 1),
-		Suppression: &Suppression{Kind: SuppressionInSource, Reason: "won't fix"},
+		Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R1", Reason: "won't fix"},
 	})
 	report.ComputeSummary()
 

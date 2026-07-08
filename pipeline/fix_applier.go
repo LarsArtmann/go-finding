@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"maps"
 	"os"
-	"path/filepath"
 	"slices"
-	"strings"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -122,21 +120,51 @@ func (a *FixApplier) ApplyWithShiftMap(
 		if a.backup.IsEnabled() {
 			err := a.backup.Backup(path)
 			if err != nil {
-				_ = a.backup.RollbackAll(modified)
+				backupErr := finding.NewIOError("backup "+path, err)
 
-				return len(applied), applied, shiftMaps, finding.NewIOError("backup "+path, err)
+				rollbackErr := a.backup.RollbackAll(modified)
+				if rollbackErr != nil {
+					return len(
+							applied,
+						), applied, shiftMaps, fmt.Errorf(
+							"%w (rollback also failed: %w)",
+							backupErr,
+							rollbackErr,
+						)
+				}
+
+				return len(applied), applied, shiftMaps, backupErr
 			}
 		}
 
 		fileApplied, shiftMap, err := a.applyToFile(path, fileFixes)
 		if err != nil {
+			var rollbackErrs []error
+
 			if a.backup.IsEnabled() {
-				_ = a.backup.Restore(path)
+				restoreErr := a.backup.Restore(path)
+				if restoreErr != nil {
+					rollbackErrs = append(rollbackErrs, fmt.Errorf("restore %s: %w", path, restoreErr))
+				}
 			}
 
-			_ = a.backup.RollbackAll(modified)
+			rollbackErr := a.backup.RollbackAll(modified)
+			if rollbackErr != nil {
+				rollbackErrs = append(rollbackErrs, fmt.Errorf("rollback: %w", rollbackErr))
+			}
 
-			return len(applied), applied, shiftMaps, finding.NewConflictError("apply to "+path, err)
+			applyErr := finding.NewConflictError("apply to "+path, err)
+			if len(rollbackErrs) > 0 {
+				return len(
+						applied,
+					), applied, shiftMaps, fmt.Errorf(
+						"%w (rollback also failed: %w)",
+						applyErr,
+						errors.Join(rollbackErrs...),
+					)
+			}
+
+			return len(applied), applied, shiftMaps, applyErr
 		}
 
 		modified = append(modified, path)
@@ -150,36 +178,22 @@ func (a *FixApplier) ApplyWithShiftMap(
 
 // groupFindingsBySafePath groups findings by their resolved filesystem path,
 // skipping findings without a file or with unsafe path traversal.
+// Uses the resolved path (not the raw join) as the map key, preventing
+// TOCTOU races where a symlink is swapped between validation and file I/O.
 func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string][]finding.Finding {
 	byFile := make(map[string][]finding.Finding)
-
-	// Resolve root once instead of per-finding (was O(N) syscalls).
-	cleanRoot := filepath.Clean(a.rootDir)
-
-	if resolved, err := filepath.EvalSymlinks(cleanRoot); err == nil {
-		cleanRoot = resolved
-	}
 
 	for _, f := range fixes {
 		if f.Position.File == "" {
 			continue
 		}
 
-		path := filepath.Join(a.rootDir, string(f.Position.File))
-
-		cleanPath := filepath.Clean(path)
-
-		resolved, err := filepath.EvalSymlinks(cleanPath)
-		if err == nil {
-			cleanPath = resolved
-		}
-
-		if cleanPath != cleanRoot &&
-			!strings.HasPrefix(cleanPath, cleanRoot+string(os.PathSeparator)) {
+		safePath, ok := resolveSafePath(a.rootDir, string(f.Position.File))
+		if !ok {
 			continue
 		}
 
-		byFile[path] = append(byFile[path], f)
+		byFile[safePath] = append(byFile[safePath], f)
 	}
 
 	return byFile

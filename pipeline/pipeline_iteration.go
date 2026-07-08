@@ -28,7 +28,10 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		return false, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
 	}
 
-	_ = p.fireStageHook(ctx, StageAfter, StageDetect, iter.Number, detResult.Findings, 0, 0)
+	hookErr := p.fireStageHook(ctx, StageAfter, StageDetect, iter.Number, detResult.Findings, 0, 0)
+	if hookErr != nil {
+		return false, fmt.Errorf("iteration %d: after detect: %w", p.iterations+1, hookErr)
+	}
 
 	findings := detResult.Findings
 
@@ -45,7 +48,10 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	}
 
 	if len(p.config.Processors) > 0 {
-		_ = p.fireStageHook(ctx, StageAfter, StageProcess, iter.Number, findings, 0, 0)
+		hookErr := p.fireStageHook(ctx, StageAfter, StageProcess, iter.Number, findings, 0, 0)
+		if hookErr != nil {
+			return false, fmt.Errorf("iteration %d: after process: %w", p.iterations+1, hookErr)
+		}
 	}
 
 	for name, detErr := range detResult.Errors {
@@ -86,7 +92,10 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		slog.Int("none", len(triage.None)),
 	)
 
-	_ = p.fireStageHook(ctx, StageAfter, StageTriage, iter.Number, findings, 0, iter.Conflicts)
+	hookErr = p.fireStageHook(ctx, StageAfter, StageTriage, iter.Number, findings, 0, 0)
+	if hookErr != nil {
+		return false, fmt.Errorf("iteration %d: after triage: %w", p.iterations+1, hookErr)
+	}
 
 	if !p.config.DryRun {
 		err := p.fireStageHook(ctx, StageBefore, StageApply, iter.Number, triage.Direct, 0, 0)
@@ -96,7 +105,7 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 
 		applyDone := p.stageTiming(StageApply)
 
-		err = p.applyTriage(ctx, triage.Direct, &iter)
+		err = p.applyTriage(ctx, triage.Direct, &iter, result)
 		if err != nil {
 			applyDone()
 
@@ -105,7 +114,20 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 
 		applyDone()
 
-		_ = p.fireStageHook(ctx, StageAfter, StageApply, iter.Number, triage.Direct, iter.Applied, iter.Conflicts)
+		hookErr := p.fireStageHook(
+			ctx,
+			StageAfter,
+			StageApply,
+			iter.Number,
+			triage.Direct,
+			iter.Applied,
+			iter.Conflicts,
+		)
+		if hookErr != nil {
+			applyDone()
+
+			return false, fmt.Errorf("iteration %d: after apply: %w", p.iterations+1, hookErr)
+		}
 	}
 
 	result.Iterations = append(result.Iterations, iter)

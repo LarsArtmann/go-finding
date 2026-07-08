@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"maps"
 	"strconv"
 	"strings"
 )
@@ -49,14 +50,19 @@ type LSPDiagnostic struct {
 // data property. This enables round-trip fidelity for fields that the standard
 // LSP diagnostic type cannot represent.
 type LSPDiagnosticData struct {
-	ID          ID          `json:"id,omitempty"`
-	FixStrategy FixStrategy `json:"fixStrategy,omitempty"`
-	Confidence  Confidence  `json:"confidence,omitempty"`
-	Category    Category    `json:"category,omitempty"`
-	Tags        []Tag       `json:"tags,omitempty"`
-	BeforeCode  string      `json:"beforeCode,omitempty"`
-	AfterCode   string      `json:"afterCode,omitempty"`
-	Suggestion  string      `json:"suggestion,omitempty"`
+	ID                ID                `json:"id,omitempty"`
+	Severity          Severity          `json:"severity,omitempty"`
+	FixStrategy       FixStrategy       `json:"fixStrategy,omitempty"`
+	Confidence        Confidence        `json:"confidence,omitempty"`
+	Category          Category          `json:"category,omitempty"`
+	Tags              []Tag             `json:"tags,omitempty"`
+	BeforeCode        string            `json:"beforeCode,omitempty"`
+	AfterCode         string            `json:"afterCode,omitempty"`
+	Suggestion        string            `json:"suggestion,omitempty"`
+	Snippet           string            `json:"snippet,omitempty"`
+	Suppression       *Suppression      `json:"suppression,omitempty"`
+	Metadata          map[string]string `json:"metadata,omitempty"`
+	RelatedFindingIDs []string          `json:"relatedFindingIds,omitempty"`
 }
 
 // LSPRange represents a 0-based character range in a text document.
@@ -99,14 +105,19 @@ func (f Finding) ToLSP() LSPDiagnostic {
 		Source:   string(f.ToolName),
 		Message:  f.Message,
 		Data: &LSPDiagnosticData{
-			ID:          f.ID,
-			FixStrategy: f.FixStrategy,
-			Confidence:  f.Confidence,
-			Category:    f.Category,
-			Tags:        f.Tags,
-			BeforeCode:  f.BeforeCode,
-			AfterCode:   f.AfterCode,
-			Suggestion:  f.Suggestion,
+			ID:                f.ID,
+			Severity:          f.Severity,
+			FixStrategy:       f.FixStrategy,
+			Confidence:        f.Confidence,
+			Category:          f.Category,
+			Tags:              f.Tags,
+			BeforeCode:        f.BeforeCode,
+			AfterCode:         f.AfterCode,
+			Suggestion:        f.Suggestion,
+			Snippet:           f.Snippet,
+			Suppression:       f.Suppression,
+			Metadata:          f.Metadata,
+			RelatedFindingIDs: collectRelatedFindingIDs(f.Related),
 		},
 	}
 
@@ -197,6 +208,12 @@ func FromLSP(fileURI FilePath, diag LSPDiagnostic) Finding {
 			f.ID = diag.Data.ID
 		}
 
+		// Restore exact severity from Data when available, since LSP collapses
+		// SeverityCritical into LSPSeverityError (SeverityCritical is not representable).
+		if diag.Data.Severity.IsValid() {
+			f.Severity = diag.Data.Severity
+		}
+
 		f.FixStrategy = diag.Data.FixStrategy
 		f.Confidence = diag.Data.Confidence
 		f.Category = diag.Data.Category
@@ -204,6 +221,17 @@ func FromLSP(fileURI FilePath, diag LSPDiagnostic) Finding {
 		f.BeforeCode = diag.Data.BeforeCode
 		f.AfterCode = diag.Data.AfterCode
 		f.Suggestion = diag.Data.Suggestion
+		f.Snippet = diag.Data.Snippet
+		f.Suppression = diag.Data.Suppression
+
+		// Merge original metadata with LSP-derived metadata.
+		if len(diag.Data.Metadata) > 0 {
+			if f.Metadata == nil {
+				f.Metadata = make(map[string]string, len(diag.Data.Metadata))
+			}
+
+			maps.Copy(f.Metadata, diag.Data.Metadata)
+		}
 	}
 
 	// Preserve end position as Range when it differs from start.
@@ -218,7 +246,12 @@ func FromLSP(fileURI FilePath, diag LSPDiagnostic) Finding {
 	}
 
 	// Convert related information.
-	for _, rel := range diag.Related {
+	var relatedIDs []string
+	if diag.Data != nil {
+		relatedIDs = diag.Data.RelatedFindingIDs
+	}
+
+	for i, rel := range diag.Related {
 		relPos := Position{
 			File:   FilePath(rel.Location.URI),
 			Line:   rel.Location.Range.Start.Line + 1,
@@ -230,9 +263,15 @@ func FromLSP(fileURI FilePath, diag LSPDiagnostic) Finding {
 			Relation:  RelationKind(rel.Message),
 			Position:  relPos,
 		}
-		endLine := rel.Location.Range.End.Line + 1
 
+		// Restore original FindingID if available from Data.
+		if i < len(relatedIDs) && relatedIDs[i] != "" {
+			ref.FindingID = ID(relatedIDs[i])
+		}
+
+		endLine := rel.Location.Range.End.Line + 1
 		endChar := rel.Location.Range.End.Character + 1
+
 		if endLine != relPos.Line || endChar != relPos.Column {
 			ref.Range = &Range{
 				Start: ref.Position,
@@ -250,7 +289,10 @@ func FromLSP(fileURI FilePath, diag LSPDiagnostic) Finding {
 
 	// Preserve raw LSP severity and tags for fidelity.
 	if diag.Severity > 0 || len(diag.Tags) > 0 {
-		f.Metadata = make(map[string]string)
+		if f.Metadata == nil {
+			f.Metadata = make(map[string]string)
+		}
+
 		if diag.Severity > 0 {
 			f.Metadata[LSPSeverityKey] = strconv.Itoa(int(diag.Severity))
 		}
@@ -292,4 +334,20 @@ func severityFromLSP(sev LSPSeverity) Severity {
 	default:
 		return SeverityWarning
 	}
+}
+
+// collectRelatedFindingIDs extracts FindingIDs from related refs in order.
+// Used to preserve original FindingIDs through LSP round-trip, since the LSP
+// relatedInformation type has no field for arbitrary IDs.
+func collectRelatedFindingIDs(refs []RelatedRef) []string {
+	if len(refs) == 0 {
+		return nil
+	}
+
+	ids := make([]string, len(refs))
+	for i, rel := range refs {
+		ids[i] = string(rel.FindingID)
+	}
+
+	return ids
 }

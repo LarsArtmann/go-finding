@@ -156,7 +156,7 @@ func TestFindingSuppressed(t *testing.T) {
 		Message:     "test message",
 		Severity:    SeverityWarning,
 		Position:    Position{File: "file.go", Line: 10, Column: 5},
-		Suppression: &Suppression{Kind: SuppressionInSource, Reason: "intentional"},
+		Suppression: &Suppression{Kind: SuppressionInSource, Rule: "rule1", Reason: "intentional"},
 	}
 
 	g.Expect(f.IsSuppressed()).To(BeTrue())

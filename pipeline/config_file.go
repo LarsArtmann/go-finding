@@ -129,7 +129,7 @@ func (cf ConfigFile) ResolveDetectors(registry *finding.DetectorRegistry) ([]fin
 	for _, name := range cf.DetectorNames {
 		d, err := registry.Build(name)
 		if err != nil {
-			return nil, fmt.Errorf("%w %q: %w", errResolveDetector, name, err)
+			return nil, fmt.Errorf("%w: %q: %w", errResolveDetector, name, err)
 		}
 
 		detectors = append(detectors, d)

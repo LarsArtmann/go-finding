@@ -76,7 +76,7 @@ func (e *FixEngine) ApplyWithConflicts(
 
 		edits, err := e.resolveEdits(content, &lineIndex, f)
 		if err != nil {
-			resolveErrors = append(resolveErrors, err)
+			resolveErrors = append(resolveErrors, fmt.Errorf("finding %s: %w", f.ID, err))
 		}
 
 		allEdits = append(allEdits, edits...)

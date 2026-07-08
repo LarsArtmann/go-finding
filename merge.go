@@ -134,6 +134,22 @@ func WithDeduplicateBy(by DeduplicateBy) MergeOption {
 // dedupKeyOverhead accounts for 3 colons + two decimal integers (up to 20 chars).
 const dedupKeyOverhead = 23
 
+// positionDedupKey builds a deterministic key from a tool/rule prefix and the
+// finding's position (file:line:column). The caller must ensure Position.File is set.
+func positionDedupKey(prefix string, f Finding) string {
+	var b strings.Builder
+	b.Grow(len(prefix) + len(f.Position.File) + dedupKeyOverhead)
+	b.WriteString(prefix)
+	b.WriteByte(':')
+	b.WriteString(string(f.Position.File))
+	b.WriteByte(':')
+	b.WriteString(strconv.Itoa(f.Position.Line))
+	b.WriteByte(':')
+	b.WriteString(strconv.Itoa(f.Position.Column))
+
+	return b.String()
+}
+
 func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 	switch opts.DeduplicateBy {
 	case DeduplicateByID:
@@ -147,33 +163,13 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 			return "", false
 		}
 
-		var b strings.Builder
-		b.Grow(len(finding.ToolName) + len(finding.Position.File) + dedupKeyOverhead)
-		b.WriteString(string(finding.ToolName))
-		b.WriteByte(':')
-		b.WriteString(string(finding.Position.File))
-		b.WriteByte(':')
-		b.WriteString(strconv.Itoa(finding.Position.Line))
-		b.WriteByte(':')
-		b.WriteString(strconv.Itoa(finding.Position.Column))
-
-		return b.String(), true
+		return positionDedupKey(string(finding.ToolName), finding), true
 	case DeduplicateByRule:
 		if finding.Position.File == "" {
 			return "", false
 		}
 
-		var b strings.Builder
-		b.Grow(len(finding.Rule) + len(finding.Position.File) + dedupKeyOverhead)
-		b.WriteString(string(finding.Rule))
-		b.WriteByte(':')
-		b.WriteString(string(finding.Position.File))
-		b.WriteByte(':')
-		b.WriteString(strconv.Itoa(finding.Position.Line))
-		b.WriteByte(':')
-		b.WriteString(strconv.Itoa(finding.Position.Column))
-
-		return b.String(), true
+		return positionDedupKey(string(finding.Rule), finding), true
 	default:
 		return string(finding.ID), true
 	}

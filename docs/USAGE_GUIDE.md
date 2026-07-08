@@ -888,9 +888,10 @@ diag := f.ToLSP()
 f := finding.FromLSP("file:///path/to/main.go", lspDiag)
 ```
 
-LSP conversion is lossy: FixStrategy, Confidence, BeforeCode, AfterCode, Suppression,
-Metadata, Category, and Tags are not preserved through LSP round-trips.
-Diagnostic tags (unnecessary, deprecated) are preserved via Metadata keys `lsp-tag-1`, `lsp-tag-2`.
+LSP round-trip is lossless via `LSPDiagnosticData`: ID, Severity (including Critical),
+FixStrategy, Confidence, BeforeCode, AfterCode, Suggestion, Snippet, Suppression,
+Metadata, Category, Tags, and RelatedRef.FindingID are all preserved in `diag.Data`.
+Diagnostic tags (unnecessary, deprecated) are also preserved via Metadata keys.
 
 ## Formatting
 

@@ -189,6 +189,8 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		err := CheckCanceledWithMsg(ctx, "pipeline cancelled")
 		if err != nil {
 			result.Reason = reasonFromContext(ctx)
+			result.TotalIterations = len(result.Iterations)
+			metricsResult = result
 
 			return result, err
 		}
@@ -206,6 +208,9 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 			} else {
 				result.Reason = ReasonError
 			}
+
+			result.TotalIterations = len(result.Iterations)
+			metricsResult = result
 
 			return result, err
 		}
@@ -226,27 +231,57 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		result.Correlations = finding.Correlate(p.findings)
 	}
 
+	// Collect unique findings once — used for verification (if enabled) and
+	// TotalDetected below. Avoids a redundant dedup pass.
+	allFindings := p.collectAllFindings(result)
+
 	// Optional final verification
 	if p.config.VerifyAfterFix && len(p.detectors) > 0 {
-		allOriginal := p.collectAllFindings(result)
+		hookErr := p.fireStageHook(
+			ctx,
+			StageBefore,
+			StageVerify,
+			result.TotalIterations,
+			allFindings,
+			0,
+			0,
+		)
+		if hookErr != nil {
+			metricsResult = result
 
-		_ = p.fireStageHook(ctx, StageBefore, StageVerify, result.TotalIterations, allOriginal, 0, 0)
+			return result, fmt.Errorf("before verify: %w", hookErr)
+		}
 
 		verifyDone := p.stageTiming(StageVerify)
-		verifyResult, err := Verify(ctx, p.detectors, allOriginal)
+		verifyResult, err := Verify(ctx, p.detectors, allFindings)
 
 		verifyDone()
 
 		if err != nil {
+			metricsResult = result
+
 			return result, fmt.Errorf("verify: %w", err)
 		}
 
-		_ = p.fireStageHook(ctx, StageAfter, StageVerify, result.TotalIterations, allOriginal, 0, 0)
+		hookErr = p.fireStageHook(
+			ctx,
+			StageAfter,
+			StageVerify,
+			result.TotalIterations,
+			allFindings,
+			0,
+			0,
+		)
+		if hookErr != nil {
+			metricsResult = result
+
+			return result, fmt.Errorf("after verify: %w", hookErr)
+		}
 
 		result.Verification = verifyResult
 	}
 
-	result.TotalDetected = len(p.findings)
+	result.TotalDetected = len(allFindings)
 
 	metricsResult = result
 

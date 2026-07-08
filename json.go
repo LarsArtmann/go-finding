@@ -40,6 +40,7 @@ func (r *Report) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
+// Safe for concurrent use — acquires a write lock.
 func (r *Report) UnmarshalJSON(data []byte) error {
 	var dto reportJSON
 
@@ -48,9 +49,13 @@ func (r *Report) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("unmarshal report: %w", err)
 	}
 
-	r.Tool = dto.Tool
-	r.findings = dto.Findings
-	r.Summary = dto.Summary
+	withLock(r, func() struct{} {
+		r.Tool = dto.Tool
+		r.findings = dto.Findings
+		r.Summary = dto.Summary
+
+		return struct{}{}
+	})
 
 	return nil
 }
@@ -68,6 +73,17 @@ func IsInvalid(f Finding) bool {
 // Deprecated: Use [IsInvalid] instead.
 func FilterInvalid(f Finding) bool {
 	return IsInvalid(f)
+}
+
+// JSON returns a compact JSON representation of the report.
+// Shorthand for MarshalJSON that returns a string.
+func (r *Report) JSON() (string, error) {
+	data, err := r.MarshalJSON()
+	if err != nil {
+		return "", fmt.Errorf("marshaling JSON: %w", err)
+	}
+
+	return string(data), nil
 }
 
 // PrettyJSON returns a formatted JSON representation of the report.

@@ -208,3 +208,42 @@ func TestRangeContains_ZeroValue(t *testing.T) {
 		t.Error("zero-value Range should not contain any position")
 	}
 }
+
+func TestRangeContains_OffsetSentinelConvention(t *testing.T) {
+	t.Parallel()
+
+	t.Run("single-point range does not contain higher offset", func(t *testing.T) {
+		t.Parallel()
+
+		// End offset -1 (unset sentinel): range is a single point at offset 10.
+		r := rngOffset("a.go", 10, -1)
+		assertRangeContains(t, r, 10, "a.go", true)
+		assertRangeContains(t, r, 50, "a.go", false)
+	})
+
+	t.Run("degenerate range at offset zero is a single point", func(t *testing.T) {
+		t.Parallel()
+
+		// Start and End both at offset 0 (valid byte offset = start of file).
+		r := rngOffset("a.go", 0, 0)
+		assertRangeContains(t, r, 0, "a.go", true)
+		assertRangeContains(t, r, 1, "a.go", false)
+	})
+
+	t.Run("range with explicit bounds respects upper bound", func(t *testing.T) {
+		t.Parallel()
+
+		r := rngOffset("a.go", 10, 20)
+		assertRangeContains(t, r, 10, "a.go", true)
+		assertRangeContains(t, r, 20, "a.go", true)
+		assertRangeContains(t, r, 21, "a.go", false)
+		assertRangeContains(t, r, 5, "a.go", false)
+	})
+
+	t.Run("offset below start rejected", func(t *testing.T) {
+		t.Parallel()
+
+		r := rngOffset("a.go", 50, 100)
+		assertRangeContains(t, r, 49, "a.go", false)
+	})
+}

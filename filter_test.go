@@ -170,7 +170,7 @@ func TestNotSuppressed(t *testing.T) {
 
 	findings := []Finding{
 		{ID: "1"},
-		{ID: "2", Suppression: &Suppression{Kind: SuppressionInSource}},
+		{ID: "2", Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R2"}},
 	}
 	runFilterCase(t, newFilterCase("not suppressed", findings, NotSuppressed, 1))
 }

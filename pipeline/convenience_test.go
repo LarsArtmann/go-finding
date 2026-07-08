@@ -60,7 +60,7 @@ func TestDetect_FiltersSuppressed(t *testing.T) {
 	suppressed := finding.Finding{
 		ID:          "supp",
 		ToolName:    "test",
-		Suppression: &finding.Suppression{Kind: finding.SuppressionInConfig},
+		Suppression: &finding.Suppression{Kind: finding.SuppressionInConfig, Rule: "test"},
 	}
 	active := finding.Finding{ID: "act", ToolName: "test"}
 

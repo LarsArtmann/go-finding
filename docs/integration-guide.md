@@ -343,10 +343,36 @@ data, _ := report.ToSARIFWithOpts(
 )
 ```
 
+### SARIF Property Bag (`go-finding/*`)
+
+All non-standard fields are preserved in the SARIF `properties` bag with the `go-finding/` prefix:
+
+| Property                        | Type     | Purpose                                           |
+| ------------------------------- | -------- | ------------------------------------------------- |
+| `go-finding/id`                 | string   | Finding ID                                        |
+| `go-finding/severity`           | string   | Exact severity (Critical, Error, Warning, Info)   |
+| `go-finding/fixStrategy`        | string   | Fix strategy (none, suggest, direct, ai-reserved) |
+| `go-finding/toolName`           | string   | Tool name                                         |
+| `go-finding/category`           | string   | Category                                          |
+| `go-finding/tags`               | []string | Tags                                              |
+| `go-finding/confidence`         | float    | Normalized confidence [0.0, 1.0]                  |
+| `go-finding/suggestion`         | string   | Suggestion text                                   |
+| `go-finding/snippet`            | string   | Source snippet                                    |
+| `go-finding/beforeCode`         | string   | Before-code for direct fixes                      |
+| `go-finding/afterCode`          | string   | After-code for direct fixes                       |
+| `go-finding/start-offset`       | int      | Start byte offset (-1 if unset)                   |
+| `go-finding/end-offset`         | int      | End byte offset (-1 if unset)                     |
+| `go-finding/suppression-kind`   | string   | Suppression kind override                         |
+| `go-finding/suppression-rule`   | string   | Suppression rule (may differ from Finding.Rule)   |
+| `go-finding/suppression-reason` | string   | Suppression reason                                |
+| `go-finding/suppression-expiry` | string   | Suppression expiry (RFC3339)                      |
+| `go-finding/meta/*`             | string   | User metadata key-value pairs                     |
+
 ## LSP Conversion with Full Fidelity
 
 `Finding.ToLSP()` populates `LSPDiagnostic.Data` with all go-finding-specific fields
-(ID, FixStrategy, Confidence, Category, Tags, code data). `FromLSP()` restores them:
+(ID, Severity, FixStrategy, Confidence, Category, Tags, code data, Snippet, Suppression,
+Metadata, RelatedFindingIDs). `FromLSP()` restores them:
 
 ```go
 diag := finding.ToLSP(myFinding)

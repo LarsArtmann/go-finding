@@ -291,7 +291,7 @@ func TestApplyTriage_EmptyFixes(t *testing.T) {
 	p := &Pipeline{config: DefaultConfig()}
 	iter := &Iteration{Number: 1}
 
-	err := p.applyTriage(context.Background(), nil, iter)
+	err := p.applyTriage(context.Background(), nil, iter, &PipelineResult{})
 	if err != nil {
 		t.Fatalf("applyTriage with nil fixes: %v", err)
 	}
@@ -318,7 +318,7 @@ func TestApplyTriage_AllConflicting(t *testing.T) {
 
 	iter := &Iteration{Number: 1}
 
-	err := p.applyTriage(context.Background(), fixes, iter)
+	err := p.applyTriage(context.Background(), fixes, iter, &PipelineResult{})
 	if err != nil {
 		t.Fatalf("applyTriage: %v", err)
 	}

@@ -17,11 +17,11 @@ const (
 )
 
 var (
-	errMaxRetriesNegative  = errors.New("MaxRetries must be >= 0")
-	errBaseDelayNegative   = errors.New("BaseDelay must be >= 0")
-	errMaxDelayNegative    = errors.New("MaxDelay must be >= 0")
-	errBaseDelayExceedsMax = errors.New("BaseDelay must not exceed MaxDelay")
-	errMaxDelayZero        = errors.New("MaxDelay must be > 0 when BaseDelay is set")
+	errMaxRetriesNegative  = errors.New("max retries must be >= 0")
+	errBaseDelayNegative   = errors.New("base delay must be >= 0")
+	errMaxDelayNegative    = errors.New("max delay must be >= 0")
+	errBaseDelayExceedsMax = errors.New("base delay must not exceed max delay")
+	errMaxDelayZero        = errors.New("max delay must be > 0 when base delay is set")
 )
 
 // RetryConfig configures retry behavior for detectors.

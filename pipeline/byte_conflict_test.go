@@ -116,3 +116,35 @@ func TestByteLevelConflictDetection_MissingFile_FailOpen(t *testing.T) {
 		t.Fatal("expected error when applying fix to nonexistent file")
 	}
 }
+
+func TestByteLevelConflictDetection_PathTraversalRejected(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+
+	// Malicious finding pointing outside rootDir via path traversal.
+	fix1 := makeFixFinding("f1", "hello", "world", "../../etc/passwd", 4)
+
+	cfg := Config{
+		MaxIterations:              1,
+		ByteLevelConflictDetection: true,
+	}
+
+	det := mockDetWithFindings("tool", fix1)
+
+	p, err := New(cfg, tmpDir, det)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+
+	// Should not read /etc/passwd or panic — path should be rejected.
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Finding should survive because the file was skipped (fail-open for conflict).
+	if len(result.Iterations) == 0 {
+		t.Fatal("expected at least one iteration")
+	}
+}

@@ -21,6 +21,9 @@ type Suppression struct {
 }
 
 // IsExpired returns true if the suppression has expired relative to now.
+// A suppression is expired when now is strictly after ExpiresAt.
+// At the exact ExpiresAt instant, the suppression is still considered active
+// (valid through that moment, expired any time after).
 func (s *Suppression) IsExpired(now time.Time) bool {
 	if s == nil || s.ExpiresAt == nil {
 		return false

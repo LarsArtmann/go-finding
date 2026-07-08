@@ -170,3 +170,38 @@ func TestProperty_FilterEmptyReturnsEmpty(t *testing.T) {
 
 	checkPropertyAny(t, property)
 }
+
+// TestProperty_RangeContainsImpliesOverlaps verifies that if Range A contains
+// a point from Range B, then A must also overlap B. This is a consistency
+// invariant between Contains and Overlaps.
+func TestProperty_RangeContainsImpliesOverlaps(t *testing.T) {
+	t.Parallel()
+
+	property := func(startA, endA, pointLine uint16) bool {
+		if endA < startA {
+			startA, endA = endA, startA
+		}
+
+		rangeA := Range{
+			Start: Position{File: "f.go", Line: int(startA)},
+			End:   Position{File: "f.go", Line: int(endA)},
+		}
+
+		p := Position{File: "f.go", Line: int(pointLine)}
+
+		if rangeA.Contains(p) {
+			// If A contains the point, a single-point range at that point
+			// must overlap A.
+			rangeB := Range{
+				Start: Position{File: "f.go", Line: int(pointLine)},
+				End:   Position{File: "f.go", Line: int(pointLine)},
+			}
+
+			return rangeA.Overlaps(rangeB)
+		}
+
+		return true
+	}
+
+	checkPropertyAny(t, property)
+}

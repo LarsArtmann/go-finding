@@ -54,6 +54,12 @@ func findingsFromSARIFLog(data []byte) ([]Finding, error) {
 }
 
 // findingsFromsarifLog extracts Findings from a parsed sarifLog.
+//
+// Unlike FindingsFromJSON (which round-trips go-finding's own strict format),
+// SARIF import is lenient: findings from external tools may lack fields that
+// go-finding's Validate() requires (e.g., no position, no severity). Filtering
+// them out would silently discard valid SARIF results. Callers that need
+// strict validation can apply slices.DeleteFunc(findings, IsInvalid) after import.
 func findingsFromsarifLog(log sarifLog) []Finding {
 	var findings []Finding
 
@@ -183,8 +189,8 @@ func applySarifPosition(f *Finding, r sarifResult) {
 		}
 	}
 
-	if region.Snippet != "" {
-		f.Snippet = region.Snippet
+	if region.Snippet != nil && region.Snippet.Text != "" {
+		f.Snippet = region.Snippet.Text
 	}
 }
 
@@ -216,6 +222,7 @@ func applySarifProperties(f *Finding, props map[string]any) {
 
 	if v, ok := props[sarifPropTags].([]any); ok {
 		f.Tags = make([]Tag, 0, len(v))
+
 		for _, item := range v {
 			if s, ok := item.(string); ok {
 				f.Tags = append(f.Tags, Tag(s))
@@ -243,6 +250,33 @@ func applySarifProperties(f *Finding, props map[string]any) {
 		f.AfterCode = v
 	}
 
+	if v, ok := intProp(props, sarifPropStartOffset); ok {
+		f.Position.Offset = v
+	}
+
+	if v, ok := intProp(props, sarifPropEndOffset); ok {
+		if f.Range == nil {
+			f.Range = &Range{Start: f.Position}
+		}
+
+		f.Range.End = Position{
+			File:   f.Range.End.File,
+			Line:   f.Range.End.Line,
+			Column: f.Range.End.Column,
+			Offset: v,
+		}
+	}
+
+	applySuppressionProperties(f, props)
+
+	f.Metadata = sarifMetadataFromProps(props)
+	if len(f.Metadata) == 0 {
+		f.Metadata = nil
+	}
+}
+
+// applySuppressionProperties restores suppression fields from SARIF properties.
+func applySuppressionProperties(f *Finding, props map[string]any) {
 	// Restore exact suppression kind from property (overrides SARIF kind mapping).
 	if v, ok := stringProp(props, sarifPropSuppressionKind); ok {
 		if f.Suppression == nil {
@@ -250,14 +284,22 @@ func applySarifProperties(f *Finding, props map[string]any) {
 		}
 
 		f.Suppression.Kind = SuppressionKind(v)
-		if f.Suppression.Reason == "" {
-			f.Suppression.Reason = v // fallback if no reason set
+	}
+
+	// Restore suppression Rule from property, falling back to finding's Rule.
+	if f.Suppression != nil && f.Suppression.Rule == "" {
+		if v, ok := stringProp(props, sarifPropSuppressionRule); ok {
+			f.Suppression.Rule = RuleName(v)
+		} else {
+			f.Suppression.Rule = f.Rule
 		}
 	}
 
-	// Restore suppression Rule from finding's own Rule field.
-	if f.Suppression != nil && f.Suppression.Rule == "" {
-		f.Suppression.Rule = f.Rule
+	// Restore suppression Reason from property.
+	if f.Suppression != nil {
+		if v, ok := stringProp(props, sarifPropSuppressionReason); ok {
+			f.Suppression.Reason = v
+		}
 	}
 
 	// Restore suppression expiry timestamp.
@@ -271,11 +313,6 @@ func applySarifProperties(f *Finding, props map[string]any) {
 			f.Suppression.ExpiresAt = &t
 		}
 	}
-
-	f.Metadata = sarifMetadataFromProps(props)
-	if len(f.Metadata) == 0 {
-		f.Metadata = nil
-	}
 }
 
 // stringProp extracts a string property from a SARIF property bag.
@@ -283,6 +320,17 @@ func stringProp(props map[string]any, key string) (string, bool) {
 	v, ok := props[key].(string)
 
 	return v, ok
+}
+
+// intProp extracts an integer property from a SARIF property bag.
+// JSON numbers are deserialized as float64, so we handle the conversion.
+func intProp(props map[string]any, key string) (int, bool) {
+	v, ok := props[key].(float64)
+	if !ok {
+		return 0, false
+	}
+
+	return int(v), true
 }
 
 // sarifMetadataFromProps extracts non-go-finding properties as metadata.
