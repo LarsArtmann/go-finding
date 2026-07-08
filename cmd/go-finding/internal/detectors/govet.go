@@ -4,6 +4,7 @@ package detectors
 
 import (
 	"context"
+	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"errors"
 	"fmt"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"encoding/json/jsontext"
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/pipeline"
 )
