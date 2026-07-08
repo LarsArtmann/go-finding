@@ -107,10 +107,12 @@ func (r *Report) WriteSARIFWithOpts(ctx context.Context, w io.Writer, opts ...SA
 		opt(&cfg)
 	}
 
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
-
-	err = enc.Encode(r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg)))
+	err = json.MarshalWrite(
+		w,
+		r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg)),
+		jsontext.WithIndentPrefix(""),
+		jsontext.WithIndent("  "),
+	)
 	if err != nil {
 		return fmt.Errorf("encoding SARIF: %w", err)
 	}

@@ -198,6 +198,10 @@ func (f Finding) WriteJSON(w io.Writer) error {
 		return fmt.Errorf("encoding finding JSON: %w", err)
 	}
 
+	if _, err := w.Write([]byte("\n")); err != nil {
+		return fmt.Errorf("writing trailing newline: %w", err)
+	}
+
 	return nil
 }
 
@@ -205,10 +209,7 @@ func (f Finding) WriteJSON(w io.Writer) error {
 // Avoids the intermediate string allocation of PrettyJSON.
 // Safe for concurrent use.
 func (r *Report) WriteJSON(w io.Writer) error {
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
-
-	err := enc.Encode(r)
+	err := json.MarshalWrite(w, r, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
 	if err != nil {
 		return fmt.Errorf("encoding report JSON: %w", err)
 	}

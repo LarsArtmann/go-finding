@@ -49,6 +49,9 @@
             "-s"
             "-w"
           ];
+          env = {
+            GOEXPERIMENT = "jsonv2";
+          };
           meta = {
             description = "Code quality finding framework for Go";
             homepage = "https://github.com/LarsArtmann/go-finding";
@@ -123,6 +126,10 @@
               pkgs.gotools
               pkgs.trash-cli
             ];
+
+            env = {
+              GOEXPERIMENT = "jsonv2";
+            };
 
             shellHook = ''
               echo "go-finding dev shell — $(go version)"
