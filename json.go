@@ -1,7 +1,8 @@
 package finding
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -89,7 +90,7 @@ func (r *Report) JSON() (string, error) {
 // PrettyJSON returns a formatted JSON representation of the report.
 // Includes all findings, including suppressed ones.
 func (r *Report) PrettyJSON() (string, error) {
-	bytes, err := json.MarshalIndent(r, "", "  ")
+	bytes, err := json.Marshal(r, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
 	if err != nil {
 		return "", fmt.Errorf("marshaling JSON: %w", err)
 	}
@@ -118,7 +119,7 @@ func (r *Report) PrettyJSONFiltered() (string, error) {
 
 	filtered.ComputeSummary()
 
-	bytes, err := json.MarshalIndent(filtered, "", "  ")
+	bytes, err := json.Marshal(filtered, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
 	if err != nil {
 		return "", fmt.Errorf("marshaling filtered JSON: %w", err)
 	}
@@ -192,7 +193,7 @@ func (f Finding) LineJSON() (string, error) {
 // WriteJSON writes compact JSON directly to w.
 // Avoids the intermediate string allocation of LineJSON.
 func (f Finding) WriteJSON(w io.Writer) error {
-	err := json.NewEncoder(w).Encode(f)
+	err := json.MarshalWrite(w, f)
 	if err != nil {
 		return fmt.Errorf("encoding finding JSON: %w", err)
 	}

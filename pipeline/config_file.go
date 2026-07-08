@@ -1,7 +1,7 @@
 package pipeline
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -55,7 +55,7 @@ func ConfigFromFile(data []byte) (Config, error) {
 func ConfigFromReader(r io.Reader) (Config, error) {
 	var cf ConfigFile
 
-	err := json.NewDecoder(r).Decode(&cf)
+	err := json.UnmarshalRead(r, &cf)
 	if err != nil {
 		return Config{}, fmt.Errorf("decode config: %w", err)
 	}

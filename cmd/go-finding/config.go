@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -221,13 +221,8 @@ func writeOutput(report *finding.Report, format, outputFile string, includeSuppr
 // supportedFormats is the complete set of CLI output format names.
 var supportedFormats = []string{"text", "markdown", "csv", "tsv", "json", "sarif"}
 
-// isValidFormat returns true if the format string is a recognized output format.
-func isValidFormat(format string) bool {
-	return slices.Contains(supportedFormats, format)
-}
-
 func outputResults(w io.Writer, report *finding.Report, format string, includeSuppressed bool) error {
-	if !isValidFormat(format) {
+	if !slices.Contains(supportedFormats, format) {
 		return fmt.Errorf("unsupported format %q (supported: %s)", format, strings.Join(supportedFormats, ", "))
 	}
 

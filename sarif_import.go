@@ -2,7 +2,7 @@ package finding
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 	"strings"
@@ -33,7 +33,7 @@ func FindingsFromReader(ctx context.Context, r io.Reader) ([]Finding, error) {
 
 	var log sarifLog
 
-	err := json.NewDecoder(r).Decode(&log)
+	err := json.UnmarshalRead(r, &log)
 	if err != nil {
 		return nil, fmt.Errorf("decoding SARIF: %w", err)
 	}

@@ -7,9 +7,9 @@ require (
 	github.com/go-faster/yaml v0.4.6
 	github.com/larsartmann/go-finding v0.0.0-00010101000000-000000000000
 	github.com/larsartmann/go-finding/pipeline v0.0.0-00010101000000-000000000000
-	github.com/larsartmann/go-output v0.23.3
-	github.com/larsartmann/go-output/delimited v0.23.3
-	github.com/larsartmann/go-output/markdown v0.23.3
+	github.com/larsartmann/go-output v0.30.1
+	github.com/larsartmann/go-output/delimited v0.30.1
+	github.com/larsartmann/go-output/markdown v0.30.1
 	github.com/onsi/gomega v1.42.0
 )
 

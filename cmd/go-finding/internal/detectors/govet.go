@@ -4,13 +4,14 @@ package detectors
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
 
+	"encoding/json/jsontext"
 	"github.com/larsartmann/go-finding"
 	"github.com/larsartmann/go-finding/pipeline"
 )
@@ -39,7 +40,7 @@ func NewGoVetDetector(dir string) pipeline.Detector {
 }
 
 func parseGoVetJSON(data []byte, dir string) []finding.Finding {
-	var diagnostics map[string]json.RawMessage
+	var diagnostics map[string]jsontext.Value
 
 	err := json.Unmarshal(data, &diagnostics)
 	if err != nil {
