@@ -11,7 +11,7 @@ import (
 	_ "github.com/larsartmann/go-output/markdown"  // registers Markdown renderer
 )
 
-// goOutputFormats is the set of formats delegated to go-output's RenderTableData.
+// goOutputFormats is the set of formats delegated to go-output's RenderTable.
 var goOutputFormats = map[string]output.Format{
 	"markdown": output.FormatMarkdown,
 	"csv":      output.FormatCSV,
@@ -24,10 +24,10 @@ func isGoOutputFormat(format string) bool {
 	return ok
 }
 
-// findingToTableData converts a slice of Findings to go-output's TableData.
+// findingToTableData converts a slice of Findings to go-output's Table.
 // This is the adapter between go-finding's domain model and go-output's presentation layer.
-func findingToTableData(findings []finding.Finding) *output.TableData {
-	data := output.NewTableData([]string{"Location", "Severity", "Category", "Rule", "Message", "Fix"})
+func findingToTableData(findings []finding.Finding) *output.Table {
+	data := output.NewTable([]string{"Location", "Severity", "Category", "Rule", "Message", "Fix"})
 
 	for _, f := range findings {
 		data.AddRow([]string{
@@ -69,5 +69,5 @@ func renderGoOutput(w io.Writer, report *finding.Report, format string) error {
 		opts.Title = fmt.Sprintf("Findings (%d)", len(findings))
 	}
 
-	return output.RenderTableData(data, f, opts)
+	return output.RenderTable(data, f, opts)
 }
