@@ -94,9 +94,9 @@
               description = "Unified data model and pipeline for static analysis tools";
               mainProgram = name;
               homepage = "https://github.com/larsartmann/go-finding";
-              license = pkgs.lib.licenses.mit;
-              platforms = pkgs.lib.platforms.unix;
-              maintainers = [ pkgs.lib.maintainers.larsartmann ];
+              license = lib.licenses.mit;
+              platforms = lib.platforms.unix;
+              maintainers = [ lib.maintainers.larsartmann ];
             };
           };
         in
