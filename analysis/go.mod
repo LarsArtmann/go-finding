@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	github.com/larsartmann/go-finding v0.0.0-00010101000000-000000000000
-	golang.org/x/tools v0.47.0
+	golang.org/x/tools v0.48.0
 )
 
 require (
