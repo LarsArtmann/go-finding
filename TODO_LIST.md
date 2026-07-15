@@ -200,33 +200,6 @@ Structural breaking changes that should batch into v2.0 alongside the `Finding` 
 - [ ] Convert `Tags []Tag` to `TagSet map[Tag]struct{}` — `finding.go:21`. Encodes set semantics at type level; eliminates need for order-insensitive equality in `finding_equal.go`.
 - [ ] Compose `Finding` from embedded sub-structs — `Identity{ID,Rule,ToolName}`, `Location{Position,Range}`, `Classification{Category,Tags,Confidence}`, `Fix{FixStrategy,Suggestion,BeforeCode,AfterCode}`. Allows passing substructs to focused functions. Changes JSON shape — must batch with other v2.0 breaks.
 
-## Recently Completed (2026-06-05)
-
-- GAP-1: `RelatedRef.Range *Range` — deep-clone, validation, equality, SARIF round-trip
-- GAP-4: `LSPDiagnosticTag` type + `Unnecessary(1)` / `Deprecated(2)` constants; `Tags` on `LSPDiagnostic`
-- GAP-5: `Snippet` field on `SarifRegion`; `findingRegion()` populates; `applySarifPosition()` reads back
-- GAP-6: `ToLSP()` emits proper `LSPRange` end from `rel.Range`; `sarifRelatedLocs()` uses `rel.Range`
-- GAP-8: `FromLSP()` preserves `DiagnosticTag` values in metadata; reconstructs `RelatedRef.Range`
-- 9 new tests added; JSON schema updated; 0 lint issues; race clean
-- Comprehensive status report written to `docs/status/2026-06-05_02-20_comprehensive-status-update.md`
-- `doc.go` expanded from ~40% to full package documentation
-- `USAGE_GUIDE.md` refreshed for v0.4.x features
-- `README.md` Fix Providers and Diff sections added
-
-## art-dupl Integration Evaluation Summary
-
-| Gap                                | Status          | Rationale                                                                      |
-| ---------------------------------- | --------------- | ------------------------------------------------------------------------------ |
-| GAP-1 `RelatedRef.Range`           | ✅ DONE         | Span-based related locations fully supported                                   |
-| GAP-2 `GroupID`                    | ❌ DEFERRED     | One-consumer justification insufficient; use `Metadata["go-finding/group-id"]` |
-| GAP-3 Per-relationship metadata    | ❌ DEFERRED     | Low value; `Finding.Metadata` workaround exists                                |
-| GAP-4 `DiagnosticTag`              | ✅ DONE         | `Unnecessary`/`Deprecated` tags in LSP diagnostics                             |
-| GAP-5 `Snippet` in SARIF           | ✅ DONE         | `region.snippet` round-trips properly                                          |
-| GAP-6 `ToLSP` uses `rel.Range`     | ✅ DONE         | Proper LSP ranges for related info                                             |
-| GAP-7 Strict `Category.IsValid()`  | ❌ BY DESIGN    | `IsValid()` checks format; `IsStandard()` checks membership                    |
-| GAP-8 `FromLSP` preserves tags     | ✅ DONE         | Tags stored in metadata as comma-separated integers                            |
-| GAP-9 `iter.Seq` on `Report.All()` | ✅ ALREADY DONE | Go 1.26 `iter.Seq` implemented                                                 |
-
 ---
 
 _Assisted-by: Crush <crush@charm.land>_

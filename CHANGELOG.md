@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`resolveLineCol` discarded underlying error** — Replaced detailed error (line/col/contentLen context) with bare sentinel. Now wraps with `fmt.Errorf("%w: %w", ...)`.
 - **Provider errors lack finding context** — FixEngine `resolveErrors` now include the finding ID in the error message.
 - **Pipeline `collectAllFindings` called twice** — When `VerifyAfterFix` was enabled, findings were collected once for verification and again for `TotalDetected`. Now cached.
+- **Path traversal vulnerability in `filterByFileEdits`** — Findings with `Position.File = "../../etc/passwd"` caused reads outside rootDir. Now uses shared `resolveSafePath` containment check.
+- **TOCTOU race in `groupFindingsBySafePath`** — Used unresolved path as map key; symlink swap between validation and I/O could redirect writes outside rootDir. Now uses resolved (symlink-evaluated) path as map key.
+- **FixApplier rollback errors silently swallowed** — `Restore` and `RollbackAll` errors were discarded with `_ =`. Now propagated to the caller so file corruption is visible.
 
 ### Changed
 
@@ -37,7 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error messages normalized** — Retry config errors now use lowercase field names consistent with config errors. Missing colons added to error wrapping in CLI config and pipeline config file.
 - **`dedupKey` duplication eliminated** — Extracted `positionDedupKey` helper in `merge.go`.
 - **`Suppression.IsExpired` boundary documented** — At the exact `ExpiresAt` instant, the suppression is still active (expired only strictly after). Documented and tested.
-- **SARIF `sarifRegion.Snippet` spec deviation documented** — Typed as `string` for simplicity; SARIF 2.1.0 §3.30.13 requires an `artifactContent` object. Snippet value also carried in `go-finding/snippet` property for lossless round-trip.
+- **SARIF `sarifRegion.Snippet` spec compliance fixed** — Changed `Snippet string` to `Snippet *sarifArtifactContent` per SARIF 2.1.0 §3.30.13 (object form `{"text": "..."}`). Custom `UnmarshalJSON` accepts both the spec-compliant object and bare string (backward compat).
+- **Migrated to `encoding/json/v2`** — All 9 JSON-handling files across all modules now use `encoding/json/v2`. Requires `GOEXPERIMENT=jsonv2` env var for all Go tool invocations (set automatically in all nix apps and devShells).
+- **go-output v0.30.1 API migration** — `cmd/go-finding/output_adapter.go` updated: `TableData`→`Table`, `NewTableData`→`NewTable`, `RenderTableData`→`RenderTable`.
+- **GOEXPERIMENT=jsonv2 propagation in flake.nix** — Added `export GOEXPERIMENT=jsonv2` to all 9 `mkApp` scripts and `devShells.ci`.
 
 ## [1.2.0] - 2026-07-06
 

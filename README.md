@@ -407,24 +407,25 @@ Key flags: `-format` (text/markdown/csv/tsv/json/sarif), `-min-severity`, `-conf
 ## Development
 
 ```bash
-go test -race -count=1 ./...     # Run tests with race detector
-go test -bench=. -benchmem ./... # Run benchmarks
-golangci-lint run ./...          # Lint
-go vet ./...                     # Vet
+nix run .#test                     # Run tests with race detector (all modules)
+nix run .#bench                    # Run benchmarks
+nix run .#lint                     # Lint
 ```
+
+> **Requires `GOEXPERIMENT=jsonv2`.** The project uses `encoding/json/v2` (experimental in Go 1.26).
+> All `nix run .#*` commands set this automatically. For direct `go` commands, export it first:
+> `export GOEXPERIMENT=jsonv2 && go test -race -count=1 ./...`
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Versioning
 
-This project follows [Semantic Versioning](https://semver.org/).
-
-**Pre-v1.0:** Until `v1.0.0` is released, minor version bumps may include breaking API changes. Patch bumps are always backward-compatible. The exported API is stable in practice — the core types (`Finding`, `Report`, `Severity`, etc.) have not changed since `v0.1.0`.
+This project follows [Semantic Versioning](https://semver.org/). The API has been frozen since `v1.0.0` (2026-06-24). Breaking changes require a major version bump.
 
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "0.9.1"
+fmt.Println(finding.Version) // "1.2.0"
 ```
 
 ## Documentation

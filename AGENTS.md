@@ -52,6 +52,11 @@ golangci-lint run ./...                     # Lint
 bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark regression check
 ```
 
+> **GOEXPERIMENT=jsonv2 required.** The project imports `encoding/json/v2` (9 files across all
+> modules). All `nix run .#*` apps and devShells set this env var automatically. Direct `go`
+> commands (outside `nix develop`) require `export GOEXPERIMENT=jsonv2` first — otherwise you get
+> "build constraints exclude all Go files" errors.
+
 ## Module Dependencies (per go.mod)
 
 | Module                      | Production Deps              | Test Deps         |
@@ -82,6 +87,7 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 
 ## Important Behaviors (Gotchas)
 
+- **GOEXPERIMENT=jsonv2 required** — The project uses `encoding/json/v2` (Go 1.26 experimental feature). All `nix run .#*` apps and devShells export `GOEXPERIMENT=jsonv2`. Direct `go build`/`go test` outside `nix develop` will fail with "build constraints exclude all Go files" unless you `export GOEXPERIMENT=jsonv2` first. The `GOWORK=off` per-module path needs BOTH `GOWORK=off` and `GOEXPERIMENT=jsonv2`.
 - **Report{} zero-value safe** — Uses value `sync.Mutex`, safe for concurrent use without initialization
 - **Report.findings is unexported** — Use `FindingsSnapshot()` for a deep copy, `All()` for iteration, or `FindByID()` for single lookups
 - **Pipeline.Run() is single-use** — Returns `errAlreadyRan` on second call
@@ -131,11 +137,11 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **FixProvider chain** — OffsetProvider → LineProvider → SubstringProvider (fallback); custom providers prepended
 - **lineIndexAware lazy caching** — Line offset index built once per file, only when a LineProvider/SubstringProvider handles a finding
 - **GoASTProvider** — AST-aware provider in `pipeline/goast/` (opt-in `go/parser` dependency)
-- **IntervalIndex[T]** — Generic O(log n + k) overlap queries; used by Correlate
+- **IntervalIndex[T]** — Generic O(n + k) overlap queries (sorted-slice impl); used by Correlate
 - **DetectorRegistry** — Thread-safe plugin architecture with `Register`/`Build`/`BuildAll`
 - **MergeIter** — Streaming `iter.Seq[Finding]` merge with dedup
 - **ConfigFile** — JSON config loading with `ResolveDetectors`/`ResolveProviders`
-- **go-output CLI adapter** — `cmd/go-finding/output_adapter.go` adapts `[]Finding` → `output.TableData` for markdown/CSV/TSV. Root `finding` package stays dependency-free. See `docs/PRO_CONTRA_go-output-integration.md`.
+- **go-output CLI adapter** — `cmd/go-finding/output_adapter.go` adapts `[]Finding` → `output.Table` for markdown/CSV/TSV. Root `finding` package stays dependency-free. See `docs/PRO_CONTRA_go-output-integration.md`.
 - **Branded primitive types** — `type ID/RuleName/ToolName/FilePath string` in `branded_types.go`. Compile-time type safety preventing ID/Rule/Tool/File mixups. JSON marshals as string. Named `ID` not `FindingID` to avoid revive stutter (`finding.FindingID`).
 - **Validate decomposition** — Monolithic `Validate()` split into 6 per-field validators. Each returns `[]error`, aggregated by `Validate()`.
 - **SeverityAliases thread-safe** — `sync.RWMutex` guarded global map; `RegisterSeverityAlias()` / `LookupSeverityAlias()` API.
