@@ -342,8 +342,7 @@ errors.go
 
 Pipeline sentinels      (errAlreadyRan, ErrPartialDetection, 5 retry config errors, ...)
 CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetector, ...)
-</pre
-    >
+</pre>
 
     <h3>Usage Surface (production code only)</h3>
     <table>
@@ -939,8 +938,7 @@ func (e *FindingError) ErrorContext() map[string]string {
 
 func (e *FindingError) IsRetryable() bool {
     return e.ErrorFamily().IsRetryable()
-}</pre
-      >
+}</pre>
       <p>
         <strong>Note:</strong> Import only in the consumer, or define an internal adapter. Root
         package stays dependency-free by using a sub-package for the bridge.
@@ -960,8 +958,7 @@ func main() {
     if err := run(); err != nil {
         os.Exit(errorfamily.HandleError(err))
     }
-}</pre
-      >
+}</pre>
       <p>
         go-error-family is imported only in <code>cmd/go-finding/</code>, which already depends on
         external packages. Root package remains dependency-free.
@@ -976,8 +973,7 @@ finding.NewIOError("backup "+path, err).
     WithPosition(pos) // already exists
 
 // Could gain WithCode("file.backup.read") for precision
-// ErrorCode() returns "file.backup.read" instead of "finding.io"</pre
-      >
+// ErrorCode() returns "file.backup.read" instead of "finding.io"</pre>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->

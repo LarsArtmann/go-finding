@@ -215,10 +215,10 @@ Composable filter functions:
 
 ### 8.2 Core Operations
 
-| Operation | Function                          |
+| Operation | Function |
 | --------- | --------------------------------- | ---------------------------------------- | -------------------- |
-| Filter    | `Filter(findings, predicates...)` |
-|           | In-place filter                   | `FilterInPlace(findings, predicates...)` | GC-safe: zeroes tail |
+| Filter | `Filter(findings, predicates...)` |
+| | In-place filter | `FilterInPlace(findings, predicates...)` | GC-safe: zeroes tail |
 
 ### 8.3 Grouping
 
