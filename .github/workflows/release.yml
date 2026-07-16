@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - "v*"
+      - "pipeline/v*"
+      - "analysis/v*"
+      - "cmd/go-finding/v*"
 
 permissions:
   contents: write
@@ -22,16 +25,26 @@ jobs:
           go-version: "1.26"
 
       - name: Run tests
+        env:
+          GOEXPERIMENT: jsonv2
         run: go test -v -race ./...
 
       - name: Run vet
+        env:
+          GOEXPERIMENT: jsonv2
         run: go vet ./...
 
       - name: Build all
+        env:
+          GOEXPERIMENT: jsonv2
         run: go build -v ./...
 
+  # CLI binary release — only for root-level (core) tags.
+  # Library sub-modules (pipeline, analysis) need no binary; the tag itself
+  # is what makes them resolvable via the Go module proxy.
   release:
     needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,3 +71,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
           COSIGN_YES: true
+          GOEXPERIMENT: jsonv2
+
+  # Lightweight GitHub Release for library sub-module tags.
+  # No binary artifact — just release notes derived from the tag.
+  release-library-module:
+    needs: test
+    if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          name="${tag//\// }"
+          gh release create "$tag" \
+            --title "$name" \
+            --notes "Library module release for \`$tag\`." \
+            --prerelease

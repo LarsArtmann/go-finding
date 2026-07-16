@@ -154,6 +154,8 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **Pipeline convenience functions** — `pipeline.Detect(ctx, detectors...)` for one-shot detection; `pipeline.ApplyToContent(content, fixes)` for content-level fix application without filesystem.
 - **FixEngine guide** — `docs/guides/fix-engine.md` covers all FixEngine usage patterns.
 - **lockutil package** — Generic `lockutil.Locked(sync.Locker, fn) T` and `lockutil.RLocked(*sync.RWMutex, fn) T` helpers eliminate m.mu.Lock()/defer m.mu.Unlock() boilerplate across Report, Metrics, FileBackup, registries, and AST provider. Stdlib only, follows `gotoken` precedent.
+- **Multi-module release tagging** — Each sub-module needs a **directory-prefixed** git tag to resolve on the Go proxy: `pipeline/v*`, `analysis/v*`, `cmd/go-finding/v*`. Core uses unprefixed `v*`. Sub-modules have no `version.go`; the tag is the version source. See `docs/release-procedure.md`.
+- **Repo is private** — Until made public, consumers MUST set `GOPRIVATE=github.com/larsartmann/go-finding` or module resolution 404s on the public proxy.
 
 ## Test Organization
 
