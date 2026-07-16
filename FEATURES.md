@@ -914,7 +914,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 
 | Feature                           | Status               | Notes                                                                                 |
 | --------------------------------- | -------------------- | ------------------------------------------------------------------------------------- |
-| Finding type                      | FULLY_FUNCTIONAL     | Core data model with branded types (ID, RuleName, ToolName, FilePath), 97.1% coverage |
+| Finding type                      | FULLY_FUNCTIONAL     | Core data model with branded types (ID, RuleName, ToolName, FilePath), 93.4% coverage |
 | Builder API                       | FULLY_FUNCTIONAL     | Fluent construction with validation                                                   |
 | Position & Range                  | FULLY_FUNCTIONAL     | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent)                     |
 | Severity (4 levels)               | FULLY_FUNCTIONAL     | With comparison operators                                                             |

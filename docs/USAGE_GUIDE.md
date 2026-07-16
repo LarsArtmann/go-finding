@@ -66,7 +66,7 @@ go-finding -format json
 go-finding -format sarif
 
 # Filter by minimum severity
-go-finding -severity error
+go-finding -min-severity error
 
 # Use a config file
 go-finding -config config.yaml
@@ -93,8 +93,8 @@ go-finding -filter-generated -generated-exclude "**/vendor/**"
 | Flag                      | Default | Description                                                              |
 | ------------------------- | ------- | ------------------------------------------------------------------------ |
 | `-dir`                    | `.`     | Root directory to analyze                                                |
-| `-format`                 | `text`  | Output format: `text`, `json`, `sarif`                                   |
-| `-severity`               | `info`  | Minimum severity: `info`, `warning`, `error`, `critical`                 |
+| `-format`                 | `text`  | Output format: `text`, `markdown`, `csv`, `tsv`, `json`, `sarif`         |
+| `-min-severity`           | `info`  | Minimum severity: `info`, `warning`, `error`, `critical`                 |
 | `-max-iterations`         | `5`     | Maximum pipeline iterations                                              |
 | `-parallel`               | `true`  | Run detectors in parallel                                                |
 | `-verify`                 | `false` | Verify fixes by re-running detectors                                     |
@@ -156,9 +156,9 @@ The central type representing a single issue:
 
 ```go
 type Finding struct {
-    ID          string            // Stable unique identifier
-    Rule        string            // Rule/check name
-    ToolName    string            // Source tool name
+    ID          ID                // Stable unique identifier (branded type)
+    Rule        RuleName          // Rule/check name (branded type)
+    ToolName    ToolName          // Source tool name (branded type)
     Message     string            // Human-readable description
     Severity    Severity          // info, warning, error, critical
     Position    Position          // Where the issue is

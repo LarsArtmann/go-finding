@@ -1,5 +1,7 @@
 # PUBLIC OR PRIVATE? — go-finding
 
+> **RESOLUTION STATUS (2026-07-16):** Decision made — project is open-source. v1.2.0 tagged and public. Most pre-release gaps below have been resolved. This document is retained as a historical record of the decision process.
+
 **Date:** 2026-05-04 | **Decision:** CONDITIONAL — Public with prerequisites
 
 ---
@@ -36,7 +38,7 @@ This is not a solved problem. Go has `staticcheck`, `govet`, `golangci-lint`, et
 - `Position` / `Range` with geometric operations: `Contains`, `Overlaps`, `Intersection`, `Adjacent`
 - `Compare` methods on `Position`, `Range`, `Severity` — total ordering, sort-friendly
 - `Clone()` deep copies on `Finding` — no accidental sharing
-- Lossless SARIF round-trip via `properties` bag (except suppression)
+- Lossless SARIF round-trip via `properties` bag (including suppression via `WithIncludeSuppressed()`)
 
 ### 4. Complete Interchange Format Support
 
@@ -54,7 +56,7 @@ This is not a solved problem. Go has `staticcheck`, `govet`, `golangci-lint`, et
 - Line-based fix application with backup/rollback
 - Exponential backoff retry with jitter
 - Graceful degradation (partial success)
-- Composable `FindingProcessor` chain
+- Composable `FindingTransformer` chain
 - Cross-tool correlation (`Correlate`)
 - Metrics collection with thread-safe snapshots
 - Dry-run mode
@@ -139,9 +141,9 @@ Public repos create implicit support obligations. Without funding or a team, iss
 
 `FixApplier` writes to disk with backup/rollback — this is powerful but dangerous. A public release needs thorough documentation of safety guarantees and a clear disclaimer. Edge cases in concurrent file modification or partial failures could damage user trust early.
 
-### 7. SARIF Round-Trip Has Known Limitations
+### 7. SARIF Round-Trip
 
-Suppression data is lost on export. `SeverityCritical` maps to SARIF "error" (lossy). These are documented but may confuse new users.
+Fully lossless including suppression data (via `WithIncludeSuppressed()`). `SeverityCritical` maps to SARIF "error" (lossy) but is preserved in the property bag.
 
 ---
 

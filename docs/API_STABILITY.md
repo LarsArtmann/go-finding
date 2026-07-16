@@ -1,13 +1,13 @@
 # API Stability — go-finding
 
-**Last audited:** 2026-06-09
-**Version:** v0.6.1
+**Last audited:** 2026-07-16
+**Version:** v1.2.0
 
 go-finding follows the [Go 1 Compatibility Promise](https://go.dev/doc/go1compat) philosophy.
 
 ## Commitment
 
-Once we tag v1.0.0:
+Since v1.0.0:
 
 1. **No breaking changes** in any minor or patch release (v1.x.y)
 2. Breaking changes require a **major version bump** (v2.0.0)
@@ -24,13 +24,13 @@ All exported symbols are classified as:
 
 ### Core Types
 
-| Type       | Status | Notes                                                                                   |
-| ---------- | ------ | --------------------------------------------------------------------------------------- |
-| `Finding`  | stable | Core data type. Fields may be added but never removed or renamed.                       |
-| `Report`   | stable | Thread-safe container. `Findings` slice is public; use accessors for concurrent safety. |
-| `Position` | stable | File/Line/Column/Offset. Zero-value is valid ("unpositioned").                          |
-| `Range`    | stable | Start/End Position. `IsValid()` checks End >= Start.                                    |
-| `Builder`  | stable | Fluent Finding builder.                                                                 |
+| Type       | Status | Notes                                                                                                   |
+| ---------- | ------ | ------------------------------------------------------------------------------------------------------- |
+| `Finding`  | stable | Core data type. Fields may be added but never removed or renamed.                                       |
+| `Report`   | stable | Thread-safe container. `findings` slice is unexported; use `FindingsSnapshot()`, `All()`, `FindByID()`. |
+| `Position` | stable | File/Line/Column/Offset. Zero-value is valid ("unpositioned").                                          |
+| `Range`    | stable | Start/End Position. `IsValid()` checks End >= Start.                                                    |
+| `Builder`  | stable | Fluent Finding builder.                                                                                 |
 
 ### Named Types
 

@@ -262,9 +262,10 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
         }
         for _, e := range entries {
             pos := parsePosn(e.Posn, dir)
+            ruleName := finding.RuleName(name)
             findings = append(findings, finding.Finding{
-                ID:          finding.GenerateID("govet", name, pos),
-                Rule:        name,
+                ID:          finding.GenerateID("govet", ruleName, pos),
+                Rule:        ruleName,
                 ToolName:    "govet",
                 Message:     e.Message,
                 Severity:    finding.SeverityWarning,

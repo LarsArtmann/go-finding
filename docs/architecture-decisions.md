@@ -49,17 +49,15 @@ These decisions need product input. They are documented here for visibility.
 
 ## 4. Suppression Expiry
 
-**Current:** `Suppression.ExpiresAt` field exists but is not enforced.
+**Current:** `Suppression.ExpiresAt` field exists and is enforced via `IsActive(now)` which checks expiry.
 
-**Question:** Should the pipeline skip expired suppressions automatically?
-
-**Recommendation:** Defer to v1.1. Add `IsActive()` method that checks expiry, but don't auto-filter.
+**Status:** Resolved in v1.1. `IsActive()` checks validity + expiry; `IsSuppressedAt()` uses it for pipeline filtering.
 
 ---
 
 ## 5. API Stability for v1.0.0
 
-**Current:** v0.2.1 — API-stable beta. All three conditions below are resolved.
+**Current:** v1.2.0 — API-stable. All three conditions below are resolved.
 
 **Status:** All blocking decisions resolved:
 
@@ -67,7 +65,7 @@ These decisions need product input. They are documented here for visibility.
 - [x] Builder.Build() error return is stable — Returns `(Finding, error)` since v0.2.0
 - [x] ID format is finalized (#2 above) — Resolved: keep readable format (A) for v1
 
-**Next target:** v1.0.0 = production release with API stability guarantee.
+**Status:** v1.0.0 released. API stability guarantee published (`docs/API_STABILITY.md`).
 
 ---
 

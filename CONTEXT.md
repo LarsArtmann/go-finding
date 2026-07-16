@@ -88,7 +88,7 @@ Static Analysis Results Interchange Format (2.1.0). Lossless round-trip via Prop
 
 ### LSP
 
-Language Server Protocol Diagnostic format. Lossy conversion.
+Language Server Protocol Diagnostic format. Lossless round-trip via `LSPDiagnosticData`.
 
 ### Diagnostic
 

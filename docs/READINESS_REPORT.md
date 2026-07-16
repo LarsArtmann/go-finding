@@ -1,5 +1,7 @@
 # go-finding SDK Readiness Report
 
+> **HISTORICAL DOCUMENT (2026-04-24):** Pre-v1.0 readiness assessment from v0.x. Project has since reached v1.2.0. Retained for reference.
+
 **Date:** 2026-04-24
 **Assessed by:** Crush
 
