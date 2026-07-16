@@ -4,7 +4,6 @@ A Go library providing a unified data model and pipeline for static analysis too
 
 [![CI](https://github.com/larsartmann/go-finding/actions/workflows/ci.yml/badge.svg)](https://github.com/larsartmann/go-finding/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/larsartmann/go-finding.svg)](https://pkg.go.dev/github.com/larsartmann/go-finding)
-[![Go Report Card](https://goreportcard.com/badge/github.com/larsartmann/go-finding)](https://goreportcard.com/report/github.com/larsartmann/go-finding)
 [![codecov](https://codecov.io/gh/larsartmann/go-finding/branch/master/graph/badge.svg)](https://codecov.io/gh/larsartmann/go-finding)
 [![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
