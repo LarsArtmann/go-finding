@@ -1,5 +1,12 @@
 # Status Report — 2026-07-08 08:33
 
+> **📦 RESOLUTION STATUS (updated 2026-07-16)**
+>
+> 4 bugs fixed (2 security: path traversal + TOCTOU), 15 regression tests added, LSP round-trip
+> fidelity completed. All changes subsequently committed. 8 fuzz targets pass (1.76M+ executions).
+> The SARIF Snippet spec compliance (`string`→`*sarifArtifactContent`) mentioned as Priority 2 #2
+> was also subsequently fixed.
+
 **Session:** Comprehensive quality hardening — regression tests, deferred bug fixes, security hardening, deeper correctness review
 **Author:** Crush (session 26, continuing from session 25)
 **Branch:** master (uncommitted changes)

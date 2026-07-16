@@ -1,5 +1,11 @@
 # Status — GOEXPERIMENT=jsonv2 Propagation Fix
 
+> **📦 RESOLUTION STATUS (updated 2026-07-16)**
+>
+> Fix committed in `7074643`. All 9 `mkApp` scripts + `devShells.ci` now export
+> `GOEXPERIMENT=jsonv2`. The requirement is documented in AGENTS.md (docs-health audit `3ad8dba`)
+> and README.md Development section. go-output was subsequently bumped to v0.30.4 (`386bd40`).
+
 **Date:** 2026-07-09 05:35
 **Session:** Fix BuildFlow failures caused by missing GOEXPERIMENT=jsonv2 in nix app scripts
 **Scope:** All 3 BuildFlow failures (test-race, go-fix, govalid-generate) traced to a single root cause: `GOEXPERIMENT=jsonv2` not propagated to `nix run .#*` app scripts.

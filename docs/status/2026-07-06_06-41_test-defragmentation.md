@@ -1,5 +1,12 @@
 # Status Report: Test Defragmentation
 
+> **📦 RESOLUTION STATUS (updated 2026-07-16)**
+>
+> Test defragmentation committed in v1.2.0 (`f48b0fa`). Zero `_extra`/`_bugfix`/`coverage` test
+> files remain. The naming convention is now enforced via the AGENTS.md "Test Organization" section.
+> The remaining multi-file splits (SARIF 7 files, Pipeline 7 files, etc.) are considered legitimate
+> decomposition by concern, not fragmentation.
+
 **Date:** 2026-07-06 06:41  
 **Session goal:** Diagnose and fix the "36.5K lines feels like a lot" problem  
 **Verifier:** `go test -race -count=1 ./...` — all 4 modules green

@@ -1,5 +1,12 @@
 # Modularization Final Status — Unix-Style Decomposition Complete
 
+> **📦 RESOLUTION STATUS (updated 2026-07-16)**
+>
+> `modularize/unix-style` merged to master. Multi-module structure (Core/Pipeline/Analysis/CLI) is
+> production. v1.1.0+ shipped with this structure. The 4-module split achieved zero-dep core
+> (`go get github.com/larsartmann/go-finding` pulls zero external deps). Most NOT STARTED items
+> from section c) were addressed in subsequent sessions.
+
 **Date:** 2026-07-01 10:10
 **Branch:** `modularize/unix-style` — pushed, in sync with remote
 **Base:** `master` (v1.0.0)

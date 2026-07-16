@@ -1,5 +1,12 @@
 # Status Report — 2026-07-08 04:32
 
+> **📦 RESOLUTION STATUS (updated 2026-07-16)**
+>
+> 15 bugs fixed and committed. 15 regression tests added in session 26 (2026-07-08_08-33). All 6
+> deferred bugs subsequently fixed: SARIF Position.Offset, SARIF Snippet spec compliance, LSP
+> round-trip fidelity (4 fields), resolveLineCol error wrapping, path traversal security fix,
+> TOCTOU race fix.
+
 **Session:** Correctness sweep + quality hardening
 **Author:** Crush (session 25)
 **Branch:** master (uncommitted changes)

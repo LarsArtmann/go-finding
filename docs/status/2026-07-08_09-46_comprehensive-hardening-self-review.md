@@ -1,5 +1,11 @@
 # Status Report — Comprehensive Hardening Sweep
 
+> **📦 RESOLUTION STATUS (updated 2026-07-16)**
+>
+> All fixes committed (`c0f900f`). SARIF Snippet spec compliance (`string`→`*sarifArtifactContent`)
+> was subsequently fixed. Path traversal and TOCTOU security fixes were added in the follow-up
+> session (2026-07-08_08-33). All fuzz targets pass (1.76M+ executions).
+
 **Date**: 2026-07-08 09:46  
 **Session**: Regression tests, security hardening, SARIF spec compliance, bug fixes  
 **Commit**: `c0f900f` — `fix: comprehensive correctness and security hardening sweep`  

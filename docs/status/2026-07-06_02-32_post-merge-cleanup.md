@@ -1,5 +1,11 @@
 # Status Report — go-finding Post-Merge
 
+> **📦 RESOLUTION STATUS (updated 2026-07-16)**
+>
+> ALL NOT STARTED items subsequently completed. CHANGELOG written, v1.0.0/v1.1.0/v1.2.0 tagged,
+> `docs/MIGRATION_v1.0.md` written, `modularize/unix-style` branch deleted, deprecated SARIF APIs
+> removed in v1.1.0. The go.work .gitignore bomb was defused with negation overrides.
+
 **Date:** 2026-07-06 02:32
 **Branch:** `master` (merged from `modularize/unix-style`)
 **Session scope:** M12-M22 completion → self-review fixes → merge to master → root cleanup

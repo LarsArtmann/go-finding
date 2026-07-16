@@ -1,5 +1,12 @@
 # Status — go-output v0.30.1 API Migration Fix
 
+> **📦 RESOLUTION STATUS (updated 2026-07-16)**
+>
+> Fix committed in `7074643`. go-output subsequently bumped to v0.30.4 (`386bd40`). The fix was a
+> single-file change (`output_adapter.go`): `TableData`→`Table`, `NewTableData`→`NewTable`,
+> `RenderTableData`→`RenderTable`. The GOEXPERIMENT=jsonv2 propagation issue flagged here as P0 #5
+> was fixed in the follow-up session (2026-07-09_05-35).
+
 **Date:** 2026-07-09 05:07
 **Session:** go-output v0.30.1 breakage repair
 **Scope:** Repair build failures from BuildFlow session 4 (2026-07-08) caused by stale go-output API usage in `cmd/go-finding`.

@@ -1,5 +1,10 @@
 # Modularization Status — Unix-Style Multi-Module Decomposition
 
+> **📦 RESOLUTION STATUS (updated 2026-07-16)**
+>
+> SUPERSEDED by the final-status report (same day, 10:10). Branch merged to master, all 4 modules
+> verified with GOWORK=off isolation, nix build passes. v1.1.0+ shipped with this structure.
+
 **Date:** 2026-07-01 09:49
 **Branch:** `modularize/unix-style`
 **Base:** `master` (v1.0.0)
