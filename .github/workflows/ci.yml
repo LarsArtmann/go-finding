@@ -4,8 +4,22 @@ on:
   push:
     branches: [master]
     tags: ["v*"]
+    paths-ignore:
+    - '**/*.md'
+    - docs/**
+    - LICENSE
+    - .gitignore
+    - '**/*.svg'
+    - '**/*.png'
   pull_request:
     branches: [master]
+    paths-ignore:
+    - '**/*.md'
+    - docs/**
+    - LICENSE
+    - .gitignore
+    - '**/*.svg'
+    - '**/*.png'
 
 permissions:
   contents: read
@@ -21,117 +35,128 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-      - run: go mod download
-      - run: go build ./...
-      - run: go vet ./...
-      - run: go test -race -count=1 -coverprofile=coverage.out ./...
-      - run: go tool cover -func=coverage.out
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+    - run: go mod download
+    - run: go build ./...
+    - run: go vet ./...
+    - run: go test -race -count=1 -coverprofile=coverage.out ./...
+    - run: go tool cover -func=coverage.out
 
+    timeout-minutes: 15
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-      - run: go test -race -count=1 -coverprofile=coverage.out ./...
-      - name: Enforce per-package coverage thresholds
-        run: bash scripts/coverage-check.sh coverage.out
-      - uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.out
-          fail_ci_if_error: false
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: "1.26"
+    - run: go test -race -count=1 -coverprofile=coverage.out ./...
+    - name: Enforce per-package coverage thresholds
+      run: bash scripts/coverage-check.sh coverage.out
+    - uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.out
+        fail_ci_if_error: false
 
+    timeout-minutes: 15
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-      - uses: golangci/golangci-lint-action@v7
-        with:
-          version: v2.10.1
-          args: --timeout=5m
-      - name: Check formatting
-        run: golangci-lint fmt --diff ./...
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: "1.26"
+    - uses: golangci/golangci-lint-action@v7
+      with:
+        version: v2.10.1
+        args: --timeout=5m
+    - name: Check formatting
+      run: golangci-lint fmt --diff ./...
 
+    timeout-minutes: 15
   govulncheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-      - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - name: Run govulncheck
-        run: govulncheck ./...
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: "1.26"
+    - name: Install govulncheck
+      run: go install golang.org/x/vuln/cmd/govulncheck@latest
+    - name: Run govulncheck
+      run: govulncheck ./...
 
+    timeout-minutes: 15
   module-isolation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-      - name: Build each module standalone (GOWORK=off)
-        run: |
-          for mod in . pipeline analysis cmd/go-finding; do
-            echo "=== $mod ==="
-            (cd "$mod" && GOWORK=off go build ./...)
-          done
-      - name: Test each module standalone (GOWORK=off)
-        run: |
-          for mod in . pipeline analysis cmd/go-finding; do
-            echo "=== $mod ==="
-            (cd "$mod" && GOWORK=off go test -count=1 ./...)
-          done
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: "1.26"
+    - name: Build each module standalone (GOWORK=off)
+      run: |
+        for mod in . pipeline analysis cmd/go-finding; do
+          echo "=== $mod ==="
+          (cd "$mod" && GOWORK=off go build ./...)
+        done
+    - name: Test each module standalone (GOWORK=off)
+      run: |
+        for mod in . pipeline analysis cmd/go-finding; do
+          echo "=== $mod ==="
+          (cd "$mod" && GOWORK=off go test -count=1 ./...)
+        done
 
+    timeout-minutes: 15
   stress:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-      - name: Stress test (-count=20)
-        run: go test -race -count=20 ./...
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: "1.26"
+    - name: Stress test (-count=20)
+      run: go test -race -count=20 ./...
 
+    timeout-minutes: 15
   dupl:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-      - name: Install art-dupl
-        run: go install github.com/LarsArtmann/art-dupl/cmd/art-dupl@latest
-      - name: Check duplication (threshold 50)
-        run: art-dupl . -t 50
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: "1.26"
+    - name: Install art-dupl
+      run: go install github.com/LarsArtmann/art-dupl/cmd/art-dupl@latest
+    - name: Check duplication (threshold 50)
+      run: art-dupl . -t 50
 
+    timeout-minutes: 15
   benchmark:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-      - name: Install benchstat
-        run: go install golang.org/x/perf/cmd/benchstat@latest
-      - name: Run benchmarks (count=10 for statistical significance)
-        run: go test -bench=. -benchmem -count=10 -run='^$' ./... 2>&1 | tee bench-current.txt
-      - name: Check for regressions vs baseline (fail if >25% slower)
-        run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 25
-      - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: benchmark-results
-          path: |
-            bench-current.txt
-            benchmarks/baseline.txt
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: "1.26"
+    - name: Install benchstat
+      run: go install golang.org/x/perf/cmd/benchstat@latest
+    - name: Run benchmarks (count=10 for statistical significance)
+      run: go test -bench=. -benchmem -count=10 -run='^$' ./... 2>&1 | tee bench-current.txt
+    - name: Check for regressions vs baseline (fail if >25% slower)
+      run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 25
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: benchmark-results
+        path: |
+          bench-current.txt
+          benchmarks/baseline.txt
+    timeout-minutes: 15
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
