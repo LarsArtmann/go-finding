@@ -420,7 +420,8 @@ Key flags: `-format` (text/markdown/csv/tsv/json/sarif), `-min-severity`, `-conf
 ## Development
 
 ```bash
-nix run .#test                     # Run tests with race detector (all modules)
+nix run .#test                     # Run tests (all modules)
+nix run .#test-race                # Run tests with race detector
 nix run .#bench                    # Run benchmarks
 nix run .#lint                     # Lint
 ```
