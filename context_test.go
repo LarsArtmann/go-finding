@@ -6,6 +6,8 @@ import (
 )
 
 func TestWithWorkingDir(t *testing.T) {
+	t.Parallel()
+
 	ctx := WithWorkingDir(context.Background(), "/tmp/test")
 
 	if dir := WorkingDirFromContext(ctx); dir != "/tmp/test" {
@@ -14,12 +16,16 @@ func TestWithWorkingDir(t *testing.T) {
 }
 
 func TestWorkingDirFromContext_Empty(t *testing.T) {
+	t.Parallel()
+
 	if dir := WorkingDirFromContext(context.Background()); dir != "" {
 		t.Errorf("expected empty string, got %q", dir)
 	}
 }
 
 func TestWorkingDirFromContext_Overwrite(t *testing.T) {
+	t.Parallel()
+
 	ctx := WithWorkingDir(context.Background(), "/first")
 	ctx = WithWorkingDir(ctx, "/second")
 

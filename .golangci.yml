@@ -196,7 +196,7 @@ linters:
         - github.com/larsartmann/go-finding/pipeline.Detector
         - github.com/larsartmann/go-finding/pipeline.FindingTransformer
     makezero:
-      always: true
+      always: false
     mnd:
       ignored-functions:
         - fmt.Errorf
