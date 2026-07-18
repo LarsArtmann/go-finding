@@ -1,0 +1,102 @@
+direction: down
+
+core: "Core Module\ngithub.com/larsartmann/go-finding\n(stdlib only — zero external deps)" {
+  shape: package
+  style.fill: "#18181d"
+  style.stroke: "#ffb347"
+
+  types: "Domain Types" {
+    shape: rectangle
+    style.fill: "#18181d"
+    finding: "Finding\n(immutable data)" {shape: rectangle}
+    position: "Position / Range" {shape: rectangle}
+    severity: "Severity / Confidence\n/ Category / Tag" {shape: rectangle}
+    branded: "ID / RuleName /\nToolName / FilePath\n(branded types)" {shape: rectangle}
+  }
+
+  collections: "Collections and Logic" {
+    shape: rectangle
+    style.fill: "#18181d"
+    report: "Report\n(thread-safe\nfinding container)" {shape: rectangle}
+    filter: "Filter / Merge /\nDiff / Correlate" {shape: rectangle}
+    interval: "IntervalIndex[T]\n(generic overlap)" {shape: rectangle}
+  }
+
+  io: "Serialization" {
+    shape: rectangle
+    style.fill: "#18181d"
+    sarif: "SARIF Export/Import\n(hand-rolled)" {shape: rectangle}
+    lsp: "LSP Conversion\n(LSPDiagnosticData)" {shape: rectangle}
+    json_conv: "JSON Round-trip" {shape: rectangle}
+  }
+
+  ext: "Extensibility" {
+    shape: rectangle
+    style.fill: "#18181d"
+    detector: "Detector interface\n+ DetectorRegistry" {shape: rectangle}
+    adapter: "ToolAdapter[O]\n(generic)" {shape: rectangle}
+  }
+
+  shared: "Shared Utilities" {
+    shape: rectangle
+    style.fill: "#18181d"
+    gotoken: "gotoken\n(go/token helpers)" {shape: rectangle}
+    lockutil: "lockutil\n(Locked[T] / RLocked[T])" {shape: rectangle}
+    context_pkg: "context.go\nWithWorkingDir" {shape: rectangle}
+  }
+}
+
+pipeline: "Pipeline Module\npipeline/\n(deps: x/sync, gogenfilter)" {
+  shape: package
+  style.fill: "#18181d"
+  style.stroke: "#ffb347"
+
+  flow: "Pipeline Flow" {
+    shape: rectangle
+    style.fill: "#16161a"
+    detect: "Detect\n(detectors run)" {shape: rectangle}
+    triage: "Triage\n(FindingTransformer)" {shape: rectangle}
+    apply: "Apply\n(fix providers)" {shape: rectangle}
+    verify: "Verify\n(re-detect)" {shape: rectangle}
+  }
+
+  engine: "Fix Engine" {
+    shape: rectangle
+    style.fill: "#16161a"
+    fix_engine: "FixEngine\n(descending-offset\nbyte edits)" {shape: rectangle}
+    providers: "FixProvider chain:\nOffset, Line, Substring,\nGoAST (opt-in)" {shape: rectangle}
+    applier: "FixApplier\n(backup + rollback)" {shape: rectangle}
+    conflict: "Conflict detection\n(byte-level overlap)" {shape: rectangle}
+  }
+
+  infra: "Infrastructure" {
+    shape: rectangle
+    style.fill: "#16161a"
+    config: "Config + ConfigFile\n+ StageHooks" {shape: rectangle}
+    metrics: "Metrics / PartialResult\n/ Retry / LineShiftMap" {shape: rectangle}
+  }
+
+  goast: "goast\n(opt-in go/parser)" {shape: rectangle}
+}
+
+analysis: "Analysis Module\nanalysis/\n(deps: x/tools)" {
+  shape: package
+  style.fill: "#16161a"
+  style.stroke: "#6eb5ff"
+  bridge: "go/analysis bridge\nFromDiagnostic to Finding\n(extracts BeforeCode\nfrom TextEdits)" {shape: rectangle}
+}
+
+cli: "CLI Module\ncmd/go-finding\n(deps: yaml, go-output)" {
+  shape: package
+  style.fill: "#16161a"
+  style.stroke: "#f4d35e"
+  main: "main.go\n(config, registry,\noutput adapter)" {shape: rectangle}
+  detectors: "Built-in Detectors\ngovet / staticcheck" {shape: rectangle}
+  output: "Output: text, markdown,\nCSV, TSV, JSON, SARIF" {shape: rectangle}
+}
+
+core -> pipeline: "Finding types"
+pipeline -> analysis: "uses go/analysis"
+pipeline -> cli: "Pipeline + detectors"
+analysis -> cli: "AnalyzerDetector"
+core -> cli: "domain types"
