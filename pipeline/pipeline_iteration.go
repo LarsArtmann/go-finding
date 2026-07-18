@@ -124,8 +124,6 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 			iter.Conflicts,
 		)
 		if hookErr != nil {
-			applyDone()
-
 			return false, fmt.Errorf("iteration %d: after apply: %w", p.iterations+1, hookErr)
 		}
 	}
