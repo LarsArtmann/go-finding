@@ -2,6 +2,7 @@ package benchutil
 
 import (
 	"bytes"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -52,7 +53,7 @@ func TestFindOldOccurrences(t *testing.T) {
 			t.Parallel()
 
 			got := FindOldOccurrences(tt.content)
-			if !equalInts(got, tt.want) {
+			if !slices.Equal(got, tt.want) {
 				t.Errorf("FindOldOccurrences() = %v, want %v", got, tt.want)
 			}
 		})
@@ -190,7 +191,7 @@ func TestPickEvenly(t *testing.T) {
 			t.Parallel()
 
 			got := PickEvenly(tt.positions, tt.n)
-			if !equalInts(got, tt.want) {
+			if !slices.Equal(got, tt.want) {
 				t.Errorf("PickEvenly(%v, %d) = %v, want %v", tt.positions, tt.n, got, tt.want)
 			}
 		})
@@ -237,18 +238,4 @@ func TestBenchutilIntegration(t *testing.T) {
 			t.Errorf("position %d = %q, want the needle", pos, got)
 		}
 	}
-}
-
-func equalInts(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-
-	return true
 }

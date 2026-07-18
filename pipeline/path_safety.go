@@ -28,6 +28,7 @@ func resolveSafePath(rootDir, relPath string) (string, bool) {
 	if !filepath.IsAbs(fullPath) {
 		fullPath = filepath.Join(rootDir, relPath)
 	}
+
 	cleanPath := filepath.Clean(fullPath)
 
 	resolved, err := filepath.EvalSymlinks(cleanPath)

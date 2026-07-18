@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"errors"
+	"slices"
 	"testing"
 	"testing/fstest"
 
@@ -77,7 +78,7 @@ func TestGeneratedFileFilter_FiltersGeneratedFiles(t *testing.T) {
 	}
 
 	want := []string{"3", "4"}
-	if !sliceEqual(ids, want) {
+	if !slices.Equal(ids, want) {
 		t.Fatalf("Process() IDs = %v, want %v", ids, want)
 	}
 }
@@ -127,7 +128,7 @@ func TestGeneratedFileFilter_FiltersSpecificGenerator(t *testing.T) {
 	}
 
 	want := []string{"2", "3"}
-	if !sliceEqual(ids, want) {
+	if !slices.Equal(ids, want) {
 		t.Fatalf("Process() IDs = %v, want %v", ids, want)
 	}
 }
@@ -190,20 +191,6 @@ func TestGeneratedFileFilter_KeepOnMissingFile(t *testing.T) {
 	if result[0].ID != "1" {
 		t.Fatalf("Process() ID = %q, want %q", result[0].ID, "1")
 	}
-}
-
-func sliceEqual(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-
-	return true
 }
 
 var errTestConfigError = errors.New("test config error")

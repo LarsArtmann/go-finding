@@ -2,7 +2,7 @@ package finding
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"math"
 	"sync"
