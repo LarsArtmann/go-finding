@@ -20,7 +20,14 @@ func resolveSafePath(rootDir, relPath string) (string, bool) {
 		cleanRoot = resolved
 	}
 
-	fullPath := filepath.Join(rootDir, relPath)
+	// If relPath is already absolute, use it directly. Some tools (e.g., cqrs-lint)
+	// store absolute paths in finding positions, so joining with rootDir would
+	// double the path (rootDir + absolutePath = rootDir/rootDir/...).
+	// The containment check below still ensures the path stays within rootDir.
+	fullPath := relPath
+	if !filepath.IsAbs(fullPath) {
+		fullPath = filepath.Join(rootDir, relPath)
+	}
 	cleanPath := filepath.Clean(fullPath)
 
 	resolved, err := filepath.EvalSymlinks(cleanPath)

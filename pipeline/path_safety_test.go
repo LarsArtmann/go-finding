@@ -51,9 +51,29 @@ func TestResolveSafePath_PathTraversal(t *testing.T) {
 	}
 }
 
-func TestResolveSafePath_AbsolutePathTreatedAsRelative(t *testing.T) {
-	// Absolute paths are normalized to relative by filepath.Join,
-	// so they cannot escape rootDir. This is a deliberate security property.
+func TestResolveSafePath_AbsolutePathInsideRoot(t *testing.T) {
+	// Absolute paths inside rootDir resolve directly — they are NOT joined
+	// with rootDir (which would double the path). The containment check still
+	// verifies the path stays within rootDir.
+	t.Parallel()
+
+	root := t.TempDir()
+	absInside := filepath.Join(root, "src", "main.go")
+
+	got, ok := resolveSafePath(root, absInside)
+	if !ok {
+		t.Fatalf("absolute path inside root should be safe, got unsafe")
+	}
+
+	want := filepath.Clean(absInside)
+	if got != want {
+		t.Errorf("got %q, want %q (the absolute path, not doubled)", got, want)
+	}
+}
+
+func TestResolveSafePath_AbsolutePathOutsideRoot(t *testing.T) {
+	// Absolute paths OUTSIDE rootDir must be rejected as unsafe.
+	// The containment check catches this.
 	t.Parallel()
 
 	root := t.TempDir()
@@ -63,21 +83,16 @@ func TestResolveSafePath_AbsolutePathTreatedAsRelative(t *testing.T) {
 		abs  string
 	}{
 		{"/etc/passwd", "/etc/passwd"},
-		{"absolute inside root", filepath.Join(root, "file.go")},
 		{"/tmp/secret", "/tmp/secret"},
+		{"sibling temp dir", filepath.Join(filepath.Dir(root), "other")},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, ok := resolveSafePath(root, tc.abs)
-			if !ok {
-				t.Errorf("abs=%q: expected safe (normalized under root), got unsafe", tc.abs)
-			}
-
-			// The result should be under root, not the raw absolute path.
-			if got == tc.abs {
-				t.Errorf("abs=%q: result should be normalized under root, got raw abs path", tc.abs)
+			_, ok := resolveSafePath(root, tc.abs)
+			if ok {
+				t.Errorf("abs=%q: expected unsafe (outside root), got safe", tc.abs)
 			}
 		})
 	}
