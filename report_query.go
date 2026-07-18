@@ -105,17 +105,6 @@ func (r *Report) Len() int {
 	})
 }
 
-// snapshotFindings returns a copy of the current findings under RLock.
-// Callers receive an isolated slice they can mutate without affecting r.
-func (r *Report) snapshotFindings() []Finding {
-	return withReadLock(r, func() []Finding {
-		findings := make([]Finding, len(r.findings))
-		copy(findings, r.findings)
-
-		return findings
-	})
-}
-
 // Filter returns a new report containing only findings that match all predicates.
 // Safe for concurrent use.
 func (r *Report) Filter(predicates ...FilterFunc) *Report {
@@ -132,7 +121,7 @@ func (r *Report) Filter(predicates ...FilterFunc) *Report {
 // Map returns a new report with the given function applied to each finding.
 // Safe for concurrent use.
 func (r *Report) Map(fn func(Finding) Finding) *Report {
-	findings := r.snapshotFindings()
+	findings := r.readFindings()
 
 	result := NewReport(r.Tool)
 	for _, f := range findings {
