@@ -908,8 +908,8 @@
         <div class="card card-solution">
           <h4>Analysis: x/tools isolated to its own module</h4>
           <p>
-            The heavy x/tools dependency (go/analysis framework) is confined to the analysis
-            module. Consumers who only need the Finding data model never pull in x/tools.
+            The heavy x/tools dependency (go/analysis framework) is confined to the analysis module.
+            Consumers who only need the Finding data model never pull in x/tools.
           </p>
         </div>
 
@@ -924,8 +924,8 @@
         <div class="card card-solution">
           <h4>Shared utilities: gotoken and lockutil</h4>
           <p>
-            <code>gotoken/</code> and <code>lockutil/</code> are stdlib-only shared utilities
-            within the Core module. They follow the same zero-dep principle as Core itself.
+            <code>gotoken/</code> and <code>lockutil/</code> are stdlib-only shared utilities within
+            the Core module. They follow the same zero-dep principle as Core itself.
           </p>
         </div>
 
@@ -971,16 +971,45 @@
         <div class="callout callout-solution">
           <strong>No split or merge recommended.</strong>
           The 4-module decomposition follows Unix philosophy: each module has a single purpose,
-          dependencies flow strictly downward, and Core has zero external deps. The dual
-          go.work + replace strategy enables both workspace development and independent module
-          consumption. This is the correct modularization for this project.
+          dependencies flow strictly downward, and Core has zero external deps. The dual go.work +
+          replace strategy enables both workspace development and independent module consumption.
+          This is the correct modularization for this project.
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; go-modularize review &middot; 4 modules, 0 changes recommended
+          Generated 2026-07-18 &middot; go-modularize review &middot; 4 modules, 0 changes
+          recommended
         </footer>
       </main>
     </div>
+
+    <!-- Progressive-enhancement scrollspy. Nav still works without JS via anchor links. -->
+    <script>
+      (function () {
+        if (!("IntersectionObserver" in window)) return;
+        var nav = document.querySelector("[data-nav]");
+        if (!nav) return;
+        var links = nav.querySelectorAll('a[href^="#"]');
+        var ids = Array.from(links).map(function (l) {
+          return l.getAttribute("href").slice(1);
+        });
+        var sections = ids
+          .map(function (id) {
+            return document.getElementById(id);
+          })
+          .filter(Boolean);
+        if (!sections.length) return;
+        var observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                links.forEach(function (link) {
+                  link.classList.toggle(
+                    "active",
+                    link.getAttribute("href") === "#" + entry.target.id,
+                  );
+                });
+              }
             });
           },
           { rootMargin: "-80px 0px -60% 0px", threshold: 0 },

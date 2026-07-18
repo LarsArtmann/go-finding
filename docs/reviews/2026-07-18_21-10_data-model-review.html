@@ -811,9 +811,9 @@
           <div class="hero-badge">DATA MODEL REVIEW</div>
           <h1>go-finding Type System Audit</h1>
           <p class="hero-subtitle">
-            First-principles review of the domain model on 2026-07-18. The model is strong:
-            branded types, decomposed validation, single extensibility field. Five v2.0
-            improvement candidates are documented and deferred (all breaking changes).
+            First-principles review of the domain model on 2026-07-18. The model is strong: branded
+            types, decomposed validation, single extensibility field. Five v2.0 improvement
+            candidates are documented and deferred (all breaking changes).
           </p>
         </div>
 
@@ -852,9 +852,9 @@
           <p>
             The Finding domain model uses branded primitive types (<code>ID</code>,
             <code>RuleName</code>, <code>ToolName</code>, <code>FilePath</code>) that prevent
-            compile-time mixups. Validation is decomposed into 6 per-field validators, each under
-            10 complexity. The single extensibility field (<code>Metadata map[string]string</code>)
-            is deliberately NOT <code>map[string]any</code>. Five known v2.0 improvements are
+            compile-time mixups. Validation is decomposed into 6 per-field validators, each under 10
+            complexity. The single extensibility field (<code>Metadata map[string]string</code>) is
+            deliberately NOT <code>map[string]any</code>. Five known v2.0 improvements are
             documented in TODO_LIST and visualized in the improved architecture diagram.
           </p>
         </div>
@@ -865,43 +865,62 @@
             <div class="check">+</div>
             <div class="text">
               <strong>Branded types prevent ID/Rule/Tool/File mixups</strong>
-              <span><code type ID string</code>, <code>type RuleName string</code>, <code>type ToolName string</code>, <code>type FilePath string</code> — all in branded_types.go. JSON marshals identically to string.</span>
+              <span
+                ><code>type ID string</code>, <code>type RuleName string</code>,
+                <code>type ToolName string</code>, <code>type FilePath string</code> — all in
+                branded_types.go. JSON marshals identically to string.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Single extensibility field: Metadata map[string]string</strong>
-              <span>NOT <code>map[string]any</code>. String-valued metadata is lossless for interchange (SARIF, JSON, CLI). Key namespacing convention prevents collisions.</span>
+              <span
+                >NOT <code>map[string]any</code>. String-valued metadata is lossless for interchange
+                (SARIF, JSON, CLI). Key namespacing convention prevents collisions.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Validate() decomposed into 6 focused validators</strong>
-              <span><code>validateIdentity</code>, <code>validateClassification</code>, <code>validateFix</code>, <code>validateReferences</code>, <code>validateSpatial</code>, <code>validateSuppression</code>. Each under complexity 10.</span>
+              <span
+                ><code>validateIdentity</code>, <code>validateClassification</code>,
+                <code>validateFix</code>, <code>validateReferences</code>,
+                <code>validateSpatial</code>, <code>validateSuppression</code>. Each under
+                complexity 10.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Named types for all domain concepts</strong>
-              <span><code>Severity</code>, <code>Confidence</code>, <code>Category</code>, <code>Tag</code>, <code>FixStrategy</code> — all named types with <code>IsValid()</code> methods. No raw strings in domain logic.</span>
+              <span
+                ><code>Severity</code>, <code>Confidence</code>, <code>Category</code>,
+                <code>Tag</code>, <code>FixStrategy</code> — all named types with
+                <code>IsValid()</code> methods. No raw strings in domain logic.</span
+              >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
               <strong>Finding struct has clear field grouping</strong>
-              <span>Identity, Core, Classification, Fix, Context, Extensibility — documented in comments. 20+ fields are organized, not dumped.</span>
+              <span
+                >Identity, Core, Classification, Fix, Context, Extensibility — documented in
+                comments. 20+ fields are organized, not dumped.</span
+              >
             </div>
           </div>
         </div>
 
         <h2 id="v2"><span class="num">01</span>v2.0 Improvement Candidates</h2>
         <p>
-          These are known design improvements that require breaking changes. All are documented
-          in <code>TODO_LIST.md</code> and deferred to v2.0. They are NOT defects in v1.x.
+          These are known design improvements that require breaking changes. All are documented in
+          <code>TODO_LIST.md</code> and deferred to v2.0. They are NOT defects in v1.x.
         </p>
 
         <table>
@@ -916,15 +935,24 @@
           <tbody>
             <tr>
               <td>1</td>
-              <td><code>Position</code>: 3 sentinel conventions (0=unset Line/Col, -1=unset Offset, zero-value=valid)</td>
+              <td>
+                <code>Position</code>: 3 sentinel conventions (0=unset Line/Col, -1=unset Offset,
+                zero-value=valid)
+              </td>
               <td>Single <code>Option[T]</code> convention</td>
               <td>Eliminates confusion; one rule for all fields</td>
             </tr>
             <tr>
               <td>2</td>
-              <td><code>FixStrategy</code>: string union + <code>NormalizeFixStrategy()</code> workaround</td>
+              <td>
+                <code>FixStrategy</code>: string union +
+                <code>NormalizeFixStrategy()</code> workaround
+              </td>
               <td>Interface-based union: <code>type Fix interface { isFix() }</code></td>
-              <td>Impossible states unrepresentable; "Direct requires BeforeCode" becomes constructor invariant</td>
+              <td>
+                Impossible states unrepresentable; "Direct requires BeforeCode" becomes constructor
+                invariant
+              </td>
             </tr>
             <tr>
               <td>3</td>
@@ -934,14 +962,20 @@
             </tr>
             <tr>
               <td>4</td>
-              <td>Pointer-as-state: <code>*Range</code>, <code>*Suppression</code>, <code>*time.Time</code></td>
+              <td>
+                Pointer-as-state: <code>*Range</code>, <code>*Suppression</code>,
+                <code>*time.Time</code>
+              </td>
               <td>Value + bool pairs</td>
               <td>3 states (nil/zero/valid) reduced to 2 (present/absent)</td>
             </tr>
             <tr>
               <td>5</td>
               <td><code>Finding</code>: flat struct with 20+ fields</td>
-              <td>Composed sub-structs: <code>Identity{}</code>, <code>Location{}</code>, <code>Classification{}</code>, <code>Fix{}</code></td>
+              <td>
+                Composed sub-structs: <code>Identity{}</code>, <code>Location{}</code>,
+                <code>Classification{}</code>, <code>Fix{}</code>
+              </td>
               <td>Pass sub-structs to focused functions; changes JSON shape</td>
             </tr>
           </tbody>
@@ -957,10 +991,39 @@
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; Data model review from first principles &middot; 5 v2.0 candidates documented
+          Generated 2026-07-18 &middot; Data model review from first principles &middot; 5 v2.0
+          candidates documented
         </footer>
       </main>
     </div>
+
+    <!-- Progressive-enhancement scrollspy. Nav still works without JS via anchor links. -->
+    <script>
+      (function () {
+        if (!("IntersectionObserver" in window)) return;
+        var nav = document.querySelector("[data-nav]");
+        if (!nav) return;
+        var links = nav.querySelectorAll('a[href^="#"]');
+        var ids = Array.from(links).map(function (l) {
+          return l.getAttribute("href").slice(1);
+        });
+        var sections = ids
+          .map(function (id) {
+            return document.getElementById(id);
+          })
+          .filter(Boolean);
+        if (!sections.length) return;
+        var observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                links.forEach(function (link) {
+                  link.classList.toggle(
+                    "active",
+                    link.getAttribute("href") === "#" + entry.target.id,
+                  );
+                });
+              }
             });
           },
           { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
