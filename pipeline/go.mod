@@ -6,7 +6,7 @@ require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.3.0
 	github.com/larsartmann/go-finding v0.0.0-00010101000000-000000000000
 	github.com/onsi/ginkgo/v2 v2.32.0
-	github.com/onsi/gomega v1.42.0
+	github.com/onsi/gomega v1.42.1
 	golang.org/x/sync v0.22.0
 )
 
