@@ -118,6 +118,9 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 - **Analysis BeforeCode** — `analysis.FromDiagnostic` now extracts `BeforeCode` from TextEdits by reading source file from disk.
 - **GroupByFile returns map[FilePath][]Finding** — Updated to use branded type as map key.
 - **lockutil.Locked/RLocked for mutex boilerplate** — Generic helpers `lockutil.Locked(sync.Locker, fn)` and `lockutil.RLocked(*sync.RWMutex, fn)` consolidate the m.mu.Lock()/defer m.mu.Unlock() pattern. Returns generic T; use `struct{}` for side-effect-only sections. Report/metrics/file_backup/registry/category_linter/etc. all use these.
+- **makezero is `always: false` (intentional)** — `.golangci.yml` sets makezero `always: false`. The `always: true` mode flags the idiomatic `make([]T, len) + copy()` pattern as wrong (23 false positives). The `false` mode still catches the real bug: `make([]T, n) + append` (over-allocation). Idiomatic Go wins. One-line revert in `.golangci.yml` if append-only style is ever desired.
+- **StageTiming closure must be called exactly once** — `Metrics.RecordStage` uses `+=` (`metrics.go:50`), so calling the closure returned by `stageTiming(stage)` more than once double-records the duration. When wrapping a stage that has success AND error/hook-abort paths, invoke the done-closure on exactly one path. Previous bug: `pipeline_iteration.go` called `applyDone()` on both the success path and the hook-error path.
+- **RetryConfig validation uses named sentinels** — `pipeline/retry.go:20-25` defines 6 named sentinel errors (`errMaxRetriesNegative`, `errBaseDelayPositive`, etc.). Consumers can `errors.Is(err, errBaseDelayPositive)`. NEVER inline `errors.New("...")` in validation returns — it breaks `errors.Is()` matching. Any new validation rule must add a named sentinel var.
 
 ## CLI Features
 

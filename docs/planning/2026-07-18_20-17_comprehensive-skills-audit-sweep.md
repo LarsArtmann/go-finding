@@ -1,5 +1,7 @@
 # Comprehensive Skills Audit Sweep — go-finding
 
+> **📦 RESOLUTION STATUS (updated 2026-07-18):** ALL 11 tasks completed. 10 applicable skills executed (8 fresh HTML reports + 2 D2 architecture diagrams), 4 real defects fixed (makezero config, context_test parallelism, duplicate `snapshotFindings`, metrics double-recording), 2 minor fixes (retry sentinel, README command), 5 prior reports annotated with resolution status. Gap-closure follow-up tracked in `docs/planning/2026-07-18_22-03_close-the-gaps.md`; self-assessment in `docs/status/2026-07-18_21-21_skills-audit-sweep-status.md`.
+
 > **Date:** 2026-07-18 20:17
 > **Branch:** `master`
 > **Trigger:** User requested a battery of Crush skills be run "PROPERLY": code-quality-scan, naming-review, data-model-review, deduplicate-code, go-modularize, architecture-review, architecture-visualization, full-code-review, docs-health, update-old-docs (plus 3 declared non-applicable: frontend-design, copywriting, nix-flake-migration).
