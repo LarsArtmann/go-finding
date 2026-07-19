@@ -69,7 +69,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: "1.26"
-      - uses: golangci/golangci-lint-action@v7
+      - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.10.1
           args: --timeout=5m
