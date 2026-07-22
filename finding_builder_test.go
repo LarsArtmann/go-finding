@@ -310,3 +310,99 @@ func TestBuilder_BuildOrDefault_Invalid(t *testing.T) {
 		t.Errorf("ID = %q, want empty", f.ID)
 	}
 }
+
+func TestFindingTemplate_Basic(t *testing.T) {
+	t.Parallel()
+
+	tmpl := NewTemplate("my-tool").
+		WithCategory(CategorySecurity).
+		WithFixStrategy(FixStrategySuggest).
+		WithTags(Tag("security"), Tag("auto-fix"))
+
+	f := tmpl.Build("SQL-injection", "unescaped query", SeverityError, Pos("db.go", 10, 5))
+
+	if f.ToolName != "my-tool" {
+		t.Errorf("ToolName = %q, want %q", f.ToolName, "my-tool")
+	}
+
+	if f.Category != CategorySecurity {
+		t.Errorf("Category = %v, want %v", f.Category, CategorySecurity)
+	}
+
+	if f.FixStrategy != FixStrategySuggest {
+		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategySuggest)
+	}
+
+	if len(f.Tags) != 2 {
+		t.Fatalf("Tags length = %d, want 2", len(f.Tags))
+	}
+
+	if f.Tags[0] != Tag("security") || f.Tags[1] != Tag("auto-fix") {
+		t.Errorf("Tags = %v, want [security, auto-fix]", f.Tags)
+	}
+
+	if f.Rule != "SQL-injection" {
+		t.Errorf("Rule = %q, want %q", f.Rule, "SQL-injection")
+	}
+
+	if f.Message != "unescaped query" {
+		t.Errorf("Message = %q, want %q", f.Message, "unescaped query")
+	}
+
+	if f.ID == "" {
+		t.Error("ID should not be empty")
+	}
+}
+
+func TestFindingTemplate_MultipleFindings(t *testing.T) {
+	t.Parallel()
+
+	tmpl := NewTemplate("linter").WithCategory(CategoryStyle)
+
+	f1 := tmpl.Build("R1", "message 1", SeverityInfo, Pos("a.go", 1, 1))
+	f2 := tmpl.Build("R2", "message 2", SeverityWarning, Pos("b.go", 2, 3))
+
+	if f1.Rule != "R1" || f2.Rule != "R2" {
+		t.Errorf("Rules = %q, %q; want R1, R2", f1.Rule, f2.Rule)
+	}
+
+	if f1.ToolName != "linter" || f2.ToolName != "linter" {
+		t.Errorf("ToolName mismatch")
+	}
+
+	if f1.Category != CategoryStyle || f2.Category != CategoryStyle {
+		t.Errorf("Category not stamped")
+	}
+
+	if f1.ID == f2.ID {
+		t.Error("findings should have different IDs")
+	}
+}
+
+func TestFindingTemplate_NoCategory(t *testing.T) {
+	t.Parallel()
+
+	tmpl := NewTemplate("tool")
+
+	f := tmpl.Build("R1", "msg", SeverityInfo, Pos("a.go", 1, 1))
+
+	if f.Category != "" {
+		t.Errorf("Category = %q, want empty", f.Category)
+	}
+
+	if f.FixStrategy != FixStrategyNone {
+		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategyNone)
+	}
+}
+
+func TestFindingTemplate_InvalidInput(t *testing.T) {
+	t.Parallel()
+
+	tmpl := NewTemplate("tool")
+
+	f := tmpl.Build("", "", SeverityError, Position{})
+
+	if f.ID != "" {
+		t.Error("invalid input should return zero-value Finding")
+	}
+}

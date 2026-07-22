@@ -157,3 +157,65 @@ func (b *Builder) BuildOrDefault() Finding {
 
 	return f
 }
+
+// FindingTemplate is a pre-configured builder factory: stamp common fields
+// (tool name, category, fix strategy, tags) once, then build many findings
+// with varying rule/message/severity/position. This eliminates the
+// newMigrationFinding / buildFixableFinding / IssueBuilderFactory patterns
+// that consumers reinvent for batch finding creation.
+type FindingTemplate struct {
+	Tool        ToolName
+	Category    Category
+	FixStrategy FixStrategy
+	Tags        []Tag
+}
+
+// NewTemplate creates a FindingTemplate with the given tool name.
+// Chain WithCategory, WithFixStrategy, WithTags to configure common fields,
+// then call Build for each finding.
+func NewTemplate(toolName ToolName) *FindingTemplate {
+	return &FindingTemplate{Tool: toolName}
+}
+
+// WithCategory sets the category on the template.
+func (t *FindingTemplate) WithCategory(cat Category) *FindingTemplate {
+	t.Category = cat
+
+	return t
+}
+
+// WithFixStrategy sets the fix strategy on the template.
+func (t *FindingTemplate) WithFixStrategy(fs FixStrategy) *FindingTemplate {
+	t.FixStrategy = fs
+
+	return t
+}
+
+// WithTags sets tags on the template. These are stamped onto every finding
+// built from this template.
+func (t *FindingTemplate) WithTags(tags ...Tag) *FindingTemplate {
+	t.Tags = append(t.Tags, tags...)
+
+	return t
+}
+
+// Build creates a Finding from the template, stamping the pre-configured
+// tool name, category, fix strategy, and tags. Returns a zero-value Finding
+// if validation fails (delegates to Builder.BuildOrDefault).
+func (t *FindingTemplate) Build(rule RuleName, message string, severity Severity, pos Position) Finding {
+	b := NewBuilder(rule, t.Tool, message, severity, pos)
+
+	if t.Category != "" {
+		b = b.WithCategory(t.Category)
+	}
+
+	if t.FixStrategy != "" {
+		b = b.WithFixStrategy(t.FixStrategy)
+	}
+
+	if len(t.Tags) > 0 {
+		b = b.WithTags(t.Tags...)
+	}
+
+	return b.BuildOrDefault()
+}
