@@ -11,7 +11,7 @@ _No unreleased changes yet._
 
 ## [1.3.0] - 2026-07-22
 
-Consumer-driven API improvements. 12 additive changes eliminating the boilerplate every consumer independently reinvents, without breaking changes to existing types or signatures. Driven by a full audit of all 22 consumer projects.
+Consumer-driven API improvements. 11 additive APIs eliminating the boilerplate every consumer independently reinvents, without breaking changes to existing types or signatures. Driven by a full audit of all 22 consumer projects.
 
 ### Added
 

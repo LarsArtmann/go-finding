@@ -1012,9 +1012,9 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | Structured logging (slog)         | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                              |
 | Stage hooks/callbacks             | FULLY_FUNCTIONAL     | `StageHooks` with abort capability                                                    |
 | Diff function                     | FULLY_FUNCTIONAL     | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()`                     |
-| FormatText / FormatMarkdown       | FULLY_FUNCTIONAL     | Severity badges, category, 💡 suggestion (v1.3.0)                                     |
+| FormatText / FormatTextRich / FormatMarkdown | FULLY_FUNCTIONAL | FormatText: `[SEVERITY]` tag. FormatTextRich: emoji badges, category, 💡 (v1.3.0) |
 | Config validation                 | FULLY_FUNCTIONAL     | Both pipeline and CLI configs                                                         |
-| Examples                          | PARTIALLY_FUNCTIONAL | 3 runnable examples, compile-tested                                                   |
+| Examples                          | PARTIALLY_FUNCTIONAL | 2 runnable examples (basic, builder), compile-tested                                  |
 | `RelatedRef.Range`                | FULLY_FUNCTIONAL     | Span-based related locations with SARIF/LSP round-trip                                |
 | LSP diagnostic tags               | FULLY_FUNCTIONAL     | `Unnecessary`/`Deprecated` preserved in metadata                                      |
 | SARIF `region.snippet`            | FULLY_FUNCTIONAL     | Native SARIF snippet round-trip support                                               |

@@ -70,7 +70,6 @@ These are known design tensions deferred because they require breaking changes:
 - **Position zero-value** — `Position{}` has `Offset=0` (valid byte 0), not "unset". Resolved pragmatically in v0.9.0 with `-1` sentinel, but a type-safe redesign is still on the table for v2.0.
 - **`Range.End` zero-value ambiguity** — same class of issue as Position.
 - **SARIF schema validation** — blocked on vendoring the 7K-line SARIF 2.1.0 JSON schema for test-time validation.
-- **FormatText output format** — v1.3.0 changed `[SEVERITY]` to emoji badges. May need backward-compatible `FormatTextClassic()` or options pattern depending on consumer impact.
 
 ---
 
