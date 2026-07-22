@@ -190,3 +190,23 @@ The TODO_LIST rebuild is the highest-value deliverable: 160 completed items remo
 ---
 
 _Assisted-by: Crush <crush@charm.land>_
+
+---
+
+## Update (2026-07-22 follow-up session)
+
+**Resolved items from this report:**
+
+| Section | Item                                                              | Resolution                                                                                                                                                |
+| ------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| b.1     | `version.go` sync (`VersionPatch = 0` vs `v1.2.1` tag)            | **Fixed.** Bumped `VersionPatch` to `1`. Added `scripts/version-check.sh` and CI job (`version-check` in `ci.yml`) to prevent recurrence.                 |
+| c.1     | Re-run `nix run .#test-race`                                      | **Done.** All packages pass, zero race conditions detected.                                                                                               |
+| f.21    | CI gate comparing `git describe --tags` against `finding.Version` | **Done.** `scripts/version-check.sh` + `version-check` CI job with `fetch-depth: 0`.                                                                      |
+| f.22    | Configure dependabot `groups:` to reduce PR noise                 | **Done.** Added `groups: { patterns: ["*"] }` for both gomod and github-actions ecosystems.                                                               |
+| f.23    | SHA-pin GitHub Actions (commit SHA, not `@v7`)                    | **Done.** All 8 actions pinned to commit SHAs in `ci.yml` and `release.yml`.                                                                              |
+| f.24    | Configure `CODECOV_TOKEN` or OIDC for codecov uploads             | **Done.** Added `token: ${{ secrets.CODECOV_TOKEN }}` and `id-token: write` permission to coverage job. Requires `CODECOV_TOKEN` secret in repo settings. |
+| f.45    | Consumer compatibility test (verify 20 downstream projects)       | **BLOCKED.** Repo is private; consumers need `GOPRIVATE` set. Marked as BLOCKED in TODO_LIST.md.                                                          |
+
+**Answers to questions:**
+
+- **Q2 resolved:** `version.go` bumped to `1.2.1` to match the existing `v1.2.1` tag. Tag is treated as deliberate.
