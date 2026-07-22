@@ -3,7 +3,7 @@
 > **Audience:** Projects consuming `github.com/larsartmann/go-finding`
 > **Goal:** Replace boilerplate with the 11 new v1.3.0 APIs
 
-v1.3.0 is **additive only** — zero breaking changes to existing types or signatures. You don't need to change anything to upgrade. But you *can* simplify your code by adopting these APIs.
+v1.3.0 is **additive only** — zero breaking changes to existing types or signatures. You don't need to change anything to upgrade. But you _can_ simplify your code by adopting these APIs.
 
 ---
 
@@ -182,16 +182,16 @@ finding.FormatTextRich(os.Stdout, findings)
 
 ## Quick Reference
 
-| Boilerplate Pattern | v1.3.0 Replacement |
-|---|---|
-| NewReport + AddFindings + ComputeSummary | `NewReportFromFindings` |
-| SafeBuildFinding / buildFinding wrapper | `Builder.BuildOrDefault()` |
-| newMigrationFinding / IssueBuilderFactory | `NewTemplate` + `Template.Build` |
-| `Position{File: f, Offset: -1}` | `FilePos(f)` |
-| `mapSeverity()` switch | `SeverityFromLevel(level, fallback)` |
-| Pipeline FixEngine for simple replacements | `ApplySimpleFixes(findings)` |
-| `exec.LookPath` + `exec.CommandContext` | `CheckBinary` + `RunCmd` |
-| `[SEVERITY]` format with emoji badges | `FormatTextRich(w, findings)` |
+| Boilerplate Pattern                        | v1.3.0 Replacement                   |
+| ------------------------------------------ | ------------------------------------ |
+| NewReport + AddFindings + ComputeSummary   | `NewReportFromFindings`              |
+| SafeBuildFinding / buildFinding wrapper    | `Builder.BuildOrDefault()`           |
+| newMigrationFinding / IssueBuilderFactory  | `NewTemplate` + `Template.Build`     |
+| `Position{File: f, Offset: -1}`            | `FilePos(f)`                         |
+| `mapSeverity()` switch                     | `SeverityFromLevel(level, fallback)` |
+| Pipeline FixEngine for simple replacements | `ApplySimpleFixes(findings)`         |
+| `exec.LookPath` + `exec.CommandContext`    | `CheckBinary` + `RunCmd`             |
+| `[SEVERITY]` format with emoji badges      | `FormatTextRich(w, findings)`        |
 
 ---
 

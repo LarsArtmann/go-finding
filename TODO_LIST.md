@@ -8,15 +8,15 @@
 
 ## 🔴 HIGH Priority
 
-| Task                                        | Status    | Impact | Effort | Evidence                                                                                                                                |
-| ------------------------------------------- | --------- | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| _(none — v1.3.0 released)_                  | ✅ `DONE` | —      | —      | v1.3.0 tagged, pushed, GitHub release created. Lint clean, tests pass, GOWORK=off verified.                                             |
+| Task                       | Status    | Impact | Effort | Evidence                                                                                    |
+| -------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------------------------------- |
+| _(none — v1.3.0 released)_ | ✅ `DONE` | —      | —      | v1.3.0 tagged, pushed, GitHub release created. Lint clean, tests pass, GOWORK=off verified. |
 
 ## 🟡 MEDIUM Priority
 
-| Task                                   | Status       | Impact | Effort | Evidence                                                                                                                                                                 |
-| -------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Fix BuildFlow auto-configure loop      | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact                                  |
+| Task                              | Status       | Impact | Effort | Evidence                                                                                                                                |
+| --------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Fix BuildFlow auto-configure loop | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact |
 
 ## 🟢 LOW Priority
 
@@ -41,8 +41,8 @@ Structural changes that must batch into v2.0. Tracked here, not in ROADMAP, beca
 
 | Task                                        | Resolution                                                                                     |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Fix 7 lint issues from v1.3.0 session       | ✅ All 7 fixed: 4 exhaustruct nolints, 2 gosec nolints, FindingTemplate→Template rename         |
-| Run `GOWORK=off` per-module isolation tests | ✅ All 4 modules pass with GOWORK=off GOEXPERIMENT=jsonv2                                       |
+| Fix 7 lint issues from v1.3.0 session       | ✅ All 7 fixed: 4 exhaustruct nolints, 2 gosec nolints, FindingTemplate→Template rename        |
+| Run `GOWORK=off` per-module isolation tests | ✅ All 4 modules pass with GOWORK=off GOEXPERIMENT=jsonv2                                      |
 | Decide on FormatText behavioral change      | ✅ Option B: FormatText reverted to `[SEVERITY]` format, FormatTextRich added for emoji badges |
 | Doc accuracy fixes                          | ✅ ADR #9 r.Findings, DOMAIN_LANGUAGE v1.3.0 terms, API_STABILITY v1.3.0, CONTRIBUTING tree    |
 

@@ -33,26 +33,26 @@ Objects with identity and lifecycle.
 
 Immutable objects defined by attributes.
 
-| Term        | Definition                                                         | Context                       |
-| ----------- | ------------------------------------------------------------------ | ----------------------------- |
-| Position    | A location in source: File (FilePath), Line, Column, Offset        | 1-based Line/Column           |
-| Range       | A span from Start to End Position (same file)                      | For region-based findings     |
-| Severity    | Urgency level: info, warning, error, critical                      | Ordered, comparable           |
-| Confidence  | Certainty of a Finding on a 0.0–1.0 scale                          | Named float64 type            |
-| FixStrategy | How a Finding can be remediated: none, suggest, direct, ai         | Determines auto-apply         |
-| Category    | Domain classification: security, style, correctness, etc. (16 std) | Extensible                    |
-| Tag         | Multi-label classification for richer filtering                    | Extensible                    |
-| Suppression | An expiring mark that a Finding is intentionally ignored           | Kind + Rule + optional TTL    |
-| FixEdit     | A byte-level edit: Offset, Length, Replacement                     | Descending-offset apply       |
-| Snippet     | Surrounding source code context around a Finding's position        | For display and SARIF         |
-| RelatedRef  | A cross-reference from one Finding to another with a relation kind | Spatial or logical link       |
-| Correlation | A scored relationship between Findings from different tools        | Spatial + proximity heuristic |
-| Template    | Pre-configured builder factory for batch finding creation (v1.3.0) | Stamp common fields once      |
-| SimpleFixResult | Outcome of a BeforeCode→AfterCode fix (Applied, Reason)        | Core package fix application  |
-| ID          | Branded string type for Finding identity                           | Distinct from RuleName etc.   |
-| RuleName    | Branded string type for rule identifiers                           | Distinct from ID etc.         |
-| ToolName    | Branded string type for tool names                                 | Distinct from FilePath etc.   |
-| FilePath    | Branded string type for file paths                                 | Distinct from ToolName etc.   |
+| Term            | Definition                                                         | Context                       |
+| --------------- | ------------------------------------------------------------------ | ----------------------------- |
+| Position        | A location in source: File (FilePath), Line, Column, Offset        | 1-based Line/Column           |
+| Range           | A span from Start to End Position (same file)                      | For region-based findings     |
+| Severity        | Urgency level: info, warning, error, critical                      | Ordered, comparable           |
+| Confidence      | Certainty of a Finding on a 0.0–1.0 scale                          | Named float64 type            |
+| FixStrategy     | How a Finding can be remediated: none, suggest, direct, ai         | Determines auto-apply         |
+| Category        | Domain classification: security, style, correctness, etc. (16 std) | Extensible                    |
+| Tag             | Multi-label classification for richer filtering                    | Extensible                    |
+| Suppression     | An expiring mark that a Finding is intentionally ignored           | Kind + Rule + optional TTL    |
+| FixEdit         | A byte-level edit: Offset, Length, Replacement                     | Descending-offset apply       |
+| Snippet         | Surrounding source code context around a Finding's position        | For display and SARIF         |
+| RelatedRef      | A cross-reference from one Finding to another with a relation kind | Spatial or logical link       |
+| Correlation     | A scored relationship between Findings from different tools        | Spatial + proximity heuristic |
+| Template        | Pre-configured builder factory for batch finding creation (v1.3.0) | Stamp common fields once      |
+| SimpleFixResult | Outcome of a BeforeCode→AfterCode fix (Applied, Reason)            | Core package fix application  |
+| ID              | Branded string type for Finding identity                           | Distinct from RuleName etc.   |
+| RuleName        | Branded string type for rule identifiers                           | Distinct from ID etc.         |
+| ToolName        | Branded string type for tool names                                 | Distinct from FilePath etc.   |
+| FilePath        | Branded string type for file paths                                 | Distinct from ToolName etc.   |
 
 ## Bounded Contexts
 
@@ -82,16 +82,16 @@ Actions the system performs.
 
 ### v1.3.0 Convenience Commands
 
-| Command             | Description                                                        |
-| ------------------- | ------------------------------------------------------------------ |
-| BuildOrDefault      | Build finding with zero-value fallback on validation error         |
+| Command               | Description                                                         |
+| --------------------- | ------------------------------------------------------------------- |
+| BuildOrDefault        | Build finding with zero-value fallback on validation error          |
 | NewReportFromFindings | One-step report creation (NewReport + AddFindings + ComputeSummary) |
-| ApplySimpleFixes    | BeforeCode→AfterCode string replacement without pipeline FixEngine |
-| FilePos             | Create a file-level Position (Line=0, Offset=-1)                   |
-| SeverityFromLevel   | Map severity string (canonical + aliases) to Severity with fallback |
-| CheckBinary         | Verify a binary exists in system PATH                              |
-| RunCmd              | Execute external command and capture stdout                        |
-| FormatTextRich      | Rich text output with emoji severity badges and category display   |
+| ApplySimpleFixes      | BeforeCode→AfterCode string replacement without pipeline FixEngine  |
+| FilePos               | Create a file-level Position (Line=0, Offset=-1)                    |
+| SeverityFromLevel     | Map severity string (canonical + aliases) to Severity with fallback |
+| CheckBinary           | Verify a binary exists in system PATH                               |
+| RunCmd                | Execute external command and capture stdout                         |
+| FormatTextRich        | Rich text output with emoji severity badges and category display    |
 
 ## Events
 
