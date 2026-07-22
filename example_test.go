@@ -405,8 +405,8 @@ func ExampleFormatText() {
 	finding.FormatText(os.Stdout, findings) //nolint:errcheck
 
 	// Output:
-	// main.go:42:5 [ERROR] nilcheck: possible nil dereference
-	// util.go:10:3 [WARNING] unused: unused variable
+	// main.go:42:5 🟠 ERROR  nilcheck: possible nil dereference
+	// util.go:10:3 🟡 WARNING  unused: unused variable
 }
 
 func ExampleFormatMarkdown() {

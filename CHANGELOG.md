@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _No unreleased changes yet._
 
+## [1.3.0] - 2026-07-22
+
+Consumer-driven API improvements. 12 additive changes eliminating the boilerplate every consumer independently reinvents, without breaking changes to existing types or signatures. Driven by a full audit of all 22 consumer projects.
+
+### Added
+
+- **`NewReportFromFindings(tool, findings)`** — One-step report creation (NewReport + AddFindings + ComputeSummary). Eliminates the 4-line boilerplate in 5+ consumers.
+- **`Builder.BuildOrDefault() Finding`** — Returns zero-value Finding on validation error instead of panicking. Eliminates the SafeBuildFinding / buildFinding error-swallowing pattern.
+- **`FindingTemplate` type** — Pre-configured builder factory: stamp tool name, category, fix strategy, and tags once, then build many findings with `Build(rule, msg, sev, pos)`. Eliminates `newMigrationFinding` / `buildFixableFinding` patterns.
+- **`FilePos(file FilePath) Position`** — Constructor for file-level positions (Line=0, Offset=-1). For findings that apply to an entire file (config issues, project checks).
+- **`SeverityFromLevel(level, fallback) Severity`** — Maps severity strings (canonical + aliases) to Severity, returns fallback for unknown. Eliminates consumer-side `mapSeverity()` switches.
+- **`Severity.PriorityString() string`** — Reverse mapping: Critical→"critical", Error→"high", Warning→"medium", Info→"low".
+- **`FormatTable(w, findings)`** — Severity-badged table output (SEVERITY, LOCATION, RULE, MESSAGE columns).
+- **`ApplySimpleFixes(findings) map[FilePath][]SimpleFixResult`** — BeforeCode→AfterCode string replacement in core package. 80% case for consumers that don't need the full pipeline FixEngine.
+- **`CheckBinary(name) (string, error)`** — Wraps `exec.LookPath` with finding error. Standardizes the "run CLI tool → parse JSON" pattern.
+- **`RunCmd(ctx, name, args) ([]byte, error)`** — Wraps `exec.CommandContext` with finding error. For external tool integration.
+
+### Changed
+
+- **Builder default Confidence is now `ConfidenceFull`** — `NewBuilder` now passes `ConfidenceFull` (1.0) instead of `0` (ConfidenceNone). More semantically correct for deterministic static analysis. Override with `.WithConfidence()`.
+- **`validateIdentity()` uses `HasFile()` instead of `IsValid()`** — File-level positions (File set, Line=0) now pass validation. `Position.IsValid()` still requires Line>0 for backward compatibility. Use `HasFile()` for file-only checks.
+- **`FormatText` enhanced** — Uses `Severity.Badge()` (emoji + name) instead of `[SEVERITY]`. Shows `[category]` suffix when present. Suggestion prefixed with 💡 emoji.
+- **Severity aliases expanded** — Added "optional"→Info and "crit"→Critical to the pre-registered alias map.
+- **DefaultLinterRegistry expanded** — Added 20+ new golangci-lint linters (gofumpt, nolintlint, depguard, nakedret, bidichk, tagliatelle, mirror, etc.).
+
 ## [1.2.1] - 2026-07-19
 
 Post-v1.2.0 correctness, security, and dependency modernization release. 40 commits covering 15+ bug fixes (range geometry, thread safety, SARIF/LSP round-trip fidelity, path traversal), `encoding/json/v2` migration, go-output v0.30.4, dependabot PR merges, and comprehensive skills audit sweep (8 review reports + 2 architecture diagrams).
