@@ -62,7 +62,8 @@ func applyFixesToFile(file FilePath, findings []Finding) []SimpleFixResult {
 		}
 
 		modified = strings.Replace(modified, f.BeforeCode, f.AfterCode, 1)
-		fileResults = append(fileResults, SimpleFixResult{ //nolint:exhaustruct // Reason intentionally omitted: fix applied
+		//nolint:exhaustruct // Reason intentionally omitted: fix applied successfully
+		fileResults = append(fileResults, SimpleFixResult{
 			FindingID: f.ID,
 			Applied:   true,
 		})
@@ -70,7 +71,8 @@ func applyFixesToFile(file FilePath, findings []Finding) []SimpleFixResult {
 	}
 
 	if anyApplied {
-		if writeErr := os.WriteFile(string(file), []byte(modified), 0o644); writeErr != nil { //nolint:gosec // G703: file path is validated by caller
+		//nolint:gosec // G703: file path is validated by caller
+		if writeErr := os.WriteFile(string(file), []byte(modified), 0o644); writeErr != nil {
 			return skippedResults(findings, fmt.Sprintf("write file: %v", writeErr))
 		}
 	}

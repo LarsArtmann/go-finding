@@ -8,10 +8,38 @@ import (
 )
 
 // FormatText writes a human-readable text representation of findings to w.
-// Each finding is formatted as: file:line:col BADGE rule: message [category].
+// Each finding is formatted as: file:line:col [SEVERITY] rule: message.
+// Suggestion (when present) is shown on the next line with a "Suggestion:" prefix.
+func FormatText(w io.Writer, findings []Finding) error {
+	for _, f := range findings {
+		_, err := fmt.Fprintf(
+			w, "%s [%s] %s: %s\n",
+			f.Position.String(),
+			strings.ToUpper(string(f.Severity)),
+			string(f.Rule),
+			f.Message,
+		)
+		if err != nil {
+			return fmt.Errorf("format text: %w", err)
+		}
+
+		if f.Suggestion != "" {
+			_, err = fmt.Fprintf(w, "  Suggestion: %s\n", f.Suggestion)
+			if err != nil {
+				return fmt.Errorf("format text suggestion: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// FormatTextRich writes a human-readable text representation of findings to w
+// with emoji severity badges and category display.
+// Each finding is formatted as: file:line:col BADGE  rule: message [category].
 // Severity badges use emoji + uppercase name (e.g., "🟠 ERROR").
 // Category is shown in brackets when present. Suggestion is prefixed with 💡.
-func FormatText(w io.Writer, findings []Finding) error {
+func FormatTextRich(w io.Writer, findings []Finding) error {
 	for _, f := range findings {
 		_, err := fmt.Fprintf(
 			w, "%s %s  %s: %s",
@@ -21,25 +49,25 @@ func FormatText(w io.Writer, findings []Finding) error {
 			f.Message,
 		)
 		if err != nil {
-			return fmt.Errorf("format text: %w", err)
+			return fmt.Errorf("format text rich: %w", err)
 		}
 
 		if f.Category != "" {
 			_, err = fmt.Fprintf(w, " [%s]", string(f.Category))
 			if err != nil {
-				return fmt.Errorf("format text category: %w", err)
+				return fmt.Errorf("format text rich category: %w", err)
 			}
 		}
 
 		_, err = fmt.Fprintln(w)
 		if err != nil {
-			return fmt.Errorf("format text newline: %w", err)
+			return fmt.Errorf("format text rich newline: %w", err)
 		}
 
 		if f.Suggestion != "" {
 			_, err = fmt.Fprintf(w, "  💡 %s\n", f.Suggestion)
 			if err != nil {
-				return fmt.Errorf("format text suggestion: %w", err)
+				return fmt.Errorf("format text rich suggestion: %w", err)
 			}
 		}
 	}
