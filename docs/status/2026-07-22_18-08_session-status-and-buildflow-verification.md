@@ -1,19 +1,21 @@
 # Status Report: go-finding v1.2.1
 
 **Date:** 2026-07-22 18:08  
-**Branch:** ~~master (1 commit ahead of origin)~~ master (synced with origin; v1.3.0 pushed, untagged)  
+**Branch:** ~~master (1 commit ahead of origin)~~ master (multiple commits ahead of origin; v1.3.0 lint fixed, FormatText reverted, pending push+tag)  
 **Version:** ~~v1.2.1~~ → v1.3.0 (implemented on master, not tagged)  
 **Tests:** ✅ All pass (including race detector)  
 **Lint:** ~~✅ 0 issues~~ ⚠️ 7 issues after v1.3.0 additions
 
 ---
 
-> **Update (2026-07-22):** v1.3.0 (16 consumer-driven API improvements) has since been implemented
-> on master and pushed to origin. Master is synced with origin (0 commits ahead). v1.3.0 is not
-> yet tagged. Lint is no longer clean: 7 issues from v1.3.0 code (4 exhaustruct, 2 gosec, 1 revive
-> stutter on `FindingTemplate`). The version-check CI gate and dependabot groups mentioned as open
-> in sections (b)/(c) have shipped. See `2026-07-22_18-55_v1.3.0-consumer-api-implementation-status.md`
-> for the full v1.3.0 breakdown.
+> **Update (2026-07-22 session 3):** Lint is now clean (0 issues). `FindingTemplate` renamed to `Template`
+> (revive stutter fixed). `FormatText` reverted to original `[SEVERITY]` format; `FormatTextRich` added for
+> emoji badges. GOWORK=off isolation tests pass for all 4 modules. v1.3.0 still needs push + tag.
+>
+> **Update (2026-07-22):** v1.3.0 (11 consumer-driven API improvements) has since been implemented
+> on master. Lint was ~~no longer clean~~ now clean again (0 issues). The version-check CI gate and
+> dependabot groups mentioned as open in sections (b)/(c) have shipped. See
+> `2026-07-22_18-55_v1.3.0-consumer-api-implementation-status.md` for the full v1.3.0 breakdown.
 
 ## Summary
 

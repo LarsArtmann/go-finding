@@ -158,9 +158,10 @@
 //
 //	f := finding.FromLSP(uri, lspDiag)
 //
-// LSP conversion is lossy: FixStrategy, Confidence, BeforeCode, AfterCode, Suppression,
-// Metadata, Category, and Tags are not preserved through LSP round-trips.
-// Diagnostic tags (unnecessary, deprecated) are preserved via Metadata.
+// LSP conversion preserves go-finding-specific fields via LSPDiagnosticData on diag.Data:
+// FixStrategy, Confidence, BeforeCode, AfterCode, Suppression, Metadata, Category, Tags,
+// and RelatedFindingIDs are round-tripped. Diagnostic tags (unnecessary, deprecated)
+// are preserved via Metadata.
 //
 // # Error Handling
 //

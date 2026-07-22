@@ -57,7 +57,7 @@ These decisions need product input. They are documented here for visibility.
 
 ## 5. API Stability for v1.0.0
 
-**Current:** v1.2.0 — API-stable. All three conditions below are resolved.
+**Current:** v1.3.0 — API-stable. All three conditions below are resolved.
 
 **Status:** All blocking decisions resolved:
 
@@ -164,7 +164,7 @@ func (r *Report) ToSARIF() ([]byte, error) {
     rep := report.NewV22Report()
     run := sarif.NewRunWithInformationURI(r.Tool.Name, "")
 
-    for _, f := range r.Findings {
+    for _, f := range r.FindingsSnapshot() {
         if f.IsSuppressed() {
             continue
         }
