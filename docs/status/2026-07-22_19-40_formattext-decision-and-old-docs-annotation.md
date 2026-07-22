@@ -13,11 +13,11 @@
 
 Explained the one behavioral breaking change in v1.3.0 with a comparison table:
 
-| Aspect | Before (v1.2.1) | After (v1.3.0) |
-|--------|-----------------|----------------|
-| Severity prefix | `[ERROR]` | `🟠 ERROR` (emoji badge) |
-| Suggestion prefix | `Suggestion: ` | `💡 ` |
-| Category suffix | absent | `[security]` |
+| Aspect            | Before (v1.2.1) | After (v1.3.0)           |
+| ----------------- | --------------- | ------------------------ |
+| Severity prefix   | `[ERROR]`       | `🟠 ERROR` (emoji badge) |
+| Suggestion prefix | `Suggestion: `  | `💡 `                    |
+| Category suffix   | absent          | `[security]`             |
 
 Presented 3 options (keep, revert+FormatTextRich, options pattern), recommended **B (revert + FormatTextRich)** as the only option consistent with v1.3.0's "additive only, zero breaking changes" principle. User asked to "explain" — explanation delivered, decision deferred to user.
 
@@ -25,12 +25,12 @@ Presented 3 options (keep, revert+FormatTextRich, options pattern), recommended 
 
 Read all 22 files (via 4 parallel sub-agents), classified each, annotated 4, left 18 untouched.
 
-| File | What was stale | Correction type |
-|------|---------------|-----------------|
-| `2026-07-06_10-28_v1.2.0-released.md` | Resolution banner: "push v1.2.0 to remote — still pending" | Inline strikethrough + correction |
-| `2026-07-22_18-08_session-status...` | Header: "lint 0 issues", "v1.2.1", "1 commit ahead" | Inline strikethroughs + update blockquote after metadata |
-| `2026-07-22_18-55_v1.3.0-consumer-api...` | Header: "6 commits ahead, 5 files uncommitted, no push" | Update blockquote after verdict |
-| `2026-07-22_19-24_docs-health-session...` | Header: "4 commits ahead" | Update blockquote after verdict |
+| File                                      | What was stale                                             | Correction type                                          |
+| ----------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------- |
+| `2026-07-06_10-28_v1.2.0-released.md`     | Resolution banner: "push v1.2.0 to remote — still pending" | Inline strikethrough + correction                        |
+| `2026-07-22_18-08_session-status...`      | Header: "lint 0 issues", "v1.2.1", "1 commit ahead"        | Inline strikethroughs + update blockquote after metadata |
+| `2026-07-22_18-55_v1.3.0-consumer-api...` | Header: "6 commits ahead, 5 files uncommitted, no push"    | Update blockquote after verdict                          |
+| `2026-07-22_19-24_docs-health-session...` | Header: "4 commits ahead"                                  | Update blockquote after verdict                          |
 
 **18 files SKIPPED** — all have resolution annotations from prior sessions (2026-07-16/22) that remain accurate. v1.3.0 did not resolve any of their listed open items. Adding "v1.3.0 exists now" to files about v1.0.0 modularization or v1.1.0 releases would fail the "so what?" test.
 
@@ -41,6 +41,7 @@ Read all 22 files (via 4 parallel sub-agents), classified each, annotated 4, lef
 ### FormatText decision
 
 Explained but not implemented. Even if user picks Option B (revert + FormatTextRich), the revert is NOT trivial — it requires changes to:
+
 - `format.go` (restore `[ERROR]` format, add `FormatTextRich`)
 - `format_test.go` (revert `TestFormatText` expectations, add `TestFormatTextRich`)
 - `example_test.go` (revert `ExampleFormatText` output)
