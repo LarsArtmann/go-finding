@@ -269,3 +269,44 @@ func TestBuilder_MustBuild_PanicsOnInvalid(t *testing.T) {
 		b.MustBuild()
 	})
 }
+
+func TestBuilder_BuildOrDefault_Valid(t *testing.T) {
+	t.Parallel()
+
+	pos := Pos("main.go", 42, 5)
+
+	f := NewBuilder("nilcheck", "govet", "possible nil deref", SeverityError, pos).
+		BuildOrDefault()
+
+	if f.Rule != "nilcheck" {
+		t.Errorf("Rule = %q, want %q", f.Rule, "nilcheck")
+	}
+
+	if f.ToolName != "govet" {
+		t.Errorf("ToolName = %q, want %q", f.ToolName, "govet")
+	}
+
+	if f.Message != "possible nil deref" {
+		t.Errorf("Message = %q, want %q", f.Message, "possible nil deref")
+	}
+
+	if f.ID == "" {
+		t.Error("ID should not be empty")
+	}
+}
+
+func TestBuilder_BuildOrDefault_Invalid(t *testing.T) {
+	t.Parallel()
+
+	b := &Builder{f: Finding{}}
+
+	f := b.BuildOrDefault()
+
+	if f.Rule != "" {
+		t.Errorf("Rule = %q, want empty", f.Rule)
+	}
+
+	if f.ID != "" {
+		t.Errorf("ID = %q, want empty", f.ID)
+	}
+}

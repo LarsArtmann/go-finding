@@ -47,9 +47,9 @@ func (f Finding) validateIdentity() []error {
 		))
 	}
 
-	if !f.Position.IsValid() {
+	if !f.Position.HasFile() {
 		errs = append(errs, NewValidationError(
-			fmt.Sprintf("finding.Position %+v is invalid", f.Position), nil,
+			fmt.Sprintf("finding.Position %+v is invalid: file path is required", f.Position), nil,
 		))
 	}
 
@@ -183,7 +183,7 @@ func (f Finding) validateSuppression() []error {
 // IsValid returns true if the finding has required fields set.
 func (f Finding) IsValid() bool {
 	return f.ID != "" && f.Rule != "" && f.ToolName != "" &&
-		f.Message != "" && f.Position.IsValid() && f.Severity.IsValid()
+		f.Message != "" && f.Position.HasFile() && f.Severity.IsValid()
 }
 
 // Key returns a stable identifier for the finding.

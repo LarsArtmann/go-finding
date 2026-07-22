@@ -19,8 +19,10 @@ type Builder struct {
 
 // NewBuilder creates a builder seeded with the required fields.
 // The ID is auto-generated from the provided arguments.
+// Confidence defaults to ConfidenceFull (1.0), appropriate for deterministic
+// static analysis. Override with WithConfidence if needed.
 func NewBuilder(rule RuleName, toolName ToolName, message string, severity Severity, pos Position) *Builder {
-	return &Builder{f: NewFinding(rule, toolName, message, severity, pos, 0)}
+	return &Builder{f: NewFinding(rule, toolName, message, severity, pos, ConfidenceFull)}
 }
 
 // WithID overrides the auto-generated ID.
@@ -138,6 +140,19 @@ func (b *Builder) MustBuild() Finding {
 	f, err := b.Build()
 	if err != nil {
 		panic(err)
+	}
+
+	return f
+}
+
+// BuildOrDefault returns the constructed Finding, or a zero-value Finding{} if
+// validation fails. This eliminates the error-swallowing boilerplate
+// (SafeBuildFinding / buildFinding) that consumers universally reinvent.
+// Use Build when you need to handle validation errors explicitly.
+func (b *Builder) BuildOrDefault() Finding {
+	f, err := b.Build()
+	if err != nil {
+		return Finding{}
 	}
 
 	return f
