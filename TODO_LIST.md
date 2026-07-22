@@ -10,7 +10,7 @@
 
 | Task                                        | Status    | Impact | Effort | Evidence                                                                                                                                |
 | ------------------------------------------- | --------- | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Tag `v1.3.0` release                        | 🔴 `TODO` | High   | 5min   | `version.go` says 1.3.0 but no git tag exists (`git tag -l 'v1.3*'` is empty). Lint clean, tests pass, GOWORK=off verified.             |
+| _(none — v1.3.0 released)_                  | ✅ `DONE` | —      | —      | v1.3.0 tagged, pushed, GitHub release created. Lint clean, tests pass, GOWORK=off verified.                                             |
 
 ## 🟡 MEDIUM Priority
 
