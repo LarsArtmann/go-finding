@@ -17,7 +17,7 @@ Consumer-driven API improvements. 12 additive changes eliminating the boilerplat
 
 - **`NewReportFromFindings(tool, findings)`** — One-step report creation (NewReport + AddFindings + ComputeSummary). Eliminates the 4-line boilerplate in 5+ consumers.
 - **`Builder.BuildOrDefault() Finding`** — Returns zero-value Finding on validation error instead of panicking. Eliminates the SafeBuildFinding / buildFinding error-swallowing pattern.
-- **`FindingTemplate` type** — Pre-configured builder factory: stamp tool name, category, fix strategy, and tags once, then build many findings with `Build(rule, msg, sev, pos)`. Eliminates `newMigrationFinding` / `buildFixableFinding` patterns.
+- **`Template` type** — Pre-configured builder factory: stamp tool name, category, fix strategy, and tags once, then build many findings with `Build(rule, msg, sev, pos)`. Eliminates `newMigrationFinding` / `buildFixableFinding` patterns.
 - **`FilePos(file FilePath) Position`** — Constructor for file-level positions (Line=0, Offset=-1). For findings that apply to an entire file (config issues, project checks).
 - **`SeverityFromLevel(level, fallback) Severity`** — Maps severity strings (canonical + aliases) to Severity, returns fallback for unknown. Eliminates consumer-side `mapSeverity()` switches.
 - **`Severity.PriorityString() string`** — Reverse mapping: Critical→"critical", Error→"high", Warning→"medium", Info→"low".

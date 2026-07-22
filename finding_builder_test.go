@@ -311,7 +311,7 @@ func TestBuilder_BuildOrDefault_Invalid(t *testing.T) {
 	}
 }
 
-func TestFindingTemplate_Basic(t *testing.T) {
+func TestTemplate_Basic(t *testing.T) {
 	t.Parallel()
 
 	tmpl := NewTemplate("my-tool").
@@ -354,7 +354,7 @@ func TestFindingTemplate_Basic(t *testing.T) {
 	}
 }
 
-func TestFindingTemplate_MultipleFindings(t *testing.T) {
+func TestTemplate_MultipleFindings(t *testing.T) {
 	t.Parallel()
 
 	tmpl := NewTemplate("linter").WithCategory(CategoryStyle)
@@ -379,7 +379,7 @@ func TestFindingTemplate_MultipleFindings(t *testing.T) {
 	}
 }
 
-func TestFindingTemplate_NoCategory(t *testing.T) {
+func TestTemplate_NoCategory(t *testing.T) {
 	t.Parallel()
 
 	tmpl := NewTemplate("tool")
@@ -395,7 +395,7 @@ func TestFindingTemplate_NoCategory(t *testing.T) {
 	}
 }
 
-func TestFindingTemplate_InvalidInput(t *testing.T) {
+func TestTemplate_InvalidInput(t *testing.T) {
 	t.Parallel()
 
 	tmpl := NewTemplate("tool")

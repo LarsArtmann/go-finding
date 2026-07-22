@@ -921,7 +921,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 
 ## 22. Convenience APIs (v1.3.0)
 
-### 22.1 FindingTemplate
+### 22.1 Template
 
 **Status:** FULLY_FUNCTIONAL
 

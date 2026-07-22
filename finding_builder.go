@@ -158,34 +158,34 @@ func (b *Builder) BuildOrDefault() Finding {
 	return f
 }
 
-// FindingTemplate is a pre-configured builder factory: stamp common fields
+// Template is a pre-configured builder factory: stamp common fields
 // (tool name, category, fix strategy, tags) once, then build many findings
 // with varying rule/message/severity/position. This eliminates the
 // newMigrationFinding / buildFixableFinding / IssueBuilderFactory patterns
 // that consumers reinvent for batch finding creation.
-type FindingTemplate struct {
+type Template struct {
 	Tool        ToolName
 	Category    Category
 	FixStrategy FixStrategy
 	Tags        []Tag
 }
 
-// NewTemplate creates a FindingTemplate with the given tool name.
+// NewTemplate creates a Template with the given tool name.
 // Chain WithCategory, WithFixStrategy, WithTags to configure common fields,
 // then call Build for each finding.
-func NewTemplate(toolName ToolName) *FindingTemplate {
-	return &FindingTemplate{Tool: toolName}
+func NewTemplate(toolName ToolName) *Template {
+	return &Template{Tool: toolName}
 }
 
 // WithCategory sets the category on the template.
-func (t *FindingTemplate) WithCategory(cat Category) *FindingTemplate {
+func (t *Template) WithCategory(cat Category) *Template {
 	t.Category = cat
 
 	return t
 }
 
 // WithFixStrategy sets the fix strategy on the template.
-func (t *FindingTemplate) WithFixStrategy(fs FixStrategy) *FindingTemplate {
+func (t *Template) WithFixStrategy(fs FixStrategy) *Template {
 	t.FixStrategy = fs
 
 	return t
@@ -193,7 +193,7 @@ func (t *FindingTemplate) WithFixStrategy(fs FixStrategy) *FindingTemplate {
 
 // WithTags sets tags on the template. These are stamped onto every finding
 // built from this template.
-func (t *FindingTemplate) WithTags(tags ...Tag) *FindingTemplate {
+func (t *Template) WithTags(tags ...Tag) *Template {
 	t.Tags = append(t.Tags, tags...)
 
 	return t
@@ -202,7 +202,7 @@ func (t *FindingTemplate) WithTags(tags ...Tag) *FindingTemplate {
 // Build creates a Finding from the template, stamping the pre-configured
 // tool name, category, fix strategy, and tags. Returns a zero-value Finding
 // if validation fails (delegates to Builder.BuildOrDefault).
-func (t *FindingTemplate) Build(rule RuleName, message string, severity Severity, pos Position) Finding {
+func (t *Template) Build(rule RuleName, message string, severity Severity, pos Position) Finding {
 	b := NewBuilder(rule, t.Tool, message, severity, pos)
 
 	if t.Category != "" {
