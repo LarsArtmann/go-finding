@@ -6,23 +6,24 @@
 
 ---
 
-## Current Phase: Post-v1 stabilization
+## Current Phase: Consumer ecosystem growth
 
-**Current version:** 1.2.1
+**Current version:** 1.3.0
 
-v1.0.0 locked the API (2026-06-24). v1.1.0 added the multi-module workspace, branded type safety (`FilePath`), SARIF suppression round-trip, and LSP data fidelity. v1.2.0 extracted the shared `lockutil` package and defragmented the test suite. v1.2.1 shipped 15+ correctness/security fixes (range geometry, path traversal, SARIF/LSP round-trip fidelity), migrated to `encoding/json/v2`, and completed a comprehensive skills audit sweep (8 review reports + 2 architecture diagrams). The library is production-ready and API-stable.
+v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects.
+
+The library is production-ready and API-stable. The focus now shifts to growing the consumer ecosystem and expanding language coverage.
 
 ---
 
-## v1.0.0 — API lock ✅
+## v1.0.0–v1.3.0 — API lock + consumer convenience ✅
 
-**Status: Released 2026-06-24.**
+**Status: Released.**
 
-- ✅ **Remove deprecated APIs** — All deprecated APIs removed: `Report.Findings` (unexported), `Report.Merge()`, `OnStage`, `Metrics.RecordFix()`, `CountBySeverity()` free function, `SeverityAliases()`, `GetCategory()`, `HasFix`/`HasSuggestion` free functions. See [removed API table](docs/RELEASE_CRITERIA.md#deprecated-api-removal--completed-).
-- ✅ **Position/Range zero-value redesign** — `-1` offset sentinel adopted (v0.9.0, confirmed in v1.0.0).
-- ✅ **`FixStrategyAI` fate** — kept as reserved marker.
-
-After v1.0.0, breaking changes require a major version bump per SemVer.
+- ✅ API locked at v1.0.0. Breaking changes require major version bump.
+- ✅ Multi-module workspace (core, pipeline, analysis, CLI) established.
+- ✅ Branded types (`ID`, `RuleName`, `ToolName`, `FilePath`), hand-rolled SARIF, LSP round-trip fidelity.
+- ✅ v1.3.0: Consumer-driven APIs (`BuildOrDefault`, `FindingTemplate`, `NewReportFromFindings`, `FilePos`, `SeverityFromLevel`, `ApplySimpleFixes`, `CheckBinary`/`RunCmd`, `FormatTable`, `PriorityString`). File-level position validation relaxed.
 
 ---
 
@@ -48,7 +49,7 @@ The core `Finding` model and SARIF/LSP interchange are language-agnostic. The fi
 - TypeScript/JavaScript (tree-sitter)
 - Python (ast / libcst)
 
-Each would live in its own subpackage to keep `go/parser`-style opt-in dependencies out of the core.
+Each would live in its own subpackage to keep language-specific dependencies out of the core.
 
 ### Tooling integrations
 
@@ -57,35 +58,31 @@ Each would live in its own subpackage to keep `go/parser`-style opt-in dependenc
 - **Interactive TUI** — triage and review findings before applying fixes
 - **GitHub Actions action** — first-class SARIF upload with fix PR generation
 
-### Ecosystem
+### Consumer ecosystem
 
-- **`go-structure-linter` integration** — Wire go-finding as the finding model for LarsArtmann's structure linter
+- **Consumer migration to v1.3.0 APIs** — 14 Go consumers can now simplify their codebases using `BuildOrDefault`, `FindingTemplate`, `SeverityFromLevel`, `FilePos`, `NewReportFromFindings`, and `ApplySimpleFixes`. Each consumer independently reinvented these patterns.
 - **More `ToolAdapter[O]` recipes** — Pre-built adapters for revive, ineffassign, errcheck, etc.
-
-### CI Hardening
-
-- **Dependabot `groups:` config** — Group gomod + github-actions updates to reduce PR noise
-- **SHA-pin GitHub Actions** — Pin actions to commit SHAs instead of major version tags
-- **`CODECOV_TOKEN` or OIDC** — Ensure codecov uploads are authenticated, not silently failing
-- **`version.go` CI gate** — Compare `git describe --tags` against `finding.Version` to prevent stale version constants (recurring incident: v1.1.0 binary reported "1.0.0")
 
 ### Hardening (owner decisions pending)
 
 These are known design tensions deferred because they require breaking changes:
 
-- **Position zero-value** — `Position{}` has `Offset=0` (valid byte 0), not "unset". Resolved pragmatically in v0.9.0 with `-1` sentinel, but a type-safe redesign is still on the table.
+- **Position zero-value** — `Position{}` has `Offset=0` (valid byte 0), not "unset". Resolved pragmatically in v0.9.0 with `-1` sentinel, but a type-safe redesign is still on the table for v2.0.
 - **`Range.End` zero-value ambiguity** — same class of issue as Position.
 - **SARIF schema validation** — blocked on vendoring the 7K-line SARIF 2.1.0 JSON schema for test-time validation.
+- **FormatText output format** — v1.3.0 changed `[SEVERITY]` to emoji badges. May need backward-compatible `FormatTextClassic()` or options pattern depending on consumer impact.
 
 ---
 
-## Out of Scope (v1)
+## Non-goals
 
-Explicitly excluded from the v1.0.0 release:
+Things we are deliberately NOT pursuing and why:
 
-- Web UI
-- Hosted/SaaS offering
-- Non-Go language providers (post-v1)
+- **Web UI** — Not aligned with the library's core purpose (data model + pipeline, not presentation layer).
+- **Hosted/SaaS offering** — Too costly relative to impact for a library project.
+- **Non-Go language providers (pre-v2)** — Language expansion is roadmap, but not until the Go provider ecosystem is fully proven.
+- **Generic `JSONToolDetector`** — Too opinionated; every tool's JSON shape differs. `CheckBinary`/`RunCmd` helpers suffice.
+- **`Properties map[string]any`** — Explicitly banned. `Metadata map[string]string` stays for type safety and interchange simplicity.
 
 ---
 

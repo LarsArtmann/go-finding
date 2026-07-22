@@ -1,44 +1,45 @@
 # TODO List
 
-**Updated:** 2026-07-22
-
-Short-term, actionable work only. Completed items live in [CHANGELOG.md](CHANGELOG.md).
-Long-term ideas live in [ROADMAP.md](ROADMAP.md).
+> Short-term, actionable, bounded work items, verified against the actual code.
+> Completed items live in [CHANGELOG.md](CHANGELOG.md).
+> Long-term ideas live in [ROADMAP.md](ROADMAP.md).
 
 ---
 
 ## 🔴 HIGH Priority
 
-- [x] **Sync `version.go` to v1.2.1** — `VersionPatch` still `0` but tag `v1.2.1` exists at `8405ba8`. Same class of bug as the v1.1.0 incident (shipped binary reported wrong version). Add CI check comparing `git describe --tags` against `finding.Version`.
-- [x] **Re-run `nix run .#test-race`** — The race detector was never re-run after the metrics double-recording fix (`0f39e10`). The gap-closure self-assessment (F01) explicitly flagged this as the highest-risk unverified item.
-
----
+| Task | Status | Impact | Effort | Evidence |
+|------|--------|--------|--------|----------|
+| Fix 7 lint issues from v1.3.0 session | 🔴 `TODO` | High | 20min | `golangci-lint run ./...` fails: 4 exhaustruct, 2 gosec, 1 revive. Add `//nolint` directives and rename `FindingTemplate` to `Template` |
+| Run `GOWORK=off` per-module isolation tests | 🔴 `TODO` | High | 15min | Plan F16.1-F16.4 never executed. Run `GOWORK=off GOEXPERIMENT=jsonv2 go test ./...` in each of the 4 module dirs |
+| Commit remaining 5 uncommitted files | 🔴 `TODO` | High | 5min | `git status` shows `category_linter.go`, `format_test.go`, `report_test.go`, `simple_fix.go`, `simple_fix_test.go` unstaged |
 
 ## 🟡 MEDIUM Priority
 
-- [x] **CI: dependabot `groups:` config** — Group gomod + github-actions updates to reduce PR noise. Currently each dep gets a separate PR.
-- [x] **CI: SHA-pin GitHub Actions** — Actions are pinned to major version tags (`@v7`), not commit SHAs. Supply-chain hardening.
-- [x] **CI: CODECOV_TOKEN or OIDC** — Codecov upload may be silently failing without a token configured.
-- [ ] **Fix BuildFlow auto-configure loop** — **BLOCKED** (external tool). BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact. `golangci-lint run ./...` directly reports 0 issues on all 4 modules.
-
----
+| Task | Status | Impact | Effort | Evidence |
+|------|--------|--------|--------|----------|
+| Tag `v1.3.0` release | 🔴 `TODO` | Med | 5min | `version.go` says 1.3.0 but no git tag exists (`git tag -l 'v1.3*'` is empty) |
+| Decide on FormatText behavioral change | 🔴 `TODO` | Med | — | `FormatText` output changed from `[ERROR]` to `🟠 ERROR`. Needs decision: keep, revert + add `FormatTextRich()`, or add options. See `docs/status/2026-07-22_18-55_*` Q1 |
+| Fix BuildFlow auto-configure loop | 🔵 `BLOCKED` | Med | — | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact |
 
 ## 🟢 LOW Priority
 
-- [ ] **SARIF schema validation test** — **BLOCKED** (requires vendoring 7K+ line SARIF 2.1.0 JSON schema).
-- [ ] **Consumer compatibility test** — **BLOCKED** (repo is private; consumers need `GOPRIVATE` set). Verify downstream projects (20 known consumers) compile against latest release.
-
----
+| Task | Status | Impact | Effort | Evidence |
+|------|--------|--------|--------|----------|
+| SARIF schema validation test | 🔵 `BLOCKED` | Low | — | Requires vendoring 7K+ line SARIF 2.1.0 JSON schema |
+| Consumer compatibility test | 🔵 `BLOCKED` | Low | — | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code |
 
 ## DEFERRED v2.0 (breaking changes)
 
 Structural changes that must batch into v2.0. Tracked here, not in ROADMAP, because they have concrete designs. From [data-model review](docs/reviews/2026-07-18_21-10_data-model-review.html).
 
-- [ ] Redesign `Position` sentinel conventions — `position.go:23-29` mixes three conventions (0=unset for Line/Column, -1=unset for Offset, zero-value `Position{}` has Offset=0 = valid). Adopt `Option[T]` generic helper for one convention. Cascades into `Range`, `Finding`, `RelatedRef`.
-- [ ] Redesign `FixStrategy` as interface-based closed union — `type Fix interface { isFix() }` with `NoFix`, `Suggestion{Text}`, `Direct{Before,After}`, `AIReserved`. Eliminates `NormalizeFixStrategy` workaround; "Direct requires BeforeCode" becomes constructor invariant.
-- [ ] Cleanup pointer-as-state fields — `Range *Range`, `Suppression *Suppression`, `Suppression.ExpiresAt *time.Time`, `RelatedRef.Range *Range`, `FindingError.Finding *Finding` all encode three states (nil/zero/valid). Replace with value+bool pairs.
-- [ ] Convert `Tags []Tag` to `TagSet map[Tag]struct{}` — `finding.go:21`. Encodes set semantics at type level; eliminates order-insensitive equality in `finding_equal.go`.
-- [ ] Compose `Finding` from embedded sub-structs — `Identity{ID,Rule,ToolName}`, `Location{Position,Range}`, `Classification{Category,Tags,Confidence}`, `Fix{FixStrategy,Suggestion,BeforeCode,AfterCode}`. Allows passing substructs to focused functions. Changes JSON shape — must batch with other v2.0 breaks.
+| Task | Status | Evidence |
+|------|--------|----------|
+| Redesign `Position` sentinel conventions | 🔴 `TODO` | `position.go:23-29`: 0=unset for Line/Column, -1=unset for Offset, zero-value has Offset=0 = valid. Adopt `Option[T]` generic helper |
+| Redesign `FixStrategy` as interface-based closed union | 🔴 `TODO` | `type Fix interface { isFix() }` with `NoFix`, `Suggestion{Text}`, `Direct{Before,After}`, `AIReserved` |
+| Cleanup pointer-as-state fields | 🔴 `TODO` | `Range *Range`, `Suppression *Suppression`, `ExpiresAt *time.Time`, `RelatedRef.Range *Range` all encode 3 states (nil/zero/valid) |
+| Convert `Tags []Tag` to `TagSet map[Tag]struct{}` | 🔴 `TODO` | `finding.go:21`. Eliminates order-insensitive equality in `finding_equal.go` |
+| Compose `Finding` from embedded sub-structs | 🔴 `TODO` | `Identity{}`, `Location{}`, `Classification{}`, `Fix{}`. Changes JSON shape — must batch |
 
 ---
 
