@@ -25,6 +25,39 @@ func TestFormatText(t *testing.T) {
 		t.Errorf("missing position in output: %q", output)
 	}
 
+	if !strings.Contains(output, "[ERROR]") {
+		t.Errorf("missing severity tag in output: %q", output)
+	}
+
+	if !strings.Contains(output, "nilcheck") {
+		t.Errorf("missing rule in output: %q", output)
+	}
+
+	if !strings.Contains(output, "Suggestion: add nil check") {
+		t.Errorf("missing suggestion text in output: %q", output)
+	}
+}
+
+func TestFormatTextRich(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{
+		{
+			ID: "1", Rule: "nilcheck", ToolName: "govet", Message: "possible nil deref",
+			Severity: SeverityError, Position: Pos("main.go", 42, 5),
+			Category:   CategorySecurity,
+			Suggestion: "add nil check",
+		},
+	}
+
+	var buf strings.Builder
+	FormatTextRich(&buf, findings) //nolint:errcheck
+
+	output := buf.String()
+	if !strings.Contains(output, "main.go:42:5") {
+		t.Errorf("missing position in output: %q", output)
+	}
+
 	if !strings.Contains(output, "🟠 ERROR") {
 		t.Errorf("missing severity badge in output: %q", output)
 	}
@@ -46,7 +79,7 @@ func TestFormatText(t *testing.T) {
 	}
 }
 
-func TestFormatText_NoCategoryNoSuggestion(t *testing.T) {
+func TestFormatText_NoSuggestion(t *testing.T) {
 	t.Parallel()
 
 	findings := []Finding{
@@ -60,11 +93,11 @@ func TestFormatText_NoCategoryNoSuggestion(t *testing.T) {
 	FormatText(&buf, findings) //nolint:errcheck
 
 	output := buf.String()
-	if strings.Contains(output, "[") {
-		t.Errorf("unexpected category bracket in output: %q", output)
+	if !strings.Contains(output, "[INFO]") {
+		t.Errorf("missing severity tag in output: %q", output)
 	}
 
-	if strings.Contains(output, "💡") {
+	if strings.Contains(output, "Suggestion:") {
 		t.Errorf("unexpected suggestion in output: %q", output)
 	}
 }

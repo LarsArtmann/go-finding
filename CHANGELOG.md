@@ -22,6 +22,7 @@ Consumer-driven API improvements. 12 additive changes eliminating the boilerplat
 - **`SeverityFromLevel(level, fallback) Severity`** — Maps severity strings (canonical + aliases) to Severity, returns fallback for unknown. Eliminates consumer-side `mapSeverity()` switches.
 - **`Severity.PriorityString() string`** — Reverse mapping: Critical→"critical", Error→"high", Warning→"medium", Info→"low".
 - **`FormatTable(w, findings)`** — Severity-badged table output (SEVERITY, LOCATION, RULE, MESSAGE columns).
+- **`FormatTextRich(w, findings)`** — Rich text output with emoji severity badges, category display, and 💡 suggestion prefix. `FormatText` retains the original `[SEVERITY]` format for backward compatibility.
 - **`ApplySimpleFixes(findings) map[FilePath][]SimpleFixResult`** — BeforeCode→AfterCode string replacement in core package. 80% case for consumers that don't need the full pipeline FixEngine.
 - **`CheckBinary(name) (string, error)`** — Wraps `exec.LookPath` with finding error. Standardizes the "run CLI tool → parse JSON" pattern.
 - **`RunCmd(ctx, name, args) ([]byte, error)`** — Wraps `exec.CommandContext` with finding error. For external tool integration.
@@ -30,7 +31,6 @@ Consumer-driven API improvements. 12 additive changes eliminating the boilerplat
 
 - **Builder default Confidence is now `ConfidenceFull`** — `NewBuilder` now passes `ConfidenceFull` (1.0) instead of `0` (ConfidenceNone). More semantically correct for deterministic static analysis. Override with `.WithConfidence()`.
 - **`validateIdentity()` uses `HasFile()` instead of `IsValid()`** — File-level positions (File set, Line=0) now pass validation. `Position.IsValid()` still requires Line>0 for backward compatibility. Use `HasFile()` for file-only checks.
-- **`FormatText` enhanced** — Uses `Severity.Badge()` (emoji + name) instead of `[SEVERITY]`. Shows `[category]` suffix when present. Suggestion prefixed with 💡 emoji.
 - **Severity aliases expanded** — Added "optional"→Info and "crit"→Critical to the pre-registered alias map.
 - **DefaultLinterRegistry expanded** — Added 20+ new golangci-lint linters (gofumpt, nolintlint, depguard, nakedret, bidichk, tagliatelle, mirror, etc.).
 

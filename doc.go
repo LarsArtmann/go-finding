@@ -192,7 +192,8 @@
 //
 // Human-readable output formats:
 //
-//	finding.FormatText(os.Stdout, findings)    // severity badge + category + suggestion
+//	finding.FormatText(os.Stdout, findings)     // [SEVERITY] tag + suggestion
+//	finding.FormatTextRich(os.Stdout, findings) // emoji badge + category + 💡 suggestion
 //	finding.FormatTable(os.Stdout, findings)   // severity-badged table
 //	finding.FormatMarkdown(os.Stdout, findings) // markdown table
 //

@@ -104,7 +104,7 @@ bash scripts/version-check.sh                                    # Verify versio
 - **NewReportFromFindings(tool, findings)** — One-step report creation: `NewReport` + `AddFindings` + `ComputeSummary`. Eliminates the 4-line boilerplate.
 - **SeverityFromLevel(level, fallback)** — Maps severity strings (canonical + aliases) to `Severity`, returns fallback for unknown. Eliminates consumer-side `mapSeverity()` switches. Aliases expanded: "optional"→Info, "crit"→Critical added.
 - **Severity.PriorityString()** — Reverse mapping: Critical→"critical", Error→"high", Warning→"medium", Info→"low".
-- **FormatText enhanced** — Uses `Severity.Badge()` (emoji + name) instead of `[SEVERITY]`. Shows `[category]` suffix when present. Suggestion prefixed with 💡.
+- **FormatTextRich** — New rich text formatter with emoji severity badges, category display, and 💡 suggestion prefix. `FormatText` retains the original `[SEVERITY]` format for backward compatibility.
 - **FormatTable(w, findings)** — Severity-badged table output (SEVERITY, LOCATION, RULE, MESSAGE columns).
 - **ApplySimpleFixes(findings)** — BeforeCode→AfterCode string replacement in core package. 80% case for consumers that don't need the full pipeline FixEngine.
 - **CheckBinary(name) / RunCmd(ctx, name, args)** — External tool helpers for the "run CLI tool → parse JSON" pattern. Returns `NewIOError` on failure.
