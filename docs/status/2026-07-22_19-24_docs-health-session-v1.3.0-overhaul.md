@@ -7,6 +7,10 @@
 
 ---
 
+> **Update (2026-07-22):** Master is now synced with origin (auto-commit hook pushed all
+> commits). The 7 lint issues, GOWORK=off isolation tests, and FormatText decision remain open.
+> The "update-old-docs on 12+ status reports" item listed below is being addressed in this session.
+
 ## A) FULLY DONE
 
 ### FEATURES.md — updated correctly
