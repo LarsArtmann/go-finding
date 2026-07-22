@@ -144,3 +144,43 @@ func FuzzCategoryForLinter(f *testing.F) {
 		}
 	})
 }
+
+func TestDefaultLinterRegistry_Expanded(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		linter string
+		want   Category
+	}{
+		// Existing entries still work
+		{"gosec", CategorySecurity},
+		{"govet", CategoryCorrectness},
+		{"staticcheck", CategoryCorrectness},
+
+		// New entries added in v1.3.0
+		{"gofumpt", CategoryStyle},
+		{"nolintlint", CategoryStyle},
+		{"depguard", CategoryBestPractice},
+		{"nakedret", CategoryCorrectness},
+		{"rowserrcheck", CategoryCorrectness},
+		{"sqlclosecheck", CategoryCorrectness},
+		{"wastedassign", CategoryCorrectness},
+		{"bidichk", CategorySecurity},
+		{"nosprintfhost", CategorySecurity},
+		{"tagliatelle", CategoryTypeSafety},
+		{"mirror", CategoryBestPractice},
+		{"nilnesserr", CategoryCorrectness},
+		{"recvcheck", CategoryCorrectness},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.linter, func(t *testing.T) {
+			t.Parallel()
+
+			got := CategoryForLinter(tt.linter)
+			if got != tt.want {
+				t.Errorf("CategoryForLinter(%q) = %v, want %v", tt.linter, got, tt.want)
+			}
+		})
+	}
+}

@@ -8,13 +8,15 @@ import (
 )
 
 // FormatText writes a human-readable text representation of findings to w.
-// Each finding is formatted as: file:line:col [SEVERITY] rule: message.
+// Each finding is formatted as: file:line:col BADGE rule: message [category].
+// Severity badges use emoji + uppercase name (e.g., "🟠 ERROR").
+// Category is shown in brackets when present. Suggestion is prefixed with 💡.
 func FormatText(w io.Writer, findings []Finding) error {
 	for _, f := range findings {
 		_, err := fmt.Fprintf(
-			w, "%s [%s] %s: %s\n",
+			w, "%s %s  %s: %s",
 			f.Position.String(),
-			strings.ToUpper(string(f.Severity)),
+			f.Severity.Badge(),
 			string(f.Rule),
 			f.Message,
 		)
@@ -22,8 +24,20 @@ func FormatText(w io.Writer, findings []Finding) error {
 			return fmt.Errorf("format text: %w", err)
 		}
 
+		if f.Category != "" {
+			_, err = fmt.Fprintf(w, " [%s]", string(f.Category))
+			if err != nil {
+				return fmt.Errorf("format text category: %w", err)
+			}
+		}
+
+		_, err = fmt.Fprintln(w)
+		if err != nil {
+			return fmt.Errorf("format text newline: %w", err)
+		}
+
 		if f.Suggestion != "" {
-			_, err = fmt.Fprintf(w, "  Suggestion: %s\n", f.Suggestion)
+			_, err = fmt.Fprintf(w, "  💡 %s\n", f.Suggestion)
 			if err != nil {
 				return fmt.Errorf("format text suggestion: %w", err)
 			}
@@ -79,4 +93,34 @@ func escapeMarkdownCell(s string, maxLen int) string {
 	}
 
 	return s
+}
+
+// FormatTable writes a human-readable table of findings to w with severity badges,
+// file:line, rule, message, and category columns.
+func FormatTable(w io.Writer, findings []Finding) error {
+	_, err := fmt.Fprintln(w, "SEVERITY    LOCATION          RULE        MESSAGE")
+	if err != nil {
+		return fmt.Errorf("format table header: %w", err)
+	}
+
+	for _, f := range findings {
+		category := ""
+		if f.Category != "" {
+			category = fmt.Sprintf(" [%s]", string(f.Category))
+		}
+
+		_, err := fmt.Fprintf(
+			w, "%-11s %-18s %-11s %s%s\n",
+			f.Severity.Badge(),
+			f.Position.String(),
+			string(f.Rule),
+			f.Message,
+			category,
+		)
+		if err != nil {
+			return fmt.Errorf("format table row: %w", err)
+		}
+	}
+
+	return nil
 }
