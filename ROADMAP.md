@@ -8,9 +8,9 @@
 
 ## Current Phase: Post-v1 stabilization
 
-**Current version:** 1.2.0
+**Current version:** 1.2.1
 
-v1.0.0 locked the API (2026-06-24). v1.1.0 added the multi-module workspace, branded type safety (`FilePath`), SARIF suppression round-trip, and LSP data fidelity. v1.2.0 extracted the shared `lockutil` package and defragmented the test suite. The library is production-ready and API-stable.
+v1.0.0 locked the API (2026-06-24). v1.1.0 added the multi-module workspace, branded type safety (`FilePath`), SARIF suppression round-trip, and LSP data fidelity. v1.2.0 extracted the shared `lockutil` package and defragmented the test suite. v1.2.1 shipped 15+ correctness/security fixes (range geometry, path traversal, SARIF/LSP round-trip fidelity), migrated to `encoding/json/v2`, and completed a comprehensive skills audit sweep (8 review reports + 2 architecture diagrams). The library is production-ready and API-stable.
 
 ---
 
@@ -59,8 +59,15 @@ Each would live in its own subpackage to keep `go/parser`-style opt-in dependenc
 
 ### Ecosystem
 
-- **`go-structure-linter` integration** — wire go-finding as the finding model for LarsArtmann's structure linter
-- **More `ToolAdapter[O]` recipes** — pre-built adapters for revive, ineffassign, errcheck, etc.
+- **`go-structure-linter` integration** — Wire go-finding as the finding model for LarsArtmann's structure linter
+- **More `ToolAdapter[O]` recipes** — Pre-built adapters for revive, ineffassign, errcheck, etc.
+
+### CI Hardening
+
+- **Dependabot `groups:` config** — Group gomod + github-actions updates to reduce PR noise
+- **SHA-pin GitHub Actions** — Pin actions to commit SHAs instead of major version tags
+- **`CODECOV_TOKEN` or OIDC** — Ensure codecov uploads are authenticated, not silently failing
+- **`version.go` CI gate** — Compare `git describe --tags` against `finding.Version` to prevent stale version constants (recurring incident: v1.1.0 binary reported "1.0.0")
 
 ### Hardening (owner decisions pending)
 

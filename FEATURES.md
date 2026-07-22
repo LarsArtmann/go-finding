@@ -753,13 +753,12 @@ Test categories:
 
 **Status:** PARTIALLY_FUNCTIONAL
 
-Three runnable examples in `examples/`:
+Two runnable examples in `examples/`:
 
-| Example     | Description                   |
-| ----------- | ----------------------------- |
-| `basic/`    | Direct Finding construction   |
-| `builder/`  | Builder API usage             |
-| `pipeline/` | Pipeline with custom detector |
+| Example    | Description                   |
+| ---------- | ----------------------------- |
+| `basic/`   | Direct Finding construction   |
+| `builder/` | Builder API usage             |
 
 > **Note:** Examples have no test files (compile-only check via `example_compile_test.go`).
 
