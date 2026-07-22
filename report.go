@@ -84,6 +84,18 @@ func NewReport(tool ToolInfo) *Report {
 	return r
 }
 
+// NewReportFromFindings creates a report from tool info and a findings slice,
+// calling AddFindings and ComputeSummary in one step.
+// This eliminates the repetitive 4-line NewReport + AddFindings + ComputeSummary
+// boilerplate duplicated across consumers.
+func NewReportFromFindings(tool ToolInfo, findings []Finding) *Report {
+	r := NewReport(tool)
+	r.AddFindings(findings)
+	r.ComputeSummary()
+
+	return r
+}
+
 // AddFinding adds a finding to the report.
 // Safe for concurrent use.
 func (r *Report) AddFinding(f Finding) {
