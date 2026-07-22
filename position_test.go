@@ -580,3 +580,67 @@ func TestRangeEndOffsetOrStart(t *testing.T) {
 		})
 	}
 }
+
+func TestFilePos(t *testing.T) {
+	t.Parallel()
+
+	p := FilePos("config.yaml")
+
+	if p.File != FilePath("config.yaml") {
+		t.Errorf("File = %q, want %q", p.File, "config.yaml")
+	}
+
+	if p.Line != 0 {
+		t.Errorf("Line = %d, want 0", p.Line)
+	}
+
+	if p.Column != 0 {
+		t.Errorf("Column = %d, want 0", p.Column)
+	}
+
+	if p.Offset != OffsetUnknown {
+		t.Errorf("Offset = %d, want %d (OffsetUnknown)", p.Offset, OffsetUnknown)
+	}
+
+	if !p.HasFile() {
+		t.Error("HasFile() = false, want true")
+	}
+}
+
+func TestFileLevelPosition_Validate(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		ID:       "tool:rule:config.yaml",
+		Rule:     "rule",
+		ToolName: "tool",
+		Message:  "missing required field",
+		Severity: SeverityError,
+		Position: FilePos("config.yaml"),
+	}
+
+	if err := f.Validate(); err != nil {
+		t.Errorf("file-level finding Validate() = %v, want nil", err)
+	}
+
+	if !f.IsValid() {
+		t.Error("file-level finding IsValid() = false, want true")
+	}
+}
+
+func TestEmptyFile_Validate(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		ID:       "1",
+		Rule:     "rule",
+		ToolName: "tool",
+		Message:  "msg",
+		Severity: SeverityError,
+		Position: Position{},
+	}
+
+	if err := f.Validate(); err == nil {
+		t.Error("empty-file finding Validate() = nil, want error")
+	}
+}
