@@ -66,7 +66,7 @@ func CheckBinary(name string) (string, error) {
 // stdout output. Returns a wrapped NewIOError if the command fails.
 // Use this with CheckBinary for the standard "run CLI tool → parse JSON" pattern.
 func RunCmd(ctx context.Context, name string, args ...string) ([]byte, error) {
-	cmd := exec.CommandContext(ctx, name, args...)
+	cmd := exec.CommandContext(ctx, name, args...) //nolint:gosec // G204: name is caller-controlled, not user input
 
 	output, err := cmd.Output()
 	if err != nil {
