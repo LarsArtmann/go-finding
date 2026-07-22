@@ -229,3 +229,47 @@ func TestMustParseSeverity_Panics(t *testing.T) {
 		MustParseSeverity("invalid")
 	})
 }
+
+func TestSeverityFromLevel(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		level    string
+		fallback Severity
+		want     Severity
+	}{
+		// Canonical names
+		{"info", SeverityWarning, SeverityInfo},
+		{"warning", SeverityInfo, SeverityWarning},
+		{"error", SeverityInfo, SeverityError},
+		{"critical", SeverityInfo, SeverityCritical},
+
+		// Aliases
+		{"warn", SeverityError, SeverityWarning},
+		{"high", SeverityInfo, SeverityError},
+		{"medium", SeverityError, SeverityWarning},
+		{"low", SeverityError, SeverityInfo},
+		{"advice", SeverityError, SeverityInfo},
+		{"optional", SeverityError, SeverityInfo},
+		{"crit", SeverityInfo, SeverityCritical},
+		{"fatal", SeverityInfo, SeverityCritical},
+		{"note", SeverityError, SeverityInfo},
+		{"suggestion", SeverityError, SeverityInfo},
+
+		// Unknown — fallback
+		{"bogus", SeverityWarning, SeverityWarning},
+		{"", SeverityError, SeverityError},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.level, func(t *testing.T) {
+			t.Parallel()
+
+			got := SeverityFromLevel(tt.level, tt.fallback)
+			if got != tt.want {
+				t.Errorf("SeverityFromLevel(%q, %v) = %v, want %v",
+					tt.level, tt.fallback, got, tt.want)
+			}
+		})
+	}
+}

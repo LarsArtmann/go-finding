@@ -171,8 +171,10 @@ var (
 		"low":        SeverityInfo,
 		"fatal":      SeverityCritical,
 		"critical":   SeverityCritical,
+		"crit":       SeverityCritical,
 		"note":       SeverityInfo,
 		"advice":     SeverityInfo,
+		"optional":   SeverityInfo,
 		"suggestion": SeverityInfo,
 	}
 	severityAliasesMu sync.RWMutex
@@ -225,4 +227,21 @@ func MustParseSeverity(s string) Severity {
 	}
 
 	return sev
+}
+
+// SeverityFromLevel maps a severity level string to a canonical Severity.
+// It tries canonical names first, then registered aliases, and falls back
+// to the provided fallback if the level is unrecognized. This eliminates the
+// severity-mapping switch statements that every consumer independently writes.
+func SeverityFromLevel(level string, fallback Severity) Severity {
+	sev := Severity(level)
+	if sev.IsValid() {
+		return sev
+	}
+
+	if alias, ok := LookupSeverityAlias(level); ok {
+		return alias
+	}
+
+	return fallback
 }
