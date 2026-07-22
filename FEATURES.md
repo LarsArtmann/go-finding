@@ -190,23 +190,23 @@ Methods: `IsExpired(now)`, `IsValid()`, `IsActive(now)`, `SuppressionKind.IsVali
 
 Top-level container for a tool run.
 
-| Feature                 | Method                              | Thread-safe |
-| ----------------------- | ----------------------------------- | ----------- |
-| Create                  | `NewReport(toolInfo)`               | Yes         |
-| Create from findings    | `NewReportFromFindings(tool, []F)`  | Yes (v1.3.0)|
-| Add single finding      | `AddFinding(f)`                     | Yes (mutex) |
-| Add multiple findings   | `AddFindings([])`                   | Yes (mutex) |
-| Recompute stats         | `ComputeSummary()`                  | No          |
-| Filter by severity      | `BySeverity(sev)`                   | Read-only   |
-| Filter by category      | `ByCategory(cat)`                   | Read-only   |
-| Filter by fix strategy  | `ByFixStrategy(fs)`                 | Read-only   |
-| Find by ID              | `FindByID(id)` → `*Finding` (copy)  | Read-only   |
-| Find by rule            | `FindByRule(rule)`                  | Read-only   |
-| Active (non-suppressed) | `ActiveFindings()`                  | Read-only   |
-| Generic filter          | `Filter(predicates...)` → `*Report` | Read-only   |
-| Transform               | `Map(func) → *Report`               | Read-only   |
-| Iterate                 | `All()` → `iter.Seq[Finding]`       | Read-only   |
-| Count                   | `Len()`                             | Read-only   |
+| Feature                 | Method                              | Thread-safe  |
+| ----------------------- | ----------------------------------- | ------------ |
+| Create                  | `NewReport(toolInfo)`               | Yes          |
+| Create from findings    | `NewReportFromFindings(tool, []F)`  | Yes (v1.3.0) |
+| Add single finding      | `AddFinding(f)`                     | Yes (mutex)  |
+| Add multiple findings   | `AddFindings([])`                   | Yes (mutex)  |
+| Recompute stats         | `ComputeSummary()`                  | No           |
+| Filter by severity      | `BySeverity(sev)`                   | Read-only    |
+| Filter by category      | `ByCategory(cat)`                   | Read-only    |
+| Filter by fix strategy  | `ByFixStrategy(fs)`                 | Read-only    |
+| Find by ID              | `FindByID(id)` → `*Finding` (copy)  | Read-only    |
+| Find by rule            | `FindByRule(rule)`                  | Read-only    |
+| Active (non-suppressed) | `ActiveFindings()`                  | Read-only    |
+| Generic filter          | `Filter(predicates...)` → `*Report` | Read-only    |
+| Transform               | `Map(func) → *Report`               | Read-only    |
+| Iterate                 | `All()` → `iter.Seq[Finding]`       | Read-only    |
+| Count                   | `Len()`                             | Read-only    |
 
 Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffected`, `DurationMs`, `Suppressed`
 
@@ -729,15 +729,15 @@ Without `-config`: uses govet + staticcheck with the flag values.
 
 ### Output Formats
 
-| Format     | Description                                               |
-| ---------- | --------------------------------------------------------- |
+| Format     | Description                                                                                                                        |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `text`     | Human-readable with severity badges: `file:line:col 🟠 ERROR  rule: message [category]` (v1.3.0: badge + category + 💡 suggestion) |
-| `markdown` | Markdown table with auto-aligned columns (via go-output)  |
-| `json`     | Full JSON report                                          |
-| `csv`      | CSV with auto-quoting and footer row (via go-output)      |
-| `tsv`      | Tab-separated with footer row (via go-output)             |
-| `sarif`    | SARIF 2.1.0                                               |
-| `table`   | Severity-badged table: SEVERITY, LOCATION, RULE, MESSAGE (v1.3.0) |
+| `markdown` | Markdown table with auto-aligned columns (via go-output)                                                                           |
+| `json`     | Full JSON report                                                                                                                   |
+| `csv`      | CSV with auto-quoting and footer row (via go-output)                                                                               |
+| `tsv`      | Tab-separated with footer row (via go-output)                                                                                      |
+| `sarif`    | SARIF 2.1.0                                                                                                                        |
+| `table`    | Severity-badged table: SEVERITY, LOCATION, RULE, MESSAGE (v1.3.0)                                                                  |
 
 Metrics summary printed to stderr when available.
 
@@ -1028,7 +1028,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | GoASTProvider                     | FULLY_FUNCTIONAL     | AST-aware fix provider for .go files (go/parser)                                      |
 | GeneratedFileFilter               | FULLY_FUNCTIONAL     | Removes findings from auto-generated files (sqlc, protobuf, etc.)                     |
 | ToolAdapter[O]                    | FULLY_FUNCTIONAL     | Generic tool→Finding converter adapter                                                |
-| CategoryForLinter                 | FULLY_FUNCTIONAL     | 84 linter→category mappings, case-insensitive                                        |
+| CategoryForLinter                 | FULLY_FUNCTIONAL     | 84 linter→category mappings, case-insensitive                                         |
 | Severity aliases                  | FULLY_FUNCTIONAL     | 11 severity aliases + SeverityFromLevel + PriorityString (v1.3.0)                     |
 | SubstringProvider column-aware    | FULLY_FUNCTIONAL     | Nearest-position heuristic with line+column disambiguation                            |
 
