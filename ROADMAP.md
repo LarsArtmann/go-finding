@@ -23,7 +23,7 @@ The library is production-ready and API-stable. The focus now shifts to growing 
 - ✅ API locked at v1.0.0. Breaking changes require major version bump.
 - ✅ Multi-module workspace (core, pipeline, analysis, CLI) established.
 - ✅ Branded types (`ID`, `RuleName`, `ToolName`, `FilePath`), hand-rolled SARIF, LSP round-trip fidelity.
-- ✅ v1.3.0: Consumer-driven APIs (`BuildOrDefault`, `FindingTemplate`, `NewReportFromFindings`, `FilePos`, `SeverityFromLevel`, `ApplySimpleFixes`, `CheckBinary`/`RunCmd`, `FormatTable`, `PriorityString`). File-level position validation relaxed.
+- ✅ v1.3.0: Consumer-driven APIs (`BuildOrDefault`, `Template`, `NewReportFromFindings`, `FilePos`, `SeverityFromLevel`, `ApplySimpleFixes`, `CheckBinary`/`RunCmd`, `FormatTable`, `PriorityString`). File-level position validation relaxed.
 
 ---
 
@@ -60,7 +60,7 @@ Each would live in its own subpackage to keep language-specific dependencies out
 
 ### Consumer ecosystem
 
-- **Consumer migration to v1.3.0 APIs** — 14 Go consumers can now simplify their codebases using `BuildOrDefault`, `FindingTemplate`, `SeverityFromLevel`, `FilePos`, `NewReportFromFindings`, and `ApplySimpleFixes`. Each consumer independently reinvented these patterns.
+- **Consumer migration to v1.3.0 APIs** — 14 Go consumers can now simplify their codebases using `BuildOrDefault`, `Template`, `SeverityFromLevel`, `FilePos`, `NewReportFromFindings`, and `ApplySimpleFixes`. Each consumer independently reinvented these patterns.
 - **More `ToolAdapter[O]` recipes** — Pre-built adapters for revive, ineffassign, errcheck, etc.
 
 ### Hardening (owner decisions pending)
