@@ -5,6 +5,7 @@ The FixEngine applies byte-level edits to source code based on `Finding` data. T
 ## Table of Contents
 
 - [Quick Start: ApplyToContent](#quick-start-applytocontent)
+- [Simple Fixes (Core Package)](#simple-fixes-core-package)
 - [Standalone FixEngine](#standalone-fixengine)
 - [Disk-Based FixApplier](#disk-based-fixapplier)
 - [Custom FixProviders](#custom-fixproviders)

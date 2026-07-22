@@ -1,7 +1,7 @@
 # v1.0.0 Release Criteria
 
 **Last updated:** 2026-07-16
-**Released as:** 1.0.0 (project now at 1.2.0)
+**Released as:** 1.0.0 (project now at 1.3.0)
 **Status:** ✅ RELEASED — historical record, criteria met for v1.0.0
 
 ---
@@ -20,7 +20,7 @@
 | Report merging + deduplication (ID/position/rule) | ✅     | —                                                        |
 | Cross-tool correlation                            | ✅     | IntervalIndex-backed                                     |
 | Diff (before/after comparison)                    | ✅     | —                                                        |
-| Test coverage ≥ 90% all packages                  | ✅     | Root 92.3%, Pipeline 95.2%, CLI 91.2%                    |
+| Test coverage ≥ 90% all packages                  | ✅     | Root 93.6%, Pipeline 95.2%, CLI 91.2%                    |
 | Zero lint warnings                                | ✅     | `GOEXPERIMENT=jsonv2 nix run .#lint` exits 0             |
 | Race detector clean                               | ✅     | `GOEXPERIMENT=jsonv2 go test -race -count=1 ./...` green |
 | Comprehensive godoc examples (29+)                | ✅     | `Example*` functions run                                 |
