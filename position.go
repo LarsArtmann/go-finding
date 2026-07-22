@@ -21,6 +21,11 @@ const OffsetUnknown = -1
 // choice: Offset=0 is a valid byte position, and the zero value should not lie about
 // having data.
 //
+// File-level positions: A Position with a file path but Line=0 is valid for findings
+// that apply to an entire file (config issues, project checks). Use [FilePos] to create
+// such positions. [Position.IsValid] still requires Line>0 for backward compatibility;
+// use [Position.HasFile] to check only whether a file is set.
+//
 // Use HasLocation() to check for a meaningful position (file + line).
 // Use HasOffset() to check whether a byte offset is set (Offset >= 0).
 // Use IsZero() to check for the completely-uninitialized state (all fields at their
@@ -45,6 +50,14 @@ func (p Position) IsValid() bool {
 // line/column completeness.
 func (p Position) HasFile() bool {
 	return p.File != ""
+}
+
+// FilePos creates a Position for a file-level finding (no line/column).
+// Use this for findings that apply to an entire file, such as configuration
+// issues, project-level checks, or file-wide linting rules.
+// The Offset is set to OffsetUnknown (-1) since no byte position applies.
+func FilePos(file FilePath) Position {
+	return Position{File: file, Offset: OffsetUnknown}
 }
 
 // IsZero reports whether the position is completely uninitialized (all fields

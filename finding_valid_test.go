@@ -218,7 +218,7 @@ func TestFinding_IsValid(t *testing.T) {
 				ToolName: "t",
 				Message:  "m",
 				Severity: SeverityError,
-				Position: Position{File: "a.go", Line: -1},
+				Position: Position{},
 			},
 			false,
 		},
