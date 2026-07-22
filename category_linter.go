@@ -84,6 +84,8 @@ var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	"gosec":      CategorySecurity,
 	"noctx":      CategorySecurity,
 	"errchkjson": CategorySecurity,
+	"bidichk":    CategorySecurity,
+	"nosprintfhost": CategorySecurity,
 
 	// Correctness
 	"govet":         CategoryCorrectness,
@@ -99,6 +101,13 @@ var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	"gosimple":      CategoryCorrectness,
 	"deadcode":      CategoryCorrectness,
 	"varcheck":      CategoryCorrectness,
+	"nakedret":      CategoryCorrectness,
+	"rowserrcheck":  CategoryCorrectness,
+	"sqlclosecheck": CategoryCorrectness,
+	"wastedassign":  CategoryCorrectness,
+	"exportloopref": CategoryCorrectness,
+	"nilnesserr":    CategoryCorrectness,
+	"recvcheck":     CategoryCorrectness,
 
 	// Performance
 	"prealloc":   CategoryPerformance,
@@ -129,8 +138,10 @@ var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	"misspell":   CategoryStyle,
 	"revive":     CategoryStyle,
 	"gofmt":      CategoryStyle,
+	"gofumpt":    CategoryStyle,
 	"goimports":  CategoryStyle,
 	"gci":        CategoryStyle,
+	"wsl":        CategoryStyle,
 	"wsl_v5":     CategoryStyle,
 	"dupword":    CategoryStyle,
 	"godot":      CategoryStyle,
@@ -138,6 +149,13 @@ var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	"whitespace": CategoryStyle,
 	"nlreturn":   CategoryStyle,
 	"golint":     CategoryStyle,
+	"dogsled":    CategoryStyle,
+	"nolintlint": CategoryStyle,
+	"forbidigo":  CategoryStyle,
+	"gomnd":      CategoryStyle,
+	"varnamelen": CategoryStyle,
+	"tagalign":   CategoryStyle,
+	"nonamedreturns": CategoryStyle,
 
 	// Testing
 	"paralleltest":     CategoryTesting,
@@ -156,11 +174,16 @@ var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	"gochecksumtype":  CategoryTypeSafety,
 	"copyloopvar":     CategoryTypeSafety,
 	"intrange":        CategoryTypeSafety,
+	"tagliatelle":     CategoryTypeSafety,
 
 	// Structure
 	"sloglint":    CategoryStructure,
 	"loggercheck": CategoryStructure,
 	"unused":      CategoryUnused,
+
+	// Best practice
+	"depguard": CategoryBestPractice,
+	"mirror":   CategoryBestPractice,
 
 	// Configuration
 	"gomodguard_v2": CategoryConfiguration,
