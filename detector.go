@@ -1,6 +1,10 @@
 package finding
 
-import "context"
+import (
+	"context"
+	"fmt"
+	"os/exec"
+)
 
 // Detector is the interface implemented by tools that can find issues.
 type Detector interface {
@@ -43,4 +47,34 @@ func (n *namedDetector) Detect(ctx context.Context) ([]Finding, error) {
 
 func (n *namedDetector) Name() string {
 	return n.name
+}
+
+// CheckBinary verifies that a binary exists in the system PATH.
+// Returns the full path to the binary on success, or a wrapped NewIOError
+// if the binary is not found. This standardizes the "run CLI tool → parse JSON"
+// pattern that 4+ consumers independently implement.
+func CheckBinary(name string) (string, error) {
+	path, err := exec.LookPath(name)
+	if err != nil {
+		return "", NewIOError(fmt.Sprintf("binary %q not found in PATH", name), err)
+	}
+
+	return path, nil
+}
+
+// RunCmd executes a command with the given context and arguments, returning
+// stdout output. Returns a wrapped NewIOError if the command fails.
+// Use this with CheckBinary for the standard "run CLI tool → parse JSON" pattern.
+func RunCmd(ctx context.Context, name string, args ...string) ([]byte, error) {
+	cmd := exec.CommandContext(ctx, name, args...)
+
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, NewIOError(
+			fmt.Sprintf("command %q failed", name),
+			err,
+		)
+	}
+
+	return output, nil
 }
