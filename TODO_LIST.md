@@ -9,16 +9,16 @@ Long-term ideas live in [ROADMAP.md](ROADMAP.md).
 
 ## 🔴 HIGH Priority
 
-- [ ] **Sync `version.go` to v1.2.1** — `VersionPatch` still `0` but tag `v1.2.1` exists at `8405ba8`. Same class of bug as the v1.1.0 incident (shipped binary reported wrong version). Add CI check comparing `git describe --tags` against `finding.Version`.
-- [ ] **Re-run `nix run .#test-race`** — The race detector was never re-run after the metrics double-recording fix (`0f39e10`). The gap-closure self-assessment (F01) explicitly flagged this as the highest-risk unverified item.
+- [x] **Sync `version.go` to v1.2.1** — `VersionPatch` still `0` but tag `v1.2.1` exists at `8405ba8`. Same class of bug as the v1.1.0 incident (shipped binary reported wrong version). Add CI check comparing `git describe --tags` against `finding.Version`.
+- [x] **Re-run `nix run .#test-race`** — The race detector was never re-run after the metrics double-recording fix (`0f39e10`). The gap-closure self-assessment (F01) explicitly flagged this as the highest-risk unverified item.
 
 ---
 
 ## 🟡 MEDIUM Priority
 
-- [ ] **CI: dependabot `groups:` config** — Group gomod + github-actions updates to reduce PR noise. Currently each dep gets a separate PR.
-- [ ] **CI: SHA-pin GitHub Actions** — Actions are pinned to major version tags (`@v7`), not commit SHAs. Supply-chain hardening.
-- [ ] **CI: CODECOV_TOKEN or OIDC** — Codecov upload may be silently failing without a token configured.
+- [x] **CI: dependabot `groups:` config** — Group gomod + github-actions updates to reduce PR noise. Currently each dep gets a separate PR.
+- [x] **CI: SHA-pin GitHub Actions** — Actions are pinned to major version tags (`@v7`), not commit SHAs. Supply-chain hardening.
+- [x] **CI: CODECOV_TOKEN or OIDC** — Codecov upload may be silently failing without a token configured.
 - [ ] **Fix BuildFlow auto-configure loop** — **BLOCKED** (external tool). BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact. `golangci-lint run ./...` directly reports 0 issues on all 4 modules.
 
 ---
@@ -26,7 +26,7 @@ Long-term ideas live in [ROADMAP.md](ROADMAP.md).
 ## 🟢 LOW Priority
 
 - [ ] **SARIF schema validation test** — **BLOCKED** (requires vendoring 7K+ line SARIF 2.1.0 JSON schema).
-- [ ] **Consumer compatibility test** — Verify downstream projects (20 known consumers) compile against latest release.
+- [ ] **Consumer compatibility test** — **BLOCKED** (repo is private; consumers need `GOPRIVATE` set). Verify downstream projects (20 known consumers) compile against latest release.
 
 ---
 

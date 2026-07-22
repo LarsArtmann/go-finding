@@ -50,6 +50,7 @@ go test -race -count=1 ./...                # Full suite with race detector (wor
 GOWORK=off go test ./...                    # Per-module isolation test (run in each module dir)
 golangci-lint run ./...                     # Lint
 bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark regression check
+bash scripts/version-check.sh                                    # Verify version.go matches git tag
 ```
 
 > **GOEXPERIMENT=jsonv2 required.** The project imports `encoding/json/v2` (9 files across all

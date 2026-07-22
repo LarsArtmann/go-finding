@@ -8,6 +8,10 @@ updates:
     labels:
       - "dependencies"
       - "go"
+    groups:
+      gomod:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -16,3 +20,7 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
