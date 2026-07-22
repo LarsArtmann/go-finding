@@ -77,6 +77,16 @@ jobs:
         run: golangci-lint fmt --diff ./...
 
     timeout-minutes: 15
+  version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Verify version.go matches git tag
+        run: bash scripts/version-check.sh
+
+    timeout-minutes: 5
   govulncheck:
     runs-on: ubuntu-latest
     steps:

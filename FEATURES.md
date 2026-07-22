@@ -755,10 +755,10 @@ Test categories:
 
 Two runnable examples in `examples/`:
 
-| Example    | Description                   |
-| ---------- | ----------------------------- |
-| `basic/`   | Direct Finding construction   |
-| `builder/` | Builder API usage             |
+| Example    | Description                 |
+| ---------- | --------------------------- |
+| `basic/`   | Direct Finding construction |
+| `builder/` | Builder API usage           |
 
 > **Note:** Examples have no test files (compile-only check via `example_compile_test.go`).
 
