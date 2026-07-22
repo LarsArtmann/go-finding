@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_No unreleased changes yet._
+
+## [1.2.1] - 2026-07-19
+
+Post-v1.2.0 correctness, security, and dependency modernization release. 40 commits covering 15+ bug fixes (range geometry, thread safety, SARIF/LSP round-trip fidelity, path traversal), `encoding/json/v2` migration, go-output v0.30.4, dependabot PR merges, and comprehensive skills audit sweep (8 review reports + 2 architecture diagrams).
+
 ### Fixed
 
 - **`Range.containsByOffset` respected Offset=0 sentinel** — Previously used `> 0` instead of `>= 0` for the end offset upper bound, causing single-point ranges at offset 0 and ranges with `End.Offset = -1` (unset sentinel) to incorrectly contain all higher offsets. Now uses `EndOffsetOrStart()` for consistency with overlap/intersection logic.
