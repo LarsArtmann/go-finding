@@ -5,6 +5,12 @@
 **Session scope:** Read all 19 `2026-07-0*` files → docs-health AUDIT (fix drift) → add resolution banners to all July reports
 **Commits:** `3ad8dba` (docs drift fixes), `7fced58` (resolution banners)
 
+> **Resolution (2026-07-22):** All work shipped. The 59 uncommitted files from the follow-up
+> session (`2026-07-16_02-36`) were committed in `e68481a`. Release-procedure.md was fixed
+> in `97ccae2`. FEATURES.md coverage claim (97.1%) was corrected to 93.4% actual in that same
+> session. All fixes are included in tag `v1.2.1` (`8405ba8`). No open items remain from this
+> report's follow-up list.
+
 ---
 
 ## a) FULLY DONE

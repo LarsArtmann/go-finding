@@ -5,6 +5,12 @@
 > **Session goal:** Run a battery of Crush skills (code-quality-scan, naming-review, data-model-review, deduplicate-code, go-modularize, architecture-review, architecture-visualization, full-code-review, docs-health, update-old-docs) properly, plan first, then execute and verify.
 > **Verdict:** Skills executed, reports produced, 4 real defects fixed, all pushed. But several discipline gaps and missed verifications remain.
 
+> **Resolution (2026-07-22):** The discipline gaps were closed in the gap-closure session
+> (2026-07-19). AGENTS.md gotchas added (`9746b87`): makezero `always:false` rationale,
+> StageTiming single-call contract, retry sentinel naming. Plan marked complete (`5662f98`).
+> All work included in tag `v1.2.1` (`8405ba8`). The 5 v2.0 data-model candidates and 9
+> deferred code-review items are tracked in TODO_LIST.md "Deferred v2.0" section.
+
 ---
 
 ## a) FULLY DONE (completed and verified)

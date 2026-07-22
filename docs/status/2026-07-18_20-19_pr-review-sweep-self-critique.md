@@ -4,6 +4,11 @@
 **Working tree:** Clean of my changes (all local PR-diff testing reverted).
 **Master local signal:** Green — `GOEXPERIMENT=jsonv2 go test -race -count=1 ./...` passes on all 4 modules.
 
+> **Resolution (2026-07-22):** All 7 PRs were merged in the follow-up session (2026-07-18 21:01).
+> Commits: `0688555` (actions #1/#2/#3/#4/#5), `07c0819` (gomega #6), `7d0cbaf` (ginkgo #8),
+> `1a01f89` (snapshotFindings dedup). The codecov `file:`→`files:` fix (PR #2) was pushed before
+> merge as `52577b1`. Open PRs: 0. All included in tag `v1.2.1`.
+
 ---
 
 ## a) FULLY DONE

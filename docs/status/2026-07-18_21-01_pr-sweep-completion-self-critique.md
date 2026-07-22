@@ -4,6 +4,12 @@
 **Master HEAD:** `1a01f89` (includes a `snapshotFindings` dedup refactor I did **not** author — appeared on master during this session from another session/agent).
 **Open PRs:** **0** (was 7 at session start).
 
+> **Resolution (2026-07-22):** PR sweep complete; all merges included in tag `v1.2.1`
+> (`8405ba8`). Remaining follow-up items (AGENTS.md gotchas, dependabot `groups:` config,
+> SHA-pin actions, CODECOV_TOKEN/OIDC) are CI infrastructure improvements tracked in
+> ROADMAP.md, not blocking work. The ginkgo/gomega bumps were subsequently validated in
+> the skills audit sweep (2026-07-18 21:21).
+
 ---
 
 ## a) FULLY DONE

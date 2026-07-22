@@ -6,6 +6,12 @@
 > **This session:** Executed F01–F10; pushed 4 more commits (`9746b87`, `49e7acc`, `6fcd64b`, `5662f98`).
 > **Honest grade this session:** **B** — Solid execution, but I trusted a prior session's claim instead of re-verifying the single highest-risk item, and I left documentation loose ends.
 
+> **Resolution (2026-07-22):** All 10 gap-closure tasks committed and pushed. Commits:
+> `9746b87`, `49e7acc`, `6fcd64b`, `5662f98`, `8405ba8` (tag `v1.2.1`). Latest HEAD:
+> `84cf66d` (post-push nix deps update). The F01 race-detector concern (trusted, not
+> re-verified) has no evidence of a subsequent `nix run .#test-race` run — this remains
+> the one unverified item from the gap-closure chain. All other F-items have evidence.
+
 ---
 
 ## a) FULLY DONE ✅

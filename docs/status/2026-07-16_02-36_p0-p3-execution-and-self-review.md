@@ -4,7 +4,13 @@
 **Branch:** `master`
 **Session scope:** Execute the 50-item follow-up list from `docs/status/2026-07-16_02-05_docs-health-audit-and-resolution-banners.md`
 **Prior commits:** `3ad8dba`, `7fced58`, `3678a22`, `97ccae2`
-**Current state:** 59 files changed, **NOT COMMITTED**
+**Current state:** ~~59 files changed, **NOT COMMITTED**~~ Committed in `e68481a` ("docs: fix stale docs across all files, archive 47 old reports, add self-review status report").
+
+> **Resolution (2026-07-22):** The 59-file changeset was committed (`e68481a`), pushed, and
+> included in tag `v1.2.1` (`8405ba8`). All P0 items from this report were resolved:
+> RELEASE_CRITERIA.md updated, release-procedure.md fixed (`97ccae2`), test suite verified
+> (10/10 modules pass with `-race`), coverage corrected to 93.4%. The USAGE_GUIDE code
+> examples flagged as broken were addressed in the skills audit sweep (2026-07-18).
 
 ---
 
