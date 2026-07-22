@@ -434,3 +434,74 @@ func TestReport_Validate(t *testing.T) {
 		}
 	})
 }
+
+func TestNewReportFromFindings(t *testing.T) {
+	t.Parallel()
+
+	tool := ToolInfo{Name: "test", Version: "1.0"}
+	findings := []Finding{
+		{ID: "1", Rule: "R1", ToolName: "test", Message: "m1",
+			Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
+			Category: CategorySecurity, FixStrategy: FixStrategyDirect},
+		{ID: "2", Rule: "R2", ToolName: "test", Message: "m2",
+			Severity: SeverityWarning, Position: Position{File: "b.go", Line: 2},
+			Category: CategoryStyle, FixStrategy: FixStrategySuggest},
+	}
+
+	r := NewReportFromFindings(tool, findings)
+
+	if r.Len() != 2 {
+		t.Fatalf("Len = %d, want 2", r.Len())
+	}
+
+	if r.Tool.Name != "test" {
+		t.Errorf("Tool.Name = %q, want %q", r.Tool.Name, "test")
+	}
+
+	assertSummaryField(t, "Total", r.Summary.Total, 2)
+	assertSummarySeverity(t, r, SeverityError, 1)
+	assertSummarySeverity(t, r, SeverityWarning, 1)
+}
+
+func TestNewReportFromFindings_Empty(t *testing.T) {
+	t.Parallel()
+
+	r := NewReportFromFindings(ToolInfo{Name: "test"}, nil)
+
+	if r.Len() != 0 {
+		t.Errorf("Len = %d, want 0", r.Len())
+	}
+
+	assertSummaryField(t, "Total", r.Summary.Total, 0)
+}
+
+func TestNewReportFromFindings_EqualsManual(t *testing.T) {
+	t.Parallel()
+
+	tool := ToolInfo{Name: "test"}
+	findings := []Finding{
+		{ID: "1", Rule: "R1", ToolName: "test", Message: "m1",
+			Severity: SeverityError, Position: Position{File: "a.go", Line: 1}},
+		{ID: "2", Rule: "R2", ToolName: "test", Message: "m2",
+			Severity: SeverityInfo, Position: Position{File: "b.go", Line: 3}},
+	}
+
+	r1 := NewReportFromFindings(tool, findings)
+
+	r2 := NewReport(tool)
+	r2.AddFindings(findings)
+	r2.ComputeSummary()
+
+	if r1.Len() != r2.Len() {
+		t.Fatalf("Len mismatch: NewReportFromFindings=%d, manual=%d", r1.Len(), r2.Len())
+	}
+
+	if r1.Summary.Total != r2.Summary.Total {
+		t.Errorf("Summary.Total mismatch: %d vs %d", r1.Summary.Total, r2.Summary.Total)
+	}
+
+	if r1.Summary.BySeverity[SeverityError] != r2.Summary.BySeverity[SeverityError] {
+		t.Errorf("BySeverity[Error] mismatch: %d vs %d",
+			r1.Summary.BySeverity[SeverityError], r2.Summary.BySeverity[SeverityError])
+	}
+}
