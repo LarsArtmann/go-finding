@@ -245,3 +245,22 @@ func SeverityFromLevel(level string, fallback Severity) Severity {
 
 	return fallback
 }
+
+// PriorityString returns a priority label for the severity, which is the
+// reverse mapping of severity levels to common priority terms.
+// Critical→"critical", Error→"high", Warning→"medium", Info→"low".
+// Returns the string value unchanged for unknown severities.
+func (s Severity) PriorityString() string {
+	switch s {
+	case SeverityCritical:
+		return "critical"
+	case SeverityError:
+		return "high"
+	case SeverityWarning:
+		return "medium"
+	case SeverityInfo:
+		return "low"
+	}
+
+	return string(s)
+}

@@ -26,7 +26,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 
 | Area                | Files                                                                                                                                                                                                   |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Core types**      | `finding.go`, `finding_methods.go`, `finding_validate.go`, `finding_equal.go`, `position.go`, `range.go`, `report.go`, `filter.go`, `merge.go`, `diff.go`, `format.go`, `json.go`, `id.go`, `errors.go` |
+| **Core types**      | `finding.go`, `finding_methods.go`, `finding_validate.go`, `finding_equal.go`, `position.go`, `range.go`, `report.go`, `filter.go`, `merge.go`, `diff.go`, `format.go`, `json.go`, `id.go`, `errors.go`, `simple_fix.go` |
 | **Named types**     | `severity.go`, `confidence.go`, `category.go`, `category_linter.go`, `tag.go`, `fix_strategy.go`, `suppression.go`, `branded_types.go`                                                                  |
 | **SARIF**           | `sarif_types.go`, `sarif_export.go`, `sarif_import.go` (hand-rolled, not go-sarif — see ADR #9)                                                                                                         |
 | **LSP**             | `lsp.go`                                                                                                                                                                                                |
@@ -94,10 +94,21 @@ bash scripts/version-check.sh                                    # Verify versio
 - **Pipeline.Run() is single-use** — Returns `errAlreadyRan` on second call
 - **NewFixApplier returns error** — Propagates backup dir creation failures
 - **Confidence is a named type** — `type Confidence float64` with `IsValid()`/`Clamp()`
-- **NewFinding accepts Confidence** — Not raw `float64`
+- **NewFinding accepts Confidence** — Not raw `float64`. Builder defaults to `ConfidenceFull` (1.0) since v1.3.0, appropriate for deterministic static analysis. Override with `.WithConfidence()`.
 - **FixStrategyAI is reserved** — No backend; kept as marker for future AI remediation
 - **GenerateID is length-prefixed** — Uses `writeLenField` (uint32 big-endian) to prevent hash collisions when field values contain colons
 - **Position.Offset uses -1 sentinel** — `Position{}` (zero value) has Offset=0 meaning "byte 0". Constructors (Pos, NewRange, FromLSP, SARIF import) set Offset=-1 for "unset". Use `HasOffset()` (>= 0) to check.
+- **File-level positions valid since v1.3.0** — `validateIdentity()` uses `Position.HasFile()` (File != ""), not `Position.IsValid()` (File != "" && Line > 0). Findings with `FilePos("config.yaml")` (Line=0) pass validation. `Position.IsValid()` still requires Line>0 for backward compat. Use `HasFile()` for file-only checks.
+- **Builder.BuildOrDefault()** — Returns zero-value `Finding{}` on validation error, not panic. Eliminates the error-swallowing boilerplate (SafeBuildFinding / buildFinding) that consumers reinvent. Use `Build()` when you need validation errors.
+- **FindingTemplate** — Pre-configured builder factory (`NewTemplate(toolName)` + `WithCategory/WithFixStrategy/WithTags` + `Build(rule, msg, sev, pos)`). Stamp common fields once, build many findings. Eliminates `newMigrationFinding` / `buildFixableFinding` patterns.
+- **NewReportFromFindings(tool, findings)** — One-step report creation: `NewReport` + `AddFindings` + `ComputeSummary`. Eliminates the 4-line boilerplate.
+- **SeverityFromLevel(level, fallback)** — Maps severity strings (canonical + aliases) to `Severity`, returns fallback for unknown. Eliminates consumer-side `mapSeverity()` switches. Aliases expanded: "optional"→Info, "crit"→Critical added.
+- **Severity.PriorityString()** — Reverse mapping: Critical→"critical", Error→"high", Warning→"medium", Info→"low".
+- **FormatText enhanced** — Uses `Severity.Badge()` (emoji + name) instead of `[SEVERITY]`. Shows `[category]` suffix when present. Suggestion prefixed with 💡.
+- **FormatTable(w, findings)** — Severity-badged table output (SEVERITY, LOCATION, RULE, MESSAGE columns).
+- **ApplySimpleFixes(findings)** — BeforeCode→AfterCode string replacement in core package. 80% case for consumers that don't need the full pipeline FixEngine.
+- **CheckBinary(name) / RunCmd(ctx, name, args)** — External tool helpers for the "run CLI tool → parse JSON" pattern. Returns `NewIOError` on failure.
+- **DefaultLinterRegistry expanded** — Now includes gofumpt, nolintlint, depguard, nakedret, bidichk, tagliatelle, and 15+ more golangci-lint linters.
 - **Range.EndOrStart / EndOffsetOrStart** — Effective end position for line-based (`End.Line == 0` → Start) and offset-based (`End.Offset < 0` → Start) single-point ranges. Used by overlap/intersection/extension to avoid duplicating the "unset means single point" convention.
 - **FixStrategy normalized** — `NormalizeFixStrategy()` converts "" to "none". Called by Builder.Build(), SARIF import, and Equal().
 - **HasFix() requires code for Direct** — `FixStrategyDirect` needs BeforeCode or AfterCode for HasFix()=true, aligning with Validate().
