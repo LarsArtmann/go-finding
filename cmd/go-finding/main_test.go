@@ -110,7 +110,7 @@ func TestOutputText_WithSuggestion(t *testing.T) {
 	var buf bytes.Buffer
 	outputText(&buf, report)
 
-	g.Expect(buf.String()).To(ContainSubstring("Suggestion: fix it"))
+	g.Expect(buf.String()).To(ContainSubstring("💡 fix it"))
 }
 
 func TestParseSeverity(t *testing.T) {
