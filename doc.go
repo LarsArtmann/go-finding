@@ -35,11 +35,20 @@
 //	    WithConfidence(finding.ConfidenceHigh).
 //	    Build()
 //
+// Or use BuildOrDefault to skip error handling (returns Finding{} on error):
+//
+//	f := finding.NewBuilder("rule", "tool", "msg", finding.SeverityError, finding.Pos("a.go", 1, 1)).
+//	    BuildOrDefault()
+//
 // Create a report:
 //
 //	report := finding.NewReport(finding.ToolInfo{Name: "my-tool"})
 //	report.AddFinding(f)
 //	report.ComputeSummary()
+//
+// Or in one step:
+//
+//	report := finding.NewReportFromFindings(finding.ToolInfo{Name: "my-tool"}, []finding.Finding{f})
 //
 // Output as SARIF:
 //
@@ -183,8 +192,40 @@
 //
 // Human-readable output formats:
 //
-//	finding.FormatText(os.Stdout, findings)    // single-line per finding
+//	finding.FormatText(os.Stdout, findings)    // severity badge + category + suggestion
+//	finding.FormatTable(os.Stdout, findings)   // severity-badged table
 //	finding.FormatMarkdown(os.Stdout, findings) // markdown table
+//
+// # Convenience APIs (v1.3.0)
+//
+// Eliminate common boilerplate with these helper functions:
+//
+// Stamp common fields once, build many findings:
+//
+//	tmpl := finding.NewTemplate("my-linter").
+//	    WithCategory(finding.CategoryStyle).
+//	    WithFixStrategy(finding.FixStrategySuggest)
+//	f1 := tmpl.Build("R1", "msg 1", finding.SeverityInfo, finding.Pos("a.go", 1, 1))
+//	f2 := tmpl.Build("R2", "msg 2", finding.SeverityWarning, finding.Pos("b.go", 2, 3))
+//
+// File-level positions (config files, project checks):
+//
+//	f := finding.NewBuilder("config", "tool", "missing field",
+//	    finding.SeverityError, finding.FilePos("config.yaml")).BuildOrDefault()
+//
+// Severity mapping from external tools:
+//
+//	sev := finding.SeverityFromLevel("warn", finding.SeverityInfo) // → SeverityWarning
+//	priority := finding.SeverityError.PriorityString()              // → "high"
+//
+// Simple BeforeCode→AfterCode fixes without the pipeline:
+//
+//	results := finding.ApplySimpleFixes(findingsWithFixes)
+//
+// External tool integration:
+//
+//	path, err := finding.CheckBinary("golangci-lint")
+//	output, err := finding.RunCmd(ctx, "golangci-lint", "run", "--out-format", "json", "./...")
 //
 // # JSON
 //
