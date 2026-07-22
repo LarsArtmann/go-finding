@@ -11,6 +11,7 @@ func TestApplySimpleFixes_SingleFix(t *testing.T) {
 
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "test.go")
+
 	content := "package main\n\noldCode\n"
 	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 		t.Fatalf("setup: %v", err)
@@ -56,6 +57,7 @@ func TestApplySimpleFixes_MultipleSameFile(t *testing.T) {
 
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "test.go")
+
 	content := "foo\nbar\nfoo\n"
 	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 		t.Fatalf("setup: %v", err)
@@ -64,12 +66,12 @@ func TestApplySimpleFixes_MultipleSameFile(t *testing.T) {
 	findings := []Finding{
 		{
 			ID: "1", Rule: "r", ToolName: "t", Message: "m", Severity: SeverityWarning,
-			Position: Position{File: FilePath(filePath), Line: 1},
+			Position:   Position{File: FilePath(filePath), Line: 1},
 			BeforeCode: "foo", AfterCode: "baz", FixStrategy: FixStrategyDirect,
 		},
 		{
 			ID: "2", Rule: "r", ToolName: "t", Message: "m", Severity: SeverityWarning,
-			Position: Position{File: FilePath(filePath), Line: 2},
+			Position:   Position{File: FilePath(filePath), Line: 2},
 			BeforeCode: "bar", AfterCode: "qux", FixStrategy: FixStrategyDirect,
 		},
 	}
@@ -103,6 +105,7 @@ func TestApplySimpleFixes_NoBeforeCode(t *testing.T) {
 
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "test.go")
+
 	content := "unchanged\n"
 	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 		t.Fatalf("setup: %v", err)
@@ -111,7 +114,7 @@ func TestApplySimpleFixes_NoBeforeCode(t *testing.T) {
 	findings := []Finding{
 		{
 			ID: "1", Rule: "r", ToolName: "t", Message: "m", Severity: SeverityWarning,
-			Position: Position{File: FilePath(filePath), Line: 1},
+			Position:  Position{File: FilePath(filePath), Line: 1},
 			AfterCode: "newCode", FixStrategy: FixStrategyDirect,
 		},
 	}
@@ -142,6 +145,7 @@ func TestApplySimpleFixes_NoMatch(t *testing.T) {
 
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "test.go")
+
 	content := "hello world\n"
 	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 		t.Fatalf("setup: %v", err)
@@ -150,7 +154,7 @@ func TestApplySimpleFixes_NoMatch(t *testing.T) {
 	findings := []Finding{
 		{
 			ID: "1", Rule: "r", ToolName: "t", Message: "m", Severity: SeverityWarning,
-			Position: Position{File: FilePath(filePath), Line: 1},
+			Position:   Position{File: FilePath(filePath), Line: 1},
 			BeforeCode: "nonexistent", AfterCode: "replacement", FixStrategy: FixStrategyDirect,
 		},
 	}
@@ -182,7 +186,7 @@ func TestApplySimpleFixes_FileNotFound(t *testing.T) {
 	findings := []Finding{
 		{
 			ID: "1", Rule: "r", ToolName: "t", Message: "m", Severity: SeverityWarning,
-			Position: Position{File: FilePath("/nonexistent/path/file.go"), Line: 1},
+			Position:   Position{File: FilePath("/nonexistent/path/file.go"), Line: 1},
 			BeforeCode: "old", AfterCode: "new", FixStrategy: FixStrategyDirect,
 		},
 	}

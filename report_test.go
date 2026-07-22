@@ -440,12 +440,16 @@ func TestNewReportFromFindings(t *testing.T) {
 
 	tool := ToolInfo{Name: "test", Version: "1.0"}
 	findings := []Finding{
-		{ID: "1", Rule: "R1", ToolName: "test", Message: "m1",
+		{
+			ID: "1", Rule: "R1", ToolName: "test", Message: "m1",
 			Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
-			Category: CategorySecurity, FixStrategy: FixStrategyDirect},
-		{ID: "2", Rule: "R2", ToolName: "test", Message: "m2",
+			Category: CategorySecurity, FixStrategy: FixStrategyDirect,
+		},
+		{
+			ID: "2", Rule: "R2", ToolName: "test", Message: "m2",
 			Severity: SeverityWarning, Position: Position{File: "b.go", Line: 2},
-			Category: CategoryStyle, FixStrategy: FixStrategySuggest},
+			Category: CategoryStyle, FixStrategy: FixStrategySuggest,
+		},
 	}
 
 	r := NewReportFromFindings(tool, findings)
@@ -480,10 +484,14 @@ func TestNewReportFromFindings_EqualsManual(t *testing.T) {
 
 	tool := ToolInfo{Name: "test"}
 	findings := []Finding{
-		{ID: "1", Rule: "R1", ToolName: "test", Message: "m1",
-			Severity: SeverityError, Position: Position{File: "a.go", Line: 1}},
-		{ID: "2", Rule: "R2", ToolName: "test", Message: "m2",
-			Severity: SeverityInfo, Position: Position{File: "b.go", Line: 3}},
+		{
+			ID: "1", Rule: "R1", ToolName: "test", Message: "m1",
+			Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
+		},
+		{
+			ID: "2", Rule: "R2", ToolName: "test", Message: "m2",
+			Severity: SeverityInfo, Position: Position{File: "b.go", Line: 3},
+		},
 	}
 
 	r1 := NewReportFromFindings(tool, findings)

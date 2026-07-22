@@ -8,8 +8,8 @@ import (
 
 // SimpleFixResult records the outcome of applying a single BeforeCode→AfterCode fix.
 type SimpleFixResult struct {
-	FindingID ID    // The finding that was processed
-	Applied   bool  // Whether the replacement was applied
+	FindingID ID     // The finding that was processed
+	Applied   bool   // Whether the replacement was applied
 	Reason    string // Why it was skipped (when Applied is false)
 }
 

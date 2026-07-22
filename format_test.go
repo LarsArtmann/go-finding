@@ -12,7 +12,7 @@ func TestFormatText(t *testing.T) {
 		{
 			ID: "1", Rule: "nilcheck", ToolName: "govet", Message: "possible nil deref",
 			Severity: SeverityError, Position: Pos("main.go", 42, 5),
-			Category:  CategorySecurity,
+			Category:   CategorySecurity,
 			Suggestion: "add nil check",
 		},
 	}
@@ -104,6 +104,7 @@ func TestFormatTable(t *testing.T) {
 	}
 
 	var buf strings.Builder
+
 	err := FormatTable(&buf, findings)
 	if err != nil {
 		t.Fatalf("FormatTable() error: %v", err)
@@ -135,6 +136,7 @@ func TestFormatTable_Empty(t *testing.T) {
 	t.Parallel()
 
 	var buf strings.Builder
+
 	err := FormatTable(&buf, nil)
 	if err != nil {
 		t.Fatalf("FormatTable() error: %v", err)
