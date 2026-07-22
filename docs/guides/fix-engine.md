@@ -46,6 +46,27 @@ fmt.Printf("Applied %d fixes\n", applied)
 
 ---
 
+## Simple Fixes (Core Package)
+
+For the 80% case — BeforeCode→AfterCode string replacement on files — use the core package's `ApplySimpleFixes`. No pipeline import needed:
+
+```go
+results := finding.ApplySimpleFixes(findingsWithDirectFixes)
+for file, fileResults := range results {
+    for _, r := range fileResults {
+        if r.Applied {
+            fmt.Printf("Fixed %s in %s\n", r.FindingID, file)
+        } else {
+            fmt.Printf("Skipped %s: %s\n", r.FindingID, r.Reason)
+        }
+    }
+}
+```
+
+`ApplySimpleFixes` reads each file, applies `strings.Replace` with count=1 per finding, and writes back. Findings without BeforeCode/AfterCode are skipped automatically.
+
+---
+
 ## Standalone FixEngine
 
 For more control over provider selection and conflict reporting:
