@@ -65,7 +65,9 @@ f, err := NewBuilder(RuleName("nilcheck"), ToolName("govet"), "possible nil dere
 - `NewBuilder(rule RuleName, toolName ToolName, message, severity, pos)` — required fields (branded types prevent ID/Rule/Tool mixups at compile time)
 - `WithID()`, `WithCategory()`, `WithTags()`, `WithFixStrategy()`, `WithSuggestion()`, `WithBeforeCode()`, `WithAfterCode()`, `WithRange()`, `WithSnippet()`, `WithConfidence()`, `WithRelated()`, `WithSuppression()`, `WithMetadata()` — optional
 - `Build()` — returns validated `Finding` or error
+- `BuildOrDefault()` — returns validated `Finding` or zero-value `Finding{}` on error (v1.3.0)
 - `MustBuild()` — panics on invalid state
+- Default confidence: `ConfidenceFull` (1.0) since v1.3.0; override with `.WithConfidence()`
 
 ---
 
@@ -82,8 +84,10 @@ f, err := NewBuilder(RuleName("nilcheck"), ToolName("govet"), "possible nil dere
 | Column | `int`      | 1-based; 0 = not set                                   |
 | Offset | `int`      | 0-based byte offset; -1 = not set                      |
 
-Methods: `IsValid()`, `Equal()`, `Compare()`, `String()`, `HasOffset()`, `IsZero()`, `HasLocation()`
-Constructor: `Pos(file, line, column)`
+Methods: `IsValid()`, `HasFile()`, `Equal()`, `Compare()`, `String()`, `HasOffset()`, `IsZero()`, `HasLocation()`
+Constructors: `Pos(file, line, column)`, `FilePos(file)` (v1.3.0 — for file-level findings with no line number)
+
+> **v1.3.0 change:** `Finding.Validate()` and `Finding.IsValid()` now accept file-level positions (File set, Line=0). Previously required Line>0 via `Position.IsValid()`. Now uses `Position.HasFile()` (File != ""). Use `FilePos("config.yaml")` for config-level or project-level findings.
 
 ### 2.2 Range
 
@@ -108,7 +112,11 @@ Four levels, ordered by urgency:
 | Error    | `"error"`    | `error`                                   |
 | Critical | `"critical"` | `error` (lossy — preserved in Properties) |
 
-Methods: `IsValid()`, `Compare()`, `GreaterThan()`, `LessThan()`, `GreaterThanOrEqual()`, `LessThanOrEqual()`
+Methods: `IsValid()`, `Compare()`, `GreaterThan()`, `LessThan()`, `GreaterThanOrEqual()`, `LessThanOrEqual()`, `Badge()`, `Emoji()`, `PriorityString()` (v1.3.0)
+
+Parsing: `ParseSeverity(s)`, `MustParseSeverity(s)`, `SeverityFromLevel(level, fallback)` (v1.3.0 — maps common aliases, returns fallback for unknown)
+
+11 pre-registered aliases: `warn`, `high`, `medium`, `low`, `fatal`, `critical`, `crit`, `note`, `advice`, `optional`, `suggestion` (extensible via `RegisterSeverityAlias()`)
 
 ---
 
@@ -185,6 +193,7 @@ Top-level container for a tool run.
 | Feature                 | Method                              | Thread-safe |
 | ----------------------- | ----------------------------------- | ----------- |
 | Create                  | `NewReport(toolInfo)`               | Yes         |
+| Create from findings    | `NewReportFromFindings(tool, []F)`  | Yes (v1.3.0)|
 | Add single finding      | `AddFinding(f)`                     | Yes (mutex) |
 | Add multiple findings   | `AddFindings([])`                   | Yes (mutex) |
 | Recompute stats         | `ComputeSummary()`                  | No          |
@@ -722,12 +731,13 @@ Without `-config`: uses govet + staticcheck with the flag values.
 
 | Format     | Description                                               |
 | ---------- | --------------------------------------------------------- |
-| `text`     | Human-readable: `file:line:col: [SEVERITY] rule: message` |
+| `text`     | Human-readable with severity badges: `file:line:col 🟠 ERROR  rule: message [category]` (v1.3.0: badge + category + 💡 suggestion) |
 | `markdown` | Markdown table with auto-aligned columns (via go-output)  |
 | `json`     | Full JSON report                                          |
 | `csv`      | CSV with auto-quoting and footer row (via go-output)      |
 | `tsv`      | Tab-separated with footer row (via go-output)             |
 | `sarif`    | SARIF 2.1.0                                               |
+| `table`   | Severity-badged table: SEVERITY, LOCATION, RULE, MESSAGE (v1.3.0) |
 
 Metrics summary printed to stderr when available.
 
@@ -890,7 +900,7 @@ adapter := finding.NewToolAdapter("my-tool", runFunc, parseFunc, convertFunc)
 
 **Status:** FULLY_FUNCTIONAL
 
-70+ linter→category mappings with case-insensitive lookup:
+84 linter→category mappings with case-insensitive lookup:
 
 ```go
 cat := finding.CategoryForLinter("gosec") // CategorySecurity
@@ -901,11 +911,61 @@ finding.RegisterLinterCategory("my-linter", finding.CategoryPerformance)
 
 **Status:** FULLY_FUNCTIONAL
 
-9 common severity aliases (warn, high, medium, low, fatal, critical, note, advice, suggestion):
+11 pre-registered severity aliases (warn, high, medium, low, fatal, critical, crit, note, advice, optional, suggestion). `SeverityFromLevel(level, fallback)` convenience function maps aliases with fallback (v1.3.0). `PriorityString()` reverse mapping (v1.3.0):
 
 ```go
 sev, err := finding.ParseSeverity("warn") // SeverityWarning
 ```
+
+---
+
+## 22. Convenience APIs (v1.3.0)
+
+### 22.1 FindingTemplate
+
+**Status:** FULLY_FUNCTIONAL
+
+Pre-configured builder factory: stamp tool name, category, fix strategy, and tags once, then build many findings:
+
+```go
+tmpl := NewTemplate("my-linter").
+    WithCategory(CategoryStyle).
+    WithFixStrategy(FixStrategySuggest)
+f1 := tmpl.Build("R1", "msg 1", SeverityInfo, Pos("a.go", 1, 1))
+f2 := tmpl.Build("R2", "msg 2", SeverityWarning, Pos("b.go", 2, 3))
+```
+
+Eliminates the `newMigrationFinding` / `buildFixableFinding` / `IssueBuilderFactory` patterns that consumers reinvent.
+
+### 22.2 ApplySimpleFixes
+
+**Status:** FULLY_FUNCTIONAL
+
+BeforeCode→AfterCode string replacement for the 80% case where consumers don't need the full pipeline FixEngine:
+
+```go
+results := ApplySimpleFixes(findingsWithDirectFixes)
+for file, fileResults := range results {
+    for _, r := range fileResults {
+        if r.Applied { /* success */ }
+    }
+}
+```
+
+Groups findings by file, reads each file, applies `strings.Replace` with count=1 per finding, writes back. Skips findings without BeforeCode/AfterCode.
+
+### 22.3 External Tool Helpers
+
+**Status:** FULLY_FUNCTIONAL
+
+Standardized helpers for the "run CLI tool → parse JSON" pattern:
+
+```go
+path, err := CheckBinary("golangci-lint")  // wraps exec.LookPath with finding error
+output, err := RunCmd(ctx, "golangci-lint", "run", "--out-format", "json", "./...")
+```
+
+Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 
 ---
 
@@ -952,7 +1012,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 | Structured logging (slog)         | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                              |
 | Stage hooks/callbacks             | FULLY_FUNCTIONAL     | `StageHooks` with abort capability                                                    |
 | Diff function                     | FULLY_FUNCTIONAL     | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()`                     |
-| FormatText / FormatMarkdown       | FULLY_FUNCTIONAL     | Return errors, UTF-8 safe truncation, markdown cell escaping                          |
+| FormatText / FormatMarkdown       | FULLY_FUNCTIONAL     | Severity badges, category, 💡 suggestion (v1.3.0)                                     |
 | Config validation                 | FULLY_FUNCTIONAL     | Both pipeline and CLI configs                                                         |
 | Examples                          | PARTIALLY_FUNCTIONAL | 3 runnable examples, compile-tested                                                   |
 | `RelatedRef.Range`                | FULLY_FUNCTIONAL     | Span-based related locations with SARIF/LSP round-trip                                |
