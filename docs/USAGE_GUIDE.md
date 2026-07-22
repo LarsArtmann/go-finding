@@ -16,6 +16,7 @@ go get github.com/larsartmann/go-finding
 package main
 
 import (
+    "encoding/json"
     "fmt"
 
     "github.com/larsartmann/go-finding"

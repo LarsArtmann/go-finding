@@ -327,11 +327,9 @@
 //
 // # Known Limitations
 //
+// LSP conversion preserves go-finding-specific fields via LSPDiagnosticData.
 // SeverityCritical maps to SARIF level "error" (SARIF 2.1.0 has no "critical" level).
 // The original severity is preserved in the SARIF property bag for round-trip fidelity.
-//
-// LSP conversion is lossy: FixStrategy, Confidence, BeforeCode, AfterCode, Suppression,
-// Metadata, Category, and Tags are not preserved through LSP round-trips.
 //
 // Report.findings is unexported for thread safety. Use AddFinding/AddFindings
 // for writes, FindingsSnapshot/All/FindByID for reads.

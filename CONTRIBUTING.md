@@ -90,7 +90,10 @@ go-finding/
 ├── filter.go            # Filtering and grouping
 ├── merge.go             # Merge, dedup, correlation
 ├── diff.go              # Diff (before/after finding sets)
-├── format.go            # FormatText/FormatMarkdown output
+├── format.go            # FormatText/FormatTextRich/FormatMarkdown/FormatTable output
+├── simple_fix.go        # ApplySimpleFixes (BeforeCode→AfterCode replacement)
+├── branded_types.go     # ID, RuleName, ToolName, FilePath branded string types
+├── detector.go          # Detector interface, CheckBinary, RunCmd
 ├── sarif_export.go      # SARIF 2.1.0 export
 ├── sarif_import.go      # SARIF 2.1.0 import
 ├── sarif_types.go       # SARIF struct types and constants

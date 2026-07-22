@@ -1,7 +1,7 @@
 # API Stability — go-finding
 
-**Last audited:** 2026-07-16
-**Version:** v1.2.0
+**Last audited:** 2026-07-22
+**Version:** v1.3.0
 
 go-finding follows the [Go 1 Compatibility Promise](https://go.dev/doc/go1compat) philosophy.
 
@@ -239,4 +239,4 @@ All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migratio
 
 ## Current Status
 
-**Pre-release** (v0.6.1). API is stabilizing but not yet locked. Target: v1.0.0 lock after resolving owner-decision items.
+**v1.3.0** — API-stable since v1.0.0. 11 additive APIs added in v1.3.0 (Template, FormatTextRich, ApplySimpleFixes, BuildOrDefault, NewReportFromFindings, FilePos, SeverityFromLevel, PriorityString, CheckBinary, RunCmd, FormatTable). Zero breaking changes.
