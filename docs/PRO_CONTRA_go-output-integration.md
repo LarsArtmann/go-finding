@@ -6,14 +6,14 @@
 
 ## Executive Summary
 
-| Dimension        | go-finding                                                | go-output                                            |
-| ---------------- | --------------------------------------------------------- | ---------------------------------------------------- |
-| **Domain**       | Static analysis data model + pipeline                     | Output formatting (12 formats)                       |
-| **Core types**   | `Finding`, `Report`, `Severity`, `Position`               | `TableData`, `TreeNode`, `Renderer`, `Format`        |
-| **Dependencies** | 3 (testify, x/sync, x/tools)                              | 3 (lipgloss, go-faster/yaml, x/term) + 15 transitive |
-| **Consumers**    | 7 tools (art-dupl, branching-flow, etc.)                  | 2 tools (project-meta, projects-management)          |
-| **Maturity**     | v0.2.1, 95.5% coverage                                    | Production-ready, 91%+ coverage                      |
-| **Philosophy**   | "Minimal dependencies — core types depend only on stdlib" | Full-featured formatting with lipgloss styling       |
+| Dimension        | go-finding                                                   | go-output                                            |
+| ---------------- | ------------------------------------------------------------ | ---------------------------------------------------- |
+| **Domain**       | Static analysis data model + pipeline                        | Output formatting (12 formats)                       |
+| **Core types**   | `Finding`, `Report`, `Severity`, `Position`                  | `TableData`, `TreeNode`, `Renderer`, `Format`        |
+| **Dependencies** | 0 production (core is stdlib-only); test-only: ginkgo/gomega | 3 (lipgloss, go-faster/yaml, x/term) + 15 transitive |
+| **Consumers**    | 22 tools (art-dupl, branching-flow, etc.)                    | 2 tools (project-meta, projects-management)          |
+| **Maturity**     | v1.3.0, 93.6% coverage, API-stable since v1.0.0              | Production-ready, 91%+ coverage                      |
+| **Philosophy**   | "Minimal dependencies — core types depend only on stdlib"    | Full-featured formatting with lipgloss styling       |
 
 ---
 
