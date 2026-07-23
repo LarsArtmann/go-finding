@@ -30,7 +30,8 @@ All exported symbols are classified as:
 | `Report`   | stable | Thread-safe container. `findings` slice is unexported; use `FindingsSnapshot()`, `All()`, `FindByID()`. |
 | `Position` | stable | File/Line/Column/Offset. Zero-value is valid ("unpositioned").                                          |
 | `Range`    | stable | Start/End Position. `IsValid()` checks End >= Start.                                                    |
-| `Builder`  | stable | Fluent Finding builder.                                                                                 |
+| `Builder`  | stable | Fluent Finding builder. `BuildOrDefault()` returns zero-value on invalid.                               |
+| `Template` | stable | Pre-configured builder factory (v1.3.0). Stamp common fields, build many findings.                      |
 
 ### Named Types
 
@@ -48,19 +49,29 @@ All exported symbols are classified as:
 | `RelationKind`     | stable | Related, Causes, IsCausedBy                       |
 | `LSPSeverity`      | stable | Named int: Error/Warning/Info/Hint                |
 | `LSPDiagnosticTag` | stable | Named int: Unnecessary(1), Deprecated(2)          |
+| `ID`               | stable | Branded string type (v1.2.0). Prevents ID mixups. |
+| `RuleName`         | stable | Branded string type (v1.2.0)                      |
+| `ToolName`         | stable | Branded string type (v1.2.0)                      |
+| `FilePath`         | stable | Branded string type (v1.2.0)                      |
 
 ### Supporting Types
 
-| Type           | Status | Notes                                           |
-| -------------- | ------ | ----------------------------------------------- |
-| `ToolInfo`     | stable | Name + Version                                  |
-| `Summary`      | stable | Aggregated statistics. New fields may be added. |
-| `Suppression`  | stable | Kind/Reason/ExpiresAt                           |
-| `Correlation`  | stable | Score + finding pair                            |
-| `ModifiedPair` | stable | Before/After from Diff                          |
-| `ParsedID`     | stable | ID parse result                                 |
-| `RelatedRef`   | stable | Related finding reference                       |
-| `DiffResult`   | stable | Diff comparison result                          |
+| Type               | Status | Notes                                             |
+| ------------------ | ------ | ------------------------------------------------- |
+| `ToolInfo`         | stable | Name + Version                                    |
+| `Summary`          | stable | Aggregated statistics. New fields may be added.   |
+| `Suppression`      | stable | Kind/Reason/ExpiresAt                             |
+| `Correlation`      | stable | Score + finding pair                              |
+| `ModifiedPair`     | stable | Before/After from Diff                            |
+| `ParsedID`         | stable | ID parse result                                   |
+| `RelatedRef`       | stable | Related finding reference                         |
+| `DiffResult`       | stable | Diff comparison result                            |
+| `SimpleFixResult`  | stable | Result of ApplySimpleFixes (v1.3.0)               |
+| `Interval[T]`      | stable | Generic interval for overlap queries              |
+| `IntervalIndex[T]` | stable | Generic O(n+k) interval index for overlap queries |
+| `DetectorRegistry` | stable | Thread-safe plugin registry for detectors         |
+| `LinterRegistry`   | stable | Linter→category mapping registry (84 linters)     |
+| `SARIFOption`      | stable | Functional option for SARIF export                |
 
 ### Interfaces and Functions
 
@@ -100,27 +111,33 @@ All exported symbols are classified as:
 
 ### Key Functions
 
-| Function                              | Status | Notes                       |
-| ------------------------------------- | ------ | --------------------------- |
-| `Combine`                             | stable | Merge reports with dedup    |
-| `Correlate`                           | stable | Find related findings       |
-| `Diff`                                | stable | Compare finding sets by ID  |
-| `Filter` / `FilterInPlace`            | stable | Filter by predicates        |
-| `GenerateID`                          | stable | Deterministic ID            |
-| `ParseID`                             | stable | Parse generated ID          |
-| `FindingsFromSARIF`                   | stable | SARIF import                |
-| `FindingsFromReader`                  | stable | Streaming SARIF import      |
-| `FindingsFromJSON`                    | stable | JSON import                 |
-| `ReportFromJSON`                      | stable | JSON → Report               |
-| `FromJSON`                            | stable | JSON → Finding              |
-| `FromLSP`                             | stable | LSP → Finding               |
-| `FormatText` / `FormatMarkdown`       | stable | Human-readable output       |
-| `ParseSeverity` / `MustParseSeverity` | stable | String → Severity           |
-| `ParseCategory` / `MustParseCategory` | stable | String → Category           |
-| `CategoryForLinter`                   | stable | Linter→category lookup      |
-| `RegisterLinterCategory`              | stable | Register linter mapping     |
-| `NewToolAdapter`                      | stable | Generic adapter constructor |
-| `FromSARIFLevel`                      | stable | SARIF level → Severity      |
+| Function                              | Status | Notes                                     |
+| ------------------------------------- | ------ | ----------------------------------------- |
+| `Combine`                             | stable | Merge reports with dedup                  |
+| `Correlate`                           | stable | Find related findings                     |
+| `Diff`                                | stable | Compare finding sets by ID                |
+| `Filter` / `FilterInPlace`            | stable | Filter by predicates                      |
+| `GenerateID`                          | stable | Deterministic ID                          |
+| `ParseID`                             | stable | Parse generated ID                        |
+| `FindingsFromSARIF`                   | stable | SARIF import                              |
+| `FindingsFromReader`                  | stable | Streaming SARIF import                    |
+| `FindingsFromJSON`                    | stable | JSON import                               |
+| `ReportFromJSON`                      | stable | JSON → Report                             |
+| `FromJSON`                            | stable | JSON → Finding                            |
+| `FromLSP`                             | stable | LSP → Finding                             |
+| `FormatText` / `FormatMarkdown`       | stable | Human-readable output                     |
+| `FormatTextRich` / `FormatTable`      | stable | Emoji-badged / table output (v1.3.0)      |
+| `ApplySimpleFixes`                    | stable | BeforeCode→AfterCode replacement (v1.3.0) |
+| `CheckBinary` / `RunCmd`              | stable | External tool helpers (v1.3.0)            |
+| `SeverityFromLevel`                   | stable | String→Severity with aliases (v1.3.0)     |
+| `NewReportFromFindings`               | stable | One-step report creation (v1.3.0)         |
+| `FilePos`                             | stable | File-level Position constructor (v1.3.0)  |
+| `ParseSeverity` / `MustParseSeverity` | stable | String → Severity                         |
+| `ParseCategory` / `MustParseCategory` | stable | String → Category                         |
+| `CategoryForLinter`                   | stable | Linter→category lookup                    |
+| `RegisterLinterCategory`              | stable | Register linter mapping                   |
+| `NewToolAdapter`                      | stable | Generic adapter constructor               |
+| `FromSARIFLevel`                      | stable | SARIF level → Severity                    |
 
 ### Report Methods
 
@@ -148,16 +165,18 @@ All exported symbols are classified as:
 
 ### Constants
 
-| Constant                                    | Status       | Notes                         |
-| ------------------------------------------- | ------------ | ----------------------------- |
-| `Severity*` (Info/Warning/Error/Critical)   | stable       |                               |
-| `Category*` (Correctness/Security/etc.)     | stable       |                               |
-| `FixStrategyDirect/Suggest`                 | stable       |                               |
-| `FixStrategyAI`                             | **reserved** | No backend. Won't auto-apply. |
-| `RelationKind*`, `SuppressionKind*`, `Tag*` | stable       |                               |
-| `VersionMajor/Minor/Patch`, `Version`       | stable       |                               |
-| `LSPSeverity*`, `LSPDiagnosticTag*`         | stable       |                               |
-| `LSPSeverityKey`, `LSPDiagnosticTagsKey`    | stable       | Metadata keys                 |
+| Constant                                    | Status       | Notes                                       |
+| ------------------------------------------- | ------------ | ------------------------------------------- |
+| `Severity*` (Info/Warning/Error/Critical)   | stable       |                                             |
+| `Category*` (Correctness/Security/etc.)     | stable       |                                             |
+| `FixStrategyDirect/Suggest`                 | stable       |                                             |
+| `FixStrategyAI`                             | **reserved** | No backend. Won't auto-apply.               |
+| `RelationKind*`, `SuppressionKind*`, `Tag*` | stable       |                                             |
+| `VersionMajor/Minor/Patch`, `Version`       | stable       |                                             |
+| `OffsetUnknown`                             | stable       | Sentinel for unset Position offset (v1.2.0) |
+| `Severity.Badge()` / `PriorityString()`     | stable       | Methods on Severity (v1.3.0)                |
+| `LSPSeverity*`, `LSPDiagnosticTag*`         | stable       |                                             |
+| `LSPSeverityKey`, `LSPDiagnosticTagsKey`    | stable       | Metadata keys                               |
 
 ### Functions
 
