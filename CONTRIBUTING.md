@@ -80,33 +80,49 @@ GOEXPERIMENT=jsonv2 go vet ./...
 ```
 go-finding/
 ├── finding.go           # Core Finding type
-├── finding_builder.go   # Fluent builder API
-├── severity.go          # Severity enum with comparison
+├── finding_builder.go   # Fluent builder API + Template factory
+├── finding_methods.go   # Finding methods (HasFix, IsSuppressedAt, etc.)
+├── finding_validate.go  # Validate() and per-field validators
+├── finding_equal.go     # Equality semantics for Finding
+├── validate_helpers.go  # Shared validation utilities
+├── severity.go          # Severity enum, Badge, SeverityFromLevel, PriorityString
 ├── confidence.go        # Confidence named type (0.0–1.0)
 ├── category.go          # Category constants
+├── category_linter.go   # LinterRegistry: linter→category mapping (84 linters)
 ├── fix_strategy.go      # FixStrategy enum
-├── position.go          # Position and Range types
-├── report.go            # Report container (thread-safe)
-├── filter.go            # Filtering and grouping
-├── merge.go             # Merge, dedup, correlation
-├── diff.go              # Diff (before/after finding sets)
-├── format.go            # FormatText/FormatTextRich/FormatMarkdown/FormatTable output
-├── simple_fix.go        # ApplySimpleFixes (BeforeCode→AfterCode replacement)
-├── branded_types.go     # ID, RuleName, ToolName, FilePath branded string types
-├── detector.go          # Detector interface, CheckBinary, RunCmd
-├── sarif_export.go      # SARIF 2.1.0 export
-├── sarif_import.go      # SARIF 2.1.0 import
-├── sarif_types.go       # SARIF struct types and constants
-├── id.go                # ID generation and parsing
-├── errors.go            # Structured error types
 ├── tag.go               # Tag type with standard constants
 ├── suppression.go       # Suppression handling with TTL
-├── json.go              # JSON marshaling/unmarshaling
-├── lsp.go               # LSP diagnostic conversion
+├── branded_types.go     # ID, RuleName, ToolName, FilePath branded string types
+├── position.go          # Position type, FilePos constructor
+├── range.go             # Range type
+├── range_overlap.go     # Range overlap/intersection logic
+├── report.go            # Report container (thread-safe), NewReportFromFindings
+├── report_query.go      # Report query methods (FindByID, FindingsSnapshot)
+├── filter.go            # Filtering and grouping
+├── merge.go             # Merge, dedup, correlation
+├── correlate.go         # Correlation scoring between findings
+├── diff.go              # Diff (before/after finding sets)
+├── interval_index.go    # Generic IntervalIndex[T] for overlap queries
+├── format.go            # FormatText/FormatTextRich/FormatMarkdown/FormatTable output
+├── simple_fix.go        # ApplySimpleFixes (BeforeCode→AfterCode replacement)
+├── detector.go          # Detector interface, CheckBinary, RunCmd helpers
+├── adapter.go           # ToolAdapter[O] generic adapter for external tools
+├── registry.go          # DetectorRegistry (thread-safe plugin architecture)
+├── sarif_export.go      # SARIF 2.1.0 export (hand-rolled, context-aware)
+├── sarif_import.go      # SARIF 2.1.0 import
+├── sarif_types.go       # SARIF struct types and constants
+├── id.go                # ID generation (length-prefixed hash) and parsing
+├── errors.go            # Structured error types (FindingError, ErrorCategory)
+├── context.go           # Context helpers
+├── json.go              # JSON marshaling/unmarshaling (encoding/json/v2)
+├── lsp.go               # LSP diagnostic conversion (lossless round-trip)
+├── doc.go               # Package documentation
 ├── version.go           # Version constants
+├── gotoken/             # Shared go/token utilities (stdlib only)
+├── lockutil/            # Generic sync.Locker helpers (Locked/RLocked)
 ├── analysis/            # go/analysis.Diagnostic integration
 │   └── analysis.go
-├── pipeline/            # Pipeline package
+├── pipeline/            # Pipeline package (x/sync, gogenfilter)
 │   ├── pipeline.go      # Pipeline orchestrator
 │   ├── adapters.go      # Detector/FindingTransformer interfaces
 │   ├── config.go        # Config with validation
