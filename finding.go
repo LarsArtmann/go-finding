@@ -55,7 +55,7 @@ func NewFinding(
 	pos Position,
 	confidence Confidence,
 ) Finding {
-	return Finding{ //nolint:exhaustruct
+	return Finding{
 		ID:          GenerateID(toolName, rule, pos),
 		Rule:        rule,
 		ToolName:    toolName,

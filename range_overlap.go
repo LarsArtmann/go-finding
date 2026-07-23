@@ -75,7 +75,7 @@ func (r Range) intersectionByLine(other Range) *Range {
 
 	// If start equals end (same position), return single point range
 	if start.Line == end.Line && start.Column == end.Column {
-		return &Range{Start: start, End: Position{}} //nolint:exhaustruct
+		return &Range{Start: start, End: Position{}}
 	}
 
 	return &Range{Start: start, End: end}
@@ -87,8 +87,8 @@ func (r Range) intersectionByOffset(other Range) *Range {
 	endOffset := min(r.EndOffsetOrStart(), other.EndOffsetOrStart())
 
 	return &Range{
-		Start: Position{File: r.Start.File, Offset: startOffset}, //nolint:exhaustruct
-		End:   Position{File: r.Start.File, Offset: endOffset},   //nolint:exhaustruct
+		Start: Position{File: r.Start.File, Offset: startOffset},
+		End:   Position{File: r.Start.File, Offset: endOffset},
 	}
 }
 

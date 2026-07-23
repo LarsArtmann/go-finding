@@ -152,7 +152,7 @@ func (b *Builder) MustBuild() Finding {
 func (b *Builder) BuildOrDefault() Finding {
 	f, err := b.Build()
 	if err != nil {
-		return Finding{} //nolint:exhaustruct // zero-value return on validation error
+		return Finding{}
 	}
 
 	return f
@@ -174,7 +174,7 @@ type Template struct {
 // Chain WithCategory, WithFixStrategy, WithTags to configure common fields,
 // then call Build for each finding.
 func NewTemplate(toolName ToolName) *Template {
-	return &Template{Tool: toolName} //nolint:exhaustruct // intentional: fields set via chain methods
+	return &Template{Tool: toolName}
 }
 
 // WithCategory sets the category on the template.

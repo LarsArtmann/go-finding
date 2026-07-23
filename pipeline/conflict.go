@@ -144,7 +144,7 @@ func getFindingRange(
 	// Create a single-position range
 	return finding.Range{
 		Start: f.Position,
-		End:   finding.Position{}, //nolint:exhaustruct // Empty end means single position
+		End:   finding.Position{},
 	}
 }
 

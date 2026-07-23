@@ -103,10 +103,10 @@ func (r *Report) PrettyJSON() (string, error) {
 // suppressed findings from the output.
 func (r *Report) PrettyJSONFiltered() (string, error) {
 	filtered := withReadLock(r, func() *Report {
-		result := &Report{ //nolint:exhaustruct
+		result := &Report{
 			Tool:     r.Tool,
 			findings: make([]Finding, 0, len(r.findings)),
-			Summary:  Summary{}, //nolint:exhaustruct
+			Summary:  Summary{},
 		}
 		for _, f := range r.findings {
 			if !f.IsSuppressed() {

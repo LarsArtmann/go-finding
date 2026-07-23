@@ -21,7 +21,7 @@ type LinterRegistry struct {
 
 // NewLinterRegistry creates a registry pre-populated with the given mappings.
 func NewLinterRegistry(items map[string]Category) *LinterRegistry {
-	r := &LinterRegistry{items: make(map[string]Category, len(items))} //nolint:exhaustruct
+	r := &LinterRegistry{items: make(map[string]Category, len(items))}
 	for k, v := range items {
 		r.items[strings.ToLower(k)] = v
 	}
@@ -64,7 +64,7 @@ func (r *LinterRegistry) Names() []string {
 // Clone returns a deep copy of the registry.
 func (r *LinterRegistry) Clone() *LinterRegistry {
 	return readLinter(r, func() *LinterRegistry {
-		return &LinterRegistry{items: maps.Clone(r.items)} //nolint:exhaustruct
+		return &LinterRegistry{items: maps.Clone(r.items)}
 	})
 }
 

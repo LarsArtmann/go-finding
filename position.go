@@ -57,7 +57,6 @@ func (p Position) HasFile() bool {
 // issues, project-level checks, or file-wide linting rules.
 // The Offset is set to OffsetUnknown (-1) since no byte position applies.
 func FilePos(file FilePath) Position {
-	//nolint:exhaustruct // intentional: file-level position has no line/column
 	return Position{File: file, Offset: OffsetUnknown}
 }
 

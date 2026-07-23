@@ -78,7 +78,6 @@ func FromDiagnosticWithSource(
 
 	id := finding.GenerateID(finding.ToolName(toolName), finding.RuleName(ruleCode), findingPos)
 
-	//nolint:exhaustruct
 	f := finding.Finding{
 		ID:          id,
 		Rule:        finding.RuleName(ruleCode),
@@ -129,8 +128,8 @@ func NodePosition(fset *token.FileSet, node ast.Node) finding.Position {
 func NodeRange(fset *token.FileSet, node ast.Node) finding.Range {
 	if node == nil {
 		return finding.Range{
-			Start: finding.Position{Offset: -1}, //nolint:exhaustruct
-			End:   finding.Position{Offset: -1}, //nolint:exhaustruct
+			Start: finding.Position{Offset: -1},
+			End:   finding.Position{Offset: -1},
 		}
 	}
 

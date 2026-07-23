@@ -62,7 +62,6 @@ func applyFixesToFile(file FilePath, findings []Finding) []SimpleFixResult {
 		}
 
 		modified = strings.Replace(modified, f.BeforeCode, f.AfterCode, 1)
-		//nolint:exhaustruct // Reason intentionally omitted: fix applied successfully
 		fileResults = append(fileResults, SimpleFixResult{
 			FindingID: f.ID,
 			Applied:   true,

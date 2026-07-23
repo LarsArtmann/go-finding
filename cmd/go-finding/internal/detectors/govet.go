@@ -62,7 +62,7 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
 
 		for _, e := range entries {
 			pos := parsePosn(e.Posn, dir)
-			findings = append(findings, finding.Finding{ //nolint:exhaustruct
+			findings = append(findings, finding.Finding{
 				ID:          finding.GenerateID(DetectorNameGovet, finding.RuleName(name), pos),
 				Rule:        finding.RuleName(name),
 				ToolName:    DetectorNameGovet,
@@ -83,10 +83,10 @@ func parsePosn(posn, dir string) finding.Position {
 
 	parts := strings.SplitN(posn, ":", posnFieldCount)
 	if len(parts) < 2 {
-		return finding.Position{File: finding.FilePath(posn)} //nolint:exhaustruct
+		return finding.Position{File: finding.FilePath(posn)}
 	}
 
-	pos := finding.Position{File: finding.FilePath(resolvePath(dir, parts[0]))} //nolint:exhaustruct
+	pos := finding.Position{File: finding.FilePath(resolvePath(dir, parts[0]))}
 
 	if len(parts) >= 2 {
 		line, err := strconv.Atoi(parts[1])

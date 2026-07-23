@@ -34,7 +34,7 @@ type DetectorRegistry struct {
 
 // NewDetectorRegistry creates an empty registry.
 func NewDetectorRegistry() *DetectorRegistry {
-	return &DetectorRegistry{builders: make(map[string]func() Detector)} //nolint:exhaustruct
+	return &DetectorRegistry{builders: make(map[string]func() Detector)}
 }
 
 // Register adds a detector constructor under the given name.

@@ -66,7 +66,7 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 			continue
 		}
 
-		pos := finding.Position{ //nolint:exhaustruct
+		pos := finding.Position{
 			File:   finding.FilePath(resolvePath(dir, entry.Location.File)),
 			Line:   entry.Location.Line,
 			Column: entry.Location.Column,
@@ -79,7 +79,7 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 
 		cat := staticcheckCategory(entry.Code)
 
-		findings = append(findings, finding.Finding{ //nolint:exhaustruct
+		findings = append(findings, finding.Finding{
 			ID:          finding.GenerateID(DetectorNameStaticcheck, finding.RuleName(entry.Code), pos),
 			Rule:        finding.RuleName(entry.Code),
 			ToolName:    DetectorNameStaticcheck,

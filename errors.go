@@ -101,7 +101,7 @@ func (e *FindingError) WithPosition(pos Position) *FindingError {
 
 // newCategorizedError creates a FindingError with the given category.
 func newCategorizedError(cat ErrorCategory, message string, cause error) *FindingError {
-	return &FindingError{ //nolint:exhaustruct
+	return &FindingError{
 		Category: cat,
 		Message:  message,
 		Cause:    cause,

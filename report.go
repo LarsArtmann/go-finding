@@ -74,10 +74,10 @@ type Summary struct {
 
 // NewReport creates a new report with the given tool info.
 func NewReport(tool ToolInfo) *Report {
-	r := &Report{ //nolint:exhaustruct
+	r := &Report{
 		Tool:     tool,
 		findings: make([]Finding, 0),
-		Summary:  Summary{}, //nolint:exhaustruct
+		Summary:  Summary{},
 	}
 	r.ComputeSummary()
 
@@ -138,7 +138,7 @@ func (r *Report) MergeInto(other *Report) *Report {
 	copy(oFindings, other.findings)
 	other.mu.RUnlock()
 
-	merged := &Report{ //nolint:exhaustruct
+	merged := &Report{
 		Tool:     rTool,
 		findings: make([]Finding, 0, len(rFindings)+len(oFindings)),
 	}

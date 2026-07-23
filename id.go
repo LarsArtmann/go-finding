@@ -102,7 +102,7 @@ func ParseID(id ID) ParsedID {
 	parts := strings.Split(string(id), ":")
 
 	if len(parts) < idPartCount {
-		return ParsedID{} //nolint:exhaustruct
+		return ParsedID{}
 	}
 
 	tool := ToolName(parts[0])
@@ -110,7 +110,7 @@ func ParseID(id ID) ParsedID {
 
 	// Handle hash-based IDs
 	if len(parts) == idPartCount && len(parts[2]) == hashLength { // hex encoded hash
-		return ParsedID{Tool: tool, Rule: rule} //nolint:exhaustruct
+		return ParsedID{Tool: tool, Rule: rule}
 	}
 
 	// Try to parse position from remaining parts
@@ -142,14 +142,14 @@ func ParseID(id ID) ParsedID {
 		if err == nil {
 			file := extractFile(parts, positionPartsOne)
 
-			return ParsedID{Tool: tool, Rule: rule, File: FilePath(file), Line: line} //nolint:exhaustruct
+			return ParsedID{Tool: tool, Rule: rule, File: FilePath(file), Line: line}
 		}
 	}
 
 	// Just file, no position
 	file := strings.Join(parts[2:], ":")
 
-	return ParsedID{Tool: tool, Rule: rule, File: FilePath(file)} //nolint:exhaustruct
+	return ParsedID{Tool: tool, Rule: rule, File: FilePath(file)}
 }
 
 // parseInt is a helper to parse a string to int, returning nil on success.
