@@ -39,12 +39,13 @@ Structural changes that must batch into v2.0. Tracked here, not in ROADMAP, beca
 
 ## Completed This Session
 
-| Task                                        | Resolution                                                                                     |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Fix 7 lint issues from v1.3.0 session       | ✅ All 7 fixed: 4 exhaustruct nolints, 2 gosec nolints, FindingTemplate→Template rename        |
-| Run `GOWORK=off` per-module isolation tests | ✅ All 4 modules pass with GOWORK=off GOEXPERIMENT=jsonv2                                      |
-| Decide on FormatText behavioral change      | ✅ Option B: FormatText reverted to `[SEVERITY]` format, FormatTextRich added for emoji badges |
-| Doc accuracy fixes                          | ✅ ADR #9 r.Findings, DOMAIN_LANGUAGE v1.3.0 terms, API_STABILITY v1.3.0, CONTRIBUTING tree    |
+| Task                                        | Resolution                                                                                                   |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Fix 7 lint issues from v1.3.0 session       | ✅ All 7 fixed: 4 exhaustruct nolints, 2 gosec nolints, FindingTemplate→Template rename                      |
+| Run `GOWORK=off` per-module isolation tests | ✅ All 4 modules pass with GOWORK=off GOEXPERIMENT=jsonv2                                                    |
+| Decide on FormatText behavioral change      | ✅ Option B: FormatText reverted to `[SEVERITY]` format, FormatTextRich added for emoji badges               |
+| Doc accuracy fixes                          | ✅ ADR #9 r.Findings, DOMAIN_LANGUAGE v1.3.0 terms, API_STABILITY v1.3.0, CONTRIBUTING tree                  |
+| Remove inline exhaustruct nolints           | ✅ 33 redundant `//nolint:exhaustruct` directives removed across 17 files; exclusions now in `.golangci.yml` |
 
 ---
 
