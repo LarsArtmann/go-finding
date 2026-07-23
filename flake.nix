@@ -82,7 +82,7 @@
         let
           goPkg = pkgs.go_1_26;
 
-          mkApp = name: description: script: {
+          mkApp = name: _description: script: {
             type = "app";
             program = "${
               pkgs.writeShellApplication {
