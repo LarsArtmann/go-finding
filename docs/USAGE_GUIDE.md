@@ -23,17 +23,17 @@ import (
 )
 
 func main() {
-    // Create a finding
+    // Create a finding — branded types (ID, RuleName, ToolName, FilePath) prevent mixups
     f := finding.Finding{
-        ID:          finding.GenerateID("mytool", "RULE001", finding.Position{File: "main.go", Line: 42, Column: 5}),
-        Rule:        "RULE001",
-        ToolName:    "mytool",
+        ID:          finding.GenerateID(finding.ToolName("mytool"), finding.RuleName("RULE001"), finding.Position{File: finding.FilePath("main.go"), Line: 42, Column: 5}),
+        Rule:        finding.RuleName("RULE001"),
+        ToolName:    finding.ToolName("mytool"),
         Message:     "unused variable",
         Severity:    finding.SeverityWarning,
         Category:    finding.CategoryCorrectness,
         FixStrategy: finding.FixStrategySuggest,
         Suggestion:  "Remove the unused variable",
-        Position:    finding.Position{File: "main.go", Line: 42, Column: 5},
+        Position:    finding.Position{File: finding.FilePath("main.go"), Line: 42, Column: 5},
     }
 
     // Create a report
