@@ -23,11 +23,8 @@ func FormatText(w io.Writer, findings []Finding) error {
 			return fmt.Errorf("format text: %w", err)
 		}
 
-		if f.Suggestion != "" {
-			_, err = fmt.Fprintf(w, "  Suggestion: %s\n", f.Suggestion)
-			if err != nil {
-				return fmt.Errorf("format text suggestion: %w", err)
-			}
+		if err := writeSuggestionLine(w, f.Suggestion, "  Suggestion: ", "format text"); err != nil {
+			return err
 		}
 	}
 
@@ -64,12 +61,24 @@ func FormatTextRich(w io.Writer, findings []Finding) error {
 			return fmt.Errorf("format text rich newline: %w", err)
 		}
 
-		if f.Suggestion != "" {
-			_, err = fmt.Fprintf(w, "  💡 %s\n", f.Suggestion)
-			if err != nil {
-				return fmt.Errorf("format text rich suggestion: %w", err)
-			}
+		if err := writeSuggestionLine(w, f.Suggestion, "  💡 ", "format text rich"); err != nil {
+			return err
 		}
+	}
+
+	return nil
+}
+
+// writeSuggestionLine writes the suggestion line with the given prefix if non-empty.
+// errLabel is used in the wrapped error for identifying which formatter failed.
+func writeSuggestionLine(w io.Writer, suggestion, prefix, errLabel string) error {
+	if suggestion == "" {
+		return nil
+	}
+
+	_, err := fmt.Fprintf(w, "%s%s\n", prefix, suggestion)
+	if err != nil {
+		return fmt.Errorf("%s suggestion: %w", errLabel, err)
 	}
 
 	return nil
