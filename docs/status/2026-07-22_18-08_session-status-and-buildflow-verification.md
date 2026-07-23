@@ -16,6 +16,10 @@
 > on master. Lint was ~~no longer clean~~ now clean again (0 issues). The version-check CI gate and
 > dependabot groups mentioned as open in sections (b)/(c) have shipped. See
 > `2026-07-22_18-55_v1.3.0-consumer-api-implementation-status.md` for the full v1.3.0 breakdown.
+>
+> **Resolution (2026-07-23):** v1.3.0 is tagged (`v1.3.0`), pushed, and released (GitHub release
+> created). The "still needs push + tag" note above is resolved. Master is synced with origin (0/0).
+> See `2026-07-22_20-13_v1.3.0-release-execution-self-critique.md`.
 
 ## Summary
 

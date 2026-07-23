@@ -7,6 +7,13 @@
 
 ---
 
+> **Resolution (2026-07-23):** v1.3.0 shipped — tagged `v1.3.0`, pushed, GitHub release created.
+> FormatText decision = **Option B** (reverted `FormatText` to original `[SEVERITY]` format; added
+> `FormatTextRich` for emoji badges). The "annotation factually wrong / auto-commit drift" concern
+> (d.1) is moot — master is synced with origin (0/0). All 7 lint issues fixed (0 remaining),
+> GOWORK=off isolation tests pass all 4 modules. Full breakdown in
+> `2026-07-22_20-13_v1.3.0-release-execution-self-critique.md`.
+
 ## a) FULLY DONE
 
 ### FormatText Explanation

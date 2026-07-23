@@ -10,6 +10,13 @@
 > **Update (2026-07-22):** Master is now synced with origin (auto-commit hook pushed all
 > commits). The 7 lint issues, GOWORK=off isolation tests, and FormatText decision remain open.
 > The "update-old-docs on 12+ status reports" item listed below is being addressed in this session.
+>
+> **Resolution (2026-07-23):** v1.3.0 shipped — tagged `v1.3.0`, pushed, GitHub release created.
+> The three "remain open" items are all resolved: 7 lint issues fixed (0 remaining), GOWORK=off
+> isolation tests pass all 4 modules, FormatText reverted + `FormatTextRich` added (Option B). The
+> "update-old-docs on 12+ status reports" item was completed across the 19-40 session and this
+> 2026-07-23 pass. Full breakdown in
+> `2026-07-22_20-13_v1.3.0-release-execution-self-critique.md`.
 
 ## A) FULLY DONE
 
