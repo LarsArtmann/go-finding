@@ -135,15 +135,15 @@
 //
 // Export and import SARIF format for CI/CD integration:
 //
-//	data, err := report.ToSARIF()           // all findings
-//	data, err := report.ToSARIFFiltered(sev) // filtered by severity + suppression
+//	data, err := report.ToSARIF()                                  // all findings
+//	data, err := report.ToSARIFWithOpts(finding.WithMinSeverity(sev)) // filtered by severity
 //
 // Import back:
 //
 //	findings, err := finding.FindingsFromSARIF(ctx, data)
 //	findings, err := finding.FindingsFromReader(ctx, reader) // streaming
 //
-// WriteSARIF/WriteSARIFFiltered stream directly to io.Writer.
+// WriteSARIF/WriteSARIFWithOpts stream directly to io.Writer.
 // Report.WriteTo implements io.WriterTo for io.Copy compatibility.
 //
 // go-finding-specific properties are preserved in the SARIF property bag for full round-trip fidelity.
