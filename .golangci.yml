@@ -158,6 +158,21 @@ linters:
     exhaustruct:
       exclude:
         - os/exec.Cmd
+        # Core data types: partial initialization is the norm (zero values are meaningful)
+        - github\.com/larsartmann/go-finding\.Finding
+        - github\.com/larsartmann/go-finding\.Position
+        - github\.com/larsartmann/go-finding\.Range
+        - github\.com/larsartmann/go-finding\.Report
+        - github\.com/larsartmann/go-finding\.Summary
+        - github\.com/larsartmann/go-finding\.ToolInfo
+        - github\.com/larsartmann/go-finding\.ParsedID
+        - github\.com/larsartmann/go-finding\.FindingError
+        - github\.com/larsartmann/go-finding\.Template
+        - github\.com/larsartmann/go-finding\.Builder
+        - github\.com/larsartmann/go-finding\.SimpleFixResult
+        # Registry types: initialized incrementally
+        - github\.com/larsartmann/go-finding\.LinterRegistry
+        - github\.com/larsartmann/go-finding\.DetectorRegistry
     funlen:
       lines: 120
       statements: 80
