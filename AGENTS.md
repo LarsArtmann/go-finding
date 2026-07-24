@@ -30,7 +30,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 | **Named types**     | `severity.go`, `confidence.go`, `category.go`, `category_linter.go`, `tag.go`, `fix_strategy.go`, `suppression.go`, `branded_types.go`                                                                                   |
 | **SARIF**           | `sarif_types.go`, `sarif_export.go`, `sarif_import.go` (hand-rolled, not go-sarif — see ADR #9)                                                                                                                          |
 | **LSP**             | `lsp.go`                                                                                                                                                                                                                 |
-| **Extensibility**   | `detector.go`, `adapter.go` (ToolAdapter[O]), `registry.go` (DetectorRegistry), `interval_tree.go` (IntervalIndex[T])                                                                                                    |
+| **Extensibility**   | `detector.go`, `adapter.go` (ToolAdapter[O]), `registry.go` (DetectorRegistry), `interval_index.go` (IntervalIndex[T])                                                                                                    |
 | **gotoken**         | `gotoken/gotoken.go` (shared go/token utilities, public package, stdlib only)                                                                                                                                            |
 | **lockutil**        | `lockutil/lockutil.go` (shared sync.Locker helpers — `Locked`, `RLocked` — for generic mutex-guarded critical sections, stdlib only)                                                                                     |
 | **Pipeline**        | `pipeline/pipeline.go` (Run), `pipeline/pipeline_detect.go`, `pipeline/pipeline_iteration.go`, `pipeline/config.go`, `pipeline/config_file.go`                                                                           |
@@ -53,8 +53,8 @@ bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark 
 bash scripts/version-check.sh                                    # Verify version.go matches git tag
 ```
 
-> **GOEXPERIMENT=jsonv2 required.** The project imports `encoding/json/v2` (9 files across all
-> modules). All `nix run .#*` apps and devShells set this env var automatically. Direct `go`
+> **GOEXPERIMENT=jsonv2 required.** The project imports `encoding/json/v2`.
+> All `nix run .#*` apps and devShells set this env var automatically. Direct `go`
 > commands (outside `nix develop`) require `export GOEXPERIMENT=jsonv2` first — otherwise you get
 > "build constraints exclude all Go files" errors.
 

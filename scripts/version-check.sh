@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null) || {
+GIT_TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null) || {
   echo "OK: no git tag found, skipping version check."
   exit 0
 }
