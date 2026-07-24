@@ -23,6 +23,17 @@ Each tool invents its own types for findings. There is no standardized way to ap
 
 ## Installation
 
+> **Prerequisite — Go 1.26+ with `GOEXPERIMENT=jsonv2`.**
+> This library uses `encoding/json/v2` (experimental in Go 1.26). Enable it once globally:
+>
+> ```bash
+> go install golang.org/dl/go1.26@latest && go1.26 download   # if not already on 1.26
+> go env -w GOEXPERIMENT=jsonv2
+> ```
+>
+> Without this, `go get` fails with `build constraints exclude all Go files`.
+> When Go stabilizes json/v2 (expected 1.27+), this step disappears.
+
 **Core types only** (zero external dependencies):
 
 ```bash
@@ -42,9 +53,6 @@ go install github.com/larsartmann/go-finding/cmd/go-finding@latest
 ```
 
 Requires Go 1.26 or later.
-
-> **Private repo:** until this repository is made public, consumers must configure
-> `go env -w GOPRIVATE=github.com/larsartmann/go-finding` before `go get`/`go mod tidy`.
 
 Each module is an independent Go module and is versioned with its own git tag:
 
@@ -431,6 +439,18 @@ nix run .#lint                     # Lint
 > `export GOEXPERIMENT=jsonv2 && go test -race -count=1 ./...`
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Support
+
+`go-finding` is **MIT-licensed** and maintained on a **best-effort** basis by a
+single author.
+
+- **Bugs & feature requests:** open a [GitHub Issue](https://github.com/larsartmann/go-finding/issues).
+- **No SLA.** Issues and PRs are reviewed as time permits.
+- **Security vulnerabilities:** see [SECURITY.md](SECURITY.md) for private reporting.
+- **Supported versions:** the latest minor release only. The API has been frozen
+  since `v1.0.0`; breaking changes require a major version bump.
+- **Community:** be kind and constructive — see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Versioning
 
