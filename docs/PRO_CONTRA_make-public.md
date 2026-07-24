@@ -19,17 +19,17 @@ requirement must be documented prominently so adopters aren't surprised, but it 
 not a blocker. When Go stabilizes json/v2 (expected in 1.27+), this becomes a
 competitive advantage rather than friction.
 
-| Dimension                      | Rating   | Key Finding                                                        |
-| ------------------------------ | -------- | ------------------------------------------------------------------ |
-| Code quality                   | **A**    | Clean architecture, branded types, decomposed validators           |
-| Test coverage                  | **A**    | 112 test files, fuzz, BDD, property, integration, E2E, stress      |
-| API stability                  | **A**    | v1.0.0 frozen (2026-06-24), v1.3.0 current, no deprecated APIs     |
-| CI/CD maturity                 | **A**    | 8 CI jobs: test, lint, vulncheck, coverage, stress, dupl, bench    |
-| Documentation                  | **B+**   | Strong README/CONTRIBUTING/FEATURES, but 91 internal docs exposed  |
-| Ecosystem value                | **A**    | Fills a genuine gap — no comparable Go library exists              |
-| Adoption friction              | **B**    | `GOEXPERIMENT=jsonv2` required — targets Go 1.26+ early adopters   |
-| Community readiness            | **C+**   | No SECURITY.md, no issue templates, no repo description on GitHub  |
-| Maintenance sustainability     | **B**    | Single author, 22 known consumers, MIT license                     |
+| Dimension                  | Rating | Key Finding                                                       |
+| -------------------------- | ------ | ----------------------------------------------------------------- |
+| Code quality               | **A**  | Clean architecture, branded types, decomposed validators          |
+| Test coverage              | **A**  | 112 test files, fuzz, BDD, property, integration, E2E, stress     |
+| API stability              | **A**  | v1.0.0 frozen (2026-06-24), v1.3.0 current, no deprecated APIs    |
+| CI/CD maturity             | **A**  | 8 CI jobs: test, lint, vulncheck, coverage, stress, dupl, bench   |
+| Documentation              | **B+** | Strong README/CONTRIBUTING/FEATURES, but 91 internal docs exposed |
+| Ecosystem value            | **A**  | Fills a genuine gap — no comparable Go library exists             |
+| Adoption friction          | **B**  | `GOEXPERIMENT=jsonv2` required — targets Go 1.26+ early adopters  |
+| Community readiness        | **C+** | No SECURITY.md, no issue templates, no repo description on GitHub |
+| Maintenance sustainability | **B**  | Single author, 22 known consumers, MIT license                    |
 
 ---
 
@@ -57,6 +57,7 @@ as of 2026-07.
 ### 3. Proven by Real Consumers
 
 22 known consumer projects (14 with Go code), including:
+
 - `art-dupl` — code duplication detection
 - `branching-flow` — Go code quality analyzer
 - `hierarchical-errors` — error handling pattern detector
@@ -67,15 +68,15 @@ boilerplate found by auditing all 22 consumers.
 
 ### 4. Excellent Infrastructure
 
-| Component         | Status                                                                  |
-| ----------------- | ----------------------------------------------------------------------- |
-| GitHub Actions CI | 8 jobs: multi-OS test, lint, govulncheck, coverage, stress, dupl, bench |
+| Component         | Status                                                                   |
+| ----------------- | ------------------------------------------------------------------------ |
+| GitHub Actions CI | 8 jobs: multi-OS test, lint, govulncheck, coverage, stress, dupl, bench  |
 | GoReleaser        | Cross-platform binaries (linux/darwin/windows, amd64/arm64), cosign SBOM |
-| golangci-lint v2  | 80+ linters, strict config, zero outstanding findings                   |
-| Codecov           | Integrated with per-package coverage thresholds                         |
-| Dependabot        | All 4 sub-modules + GitHub Actions tracked                              |
-| Multi-module      | 4 independent Go modules with replace directives for GOWORK=off CI      |
-| Benchmark CI      | Regression detection vs baseline (25% threshold)                        |
+| golangci-lint v2  | 80+ linters, strict config, zero outstanding findings                    |
+| Codecov           | Integrated with per-package coverage thresholds                          |
+| Dependabot        | All 4 sub-modules + GitHub Actions tracked                               |
+| Multi-module      | 4 independent Go modules with replace directives for GOWORK=off CI       |
+| Benchmark CI      | Regression detection vs baseline (25% threshold)                         |
 
 ### 5. API Stability Guaranteed
 
@@ -116,6 +117,7 @@ The core library imports `encoding/json/v2` in 4 production files:
 `json.go`, `sarif_types.go`, `sarif_import.go`, `sarif_export.go`.
 
 This means **every consumer** must:
+
 1. Use Go 1.26+
 2. Set `GOEXPERIMENT=jsonv2` environment variable
 3. Without it: `build constraints exclude all Go files` — the import fails
@@ -126,6 +128,7 @@ stabilizes json/v2 (expected Go 1.27+), this becomes a competitive advantage:
 better performance, cleaner API, first in the ecosystem.
 
 **Mitigation required:**
+
 - Document the requirement **prominently** in README (not buried at the bottom)
 - Add a "Prerequisites" section at the very top of Installation
 - Consider a `go env -w GOEXPERIMENT=jsonv2` one-liner in the quick start
@@ -134,6 +137,7 @@ better performance, cleaner API, first in the ecosystem.
 ### 2. Split Brain: PUBLIC_OR_PRIVATE.md Claims Public
 
 `PUBLIC_OR_PRIVATE.md` has a resolution banner stating:
+
 > "Decision made — project is open-source. v1.2.0 tagged and public."
 
 **This is false.** The repo is `isPrivate: true` on GitHub. This document must be
@@ -142,6 +146,7 @@ corrected before going public to avoid confusion.
 ### 3. 91 Internal Documents Would Be Exposed
 
 The `docs/` directory contains 227 files, of which ~91 are internal-facing:
+
 - Status reports (`docs/status/` — 75+ files documenting every session)
 - Self-critiques and brutal reviews
 - Planning docs with internal task breakdowns
@@ -154,24 +159,26 @@ look like a personal journal rather than a professional library. Competitors als
 gain free insight into your architecture decisions and self-identified weaknesses.
 
 **Options:**
+
 - Move internal docs to `docs/internal/` with a README explaining they're process docs
 - Or `.gitignore` the `docs/status/`, `docs/planning/`, `docs/reviews/` directories
 - Or accept the transparency (some projects do this successfully)
 
 ### 4. Missing Community Health Files
 
-| Missing File           | Purpose                                         |
-| ---------------------- | ----------------------------------------------- |
-| `SECURITY.md`          | Vulnerability reporting policy                  |
-| `CODE_OF_CONDUCT.md`   | Community standards                             |
-| `.github/ISSUE_TEMPLATE/` | Bug report and feature request templates     |
-| `.github/PULL_REQUEST_TEMPLATE.md` | PR checklist                        |
-| `.github/FUNDING.yml`  | Sponsorship (optional)                          |
-| GitHub Topics & Description | Discoverability (repo has no description)  |
+| Missing File                       | Purpose                                   |
+| ---------------------------------- | ----------------------------------------- |
+| `SECURITY.md`                      | Vulnerability reporting policy            |
+| `CODE_OF_CONDUCT.md`               | Community standards                       |
+| `.github/ISSUE_TEMPLATE/`          | Bug report and feature request templates  |
+| `.github/PULL_REQUEST_TEMPLATE.md` | PR checklist                              |
+| `.github/FUNDING.yml`              | Sponsorship (optional)                    |
+| GitHub Topics & Description        | Discoverability (repo has no description) |
 
 ### 5. Single-Author Maintenance Risk
 
 Bus factor = 1. Going public creates implicit support obligations:
+
 - Issue triage and response
 - PR review
 - Semver compatibility promises (harder to change once external consumers depend on APIs)
@@ -200,55 +207,56 @@ before the first public release triggers GoReleaser.
 
 #### Phase 1: Critical Blockers (must fix before `gh repo edit --visibility public`)
 
-| # | Task | Effort | Why |
-|---|------|--------|-----|
-| 1 | **Fix `PUBLIC_OR_PRIVATE.md` split brain** | ✅ Done | Corrected 2026-07-24 |
-| 2 | **Make GOEXPERIMENT=jsonv2 prominent in README** | Trivial | Move prerequisite to top of Installation; add `go env -w GOEXPERIMENT=jsonv2` one-liner |
-| 3 | **Remove `GOPRIVATE` warning from README** | Trivial | No longer needed once public |
-| 4 | **Add GitHub repo description + topics** | Trivial | Discoverability |
+| #   | Task                                             | Effort  | Why                                                                                     |
+| --- | ------------------------------------------------ | ------- | --------------------------------------------------------------------------------------- |
+| 1   | **Fix `PUBLIC_OR_PRIVATE.md` split brain**       | ✅ Done | Corrected 2026-07-24                                                                    |
+| 2   | **Make GOEXPERIMENT=jsonv2 prominent in README** | Trivial | Move prerequisite to top of Installation; add `go env -w GOEXPERIMENT=jsonv2` one-liner |
+| 3   | **Remove `GOPRIVATE` warning from README**       | Trivial | No longer needed once public                                                            |
+| 4   | **Add GitHub repo description + topics**         | Trivial | Discoverability                                                                         |
 
 #### Phase 2: Community Readiness (should fix before announcing)
 
-| #  | Task | Effort | Why |
-|----|------|--------|-----|
-| 5  | Add `SECURITY.md` | Trivial | Vulnerability reporting policy |
-| 6  | Add `CODE_OF_CONDUCT.md` | Trivial | Community standards (Contributor Covenant) |
-| 7  | Add `.github/ISSUE_TEMPLATE/` (bug + feature) | Trivial | Structured issue reporting |
-| 8  | Add `.github/PULL_REQUEST_TEMPLATE.md` | Trivial | PR quality checklist |
-| 9  | Add support policy to README | Trivial | Set expectations (MIT, best-effort) |
-| 10 | Decide on internal docs (move/archive/keep) | Low-Med | Reduce noise from 91 internal files |
-| 11 | Verify pkg.go.dev renders after first public tag | Low | Documentation discoverability |
-| 12 | Track Go json/v2 stabilization (Go 1.27+) | Ongoing | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes |
+| #   | Task                                                             | Effort  | Why                                                       |
+| --- | ---------------------------------------------------------------- | ------- | --------------------------------------------------------- |
+| 5   | Add `SECURITY.md`                                                | Trivial | Vulnerability reporting policy                            |
+| 6   | Add `CODE_OF_CONDUCT.md`                                         | Trivial | Community standards (Contributor Covenant)                |
+| 7   | Add `.github/ISSUE_TEMPLATE/` (bug + feature)                    | Trivial | Structured issue reporting                                |
+| 8   | Add `.github/PULL_REQUEST_TEMPLATE.md`                           | Trivial | PR quality checklist                                      |
+| 9   | Add support policy to README                                     | Trivial | Set expectations (MIT, best-effort)                       |
+| 10  | ~~Decide on internal docs (move/archive/keep)~~ ✅ **No action** | Done    | User: keep all as-is                                      |
+| 11  | Verify pkg.go.dev renders after first public tag                 | Low     | Documentation discoverability                             |
+| 12  | Track Go json/v2 stabilization (Go 1.27+)                        | Ongoing | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes |
 
 #### Phase 3: Launch (do after visibility flip)
 
-| #  | Task | Effort | Why |
-|----|------|--------|-----|
-| 13 | Tag v1.4.0 (or next minor) | Low | Public version anchor |
-| 14 | Verify GoReleaser + Homebrew tap works on public tag | Low | Binary distribution |
-| 15 | Write announcement (blog post / r/golang / Go Slack / Twitter) | Medium | Drive adoption |
-| 16 | Add to Awesome Go lists | Low | Discoverability |
+| #   | Task                                                           | Effort | Why                   |
+| --- | -------------------------------------------------------------- | ------ | --------------------- |
+| 13  | Tag v1.4.0 (or next minor)                                     | Low    | Public version anchor |
+| 14  | Verify GoReleaser + Homebrew tap works on public tag           | Low    | Binary distribution   |
+| 15  | Write announcement (blog post / r/golang / Go Slack / Twitter) | Medium | Drive adoption        |
+| 16  | Add to Awesome Go lists                                        | Low    | Discoverability       |
 
 ---
 
 ## Assessment Matrix
 
-| Question | Answer |
-|----------|--------|
-| Is the code production-ready? | **Yes** — v1.3.0, 95%+ coverage, zero-dep core |
-| Does it fill a real gap? | **Yes** — no comparable Go library exists |
-| Are there known consumers? | **Yes** — 22 projects, 14 with Go code |
-| Is the API stable? | **Yes** — frozen since v1.0.0, no deprecated APIs |
-| Can users `go get` it today? | **Yes, with `GOEXPERIMENT=jsonv2`** — targets Go 1.26+ early adopters |
-| Is the community infrastructure ready? | **Partially** — missing 5 health files |
-| Is the git history clean? | **Yes** — no secrets, no binaries, no PII |
-| Should you wait? | **No** — everything is ready; json/v2 is a feature, not a bug |
+| Question                               | Answer                                                                |
+| -------------------------------------- | --------------------------------------------------------------------- |
+| Is the code production-ready?          | **Yes** — v1.3.0, 95%+ coverage, zero-dep core                        |
+| Does it fill a real gap?               | **Yes** — no comparable Go library exists                             |
+| Are there known consumers?             | **Yes** — 22 projects, 14 with Go code                                |
+| Is the API stable?                     | **Yes** — frozen since v1.0.0, no deprecated APIs                     |
+| Can users `go get` it today?           | **Yes, with `GOEXPERIMENT=jsonv2`** — targets Go 1.26+ early adopters |
+| Is the community infrastructure ready? | **Partially** — missing 5 health files                                |
+| Is the git history clean?              | **Yes** — no secrets, no binaries, no PII                             |
+| Should you wait?                       | **No** — everything is ready; json/v2 is a feature, not a bug         |
 
 ---
 
 ## If You Choose to Stay Private
 
 Valid reasons to delay:
+
 - You're building commercial tooling on top and want to keep the foundation private
 - You don't want maintenance burden right now
 
