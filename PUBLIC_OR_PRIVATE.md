@@ -1,8 +1,11 @@
 # PUBLIC OR PRIVATE? — go-finding
 
-> **RESOLUTION STATUS (2026-07-16):** Decision made — project is open-source. v1.2.0 tagged and public. Most pre-release gaps below have been resolved. This document is retained as a historical record of the decision process.
+> **CORRECTION (2026-07-24):** The banner below claiming the repo is public was
+> **incorrect** — the GitHub repo remains `PRIVATE`. A fresh, accurate assessment
+> with an actionable TODO list lives in [`docs/PRO_CONTRA_make-public.md`](docs/PRO_CONTRA_make-public.md).
 
 **Date:** 2026-05-04 | **Decision:** CONDITIONAL — Public with prerequisites
+**Superseded by:** `docs/PRO_CONTRA_make-public.md` (2026-07-24)
 
 ---
 
