@@ -10,14 +10,14 @@
 
 ## Executive Summary
 
-**Verdict: Make public — but fix the GOEXPERIMENT=jsonv2 barrier first.**
+**Verdict: Make public.** The project is production-grade and fills an unfilled gap.
 
-The project is production-grade: zero-dep core, 95%+ coverage, comprehensive CI,
-lossless SARIF/LSP round-trip, clean multi-module architecture. The ecosystem gap
-it fills is real and unfilled. The single biggest adoption blocker is the
-`encoding/json/v2` dependency in the **core** library, which requires every consumer
-to set `GOEXPERIMENT=jsonv2`. This should be resolved (migrate to `encoding/json`
-or wait for Go 1.27 to stabilize json/v2) **before** going public.
+The core library depends on `encoding/json/v2` (Go 1.26 experimental). This is a
+**conscious decision to stay on the cutting edge** — the project targets Go 1.26+
+users and positions itself as a forward-looking library. The `GOEXPERIMENT=jsonv2`
+requirement must be documented prominently so adopters aren't surprised, but it is
+not a blocker. When Go stabilizes json/v2 (expected in 1.27+), this becomes a
+competitive advantage rather than friction.
 
 | Dimension                      | Rating   | Key Finding                                                        |
 | ------------------------------ | -------- | ------------------------------------------------------------------ |
@@ -27,7 +27,7 @@ or wait for Go 1.27 to stabilize json/v2) **before** going public.
 | CI/CD maturity                 | **A**    | 8 CI jobs: test, lint, vulncheck, coverage, stress, dupl, bench    |
 | Documentation                  | **B+**   | Strong README/CONTRIBUTING/FEATURES, but 91 internal docs exposed  |
 | Ecosystem value                | **A**    | Fills a genuine gap — no comparable Go library exists              |
-| **Adoption friction**          | **C**    | **GOEXPERIMENT=jsonv2 required — breaks `go get` for most users**  |
+| Adoption friction              | **B**    | `GOEXPERIMENT=jsonv2` required — targets Go 1.26+ early adopters   |
 | Community readiness            | **C+**   | No SECURITY.md, no issue templates, no repo description on GitHub  |
 | Maintenance sustainability     | **B**    | Single author, 22 known consumers, MIT license                     |
 
@@ -108,34 +108,28 @@ Architecture decision records. Migration guides.
 
 ## CONTRA — Arguments Against Making Public (Right Now)
 
-### 1. GOEXPERIMENT=jsonv2 — THE Critical Adoption Barrier
+### 1. GOEXPERIMENT=jsonv2 — Conscious Cutting-Edge Choice
 
-**Severity: BLOCKER**
+**Severity: Adoption friction (not a blocker)**
 
 The core library imports `encoding/json/v2` in 4 production files:
 `json.go`, `sarif_types.go`, `sarif_import.go`, `sarif_export.go`.
 
 This means **every consumer** must:
-1. Use Go 1.26+ (not yet the default in most environments)
+1. Use Go 1.26+
 2. Set `GOEXPERIMENT=jsonv2` environment variable
 3. Without it: `build constraints exclude all Go files` — the import fails
 
-**Impact:** `go get github.com/larsartmann/go-finding` **does not work** out of the box.
-A user following the README's installation instructions will hit an immediate wall.
-This is the #1 reason most potential adopters will abandon the library.
+**Decision: Stay on json/v2.** This is a deliberate choice to adopt the future Go
+JSON standard early. The project targets forward-looking Go 1.26+ users. When Go
+stabilizes json/v2 (expected Go 1.27+), this becomes a competitive advantage:
+better performance, cleaner API, first in the ecosystem.
 
-**Options to resolve:**
-- **A) Migrate back to `encoding/json`** (v1) — Most pragmatic. The json/v2 API is
-  similar; the migration is mechanical. Removes the barrier entirely. Cost: lose
-  json/v2 performance and some API ergonomics.
-- **B) Wait for Go 1.27** — json/v2 is expected to be stabilized. But timeline is
-  unknown (likely late 2026), and Go 1.26 adoption is still ramping.
-- **C) Keep json/v2, document loudly** — Highest friction. Only viable if the target
-  audience is exclusively Go 1.26+ early adopters.
-
-**Recommendation: Option A.** Migrate to `encoding/json` before going public. The
-adoption cost of json/v2 far outweighs its benefits for a library seeking broad
-adoption.
+**Mitigation required:**
+- Document the requirement **prominently** in README (not buried at the bottom)
+- Add a "Prerequisites" section at the very top of Installation
+- Consider a `go env -w GOEXPERIMENT=jsonv2` one-liner in the quick start
+- Track Go json/v2 stabilization timeline and remove the env var when it lands
 
 ### 2. Split Brain: PUBLIC_OR_PRIVATE.md Claims Public
 
@@ -208,29 +202,29 @@ before the first public release triggers GoReleaser.
 
 | # | Task | Effort | Why |
 |---|------|--------|-----|
-| 1 | **Migrate `encoding/json/v2` → `encoding/json`** | Medium (4 files + tests) | Without this, `go get` fails for 99% of users |
-| 2 | **Fix `PUBLIC_OR_PRIVATE.md` split brain** | Trivial | Remove false "already public" banner |
+| 1 | **Fix `PUBLIC_OR_PRIVATE.md` split brain** | ✅ Done | Corrected 2026-07-24 |
+| 2 | **Make GOEXPERIMENT=jsonv2 prominent in README** | Trivial | Move prerequisite to top of Installation; add `go env -w GOEXPERIMENT=jsonv2` one-liner |
 | 3 | **Remove `GOPRIVATE` warning from README** | Trivial | No longer needed once public |
-| 4 | **Verify tests pass without `GOEXPERIMENT`** | Medium | Confirm migration is complete |
-| 5 | **Add GitHub repo description + topics** | Trivial | Discoverability |
+| 4 | **Add GitHub repo description + topics** | Trivial | Discoverability |
 
 #### Phase 2: Community Readiness (should fix before announcing)
 
 | #  | Task | Effort | Why |
 |----|------|--------|-----|
-| 6  | Add `SECURITY.md` | Trivial | Vulnerability reporting policy |
-| 7  | Add `CODE_OF_CONDUCT.md` | Trivial | Community standards (Contributor Covenant) |
-| 8  | Add `.github/ISSUE_TEMPLATE/` (bug + feature) | Trivial | Structured issue reporting |
-| 9  | Add `.github/PULL_REQUEST_TEMPLATE.md` | Trivial | PR quality checklist |
-| 10 | Add support policy to README | Trivial | Set expectations (MIT, best-effort) |
-| 11 | Decide on internal docs (move/archive/keep) | Low-Med | Reduce noise from 91 internal files |
-| 12 | Verify pkg.go.dev renders after first public tag | Low | Documentation discoverability |
+| 5  | Add `SECURITY.md` | Trivial | Vulnerability reporting policy |
+| 6  | Add `CODE_OF_CONDUCT.md` | Trivial | Community standards (Contributor Covenant) |
+| 7  | Add `.github/ISSUE_TEMPLATE/` (bug + feature) | Trivial | Structured issue reporting |
+| 8  | Add `.github/PULL_REQUEST_TEMPLATE.md` | Trivial | PR quality checklist |
+| 9  | Add support policy to README | Trivial | Set expectations (MIT, best-effort) |
+| 10 | Decide on internal docs (move/archive/keep) | Low-Med | Reduce noise from 91 internal files |
+| 11 | Verify pkg.go.dev renders after first public tag | Low | Documentation discoverability |
+| 12 | Track Go json/v2 stabilization (Go 1.27+) | Ongoing | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes |
 
 #### Phase 3: Launch (do after visibility flip)
 
 | #  | Task | Effort | Why |
 |----|------|--------|-----|
-| 13 | Tag v2.0.0 (if json/v2 removal is a breaking change) or v1.4.0 | Low | Public version anchor |
+| 13 | Tag v1.4.0 (or next minor) | Low | Public version anchor |
 | 14 | Verify GoReleaser + Homebrew tap works on public tag | Low | Binary distribution |
 | 15 | Write announcement (blog post / r/golang / Go Slack / Twitter) | Medium | Drive adoption |
 | 16 | Add to Awesome Go lists | Low | Discoverability |
@@ -245,23 +239,21 @@ before the first public release triggers GoReleaser.
 | Does it fill a real gap? | **Yes** — no comparable Go library exists |
 | Are there known consumers? | **Yes** — 22 projects, 14 with Go code |
 | Is the API stable? | **Yes** — frozen since v1.0.0, no deprecated APIs |
-| Can users `go get` it today? | **No** — GOEXPERIMENT=jsonv2 blocks import |
+| Can users `go get` it today? | **Yes, with `GOEXPERIMENT=jsonv2`** — targets Go 1.26+ early adopters |
 | Is the community infrastructure ready? | **Partially** — missing 5 health files |
 | Is the git history clean? | **Yes** — no secrets, no binaries, no PII |
-| Should you wait? | **Only for json/v2 migration** — everything else is ready |
+| Should you wait? | **No** — everything is ready; json/v2 is a feature, not a bug |
 
 ---
 
 ## If You Choose to Stay Private
 
 Valid reasons to delay:
-- You need the json/v2 API and don't want to migrate yet
 - You're building commercial tooling on top and want to keep the foundation private
 - You don't want maintenance burden right now
 
-**None of these outweigh the ecosystem value.** The json/v2 migration is mechanical.
-The maintenance burden is manageable with a clear support policy. The first-mover
-advantage窗口窗口 is closing.
+**None of these outweigh the ecosystem value.** The maintenance burden is
+manageable with a clear support policy. The first-mover advantage window is closing.
 
 ---
 

@@ -8,7 +8,38 @@
 
 ## 🔴 HIGH Priority
 
-_No high-priority items. v1.3.0 is released; see [CHANGELOG.md](CHANGELOG.md)._
+### Make Repo Public — Phase 1: Critical Blockers
+
+_See [`docs/PRO_CONTRA_make-public.md`](docs/PRO_CONTRA_make-public.md) for full analysis._
+
+| Task | Status | Impact | Effort | Notes |
+|------|--------|--------|--------|-------|
+| Make `GOEXPERIMENT=jsonv2` prominent in README | ⬜ `TODO` | Critical | Trivial | Move prerequisite to top of Installation; add `go env -w GOEXPERIMENT=jsonv2` one-liner |
+| Fix `PUBLIC_OR_PRIVATE.md` false "public" banner | ✅ `DONE` | High | Trivial | Corrected 2026-07-24 |
+| Remove `GOPRIVATE` warning from README | ⬜ `TODO` | High | Trivial | No longer needed once public |
+| Add GitHub repo description + topics | ⬜ `TODO` | High | Trivial | Discoverability — `gh repo edit --description "..." --add-topic go,static-analysis,sarif,...` |
+
+### Make Repo Public — Phase 2: Community Readiness
+
+| Task | Status | Impact | Effort | Notes |
+|------|--------|--------|--------|-------|
+| Add `SECURITY.md` | ⬜ `TODO` | Med | Trivial | Vulnerability reporting policy |
+| Add `CODE_OF_CONDUCT.md` | ⬜ `TODO` | Med | Trivial | Contributor Covenant v2.1 |
+| Add `.github/ISSUE_TEMPLATE/` (bug + feature) | ⬜ `TODO` | Med | Trivial | Structured issue reporting |
+| Add `.github/PULL_REQUEST_TEMPLATE.md` | ⬜ `TODO` | Med | Trivial | PR quality checklist |
+| Add support policy to README | ⬜ `TODO` | Med | Trivial | Set expectations (MIT, best-effort) |
+| Decide on 91 internal docs (move/archive/keep) | ⬜ `TODO` | Med | Low-Med | `docs/status/`, `docs/planning/`, `docs/reviews/` noise reduction |
+| Verify pkg.go.dev renders after first public tag | ⬜ `TODO` | Med | Low | Triggered by first `go get` after visibility flip |
+| Track Go json/v2 stabilization (Go 1.27+) | ⬜ `TODO` | Low | Ongoing | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes |
+
+### Make Repo Public — Phase 3: Launch
+
+| Task | Status | Impact | Effort | Notes |
+|------|--------|--------|--------|-------|
+| Tag v1.4.0 (or next minor) | ⬜ `TODO` | Med | Low | Public version anchor |
+| Verify GoReleaser + Homebrew tap on public tag | ⬜ `TODO` | Med | Low | `HOMEBREW_TAP_GITHUB_TOKEN` secret must exist |
+| Write announcement (blog/r/golang/Slack/Twitter) | ⬜ `TODO` | High | Medium | Drive adoption |
+| Submit to Awesome Go | ⬜ `TODO` | Low | Low | Discoverability |
 
 ## 🟡 MEDIUM Priority
 
