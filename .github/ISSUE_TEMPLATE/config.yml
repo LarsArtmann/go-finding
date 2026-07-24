@@ -3,6 +3,3 @@ contact_links:
   - name: Security vulnerability
     url: https://github.com/larsartmann/go-finding/security/advisories/new
     about: Report security issues privately — do NOT open a public issue.
-  - name: Questions & discussions
-    url: https://github.com/larsartmann/go-finding/discussions
-    about: Ask questions and discuss ideas in GitHub Discussions.
