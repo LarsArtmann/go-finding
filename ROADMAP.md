@@ -65,10 +65,14 @@ Each would live in its own subpackage to keep language-specific dependencies out
 
 ### Hardening (owner decisions pending)
 
-These are known design tensions deferred because they require breaking changes:
+These are known design tensions deferred because they require breaking changes. Concrete designs from the [data-model review](docs/reviews/2026-07-18_21-10_data-model-review.html).
 
-- **Position zero-value** — `Position{}` has `Offset=0` (valid byte 0), not "unset". Resolved pragmatically in v0.9.0 with `-1` sentinel, but a type-safe redesign is still on the table for v2.0.
+- **Position zero-value** — `Position{}` has `Offset=0` (valid byte 0), not "unset" (`position.go:33-38`: 0=unset for Line/Column, -1=unset for Offset). Resolved pragmatically in v0.9.0 with `-1` sentinel, but a type-safe redesign using `Option[T]` generic helpers is still on the table for v2.0.
 - **`Range.End` zero-value ambiguity** — same class of issue as Position.
+- **FixStrategy as closed union** — Current `type FixStrategy string` (`fix_strategy.go:4`) with string constants loses type safety. v2.0 design: `type Fix interface { isFix() }` with `NoFix`, `Suggestion{Text}`, `Direct{Before,After}`, `AIReserved`.
+- **Pointer-as-state fields** — `Range *Range` (`finding.go:29`), `Suppression *Suppression` (`finding.go:33`), `ExpiresAt *time.Time` (`suppression.go:20`), and `RelatedRef.Range *Range` (`finding.go:96`) all encode 3 states (nil/zero/valid) in a single pointer.
+- **Tags to TagSet** — `Tags []Tag` (`finding.go:21`) forces order-insensitive equality in `finding_equal.go`. v2.0: `TagSet map[Tag]struct{}`.
+- **Finding sub-struct composition** — Current flat struct (`finding.go:8-48`). v2.0: compose from `Identity{}`, `Location{}`, `Classification{}`, `Fix{}`. Changes JSON shape — must batch.
 - **SARIF schema validation** — blocked on vendoring the 7K-line SARIF 2.1.0 JSON schema for test-time validation.
 
 ---
