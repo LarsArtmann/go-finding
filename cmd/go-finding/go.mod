@@ -15,7 +15,7 @@ require (
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.10.0 // indirect
-	github.com/go-faster/errors v0.7.1 // indirect
+	github.com/go-faster/errors v0.8.0 // indirect
 	github.com/go-faster/jx v1.2.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/larsartmann/go-branded-id v0.3.2 // indirect
