@@ -4,11 +4,7 @@
 
 `go-finding` is a library, not a long-running service, so "support" means: we
 provide fixes for security-relevant bugs in the **latest minor release** only.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.3.x   | :white_check_mark: |
-| < 1.3   | :x:                |
+Older minor versions do not receive backports.
 
 The public API has been frozen since `v1.0.0`; breaking changes require a major
 version bump, so upgrading within the `1.x` line is safe.

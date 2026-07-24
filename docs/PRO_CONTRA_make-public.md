@@ -28,7 +28,7 @@ competitive advantage rather than friction.
 | Documentation              | **B+** | Strong README/CONTRIBUTING/FEATURES, but 91 internal docs exposed |
 | Ecosystem value            | **A**  | Fills a genuine gap — no comparable Go library exists             |
 | Adoption friction          | **B**  | `GOEXPERIMENT=jsonv2` required — targets Go 1.26+ early adopters  |
-| Community readiness        | **C+** | No SECURITY.md, no issue templates, no repo description on GitHub |
+| Community readiness        | **A-**  | SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates, support policy |
 | Maintenance sustainability | **B**  | Single author, 22 known consumers, MIT license                    |
 
 ---
@@ -164,16 +164,18 @@ gain free insight into your architecture decisions and self-identified weaknesse
 - Or `.gitignore` the `docs/status/`, `docs/planning/`, `docs/reviews/` directories
 - Or accept the transparency (some projects do this successfully)
 
-### 4. Missing Community Health Files
+### 4. ~~Missing Community Health Files~~ ✅ RESOLVED
 
-| Missing File                       | Purpose                                   |
-| ---------------------------------- | ----------------------------------------- |
-| `SECURITY.md`                      | Vulnerability reporting policy            |
-| `CODE_OF_CONDUCT.md`               | Community standards                       |
-| `.github/ISSUE_TEMPLATE/`          | Bug report and feature request templates  |
-| `.github/PULL_REQUEST_TEMPLATE.md` | PR checklist                              |
-| `.github/FUNDING.yml`              | Sponsorship (optional)                    |
-| GitHub Topics & Description        | Discoverability (repo has no description) |
+All community health files have been added (2026-07-24):
+
+| File                             | Status    |
+| -------------------------------- | --------- |
+| `SECURITY.md`                    | ✅ Created |
+| `CODE_OF_CONDUCT.md`             | ✅ Created |
+| `.github/ISSUE_TEMPLATE/`        | ✅ Created |
+| `.github/PULL_REQUEST_TEMPLATE.md` | ✅ Created |
+| `.github/FUNDING.yml`            | ⬜ Optional (not added) |
+| GitHub Topics & Description      | ✅ Set (11 topics)    |
 
 ### 5. Single-Author Maintenance Risk
 
@@ -207,25 +209,25 @@ before the first public release triggers GoReleaser.
 
 #### Phase 1: Critical Blockers (must fix before `gh repo edit --visibility public`)
 
-| #   | Task                                             | Effort  | Why                                                                                     |
-| --- | ------------------------------------------------ | ------- | --------------------------------------------------------------------------------------- |
-| 1   | **Fix `PUBLIC_OR_PRIVATE.md` split brain**       | ✅ Done | Corrected 2026-07-24                                                                    |
-| 2   | **Make GOEXPERIMENT=jsonv2 prominent in README** | Trivial | Move prerequisite to top of Installation; add `go env -w GOEXPERIMENT=jsonv2` one-liner |
-| 3   | **Remove `GOPRIVATE` warning from README**       | Trivial | No longer needed once public                                                            |
-| 4   | **Add GitHub repo description + topics**         | Trivial | Discoverability                                                                         |
+| #   | Task                                             | Status    | Why                                                                                     |
+| --- | ------------------------------------------------ | --------- | --------------------------------------------------------------------------------------- |
+| 1   | **Fix `PUBLIC_OR_PRIVATE.md` split brain**       | ✅ Done   | Corrected 2026-07-24                                                                    |
+| 2   | **Make GOEXPERIMENT=jsonv2 prominent in README** | ✅ Done   | Prerequisites block at top of Installation (2026-07-24)                                 |
+| 3   | **Remove `GOPRIVATE` warning from README**       | ✅ Done   | Removed 2026-07-24; no longer needed once public                                        |
+| 4   | **Add GitHub repo description + topics**         | ✅ Done   | Description + 11 topics set via `gh repo edit` (2026-07-24)                            |
 
 #### Phase 2: Community Readiness (should fix before announcing)
 
-| #   | Task                                                             | Effort  | Why                                                       |
-| --- | ---------------------------------------------------------------- | ------- | --------------------------------------------------------- |
-| 5   | Add `SECURITY.md`                                                | Trivial | Vulnerability reporting policy                            |
-| 6   | Add `CODE_OF_CONDUCT.md`                                         | Trivial | Community standards (Contributor Covenant)                |
-| 7   | Add `.github/ISSUE_TEMPLATE/` (bug + feature)                    | Trivial | Structured issue reporting                                |
-| 8   | Add `.github/PULL_REQUEST_TEMPLATE.md`                           | Trivial | PR quality checklist                                      |
-| 9   | Add support policy to README                                     | Trivial | Set expectations (MIT, best-effort)                       |
-| 10  | ~~Decide on internal docs (move/archive/keep)~~ ✅ **No action** | Done    | User: keep all as-is                                      |
-| 11  | Verify pkg.go.dev renders after first public tag                 | Low     | Documentation discoverability                             |
-| 12  | Track Go json/v2 stabilization (Go 1.27+)                        | Ongoing | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes |
+| #   | Task                                                             | Status    | Why                                                       |
+| --- | ---------------------------------------------------------------- | --------- | --------------------------------------------------------- |
+| 5   | Add `SECURITY.md`                                                | ✅ Done   | Vulnerability reporting policy (2026-07-24)               |
+| 6   | Add `CODE_OF_CONDUCT.md`                                         | ✅ Done   | Contributor Covenant v2.1 (2026-07-24)                    |
+| 7   | Add `.github/ISSUE_TEMPLATE/` (bug + feature)                    | ✅ Done   | bug + feature templates + config.yml (2026-07-24)         |
+| 8   | Add `.github/PULL_REQUEST_TEMPLATE.md`                           | ✅ Done   | PR quality checklist (2026-07-24)                         |
+| 9   | Add support policy to README                                     | ✅ Done   | "Support" section added before Versioning (2026-07-24)   |
+| 10  | ~~Decide on internal docs (move/archive/keep)~~ ✅ **No action** | Done      | User: keep all as-is                                      |
+| 11  | Verify pkg.go.dev renders after first public tag                 | ⬜ TODO   | Triggered by first `go get` after visibility flip          |
+| 12  | Track Go json/v2 stabilization (Go 1.27+)                        | ⬜ TODO   | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes |
 
 #### Phase 3: Launch (do after visibility flip)
 
@@ -247,7 +249,7 @@ before the first public release triggers GoReleaser.
 | Are there known consumers?             | **Yes** — 22 projects, 14 with Go code                                |
 | Is the API stable?                     | **Yes** — frozen since v1.0.0, no deprecated APIs                     |
 | Can users `go get` it today?           | **Yes, with `GOEXPERIMENT=jsonv2`** — targets Go 1.26+ early adopters |
-| Is the community infrastructure ready? | **Partially** — missing 5 health files                                |
+| Is the community infrastructure ready? | **Yes** — SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates, support policy (2026-07-24) |
 | Is the git history clean?              | **Yes** — no secrets, no binaries, no PII                             |
 | Should you wait?                       | **No** — everything is ready; json/v2 is a feature, not a bug         |
 

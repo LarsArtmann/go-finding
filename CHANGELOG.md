@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No unreleased changes yet._
+### Added — Community Readiness
+
+- `SECURITY.md` — Vulnerability reporting policy (GitHub private advisories, 72h SLA).
+- `CODE_OF_CONDUCT.md` — Contributor Covenant v2.1.
+- `.github/ISSUE_TEMPLATE/bug_report.md` — Structured bug report template with environment section.
+- `.github/ISSUE_TEMPLATE/feature_request.md` — Feature request template with API sketch.
+- `.github/ISSUE_TEMPLATE/config.yml` — Issue chooser with security advisory contact link.
+- `.github/PULL_REQUEST_TEMPLATE.md` — PR checklist with GOEXPERIMENT test/lint commands.
+
+### Changed — Documentation
+
+- README: Added prominent `GOEXPERIMENT=jsonv2` prerequisite block at top of Installation.
+- README: Removed `GOPRIVATE` warning (no longer needed once public).
+- README: Added `## Support` section (MIT, best-effort, latest-minor-only policy).
+- README: Fixed stale version references (`v1.2.1` → `v1.3.0`, `"1.2.0"` → `"1.3.0"`).
+- README: Removed redundant `Requires Go 1.26 or later.` line (now covered by Prerequisites block).
+- SECURITY.md: Replaced stale hardcoded version table with prose-only "latest minor release" policy.
+- GitHub repo: Set description and 11 topics for discoverability.
 
 ## [1.3.0] - 2026-07-22
 
