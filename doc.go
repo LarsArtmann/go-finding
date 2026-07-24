@@ -171,7 +171,7 @@
 //	errors.Is(err, finding.ErrValidation) // true
 //
 // Five error categories: Validation, IO, Parse, Conflict, Internal.
-// Use IsFindingError, GetCategory, IsCategory for programmatic handling.
+// Use IsFindingError, CategoryOf, IsCategory for programmatic handling.
 // FindingError supports WithFinding and WithPosition for attaching context.
 //
 // # Suppression

@@ -240,14 +240,13 @@ Renamed for clarity. `Process()` is now `Transform()`.
 | `SeverityAliases()` | `LookupSeverityAlias(name)`        | `severity.go`          |
 | (direct map edit)   | `RegisterSeverityAlias(name, sev)` | `severity.go`          |
 
-`GetCategory()`, `ConflictInfo`, and `LSPRelatedInfo` are kept as deprecated wrappers until v1.0.0 final.
+All deprecated wrappers were removed in v1.0.0. Update all call sites.
 
 ---
 
-## 10. FixStrategy Normalization (OWNER DECISION PENDING)
+## 10. FixStrategy Normalization
 
-v1.0.0 will normalize the empty string `""` to `FixStrategyNone` (`"none"`). See
-`docs/RELEASE_CRITERIA.md` Blocker 2.
+v1.0.0 normalizes the empty string `""` to `FixStrategyNone` (`"none"`) via `NormalizeFixStrategy()`. All public entry points (`Validate`, `Builder.Build`, `FromLSP`, SARIF import) call this automatically.
 
 ---
 
