@@ -1,5 +1,7 @@
 # Consumer-Driven API Improvements — Making go-finding a Better Fit
 
+> **📦 RESOLUTION STATUS (updated 2026-07-24):** ALL consumer-driven APIs shipped in v1.3.0 (2026-07-22). 12 convenience APIs added: NewReportFromFindings, BuildOrDefault, Template, default ConfidenceFull, FilePos, SeverityFromLevel, PriorityString, FormatTextRich, FormatTable, ApplySimpleFixes, CheckBinary/RunCmd, DefaultLinterRegistry expansion.
+
 > **Date:** 2026-07-22 17:56
 > **Branch:** `master`
 > **Trigger:** Full audit of all 22 consumers of `go-finding` across `~/projects/`

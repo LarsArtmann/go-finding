@@ -123,7 +123,7 @@ func TestIsFindingError(t *testing.T) {
 	}
 }
 
-func TestGetCategory(t *testing.T) {
+func TestCategoryOf(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
