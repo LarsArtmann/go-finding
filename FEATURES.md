@@ -752,7 +752,7 @@ Test categories:
 - Unit tests per source file
 - Integration tests (`pipeline/integration_test.go`, `cmd/go-finding/integration_test.go`)
 - E2E tests (`cmd/go-finding/e2e_test.go`)
-- Fuzz tests (`fuzz_test.go`, `id_fuzz_test.go`, `merge_fuzz_test.go`, `sarif_fuzz_test.go`)
+- Fuzz tests (`fuzz_test.go`, `id_fuzz_test.go`, `json_fuzz_test.go`, `lsp_fuzz_test.go`, `merge_fuzz_test.go`, `sarif_fuzz_test.go`)
 - Property-based tests (`property_test.go`)
 - Benchmarks (`bench_test.go`)
 - Regression tests alongside the behavior they protect (one `<subject>_test.go` per production file)
@@ -900,7 +900,7 @@ adapter := finding.NewToolAdapter("my-tool", runFunc, parseFunc, convertFunc)
 
 **Status:** FULLY_FUNCTIONAL
 
-84 linter→category mappings with case-insensitive lookup:
+89 linter→category mappings with case-insensitive lookup:
 
 ```go
 cat := finding.CategoryForLinter("gosec") // CategorySecurity
@@ -973,7 +973,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 
 | Feature                                      | Status               | Notes                                                                                 |
 | -------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------- |
-| Finding type                                 | FULLY_FUNCTIONAL     | Core data model with branded types (ID, RuleName, ToolName, FilePath), 93.6% coverage |
+| Finding type                                 | FULLY_FUNCTIONAL     | Core data model with branded types (ID, RuleName, ToolName, FilePath)                  |
 | Builder API                                  | FULLY_FUNCTIONAL     | Fluent construction with validation                                                   |
 | Position & Range                             | FULLY_FUNCTIONAL     | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent)                     |
 | Severity (4 levels)                          | FULLY_FUNCTIONAL     | With comparison operators                                                             |
@@ -1006,7 +1006,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | File backup & rollback                       | FULLY_FUNCTIONAL     | Automatic on fix failure                                                              |
 | Go vet detector                              | PARTIALLY_FUNCTIONAL | Requires `go vet` in PATH                                                             |
 | Staticcheck detector                         | PARTIALLY_FUNCTIONAL | Requires `staticcheck` in PATH                                                        |
-| CLI tool                                     | PARTIALLY_FUNCTIONAL | 6 output formats (text, markdown, csv, tsv, json, sarif), config, profiling           |
+| CLI tool                                     | PARTIALLY_FUNCTIONAL | 7 output formats (text, markdown, csv, tsv, json, sarif, table), config, profiling    |
 | Plugin detector registry                     | FULLY_FUNCTIONAL     | Thread-safe `RegisterDetector`                                                        |
 | Per-detector timeouts                        | FULLY_FUNCTIONAL     | `DetectorTimeouts` map in Config + CLI config file                                    |
 | Structured logging (slog)                    | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                              |
@@ -1028,7 +1028,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | GoASTProvider                                | FULLY_FUNCTIONAL     | AST-aware fix provider for .go files (go/parser)                                      |
 | GeneratedFileFilter                          | FULLY_FUNCTIONAL     | Removes findings from auto-generated files (sqlc, protobuf, etc.)                     |
 | ToolAdapter[O]                               | FULLY_FUNCTIONAL     | Generic tool→Finding converter adapter                                                |
-| CategoryForLinter                            | FULLY_FUNCTIONAL     | 84 linter→category mappings, case-insensitive                                         |
+| CategoryForLinter                            | FULLY_FUNCTIONAL     | 89 linter→category mappings, case-insensitive                                         |
 | Severity aliases                             | FULLY_FUNCTIONAL     | 11 severity aliases + SeverityFromLevel + PriorityString (v1.3.0)                     |
 | SubstringProvider column-aware               | FULLY_FUNCTIONAL     | Nearest-position heuristic with line+column disambiguation                            |
 
