@@ -20,6 +20,7 @@ _No high-priority items. v1.3.0 is released; see [CHANGELOG.md](CHANGELOG.md)._
 
 | Task                        | Status       | Impact | Effort | Evidence                                                                             |
 | --------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------ |
+| SARIF schema validation test | 🔵 `BLOCKED` | Low    | —      | Requires vendoring 7K+ line SARIF 2.1.0 JSON schema                                 |
 | Consumer compatibility test | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code |
 
 ---
