@@ -3,6 +3,8 @@ package finding
 import (
 	"errors"
 	"fmt"
+
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 // Sentinel errors for use with errors.Is.
@@ -77,6 +79,28 @@ func (e *FindingError) Is(target error) bool {
 		return target == ErrInternal
 	default:
 		return false
+	}
+}
+
+// ErrorCode implements errorfamily.Coded.
+func (e *FindingError) ErrorCode() string {
+	return "finding." + string(e.Category)
+}
+
+// ErrorFamily implements errorfamily.Classified, mapping ErrorCategory to
+// go-error-family families for integration with Classify().
+func (e *FindingError) ErrorFamily() errorfamily.Family {
+	switch e.Category {
+	case ErrCategoryValidation, ErrCategoryParse:
+		return errorfamily.Rejection
+	case ErrCategoryConflict:
+		return errorfamily.Conflict
+	case ErrCategoryIO:
+		return errorfamily.Transient
+	case ErrCategoryInternal:
+		return errorfamily.Infrastructure
+	default:
+		return errorfamily.Transient
 	}
 }
 
