@@ -12,25 +12,25 @@
 
 _See [`docs/PRO_CONTRA_make-public.md`](docs/PRO_CONTRA_make-public.md) for full analysis._
 
-| Task                                             | Status    | Impact   | Effort  | Notes                                                                                         |
-| ------------------------------------------------ | --------- | -------- | ------- | --------------------------------------------------------------------------------------------- |
-| Make `GOEXPERIMENT=jsonv2` prominent in README   | ✅ `DONE` | Critical | Trivial | Prerequisites block added at top of Installation (2026-07-24)                |
-| Fix `PUBLIC_OR_PRIVATE.md` false "public" banner | ✅ `DONE` | High     | Trivial | Corrected 2026-07-24                                                                          |
-| Remove `GOPRIVATE` warning from README           | ✅ `DONE` | High     | Trivial | Removed 2026-07-24; no longer needed once public                                             |
-| Add GitHub repo description + topics             | ✅ `DONE` | High     | Trivial | `gh repo edit` set description + 11 topics (2026-07-24)                                      |
+| Task                                             | Status    | Impact   | Effort  | Notes                                                         |
+| ------------------------------------------------ | --------- | -------- | ------- | ------------------------------------------------------------- |
+| Make `GOEXPERIMENT=jsonv2` prominent in README   | ✅ `DONE` | Critical | Trivial | Prerequisites block added at top of Installation (2026-07-24) |
+| Fix `PUBLIC_OR_PRIVATE.md` false "public" banner | ✅ `DONE` | High     | Trivial | Corrected 2026-07-24                                          |
+| Remove `GOPRIVATE` warning from README           | ✅ `DONE` | High     | Trivial | Removed 2026-07-24; no longer needed once public              |
+| Add GitHub repo description + topics             | ✅ `DONE` | High     | Trivial | `gh repo edit` set description + 11 topics (2026-07-24)       |
 
 ### Make Repo Public — Phase 2: Community Readiness
 
-| Task                                               | Status    | Impact    | Effort                                            | Notes                                                     |
-| -------------------------------------------------- | --------- | --------- | ------------------------------------------------- | --------------------------------------------------------- |
+| Task                                               | Status    | Impact    | Effort                                            | Notes                                                                   |
+| -------------------------------------------------- | --------- | --------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
 | Add `SECURITY.md`                                  | ✅ `DONE` | Med       | Trivial                                           | Vulnerability reporting policy (GitHub private advisories) (2026-07-24) |
 | Add `CODE_OF_CONDUCT.md`                           | ✅ `DONE` | Med       | Trivial                                           | Contributor Covenant v2.1 (2026-07-24)                                  |
 | Add `.github/ISSUE_TEMPLATE/` (bug + feature)      | ✅ `DONE` | Med       | Trivial                                           | bug + feature templates + config.yml (2026-07-24)                       |
 | Add `.github/PULL_REQUEST_TEMPLATE.md`             | ✅ `DONE` | Med       | Trivial                                           | PR quality checklist (2026-07-24)                                       |
-| Add support policy to README                       | ✅ `DONE` | Med       | Trivial                                           | "Support" section added before Versioning (2026-07-24)                 |
+| Add support policy to README                       | ✅ `DONE` | Med       | Trivial                                           | "Support" section added before Versioning (2026-07-24)                  |
 | ~~Decide on 91 internal docs (move/archive/keep)~~ | ✅ `DONE` | No action | Keep all docs in place (user decision 2026-07-24) |
-| Verify pkg.go.dev renders after first public tag   | ⬜ `TODO` | Med       | Low                                               | Triggered by first `go get` after visibility flip         |
-| Track Go json/v2 stabilization (Go 1.27+)          | ⬜ `TODO` | Low       | Ongoing                                           | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes |
+| Verify pkg.go.dev renders after first public tag   | ⬜ `TODO` | Med       | Low                                               | Triggered by first `go get` after visibility flip                       |
+| Track Go json/v2 stabilization (Go 1.27+)          | ⬜ `TODO` | Low       | Ongoing                                           | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes               |
 
 ### Make Repo Public — Phase 3: Launch
 

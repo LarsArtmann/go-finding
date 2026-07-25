@@ -7,47 +7,50 @@
 
 ## a) FULLY DONE (verified this session)
 
-| # | Task | Evidence |
-|---|------|----------|
-| 1 | Made `GOEXPERIMENT=jsonv2` prominent in README | Prerequisites blockquote at top of `Installation`; `go env -w GOEXPERIMENT=jsonv2` one-liner added |
-| 2 | Removed `GOPRIVATE` warning from README | `rg GOPRIVATE README.md` → exit 1 (no matches) |
-| 3 | Added Support policy section to README | New `## Support` at line 443 (before Versioning) |
-| 4 | Created `SECURITY.md` | Uses GitHub private vulnerability reporting; 72h SLA; scope = 4 modules |
-| 5 | Created `CODE_OF_CONDUCT.md` | Contributor Covenant v2.1 verbatim |
-| 6 | Created `.github/ISSUE_TEMPLATE/bug_report.md` | Structured bug template with env section |
-| 7 | Created `.github/ISSUE_TEMPLATE/feature_request.md` | Motivation + proposed API sketch template |
-| 8 | Created `.github/ISSUE_TEMPLATE/config.yml` | Issue chooser with security + discussions links |
-| 9 | Created `.github/PULL_REQUEST_TEMPLATE.md` | Checklist with GOEXPERIMENT test/lint commands |
-| 10 | Set GitHub repo description + 11 topics | `gh repo view` confirms description + topics set on remote |
-| 11 | Updated `TODO_LIST.md` | All 8 actionable items marked `✅ DONE` with dates + notes |
-| 12 | Verified `go build ./...` passes | Exit 0 (doc-only changes, no code impact) |
+| #   | Task                                                | Evidence                                                                                           |
+| --- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 1   | Made `GOEXPERIMENT=jsonv2` prominent in README      | Prerequisites blockquote at top of `Installation`; `go env -w GOEXPERIMENT=jsonv2` one-liner added |
+| 2   | Removed `GOPRIVATE` warning from README             | `rg GOPRIVATE README.md` → exit 1 (no matches)                                                     |
+| 3   | Added Support policy section to README              | New `## Support` at line 443 (before Versioning)                                                   |
+| 4   | Created `SECURITY.md`                               | Uses GitHub private vulnerability reporting; 72h SLA; scope = 4 modules                            |
+| 5   | Created `CODE_OF_CONDUCT.md`                        | Contributor Covenant v2.1 verbatim                                                                 |
+| 6   | Created `.github/ISSUE_TEMPLATE/bug_report.md`      | Structured bug template with env section                                                           |
+| 7   | Created `.github/ISSUE_TEMPLATE/feature_request.md` | Motivation + proposed API sketch template                                                          |
+| 8   | Created `.github/ISSUE_TEMPLATE/config.yml`         | Issue chooser with security + discussions links                                                    |
+| 9   | Created `.github/PULL_REQUEST_TEMPLATE.md`          | Checklist with GOEXPERIMENT test/lint commands                                                     |
+| 10  | Set GitHub repo description + 11 topics             | `gh repo view` confirms description + topics set on remote                                         |
+| 11  | Updated `TODO_LIST.md`                              | All 8 actionable items marked `✅ DONE` with dates + notes                                         |
+| 12  | Verified `go build ./...` passes                    | Exit 0 (doc-only changes, no code impact)                                                          |
 
 ---
 
 ## b) PARTIALLY DONE / created but not verified end-to-end
 
-| # | Task | What's done | What's missing |
-|---|------|-------------|----------------|
-| 1 | Issue templates | Markdown files created | NOT verified they render correctly on GitHub (repo is private — GitHub's template UI isn't testable until public or via API) |
-| 2 | PR template | File created | Same — not verified in GitHub PR UI |
-| 3 | SECURITY.md reporting flow | References GitHub private advisory URL | **Private vulnerability reporting is NOT confirmed enabled** on the repo (API returned blank — needs `gh api` settings check or manual toggle in Settings → Security) |
-| 4 | config.yml discussions link | References `github.com/larsartmann/go-finding/discussions` | **Discussions is DISABLED** (`hasDiscussionsEnabled: false`) — the link is a dead link until enabled |
+| #   | Task                        | What's done                                                | What's missing                                                                                                                                                        |
+| --- | --------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Issue templates             | Markdown files created                                     | NOT verified they render correctly on GitHub (repo is private — GitHub's template UI isn't testable until public or via API)                                          |
+| 2   | PR template                 | File created                                               | Same — not verified in GitHub PR UI                                                                                                                                   |
+| 3   | SECURITY.md reporting flow  | References GitHub private advisory URL                     | **Private vulnerability reporting is NOT confirmed enabled** on the repo (API returned blank — needs `gh api` settings check or manual toggle in Settings → Security) |
+| 4   | config.yml discussions link | References `github.com/larsartmann/go-finding/discussions` | **Discussions is DISABLED** (`hasDiscussionsEnabled: false`) — the link is a dead link until enabled                                                                  |
 
 ---
 
 ## c) NOT STARTED (blocked / deferred from TODO_LIST.md)
 
 **Phase 3 — Launch (needs visibility flip first):**
+
 - Tag v1.4.0 (or next minor)
 - Verify GoReleaser + Homebrew tap on public tag
 - Write announcement (blog / r/golang / Slack / Twitter)
 - Submit to Awesome Go
 
 **Ongoing / triggered:**
+
 - Verify pkg.go.dev renders after first public tag
 - Track Go json/v2 stabilization (Go 1.27+)
 
 **Blocked (external):**
+
 - Fix BuildFlow auto-configure loop (external tool artifact)
 - SARIF schema validation test (needs 7K+ line schema vendored)
 - Consumer compatibility test (repo private; 22 consumers, 14 with Go code)

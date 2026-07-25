@@ -8,45 +8,47 @@
 
 ## a) FULLY DONE (verified this session)
 
-| # | Task | Evidence |
-|---|------|----------|
-| 1 | Fixed stale Core version `v1.2.1` → `v1.3.0` | `README.md:59` — matches `version.go` |
-| 2 | Fixed stale version example `"1.2.0"` → `"1.3.0"` | `README.md:460` — matches `finding.Version` |
-| 3 | Removed redundant `Requires Go 1.26 or later.` line | `rg 'Requires Go 1\.26' README.md` → exit 1 |
-| 4 | Removed dead Discussions link from `config.yml` | Discussions is disabled (`hasDiscussionsEnabled: false`); link would 404 |
-| 5 | Replaced stale SECURITY.md version table | Removed hardcoded `1.3.x` table; now prose-only "latest minor release" — never goes stale |
-| 6 | Added `[Unreleased]` entry to CHANGELOG | 6 Added + 7 Changed entries documenting all community-readiness work |
-| 7 | Updated `docs/PRO_CONTRA_make-public.md` Phase 1+2 statuses | All items marked ✅ Done; community rating C+ → A-; assessment matrix updated; CONTRA #4 marked RESOLVED |
-| 8 | Audited README for stale version references | `rg 'v1\.2\.\d\|"1\.2\.\d' README.md` → CLEAN (only `v1.0.0` historical refs remain, which are correct) |
-| 9 | Verified no GOPRIVATE in `.github/workflows/` or `dependabot.yml` | `rg GOPRIVATE .github/` → exit 1 |
-| 10 | Verified all 11 README local doc links resolve | All files exist on disk |
-| 11 | Verified LICENSE is MIT, 2026, Lars Artmann | Correct |
-| 12 | Verified `doc.go` has no stale API references | Uses current names (`CategoryOf`, `FindingTransformer`) |
-| 13 | Verified `go build ./...` passes | Exit 0 (GOEXPERIMENT=jsonv2) |
-| 14 | Verified `nix run .#lint` = 0 issues | Clean |
-| 15 | Verified `version-check.sh` passes | `version.go` (v1.3.0) matches git tag (v1.3.0) |
-| 16 | Verified CONTRIBUTING.md has no GOPRIVATE references | Clean |
+| #   | Task                                                              | Evidence                                                                                                 |
+| --- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | Fixed stale Core version `v1.2.1` → `v1.3.0`                      | `README.md:59` — matches `version.go`                                                                    |
+| 2   | Fixed stale version example `"1.2.0"` → `"1.3.0"`                 | `README.md:460` — matches `finding.Version`                                                              |
+| 3   | Removed redundant `Requires Go 1.26 or later.` line               | `rg 'Requires Go 1\.26' README.md` → exit 1                                                              |
+| 4   | Removed dead Discussions link from `config.yml`                   | Discussions is disabled (`hasDiscussionsEnabled: false`); link would 404                                 |
+| 5   | Replaced stale SECURITY.md version table                          | Removed hardcoded `1.3.x` table; now prose-only "latest minor release" — never goes stale                |
+| 6   | Added `[Unreleased]` entry to CHANGELOG                           | 6 Added + 7 Changed entries documenting all community-readiness work                                     |
+| 7   | Updated `docs/PRO_CONTRA_make-public.md` Phase 1+2 statuses       | All items marked ✅ Done; community rating C+ → A-; assessment matrix updated; CONTRA #4 marked RESOLVED |
+| 8   | Audited README for stale version references                       | `rg 'v1\.2\.\d\|"1\.2\.\d' README.md` → CLEAN (only `v1.0.0` historical refs remain, which are correct)  |
+| 9   | Verified no GOPRIVATE in `.github/workflows/` or `dependabot.yml` | `rg GOPRIVATE .github/` → exit 1                                                                         |
+| 10  | Verified all 11 README local doc links resolve                    | All files exist on disk                                                                                  |
+| 11  | Verified LICENSE is MIT, 2026, Lars Artmann                       | Correct                                                                                                  |
+| 12  | Verified `doc.go` has no stale API references                     | Uses current names (`CategoryOf`, `FindingTransformer`)                                                  |
+| 13  | Verified `go build ./...` passes                                  | Exit 0 (GOEXPERIMENT=jsonv2)                                                                             |
+| 14  | Verified `nix run .#lint` = 0 issues                              | Clean                                                                                                    |
+| 15  | Verified `version-check.sh` passes                                | `version.go` (v1.3.0) matches git tag (v1.3.0)                                                           |
+| 16  | Verified CONTRIBUTING.md has no GOPRIVATE references              | Clean                                                                                                    |
 
 ---
 
 ## b) PARTIALLY DONE / created but not verified end-to-end
 
-| # | Task | What's done | What's missing |
-|---|------|-------------|----------------|
-| 1 | Private vulnerability reporting | Attempted to enable via `gh api -X PATCH` | Field didn't appear in response — GitHub may require UI toggle or it auto-enables on public flip. **Unconfirmed.** |
-| 2 | Auto-commit hook attribution | Identified that hook overrides correct git config | **Still happening** — committed 2 more commits as `Unknown Author` this session (see section d) |
-| 3 | CoC enforcement contact | CoC references "private GitHub Security Advisory or contacting the repository owner directly" | "Repository owner directly" is vague — no email specified. Acceptable for solo project but could be clearer. |
+| #   | Task                            | What's done                                                                                   | What's missing                                                                                                     |
+| --- | ------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 1   | Private vulnerability reporting | Attempted to enable via `gh api -X PATCH`                                                     | Field didn't appear in response — GitHub may require UI toggle or it auto-enables on public flip. **Unconfirmed.** |
+| 2   | Auto-commit hook attribution    | Identified that hook overrides correct git config                                             | **Still happening** — committed 2 more commits as `Unknown Author` this session (see section d)                    |
+| 3   | CoC enforcement contact         | CoC references "private GitHub Security Advisory or contacting the repository owner directly" | "Repository owner directly" is vague — no email specified. Acceptable for solo project but could be clearer.       |
 
 ---
 
 ## c) NOT STARTED (blocked / deferred)
 
 **Blocked on user decisions:**
+
 - Version number for public release: v1.4.0 (minor anchor) vs v1.3.1 (patch, doc-only)
 - Enable GitHub Discussions as community feature (or permanently issues-only)
 - Reconfigure/disable the auto-commit hook that writes `Unknown Author`
 
 **Blocked on visibility flip (Phase 3):**
+
 - Tag release
 - Verify GoReleaser + Homebrew tap on public tag
 - Write announcement (blog / r/golang / Slack / Twitter)
@@ -54,6 +56,7 @@
 - Verify pkg.go.dev renders after first public `go get`
 
 **Blocked (external):**
+
 - Fix BuildFlow auto-configure loop (external tool artifact)
 - SARIF schema validation test (needs 7K+ line schema vendored)
 - Consumer compatibility test (repo private; 22 consumers)
