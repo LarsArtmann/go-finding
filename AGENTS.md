@@ -135,6 +135,7 @@ bash scripts/version-check.sh                                    # Verify versio
 - **RetryConfig validation uses named sentinels** — `pipeline/retry.go:20-25` defines 6 named sentinel errors (`errMaxRetriesNegative`, `errBaseDelayPositive`, etc.). Consumers can `errors.Is(err, errBaseDelayPositive)`. NEVER inline `errors.New("...")` in validation returns — it breaks `errors.Is()` matching. Any new validation rule must add a named sentinel var.
 - **version-check.sh uses `--match 'v[0-9]*'`** — `git describe --tags --abbrev=0` without the match pattern picks up sub-module directory-prefixed tags (e.g. `analysis/v1.3.0`) alphabetically before the core `v*` tag. The `--match 'v[0-9]*'` filter ensures only core tags are matched. Any script that resolves the core version from git tags must use this flag.
 - **doc.go API references must match current names** — `doc.go` contains godoc prose that references API symbols by name. After ANY rename (e.g. `GetCategory` → `CategoryOf`), grep `doc.go` for the old name. Stale references in godoc mislead consumers reading the package documentation.
+- **FindingError implements go-error-family interfaces** — `ErrorCode()` returns `"finding.<category>"`; `ErrorFamily()` maps ErrorCategory to errorfamily.Family (Validation/Parse→Rejection, Conflict→Conflict, IO→Transient, Internal→Infrastructure). Consumers can call `errorfamily.Classify(err)` on go-finding errors. See ADR #15.
 - **Consumer count is from 2026-07-22 audit** — The v1.0.0 audit (`docs/reviews/2026-07-05_20-55_consumer-audit.html`, 2026-07-05) counted 20 consumers. The v1.3.0-era audit (`docs/planning/2026-07-22_17-56_consumer-driven-api-improvements.md`, 2026-07-22) counted 22 consumers (14 with Go code). The count grows over time — do not assert a specific number without checking the latest data.
 
 ## CLI Features
@@ -149,7 +150,8 @@ bash scripts/version-check.sh                                    # Verify versio
 
 ## Architecture Decisions
 
-- **SARIF hand-rolled** — Not go-sarif. Zero extra deps, custom property bag, streaming + context. See ADR #9.
+- **SARIF hand-rolled** — Not go-sarif. No SARIF library dependency, custom property bag, streaming + context. See ADR #9.
+- **go-error-family integration** — Core module depends on `go-error-family` for unified error classification. `FindingError` implements `Coded` + `Classified`. See ADR #15.
 - **Pipeline split** — `pipeline.go` + `pipeline_detect.go`, both under 350 lines
 - **Byte-level FixEngine** — `[]byte` edit ops with descending-offset application, O(F+R) single-pass
 - **FixProvider chain** — OffsetProvider → LineProvider → SubstringProvider (fallback); custom providers prepended

@@ -482,3 +482,51 @@ and the lazy `*[]int` pointer in `resolveEdits`.
 **Conclusion:** The complexity of pool lifecycle management (reset, Put/Get, potential
 for stale data) is not justified for a <0.1% improvement. Revisit only if profiling
 shows line index allocation as a hot path on very large batches (>100K files).
+
+---
+
+## 15. go-error-family as Core Dependency
+
+**Status:** Accepted — v1.4.0.
+
+**Context:** The core `finding` package historically depended only on the Go standard
+library. Error handling was purely internal: `FindingError` had sentinel errors
+(`ErrValidation`, `ErrIO`, etc.) and `ErrorCategory` classification, but consumers had
+no standardized way to classify go-finding errors alongside errors from other libraries.
+
+The `go-error-family` library (`github.com/larsartmann/go-error-family`) provides a
+unified error classification system with `Family` values (Rejection, Conflict,
+Transient, Infrastructure) and `Classify()` for routing errors to retry, logging, or
+user-facing strategies. Integrating it into go-finding allows consumers to handle
+go-finding errors uniformly with all their other errors.
+
+**Decision:** Accept `go-error-family` v0.9.0 as a direct production dependency of the
+core module. `FindingError` now implements two `go-error-family` interfaces:
+
+- `errorfamily.Coded` via `ErrorCode()` — returns `"finding.<category>"` (e.g., `"finding.validation"`)
+- `errorfamily.Classified` via `ErrorFamily()` — maps categories to families:
+  - Validation, Parse → Rejection
+  - Conflict → Conflict
+  - IO → Transient
+  - Internal → Infrastructure
+
+**Tradeoffs:**
+
+- **Gain:** Consumers can call `errorfamily.Classify(err)` on any error, including
+  go-finding errors, and get a consistent family for retry/log/escalation decisions.
+  No more per-library error type switching.
+- **Gain:** Error codes (`"finding.io"`, `"finding.parse"`) are stable, structured
+  identifiers for observability and dashboards.
+- **Cost:** Core module gains one external dependency. The "zero external deps"
+  principle is retired in favor of a small, deliberate dependency surface.
+- **Cost:** Consumers who do not use `go-error-family` are unaffected — `ErrorCode()`
+  and `ErrorFamily()` are additive methods that do not change existing behavior.
+
+**Why not vendor or inline?** The `go-error-family` library is small and focused, but
+it is actively developed. Inlining would freeze the API surface and create a
+maintenance burden. Vendoring would duplicate the code. A direct dependency is the
+simplest correct choice.
+
+**Reversibility:** Fully reversible. The two methods (`ErrorCode`, `ErrorFamily`) are
+additive. Removing the dependency would only require deleting the import and the two
+methods. No existing consumer code would break.

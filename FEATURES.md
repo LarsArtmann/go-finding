@@ -900,7 +900,7 @@ adapter := finding.NewToolAdapter("my-tool", runFunc, parseFunc, convertFunc)
 
 **Status:** FULLY_FUNCTIONAL
 
-89 linter→category mappings with case-insensitive lookup:
+84 linter→category mappings with case-insensitive lookup:
 
 ```go
 cat := finding.CategoryForLinter("gosec") // CategorySecurity
@@ -1028,7 +1028,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | GoASTProvider                                | FULLY_FUNCTIONAL     | AST-aware fix provider for .go files (go/parser)                                   |
 | GeneratedFileFilter                          | FULLY_FUNCTIONAL     | Removes findings from auto-generated files (sqlc, protobuf, etc.)                  |
 | ToolAdapter[O]                               | FULLY_FUNCTIONAL     | Generic tool→Finding converter adapter                                             |
-| CategoryForLinter                            | FULLY_FUNCTIONAL     | 89 linter→category mappings, case-insensitive                                      |
+| CategoryForLinter                            | FULLY_FUNCTIONAL     | 84 linter→category mappings, case-insensitive                                      |
 | Severity aliases                             | FULLY_FUNCTIONAL     | 11 severity aliases + SeverityFromLevel + PriorityString (v1.3.0)                  |
 | SubstringProvider column-aware               | FULLY_FUNCTIONAL     | Nearest-position heuristic with line+column disambiguation                         |
 
