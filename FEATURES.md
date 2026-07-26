@@ -414,7 +414,7 @@ Category-based error types with `errors.Is` / `errors.As` support:
 | `ErrConflict`   | `conflict`   | `NewConflictError(msg, cause)`   |
 | `ErrInternal`   | `internal`   | `NewInternalError(msg, cause)`   |
 
-`FindingError` supports: `WithFinding()`, `WithPosition()`, `Unwrap()`, `Is()` for sentinel matching
+`FindingError` supports: `WithFinding()`, `WithPosition()`, `Unwrap()`, `Is()` for sentinel matching, `ErrorCode()` (returns `"finding.<category>"`), `ErrorFamily()` (maps category to `go-error-family` families for `errorfamily.Classify()` integration)
 
 Helpers: `IsFindingError(err)`, `CategoryOf(err)`, `IsCategory(err, cat)`
 
