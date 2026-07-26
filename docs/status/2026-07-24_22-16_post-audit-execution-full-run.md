@@ -253,4 +253,14 @@ The consumer audit HTML (`docs/reviews/2026-07-05_20-55_consumer-audit.html`) sa
 
 ---
 
+## Resolution (2026-07-26)
+
+The 2 uncommitted files (`doc.go`, `docs/MIGRATION_v1.0.md`) were committed in
+the follow-up remediation session (`2026-07-24_22-59`, commits `3c08c17` +
+`d6c4239`). All 5 bug fixes shipped. The 5 BLOCKED SARIF schema tasks remain
+open (vendoring decision needed — tracked in TODO_LIST as BLOCKED). Quality
+gates verified green: test, lint, race, `nix flake check`, GOWORK=off isolation.
+
+---
+
 _Assisted-by: Crush <crush@charm.land>_

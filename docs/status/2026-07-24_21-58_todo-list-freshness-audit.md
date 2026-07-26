@@ -10,7 +10,12 @@
 
 User asked "Is TODO_LIST.md up to date?" I ran a docs-health VERIFY audit, found severe structural decay (79% non-job content), rebuilt the file, and consolidated deferred v2.0 items into ROADMAP.md. The rebuild was directionally correct but contained **three mistakes** I caught in self-review: one wrong item removal (SARIF schema validation), one incomplete quality gate (build only, no tests/lint), and one unresolved split brain (CHANGELOG `[Unreleased]` empty despite 18 post-v1.3.0 commits).
 
-**Two files changed, 0 commits made, 3 known errors in my own work.**
+**Two files changed, ~~0 commits made~~, 3 known errors in my own work.**
+
+> **Update 2026-07-26:** All 3 mistakes were fixed in the follow-up session
+> (`2026-07-24_22-16`): SARIF schema validation restored to TODO_LIST (as
+> BLOCKED), quality gate run fully (test + lint + race), CHANGELOG `[Unreleased]`
+> populated. Changes committed in `3c08c17` and `87b13c6`.
 
 ---
 

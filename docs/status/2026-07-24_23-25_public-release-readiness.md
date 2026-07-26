@@ -171,4 +171,15 @@ Being brutally honest:
 
 ---
 
+## Resolution (2026-07-26)
+
+All misses identified in the self-critique (section e) were fixed in the
+follow-up session (`2026-07-24_23-43`, commits `85d516e` + `0722e16`):
+stale README versions corrected, dead Discussions link removed, CHANGELOG
+`[Unreleased]` populated, SECURITY.md version table de-hardcoded, redundant
+Go version line removed. Files committed. Open questions (v1.4.0 vs v1.3.1,
+Discussions) are tracked in TODO_LIST Phase 3.
+
+---
+
 _Assisted-by: Crush <crush@charm.land>_

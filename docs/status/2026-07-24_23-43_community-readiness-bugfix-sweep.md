@@ -190,4 +190,15 @@ Being brutally honest:
 
 ---
 
+## Resolution (2026-07-26)
+
+This is the terminal report for the public-release-readiness chain. All bugs
+from `2026-07-24_23-25` were fixed and committed (`85d516e`, `0722e16`).
+Quality gates verified: build, lint, version-check. The open questions above
+(v1.4.0 vs v1.3.1, Discussions, auto-commit hook) are owner decisions tracked
+in TODO_LIST Phase 3. The subsequent session (`2026-07-26_09-27`) confirmed
+code quality is clean (zero harmful duplication at `-t 5`).
+
+---
+
 _Assisted-by: Crush <crush@charm.land>_
