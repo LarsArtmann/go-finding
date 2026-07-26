@@ -63,7 +63,7 @@
 //   - Severity: info, warning, error, critical (with comparison operators)
 //   - Confidence: Named float64 type with IsValid/Clamp, range [0.0, 1.0]
 //   - FixStrategy: none, suggest, direct, ai (ai is reserved)
-//   - Category: 14 predefined + custom (security, style, performance, etc.)
+//   - Category: 16 predefined + custom (security, style, performance, etc.)
 //   - Tag: Multi-label classification (security, bug, deprecated, etc.)
 //   - Position: File, line, column, offset location
 //   - Range: Start and end positions with spatial operations (Contains, Overlaps, Adjacent)
@@ -173,6 +173,8 @@
 // Five error categories: Validation, IO, Parse, Conflict, Internal.
 // Use IsFindingError, CategoryOf, IsCategory for programmatic handling.
 // FindingError supports WithFinding and WithPosition for attaching context.
+// ErrorCode returns "finding.<category>" for use with go-error-family classification.
+// ErrorFamily maps the category to an errorfamily.Family (Rejection, Conflict, etc.).
 //
 // # Suppression
 //
