@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-finding/pipeline
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.3.1
