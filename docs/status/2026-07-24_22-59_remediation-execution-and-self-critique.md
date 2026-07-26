@@ -267,6 +267,11 @@ There are now **10 files** in `docs/planning/` and `docs/status/` from July 2026
 
 I cannot decide this because it's a documentation philosophy question: comprehensive history vs minimal surface area.
 
+> **Update 2026-07-26:** Decision A (leave all as historical records) was chosen.
+> Each report is annotated with its resolution status. All 96 micro-tasks from
+> this session shipped. Quality gates verified green in the subsequent
+> `2026-07-26_09-27` dedup verification sweep.
+
 ---
 
 _Assisted-by: Crush <crush@charm.land>_

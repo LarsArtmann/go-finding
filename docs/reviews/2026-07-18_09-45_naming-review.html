@@ -783,6 +783,27 @@
     </style>
   </head>
   <body>
+    <div
+      style="
+        background: #fef9e7;
+        border-bottom: 2px solid #f4d35e;
+        color: #1d3557;
+        padding: 0.75rem 2rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      "
+    >
+      <strong>📦 Resolution Status (updated 2026-07-26):</strong>
+      All high/medium rename recommendations were completed in
+      <strong>v1.0.0</strong> (2026-06-24), which predates this review:
+      <code>FindingProcessor</code>→<code>FindingTransformer</code>,
+      <code>Process()</code>→<code>Transform()</code>,
+      <code>GetCategory</code>→<code>CategoryOf</code>,
+      <code>ConflictInfo</code>→<code>Conflict</code>,
+      <code>LSPRelatedInfo</code>→<code>LSPRelated</code>. The review appears to
+      have been generated against pre-v1.0.0 code. <code>ToolInfo</code> retains
+      its name (legitimate metadata type, not a vague "info" bag).
+    </div>
     <!-- Full-bleed top bar (optional — remove for quieter reports) -->
     <div class="top-bar">
       <span>REPORT TYPE</span>
