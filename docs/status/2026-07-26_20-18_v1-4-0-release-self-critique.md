@@ -8,25 +8,25 @@
 
 ## A) FULLY DONE (verified)
 
-| # | Task | Verification |
-|---|------|-------------|
-| 1 | Quality gate: `go build ./...` | Exit 0 |
-| 2 | Quality gate: `go test -race -count=1 ./...` (workspace) | All packages `ok` |
-| 3 | Quality gate: Per-module isolation tests (`GOWORK=off` in pipeline, analysis, cmd/go-finding) | All `ok` |
-| 4 | Quality gate: `golangci-lint run ./...` | 0 issues |
-| 5 | Quality gate: `nix flake check` | "all checks passed!" |
-| 6 | doc.go: Fixed category count "14 predefined" → "16 predefined" | `grep` confirmed 16 constants in `category.go` |
-| 7 | doc.go: Added `ErrorCode()` / `ErrorFamily()` to Error Handling section | Compiles, build OK |
-| 8 | FEATURES.md: Fixed linter count "89" → "84" (2 locations) | `awk` counted 84 entries in `DefaultLinterRegistry` map |
-| 9 | ADR #15 written: go-error-family as core dependency | In `docs/architecture-decisions.md` |
-| 10 | AGENTS.md updated: ADR #15 reference + FindingError behavior note | 3 edits applied |
-| 11 | `version.go` bumped: `VersionMinor = 3` → `4` | Build OK |
-| 12 | `CHANGELOG.md`: `[1.4.0] - 2026-07-26` section with full notes | Content verified |
-| 13 | `README.md`: Version refs updated (`v1.3.0` → `v1.4.0`, `"1.3.0"` → `"1.4.0"`) | 2 edits applied |
-| 14 | `API_STABILITY.md`: Version updated + `ErrorCode()`/`ErrorFamily()` added to symbol table | 3 edits applied |
-| 15 | Git tags: `v1.4.0`, `pipeline/v1.4.0`, `analysis/v1.4.0`, `cmd/go-finding/v1.4.0` | `version-check.sh` passes |
-| 16 | Pushed to remote: all commits + all 4 tags | `git status` clean, up-to-date with origin |
-| 17 | GitHub release created: https://github.com/LarsArtmann/go-finding/releases/tag/v1.4.0 | `gh release list` confirms |
+| #   | Task                                                                                          | Verification                                            |
+| --- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| 1   | Quality gate: `go build ./...`                                                                | Exit 0                                                  |
+| 2   | Quality gate: `go test -race -count=1 ./...` (workspace)                                      | All packages `ok`                                       |
+| 3   | Quality gate: Per-module isolation tests (`GOWORK=off` in pipeline, analysis, cmd/go-finding) | All `ok`                                                |
+| 4   | Quality gate: `golangci-lint run ./...`                                                       | 0 issues                                                |
+| 5   | Quality gate: `nix flake check`                                                               | "all checks passed!"                                    |
+| 6   | doc.go: Fixed category count "14 predefined" → "16 predefined"                                | `grep` confirmed 16 constants in `category.go`          |
+| 7   | doc.go: Added `ErrorCode()` / `ErrorFamily()` to Error Handling section                       | Compiles, build OK                                      |
+| 8   | FEATURES.md: Fixed linter count "89" → "84" (2 locations)                                     | `awk` counted 84 entries in `DefaultLinterRegistry` map |
+| 9   | ADR #15 written: go-error-family as core dependency                                           | In `docs/architecture-decisions.md`                     |
+| 10  | AGENTS.md updated: ADR #15 reference + FindingError behavior note                             | 3 edits applied                                         |
+| 11  | `version.go` bumped: `VersionMinor = 3` → `4`                                                 | Build OK                                                |
+| 12  | `CHANGELOG.md`: `[1.4.0] - 2026-07-26` section with full notes                                | Content verified                                        |
+| 13  | `README.md`: Version refs updated (`v1.3.0` → `v1.4.0`, `"1.3.0"` → `"1.4.0"`)                | 2 edits applied                                         |
+| 14  | `API_STABILITY.md`: Version updated + `ErrorCode()`/`ErrorFamily()` added to symbol table     | 3 edits applied                                         |
+| 15  | Git tags: `v1.4.0`, `pipeline/v1.4.0`, `analysis/v1.4.0`, `cmd/go-finding/v1.4.0`             | `version-check.sh` passes                               |
+| 16  | Pushed to remote: all commits + all 4 tags                                                    | `git status` clean, up-to-date with origin              |
+| 17  | GitHub release created: https://github.com/LarsArtmann/go-finding/releases/tag/v1.4.0         | `gh release list` confirms                              |
 
 ---
 
@@ -37,12 +37,14 @@
 **What happened:** I added `## [1.4.0] - 2026-07-26` at the top but did NOT update the link reference section at the bottom of the file.
 
 **Current state (line 711-712):**
+
 ```
 [Unreleased]: https://github.com/LarsArtmann/go-finding/compare/v1.3.0...HEAD
 [1.3.0]: https://github.com/LarsArtmann/go-finding/compare/v1.2.1...v1.3.0
 ```
 
 **Should be:**
+
 ```
 [Unreleased]: https://github.com/LarsArtmann/go-finding/compare/v1.4.0...HEAD
 [1.4.0]: https://github.com/LarsArtmann/go-finding/compare/v1.3.0...v1.4.0
@@ -56,6 +58,7 @@
 **What happened:** I tagged v1.4.0 but did not update TODO_LIST.md to reflect completion.
 
 **Current state:** TODO_LIST.md line ~22 still shows:
+
 ```
 | Tag v1.4.0 (or next minor) | ⬜ TODO | Med | Low | Public version anchor |
 ```
@@ -74,15 +77,15 @@
 
 ## C) NOT STARTED
 
-| # | Task | Why it matters |
-|---|------|---------------|
-| 1 | `docs/USAGE_GUIDE.md` freshness check | May contain stale examples, version refs, or missing v1.4.0 APIs |
-| 2 | `docs/DOMAIN_LANGUAGE.md` freshness check | Domain language should reflect go-error-family integration terms |
-| 3 | `docs/integration-guide.md` verification | Not checked this session or prior session |
-| 4 | Full FEATURES.md vs code verification | 1038+ lines, only linter count checked. Other claims may be stale |
-| 5 | Go module proxy verification | Tags pushed but proxy resolution not confirmed (repo is private — needs `GOPRIVATE`) |
-| 6 | Sub-module `go mod tidy` | Core was tidied in prior session; sub-modules not re-checked after dependency updates |
-| 7 | CONTRIBUTING.md linter count was already correct (84) but I didn't verify it matched — just got lucky |
+| #   | Task                                                                                                  | Why it matters                                                                        |
+| --- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1   | `docs/USAGE_GUIDE.md` freshness check                                                                 | May contain stale examples, version refs, or missing v1.4.0 APIs                      |
+| 2   | `docs/DOMAIN_LANGUAGE.md` freshness check                                                             | Domain language should reflect go-error-family integration terms                      |
+| 3   | `docs/integration-guide.md` verification                                                              | Not checked this session or prior session                                             |
+| 4   | Full FEATURES.md vs code verification                                                                 | 1038+ lines, only linter count checked. Other claims may be stale                     |
+| 5   | Go module proxy verification                                                                          | Tags pushed but proxy resolution not confirmed (repo is private — needs `GOPRIVATE`)  |
+| 6   | Sub-module `go mod tidy`                                                                              | Core was tidied in prior session; sub-modules not re-checked after dependency updates |
+| 7   | CONTRIBUTING.md linter count was already correct (84) but I didn't verify it matched — just got lucky |
 
 ---
 
@@ -217,6 +220,7 @@ Same class of mistake as #2. The ROADMAP says "Current version: 1.3.0" right aft
 ### 1. Should we amend the v1.4.0 tag or create a follow-up commit?
 
 The CHANGELOG link references, TODO_LIST, and ROADMAP are stale. The tag `v1.4.0` is already pushed and the GitHub release is created. Options:
+
 - **(A)** Amend the tag (force-push tag, update release) — clean history but destructive
 - **(B)** Follow-up commit + patch tag `v1.4.1` — non-destructive but inflates version
 - **(C)** Follow-up commit, leave tag as-is, note the doc fixes in next release — pragmatic
@@ -226,6 +230,7 @@ I cannot decide this because it depends on your policy on tag immutability vs do
 ### 2. Is the `go-error-family` v0.9.0 version acceptable for a public release?
 
 The core module now depends on `go-error-family v0.9.0`, which is a pre-1.0 version. This means go-error-family itself could have breaking changes before its own v1.0. Should we:
+
 - **(A)** Wait for go-error-family v1.0 before making go-finding public
 - **(B)** Pin to v0.9.0 and accept the risk
 - **(C)** Vendor go-error-family to freeze the API surface
@@ -235,6 +240,7 @@ I cannot answer this because it depends on your confidence in go-error-family's 
 ### 3. Should the ROADMAP "Current version" field exist at all?
 
 Every release requires updating it, and it's a constant source of staleness. Should we:
+
 - **(A)** Keep it and add a CI check to catch staleness
 - **(B)** Remove it entirely and rely on `version.go` + git tags as the single source of truth
 - **(C)** Replace it with a generated badge from the latest git tag
@@ -245,15 +251,15 @@ I cannot answer this because it depends on whether you find the human-readable v
 
 ## Session Metrics
 
-| Metric | Value |
-|--------|-------|
-| Files modified | ~8 (version.go, CHANGELOG.md, README.md, API_STABILITY.md, doc.go, FEATURES.md, AGENTS.md, architecture-decisions.md) |
-| Quality gates run | 5 (build, test workspace, test per-module, lint, nix flake check) |
-| Tags created | 4 (v1.4.0 + 3 sub-module tags) |
-| GitHub releases created | 1 |
-| Bugs introduced | 3 (CHANGELOG link refs, TODO_LIST staleness, ROADMAP version) |
-| Bugs caught during session | 1 (ADR numbering — caught and fixed before writing) |
-| Bugs caught in self-critique | 3 (listed above) |
+| Metric                       | Value                                                                                                                 |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Files modified               | ~8 (version.go, CHANGELOG.md, README.md, API_STABILITY.md, doc.go, FEATURES.md, AGENTS.md, architecture-decisions.md) |
+| Quality gates run            | 5 (build, test workspace, test per-module, lint, nix flake check)                                                     |
+| Tags created                 | 4 (v1.4.0 + 3 sub-module tags)                                                                                        |
+| GitHub releases created      | 1                                                                                                                     |
+| Bugs introduced              | 3 (CHANGELOG link refs, TODO_LIST staleness, ROADMAP version)                                                         |
+| Bugs caught during session   | 1 (ADR numbering — caught and fixed before writing)                                                                   |
+| Bugs caught in self-critique | 3 (listed above)                                                                                                      |
 
 ---
 

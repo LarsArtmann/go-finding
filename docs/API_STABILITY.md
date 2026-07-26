@@ -97,18 +97,18 @@ All exported symbols are classified as:
 
 ### Error Types
 
-| Symbol               | Status | Notes                                |
-| -------------------- | ------ | ------------------------------------ |
-| `FindingError`       | stable | Structured error with Category/Cause |
-| `NewValidationError` | stable | Constructor                          |
-| `NewParseError`      | stable | Constructor                          |
-| `NewIOError`         | stable | Constructor                          |
-| `NewConflictError`   | stable | Constructor                          |
-| `NewInternalError`   | stable | Constructor                          |
-| `CategoryOf`         | stable | Extract ErrorCategory from error     |
-| `IsCategory`         | stable | Check error category                 |
-| `IsFindingError`     | stable | Type assertion                       |
-| `ErrorCode()`        | stable | go-error-family Coded interface (v1.4.0) |
+| Symbol               | Status | Notes                                         |
+| -------------------- | ------ | --------------------------------------------- |
+| `FindingError`       | stable | Structured error with Category/Cause          |
+| `NewValidationError` | stable | Constructor                                   |
+| `NewParseError`      | stable | Constructor                                   |
+| `NewIOError`         | stable | Constructor                                   |
+| `NewConflictError`   | stable | Constructor                                   |
+| `NewInternalError`   | stable | Constructor                                   |
+| `CategoryOf`         | stable | Extract ErrorCategory from error              |
+| `IsCategory`         | stable | Check error category                          |
+| `IsFindingError`     | stable | Type assertion                                |
+| `ErrorCode()`        | stable | go-error-family Coded interface (v1.4.0)      |
 | `ErrorFamily()`      | stable | go-error-family Classified interface (v1.4.0) |
 
 ### Key Functions
