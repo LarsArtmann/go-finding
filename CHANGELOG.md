@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-07-26
+
+Error classification integration, community readiness infrastructure, and documentation accuracy sweep. The core module gains its first production dependency (`go-error-family`) to enable unified error classification across consumer codebases.
+
 ### Added
 
 - **`FindingError.ErrorCode()` and `FindingError.ErrorFamily()`** — Integration with `go-error-family` library. `ErrorCode()` returns `"finding.<category>"`; `ErrorFamily()` maps `ErrorCategory` to error families (Rejection, Conflict, Transient, Infrastructure) for use with `errorfamily.Classify()`.
@@ -16,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.github/ISSUE_TEMPLATE/feature_request.md` — Feature request template with API sketch.
 - `.github/ISSUE_TEMPLATE/config.yml` — Issue chooser with security advisory contact link.
 - `.github/PULL_REQUEST_TEMPLATE.md` — PR checklist with GOEXPERIMENT test/lint commands.
+- **ADR #15** — `go-error-family` as core dependency decision documented.
 
 ### Changed
 
@@ -30,10 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot: Expanded to track all 4 sub-modules (core, pipeline, analysis, CLI).
 - Removed inline `exhaustruct` `nolint` comments superseded by `.golangci.yml` config exclusions.
 - Extracted `writeSuggestionLine` helper to reduce `FormatText`/`FormatTextRich` duplication.
+- **Retired "zero external deps" principle** — Core module now depends on `go-error-family`. All docs, README, AGENTS.md, and ADR #9 updated to reflect a small, deliberate dependency surface instead of zero-dep claims.
 
 ### Fixed
 
 - Replaced deprecated `ToSARIFFiltered` reference in godoc with `ToSARIFWithOpts`.
+- `doc.go`: Fixed stale category count ("14 predefined" → "16 predefined").
+- `doc.go`: Added `ErrorCode()` and `ErrorFamily()` documentation to Error Handling section.
+- `FEATURES.md`: Fixed stale linter count ("89 mappings" → "84 mappings" in two places).
+- `go.mod`: Moved `go-error-family` from indirect to direct require block.
 
 ## [1.3.0] - 2026-07-22
 

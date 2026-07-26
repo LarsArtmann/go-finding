@@ -1,7 +1,7 @@
 # API Stability — go-finding
 
-**Last audited:** 2026-07-22
-**Version:** v1.3.0
+**Last audited:** 2026-07-26
+**Version:** v1.4.0
 
 go-finding follows the [Go 1 Compatibility Promise](https://go.dev/doc/go1compat) philosophy.
 
@@ -108,6 +108,8 @@ All exported symbols are classified as:
 | `CategoryOf`         | stable | Extract ErrorCategory from error     |
 | `IsCategory`         | stable | Check error category                 |
 | `IsFindingError`     | stable | Type assertion                       |
+| `ErrorCode()`        | stable | go-error-family Coded interface (v1.4.0) |
+| `ErrorFamily()`      | stable | go-error-family Classified interface (v1.4.0) |
 
 ### Key Functions
 
@@ -258,4 +260,6 @@ All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migratio
 
 ## Current Status
 
-**v1.3.0** — API-stable since v1.0.0. 11 additive APIs added in v1.3.0 (Template, FormatTextRich, ApplySimpleFixes, BuildOrDefault, NewReportFromFindings, FilePos, SeverityFromLevel, PriorityString, CheckBinary, RunCmd, FormatTable). Zero breaking changes.
+**v1.4.0** — API-stable since v1.0.0. 2 additive APIs added in v1.4.0 (`FindingError.ErrorCode()`, `FindingError.ErrorFamily()` for go-error-family integration). Zero breaking changes.
+
+**v1.3.0** — 11 additive APIs added (Template, FormatTextRich, ApplySimpleFixes, BuildOrDefault, NewReportFromFindings, FilePos, SeverityFromLevel, PriorityString, CheckBinary, RunCmd, FormatTable).

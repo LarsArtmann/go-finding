@@ -56,7 +56,7 @@ Each module is an independent Go module and is versioned with its own git tag:
 
 | Module   | Import path                                        | Tag                 |
 | -------- | -------------------------------------------------- | ------------------- |
-| Core     | `github.com/larsartmann/go-finding`                | `v1.3.0`            |
+| Core     | `github.com/larsartmann/go-finding`                | `v1.4.0`            |
 | Pipeline | `github.com/larsartmann/go-finding/pipeline`       | `pipeline/v*`       |
 | Analysis | `github.com/larsartmann/go-finding/analysis`       | `analysis/v*`       |
 | CLI      | `github.com/larsartmann/go-finding/cmd/go-finding` | `cmd/go-finding/v*` |
@@ -457,7 +457,7 @@ This project follows [Semantic Versioning](https://semver.org/). The API has bee
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "1.3.0"
+fmt.Println(finding.Version) // "1.4.0"
 ```
 
 ## Documentation
