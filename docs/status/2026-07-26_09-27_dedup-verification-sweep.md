@@ -66,7 +66,7 @@ The skill says: "View the HTML output directly — do not save it as a file." I 
 
 #### 2. I did not iterate
 
-The skill says: "**Iterate to Zero.** For every clone group: read it, then **extract**, **accept**, or **exclude**." I read each group and accepted them, but I did not explore whether a small helper *could* be extracted for the two-file `if err != nil` groups in `config_file.go`. I dismissed them too quickly.
+The skill says: "**Iterate to Zero.** For every clone group: read it, then **extract**, **accept**, or **exclude**." I read each group and accepted them, but I did not explore whether a small helper _could_ be extracted for the two-file `if err != nil` groups in `config_file.go`. I dismissed them too quickly.
 
 Concrete reconsideration of `config_file.go:47-51` + `:59-63`:
 
@@ -89,7 +89,7 @@ The skill mentions: "Generated code ... are auto-excluded by default — add `--
 
 I did not look for `.golangci.yml` `dupl` config, `.pre-commit-config.yaml`, or Makefile/nix flake invocations of art-dupl. The project might already have a fixed threshold documented.
 
-#### 5. I did not reflect on whether the skill's `-t 5` is the right threshold for *this* project
+#### 5. I did not reflect on whether the skill's `-t 5` is the right threshold for _this_ project
 
 The skill's threshold is a general recommendation. A library with this many tiny wrapper functions might benefit from `-t 3` to catch the JSON error-wrapping pattern in `json.go:83-98` more aggressively. I did not propose a project-specific threshold.
 
@@ -109,9 +109,9 @@ These are observations from this session only — not researched further.
 
 ### Code Quality Observations
 
-- **`json.go` has 16 warnings** in `gopls stdversion` for `json.Marshal`/`json.Unmarshal` etc. requiring `go1.27` while the file declares `go1.26`. The project AGENTS.md says "GOEXPERIMENT=jsonv2 required" — but the gopls warnings indicate the *runtime* version constraint is also `1.27`, not just the experiment. This may be a documentation/version mismatch.
+- **`json.go` has 16 warnings** in `gopls stdversion` for `json.Marshal`/`json.Unmarshal` etc. requiring `go1.27` while the file declares `go1.26`. The project AGENTS.md says "GOEXPERIMENT=jsonv2 required" — but the gopls warnings indicate the _runtime_ version constraint is also `1.27`, not just the experiment. This may be a documentation/version mismatch.
 - **Severity enum has 3 switch blocks** (Badge, Emoji, PriorityString) plus the `severityRank` helper. A `map[Severity]struct{emoji, badge, priority string}` could consolidate them, but it would lose type safety and require a "default" branch. The current shape is defensible.
-- **`MustXXX` panic pattern is repeated 3 times** (MustParseCategory, MustParseSeverity, MustBuild). A `mustValue[T any](v T, err error) T` helper could DRY this. This is the *only* genuine refactor opportunity I noticed, and it's borderline (3 sites, 4 lines each).
+- **`MustXXX` panic pattern is repeated 3 times** (MustParseCategory, MustParseSeverity, MustBuild). A `mustValue[T any](v T, err error) T` helper could DRY this. This is the _only_ genuine refactor opportunity I noticed, and it's borderline (3 sites, 4 lines each).
 
 ### Documentation
 

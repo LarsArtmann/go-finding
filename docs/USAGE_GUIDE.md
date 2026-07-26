@@ -138,14 +138,14 @@ Equivalent JSON:
 
 ```json
 {
-  "maxIterations": 5,
-  "parallelDetectors": true,
-  "verifyAfterFix": false,
-  "timeout": "10m",
-  "detectors": [
-    { "name": "govet", "args": {} },
-    { "name": "staticcheck", "args": {} }
-  ]
+	"maxIterations": 5,
+	"parallelDetectors": true,
+	"verifyAfterFix": false,
+	"timeout": "10m",
+	"detectors": [
+		{ "name": "govet", "args": {} },
+		{ "name": "staticcheck", "args": {} }
+	]
 }
 ```
 
