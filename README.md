@@ -34,7 +34,7 @@ Each tool invents its own types for findings. There is no standardized way to ap
 > Without this, `go get` fails with `build constraints exclude all Go files`.
 > When Go stabilizes json/v2 (expected 1.27+), this step disappears.
 
-**Core types only** (zero external dependencies):
+**Core types only**:
 
 ```bash
 go get github.com/larsartmann/go-finding

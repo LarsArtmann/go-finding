@@ -870,7 +870,7 @@ AST-aware fix provider for `.go` files using `go/parser`. Disambiguates BeforeCo
 applier, err := pipeline.NewFixApplierWithProviders(rootDir, &goast.Provider{})
 ```
 
-Separate subpackage (`pipeline/goast`) keeps `go/parser` as a stdlib-only opt-in within the pipeline module.
+Separate subpackage (`pipeline/goast`) keeps `go/parser` as an opt-in within the pipeline module.
 
 ### 21.8 GeneratedFileFilter
 

@@ -265,7 +265,7 @@ Adapting these would require wrapping go-sarif's API, adding even more adapter c
 
 ### 9.5 Dependency Argument
 
-Adding `go-sarif` means every consumer of `go-finding` transitively depends on it. Our design principle #1 is "core types depend only on stdlib." The `finding` package currently has **zero** third-party dependencies in the root package. Breaking that for a builder API we do not need would be a regression.
+Adding `go-sarif` means every consumer of `go-finding` transitively depends on it. The `finding` package intentionally keeps its dependency surface minimal. Adding a heavy SARIF library for a builder API we do not need would be a regression.
 
 ---
 

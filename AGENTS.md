@@ -15,7 +15,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 
 | Module       | Path                                               | External Deps                | Depends on     |
 | ------------ | -------------------------------------------------- | ---------------------------- | -------------- |
-| **Core**     | `github.com/larsartmann/go-finding`                | **None** (stdlib only)       | —              |
+| **Core**     | `github.com/larsartmann/go-finding`                | go-error-family              | —              |
 | **Pipeline** | `github.com/larsartmann/go-finding/pipeline`       | x/sync, gogenfilter          | Core           |
 | **Analysis** | `github.com/larsartmann/go-finding/analysis`       | x/tools                      | Core           |
 | **CLI**      | `github.com/larsartmann/go-finding/cmd/go-finding` | yaml, go-output, gogenfilter | Core, Pipeline |
@@ -31,8 +31,8 @@ Unix-style decomposition — each module does one thing well, composes via repla
 | **SARIF**           | `sarif_types.go`, `sarif_export.go`, `sarif_import.go` (hand-rolled, not go-sarif — see ADR #9)                                                                                                                          |
 | **LSP**             | `lsp.go`                                                                                                                                                                                                                 |
 | **Extensibility**   | `detector.go`, `adapter.go` (ToolAdapter[O]), `registry.go` (DetectorRegistry), `interval_index.go` (IntervalIndex[T])                                                                                                   |
-| **gotoken**         | `gotoken/gotoken.go` (shared go/token utilities, public package, stdlib only)                                                                                                                                            |
-| **lockutil**        | `lockutil/lockutil.go` (shared sync.Locker helpers — `Locked`, `RLocked` — for generic mutex-guarded critical sections, stdlib only)                                                                                     |
+| **gotoken**         | `gotoken/gotoken.go` (shared go/token utilities, public package)                                                                                                                                                         |
+| **lockutil**        | `lockutil/lockutil.go` (shared sync.Locker helpers — `Locked`, `RLocked` — for generic mutex-guarded critical sections)                                                                                                 |
 | **Pipeline**        | `pipeline/pipeline.go` (Run), `pipeline/pipeline_detect.go`, `pipeline/pipeline_iteration.go`, `pipeline/config.go`, `pipeline/config_file.go`                                                                           |
 | **Fix engine**      | `pipeline/fix_engine.go`, `pipeline/fix_provider.go`, `pipeline/fix_applier.go`, `pipeline/fix_edit.go`, `pipeline/conflict.go`, `pipeline/goast/provider.go`                                                            |
 | **Pipeline extras** | `pipeline/stage_hook.go`, `pipeline/line_shift.go`, `pipeline/metrics.go`, `pipeline/retry.go`, `pipeline/partial.go`, `pipeline/generated_filter.go`                                                                    |
@@ -62,7 +62,7 @@ bash scripts/version-check.sh                                    # Verify versio
 
 | Module                      | Production Deps              | Test Deps         |
 | --------------------------- | ---------------------------- | ----------------- |
-| **Core** (`.`)              | **None** — stdlib only       | ginkgo/v2, gomega |
+| **Core** (`.`)              | go-error-family              | ginkgo/v2, gomega |
 | **Pipeline** (`pipeline/`)  | x/sync, gogenfilter          | ginkgo/v2, gomega |
 | **Analysis** (`analysis/`)  | x/tools                      | (stdlib testing)  |
 | **CLI** (`cmd/go-finding/`) | yaml, go-output, gogenfilter | gomega            |
@@ -78,7 +78,7 @@ bash scripts/version-check.sh                                    # Verify versio
 
 ## Design Principles
 
-1. **Minimal dependencies** — core module depends only on stdlib (zero external deps in production go.mod)
+1. **Minimal dependencies** — core module keeps a small, deliberate dependency surface
 2. **Immutable** — Findings are data, not state machines
 3. **Lossless** — Conversions (SARIF, LSP) preserve all data via Metadata/Tags/Data fields
 4. **One extensibility field** — `Finding.Metadata` is `map[string]string`. NO `Properties map[string]any`
