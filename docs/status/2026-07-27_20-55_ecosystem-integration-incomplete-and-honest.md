@@ -9,16 +9,16 @@
 
 ## TL;DR
 
-| Dimension                                              | State                                                                                         |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| Doc drift fixes (Phase 0)                              | **Already done by prior sessions** — I verified, didn't re-do                                 |
-| `go-linter-sdk` pseudo-version → `v1.4.0`              | **DONE** — external consumers can now resolve without `replace`                               |
-| `Rule.IsEnabledByDefault()` + `OptIn()` added           | **DONE but INCOMPLETE** — method exists, `Registry.Run` doesn't filter on it                  |
-| `ireturn` lint on `OptIn`                              | **FAILED** — I forgot to run `golangci-lint`; it caught a real issue                          |
-| `go-vet`, `nix flake check`, benchmarks                | **NOT RUN** — I only ran `go test -race`                                                      |
-| Phase 1 pilot: port `go-structure-linter` to the SDK   | **NOT STARTED** — I prepared the SDK but didn't do the actual migration                       |
-| `linter-autoconfigure-sdk` README self-assessment      | **PARTIALLY DONE** — removed "weakest of 5 SDKs" label; deeper value question unaddressed    |
-| `Registry.Run` / `DetectorFromRegistry` rule filtering | **TOTALLY FORGOT** — the entire point of `IsEnabledByDefault` is unimplemented                |
+| Dimension                                              | State                                                                                     |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Doc drift fixes (Phase 0)                              | **Already done by prior sessions** — I verified, didn't re-do                             |
+| `go-linter-sdk` pseudo-version → `v1.4.0`              | **DONE** — external consumers can now resolve without `replace`                           |
+| `Rule.IsEnabledByDefault()` + `OptIn()` added          | **DONE but INCOMPLETE** — method exists, `Registry.Run` doesn't filter on it              |
+| `ireturn` lint on `OptIn`                              | **FAILED** — I forgot to run `golangci-lint`; it caught a real issue                      |
+| `go-vet`, `nix flake check`, benchmarks                | **NOT RUN** — I only ran `go test -race`                                                  |
+| Phase 1 pilot: port `go-structure-linter` to the SDK   | **NOT STARTED** — I prepared the SDK but didn't do the actual migration                   |
+| `linter-autoconfigure-sdk` README self-assessment      | **PARTIALLY DONE** — removed "weakest of 5 SDKs" label; deeper value question unaddressed |
+| `Registry.Run` / `DetectorFromRegistry` rule filtering | **TOTALLY FORGOT** — the entire point of `IsEnabledByDefault` is unimplemented            |
 
 ---
 
