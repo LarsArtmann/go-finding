@@ -76,26 +76,26 @@ func FilterInvalid(f Finding) bool {
 	return IsInvalid(f)
 }
 
-// JSON returns a compact JSON representation of the report.
-// Shorthand for MarshalJSON that returns a string.
-func (r *Report) JSON() (string, error) {
-	data, err := r.MarshalJSON()
-	if err != nil {
-		return "", fmt.Errorf("marshaling JSON: %w", err)
-	}
-
-	return string(data), nil
-}
-
-// PrettyJSON returns a formatted JSON representation of the report.
-// Includes all findings, including suppressed ones.
-func (r *Report) PrettyJSON() (string, error) {
-	bytes, err := json.Marshal(r, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
+// marshalJSONString converts a marshal result (bytes, err) into a string,
+// wrapping any marshaling error with consistent context.
+func marshalJSONString(bytes []byte, err error) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("marshaling JSON: %w", err)
 	}
 
 	return string(bytes), nil
+}
+
+// JSON returns a compact JSON representation of the report.
+// Shorthand for MarshalJSON that returns a string.
+func (r *Report) JSON() (string, error) {
+	return marshalJSONString(r.MarshalJSON())
+}
+
+// PrettyJSON returns a formatted JSON representation of the report.
+// Includes all findings, including suppressed ones.
+func (r *Report) PrettyJSON() (string, error) {
+	return marshalJSONString(json.Marshal(r, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  ")))
 }
 
 // PrettyJSONFiltered returns a formatted JSON representation with only
@@ -119,12 +119,7 @@ func (r *Report) PrettyJSONFiltered() (string, error) {
 
 	filtered.ComputeSummary()
 
-	bytes, err := json.Marshal(filtered, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
-	if err != nil {
-		return "", fmt.Errorf("marshaling filtered JSON: %w", err)
-	}
-
-	return string(bytes), nil
+	return marshalJSONString(json.Marshal(filtered, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  ")))
 }
 
 // FromJSON parses a Finding from JSON and validates required fields.
@@ -182,12 +177,7 @@ func FindingsFromJSON(data []byte) ([]Finding, int, error) {
 
 // LineJSON returns compact JSON (single line).
 func (f Finding) LineJSON() (string, error) {
-	bytes, err := json.Marshal(f)
-	if err != nil {
-		return "", fmt.Errorf("marshaling finding: %w", err)
-	}
-
-	return string(bytes), nil
+	return marshalJSONString(json.Marshal(f))
 }
 
 // WriteJSON writes compact JSON directly to w.
