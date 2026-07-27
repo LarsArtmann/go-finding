@@ -137,12 +137,7 @@ func (b *Builder) Build() (Finding, error) {
 // MustBuild returns the constructed Finding or panics if required fields are missing.
 // Use this only when the builder is fully configured and invalid state is a programmer error.
 func (b *Builder) MustBuild() Finding {
-	f, err := b.Build()
-	if err != nil {
-		panic(err)
-	}
-
-	return f
+	return must(b.Build())
 }
 
 // BuildOrDefault returns the constructed Finding, or a zero-value Finding{} if

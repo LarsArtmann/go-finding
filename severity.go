@@ -221,12 +221,7 @@ func ParseSeverity(s string) (Severity, error) {
 
 // MustParseSeverity parses a string into a Severity, panicking on invalid input.
 func MustParseSeverity(s string) Severity {
-	sev, err := ParseSeverity(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return sev
+	return must(ParseSeverity(s))
 }
 
 // SeverityFromLevel maps a severity level string to a canonical Severity.

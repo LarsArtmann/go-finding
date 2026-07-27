@@ -43,21 +43,20 @@ var (
 func ConfigFromFile(data []byte) (Config, error) {
 	var cf ConfigFile
 
-	err := json.Unmarshal(data, &cf)
-	if err != nil {
-		return Config{}, fmt.Errorf("unmarshal config: %w", err)
-	}
-
-	return cf.toConfig()
+	return decodeConfig(cf, json.Unmarshal(data, &cf))
 }
 
 // ConfigFromReader parses a JSON [ConfigFile] from an [io.Reader].
 func ConfigFromReader(r io.Reader) (Config, error) {
 	var cf ConfigFile
 
-	err := json.UnmarshalRead(r, &cf)
+	return decodeConfig(cf, json.UnmarshalRead(r, &cf))
+}
+
+// decodeConfig wraps an unmarshal error and converts the [ConfigFile] to a [Config].
+func decodeConfig(cf ConfigFile, err error) (Config, error) {
 	if err != nil {
-		return Config{}, fmt.Errorf("decode config: %w", err)
+		return Config{}, fmt.Errorf("unmarshal config: %w", err)
 	}
 
 	return cf.toConfig()

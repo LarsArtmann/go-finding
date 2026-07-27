@@ -177,3 +177,14 @@ func CategoryOf(err error) ErrorCategory {
 func IsCategory(err error, cat ErrorCategory) bool {
 	return CategoryOf(err) == cat
 }
+
+// must returns v or panics if err is non-nil. Used by Must-style constructors
+// (MustParseCategory, MustParseSeverity, Builder.MustBuild) to eliminate the
+// repetitive `if err != nil { panic(err) }` boilerplate.
+func must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}

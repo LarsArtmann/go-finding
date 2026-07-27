@@ -88,10 +88,5 @@ func ParseCategory(s string) (Category, error) {
 
 // MustParseCategory parses a string into a Category, panicking on invalid input.
 func MustParseCategory(s string) Category {
-	cat, err := ParseCategory(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return cat
+	return must(ParseCategory(s))
 }
