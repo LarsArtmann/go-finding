@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -87,20 +88,15 @@ func (s Severity) String() string {
 }
 
 // Badge returns a human-readable severity badge with emoji (e.g., "🔴 CRITICAL").
+// Derived from [Severity.Emoji] and the uppercased severity name.
 // Returns the string value unchanged for unknown severities.
 func (s Severity) Badge() string {
-	switch s {
-	case SeverityCritical:
-		return "🔴 CRITICAL"
-	case SeverityError:
-		return "🟠 ERROR"
-	case SeverityWarning:
-		return "🟡 WARNING"
-	case SeverityInfo:
-		return "🟢 INFO"
+	emoji := s.Emoji()
+	if emoji == "" {
+		return string(s)
 	}
 
-	return string(s)
+	return emoji + " " + strings.ToUpper(string(s))
 }
 
 // Emoji returns the emoji representing the severity level.

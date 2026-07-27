@@ -32,17 +32,17 @@ func (d staticDetector) Detect(_ context.Context) ([]finding.Finding, error) {
 	}, nil
 }
 
-// fatal prints the error to stderr and exits with status 1.
-func fatal(err error) {
-	fmt.Fprintln(os.Stderr, err)
-	os.Exit(1)
+// must prints err to stderr and exits if err is non-nil.
+func must(err error) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
 
 func main() {
 	tmpDir, err := os.MkdirTemp("", "pipeline-example-*")
-	if err != nil {
-		fatal(err)
-	}
+	must(err)
 
 	cleanup := func() {
 		_ = os.RemoveAll(tmpDir)
@@ -52,9 +52,7 @@ func main() {
 	srcFile := filepath.Join(tmpDir, "main.go")
 
 	err = os.WriteFile(srcFile, []byte("package main\n\nx := 42\n"), 0o644)
-	if err != nil {
-		fatal(err)
-	}
+	must(err)
 
 	cfg := pipeline.Config{
 		MaxIterations:     1,
@@ -63,14 +61,10 @@ func main() {
 	}
 
 	p, err := pipeline.New(cfg, tmpDir, staticDetector{file: "main.go"})
-	if err != nil {
-		fatal(err)
-	}
+	must(err)
 
 	result, err := p.Run(context.Background())
-	if err != nil {
-		fatal(err)
-	}
+	must(err)
 
 	fmt.Printf("Iterations: %d\n", result.TotalIterations)
 	fmt.Printf("Stable: %v\n", result.Stable())
