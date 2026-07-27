@@ -126,6 +126,7 @@ linters:
     - zerologlint
   disable:
     - noinlineerr
+    - paralleltest # t.Parallel() is centralized in NewParallelGomega test helpers; the linter cannot trace calls through helpers
   settings:
     cyclop:
       max-complexity: 25
