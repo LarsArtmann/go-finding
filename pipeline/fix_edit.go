@@ -89,17 +89,19 @@ func (e FixEdit) Validate() error {
 	return nil
 }
 
+// fixEditJSON is the JSON wire representation of FixEdit, used by
+// MarshalJSON/UnmarshalJSON to control field tags independently of the domain type.
+type fixEditJSON struct {
+	Offset      int    `json:"offset"`
+	Length      int    `json:"length"`
+	Replacement []byte `json:"replacement,omitempty"`
+}
+
 // MarshalJSON implements json.Marshaler for FixEdit.
 // Replacement is base64-encoded per JSON spec for []byte fields.
 // Source is omitted from JSON output (use property bag for SARIF round-tripping).
 func (e FixEdit) MarshalJSON() ([]byte, error) {
-	type jsonEdit struct {
-		Offset      int    `json:"offset"`
-		Length      int    `json:"length"`
-		Replacement []byte `json:"replacement,omitempty"`
-	}
-
-	return json.Marshal(jsonEdit{ //nolint:wrapcheck // standard JSON marshaling
+	return json.Marshal(fixEditJSON{ //nolint:wrapcheck // standard JSON marshaling
 		Offset:      e.Offset,
 		Length:      e.Length,
 		Replacement: e.Replacement,
@@ -108,13 +110,7 @@ func (e FixEdit) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler for FixEdit.
 func (e *FixEdit) UnmarshalJSON(data []byte) error {
-	type jsonEdit struct {
-		Offset      int    `json:"offset"`
-		Length      int    `json:"length"`
-		Replacement []byte `json:"replacement,omitempty"`
-	}
-
-	var j jsonEdit
+	var j fixEditJSON
 
 	err := json.Unmarshal(data, &j)
 	if err != nil {
