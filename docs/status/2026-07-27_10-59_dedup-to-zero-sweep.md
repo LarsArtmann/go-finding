@@ -19,15 +19,15 @@
 
 ### Production Code Extractions (7)
 
-| Extraction                  | File                           | What it eliminated                                                                    |
-| --------------------------- | ------------------------------ | ------------------------------------------------------------------------------------- |
-| `must[T]` generic           | `errors.go`                    | `if err != nil { panic(err) }` in `MustParseCategory`, `MustParseSeverity`, `MustBuild` |
-| `marshalJSONString`         | `json.go`                      | 4× marshal-to-string boilerplate (`Report.JSON`, `PrettyJSON`, `PrettyJSONFiltered`, `Finding.LineJSON`) |
-| `decodeConfig`              | `pipeline/config_file.go`      | Duplicate unmarshal-wrap-convert in `ConfigFromFile` + `ConfigFromReader`             |
-| `fixEditJSON` (package-lvl) | `pipeline/fix_edit.go`         | Identical inner struct declared twice in Marshal/UnmarshalJSON                        |
-| `Badge()` derives from `Emoji()` | `severity.go`             | Duplicate 4-case switch (emoji + label) → single `Emoji()` switch + string derivation |
-| `severityPriorities` map    | `severity.go`                  | `PriorityString()` switch → map lookup                                                |
-| `must(err)` helper          | `pipeline/examples/main.go`, `examples/builder/main.go` | `if err != nil { fatal/log.Fatal(err) }` boilerplate             |
+| Extraction                       | File                                                    | What it eliminated                                                                                       |
+| -------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `must[T]` generic                | `errors.go`                                             | `if err != nil { panic(err) }` in `MustParseCategory`, `MustParseSeverity`, `MustBuild`                  |
+| `marshalJSONString`              | `json.go`                                               | 4× marshal-to-string boilerplate (`Report.JSON`, `PrettyJSON`, `PrettyJSONFiltered`, `Finding.LineJSON`) |
+| `decodeConfig`                   | `pipeline/config_file.go`                               | Duplicate unmarshal-wrap-convert in `ConfigFromFile` + `ConfigFromReader`                                |
+| `fixEditJSON` (package-lvl)      | `pipeline/fix_edit.go`                                  | Identical inner struct declared twice in Marshal/UnmarshalJSON                                           |
+| `Badge()` derives from `Emoji()` | `severity.go`                                           | Duplicate 4-case switch (emoji + label) → single `Emoji()` switch + string derivation                    |
+| `severityPriorities` map         | `severity.go`                                           | `PriorityString()` switch → map lookup                                                                   |
+| `must(err)` helper               | `pipeline/examples/main.go`, `examples/builder/main.go` | `if err != nil { fatal/log.Fatal(err) }` boilerplate                                                     |
 
 ### Test Code Consolidation (1 extraction × 4 modules)
 
@@ -76,6 +76,7 @@ fa67b00 functionality to pipeline
 ## b) PARTIALLY DONE
 
 ### Pipeline pre-existing lint issues (8 total, not touched)
+
 - `exhaustruct`: `pipeline/goast/provider.go:129` — `result` struct missing fields
 - `funlen`: `Run` (137 lines), `runIteration` (124 lines) — both exceed 120 limit
 - `gocognit`: `applyTriage` at 36 (>35 limit)
@@ -98,6 +99,7 @@ Nothing related to the deduplication task. All 10 original clone groups were res
 Nothing. No regressions, no test failures, no broken builds.
 
 **One judgment call to scrutinize:** Disabling `paralleltest` globally. The alternative would have been keeping `t.Parallel()` inline (accepting the 2-line boilerplate as "acceptable duplication"). The tradeoff was:
+
 - **Pro:** Zero duplication, cleaner tests, single point of control for parallel test setup
 - **Con:** Loses per-function lint enforcement of `t.Parallel()` — a developer writing a new test without `NewParallelGomega` won't get a lint warning
 
@@ -126,6 +128,7 @@ This is documented in `.golangci.yml` and AGENTS.md. Reversible with one line.
 ## f) Up to 50 Things We Should Get Done Next
 
 ### High Priority — Fix pre-existing lint issues
+
 1. Decompose `Pipeline.Run()` (137 lines → under 120)
 2. Decompose `Pipeline.runIteration()` (124 lines → under 120)
 3. Reduce `applyTriage` cognitive complexity (36 → under 35)
@@ -135,12 +138,14 @@ This is documented in `.golangci.yml` and AGENTS.md. Reversible with one line.
 7. Rename unused `s` receivers in `saboteurProvider` to `_`
 
 ### Medium Priority — Consolidate test infrastructure further
+
 8. **Shared assertions** — `testutil_test.go` has `AssertErrIsIO`, `AssertFindingSeverity`, etc. but many tests still inline `g.Expect(...).To(gomega.Equal(...))` patterns that could use these helpers
 9. **Table-driven test pattern** — `RunEqualTests` helper exists but many tests don't use it; standardize
 10. **Mock detectors** — `mockDetector` in `pipeline/testutil_test.go` could be shared with `cmd/go-finding` tests via a shared test helper package (if Go's test package visibility allows)
 11. **Fix the garbled commit message** — `git rebase -i` to fix `d59538b` (if history allows)
 
 ### Medium Priority — Strengthen test coverage
+
 12. **Add `Badge()` unit tests** — No test directly asserts `Badge()` output; the method now derives from `Emoji()` + `strings.ToUpper`. Add explicit test to lock the format.
 13. **Add `PriorityString()` unit tests** — Verify map lookup returns correct values for all 4 severities + unknown fallback
 14. **Add `marshalJSONString` tests** — Verify error wrapping behavior
@@ -148,12 +153,14 @@ This is documented in `.golangci.yml` and AGENTS.md. Reversible with one line.
 16. **Add `decodeConfig` tests** — Verify error path wraps correctly, success path converts
 
 ### Medium Priority — Documentation
+
 17. **Verify `docs/guides/fix-engine.md`** still references correct API after `fixEditJSON` extraction
 18. **Check `docs/MIGRATION_v1.0.md`** — Does it mention any of the refactored patterns?
 19. **Run `docs-health` skill** — Full documentation audit after these structural changes
 20. **Update `CHANGELOG.md`** if one exists, documenting the deduplication pass
 
 ### Lower Priority — Code quality
+
 21. **Run `full-code-review` skill** — Comprehensive review after this structural pass
 22. **Run `code-quality-scan` skill** — Build + lint + duplication analysis
 23. **Run `brutal-self-review` skill** — Self-critique of the refactoring decisions
@@ -163,18 +170,21 @@ This is documented in `.golangci.yml` and AGENTS.md. Reversible with one line.
 27. **Consistency audit** — `examples/builder/main.go` has a package-level comment explaining it mirrors `ExampleBuilder` in `example_test.go`. Verify this is still accurate after changes.
 
 ### Lower Priority — Architecture
+
 28. **Consider a `testutil` shared module** — Currently `NewParallelGomega` is duplicated 4× (once per module). A `go-finding/testutil` module could host shared test helpers. This is a tradeoff: less duplication vs. more module complexity.
 29. **Evaluate `paralleltest` re-enablement** — Could re-enable `paralleltest` and add `//nolint:paralleltest` only to the 4 `NewParallelGomega` definitions instead of disabling globally
 30. **Benchmark impact** — Run `nix run .#bench` to verify the `severityPriorities` map lookup vs switch doesn't regress hot-path performance
 31. **Check SARIF round-trip** — After `fixEditJSON` extraction, verify SARIF export/import still round-trips `FixEdit` correctly with a manual test
 
 ### Lower Priority — Tooling
+
 32. **Add art-dupl to CI** — `art-dupl baseline` + `art-dupl check` in CI to prevent future duplication regression
 33. **Add art-dupl threshold to flake.nix** — The `dedup` app in flake.nix could default to `-t 1` for maximum strictness
 34. **Consider `dupl` linter in golangci-lint** — `dupl` is already enabled in `.golangci.yml`; verify it doesn't now conflict or overlap with art-dupl findings
 35. **Review the `dedup` flake app** — `flake.nix` has a `dedup` app; verify it uses the same flags as this session
 
 ### Backlog ideas
+
 36. **Extract a `must` package** — If more Must-style constructors are added across modules, consider a `go-finding/must` utility package
 37. **Generify JSON helpers** — `marshalJSONString` could be part of a broader `jsonutil` package if more JSON patterns emerge
 38. **Severity formatting** — Consider a `SeverityFormatter` type if Badge/PriorityString/Emoji formatting needs to be customizable by consumers
@@ -198,6 +208,7 @@ This is documented in `.golangci.yml` and AGENTS.md. Reversible with one line.
 ### 1. Error message stability — is this a breaking change?
 
 `marshalJSONString` unified these error messages:
+
 - `"marshaling finding"` → `"marshaling JSON"`
 - `"marshaling filtered JSON"` → `"marshaling JSON"`
 - `"decode config"` → `"unmarshal config"`

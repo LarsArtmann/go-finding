@@ -1,7 +1,7 @@
 version: "2"
 run:
   timeout: 5m
-  go: 1.26.4
+  go: 1.26.5
   build-tags:
     - goexperiment.arenas
     - goexperiment.goroutineleakprofile
@@ -27,7 +27,6 @@ linters:
     - copyloopvar
     - cyclop
     - decorder
-    - depguard
     - dogsled
     - dupl
     - dupword
@@ -125,41 +124,14 @@ linters:
     - wsl_v5
     - zerologlint
   disable:
+    - depguard
     - noinlineerr
-    - paralleltest # t.Parallel() is centralized in NewParallelGomega test helpers; the linter cannot trace calls through helpers
   settings:
     cyclop:
       max-complexity: 25
-    depguard:
-      rules:
-        main:
-          allow:
-            - $gostd
-            - github.com/LarsArtmann/gogenfilter
-            - github.com/larsartmann/go-finding
-            - github.com/larsartmann/go-output
-          deny:
-            - desc: deprecated since Go 1.16, use io and os
-              pkg: io/ioutil
-          files:
-            - $all
-            - "!$test"
-          list-mode: lax
-        test:
-          allow:
-            - $gostd
-            - github.com/LarsArtmann/gogenfilter
-            - github.com/larsartmann/go-finding
-            - github.com/larsartmann/go-output
-            - github.com/onsi/ginkgo
-            - github.com/onsi/gomega
-          files:
-            - $test
-          list-mode: lax
     exhaustruct:
       exclude:
         - os/exec.Cmd
-        # Core data types: partial initialization is the norm (zero values are meaningful)
         - github\.com/larsartmann/go-finding\.Finding
         - github\.com/larsartmann/go-finding\.Position
         - github\.com/larsartmann/go-finding\.Range
@@ -171,7 +143,6 @@ linters:
         - github\.com/larsartmann/go-finding\.Template
         - github\.com/larsartmann/go-finding\.Builder
         - github\.com/larsartmann/go-finding\.SimpleFixResult
-        # Registry types: initialized incrementally
         - github\.com/larsartmann/go-finding\.LinterRegistry
         - github\.com/larsartmann/go-finding\.DetectorRegistry
     funlen:
