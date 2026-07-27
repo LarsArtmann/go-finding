@@ -19,6 +19,14 @@ const (
 	SeverityCritical Severity = "critical"
 )
 
+// severityPriorities maps each canonical severity to its priority label.
+var severityPriorities = map[Severity]string{
+	SeverityCritical: "critical",
+	SeverityError:    "high",
+	SeverityWarning:  "medium",
+	SeverityInfo:     "low",
+}
+
 // IsValid returns true if the severity is a valid value.
 func (s Severity) IsValid() bool {
 	switch s {
@@ -242,15 +250,8 @@ func SeverityFromLevel(level string, fallback Severity) Severity {
 // Critical→"critical", Error→"high", Warning→"medium", Info→"low".
 // Returns the string value unchanged for unknown severities.
 func (s Severity) PriorityString() string {
-	switch s {
-	case SeverityCritical:
-		return "critical"
-	case SeverityError:
-		return "high"
-	case SeverityWarning:
-		return "medium"
-	case SeverityInfo:
-		return "low"
+	if p, ok := severityPriorities[s]; ok {
+		return p
 	}
 
 	return string(s)

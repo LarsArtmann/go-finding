@@ -12,6 +12,13 @@ import (
 	finding "github.com/larsartmann/go-finding"
 )
 
+// must calls log.Fatal if err is non-nil.
+func must(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	f, err := finding.NewBuilder(finding.RuleName("SA1000"), finding.ToolName("staticcheck"), "invalid regular expression", finding.SeverityError, finding.Pos("pkg/validate.go", 24, 8)).
 		WithCategory(finding.CategoryCorrectness).
@@ -20,9 +27,7 @@ func main() {
 		WithAfterCode("newPattern").
 		WithFixStrategy(finding.FixStrategyDirect).
 		Build()
-	if err != nil {
-		log.Fatal(err)
-	}
+	must(err)
 
 	fmt.Printf("Finding: %s (%s)\n", f.ID, f.Rule)
 	fmt.Printf("Position: %s\n", f.Position)
@@ -33,9 +38,7 @@ func main() {
 	}
 
 	json, err := f.LineJSON()
-	if err != nil {
-		log.Fatal(err)
-	}
+	must(err)
 
 	fmt.Println(json)
 }
