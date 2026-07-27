@@ -3,7 +3,7 @@ module github.com/larsartmann/go-finding
 go 1.26.5
 
 require (
-	github.com/larsartmann/go-error-family v0.9.0
+	github.com/larsartmann/go-error-family v0.10.0
 	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.42.1
 )
