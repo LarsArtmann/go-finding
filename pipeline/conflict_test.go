@@ -59,8 +59,7 @@ func TestConflictDetectorDetectConflicts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			groups, conflicts := DetectConflicts(tt.fixes)
 			g.Expect(groups).To(HaveLen(tt.expectedGroups))
@@ -95,8 +94,7 @@ func TestPositionLess(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			got := tt.a.Compare(tt.b) < 0
 			g.Expect(got).To(Equal(tt.expected))
@@ -199,8 +197,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 	t.Parallel()
 
 	t.Run("no conflicts returns empty", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		result := AnalyzeConflicts(findings("1", "a.go", 10, "2", "b.go", 20))
 		g.Expect(result).To(BeEmpty())
@@ -233,8 +230,7 @@ func TestAnalyzeConflicts(t *testing.T) {
 	})
 
 	t.Run("empty input returns empty", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		result := AnalyzeConflicts(nil)
 		g.Expect(result).To(BeEmpty())

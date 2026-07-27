@@ -226,8 +226,7 @@ func TestFindingsFromJSON(t *testing.T) {
 	t.Parallel()
 
 	t.Run("valid findings slice", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		orig := []Finding{
 			MakeFindingWithPos("f1", "R1", "t", "msg", SeverityInfo, "a.go", 1, 1),
@@ -262,8 +261,7 @@ func TestFindingsFromJSON(t *testing.T) {
 	})
 
 	t.Run("filters invalid findings", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		orig := []Finding{
 			MakeFindingWithPos("f1", "R1", "t", "msg", SeverityInfo, "a.go", 1, 1),
@@ -293,8 +291,7 @@ func TestFindingsFromJSON(t *testing.T) {
 }
 
 func TestPrettyJSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := MakeSimpleReport("tool")
 
@@ -309,8 +306,7 @@ func TestPrettyJSON(t *testing.T) {
 }
 
 func TestLineJSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		ID:       "f1",
@@ -328,8 +324,7 @@ func TestLineJSON(t *testing.T) {
 }
 
 func TestPrettyJSONFiltered(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := NewReport(ToolInfo{Name: "tool"})
 	r.AddFinding(Finding{ID: "active", Rule: "r1", Message: "m1", Severity: SeverityWarning})
@@ -351,8 +346,7 @@ func TestPrettyJSONFiltered(t *testing.T) {
 }
 
 func TestPrettyJSON_ErrorPath(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := MakeSimpleReport("tool")
 	r.AddFinding(nanConfidenceFinding())
@@ -362,8 +356,7 @@ func TestPrettyJSON_ErrorPath(t *testing.T) {
 }
 
 func TestLineJSON_ErrorPath(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := nanConfidenceFinding()
 
@@ -381,8 +374,7 @@ func expectJSONError(t *testing.T, fn func() error, context string) {
 }
 
 func TestFinding_WriteJSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		ID:       "f1",
@@ -403,8 +395,7 @@ func TestFinding_WriteJSON(t *testing.T) {
 }
 
 func TestReport_WriteJSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := MakeSimpleReport("tool")
 
@@ -426,8 +417,7 @@ type failingWriter struct{ err error }
 func (w *failingWriter) Write([]byte) (int, error) { return 0, w.err }
 
 func TestFinding_WriteJSON_Error(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{ID: "f1", Rule: "r1", Severity: SeverityWarning}
 	err := f.WriteJSON(&failingWriter{err: errors.New("write failed")})
@@ -436,8 +426,7 @@ func TestFinding_WriteJSON_Error(t *testing.T) {
 }
 
 func TestReport_WriteJSON_Error(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := MakeSimpleReport("tool")
 	err := r.WriteJSON(&failingWriter{err: errors.New("write failed")})

@@ -8,8 +8,7 @@ import (
 )
 
 func TestDeduplicateStrategies_BehaviorDiff(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r1 := NewReport(ToolInfo{Name: "govet"})
 	for _, tc := range []struct {
@@ -53,9 +52,7 @@ func TestDeduplicateStrategies_EmptyFileNotDeduplicated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			r1 := NewReport(ToolInfo{Name: "t1"})
 			r1.AddFinding(
@@ -76,8 +73,7 @@ func TestDeduplicateStrategies_EmptyFileNotDeduplicated(t *testing.T) {
 }
 
 func TestDeduplicateBy_String(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	g.Expect(DeduplicateByID.String()).To(Equal("id"))
 	g.Expect(DeduplicateByPosition.String()).To(Equal("position"))
@@ -145,8 +141,7 @@ func makeFinding(id, tool, rule, file string, line int) Finding {
 }
 
 func TestMergeIter(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r1 := NewReport(ToolInfo{Name: "a"})
 	r1.AddFinding(Finding{ID: "1", ToolName: "a", Position: Position{File: "f.go", Line: 1}})
@@ -163,8 +158,7 @@ func TestMergeIter(t *testing.T) {
 }
 
 func TestMergeIter_WithDedup(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r1 := NewReport(ToolInfo{Name: "a"})
 	r1.AddFinding(Finding{ID: "dup", ToolName: "a"})
@@ -178,16 +172,14 @@ func TestMergeIter_WithDedup(t *testing.T) {
 }
 
 func TestMergeIter_Empty(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	collected := slices.Collect(MergeIter(nil))
 	g.Expect(collected).To(BeEmpty())
 }
 
 func TestMergeIter_EarlyStop(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r1 := NewReport(ToolInfo{Name: "a"})
 	r1.AddFinding(Finding{ID: "1"})

@@ -25,8 +25,7 @@ func runIsValidTests(t *testing.T, tests []struct {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.f.IsValid()).To(Equal(tt.want))
 		})
@@ -154,8 +153,7 @@ func TestFindingHasFix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.f.HasFix()).To(Equal(tt.want))
 		})
@@ -183,8 +181,7 @@ func TestFindingHasSuggestion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.f.HasSuggestion()).To(Equal(tt.want))
 		})
@@ -215,8 +212,7 @@ func TestFindingIsSuppressed(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.f.IsSuppressed()).To(Equal(tt.want))
 		})
@@ -246,8 +242,7 @@ func TestRelatedRefIsValid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.r.IsValid()).To(Equal(tt.want))
 		})
@@ -272,8 +267,7 @@ func TestSuppressionIsValid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.s.IsValid()).To(Equal(tt.want))
 		})
@@ -310,8 +304,7 @@ func TestSuppressionIsExpired(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.s.IsExpired(now)).To(Equal(tt.want))
 		})
@@ -337,8 +330,7 @@ func TestErrorCategoryIsValid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.c.IsValid()).To(Equal(tt.want))
 		})
@@ -346,8 +338,7 @@ func TestErrorCategoryIsValid(t *testing.T) {
 }
 
 func TestFindingErrorIsCategory(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	err := NewValidationError("test", nil)
 	g.Expect(IsCategory(err, ErrCategoryValidation)).To(BeTrue())
@@ -378,8 +369,7 @@ func TestRangeContainsByOffset(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(r.containsByOffset(tt.p)).To(Equal(tt.want))
 		})
@@ -387,8 +377,7 @@ func TestRangeContainsByOffset(t *testing.T) {
 }
 
 func TestRangeContainsByOffsetZeroStart(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := Range{
 		Start: Position{File: "test.go", Line: 10, Offset: -1},
@@ -400,8 +389,7 @@ func TestRangeContainsByOffsetZeroStart(t *testing.T) {
 }
 
 func TestSARIFCriticalSeverityPreserved(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		ID:          "tool:rule:file.go:1:1",

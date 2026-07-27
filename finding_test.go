@@ -67,16 +67,14 @@ func TestSeverity(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			g.Expect(tt.severity.IsValid()).To(Equal(tt.valid))
 		})
 	}
 }
 
 func TestSeverityOrdering(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	g.Expect(SeverityInfo.GreaterThan(SeverityWarning)).To(BeFalse())
 	g.Expect(SeverityError.GreaterThan(SeverityWarning)).To(BeTrue())
@@ -84,8 +82,7 @@ func TestSeverityOrdering(t *testing.T) {
 }
 
 func TestFixStrategy(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	g.Expect(FixStrategyNone.IsValid()).To(BeTrue())
 	g.Expect(FixStrategyDirect.CanAutoApply()).To(BeTrue())
@@ -94,8 +91,7 @@ func TestFixStrategy(t *testing.T) {
 }
 
 func TestPosition(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	p := Position{File: "test.go", Line: 42, Column: 5}
 	g.Expect(p.IsValid()).To(BeTrue())
@@ -116,16 +112,14 @@ func TestPositionString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.want, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			g.Expect(tt.pos.String()).To(Equal(tt.want))
 		})
 	}
 }
 
 func TestFinding(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		ID:          "test:rule1:file.go:10:5",
@@ -146,8 +140,7 @@ func TestFinding(t *testing.T) {
 }
 
 func TestFindingSuppressed(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		ID:          "test:rule1:file.go:10:5",
@@ -163,8 +156,7 @@ func TestFindingSuppressed(t *testing.T) {
 }
 
 func TestReport(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := NewReport(ToolInfo{Name: "test-tool", Version: "1.0.0"})
 
@@ -183,8 +175,7 @@ func TestReport(t *testing.T) {
 }
 
 func TestReportJSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := NewReport(ToolInfo{Name: "test"})
 	r.AddFinding(Finding{
@@ -207,8 +198,7 @@ func TestReportJSON(t *testing.T) {
 }
 
 func TestFindingJSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := standardTestFinding()
 
@@ -221,8 +211,7 @@ func TestFindingJSON(t *testing.T) {
 }
 
 func TestSARIFConversion(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := NewReport(ToolInfo{Name: "test"})
 	r.AddFinding(Finding{
@@ -248,8 +237,7 @@ func TestSARIFConversion(t *testing.T) {
 }
 
 func TestLSPConversion(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := standardTestFinding()
 
@@ -259,8 +247,7 @@ func TestLSPConversion(t *testing.T) {
 }
 
 func TestCategory(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	g.Expect(CategorySecurity.IsValid()).To(BeTrue())
 	g.Expect(Category("custom-category").IsValid()).To(BeTrue())
@@ -284,8 +271,7 @@ func TestRangeContains(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			g.Expect(r.Contains(tt.pos)).To(Equal(tt.want))
 		})
 	}
@@ -308,24 +294,21 @@ func TestClampConfidence(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			g.Expect(tt.in.Clamp()).To(BeNumerically("~", tt.want, 1e-9))
 		})
 	}
 }
 
 func TestFinding_HasCategory(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	g.Expect(Finding{}.HasCategory()).To(BeFalse())
 	g.Expect(Finding{Category: CategorySecurity}.HasCategory()).To(BeTrue())
 }
 
 func TestFinding_String_WithCategory(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		Severity: SeverityError,
@@ -342,8 +325,7 @@ func TestFinding_String_WithCategory(t *testing.T) {
 }
 
 func TestFinding_Preview(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	g.Expect(Finding{}.Preview()).To(BeEmpty())
 

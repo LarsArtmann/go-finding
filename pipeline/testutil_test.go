@@ -10,7 +10,16 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/onsi/gomega"
 )
+
+// NewParallelGomega marks the test as parallel and returns a gomega.GomegaWithT,
+// consolidating the t.Parallel() + gomega.NewWithT(t) boilerplate.
+func NewParallelGomega(t *testing.T) *gomega.GomegaWithT {
+	t.Parallel()
+
+	return gomega.NewWithT(t)
+}
 
 const helloProgram = "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
 

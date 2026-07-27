@@ -41,8 +41,7 @@ func initGoModule(t *testing.T, dir string) {
 }
 
 func TestRun_E2E_DefaultDetectors(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	bin := buildBinary(t)
 	tmpDir := t.TempDir()
@@ -62,8 +61,7 @@ func TestRun_E2E_DefaultDetectors(t *testing.T) {
 }
 
 func TestRun_E2E_ConfigFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	bin := buildBinary(t)
 	tmpDir := t.TempDir()
@@ -87,8 +85,7 @@ func TestRun_E2E_ConfigFile(t *testing.T) {
 }
 
 func TestRun_E2E_SARIFOutput(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	bin := buildBinary(t)
 	tmpDir := t.TempDir()
@@ -114,8 +111,7 @@ func TestRun_E2E_SARIFOutput(t *testing.T) {
 }
 
 func TestRun_E2E_FilterGenerated(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	bin := buildBinary(t)
 	tmpDir := t.TempDir()

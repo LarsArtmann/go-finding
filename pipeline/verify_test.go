@@ -61,8 +61,7 @@ func TestDiffFindings_NewFindings(t *testing.T) {
 }
 
 func TestDiffFindings_Mixed(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	original := []finding.Finding{
 		makeFinding("a:rule:file.go:1", "fixed"),
@@ -95,8 +94,7 @@ func TestDiffFindings_BothEmpty(t *testing.T) {
 }
 
 func TestVerifier_Verify(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	callCount := 0
 	detector := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -118,8 +116,7 @@ func TestVerifier_Verify(t *testing.T) {
 }
 
 func TestVerifier_Verify_DetectorError(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	detector := makeErrorDetector("detector failed")
 
@@ -130,8 +127,7 @@ func TestVerifier_Verify_DetectorError(t *testing.T) {
 }
 
 func TestVerifier_Verify_SuppressedFindingsFiltered(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	suppressed := finding.Finding{
 		ID:          "suppressed:rule:f.go:1",
@@ -155,8 +151,7 @@ func TestVerifier_Verify_SuppressedFindingsFiltered(t *testing.T) {
 }
 
 func TestFindingKey_EmptyID(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	f := finding.Finding{
 		Position: finding.Position{File: "main.go"},
@@ -168,8 +163,7 @@ func TestFindingKey_EmptyID(t *testing.T) {
 }
 
 func TestFindingKey_WithID(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := finding.Finding{ID: "unique-id-123", Position: finding.Position{File: "main.go"}}
 	key := f.Key()

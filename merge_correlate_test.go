@@ -20,8 +20,7 @@ func makeRangeFinding(id, tool, rule, file string, startLine, endLine int) Findi
 }
 
 func TestCorrelate(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []Finding{
 		makeFinding("1", "govet", "nilcheck", "a.go", 10),
@@ -48,8 +47,7 @@ func TestCorrelate(t *testing.T) {
 }
 
 func TestCorrelate_OverlappingRanges(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []Finding{
 		makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
@@ -64,8 +62,7 @@ func TestCorrelate_OverlappingRanges(t *testing.T) {
 }
 
 func TestCorrelate_PointWithinRange(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []Finding{
 		makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
@@ -103,9 +100,7 @@ func TestCorrelate_NoCorrelations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			correlations := Correlate(tt.findings)
 			g.Expect(correlations).To(BeEmpty())
@@ -114,8 +109,7 @@ func TestCorrelate_NoCorrelations(t *testing.T) {
 }
 
 func TestCorrelate_TooFewFindings(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []Finding{
 		{ID: "1", ToolName: "govet", Position: Position{File: "a.go", Line: 10}},
@@ -140,8 +134,7 @@ func TestCloneFindings_EmptySlice(t *testing.T) {
 }
 
 func TestCloneFindings_DeepCopy(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	original := []Finding{
 		{
@@ -205,8 +198,7 @@ func TestMerge_DeduplicateByID_EmptyIDs(t *testing.T) {
 // before the fix, zero-line findings correlated at confidence 1.0 because the
 // line-diff was 0.
 func TestCorrelate_ZeroLineFindings(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	// Two findings from different tools, both with Line == 0.
 	findings := []Finding{

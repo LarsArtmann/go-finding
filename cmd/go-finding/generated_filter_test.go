@@ -34,8 +34,7 @@ func TestSplitCommaList(t *testing.T) {
 }
 
 func TestMustKeys(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	keys := mustKeys(filterTypeRegistry)
 	g.Expect(keys).NotTo(BeEmpty())
@@ -68,8 +67,7 @@ func TestParseFilterGenTypes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			opts, err := parseFilterGenTypes(tt.cliTypes, tt.configType)
 			if tt.wantErr {
@@ -84,8 +82,7 @@ func TestParseFilterGenTypes(t *testing.T) {
 }
 
 func TestAddGeneratedFilter_Integration(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	pipelineCfg := testPipelineConfig()
 	cfg := pipelineConfigFile{}
@@ -101,8 +98,7 @@ func TestAddGeneratedFilter_Integration(t *testing.T) {
 }
 
 func TestAddGeneratedFilter_WithExcludeInclude(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	pipelineCfg := testPipelineConfig()
 	cfg := pipelineConfigFile{

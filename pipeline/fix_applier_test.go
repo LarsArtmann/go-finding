@@ -12,8 +12,7 @@ import (
 )
 
 func TestFixApplier_Apply_CancelledContext(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -34,8 +33,7 @@ func TestFixApplier_Apply_CancelledContext(t *testing.T) {
 }
 
 func TestFixApplier_Backup_NonexistentFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -45,8 +43,7 @@ func TestFixApplier_Backup_NonexistentFile(t *testing.T) {
 }
 
 func TestFixApplier_Restore_WithoutBackup(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -56,8 +53,7 @@ func TestFixApplier_Restore_WithoutBackup(t *testing.T) {
 }
 
 func TestFixApplier_ApplyToFile_PreservesPermissions(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -81,8 +77,7 @@ func TestFixApplier_ApplyToFile_PreservesPermissions(t *testing.T) {
 }
 
 func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -95,8 +90,7 @@ func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 }
 
 func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -111,8 +105,7 @@ func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 }
 
 func TestFixApplier_PathTraversal_Skipped(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -140,8 +133,7 @@ func TestFixApplier_PathTraversal_Skipped(t *testing.T) {
 }
 
 func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -162,8 +154,7 @@ func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
 }
 
 func TestFixApplier_RollbackAll(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -209,8 +200,7 @@ func TestFixApplier_RollbackAll(t *testing.T) {
 }
 
 func TestFixApplier_RollbackAll_PartialFailure(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -231,8 +221,7 @@ func TestFixApplier_RollbackAll_PartialFailure(t *testing.T) {
 }
 
 func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -252,8 +241,7 @@ func TestFixApplier_Apply_BackupFailureRollsBack(t *testing.T) {
 }
 
 func TestFixApplier_Apply_EmptyFixesList(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	applier := newTestApplier(t)
 
@@ -263,8 +251,7 @@ func TestFixApplier_Apply_EmptyFixesList(t *testing.T) {
 }
 
 func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -303,8 +290,7 @@ func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
 }
 
 func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tempDir := t.TempDir()
 
@@ -328,8 +314,7 @@ func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
 // actually-applied findings. Findings without a file are silently skipped by
 // groupFindingsBySafePath, so they must NOT appear in the returned slice.
 func TestFixApplier_ApplyWithDetails_ReturnsOnlyApplied(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -353,8 +338,7 @@ func TestFixApplier_ApplyWithDetails_ReturnsOnlyApplied(t *testing.T) {
 }
 
 func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 
@@ -381,8 +365,7 @@ func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 }
 
 func TestFixApplier_FileHash_Deterministic(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	h1 := fileHash("test/path.go")
 	h2 := fileHash("test/path.go")
@@ -393,8 +376,7 @@ func TestFixApplier_FileHash_Deterministic(t *testing.T) {
 }
 
 func TestFixApplier_BackupDisabled(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
 	applier.backup.SetEnabled(false)
@@ -413,8 +395,7 @@ func TestFixApplier_BackupDisabled(t *testing.T) {
 }
 
 func TestFixApplier_NewFixApplier_Defaults(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	applier, err := NewFixApplier("/tmp/test")
 	if err != nil {
@@ -445,8 +426,7 @@ func TestFixApplier_Apply_RestoreOnApplyError(t *testing.T) {
 }
 
 func TestIoErrorAt_WrapsCorrectly(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	err := ioErrorAt("test op", os.ErrPermission, "file.go")
 
@@ -462,8 +442,7 @@ func TestIoErrorAt_WrapsCorrectly(t *testing.T) {
 // TestFixApplier_InsertionOnly verifies C-2: findings with only AfterCode
 // (and no BeforeCode) are treated as insertions at the finding's line.
 func TestFixApplier_InsertionOnly(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "insert.go")
@@ -497,8 +476,7 @@ func TestFixApplier_InsertionOnly(t *testing.T) {
 // TestFixApplier_DeletionOnly verifies C-2: findings with only BeforeCode
 // (and no AfterCode) are treated as deletions.
 func TestFixApplier_DeletionOnly(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "delete.go")
@@ -535,8 +513,7 @@ func TestFixApplier_DeletionOnly(t *testing.T) {
 // TestFixApplier_NearestLineReplacement verifies H-7: when BeforeCode
 // appears multiple times, the occurrence nearest to the finding's line is replaced.
 func TestFixApplier_NearestLineReplacement(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "nearest.go")
@@ -571,8 +548,7 @@ func TestFixApplier_NearestLineReplacement(t *testing.T) {
 }
 
 func TestFixApplier_ApplyWithDetails(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	applier, err := NewFixApplier(t.TempDir())
 	g.Expect(err).NotTo(HaveOccurred())
@@ -610,8 +586,7 @@ func (s *saboteurProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error)
 // error includes BOTH the apply failure and the rollback failure — proving
 // rollback errors are no longer silently swallowed.
 func TestFixApplier_RollbackErrorNotSwallowed(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	root := t.TempDir()
 

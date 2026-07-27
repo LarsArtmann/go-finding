@@ -10,8 +10,7 @@ import (
 )
 
 func TestFixApplier(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 	// Create a temporary directory for testing
 	tempDir := t.TempDir()
 
@@ -69,8 +68,7 @@ func TestFixApplier(t *testing.T) {
 
 // TestFixApplier_Apply tests actual fix application.
 func TestFixApplier_Apply(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 	tempDir := t.TempDir()
 
 	applier, err := NewFixApplier(tempDir)
@@ -107,8 +105,7 @@ func TestFixApplier_Apply(t *testing.T) {
 }
 
 func TestFixApplier_RangeBasedFix(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 	tempDir := t.TempDir()
 
 	applier, err := NewFixApplier(tempDir)
@@ -156,8 +153,7 @@ func TestFixApplier_RangeBasedFix(t *testing.T) {
 }
 
 func TestFixApplier_MultiLineRangeFix(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 	tempDir := t.TempDir()
 
 	applier, err := NewFixApplier(tempDir)
@@ -198,8 +194,7 @@ func TestFixApplier_MultiLineRangeFix(t *testing.T) {
 }
 
 func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 	tempDir := t.TempDir()
 
 	applier, err := NewFixApplier(tempDir)

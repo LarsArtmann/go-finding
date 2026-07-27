@@ -9,8 +9,7 @@ import (
 )
 
 func TestDetectParallel_SuppressionConsistency(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	makeFindings := func() []finding.Finding {
 		return []finding.Finding{
@@ -100,8 +99,7 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 
 // TestDetectorFunc tests the DetectorFunc adapter.
 func TestDetectorFunc(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	called := false
 	f := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -123,8 +121,7 @@ func TestDetectorFunc(t *testing.T) {
 }
 
 func TestNamedDetectorFunc(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	fn := makeFindingDetectorFunc("test")
 

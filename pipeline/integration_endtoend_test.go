@@ -16,8 +16,7 @@ import (
 // end-to-end through the Pipeline. This is the "ConfigFile feature actually
 // works" proof that was missing.
 func TestIntegration_ConfigFileToPipelineRun(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	// 1. Register detectors in a registry.
 	registry := finding.NewDetectorRegistry()
@@ -66,8 +65,7 @@ func TestIntegration_ConfigFileToPipelineRun(t *testing.T) {
 // TestIntegration_ConfigFileUnknownDetector verifies that an unknown detector
 // name in the config produces a clear error wrapping errResolveDetector.
 func TestIntegration_ConfigFileUnknownDetector(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	registry := finding.NewDetectorRegistry()
 
@@ -83,8 +81,7 @@ func TestIntegration_ConfigFileUnknownDetector(t *testing.T) {
 // DetectorRegistry populated with constructors can drive a full Pipeline run
 // via BuildAll. This was tested in isolation only.
 func TestIntegration_DetectorRegistryBuildAllToPipelineRun(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	registry := finding.NewDetectorRegistry()
 	registerFindingDetector(registry, "govet", "vet", finding.Finding{
@@ -118,8 +115,7 @@ func TestIntegration_DetectorRegistryBuildAllToPipelineRun(t *testing.T) {
 // TestIntegration_DetectorRegistryPartialBuild verifies selective Build of a
 // subset of registered detectors.
 func TestIntegration_DetectorRegistryPartialBuild(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	registry := finding.NewDetectorRegistry()
 	registry.MustRegister("a", func() finding.Detector { return newMockDetector("a", "ta") })
@@ -168,8 +164,7 @@ func TestIntegration_TypeAliasesCompileMatch(t *testing.T) {
 // TestIntegration_ConfigFromReader verifies the streaming reader path produces
 // the same Config as the byte-slice path.
 func TestIntegration_ConfigFromReader(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	raw := `{"maxIterations": 7, "timeout": "30s", "parallelDetectors": true}`
 

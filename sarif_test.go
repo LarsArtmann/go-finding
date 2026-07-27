@@ -115,8 +115,7 @@ func TestFromSARIFLevel(t *testing.T) {
 }
 
 func TestToSARIF(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "test-tool", Version: "1.0"},
@@ -162,8 +161,7 @@ func TestToSARIF(t *testing.T) {
 }
 
 func TestToSARIFFiltered(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	suppression := expiringSuppression(t, "test")
 
@@ -207,8 +205,7 @@ func TestToSARIFFiltered(t *testing.T) {
 }
 
 func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	suppression := expiringSuppression(t, "won't fix")
 
@@ -242,8 +239,7 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 }
 
 func TestToSARIF_WithFix(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
@@ -313,8 +309,7 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 }
 
 func TestToSARIF_SuggestionOnly(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},

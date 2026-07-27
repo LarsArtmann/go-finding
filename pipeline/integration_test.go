@@ -70,8 +70,7 @@ func TestFixApplier_BackupPathCollision(t *testing.T) {
 }
 
 func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tempDir := t.TempDir()
 
@@ -113,8 +112,7 @@ func TestFixApplier_MultipleFilesConcurrent(t *testing.T) {
 }
 
 func TestPipeline_GracefulDegradation(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	config := Config{
 		MaxIterations:       1,
@@ -147,8 +145,7 @@ func TestPipeline_GracefulDegradation(t *testing.T) {
 }
 
 func TestPipeline_RetryConfig(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	var calls atomic.Int32
 
@@ -194,8 +191,7 @@ func TestPipeline_RetryConfig(t *testing.T) {
 }
 
 func TestPipeline_VerifyAfterFix(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	var callCount atomic.Int32
 
@@ -235,8 +231,7 @@ func TestPipeline_VerifyAfterFix(t *testing.T) {
 }
 
 func TestPipeline_MetricsRecordsDetector(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	metrics := NewMetrics()
 	config := Config{
@@ -281,8 +276,7 @@ func TestSuppression_IsValid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			got := tt.s.IsValid()
 			g.Expect(got).To(Equal(tt.want))
 		})

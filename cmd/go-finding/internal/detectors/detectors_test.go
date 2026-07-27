@@ -42,8 +42,7 @@ func TestParsePosn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			pos := parsePosn(tt.posn, tt.dir)
 			g.Expect(pos.File).To(Equal(finding.FilePath(tt.wantFile)))
@@ -54,8 +53,7 @@ func TestParsePosn(t *testing.T) {
 }
 
 func TestParseGoVetJSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	input := `{
 		"github.com/example/pkg": [
@@ -92,8 +90,7 @@ func TestParseGoVetJSON_InvalidAndEmpty(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			findings := parseGoVetJSON([]byte(tt.input), "")
 			if tt.empty {
@@ -106,8 +103,7 @@ func TestParseGoVetJSON_InvalidAndEmpty(t *testing.T) {
 }
 
 func TestParseStaticcheckJSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	input := `{"code":"SA1000","severity":"warning","location":{"file":"main.go","line":10,"column":5},"message":"invalid regex pattern"}
 {"code":"S1001","severity":"error","location":{"file":"util.go","line":20,"column":1},"message":"should use copy"}`
@@ -129,8 +125,7 @@ func TestParseStaticcheckJSON(t *testing.T) {
 }
 
 func TestParseStaticcheckJSON_Empty(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	findings := parseStaticcheckJSON(nil, "")
 	g.Expect(findings).To(BeNil())
@@ -161,8 +156,7 @@ func TestParseStaticcheckJSON_LineSkipping(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			findings := parseStaticcheckJSON([]byte(tt.input), "")
 			g.Expect(findings).To(HaveLen(tt.wantLen))
@@ -192,8 +186,7 @@ func TestStaticcheckCategory(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.code, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(staticcheckCategory(tt.code)).To(Equal(tt.want))
 		})
@@ -201,8 +194,7 @@ func TestStaticcheckCategory(t *testing.T) {
 }
 
 func TestDetectorNames(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	govet := NewGoVetDetector(".")
 	g.Expect(govet.Name()).To(Equal("govet"))
@@ -224,8 +216,7 @@ func TestDetector_CancelledContext(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			ctx, cancel := context.WithCancel(context.Background())
 			cancel()
@@ -237,9 +228,7 @@ func TestDetector_CancelledContext(t *testing.T) {
 }
 
 func TestNewGoVetDetector_ValidProject(t *testing.T) {
-	t.Parallel()
-
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
@@ -256,8 +245,7 @@ func TestNewGoVetDetector_ValidProject(t *testing.T) {
 }
 
 func TestParseGoVetJSON_BadEntry(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	input := `{"github.com/example/pkg": "not an array"}`
 	findings := parseGoVetJSON([]byte(input), "")
@@ -265,15 +253,13 @@ func TestParseGoVetJSON_BadEntry(t *testing.T) {
 }
 
 func TestStaticcheckCategory_A(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	g.Expect(staticcheckCategory("A1000")).To(Equal(finding.CategoryCorrectness))
 }
 
 func TestParseStaticcheckJSON_AbsolutePath(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	input := `{"code":"S1001","severity":"warning","location":{"file":"/abs/path/main.go","line":1,"column":1},"message":"ok"}`
 	findings := parseStaticcheckJSON([]byte(input), "/project")

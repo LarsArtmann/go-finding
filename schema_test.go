@@ -9,8 +9,7 @@ import (
 )
 
 func TestFindingJSONSchema_IsValidJSON(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	data, err := os.ReadFile("docs/schemas/finding.schema.json")
 	g.Expect(err).NotTo(HaveOccurred())
@@ -24,8 +23,7 @@ func TestFindingJSONSchema_IsValidJSON(t *testing.T) {
 }
 
 func TestFindingJSONSchema_RoundTrip(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		ID:          "tool:rule:file.go:10:5",

@@ -9,8 +9,7 @@ import (
 )
 
 func TestDetect_EmptyDetectors(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	findings, err := Detect(context.Background())
 	g.Expect(err).NotTo(gomega.HaveOccurred())
@@ -18,8 +17,7 @@ func TestDetect_EmptyDetectors(t *testing.T) {
 }
 
 func TestDetect_SingleDetector(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	expected := []finding.Finding{
 		{ID: "f1", Rule: "r1", ToolName: "test", Severity: finding.SeverityWarning},
@@ -38,8 +36,7 @@ func TestDetect_SingleDetector(t *testing.T) {
 }
 
 func TestDetect_MultipleDetectorsParallel(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	d1 := finding.NamedDetectorFunc("d1", func(_ context.Context) ([]finding.Finding, error) {
 		return []finding.Finding{{ID: "a", ToolName: "d1"}}, nil
@@ -54,8 +51,7 @@ func TestDetect_MultipleDetectorsParallel(t *testing.T) {
 }
 
 func TestDetect_FiltersSuppressed(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	suppressed := finding.Finding{
 		ID:          "supp",
@@ -75,8 +71,7 @@ func TestDetect_FiltersSuppressed(t *testing.T) {
 }
 
 func TestDetect_ContextCancellation(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -90,8 +85,7 @@ func TestDetect_ContextCancellation(t *testing.T) {
 }
 
 func TestDetect_DetectorError(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	detector := finding.NamedDetectorFunc("failing", func(_ context.Context) ([]finding.Finding, error) {
 		return nil, context.DeadlineExceeded
@@ -103,8 +97,7 @@ func TestDetect_DetectorError(t *testing.T) {
 }
 
 func TestApplyToContent_SingleFix(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	content := []byte("package main\n\noldFunc()\n")
 	fix := finding.Finding{
@@ -123,8 +116,7 @@ func TestApplyToContent_SingleFix(t *testing.T) {
 }
 
 func TestApplyToContent_NoFixes(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	content := []byte("package main\n")
 
@@ -134,8 +126,7 @@ func TestApplyToContent_NoFixes(t *testing.T) {
 }
 
 func TestApplyToContent_NoMatch(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	content := []byte("package main\n")
 	fix := finding.Finding{

@@ -36,8 +36,7 @@ func parseJSON(t *testing.T, buf *bytes.Buffer) map[string]any {
 }
 
 func TestOutputResults_JSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := reportWithFindings()
 
@@ -53,8 +52,7 @@ func TestOutputResults_JSON(t *testing.T) {
 }
 
 func TestOutputResults_SARIF(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := reportWithFindings()
 
@@ -69,8 +67,7 @@ func TestOutputResults_SARIF(t *testing.T) {
 }
 
 func TestOutputResults_Text(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := reportWithFindings()
 
@@ -84,8 +81,7 @@ func TestOutputResults_Text(t *testing.T) {
 }
 
 func TestOutputText_EmptyReport(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := finding.NewReport(finding.ToolInfo{Name: testToolName})
 	var buf bytes.Buffer
@@ -96,8 +92,7 @@ func TestOutputText_EmptyReport(t *testing.T) {
 }
 
 func TestOutputText_WithSuggestion(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := finding.NewReport(finding.ToolInfo{Name: testToolName})
 	report.AddFinding(finding.Finding{
@@ -148,8 +143,7 @@ func TestParseSeverity(t *testing.T) {
 }
 
 func TestFilterBySeverity(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	findings := []finding.Finding{
 		{Severity: finding.SeverityInfo, Message: "info"},
@@ -189,8 +183,7 @@ func TestBuildDetectors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			dets := buildDetectors(tt.specs, ".")
 			g.Expect(dets).To(HaveLen(tt.wantCount))
@@ -228,8 +221,7 @@ func (w *failingWriter) Write(_ []byte) (int, error) {
 }
 
 func TestOutputResults_WriteError(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	report := reportWithFindings()
 
 	err := outputResults(&failingWriter{err: errors.New("disk full")}, report, "json", true)
@@ -244,8 +236,7 @@ func TestOutputResults_WriteError(t *testing.T) {
 }
 
 func TestOutputText_WithSummary(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	report := finding.NewReport(finding.ToolInfo{Name: testToolName})
 	report.AddFinding(finding.Finding{
 		Severity: finding.SeverityError, Rule: "R1", Message: "err1",
@@ -358,8 +349,7 @@ func TestOutputResults_JSONSerializationError(t *testing.T) {
 }
 
 func TestOutputResults_SARIFNaNConfidenceHandled(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	var buf bytes.Buffer
 	err := outputResults(&buf, reportWithNaNConfidence(), "sarif", true)
@@ -371,8 +361,7 @@ func TestRun_InvalidSeverity(t *testing.T) {
 		t.Skip("skipping integration test in short mode")
 	}
 
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	saveRestoreFlags(t)
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
@@ -383,8 +372,7 @@ func TestRun_InvalidSeverity(t *testing.T) {
 }
 
 func TestRegisterDetector(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	name := uniqueDetName("test-detector")
 
@@ -413,8 +401,7 @@ func TestRegisterDetector(t *testing.T) {
 }
 
 func TestWriteOutput_ToFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	outPath := filepath.Join(tmpDir, "output.json")
@@ -429,8 +416,7 @@ func TestWriteOutput_ToFile(t *testing.T) {
 }
 
 func TestWriteOutput_FileCreationError(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := reportWithFindings()
 	err := writeOutput(report, "json", "/nonexistent/dir/out.json", true)
@@ -439,8 +425,7 @@ func TestWriteOutput_FileCreationError(t *testing.T) {
 }
 
 func TestResolveFixProviders_UnknownReturnsError(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	_, err := resolveFixProviders([]string{"nonexistent-provider"})
 	g.Expect(err).To(HaveOccurred())
@@ -448,8 +433,7 @@ func TestResolveFixProviders_UnknownReturnsError(t *testing.T) {
 }
 
 func TestResolveFixProviders_KnownAndDefaults(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	providers, err := resolveFixProviders([]string{"go-ast"})
 	g.Expect(err).NotTo(HaveOccurred())
@@ -459,8 +443,7 @@ func TestResolveFixProviders_KnownAndDefaults(t *testing.T) {
 }
 
 func TestResolveFixProviders_Empty(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	providers, err := resolveFixProviders(nil)
 	g.Expect(err).NotTo(HaveOccurred())
@@ -468,8 +451,7 @@ func TestResolveFixProviders_Empty(t *testing.T) {
 }
 
 func TestToPipelineConfig_BadTimeout(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	cfg := pipelineConfigFile{Timeout: "not-a-duration"}
 	_, err := cfg.toPipelineConfig()
@@ -478,8 +460,7 @@ func TestToPipelineConfig_BadTimeout(t *testing.T) {
 }
 
 func TestToPipelineConfig_BadDetectorTimeout(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	cfg := pipelineConfigFile{
 		DetectorTimeouts: map[string]string{"govet": "bad"},
@@ -490,8 +471,7 @@ func TestToPipelineConfig_BadDetectorTimeout(t *testing.T) {
 }
 
 func TestToPipelineConfig_Success(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	cfg := pipelineConfigFile{
 		MaxIterations:    3,
@@ -505,8 +485,7 @@ func TestToPipelineConfig_Success(t *testing.T) {
 }
 
 func TestOutputResults_Markdown(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	var buf bytes.Buffer
 	report := reportWithFindings()
@@ -517,8 +496,7 @@ func TestOutputResults_Markdown(t *testing.T) {
 }
 
 func TestValidate_InvalidMaxIterations(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	cfg := pipelineConfigFile{MaxIterations: -1}
 	err := cfg.validate()

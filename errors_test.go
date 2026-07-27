@@ -30,8 +30,7 @@ func TestFindingErrorError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			got := tt.err.Error()
 			g.Expect(got).To(Equal(tt.expected))
@@ -40,8 +39,7 @@ func TestFindingErrorError(t *testing.T) {
 }
 
 func TestFindingErrorUnwrap(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	cause := errors.New("underlying error")
 	err := NewValidationError("validation failed", cause)
@@ -50,8 +48,7 @@ func TestFindingErrorUnwrap(t *testing.T) {
 }
 
 func TestFindingErrorWithFinding(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		ID:       "test:1",
@@ -70,8 +67,7 @@ func TestFindingErrorWithFinding(t *testing.T) {
 }
 
 func TestFindingErrorWithPosition(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	pos := Position{File: "test.go", Line: 20, Column: 10}
 	err := NewIOError("read failed", nil).WithPosition(pos)
@@ -114,8 +110,7 @@ func TestIsFindingError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			got := IsFindingError(tt.err)
 			g.Expect(got).To(Equal(tt.expected))
@@ -155,8 +150,7 @@ func TestCategoryOf(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			got := CategoryOf(tt.err)
 			g.Expect(got).To(Equal(tt.expected))
@@ -165,8 +159,7 @@ func TestCategoryOf(t *testing.T) {
 }
 
 func TestIsCategory(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	err := NewValidationError("test", nil)
 
@@ -192,8 +185,7 @@ func TestErrorCategoryConstructors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.err.Category).To(Equal(tt.expected))
 		})
@@ -220,8 +212,7 @@ func TestSentinelErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(errors.Is(tt.err, tt.target)).To(Equal(tt.want))
 		})
@@ -229,16 +220,14 @@ func TestSentinelErrors(t *testing.T) {
 }
 
 func TestSentinelErrors_Wrapped(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	err := fmt.Errorf("wrapped: %w", NewValidationError("test", nil))
 	g.Expect(errors.Is(err, ErrValidation)).To(BeTrue())
 }
 
 func TestFindingError_Is_UnknownCategory(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	err := &FindingError{Category: ErrorCategory("custom"), Message: "custom error"}
 	g.Expect(errors.Is(err, ErrValidation)).To(BeFalse())

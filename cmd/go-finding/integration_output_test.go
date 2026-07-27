@@ -52,8 +52,7 @@ func TestOutputResults_AllFormats(t *testing.T) {
 }
 
 func TestOutputResults_JSONContainsFindings(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := reportWithFindings()
 
@@ -74,8 +73,7 @@ func TestOutputResults_JSONContainsFindings(t *testing.T) {
 }
 
 func TestOutputResults_SARIFContainsResults(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := reportWithFindings()
 
@@ -234,8 +232,7 @@ detectors: []
 }
 
 func TestOutputResults_CSV(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := reportWithFindings()
 
@@ -251,8 +248,7 @@ func TestOutputResults_CSV(t *testing.T) {
 }
 
 func TestOutputResults_TSV(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := reportWithFindings()
 
@@ -271,8 +267,7 @@ func TestOutputResults_TSV(t *testing.T) {
 }
 
 func TestOutputResults_MarkdownHasAlignedTable(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := reportWithFindings()
 

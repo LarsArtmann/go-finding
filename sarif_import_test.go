@@ -59,8 +59,7 @@ func TestFindingFromSarResult_FixesWithReplacements(t *testing.T) {
 }
 
 func TestFindingFromSarResult_FixSuggestionOnly(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := sarifResult{
 		RuleID:  "r1",
@@ -83,8 +82,7 @@ func TestFindingFromSarResult_FixSuggestionOnly(t *testing.T) {
 }
 
 func TestFindingFromSarResult_RelatedLocations(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := sarifResult{
 		RuleID:  "r1",

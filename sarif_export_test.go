@@ -10,8 +10,7 @@ import (
 )
 
 func TestToSARIF_WithRelated(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},

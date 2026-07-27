@@ -7,16 +7,14 @@ import (
 )
 
 func TestIntervalTree_Empty(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tree := NewIntervalIndex[int](nil)
 	g.Expect(tree.Query(0, 10)).To(gomega.BeNil())
 }
 
 func TestIntervalTree_SingleInterval(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tree := NewIntervalIndex([]Interval[string]{
 		{Start: 5, End: 10, Value: "a"},
@@ -31,8 +29,7 @@ func TestIntervalTree_SingleInterval(t *testing.T) {
 }
 
 func TestIntervalTree_MultipleOverlapping(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tree := NewIntervalIndex([]Interval[string]{
 		{Start: 0, End: 5, Value: "a"},
@@ -48,8 +45,7 @@ func TestIntervalTree_MultipleOverlapping(t *testing.T) {
 }
 
 func TestIntervalTree_PointQuery(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tree := NewIntervalIndex([]Interval[int]{
 		{Start: 10, End: 20, Value: 1},
@@ -62,8 +58,7 @@ func TestIntervalTree_PointQuery(t *testing.T) {
 }
 
 func TestIntervalTree_AdjacentNoOverlap(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tree := NewIntervalIndex([]Interval[string]{
 		{Start: 0, End: 5, Value: "a"},

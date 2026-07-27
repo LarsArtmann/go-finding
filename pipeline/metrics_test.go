@@ -32,8 +32,7 @@ func runPipelineWithMetrics(t *testing.T, config Config, det Detector) *Pipeline
 }
 
 func TestNewMetrics(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	g.Expect(m).NotTo(BeNil())
 
@@ -44,8 +43,7 @@ func TestNewMetrics(t *testing.T) {
 }
 
 func TestMetrics_RecordStage(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.RecordStage(StageDetect, 100*time.Millisecond)
 	m.RecordStage(StageDetect, 50*time.Millisecond)
@@ -56,8 +54,7 @@ func TestMetrics_RecordStage(t *testing.T) {
 }
 
 func TestMetrics_RecordDetector(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.RecordDetector("staticcheck", 50*time.Millisecond, 10)
 	m.RecordDetector("staticcheck", 30*time.Millisecond, 5)
@@ -84,9 +81,7 @@ func TestMetrics_RecordFixes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			m := NewMetrics()
 
 			for _, count := range tt.fixes {
@@ -103,8 +98,7 @@ func TestMetrics_RecordFixes(t *testing.T) {
 }
 
 func TestMetrics_StageTiming(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	done := m.StageTiming(StageDetect)
 
@@ -115,8 +109,7 @@ func TestMetrics_StageTiming(t *testing.T) {
 }
 
 func TestMetrics_TotalDuration(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.SetStart(time.Now())
 
@@ -129,8 +122,7 @@ func TestMetrics_TotalDuration(t *testing.T) {
 }
 
 func TestMetrics_Snapshot(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.RecordStage("detect", 100*time.Millisecond)
 	m.RecordDetector("govet", 50*time.Millisecond, 5)
@@ -154,8 +146,7 @@ func TestMetrics_Snapshot(t *testing.T) {
 }
 
 func TestPipeline_MetricsIntegration(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	count := 0
 	detector := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -181,8 +172,7 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 }
 
 func TestMetrics_TotalDuration_NoEnd(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.SetStart(time.Now())
 
@@ -191,8 +181,7 @@ func TestMetrics_TotalDuration_NoEnd(t *testing.T) {
 }
 
 func TestMetricsSnapshot_StageDuration(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	snap := MetricsSnapshot{
 		StageDurations: map[Stage]time.Duration{
@@ -205,8 +194,7 @@ func TestMetricsSnapshot_StageDuration(t *testing.T) {
 }
 
 func TestPipeline_NilMetricsNoPanic(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	detector := &mockDetector{
 		name:     "test",
@@ -218,8 +206,7 @@ func TestPipeline_NilMetricsNoPanic(t *testing.T) {
 }
 
 func TestMetrics_TotalDuration_NegativeGuard(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	m := NewMetrics()
 	m.SetStart(time.Now())
@@ -230,8 +217,7 @@ func TestMetrics_TotalDuration_NegativeGuard(t *testing.T) {
 }
 
 func TestMetrics_Snapshot_NegativeGuard(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	m := NewMetrics()
 	m.SetStart(time.Now())

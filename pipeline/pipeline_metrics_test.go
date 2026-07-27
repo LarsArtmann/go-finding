@@ -54,8 +54,7 @@ func BenchmarkParallelDetection(b *testing.B) {
 }
 
 func TestIteration_Findings(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []finding.Finding{
 		{Message: "a", Severity: finding.SeverityError},
@@ -86,8 +85,7 @@ func TestIteration_Findings(t *testing.T) {
 }
 
 func TestIteration_Findings_Empty(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	iter := Iteration{Number: 1}
 	g.Expect(iter.Findings()).To(BeNil())
@@ -96,8 +94,7 @@ func TestIteration_Findings_Empty(t *testing.T) {
 }
 
 func TestIoErrorAt(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	err := ioErrorAt("read failed", os.ErrNotExist, "foo.go")
 
@@ -108,8 +105,7 @@ func TestIoErrorAt(t *testing.T) {
 }
 
 func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	goodDetector := mockDetectorWithFinding("good", "F1", "r", "good", "m")
 	badDetector := &mockDetector{name: "bad", err: errors.New("boom")}
@@ -139,8 +135,7 @@ func TestPipelineRun_PartialErrorsSurfaced(t *testing.T) {
 }
 
 func TestPipelineRun_MetricsInResult(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	m := NewMetrics()
 	config := Config{
@@ -166,8 +161,7 @@ func TestPipelineRun_MetricsInResult(t *testing.T) {
 }
 
 func TestPipelineRun_DirectFixStabilizes(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "fixme.go")
@@ -253,8 +247,7 @@ func TestDetectPartialParallel_ContextErrorPropagates(t *testing.T) {
 }
 
 func TestVerify_ContextCancellation(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	slowDetector := &mockDetector{name: "slow", delay: time.Second}
 

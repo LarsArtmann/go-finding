@@ -55,8 +55,7 @@ func TestRetryConfig_delay_maxCap(t *testing.T) {
 }
 
 func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	inner := makeFindingDetectorFunc("F1")
 	rd := newRetryDet(inner, 3)
@@ -70,8 +69,7 @@ func TestRetryDetector_SuccessOnFirstTry(t *testing.T) {
 }
 
 func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -96,8 +94,7 @@ func TestRetryDetector_SuccessAfterRetries(t *testing.T) {
 }
 
 func TestRetryDetector_ExhaustedRetries(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	inner := makeErrorDetector("permanent")
 
@@ -112,8 +109,7 @@ func TestRetryDetector_ExhaustedRetries(t *testing.T) {
 }
 
 func TestRetryDetector_ContextCancellation(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -136,8 +132,7 @@ func TestRetryDetector_ContextCancellation(t *testing.T) {
 }
 
 func TestRetryDetector_ContextErrorFromInnerNotRetried(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -156,8 +151,7 @@ func TestRetryDetector_ContextErrorFromInnerNotRetried(t *testing.T) {
 }
 
 func TestRetryDetector_DeadlineExceededFromInnerNotRetried(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	calls := 0
 	inner := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -176,8 +170,7 @@ func TestRetryDetector_DeadlineExceededFromInnerNotRetried(t *testing.T) {
 }
 
 func TestRetryDetector_Name(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	inner := &mockDetector{name: "my-detector"}
 
 	rd := NewRetryDetector(inner, DefaultRetryConfig())
@@ -185,8 +178,7 @@ func TestRetryDetector_Name(t *testing.T) {
 }
 
 func TestDefaultRetryConfig(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	c := DefaultRetryConfig()
 	g.Expect(c.MaxRetries).To(Equal(3))
 	g.Expect(c.BaseDelay).To(Equal(100 * time.Millisecond))
@@ -194,8 +186,7 @@ func TestDefaultRetryConfig(t *testing.T) {
 }
 
 func TestRetryConfig_Validate_BaseDelayExceedsMax(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	c := RetryConfig{BaseDelay: 2 * time.Second, MaxDelay: 1 * time.Second}
 
@@ -208,8 +199,7 @@ func TestRetryConfig_Validate_BaseDelayExceedsMax(t *testing.T) {
 }
 
 func TestRetryConfig_Validate_MaxDelayZeroWithBaseDelay(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	c := RetryConfig{BaseDelay: 100 * time.Millisecond, MaxDelay: 0}
 
@@ -222,8 +212,7 @@ func TestRetryConfig_Validate_MaxDelayZeroWithBaseDelay(t *testing.T) {
 }
 
 func TestRetryConfig_Validate_NegativeMaxRetries(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	c := RetryConfig{MaxRetries: -1}
 
@@ -236,8 +225,7 @@ func TestRetryConfig_Validate_NegativeMaxRetries(t *testing.T) {
 }
 
 func TestRetryConfig_Validate_NegativeBaseDelay(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	c := RetryConfig{BaseDelay: -1}
 
@@ -250,8 +238,7 @@ func TestRetryConfig_Validate_NegativeBaseDelay(t *testing.T) {
 }
 
 func TestRetryConfig_Validate_NegativeMaxDelay(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	c := RetryConfig{MaxDelay: -1}
 
@@ -264,8 +251,7 @@ func TestRetryConfig_Validate_NegativeMaxDelay(t *testing.T) {
 }
 
 func TestRetryConfig_Validate_Valid(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	c := RetryConfig{MaxRetries: 3, BaseDelay: 100 * time.Millisecond, MaxDelay: 5 * time.Second}
 	g.Expect(c.Validate()).NotTo(HaveOccurred())

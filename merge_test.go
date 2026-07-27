@@ -7,8 +7,7 @@ import (
 )
 
 func TestMerge_Empty(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	merged := Combine(nil)
 	g.Expect(merged).NotTo(BeNil())
@@ -145,8 +144,7 @@ func TestDedupKey(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			got, _ := dedupKey(f, MergeOptions{DeduplicateBy: tt.by})
 			g.Expect(got).To(Equal(tt.want))
@@ -155,8 +153,7 @@ func TestDedupKey(t *testing.T) {
 }
 
 func TestDeduplicateStrategiesDistinct(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		Rule:     "rule1",
@@ -170,8 +167,7 @@ func TestDeduplicateStrategiesDistinct(t *testing.T) {
 }
 
 func TestDedupKey_EmptyID(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{Rule: "r", Position: Position{File: "a.go", Line: 1}}
 
@@ -181,8 +177,7 @@ func TestDedupKey_EmptyID(t *testing.T) {
 }
 
 func TestDeduplicateByID_EmptyIDNotDeduplicated(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r1 := NewReport(ToolInfo{Name: "t1"})
 	for _, msg := range []string{"m1", "m2"} {

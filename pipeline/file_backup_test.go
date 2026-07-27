@@ -11,8 +11,7 @@ import (
 )
 
 func TestNewFileBackup_Defaults(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	fb := NewFileBackup(t.TempDir())
 	g.Expect(fb.IsEnabled()).To(BeTrue())
@@ -20,8 +19,7 @@ func TestNewFileBackup_Defaults(t *testing.T) {
 }
 
 func TestFileBackup_SetEnabled(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	fb := NewFileBackup(t.TempDir())
 	g.Expect(fb.IsEnabled()).To(BeTrue())
@@ -34,16 +32,14 @@ func TestFileBackup_SetEnabled(t *testing.T) {
 }
 
 func TestFileBackup_BackupPath_NoBackup(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	fb := NewFileBackup(t.TempDir())
 	g.Expect(fb.BackupPath("/nonexistent/file.go")).To(BeEmpty())
 }
 
 func TestFileBackup_BackupAndRestore(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	fb := NewFileBackup(tmpDir)
@@ -66,8 +62,7 @@ func TestFileBackup_BackupAndRestore(t *testing.T) {
 }
 
 func TestFileBackup_Backup_NonexistentFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	fb := NewFileBackup(t.TempDir())
 	err := fb.Backup(filepath.Join(t.TempDir(), "missing.go"))
@@ -75,8 +70,7 @@ func TestFileBackup_Backup_NonexistentFile(t *testing.T) {
 }
 
 func TestFileBackup_Restore_NoBackup(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	fb := NewFileBackup(t.TempDir())
 	err := fb.Restore(filepath.Join(t.TempDir(), "never-backed.go"))
@@ -84,8 +78,7 @@ func TestFileBackup_Restore_NoBackup(t *testing.T) {
 }
 
 func TestFileBackup_RollbackAll(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	fb := NewFileBackup(tmpDir)
@@ -114,8 +107,7 @@ func TestFileBackup_RollbackAll(t *testing.T) {
 }
 
 func TestFileBackup_Disabled_DoesNotBackup(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	fb := NewFileBackup(tmpDir)
@@ -131,8 +123,7 @@ func TestFileBackup_Disabled_DoesNotBackup(t *testing.T) {
 }
 
 func TestFileBackup_Backup_MkdirAllError(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	// Create a file (not a directory) to use as backupDir parent.
 	// MkdirAll will fail because it cannot create a directory inside a file.
@@ -149,8 +140,7 @@ func TestFileBackup_Backup_MkdirAllError(t *testing.T) {
 }
 
 func TestFileBackup_Restore_ReadBackupError(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	fb := NewFileBackup(tmpDir)

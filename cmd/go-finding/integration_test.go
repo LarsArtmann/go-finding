@@ -103,8 +103,7 @@ detectors:
 }
 
 func TestLoadConfig_JSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.json")
@@ -122,8 +121,7 @@ func TestLoadConfig_JSON(t *testing.T) {
 }
 
 func TestLoadConfig_NoFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	cfg, err := loadConfig("", 2, true, true, 5*time.Minute)
 	if err != nil {
@@ -135,8 +133,7 @@ func TestLoadConfig_NoFile(t *testing.T) {
 }
 
 func TestLoadConfig_MissingFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	_, err := loadConfig("/nonexistent/config.yaml", 1, true, false, 10*time.Minute)
 	g.Expect(err).To(HaveOccurred())
@@ -215,8 +212,7 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			err := tt.cfg.validate()
 			if tt.wantErr {

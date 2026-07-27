@@ -54,8 +54,7 @@ func correlateTestDetectors() (*mockDetector, *mockDetector) {
 }
 
 func TestPipelineRun_PerDetectorTimeout(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	cfg := DefaultConfig()
 	cfg.ParallelDetectors = false
@@ -77,8 +76,7 @@ func TestPipelineRun_PerDetectorTimeout(t *testing.T) {
 }
 
 func TestPipelineRun_PerDetectorTimeout_UnaffectedDetector(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	cfg := DefaultConfig()
 	cfg.ParallelDetectors = false
@@ -104,8 +102,7 @@ func TestPipelineRun_PerDetectorTimeout_UnaffectedDetector(t *testing.T) {
 }
 
 func TestPipelineRun_CorrelateFindings(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	detA, detB := correlateTestDetectors()
 
@@ -126,8 +123,7 @@ func TestPipelineRun_CorrelateFindings(t *testing.T) {
 }
 
 func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	detA, detB := correlateTestDetectors()
 
@@ -147,8 +143,7 @@ func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {
 }
 
 func TestPipelineRun_StructuredLogging(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	var buf bytes.Buffer
 
@@ -203,8 +198,7 @@ func TestPipelineRun_StructuredLogging(t *testing.T) {
 }
 
 func TestPipelineRun_OnStage(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	var stages []string
 
@@ -261,8 +255,7 @@ func TestReasonFromContext(t *testing.T) {
 	t.Parallel()
 
 	t.Run("cancelled", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 
@@ -271,8 +264,7 @@ func TestReasonFromContext(t *testing.T) {
 	})
 
 	t.Run("timeout", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 0)
 		defer cancel()

@@ -11,6 +11,14 @@ import (
 	"github.com/onsi/gomega"
 )
 
+// NewParallelGomega marks the test as parallel and returns a gomega.GomegaWithT,
+// consolidating the t.Parallel() + gomega.NewWithT(t) boilerplate.
+func NewParallelGomega(t *testing.T) *gomega.GomegaWithT {
+	t.Parallel()
+
+	return gomega.NewWithT(t)
+}
+
 // AssertErrIsIO asserts an error is of type ErrIO using Gomega.
 func AssertErrIsIO(g *gomega.GomegaWithT, err error) {
 	g.Expect(errors.Is(err, ErrIO)).To(gomega.BeTrue())

@@ -14,8 +14,7 @@ func TestConfigFile_SeverityFilter(t *testing.T) {
 	t.Parallel()
 
 	t.Run("empty returns false", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		cf := ConfigFile{}
 		sev, ok := cf.SeverityFilter()
@@ -24,8 +23,7 @@ func TestConfigFile_SeverityFilter(t *testing.T) {
 	})
 
 	t.Run("valid severity returns true", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		cf := ConfigFile{Severity: "error"}
 		sev, ok := cf.SeverityFilter()
@@ -34,8 +32,7 @@ func TestConfigFile_SeverityFilter(t *testing.T) {
 	})
 
 	t.Run("invalid severity returns false", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		cf := ConfigFile{Severity: "bogus"}
 		_, ok := cf.SeverityFilter()
@@ -48,8 +45,7 @@ func TestConfigFile_ResolveProviders(t *testing.T) {
 	t.Parallel()
 
 	t.Run("empty names returns nil", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		cf := ConfigFile{}
 		providers, err := cf.ResolveProviders(nil)
@@ -58,8 +54,7 @@ func TestConfigFile_ResolveProviders(t *testing.T) {
 	})
 
 	t.Run("known providers resolved", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		offset := OffsetProvider{}
 		cf := ConfigFile{ProviderNames: []string{offset.Name()}}
@@ -71,8 +66,7 @@ func TestConfigFile_ResolveProviders(t *testing.T) {
 	})
 
 	t.Run("unknown provider returns error", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		cf := ConfigFile{ProviderNames: []string{"ghost"}}
 		_, err := cf.ResolveProviders(map[string]FixProvider{})
@@ -83,8 +77,7 @@ func TestConfigFile_ResolveProviders(t *testing.T) {
 
 // TestConfigFile_ConfigFromReader_Error covers the reader decode error path.
 func TestConfigFile_ConfigFromReader_Error(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	_, err := ConfigFromReader(strings.NewReader("{invalid json"))
 	g.Expect(err).To(HaveOccurred())
@@ -116,9 +109,7 @@ func TestConfigFile_ConfigFromFile_BadDurations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			_, err := ConfigFromFile([]byte(tt.input))
 			g.Expect(err).To(HaveOccurred())

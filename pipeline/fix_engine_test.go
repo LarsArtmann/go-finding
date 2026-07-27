@@ -8,8 +8,7 @@ import (
 )
 
 func TestFixEngine_Apply_EmptyInput(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 
@@ -25,8 +24,7 @@ func TestFixEngine_Apply_EmptyInput(t *testing.T) {
 }
 
 func TestFixEngine_Apply_NoMatchingFixes(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc main() {}")
@@ -45,8 +43,7 @@ func TestFixEngine_Apply_NoMatchingFixes(t *testing.T) {
 }
 
 func TestFixEngine_Apply_FixWithNoCode(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main")
@@ -115,8 +112,7 @@ func TestFixEngine_Apply_LineRange(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			engine := NewFixEngine()
 			result, _, count := engine.Apply([]byte(tt.content), []finding.Finding{tt.fix})
 			g.Expect(count).To(Equal(tt.wantCount))
@@ -126,8 +122,7 @@ func TestFixEngine_Apply_LineRange(t *testing.T) {
 }
 
 func TestFixEngine_Apply_LineRange_MultiLine(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc old() {\n\treturn\n}\n\nfunc main() {}")
@@ -149,8 +144,7 @@ func TestFixEngine_Apply_LineRange_MultiLine(t *testing.T) {
 }
 
 func TestFixEngine_Apply_LineRange_DescendingOrder(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\nline2: old\nline3: old\nline4: old")
@@ -182,8 +176,7 @@ func TestFixEngine_Apply_Substring(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			engine := NewFixEngine()
 			fixes := []finding.Finding{
 				{BeforeCode: tt.before, AfterCode: tt.after, Position: finding.Pos("a.go", 1, 1)},
@@ -196,8 +189,7 @@ func TestFixEngine_Apply_Substring(t *testing.T) {
 }
 
 func TestFixEngine_Apply_SubstringInsertion(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc main() {}")
@@ -228,8 +220,7 @@ func TestFixEngine_Apply_NearestLineMatch(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			fixes := []finding.Finding{
 				{BeforeCode: "X", AfterCode: "Y", Position: finding.Pos("a.go", tt.line, tt.col)},
@@ -260,8 +251,7 @@ func TestFixEngine_Apply_NearestColumnMatch(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			fixes := []finding.Finding{
 				{BeforeCode: "X", AfterCode: "Y", Position: finding.Pos("a.go", 1, tt.col)},
@@ -274,8 +264,7 @@ func TestFixEngine_Apply_NearestColumnMatch(t *testing.T) {
 }
 
 func TestFixEngine_Apply_ByteOffset(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc main() {\n\told()\n}")
@@ -300,8 +289,7 @@ func TestFixEngine_Apply_ByteOffset(t *testing.T) {
 }
 
 func TestFixEngine_Apply_WithCustomProvider(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	custom := &upperProvider{}
 	engine := NewFixEngineWithProviders(custom)

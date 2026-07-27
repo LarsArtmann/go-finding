@@ -9,8 +9,7 @@ import (
 )
 
 func TestSARIF_RoundTripPreservesBeforeCodeAndID(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -51,8 +50,7 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndID(t *testing.T) {
 }
 
 func TestSARIF_TagsRoundTrip(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -77,8 +75,7 @@ func TestSARIF_TagsRoundTrip(t *testing.T) {
 }
 
 func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -101,8 +98,7 @@ func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 }
 
 func TestSARIF_RoundTrip_EditProperties(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{

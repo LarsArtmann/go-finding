@@ -27,8 +27,7 @@ func pipelineTestFinding(column int) finding.Finding {
 
 // TestPipelineRun_NoFindings tests that pipeline completes when no findings.
 func TestPipelineRun_NoFindings(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	config := DefaultConfig()
 	config.ParallelDetectors = false
@@ -53,8 +52,7 @@ func TestPipelineRun_NoFindings(t *testing.T) {
 
 // TestPipelineRun_WithFindings tests pipeline with findings.
 func TestPipelineRun_WithFindings(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	config := DefaultConfig()
 	config.ParallelDetectors = false
@@ -91,8 +89,7 @@ func TestPipelineRun_WithFindings(t *testing.T) {
 
 // TestPipelineRun_DetectorError tests error handling from detector.
 func TestPipelineRun_DetectorError(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	config := DefaultConfig()
 	config.ParallelDetectors = false
@@ -115,8 +112,7 @@ func TestPipelineRun_DetectorError(t *testing.T) {
 // TestDetectSequential_ContextCancellation verifies that detectSequential
 // returns an error when the context is cancelled.
 func TestDetectSequential_ContextCancellation(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	p := &Pipeline{
 		detectors: []Detector{&mockDetector{name: "slow", delay: time.Second}},
@@ -132,8 +128,7 @@ func TestDetectSequential_ContextCancellation(t *testing.T) {
 
 // TestPipelineRun_ContextCancellation tests context cancellation.
 func TestPipelineRun_ContextCancellation(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	config := DefaultConfig()
 	config.ParallelDetectors = false
@@ -160,8 +155,7 @@ func TestPipelineRun_ContextCancellation(t *testing.T) {
 
 // TestPipelineRun_Timeout tests pipeline timeout.
 func TestPipelineRun_Timeout(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	config := DefaultConfig()
 	config.ParallelDetectors = false
@@ -184,8 +178,7 @@ func TestPipelineRun_Timeout(t *testing.T) {
 
 // TestPipelineRun_MaxIterations tests max iteration limit.
 func TestPipelineRun_MaxIterations(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	config := DefaultConfig()
 	config.MaxIterations = 2
@@ -214,8 +207,7 @@ func TestPipelineRun_MaxIterations(t *testing.T) {
 
 // TestPipelineRun_Parallel tests parallel detection.
 func TestPipelineRun_Parallel(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	config := DefaultConfig()
 	config.ParallelDetectors = true
@@ -291,8 +283,7 @@ func directFix(id, rule, tool, msg, before, after, file string, line int) findin
 // TestOnFix_FiresOnlyForAppliedFixes verifies C-1: OnFix callback fires
 // exactly once per actually-applied fix, not once per safeFix.
 func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "fixme.go")
@@ -332,8 +323,7 @@ func TestOnFix_FiresOnlyForAppliedFixes(t *testing.T) {
 // TestOnFix_SkipsUnappliedFixes verifies that when a fix is skipped
 // (e.g., BeforeCode not found), OnFix is not called with wasApplied=true.
 func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "fixme.go")
@@ -369,8 +359,7 @@ func TestOnFix_SkipsUnappliedFixes(t *testing.T) {
 // and others succeed, OnFix is called with the actually-applied findings, not
 // just the first N fixes from the input slice.
 func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "fixme.go")
@@ -425,8 +414,7 @@ func TestOnFix_ReportsCorrectAppliedFindings(t *testing.T) {
 // TestPipelineRun_ParallelDetectorError verifies that a detector error in
 // parallel mode propagates correctly from detectParallel.
 func TestPipelineRun_ParallelDetectorError(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	config := DefaultConfig()
 	config.ParallelDetectors = true
@@ -449,8 +437,7 @@ func TestPipelineRun_ParallelDetectorError(t *testing.T) {
 // FilterConflictingFixes (no file info), applyTriage returns nil without
 // calling applyDirectFixes.
 func TestApplyTriage_AllConflicts(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 
@@ -489,8 +476,7 @@ func TestApplyTriage_AllConflicts(t *testing.T) {
 // TestApplyTriage_ApplyError verifies that applyTriage returns an error when
 // applyDirectFixes fails (e.g., target file does not exist).
 func TestApplyTriage_ApplyError(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 
@@ -525,8 +511,7 @@ func TestApplyTriage_ApplyError(t *testing.T) {
 // even when the pipeline stops due to an error. Regression for pipeline.go:193 —
 // metrics were only set on the success path.
 func TestPipeline_MetricsAvailableOnErrorPath(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	detectorErr := errors.New("detector exploded")
 	d := &mockDetector{name: "broken", err: detectorErr}
@@ -551,8 +536,7 @@ func TestPipeline_MetricsAvailableOnErrorPath(t *testing.T) {
 // aborts the pipeline. Regression for pipeline_iteration.go:31 — StageAfter
 // errors were silently discarded with `_ =`.
 func TestPipeline_StageAfterHookErrorAborts(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	abortErr := errors.New("after-hook-abort")
 
@@ -585,8 +569,7 @@ func TestPipeline_StageAfterHookErrorAborts(t *testing.T) {
 // unique findings only, not duplicates across iterations. Regression for
 // pipeline.go:249 — previously used raw p.findings (accumulated, not deduped).
 func TestPipeline_TotalDetectedDeduplicated(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	// Same finding returned every iteration.
 	sameFinding := finding.NewFinding(
@@ -615,8 +598,7 @@ func TestPipeline_TotalDetectedDeduplicated(t *testing.T) {
 // adds lines. Regression for pipeline_detect.go:237 — previously only
 // iter.findings was shifted, not iter.suggest.
 func TestPipeline_SuggestFindingsShiftedAfterDirectFix(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 

@@ -331,8 +331,7 @@ func TestSARIFRoundTrip_PositionOffset(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			g := gomega.NewWithT(t)
+			g := NewParallelGomega(t)
 
 			f := Finding{
 				ID:       ID("test:offset:" + tc.name),
@@ -414,8 +413,7 @@ func TestSARIFSnippet_BackwardCompat(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			g := gomega.NewWithT(t)
+			g := NewParallelGomega(t)
 
 			sarif := fmt.Sprintf(`{
 				"version": "2.1.0",

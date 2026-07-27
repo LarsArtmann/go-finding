@@ -12,8 +12,7 @@ import (
 // findings to different providers (Offset, Line, Substring) in a single
 // ApplyWithConflicts call, and that the line offset index is built only once.
 func TestFixEngine_MixedProviders(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	content := []byte("package main\n\nfunc main() {\n\talpha()\n\tbeta()\n\tgamma()\n}\n")
 
@@ -59,8 +58,7 @@ func TestFixEngine_MixedProviders(t *testing.T) {
 // built only when a lineIndexAware provider handles a finding, not when
 // only OffsetProvider-handled findings are present.
 func TestFixEngine_LineIndexLazyBuild(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	content := []byte("package main\n\nfunc main() {\n\told()\n}\n")
 
@@ -96,8 +94,7 @@ func applyAndGetModifiedContent(t *testing.T, engine *FixEngine, content []byte,
 // TestFixEngine_InterleavedProviders verifies correctness when offset and
 // line-based findings are interleaved in the same file.
 func TestFixEngine_InterleavedProviders(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	content := []byte("line1\nline2\nline3\nold1\nline5\nold2\nline7\n")
 

@@ -41,8 +41,7 @@ func runDetectPartial(t *testing.T, parallel bool, d1, d2 *mockDetector) *Partia
 }
 
 func TestPartialResult_HasErrors(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	r := &PartialResult{Errors: make(map[string]error)}
 	g.Expect(r.HasErrors()).To(BeFalse())
 
@@ -51,8 +50,7 @@ func TestPartialResult_HasErrors(t *testing.T) {
 }
 
 func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	d1 := mockDet("d1", "F1")
 	d2 := mockDet("d2", "F2")
 
@@ -63,8 +61,7 @@ func TestDetectPartial_Sequential_AllSucceed(t *testing.T) {
 }
 
 func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	d1, d2 := goodThenBadDetectors()
 
 	result := runDetectPartial(t, false, d1, d2)
@@ -75,8 +72,7 @@ func TestDetectPartial_Sequential_PartialFailure(t *testing.T) {
 }
 
 func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	d1, d2 := goodThenBadDetectors()
 
 	result := runDetectPartial(t, true, d1, d2)
@@ -86,8 +82,7 @@ func TestDetectPartial_Parallel_PartialFailure(t *testing.T) {
 }
 
 func TestDetectPartial_AllFail(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	d1 := &mockDetector{name: "d1", err: errors.New("fail1")}
 	d2 := &mockDetector{name: "d2", err: errors.New("fail2")}
 
@@ -98,8 +93,7 @@ func TestDetectPartial_AllFail(t *testing.T) {
 }
 
 func TestFormatPartialErrors(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	g.Expect(FormatPartialErrors(nil)).NotTo(HaveOccurred())
 	g.Expect(FormatPartialErrors(map[string]error{})).NotTo(HaveOccurred())
 
@@ -114,8 +108,7 @@ func TestFormatPartialErrors(t *testing.T) {
 }
 
 func TestFormatPartialErrors_ErrorWrapping(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	inner := errors.New("inner error")
 	errs := map[string]error{"det1": inner}
@@ -127,8 +120,7 @@ func TestFormatPartialErrors_ErrorWrapping(t *testing.T) {
 }
 
 func TestDetectPartial_Sequential_CancelBeforeSecond(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	d1 := mockDet("fast", "F1")
 	d2 := slowMockDetector("slow", 5*time.Second, finding.Finding{ID: "F2"})
@@ -146,8 +138,7 @@ func TestDetectPartial_Sequential_CancelBeforeSecond(t *testing.T) {
 }
 
 func TestDetectPartial_Parallel_CancelReturnsPartial(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	d1 := mockDet("fast", "F1")
 	d2 := slowMockDetector("slow", 5*time.Second, finding.Finding{ID: "F2"})

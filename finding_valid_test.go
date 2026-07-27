@@ -29,8 +29,7 @@ func TestIsAutoFixable_ValidateAgreement(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
 			f.FixStrategy = tc.fixStrategy
@@ -136,8 +135,7 @@ func TestFinding_Validate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
 			tt.mutate(&f)
