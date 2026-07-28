@@ -97,35 +97,8 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		return false, fmt.Errorf("iteration %d: after triage: %w", p.iterations+1, hookErr)
 	}
 
-	if !p.config.DryRun {
-		err := p.fireStageHook(ctx, StageBefore, StageApply, iter.Number, triage.Direct, 0, 0)
-		if err != nil {
-			return false, fmt.Errorf("iteration %d: before apply: %w", p.iterations+1, err)
-		}
-
-		applyDone := p.stageTiming(StageApply)
-
-		err = p.applyTriage(ctx, triage.Direct, &iter, result)
-		if err != nil {
-			applyDone()
-
-			return false, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
-		}
-
-		applyDone()
-
-		hookErr := p.fireStageHook(
-			ctx,
-			StageAfter,
-			StageApply,
-			iter.Number,
-			triage.Direct,
-			iter.Applied,
-			iter.Conflicts,
-		)
-		if hookErr != nil {
-			return false, fmt.Errorf("iteration %d: after apply: %w", p.iterations+1, hookErr)
-		}
+	if err := p.applyStage(ctx, &iter, triage.Direct, result); err != nil {
+		return false, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
 	}
 
 	result.Iterations = append(result.Iterations, iter)
@@ -136,6 +109,50 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	}
 
 	return false, nil
+}
+
+// applyStage fires before/after hooks around the fix application phase.
+// Skipped entirely in DryRun mode.
+func (p *Pipeline) applyStage(
+	ctx context.Context,
+	iter *Iteration,
+	directFixes []finding.Finding,
+	result *PipelineResult,
+) error {
+	if p.config.DryRun {
+		return nil
+	}
+
+	err := p.fireStageHook(ctx, StageBefore, StageApply, iter.Number, directFixes, 0, 0)
+	if err != nil {
+		return fmt.Errorf("before apply: %w", err)
+	}
+
+	applyDone := p.stageTiming(StageApply)
+
+	err = p.applyTriage(ctx, directFixes, iter, result)
+	if err != nil {
+		applyDone()
+
+		return err
+	}
+
+	applyDone()
+
+	hookErr := p.fireStageHook(
+		ctx,
+		StageAfter,
+		StageApply,
+		iter.Number,
+		directFixes,
+		iter.Applied,
+		iter.Conflicts,
+	)
+	if hookErr != nil {
+		return fmt.Errorf("after apply: %w", hookErr)
+	}
+
+	return nil
 }
 
 // collectAllFindings gathers all findings from all iterations for verification.
