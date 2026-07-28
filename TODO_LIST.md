@@ -35,15 +35,15 @@
 
 All in the `pipeline/` module, pre-existing before the dedup-to-zero sweep. None in changed files.
 
-| Task                                                           | Status    | Impact | Effort | Evidence                                          |
-| -------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------- |
-| Decompose `Pipeline.Run()` (137 lines, exceeds funlen 120)     | ⬜ `TODO` | Med    | Medium | `pipeline/pipeline.go`                            |
-| Decompose `Pipeline.runIteration()` (124 lines, exceeds 120)   | ⬜ `TODO` | Med    | Medium | `pipeline/pipeline_iteration.go`                  |
-| Reduce `applyTriage` cognitive complexity (36, limit 35)       | ⬜ `TODO` | Low    | Low    | `pipeline/pipeline_triage.go`                     |
-| Fix `goast/provider.go` exhaustruct (`result{ok: false}`)      | ⬜ `TODO` | Low    | Low    | `pipeline/goast/provider.go:129`                  |
-| Wrap `errgroup.Wait()` error in `convenience.go`               | ⬜ `TODO` | Low    | Low    | `pipeline/convenience.go:67` (wrapcheck)          |
-| Add `//nolint:gosec` to `fix_applier_test.go` path traversal   | ⬜ `TODO` | Low    | Low    | `pipeline/fix_applier_test.go:578` (gosec G703)   |
-| Rename unused `s` receivers in `saboteurProvider` test mock    | ⬜ `TODO` | Low    | Low    | `pipeline/fix_provider_test.go` (revive)          |
+| Task                                                         | Status    | Impact | Effort | Evidence                                        |
+| ------------------------------------------------------------ | --------- | ------ | ------ | ----------------------------------------------- |
+| Decompose `Pipeline.Run()` (137 lines, exceeds funlen 120)   | ⬜ `TODO` | Med    | Medium | `pipeline/pipeline.go`                          |
+| Decompose `Pipeline.runIteration()` (124 lines, exceeds 120) | ⬜ `TODO` | Med    | Medium | `pipeline/pipeline_iteration.go`                |
+| Reduce `applyTriage` cognitive complexity (36, limit 35)     | ⬜ `TODO` | Low    | Low    | `pipeline/pipeline_detect.go`                   |
+| Fix `goast/provider.go` exhaustruct (`result{ok: false}`)    | ⬜ `TODO` | Low    | Low    | `pipeline/goast/provider.go:129`                |
+| Wrap `errgroup.Wait()` error in `convenience.go`             | ⬜ `TODO` | Low    | Low    | `pipeline/convenience.go:67` (wrapcheck)        |
+| Add `//nolint:gosec` to `fix_applier_test.go` path traversal | ⬜ `TODO` | Low    | Low    | `pipeline/fix_applier_test.go:578` (gosec G703) |
+| Rename unused `s` receivers in `saboteurProvider` test mock  | ⬜ `TODO` | Low    | Low    | `pipeline/fix_applier_test.go` (revive)         |
 
 ## 🟢 LOW Priority
 
