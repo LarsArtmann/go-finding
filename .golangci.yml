@@ -90,7 +90,6 @@ linters:
     - nolintlint
     - nonamedreturns
     - nosprintfhostport
-    - paralleltest
     - perfsprint
     - prealloc
     - predeclared
@@ -126,6 +125,7 @@ linters:
   disable:
     - depguard
     - noinlineerr
+    - paralleltest # t.Parallel() is centralized in NewParallelGomega test helpers; the linter cannot trace calls through helpers
   settings:
     cyclop:
       max-complexity: 25
