@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Internal refactoring and test-infrastructure sweep. No public API changes.
+
+### Changed
+
+- **Code duplication eliminated (zero clones at `-t 5`).** Extracted internal helpers that the same pattern was reinvented across files: `must[T any]` generic (errors.go, used by `MustParseCategory`/`MustParseSeverity`/`Builder.MustBuild`), `marshalJSONString` (json.go, used by 4 marshal-to-string methods), `decodeConfig` (pipeline/config_file.go), package-level `fixEditJSON` wire type (pipeline/fix_edit.go), and `must(err)` in examples.
+- **`Severity.Badge()` now derives from `Emoji()`.** Single switch instead of duplicate 4-case logic. `Severity.PriorityString()` uses a `severityPriorities` map lookup instead of a switch.
+- **Test setup consolidated.** `NewParallelGomega(t *testing.T)` helper added to `testutil_test.go` in all 4 modules, replacing 112 occurrences of the `t.Parallel()` + `NewWithT(t)` two-line boilerplate.
+- **`paralleltest` linter disabled** in `.golangci.yml` — it cannot trace `t.Parallel()` through the `NewParallelGomega` helper wrapper. Reversible with one line.
+- Go module dependencies and Nix flake toolchain versions synchronized across all sub-modules.
+
 ## [1.4.0] - 2026-07-26
 
 Error classification integration, community readiness infrastructure, and documentation accuracy sweep. The core module gains its first production dependency (`go-error-family`) to enable unified error classification across consumer codebases.
@@ -708,7 +718,8 @@ All APIs deprecated since v0.6.0–v0.9.0 have been removed. See `docs/MIGRATION
 
 ---
 
-[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/larsartmann/go-finding/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/larsartmann/go-finding/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/larsartmann/go-finding/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/larsartmann/go-finding/compare/v1.1.0...v1.2.0
