@@ -4,7 +4,10 @@
 
 1. Verify all tests pass: `GOEXPERIMENT=jsonv2 go test -race -count=1 ./...`
 2. Verify lint passes: `GOEXPERIMENT=jsonv2 golangci-lint run ./...`
-3. Run stress test: `GOEXPERIMENT=jsonv2 go test -race -count=20 ./...`
+3. Run stress test:
+   - stdlib modules (analysis, CLI): `GOEXPERIMENT=jsonv2 go test -race -count=20 ./...`
+   - Ginkgo modules (core, pipeline): `GOEXPERIMENT=jsonv2 ginkgo -r --race --repeat=20 --skip-package=examples`
+   - > **Note:** Ginkgo rejects `go test -count=N` for N>1 (`Only -count=1 is allowed`). Use `ginkgo --repeat=N` instead for the core and pipeline suites.
 4. Update `CHANGELOG.md` with release notes
 5. Update `version.go` (core module only)
 
@@ -93,7 +96,7 @@ git push origin master --tags
 ## Version Scheme
 
 Semantic versioning strictly: `vMAJOR.MINOR.PATCH`. Current core version:
-`1.2.0` (see `version.go`). Sub-modules track their own independent semver.
+`1.4.1` (see `version.go`). Sub-modules track their own independent semver.
 
 ## Private-Repo Consumer Setup
 
