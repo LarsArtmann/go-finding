@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_No changes yet._
+
+## [1.4.1] - 2026-07-28
+
 Internal refactoring and test-infrastructure sweep. No public API changes.
 
 ### Changed
@@ -14,12 +18,13 @@ Internal refactoring and test-infrastructure sweep. No public API changes.
 - **Code duplication eliminated (zero clones at `-t 5`).** Extracted internal helpers that the same pattern was reinvented across files: `must[T any]` generic (errors.go, used by `MustParseCategory`/`MustParseSeverity`/`Builder.MustBuild`), `marshalJSONString` (json.go, used by 4 marshal-to-string methods), `decodeConfig` (pipeline/config_file.go), package-level `fixEditJSON` wire type (pipeline/fix_edit.go), and `must(err)` in examples.
 - **`Severity.Badge()` now derives from `Emoji()`.** Single switch instead of duplicate 4-case logic. `Severity.PriorityString()` uses a `severityPriorities` map lookup instead of a switch.
 - **Test setup consolidated.** `NewParallelGomega(t *testing.T)` helper added to `testutil_test.go` in all 4 modules, replacing 112 occurrences of the `t.Parallel()` + `NewWithT(t)` two-line boilerplate.
-- **`paralleltest` linter disabled** in `.golangci.yml` — it cannot trace `t.Parallel()` through the `NewParallelGomega` helper wrapper. Reversible with one line.
+- **`paralleltest` linter disabled (again).** Commit `59121e8` had inadvertently re-added `paralleltest` to the `enable` list in `.golangci.yml` (with a comment stating it *should* be disabled), causing `golangci-lint` to report 93 false positives. Moved to the `disable` list where the documentation intended. The linter cannot trace `t.Parallel()` through the `NewParallelGomega` helper wrapper.
 - Go module dependencies and Nix flake toolchain versions synchronized across all sub-modules.
 
 ### Fixed
 
 - **7 pipeline lint issues resolved.** `Pipeline.Run()` decomposed via `runVerification()` extraction (funlen). `Pipeline.runIteration()` decomposed via `applyStage()` extraction (funlen). `applyTriage` complexity reduced via `shiftFindingsPositions()`/`shiftFindingSlice()` extraction (gocognit). `goast/provider.go` exhaustruct fixed with explicit zero values. `convenience.go` `errgroup.Wait()` error wrapped (wrapcheck). `fix_applier_test.go` gosec G703 suppressed with justification. `saboteurProvider` unused receivers removed (revive).
+- **Release gate unblocked.** Lint (`nix run .#lint`) was failing the pre-release checklist due to the `paralleltest` config drift above; now passes cleanly across all 4 modules.
 
 ## [1.4.0] - 2026-07-26
 

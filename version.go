@@ -9,7 +9,7 @@ const VersionMajor = 1
 const VersionMinor = 4
 
 // VersionPatch is the patch version number.
-const VersionPatch = 0
+const VersionPatch = 1
 
 // Version is the semantic version string, computed from components.
 var Version = fmt.Sprintf("%d.%d.%d", VersionMajor, VersionMinor, VersionPatch)
