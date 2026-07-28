@@ -5,6 +5,12 @@
 > **Session goal:** Fix broken exhaustruct lint, annotate stale status report, create sub-module tags, assess release readiness.
 > **Verdict:** **All green. Not time for a release — no consumer-facing changes since v1.3.0.**
 
+> **Update 2026-07-28 (v1.4.0 shipped):** the "do not release" verdict was correct at the
+> time, but a consumer-facing release DID follow. v1.4.0 (2026-07-26) shipped `go-error-family`
+> integration (`FindingError.ErrorCode()` / `ErrorFamily()`), community infrastructure
+> (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), and retired the "zero deps" principle.
+> The exhaustruct cleanup and sub-module tags from this session held — see CHANGELOG `[1.4.0]`.
+
 ---
 
 ## a) FULLY DONE

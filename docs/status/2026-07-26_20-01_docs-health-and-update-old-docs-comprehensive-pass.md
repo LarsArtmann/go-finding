@@ -14,6 +14,12 @@ Then the user asked about a release. I flagged that `go-error-family` (commit `9
 
 **14 files changed across 3 auto-commit commits. Working tree clean. Quality gates all green.**
 
+> **Update 2026-07-28:** the open items from this session's "NOT STARTED" list were resolved in
+> the immediately following session (2026-07-26 20:18): v1.4.0 was tagged and released, ADR #15
+> was written for the go-error-family decision (not #14 as this report suggested — #14 already
+> existed for sync.Pool). The CHANGELOG link references flagged as broken in that session were
+> fixed in a later docs-health pass. Current version: v1.4.0.
+
 ---
 
 ## a) FULLY DONE

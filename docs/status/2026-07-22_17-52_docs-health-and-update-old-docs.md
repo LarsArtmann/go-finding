@@ -5,6 +5,12 @@
 > **Session goal:** Run `update-old-docs` and `docs-health` skills superbly on all July snapshot files + rebuild living docs.
 > **Head:** `ef9e2c7`
 
+> **Update 2026-07-28:** this report operates on v1.2.0/v1.2.1 assumptions. Since then,
+> v1.3.0 (2026-07-22) shipped 12 consumer-driven convenience APIs (`BuildOrDefault`, `Template`,
+> `SeverityFromLevel`, `ApplySimpleFixes`, etc.) and v1.4.0 (2026-07-26) shipped `go-error-family`
+> integration. The version-check CI gate, dependabot groups, and SHA-pin recommendations from
+> this session were all implemented. Current version: v1.4.0. See CHANGELOG.
+
 ---
 
 ## a) FULLY DONE ✅

@@ -4,6 +4,13 @@
 > **Session scope:** PRO/CONTRA analysis for making go-finding public + TODO list
 > **Assessed by:** Crush
 
+> **Update 2026-07-28:** the 3-phase public-release plan from this session was executed.
+> SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates, and support policy were created
+> (commits `f325122`, `63a6639`). The `GOPRIVATE` warning was removed from README. Dependabot
+> was expanded to all 4 sub-modules. v1.4.0 was tagged (2026-07-26). The repo itself is still
+> private pending the Phase 3 visibility flip — see TODO_LIST "Make Repo Public — Phase 3".
+> Open question Q3 (Homebrew tap secret) is still unresolved.
+
 ---
 
 ## What This Session Did

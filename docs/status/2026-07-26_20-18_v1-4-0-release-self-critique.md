@@ -4,6 +4,12 @@
 **Session goal:** Execute the full TODO list — quality gates, doc audits, version bump, tag, push, GitHub release.
 **Outcome:** v1.4.0 shipped, but with detectable gaps.
 
+> **Update 2026-07-28:** all 3 gaps flagged in sections B.1–B.3 were resolved in a follow-up
+> docs-health pass. CHANGELOG `[1.4.0]` link reference added and `[Unreleased]` range corrected
+> to `v1.4.0...HEAD`. TODO_LIST "Tag v1.4.0" removed (done). ROADMAP "Current version" updated
+> from 1.3.0 to 1.4.0 with a v1.4.0 release summary. The post-v1.4.0 dedup-to-zero sweep
+> (2026-07-27) achieved zero clone groups and is recorded in CHANGELOG `[Unreleased]`.
+
 ---
 
 ## A) FULLY DONE (verified)

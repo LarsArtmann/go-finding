@@ -8,15 +8,15 @@
 
 ## Current Phase: Consumer ecosystem growth
 
-**Current version:** 1.3.0
+**Current version:** 1.4.0
 
-v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects.
+v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects. v1.4.0 added `go-error-family` integration (unified error classification), community readiness infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), and retired the "zero external deps" principle in favor of a small, deliberate dependency surface.
 
-The library is production-ready and API-stable. The focus now shifts to growing the consumer ecosystem and expanding language coverage.
+The library is production-ready and API-stable. The focus now shifts to growing the consumer ecosystem, expanding language coverage, and completing the public launch.
 
 ---
 
-## v1.0.0–v1.3.0 — API lock + consumer convenience ✅
+## v1.0.0–v1.4.0 — API lock, consumer convenience, community readiness ✅
 
 **Status: Released.**
 
@@ -24,6 +24,7 @@ The library is production-ready and API-stable. The focus now shifts to growing 
 - ✅ Multi-module workspace (core, pipeline, analysis, CLI) established.
 - ✅ Branded types (`ID`, `RuleName`, `ToolName`, `FilePath`), hand-rolled SARIF, LSP round-trip fidelity.
 - ✅ v1.3.0: Consumer-driven APIs (`BuildOrDefault`, `Template`, `NewReportFromFindings`, `FilePos`, `SeverityFromLevel`, `ApplySimpleFixes`, `CheckBinary`/`RunCmd`, `FormatTable`, `PriorityString`). File-level position validation relaxed.
+- ✅ v1.4.0: `go-error-family` integration (`FindingError.ErrorCode()` / `ErrorFamily()`), community infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), documentation accuracy sweep. "Zero external deps" principle retired.
 
 ---
 
