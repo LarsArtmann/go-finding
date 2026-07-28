@@ -237,48 +237,11 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	// Optional final verification
 	if p.config.VerifyAfterFix && len(p.detectors) > 0 {
-		hookErr := p.fireStageHook(
-			ctx,
-			StageBefore,
-			StageVerify,
-			result.TotalIterations,
-			allFindings,
-			0,
-			0,
-		)
-		if hookErr != nil {
+		if err := p.runVerification(ctx, result, allFindings); err != nil {
 			metricsResult = result
 
-			return result, fmt.Errorf("before verify: %w", hookErr)
+			return result, err
 		}
-
-		verifyDone := p.stageTiming(StageVerify)
-		verifyResult, err := Verify(ctx, p.detectors, allFindings)
-
-		verifyDone()
-
-		if err != nil {
-			metricsResult = result
-
-			return result, fmt.Errorf("verify: %w", err)
-		}
-
-		hookErr = p.fireStageHook(
-			ctx,
-			StageAfter,
-			StageVerify,
-			result.TotalIterations,
-			allFindings,
-			0,
-			0,
-		)
-		if hookErr != nil {
-			metricsResult = result
-
-			return result, fmt.Errorf("after verify: %w", hookErr)
-		}
-
-		result.Verification = verifyResult
 	}
 
 	result.TotalDetected = len(allFindings)
@@ -286,4 +249,51 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	metricsResult = result
 
 	return result, nil
+}
+
+// runVerification runs the optional post-fix verification stage,
+// firing before/after hooks around the Verify call.
+func (p *Pipeline) runVerification(
+	ctx context.Context,
+	result *PipelineResult,
+	allFindings []finding.Finding,
+) error {
+	hookErr := p.fireStageHook(
+		ctx,
+		StageBefore,
+		StageVerify,
+		result.TotalIterations,
+		allFindings,
+		0,
+		0,
+	)
+	if hookErr != nil {
+		return fmt.Errorf("before verify: %w", hookErr)
+	}
+
+	verifyDone := p.stageTiming(StageVerify)
+	verifyResult, err := Verify(ctx, p.detectors, allFindings)
+
+	verifyDone()
+
+	if err != nil {
+		return fmt.Errorf("verify: %w", err)
+	}
+
+	hookErr = p.fireStageHook(
+		ctx,
+		StageAfter,
+		StageVerify,
+		result.TotalIterations,
+		allFindings,
+		0,
+		0,
+	)
+	if hookErr != nil {
+		return fmt.Errorf("after verify: %w", hookErr)
+	}
+
+	result.Verification = verifyResult
+
+	return nil
 }

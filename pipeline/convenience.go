@@ -64,7 +64,7 @@ func Detect(ctx context.Context, detectors ...Detector) ([]finding.Finding, erro
 
 	err := g.Wait()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("detect: %w", err)
 	}
 
 	return allFindings, nil

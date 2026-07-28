@@ -567,15 +567,15 @@ type saboteurProvider struct {
 	targetPath string
 }
 
-func (s *saboteurProvider) Name() string { return "saboteur" }
-func (s *saboteurProvider) CanHandle(f finding.Finding) bool {
+func (*saboteurProvider) Name() string { return "saboteur" }
+func (*saboteurProvider) CanHandle(f finding.Finding) bool {
 	return f.HasCodeChange()
 }
 
 func (s *saboteurProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error) {
 	bakPath := s.backup.BackupPath(s.targetPath)
 	if bakPath != "" {
-		_ = os.Remove(bakPath)
+		_ = os.Remove(bakPath) //nolint:gosec // G703: intentional path manipulation in test saboteur
 	}
 
 	return nil, errors.New("sabotaged by test provider")

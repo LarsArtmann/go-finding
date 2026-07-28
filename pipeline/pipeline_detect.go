@@ -243,23 +243,7 @@ func (p *Pipeline) applyTriage(
 	iter.Applied = len(applied)
 
 	// Shift remaining findings' positions and ranges based on applied edits.
-	for file, shiftMap := range shiftMaps {
-		for i := range iter.findings {
-			f := &iter.findings[i]
-			if f.Position.File == finding.FilePath(file) {
-				f.Position = shiftMap.ShiftedPosition(f.Position)
-				f.Range = shiftMap.ShiftedRange(f.Range)
-			}
-		}
-
-		for i := range iter.suggest {
-			f := &iter.suggest[i]
-			if f.Position.File == finding.FilePath(file) {
-				f.Position = shiftMap.ShiftedPosition(f.Position)
-				f.Range = shiftMap.ShiftedRange(f.Range)
-			}
-		}
-	}
+	shiftFindingsPositions(shiftMaps, iter)
 
 	if p.config.OnFix != nil {
 		appliedSet := make(map[string]struct{}, len(applied))
@@ -278,6 +262,28 @@ func (p *Pipeline) applyTriage(
 	}
 
 	return nil
+}
+
+// shiftFindingsPositions updates line/column information for all findings
+// in an iteration after fixes have been applied, using per-file line shift maps.
+func shiftFindingsPositions(
+	shiftMaps map[string]*LineShiftMap,
+	iter *Iteration,
+) {
+	for file, shiftMap := range shiftMaps {
+		shiftFindingSlice(iter.findings, file, shiftMap)
+		shiftFindingSlice(iter.suggest, file, shiftMap)
+	}
+}
+
+func shiftFindingSlice(findings []finding.Finding, file string, shiftMap *LineShiftMap) {
+	for i := range findings {
+		f := &findings[i]
+		if f.Position.File == finding.FilePath(file) {
+			f.Position = shiftMap.ShiftedPosition(f.Position)
+			f.Range = shiftMap.ShiftedRange(f.Range)
+		}
+	}
 }
 
 // applyDirectFixes applies deterministic fixes to files and returns the applied findings
