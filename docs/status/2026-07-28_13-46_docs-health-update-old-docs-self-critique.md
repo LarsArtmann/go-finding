@@ -8,20 +8,20 @@
 
 ## a) FULLY DONE (verified this session)
 
-| #   | Task                                                                                                      | Evidence                                                                                                  |
-| --- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1   | Loaded both skills (`update-old-docs` + `docs-health`) + SKILL.md bodies in full before any action        | Both files read in full via `view` tool                                                                   |
-| 2   | Read ALL 24 `2026-07-2*` historical files via 4 parallel sub-agents + direct reads                       | Structured summaries extracted for every file: resolution status, stale claims, HARVEST candidates        |
-| 3   | Read all 4 living docs (TODO_LIST, ROADMAP, FEATURES, CHANGELOG) + git log + version.go + tags            | Full reads; 40-commit git log analyzed; version.go = 1.4.0 confirmed; all 4 module tags exist             |
-| 4   | **Fixed CHANGELOG broken link references** — added `[1.4.0]`, corrected `[Unreleased]` range              | Was `v1.3.0...HEAD`, now `v1.4.0...HEAD`. `[1.4.0]` link added. Verified at line 711-712                  |
-| 5   | **Populated CHANGELOG `[Unreleased]`** — 5 entries covering post-v1.4.0 dedup-to-zero sweep               | `must[T]`, `marshalJSONString`, `decodeConfig`, `fixEditJSON`, `Badge()`/`PriorityString()` refactor      |
-| 6   | **Removed done item from TODO_LIST** — "Tag v1.4.0" (tagged 2026-07-26)                                   | Done items belong in CHANGELOG, not TODO_LIST. Added v1.4.0 release note blockquote                       |
-| 7   | **Harvested 7 pipeline lint issues into TODO_LIST** — new MEDIUM priority table                            | Sourced from `2026-07-27_10-59_dedup-to-zero-sweep.md` section e. All 7 evidence paths verified against disk |
-| 8   | **Updated ROADMAP** — version 1.3.0 to 1.4.0, v1.4.0 release summary, section header widened              | 2 edits; version consistency verified: version.go = ROADMAP = CHANGELOG = 1.4.0                           |
-| 9   | **Verified FEATURES.md core claims against code** — categories (16), tags (10), linters (84), FixStrategy | `grep` counts confirmed. ErrorCode/ErrorFamily documented at line 417                                     |
-| 10  | **Annotated 5 stale historical snapshots** with specific, "so what?"-passing resolution notes             | Each placed after TL;DR/header (visible on open), cites commit hashes and current state                   |
-| 11  | Verified ROADMAP "Hardening" section file:line references against current code                            | `fix_strategy.go:4`, `finding.go:8-48`, `position.go:35` — all approximately correct                      |
-| 12  | Quality gate: `go build ./...` + `go test -race -count=1` all 4 modules                                   | All exit 0. Core, pipeline, analysis, CLI all pass                                                        |
+| #   | Task                                                                                                      | Evidence                                                                                                     |
+| --- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 1   | Loaded both skills (`update-old-docs` + `docs-health`) + SKILL.md bodies in full before any action        | Both files read in full via `view` tool                                                                      |
+| 2   | Read ALL 24 `2026-07-2*` historical files via 4 parallel sub-agents + direct reads                        | Structured summaries extracted for every file: resolution status, stale claims, HARVEST candidates           |
+| 3   | Read all 4 living docs (TODO_LIST, ROADMAP, FEATURES, CHANGELOG) + git log + version.go + tags            | Full reads; 40-commit git log analyzed; version.go = 1.4.0 confirmed; all 4 module tags exist                |
+| 4   | **Fixed CHANGELOG broken link references** — added `[1.4.0]`, corrected `[Unreleased]` range              | Was `v1.3.0...HEAD`, now `v1.4.0...HEAD`. `[1.4.0]` link added. Verified at line 711-712                     |
+| 5   | **Populated CHANGELOG `[Unreleased]`** — 5 entries covering post-v1.4.0 dedup-to-zero sweep               | `must[T]`, `marshalJSONString`, `decodeConfig`, `fixEditJSON`, `Badge()`/`PriorityString()` refactor         |
+| 6   | **Removed done item from TODO_LIST** — "Tag v1.4.0" (tagged 2026-07-26)                                   | Done items belong in CHANGELOG, not TODO_LIST. Added v1.4.0 release note blockquote                          |
+| 7   | **Harvested 7 pipeline lint issues into TODO_LIST** — new MEDIUM priority table                           | Sourced from `2026-07-27_10-59_dedup-to-zero-sweep.md` section e. All 7 evidence paths verified against disk |
+| 8   | **Updated ROADMAP** — version 1.3.0 to 1.4.0, v1.4.0 release summary, section header widened              | 2 edits; version consistency verified: version.go = ROADMAP = CHANGELOG = 1.4.0                              |
+| 9   | **Verified FEATURES.md core claims against code** — categories (16), tags (10), linters (84), FixStrategy | `grep` counts confirmed. ErrorCode/ErrorFamily documented at line 417                                        |
+| 10  | **Annotated 5 stale historical snapshots** with specific, "so what?"-passing resolution notes             | Each placed after TL;DR/header (visible on open), cites commit hashes and current state                      |
+| 11  | Verified ROADMAP "Hardening" section file:line references against current code                            | `fix_strategy.go:4`, `finding.go:8-48`, `position.go:35` — all approximately correct                         |
+| 12  | Quality gate: `go build ./...` + `go test -race -count=1` all 4 modules                                   | All exit 0. Core, pipeline, analysis, CLI all pass                                                           |
 
 ---
 
@@ -34,6 +34,7 @@
 **What I did NOT do:** Walk all 1037 lines. FEATURES.md contains hundreds of method names, file paths, API signatures, and status assertions across 15+ sections (Finding, Builder, Position, Range, Severity, FixStrategy, Category, Tags, Suppression, Report, Filtering, Merging, ID Generation, SARIF, LSP, Pipeline, CLI). I verified the easiest 5 and called it "verified."
 
 **Concrete unverified claims (examples):**
+
 - Section 7 (Report): claims `NewReportFromFindings(tool, findings)` — exists in code? (Likely yes, but not grep'd.)
 - Section 9.3 (Correlation): claims "O(log n + k)" complexity and "Capped at 10,000 correlations" — verified against `correlate.go`? No.
 - Section 10 (ID Generation): claims `ParseID(id)` returns `ParsedID{Tool, Rule, File, Line, Column}` — struct fields verified? No.
@@ -53,20 +54,20 @@ I ran `go build` and `go test -race` but **did not run `golangci-lint run ./...`
 
 ## c) NOT STARTED
 
-| #   | Task                                                              | Why it matters                                                                                       |
-| --- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| 1   | `golangci-lint run ./...`                                         | The canonical linter. Not run this session. Changes were doc-only but principle is non-negotiable.   |
-| 2   | `nix flake check` / `nix run .#lint`                              | The project's canonical quality gate commands per AGENTS.md. I used raw `go` commands instead.       |
-| 3   | Full FEATURES.md vs code walk (1037 lines)                        | Only 5 of hundreds of claims spot-checked. Prior reports flagged this as needing a full walk.        |
-| 4   | README.md freshness audit                                         | Prior reports flagged README version refs as recurring failure mode. Not checked this session.       |
-| 5   | Comprehensive markdown link check across all docs                 | Only TODO_LIST internal links verified. Verify checklist requires checking ALL docs.                 |
-| 6   | Date-qualify "22 consumers" in TODO_LIST                          | AGENTS.md: "do not assert a specific number without checking latest data." Count is from 2026-07-22. |
-| 7   | Harvest go-linter-sdk ecosystem integration gaps                  | Most recent report (2026-07-27_20-55) reveals pilot migration not started, IsEnabledByDefault incomplete, no SDK tag. These are live ecosystem items I dismissed as "about other repos." |
-| 8   | Annotate dedup-to-zero sweep report with "harvested" note         | Report lists 8 pipeline lint issues as "not started." I harvested them into TODO_LIST but didn't annotate the report. |
-| 9   | `docs/DOMAIN_LANGUAGE.md` freshness check                         | Should reflect go-error-family integration terms. Not checked.                                       |
-| 10  | `docs/USAGE_GUIDE.md` freshness check                             | May have stale API references. Not checked.                                                          |
-| 11  | `docs/guides/fix-engine.md` accuracy                               | After `fixEditJSON` extraction, may reference old structure. Not checked.                            |
-| 12  | `doc.go` API reference grep for renamed/removed symbols            | AGENTS.md flags this as a known gotcha. Not run.                                                      |
+| #   | Task                                                      | Why it matters                                                                                                                                                                           |
+| --- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `golangci-lint run ./...`                                 | The canonical linter. Not run this session. Changes were doc-only but principle is non-negotiable.                                                                                       |
+| 2   | `nix flake check` / `nix run .#lint`                      | The project's canonical quality gate commands per AGENTS.md. I used raw `go` commands instead.                                                                                           |
+| 3   | Full FEATURES.md vs code walk (1037 lines)                | Only 5 of hundreds of claims spot-checked. Prior reports flagged this as needing a full walk.                                                                                            |
+| 4   | README.md freshness audit                                 | Prior reports flagged README version refs as recurring failure mode. Not checked this session.                                                                                           |
+| 5   | Comprehensive markdown link check across all docs         | Only TODO_LIST internal links verified. Verify checklist requires checking ALL docs.                                                                                                     |
+| 6   | Date-qualify "22 consumers" in TODO_LIST                  | AGENTS.md: "do not assert a specific number without checking latest data." Count is from 2026-07-22.                                                                                     |
+| 7   | Harvest go-linter-sdk ecosystem integration gaps          | Most recent report (2026-07-27_20-55) reveals pilot migration not started, IsEnabledByDefault incomplete, no SDK tag. These are live ecosystem items I dismissed as "about other repos." |
+| 8   | Annotate dedup-to-zero sweep report with "harvested" note | Report lists 8 pipeline lint issues as "not started." I harvested them into TODO_LIST but didn't annotate the report.                                                                    |
+| 9   | `docs/DOMAIN_LANGUAGE.md` freshness check                 | Should reflect go-error-family integration terms. Not checked.                                                                                                                           |
+| 10  | `docs/USAGE_GUIDE.md` freshness check                     | May have stale API references. Not checked.                                                                                                                                              |
+| 11  | `docs/guides/fix-engine.md` accuracy                      | After `fixEditJSON` extraction, may reference old structure. Not checked.                                                                                                                |
+| 12  | `doc.go` API reference grep for renamed/removed symbols   | AGENTS.md flags this as a known gotcha. Not run.                                                                                                                                         |
 
 ---
 

@@ -10,15 +10,15 @@
 
 ### 7 lint issues resolved (all verified by `golangci-lint run ./...`)
 
-| # | Linter | Issue | Fix Applied | File |
-|---|--------|-------|-------------|------|
-| 1 | `funlen` | `Run()` 137 lines (>120) | Extracted `runVerification()` method — fires before/after hooks around `Verify()` call, sets `result.Verification` | `pipeline/pipeline.go` |
-| 2 | `funlen` | `runIteration()` 124 lines (>120) | Extracted `applyStage()` method — DryRun guard + before/after apply hooks + `applyTriage` call | `pipeline/pipeline_iteration.go` |
-| 3 | `gocognit` | `applyTriage` complexity 36 (>35) | Extracted `shiftFindingsPositions()` + `shiftFindingSlice()` — eliminated duplicated position-shifting loops over `iter.findings` and `iter.suggest` | `pipeline/pipeline_detect.go` |
-| 4 | `exhaustruct` | `result{ok: false}` missing fields | Explicit zero values: `result{fset: nil, file: nil, ok: false}` | `pipeline/goast/provider.go:129` |
-| 5 | `wrapcheck` | `g.Wait()` error unwrapped | Wrapped: `fmt.Errorf("detect: %w", err)` | `pipeline/convenience.go:67` |
-| 6 | `gosec G703` | Path traversal in test `os.Remove(bakPath)` | `//nolint:gosec` with justification (intentional test saboteur) | `pipeline/fix_applier_test.go:578` |
-| 7 | `revive` | Unused `s` receiver on `saboteurProvider.Name()` and `.CanHandle()` | Changed `(s *saboteurProvider)` to `(*saboteurProvider)` | `pipeline/fix_applier_test.go:570-571` |
+| #   | Linter        | Issue                                                               | Fix Applied                                                                                                                                          | File                                   |
+| --- | ------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| 1   | `funlen`      | `Run()` 137 lines (>120)                                            | Extracted `runVerification()` method — fires before/after hooks around `Verify()` call, sets `result.Verification`                                   | `pipeline/pipeline.go`                 |
+| 2   | `funlen`      | `runIteration()` 124 lines (>120)                                   | Extracted `applyStage()` method — DryRun guard + before/after apply hooks + `applyTriage` call                                                       | `pipeline/pipeline_iteration.go`       |
+| 3   | `gocognit`    | `applyTriage` complexity 36 (>35)                                   | Extracted `shiftFindingsPositions()` + `shiftFindingSlice()` — eliminated duplicated position-shifting loops over `iter.findings` and `iter.suggest` | `pipeline/pipeline_detect.go`          |
+| 4   | `exhaustruct` | `result{ok: false}` missing fields                                  | Explicit zero values: `result{fset: nil, file: nil, ok: false}`                                                                                      | `pipeline/goast/provider.go:129`       |
+| 5   | `wrapcheck`   | `g.Wait()` error unwrapped                                          | Wrapped: `fmt.Errorf("detect: %w", err)`                                                                                                             | `pipeline/convenience.go:67`           |
+| 6   | `gosec G703`  | Path traversal in test `os.Remove(bakPath)`                         | `//nolint:gosec` with justification (intentional test saboteur)                                                                                      | `pipeline/fix_applier_test.go:578`     |
+| 7   | `revive`      | Unused `s` receiver on `saboteurProvider.Name()` and `.CanHandle()` | Changed `(s *saboteurProvider)` to `(*saboteurProvider)`                                                                                             | `pipeline/fix_applier_test.go:570-571` |
 
 ### Verification completed
 
@@ -57,11 +57,13 @@ Nothing catastrophically broken. But one significant oversight:
 ### paralleltest config drift — DISCOVERED BUT NOT FIXED
 
 **The AGENTS.md explicitly states:**
+
 > `paralleltest` linter is disabled (intentional) — `.golangci.yml` disables `paralleltest` because `t.Parallel()` is centralized inside `NewParallelGomega` helpers across all 4 modules.
 
 **Reality:** `.golangci.yml` line 93 has `- paralleltest` in the `enable` list. The linter is ENABLED, not disabled. This produces **100 findings** across the pipeline module alone.
 
 This means either:
+
 - The AGENTS.md documentation is lying (the linter was re-enabled but docs weren't updated), OR
 - The `.golangci.yml` was accidentally changed to enable it
 

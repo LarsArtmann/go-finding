@@ -17,6 +17,10 @@ Internal refactoring and test-infrastructure sweep. No public API changes.
 - **`paralleltest` linter disabled** in `.golangci.yml` — it cannot trace `t.Parallel()` through the `NewParallelGomega` helper wrapper. Reversible with one line.
 - Go module dependencies and Nix flake toolchain versions synchronized across all sub-modules.
 
+### Fixed
+
+- **7 pipeline lint issues resolved.** `Pipeline.Run()` decomposed via `runVerification()` extraction (funlen). `Pipeline.runIteration()` decomposed via `applyStage()` extraction (funlen). `applyTriage` complexity reduced via `shiftFindingsPositions()`/`shiftFindingSlice()` extraction (gocognit). `goast/provider.go` exhaustruct fixed with explicit zero values. `convenience.go` `errgroup.Wait()` error wrapped (wrapcheck). `fix_applier_test.go` gosec G703 suppressed with justification. `saboteurProvider` unused receivers removed (revive).
+
 ## [1.4.0] - 2026-07-26
 
 Error classification integration, community readiness infrastructure, and documentation accuracy sweep. The core module gains its first production dependency (`go-error-family`) to enable unified error classification across consumer codebases.
