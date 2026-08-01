@@ -191,7 +191,8 @@ func (h *FlightRecorderHook) asyncSnapshot(ctx context.Context, event StageEvent
 			return
 		}
 
-		h.log(ctx, slog.LevelInfo, "flight recorder snapshot written",
+		h.log(
+			ctx, slog.LevelInfo, "flight recorder snapshot written",
 			slog.String("path", path),
 			slog.String("stage", string(event.Stage)),
 			slog.Int("iteration", event.Iteration),
