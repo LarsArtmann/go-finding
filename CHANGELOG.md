@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No changes yet._
+### Added
+
+- **`pipeline.FlightRecorderHook`** — Go runtime execution trace flight recorder for pipeline observability. Wraps Go 1.25+'s `runtime/trace.FlightRecorder` to continuously buffer trace data in memory, snapshotting on demand or automatically when a pipeline stage exceeds a configurable slow-stage threshold. Invaluable for diagnosing slow detectors, fix contention, or unexpected pipeline stalls.
+  - `NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, error)` — creates and starts the recorder
+  - `FlightRecorderConfig` — `MinAge` (buffer retention, default 30s), `MaxBytes` (default 4 MiB), `SlowStageThreshold` (auto-snapshot trigger, default off), `OutputDir` (default temp), `Logger`
+  - `DefaultFlightRecorderConfig()` — sensible defaults
+  - Implements `StageHook` — `OnStageEvent` never returns an error (trace collection is purely diagnostic)
+  - `Snapshot(reason) (path, error)` — manual on-demand snapshot
+  - `Close()` — stops recorder, waits for in-flight async snapshots
+  - CLI flags: `-trace` (enable), `-trace-dir` (output directory), `-trace-slow` (auto-snapshot threshold, e.g. `30s`)
+
+### Changed
+
+- Go module dependencies and Nix flake toolchain versions synchronized across all sub-modules.
 
 ## [1.4.1] - 2026-07-28
 
