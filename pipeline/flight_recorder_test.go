@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -258,4 +259,133 @@ func findTraceFiles(dir string) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+func TestFlightRecorderHook_ConcurrentSnapshotsDoNotCollide(t *testing.T) {
+	hook := newTestFlightRecorderHook(t, DefaultFlightRecorderConfig())
+	defer hook.Close()
+
+	g := gomega.NewWithT(t)
+
+	const n = 10
+	paths := make([]string, n)
+	errs := make([]error, n)
+
+	var wg sync.WaitGroup
+
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+
+		go func(idx int) {
+			defer wg.Done()
+			paths[idx], errs[idx] = hook.Snapshot("concurrent")
+		}(i)
+	}
+
+	wg.Wait()
+
+	for i := 0; i < n; i++ {
+		g.Expect(errs[i]).To(gomega.Not(gomega.HaveOccurred()), "snapshot %d", i)
+		g.Expect(paths[i]).To(gomega.BeAnExistingFile(), "snapshot %d", i)
+	}
+
+	uniquePaths := make(map[string]struct{}, n)
+	for _, p := range paths {
+		uniquePaths[p] = struct{}{}
+	}
+
+	g.Expect(uniquePaths).To(gomega.HaveLen(n), "all snapshot paths should be unique")
+}
+
+func TestFlightRecorderHook_MkdirAllError(t *testing.T) {
+	// /dev/null is a file, not a directory — MkdirAll should fail.
+	_, err := NewFlightRecorderHook(FlightRecorderConfig{
+		OutputDir: "/dev/null/subdir",
+	})
+
+	g := gomega.NewWithT(t)
+	g.Expect(err).To(gomega.HaveOccurred())
+}
+
+func TestRecordStageBoundary_BeforeReturnsFalse(t *testing.T) {
+	hook := newTestFlightRecorderHook(t, FlightRecorderConfig{
+		SlowStageThreshold: 1 * time.Nanosecond,
+	})
+	defer hook.Close()
+
+	ctx := context.Background()
+
+	// StageBefore should never trigger a snapshot.
+	err := hook.OnStageEvent(ctx, StageEvent{
+		Stage:  StageTriage,
+		Timing: StageBefore,
+	})
+	g := gomega.NewWithT(t)
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+	g.Expect(hook.Enabled()).To(gomega.BeTrue())
+
+	// No trace files should exist from a Before event alone.
+	hook.Close()
+	traceFiles, _ := findTraceFiles(hook.config.OutputDir)
+	g.Expect(traceFiles).To(gomega.BeEmpty())
+}
+
+func TestRecordStageBoundary_SlowAfterTriggersSnapshot(t *testing.T) {
+	hook := newTestFlightRecorderHook(t, FlightRecorderConfig{
+		SlowStageThreshold: 1 * time.Nanosecond,
+	})
+	defer hook.Close()
+
+	ctx := context.Background()
+
+	g := gomega.NewWithT(t)
+
+	err := hook.OnStageEvent(ctx, StageEvent{
+		Stage:  StageVerify,
+		Timing: StageBefore,
+	})
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+
+	time.Sleep(2 * time.Millisecond)
+
+	err = hook.OnStageEvent(ctx, StageEvent{
+		Stage:  StageVerify,
+		Timing: StageAfter,
+	})
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+
+	hook.Close()
+
+	traceFiles, err := findTraceFiles(hook.config.OutputDir)
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+	g.Expect(traceFiles).To(gomega.HaveLen(1))
+}
+
+func TestRecordStageBoundary_AfterWithoutBeforeDoesNothing(t *testing.T) {
+	hook := newTestFlightRecorderHook(t, FlightRecorderConfig{
+		SlowStageThreshold: 1 * time.Nanosecond,
+	})
+	defer hook.Close()
+
+	ctx := context.Background()
+
+	// StageAfter without a matching StageBefore should not snapshot.
+	err := hook.OnStageEvent(ctx, StageEvent{
+		Stage:  StageApply,
+		Timing: StageAfter,
+	})
+	g := gomega.NewWithT(t)
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+
+	hook.Close()
+
+	traceFiles, _ := findTraceFiles(hook.config.OutputDir)
+	g.Expect(traceFiles).To(gomega.BeEmpty())
+}
+
+func TestSanitizeFilename_AllSpecialChars(t *testing.T) {
+	g := gomega.NewWithT(t)
+
+	got := sanitizeFilename("@#$%^&*()")
+	g.Expect(got).To(gomega.Equal("snapshot"))
 }

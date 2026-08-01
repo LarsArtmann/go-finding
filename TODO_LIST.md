@@ -12,10 +12,10 @@
 
 | Task | Status | Impact | Effort | Notes |
 | --- | --- | --- | --- | --- |
-| Serialize concurrent `WriteTo` calls with `writeMu sync.Mutex` | ⬜ `TODO` | High | Low | `runtime/trace.FlightRecorder.WriteTo` is NOT safe for concurrent calls. Two slow stages in the same iteration cause "already in progress" error. Self-critique §d.1. |
-| Fix `sanitizeFilename("")` to return `"snapshot"` | ⬜ `TODO` | Med | Low | Empty input produces malformed filename `go-finding-trace-000-.trace` (trailing hyphen). Self-critique §d.3. |
-| Add concurrent-snapshot serialization test | ⬜ `TODO` | High | Low | Prove the mutex prevents collision. Self-critique §f.3. |
-| Add `MkdirAll` error path test | ⬜ `TODO` | Med | Low | Pass unwritable directory to `NewFlightRecorderHook`. Self-critique §f.4. |
+| Serialize concurrent `WriteTo` calls with `writeMu sync.Mutex` | ✅ `DONE` | High | Low | Fixed: added `writeMu sync.Mutex` to FlightRecorderHook struct, serializes WriteTo calls. |
+| Fix `sanitizeFilename("")` to return `"snapshot"` | ✅ `DONE` | Med | Low | Fixed: empty/all-special-chars input now returns `"snapshot"`. |
+| Add concurrent-snapshot serialization test | ✅ `DONE` | High | Low | `TestFlightRecorderHook_ConcurrentSnapshotsDoNotCollide` — 10 concurrent snapshots, all succeed, all unique. |
+| Add `MkdirAll` error path test | ✅ `DONE` | Med | Low | `TestFlightRecorderHook_MkdirAllError` — unwritable dir returns error. |
 
 ### Make Repo Public — Phase 2: Community Readiness (remaining)
 
