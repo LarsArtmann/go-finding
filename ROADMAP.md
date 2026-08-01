@@ -8,15 +8,15 @@
 
 ## Current Phase: Consumer ecosystem growth
 
-**Current version:** 1.4.0
+**Current version:** 1.4.1 ([unreleased FlightRecorder work](CHANGELOG.md#unreleased) in progress)
 
-v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects. v1.4.0 added `go-error-family` integration (unified error classification), community readiness infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), and retired the "zero external deps" principle in favor of a small, deliberate dependency surface.
+v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects. v1.4.0 added `go-error-family` integration (unified error classification), community readiness infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), and retired the "zero external deps" principle in favor of a small, deliberate dependency surface. v1.4.1 eliminated all code duplication (zero clones at `-t 1`), consolidated test setup across all 4 modules, and resolved 7 pipeline lint issues.
 
 The library is production-ready and API-stable. The focus now shifts to growing the consumer ecosystem, expanding language coverage, and completing the public launch.
 
 ---
 
-## v1.0.0–v1.4.0 — API lock, consumer convenience, community readiness ✅
+## v1.0.0–v1.4.1 — API lock, consumer convenience, community readiness ✅
 
 **Status: Released.**
 
@@ -25,6 +25,7 @@ The library is production-ready and API-stable. The focus now shifts to growing 
 - ✅ Branded types (`ID`, `RuleName`, `ToolName`, `FilePath`), hand-rolled SARIF, LSP round-trip fidelity.
 - ✅ v1.3.0: Consumer-driven APIs (`BuildOrDefault`, `Template`, `NewReportFromFindings`, `FilePos`, `SeverityFromLevel`, `ApplySimpleFixes`, `CheckBinary`/`RunCmd`, `FormatTable`, `PriorityString`). File-level position validation relaxed.
 - ✅ v1.4.0: `go-error-family` integration (`FindingError.ErrorCode()` / `ErrorFamily()`), community infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), documentation accuracy sweep. "Zero external deps" principle retired.
+- ✅ v1.4.1: Zero code duplication (extracted `must[T]`, `marshalJSONString`, `decodeConfig`, `fixEditJSON`), test setup consolidated (`NewParallelGomega`), 7 pipeline lint issues resolved.
 
 ---
 
@@ -61,8 +62,9 @@ Each would live in its own subpackage to keep language-specific dependencies out
 
 ### Consumer ecosystem
 
-- **Consumer migration to v1.3.0 APIs** — 14 Go consumers can now simplify their codebases using `BuildOrDefault`, `Template`, `SeverityFromLevel`, `FilePos`, `NewReportFromFindings`, and `ApplySimpleFixes`. Each consumer independently reinvented these patterns.
+- **Consumer migration to v1.3.0/v1.4.x APIs** — 14 Go consumers can now simplify their codebases using `BuildOrDefault`, `Template`, `SeverityFromLevel`, `FilePos`, `NewReportFromFindings`, and `ApplySimpleFixes`. Each consumer independently reinvented these patterns.
 - **More `ToolAdapter[O]` recipes** — Pre-built adapters for revive, ineffassign, errcheck, etc.
+- **go-linter-sdk integration** — `IsEnabledByDefault()` / `OptIn()` added to the Rule interface in the sibling `go-linter-sdk` repo, but `Registry.Run` does not yet use it for filtering. The SDK has no git tag (consumers cannot import it). A pilot migration (porting `go-structure-linter`) is planned but not started. This is the primary ecosystem integration gap.
 
 ### Hardening (owner decisions pending)
 

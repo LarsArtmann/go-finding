@@ -23,13 +23,14 @@
 | Write announcement (blog/r/golang/Slack/Twitter) | ⬜ `TODO` | High   | Medium | Drive adoption                                |
 | Submit to Awesome Go                             | ⬜ `TODO` | Low    | Low    | Discoverability                               |
 
-> v1.4.0 was tagged on 2026-07-26 (see [CHANGELOG](CHANGELOG.md)). All four module tags exist: `v1.4.0`, `pipeline/v1.4.0`, `analysis/v1.4.0`, `cmd/go-finding/v1.4.0`.
+> v1.4.1 was tagged on 2026-07-28 (see [CHANGELOG](CHANGELOG.md)). All four module tags exist: `v1.4.1`, `pipeline/v1.4.1`, `analysis/v1.4.1`, `cmd/go-finding/v1.4.1`. Unreleased FlightRecorder work is in `[Unreleased]`.
 
 ## 🟡 MEDIUM Priority
 
 | Task                              | Status       | Impact | Effort | Notes                                                                                                                                   |
 | --------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Fix BuildFlow auto-configure loop | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact |
+| Commit benchmark baseline         | ⬜ `TODO`   | Med    | Low    | `/benchmarks/` is gitignored (`.gitignore:53`); `scripts/bench-check.sh` compares against `benchmarks/baseline.txt` which doesn't exist in a fresh clone. CI benchmark regression check has never worked. |
 
 ## 🟢 LOW Priority
 
