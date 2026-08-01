@@ -86,6 +86,10 @@ type FlightRecorderHook struct {
 	snapshotCount int
 	closed        bool
 	snapshotWg    sync.WaitGroup
+
+	// writeMu serializes concurrent WriteTo calls.
+	// runtime/trace.FlightRecorder.WriteTo is NOT safe for concurrent use.
+	writeMu sync.Mutex
 }
 
 // NewFlightRecorderHook creates and starts a flight recorder.
@@ -222,6 +226,8 @@ func (h *FlightRecorderHook) Snapshot(reason string) (string, error) {
 }
 
 // writeSnapshot creates a trace file and writes the buffered trace data.
+// The writeMu serializes concurrent WriteTo calls because
+// runtime/trace.FlightRecorder.WriteTo is NOT safe for concurrent use.
 func (h *FlightRecorderHook) writeSnapshot(num int, reason string) (string, error) {
 	filename := fmt.Sprintf("go-finding-trace-%03d-%s.trace", num, sanitizeFilename(reason))
 	path := filepath.Join(h.config.OutputDir, filename)
@@ -231,10 +237,14 @@ func (h *FlightRecorderHook) writeSnapshot(num int, reason string) (string, erro
 		return "", fmt.Errorf("create trace file %s: %w", path, err)
 	}
 
-	if _, err := h.fr.WriteTo(f); err != nil {
+	h.writeMu.Lock()
+	_, writeErr := h.fr.WriteTo(f)
+	h.writeMu.Unlock()
+
+	if writeErr != nil {
 		_ = f.Close()
 
-		return "", fmt.Errorf("write trace to %s: %w", path, err)
+		return "", fmt.Errorf("write trace to %s: %w", path, writeErr)
 	}
 
 	if err := f.Close(); err != nil {
@@ -300,5 +310,10 @@ func sanitizeFilename(s string) string {
 		result = strings.ReplaceAll(result, "--", "-")
 	}
 
-	return strings.Trim(result, "-")
+	result = strings.Trim(result, "-")
+	if result == "" {
+		return "snapshot"
+	}
+
+	return result
 }

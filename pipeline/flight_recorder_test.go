@@ -233,7 +233,7 @@ func TestSanitizeFilename(t *testing.T) {
 		{"path/to/file", "path-to-file"},
 		{"hello world!", "hello-world"},
 		{"+++bad---", "bad"},
-		{"", ""},
+		{"", "snapshot"},
 	}
 
 	for _, tt := range tests {

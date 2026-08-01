@@ -1,7 +1,7 @@
 # API Stability — go-finding
 
-**Last audited:** 2026-07-26
-**Version:** v1.4.0
+**Last audited:** 2026-08-01
+**Version:** v1.4.1 (unreleased FlightRecorder in `[Unreleased]`)
 
 go-finding follows the [Go 1 Compatibility Promise](https://go.dev/doc/go1compat) philosophy.
 
@@ -207,10 +207,24 @@ All exported symbols are classified as:
 | `FindingTransformer`, `TransformerFunc`                         | stable |
 | `Detector`, `DetectorFunc` (type aliases)                       | stable |
 | `OffsetProvider`, `LineProvider`, `SubstringProvider`           | stable |
+| `StageHook`, `StageHookFunc`, `StageEvent`, `StageTiming`       | stable |
+| `LineShiftMap`, `LineShiftEntry`                                 | stable |
+| `ConfigFile`                                                     | stable |
+| `FlightRecorderHook`, `FlightRecorderConfig`                     | stable | Unreleased. Chrome Trace Event export. |
 
 ### Functions
 
 All exported functions in `pipeline` are **stable**.
+
+Notable additions:
+
+| Function                       | Status | Notes                                              |
+| ------------------------------ | ------ | -------------------------------------------------- |
+| `NewFlightRecorderHook`        | stable | Unreleased. Constructor for FlightRecorderHook.    |
+| `DefaultFlightRecorderConfig`  | stable | Unreleased. Returns default config.                |
+| `Detect`                       | stable | One-shot detection convenience function (v1.3.0)   |
+| `ApplyToContent`               | stable | Content-level fix application without FS (v1.3.0)  |
+| `ConfigFromFile` / `ConfigFromReader` | stable | JSON/YAML config file loading              |
 
 ---
 
@@ -260,6 +274,10 @@ All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migratio
 
 ## Current Status
 
-**v1.4.0** — API-stable since v1.0.0. 2 additive APIs added in v1.4.0 (`FindingError.ErrorCode()`, `FindingError.ErrorFamily()` for go-error-family integration). Zero breaking changes.
+**Unreleased** — FlightRecorder pipeline trace export (`FlightRecorderHook`, `FlightRecorderConfig`, `NewFlightRecorderHook`, `DefaultFlightRecorderConfig`). Additive, zero breaking changes.
 
-**v1.3.0** — 11 additive APIs added (Template, FormatTextRich, ApplySimpleFixes, BuildOrDefault, NewReportFromFindings, FilePos, SeverityFromLevel, PriorityString, CheckBinary, RunCmd, FormatTable).
+**v1.4.1** — Zero new public APIs. Internal refactoring: extracted `must[T]`, `marshalJSONString`, `fixEditJSON`; consolidated test setup (`NewParallelGomega`); resolved 7 pipeline lint issues; zero code duplication.
+
+**v1.4.0** — 2 additive APIs: `FindingError.ErrorCode()`, `FindingError.ErrorFamily()` for go-error-family integration.
+
+**v1.3.0** — 11 additive APIs: Template, FormatTextRich, ApplySimpleFixes, BuildOrDefault, NewReportFromFindings, FilePos, SeverityFromLevel, PriorityString, CheckBinary, RunCmd, FormatTable.

@@ -982,7 +982,7 @@ for file, fileResults := range results {
 }
 ```
 
-Groups findings by file, reads each file, applies `strings.Replace` with count=1 per finding, writes back. Skips findings without BeforeCode/AfterCode.
+Groups findings by file, reads each file, applies `strings.Replace` with count=1 per finding, writes back. Skips findings without BeforeCode/AfterCode. See [Fix Engine Guide](docs/guides/fix-engine.md#simple-fixes-core-package) for full usage.
 
 ### 22.3 External Tool Helpers
 
