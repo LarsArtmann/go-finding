@@ -42,12 +42,12 @@ type cliFlags struct {
 	filterGenTypes    string
 	generatedExclude  string
 	generatedInclude  string
-	byteLevelConflict    bool
-	fixProviders          string
-	includeSuppressed     bool
-	trace                 bool
-	traceDir              string
-	traceSlow             time.Duration
+	byteLevelConflict bool
+	fixProviders      string
+	includeSuppressed bool
+	trace             bool
+	traceDir          string
+	traceSlow         time.Duration
 }
 
 func parseFlags() cliFlags {
@@ -238,7 +238,7 @@ func run() int {
 
 		result, runErr := p.Run(ctx)
 
-			// On error or timeout, capture a final trace snapshot.
+		// On error or timeout, capture a final trace snapshot.
 		if runErr != nil && frHook.Enabled() {
 			if snapPath, snapErr := frHook.Snapshot("pipeline-error"); snapErr == nil {
 				fmt.Fprintf(os.Stderr, "Trace snapshot: %s\n", snapPath)

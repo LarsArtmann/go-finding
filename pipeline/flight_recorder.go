@@ -17,6 +17,11 @@ import (
 // closed or disabled flight recorder.
 var ErrFlightRecorderNotEnabled = errors.New("flight recorder: not enabled or already closed")
 
+const (
+	defaultFRMinAge   = 30 * time.Second
+	defaultFRMaxBytes = 4 << 20 // 4 MiB
+)
+
 // FlightRecorderConfig configures the pipeline's execution trace flight recorder.
 //
 // The flight recorder continuously buffers Go runtime execution trace data
@@ -52,9 +57,10 @@ type FlightRecorderConfig struct {
 // DefaultFlightRecorderConfig returns sensible defaults for pipeline
 // flight recording.
 func DefaultFlightRecorderConfig() FlightRecorderConfig {
+	//nolint:exhaustruct // SlowStageThreshold and Logger are intentionally zero/nil by default
 	return FlightRecorderConfig{
-		MinAge:    30 * time.Second,
-		MaxBytes:  4 << 20,
+		MinAge:    defaultFRMinAge,
+		MaxBytes:  defaultFRMaxBytes,
 		OutputDir: os.TempDir(),
 	}
 }
@@ -75,11 +81,11 @@ type FlightRecorderHook struct {
 	fr     *trace.FlightRecorder
 	config FlightRecorderConfig
 
-	mu             sync.Mutex
-	stageStarts    map[Stage]time.Time
-	snapshotCount  int
-	closed         bool
-	snapshotWg     sync.WaitGroup
+	mu            sync.Mutex
+	stageStarts   map[Stage]time.Time
+	snapshotCount int
+	closed        bool
+	snapshotWg    sync.WaitGroup
 }
 
 // NewFlightRecorderHook creates and starts a flight recorder.
@@ -88,28 +94,28 @@ type FlightRecorderHook struct {
 // flight recorder is already active — only one may exist at a time).
 func NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, error) {
 	if config.MinAge <= 0 {
-		config.MinAge = 30 * time.Second
+		config.MinAge = defaultFRMinAge
 	}
 
 	if config.MaxBytes == 0 {
-		config.MaxBytes = 4 << 20
+		config.MaxBytes = defaultFRMaxBytes
 	}
 
 	if config.OutputDir == "" {
 		config.OutputDir = os.TempDir()
 	}
 
-	fr := trace.NewFlightRecorder(trace.FlightRecorderConfig{
+	recorder := trace.NewFlightRecorder(trace.FlightRecorderConfig{
 		MinAge:   config.MinAge,
 		MaxBytes: config.MaxBytes,
 	})
 
-	if err := fr.Start(); err != nil {
+	if err := recorder.Start(); err != nil {
 		return nil, fmt.Errorf("start flight recorder: %w", err)
 	}
 
-	return &FlightRecorderHook{
-		fr:          fr,
+	return &FlightRecorderHook{ //nolint:exhaustruct // mu, snapshotCount, closed, snapshotWg are zero-valued intentionally
+		fr:          recorder,
 		config:      config,
 		stageStarts: make(map[Stage]time.Time),
 	}, nil
@@ -176,17 +182,18 @@ func (h *FlightRecorderHook) asyncSnapshot(event StageEvent) {
 	h.snapshotWg.Go(func() {
 		path, err := h.writeSnapshot(num, fmt.Sprintf("%s-iter%d", event.Stage, event.Iteration))
 		if err != nil {
-			h.log(slog.LevelError, "flight recorder snapshot failed", slog.String("error", err.Error()))
+			h.log(context.Background(), slog.LevelError, "flight recorder snapshot failed", slog.String("error", err.Error()))
+
 			return
 		}
 
 		h.log(
-			slog.LevelInfo, "flight recorder snapshot written",
+			context.Background(), slog.LevelInfo, "flight recorder snapshot written",
 			slog.String("path", path),
 			slog.String("stage", string(event.Stage)),
 			slog.Int("iteration", event.Iteration),
 		)
-	}()
+	})
 }
 
 // Snapshot captures the current flight recorder buffer to a file and
@@ -253,15 +260,19 @@ func (h *FlightRecorderHook) Close() {
 	}
 
 	h.closed = true
-	h.fr.Stop()
 	h.mu.Unlock()
 
+	// Wait for in-flight async snapshots to finish writing before
+	// stopping the recorder, since WriteTo and Stop access the same
+	// internal FlightRecorder state.
 	h.snapshotWg.Wait()
+
+	h.fr.Stop()
 }
 
-func (h *FlightRecorderHook) log(level slog.Level, msg string, attrs ...slog.Attr) {
+func (h *FlightRecorderHook) log(ctx context.Context, level slog.Level, msg string, attrs ...slog.Attr) {
 	if h.config.Logger != nil {
-		h.config.Logger.LogAttrs(context.Background(), level, msg, attrs...)
+		h.config.Logger.LogAttrs(ctx, level, msg, attrs...)
 	}
 }
 
