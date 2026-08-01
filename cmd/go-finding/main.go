@@ -42,9 +42,12 @@ type cliFlags struct {
 	filterGenTypes    string
 	generatedExclude  string
 	generatedInclude  string
-	byteLevelConflict bool
-	fixProviders      string
-	includeSuppressed bool
+	byteLevelConflict    bool
+	fixProviders          string
+	includeSuppressed     bool
+	trace                 bool
+	traceDir              string
+	traceSlow             time.Duration
 }
 
 func parseFlags() cliFlags {
@@ -109,6 +112,18 @@ func parseFlags() cliFlags {
 	flag.BoolVar(
 		&f.includeSuppressed, "include-suppressed", true,
 		"include suppressed findings in SARIF output",
+	)
+	flag.BoolVar(
+		&f.trace, "trace", false,
+		"enable Go execution trace flight recorder for diagnostics",
+	)
+	flag.StringVar(
+		&f.traceDir, "trace-dir", "",
+		"directory for trace snapshot files (default: temp dir)",
+	)
+	flag.DurationVar(
+		&f.traceSlow, "trace-slow", 0,
+		"auto-snapshot trace when a pipeline stage exceeds this duration (e.g. 30s)",
 	)
 	flag.Parse()
 
@@ -201,6 +216,43 @@ func run() int {
 		f.dir,
 		len(detectorList),
 	)
+
+	if f.trace {
+		frConfig := pipeline.DefaultFlightRecorderConfig()
+		if f.traceDir != "" {
+			frConfig.OutputDir = f.traceDir
+		}
+		frConfig.SlowStageThreshold = f.traceSlow
+
+		var frErr error
+
+		frHook, frErr := pipeline.NewFlightRecorderHook(frConfig)
+		if frErr != nil {
+			return fatalf("creating flight recorder", frErr)
+		}
+
+		pipelineCfg.StageHooks = append(pipelineCfg.StageHooks, frHook)
+
+		fmt.Fprintf(os.Stderr, "Flight recorder enabled (output: %s, slow threshold: %v)\n",
+			frConfig.OutputDir, frConfig.SlowStageThreshold)
+
+		result, runErr := p.Run(ctx)
+
+			// On error or timeout, capture a final trace snapshot.
+		if runErr != nil && frHook.Enabled() {
+			if snapPath, snapErr := frHook.Snapshot("pipeline-error"); snapErr == nil {
+				fmt.Fprintf(os.Stderr, "Trace snapshot: %s\n", snapPath)
+			}
+		}
+
+		frHook.Close()
+
+		if runErr != nil {
+			return fatalf("running pipeline", runErr)
+		}
+
+		return writeResults(result, sev, f.format, f.outputFile, f.includeSuppressed)
+	}
 
 	result, err := p.Run(ctx)
 	if err != nil {
