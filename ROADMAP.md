@@ -56,9 +56,11 @@ Each would live in its own subpackage to keep language-specific dependencies out
 ### Tooling integrations
 
 - **IDE plugins** — VS Code / Neovim consuming LSP diagnostics from `ToLSP()`
+- **LSP code action support** — `ToLSP()` emits diagnostics but not code actions (auto-fix proposals). The data model has `FixStrategy`/`BeforeCode`/`AfterCode` but LSP code actions would require `LSPCodeAction` wire types.
 - **Watch mode** — re-run the pipeline on file change (`fsnotify`)
 - **Interactive TUI** — triage and review findings before applying fixes
 - **GitHub Actions action** — first-class SARIF upload with fix PR generation
+- **Profile-guided optimization** — PGO investigation. The pipeline hot path (fix engine, merge) could benefit from PGO profiles.
 
 ### Consumer ecosystem
 
@@ -82,7 +84,7 @@ The FlightRecorder feature (`pipeline/flight_recorder.go`) is shipped but has ro
 
 ### Hardening (owner decisions pending)
 
-These are known design tensions deferred because they require breaking changes. Concrete designs from the [data-model review](docs/reviews/2026-07-18_21-10_data-model-review.html).
+These are known design tensions deferred because they require breaking changes. Concrete designs from the [data-model review](docs/reviews/archived/2026-07-18_21-10_data-model-review.html).
 
 - **Position zero-value** — `Position{}` has `Offset=0` (valid byte 0), not "unset" (`position.go:33-38`: 0=unset for Line/Column, -1=unset for Offset). Resolved pragmatically in v0.9.0 with `-1` sentinel, but a type-safe redesign using `Option[T]` generic helpers is still on the table for v2.0.
 - **`Range.End` zero-value ambiguity** — same class of issue as Position.

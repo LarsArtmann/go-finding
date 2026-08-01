@@ -74,6 +74,7 @@ pipeline: "Pipeline Module\npipeline/\n(deps: x/sync, gogenfilter)" {
     style.fill: "#16161a"
     config: "Config + ConfigFile\n+ StageHooks" {shape: rectangle}
     metrics: "Metrics / PartialResult\n/ Retry / LineShiftMap" {shape: rectangle}
+    flightrec: "FlightRecorderHook\n(runtime/trace\nexecution trace)" {shape: rectangle}
   }
 
   goast: "goast\n(opt-in go/parser)" {shape: rectangle}

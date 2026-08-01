@@ -171,6 +171,48 @@ jobs:
             bench-current.txt
             benchmarks/baseline.txt
     timeout-minutes: 15
+  changelog-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Verify CHANGELOG.md was updated
+        run: |
+          if ! git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "^CHANGELOG.md$"; then
+            echo "::warning::CHANGELOG.md was not updated. Please add an entry under [Unreleased]."
+          fi
+
+    timeout-minutes: 5
+  markdown-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Check for broken internal markdown links
+        run: |
+          # Check relative links in markdown files resolve to existing files
+          rc=0
+          while IFS= read -r file; do
+            while IFS= read -r link; do
+              # Skip URLs and anchors
+              [[ "$link" =~ ^https?:// ]] && continue
+              [[ "$link" =~ ^# ]] && continue
+              # Strip anchor from end
+              target="${link%%#*}"
+              [ -z "$target" ] && continue
+              # Resolve relative to the markdown file's directory
+              dir=$(dirname "$file")
+              fullpath="$dir/$target"
+              if [ ! -e "$fullpath" ]; then
+                echo "::error file=$file::Broken link: $link (resolved: $fullpath)"
+                rc=1
+              fi
+            done < <(grep -oP '\[.*?\]\(\K[^)]+' "$file" 2>/dev/null)
+          done < <(find . -name "*.md" -not -path "./vendor/*" -not -path "./docs/*/archived/*")
+          exit $rc
+
+    timeout-minutes: 5
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

@@ -795,10 +795,9 @@
         <nav>
           <div class="label">Contents</div>
           <a href="#summary">Summary</a>
-          <a href="#findings">Findings</a>
-          <a href="#fix">Fix Applied</a>
-          <a href="#accepted">Accepted Clones</a>
-          <a href="#strengths">Strengths</a>
+          <a href="#modules">Module Map</a>
+          <a href="#boundaries">Boundary Assessment</a>
+          <a href="#verdict">Verdict</a>
         </nav>
       </aside>
 
@@ -809,11 +808,11 @@
             <div class="square"></div>
             <div class="tri"></div>
           </div>
-          <div class="hero-badge">DEDUPLICATE CODE</div>
-          <h1>go-finding Duplication Analysis</h1>
+          <div class="hero-badge">GO MODULARIZE</div>
+          <h1>go-finding Module Boundary Review</h1>
           <p class="hero-subtitle">
-            Semantic clone detection with art-dupl across 188 Go files on 2026-07-18. 1 harmful
-            production clone eliminated. All remaining clones are acceptable test-file patterns.
+            Direction-neutral review of the 4-module Go workspace on 2026-07-18. Boundaries are
+            correct: no split or merge recommended.
           </p>
         </div>
 
@@ -821,213 +820,165 @@
           <h3>Contents</h3>
           <ul>
             <li><a href="#summary">Summary</a></li>
-            <li><a href="#findings">Findings</a></li>
-            <li><a href="#fix">Fix Applied</a></li>
-            <li><a href="#accepted">Accepted Clones</a></li>
-            <li><a href="#strengths">Strengths</a></li>
+            <li><a href="#modules">Module Map</a></li>
+            <li><a href="#boundaries">Boundary Assessment</a></li>
+            <li><a href="#verdict">Verdict</a></li>
           </ul>
         </nav>
 
         <h2 id="summary"><span class="num">00</span>Summary</h2>
         <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-value">188</div>
-            <div class="stat-label">Files Analyzed</div>
+          <div class="stat-card stat-good">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Modules</div>
           </div>
           <div class="stat-card stat-good">
             <div class="stat-value">0</div>
-            <div class="stat-label">Production Clones (t50+)</div>
+            <div class="stat-label">God-Modules</div>
           </div>
           <div class="stat-card stat-good">
-            <div class="stat-value">1</div>
-            <div class="stat-label">Clone Eliminated</div>
+            <div class="stat-value">0</div>
+            <div class="stat-label">Over-Split</div>
           </div>
-          <div class="stat-card stat-warn">
-            <div class="stat-value">2</div>
-            <div class="stat-label">Test Groups Accepted (t50)</div>
+          <div class="stat-card stat-good">
+            <div class="stat-value">No</div>
+            <div class="stat-label">Action Required</div>
           </div>
         </div>
 
-        <h3>Threshold Analysis</h3>
+        <h2 id="modules"><span class="num">01</span>Module Map</h2>
         <table>
           <thead>
             <tr>
-              <th>Threshold</th>
-              <th>Clone Groups</th>
-              <th>Production</th>
-              <th>Test Only</th>
-              <th>Verdict</th>
+              <th>Module</th>
+              <th>Path</th>
+              <th>Production Deps</th>
+              <th>Depends On</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><code>-t 50</code></td>
-              <td>2</td>
-              <td>0</td>
-              <td>2</td>
-              <td><span class="badge badge-fixed">All accepted</span></td>
+              <td><strong>Core</strong></td>
+              <td><code>github.com/larsartmann/go-finding</code></td>
+              <td><strong>None</strong> (stdlib only)</td>
+              <td>&mdash;</td>
             </tr>
             <tr>
-              <td><code>-t 30</code></td>
-              <td>14</td>
-              <td>0 (was 1)</td>
-              <td>14</td>
-              <td><span class="badge badge-fixed">1 fixed, rest accepted</span></td>
+              <td><strong>Pipeline</strong></td>
+              <td><code>.../go-finding/pipeline</code></td>
+              <td>x/sync, gogenfilter</td>
+              <td>Core</td>
             </tr>
             <tr>
-              <td><code>-t 15</code></td>
-              <td>231</td>
-              <td>0</td>
-              <td>231</td>
-              <td><span class="badge badge-fixed">Test boilerplate</span></td>
+              <td><strong>Analysis</strong></td>
+              <td><code>.../go-finding/analysis</code></td>
+              <td>x/tools</td>
+              <td>Core</td>
             </tr>
             <tr>
-              <td><code>-t 5</code></td>
-              <td>2427</td>
-              <td>0</td>
-              <td>2427</td>
-              <td><span class="badge badge-fixed">Noise (1-5 line patterns)</span></td>
+              <td><strong>CLI</strong></td>
+              <td><code>.../go-finding/cmd/go-finding</code></td>
+              <td>yaml, go-output, gogenfilter</td>
+              <td>Core, Pipeline</td>
             </tr>
           </tbody>
         </table>
 
-        <h2 id="findings"><span class="num">01</span>Findings</h2>
+        <h2 id="boundaries"><span class="num">02</span>Boundary Assessment</h2>
 
-        <div class="card card-problem">
-          <h4>Harmful clone found and eliminated: snapshotFindings vs readFindings</h4>
+        <div class="card card-solution">
+          <h4>Core: zero external production dependencies</h4>
           <p>
-            <code>Report.snapshotFindings()</code> (report_query.go:110) and
-            <code>Report.readFindings()</code> (report.go:143) were
-            <strong>byte-for-byte identical implementations</strong> &mdash; both took a shallow
-            snapshot of findings under RLock using the same <code>withReadLock</code> +
-            <code>make + copy</code> pattern. <code>snapshotFindings</code> had a single caller
-            (<code>Map()</code>); <code>readFindings</code> had four callers.
+            Core go.mod has NO external production deps. The only deps are test-only (ginkgo/v2,
+            gomega). This means the domain model (Finding, Position, Range, Severity, etc.) can be
+            consumed by ANY Go project without pulling in x/sync, x/tools, or any third-party
+            library. This is the strongest possible isolation.
           </p>
         </div>
 
         <div class="card card-solution">
-          <h4>Zero production clones at threshold 50+</h4>
+          <h4>Pipeline: isolated concurrency + fix engine deps</h4>
           <p>
-            After the fix, <code>art-dupl --semantic -t 50</code> reports 0 production clone groups.
-            The only remaining t50 clones are in
-            <code>pipeline/path_safety_test.go</code> (table-driven test entries that repeat setup
-            patterns &mdash; acceptable).
+            Pipeline pulls in x/sync (errgroup) and gogenfilter (generated-file detection). These
+            are the ONLY deps that the pipeline needs beyond Core. The fix engine, conflict
+            detection, and metrics are all stdlib + Core.
           </p>
         </div>
 
         <div class="card card-solution">
-          <h4>All test-file clones are acceptable</h4>
+          <h4>Analysis: x/tools isolated to its own module</h4>
           <p>
-            At t=30, 14 clone groups remain &mdash; all in <code>_test.go</code> files. These are
-            standard test patterns: table-driven assertions, repeated fixture setup, parallel test
-            blocks. The deduplicate-code skill explicitly classifies these as
-            <strong>acceptable</strong>: extracting them would take more parameters than the
-            duplicated code has lines.
+            The heavy x/tools dependency (go/analysis framework) is confined to the analysis module.
+            Consumers who only need the Finding data model never pull in x/tools.
           </p>
         </div>
 
-        <h2 id="fix"><span class="num">02</span>Fix Applied</h2>
-
-        <div class="issue issue-nice">
-          <span class="severity severity-nice">Eliminated</span>
-          <h3>Removed duplicate snapshotFindings method</h3>
-          <div class="where">
-            report_query.go:108-117 (deleted) &middot; report_query.go:135 (updated caller)
-          </div>
+        <div class="card card-solution">
+          <h4>CLI: all I/O deps isolated to the binary</h4>
           <p>
-            <code>snapshotFindings()</code> was identical to <code>readFindings()</code>. Redirected
-            its single caller (<code>Map()</code>) to <code>readFindings()</code> and deleted the
-            duplicate method. 10 lines removed, 0 added.
+            YAML parsing, output formatting (go-output), and generated-file detection live only in
+            the CLI module. Library consumers never see these deps.
           </p>
-          <div class="callout callout-solution">
-            <strong>Verified</strong>
-            Build passes, all tests green, golangci-lint 0 issues, art-dupl confirms the clone group
-            is gone at t=30.
-          </div>
         </div>
 
-        <h2 id="accepted"><span class="num">03</span>Accepted Clones</h2>
+        <div class="card card-solution">
+          <h4>Shared utilities: gotoken and lockutil</h4>
+          <p>
+            <code>gotoken/</code> and <code>lockutil/</code> are stdlib-only shared utilities within
+            the Core module. They follow the same zero-dep principle as Core itself.
+          </p>
+        </div>
 
+        <h3>Direction-Neutral Assessment</h3>
         <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Files</th>
-              <th>Lines</th>
-              <th>Why Accepted</th>
+              <th>Question</th>
+              <th>Answer</th>
+              <th>Evidence</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>1</td>
-              <td><code>pipeline/path_safety_test.go:11-26 vs 222-237</code></td>
-              <td>15</td>
-              <td>
-                Test setup helper repeated for independent test cases; extraction would obscure
-                intent
-              </td>
+              <td>Any module too big (god-module)?</td>
+              <td><span class="badge badge-fixed">No</span></td>
+              <td>Core = 30 files, Pipeline = 22 files, Analysis = 1 file, CLI = 7 files</td>
             </tr>
             <tr>
-              <td>2</td>
-              <td><code>pipeline/path_safety_test.go:101-115 vs 117-131 vs 206-220</code></td>
-              <td>14</td>
-              <td>3 table-driven test entries; each tests a distinct path-traversal scenario</td>
+              <td>Any module too small (over-split)?</td>
+              <td><span class="badge badge-fixed">No</span></td>
+              <td>Analysis has 1 file but needs x/tools isolation. CLI is a proper binary.</td>
             </tr>
             <tr>
-              <td>3</td>
-              <td><code>adapter.go:17-22 vs 30-35</code></td>
-              <td>5</td>
-              <td>Struct fields mirrored in constructor params; natural Go pattern</td>
+              <td>Circular dependencies?</td>
+              <td><span class="badge badge-fixed">No</span></td>
+              <td>DAG: Core &larr; Pipeline &larr; CLI; Core &larr; Analysis &larr; CLI</td>
             </tr>
             <tr>
-              <td>4</td>
-              <td><code>pipeline/pipeline_detect.go:249-252 vs 257-260</code></td>
-              <td>3</td>
-              <td>
-                Same shift logic applied to two different slices; extraction would take more params
-                than lines
-              </td>
+              <td>Replace directives correct?</td>
+              <td><span class="badge badge-fixed">Yes</span></td>
+              <td>Each sub-module has replace for Core (and Pipeline for CLI)</td>
+            </tr>
+            <tr>
+              <td>go.work coordinates all modules?</td>
+              <td><span class="badge badge-fixed">Yes</span></td>
+              <td>go.work lists: ., ./analysis, ./cmd/go-finding, ./pipeline</td>
             </tr>
           </tbody>
         </table>
 
-        <h2 id="strengths">Strengths</h2>
-        <div class="strengths">
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>Zero harmful production duplication</strong>
-              <span
-                >After eliminating snapshotFindings, no production clones remain at any
-                threshold.</span
-              >
-            </div>
-          </div>
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>Dedicated snapshot pattern</strong>
-              <span
-                >Three distinct snapshot methods now have clear roles: readFindings (shallow),
-                FindingsSnapshot (deep), readFindingsLocked (under lock).</span
-              >
-            </div>
-          </div>
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>Test duplication is idiomatic</strong>
-              <span
-                >All test-file clones are table-driven patterns or fixture setup &mdash; the
-                deduplicate-code skill classifies these as acceptable.</span
-              >
-            </div>
-          </div>
+        <h2 id="verdict"><span class="num">03</span>Verdict</h2>
+        <div class="callout callout-solution">
+          <strong>No split or merge recommended.</strong>
+          The 4-module decomposition follows Unix philosophy: each module has a single purpose,
+          dependencies flow strictly downward, and Core has zero external deps. The dual go.work +
+          replace strategy enables both workspace development and independent module consumption.
+          This is the correct modularization for this project.
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; art-dupl semantic mode &middot; 188 files &middot; 1 clone
-          eliminated, 0 harmful remaining
+          Generated 2026-07-18 &middot; go-modularize review &middot; 4 modules, 0 changes
+          recommended
         </footer>
       </main>
     </div>
@@ -1069,4 +1020,12 @@
       })();
     </script>
   </body>
+<!--
+Resolution (2026-08-01):
+This review was conducted on 2026-07-18 against go-finding v1.2.x.
+All actionable findings have been addressed in v1.3.0-v1.4.1 releases.
+See CHANGELOG.md for resolved items, TODO_LIST.md for remaining work,
+and ROADMAP.md for deferred/v2.0 items.
+This is a point-in-time snapshot. For current state, see FEATURES.md.
+-->
 </html>

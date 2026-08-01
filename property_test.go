@@ -205,3 +205,87 @@ func TestProperty_RangeContainsImpliesOverlaps(t *testing.T) {
 
 	checkPropertyAny(t, property)
 }
+
+// TestProperty_FindingEqualTagOrderInvariant verifies that two Findings with
+// the same Tags in different order are Equal.
+func TestProperty_FindingEqualTagOrderInvariant(t *testing.T) {
+	t.Parallel()
+
+	property := func(seed int64) bool {
+		rng := rand.New(rand.NewSource(seed))
+		n := rng.Intn(6) + 1
+
+		tagsA := make([]Tag, n)
+		tagsB := make([]Tag, n)
+
+		for i := range tagsA {
+			tag := Tag(string(rune('a') + rune(rng.Intn(26)))) //nolint:gosec // test-only random character generation
+			tagsA[i] = tag
+			tagsB[n-1-i] = tag
+		}
+
+		a := Finding{
+			ID:       "test-id",
+			Rule:     "test-rule",
+			ToolName: "test-tool",
+			Severity: SeverityWarning,
+			Tags:     tagsA,
+		}
+		b := a
+		b.Tags = tagsB
+
+		return a.Equal(b)
+	}
+
+	checkProperty(t, property)
+}
+
+// TestProperty_RangeContainsReflexive verifies that a Range contains its own
+// Start position.
+func TestProperty_RangeContainsReflexive(t *testing.T) {
+	t.Parallel()
+
+	property := func(line, col uint16) bool {
+		if line == 0 {
+			return true
+		}
+
+		r := Range{
+			Start: Position{File: "f.go", Line: int(line), Column: int(col)},
+			End:   Position{File: "f.go", Line: int(line), Column: int(col)},
+		}
+
+		return r.Contains(Position{File: "f.go", Line: int(line), Column: int(col)})
+	}
+
+	checkPropertyAny(t, property)
+}
+
+// TestProperty_RangeOverlapsSymmetric verifies that if A overlaps B,
+// then B overlaps A.
+func TestProperty_RangeOverlapsSymmetric(t *testing.T) {
+	t.Parallel()
+
+	property := func(startA, endA, startB, endB uint16) bool {
+		if endA < startA {
+			startA, endA = endA, startA
+		}
+
+		if endB < startB {
+			startB, endB = endB, startB
+		}
+
+		rangeA := Range{
+			Start: Position{File: "f.go", Line: int(startA)},
+			End:   Position{File: "f.go", Line: int(endA)},
+		}
+		rangeB := Range{
+			Start: Position{File: "f.go", Line: int(startB)},
+			End:   Position{File: "f.go", Line: int(endB)},
+		}
+
+		return rangeA.Overlaps(rangeB) == rangeB.Overlaps(rangeA)
+	}
+
+	checkPropertyAny(t, property)
+}

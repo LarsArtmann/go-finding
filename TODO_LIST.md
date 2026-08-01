@@ -10,12 +10,12 @@
 
 ### FlightRecorder Bug Fixes (from self-critique)
 
-| Task | Status | Impact | Effort | Notes |
-| --- | --- | --- | --- | --- |
-| Serialize concurrent `WriteTo` calls with `writeMu sync.Mutex` | ✅ `DONE` | High | Low | Fixed: added `writeMu sync.Mutex` to FlightRecorderHook struct, serializes WriteTo calls. |
-| Fix `sanitizeFilename("")` to return `"snapshot"` | ✅ `DONE` | Med | Low | Fixed: empty/all-special-chars input now returns `"snapshot"`. |
-| Add concurrent-snapshot serialization test | ✅ `DONE` | High | Low | `TestFlightRecorderHook_ConcurrentSnapshotsDoNotCollide` — 10 concurrent snapshots, all succeed, all unique. |
-| Add `MkdirAll` error path test | ✅ `DONE` | Med | Low | `TestFlightRecorderHook_MkdirAllError` — unwritable dir returns error. |
+| Task                                                           | Status    | Impact | Effort | Notes                                                                                                        |
+| -------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------------------------------------------------ |
+| Serialize concurrent `WriteTo` calls with `writeMu sync.Mutex` | ✅ `DONE` | High   | Low    | Fixed: added `writeMu sync.Mutex` to FlightRecorderHook struct, serializes WriteTo calls.                    |
+| Fix `sanitizeFilename("")` to return `"snapshot"`              | ✅ `DONE` | Med    | Low    | Fixed: empty/all-special-chars input now returns `"snapshot"`.                                               |
+| Add concurrent-snapshot serialization test                     | ✅ `DONE` | High   | Low    | `TestFlightRecorderHook_ConcurrentSnapshotsDoNotCollide` — 10 concurrent snapshots, all succeed, all unique. |
+| Add `MkdirAll` error path test                                 | ✅ `DONE` | Med    | Low    | `TestFlightRecorderHook_MkdirAllError` — unwritable dir returns error.                                       |
 
 ### Make Repo Public — Phase 2: Community Readiness (remaining)
 
@@ -36,22 +36,33 @@
 
 ## 🟡 MEDIUM Priority
 
-| Task                              | Status       | Impact | Effort | Notes                                                                                                                                   |
-| --------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Fix BuildFlow auto-configure loop | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact |
-| Commit benchmark baseline         | ✅ `DONE`   | Med    | Low    | Fixed in 2026-08-01 session. Removed `/benchmarks/` from `.gitignore`, committed `benchmarks/baseline.txt`. |
-| FlightRecorder `ConfigFile` integration | ⬜ `TODO` | Med | Medium | Add `FlightRecorder *FlightRecorderConfig` to `config_file.go` schema so YAML/JSON config users can enable tracing. Self-critique §b.3. |
-| Write `docs/guides/flight-recorder.md` user guide | ⬜ `TODO` | Med | Low | Full user guide with `go tool trace` workflow. Self-critique §c.8. |
-| FlightRecorder `example_test.go` | ⬜ `TODO` | Low | Low | Runnable godoc examples for pipeline package. Self-critique §c.1. |
-| Check `doc.go` for FlightRecorder API references | ⬜ `TODO` | Low | Low | Ensure new symbols are documented in godoc prose. Self-critique §c.10. |
-| CLI integration test for `-trace` flag | ⬜ `TODO` | Low | Medium | Automated test that `-trace` produces a `.trace` file. Self-critique §c.9. |
+| Task                                              | Status       | Impact | Effort | Notes                                                                                                                                   |
+| ------------------------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Fix BuildFlow auto-configure loop                 | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact |
+| Commit benchmark baseline                         | ✅ `DONE`    | Med    | Low    | Fixed in 2026-08-01 session. Removed `/benchmarks/` from `.gitignore`, committed `benchmarks/baseline.txt`.                             |
+| FlightRecorder `ConfigFile` integration           | ⬜ `TODO`    | Med    | Medium | Add `FlightRecorder *FlightRecorderConfig` to `config_file.go` schema so YAML/JSON config users can enable tracing. Self-critique §b.3. |
+| Write `docs/guides/flight-recorder.md` user guide | ⬜ `TODO`    | Med    | Low    | Full user guide with `go tool trace` workflow. Self-critique §c.8.                                                                      |
+| FlightRecorder `example_test.go`                  | ⬜ `TODO`    | Low    | Low    | Runnable godoc examples for pipeline package. Self-critique §c.1.                                                                       |
+| Check `doc.go` for FlightRecorder API references  | ⬜ `TODO`    | Low    | Low    | Ensure new symbols are documented in godoc prose. Self-critique §c.10.                                                                  |
+| CLI integration test for `-trace` flag            | ⬜ `TODO`    | Low    | Medium | Automated test that `-trace` produces a `.trace` file. Self-critique §c.9.                                                              |
 
 ## 🟢 LOW Priority
 
-| Task                         | Status       | Impact | Effort | Evidence                                                                             |
-| ---------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------ |
-| SARIF schema validation test | 🔵 `BLOCKED` | Low    | —      | Requires vendoring 7K+ line SARIF 2.1.0 JSON schema                                  |
-| Consumer compatibility test  | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code |
+| Task                                    | Status       | Impact | Effort | Evidence                                                                                    |
+| --------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------------- |
+| SARIF schema validation test            | 🔵 `BLOCKED` | Low    | —      | Requires vendoring 7K+ line SARIF 2.1.0 JSON schema                                         |
+| Consumer compatibility test             | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code        |
+| Per-module golangci-lint configs        | ⬜ `TODO`    | Low    | Medium | Workspace-level lint suffices but loses per-module precision. Flagged since modularization. |
+| go-arch-lint module boundary CI         | ⬜ `TODO`    | Low    | Medium | Enforce module dependency boundaries in CI. Flagged in modularization reports.              |
+| `go.work sync` idempotency CI           | ⬜ `TODO`    | Low    | Medium | Verify `go.work sync` is idempotent. Flagged in modularization reports.                     |
+| Replace directive audit CI              | ⬜ `TODO`    | Low    | Low    | Verify all sub-module replace directives point at correct paths.                            |
+| Version drift detection CI              | ⬜ `TODO`    | Low    | Low    | Beyond `version-check.sh` — cross-check all 4 module versions match.                        |
+| Test filename convention CI             | ⬜ `TODO`    | Low    | Low    | Reject `_extra_test.go`/`_bugfix_test.go`/`coverage_test.go` filenames.                     |
+| Docs-freshness CI check                 | ⬜ `TODO`    | Low    | Medium | Flag docs older than N days without review.                                                 |
+| Per-module CHANGELOG entries            | ⬜ `TODO`    | Low    | Medium | Each sub-module tracks its own changes. Flagged in modularization reports.                  |
+| Multi-module vs monolith benchmark      | ⬜ `TODO`    | Low    | Medium | Measure overhead of workspace vs single-module.                                             |
+| SARIF/LSP/FilePath round-trip benchmark | ⬜ `TODO`    | Low    | Medium | Thin benchmark coverage for serialization paths.                                            |
+| TOCTOU symlink swap runtime test        | ⬜ `TODO`    | Low    | Medium | Unit tests exist for resolveSafePath but no runtime swap test.                              |
 
 ---
 

@@ -186,6 +186,24 @@ func (f Finding) IsValid() bool {
 		f.Message != "" && f.Position.HasFile() && f.Severity.IsValid()
 }
 
+// ValidateAll validates a batch of findings and returns a map of
+// index → error for all invalid findings. Returns nil if all are valid.
+func ValidateAll(findings []Finding) map[int]error {
+	var result map[int]error
+
+	for i, f := range findings {
+		if err := f.Validate(); err != nil {
+			if result == nil {
+				result = make(map[int]error)
+			}
+
+			result[i] = err
+		}
+	}
+
+	return result
+}
+
 // Key returns a stable identifier for the finding.
 //
 // Canonical identity: Two findings are identical iff their GenerateID outputs

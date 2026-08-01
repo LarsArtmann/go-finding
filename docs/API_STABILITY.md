@@ -113,33 +113,34 @@ All exported symbols are classified as:
 
 ### Key Functions
 
-| Function                              | Status | Notes                                     |
-| ------------------------------------- | ------ | ----------------------------------------- |
-| `Combine`                             | stable | Merge reports with dedup                  |
-| `Correlate`                           | stable | Find related findings                     |
-| `Diff`                                | stable | Compare finding sets by ID                |
-| `Filter` / `FilterInPlace`            | stable | Filter by predicates                      |
-| `GenerateID`                          | stable | Deterministic ID                          |
-| `ParseID`                             | stable | Parse generated ID                        |
-| `FindingsFromSARIF`                   | stable | SARIF import                              |
-| `FindingsFromReader`                  | stable | Streaming SARIF import                    |
-| `FindingsFromJSON`                    | stable | JSON import                               |
-| `ReportFromJSON`                      | stable | JSON → Report                             |
-| `FromJSON`                            | stable | JSON → Finding                            |
-| `FromLSP`                             | stable | LSP → Finding                             |
-| `FormatText` / `FormatMarkdown`       | stable | Human-readable output                     |
-| `FormatTextRich` / `FormatTable`      | stable | Emoji-badged / table output (v1.3.0)      |
-| `ApplySimpleFixes`                    | stable | BeforeCode→AfterCode replacement (v1.3.0) |
-| `CheckBinary` / `RunCmd`              | stable | External tool helpers (v1.3.0)            |
-| `SeverityFromLevel`                   | stable | String→Severity with aliases (v1.3.0)     |
-| `NewReportFromFindings`               | stable | One-step report creation (v1.3.0)         |
-| `FilePos`                             | stable | File-level Position constructor (v1.3.0)  |
-| `ParseSeverity` / `MustParseSeverity` | stable | String → Severity                         |
-| `ParseCategory` / `MustParseCategory` | stable | String → Category                         |
-| `CategoryForLinter`                   | stable | Linter→category lookup                    |
-| `RegisterLinterCategory`              | stable | Register linter mapping                   |
-| `NewToolAdapter`                      | stable | Generic adapter constructor               |
-| `FromSARIFLevel`                      | stable | SARIF level → Severity                    |
+| Function                              | Status | Notes                                           |
+| ------------------------------------- | ------ | ----------------------------------------------- |
+| `Combine`                             | stable | Merge reports with dedup                        |
+| `Correlate`                           | stable | Find related findings                           |
+| `Diff`                                | stable | Compare finding sets by ID                      |
+| `Filter` / `FilterInPlace`            | stable | Filter by predicates                            |
+| `GenerateID`                          | stable | Deterministic ID                                |
+| `ParseID`                             | stable | Parse generated ID                              |
+| `FindingsFromSARIF`                   | stable | SARIF import                                    |
+| `FindingsFromReader`                  | stable | Streaming SARIF import                          |
+| `FindingsFromJSON`                    | stable | JSON import                                     |
+| `ReportFromJSON`                      | stable | JSON → Report                                   |
+| `FromJSON`                            | stable | JSON → Finding                                  |
+| `FromLSP`                             | stable | LSP → Finding                                   |
+| `FormatText` / `FormatMarkdown`       | stable | Human-readable output                           |
+| `FormatTextRich` / `FormatTable`      | stable | Emoji-badged / table output (v1.3.0)            |
+| `ApplySimpleFixes`                    | stable | BeforeCode→AfterCode replacement (v1.3.0)       |
+| `CheckBinary` / `RunCmd`              | stable | External tool helpers (v1.3.0)                  |
+| `SeverityFromLevel`                   | stable | String→Severity with aliases (v1.3.0)           |
+| `NewReportFromFindings`               | stable | One-step report creation (v1.3.0)               |
+| `FilePos`                             | stable | File-level Position constructor (v1.3.0)        |
+| `ParseSeverity` / `MustParseSeverity` | stable | String → Severity                               |
+| `ValidateAll`                         | stable | Batch-validate findings (returns map[int]error) |
+| `ParseCategory` / `MustParseCategory` | stable | String → Category                               |
+| `CategoryForLinter`                   | stable | Linter→category lookup                          |
+| `RegisterLinterCategory`              | stable | Register linter mapping                         |
+| `NewToolAdapter`                      | stable | Generic adapter constructor                     |
+| `FromSARIFLevel`                      | stable | SARIF level → Severity                          |
 
 ### Report Methods
 
@@ -208,9 +209,9 @@ All exported symbols are classified as:
 | `Detector`, `DetectorFunc` (type aliases)                       | stable |
 | `OffsetProvider`, `LineProvider`, `SubstringProvider`           | stable |
 | `StageHook`, `StageHookFunc`, `StageEvent`, `StageTiming`       | stable |
-| `LineShiftMap`, `LineShiftEntry`                                 | stable |
-| `ConfigFile`                                                     | stable |
-| `FlightRecorderHook`, `FlightRecorderConfig`                     | stable | Unreleased. Chrome Trace Event export. |
+| `LineShiftMap`, `LineShiftEntry`                                | stable |
+| `ConfigFile`                                                    | stable |
+| `FlightRecorderHook`, `FlightRecorderConfig`                    | stable | Unreleased. Chrome Trace Event export. |
 
 ### Functions
 
@@ -218,13 +219,13 @@ All exported functions in `pipeline` are **stable**.
 
 Notable additions:
 
-| Function                       | Status | Notes                                              |
-| ------------------------------ | ------ | -------------------------------------------------- |
-| `NewFlightRecorderHook`        | stable | Unreleased. Constructor for FlightRecorderHook.    |
-| `DefaultFlightRecorderConfig`  | stable | Unreleased. Returns default config.                |
-| `Detect`                       | stable | One-shot detection convenience function (v1.3.0)   |
-| `ApplyToContent`               | stable | Content-level fix application without FS (v1.3.0)  |
-| `ConfigFromFile` / `ConfigFromReader` | stable | JSON/YAML config file loading              |
+| Function                              | Status | Notes                                             |
+| ------------------------------------- | ------ | ------------------------------------------------- |
+| `NewFlightRecorderHook`               | stable | Unreleased. Constructor for FlightRecorderHook.   |
+| `DefaultFlightRecorderConfig`         | stable | Unreleased. Returns default config.               |
+| `Detect`                              | stable | One-shot detection convenience function (v1.3.0)  |
+| `ApplyToContent`                      | stable | Content-level fix application without FS (v1.3.0) |
+| `ConfigFromFile` / `ConfigFromReader` | stable | JSON/YAML config file loading                     |
 
 ---
 

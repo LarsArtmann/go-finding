@@ -209,6 +209,9 @@ func (h *FlightRecorderHook) asyncSnapshot(ctx context.Context, event StageEvent
 // for identification.
 //
 // Returns ErrFlightRecorderNotEnabled if the recorder is closed or disabled.
+// Returns a wrapped os/Create or WriteTo error if the filesystem fails
+// (e.g., disk full, permission denied). In such cases the partially-written
+// file is closed but may remain on disk with incomplete data.
 func (h *FlightRecorderHook) Snapshot(reason string) (string, error) {
 	h.mu.Lock()
 
@@ -255,6 +258,12 @@ func (h *FlightRecorderHook) writeSnapshot(num int, reason string) (string, erro
 }
 
 // Enabled reports whether the flight recorder is active and capturing.
+//
+// Note: There is an inherent TOCTOU window between calling Enabled() and
+// acting on the result — the recorder may be closed by another goroutine
+// between the check and the use. Callers that need atomicity should use
+// Snapshot() directly (which checks closed state under the mutex) rather
+// than pre-checking with Enabled().
 func (h *FlightRecorderHook) Enabled() bool {
 	h.mu.Lock()
 	defer h.mu.Unlock()

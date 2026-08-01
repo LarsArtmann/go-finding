@@ -1,0 +1,22 @@
+# CODEOWNERS — auto-request review for sensitive paths
+
+# CI/CD pipeline changes
+.github/workflows/      @larsartmann
+
+# Release tooling
+.goreleaser.yml         @larsartmann
+flake.nix               @larsartmann
+flake.lock              @larsartmann
+
+# Security policy
+SECURITY.md             @larsartmann
+
+# Module manifests (dependency surface)
+go.mod                  @larsartmann
+go.sum                  @larsartmann
+**/go.mod               @larsartmann
+**/go.sum               @larsartmann
+go.work                 @larsartmann
+
+# Version
+version.go              @larsartmann

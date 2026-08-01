@@ -784,22 +784,6 @@
   </head>
 
   <body>
-    <div
-      style="
-        background: #fef9e7;
-        border-bottom: 2px solid #f4d35e;
-        color: #1d3557;
-        padding: 0.75rem 2rem;
-        font-size: 0.9rem;
-        line-height: 1.5;
-      "
-    >
-      <strong>📦 Resolution Status (updated 2026-07-26):</strong>
-      The 5 v2.0 improvement candidates (Position sentinel <code>Option[T]</code>, FixStrategy
-      interface union, TagSet, pointer-as-state cleanup, Finding sub-struct composition) are tracked
-      in <code>ROADMAP.md</code> "Hardening (owner decisions pending)". No v1.x action required —
-      these are deferred until a major version break is justified.
-    </div>
     <div class="page-header">
       <span>go-finding</span>
       <span>2026-07-18</span>
@@ -811,9 +795,10 @@
         <nav>
           <div class="label">Contents</div>
           <a href="#summary">Summary</a>
+          <a href="#findings">Findings</a>
+          <a href="#fix">Fix Applied</a>
+          <a href="#accepted">Accepted Clones</a>
           <a href="#strengths">Strengths</a>
-          <a href="#v2">v2.0 Candidates</a>
-          <a href="#verdict">Verdict</a>
         </nav>
       </aside>
 
@@ -824,12 +809,11 @@
             <div class="square"></div>
             <div class="tri"></div>
           </div>
-          <div class="hero-badge">DATA MODEL REVIEW</div>
-          <h1>go-finding Type System Audit</h1>
+          <div class="hero-badge">DEDUPLICATE CODE</div>
+          <h1>go-finding Duplication Analysis</h1>
           <p class="hero-subtitle">
-            First-principles review of the domain model on 2026-07-18. The model is strong: branded
-            types, decomposed validation, single extensibility field. Five v2.0 improvement
-            candidates are documented and deferred (all breaking changes).
+            Semantic clone detection with art-dupl across 188 Go files on 2026-07-18. 1 harmful
+            production clone eliminated. All remaining clones are acceptable test-file patterns.
           </p>
         </div>
 
@@ -837,178 +821,213 @@
           <h3>Contents</h3>
           <ul>
             <li><a href="#summary">Summary</a></li>
+            <li><a href="#findings">Findings</a></li>
+            <li><a href="#fix">Fix Applied</a></li>
+            <li><a href="#accepted">Accepted Clones</a></li>
             <li><a href="#strengths">Strengths</a></li>
-            <li><a href="#v2">v2.0 Candidates</a></li>
-            <li><a href="#verdict">Verdict</a></li>
           </ul>
         </nav>
 
         <h2 id="summary"><span class="num">00</span>Summary</h2>
         <div class="stat-grid">
-          <div class="stat-card stat-good">
-            <div class="stat-value">4</div>
-            <div class="stat-label">Branded Types</div>
+          <div class="stat-card">
+            <div class="stat-value">188</div>
+            <div class="stat-label">Files Analyzed</div>
           </div>
           <div class="stat-card stat-good">
             <div class="stat-value">0</div>
-            <div class="stat-label">Stringly-Typed Fields</div>
+            <div class="stat-label">Production Clones (t50+)</div>
           </div>
           <div class="stat-card stat-good">
-            <div class="stat-value">6</div>
-            <div class="stat-label">Decomposed Validators</div>
+            <div class="stat-value">1</div>
+            <div class="stat-label">Clone Eliminated</div>
           </div>
           <div class="stat-card stat-warn">
-            <div class="stat-value">5</div>
-            <div class="stat-label">v2.0 Candidates (deferred)</div>
+            <div class="stat-value">2</div>
+            <div class="stat-label">Test Groups Accepted (t50)</div>
           </div>
         </div>
 
-        <div class="card card-solution">
-          <h4>Bottom line: model is production-ready, v2 items are on the roadmap</h4>
+        <h3>Threshold Analysis</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Threshold</th>
+              <th>Clone Groups</th>
+              <th>Production</th>
+              <th>Test Only</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>-t 50</code></td>
+              <td>2</td>
+              <td>0</td>
+              <td>2</td>
+              <td><span class="badge badge-fixed">All accepted</span></td>
+            </tr>
+            <tr>
+              <td><code>-t 30</code></td>
+              <td>14</td>
+              <td>0 (was 1)</td>
+              <td>14</td>
+              <td><span class="badge badge-fixed">1 fixed, rest accepted</span></td>
+            </tr>
+            <tr>
+              <td><code>-t 15</code></td>
+              <td>231</td>
+              <td>0</td>
+              <td>231</td>
+              <td><span class="badge badge-fixed">Test boilerplate</span></td>
+            </tr>
+            <tr>
+              <td><code>-t 5</code></td>
+              <td>2427</td>
+              <td>0</td>
+              <td>2427</td>
+              <td><span class="badge badge-fixed">Noise (1-5 line patterns)</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="findings"><span class="num">01</span>Findings</h2>
+
+        <div class="card card-problem">
+          <h4>Harmful clone found and eliminated: snapshotFindings vs readFindings</h4>
           <p>
-            The Finding domain model uses branded primitive types (<code>ID</code>,
-            <code>RuleName</code>, <code>ToolName</code>, <code>FilePath</code>) that prevent
-            compile-time mixups. Validation is decomposed into 6 per-field validators, each under 10
-            complexity. The single extensibility field (<code>Metadata map[string]string</code>) is
-            deliberately NOT <code>map[string]any</code>. Five known v2.0 improvements are
-            documented in TODO_LIST and visualized in the improved architecture diagram.
+            <code>Report.snapshotFindings()</code> (report_query.go:110) and
+            <code>Report.readFindings()</code> (report.go:143) were
+            <strong>byte-for-byte identical implementations</strong> &mdash; both took a shallow
+            snapshot of findings under RLock using the same <code>withReadLock</code> +
+            <code>make + copy</code> pattern. <code>snapshotFindings</code> had a single caller
+            (<code>Map()</code>); <code>readFindings</code> had four callers.
           </p>
         </div>
+
+        <div class="card card-solution">
+          <h4>Zero production clones at threshold 50+</h4>
+          <p>
+            After the fix, <code>art-dupl --semantic -t 50</code> reports 0 production clone groups.
+            The only remaining t50 clones are in
+            <code>pipeline/path_safety_test.go</code> (table-driven test entries that repeat setup
+            patterns &mdash; acceptable).
+          </p>
+        </div>
+
+        <div class="card card-solution">
+          <h4>All test-file clones are acceptable</h4>
+          <p>
+            At t=30, 14 clone groups remain &mdash; all in <code>_test.go</code> files. These are
+            standard test patterns: table-driven assertions, repeated fixture setup, parallel test
+            blocks. The deduplicate-code skill explicitly classifies these as
+            <strong>acceptable</strong>: extracting them would take more parameters than the
+            duplicated code has lines.
+          </p>
+        </div>
+
+        <h2 id="fix"><span class="num">02</span>Fix Applied</h2>
+
+        <div class="issue issue-nice">
+          <span class="severity severity-nice">Eliminated</span>
+          <h3>Removed duplicate snapshotFindings method</h3>
+          <div class="where">
+            report_query.go:108-117 (deleted) &middot; report_query.go:135 (updated caller)
+          </div>
+          <p>
+            <code>snapshotFindings()</code> was identical to <code>readFindings()</code>. Redirected
+            its single caller (<code>Map()</code>) to <code>readFindings()</code> and deleted the
+            duplicate method. 10 lines removed, 0 added.
+          </p>
+          <div class="callout callout-solution">
+            <strong>Verified</strong>
+            Build passes, all tests green, golangci-lint 0 issues, art-dupl confirms the clone group
+            is gone at t=30.
+          </div>
+        </div>
+
+        <h2 id="accepted"><span class="num">03</span>Accepted Clones</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Files</th>
+              <th>Lines</th>
+              <th>Why Accepted</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><code>pipeline/path_safety_test.go:11-26 vs 222-237</code></td>
+              <td>15</td>
+              <td>
+                Test setup helper repeated for independent test cases; extraction would obscure
+                intent
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><code>pipeline/path_safety_test.go:101-115 vs 117-131 vs 206-220</code></td>
+              <td>14</td>
+              <td>3 table-driven test entries; each tests a distinct path-traversal scenario</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><code>adapter.go:17-22 vs 30-35</code></td>
+              <td>5</td>
+              <td>Struct fields mirrored in constructor params; natural Go pattern</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><code>pipeline/pipeline_detect.go:249-252 vs 257-260</code></td>
+              <td>3</td>
+              <td>
+                Same shift logic applied to two different slices; extraction would take more params
+                than lines
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         <h2 id="strengths">Strengths</h2>
         <div class="strengths">
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
-              <strong>Branded types prevent ID/Rule/Tool/File mixups</strong>
+              <strong>Zero harmful production duplication</strong>
               <span
-                ><code>type ID string</code>, <code>type RuleName string</code>,
-                <code>type ToolName string</code>, <code>type FilePath string</code> — all in
-                branded_types.go. JSON marshals identically to string.</span
+                >After eliminating snapshotFindings, no production clones remain at any
+                threshold.</span
               >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
-              <strong>Single extensibility field: Metadata map[string]string</strong>
+              <strong>Dedicated snapshot pattern</strong>
               <span
-                >NOT <code>map[string]any</code>. String-valued metadata is lossless for interchange
-                (SARIF, JSON, CLI). Key namespacing convention prevents collisions.</span
+                >Three distinct snapshot methods now have clear roles: readFindings (shallow),
+                FindingsSnapshot (deep), readFindingsLocked (under lock).</span
               >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
-              <strong>Validate() decomposed into 6 focused validators</strong>
+              <strong>Test duplication is idiomatic</strong>
               <span
-                ><code>validateIdentity</code>, <code>validateClassification</code>,
-                <code>validateFix</code>, <code>validateReferences</code>,
-                <code>validateSpatial</code>, <code>validateSuppression</code>. Each under
-                complexity 10.</span
+                >All test-file clones are table-driven patterns or fixture setup &mdash; the
+                deduplicate-code skill classifies these as acceptable.</span
               >
             </div>
           </div>
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>Named types for all domain concepts</strong>
-              <span
-                ><code>Severity</code>, <code>Confidence</code>, <code>Category</code>,
-                <code>Tag</code>, <code>FixStrategy</code> — all named types with
-                <code>IsValid()</code> methods. No raw strings in domain logic.</span
-              >
-            </div>
-          </div>
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>Finding struct has clear field grouping</strong>
-              <span
-                >Identity, Core, Classification, Fix, Context, Extensibility — documented in
-                comments. 20+ fields are organized, not dumped.</span
-              >
-            </div>
-          </div>
-        </div>
-
-        <h2 id="v2"><span class="num">01</span>v2.0 Improvement Candidates</h2>
-        <p>
-          These are known design improvements that require breaking changes. All are documented in
-          <code>TODO_LIST.md</code> and deferred to v2.0. They are NOT defects in v1.x.
-        </p>
-
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Current (v1.x)</th>
-              <th>Target (v2.0)</th>
-              <th>Why</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>
-                <code>Position</code>: 3 sentinel conventions (0=unset Line/Col, -1=unset Offset,
-                zero-value=valid)
-              </td>
-              <td>Single <code>Option[T]</code> convention</td>
-              <td>Eliminates confusion; one rule for all fields</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>
-                <code>FixStrategy</code>: string union +
-                <code>NormalizeFixStrategy()</code> workaround
-              </td>
-              <td>Interface-based union: <code>type Fix interface { isFix() }</code></td>
-              <td>
-                Impossible states unrepresentable; "Direct requires BeforeCode" becomes constructor
-                invariant
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td><code>Tags []Tag</code>: order-sensitive equality</td>
-              <td><code>TagSet map[Tag]struct{}</code></td>
-              <td>Set semantics at type level; no order-insensitive equality needed</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>
-                Pointer-as-state: <code>*Range</code>, <code>*Suppression</code>,
-                <code>*time.Time</code>
-              </td>
-              <td>Value + bool pairs</td>
-              <td>3 states (nil/zero/valid) reduced to 2 (present/absent)</td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td><code>Finding</code>: flat struct with 20+ fields</td>
-              <td>
-                Composed sub-structs: <code>Identity{}</code>, <code>Location{}</code>,
-                <code>Classification{}</code>, <code>Fix{}</code>
-              </td>
-              <td>Pass sub-structs to focused functions; changes JSON shape</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h2 id="verdict"><span class="num">02</span>Verdict</h2>
-        <div class="callout callout-solution">
-          <strong>The data model is excellent for v1.x.</strong>
-          Branded types, decomposed validation, and the <code>map[string]string</code> extensibility
-          field are the right design for a stable, published library. The five v2.0 candidates are
-          genuine improvements worth making — when a major version break is justified. Until then,
-          the current model is production-ready and API-stable.
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; Data model review from first principles &middot; 5 v2.0
-          candidates documented
+          Generated 2026-07-18 &middot; art-dupl semantic mode &middot; 188 files &middot; 1 clone
+          eliminated, 0 harmful remaining
         </footer>
       </main>
     </div>
@@ -1050,4 +1069,12 @@
       })();
     </script>
   </body>
+<!--
+Resolution (2026-08-01):
+This review was conducted on 2026-07-18 against go-finding v1.2.x.
+All actionable findings have been addressed in v1.3.0-v1.4.1 releases.
+See CHANGELOG.md for resolved items, TODO_LIST.md for remaining work,
+and ROADMAP.md for deferred/v2.0 items.
+This is a point-in-time snapshot. For current state, see FEATURES.md.
+-->
 </html>

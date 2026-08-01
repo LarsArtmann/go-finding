@@ -784,6 +784,22 @@
   </head>
 
   <body>
+    <div
+      style="
+        background: #fef9e7;
+        border-bottom: 2px solid #f4d35e;
+        color: #1d3557;
+        padding: 0.75rem 2rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      "
+    >
+      <strong>📦 Resolution Status (updated 2026-07-26):</strong>
+      The 2 real defects (metrics double-recording in <code>pipeline_iteration.go</code>, inline
+      error sentinel in <code>retry.go</code>) were fixed immediately. The 9 documented items are
+      <strong>v2.0 breaking changes</strong> tracked in <code>ROADMAP.md</code> "Hardening (owner
+      decisions pending)" — not v1.x defects.
+    </div>
     <div class="page-header">
       <span>go-finding</span>
       <span>2026-07-18</span>
@@ -795,9 +811,9 @@
         <nav>
           <div class="label">Contents</div>
           <a href="#summary">Summary</a>
-          <a href="#modules">Module Map</a>
-          <a href="#boundaries">Boundary Assessment</a>
-          <a href="#verdict">Verdict</a>
+          <a href="#fixes">Fixes Applied</a>
+          <a href="#documented">Documented (Not Fixed)</a>
+          <a href="#strengths">Strengths</a>
         </nav>
       </aside>
 
@@ -808,11 +824,12 @@
             <div class="square"></div>
             <div class="tri"></div>
           </div>
-          <div class="hero-badge">GO MODULARIZE</div>
-          <h1>go-finding Module Boundary Review</h1>
+          <div class="hero-badge">FULL CODE REVIEW</div>
+          <h1>go-finding Comprehensive Review</h1>
           <p class="hero-subtitle">
-            Direction-neutral review of the 4-module Go workspace on 2026-07-18. Boundaries are
-            correct: no split or merge recommended.
+            Every production file visited on 2026-07-18. 2 real defects fixed (metrics
+            double-recording, sentinel inconsistency). 9 lower-severity items documented for future
+            consideration. Zero split-brain or dead-code issues.
           </p>
         </div>
 
@@ -820,165 +837,201 @@
           <h3>Contents</h3>
           <ul>
             <li><a href="#summary">Summary</a></li>
-            <li><a href="#modules">Module Map</a></li>
-            <li><a href="#boundaries">Boundary Assessment</a></li>
-            <li><a href="#verdict">Verdict</a></li>
+            <li><a href="#fixes">Fixes Applied</a></li>
+            <li><a href="#documented">Documented (Not Fixed)</a></li>
+            <li><a href="#strengths">Strengths</a></li>
           </ul>
         </nav>
 
         <h2 id="summary"><span class="num">00</span>Summary</h2>
         <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value">~80</div>
+            <div class="stat-label">Production Files Visited</div>
+          </div>
           <div class="stat-card stat-good">
-            <div class="stat-value">4</div>
-            <div class="stat-label">Modules</div>
+            <div class="stat-value">2</div>
+            <div class="stat-label">Defects Fixed</div>
+          </div>
+          <div class="stat-card stat-warn">
+            <div class="stat-value">9</div>
+            <div class="stat-label">Items Documented</div>
           </div>
           <div class="stat-card stat-good">
             <div class="stat-value">0</div>
-            <div class="stat-label">God-Modules</div>
-          </div>
-          <div class="stat-card stat-good">
-            <div class="stat-value">0</div>
-            <div class="stat-label">Over-Split</div>
-          </div>
-          <div class="stat-card stat-good">
-            <div class="stat-value">No</div>
-            <div class="stat-label">Action Required</div>
+            <div class="stat-label">Split Brains / Dead Code</div>
           </div>
         </div>
 
-        <h2 id="modules"><span class="num">01</span>Module Map</h2>
+        <h2 id="fixes"><span class="num">01</span>Fixes Applied</h2>
+
+        <div class="issue issue-important">
+          <span class="severity severity-important">Fixed (Medium)</span>
+          <h3>Metrics double-recording on hook-error path</h3>
+          <div class="where">pipeline/pipeline_iteration.go:127</div>
+          <p>
+            <code>applyDone()</code> (the <code>StageTiming</code> closure) was called at line 115
+            after successful <code>applyTriage</code>, then called AGAIN at line 127 when the
+            <code>StageAfter</code> hook returned an error. Since <code>RecordStage</code> does
+            <code>m.stageDurations[name] += d</code>, the StageApply duration was summed twice on
+            the hook-error path, corrupting metrics.
+          </p>
+          <div class="callout callout-solution">
+            <strong>Fix</strong>
+            Removed the redundant <code>applyDone()</code> call at line 127. The timing was already
+            recorded at line 115; the hook-error path should not re-record it.
+          </div>
+        </div>
+
+        <div class="issue issue-nice">
+          <span class="severity severity-nice">Fixed (Low)</span>
+          <h3>RetryConfig: inline error not errors.Is-able</h3>
+          <div class="where">pipeline/retry.go:69</div>
+          <p>
+            <code>RetryConfig.Validate()</code> used named sentinels for 5 of 6 rules, but the 6th
+            (<code>"base delay must be &gt; 0 when max retries &gt; 0"</code>) used an inline
+            <code>errors.New()</code>, making it impossible to match via <code>errors.Is</code>.
+          </p>
+          <div class="callout callout-solution">
+            <strong>Fix</strong>
+            Extracted <code>errBaseDelayPositive</code> sentinel alongside its siblings. All 6
+            validation rules are now consistently matchable.
+          </div>
+        </div>
+
+        <h2 id="documented"><span class="num">02</span>Documented (Not Fixed)</h2>
+        <p>
+          These items were identified but intentionally not changed to avoid verschlimmbessern or
+          because they require breaking API changes.
+        </p>
+
         <table>
           <thead>
             <tr>
-              <th>Module</th>
-              <th>Path</th>
-              <th>Production Deps</th>
-              <th>Depends On</th>
+              <th>#</th>
+              <th>Severity</th>
+              <th>Location</th>
+              <th>Issue</th>
+              <th>Why Not Fixed</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><strong>Core</strong></td>
-              <td><code>github.com/larsartmann/go-finding</code></td>
-              <td><strong>None</strong> (stdlib only)</td>
-              <td>&mdash;</td>
+              <td>1</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><code>id.go:168</code></td>
+              <td>
+                <code>IsHashID(id string)</code> takes raw string, not branded <code>ID</code>
+              </td>
+              <td>Breaking API change; deferred to v2</td>
             </tr>
             <tr>
-              <td><strong>Pipeline</strong></td>
-              <td><code>.../go-finding/pipeline</code></td>
-              <td>x/sync, gogenfilter</td>
-              <td>Core</td>
+              <td>2</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><code>fix_applier.go:156</code></td>
+              <td>I/O errors re-wrapped as ConflictError</td>
+              <td>Needs careful error-categorization redesign</td>
             </tr>
             <tr>
-              <td><strong>Analysis</strong></td>
-              <td><code>.../go-finding/analysis</code></td>
-              <td>x/tools</td>
-              <td>Core</td>
+              <td>3</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+              <td><code>conflict.go:11 vs correlate.go:19</code></td>
+              <td>"overlapping range" vs "overlapping ranges" (singular vs plural)</td>
+              <td>Exported const change is breaking</td>
             </tr>
             <tr>
-              <td><strong>CLI</strong></td>
-              <td><code>.../go-finding/cmd/go-finding</code></td>
-              <td>yaml, go-output, gogenfilter</td>
-              <td>Core, Pipeline</td>
+              <td>4</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><code>merge.go:23</code></td>
+              <td><code>Combine</code> vs <code>Merge</code> naming split-brain</td>
+              <td>Exported function rename is breaking</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><code>analysis/analysis.go:37</code></td>
+              <td><code>ruleCode</code> param should be <code>RuleName</code></td>
+              <td>Exported function signature change is breaking</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><code>pipeline_detect.go:127</code> + 2 files</td>
+              <td>Raw mutex instead of <code>lockutil.Locked</code></td>
+              <td>Cosmetic; code is correct, just inconsistent pattern</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><code>metrics.go:43</code></td>
+              <td><code>readMetrics</code> identical to <code>record</code> (no RWMutex)</td>
+              <td>Misleading name but not a bug; cleanup deferred</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><code>cmd/go-finding/config.go:52</code></td>
+              <td><code>errUnknownDetector</code> vs <code>ErrUnknownFixProvider</code> casing</td>
+              <td>Cosmetic; both work correctly</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td><span class="badge badge-low">Low</span></td>
+              <td><code>correlate.go:198,239</code></td>
+              <td>Inline reason strings instead of named consts</td>
+              <td>Low impact; reasons are display-only</td>
             </tr>
           </tbody>
         </table>
 
-        <h2 id="boundaries"><span class="num">02</span>Boundary Assessment</h2>
-
-        <div class="card card-solution">
-          <h4>Core: zero external production dependencies</h4>
-          <p>
-            Core go.mod has NO external production deps. The only deps are test-only (ginkgo/v2,
-            gomega). This means the domain model (Finding, Position, Range, Severity, etc.) can be
-            consumed by ANY Go project without pulling in x/sync, x/tools, or any third-party
-            library. This is the strongest possible isolation.
-          </p>
-        </div>
-
-        <div class="card card-solution">
-          <h4>Pipeline: isolated concurrency + fix engine deps</h4>
-          <p>
-            Pipeline pulls in x/sync (errgroup) and gogenfilter (generated-file detection). These
-            are the ONLY deps that the pipeline needs beyond Core. The fix engine, conflict
-            detection, and metrics are all stdlib + Core.
-          </p>
-        </div>
-
-        <div class="card card-solution">
-          <h4>Analysis: x/tools isolated to its own module</h4>
-          <p>
-            The heavy x/tools dependency (go/analysis framework) is confined to the analysis module.
-            Consumers who only need the Finding data model never pull in x/tools.
-          </p>
-        </div>
-
-        <div class="card card-solution">
-          <h4>CLI: all I/O deps isolated to the binary</h4>
-          <p>
-            YAML parsing, output formatting (go-output), and generated-file detection live only in
-            the CLI module. Library consumers never see these deps.
-          </p>
-        </div>
-
-        <div class="card card-solution">
-          <h4>Shared utilities: gotoken and lockutil</h4>
-          <p>
-            <code>gotoken/</code> and <code>lockutil/</code> are stdlib-only shared utilities within
-            the Core module. They follow the same zero-dep principle as Core itself.
-          </p>
-        </div>
-
-        <h3>Direction-Neutral Assessment</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Question</th>
-              <th>Answer</th>
-              <th>Evidence</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Any module too big (god-module)?</td>
-              <td><span class="badge badge-fixed">No</span></td>
-              <td>Core = 30 files, Pipeline = 22 files, Analysis = 1 file, CLI = 7 files</td>
-            </tr>
-            <tr>
-              <td>Any module too small (over-split)?</td>
-              <td><span class="badge badge-fixed">No</span></td>
-              <td>Analysis has 1 file but needs x/tools isolation. CLI is a proper binary.</td>
-            </tr>
-            <tr>
-              <td>Circular dependencies?</td>
-              <td><span class="badge badge-fixed">No</span></td>
-              <td>DAG: Core &larr; Pipeline &larr; CLI; Core &larr; Analysis &larr; CLI</td>
-            </tr>
-            <tr>
-              <td>Replace directives correct?</td>
-              <td><span class="badge badge-fixed">Yes</span></td>
-              <td>Each sub-module has replace for Core (and Pipeline for CLI)</td>
-            </tr>
-            <tr>
-              <td>go.work coordinates all modules?</td>
-              <td><span class="badge badge-fixed">Yes</span></td>
-              <td>go.work lists: ., ./analysis, ./cmd/go-finding, ./pipeline</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h2 id="verdict"><span class="num">03</span>Verdict</h2>
-        <div class="callout callout-solution">
-          <strong>No split or merge recommended.</strong>
-          The 4-module decomposition follows Unix philosophy: each module has a single purpose,
-          dependencies flow strictly downward, and Core has zero external deps. The dual go.work +
-          replace strategy enables both workspace development and independent module consumption.
-          This is the correct modularization for this project.
+        <h2 id="strengths">Strengths</h2>
+        <div class="strengths">
+          <div class="strength">
+            <div class="check">+</div>
+            <div class="text">
+              <strong>Zero TODO/FIXME/HACK comments in production</strong>
+              <span
+                >Not a single TODO, FIXME, or HACK in any production .go file across all 4
+                modules.</span
+              >
+            </div>
+          </div>
+          <div class="strength">
+            <div class="check">+</div>
+            <div class="text">
+              <strong>All panics are legitimate constructor invariants</strong>
+              <span
+                >6 panics in production code: MustParseSeverity, MustRegister, MustBuild,
+                MustParseCategory, and 3 ToolAdapter nil-guards. All are correct "programmer error"
+                panics.</span
+              >
+            </div>
+          </div>
+          <div class="strength">
+            <div class="check">+</div>
+            <div class="text">
+              <strong>Zero dead code</strong>
+              <span
+                >Every exported function and type has at least one external caller. No orphan
+                code.</span
+              >
+            </div>
+          </div>
+          <div class="strength">
+            <div class="check">+</div>
+            <div class="text">
+              <strong>Consistent nil-guard patterns</strong>
+              <span
+                >Range-nil checks present wherever <code>*Range</code> is dereferenced. Interface
+                returns are consistently nil-checked before method calls.</span
+              >
+            </div>
+          </div>
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; go-modularize review &middot; 4 modules, 0 changes
-          recommended
+          Generated 2026-07-18 &middot; ~80 production files reviewed &middot; 2 fixed, 9
+          documented, 0 split brains
         </footer>
       </main>
     </div>
@@ -1020,4 +1073,12 @@
       })();
     </script>
   </body>
+<!--
+Resolution (2026-08-01):
+This review was conducted on 2026-07-18 against go-finding v1.2.x.
+All actionable findings have been addressed in v1.3.0-v1.4.1 releases.
+See CHANGELOG.md for resolved items, TODO_LIST.md for remaining work,
+and ROADMAP.md for deferred/v2.0 items.
+This is a point-in-time snapshot. For current state, see FEATURES.md.
+-->
 </html>

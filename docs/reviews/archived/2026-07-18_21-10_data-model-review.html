@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>go-finding — Code Quality Scan (2026-07-18)</title>
+    <title>go-finding — Deduplicate Code (2026-07-18)</title>
     <style>
       /* =========================================================================
          BAUHAUS DARK — Dashboard template
@@ -782,365 +782,233 @@
       }
     </style>
   </head>
+
   <body>
-    <!-- Full-bleed top bar (optional — remove for quieter reports) -->
-    <div class="top-bar">
-      <span>REPORT TYPE</span>
-      <span>YYYY-MM-DD</span>
-      <span>AUTHOR / TEAM</span>
+    <div
+      style="
+        background: #fef9e7;
+        border-bottom: 2px solid #f4d35e;
+        color: #1d3557;
+        padding: 0.75rem 2rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      "
+    >
+      <strong>📦 Resolution Status (updated 2026-07-26):</strong>
+      The 5 v2.0 improvement candidates (Position sentinel <code>Option[T]</code>, FixStrategy
+      interface union, TagSet, pointer-as-state cleanup, Finding sub-struct composition) are tracked
+      in <code>ROADMAP.md</code> "Hardening (owner decisions pending)". No v1.x action required —
+      these are deferred until a major version break is justified.
+    </div>
+    <div class="page-header">
+      <span>go-finding</span>
+      <span>2026-07-18</span>
+      <span>Crush Skills Audit</span>
     </div>
 
     <div class="layout">
-      <!-- Sidebar TOC (hidden below 1024px; use inline .toc if you prefer) -->
       <aside class="sidebar" data-nav>
         <nav>
           <div class="label">Contents</div>
           <a href="#summary">Summary</a>
-          <a href="#findings">Findings</a>
-          <a href="#fixes">Fixes Applied</a>
-          <a href="#config">Config Change</a>
-          <a href="#plan">Action Plan</a>
+          <a href="#strengths">Strengths</a>
+          <a href="#v2">v2.0 Candidates</a>
+          <a href="#verdict">Verdict</a>
         </nav>
       </aside>
 
       <main class="main">
-        <!-- Hero -->
         <div class="hero">
-          <!-- Optional Bauhaus signature: geometric shape cluster. Remove for quieter hero. -->
           <div class="hero-shapes">
             <div class="circle"></div>
             <div class="square"></div>
             <div class="tri"></div>
           </div>
-          <div class="hero-badge">CODE QUALITY SCAN</div>
-          <h1>go-finding Code Quality Scan</h1>
+          <div class="hero-badge">DATA MODEL REVIEW</div>
+          <h1>go-finding Type System Audit</h1>
           <p class="hero-subtitle">
-            Build, lint, vet, tests, and duplication analysis of the go-finding multi-module
-            workspace on 2026-07-18. All checks green after two root-cause fixes.
+            First-principles review of the domain model on 2026-07-18. The model is strong: branded
+            types, decomposed validation, single extensibility field. Five v2.0 improvement
+            candidates are documented and deferred (all breaking changes).
           </p>
         </div>
 
-        <!-- Inline TOC (alternative to sidebar; pick one) -->
         <nav class="toc">
           <h3>Contents</h3>
           <ul>
             <li><a href="#summary">Summary</a></li>
-            <li><a href="#findings">Findings</a></li>
-            <li><a href="#fixes">Fixes Applied</a></li>
-            <li><a href="#config">Config Change</a></li>
-            <li><a href="#plan">Action Plan</a></li>
+            <li><a href="#strengths">Strengths</a></li>
+            <li><a href="#v2">v2.0 Candidates</a></li>
+            <li><a href="#verdict">Verdict</a></li>
           </ul>
         </nav>
 
-        <!-- Stats Dashboard -->
         <h2 id="summary"><span class="num">00</span>Summary</h2>
         <div class="stat-grid">
           <div class="stat-card stat-good">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Branded Types</div>
+          </div>
+          <div class="stat-card stat-good">
+            <div class="stat-value">0</div>
+            <div class="stat-label">Stringly-Typed Fields</div>
+          </div>
+          <div class="stat-card stat-good">
             <div class="stat-value">6</div>
-            <div class="stat-label">Checks Passed</div>
+            <div class="stat-label">Decomposed Validators</div>
           </div>
-          <div class="stat-card stat-good">
-            <div class="stat-value">0</div>
-            <div class="stat-label">Checks Failed</div>
-          </div>
-          <div class="stat-card stat-good">
-            <div class="stat-value">0</div>
-            <div class="stat-label">Lint Issues</div>
-          </div>
-          <div class="stat-card stat-good">
-            <div class="stat-value">A</div>
-            <div class="stat-label">Dup Health Grade</div>
+          <div class="stat-card stat-warn">
+            <div class="stat-value">5</div>
+            <div class="stat-label">v2.0 Candidates (deferred)</div>
           </div>
         </div>
 
-        <h3>Check Results</h3>
+        <div class="card card-solution">
+          <h4>Bottom line: model is production-ready, v2 items are on the roadmap</h4>
+          <p>
+            The Finding domain model uses branded primitive types (<code>ID</code>,
+            <code>RuleName</code>, <code>ToolName</code>, <code>FilePath</code>) that prevent
+            compile-time mixups. Validation is decomposed into 6 per-field validators, each under 10
+            complexity. The single extensibility field (<code>Metadata map[string]string</code>) is
+            deliberately NOT <code>map[string]any</code>. Five known v2.0 improvements are
+            documented in TODO_LIST and visualized in the improved architecture diagram.
+          </p>
+        </div>
+
+        <h2 id="strengths">Strengths</h2>
+        <div class="strengths">
+          <div class="strength">
+            <div class="check">+</div>
+            <div class="text">
+              <strong>Branded types prevent ID/Rule/Tool/File mixups</strong>
+              <span
+                ><code>type ID string</code>, <code>type RuleName string</code>,
+                <code>type ToolName string</code>, <code>type FilePath string</code> — all in
+                branded_types.go. JSON marshals identically to string.</span
+              >
+            </div>
+          </div>
+          <div class="strength">
+            <div class="check">+</div>
+            <div class="text">
+              <strong>Single extensibility field: Metadata map[string]string</strong>
+              <span
+                >NOT <code>map[string]any</code>. String-valued metadata is lossless for interchange
+                (SARIF, JSON, CLI). Key namespacing convention prevents collisions.</span
+              >
+            </div>
+          </div>
+          <div class="strength">
+            <div class="check">+</div>
+            <div class="text">
+              <strong>Validate() decomposed into 6 focused validators</strong>
+              <span
+                ><code>validateIdentity</code>, <code>validateClassification</code>,
+                <code>validateFix</code>, <code>validateReferences</code>,
+                <code>validateSpatial</code>, <code>validateSuppression</code>. Each under
+                complexity 10.</span
+              >
+            </div>
+          </div>
+          <div class="strength">
+            <div class="check">+</div>
+            <div class="text">
+              <strong>Named types for all domain concepts</strong>
+              <span
+                ><code>Severity</code>, <code>Confidence</code>, <code>Category</code>,
+                <code>Tag</code>, <code>FixStrategy</code> — all named types with
+                <code>IsValid()</code> methods. No raw strings in domain logic.</span
+              >
+            </div>
+          </div>
+          <div class="strength">
+            <div class="check">+</div>
+            <div class="text">
+              <strong>Finding struct has clear field grouping</strong>
+              <span
+                >Identity, Core, Classification, Fix, Context, Extensibility — documented in
+                comments. 20+ fields are organized, not dumped.</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <h2 id="v2"><span class="num">01</span>v2.0 Improvement Candidates</h2>
+        <p>
+          These are known design improvements that require breaking changes. All are documented in
+          <code>TODO_LIST.md</code> and deferred to v2.0. They are NOT defects in v1.x.
+        </p>
+
         <table>
           <thead>
             <tr>
               <th>#</th>
-              <th>Check</th>
-              <th>Command</th>
-              <th>Status</th>
+              <th>Current (v1.x)</th>
+              <th>Target (v2.0)</th>
+              <th>Why</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>1</td>
-              <td>Go build (workspace)</td>
-              <td><code>go build ./...</code></td>
-              <td><span class="badge badge-fixed">PASS</span></td>
+              <td>
+                <code>Position</code>: 3 sentinel conventions (0=unset Line/Col, -1=unset Offset,
+                zero-value=valid)
+              </td>
+              <td>Single <code>Option[T]</code> convention</td>
+              <td>Eliminates confusion; one rule for all fields</td>
             </tr>
             <tr>
               <td>2</td>
-              <td>Go vet</td>
-              <td><code>go vet ./...</code></td>
-              <td><span class="badge badge-fixed">PASS</span></td>
+              <td>
+                <code>FixStrategy</code>: string union +
+                <code>NormalizeFixStrategy()</code> workaround
+              </td>
+              <td>Interface-based union: <code>type Fix interface { isFix() }</code></td>
+              <td>
+                Impossible states unrepresentable; "Direct requires BeforeCode" becomes constructor
+                invariant
+              </td>
             </tr>
             <tr>
               <td>3</td>
-              <td>Tests (core + submodules)</td>
-              <td><code>go test -count=1 ./...</code></td>
-              <td><span class="badge badge-fixed">PASS (10/10)</span></td>
+              <td><code>Tags []Tag</code>: order-sensitive equality</td>
+              <td><code>TagSet map[Tag]struct{}</code></td>
+              <td>Set semantics at type level; no order-insensitive equality needed</td>
             </tr>
             <tr>
               <td>4</td>
-              <td>Lint</td>
-              <td><code>golangci-lint run ./...</code></td>
-              <td><span class="badge badge-fixed">0 ISSUES</span></td>
+              <td>
+                Pointer-as-state: <code>*Range</code>, <code>*Suppression</code>,
+                <code>*time.Time</code>
+              </td>
+              <td>Value + bool pairs</td>
+              <td>3 states (nil/zero/valid) reduced to 2 (present/absent)</td>
             </tr>
             <tr>
               <td>5</td>
-              <td>Duplication (semantic)</td>
-              <td><code>art-dupl -t 5 .</code></td>
-              <td><span class="badge badge-fixed">0 CLONES</span></td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>Duplication health</td>
-              <td><code>art-dupl stats .</code></td>
-              <td><span class="badge badge-fixed">GRADE A</span></td>
+              <td><code>Finding</code>: flat struct with 20+ fields</td>
+              <td>
+                Composed sub-structs: <code>Identity{}</code>, <code>Location{}</code>,
+                <code>Classification{}</code>, <code>Fix{}</code>
+              </td>
+              <td>Pass sub-structs to focused functions; changes JSON shape</td>
             </tr>
           </tbody>
         </table>
 
-        <!-- Findings as Cards -->
-        <h2 id="findings"><span class="num">01</span>Findings</h2>
-
-        <div class="card card-solution">
-          <h4>Lint fully clean — 0 issues</h4>
-          <p>
-            <code>golangci-lint run ./...</code> (108 enabled linters across the workspace) exits
-            with <strong>0 issues</strong>. The prior scan reported 26 issues; all were resolved
-            this session via two root-cause fixes (see <a href="#fixes">Fixes Applied</a>). No
-            <code>//nolint</code> directives were used — every issue was eliminated at its source.
-          </p>
-        </div>
-
-        <div class="card card-solution">
-          <h4>Zero harmful duplication — Health grade A</h4>
-          <p>
-            <code>art-dupl</code> (semantic mode, by LarsArtmann — same author as this repo)
-            analyzes 188 files and reports <strong>0 clone groups</strong> at threshold 5. The
-            health grade is <strong>A</strong> (&lt;5% duplication). At an aggressive threshold of
-            3, only 2 trivial clones surface, both in example files (<code
-              >example_test.go:626-628</code
-            >
-            vs <code>examples/basic/main.go:22-24</code>) — acceptable, since examples deliberately
-            repeat the canonical usage pattern.
-          </p>
-        </div>
-
-        <div class="card card-solution">
-          <h4>All 10 packages pass across 4 modules</h4>
-          <p>
-            Core, gotoken, lockutil, examples, pipeline, pipeline/goast,
-            pipeline/internal/benchutil, analysis, cmd/go-finding, and
-            cmd/go-finding/internal/detectors — every package in the go-finding workspace is green
-            under
-            <code>GOEXPERIMENT=jsonv2</code>.
-          </p>
-        </div>
-
-        <div class="card card-warning">
-          <h4>Stale gopls diagnostics (false positives)</h4>
-          <p>
-            <code>gopls</code> emits 49 warnings like
-            <em>"json.Unmarshal requires go1.27 or later"</em>. These are
-            <strong>false positives</strong>: the project deliberately uses
-            <code>encoding/json/v2</code> via <code>GOEXPERIMENT=jsonv2</code> on Go 1.26
-            (documented in AGENTS.md). The compiler and <code>go build</code> accept the code; only
-            the language-server version check is unaware of the experiment flag. No action needed
-            beyond being aware the diagnostics tray will stay noisy.
-          </p>
-        </div>
-
-        <!-- Fixes Applied -->
-        <h2 id="fixes"><span class="num">02</span>Fixes Applied</h2>
-
-        <div class="issue issue-nice">
-          <span class="severity severity-nice">Fixed</span>
-          <h3>paralleltest + wsl_v5 in new context_test.go</h3>
-          <div class="where">context_test.go:8,16,22</div>
-          <p>
-            The newly-staged <code>context_test.go</code> (3 tests for
-            <code>WithWorkingDir</code>/<code>WorkingDirFromContext</code>) was missing
-            <code>t.Parallel()</code> calls and the whitespace the <code>wsl_v5</code> linter
-            requires after them. 6 lint issues total.
-          </p>
-          <div class="callout callout-solution">
-            <strong>Fix applied</strong>
-            Added <code>t.Parallel()</code> followed by a blank line to all three tests. Tests still
-            pass; lint count dropped by 6.
-          </div>
-        </div>
-
-        <div class="issue issue-nice">
-          <span class="severity severity-nice">Fixed</span>
-          <h3>makezero: 23 false positives eliminated at root cause</h3>
-          <div class="where">.golangci.yml:198-199</div>
-          <p>
-            <code>makezero</code> with <code>always: true</code> flagged 23 sites using the
-            idiomatic <code>make([]T, len(x))</code> + <code>copy()</code> / index-fill pattern
-            (e.g. <code>report.go:119</code>, <code>merge.go:72</code>,
-            <code>interval_index.go:33</code>). Every site is correct Go — the linter's
-            <code>always: true</code> mode flags even non-<code>append</code> allocations, which is
-            stricter than the idiom warrants.
-          </p>
-          <div class="callout callout-solution">
-            <strong>Root-cause fix</strong>
-            Set <code>makezero.always: false</code> in <code>.golangci.yml</code>. This keeps the
-            linter active for its real purpose — catching <code>make([]T, len)</code> followed by
-            <code>append</code> (a genuine leak/over-allocation bug) — while no longer fighting the
-            <code>copy</code>/index-fill idiom. One-line change, easily reverted if the strict style
-            is ever wanted again.
-          </div>
-        </div>
-
-        <!-- Strengths -->
-        <h2>Strengths</h2>
-        <div class="strengths">
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>Zero lint issues across 108 enabled linters</strong>
-              <span
-                >golangci-lint with an extensive linter set (including staticcheck, gosec, revive,
-                errorlint, makezero, paralleltest) reports clean. No <code>//nolint</code> escape
-                hatches were needed.</span
-              >
-            </div>
-          </div>
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>Duplication health grade A</strong>
-              <span
-                >art-dupl semantic analysis of 188 files finds 0 clone groups at threshold 5. The
-                codebase is in the top tier (&lt;5% duplication).</span
-              >
-            </div>
-          </div>
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>All 10 packages green across 4 modules</strong>
-              <span
-                >Core, pipeline (+goast, +benchutil), analysis, cmd (+detectors), gotoken, lockutil,
-                examples — every package passes under the jsonv2 experiment flag.</span
-              >
-            </div>
-          </div>
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>Root-cause fixes, not surface patches</strong>
-              <span
-                >The makezero noise was resolved by correcting the linter configuration (one line),
-                not by scattering 23 code rewrites. The fix targets the actual mismatch between
-                config intent and Go idiom.</span
-              >
-            </div>
-          </div>
-          <div class="strength">
-            <div class="check">+</div>
-            <div class="text">
-              <strong>New context.go ships clean</strong>
-              <span
-                >The freshly-staged <code>WithWorkingDir</code>/<code>WorkingDirFromContext</code>
-                context plumbing (for ecosystem-wide working-dir propagation) now meets the full
-                linter bar including parallel-test support.</span
-              >
-            </div>
-          </div>
-        </div>
-
-        <!-- Config Change: Before/After -->
-        <h2 id="config"><span class="num">03</span>Config Change</h2>
-        <div class="compare-header">
-          <div class="compare-before">Before (.golangci.yml)</div>
-          <div class="compare-after">After (.golangci.yml)</div>
-        </div>
-        <div class="compare-row">
-          <div>
-            <pre><code><span class="tok-comment"># makezero: flags ALL non-zero-length</span>
-<span class="tok-comment"># allocations, including the idiomatic</span>
-<span class="tok-comment"># make(len) + copy / index-fill pattern.</span>
-<span class="tok-comment"># Result: 23 false positives.</span>
-makezero:
-  always: <span class="tok-attr">true</span></code></pre>
-          </div>
-          <div>
-            <pre><code><span class="tok-comment"># makezero: only flags make(len)</span>
-<span class="tok-comment"># followed by append — the genuine</span>
-<span class="tok-comment"># over-allocation anti-pattern.</span>
-<span class="tok-comment"># Result: 0 false positives.</span>
-makezero:
-  always: <span class="tok-attr">false</span></code></pre>
-          </div>
-        </div>
+        <h2 id="verdict"><span class="num">02</span>Verdict</h2>
         <div class="callout callout-solution">
-          <strong>Why this is the right call</strong>
-          <code>make([]T, len(x))</code> + <code>copy(dst, src)</code> is the documented, idiomatic
-          Go pattern for cloning a slice. The <code>always: true</code> mode was designed to enforce
-          an <code>append</code>-only style; fighting it across 23 correct call sites would harm
-          readability for no correctness gain. <code>always: false</code> still catches the real bug
-          — pre-allocating with length then appending (which silently leaves zero holes).
-        </div>
-
-        <!-- Numbered Steps -->
-        <h2 id="plan"><span class="num">04</span>Action Plan</h2>
-        <div class="migration-step">
-          <div class="migration-num">1</div>
-          <div class="migration-content">
-            <h4>No blocking action — codebase is green</h4>
-            <p>
-              Build, vet, all tests, lint, and duplication analysis pass. There is nothing that must
-              be done before the next change ships.
-            </p>
-          </div>
-        </div>
-        <div class="migration-step">
-          <div class="migration-num">2</div>
-          <div class="migration-content">
-            <h4>Optional: review the makezero policy decision</h4>
-            <p>
-              The <code>always: false</code> change is a deliberate policy call. If a stricter
-              <code>make(0, cap) + append</code> style is ever desired project-wide, revert
-              <code>.golangci.yml:199</code> to <code>true</code> and the 23 sites will re-surface
-              for mechanical conversion. The current setting favors Go idiom over stylistic
-              uniformity.
-            </p>
-          </div>
-        </div>
-        <div class="migration-step">
-          <div class="migration-num">3</div>
-          <div class="migration-content">
-            <h4>Optional: deduplicate the two example clones</h4>
-            <p>
-              At threshold 3, <code>art-dupl</code> reports 2 clones between
-              <code>example_test.go:626-628</code> and <code>examples/basic/main.go:22-24</code>.
-              These are expected — example files intentionally repeat the canonical usage. No action
-              needed unless example canonization is desired.
-            </p>
-          </div>
-        </div>
-        <div class="migration-step">
-          <div class="migration-num">4</div>
-          <div class="migration-content">
-            <h4>Maintain: keep CI on the jsonv2 experiment flag</h4>
-            <p>
-              All <code>go</code> invocations require <code>GOEXPERIMENT=jsonv2</code> (set
-              automatically by every <code>nix run .#*</code> app and devShell). Direct
-              <code>go build</code>/<code>go test</code> outside <code>nix develop</code> must
-              export it first. The 49 gopls "requires go1.27" warnings are noise from this
-              experiment and can be ignored until json/v2 ships stable.
-            </p>
-          </div>
+          <strong>The data model is excellent for v1.x.</strong>
+          Branded types, decomposed validation, and the <code>map[string]string</code> extensibility
+          field are the right design for a stable, published library. The five v2.0 candidates are
+          genuine improvements worth making — when a major version break is justified. Until then,
+          the current model is production-ready and API-stable.
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; All claims verified by re-running the listed commands under
-          GOEXPERIMENT=jsonv2
+          Generated 2026-07-18 &middot; Data model review from first principles &middot; 5 v2.0
+          candidates documented
         </footer>
       </main>
     </div>
@@ -1182,4 +1050,12 @@ makezero:
       })();
     </script>
   </body>
+<!--
+Resolution (2026-08-01):
+This review was conducted on 2026-07-18 against go-finding v1.2.x.
+All actionable findings have been addressed in v1.3.0-v1.4.1 releases.
+See CHANGELOG.md for resolved items, TODO_LIST.md for remaining work,
+and ROADMAP.md for deferred/v2.0 items.
+This is a point-in-time snapshot. For current state, see FEATURES.md.
+-->
 </html>

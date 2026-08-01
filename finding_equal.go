@@ -36,7 +36,7 @@ func (f Finding) Equal(other Finding) bool {
 		return false
 	}
 
-	if !slices.Equal(f.Tags, other.Tags) {
+	if !tagsEqual(f.Tags, other.Tags) {
 		return false
 	}
 
@@ -77,6 +77,26 @@ func (f Finding) Equal(other Finding) bool {
 	}
 
 	return maps.Equal(f.Metadata, other.Metadata)
+}
+
+// tagsEqual reports whether two tag slices contain the same elements
+// regardless of order. Tags are an unordered set of classification labels.
+func tagsEqual(a, b []Tag) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	if len(a) == 0 {
+		return true
+	}
+
+	sortedA := slices.Clone(a)
+	sortedB := slices.Clone(b)
+
+	slices.Sort(sortedA)
+	slices.Sort(sortedB)
+
+	return slices.Equal(sortedA, sortedB)
 }
 
 func (f Finding) equalRange(other Finding) bool {
