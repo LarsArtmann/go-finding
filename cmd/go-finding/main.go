@@ -198,9 +198,38 @@ func run() int {
 		}
 	}
 
+	// Set up flight recorder BEFORE pipeline construction so the hook
+	// is registered in Config.StageHooks at creation time.
+	var frHook *pipeline.FlightRecorderHook
+
+	if f.trace {
+		frConfig := pipeline.DefaultFlightRecorderConfig()
+		if f.traceDir != "" {
+			frConfig.OutputDir = f.traceDir
+		}
+
+		frConfig.SlowStageThreshold = f.traceSlow
+
+		var frErr error
+
+		frHook, frErr = pipeline.NewFlightRecorderHook(frConfig)
+		if frErr != nil {
+			return fatalf("creating flight recorder", frErr)
+		}
+
+		pipelineCfg.StageHooks = append(pipelineCfg.StageHooks, frHook)
+
+		fmt.Fprintf(os.Stderr, "Flight recorder enabled (output: %s, slow threshold: %v)\n",
+			frConfig.OutputDir, frConfig.SlowStageThreshold)
+	}
+
 	p, err := pipeline.New(pipelineCfg, f.dir, detectorList...)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "invalid pipeline config: %v\n", err)
+
+		if frHook != nil {
+			frHook.Close()
+		}
 
 		return 1
 	}
@@ -217,44 +246,19 @@ func run() int {
 		len(detectorList),
 	)
 
-	if f.trace {
-		frConfig := pipeline.DefaultFlightRecorderConfig()
-		if f.traceDir != "" {
-			frConfig.OutputDir = f.traceDir
+	result, err := p.Run(ctx)
+
+	// On error or timeout, capture a final trace snapshot.
+	if err != nil && frHook != nil && frHook.Enabled() {
+		if snapPath, snapErr := frHook.Snapshot("pipeline-error"); snapErr == nil {
+			fmt.Fprintf(os.Stderr, "Trace snapshot: %s\n", snapPath)
 		}
-		frConfig.SlowStageThreshold = f.traceSlow
-
-		var frErr error
-
-		frHook, frErr := pipeline.NewFlightRecorderHook(frConfig)
-		if frErr != nil {
-			return fatalf("creating flight recorder", frErr)
-		}
-
-		pipelineCfg.StageHooks = append(pipelineCfg.StageHooks, frHook)
-
-		fmt.Fprintf(os.Stderr, "Flight recorder enabled (output: %s, slow threshold: %v)\n",
-			frConfig.OutputDir, frConfig.SlowStageThreshold)
-
-		result, runErr := p.Run(ctx)
-
-		// On error or timeout, capture a final trace snapshot.
-		if runErr != nil && frHook.Enabled() {
-			if snapPath, snapErr := frHook.Snapshot("pipeline-error"); snapErr == nil {
-				fmt.Fprintf(os.Stderr, "Trace snapshot: %s\n", snapPath)
-			}
-		}
-
-		frHook.Close()
-
-		if runErr != nil {
-			return fatalf("running pipeline", runErr)
-		}
-
-		return writeResults(result, sev, f.format, f.outputFile, f.includeSuppressed)
 	}
 
-	result, err := p.Run(ctx)
+	if frHook != nil {
+		frHook.Close()
+	}
+
 	if err != nil {
 		return fatalf("running pipeline", err)
 	}
