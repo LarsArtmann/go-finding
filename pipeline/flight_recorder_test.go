@@ -268,23 +268,25 @@ func TestFlightRecorderHook_ConcurrentSnapshotsDoNotCollide(t *testing.T) {
 	g := gomega.NewWithT(t)
 
 	const n = 10
+
 	paths := make([]string, n)
 	errs := make([]error, n)
 
 	var wg sync.WaitGroup
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		wg.Add(1)
 
 		go func(idx int) {
 			defer wg.Done()
+
 			paths[idx], errs[idx] = hook.Snapshot("concurrent")
 		}(i)
 	}
 
 	wg.Wait()
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		g.Expect(errs[i]).To(gomega.Not(gomega.HaveOccurred()), "snapshot %d", i)
 		g.Expect(paths[i]).To(gomega.BeAnExistingFile(), "snapshot %d", i)
 	}
