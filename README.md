@@ -241,22 +241,22 @@ fmt.Printf("Iterations: %d, Findings: %d, Stable: %v\n",
 
 ### Pipeline Features
 
-| Feature                           | Description                                                      |
-| --------------------------------- | ---------------------------------------------------------------- |
-| **Parallel detection**            | errgroup-based concurrent detector execution                     |
-| **Finding processors**            | Composable transforms between detection and triage               |
-| **Custom triage**                 | `Config.TriageFunc` overrides default categorization             |
-| **Byte-level conflict detection** | `Config.ByteLevelConflictDetection` filters overlapping edits    |
-| **Fix provider chain**            | Offset → Line → Substring, plus custom AST-aware providers       |
-| **Fix application**               | Byte-level edits with backup/rollback                            |
-| **Verification**                  | Re-run detectors to confirm fixes                                |
-| **Retry**                         | Exponential backoff for flaky detectors                          |
-| **Partial success**               | Continue with findings from successful detectors                 |
-| **Metrics**                       | Optional timing and count collection with snapshots              |
-| **Structured logging**            | `*slog.Logger` integration                                       |
-| **Stage hooks**                   | `StageHooks` before/after events with abort (replaces `OnStage`) |
-| **Dry run**                       | Detect + triage without applying fixes                           |
-| **Generated file filter**         | Removes findings from auto-generated Go source files             |
+| Feature                           | Description                                                       |
+| --------------------------------- | ----------------------------------------------------------------- |
+| **Parallel detection**            | errgroup-based concurrent detector execution                      |
+| **Finding processors**            | Composable transforms between detection and triage                |
+| **Custom triage**                 | `Config.TriageFunc` overrides default categorization              |
+| **Byte-level conflict detection** | `Config.ByteLevelConflictDetection` filters overlapping edits     |
+| **Fix provider chain**            | Offset → Line → Substring, plus custom AST-aware providers        |
+| **Fix application**               | Byte-level edits with backup/rollback                             |
+| **Verification**                  | Re-run detectors to confirm fixes                                 |
+| **Retry**                         | Exponential backoff for flaky detectors                           |
+| **Partial success**               | Continue with findings from successful detectors                  |
+| **Metrics**                       | Optional timing and count collection with snapshots               |
+| **Structured logging**            | `*slog.Logger` integration                                        |
+| **Stage hooks**                   | `StageHooks` before/after events with abort (replaces `OnStage`)  |
+| **Dry run**                       | Detect + triage without applying fixes                            |
+| **Generated file filter**         | Removes findings from auto-generated Go source files              |
 | **Flight recorder**               | Chrome Trace Event export for pipeline stage timing visualization |
 
 ### Custom Detector

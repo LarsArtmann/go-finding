@@ -236,3 +236,43 @@ func TestFinding_IsValid(t *testing.T) {
 
 	runIsValidTests(t, tests)
 }
+
+func TestValidateAll(t *testing.T) {
+	t.Parallel()
+
+	validFinding := NewFinding("rule1", "tool", "msg", SeverityError, Pos("a.go", 1, 1), 0.5)
+	invalidFinding := Finding{}
+
+	tests := []struct {
+		name     string
+		findings []Finding
+		wantNil  bool
+		wantKeys []int
+	}{
+		{"nil slice", nil, true, nil},
+		{"empty slice", []Finding{}, true, nil},
+		{"all valid", []Finding{validFinding, validFinding}, true, nil},
+		{"all invalid", []Finding{invalidFinding, invalidFinding}, false, []int{0, 1}},
+		{"mixed valid and invalid", []Finding{validFinding, invalidFinding}, false, []int{1}},
+		{"single invalid at index 0", []Finding{invalidFinding}, false, []int{0}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
+
+			result := ValidateAll(tt.findings)
+			if tt.wantNil {
+				g.Expect(result).To(BeNil())
+			} else {
+				g.Expect(result).NotTo(BeNil())
+				g.Expect(result).To(HaveLen(len(tt.wantKeys)))
+
+				for _, key := range tt.wantKeys {
+					g.Expect(result).To(HaveKey(key))
+					g.Expect(result[key]).To(HaveOccurred())
+				}
+			}
+		})
+	}
+}

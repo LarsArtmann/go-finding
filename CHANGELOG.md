@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`ValidateAll(findings []Finding) map[int]error`** — Batch validation helper. Returns a map of index → error for all invalid findings in a slice, or nil if all are valid. Lazy-allocates only when at least one finding is invalid. Use for validating detector output or config-loaded findings without manual loop boilerplate.
 - **`pipeline.FlightRecorderHook`** — Go runtime execution trace flight recorder for pipeline observability. Wraps Go 1.25+'s `runtime/trace.FlightRecorder` to continuously buffer trace data in memory, snapshotting on demand or automatically when a pipeline stage exceeds a configurable slow-stage threshold. Invaluable for diagnosing slow detectors, fix contention, or unexpected pipeline stalls.
   - `NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, error)` — creates and starts the recorder
   - `FlightRecorderConfig` — `MinAge` (buffer retention, default 30s), `MaxBytes` (default 4 MiB), `SlowStageThreshold` (auto-snapshot trigger, default off), `OutputDir` (default temp), `Logger`
@@ -21,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Go module dependencies and Nix flake toolchain versions synchronized across all sub-modules.
+
+### Fixed
+
+- **`Finding.Equal()` tag-order sensitivity** — Was using `slices.Equal` for tag comparison, making findings with the same tags in different order compare as unequal. The documentation and ROADMAP always claimed order-insensitive equality. Fixed with a `tagsEqual` helper that clones, sorts, then compares. This is a semantic behavior change that aligns the implementation with the documented contract.
+- **`FlightRecorderHook` concurrent `WriteTo` race** — `runtime/trace.FlightRecorder.WriteTo` is not concurrency-safe. Two slow stages firing snapshots concurrently would produce an "already in progress" error. Fixed by adding a `writeMu sync.Mutex` that serializes WriteTo calls.
+- **`sanitizeFilename("")` produced malformed filenames** — Empty reason strings produced filenames like `go-finding-trace-000-.trace`. Now returns `"snapshot"` as the default reason label when sanitization yields an empty string.
 
 ## [1.4.1] - 2026-07-28
 

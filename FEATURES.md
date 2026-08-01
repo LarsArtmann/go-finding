@@ -656,13 +656,13 @@ cfg := pipeline.Config{StageHooks: []pipeline.StageHook{hook}}
 defer hook.Close()
 ```
 
-| Component | Description |
-| --------- | ----------- |
-| `FlightRecorderConfig` | `MinAge` (buffer retention, default 30s), `MaxBytes` (default 4 MiB), `SlowStageThreshold` (auto-snapshot trigger), `OutputDir`, `Logger` |
-| `NewFlightRecorderHook(config)` | Creates and starts the recorder (only one active at a time) |
-| `DefaultFlightRecorderConfig()` | Sensible defaults |
-| `Snapshot(reason)` | Manual on-demand snapshot, returns file path |
-| `Close()` | Stops recorder, waits for in-flight async snapshots |
+| Component                       | Description                                                                                                                               |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `FlightRecorderConfig`          | `MinAge` (buffer retention, default 30s), `MaxBytes` (default 4 MiB), `SlowStageThreshold` (auto-snapshot trigger), `OutputDir`, `Logger` |
+| `NewFlightRecorderHook(config)` | Creates and starts the recorder (only one active at a time)                                                                               |
+| `DefaultFlightRecorderConfig()` | Sensible defaults                                                                                                                         |
+| `Snapshot(reason)`              | Manual on-demand snapshot, returns file path                                                                                              |
+| `Close()`                       | Stops recorder, waits for in-flight async snapshots                                                                                       |
 
 Implements `StageHook` — `OnStageEvent` **never returns an error** (trace collection is purely diagnostic and must not affect pipeline control flow).
 
@@ -726,9 +726,9 @@ Binary: `go-finding`
 | `-generated-include`      | (none)  | Comma-separated glob patterns restricting generated-filtering scope |
 | `-byte-level-conflict`    | `false` | Enable precise byte-level conflict detection for overlapping fixes  |
 | `-fix-provider`           | (none)  | Comma-separated fix provider names to enable (e.g., `go-ast`)       |
-| `-trace`                  | `false` | Enable Go execution trace flight recorder for pipeline diagnostics   |
-| `-trace-dir`              | (none)  | Directory for trace snapshot files (default: temp dir)               |
-| `-trace-slow`             | `0`     | Auto-snapshot trace when a stage exceeds this duration (e.g. `30s`)  |
+| `-trace`                  | `false` | Enable Go execution trace flight recorder for pipeline diagnostics  |
+| `-trace-dir`              | (none)  | Directory for trace snapshot files (default: temp dir)              |
+| `-trace-slow`             | `0`     | Auto-snapshot trace when a stage exceeds this duration (e.g. `30s`) |
 
 ### Config File (YAML/JSON)
 

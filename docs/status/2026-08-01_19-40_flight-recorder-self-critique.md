@@ -187,6 +187,7 @@
 - **Already resolved by docs-health session:** CHANGELOG.md `[Unreleased]` entry ✓, FEATURES.md §16.13 ✓, AGENTS.md gotchas ✓, README Pipeline Features table ✓
 
 **Items NOT routed** (judged not actionable or out of scope):
+
 - P2 items 20-25 (CLI flags for min-age/max-bytes, in-memory snapshot mode) — implementation details better decided when ConfigFile integration is done
 - P3 items 26-35 (core trace helper, LSP/SARIF integration, per-detector tracing) — captured in ROADMAP broader ideas
 - P4 items 40-45 (DOMAIN_LANGUAGE, troubleshooting guide) — will be addressed when writing the user guide (TODO_LIST)
