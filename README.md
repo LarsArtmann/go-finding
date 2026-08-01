@@ -257,6 +257,7 @@ fmt.Printf("Iterations: %d, Findings: %d, Stable: %v\n",
 | **Stage hooks**                   | `StageHooks` before/after events with abort (replaces `OnStage`) |
 | **Dry run**                       | Detect + triage without applying fixes                           |
 | **Generated file filter**         | Removes findings from auto-generated Go source files             |
+| **Flight recorder**               | Chrome Trace Event export for pipeline stage timing visualization |
 
 ### Custom Detector
 

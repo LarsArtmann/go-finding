@@ -8,6 +8,15 @@
 
 ## 🔴 HIGH Priority
 
+### FlightRecorder Bug Fixes (from self-critique)
+
+| Task | Status | Impact | Effort | Notes |
+| --- | --- | --- | --- | --- |
+| Serialize concurrent `WriteTo` calls with `writeMu sync.Mutex` | ⬜ `TODO` | High | Low | `runtime/trace.FlightRecorder.WriteTo` is NOT safe for concurrent calls. Two slow stages in the same iteration cause "already in progress" error. Self-critique §d.1. |
+| Fix `sanitizeFilename("")` to return `"snapshot"` | ⬜ `TODO` | Med | Low | Empty input produces malformed filename `go-finding-trace-000-.trace` (trailing hyphen). Self-critique §d.3. |
+| Add concurrent-snapshot serialization test | ⬜ `TODO` | High | Low | Prove the mutex prevents collision. Self-critique §f.3. |
+| Add `MkdirAll` error path test | ⬜ `TODO` | Med | Low | Pass unwritable directory to `NewFlightRecorderHook`. Self-critique §f.4. |
+
 ### Make Repo Public — Phase 2: Community Readiness (remaining)
 
 | Task                                             | Status    | Impact | Effort  | Notes                                                     |
@@ -30,7 +39,12 @@
 | Task                              | Status       | Impact | Effort | Notes                                                                                                                                   |
 | --------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Fix BuildFlow auto-configure loop | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact |
-| Commit benchmark baseline         | ⬜ `TODO`   | Med    | Low    | `/benchmarks/` is gitignored (`.gitignore:53`); `scripts/bench-check.sh` compares against `benchmarks/baseline.txt` which doesn't exist in a fresh clone. CI benchmark regression check has never worked. |
+| Commit benchmark baseline         | ✅ `DONE`   | Med    | Low    | Fixed in 2026-08-01 session. Removed `/benchmarks/` from `.gitignore`, committed `benchmarks/baseline.txt`. |
+| FlightRecorder `ConfigFile` integration | ⬜ `TODO` | Med | Medium | Add `FlightRecorder *FlightRecorderConfig` to `config_file.go` schema so YAML/JSON config users can enable tracing. Self-critique §b.3. |
+| Write `docs/guides/flight-recorder.md` user guide | ⬜ `TODO` | Med | Low | Full user guide with `go tool trace` workflow. Self-critique §c.8. |
+| FlightRecorder `example_test.go` | ⬜ `TODO` | Low | Low | Runnable godoc examples for pipeline package. Self-critique §c.1. |
+| Check `doc.go` for FlightRecorder API references | ⬜ `TODO` | Low | Low | Ensure new symbols are documented in godoc prose. Self-critique §c.10. |
+| CLI integration test for `-trace` flag | ⬜ `TODO` | Low | Medium | Automated test that `-trace` produces a `.trace` file. Self-critique §c.9. |
 
 ## 🟢 LOW Priority
 
@@ -40,6 +54,8 @@
 | Consumer compatibility test  | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code |
 
 ---
+
+_FlightRecorder future ideas (trace file rotation, OTel bridge, trace diff, AI-assisted analysis) are tracked in [ROADMAP.md](ROADMAP.md) under "FlightRecorder future directions"._
 
 _The following deferred breaking changes have concrete designs and are tracked in [ROADMAP.md](ROADMAP.md) under "Hardening (owner decisions pending)": Position sentinel redesign, FixStrategy closed union, pointer-as-state cleanup, Tags→TagSet, Finding sub-struct composition._
 

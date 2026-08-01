@@ -47,10 +47,9 @@ Thumbs.db
 *.prof
 *.pdb
 
-# Benchmark regression tracking
+# Benchmark regression tracking (temporary files only; baseline is committed)
 .bench-baseline.txt
 .bench-current.txt
-/benchmarks/
 
 # Copy/paste detection report
 /report/jscpd-report.json

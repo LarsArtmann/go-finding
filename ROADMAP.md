@@ -66,6 +66,20 @@ Each would live in its own subpackage to keep language-specific dependencies out
 - **More `ToolAdapter[O]` recipes** — Pre-built adapters for revive, ineffassign, errcheck, etc.
 - **go-linter-sdk integration** — `IsEnabledByDefault()` / `OptIn()` added to the Rule interface in the sibling `go-linter-sdk` repo, but `Registry.Run` does not yet use it for filtering. The SDK has no git tag (consumers cannot import it). A pilot migration (porting `go-structure-linter`) is planned but not started. This is the primary ecosystem integration gap.
 
+### FlightRecorder future directions
+
+The FlightRecorder feature (`pipeline/flight_recorder.go`) is shipped but has room to grow:
+
+- **Trace file rotation** — Long-running pipelines with `-trace-slow` can produce hundreds of numbered `.trace` files. Add max-files or rotation.
+- **Config file integration** — FlightRecorder is CLI-flag-only. `ConfigFile` YAML/JSON schema doesn't support it yet.
+- **Context propagation** — `writeSnapshot` doesn't accept a context. Long-running `WriteTo` calls can't be cancelled.
+- **Multiple recorder support** — Go's "one active recorder at a time" limit. Hook should detect pre-existing recorder and degrade gracefully.
+- **Core package trace helper** — Generalize beyond pipeline: `finding.TraceSnapshot()` in a `finding/tracing` sub-package.
+- **OpenTelemetry bridge** — Convert trace snapshots to OTel spans for distributed tracing integration.
+- **Trace diff tool** — Compare two trace snapshots to identify what changed between fast/slow pipeline runs.
+- **AI-assisted trace analysis** — Feed trace data to an LLM for anomaly detection in stage timing.
+- **Continuous trace sampling** — Sample 1% of pipeline runs with full tracing for production observability.
+
 ### Hardening (owner decisions pending)
 
 These are known design tensions deferred because they require breaking changes. Concrete designs from the [data-model review](docs/reviews/2026-07-18_21-10_data-model-review.html).

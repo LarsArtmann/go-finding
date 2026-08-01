@@ -174,3 +174,19 @@
 2. **Should trace files contain pipeline metadata (findings count, stage info) or pure Go runtime trace?** Currently they're pure runtime traces — you need to correlate with logs to know which pipeline stage produced the slow region. Embedding pipeline metadata would require either a custom trace format (breaking `go tool trace` compatibility) or a sidecar JSON file. I chose pure runtime trace for tool compatibility.
 
 3. **Should `-trace` be opt-in (current) or should the flight recorder always run with a tiny buffer?** Always-on with a 256KB buffer would add ~2-3% overhead but give every user "hindsight" capability for free. The Go blog example uses opt-in. I chose opt-in for safety, but the always-on approach would be more useful in practice.
+
+---
+
+## Resolution (2026-08-01)
+
+**Items routed:**
+
+- **P0 bugs** (concurrent WriteTo race, SanitizeFilename edge case, missing tests) → TODO_LIST HIGH priority
+- **Feature gaps** (ConfigFile integration, flight-recorder guide, example_test.go, doc.go check, CLI integration test) → TODO_LIST MEDIUM priority
+- **Future directions** (trace rotation, OTel bridge, trace diff, AI analysis, continuous sampling) → ROADMAP "FlightRecorder future directions"
+- **Already resolved by docs-health session:** CHANGELOG.md `[Unreleased]` entry ✓, FEATURES.md §16.13 ✓, AGENTS.md gotchas ✓, README Pipeline Features table ✓
+
+**Items NOT routed** (judged not actionable or out of scope):
+- P2 items 20-25 (CLI flags for min-age/max-bytes, in-memory snapshot mode) — implementation details better decided when ConfigFile integration is done
+- P3 items 26-35 (core trace helper, LSP/SARIF integration, per-detector tracing) — captured in ROADMAP broader ideas
+- P4 items 40-45 (DOMAIN_LANGUAGE, troubleshooting guide) — will be addressed when writing the user guide (TODO_LIST)
