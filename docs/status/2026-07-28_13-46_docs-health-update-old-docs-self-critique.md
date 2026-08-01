@@ -228,6 +228,12 @@ The auto-commit daemon already captured CHANGELOG + TODO_LIST as commit `0ad429e
 
 ---
 
+## Resolution (2026-08-01)
+
+The pipeline lint items (section f.17-25) this report harvested were resolved in `2026-07-28_14-01` (shipped v1.4.1). The FEATURES.md full audit and lint gate gaps this self-critique flagged were addressed in a subsequent comprehensive docs-health session (this one). ROADMAP version updated to 1.4.1, CHANGELOG `[Unreleased]` populated with FlightRecorder, TODO_LIST refreshed with benchmark baseline issue. The go-linter-sdk ecosystem items this report noted as "not harvested" are now in ROADMAP.md "Consumer ecosystem."
+
+---
+
 _This report was written immediately after the session work. The author (Crush) forgot to run the linter for the third consecutive session and is aware of the irony._
 
 _Assisted-by: Crush <crush@charm.land>_

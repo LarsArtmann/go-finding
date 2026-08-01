@@ -274,4 +274,10 @@ I cannot decide this because it's a documentation philosophy question: comprehen
 
 ---
 
+## Resolution (2026-08-01)
+
+All 96 remediation micro-tasks shipped (v1.4.0/v1.4.1). One discovery remains open: `/benchmarks/` is gitignored (`.gitignore:53`), so `scripts/bench-check.sh` has no committed baseline. Now tracked in TODO_LIST.md "Commit benchmark baseline."
+
+---
+
 _Assisted-by: Crush <crush@charm.land>_

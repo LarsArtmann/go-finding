@@ -229,4 +229,10 @@ I disabled `paralleltest` globally in `.golangci.yml`. The alternative is keepin
 
 ---
 
+## Resolution (2026-08-01)
+
+The 7 pre-existing pipeline lint issues this report flagged were resolved in `2026-07-28_14-01` (shipped v1.4.1, CHANGELOG documents all 7). The `paralleltest` disable question was answered: global disable is the permanent policy — `commit 59121e8` had inadvertently re-added it to the `enable` list, which was discovered and corrected in v1.4.1. The `NewParallelGomega` test-helper pattern remains; `paralleltest` linter stays disabled (documented in AGENTS.md).
+
+---
+
 _Assisted-by: Crush <crush@charm.land>_

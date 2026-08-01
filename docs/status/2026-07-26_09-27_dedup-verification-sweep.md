@@ -239,4 +239,10 @@ The skill's threshold is the de facto standard. The 2026-07-24 reports mention C
 
 ---
 
+## Resolution (2026-08-01)
+
+The `MustXXX` → `must[T]` refactor proposed in the 50-item list was completed in the `2026-07-27_10-59` dedup-to-zero sweep (shipped v1.4.1). Zero clones achieved at `-t 1`. The go1.26/go1.27 version drift this report flagged in its self-critique is still live (gopls `stdversion` warnings on `encoding/json/v2` imports) — this is expected while the project uses `GOEXPERIMENT=jsonv2` and will resolve when Go stabilizes json/v2 (tracked in TODO_LIST.md "Track Go json/v2 stabilization").
+
+---
+
 _Assisted-by: Crush <crush@charm.land>_

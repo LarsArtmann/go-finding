@@ -186,3 +186,9 @@ The AGENTS.md mentions "An auto-git commit daemon runs continuously and commits 
 - **Tests:** All pass (workspace + GOWORK=off isolation)
 - **Build:** Clean
 - **Time:** ~15 minutes of active work
+
+---
+
+## Resolution (2026-08-01)
+
+The 7 lint fixes and the `paralleltest` config drift discovery both shipped in v1.4.1 (CHANGELOG `[1.4.1]` documents all fixes). The open items from this report's self-critique — unit tests for extracted functions (`runVerification`, `applyStage`, `shiftFindingsPositions`), benchmark regression check, and AGENTS.md Key Files update for the new helpers — remain low-priority backlog. The extracted functions are covered by existing integration tests; dedicated unit tests would add depth but are not blocking.
