@@ -60,14 +60,13 @@ func TestFlightRecorderHook_NeverReturnsError(t *testing.T) {
 		Timing: StageBefore,
 	})
 	g := gomega.NewWithT(t)
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).ToNot(gomega.HaveOccurred())
 
-	// After stage — should succeed.
 	err = hook.OnStageEvent(ctx, StageEvent{
 		Stage:  StageDetect,
 		Timing: StageAfter,
 	})
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).ToNot(gomega.HaveOccurred())
 
 	// After close — should still return nil (diagnostic, not control flow).
 	hook.Close()
@@ -76,7 +75,7 @@ func TestFlightRecorderHook_NeverReturnsError(t *testing.T) {
 		Stage:  StageDetect,
 		Timing: StageBefore,
 	})
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).ToNot(gomega.HaveOccurred())
 }
 
 func TestFlightRecorderHook_ManualSnapshotWritesFile(t *testing.T) {
@@ -120,7 +119,7 @@ func TestFlightRecorderHook_SlowStageTriggersSnapshot(t *testing.T) {
 		Timing: StageBefore,
 	})
 	g := gomega.NewWithT(t)
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).ToNot(gomega.HaveOccurred())
 
 	time.Sleep(20 * time.Millisecond)
 
@@ -128,7 +127,7 @@ func TestFlightRecorderHook_SlowStageTriggersSnapshot(t *testing.T) {
 		Stage:  StageDetect,
 		Timing: StageAfter,
 	})
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).ToNot(gomega.HaveOccurred())
 
 	hook.Close()
 
@@ -156,13 +155,13 @@ func TestFlightRecorderHook_FastStageDoesNotSnapshot(t *testing.T) {
 		Timing: StageBefore,
 	})
 	g := gomega.NewWithT(t)
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).ToNot(gomega.HaveOccurred())
 
 	err = hook.OnStageEvent(ctx, StageEvent{
 		Stage:  StageDetect,
 		Timing: StageAfter,
 	})
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).ToNot(gomega.HaveOccurred())
 
 	hook.Close()
 

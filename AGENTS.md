@@ -35,7 +35,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 | **lockutil**        | `lockutil/lockutil.go` (shared sync.Locker helpers — `Locked`, `RLocked` — for generic mutex-guarded critical sections)                                                                                                  |
 | **Pipeline**        | `pipeline/pipeline.go` (Run), `pipeline/pipeline_detect.go`, `pipeline/pipeline_iteration.go`, `pipeline/config.go`, `pipeline/config_file.go`                                                                           |
 | **Fix engine**      | `pipeline/fix_engine.go`, `pipeline/fix_provider.go`, `pipeline/fix_applier.go`, `pipeline/fix_edit.go`, `pipeline/conflict.go`, `pipeline/goast/provider.go`                                                            |
-| **Pipeline extras** | `pipeline/stage_hook.go`, `pipeline/line_shift.go`, `pipeline/metrics.go`, `pipeline/retry.go`, `pipeline/partial.go`, `pipeline/generated_filter.go`                                                                    |
+| **Pipeline extras** | `pipeline/stage_hook.go`, `pipeline/flight_recorder.go`, `pipeline/line_shift.go`, `pipeline/metrics.go`, `pipeline/retry.go`, `pipeline/partial.go`, `pipeline/generated_filter.go`                                    |
 | **Analysis**        | `analysis/analysis.go` (go/analysis ↔ Finding)                                                                                                                                                                           |
 | **Detectors**       | `cmd/go-finding/internal/detectors/govet.go`, `staticcheck.go`, `helpers.go`                                                                                                                                             |
 | **CLI**             | `cmd/go-finding/main.go`, `config.go`, `registry.go`, `fix_provider_registry.go`, `generated_filter.go`, `output_adapter.go`                                                                                             |
@@ -144,6 +144,7 @@ bash scripts/version-check.sh                                    # Verify versio
 - **Badge() derives from Emoji()** — `Severity.Badge()` returns `Emoji() + " " + strings.ToUpper(string(s))` instead of a duplicate switch. Any new emoji-to-severity mapping only needs to update `Emoji()`.
 - **severityPriorities map replaces switch** — `Severity.PriorityString()` uses a `map[Severity]string` lookup (`severityPriorities`) instead of a switch statement. Add new severity priorities to the map, not a new case.
 - **fixEditJSON is the JSON wire type** — `pipeline/fix_edit.go` defines `fixEditJSON` at package level (not as inner types in Marshal/UnmarshalJSON) to control field tags independently of the `FixEdit` domain type.
+- **FlightRecorderHook wraps Go 1.25 runtime/trace.FlightRecorder** — `pipeline/flight_recorder.go` provides `FlightRecorderHook` implementing `StageHook`. It continuously buffers Go execution trace data and captures snapshots when stages exceed `SlowStageThreshold` or on manual `Snapshot(reason)`. `OnStageEvent` never returns errors (diagnostic-only). Only one flight recorder can be active at a time globally. `Close()` waits for in-flight snapshots before calling `fr.Stop()` to avoid a data race between `WriteTo` and `Stop`. CLI flags: `-trace`, `-trace-dir`, `-trace-slow`. See https://go.dev/blog/flight-recorder.
 
 ## CLI Features
 
@@ -153,6 +154,7 @@ bash scripts/version-check.sh                                    # Verify versio
 - `-filter-generated` — removes findings from auto-generated files (sqlc, protobuf, etc.)
 - `-fix-provider go-ast` — enables AST-aware fix provider
 - `-byte-level-conflict` — precise overlap detection
+- `-trace` — enable Go execution trace flight recorder for diagnostics (`-trace-dir`, `-trace-slow` for config)
 - Dynamic detector registry (`RegisterDetector`)
 
 ## Architecture Decisions
@@ -181,6 +183,7 @@ bash scripts/version-check.sh                                    # Verify versio
 - **Pipeline convenience functions** — `pipeline.Detect(ctx, detectors...)` for one-shot detection; `pipeline.ApplyToContent(content, fixes)` for content-level fix application without filesystem.
 - **FixEngine guide** — `docs/guides/fix-engine.md` covers all FixEngine usage patterns.
 - **lockutil package** — Generic `lockutil.Locked(sync.Locker, fn) T` and `lockutil.RLocked(*sync.RWMutex, fn) T` helpers eliminate m.mu.Lock()/defer m.mu.Unlock() boilerplate across Report, Metrics, FileBackup, registries, and AST provider. Stdlib only, follows `gotoken` precedent.
+- **FlightRecorderHook** — Wraps Go 1.25 `runtime/trace.FlightRecorder` as a `StageHook`. Stdlib-only (no external dep). Continuously buffers execution trace; snapshots on slow-stage threshold breach or manual `Snapshot(reason)`. `OnStageEvent` never returns errors (diagnostic-only). `Close()` waits for in-flight snapshots before `fr.Stop()` to avoid `WriteTo`/`Stop` data race. See https://go.dev/blog/flight-recorder.
 - **Multi-module release tagging** — Each sub-module needs a **directory-prefixed** git tag to resolve on the Go proxy: `pipeline/v*`, `analysis/v*`, `cmd/go-finding/v*`. Core uses unprefixed `v*`. Sub-modules have no `version.go`; the tag is the version source. See `docs/release-procedure.md`.
 - **Repo is private** — Until made public, consumers MUST set `GOPRIVATE=github.com/larsartmann/go-finding` or module resolution 404s on the public proxy.
 

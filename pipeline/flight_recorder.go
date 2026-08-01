@@ -105,6 +105,10 @@ func NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, er
 		config.OutputDir = os.TempDir()
 	}
 
+	if err := os.MkdirAll(config.OutputDir, 0o755); err != nil {
+		return nil, fmt.Errorf("create trace output dir %s: %w", config.OutputDir, err)
+	}
+
 	recorder := trace.NewFlightRecorder(trace.FlightRecorderConfig{
 		MinAge:   config.MinAge,
 		MaxBytes: config.MaxBytes,
@@ -127,11 +131,11 @@ func NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, er
 // This method never returns an error — trace collection is diagnostic
 // and must not affect pipeline control flow. Snapshot I/O errors are
 // logged to the configured Logger.
-func (h *FlightRecorderHook) OnStageEvent(_ context.Context, event StageEvent) error {
+func (h *FlightRecorderHook) OnStageEvent(ctx context.Context, event StageEvent) error {
 	shouldSnapshot := h.recordStageBoundary(event)
 
 	if shouldSnapshot {
-		h.asyncSnapshot(event)
+		h.asyncSnapshot(ctx, event)
 	}
 
 	return nil
@@ -173,7 +177,7 @@ func (h *FlightRecorderHook) recordStageBoundary(event StageEvent) bool {
 
 // asyncSnapshot captures a trace snapshot to a file in a background goroutine.
 // Uses snapshotWg so Close can wait for in-flight snapshots.
-func (h *FlightRecorderHook) asyncSnapshot(event StageEvent) {
+func (h *FlightRecorderHook) asyncSnapshot(ctx context.Context, event StageEvent) {
 	h.mu.Lock()
 	num := h.snapshotCount
 	h.snapshotCount++
@@ -182,13 +186,12 @@ func (h *FlightRecorderHook) asyncSnapshot(event StageEvent) {
 	h.snapshotWg.Go(func() {
 		path, err := h.writeSnapshot(num, fmt.Sprintf("%s-iter%d", event.Stage, event.Iteration))
 		if err != nil {
-			h.log(context.Background(), slog.LevelError, "flight recorder snapshot failed", slog.String("error", err.Error()))
+			h.log(ctx, slog.LevelError, "flight recorder snapshot failed", slog.String("error", err.Error()))
 
 			return
 		}
 
-		h.log(
-			context.Background(), slog.LevelInfo, "flight recorder snapshot written",
+		h.log(ctx, slog.LevelInfo, "flight recorder snapshot written",
 			slog.String("path", path),
 			slog.String("stage", string(event.Stage)),
 			slog.Int("iteration", event.Iteration),
