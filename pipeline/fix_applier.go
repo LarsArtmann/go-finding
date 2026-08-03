@@ -180,16 +180,29 @@ func (a *FixApplier) ApplyWithShiftMap(
 // skipping findings without a file or with unsafe path traversal.
 // Uses the resolved path (not the raw join) as the map key, preventing
 // TOCTOU races where a symlink is swapped between validation and file I/O.
+//
+// The root directory is resolved once and each unique file path is resolved
+// at most once, avoiding redundant EvalSymlinks syscalls when many findings
+// target the same file.
 func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string][]finding.Finding {
 	byFile := make(map[string][]finding.Finding)
+	resolvedRoot := resolveRoot(a.rootDir)
+	pathCache := make(map[string]string, len(fixes))
 
 	for _, f := range fixes {
 		if f.Position.File == "" {
 			continue
 		}
 
-		safePath, ok := resolveSafePath(a.rootDir, string(f.Position.File))
-		if !ok {
+		rawPath := string(f.Position.File)
+
+		safePath, cached := pathCache[rawPath]
+		if !cached {
+			safePath, _ = resolveSafePathFrom(resolvedRoot, rawPath)
+			pathCache[rawPath] = safePath
+		}
+
+		if safePath == "" {
 			continue
 		}
 

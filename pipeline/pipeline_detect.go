@@ -327,13 +327,15 @@ func (p *Pipeline) filterByFileEdits(
 		byFile[f.Position.File] = append(byFile[f.Position.File], f)
 	}
 
+	resolvedRoot := resolveRoot(p.rootDir)
+
 	var (
 		result    []finding.Finding
 		allErrors []error
 	)
 
 	for file, fileFixes := range byFile {
-		safePath, ok := resolveSafePath(p.rootDir, string(file))
+		safePath, ok := resolveSafePathFrom(resolvedRoot, string(file))
 		if !ok {
 			p.log(
 				ctx, "skipping unsafe file path for conflict detection",

@@ -274,3 +274,68 @@ func BenchmarkFindingKey_NoID(b *testing.B) {
 		_ = f.Key()
 	}
 }
+
+func BenchmarkEqual_IdenticalWithTags(b *testing.B) {
+	a := Finding{
+		ID:          "tool:rule:file.go:42:10",
+		Rule:        benchRule,
+		ToolName:    "govet",
+		Message:     "possible nil deref",
+		Severity:    SeverityError,
+		Position:    Position{File: benchFile, Line: 42, Column: 10},
+		Category:    CategorySecurity,
+		Tags:        []Tag{"security", "nil-safety", "critical"},
+		FixStrategy: FixStrategyDirect,
+		BeforeCode:  "x.foo",
+		AfterCode:   "x.foo()",
+	}
+	other := a
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = a.Equal(other)
+	}
+}
+
+func BenchmarkEqual_TagsDifferentOrder(b *testing.B) {
+	a := Finding{
+		ID:       "tool:rule:file.go:42:10",
+		Rule:     benchRule,
+		Severity: SeverityError,
+		Position: Position{File: benchFile, Line: 42, Column: 10},
+		Tags:     []Tag{"security", "nil-safety", "critical"},
+	}
+	other := Finding{
+		ID:       "tool:rule:file.go:42:10",
+		Rule:     benchRule,
+		Severity: SeverityError,
+		Position: Position{File: benchFile, Line: 42, Column: 10},
+		Tags:     []Tag{"critical", "security", "nil-safety"},
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = a.Equal(other)
+	}
+}
+
+func BenchmarkEqual_NoTags(b *testing.B) {
+	a := Finding{
+		ID:       "tool:rule:file.go:42:10",
+		Rule:     benchRule,
+		Severity: SeverityError,
+		Position: Position{File: benchFile, Line: 42, Column: 10},
+	}
+	other := a
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = a.Equal(other)
+	}
+}
