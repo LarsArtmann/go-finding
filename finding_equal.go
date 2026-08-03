@@ -40,8 +40,12 @@ func (f Finding) Equal(other Finding) bool {
 		return false
 	}
 
-	if NormalizeFixStrategy(f.FixStrategy) != NormalizeFixStrategy(other.FixStrategy) {
-		return false
+	// Short-circuit: when raw strategies are identical, their normalized forms
+	// are also identical. Only normalize when they differ (handles "" vs "none").
+	if f.FixStrategy != other.FixStrategy {
+		if NormalizeFixStrategy(f.FixStrategy) != NormalizeFixStrategy(other.FixStrategy) {
+			return false
+		}
 	}
 
 	if f.Suggestion != other.Suggestion {
@@ -90,6 +94,13 @@ func tagsEqual(a, b []Tag) bool {
 		return true
 	}
 
+	// Fast path: tags already in the same order. This is the common case when
+	// comparing findings from the same tool, and avoids 2 allocations + 2 sorts.
+	if slices.Equal(a, b) {
+		return true
+	}
+
+	// Tags differ in order — fall back to sorted comparison for set equality.
 	sortedA := slices.Clone(a)
 	sortedB := slices.Clone(b)
 
