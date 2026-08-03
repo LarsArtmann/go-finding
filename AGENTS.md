@@ -110,7 +110,9 @@ bash scripts/version-check.sh                                    # Verify versio
 - **CheckBinary(name) / RunCmd(ctx, name, args)** — External tool helpers for the "run CLI tool → parse JSON" pattern. Returns `NewIOError` on failure.
 - **DefaultLinterRegistry expanded** — Now includes gofumpt, nolintlint, depguard, nakedret, bidichk, tagliatelle, and 15+ more golangci-lint linters.
 - **Range.EndOrStart / EndOffsetOrStart** — Effective end position for line-based (`End.Line == 0` → Start) and offset-based (`End.Offset < 0` → Start) single-point ranges. Used by overlap/intersection/extension to avoid duplicating the "unset means single point" convention.
-- **FixStrategy normalized** — `NormalizeFixStrategy()` converts "" to "none". Called by Builder.Build(), SARIF import, and Equal().
+- **FixStrategy normalized** — `NormalizeFixStrategy()` converts "" to "none". Called by Builder.Build(), SARIF import, and Equal(). In Equal(), normalization is short-circuited: raw values are compared first, and `NormalizeFixStrategy` is only called when they differ (handles "" vs "none" edge case).
+- **tagsEqual fast path** — `finding_equal.go` checks `slices.Equal(a, b)` before clone+sort. When tags are in the same order (common when findings come from the same tool), `Equal()` makes 0 allocations. Only different-order tag sets trigger the clone+sort fallback (2 allocs).
+- **resolveSafePath batch caching** — `pipeline/path_safety.go` splits into `resolveRoot(rootDir)` (resolves symlinks once) and `resolveSafePathFrom(resolvedRoot, relPath)` (per-path resolution). `groupFindingsBySafePath` and `filterByFileEdits` resolve root once and cache per-path results, eliminating redundant `EvalSymlinks` syscalls when many findings target the same file. The convenience wrapper `resolveSafePath(rootDir, relPath)` remains for single-call use.
 - **HasFix() requires code for Direct** — `FixStrategyDirect` needs BeforeCode or AfterCode for HasFix()=true, aligning with Validate().
 - **math/rand v1/v2 split** — Production uses `math/rand/v2`; tests use `math/rand` (v1) due to `testing/quick` API constraint
 - **FixEngine descending-offset** — All edits resolve against the same original content snapshot; multi-edit correctness proven by tests
@@ -166,6 +168,7 @@ bash scripts/version-check.sh                                    # Verify versio
 - **Byte-level FixEngine** — `[]byte` edit ops with descending-offset application, O(F+R) single-pass
 - **FixProvider chain** — OffsetProvider → LineProvider → SubstringProvider (fallback); custom providers prepended
 - **lineIndexAware lazy caching** — Line offset index built once per file, only when a LineProvider/SubstringProvider handles a finding
+- **resolveSafePath batch caching** — Root symlink resolution cached once per batch; per-path results cached within `groupFindingsBySafePath` to avoid redundant `EvalSymlinks` when many findings target the same file
 - **GoASTProvider** — AST-aware provider in `pipeline/goast/` (opt-in `go/parser` dependency)
 - **IntervalIndex[T]** — Generic O(n + k) overlap queries (sorted-slice impl); used by Correlate
 - **DetectorRegistry** — Thread-safe plugin architecture with `Register`/`Build`/`BuildAll`
