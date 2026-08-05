@@ -471,17 +471,26 @@ fmt.Println(finding.Version) // "1.4.0"
 | [CHANGELOG.md](CHANGELOG.md)                     | Versioned change history             |
 | [docs/USAGE_GUIDE.md](docs/USAGE_GUIDE.md)       | Comprehensive usage guide            |
 | [docs/MIGRATION_v1.0.md](docs/MIGRATION_v1.0.md) | v1.0 migration instructions          |
+| [docs/ecosystem.md](docs/ecosystem.md)           | How go-finding relates to the surrounding SDKs and tools |
 
 ## Related Projects
 
-Tools using this SDK:
+go-finding is the hub of an ecosystem of SDKs and tools. See [`docs/ecosystem.md`](docs/ecosystem.md) for the full architecture diagram and component comparison.
+
+**Ecosystem SDKs** (shared plumbing for tools that emit findings):
+
+- [go-linter-sdk](https://github.com/larsartmann/go-linter-sdk) — Rule + Registry scaffolding for linters
+- [linter-autoconfigure-sdk](https://github.com/larsartmann/linter-autoconfigure-sdk) — Config round-trip + finding emission for auto-configurers
+- [go-checker-helpers](https://github.com/larsartmann/go-checker-helpers) — Finding builders, fix pipeline, and safe I/O for BuildFlow checkers
+
+**Tools using go-finding:**
 
 - [art-dupl](https://github.com/larsartmann/art-dupl) — Code duplication detection
 - [branching-flow](https://github.com/larsartmann/branching-flow) — Go code quality analyzer
 - [hierarchical-errors](https://github.com/larsartmann/hierarchical-errors) — Error handling pattern detector
 - [go-auto-upgrade](https://github.com/larsartmann/go-auto-upgrade) — Dependency upgrade automation
 
-Standards:
+**Standards:**
 
 - [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) — Static Analysis Results Interchange Format
 - [LSP](https://microsoft.github.io/language-server-protocol/) — Language Server Protocol
