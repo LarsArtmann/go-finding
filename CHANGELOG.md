@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`FlightRecorderHook` concurrent `WriteTo` race** — `runtime/trace.FlightRecorder.WriteTo` is not concurrency-safe. Two slow stages firing snapshots concurrently would produce an "already in progress" error. Fixed by adding a `writeMu sync.Mutex` that serializes WriteTo calls.
 - **`sanitizeFilename("")` produced malformed filenames** — Empty reason strings produced filenames like `go-finding-trace-000-.trace`. Now returns `"snapshot"` as the default reason label when sanitization yields an empty string.
 
+## [1.4.2] - 2026-08-06
+
+### Fixed
+
+- **Non-deterministic JSON/SARIF output** — All `json.Marshal`/`json.MarshalWrite` calls in production code now pass `json.Deterministic(true)`, ensuring Go map keys (SARIF `properties` bag, `Summary.bySeverity`, `Summary.byCategory`, `Finding.Metadata`, etc.) serialize in sorted order on every run. Previously, `encoding/json/v2` serialized map keys in unspecified order, making every consumer that snapshots or diffs SARIF/JSON output flaky. Affects `Report.MarshalJSON`, `Report.PrettyJSON`, `Report.PrettyJSONFiltered`, `Report.WriteJSON`, `Finding.LineJSON`, `Finding.WriteJSON`, `Report.ToSARIFWithOpts`, and `Report.WriteSARIFWithOpts`.
+
 ## [1.4.1] - 2026-07-28
 
 Internal refactoring and test-infrastructure sweep. No public API changes.

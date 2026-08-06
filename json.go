@@ -31,7 +31,7 @@ func (r *Report) MarshalJSON() ([]byte, error) {
 			Tool:     r.Tool,
 			Findings: r.findings,
 			Summary:  r.Summary,
-		})
+		}, json.Deterministic(true))
 	})
 	if err != nil {
 		return nil, fmt.Errorf("marshal report: %w", err)
@@ -95,7 +95,7 @@ func (r *Report) JSON() (string, error) {
 // PrettyJSON returns a formatted JSON representation of the report.
 // Includes all findings, including suppressed ones.
 func (r *Report) PrettyJSON() (string, error) {
-	return marshalJSONString(json.Marshal(r, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  ")))
+	return marshalJSONString(json.Marshal(r, json.Deterministic(true), jsontext.WithIndentPrefix(""), jsontext.WithIndent("  ")))
 }
 
 // PrettyJSONFiltered returns a formatted JSON representation with only
@@ -119,7 +119,7 @@ func (r *Report) PrettyJSONFiltered() (string, error) {
 
 	filtered.ComputeSummary()
 
-	return marshalJSONString(json.Marshal(filtered, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  ")))
+	return marshalJSONString(json.Marshal(filtered, json.Deterministic(true), jsontext.WithIndentPrefix(""), jsontext.WithIndent("  ")))
 }
 
 // FromJSON parses a Finding from JSON and validates required fields.
@@ -177,13 +177,13 @@ func FindingsFromJSON(data []byte) ([]Finding, int, error) {
 
 // LineJSON returns compact JSON (single line).
 func (f Finding) LineJSON() (string, error) {
-	return marshalJSONString(json.Marshal(f))
+	return marshalJSONString(json.Marshal(f, json.Deterministic(true)))
 }
 
 // WriteJSON writes compact JSON directly to w.
 // Avoids the intermediate string allocation of LineJSON.
 func (f Finding) WriteJSON(w io.Writer) error {
-	err := json.MarshalWrite(w, f)
+	err := json.MarshalWrite(w, f, json.Deterministic(true))
 	if err != nil {
 		return fmt.Errorf("encoding finding JSON: %w", err)
 	}
@@ -199,7 +199,7 @@ func (f Finding) WriteJSON(w io.Writer) error {
 // Avoids the intermediate string allocation of PrettyJSON.
 // Safe for concurrent use.
 func (r *Report) WriteJSON(w io.Writer) error {
-	err := json.MarshalWrite(w, r, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
+	err := json.MarshalWrite(w, r, json.Deterministic(true), jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
 	if err != nil {
 		return fmt.Errorf("encoding report JSON: %w", err)
 	}
