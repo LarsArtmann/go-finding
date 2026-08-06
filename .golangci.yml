@@ -366,6 +366,7 @@ linters:
       - \.gen\.go$
       - _templ\.go$
       - cmd/go-finding/
+      - pipeline/
       - vendor/
 formatters:
   enable:
@@ -382,6 +383,7 @@ formatters:
     paths:
       - _templ\.go$
       - cmd/go-finding/
+      - pipeline/
 issues:
   max-issues-per-linter: 100
   max-same-issues: 5

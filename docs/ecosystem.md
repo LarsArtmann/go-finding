@@ -43,12 +43,12 @@ The hub. Defines the unified `Finding` type, the detect-triage-fix-verify pipeli
 
 Four Go modules with Unix-style decomposition:
 
-| Module | Path | Role |
-|--------|------|------|
-| Core | `github.com/larsartmann/go-finding` | Types, filtering, merging, SARIF, LSP, formatting |
-| Pipeline | `github.com/larsartmann/go-finding/pipeline` | Detect-triage-fix-verify loop, fix engine |
-| Analysis | `github.com/larsartmann/go-finding/analysis` | go/analysis diagnostic conversion |
-| CLI | `github.com/larsartmann/go-finding/cmd/go-finding` | Command-line tool with config, output formats |
+| Module   | Path                                               | Role                                              |
+| -------- | -------------------------------------------------- | ------------------------------------------------- |
+| Core     | `github.com/larsartmann/go-finding`                | Types, filtering, merging, SARIF, LSP, formatting |
+| Pipeline | `github.com/larsartmann/go-finding/pipeline`       | Detect-triage-fix-verify loop, fix engine         |
+| Analysis | `github.com/larsartmann/go-finding/analysis`       | go/analysis diagnostic conversion                 |
+| CLI      | `github.com/larsartmann/go-finding/cmd/go-finding` | Command-line tool with config, output formats     |
 
 ### go-linter-sdk
 
@@ -109,25 +109,25 @@ The newer SDKs eliminate this pattern at the source. `go-structure-linter` prove
 
 The `go-linter-sdk` README quantifies the cost of the bridge pattern:
 
-| Tool | Converter LOC |
-|------|--------------|
-| branching-flow | 1,871 |
-| erraudit | 1,214 |
+| Tool                | Converter LOC                      |
+| ------------------- | ---------------------------------- |
+| branching-flow      | 1,871                              |
+| erraudit            | 1,214                              |
 | go-structure-linter | 0 (`type Issue = finding.Finding`) |
 
 ## SDK Comparison
 
 All three SDKs serve the same meta-pattern: extract shared plumbing from N tools that target go-finding. They differ in abstraction level and tool category.
 
-| Aspect | go-linter-sdk | linter-autoconfigure-sdk | go-checker-helpers |
-|--------|---------------|--------------------------|--------------------|
-| **For** | Linters (find code issues) | Auto-configurers (fix config files) | BuildFlow checkers |
-| **Abstraction level** | High (full rule framework) | Medium (config lifecycle) | Low (utility functions) |
-| **Core abstraction** | `Rule` + `Registry` | `ConfigIssue` + `ProviderSpec` | `NewFinding` + `ApplyDirectFixes` |
-| **Owns execution?** | Yes (`Registry.Run`) | Partially (`ProviderSpec`) | No (call what you need) |
-| **Opinionated shape?** | Yes (`Rule` interface) | Yes (`Analyze`/`Repair`) | No |
-| **Extra deps** | none | go-atomic-write | go-error-family, samber/lo |
-| **Eliminates** | Violation-to-Finding converter | Config I/O + priority mapping | Finding construction + fix loop boilerplate |
+| Aspect                 | go-linter-sdk                  | linter-autoconfigure-sdk            | go-checker-helpers                          |
+| ---------------------- | ------------------------------ | ----------------------------------- | ------------------------------------------- |
+| **For**                | Linters (find code issues)     | Auto-configurers (fix config files) | BuildFlow checkers                          |
+| **Abstraction level**  | High (full rule framework)     | Medium (config lifecycle)           | Low (utility functions)                     |
+| **Core abstraction**   | `Rule` + `Registry`            | `ConfigIssue` + `ProviderSpec`      | `NewFinding` + `ApplyDirectFixes`           |
+| **Owns execution?**    | Yes (`Registry.Run`)           | Partially (`ProviderSpec`)          | No (call what you need)                     |
+| **Opinionated shape?** | Yes (`Rule` interface)         | Yes (`Analyze`/`Repair`)            | No                                          |
+| **Extra deps**         | none                           | go-atomic-write                     | go-error-family, samber/lo                  |
+| **Eliminates**         | Violation-to-Finding converter | Config I/O + priority mapping       | Finding construction + fix loop boilerplate |
 
 ## Dependency Graph
 
