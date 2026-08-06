@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-08-06
+
+Deterministic output, batch validation, pipeline observability, and tag equality fix.
+
 ### Added
 
 - **`ValidateAll(findings []Finding) map[int]error`** — Batch validation helper. Returns a map of index → error for all invalid findings in a slice, or nil if all are valid. Lazy-allocates only when at least one finding is invalid. Use for validating detector output or config-loaded findings without manual loop boilerplate.
@@ -18,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Snapshot(reason) (path, error)` — manual on-demand snapshot
   - `Close()` — stops recorder, waits for in-flight async snapshots
   - CLI flags: `-trace` (enable), `-trace-dir` (output directory), `-trace-slow` (auto-snapshot threshold, e.g. `30s`)
+- **Determinism regression tests** — `TestDeterminism_*_RawBytesIdentical` test suite (8 tests) verifying all JSON/SARIF marshal paths produce byte-identical output across 100 invocations. Tests compare raw `[]byte`, not parsed structures. The SARIF test is proven to fail without `json.Deterministic(true)`.
 
 ### Changed
 
@@ -25,15 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Non-deterministic JSON/SARIF output** — All `json.Marshal`/`json.MarshalWrite` calls in production code now pass `json.Deterministic(true)`, ensuring Go map keys (SARIF `properties` bag, `Summary.bySeverity`, `Summary.byCategory`, `Finding.Metadata`, etc.) serialize in sorted order on every run. Previously, `encoding/json/v2` serialized `map[string]any` keys (SARIF properties) in unspecified order, making every consumer that snapshots or diffs SARIF output flaky. Affects `Report.MarshalJSON`, `Report.PrettyJSON`, `Report.PrettyJSONFiltered`, `Report.WriteJSON`, `Finding.LineJSON`, `Finding.WriteJSON`, `Report.ToSARIFWithOpts`, and `Report.WriteSARIFWithOpts`.
 - **`Finding.Equal()` tag-order sensitivity** — Was using `slices.Equal` for tag comparison, making findings with the same tags in different order compare as unequal. The documentation and ROADMAP always claimed order-insensitive equality. Fixed with a `tagsEqual` helper that clones, sorts, then compares. This is a semantic behavior change that aligns the implementation with the documented contract.
 - **`FlightRecorderHook` concurrent `WriteTo` race** — `runtime/trace.FlightRecorder.WriteTo` is not concurrency-safe. Two slow stages firing snapshots concurrently would produce an "already in progress" error. Fixed by adding a `writeMu sync.Mutex` that serializes WriteTo calls.
 - **`sanitizeFilename("")` produced malformed filenames** — Empty reason strings produced filenames like `go-finding-trace-000-.trace`. Now returns `"snapshot"` as the default reason label when sanitization yields an empty string.
-
-## [1.4.2] - 2026-08-06
-
-### Fixed
-
-- **Non-deterministic JSON/SARIF output** — All `json.Marshal`/`json.MarshalWrite` calls in production code now pass `json.Deterministic(true)`, ensuring Go map keys (SARIF `properties` bag, `Summary.bySeverity`, `Summary.byCategory`, `Finding.Metadata`, etc.) serialize in sorted order on every run. Previously, `encoding/json/v2` serialized map keys in unspecified order, making every consumer that snapshots or diffs SARIF/JSON output flaky. Affects `Report.MarshalJSON`, `Report.PrettyJSON`, `Report.PrettyJSONFiltered`, `Report.WriteJSON`, `Finding.LineJSON`, `Finding.WriteJSON`, `Report.ToSARIFWithOpts`, and `Report.WriteSARIFWithOpts`.
 
 ## [1.4.1] - 2026-07-28
 
@@ -753,8 +753,8 @@ All APIs deprecated since v0.6.0–v0.9.0 have been removed. See `docs/MIGRATION
 
 ---
 
-[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.4.2...HEAD
-[1.4.2]: https://github.com/larsartmann/go-finding/compare/v1.4.1...v1.4.2
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/larsartmann/go-finding/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/larsartmann/go-finding/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/larsartmann/go-finding/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/larsartmann/go-finding/compare/v1.2.1...v1.3.0

@@ -482,16 +482,41 @@ func TestReport_UnmarshalJSON_ConcurrentSafety(t *testing.T) {
 // json.Deterministic(true).
 func findingWithMaps() Finding {
 	return Finding{
-		ID:         "tool:rule:file.go:10:5",
-		Rule:       "rule1",
-		ToolName:   "tool1",
-		Message:    "test message",
-		Severity:   SeverityError,
-		Position:   Position{File: FilePath("file.go"), Line: 10, Column: 5},
-		Category:   "security",
-		Metadata:   map[string]string{"zebra": "z", "alpha": "a", "mike": "m", "delta": "d", "sierra": "s", "bravo": "b", "tango": "t", "hotel": "h", "india": "i", "kilo": "k", "lima": "l", "november": "n", "oscar": "o", "papa": "p", "quebec": "q", "romeo": "r", "uniform": "u", "victor": "v", "whiskey": "w", "xray": "x"},
-		Tags:       []Tag{"tag-c", "tag-a", "tag-b"},
+		ID:       "tool:rule:file.go:10:5",
+		Rule:     "rule1",
+		ToolName: "tool1",
+		Message:  "test message",
+		Severity: SeverityError,
+		Position: Position{File: FilePath("file.go"), Line: 10, Column: 5},
+		Category: "security",
+		Metadata: map[string]string{
+			"zebra": "z", "alpha": "a", "mike": "m", "delta": "d", "sierra": "s",
+			"bravo": "b", "tango": "t", "hotel": "h", "india": "i", "kilo": "k",
+			"lima": "l", "november": "n", "oscar": "o", "papa": "p", "quebec": "q",
+			"romeo": "r", "uniform": "u", "victor": "v", "whiskey": "w", "xray": "x",
+		},
+		Tags: []Tag{"tag-c", "tag-a", "tag-b"},
 	}
+}
+
+// reportWithMaps builds a Report with multiple map-bearing findings for
+// determinism testing.
+func reportWithMaps() *Report {
+	r := NewReport(ToolInfo{Name: "det-test", Version: "1.0"})
+	r.AddFinding(findingWithMaps())
+	r.AddFinding(Finding{
+		ID:       "f2",
+		Rule:     "r2",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("b.go"), Line: 2},
+		Metadata: map[string]string{
+			"k0": "v0", "k1": "v1", "k2": "v2", "k3": "v3", "k4": "v4",
+			"k5": "v5", "k6": "v6", "k7": "v7", "k8": "v8", "k9": "v9",
+		},
+	})
+	r.ComputeSummary()
+
+	return r
 }
 
 func TestDeterminism_FindingJSON_RawBytesIdentical(t *testing.T) {
@@ -541,16 +566,7 @@ func TestDeterminism_FindingWriteJSON_RawBytesIdentical(t *testing.T) {
 func TestDeterminism_ReportJSON_RawBytesIdentical(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "det-test", Version: "1.0"})
-	r.AddFinding(findingWithMaps())
-	r.AddFinding(Finding{
-		ID:       "f2",
-		Rule:     "r2",
-		Severity: SeverityWarning,
-		Position: Position{File: FilePath("b.go"), Line: 2},
-		Metadata: map[string]string{"k9": "v9", "k0": "v0", "k1": "v1", "k2": "v2", "k3": "v3", "k4": "v4", "k5": "v5", "k6": "v6", "k7": "v7", "k8": "v8"},
-	})
-	r.ComputeSummary()
+	r := reportWithMaps()
 
 	first, err := r.JSON()
 	if err != nil {
@@ -596,16 +612,7 @@ func TestDeterminism_ReportPrettyJSON_RawBytesIdentical(t *testing.T) {
 func TestDeterminism_ReportPrettyJSONFiltered_RawBytesIdentical(t *testing.T) {
 	t.Parallel()
 
-	r := NewReport(ToolInfo{Name: "det-test", Version: "1.0"})
-	r.AddFinding(findingWithMaps())
-	r.AddFinding(Finding{
-		ID:       "f2",
-		Rule:     "r2",
-		Severity: SeverityWarning,
-		Position: Position{File: FilePath("b.go"), Line: 2},
-		Metadata: map[string]string{"k9": "v9", "k0": "v0", "k1": "v1", "k2": "v2", "k3": "v3", "k4": "v4", "k5": "v5", "k6": "v6", "k7": "v7", "k8": "v8"},
-	})
-	r.ComputeSummary()
+	r := reportWithMaps()
 
 	first, err := r.PrettyJSONFiltered()
 	if err != nil {
