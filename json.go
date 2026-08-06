@@ -95,7 +95,11 @@ func (r *Report) JSON() (string, error) {
 // PrettyJSON returns a formatted JSON representation of the report.
 // Includes all findings, including suppressed ones.
 func (r *Report) PrettyJSON() (string, error) {
-	return marshalJSONString(json.Marshal(r, json.Deterministic(true), jsontext.WithIndentPrefix(""), jsontext.WithIndent("  ")))
+	return marshalJSONString(json.Marshal(r,
+		json.Deterministic(true),
+		jsontext.WithIndentPrefix(""),
+		jsontext.WithIndent("  "),
+	))
 }
 
 // PrettyJSONFiltered returns a formatted JSON representation with only
@@ -119,7 +123,11 @@ func (r *Report) PrettyJSONFiltered() (string, error) {
 
 	filtered.ComputeSummary()
 
-	return marshalJSONString(json.Marshal(filtered, json.Deterministic(true), jsontext.WithIndentPrefix(""), jsontext.WithIndent("  ")))
+	return marshalJSONString(json.Marshal(filtered,
+		json.Deterministic(true),
+		jsontext.WithIndentPrefix(""),
+		jsontext.WithIndent("  "),
+	))
 }
 
 // FromJSON parses a Finding from JSON and validates required fields.
