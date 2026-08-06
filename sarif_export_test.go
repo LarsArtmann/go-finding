@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"bytes"
 	"context"
 	"math"
 	"strings"
@@ -238,5 +239,73 @@ func TestSeverityToSARIFLevel(t *testing.T) {
 				t.Errorf("severityToSARIFLevel(%v) = %q, want %q", tt.sev, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestDeterminism_ToSARIF_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "det-sarif", Version: "1.0"})
+	r.AddFinding(Finding{
+		ID:       "f1",
+		Rule:     "r1",
+		Severity: SeverityError,
+		Position: Position{File: FilePath("a.go"), Line: 10},
+		Metadata: map[string]string{"zebra": "z", "alpha": "a", "mike": "m", "delta": "d"},
+		Tags:     []Tag{"tag-c", "tag-a", "tag-b"},
+	})
+	r.AddFinding(Finding{
+		ID:       "f2",
+		Rule:     "r2",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("b.go"), Line: 20},
+		Metadata: map[string]string{"k2": "v2", "k0": "v0", "k1": "v1"},
+	})
+	r.ComputeSummary()
+
+	first, err := r.ToSARIF()
+	if err != nil {
+		t.Fatalf("first ToSARIF: %v", err)
+	}
+
+	for range 100 {
+		got, err := r.ToSARIF()
+		if err != nil {
+			t.Fatalf("ToSARIF: %v", err)
+		}
+
+		if !bytes.Equal(first, got) {
+			t.Fatalf("non-deterministic ToSARIF output")
+		}
+	}
+}
+
+func TestDeterminism_WriteSARIF_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "det-sarif", Version: "1.0"})
+	r.AddFinding(Finding{
+		ID:       "f1",
+		Rule:     "r1",
+		Severity: SeverityError,
+		Position: Position{File: FilePath("a.go"), Line: 10},
+		Metadata: map[string]string{"zebra": "z", "alpha": "a", "mike": "m"},
+	})
+	r.ComputeSummary()
+
+	var first bytes.Buffer
+	if err := r.WriteSARIF(context.Background(), &first); err != nil {
+		t.Fatalf("first WriteSARIF: %v", err)
+	}
+
+	for range 100 {
+		var buf bytes.Buffer
+		if err := r.WriteSARIF(context.Background(), &buf); err != nil {
+			t.Fatalf("WriteSARIF: %v", err)
+		}
+
+		if !bytes.Equal(first.Bytes(), buf.Bytes()) {
+			t.Fatalf("non-deterministic WriteSARIF output")
+		}
 	}
 }

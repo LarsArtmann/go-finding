@@ -476,3 +476,174 @@ func TestReport_UnmarshalJSON_ConcurrentSafety(t *testing.T) {
 
 	wg.Wait()
 }
+
+// findingWithMaps builds a Finding whose JSON output includes map-bearing fields
+// (Metadata, Tags) that would serialize in non-deterministic key order without
+// json.Deterministic(true).
+func findingWithMaps() Finding {
+	return Finding{
+		ID:         "tool:rule:file.go:10:5",
+		Rule:       "rule1",
+		ToolName:   "tool1",
+		Message:    "test message",
+		Severity:   SeverityError,
+		Position:   Position{File: FilePath("file.go"), Line: 10, Column: 5},
+		Category:   "security",
+		Metadata:   map[string]string{"zebra": "z", "alpha": "a", "mike": "m", "delta": "d", "sierra": "s", "bravo": "b", "tango": "t", "hotel": "h", "india": "i", "kilo": "k", "lima": "l", "november": "n", "oscar": "o", "papa": "p", "quebec": "q", "romeo": "r", "uniform": "u", "victor": "v", "whiskey": "w", "xray": "x"},
+		Tags:       []Tag{"tag-c", "tag-a", "tag-b"},
+	}
+}
+
+func TestDeterminism_FindingJSON_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	f := findingWithMaps()
+
+	first, err := f.LineJSON()
+	if err != nil {
+		t.Fatalf("first LineJSON: %v", err)
+	}
+
+	for range 100 {
+		got, err := f.LineJSON()
+		if err != nil {
+			t.Fatalf("LineJSON: %v", err)
+		}
+
+		if got != first {
+			t.Fatalf("non-deterministic Finding JSON output:\n  run 1: %s\n  run N: %s", first, got)
+		}
+	}
+}
+
+func TestDeterminism_FindingWriteJSON_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	f := findingWithMaps()
+
+	var first bytes.Buffer
+	if err := f.WriteJSON(&first); err != nil {
+		t.Fatalf("first WriteJSON: %v", err)
+	}
+
+	for range 100 {
+		var buf bytes.Buffer
+		if err := f.WriteJSON(&buf); err != nil {
+			t.Fatalf("WriteJSON: %v", err)
+		}
+
+		if !bytes.Equal(first.Bytes(), buf.Bytes()) {
+			t.Fatalf("non-deterministic Finding.WriteJSON output")
+		}
+	}
+}
+
+func TestDeterminism_ReportJSON_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "det-test", Version: "1.0"})
+	r.AddFinding(findingWithMaps())
+	r.AddFinding(Finding{
+		ID:       "f2",
+		Rule:     "r2",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("b.go"), Line: 2},
+		Metadata: map[string]string{"k9": "v9", "k0": "v0", "k1": "v1", "k2": "v2", "k3": "v3", "k4": "v4", "k5": "v5", "k6": "v6", "k7": "v7", "k8": "v8"},
+	})
+	r.ComputeSummary()
+
+	first, err := r.JSON()
+	if err != nil {
+		t.Fatalf("first JSON: %v", err)
+	}
+
+	for range 100 {
+		got, err := r.JSON()
+		if err != nil {
+			t.Fatalf("JSON: %v", err)
+		}
+
+		if got != first {
+			t.Fatalf("non-deterministic Report JSON output")
+		}
+	}
+}
+
+func TestDeterminism_ReportPrettyJSON_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "det-test", Version: "1.0"})
+	r.AddFinding(findingWithMaps())
+	r.ComputeSummary()
+
+	first, err := r.PrettyJSON()
+	if err != nil {
+		t.Fatalf("first PrettyJSON: %v", err)
+	}
+
+	for range 100 {
+		got, err := r.PrettyJSON()
+		if err != nil {
+			t.Fatalf("PrettyJSON: %v", err)
+		}
+
+		if got != first {
+			t.Fatalf("non-deterministic Report.PrettyJSON output")
+		}
+	}
+}
+
+func TestDeterminism_ReportPrettyJSONFiltered_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "det-test", Version: "1.0"})
+	r.AddFinding(findingWithMaps())
+	r.AddFinding(Finding{
+		ID:       "f2",
+		Rule:     "r2",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("b.go"), Line: 2},
+		Metadata: map[string]string{"k9": "v9", "k0": "v0", "k1": "v1", "k2": "v2", "k3": "v3", "k4": "v4", "k5": "v5", "k6": "v6", "k7": "v7", "k8": "v8"},
+	})
+	r.ComputeSummary()
+
+	first, err := r.PrettyJSONFiltered()
+	if err != nil {
+		t.Fatalf("first PrettyJSONFiltered: %v", err)
+	}
+
+	for range 100 {
+		got, err := r.PrettyJSONFiltered()
+		if err != nil {
+			t.Fatalf("PrettyJSONFiltered: %v", err)
+		}
+
+		if got != first {
+			t.Fatalf("non-deterministic Report.PrettyJSONFiltered output")
+		}
+	}
+}
+
+func TestDeterminism_ReportWriteJSON_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "det-test", Version: "1.0"})
+	r.AddFinding(findingWithMaps())
+	r.ComputeSummary()
+
+	var first bytes.Buffer
+	if err := r.WriteJSON(&first); err != nil {
+		t.Fatalf("first WriteJSON: %v", err)
+	}
+
+	for range 100 {
+		var buf bytes.Buffer
+		if err := r.WriteJSON(&buf); err != nil {
+			t.Fatalf("WriteJSON: %v", err)
+		}
+
+		if !bytes.Equal(first.Bytes(), buf.Bytes()) {
+			t.Fatalf("non-deterministic Report.WriteJSON output")
+		}
+	}
+}
