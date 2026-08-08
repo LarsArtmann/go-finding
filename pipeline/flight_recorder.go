@@ -85,6 +85,7 @@ type FlightRecorderHook struct {
 	stageStarts   map[Stage]time.Time
 	snapshotCount int
 	closed        bool
+	degraded      bool
 	snapshotWg    sync.WaitGroup
 
 	// writeMu serializes concurrent WriteTo calls.
@@ -94,8 +95,12 @@ type FlightRecorderHook struct {
 
 // NewFlightRecorderHook creates and starts a flight recorder.
 //
-// Returns an error if the recorder cannot be started (e.g., another
-// flight recorder is already active — only one may exist at a time).
+// If another flight recorder is already active (Go's runtime allows only one
+// at a time), the hook enters degraded mode: it returns successfully but all
+// snapshot operations are silently skipped. Check Degraded() to detect this.
+//
+// Returns an error if the output directory cannot be created or if the recorder
+// fails to start for reasons other than a singleton conflict.
 func NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, error) {
 	if config.MinAge <= 0 {
 		config.MinAge = defaultFRMinAge
@@ -119,10 +124,26 @@ func NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, er
 	})
 
 	if err := recorder.Start(); err != nil {
+		if strings.Contains(err.Error(), "flight recorder already enabled") {
+			if config.Logger != nil {
+				config.Logger.Warn(
+					"flight recorder degraded: another recorder is already active; snapshots will be skipped",
+					slog.String("error", err.Error()),
+				)
+			}
+
+			return &FlightRecorderHook{ //nolint:exhaustruct // zero-valued fields are intentional
+				fr:          recorder,
+				config:      config,
+				degraded:    true,
+				stageStarts: make(map[Stage]time.Time),
+			}, nil
+		}
+
 		return nil, fmt.Errorf("start flight recorder: %w", err)
 	}
 
-	return &FlightRecorderHook{ //nolint:exhaustruct // mu, snapshotCount, closed, snapshotWg are zero-valued intentionally
+	return &FlightRecorderHook{ //nolint:exhaustruct // mu, snapshotCount, closed, degraded, snapshotWg are zero-valued intentionally
 		fr:          recorder,
 		config:      config,
 		stageStarts: make(map[Stage]time.Time),
@@ -151,7 +172,7 @@ func (h *FlightRecorderHook) recordStageBoundary(event StageEvent) bool {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	if h.closed {
+	if h.closed || h.degraded {
 		return false
 	}
 
@@ -221,7 +242,7 @@ func (h *FlightRecorderHook) asyncSnapshot(ctx context.Context, event StageEvent
 func (h *FlightRecorderHook) Snapshot(ctx context.Context, reason string) (string, error) {
 	h.mu.Lock()
 
-	if h.closed || !h.fr.Enabled() {
+	if h.closed || h.degraded || !h.fr.Enabled() {
 		h.mu.Unlock()
 
 		return "", ErrFlightRecorderNotEnabled
@@ -268,6 +289,17 @@ func (h *FlightRecorderHook) writeSnapshot(ctx context.Context, num int, reason 
 	return path, nil
 }
 
+// Degraded reports whether the hook is operating in degraded mode because
+// another flight recorder was already active when NewFlightRecorderHook was
+// called. In degraded mode, all snapshot operations are silently skipped.
+// The hook is safe to register as a StageHook — it simply does nothing.
+func (h *FlightRecorderHook) Degraded() bool {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	return h.degraded
+}
+
 // Enabled reports whether the flight recorder is active and capturing.
 //
 // Note: There is an inherent TOCTOU window between calling Enabled() and
@@ -279,7 +311,7 @@ func (h *FlightRecorderHook) Enabled() bool {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	return !h.closed && h.fr.Enabled()
+	return !h.degraded && !h.closed && h.fr.Enabled()
 }
 
 // Close stops the flight recorder and waits for any in-flight snapshots

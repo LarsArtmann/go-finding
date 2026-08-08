@@ -463,6 +463,40 @@ func TestFlightRecorderHook_SlowLastStageInPipeline(t *testing.T) {
 	g.Expect(traceFiles).ToNot(gomega.BeEmpty(), "at least one slow stage snapshot should exist")
 }
 
+func TestFlightRecorderHook_DegradedWhenConflict(t *testing.T) {
+	// Must NOT call t.Parallel() — flight recorder is a global singleton.
+	primary := newTestFlightRecorderHook(t, DefaultFlightRecorderConfig())
+	defer primary.Close()
+
+	g := gomega.NewWithT(t)
+	g.Expect(primary.Enabled()).To(gomega.BeTrue())
+	g.Expect(primary.Degraded()).To(gomega.BeFalse())
+
+	// Second hook should enter degraded mode, not fail.
+	degraded, err := NewFlightRecorderHook(FlightRecorderConfig{
+		MinAge:    time.Second,
+		MaxBytes:  1 << 20,
+		OutputDir: t.TempDir(),
+	})
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+	defer degraded.Close()
+
+	g.Expect(degraded.Degraded()).To(gomega.BeTrue())
+	g.Expect(degraded.Enabled()).To(gomega.BeFalse())
+
+	// Snapshot on degraded hook should return error.
+	_, err = degraded.Snapshot(context.Background(), "degraded-test")
+	g.Expect(err).To(gomega.HaveOccurred())
+	g.Expect(errors.Is(err, ErrFlightRecorderNotEnabled)).To(gomega.BeTrue())
+
+	// OnStageEvent should still work (no-op, no error).
+	err = degraded.OnStageEvent(context.Background(), StageEvent{
+		Stage:  StageDetect,
+		Timing: StageBefore,
+	})
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+}
+
 func TestFlightRecorderHook_ConcurrentStageEventsSafe(t *testing.T) {
 	// Fire Before/After events for all stages from multiple goroutines.
 	// Designed to be run with -race to detect data races in stageStarts map.
