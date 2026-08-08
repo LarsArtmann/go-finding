@@ -53,7 +53,7 @@
 | SARIF schema validation test            | 🔵 `BLOCKED` | Low    | —      | Requires vendoring 7K+ line SARIF 2.1.0 JSON schema                                                                       |
 | Consumer compatibility test             | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code                                      |
 | Per-module golangci-lint configs        | ⬜ `TODO`    | Low    | Medium | Workspace-level lint suffices but loses per-module precision. Flagged since modularization.                               |
-| go-arch-lint module boundary CI         | ⬜ `TODO`    | Low    | Medium | Enforce module dependency boundaries in CI. Flagged in modularization reports.                                            |
+| go-arch-lint module boundary CI         | ✅ `DONE`    | Low    | Medium | `.go-arch-lint.yml` defines 11 component boundaries. Wired into ci.yml `arch-check` job.                       |
 | `go.work sync` idempotency CI           | ✅ `DONE`    | Low    | Low    | `scripts/go-work-sync.sh` — runs `go work sync` twice, checks for changes. Wired into ci.yml as `go-work-sync` job.                |
 | Replace directive audit CI              | ✅ `DONE`    | Low    | Low    | `scripts/replace-audit.sh` — verifies all sub-module replace directives. Wired into ci.yml `structural-checks` job.             |
 | Version drift detection CI              | ✅ `DONE`    | Low    | Low    | `scripts/version-drift.sh` — cross-checks all 4 module versions against `version.go`. Wired into ci.yml `structural-checks` job.|

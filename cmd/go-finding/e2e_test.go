@@ -206,6 +206,58 @@ flightRecorder:
 	g.Expect(hasTrace).To(BeTrue(), "expected at least one .trace file in config-based trace dir")
 }
 
+func TestRun_E2E_TraceViaConfigFile_AllFields(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	bin := buildBinary(t)
+	tmpDir := t.TempDir()
+	initGoModule(t, tmpDir)
+
+	traceDir := filepath.Join(tmpDir, "traces")
+
+	cfgContent := `
+maxIterations: 1
+detectors:
+  - name: govet
+flightRecorder:
+  enabled: true
+  outputDir: "` + traceDir + `"
+  slowStageThreshold: "1ns"
+  minAge: "1m"
+  maxBytes: 4194304
+`
+	cfgFile := filepath.Join(tmpDir, "config.yaml")
+	g.Expect(os.WriteFile(cfgFile, []byte(cfgContent), 0o644)).NotTo(HaveOccurred())
+
+	goFile := filepath.Join(tmpDir, "main.go")
+	g.Expect(os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644)).
+		NotTo(HaveOccurred())
+
+	cmd := exec.CommandContext( //nolint:gosec // E2E test
+		context.Background(),
+		bin,
+		"-config="+cfgFile,
+		"-dir="+tmpDir,
+	)
+	out, err := cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(out)).To(ContainSubstring("Flight recorder enabled via config"))
+
+	entries, readErr := os.ReadDir(traceDir)
+	g.Expect(readErr).NotTo(HaveOccurred())
+
+	var hasTrace bool
+
+	for _, e := range entries {
+		if strings.HasSuffix(e.Name(), ".trace") {
+			hasTrace = true
+			break
+		}
+	}
+
+	g.Expect(hasTrace).To(BeTrue(), "expected at least one .trace file when all 5 config fields are set")
+}
+
 func TestRun_E2E_FilterGenerated(t *testing.T) {
 	g := NewParallelGomega(t)
 
