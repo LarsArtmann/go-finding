@@ -115,25 +115,25 @@ Things that happen in the domain.
 
 ## Observability
 
-| Term              | Definition                                                        | Context                          |
-| ----------------- | ----------------------------------------------------------------- | -------------------------------- |
-| StageHook         | Interface for before/after stage boundary notifications           | Abort on error                   |
-| FlightRecorderHook | Wraps `runtime/trace.FlightRecorder`; snapshots on slow stages   | Diagnostic-only, never aborts    |
-| Metrics           | Timing and count data: stage durations, detector times, fixes     | Collected during pipeline run    |
-| MetricsSnapshot   | Immutable point-in-time copy of Metrics                           | Returned in PipelineResult       |
+| Term               | Definition                                                     | Context                       |
+| ------------------ | -------------------------------------------------------------- | ----------------------------- |
+| StageHook          | Interface for before/after stage boundary notifications        | Abort on error                |
+| FlightRecorderHook | Wraps `runtime/trace.FlightRecorder`; snapshots on slow stages | Diagnostic-only, never aborts |
+| Metrics            | Timing and count data: stage durations, detector times, fixes  | Collected during pipeline run |
+| MetricsSnapshot    | Immutable point-in-time copy of Metrics                        | Returned in PipelineResult    |
 
 ---
 
 ## Pipeline Configuration
 
-| Term                    | Definition                                                        | Context                          |
-| ----------------------- | ----------------------------------------------------------------- | -------------------------------- |
-| Iteration               | One complete detect → triage → apply cycle                        | Repeats until stable or max      |
-| CompletionReason        | Why the pipeline finished: stable, max-iterations, cancelled, etc.| Returned in PipelineResult       |
-| DryRun                  | Run detect+triage but skip fix application                        | "What would happen?" analysis    |
-| GracefulDegradation     | Continue on detector failures, collecting partial results         | Partial errors in result         |
-| ByteLevelConflictDetection | Precise byte-overlap detection for conflicting fixes           | More accurate than range-based   |
-| VerifyAfterFix          | Re-run detectors after fixes to confirm resolution                | Final verification pass          |
+| Term                       | Definition                                                         | Context                        |
+| -------------------------- | ------------------------------------------------------------------ | ------------------------------ |
+| Iteration                  | One complete detect → triage → apply cycle                         | Repeats until stable or max    |
+| CompletionReason           | Why the pipeline finished: stable, max-iterations, cancelled, etc. | Returned in PipelineResult     |
+| DryRun                     | Run detect+triage but skip fix application                         | "What would happen?" analysis  |
+| GracefulDegradation        | Continue on detector failures, collecting partial results          | Partial errors in result       |
+| ByteLevelConflictDetection | Precise byte-overlap detection for conflicting fixes               | More accurate than range-based |
+| VerifyAfterFix             | Re-run detectors after fixes to confirm resolution                 | Final verification pass        |
 
 ---
 

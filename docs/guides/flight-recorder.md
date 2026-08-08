@@ -64,7 +64,7 @@ flightRecorder:
   outputDir: "./traces"
   slowStageThreshold: "30s"
   minAge: "1m"
-  maxBytes: 4194304  # 4 MiB
+  maxBytes: 4194304 # 4 MiB
 ```
 
 ### JSON

@@ -11,120 +11,121 @@ All items below were implemented, tested (`-race`), linted (0 issues), CI-script
 
 ### Session Debt Fixes (from prior session's self-critique)
 
-| # | Item | Files Changed | Commit |
-|---|------|--------------|--------|
-| D1 | `flight-recorder.md` YAML/JSON examples updated from 3→5 fields (added `minAge`, `maxBytes`) | `docs/guides/flight-recorder.md` | `cc9871d` |
-| D2 | `AGENTS.md` CLI features: enumerated all 5 config-file flightRecorder fields | `AGENTS.md` | `a6d6752` |
-| D3 | E2E test for 5-field config: `TestRun_E2E_TraceViaConfigFile_AllFields` | `cmd/go-finding/e2e_test.go` | `a6d6752` |
+| #   | Item                                                                                         | Files Changed                    | Commit    |
+| --- | -------------------------------------------------------------------------------------------- | -------------------------------- | --------- |
+| D1  | `flight-recorder.md` YAML/JSON examples updated from 3→5 fields (added `minAge`, `maxBytes`) | `docs/guides/flight-recorder.md` | `cc9871d` |
+| D2  | `AGENTS.md` CLI features: enumerated all 5 config-file flightRecorder fields                 | `AGENTS.md`                      | `a6d6752` |
+| D3  | E2E test for 5-field config: `TestRun_E2E_TraceViaConfigFile_AllFields`                      | `cmd/go-finding/e2e_test.go`     | `a6d6752` |
 
 ### T10: go-arch-lint Module Boundary CI Enforcement
 
-| Sub-task | Status | Detail |
-|----------|--------|--------|
-| `.go-arch-lint.yml` config | DONE | v3 format, 11 components, test files excluded |
-| `go-arch-lint check` passes locally | DONE | "OK - No warnings found" |
-| CI job wired into ci.yml | DONE | `arch-check` job (checkout + setup-go + install + check) |
-| AGENTS.md gotcha + architecture decision | DONE | Both sections updated |
-| TODO_LIST.md updated | DONE | Changed from TODO to DONE |
-| CHANGELOG entry | DONE | Root CHANGELOG [Unreleased] |
+| Sub-task                                 | Status | Detail                                                   |
+| ---------------------------------------- | ------ | -------------------------------------------------------- |
+| `.go-arch-lint.yml` config               | DONE   | v3 format, 11 components, test files excluded            |
+| `go-arch-lint check` passes locally      | DONE   | "OK - No warnings found"                                 |
+| CI job wired into ci.yml                 | DONE   | `arch-check` job (checkout + setup-go + install + check) |
+| AGENTS.md gotcha + architecture decision | DONE   | Both sections updated                                    |
+| TODO_LIST.md updated                     | DONE   | Changed from TODO to DONE                                |
+| CHANGELOG entry                          | DONE   | Root CHANGELOG [Unreleased]                              |
 
 **Key decisions:**
+
 - Test files excluded via `excludeFiles: ["_test\.go$"]` — production boundaries are what matter.
 - `commonComponents: [gotoken, lockutil]` — these are shared utility packages any component may import.
 - `cli-detectors` allowed to import `pipeline` (detectors implement the pipeline Detector interface).
 
 ### T11: Multi-Module vs Monolith Benchmark Comparison
 
-| Sub-task | Status | Detail |
-|----------|--------|--------|
-| Build time measurement | DONE | Workspace 3.0s, per-module sum 1.1s |
-| Dependency isolation analysis | DONE | Core: 1 direct dep vs monolith 7+ |
-| Report written | DONE | `docs/reports/2026-08-08_multi-module-vs-monolith.md` |
+| Sub-task                      | Status | Detail                                                |
+| ----------------------------- | ------ | ----------------------------------------------------- |
+| Build time measurement        | DONE   | Workspace 3.0s, per-module sum 1.1s                   |
+| Dependency isolation analysis | DONE   | Core: 1 direct dep vs monolith 7+                     |
+| Report written                | DONE   | `docs/reports/2026-08-08_multi-module-vs-monolith.md` |
 
 **Finding:** Zero runtime overhead, negligible build overhead (~0.5s workspace coordination), significant dependency isolation. Recommendation: keep multi-module.
 
 ### T12: docs/guides/configuration.md
 
-| Sub-task | Status | Detail |
-|----------|--------|--------|
-| All CLI flags documented | DONE | 22 flags with type, default, description |
-| Config file YAML/JSON examples | DONE | Full examples with all fields |
-| Config file field table | DONE | All 13 top-level keys + 5 flightRecorder sub-keys |
-| CLI vs config precedence | DONE | Merge behavior table |
-| Library ConfigFile API | DONE | Extra fields (gracefulDegradation, dryRun, etc.) |
-| Runtime defaults | DONE | MaxIterations, Timeout, ParallelDetectors |
+| Sub-task                       | Status | Detail                                            |
+| ------------------------------ | ------ | ------------------------------------------------- |
+| All CLI flags documented       | DONE   | 22 flags with type, default, description          |
+| Config file YAML/JSON examples | DONE   | Full examples with all fields                     |
+| Config file field table        | DONE   | All 13 top-level keys + 5 flightRecorder sub-keys |
+| CLI vs config precedence       | DONE   | Merge behavior table                              |
+| Library ConfigFile API         | DONE   | Extra fields (gracefulDegradation, dryRun, etc.)  |
+| Runtime defaults               | DONE   | MaxIterations, Timeout, ParallelDetectors         |
 
 ### T13: docs/guides/troubleshooting.md
 
-| Sub-task | Status | Detail |
-|----------|--------|--------|
-| Build/setup errors | DONE | GOEXPERIMENT, GOPRIVATE, GOWORK=off |
-| Config file errors | DONE | YAML parsing, timeout, unknown detector/provider |
-| Pipeline runtime errors | DONE | errAlreadyRan, cancellation, partial detection, retry validation |
-| Fix application errors | DONE | Conflicts, position unresolvable, rollback failure |
-| Flight recorder errors | DONE | Not enabled, no trace files, singleton constraint |
-| Finding validation errors | DONE | ID/Rule/Tool required, severity, confidence |
-| Output errors | DONE | Permission, suppressed findings |
+| Sub-task                  | Status | Detail                                                           |
+| ------------------------- | ------ | ---------------------------------------------------------------- |
+| Build/setup errors        | DONE   | GOEXPERIMENT, GOPRIVATE, GOWORK=off                              |
+| Config file errors        | DONE   | YAML parsing, timeout, unknown detector/provider                 |
+| Pipeline runtime errors   | DONE   | errAlreadyRan, cancellation, partial detection, retry validation |
+| Fix application errors    | DONE   | Conflicts, position unresolvable, rollback failure               |
+| Flight recorder errors    | DONE   | Not enabled, no trace files, singleton constraint                |
+| Finding validation errors | DONE   | ID/Rule/Tool required, severity, confidence                      |
+| Output errors             | DONE   | Permission, suppressed findings                                  |
 
 ### T14: README.md FlightRecorder Feature Mention
 
-| Sub-task | Status | Detail |
-|----------|--------|--------|
-| FlightRecorder in feature list | DONE | Bullet point with guide link |
-| Pipeline description enhanced | DONE | Added "retry, partial success, and observability hooks" |
+| Sub-task                       | Status | Detail                                                  |
+| ------------------------------ | ------ | ------------------------------------------------------- |
+| FlightRecorder in feature list | DONE   | Bullet point with guide link                            |
+| Pipeline description enhanced  | DONE   | Added "retry, partial success, and observability hooks" |
 
 ### T15: docs/DOMAIN_LANGUAGE.md Update
 
-| Sub-task | Status | Detail |
-|----------|--------|--------|
-| Observability section | DONE | StageHook, FlightRecorderHook, Metrics, MetricsSnapshot |
-| Pipeline Configuration section | DONE | Iteration, CompletionReason, DryRun, GracefulDegradation, ByteLevelConflictDetection, VerifyAfterFix |
-| Events section expanded | DONE | Stage begin/end, slow stage, snapshot captured |
+| Sub-task                       | Status | Detail                                                                                               |
+| ------------------------------ | ------ | ---------------------------------------------------------------------------------------------------- |
+| Observability section          | DONE   | StageHook, FlightRecorderHook, Metrics, MetricsSnapshot                                              |
+| Pipeline Configuration section | DONE   | Iteration, CompletionReason, DryRun, GracefulDegradation, ByteLevelConflictDetection, VerifyAfterFix |
+| Events section expanded        | DONE   | Stage begin/end, slow stage, snapshot captured                                                       |
 
 ### T18: sanitizeFilename Fuzz Test
 
-| Sub-task | Status | Detail |
-|----------|--------|--------|
-| `FuzzSanitizeFilename` written | DONE | `pipeline/flight_recorder_fuzz_test.go` |
-| Seed cases (9) | DONE | detect, slow-stage, empty, special chars, etc. |
-| 10s fuzz run | DONE | 49K executions, 0 failures, 37 interesting inputs |
-| Invariants verified | DONE | Non-empty, no consecutive hyphens, no leading/trailing hyphens, only safe characters |
+| Sub-task                       | Status | Detail                                                                               |
+| ------------------------------ | ------ | ------------------------------------------------------------------------------------ |
+| `FuzzSanitizeFilename` written | DONE   | `pipeline/flight_recorder_fuzz_test.go`                                              |
+| Seed cases (9)                 | DONE   | detect, slow-stage, empty, special chars, etc.                                       |
+| 10s fuzz run                   | DONE   | 49K executions, 0 failures, 37 interesting inputs                                    |
+| Invariants verified            | DONE   | Non-empty, no consecutive hyphens, no leading/trailing hyphens, only safe characters |
 
 ### T19: SARIF Schema Validation Edge Case Tests
 
-| Sub-task | Status | Detail |
-|----------|--------|--------|
-| Multiple findings test | DONE | Verifies 2 findings → 2 results |
-| File-level position test | DONE | Verifies region handling for Line=0 |
-| Minimal finding test | DONE | Verifies fixes/relatedLocations omitted |
-| Empty report test | DONE | Verifies valid SARIF with 0 findings |
-| Suppressed finding test | DONE | Verifies suppressions array emitted |
-| Shared helper extracted | DONE | `sarifExtractResults` eliminates type-assertion boilerplate |
+| Sub-task                 | Status | Detail                                                      |
+| ------------------------ | ------ | ----------------------------------------------------------- |
+| Multiple findings test   | DONE   | Verifies 2 findings → 2 results                             |
+| File-level position test | DONE   | Verifies region handling for Line=0                         |
+| Minimal finding test     | DONE   | Verifies fixes/relatedLocations omitted                     |
+| Empty report test        | DONE   | Verifies valid SARIF with 0 findings                        |
+| Suppressed finding test  | DONE   | Verifies suppressions array emitted                         |
+| Shared helper extracted  | DONE   | `sarifExtractResults` eliminates type-assertion boilerplate |
 
 ### Cross-Cutting Updates
 
-| Item | Status |
-|------|--------|
-| AGENTS.md CI scripts gotcha: "Five" → "Six" (+ go-arch-lint) | DONE |
-| AGENTS.md go-arch-lint architecture decision added | DONE |
-| CHANGELOG [Unreleased] — 6 new Added entries, 3 new Changed entries | DONE |
-| TODO_LIST.md — go-arch-lint TODO→DONE, SARIF validation BLOCKED→DONE | DONE |
-| docs/guides/flight-recorder.md — all examples now show 5 fields | DONE |
+| Item                                                                 | Status |
+| -------------------------------------------------------------------- | ------ |
+| AGENTS.md CI scripts gotcha: "Five" → "Six" (+ go-arch-lint)         | DONE   |
+| AGENTS.md go-arch-lint architecture decision added                   | DONE   |
+| CHANGELOG [Unreleased] — 6 new Added entries, 3 new Changed entries  | DONE   |
+| TODO_LIST.md — go-arch-lint TODO→DONE, SARIF validation BLOCKED→DONE | DONE   |
+| docs/guides/flight-recorder.md — all examples now show 5 fields      | DONE   |
 
 ### Final Verification
 
-| Check | Result |
-|-------|--------|
-| `go build ./...` (workspace) | PASS |
-| `go test -race -count=1 ./...` (all 4 modules) | PASS — 11 packages, 0 failures |
-| `golangci-lint run ./...` (all 4 modules) | PASS — 0 issues |
-| `GOWORK=off` build + test (all 4 modules standalone) | PASS |
-| `bash scripts/replace-audit.sh` | PASS |
-| `bash scripts/version-drift.sh` | PASS |
-| `bash scripts/test-naming.sh` | PASS |
-| `bash scripts/go-work-sync.sh` | PASS |
-| `bash scripts/docs-freshness.sh` | PASS (exits 0, 8 informational warnings) |
-| `go-arch-lint check` | PASS (No warnings found) |
+| Check                                                | Result                                   |
+| ---------------------------------------------------- | ---------------------------------------- |
+| `go build ./...` (workspace)                         | PASS                                     |
+| `go test -race -count=1 ./...` (all 4 modules)       | PASS — 11 packages, 0 failures           |
+| `golangci-lint run ./...` (all 4 modules)            | PASS — 0 issues                          |
+| `GOWORK=off` build + test (all 4 modules standalone) | PASS                                     |
+| `bash scripts/replace-audit.sh`                      | PASS                                     |
+| `bash scripts/version-drift.sh`                      | PASS                                     |
+| `bash scripts/test-naming.sh`                        | PASS                                     |
+| `bash scripts/go-work-sync.sh`                       | PASS                                     |
+| `bash scripts/docs-freshness.sh`                     | PASS (exits 0, 8 informational warnings) |
+| `go-arch-lint check`                                 | PASS (No warnings found)                 |
 
 ---
 
@@ -154,30 +155,30 @@ I chose lightweight structural validation (map[string]any assertions) over vendo
 
 ### Pareto Plan Tasks Not Started
 
-| Task | Description | Why Not Started |
-|------|-------------|----------------|
-| T20 | GoReleaser + Homebrew verification | Blocked: needs repo public |
-| T21 | pkg.go.dev verification | Blocked: needs repo public |
-| T22 | Launch announcement | Blocked: needs repo public |
-| T23 | Submit to Awesome Go | Blocked: needs repo public |
-| T24a | FlightRecorder trace file rotation (max-files/max-bytes) | Not yet prioritized (Phase 8) |
-| T24b | FlightRecorder compressed trace output (gzip) | Not yet prioritized (Phase 8) |
-| T25a | FlightRecorder automatic pprof capture | Not yet prioritized (Phase 8) |
-| T25b | FlightRecorder context propagation in writeSnapshot | Not yet prioritized (Phase 8) |
-| T25c | FlightRecorder multiple recorder graceful degradation | Not yet prioritized (Phase 8) |
-| T26a | FlightRecorder OpenTelemetry bridge | Not yet prioritized (Phase 8) |
-| T26b | FlightRecorder trace diff tool | Not yet prioritized (Phase 8) |
-| T27 | Consumer migration guide | Not yet prioritized (Phase 9) |
-| T28 | More ToolAdapter recipes | Not yet prioritized (Phase 9) |
-| T29 | LSP code action support | Not yet prioritized (Phase 9) |
-| T30a | Language provider: Rust | Not yet prioritized (Phase 9) |
-| T30b | Language provider: TypeScript | Not yet prioritized (Phase 9) |
-| T30c | Language provider: Python | Not yet prioritized (Phase 9) |
-| T31 | AI-assisted remediation backend | Not yet prioritized (Phase 9) |
-| T32 | v2.0: Position sentinel redesign | Not yet prioritized (Phase 10) |
-| T33 | v2.0: FixStrategy closed union | Not yet prioritized (Phase 10) |
-| T34 | v2.0: Tags to TagSet | Not yet prioritized (Phase 10) |
-| T35 | v2.0: Finding sub-struct composition | Not yet prioritized (Phase 10) |
+| Task | Description                                              | Why Not Started                |
+| ---- | -------------------------------------------------------- | ------------------------------ |
+| T20  | GoReleaser + Homebrew verification                       | Blocked: needs repo public     |
+| T21  | pkg.go.dev verification                                  | Blocked: needs repo public     |
+| T22  | Launch announcement                                      | Blocked: needs repo public     |
+| T23  | Submit to Awesome Go                                     | Blocked: needs repo public     |
+| T24a | FlightRecorder trace file rotation (max-files/max-bytes) | Not yet prioritized (Phase 8)  |
+| T24b | FlightRecorder compressed trace output (gzip)            | Not yet prioritized (Phase 8)  |
+| T25a | FlightRecorder automatic pprof capture                   | Not yet prioritized (Phase 8)  |
+| T25b | FlightRecorder context propagation in writeSnapshot      | Not yet prioritized (Phase 8)  |
+| T25c | FlightRecorder multiple recorder graceful degradation    | Not yet prioritized (Phase 8)  |
+| T26a | FlightRecorder OpenTelemetry bridge                      | Not yet prioritized (Phase 8)  |
+| T26b | FlightRecorder trace diff tool                           | Not yet prioritized (Phase 8)  |
+| T27  | Consumer migration guide                                 | Not yet prioritized (Phase 9)  |
+| T28  | More ToolAdapter recipes                                 | Not yet prioritized (Phase 9)  |
+| T29  | LSP code action support                                  | Not yet prioritized (Phase 9)  |
+| T30a | Language provider: Rust                                  | Not yet prioritized (Phase 9)  |
+| T30b | Language provider: TypeScript                            | Not yet prioritized (Phase 9)  |
+| T30c | Language provider: Python                                | Not yet prioritized (Phase 9)  |
+| T31  | AI-assisted remediation backend                          | Not yet prioritized (Phase 9)  |
+| T32  | v2.0: Position sentinel redesign                         | Not yet prioritized (Phase 10) |
+| T33  | v2.0: FixStrategy closed union                           | Not yet prioritized (Phase 10) |
+| T34  | v2.0: Tags to TagSet                                     | Not yet prioritized (Phase 10) |
+| T35  | v2.0: Finding sub-struct composition                     | Not yet prioritized (Phase 10) |
 
 ---
 
@@ -190,9 +191,11 @@ But there are real issues I noticed:
 ### D1. I did NOT verify `config.ToConfig()` exists
 
 In `docs/guides/configuration.md`, the Library ConfigFile section shows:
+
 ```go
 pipelineConfig := config.ToConfig()
 ```
+
 I never verified this method exists. The agent research mentioned `ConfigFromFile` and `ConfigFromReader` but the `ToConfig()` call was my assumption based on the pattern. **This could be wrong and would mislead consumers.**
 
 **Fix needed:** Verify the actual API, fix the doc if wrong.
@@ -350,6 +353,7 @@ The repo has 30+ uncommitted... wait, all changes ARE committed (auto-git daemon
 I excluded `_test.go` files from go-arch-lint analysis because test files have legitimate cross-package imports (test utilities, test fixtures). But this means a test in `pipeline/` importing `cmd/go-finding` would NOT be caught — creating hidden coupling.
 
 **Options:**
+
 - **A) Keep exclusion** — Current approach. Simpler, fewer false positives. Misses test-time coupling.
 - **B) Include test files** — More thorough. Requires careful `mayDependOn` rules for test-only packages.
 - **C) Separate test arch file** — Different rules for test vs production imports.
@@ -359,6 +363,7 @@ I excluded `_test.go` files from go-arch-lint analysis because test files have l
 ### G3. Should the next release be v1.5.1 (patch) or v1.6.0 (minor)?
 
 The [Unreleased] CHANGELOG section has significant additions:
+
 - FlightRecorderFileConfig (new API surface)
 - CLI flightRecorder config section (new feature)
 - 6 CI scripts/jobs (infrastructure)
@@ -374,17 +379,17 @@ SemVer says: new features = minor bump (v1.6.0). But if we consider CI/docs/test
 
 ## H. Session Metrics
 
-| Metric | Value |
-|--------|-------|
-| Tasks attempted | 11 (T10-T19 + session debt) |
-| Tasks completed | 11 |
-| Tasks failed | 0 |
-| Files created | 6 (.go-arch-lint.yml, 3 docs, 1 report, 1 fuzz test) |
-| Files modified | 8 (AGENTS.md, CHANGELOG.md, README.md, TODO_LIST.md, DOMAIN_LANGUAGE.md, flight-recorder.md, ci.yml, sarif_properties_test.go) |
-| Test functions added | 8 (1 fuzz + 5 SARIF + 1 E2E + 1 helper) |
-| Commits this session | ~8 |
-| Build status | PASS (all 4 modules) |
-| Test status | PASS (all 4 modules, -race) |
-| Lint status | PASS (all 4 modules, 0 issues) |
-| CI scripts | 6/6 PASS |
-| GOWORK=off isolation | 4/4 PASS |
+| Metric               | Value                                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Tasks attempted      | 11 (T10-T19 + session debt)                                                                                                    |
+| Tasks completed      | 11                                                                                                                             |
+| Tasks failed         | 0                                                                                                                              |
+| Files created        | 6 (.go-arch-lint.yml, 3 docs, 1 report, 1 fuzz test)                                                                           |
+| Files modified       | 8 (AGENTS.md, CHANGELOG.md, README.md, TODO_LIST.md, DOMAIN_LANGUAGE.md, flight-recorder.md, ci.yml, sarif_properties_test.go) |
+| Test functions added | 8 (1 fuzz + 5 SARIF + 1 E2E + 1 helper)                                                                                        |
+| Commits this session | ~8                                                                                                                             |
+| Build status         | PASS (all 4 modules)                                                                                                           |
+| Test status          | PASS (all 4 modules, -race)                                                                                                    |
+| Lint status          | PASS (all 4 modules, 0 issues)                                                                                                 |
+| CI scripts           | 6/6 PASS                                                                                                                       |
+| GOWORK=off isolation | 4/4 PASS                                                                                                                       |

@@ -59,6 +59,7 @@ go env -w GOPRIVATE=github.com/larsartmann/go-finding
 **Cause:** Malformed YAML or JSON in the config file.
 
 **Fix:** Validate the syntax. Common issues:
+
 - YAML: wrong indentation, missing quotes around duration strings (`timeout: 10m` should be `timeout: "10m"`)
 - JSON: trailing commas, unquoted keys
 
@@ -118,6 +119,7 @@ result2, _ := p2.Run(ctx)
 **Cause:** One or more detectors failed during graceful degradation mode. The pipeline continued with partial results.
 
 **Fix:** Check the formatted error for per-detector details. Common causes:
+
 - External tool not installed (e.g., `staticcheck` binary missing)
 - Detector timeout exceeded (increase `detectorTimeouts`)
 - Invalid analysis input (corrupt Go files)

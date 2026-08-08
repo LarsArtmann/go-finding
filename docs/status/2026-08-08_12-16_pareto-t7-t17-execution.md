@@ -110,6 +110,7 @@ T7 added validation tests (unit level) for the new `minAge`/`maxBytes` fields, a
 ### docs-freshness.sh produces noisy warnings
 
 The script's `.go` file reference grep (`grep -oP '`?\K[a-zA-Z0-9_/]+\.go'`) is very broad. It matches:
+
 - Code examples in markdown (e.g., `main.go` in a tutorial) that aren't real file references
 - Filenames in prose that may not exist relative to the doc
 
@@ -191,6 +192,7 @@ The section at line ~158 lists `-trace`, `-trace-dir`, `-trace-slow` flags and c
 ### E5: The 3 open questions from the prior status report are still unanswered
 
 The prior status report (section G) asked:
+
 - G1: Push now or batch?
 - G2: FlightRecorderFileConfig parity direction? (now resolved — chose full parity)
 - G3: version-drift.sh grep vs `go mod edit -json`?
