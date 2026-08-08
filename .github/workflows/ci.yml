@@ -135,6 +135,8 @@ jobs:
         run: bash scripts/version-drift.sh
       - name: Verify test naming conventions
         run: bash scripts/test-naming.sh
+      - name: Verify JSON determinism
+        run: bash scripts/json-deterministic-check.sh
 
     timeout-minutes: 5
   go-work-sync:

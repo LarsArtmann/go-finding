@@ -14,7 +14,7 @@ set -euo pipefail
 
 VIOLATIONS=0
 
-# Find all production .go files (exclude test files, vendor, generated).
+# Find all production .go files (exclude test files, vendor, generated, doc.go).
 mapfile -t FILES < <({
     find . -name "*.go" \
         ! -name "*_test.go" \
@@ -32,26 +32,35 @@ for file in "${FILES[@]}"; do
     while IFS=: read -r linenum line; do
         [ -z "$linenum" ] && continue
 
-        # Skip comment lines and import blocks.
+        # Skip comment lines.
         trimmed="${line#"${line%%[![:space:]]*}"}"
         case "$trimmed" in
             \/\/*) continue ;;
-            \*/*) continue ;;
         esac
 
-        # Check a 6-line window around the call (handles multi-line calls).
-        start=$((linenum > 2 ? linenum - 1 : 1))
-        end=$((linenum + 6))
-        window=$(sed -n "${start},${end}p" "$file")
+        # Extract the call statement: from this line to the matching ')'
+        # (tracking paren depth to handle nested function calls correctly).
+        call=$(sed -n "${linenum},$((linenum + 20))p" "$file" |
+            awk '
+                {
+                    for (i = 1; i <= length($0); i++) {
+                        c = substr($0, i, 1)
+                        if (c == "(") depth++
+                        else if (c == ")") depth--
+                    }
+                    print
+                    if (depth <= 0) exit
+                }
+            ')
 
-        # The call is compliant if the window contains Deterministic,
+        # The call is compliant if it contains Deterministic,
         # marshalOpts, or prettyMarshalOpts.
-        if ! echo "$window" | grep -qE 'Deterministic|marshalOpts|prettyMarshalOpts'; then
+        if ! echo "$call" | grep -qE 'Deterministic|marshalOpts|prettyMarshalOpts'; then
             echo "::error file=$file,line=$linenum::json.Marshal call without json.Deterministic(true)"
             echo "  ${file}:${linenum}: ${trimmed}"
             VIOLATIONS=$((VIOLATIONS + 1))
         fi
-    done < <(grep -nE 'json\.Marshal(Wait|Write|Encode)?\(' "$file" 2>/dev/null || true)
+    done < <(grep -nE 'json\.Marshal(Write|Encode)?\(' "$file" 2>/dev/null || true)
 done
 
 echo ""

@@ -49,7 +49,11 @@ for file in "${FILES[@]}"; do
     fi
 
     # Check 2: Code-doc sync — find referenced .go files modified after the doc
-    # Extract Go file references from markdown: `filename.go` or path/to/filename.go
+    # Extract Go file references from markdown code spans and links only:
+    #   `filename.go`         (backtick code spans)
+    #   [text](filename.go)   (markdown links)
+    # Plain prose mentions like "see finding.go" are intentionally excluded
+    # to reduce false positives from conceptual references.
     while IFS= read -r gofile; do
         [ -f "$gofile" ] || continue
 
@@ -62,7 +66,10 @@ for file in "${FILES[@]}"; do
             SYNC_COUNT=$((SYNC_COUNT + 1))
             break # one stale reference per doc is enough
         fi
-    done < <(grep -oP '`?\K[a-zA-Z0-9_/]+\.go' "$file" 2>/dev/null | sort -u | head -20 || true)
+    done < <({
+        grep -oP '`\K[a-zA-Z0-9_/]+\.go(?=`)' "$file" 2>/dev/null || true
+        grep -oP '\]\(\K[a-zA-Z0-9_/]+\.go(?=\))' "$file" 2>/dev/null || true
+    } | sort -u | head -20)
 done
 
 echo ""
