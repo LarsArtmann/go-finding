@@ -273,8 +273,9 @@
 //   - Retry with exponential backoff for flaky detectors
 //   - Graceful degradation on detector failures
 //   - Structured logging via slog
-//   - Stage and iteration callbacks
+//   - Stage and iteration callbacks (StageHook with before/after events)
 //   - Metrics collection with snapshots
+//   - Flight recorder (Go execution trace via runtime/trace.FlightRecorder)
 //
 // # Fix Providers
 //
@@ -301,6 +302,20 @@
 //	all, err := registry.BuildAll() // sorted by name
 //
 // Thread-safe. Use with ConfigFile.ResolveDetectors for config-driven pipelines.
+//
+// # Flight Recorder
+//
+// The pipeline module includes a flight recorder (pipeline.FlightRecorderHook) that
+// captures Go execution traces for diagnostics. It wraps runtime/trace.FlightRecorder
+// and is registered as a StageHook:
+//
+//	hook, err := pipeline.NewFlightRecorderHook(pipeline.DefaultFlightRecorderConfig())
+//	cfg.StageHooks = append(cfg.StageHooks, hook)
+//
+// Snapshots are written on demand via hook.Snapshot(reason) or automatically when a
+// stage exceeds SlowStageThreshold. The CLI exposes -trace, -trace-dir, and -trace-slow
+// flags. YAML/JSON config files support a flightRecorder section. See the Flight Recorder
+// Guide (docs/guides/flight-recorder.md) for the full workflow.
 //
 // # Interval Index
 //

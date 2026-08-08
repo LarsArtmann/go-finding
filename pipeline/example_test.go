@@ -2,6 +2,7 @@ package pipeline_test
 
 import (
 	"context"
+	"encoding/json/v2"
 	"fmt"
 	"time"
 
@@ -119,6 +120,59 @@ func ExamplePipeline() {
 	// Output:
 	// Iterations: 1
 	// Findings: 1
+}
+
+func ExampleNewFlightRecorderHook() {
+	hook, err := pipeline.NewFlightRecorderHook(pipeline.DefaultFlightRecorderConfig())
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println("enabled:", hook.Enabled())
+
+	hook.Close()
+
+	fmt.Println("enabled after close:", hook.Enabled())
+
+	// Output:
+	// enabled: true
+	// enabled after close: false
+}
+
+func ExampleConfigFile_ResolveFlightRecorder() {
+	// Config with flight recorder enabled.
+	data := []byte(`{
+		"flightRecorder": {
+			"enabled": true,
+			"slowStageThreshold": "10s"
+		}
+	}`)
+
+	var cf pipeline.ConfigFile
+	if err := json.Unmarshal(data, &cf); err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	hook, err := cf.ResolveFlightRecorder()
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	if hook != nil {
+		fmt.Println("flight recorder created")
+		hook.Close()
+	} else {
+		fmt.Println("no flight recorder")
+	}
+
+	// Output:
+	// flight recorder created
 }
 
 func ExampleGeneratedFileFilter() {

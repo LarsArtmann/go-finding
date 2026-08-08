@@ -75,6 +75,64 @@ func TestConfigFile_ResolveProviders(t *testing.T) {
 	})
 }
 
+// TestConfigFile_ResolveFlightRecorder covers the ResolveFlightRecorder method.
+func TestConfigFile_ResolveFlightRecorder(t *testing.T) {
+	t.Parallel()
+
+	t.Run("nil returns nil nil", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		cf := ConfigFile{}
+		hook, err := cf.ResolveFlightRecorder()
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(hook).To(BeNil())
+	})
+
+	t.Run("disabled returns nil nil", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		cf := ConfigFile{FlightRecorder: &FlightRecorderFileConfig{Enabled: false}}
+		hook, err := cf.ResolveFlightRecorder()
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(hook).To(BeNil())
+	})
+
+	t.Run("enabled creates hook", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		cf := ConfigFile{FlightRecorder: &FlightRecorderFileConfig{Enabled: true}}
+		hook, err := cf.ResolveFlightRecorder()
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(hook).NotTo(BeNil())
+		g.Expect(hook.Enabled()).To(BeTrue())
+		hook.Close()
+	})
+
+	t.Run("bad slowStageThreshold returns error", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		cf := ConfigFile{FlightRecorder: &FlightRecorderFileConfig{
+			Enabled:            true,
+			SlowStageThreshold: "not-a-duration",
+		}}
+		_, err := cf.ResolveFlightRecorder()
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err.Error()).To(ContainSubstring("slowStageThreshold"))
+	})
+
+	t.Run("bad minAge returns error", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		cf := ConfigFile{FlightRecorder: &FlightRecorderFileConfig{
+			Enabled: true,
+			MinAge:  "garbage",
+		}}
+		_, err := cf.ResolveFlightRecorder()
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err.Error()).To(ContainSubstring("minAge"))
+	})
+}
+
 // TestConfigFile_ConfigFromReader_Error covers the reader decode error path.
 func TestConfigFile_ConfigFromReader_Error(t *testing.T) {
 	g := NewParallelGomega(t)
