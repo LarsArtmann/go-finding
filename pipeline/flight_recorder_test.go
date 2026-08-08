@@ -391,3 +391,110 @@ func TestSanitizeFilename_AllSpecialChars(t *testing.T) {
 	got := sanitizeFilename("@#$%^&*()")
 	g.Expect(got).To(gomega.Equal("snapshot"))
 }
+
+func TestFlightRecorderHook_SnapshotWriteError(t *testing.T) {
+	// Simulate disk-full or permission denied by making the output dir
+	// read-only AFTER hook construction. Snapshot should return an error
+	// from os.Create, not panic or silently succeed.
+	hook := newTestFlightRecorderHook(t, DefaultFlightRecorderConfig())
+
+	dir := hook.config.OutputDir
+
+	// Restore permissions so t.TempDir cleanup can delete files.
+	defer func() { _ = os.Chmod(dir, 0o755) }()
+
+	if err := os.Chmod(dir, 0o444); err != nil {
+		// Some CI environments run as root, where chmod is ineffective.
+		t.Skipf("cannot make dir read-only (running as root?): %v", err)
+	}
+
+	defer hook.Close()
+
+	g := gomega.NewWithT(t)
+
+	_, err := hook.Snapshot("permission-test")
+	g.Expect(err).To(gomega.HaveOccurred())
+}
+
+func TestFlightRecorderHook_SlowLastStageInPipeline(t *testing.T) {
+	// Verify SlowStageThreshold triggers on the verify (last) stage during
+	// a real pipeline run, not just isolated OnStageEvent calls.
+	hook := newTestFlightRecorderHook(t, FlightRecorderConfig{
+		MinAge:             time.Second,
+		MaxBytes:           1 << 20,
+		SlowStageThreshold: 1 * time.Nanosecond,
+	})
+	defer hook.Close()
+
+	d := newMockDetector("test", "tool", finding.NewFinding(
+		"rule", "tool", "msg", finding.SeverityInfo,
+		finding.Position{}, finding.ConfidenceHigh,
+	))
+
+	cfg := DefaultConfig()
+	cfg.MaxIterations = 1
+	cfg.StageHooks = []StageHook{hook}
+
+	g := gomega.NewWithT(t)
+
+	p, err := New(cfg, t.TempDir(), d)
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+
+	_, err = p.Run(context.Background())
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+
+	hook.Close()
+
+	traceFiles, err := findTraceFiles(hook.config.OutputDir)
+	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+	g.Expect(traceFiles).ToNot(gomega.BeEmpty(), "at least one slow stage snapshot should exist")
+}
+
+func TestFlightRecorderHook_ConcurrentStageEventsSafe(t *testing.T) {
+	// Fire Before/After events for all stages from multiple goroutines.
+	// Designed to be run with -race to detect data races in stageStarts map.
+	// Must NOT call t.Parallel() — flight recorder is a global singleton.
+	hook := newTestFlightRecorderHook(t, FlightRecorderConfig{
+		SlowStageThreshold: 1 * time.Millisecond,
+	})
+	defer hook.Close()
+
+	ctx := context.Background()
+
+	stages := []Stage{StageDetect, StageProcess, StageTriage, StageApply, StageVerify}
+
+	var wg sync.WaitGroup
+
+	for _, stage := range stages {
+		wg.Add(1)
+
+		go func(s Stage) {
+			defer wg.Done()
+
+			for i := range 5 {
+				_ = hook.OnStageEvent(ctx, StageEvent{
+					Stage:     s,
+					Timing:    StageBefore,
+					Iteration: i,
+				})
+
+				time.Sleep(2 * time.Millisecond)
+
+				_ = hook.OnStageEvent(ctx, StageEvent{
+					Stage:     s,
+					Timing:    StageAfter,
+					Iteration: i,
+				})
+			}
+		}(stage)
+	}
+
+	wg.Wait()
+	hook.Close()
+
+	// If we get here without panicking or -race failures, the test passes.
+	traceFiles, _ := findTraceFiles(hook.config.OutputDir)
+
+	g := gomega.NewWithT(t)
+	g.Expect(traceFiles).ToNot(gomega.BeEmpty(), "some slow stages should have triggered snapshots")
+}

@@ -451,3 +451,129 @@ func TestGroupFindingsBySafePath_PathTraversalFiltered(t *testing.T) {
 		}
 	}
 }
+
+// TestResolveSafePath_CircularSymlink verifies that a self-referential symlink
+// does not cause an infinite loop or panic. EvalSymlinks returns an error for
+// circular links, so the fallback cleaned path (inside root) is returned.
+func TestResolveSafePath_CircularSymlink(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+
+	linkPath := filepath.Join(root, "loop.go")
+	if err := os.Symlink(linkPath, linkPath); err != nil {
+		t.Fatal(err)
+	}
+
+	got, ok := resolveSafePath(root, "loop.go")
+	if !ok {
+		t.Fatalf("circular symlink inside root should return safe (path is within root)")
+	}
+
+	want := filepath.Clean(linkPath)
+	if got != want {
+		t.Errorf("got %q, want %q (unresolved cleaned path)", got, want)
+	}
+}
+
+// TestResolveSafePath_MutualCircularSymlink verifies that two symlinks pointing
+// to each other (a -> b -> a) are handled gracefully without infinite loops.
+func TestResolveSafePath_MutualCircularSymlink(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+
+	linkA := filepath.Join(root, "a.go")
+	linkB := filepath.Join(root, "b.go")
+
+	if err := os.Symlink(linkB, linkA); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Symlink(linkA, linkB); err != nil {
+		t.Fatal(err)
+	}
+
+	got, ok := resolveSafePath(root, "a.go")
+	if !ok {
+		t.Fatalf("mutual circular symlink inside root should return safe (path is within root)")
+	}
+
+	want := filepath.Clean(linkA)
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+// TestResolveSafePath_DanglingSymlink_OutsideRoot verifies that a broken
+// symlink inside root pointing to a non-existent file OUTSIDE root is handled
+// without panicking. EvalSymlinks fails (target missing), so the unresolved
+// symlink path is checked for containment. The path string is inside root, so
+// it returns safe — but any subsequent file I/O through this path will fail
+// because the target does not exist.
+func TestResolveSafePath_DanglingSymlink_OutsideRoot(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+
+	linkPath := filepath.Join(root, "dangling.go")
+	outsideTarget := filepath.Join(t.TempDir(), "nonexistent")
+
+	if err := os.Symlink(outsideTarget, linkPath); err != nil {
+		t.Fatal(err)
+	}
+
+	got, ok := resolveSafePath(root, "dangling.go")
+	if !ok {
+		t.Fatalf("dangling symlink inside root should return safe (unresolved path is within root)")
+	}
+
+	want := filepath.Clean(linkPath)
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+// TestResolveSafePath_RootIsSymlink verifies that resolveSafePath works
+// correctly when rootDir itself is a symlink to another directory.
+// resolveRoot calls EvalSymlinks on rootDir, resolving it to the real path.
+func TestResolveSafePath_RootIsSymlink(t *testing.T) {
+	t.Parallel()
+
+	realRoot := t.TempDir()
+	if err := os.WriteFile(filepath.Join(realRoot, "main.go"), []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	symlinkRoot := filepath.Join(t.TempDir(), "symlinked-root")
+	if err := os.Symlink(realRoot, symlinkRoot); err != nil {
+		t.Fatal(err)
+	}
+
+	got, ok := resolveSafePath(symlinkRoot, "main.go")
+	if !ok {
+		t.Fatalf("file inside symlinked root should be safe")
+	}
+
+	realFile := filepath.Join(realRoot, "main.go")
+	if got != realFile {
+		t.Errorf("got %q, want resolved real path %q", got, realFile)
+	}
+}
+
+// TestResolveSafePath_RootIsSymlink_PathTraversal verifies that path traversal
+// attacks are blocked even when rootDir is a symlink.
+func TestResolveSafePath_RootIsSymlink_PathTraversal(t *testing.T) {
+	t.Parallel()
+
+	realRoot := t.TempDir()
+	symlinkRoot := filepath.Join(t.TempDir(), "symlinked-root")
+	if err := os.Symlink(realRoot, symlinkRoot); err != nil {
+		t.Fatal(err)
+	}
+
+	_, ok := resolveSafePath(symlinkRoot, "../../../etc/passwd")
+	if ok {
+		t.Errorf("path traversal through symlinked root should be unsafe")
+	}
+}
