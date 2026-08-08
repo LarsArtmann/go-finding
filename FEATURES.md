@@ -152,7 +152,7 @@ Methods: `IsValid()`, `CanAutoApply()`, `NeedsAI()`
 
 ---
 
-## 5. Category & Tags
+## 5. Confidence, Category & Tags
 
 ### 5.1 Confidence
 

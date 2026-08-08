@@ -57,7 +57,6 @@ Two new public APIs are implemented, tested, and documented in `[Unreleased]` bu
 | --------------------------------------- | ------------ | ------ | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Consumer compatibility test             | BLOCKED      | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code                                                                                                                                                   |
 | Per-module golangci-lint configs        | TODO         | Low    | Medium | Workspace-level lint suffices but loses per-module precision. Flagged since modularization.                                                                                                                                            |
-| Multi-module vs monolith benchmark      | DONE         | Low    | Medium | Report at `docs/reports/2026-08-08_multi-module-vs-monolith.md`. Zero runtime overhead, negligible build overhead, significant dependency isolation.                                                                                   |
 
 ---
 
