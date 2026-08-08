@@ -1,5 +1,7 @@
 # Status Report — Pareto Plan Execution (M02-M19)
 
+> **RESOLVED:** All critical items from this report (CHANGELOG entries, ValidateAll tests, tag decision) were completed in the subsequent session (`2026-08-02_00-26_comprehensive-session-status.md`). The release shipped as v1.5.0. The tag-order Equal fix was correctly classified as a patch-level fix included in the minor release. ValidateAll kept its `map[int]error` return type.
+
 **Date:** 2026-08-02 00:18 CEST
 **Session scope:** Execute the entire actionable Pareto execution plan (`docs/planning/2026-08-01_20-46_SUPERB-pareto-execution-plan.md`), tasks M02-M19. Skip blocked tasks (M01, M20-M26).
 **Commits this session:** `62915b2` (main), `3ac33df` (oxfmt formatting fix)

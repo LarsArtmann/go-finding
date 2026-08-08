@@ -160,7 +160,7 @@ CLI flags and config file values are **merged**, not mutually exclusive:
 
 ## Library ConfigFile (Programmatic API)
 
-For applications embedding go-finding directly, use `pipeline.ConfigFromFile` or `pipeline.ConfigFromReader` to load JSON config into a `pipeline.ConfigFile` struct, then convert to a `pipeline.Config`:
+For applications embedding go-finding directly, use `pipeline.ConfigFromFile` or `pipeline.ConfigFromReader` to load JSON config directly into a `pipeline.Config`:
 
 ```go
 import "github.com/larsartmann/go-finding/pipeline"
@@ -170,12 +170,18 @@ if err != nil {
     return err
 }
 
+// ConfigFromFile parses JSON, validates duration strings, and returns
+// a pipeline.Config ready to pass to pipeline.New().
 config, err := pipeline.ConfigFromFile(data)
 if err != nil {
     return err
 }
 
-pipelineConfig := config.ToConfig()
+// Add detectors, fix providers, stage hooks, etc.
+config.Detectors = detectors
+config.FixProviders = providers
+
+p, err := pipeline.New(config)
 ```
 
 The library `ConfigFile` has additional fields not available in the CLI config:

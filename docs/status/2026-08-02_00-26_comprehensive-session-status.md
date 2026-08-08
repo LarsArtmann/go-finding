@@ -1,5 +1,7 @@
 # Comprehensive Status Report — Pareto Plan Execution & Self-Critique Fixes
 
+> **RESOLVED:** All items in section d) (ValidateAll tests, CHANGELOG entries, plan updates, committed) were completed in this session. The release shipped as v1.5.0 on 2026-08-06 with all fixes. The Q1-Q3 decisions were made: Equal fix = patch-level in minor release, `map[int]error` kept, plan updated in-place. All 18 Pareto tasks marked DONE.
+
 **Date:** 2026-08-02 00:26 CEST
 **Session:** Continuation of Pareto plan M02-M19 execution + self-critique remediation
 **Quality Gate:** GREEN — all 4 modules test OK, lint 0 issues, `nix flake check` passes

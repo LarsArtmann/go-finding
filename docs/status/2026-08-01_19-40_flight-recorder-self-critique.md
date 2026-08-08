@@ -1,5 +1,7 @@
 # Status Report: Flight Recorder Integration — Self-Critique
 
+> **RESOLVED:** All P0 bugs fixed and shipped in v1.5.0. P1 feature gaps (ConfigFile integration, user guide, examples, CLI integration tests) all completed in subsequent sessions. See CHANGELOG `[1.5.0]` and `[Unreleased]` sections for details.
+
 **Date:** 2026-08-01 19:40
 **Session scope:** Leveraging Go 1.25 `runtime/trace.FlightRecorder` in go-finding
 **Verdict:** Shipped a working feature. But I cut corners and left real bugs and gaps.
@@ -51,13 +53,13 @@
 
 ## d) TOTALLY FUCKED UP
 
-1. **CRITICAL BUG: Concurrent `WriteTo` race condition** — During debugging I observed `"call to WriteTo for trace.FlightRecorder already in progress"`. The `runtime/trace.FlightRecorder.WriteTo` method is NOT safe for concurrent calls. If two stages exceed `SlowStageThreshold` in the same iteration (e.g., `StageDetect` and `StageApply` both slow), the second `asyncSnapshot` goroutine will fail because the first hasn't finished writing yet. **I saw this error in my own debug output and shipped anyway.** The fix is a dedicated write mutex or a serialized snapshot channel.
+1. ~~**CRITICAL BUG: Concurrent `WriteTo` race condition**~~ **FIXED** — Added `writeMu sync.Mutex` to serialize WriteTo calls. Shipped in v1.5.0. Test: `TestFlightRecorderHook_ConcurrentSnapshotsDoNotCollide`.
 
-2. **Initial CLI wiring was broken** — I added the hook to `pipelineCfg.StageHooks` AFTER `pipeline.New()` had already copied the config into the `Pipeline` struct. The hook was silently ignored. Caught during smoke testing, but I should have thought about object ownership before writing the code.
+2. ~~**Initial CLI wiring was broken**~~ **FIXED** — Hook is now registered before `pipeline.New()`. Caught and fixed during original session smoke testing.
 
-3. **Empty `SanitizeFilename("")` edge case** — Returns `""`, which produces a filename like `go-finding-trace-000-.trace` (trailing hyphen). Not tested in the table-driven test — I actually have `{"", ""}` in the test but the resulting filename is still malformed.
+3. ~~**Empty `SanitizeFilename("")` edge case**~~ **FIXED** — Now returns `"snapshot"` as default. Shipped in v1.5.0. Test: `TestSanitizeFilename_AllSpecialChars`. Fuzz test: `FuzzSanitizeFilename`.
 
-4. **No test for `MkdirAll` failure** — I added `os.MkdirAll(config.OutputDir, 0o755)` but never tested the error path. If the directory can't be created, `NewFlightRecorderHook` returns an error, but there's no test proving this.
+4. ~~**No test for `MkdirAll` failure**~~ **FIXED** — `TestFlightRecorderHook_MkdirAllError` tests unwritable directory. Shipped in v1.5.0.
 
 ---
 
