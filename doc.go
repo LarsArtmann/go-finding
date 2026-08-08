@@ -61,7 +61,7 @@
 //   - Finding: A single issue detected by a tool
 //   - Report: Thread-safe container for all findings from a tool run
 //   - Severity: info, warning, error, critical (with comparison operators)
-//   - Confidence: Named float64 type with IsValid/Clamp, range [0.0, 1.0]
+//   - Confidence: Named float64 type with IsValid/Clamp/Compare/String/ParseConfidence, range [0.0, 1.0]
 //   - FixStrategy: none, suggest, direct, ai (ai is reserved)
 //   - Category: 16 predefined + custom (security, style, performance, etc.)
 //   - Tag: Multi-label classification (security, bug, deprecated, etc.)

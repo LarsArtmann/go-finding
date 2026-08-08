@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`ParseConfidence(string) (Confidence, error)`** — Inverse of `Confidence.String()`. Parses named levels ("none", "low", "medium", "high", "full"), decimal strings (e.g. "0.42"), and empty string (defaults to `ConfidenceLow`). Case-insensitive, trims whitespace. Returns `ErrInvalidConfidence` sentinel error, matchable via `errors.Is`. Eliminates the per-consumer switch statement every CLI linter reinvents for its `--min-confidence` flag.
+- **`Template.Builder(rule, message, severity, pos) *Builder`** — Returns a pre-configured `*Builder` from the template, allowing per-finding chaining (confidence, suggestion, before/after code, metadata) before the terminal `Build()`/`MustBuild()`/`BuildOrDefault()` call. `Template.Build()` delegates to `Builder().BuildOrDefault()` for backward compatibility. Eliminates the `makeFindingWithConfidence` / `buildFixableFinding` factory patterns consumers reinvent when they need both template-level defaults AND per-finding overrides.
+
 ## [1.5.0] - 2026-08-06
 
 Deterministic output, batch validation, pipeline observability, and tag equality fix.
