@@ -194,10 +194,26 @@ func (t *Template) WithTags(tags ...Tag) *Template {
 	return t
 }
 
-// Build creates a Finding from the template, stamping the pre-configured
-// tool name, category, fix strategy, and tags. Returns a zero-value Finding
-// if validation fails (delegates to Builder.BuildOrDefault).
-func (t *Template) Build(rule RuleName, message string, severity Severity, pos Position) Finding {
+// Builder creates a pre-configured [*Builder] from the template, stamping the
+// pre-configured tool name, category, fix strategy, and tags. Unlike [Build],
+// which returns a final [Finding], Builder returns the intermediate [*Builder]
+// so the caller can chain additional per-finding fields (confidence, suggestion,
+// before/after code, metadata, etc.) before calling [Builder.Build],
+// [Builder.MustBuild], or [Builder.BuildOrDefault].
+//
+// This eliminates the per-consumer factory wrapper (e.g. makeFindingWithConfidence)
+// that every linter reinvents when it needs both template-level defaults AND
+// per-finding confidence/suggestion:
+//
+//	tmpl := finding.NewTemplate("my-linter").
+//	    WithCategory(finding.CategoryStyle).
+//	    WithFixStrategy(finding.FixStrategySuggest)
+//
+//	f := tmpl.Builder(rule, msg, finding.SeverityWarning, pos).
+//	    WithConfidence(finding.ConfidenceHigh).
+//	    WithSuggestion("use foo.Bar() instead").
+//	    MustBuild()
+func (t *Template) Builder(rule RuleName, message string, severity Severity, pos Position) *Builder {
 	b := NewBuilder(rule, t.Tool, message, severity, pos)
 
 	if t.Category != "" {
@@ -212,5 +228,15 @@ func (t *Template) Build(rule RuleName, message string, severity Severity, pos P
 		b = b.WithTags(t.Tags...)
 	}
 
-	return b.BuildOrDefault()
+	return b
+}
+
+// Build creates a Finding from the template, stamping the pre-configured
+// tool name, category, fix strategy, and tags. Returns a zero-value Finding
+// if validation fails (delegates to Builder.BuildOrDefault).
+//
+// For per-finding confidence, suggestion, or other overrides, use [Template.Builder]
+// instead — it returns a [*Builder] for further chaining before terminal Build.
+func (t *Template) Build(rule RuleName, message string, severity Severity, pos Position) Finding {
+	return t.Builder(rule, message, severity, pos).BuildOrDefault()
 }

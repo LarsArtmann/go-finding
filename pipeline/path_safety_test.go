@@ -293,7 +293,112 @@ func TestGroupFindingsBySafePath_ResolvedPathAsMapKey(t *testing.T) {
 	}
 }
 
-// TestGroupFindingsBySafePath_PathTraversalFiltered verifies that findings
+// TestResolveSafePath_TOCOU_SymlinkSwap verifies the TOCTOU mitigation: the
+// resolved path returned by resolveSafePathFrom is the real path on disk
+// (after EvalSymlinks), not the symlink path. If an attacker swaps the
+// symlink target AFTER validation but BEFORE file I/O, the previously
+// resolved path string still points to the safe location inside root.
+func TestResolveSafePath_TOCOU_SymlinkSwap(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+
+	safeTarget := filepath.Join(root, "real.go")
+	if err := os.WriteFile(safeTarget, []byte("package main"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	linkPath := filepath.Join(root, "link.go")
+	if err := os.Symlink(safeTarget, linkPath); err != nil {
+		t.Fatal(err)
+	}
+
+	resolvedRoot := resolveRoot(root)
+
+	resolved, ok := resolveSafePathFrom(resolvedRoot, "link.go")
+	if !ok {
+		t.Fatal("expected safe path for symlink pointing inside root")
+	}
+
+	if resolved != safeTarget {
+		t.Fatalf("resolved = %q, want %q (real path, not symlink)", resolved, safeTarget)
+	}
+
+	outsideTarget := filepath.Join(t.TempDir(), "secret.txt")
+	if err := os.WriteFile(outsideTarget, []byte("secret"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Remove(linkPath); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Symlink(outsideTarget, linkPath); err != nil {
+		t.Fatal(err)
+	}
+
+	info, err := os.Stat(resolved)
+	if err != nil {
+		t.Fatalf("resolved path should still exist after symlink swap: %v", err)
+	}
+
+	if info.Size() == 0 {
+		t.Error("resolved path should still point to original safe file content")
+	}
+
+	reResolved, reOk := resolveSafePathFrom(resolvedRoot, "link.go")
+	if reOk {
+		t.Errorf("after swap, symlink should be unsafe, but resolved to %q", reResolved)
+	}
+}
+
+// TestResolveSafePath_SymlinkSwap_OutsideToInside verifies that a symlink
+// initially pointing outside root (unsafe) becomes safe when swapped to
+// point inside root. This confirms resolveSafePathFrom evaluates the
+// current symlink state on each call.
+func TestResolveSafePath_SymlinkSwap_OutsideToInside(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+
+	outsideTarget := filepath.Join(t.TempDir(), "outside.txt")
+	if err := os.WriteFile(outsideTarget, []byte("outside"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	insideTarget := filepath.Join(root, "inside.go")
+	if err := os.WriteFile(insideTarget, []byte("package main"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	linkPath := filepath.Join(root, "evil.go")
+	if err := os.Symlink(outsideTarget, linkPath); err != nil {
+		t.Fatal(err)
+	}
+
+	resolvedRoot := resolveRoot(root)
+
+	if _, ok := resolveSafePathFrom(resolvedRoot, "evil.go"); ok {
+		t.Fatal("symlink pointing outside root should be unsafe")
+	}
+
+	if err := os.Remove(linkPath); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Symlink(insideTarget, linkPath); err != nil {
+		t.Fatal(err)
+	}
+
+	resolved, ok := resolveSafePathFrom(resolvedRoot, "evil.go")
+	if !ok {
+		t.Fatal("after swap to inside root, symlink should be safe")
+	}
+
+	if resolved != insideTarget {
+		t.Fatalf("resolved = %q, want %q", resolved, insideTarget)
+	}
+}
 // with path traversal in Position.File are silently skipped.
 func TestGroupFindingsBySafePath_PathTraversalFiltered(t *testing.T) {
 	t.Parallel()
