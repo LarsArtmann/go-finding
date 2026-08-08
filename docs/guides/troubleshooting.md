@@ -178,13 +178,13 @@ result2, _ := p2.Run(ctx)
 
 **Cause:** `SlowStageThreshold` is not set (or set too high), and no manual `Snapshot()` call was made.
 
-**Fix:** Either set `slowStageThreshold` to a low value (e.g., `"1s"`) or call `hook.Snapshot("reason")` explicitly after the pipeline run.
+**Fix:** Either set `slowStageThreshold` to a low value (e.g., `"1s"`) or call `hook.Snapshot(ctx, "reason")` explicitly after the pipeline run.
 
 ### Only one flight recorder can be active at a time
 
-**Cause:** Go's `runtime/trace.FlightRecorder` is a global singleton. Creating a second one while the first is active causes a panic or silent failure.
+**Cause:** Go's `runtime/trace.FlightRecorder` is a global singleton. Creating a second one while the first is active causes `Start()` to fail.
 
-**Fix:** Ensure only one `FlightRecorderHook` is created per process. Use `defer hook.Close()` before creating another.
+**Fix:** Since v1.6.0, `NewFlightRecorderHook` handles this gracefully — if another recorder is active, it returns a degraded hook (`Degraded()` returns true) that silently skips all snapshots. Check `hook.Degraded()` if you need to detect this. Use `defer hook.Close()` before creating another.
 
 ---
 

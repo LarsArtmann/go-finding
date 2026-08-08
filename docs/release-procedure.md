@@ -96,7 +96,7 @@ git push origin master --tags
 ## Version Scheme
 
 Semantic versioning strictly: `vMAJOR.MINOR.PATCH`. Current core version:
-`1.4.1` (see `version.go`). Sub-modules track their own independent semver.
+`1.6.0` (see `version.go`). Sub-modules track their own independent semver.
 
 ## Private-Repo Consumer Setup
 

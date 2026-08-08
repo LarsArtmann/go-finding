@@ -144,10 +144,10 @@ if path, snapErr := hook.Snapshot("manual"); snapErr == nil {
 
 ### Manual Snapshots
 
-Call `Snapshot(reason)` at any point to capture the current trace buffer:
+Call `Snapshot(ctx, reason)` at any point to capture the current trace buffer:
 
 ```go
-path, err := hook.Snapshot("custom-checkpoint")
+path, err := hook.Snapshot(ctx, "custom-checkpoint")
 // path: /tmp/go-finding-trace-003-custom-checkpoint.trace
 ```
 
@@ -220,7 +220,7 @@ The flight recorder wraps `runtime/trace.FlightRecorder`, which continuously rec
 
 1. **Construction** — `NewFlightRecorderHook` creates the output directory, initializes the `trace.FlightRecorder`, and calls `Start()`.
 2. **Pipeline execution** — Registered as a `StageHook`, it receives `StageBefore` and `StageAfter` events. If `SlowStageThreshold` is set, stages exceeding it trigger an async snapshot.
-3. **Snapshots** — `Snapshot(reason)` or `writeSnapshot(num, reason)` calls `fr.WriteTo(file)` to dump the ring buffer to a `.trace` file. A `sync.Mutex` (`writeMu`) serializes concurrent writes.
+3. **Snapshots** — `Snapshot(ctx, reason)` or `writeSnapshot(ctx, num, reason)` calls `fr.WriteTo(file)` to dump the ring buffer to a `.trace` file. A `sync.Mutex` (`writeMu`) serializes concurrent writes. The context is checked for cancellation before writing.
 4. **Shutdown** — `Close()` is idempotent. It waits for in-flight snapshot goroutines to finish, then calls `fr.Stop()`.
 
 ### Thread Safety

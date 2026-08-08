@@ -323,7 +323,7 @@
 //	hook, err := pipeline.NewFlightRecorderHook(pipeline.DefaultFlightRecorderConfig())
 //	cfg.StageHooks = append(cfg.StageHooks, hook)
 //
-// Snapshots are written on demand via hook.Snapshot(reason) or automatically when a
+// Snapshots are written on demand via hook.Snapshot(ctx, reason) or automatically when a
 // stage exceeds SlowStageThreshold. The CLI exposes -trace, -trace-dir, and -trace-slow
 // flags. YAML/JSON config files support a flightRecorder section with enabled, outputDir,
 // slowStageThreshold, minAge, and maxBytes fields. For a complete walkthrough with examples,

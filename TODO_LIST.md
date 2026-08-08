@@ -60,12 +60,6 @@ Two new public APIs are implemented, tested, and documented in `[Unreleased]` bu
 | ------------------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------------------- |
 | Consumer compatibility test                       | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code              |
 | Per-module golangci-lint configs                  | ⬜ `TODO`    | Low    | Medium | Workspace-level lint suffices but loses per-module precision. Flagged since modularization.       |
-| Export resolveSafePath/resolveSafePathFrom        | ⬜ `TODO`    | Low    | Low    | Flagged in 3+ reports as potential public API for consumer path validation.                      |
-| FlightRecorder context propagation                | ⬜ `TODO`    | Low    | Medium | `writeSnapshot` doesn't accept context. Long `WriteTo` calls can't be cancelled.                 |
-| FlightRecorder multiple recorder graceful degradation | ⬜ `TODO` | Low    | Medium | Go's singleton limit. Hook should detect pre-existing recorder and warn, not fail.               |
-| Refine docs-freshness.sh false-positive matching  | ⬜ `TODO`    | Low    | Medium | Script matches `.go` filenames in prose/code examples. Should only check code spans and links.   |
-| Extract `marshalOpts` package-level constant      | ⬜ `TODO`    | Low    | Low    | Single source of truth for `json.Deterministic(true)` so new call sites can't forget it.         |
-| Add CI check for `json.Marshal` without Deterministic | ⬜ `TODO` | Low    | Medium | Prevent future determinism regressions at code level.                                            |
 
 ---
 

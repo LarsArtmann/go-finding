@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+No changes yet.
+
+## [1.6.0] - 2026-08-08
+
 ### Added
 
 - **`pipeline.FlightRecorderFileConfig` + `ConfigFile.ResolveFlightRecorder()`** — Flight recorder configuration via JSON config files. The `FlightRecorderFileConfig` struct exposes 5 fields (`Enabled`, `OutputDir`, `SlowStageThreshold`, `MinAge`, `MaxBytes`) as string-encoded durations matching the ConfigFile convention. `ResolveFlightRecorder()` constructs a `*FlightRecorderHook` from the config section, returning `(nil, nil)` when disabled. Enables pipeline consumers to configure trace recording without CLI flags.
@@ -32,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-module benchmark report** — `docs/reports/2026-08-08_multi-module-vs-monolith.md` quantifies zero runtime overhead, negligible build overhead, and significant dependency isolation benefit.
 - **sanitizeFilename fuzz test** — `FuzzSanitizeFilename` in `pipeline/flight_recorder_fuzz_test.go` verifies non-empty output, no consecutive hyphens, no leading/trailing hyphens, and only safe filename characters across random inputs.
 - **SARIF schema compliance edge cases** — 5 new tests in `sarif_properties_test.go`: multiple findings, file-level positions, minimal findings, empty reports, and suppressed findings.
+- **`pipeline.ResolveSafePath`, `ResolveSafePathFrom`, `ResolveRoot`** — Exported the path-traversal security boundary as public API so external callers can validate finding file paths without duplicating logic. `ResolveSafePath(rootDir, relPath)` is the convenience wrapper; `ResolveRoot(rootDir)` (resolve symlinks once) + `ResolveSafePathFrom(resolvedRoot, relPath)` (per-path resolution) enable batch optimization.
+- **`pipeline.FlightRecorderHook.Degraded()`** — When a second flight recorder is created while one is already active (Go singleton limit), `NewFlightRecorderHook` now returns a degraded hook instead of an error. `Degraded()` returns true; all snapshot operations silently no-op. Callers can detect this state without error handling.
+- **`scripts/json-deterministic-check.sh`** — CI script enforcing `json.Deterministic(true)` on all production marshal calls via paren-depth-aware source scanning. Excludes `doc.go`. Wired into ci.yml.
 
 ### Changed
 
@@ -40,6 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **docs/guides/flight-recorder.md** — Updated YAML and JSON config examples to include all 5 fields (`minAge`, `maxBytes`).
 - **README.md** — Added FlightRecorder to feature list with link to guide; enhanced Pipeline description with observability mention.
 - **docs/DOMAIN_LANGUAGE.md** — Added Observability section (StageHook, FlightRecorderHook, Metrics, MetricsSnapshot) and Pipeline Configuration section (Iteration, CompletionReason, DryRun, GracefulDegradation, ByteLevelConflictDetection, VerifyAfterFix).
+- **`pipeline.FlightRecorderHook.Snapshot` signature** — Now accepts `context.Context` as first parameter: `Snapshot(ctx, reason)`. Cancelled contexts skip the trace write and return `context.Cause(ctx)` wrapped in a descriptive error. **Breaking change** for callers using the v1.5.0 `Snapshot(reason)` signature — update to `Snapshot(ctx, reason)`.
+- **`pipeline.NewFlightRecorderHook` singleton behavior** — On "flight recorder already enabled" runtime error, now returns `(degradedHook, nil)` instead of `(nil, err)`. Callers that previously checked `err != nil` for this case now get a safe no-op degraded hook.
+- **Centralized JSON marshal options** — `marshalOpts` and `prettyMarshalOpts` package-level variables in `json.go` replace duplicated `json.Deterministic(true)` literals across all marshal methods. SARIF export (`ToSARIFWithOpts`, `WriteSARIFWithOpts`) now reuses `prettyMarshalOpts`.
+- **`scripts/docs-freshness.sh`** — Tightened Go-file reference matching to only backtick code spans (`` `filename.go` ``) and markdown link targets (`[text](filename.go)`), excluding prose mentions that caused false positives.
+
+### Fixed
+
+- **`pipeline.FixEdit.MarshalJSON` non-deterministic output** — Missing `json.Deterministic(true)` caused non-reproducible fix serialization (map keys in random order). Now uses `marshalOpts`.
 
 ## [1.5.0] - 2026-08-06
 

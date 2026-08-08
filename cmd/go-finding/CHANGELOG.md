@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+No changes yet.
+
+## [1.6.0] - 2026-08-08
+
 ### Added
 
 - **`flightRecorder` config section** — YAML/JSON config files now support a `flightRecorder` section as an alternative to `-trace`, `-trace-dir`, and `-trace-slow` flags.
