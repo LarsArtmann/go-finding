@@ -59,7 +59,13 @@ Two new public APIs are implemented, tested, and documented in `[Unreleased]` bu
 | Task                                              | Status       | Impact | Effort | Evidence                                                                                          |
 | ------------------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------------------- |
 | Consumer compatibility test                       | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code              |
-| Per-module golangci-lint configs                  | ⬜ `TODO`    | Low    | Medium | Workspace-level lint suffices but loses per-module precision. Flagged since modularization.       |
+| Per-module golangci-lint configs                  | ✅ `DONE`    | Low    | Medium | Removed path exclusions from root `.golangci.yml` — all 4 modules lint clean with single config. Simpler than duplicating. |
+| Export ResolveSafePath/ResolveSafePathFrom        | ✅ `DONE`    | Low    | Low    | Exported in `pipeline/path_safety.go`. Consumers can now validate paths against root dir.         |
+| FlightRecorder context propagation                | ✅ `DONE`    | Low    | Medium | `Snapshot(ctx, reason)` + `writeSnapshot(ctx, ...)` accept context. asyncSnapshot uses `context.Background()`. |
+| FlightRecorder graceful degradation               | ✅ `DONE`    | Low    | Medium | `NewFlightRecorderHook` detects singleton conflict, enters degraded mode. `Degraded()` method.   |
+| Refine docs-freshness.sh false-positive matching  | ✅ `DONE`    | Low    | Medium | Now matches only backtick code spans and markdown links, not prose mentions of `.go` files.       |
+| Extract marshalOpts package-level constant        | ✅ `DONE`    | Low    | Low    | `marshalOpts` + `prettyMarshalOpts` in `json.go`. Single source of truth for deterministic JSON.  |
+| Add CI check for json.Marshal without Deterministic | ✅ `DONE`  | Low    | Medium | `scripts/json-deterministic-check.sh` with paren-depth-aware extraction. Wired into CI.           |
 
 ---
 
