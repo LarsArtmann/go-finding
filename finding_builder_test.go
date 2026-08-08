@@ -406,3 +406,81 @@ func TestTemplate_InvalidInput(t *testing.T) {
 		t.Error("invalid input should return zero-value Finding")
 	}
 }
+
+func TestTemplate_Builder_AllowsChainingConfidenceAndSuggestion(t *testing.T) {
+	t.Parallel()
+
+	tmpl := NewTemplate("my-linter").
+		WithCategory(CategoryStyle).
+		WithFixStrategy(FixStrategySuggest)
+
+	f := tmpl.Builder("R1", "bad pattern", SeverityWarning, Pos("demo.go", 42, 3)).
+		WithConfidence(ConfidenceHigh).
+		WithSuggestion("use humanize.Bytes instead").
+		MustBuild()
+
+	if f.ToolName != "my-linter" {
+		t.Errorf("ToolName = %q, want %q", f.ToolName, "my-linter")
+	}
+
+	if f.Category != CategoryStyle {
+		t.Errorf("Category = %v, want %v", f.Category, CategoryStyle)
+	}
+
+	if f.FixStrategy != FixStrategySuggest {
+		t.Errorf("FixStrategy = %v, want %v", f.FixStrategy, FixStrategySuggest)
+	}
+
+	if f.Confidence != ConfidenceHigh {
+		t.Errorf("Confidence = %v, want %v", f.Confidence, ConfidenceHigh)
+	}
+
+	if f.Suggestion != "use humanize.Bytes instead" {
+		t.Errorf("Suggestion = %q, want %q", f.Suggestion, "use humanize.Bytes instead")
+	}
+
+	if f.Rule != "R1" {
+		t.Errorf("Rule = %q, want %q", f.Rule, "R1")
+	}
+
+	if f.Message != "bad pattern" {
+		t.Errorf("Message = %q, want %q", f.Message, "bad pattern")
+	}
+}
+
+func TestTemplate_Builder_DelegatesToBuild(t *testing.T) {
+	t.Parallel()
+
+	tmpl := NewTemplate("tool").WithCategory(CategoryStyle)
+
+	built := tmpl.Build("R1", "msg", SeverityInfo, Pos("a.go", 1, 1))
+	buildered := tmpl.Builder("R1", "msg", SeverityInfo, Pos("a.go", 1, 1)).BuildOrDefault()
+
+	if built.ToolName != buildered.ToolName {
+		t.Errorf("ToolName mismatch: Build=%q, Builder=%q", built.ToolName, buildered.ToolName)
+	}
+
+	if built.Category != buildered.Category {
+		t.Errorf("Category mismatch: Build=%v, Builder=%v", built.Category, buildered.Category)
+	}
+
+	if built.Rule != buildered.Rule {
+		t.Errorf("Rule mismatch: Build=%q, Builder=%q", built.Rule, buildered.Rule)
+	}
+}
+
+func TestTemplate_Builder_WithoutChaining(t *testing.T) {
+	t.Parallel()
+
+	tmpl := NewTemplate("tool").WithCategory(CategoryStyle)
+
+	f := tmpl.Builder("R1", "msg", SeverityInfo, Pos("a.go", 1, 1)).BuildOrDefault()
+
+	if f.ID == "" {
+		t.Error("Builder without chaining should produce valid finding")
+	}
+
+	if f.Category != CategoryStyle {
+		t.Errorf("Category = %v, want %v", f.Category, CategoryStyle)
+	}
+}

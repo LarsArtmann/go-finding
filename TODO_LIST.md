@@ -40,11 +40,11 @@
 | ------------------------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Fix BuildFlow auto-configure loop                 | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact |
 | Commit benchmark baseline                         | ✅ `DONE`    | Med    | Low    | Fixed in 2026-08-01 session. Removed `/benchmarks/` from `.gitignore`, committed `benchmarks/baseline.txt`.                             |
-| FlightRecorder `ConfigFile` integration           | ⬜ `TODO`    | Med    | Medium | Add `FlightRecorder *FlightRecorderConfig` to `config_file.go` schema so YAML/JSON config users can enable tracing. Self-critique §b.3. |
-| Write `docs/guides/flight-recorder.md` user guide | ⬜ `TODO`    | Med    | Low    | Full user guide with `go tool trace` workflow. Self-critique §c.8.                                                                      |
-| FlightRecorder `example_test.go`                  | ⬜ `TODO`    | Low    | Low    | Runnable godoc examples for pipeline package. Self-critique §c.1.                                                                       |
-| Check `doc.go` for FlightRecorder API references  | ⬜ `TODO`    | Low    | Low    | Ensure new symbols are documented in godoc prose. Self-critique §c.10.                                                                  |
-| CLI integration test for `-trace` flag            | ⬜ `TODO`    | Low    | Medium | Automated test that `-trace` produces a `.trace` file. Self-critique §c.9.                                                              |
+| FlightRecorder `ConfigFile` integration           | ✅ `DONE`    | Med    | Medium | Added `FlightRecorderFileConfig` to pipeline `config_file.go` + CLI YAML/JSON support + `ResolveFlightRecorder()` method. |
+| Write `docs/guides/flight-recorder.md` user guide | ✅ `DONE`    | Med    | Low    | Full guide: CLI flags, config file, programmatic API, `go tool trace` workflow, config reference, internals. |
+| FlightRecorder `example_test.go`                  | ✅ `DONE`    | Low    | Low    | Added `ExampleNewFlightRecorderHook` and `ExampleConfigFile_ResolveFlightRecorder` to `pipeline/example_test.go`. |
+| Check `doc.go` for FlightRecorder API references  | ✅ `DONE`    | Low    | Low    | Added FlightRecorder to pipeline feature list + dedicated section in `doc.go`. |
+| CLI integration test for `-trace` flag            | ✅ `DONE`    | Low    | Medium | `TestRun_E2E_TraceFlag` + `TestRun_E2E_TraceViaConfigFile` verify `.trace` file output. |
 
 ## 🟢 LOW Priority
 
@@ -54,15 +54,15 @@
 | Consumer compatibility test             | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code        |
 | Per-module golangci-lint configs        | ⬜ `TODO`    | Low    | Medium | Workspace-level lint suffices but loses per-module precision. Flagged since modularization. |
 | go-arch-lint module boundary CI         | ⬜ `TODO`    | Low    | Medium | Enforce module dependency boundaries in CI. Flagged in modularization reports.              |
-| `go.work sync` idempotency CI           | ⬜ `TODO`    | Low    | Medium | Verify `go.work sync` is idempotent. Flagged in modularization reports.                     |
-| Replace directive audit CI              | ⬜ `TODO`    | Low    | Low    | Verify all sub-module replace directives point at correct paths.                            |
-| Version drift detection CI              | ⬜ `TODO`    | Low    | Low    | Beyond `version-check.sh` — cross-check all 4 module versions match.                        |
-| Test filename convention CI             | ⬜ `TODO`    | Low    | Low    | Reject `_extra_test.go`/`_bugfix_test.go`/`coverage_test.go` filenames.                     |
+| `go.work sync` idempotency CI           | ✅ `DONE`    | Low    | Low    | `scripts/go-work-sync.sh` — runs `go work sync` twice, checks for changes.                  |
+| Replace directive audit CI              | ✅ `DONE`    | Low    | Low    | `scripts/replace-audit.sh` — verifies all sub-module replace directives.                    |
+| Version drift detection CI              | ✅ `DONE`    | Low    | Low    | `scripts/version-drift.sh` — cross-checks all 4 module versions against `version.go`.       |
+| Test filename convention CI             | ✅ `DONE`    | Low    | Low    | `scripts/test-naming.sh` — rejects banned test file naming patterns.                       |
 | Docs-freshness CI check                 | ⬜ `TODO`    | Low    | Medium | Flag docs older than N days without review.                                                 |
 | Per-module CHANGELOG entries            | ⬜ `TODO`    | Low    | Medium | Each sub-module tracks its own changes. Flagged in modularization reports.                  |
 | Multi-module vs monolith benchmark      | ⬜ `TODO`    | Low    | Medium | Measure overhead of workspace vs single-module.                                             |
-| SARIF/LSP/FilePath round-trip benchmark | ⬜ `TODO`    | Low    | Medium | Thin benchmark coverage for serialization paths.                                            |
-| TOCTOU symlink swap runtime test        | ⬜ `TODO`    | Low    | Medium | Unit tests exist for resolveSafePath but no runtime swap test.                              |
+| SARIF/LSP/FilePath round-trip benchmark | ✅ `DONE`    | Low    | Low    | Added `BenchmarkToLSP`, `BenchmarkFromLSP`, `BenchmarkLSPRoundTrip` to `bench_test.go`. SARIF benchmarks already existed. |
+| TOCTOU symlink swap runtime test        | ✅ `DONE`    | Low    | Low    | `TestResolveSafePath_TOCOU_SymlinkSwap` + `TestResolveSafePath_SymlinkSwap_OutsideToInside` in `path_safety_test.go`. |
 
 ---
 

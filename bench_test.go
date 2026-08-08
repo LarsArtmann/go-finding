@@ -244,6 +244,59 @@ func BenchmarkFromSARIF(b *testing.B) {
 	}
 }
 
+func lspBenchFinding() Finding {
+	return Finding{
+		ID:          "tool:SA1000:main.go:42:10",
+		Rule:        benchRule,
+		ToolName:    "staticcheck",
+		Message:     "test finding for LSP benchmark",
+		Severity:    SeverityError,
+		Confidence:  ConfidenceHigh,
+		Category:    CategorySecurity,
+		Position:    Position{File: FilePath(benchMainFile), Line: 42, Column: 10, Offset: 500},
+		FixStrategy: FixStrategyDirect,
+		BeforeCode:  "old code",
+		AfterCode:   "new code",
+		Tags:        []Tag{"security", "bug"},
+		Metadata:    map[string]string{"key1": "val1", "key2": "val2"},
+	}
+}
+
+func BenchmarkToLSP(b *testing.B) {
+	f := lspBenchFinding()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = f.ToLSP()
+	}
+}
+
+func BenchmarkFromLSP(b *testing.B) {
+	f := lspBenchFinding()
+	diag := f.ToLSP()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = FromLSP(FilePath(benchMainFile), diag)
+	}
+}
+
+func BenchmarkLSPRoundTrip(b *testing.B) {
+	f := lspBenchFinding()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		diag := f.ToLSP()
+		_ = FromLSP(FilePath(benchMainFile), diag)
+	}
+}
+
 func BenchmarkFindingKey(b *testing.B) {
 	f := Finding{
 		ID:       "tool:rule:file.go:42:10",

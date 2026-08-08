@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"errors"
 	"math"
 	"testing"
 )
@@ -137,5 +138,78 @@ func TestConfidence_StandardConstants_Ordering(t *testing.T) {
 
 	if ConfidenceFull != 1.0 {
 		t.Errorf("ConfidenceFull = %v, want 1.0", ConfidenceFull)
+	}
+}
+
+func TestParseConfidence(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		input   string
+		want    Confidence
+		wantErr bool
+	}{
+		{"empty defaults to low", "", ConfidenceLow, false},
+		{"low", "low", ConfidenceLow, false},
+		{"medium", "medium", ConfidenceMedium, false},
+		{"high", "high", ConfidenceHigh, false},
+		{"full", "full", ConfidenceFull, false},
+		{"none", "none", ConfidenceNone, false},
+		{"uppercase LOW", "Low", ConfidenceLow, false},
+		{"uppercase MEDIUM", "MEDIUM", ConfidenceMedium, false},
+		{"spaces around", "  high  ", ConfidenceHigh, false},
+		{"decimal 0.42", "0.42", Confidence(0.42), false},
+		{"decimal 1.0", "1.0", ConfidenceFull, false},
+		{"decimal 0.0", "0.0", ConfidenceNone, false},
+		{"garbage", "banana", ConfidenceNone, true},
+		{"out of range high", "1.5", ConfidenceNone, true},
+		{"out of range low", "-0.5", ConfidenceNone, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := ParseConfidence(tt.input)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("ParseConfidence(%q) err = nil, want error", tt.input)
+				}
+
+				if !errors.Is(err, ErrInvalidConfidence) {
+					t.Errorf("ParseConfidence(%q) err does not match ErrInvalidConfidence: %v", tt.input, err)
+				}
+
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("ParseConfidence(%q) err = %v, want nil", tt.input, err)
+			}
+
+			if got != tt.want {
+				t.Errorf("ParseConfidence(%q) = %v, want %v", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseConfidence_RoundTrip(t *testing.T) {
+	t.Parallel()
+
+	levels := []Confidence{ConfidenceNone, ConfidenceLow, ConfidenceMedium, ConfidenceHigh, ConfidenceFull}
+
+	for _, c := range levels {
+		s := c.String()
+
+		got, err := ParseConfidence(s)
+		if err != nil {
+			t.Fatalf("ParseConfidence(%q) err = %v", s, err)
+		}
+
+		if got != c {
+			t.Errorf("round-trip failed: Confidence(%v).String() = %q, ParseConfidence(%q) = %v", c, s, s, got)
+		}
 	}
 }

@@ -212,6 +212,17 @@
 //	f1 := tmpl.Build("R1", "msg 1", finding.SeverityInfo, finding.Pos("a.go", 1, 1))
 //	f2 := tmpl.Build("R2", "msg 2", finding.SeverityWarning, finding.Pos("b.go", 2, 3))
 //
+// For per-finding confidence/suggestion, use Template.Builder (returns *Builder):
+//
+//	f := tmpl.Builder("R1", "msg", finding.SeverityWarning, finding.Pos("a.go", 1, 1)).
+//	    WithConfidence(finding.ConfidenceHigh).
+//	    WithSuggestion("use foo.Bar() instead").
+//	    MustBuild()
+//
+// Confidence parsing (inverse of String):
+//
+//	c, err := finding.ParseConfidence("high") // → ConfidenceHigh
+//
 // File-level positions (config files, project checks):
 //
 //	f := finding.NewBuilder("config", "tool", "missing field",
