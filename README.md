@@ -17,9 +17,10 @@ Each tool invents its own types for findings. There is no standardized way to ap
 **go-finding** solves this with:
 
 - **Unified Finding type** — Common model for all static analysis tools
-- **Pipeline** — Automated detect → triage → fix → verify loop
+- **Pipeline** — Automated detect → triage → fix → verify loop with retry, partial success, and observability hooks
 - **SARIF 2.1.0** — Standard interchange format for CI/CD integration
 - **LSP diagnostics** — IDE integration out of the box
+- **Flight recorder** — Go execution trace capture for pipeline diagnostics, with slow-stage auto-snapshot and manual checkpoints. See [FlightRecorder Guide](docs/guides/flight-recorder.md).
 
 ## Installation
 
