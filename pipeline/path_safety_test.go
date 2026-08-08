@@ -399,6 +399,7 @@ func TestResolveSafePath_SymlinkSwap_OutsideToInside(t *testing.T) {
 		t.Fatalf("resolved = %q, want %q", resolved, insideTarget)
 	}
 }
+
 // with path traversal in Position.File are silently skipped.
 func TestGroupFindingsBySafePath_PathTraversalFiltered(t *testing.T) {
 	t.Parallel()

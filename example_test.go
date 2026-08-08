@@ -801,3 +801,51 @@ func Example_merging() {
 	// Total: 2 findings from 2 tools
 	// By severity: critical=1, warning=1
 }
+
+func ExampleParseConfidence() {
+	c, err := finding.ParseConfidence("high")
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	fmt.Println(c)
+
+	// Empty string defaults to low
+	low, _ := finding.ParseConfidence("")
+	fmt.Println(low)
+
+	// Decimals work too
+	custom, _ := finding.ParseConfidence("0.42")
+	fmt.Println(custom)
+
+	// Output:
+	// high
+	// low
+	// 0.42
+}
+
+func ExampleTemplate_Builder() {
+	tmpl := finding.NewTemplate("my-linter").
+		WithCategory(finding.CategoryStyle).
+		WithFixStrategy(finding.FixStrategySuggest)
+
+	f := tmpl.Builder("R1", "bad pattern", finding.SeverityWarning, finding.Pos("demo.go", 42, 3)).
+		WithConfidence(finding.ConfidenceHigh).
+		WithSuggestion("use humanize.Bytes instead").
+		MustBuild()
+
+	fmt.Println(f.Rule)
+	fmt.Println(f.ToolName)
+	fmt.Println(f.Category)
+	fmt.Println(f.Confidence)
+	fmt.Println(f.Suggestion)
+
+	// Output:
+	// R1
+	// my-linter
+	// style
+	// high
+	// use humanize.Bytes instead
+}
