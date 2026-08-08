@@ -58,8 +58,8 @@
 | Replace directive audit CI              | ✅ `DONE`    | Low    | Low    | `scripts/replace-audit.sh` — verifies all sub-module replace directives. Wired into ci.yml `structural-checks` job.             |
 | Version drift detection CI              | ✅ `DONE`    | Low    | Low    | `scripts/version-drift.sh` — cross-checks all 4 module versions against `version.go`. Wired into ci.yml `structural-checks` job.|
 | Test filename convention CI             | ✅ `DONE`    | Low    | Low    | `scripts/test-naming.sh` — rejects banned test file naming patterns. Wired into ci.yml `structural-checks` job.                |
-| Docs-freshness CI check                 | ⬜ `TODO`    | Low    | Medium | Flag docs older than N days without review.                                                                               |
-| Per-module CHANGELOG entries            | ⬜ `TODO`    | Low    | Medium | Each sub-module tracks its own changes. Flagged in modularization reports.                                                |
+| Docs-freshness CI check                 | ✅ `DONE`    | Low    | Medium | `scripts/docs-freshness.sh` — checks staleness + code-doc sync. Wired into ci.yml `docs-freshness` job.                        |
+| Per-module CHANGELOG entries            | ✅ `DONE`    | Low    | Medium | `pipeline/CHANGELOG.md`, `analysis/CHANGELOG.md`, `cmd/go-finding/CHANGELOG.md` created with cross-refs from root.            |
 | Multi-module vs monolith benchmark      | ⬜ `TODO`    | Low    | Medium | Measure overhead of workspace vs single-module.                                                                           |
 | SARIF/LSP/FilePath round-trip benchmark | ✅ `DONE`    | Low    | Low    | Added `BenchmarkToLSP`, `BenchmarkFromLSP`, `BenchmarkLSPRoundTrip` to `bench_test.go`. SARIF benchmarks already existed. |
 | TOCTOU symlink swap runtime test        | ✅ `DONE`    | Low    | Low    | `TestResolveSafePath_TOCOU_SymlinkSwap` + `TestResolveSafePath_SymlinkSwap_OutsideToInside` in `path_safety_test.go`.     |

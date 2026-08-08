@@ -148,6 +148,16 @@ jobs:
         run: bash scripts/go-work-sync.sh
 
     timeout-minutes: 5
+  docs-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Check documentation freshness
+        run: bash scripts/docs-freshness.sh
+
+    timeout-minutes: 5
   stress:
     runs-on: ubuntu-latest
     steps:
