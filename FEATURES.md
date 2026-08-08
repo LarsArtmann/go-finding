@@ -69,6 +69,21 @@ f, err := NewBuilder(RuleName("nilcheck"), ToolName("govet"), "possible nil dere
 - `MustBuild()` — panics on invalid state
 - Default confidence: `ConfidenceFull` (1.0) since v1.3.0; override with `.WithConfidence()`
 
+### 1.3 Template Factory
+
+**Status:** FULLY_FUNCTIONAL
+
+Pre-configured builder factory for stamping common fields (tool name, category, fix strategy, tags) once and building many findings:
+
+```go
+tmpl := NewTemplate("my-linter").
+    WithCategory(CategoryStyle).
+    WithFixStrategy(FixStrategySuggest)
+f1 := tmpl.Build("R1", "msg 1", SeverityInfo, Pos("a.go", 1, 1))
+```
+
+`Template.Builder(rule, msg, sev, pos) *Builder` returns a pre-configured `*Builder` for per-finding chaining (confidence, suggestion, before/after code) before the terminal `Build()`/`MustBuild()`/`BuildOrDefault()` call. Eliminates the `makeFindingWithConfidence` / `buildFixableFinding` factory patterns consumers reinvent when they need both template-level defaults AND per-finding overrides.
+
 ---
 
 ## 2. Position & Range
@@ -139,7 +154,25 @@ Methods: `IsValid()`, `CanAutoApply()`, `NeedsAI()`
 
 ## 5. Category & Tags
 
-### 5.1 Category
+### 5.1 Confidence
+
+**Status:** FULLY_FUNCTIONAL
+
+Named float64 type with range [0.0, 1.0]. Five canonical levels:
+
+| Level   | Value | String      |
+| ------- | ----- | ----------- |
+| None    | 0.0   | `"none"`    |
+| Low     | 0.25  | `"low"`     |
+| Medium  | 0.5   | `"medium"`  |
+| High    | 0.75  | `"high"`    |
+| Full    | 1.0   | `"full"`    |
+
+Methods: `IsValid()`, `Clamp()`, `Compare()`, `String()`
+
+Parsing: `ParseConfidence(string) (Confidence, error)` — inverse of `String()`. Accepts named levels, decimal strings (e.g. `"0.42"`), and empty string (defaults to `ConfidenceLow`). Case-insensitive, trims whitespace. Returns `ErrInvalidConfidence` sentinel, matchable via `errors.Is`.
+
+### 5.2 Category
 
 **Status:** FULLY_FUNCTIONAL
 
@@ -149,7 +182,7 @@ Methods: `IsValid()`, `CanAutoApply()`, `NeedsAI()`
 
 Plus arbitrary custom categories accepted. Methods: `IsStandard()`, `IsValid()`, `String()`, `Compare()`, `IsSecurity()`. Parsing: `ParseCategory(s)` (returns error), `MustParseCategory(s)` (panics).
 
-### 5.2 Tags
+### 5.3 Tags
 
 **Status:** FULLY_FUNCTIONAL
 
@@ -307,6 +340,8 @@ Handles Windows paths with colons correctly.
 ## 11. JSON Serialization
 
 **Status:** FULLY_FUNCTIONAL
+
+> **Deterministic since v1.5.0:** All JSON/SARIF marshal calls pass `json.Deterministic(true)`, ensuring Go map keys serialize in sorted order on every run. Output is safe for snapshot/diff testing without post-hoc normalization. 8 byte-identity regression tests guard this.
 
 | Operation        | Function                                                 | Notes                        |
 | ---------------- | -------------------------------------------------------- | ---------------------------- |
@@ -666,7 +701,7 @@ defer hook.Close()
 
 Implements `StageHook` — `OnStageEvent` **never returns an error** (trace collection is purely diagnostic and must not affect pipeline control flow).
 
-CLI flags: `-trace` (enable), `-trace-dir` (output directory), `-trace-slow` (auto-snapshot threshold, e.g. `30s`).
+CLI flags: `-trace` (enable), `-trace-dir` (output directory), `-trace-slow` (auto-snapshot threshold, e.g. `30s`). Config file `flightRecorder` section: `enabled`, `outputDir`, `slowStageThreshold`, `minAge`, `maxBytes` (full parity with `pipeline.FlightRecorderFileConfig`). See [Flight Recorder Guide](docs/guides/flight-recorder.md).
 
 ---
 
@@ -949,7 +984,7 @@ sev, err := finding.ParseSeverity("warn") // SeverityWarning
 
 ---
 
-## 22. Convenience APIs (v1.3.0)
+## 22. Convenience APIs (v1.3.0+)
 
 ### 22.1 Template
 
@@ -965,7 +1000,16 @@ f1 := tmpl.Build("R1", "msg 1", SeverityInfo, Pos("a.go", 1, 1))
 f2 := tmpl.Build("R2", "msg 2", SeverityWarning, Pos("b.go", 2, 3))
 ```
 
-Eliminates the `newMigrationFinding` / `buildFixableFinding` / `IssueBuilderFactory` patterns that consumers reinvent.
+`Template.Builder(rule, msg, sev, pos) *Builder` returns a pre-configured `*Builder` for per-finding chaining:
+
+```go
+f := tmpl.Builder("R3", "msg 3", SeverityWarning, pos).
+    WithConfidence(ConfidenceHigh).
+    WithSuggestion("use humanize.Bytes").
+    MustBuild()
+```
+
+Eliminates the `newMigrationFinding` / `buildFixableFinding` / `makeFindingWithConfidence` / `IssueBuilderFactory` patterns that consumers reinvent.
 
 ### 22.2 ApplySimpleFixes
 
@@ -1061,6 +1105,18 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | CategoryForLinter                            | FULLY_FUNCTIONAL     | 84 linter→category mappings, case-insensitive                                      |
 | Severity aliases                             | FULLY_FUNCTIONAL     | 11 severity aliases + SeverityFromLevel + PriorityString (v1.3.0)                  |
 | SubstringProvider column-aware               | FULLY_FUNCTIONAL     | Nearest-position heuristic with line+column disambiguation                         |
+| Template factory                             | FULLY_FUNCTIONAL     | Pre-configured builder: stamp common fields once, build many findings              |
+| Template.Builder (per-finding chaining)      | FULLY_FUNCTIONAL     | Returns *Builder from template for confidence/suggestion overrides (unreleased)    |
+| ParseConfidence                              | FULLY_FUNCTIONAL     | Inverse of Confidence.String(); named levels + decimals + empty default (unreleased)|
+| Deterministic JSON/SARIF output               | FULLY_FUNCTIONAL     | json.Deterministic(true) on all 8 marshal calls; 8 byte-identity regression tests  |
+| ValidateAll (batch validation)               | FULLY_FUNCTIONAL     | Batch helper returning map[int]error for invalid findings                          |
+| FlightRecorderHook                            | FULLY_FUNCTIONAL     | Go runtime execution trace flight recorder for pipeline observability              |
+| FlightRecorder config-file integration        | FULLY_FUNCTIONAL     | FlightRecorderFileConfig + ResolveFlightRecorder(); 5 fields via YAML/JSON         |
+| go-arch-lint module boundary CI               | FULLY_FUNCTIONAL     | 11 components, one-directional flow enforced; wired into ci.yml arch-check job     |
+| Docs-freshness CI                             | FULLY_FUNCTIONAL     | Staleness + code-doc sync checks; wired into ci.yml docs-freshness job             |
+| Configuration guide                           | FULLY_FUNCTIONAL     | docs/guides/configuration.md: all CLI flags, config file, library ConfigFile API   |
+| Troubleshooting guide                         | FULLY_FUNCTIONAL     | docs/guides/troubleshooting.md: build, config, pipeline, fix, flight recorder errors|
+| Multi-module benchmark                        | FULLY_FUNCTIONAL     | docs/reports/2026-08-08_multi-module-vs-monolith.md: zero runtime overhead          |
 
 ---
 
