@@ -164,7 +164,7 @@ bash scripts/version-check.sh                                    # Verify versio
 - `-fix-provider go-ast` — enables AST-aware fix provider
 - `-byte-level-conflict` — precise overlap detection
 - `-trace` — enable Go execution trace flight recorder for diagnostics (`-trace-dir`, `-trace-slow` for config)
-- Config-file `flightRecorder` section — alternative to `-trace` flags for YAML/JSON config users
+- Config-file `flightRecorder` section — alternative to `-trace` flags; supports `enabled`, `outputDir`, `slowStageThreshold`, `minAge`, `maxBytes` (full parity with pipeline `FlightRecorderFileConfig`)
 - Dynamic detector registry (`RegisterDetector`)
 
 ## Architecture Decisions

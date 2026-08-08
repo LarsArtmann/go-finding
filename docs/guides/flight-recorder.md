@@ -63,6 +63,8 @@ flightRecorder:
   enabled: true
   outputDir: "./traces"
   slowStageThreshold: "30s"
+  minAge: "1m"
+  maxBytes: 4194304  # 4 MiB
 ```
 
 ### JSON
@@ -72,7 +74,9 @@ flightRecorder:
 	"flightRecorder": {
 		"enabled": true,
 		"outputDir": "./traces",
-		"slowStageThreshold": "30s"
+		"slowStageThreshold": "30s",
+		"minAge": "1m",
+		"maxBytes": 4194304
 	}
 }
 ```
