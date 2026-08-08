@@ -33,6 +33,15 @@ type pipelineConfigFile struct {
 	ByteLevelConflictDetection bool `json:"byteLevelConflictDetection" yaml:"byteLevelConflictDetection"`
 	// FixProviders enables named fix providers (e.g., "go-ast") for domain-specific edits.
 	FixProviders []string `json:"fixProviders" yaml:"fixProviders"`
+	// FlightRecorder enables Go execution trace recording. This is an alternative
+	// to the -trace CLI flag for YAML/JSON config users.
+	FlightRecorder *flightRecorderFileConfig `json:"flightRecorder" yaml:"flightRecorder"`
+}
+
+type flightRecorderFileConfig struct {
+	Enabled            bool   `json:"enabled"             yaml:"enabled"`
+	OutputDir          string `json:"outputDir"           yaml:"outputDir"`
+	SlowStageThreshold string `json:"slowStageThreshold"  yaml:"slowStageThreshold"`
 }
 
 type detectorSpec struct {
@@ -129,6 +138,13 @@ func (c pipelineConfigFile) validate() error {
 		if _, ok := lookupFixProvider(name); !ok {
 			return fmt.Errorf("%w: %q (available: %s)", ErrUnknownFixProvider, name,
 				strings.Join(availableFixProviderNames(), ", "))
+		}
+	}
+
+	if c.FlightRecorder != nil && c.FlightRecorder.SlowStageThreshold != "" {
+		if _, err := time.ParseDuration(c.FlightRecorder.SlowStageThreshold); err != nil {
+			return fmt.Errorf("invalid flightRecorder.slowStageThreshold %q: %w",
+				c.FlightRecorder.SlowStageThreshold, err)
 		}
 	}
 

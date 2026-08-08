@@ -221,6 +221,32 @@ func run() int {
 
 		fmt.Fprintf(os.Stderr, "Flight recorder enabled (output: %s, slow threshold: %v)\n",
 			frConfig.OutputDir, frConfig.SlowStageThreshold)
+	} else if cfg.FlightRecorder != nil && cfg.FlightRecorder.Enabled {
+		frConfig := pipeline.DefaultFlightRecorderConfig()
+		if cfg.FlightRecorder.OutputDir != "" {
+			frConfig.OutputDir = cfg.FlightRecorder.OutputDir
+		}
+
+		if cfg.FlightRecorder.SlowStageThreshold != "" {
+			d, err := time.ParseDuration(cfg.FlightRecorder.SlowStageThreshold)
+			if err != nil {
+				return fatalf("parsing flightRecorder.slowStageThreshold", err)
+			}
+
+			frConfig.SlowStageThreshold = d
+		}
+
+		var frErr error
+
+		frHook, frErr = pipeline.NewFlightRecorderHook(frConfig)
+		if frErr != nil {
+			return fatalf("creating flight recorder", frErr)
+		}
+
+		pipelineCfg.StageHooks = append(pipelineCfg.StageHooks, frHook)
+
+		fmt.Fprintf(os.Stderr, "Flight recorder enabled via config (output: %s, slow threshold: %v)\n",
+			frConfig.OutputDir, frConfig.SlowStageThreshold)
 	}
 
 	p, err := pipeline.New(pipelineCfg, f.dir, detectorList...)

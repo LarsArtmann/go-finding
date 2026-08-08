@@ -17,19 +17,32 @@ import (
 // DetectorNames and ProviderNames store names to be resolved via a
 // [DetectorRegistry] and fix provider map at construction time — the config
 // file itself cannot construct function values.
+// FlightRecorderFileConfig is the JSON-friendly representation of flight
+// recorder settings for use in a [ConfigFile]. Duration fields use string
+// syntax (e.g. "30s", "2m") parsed via time.ParseDuration, matching the
+// convention used elsewhere in ConfigFile.
+type FlightRecorderFileConfig struct {
+	Enabled            bool   `json:"enabled"`
+	OutputDir          string `json:"outputDir"`
+	SlowStageThreshold string `json:"slowStageThreshold"`
+	MinAge             string `json:"minAge"`
+	MaxBytes           uint64 `json:"maxBytes"`
+}
+
 type ConfigFile struct {
-	MaxIterations              int               `json:"maxIterations"`
-	ParallelDetectors          bool              `json:"parallelDetectors"`
-	VerifyAfterFix             bool              `json:"verifyAfterFix"`
-	Timeout                    string            `json:"timeout"`
-	DetectorTimeouts           map[string]string `json:"detectorTimeouts"`
-	GracefulDegradation        bool              `json:"gracefulDegradation"`
-	DryRun                     bool              `json:"dryRun"`
-	CorrelateFindings          bool              `json:"correlateFindings"`
-	ByteLevelConflictDetection bool              `json:"byteLevelConflictDetection"`
-	Severity                   string            `json:"severity"`
-	DetectorNames              []string          `json:"detectorNames"`
-	ProviderNames              []string          `json:"providerNames"`
+	MaxIterations              int                       `json:"maxIterations"`
+	ParallelDetectors          bool                      `json:"parallelDetectors"`
+	VerifyAfterFix             bool                      `json:"verifyAfterFix"`
+	Timeout                    string                    `json:"timeout"`
+	DetectorTimeouts           map[string]string         `json:"detectorTimeouts"`
+	GracefulDegradation        bool                      `json:"gracefulDegradation"`
+	DryRun                     bool                      `json:"dryRun"`
+	CorrelateFindings          bool                      `json:"correlateFindings"`
+	ByteLevelConflictDetection bool                      `json:"byteLevelConflictDetection"`
+	Severity                   string                    `json:"severity"`
+	DetectorNames              []string                  `json:"detectorNames"`
+	ProviderNames              []string                  `json:"providerNames"`
+	FlightRecorder             *FlightRecorderFileConfig `json:"flightRecorder"`
 }
 
 // Sentinel errors for config file resolution.
@@ -135,6 +148,54 @@ func (cf ConfigFile) ResolveDetectors(registry *finding.DetectorRegistry) ([]fin
 	}
 
 	return detectors, nil
+}
+
+// ResolveFlightRecorder constructs a [FlightRecorderHook] from the config's
+// FlightRecorder section. Returns (nil, nil) when flight recording is not
+// enabled. The caller is responsible for appending the returned hook to
+// [Config.StageHooks] and calling Close() when done.
+func (cf ConfigFile) ResolveFlightRecorder() (*FlightRecorderHook, error) {
+	if cf.FlightRecorder == nil || !cf.FlightRecorder.Enabled {
+		return nil, nil
+	}
+
+	config := DefaultFlightRecorderConfig()
+
+	if cf.FlightRecorder.OutputDir != "" {
+		config.OutputDir = cf.FlightRecorder.OutputDir
+	}
+
+	if cf.FlightRecorder.SlowStageThreshold != "" {
+		d, err := time.ParseDuration(cf.FlightRecorder.SlowStageThreshold)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"parse flightRecorder.slowStageThreshold %q: %w",
+				cf.FlightRecorder.SlowStageThreshold,
+				err,
+			)
+		}
+
+		config.SlowStageThreshold = d
+	}
+
+	if cf.FlightRecorder.MinAge != "" {
+		d, err := time.ParseDuration(cf.FlightRecorder.MinAge)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"parse flightRecorder.minAge %q: %w",
+				cf.FlightRecorder.MinAge,
+				err,
+			)
+		}
+
+		config.MinAge = d
+	}
+
+	if cf.FlightRecorder.MaxBytes != 0 {
+		config.MaxBytes = cf.FlightRecorder.MaxBytes
+	}
+
+	return NewFlightRecorderHook(config)
 }
 
 // ResolveProviders builds fix providers from the config's ProviderNames using
