@@ -325,8 +325,8 @@
 //
 // Snapshots are written on demand via hook.Snapshot(reason) or automatically when a
 // stage exceeds SlowStageThreshold. The CLI exposes -trace, -trace-dir, and -trace-slow
-// flags. YAML/JSON config files support a flightRecorder section. See the Flight Recorder
-// Guide (docs/guides/flight-recorder.md) for the full workflow.
+// flags. YAML/JSON config files support a flightRecorder section with enabled, outputDir,
+// and slowStageThreshold fields.
 //
 // # Interval Index
 //

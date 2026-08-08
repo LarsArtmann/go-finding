@@ -19,7 +19,7 @@ check_version() {
   local expected="$3"
 
   local actual
-  actual=$(grep -E "^\s+${module} ${expected}" "$modfile" | head -1 | awk '{print $2}')
+  actual=$(grep -E "^\s+${module} ${expected}" "$modfile" | grep -v '// indirect' | head -1 | awk '{print $2}')
   if [ "$actual" != "$expected" ]; then
     echo "ERROR: $modfile requires ${module} ${actual}, expected ${expected}"
     ERRORS=$((ERRORS + 1))
