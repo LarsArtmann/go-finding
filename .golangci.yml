@@ -358,6 +358,9 @@ linters:
         linters:
           - goconst
           - gochecknoglobals
+      - path: json\.go
+        linters:
+          - gochecknoglobals
       - path: _test\.go
         text: unused
         linters:
@@ -365,8 +368,6 @@ linters:
     paths:
       - \.gen\.go$
       - _templ\.go$
-      - cmd/go-finding/
-      - pipeline/
       - vendor/
 formatters:
   enable:
@@ -382,8 +383,6 @@ formatters:
     generated: lax
     paths:
       - _templ\.go$
-      - cmd/go-finding/
-      - pipeline/
 issues:
   max-issues-per-linter: 100
   max-same-issues: 5
