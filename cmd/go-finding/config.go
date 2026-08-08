@@ -39,9 +39,9 @@ type pipelineConfigFile struct {
 }
 
 type flightRecorderFileConfig struct {
-	Enabled            bool   `json:"enabled"             yaml:"enabled"`
-	OutputDir          string `json:"outputDir"           yaml:"outputDir"`
-	SlowStageThreshold string `json:"slowStageThreshold"  yaml:"slowStageThreshold"`
+	Enabled            bool   `json:"enabled"            yaml:"enabled"`
+	OutputDir          string `json:"outputDir"          yaml:"outputDir"`
+	SlowStageThreshold string `json:"slowStageThreshold" yaml:"slowStageThreshold"`
 }
 
 type detectorSpec struct {
