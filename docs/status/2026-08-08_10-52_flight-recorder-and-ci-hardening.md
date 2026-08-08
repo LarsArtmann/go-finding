@@ -92,6 +92,7 @@ The 4 scripts exist and work, but are not referenced in any CI pipeline config (
 ### 3. AGENTS.md — Missing Gotchas for New Features
 
 The AGENTS.md "Important Behaviors" section was NOT updated with:
+
 - The new `FlightRecorderFileConfig` / `ResolveFlightRecorder()` API
 - The CLI config-file-based flight recorder fallback behavior
 - The new CI scripts
@@ -102,16 +103,16 @@ The AGENTS.md "Important Behaviors" section was NOT updated with:
 
 These items were in the original task list but were BLOCKED or intentionally deferred:
 
-| Task | Status | Reason |
-|------|--------|--------|
-| Fix BuildFlow auto-configure loop | BLOCKED | External tool issue, not actionable from code |
-| SARIF schema validation test | BLOCKED | Requires vendoring 7K+ line JSON schema |
-| Consumer compatibility test | BLOCKED | Repo is private; needs GOPRIVATE |
-| Per-module golangci-lint configs | TODO | Workspace-level lint suffices |
-| go-arch-lint module boundary CI | TODO | Not started |
-| Docs-freshness CI check | TODO | Not started |
-| Per-module CHANGELOG entries | TODO | Not started |
-| Multi-module vs monolith benchmark | TODO | Not started |
+| Task                               | Status  | Reason                                        |
+| ---------------------------------- | ------- | --------------------------------------------- |
+| Fix BuildFlow auto-configure loop  | BLOCKED | External tool issue, not actionable from code |
+| SARIF schema validation test       | BLOCKED | Requires vendoring 7K+ line JSON schema       |
+| Consumer compatibility test        | BLOCKED | Repo is private; needs GOPRIVATE              |
+| Per-module golangci-lint configs   | TODO    | Workspace-level lint suffices                 |
+| go-arch-lint module boundary CI    | TODO    | Not started                                   |
+| Docs-freshness CI check            | TODO    | Not started                                   |
+| Per-module CHANGELOG entries       | TODO    | Not started                                   |
+| Multi-module vs monolith benchmark | TODO    | Not started                                   |
 
 ---
 

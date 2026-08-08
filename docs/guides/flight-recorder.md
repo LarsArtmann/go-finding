@@ -69,11 +69,11 @@ flightRecorder:
 
 ```json
 {
-  "flightRecorder": {
-    "enabled": true,
-    "outputDir": "./traces",
-    "slowStageThreshold": "30s"
-  }
+	"flightRecorder": {
+		"enabled": true,
+		"outputDir": "./traces",
+		"slowStageThreshold": "30s"
+	}
 }
 ```
 
@@ -177,34 +177,34 @@ This opens a web browser with interactive views including:
 
 ### What to Look For
 
-| Symptom | Trace View |
-|---------|-----------|
-| Pipeline hangs | Goroutine analysis → blocking time |
-| Slow detection | View trace → detector goroutines |
-| GC pressure | Heap view under trace timeline |
+| Symptom         | Trace View                         |
+| --------------- | ---------------------------------- |
+| Pipeline hangs  | Goroutine analysis → blocking time |
+| Slow detection  | View trace → detector goroutines   |
+| GC pressure     | Heap view under trace timeline     |
 | Lock contention | View trace → goroutine wait states |
 
 ---
 
 ## Configuration Reference
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `OutputDir` | `string` | `os.TempDir()` | Directory for `.trace` snapshot files |
-| `SlowStageThreshold` | `time.Duration` | `0` (disabled) | Auto-snapshot when a stage exceeds this duration |
-| `MinAge` | `time.Duration` | `30s` | How long trace data is reliably retained in the ring buffer |
-| `MaxBytes` | `uint64` | `4 MiB` (`4<<20`) | Maximum in-memory buffer size |
-| `Logger` | `*slog.Logger` | `nil` | Receives snapshot lifecycle events |
+| Field                | Type            | Default           | Description                                                 |
+| -------------------- | --------------- | ----------------- | ----------------------------------------------------------- |
+| `OutputDir`          | `string`        | `os.TempDir()`    | Directory for `.trace` snapshot files                       |
+| `SlowStageThreshold` | `time.Duration` | `0` (disabled)    | Auto-snapshot when a stage exceeds this duration            |
+| `MinAge`             | `time.Duration` | `30s`             | How long trace data is reliably retained in the ring buffer |
+| `MaxBytes`           | `uint64`        | `4 MiB` (`4<<20`) | Maximum in-memory buffer size                               |
+| `Logger`             | `*slog.Logger`  | `nil`             | Receives snapshot lifecycle events                          |
 
 ### Config File Fields
 
-| YAML Key | Type | Description |
-|----------|------|-------------|
-| `enabled` | `bool` | Must be `true` to activate |
-| `outputDir` | `string` | Override the output directory |
-| `slowStageThreshold` | `string` | Duration string (e.g. `"30s"`, `"2m"`) |
-| `minAge` | `string` | Duration string for ring buffer retention |
-| `maxBytes` | `uint64` | Buffer size in bytes |
+| YAML Key             | Type     | Description                               |
+| -------------------- | -------- | ----------------------------------------- |
+| `enabled`            | `bool`   | Must be `true` to activate                |
+| `outputDir`          | `string` | Override the output directory             |
+| `slowStageThreshold` | `string` | Duration string (e.g. `"30s"`, `"2m"`)    |
+| `minAge`             | `string` | Duration string for ring buffer retention |
+| `maxBytes`           | `uint64` | Buffer size in bytes                      |
 
 ---
 

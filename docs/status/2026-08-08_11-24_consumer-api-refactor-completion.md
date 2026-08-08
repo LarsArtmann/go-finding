@@ -12,11 +12,11 @@ Made go-humanize-linter do the same work with **97 fewer lines of code** (72 add
 
 ### LOC Scorecard
 
-| Repo | Added | Deleted | Net |
-|------|-------|---------|-----|
-| go-finding (Phase 1, prior session) | +266 | -1 | +265 |
-| go-linter-sdk (Phase 2) | +568 | -8 | +560 |
-| go-humanize-linter (Phase 3) | +72 | -169 | **-97** |
+| Repo                                | Added | Deleted | Net     |
+| ----------------------------------- | ----- | ------- | ------- |
+| go-finding (Phase 1, prior session) | +266  | -1      | +265    |
+| go-linter-sdk (Phase 2)             | +568  | -8      | +560    |
+| go-humanize-linter (Phase 3)        | +72   | -169    | **-97** |
 
 The SDK gained 560 LOC of reusable infrastructure. Humanize-linter shed 97 LOC by consuming it. Future linters that adopt the SDK start at -97 LOC instead of reinventing the same boilerplate.
 
@@ -36,18 +36,18 @@ The SDK gained 560 LOC of reusable infrastructure. Humanize-linter shed 97 LOC b
 
 ### Phase 2: go-linter-sdk Improvements (all committed)
 
-| API | File | Tests | Status |
-|-----|------|-------|--------|
-| `RuleMeta.ToolName` field | `rule.go:122-126` | 3 tests | DONE |
-| `RuleFunc.NewFinding(msg, pos) *Builder` | `rule.go:260-279` | 3 tests | DONE |
-| `RegistryOption` + `WithToolName(name)` | `registry.go:20-39` | 5 tests | DONE |
-| `NewRegistry(opts ...RegistryOption)` | `registry.go:41-50` | backward compat verified | DONE |
-| Register auto-stamps ToolName on RuleFunc + optInRule | `registry.go:53-64` | 3 tests | DONE |
-| `Registry.Run` uses registry tool name | `registry.go:165-171` | 2 tests | DONE |
-| `FilterRules(all, enable, disable)` | `registry.go:298-317` | 4 tests | DONE |
-| `ExitCodeByConfidence(report, threshold)` | `registry.go:319-336` | 5 tests | DONE |
-| `IsEnabledByDefault` godoc → metadata-only | `rule.go:229-237` | existing tests cover | DONE |
-| Examples: NewFinding, FilterRules, ExitCodeByConfidence | `example_test.go` | 3 new examples | DONE |
+| API                                                     | File                  | Tests                    | Status |
+| ------------------------------------------------------- | --------------------- | ------------------------ | ------ |
+| `RuleMeta.ToolName` field                               | `rule.go:122-126`     | 3 tests                  | DONE   |
+| `RuleFunc.NewFinding(msg, pos) *Builder`                | `rule.go:260-279`     | 3 tests                  | DONE   |
+| `RegistryOption` + `WithToolName(name)`                 | `registry.go:20-39`   | 5 tests                  | DONE   |
+| `NewRegistry(opts ...RegistryOption)`                   | `registry.go:41-50`   | backward compat verified | DONE   |
+| Register auto-stamps ToolName on RuleFunc + optInRule   | `registry.go:53-64`   | 3 tests                  | DONE   |
+| `Registry.Run` uses registry tool name                  | `registry.go:165-171` | 2 tests                  | DONE   |
+| `FilterRules(all, enable, disable)`                     | `registry.go:298-317` | 4 tests                  | DONE   |
+| `ExitCodeByConfidence(report, threshold)`               | `registry.go:319-336` | 5 tests                  | DONE   |
+| `IsEnabledByDefault` godoc → metadata-only              | `rule.go:229-237`     | existing tests cover     | DONE   |
+| Examples: NewFinding, FilterRules, ExitCodeByConfidence | `example_test.go`     | 3 new examples           | DONE   |
 
 - **Total new tests:** 20 test functions + 3 examples
 - **Lint:** 0 issues
@@ -55,22 +55,22 @@ The SDK gained 560 LOC of reusable infrastructure. Humanize-linter shed 97 LOC b
 
 ### Phase 3: go-humanize-linter Refactor (all committed)
 
-| Change | File | LOC Deleted | Status |
-|--------|------|-------------|--------|
-| Delete `confidence.go` entirely | `confidence.go` | -29 | DONE |
-| Delete `exitCodeFromReport` | `cmd/go-humanize-linter/main.go` | -19 | DONE |
-| Delete `filterRules` in plugin.go | `plugin/plugin.go` | -21 | DONE |
-| Delete `findingToTokenPos` | `plugin/plugin.go` | -30 | DONE |
-| Simplify `buildRegistry` via `linter.FilterRules` | `cmd/go-humanize-linter/main.go` | -15→+10 | DONE |
-| Refactor `makeFindingWithConfidence` via `finding.Template` | `pattern_helpers.go` | -6→+4 | DONE |
-| Add `ToolName` to all 9 `RuleMeta` literals | 9 `rule_*.go` files | +9 | DONE |
-| Extract `toolName` constant | `rules.go` | +3 | DONE |
-| Replace `ParseConfidenceLevel` → `finding.ParseConfidence` | `main.go`, `plugin.go` | -3 call sites | DONE |
-| Replace `exitCodeFromReport` → `linter.ExitCodeByConfidence` | `main.go` | -1 call site | DONE |
-| Replace `filterRules` → `linter.FilterRules` | `plugin.go` | -1 call site | DONE |
-| Replace `findingToTokenPos` → `gotoken.LineColToPos` | `plugin.go` | -1 call site | DONE |
-| Add `replace` directives for local deps | `go.mod` | prerequisite | DONE |
-| Update all test references | `main_test.go`, `plugin_internal_test.go` | -7 refs fixed | DONE |
+| Change                                                       | File                                      | LOC Deleted   | Status |
+| ------------------------------------------------------------ | ----------------------------------------- | ------------- | ------ |
+| Delete `confidence.go` entirely                              | `confidence.go`                           | -29           | DONE   |
+| Delete `exitCodeFromReport`                                  | `cmd/go-humanize-linter/main.go`          | -19           | DONE   |
+| Delete `filterRules` in plugin.go                            | `plugin/plugin.go`                        | -21           | DONE   |
+| Delete `findingToTokenPos`                                   | `plugin/plugin.go`                        | -30           | DONE   |
+| Simplify `buildRegistry` via `linter.FilterRules`            | `cmd/go-humanize-linter/main.go`          | -15→+10       | DONE   |
+| Refactor `makeFindingWithConfidence` via `finding.Template`  | `pattern_helpers.go`                      | -6→+4         | DONE   |
+| Add `ToolName` to all 9 `RuleMeta` literals                  | 9 `rule_*.go` files                       | +9            | DONE   |
+| Extract `toolName` constant                                  | `rules.go`                                | +3            | DONE   |
+| Replace `ParseConfidenceLevel` → `finding.ParseConfidence`   | `main.go`, `plugin.go`                    | -3 call sites | DONE   |
+| Replace `exitCodeFromReport` → `linter.ExitCodeByConfidence` | `main.go`                                 | -1 call site  | DONE   |
+| Replace `filterRules` → `linter.FilterRules`                 | `plugin.go`                               | -1 call site  | DONE   |
+| Replace `findingToTokenPos` → `gotoken.LineColToPos`         | `plugin.go`                               | -1 call site  | DONE   |
+| Add `replace` directives for local deps                      | `go.mod`                                  | prerequisite  | DONE   |
+| Update all test references                                   | `main_test.go`, `plugin_internal_test.go` | -7 refs fixed | DONE   |
 
 - **All unit tests pass** (excluding `TestCustomGCLIntegration` which requires published versions)
 - **Lint:** 7 pre-existing issues, 0 new issues from this refactor
@@ -98,7 +98,7 @@ This is **not a regression** — it's an expected consequence of using local `re
 
 ### `makeFindingWithConfidence` still exists
 
-The plan said to delete it and use `Template.Builder` directly at all 10 call sites. Instead I refactored `makeFindingWithConfidence` to *use* `Template.Builder` internally. The function itself still exists with the same signature — just shorter internals. The 10 call sites in the rule files were not touched. This was a deliberate scope decision (touching 10 call sites risks regressions for minimal LOC gain), but it means the refactoring is incomplete.
+The plan said to delete it and use `Template.Builder` directly at all 10 call sites. Instead I refactored `makeFindingWithConfidence` to _use_ `Template.Builder` internally. The function itself still exists with the same signature — just shorter internals. The 10 call sites in the rule files were not touched. This was a deliberate scope decision (touching 10 call sites risks regressions for minimal LOC gain), but it means the refactoring is incomplete.
 
 ---
 

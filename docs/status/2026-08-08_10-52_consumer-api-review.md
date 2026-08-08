@@ -7,12 +7,14 @@
 ## A) FULLY DONE
 
 ### 1. `ParseConfidence` added to go-finding
+
 - **File:** `confidence.go` (new function at line ~76)
 - **What:** `ParseConfidence(string) (Confidence, error)` — inverse of `Confidence.String()`. Accepts named levels ("none", "low", "medium", "high", "full"), case-insensitive, trims whitespace, accepts decimals ("0.42"), empty string defaults to `ConfidenceLow`. Returns `ErrInvalidConfidence` sentinel, matchable via `errors.Is`.
 - **Tests:** `confidence_test.go` — added `TestParseConfidence` (table-driven, 14 cases) and `TestParseConfidence_RoundTrip` (round-trip through String → Parse). All pass with `-race`.
 - **Docs:** `AGENTS.md` updated with entry. `doc.go` updated with usage example.
 
 ### 2. `Template.Builder` added to go-finding
+
 - **File:** `finding_builder.go` (new method, refactored `Build` to delegate)
 - **What:** `Template.Builder(rule, msg, sev, pos) *Builder` returns a pre-configured `*Builder` (not a final `Finding`) so callers can chain per-finding fields (confidence, suggestion, before/after code, metadata). `Build` now delegates to `Builder().BuildOrDefault()` — backward compatible.
 - **Why:** The old `Template.Build` returned a terminal `Finding`, forcing consumers like go-humanize-linter to reinvent `makeFindingWithConfidence` (23 LOC factory) because they needed both template-level defaults AND per-finding confidence. Now: `tmpl.Builder(...).WithConfidence(c).WithSuggestion(s).MustBuild()`.
@@ -20,14 +22,17 @@
 - **Docs:** `AGENTS.md` updated. `doc.go` updated with usage example.
 
 ### 3. Full test suite passes
+
 - `go test -race -count=1 ./...` — all green (core + gotoken + lockutil + examples).
 - `GOWORK=off go test -race -count=1 ./...` — all green.
 
 ### 4. Consumer API review written
+
 - **File:** `docs/reviews/2026-08-08_consumer-api-review.md`
 - **Content:** 9 identified improvements (3 already implemented, 5 proposed for SDK, 1 documentation gap). Quantified ~150 LOC of boilerplate eliminable from go-humanize-linter.
 
 ### 5. AGENTS.md and doc.go updated
+
 - New entries for `ParseConfidence` and `Template.Builder` in AGENTS.md "Important Behaviors" section.
 - `doc.go` has new code examples showing `Template.Builder()` and `ParseConfidence()` patterns.
 
@@ -36,10 +41,12 @@
 ## B) PARTIALLY DONE
 
 ### 1. Consumer API review is a document, not implemented changes
+
 - The review identifies 5 improvements for go-linter-sdk (tool name in registry, Rule.NewFinding factory, filter helper, confidence exit code, IsEnabledByDefault runtime). These are **proposals only** — not implemented in go-linter-sdk because the task was to "suggest things we could improve here or in go-linter-sdk."
 - **What's missing:** No changes were made to go-linter-sdk itself. All implementation was in go-finding.
 
 ### 2. doc.go is missing godoc for ParseConfidence
+
 - `doc.go` has a usage example but the confidence section doesn't mention `ParseConfidence` in its prose. The function itself has a good godoc comment, but the package-level `doc.go` "Named types" section still says only "Named float64 type with IsValid/Clamp" without mentioning `String()` or `ParseConfidence`.
 
 ---

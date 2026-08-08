@@ -34,6 +34,7 @@ The humanize-linter's `plugin/plugin.go` reimplements `gotoken.LineColToPos` as 
 ### 3. `ParseConfidence(string) (Confidence, error)` — `confidence.go`
 
 **Before (consumer reinvents):**
+
 ```go
 // go-humanize-linter/confidence.go (14 LOC)
 func ParseConfidenceLevel(level string) (finding.Confidence, error) {
@@ -48,6 +49,7 @@ func ParseConfidenceLevel(level string) (finding.Confidence, error) {
 ```
 
 **After:**
+
 ```go
 c, err := finding.ParseConfidence("high") // one-liner, no consumer code
 ```
@@ -59,6 +61,7 @@ Also accepts decimals (`"0.42"`), is case-insensitive, trims whitespace, and def
 ### 4. `Template.Builder(rule, msg, sev, pos) *Builder` — `finding_builder.go`
 
 **Before (consumer reinvents):**
+
 ```go
 // go-humanize-linter/pattern_helpers.go (23 LOC, called 12+ times)
 func makeFindingWithConfidence(ruleID, message, suggestion string, line, col int, filePath string, conf finding.Confidence) finding.Finding {
@@ -80,6 +83,7 @@ func makeFindingWithConfidence(ruleID, message, suggestion string, line, col int
 ```
 
 **After:**
+
 ```go
 // One-time setup
 var tmpl = finding.NewTemplate("go-humanize-linter").
@@ -104,6 +108,7 @@ f := tmpl.Builder(rule, msg, finding.SeverityWarning, pos).
 **Problem:** `Registry.Run()` hardcodes the tool name as `"linter"` (`registry.go:158`). Findings are attributed to a generic "linter" tool, not the actual linter. The humanize-linter works around this by constructing findings with the correct tool name in every `NewBuilder` call, but the report metadata (`finding.ToolInfo`) is wrong.
 
 **Proposed:**
+
 ```go
 // Option A: Constructor option
 registry := linter.NewRegistry(linter.WithToolName("go-humanize-linter"))
@@ -122,6 +127,7 @@ report, err := registry.Run(ctx, dir, linter.WithToolInfo(finding.ToolInfo{
 **Problem:** Every rule in humanize-linter repeats the rule ID, tool name, severity, and category in every `finding.NewBuilder(...)` call — even though all four are already in `RuleMeta`. The SDK has this metadata but doesn't use it to help build findings.
 
 **Proposed:**
+
 ```go
 // On RuleFunc or RuleMeta:
 func (r RuleFunc) NewFinding(message string, pos finding.Position) *finding.Builder {
@@ -137,6 +143,7 @@ func (r RuleFunc) NewFinding(message string, pos finding.Position) *finding.Buil
 ```
 
 **Impact:** Rules emit findings without repeating identity fields:
+
 ```go
 Run: func(ctx context.Context, dir string) ([]finding.Finding, error) {
     // ...
@@ -154,12 +161,14 @@ This is the **single biggest boilerplate eliminator** — it would remove the to
 ### 7. Enable/disable rule filtering helper (MEDIUM IMPACT)
 
 **Problem:** Two near-identical implementations exist in the humanize-linter:
+
 - `buildRegistry()` in `cmd/go-humanize-linter/main.go:425-455` (30 LOC)
 - `filterRules()` in `plugin/plugin.go:261-281` (20 LOC)
 
 Both iterate over `AllRules()`, check `disable[rule.Meta.ID]` and `enable[rule.Meta.ID]`, with identical logic.
 
 **Proposed:**
+
 ```go
 // In go-linter-sdk:
 func (r *Registry) Filter(enableIDs, disableIDs []string) []Rule
@@ -174,6 +183,7 @@ func FilterRules(all []RuleFunc, enable, disable map[string]bool) []RuleFunc
 **Problem:** The SDK provides `ExitCodeFromReport()` (binary: 0 clean / 1 any finding). The humanize-linter needs tiered exit codes (0 clean / 1 high+full / 2 medium+low) for CI, so it reimplements this as `exitCodeFromReport()` in `main.go:494-512` (18 LOC).
 
 **Proposed:**
+
 ```go
 // Option A: Dedicated function
 func ExitCodeByConfidence(report *finding.Report, threshold finding.Confidence) int
@@ -189,6 +199,7 @@ func ExitCodeFromReportWithOpts(report *finding.Report, opts ...ExitOption) int
 **Problem:** `IsEnabledByDefault()` is declared on the `Rule` interface and `OptIn()` creates disabled-by-default rules, but **neither `Registry.Run` nor `DetectorsFromRegistry` consult it**. Both iterate `registry.All()` and run every rule unconditionally. The flag is purely informational.
 
 **Proposed:** Either:
+
 - Have `Registry.Run` skip rules where `!rule.IsEnabledByDefault()` unless explicitly enabled
 - Or document clearly that `IsEnabledByDefault` is consumer-only metadata, not runtime behavior
 
@@ -198,15 +209,15 @@ func ExitCodeFromReportWithOpts(report *finding.Report, opts ...ExitOption) int
 
 ## Quantified Impact
 
-| Improvement | Where | LOC eliminated per consumer |
-|---|---|---|
-| `ParseConfidence` (done) | go-finding | ~14 LOC + tests |
-| `Template.Builder` (done) | go-finding | ~23 LOC factory + 12 call sites shortened |
-| Tool name in Registry | go-linter-sdk | Correct attribution + enables #6 |
-| Rule.NewFinding factory | go-linter-sdk | ~5 LOC × 9 rules = 45 LOC |
-| Filter helper | go-linter-sdk | ~50 LOC (two duplicates) |
-| Confidence exit code | go-linter-sdk | ~18 LOC |
-| **Total** | | **~150 LOC eliminated from go-humanize-linter** |
+| Improvement               | Where         | LOC eliminated per consumer                     |
+| ------------------------- | ------------- | ----------------------------------------------- |
+| `ParseConfidence` (done)  | go-finding    | ~14 LOC + tests                                 |
+| `Template.Builder` (done) | go-finding    | ~23 LOC factory + 12 call sites shortened       |
+| Tool name in Registry     | go-linter-sdk | Correct attribution + enables #6                |
+| Rule.NewFinding factory   | go-linter-sdk | ~5 LOC × 9 rules = 45 LOC                       |
+| Filter helper             | go-linter-sdk | ~50 LOC (two duplicates)                        |
+| Confidence exit code      | go-linter-sdk | ~18 LOC                                         |
+| **Total**                 |               | **~150 LOC eliminated from go-humanize-linter** |
 
 ---
 
