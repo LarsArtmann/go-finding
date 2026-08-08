@@ -21,6 +21,7 @@ var goOutputFormats = map[string]output.Format{
 // isGoOutputFormat returns true if the format string is handled by go-output.
 func isGoOutputFormat(format string) bool {
 	_, ok := goOutputFormats[format]
+
 	return ok
 }
 

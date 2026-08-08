@@ -479,6 +479,7 @@ func TestFlightRecorderHook_DegradedWhenConflict(t *testing.T) {
 		OutputDir: t.TempDir(),
 	})
 	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
+
 	defer degraded.Close()
 
 	g.Expect(degraded.Degraded()).To(gomega.BeTrue())

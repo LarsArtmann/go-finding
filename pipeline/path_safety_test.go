@@ -567,6 +567,7 @@ func TestResolveSafePath_RootIsSymlink_PathTraversal(t *testing.T) {
 	t.Parallel()
 
 	realRoot := t.TempDir()
+
 	symlinkRoot := filepath.Join(t.TempDir(), "symlinked-root")
 	if err := os.Symlink(realRoot, symlinkRoot); err != nil {
 		t.Fatal(err)

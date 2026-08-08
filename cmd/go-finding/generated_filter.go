@@ -63,6 +63,7 @@ func addGeneratedFilter(
 	if excl := splitCommaList(generatedExclude); len(excl) > 0 {
 		configs = append(configs, gogenfilter.WithExcludePatterns(excl...))
 	}
+
 	if excl := cfg.GeneratedExclude; len(excl) > 0 {
 		configs = append(configs, gogenfilter.WithExcludePatterns(excl...))
 	}
@@ -70,6 +71,7 @@ func addGeneratedFilter(
 	if incl := splitCommaList(generatedInclude); len(incl) > 0 {
 		configs = append(configs, gogenfilter.WithIncludePatterns(incl...))
 	}
+
 	if incl := cfg.GeneratedInclude; len(incl) > 0 {
 		configs = append(configs, gogenfilter.WithIncludePatterns(incl...))
 	}
@@ -130,7 +132,9 @@ func splitCommaList(s string) []string {
 	if s == "" {
 		return nil
 	}
+
 	parts := strings.Split(s, ",")
+
 	result := make([]string, 0, len(parts))
 	for _, p := range parts {
 		p = strings.TrimSpace(p)
@@ -138,6 +142,7 @@ func splitCommaList(s string) []string {
 			result = append(result, p)
 		}
 	}
+
 	return result
 }
 

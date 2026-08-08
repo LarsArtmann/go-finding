@@ -19,6 +19,7 @@ func detectorSpecs(names ...string) []detectorSpec {
 	for i, name := range names {
 		specs[i] = detectorSpec{Name: name}
 	}
+
 	return specs
 }
 
@@ -30,6 +31,7 @@ func govetConfig(iterations int, timeout ...string) pipelineConfigFile {
 	if len(timeout) > 0 {
 		cfg.Timeout = timeout[0]
 	}
+
 	return cfg
 }
 
@@ -45,6 +47,7 @@ func runWithArgs(t *testing.T, args ...string) int {
 
 func writeConfig(t *testing.T, path string, content []byte) {
 	t.Helper()
+
 	if err := os.WriteFile(path, content, 0o644); err != nil {
 		t.Fatalf("write config: %v", err)
 	}
@@ -53,8 +56,10 @@ func writeConfig(t *testing.T, path string, content []byte) {
 // saveRestoreFlags saves the current flag state and registers a cleanup to restore it.
 func saveRestoreFlags(t *testing.T) {
 	t.Helper()
+
 	savedCommandLine := flag.CommandLine
 	savedArgs := os.Args
+
 	t.Cleanup(func() {
 		flag.CommandLine = savedCommandLine
 		os.Args = savedArgs
@@ -63,6 +68,7 @@ func saveRestoreFlags(t *testing.T) {
 
 func requireOutputResults(t *testing.T, w *bytes.Buffer, report *finding.Report, format string) {
 	t.Helper()
+
 	if err := outputResults(w, report, format, true); err != nil {
 		t.Fatalf("outputResults error: %v", err)
 	}

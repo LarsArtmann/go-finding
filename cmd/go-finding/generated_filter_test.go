@@ -10,6 +10,7 @@ import (
 
 func TestSplitCommaList(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name  string
 		input string
@@ -26,6 +27,7 @@ func TestSplitCommaList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			got := splitCommaList(tt.input)
 			g := NewWithT(t)
 			g.Expect(got).To(Equal(tt.want))
@@ -47,6 +49,7 @@ func TestMustKeys(t *testing.T) {
 
 func TestParseFilterGenTypes(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name       string
 		cliTypes   string
@@ -72,6 +75,7 @@ func TestParseFilterGenTypes(t *testing.T) {
 			opts, err := parseFilterGenTypes(tt.cliTypes, tt.configType)
 			if tt.wantErr {
 				g.Expect(err).To(HaveOccurred())
+
 				return
 			}
 
@@ -112,7 +116,7 @@ func TestAddGeneratedFilter_WithExcludeInclude(t *testing.T) {
 }
 
 func testPipelineConfig() pipeline.Config {
-	return pipeline.Config{ //nolint:exhaustruct
+	return pipeline.Config{
 		MaxIterations:     1,
 		ParallelDetectors: false,
 		Timeout:           30 * time.Second,

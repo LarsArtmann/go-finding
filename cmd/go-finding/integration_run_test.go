@@ -105,6 +105,7 @@ detectors:
 	if err != nil {
 		t.Fatalf("toPipelineConfig: %v", err)
 	}
+
 	g.Expect(pc.MaxIterations).To(Equal(1))
 }
 

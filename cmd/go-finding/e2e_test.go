@@ -199,6 +199,7 @@ flightRecorder:
 	for _, e := range entries {
 		if strings.HasSuffix(e.Name(), ".trace") {
 			hasTrace = true
+
 			break
 		}
 	}
@@ -251,6 +252,7 @@ flightRecorder:
 	for _, e := range entries {
 		if strings.HasSuffix(e.Name(), ".trace") {
 			hasTrace = true
+
 			break
 		}
 	}

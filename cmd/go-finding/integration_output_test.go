@@ -100,6 +100,7 @@ func TestOutputResults_SARIFContainsResults(t *testing.T) {
 
 func assertRunFails(t *testing.T, args ...string) {
 	t.Helper()
+
 	if got := runWithArgs(t, args...); got != 1 {
 		t.Errorf("run() with args %v = %d, want 1", args, got)
 	}
@@ -107,6 +108,7 @@ func assertRunFails(t *testing.T, args ...string) {
 
 func requireJSON[T any](t *testing.T, buf *bytes.Buffer, parsed *T, context string) {
 	t.Helper()
+
 	if err := json.Unmarshal(buf.Bytes(), parsed); err != nil {
 		t.Fatalf("%s: %v", context, err)
 	}
@@ -180,11 +182,13 @@ func TestRun_MetricsOutput(t *testing.T) {
 	))
 
 	var buf bytes.Buffer
+
 	old := os.Stderr
 	r, w, _ := os.Pipe()
 	os.Stderr = w
 
 	saveRestoreFlags(t)
+
 	flag.CommandLine = flag.NewFlagSet("go-finding", flag.ContinueOnError)
 	os.Args = []string{"go-finding", "-config", cfgPath, "-dir", dir}
 
@@ -340,6 +344,7 @@ func TestFindingToTableData(t *testing.T) {
 	}
 
 	headers := data.GetHeaders()
+
 	want := []string{"Location", "Severity", "Category", "Rule", "Message", "Fix"}
 	for i, h := range want {
 		if headers[i] != h {
@@ -372,6 +377,7 @@ func TestOutputResults_UnknownFormat(t *testing.T) {
 	report.ComputeSummary()
 
 	var buf bytes.Buffer
+
 	err := outputResults(&buf, report, "xml", true)
 	if err == nil {
 		t.Fatal("expected error for unknown format, got nil")

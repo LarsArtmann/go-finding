@@ -28,10 +28,12 @@ func uniqueDetName(prefix string) string {
 
 func parseJSON(t *testing.T, buf *bytes.Buffer) map[string]any {
 	t.Helper()
+
 	var parsed map[string]any
 	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
 		t.Fatalf("invalid JSON output: %v\noutput: %s", err, buf.String())
 	}
+
 	return parsed
 }
 
@@ -84,6 +86,7 @@ func TestOutputText_EmptyReport(t *testing.T) {
 	g := NewParallelGomega(t)
 
 	report := finding.NewReport(finding.ToolInfo{Name: testToolName})
+
 	var buf bytes.Buffer
 
 	outputText(&buf, report)
@@ -132,9 +135,11 @@ func TestParseSeverity(t *testing.T) {
 			if tt.ok && err != nil {
 				t.Fatalf("parseSeverity(%q) error: %v", tt.input, err)
 			}
+
 			if !tt.ok && err == nil {
 				t.Fatalf("parseSeverity(%q) expected error, got nil", tt.input)
 			}
+
 			if got != tt.want {
 				t.Errorf("parseSeverity(%q) = %v, want %v", tt.input, got, tt.want)
 			}
@@ -194,7 +199,9 @@ func TestBuildDetectors(t *testing.T) {
 //nolint:paralleltest // mutates global os.Stderr
 func TestFatalf(t *testing.T) {
 	g := NewWithT(t)
+
 	var buf bytes.Buffer
+
 	old := os.Stderr
 	r, w, _ := os.Pipe()
 	os.Stderr = w
@@ -313,9 +320,11 @@ func TestSetupProfiling_CPUProfileStartFailure(t *testing.T) {
 	// Start a CPU profile already, so the second StartCPUProfile fails.
 	f2, err := os.CreateTemp(t.TempDir(), "cpu2.prof")
 	g.Expect(err).NotTo(HaveOccurred())
+
 	defer func() { _ = f2.Close() }()
 
 	g.Expect(pprof.StartCPUProfile(f2)).NotTo(HaveOccurred())
+
 	defer pprof.StopCPUProfile()
 
 	stop, err := setupProfiling(f.Name(), "")
@@ -330,6 +339,7 @@ func reportWithNaNConfidence() *finding.Report {
 		Severity: finding.SeverityError, Position: finding.Position{File: "a.go"},
 		Confidence: finding.Confidence(math.NaN()),
 	})
+
 	return report
 }
 
@@ -338,6 +348,7 @@ func testOutputSerializationError(t *testing.T, format, substr string) {
 	g := NewWithT(t)
 
 	var buf bytes.Buffer
+
 	err := outputResults(&buf, reportWithNaNConfidence(), format, true)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err.Error()).To(ContainSubstring(substr))
@@ -352,6 +363,7 @@ func TestOutputResults_SARIFNaNConfidenceHandled(t *testing.T) {
 	g := NewParallelGomega(t)
 
 	var buf bytes.Buffer
+
 	err := outputResults(&buf, reportWithNaNConfidence(), "sarif", true)
 	g.Expect(err).NotTo(HaveOccurred())
 }
@@ -364,6 +376,7 @@ func TestRun_InvalidSeverity(t *testing.T) {
 	g := NewParallelGomega(t)
 
 	saveRestoreFlags(t)
+
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	os.Args = []string{toolName, "-severity=banana"}
 
@@ -488,6 +501,7 @@ func TestOutputResults_Markdown(t *testing.T) {
 	g := NewParallelGomega(t)
 
 	var buf bytes.Buffer
+
 	report := reportWithFindings()
 
 	err := outputResults(&buf, report, "markdown", true)

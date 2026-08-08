@@ -79,7 +79,7 @@ func TestConfigFile_ResolveProviders(t *testing.T) {
 func TestConfigFile_ResolveFlightRecorder(t *testing.T) {
 	t.Parallel()
 
-	t.Run("nil returns nil nil", func(t *testing.T) {
+	t.Run("nil returns nil", func(t *testing.T) {
 		g := NewParallelGomega(t)
 
 		cf := ConfigFile{}
@@ -88,7 +88,7 @@ func TestConfigFile_ResolveFlightRecorder(t *testing.T) {
 		g.Expect(hook).To(BeNil())
 	})
 
-	t.Run("disabled returns nil nil", func(t *testing.T) {
+	t.Run("disabled returns nil", func(t *testing.T) {
 		g := NewParallelGomega(t)
 
 		cf := ConfigFile{FlightRecorder: &FlightRecorderFileConfig{Enabled: false}}
