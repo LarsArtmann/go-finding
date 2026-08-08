@@ -225,6 +225,33 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "invalid flightRecorder minAge",
+			cfg: pipelineConfigFile{
+				MaxIterations: 1,
+				Detectors:     detectorSpecs("govet"),
+				FlightRecorder: &flightRecorderFileConfig{
+					Enabled: true,
+					MinAge:  "not-a-duration",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid flightRecorder config with all fields",
+			cfg: pipelineConfigFile{
+				MaxIterations: 1,
+				Detectors:     detectorSpecs("govet"),
+				FlightRecorder: &flightRecorderFileConfig{
+					Enabled:            true,
+					SlowStageThreshold: "30s",
+					MinAge:             "1m",
+					MaxBytes:           1 << 20,
+					OutputDir:          "/tmp/traces",
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "empty is valid",
 			cfg: pipelineConfigFile{
 				MaxIterations: 0,

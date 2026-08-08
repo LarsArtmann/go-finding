@@ -42,6 +42,8 @@ type flightRecorderFileConfig struct {
 	Enabled            bool   `json:"enabled"            yaml:"enabled"`
 	OutputDir          string `json:"outputDir"          yaml:"outputDir"`
 	SlowStageThreshold string `json:"slowStageThreshold" yaml:"slowStageThreshold"`
+	MinAge             string `json:"minAge"             yaml:"minAge"`
+	MaxBytes           uint64 `json:"maxBytes"           yaml:"maxBytes"`
 }
 
 type detectorSpec struct {
@@ -141,10 +143,19 @@ func (c pipelineConfigFile) validate() error {
 		}
 	}
 
-	if c.FlightRecorder != nil && c.FlightRecorder.SlowStageThreshold != "" {
-		if _, err := time.ParseDuration(c.FlightRecorder.SlowStageThreshold); err != nil {
-			return fmt.Errorf("invalid flightRecorder.slowStageThreshold %q: %w",
-				c.FlightRecorder.SlowStageThreshold, err)
+	if c.FlightRecorder != nil {
+		if c.FlightRecorder.SlowStageThreshold != "" {
+			if _, err := time.ParseDuration(c.FlightRecorder.SlowStageThreshold); err != nil {
+				return fmt.Errorf("invalid flightRecorder.slowStageThreshold %q: %w",
+					c.FlightRecorder.SlowStageThreshold, err)
+			}
+		}
+
+		if c.FlightRecorder.MinAge != "" {
+			if _, err := time.ParseDuration(c.FlightRecorder.MinAge); err != nil {
+				return fmt.Errorf("invalid flightRecorder.minAge %q: %w",
+					c.FlightRecorder.MinAge, err)
+			}
 		}
 	}
 

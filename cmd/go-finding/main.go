@@ -236,6 +236,19 @@ func run() int {
 			frConfig.SlowStageThreshold = d
 		}
 
+		if cfg.FlightRecorder.MinAge != "" {
+			d, err := time.ParseDuration(cfg.FlightRecorder.MinAge)
+			if err != nil {
+				return fatalf("parsing flightRecorder.minAge", err)
+			}
+
+			frConfig.MinAge = d
+		}
+
+		if cfg.FlightRecorder.MaxBytes != 0 {
+			frConfig.MaxBytes = cfg.FlightRecorder.MaxBytes
+		}
+
 		var frErr error
 
 		frHook, frErr = pipeline.NewFlightRecorderHook(frConfig)

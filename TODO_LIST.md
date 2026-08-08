@@ -54,10 +54,10 @@
 | Consumer compatibility test             | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code                                      |
 | Per-module golangci-lint configs        | ⬜ `TODO`    | Low    | Medium | Workspace-level lint suffices but loses per-module precision. Flagged since modularization.                               |
 | go-arch-lint module boundary CI         | ⬜ `TODO`    | Low    | Medium | Enforce module dependency boundaries in CI. Flagged in modularization reports.                                            |
-| `go.work sync` idempotency CI           | ✅ `DONE`    | Low    | Low    | `scripts/go-work-sync.sh` — runs `go work sync` twice, checks for changes.                                                |
-| Replace directive audit CI              | ✅ `DONE`    | Low    | Low    | `scripts/replace-audit.sh` — verifies all sub-module replace directives.                                                  |
-| Version drift detection CI              | ✅ `DONE`    | Low    | Low    | `scripts/version-drift.sh` — cross-checks all 4 module versions against `version.go`.                                     |
-| Test filename convention CI             | ✅ `DONE`    | Low    | Low    | `scripts/test-naming.sh` — rejects banned test file naming patterns.                                                      |
+| `go.work sync` idempotency CI           | ✅ `DONE`    | Low    | Low    | `scripts/go-work-sync.sh` — runs `go work sync` twice, checks for changes. Wired into ci.yml as `go-work-sync` job.                |
+| Replace directive audit CI              | ✅ `DONE`    | Low    | Low    | `scripts/replace-audit.sh` — verifies all sub-module replace directives. Wired into ci.yml `structural-checks` job.             |
+| Version drift detection CI              | ✅ `DONE`    | Low    | Low    | `scripts/version-drift.sh` — cross-checks all 4 module versions against `version.go`. Wired into ci.yml `structural-checks` job.|
+| Test filename convention CI             | ✅ `DONE`    | Low    | Low    | `scripts/test-naming.sh` — rejects banned test file naming patterns. Wired into ci.yml `structural-checks` job.                |
 | Docs-freshness CI check                 | ⬜ `TODO`    | Low    | Medium | Flag docs older than N days without review.                                                                               |
 | Per-module CHANGELOG entries            | ⬜ `TODO`    | Low    | Medium | Each sub-module tracks its own changes. Flagged in modularization reports.                                                |
 | Multi-module vs monolith benchmark      | ⬜ `TODO`    | Low    | Medium | Measure overhead of workspace vs single-module.                                                                           |
