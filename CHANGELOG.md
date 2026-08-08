@@ -27,11 +27,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FlightRecorder user guide** — `docs/guides/flight-recorder.md` covering CLI flags, config-file integration, programmatic API, and snapshot workflow.
 - **`ParseConfidence(string) (Confidence, error)`** — Inverse of `Confidence.String()`. Parses named levels ("none", "low", "medium", "high", "full"), decimal strings (e.g. "0.42"), and empty string (defaults to `ConfidenceLow`). Case-insensitive, trims whitespace. Returns `ErrInvalidConfidence` sentinel error, matchable via `errors.Is`. Eliminates the per-consumer switch statement every CLI linter reinvents for its `--min-confidence` flag.
 - **`Template.Builder(rule, message, severity, pos) *Builder`** — Returns a pre-configured `*Builder` from the template, allowing per-finding chaining (confidence, suggestion, before/after code, metadata) before the terminal `Build()`/`MustBuild()`/`BuildOrDefault()` call. `Template.Build()` delegates to `Builder().BuildOrDefault()` for backward compatibility. Eliminates the `makeFindingWithConfidence` / `buildFixableFinding` factory patterns consumers reinvent when they need both template-level defaults AND per-finding overrides.
+- **Configuration guide** — `docs/guides/configuration.md` covers all CLI flags, YAML/JSON config file format, CLI vs config precedence, library ConfigFile API, and runtime defaults.
+- **Troubleshooting guide** — `docs/guides/troubleshooting.md` covers build/setup errors, config file errors, pipeline runtime errors, fix application errors, flight recorder issues, and finding validation errors.
+- **Multi-module benchmark report** — `docs/reports/2026-08-08_multi-module-vs-monolith.md` quantifies zero runtime overhead, negligible build overhead, and significant dependency isolation benefit.
+- **sanitizeFilename fuzz test** — `FuzzSanitizeFilename` in `pipeline/flight_recorder_fuzz_test.go` verifies non-empty output, no consecutive hyphens, no leading/trailing hyphens, and only safe filename characters across random inputs.
+- **SARIF schema compliance edge cases** — 5 new tests in `sarif_properties_test.go`: multiple findings, file-level positions, minimal findings, empty reports, and suppressed findings.
 
 ### Changed
 
 - **doc.go FlightRecorder section** — Updated field list to include `minAge` and `maxBytes`; added soft reference to the project's FlightRecorder guide.
 - **version-drift.sh** — Excludes `// indirect` lines from grep to prevent false positives when a module appears as both direct and indirect dependency.
+- **docs/guides/flight-recorder.md** — Updated YAML and JSON config examples to include all 5 fields (`minAge`, `maxBytes`).
+- **README.md** — Added FlightRecorder to feature list with link to guide; enhanced Pipeline description with observability mention.
+- **docs/DOMAIN_LANGUAGE.md** — Added Observability section (StageHook, FlightRecorderHook, Metrics, MetricsSnapshot) and Pipeline Configuration section (Iteration, CompletionReason, DryRun, GracefulDegradation, ByteLevelConflictDetection, VerifyAfterFix).
 
 ## [1.5.0] - 2026-08-06
 

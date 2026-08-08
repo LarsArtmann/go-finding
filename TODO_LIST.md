@@ -50,7 +50,7 @@
 
 | Task                                    | Status       | Impact | Effort | Evidence                                                                                                                  |
 | --------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------- |
-| SARIF schema validation test            | 🔵 `BLOCKED` | Low    | —      | Requires vendoring 7K+ line SARIF 2.1.0 JSON schema                                                                       |
+| SARIF schema validation test            | ✅ `DONE`    | Low    | Medium | Lightweight structural validation: `TestSARIF_SchemaCompliance` + edge cases (multiple findings, file-level positions, minimal findings, empty report, suppressed findings) in `sarif_properties_test.go`. No schema vendoring needed. |
 | Consumer compatibility test             | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code                                      |
 | Per-module golangci-lint configs        | ⬜ `TODO`    | Low    | Medium | Workspace-level lint suffices but loses per-module precision. Flagged since modularization.                               |
 | go-arch-lint module boundary CI         | ✅ `DONE`    | Low    | Medium | `.go-arch-lint.yml` defines 11 component boundaries. Wired into ci.yml `arch-check` job.                       |
