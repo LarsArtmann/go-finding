@@ -200,6 +200,16 @@ func (h *FlightRecorderHook) recordStageBoundary(event StageEvent) bool {
 	return time.Since(start) > h.config.SlowStageThreshold
 }
 
+func (h *FlightRecorderHook) nextSnapshotNumber() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	num := h.snapshotCount
+	h.snapshotCount++
+
+	return num
+}
+
 // asyncSnapshot captures a trace snapshot to a file in a background goroutine.
 // Uses snapshotWg so Close can wait for in-flight snapshots.
 // The snapshot write uses context.Background() (not the pipeline ctx) because
@@ -207,10 +217,7 @@ func (h *FlightRecorderHook) recordStageBoundary(event StageEvent) bool {
 // (defer cancel() in Pipeline.Run fires on return). Diagnostic snapshots must
 // complete regardless of pipeline lifecycle.
 func (h *FlightRecorderHook) asyncSnapshot(ctx context.Context, event StageEvent) {
-	h.mu.Lock()
-	num := h.snapshotCount
-	h.snapshotCount++
-	h.mu.Unlock()
+	num := h.nextSnapshotNumber()
 
 	h.snapshotWg.Go(func() {
 		path, err := h.writeSnapshot(context.Background(), num, fmt.Sprintf("%s-iter%d", event.Stage, event.Iteration))
@@ -248,9 +255,8 @@ func (h *FlightRecorderHook) Snapshot(ctx context.Context, reason string) (strin
 		return "", ErrFlightRecorderNotEnabled
 	}
 
-	num := h.snapshotCount
-	h.snapshotCount++
 	h.mu.Unlock()
+	num := h.nextSnapshotNumber()
 
 	return h.writeSnapshot(ctx, num, reason)
 }
