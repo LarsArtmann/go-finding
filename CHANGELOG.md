@@ -9,8 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`pipeline.FlightRecorderFileConfig` + `ConfigFile.ResolveFlightRecorder()`** — Flight recorder configuration via JSON config files. The `FlightRecorderFileConfig` struct exposes 5 fields (`Enabled`, `OutputDir`, `SlowStageThreshold`, `MinAge`, `MaxBytes`) as string-encoded durations matching the ConfigFile convention. `ResolveFlightRecorder()` constructs a `*FlightRecorderHook` from the config section, returning `(nil, nil)` when disabled. Enables pipeline consumers to configure trace recording without CLI flags.
+- **CLI `flightRecorder` config section** — YAML/JSON config files now support a `flightRecorder` section as an alternative to `-trace`, `-trace-dir`, and `-trace-slow` flags. Fields: `enabled`, `outputDir`, `slowStageThreshold`.
+- **4 CI structural-check scripts** — `scripts/replace-audit.sh` (verifies replace directives), `scripts/version-drift.sh` (cross-checks go.mod version references), `scripts/test-naming.sh` (enforces test naming conventions), `scripts/go-work-sync.sh` (verifies go.work sync idempotency). Wired into `.github/workflows/ci.yml` as `structural-checks` and `go-work-sync` jobs.
+- **TOCTOU path safety tests** — Symlink swap attack tests for `resolveSafePath` in `pipeline/path_safety_test.go`.
+- **LSP serialization benchmarks** — `BenchmarkToLSP`, `BenchmarkFromLSP`, `BenchmarkLSPRoundTrip` in `bench_test.go`.
+- **FlightRecorder user guide** — `docs/guides/flight-recorder.md` covering CLI flags, config-file integration, programmatic API, and snapshot workflow.
 - **`ParseConfidence(string) (Confidence, error)`** — Inverse of `Confidence.String()`. Parses named levels ("none", "low", "medium", "high", "full"), decimal strings (e.g. "0.42"), and empty string (defaults to `ConfidenceLow`). Case-insensitive, trims whitespace. Returns `ErrInvalidConfidence` sentinel error, matchable via `errors.Is`. Eliminates the per-consumer switch statement every CLI linter reinvents for its `--min-confidence` flag.
 - **`Template.Builder(rule, message, severity, pos) *Builder`** — Returns a pre-configured `*Builder` from the template, allowing per-finding chaining (confidence, suggestion, before/after code, metadata) before the terminal `Build()`/`MustBuild()`/`BuildOrDefault()` call. `Template.Build()` delegates to `Builder().BuildOrDefault()` for backward compatibility. Eliminates the `makeFindingWithConfidence` / `buildFixableFinding` factory patterns consumers reinvent when they need both template-level defaults AND per-finding overrides.
+
+### Changed
+
+- **doc.go FlightRecorder section** — Removed filesystem path reference from godoc; replaced with inline field documentation for the config-file `flightRecorder` section.
+- **version-drift.sh** — Excludes `// indirect` lines from grep to prevent false positives when a module appears as both direct and indirect dependency.
 
 ## [1.5.0] - 2026-08-06
 

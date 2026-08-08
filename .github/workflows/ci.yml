@@ -125,6 +125,29 @@ jobs:
           done
 
     timeout-minutes: 15
+  structural-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Verify replace directives
+        run: bash scripts/replace-audit.sh
+      - name: Verify version drift
+        run: bash scripts/version-drift.sh
+      - name: Verify test naming conventions
+        run: bash scripts/test-naming.sh
+
+    timeout-minutes: 5
+  go-work-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.26"
+      - name: Verify go.work sync
+        run: bash scripts/go-work-sync.sh
+
+    timeout-minutes: 5
   stress:
     runs-on: ubuntu-latest
     steps:
