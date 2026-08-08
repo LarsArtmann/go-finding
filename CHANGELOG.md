@@ -14,8 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`pipeline.FlightRecorderFileConfig` + `ConfigFile.ResolveFlightRecorder()`** — Flight recorder configuration via JSON config files. The `FlightRecorderFileConfig` struct exposes 5 fields (`Enabled`, `OutputDir`, `SlowStageThreshold`, `MinAge`, `MaxBytes`) as string-encoded durations matching the ConfigFile convention. `ResolveFlightRecorder()` constructs a `*FlightRecorderHook` from the config section, returning `(nil, nil)` when disabled. Enables pipeline consumers to configure trace recording without CLI flags.
-- **CLI `flightRecorder` config section** — YAML/JSON config files now support a `flightRecorder` section as an alternative to `-trace`, `-trace-dir`, and `-trace-slow` flags. Fields: `enabled`, `outputDir`, `slowStageThreshold`.
+- **CLI `flightRecorder` config section** — YAML/JSON config files now support a `flightRecorder` section as an alternative to `-trace`, `-trace-dir`, and `-trace-slow` flags. Fields: `enabled`, `outputDir`, `slowStageThreshold`, `minAge`, `maxBytes` (full parity with `pipeline.FlightRecorderFileConfig`).
 - **4 CI structural-check scripts** — `scripts/replace-audit.sh` (verifies replace directives), `scripts/version-drift.sh` (cross-checks go.mod version references), `scripts/test-naming.sh` (enforces test naming conventions), `scripts/go-work-sync.sh` (verifies go.work sync idempotency). Wired into `.github/workflows/ci.yml` as `structural-checks` and `go-work-sync` jobs.
+- **`scripts/docs-freshness.sh`** — Checks documentation freshness against code changes. Flags docs not modified in N days (default 180) and docs whose referenced source files have been modified since the doc was last updated. Wired into ci.yml as `docs-freshness` job.
+- **Per-module CHANGELOGs** — `pipeline/CHANGELOG.md`, `analysis/CHANGELOG.md`, `cmd/go-finding/CHANGELOG.md` with cross-references from root CHANGELOG.md.
+- **resolveSafePath edge case tests** — Circular symlinks (self-referential and mutual), dangling symlinks, root-is-symlink, and root-is-symlink path traversal in `pipeline/path_safety_test.go`.
+- **FlightRecorder edge case tests** — Snapshot write error (permission denied), slow last-stage snapshot during pipeline run, concurrent stage events safety with race detector in `pipeline/flight_recorder_test.go`.
 - **TOCTOU path safety tests** — Symlink swap attack tests for `resolveSafePath` in `pipeline/path_safety_test.go`.
 - **LSP serialization benchmarks** — `BenchmarkToLSP`, `BenchmarkFromLSP`, `BenchmarkLSPRoundTrip` in `bench_test.go`.
 - **FlightRecorder user guide** — `docs/guides/flight-recorder.md` covering CLI flags, config-file integration, programmatic API, and snapshot workflow.
@@ -24,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **doc.go FlightRecorder section** — Removed filesystem path reference from godoc; replaced with inline field documentation for the config-file `flightRecorder` section.
+- **doc.go FlightRecorder section** — Updated field list to include `minAge` and `maxBytes`; added soft reference to the project's FlightRecorder guide.
 - **version-drift.sh** — Excludes `// indirect` lines from grep to prevent false positives when a module appears as both direct and indirect dependency.
 
 ## [1.5.0] - 2026-08-06
