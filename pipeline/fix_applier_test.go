@@ -593,7 +593,7 @@ func TestFixApplier_RollbackErrorNotSwallowed(t *testing.T) {
 	testFile := filepath.Join(root, "target.go")
 	writeTestFile(t, testFile, []byte("package main\n"))
 
-	resolvedPath, ok := resolveSafePath(root, "target.go")
+	resolvedPath, ok := ResolveSafePath(root, "target.go")
 	g.Expect(ok).To(BeTrue())
 
 	backupDir := t.TempDir()

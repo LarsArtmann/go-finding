@@ -181,6 +181,10 @@ func (h *FlightRecorderHook) recordStageBoundary(event StageEvent) bool {
 
 // asyncSnapshot captures a trace snapshot to a file in a background goroutine.
 // Uses snapshotWg so Close can wait for in-flight snapshots.
+// The snapshot write uses context.Background() (not the pipeline ctx) because
+// the pipeline's run context may be cancelled before the goroutine executes
+// (defer cancel() in Pipeline.Run fires on return). Diagnostic snapshots must
+// complete regardless of pipeline lifecycle.
 func (h *FlightRecorderHook) asyncSnapshot(ctx context.Context, event StageEvent) {
 	h.mu.Lock()
 	num := h.snapshotCount
@@ -188,7 +192,7 @@ func (h *FlightRecorderHook) asyncSnapshot(ctx context.Context, event StageEvent
 	h.mu.Unlock()
 
 	h.snapshotWg.Go(func() {
-		path, err := h.writeSnapshot(num, fmt.Sprintf("%s-iter%d", event.Stage, event.Iteration))
+		path, err := h.writeSnapshot(context.Background(), num, fmt.Sprintf("%s-iter%d", event.Stage, event.Iteration))
 		if err != nil {
 			h.log(ctx, slog.LevelError, "flight recorder snapshot failed", slog.String("error", err.Error()))
 
@@ -206,13 +210,15 @@ func (h *FlightRecorderHook) asyncSnapshot(ctx context.Context, event StageEvent
 
 // Snapshot captures the current flight recorder buffer to a file and
 // returns the file path. The reason string is included in the filename
-// for identification.
+// for identification. The context is checked for cancellation before
+// writing; if cancelled, no file is created.
 //
 // Returns ErrFlightRecorderNotEnabled if the recorder is closed or disabled.
+// Returns context.Cause(ctx) if the context is cancelled before writing.
 // Returns a wrapped os/Create or WriteTo error if the filesystem fails
 // (e.g., disk full, permission denied). In such cases the partially-written
 // file is closed but may remain on disk with incomplete data.
-func (h *FlightRecorderHook) Snapshot(reason string) (string, error) {
+func (h *FlightRecorderHook) Snapshot(ctx context.Context, reason string) (string, error) {
 	h.mu.Lock()
 
 	if h.closed || !h.fr.Enabled() {
@@ -225,13 +231,18 @@ func (h *FlightRecorderHook) Snapshot(reason string) (string, error) {
 	h.snapshotCount++
 	h.mu.Unlock()
 
-	return h.writeSnapshot(num, reason)
+	return h.writeSnapshot(ctx, num, reason)
 }
 
 // writeSnapshot creates a trace file and writes the buffered trace data.
 // The writeMu serializes concurrent WriteTo calls because
 // runtime/trace.FlightRecorder.WriteTo is NOT safe for concurrent use.
-func (h *FlightRecorderHook) writeSnapshot(num int, reason string) (string, error) {
+// The context is checked for cancellation before the potentially slow WriteTo call.
+func (h *FlightRecorderHook) writeSnapshot(ctx context.Context, num int, reason string) (string, error) {
+	if err := ctx.Err(); err != nil {
+		return "", fmt.Errorf("snapshot cancelled before write: %w", err)
+	}
+
 	filename := fmt.Sprintf("go-finding-trace-%03d-%s.trace", num, sanitizeFilename(reason))
 	path := filepath.Join(h.config.OutputDir, filename)
 

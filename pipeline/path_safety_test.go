@@ -14,7 +14,7 @@ func TestResolveSafePath_NormalRelativePath(t *testing.T) {
 	root := t.TempDir()
 	rel := "src/main.go"
 
-	got, ok := resolveSafePath(root, rel)
+	got, ok := ResolveSafePath(root, rel)
 	if !ok {
 		t.Fatalf("expected safe, got unsafe")
 	}
@@ -43,7 +43,7 @@ func TestResolveSafePath_PathTraversal(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, ok := resolveSafePath(root, tc.rel)
+			_, ok := ResolveSafePath(root, tc.rel)
 			if ok {
 				t.Errorf("rel=%q: expected unsafe, got safe", tc.rel)
 			}
@@ -60,7 +60,7 @@ func TestResolveSafePath_AbsolutePathInsideRoot(t *testing.T) {
 	root := t.TempDir()
 	absInside := filepath.Join(root, "src", "main.go")
 
-	got, ok := resolveSafePath(root, absInside)
+	got, ok := ResolveSafePath(root, absInside)
 	if !ok {
 		t.Fatalf("absolute path inside root should be safe, got unsafe")
 	}
@@ -90,7 +90,7 @@ func TestResolveSafePath_AbsolutePathOutsideRoot(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, ok := resolveSafePath(root, tc.abs)
+			_, ok := ResolveSafePath(root, tc.abs)
 			if ok {
 				t.Errorf("abs=%q: expected unsafe (outside root), got safe", tc.abs)
 			}
@@ -103,7 +103,7 @@ func TestResolveSafePath_EmptyRelPath(t *testing.T) {
 
 	root := t.TempDir()
 
-	got, ok := resolveSafePath(root, "")
+	got, ok := ResolveSafePath(root, "")
 	if !ok {
 		t.Fatalf("empty rel should resolve to root, expected safe")
 	}
@@ -119,7 +119,7 @@ func TestResolveSafePath_DotPath(t *testing.T) {
 
 	root := t.TempDir()
 
-	got, ok := resolveSafePath(root, ".")
+	got, ok := ResolveSafePath(root, ".")
 	if !ok {
 		t.Fatalf("'.' should resolve to root, expected safe")
 	}
@@ -149,7 +149,7 @@ func TestResolveSafePath_SymlinkInsideRoot_PointingInside(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, ok := resolveSafePath(root, "link.go")
+	got, ok := ResolveSafePath(root, "link.go")
 	if !ok {
 		t.Fatalf("symlink inside root pointing inside should be safe")
 	}
@@ -181,7 +181,7 @@ func TestResolveSafePath_SymlinkInsideRoot_PointingOutside(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, ok := resolveSafePath(root, "escape.go")
+	_, ok := ResolveSafePath(root, "escape.go")
 	if ok {
 		t.Errorf("symlink pointing outside root should be unsafe")
 	}
@@ -192,7 +192,7 @@ func TestResolveSafePath_NonexistentFile(t *testing.T) {
 
 	root := t.TempDir()
 
-	got, ok := resolveSafePath(root, "nonexistent.go")
+	got, ok := ResolveSafePath(root, "nonexistent.go")
 	if !ok {
 		t.Fatalf("nonexistent file inside root should be safe (path is still within root)")
 	}
@@ -208,7 +208,7 @@ func TestResolveSafePath_RootItself(t *testing.T) {
 
 	root := t.TempDir()
 
-	got, ok := resolveSafePath(root, "")
+	got, ok := ResolveSafePath(root, "")
 	if !ok {
 		t.Fatalf("root itself should be safe")
 	}
@@ -225,7 +225,7 @@ func TestResolveSafePath_DeeplyNestedPath(t *testing.T) {
 	root := t.TempDir()
 	rel := "a/b/c/d/e/f.go"
 
-	got, ok := resolveSafePath(root, rel)
+	got, ok := ResolveSafePath(root, rel)
 	if !ok {
 		t.Fatalf("deeply nested path inside root should be safe")
 	}
@@ -294,7 +294,7 @@ func TestGroupFindingsBySafePath_ResolvedPathAsMapKey(t *testing.T) {
 }
 
 // TestResolveSafePath_TOCOU_SymlinkSwap verifies the TOCTOU mitigation: the
-// resolved path returned by resolveSafePathFrom is the real path on disk
+// resolved path returned by ResolveSafePathFrom is the real path on disk
 // (after EvalSymlinks), not the symlink path. If an attacker swaps the
 // symlink target AFTER validation but BEFORE file I/O, the previously
 // resolved path string still points to the safe location inside root.
@@ -313,9 +313,9 @@ func TestResolveSafePath_TOCOU_SymlinkSwap(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resolvedRoot := resolveRoot(root)
+	resolvedRoot := ResolveRoot(root)
 
-	resolved, ok := resolveSafePathFrom(resolvedRoot, "link.go")
+	resolved, ok := ResolveSafePathFrom(resolvedRoot, "link.go")
 	if !ok {
 		t.Fatal("expected safe path for symlink pointing inside root")
 	}
@@ -346,7 +346,7 @@ func TestResolveSafePath_TOCOU_SymlinkSwap(t *testing.T) {
 		t.Error("resolved path should still point to original safe file content")
 	}
 
-	reResolved, reOk := resolveSafePathFrom(resolvedRoot, "link.go")
+	reResolved, reOk := ResolveSafePathFrom(resolvedRoot, "link.go")
 	if reOk {
 		t.Errorf("after swap, symlink should be unsafe, but resolved to %q", reResolved)
 	}
@@ -354,7 +354,7 @@ func TestResolveSafePath_TOCOU_SymlinkSwap(t *testing.T) {
 
 // TestResolveSafePath_SymlinkSwap_OutsideToInside verifies that a symlink
 // initially pointing outside root (unsafe) becomes safe when swapped to
-// point inside root. This confirms resolveSafePathFrom evaluates the
+// point inside root. This confirms ResolveSafePathFrom evaluates the
 // current symlink state on each call.
 func TestResolveSafePath_SymlinkSwap_OutsideToInside(t *testing.T) {
 	t.Parallel()
@@ -376,9 +376,9 @@ func TestResolveSafePath_SymlinkSwap_OutsideToInside(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resolvedRoot := resolveRoot(root)
+	resolvedRoot := ResolveRoot(root)
 
-	if _, ok := resolveSafePathFrom(resolvedRoot, "evil.go"); ok {
+	if _, ok := ResolveSafePathFrom(resolvedRoot, "evil.go"); ok {
 		t.Fatal("symlink pointing outside root should be unsafe")
 	}
 
@@ -390,7 +390,7 @@ func TestResolveSafePath_SymlinkSwap_OutsideToInside(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resolved, ok := resolveSafePathFrom(resolvedRoot, "evil.go")
+	resolved, ok := ResolveSafePathFrom(resolvedRoot, "evil.go")
 	if !ok {
 		t.Fatal("after swap to inside root, symlink should be safe")
 	}
@@ -465,7 +465,7 @@ func TestResolveSafePath_CircularSymlink(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, ok := resolveSafePath(root, "loop.go")
+	got, ok := ResolveSafePath(root, "loop.go")
 	if !ok {
 		t.Fatalf("circular symlink inside root should return safe (path is within root)")
 	}
@@ -494,7 +494,7 @@ func TestResolveSafePath_MutualCircularSymlink(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, ok := resolveSafePath(root, "a.go")
+	got, ok := ResolveSafePath(root, "a.go")
 	if !ok {
 		t.Fatalf("mutual circular symlink inside root should return safe (path is within root)")
 	}
@@ -523,7 +523,7 @@ func TestResolveSafePath_DanglingSymlink_OutsideRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, ok := resolveSafePath(root, "dangling.go")
+	got, ok := ResolveSafePath(root, "dangling.go")
 	if !ok {
 		t.Fatalf("dangling symlink inside root should return safe (unresolved path is within root)")
 	}
@@ -534,9 +534,9 @@ func TestResolveSafePath_DanglingSymlink_OutsideRoot(t *testing.T) {
 	}
 }
 
-// TestResolveSafePath_RootIsSymlink verifies that resolveSafePath works
+// TestResolveSafePath_RootIsSymlink verifies that ResolveSafePath works
 // correctly when rootDir itself is a symlink to another directory.
-// resolveRoot calls EvalSymlinks on rootDir, resolving it to the real path.
+// ResolveRoot calls EvalSymlinks on rootDir, resolving it to the real path.
 func TestResolveSafePath_RootIsSymlink(t *testing.T) {
 	t.Parallel()
 
@@ -550,7 +550,7 @@ func TestResolveSafePath_RootIsSymlink(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, ok := resolveSafePath(symlinkRoot, "main.go")
+	got, ok := ResolveSafePath(symlinkRoot, "main.go")
 	if !ok {
 		t.Fatalf("file inside symlinked root should be safe")
 	}
@@ -572,7 +572,7 @@ func TestResolveSafePath_RootIsSymlink_PathTraversal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, ok := resolveSafePath(symlinkRoot, "../../../etc/passwd")
+	_, ok := ResolveSafePath(symlinkRoot, "../../../etc/passwd")
 	if ok {
 		t.Errorf("path traversal through symlinked root should be unsafe")
 	}

@@ -85,7 +85,7 @@ func TestFlightRecorderHook_ManualSnapshotWritesFile(t *testing.T) {
 
 	g := gomega.NewWithT(t)
 
-	path, err := hook.Snapshot("manual-test")
+	path, err := hook.Snapshot(context.Background(), "manual-test")
 	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
 	g.Expect(path).To(gomega.BeAnExistingFile())
 
@@ -100,9 +100,22 @@ func TestFlightRecorderHook_SnapshotAfterCloseFails(t *testing.T) {
 
 	g := gomega.NewWithT(t)
 
-	_, err := hook.Snapshot("post-close")
+	_, err := hook.Snapshot(context.Background(), "post-close")
 	g.Expect(err).To(gomega.HaveOccurred())
 	g.Expect(errors.Is(err, ErrFlightRecorderNotEnabled)).To(gomega.BeTrue())
+}
+
+func TestFlightRecorderHook_SnapshotWithCancelledContext(t *testing.T) {
+	hook := newTestFlightRecorderHook(t, DefaultFlightRecorderConfig())
+	defer hook.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	g := gomega.NewWithT(t)
+
+	_, err := hook.Snapshot(ctx, "cancelled")
+	g.Expect(err).To(gomega.HaveOccurred())
 }
 
 func TestFlightRecorderHook_SlowStageTriggersSnapshot(t *testing.T) {
@@ -193,7 +206,7 @@ func TestFlightRecorderHook_WithPipeline(t *testing.T) {
 	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
 	g.Expect(result.Reason).To(gomega.Equal(ReasonMaxIterations))
 
-	path, err := hook.Snapshot("post-run")
+	path, err := hook.Snapshot(context.Background(), "post-run")
 	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
 	g.Expect(path).To(gomega.BeAnExistingFile())
 }
@@ -204,10 +217,10 @@ func TestFlightRecorderHook_MultipleSnapshots(t *testing.T) {
 
 	g := gomega.NewWithT(t)
 
-	path1, err := hook.Snapshot("first")
+	path1, err := hook.Snapshot(context.Background(), "first")
 	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
 
-	path2, err := hook.Snapshot("second")
+	path2, err := hook.Snapshot(context.Background(), "second")
 	g.Expect(err).To(gomega.Not(gomega.HaveOccurred()))
 
 	g.Expect(path1).To(gomega.Not(gomega.Equal(path2)))
@@ -280,7 +293,7 @@ func TestFlightRecorderHook_ConcurrentSnapshotsDoNotCollide(t *testing.T) {
 		go func(idx int) {
 			defer wg.Done()
 
-			paths[idx], errs[idx] = hook.Snapshot("concurrent")
+			paths[idx], errs[idx] = hook.Snapshot(context.Background(), "concurrent")
 		}(i)
 	}
 
@@ -412,7 +425,7 @@ func TestFlightRecorderHook_SnapshotWriteError(t *testing.T) {
 
 	g := gomega.NewWithT(t)
 
-	_, err := hook.Snapshot("permission-test")
+	_, err := hook.Snapshot(context.Background(), "permission-test")
 	g.Expect(err).To(gomega.HaveOccurred())
 }
 

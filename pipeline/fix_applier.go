@@ -186,7 +186,7 @@ func (a *FixApplier) ApplyWithShiftMap(
 // target the same file.
 func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string][]finding.Finding {
 	byFile := make(map[string][]finding.Finding)
-	resolvedRoot := resolveRoot(a.rootDir)
+	resolvedRoot := ResolveRoot(a.rootDir)
 	pathCache := make(map[string]string, len(fixes))
 
 	for _, f := range fixes {
@@ -198,7 +198,7 @@ func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string
 
 		safePath, cached := pathCache[rawPath]
 		if !cached {
-			safePath, _ = resolveSafePathFrom(resolvedRoot, rawPath)
+			safePath, _ = ResolveSafePathFrom(resolvedRoot, rawPath)
 			pathCache[rawPath] = safePath
 		}
 

@@ -105,7 +105,7 @@ func (e FixEdit) MarshalJSON() ([]byte, error) {
 		Offset:      e.Offset,
 		Length:      e.Length,
 		Replacement: e.Replacement,
-	})
+	}, json.Deterministic(true))
 }
 
 // UnmarshalJSON implements json.Unmarshaler for FixEdit.

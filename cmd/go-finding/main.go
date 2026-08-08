@@ -289,7 +289,7 @@ func run() int {
 
 	// On error or timeout, capture a final trace snapshot.
 	if err != nil && frHook != nil && frHook.Enabled() {
-		if snapPath, snapErr := frHook.Snapshot("pipeline-error"); snapErr == nil {
+		if snapPath, snapErr := frHook.Snapshot(ctx, "pipeline-error"); snapErr == nil {
 			fmt.Fprintf(os.Stderr, "Trace snapshot: %s\n", snapPath)
 		}
 	}

@@ -9,6 +9,19 @@ import (
 	"slices"
 )
 
+// marshalOpts ensures deterministic map key ordering in all JSON output.
+// All production json.Marshal / json.MarshalWrite calls must include this option
+// to guarantee reproducible output (required for snapshot/diff stability).
+var marshalOpts = json.Deterministic(true)
+
+// prettyMarshalOpts ensures deterministic, indented JSON output.
+// Used by PrettyJSON, PrettyJSONFiltered, WriteJSON, ToSARIFWithOpts, WriteSARIFWithOpts.
+var prettyMarshalOpts = []json.Options{
+	json.Deterministic(true),
+	jsontext.WithIndentPrefix(""),
+	jsontext.WithIndent("  "),
+}
+
 // Sentinel errors for JSON validation.
 var (
 	ErrInvalidFinding = errors.New("invalid finding: missing required fields")
@@ -31,7 +44,7 @@ func (r *Report) MarshalJSON() ([]byte, error) {
 			Tool:     r.Tool,
 			Findings: r.findings,
 			Summary:  r.Summary,
-		}, json.Deterministic(true))
+		}, marshalOpts)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("marshal report: %w", err)
@@ -95,12 +108,7 @@ func (r *Report) JSON() (string, error) {
 // PrettyJSON returns a formatted JSON representation of the report.
 // Includes all findings, including suppressed ones.
 func (r *Report) PrettyJSON() (string, error) {
-	return marshalJSONString(json.Marshal(
-		r,
-		json.Deterministic(true),
-		jsontext.WithIndentPrefix(""),
-		jsontext.WithIndent("  "),
-	))
+	return marshalJSONString(json.Marshal(r, prettyMarshalOpts...))
 }
 
 // PrettyJSONFiltered returns a formatted JSON representation with only
@@ -124,12 +132,7 @@ func (r *Report) PrettyJSONFiltered() (string, error) {
 
 	filtered.ComputeSummary()
 
-	return marshalJSONString(json.Marshal(
-		filtered,
-		json.Deterministic(true),
-		jsontext.WithIndentPrefix(""),
-		jsontext.WithIndent("  "),
-	))
+	return marshalJSONString(json.Marshal(filtered, prettyMarshalOpts...))
 }
 
 // FromJSON parses a Finding from JSON and validates required fields.
@@ -187,13 +190,13 @@ func FindingsFromJSON(data []byte) ([]Finding, int, error) {
 
 // LineJSON returns compact JSON (single line).
 func (f Finding) LineJSON() (string, error) {
-	return marshalJSONString(json.Marshal(f, json.Deterministic(true)))
+	return marshalJSONString(json.Marshal(f, marshalOpts))
 }
 
 // WriteJSON writes compact JSON directly to w.
 // Avoids the intermediate string allocation of LineJSON.
 func (f Finding) WriteJSON(w io.Writer) error {
-	err := json.MarshalWrite(w, f, json.Deterministic(true))
+	err := json.MarshalWrite(w, f, marshalOpts)
 	if err != nil {
 		return fmt.Errorf("encoding finding JSON: %w", err)
 	}
@@ -209,7 +212,7 @@ func (f Finding) WriteJSON(w io.Writer) error {
 // Avoids the intermediate string allocation of PrettyJSON.
 // Safe for concurrent use.
 func (r *Report) WriteJSON(w io.Writer) error {
-	err := json.MarshalWrite(w, r, json.Deterministic(true), jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
+	err := json.MarshalWrite(w, r, prettyMarshalOpts...)
 	if err != nil {
 		return fmt.Errorf("encoding report JSON: %w", err)
 	}

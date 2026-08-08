@@ -327,7 +327,7 @@ func (p *Pipeline) filterByFileEdits(
 		byFile[f.Position.File] = append(byFile[f.Position.File], f)
 	}
 
-	resolvedRoot := resolveRoot(p.rootDir)
+	resolvedRoot := ResolveRoot(p.rootDir)
 
 	var (
 		result    []finding.Finding
@@ -335,7 +335,7 @@ func (p *Pipeline) filterByFileEdits(
 	)
 
 	for file, fileFixes := range byFile {
-		safePath, ok := resolveSafePathFrom(resolvedRoot, string(file))
+		safePath, ok := ResolveSafePathFrom(resolvedRoot, string(file))
 		if !ok {
 			p.log(
 				ctx, "skipping unsafe file path for conflict detection",

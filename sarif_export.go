@@ -2,7 +2,6 @@ package finding
 
 import (
 	"context"
-	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
 	"io"
@@ -76,7 +75,7 @@ func (r *Report) ToSARIFWithOpts(opts ...SARIFOption) ([]byte, error) {
 
 	log := r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg))
 
-	data, err := json.Marshal(log, json.Deterministic(true), jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
+	data, err := json.Marshal(log, prettyMarshalOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("marshaling SARIF: %w", err)
 	}
@@ -110,9 +109,7 @@ func (r *Report) WriteSARIFWithOpts(ctx context.Context, w io.Writer, opts ...SA
 	err = json.MarshalWrite(
 		w,
 		r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg)),
-		json.Deterministic(true),
-		jsontext.WithIndentPrefix(""),
-		jsontext.WithIndent("  "),
+		prettyMarshalOpts...,
 	)
 	if err != nil {
 		return fmt.Errorf("encoding SARIF: %w", err)
