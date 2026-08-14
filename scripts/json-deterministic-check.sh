@@ -16,32 +16,32 @@ VIOLATIONS=0
 
 # Find all production .go files (exclude test files, vendor, generated, doc.go).
 mapfile -t FILES < <({
-    find . -name "*.go" \
-        ! -name "*_test.go" \
-        ! -name "*.gen.go" \
-        ! -name "doc.go" \
-        ! -path "./vendor/*" \
-        ! -path "./.git/*" \
-        2>/dev/null
+	find . -name "*.go" \
+		! -name "*_test.go" \
+		! -name "*.gen.go" \
+		! -name "doc.go" \
+		! -path "./vendor/*" \
+		! -path "./.git/*" \
+		2>/dev/null
 } | sort -u)
 
 for file in "${FILES[@]}"; do
-    [ -f "$file" ] || continue
+	[ -f "$file" ] || continue
 
-    # Find lines containing json.Marshal( / json.MarshalWrite( / json.MarshalEncode(
-    while IFS=: read -r linenum line; do
-        [ -z "$linenum" ] && continue
+	# Find lines containing json.Marshal( / json.MarshalWrite( / json.MarshalEncode(
+	while IFS=: read -r linenum line; do
+		[ -z "$linenum" ] && continue
 
-        # Skip comment lines.
-        trimmed="${line#"${line%%[![:space:]]*}"}"
-        case "$trimmed" in
-            \/\/*) continue ;;
-        esac
+		# Skip comment lines.
+		trimmed="${line#"${line%%[![:space:]]*}"}"
+		case "$trimmed" in
+		\/\/*) continue ;;
+		esac
 
-        # Extract the call statement: from this line to the matching ')'
-        # (tracking paren depth to handle nested function calls correctly).
-        call=$(sed -n "${linenum},$((linenum + 20))p" "$file" |
-            awk '
+		# Extract the call statement: from this line to the matching ')'
+		# (tracking paren depth to handle nested function calls correctly).
+		call=$(sed -n "${linenum},$((linenum + 20))p" "$file" |
+			awk '
                 {
                     for (i = 1; i <= length($0); i++) {
                         c = substr($0, i, 1)
@@ -53,22 +53,22 @@ for file in "${FILES[@]}"; do
                 }
             ')
 
-        # The call is compliant if it contains Deterministic,
-        # marshalOpts, or prettyMarshalOpts.
-        if ! echo "$call" | grep -qE 'Deterministic|marshalOpts|prettyMarshalOpts'; then
-            echo "::error file=$file,line=$linenum::json.Marshal call without json.Deterministic(true)"
-            echo "  ${file}:${linenum}: ${trimmed}"
-            VIOLATIONS=$((VIOLATIONS + 1))
-        fi
-    done < <(grep -nE 'json\.Marshal(Write|Encode)?\(' "$file" 2>/dev/null || true)
+		# The call is compliant if it contains Deterministic,
+		# marshalOpts, or prettyMarshalOpts.
+		if ! echo "$call" | grep -qE 'Deterministic|marshalOpts|prettyMarshalOpts'; then
+			echo "::error file=$file,line=$linenum::json.Marshal call without json.Deterministic(true)"
+			echo "  ${file}:${linenum}: ${trimmed}"
+			VIOLATIONS=$((VIOLATIONS + 1))
+		fi
+	done < <(grep -nE 'json\.Marshal(Write|Encode)?\(' "$file" 2>/dev/null || true)
 done
 
 echo ""
 if [ "$VIOLATIONS" -gt 0 ]; then
-    echo "Found $VIOLATIONS production marshal call(s) missing json.Deterministic(true)."
-    echo "All production json.Marshal / json.MarshalWrite calls must include Deterministic"
-    echo "or use the shared marshalOpts / prettyMarshalOpts variables."
-    exit 1
+	echo "Found $VIOLATIONS production marshal call(s) missing json.Deterministic(true)."
+	echo "All production json.Marshal / json.MarshalWrite calls must include Deterministic"
+	echo "or use the shared marshalOpts / prettyMarshalOpts variables."
+	exit 1
 fi
 
 echo "json-deterministic-check: all production marshal calls include Deterministic."

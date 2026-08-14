@@ -12,9 +12,9 @@ current="${2:?usage: bench-check.sh <baseline.txt> <current.txt> [threshold]}"
 threshold="${3:-25}"
 
 if [ ! -f "$baseline" ]; then
-    echo "⚠ No baseline found at $baseline — skipping regression check."
-    echo "  To create a baseline: cp $current $baseline"
-    exit 0
+	echo "⚠ No baseline found at $baseline — skipping regression check."
+	echo "  To create a baseline: cp $current $baseline"
+	exit 0
 fi
 
 echo "=== Benchmark comparison (threshold: +${threshold}%) ==="
@@ -43,10 +43,10 @@ regressions=$(awk '
 ' /tmp/benchstat-output.txt)
 
 if [ -n "$regressions" ]; then
-    echo ""
-    echo "❌ FAIL: Benchmarks regressed beyond ${threshold}%:"
-    echo "$regressions"
-    exit 1
+	echo ""
+	echo "❌ FAIL: Benchmarks regressed beyond ${threshold}%:"
+	echo "$regressions"
+	exit 1
 fi
 
 echo ""
