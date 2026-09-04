@@ -38,24 +38,24 @@ The only blocking issue is a **corrupted Nix Go stdlib** preventing local builds
 
 ### Session 6 (this session) — Tasks 9-12 from previous session's plan
 
-| #   | Task                                              | Commit    | Status |
-| --- | ------------------------------------------------- | --------- | ------ |
-| 9   | Extract FixApplier into `fix_applier.go`          | `56c1f52` | ✅     |
-| 10  | Extract PipelineResult/Iteration into `result.go` | `a4f8d9b` | ✅     |
-| 11  | Pin golangci-lint version in CI                   | `79fabe5` | ✅     |
+| #  | Task                                              | Commit    | Status |
+| -- | ------------------------------------------------- | --------- | ------ |
+| 9  | Extract FixApplier into `fix_applier.go`          | `56c1f52` | ✅     |
+| 10 | Extract PipelineResult/Iteration into `result.go` | `a4f8d9b` | ✅     |
+| 11 | Pin golangci-lint version in CI                   | `79fabe5` | ✅     |
 
 ### Session 6 — Discovered and fixed pre-existing issues
 
-| #   | Task                                                                                          | Commit                | Status |
-| --- | --------------------------------------------------------------------------------------------- | --------------------- | ------ |
-| —   | Uncommitted work from session 5 (nil-safety, struct{} map, SARIF constants, retry validation) | `af0045c` (session 5) | ✅     |
-| —   | Remove `nlreturn`/`wsl_v5` from enable list                                                   | `006f504`             | ✅     |
-| —   | Use `Position.Compare` in `SortByPosition`                                                    | `b4c983e`             | ✅     |
-| —   | Remove explicit zero-value assignments in `FromDiagnostic`                                    | `d267e84`             | ✅     |
-| —   | Add `Report.Len()` method                                                                     | `35c386f`             | ✅     |
-| —   | Add `Severity.Compare()` method                                                               | `3c52cb9`             | ✅     |
-| —   | Fix errgroup derived context in `detectPartialParallel`                                       | `2b0a117`             | ✅     |
-| —   | Fix findingKey collision in `verify.go`                                                       | `decc571`             | ✅     |
+| # | Task                                                                                          | Commit                | Status |
+| - | --------------------------------------------------------------------------------------------- | --------------------- | ------ |
+| — | Uncommitted work from session 5 (nil-safety, struct{} map, SARIF constants, retry validation) | `af0045c` (session 5) | ✅     |
+| — | Remove `nlreturn`/`wsl_v5` from enable list                                                   | `006f504`             | ✅     |
+| — | Use `Position.Compare` in `SortByPosition`                                                    | `b4c983e`             | ✅     |
+| — | Remove explicit zero-value assignments in `FromDiagnostic`                                    | `d267e84`             | ✅     |
+| — | Add `Report.Len()` method                                                                     | `35c386f`             | ✅     |
+| — | Add `Severity.Compare()` method                                                               | `3c52cb9`             | ✅     |
+| — | Fix errgroup derived context in `detectPartialParallel`                                       | `2b0a117`             | ✅     |
+| — | Fix findingKey collision in `verify.go`                                                       | `decc571`             | ✅     |
 
 ### Sessions 7-12 — 24-task Architecture Audit (ALL COMPLETE)
 
@@ -124,24 +124,24 @@ Existing benchmarks already cover: Filter, FilterMultiple, GroupByFile, Merge, M
 
 ## C) NOT STARTED 📋
 
-| #   | Task                                                     | Priority | Effort  |
-| --- | -------------------------------------------------------- | -------- | ------- |
-| 1   | Commit Clone benchmarks                                  | HIGH     | 1min    |
-| 2   | Add `iter.Seq[Finding]` on `Report.All()`                | MEDIUM   | 30min   |
-| 3   | Tag v0.1.3 release                                       | MEDIUM   | 2min    |
-| 4   | Fix flaky property test (seed control)                   | MEDIUM   | 30min   |
-| 5   | FixApplier dedicated unit tests                          | MEDIUM   | 1hr     |
-| 6   | Decide on FixStrategyAI: implement or remove             | MEDIUM   | 30min   |
-| 7   | CLI coverage → 70%+                                      | LOW      | 2hr     |
-| 8   | Pre-existing goconst warnings (2 in sarif/coverage_test) | LOW      | 10min   |
-| 9   | Fix `go vet` Nix store intermittent                      | LOW      | env fix |
-| 10  | Consider fuzz test for SARIF parser                      | LOW      | 2hr     |
-| 11  | Add `-json` flag to CLI                                  | LOW      | 1hr     |
-| 12  | Document pipeline result interpretation                  | LOW      | 1hr     |
-| 13  | Example integration with golangci-lint                   | LOW      | 3hr     |
-| 14  | Config file support (#15 in EXECUTION_PLAN)              | LOW      | 3hr     |
-| 15  | Watch mode (#16 in EXECUTION_PLAN)                       | LOW      | 4hr     |
-| 16  | go-sarif evaluation for FromSARIF                        | LOW      | 2hr     |
+| #  | Task                                                     | Priority | Effort  |
+| -- | -------------------------------------------------------- | -------- | ------- |
+| 1  | Commit Clone benchmarks                                  | HIGH     | 1min    |
+| 2  | Add `iter.Seq[Finding]` on `Report.All()`                | MEDIUM   | 30min   |
+| 3  | Tag v0.1.3 release                                       | MEDIUM   | 2min    |
+| 4  | Fix flaky property test (seed control)                   | MEDIUM   | 30min   |
+| 5  | FixApplier dedicated unit tests                          | MEDIUM   | 1hr     |
+| 6  | Decide on FixStrategyAI: implement or remove             | MEDIUM   | 30min   |
+| 7  | CLI coverage → 70%+                                      | LOW      | 2hr     |
+| 8  | Pre-existing goconst warnings (2 in sarif/coverage_test) | LOW      | 10min   |
+| 9  | Fix `go vet` Nix store intermittent                      | LOW      | env fix |
+| 10 | Consider fuzz test for SARIF parser                      | LOW      | 2hr     |
+| 11 | Add `-json` flag to CLI                                  | LOW      | 1hr     |
+| 12 | Document pipeline result interpretation                  | LOW      | 1hr     |
+| 13 | Example integration with golangci-lint                   | LOW      | 3hr     |
+| 14 | Config file support (#15 in EXECUTION_PLAN)              | LOW      | 3hr     |
+| 15 | Watch mode (#16 in EXECUTION_PLAN)                       | LOW      | 4hr     |
+| 16 | go-sarif evaluation for FromSARIF                        | LOW      | 2hr     |
 
 ---
 
@@ -220,33 +220,33 @@ The codebase itself is clean. All lint issues resolved, all tests passing (as ve
 
 ## F) Top 25 Things We Should Get Done Next
 
-| #   | What                                                 | Priority | Effort | Impact               |
-| --- | ---------------------------------------------------- | -------- | ------ | -------------------- |
-| 1   | **Fix Nix Go stdlib corruption**                     | CRITICAL | 15min  | Unblocks everything  |
-| 2   | **Commit Clone benchmarks** (code written, untested) | HIGH     | 1min   | Completes task 12    |
-| 3   | **Run full verification** (lint, test, bench)        | HIGH     | 5min   | Confirms code health |
-| 4   | **Add `Report.All() iter.Seq[Finding]`**             | MEDIUM   | 30min  | Modern Go idiom      |
-| 5   | **Tag v0.1.3 release**                               | MEDIUM   | 2min   | Release management   |
-| 6   | **Fix flaky property test** (seed control)           | MEDIUM   | 30min  | CI reliability       |
-| 7   | **FixApplier unit tests**                            | MEDIUM   | 1hr    | Test quality         |
-| 8   | **Decide on FixStrategyAI** (implement or remove)    | MEDIUM   | 30min  | API honesty          |
-| 9   | **Pre-existing goconst warnings** (2 in sarif/test)  | LOW      | 10min  | Lint perfection      |
-| 10  | **CLI coverage → 70%+**                              | LOW      | 2hr    | Test quality         |
-| 11  | **SARIF parser fuzz test**                           | LOW      | 2hr    | Security             |
-| 12  | **Add `-json` CLI flag**                             | LOW      | 1hr    | Usability            |
-| 13  | **Pipeline godoc examples**                          | LOW      | 1hr    | Documentation        |
-| 14  | **go-sarif evaluation for FromSARIF**                | LOW      | 2hr    | Interoperability     |
-| 15  | **goreleaser for CLI binary**                        | LOW      | 1hr    | Distribution         |
-| 16  | **Benchmark regression in CI**                       | LOW      | 30min  | Performance          |
-| 17  | **Update USAGE_GUIDE.md**                            | LOW      | 30min  | Documentation        |
-| 18  | **ADR for string-based enums**                       | LOW      | 30min  | Knowledge mgmt       |
-| 19  | **Config file support** (#15 in plan)                | LOW      | 3hr    | Usability            |
-| 20  | **Correlate same-tool**                              | LOW      | 1hr    | Feature              |
-| 21  | **Watch mode** (#16 in plan)                         | LOW      | 4hr    | Feature              |
-| 22  | **golangci-lint integration example**                | LOW      | 3hr    | Ecosystem            |
-| 23  | **Version flag via ldflags**                         | LOW      | 30min  | CLI polish           |
-| 24  | **Consider `owenrumney/go-sarif` for parsing**       | LOW      | 2hr    | Dependencies         |
-| 25  | **`Report` immutability** (builder pattern)          | LOW      | 2hr    | API safety           |
+| #  | What                                                 | Priority | Effort | Impact               |
+| -- | ---------------------------------------------------- | -------- | ------ | -------------------- |
+| 1  | **Fix Nix Go stdlib corruption**                     | CRITICAL | 15min  | Unblocks everything  |
+| 2  | **Commit Clone benchmarks** (code written, untested) | HIGH     | 1min   | Completes task 12    |
+| 3  | **Run full verification** (lint, test, bench)        | HIGH     | 5min   | Confirms code health |
+| 4  | **Add `Report.All() iter.Seq[Finding]`**             | MEDIUM   | 30min  | Modern Go idiom      |
+| 5  | **Tag v0.1.3 release**                               | MEDIUM   | 2min   | Release management   |
+| 6  | **Fix flaky property test** (seed control)           | MEDIUM   | 30min  | CI reliability       |
+| 7  | **FixApplier unit tests**                            | MEDIUM   | 1hr    | Test quality         |
+| 8  | **Decide on FixStrategyAI** (implement or remove)    | MEDIUM   | 30min  | API honesty          |
+| 9  | **Pre-existing goconst warnings** (2 in sarif/test)  | LOW      | 10min  | Lint perfection      |
+| 10 | **CLI coverage → 70%+**                              | LOW      | 2hr    | Test quality         |
+| 11 | **SARIF parser fuzz test**                           | LOW      | 2hr    | Security             |
+| 12 | **Add `-json` CLI flag**                             | LOW      | 1hr    | Usability            |
+| 13 | **Pipeline godoc examples**                          | LOW      | 1hr    | Documentation        |
+| 14 | **go-sarif evaluation for FromSARIF**                | LOW      | 2hr    | Interoperability     |
+| 15 | **goreleaser for CLI binary**                        | LOW      | 1hr    | Distribution         |
+| 16 | **Benchmark regression in CI**                       | LOW      | 30min  | Performance          |
+| 17 | **Update USAGE_GUIDE.md**                            | LOW      | 30min  | Documentation        |
+| 18 | **ADR for string-based enums**                       | LOW      | 30min  | Knowledge mgmt       |
+| 19 | **Config file support** (#15 in plan)                | LOW      | 3hr    | Usability            |
+| 20 | **Correlate same-tool**                              | LOW      | 1hr    | Feature              |
+| 21 | **Watch mode** (#16 in plan)                         | LOW      | 4hr    | Feature              |
+| 22 | **golangci-lint integration example**                | LOW      | 3hr    | Ecosystem            |
+| 23 | **Version flag via ldflags**                         | LOW      | 30min  | CLI polish           |
+| 24 | **Consider `owenrumney/go-sarif` for parsing**       | LOW      | 2hr    | Dependencies         |
+| 25 | **`Report` immutability** (builder pattern)          | LOW      | 2hr    | API safety           |
 
 ---
 

@@ -8,14 +8,16 @@
   </head>
   <body class="bg-gray-50 text-gray-900 max-w-6xl mx-auto px-6 py-10">
     <h1 class="text-3xl font-bold mb-2">go-finding — Architecture Review</h1>
-    <p class="text-gray-500 mb-8">2026-06-01 | Codebase: ~27K lines, ~90 Go files, 4 packages</p>
+    <p class="text-gray-500 mb-8">
+      2026-06-01 | Codebase: ~27K lines, ~90 Go files, 4 packages
+    </p>
 
     <h2 class="text-2xl font-semibold mb-4">Overall Assessment</h2>
     <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
       <p class="text-green-800 font-medium">
-        The codebase is in excellent shape. Build passes, tests pass, lint is clean. The
-        architecture is well-layered with clear dependency direction. Issues found are
-        quality-of-life improvements, not structural problems.
+        The codebase is in excellent shape. Build passes, tests pass, lint is
+        clean. The architecture is well-layered with clear dependency direction.
+        Issues found are quality-of-life improvements, not structural problems.
       </p>
     </div>
 
@@ -50,7 +52,9 @@
         <div class="text-3xl font-bold text-red-600">3</div>
         <div class="text-sm text-red-700">Fixed This Session</div>
       </div>
-      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+      <div
+        class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center"
+      >
         <div class="text-3xl font-bold text-yellow-600">8</div>
         <div class="text-sm text-yellow-700">Improvements Made</div>
       </div>
@@ -76,7 +80,8 @@
         </tr>
         <tr>
           <td class="border px-4 py-2">
-            Fixed doc.go stale reference (SuppressionKindInSource → SuppressionInSource)
+            Fixed doc.go stale reference (SuppressionKindInSource →
+            SuppressionInSource)
           </td>
           <td class="border px-4 py-2 text-green-600">Doc bug fix</td>
         </tr>
@@ -97,27 +102,39 @@
           <td class="border px-4 py-2 text-yellow-600">DRY improvement</td>
         </tr>
         <tr>
-          <td class="border px-4 py-2">Unified detector name constants (single source of truth)</td>
+          <td class="border px-4 py-2">
+            Unified detector name constants (single source of truth)
+          </td>
           <td class="border px-4 py-2 text-yellow-600">Split brain fix</td>
         </tr>
         <tr>
-          <td class="border px-4 py-2">Extracted <code>matchesAll</code> filter helper</td>
+          <td class="border px-4 py-2">
+            Extracted <code>matchesAll</code> filter helper
+          </td>
           <td class="border px-4 py-2 text-yellow-600">DRY improvement</td>
         </tr>
         <tr>
-          <td class="border px-4 py-2">DRYed CheckCanceled/CheckCanceledWithMsg</td>
+          <td class="border px-4 py-2">
+            DRYed CheckCanceled/CheckCanceledWithMsg
+          </td>
           <td class="border px-4 py-2 text-yellow-600">DRY improvement</td>
         </tr>
         <tr>
-          <td class="border px-4 py-2">Removed dead code (lineColToOffset, dead detector case)</td>
+          <td class="border px-4 py-2">
+            Removed dead code (lineColToOffset, dead detector case)
+          </td>
           <td class="border px-4 py-2 text-yellow-600">Cleanup</td>
         </tr>
         <tr>
-          <td class="border px-4 py-2">Split pipeline.go (537 → 293+262 lines)</td>
+          <td class="border px-4 py-2">
+            Split pipeline.go (537 → 293+262 lines)
+          </td>
           <td class="border px-4 py-2 text-yellow-600">File size fix</td>
         </tr>
         <tr>
-          <td class="border px-4 py-2">Generated architecture diagrams (D2 → SVG)</td>
+          <td class="border px-4 py-2">
+            Generated architecture diagrams (D2 → SVG)
+          </td>
           <td class="border px-4 py-2 text-blue-600">Documentation</td>
         </tr>
       </tbody>
@@ -129,77 +146,93 @@
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
           <h3 class="font-semibold">1. PipelineResult.Stable → typed enum</h3>
-          <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
+          <span
+            class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
             >Worth exploring</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          <strong>Problem:</strong> <code>Stable bool</code> loses information — false could mean
-          "max iterations" or "cancelled".
+          <strong>Problem:</strong> <code>Stable bool</code> loses information —
+          false could mean "max iterations" or "cancelled".
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Replace with <code>type CompletionReason string</code> with
-          constants <code>ReasonStable</code>, <code>ReasonMaxIterations</code>,
+          <strong>Solution:</strong> Replace with
+          <code>type CompletionReason string</code> with constants
+          <code>ReasonStable</code>, <code>ReasonMaxIterations</code>,
           <code>ReasonCancelled</code>.
         </p>
         <p class="text-sm text-gray-500 mt-1">
-          <strong>Files:</strong> <code>pipeline/result.go</code>, <code>pipeline/pipeline.go</code>
+          <strong>Files:</strong> <code>pipeline/result.go</code>,
+          <code>pipeline/pipeline.go</code>
         </p>
       </div>
 
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
-          <h3 class="font-semibold">2. Extract correlation score from Confidence</h3>
-          <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
+          <h3 class="font-semibold">
+            2. Extract correlation score from Confidence
+          </h3>
+          <span
+            class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
             >Worth exploring</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
           <strong>Problem:</strong> <code>Correlation.Confidence</code> reuses
-          <code>Confidence</code> type for "correlation strength" — different domain concept.
+          <code>Confidence</code> type for "correlation strength" — different
+          domain concept.
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Define <code>type CorrelationScore float64</code> for
-          correlation-specific scoring.
+          <strong>Solution:</strong> Define
+          <code>type CorrelationScore float64</code> for correlation-specific
+          scoring.
         </p>
-        <p class="text-sm text-gray-500 mt-1"><strong>Files:</strong> <code>merge.go</code></p>
+        <p class="text-sm text-gray-500 mt-1">
+          <strong>Files:</strong> <code>merge.go</code>
+        </p>
       </div>
 
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
-          <h3 class="font-semibold">3. Report.Findings public slice mutability</h3>
-          <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm font-medium"
+          <h3 class="font-semibold">
+            3. Report.Findings public slice mutability
+          </h3>
+          <span
+            class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm font-medium"
             >Strong</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          <strong>Problem:</strong> <code>Report.Findings</code> is a public slice — external code
-          can bypass mutex and corrupt state.
+          <strong>Problem:</strong> <code>Report.Findings</code> is a public
+          slice — external code can bypass mutex and corrupt state.
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Make <code>findings</code> unexported. Provide
-          <code>All()</code> iterator, <code>FindByID()</code>, <code>AddFinding()</code> as the
-          only access paths.
+          <strong>Solution:</strong> Make <code>findings</code> unexported.
+          Provide <code>All()</code> iterator, <code>FindByID()</code>,
+          <code>AddFinding()</code> as the only access paths.
         </p>
         <p class="text-sm text-gray-500 mt-1">
-          <strong>Files:</strong> <code>report.go</code> — breaking change, requires migration
+          <strong>Files:</strong> <code>report.go</code> — breaking change,
+          requires migration
         </p>
       </div>
 
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
           <h3 class="font-semibold">4. FixStrategyAI — commit or remove</h3>
-          <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
+          <span
+            class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
             >Worth exploring</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          <strong>Problem:</strong> <code>FixStrategyAI</code> and <code>NeedsAI()</code> are
-          published API with zero backend — vapor surface.
+          <strong>Problem:</strong> <code>FixStrategyAI</code> and
+          <code>NeedsAI()</code> are published API with zero backend — vapor
+          surface.
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Either implement the AI integration or remove the constant.
-          YAGNI until there's a consumer.
+          <strong>Solution:</strong> Either implement the AI integration or
+          remove the constant. YAGNI until there's a consumer.
         </p>
         <p class="text-sm text-gray-500 mt-1">
           <strong>Files:</strong> <code>fix_strategy.go</code>
@@ -209,17 +242,20 @@
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
           <h3 class="font-semibold">5. FileBackup TOCTOU in Backup()</h3>
-          <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
+          <span
+            class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
             >Worth exploring</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          <strong>Problem:</strong> <code>Backup()</code> calls <code>os.ReadFile</code> then
-          <code>os.Stat</code> — file can change between calls.
+          <strong>Problem:</strong> <code>Backup()</code> calls
+          <code>os.ReadFile</code> then <code>os.Stat</code> — file can change
+          between calls.
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Use <code>os.Open</code> + <code>file.Stat()</code> +
-          <code>io.ReadAll</code> from single file handle.
+          <strong>Solution:</strong> Use <code>os.Open</code> +
+          <code>file.Stat()</code> + <code>io.ReadAll</code> from single file
+          handle.
         </p>
         <p class="text-sm text-gray-500 mt-1">
           <strong>Files:</strong> <code>pipeline/file_backup.go</code>
@@ -228,19 +264,22 @@
 
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
-          <h3 class="font-semibold">6. Tag/Category overlap — split brain risk</h3>
-          <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
+          <h3 class="font-semibold">
+            6. Tag/Category overlap — split brain risk
+          </h3>
+          <span
+            class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
             >Speculative</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
           <strong>Problem:</strong> <code>TagSecurity</code> and
-          <code>CategorySecurity</code> represent the same concept in two type systems with no
-          structural link.
+          <code>CategorySecurity</code> represent the same concept in two type
+          systems with no structural link.
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Document the relationship or merge into a single taxonomy where
-          Tags are a superset.
+          <strong>Solution:</strong> Document the relationship or merge into a
+          single taxonomy where Tags are a superset.
         </p>
         <p class="text-sm text-gray-500 mt-1">
           <strong>Files:</strong> <code>tag.go</code>, <code>category.go</code>
@@ -250,55 +289,65 @@
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
           <h3 class="font-semibold">7. Position.IsValid allows Line=0</h3>
-          <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
+          <span
+            class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
             >Speculative</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          <strong>Problem:</strong> <code>IsValid()</code> only requires File + non-negative
-          Line/Column, but Line=0 is "not set" — a position with just a file is considered "valid".
+          <strong>Problem:</strong> <code>IsValid()</code> only requires File +
+          non-negative Line/Column, but Line=0 is "not set" — a position with
+          just a file is considered "valid".
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Consider renaming to <code>HasFile()</code> and making
-          <code>IsValid()</code> require <code>HasLocation()</code>.
+          <strong>Solution:</strong> Consider renaming to
+          <code>HasFile()</code> and making <code>IsValid()</code> require
+          <code>HasLocation()</code>.
         </p>
-        <p class="text-sm text-gray-500 mt-1"><strong>Files:</strong> <code>position.go</code></p>
+        <p class="text-sm text-gray-500 mt-1">
+          <strong>Files:</strong> <code>position.go</code>
+        </p>
       </div>
 
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
           <h3 class="font-semibold">8. SARIF Metadata namespace collision</h3>
-          <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
+          <span
+            class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
             >Worth exploring</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          <strong>Problem:</strong> Export dumps user <code>Metadata</code> into SARIF properties
-          without prefix — could collide with <code>go-finding/*</code> keys.
+          <strong>Problem:</strong> Export dumps user <code>Metadata</code> into
+          SARIF properties without prefix — could collide with
+          <code>go-finding/*</code> keys.
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Prefix user metadata with <code>go-finding/meta/*</code> on
-          export.
+          <strong>Solution:</strong> Prefix user metadata with
+          <code>go-finding/meta/*</code> on export.
         </p>
         <p class="text-sm text-gray-500 mt-1">
-          <strong>Files:</strong> <code>sarif_export.go</code>, <code>sarif_import.go</code>
+          <strong>Files:</strong> <code>sarif_export.go</code>,
+          <code>sarif_import.go</code>
         </p>
       </div>
 
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
           <h3 class="font-semibold">9. CLI format string unvalidated</h3>
-          <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
+          <span
+            class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
             >Worth exploring</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          <strong>Problem:</strong> CLI <code>-format</code> flag is a raw string — unknown formats
-          silently fall through to text.
+          <strong>Problem:</strong> CLI <code>-format</code> flag is a raw
+          string — unknown formats silently fall through to text.
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Define <code>type OutputFormat string</code> with constants,
-          validate in flag parsing, error on unknown.
+          <strong>Solution:</strong> Define
+          <code>type OutputFormat string</code> with constants, validate in flag
+          parsing, error on unknown.
         </p>
         <p class="text-sm text-gray-500 mt-1">
           <strong>Files:</strong> <code>cmd/go-finding/main.go</code>,
@@ -309,16 +358,18 @@
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
           <h3 class="font-semibold">10. Batch metrics recording</h3>
-          <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
+          <span
+            class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
             >Speculative</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          <strong>Problem:</strong> <code>applyDirectFixes</code> calls <code>RecordFix()</code> N
-          times in a loop — N mutex acquisitions.
+          <strong>Problem:</strong> <code>applyDirectFixes</code> calls
+          <code>RecordFix()</code> N times in a loop — N mutex acquisitions.
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Add <code>RecordFixes(n int)</code> batch method.
+          <strong>Solution:</strong> Add <code>RecordFixes(n int)</code> batch
+          method.
         </p>
         <p class="text-sm text-gray-500 mt-1">
           <strong>Files:</strong> <code>pipeline/metrics.go</code>,
@@ -328,8 +379,11 @@
 
       <div class="bg-white border rounded-lg p-4">
         <div class="flex justify-between items-start">
-          <h3 class="font-semibold">11. Merge free function vs Report.Merge method</h3>
-          <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
+          <h3 class="font-semibold">
+            11. Merge free function vs Report.Merge method
+          </h3>
+          <span
+            class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
             >Speculative</span
           >
         </div>
@@ -339,8 +393,8 @@
           <code>Report.Merge(other)</code> concatenates without dedup.
         </p>
         <p class="text-sm text-gray-600">
-          <strong>Solution:</strong> Rename free function to <code>Combine</code> or
-          <code>Union</code>.
+          <strong>Solution:</strong> Rename free function to
+          <code>Combine</code> or <code>Union</code>.
         </p>
         <p class="text-sm text-gray-500 mt-1">
           <strong>Files:</strong> <code>merge.go</code>, <code>report.go</code>
@@ -352,17 +406,20 @@
           <h3 class="font-semibold">
             12. GeneratedFilter missing context cancellation in hot loop
           </h3>
-          <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
+          <span
+            class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium"
             >Worth exploring</span
           >
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          <strong>Problem:</strong> <code>GeneratedFileFilter.Process()</code> checks context only
-          via slog, not for cancellation — can't abort mid-filter.
+          <strong>Problem:</strong>
+          <code>GeneratedFileFilter.Process()</code> checks context only via
+          slog, not for cancellation — can't abort mid-filter.
         </p>
         <p class="text-sm text-gray-600">
           <strong>Solution:</strong> Add
-          <code>if ctx.Err() != nil { return nil, ctx.Err() }</code> in the per-finding loop.
+          <code>if ctx.Err() != nil { return nil, ctx.Err() }</code> in the
+          per-finding loop.
         </p>
         <p class="text-sm text-gray-500 mt-1">
           <strong>Files:</strong> <code>pipeline/generated_filter.go</code>
@@ -373,20 +430,21 @@
     <h2 class="text-2xl font-semibold mt-8 mb-4">Modularization Assessment</h2>
     <div class="bg-white border rounded-lg p-4 mb-6">
       <p class="text-sm">
-        <strong>Recommendation: Do NOT modularize.</strong> The project has 4 packages, ~27K lines,
-        is a library (not an application), and the root package is the core type system that
-        everything else depends on. Modularization would add overhead with no clear benefit. The
-        "When NOT to Modularize" criteria score: 3+ High signals (small project, no external
-        consumers, all packages change together).
+        <strong>Recommendation: Do NOT modularize.</strong> The project has 4
+        packages, ~27K lines, is a library (not an application), and the root
+        package is the core type system that everything else depends on.
+        Modularization would add overhead with no clear benefit. The "When NOT
+        to Modularize" criteria score: 3+ High signals (small project, no
+        external consumers, all packages change together).
       </p>
     </div>
 
     <h2 class="text-2xl font-semibold mt-8 mb-4">Top Recommendation</h2>
     <div class="bg-green-50 border border-green-200 rounded-lg p-4">
       <p class="text-green-800 font-medium">
-        Tackle #3 (Report.Findings encapsulation) first — it's the only remaining design flaw that
-        could cause real bugs in production. The rest are quality-of-life improvements that can be
-        addressed incrementally.
+        Tackle #3 (Report.Findings encapsulation) first — it's the only
+        remaining design flaw that could cause real bugs in production. The rest
+        are quality-of-life improvements that can be addressed incrementally.
       </p>
     </div>
   </body>

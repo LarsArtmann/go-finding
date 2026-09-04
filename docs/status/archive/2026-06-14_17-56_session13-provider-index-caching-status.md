@@ -199,7 +199,7 @@ The codebase is in excellent shape:
 20. **FixProvider authoring guide** — Dedicated `docs/guides/fix-providers.md`.
 21. **Benchmark `MergeIter` vs `Combine`** — Verify streaming advantage for large inputs.
 22. **Add `IntervalIndex` benchmarks** — Currently only exercised through `Correlate`.
-23. **Evaluate ` arena` experimental allocation** — When Go arena proposal lands.
+23. **Evaluate `arena` experimental allocation** — When Go arena proposal lands.
 24. **SubstringProvider Boyer-Moore** — If domain providers aren't viable for some languages.
 25. **Performance analysis HTML update** — `docs/research/performance-analysis.html` has Session 12 numbers; update with Session 13 results.
 

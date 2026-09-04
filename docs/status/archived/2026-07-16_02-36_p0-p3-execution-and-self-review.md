@@ -240,9 +240,9 @@ The Quick Start examples in USAGE_GUIDE.md and integration-guide.md use `Rule: "
 | `GOEXPERIMENT=jsonv2 go build ./...`               | ✅ PASS          | All 4 modules                             |
 | `GOEXPERIMENT=jsonv2 go test -race -count=1 ./...` | ✅ PASS          | 10/10 modules green                       |
 | `golangci-lint run ./...` (per module)             | ✅ PASS          | 0 issues on all 4 modules                 |
-| `nix run .#lint`                                   | ⏭️ SKIPPED       | Used golangci-lint directly               |
-| BuildFlow pre-commit                               | ⚠️ 26/27         | Scoring artifact — golangci-lint is clean |
-| Git working tree                                   | ⚠️ DIRTY         | 59 files uncommitted                      |
+| `nix run .#lint`                                   | ⏭️ SKIPPED        | Used golangci-lint directly               |
+| BuildFlow pre-commit                               | ⚠️ 26/27          | Scoring artifact — golangci-lint is clean |
+| Git working tree                                   | ⚠️ DIRTY          | 59 files uncommitted                      |
 | Git committed                                      | ❌ NOT COMMITTED | Zero commits this session                 |
 
 ---

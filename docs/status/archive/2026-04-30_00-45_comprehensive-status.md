@@ -1,8 +1,8 @@
 # Comprehensive Status Report — 2026-04-30 00:45
 
-**Session:** Hardening, API Stability & Flakiness Elimination  
-**Branch:** master (up to date with origin)  
-**State:** All tests pass including `-count=20` stress test. Lint clean.  
+**Session:** Hardening, API Stability & Flakiness Elimination\
+**Branch:** master (up to date with origin)\
+**State:** All tests pass including `-count=20` stress test. Lint clean.\
 **Coverage:** 95.2% total
 
 ---
@@ -169,33 +169,33 @@ I made the `HasFix()` change autonomously, treating it as a straightforward bug 
 
 ## F) Top #25 Things To Do Next
 
-| #   | Task                                                            | Impact       | Effort | Status              |
-| --- | --------------------------------------------------------------- | ------------ | ------ | ------------------- |
-| 1   | **Decide `FixStrategyAI` fate** (remove / implement / document) | **Critical** | 30min  | Needs user decision |
-| 2   | **Add `-race` to CI workflow**                                  | **Critical** | 15min  | Not started         |
-| 3   | **Delete stale status report**                                  | **Critical** | 2min   | Not started         |
-| 4   | Add `RetryConfig.Validate` edge-case tests                      | High         | 20min  | Not started         |
-| 5   | Add `Verifier.Verify` error-path tests                          | High         | 20min  | Not started         |
-| 6   | Fix flaky `TestProperty_IDRoundTrip`                            | High         | 30min  | Not started         |
-| 7   | Add `partial.go` metrics recording during failures              | Med          | 30min  | Not started         |
-| 8   | `DeduplicateByPosition` vs `DeduplicateByRule` diff test        | Low          | 15min  | Not started         |
-| 9   | Add `-count=100` stress test to CI                              | Med          | 15min  | Not started         |
-| 10  | Remove `hasLineRange` dead code or justify it                   | Med          | 10min  | Not started         |
-| 11  | Add per-package coverage thresholds to CI                       | Med          | 20min  | Not started         |
-| 12  | API stability review before v1.0.0                              | High         | 120min | Not started         |
-| 13  | Add `go:generate stringer` for enums                            | Low          | 30min  | Deferred            |
-| 14  | Modernize to Go 1.21+ stdlib throughout                         | Low          | 45min  | Not started         |
-| 15  | Convert `retry.go` `errors.New()` to sentinels                  | Low          | 15min  | Not started         |
-| 16  | Document SARIF round-trip losses                                | Low          | 30min  | Not started         |
-| 17  | Profile memory allocation hotspots                              | Med          | 60min  | Baseline captured   |
-| 18  | Benchmark regression tracking in CI                             | Med          | 30min  | Not started         |
-| 19  | Add `gosec`/`staticcheck` to CI                                 | Med          | 20min  | Not started         |
-| 20  | GitHub release workflow + GoReleaser                            | Med          | 45min  | Not started         |
-| 21  | Real-world tool integration guide                               | Med          | 60min  | Not started         |
-| 22  | Remove stale `//nolint` directives                              | Low          | 30min  | Not started         |
-| 23  | `Finding` struct sub-grouping                                   | High         | 90min  | Breaking change     |
-| 24  | Replace hardcoded `SeverityWarning` in diagnostic.go            | Low          | 15min  | Not started         |
-| 25  | Contribution guidelines review                                  | Low          | 30min  | Not started         |
+| #  | Task                                                            | Impact       | Effort | Status              |
+| -- | --------------------------------------------------------------- | ------------ | ------ | ------------------- |
+| 1  | **Decide `FixStrategyAI` fate** (remove / implement / document) | **Critical** | 30min  | Needs user decision |
+| 2  | **Add `-race` to CI workflow**                                  | **Critical** | 15min  | Not started         |
+| 3  | **Delete stale status report**                                  | **Critical** | 2min   | Not started         |
+| 4  | Add `RetryConfig.Validate` edge-case tests                      | High         | 20min  | Not started         |
+| 5  | Add `Verifier.Verify` error-path tests                          | High         | 20min  | Not started         |
+| 6  | Fix flaky `TestProperty_IDRoundTrip`                            | High         | 30min  | Not started         |
+| 7  | Add `partial.go` metrics recording during failures              | Med          | 30min  | Not started         |
+| 8  | `DeduplicateByPosition` vs `DeduplicateByRule` diff test        | Low          | 15min  | Not started         |
+| 9  | Add `-count=100` stress test to CI                              | Med          | 15min  | Not started         |
+| 10 | Remove `hasLineRange` dead code or justify it                   | Med          | 10min  | Not started         |
+| 11 | Add per-package coverage thresholds to CI                       | Med          | 20min  | Not started         |
+| 12 | API stability review before v1.0.0                              | High         | 120min | Not started         |
+| 13 | Add `go:generate stringer` for enums                            | Low          | 30min  | Deferred            |
+| 14 | Modernize to Go 1.21+ stdlib throughout                         | Low          | 45min  | Not started         |
+| 15 | Convert `retry.go` `errors.New()` to sentinels                  | Low          | 15min  | Not started         |
+| 16 | Document SARIF round-trip losses                                | Low          | 30min  | Not started         |
+| 17 | Profile memory allocation hotspots                              | Med          | 60min  | Baseline captured   |
+| 18 | Benchmark regression tracking in CI                             | Med          | 30min  | Not started         |
+| 19 | Add `gosec`/`staticcheck` to CI                                 | Med          | 20min  | Not started         |
+| 20 | GitHub release workflow + GoReleaser                            | Med          | 45min  | Not started         |
+| 21 | Real-world tool integration guide                               | Med          | 60min  | Not started         |
+| 22 | Remove stale `//nolint` directives                              | Low          | 30min  | Not started         |
+| 23 | `Finding` struct sub-grouping                                   | High         | 90min  | Breaking change     |
+| 24 | Replace hardcoded `SeverityWarning` in diagnostic.go            | Low          | 15min  | Not started         |
+| 25 | Contribution guidelines review                                  | Low          | 30min  | Not started         |
 
 ---
 

@@ -128,11 +128,11 @@ pipeline coverage targets were exceeded.
 
 ### Integration Tests (High Value, Now Partially Done)
 
-| #   | What                                         | Why It Matters       |
-| --- | -------------------------------------------- | -------------------- |
-| 14  | ConfigFile → ResolveDetectors → Pipeline.Run | ✅ Done this session |
-| 15  | DetectorRegistry → Build → Pipeline.Run      | ✅ Done this session |
-| 17  | Type alias backward compat                   | ✅ Done this session |
+| #  | What                                         | Why It Matters       |
+| -- | -------------------------------------------- | -------------------- |
+| 14 | ConfigFile → ResolveDetectors → Pipeline.Run | ✅ Done this session |
+| 15 | DetectorRegistry → Build → Pipeline.Run      | ✅ Done this session |
+| 17 | Type alias backward compat                   | ✅ Done this session |
 
 ### v1.0.0 Release Preparation
 
@@ -186,43 +186,43 @@ Sorted by **impact / effort ratio** (highest first).
 
 ### Tier A: High Impact, Low Effort (Do First)
 
-| #   | Task                                                            | Impact   | Effort   | Why                                                               |
-| --- | --------------------------------------------------------------- | -------- | -------- | ----------------------------------------------------------------- |
-| 1   | **Resolve Position zero-value semantics** (OWNER DECISION)      | Critical | Decision | Blocks v1.0.0; affects every type. Pick `-1` sentinel and commit. |
-| 2   | **Normalize FixStrategy "" → FixStrategyNone** (OWNER DECISION) | High     | Decision | Two "no fix" states is a type smell; trivial once decided.        |
-| 3   | **Unexport Report.Findings** (OWNER DECISION)                   | High     | Decision | Migration path done; encapsulates the mutex.                      |
-| 4   | **Cut v0.8.0 or v1.0.0 release**                                | High     | 30min    | 20+ commits since v0.6.1; CHANGELOG and GoReleaser ready.         |
-| 5   | **Refresh USAGE_GUIDE.md for v0.7.0+**                          | Medium   | 30min    | Missing new features.                                             |
-| 6   | **Improve pipeline/goast test coverage 80.8% → 90%+**           | Medium   | 1hr      | Lowest coverage package.                                          |
-| 7   | **Run a full brutal self-review before v1.0.0**                 | High     | 1hr      | Catch remaining ghost systems / split brains.                     |
-| 8   | **Add more SubstringProvider property tests**                   | Low      | 30min    | Column disambiguation needs randomized coverage.                  |
-| 9   | **Fuzz LineShiftMap**                                           | Low      | 30min    | Random edits + positions to catch shift bugs.                     |
-| 10  | **Add E2E CLI test for `-fix-provider go-ast`**                 | Medium   | 1hr      | Verify CLI fix provider wiring end-to-end.                        |
+| #  | Task                                                            | Impact   | Effort   | Why                                                               |
+| -- | --------------------------------------------------------------- | -------- | -------- | ----------------------------------------------------------------- |
+| 1  | **Resolve Position zero-value semantics** (OWNER DECISION)      | Critical | Decision | Blocks v1.0.0; affects every type. Pick `-1` sentinel and commit. |
+| 2  | **Normalize FixStrategy "" → FixStrategyNone** (OWNER DECISION) | High     | Decision | Two "no fix" states is a type smell; trivial once decided.        |
+| 3  | **Unexport Report.Findings** (OWNER DECISION)                   | High     | Decision | Migration path done; encapsulates the mutex.                      |
+| 4  | **Cut v0.8.0 or v1.0.0 release**                                | High     | 30min    | 20+ commits since v0.6.1; CHANGELOG and GoReleaser ready.         |
+| 5  | **Refresh USAGE_GUIDE.md for v0.7.0+**                          | Medium   | 30min    | Missing new features.                                             |
+| 6  | **Improve pipeline/goast test coverage 80.8% → 90%+**           | Medium   | 1hr      | Lowest coverage package.                                          |
+| 7  | **Run a full brutal self-review before v1.0.0**                 | High     | 1hr      | Catch remaining ghost systems / split brains.                     |
+| 8  | **Add more SubstringProvider property tests**                   | Low      | 30min    | Column disambiguation needs randomized coverage.                  |
+| 9  | **Fuzz LineShiftMap**                                           | Low      | 30min    | Random edits + positions to catch shift bugs.                     |
+| 10 | **Add E2E CLI test for `-fix-provider go-ast`**                 | Medium   | 1hr      | Verify CLI fix provider wiring end-to-end.                        |
 
 ### Tier B: Medium Impact, Medium Effort
 
-| #   | Task                                                             | Impact | Effort   | Why                                                                              |
-| --- | ---------------------------------------------------------------- | ------ | -------- | -------------------------------------------------------------------------------- |
-| 11  | **Add named string types** (`ToolName`, `RuleName`, `FindingID`) | Medium | 2hr      | Prevents parameter mixing at call sites; breaking change.                        |
-| 12  | **Add `FindingID` typed constructor + validation**               | Medium | 1hr      | Stronger ID semantics.                                                           |
-| 13  | **Correlate spatial-index optimization**                         | Medium | 2hr      | Replace O(k²) worst case with proper index.                                      |
-| 14  | **Add JSON schema validation CI check**                          | Medium | 30min    | Ensure schemas stay in sync with code.                                           |
-| 15  | **Benchmark baseline update + commit**                           | Low    | 15min    | `benchmarks/baseline.txt` currently absent; needed for CI gate to be meaningful. |
-| 16  | **Add `-count=5` stress to pre-commit BuildFlow**                | Medium | 15min    | Catch flaky races earlier.                                                       |
-| 17  | **Document fix provider authoring with GoASTProvider example**   | Medium | 30min    | Improve `docs/guides/fix-providers.md`.                                          |
-| 18  | **Add property test for MergeIter deduplication**                | Low    | 30min    | Streaming correctness under random inputs.                                       |
-| 19  | **Add fuzz target for ConfigFile parsing**                       | Low    | 30min    | Random JSON configs.                                                             |
-| 20  | **Re-evaluate `FixStrategyAI`** — keep reserved or remove?       | Low    | Decision | Already decided KEEP; document this once more in ADR.                            |
+| #  | Task                                                             | Impact | Effort   | Why                                                                              |
+| -- | ---------------------------------------------------------------- | ------ | -------- | -------------------------------------------------------------------------------- |
+| 11 | **Add named string types** (`ToolName`, `RuleName`, `FindingID`) | Medium | 2hr      | Prevents parameter mixing at call sites; breaking change.                        |
+| 12 | **Add `FindingID` typed constructor + validation**               | Medium | 1hr      | Stronger ID semantics.                                                           |
+| 13 | **Correlate spatial-index optimization**                         | Medium | 2hr      | Replace O(k²) worst case with proper index.                                      |
+| 14 | **Add JSON schema validation CI check**                          | Medium | 30min    | Ensure schemas stay in sync with code.                                           |
+| 15 | **Benchmark baseline update + commit**                           | Low    | 15min    | `benchmarks/baseline.txt` currently absent; needed for CI gate to be meaningful. |
+| 16 | **Add `-count=5` stress to pre-commit BuildFlow**                | Medium | 15min    | Catch flaky races earlier.                                                       |
+| 17 | **Document fix provider authoring with GoASTProvider example**   | Medium | 30min    | Improve `docs/guides/fix-providers.md`.                                          |
+| 18 | **Add property test for MergeIter deduplication**                | Low    | 30min    | Streaming correctness under random inputs.                                       |
+| 19 | **Add fuzz target for ConfigFile parsing**                       | Low    | 30min    | Random JSON configs.                                                             |
+| 20 | **Re-evaluate `FixStrategyAI`** — keep reserved or remove?       | Low    | Decision | Already decided KEEP; document this once more in ADR.                            |
 
 ### Tier C: Lower Priority / Blocked
 
-| #   | Task                                        | Impact | Effort   | Why                                             |
-| --- | ------------------------------------------- | ------ | -------- | ----------------------------------------------- |
-| 21  | **SARIF 2.2 support evaluation**            | Low    | 2hr      | Not needed now; revisit if consumers demand it. |
-| 22  | **GoReleaser cosign signing verification**  | Low    | 1hr      | Nice-to-have for supply chain.                  |
-| 23  | **Add .github/FUNDING.yml**                 | Low    | 15min    | GitHub sponsorship metadata.                    |
-| 24  | **Add issue templates**                     | Low    | 30min    | Standardize bug reports / feature requests.     |
-| 25  | **Evaluate nix flake migration completion** | Low    | Decision | Current flake.nix works; revisit if needed.     |
+| #  | Task                                        | Impact | Effort   | Why                                             |
+| -- | ------------------------------------------- | ------ | -------- | ----------------------------------------------- |
+| 21 | **SARIF 2.2 support evaluation**            | Low    | 2hr      | Not needed now; revisit if consumers demand it. |
+| 22 | **GoReleaser cosign signing verification**  | Low    | 1hr      | Nice-to-have for supply chain.                  |
+| 23 | **Add .github/FUNDING.yml**                 | Low    | 15min    | GitHub sponsorship metadata.                    |
+| 24 | **Add issue templates**                     | Low    | 30min    | Standardize bug reports / feature requests.     |
+| 25 | **Evaluate nix flake migration completion** | Low    | Decision | Current flake.nix works; revisit if needed.     |
 
 ---
 

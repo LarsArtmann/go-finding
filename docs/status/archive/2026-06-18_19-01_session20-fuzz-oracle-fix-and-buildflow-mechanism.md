@@ -171,33 +171,33 @@ Four consecutive commits churned `go.sum`, and it is **still drifting** in the w
 
 Sorted by impact. Items marked **NEW** or **unblocked** reflect this session's findings.
 
-| #   | Task                                                                  | Impact   | Effort | Note                             |
-| --- | --------------------------------------------------------------------- | -------- | ------ | -------------------------------- |
-| 1   | **Add `scripts/fuzz-check.sh`** (clean-cache, per-target diagnostics) | Critical | 30min  | Kills the ambiguity fuckup (d.1) |
-| 2   | **Audit all 23 fuzz oracles** for empty/zero assumptions              | Critical | 1hr    | Prevents next hidden oracle bug  |
-| 3   | Add CI fuzz job to `ci.yml` (exact command now known)                 | High     | 30min  | **Unblocked this session**       |
-| 4   | Fix 3 lint issues (gocyclo `Validate`, `varnamelen` `fs`/`rt`)        | High     | 20min  | Unblocks "lint clean"            |
-| 5   | Stabilize go.sum (one tidy, one commit, investigate drift)            | High     | 30min  | Stops the ping-pong (d.5)        |
-| 6   | Document `-fuzz` regex+cache behavior in CONTRIBUTING.md              | Medium   | 15min  | Prevents misdiagnosis recurrence |
-| 7   | Update FEATURES.md with v0.9.0 changes                                | High     | 30min  | Carryover                        |
-| 8   | Update README.md for v0.9.0                                           | High     | 30min  | Carryover                        |
-| 9   | Named string types: `ToolName`, `RuleName`, `FindingID`               | High     | 2hr    | Carryover                        |
-| 10  | v1.0.0: remove 7 deprecated APIs                                      | Critical | 2hr    | Carryover                        |
-| 11  | v1.0.0: unexport `Report.Findings`                                    | High     | 1hr    | Carryover                        |
-| 12  | Cut v1.0.0 tag                                                        | Critical | 1hr    | Carryover                        |
-| 13  | Add godoc examples: `Normalized`, `WithFix`                           | Medium   | 30min  | Carryover                        |
-| 14  | Complete CLI FixProviders config                                      | Medium   | 2hr    | Carryover                        |
-| 15  | Integration test: full pipeline with split-brain fixes                | Medium   | 1hr    | Carryover                        |
-| 16  | Restart/fix golangci-lint LSP (phantom warnings)                      | Low      | 15min  | (d.4)                            |
-| 17  | Summary.ByTag map                                                     | Medium   | 30min  | Carryover                        |
-| 18  | Benchmark regression check vs baseline                                | Medium   | 1hr    | Carryover                        |
-| 19  | Property test: `HasFix ⊇ IsAutoFixable`                               | Medium   | 15min  | Carryover                        |
-| 20  | LineShiftMap Range/Column completeness                                | Medium   | 1hr    | Carryover                        |
-| 21  | SubstringProvider nearest-position heuristic                          | Medium   | 1hr    | Carryover                        |
-| 22  | Update USAGE_GUIDE.md                                                 | Medium   | 1hr    | Carryover                        |
-| 23  | slices.Collect modernization pass                                     | Low      | 1hr    | Carryover                        |
-| 24  | Position as value object refactor                                     | High     | 4hr    | Carryover (v2)                   |
-| 25  | Explore sync.Pool for line offset index                               | Low      | 2hr    | Carryover                        |
+| #  | Task                                                                  | Impact   | Effort | Note                             |
+| -- | --------------------------------------------------------------------- | -------- | ------ | -------------------------------- |
+| 1  | **Add `scripts/fuzz-check.sh`** (clean-cache, per-target diagnostics) | Critical | 30min  | Kills the ambiguity fuckup (d.1) |
+| 2  | **Audit all 23 fuzz oracles** for empty/zero assumptions              | Critical | 1hr    | Prevents next hidden oracle bug  |
+| 3  | Add CI fuzz job to `ci.yml` (exact command now known)                 | High     | 30min  | **Unblocked this session**       |
+| 4  | Fix 3 lint issues (gocyclo `Validate`, `varnamelen` `fs`/`rt`)        | High     | 20min  | Unblocks "lint clean"            |
+| 5  | Stabilize go.sum (one tidy, one commit, investigate drift)            | High     | 30min  | Stops the ping-pong (d.5)        |
+| 6  | Document `-fuzz` regex+cache behavior in CONTRIBUTING.md              | Medium   | 15min  | Prevents misdiagnosis recurrence |
+| 7  | Update FEATURES.md with v0.9.0 changes                                | High     | 30min  | Carryover                        |
+| 8  | Update README.md for v0.9.0                                           | High     | 30min  | Carryover                        |
+| 9  | Named string types: `ToolName`, `RuleName`, `FindingID`               | High     | 2hr    | Carryover                        |
+| 10 | v1.0.0: remove 7 deprecated APIs                                      | Critical | 2hr    | Carryover                        |
+| 11 | v1.0.0: unexport `Report.Findings`                                    | High     | 1hr    | Carryover                        |
+| 12 | Cut v1.0.0 tag                                                        | Critical | 1hr    | Carryover                        |
+| 13 | Add godoc examples: `Normalized`, `WithFix`                           | Medium   | 30min  | Carryover                        |
+| 14 | Complete CLI FixProviders config                                      | Medium   | 2hr    | Carryover                        |
+| 15 | Integration test: full pipeline with split-brain fixes                | Medium   | 1hr    | Carryover                        |
+| 16 | Restart/fix golangci-lint LSP (phantom warnings)                      | Low      | 15min  | (d.4)                            |
+| 17 | Summary.ByTag map                                                     | Medium   | 30min  | Carryover                        |
+| 18 | Benchmark regression check vs baseline                                | Medium   | 1hr    | Carryover                        |
+| 19 | Property test: `HasFix ⊇ IsAutoFixable`                               | Medium   | 15min  | Carryover                        |
+| 20 | LineShiftMap Range/Column completeness                                | Medium   | 1hr    | Carryover                        |
+| 21 | SubstringProvider nearest-position heuristic                          | Medium   | 1hr    | Carryover                        |
+| 22 | Update USAGE_GUIDE.md                                                 | Medium   | 1hr    | Carryover                        |
+| 23 | slices.Collect modernization pass                                     | Low      | 1hr    | Carryover                        |
+| 24 | Position as value object refactor                                     | High     | 4hr    | Carryover (v2)                   |
+| 25 | Explore sync.Pool for line offset index                               | Low      | 2hr    | Carryover                        |
 
 ---
 

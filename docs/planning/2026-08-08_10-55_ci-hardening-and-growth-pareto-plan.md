@@ -17,17 +17,17 @@ The project has 22 known consumers (14 with Go code), is API-stable since v1.0.0
 
 ### The 1% that delivers 51%
 
-| #   | Task                              | Why it's the 1%                                                                                                                                                                                                                                                                         |
-| --- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P1  | **Wire 4 CI scripts into ci.yml** | The scripts exist, pass, and protect the multi-module architecture (replace directives, version drift, test naming, workspace sync). They are DEAD until wired. Adding 4 job blocks to existing YAML = instant automated quality gates. ~20 min for 51% of the structural safety value. |
+| #  | Task                              | Why it's the 1%                                                                                                                                                                                                                                                                         |
+| -- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1 | **Wire 4 CI scripts into ci.yml** | The scripts exist, pass, and protect the multi-module architecture (replace directives, version drift, test naming, workspace sync). They are DEAD until wired. Adding 4 job blocks to existing YAML = instant automated quality gates. ~20 min for 51% of the structural safety value. |
 
 ### The 4% that delivers 64%
 
-| #   | Task                                          | Why it's in the 4%                                                                                                                                                                    |
-| --- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P2  | **CHANGELOG entry for unreleased work**       | The FlightRecorder config-file integration, CI scripts, TOCTOU tests, and LSP benchmarks have NO CHANGELOG entry. Without it, the next release (v1.5.1 or v1.6.0) cannot happen.      |
-| P3  | **AGENTS.md updates (3 new gotchas)**         | Every future AI session starts confused without these. The new `FlightRecorderFileConfig`, `ResolveFlightRecorder()`, config-file fallback, and CI scripts are invisible to sessions. |
-| P4  | **Fix session debt (test + doc.go + script)** | Missing CLI validation test, doc.go godoc-unfriendly path, version-drift.sh grep imprecision. Quick fixes that prevent false confidence.                                              |
+| #  | Task                                          | Why it's in the 4%                                                                                                                                                                    |
+| -- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P2 | **CHANGELOG entry for unreleased work**       | The FlightRecorder config-file integration, CI scripts, TOCTOU tests, and LSP benchmarks have NO CHANGELOG entry. Without it, the next release (v1.5.1 or v1.6.0) cannot happen.      |
+| P3 | **AGENTS.md updates (3 new gotchas)**         | Every future AI session starts confused without these. The new `FlightRecorderFileConfig`, `ResolveFlightRecorder()`, config-file fallback, and CI scripts are invisible to sessions. |
+| P4 | **Fix session debt (test + doc.go + script)** | Missing CLI validation test, doc.go godoc-unfriendly path, version-drift.sh grep imprecision. Quick fixes that prevent false confidence.                                              |
 
 ### The 20% that delivers 80%
 

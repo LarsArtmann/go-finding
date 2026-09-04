@@ -324,33 +324,33 @@ The codebase itself is clean. No broken tests, no known bugs, no data loss risks
 
 Priority-ordered. T = estimated time. **Bold = recommended for next session.**
 
-| #   | Task                                                    | T     | Impact    | Risk |
-| --- | ------------------------------------------------------- | ----- | --------- | ---- |
-| 1   | **Push HEAD to origin** (1 commit ahead)                | 1min  | hygiene   | none |
-| 2   | **Tag v0.1.3 release**                                  | 2min  | hygiene   | none |
-| 3   | **Delete stale planning docs**                          | 5min  | cleanup   | none |
-| 4   | **Archive old status reports** (keep latest 3)          | 5min  | cleanup   | none |
-| 5   | **Add `iter.Seq[Finding]` on `Report.All()`**           | 15min | API       | none |
-| 6   | **Fix flaky property test (add seed)**                  | 10min | stability | low  |
-| 7   | **Decide: implement or remove `FixStrategyAI`**         | 30min | clarity   | med  |
-| 8   | **FixApplier error-path unit tests**                    | 30min | coverage  | none |
-| 9   | **Extract `findingKey` to shared utility**              | 15min | DRY       | none |
-| 10  | **Add `NewReport()` constructor**                       | 10min | API       | none |
-| 11  | **Extract SARIF constants to own file**                 | 10min | cleanup   | none |
-| 12  | **CLI coverage → 65%+** (refactor `run()` testable)     | 45min | coverage  | low  |
-| 13  | **Detector coverage → 80%+** (mock exec or integration) | 45min | coverage  | low  |
-| 14  | **Per-package coverage thresholds in CI**               | 15min | quality   | low  |
-| 15  | **Add `go:generate stringer` for enums**                | 20min | DRY       | low  |
-| 16  | **Add `version.go` with semver constants**              | 10min | API       | none |
-| 17  | **Wire `Correlate` into Pipeline (optional stage)**     | 30min | feature   | med  |
-| 18  | **Add godoc examples for key APIs**                     | 30min | docs      | none |
-| 19  | **Error wrapping audit** (ensure all use `%w`)          | 20min | quality   | none |
-| 20  | **Add `io.WriterTo` for SARIF output**                  | 15min | perf      | none |
-| 21  | **Consolidate `docs/planning/` or remove entirely**     | 5min  | cleanup   | none |
-| 22  | **Add `Range.Contains(p Position) bool`**               | 10min | API       | none |
-| 23  | **Add `Report.All()` for `iter.Seq`**                   | 10min | API       | none |
-| 24  | **Config file support for library (not just CLI)**      | 45min | feature   | med  |
-| 25  | **Watch mode for continuous analysis**                  | 60min | feature   | high |
+| #  | Task                                                    | T     | Impact    | Risk |
+| -- | ------------------------------------------------------- | ----- | --------- | ---- |
+| 1  | **Push HEAD to origin** (1 commit ahead)                | 1min  | hygiene   | none |
+| 2  | **Tag v0.1.3 release**                                  | 2min  | hygiene   | none |
+| 3  | **Delete stale planning docs**                          | 5min  | cleanup   | none |
+| 4  | **Archive old status reports** (keep latest 3)          | 5min  | cleanup   | none |
+| 5  | **Add `iter.Seq[Finding]` on `Report.All()`**           | 15min | API       | none |
+| 6  | **Fix flaky property test (add seed)**                  | 10min | stability | low  |
+| 7  | **Decide: implement or remove `FixStrategyAI`**         | 30min | clarity   | med  |
+| 8  | **FixApplier error-path unit tests**                    | 30min | coverage  | none |
+| 9  | **Extract `findingKey` to shared utility**              | 15min | DRY       | none |
+| 10 | **Add `NewReport()` constructor**                       | 10min | API       | none |
+| 11 | **Extract SARIF constants to own file**                 | 10min | cleanup   | none |
+| 12 | **CLI coverage → 65%+** (refactor `run()` testable)     | 45min | coverage  | low  |
+| 13 | **Detector coverage → 80%+** (mock exec or integration) | 45min | coverage  | low  |
+| 14 | **Per-package coverage thresholds in CI**               | 15min | quality   | low  |
+| 15 | **Add `go:generate stringer` for enums**                | 20min | DRY       | low  |
+| 16 | **Add `version.go` with semver constants**              | 10min | API       | none |
+| 17 | **Wire `Correlate` into Pipeline (optional stage)**     | 30min | feature   | med  |
+| 18 | **Add godoc examples for key APIs**                     | 30min | docs      | none |
+| 19 | **Error wrapping audit** (ensure all use `%w`)          | 20min | quality   | none |
+| 20 | **Add `io.WriterTo` for SARIF output**                  | 15min | perf      | none |
+| 21 | **Consolidate `docs/planning/` or remove entirely**     | 5min  | cleanup   | none |
+| 22 | **Add `Range.Contains(p Position) bool`**               | 10min | API       | none |
+| 23 | **Add `Report.All()` for `iter.Seq`**                   | 10min | API       | none |
+| 24 | **Config file support for library (not just CLI)**      | 45min | feature   | med  |
+| 25 | **Watch mode for continuous analysis**                  | 60min | feature   | high |
 
 ---
 

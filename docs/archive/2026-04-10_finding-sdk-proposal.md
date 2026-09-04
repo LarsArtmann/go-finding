@@ -90,7 +90,12 @@ type Diagnostic struct {
 De facto interchange format for Go linters. Every tool that integrates with golangci-lint speaks this:
 
 ```json
-{ "Pos": "file.go:42:5", "Text": "message", "FromLinter": "gosec", "Severity": "warning" }
+{
+  "Pos": "file.go:42:5",
+  "Text": "message",
+  "FromLinter": "gosec",
+  "Severity": "warning"
+}
 ```
 
 **Alignment:** The SDK parses golangci-lint JSON into `Finding` via `FromGolangciLintJSON()`. This is how BuildFlow already integrates external linters.

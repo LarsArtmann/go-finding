@@ -170,33 +170,33 @@ The previous session's status report incorrectly flagged `detectParallel`'s `g.W
 
 Sorted by **Impact / Work ratio** (Pareto principle: highest impact first):
 
-| #   | Task                                                       | Impact | Work   | Package              |
-| --- | ---------------------------------------------------------- | ------ | ------ | -------------------- |
-| 1   | Fix `Finding.Key()` cross-tool collision                   | High   | 10 min | `finding`            |
-| 2   | Add `Tags []string` field to Finding                       | High   | 20 min | `finding`            |
-| 3   | Add CLI `-output` flag for file output                     | High   | 15 min | `cmd`                |
-| 4   | Document `FixStrategyAI` placeholder status                | Medium | 5 min  | `finding`            |
-| 5   | Add CLI `-version` flag                                    | Medium | 5 min  | `cmd`                |
-| 6   | Improve `Category.IsValid()` docs/behavior                 | Low    | 5 min  | `finding`            |
-| 7   | Add `Properties map[string]any` for structured metadata    | Medium | 30 min | `finding`            |
-| 8   | Add file output sink to Report (WriteFile)                 | Medium | 20 min | `finding`            |
-| 9   | Add streaming report writers (io.Writer interface)         | Medium | 25 min | `finding`            |
-| 10  | Document all SARIF round-trip losses in user docs          | Low    | 15 min | `docs`               |
-| 11  | Add `golines` to justfile/CI                               | Low    | 10 min | `tooling`            |
-| 12  | Add detector timeout per-detector                          | Medium | 30 min | `pipeline`           |
-| 13  | Improve conflict detection (semantic merge)                | High   | 2h     | `pipeline`           |
-| 14  | Add progress bars for long-running operations              | Medium | 45 min | `cmd`                |
-| 15  | Add structured logging (slog)                              | Medium | 1h     | `cmd` + `pipeline`   |
-| 16  | Plugin architecture for detectors                          | High   | 4h     | `pipeline`           |
-| 17  | Interactive TUI for fix review                             | High   | 6h     | `cmd`                |
-| 18  | Watch/daemon mode                                          | Medium | 3h     | `cmd`                |
-| 19  | Evaluate `github.com/owenrumney/go-sarif`                  | Low    | 1h     | `finding`            |
-| 20  | Add diff output to verification stage                      | Medium | 1h     | `pipeline`           |
-| 21  | Add config file schema validation                          | Medium | 45 min | `cmd`                |
-| 22  | Add telemetry/metrics export                               | Low    | 2h     | `pipeline`           |
-| 23  | Add fuzz tests for FixEngine                               | Medium | 30 min | `pipeline`           |
-| 24  | Add property-based tests for Range operations              | Low    | 20 min | `finding`            |
-| 25  | Add integration tests for real govet/staticcheck execution | Medium | 1h     | `internal/detectors` |
+| #  | Task                                                       | Impact | Work   | Package              |
+| -- | ---------------------------------------------------------- | ------ | ------ | -------------------- |
+| 1  | Fix `Finding.Key()` cross-tool collision                   | High   | 10 min | `finding`            |
+| 2  | Add `Tags []string` field to Finding                       | High   | 20 min | `finding`            |
+| 3  | Add CLI `-output` flag for file output                     | High   | 15 min | `cmd`                |
+| 4  | Document `FixStrategyAI` placeholder status                | Medium | 5 min  | `finding`            |
+| 5  | Add CLI `-version` flag                                    | Medium | 5 min  | `cmd`                |
+| 6  | Improve `Category.IsValid()` docs/behavior                 | Low    | 5 min  | `finding`            |
+| 7  | Add `Properties map[string]any` for structured metadata    | Medium | 30 min | `finding`            |
+| 8  | Add file output sink to Report (WriteFile)                 | Medium | 20 min | `finding`            |
+| 9  | Add streaming report writers (io.Writer interface)         | Medium | 25 min | `finding`            |
+| 10 | Document all SARIF round-trip losses in user docs          | Low    | 15 min | `docs`               |
+| 11 | Add `golines` to justfile/CI                               | Low    | 10 min | `tooling`            |
+| 12 | Add detector timeout per-detector                          | Medium | 30 min | `pipeline`           |
+| 13 | Improve conflict detection (semantic merge)                | High   | 2h     | `pipeline`           |
+| 14 | Add progress bars for long-running operations              | Medium | 45 min | `cmd`                |
+| 15 | Add structured logging (slog)                              | Medium | 1h     | `cmd` + `pipeline`   |
+| 16 | Plugin architecture for detectors                          | High   | 4h     | `pipeline`           |
+| 17 | Interactive TUI for fix review                             | High   | 6h     | `cmd`                |
+| 18 | Watch/daemon mode                                          | Medium | 3h     | `cmd`                |
+| 19 | Evaluate `github.com/owenrumney/go-sarif`                  | Low    | 1h     | `finding`            |
+| 20 | Add diff output to verification stage                      | Medium | 1h     | `pipeline`           |
+| 21 | Add config file schema validation                          | Medium | 45 min | `cmd`                |
+| 22 | Add telemetry/metrics export                               | Low    | 2h     | `pipeline`           |
+| 23 | Add fuzz tests for FixEngine                               | Medium | 30 min | `pipeline`           |
+| 24 | Add property-based tests for Range operations              | Low    | 20 min | `finding`            |
+| 25 | Add integration tests for real govet/staticcheck execution | Medium | 1h     | `internal/detectors` |
 
 ---
 

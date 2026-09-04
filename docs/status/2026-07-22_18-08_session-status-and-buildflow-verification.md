@@ -1,9 +1,9 @@
 # Status Report: go-finding v1.2.1
 
-**Date:** 2026-07-22 18:08  
-**Branch:** ~~master (1 commit ahead of origin)~~ master (multiple commits ahead of origin; v1.3.0 lint fixed, FormatText reverted, pending push+tag)  
-**Version:** ~~v1.2.1~~ → v1.3.0 (implemented on master, not tagged)  
-**Tests:** ✅ All pass (including race detector)  
+**Date:** 2026-07-22 18:08\
+**Branch:** ~~master (1 commit ahead of origin)~~ master (multiple commits ahead of origin; v1.3.0 lint fixed, FormatText reverted, pending push+tag)\
+**Version:** ~~v1.2.1~~ → v1.3.0 (implemented on master, not tagged)\
+**Tests:** ✅ All pass (including race detector)\
 **Lint:** ~~✅ 0 issues~~ ⚠️ 7 issues after v1.3.0 additions
 
 ---
@@ -31,38 +31,38 @@ Quick session to verify and answer: "Is the BuildFlow auto-configure loop still 
 
 ## a) FULLY DONE
 
-| #   | Item                        | Evidence                                                                |
-| --- | --------------------------- | ----------------------------------------------------------------------- |
-| 1   | Sync `version.go` to v1.2.1 | `VersionPatch = 1` at `version.go:12`                                   |
-| 2   | Version-check CI gate       | `scripts/version-check.sh` + CI job at `.github/workflows/ci.yml:65-73` |
-| 3   | Race detector re-run        | `nix run .#test-race` — all packages OK, 0 races                        |
-| 4   | Dependabot groups           | `.github/dependabot.yml` — `patterns: ["*"]` for gomod + github-actions |
-| 5   | SHA-pin GitHub Actions      | All 8 actions across `ci.yml` + `release.yml` pinned to commit SHAs     |
-| 6   | CODECOV_TOKEN support       | `token: ${{ secrets.CODECOV_TOKEN }}` + `id-token: write` in CI         |
-| 7   | Tests pass                  | All 4 test packages pass (core, examples, gotoken, lockutil)            |
-| 8   | Lint clean                  | `golangci-lint run ./...` — 0 issues                                    |
+| # | Item                        | Evidence                                                                |
+| - | --------------------------- | ----------------------------------------------------------------------- |
+| 1 | Sync `version.go` to v1.2.1 | `VersionPatch = 1` at `version.go:12`                                   |
+| 2 | Version-check CI gate       | `scripts/version-check.sh` + CI job at `.github/workflows/ci.yml:65-73` |
+| 3 | Race detector re-run        | `nix run .#test-race` — all packages OK, 0 races                        |
+| 4 | Dependabot groups           | `.github/dependabot.yml` — `patterns: ["*"]` for gomod + github-actions |
+| 5 | SHA-pin GitHub Actions      | All 8 actions across `ci.yml` + `release.yml` pinned to commit SHAs     |
+| 6 | CODECOV_TOKEN support       | `token: ${{ secrets.CODECOV_TOKEN }}` + `id-token: write` in CI         |
+| 7 | Tests pass                  | All 4 test packages pass (core, examples, gotoken, lockutil)            |
+| 8 | Lint clean                  | `golangci-lint run ./...` — 0 issues                                    |
 
 ---
 
 ## b) PARTIALLY DONE
 
-| #   | Item                 | What's Missing                                                                                |
-| --- | -------------------- | --------------------------------------------------------------------------------------------- |
-| 1   | Push to origin       | 1 commit ahead of `origin/master` — not pushed yet                                            |
-| 2   | CODECOV_TOKEN secret | Workflow references `secrets.CODECOV_TOKEN` but secret not configured in GitHub repo settings |
+| # | Item                 | What's Missing                                                                                |
+| - | -------------------- | --------------------------------------------------------------------------------------------- |
+| 1 | Push to origin       | 1 commit ahead of `origin/master` — not pushed yet                                            |
+| 2 | CODECOV_TOKEN secret | Workflow references `secrets.CODECOV_TOKEN` but secret not configured in GitHub repo settings |
 
 ---
 
 ## c) NOT STARTED
 
-| #   | Item                         | Why                                                      |
-| --- | ---------------------------- | -------------------------------------------------------- |
-| 1   | Consumer compatibility test  | BLOCKED — repo is private, consumers need `GOPRIVATE`    |
-| 2   | SARIF schema validation test | BLOCKED — requires vendoring 7K+ line JSON schema        |
-| 3   | `.golangci.yml` in repo      | Missing — was removed or managed externally by BuildFlow |
-| 4   | Tests for `examples/basic`   | `[no test files]` — no coverage                          |
-| 5   | Tests for `examples/builder` | `[no test files]` — no coverage                          |
-| 6   | Push 1 commit to origin      | Skipped — not asked to push                              |
+| # | Item                         | Why                                                      |
+| - | ---------------------------- | -------------------------------------------------------- |
+| 1 | Consumer compatibility test  | BLOCKED — repo is private, consumers need `GOPRIVATE`    |
+| 2 | SARIF schema validation test | BLOCKED — requires vendoring 7K+ line JSON schema        |
+| 3 | `.golangci.yml` in repo      | Missing — was removed or managed externally by BuildFlow |
+| 4 | Tests for `examples/basic`   | `[no test files]` — no coverage                          |
+| 5 | Tests for `examples/builder` | `[no test files]` — no coverage                          |
+| 6 | Push 1 commit to origin      | Skipped — not asked to push                              |
 
 ---
 

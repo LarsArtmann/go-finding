@@ -129,33 +129,33 @@
 
 ## Top 25 Next Steps (Ranked by Impact / Work)
 
-| #   | Task                                                                 | Work   | Impact | Package                |
-| --- | -------------------------------------------------------------------- | ------ | ------ | ---------------------- |
-| 1   | Add `Finding.Key()` tests                                            | 5 min  | High   | `finding`              |
-| 2   | Add `PrettyJSON` / `LineJSON` error-path tests                       | 15 min | High   | `finding`              |
-| 3   | Add `ToSARIF` / `ToSARIFFiltered` error-path tests                   | 15 min | High   | `finding`              |
-| 4   | Add `hasLineRange` + `checkColumnRange` edge-case tests              | 15 min | Medium | `finding`              |
-| 5   | Add `intersectionByOffset` + `HasOffset` tests                       | 15 min | Medium | `finding`              |
-| 6   | Add `Range.Contains` edge-case tests                                 | 15 min | Medium | `finding`              |
-| 7   | Add `Verifier.Verify` error-path tests                               | 20 min | Medium | `pipeline`             |
-| 8   | Add `FixApplier` error-path tests                                    | 30 min | Medium | `pipeline`             |
-| 9   | Add `RetryConfig.Validate` edge-case tests                           | 15 min | Medium | `pipeline`             |
-| 10  | Add hot-path benchmarks                                              | 30 min | Medium | `finding` / `pipeline` |
-| 11  | Fix flaky `TestProperty_IDRoundTrip`                                 | 15 min | Medium | `finding`              |
-| 12  | Add `findingFromSarResult` import-path tests                         | 20 min | Medium | `finding`              |
-| 13  | Finding constructor validation                                       | 15 min | Medium | `finding`              |
-| 14  | Remove stale `//nolint` directives                                   | 10 min | Low    | `finding` / `pipeline` |
-| 15  | Modernize stdlib usage                                               | 20 min | Low    | various                |
-| 16  | Archive stale planning docs                                          | 10 min | Low    | `docs/`                |
-| 17  | Evaluate `go-sarif` library                                          | 45 min | Medium | `finding`              |
-| 18  | Profile memory allocations                                           | 20 min | Low    | various                |
-| 19  | Replace hardcoded `SeverityWarning` in `diagnostic.go`               | 15 min | Low    | `finding`              |
-| 20  | Add `go.work` for local development                                  | 10 min | Low    | root                   |
-| 21  | Preallocate slices in tests                                          | 10 min | Low    | `pipeline`             |
-| 22  | Extract string constants in tests                                    | 10 min | Low    | `finding`              |
-| 23  | Auto-sync `Report.Summary` (incremental)                             | 30 min | Medium | `finding`              |
-| 24  | Add `DeduplicateByPosition` vs `DeduplicateByRule` differential test | 15 min | Medium | `finding`              |
-| 25  | Add `cloneFindings` edge-case test                                   | 10 min | Low    | `finding`              |
+| #  | Task                                                                 | Work   | Impact | Package                |
+| -- | -------------------------------------------------------------------- | ------ | ------ | ---------------------- |
+| 1  | Add `Finding.Key()` tests                                            | 5 min  | High   | `finding`              |
+| 2  | Add `PrettyJSON` / `LineJSON` error-path tests                       | 15 min | High   | `finding`              |
+| 3  | Add `ToSARIF` / `ToSARIFFiltered` error-path tests                   | 15 min | High   | `finding`              |
+| 4  | Add `hasLineRange` + `checkColumnRange` edge-case tests              | 15 min | Medium | `finding`              |
+| 5  | Add `intersectionByOffset` + `HasOffset` tests                       | 15 min | Medium | `finding`              |
+| 6  | Add `Range.Contains` edge-case tests                                 | 15 min | Medium | `finding`              |
+| 7  | Add `Verifier.Verify` error-path tests                               | 20 min | Medium | `pipeline`             |
+| 8  | Add `FixApplier` error-path tests                                    | 30 min | Medium | `pipeline`             |
+| 9  | Add `RetryConfig.Validate` edge-case tests                           | 15 min | Medium | `pipeline`             |
+| 10 | Add hot-path benchmarks                                              | 30 min | Medium | `finding` / `pipeline` |
+| 11 | Fix flaky `TestProperty_IDRoundTrip`                                 | 15 min | Medium | `finding`              |
+| 12 | Add `findingFromSarResult` import-path tests                         | 20 min | Medium | `finding`              |
+| 13 | Finding constructor validation                                       | 15 min | Medium | `finding`              |
+| 14 | Remove stale `//nolint` directives                                   | 10 min | Low    | `finding` / `pipeline` |
+| 15 | Modernize stdlib usage                                               | 20 min | Low    | various                |
+| 16 | Archive stale planning docs                                          | 10 min | Low    | `docs/`                |
+| 17 | Evaluate `go-sarif` library                                          | 45 min | Medium | `finding`              |
+| 18 | Profile memory allocations                                           | 20 min | Low    | various                |
+| 19 | Replace hardcoded `SeverityWarning` in `diagnostic.go`               | 15 min | Low    | `finding`              |
+| 20 | Add `go.work` for local development                                  | 10 min | Low    | root                   |
+| 21 | Preallocate slices in tests                                          | 10 min | Low    | `pipeline`             |
+| 22 | Extract string constants in tests                                    | 10 min | Low    | `finding`              |
+| 23 | Auto-sync `Report.Summary` (incremental)                             | 30 min | Medium | `finding`              |
+| 24 | Add `DeduplicateByPosition` vs `DeduplicateByRule` differential test | 15 min | Medium | `finding`              |
+| 25 | Add `cloneFindings` edge-case test                                   | 10 min | Low    | `finding`              |
 
 ---
 

@@ -278,33 +278,33 @@ These items are verified complete in the current codebase — confirmed by readi
 
 Ordered by impact × effort ratio (highest first):
 
-| #   | Task                                                         | Priority | Effort | Impact   | Package            |
-| --- | ------------------------------------------------------------ | -------- | ------ | -------- | ------------------ |
-| 1   | **Bump version to v0.2.0** in `version.go`                   | P0       | 2min   | Critical | root               |
-| 2   | **Release `[Unreleased]` in CHANGELOG.md** as v0.2.0         | P0       | 5min   | Critical | docs               |
-| 3   | **Write consumer migration guide** (v0.1.3 → v0.2.0)         | P0       | 30min  | High     | docs               |
-| 4   | **Extract `diagnostic.go` to `finding/analysis` subpackage** | P0       | 60min  | High     | root               |
-| 5   | **Decide `NewFinding` API pattern** and document in ADR      | P0       | 30min  | High     | root               |
-| 6   | **API stability review** — audit all exported symbols        | P0       | 60min  | High     | all                |
-| 7   | **Fix `Pipeline.Run()` mutability** — single-use or copy     | P1       | 30min  | High     | pipeline           |
-| 8   | **Deprecate `WithTag()` builder method**                     | P1       | 5min   | Medium   | root               |
-| 9   | **Add `Suppression.IsActive()` method**                      | P1       | 10min  | Medium   | root               |
-| 10  | **Add `WriteSARIF` error-path test** (failingWriter)         | P1       | 15min  | Medium   | root               |
-| 11  | **Add `detectPartial*` context-cancel tests**                | P1       | 20min  | Medium   | pipeline           |
-| 12  | **Integration tests with real govet/staticcheck**            | P1       | 60min  | High     | internal/detectors |
-| 13  | **Refactor CLI `run()` for testability**                     | P1       | 45min  | Medium   | cmd                |
-| 14  | **Add `Properties map[string]any` to Finding**               | P1       | 20min  | High     | root               |
-| 15  | **Add per-package coverage thresholds to CI**                | P2       | 20min  | Medium   | CI                 |
-| 16  | **SARIF schema validation test**                             | P2       | 30min  | Medium   | root               |
-| 17  | **Benchmark regression tracking script**                     | P2       | 30min  | Low      | scripts            |
-| 18  | **Confidence strong type**                                   | P1       | 45min  | Medium   | root               |
-| 19  | **Add Nix section to CONTRIBUTING.md**                       | P2       | 15min  | Low      | docs               |
-| 20  | **Document SARIF round-trip losses in user-facing docs**     | P2       | 15min  | Medium   | docs               |
-| 21  | **`FixApplier` cross-iteration persistence design**          | P1       | 60min  | High     | pipeline           |
-| 22  | **Error wrapping consistency audit**                         | P2       | 30min  | Medium   | all                |
-| 23  | **Unify `Tag` deprecation** — migrate tests to `Tags`        | P1       | 45min  | Medium   | tests              |
-| 24  | **Profile performance at 10k+ findings**                     | P2       | 60min  | Medium   | pipeline           |
-| 25  | **Consumer migration guide** (v0.1.3 → v0.2.0)               | P0       | 30min  | Critical | docs               |
+| #  | Task                                                         | Priority | Effort | Impact   | Package            |
+| -- | ------------------------------------------------------------ | -------- | ------ | -------- | ------------------ |
+| 1  | **Bump version to v0.2.0** in `version.go`                   | P0       | 2min   | Critical | root               |
+| 2  | **Release `[Unreleased]` in CHANGELOG.md** as v0.2.0         | P0       | 5min   | Critical | docs               |
+| 3  | **Write consumer migration guide** (v0.1.3 → v0.2.0)         | P0       | 30min  | High     | docs               |
+| 4  | **Extract `diagnostic.go` to `finding/analysis` subpackage** | P0       | 60min  | High     | root               |
+| 5  | **Decide `NewFinding` API pattern** and document in ADR      | P0       | 30min  | High     | root               |
+| 6  | **API stability review** — audit all exported symbols        | P0       | 60min  | High     | all                |
+| 7  | **Fix `Pipeline.Run()` mutability** — single-use or copy     | P1       | 30min  | High     | pipeline           |
+| 8  | **Deprecate `WithTag()` builder method**                     | P1       | 5min   | Medium   | root               |
+| 9  | **Add `Suppression.IsActive()` method**                      | P1       | 10min  | Medium   | root               |
+| 10 | **Add `WriteSARIF` error-path test** (failingWriter)         | P1       | 15min  | Medium   | root               |
+| 11 | **Add `detectPartial*` context-cancel tests**                | P1       | 20min  | Medium   | pipeline           |
+| 12 | **Integration tests with real govet/staticcheck**            | P1       | 60min  | High     | internal/detectors |
+| 13 | **Refactor CLI `run()` for testability**                     | P1       | 45min  | Medium   | cmd                |
+| 14 | **Add `Properties map[string]any` to Finding**               | P1       | 20min  | High     | root               |
+| 15 | **Add per-package coverage thresholds to CI**                | P2       | 20min  | Medium   | CI                 |
+| 16 | **SARIF schema validation test**                             | P2       | 30min  | Medium   | root               |
+| 17 | **Benchmark regression tracking script**                     | P2       | 30min  | Low      | scripts            |
+| 18 | **Confidence strong type**                                   | P1       | 45min  | Medium   | root               |
+| 19 | **Add Nix section to CONTRIBUTING.md**                       | P2       | 15min  | Low      | docs               |
+| 20 | **Document SARIF round-trip losses in user-facing docs**     | P2       | 15min  | Medium   | docs               |
+| 21 | **`FixApplier` cross-iteration persistence design**          | P1       | 60min  | High     | pipeline           |
+| 22 | **Error wrapping consistency audit**                         | P2       | 30min  | Medium   | all                |
+| 23 | **Unify `Tag` deprecation** — migrate tests to `Tags`        | P1       | 45min  | Medium   | tests              |
+| 24 | **Profile performance at 10k+ findings**                     | P2       | 60min  | Medium   | pipeline           |
+| 25 | **Consumer migration guide** (v0.1.3 → v0.2.0)               | P0       | 30min  | Critical | docs               |
 
 ---
 

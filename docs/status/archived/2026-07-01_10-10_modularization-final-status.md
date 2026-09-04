@@ -19,37 +19,37 @@
 
 ### Core Modularization (9 commits)
 
-| #   | Commit    | Task                                                    |
-| --- | --------- | ------------------------------------------------------- |
-| 1   | `d6454d6` | Write modularization proposal HTML                      |
-| 2   | `9a9394a` | Move gotoken from internal/ to public package           |
-| 3   | `92adedf` | Move detectors into cmd/go-finding/internal/ tree       |
-| 4   | `85aec26` | Move benchutil into pipeline/internal/ tree             |
-| 5   | `ba0ee49` | Relocate pipeline-dependent examples to pipeline module |
-| 6   | `ad0892f` | Create pipeline/go.mod (extract pipeline module)        |
-| 7   | `035ebcc` | Create analysis/go.mod + cmd/go-finding/go.mod          |
-| 8   | `e127e53` | Update flake.nix for multi-module (modRoot, vendorHash) |
-| 9   | `70502da` | Update AGENTS.md for multi-module structure             |
+| # | Commit    | Task                                                    |
+| - | --------- | ------------------------------------------------------- |
+| 1 | `d6454d6` | Write modularization proposal HTML                      |
+| 2 | `9a9394a` | Move gotoken from internal/ to public package           |
+| 3 | `92adedf` | Move detectors into cmd/go-finding/internal/ tree       |
+| 4 | `85aec26` | Move benchutil into pipeline/internal/ tree             |
+| 5 | `ba0ee49` | Relocate pipeline-dependent examples to pipeline module |
+| 6 | `ad0892f` | Create pipeline/go.mod (extract pipeline module)        |
+| 7 | `035ebcc` | Create analysis/go.mod + cmd/go-finding/go.mod          |
+| 8 | `e127e53` | Update flake.nix for multi-module (modRoot, vendorHash) |
+| 9 | `70502da` | Update AGENTS.md for multi-module structure             |
 
 ### Quality & CI (5 commits)
 
-| #   | Commit    | Task                                                                           |
-| --- | --------- | ------------------------------------------------------------------------------ |
-| 10  | `556525e` | Track go.work/go.work.sum (remove from .gitignore)                             |
-| 11  | `3f9dfb5` | Fix stale internal/detectors paths in coverage-check.sh + integration-guide.md |
-| 12  | `2671d29` | Write execution plan HTML deliverable                                          |
-| 13  | `954d681` | Add per-module GOWORK=off CI isolation job                                     |
-| 14  | `70f1029` | Add compile-time interface assertions at module boundaries                     |
+| #  | Commit    | Task                                                                           |
+| -- | --------- | ------------------------------------------------------------------------------ |
+| 10 | `556525e` | Track go.work/go.work.sum (remove from .gitignore)                             |
+| 11 | `3f9dfb5` | Fix stale internal/detectors paths in coverage-check.sh + integration-guide.md |
+| 12 | `2671d29` | Write execution plan HTML deliverable                                          |
+| 13 | `954d681` | Add per-module GOWORK=off CI isolation job                                     |
+| 14 | `70f1029` | Add compile-time interface assertions at module boundaries                     |
 
 ### Documentation (4 commits)
 
-| #   | Commit    | Task                                                            |
-| --- | --------- | --------------------------------------------------------------- |
-| 15  | `e3fbded` | Update README.md per-module install + CONTRIBUTING.md tree fix  |
-| 16  | `7731ecc` | Update ADR #7, FEATURES, goreleaser hook, AGENTS testify gotcha |
-| 17  | `d84db2e` | Status report + go.work.sum sync                                |
-| 18  | `0a53748` | Clarify doc.go module references                                |
-| 19  | `3f1b55b` | Archive stale root proposals to docs/archive/                   |
+| #  | Commit    | Task                                                            |
+| -- | --------- | --------------------------------------------------------------- |
+| 15 | `e3fbded` | Update README.md per-module install + CONTRIBUTING.md tree fix  |
+| 16 | `7731ecc` | Update ADR #7, FEATURES, goreleaser hook, AGENTS testify gotcha |
+| 17 | `d84db2e` | Status report + go.work.sum sync                                |
+| 18 | `0a53748` | Clarify doc.go module references                                |
+| 19 | `3f1b55b` | Archive stale root proposals to docs/archive/                   |
 
 ### Verification Matrix
 
@@ -92,23 +92,23 @@
 
 ## c) NOT STARTED ⬜
 
-| #   | Item                                                 | Impact                |
-| --- | ---------------------------------------------------- | --------------------- |
-| 1   | Version normalization (all v0.0.0 or all v1.0.0)     | Consistency           |
-| 2   | Per-module golangci-lint config                      | Per-module CI linting |
-| 3   | go.work sync idempotency CI check                    | Catches drift         |
-| 4   | Replace directive audit CI check (no absolute paths) | Portability           |
-| 5   | Version drift detection CI check                     | Catch mismatches      |
-| 6   | Split BDD tests into finding_test companion module   | Zero-dep core go.mod  |
-| 7   | Update docs/USAGE_GUIDE.md for multi-module          | User guidance         |
-| 8   | Module boundary diagram in README                    | Onboarding            |
-| 9   | docs/MIGRATION_multi-module.md for consumers         | Migration guide       |
-| 10  | Tag v1.1.0 with multi-module structure               | Release               |
-| 11  | govulncheck across all modules                       | Security              |
-| 12  | go-arch-lint for layer enforcement                   | Architecture guard    |
-| 13  | Per-module CHANGELOG entries                         | Release communication |
-| 14  | Benchmark multi-module vs monolith build times       | CI data               |
-| 15  | Review gotoken public vs internal API surface        | API minimization      |
+| #  | Item                                                 | Impact                |
+| -- | ---------------------------------------------------- | --------------------- |
+| 1  | Version normalization (all v0.0.0 or all v1.0.0)     | Consistency           |
+| 2  | Per-module golangci-lint config                      | Per-module CI linting |
+| 3  | go.work sync idempotency CI check                    | Catches drift         |
+| 4  | Replace directive audit CI check (no absolute paths) | Portability           |
+| 5  | Version drift detection CI check                     | Catch mismatches      |
+| 6  | Split BDD tests into finding_test companion module   | Zero-dep core go.mod  |
+| 7  | Update docs/USAGE_GUIDE.md for multi-module          | User guidance         |
+| 8  | Module boundary diagram in README                    | Onboarding            |
+| 9  | docs/MIGRATION_multi-module.md for consumers         | Migration guide       |
+| 10 | Tag v1.1.0 with multi-module structure               | Release               |
+| 11 | govulncheck across all modules                       | Security              |
+| 12 | go-arch-lint for layer enforcement                   | Architecture guard    |
+| 13 | Per-module CHANGELOG entries                         | Release communication |
+| 14 | Benchmark multi-module vs monolith build times       | CI data               |
+| 15 | Review gotoken public vs internal API surface        | API minimization      |
 
 ---
 
@@ -148,33 +148,33 @@
 
 ## f) TOP 25 THINGS TO DO NEXT
 
-| #   | Priority | Task                                                            | Impact                  | Effort   |
-| --- | -------- | --------------------------------------------------------------- | ----------------------- | -------- |
-| 1   | 🔴 P0    | Normalize internal require versions (all v0.0.0 or all v1.0.0)  | Consistency             | 5 min    |
-| 2   | 🟠 P1    | Add go.work sync idempotency CI check                           | Catch drift             | 5 min    |
-| 3   | 🟠 P1    | Add replace directive audit CI check (no absolute paths)        | Portability             | 5 min    |
-| 4   | 🟠 P1    | Per-module golangci-lint config or inherit strategy             | Per-module CI linting   | 15 min   |
-| 5   | 🟠 P1    | Verify coverage-check.sh thresholds match new package layout    | CI coverage correctness | 10 min   |
-| 6   | 🟡 P2    | Add version drift detection CI check                            | Catch mismatches        | 10 min   |
-| 7   | 🟡 P2    | Consider splitting BDD tests into finding_test companion module | Zero-dep core go.mod    | 30 min   |
-| 8   | 🟡 P2    | Update docs/USAGE_GUIDE.md for multi-module import patterns     | User guidance           | 10 min   |
-| 9   | 🟡 P2    | Create docs/MIGRATION_multi-module.md for consumers             | Migration guide         | 15 min   |
-| 10  | 🟡 P2    | Module boundary diagram in README.md                            | Onboarding              | 10 min   |
-| 11  | 🟡 P2    | Tag v1.1.0 with multi-module structure                          | Release                 | 5 min    |
-| 12  | 🟡 P2    | Verify govulncheck works across all modules                     | Security scanning       | 5 min    |
-| 13  | 🟢 P3    | Add "choosing the right module" section to docs                 | User guidance           | 10 min   |
-| 14  | 🟢 P3    | go-arch-lint for layer enforcement                              | Architecture guard      | 20 min   |
-| 15  | 🟢 P3    | Benchmark multi-module vs monolith build times                  | CI data                 | 15 min   |
-| 16  | 🟢 P3    | Per-module CHANGELOG entries                                    | Release communication   | 10 min   |
-| 17  | 🟢 P3    | Consider independent module versioning (per-module semver tags) | Consumer flexibility    | Decision |
-| 18  | 🟢 P3    | Review gotoken exported API surface                             | API minimization        | 10 min   |
-| 19  | 🟢 P3    | Consider `go work vendor` for reproducible builds               | Build reproducibility   | 15 min   |
-| 20  | 🟢 P3    | Consider merging examples into a single examples module         | Simplicity              | Decision |
-| 21  | 🟢 P3    | Add module dependency graph to AGENTS.md (D2 or ASCII)          | Dev orientation         | 10 min   |
-| 22  | 🟢 P3    | Review pipeline/goast as separate module vs staying in pipeline | Boundary depth          | Decision |
-| 23  | 🟢 P3    | Consider error classification interface (ErrorCoder pattern)    | Cross-module errors     | 20 min   |
-| 24  | 🟢 P3    | Audit testify transitive chain — can ginkgo config avoid it?    | Dependency hygiene      | 15 min   |
-| 25  | 🟢 P3    | Merge `modularize/unix-style` into `master`                     | Ship it                 | 2 min    |
+| #  | Priority | Task                                                            | Impact                  | Effort   |
+| -- | -------- | --------------------------------------------------------------- | ----------------------- | -------- |
+| 1  | 🔴 P0    | Normalize internal require versions (all v0.0.0 or all v1.0.0)  | Consistency             | 5 min    |
+| 2  | 🟠 P1    | Add go.work sync idempotency CI check                           | Catch drift             | 5 min    |
+| 3  | 🟠 P1    | Add replace directive audit CI check (no absolute paths)        | Portability             | 5 min    |
+| 4  | 🟠 P1    | Per-module golangci-lint config or inherit strategy             | Per-module CI linting   | 15 min   |
+| 5  | 🟠 P1    | Verify coverage-check.sh thresholds match new package layout    | CI coverage correctness | 10 min   |
+| 6  | 🟡 P2    | Add version drift detection CI check                            | Catch mismatches        | 10 min   |
+| 7  | 🟡 P2    | Consider splitting BDD tests into finding_test companion module | Zero-dep core go.mod    | 30 min   |
+| 8  | 🟡 P2    | Update docs/USAGE_GUIDE.md for multi-module import patterns     | User guidance           | 10 min   |
+| 9  | 🟡 P2    | Create docs/MIGRATION_multi-module.md for consumers             | Migration guide         | 15 min   |
+| 10 | 🟡 P2    | Module boundary diagram in README.md                            | Onboarding              | 10 min   |
+| 11 | 🟡 P2    | Tag v1.1.0 with multi-module structure                          | Release                 | 5 min    |
+| 12 | 🟡 P2    | Verify govulncheck works across all modules                     | Security scanning       | 5 min    |
+| 13 | 🟢 P3    | Add "choosing the right module" section to docs                 | User guidance           | 10 min   |
+| 14 | 🟢 P3    | go-arch-lint for layer enforcement                              | Architecture guard      | 20 min   |
+| 15 | 🟢 P3    | Benchmark multi-module vs monolith build times                  | CI data                 | 15 min   |
+| 16 | 🟢 P3    | Per-module CHANGELOG entries                                    | Release communication   | 10 min   |
+| 17 | 🟢 P3    | Consider independent module versioning (per-module semver tags) | Consumer flexibility    | Decision |
+| 18 | 🟢 P3    | Review gotoken exported API surface                             | API minimization        | 10 min   |
+| 19 | 🟢 P3    | Consider `go work vendor` for reproducible builds               | Build reproducibility   | 15 min   |
+| 20 | 🟢 P3    | Consider merging examples into a single examples module         | Simplicity              | Decision |
+| 21 | 🟢 P3    | Add module dependency graph to AGENTS.md (D2 or ASCII)          | Dev orientation         | 10 min   |
+| 22 | 🟢 P3    | Review pipeline/goast as separate module vs staying in pipeline | Boundary depth          | Decision |
+| 23 | 🟢 P3    | Consider error classification interface (ErrorCoder pattern)    | Cross-module errors     | 20 min   |
+| 24 | 🟢 P3    | Audit testify transitive chain — can ginkgo config avoid it?    | Dependency hygiene      | 15 min   |
+| 25 | 🟢 P3    | Merge `modularize/unix-style` into `master`                     | Ship it                 | 2 min    |
 
 ---
 

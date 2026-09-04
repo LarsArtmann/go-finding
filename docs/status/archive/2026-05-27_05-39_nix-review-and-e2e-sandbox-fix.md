@@ -16,23 +16,23 @@ Conducted a comprehensive nix-review of `flake.nix` against the full skill check
 
 ### Flake.nix Overhaul (8 fixes)
 
-| #   | What                                                      | Why                                                                                                |
-| --- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| 1   | `flake-parts` now `follows = "nixpkgs"` via `nixpkgs-lib` | Prevents dependency duplication; pins to same nixpkgs lib version                                  |
-| 2   | Added `packages.default` with `buildGoModule`             | Project had no Nix package derivation — only ad-hoc `runCommand` check that failed in sandbox      |
-| 3   | Source filtering via `lib.fileset.gitTracked`             | Old `cp -r ${./.}` copied entire tree including `.git` (6.4MB), `coverage.out`, `docs/`, `.crush/` |
-| 4   | `checks.build` reuses `packages.default`                  | Eliminates the broken `runCommand` that failed with `/homeless-shelter` permission error           |
-| 5   | Added `checks.test` with `doCheck = true`                 | Tests now run in Nix sandbox as a proper check                                                     |
-| 6   | Apps use `writeShellApplication`                          | Replaces `writeShellScriptBin` — proper runtime isolation, input validation, no PATH pollution     |
-| 7   | `GOWORK = "off"` in devShell                              | Matches what checks already set; prevents accidental `go.work` interference                        |
-| 8   | `overlays.default` fixed                                  | Was referencing non-existent `./package.nix`; now uses `final.buildGoModule` inline                |
+| # | What                                                      | Why                                                                                                |
+| - | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 1 | `flake-parts` now `follows = "nixpkgs"` via `nixpkgs-lib` | Prevents dependency duplication; pins to same nixpkgs lib version                                  |
+| 2 | Added `packages.default` with `buildGoModule`             | Project had no Nix package derivation — only ad-hoc `runCommand` check that failed in sandbox      |
+| 3 | Source filtering via `lib.fileset.gitTracked`             | Old `cp -r ${./.}` copied entire tree including `.git` (6.4MB), `coverage.out`, `docs/`, `.crush/` |
+| 4 | `checks.build` reuses `packages.default`                  | Eliminates the broken `runCommand` that failed with `/homeless-shelter` permission error           |
+| 5 | Added `checks.test` with `doCheck = true`                 | Tests now run in Nix sandbox as a proper check                                                     |
+| 6 | Apps use `writeShellApplication`                          | Replaces `writeShellScriptBin` — proper runtime isolation, input validation, no PATH pollution     |
+| 7 | `GOWORK = "off"` in devShell                              | Matches what checks already set; prevents accidental `go.work` interference                        |
+| 8 | `overlays.default` fixed                                  | Was referencing non-existent `./package.nix`; now uses `final.buildGoModule` inline                |
 
 ### E2E Test Sandbox Fix (2 fixes)
 
-| #   | What                                                                   | Why                                                                                   |
-| --- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 1   | Removed hardcoded `/home/lars/projects/go-finding/cmd/go-finding` path | `buildBinary()` now uses `filepath.Abs(".")` — works in Nix sandbox, CI, any checkout |
-| 2   | Removed duplicate `TestRun_E2E_FilterGenerated`                        | Was declared twice in working tree (compile error)                                    |
+| # | What                                                                   | Why                                                                                   |
+| - | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1 | Removed hardcoded `/home/lars/projects/go-finding/cmd/go-finding` path | `buildBinary()` now uses `filepath.Abs(".")` — works in Nix sandbox, CI, any checkout |
+| 2 | Removed duplicate `TestRun_E2E_FilterGenerated`                        | Was declared twice in working tree (compile error)                                    |
 
 ### Verification (all passing)
 
@@ -63,29 +63,29 @@ The `vendorHash` string `"sha256-DSEmCeYk/..."` appears in both `perSystem` (lin
 
 ### High Priority
 
-| #   | Item                                                          | Effort |
-| --- | ------------------------------------------------------------- | ------ |
-| 1   | GitHub Actions CI using `nix flake check`                     | Medium |
-| 2   | Binary cache configuration (cachix)                           | Low    |
-| 3   | `nix fmt` in CI (treefmt check gate)                          | Low    |
-| 4   | Cross-compilation targets (`aarch64-linux`, `aarch64-darwin`) | Medium |
-| 5   | Goreleaser integration with Nix-built binary                  | Medium |
+| # | Item                                                          | Effort |
+| - | ------------------------------------------------------------- | ------ |
+| 1 | GitHub Actions CI using `nix flake check`                     | Medium |
+| 2 | Binary cache configuration (cachix)                           | Low    |
+| 3 | `nix fmt` in CI (treefmt check gate)                          | Low    |
+| 4 | Cross-compilation targets (`aarch64-linux`, `aarch64-darwin`) | Medium |
+| 5 | Goreleaser integration with Nix-built binary                  | Medium |
 
 ### Medium Priority
 
-| #   | Item                                         | Effort |
-| --- | -------------------------------------------- | ------ |
-| 6   | `checks.lint` — golangci-lint as a Nix check | Low    |
-| 7   | Separate CI devShell (minimal closure)       | Low    |
-| 8   | `apps.bench` — benchmark runner app          | Low    |
-| 9   | `apps.coverage-html` — HTML coverage report  | Low    |
+| # | Item                                         | Effort |
+| - | -------------------------------------------- | ------ |
+| 6 | `checks.lint` — golangci-lint as a Nix check | Low    |
+| 7 | Separate CI devShell (minimal closure)       | Low    |
+| 8 | `apps.bench` — benchmark runner app          | Low    |
+| 9 | `apps.coverage-html` — HTML coverage report  | Low    |
 
 ### Low Priority
 
-| #   | Item                                             | Effort |
-| --- | ------------------------------------------------ | ------ |
-| 10  | NixOS module for running go-finding as a service | High   |
-| 11  | Home Manager module                              | High   |
+| #  | Item                                             | Effort |
+| -- | ------------------------------------------------ | ------ |
+| 10 | NixOS module for running go-finding as a service | High   |
+| 11 | Home Manager module                              | High   |
 
 ---
 
@@ -126,43 +126,43 @@ The only pre-existing issue found during the session: `TestRun_E2E_FilterGenerat
 
 ### Critical / High Impact (Pareto top 20%)
 
-| #   | Task                                                                       | Impact | Effort |
-| --- | -------------------------------------------------------------------------- | ------ | ------ |
-| 1   | Commit the working tree changes (category.go, USAGE_GUIDE.md, e2e_test.go) | High   | 5 min  |
-| 2   | Fix `TestRun_E2E_FilterGenerated` fragile assertion                        | High   | 15 min |
-| 3   | Set up GitHub Actions CI with `nix flake check` + `go test -race`          | High   | 1 hour |
-| 4   | Add `checks.lint` to flake.nix (golangci-lint as Nix check)                | Medium | 15 min |
-| 5   | Push to origin/master (3 commits ahead)                                    | Medium | 1 min  |
-| 6   | Add `flake.lock` to CI caching                                             | Medium | 30 min |
-| 7   | Update TODO_LIST.md with recent progress (97→~105 done)                    | Medium | 30 min |
-| 8   | Add `apps.bench` for benchmark runner                                      | Low    | 10 min |
-| 9   | Review MIGRATION_TO_NIX_FLAKES_PROPOSAL.md for completion                  | Low    | 15 min |
-| 10  | Create `package.nix` for overlay (eliminate duplication)                   | Low    | 20 min |
+| #  | Task                                                                       | Impact | Effort |
+| -- | -------------------------------------------------------------------------- | ------ | ------ |
+| 1  | Commit the working tree changes (category.go, USAGE_GUIDE.md, e2e_test.go) | High   | 5 min  |
+| 2  | Fix `TestRun_E2E_FilterGenerated` fragile assertion                        | High   | 15 min |
+| 3  | Set up GitHub Actions CI with `nix flake check` + `go test -race`          | High   | 1 hour |
+| 4  | Add `checks.lint` to flake.nix (golangci-lint as Nix check)                | Medium | 15 min |
+| 5  | Push to origin/master (3 commits ahead)                                    | Medium | 1 min  |
+| 6  | Add `flake.lock` to CI caching                                             | Medium | 30 min |
+| 7  | Update TODO_LIST.md with recent progress (97→~105 done)                    | Medium | 30 min |
+| 8  | Add `apps.bench` for benchmark runner                                      | Low    | 10 min |
+| 9  | Review MIGRATION_TO_NIX_FLAKES_PROPOSAL.md for completion                  | Low    | 15 min |
+| 10 | Create `package.nix` for overlay (eliminate duplication)                   | Low    | 20 min |
 
 ### Medium Priority
 
-| #   | Task                                                                | Impact | Effort |
-| --- | ------------------------------------------------------------------- | ------ | ------ |
-| 11  | Add examples tests (basic, builder, pipeline)                       | Medium | 1 hour |
-| 12  | Set up cachix or GitHub Actions Nix cache                           | Medium | 30 min |
-| 13  | Add `inputsFrom`-based CI devShell (smaller closure)                | Low    | 15 min |
-| 14  | Review PROPOSAL.md accuracy                                         | Low    | 20 min |
-| 15  | Add `aarch64-linux` cross-compilation to flake                      | Low    | 30 min |
-| 16  | Add `apps.coverage-html` (HTML coverage report)                     | Low    | 10 min |
-| 17  | Lint `.golangci.yml` against current Go version                     | Low    | 10 min |
-| 18  | Add `justfile` removal to AGENTS.md (done, not documented)          | Low    | 5 min  |
-| 19  | Document flake.nix overlay limitation (vendorHash dup) in AGENTS.md | Low    | 5 min  |
-| 20  | Add `self.rev` version injection to `main.go` via ldflags           | Medium | 20 min |
+| #  | Task                                                                | Impact | Effort |
+| -- | ------------------------------------------------------------------- | ------ | ------ |
+| 11 | Add examples tests (basic, builder, pipeline)                       | Medium | 1 hour |
+| 12 | Set up cachix or GitHub Actions Nix cache                           | Medium | 30 min |
+| 13 | Add `inputsFrom`-based CI devShell (smaller closure)                | Low    | 15 min |
+| 14 | Review PROPOSAL.md accuracy                                         | Low    | 20 min |
+| 15 | Add `aarch64-linux` cross-compilation to flake                      | Low    | 30 min |
+| 16 | Add `apps.coverage-html` (HTML coverage report)                     | Low    | 10 min |
+| 17 | Lint `.golangci.yml` against current Go version                     | Low    | 10 min |
+| 18 | Add `justfile` removal to AGENTS.md (done, not documented)          | Low    | 5 min  |
+| 19 | Document flake.nix overlay limitation (vendorHash dup) in AGENTS.md | Low    | 5 min  |
+| 20 | Add `self.rev` version injection to `main.go` via ldflags           | Medium | 20 min |
 
 ### Lower Priority
 
-| #   | Task                                                             | Impact | Effort  |
-| --- | ---------------------------------------------------------------- | ------ | ------- |
-| 21  | Create NixOS module for go-finding as a service                  | Low    | 2 hours |
-| 22  | Create Home Manager module                                       | Low    | 2 hours |
-| 23  | Add `lib.fileset`-based separate source sets for checks vs build | Low    | 30 min  |
-| 24  | Investigate flake-parts module options for shared values         | Low    | 1 hour  |
-| 25  | Add `apps.smoke` — end-to-end smoke test app                     | Low    | 15 min  |
+| #  | Task                                                             | Impact | Effort  |
+| -- | ---------------------------------------------------------------- | ------ | ------- |
+| 21 | Create NixOS module for go-finding as a service                  | Low    | 2 hours |
+| 22 | Create Home Manager module                                       | Low    | 2 hours |
+| 23 | Add `lib.fileset`-based separate source sets for checks vs build | Low    | 30 min  |
+| 24 | Investigate flake-parts module options for shared values         | Low    | 1 hour  |
+| 25 | Add `apps.smoke` — end-to-end smoke test app                     | Low    | 15 min  |
 
 ---
 

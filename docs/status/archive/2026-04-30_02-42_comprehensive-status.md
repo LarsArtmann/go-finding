@@ -124,33 +124,33 @@ Gopls still references `pipeline/temp_test.go` in diagnostics even though the fi
 
 Sorted by **Impact / Work ratio**:
 
-| #   | Task                                            | Impact   | Work   | Package            |
-| --- | ----------------------------------------------- | -------- | ------ | ------------------ |
-| 1   | Fix `examples/builder/main.go` compile error    | Critical | 2 min  | `examples`         |
-| 2   | Fix `tag.go` gci formatting                     | Low      | 1 min  | `finding`          |
-| 3   | Deprecate `Tag string` field                    | Medium   | 2 min  | `finding`          |
-| 4   | Fix `examples/example_compile_test.go` warnings | Low      | 5 min  | `examples`         |
-| 5   | Add confidence clamping to `NewFinding`         | Medium   | 3 min  | `finding`          |
-| 6   | Improve `Category.IsValid()` docs/behavior      | Low      | 3 min  | `finding`          |
-| 7   | Add `-watch` flag with `fsnotify`               | High     | 30 min | `cmd`              |
-| 8   | Add structured logging (`slog`)                 | Medium   | 1h     | `cmd` + `pipeline` |
-| 9   | Add diff output to verification                 | Medium   | 45 min | `pipeline`         |
-| 10  | SARIF schema validation                         | Low      | 30 min | `finding`          |
-| 11  | Plugin architecture                             | High     | 4h     | `pipeline`         |
-| 12  | Progress bars                                   | Medium   | 45 min | `cmd`              |
-| 13  | Add `Finding.WriteSARIF` method                 | Low      | 15 min | `finding`          |
-| 14  | Benchmark regression tracking                   | Low      | 30 min | `tooling`          |
-| 15  | Add `io.WriterTo` to Finding                    | Low      | 10 min | `finding`          |
-| 16  | Web UI prototype                                | High     | 6h     | out of scope       |
-| 17  | IDE plugin stubs                                | Medium   | 3h     | out of scope       |
-| 18  | Distributed detection                           | High     | 8h     | out of scope       |
-| 19  | BuildFlow integration                           | Medium   | 2h     | external           |
-| 20  | Evaluate `go-sarif` library                     | Low      | 1h     | finding            |
-| 21  | Cross-iteration fix persistence                 | Medium   | 2h     | pipeline           |
-| 22  | Semantic merge for conflicts                    | High     | 3h     | pipeline           |
-| 23  | Column shift handling in FixEngine              | Medium   | 2h     | pipeline           |
-| 24  | Property-based tests for Range ops              | Low      | 20 min | finding            |
-| 25  | Integration tests for real govet/staticcheck    | Medium   | 1h     | internal/detectors |
+| #  | Task                                            | Impact   | Work   | Package            |
+| -- | ----------------------------------------------- | -------- | ------ | ------------------ |
+| 1  | Fix `examples/builder/main.go` compile error    | Critical | 2 min  | `examples`         |
+| 2  | Fix `tag.go` gci formatting                     | Low      | 1 min  | `finding`          |
+| 3  | Deprecate `Tag string` field                    | Medium   | 2 min  | `finding`          |
+| 4  | Fix `examples/example_compile_test.go` warnings | Low      | 5 min  | `examples`         |
+| 5  | Add confidence clamping to `NewFinding`         | Medium   | 3 min  | `finding`          |
+| 6  | Improve `Category.IsValid()` docs/behavior      | Low      | 3 min  | `finding`          |
+| 7  | Add `-watch` flag with `fsnotify`               | High     | 30 min | `cmd`              |
+| 8  | Add structured logging (`slog`)                 | Medium   | 1h     | `cmd` + `pipeline` |
+| 9  | Add diff output to verification                 | Medium   | 45 min | `pipeline`         |
+| 10 | SARIF schema validation                         | Low      | 30 min | `finding`          |
+| 11 | Plugin architecture                             | High     | 4h     | `pipeline`         |
+| 12 | Progress bars                                   | Medium   | 45 min | `cmd`              |
+| 13 | Add `Finding.WriteSARIF` method                 | Low      | 15 min | `finding`          |
+| 14 | Benchmark regression tracking                   | Low      | 30 min | `tooling`          |
+| 15 | Add `io.WriterTo` to Finding                    | Low      | 10 min | `finding`          |
+| 16 | Web UI prototype                                | High     | 6h     | out of scope       |
+| 17 | IDE plugin stubs                                | Medium   | 3h     | out of scope       |
+| 18 | Distributed detection                           | High     | 8h     | out of scope       |
+| 19 | BuildFlow integration                           | Medium   | 2h     | external           |
+| 20 | Evaluate `go-sarif` library                     | Low      | 1h     | finding            |
+| 21 | Cross-iteration fix persistence                 | Medium   | 2h     | pipeline           |
+| 22 | Semantic merge for conflicts                    | High     | 3h     | pipeline           |
+| 23 | Column shift handling in FixEngine              | Medium   | 2h     | pipeline           |
+| 24 | Property-based tests for Range ops              | Low      | 20 min | finding            |
+| 25 | Integration tests for real govet/staticcheck    | Medium   | 1h     | internal/detectors |
 
 ---
 

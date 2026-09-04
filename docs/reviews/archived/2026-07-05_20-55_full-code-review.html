@@ -32,14 +32,14 @@
         --warning: var(--color-yellow);
         --radius: 0px;
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
       * {
         box-sizing: border-box;
@@ -388,11 +388,19 @@
       }
       .callout-teal {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 10%,
+          var(--surface-raised)
+        );
       }
       .callout-amber {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 18%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 18%,
+          var(--surface-raised)
+        );
       }
       .strengths {
         display: grid;
@@ -579,11 +587,13 @@
     >
       <strong>📦 Resolution Status (updated 2026-07-16):</strong>
       All findings from this review were addressed by the
-      <strong>SUPERB improvement plan</strong> (22 tasks, M01-M22). 7 critical/high + 38 medium + 31
-      low findings were triaged and resolved: lying predicates fixed, concurrency bugs fixed, dead
-      code removed, type safety improved (branded types), IntervalIndex complexity corrected, CLI
-      hardened. See <code>docs/planning/2026-07-05_21-43_SUPERB-improvement-plan.md</code> (all 22
-      tasks complete).
+      <strong>SUPERB improvement plan</strong> (22 tasks, M01-M22). 7
+      critical/high + 38 medium + 31 low findings were triaged and resolved:
+      lying predicates fixed, concurrency bugs fixed, dead code removed, type
+      safety improved (branded types), IntervalIndex complexity corrected, CLI
+      hardened. See
+      <code>docs/planning/2026-07-05_21-43_SUPERB-improvement-plan.md</code>
+      (all 22 tasks complete).
     </div>
     <div class="top-bar">
       <span>Deep Code Review</span>
@@ -618,10 +628,11 @@
           <div class="eyebrow">Full Code Review &middot; 2026-07-05</div>
           <h1>go-finding &mdash; Deep Review</h1>
           <p class="subtitle">
-            Every code and test file across all four modules (Core, Pipeline, Analysis, CLI)
-            reviewed as a Senior Staff Go architect. 196 Go files, ~35k lines. Build, vet, and the
-            full test suite all pass. The code is clearly above average &mdash; this review finds
-            what would make it exceptional.
+            Every code and test file across all four modules (Core, Pipeline,
+            Analysis, CLI) reviewed as a Senior Staff Go architect. 196 Go
+            files, ~35k lines. Build, vet, and the full test suite all pass. The
+            code is clearly above average &mdash; this review finds what would
+            make it exceptional.
           </p>
           <div class="meta">
             <span class="tag amber">Scope: all 4 modules</span>
@@ -652,57 +663,67 @@
         <section id="summary">
           <h2><span class="num">00</span>Summary</h2>
           <p>
-            go-finding is a well-engineered, cleanly decomposed multi-module Go library. The
-            Unix-style module split (Core stdlib-only &rarr; Pipeline &rarr; Analysis &rarr; CLI) is
-            genuinely good architecture, and the validation, error-wrapping, and test discipline are
-            far above typical Go projects. There are
+            go-finding is a well-engineered, cleanly decomposed multi-module Go
+            library. The Unix-style module split (Core stdlib-only &rarr;
+            Pipeline &rarr; Analysis &rarr; CLI) is genuinely good architecture,
+            and the validation, error-wrapping, and test discipline are far
+            above typical Go projects. There are
             <strong>no build, vet, or test failures</strong>.
           </p>
           <p>
-            However, the review surfaced <strong>one latent correctness bug</strong> (the fix
-            applier returns its input instead of applied findings), a
+            However, the review surfaced
+            <strong>one latent correctness bug</strong> (the fix applier returns
+            its input instead of applied findings), a
             <strong>performance lie</strong> in the interval index doc, several
-            <strong>silent-data-loss paths</strong> in SARIF/LSP conversions, a handful of
-            <strong>type-safety gaps</strong> (a branded <code>FilePath</code> type that the one
-            struct that needs it ignores), and a recurring pattern of
-            <strong>lying names and predicates</strong> (<code>IsValid</code> that returns true for
-            invalid values, "adjacent" functions that mean "coincident").
+            <strong>silent-data-loss paths</strong> in SARIF/LSP conversions, a
+            handful of <strong>type-safety gaps</strong> (a branded
+            <code>FilePath</code> type that the one struct that needs it
+            ignores), and a recurring pattern of
+            <strong>lying names and predicates</strong> (<code>IsValid</code>
+            that returns true for invalid values, "adjacent" functions that mean
+            "coincident").
           </p>
           <div class="callout callout-amber">
             <strong>The bottom line</strong>
-            Ship-ready foundation with solid bones. Fix the 7 critical/high items first &mdash;
-            especially the <code>ApplyWithDetails</code> return bug and the
-            <code>IntervalIndex</code> doc/perf claim. Then work the type-safety and data-loss items
-            in the medium tier. The low tier is polish.
+            Ship-ready foundation with solid bones. Fix the 7 critical/high
+            items first &mdash; especially the
+            <code>ApplyWithDetails</code> return bug and the
+            <code>IntervalIndex</code> doc/perf claim. Then work the type-safety
+            and data-loss items in the medium tier. The low tier is polish.
           </div>
         </section>
 
         <section id="strengths">
           <h2><span class="num">&#9670;</span>What's already excellent</h2>
           <p>
-            Acknowledging the strong work before the criticism &mdash; these patterns should be
-            preserved and extended.
+            Acknowledging the strong work before the criticism &mdash; these
+            patterns should be preserved and extended.
           </p>
           <div class="strengths">
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
-                <strong>Unix-style module decomposition is the real deal</strong>
+                <strong
+                  >Unix-style module decomposition is the real deal</strong
+                >
                 <span
-                  >Core is stdlib-only in production; Pipeline/Analysis/CLI compose via replace
-                  directives. Clean dependency direction, dual go.work + replace strategy. Each
-                  module does one thing well.</span
+                  >Core is stdlib-only in production; Pipeline/Analysis/CLI
+                  compose via replace directives. Clean dependency direction,
+                  dual go.work + replace strategy. Each module does one thing
+                  well.</span
                 >
               </div>
             </div>
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
-                <strong>Centralized, composable validation with errors.Join</strong>
+                <strong
+                  >Centralized, composable validation with errors.Join</strong
+                >
                 <span
-                  ><code>finding_validate.go</code> delegates to 6 per-field sub-validators, each
-                  &lt;10 complexity, collecting all errors before reporting. Idiomatic and
-                  actionable.</span
+                  ><code>finding_validate.go</code> delegates to 6 per-field
+                  sub-validators, each &lt;10 complexity, collecting all errors
+                  before reporting. Idiomatic and actionable.</span
                 >
               </div>
             </div>
@@ -711,8 +732,9 @@
               <div class="text">
                 <strong>Consistent, contextual error wrapping</strong>
                 <span
-                  >Nearly every error path uses <code>fmt.Errorf("...: %w", err)</code> with
-                  detector name / file path / iteration number. Sentinel errors enable
+                  >Nearly every error path uses
+                  <code>fmt.Errorf("...: %w", err)</code> with detector name /
+                  file path / iteration number. Sentinel errors enable
                   <code>errors.Is</code>/<code>errors.As</code>.</span
                 >
               </div>
@@ -720,11 +742,14 @@
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
-                <strong>Branded primitive types prevent ID/Rule/Tool mixups</strong>
+                <strong
+                  >Branded primitive types prevent ID/Rule/Tool mixups</strong
+                >
                 <span
-                  ><code>ID</code>, <code>RuleName</code>, <code>ToolName</code> are distinct string
-                  types with compile-time safety. JSON marshals as plain string. Length-prefixed
-                  hash ID prevents collision attacks.</span
+                  ><code>ID</code>, <code>RuleName</code>,
+                  <code>ToolName</code> are distinct string types with
+                  compile-time safety. JSON marshals as plain string.
+                  Length-prefixed hash ID prevents collision attacks.</span
                 >
               </div>
             </div>
@@ -733,9 +758,10 @@
               <div class="text">
                 <strong>FixProvider chain is clean and extensible</strong>
                 <span
-                  ><code>FixProvider</code> interface + optional <code>lineIndexAware</code> for
-                  lazy O(1) line-index lookups. <code>goast.Provider</code> demonstrates real
-                  drop-in extensibility.</span
+                  ><code>FixProvider</code> interface + optional
+                  <code>lineIndexAware</code> for lazy O(1) line-index lookups.
+                  <code>goast.Provider</code> demonstrates real drop-in
+                  extensibility.</span
                 >
               </div>
             </div>
@@ -744,8 +770,9 @@
               <div class="text">
                 <strong>Security-conscious path handling</strong>
                 <span
-                  ><code>groupFindingsBySafePath</code> resolves symlinks + prefix-checks against
-                  root to prevent path traversal. Correct and deliberate.</span
+                  ><code>groupFindingsBySafePath</code> resolves symlinks +
+                  prefix-checks against root to prevent path traversal. Correct
+                  and deliberate.</span
                 >
               </div>
             </div>
@@ -754,9 +781,9 @@
               <div class="text">
                 <strong>MergeIter streaming design</strong>
                 <span
-                  >Uses Go 1.23 <code>iter.Seq[Finding]</code>, clones on yield, doesn't hold locks
-                  across reports, pre-sizes dedup map. Functional-options pattern is
-                  idiomatic.</span
+                  >Uses Go 1.23 <code>iter.Seq[Finding]</code>, clones on yield,
+                  doesn't hold locks across reports, pre-sizes dedup map.
+                  Functional-options pattern is idiomatic.</span
                 >
               </div>
             </div>
@@ -765,9 +792,9 @@
               <div class="text">
                 <strong>Thorough sentinel-value documentation</strong>
                 <span
-                  >Position/Confidence/FixStrategy docs explain <em>why</em> the design is
-                  non-obvious (the <code>Offset: -1</code> sentinel, <code>0 means unset</code>).
-                  This prevents regression.</span
+                  >Position/Confidence/FixStrategy docs explain <em>why</em> the
+                  design is non-obvious (the <code>Offset: -1</code> sentinel,
+                  <code>0 means unset</code>). This prevents regression.</span
                 >
               </div>
             </div>
@@ -776,8 +803,9 @@
               <div class="text">
                 <strong>go-output adapter boundary is clean</strong>
                 <span
-                  >The go-output dependency is isolated in <code>output_adapter.go</code>; the rest
-                  of the CLI never imports it. Root <code>finding</code> package stays
+                  >The go-output dependency is isolated in
+                  <code>output_adapter.go</code>; the rest of the CLI never
+                  imports it. Root <code>finding</code> package stays
                   dependency-free.</span
                 >
               </div>
@@ -788,29 +816,36 @@
         <section id="critical">
           <h2><span class="num">01</span>Critical &amp; High findings</h2>
           <p>
-            Blocking or near-blocking issues &mdash; correctness bugs, data loss, race conditions,
-            and performance lies. Fix these first.
+            Blocking or near-blocking issues &mdash; correctness bugs, data
+            loss, race conditions, and performance lies. Fix these first.
           </p>
 
           <div class="issue issue-critical">
-            <span class="severity severity-critical">Critical &middot; Correctness bug</span>
-            <h3>ApplyWithDetails returns its INPUT, not the applied findings</h3>
+            <span class="severity severity-critical"
+              >Critical &middot; Correctness bug</span
+            >
+            <h3>
+              ApplyWithDetails returns its INPUT, not the applied findings
+            </h3>
             <div class="where">pipeline/fix_applier.go:86-93</div>
             <p>
-              <code>ApplyWithDetails</code> calls <code>ApplyWithShiftMap</code> and discards the
-              returned <code>appliedFixes</code> slice (second return value is <code>_</code>), then
-              returns the unfiltered input <code>fixes</code>. The doc promises "the list of
-              successfully applied findings" but returns every input finding regardless of whether
-              it was applied. The only test passes <code>nil</code>, masking the bug.
+              <code>ApplyWithDetails</code> calls
+              <code>ApplyWithShiftMap</code> and discards the returned
+              <code>appliedFixes</code> slice (second return value is
+              <code>_</code>), then returns the unfiltered input
+              <code>fixes</code>. The doc promises "the list of successfully
+              applied findings" but returns every input finding regardless of
+              whether it was applied. The only test passes <code>nil</code>,
+              masking the bug.
             </p>
             <pre><code><span class="tok-comment">// BUG: discards appliedFixes, returns input</span>
 applied, _, _, err := a.ApplyWithShiftMap(ctx, fixes)
 return applied, fixes, err   <span class="tok-comment">// should be: appliedFixes</span></code></pre>
             <div class="callout callout-teal">
               <strong>Fix:</strong>
-              Capture the second return value and return it. Add a test with non-nil input where
-              some fixes fail, asserting the returned slice contains only the successfully applied
-              findings.
+              Capture the second return value and return it. Add a test with
+              non-nil input where some fixes fail, asserting the returned slice
+              contains only the successfully applied findings.
             </div>
           </div>
 
@@ -819,54 +854,65 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
               >Critical &middot; Lying doc &amp; latent perf bug</span
             >
             <h3>IntervalIndex claims O(log n + k) but is O(n + k)</h3>
-            <div class="where">interval_tree.go:15,44-66 &middot; affects correlate.go</div>
+            <div class="where">
+              interval_tree.go:15,44-66 &middot; affects correlate.go
+            </div>
             <p>
               The type doc claims "efficient O(log n + k) overlap queries," but
               <code>Query</code> binary-searches the cutoff, then does
-              <code>for i := range cutoff</code> &mdash; an O(cutoff) linear scan. Worst case (all
-              intervals start near 0) every query scans the whole array:
-              <strong>O(n + k), not O(log n + k)</strong>. This propagates into
-              <code>Correlate</code>, which is effectively O(n&sup2;) worst case. Also: the file is
-              named <code>interval_tree.go</code> but contains a sorted slice, not a tree.
+              <code>for i := range cutoff</code> &mdash; an O(cutoff) linear
+              scan. Worst case (all intervals start near 0) every query scans
+              the whole array: <strong>O(n + k), not O(log n + k)</strong>. This
+              propagates into <code>Correlate</code>, which is effectively
+              O(n&sup2;) worst case. Also: the file is named
+              <code>interval_tree.go</code> but contains a sorted slice, not a
+              tree.
             </p>
             <div class="callout callout-teal">
               <strong>Fix:</strong>
-              Either implement a real augmented interval tree (max-end field per node), or correct
-              the doc to "O(n + k) &mdash; acceptable for typical finding counts" and rename the
-              file to
-              <code>interval_index.go</code>. The honest linear scan is fine at current scale; the
-              lie is not.
+              Either implement a real augmented interval tree (max-end field per
+              node), or correct the doc to "O(n + k) &mdash; acceptable for
+              typical finding counts" and rename the file to
+              <code>interval_index.go</code>. The honest linear scan is fine at
+              current scale; the lie is not.
             </div>
           </div>
 
           <div class="issue issue-critical">
-            <span class="severity severity-critical">Critical &middot; Type-safety gap</span>
+            <span class="severity severity-critical"
+              >Critical &middot; Type-safety gap</span
+            >
             <h3>Branded FilePath defined but Position.File is plain string</h3>
             <div class="where">branded_types.go:19 &middot; position.go:25</div>
             <p>
-              <code>FilePath</code> exists specifically to prevent mixing file paths with arbitrary
-              strings, but the one struct where it matters &mdash;
-              <code>Position.File</code> &mdash; uses <code>string</code>.
-              <code>ParsedID.File</code> uses <code>FilePath</code> (id.go:90), so the same concept
-              is typed in one place and untyped in another. Split-brain.
+              <code>FilePath</code> exists specifically to prevent mixing file
+              paths with arbitrary strings, but the one struct where it matters
+              &mdash; <code>Position.File</code> &mdash; uses
+              <code>string</code>. <code>ParsedID.File</code> uses
+              <code>FilePath</code> (id.go:90), so the same concept is typed in
+              one place and untyped in another. Split-brain.
             </p>
             <div class="callout callout-teal">
-              <strong>Fix:</strong> Change <code>Position.File</code> to <code>FilePath</code>. JSON
-              marshals identically. Audit all constructors (Pos, NewRange, FromLSP, SARIF import)
-              for compatibility.
+              <strong>Fix:</strong> Change <code>Position.File</code> to
+              <code>FilePath</code>. JSON marshals identically. Audit all
+              constructors (Pos, NewRange, FromLSP, SARIF import) for
+              compatibility.
             </div>
           </div>
 
           <div class="issue issue-critical">
-            <span class="severity severity-critical">Critical &middot; Lying predicate</span>
+            <span class="severity severity-critical"
+              >Critical &middot; Lying predicate</span
+            >
             <h3>Position.IsValid() returns true for "not set" values</h3>
             <div class="where">position.go:31-34</div>
             <p>
-              The docs say <code>Line == 0</code> means "not set," yet <code>IsValid()</code> checks
-              <code>p.Line &gt;= 0</code> &mdash; so a position with <code>Line: 0</code> ("not
-              set") is reported valid. <code>HasLocation()</code> correctly requires
-              <code>Line &gt; 0</code>. Two predicates on the same type give contradictory answers
-              about the same concept.
+              The docs say <code>Line == 0</code> means "not set," yet
+              <code>IsValid()</code> checks <code>p.Line &gt;= 0</code> &mdash;
+              so a position with <code>Line: 0</code> ("not set") is reported
+              valid. <code>HasLocation()</code> correctly requires
+              <code>Line &gt; 0</code>. Two predicates on the same type give
+              contradictory answers about the same concept.
             </p>
             <div class="callout callout-teal">
               <strong>Fix:</strong> Either make <code>IsValid()</code> require
@@ -876,96 +922,125 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
           </div>
 
           <div class="issue issue-critical">
-            <span class="severity severity-critical">Critical &middot; Lying names</span>
-            <h3>columnAdjacent / offsetAdjacent mean "coincident," not "adjacent"</h3>
+            <span class="severity severity-critical"
+              >Critical &middot; Lying names</span
+            >
+            <h3>
+              columnAdjacent / offsetAdjacent mean "coincident," not "adjacent"
+            </h3>
             <div class="where">
-              range_overlap.go:95-110 &middot; also range.go:163 &amp; range_overlap.go:108
+              range_overlap.go:95-110 &middot; also range.go:163 &amp;
+              range_overlap.go:108
             </div>
             <p>
-              "Adjacent" means "next to." These functions return <code>true</code> when the two
-              values are <strong>equal</strong>. Any caller reading the name will reason
-              incorrectly. Related: <code>r.End.Offset &gt; 0</code> excludes byte offset 0, which
-              the rest of the codebase (and the Position docs) treat as a valid offset &mdash; a
-              range ending at the very start of a file is mishandled.
+              "Adjacent" means "next to." These functions return
+              <code>true</code> when the two values are <strong>equal</strong>.
+              Any caller reading the name will reason incorrectly. Related:
+              <code>r.End.Offset &gt; 0</code> excludes byte offset 0, which the
+              rest of the codebase (and the Position docs) treat as a valid
+              offset &mdash; a range ending at the very start of a file is
+              mishandled.
             </p>
             <div class="callout callout-teal">
-              <strong>Fix:</strong> Rename to <code>columnCoincident</code>/<code
-                >offsetCoincident</code
-              >
-              (or implement real adjacency with <code>diff == 1</code>), and change
+              <strong>Fix:</strong> Rename to
+              <code>columnCoincident</code>/<code>offsetCoincident</code> (or
+              implement real adjacency with <code>diff == 1</code>), and change
               <code>&gt; 0</code> to <code>&gt;= 0</code> for offset checks.
             </div>
           </div>
 
           <div class="issue issue-important">
-            <span class="severity severity-important">High &middot; Silent data loss</span>
-            <h3>IsAutoFixable() disagrees with HasFix() on empty FixStrategy</h3>
+            <span class="severity severity-important"
+              >High &middot; Silent data loss</span
+            >
+            <h3>
+              IsAutoFixable() disagrees with HasFix() on empty FixStrategy
+            </h3>
             <div class="where">finding_methods.go:106-108 vs 87-100</div>
             <p>
               <code>HasFix()</code> normalizes <code>FixStrategy == ""</code> to
               <code>none</code> (matching the documented convention), but
-              <code>IsAutoFixable()</code> does not &mdash; it returns <code>false</code> for the
-              empty string. Two methods, two answers about the same concept. Also:
-              <code>Equal()</code> normalizes FixStrategy but not Confidence, so
-              <code>Finding{Confidence:1.5}.Equal(Finding{Confidence:1.0})</code> is false even
-              though both clamp to 1.0.
+              <code>IsAutoFixable()</code> does not &mdash; it returns
+              <code>false</code> for the empty string. Two methods, two answers
+              about the same concept. Also: <code>Equal()</code> normalizes
+              FixStrategy but not Confidence, so
+              <code
+                >Finding{Confidence:1.5}.Equal(Finding{Confidence:1.0})</code
+              >
+              is false even though both clamp to 1.0.
             </p>
             <div class="callout callout-teal">
               <strong>Fix:</strong> Call <code>NormalizeFixStrategy()</code> in
-              <code>IsAutoFixable()</code>. Make <code>Normalized()</code> clamp Confidence too
-              (currently only normalizes FixStrategy). Normalize consistently in
-              <code>Equal()</code> or not at all.
+              <code>IsAutoFixable()</code>. Make <code>Normalized()</code> clamp
+              Confidence too (currently only normalizes FixStrategy). Normalize
+              consistently in <code>Equal()</code> or not at all.
             </div>
           </div>
 
           <div class="issue issue-important">
-            <span class="severity severity-important">High &middot; Silent data loss</span>
+            <span class="severity severity-important"
+              >High &middot; Silent data loss</span
+            >
             <h3>SARIF/LSP conversions silently drop data</h3>
             <div class="where">
-              sarif_export.go:30-34 &middot; sarif_import.go:99-108 &middot; lsp.go:69-119
+              sarif_export.go:30-34 &middot; sarif_import.go:99-108 &middot;
+              lsp.go:69-119
             </div>
             <p>
-              Three independent loss paths: (1) <code>ToSARIF</code> drops all suppressed findings
-              &mdash; SARIF has native <code>suppressions</code> arrays, so this is unnecessary data
-              loss with no <code>includeSuppressed</code> option. (2)
-              <code>findingFromSarResult</code> keeps only the first fix when a result has multiple.
-              (3) <code>ToLSP</code> discards ID, Category, Tags, Confidence, Suppression, Snippet,
-              BeforeCode/AfterCode &mdash; and <code>FromLSP</code> regenerates the ID, breaking
+              Three independent loss paths: (1) <code>ToSARIF</code> drops all
+              suppressed findings &mdash; SARIF has native
+              <code>suppressions</code> arrays, so this is unnecessary data loss
+              with no <code>includeSuppressed</code> option. (2)
+              <code>findingFromSarResult</code> keeps only the first fix when a
+              result has multiple. (3) <code>ToLSP</code> discards ID, Category,
+              Tags, Confidence, Suppression, Snippet, BeforeCode/AfterCode
+              &mdash; and <code>FromLSP</code> regenerates the ID, breaking
               <code>Diff</code>/<code>Correlate</code> across LSP boundaries.
             </p>
             <div class="callout callout-teal">
-              <strong>Fix:</strong> Emit SARIF <code>suppressions</code> arrays instead of dropping.
-              Accumulate multiple fixes or document the truncation loudly. For LSP, persist the
-              original ID in a property bag so round-trip is stable; document every field that is
-              lossy.
+              <strong>Fix:</strong> Emit SARIF <code>suppressions</code> arrays
+              instead of dropping. Accumulate multiple fixes or document the
+              truncation loudly. For LSP, persist the original ID in a property
+              bag so round-trip is stable; document every field that is lossy.
             </div>
           </div>
 
           <div class="issue issue-important">
-            <span class="severity severity-important">High &middot; Public API defect</span>
-            <h3>Registry sentinel errors are unexported &mdash; can't errors.Is</h3>
+            <span class="severity severity-important"
+              >High &middot; Public API defect</span
+            >
+            <h3>
+              Registry sentinel errors are unexported &mdash; can't errors.Is
+            </h3>
             <div class="where">registry.go:13-14</div>
             <p>
-              <code>errDetectorRegistered</code> and <code>errUnknownDetector</code> are unexported,
-              so external callers of the public <code>DetectorRegistry</code> cannot use
-              <code>errors.Is</code> to distinguish "already registered" from "unknown." For a type
-              whose entire purpose is the public extensibility point, this defeats the error
-              contract.
+              <code>errDetectorRegistered</code> and
+              <code>errUnknownDetector</code> are unexported, so external
+              callers of the public <code>DetectorRegistry</code> cannot use
+              <code>errors.Is</code> to distinguish "already registered" from
+              "unknown." For a type whose entire purpose is the public
+              extensibility point, this defeats the error contract.
             </p>
             <div class="callout callout-teal">
-              <strong>Fix:</strong> Export as <code>ErrDetectorRegistered</code> /
-              <code>ErrUnknownDetector</code>. This is a non-breaking additive change.
+              <strong>Fix:</strong> Export as
+              <code>ErrDetectorRegistered</code> /
+              <code>ErrUnknownDetector</code>. This is a non-breaking additive
+              change.
             </div>
           </div>
 
           <div class="issue issue-important">
-            <span class="severity severity-important">High &middot; Race condition</span>
+            <span class="severity severity-important"
+              >High &middot; Race condition</span
+            >
             <h3>file_backup SetEnabled/IsEnabled not synchronized</h3>
             <div class="where">pipeline/file_backup.go:47-49</div>
             <p>
-              <code>enabled</code> is read without a lock in <code>IsEnabled()</code> and written
-              without a lock in <code>SetEnabled()</code>, while
-              <code>Backup</code>/<code>Restore</code>/ <code>RollbackAll</code> call
+              <code>enabled</code> is read without a lock in
+              <code>IsEnabled()</code> and written without a lock in
+              <code>SetEnabled()</code>, while
+              <code>Backup</code>/<code>Restore</code>/
+              <code>RollbackAll</code> call
               <code>IsEnabled()</code> concurrently from multiple goroutines.
             </p>
             <div class="callout callout-teal">
@@ -975,37 +1050,50 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
           </div>
 
           <div class="issue issue-important">
-            <span class="severity severity-important">High &middot; CLI robustness</span>
-            <h3>No signal handling &mdash; Ctrl+C doesn't cancel the pipeline</h3>
+            <span class="severity severity-important"
+              >High &middot; CLI robustness</span
+            >
+            <h3>
+              No signal handling &mdash; Ctrl+C doesn't cancel the pipeline
+            </h3>
             <div class="where">cmd/go-finding/main.go:183</div>
             <p>
-              <code>ctx := context.Background()</code> has no signal handler. Users pressing Ctrl+C
-              get no response until the pipeline's internal timeout fires. The
-              <code>-timeout</code> flag configures the inner pipeline timeout, not the outer
-              context.
+              <code>ctx := context.Background()</code> has no signal handler.
+              Users pressing Ctrl+C get no response until the pipeline's
+              internal timeout fires. The <code>-timeout</code> flag configures
+              the inner pipeline timeout, not the outer context.
             </p>
             <div class="callout callout-teal">
               <strong>Fix:</strong>
-              <code>signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)</code
+              <code
+                >signal.NotifyContext(context.Background(), os.Interrupt,
+                syscall.SIGTERM)</code
               >. One line, large UX improvement.
             </div>
           </div>
 
           <div class="issue issue-important">
-            <span class="severity severity-important">High &middot; Incorrect domain mapping</span>
+            <span class="severity severity-important"
+              >High &middot; Incorrect domain mapping</span
+            >
             <h3>staticcheckCategory maps SA (correctness) codes to Style</h3>
-            <div class="where">cmd/go-finding/internal/detectors/staticcheck.go:103-105</div>
+            <div class="where">
+              cmd/go-finding/internal/detectors/staticcheck.go:103-105
+            </div>
             <p>
-              Staticcheck's <code>SA</code> codes (e.g. <code>SA1000</code>) are static-analysis
-              <strong>correctness</strong> checks, but <code>code[0] == 'S'</code> maps them to
-              <code>CategoryStyle</code>. Only <code>ST</code>/<code>S</code> (simplify) codes are
-              style. The test at <code>detectors_test.go:181</code> asserts the wrong expected
+              Staticcheck's <code>SA</code> codes (e.g. <code>SA1000</code>) are
+              static-analysis <strong>correctness</strong> checks, but
+              <code>code[0] == 'S'</code> maps them to
+              <code>CategoryStyle</code>. Only <code>ST</code>/<code>S</code>
+              (simplify) codes are style. The test at
+              <code>detectors_test.go:181</code> asserts the wrong expected
               value, enshrining the bug.
             </p>
             <div class="callout callout-teal">
-              <strong>Fix:</strong> Check <code>strings.HasPrefix(code, "SA")</code> &rarr;
-              <code>CategoryCorrectness</code> before the single-letter switch. Fix the test
-              expectation.
+              <strong>Fix:</strong> Check
+              <code>strings.HasPrefix(code, "SA")</code> &rarr;
+              <code>CategoryCorrectness</code> before the single-letter switch.
+              Fix the test expectation.
             </div>
           </div>
         </section>
@@ -1015,8 +1103,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
         <section id="medium">
           <h2><span class="num">02</span>Medium findings</h2>
           <p>
-            Important but not blocking &mdash; type-safety gaps, split brains, data-model smells,
-            and robustness issues. These compound if left alone.
+            Important but not blocking &mdash; type-safety gaps, split brains,
+            data-model smells, and robustness issues. These compound if left
+            alone.
           </p>
 
           <h3>Type safety &amp; data model</h3>
@@ -1035,17 +1124,22 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>1</td>
                   <td>finding_validate.go:81-105</td>
                   <td>
-                    Category &amp; Tags are both <code>string</code> sharing 6+ overlapping values;
-                    a validator exists only to paper over the split-brain
+                    Category &amp; Tags are both <code>string</code> sharing 6+
+                    overlapping values; a validator exists only to paper over
+                    the split-brain
                   </td>
-                  <td>Pick one canonical classification (Tags or Category); drop the overlap</td>
+                  <td>
+                    Pick one canonical classification (Tags or Category); drop
+                    the overlap
+                  </td>
                 </tr>
                 <tr>
                   <td>2</td>
                   <td>suppression.go:18</td>
                   <td>
                     <code>Suppression.Rule</code> is <code>string</code> but
-                    <code>Finding.Rule</code> is <code>RuleName</code> &mdash; inconsistent typing
+                    <code>Finding.Rule</code> is <code>RuleName</code> &mdash;
+                    inconsistent typing
                   </td>
                   <td>Use <code>RuleName</code></td>
                 </tr>
@@ -1053,8 +1147,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>3</td>
                   <td>finding.go:71-79</td>
                   <td>
-                    <code>RelationKind</code> has 4 constants but no <code>IsValid()</code>, unlike
-                    every other string enum; <code>RelatedRef.IsValid()</code> ignores Relation
+                    <code>RelationKind</code> has 4 constants but no
+                    <code>IsValid()</code>, unlike every other string enum;
+                    <code>RelatedRef.IsValid()</code> ignores Relation
                   </td>
                   <td>Add <code>RelationKind.IsValid()</code></td>
                 </tr>
@@ -1062,8 +1157,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>4</td>
                   <td>severity.go:91-121</td>
                   <td>
-                    <code>Badge()</code>/<code>Emoji()</code> are presentation logic in the core
-                    domain-types package &mdash; layering violation
+                    <code>Badge()</code>/<code>Emoji()</code> are presentation
+                    logic in the core domain-types package &mdash; layering
+                    violation
                   </td>
                   <td>Move to a renderer/presentation package</td>
                 </tr>
@@ -1071,19 +1167,23 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>5</td>
                   <td>category.go:52, tag.go:39</td>
                   <td>
-                    <code>IsValid()</code> accepts any lowercase-hyphen string (<code
-                      >Category("banana")</code
-                    >
+                    <code>IsValid()</code> accepts any lowercase-hyphen string
+                    (<code>Category("banana")</code>
                     is "valid"). Name implies a known set
                   </td>
-                  <td>Rename to <code>IsWellFormed()</code> or validate against the known set</td>
+                  <td>
+                    Rename to <code>IsWellFormed()</code> or validate against
+                    the known set
+                  </td>
                 </tr>
                 <tr>
                   <td>6</td>
                   <td>errors.go:39-49</td>
                   <td>
-                    <code>FindingError</code> stores file path twice (<code>File string</code> and
-                    <code>Position.File</code>); nothing keeps them in sync
+                    <code>FindingError</code> stores file path twice (<code
+                      >File string</code
+                    >
+                    and <code>Position.File</code>); nothing keeps them in sync
                   </td>
                   <td>Pick one source of truth</td>
                 </tr>
@@ -1092,18 +1192,23 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>id.go:112</td>
                   <td>
                     Hash-ID detection by
-                    <code>len==3 &amp;&amp; len(parts[2])==8</code> misclassifies a real file
-                    <code>"abcd1234"</code> as a hash &mdash; brittle; <code>IsHashID</code> exists
-                    but isn't reused
+                    <code>len==3 &amp;&amp; len(parts[2])==8</code>
+                    misclassifies a real file <code>"abcd1234"</code> as a hash
+                    &mdash; brittle; <code>IsHashID</code> exists but isn't
+                    reused
                   </td>
-                  <td>Use <code>IsHashID</code> here, or prefix hash IDs with a marker</td>
+                  <td>
+                    Use <code>IsHashID</code> here, or prefix hash IDs with a
+                    marker
+                  </td>
                 </tr>
                 <tr>
                   <td>8</td>
                   <td>pipeline/conflict.go:10-13</td>
                   <td>
-                    <code>ReasonOverlappingRange</code> etc. are untyped <code>string</code> consts;
-                    any string can be a <code>Conflict.Reason</code>
+                    <code>ReasonOverlappingRange</code> etc. are untyped
+                    <code>string</code> consts; any string can be a
+                    <code>Conflict.Reason</code>
                   </td>
                   <td><code>type ConflictReason string</code></td>
                 </tr>
@@ -1111,8 +1216,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>9</td>
                   <td>pipeline/config.go:13-65</td>
                   <td>
-                    <code>Config</code> is a 24-field struct with 7 bools; zero-value unsafe
-                    (MaxIterations=0 loops zero times). No builder
+                    <code>Config</code> is a 24-field struct with 7 bools;
+                    zero-value unsafe (MaxIterations=0 loops zero times). No
+                    builder
                   </td>
                   <td>Functional options or unexport + <code>New()</code></td>
                 </tr>
@@ -1136,27 +1242,36 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>10</td>
                   <td>pipeline/conflict.go:172-247 + fix_engine.go</td>
                   <td>
-                    Two parallel conflict-detection paths (position-based vs byte-level), selected
-                    by a bool; can produce different results for the same input
+                    Two parallel conflict-detection paths (position-based vs
+                    byte-level), selected by a bool; can produce different
+                    results for the same input
                   </td>
-                  <td>Unify behind a single <code>ConflictResolver</code> interface</td>
+                  <td>
+                    Unify behind a single
+                    <code>ConflictResolver</code> interface
+                  </td>
                 </tr>
                 <tr>
                   <td>11</td>
                   <td>sarif_types.go + lsp.go + sarif_import.go</td>
                   <td>
-                    Three severity representations (Severity &harr; SARIF level &harr; LSP severity)
-                    with three lossy conversions and different fallback defaults; no single source
-                    of truth
+                    Three severity representations (Severity &harr; SARIF level
+                    &harr; LSP severity) with three lossy conversions and
+                    different fallback defaults; no single source of truth
                   </td>
                   <td>
-                    <code>Severity.MarshalSARIF()</code>/<code>MarshalLSP()</code> on the type
+                    <code>Severity.MarshalSARIF()</code>/<code
+                      >MarshalLSP()</code
+                    >
+                    on the type
                   </td>
                 </tr>
                 <tr>
                   <td>12</td>
                   <td>sarif_import.go, lsp.go</td>
-                  <td><code>Offset: -1</code> sentinel copy-pasted across 5+ sites</td>
+                  <td>
+                    <code>Offset: -1</code> sentinel copy-pasted across 5+ sites
+                  </td>
                   <td>Constant <code>OffsetUnknown = -1</code></td>
                 </tr>
                 <tr>
@@ -1173,18 +1288,23 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>14</td>
                   <td>sarif_export.go:35-94</td>
                   <td>
-                    5 export methods (<code>ToSARIF</code>, <code>ToSARIFFiltered</code>,
-                    <code>WriteSARIF</code>, <code>WriteSARIFFiltered</code>, <code>WriteTo</code>)
-                    doing nearly the same thing
+                    5 export methods (<code>ToSARIF</code>,
+                    <code>ToSARIFFiltered</code>, <code>WriteSARIF</code>,
+                    <code>WriteSARIFFiltered</code>, <code>WriteTo</code>) doing
+                    nearly the same thing
                   </td>
-                  <td>Collapse to <code>WriteSARIF(ctx, w, opts ...SARIFOption)</code></td>
+                  <td>
+                    Collapse to
+                    <code>WriteSARIF(ctx, w, opts ...SARIFOption)</code>
+                  </td>
                 </tr>
                 <tr>
                   <td>15</td>
                   <td>cmd config.go vs output_adapter.go</td>
                   <td>
-                    Format dispatch spread across 4 locations; <code>supportedFormats</code> must be
-                    manually synced with <code>goOutputFormats</code> &mdash; no compile-time
+                    Format dispatch spread across 4 locations;
+                    <code>supportedFormats</code> must be manually synced with
+                    <code>goOutputFormats</code> &mdash; no compile-time
                     guarantee
                   </td>
                   <td>Single dispatch map; derive supported list from union</td>
@@ -1193,8 +1313,8 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>16</td>
                   <td>govet.go + staticcheck.go</td>
                   <td>
-                    Both detectors share identical exec&rarr;parse&rarr;convert structure; ExitError
-                    handling is copy-pasted
+                    Both detectors share identical exec&rarr;parse&rarr;convert
+                    structure; ExitError handling is copy-pasted
                   </td>
                   <td>Extract <code>CommandDetector[O any]</code> generic</td>
                 </tr>
@@ -1218,18 +1338,22 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>17</td>
                   <td>report.go:16-21</td>
                   <td>
-                    <code>Report.Tool</code> &amp; <code>Report.Summary</code> are exported,
-                    mutable, unlocked &mdash; type claims "concurrent safe" but direct writes race
+                    <code>Report.Tool</code> &amp;
+                    <code>Report.Summary</code> are exported, mutable, unlocked
+                    &mdash; type claims "concurrent safe" but direct writes race
                     with RLock reads
                   </td>
-                  <td>Unexport fields or document read-only-after-construction</td>
+                  <td>
+                    Unexport fields or document read-only-after-construction
+                  </td>
                 </tr>
                 <tr>
                   <td>18</td>
                   <td>json.go:78-102</td>
                   <td>
-                    <code>PrettyJSONFiltered</code> TOCTOU: RLock&rarr;copy&rarr;RUnlock, then WLock
-                    for summary &mdash; summary won't match the snapshot
+                    <code>PrettyJSONFiltered</code> TOCTOU:
+                    RLock&rarr;copy&rarr;RUnlock, then WLock for summary &mdash;
+                    summary won't match the snapshot
                   </td>
                   <td>Snapshot findings AND compute summary under one lock</td>
                 </tr>
@@ -1237,8 +1361,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>19</td>
                   <td>sarif_import.go:15-43</td>
                   <td>
-                    Context checking is theater: <code>ctx.Err()</code> checked once, then
-                    <code>json.Unmarshal</code> (uncancellable) on potentially huge SARIF
+                    Context checking is theater: <code>ctx.Err()</code> checked
+                    once, then <code>json.Unmarshal</code> (uncancellable) on
+                    potentially huge SARIF
                   </td>
                   <td>Stream-decode with periodic checks, or drop ctx param</td>
                 </tr>
@@ -1246,26 +1371,34 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>20</td>
                   <td>analysis/adapter.go:140-158</td>
                   <td>
-                    Nil fact stubs silently break fact-dependent analyzers (unused, nilness, printf)
-                    &mdash; zero findings, no error, no docs
+                    Nil fact stubs silently break fact-dependent analyzers
+                    (unused, nilness, printf) &mdash; zero findings, no error,
+                    no docs
                   </td>
-                  <td>Document; return error if <code>analyzer.FactTypes</code> non-empty</td>
+                  <td>
+                    Document; return error if
+                    <code>analyzer.FactTypes</code> non-empty
+                  </td>
                 </tr>
                 <tr>
                   <td>21</td>
                   <td>analysis/adapter.go:67-104</td>
                   <td>
-                    Context not propagated into <code>analyzer.Run</code> &mdash; a hanging custom
-                    analyzer can't be cancelled
+                    Context not propagated into
+                    <code>analyzer.Run</code> &mdash; a hanging custom analyzer
+                    can't be cancelled
                   </td>
-                  <td>Run in goroutine + <code>select{&lt;-ctx.Done()}</code></td>
+                  <td>
+                    Run in goroutine + <code>select{&lt;-ctx.Done()}</code>
+                  </td>
                 </tr>
                 <tr>
                   <td>22</td>
                   <td>pipeline/fix_provider.go:159</td>
                   <td>
-                    <code>lineProviderInsertionEdit</code> unconditionally appends
-                    <code>'\n'</code> &mdash; double newline if AfterCode already ends with one
+                    <code>lineProviderInsertionEdit</code> unconditionally
+                    appends <code>'\n'</code> &mdash; double newline if
+                    AfterCode already ends with one
                   </td>
                   <td>Strip/check trailing newline first</td>
                 </tr>
@@ -1274,17 +1407,20 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>pipeline/retry.go:59-65</td>
                   <td>
                     <code>Validate</code> allows
-                    <code>BaseDelay=0 &amp;&amp; MaxRetries&gt;0</code> &rarr; zero-delay hot-loop
-                    retries
+                    <code>BaseDelay=0 &amp;&amp; MaxRetries&gt;0</code> &rarr;
+                    zero-delay hot-loop retries
                   </td>
-                  <td>If <code>MaxRetries&gt;0</code> then <code>BaseDelay&gt;0</code></td>
+                  <td>
+                    If <code>MaxRetries&gt;0</code> then
+                    <code>BaseDelay&gt;0</code>
+                  </td>
                 </tr>
                 <tr>
                   <td>24</td>
                   <td>cmd config.go:203-217</td>
                   <td>
-                    <code>writeOutput</code> discards <code>Close()</code> error &mdash; on
-                    disk-full/NFS, truncated output exits 0 (success)
+                    <code>writeOutput</code> discards <code>Close()</code> error
+                    &mdash; on disk-full/NFS, truncated output exits 0 (success)
                   </td>
                   <td><code>errors.Join(err, cerr)</code> on close</td>
                 </tr>
@@ -1292,8 +1428,8 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>25</td>
                   <td>cmd main.go:131-139</td>
                   <td>
-                    <code>buildDetectors</code> silently skips unknown detector names (typo &rarr;
-                    fewer detectors, no error)
+                    <code>buildDetectors</code> silently skips unknown detector
+                    names (typo &rarr; fewer detectors, no error)
                   </td>
                   <td>Error, or exit non-zero if zero detectors remain</td>
                 </tr>
@@ -1301,26 +1437,32 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>26</td>
                   <td>pipeline_iteration.go:47-49,89</td>
                   <td>
-                    No <code>StageBefore</code> hook for Triage/Process (every other stage has
-                    Before+After); triage-after hook passes conflicts=0 (computed later)
+                    No <code>StageBefore</code> hook for Triage/Process (every
+                    other stage has Before+After); triage-after hook passes
+                    conflicts=0 (computed later)
                   </td>
-                  <td>Add Before hooks; fix the misleading post-triage count</td>
+                  <td>
+                    Add Before hooks; fix the misleading post-triage count
+                  </td>
                 </tr>
                 <tr>
                   <td>27</td>
                   <td>gotoken/gotoken.go:54-68</td>
                   <td>
-                    <code>FindFileByName</code> is O(n) linear scan per call; called per-finding
-                    &rarr; O(n&times;m)
+                    <code>FindFileByName</code> is O(n) linear scan per call;
+                    called per-finding &rarr; O(n&times;m)
                   </td>
-                  <td>Build a <code>map[string]*token.File</code> index once</td>
+                  <td>
+                    Build a <code>map[string]*token.File</code> index once
+                  </td>
                 </tr>
                 <tr>
                   <td>28</td>
                   <td>pipeline/fix_applier.go:153-186</td>
                   <td>
                     <code>groupFindingsBySafePath</code> calls
-                    <code>filepath.EvalSymlinks</code> per finding &mdash; O(N) syscalls
+                    <code>filepath.EvalSymlinks</code> per finding &mdash; O(N)
+                    syscalls
                   </td>
                   <td>Cache resolved root once; batch-resolve paths</td>
                 </tr>
@@ -1328,8 +1470,8 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>29</td>
                   <td>pipeline/fix_engine.go:142-188</td>
                   <td>
-                    <code>applyEditsWithConflicts</code> O(n&sup2;) conflict lookup; inner loop
-                    scans all appliedEdits
+                    <code>applyEditsWithConflicts</code> O(n&sup2;) conflict
+                    lookup; inner loop scans all appliedEdits
                   </td>
                   <td>Maintain sorted structure / use frontier for O(N)</td>
                 </tr>
@@ -1337,8 +1479,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>30</td>
                   <td>cmd main.go:121-124</td>
                   <td>
-                    <code>parseSeverity</code> returns valid <code>SeverityWarning</code> on error
-                    &mdash; caller who forgets to check err silently filters at warning
+                    <code>parseSeverity</code> returns valid
+                    <code>SeverityWarning</code> on error &mdash; caller who
+                    forgets to check err silently filters at warning
                   </td>
                   <td>Return <code>Severity("")</code> on error</td>
                 </tr>
@@ -1346,8 +1489,8 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>31</td>
                   <td>cmd config.go:112-119,172-175</td>
                   <td>
-                    MaxIterations=0 is valid in validate() but means "use default" in
-                    toPipelineConfig &mdash; silently overridden
+                    MaxIterations=0 is valid in validate() but means "use
+                    default" in toPipelineConfig &mdash; silently overridden
                   </td>
                   <td>Reject 0 or document "0 = default"</td>
                 </tr>
@@ -1355,8 +1498,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>32</td>
                   <td>sarif_import.go:121-125,267-288</td>
                   <td>
-                    Silent type-assertion failures (<code>.(string)</code>) drop data with no error;
-                    edit properties silently dropped despite a comment claiming they're preserved
+                    Silent type-assertion failures (<code>.(string)</code>) drop
+                    data with no error; edit properties silently dropped despite
+                    a comment claiming they're preserved
                   </td>
                   <td>Guard assertions; fix the stale comment / the drop</td>
                 </tr>
@@ -1364,8 +1508,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>33</td>
                   <td>analysis/analysis.go:43-50</td>
                   <td>
-                    <code>FromDiagnostic</code> sets <code>FixStrategyDirect</code> but never
-                    populates <code>BeforeCode</code> &mdash; an impossible/invalid state
+                    <code>FromDiagnostic</code> sets
+                    <code>FixStrategyDirect</code> but never populates
+                    <code>BeforeCode</code> &mdash; an impossible/invalid state
                   </td>
                   <td>Populate BeforeCode, or downgrade to Suggest</td>
                 </tr>
@@ -1373,10 +1518,14 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>34</td>
                   <td>cmd fix_provider_registry.go:19-24,49-76</td>
                   <td>
-                    Registry pattern with mutex but no <code>RegisterFixProvider</code> function
-                    &mdash; closed set dressed as extensible; always appends defaults, can't replace
+                    Registry pattern with mutex but no
+                    <code>RegisterFixProvider</code> function &mdash; closed set
+                    dressed as extensible; always appends defaults, can't
+                    replace
                   </td>
-                  <td>Add Register, or drop the mutex; allow disabling defaults</td>
+                  <td>
+                    Add Register, or drop the mutex; allow disabling defaults
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1384,23 +1533,30 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
 
           <h3>Global mutable state in domain package</h3>
           <div class="issue issue-important">
-            <span class="severity severity-important">Medium &middot; Test hermeticity</span>
+            <span class="severity severity-important"
+              >Medium &middot; Test hermeticity</span
+            >
             <h3>Two global mutable maps in core + three in CLI</h3>
             <div class="where">
-              severity.go:166-199 &middot; category_linter.go:71-171 &middot; cmd/registry.go
-              &middot; cmd/generated_filter.go &middot; cmd/fix_provider_registry.go
+              severity.go:166-199 &middot; category_linter.go:71-171 &middot;
+              cmd/registry.go &middot; cmd/generated_filter.go &middot;
+              cmd/fix_provider_registry.go
             </div>
             <p>
-              <code>severityAliases</code> and <code>DefaultLinterRegistry</code> are package-level
-              mutable maps guarded by mutexes in the core domain-types package. This makes tests
-              non-hermetic and introduces hidden coupling. The CLI has three more such globals. None
-              have <code>resetRegistryForTesting</code> helpers. Also
-              <code>CategoryForLinter</code> silently returns <code>CategoryCorrectness</code> for
-              unknown linters (false classification, no signal).
+              <code>severityAliases</code> and
+              <code>DefaultLinterRegistry</code> are package-level mutable maps
+              guarded by mutexes in the core domain-types package. This makes
+              tests non-hermetic and introduces hidden coupling. The CLI has
+              three more such globals. None have
+              <code>resetRegistryForTesting</code> helpers. Also
+              <code>CategoryForLinter</code> silently returns
+              <code>CategoryCorrectness</code> for unknown linters (false
+              classification, no signal).
             </p>
             <div class="callout callout-teal">
-              <strong>Fix:</strong> Inject registries where feasible; at minimum add test-reset
-              helpers. Make <code>CategoryForLinter</code> return <code>(Category, bool)</code>.
+              <strong>Fix:</strong> Inject registries where feasible; at minimum
+              add test-reset helpers. Make <code>CategoryForLinter</code> return
+              <code>(Category, bool)</code>.
             </div>
           </div>
         </section>
@@ -1408,8 +1564,8 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
         <section id="low">
           <h2><span class="num">03</span>Low findings</h2>
           <p>
-            Polish, naming smells, minor inefficiencies, and documentation gaps. Pick these up
-            opportunistically.
+            Polish, naming smells, minor inefficiencies, and documentation gaps.
+            Pick these up opportunistically.
           </p>
           <div class="table-wrap">
             <table>
@@ -1423,66 +1579,72 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                 <tr>
                   <td>position.go:24-29</td>
                   <td>
-                    <code>Line</code>/<code>Column</code> are <code>int</code> not
-                    <code>uint</code>; negative values representable but never valid. The
-                    <code>-1</code> Offset sentinel is itself a documented footgun
+                    <code>Line</code>/<code>Column</code> are
+                    <code>int</code> not <code>uint</code>; negative values
+                    representable but never valid. The <code>-1</code> Offset
+                    sentinel is itself a documented footgun
                   </td>
                 </tr>
                 <tr>
                   <td>finding_methods.go:62-65</td>
                   <td>
-                    <code>IsSuppressed()</code> calls <code>time.Now()</code> &mdash;
-                    non-deterministic; prefer <code>IsSuppressedAt(time.Time)</code> only
+                    <code>IsSuppressed()</code> calls
+                    <code>time.Now()</code> &mdash; non-deterministic; prefer
+                    <code>IsSuppressedAt(time.Time)</code> only
                   </td>
                 </tr>
                 <tr>
                   <td>finding_builder.go:40-45</td>
                   <td>
-                    Comment says "sets multiple tags" but body appends; inconsistent with
+                    Comment says "sets multiple tags" but body appends;
+                    inconsistent with
                     <code>WithMetadata</code> which replaces
                   </td>
                 </tr>
                 <tr>
                   <td>finding_validate.go:189-210</td>
                   <td>
-                    <code>Key()</code> is effectively dead code (NewFinding always sets ID);
-                    <code>keySeparator</code> declared in finding.go but used only in
-                    finding_validate.go
+                    <code>Key()</code> is effectively dead code (NewFinding
+                    always sets ID); <code>keySeparator</code> declared in
+                    finding.go but used only in finding_validate.go
                   </td>
                 </tr>
                 <tr>
                   <td>id.go:16-21,78-84</td>
                   <td>
-                    <code>idPartCount=3</code> named "minimum parts" but used as "exact hash parts";
-                    comment/code off-by-one mismatch
+                    <code>idPartCount=3</code> named "minimum parts" but used as
+                    "exact hash parts"; comment/code off-by-one mismatch
                   </td>
                 </tr>
                 <tr>
                   <td>id.go:155-165</td>
                   <td>
-                    <code>parseInt</code> wraps <code>strconv.Atoi</code> adding only redundant
+                    <code>parseInt</code> wraps <code>strconv.Atoi</code> adding
+                    only redundant
                     <code>fmt.Errorf</code>
                   </td>
                 </tr>
                 <tr>
                   <td>fix_strategy.go:14-18</td>
                   <td>
-                    <code>FixStrategyAI</code> is reserved dead code (no backend); pollutes every
-                    switch on FixStrategy
+                    <code>FixStrategyAI</code> is reserved dead code (no
+                    backend); pollutes every switch on FixStrategy
                   </td>
                 </tr>
                 <tr>
                   <td>severity.go:31-82</td>
                   <td>
-                    <code>comparisonOp</code> enum + <code>compareOp</code> dispatcher is
-                    over-engineered; four one-liners delegate to a switch
+                    <code>comparisonOp</code> enum +
+                    <code>compareOp</code> dispatcher is over-engineered; four
+                    one-liners delegate to a switch
                   </td>
                 </tr>
                 <tr>
                   <td>finding_methods.go:110-113,147-152</td>
                   <td>
-                    <code>HasSuggestion()</code> conflates "has Suggestion text" with "has
-                    Before+AfterCode"; <code>HasCodeChange</code> documented as "internal" but
+                    <code>HasSuggestion()</code> conflates "has Suggestion text"
+                    with "has Before+AfterCode";
+                    <code>HasCodeChange</code> documented as "internal" but
                     exported
                   </td>
                 </tr>
@@ -1495,24 +1657,31 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                 </tr>
                 <tr>
                   <td>diff.go:24-26</td>
-                  <td><code>SortFindingsByID</code> mutates input slice &mdash; undocumented</td>
+                  <td>
+                    <code>SortFindingsByID</code> mutates input slice &mdash;
+                    undocumented
+                  </td>
                 </tr>
                 <tr>
                   <td>filter.go:127-160</td>
                   <td>
-                    Mixed API style: some filters are bare values, others factory functions;
+                    Mixed API style: some filters are bare values, others
+                    factory functions;
                     <code>AnyOf</code> with empty preds returns true (vacuous)
                   </td>
                 </tr>
                 <tr>
                   <td>format.go:71-82</td>
-                  <td><code>escapeMarkdownCell</code> panics if <code>maxLen &lt; 3</code></td>
+                  <td>
+                    <code>escapeMarkdownCell</code> panics if
+                    <code>maxLen &lt; 3</code>
+                  </td>
                 </tr>
                 <tr>
                   <td>merge.go:28-38,177-179</td>
                   <td>
-                    Single-report path skips dedup options; <code>dedupKey</code> default swallows
-                    unknown enum as ID
+                    Single-report path skips dedup options;
+                    <code>dedupKey</code> default swallows unknown enum as ID
                   </td>
                 </tr>
                 <tr>
@@ -1525,36 +1694,38 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                 <tr>
                   <td>json.go:60-62</td>
                   <td>
-                    <code>FilterInvalid</code> is a lying name (returns true when invalid). Rename
+                    <code>FilterInvalid</code> is a lying name (returns true
+                    when invalid). Rename
                     <code>IsInvalid</code>
                   </td>
                 </tr>
                 <tr>
                   <td>detector.go:24-26</td>
                   <td>
-                    <code>DetectorFunc.Name()</code> returns "anonymous" &mdash; a lying default
-                    that can leak into ToolName
+                    <code>DetectorFunc.Name()</code> returns "anonymous" &mdash;
+                    a lying default that can leak into ToolName
                   </td>
                 </tr>
                 <tr>
                   <td>adapter.go:36-46</td>
                   <td>
-                    <code>NewToolAdapter</code> panics on nil; rest of codebase returns errors
-                    &mdash; inconsistent
+                    <code>NewToolAdapter</code> panics on nil; rest of codebase
+                    returns errors &mdash; inconsistent
                   </td>
                 </tr>
                 <tr>
                   <td>pipeline/adapters.go</td>
                   <td>
-                    Misnamed grab-bag: type aliases + context utilities + transformer adapters.
-                    Split; add <code>// Deprecated</code> to re-exports
+                    Misnamed grab-bag: type aliases + context utilities +
+                    transformer adapters. Split; add
+                    <code>// Deprecated</code> to re-exports
                   </td>
                 </tr>
                 <tr>
                   <td>pipeline/line_shift.go:196</td>
                   <td>
-                    <code>var _ = (*LineShiftMap)(nil)</code> asserts nothing (no interface) &mdash;
-                    no-op
+                    <code>var _ = (*LineShiftMap)(nil)</code> asserts nothing
+                    (no interface) &mdash; no-op
                   </td>
                 </tr>
                 <tr>
@@ -1564,14 +1735,15 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                 <tr>
                   <td>pipeline/metrics.go:48</td>
                   <td>
-                    <code>RecordFixes(count uint)</code> stores as <code>int</code> &mdash;
-                    truncation on 32-bit
+                    <code>RecordFixes(count uint)</code> stores as
+                    <code>int</code> &mdash; truncation on 32-bit
                   </td>
                 </tr>
                 <tr>
                   <td>pipeline/file_backup.go:82-87</td>
                   <td>
-                    <code>fileHash</code> hashes the path string (not content); redundant
+                    <code>fileHash</code> hashes the path string (not content);
+                    redundant
                     <code>MkdirAll</code>
                   </td>
                 </tr>
@@ -1584,45 +1756,52 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                 </tr>
                 <tr>
                   <td>pipeline/config.go:105</td>
-                  <td>Validate allows MaxIterations=0 (pipeline silently does nothing)</td>
+                  <td>
+                    Validate allows MaxIterations=0 (pipeline silently does
+                    nothing)
+                  </td>
                 </tr>
                 <tr>
                   <td>analysis/analysis.go:104-106,171</td>
                   <td>
-                    Magic <code>Offset: -1</code> sentinel; semantically wrong reverse mapping of
-                    Relation&rarr;Message
+                    Magic <code>Offset: -1</code> sentinel; semantically wrong
+                    reverse mapping of Relation&rarr;Message
                   </td>
                 </tr>
                 <tr>
                   <td>gotoken/gotoken.go</td>
                   <td>
-                    Inconsistent error signaling (<code>(int,bool)</code> vs sentinel) between
-                    siblings; <code>NodeByteRange</code> doesn't validate start&le;end
+                    Inconsistent error signaling (<code>(int,bool)</code> vs
+                    sentinel) between siblings;
+                    <code>NodeByteRange</code> doesn't validate start&le;end
                   </td>
                 </tr>
                 <tr>
                   <td>gotoken/gotoken_test.go:125</td>
-                  <td>Dead code: impossible nil check (gopls nilness confirms)</td>
+                  <td>
+                    Dead code: impossible nil check (gopls nilness confirms)
+                  </td>
                 </tr>
                 <tr>
                   <td>cmd main.go:50,99</td>
                   <td>
-                    Lying flag <code>-severity</code> for a min-severity threshold (rename
-                    <code>-min-severity</code>); <code>-dir</code> not validated early
+                    Lying flag <code>-severity</code> for a min-severity
+                    threshold (rename <code>-min-severity</code>);
+                    <code>-dir</code> not validated early
                   </td>
                 </tr>
                 <tr>
                   <td>cmd config.go:62-98</td>
                   <td>
-                    YAML parse errors include irrelevant CLI flag values (maxIter, timeout) as debug
-                    noise
+                    YAML parse errors include irrelevant CLI flag values
+                    (maxIter, timeout) as debug noise
                   </td>
                 </tr>
                 <tr>
                   <td>cmd output_adapter.go:52-54</td>
                   <td>
-                    Inconsistent empty-results handling across formats (CSV/TSV emit no header on
-                    zero findings)
+                    Inconsistent empty-results handling across formats (CSV/TSV
+                    emit no header on zero findings)
                   </td>
                 </tr>
                 <tr>
@@ -1636,16 +1815,20 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
 
         <section id="plan">
           <h2><span class="num">04</span>Prioritized improvement plan</h2>
-          <p>Ordered by impact-to-effort ratio (Pareto). Each step is independently shippable.</p>
+          <p>
+            Ordered by impact-to-effort ratio (Pareto). Each step is
+            independently shippable.
+          </p>
 
           <div class="migration-step">
             <div class="migration-num">1</div>
             <div class="migration-content">
               <h4>Fix the ApplyWithDetails return bug</h4>
               <p>
-                One-line fix, highest correctness impact. Capture the second return value of
-                <code>ApplyWithShiftMap</code> and return it. Add a test with partial-failure input.
-                Effort: ~30 min.
+                One-line fix, highest correctness impact. Capture the second
+                return value of
+                <code>ApplyWithShiftMap</code> and return it. Add a test with
+                partial-failure input. Effort: ~30 min.
               </p>
             </div>
           </div>
@@ -1655,9 +1838,10 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             <div class="migration-content">
               <h4>Honest-ify the IntervalIndex</h4>
               <p>
-                Correct the doc to O(n + k), rename <code>interval_tree.go</code> &rarr;
-                <code>interval_index.go</code>, or implement a real augmented tree if scale demands
-                it. Effort: 1-4 hrs.
+                Correct the doc to O(n + k), rename
+                <code>interval_tree.go</code> &rarr;
+                <code>interval_index.go</code>, or implement a real augmented
+                tree if scale demands it. Effort: 1-4 hrs.
               </p>
             </div>
           </div>
@@ -1667,11 +1851,12 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             <div class="migration-content">
               <h4>Fix the lying names &amp; predicates</h4>
               <p>
-                <code>IsValid</code> &rarr; require <code>Line&gt;0</code> or rename
-                <code>HasFile</code>;
+                <code>IsValid</code> &rarr; require <code>Line&gt;0</code> or
+                rename <code>HasFile</code>;
                 <code>columnAdjacent</code>&rarr;<code>columnCoincident</code>;
                 <code>FilterInvalid</code>&rarr;<code>IsInvalid</code>;
-                <code>IsAutoFixable</code> call <code>NormalizeFixStrategy</code>. Effort: ~2 hrs.
+                <code>IsAutoFixable</code> call
+                <code>NormalizeFixStrategy</code>. Effort: ~2 hrs.
               </p>
             </div>
           </div>
@@ -1681,9 +1866,11 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             <div class="migration-content">
               <h4>Use FilePath in Position + export registry errors</h4>
               <p>
-                Change <code>Position.File</code> to <code>FilePath</code>; export
-                <code>ErrDetectorRegistered</code>/<code>ErrUnknownDetector</code>. Non-breaking
-                additive + a JSON-transparent type change. Effort: ~2 hrs.
+                Change <code>Position.File</code> to <code>FilePath</code>;
+                export
+                <code>ErrDetectorRegistered</code
+                >/<code>ErrUnknownDetector</code>. Non-breaking additive + a
+                JSON-transparent type change. Effort: ~2 hrs.
               </p>
             </div>
           </div>
@@ -1693,9 +1880,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             <div class="migration-content">
               <h4>Plug the silent-data-loss paths</h4>
               <p>
-                SARIF: emit <code>suppressions</code> arrays; handle multiple fixes. LSP: persist
-                original ID in a property bag. Document every lossy field explicitly. Effort: ~1
-                day.
+                SARIF: emit <code>suppressions</code> arrays; handle multiple
+                fixes. LSP: persist original ID in a property bag. Document
+                every lossy field explicitly. Effort: ~1 day.
               </p>
             </div>
           </div>
@@ -1705,8 +1892,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             <div class="migration-content">
               <h4>CLI robustness pass</h4>
               <p>
-                Add <code>signal.NotifyContext</code>; check output <code>Close()</code> errors;
-                error on unknown detectors; validate format at parse time. Effort: ~2 hrs.
+                Add <code>signal.NotifyContext</code>; check output
+                <code>Close()</code> errors; error on unknown detectors;
+                validate format at parse time. Effort: ~2 hrs.
               </p>
             </div>
           </div>
@@ -1716,8 +1904,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             <div class="migration-content">
               <h4>Concurrency &amp; consistency fixes</h4>
               <p>
-                Lock <code>file_backup.enabled</code>; fix <code>PrettyJSONFiltered</code> TOCTOU;
-                unexport or document <code>Report.Tool</code>/<code>Summary</code>. Effort: ~3 hrs.
+                Lock <code>file_backup.enabled</code>; fix
+                <code>PrettyJSONFiltered</code> TOCTOU; unexport or document
+                <code>Report.Tool</code>/<code>Summary</code>. Effort: ~3 hrs.
               </p>
             </div>
           </div>
@@ -1727,9 +1916,10 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             <div class="migration-content">
               <h4>Data-model consolidation</h4>
               <p>
-                Resolve the Category/Tags split-brain; unify the conflict-detection paths behind one
-                interface; centralize the three severity conversions onto the Severity type. Effort:
-                ~2 days (design first).
+                Resolve the Category/Tags split-brain; unify the
+                conflict-detection paths behind one interface; centralize the
+                three severity conversions onto the Severity type. Effort: ~2
+                days (design first).
               </p>
             </div>
           </div>
@@ -1739,9 +1929,10 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             <div class="migration-content">
               <h4>Performance: cache &amp; index</h4>
               <p>
-                Cache resolved root in <code>groupFindingsBySafePath</code>; build a file index in
-                gotoken; O(N) frontier for conflict lookup; add an index to <code>FindByID</code> if
-                used at scale. Effort: ~1 day.
+                Cache resolved root in <code>groupFindingsBySafePath</code>;
+                build a file index in gotoken; O(N) frontier for conflict
+                lookup; add an index to <code>FindByID</code> if used at scale.
+                Effort: ~1 day.
               </p>
             </div>
           </div>
@@ -1751,8 +1942,9 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             <div class="migration-content">
               <h4>Reduce global mutable state</h4>
               <p>
-                Inject severity-alias &amp; linter registries where feasible; add test-reset
-                helpers; extract a <code>CommandDetector[O]</code> generic to dedupe
+                Inject severity-alias &amp; linter registries where feasible;
+                add test-reset helpers; extract a
+                <code>CommandDetector[O]</code> generic to dedupe
                 govet/staticcheck. Effort: ~1 day.
               </p>
             </div>
@@ -1760,11 +1952,14 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
         </section>
 
         <section id="appendix">
-          <h2><span class="num">05</span>Appendix &mdash; method &amp; baseline</h2>
+          <h2>
+            <span class="num">05</span>Appendix &mdash; method &amp; baseline
+          </h2>
           <p>
-            Method: every <code>.go</code> file across all four modules was reviewed (76 source +
-            120 test files, ~35k lines). Four parallel architectural reviews covered Core domain
-            types, Core conversion/IO layer, Pipeline, and Analysis+gotoken+CLI. Key findings were
+            Method: every <code>.go</code> file across all four modules was
+            reviewed (76 source + 120 test files, ~35k lines). Four parallel
+            architectural reviews covered Core domain types, Core conversion/IO
+            layer, Pipeline, and Analysis+gotoken+CLI. Key findings were
             independently verified against source.
           </p>
           <h3>Baseline verification</h3>
@@ -1817,8 +2012,8 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
                   <td>LSP diagnostics</td>
                   <td>gopls</td>
                   <td>
-                    1 warning (dead nil check in gotoken_test.go:125), 3 infos (unnecessary type
-                    args)
+                    1 warning (dead nil check in gotoken_test.go:125), 3 infos
+                    (unnecessary type args)
                   </td>
                 </tr>
               </tbody>
@@ -1859,16 +2054,18 @@ return applied, fixes, err   <span class="tok-comment">// should be: appliedFixe
             </table>
           </div>
           <p>
-            No banned dependencies found. <code>stretchr/testify</code> appears only as a transitive
-            indirect of ginkgo (documented and accepted). Dependency direction is clean: Core &larr;
-            Pipeline &larr; CLI; Analysis &larr; Core only.
+            No banned dependencies found. <code>stretchr/testify</code> appears
+            only as a transitive indirect of ginkgo (documented and accepted).
+            Dependency direction is clean: Core &larr; Pipeline &larr; CLI;
+            Analysis &larr; Core only.
           </p>
         </section>
 
         <footer class="footer">
           <p>
-            Generated 2026-07-05 &middot; Reviewed against branch modularize/unix-style @ fe1427c
-            &middot; All findings verified against source code
+            Generated 2026-07-05 &middot; Reviewed against branch
+            modularize/unix-style @ fe1427c &middot; All findings verified
+            against source code
           </p>
         </footer>
       </main>

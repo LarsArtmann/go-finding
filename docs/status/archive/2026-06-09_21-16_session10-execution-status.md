@@ -13,18 +13,18 @@
 
 This session executed **10 of 20 actionable TODO items** from the master plan. All 10 are committed, tested, linted, and passing.
 
-| #   | Task                                            | Files Changed                            | Lines Impact                               |
-| --- | ----------------------------------------------- | ---------------------------------------- | ------------------------------------------ |
-| 1   | **Remove dead code Badge()/Emoji()**            | `severity.go`                            | -30 lines, 2 methods removed               |
-| 2   | **Add CorrelationScore.IsValid/String tests**   | `merge_test.go`                          | +38 lines, table-driven tests              |
-| 3   | **Fix FuzzDedupKey test bug**                   | `fuzz_test.go`                           | ~+15 lines rewritten, checks `bool` return |
-| 4   | **Deprecate CountBySeverity free function**     | `severity.go`, `API_STABILITY.md`        | godoc `Deprecated:` header                 |
-| 5   | **Add logFilterError tests**                    | `pipeline/generated_filter_log_test.go`  | +88 lines, 2 test funcs                    |
-| 6   | **filterByFileEdits integration test**          | `pipeline/byte_conflict_test.go`         | +121 lines, 3 scenarios                    |
-| 7   | **Modernize: cmp.Or pass**                      | `cmd/go-finding/generated_filter.go`     | +1 import, 2 simplifications               |
-| 8   | **Add analysis.AnalyzerDetector**               | `analysis/adapter.go`, `adapter_test.go` | +349 lines, 6 test funcs                   |
-| 9   | **Wire ByteLevelConflictDetection through CLI** | `cmd/go-finding/config.go`, `main.go`    | +2 fields + flag                           |
-| 10  | **Move category_linter to LinterRegistry**      | `category_linter.go`                     | +86 lines, encapsulated state              |
+| #  | Task                                            | Files Changed                            | Lines Impact                               |
+| -- | ----------------------------------------------- | ---------------------------------------- | ------------------------------------------ |
+| 1  | **Remove dead code Badge()/Emoji()**            | `severity.go`                            | -30 lines, 2 methods removed               |
+| 2  | **Add CorrelationScore.IsValid/String tests**   | `merge_test.go`                          | +38 lines, table-driven tests              |
+| 3  | **Fix FuzzDedupKey test bug**                   | `fuzz_test.go`                           | ~+15 lines rewritten, checks `bool` return |
+| 4  | **Deprecate CountBySeverity free function**     | `severity.go`, `API_STABILITY.md`        | godoc `Deprecated:` header                 |
+| 5  | **Add logFilterError tests**                    | `pipeline/generated_filter_log_test.go`  | +88 lines, 2 test funcs                    |
+| 6  | **filterByFileEdits integration test**          | `pipeline/byte_conflict_test.go`         | +121 lines, 3 scenarios                    |
+| 7  | **Modernize: cmp.Or pass**                      | `cmd/go-finding/generated_filter.go`     | +1 import, 2 simplifications               |
+| 8  | **Add analysis.AnalyzerDetector**               | `analysis/adapter.go`, `adapter_test.go` | +349 lines, 6 test funcs                   |
+| 9  | **Wire ByteLevelConflictDetection through CLI** | `cmd/go-finding/config.go`, `main.go`    | +2 fields + flag                           |
+| 10 | **Move category_linter to LinterRegistry**      | `category_linter.go`                     | +86 lines, encapsulated state              |
 
 ### Production Bug Fix Discovered & Fixed
 
@@ -38,10 +38,10 @@ This session executed **10 of 20 actionable TODO items** from the master plan. A
 
 ## B — What Was Partially Done
 
-| #   | Task                      | What Was Done                                                             | What's Left                                                                                                                                       |
-| --- | ------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 11  | slices.Collect pass       | Identified 12 candidates; applied `cmp.Or` to 2 locations                 | Full `slices.Collect` conversion of `append` loops in `filter.go`, `report.go`, `pipeline/verify.go`, `sarif_import.go` — deferred to avoid churn |
-| 12  | `FixProviders` CLI wiring | `ByteLevelConflictDetection` wired; `FixProviders` config field NOT added | Custom provider config via YAML/JSON requires provider registry (registry.go) — not designed yet                                                  |
+| #  | Task                      | What Was Done                                                             | What's Left                                                                                                                                       |
+| -- | ------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 11 | slices.Collect pass       | Identified 12 candidates; applied `cmp.Or` to 2 locations                 | Full `slices.Collect` conversion of `append` loops in `filter.go`, `report.go`, `pipeline/verify.go`, `sarif_import.go` — deferred to avoid churn |
+| 12 | `FixProviders` CLI wiring | `ByteLevelConflictDetection` wired; `FixProviders` config field NOT added | Custom provider config via YAML/JSON requires provider registry (registry.go) — not designed yet                                                  |
 
 ---
 
@@ -49,18 +49,18 @@ This session executed **10 of 20 actionable TODO items** from the master plan. A
 
 The remaining 10 tasks are all **large architectural features** requiring interface design, breaking changes, or algorithm implementation:
 
-| #   | Task                                      | Effort | Why Not Started                                     |
-| --- | ----------------------------------------- | ------ | --------------------------------------------------- |
-| 13  | Report.Findings encapsulation (ADR 10)    | M      | Breaking API change; needs migration guide          |
-| 14  | Pipeline stage hooks (pre/post)           | L      | New interface design; 4 stages × 2 hooks = 8 events |
-| 15  | FixEngine line-offset tracking            | M      | Algorithmic complexity; cumulative line shift math  |
-| 16  | Spatial index for Correlate               | M      | Data structure choice (interval tree vs R-tree)     |
-| 17  | Streaming merge                           | M      | Iterator/reader API design                          |
-| 18  | Config file support for library           | M      | Subpackage extraction from CLI                      |
-| 19  | Plugin architecture for detectors         | L      | Go plugin system (unsafe) or gob-based IPC          |
-| 20  | Pipeline middleware/interceptor           | M      | Chain-of-responsibility pattern                     |
-| 21  | Benchmark regression CI gate              | S      | CI infra — needs bench data storage                 |
-| 22  | Make fix strategy composable as interface | L      | `FixStrategyHandler` + registry redesign            |
+| #  | Task                                      | Effort | Why Not Started                                     |
+| -- | ----------------------------------------- | ------ | --------------------------------------------------- |
+| 13 | Report.Findings encapsulation (ADR 10)    | M      | Breaking API change; needs migration guide          |
+| 14 | Pipeline stage hooks (pre/post)           | L      | New interface design; 4 stages × 2 hooks = 8 events |
+| 15 | FixEngine line-offset tracking            | M      | Algorithmic complexity; cumulative line shift math  |
+| 16 | Spatial index for Correlate               | M      | Data structure choice (interval tree vs R-tree)     |
+| 17 | Streaming merge                           | M      | Iterator/reader API design                          |
+| 18 | Config file support for library           | M      | Subpackage extraction from CLI                      |
+| 19 | Plugin architecture for detectors         | L      | Go plugin system (unsafe) or gob-based IPC          |
+| 20 | Pipeline middleware/interceptor           | M      | Chain-of-responsibility pattern                     |
+| 21 | Benchmark regression CI gate              | S      | CI infra — needs bench data storage                 |
+| 22 | Make fix strategy composable as interface | L      | `FixStrategyHandler` + registry redesign            |
 
 ---
 
@@ -110,33 +110,33 @@ The remaining 10 tasks are all **large architectural features** requiring interf
 
 ## F — Top #25 Things to Get Done Next
 
-| #   | Task                                          | Priority | Effort | Impact                                  |
-| --- | --------------------------------------------- | -------- | ------ | --------------------------------------- |
-| 1   | **ADR 10: Report.Findings encapsulation**     | 🔴       | M      | High — blocks v1.0 API freeze           |
-| 2   | **Pipeline stage hooks (pre/post)**           | 🔴       | L      | High — extensibility                    |
-| 3   | **Config file support for library**           | 🔴       | M      | High — CLI-only config is limiting      |
-| 4   | **Benchmark regression CI gate**              | 🟡       | S      | Medium — quality gate                   |
-| 5   | **Spatial index for Correlate**               | 🟡       | M      | Medium — performance                    |
-| 6   | **FixEngine line-offset tracking**            | 🟡       | M      | Medium — correctness                    |
-| 7   | **Pipeline middleware/interceptor**           | 🟡       | M      | Medium — extensibility                  |
-| 8   | **Fix strategy composable interface**         | 🟡       | L      | Medium — domain fixes                   |
-| 9   | **Streaming merge**                           | 🟢       | M      | Low — memory efficiency                 |
-| 10  | **Plugin architecture for detectors**         | 🟢       | L      | Low — extensibility                     |
-| 11  | **slices.Collect modernization pass**         | 🟢       | S      | Low — code cleanup                      |
-| 12  | **IDE plugin stubs**                          | ⚪       | M      | Low — out of scope v1                   |
-| 13  | **Web UI**                                    | ⚪       | XL     | Low — out of scope v1                   |
-| 14  | **Watch mode**                                | ⚪       | L      | Low — deferred v2+                      |
-| 15  | **SARIF schema validation**                   | ⚪       | M      | Low — blocked by 7K schema              |
-| 16  | **Add `golines` to CI**                       | ⚪       | XS     | Low — blocked by treefmt-nix            |
-| 17  | **`.envrc` creation**                         | ⚪       | XS     | Low — blocked by Nix setup              |
-| 18  | **Resolve 4 OWNER_DECISION items**            | 🔴       | M      | High — blocks v1.0 lock                 |
-| 19  | **Remove Report.Merge (v1.0)**                | 🔴       | XS     | High — after deprecation period         |
-| 20  | **Wire `FixProviders` through CLI config**    | 🟡       | M      | Medium — custom providers               |
-| 21  | **Add `analysis.Analyzer` example to README** | 🟡       | XS     | Medium — documentation                  |
-| 22  | **Document LinterRegistry usage**             | 🟢       | XS     | Low — documentation                     |
-| 23  | **Add `Analyzer` adapter example**            | 🟢       | XS     | Low — examples/ directory               |
-| 24  | **CorrelationScore benchmarks**               | 🟢       | S      | Low — performance data                  |
-| 25  | **Interval tree implementation**              | 🟡       | M      | Medium — prerequisite for spatial index |
+| #  | Task                                          | Priority | Effort | Impact                                  |
+| -- | --------------------------------------------- | -------- | ------ | --------------------------------------- |
+| 1  | **ADR 10: Report.Findings encapsulation**     | 🔴       | M      | High — blocks v1.0 API freeze           |
+| 2  | **Pipeline stage hooks (pre/post)**           | 🔴       | L      | High — extensibility                    |
+| 3  | **Config file support for library**           | 🔴       | M      | High — CLI-only config is limiting      |
+| 4  | **Benchmark regression CI gate**              | 🟡       | S      | Medium — quality gate                   |
+| 5  | **Spatial index for Correlate**               | 🟡       | M      | Medium — performance                    |
+| 6  | **FixEngine line-offset tracking**            | 🟡       | M      | Medium — correctness                    |
+| 7  | **Pipeline middleware/interceptor**           | 🟡       | M      | Medium — extensibility                  |
+| 8  | **Fix strategy composable interface**         | 🟡       | L      | Medium — domain fixes                   |
+| 9  | **Streaming merge**                           | 🟢       | M      | Low — memory efficiency                 |
+| 10 | **Plugin architecture for detectors**         | 🟢       | L      | Low — extensibility                     |
+| 11 | **slices.Collect modernization pass**         | 🟢       | S      | Low — code cleanup                      |
+| 12 | **IDE plugin stubs**                          | ⚪       | M      | Low — out of scope v1                   |
+| 13 | **Web UI**                                    | ⚪       | XL     | Low — out of scope v1                   |
+| 14 | **Watch mode**                                | ⚪       | L      | Low — deferred v2+                      |
+| 15 | **SARIF schema validation**                   | ⚪       | M      | Low — blocked by 7K schema              |
+| 16 | **Add `golines` to CI**                       | ⚪       | XS     | Low — blocked by treefmt-nix            |
+| 17 | **`.envrc` creation**                         | ⚪       | XS     | Low — blocked by Nix setup              |
+| 18 | **Resolve 4 OWNER_DECISION items**            | 🔴       | M      | High — blocks v1.0 lock                 |
+| 19 | **Remove Report.Merge (v1.0)**                | 🔴       | XS     | High — after deprecation period         |
+| 20 | **Wire `FixProviders` through CLI config**    | 🟡       | M      | Medium — custom providers               |
+| 21 | **Add `analysis.Analyzer` example to README** | 🟡       | XS     | Medium — documentation                  |
+| 22 | **Document LinterRegistry usage**             | 🟢       | XS     | Low — documentation                     |
+| 23 | **Add `Analyzer` adapter example**            | 🟢       | XS     | Low — examples/ directory               |
+| 24 | **CorrelationScore benchmarks**               | 🟢       | S      | Low — performance data                  |
+| 25 | **Interval tree implementation**              | 🟡       | M      | Medium — prerequisite for spatial index |
 
 ---
 

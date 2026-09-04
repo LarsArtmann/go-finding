@@ -229,33 +229,33 @@
 
 ## f) Top #25 Things We Should Get Done Next
 
-| #   | Priority | Item                                                                       | Effort | Impact          |
-| --- | -------- | -------------------------------------------------------------------------- | ------ | --------------- |
-| 1   | **P0**   | Decide `NewFinding` API pattern (functional options vs builder vs current) | S      | H — blocks v1.0 |
-| 2   | **P0**   | Decide domain-specific FixProvider module location                         | S      | H — blocks v1.0 |
-| 3   | **P0**   | Full exported symbol audit → formal API stability guarantee                | M      | H — blocks v1.0 |
-| 4   | **P0**   | Push 2 local commits to origin                                             | S      | M               |
-| 5   | **P1**   | Write v1.0.0 release criteria document                                     | S      | H               |
-| 6   | **P1**   | `Confidence` direct-struct bypass protection                               | S      | M               |
-| 7   | **P1**   | Add `CHANGELOG.md` v1.0.0 entry (unreleased section)                       | S      | M               |
-| 8   | **P1**   | Structured logging (`slog`) in cmd + pipeline                              | M      | M               |
-| 9   | **P1**   | Evaluate `go-sarif` vs hand-rolled for spec compliance                     | M      | M               |
-| 10  | **P1**   | pkg.go.dev readiness: godoc audit for all exported symbols                 | M      | M               |
-| 11  | **P1**   | Add more `Example*()` test functions for godoc                             | S      | M               |
-| 12  | **P2**   | Plugin architecture for detector registration                              | M      | M               |
-| 13  | **P2**   | Pipeline middleware/interceptor pattern                                    | M      | M               |
-| 14  | **P2**   | Per-detector timeout configuration                                         | S      | M               |
-| 15  | **P2**   | Progress reporting callback for pipeline                                   | S      | L               |
-| 16  | **P2**   | `finding.Diff()` — Compare finding sets                                    | S      | M               |
-| 17  | **P2**   | `finding.FormatText()` / `FormatMarkdown()`                                | S      | M               |
-| 18  | **P2**   | `go/analysis` reverse conversion (Finding → Diagnostic)                    | M      | L               |
-| 19  | **P2**   | Watch mode with `fsnotify`                                                 | L      | M               |
-| 20  | **P2**   | Styled CLI output with `lipgloss`                                          | M      | L               |
-| 21  | **P2**   | Interactive TUI for fix review with `bubbletea`                            | L      | M               |
-| 22  | **P3**   | Nix migration Phase 0–2                                                    | L      | M               |
-| 23  | **P3**   | More detector integrations (golangci-lint, errcheck)                       | M      | M               |
-| 24  | **P3**   | LSP CodeAction support for direct fixes                                    | M      | L               |
-| 25  | **P3**   | Archive old status reports (20+ in docs/status/)                           | S      | L               |
+| #  | Priority | Item                                                                       | Effort | Impact          |
+| -- | -------- | -------------------------------------------------------------------------- | ------ | --------------- |
+| 1  | **P0**   | Decide `NewFinding` API pattern (functional options vs builder vs current) | S      | H — blocks v1.0 |
+| 2  | **P0**   | Decide domain-specific FixProvider module location                         | S      | H — blocks v1.0 |
+| 3  | **P0**   | Full exported symbol audit → formal API stability guarantee                | M      | H — blocks v1.0 |
+| 4  | **P0**   | Push 2 local commits to origin                                             | S      | M               |
+| 5  | **P1**   | Write v1.0.0 release criteria document                                     | S      | H               |
+| 6  | **P1**   | `Confidence` direct-struct bypass protection                               | S      | M               |
+| 7  | **P1**   | Add `CHANGELOG.md` v1.0.0 entry (unreleased section)                       | S      | M               |
+| 8  | **P1**   | Structured logging (`slog`) in cmd + pipeline                              | M      | M               |
+| 9  | **P1**   | Evaluate `go-sarif` vs hand-rolled for spec compliance                     | M      | M               |
+| 10 | **P1**   | pkg.go.dev readiness: godoc audit for all exported symbols                 | M      | M               |
+| 11 | **P1**   | Add more `Example*()` test functions for godoc                             | S      | M               |
+| 12 | **P2**   | Plugin architecture for detector registration                              | M      | M               |
+| 13 | **P2**   | Pipeline middleware/interceptor pattern                                    | M      | M               |
+| 14 | **P2**   | Per-detector timeout configuration                                         | S      | M               |
+| 15 | **P2**   | Progress reporting callback for pipeline                                   | S      | L               |
+| 16 | **P2**   | `finding.Diff()` — Compare finding sets                                    | S      | M               |
+| 17 | **P2**   | `finding.FormatText()` / `FormatMarkdown()`                                | S      | M               |
+| 18 | **P2**   | `go/analysis` reverse conversion (Finding → Diagnostic)                    | M      | L               |
+| 19 | **P2**   | Watch mode with `fsnotify`                                                 | L      | M               |
+| 20 | **P2**   | Styled CLI output with `lipgloss`                                          | M      | L               |
+| 21 | **P2**   | Interactive TUI for fix review with `bubbletea`                            | L      | M               |
+| 22 | **P3**   | Nix migration Phase 0–2                                                    | L      | M               |
+| 23 | **P3**   | More detector integrations (golangci-lint, errcheck)                       | M      | M               |
+| 24 | **P3**   | LSP CodeAction support for direct fixes                                    | M      | L               |
+| 25 | **P3**   | Archive old status reports (20+ in docs/status/)                           | S      | L               |
 
 ---
 

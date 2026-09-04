@@ -65,14 +65,14 @@
 
         /* --- Type stacks (system only — zero external fonts) --- */
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -280,15 +280,27 @@
       }
       .card-problem {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .card-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .card-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
 
       /* --- Issue cards --- */
@@ -301,15 +313,27 @@
       }
       .issue-critical {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-important {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-nice {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .issue h3 {
         margin-bottom: 0.3rem;
@@ -795,10 +819,12 @@
       "
     >
       <strong>📦 Resolution Status (updated 2026-07-26):</strong>
-      The 2 real defects (metrics double-recording in <code>pipeline_iteration.go</code>, inline
-      error sentinel in <code>retry.go</code>) were fixed immediately. The 9 documented items are
-      <strong>v2.0 breaking changes</strong> tracked in <code>ROADMAP.md</code> "Hardening (owner
-      decisions pending)" — not v1.x defects.
+      The 2 real defects (metrics double-recording in
+      <code>pipeline_iteration.go</code>, inline error sentinel in
+      <code>retry.go</code>) were fixed immediately. The 9 documented items are
+      <strong>v2.0 breaking changes</strong> tracked in
+      <code>ROADMAP.md</code> "Hardening (owner decisions pending)" — not v1.x
+      defects.
     </div>
     <div class="page-header">
       <span>go-finding</span>
@@ -827,9 +853,10 @@
           <div class="hero-badge">FULL CODE REVIEW</div>
           <h1>go-finding Comprehensive Review</h1>
           <p class="hero-subtitle">
-            Every production file visited on 2026-07-18. 2 real defects fixed (metrics
-            double-recording, sentinel inconsistency). 9 lower-severity items documented for future
-            consideration. Zero split-brain or dead-code issues.
+            Every production file visited on 2026-07-18. 2 real defects fixed
+            (metrics double-recording, sentinel inconsistency). 9 lower-severity
+            items documented for future consideration. Zero split-brain or
+            dead-code issues.
           </p>
         </div>
 
@@ -870,16 +897,18 @@
           <h3>Metrics double-recording on hook-error path</h3>
           <div class="where">pipeline/pipeline_iteration.go:127</div>
           <p>
-            <code>applyDone()</code> (the <code>StageTiming</code> closure) was called at line 115
-            after successful <code>applyTriage</code>, then called AGAIN at line 127 when the
-            <code>StageAfter</code> hook returned an error. Since <code>RecordStage</code> does
-            <code>m.stageDurations[name] += d</code>, the StageApply duration was summed twice on
-            the hook-error path, corrupting metrics.
+            <code>applyDone()</code> (the <code>StageTiming</code> closure) was
+            called at line 115 after successful <code>applyTriage</code>, then
+            called AGAIN at line 127 when the <code>StageAfter</code> hook
+            returned an error. Since <code>RecordStage</code> does
+            <code>m.stageDurations[name] += d</code>, the StageApply duration
+            was summed twice on the hook-error path, corrupting metrics.
           </p>
           <div class="callout callout-solution">
             <strong>Fix</strong>
-            Removed the redundant <code>applyDone()</code> call at line 127. The timing was already
-            recorded at line 115; the hook-error path should not re-record it.
+            Removed the redundant <code>applyDone()</code> call at line 127. The
+            timing was already recorded at line 115; the hook-error path should
+            not re-record it.
           </div>
         </div>
 
@@ -888,21 +917,25 @@
           <h3>RetryConfig: inline error not errors.Is-able</h3>
           <div class="where">pipeline/retry.go:69</div>
           <p>
-            <code>RetryConfig.Validate()</code> used named sentinels for 5 of 6 rules, but the 6th
-            (<code>"base delay must be &gt; 0 when max retries &gt; 0"</code>) used an inline
-            <code>errors.New()</code>, making it impossible to match via <code>errors.Is</code>.
+            <code>RetryConfig.Validate()</code> used named sentinels for 5 of 6
+            rules, but the 6th (<code
+              >"base delay must be &gt; 0 when max retries &gt; 0"</code
+            >) used an inline <code>errors.New()</code>, making it impossible to
+            match via <code>errors.Is</code>.
           </p>
           <div class="callout callout-solution">
             <strong>Fix</strong>
-            Extracted <code>errBaseDelayPositive</code> sentinel alongside its siblings. All 6
-            validation rules are now consistently matchable.
+            Extracted <code>errBaseDelayPositive</code> sentinel alongside its
+            siblings. All 6 validation rules are now consistently matchable.
           </div>
         </div>
 
-        <h2 id="documented"><span class="num">02</span>Documented (Not Fixed)</h2>
+        <h2 id="documented">
+          <span class="num">02</span>Documented (Not Fixed)
+        </h2>
         <p>
-          These items were identified but intentionally not changed to avoid verschlimmbessern or
-          because they require breaking API changes.
+          These items were identified but intentionally not changed to avoid
+          verschlimmbessern or because they require breaking API changes.
         </p>
 
         <table>
@@ -921,7 +954,8 @@
               <td><span class="badge badge-medium">Medium</span></td>
               <td><code>id.go:168</code></td>
               <td>
-                <code>IsHashID(id string)</code> takes raw string, not branded <code>ID</code>
+                <code>IsHashID(id string)</code> takes raw string, not branded
+                <code>ID</code>
               </td>
               <td>Breaking API change; deferred to v2</td>
             </tr>
@@ -936,21 +970,27 @@
               <td>3</td>
               <td><span class="badge badge-medium">Medium</span></td>
               <td><code>conflict.go:11 vs correlate.go:19</code></td>
-              <td>"overlapping range" vs "overlapping ranges" (singular vs plural)</td>
+              <td>
+                "overlapping range" vs "overlapping ranges" (singular vs plural)
+              </td>
               <td>Exported const change is breaking</td>
             </tr>
             <tr>
               <td>4</td>
               <td><span class="badge badge-low">Low</span></td>
               <td><code>merge.go:23</code></td>
-              <td><code>Combine</code> vs <code>Merge</code> naming split-brain</td>
+              <td>
+                <code>Combine</code> vs <code>Merge</code> naming split-brain
+              </td>
               <td>Exported function rename is breaking</td>
             </tr>
             <tr>
               <td>5</td>
               <td><span class="badge badge-low">Low</span></td>
               <td><code>analysis/analysis.go:37</code></td>
-              <td><code>ruleCode</code> param should be <code>RuleName</code></td>
+              <td>
+                <code>ruleCode</code> param should be <code>RuleName</code>
+              </td>
               <td>Exported function signature change is breaking</td>
             </tr>
             <tr>
@@ -964,14 +1004,20 @@
               <td>7</td>
               <td><span class="badge badge-low">Low</span></td>
               <td><code>metrics.go:43</code></td>
-              <td><code>readMetrics</code> identical to <code>record</code> (no RWMutex)</td>
+              <td>
+                <code>readMetrics</code> identical to <code>record</code> (no
+                RWMutex)
+              </td>
               <td>Misleading name but not a bug; cleanup deferred</td>
             </tr>
             <tr>
               <td>8</td>
               <td><span class="badge badge-low">Low</span></td>
               <td><code>cmd/go-finding/config.go:52</code></td>
-              <td><code>errUnknownDetector</code> vs <code>ErrUnknownFixProvider</code> casing</td>
+              <td>
+                <code>errUnknownDetector</code> vs
+                <code>ErrUnknownFixProvider</code> casing
+              </td>
               <td>Cosmetic; both work correctly</td>
             </tr>
             <tr>
@@ -991,8 +1037,8 @@
             <div class="text">
               <strong>Zero TODO/FIXME/HACK comments in production</strong>
               <span
-                >Not a single TODO, FIXME, or HACK in any production .go file across all 4
-                modules.</span
+                >Not a single TODO, FIXME, or HACK in any production .go file
+                across all 4 modules.</span
               >
             </div>
           </div>
@@ -1001,9 +1047,9 @@
             <div class="text">
               <strong>All panics are legitimate constructor invariants</strong>
               <span
-                >6 panics in production code: MustParseSeverity, MustRegister, MustBuild,
-                MustParseCategory, and 3 ToolAdapter nil-guards. All are correct "programmer error"
-                panics.</span
+                >6 panics in production code: MustParseSeverity, MustRegister,
+                MustBuild, MustParseCategory, and 3 ToolAdapter nil-guards. All
+                are correct "programmer error" panics.</span
               >
             </div>
           </div>
@@ -1012,8 +1058,8 @@
             <div class="text">
               <strong>Zero dead code</strong>
               <span
-                >Every exported function and type has at least one external caller. No orphan
-                code.</span
+                >Every exported function and type has at least one external
+                caller. No orphan code.</span
               >
             </div>
           </div>
@@ -1022,16 +1068,17 @@
             <div class="text">
               <strong>Consistent nil-guard patterns</strong>
               <span
-                >Range-nil checks present wherever <code>*Range</code> is dereferenced. Interface
-                returns are consistently nil-checked before method calls.</span
+                >Range-nil checks present wherever <code>*Range</code> is
+                dereferenced. Interface returns are consistently nil-checked
+                before method calls.</span
               >
             </div>
           </div>
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; ~80 production files reviewed &middot; 2 fixed, 9
-          documented, 0 split brains
+          Generated 2026-07-18 &middot; ~80 production files reviewed &middot; 2
+          fixed, 9 documented, 0 split brains
         </footer>
       </main>
     </div>

@@ -238,33 +238,33 @@ If anyone relies on `OnFix` callback to track which fixes were actually applied 
 
 ## F) TOP #25 THINGS WE SHOULD GET DONE NEXT
 
-| Priority | #   | Item                                                                                                 | Effort | Impact |
-| -------- | --- | ---------------------------------------------------------------------------------------------------- | ------ | ------ |
-| P0       | 1   | **Fix OnFix callback inaccuracy** — only call for actually-applied fixes                             | S      | M      |
-| P0       | 2   | **Add `paralleltest` nolint comments** to the 5 intentionally-serial CLI tests                       | XS     | S      |
-| P0       | 3   | **Add `rootDir` path validation in FixApplier** — prevent writes outside project                     | S      | M      |
-| P1       | 4   | **Decide on FixStrategyAI** — implement, deprecate with warning, or remove                           | M      | M      |
-| P1       | 5   | **Refactor CLI `run()` for testability** — inject io.Writer, flag.FlagSet                            | M      | L      |
-| P1       | 6   | **Clean stale TODO_LIST.md items** — audit and prune ~5 confirmed-stale entries                      | S      | S      |
-| P1       | 7   | **Add CLI integration test with real govet detector** — end-to-end pipeline test                     | M      | M      |
-| P1       | 8   | **Fix property test flakiness** — add seed control to TestProperty_IDRoundTrip                       | S      | M      |
-| P2       | 9   | **Add `govulncheck` step to CI** — justfile has target, CI doesn't use it                            | S      | M      |
-| P2       | 10  | **Consolidate `findingKey` function** — duplicated in verify.go and merge.go                         | S      | S      |
-| P2       | 11  | **Add FixApplier error-path unit tests** — push coverage from 84.6% to 90%+                          | M      | S      |
-| P2       | 12  | **Add Conflict detection dedicated tests** — FilterConflictingFixes + AnalyzeConflicts 0%            | S      | S      |
-| P2       | 13  | **Add `Correlation` JSON tags** — fix tagliatelle violation                                          | XS     | S      |
-| P2       | 14  | **Replace `math/rand` in retry** — use `math/rand/v2` or crypto/rand for jitter                      | S      | S      |
-| P2       | 15  | **Run `golines` formatter** — fix 2 formatting warnings in test files                                | XS     | S      |
-| P2       | 16  | **Add per-package coverage thresholds in CI** — not just total 75%                                   | S      | M      |
-| P3       | 17  | **Document SARIF round-trip losses explicitly** — SeverityCritical, RelatedRef.FindingID, BeforeCode | S      | S      |
-| P3       | 18  | **API stability review** — lock exported API before v1.0.0                                           | L      | L      |
-| P3       | 19  | **Add `Report` goroutine safety** — mutex or prominent constructor-only pattern                      | M      | M      |
-| P3       | 20  | **Add benchmark regression tracking in CI** — compare against baselines                              | M      | M      |
-| P3       | 21  | **Evaluate `go-sarif` library vs hand-rolled** — spec compliance check                               | M      | M      |
-| P3       | 22  | **Add `go:generate stringer` for enums** — Severity, FixStrategy, Category, SuppressionKind          | S      | S      |
-| P3       | 23  | **Create `examples/` directory** — standalone runnable programs for adoption                         | M      | L      |
-| P3       | 24  | **Optimize Correlate() O(n²)** — sorted+merge approach for large finding sets                        | M      | S      |
-| P3       | 25  | **Add version.go with semver constants** — programmatic version checking                             | S      | S      |
+| Priority | #  | Item                                                                                                 | Effort | Impact |
+| -------- | -- | ---------------------------------------------------------------------------------------------------- | ------ | ------ |
+| P0       | 1  | **Fix OnFix callback inaccuracy** — only call for actually-applied fixes                             | S      | M      |
+| P0       | 2  | **Add `paralleltest` nolint comments** to the 5 intentionally-serial CLI tests                       | XS     | S      |
+| P0       | 3  | **Add `rootDir` path validation in FixApplier** — prevent writes outside project                     | S      | M      |
+| P1       | 4  | **Decide on FixStrategyAI** — implement, deprecate with warning, or remove                           | M      | M      |
+| P1       | 5  | **Refactor CLI `run()` for testability** — inject io.Writer, flag.FlagSet                            | M      | L      |
+| P1       | 6  | **Clean stale TODO_LIST.md items** — audit and prune ~5 confirmed-stale entries                      | S      | S      |
+| P1       | 7  | **Add CLI integration test with real govet detector** — end-to-end pipeline test                     | M      | M      |
+| P1       | 8  | **Fix property test flakiness** — add seed control to TestProperty_IDRoundTrip                       | S      | M      |
+| P2       | 9  | **Add `govulncheck` step to CI** — justfile has target, CI doesn't use it                            | S      | M      |
+| P2       | 10 | **Consolidate `findingKey` function** — duplicated in verify.go and merge.go                         | S      | S      |
+| P2       | 11 | **Add FixApplier error-path unit tests** — push coverage from 84.6% to 90%+                          | M      | S      |
+| P2       | 12 | **Add Conflict detection dedicated tests** — FilterConflictingFixes + AnalyzeConflicts 0%            | S      | S      |
+| P2       | 13 | **Add `Correlation` JSON tags** — fix tagliatelle violation                                          | XS     | S      |
+| P2       | 14 | **Replace `math/rand` in retry** — use `math/rand/v2` or crypto/rand for jitter                      | S      | S      |
+| P2       | 15 | **Run `golines` formatter** — fix 2 formatting warnings in test files                                | XS     | S      |
+| P2       | 16 | **Add per-package coverage thresholds in CI** — not just total 75%                                   | S      | M      |
+| P3       | 17 | **Document SARIF round-trip losses explicitly** — SeverityCritical, RelatedRef.FindingID, BeforeCode | S      | S      |
+| P3       | 18 | **API stability review** — lock exported API before v1.0.0                                           | L      | L      |
+| P3       | 19 | **Add `Report` goroutine safety** — mutex or prominent constructor-only pattern                      | M      | M      |
+| P3       | 20 | **Add benchmark regression tracking in CI** — compare against baselines                              | M      | M      |
+| P3       | 21 | **Evaluate `go-sarif` library vs hand-rolled** — spec compliance check                               | M      | M      |
+| P3       | 22 | **Add `go:generate stringer` for enums** — Severity, FixStrategy, Category, SuppressionKind          | S      | S      |
+| P3       | 23 | **Create `examples/` directory** — standalone runnable programs for adoption                         | M      | L      |
+| P3       | 24 | **Optimize Correlate() O(n²)** — sorted+merge approach for large finding sets                        | M      | S      |
+| P3       | 25 | **Add version.go with semver constants** — programmatic version checking                             | S      | S      |
 
 ---
 

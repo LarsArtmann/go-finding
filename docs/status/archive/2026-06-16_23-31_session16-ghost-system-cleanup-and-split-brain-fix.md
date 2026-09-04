@@ -108,11 +108,11 @@ These are all tracked in `docs/architecture-decisions.md` ADR #11 for the v1.0.0
 
 ### Integration Tests (High Value, Never Done)
 
-| #   | What                                         | Why It Matters                                 |
-| --- | -------------------------------------------- | ---------------------------------------------- |
-| 14  | ConfigFile → ResolveDetectors → Pipeline.Run | Pieces exist but never assembled end-to-end    |
-| 15  | DetectorRegistry → Build → Pipeline.Run      | Registry tested in isolation only              |
-| 17  | Type alias backward compat                   | Verify `pipeline.Detector == finding.Detector` |
+| #  | What                                         | Why It Matters                                 |
+| -- | -------------------------------------------- | ---------------------------------------------- |
+| 14 | ConfigFile → ResolveDetectors → Pipeline.Run | Pieces exist but never assembled end-to-end    |
+| 15 | DetectorRegistry → Build → Pipeline.Run      | Registry tested in isolation only              |
+| 17 | Type alias backward compat                   | Verify `pipeline.Detector == finding.Detector` |
 
 ### v1.0.0 Release Preparation
 
@@ -176,43 +176,43 @@ Sorted by **impact / effort ratio** (highest first).
 
 ### Tier A: High Impact, Low Effort (Do First)
 
-| #   | Task                                                                                     | Impact   | Effort   | Why                                                                                  |
-| --- | ---------------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------ |
-| 1   | **Resolve Position zero-value semantics** (OWNER DECISION)                               | Critical | Decision | Blocks v1.0.0; affects every type. Pick `-1` sentinel or `*int` and commit.          |
-| 2   | **Integration test: ConfigFile → ResolveDetectors → Pipeline.Run**                       | High     | 1hr      | Prove the ConfigFile feature actually works end-to-end. Currently zero proof.        |
-| 3   | **Integration test: DetectorRegistry → Build → Pipeline.Run**                            | High     | 1hr      | Registry tested in isolation only. Needs end-to-end proof.                           |
-| 4   | **v1.0 Migration Guide**                                                                 | High     | 1hr      | Consumers need guidance for FindingsSnapshot, unexported types, deprecated APIs.     |
-| 5   | **Fix CLI coverage: 83.5% → 90%+**                                                       | Medium   | 1hr      | Biggest coverage gap. Target new features (fix_provider_registry, generated_filter). |
-| 6   | **Fix pipeline coverage: 90.4% → 93%+**                                                  | Medium   | 1hr      | Test ApplyWithShiftMap, groupFindingsBySafePath, recordShiftMap.                     |
-| 7   | **Trim AGENTS.md to <200 lines**                                                         | Medium   | 30min    | 399 lines violates its own purpose. Move session logs to CHANGELOG.                  |
-| 8   | **Update FEATURES.md**                                                                   | Low      | 30min    | Missing v0.7.0 features. One-file update.                                            |
-| 9   | **Godoc examples: IntervalIndex, MergeIter, LineShiftMap, DetectorRegistry, ConfigFile** | Medium   | 30min    | Zero discoverable examples for 5 features.                                           |
-| 10  | **Add `Category.Compare()` method**                                                      | Low      | 15min    | Follows established Severity/Confidence pattern.                                     |
+| #  | Task                                                                                     | Impact   | Effort   | Why                                                                                  |
+| -- | ---------------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------ |
+| 1  | **Resolve Position zero-value semantics** (OWNER DECISION)                               | Critical | Decision | Blocks v1.0.0; affects every type. Pick `-1` sentinel or `*int` and commit.          |
+| 2  | **Integration test: ConfigFile → ResolveDetectors → Pipeline.Run**                       | High     | 1hr      | Prove the ConfigFile feature actually works end-to-end. Currently zero proof.        |
+| 3  | **Integration test: DetectorRegistry → Build → Pipeline.Run**                            | High     | 1hr      | Registry tested in isolation only. Needs end-to-end proof.                           |
+| 4  | **v1.0 Migration Guide**                                                                 | High     | 1hr      | Consumers need guidance for FindingsSnapshot, unexported types, deprecated APIs.     |
+| 5  | **Fix CLI coverage: 83.5% → 90%+**                                                       | Medium   | 1hr      | Biggest coverage gap. Target new features (fix_provider_registry, generated_filter). |
+| 6  | **Fix pipeline coverage: 90.4% → 93%+**                                                  | Medium   | 1hr      | Test ApplyWithShiftMap, groupFindingsBySafePath, recordShiftMap.                     |
+| 7  | **Trim AGENTS.md to <200 lines**                                                         | Medium   | 30min    | 399 lines violates its own purpose. Move session logs to CHANGELOG.                  |
+| 8  | **Update FEATURES.md**                                                                   | Low      | 30min    | Missing v0.7.0 features. One-file update.                                            |
+| 9  | **Godoc examples: IntervalIndex, MergeIter, LineShiftMap, DetectorRegistry, ConfigFile** | Medium   | 30min    | Zero discoverable examples for 5 features.                                           |
+| 10 | **Add `Category.Compare()` method**                                                      | Low      | 15min    | Follows established Severity/Confidence pattern.                                     |
 
 ### Tier B: Medium Impact, Medium Effort
 
-| #   | Task                                                       | Impact | Effort | Why                                                                 |
-| --- | ---------------------------------------------------------- | ------ | ------ | ------------------------------------------------------------------- |
-| 11  | **Complete FixProviders through CLI config** (TODO #18a-d) | Medium | 2hr    | Users can't specify custom providers without writing Go code.       |
-| 12  | **v1.0.0 release criteria checklist**                      | High   | 1hr    | `docs/RELEASE_CRITERIA.md` needs concrete pass/fail thresholds.     |
-| 13  | **LineShiftMap: extend to Range + Column shifting**        | Medium | 30min  | Post-fix finding positions can be wrong for multi-line ranges.      |
-| 14  | **SubstringProvider nearest-position heuristic**           | Medium | 30min  | First-match `strings.Index` is ambiguous with multiple occurrences. |
-| 15  | **Integration test: type alias backward compat**           | Low    | 15min  | Verify pipeline type aliases compile-match root package.            |
-| 16  | **Update README.md for v0.7.0+**                           | Medium | 30min  | Missing GoASTProvider, updated stats, new feature sections.         |
-| 17  | **Update doc.go with new feature examples**                | Medium | 30min  | Package docs miss several features.                                 |
-| 18  | **Audit deprecated APIs for v1.0.0 removal timeline**      | Medium | 1hr    | 5 deprecated APIs need concrete removal dates.                      |
-| 19  | **Benchmark regression thresholds in CI**                  | Medium | 30min  | Benchmark job exists but never fails on regression.                 |
-| 20  | **Fuzz CategoryForLinter**                                 | Low    | 15min  | Case-insensitive lookup edge cases.                                 |
+| #  | Task                                                       | Impact | Effort | Why                                                                 |
+| -- | ---------------------------------------------------------- | ------ | ------ | ------------------------------------------------------------------- |
+| 11 | **Complete FixProviders through CLI config** (TODO #18a-d) | Medium | 2hr    | Users can't specify custom providers without writing Go code.       |
+| 12 | **v1.0.0 release criteria checklist**                      | High   | 1hr    | `docs/RELEASE_CRITERIA.md` needs concrete pass/fail thresholds.     |
+| 13 | **LineShiftMap: extend to Range + Column shifting**        | Medium | 30min  | Post-fix finding positions can be wrong for multi-line ranges.      |
+| 14 | **SubstringProvider nearest-position heuristic**           | Medium | 30min  | First-match `strings.Index` is ambiguous with multiple occurrences. |
+| 15 | **Integration test: type alias backward compat**           | Low    | 15min  | Verify pipeline type aliases compile-match root package.            |
+| 16 | **Update README.md for v0.7.0+**                           | Medium | 30min  | Missing GoASTProvider, updated stats, new feature sections.         |
+| 17 | **Update doc.go with new feature examples**                | Medium | 30min  | Package docs miss several features.                                 |
+| 18 | **Audit deprecated APIs for v1.0.0 removal timeline**      | Medium | 1hr    | 5 deprecated APIs need concrete removal dates.                      |
+| 19 | **Benchmark regression thresholds in CI**                  | Medium | 30min  | Benchmark job exists but never fails on regression.                 |
+| 20 | **Fuzz CategoryForLinter**                                 | Low    | 15min  | Case-insensitive lookup edge cases.                                 |
 
 ### Tier C: Lower Priority / Blocked
 
-| #   | Task                                                                     | Impact | Effort   | Why                                                                 |
-| --- | ------------------------------------------------------------------------ | ------ | -------- | ------------------------------------------------------------------- |
-| 21  | **GoReleaser release with latest tag**                                   | Medium | 30min    | 20 commits ahead of last tag (v0.6.1). Should cut v0.7.0 or v0.8.0. |
-| 22  | **slices.Collect modernization pass**                                    | Low    | 30min    | 12 candidates. Code polish, no behavior change.                     |
-| 23  | **Add .github/dependabot.yml**                                           | Low    | 15min    | Auto-dependency updates for golang.org/x.                           |
-| 24  | **Fix FixStrategy "" vs FixStrategyNone normalization** (OWNER DECISION) | Medium | Decision | Two valid "no fix" states is a type smell.                          |
-| 25  | **Decide Report.Findings unexport timing** (OWNER DECISION)              | High   | Decision | Field is deprecated but still public. When to pull the trigger?     |
+| #  | Task                                                                     | Impact | Effort   | Why                                                                 |
+| -- | ------------------------------------------------------------------------ | ------ | -------- | ------------------------------------------------------------------- |
+| 21 | **GoReleaser release with latest tag**                                   | Medium | 30min    | 20 commits ahead of last tag (v0.6.1). Should cut v0.7.0 or v0.8.0. |
+| 22 | **slices.Collect modernization pass**                                    | Low    | 30min    | 12 candidates. Code polish, no behavior change.                     |
+| 23 | **Add .github/dependabot.yml**                                           | Low    | 15min    | Auto-dependency updates for golang.org/x.                           |
+| 24 | **Fix FixStrategy "" vs FixStrategyNone normalization** (OWNER DECISION) | Medium | Decision | Two valid "no fix" states is a type smell.                          |
+| 25 | **Decide Report.Findings unexport timing** (OWNER DECISION)              | High   | Decision | Field is deprecated but still public. When to pull the trigger?     |
 
 ---
 

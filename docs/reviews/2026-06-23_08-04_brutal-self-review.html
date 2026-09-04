@@ -65,14 +65,14 @@
 
         /* --- Type stacks (system only — zero external fonts) --- */
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -280,15 +280,27 @@
       }
       .card-problem {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .card-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .card-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
 
       /* --- Issue cards --- */
@@ -301,15 +313,27 @@
       }
       .issue-critical {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-important {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-nice {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .issue h3 {
         margin-bottom: 0.3rem;
@@ -814,7 +838,9 @@
           </div>
           <div class="hero-badge">Report Type</div>
           <h1>Report Title</h1>
-          <p class="hero-subtitle">One-sentence description of what this report covers.</p>
+          <p class="hero-subtitle">
+            One-sentence description of what this report covers.
+          </p>
         </div>
 
         <!-- Inline TOC (alternative to sidebar; pick one) -->
@@ -870,7 +896,9 @@
           <span class="severity severity-critical">Blocking</span>
           <h3>Critical finding title</h3>
           <div class="where">path/to/file.go:42-58</div>
-          <p>Describe the problem and cite the code or behavior that proves it.</p>
+          <p>
+            Describe the problem and cite the code or behavior that proves it.
+          </p>
           <div class="callout callout-solution">
             <strong>Fix</strong>
             State the concrete recommended action.
@@ -881,14 +909,19 @@
           <span class="severity severity-important">Important</span>
           <h3>Important finding title</h3>
           <div class="where">path/to/another.go:12-19</div>
-          <p>Explain the risk and why a careful reviewer would hesitate before shipping.</p>
+          <p>
+            Explain the risk and why a careful reviewer would hesitate before
+            shipping.
+          </p>
         </div>
 
         <div class="issue issue-nice">
           <span class="severity severity-nice">Nice to have</span>
           <h3>Polish suggestion</h3>
           <div class="where">docs/ or config</div>
-          <p>Minor documentation gaps or future-proofing suggestions go here.</p>
+          <p>
+            Minor documentation gaps or future-proofing suggestions go here.
+          </p>
         </div>
 
         <!-- Strengths -->
@@ -950,7 +983,8 @@
         <!-- ASCII Diagram -->
         <h2>Dependency Tree</h2>
         <div class="dep-tree">
-          <span class="root">root</span> ├── <span class="ok">wanted-dep</span> └──
+          <span class="root">root</span> ├──
+          <span class="ok">wanted-dep</span> └──
           <span class="unwanted">unwanted-dep</span>
         </div>
 
@@ -972,7 +1006,8 @@
         </div>
 
         <footer class="footer">
-          Generated YYYY-MM-DD &middot; All claims verified against source code where noted
+          Generated YYYY-MM-DD &middot; All claims verified against source code
+          where noted
         </footer>
       </main>
     </div>

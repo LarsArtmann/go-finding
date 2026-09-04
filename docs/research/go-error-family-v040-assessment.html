@@ -337,36 +337,49 @@
           PRO / CONTRA Review
         </h1>
         <div class="hero-meta">
-          github.com/larsartmann/go-error-family &mdash; reviewed for go-finding &mdash; 2026-06-17
+          github.com/larsartmann/go-error-family &mdash; reviewed for go-finding
+          &mdash; 2026-06-17
         </div>
         <p class="hero-subtitle">
-          A protocol-first structured error library for Go. This report evaluates its design,
-          implementation quality, maturity, and fit for the go-finding static-analysis project.
+          A protocol-first structured error library for Go. This report
+          evaluates its design, implementation quality, maturity, and fit for
+          the go-finding static-analysis project.
         </p>
       </header>
 
       <section>
         <div class="section-label">00 &mdash; Executive Verdict</div>
-        <h2 class="section-title">Well-designed library, narrow fit for go-finding</h2>
+        <h2 class="section-title">
+          Well-designed library, narrow fit for go-finding
+        </h2>
 
         <div class="verdict-box recommend">
-          <h4>Overall assessment: 7.5 / 10 as a library; 5 / 10 as a go-finding dependency</h4>
+          <h4>
+            Overall assessment: 7.5 / 10 as a library; 5 / 10 as a go-finding
+            dependency
+          </h4>
           <p>
-            <strong>go-error-family is a thoughtful, well-executed library.</strong> Its protocol of
-            small interfaces (<code>Coded</code>, <code>Classified</code>, <code>Contextual</code>,
-            <code>Retryable</code>) is the right abstraction for behavioral error handling at
-            CLI/HTTP boundaries. The code is clean, tested, lint-free, and documented.
+            <strong
+              >go-error-family is a thoughtful, well-executed library.</strong
+            >
+            Its protocol of small interfaces (<code>Coded</code>,
+            <code>Classified</code>, <code>Contextual</code>,
+            <code>Retryable</code>) is the right abstraction for behavioral
+            error handling at CLI/HTTP boundaries. The code is clean, tested,
+            lint-free, and documented.
           </p>
           <p>
-            For <strong>go-finding</strong>, however, the value is limited. The library's Families,
-            diagnostics, and agent are aimed at runtime services, not static-analysis tooling. The
-            most useful parts (interfaces + CLI boundary) can be adopted without importing the
+            For <strong>go-finding</strong>, however, the value is limited. The
+            library's Families, diagnostics, and agent are aimed at runtime
+            services, not static-analysis tooling. The most useful parts
+            (interfaces + CLI boundary) can be adopted without importing the
             library into the root package.
           </p>
           <p style="margin-top: 0.75rem">
-            <strong>Recommendation:</strong> do not add a root-package dependency. Keep the existing
-            <code>FindingError</code> and consider implementing go-error-family's consumer
-            interfaces in a bridge subpackage, or adopt <code>HandleError</code> only in
+            <strong>Recommendation:</strong> do not add a root-package
+            dependency. Keep the existing <code>FindingError</code> and consider
+            implementing go-error-family's consumer interfaces in a bridge
+            subpackage, or adopt <code>HandleError</code> only in
             <code>cmd/go-finding/main.go</code>.
           </p>
         </div>
@@ -388,7 +401,9 @@
               <li>Requires Go 1.26+ (<code>errors.AsType</code>)</li>
               <li>Domain mismatch: Families target runtime services</li>
               <li>Most features unused in a static-analysis library</li>
-              <li>Would violate go-finding's root-package-dependency-free rule</li>
+              <li>
+                Would violate go-finding's root-package-dependency-free rule
+              </li>
             </ul>
           </div>
         </div>
@@ -400,10 +415,11 @@
 
         <p>
           go-error-family is a Go library that gives every error a behavioral
-          <strong>Family</strong>: <code>Rejection</code>, <code>Conflict</code>,
-          <code>Transient</code>, <code>Corruption</code>, or <code>Infrastructure</code>. From that
-          Family, the library derives retry decisions, process exit codes, presentation tone, and
-          audience targeting.
+          <strong>Family</strong>: <code>Rejection</code>,
+          <code>Conflict</code>, <code>Transient</code>,
+          <code>Corruption</code>, or <code>Infrastructure</code>. From that
+          Family, the library derives retry decisions, process exit codes,
+          presentation tone, and audience targeting.
         </p>
 
         <table>
@@ -458,20 +474,33 @@
         <p>The library is organized as a Go workspace:</p>
         <ul>
           <li>
-            <strong>root</strong> &mdash; core types, classification, constructors, CLI boundary
+            <strong>root</strong> &mdash; core types, classification,
+            constructors, CLI boundary
           </li>
           <li>
-            <strong>diagnose/</strong> &mdash; concurrent diagnostic rules (filesystem, network)
+            <strong>diagnose/</strong> &mdash; concurrent diagnostic rules
+            (filesystem, network)
           </li>
-          <li><strong>diagnose/git</strong> &mdash; opt-in GitRule submodule</li>
-          <li><strong>diagnose/postgres</strong> &mdash; opt-in PostgresRule submodule</li>
-          <li><strong>agent/</strong> &mdash; deterministic root-cause analysis + FixSteps</li>
-          <li><strong>bridge/</strong> &mdash; separate module integrating samber/oops</li>
+          <li>
+            <strong>diagnose/git</strong> &mdash; opt-in GitRule submodule
+          </li>
+          <li>
+            <strong>diagnose/postgres</strong> &mdash; opt-in PostgresRule
+            submodule
+          </li>
+          <li>
+            <strong>agent/</strong> &mdash; deterministic root-cause analysis +
+            FixSteps
+          </li>
+          <li>
+            <strong>bridge/</strong> &mdash; separate module integrating
+            samber/oops
+          </li>
         </ul>
 
         <p class="pull-quote">
-          The central idea is sound: share the <em>protocol</em> (what an error means) without
-          forcing consumers to share the <em>implementation</em>.
+          The central idea is sound: share the <em>protocol</em> (what an error
+          means) without forcing consumers to share the <em>implementation</em>.
         </p>
       </section>
 
@@ -482,26 +511,33 @@
         <div class="card pro">
           <h4>P1. Protocol-first, interface-driven design</h4>
           <p>
-            The library exposes four tiny interfaces that any error type can implement. This lets
-            consumers classify and handle errors without importing the library's concrete
-            <code>Error</code> type. It is the Go idiom: accept interfaces, return structs.
+            The library exposes four tiny interfaces that any error type can
+            implement. This lets consumers classify and handle errors without
+            importing the library's concrete
+            <code>Error</code> type. It is the Go idiom: accept interfaces,
+            return structs.
           </p>
           <pre>
 type Classified interface {
     error
     ErrorFamily() Family
 }</pre>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 95%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 95%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P2. Zero dependencies in the root module</h4>
           <p>
-            The core package depends only on the standard library. Submodules (git, postgres,
-            bridge) carry their own dependencies, so consumers pay only for what they use. This
-            aligns well with go-finding's minimal-dependency philosophy.
+            The core package depends only on the standard library. Submodules
+            (git, postgres, bridge) carry their own dependencies, so consumers
+            pay only for what they use. This aligns well with go-finding's
+            minimal-dependency philosophy.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 90%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 90%"></div>
+          </div>
         </div>
 
         <div class="card pro">
@@ -509,7 +545,10 @@ type Classified interface {
           <p>The precedence chain is clear and deterministic:</p>
           <ol>
             <li>
-              Multi-error (<code>errors.Join</code>) &mdash; first non-<code>Transient</code> wins
+              Multi-error (<code>errors.Join</code>) &mdash; first non-<code
+                >Transient</code
+              >
+              wins
             </li>
             <li><code>Classified</code> interface</li>
             <li><code>Retryable</code> interface</li>
@@ -517,10 +556,13 @@ type Classified interface {
             <li>Default <code>Transient</code> (fail-open)</li>
           </ol>
           <p>
-            The fail-open default is a deliberate product decision: unknown errors are retried
-            rather than rejected, which is usually safer at boundaries.
+            The fail-open default is a deliberate product decision: unknown
+            errors are retried rather than rejected, which is usually safer at
+            boundaries.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 85%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 85%"></div>
+          </div>
         </div>
 
         <div class="card pro">
@@ -528,52 +570,66 @@ type Classified interface {
           <p>Several choices show architectural discipline:</p>
           <ul>
             <li>
-              The agent only <em>analyzes</em>; it does not execute shell commands. The consumer
-              decides what to do with <code>FixStep.Command</code>.
+              The agent only <em>analyzes</em>; it does not execute shell
+              commands. The consumer decides what to do with
+              <code>FixStep.Command</code>.
             </li>
             <li>
-              <code>HandleErrorWithContext</code> is the canonical entry point; other handlers
-              delegate to it.
+              <code>HandleErrorWithContext</code> is the canonical entry point;
+              other handlers delegate to it.
             </li>
-            <li>A disabled agent returns an error instead of a synthetic result.</li>
             <li>
-              The sentinel registry is snapshotted before iteration, so <code>errors.Is</code> runs
-              without holding a lock.
+              A disabled agent returns an error instead of a synthetic result.
+            </li>
+            <li>
+              The sentinel registry is snapshotted before iteration, so
+              <code>errors.Is</code> runs without holding a lock.
             </li>
           </ul>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 85%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 85%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P5. Strong test coverage and quality gates</h4>
           <p>
-            The project ships with table-driven tests, fuzz tests, benchmarks, and integration tests
-            for diagnostic rules. Running the full suite (root + all submodules) passes cleanly:
+            The project ships with table-driven tests, fuzz tests, benchmarks,
+            and integration tests for diagnostic rules. Running the full suite
+            (root + all submodules) passes cleanly:
           </p>
           <pre>
 go test ./... -count=1 -timeout 120s   # ok all modules
 golangci-lint run ./...                 # 0 issues</pre>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 80%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 80%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P6. Useful bridge to samber/oops</h4>
           <p>
-            The <code>bridge/</code> submodule lets a project use oops for rich observability (stack
-            traces, source fragments, trace IDs) and still get go-error-family classification. This
-            shows the library is designed to coexist, not conquer.
+            The <code>bridge/</code> submodule lets a project use oops for rich
+            observability (stack traces, source fragments, trace IDs) and still
+            get go-error-family classification. This shows the library is
+            designed to coexist, not conquer.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 75%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 75%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P7. CLI boundary handler is genuinely useful</h4>
           <p>
-            <code>HandleError</code> turns a one-liner in <code>main()</code> into structured,
-            user-facing output with What/Why/Fix/WayOut templates and a correct exit code. For
+            <code>HandleError</code> turns a one-liner in
+            <code>main()</code> into structured, user-facing output with
+            What/Why/Fix/WayOut templates and a correct exit code. For
             command-line tools this removes boilerplate and improves UX.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 80%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 80%"></div>
+          </div>
         </div>
       </section>
 
@@ -584,87 +640,111 @@ golangci-lint run ./...                 # 0 issues</pre>
         <div class="card contra">
           <h4>C1. Go 1.26 requirement is aggressive</h4>
           <p>
-            The library uses <code>errors.AsType[T]()</code>, which is new in Go 1.26. At the time
-            of review, Go 1.26 has only recently released. This sharply limits adoption and forces
-            consumers to upgrade their toolchain. It also means the library cannot be used in
-            projects that must support older Go versions.
+            The library uses <code>errors.AsType[T]()</code>, which is new in Go
+            1.26. At the time of review, Go 1.26 has only recently released.
+            This sharply limits adoption and forces consumers to upgrade their
+            toolchain. It also means the library cannot be used in projects that
+            must support older Go versions.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 85%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 85%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C2. Young project with unproven ecosystem traction</h4>
           <p>
-            v0.4.0 is pre-1.0. There is no broad production track record, few external consumers,
-            and APIs may still change. The comparison with samber/oops notes oops has 41 releases
-            and ~1k GitHub stars; go-error-family is niche by comparison.
+            v0.4.0 is pre-1.0. There is no broad production track record, few
+            external consumers, and APIs may still change. The comparison with
+            samber/oops notes oops has 41 releases and ~1k GitHub stars;
+            go-error-family is niche by comparison.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 70%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 70%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C3. Context values are string-only</h4>
           <p>
-            <code>ErrorContext() map[string]string</code> is simple and serializable, but it forces
-            callers to stringify structured values. For richer observability (integers, nested
-            objects, request bodies), consumers still need something like samber/oops or a custom
-            type.
+            <code>ErrorContext() map[string]string</code> is simple and
+            serializable, but it forces callers to stringify structured values.
+            For richer observability (integers, nested objects, request bodies),
+            consumers still need something like samber/oops or a custom type.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 55%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 55%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C4. No built-in stack traces or rich debugging context</h4>
           <p>
-            Unlike samber/oops, the library does not capture stack traces, source fragments, or
-            trace/span IDs. The diagnostic rules and agent help, but they are no replacement for a
-            captured stack trace when debugging a production failure.
+            Unlike samber/oops, the library does not capture stack traces,
+            source fragments, or trace/span IDs. The diagnostic rules and agent
+            help, but they are no replacement for a captured stack trace when
+            debugging a production failure.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 60%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 60%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C5. Template substitution has an XSS footgun</h4>
           <p>
-            The <code>applyContext</code> helper uses <code>strings.ReplaceAll</code>, not
-            <code>html/template</code>. This is fine for stderr output but unsafe if the rendered
-            message is ever embedded in HTML. The limitation is documented, but it means the library
-            is not boundary-agnostic: consumers must escape values themselves for web output.
+            The <code>applyContext</code> helper uses
+            <code>strings.ReplaceAll</code>, not <code>html/template</code>.
+            This is fine for stderr output but unsafe if the rendered message is
+            ever embedded in HTML. The limitation is documented, but it means
+            the library is not boundary-agnostic: consumers must escape values
+            themselves for web output.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 50%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 50%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C6. Root package mixes protocol and presentation</h4>
           <p>
-            <code>HandleError</code>, templates, and the CLI boundary live in the root package. The
-            project's own earlier "top-5 stupidest things" doc flagged this as a structural issue
-            (item #3) and proposed moving it to a <code>cli</code> subpackage. It was not moved, so
-            the root package still couples protocol semantics with presentation concerns.
+            <code>HandleError</code>, templates, and the CLI boundary live in
+            the root package. The project's own earlier "top-5 stupidest things"
+            doc flagged this as a structural issue (item #3) and proposed moving
+            it to a <code>cli</code> subpackage. It was not moved, so the root
+            package still couples protocol semantics with presentation concerns.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 45%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 45%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C7. Fail-open default can surprise</h4>
           <p>
             Unknown errors classify as <code>Transient</code>, which means
-            <code>IsRetryable(err)</code> returns <code>true</code> for any unrecognized error. This
-            is safe for many boundaries but can lead to infinite retry loops if a caller blindly
-            retries every <code>Transient</code> error without inspecting the code or message.
+            <code>IsRetryable(err)</code> returns <code>true</code> for any
+            unrecognized error. This is safe for many boundaries but can lead to
+            infinite retry loops if a caller blindly retries every
+            <code>Transient</code> error without inspecting the code or message.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 50%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 50%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C8. Many features are dead weight for library consumers</h4>
           <p>
-            Diagnostics, Git/Postgres rules, agent analysis, and audience/tone metadata are designed
-            for applications at runtime boundaries. A library like go-finding has no use for most of
-            them; importing the root package still brings the conceptual weight even if the code is
+            Diagnostics, Git/Postgres rules, agent analysis, and audience/tone
+            metadata are designed for applications at runtime boundaries. A
+            library like go-finding has no use for most of them; importing the
+            root package still brings the conceptual weight even if the code is
             unused.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 65%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 65%"></div>
+          </div>
         </div>
       </section>
 
@@ -673,10 +753,12 @@ golangci-lint run ./...                 # 0 issues</pre>
         <h2 class="section-title">How well does it map to static analysis?</h2>
 
         <p>
-          go-finding's existing error system is built around static-analysis semantics:
-          <code>FindingError</code> carries <code>Category</code>, <code>Finding</code>,
-          <code>File</code>, and <code>Position</code>. go-error-family is built around runtime
-          service semantics: retry, exit code, audience, tone.
+          go-finding's existing error system is built around static-analysis
+          semantics:
+          <code>FindingError</code> carries <code>Category</code>,
+          <code>Finding</code>, <code>File</code>, and <code>Position</code>.
+          go-error-family is built around runtime service semantics: retry, exit
+          code, audience, tone.
         </p>
 
         <table>
@@ -723,10 +805,10 @@ golangci-lint run ./...                 # 0 issues</pre>
 
         <p>
           The best mapping is <strong>interfaces, not replacement</strong>:
-          <code>FindingError</code> can implement <code>Coded</code>, <code>Classified</code>, and
-          <code>Contextual</code> without changing its shape, and
-          <code>cmd/go-finding/main.go</code> can call <code>errorfamily.HandleError</code> at the
-          boundary.
+          <code>FindingError</code> can implement <code>Coded</code>,
+          <code>Classified</code>, and <code>Contextual</code> without changing
+          its shape, and <code>cmd/go-finding/main.go</code> can call
+          <code>errorfamily.HandleError</code> at the boundary.
         </p>
       </section>
 
@@ -774,9 +856,10 @@ golangci-lint run ./...                 # 0 issues</pre>
         </table>
 
         <p>
-          go-error-family occupies a clear niche: it is lighter than oops/cockroachdb and more
-          opinionated than stdlib. It is not a replacement for rich observability libraries, but it
-          can complement them (as the <code>bridge/</code> module demonstrates).
+          go-error-family occupies a clear niche: it is lighter than
+          oops/cockroachdb and more opinionated than stdlib. It is not a
+          replacement for rich observability libraries, but it can complement
+          them (as the <code>bridge/</code> module demonstrates).
         </p>
       </section>
 
@@ -787,9 +870,10 @@ golangci-lint run ./...                 # 0 issues</pre>
         <div class="card pro">
           <h4>Recommended: interface-level adoption only</h4>
           <p>
-            Implement go-error-family's consumer interfaces on <code>FindingError</code> in a
-            separate bridge subpackage (e.g., <code>finding/errorfamily/</code>) so the root package
-            remains dependency-free. Adopt <code>HandleError</code> only in
+            Implement go-error-family's consumer interfaces on
+            <code>FindingError</code> in a separate bridge subpackage (e.g.,
+            <code>finding/errorfamily/</code>) so the root package remains
+            dependency-free. Adopt <code>HandleError</code> only in
             <code>cmd/go-finding/main.go</code>.
           </p>
           <p>
@@ -801,19 +885,20 @@ golangci-lint run ./...                 # 0 issues</pre>
         <div class="card contra">
           <h4>Not recommended: full replacement of FindingError</h4>
           <p>
-            Replacing <code>FindingError</code> with <code>errorfamily.Error</code> would discard
-            domain-specific fields (<code>Finding</code>, <code>Position</code>, <code>File</code>)
-            and force static-analysis errors into runtime Families. The cost far exceeds the
-            benefit.
+            Replacing <code>FindingError</code> with
+            <code>errorfamily.Error</code> would discard domain-specific fields
+            (<code>Finding</code>, <code>Position</code>, <code>File</code>) and
+            force static-analysis errors into runtime Families. The cost far
+            exceeds the benefit.
           </p>
         </div>
 
         <div class="card neutral">
           <h4>Alternative: no adoption</h4>
           <p>
-            go-finding's current error system is already idiomatic and domain-appropriate. Doing
-            nothing is acceptable, though it leaves machine-readable codes and richer CLI output on
-            the table.
+            go-finding's current error system is already idiomatic and
+            domain-appropriate. Doing nothing is acceptable, though it leaves
+            machine-readable codes and richer CLI output on the table.
           </p>
         </div>
       </section>
@@ -839,7 +924,9 @@ golangci-lint run ./...                 # 0 issues</pre>
             <tr>
               <td>Implementation quality</td>
               <td><span class="tag tag-pro">8 / 10</span></td>
-              <td>Clean, tested, lint-free; minor presentation/protocol coupling</td>
+              <td>
+                Clean, tested, lint-free; minor presentation/protocol coupling
+              </td>
             </tr>
             <tr>
               <td>Documentation</td>
@@ -869,8 +956,8 @@ golangci-lint run ./...                 # 0 issues</pre>
 
       <footer>
         <p>
-          Review generated 2026-06-17 &middot; go-error-family v0.4.0 &middot; all tests and lint
-          passed at time of review
+          Review generated 2026-06-17 &middot; go-error-family v0.4.0 &middot;
+          all tests and lint passed at time of review
         </p>
       </footer>
     </div>

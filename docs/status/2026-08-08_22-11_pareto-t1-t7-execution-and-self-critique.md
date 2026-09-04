@@ -9,7 +9,9 @@ Executed 7 TODO items from the `paste_1.txt` TODO list. All were `Low` priority 
 ## A) FULLY DONE
 
 ### 1. Extract marshalOpts Package-Level Constant
+
 **Commit:** `a93b749`
+
 - Created `marshalOpts = json.Deterministic(true)` and `prettyMarshalOpts` (deterministic + indent) in `json.go`
 - Replaced all inline `json.Deterministic(true)` across `json.go` (6 sites), `sarif_export.go` (2 sites)
 - Added missing `json.Deterministic(true)` to `pipeline/fix_edit.go` `MarshalJSON`
@@ -18,14 +20,18 @@ Executed 7 TODO items from the `paste_1.txt` TODO list. All were `Low` priority 
 - **Single source of truth** — new call sites cannot forget the option
 
 ### 2. Export ResolveSafePath / ResolveSafePathFrom / ResolveRoot
+
 **Commit:** `a93b749`
+
 - Capitalized all three functions in `pipeline/path_safety.go`
 - Updated all internal callers: `fix_applier.go`, `pipeline_detect.go`, `fix_applier_test.go`, `path_safety_test.go` (52 refs)
 - Build + tests pass cleanly
 - Consumers can now validate paths against a root directory themselves
 
 ### 3. FlightRecorder Context Propagation
+
 **Commit:** `a93b749`
+
 - `Snapshot(ctx, reason)` now accepts `context.Context` as first arg
 - `writeSnapshot(ctx, num, reason)` checks `ctx.Err()` before writing
 - `asyncSnapshot` uses `context.Background()` internally — critical fix discovered during testing: `Pipeline.Run()` wraps ctx with `WithTimeout` + `defer cancel()`, which fires on return, killing the async snapshot goroutine's context before it writes
@@ -34,7 +40,9 @@ Executed 7 TODO items from the `paste_1.txt` TODO list. All were `Low` priority 
 - Updated doc.go and docs/guides/flight-recorder.md with new signatures
 
 ### 4. FlightRecorder Multiple Recorder Graceful Degradation
+
 **Commit:** `a93b749`
+
 - `NewFlightRecorderHook` detects "flight recorder already enabled" error and enters degraded mode
 - Added `degraded bool` field to `FlightRecorderHook`
 - Added `Degraded() bool` method
@@ -44,7 +52,9 @@ Executed 7 TODO items from the `paste_1.txt` TODO list. All were `Low` priority 
 - Updated docs/guides/troubleshooting.md with new behavior
 
 ### 5. CI Check for json.Marshal Without Deterministic
+
 **Commit:** `d39872a`
+
 - Created `scripts/json-deterministic-check.sh` with paren-depth-aware extraction
 - Correctly handles multi-line `json.Marshal(...)` calls with nested function arguments
 - Excludes test files, generated files, doc.go
@@ -52,27 +62,34 @@ Executed 7 TODO items from the `paste_1.txt` TODO list. All were `Low` priority 
 - Verified: passes on real codebase, correctly flags simulated violations
 
 ### 6. Refine docs-freshness.sh False-Positive Matching
+
 **Commit:** `d39872a`
+
 - Changed grep from `` `?\K[a-zA-Z0-9_/]+\.go `` (optional backtick, matches prose) to two patterns:
   - `` `\K[a-zA-Z0-9_/]+\.go(?=`) `` (backtick code spans only)
   - `\]\(\K[a-zA-Z0-9_/]+\.go(?=\))` (markdown links only)
 - Eliminates false positives from prose mentions like "see finding.go"
 
 ### 7. Per-Module golangci-lint Coverage
+
 **Commit:** `4809b49`
+
 - **Decision:** Instead of creating 3 duplicated per-module configs, removed the path exclusions for `pipeline/` and `cmd/go-finding/` from root `.golangci.yml`
 - All 4 modules now lint clean with a single root config (0 issues)
 - Both lint and formatter exclusions removed
 - Simpler, DRY, no config drift risk
 
 ### Documentation Updates
+
 **Commit:** `4809b49` (unstaged: AGENTS.md, doc.go, guides)
+
 - Updated AGENTS.md: marshalOpts pattern, exported path safety API, flight recorder context + degradation, CI script count (6→7), docs-freshness matching refinement
 - Updated doc.go: `Snapshot(ctx, reason)` signature
 - Updated docs/guides/flight-recorder.md: `Snapshot(ctx, reason)` in prose + code examples + lifecycle description
 - Updated docs/guides/troubleshooting.md: graceful degradation troubleshooting advice
 
 ### Verification
+
 - `go build ./...` — all 4 modules clean
 - `go test -race -count=1 ./...` — all modules pass
 - `golangci-lint run ./...` — 0 issues
@@ -99,6 +116,7 @@ No items from the original TODO list were skipped. All 7 were executed.
 Nothing was fucked up. However, one significant issue was caught and fixed during execution:
 
 ### Bug Found & Fixed: asyncSnapshot Context Cancellation
+
 - **Problem:** Initial implementation passed the pipeline's run context to `asyncSnapshot`. `Pipeline.Run()` wraps ctx with `context.WithTimeout` + `defer cancel()`. When Run returns, `cancel()` fires immediately, cancelling the async snapshot goroutine's context before it writes. Result: `TestFlightRecorderHook_SlowLastStageInPipeline` failed 3/3 times.
 - **Root cause:** The pipeline's context lifecycle ends before diagnostic goroutines complete.
 - **Fix:** `asyncSnapshot` uses `context.Background()` for the actual write. The public `Snapshot(ctx, reason)` API still accepts context for cancellation, but internal async snapshots are decoupled from pipeline lifecycle.
@@ -109,17 +127,20 @@ Nothing was fucked up. However, one significant issue was caught and fixed durin
 ## E) WHAT WE SHOULD IMPROVE
 
 ### Architecture / Design
+
 1. **FixEdit.MarshalJSON now has inline `json.Deterministic(true)`** instead of using `marshalOpts`. This is because `fix_edit.go` is in the `pipeline` module, which can't import the core module's `marshalOpts`. Consider whether the pipeline module needs its own `marshalOpts` equivalent, or whether a shared internal package would help.
 2. **`Degraded()` on FlightRecorderHook is not exported in the StageHook interface** — consumers checking `hook.Degraded()` need a type assertion from `StageHook` to `*FlightRecorderHook`. Consider whether degraded state should be surfaced through the hook interface or via the Logger only.
 3. **The `strings.Contains(err.Error(), "flight recorder already enabled")` check is fragile** — it depends on the exact error string from `runtime/trace`. If Go changes the message, degraded mode silently breaks. No better alternative exists without Go stdlib cooperation.
 4. **doc.go has stale API references risk** — The AGENTS.md notes that doc.go must be updated after renames. The `Snapshot(ctx, reason)` change was applied, but there may be other references to old APIs in doc.go's ~350 lines that weren't checked this session.
 
 ### Testing
+
 5. **No test for the CI script itself** — `json-deterministic-check.sh` was manually verified but has no automated regression test. If someone modifies the script and breaks the awk logic, CI will silently pass everything.
 6. **No fuzz test for degraded mode** — The degraded mode path is tested with one integration test but not fuzzed for edge cases (e.g., degraded hook in concurrent pipeline).
 7. **`TestFlightRecorderHook_DegradedWhenConflict` depends on test execution order** — it creates a primary hook first, then a degraded one. If run in parallel with other flight recorder tests (which don't use `t.Parallel()`), it could interfere. The singleton nature is documented but fragile.
 
 ### Process
+
 8. **The marshalOpts variables trigger `gochecknoglobals`** — suppressed via `.golangci.yml` exclusion for `json.go`. A package-level `var` is the Go-idiomatic way to define reusable options, but it's technically mutable. Could use a function returning a fresh slice, but that allocates per call. The tradeoff is acceptable.
 9. **GOWORK=off path safety tests** — Not explicitly verified this session. The exported functions should work identically in GOWORK=off mode, but only the workspace build was tested for this specific change.
 
@@ -128,6 +149,7 @@ Nothing was fucked up. However, one significant issue was caught and fixed durin
 ## F) Up to 50 Things to Get Done Next
 
 ### High Impact
+
 1. **Verify doc.go has no other stale API references** — Grep for all function/type names that changed in v1.3-v1.5 era
 2. **Add `ResolveSafePath` usage example to docs/guides/** — Now that it's exported, show consumers how to use it
 3. **Add `Degraded()` documentation to flight-recorder guide** — How to detect and handle degraded mode
@@ -139,6 +161,7 @@ Nothing was fucked up. However, one significant issue was caught and fixed durin
 9. **Stress test the flight recorder** — Run `-count=20` to verify degraded mode doesn't flake under stress
 
 ### Medium Impact
+
 10. **Add a `ResolveSafePathFrom` bench test** — Verify the caching doesn't regress performance
 11. **Test `json-deterministic-check.sh` against edge cases** — Nested ternary, single-line calls, calls with no options at all
 12. **Consider a Go-based json-deterministic linter** — The bash script works but a `go/analysis` pass would be more robust
@@ -152,6 +175,7 @@ Nothing was fucked up. However, one significant issue was caught and fixed durin
 20. **Review the `writeSnapshot` error messages** — Now includes context cancellation, should have consistent error wrapping
 
 ### Lower Priority
+
 21. **Add `ResolveSafePath` to the examples/ directory** — Show the path validation pattern
 22. **Document the `asyncSnapshot` context decision in an ADR** — Important architectural decision
 23. **Consider a `FlightRecorderHook.DegradedReason() string` method** — More informative than just `bool`

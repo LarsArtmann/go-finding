@@ -220,23 +220,23 @@ Path 1 gets a releasable v1.0.0 faster. Path 2 delivers a more complete library 
 
 ## Project Health Dashboard
 
-| Metric                    | Value         | Trend               | Status                  |
-| ------------------------- | ------------- | ------------------- | ----------------------- |
+| Metric                    | Value         | Trend               | Status                 |
+| ------------------------- | ------------- | ------------------- | ---------------------- |
 | Test Coverage (root)      | 97.1%         | ↓ from 98.4%        | ⚠️ New code needs tests |
-| Test Coverage (analysis)  | 98.5%         | →                   | ✅                      |
+| Test Coverage (analysis)  | 98.5%         | →                   | ✅                     |
 | Test Coverage (pipeline)  | 94.0%         | ↓ from 95.9%        | ⚠️                      |
-| Test Coverage (detectors) | 95.9%         | →                   | ✅                      |
+| Test Coverage (detectors) | 95.9%         | →                   | ✅                     |
 | Test Coverage (CLI)       | 70.0%         | →                   | ⚠️                      |
-| Lint Issues               | 0             | →                   | ✅                      |
-| Race Detector             | Clean         | →                   | ✅                      |
-| Go Files                  | 118           | ↑ +2                | —                       |
-| Lines of Go               | 27,601        | ↑ +273              | —                       |
-| Test Files                | 66            | →                   | —                       |
-| TODO Done                 | 138/192 (72%) | ↑ from 97/190 (51%) | ✅                      |
-| TODO Actionable           | 25            | ↓ from 36           | ✅                      |
-| TODO Blocked              | 13            | →                   | —                       |
-| Commits This Session      | 4             | —                   | —                       |
-| All Pushed                | Yes           | —                   | ✅                      |
+| Lint Issues               | 0             | →                   | ✅                     |
+| Race Detector             | Clean         | →                   | ✅                     |
+| Go Files                  | 118           | ↑ +2                | —                      |
+| Lines of Go               | 27,601        | ↑ +273              | —                      |
+| Test Files                | 66            | →                   | —                      |
+| TODO Done                 | 138/192 (72%) | ↑ from 97/190 (51%) | ✅                     |
+| TODO Actionable           | 25            | ↓ from 36           | ✅                     |
+| TODO Blocked              | 13            | →                   | —                      |
+| Commits This Session      | 4             | —                   | —                      |
+| All Pushed                | Yes           | —                   | ✅                     |
 
 ---
 

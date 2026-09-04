@@ -198,33 +198,33 @@ These are not new but were never fixed.
 
 ## f) Top #25 Things to Get Done Next
 
-| #   | Item                                                                  | Category     | Effort | Impact                              |
-| --- | --------------------------------------------------------------------- | ------------ | ------ | ----------------------------------- |
-| 1   | Fix CI Go version matrix (1.26.0)                                     | Fix          | 5 min  | 🔴 Blocks all CI                    |
-| 2   | Fix release workflow Go version                                       | Fix          | 5 min  | 🔴 Blocks all releases              |
-| 3   | Push to origin                                                        | Ops          | 1 min  | 🔴 Unpushed work at risk            |
-| 4   | Clear Go cache + verify `-race` tests pass                            | Fix          | 5 min  | 🔴 `just test` is broken            |
-| 5   | Fix lint warnings in `cmd/go-finding/main.go`                         | Quality      | 30 min | 🟡 26 warnings                      |
-| 6   | Add CLI tests (`cmd/go-finding/`)                                     | Tests        | 2-3h   | 🟡 Zero test coverage               |
-| 7   | Wire `registerDetector` or remove dead code                           | Quality      | 30 min | 🟡 Unused code                      |
-| 8   | Resolve module split `example_test.go` blocker                        | Design       | 1h     | 🟡 Blocks Approach B                |
-| 9   | Measure `golang.org/x/tools` transitive dep size                      | Research     | 15 min | 🟡 Data for decision                |
-| 10  | Revise MODULE_SPLIT_PLAN.md with all 9 gaps                           | Planning     | 1-2h   | 🟢 Better plan                      |
-| 11  | Update AGENTS.md with module split decision context                   | Docs         | 15 min | 🟢 Agent awareness                  |
-| 12  | Add `govulncheck` step to CI                                          | Security     | 15 min | 🟢 Supply chain                     |
-| 13  | Add `go.work` for local development                                   | DevEx        | 10 min | 🟢 Better DX                        |
-| 14  | Add GoReleaser multi-module config (if splitting)                     | Release      | 1h     | 🟢 Required for split               |
-| 15  | Write migration guide for module split (before/after)                 | Docs         | 1h     | 🟢 Downstream clarity               |
-| 16  | Add pipeline example with config file                                 | Examples     | 30 min | 🟢 Usability                        |
-| 17  | Build at least 1 real detector integration (e.g., govet)              | Features     | 2-3h   | 🟢 CLI is useless without detectors |
-| 18  | Add CLI end-to-end test with a real detector                          | Tests        | 1-2h   | 🟢 Confidence                       |
-| 19  | Document first-release procedure for multi-module                     | Docs         | 30 min | 🟢 Ops readiness                    |
-| 20  | Evaluate `go-sarif` upstream vs. custom SARIF code                    | Research     | 1h     | 🟢 Dependency audit                 |
-| 21  | Add SARIF schema validation test                                      | Tests        | 30 min | 🟢 Correctness                      |
-| 22  | Clean up `pipeline/astfix.go` — evaluate if it belongs in `analysis/` | Architecture | 30 min | 🟢 Module alignment                 |
-| 23  | Set up pkg.go.dev documentation                                       | Docs         | 15 min | 🟢 Discoverability                  |
-| 24  | Add watch mode to CLI (EXECUTION_PLAN_V2 #16)                         | Features     | 2-3h   | 🟢 DevEx                            |
-| 25  | Tag v1.1.0 with module split or v1.0.1 without                        | Release      | 15 min | 🟢 Milestone                        |
+| #  | Item                                                                  | Category     | Effort | Impact                              |
+| -- | --------------------------------------------------------------------- | ------------ | ------ | ----------------------------------- |
+| 1  | Fix CI Go version matrix (1.26.0)                                     | Fix          | 5 min  | 🔴 Blocks all CI                    |
+| 2  | Fix release workflow Go version                                       | Fix          | 5 min  | 🔴 Blocks all releases              |
+| 3  | Push to origin                                                        | Ops          | 1 min  | 🔴 Unpushed work at risk            |
+| 4  | Clear Go cache + verify `-race` tests pass                            | Fix          | 5 min  | 🔴 `just test` is broken            |
+| 5  | Fix lint warnings in `cmd/go-finding/main.go`                         | Quality      | 30 min | 🟡 26 warnings                      |
+| 6  | Add CLI tests (`cmd/go-finding/`)                                     | Tests        | 2-3h   | 🟡 Zero test coverage               |
+| 7  | Wire `registerDetector` or remove dead code                           | Quality      | 30 min | 🟡 Unused code                      |
+| 8  | Resolve module split `example_test.go` blocker                        | Design       | 1h     | 🟡 Blocks Approach B                |
+| 9  | Measure `golang.org/x/tools` transitive dep size                      | Research     | 15 min | 🟡 Data for decision                |
+| 10 | Revise MODULE_SPLIT_PLAN.md with all 9 gaps                           | Planning     | 1-2h   | 🟢 Better plan                      |
+| 11 | Update AGENTS.md with module split decision context                   | Docs         | 15 min | 🟢 Agent awareness                  |
+| 12 | Add `govulncheck` step to CI                                          | Security     | 15 min | 🟢 Supply chain                     |
+| 13 | Add `go.work` for local development                                   | DevEx        | 10 min | 🟢 Better DX                        |
+| 14 | Add GoReleaser multi-module config (if splitting)                     | Release      | 1h     | 🟢 Required for split               |
+| 15 | Write migration guide for module split (before/after)                 | Docs         | 1h     | 🟢 Downstream clarity               |
+| 16 | Add pipeline example with config file                                 | Examples     | 30 min | 🟢 Usability                        |
+| 17 | Build at least 1 real detector integration (e.g., govet)              | Features     | 2-3h   | 🟢 CLI is useless without detectors |
+| 18 | Add CLI end-to-end test with a real detector                          | Tests        | 1-2h   | 🟢 Confidence                       |
+| 19 | Document first-release procedure for multi-module                     | Docs         | 30 min | 🟢 Ops readiness                    |
+| 20 | Evaluate `go-sarif` upstream vs. custom SARIF code                    | Research     | 1h     | 🟢 Dependency audit                 |
+| 21 | Add SARIF schema validation test                                      | Tests        | 30 min | 🟢 Correctness                      |
+| 22 | Clean up `pipeline/astfix.go` — evaluate if it belongs in `analysis/` | Architecture | 30 min | 🟢 Module alignment                 |
+| 23 | Set up pkg.go.dev documentation                                       | Docs         | 15 min | 🟢 Discoverability                  |
+| 24 | Add watch mode to CLI (EXECUTION_PLAN_V2 #16)                         | Features     | 2-3h   | 🟢 DevEx                            |
+| 25 | Tag v1.1.0 with module split or v1.0.1 without                        | Release      | 15 min | 🟢 Milestone                        |
 
 ---
 

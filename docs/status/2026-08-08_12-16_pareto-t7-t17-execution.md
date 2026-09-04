@@ -179,7 +179,7 @@ The flight-recorder.md guide has a Configuration Reference table (line 199) that
 
 ### E2: docs-freshness.sh is a good start but needs refinement
 
-The script's code-doc sync check is too broad — it greps all `.go` filenames from markdown, including code examples in prose. A better approach would be to only check paths inside code spans (` ``filename.go`` `) or fenced code blocks. This would dramatically reduce false-positive warnings.
+The script's code-doc sync check is too broad — it greps all `.go` filenames from markdown, including code examples in prose. A better approach would be to only check paths inside code spans (`filename.go`) or fenced code blocks. This would dramatically reduce false-positive warnings.
 
 ### E3: No go-arch-lint module boundary enforcement
 

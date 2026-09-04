@@ -65,14 +65,14 @@
 
         /* --- Type stacks (system only — zero external fonts) --- */
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -280,15 +280,27 @@
       }
       .card-problem {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .card-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .card-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
 
       /* --- Issue cards --- */
@@ -301,15 +313,27 @@
       }
       .issue-critical {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-important {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-nice {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .issue h3 {
         margin-bottom: 0.3rem;
@@ -795,10 +819,12 @@
       "
     >
       <strong>📦 Resolution Status (updated 2026-07-26):</strong>
-      The 5 v2.0 improvement candidates (Position sentinel <code>Option[T]</code>, FixStrategy
-      interface union, TagSet, pointer-as-state cleanup, Finding sub-struct composition) are tracked
-      in <code>ROADMAP.md</code> "Hardening (owner decisions pending)". No v1.x action required —
-      these are deferred until a major version break is justified.
+      The 5 v2.0 improvement candidates (Position sentinel
+      <code>Option[T]</code>, FixStrategy interface union, TagSet,
+      pointer-as-state cleanup, Finding sub-struct composition) are tracked in
+      <code>ROADMAP.md</code> "Hardening (owner decisions pending)". No v1.x
+      action required — these are deferred until a major version break is
+      justified.
     </div>
     <div class="page-header">
       <span>go-finding</span>
@@ -827,9 +853,10 @@
           <div class="hero-badge">DATA MODEL REVIEW</div>
           <h1>go-finding Type System Audit</h1>
           <p class="hero-subtitle">
-            First-principles review of the domain model on 2026-07-18. The model is strong: branded
-            types, decomposed validation, single extensibility field. Five v2.0 improvement
-            candidates are documented and deferred (all breaking changes).
+            First-principles review of the domain model on 2026-07-18. The model
+            is strong: branded types, decomposed validation, single
+            extensibility field. Five v2.0 improvement candidates are documented
+            and deferred (all breaking changes).
           </p>
         </div>
 
@@ -864,14 +891,19 @@
         </div>
 
         <div class="card card-solution">
-          <h4>Bottom line: model is production-ready, v2 items are on the roadmap</h4>
+          <h4>
+            Bottom line: model is production-ready, v2 items are on the roadmap
+          </h4>
           <p>
-            The Finding domain model uses branded primitive types (<code>ID</code>,
-            <code>RuleName</code>, <code>ToolName</code>, <code>FilePath</code>) that prevent
-            compile-time mixups. Validation is decomposed into 6 per-field validators, each under 10
-            complexity. The single extensibility field (<code>Metadata map[string]string</code>) is
-            deliberately NOT <code>map[string]any</code>. Five known v2.0 improvements are
-            documented in TODO_LIST and visualized in the improved architecture diagram.
+            The Finding domain model uses branded primitive types
+            (<code>ID</code>,
+            <code>RuleName</code>, <code>ToolName</code>, <code>FilePath</code>)
+            that prevent compile-time mixups. Validation is decomposed into 6
+            per-field validators, each under 10 complexity. The single
+            extensibility field (<code>Metadata map[string]string</code>) is
+            deliberately NOT <code>map[string]any</code>. Five known v2.0
+            improvements are documented in TODO_LIST and visualized in the
+            improved architecture diagram.
           </p>
         </div>
 
@@ -883,18 +915,22 @@
               <strong>Branded types prevent ID/Rule/Tool/File mixups</strong>
               <span
                 ><code>type ID string</code>, <code>type RuleName string</code>,
-                <code>type ToolName string</code>, <code>type FilePath string</code> — all in
-                branded_types.go. JSON marshals identically to string.</span
+                <code>type ToolName string</code>,
+                <code>type FilePath string</code> — all in branded_types.go.
+                JSON marshals identically to string.</span
               >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
-              <strong>Single extensibility field: Metadata map[string]string</strong>
+              <strong
+                >Single extensibility field: Metadata map[string]string</strong
+              >
               <span
-                >NOT <code>map[string]any</code>. String-valued metadata is lossless for interchange
-                (SARIF, JSON, CLI). Key namespacing convention prevents collisions.</span
+                >NOT <code>map[string]any</code>. String-valued metadata is
+                lossless for interchange (SARIF, JSON, CLI). Key namespacing
+                convention prevents collisions.</span
               >
             </div>
           </div>
@@ -903,10 +939,11 @@
             <div class="text">
               <strong>Validate() decomposed into 6 focused validators</strong>
               <span
-                ><code>validateIdentity</code>, <code>validateClassification</code>,
-                <code>validateFix</code>, <code>validateReferences</code>,
-                <code>validateSpatial</code>, <code>validateSuppression</code>. Each under
-                complexity 10.</span
+                ><code>validateIdentity</code>,
+                <code>validateClassification</code>, <code>validateFix</code>,
+                <code>validateReferences</code>, <code>validateSpatial</code>,
+                <code>validateSuppression</code>. Each under complexity
+                10.</span
               >
             </div>
           </div>
@@ -915,9 +952,11 @@
             <div class="text">
               <strong>Named types for all domain concepts</strong>
               <span
-                ><code>Severity</code>, <code>Confidence</code>, <code>Category</code>,
-                <code>Tag</code>, <code>FixStrategy</code> — all named types with
-                <code>IsValid()</code> methods. No raw strings in domain logic.</span
+                ><code>Severity</code>, <code>Confidence</code>,
+                <code>Category</code>, <code>Tag</code>,
+                <code>FixStrategy</code> — all named types with
+                <code>IsValid()</code> methods. No raw strings in domain
+                logic.</span
               >
             </div>
           </div>
@@ -926,8 +965,9 @@
             <div class="text">
               <strong>Finding struct has clear field grouping</strong>
               <span
-                >Identity, Core, Classification, Fix, Context, Extensibility — documented in
-                comments. 20+ fields are organized, not dumped.</span
+                >Identity, Core, Classification, Fix, Context, Extensibility —
+                documented in comments. 20+ fields are organized, not
+                dumped.</span
               >
             </div>
           </div>
@@ -935,8 +975,10 @@
 
         <h2 id="v2"><span class="num">01</span>v2.0 Improvement Candidates</h2>
         <p>
-          These are known design improvements that require breaking changes. All are documented in
-          <code>TODO_LIST.md</code> and deferred to v2.0. They are NOT defects in v1.x.
+          These are known design improvements that require breaking changes. All
+          are documented in
+          <code>TODO_LIST.md</code> and deferred to v2.0. They are NOT defects
+          in v1.x.
         </p>
 
         <table>
@@ -952,8 +994,8 @@
             <tr>
               <td>1</td>
               <td>
-                <code>Position</code>: 3 sentinel conventions (0=unset Line/Col, -1=unset Offset,
-                zero-value=valid)
+                <code>Position</code>: 3 sentinel conventions (0=unset Line/Col,
+                -1=unset Offset, zero-value=valid)
               </td>
               <td>Single <code>Option[T]</code> convention</td>
               <td>Eliminates confusion; one rule for all fields</td>
@@ -964,22 +1006,29 @@
                 <code>FixStrategy</code>: string union +
                 <code>NormalizeFixStrategy()</code> workaround
               </td>
-              <td>Interface-based union: <code>type Fix interface { isFix() }</code></td>
               <td>
-                Impossible states unrepresentable; "Direct requires BeforeCode" becomes constructor
-                invariant
+                Interface-based union:
+                <code>type Fix interface { isFix() }</code>
+              </td>
+              <td>
+                Impossible states unrepresentable; "Direct requires BeforeCode"
+                becomes constructor invariant
               </td>
             </tr>
             <tr>
               <td>3</td>
               <td><code>Tags []Tag</code>: order-sensitive equality</td>
               <td><code>TagSet map[Tag]struct{}</code></td>
-              <td>Set semantics at type level; no order-insensitive equality needed</td>
+              <td>
+                Set semantics at type level; no order-insensitive equality
+                needed
+              </td>
             </tr>
             <tr>
               <td>4</td>
               <td>
-                Pointer-as-state: <code>*Range</code>, <code>*Suppression</code>,
+                Pointer-as-state: <code>*Range</code>,
+                <code>*Suppression</code>,
                 <code>*time.Time</code>
               </td>
               <td>Value + bool pairs</td>
@@ -989,8 +1038,9 @@
               <td>5</td>
               <td><code>Finding</code>: flat struct with 20+ fields</td>
               <td>
-                Composed sub-structs: <code>Identity{}</code>, <code>Location{}</code>,
-                <code>Classification{}</code>, <code>Fix{}</code>
+                Composed sub-structs: <code>Identity{}</code>,
+                <code>Location{}</code>, <code>Classification{}</code>,
+                <code>Fix{}</code>
               </td>
               <td>Pass sub-structs to focused functions; changes JSON shape</td>
             </tr>
@@ -1000,15 +1050,17 @@
         <h2 id="verdict"><span class="num">02</span>Verdict</h2>
         <div class="callout callout-solution">
           <strong>The data model is excellent for v1.x.</strong>
-          Branded types, decomposed validation, and the <code>map[string]string</code> extensibility
-          field are the right design for a stable, published library. The five v2.0 candidates are
-          genuine improvements worth making — when a major version break is justified. Until then,
-          the current model is production-ready and API-stable.
+          Branded types, decomposed validation, and the
+          <code>map[string]string</code> extensibility field are the right
+          design for a stable, published library. The five v2.0 candidates are
+          genuine improvements worth making — when a major version break is
+          justified. Until then, the current model is production-ready and
+          API-stable.
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; Data model review from first principles &middot; 5 v2.0
-          candidates documented
+          Generated 2026-07-18 &middot; Data model review from first principles
+          &middot; 5 v2.0 candidates documented
         </footer>
       </main>
     </div>

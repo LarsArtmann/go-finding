@@ -36,23 +36,23 @@
 
 ### Code Changes (Verified, Uncommitted)
 
-| #   | Change                                                                        | Impact                                         |
-| --- | ----------------------------------------------------------------------------- | ---------------------------------------------- |
-| 1   | `Report.WriteTo(w)` implements `io.WriterTo` for SARIF streaming              | Feature: streaming via `io.Copy`               |
-| 2   | `countingWriter` internal type wraps `io.Writer` with byte counting           | Infrastructure                                 |
-| 3   | `FuzzFindingsFromJSON`, `FuzzReportFromJSON`, `FuzzFromJSON` fuzzers          | Security: 1.1M+ execs, 0 panics                |
-| 4   | Pipeline benchmarks: 10 benchmarks at 100/1k/10k findings                     | Performance: baseline captured                 |
-| 5   | SARIF schema validation test (`TestSARIF_SchemaCompliance`)                   | Correctness: structural SARIF 2.1.0 compliance |
-| 6   | `Finding` JSON schema (Draft 2020-12)                                         | Documentation: formal JSON contract            |
-| 7   | `Report` JSON schema with `$ref` to Finding schema                            | Documentation: formal JSON contract            |
-| 8   | `TestFindingJSONSchema_RoundTrip` validates JSON output against schema fields | Correctness                                    |
-| 9   | `scripts/bench-compare.sh` with benchstat integration                         | Tooling: regression tracking                   |
-| 10  | `golangci-lint fmt --diff` CI step in lint job                                | CI: formatting enforcement                     |
-| 11  | FixStrategyAI semantics documented in USAGE_GUIDE.md                          | Documentation: pipeline behavior table         |
-| 12  | `go.work` TODO resolved — not needed for single-module project                | Cleanup                                        |
-| 13  | `.bench-baseline.txt` / `.bench-current.txt` added to `.gitignore`            | Housekeeping                                   |
-| 14  | 10 TODO_LIST entries marked as done                                           | Accuracy                                       |
-| 15  | Safe type assertions in SARIF schema test (forcetypeassert fix)               | Code quality                                   |
+| #  | Change                                                                        | Impact                                         |
+| -- | ----------------------------------------------------------------------------- | ---------------------------------------------- |
+| 1  | `Report.WriteTo(w)` implements `io.WriterTo` for SARIF streaming              | Feature: streaming via `io.Copy`               |
+| 2  | `countingWriter` internal type wraps `io.Writer` with byte counting           | Infrastructure                                 |
+| 3  | `FuzzFindingsFromJSON`, `FuzzReportFromJSON`, `FuzzFromJSON` fuzzers          | Security: 1.1M+ execs, 0 panics                |
+| 4  | Pipeline benchmarks: 10 benchmarks at 100/1k/10k findings                     | Performance: baseline captured                 |
+| 5  | SARIF schema validation test (`TestSARIF_SchemaCompliance`)                   | Correctness: structural SARIF 2.1.0 compliance |
+| 6  | `Finding` JSON schema (Draft 2020-12)                                         | Documentation: formal JSON contract            |
+| 7  | `Report` JSON schema with `$ref` to Finding schema                            | Documentation: formal JSON contract            |
+| 8  | `TestFindingJSONSchema_RoundTrip` validates JSON output against schema fields | Correctness                                    |
+| 9  | `scripts/bench-compare.sh` with benchstat integration                         | Tooling: regression tracking                   |
+| 10 | `golangci-lint fmt --diff` CI step in lint job                                | CI: formatting enforcement                     |
+| 11 | FixStrategyAI semantics documented in USAGE_GUIDE.md                          | Documentation: pipeline behavior table         |
+| 12 | `go.work` TODO resolved — not needed for single-module project                | Cleanup                                        |
+| 13 | `.bench-baseline.txt` / `.bench-current.txt` added to `.gitignore`            | Housekeeping                                   |
+| 14 | 10 TODO_LIST entries marked as done                                           | Accuracy                                       |
+| 15 | Safe type assertions in SARIF schema test (forcetypeassert fix)               | Code quality                                   |
 
 ### Specific Improvements
 
@@ -130,40 +130,40 @@ Every task started in this session was completed, verified, and tested.
 
 ### P0 — Blocking Decisions (Need User Input)
 
-| #   | Item                                     | Why Blocked                                 |
-| --- | ---------------------------------------- | ------------------------------------------- |
-| 1   | Decide `NewFinding` API pattern          | Builder-only vs keep both — breaking change |
-| 2   | API stability review for v1.0            | Audit all exported symbols — scope decision |
-| 3   | Decide domain-specific provider location | Inside pipeline/ or separate modules        |
-| 4   | Add `Properties map[string]any`          | Breaking type model change                  |
+| # | Item                                     | Why Blocked                                 |
+| - | ---------------------------------------- | ------------------------------------------- |
+| 1 | Decide `NewFinding` API pattern          | Builder-only vs keep both — breaking change |
+| 2 | API stability review for v1.0            | Audit all exported symbols — scope decision |
+| 3 | Decide domain-specific provider location | Inside pipeline/ or separate modules        |
+| 4 | Add `Properties map[string]any`          | Breaking type model change                  |
 
 ### P1 — Should Do Before v1.0
 
-| #   | Item                                               | Effort   | Impact |
-| --- | -------------------------------------------------- | -------- | ------ |
-| 5   | `Protect Confidence` in direct struct construction | Design   | Low    |
-| 6   | `Finding` struct sub-grouping (v2)                 | Breaking | High   |
+| # | Item                                               | Effort   | Impact |
+| - | -------------------------------------------------- | -------- | ------ |
+| 5 | `Protect Confidence` in direct struct construction | Design   | Low    |
+| 6 | `Finding` struct sub-grouping (v2)                 | Breaking | High   |
 
 ### P2 — Nice to Have
 
-| #   | Item                               | Effort | Impact |
-| --- | ---------------------------------- | ------ | ------ |
-| 7   | Evaluate `go-sarif` vs hand-rolled | Hours  | Medium |
-| 8   | `go/analysis` reverse conversion   | Hours  | Low    |
-| 9   | Per-detector timeout               | 30min  | Low    |
-| 10  | Structured logging (`slog`)        | Hours  | Medium |
+| #  | Item                               | Effort | Impact |
+| -- | ---------------------------------- | ------ | ------ |
+| 7  | Evaluate `go-sarif` vs hand-rolled | Hours  | Medium |
+| 8  | `go/analysis` reverse conversion   | Hours  | Low    |
+| 9  | Per-detector timeout               | 30min  | Low    |
+| 10 | Structured logging (`slog`)        | Hours  | Medium |
 
 ### P3 — Future / Deferred
 
-| #   | Item                                                 | Effort   |
-| --- | ---------------------------------------------------- | -------- |
-| 11  | Nix migration (Phases 0-5)                           | Days     |
-| 12  | Plugin architecture for detectors                    | Days     |
-| 13  | Pipeline middleware/interceptor                      | Days     |
-| 14  | Watch mode (`fsnotify`)                              | Hours    |
-| 15  | `finding.Diff()`, `FormatText()`, `FormatMarkdown()` | Hours    |
-| 16  | BuildFlow integration                                | External |
-| 17  | go-business-rules Severity sharing                   | External |
+| #  | Item                                                 | Effort   |
+| -- | ---------------------------------------------------- | -------- |
+| 11 | Nix migration (Phases 0-5)                           | Days     |
+| 12 | Plugin architecture for detectors                    | Days     |
+| 13 | Pipeline middleware/interceptor                      | Days     |
+| 14 | Watch mode (`fsnotify`)                              | Hours    |
+| 15 | `finding.Diff()`, `FormatText()`, `FormatMarkdown()` | Hours    |
+| 16 | BuildFlow integration                                | External |
+| 17 | go-business-rules Severity sharing                   | External |
 
 ### Out of Scope (Listed, Not Tracked for Execution)
 

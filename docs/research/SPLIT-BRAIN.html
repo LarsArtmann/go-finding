@@ -45,7 +45,9 @@
       }
 
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
         background: var(--bg);
         color: var(--text);
         line-height: 1.6;
@@ -227,7 +229,8 @@
         padding: 0.1rem 0.6rem;
         font-size: 0.8rem;
         font-weight: 700;
-        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
       }
       .issue-title {
         font-size: 1.2rem;
@@ -253,7 +256,8 @@
 
       /* ── Code blocks ── */
       code {
-        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         font-size: 0.85em;
       }
       p code,
@@ -549,22 +553,32 @@
     <div class="header">
       <h1>🧠 Split-Brain Audit — go-finding Data Model</h1>
       <div class="subtitle">
-        Where the same concept lives in two (or more) disagreeing places, and how to fix every one.
+        Where the same concept lives in two (or more) disagreeing places, and
+        how to fix every one.
       </div>
       <div class="meta">
         <span>📅 <strong>2026-06-17</strong></span>
-        <span>🏷️ Version audited: <code>v0.7.0</code> (master @ <code>0b1da40</code>)</span>
-        <span>📦 Scope: <code>finding</code> + <code>pipeline</code> packages</span>
+        <span
+          >🏷️ Version audited: <code>v0.7.0</code> (master @
+          <code>0b1da40</code>)</span
+        >
+        <span
+          >📦 Scope: <code>finding</code> + <code>pipeline</code> packages</span
+        >
         <span>✅ All claims verified by runnable Go programs</span>
       </div>
       <p class="description">
-        <strong>✅ ALL 11 ISSUES RESOLVED</strong> — A <strong>split-brain</strong> is when one
-        concept has two or more competing representations in the code, and they disagree. This
-        report cataloged <strong>11 split-brain issues</strong> in the data model, ranked by impact.
-        Every claim was verified by compiling and running Go code against the actual types. Every
-        issue has been fixed, tested with race detector, and committed. See the
-        <a href="../planning/2026-06-17_22-59_SPLIT-BRAIN-RESOLUTION.md">execution plan</a> for
-        details.
+        <strong>✅ ALL 11 ISSUES RESOLVED</strong> — A
+        <strong>split-brain</strong> is when one concept has two or more
+        competing representations in the code, and they disagree. This report
+        cataloged <strong>11 split-brain issues</strong> in the data model,
+        ranked by impact. Every claim was verified by compiling and running Go
+        code against the actual types. Every issue has been fixed, tested with
+        race detector, and committed. See the
+        <a href="../planning/2026-06-17_22-59_SPLIT-BRAIN-RESOLUTION.md"
+          >execution plan</a
+        >
+        for details.
       </p>
     </div>
 
@@ -592,24 +606,30 @@
 
     <div class="callout callout-danger">
       <strong>Bottom line:</strong> Two Critical issues are
-      <em>already documented as v1.0.0 release blockers</em> (<code>Position.Offset=0</code>
-      ambiguity, <code>FixStrategy ""</code> vs <code>"none"</code>) but remain unresolved. The
-      remaining 9 were discovered during this audit. Three of them (<strong
-        >#3 Multiple fixability predicates</strong
-      >, <strong>#4 Category/Tags vocabulary overlap</strong>,
-      <strong>#5 Dual duration fields</strong>) are previously-uncatalogued defects with real
-      consumer-facing impact.
+      <em>already documented as v1.0.0 release blockers</em> (<code
+        >Position.Offset=0</code
+      >
+      ambiguity, <code>FixStrategy ""</code> vs <code>"none"</code>) but remain
+      unresolved. The remaining 9 were discovered during this audit. Three of
+      them (<strong>#3 Multiple fixability predicates</strong>,
+      <strong>#4 Category/Tags vocabulary overlap</strong>,
+      <strong>#5 Dual duration fields</strong>) are previously-uncatalogued
+      defects with real consumer-facing impact.
     </div>
 
     <h3>🔑 What is a split-brain?</h3>
     <p>
-      A split-brain is <strong>not</strong> just "two ways to do the same thing" (that's normal API
-      surface). It's when the two ways <strong>disagree about the truth</strong>. The signature of a
-      split-brain:
+      A split-brain is <strong>not</strong> just "two ways to do the same thing"
+      (that's normal API surface). It's when the two ways
+      <strong>disagree about the truth</strong>. The signature of a split-brain:
     </p>
     <ul>
-      <li>You ask the same question in two places and get different answers.</li>
-      <li>Two fields hold overlapping information with no invariant linking them.</li>
+      <li>
+        You ask the same question in two places and get different answers.
+      </li>
+      <li>
+        Two fields hold overlapping information with no invariant linking them.
+      </li>
       <li>A round-trip (export → import) silently changes the data.</li>
       <li>A constructor produces a value that the validator rejects.</li>
     </ul>
@@ -630,7 +650,9 @@
       <tbody>
         <tr>
           <td>1</td>
-          <td><a href="#issue-1">Position zero-value lies about its own state</a></td>
+          <td>
+            <a href="#issue-1">Position zero-value lies about its own state</a>
+          </td>
           <td><span class="badge badge-critical">Critical</span></td>
           <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Adopt <code>-1</code> sentinel; remove zero-value ambiguity</td>
@@ -639,53 +661,85 @@
           <td>2</td>
           <td>
             <a href="#issue-2"
-              >Two valid "no fix" states: <code>""</code> and <code>"none"</code></a
+              >Two valid "no fix" states: <code>""</code> and
+              <code>"none"</code></a
             >
           </td>
           <td><span class="badge badge-critical">Critical</span></td>
           <td><span class="badge badge-verified">✅ Resolved</span></td>
-          <td>Normalize <code>""</code> → <code>"none"</code> in <code>Validate()</code></td>
+          <td>
+            Normalize <code>""</code> → <code>"none"</code> in
+            <code>Validate()</code>
+          </td>
         </tr>
         <tr>
           <td>3</td>
-          <td><a href="#issue-3">Four "is this fixable?" predicates disagree</a></td>
+          <td>
+            <a href="#issue-3">Four "is this fixable?" predicates disagree</a>
+          </td>
           <td><span class="badge badge-high">High</span></td>
           <td><span class="badge badge-verified">✅ Resolved</span></td>
-          <td>Document the lattice; make <code>HasFix()</code> respect <code>Validate()</code></td>
+          <td>
+            Document the lattice; make <code>HasFix()</code> respect
+            <code>Validate()</code>
+          </td>
         </tr>
         <tr>
           <td>4</td>
-          <td><a href="#issue-4">Category and Tags share vocabulary, can conflict</a></td>
+          <td>
+            <a href="#issue-4"
+              >Category and Tags share vocabulary, can conflict</a
+            >
+          </td>
           <td><span class="badge badge-high">High</span></td>
           <td><span class="badge badge-verified">✅ Resolved</span></td>
-          <td>Deprecate single-value <code>Category</code>; keep <code>Tags</code></td>
+          <td>
+            Deprecate single-value <code>Category</code>; keep <code>Tags</code>
+          </td>
         </tr>
         <tr>
           <td>5</td>
-          <td><a href="#issue-5">Three duration fields, none authoritative</a></td>
+          <td>
+            <a href="#issue-5">Three duration fields, none authoritative</a>
+          </td>
           <td><span class="badge badge-high">High</span></td>
           <td><span class="badge badge-verified">✅ Resolved</span></td>
-          <td>Compute <code>Summary.DurationMs</code> from <code>Metrics</code> or remove it</td>
+          <td>
+            Compute <code>Summary.DurationMs</code> from <code>Metrics</code> or
+            remove it
+          </td>
         </tr>
         <tr>
           <td>6</td>
-          <td><a href="#issue-6">Three different "finding identity" definitions</a></td>
+          <td>
+            <a href="#issue-6"
+              >Three different "finding identity" definitions</a
+            >
+          </td>
           <td><span class="badge badge-medium">Medium</span></td>
           <td><span class="badge badge-verified">✅ Resolved</span></td>
           <td>Document; pick one canonical key for dedup</td>
         </tr>
         <tr>
           <td>7</td>
-          <td><a href="#issue-7">SARIF exports two disagreeing regions per finding</a></td>
+          <td>
+            <a href="#issue-7"
+              >SARIF exports two disagreeing regions per finding</a
+            >
+          </td>
           <td><span class="badge badge-medium">Medium</span></td>
           <td><span class="badge badge-verified">✅ Resolved</span></td>
-          <td><code>findingFixRegion()</code> should respect <code>Range.End</code></td>
+          <td>
+            <code>findingFixRegion()</code> should respect
+            <code>Range.End</code>
+          </td>
         </tr>
         <tr>
           <td>8</td>
           <td>
             <a href="#issue-8"
-              >SARIF property bag uses <code>map[string]any</code> against project doctrine</a
+              >SARIF property bag uses <code>map[string]any</code> against
+              project doctrine</a
             >
           </td>
           <td><span class="badge badge-medium">Medium</span></td>
@@ -694,16 +748,23 @@
         </tr>
         <tr>
           <td>9</td>
-          <td><a href="#issue-9">Suppression validation accepts unknown kinds</a></td>
+          <td>
+            <a href="#issue-9">Suppression validation accepts unknown kinds</a>
+          </td>
           <td><span class="badge badge-low">Low</span></td>
           <td><span class="badge badge-verified">✅ Resolved</span></td>
-          <td><code>Validate()</code> should call <code>Kind.IsValid()</code></td>
+          <td>
+            <code>Validate()</code> should call <code>Kind.IsValid()</code>
+          </td>
         </tr>
         <tr>
           <td>10</td>
           <td>
             <a href="#issue-10"
-              >Category/Tag have twin <code>IsValid</code>/<code>IsStandard</code> methods</a
+              >Category/Tag have twin <code>IsValid</code>/<code
+                >IsStandard</code
+              >
+              methods</a
             >
           </td>
           <td><span class="badge badge-low">Low</span></td>
@@ -720,7 +781,10 @@
           </td>
           <td><span class="badge badge-cosmetic">Cosmetic</span></td>
           <td><span class="badge badge-verified">✅ Resolved</span></td>
-          <td>Rename free functions to <code>WithFix</code> / <code>WithSuggestion</code></td>
+          <td>
+            Rename free functions to <code>WithFix</code> /
+            <code>WithSuggestion</code>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -749,7 +813,8 @@
       <div class="issue-header">
         <span class="issue-number">#1</span>
         <span class="issue-title"
-          >The most fundamental type in the library returns contradictory answers</span
+          >The most fundamental type in the library returns contradictory
+          answers</span
         >
         <span class="issue-badges">
           <span class="badge badge-critical">Critical</span>
@@ -760,11 +825,12 @@
 
       <h4>“What's the split-brain?”</h4>
       <p>
-        <code>Position</code> is the most-used type in the library — every <code>Finding</code> has
-        one, every <code>Range</code> has two, every <code>RelatedRef</code> has one. Its zero value
+        <code>Position</code> is the most-used type in the library — every
+        <code>Finding</code> has one, every <code>Range</code> has two, every
+        <code>RelatedRef</code> has one. Its zero value
         <code>Position{}</code> lies about itself: <code>IsZero()</code> and
-        <code>HasOffset()</code> both return <code class="true">true</code> for the same value, but
-        they mean opposite things.
+        <code>HasOffset()</code> both return <code class="true">true</code> for
+        the same value, but they mean opposite things.
       </p>
 
       <div class="contradiction">
@@ -782,11 +848,15 @@
       </div>
 
       <p>
-        But the zero value of <code>int</code> is <code>0</code>, not <code>-1</code>. So
-        <code>Position{}</code> has <code>Offset == 0</code>, which:
+        But the zero value of <code>int</code> is <code>0</code>, not
+        <code>-1</code>. So <code>Position{}</code> has
+        <code>Offset == 0</code>, which:
       </p>
       <ul>
-        <li><code>IsZero()</code> reports as <strong>“unset”</strong> (position.go:30-32)</li>
+        <li>
+          <code>IsZero()</code> reports as
+          <strong>“unset”</strong> (position.go:30-32)
+        </li>
         <li>
           <code>HasOffset()</code> reports as
           <strong>“byte offset 0 is set”</strong> (range.go:170-172)
@@ -800,8 +870,8 @@
           <code>r.End.Offset &gt;= 0</code> (range.go:35)
         </li>
         <li>
-          <code>Range.containsByOffset()</code> treats <code>0</code> as <em>set</em> via
-          <code>p.Offset &gt;= 0</code> (range.go:137)
+          <code>Range.containsByOffset()</code> treats <code>0</code> as
+          <em>set</em> via <code>p.Offset &gt;= 0</code> (range.go:137)
         </li>
       </ul>
 
@@ -815,45 +885,57 @@ fmt.Println(p.Offset)       // → 0</code></pre>
 
       <h4>💥 Why it matters</h4>
       <p>
-        Every consumer that touches <code>Position.Offset</code> must know which interpretation to
-        use. A junior developer writing <code>if pos.HasOffset() { seek(pos.Offset) }</code> will
-        silently seek to byte 0 when they meant “position wasn't set.” The bug only surfaces when a
-        finding legitimately has no offset — exactly the case where seeking to byte 0 corrupts data.
-        Tests rarely catch this because most test fixtures set offsets explicitly.
+        Every consumer that touches <code>Position.Offset</code> must know which
+        interpretation to use. A junior developer writing
+        <code>if pos.HasOffset() { seek(pos.Offset) }</code> will silently seek
+        to byte 0 when they meant “position wasn't set.” The bug only surfaces
+        when a finding legitimately has no offset — exactly the case where
+        seeking to byte 0 corrupts data. Tests rarely catch this because most
+        test fixtures set offsets explicitly.
       </p>
 
       <div class="fix-box">
         <h5>🔧 How to fix — three options</h5>
         <div class="option">
           <span class="option-label">A</span>
-          <strong>Adopt <code>-1</code> sentinel for “unset” offset (recommended).</strong>
-          Change <code>NewFinding</code>, <code>Pos()</code>, <code>NewRange</code>, and every
-          offset-setting call site to use <code>-1</code> as default. <code>Position{}</code> would
-          then have <code>Offset == 0</code> (meaning byte 0) — make the zero value invalid by
-          introducing <code>Position.IsValid()</code> checks at boundaries. <br /><em>Pro:</em>
-          least invasive; <code>HasOffset()</code> already implements this check. <br /><em
+          <strong
+            >Adopt <code>-1</code> sentinel for “unset” offset
+            (recommended).</strong
+          >
+          Change <code>NewFinding</code>, <code>Pos()</code>,
+          <code>NewRange</code>, and every offset-setting call site to use
+          <code>-1</code> as default. <code>Position{}</code> would then have
+          <code>Offset == 0</code> (meaning byte 0) — make the zero value
+          invalid by introducing <code>Position.IsValid()</code> checks at
+          boundaries. <br /><em>Pro:</em> least invasive;
+          <code>HasOffset()</code> already implements this check. <br /><em
             >Con:</em
           >
-          negative offset is a footgun if not validated; can't use <code>uint</code>.
+          negative offset is a footgun if not validated; can't use
+          <code>uint</code>.
         </div>
         <div class="option">
           <span class="option-label">B</span>
           <strong>Switch <code>Offset</code> to <code>*int</code>.</strong>
-          <code>nil</code> unambiguously means “unset.” <br /><em>Pro:</em> impossible to confuse;
-          idiomatic Go. <br /><em>Con:</em> breaking API change; nil-deref risk at every call site;
-          JSON encoding changes.
+          <code>nil</code> unambiguously means “unset.” <br /><em>Pro:</em>
+          impossible to confuse; idiomatic Go. <br /><em>Con:</em> breaking API
+          change; nil-deref risk at every call site; JSON encoding changes.
         </div>
         <div class="option">
           <span class="option-label">C</span>
           <strong>Add explicit <code>HasOffset bool</code> field.</strong>
-          <br /><em>Pro:</em> explicit; no sentinel confusion. <br /><em>Con:</em> struct grows; two
-          fields must be kept in sync — a new split-brain.
+          <br /><em>Pro:</em> explicit; no sentinel confusion. <br /><em
+            >Con:</em
+          >
+          struct grows; two fields must be kept in sync — a new split-brain.
         </div>
         <p style="margin-top: 0.75rem">
-          <strong>Recommended path:</strong> Option A. Update <code>Position{}</code> construction
-          in <code>NewFinding</code>, <code>Pos()</code>, <code>NewRange</code>, and
+          <strong>Recommended path:</strong> Option A. Update
+          <code>Position{}</code> construction in <code>NewFinding</code>,
+          <code>Pos()</code>, <code>NewRange</code>, and
           <code>FromLSP()</code> to set <code>Offset: -1</code>. Add a
-          <code>go test -race</code> test that constructs <code>Position{}</code> and asserts
+          <code>go test -race</code> test that constructs
+          <code>Position{}</code> and asserts
           <code>!HasOffset() &amp;&amp; IsZero()</code>.
         </p>
       </div>
@@ -862,14 +944,16 @@ fmt.Println(p.Offset)       // → 0</code></pre>
       <ul>
         <li>
           <code>TestPositionZeroValue_ConsistentSelfReports</code> — assert
-          <code>Position{}.IsZero()</code> ⟺ <code>!Position{}.HasOffset()</code>.
+          <code>Position{}.IsZero()</code> ⟺
+          <code>!Position{}.HasOffset()</code>.
         </li>
         <li>
           <code>TestRange_Length_ZeroOffsetIsUnset</code> —
           <code>Range{Start: Position{}}.Length()</code> returns 0.
         </li>
         <li>
-          Fuzz: random <code>Position</code> values, assert <code>HasOffset()</code> never lies.
+          Fuzz: random <code>Position</code> values, assert
+          <code>HasOffset()</code> never lies.
         </li>
       </ul>
 
@@ -879,20 +963,23 @@ fmt.Println(p.Offset)       // → 0</code></pre>
         <span class="file-ref">range.go:35, 66, 137, 170-172</span>
         <span class="file-ref">finding.go:52-68</span> (NewFinding)
         <span class="file-ref">lsp.go:139-170</span> (FromLSP)
-        <span class="file-ref">sarif_import.go:141-177</span> (applySarifPosition)
+        <span class="file-ref">sarif_import.go:141-177</span>
+        (applySarifPosition)
       </p>
     </div>
 
     <!-- ════════════════ ISSUE 2 ════════════════ -->
     <h2 id="issue-2">
-      Issue 2 — Two Valid “No Fix” States: <code>""</code> vs <code>"none"</code>
+      Issue 2 — Two Valid “No Fix” States: <code>""</code> vs
+      <code>"none"</code>
     </h2>
 
     <div class="issue critical">
       <div class="issue-header">
         <span class="issue-number">#2</span>
         <span class="issue-title"
-          >FixStrategy has two ways to say “no fix,” and they aren't even Equal()</span
+          >FixStrategy has two ways to say “no fix,” and they aren't even
+          Equal()</span
         >
         <span class="issue-badges">
           <span class="badge badge-critical">Critical</span>
@@ -903,9 +990,10 @@ fmt.Println(p.Offset)       // → 0</code></pre>
 
       <h4>What's the split-brain?</h4>
       <p>
-        <code>FixStrategy</code> is a string enum with four declared constants. But the empty string
-        <code>""</code> — the zero value — is also a valid “no fix” state, distinct from the
-        explicit <code>FixStrategyNone = "none"</code>.
+        <code>FixStrategy</code> is a string enum with four declared constants.
+        But the empty string <code>""</code> — the zero value — is also a valid
+        “no fix” state, distinct from the explicit
+        <code>FixStrategyNone = "none"</code>.
       </p>
 
       <div class="contradiction">
@@ -914,7 +1002,9 @@ fmt.Println(p.Offset)       // → 0</code></pre>
           <pre><code>FixStrategyNone FixStrategy = <strong>"none"</strong></code></pre>
         </div>
         <div>
-          <div class="label right">finding_validate.go:41 — implicit acceptance</div>
+          <div class="label right">
+            finding_validate.go:41 — implicit acceptance
+          </div>
           <pre><code>if f.FixStrategy != <strong>""</strong> &amp;&amp; !f.FixStrategy.IsValid() {
     // error
 }
@@ -923,11 +1013,11 @@ fmt.Println(p.Offset)       // → 0</code></pre>
       </div>
 
       <p>
-        <code>FixStrategy.IsValid()</code> returns <code class="false">false</code> for
-        <code>""</code> (it only matches the 4 constants). But
-        <code>Finding.Validate()</code> explicitly skips the check when
-        <code>FixStrategy == ""</code>. So the validator disagrees with the type's own validity
-        method.
+        <code>FixStrategy.IsValid()</code> returns
+        <code class="false">false</code> for <code>""</code> (it only matches
+        the 4 constants). But <code>Finding.Validate()</code> explicitly skips
+        the check when <code>FixStrategy == ""</code>. So the validator
+        disagrees with the type's own validity method.
       </p>
 
       <h4>🧪 Reproduction (verified)</h4>
@@ -940,29 +1030,34 @@ f2.Equal(f3)    // → <span class="false">false</span>  (different bytes!)
 f2.FixStrategy.IsValid()  // → <span class="false">false</span>
 f3.FixStrategy.IsValid()  // → <span class="true">true</span></code></pre>
       <p>
-        Two findings that are both “no fix” fail <code>Equal()</code>. Diff, dedup, and merge all
-        see them as different. Worse: <code>Equal()</code> compares
-        <code>f.FixStrategy != other.FixStrategy</code> directly (finding_equal.go:43), so a
-        default-constructed <code>Finding{}</code> and an <code>NewFinding(...)</code> result (which
-        sets <code>"none"</code>) compare unequal on strategy even when everything else matches.
+        Two findings that are both “no fix” fail <code>Equal()</code>. Diff,
+        dedup, and merge all see them as different. Worse:
+        <code>Equal()</code> compares
+        <code>f.FixStrategy != other.FixStrategy</code> directly
+        (finding_equal.go:43), so a default-constructed
+        <code>Finding{}</code> and an <code>NewFinding(...)</code> result (which
+        sets <code>"none"</code>) compare unequal on strategy even when
+        everything else matches.
       </p>
 
       <h4>💥 Why it matters</h4>
       <ul>
         <li>
-          <strong>Diff lies:</strong> <code>Diff()</code> reports two equivalent findings as
-          “modified” because their strategies differ as strings.
+          <strong>Diff lies:</strong> <code>Diff()</code> reports two equivalent
+          findings as “modified” because their strategies differ as strings.
         </li>
         <li>
-          <strong>SARIF round-trip:</strong> empty strategy is exported as <code>""</code> in the
-          property bag; on import, <code>FixStrategy("").IsValid()</code> fails, so the field is
-          left empty — works, but for the wrong reason.
+          <strong>SARIF round-trip:</strong> empty strategy is exported as
+          <code>""</code> in the property bag; on import,
+          <code>FixStrategy("").IsValid()</code> fails, so the field is left
+          empty — works, but for the wrong reason.
         </li>
         <li>
-          <strong>Constructor asymmetry:</strong> <code>NewFinding()</code> normalizes to
+          <strong>Constructor asymmetry:</strong>
+          <code>NewFinding()</code> normalizes to
           <code>"none"</code> (finding.go:65), but struct-literal construction
-          <code>Finding{...}</code> leaves <code>""</code>. Two findings built two valid ways
-          differ.
+          <code>Finding{...}</code> leaves <code>""</code>. Two findings built
+          two valid ways differ.
         </li>
       </ul>
 
@@ -981,25 +1076,28 @@ f3.FixStrategy.IsValid()  // → <span class="true">true</span></code></pre>
     errs = append(errs, NewValidationError(...))
 }</code></pre>
           Or do it in <code>Builder.Build()</code> and add a normalizing helper
-          <code>NormalizeFixStrategy(FixStrategy) FixStrategy</code> that other entry points call.
+          <code>NormalizeFixStrategy(FixStrategy) FixStrategy</code> that other
+          entry points call.
         </div>
         <div class="option">
           <span class="option-label">B</span>
-          <strong>Make <code>""</code> invalid.</strong> Reject it in <code>Validate()</code>.
-          Update every constructor to set <code>"none"</code> explicitly. This is a breaking change
-          for any consumer that relies on the zero value.
+          <strong>Make <code>""</code> invalid.</strong> Reject it in
+          <code>Validate()</code>. Update every constructor to set
+          <code>"none"</code> explicitly. This is a breaking change for any
+          consumer that relies on the zero value.
         </div>
         <div class="option">
           <span class="option-label">C</span>
           <strong>Make <code>"none"</code> the zero value.</strong> Replace
-          <code>FixStrategy string</code> with a type whose zero value is <code>"none"</code> —
-          impossible without changing the underlying type. Not viable.
+          <code>FixStrategy string</code> with a type whose zero value is
+          <code>"none"</code> — impossible without changing the underlying type.
+          Not viable.
         </div>
         <p style="margin-top: 0.75rem">
-          <strong>Recommended:</strong> Option A. Add a single normalization point and route every
-          public entry point (<code>NewFinding</code>, <code>FromLSP</code>,
-          <code>findingFromSarResult</code>, <code>Builder.Build</code>, <code>Validate</code>)
-          through it.
+          <strong>Recommended:</strong> Option A. Add a single normalization
+          point and route every public entry point (<code>NewFinding</code>,
+          <code>FromLSP</code>, <code>findingFromSarResult</code>,
+          <code>Builder.Build</code>, <code>Validate</code>) through it.
         </p>
       </div>
 
@@ -1007,25 +1105,29 @@ f3.FixStrategy.IsValid()  // → <span class="true">true</span></code></pre>
       <ul>
         <li>
           <code>TestFixStrategy_EmptyEqualsNone</code> — after normalization,
-          <code>Finding{Strategy:""}.Equal(Finding{Strategy:"none"})</code> is true.
+          <code>Finding{Strategy:""}.Equal(Finding{Strategy:"none"})</code> is
+          true.
         </li>
         <li>
-          <code>TestFinding_Validate_NormalizesEmptyStrategy</code> — verify the field is mutated to
-          <code>"none"</code>.
+          <code>TestFinding_Validate_NormalizesEmptyStrategy</code> — verify the
+          field is mutated to <code>"none"</code>.
         </li>
         <li>
-          Property test: for any <code>FixStrategy</code>, after <code>Validate()</code>,
-          <code>IsValid()</code> returns true.
+          Property test: for any <code>FixStrategy</code>, after
+          <code>Validate()</code>, <code>IsValid()</code> returns true.
         </li>
       </ul>
 
       <h4>📍 Files to touch</h4>
       <p>
         <span class="file-ref">finding_validate.go:41-45</span>
-        <span class="file-ref">fix_strategy.go:6-18</span> (add normalization helper)
-        <span class="file-ref">finding.go:65</span> (NewFinding — already correct, keep as canonical
-        example) <span class="file-ref">lsp.go:158</span> (FromLSP — sets FixStrategyNone, OK)
-        <span class="file-ref">sarif_import.go:74-97</span> (default for unset strategy)
+        <span class="file-ref">fix_strategy.go:6-18</span> (add normalization
+        helper) <span class="file-ref">finding.go:65</span> (NewFinding —
+        already correct, keep as canonical example)
+        <span class="file-ref">lsp.go:158</span> (FromLSP — sets
+        FixStrategyNone, OK)
+        <span class="file-ref">sarif_import.go:74-97</span> (default for unset
+        strategy)
       </p>
     </div>
 
@@ -1036,8 +1138,8 @@ f3.FixStrategy.IsValid()  // → <span class="true">true</span></code></pre>
       <div class="issue-header">
         <span class="issue-number">#3</span>
         <span class="issue-title"
-          >HasFix, IsAutoFixable, HasCodeChange, HasSuggestion answer the same question four
-          ways</span
+          >HasFix, IsAutoFixable, HasCodeChange, HasSuggestion answer the same
+          question four ways</span
         >
         <span class="issue-badges">
           <span class="badge badge-high">High</span>
@@ -1048,9 +1150,10 @@ f3.FixStrategy.IsValid()  // → <span class="true">true</span></code></pre>
 
       <h4>What's the split-brain?</h4>
       <p>
-        <code>Finding</code> has four predicates about fixability, each answering a slightly
-        different question with overlapping semantics. For a single <code>Finding</code>, they
-        routinely return different combinations of true/false — and one combination is internally
+        <code>Finding</code> has four predicates about fixability, each
+        answering a slightly different question with overlapping semantics. For
+        a single <code>Finding</code>, they routinely return different
+        combinations of true/false — and one combination is internally
         contradictory.
       </p>
 
@@ -1086,7 +1189,9 @@ f3.FixStrategy.IsValid()  // → <span class="true">true</span></code></pre>
         </tbody>
       </table>
 
-      <h4>🧪 Reproduction — four findings, four contradictory verdicts (verified)</h4>
+      <h4>
+        🧪 Reproduction — four findings, four contradictory verdicts (verified)
+      </h4>
       <pre><code>// Case A: FixStrategyDirect with no code (invalid per Validate!)
 f := Finding{FixStrategy: FixStrategyDirect}
 f.HasFix()         // → <span class="true">true</span>   ← lies
@@ -1102,15 +1207,15 @@ f.HasCodeChange()  // → <span class="true">true</span>
 f.HasSuggestion()  // → <span class="false">false</span>   ← surprising</code></pre>
 
       <p>
-        Case A is the worst: <code>HasFix()</code> returns <code>true</code> for a finding that
-        <code>Validate()</code> rejects. The type claims to be fixable while simultaneously being
-        invalid.
+        Case A is the worst: <code>HasFix()</code> returns <code>true</code> for
+        a finding that <code>Validate()</code> rejects. The type claims to be
+        fixable while simultaneously being invalid.
       </p>
 
       <h4>💥 Why it matters</h4>
       <p>
-        <code>Pipeline.DefaultTriageFunc</code> (pipeline_detect.go:159-177) calls
-        <code>IsAutoFixable()</code> <em>then</em> <code>HasFix()</code>:
+        <code>Pipeline.DefaultTriageFunc</code> (pipeline_detect.go:159-177)
+        calls <code>IsAutoFixable()</code> <em>then</em> <code>HasFix()</code>:
       </p>
       <pre><code>if f.IsAutoFixable() {
     result.Direct = append(result.Direct, f)
@@ -1120,20 +1225,27 @@ f.HasSuggestion()  // → <span class="false">false</span>   ← surprising</cod
     result.None = append(result.None, f)
 }</code></pre>
       <p>
-        So a <code>FixStrategyDirect</code>-without-code finding is silently routed to
-        <code>Suggest</code>, contradicting its own declared strategy. The pipeline papers over the
-        contradiction, but the <code>Suggest</code> bucket now contains a finding whose
+        So a <code>FixStrategyDirect</code>-without-code finding is silently
+        routed to <code>Suggest</code>, contradicting its own declared strategy.
+        The pipeline papers over the contradiction, but the
+        <code>Suggest</code> bucket now contains a finding whose
         <code>FixStrategy</code> says “direct.” Any consumer reading
-        <code>result.Suggest[i].FixStrategy</code> will see <code>"direct"</code> — a lie.
+        <code>result.Suggest[i].FixStrategy</code> will see
+        <code>"direct"</code> — a lie.
       </p>
 
       <div class="fix-box">
         <h5>🔧 How to fix</h5>
         <ol>
           <li>
-            <strong>Make <code>HasFix()</code> respect <code>Validate()</code>.</strong> Change
-            finding_methods.go:65-76:
-            <pre style="margin-top: 0.5rem"><code>func (f Finding) HasFix() bool {
+            <strong
+              >Make <code>HasFix()</code> respect
+              <code>Validate()</code>.</strong
+            >
+            Change finding_methods.go:65-76:
+            <pre
+              style="margin-top: 0.5rem"
+            ><code>func (f Finding) HasFix() bool {
     switch f.FixStrategy {
     case FixStrategyNone, "":  // ← also normalize empty
         return false
@@ -1145,11 +1257,13 @@ f.HasSuggestion()  // → <span class="false">false</span>   ← surprising</cod
         return false
     }
 }</code></pre>
-            Now <code>HasFix()</code> is the strict superset of <code>IsAutoFixable()</code>: if
-            <code>HasFix()</code> is true, the finding is at least valid as a fix.
+            Now <code>HasFix()</code> is the strict superset of
+            <code>IsAutoFixable()</code>: if <code>HasFix()</code> is true, the
+            finding is at least valid as a fix.
           </li>
           <li>
-            <strong>Document the lattice</strong> in <code>finding_methods.go</code>:
+            <strong>Document the lattice</strong> in
+            <code>finding_methods.go</code>:
             <pre
               style="margin-top: 0.5rem"
             ><code>// HasFix ⊇ IsAutoFixable. HasCodeChange is the low-level signal.
@@ -1157,8 +1271,10 @@ f.HasSuggestion()  // → <span class="false">false</span>   ← surprising</cod
           </li>
           <li>
             <strong
-              >Replace the <code>HasFix()</code>-then-<code>IsAutoFixable()</code> cascade in
-              <code>DefaultTriageFunc</code></strong
+              >Replace the <code>HasFix()</code>-then-<code
+                >IsAutoFixable()</code
+              >
+              cascade in <code>DefaultTriageFunc</code></strong
             >
             with a single decision:
             <pre style="margin-top: 0.5rem"><code>switch {
@@ -1177,12 +1293,13 @@ default:
       <h4>🧪 Tests to add</h4>
       <ul>
         <li>
-          <code>TestHasFix_NeverTrueForInvalidFindings</code> — every finding where
-          <code>HasFix()</code> returns true must also pass <code>Validate()</code>.
+          <code>TestHasFix_NeverTrueForInvalidFindings</code> — every finding
+          where <code>HasFix()</code> returns true must also pass
+          <code>Validate()</code>.
         </li>
         <li>
-          <code>TestTriage_DirectWithoutCode_GoesToNone</code> — invalid Direct findings are not
-          silently demoted to Suggest.
+          <code>TestTriage_DirectWithoutCode_GoesToNone</code> — invalid Direct
+          findings are not silently demoted to Suggest.
         </li>
         <li>Property test: <code>IsAutoFixable() ⟹ HasFix()</code>.</li>
       </ul>
@@ -1190,20 +1307,24 @@ default:
       <h4>📍 Files to touch</h4>
       <p>
         <span class="file-ref">finding_methods.go:65-76</span> (HasFix)
-        <span class="file-ref">pipeline/pipeline_detect.go:159-177</span> (DefaultTriageFunc)
-        <span class="file-ref">sarif_export.go:198-218</span> (sarifFixes — depends on HasFix)
+        <span class="file-ref">pipeline/pipeline_detect.go:159-177</span>
+        (DefaultTriageFunc)
+        <span class="file-ref">sarif_export.go:198-218</span> (sarifFixes —
+        depends on HasFix)
       </p>
     </div>
 
     <!-- ════════════════ ISSUE 4 ════════════════ -->
-    <h2 id="issue-4">Issue 4 — Category and Tags Share Vocabulary, Can Conflict</h2>
+    <h2 id="issue-4">
+      Issue 4 — Category and Tags Share Vocabulary, Can Conflict
+    </h2>
 
     <div class="issue high">
       <div class="issue-header">
         <span class="issue-number">#4</span>
         <span class="issue-title"
-          >A Finding has two classification fields with overlapping constant sets and no invariant
-          linking them</span
+          >A Finding has two classification fields with overlapping constant
+          sets and no invariant linking them</span
         >
         <span class="issue-badges">
           <span class="badge badge-high">High</span>
@@ -1214,8 +1335,9 @@ default:
 
       <h4>What's the split-brain?</h4>
       <p>
-        <code>Finding.Category</code> is a single-value classification. <code>Finding.Tags</code> is
-        a multi-value classification. Both use lowercase-hyphenated strings, and
+        <code>Finding.Category</code> is a single-value classification.
+        <code>Finding.Tags</code> is a multi-value classification. Both use
+        lowercase-hyphenated strings, and
         <strong>six values are defined as constants in both types</strong>:
       </p>
 
@@ -1248,26 +1370,31 @@ TagDocumentation = "documentation"
     Tags:     []Tag{TagPerformance, TagSecurity},  // ← contradicts Category
 }</code></pre>
       <p>
-        Is this finding about security or performance? The data model has no opinion. Nothing in
+        Is this finding about security or performance? The data model has no
+        opinion. Nothing in
         <code>Validate()</code> checks for consistency. The consumer must guess.
       </p>
 
       <h4>💥 Why it matters</h4>
       <ul>
         <li>
-          <strong>Filter ambiguity.</strong> <code>ByCategory(CategorySecurity)</code> and
-          <code>ByCategory via Tags</code> give different result sets for the same logical query.
-          There's no <code>FilterByClassification</code> that checks both.
+          <strong>Filter ambiguity.</strong>
+          <code>ByCategory(CategorySecurity)</code> and
+          <code>ByCategory via Tags</code> give different result sets for the
+          same logical query. There's no
+          <code>FilterByClassification</code> that checks both.
         </li>
         <li>
-          <strong>SARIF doubles the data.</strong> <code>sarifProperties()</code> emits both
-          <code>go-finding/category</code> and <code>go-finding/tags</code> — same string in two
-          property-bag keys.
+          <strong>SARIF doubles the data.</strong>
+          <code>sarifProperties()</code> emits both
+          <code>go-finding/category</code> and <code>go-finding/tags</code> —
+          same string in two property-bag keys.
         </li>
         <li>
-          <strong>Summary counts are ambiguous.</strong> <code>Summary.ByCategory</code> counts by
-          single category; <code>Summary</code> has no <code>ByTag</code>. A multi-tagged finding is
-          undercounted.
+          <strong>Summary counts are ambiguous.</strong>
+          <code>Summary.ByCategory</code> counts by single category;
+          <code>Summary</code> has no <code>ByTag</code>. A multi-tagged finding
+          is undercounted.
         </li>
       </ul>
 
@@ -1276,26 +1403,31 @@ TagDocumentation = "documentation"
         <div class="option">
           <span class="option-label">A</span>
           <strong
-            >Deprecate <code>Category</code> in favor of <code>Tags</code> only (recommended
-            long-term).</strong
+            >Deprecate <code>Category</code> in favor of <code>Tags</code> only
+            (recommended long-term).</strong
           >
-          <code>Tags</code> is strictly more expressive. <code>Category</code> becomes “the
-          first/primary tag,” derivable. Mark <code>Category</code> deprecated in v0.8.0, remove in
-          v1.0.0 alongside other deprecated APIs. <br /><em>Pro:</em> eliminates the entire class of
-          bug; simplifies Summary. <br /><em>Con:</em> breaking change; requires migration guide.
+          <code>Tags</code> is strictly more expressive.
+          <code>Category</code> becomes “the first/primary tag,” derivable. Mark
+          <code>Category</code> deprecated in v0.8.0, remove in v1.0.0 alongside
+          other deprecated APIs. <br /><em>Pro:</em> eliminates the entire class
+          of bug; simplifies Summary. <br /><em>Con:</em> breaking change;
+          requires migration guide.
         </div>
         <div class="option">
           <span class="option-label">B</span>
-          <strong>Add a validation invariant (minimal fix).</strong> In <code>Validate()</code>,
-          reject findings where <code>Category</code> appears in <code>Tags</code> with a
-          conflicting value (e.g. <code>Category="security"</code>,
-          <code>Tags=["performance"]</code> alone). Allow <code>Tags</code> to <em>contain</em> the
-          category. <br /><em>Pro:</em> non-breaking; surfaces the conflict at construction.
-          <br /><em>Con:</em> doesn't remove the redundancy, just forbids the worst case.
+          <strong>Add a validation invariant (minimal fix).</strong> In
+          <code>Validate()</code>, reject findings where
+          <code>Category</code> appears in <code>Tags</code> with a conflicting
+          value (e.g. <code>Category="security"</code>,
+          <code>Tags=["performance"]</code> alone). Allow <code>Tags</code> to
+          <em>contain</em> the category. <br /><em>Pro:</em> non-breaking;
+          surfaces the conflict at construction. <br /><em>Con:</em> doesn't
+          remove the redundancy, just forbids the worst case.
         </div>
         <p style="margin-top: 0.75rem">
-          <strong>Recommended path for v1.0.0:</strong> Option B now (stops the bleeding), Option A
-          in v1.0.0 alongside the other breaking changes. Document the decision in
+          <strong>Recommended path for v1.0.0:</strong> Option B now (stops the
+          bleeding), Option A in v1.0.0 alongside the other breaking changes.
+          Document the decision in
           <code>docs/architecture-decisions.md</code> as ADR #12.
         </p>
       </div>
@@ -1303,16 +1435,18 @@ TagDocumentation = "documentation"
       <h4>🧪 Tests to add</h4>
       <ul>
         <li>
-          <code>TestValidate_CategoryTagConsistency</code> — conflicting Category/Tags fails
-          validation.
+          <code>TestValidate_CategoryTagConsistency</code> — conflicting
+          Category/Tags fails validation.
         </li>
         <li>
-          <code>TestTags_SubsumeCategory</code> — if <code>Category="security"</code>, the finding
-          is queryable as security via Tags too.
+          <code>TestTags_SubsumeCategory</code> — if
+          <code>Category="security"</code>, the finding is queryable as security
+          via Tags too.
         </li>
         <li>
-          After A: <code>TestCategory_DeprecatedEquivalence</code> — <code>Category</code> accessor
-          returns <code>Tags[0]</code> or derived primary.
+          After A: <code>TestCategory_DeprecatedEquivalence</code> —
+          <code>Category</code> accessor returns <code>Tags[0]</code> or derived
+          primary.
         </li>
       </ul>
 
@@ -1322,7 +1456,8 @@ TagDocumentation = "documentation"
         <span class="file-ref">tag.go:7-18</span>
         <span class="file-ref">finding_validate.go:59-65</span> (add invariant)
         <span class="file-ref">sarif_export.go:258-272</span> (sarifProperties)
-        <span class="file-ref">report.go:69-78</span> (Summary.ByCategory vs missing ByTag)
+        <span class="file-ref">report.go:69-78</span> (Summary.ByCategory vs
+        missing ByTag)
       </p>
     </div>
 
@@ -1333,8 +1468,8 @@ TagDocumentation = "documentation"
       <div class="issue-header">
         <span class="issue-number">#5</span>
         <span class="issue-title"
-          >Summary.DurationMs, Metrics.TotalDuration(), MetricsSnapshot.TotalDuration — pick
-          one</span
+          >Summary.DurationMs, Metrics.TotalDuration(),
+          MetricsSnapshot.TotalDuration — pick one</span
         >
         <span class="issue-badges">
           <span class="badge badge-high">High</span>
@@ -1380,33 +1515,39 @@ TagDocumentation = "documentation"
         </tbody>
       </table>
 
-      <p>The field comment on <code>Summary.DurationMs</code> even admits the problem:</p>
+      <p>
+        The field comment on <code>Summary.DurationMs</code> even admits the
+        problem:
+      </p>
       <pre><code>DurationMs int64 `json:"durationMs,omitempty"`
 // Execution time (<strong>caller-set; not computed by ComputeSummary</strong>)</code></pre>
 
       <p>
-        <code>ComputeSummary()</code> (report.go:179-250) computes <code>Total</code>,
-        <code>BySeverity</code>, <code>ByCategory</code>, <code>ByFixStrategy</code>,
-        <code>FilesAffected</code>, <code>Suppressed</code> — but pointedly <strong>not</strong>
-        <code>DurationMs</code>. A consumer who builds a <code>Report</code> directly (without the
-        pipeline) gets <code>DurationMs == 0</code> forever, unless they remember to set it. A
-        consumer who runs the pipeline gets an accurate duration in <code>Metrics</code>, but
-        <code>Summary.DurationMs</code> is still 0.
+        <code>ComputeSummary()</code> (report.go:179-250) computes
+        <code>Total</code>, <code>BySeverity</code>, <code>ByCategory</code>,
+        <code>ByFixStrategy</code>, <code>FilesAffected</code>,
+        <code>Suppressed</code> — but pointedly <strong>not</strong>
+        <code>DurationMs</code>. A consumer who builds a
+        <code>Report</code> directly (without the pipeline) gets
+        <code>DurationMs == 0</code> forever, unless they remember to set it. A
+        consumer who runs the pipeline gets an accurate duration in
+        <code>Metrics</code>, but <code>Summary.DurationMs</code> is still 0.
       </p>
 
       <h4>💥 Why it matters</h4>
       <ul>
         <li>
-          <strong>JSON consumers get contradictory data.</strong> A SARIF/JSON report shows
-          <code>"durationMs": 0</code> in the summary while the pipeline metrics show real time.
+          <strong>JSON consumers get contradictory data.</strong> A SARIF/JSON
+          report shows <code>"durationMs": 0</code> in the summary while the
+          pipeline metrics show real time.
         </li>
         <li>
-          <strong>No single source of truth.</strong> Consumers reading docs see both fields and
-          don't know which to trust.
+          <strong>No single source of truth.</strong> Consumers reading docs see
+          both fields and don't know which to trust.
         </li>
         <li>
-          <strong>AGENTS.md documents this</strong> as a known gotcha — meaning even the maintainer
-          acknowledges the confusion but hasn't resolved it.
+          <strong>AGENTS.md documents this</strong> as a known gotcha — meaning
+          even the maintainer acknowledges the confusion but hasn't resolved it.
         </li>
       </ul>
 
@@ -1418,38 +1559,48 @@ TagDocumentation = "documentation"
             >Remove <code>Summary.DurationMs</code>; point consumers to
             <code>Metrics</code> (recommended).</strong
           >
-          The pipeline already produces authoritative timing. <code>Report</code> without a pipeline
-          has no meaningful duration by definition. <br /><em>Pro:</em> one source of truth; matches
-          reality. <br /><em>Con:</em> breaking change for any consumer reading
+          The pipeline already produces authoritative timing.
+          <code>Report</code> without a pipeline has no meaningful duration by
+          definition. <br /><em>Pro:</em> one source of truth; matches reality.
+          <br /><em>Con:</em> breaking change for any consumer reading
           <code>Summary.DurationMs</code>.
         </div>
         <div class="option">
           <span class="option-label">B</span>
           <strong
-            >Make <code>ComputeSummary()</code> accept optional metrics and populate
-            <code>DurationMs</code>.</strong
+            >Make <code>ComputeSummary()</code> accept optional metrics and
+            populate <code>DurationMs</code>.</strong
           >
           Add <code>ComputeSummaryFromMetrics(m *Metrics)</code> that sets
-          <code>DurationMs</code> from <code>m.TotalDuration()</code>. <br /><em>Pro:</em>
-          non-breaking; both fields stay populated and consistent. <br /><em>Con:</em> two fields
-          still exist; need to keep them in sync going forward.
+          <code>DurationMs</code> from <code>m.TotalDuration()</code>. <br /><em
+            >Pro:</em
+          >
+          non-breaking; both fields stay populated and consistent. <br /><em
+            >Con:</em
+          >
+          two fields still exist; need to keep them in sync going forward.
         </div>
         <p style="margin-top: 0.75rem">
-          <strong>Recommended:</strong> Option A for v1.0.0 (clean break with other breaking
-          changes). Option B as a v0.8.0 compatibility shim if needed.
+          <strong>Recommended:</strong> Option A for v1.0.0 (clean break with
+          other breaking changes). Option B as a v0.8.0 compatibility shim if
+          needed.
         </p>
       </div>
 
       <h4>🧪 Tests to add</h4>
       <ul>
         <li>
-          <code>TestReport_NoDurationField_AfterRemoval</code> — verify the JSON no longer contains
-          <code>durationMs</code>.
+          <code>TestReport_NoDurationField_AfterRemoval</code> — verify the JSON
+          no longer contains <code>durationMs</code>.
         </li>
-        <li>Or: <code>TestComputeSummary_PopulatesDurationFromMetrics</code> — if Option B.</li>
+        <li>
+          Or: <code>TestComputeSummary_PopulatesDurationFromMetrics</code> — if
+          Option B.
+        </li>
         <li>
           Update <code>report_extra_test.go:77-92</code> (current
-          <code>TestComputeSummary_PreservesDurationMs</code> — delete or repurpose).
+          <code>TestComputeSummary_PreservesDurationMs</code> — delete or
+          repurpose).
         </li>
       </ul>
 
@@ -1463,14 +1614,16 @@ TagDocumentation = "documentation"
     </div>
 
     <!-- ════════════════ ISSUE 6 ════════════════ -->
-    <h2 id="issue-6">Issue 6 — Three Different “Finding Identity” Definitions</h2>
+    <h2 id="issue-6">
+      Issue 6 — Three Different “Finding Identity” Definitions
+    </h2>
 
     <div class="issue medium">
       <div class="issue-header">
         <span class="issue-number">#6</span>
         <span class="issue-title"
-          >Key(), dedupKey(), and GenerateID() use different fields to answer “are these the same
-          finding?”</span
+          >Key(), dedupKey(), and GenerateID() use different fields to answer
+          “are these the same finding?”</span
         >
         <span class="issue-badges">
           <span class="badge badge-medium">Medium</span>
@@ -1481,8 +1634,8 @@ TagDocumentation = "documentation"
 
       <h4>What's the split-brain?</h4>
       <p>
-        “Are these two findings the same?” has three different answers depending on which function
-        you ask:
+        “Are these two findings the same?” has three different answers depending
+        on which function you ask:
       </p>
 
       <table>
@@ -1497,7 +1650,10 @@ TagDocumentation = "documentation"
         <tbody>
           <tr>
             <td><code>Finding.Key()</code></td>
-            <td>ID, <strong>or</strong> ToolName + File + Rule + <strong>Message</strong></td>
+            <td>
+              ID, <strong>or</strong> ToolName + File + Rule +
+              <strong>Message</strong>
+            </td>
             <td>Line, Column</td>
             <td>finding_validate.go:114</td>
           </tr>
@@ -1529,26 +1685,30 @@ TagDocumentation = "documentation"
       </table>
 
       <p>
-        So if two detectors both report “nil deref at main.go:10:5,” they have the same
-        <code>GenerateID</code>, same <code>dedupKey(ByPosition)</code> (if same tool) or different
-        (if different tools!), but their <code>Key()</code> differs if their messages differ. Three
-        functions, three opinions on identity.
+        So if two detectors both report “nil deref at main.go:10:5,” they have
+        the same
+        <code>GenerateID</code>, same <code>dedupKey(ByPosition)</code> (if same
+        tool) or different (if different tools!), but their
+        <code>Key()</code> differs if their messages differ. Three functions,
+        three opinions on identity.
       </p>
 
       <h4>💥 Why it matters</h4>
       <ul>
         <li>
-          <code>Key()</code> is used by external consumers for dedup; <code>dedupKey()</code> is
-          used by <code>Combine()</code>. If they disagree, two reports deduped externally may not
-          dedup internally, or vice versa.
+          <code>Key()</code> is used by external consumers for dedup;
+          <code>dedupKey()</code> is used by <code>Combine()</code>. If they
+          disagree, two reports deduped externally may not dedup internally, or
+          vice versa.
         </li>
         <li>
-          The separator differs: <code>Key()</code> uses <code>"\x00"</code> (NUL),
-          <code>dedupKey()</code> uses <code>":"</code>. Different collision properties.
+          The separator differs: <code>Key()</code> uses
+          <code>"\x00"</code> (NUL), <code>dedupKey()</code> uses
+          <code>":"</code>. Different collision properties.
         </li>
         <li>
-          <code>Key()</code> includes <code>Message</code>, so rewording a message creates a “new”
-          finding.
+          <code>Key()</code> includes <code>Message</code>, so rewording a
+          message creates a “new” finding.
         </li>
       </ul>
 
@@ -1558,27 +1718,35 @@ TagDocumentation = "documentation"
           <li>
             <strong>Document the canonical identity</strong> in a single place:
             <em
-              >“Two findings are identical iff their <code>GenerateID</code> outputs are equal.”</em
+              >“Two findings are identical iff their
+              <code>GenerateID</code> outputs are equal.”</em
             >
           </li>
           <li>
-            <strong>Make <code>Key()</code> consistent with <code>GenerateID</code></strong> — drop
-            Message, add Line/Column. Or deprecate <code>Key()</code> in favor of
-            <code>GenerateID</code>.
+            <strong
+              >Make <code>Key()</code> consistent with
+              <code>GenerateID</code></strong
+            >
+            — drop Message, add Line/Column. Or deprecate <code>Key()</code> in
+            favor of <code>GenerateID</code>.
           </li>
           <li>
-            <strong>Document each <code>DeduplicateBy</code> strategy</strong> as a deliberate
-            relaxation of canonical identity, not a competing definition.
+            <strong>Document each <code>DeduplicateBy</code> strategy</strong>
+            as a deliberate relaxation of canonical identity, not a competing
+            definition.
           </li>
         </ol>
       </div>
 
       <h4>🧪 Tests to add</h4>
       <ul>
-        <li><code>TestKey_EqualsGenerateID_WhenIDSet</code> — verify the two agree.</li>
         <li>
-          Property test: for any two findings, if <code>GenerateID</code> equal then
-          <code>Key()</code> equal.
+          <code>TestKey_EqualsGenerateID_WhenIDSet</code> — verify the two
+          agree.
+        </li>
+        <li>
+          Property test: for any two findings, if <code>GenerateID</code> equal
+          then <code>Key()</code> equal.
         </li>
       </ul>
 
@@ -1587,18 +1755,22 @@ TagDocumentation = "documentation"
         <span class="file-ref">finding_validate.go:114-120</span> (Key)
         <span class="file-ref">merge.go:137-180</span> (dedupKey)
         <span class="file-ref">id.go:23-73</span> (GenerateID)
-        <span class="file-ref">docs/DOMAIN_LANGUAGE.md</span> (add Identity definition)
+        <span class="file-ref">docs/DOMAIN_LANGUAGE.md</span> (add Identity
+        definition)
       </p>
     </div>
 
     <!-- ════════════════ ISSUE 7 ════════════════ -->
-    <h2 id="issue-7">Issue 7 — SARIF Exports Two Disagreeing Regions Per Finding</h2>
+    <h2 id="issue-7">
+      Issue 7 — SARIF Exports Two Disagreeing Regions Per Finding
+    </h2>
 
     <div class="issue medium">
       <div class="issue-header">
         <span class="issue-number">#7</span>
         <span class="issue-title"
-          >Location region uses Range.End; fix region ignores it and emits a zero-length span</span
+          >Location region uses Range.End; fix region ignores it and emits a
+          zero-length span</span
         >
         <span class="issue-badges">
           <span class="badge badge-medium">Medium</span>
@@ -1609,13 +1781,16 @@ TagDocumentation = "documentation"
 
       <h4>What's the split-brain?</h4>
       <p>
-        In <code>sarif_export.go</code>, two functions in the <em>same file</em> compute a SARIF
-        <code>region</code> from a <code>Finding</code> using different rules:
+        In <code>sarif_export.go</code>, two functions in the
+        <em>same file</em> compute a SARIF <code>region</code> from a
+        <code>Finding</code> using different rules:
       </p>
 
       <div class="contradiction">
         <div>
-          <div class="label left">sarif_export.go:171 — findingRegion (location)</div>
+          <div class="label left">
+            sarif_export.go:171 — findingRegion (location)
+          </div>
           <pre><code>region.StartLine = f.Position.Line
 region.StartColumn = f.Position.Column
 if f.Range != nil &amp;&amp; f.Range.HasEnd() {
@@ -1624,7 +1799,9 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
 }</code></pre>
         </div>
         <div>
-          <div class="label right">sarif_export.go:189 — findingFixRegion (fix)</div>
+          <div class="label right">
+            sarif_export.go:189 — findingFixRegion (fix)
+          </div>
           <pre><code>return sarifRegion{
     StartLine:   f.Position.Line,
     StartColumn: f.Position.Column,
@@ -1636,8 +1813,8 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
 
       <h4>🧪 Reproduction (verified)</h4>
       <p>
-        A finding with <code>Range</code> from line 10 col 5 to line 20 col 10 produces this SARIF
-        (excerpt):
+        A finding with <code>Range</code> from line 10 col 5 to line 20 col 10
+        produces this SARIF (excerpt):
       </p>
       <pre><code>"locations": [{
     "region": {
@@ -1657,24 +1834,25 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
     }]
 }]</code></pre>
       <p>
-        The fix claims to delete zero bytes at one position and insert <code>"new"</code>. A SARIF
-        consumer applying this fix literally inserts text at column 5 without deleting anything —
-        completely wrong for a finding that actually spans 10 lines.
+        The fix claims to delete zero bytes at one position and insert
+        <code>"new"</code>. A SARIF consumer applying this fix literally inserts
+        text at column 5 without deleting anything — completely wrong for a
+        finding that actually spans 10 lines.
       </p>
 
       <h4>💥 Why it matters</h4>
       <ul>
         <li>
-          SARIF consumers (GitHub Code Scanning, VSCode, Azure DevOps) that apply fixes get wrong
-          results.
+          SARIF consumers (GitHub Code Scanning, VSCode, Azure DevOps) that
+          apply fixes get wrong results.
         </li>
         <li>
-          The exported SARIF contradicts itself: the location says the issue spans lines 10-20, the
-          fix says it touches only line 10.
+          The exported SARIF contradicts itself: the location says the issue
+          spans lines 10-20, the fix says it touches only line 10.
         </li>
         <li>
-          Round-trip is partially lossy: re-importing recovers the Range from the location, but the
-          fix region's lie is preserved.
+          Round-trip is partially lossy: re-importing recovers the Range from
+          the location, but the fix region's lie is preserved.
         </li>
       </ul>
 
@@ -1685,8 +1863,8 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
             >Make <code>findingFixRegion</code> use the same logic as
             <code>findingRegion</code>.</strong
           >
-          Either extract a shared helper or have <code>findingFixRegion</code> call
-          <code>findingRegion</code>:
+          Either extract a shared helper or have
+          <code>findingFixRegion</code> call <code>findingRegion</code>:
         </p>
         <pre><code>func findingFixRegion(f Finding) sarifRegion {
     region := findingRegion(f)  // ← shared logic
@@ -1697,42 +1875,49 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
     return region
 }</code></pre>
         <p style="margin-top: 0.75rem">
-          This is a 5-line fix. The hard part is deciding what to do when <code>Range</code> is nil
-          — the current zero-length behavior is correct in that case (no span to delete).
+          This is a 5-line fix. The hard part is deciding what to do when
+          <code>Range</code> is nil — the current zero-length behavior is
+          correct in that case (no span to delete).
         </p>
       </div>
 
       <h4>🧪 Tests to add</h4>
       <ul>
         <li>
-          <code>TestSARIF_FixRegionMatchesLocationRegion_WhenRangeSet</code> — for a multi-line
-          finding, exported deletedRegion equals location region.
+          <code>TestSARIF_FixRegionMatchesLocationRegion_WhenRangeSet</code> —
+          for a multi-line finding, exported deletedRegion equals location
+          region.
         </li>
         <li>
-          Round-trip test: multi-line finding with Direct fix → SARIF → re-import → Range preserved.
+          Round-trip test: multi-line finding with Direct fix → SARIF →
+          re-import → Range preserved.
         </li>
-        <li>Update <code>sarif_roundtrip_test.go</code> with a multi-line fixture.</li>
+        <li>
+          Update <code>sarif_roundtrip_test.go</code> with a multi-line fixture.
+        </li>
       </ul>
 
       <h4>📍 Files to touch</h4>
       <p>
         <span class="file-ref">sarif_export.go:189-196</span> (findingFixRegion)
-        <span class="file-ref">sarif_export.go:171-187</span> (findingRegion — reference)
+        <span class="file-ref">sarif_export.go:171-187</span> (findingRegion —
+        reference)
         <span class="file-ref">sarif_roundtrip_test.go</span>
       </p>
     </div>
 
     <!-- ════════════════ ISSUE 8 ════════════════ -->
     <h2 id="issue-8">
-      Issue 8 — SARIF Property Bag Uses <code>map[string]any</code> Against Project Doctrine
+      Issue 8 — SARIF Property Bag Uses <code>map[string]any</code> Against
+      Project Doctrine
     </h2>
 
     <div class="issue medium">
       <div class="issue-header">
         <span class="issue-number">#8</span>
         <span class="issue-title"
-          >Finding.Metadata is map[string]string by design; sarifResult.Properties is
-          map[string]any</span
+          >Finding.Metadata is map[string]string by design;
+          sarifResult.Properties is map[string]any</span
         >
         <span class="issue-badges">
           <span class="badge badge-medium">Medium</span>
@@ -1761,35 +1946,38 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
 
       <p>
         The project has an explicit, documented design decision:
-        <strong>string-to-string only</strong>, for lossless interchange. But the SARIF layer —
-        which is the primary interchange format — uses <code>map[string]any</code> internally. The
-        conversion happens in <code>sarifProperties()</code> (sarif_export.go:258) and
-        <code>applySarifProperties()</code> (sarif_import.go:180), which silently coerce types (e.g.
-        <code>Tags []Tag</code> → <code>[]any</code>; on import, type-assert back).
+        <strong>string-to-string only</strong>, for lossless interchange. But
+        the SARIF layer — which is the primary interchange format — uses
+        <code>map[string]any</code> internally. The conversion happens in
+        <code>sarifProperties()</code> (sarif_export.go:258) and
+        <code>applySarifProperties()</code> (sarif_import.go:180), which
+        silently coerce types (e.g. <code>Tags []Tag</code> →
+        <code>[]any</code>; on import, type-assert back).
       </p>
 
       <h4>💥 Why it matters</h4>
       <ul>
         <li>
-          <strong>Type-assertion boilerplate</strong> on every import — see the 5+
-          <code>switch v := props[k].(type)</code> blocks.
+          <strong>Type-assertion boilerplate</strong> on every import — see the
+          5+ <code>switch v := props[k].(type)</code> blocks.
         </li>
         <li>
-          <strong>Silent loss</strong>: if a Tag value isn't a string on import, it's dropped with
-          no error.
+          <strong>Silent loss</strong>: if a Tag value isn't a string on import,
+          it's dropped with no error.
         </li>
         <li>
-          <strong>Doctrine erosion:</strong> a contributor reading the doctrine in
-          <code>finding.go</code> won't know the SARIF layer violates it.
+          <strong>Doctrine erosion:</strong> a contributor reading the doctrine
+          in <code>finding.go</code> won't know the SARIF layer violates it.
         </li>
       </ul>
 
       <div class="callout callout-info">
         <strong>Important nuance:</strong> SARIF 2.1.0 itself specifies
-        <code>propertyBag.properties</code> as <code>map[string,any</code> — so the SARIF
-        <em>wire format</em> requires this. The split-brain is between the public Go API
-        (string-only) and the internal SARIF layer (any). The fix is not to change the wire format,
-        but to document the boundary and centralize the coercion.
+        <code>propertyBag.properties</code> as <code>map[string,any</code> — so
+        the SARIF <em>wire format</em> requires this. The split-brain is between
+        the public Go API (string-only) and the internal SARIF layer (any). The
+        fix is not to change the wire format, but to document the boundary and
+        centralize the coercion.
       </div>
 
       <div class="fix-box">
@@ -1803,13 +1991,15 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
 // for the coercion layer.</code></pre>
           </li>
           <li>
-            <strong>Centralize coercion</strong> in <code>applySarifProperties</code>: make every
-            property read go through a single <code>stringProp</code>-style helper that returns
+            <strong>Centralize coercion</strong> in
+            <code>applySarifProperties</code>: make every property read go
+            through a single <code>stringProp</code>-style helper that returns
             <code>(string, ok)</code> and logs losses.
           </li>
           <li>
             <strong>Test for losslessness:</strong> property test — for any
-            <code>map[string]string</code>, after export→import, all keys are recovered.
+            <code>map[string]string</code>, after export→import, all keys are
+            recovered.
           </li>
         </ol>
       </div>
@@ -1817,12 +2007,12 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
       <h4>🧪 Tests to add</h4>
       <ul>
         <li>
-          <code>TestSarifProperties_RoundTripPreservesAllMetadata</code> — every metadata entry
-          survives.
+          <code>TestSarifProperties_RoundTripPreservesAllMetadata</code> — every
+          metadata entry survives.
         </li>
         <li>
-          <code>TestSarifProperties_RejectsNonStringOnImport</code> — non-string values are dropped
-          with a debug log, not silently.
+          <code>TestSarifProperties_RejectsNonStringOnImport</code> — non-string
+          values are dropped with a debug log, not silently.
         </li>
       </ul>
 
@@ -1841,8 +2031,8 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
       <div class="issue-header">
         <span class="issue-number">#9</span>
         <span class="issue-title"
-          >Suppression.IsValid() accepts any non-empty Kind; SuppressionKind.IsValid() rejects
-          most</span
+          >Suppression.IsValid() accepts any non-empty Kind;
+          SuppressionKind.IsValid() rejects most</span
         >
         <span class="issue-badges">
           <span class="badge badge-low">Low</span>
@@ -1873,17 +2063,19 @@ if f.Range != nil &amp;&amp; f.Range.HasEnd() {
 
       <p>
         <code>Suppression{Kind: "garbage", Rule: "x"}.IsValid()</code> returns
-        <code class="true">true</code>. <code>SuppressionKind("garbage").IsValid()</code> returns
-        <code class="false">false</code>. <code>Finding.Validate()</code> calls the weaker one
-        (finding_validate.go:85-89).
+        <code class="true">true</code>.
+        <code>SuppressionKind("garbage").IsValid()</code> returns
+        <code class="false">false</code>. <code>Finding.Validate()</code> calls
+        the weaker one (finding_validate.go:85-89).
       </p>
 
       <h4>💥 Why it matters</h4>
       <p>
-        A typo like <code>Kind: "in-soruce"</code> passes validation and silently produces a
-        suppression that no consumer recognizes. The data enters the system, gets serialized to
-        SARIF, and propagates. Low-severity because suppressions are rare, but the pattern is the
-        same as Issue 2 — two validation methods disagreeing.
+        A typo like <code>Kind: "in-soruce"</code> passes validation and
+        silently produces a suppression that no consumer recognizes. The data
+        enters the system, gets serialized to SARIF, and propagates.
+        Low-severity because suppressions are rare, but the pattern is the same
+        as Issue 2 — two validation methods disagreeing.
       </p>
 
       <div class="fix-box">
@@ -1898,11 +2090,12 @@ func (s *Suppression) IsValid() bool {
       <ul>
         <li>
           <code>TestSuppression_RejectsUnknownKind</code> —
-          <code>Suppression{Kind: "garbage", Rule: "x"}.IsValid()</code> is false.
+          <code>Suppression{Kind: "garbage", Rule: "x"}.IsValid()</code> is
+          false.
         </li>
         <li>
-          <code>TestValidate_FindingWithBadSuppressionKind</code> — <code>Validate()</code> returns
-          an error.
+          <code>TestValidate_FindingWithBadSuppressionKind</code> —
+          <code>Validate()</code> returns an error.
         </li>
       </ul>
 
@@ -1915,14 +2108,16 @@ func (s *Suppression) IsValid() bool {
 
     <!-- ════════════════ ISSUE 10 ════════════════ -->
     <h2 id="issue-10">
-      Issue 10 — Category and Tag Have Twin <code>IsValid</code> / <code>IsStandard</code> Methods
+      Issue 10 — Category and Tag Have Twin <code>IsValid</code> /
+      <code>IsStandard</code> Methods
     </h2>
 
     <div class="issue low">
       <div class="issue-header">
         <span class="issue-number">#10</span>
         <span class="issue-title"
-          >Two validity methods per type, no documented rule for which to call when</span
+          >Two validity methods per type, no documented rule for which to call
+          when</span
         >
         <span class="issue-badges">
           <span class="badge badge-low">Low</span>
@@ -1933,9 +2128,10 @@ func (s *Suppression) IsValid() bool {
 
       <h4>What's the split-brain?</h4>
       <p>
-        Both <code>Category</code> and <code>Tag</code> expose <code>IsValid()</code> (any
-        lowercase-hyphen string) and <code>IsStandard()</code> (only predefined constants). Same
-        pattern, same ambiguity. Which one should a consumer call?
+        Both <code>Category</code> and <code>Tag</code> expose
+        <code>IsValid()</code> (any lowercase-hyphen string) and
+        <code>IsStandard()</code> (only predefined constants). Same pattern,
+        same ambiguity. Which one should a consumer call?
       </p>
       <table>
         <thead>
@@ -1969,13 +2165,13 @@ func (s *Suppression) IsValid() bool {
           <code>IsStandard()</code>, not <code>IsValid()</code>.
         </li>
         <li>
-          No documentation tells consumers which is the right default. The <code>IsValid</code> doc
-          says “use IsStandard for predefined only” but doesn't say when <code>IsValid</code> itself
-          is the right call.
+          No documentation tells consumers which is the right default. The
+          <code>IsValid</code> doc says “use IsStandard for predefined only” but
+          doesn't say when <code>IsValid</code> itself is the right call.
         </li>
         <li>
-          Same ambiguity as Issue 9: weak validation accepts unknown values that downstream code may
-          not handle.
+          Same ambiguity as Issue 9: weak validation accepts unknown values that
+          downstream code may not handle.
         </li>
       </ul>
 
@@ -1985,22 +2181,25 @@ func (s *Suppression) IsValid() bool {
           <li>
             <strong>Document the contract</strong> clearly in both files:
             <em
-              >“<code>IsValid</code> = syntactically well-formed (accept custom values).
-              <code>IsStandard</code> = in the predefined set (rejects custom). Use
-              <code>IsStandard</code> for allow-list filtering; use <code>IsValid</code> for input
-              validation.”</em
+              >“<code>IsValid</code> = syntactically well-formed (accept custom
+              values). <code>IsStandard</code> = in the predefined set (rejects
+              custom). Use <code>IsStandard</code> for allow-list filtering; use
+              <code>IsValid</code> for input validation.”</em
             >
           </li>
           <li>
-            Consider: rename <code>IsStandard</code> → <code>IsPredefined</code> for clarity
-            (matches the doc wording).
+            Consider: rename <code>IsStandard</code> →
+            <code>IsPredefined</code> for clarity (matches the doc wording).
           </li>
         </ol>
       </div>
 
       <h4>🧪 Tests to add</h4>
       <ul>
-        <li>Doc test: godoc-rendered example showing both methods and when to use each.</li>
+        <li>
+          Doc test: godoc-rendered example showing both methods and when to use
+          each.
+        </li>
       </ul>
 
       <h4>📍 Files to touch</h4>
@@ -2017,7 +2216,8 @@ func (s *Suppression) IsValid() bool {
       <div class="issue-header">
         <span class="issue-number">#11</span>
         <span class="issue-title"
-          >HasFix and HasSuggestion exist as both Finding methods and package-level functions</span
+          >HasFix and HasSuggestion exist as both Finding methods and
+          package-level functions</span
         >
         <span class="issue-badges">
           <span class="badge badge-cosmetic">Cosmetic</span>
@@ -2041,20 +2241,25 @@ func (s *Suppression) IsValid() bool {
 }</code></pre>
         </div>
       </div>
-      <p>Same pattern for <code>HasSuggestion</code> (finding_methods.go:87 / filter.go:158).</p>
+      <p>
+        Same pattern for <code>HasSuggestion</code> (finding_methods.go:87 /
+        filter.go:158).
+      </p>
 
       <p>
-        Go disambiguates these (<code>f.HasFix()</code> vs <code>finding.HasFix(f)</code>), so it's
-        not a correctness bug. But it's a naming smell that violates the project's own “names are
-        contracts” principle: a reader seeing <code>HasFix</code> in an IDE autocomplete gets two
-        entries and must guess which is canonical.
+        Go disambiguates these (<code>f.HasFix()</code> vs
+        <code>finding.HasFix(f)</code>), so it's not a correctness bug. But it's
+        a naming smell that violates the project's own “names are contracts”
+        principle: a reader seeing <code>HasFix</code> in an IDE autocomplete
+        gets two entries and must guess which is canonical.
       </p>
 
       <div class="fix-box">
         <h5>🔧 How to fix</h5>
         <p>
-          Rename the free functions in <code>filter.go</code> to fit the <code>ByX</code> /
-          <code>WithX</code> convention used by their neighbors:
+          Rename the free functions in <code>filter.go</code> to fit the
+          <code>ByX</code> / <code>WithX</code> convention used by their
+          neighbors:
         </p>
         <pre><code>// Old (filter.go:153, 158):
 func HasFix(f Finding) bool
@@ -2064,8 +2269,8 @@ func HasSuggestion(f Finding) bool
 func WithFix(f Finding) bool         // or: FilterHasFix
 func WithSuggestion(f Finding) bool  // or: FilterHasSuggestion</code></pre>
         <p style="margin-top: 0.75rem">
-          <strong>Migration:</strong> the free functions are exported. Deprecate them with a comment
-          for one release, then remove in v1.0.0.
+          <strong>Migration:</strong> the free functions are exported. Deprecate
+          them with a comment for one release, then remove in v1.0.0.
         </p>
       </div>
 
@@ -2079,56 +2284,67 @@ func WithSuggestion(f Finding) bool  // or: FilterHasSuggestion</code></pre>
     <!-- ════════════════ CROSS-CUTTING ════════════════ -->
     <h2>🔀 Cross-Cutting Patterns</h2>
 
-    <p>Three themes recur across the 11 issues. Fixing the pattern prevents the next bug.</p>
+    <p>
+      Three themes recur across the 11 issues. Fixing the pattern prevents the
+      next bug.
+    </p>
 
     <h3>Pattern 1 — “Two validators, one truth”</h3>
     <p>
-      Issues <a href="#issue-2">#2</a>, <a href="#issue-9">#9</a>, <a href="#issue-10">#10</a> all
-      follow the same shape: a type has a validity method, and a containing type has its own
-      validity method that uses a <em>weaker</em> check. The two methods disagree about what's
-      valid.
+      Issues <a href="#issue-2">#2</a>, <a href="#issue-9">#9</a>,
+      <a href="#issue-10">#10</a> all follow the same shape: a type has a
+      validity method, and a containing type has its own validity method that
+      uses a <em>weaker</em> check. The two methods disagree about what's valid.
     </p>
     <div class="callout callout-tip">
       <strong>Fix the pattern:</strong> adopt a project rule —
       <em
-        >“a type's <code>Validate()</code> must transitively call <code>Validate()</code>/<code
-          >IsValid()</code
-        >
-        on every nested typed field.”</em
+        >“a type's <code>Validate()</code> must transitively call
+        <code>Validate()</code>/<code>IsValid()</code> on every nested typed
+        field.”</em
       >
       Add a lint rule or test that enforces it.
     </div>
 
     <h3>Pattern 2 — “Constructor skips normalization”</h3>
     <p>
-      Issues <a href="#issue-1">#1</a> and <a href="#issue-2">#2</a> both allow struct-literal
-      construction to bypass normalization that constructors apply. <code>Finding{}</code> has
-      <code>FixStrategy: ""</code> and <code>Position{}</code> has <code>Offset: 0</code>;
+      Issues <a href="#issue-1">#1</a> and <a href="#issue-2">#2</a> both allow
+      struct-literal construction to bypass normalization that constructors
+      apply. <code>Finding{}</code> has <code>FixStrategy: ""</code> and
+      <code>Position{}</code> has <code>Offset: 0</code>;
       <code>NewFinding()</code> normalizes the former but not the latter.
     </p>
     <div class="callout callout-tip">
-      <strong>Fix the pattern:</strong> make <code>Validate()</code> normalizing where possible
-      (mutate fields to canonical form), so even struct-literal construction self-corrects at the
-      next validation boundary. Where mutation is unsafe (concurrency), document the canonical
-      constructor as the only supported path and have tests assert that.
+      <strong>Fix the pattern:</strong> make <code>Validate()</code> normalizing
+      where possible (mutate fields to canonical form), so even struct-literal
+      construction self-corrects at the next validation boundary. Where mutation
+      is unsafe (concurrency), document the canonical constructor as the only
+      supported path and have tests assert that.
     </div>
 
     <h3>Pattern 3 — “Same concept, two fields”</h3>
     <p>
-      Issues <a href="#issue-4">#4</a> (Category/Tags), <a href="#issue-5">#5</a> (three durations),
-      <a href="#issue-6">#6</a> (three identity keys), <a href="#issue-7">#7</a> (two SARIF regions)
-      all store the same fact in multiple places with no invariant linking them.
+      Issues <a href="#issue-4">#4</a> (Category/Tags),
+      <a href="#issue-5">#5</a> (three durations),
+      <a href="#issue-6">#6</a> (three identity keys),
+      <a href="#issue-7">#7</a> (two SARIF regions) all store the same fact in
+      multiple places with no invariant linking them.
     </p>
     <div class="callout callout-tip">
-      <strong>Fix the pattern:</strong> when adding a field that overlaps an existing one, add a
-      <code>// INVARIANT:</code> comment and a validation check. Better: derive one from the other
-      (<code>func (f Finding) DurationMs() int64</code> instead of a stored field).
+      <strong>Fix the pattern:</strong> when adding a field that overlaps an
+      existing one, add a <code>// INVARIANT:</code> comment and a validation
+      check. Better: derive one from the other (<code
+        >func (f Finding) DurationMs() int64</code
+      >
+      instead of a stored field).
     </div>
 
     <!-- ════════════════ RECOMMENDED FIX ORDER ════════════════ -->
     <h2>🎯 Recommended Fix Order (Pareto-Sorted)</h2>
 
-    <p>Ordered by <strong>impact / effort</strong>. Do the top of the list first.</p>
+    <p>
+      Ordered by <strong>impact / effort</strong>. Do the top of the list first.
+    </p>
 
     <table>
       <thead>
@@ -2146,14 +2362,19 @@ func WithSuggestion(f Finding) bool  // or: FilterHasSuggestion</code></pre>
           <td><a href="#issue-9">#9 Suppression validation</a></td>
           <td><span class="badge badge-verified">15 min</span></td>
           <td><span class="badge badge-low">Low</span></td>
-          <td>One-line change; establishes the “nested validate” pattern for #2.</td>
+          <td>
+            One-line change; establishes the “nested validate” pattern for #2.
+          </td>
         </tr>
         <tr>
           <td>2</td>
           <td><a href="#issue-7">#7 SARIF region asymmetry</a></td>
           <td><span class="badge badge-verified">30 min</span></td>
           <td><span class="badge badge-medium">Medium</span></td>
-          <td>5-line fix; immediately fixes wrong SARIF output for multi-line findings.</td>
+          <td>
+            5-line fix; immediately fixes wrong SARIF output for multi-line
+            findings.
+          </td>
         </tr>
         <tr>
           <td>3</td>
@@ -2167,21 +2388,28 @@ func WithSuggestion(f Finding) bool  // or: FilterHasSuggestion</code></pre>
           <td><a href="#issue-10">#10 Category/Tag twin methods</a></td>
           <td><span class="badge badge-verified">30 min</span></td>
           <td><span class="badge badge-low">Low</span></td>
-          <td>Documentation-only; clears ambiguity for the bigger Category/Tags work (#4).</td>
+          <td>
+            Documentation-only; clears ambiguity for the bigger Category/Tags
+            work (#4).
+          </td>
         </tr>
         <tr>
           <td>5</td>
           <td><a href="#issue-2">#2 FixStrategy dual no-fix</a></td>
           <td><span class="badge badge-verified">1 hr</span></td>
           <td><span class="badge badge-critical">Critical</span></td>
-          <td>Already a v1.0.0 blocker; small code change, large audit surface.</td>
+          <td>
+            Already a v1.0.0 blocker; small code change, large audit surface.
+          </td>
         </tr>
         <tr>
           <td>6</td>
           <td><a href="#issue-3">#3 Fixability predicates</a></td>
           <td><span class="badge badge-verified">1.5 hr</span></td>
           <td><span class="badge badge-high">High</span></td>
-          <td>Fixes real misrouting in the pipeline; depends on #2 being decided.</td>
+          <td>
+            Fixes real misrouting in the pipeline; depends on #2 being decided.
+          </td>
         </tr>
         <tr>
           <td>7</td>
@@ -2202,14 +2430,19 @@ func WithSuggestion(f Finding) bool  // or: FilterHasSuggestion</code></pre>
           <td><a href="#issue-6">#6 Identity trio</a></td>
           <td><span class="badge badge-verified">2 hr</span></td>
           <td><span class="badge badge-medium">Medium</span></td>
-          <td>Mostly documentation; needs ADR to lock the canonical definition.</td>
+          <td>
+            Mostly documentation; needs ADR to lock the canonical definition.
+          </td>
         </tr>
         <tr>
           <td>10</td>
           <td><a href="#issue-1">#1 Position zero-value</a></td>
           <td><span class="badge badge-critical">4-8 hr</span></td>
           <td><span class="badge badge-critical">Critical</span></td>
-          <td>Already a v1.0.0 blocker; large blast radius; do last among criticals.</td>
+          <td>
+            Already a v1.0.0 blocker; large blast radius; do last among
+            criticals.
+          </td>
         </tr>
         <tr>
           <td>11</td>
@@ -2223,8 +2456,9 @@ func WithSuggestion(f Finding) bool  // or: FilterHasSuggestion</code></pre>
 
     <div class="callout callout-info">
       <strong>Sequencing note:</strong> Issues #2, #3, #6 are coupled — fixing
-      <code>FixStrategy</code> normalization (#2) changes what <code>HasFix()</code> should return
-      (#3), which changes how <code>DefaultTriageFunc</code> routes findings, which changes identity
+      <code>FixStrategy</code> normalization (#2) changes what
+      <code>HasFix()</code> should return (#3), which changes how
+      <code>DefaultTriageFunc</code> routes findings, which changes identity
       comparisons in <code>Diff</code>
       (#6). Do them in that order in a single PR to keep tests green.
     </div>
@@ -2234,43 +2468,55 @@ func WithSuggestion(f Finding) bool  // or: FilterHasSuggestion</code></pre>
 
     <ol>
       <li>
-        <strong>Read every core type file.</strong> All 20+ files under “Core types” and “Named
-        types” in <code>AGENTS.md</code> were read end-to-end.
+        <strong>Read every core type file.</strong> All 20+ files under “Core
+        types” and “Named types” in <code>AGENTS.md</code> were read end-to-end.
       </li>
       <li>
-        <strong>Searched for duplicated concepts.</strong> Grep for <code>type.*struct</code> across
-        the codebase (98 hits), then filtered for overlapping semantics.
+        <strong>Searched for duplicated concepts.</strong> Grep for
+        <code>type.*struct</code> across the codebase (98 hits), then filtered
+        for overlapping semantics.
       </li>
       <li>
-        <strong>Compared validators.</strong> For every type with <code>Validate()</code> or
-        <code>IsValid()</code>, checked whether nested types were validated consistently.
+        <strong>Compared validators.</strong> For every type with
+        <code>Validate()</code> or <code>IsValid()</code>, checked whether
+        nested types were validated consistently.
       </li>
       <li>
-        <strong>Traced round-trips.</strong> SARIF export → import → compared with original. LSP →
-        Finding → LSP. Looked for silent data loss or mutation.
+        <strong>Traced round-trips.</strong> SARIF export → import → compared
+        with original. LSP → Finding → LSP. Looked for silent data loss or
+        mutation.
       </li>
       <li>
-        <strong>Cross-checked with project docs.</strong> <code>AGENTS.md</code>,
-        <code>RELEASE_CRITERIA.md</code>, <code>architecture-decisions.md</code>, and prior session
-        status reports — to distinguish known issues from new findings.
+        <strong>Cross-checked with project docs.</strong>
+        <code>AGENTS.md</code>, <code>RELEASE_CRITERIA.md</code>,
+        <code>architecture-decisions.md</code>, and prior session status reports
+        — to distinguish known issues from new findings.
       </li>
       <li>
-        <strong>Verified every claim by running Go code</strong> against the actual types (see
-        verification scripts in this report). No claim rests on reading alone.
+        <strong>Verified every claim by running Go code</strong> against the
+        actual types (see verification scripts in this report). No claim rests
+        on reading alone.
       </li>
     </ol>
 
     <div class="callout callout-warn">
       <strong>What this audit does <em>not</em> cover:</strong>
       <ul style="margin-top: 0.4rem">
-        <li>Concurrency safety of the split-brains (some may race when fields mutate).</li>
-        <li>Consumer code outside this repo (downstream impact inferred, not measured).</li>
         <li>
-          Performance impact of fix options (e.g. <code>*int</code> allocation cost for Position).
+          Concurrency safety of the split-brains (some may race when fields
+          mutate).
         </li>
         <li>
-          The <code>cmd/go-finding</code> CLI in depth — only its consumer-side exposure to these
-          issues.
+          Consumer code outside this repo (downstream impact inferred, not
+          measured).
+        </li>
+        <li>
+          Performance impact of fix options (e.g. <code>*int</code> allocation
+          cost for Position).
+        </li>
+        <li>
+          The <code>cmd/go-finding</code> CLI in depth — only its consumer-side
+          exposure to these issues.
         </li>
       </ul>
       A follow-up audit could cover these.
@@ -2280,10 +2526,12 @@ func WithSuggestion(f Finding) bool  // or: FilterHasSuggestion</code></pre>
     <div class="footer">
       <p>
         <strong>Split-Brain Audit — go-finding v0.7.0</strong> · 2026-06-17<br />
-        Generated by exhaustive source reading + runtime verification. Every code snippet marked
-        <span class="badge badge-verified">Verified</span> was executed against the actual types.<br />
-        Cross-reference: <code>docs/RELEASE_CRITERIA.md</code> (v1.0.0 blockers),
-        <code>docs/architecture-decisions.md</code> (open ADRs),
+        Generated by exhaustive source reading + runtime verification. Every
+        code snippet marked
+        <span class="badge badge-verified">Verified</span> was executed against
+        the actual types.<br />
+        Cross-reference: <code>docs/RELEASE_CRITERIA.md</code> (v1.0.0
+        blockers), <code>docs/architecture-decisions.md</code> (open ADRs),
         <code
           >docs/status/2026-06-16_23-31_session16-ghost-system-cleanup-and-split-brain-fix.md</code
         >

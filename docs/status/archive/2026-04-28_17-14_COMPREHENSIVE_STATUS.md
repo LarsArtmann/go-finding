@@ -290,33 +290,33 @@ Even though we added `sync.RWMutex` protection, the global map is still mutable 
 
 ## F) TOP 25 THINGS WE SHOULD GET DONE NEXT
 
-| #   | Task                                                                            | Priority | Effort | Impact | Category      |
-| --- | ------------------------------------------------------------------------------- | -------- | ------ | ------ | ------------- |
-| 1   | Fix `TestProperty_IDRoundTrip` flakiness (seed control)                         | P1       | S      | M      | Testing       |
-| 2   | Add SARIF parser fuzz test (`FindingsFromSARIF`)                                | P1       | M      | H      | Security      |
-| 3   | Fix `pipeline/partial.go` missing metrics recording during partial detection    | P1       | S      | M      | Bug           |
-| 4   | Add `FixApplier` error-path unit tests (backup/restore failure)                 | P1       | M      | M      | Testing       |
-| 5   | Fix 10 testifylint `require-error` warnings                                     | P2       | S      | L      | Lint          |
-| 6   | Fix 6 `paralleltest` warnings (add `t.Parallel()`)                              | P2       | S      | L      | Lint          |
-| 7   | Decompose `applyToFile` (cognitive complexity 42 → <35)                         | P2       | M      | M      | Code quality  |
-| 8   | Add `examples/` directory with 3-5 standalone examples                          | P2       | M      | M      | Docs          |
-| 9   | Add godoc examples for key APIs (`ExampleBuilder`, `ExampleFilter`)             | P2       | M      | M      | Docs          |
-| 10  | Fix 7 gosec warnings (G204 subprocess, G703 path traversal nolints)             | P2       | S      | M      | Lint/Security |
-| 11  | Add `findingFromSarResult` import path tests (rule metadata, help URI)          | P2       | M      | M      | Testing       |
-| 12  | Add `PrettyJSON` / `LineJSON` / `ToSARIF` error-path tests                      | P2       | S      | L      | Testing       |
-| 13  | Document SARIF round-trip losses prominently                                    | P2       | S      | M      | Docs          |
-| 14  | Replace hardcoded temp dir in `pipeline/pipeline.go` with `os.MkdirTemp`        | P2       | S      | M      | Bug           |
-| 15  | Decide on `FixStrategyAI` — document as placeholder or remove                   | P2       | S      | M      | API           |
-| 16  | Add `intersectionByOffset` + `HasOffset` tests (0% coverage)                    | P1       | S      | L      | Testing       |
-| 17  | Add `FilterConflictingFixes` + `AnalyzeConflicts` dedicated tests               | P1       | S      | L      | Testing       |
-| 18  | Evaluate `go-sarif` library vs hand-rolled SARIF for spec compliance            | P2       | M      | H      | Architecture  |
-| 19  | Add `govulncheck` step to CI                                                    | P2       | S      | M      | Security      |
-| 20  | Add `go:generate stringer` for Severity, FixStrategy, Category                  | P2       | S      | L      | DX            |
-| 21  | Add `RegisterDetector()` test                                                   | P2       | S      | L      | Testing       |
-| 22  | Fix `Finding.Equal` field-mismatch test (91.7% → 100%)                          | P2       | S      | L      | Testing       |
-| 23  | Extract `findingKey` to shared utility (deduplicated from verify.go + merge.go) | P2       | S      | L      | DRY           |
-| 24  | Add `clampConfidence()` negative input test (80% → 100%)                        | P2       | S      | L      | Testing       |
-| 25  | Add `setupProfiling` error-path test (76.9% → 90%+)                             | P2       | S      | L      | Testing       |
+| #  | Task                                                                            | Priority | Effort | Impact | Category      |
+| -- | ------------------------------------------------------------------------------- | -------- | ------ | ------ | ------------- |
+| 1  | Fix `TestProperty_IDRoundTrip` flakiness (seed control)                         | P1       | S      | M      | Testing       |
+| 2  | Add SARIF parser fuzz test (`FindingsFromSARIF`)                                | P1       | M      | H      | Security      |
+| 3  | Fix `pipeline/partial.go` missing metrics recording during partial detection    | P1       | S      | M      | Bug           |
+| 4  | Add `FixApplier` error-path unit tests (backup/restore failure)                 | P1       | M      | M      | Testing       |
+| 5  | Fix 10 testifylint `require-error` warnings                                     | P2       | S      | L      | Lint          |
+| 6  | Fix 6 `paralleltest` warnings (add `t.Parallel()`)                              | P2       | S      | L      | Lint          |
+| 7  | Decompose `applyToFile` (cognitive complexity 42 → <35)                         | P2       | M      | M      | Code quality  |
+| 8  | Add `examples/` directory with 3-5 standalone examples                          | P2       | M      | M      | Docs          |
+| 9  | Add godoc examples for key APIs (`ExampleBuilder`, `ExampleFilter`)             | P2       | M      | M      | Docs          |
+| 10 | Fix 7 gosec warnings (G204 subprocess, G703 path traversal nolints)             | P2       | S      | M      | Lint/Security |
+| 11 | Add `findingFromSarResult` import path tests (rule metadata, help URI)          | P2       | M      | M      | Testing       |
+| 12 | Add `PrettyJSON` / `LineJSON` / `ToSARIF` error-path tests                      | P2       | S      | L      | Testing       |
+| 13 | Document SARIF round-trip losses prominently                                    | P2       | S      | M      | Docs          |
+| 14 | Replace hardcoded temp dir in `pipeline/pipeline.go` with `os.MkdirTemp`        | P2       | S      | M      | Bug           |
+| 15 | Decide on `FixStrategyAI` — document as placeholder or remove                   | P2       | S      | M      | API           |
+| 16 | Add `intersectionByOffset` + `HasOffset` tests (0% coverage)                    | P1       | S      | L      | Testing       |
+| 17 | Add `FilterConflictingFixes` + `AnalyzeConflicts` dedicated tests               | P1       | S      | L      | Testing       |
+| 18 | Evaluate `go-sarif` library vs hand-rolled SARIF for spec compliance            | P2       | M      | H      | Architecture  |
+| 19 | Add `govulncheck` step to CI                                                    | P2       | S      | M      | Security      |
+| 20 | Add `go:generate stringer` for Severity, FixStrategy, Category                  | P2       | S      | L      | DX            |
+| 21 | Add `RegisterDetector()` test                                                   | P2       | S      | L      | Testing       |
+| 22 | Fix `Finding.Equal` field-mismatch test (91.7% → 100%)                          | P2       | S      | L      | Testing       |
+| 23 | Extract `findingKey` to shared utility (deduplicated from verify.go + merge.go) | P2       | S      | L      | DRY           |
+| 24 | Add `clampConfidence()` negative input test (80% → 100%)                        | P2       | S      | L      | Testing       |
+| 25 | Add `setupProfiling` error-path test (76.9% → 90%+)                             | P2       | S      | L      | Testing       |
 
 ---
 

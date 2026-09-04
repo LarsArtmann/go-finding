@@ -30,14 +30,14 @@
         --radius: 0px;
         --radius-sm: 0px;
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
       * {
         box-sizing: border-box;
@@ -259,12 +259,20 @@
       .callout-teal,
       .callout-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 10%,
+          var(--surface-raised)
+        );
       }
       .callout-amber,
       .callout-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 18%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 18%,
+          var(--surface-raised)
+        );
       }
       .table-wrap {
         overflow-x: auto;
@@ -443,9 +451,12 @@
     >
       <strong>📦 Resolution Status (updated 2026-07-16):</strong>
       This proposal was <strong>fully implemented</strong>. The
-      <code>modularize/unix-style</code> branch was merged to master. Multi-module structure
-      (Core/Pipeline/Analysis/CLI) is production. v1.1.0+ shipped with this structure. Zero-dep core
-      achieved (<code>go get github.com/larsartmann/go-finding</code> pulls zero external deps).
+      <code>modularize/unix-style</code> branch was merged to master.
+      Multi-module structure (Core/Pipeline/Analysis/CLI) is production. v1.1.0+
+      shipped with this structure. Zero-dep core achieved (<code
+        >go get github.com/larsartmann/go-finding</code
+      >
+      pulls zero external deps).
     </div>
     <div class="top-bar">
       <span>Modularization Proposal</span>
@@ -477,9 +488,10 @@
           <div class="eyebrow">Modularization Proposal &middot; 2026-07-01</div>
           <h1>Unix-Style Module Decomposition</h1>
           <p class="subtitle">
-            Split the go-finding monolith into four independently versioned Go modules, each with a
-            single clear purpose and zero unnecessary dependencies. Consumers import only what they
-            need — the core Finding type, the pipeline, the analysis bridge, or the CLI.
+            Split the go-finding monolith into four independently versioned Go
+            modules, each with a single clear purpose and zero unnecessary
+            dependencies. Consumers import only what they need — the core
+            Finding type, the pipeline, the analysis bridge, or the CLI.
           </p>
           <div class="meta">
             <span class="tag amber">Scope: full modularization</span>
@@ -492,25 +504,28 @@
           <h2><span class="num">00</span>Executive Summary</h2>
           <p>
             go-finding is a single-module Go library
-            (<code>github.com/larsartmann/go-finding</code>) with 12 packages and 37 production
-            files in the root alone. Every consumer who imports the core Finding type transitively
-            pulls in <code>golang.org/x/tools</code>, <code>golang.org/x/sync</code>,
-            <code>gogenfilter</code>, <code>go-faster/yaml</code>, and <code>go-output</code> — even
-            if they only need the type definitions.
+            (<code>github.com/larsartmann/go-finding</code>) with 12 packages
+            and 37 production files in the root alone. Every consumer who
+            imports the core Finding type transitively pulls in
+            <code>golang.org/x/tools</code>, <code>golang.org/x/sync</code>,
+            <code>gogenfilter</code>, <code>go-faster/yaml</code>, and
+            <code>go-output</code> — even if they only need the type
+            definitions.
           </p>
           <p>
-            The root package itself is <strong>zero-dependency</strong> (stdlib only). All external
-            dependencies live in sub-packages. This is the ideal starting point for Unix-style
-            decomposition: each concern becomes its own module, and consumers compose only what they
-            need.
+            The root package itself is <strong>zero-dependency</strong> (stdlib
+            only). All external dependencies live in sub-packages. This is the
+            ideal starting point for Unix-style decomposition: each concern
+            becomes its own module, and consumers compose only what they need.
           </p>
           <div class="callout callout-teal">
             <strong>The bottom line</strong>
             Split into 4 modules: <strong>core</strong> (zero deps),
-            <strong>pipeline</strong> (x/sync + gogenfilter), <strong>analysis</strong> (x/tools),
-            and <strong>CLI</strong>
-            (yaml + go-output). No import path changes. No breaking changes for consumers. Dual
-            go.work + replace strategy for development and CI isolation.
+            <strong>pipeline</strong> (x/sync + gogenfilter),
+            <strong>analysis</strong> (x/tools), and <strong>CLI</strong>
+            (yaml + go-output). No import path changes. No breaking changes for
+            consumers. Dual go.work + replace strategy for development and CI
+            isolation.
           </div>
         </section>
 
@@ -519,36 +534,42 @@
 
           <h3>Monolith Structure</h3>
           <p>
-            Single <code>go.mod</code> at <code>github.com/larsartmann/go-finding</code>. 12
-            packages, 1 module.
+            Single <code>go.mod</code> at
+            <code>github.com/larsartmann/go-finding</code>. 12 packages, 1
+            module.
           </p>
 
           <div class="dep-tree">
-            <span class="root">github.com/larsartmann/go-finding</span> (root, 37 files, 18K lines)
-            ├── <span class="ok">.</span> stdlib ONLY — Finding, Position, Range, Report, SARIF,
-            LSP, errors ├── analysis/ <span class="unwanted">golang.org/x/tools</span> — go/analysis
-            ↔ Finding bridge ├── pipeline/
-            <span class="unwanted">golang.org/x/sync + gogenfilter</span> — detect→triage→fix→verify
-            │ └── goast/ stdlib (go/parser) — AST-aware fix provider ├── cmd/go-finding/
-            <span class="unwanted">yaml + go-output + gogenfilter</span> — CLI binary ├──
-            internal/detectors/ stdlib — govet + staticcheck (used by cmd only) ├──
-            internal/gotoken/ stdlib (go/token) — shared position resolution ├── internal/benchutil/
-            stdlib (bytes) — benchmark helpers (test-only) └── examples/ stdlib — basic, builder,
-            pipeline examples
+            <span class="root">github.com/larsartmann/go-finding</span> (root,
+            37 files, 18K lines) ├── <span class="ok">.</span> stdlib ONLY —
+            Finding, Position, Range, Report, SARIF, LSP, errors ├── analysis/
+            <span class="unwanted">golang.org/x/tools</span> — go/analysis ↔
+            Finding bridge ├── pipeline/
+            <span class="unwanted">golang.org/x/sync + gogenfilter</span> —
+            detect→triage→fix→verify │ └── goast/ stdlib (go/parser) — AST-aware
+            fix provider ├── cmd/go-finding/
+            <span class="unwanted">yaml + go-output + gogenfilter</span> — CLI
+            binary ├── internal/detectors/ stdlib — govet + staticcheck (used by
+            cmd only) ├── internal/gotoken/ stdlib (go/token) — shared position
+            resolution ├── internal/benchutil/ stdlib (bytes) — benchmark
+            helpers (test-only) └── examples/ stdlib — basic, builder, pipeline
+            examples
           </div>
 
           <h3>Dependency Graph (production imports)</h3>
           <div class="dep-tree">
             <span class="root">root (stdlib only)</span>
             / | | \
-            <span class="ok">analysis</span> <span class="ok">pipeline</span> examples/* (none) / \
-            | \ gotoken root goast internal/detectors / | \ | gotoken pipeline root, pipeline |
-            root, pipeline
+            <span class="ok">analysis</span>
+            <span class="ok">pipeline</span> examples/* (none) / \ | \ gotoken
+            root goast internal/detectors / | \ | gotoken pipeline root,
+            pipeline | root, pipeline
           </div>
 
           <h3>The Problem: Transitive Dependency Bloat</h3>
           <p>
-            Every consumer of <code>github.com/larsartmann/go-finding</code> gets ALL dependencies
+            Every consumer of
+            <code>github.com/larsartmann/go-finding</code> gets ALL dependencies
             transitively:
           </p>
           <div class="table-wrap">
@@ -628,23 +649,29 @@
 
         <section id="proposed-structure">
           <h2><span class="num">02</span>Proposed Module Structure</h2>
-          <p>Four modules, each doing one thing well, composable like Unix pipes.</p>
+          <p>
+            Four modules, each doing one thing well, composable like Unix pipes.
+          </p>
 
           <div class="dep-tree">
-            github.com/larsartmann/go-finding/ ├── go.work workspace: . + pipeline + analysis +
-            cmd/go-finding ├── go.mod <span class="root">MODULE 1: core</span> — stdlib ONLY ├──
-            finding.go, position.go, ... 37 prod files — domain types, SARIF, LSP, ops ├── gotoken/
-            moved from internal/ — shared go/token utils (stdlib) ├── examples/ basic + builder
-            (root-only examples) │ ├── pipeline/ │ ├── go.mod
-            <span class="root">MODULE 2: pipeline</span> — x/sync, gogenfilter │ ├── pipeline.go,
-            fix_engine.go, … 22 prod files — detect→triage→fix→verify │ ├── goast/ AST fix provider
-            (stdlib) │ ├── internal/benchutil/ moved from root internal/ — bench helpers │ └──
-            examples/ pipeline example │ ├── analysis/ │ └── go.mod
-            <span class="root">MODULE 3: analysis</span> — x/tools │ analysis.go, adapter.go
-            go/analysis ↔ Finding bridge │ └── cmd/go-finding/ └── go.mod
-            <span class="root">MODULE 4: CLI</span> — yaml, go-output, gogenfilter main.go,
-            config.go, … 6 prod files — CLI binary internal/detectors/ moved from root internal/ —
-            govet + staticcheck
+            github.com/larsartmann/go-finding/ ├── go.work workspace: . +
+            pipeline + analysis + cmd/go-finding ├── go.mod
+            <span class="root">MODULE 1: core</span> — stdlib ONLY ├──
+            finding.go, position.go, ... 37 prod files — domain types, SARIF,
+            LSP, ops ├── gotoken/ moved from internal/ — shared go/token utils
+            (stdlib) ├── examples/ basic + builder (root-only examples) │ ├──
+            pipeline/ │ ├── go.mod
+            <span class="root">MODULE 2: pipeline</span> — x/sync, gogenfilter │
+            ├── pipeline.go, fix_engine.go, … 22 prod files —
+            detect→triage→fix→verify │ ├── goast/ AST fix provider (stdlib) │
+            ├── internal/benchutil/ moved from root internal/ — bench helpers │
+            └── examples/ pipeline example │ ├── analysis/ │ └── go.mod
+            <span class="root">MODULE 3: analysis</span> — x/tools │
+            analysis.go, adapter.go go/analysis ↔ Finding bridge │ └──
+            cmd/go-finding/ └── go.mod <span class="root">MODULE 4: CLI</span> —
+            yaml, go-output, gogenfilter main.go, config.go, … 6 prod files —
+            CLI binary internal/detectors/ moved from root internal/ — govet +
+            staticcheck
           </div>
 
           <h3>Module Definitions</h3>
@@ -663,28 +690,41 @@
                 <tr>
                   <td><strong>core</strong></td>
                   <td><code>github.com/larsartmann/go-finding</code></td>
-                  <td>Finding types, SARIF, LSP, filter/merge/diff, errors, extensibility</td>
+                  <td>
+                    Finding types, SARIF, LSP, filter/merge/diff, errors,
+                    extensibility
+                  </td>
                   <td><strong>None</strong> (stdlib only)</td>
                   <td>—</td>
                 </tr>
                 <tr>
                   <td><strong>pipeline</strong></td>
-                  <td><code>github.com/larsartmann/go-finding/pipeline</code></td>
+                  <td>
+                    <code>github.com/larsartmann/go-finding/pipeline</code>
+                  </td>
                   <td>Detect→triage→fix→verify loop with fix engine</td>
                   <td>x/sync, gogenfilter</td>
                   <td>core</td>
                 </tr>
                 <tr>
                   <td><strong>analysis</strong></td>
-                  <td><code>github.com/larsartmann/go-finding/analysis</code></td>
+                  <td>
+                    <code>github.com/larsartmann/go-finding/analysis</code>
+                  </td>
                   <td>go/analysis framework ↔ Finding adapter</td>
                   <td>x/tools</td>
                   <td>core</td>
                 </tr>
                 <tr>
                   <td><strong>CLI</strong></td>
-                  <td><code>github.com/larsartmann/go-finding/cmd/go-finding</code></td>
-                  <td>Command-line tool wiring detectors + pipeline + output</td>
+                  <td>
+                    <code
+                      >github.com/larsartmann/go-finding/cmd/go-finding</code
+                    >
+                  </td>
+                  <td>
+                    Command-line tool wiring detectors + pipeline + output
+                  </td>
                   <td>yaml, go-output, gogenfilter</td>
                   <td>core, pipeline</td>
                 </tr>
@@ -740,24 +780,31 @@
 
         <section id="dag">
           <h2><span class="num">03</span>DAG Verification</h2>
-          <p>The proposed dependency graph is a strict DAG — no cycles possible:</p>
+          <p>
+            The proposed dependency graph is a strict DAG — no cycles possible:
+          </p>
           <div class="dep-tree">
             Layer 0 Layer 1 Layer 2 ┌─────────┐ ┌──────────┐ ┌─────────────┐ │
-            <span class="root">core</span> │ ←── │ pipeline │ ←── │ CLI │ │(stdlib) │ ←── │ analysis
-            │ │ (yaml, ...) │ └─────────┘ └──────────┘ └─────────────┘ ↑ ↑ │ pipeline/goast (in
-            pipeline module) │ gotoken (in core module)
+            <span class="root">core</span> │ ←── │ pipeline │ ←── │ CLI │
+            │(stdlib) │ ←── │ analysis │ │ (yaml, ...) │ └─────────┘
+            └──────────┘ └─────────────┘ ↑ ↑ │ pipeline/goast (in pipeline
+            module) │ gotoken (in core module)
           </div>
 
           <div class="callout callout-teal">
             <strong>Acyclic proof</strong>
-            core → nothing. pipeline → core. analysis → core. CLI → core + pipeline. No module
-            depends upward. No module depends on a leaf. The graph is trivially acyclic.
+            core → nothing. pipeline → core. analysis → core. CLI → core +
+            pipeline. No module depends upward. No module depends on a leaf. The
+            graph is trivially acyclic.
           </div>
         </section>
 
         <section id="dependency-isolation">
           <h2><span class="num">04</span>Dependency Isolation</h2>
-          <p>The primary benefit: each module carries only the dependencies it actually needs.</p>
+          <p>
+            The primary benefit: each module carries only the dependencies it
+            actually needs.
+          </p>
 
           <div class="table-wrap">
             <table class="compare">
@@ -805,10 +852,11 @@
 
           <h3>Test Dependencies</h3>
           <p>
-            <code>ginkgo/v2</code> and <code>gomega</code> are used in BDD tests across root and
-            pipeline. Go has no test-only <code>require</code> block, so these appear in each
-            module's go.mod that has BDD tests. This is acceptable — most modules should have zero
-            test framework deps in production builds.
+            <code>ginkgo/v2</code> and <code>gomega</code> are used in BDD tests
+            across root and pipeline. Go has no test-only
+            <code>require</code> block, so these appear in each module's go.mod
+            that has BDD tests. This is acceptable — most modules should have
+            zero test framework deps in production builds.
           </p>
         </section>
 
@@ -830,7 +878,9 @@ use (
 )</code></pre>
 
           <h3>Replace directives (GOWORK=off CI/consumer builds)</h3>
-          <p>Each sub-module that depends on a sibling gets a replace directive:</p>
+          <p>
+            Each sub-module that depends on a sibling gets a replace directive:
+          </p>
           <pre><code># pipeline/go.mod
 require github.com/larsartmann/go-finding v0.0.0
 replace github.com/larsartmann/go-finding => ../
@@ -847,35 +897,41 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
 
           <div class="callout callout-amber">
             <strong>v0.0.0 normalization</strong>
-            All internal requires use <code>v0.0.0</code> — replace makes the version irrelevant for
-            resolution, eliminating pseudo-version churn.
+            All internal requires use <code>v0.0.0</code> — replace makes the
+            version irrelevant for resolution, eliminating pseudo-version churn.
           </div>
         </section>
 
         <section id="error-placement">
           <h2><span class="num">06</span>Error Type Placement</h2>
           <p>
-            All error types (<code>FindingError</code>, <code>ErrValidation</code>,
-            <code>ErrIO</code>, etc.) live in the <strong>core module</strong>. This is correct:
-            they are part of the Finding domain contract, and every consumer already imports core.
-            No cross-module <code>errors.Is</code>/<code>errors.As</code> issues.
+            All error types (<code>FindingError</code>,
+            <code>ErrValidation</code>, <code>ErrIO</code>, etc.) live in the
+            <strong>core module</strong>. This is correct: they are part of the
+            Finding domain contract, and every consumer already imports core. No
+            cross-module <code>errors.Is</code>/<code>errors.As</code> issues.
           </p>
           <p>
-            Pipeline-specific errors (e.g., <code>errAlreadyRan</code>) stay in the pipeline module.
-            They are implementation details, not contract errors.
+            Pipeline-specific errors (e.g., <code>errAlreadyRan</code>) stay in
+            the pipeline module. They are implementation details, not contract
+            errors.
           </p>
         </section>
 
         <section id="versioning">
           <h2><span class="num">07</span>Versioning Strategy</h2>
           <p>
-            <strong>Shared versioning</strong> — single <code>v*</code> git tag bumps all modules
-            together. Appropriate because:
+            <strong>Shared versioning</strong> — single <code>v*</code> git tag
+            bumps all modules together. Appropriate because:
           </p>
           <ul>
             <li>Single team, single repo</li>
-            <li>Modules are tightly coupled (pipeline always tracks core changes)</li>
-            <li>Currently at v1.0.0 — no major version suffix needed in paths</li>
+            <li>
+              Modules are tightly coupled (pipeline always tracks core changes)
+            </li>
+            <li>
+              Currently at v1.0.0 — no major version suffix needed in paths
+            </li>
           </ul>
         </section>
 
@@ -927,16 +983,17 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
           </div>
           <div class="callout callout-teal">
             <strong>Zero breaking changes</strong>
-            All public import paths remain identical. Consumers who <code>go mod tidy</code> after
-            the split automatically get the right module dependencies.
+            All public import paths remain identical. Consumers who
+            <code>go mod tidy</code> after the split automatically get the right
+            module dependencies.
           </div>
         </section>
 
         <section id="migration">
           <h2><span class="num">09</span>Migration Strategy</h2>
           <p>
-            Each step leaves the project buildable and testable. Each step is independently
-            revertable.
+            Each step leaves the project buildable and testable. Each step is
+            independently revertable.
           </p>
 
           <div class="migration-step">
@@ -944,8 +1001,9 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
             <div class="migration-content">
               <h4>Move gotoken out of internal/</h4>
               <p>
-                <code>internal/gotoken/</code> → <code>gotoken/</code>. Update 2 import sites
-                (analysis, pipeline/goast). <span class="badge badge-medium">Prep</span>
+                <code>internal/gotoken/</code> → <code>gotoken/</code>. Update 2
+                import sites (analysis, pipeline/goast).
+                <span class="badge badge-medium">Prep</span>
               </p>
             </div>
           </div>
@@ -954,8 +1012,9 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
             <div class="migration-content">
               <h4>Move detectors into cmd module tree</h4>
               <p>
-                <code>internal/detectors/</code> → <code>cmd/go-finding/internal/detectors/</code>.
-                Update 2 import sites. <span class="badge badge-medium">Prep</span>
+                <code>internal/detectors/</code> →
+                <code>cmd/go-finding/internal/detectors/</code>. Update 2 import
+                sites. <span class="badge badge-medium">Prep</span>
               </p>
             </div>
           </div>
@@ -964,8 +1023,9 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
             <div class="migration-content">
               <h4>Move benchutil into pipeline tree</h4>
               <p>
-                <code>internal/benchutil/</code> → <code>pipeline/internal/benchutil/</code>. Update
-                2 test import sites. <span class="badge badge-medium">Prep</span>
+                <code>internal/benchutil/</code> →
+                <code>pipeline/internal/benchutil/</code>. Update 2 test import
+                sites. <span class="badge badge-medium">Prep</span>
               </p>
             </div>
           </div>
@@ -974,10 +1034,12 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
             <div class="migration-content">
               <h4>Relocate pipeline-dependent examples</h4>
               <p>
-                Move <code>ExamplePipeline</code> and <code>ExampleGeneratedFileFilter</code> from
-                root <code>example_extra_test.go</code> to pipeline module. Move
+                Move <code>ExamplePipeline</code> and
+                <code>ExampleGeneratedFileFilter</code> from root
+                <code>example_extra_test.go</code> to pipeline module. Move
                 <code>examples/pipeline/</code> to pipeline module. Update root
-                <code>example_compile_test.go</code>. <span class="badge badge-medium">Prep</span>
+                <code>example_compile_test.go</code>.
+                <span class="badge badge-medium">Prep</span>
               </p>
             </div>
           </div>
@@ -986,8 +1048,9 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
             <div class="migration-content">
               <h4>Create pipeline/go.mod — extract pipeline module</h4>
               <p>
-                Module path: <code>github.com/larsartmann/go-finding/pipeline</code>. Add replace
-                for core. Remove pipeline deps from root go.mod.
+                Module path:
+                <code>github.com/larsartmann/go-finding/pipeline</code>. Add
+                replace for core. Remove pipeline deps from root go.mod.
                 <span class="badge badge-high">Tier 1 — Domain</span>
               </p>
             </div>
@@ -997,8 +1060,9 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
             <div class="migration-content">
               <h4>Create analysis/go.mod — extract analysis module</h4>
               <p>
-                Module path: <code>github.com/larsartmann/go-finding/analysis</code>. Add replace
-                for core. Remove x/tools from root go.mod.
+                Module path:
+                <code>github.com/larsartmann/go-finding/analysis</code>. Add
+                replace for core. Remove x/tools from root go.mod.
                 <span class="badge badge-high">Tier 2 — Untangle</span>
               </p>
             </div>
@@ -1008,8 +1072,10 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
             <div class="migration-content">
               <h4>Create cmd/go-finding/go.mod — extract CLI module</h4>
               <p>
-                Module path: <code>github.com/larsartmann/go-finding/cmd/go-finding</code>. Add
-                replace for core + pipeline. Remove yaml/go-output from root go.mod.
+                Module path:
+                <code>github.com/larsartmann/go-finding/cmd/go-finding</code>.
+                Add replace for core + pipeline. Remove yaml/go-output from root
+                go.mod.
                 <span class="badge badge-high">Tier 3 — Infrastructure</span>
               </p>
             </div>
@@ -1019,8 +1085,9 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
             <div class="migration-content">
               <h4>Create go.work + tidy all modules</h4>
               <p>
-                Write <code>go.work</code> listing all 4 modules. Run <code>go mod tidy</code> in
-                each. Update vendorHash in flake.nix.
+                Write <code>go.work</code> listing all 4 modules. Run
+                <code>go mod tidy</code> in each. Update vendorHash in
+                flake.nix.
                 <span class="badge badge-high">Tier 3 — Infrastructure</span>
               </p>
             </div>
@@ -1030,7 +1097,8 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
             <div class="migration-content">
               <h4>Update docs and build system</h4>
               <p>
-                AGENTS.md, flake.nix, CI workflows. Per-module test/lint commands.
+                AGENTS.md, flake.nix, CI workflows. Per-module test/lint
+                commands.
                 <span class="badge badge-medium">Tier 4 — Polish</span>
               </p>
             </div>
@@ -1052,40 +1120,57 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
                 <tr>
                   <td><strong>FM#1 Import cycles</strong></td>
                   <td><span class="badge badge-fixed">Very low</span></td>
-                  <td>DAG is trivially acyclic (core ← pipeline ← CLI). Verified in §3.</td>
+                  <td>
+                    DAG is trivially acyclic (core ← pipeline ← CLI). Verified
+                    in §3.
+                  </td>
                 </tr>
                 <tr>
                   <td><strong>FM#3 Test dep leaks</strong></td>
                   <td><span class="badge badge-medium">Medium</span></td>
-                  <td>ginkgo/gomega in core go.mod for BDD tests. Acceptable per patterns doc.</td>
+                  <td>
+                    ginkgo/gomega in core go.mod for BDD tests. Acceptable per
+                    patterns doc.
+                  </td>
                 </tr>
                 <tr>
                   <td><strong>FM#4 go.work/replace drift</strong></td>
                   <td><span class="badge badge-medium">Medium</span></td>
-                  <td>Dual strategy: both go.work AND replace. CI tests both modes.</td>
+                  <td>
+                    Dual strategy: both go.work AND replace. CI tests both
+                    modes.
+                  </td>
                 </tr>
                 <tr>
                   <td><strong>FM#6 internal/ access</strong></td>
                   <td><span class="badge badge-fixed">Handled</span></td>
-                  <td>gotoken → public, detectors → cmd tree, benchutil → pipeline tree.</td>
+                  <td>
+                    gotoken → public, detectors → cmd tree, benchutil → pipeline
+                    tree.
+                  </td>
                 </tr>
                 <tr>
                   <td><strong>FM#9 Stale go.work</strong></td>
                   <td><span class="badge badge-medium">Medium</span></td>
-                  <td><code>go work sync</code> after each structural change.</td>
+                  <td>
+                    <code>go work sync</code> after each structural change.
+                  </td>
                 </tr>
                 <tr>
                   <td><strong>FM#10 Build system breakage</strong></td>
                   <td><span class="badge badge-high">High</span></td>
                   <td>
-                    flake.nix uses <code>GOWORK=off</code> + replace. Must update vendorHash. Build
-                    after each step.
+                    flake.nix uses <code>GOWORK=off</code> + replace. Must
+                    update vendorHash. Build after each step.
                   </td>
                 </tr>
                 <tr>
                   <td><strong>FM#12 Workspace-only testing</strong></td>
                   <td><span class="badge badge-medium">Medium</span></td>
-                  <td>Test each module with <code>GOWORK=off</code> after extraction.</td>
+                  <td>
+                    Test each module with <code>GOWORK=off</code> after
+                    extraction.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1096,31 +1181,35 @@ replace github.com/larsartmann/go-finding/pipeline => ../pipeline</code></pre>
           <h2><span class="num">11</span>Build System Impact</h2>
           <h3>flake.nix</h3>
           <p>
-            The current <code>flake.nix</code> builds with <code>buildGoModule</code> using a single
-            <code>src</code> and <code>vendorHash</code>. With <code>GOWORK=off</code> set in
-            devShells, the replace directives resolve sibling modules from the source tree. The
-            <code>vendorHash</code> will change after modularization — update after
-            <code>go mod tidy</code>.
+            The current <code>flake.nix</code> builds with
+            <code>buildGoModule</code> using a single <code>src</code> and
+            <code>vendorHash</code>. With <code>GOWORK=off</code> set in
+            devShells, the replace directives resolve sibling modules from the
+            source tree. The <code>vendorHash</code> will change after
+            modularization — update after <code>go mod tidy</code>.
           </p>
           <h3>CI (GitHub Actions)</h3>
           <p>
-            Current CI runs <code>go build ./...</code> and <code>go test ./...</code> from root.
-            With <code>go.work</code>, these commands still work from root (workspace mode). For
-            per-module isolation, add a CI job running <code>GOWORK=off go build ./...</code> in
-            each module directory.
+            Current CI runs <code>go build ./...</code> and
+            <code>go test ./...</code> from root. With <code>go.work</code>,
+            these commands still work from root (workspace mode). For per-module
+            isolation, add a CI job running
+            <code>GOWORK=off go build ./...</code> in each module directory.
           </p>
           <h3>goreleaser</h3>
           <p>
-            goreleaser builds <code>./cmd/go-finding</code>. After modularization, this still works
-            with go.work. For <code>GOWORK=off</code> release builds, replace directives resolve the
-            sibling modules. No goreleaser config changes needed.
+            goreleaser builds <code>./cmd/go-finding</code>. After
+            modularization, this still works with go.work. For
+            <code>GOWORK=off</code> release builds, replace directives resolve
+            the sibling modules. No goreleaser config changes needed.
           </p>
         </section>
 
         <footer class="footer">
           <p>
-            Generated 2026-07-01 &middot; Analyzed against go-finding v1.0.0 &middot; All dependency
-            claims verified via <code>go list</code> and <code>go mod graph</code>
+            Generated 2026-07-01 &middot; Analyzed against go-finding v1.0.0
+            &middot; All dependency claims verified via <code>go list</code> and
+            <code>go mod graph</code>
           </p>
         </footer>
       </main>

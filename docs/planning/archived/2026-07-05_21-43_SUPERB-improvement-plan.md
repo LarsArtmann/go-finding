@@ -11,10 +11,10 @@
 >
 > **Verification:** Build, vet, race tests, and GOWORK=off isolation all pass across all 4 modules.
 
-> **Date:** 2026-07-05  
-> **Branch:** `modularize/unix-style`  
-> **Base:** `dddb2c7` (fix: ApplyWithDetails now returns applied findings instead of input)  
-> **Reviews:** Full code review (196 files) + Consumer audit (20 projects)  
+> **Date:** 2026-07-05\
+> **Branch:** `modularize/unix-style`\
+> **Base:** `dddb2c7` (fix: ApplyWithDetails now returns applied findings instead of input)\
+> **Reviews:** Full code review (196 files) + Consumer audit (20 projects)\
 > **Goal:** Close every actionable finding from both reviews — API gaps, bugs, docs, type safety, performance.
 
 ---

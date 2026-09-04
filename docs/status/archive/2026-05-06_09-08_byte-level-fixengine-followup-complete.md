@@ -19,28 +19,28 @@ Executed follow-up work from the byte-level FixEngine redesign across two contin
 
 ### 20 Commits (since `0d00a20`)
 
-| #   | Commit    | Category     | Description                                                                             |
-| --- | --------- | ------------ | --------------------------------------------------------------------------------------- |
-| 1   | `5081eae` | **fix**      | Fix temp dir leak — defer `FixApplier.Close()` in `applyDirectFixes`                    |
-| 2   | `dc3ca37` | **docs**     | Pipeline.Run() single-use contract in godoc                                             |
-| 3   | `7eae850` | **refactor** | `strconv.Atoi` over `fmt.Sscanf` in `FixEditFromSARIFProperties`                        |
-| 4   | `cba1b19` | **perf**     | `buildLineOffsetIndex` for O(1) line→byte offset lookup                                 |
-| 5   | `a3e4b58` | **feat**     | `ConflictInfo.ConflictsWith` populated via `edit.Overlaps(prev)`                        |
-| 6   | `a91f948` | **fix**      | `Finding.Key()` in `FilterConflictingEdits` for empty-ID safety                         |
-| 7   | `340f1f2` | **refactor** | Deprecate `ConflictDetector` → `DetectConflicts()` package-level function               |
-| 8   | `ad9c65a` | **refactor** | Deprecate `Verifier` → `Verify()` package-level function                                |
-| 9   | `e97f62e` | **refactor** | Split `sarif.go` (570 lines) → `sarif_types.go` + `sarif_export.go` + `sarif_import.go` |
-| 10  | `1bb1b1e` | **refactor** | Split `pipeline.go` (624 lines) → `pipeline.go` + `adapters.go` + `config.go`           |
-| 11  | `c946025` | **test**     | FixEngine benchmarks: 1/10/100/1000 fixes on 10k-line file                              |
-| 12  | `aa25f80` | **test**     | BDD specs for FixProvider contract (15 specs)                                           |
-| 13  | `e47c219` | **feat**     | SARIF `go-finding/edit/*` property round-trip wiring                                    |
-| 14  | `48dfc8c` | **chore**    | Auto-format: table alignment, parameter order, modernize loops                          |
-| 15  | `9107bfa` | **fix**      | Correct byte offsets in `TestFixEngine_Apply_ByteOffset` (29-34, not 28-33)             |
-| 16  | `b071665` | **docs**     | Update TODO_LIST.md — 11 items marked completed                                         |
-| 17  | `686f803` | **docs**     | Update AGENTS.md — new file structure, deprecated APIs                                  |
-| 18  | `1d64c73` | **feat**     | Extract `diagnostic.go` → `analysis/` subpackage (removes 12MB dep from core)           |
-| 19  | `df82906` | **feat**     | Add `Report.Merge(other *Report)` in-place merge method                                 |
-| 20  | _(next)_  | **docs**     | This status report                                                                      |
+| #  | Commit    | Category     | Description                                                                             |
+| -- | --------- | ------------ | --------------------------------------------------------------------------------------- |
+| 1  | `5081eae` | **fix**      | Fix temp dir leak — defer `FixApplier.Close()` in `applyDirectFixes`                    |
+| 2  | `dc3ca37` | **docs**     | Pipeline.Run() single-use contract in godoc                                             |
+| 3  | `7eae850` | **refactor** | `strconv.Atoi` over `fmt.Sscanf` in `FixEditFromSARIFProperties`                        |
+| 4  | `cba1b19` | **perf**     | `buildLineOffsetIndex` for O(1) line→byte offset lookup                                 |
+| 5  | `a3e4b58` | **feat**     | `ConflictInfo.ConflictsWith` populated via `edit.Overlaps(prev)`                        |
+| 6  | `a91f948` | **fix**      | `Finding.Key()` in `FilterConflictingEdits` for empty-ID safety                         |
+| 7  | `340f1f2` | **refactor** | Deprecate `ConflictDetector` → `DetectConflicts()` package-level function               |
+| 8  | `ad9c65a` | **refactor** | Deprecate `Verifier` → `Verify()` package-level function                                |
+| 9  | `e97f62e` | **refactor** | Split `sarif.go` (570 lines) → `sarif_types.go` + `sarif_export.go` + `sarif_import.go` |
+| 10 | `1bb1b1e` | **refactor** | Split `pipeline.go` (624 lines) → `pipeline.go` + `adapters.go` + `config.go`           |
+| 11 | `c946025` | **test**     | FixEngine benchmarks: 1/10/100/1000 fixes on 10k-line file                              |
+| 12 | `aa25f80` | **test**     | BDD specs for FixProvider contract (15 specs)                                           |
+| 13 | `e47c219` | **feat**     | SARIF `go-finding/edit/*` property round-trip wiring                                    |
+| 14 | `48dfc8c` | **chore**    | Auto-format: table alignment, parameter order, modernize loops                          |
+| 15 | `9107bfa` | **fix**      | Correct byte offsets in `TestFixEngine_Apply_ByteOffset` (29-34, not 28-33)             |
+| 16 | `b071665` | **docs**     | Update TODO_LIST.md — 11 items marked completed                                         |
+| 17 | `686f803` | **docs**     | Update AGENTS.md — new file structure, deprecated APIs                                  |
+| 18 | `1d64c73` | **feat**     | Extract `diagnostic.go` → `analysis/` subpackage (removes 12MB dep from core)           |
+| 19 | `df82906` | **feat**     | Add `Report.Merge(other *Report)` in-place merge method                                 |
+| 20 | _(next)_  | **docs**     | This status report                                                                      |
 
 ### Key Metrics
 
@@ -135,33 +135,33 @@ golangci-lint run ./...  ✅ 0 issues
 
 Sorted by impact × effort:
 
-| #   | Task                                                                   | Impact | Effort | Status   |
-| --- | ---------------------------------------------------------------------- | ------ | ------ | -------- |
-| 1   | **Push 5 unpushed commits**                                            | HIGH   | LOW    | Ready    |
-| 2   | **Confidence strong type** — `type Confidence float64` with validation | MED    | MED    | Ready    |
-| 3   | **Centralize triage logic** — single `CategorizeFix` function          | MED    | MED    | Ready    |
-| 4   | **Properties map[string]any** on Finding                               | MED    | MED    | Ready    |
-| 5   | **Context-cancel tests** for detectPartial                             | MED    | LOW    | Ready    |
-| 6   | **WriteSARIF error-path tests** with failingWriter                     | LOW    | LOW    | Ready    |
-| 7   | **io.WriterTo for SARIF** streaming                                    | LOW    | LOW    | Ready    |
-| 8   | **Split cmd/go-finding/main.go** — config + output                     | MED    | MED    | Ready    |
-| 9   | **Refactor CLI run()** for testability                                 | MED    | MED    | Ready    |
-| 10  | **Wire FixProviders through CLI config**                               | MED    | MED    | Ready    |
-| 11  | **Document SARIF round-trip losses** in user-facing docs               | MED    | LOW    | Ready    |
-| 12  | **Nix setup in CONTRIBUTING.md**                                       | LOW    | LOW    | Ready    |
-| 13  | **Evaluate go-sarif vs hand-rolled** for spec compliance               | MED    | MED    | Research |
-| 14  | **Benchmark regression tracking** scripts                              | LOW    | MED    | Ready    |
-| 15  | **Pipeline benchmarks 10k+ findings**                                  | LOW    | MED    | Ready    |
-| 16  | **SARIF schema validation test**                                       | MED    | MED    | Ready    |
-| 17  | **API stability review** — audit all exported symbols                  | HIGH   | HIGH   | Ready    |
-| 18  | **Decide domain provider location**                                    | HIGH   | N/A    | BLOCKED  |
-| 19  | **Protect Confidence** in direct struct construction                   | MED    | MED    | Ready    |
-| 20  | **Report thread-safety** — sync.Once for nil mutex                     | MED    | MED    | Ready    |
-| 21  | **Unify Tag deprecation** across tests                                 | LOW    | LOW    | Ready    |
-| 22  | **Error wrapping audit**                                               | MED    | MED    | Ready    |
-| 23  | **Finding JSON schema** — formal contract                              | MED    | MED    | Ready    |
-| 24  | **Consumer migration guide** v0.1→v0.2                                 | MED    | MED    | Ready    |
-| 25  | **gci/golines in devShell** or flake.nix                               | MED    | LOW    | Ready    |
+| #  | Task                                                                   | Impact | Effort | Status   |
+| -- | ---------------------------------------------------------------------- | ------ | ------ | -------- |
+| 1  | **Push 5 unpushed commits**                                            | HIGH   | LOW    | Ready    |
+| 2  | **Confidence strong type** — `type Confidence float64` with validation | MED    | MED    | Ready    |
+| 3  | **Centralize triage logic** — single `CategorizeFix` function          | MED    | MED    | Ready    |
+| 4  | **Properties map[string]any** on Finding                               | MED    | MED    | Ready    |
+| 5  | **Context-cancel tests** for detectPartial                             | MED    | LOW    | Ready    |
+| 6  | **WriteSARIF error-path tests** with failingWriter                     | LOW    | LOW    | Ready    |
+| 7  | **io.WriterTo for SARIF** streaming                                    | LOW    | LOW    | Ready    |
+| 8  | **Split cmd/go-finding/main.go** — config + output                     | MED    | MED    | Ready    |
+| 9  | **Refactor CLI run()** for testability                                 | MED    | MED    | Ready    |
+| 10 | **Wire FixProviders through CLI config**                               | MED    | MED    | Ready    |
+| 11 | **Document SARIF round-trip losses** in user-facing docs               | MED    | LOW    | Ready    |
+| 12 | **Nix setup in CONTRIBUTING.md**                                       | LOW    | LOW    | Ready    |
+| 13 | **Evaluate go-sarif vs hand-rolled** for spec compliance               | MED    | MED    | Research |
+| 14 | **Benchmark regression tracking** scripts                              | LOW    | MED    | Ready    |
+| 15 | **Pipeline benchmarks 10k+ findings**                                  | LOW    | MED    | Ready    |
+| 16 | **SARIF schema validation test**                                       | MED    | MED    | Ready    |
+| 17 | **API stability review** — audit all exported symbols                  | HIGH   | HIGH   | Ready    |
+| 18 | **Decide domain provider location**                                    | HIGH   | N/A    | BLOCKED  |
+| 19 | **Protect Confidence** in direct struct construction                   | MED    | MED    | Ready    |
+| 20 | **Report thread-safety** — sync.Once for nil mutex                     | MED    | MED    | Ready    |
+| 21 | **Unify Tag deprecation** across tests                                 | LOW    | LOW    | Ready    |
+| 22 | **Error wrapping audit**                                               | MED    | MED    | Ready    |
+| 23 | **Finding JSON schema** — formal contract                              | MED    | MED    | Ready    |
+| 24 | **Consumer migration guide** v0.1→v0.2                                 | MED    | MED    | Ready    |
+| 25 | **gci/golines in devShell** or flake.nix                               | MED    | LOW    | Ready    |
 
 ---
 

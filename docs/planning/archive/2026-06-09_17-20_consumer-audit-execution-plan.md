@@ -10,28 +10,28 @@ _Based on: Full consumer audit of 15 projects, 200+ files, 109 field settings, e
 
 ### The 1% That Delivers 51% of the Result
 
-| #   | Task                                       | Why                                                        |
-| --- | ------------------------------------------ | ---------------------------------------------------------- |
-| 1   | Fix 4 lint warnings → zero-lint codebase   | Professional quality bar; blocks nothing but signals trust |
-| 2   | Expand `ParseSeverity` with common aliases | Eliminates 7 duplicated switch statements immediately      |
+| # | Task                                       | Why                                                        |
+| - | ------------------------------------------ | ---------------------------------------------------------- |
+| 1 | Fix 4 lint warnings → zero-lint codebase   | Professional quality bar; blocks nothing but signals trust |
+| 2 | Expand `ParseSeverity` with common aliases | Eliminates 7 duplicated switch statements immediately      |
 
 ### The 4% That Delivers 64% of the Result (adds to 1%)
 
-| #   | Task                                                               | Why                                                              |
-| --- | ------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| 3   | Move `Detector`/`DetectorFunc`/`NamedDetectorFunc` to root package | 3 consumers can drop pipeline import; most-used pipeline concept |
-| 4   | Add `CategoryForLinter()` registry function                        | Consolidates 3 identical lookup tables across repos              |
-| 5   | Add `ParseCategory()` + `MustParseCategory()`                      | 3+ consumers parse category strings from config                  |
-| 6   | Update AGENTS.md with audit findings                               | Knowledge persistence for future sessions                        |
+| # | Task                                                               | Why                                                              |
+| - | ------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| 3 | Move `Detector`/`DetectorFunc`/`NamedDetectorFunc` to root package | 3 consumers can drop pipeline import; most-used pipeline concept |
+| 4 | Add `CategoryForLinter()` registry function                        | Consolidates 3 identical lookup tables across repos              |
+| 5 | Add `ParseCategory()` + `MustParseCategory()`                      | 3+ consumers parse category strings from config                  |
+| 6 | Update AGENTS.md with audit findings                               | Knowledge persistence for future sessions                        |
 
 ### The 20% That Delivers 80% of the Result (adds to 4%)
 
-| #   | Task                                             | Why                                                   |
-| --- | ------------------------------------------------ | ----------------------------------------------------- |
-| 7   | Add `ToolAdapter[O any]` generic converter       | Eliminates ~30 files of boilerplate across 5 projects |
-| 8   | Add godoc examples for new APIs                  | Discoverability                                       |
-| 9   | Update consumer-audit.html with field usage data | Complete the research artifact                        |
-| 10  | Update TODO_LIST.md with new audit items         | Planning persistence                                  |
+| #  | Task                                             | Why                                                   |
+| -- | ------------------------------------------------ | ----------------------------------------------------- |
+| 7  | Add `ToolAdapter[O any]` generic converter       | Eliminates ~30 files of boilerplate across 5 projects |
+| 8  | Add godoc examples for new APIs                  | Discoverability                                       |
+| 9  | Update consumer-audit.html with field usage data | Complete the research artifact                        |
+| 10 | Update TODO_LIST.md with new audit items         | Planning persistence                                  |
 
 ---
 
@@ -83,35 +83,35 @@ graph TD
 
 ## Comprehensive Task List (~27 tasks, 7-30min each)
 
-| #   | Task                                                                  | Impact          | Effort | Tier |
-| --- | --------------------------------------------------------------------- | --------------- | ------ | ---- |
-| 1   | Add godoc to `Finding.Validate()` (revive lint)                       | Lint fix        | 5min   | 1%   |
-| 2   | Fix `merge.go:134` goconst — add `dedupStrategyRule` constant         | Lint fix        | 10min  | 1%   |
-| 3   | Fix `pipeline/fix_applier.go:105,109` noinlineerr                     | Lint fix        | 10min  | 1%   |
-| 4   | Verify zero lint warnings after fixes                                 | Quality         | 5min   | 1%   |
-| 5   | Add `severityAliases` map to `severity.go`                            | Consumer DRY    | 10min  | 1%   |
-| 6   | Update `ParseSeverity` to check aliases map                           | Consumer DRY    | 10min  | 1%   |
-| 7   | Add `SeverityAliases` exported var for introspection                  | Discoverability | 5min   | 1%   |
-| 8   | Add tests for alias-based ParseSeverity                               | Correctness     | 15min  | 1%   |
-| 9   | Create `detector.go` in root package with Detector interface          | Architecture    | 15min  | 4%   |
-| 10  | Move `DetectorFunc`, `NamedDetectorFunc`, `namedDetector` to root     | Architecture    | 15min  | 4%   |
-| 11  | Update `pipeline/adapters.go` — re-export from root (backward compat) | Backward compat | 10min  | 4%   |
-| 12  | Add `CategoryForLinter()` function with golangci-lint mappings        | Consumer DRY    | 15min  | 4%   |
-| 13  | Add `RegisterLinterCategory()` for custom mappings                    | Extensibility   | 10min  | 4%   |
-| 14  | Add tests for `CategoryForLinter` + `RegisterLinterCategory`          | Correctness     | 15min  | 4%   |
-| 15  | Add `ParseCategory()` + `MustParseCategory()` functions               | Consumer DRY    | 10min  | 4%   |
-| 16  | Add tests for `ParseCategory`                                         | Correctness     | 10min  | 4%   |
-| 17  | Update AGENTS.md with audit findings                                  | Knowledge       | 15min  | 4%   |
-| 18  | Design `ToolAdapter[O any]` type in new `adapter.go`                  | Architecture    | 20min  | 20%  |
-| 19  | Implement `ToolAdapter.Run` method                                    | Feature         | 20min  | 20%  |
-| 20  | Add tests for `ToolAdapter`                                           | Correctness     | 20min  | 20%  |
-| 21  | Add `ToolResult` helper type for common JSON shapes                   | Convenience     | 15min  | 20%  |
-| 22  | Add godoc examples for ParseSeverity, CategoryForLinter, ToolAdapter  | Discoverability | 15min  | 20%  |
-| 23  | Update consumer-audit.html with field usage data                      | Research        | 15min  | 20%  |
-| 24  | Update TODO_LIST.md with new audit-driven items                       | Planning        | 15min  | 20%  |
-| 25  | Update FEATURES.md with new features                                  | Documentation   | 10min  | 20%  |
-| 26  | Run full test suite + race detector                                   | Verification    | 5min   | All  |
-| 27  | Run lint — verify zero warnings                                       | Verification    | 5min   | All  |
+| #  | Task                                                                  | Impact          | Effort | Tier |
+| -- | --------------------------------------------------------------------- | --------------- | ------ | ---- |
+| 1  | Add godoc to `Finding.Validate()` (revive lint)                       | Lint fix        | 5min   | 1%   |
+| 2  | Fix `merge.go:134` goconst — add `dedupStrategyRule` constant         | Lint fix        | 10min  | 1%   |
+| 3  | Fix `pipeline/fix_applier.go:105,109` noinlineerr                     | Lint fix        | 10min  | 1%   |
+| 4  | Verify zero lint warnings after fixes                                 | Quality         | 5min   | 1%   |
+| 5  | Add `severityAliases` map to `severity.go`                            | Consumer DRY    | 10min  | 1%   |
+| 6  | Update `ParseSeverity` to check aliases map                           | Consumer DRY    | 10min  | 1%   |
+| 7  | Add `SeverityAliases` exported var for introspection                  | Discoverability | 5min   | 1%   |
+| 8  | Add tests for alias-based ParseSeverity                               | Correctness     | 15min  | 1%   |
+| 9  | Create `detector.go` in root package with Detector interface          | Architecture    | 15min  | 4%   |
+| 10 | Move `DetectorFunc`, `NamedDetectorFunc`, `namedDetector` to root     | Architecture    | 15min  | 4%   |
+| 11 | Update `pipeline/adapters.go` — re-export from root (backward compat) | Backward compat | 10min  | 4%   |
+| 12 | Add `CategoryForLinter()` function with golangci-lint mappings        | Consumer DRY    | 15min  | 4%   |
+| 13 | Add `RegisterLinterCategory()` for custom mappings                    | Extensibility   | 10min  | 4%   |
+| 14 | Add tests for `CategoryForLinter` + `RegisterLinterCategory`          | Correctness     | 15min  | 4%   |
+| 15 | Add `ParseCategory()` + `MustParseCategory()` functions               | Consumer DRY    | 10min  | 4%   |
+| 16 | Add tests for `ParseCategory`                                         | Correctness     | 10min  | 4%   |
+| 17 | Update AGENTS.md with audit findings                                  | Knowledge       | 15min  | 4%   |
+| 18 | Design `ToolAdapter[O any]` type in new `adapter.go`                  | Architecture    | 20min  | 20%  |
+| 19 | Implement `ToolAdapter.Run` method                                    | Feature         | 20min  | 20%  |
+| 20 | Add tests for `ToolAdapter`                                           | Correctness     | 20min  | 20%  |
+| 21 | Add `ToolResult` helper type for common JSON shapes                   | Convenience     | 15min  | 20%  |
+| 22 | Add godoc examples for ParseSeverity, CategoryForLinter, ToolAdapter  | Discoverability | 15min  | 20%  |
+| 23 | Update consumer-audit.html with field usage data                      | Research        | 15min  | 20%  |
+| 24 | Update TODO_LIST.md with new audit-driven items                       | Planning        | 15min  | 20%  |
+| 25 | Update FEATURES.md with new features                                  | Documentation   | 10min  | 20%  |
+| 26 | Run full test suite + race detector                                   | Verification    | 5min   | All  |
+| 27 | Run lint — verify zero warnings                                       | Verification    | 5min   | All  |
 
 ---
 

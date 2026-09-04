@@ -65,14 +65,14 @@
 
         /* --- Type stacks (system only — zero external fonts) --- */
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -280,15 +280,27 @@
       }
       .card-problem {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .card-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .card-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
 
       /* --- Issue cards --- */
@@ -301,15 +313,27 @@
       }
       .issue-critical {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-important {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-nice {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .issue h3 {
         margin-bottom: 0.3rem;
@@ -812,8 +836,9 @@
           <div class="hero-badge">ARCHITECTURE REVIEW</div>
           <h1>go-finding Architecture Audit</h1>
           <p class="hero-subtitle">
-            Review of modularity, composability, and scalability on 2026-07-18. The 4-module
-            Unix-style decomposition is excellent. Zero coupling issues found.
+            Review of modularity, composability, and scalability on 2026-07-18.
+            The 4-module Unix-style decomposition is excellent. Zero coupling
+            issues found.
           </p>
         </div>
 
@@ -852,18 +877,20 @@
         <div class="card card-solution">
           <h4>Unix-style decomposition — each module does one thing well</h4>
           <p>
-            Core (stdlib only) provides the domain model. Pipeline adds orchestration with isolated
-            deps (x/sync, gogenfilter). Analysis bridges go/analysis. CLI composes everything for
-            the end-user. Dependencies flow strictly downward: CLI depends on Pipeline and Core;
-            Pipeline depends on Core; Core depends on nothing.
+            Core (stdlib only) provides the domain model. Pipeline adds
+            orchestration with isolated deps (x/sync, gogenfilter). Analysis
+            bridges go/analysis. CLI composes everything for the end-user.
+            Dependencies flow strictly downward: CLI depends on Pipeline and
+            Core; Pipeline depends on Core; Core depends on nothing.
           </p>
         </div>
         <div class="card card-solution">
           <h4>Dual go.work + replace strategy</h4>
           <p>
-            <code>go.work</code> coordinates development across all 4 modules. Each sub-module has
-            <code>replace</code> directives for <code>GOWORK=off</code> CI/consumer builds. This
-            enables both workspace development and independent module consumption.
+            <code>go.work</code> coordinates development across all 4 modules.
+            Each sub-module has <code>replace</code> directives for
+            <code>GOWORK=off</code> CI/consumer builds. This enables both
+            workspace development and independent module consumption.
           </p>
         </div>
 
@@ -874,8 +901,8 @@
             <div class="text">
               <strong>ToolAdapter[O] — generic tool integration</strong>
               <span
-                >Any tool can be adapted via 3 functions: run, parse, convert. Type parameter O is
-                the tool-specific output type.</span
+                >Any tool can be adapted via 3 functions: run, parse, convert.
+                Type parameter O is the tool-specific output type.</span
               >
             </div>
           </div>
@@ -884,8 +911,8 @@
             <div class="text">
               <strong>IntervalIndex[T] — generic overlap queries</strong>
               <span
-                >O(n + k) sorted-slice implementation. Used by Correlate for spatial finding
-                overlap. Reusable for any interval domain.</span
+                >O(n + k) sorted-slice implementation. Used by Correlate for
+                spatial finding overlap. Reusable for any interval domain.</span
               >
             </div>
           </div>
@@ -894,18 +921,21 @@
             <div class="text">
               <strong>FixProvider chain — pluggable fix resolution</strong>
               <span
-                >OffsetProvider, LineProvider, SubstringProvider, GoASTProvider. Custom providers
-                prepended. Each handles findings it can, passes the rest.</span
+                >OffsetProvider, LineProvider, SubstringProvider, GoASTProvider.
+                Custom providers prepended. Each handles findings it can, passes
+                the rest.</span
               >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
-              <strong>DetectorRegistry — thread-safe plugin architecture</strong>
+              <strong
+                >DetectorRegistry — thread-safe plugin architecture</strong
+              >
               <span
-                >Register/Build/BuildAll. Detectors are independently registerable. CLI
-                auto-discovers built-in detectors.</span
+                >Register/Build/BuildAll. Detectors are independently
+                registerable. CLI auto-discovers built-in detectors.</span
               >
             </div>
           </div>
@@ -952,16 +982,17 @@
         <h2 id="verdict"><span class="num">04</span>Verdict</h2>
         <div class="callout callout-solution">
           <strong>Architecture grade: A.</strong>
-          The 4-module decomposition with strict downward dependencies is textbook Unix philosophy.
-          Core has zero external deps, enabling maximal reusability. The generic types
-          (ToolAdapter[O], IntervalIndex[T], lockutil.Locked[T]) and interface-based extension
-          points (Detector, FixProvider, FindingTransformer) make the system composable without
-          coupling. No action required.
+          The 4-module decomposition with strict downward dependencies is
+          textbook Unix philosophy. Core has zero external deps, enabling
+          maximal reusability. The generic types (ToolAdapter[O],
+          IntervalIndex[T], lockutil.Locked[T]) and interface-based extension
+          points (Detector, FixProvider, FindingTransformer) make the system
+          composable without coupling. No action required.
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; Architecture review &middot; 4 modules, 0 coupling issues,
-          grade A
+          Generated 2026-07-18 &middot; Architecture review &middot; 4 modules,
+          0 coupling issues, grade A
         </footer>
       </main>
     </div>

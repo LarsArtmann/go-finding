@@ -171,33 +171,33 @@ The config file has an ongoing fight between 2-space and 4-space indentation cau
 
 ## f) Top #25 Things to Do Next
 
-| #   | Item                                                               | Priority | Impact        | Effort     |
-| --- | ------------------------------------------------------------------ | -------- | ------------- | ---------- |
-| 1   | **Fix pipeline benchmarks** — move `New()` inside loop             | P0       | Correctness   | S (10 min) |
-| 2   | **GitHub Actions CI** — test + lint + race on push/PR              | P0       | Reliability   | M (2-4 hr) |
-| 3   | **Centralize triage logic** — make `HasFix()` canonical            | P1       | Architecture  | M (2 hr)   |
-| 4   | **Consistent structured errors in pipeline**                       | P1       | Consistency   | M (2 hr)   |
-| 5   | **FixApplier lifecycle** — lift to Pipeline constructor            | P1       | Correctness   | M (3 hr)   |
-| 6   | **CLI test coverage → 85%+**                                       | P1       | Quality       | M (4 hr)   |
-| 7   | **API stability review** — audit all exported symbols              | P1       | Release       | M (4 hr)   |
-| 8   | **Decompose `findingFromSarResult`** — reduce cognitive complexity | P2       | Readability   | S (1 hr)   |
-| 9   | **Decompose `applySarifProperties`** — reduce complexity below 25  | P2       | Readability   | S (30 min) |
-| 10  | **Update USAGE_GUIDE.md for v0.4.x**                               | P2       | Docs          | M (2 hr)   |
-| 11  | **Complete `doc.go`** — currently ~40%                             | P2       | Docs          | M (3 hr)   |
-| 12  | **GoReleaser config**                                              | P2       | DevOps        | S (1 hr)   |
-| 13  | **Concurrent Report race test**                                    | P2       | Correctness   | S (30 min) |
-| 14  | **`Report.Merge()` returns new `*Report`**                         | P2       | API           | S (1 hr)   |
-| 15  | **Modernize to Go 1.21+ stdlib** — `slices`, `maps`                | P2       | Modernization | M (3 hr)   |
-| 16  | **SARIF parser fuzz test**                                         | P2       | Security      | S (1 hr)   |
-| 17  | **Fix `maxIterations` default inconsistency** — CLI vs config      | P2       | Correctness   | S (15 min) |
-| 18  | **Extract `Equal()` into readable helper**                         | P3       | Readability   | S (30 min) |
-| 19  | **Document provider chain** in user-facing docs                    | P3       | Docs          | S (1 hr)   |
-| 20  | **`go:generate stringer`** for 4 enum types                        | P3       | DevEx         | S (1 hr)   |
-| 21  | **FixEngine: line-offset tracking** for cumulative shifts          | P3       | Correctness   | L (1 day)  |
-| 22  | **`FixStrategySuggest` SARIF round-trip** — preserve suggestion    | P3       | Fidelity      | S (1 hr)   |
-| 23  | **SARIF schema validation test** against JSON schema               | P3       | Correctness   | M (2 hr)   |
-| 24  | **Define v1.0.0 release criteria**                                 | P3       | Planning      | S (30 min) |
-| 25  | **Persist fuzz corpus** — seed corpus for 17 targets               | P3       | Reliability   | M (3 hr)   |
+| #  | Item                                                               | Priority | Impact        | Effort     |
+| -- | ------------------------------------------------------------------ | -------- | ------------- | ---------- |
+| 1  | **Fix pipeline benchmarks** — move `New()` inside loop             | P0       | Correctness   | S (10 min) |
+| 2  | **GitHub Actions CI** — test + lint + race on push/PR              | P0       | Reliability   | M (2-4 hr) |
+| 3  | **Centralize triage logic** — make `HasFix()` canonical            | P1       | Architecture  | M (2 hr)   |
+| 4  | **Consistent structured errors in pipeline**                       | P1       | Consistency   | M (2 hr)   |
+| 5  | **FixApplier lifecycle** — lift to Pipeline constructor            | P1       | Correctness   | M (3 hr)   |
+| 6  | **CLI test coverage → 85%+**                                       | P1       | Quality       | M (4 hr)   |
+| 7  | **API stability review** — audit all exported symbols              | P1       | Release       | M (4 hr)   |
+| 8  | **Decompose `findingFromSarResult`** — reduce cognitive complexity | P2       | Readability   | S (1 hr)   |
+| 9  | **Decompose `applySarifProperties`** — reduce complexity below 25  | P2       | Readability   | S (30 min) |
+| 10 | **Update USAGE_GUIDE.md for v0.4.x**                               | P2       | Docs          | M (2 hr)   |
+| 11 | **Complete `doc.go`** — currently ~40%                             | P2       | Docs          | M (3 hr)   |
+| 12 | **GoReleaser config**                                              | P2       | DevOps        | S (1 hr)   |
+| 13 | **Concurrent Report race test**                                    | P2       | Correctness   | S (30 min) |
+| 14 | **`Report.Merge()` returns new `*Report`**                         | P2       | API           | S (1 hr)   |
+| 15 | **Modernize to Go 1.21+ stdlib** — `slices`, `maps`                | P2       | Modernization | M (3 hr)   |
+| 16 | **SARIF parser fuzz test**                                         | P2       | Security      | S (1 hr)   |
+| 17 | **Fix `maxIterations` default inconsistency** — CLI vs config      | P2       | Correctness   | S (15 min) |
+| 18 | **Extract `Equal()` into readable helper**                         | P3       | Readability   | S (30 min) |
+| 19 | **Document provider chain** in user-facing docs                    | P3       | Docs          | S (1 hr)   |
+| 20 | **`go:generate stringer`** for 4 enum types                        | P3       | DevEx         | S (1 hr)   |
+| 21 | **FixEngine: line-offset tracking** for cumulative shifts          | P3       | Correctness   | L (1 day)  |
+| 22 | **`FixStrategySuggest` SARIF round-trip** — preserve suggestion    | P3       | Fidelity      | S (1 hr)   |
+| 23 | **SARIF schema validation test** against JSON schema               | P3       | Correctness   | M (2 hr)   |
+| 24 | **Define v1.0.0 release criteria**                                 | P3       | Planning      | S (30 min) |
+| 25 | **Persist fuzz corpus** — seed corpus for 17 targets               | P3       | Reliability   | M (3 hr)   |
 
 ---
 

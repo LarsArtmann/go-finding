@@ -209,34 +209,34 @@ before the first public release triggers GoReleaser.
 
 #### Phase 1: Critical Blockers (must fix before `gh repo edit --visibility public`)
 
-| #   | Task                                             | Status  | Why                                                         |
-| --- | ------------------------------------------------ | ------- | ----------------------------------------------------------- |
-| 1   | **Fix `PUBLIC_OR_PRIVATE.md` split brain**       | ✅ Done | Corrected 2026-07-24                                        |
-| 2   | **Make GOEXPERIMENT=jsonv2 prominent in README** | ✅ Done | Prerequisites block at top of Installation (2026-07-24)     |
-| 3   | **Remove `GOPRIVATE` warning from README**       | ✅ Done | Removed 2026-07-24; no longer needed once public            |
-| 4   | **Add GitHub repo description + topics**         | ✅ Done | Description + 11 topics set via `gh repo edit` (2026-07-24) |
+| # | Task                                             | Status  | Why                                                         |
+| - | ------------------------------------------------ | ------- | ----------------------------------------------------------- |
+| 1 | **Fix `PUBLIC_OR_PRIVATE.md` split brain**       | ✅ Done | Corrected 2026-07-24                                        |
+| 2 | **Make GOEXPERIMENT=jsonv2 prominent in README** | ✅ Done | Prerequisites block at top of Installation (2026-07-24)     |
+| 3 | **Remove `GOPRIVATE` warning from README**       | ✅ Done | Removed 2026-07-24; no longer needed once public            |
+| 4 | **Add GitHub repo description + topics**         | ✅ Done | Description + 11 topics set via `gh repo edit` (2026-07-24) |
 
 #### Phase 2: Community Readiness (should fix before announcing)
 
-| #   | Task                                                             | Status  | Why                                                       |
-| --- | ---------------------------------------------------------------- | ------- | --------------------------------------------------------- |
-| 5   | Add `SECURITY.md`                                                | ✅ Done | Vulnerability reporting policy (2026-07-24)               |
-| 6   | Add `CODE_OF_CONDUCT.md`                                         | ✅ Done | Contributor Covenant v2.1 (2026-07-24)                    |
-| 7   | Add `.github/ISSUE_TEMPLATE/` (bug + feature)                    | ✅ Done | bug + feature templates + config.yml (2026-07-24)         |
-| 8   | Add `.github/PULL_REQUEST_TEMPLATE.md`                           | ✅ Done | PR quality checklist (2026-07-24)                         |
-| 9   | Add support policy to README                                     | ✅ Done | "Support" section added before Versioning (2026-07-24)    |
-| 10  | ~~Decide on internal docs (move/archive/keep)~~ ✅ **No action** | Done    | User: keep all as-is                                      |
-| 11  | Verify pkg.go.dev renders after first public tag                 | ⬜ TODO | Triggered by first `go get` after visibility flip         |
-| 12  | Track Go json/v2 stabilization (Go 1.27+)                        | ⬜ TODO | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes |
+| #  | Task                                                             | Status  | Why                                                       |
+| -- | ---------------------------------------------------------------- | ------- | --------------------------------------------------------- |
+| 5  | Add `SECURITY.md`                                                | ✅ Done | Vulnerability reporting policy (2026-07-24)               |
+| 6  | Add `CODE_OF_CONDUCT.md`                                         | ✅ Done | Contributor Covenant v2.1 (2026-07-24)                    |
+| 7  | Add `.github/ISSUE_TEMPLATE/` (bug + feature)                    | ✅ Done | bug + feature templates + config.yml (2026-07-24)         |
+| 8  | Add `.github/PULL_REQUEST_TEMPLATE.md`                           | ✅ Done | PR quality checklist (2026-07-24)                         |
+| 9  | Add support policy to README                                     | ✅ Done | "Support" section added before Versioning (2026-07-24)    |
+| 10 | ~~Decide on internal docs (move/archive/keep)~~ ✅ **No action** | Done    | User: keep all as-is                                      |
+| 11 | Verify pkg.go.dev renders after first public tag                 | ⬜ TODO | Triggered by first `go get` after visibility flip         |
+| 12 | Track Go json/v2 stabilization (Go 1.27+)                        | ⬜ TODO | Remove `GOEXPERIMENT` requirement when json/v2 stabilizes |
 
 #### Phase 3: Launch (do after visibility flip)
 
-| #   | Task                                                           | Effort | Why                   |
-| --- | -------------------------------------------------------------- | ------ | --------------------- |
-| 13  | Tag v1.4.0 (or next minor)                                     | Low    | Public version anchor |
-| 14  | Verify GoReleaser + Homebrew tap works on public tag           | Low    | Binary distribution   |
-| 15  | Write announcement (blog post / r/golang / Go Slack / Twitter) | Medium | Drive adoption        |
-| 16  | Add to Awesome Go lists                                        | Low    | Discoverability       |
+| #  | Task                                                           | Effort | Why                   |
+| -- | -------------------------------------------------------------- | ------ | --------------------- |
+| 13 | Tag v1.4.0 (or next minor)                                     | Low    | Public version anchor |
+| 14 | Verify GoReleaser + Homebrew tap works on public tag           | Low    | Binary distribution   |
+| 15 | Write announcement (blog post / r/golang / Go Slack / Twitter) | Medium | Drive adoption        |
+| 16 | Add to Awesome Go lists                                        | Low    | Discoverability       |
 
 ---
 

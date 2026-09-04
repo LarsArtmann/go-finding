@@ -134,33 +134,33 @@ Minor issues during execution:
 
 Sorted by impact/effort ratio (Pareto-ordered):
 
-| #   | Task                                                                                                            | Impact        | Effort | Category     |
-| --- | --------------------------------------------------------------------------------------------------------------- | ------------- | ------ | ------------ |
-| 1   | **Bump version to v0.7.0** — new public APIs warrant minor version bump                                         | Release       | 5min   | Housekeeping |
-| 2   | **Update FEATURES.md** — add CategoryForLinter, ParseCategory, ToolAdapter, Detector-in-root, SeverityAliases   | Docs          | 30min  | Docs         |
-| 3   | **Split `example_test.go`** (625→300+300) — satisfy file-size check                                             | Quality       | 15min  | Quality      |
-| 4   | **Write CHANGELOG.md entry for v0.7.0**                                                                         | Docs          | 20min  | Docs         |
-| 5   | **Update TODO_LIST.md** with consumer-audit findings (mark done, add new items)                                 | Planning      | 30min  | Planning     |
-| 6   | **Add consumer integration test** — verify `pipeline.Detector == finding.Detector` type alias compatibility     | Correctness   | 15min  | Testing      |
-| 7   | **Update `doc.go` package docs** — show 3 most common use cases with code snippets                              | DX            | 20min  | Docs         |
-| 8   | **Deprecate `RecordFix()`** — add deprecation comment, plan removal for v1.0.0                                  | API cleanup   | 5min   | API          |
-| 9   | **Write migration guide** — "Switching from pipeline.DetectorFunc to finding.DetectorFunc"                      | DX            | 30min  | Docs         |
-| 10  | **Update README.md** — badges, quickstart, API overview with new root-package features                          | DX            | 60min  | Docs         |
-| 11  | **Add `IsHashID` to root package godoc** — it's used but undocumented in examples                               | DX            | 10min  | Docs         |
-| 12  | **Consumer field-usage table in audit report** — complete the research artifact                                 | Research      | 30min  | Research     |
-| 13  | **Report.Findings encapsulation** — implement ADR 10: `AddFinding`, `FindingsSnapshot`, deprecate direct access | Architecture  | 120min | Architecture |
-| 14  | **Pipeline adoption push** — write "Why Pipeline?" doc with concrete examples                                   | Adoption      | 60min  | Docs         |
-| 15  | **FixEngine line-offset tracking** — cumulative line shifts for multi-fix                                       | Correctness   | 120min | Feature      |
-| 16  | **Deprecate/remove `FixStrategyAI`** — no backend, no consumers; reserve via docs only if needed                | API cleanup   | 30min  | API          |
-| 17  | **Add `ToolRunFunc` adapter for exec.Command** — common case helper in root package                             | DX            | 30min  | Feature      |
-| 18  | **Fuzz CategoryForLinter** — add fuzz target for case-insensitive lookup                                        | Testing       | 15min  | Testing      |
-| 19  | **API stability review** — audit all exported symbols for v1.0.0 readiness                                      | Architecture  | 120min | Architecture |
-| 20  | **Benchmark ToolAdapter** — ensure zero-alloc in hot path                                                       | Performance   | 30min  | Testing      |
-| 21  | **Add `Compare()` method to Category** — matching Severity.Compare() pattern                                    | Consistency   | 15min  | Feature      |
-| 22  | **Write `.github/dependabot.yml`** — auto-dependency updates for golang.org/x packages                          | CI            | 15min  | CI           |
-| 23  | **Pipeline stage hooks** — pre/post hooks for detect, triage, fix, verify                                       | Extensibility | 90min  | Feature      |
-| 24  | **Position zero-value decision** — resolve OWNER_DECISION items in TODO_LIST.md                                 | API           | 60min  | Architecture |
-| 25  | **Fix strategy composable interface** — allow custom fix strategies beyond the 4 constants                      | Extensibility | 90min  | Feature      |
+| #  | Task                                                                                                            | Impact        | Effort | Category     |
+| -- | --------------------------------------------------------------------------------------------------------------- | ------------- | ------ | ------------ |
+| 1  | **Bump version to v0.7.0** — new public APIs warrant minor version bump                                         | Release       | 5min   | Housekeeping |
+| 2  | **Update FEATURES.md** — add CategoryForLinter, ParseCategory, ToolAdapter, Detector-in-root, SeverityAliases   | Docs          | 30min  | Docs         |
+| 3  | **Split `example_test.go`** (625→300+300) — satisfy file-size check                                             | Quality       | 15min  | Quality      |
+| 4  | **Write CHANGELOG.md entry for v0.7.0**                                                                         | Docs          | 20min  | Docs         |
+| 5  | **Update TODO_LIST.md** with consumer-audit findings (mark done, add new items)                                 | Planning      | 30min  | Planning     |
+| 6  | **Add consumer integration test** — verify `pipeline.Detector == finding.Detector` type alias compatibility     | Correctness   | 15min  | Testing      |
+| 7  | **Update `doc.go` package docs** — show 3 most common use cases with code snippets                              | DX            | 20min  | Docs         |
+| 8  | **Deprecate `RecordFix()`** — add deprecation comment, plan removal for v1.0.0                                  | API cleanup   | 5min   | API          |
+| 9  | **Write migration guide** — "Switching from pipeline.DetectorFunc to finding.DetectorFunc"                      | DX            | 30min  | Docs         |
+| 10 | **Update README.md** — badges, quickstart, API overview with new root-package features                          | DX            | 60min  | Docs         |
+| 11 | **Add `IsHashID` to root package godoc** — it's used but undocumented in examples                               | DX            | 10min  | Docs         |
+| 12 | **Consumer field-usage table in audit report** — complete the research artifact                                 | Research      | 30min  | Research     |
+| 13 | **Report.Findings encapsulation** — implement ADR 10: `AddFinding`, `FindingsSnapshot`, deprecate direct access | Architecture  | 120min | Architecture |
+| 14 | **Pipeline adoption push** — write "Why Pipeline?" doc with concrete examples                                   | Adoption      | 60min  | Docs         |
+| 15 | **FixEngine line-offset tracking** — cumulative line shifts for multi-fix                                       | Correctness   | 120min | Feature      |
+| 16 | **Deprecate/remove `FixStrategyAI`** — no backend, no consumers; reserve via docs only if needed                | API cleanup   | 30min  | API          |
+| 17 | **Add `ToolRunFunc` adapter for exec.Command** — common case helper in root package                             | DX            | 30min  | Feature      |
+| 18 | **Fuzz CategoryForLinter** — add fuzz target for case-insensitive lookup                                        | Testing       | 15min  | Testing      |
+| 19 | **API stability review** — audit all exported symbols for v1.0.0 readiness                                      | Architecture  | 120min | Architecture |
+| 20 | **Benchmark ToolAdapter** — ensure zero-alloc in hot path                                                       | Performance   | 30min  | Testing      |
+| 21 | **Add `Compare()` method to Category** — matching Severity.Compare() pattern                                    | Consistency   | 15min  | Feature      |
+| 22 | **Write `.github/dependabot.yml`** — auto-dependency updates for golang.org/x packages                          | CI            | 15min  | CI           |
+| 23 | **Pipeline stage hooks** — pre/post hooks for detect, triage, fix, verify                                       | Extensibility | 90min  | Feature      |
+| 24 | **Position zero-value decision** — resolve OWNER_DECISION items in TODO_LIST.md                                 | API           | 60min  | Architecture |
+| 25 | **Fix strategy composable interface** — allow custom fix strategies beyond the 4 constants                      | Extensibility | 90min  | Feature      |
 
 ---
 

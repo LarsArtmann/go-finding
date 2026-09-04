@@ -221,21 +221,21 @@ This decision impacts the priority of 13+ items and whether this session's work 
 
 ## Project Health Metrics
 
-| Metric                             | Value         | Status        |
-| ---------------------------------- | ------------- | ------------- |
-| Test Coverage (root)               | 98.4%         | ✅ Excellent  |
-| Test Coverage (analysis)           | 98.5%         | ✅ Excellent  |
-| Test Coverage (pipeline)           | 95.9%         | ✅ Good       |
-| Test Coverage (internal/detectors) | 95.9%         | ✅ Good       |
+| Metric                             | Value         | Status       |
+| ---------------------------------- | ------------- | ------------ |
+| Test Coverage (root)               | 98.4%         | ✅ Excellent |
+| Test Coverage (analysis)           | 98.5%         | ✅ Excellent |
+| Test Coverage (pipeline)           | 95.9%         | ✅ Good      |
+| Test Coverage (internal/detectors) | 95.9%         | ✅ Good      |
 | Test Coverage (cmd/go-finding)     | 70.0%         | ⚠️ Needs work |
-| Lint Issues                        | 0             | ✅ Clean      |
-| Race Detector                      | Clean         | ✅ Clean      |
-| Go Files                           | 118           | —             |
-| Lines of Go Code                   | 27,428        | —             |
-| Test Files                         | 66            | —             |
-| TODO Items Done                    | 123/190 (65%) | —             |
-| TODO Items Actionable              | 36/67         | —             |
-| TODO Items Blocked                 | 13/67         | —             |
+| Lint Issues                        | 0             | ✅ Clean     |
+| Race Detector                      | Clean         | ✅ Clean     |
+| Go Files                           | 118           | —            |
+| Lines of Go Code                   | 27,428        | —            |
+| Test Files                         | 66            | —            |
+| TODO Items Done                    | 123/190 (65%) | —            |
+| TODO Items Actionable              | 36/67         | —            |
+| TODO Items Blocked                 | 13/67         | —            |
 
 ---
 

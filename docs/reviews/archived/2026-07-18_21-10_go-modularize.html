@@ -65,14 +65,14 @@
 
         /* --- Type stacks (system only — zero external fonts) --- */
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -280,15 +280,27 @@
       }
       .card-problem {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .card-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .card-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
 
       /* --- Issue cards --- */
@@ -301,15 +313,27 @@
       }
       .issue-critical {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-important {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-nice {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .issue h3 {
         margin-bottom: 0.3rem;
@@ -811,8 +835,8 @@
           <div class="hero-badge">GO MODULARIZE</div>
           <h1>go-finding Module Boundary Review</h1>
           <p class="hero-subtitle">
-            Direction-neutral review of the 4-module Go workspace on 2026-07-18. Boundaries are
-            correct: no split or merge recommended.
+            Direction-neutral review of the 4-module Go workspace on 2026-07-18.
+            Boundaries are correct: no split or merge recommended.
           </p>
         </div>
 
@@ -889,43 +913,48 @@
         <div class="card card-solution">
           <h4>Core: zero external production dependencies</h4>
           <p>
-            Core go.mod has NO external production deps. The only deps are test-only (ginkgo/v2,
-            gomega). This means the domain model (Finding, Position, Range, Severity, etc.) can be
-            consumed by ANY Go project without pulling in x/sync, x/tools, or any third-party
-            library. This is the strongest possible isolation.
+            Core go.mod has NO external production deps. The only deps are
+            test-only (ginkgo/v2, gomega). This means the domain model (Finding,
+            Position, Range, Severity, etc.) can be consumed by ANY Go project
+            without pulling in x/sync, x/tools, or any third-party library. This
+            is the strongest possible isolation.
           </p>
         </div>
 
         <div class="card card-solution">
           <h4>Pipeline: isolated concurrency + fix engine deps</h4>
           <p>
-            Pipeline pulls in x/sync (errgroup) and gogenfilter (generated-file detection). These
-            are the ONLY deps that the pipeline needs beyond Core. The fix engine, conflict
-            detection, and metrics are all stdlib + Core.
+            Pipeline pulls in x/sync (errgroup) and gogenfilter (generated-file
+            detection). These are the ONLY deps that the pipeline needs beyond
+            Core. The fix engine, conflict detection, and metrics are all stdlib
+            + Core.
           </p>
         </div>
 
         <div class="card card-solution">
           <h4>Analysis: x/tools isolated to its own module</h4>
           <p>
-            The heavy x/tools dependency (go/analysis framework) is confined to the analysis module.
-            Consumers who only need the Finding data model never pull in x/tools.
+            The heavy x/tools dependency (go/analysis framework) is confined to
+            the analysis module. Consumers who only need the Finding data model
+            never pull in x/tools.
           </p>
         </div>
 
         <div class="card card-solution">
           <h4>CLI: all I/O deps isolated to the binary</h4>
           <p>
-            YAML parsing, output formatting (go-output), and generated-file detection live only in
-            the CLI module. Library consumers never see these deps.
+            YAML parsing, output formatting (go-output), and generated-file
+            detection live only in the CLI module. Library consumers never see
+            these deps.
           </p>
         </div>
 
         <div class="card card-solution">
           <h4>Shared utilities: gotoken and lockutil</h4>
           <p>
-            <code>gotoken/</code> and <code>lockutil/</code> are stdlib-only shared utilities within
-            the Core module. They follow the same zero-dep principle as Core itself.
+            <code>gotoken/</code> and <code>lockutil/</code> are stdlib-only
+            shared utilities within the Core module. They follow the same
+            zero-dep principle as Core itself.
           </p>
         </div>
 
@@ -942,27 +971,40 @@
             <tr>
               <td>Any module too big (god-module)?</td>
               <td><span class="badge badge-fixed">No</span></td>
-              <td>Core = 30 files, Pipeline = 22 files, Analysis = 1 file, CLI = 7 files</td>
+              <td>
+                Core = 30 files, Pipeline = 22 files, Analysis = 1 file, CLI = 7
+                files
+              </td>
             </tr>
             <tr>
               <td>Any module too small (over-split)?</td>
               <td><span class="badge badge-fixed">No</span></td>
-              <td>Analysis has 1 file but needs x/tools isolation. CLI is a proper binary.</td>
+              <td>
+                Analysis has 1 file but needs x/tools isolation. CLI is a proper
+                binary.
+              </td>
             </tr>
             <tr>
               <td>Circular dependencies?</td>
               <td><span class="badge badge-fixed">No</span></td>
-              <td>DAG: Core &larr; Pipeline &larr; CLI; Core &larr; Analysis &larr; CLI</td>
+              <td>
+                DAG: Core &larr; Pipeline &larr; CLI; Core &larr; Analysis
+                &larr; CLI
+              </td>
             </tr>
             <tr>
               <td>Replace directives correct?</td>
               <td><span class="badge badge-fixed">Yes</span></td>
-              <td>Each sub-module has replace for Core (and Pipeline for CLI)</td>
+              <td>
+                Each sub-module has replace for Core (and Pipeline for CLI)
+              </td>
             </tr>
             <tr>
               <td>go.work coordinates all modules?</td>
               <td><span class="badge badge-fixed">Yes</span></td>
-              <td>go.work lists: ., ./analysis, ./cmd/go-finding, ./pipeline</td>
+              <td>
+                go.work lists: ., ./analysis, ./cmd/go-finding, ./pipeline
+              </td>
             </tr>
           </tbody>
         </table>
@@ -970,15 +1012,16 @@
         <h2 id="verdict"><span class="num">03</span>Verdict</h2>
         <div class="callout callout-solution">
           <strong>No split or merge recommended.</strong>
-          The 4-module decomposition follows Unix philosophy: each module has a single purpose,
-          dependencies flow strictly downward, and Core has zero external deps. The dual go.work +
-          replace strategy enables both workspace development and independent module consumption.
-          This is the correct modularization for this project.
+          The 4-module decomposition follows Unix philosophy: each module has a
+          single purpose, dependencies flow strictly downward, and Core has zero
+          external deps. The dual go.work + replace strategy enables both
+          workspace development and independent module consumption. This is the
+          correct modularization for this project.
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; go-modularize review &middot; 4 modules, 0 changes
-          recommended
+          Generated 2026-07-18 &middot; go-modularize review &middot; 4 modules,
+          0 changes recommended
         </footer>
       </main>
     </div>

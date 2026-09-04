@@ -202,48 +202,48 @@ Sorted by **impact × effort** (highest first):
 
 ### HIGH IMPACT, LOW EFFORT (Do Now)
 
-| #   | Task                                                                                                                            | Impact | Effort  |
-| --- | ------------------------------------------------------------------------------------------------------------------------------- | ------ | ------- |
-| 1   | **Fix fuzz test edge cases** — add `t.Skip()` for empty tool/rule in `FuzzGenerateID` and `FuzzRoundTripID`                     | HIGH   | LOW     |
-| 2   | **Complete YAML migration** — change `cmd/go-finding/main.go` from `go-faster/yaml` to `go.yaml.in/yaml/v3`, then `go mod tidy` | HIGH   | LOW     |
-| 3   | **Delete stale fuzz corpus** — `rm -rf testdata/fuzz/` and add to `.gitignore`                                                  | MEDIUM | TRIVIAL |
-| 4   | **Add `.gitignore` entry** for `testdata/fuzz/` to prevent corpus creep                                                         | MEDIUM | TRIVIAL |
-| 5   | **Archive old status reports** — move 25+ old files to `docs/status/archive/`                                                   | LOW    | TRIVIAL |
-| 6   | **Add LICENSE file** — required for any open-source release                                                                     | HIGH   | TRIVIAL |
-| 7   | **Add CHANGELOG.md** — start tracking changes for semver releases                                                               | MEDIUM | LOW     |
+| # | Task                                                                                                                            | Impact | Effort  |
+| - | ------------------------------------------------------------------------------------------------------------------------------- | ------ | ------- |
+| 1 | **Fix fuzz test edge cases** — add `t.Skip()` for empty tool/rule in `FuzzGenerateID` and `FuzzRoundTripID`                     | HIGH   | LOW     |
+| 2 | **Complete YAML migration** — change `cmd/go-finding/main.go` from `go-faster/yaml` to `go.yaml.in/yaml/v3`, then `go mod tidy` | HIGH   | LOW     |
+| 3 | **Delete stale fuzz corpus** — `rm -rf testdata/fuzz/` and add to `.gitignore`                                                  | MEDIUM | TRIVIAL |
+| 4 | **Add `.gitignore` entry** for `testdata/fuzz/` to prevent corpus creep                                                         | MEDIUM | TRIVIAL |
+| 5 | **Archive old status reports** — move 25+ old files to `docs/status/archive/`                                                   | LOW    | TRIVIAL |
+| 6 | **Add LICENSE file** — required for any open-source release                                                                     | HIGH   | TRIVIAL |
+| 7 | **Add CHANGELOG.md** — start tracking changes for semver releases                                                               | MEDIUM | LOW     |
 
 ### HIGH IMPACT, MEDIUM EFFORT (Plan For)
 
-| #   | Task                                                                                                   | Impact | Effort |
-| --- | ------------------------------------------------------------------------------------------------------ | ------ | ------ |
-| 8   | **Add GitHub Actions CI** — build, vet, test, coverage on push/PR                                      | HIGH   | MEDIUM |
-| 9   | **Add `flake.nix`** — replace `justfile` per project standards                                         | HIGH   | MEDIUM |
-| 10  | **Consolidate test helpers** — move shared assertions to `internal/testutil`                           | MEDIUM | MEDIUM |
-| 11  | **Move pipeline config to pipeline package** — extract `pipelineConfigFile` from `cmd/` to `pipeline/` | MEDIUM | MEDIUM |
-| 12  | **Add structured logging (slog)** — replace `fmt.Fprintf` in CLI                                       | MEDIUM | MEDIUM |
-| 13  | **Add godoc comments** — all exported types and functions                                              | MEDIUM | MEDIUM |
-| 14  | **Write CONTRIBUTING.md** — required for open source                                                   | HIGH   | MEDIUM |
+| #  | Task                                                                                                   | Impact | Effort |
+| -- | ------------------------------------------------------------------------------------------------------ | ------ | ------ |
+| 8  | **Add GitHub Actions CI** — build, vet, test, coverage on push/PR                                      | HIGH   | MEDIUM |
+| 9  | **Add `flake.nix`** — replace `justfile` per project standards                                         | HIGH   | MEDIUM |
+| 10 | **Consolidate test helpers** — move shared assertions to `internal/testutil`                           | MEDIUM | MEDIUM |
+| 11 | **Move pipeline config to pipeline package** — extract `pipelineConfigFile` from `cmd/` to `pipeline/` | MEDIUM | MEDIUM |
+| 12 | **Add structured logging (slog)** — replace `fmt.Fprintf` in CLI                                       | MEDIUM | MEDIUM |
+| 13 | **Add godoc comments** — all exported types and functions                                              | MEDIUM | MEDIUM |
+| 14 | **Write CONTRIBUTING.md** — required for open source                                                   | HIGH   | MEDIUM |
 
 ### MEDIUM IMPACT, MEDIUM EFFORT (Schedule)
 
-| #   | Task                                                                                                  | Impact | Effort |
-| --- | ----------------------------------------------------------------------------------------------------- | ------ | ------ |
-| 15  | **Add benchmark regression tracking** — store bench results, compare over time                        | MEDIUM | MEDIUM |
-| 16  | **Example README files** — add README to each example dir                                             | MEDIUM | LOW    |
-| 17  | **Review PUBLIC_OR_PRIVATE.md action items** — execute pre-release checklist                          | HIGH   | HIGH   |
-| 18  | **Semver tagging** — tag v0.1.0 or v1.0.0                                                             | HIGH   | LOW    |
-| 19  | **Add `go ref` docs** — generate API reference                                                        | MEDIUM | MEDIUM |
-| 20  | **Improve PipelineConfig validation** — move validation into pipeline package with proper error types | MEDIUM | MEDIUM |
+| #  | Task                                                                                                  | Impact | Effort |
+| -- | ----------------------------------------------------------------------------------------------------- | ------ | ------ |
+| 15 | **Add benchmark regression tracking** — store bench results, compare over time                        | MEDIUM | MEDIUM |
+| 16 | **Example README files** — add README to each example dir                                             | MEDIUM | LOW    |
+| 17 | **Review PUBLIC_OR_PRIVATE.md action items** — execute pre-release checklist                          | HIGH   | HIGH   |
+| 18 | **Semver tagging** — tag v0.1.0 or v1.0.0                                                             | HIGH   | LOW    |
+| 19 | **Add `go ref` docs** — generate API reference                                                        | MEDIUM | MEDIUM |
+| 20 | **Improve PipelineConfig validation** — move validation into pipeline package with proper error types | MEDIUM | MEDIUM |
 
 ### STRATEGIC (Longer Term)
 
-| #   | Task                                                                       | Impact | Effort |
-| --- | -------------------------------------------------------------------------- | ------ | ------ |
-| 21  | **Plugin system for detectors** — make detector registration more dynamic  | HIGH   | HIGH   |
-| 22  | **LSP server implementation** — bridge findings to IDE diagnostics         | HIGH   | HIGH   |
-| 23  | **Output format plugins** — allow custom formatters beyond text/json/sarif | MEDIUM | HIGH   |
-| 24  | **Investigate `mvdan/gofumpt`** — stricter formatting than `gofmt`         | LOW    | LOW    |
-| 25  | **Dependency audit** — review all indirect deps for necessity              | MEDIUM | MEDIUM |
+| #  | Task                                                                       | Impact | Effort |
+| -- | -------------------------------------------------------------------------- | ------ | ------ |
+| 21 | **Plugin system for detectors** — make detector registration more dynamic  | HIGH   | HIGH   |
+| 22 | **LSP server implementation** — bridge findings to IDE diagnostics         | HIGH   | HIGH   |
+| 23 | **Output format plugins** — allow custom formatters beyond text/json/sarif | MEDIUM | HIGH   |
+| 24 | **Investigate `mvdan/gofumpt`** — stricter formatting than `gofmt`         | LOW    | LOW    |
+| 25 | **Dependency audit** — review all indirect deps for necessity              | MEDIUM | MEDIUM |
 
 ---
 

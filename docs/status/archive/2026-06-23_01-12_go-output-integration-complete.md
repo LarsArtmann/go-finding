@@ -126,33 +126,33 @@ All 6 commits pushed to `master`:
 
 ## f) TOP 25 THINGS TO DO NEXT (sorted by impact/work ratio)
 
-| #   | Task                                                                                  | Impact   | Work     | Ratio |
-| --- | ------------------------------------------------------------------------------------- | -------- | -------- | ----- |
-| 1   | **Bump version to v0.9.2** and tag release with go-output integration                 | High     | 5min     | ★★★★★ |
-| 2   | **Update RELEASE_CRITERIA.md** — version 0.7.0 → 0.9.1                                | Med      | 10min    | ★★★★★ |
-| 3   | **Update USAGE_GUIDE.md** — add CSV/TSV/markdown format docs                          | Med      | 30min    | ★★★★☆ |
-| 4   | **Remove deprecated `Report.Findings`** — unexport to `findings`                      | High     | 1h       | ★★★★☆ |
-| 5   | **Remove `Report.Merge()`** — deprecated, use `MergeInto()`                           | High     | 30min    | ★★★★☆ |
-| 6   | **Remove `OnStage`** — deprecated, use `StageHooks`                                   | High     | 30min    | ★★★★☆ |
-| 7   | **Remove `Metrics.RecordFix()`** — deprecated, use `RecordFixes(1)`                   | High     | 15min    | ★★★★☆ |
-| 8   | **Remove `CountBySeverity()` free func** — deprecated, use `Report.CountBySeverity()` | High     | 15min    | ★★★★☆ |
-| 9   | **Tag v1.0.0** — after all deprecated APIs removed                                    | Critical | 5min     | ★★★★★ |
-| 10  | **Add golden-file tests** for each CLI format (text, md, csv, tsv, json, sarif)       | High     | 1h       | ★★★★☆ |
-| 11  | **D2/Mermaid correlation visualization** — go-output graph renderer for `Correlate()` | Med      | 2h       | ★★★☆☆ |
-| 12  | **Fix SubstringProvider ambiguity** — use surrounding lines as context                | Med      | 2h       | ★★★☆☆ |
-| 13  | **Improve CLI `-help`** — list formats dynamically from `supportedFormats` slice      | Low      | 15min    | ★★★★☆ |
-| 14  | **Stale doc audit** — scan all docs for version references                            | Med      | 30min    | ★★★☆☆ |
-| 15  | **Add `-format jsonl`** — JSON Lines streaming output via go-output/serialization     | Med      | 30min    | ★★★☆☆ |
-| 16  | **Add `-format yaml`** — YAML output via go-output/serialization                      | Low      | 30min    | ★★☆☆☆ |
-| 17  | **Position zero-value owner decision** — type-safe vs sentinel                        | Critical | 4h+      | ★★☆☆☆ |
-| 18  | **FixStrategyAI owner decision** — keep marker or remove                              | Med      | Decision | ★★★☆☆ |
-| 19  | **Watch mode** — `fsnotify`-based pipeline re-run                                     | High     | 4h+      | ★★☆☆☆ |
-| 20  | **Interactive TUI** — triage findings with bubbletea                                  | High     | 8h+      | ★☆☆☆☆ |
-| 21  | **GitHub Actions action** — SARIF upload + fix PR                                     | High     | 4h+      | ★★☆☆☆ |
-| 22  | **Go AST fix provider expansion** — more rule-specific fixes                          | Med      | 8h+      | ★☆☆☆☆ |
-| 23  | **AI-assisted remediation** — pluggable AIProvider interface                          | High     | 16h+     | ★☆☆☆☆ |
-| 24  | **Non-Go language providers** — Rust/TS/Python                                        | Med      | 16h+     | ★☆☆☆☆ |
-| 25  | **SARIF schema validation** — vendor 7K-line schema                                   | Low      | 2h       | ★★☆☆☆ |
+| #  | Task                                                                                  | Impact   | Work     | Ratio |
+| -- | ------------------------------------------------------------------------------------- | -------- | -------- | ----- |
+| 1  | **Bump version to v0.9.2** and tag release with go-output integration                 | High     | 5min     | ★★★★★ |
+| 2  | **Update RELEASE_CRITERIA.md** — version 0.7.0 → 0.9.1                                | Med      | 10min    | ★★★★★ |
+| 3  | **Update USAGE_GUIDE.md** — add CSV/TSV/markdown format docs                          | Med      | 30min    | ★★★★☆ |
+| 4  | **Remove deprecated `Report.Findings`** — unexport to `findings`                      | High     | 1h       | ★★★★☆ |
+| 5  | **Remove `Report.Merge()`** — deprecated, use `MergeInto()`                           | High     | 30min    | ★★★★☆ |
+| 6  | **Remove `OnStage`** — deprecated, use `StageHooks`                                   | High     | 30min    | ★★★★☆ |
+| 7  | **Remove `Metrics.RecordFix()`** — deprecated, use `RecordFixes(1)`                   | High     | 15min    | ★★★★☆ |
+| 8  | **Remove `CountBySeverity()` free func** — deprecated, use `Report.CountBySeverity()` | High     | 15min    | ★★★★☆ |
+| 9  | **Tag v1.0.0** — after all deprecated APIs removed                                    | Critical | 5min     | ★★★★★ |
+| 10 | **Add golden-file tests** for each CLI format (text, md, csv, tsv, json, sarif)       | High     | 1h       | ★★★★☆ |
+| 11 | **D2/Mermaid correlation visualization** — go-output graph renderer for `Correlate()` | Med      | 2h       | ★★★☆☆ |
+| 12 | **Fix SubstringProvider ambiguity** — use surrounding lines as context                | Med      | 2h       | ★★★☆☆ |
+| 13 | **Improve CLI `-help`** — list formats dynamically from `supportedFormats` slice      | Low      | 15min    | ★★★★☆ |
+| 14 | **Stale doc audit** — scan all docs for version references                            | Med      | 30min    | ★★★☆☆ |
+| 15 | **Add `-format jsonl`** — JSON Lines streaming output via go-output/serialization     | Med      | 30min    | ★★★☆☆ |
+| 16 | **Add `-format yaml`** — YAML output via go-output/serialization                      | Low      | 30min    | ★★☆☆☆ |
+| 17 | **Position zero-value owner decision** — type-safe vs sentinel                        | Critical | 4h+      | ★★☆☆☆ |
+| 18 | **FixStrategyAI owner decision** — keep marker or remove                              | Med      | Decision | ★★★☆☆ |
+| 19 | **Watch mode** — `fsnotify`-based pipeline re-run                                     | High     | 4h+      | ★★☆☆☆ |
+| 20 | **Interactive TUI** — triage findings with bubbletea                                  | High     | 8h+      | ★☆☆☆☆ |
+| 21 | **GitHub Actions action** — SARIF upload + fix PR                                     | High     | 4h+      | ★★☆☆☆ |
+| 22 | **Go AST fix provider expansion** — more rule-specific fixes                          | Med      | 8h+      | ★☆☆☆☆ |
+| 23 | **AI-assisted remediation** — pluggable AIProvider interface                          | High     | 16h+     | ★☆☆☆☆ |
+| 24 | **Non-Go language providers** — Rust/TS/Python                                        | Med      | 16h+     | ★☆☆☆☆ |
+| 25 | **SARIF schema validation** — vendor 7K-line schema                                   | Low      | 2h       | ★★☆☆☆ |
 
 ---
 

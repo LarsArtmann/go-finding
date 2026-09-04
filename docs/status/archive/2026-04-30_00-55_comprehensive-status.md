@@ -1,8 +1,8 @@
 # Comprehensive Status Report — 2026-04-30 00:55
 
-**Session:** Coverage completion, dead code removal, CI hardening  
-**Branch:** master (ahead of origin by 3 commits)  
-**State:** All tests pass including `-count=100`. Lint clean.  
+**Session:** Coverage completion, dead code removal, CI hardening\
+**Branch:** master (ahead of origin by 3 commits)\
+**State:** All tests pass including `-count=100`. Lint clean.\
 **Coverage:** 95.2% total
 
 ---
@@ -154,23 +154,23 @@ Commit `a043410` accidentally included `docs/status/2026-04-30_00-35_comprehensi
 
 ## F) Top #15 Things To Do Next
 
-| #   | Task                                                | Impact   | Effort | Blocked By    |
-| --- | --------------------------------------------------- | -------- | ------ | ------------- |
-| 1   | Remove `detectParallel` dead error handling         | **High** | 5min   | Nothing       |
-| 2   | Decide `FixStrategyAI` fate                         | **High** | 30min  | User decision |
-| 3   | Add `FixApplier` error-path tests                   | High     | 30min  | Nothing       |
-| 4   | Add `findingFromSarResult` import tests             | Med      | 30min  | Nothing       |
-| 5   | Fix flaky `TestProperty_IDRoundTrip`                | Med      | 30min  | Nothing       |
-| 6   | `DeduplicateByPosition` vs `DeduplicateByRule` test | Low      | 15min  | Nothing       |
-| 7   | Add `go:generate stringer` for enums                | Low      | 30min  | Nothing       |
-| 8   | Modernize to Go 1.21+ stdlib                        | Low      | 45min  | Nothing       |
-| 9   | Convert `retry.go` `errors.New()` to sentinels      | Low      | 15min  | Nothing       |
-| 10  | Document SARIF round-trip losses                    | Low      | 30min  | Nothing       |
-| 11  | Add benchmark regression tracking                   | Med      | 30min  | Nothing       |
-| 12  | `gosec`/`staticcheck` in CI                         | Med      | 20min  | Nothing       |
-| 13  | GitHub release workflow                             | Med      | 45min  | Nothing       |
-| 14  | Real-world tool integration guide                   | Med      | 60min  | Nothing       |
-| 15  | API stability review before v1                      | High     | 120min | Nothing       |
+| #  | Task                                                | Impact   | Effort | Blocked By    |
+| -- | --------------------------------------------------- | -------- | ------ | ------------- |
+| 1  | Remove `detectParallel` dead error handling         | **High** | 5min   | Nothing       |
+| 2  | Decide `FixStrategyAI` fate                         | **High** | 30min  | User decision |
+| 3  | Add `FixApplier` error-path tests                   | High     | 30min  | Nothing       |
+| 4  | Add `findingFromSarResult` import tests             | Med      | 30min  | Nothing       |
+| 5  | Fix flaky `TestProperty_IDRoundTrip`                | Med      | 30min  | Nothing       |
+| 6  | `DeduplicateByPosition` vs `DeduplicateByRule` test | Low      | 15min  | Nothing       |
+| 7  | Add `go:generate stringer` for enums                | Low      | 30min  | Nothing       |
+| 8  | Modernize to Go 1.21+ stdlib                        | Low      | 45min  | Nothing       |
+| 9  | Convert `retry.go` `errors.New()` to sentinels      | Low      | 15min  | Nothing       |
+| 10 | Document SARIF round-trip losses                    | Low      | 30min  | Nothing       |
+| 11 | Add benchmark regression tracking                   | Med      | 30min  | Nothing       |
+| 12 | `gosec`/`staticcheck` in CI                         | Med      | 20min  | Nothing       |
+| 13 | GitHub release workflow                             | Med      | 45min  | Nothing       |
+| 14 | Real-world tool integration guide                   | Med      | 60min  | Nothing       |
+| 15 | API stability review before v1                      | High     | 120min | Nothing       |
 
 ---
 

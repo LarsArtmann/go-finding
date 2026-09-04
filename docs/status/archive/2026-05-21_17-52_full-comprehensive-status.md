@@ -226,33 +226,33 @@ No `.github/workflows/` directory exists. Zero CI. Zero automated testing on pus
 
 ## F) Top 25 Next Actions (Sorted by Impact × Effort)
 
-| #   | Action                                                                        | Impact | Effort | Type    |
-| --- | ----------------------------------------------------------------------------- | ------ | ------ | ------- |
-| 1   | Fix global AGENTS.md: remove "use flake.nix" for projects without flake.nix   | High   | Low    | Config  |
-| 2   | Create `.github/workflows/ci.yml` with build + test + lint + race             | High   | Low    | CI      |
-| 3   | Wire `FilterConflictingEdits` as opt-in Config field                          | Medium | Low    | Code    |
-| 4   | Consistent structured errors in pipeline.go (use `NewIOError` etc.)           | Medium | Low    | Code    |
-| 5   | Fix `maxIterations: 0` CLI vs config inconsistency                            | Low    | Low    | Code    |
-| 6   | `FixStrategySuggest` without `AfterCode` — lose suggestion in SARIF           | Medium | Low    | Code    |
-| 7   | Add `Report.PrettyJSONFiltered` (exclude suppressed)                          | Low    | Low    | Code    |
-| 8   | `Report.Merge()` → return new `*Report` instead of mutating                   | High   | Medium | Code    |
-| 9   | Lift `FixApplier` creation to Pipeline constructor (fix backup dir orphaning) | Medium | Medium | Code    |
-| 10  | Add pipeline integration tests for OnFix callback                             | Medium | Low    | Test    |
-| 11  | Add pipeline integration test with multiple concurrent detectors              | Medium | Low    | Test    |
-| 12  | Persist fuzz seed corpus files for 17 fuzz targets                            | Medium | Medium | Test    |
-| 13  | Verify `ParseID` with Windows backslash paths                                 | Low    | Low    | Test    |
-| 14  | Write concurrent Report read-write race test                                  | Low    | Low    | Test    |
-| 15  | Add godoc examples (`ExampleBuilder`, `ExampleFilter`)                        | Medium | Low    | Docs    |
-| 16  | Write API stability guarantee document                                        | Medium | Low    | Docs    |
-| 17  | Define v1.0.0 release criteria                                                | Medium | Low    | Docs    |
-| 18  | Update FEATURES.md with session 3 changes (path validation, dedup fix)        | Low    | Low    | Docs    |
-| 19  | Tag v0.3.0 release                                                            | Low    | Low    | Release |
-| 20  | Add GoReleaser config                                                         | Medium | Medium | Tooling |
-| 21  | Fix pre-commit hooks (goconst exclusions, todo-check config)                  | Medium | Medium | Tooling |
-| 22  | `go:generate stringer` for Severity, FixStrategy, Category, SuppressionKind   | Low    | Low    | Code    |
-| 23  | Spatial index for `Correlate` (interval tree)                                 | Medium | High   | Code    |
-| 24  | Customizable `TriageFunc` in Config                                           | Medium | Medium | Code    |
-| 25  | Remove `git-town.toml` from repo root                                         | Low    | Low    | Hygiene |
+| #  | Action                                                                        | Impact | Effort | Type    |
+| -- | ----------------------------------------------------------------------------- | ------ | ------ | ------- |
+| 1  | Fix global AGENTS.md: remove "use flake.nix" for projects without flake.nix   | High   | Low    | Config  |
+| 2  | Create `.github/workflows/ci.yml` with build + test + lint + race             | High   | Low    | CI      |
+| 3  | Wire `FilterConflictingEdits` as opt-in Config field                          | Medium | Low    | Code    |
+| 4  | Consistent structured errors in pipeline.go (use `NewIOError` etc.)           | Medium | Low    | Code    |
+| 5  | Fix `maxIterations: 0` CLI vs config inconsistency                            | Low    | Low    | Code    |
+| 6  | `FixStrategySuggest` without `AfterCode` — lose suggestion in SARIF           | Medium | Low    | Code    |
+| 7  | Add `Report.PrettyJSONFiltered` (exclude suppressed)                          | Low    | Low    | Code    |
+| 8  | `Report.Merge()` → return new `*Report` instead of mutating                   | High   | Medium | Code    |
+| 9  | Lift `FixApplier` creation to Pipeline constructor (fix backup dir orphaning) | Medium | Medium | Code    |
+| 10 | Add pipeline integration tests for OnFix callback                             | Medium | Low    | Test    |
+| 11 | Add pipeline integration test with multiple concurrent detectors              | Medium | Low    | Test    |
+| 12 | Persist fuzz seed corpus files for 17 fuzz targets                            | Medium | Medium | Test    |
+| 13 | Verify `ParseID` with Windows backslash paths                                 | Low    | Low    | Test    |
+| 14 | Write concurrent Report read-write race test                                  | Low    | Low    | Test    |
+| 15 | Add godoc examples (`ExampleBuilder`, `ExampleFilter`)                        | Medium | Low    | Docs    |
+| 16 | Write API stability guarantee document                                        | Medium | Low    | Docs    |
+| 17 | Define v1.0.0 release criteria                                                | Medium | Low    | Docs    |
+| 18 | Update FEATURES.md with session 3 changes (path validation, dedup fix)        | Low    | Low    | Docs    |
+| 19 | Tag v0.3.0 release                                                            | Low    | Low    | Release |
+| 20 | Add GoReleaser config                                                         | Medium | Medium | Tooling |
+| 21 | Fix pre-commit hooks (goconst exclusions, todo-check config)                  | Medium | Medium | Tooling |
+| 22 | `go:generate stringer` for Severity, FixStrategy, Category, SuppressionKind   | Low    | Low    | Code    |
+| 23 | Spatial index for `Correlate` (interval tree)                                 | Medium | High   | Code    |
+| 24 | Customizable `TriageFunc` in Config                                           | Medium | Medium | Code    |
+| 25 | Remove `git-town.toml` from repo root                                         | Low    | Low    | Hygiene |
 
 ---
 

@@ -20,18 +20,18 @@ Tasks 11-15 were fully completed and verified in the previous session segment. T
 
 ### Completed This Session (Tasks 11-20)
 
-| #   | Task                                   | Files Changed                                                                                         | Tests Added |
-| --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------- |
-| 11  | Report.Findings encapsulation (ADR 10) | `report.go`, `sarif_export.go`, `json.go`, `merge.go`, `cmd/go-finding/config.go`                     | —           |
-| 12  | Pipeline stage hooks                   | `pipeline/stage_hook.go`, `pipeline/stage_hook_test.go`, `pipeline/config.go`, `pipeline/pipeline.go` | 2 tests     |
-| 13  | FixEngine line-offset tracking         | `pipeline/line_shift.go`, `pipeline/line_shift_test.go`                                               | 7 tests     |
-| 14  | Interval index for Correlate           | `interval_tree.go`, `interval_tree_test.go`                                                           | 5 tests     |
-| 15  | Streaming merge                        | `merge.go`, `merge_test.go`                                                                           | 4 tests     |
-| 16  | Config file support for library        | `pipeline/config_file.go`                                                                             | —           |
-| 17  | DetectorRegistry plugin architecture   | `registry.go`                                                                                         | —           |
-| 18  | Pipeline middleware pattern            | `pipeline/middleware.go`                                                                              | —           |
-| 19  | Benchmark regression CI gate           | `.github/workflows/ci.yml`                                                                            | —           |
-| 20  | Composable fix strategy                | `fix_strategy.go`                                                                                     | —           |
+| #  | Task                                   | Files Changed                                                                                         | Tests Added |
+| -- | -------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------- |
+| 11 | Report.Findings encapsulation (ADR 10) | `report.go`, `sarif_export.go`, `json.go`, `merge.go`, `cmd/go-finding/config.go`                     | —           |
+| 12 | Pipeline stage hooks                   | `pipeline/stage_hook.go`, `pipeline/stage_hook_test.go`, `pipeline/config.go`, `pipeline/pipeline.go` | 2 tests     |
+| 13 | FixEngine line-offset tracking         | `pipeline/line_shift.go`, `pipeline/line_shift_test.go`                                               | 7 tests     |
+| 14 | Interval index for Correlate           | `interval_tree.go`, `interval_tree_test.go`                                                           | 5 tests     |
+| 15 | Streaming merge                        | `merge.go`, `merge_test.go`                                                                           | 4 tests     |
+| 16 | Config file support for library        | `pipeline/config_file.go`                                                                             | —           |
+| 17 | DetectorRegistry plugin architecture   | `registry.go`                                                                                         | —           |
+| 18 | Pipeline middleware pattern            | `pipeline/middleware.go`                                                                              | —           |
+| 19 | Benchmark regression CI gate           | `.github/workflows/ci.yml`                                                                            | —           |
+| 20 | Composable fix strategy                | `fix_strategy.go`                                                                                     | —           |
 
 ### Summary of All Completed Work (Sessions 1-11)
 
@@ -165,48 +165,48 @@ The TODO list still shows these as `[ ]` but they are fully implemented and comm
 
 ### Tier 1: Ship v0.7.0 (Quick Wins)
 
-| #   | Task                                                 | Impact             | Effort |
-| --- | ---------------------------------------------------- | ------------------ | ------ |
-| 1   | Update TODO_LIST.md — mark 9 completed items done    | Trust              | 10min  |
-| 2   | Bump version to v0.7.0                               | Release            | 5min   |
-| 3   | Update CHANGELOG.md for sessions 10-11               | Documentation      | 15min  |
-| 4   | Wire IntervalIndex into Correlate()                  | Performance        | 30min  |
-| 5   | Wire LineShiftMap into pipeline fix flow             | Feature completion | 30min  |
-| 6   | Expand ConfigFile to support detector/provider names | Feature completion | 1hr    |
+| # | Task                                                 | Impact             | Effort |
+| - | ---------------------------------------------------- | ------------------ | ------ |
+| 1 | Update TODO_LIST.md — mark 9 completed items done    | Trust              | 10min  |
+| 2 | Bump version to v0.7.0                               | Release            | 5min   |
+| 3 | Update CHANGELOG.md for sessions 10-11               | Documentation      | 15min  |
+| 4 | Wire IntervalIndex into Correlate()                  | Performance        | 30min  |
+| 5 | Wire LineShiftMap into pipeline fix flow             | Feature completion | 30min  |
+| 6 | Expand ConfigFile to support detector/provider names | Feature completion | 1hr    |
 
 ### Tier 2: Quality & Coverage
 
-| #   | Task                                                                | Impact        | Effort |
-| --- | ------------------------------------------------------------------- | ------------- | ------ |
-| 7   | Fix analysis/ coverage from 79.5% → 90%+                            | Quality       | 1hr    |
-| 8   | Add godoc examples for IntervalIndex, MergeIter, LineShiftMap       | Documentation | 30min  |
-| 9   | Add godoc examples for DetectorRegistry, MiddlewareFunc, ConfigFile | Documentation | 30min  |
-| 10  | Fix go.sum stale entries                                            | Hygiene       | 5min   |
-| 11  | Add benchmark regression thresholds to CI benchmark job             | CI            | 30min  |
-| 12  | Add integration test for full pipeline with middleware              | Testing       | 1hr    |
-| 13  | Add integration test for DetectorRegistry → Build → Pipeline.Run    | Testing       | 1hr    |
+| #  | Task                                                                | Impact        | Effort |
+| -- | ------------------------------------------------------------------- | ------------- | ------ |
+| 7  | Fix analysis/ coverage from 79.5% → 90%+                            | Quality       | 1hr    |
+| 8  | Add godoc examples for IntervalIndex, MergeIter, LineShiftMap       | Documentation | 30min  |
+| 9  | Add godoc examples for DetectorRegistry, MiddlewareFunc, ConfigFile | Documentation | 30min  |
+| 10 | Fix go.sum stale entries                                            | Hygiene       | 5min   |
+| 11 | Add benchmark regression thresholds to CI benchmark job             | CI            | 30min  |
+| 12 | Add integration test for full pipeline with middleware              | Testing       | 1hr    |
+| 13 | Add integration test for DetectorRegistry → Build → Pipeline.Run    | Testing       | 1hr    |
 
 ### Tier 3: Pre-v1.0 Cleanup
 
-| #   | Task                                                       | Impact        | Effort   |
-| --- | ---------------------------------------------------------- | ------------- | -------- |
-| 14  | Create v1.0.0 release checklist with concrete criteria     | Planning      | 1hr      |
-| 15  | Audit all deprecated APIs for v1.0.0 removal timeline      | API hygiene   | 1hr      |
-| 16  | Fix FixProviders CLI config support                        | Feature gap   | 2hr      |
-| 17  | Unexport Report.Findings (v1.0 breaking change plan)       | Encapsulation | 1hr      |
-| 18  | Remove Merge() in favor of MergeInto()                     | API cleanup   | 30min    |
-| 19  | Resolve Position zero-value semantic trap (OWNER_DECISION) | Correctness   | Decision |
-| 20  | Resolve Range.End zero-value ambiguity (OWNER_DECISION)    | Correctness   | Decision |
+| #  | Task                                                       | Impact        | Effort   |
+| -- | ---------------------------------------------------------- | ------------- | -------- |
+| 14 | Create v1.0.0 release checklist with concrete criteria     | Planning      | 1hr      |
+| 15 | Audit all deprecated APIs for v1.0.0 removal timeline      | API hygiene   | 1hr      |
+| 16 | Fix FixProviders CLI config support                        | Feature gap   | 2hr      |
+| 17 | Unexport Report.Findings (v1.0 breaking change plan)       | Encapsulation | 1hr      |
+| 18 | Remove Merge() in favor of MergeInto()                     | API cleanup   | 30min    |
+| 19 | Resolve Position zero-value semantic trap (OWNER_DECISION) | Correctness   | Decision |
+| 20 | Resolve Range.End zero-value ambiguity (OWNER_DECISION)    | Correctness   | Decision |
 
 ### Tier 4: Future Features
 
-| #   | Task                                                       | Impact      | Effort |
-| --- | ---------------------------------------------------------- | ----------- | ------ |
-| 21  | Watch mode for continuous analysis                         | UX          | 3hr    |
-| 22  | GoReleaser release with v0.7.0 tag                         | Release     | 30min  |
-| 23  | SARIF schema validation against official 2.1.0 JSON schema | Correctness | 2hr    |
-| 24  | Fix golines in CI (treefmt-nix or standalone)              | CI          | 1hr    |
-| 25  | Wire go-finding into go-structure-linter as a consumer     | Ecosystem   | 3hr    |
+| #  | Task                                                       | Impact      | Effort |
+| -- | ---------------------------------------------------------- | ----------- | ------ |
+| 21 | Watch mode for continuous analysis                         | UX          | 3hr    |
+| 22 | GoReleaser release with v0.7.0 tag                         | Release     | 30min  |
+| 23 | SARIF schema validation against official 2.1.0 JSON schema | Correctness | 2hr    |
+| 24 | Fix golines in CI (treefmt-nix or standalone)              | CI          | 1hr    |
+| 25 | Wire go-finding into go-structure-linter as a consumer     | Ecosystem   | 3hr    |
 
 ---
 

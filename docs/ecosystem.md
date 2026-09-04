@@ -5,34 +5,34 @@ go-finding is the hub of a constellation of libraries and tools that share a com
 ## At a Glance
 
 ```
-  Tools that PRODUCE findings
-  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐
-  │ Linters  │  │ Auto-    │  │ BuildFlow checkers    │
-  │          │  │ config-  │  │ (gomod, nix, flake,   │
-  │          │  │ urers    │  │  todo, docfile...)    │
-  └────┬─────┘  └────┬─────┘  └──────────┬────────────┘
-       │             │                   │
-  ┌────▼────┐   ┌────▼──────────┐   ┌────▼──────────────┐
-  │ go-     │   │ linter-       │   │ go-checker-       │
-  │ linter- │   │ autoconfigure │   │ helpers           │
-  │ sdk     │   │ -sdk          │   │ (finding builders,│
-  │ (Rule+  │   │ (config I/O + │   │  fix pipeline,    │
-  │  Regist)│   │  ConfigIssue) │   │  safe I/O, tests) │
-  └────┬────┘   └────┬──────────┘   └────┬──────────────┘
-       │             │                   │
-       └─────────────┼───────────────────┘
-                     │
-             ┌───────▼────────┐
-             │  go-finding    │
-             │  (THE HUB)     │
-             └───┬────────┬───┘
-                 │        │
-        ┌────────▼──┐  ┌──▼──────────┐
-        │BuildFlow/ │  │ pipeline/   │
-        │finding    │  │ analysis/   │
-        │(legacy    │  │ cmd/go-     │
-        │  bridge)  │  │ finding/    │
-        └───────────┘  └─────────────┘
+Tools that PRODUCE findings
+┌──────────┐  ┌──────────┐  ┌──────────────────────┐
+│ Linters  │  │ Auto-    │  │ BuildFlow checkers    │
+│          │  │ config-  │  │ (gomod, nix, flake,   │
+│          │  │ urers    │  │  todo, docfile...)    │
+└────┬─────┘  └────┬─────┘  └──────────┬────────────┘
+     │             │                   │
+┌────▼────┐   ┌────▼──────────┐   ┌────▼──────────────┐
+│ go-     │   │ linter-       │   │ go-checker-       │
+│ linter- │   │ autoconfigure │   │ helpers           │
+│ sdk     │   │ -sdk          │   │ (finding builders,│
+│ (Rule+  │   │ (config I/O + │   │  fix pipeline,    │
+│  Regist)│   │  ConfigIssue) │   │  safe I/O, tests) │
+└────┬────┘   └────┬──────────┘   └────┬──────────────┘
+     │             │                   │
+     └─────────────┼───────────────────┘
+                   │
+           ┌───────▼────────┐
+           │  go-finding    │
+           │  (THE HUB)     │
+           └───┬────────┬───┘
+               │        │
+      ┌────────▼──┐  ┌──▼──────────┐
+      │BuildFlow/ │  │ pipeline/   │
+      │finding    │  │ analysis/   │
+      │(legacy    │  │ cmd/go-     │
+      │  bridge)  │  │ finding/    │
+      └───────────┘  └─────────────┘
 ```
 
 ## Components

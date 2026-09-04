@@ -671,7 +671,6 @@ just ci          # Run all checks
 With [direnv](https://direnv.net/) installed, the shell loads automatically when you `cd` into the project.
 
 ````
-
 4. Update `AGENTS.md` — add Nix notes:
 
 ```markdown
@@ -687,7 +686,6 @@ nix flake update       # Update all flake inputs
 ````
 
 ````
-
 **Verification:**
 
 - [ ] `direnv allow` loads the shell automatically
@@ -860,18 +858,18 @@ Nix is **additive** — adding `flake.nix` does not modify or remove any existin
 
 ### Recommendations
 
-| #   | Decision               | Recommendation                                                                                   |
-| --- | ---------------------- | ------------------------------------------------------------------------------------------------ |
-| 1   | **Flake inputs**       | `nixpkgs` + `flake-utils` only. No `gomod2nix`, no `dream2nix`. Keep it minimal.                 |
-| 2   | **Go module hashing**  | Use `vendorHash` in `buildGoModule`. Update manually on `go.mod` changes.                        |
-| 3   | **System support**     | `eachDefaultSystem` — covers x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin.         |
-| 4   | **CI migration**       | Full replacement of `setup-go` / `golangci-lint-action` with Nix. Keep as backup during Phase 2. |
-| 5   | **direnv**             | Recommended but optional. Documented in Phase 3.                                                 |
-| 6   | **Cachix**             | Not needed initially. `magic-nix-cache-action` suffices for CI.                                  |
-| 7   | **Justfile**           | Unchanged. `just` is available in the nix shell.                                                 |
-| 8   | **goreleaser**         | Unchanged. Runs inside the nix shell.                                                            |
-| 9   | **Non-Nix path**       | Always maintained. `CONTRIBUTING.md` documents both paths.                                       |
-| 10  | **Flake lock updates** | Manual (`nix flake update`) or via Dependabot/Renovate.                                          |
+| #  | Decision               | Recommendation                                                                                   |
+| -- | ---------------------- | ------------------------------------------------------------------------------------------------ |
+| 1  | **Flake inputs**       | `nixpkgs` + `flake-utils` only. No `gomod2nix`, no `dream2nix`. Keep it minimal.                 |
+| 2  | **Go module hashing**  | Use `vendorHash` in `buildGoModule`. Update manually on `go.mod` changes.                        |
+| 3  | **System support**     | `eachDefaultSystem` — covers x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin.         |
+| 4  | **CI migration**       | Full replacement of `setup-go` / `golangci-lint-action` with Nix. Keep as backup during Phase 2. |
+| 5  | **direnv**             | Recommended but optional. Documented in Phase 3.                                                 |
+| 6  | **Cachix**             | Not needed initially. `magic-nix-cache-action` suffices for CI.                                  |
+| 7  | **Justfile**           | Unchanged. `just` is available in the nix shell.                                                 |
+| 8  | **goreleaser**         | Unchanged. Runs inside the nix shell.                                                            |
+| 9  | **Non-Nix path**       | Always maintained. `CONTRIBUTING.md` documents both paths.                                       |
+| 10 | **Flake lock updates** | Manual (`nix flake update`) or via Dependabot/Renovate.                                          |
 
 ### Out of Scope
 

@@ -27,8 +27,8 @@ This plan addresses the gaps identified in the status report and prioritizes wor
 
 ### Task 1: Fix Pipeline Linting Issues
 
-**Time:** ~8 min  
-**Impact:** Code quality, prevents technical debt  
+**Time:** ~8 min\
+**Impact:** Code quality, prevents technical debt\
 **Why:** Current code has linting hints that should be addressed
 
 **Issues to fix:**
@@ -46,8 +46,8 @@ just lint
 
 ### Task 2: Create Structured Error Types
 
-**Time:** ~10 min  
-**Impact:** Better error handling for consumers  
+**Time:** ~10 min\
+**Impact:** Better error handling for consumers\
 **Why:** Current errors are plain fmt.Errorf, hard to programmatically handle
 
 **Deliverables:**
@@ -82,8 +82,8 @@ func (e *FindingError) Unwrap() error
 
 ### Task 3: Implement Fix Conflict Detection
 
-**Time:** ~12 min  
-**Impact:** Prevents broken code from overlapping fixes  
+**Time:** ~12 min\
+**Impact:** Prevents broken code from overlapping fixes\
 **Why:** The #1 question in status report - how to handle overlapping fixes
 
 **Approach:** Group by location, detect overlaps using Position/Range
@@ -111,8 +111,8 @@ func DetectConflicts(fixes []finding.Finding) ([]FixGroup, []finding.Finding)
 
 ### Task 4: Add Position/Range Overlap Methods
 
-**Time:** ~8 min  
-**Impact:** Enables conflict detection, improves type model  
+**Time:** ~8 min\
+**Impact:** Enables conflict detection, improves type model\
 **Why:** Current Range only has Contains(), needs Overlaps(), Intersects()
 
 ```go
@@ -134,8 +134,8 @@ func (r Range) Adjacent(other Range) bool
 
 ### Task 5: Fix Applier Error Structuring
 
-**Time:** ~10 min  
-**Impact:** Better error reporting from FixApplier  
+**Time:** ~10 min\
+**Impact:** Better error reporting from FixApplier\
 **Why:** Currently logs failures but doesn't provide structured errors
 
 ```go
@@ -164,8 +164,8 @@ func (a *FixApplier) ApplyWithResult(ctx context.Context, fixes []finding.Findin
 
 ### Task 6: Implement AST-Aware Fix Application
 
-**Time:** ~12 min  
-**Impact:** Robust code transformations  
+**Time:** ~12 min\
+**Impact:** Robust code transformations\
 **Why:** Current text replacement is fragile
 
 **Use standard library:** `go/parser`, `go/ast`, `go/printer`
@@ -198,8 +198,8 @@ func (a *ASTFixer) Apply(file string, fix finding.Finding) error
 
 ### Task 7: Create Go Vet Converter
 
-**Time:** ~12 min  
-**Impact:** Real tool integration  
+**Time:** ~12 min\
+**Impact:** Real tool integration\
 **Why:** Need detector implementations that work with actual tools
 
 **Deliverable:** Moved to `internal/detectors/govet.go` — exports `NewGoVetDetector(dir string) pipeline.Detector`
@@ -210,8 +210,8 @@ func (a *ASTFixer) Apply(file string, fix finding.Finding) error
 
 ### Task 8: Evaluate go-sarif Library
 
-**Time:** ~10 min  
-**Impact:** Decision on SARIF implementation  
+**Time:** ~10 min\
+**Impact:** Decision on SARIF implementation\
 **Why:** EXECUTION_PLAN.md mentions evaluating github.com/owenrumney/go-sarif
 
 **Research:**
@@ -230,8 +230,8 @@ func (a *ASTFixer) Apply(file string, fix finding.Finding) error
 
 ### Task 9: Add Pipeline Metrics Collection
 
-**Time:** ~12 min  
-**Impact:** Performance insights, debugging  
+**Time:** ~12 min\
+**Impact:** Performance insights, debugging\
 **Why:** Track timing per stage, memory, detector performance
 
 ```go
@@ -251,8 +251,8 @@ func (p *Pipeline) RunWithMetrics(ctx context.Context) (*Result, *Metrics, error
 
 ### Task 10: Implement Verification Stage
 
-**Time:** ~12 min  
-**Impact:** Confirms fixes actually worked  
+**Time:** ~12 min\
+**Impact:** Confirms fixes actually worked\
 **Why:** Pipeline has verify step in theory but no implementation
 
 ```go
@@ -280,8 +280,8 @@ type VerifyResult struct {
 
 ### Task 11: Add Fuzz Tests for Filter/Merge
 
-**Time:** ~10 min  
-**Impact:** Catches edge cases  
+**Time:** ~10 min\
+**Impact:** Catches edge cases\
 **Why:** Property-based testing for core operations
 
 ```go
@@ -299,8 +299,8 @@ func FuzzFilter(f *testing.F) {
 
 ### Task 12: Add Retry Logic with Exponential Backoff
 
-**Time:** ~10 min  
-**Impact:** Handles transient detector failures  
+**Time:** ~10 min\
+**Impact:** Handles transient detector failures\
 **Why:** External tools may fail intermittently
 
 ```go
@@ -315,8 +315,8 @@ func detectWithRetry(d Detector, maxRetries int, baseDelay time.Duration) ([]fin
 
 ### Task 13: Implement Partial Success Handling
 
-**Time:** ~12 min  
-**Impact:** More resilient pipelines  
+**Time:** ~12 min\
+**Impact:** More resilient pipelines\
 **Why:** Currently fails entire iteration if one detector errors
 
 ```go
@@ -333,8 +333,8 @@ func (p *Pipeline) detectPartial(ctx context.Context) *PartialResult
 
 ### Task 14: Create CLI Tool
 
-**Time:** ~12 min  
-**Impact:** Usable standalone tool  
+**Time:** ~12 min\
+**Impact:** Usable standalone tool\
 **Why:** Make the library accessible without code
 
 ```go
@@ -352,8 +352,8 @@ func (p *Pipeline) detectPartial(ctx context.Context) *PartialResult
 
 ### Task 15: Configuration File Support
 
-**Time:** ~12 min  
-**Impact:** Flexible configuration  
+**Time:** ~12 min\
+**Impact:** Flexible configuration\
 **Why:** YAML/JSON config for pipelines
 
 ```go
@@ -371,8 +371,8 @@ type PipelineConfig struct {
 
 ### Task 16: Add Watch Mode
 
-**Time:** ~12 min  
-**Impact:** Continuous analysis during development  
+**Time:** ~12 min\
+**Impact:** Continuous analysis during development\
 **Why:** File system monitoring for continuous analysis
 
 Use `fsnotify` or poll-based approach
@@ -381,8 +381,8 @@ Use `fsnotify` or poll-based approach
 
 ### Task 17: Create Web UI Prototype
 
-**Time:** >12 min  
-**Impact:** Visual pipeline monitoring  
+**Time:** >12 min\
+**Impact:** Visual pipeline monitoring\
 **Why:** Progress visualization
 
 **Defer:** Larger task, create separate project
@@ -391,8 +391,8 @@ Use `fsnotify` or poll-based approach
 
 ### Task 18: Add Property-Based Tests
 
-**Time:** ~12 min  
-**Impact:** Mathematical confidence  
+**Time:** ~12 min\
+**Impact:** Mathematical confidence\
 **Why:** Quick-check style testing
 
 Use `testing/quick` from stdlib or `gopter`
@@ -401,26 +401,26 @@ Use `testing/quick` from stdlib or `gopter`
 
 ## Summary Table
 
-| #   | Task                    | Time | Impact | Effort | Status      |
-| --- | ----------------------- | ---- | ------ | ------ | ----------- |
-| 1   | Fix linting issues      | 8m   | High   | Low    | ✅ Done     |
-| 2   | Structured error types  | 10m  | High   | Low    | ✅ Done     |
-| 3   | Fix conflict detection  | 12m  | High   | Medium | ✅ Done     |
-| 4   | Position/Range methods  | 8m   | High   | Low    | ✅ Done     |
-| 5   | FixApplier error struct | 10m  | High   | Low    | ✅ Done     |
-| 6   | AST-aware fixes         | 12m  | High   | Medium | ✅ Done     |
-| 7   | Go vet converter        | 12m  | High   | Medium | ✅ Done     |
-| 8   | Evaluate go-sarif       | 10m  | Medium | Low    | ⬜ Deferred |
-| 9   | Metrics collection      | 12m  | Medium | Medium | ✅ Done     |
-| 10  | Verification stage      | 12m  | High   | Medium | ✅ Done     |
-| 11  | Fuzz tests              | 10m  | Medium | Low    | ✅ Done     |
-| 12  | Retry logic             | 10m  | Medium | Low    | ✅ Done     |
-| 13  | Partial success         | 12m  | Medium | Medium | ✅ Done     |
-| 14  | CLI tool                | 12m  | High   | Medium | ⬜ Pending  |
-| 15  | Config file support     | 12m  | Low    | Medium | ⬜ Pending  |
-| 16  | Watch mode              | 12m  | Low    | Medium | ⬜ Pending  |
-| 17  | Web UI                  | >12m | Low    | High   | ⬜ Deferred |
-| 18  | Property tests          | 12m  | Low    | Medium | ⬜ Pending  |
+| #  | Task                    | Time | Impact | Effort | Status      |
+| -- | ----------------------- | ---- | ------ | ------ | ----------- |
+| 1  | Fix linting issues      | 8m   | High   | Low    | ✅ Done     |
+| 2  | Structured error types  | 10m  | High   | Low    | ✅ Done     |
+| 3  | Fix conflict detection  | 12m  | High   | Medium | ✅ Done     |
+| 4  | Position/Range methods  | 8m   | High   | Low    | ✅ Done     |
+| 5  | FixApplier error struct | 10m  | High   | Low    | ✅ Done     |
+| 6  | AST-aware fixes         | 12m  | High   | Medium | ✅ Done     |
+| 7  | Go vet converter        | 12m  | High   | Medium | ✅ Done     |
+| 8  | Evaluate go-sarif       | 10m  | Medium | Low    | ⬜ Deferred |
+| 9  | Metrics collection      | 12m  | Medium | Medium | ✅ Done     |
+| 10 | Verification stage      | 12m  | High   | Medium | ✅ Done     |
+| 11 | Fuzz tests              | 10m  | Medium | Low    | ✅ Done     |
+| 12 | Retry logic             | 10m  | Medium | Low    | ✅ Done     |
+| 13 | Partial success         | 12m  | Medium | Medium | ✅ Done     |
+| 14 | CLI tool                | 12m  | High   | Medium | ⬜ Pending  |
+| 15 | Config file support     | 12m  | Low    | Medium | ⬜ Pending  |
+| 16 | Watch mode              | 12m  | Low    | Medium | ⬜ Pending  |
+| 17 | Web UI                  | >12m | Low    | High   | ⬜ Deferred |
+| 18 | Property tests          | 12m  | Low    | Medium | ⬜ Pending  |
 
 ---
 

@@ -87,20 +87,20 @@
 
 ### 12 Remaining Open TODOs (all deferred/out-of-scope)
 
-| #   | Item                                   | Reason deferred                                               |
-| --- | -------------------------------------- | ------------------------------------------------------------- |
-| 1   | Finding struct sub-grouping            | Breaking API change, v2                                       |
-| 2   | SARIF schema validation test           | Requires downloading JSON schema                              |
-| 3   | FixApplier cross-iteration persistence | Design question for v1.1                                      |
-| 4   | API stability review                   | Documented in `docs/architecture-decisions.md`, target v0.2.0 |
-| 5   | BuildFlow integration                  | External project dependency                                   |
-| 6   | go-business-rules Severity sharing     | External project dependency                                   |
-| 7   | Web UI prototype                       | Out of scope for v1                                           |
-| 8   | Distributed detection                  | Out of scope for v1                                           |
-| 9   | IDE plugin stubs                       | Out of scope for v1                                           |
-| 10  | Watch mode                             | Out of scope for v1                                           |
-| 11  | Evaluate go-sarif vs hand-rolled       | Deferred to post-v1                                           |
-| 12  | Benchmark regression tracking          | Baseline captured, automation deferred                        |
+| #  | Item                                   | Reason deferred                                               |
+| -- | -------------------------------------- | ------------------------------------------------------------- |
+| 1  | Finding struct sub-grouping            | Breaking API change, v2                                       |
+| 2  | SARIF schema validation test           | Requires downloading JSON schema                              |
+| 3  | FixApplier cross-iteration persistence | Design question for v1.1                                      |
+| 4  | API stability review                   | Documented in `docs/architecture-decisions.md`, target v0.2.0 |
+| 5  | BuildFlow integration                  | External project dependency                                   |
+| 6  | go-business-rules Severity sharing     | External project dependency                                   |
+| 7  | Web UI prototype                       | Out of scope for v1                                           |
+| 8  | Distributed detection                  | Out of scope for v1                                           |
+| 9  | IDE plugin stubs                       | Out of scope for v1                                           |
+| 10 | Watch mode                             | Out of scope for v1                                           |
+| 11 | Evaluate go-sarif vs hand-rolled       | Deferred to post-v1                                           |
+| 12 | Benchmark regression tracking          | Baseline captured, automation deferred                        |
 
 ---
 
@@ -139,33 +139,33 @@ None are actionable without external input (product decisions, external projects
 
 Since 48→12 TODOs were closed this session, the remaining 12 are truly deferred. Here's what would move the needle most:
 
-| #   | Task                                                                     | Impact   | Effort | Why                                           |
-| --- | ------------------------------------------------------------------------ | -------- | ------ | --------------------------------------------- |
-| 1   | **Resolve 5 architecture decisions** in `docs/architecture-decisions.md` | Critical | 5min   | User input needed to lock API for v1          |
-| 2   | Move `diagnostic.go` to `finding/analysis` subpackage                    | High     | 30min  | Eliminates 12MB transitive dep for core users |
-| 3   | Add SARIF schema validation test                                         | High     | 30min  | Catches format drift                          |
-| 4   | Add `Suppression.IsActive()` method                                      | Medium   | 10min  | Checks expiry without auto-filtering          |
-| 5   | Investigate FixApplier cross-iteration persistence                       | Medium   | 1hr    | Design question for pipeline correctness      |
-| 6   | Add `WriteSARIF` error-path test                                         | Low      | 5min   | 83.3% → 100% on that function                 |
-| 7   | Add `setupProfiling` subprocess isolation test                           | Low      | 20min  | 88.5% → 95%+ on cmd package                   |
-| 8   | API stability audit for v0.2.0                                           | High     | 2hr    | Lock exported symbols, document guarantees    |
-| 9   | Add `go:generate stringer` alternatives for string enums                 | Low      | 30min  | Custom generator for string-based enums       |
-| 10  | Add `Finding` struct sub-grouping proposal (RFC)                         | Medium   | 30min  | Draft ADR for v2 consideration                |
-| 11  | Evaluate `go-sarif` vs hand-rolled                                       | Medium   | 2hr    | Formal compliance check                       |
-| 12  | Add benchmark regression CI job                                          | Medium   | 30min  | Automate baseline comparison                  |
-| 13  | Add IDE plugin stub (VS Code LSP)                                        | Medium   | 2hr    | LSP conversion already exists                 |
-| 14  | Add watch mode with `fsnotify`                                           | Medium   | 2hr    | Continuous analysis for dev workflow          |
-| 15  | Write `FuzzFindingsFromJSON` fuzzer                                      | Medium   | 15min  | JSON import is another attack surface         |
-| 16  | Add `Finding` JSON schema                                                | Low      | 30min  | Formal JSON contract for API consumers        |
-| 17  | Add OpenAPI/SARIF compatibility matrix                                   | Low      | 1hr    | Document field mapping                        |
-| 18  | Add `pipeline.Config` YAML/JSON schema                                   | Low      | 20min  | Validate config files formally                |
-| 19  | Performance benchmarks for 10k+ findings                                 | Medium   | 1hr    | Ensure pipeline scales                        |
-| 20  | Add `go.work` for multi-module dev (if splitting)                        | Low      | 5min   | Already created locally, in `.gitignore`      |
-| 21  | Update `CONTRIBUTING.md` for `diagnostic.go` potential move              | Low      | 15min  | Reflect possible subpackage                   |
-| 22  | Add `CHANGELOG.md` entry for v0.2.0 planning                             | Low      | 10min  | Track what goes in next release               |
-| 23  | Test with Go 1.27 when available                                         | Low      | 5min   | Forward compatibility                         |
-| 24  | Add `//go:build ignore` examples                                         | Low      | 15min  | Runnable example files                        |
-| 25  | Create GitHub Discussions for architecture decisions                     | Low      | 10min  | Community input on deferred items             |
+| #  | Task                                                                     | Impact   | Effort | Why                                           |
+| -- | ------------------------------------------------------------------------ | -------- | ------ | --------------------------------------------- |
+| 1  | **Resolve 5 architecture decisions** in `docs/architecture-decisions.md` | Critical | 5min   | User input needed to lock API for v1          |
+| 2  | Move `diagnostic.go` to `finding/analysis` subpackage                    | High     | 30min  | Eliminates 12MB transitive dep for core users |
+| 3  | Add SARIF schema validation test                                         | High     | 30min  | Catches format drift                          |
+| 4  | Add `Suppression.IsActive()` method                                      | Medium   | 10min  | Checks expiry without auto-filtering          |
+| 5  | Investigate FixApplier cross-iteration persistence                       | Medium   | 1hr    | Design question for pipeline correctness      |
+| 6  | Add `WriteSARIF` error-path test                                         | Low      | 5min   | 83.3% → 100% on that function                 |
+| 7  | Add `setupProfiling` subprocess isolation test                           | Low      | 20min  | 88.5% → 95%+ on cmd package                   |
+| 8  | API stability audit for v0.2.0                                           | High     | 2hr    | Lock exported symbols, document guarantees    |
+| 9  | Add `go:generate stringer` alternatives for string enums                 | Low      | 30min  | Custom generator for string-based enums       |
+| 10 | Add `Finding` struct sub-grouping proposal (RFC)                         | Medium   | 30min  | Draft ADR for v2 consideration                |
+| 11 | Evaluate `go-sarif` vs hand-rolled                                       | Medium   | 2hr    | Formal compliance check                       |
+| 12 | Add benchmark regression CI job                                          | Medium   | 30min  | Automate baseline comparison                  |
+| 13 | Add IDE plugin stub (VS Code LSP)                                        | Medium   | 2hr    | LSP conversion already exists                 |
+| 14 | Add watch mode with `fsnotify`                                           | Medium   | 2hr    | Continuous analysis for dev workflow          |
+| 15 | Write `FuzzFindingsFromJSON` fuzzer                                      | Medium   | 15min  | JSON import is another attack surface         |
+| 16 | Add `Finding` JSON schema                                                | Low      | 30min  | Formal JSON contract for API consumers        |
+| 17 | Add OpenAPI/SARIF compatibility matrix                                   | Low      | 1hr    | Document field mapping                        |
+| 18 | Add `pipeline.Config` YAML/JSON schema                                   | Low      | 20min  | Validate config files formally                |
+| 19 | Performance benchmarks for 10k+ findings                                 | Medium   | 1hr    | Ensure pipeline scales                        |
+| 20 | Add `go.work` for multi-module dev (if splitting)                        | Low      | 5min   | Already created locally, in `.gitignore`      |
+| 21 | Update `CONTRIBUTING.md` for `diagnostic.go` potential move              | Low      | 15min  | Reflect possible subpackage                   |
+| 22 | Add `CHANGELOG.md` entry for v0.2.0 planning                             | Low      | 10min  | Track what goes in next release               |
+| 23 | Test with Go 1.27 when available                                         | Low      | 5min   | Forward compatibility                         |
+| 24 | Add `//go:build ignore` examples                                         | Low      | 15min  | Runnable example files                        |
+| 25 | Create GitHub Discussions for architecture decisions                     | Low      | 10min  | Community input on deferred items             |
 
 ---
 

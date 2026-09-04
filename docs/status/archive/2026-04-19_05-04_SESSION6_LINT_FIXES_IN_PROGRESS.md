@@ -158,33 +158,33 @@ Current uncommitted progress:
 
 ## F) Top #25 Things to Do Next
 
-| #   | Task                                                                                    | Priority | Effort | Category |
-| --- | --------------------------------------------------------------------------------------- | -------- | ------ | -------- |
-| 1   | **Fix `pipeline/retry.go`** — Convert 4 `errors.New()` to sentinel errors               | P0       | 5min   | Lint     |
-| 2   | **Fix `finding.go:104`** — Add missing `FixStrategyNone` case in switch                 | P0       | 2min   | Lint     |
-| 3   | **Fix `merge_test.go:208`** — Replace loop with `slices.Contains`                       | P0       | 2min   | Lint     |
-| 4   | **Fix `position.go:337`** — Flatten `Range.Overlaps` nesting                            | P0       | 10min  | Lint     |
-| 5   | **Fix `finding_extra_test.go:46`** — Extract `"changed"` to constant                    | P0       | 2min   | Lint     |
-| 6   | **Fix nolintlint** — Remove 3 unused nolint directives                                  | P0       | 3min   | Lint     |
-| 7   | **Fix revive** — Rename unused receivers/params to `_` (4 locations)                    | P0       | 3min   | Lint     |
-| 8   | **Fix wrapcheck** — Wrap `os.Create` + `pprof.StartCPUProfile` errors in CLI            | P0       | 3min   | Lint     |
-| 9   | **Update `.golangci.yml`** — Disable `wsl_v5` + `nlreturn` (9 pedantic issues)          | P0       | 2min   | Config   |
-| 10  | **Fix tagliatelle** — `finding_ids` → `findingIds` in merge.go or configure tagliatelle | P1       | 3min   | Lint     |
-| 11  | **Fix `position.go:376`** — Add godoc to exported `Pos()` function                      | P1       | 1min   | Lint     |
-| 12  | **Fix prealloc** — Preallocate `all` slice in `pipeline_test.go:332`                    | P1       | 1min   | Lint     |
-| 13  | **Run `golangci-lint run ./...`** — Verify ZERO issues                                  | P0       | 2min   | Verify   |
-| 14  | **Commit all lint fixes** — Descriptive commit message                                  | P0       | 1min   | Git      |
-| 15  | **Update CHANGELOG.md** — Document v0.1.0 changes comprehensively                       | P1       | 15min  | Docs     |
-| 16  | **Improve README.md** — Add badges, pipeline examples, API overview                     | P1       | 20min  | Docs     |
-| 17  | **Create examples/** — Standalone examples: basic, custom detector, pipeline            | P1       | 30min  | Docs     |
-| 18  | **Add benchmarks** — Hot paths: merge, filter, SARIF, ID generation                     | P2       | 20min  | Testing  |
-| 19  | **CLI integration tests** — Subprocess testing for cmd/go-finding                       | P1       | 30min  | Testing  |
-| 20  | **Review CONTRIBUTING.md** — Ensure accuracy, add lint commands                         | P2       | 10min  | Docs     |
-| 21  | **Review pkg.go.dev docs** — All exported types have godoc                              | P1       | 15min  | Docs     |
-| 22  | **Push all commits** to origin                                                          | P0       | 1min   | Git      |
-| 23  | **Update tests for sentinel errors** — Verify test assertions match new error strings   | P0       | 5min   | Testing  |
-| 24  | **Consider re-tagging v0.1.0** after lint cleanup (or tag v0.1.1)                       | P2       | 5min   | Release  |
-| 25  | **Add fuzz tests** — ID parsing, JSON, SARIF parsing                                    | P3       | 30min  | Testing  |
+| #  | Task                                                                                    | Priority | Effort | Category |
+| -- | --------------------------------------------------------------------------------------- | -------- | ------ | -------- |
+| 1  | **Fix `pipeline/retry.go`** — Convert 4 `errors.New()` to sentinel errors               | P0       | 5min   | Lint     |
+| 2  | **Fix `finding.go:104`** — Add missing `FixStrategyNone` case in switch                 | P0       | 2min   | Lint     |
+| 3  | **Fix `merge_test.go:208`** — Replace loop with `slices.Contains`                       | P0       | 2min   | Lint     |
+| 4  | **Fix `position.go:337`** — Flatten `Range.Overlaps` nesting                            | P0       | 10min  | Lint     |
+| 5  | **Fix `finding_extra_test.go:46`** — Extract `"changed"` to constant                    | P0       | 2min   | Lint     |
+| 6  | **Fix nolintlint** — Remove 3 unused nolint directives                                  | P0       | 3min   | Lint     |
+| 7  | **Fix revive** — Rename unused receivers/params to `_` (4 locations)                    | P0       | 3min   | Lint     |
+| 8  | **Fix wrapcheck** — Wrap `os.Create` + `pprof.StartCPUProfile` errors in CLI            | P0       | 3min   | Lint     |
+| 9  | **Update `.golangci.yml`** — Disable `wsl_v5` + `nlreturn` (9 pedantic issues)          | P0       | 2min   | Config   |
+| 10 | **Fix tagliatelle** — `finding_ids` → `findingIds` in merge.go or configure tagliatelle | P1       | 3min   | Lint     |
+| 11 | **Fix `position.go:376`** — Add godoc to exported `Pos()` function                      | P1       | 1min   | Lint     |
+| 12 | **Fix prealloc** — Preallocate `all` slice in `pipeline_test.go:332`                    | P1       | 1min   | Lint     |
+| 13 | **Run `golangci-lint run ./...`** — Verify ZERO issues                                  | P0       | 2min   | Verify   |
+| 14 | **Commit all lint fixes** — Descriptive commit message                                  | P0       | 1min   | Git      |
+| 15 | **Update CHANGELOG.md** — Document v0.1.0 changes comprehensively                       | P1       | 15min  | Docs     |
+| 16 | **Improve README.md** — Add badges, pipeline examples, API overview                     | P1       | 20min  | Docs     |
+| 17 | **Create examples/** — Standalone examples: basic, custom detector, pipeline            | P1       | 30min  | Docs     |
+| 18 | **Add benchmarks** — Hot paths: merge, filter, SARIF, ID generation                     | P2       | 20min  | Testing  |
+| 19 | **CLI integration tests** — Subprocess testing for cmd/go-finding                       | P1       | 30min  | Testing  |
+| 20 | **Review CONTRIBUTING.md** — Ensure accuracy, add lint commands                         | P2       | 10min  | Docs     |
+| 21 | **Review pkg.go.dev docs** — All exported types have godoc                              | P1       | 15min  | Docs     |
+| 22 | **Push all commits** to origin                                                          | P0       | 1min   | Git      |
+| 23 | **Update tests for sentinel errors** — Verify test assertions match new error strings   | P0       | 5min   | Testing  |
+| 24 | **Consider re-tagging v0.1.0** after lint cleanup (or tag v0.1.1)                       | P2       | 5min   | Release  |
+| 25 | **Add fuzz tests** — ID parsing, JSON, SARIF parsing                                    | P3       | 30min  | Testing  |
 
 ---
 
@@ -250,10 +250,10 @@ I'd recommend option 3 (nolint directive) since this is a data interchange field
 ## Uncommitted Changes Summary
 
 ```
- M cmd/go-finding/main_test.go    — Table-driven refactor of TestBuildDetectors
- M id_test.go                     — Extract testParseIDCase helper
- M json.go                        — Sentinel errors ErrInvalidFinding, ErrInvalidReport
- M pipeline/pipeline.go           — Sentinel errors errMaxIterations, errTimeout
+M cmd/go-finding/main_test.go    — Table-driven refactor of TestBuildDetectors
+M id_test.go                     — Extract testParseIDCase helper
+M json.go                        — Sentinel errors ErrInvalidFinding, ErrInvalidReport
+M pipeline/pipeline.go           — Sentinel errors errMaxIterations, errTimeout
 ```
 
 **4 files changed, 77 insertions(+), 69 deletions(-)**

@@ -23,24 +23,24 @@ The session was triggered by a BuildFlow log showing 5 failing tools: `go-fix`, 
 
 ## a) FULLY DONE
 
-| #   | Task                                              | Result                                                                                 |
-| --- | ------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| 1   | Identify root cause of `test-race` failure        | DONE — `output_adapter.go` uses renamed go-output v0.30.1 types                        |
-| 2   | Fix `output_adapter.go` API migration             | DONE — `TableData`→`Table`, `NewTableData`→`NewTable`, `RenderTableData`→`RenderTable` |
-| 3   | Verify `cmd/go-finding` compiles                  | DONE — `go build ./...` clean                                                          |
-| 4   | Verify `cmd/go-finding` tests pass                | DONE — all 2 packages green                                                            |
-| 5   | Run `nix flake check`                             | DONE — `all checks passed!`                                                            |
-| 6   | Run `nix build` for `packages.default`            | DONE — produces `a8qiz94a7bmw632y1l62kwfaa5vfdwkd-go-finding-…`                        |
-| 7   | Run full workspace `go test -race -count=1 ./...` | DONE — all 12 packages pass                                                            |
-| 8   | Run `GOWORK=off` per-module tests (CI path)       | DONE — all 4 modules pass                                                              |
-| 9   | Run `go vet` on `cmd/go-finding`                  | DONE — clean                                                                           |
-| 10  | Update doc comments to match new API              | DONE — `TableData` reference replaced with `Table` in two comments                     |
+| #  | Task                                              | Result                                                                                 |
+| -- | ------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 1  | Identify root cause of `test-race` failure        | DONE — `output_adapter.go` uses renamed go-output v0.30.1 types                        |
+| 2  | Fix `output_adapter.go` API migration             | DONE — `TableData`→`Table`, `NewTableData`→`NewTable`, `RenderTableData`→`RenderTable` |
+| 3  | Verify `cmd/go-finding` compiles                  | DONE — `go build ./...` clean                                                          |
+| 4  | Verify `cmd/go-finding` tests pass                | DONE — all 2 packages green                                                            |
+| 5  | Run `nix flake check`                             | DONE — `all checks passed!`                                                            |
+| 6  | Run `nix build` for `packages.default`            | DONE — produces `a8qiz94a7bmw632y1l62kwfaa5vfdwkd-go-finding-…`                        |
+| 7  | Run full workspace `go test -race -count=1 ./...` | DONE — all 12 packages pass                                                            |
+| 8  | Run `GOWORK=off` per-module tests (CI path)       | DONE — all 4 modules pass                                                              |
+| 9  | Run `go vet` on `cmd/go-finding`                  | DONE — clean                                                                           |
+| 10 | Update doc comments to match new API              | DONE — `TableData` reference replaced with `Table` in two comments                     |
 
 ## b) PARTIALLY DONE
 
-| #   | Task | Blocked by |
-| --- | ---- | ---------- |
-| —   | —    | —          |
+| # | Task | Blocked by |
+| - | ---- | ---------- |
+| — | —    | —          |
 
 Nothing is partially done — the fix was a single atomic change with complete verification.
 

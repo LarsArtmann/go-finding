@@ -11,11 +11,11 @@ All items below were implemented, tested (`-race`), linted (0 issues), CI-script
 
 ### Session Debt Fixes (from prior session's self-critique)
 
-| #   | Item                                                                                         | Files Changed                    | Commit    |
-| --- | -------------------------------------------------------------------------------------------- | -------------------------------- | --------- |
-| D1  | `flight-recorder.md` YAML/JSON examples updated from 3→5 fields (added `minAge`, `maxBytes`) | `docs/guides/flight-recorder.md` | `cc9871d` |
-| D2  | `AGENTS.md` CLI features: enumerated all 5 config-file flightRecorder fields                 | `AGENTS.md`                      | `a6d6752` |
-| D3  | E2E test for 5-field config: `TestRun_E2E_TraceViaConfigFile_AllFields`                      | `cmd/go-finding/e2e_test.go`     | `a6d6752` |
+| #  | Item                                                                                         | Files Changed                    | Commit    |
+| -- | -------------------------------------------------------------------------------------------- | -------------------------------- | --------- |
+| D1 | `flight-recorder.md` YAML/JSON examples updated from 3→5 fields (added `minAge`, `maxBytes`) | `docs/guides/flight-recorder.md` | `cc9871d` |
+| D2 | `AGENTS.md` CLI features: enumerated all 5 config-file flightRecorder fields                 | `AGENTS.md`                      | `a6d6752` |
+| D3 | E2E test for 5-field config: `TestRun_E2E_TraceViaConfigFile_AllFields`                      | `cmd/go-finding/e2e_test.go`     | `a6d6752` |
 
 ### T10: go-arch-lint Module Boundary CI Enforcement
 

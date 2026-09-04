@@ -195,48 +195,48 @@ All critical issues have been resolved across 20+ commits:
 
 ### Immediate (Today — 30 minutes total)
 
-| #   | Task                                                           | Effort | Impact          |
-| --- | -------------------------------------------------------------- | ------ | --------------- |
-| 1   | Fix `.gitignore` line 43 corruption                            | 2 min  | Clean config    |
-| 2   | Delete binary artifacts (`go-finding`, `govet`)                | 1 min  | Clean repo      |
-| 3   | Delete stale coverage files (`cover.out`, `coverage.out`)      | 1 min  | Clean repo      |
-| 4   | Remove or archive stale planning docs                          | 5 min  | Clarity         |
-| 5   | Test `ioErrorAt` and `NewRangePtr`                             | 10 min | Coverage        |
-| 6   | Delete `report/` directory (only contains gitignored artifact) | 1 min  | Clean structure |
+| # | Task                                                           | Effort | Impact          |
+| - | -------------------------------------------------------------- | ------ | --------------- |
+| 1 | Fix `.gitignore` line 43 corruption                            | 2 min  | Clean config    |
+| 2 | Delete binary artifacts (`go-finding`, `govet`)                | 1 min  | Clean repo      |
+| 3 | Delete stale coverage files (`cover.out`, `coverage.out`)      | 1 min  | Clean repo      |
+| 4 | Remove or archive stale planning docs                          | 5 min  | Clarity         |
+| 5 | Test `ioErrorAt` and `NewRangePtr`                             | 10 min | Coverage        |
+| 6 | Delete `report/` directory (only contains gitignored artifact) | 1 min  | Clean structure |
 
 ### Short Term (This Week)
 
-| #   | Task                                                      | Effort | Impact      |
-| --- | --------------------------------------------------------- | ------ | ----------- |
-| 7   | Add `applyDirectFixes` integration tests                  | 60 min | Coverage    |
-| 8   | Document SARIF critical round-trip limitation in sarif.go | 15 min | Honesty     |
-| 9   | Decide: wire or document `Correlate()`                    | 30 min | Closure     |
-| 10  | Add CLI smoke tests (flag parsing, output formats)        | 2h     | Coverage    |
-| 11  | Suppress gosec G401 false positive for sha256             | 5 min  | Clean lint  |
-| 12  | Address gopls rangeint hints (3 locations)                | 15 min | Modern code |
-| 13  | Evaluate go-sarif for optional SARIF schema compliance    | 30 min | Decision    |
+| #  | Task                                                      | Effort | Impact      |
+| -- | --------------------------------------------------------- | ------ | ----------- |
+| 7  | Add `applyDirectFixes` integration tests                  | 60 min | Coverage    |
+| 8  | Document SARIF critical round-trip limitation in sarif.go | 15 min | Honesty     |
+| 9  | Decide: wire or document `Correlate()`                    | 30 min | Closure     |
+| 10 | Add CLI smoke tests (flag parsing, output formats)        | 2h     | Coverage    |
+| 11 | Suppress gosec G401 false positive for sha256             | 5 min  | Clean lint  |
+| 12 | Address gopls rangeint hints (3 locations)                | 15 min | Modern code |
+| 13 | Evaluate go-sarif for optional SARIF schema compliance    | 30 min | Decision    |
 
 ### Medium Term (Next 2 Weeks)
 
-| #   | Task                                                     | Effort | Impact      |
-| --- | -------------------------------------------------------- | ------ | ----------- |
-| 14  | Plan v1.0 release — stabilize API, write CHANGELOG       | 2h     | Release     |
-| 15  | Add GitHub release workflow (GoReleaser config exists)   | 1h     | Release     |
-| 16  | Create comprehensive GoDoc examples for all public types | 2h     | DX          |
-| 17  | Add detector integration tests with fixture data         | 2h     | Coverage    |
-| 18  | Benchmark pipeline performance                           | 1h     | Performance |
-| 19  | Profile memory allocation hotspots                       | 1h     | Performance |
-| 20  | Add property-based tests (testing/quick)                 | 1h     | Robustness  |
+| #  | Task                                                     | Effort | Impact      |
+| -- | -------------------------------------------------------- | ------ | ----------- |
+| 14 | Plan v1.0 release — stabilize API, write CHANGELOG       | 2h     | Release     |
+| 15 | Add GitHub release workflow (GoReleaser config exists)   | 1h     | Release     |
+| 16 | Create comprehensive GoDoc examples for all public types | 2h     | DX          |
+| 17 | Add detector integration tests with fixture data         | 2h     | Coverage    |
+| 18 | Benchmark pipeline performance                           | 1h     | Performance |
+| 19 | Profile memory allocation hotspots                       | 1h     | Performance |
+| 20 | Add property-based tests (testing/quick)                 | 1h     | Robustness  |
 
 ### Longer Term
 
-| #   | Task                                                      | Effort | Impact   |
-| --- | --------------------------------------------------------- | ------ | -------- |
-| 21  | Add watch mode for continuous analysis                    | 3h     | DX       |
-| 22  | IDE plugin stubs (VS Code)                                | 5h     | DX       |
-| 23  | Web UI prototype for pipeline monitoring                  | 5h     | DX       |
-| 24  | Add more detector integrations (errcheck, gosimple, etc.) | 3h     | Adoption |
-| 25  | Distributed detection support                             | 8h     | Scale    |
+| #  | Task                                                      | Effort | Impact   |
+| -- | --------------------------------------------------------- | ------ | -------- |
+| 21 | Add watch mode for continuous analysis                    | 3h     | DX       |
+| 22 | IDE plugin stubs (VS Code)                                | 5h     | DX       |
+| 23 | Web UI prototype for pipeline monitoring                  | 5h     | DX       |
+| 24 | Add more detector integrations (errcheck, gosimple, etc.) | 3h     | Adoption |
+| 25 | Distributed detection support                             | 8h     | Scale    |
 
 ---
 

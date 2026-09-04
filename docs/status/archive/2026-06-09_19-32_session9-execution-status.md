@@ -16,18 +16,18 @@
 
 **7 modified + 70+ new files, not yet committed.**
 
-| #   | Change                             | File                               | Impact                                                                                       |
-| --- | ---------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------- |
-| 1   | `Report.Merge` deprecated          | `report.go`                        | Added `// Deprecated:` godoc; `MergeInto` is replacement; removed in v1.0.0                  |
-| 2   | Combine godoc updated              | `merge.go`                         | References `MergeInto` instead of `Merge`                                                    |
-| 3   | art-dupl flake app                 | `flake.nix`                        | `nix run .#art-dupl` — graceful error if not installed                                       |
-| 4   | art-dupl CI job                    | `.github/workflows/ci.yml`         | `dupl` job installs via `go install`, runs threshold 50                                      |
-| 5   | Fuzz seed corpus persisted         | `testdata/fuzz/`                   | 70+ seed files across 20 fuzz targets; `.gitignore` excludes hex-hash files                  |
-| 6   | `TestExamplesRun` integration test | `examples/example_compile_test.go` | Verifies all 3 examples compile + run + produce expected output                              |
-| 7   | API stability audit                | `docs/API_STABILITY.md`            | Every exported symbol classified (stable/deprecated/reserved); rewritten from v0.3 to v0.6.1 |
-| 8   | README.md updated                  | `README.md`                        | Added ToolAdapter section, CategoryForLinter section, v0.6.1 project stats                   |
-| 9   | TODO_LIST.md updated               | `TODO_LIST.md`                     | Marked 5 items done (README, API audit, fuzz corpus, pkg.go.dev, Merge deprecation)          |
-| 10  | AGENTS.md updated                  | `AGENTS.md`                        | Session 9 notes                                                                              |
+| #  | Change                             | File                               | Impact                                                                                       |
+| -- | ---------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| 1  | `Report.Merge` deprecated          | `report.go`                        | Added `// Deprecated:` godoc; `MergeInto` is replacement; removed in v1.0.0                  |
+| 2  | Combine godoc updated              | `merge.go`                         | References `MergeInto` instead of `Merge`                                                    |
+| 3  | art-dupl flake app                 | `flake.nix`                        | `nix run .#art-dupl` — graceful error if not installed                                       |
+| 4  | art-dupl CI job                    | `.github/workflows/ci.yml`         | `dupl` job installs via `go install`, runs threshold 50                                      |
+| 5  | Fuzz seed corpus persisted         | `testdata/fuzz/`                   | 70+ seed files across 20 fuzz targets; `.gitignore` excludes hex-hash files                  |
+| 6  | `TestExamplesRun` integration test | `examples/example_compile_test.go` | Verifies all 3 examples compile + run + produce expected output                              |
+| 7  | API stability audit                | `docs/API_STABILITY.md`            | Every exported symbol classified (stable/deprecated/reserved); rewritten from v0.3 to v0.6.1 |
+| 8  | README.md updated                  | `README.md`                        | Added ToolAdapter section, CategoryForLinter section, v0.6.1 project stats                   |
+| 9  | TODO_LIST.md updated               | `TODO_LIST.md`                     | Marked 5 items done (README, API audit, fuzz corpus, pkg.go.dev, Merge deprecation)          |
+| 10 | AGENTS.md updated                  | `AGENTS.md`                        | Session 9 notes                                                                              |
 
 ### Pre-existing Foundation (Sessions 1-8)
 
@@ -59,21 +59,21 @@
 
 Items from the TODO list and status report that have not been started:
 
-| #   | Item                                                           | Priority | Effort | Notes                                                              |
-| --- | -------------------------------------------------------------- | -------- | ------ | ------------------------------------------------------------------ |
-| 1   | Resolve 4 OWNER_DECISION items                                 | 🔴       | M      | Position zero, Range.End, PositionOffset sentinel, Merge semantics |
-| 2   | Config file support for library (YAML)                         | 🟡       | M      | CLI has it; library doesn't                                        |
-| 3   | Plugin architecture for external detectors                     | 🟡       | L      | CLI has `RegisterDetector`; library could expose                   |
-| 4   | Pipeline middleware/interceptor pattern                        | 🟡       | M      | `FindingProcessor` covers part of this                             |
-| 5   | FixEngine: line-offset tracking for cumulative line shifts     | 🟡       | M      | Single-pass correct; multi-pass shifts not tracked                 |
-| 6   | Make fix strategy composable as interface                      | 🟡       | L      | Currently enum-based                                               |
-| 7   | Pipeline stage hooks (pre/post)                                | 🟡       | L      | Only `OnStage` progress callback exists                            |
-| 8   | Spatial index for `Correlate`                                  | 🟡       | M      | Would improve large-report performance                             |
-| 9   | Streaming merge                                                | 🟡       | M      | Currently loads all reports in memory                              |
-| 10  | Wire `FixProviders` through CLI config                         | 🟡       | M      | Consumer use                                                       |
-| 11  | Benchmark regression tracking in CI                            | 🟢       | M      | `benchstat` baseline + 10% gate                                    |
-| 12  | `Report.Findings` encapsulation (ADR 10)                       | 🟡       | M      | Public slice; use `FindingsSnapshot()`                             |
-| 13  | Move `category_linter` global state into `LinterRegistry` type | 🟢       | M      | Design smell acknowledged                                          |
+| #  | Item                                                           | Priority | Effort | Notes                                                              |
+| -- | -------------------------------------------------------------- | -------- | ------ | ------------------------------------------------------------------ |
+| 1  | Resolve 4 OWNER_DECISION items                                 | 🔴       | M      | Position zero, Range.End, PositionOffset sentinel, Merge semantics |
+| 2  | Config file support for library (YAML)                         | 🟡       | M      | CLI has it; library doesn't                                        |
+| 3  | Plugin architecture for external detectors                     | 🟡       | L      | CLI has `RegisterDetector`; library could expose                   |
+| 4  | Pipeline middleware/interceptor pattern                        | 🟡       | M      | `FindingProcessor` covers part of this                             |
+| 5  | FixEngine: line-offset tracking for cumulative line shifts     | 🟡       | M      | Single-pass correct; multi-pass shifts not tracked                 |
+| 6  | Make fix strategy composable as interface                      | 🟡       | L      | Currently enum-based                                               |
+| 7  | Pipeline stage hooks (pre/post)                                | 🟡       | L      | Only `OnStage` progress callback exists                            |
+| 8  | Spatial index for `Correlate`                                  | 🟡       | M      | Would improve large-report performance                             |
+| 9  | Streaming merge                                                | 🟡       | M      | Currently loads all reports in memory                              |
+| 10 | Wire `FixProviders` through CLI config                         | 🟡       | M      | Consumer use                                                       |
+| 11 | Benchmark regression tracking in CI                            | 🟢       | M      | `benchstat` baseline + 10% gate                                    |
+| 12 | `Report.Findings` encapsulation (ADR 10)                       | 🟡       | M      | Public slice; use `FindingsSnapshot()`                             |
+| 13 | Move `category_linter` global state into `LinterRegistry` type | 🟢       | M      | Design smell acknowledged                                          |
 
 ---
 
@@ -142,33 +142,33 @@ Nothing is broken. Zero test failures, zero lint issues, zero build issues, zero
 
 Ranked by impact-to-effort ratio. **#1-5 are quick wins with immediate value. #6-15 are medium effort. #16-25 are v2 scope.**
 
-| #   | Task                                                                                           | Priority | Effort | Impact | Why                                                  |
-| --- | ---------------------------------------------------------------------------------------------- | -------- | ------ | ------ | ---------------------------------------------------- |
-| 1   | **Test `CorrelationScore.IsValid/String`**                                                     | 🟡       | XS     | Medium | Public API with 0% coverage; 5 minutes               |
-| 2   | **Test `filterByFileEdits`** (ByteLevelConflictDetection=true)                                 | 🟡       | S      | Medium | Feature exists but untested; integration test needed |
-| 3   | **Decide `Badge()` / `Emoji()` fate** — test or remove                                         | 🟡       | XS     | Low    | Dead code? 0% coverage, no callers found             |
-| 4   | **Fix `FuzzDedupKey` test bug** — `ContainSubstring(rule)` fails for empty file                | 🟡       | XS     | Medium | Pre-existing test bug masked by deterministic seed   |
-| 5   | **Deprecate `CountBySeverity` free function**                                                  | 🟡       | XS     | Low    | Duplicates `Report.CountBySeverity()`                |
-| 6   | **Resolve 4 OWNER_DECISION items** (Position zero, Range.End, PositionOffset, Merge semantics) | 🔴       | M      | High   | Blocks v1.0.0 lock                                   |
-| 7   | **Add `analysis.Analyzer` adapter** — wrap `*analysis.Analyzer` into `Detector`                | 🟡       | S      | High   | Unlocks any go/analysis tool as pipeline detector    |
-| 8   | **Remove `Report.Merge` method** (after deprecation period)                                    | 🔴       | XS     | High   | API cleanup for v1.0.0                               |
-| 9   | **Use `slices.Collect` + `cmp.Or`** modernization pass                                         | 🟢       | S      | Low    | Code hygiene                                         |
-| 10  | **Config file support for library** (extract from CLI)                                         | 🟡       | M      | High   | Consumers want shared config                         |
-| 11  | **Pipeline stage hooks** (pre/post for detect, triage, fix, verify)                            | 🟡       | L      | High   | Unblocks observability                               |
-| 12  | **`Report.Findings` encapsulation** (ADR 10 implementation)                                    | 🟡       | M      | Medium | Thread-safety risk                                   |
-| 13  | **Benchmark regression tracking in CI**                                                        | 🟢       | M      | Medium | Performance safety net                               |
-| 14  | **Streaming merge**                                                                            | 🟡       | M      | Low    | Large report performance                             |
-| 15  | **Spatial index for `Correlate`**                                                              | 🟡       | M      | Low    | O(n²) → O(n log n)                                   |
-| 16  | **Move `category_linter` to `LinterRegistry` type**                                            | 🟢       | M      | Medium | Encapsulation improvement                            |
-| 17  | **Code generation for enum types**                                                             | 🟢       | M      | Low    | Reduce 7× boilerplate                                |
-| 18  | **Make fix strategy composable as interface**                                                  | 🟡       | L      | Medium | Extensibility                                        |
-| 19  | **FixEngine line-offset tracking**                                                             | 🟡       | M      | Medium | Multi-pass fix correctness                           |
-| 20  | **Wire `FixProviders` through CLI**                                                            | 🟡       | M      | Medium | Consumer use                                         |
-| 21  | **Plugin architecture for external detectors**                                                 | 🟡       | L      | Medium | Ecosystem                                            |
-| 22  | **`Finding` struct sub-grouping**                                                              | 🔴       | L      | High   | **DEFERRED v2** (breaking)                           |
-| 23  | **Watch mode**                                                                                 | ⚪       | L      | Low    | **DEFERRED v2+**                                     |
-| 24  | **Web UI**                                                                                     | ⚪       | XL     | Low    | **OUT OF SCOPE v1**                                  |
-| 25  | **IDE plugin stubs**                                                                           | ⚪       | M      | Low    | **OUT OF SCOPE v1**                                  |
+| #  | Task                                                                                           | Priority | Effort | Impact | Why                                                  |
+| -- | ---------------------------------------------------------------------------------------------- | -------- | ------ | ------ | ---------------------------------------------------- |
+| 1  | **Test `CorrelationScore.IsValid/String`**                                                     | 🟡       | XS     | Medium | Public API with 0% coverage; 5 minutes               |
+| 2  | **Test `filterByFileEdits`** (ByteLevelConflictDetection=true)                                 | 🟡       | S      | Medium | Feature exists but untested; integration test needed |
+| 3  | **Decide `Badge()` / `Emoji()` fate** — test or remove                                         | 🟡       | XS     | Low    | Dead code? 0% coverage, no callers found             |
+| 4  | **Fix `FuzzDedupKey` test bug** — `ContainSubstring(rule)` fails for empty file                | 🟡       | XS     | Medium | Pre-existing test bug masked by deterministic seed   |
+| 5  | **Deprecate `CountBySeverity` free function**                                                  | 🟡       | XS     | Low    | Duplicates `Report.CountBySeverity()`                |
+| 6  | **Resolve 4 OWNER_DECISION items** (Position zero, Range.End, PositionOffset, Merge semantics) | 🔴       | M      | High   | Blocks v1.0.0 lock                                   |
+| 7  | **Add `analysis.Analyzer` adapter** — wrap `*analysis.Analyzer` into `Detector`                | 🟡       | S      | High   | Unlocks any go/analysis tool as pipeline detector    |
+| 8  | **Remove `Report.Merge` method** (after deprecation period)                                    | 🔴       | XS     | High   | API cleanup for v1.0.0                               |
+| 9  | **Use `slices.Collect` + `cmp.Or`** modernization pass                                         | 🟢       | S      | Low    | Code hygiene                                         |
+| 10 | **Config file support for library** (extract from CLI)                                         | 🟡       | M      | High   | Consumers want shared config                         |
+| 11 | **Pipeline stage hooks** (pre/post for detect, triage, fix, verify)                            | 🟡       | L      | High   | Unblocks observability                               |
+| 12 | **`Report.Findings` encapsulation** (ADR 10 implementation)                                    | 🟡       | M      | Medium | Thread-safety risk                                   |
+| 13 | **Benchmark regression tracking in CI**                                                        | 🟢       | M      | Medium | Performance safety net                               |
+| 14 | **Streaming merge**                                                                            | 🟡       | M      | Low    | Large report performance                             |
+| 15 | **Spatial index for `Correlate`**                                                              | 🟡       | M      | Low    | O(n²) → O(n log n)                                   |
+| 16 | **Move `category_linter` to `LinterRegistry` type**                                            | 🟢       | M      | Medium | Encapsulation improvement                            |
+| 17 | **Code generation for enum types**                                                             | 🟢       | M      | Low    | Reduce 7× boilerplate                                |
+| 18 | **Make fix strategy composable as interface**                                                  | 🟡       | L      | Medium | Extensibility                                        |
+| 19 | **FixEngine line-offset tracking**                                                             | 🟡       | M      | Medium | Multi-pass fix correctness                           |
+| 20 | **Wire `FixProviders` through CLI**                                                            | 🟡       | M      | Medium | Consumer use                                         |
+| 21 | **Plugin architecture for external detectors**                                                 | 🟡       | L      | Medium | Ecosystem                                            |
+| 22 | **`Finding` struct sub-grouping**                                                              | 🔴       | L      | High   | **DEFERRED v2** (breaking)                           |
+| 23 | **Watch mode**                                                                                 | ⚪       | L      | Low    | **DEFERRED v2+**                                     |
+| 24 | **Web UI**                                                                                     | ⚪       | XL     | Low    | **OUT OF SCOPE v1**                                  |
+| 25 | **IDE plugin stubs**                                                                           | ⚪       | M      | Low    | **OUT OF SCOPE v1**                                  |
 
 ---
 

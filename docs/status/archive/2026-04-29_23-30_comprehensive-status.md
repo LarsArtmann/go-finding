@@ -11,39 +11,39 @@
 
 ### Bugs Fixed
 
-| #   | Issue                              | Root Cause                                                                                                                                                                                                                           | Fix                                                                                              | Commit    |
-| --- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | --------- |
-| 1   | **Data race in `notifyFinding`**   | `OnFinding` callback called from parallel goroutines via `detectParallel → runOneDetector → filterActive → notifyFinding` without synchronization. Affected every `Pipeline.Run()` with `ParallelDetectors: true` + `OnFinding` set. | Added `callbackMu sync.Mutex` to `Pipeline`. Guard callback when `ParallelDetectors` enabled.    | `1b82717` |
-| 2   | **Concurrent backup collisions**   | `FixApplier` used hardcoded `go-finding-backups` temp dir. Multiple pipelines running simultaneously would share/collide on backup files.                                                                                            | `os.MkdirTemp("", "go-finding-backups-*")` with fallback.                                        | `3f0b298` |
-| 3   | **Flaky FixApplier rollback test** | `TestFixApplier_RollbackAll_PartialFailure` iterated `map[string]error` (non-deterministic order), comparing error messages against file-specific expectations. Order-dependent assertion in unordered map.                          | Removed order-dependent assertion, verify only that error is non-nil and good file was restored. | `5e75d79` |
+| # | Issue                              | Root Cause                                                                                                                                                                                                                           | Fix                                                                                              | Commit    |
+| - | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | --------- |
+| 1 | **Data race in `notifyFinding`**   | `OnFinding` callback called from parallel goroutines via `detectParallel → runOneDetector → filterActive → notifyFinding` without synchronization. Affected every `Pipeline.Run()` with `ParallelDetectors: true` + `OnFinding` set. | Added `callbackMu sync.Mutex` to `Pipeline`. Guard callback when `ParallelDetectors` enabled.    | `1b82717` |
+| 2 | **Concurrent backup collisions**   | `FixApplier` used hardcoded `go-finding-backups` temp dir. Multiple pipelines running simultaneously would share/collide on backup files.                                                                                            | `os.MkdirTemp("", "go-finding-backups-*")` with fallback.                                        | `3f0b298` |
+| 3 | **Flaky FixApplier rollback test** | `TestFixApplier_RollbackAll_PartialFailure` iterated `map[string]error` (non-deterministic order), comparing error messages against file-specific expectations. Order-dependent assertion in unordered map.                          | Removed order-dependent assertion, verify only that error is non-nil and good file was restored. | `5e75d79` |
 
 ### Ghost Systems Eliminated
 
-| #   | What                | Before                                                                                                                            | After                                              | Commit    |
-| --- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | --------- |
-| 1   | `detectResult` type | 2 identical types (`detectResult` + `PartialResult`) with different field names. `detect()` converted between them for no reason. | Single `PartialResult` used everywhere. -15 lines. | `f809fee` |
+| # | What                | Before                                                                                                                            | After                                              | Commit    |
+| - | ------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | --------- |
+| 1 | `detectResult` type | 2 identical types (`detectResult` + `PartialResult`) with different field names. `detect()` converted between them for no reason. | Single `PartialResult` used everywhere. -15 lines. | `f809fee` |
 
 ### Code Quality
 
-| #   | What                                                                   | Commit    |
-| --- | ---------------------------------------------------------------------- | --------- |
-| 1   | Duplicate doc comments on `FindByID` and `All` in `report.go`          | `de43e0b` |
-| 2   | Opaque `-count+2` formula in `Range.LineCount()` → clear `abs(span)+1` | `de43e0b` |
-| 3   | `FormatPartialErrors` modernized to `slices.Collect(maps.Keys)`        | `1b82717` |
+| # | What                                                                   | Commit    |
+| - | ---------------------------------------------------------------------- | --------- |
+| 1 | Duplicate doc comments on `FindByID` and `All` in `report.go`          | `de43e0b` |
+| 2 | Opaque `-count+2` formula in `Range.LineCount()` → clear `abs(span)+1` | `de43e0b` |
+| 3 | `FormatPartialErrors` modernized to `slices.Collect(maps.Keys)`        | `1b82717` |
 
 ### Test Coverage Added
 
-| #   | What                                                                                                                                    | Tests Added       | Commit    |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | --------- |
-| 1   | **FixEngine direct tests** — `Apply`, `partitionFixes`, `applyRangeFixes`, `applyStringFixes`, `replaceNearestToLine`, `lineDistance`   | 20 test functions | `5ffdfc9` |
-| 2   | **FileBackup direct tests** — `NewFileBackup`, `SetEnabled`, `BackupPath`, `Backup+Restore`, error paths, `RollbackAll`, disabled state | 9 test functions  | `858aeb2` |
+| # | What                                                                                                                                    | Tests Added       | Commit    |
+| - | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | --------- |
+| 1 | **FixEngine direct tests** — `Apply`, `partitionFixes`, `applyRangeFixes`, `applyStringFixes`, `replaceNearestToLine`, `lineDistance`   | 20 test functions | `5ffdfc9` |
+| 2 | **FileBackup direct tests** — `NewFileBackup`, `SetEnabled`, `BackupPath`, `Backup+Restore`, error paths, `RollbackAll`, disabled state | 9 test functions  | `858aeb2` |
 
 ### Documentation
 
-| #   | What                                                      | Commit    |
-| --- | --------------------------------------------------------- | --------- |
-| 1   | Deep codebase hardening plan with mermaid execution graph | `4fdaa2f` |
-| 2   | TODO_LIST.md updated with 16 completed items              | `47c9efa` |
+| # | What                                                      | Commit    |
+| - | --------------------------------------------------------- | --------- |
+| 1 | Deep codebase hardening plan with mermaid execution graph | `4fdaa2f` |
+| 2 | TODO_LIST.md updated with 16 completed items              | `47c9efa` |
 
 ---
 
@@ -122,33 +122,33 @@
 
 ## F) Top #25 Things To Do Next
 
-| #   | Task                                                     | Impact       | Effort   | Category     |
-| --- | -------------------------------------------------------- | ------------ | -------- | ------------ |
-| 1   | Add `-race` to CI workflow and justfile                  | **Critical** | 15min    | Process      |
-| 2   | Add coverage gate to CI (min 90%)                        | High         | 20min    | Process      |
-| 3   | Fix `applyTriage` OnFix accuracy bug                     | High         | 60min    | Bug          |
-| 4   | Fix flaky `TestProperty_IDRoundTrip`                     | High         | 30min    | Test         |
-| 5   | Add partial detection metrics recording                  | Med          | 30min    | Feature      |
-| 6   | Add `Verifier.Verify` error-path tests                   | Med          | 20min    | Test         |
-| 7   | Add `RetryConfig.Validate` edge-case tests               | Med          | 20min    | Test         |
-| 8   | Add SARIF fuzz test for `FindingsFromSARIF`              | Med          | 30min    | Test         |
-| 9   | Add JSON fuzz test for `FromJSON`/`ReportFromJSON`       | Med          | 30min    | Test         |
-| 10  | Add `detectPartialParallel` direct test                  | Med          | 20min    | Test         |
-| 11  | Add benchmarks for merge, filter, SARIF, ID generation   | Med          | 45min    | Perf         |
-| 12  | Modernize to Go 1.21+ stdlib (`slices.Contains`, etc.)   | Low          | 45min    | Cleanup      |
-| 13  | Convert `retry.go` `errors.New` to sentinels             | Low          | 15min    | Cleanup      |
-| 14  | Add godoc examples for key APIs                          | Low          | 45min    | Docs         |
-| 15  | Decide: implement or remove `FixStrategyAI`              | Med          | Decision | Architecture |
-| 16  | Add `govulncheck` to CI                                  | Med          | 15min    | Security     |
-| 17  | API stability review before v1                           | High         | 120min   | Architecture |
-| 18  | `DeduplicateByPosition` vs `DeduplicateByRule` diff test | Low          | 15min    | Test         |
-| 19  | `PrettyJSON`/`LineJSON` error-path tests                 | Low          | 15min    | Test         |
-| 20  | Add `go.work` for local development                      | Low          | 15min    | DevEx        |
-| 21  | Pipeline example with config file                        | Low          | 30min    | Docs         |
-| 22  | Profile memory allocation hotspots                       | Med          | 60min    | Perf         |
-| 23  | Add `io.WriterTo` for SARIF output                       | Low          | 30min    | Perf         |
-| 24  | Delete stale coverage files from repo root               | Low          | 5min     | Cleanup      |
-| 25  | Set up benchmark regression tracking in CI               | Med          | 30min    | Process      |
+| #  | Task                                                     | Impact       | Effort   | Category     |
+| -- | -------------------------------------------------------- | ------------ | -------- | ------------ |
+| 1  | Add `-race` to CI workflow and justfile                  | **Critical** | 15min    | Process      |
+| 2  | Add coverage gate to CI (min 90%)                        | High         | 20min    | Process      |
+| 3  | Fix `applyTriage` OnFix accuracy bug                     | High         | 60min    | Bug          |
+| 4  | Fix flaky `TestProperty_IDRoundTrip`                     | High         | 30min    | Test         |
+| 5  | Add partial detection metrics recording                  | Med          | 30min    | Feature      |
+| 6  | Add `Verifier.Verify` error-path tests                   | Med          | 20min    | Test         |
+| 7  | Add `RetryConfig.Validate` edge-case tests               | Med          | 20min    | Test         |
+| 8  | Add SARIF fuzz test for `FindingsFromSARIF`              | Med          | 30min    | Test         |
+| 9  | Add JSON fuzz test for `FromJSON`/`ReportFromJSON`       | Med          | 30min    | Test         |
+| 10 | Add `detectPartialParallel` direct test                  | Med          | 20min    | Test         |
+| 11 | Add benchmarks for merge, filter, SARIF, ID generation   | Med          | 45min    | Perf         |
+| 12 | Modernize to Go 1.21+ stdlib (`slices.Contains`, etc.)   | Low          | 45min    | Cleanup      |
+| 13 | Convert `retry.go` `errors.New` to sentinels             | Low          | 15min    | Cleanup      |
+| 14 | Add godoc examples for key APIs                          | Low          | 45min    | Docs         |
+| 15 | Decide: implement or remove `FixStrategyAI`              | Med          | Decision | Architecture |
+| 16 | Add `govulncheck` to CI                                  | Med          | 15min    | Security     |
+| 17 | API stability review before v1                           | High         | 120min   | Architecture |
+| 18 | `DeduplicateByPosition` vs `DeduplicateByRule` diff test | Low          | 15min    | Test         |
+| 19 | `PrettyJSON`/`LineJSON` error-path tests                 | Low          | 15min    | Test         |
+| 20 | Add `go.work` for local development                      | Low          | 15min    | DevEx        |
+| 21 | Pipeline example with config file                        | Low          | 30min    | Docs         |
+| 22 | Profile memory allocation hotspots                       | Med          | 60min    | Perf         |
+| 23 | Add `io.WriterTo` for SARIF output                       | Low          | 30min    | Perf         |
+| 24 | Delete stale coverage files from repo root               | Low          | 5min     | Cleanup      |
+| 25 | Set up benchmark regression tracking in CI               | Med          | 30min    | Process      |
 
 ---
 

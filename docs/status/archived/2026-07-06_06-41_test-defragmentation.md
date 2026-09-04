@@ -7,8 +7,8 @@
 > The remaining multi-file splits (SARIF 7 files, Pipeline 7 files, etc.) are considered legitimate
 > decomposition by concern, not fragmentation.
 
-**Date:** 2026-07-06 06:41  
-**Session goal:** Diagnose and fix the "36.5K lines feels like a lot" problem  
+**Date:** 2026-07-06 06:41\
+**Session goal:** Diagnose and fix the "36.5K lines feels like a lot" problem\
 **Verifier:** `go test -race -count=1 ./...` — all 4 modules green
 
 ---
@@ -21,25 +21,25 @@ The 36.5K line count was **not** a production code problem. Production is lean: 
 
 ### Test files defragmented (17 files eliminated)
 
-| #   | File deleted                            | Merged into                    | Module   |
-| --- | --------------------------------------- | ------------------------------ | -------- |
-| 1   | `finding_extra_test.go`                 | `finding_test.go`              | core     |
-| 2   | `position_extra_test.go`                | `position_test.go`             | core     |
-| 3   | `coverage_extra_test.go`                | `coverage_test.go`             | core     |
-| 4   | `example_extra_test.go`                 | `example_test.go`              | core     |
-| 5   | `json_extra_test.go`                    | `json_test.go`                 | core     |
-| 6   | `report_extra_test.go`                  | `report_test.go`               | core     |
-| 7   | `bdd_extra_test.go`                     | `bdd_test.go`                  | core     |
-| 8   | `assert_extra_test.go`                  | `testutil_test.go`             | core     |
-| 9   | `example_basic_test.go`                 | `example_test.go`              | core     |
-| 10  | `example_cli_test.go`                   | `example_test.go`              | core     |
-| 11  | `pipeline/conflict_extra_test.go`       | `pipeline/conflict_test.go`    | pipeline |
-| 12  | `pipeline/fix_applier_extra_test.go`    | `pipeline/fix_applier_test.go` | pipeline |
-| 13  | `pipeline/fix_applier_bugfix_test.go`   | `pipeline/fix_applier_test.go` | pipeline |
-| 14  | `pipeline/pipeline_bugfix_test.go`      | `pipeline/pipeline_test.go`    | pipeline |
-| 15  | `pipeline/example_extra_test.go`        | `pipeline/example_test.go`     | pipeline |
-| 16  | `cmd/go-finding/main_extra_test.go`     | `cmd/go-finding/main_test.go`  | CLI      |
-| 17  | `cmd/go-finding/coverage_extra_test.go` | `cmd/go-finding/main_test.go`  | CLI      |
+| #  | File deleted                            | Merged into                    | Module   |
+| -- | --------------------------------------- | ------------------------------ | -------- |
+| 1  | `finding_extra_test.go`                 | `finding_test.go`              | core     |
+| 2  | `position_extra_test.go`                | `position_test.go`             | core     |
+| 3  | `coverage_extra_test.go`                | `coverage_test.go`             | core     |
+| 4  | `example_extra_test.go`                 | `example_test.go`              | core     |
+| 5  | `json_extra_test.go`                    | `json_test.go`                 | core     |
+| 6  | `report_extra_test.go`                  | `report_test.go`               | core     |
+| 7  | `bdd_extra_test.go`                     | `bdd_test.go`                  | core     |
+| 8  | `assert_extra_test.go`                  | `testutil_test.go`             | core     |
+| 9  | `example_basic_test.go`                 | `example_test.go`              | core     |
+| 10 | `example_cli_test.go`                   | `example_test.go`              | core     |
+| 11 | `pipeline/conflict_extra_test.go`       | `pipeline/conflict_test.go`    | pipeline |
+| 12 | `pipeline/fix_applier_extra_test.go`    | `pipeline/fix_applier_test.go` | pipeline |
+| 13 | `pipeline/fix_applier_bugfix_test.go`   | `pipeline/fix_applier_test.go` | pipeline |
+| 14 | `pipeline/pipeline_bugfix_test.go`      | `pipeline/pipeline_test.go`    | pipeline |
+| 15 | `pipeline/example_extra_test.go`        | `pipeline/example_test.go`     | pipeline |
+| 16 | `cmd/go-finding/main_extra_test.go`     | `cmd/go-finding/main_test.go`  | CLI      |
+| 17 | `cmd/go-finding/coverage_extra_test.go` | `cmd/go-finding/main_test.go`  | CLI      |
 
 ### Files renamed for honesty
 
@@ -183,33 +183,33 @@ No `go test -cover` was run. We don't know if the merges changed coverage (they 
 
 ## f) Up to 25 Things We Should Get Done Next
 
-| #   | Task                                                                                                                                       | Impact | Effort  |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------ | ------- |
-| 1   | Run `nix run .#lint` across all modules to verify linter passes                                                                            | High   | Low     |
-| 2   | Run `GOWORK=off go test ./...` in each module dir to verify replace directives                                                             | High   | Low     |
-| 3   | Run `go test -cover ./...` and compare coverage before/after merge                                                                         | Medium | Low     |
-| 4   | Audit `validate_test.go` vs `finding_valid_test.go` for test duplication                                                                   | Medium | Low     |
-| 5   | Audit SARIF 7-file split — can sarif_fuzz + sarif_roundtrip merge into sarif_test?                                                         | Medium | Medium  |
-| 6   | Audit pipeline 7-file split — are pipeline_detector/triage/logging/metrics separate concerns or fragments?                                 | Medium | Medium  |
-| 7   | Evaluate whether `_fuzz_test.go` and `_bench_test.go` files should merge into parent (Go convention says no, but worth conscious decision) | Low    | Low     |
-| 8   | Audit LSP 4-file split for consolidation                                                                                                   | Low    | Medium  |
-| 9   | Audit merge 4-file split for consolidation                                                                                                 | Low    | Medium  |
-| 10  | Check `testutil_test.go` vs `pipeline/testutil_test.go` for extractable shared patterns                                                    | Low    | Medium  |
-| 11  | Investigate `splitbrain_test.go` — is it a real test or a dev artifact?                                                                    | Low    | Low     |
-| 12  | Audit individual test cases for triviality (getter/setter tests, zero-value paths)                                                         | Medium | High    |
-| 13  | Run `ginkgo unfocus` to verify no focus specs exist (manual grep found none, but tooling is authoritative)                                 | Low    | Trivial |
-| 14  | Evaluate whether `example_test.go` (now ~750 lines) is too large after merging 4 files                                                     | Low    | Low     |
-| 15  | Consider splitting `example_test.go` by domain (basic examples vs advanced examples) if >400 lines                                         | Low    | Low     |
-| 16  | Document the merge technique as a reusable procedure in AGENTS.md or a script                                                              | Low    | Low     |
-| 17  | Check if `finding_builder_test.go` should merge into `finding_test.go`                                                                     | Low    | Low     |
-| 18  | Check if `errors_test.go` + `errors_valid_test.go` should merge                                                                            | Low    | Low     |
-| 19  | Run `nix run .#test` (the documented full-suite command) to verify it still works                                                          | High   | Trivial |
-| 20  | Run `nix run .#bench` to verify benchmarks still pass                                                                                      | Medium | Low     |
-| 21  | Consider adding CI check that rejects `_extra_test.go` / `_bugfix_test.go` filenames                                                       | Medium | Low     |
-| 22  | Audit `pipeline/byte_conflict_test.go` — does it belong in `conflict_test.go`?                                                             | Low    | Low     |
-| 23  | Audit `position_overlap_test.go` — does it belong in `position_test.go`?                                                                   | Low    | Low     |
-| 24  | Evaluate `report_iter_test.go` + `report_validate_test.go` — should they merge into `report_test.go`?                                      | Low    | Low     |
-| 25  | Commit the changes (user has not asked for this yet)                                                                                       | High   | Trivial |
+| #  | Task                                                                                                                                       | Impact | Effort  |
+| -- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------ | ------- |
+| 1  | Run `nix run .#lint` across all modules to verify linter passes                                                                            | High   | Low     |
+| 2  | Run `GOWORK=off go test ./...` in each module dir to verify replace directives                                                             | High   | Low     |
+| 3  | Run `go test -cover ./...` and compare coverage before/after merge                                                                         | Medium | Low     |
+| 4  | Audit `validate_test.go` vs `finding_valid_test.go` for test duplication                                                                   | Medium | Low     |
+| 5  | Audit SARIF 7-file split — can sarif_fuzz + sarif_roundtrip merge into sarif_test?                                                         | Medium | Medium  |
+| 6  | Audit pipeline 7-file split — are pipeline_detector/triage/logging/metrics separate concerns or fragments?                                 | Medium | Medium  |
+| 7  | Evaluate whether `_fuzz_test.go` and `_bench_test.go` files should merge into parent (Go convention says no, but worth conscious decision) | Low    | Low     |
+| 8  | Audit LSP 4-file split for consolidation                                                                                                   | Low    | Medium  |
+| 9  | Audit merge 4-file split for consolidation                                                                                                 | Low    | Medium  |
+| 10 | Check `testutil_test.go` vs `pipeline/testutil_test.go` for extractable shared patterns                                                    | Low    | Medium  |
+| 11 | Investigate `splitbrain_test.go` — is it a real test or a dev artifact?                                                                    | Low    | Low     |
+| 12 | Audit individual test cases for triviality (getter/setter tests, zero-value paths)                                                         | Medium | High    |
+| 13 | Run `ginkgo unfocus` to verify no focus specs exist (manual grep found none, but tooling is authoritative)                                 | Low    | Trivial |
+| 14 | Evaluate whether `example_test.go` (now ~750 lines) is too large after merging 4 files                                                     | Low    | Low     |
+| 15 | Consider splitting `example_test.go` by domain (basic examples vs advanced examples) if >400 lines                                         | Low    | Low     |
+| 16 | Document the merge technique as a reusable procedure in AGENTS.md or a script                                                              | Low    | Low     |
+| 17 | Check if `finding_builder_test.go` should merge into `finding_test.go`                                                                     | Low    | Low     |
+| 18 | Check if `errors_test.go` + `errors_valid_test.go` should merge                                                                            | Low    | Low     |
+| 19 | Run `nix run .#test` (the documented full-suite command) to verify it still works                                                          | High   | Trivial |
+| 20 | Run `nix run .#bench` to verify benchmarks still pass                                                                                      | Medium | Low     |
+| 21 | Consider adding CI check that rejects `_extra_test.go` / `_bugfix_test.go` filenames                                                       | Medium | Low     |
+| 22 | Audit `pipeline/byte_conflict_test.go` — does it belong in `conflict_test.go`?                                                             | Low    | Low     |
+| 23 | Audit `position_overlap_test.go` — does it belong in `position_test.go`?                                                                   | Low    | Low     |
+| 24 | Evaluate `report_iter_test.go` + `report_validate_test.go` — should they merge into `report_test.go`?                                      | Low    | Low     |
+| 25 | Commit the changes (user has not asked for this yet)                                                                                       | High   | Trivial |
 
 ---
 

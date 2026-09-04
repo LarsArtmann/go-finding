@@ -31,7 +31,9 @@
         box-sizing: border-box;
       }
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
         background: var(--bg);
         color: var(--text);
         line-height: 1.6;
@@ -296,17 +298,20 @@
       <h3>Verdict: Partial adoption recommended</h3>
       <p>
         <strong
-          >Do NOT replace <code>FindingError</code> with <code>errorfamily.Error</code>.</strong
+          >Do NOT replace <code>FindingError</code> with
+          <code>errorfamily.Error</code>.</strong
         >
-        The two systems serve different domains and both are well-designed for their purpose.
-        Instead, <strong>implement go-error-family's interfaces</strong> on
-        <code>FindingError</code> for interoperability, and adopt <code>HandleError</code> in the
-        CLI layer for richer output.
+        The two systems serve different domains and both are well-designed for
+        their purpose. Instead,
+        <strong>implement go-error-family's interfaces</strong> on
+        <code>FindingError</code> for interoperability, and adopt
+        <code>HandleError</code> in the CLI layer for richer output.
       </p>
       <p style="margin-top: 0.75rem; color: var(--text-muted)">
-        Key reason: go-finding's errors carry static-analysis domain context (Finding, File,
-        Position) that go-error-family was never designed for. The Families map poorly to static
-        analysis semantics. But the interfaces and CLI boundary logic are universally useful.
+        Key reason: go-finding's errors carry static-analysis domain context
+        (Finding, File, Position) that go-error-family was never designed for.
+        The Families map poorly to static analysis semantics. But the interfaces
+        and CLI boundary logic are universally useful.
       </p>
     </div>
 
@@ -379,7 +384,10 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
       <tr>
         <td><code>NewXxxError()</code> constructors</td>
         <td>17</td>
-        <td>finding.go, report.go, pipeline/fix_applier.go, pipeline/file_backup.go</td>
+        <td>
+          finding.go, report.go, pipeline/fix_applier.go,
+          pipeline/file_backup.go
+        </td>
       </tr>
     </table>
 
@@ -398,7 +406,9 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
       <tr>
         <td>2</td>
         <td>Immutable findings</td>
-        <td>Error system is mutable (chainable WithXxx), but that's separate</td>
+        <td>
+          Error system is mutable (chainable WithXxx), but that's separate
+        </td>
       </tr>
       <tr>
         <td>8</td>
@@ -471,25 +481,29 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
     <h3>Key Capabilities</h3>
     <ul style="margin: 0.5rem 0 0 1.25rem">
       <li>
-        <strong>Classification system</strong> — 5-level precedence chain: multi-error &rarr;
-        Classified &rarr; Retryable &rarr; registered sentinels &rarr; default Transient
+        <strong>Classification system</strong> — 5-level precedence chain:
+        multi-error &rarr; Classified &rarr; Retryable &rarr; registered
+        sentinels &rarr; default Transient
       </li>
       <li>
-        <strong>CLI boundary</strong> — <code>HandleError()</code>: classify &rarr; format with
-        templates &rarr; stderr &rarr; exit code
+        <strong>CLI boundary</strong> — <code>HandleError()</code>: classify
+        &rarr; format with templates &rarr; stderr &rarr; exit code
       </li>
       <li>
         <strong>Message templates</strong> — Wix-style What/Why/Fix/WayOut with
         <code>{{.key}}</code> substitution
       </li>
       <li>
-        <strong>Diagnostics</strong> — Concurrent rules (Filesystem, Network, Git, Postgres) for
-        root-cause analysis
+        <strong>Diagnostics</strong> — Concurrent rules (Filesystem, Network,
+        Git, Postgres) for root-cause analysis
       </li>
-      <li><strong>Agent analysis</strong> — Debug agent for AI-assisted error explanation</li>
       <li>
-        <strong>Consumer interfaces</strong> — Coded, Classified, Contextual, Retryable —
-        composable, third-party friendly
+        <strong>Agent analysis</strong> — Debug agent for AI-assisted error
+        explanation
+      </li>
+      <li>
+        <strong>Consumer interfaces</strong> — Coded, Classified, Contextual,
+        Retryable — composable, third-party friendly
       </li>
     </ul>
 
@@ -516,15 +530,18 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
         <td><code>io</code></td>
         <td><code>Transient</code> or <code>Infrastructure</code></td>
         <td><span class="tag tag-contra">Ambiguous</span></td>
-        <td>File not found = Rejection, but disk full = Infrastructure. One category can't map.</td>
+        <td>
+          File not found = Rejection, but disk full = Infrastructure. One
+          category can't map.
+        </td>
       </tr>
       <tr>
         <td><code>parse</code></td>
         <td><code>Corruption</code> or <code>Rejection</code></td>
         <td><span class="tag tag-contra">Ambiguous</span></td>
         <td>
-          Bad SARIF input = Rejection (caller's fault), but corrupted file = Corruption. Domain
-          split.
+          Bad SARIF input = Rejection (caller's fault), but corrupted file =
+          Corruption. Domain split.
         </td>
       </tr>
       <tr>
@@ -537,15 +554,18 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
         <td><code>internal</code></td>
         <td><code>Infrastructure</code></td>
         <td><span class="tag tag-neutral">OK</span></td>
-        <td>"System cannot serve" ≈ internal error, but the semantics differ (ops vs developer)</td>
+        <td>
+          "System cannot serve" ≈ internal error, but the semantics differ (ops
+          vs developer)
+        </td>
       </tr>
       <tr>
         <td><em>missing</em></td>
         <td><code>Transient</code></td>
         <td><span class="tag tag-contra">No fit</span></td>
         <td>
-          Pipeline has retry logic but no error ever carries retry semantics. Adding this would be
-          new behavior.
+          Pipeline has retry logic but no error ever carries retry semantics.
+          Adding this would be new behavior.
         </td>
       </tr>
     </table>
@@ -563,13 +583,19 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
         <td>Classification</td>
         <td><code>ErrorCategory string</code></td>
         <td><code>Family int</code></td>
-        <td><span class="tag tag-contra">No</span> — different type, different semantics</td>
+        <td>
+          <span class="tag tag-contra">No</span> — different type, different
+          semantics
+        </td>
       </tr>
       <tr>
         <td>Machine-readable ID</td>
         <td><em>none</em></td>
         <td><code>code string</code></td>
-        <td><span class="tag tag-pro">Additive</span> — FindingError could gain ErrorCode()</td>
+        <td>
+          <span class="tag tag-pro">Additive</span> — FindingError could gain
+          ErrorCode()
+        </td>
       </tr>
       <tr>
         <td>Context</td>
@@ -587,13 +613,18 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
         <td>Domain: Finding ref</td>
         <td><code>Finding *Finding</code></td>
         <td><em>none</em></td>
-        <td><span class="tag tag-contra">Lost</span> — core domain data with no equivalent</td>
+        <td>
+          <span class="tag tag-contra">Lost</span> — core domain data with no
+          equivalent
+        </td>
       </tr>
       <tr>
         <td>Domain: Position</td>
         <td><code>Position *Position</code></td>
         <td><em>none</em></td>
-        <td><span class="tag tag-contra">Lost</span> — file:line:col context</td>
+        <td>
+          <span class="tag tag-contra">Lost</span> — file:line:col context
+        </td>
       </tr>
       <tr>
         <td>Domain: File</td>
@@ -605,7 +636,10 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
         <td>errors.Is</td>
         <td><code>Is()</code> bridges category &rarr; sentinel</td>
         <td><code>Is()</code> matches code+family</td>
-        <td><span class="tag tag-contra">Conflicting</span> — different matching semantics</td>
+        <td>
+          <span class="tag tag-contra">Conflicting</span> — different matching
+          semantics
+        </td>
       </tr>
       <tr>
         <td>Timestamp</td>
@@ -622,74 +656,98 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
     <div class="card pro">
       <h4>P1. Machine-readable error codes</h4>
       <p>
-        go-finding errors currently carry a category (<code>"io"</code>) but no specific code. Two
-        different IO errors are indistinguishable programmatically.
-        <code>errorfamily.Coded</code> adds <code>ErrorCode() string</code> enabling
+        go-finding errors currently carry a category (<code>"io"</code>) but no
+        specific code. Two different IO errors are indistinguishable
+        programmatically.
+        <code>errorfamily.Coded</code> adds
+        <code>ErrorCode() string</code> enabling
         <code>"file.backup.read"</code> vs <code>"sarif.parse.invalid"</code>.
       </p>
-      <div class="impact-bar"><div class="impact-fill pro" style="width: 85%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill pro" style="width: 85%"></div>
+      </div>
     </div>
 
     <div class="card pro">
       <h4>P2. Retry semantics baked into error types</h4>
       <p>
-        Pipeline's <code>retry.go</code> retries all detector errors uniformly. With
-        <code>Classified</code>/<code>Retryable</code>, detectors could signal which errors are
-        worth retrying. <code>Transient</code> = retry with backoff; everything else = fail
-        immediately. This is more precise than the current blanket approach.
+        Pipeline's <code>retry.go</code> retries all detector errors uniformly.
+        With <code>Classified</code>/<code>Retryable</code>, detectors could
+        signal which errors are worth retrying. <code>Transient</code> = retry
+        with backoff; everything else = fail immediately. This is more precise
+        than the current blanket approach.
       </p>
-      <div class="impact-bar"><div class="impact-fill pro" style="width: 70%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill pro" style="width: 70%"></div>
+      </div>
     </div>
 
     <div class="card pro">
       <h4>P3. Richer CLI boundary output</h4>
       <p>
-        <code>HandleError()</code> provides structured What/Why/Fix/WayOut output with template
-        overrides. Currently the CLI just prints <code>fmt.Errorf</code> chains. Adopting
-        <code>HandleError</code> in <code>cmd/go-finding/main.go</code> would give users actionable
-        fix suggestions instead of raw error chains.
+        <code>HandleError()</code> provides structured What/Why/Fix/WayOut
+        output with template overrides. Currently the CLI just prints
+        <code>fmt.Errorf</code> chains. Adopting <code>HandleError</code> in
+        <code>cmd/go-finding/main.go</code> would give users actionable fix
+        suggestions instead of raw error chains.
       </p>
-      <div class="impact-bar"><div class="impact-fill pro" style="width: 80%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill pro" style="width: 80%"></div>
+      </div>
     </div>
 
     <div class="card pro">
       <h4>P4. Zero external dependencies</h4>
       <p>
-        go-error-family is stdlib-only. No transitive dependency explosion. Compatible with
-        go-finding's minimal dependency philosophy.
+        go-error-family is stdlib-only. No transitive dependency explosion.
+        Compatible with go-finding's minimal dependency philosophy.
       </p>
-      <div class="impact-bar"><div class="impact-fill pro" style="width: 90%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill pro" style="width: 90%"></div>
+      </div>
     </div>
 
     <div class="card pro">
       <h4>P5. Composable interfaces enable third-party integration</h4>
       <p>
         If go-finding's <code>FindingError</code> implements <code>Coded</code>,
-        <code>Classified</code>, <code>Contextual</code>, then any consumer already using
-        go-error-family can classify and handle go-finding errors without import coupling.
-        <strong>This is the "share protocols, not implementations" pattern.</strong>
+        <code>Classified</code>, <code>Contextual</code>, then any consumer
+        already using go-error-family can classify and handle go-finding errors
+        without import coupling.
+        <strong
+          >This is the "share protocols, not implementations" pattern.</strong
+        >
       </p>
-      <div class="impact-bar"><div class="impact-fill pro" style="width: 75%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill pro" style="width: 75%"></div>
+      </div>
     </div>
 
     <div class="card pro">
       <h4>P6. Contextual error details via map[string]string</h4>
       <p>
-        <code>WithContext("host", "localhost")</code> pattern matches go-finding's existing
-        <code>Metadata map[string]string</code> convention. FindingError could gain context without
-        breaking anything, and diagnostic rules could key off it.
+        <code>WithContext("host", "localhost")</code> pattern matches
+        go-finding's existing
+        <code>Metadata map[string]string</code> convention. FindingError could
+        gain context without breaking anything, and diagnostic rules could key
+        off it.
       </p>
-      <div class="impact-bar"><div class="impact-fill pro" style="width: 60%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill pro" style="width: 60%"></div>
+      </div>
     </div>
 
     <div class="card pro">
       <h4>P7. Diagnostic rules for common failure modes</h4>
       <p>
-        go-finding's pipeline frequently hits filesystem errors (file_backup.go, fix_applier.go).
-        The FilesystemRule from go-error-family could automatically diagnose "permission denied" /
-        "disk full" / "path not found" with structured findings.
+        go-finding's pipeline frequently hits filesystem errors (file_backup.go,
+        fix_applier.go). The FilesystemRule from go-error-family could
+        automatically diagnose "permission denied" / "disk full" / "path not
+        found" with structured findings.
       </p>
-      <div class="impact-bar"><div class="impact-fill pro" style="width: 55%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill pro" style="width: 55%"></div>
+      </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
@@ -697,63 +755,81 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
     <!-- ═══════════════════════════════════════════════════════════════ -->
 
     <div class="card contra">
-      <h4>C1. Domain mismatch — Families designed for CLI/HTTP, not static analysis</h4>
+      <h4>
+        C1. Domain mismatch — Families designed for CLI/HTTP, not static
+        analysis
+      </h4>
       <p>
-        The five Families encode a retry/audience/tone model for user-facing systems. Static
-        analysis has different concerns:
+        The five Families encode a retry/audience/tone model for user-facing
+        systems. Static analysis has different concerns:
       </p>
       <ul>
         <li>
-          <strong>Corruption</strong> = "source of truth damaged" &mdash; when does a static
-          analysis tool encounter this?
+          <strong>Corruption</strong> = "source of truth damaged" &mdash; when
+          does a static analysis tool encounter this?
         </li>
         <li>
-          <strong>Infrastructure</strong> = "system cannot serve" &mdash; only the CLI entry point
-          applies; the library never "serves"
+          <strong>Infrastructure</strong> = "system cannot serve" &mdash; only
+          the CLI entry point applies; the library never "serves"
         </li>
         <li>
-          <strong>Transient</strong> = "retry with backoff" &mdash; pipeline has its own retry logic
-          independent of error classification
+          <strong>Transient</strong> = "retry with backoff" &mdash; pipeline has
+          its own retry logic independent of error classification
         </li>
       </ul>
       <p>
-        Forcing go-finding's errors into these Families adds semantic friction without proportional
-        gain.
+        Forcing go-finding's errors into these Families adds semantic friction
+        without proportional gain.
       </p>
-      <div class="impact-bar"><div class="impact-fill contra" style="width: 85%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill contra" style="width: 85%"></div>
+      </div>
     </div>
 
     <div class="card contra">
-      <h4>C2. FindingError carries domain-specific fields with no equivalent</h4>
+      <h4>
+        C2. FindingError carries domain-specific fields with no equivalent
+      </h4>
       <p>
-        <code>FindingError</code> has <code>Finding *Finding</code>, <code>File string</code>,
-        <code>Position *Position</code>. These are <strong>core to go-finding's domain</strong>
-        and have no parallel in go-error-family. Replacing FindingError means either:
+        <code>FindingError</code> has <code>Finding *Finding</code>,
+        <code>File string</code>, <code>Position *Position</code>. These are
+        <strong>core to go-finding's domain</strong>
+        and have no parallel in go-error-family. Replacing FindingError means
+        either:
       </p>
       <ul>
         <li>Losing this context (unacceptable), or</li>
         <li>
-          Embedding <code>errorfamily.Error</code> inside a new wrapper (reinventing FindingError
-          with extra steps)
+          Embedding <code>errorfamily.Error</code> inside a new wrapper
+          (reinventing FindingError with extra steps)
         </li>
       </ul>
-      <div class="impact-bar"><div class="impact-fill contra" style="width: 90%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill contra" style="width: 90%"></div>
+      </div>
     </div>
 
     <div class="card contra">
       <h4>C3. Violates design principle #12: Root package dependency-free</h4>
       <p>
         AGENTS.md states:
-        <em>"<code>golang.org/x/tools</code> only in <code>analysis/</code> subpackage"</em>.
-        Importing <code>errorfamily</code> in the root package (where <code>errors.go</code> lives)
-        would add the first non-stdlib dependency to the root. This is a deliberate architectural
-        boundary.
+        <em
+          >"<code>golang.org/x/tools</code> only in
+          <code>analysis/</code> subpackage"</em
+        >. Importing <code>errorfamily</code> in the root package (where
+        <code>errors.go</code> lives) would add the first non-stdlib dependency
+        to the root. This is a deliberate architectural boundary.
       </p>
-      <div class="impact-bar"><div class="impact-fill contra" style="width: 75%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill contra" style="width: 75%"></div>
+      </div>
     </div>
 
     <div class="card contra">
-      <h4>C4. Massive migration surface — 66 fmt.Errorf, 22 sentinels, ~50 test files</h4>
+      <h4>
+        C4. Massive migration surface — 66 fmt.Errorf, 22 sentinels, ~50 test
+        files
+      </h4>
       <p>Full adoption would touch:</p>
       <ul>
         <li>66 <code>fmt.Errorf</code> calls across all packages</li>
@@ -761,74 +837,102 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
         <li>8 <code>errors.Join</code> aggregation points</li>
         <li>~49 test files checking error types</li>
         <li>
-          All exported API (<code>ErrValidation</code>, <code>NewValidationError</code>, etc.)
-          &mdash; breaking change
+          All exported API (<code>ErrValidation</code>,
+          <code>NewValidationError</code>, etc.) &mdash; breaking change
         </li>
       </ul>
       <p>
-        Risk: every touched file is a regression opportunity. The current system <em>works</em>.
+        Risk: every touched file is a regression opportunity. The current system
+        <em>works</em>.
       </p>
-      <div class="impact-bar"><div class="impact-fill contra" style="width: 95%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill contra" style="width: 95%"></div>
+      </div>
     </div>
 
     <div class="card contra">
       <h4>C5. <code>errors.Is</code> semantics conflict</h4>
       <p>
-        FindingError.<code>Is()</code> matches any error with the same <em>category</em> to the
-        corresponding sentinel. errorfamily.Error.<code>Is()</code> matches <em>code + family</em>.
-        These are fundamentally different:
+        FindingError.<code>Is()</code> matches any error with the same
+        <em>category</em> to the corresponding sentinel. errorfamily.Error.<code
+          >Is()</code
+        >
+        matches <em>code + family</em>. These are fundamentally different:
       </p>
       <ul>
-        <li>go-finding: <code>errors.Is(anyIOError, ErrIO)</code> &rarr; true (category match)</li>
         <li>
-          go-error-family: <code>errors.Is(err1, err2)</code> &rarr; only if same code AND family
+          go-finding: <code>errors.Is(anyIOError, ErrIO)</code> &rarr; true
+          (category match)
+        </li>
+        <li>
+          go-error-family: <code>errors.Is(err1, err2)</code> &rarr; only if
+          same code AND family
         </li>
       </ul>
       <p>Merging would break one or both matching strategies.</p>
-      <div class="impact-bar"><div class="impact-fill contra" style="width: 80%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill contra" style="width: 80%"></div>
+      </div>
     </div>
 
     <div class="card contra">
       <h4>C6. Pipeline retry logic is already independent</h4>
       <p>
         <code>pipeline/retry.go</code> has its own <code>RetryConfig</code> with
-        <code>MaxRetries</code>, <code>BaseDelay</code>, <code>MaxDelay</code>, and jitter. It
-        retries detector errors uniformly. Adding family-based retry semantics would be
-        <strong>redundant or conflicting</strong> &mdash; two systems fighting over the same
-        decision.
+        <code>MaxRetries</code>, <code>BaseDelay</code>, <code>MaxDelay</code>,
+        and jitter. It retries detector errors uniformly. Adding family-based
+        retry semantics would be
+        <strong>redundant or conflicting</strong> &mdash; two systems fighting
+        over the same decision.
       </p>
-      <div class="impact-bar"><div class="impact-fill contra" style="width: 65%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill contra" style="width: 65%"></div>
+      </div>
     </div>
 
     <div class="card contra">
       <h4>C7. Unused features add conceptual weight</h4>
       <p>
-        go-error-family ships diagnostics (Filesystem, Network, Git, Postgres rules), agent
-        analysis, message templates, and audience/tone metadata. go-finding (a library) would use
-        approximately:
+        go-error-family ships diagnostics (Filesystem, Network, Git, Postgres
+        rules), agent analysis, message templates, and audience/tone metadata.
+        go-finding (a library) would use approximately:
       </p>
       <ul>
         <li>
-          Diagnostics: <strong>Not applicable</strong> (library doesn't run diagnostics on its own
-          errors)
+          Diagnostics: <strong>Not applicable</strong> (library doesn't run
+          diagnostics on its own errors)
         </li>
-        <li>Agent: <strong>Not applicable</strong> (library doesn't do AI analysis)</li>
-        <li>Audience/Tone: <strong>Marginal</strong> (library doesn't format user messages)</li>
+        <li>
+          Agent: <strong>Not applicable</strong> (library doesn't do AI
+          analysis)
+        </li>
+        <li>
+          Audience/Tone: <strong>Marginal</strong> (library doesn't format user
+          messages)
+        </li>
         <li>Templates: <strong>CLI only</strong> (useful in cmd/go-finding)</li>
       </ul>
-      <p>~80% of go-error-family's features would be dead weight in the library layer.</p>
-      <div class="impact-bar"><div class="impact-fill contra" style="width: 70%"></div></div>
+      <p>
+        ~80% of go-error-family's features would be dead weight in the library
+        layer.
+      </p>
+      <div class="impact-bar">
+        <div class="impact-fill contra" style="width: 70%"></div>
+      </div>
     </div>
 
     <div class="card contra">
       <h4>C8. Library consumers don't control error handling</h4>
       <p>
-        go-error-family is designed for the <em>CLI/HTTP boundary</em> &mdash; the place where
-        errors leave the program. But go-finding is a <strong>library</strong>. Its consumers (other
-        programs) decide how to handle errors at their own boundaries. Adopting CLI-boundary
-        patterns in a library imposes opinions on consumers.
+        go-error-family is designed for the <em>CLI/HTTP boundary</em> &mdash;
+        the place where errors leave the program. But go-finding is a
+        <strong>library</strong>. Its consumers (other programs) decide how to
+        handle errors at their own boundaries. Adopting CLI-boundary patterns in
+        a library imposes opinions on consumers.
       </p>
-      <div class="impact-bar"><div class="impact-fill contra" style="width: 75%"></div></div>
+      <div class="impact-bar">
+        <div class="impact-fill contra" style="width: 75%"></div>
+      </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
@@ -839,69 +943,102 @@ CLI sentinels           (errUnknownSeverity, errInvalidConfig, errUnknownDetecto
     <div class="card contra">
       <h4>Replace FindingError with errorfamily.Error everywhere</h4>
       <ul>
-        <li>Eliminate <code>errors.go</code>, <code>ErrorCategory</code>, all 5 sentinels</li>
-        <li>Replace all 66 <code>fmt.Errorf</code> calls with family constructors</li>
-        <li>Wrap go-error-family.Error in a new struct adding Finding/Position/File</li>
+        <li>
+          Eliminate <code>errors.go</code>, <code>ErrorCategory</code>, all 5
+          sentinels
+        </li>
+        <li>
+          Replace all 66 <code>fmt.Errorf</code> calls with family constructors
+        </li>
+        <li>
+          Wrap go-error-family.Error in a new struct adding
+          Finding/Position/File
+        </li>
         <li>Rewrite ~50 test files</li>
       </ul>
       <p>
-        <strong>Cost:</strong> 2-3 days of migration, high regression risk, breaks public API,
-        violates principle #12.
+        <strong>Cost:</strong> 2-3 days of migration, high regression risk,
+        breaks public API, violates principle #12.
       </p>
-      <p><strong>Gain:</strong> Unified error type, retry semantics, CLI boundary handling.</p>
       <p>
-        <strong>Net:</strong> <span class="tag tag-contra">Negative</span> — cost far exceeds
-        benefit for a library.
+        <strong>Gain:</strong> Unified error type, retry semantics, CLI boundary
+        handling.
+      </p>
+      <p>
+        <strong>Net:</strong> <span class="tag tag-contra">Negative</span> —
+        cost far exceeds benefit for a library.
       </p>
     </div>
 
     <h3>Scenario B: Interface Adoption &mdash; RECOMMENDED</h3>
     <div class="card pro">
-      <h4>Implement go-error-family interfaces on FindingError + CLI boundary</h4>
+      <h4>
+        Implement go-error-family interfaces on FindingError + CLI boundary
+      </h4>
       <ul>
         <li>
-          Add <code>ErrorCode() string</code> to <code>FindingError</code> &rarr; implements
+          Add <code>ErrorCode() string</code> to
+          <code>FindingError</code> &rarr; implements
           <code>Coded</code>
         </li>
         <li>
-          Add <code>ErrorFamily() Family</code> with category-to-family mapping &rarr; implements
+          Add <code>ErrorFamily() Family</code> with category-to-family mapping
+          &rarr; implements
           <code>Classified</code>
         </li>
         <li>
-          Add <code>ErrorContext() map[string]string</code> from File/Position &rarr; implements
+          Add <code>ErrorContext() map[string]string</code> from File/Position
+          &rarr; implements
           <code>Contextual</code>
         </li>
-        <li>Keep all existing API, sentinels, categories &mdash; zero breaking changes</li>
         <li>
-          Adopt <code>HandleError</code> in <code>cmd/go-finding/main.go</code> for richer CLI
-          output
+          Keep all existing API, sentinels, categories &mdash; zero breaking
+          changes
         </li>
-        <li>go-error-family import only in <code>cmd/go-finding/</code> (not root package)</li>
+        <li>
+          Adopt <code>HandleError</code> in
+          <code>cmd/go-finding/main.go</code> for richer CLI output
+        </li>
+        <li>
+          go-error-family import only in <code>cmd/go-finding/</code> (not root
+          package)
+        </li>
       </ul>
-      <p><strong>Cost:</strong> ~3-4 hours. Additive only. No existing code changes.</p>
       <p>
-        <strong>Gain:</strong> Interoperability, richer CLI output, retry semantics available when
-        needed.
+        <strong>Cost:</strong> ~3-4 hours. Additive only. No existing code
+        changes.
       </p>
-      <p><strong>Net:</strong> <span class="tag tag-pro">Strongly Positive</span></p>
+      <p>
+        <strong>Gain:</strong> Interoperability, richer CLI output, retry
+        semantics available when needed.
+      </p>
+      <p>
+        <strong>Net:</strong> <span class="tag tag-pro">Strongly Positive</span>
+      </p>
     </div>
 
     <h3>Scenario C: No Adoption</h3>
     <div class="card neutral">
       <h4>Keep current system unchanged</h4>
       <ul>
-        <li>go-finding's error system is already well-designed for its domain</li>
-        <li>5 categories, 5 sentinels, structured FindingError with domain context</li>
+        <li>
+          go-finding's error system is already well-designed for its domain
+        </li>
+        <li>
+          5 categories, 5 sentinels, structured FindingError with domain context
+        </li>
         <li>The <code>Is()</code>/Unwrap() pattern is idiomatic Go</li>
       </ul>
       <p><strong>Cost:</strong> None.</p>
       <p>
-        <strong>Lost opportunity:</strong> Machine-readable codes, retry semantics, CLI boundary
-        improvements.
+        <strong>Lost opportunity:</strong> Machine-readable codes, retry
+        semantics, CLI boundary improvements.
       </p>
       <p>
         <strong>Net:</strong>
-        <span class="tag tag-neutral">Acceptable but leaves value on the table</span>
+        <span class="tag tag-neutral"
+          >Acceptable but leaves value on the table</span
+        >
       </p>
     </div>
 
@@ -940,8 +1077,9 @@ func (e *FindingError) IsRetryable() bool {
     return e.ErrorFamily().IsRetryable()
 }</pre>
       <p>
-        <strong>Note:</strong> Import only in the consumer, or define an internal adapter. Root
-        package stays dependency-free by using a sub-package for the bridge.
+        <strong>Note:</strong> Import only in the consumer, or define an
+        internal adapter. Root package stays dependency-free by using a
+        sub-package for the bridge.
       </p>
     </div>
 
@@ -960,8 +1098,9 @@ func main() {
     }
 }</pre>
       <p>
-        go-error-family is imported only in <code>cmd/go-finding/</code>, which already depends on
-        external packages. Root package remains dependency-free.
+        go-error-family is imported only in <code>cmd/go-finding/</code>, which
+        already depends on external packages. Root package remains
+        dependency-free.
       </p>
     </div>
 
@@ -1054,31 +1193,37 @@ finding.NewIOError("backup "+path, err).
     <!-- ═══════════════════════════════════════════════════════════════ -->
 
     <div class="card neutral">
-      <h4>Q1: Should the category-to-family mapping live in root or a bridge package?</h4>
+      <h4>
+        Q1: Should the category-to-family mapping live in root or a bridge
+        package?
+      </h4>
       <p>
-        If FindingError implements <code>Classified</code> directly, the root package imports
-        errorfamily. To preserve principle #12, create a <code>finding/errorfamily/</code> bridge
-        package instead. But this adds indirection. Decision needed.
+        If FindingError implements <code>Classified</code> directly, the root
+        package imports errorfamily. To preserve principle #12, create a
+        <code>finding/errorfamily/</code> bridge package instead. But this adds
+        indirection. Decision needed.
       </p>
     </div>
 
     <div class="card neutral">
       <h4>Q2: Should IO errors be Transient (retryable) or split?</h4>
       <p>
-        <code>"file not found"</code> is Rejection (permanent). <code>"permission denied"</code> is
-        Rejection (permanent). <code>"disk I/O error"</code> could be Transient. Current
-        <code>ErrCategoryIO</code> bundles them all. Mapping the whole category to Transient would
-        make <em>all</em> IO errors retryable, which is wrong. Per-error code classification may be
-        needed.
+        <code>"file not found"</code> is Rejection (permanent).
+        <code>"permission denied"</code> is Rejection (permanent).
+        <code>"disk I/O error"</code> could be Transient. Current
+        <code>ErrCategoryIO</code> bundles them all. Mapping the whole category
+        to Transient would make <em>all</em> IO errors retryable, which is
+        wrong. Per-error code classification may be needed.
       </p>
     </div>
 
     <div class="card neutral">
       <h4>Q3: Should pipeline retry logic use Family.IsRetryable()?</h4>
       <p>
-        Currently <code>retry.go</code> retries everything. Adopting Family-based retry would mean
-        only <code>Transient</code> errors get retried. This changes behavior (less aggressive
-        retry). Could be a feature or a regression depending on detector error patterns.
+        Currently <code>retry.go</code> retries everything. Adopting
+        Family-based retry would mean only <code>Transient</code> errors get
+        retried. This changes behavior (less aggressive retry). Could be a
+        feature or a regression depending on detector error patterns.
       </p>
     </div>
 
@@ -1087,15 +1232,20 @@ finding.NewIOError("backup "+path, err).
     <!-- ═══════════════════════════════════════════════════════════════ -->
 
     <p>
-      go-error-family is a well-designed library solving a real problem (structured error handling
-      at the CLI/HTTP boundary). But go-finding's error system is also well-designed for its domain
-      (static analysis with Finding/Position context).
+      go-error-family is a well-designed library solving a real problem
+      (structured error handling at the CLI/HTTP boundary). But go-finding's
+      error system is also well-designed for its domain (static analysis with
+      Finding/Position context).
     </p>
     <p>
-      The two systems are <strong>complementary, not competing</strong>. The right move is Scenario
-      B: implement go-error-family's consumer interfaces on FindingError for interoperability, adopt
-      HandleError in the CLI, and keep the domain-specific error type intact.
+      The two systems are <strong>complementary, not competing</strong>. The
+      right move is Scenario B: implement go-error-family's consumer interfaces
+      on FindingError for interoperability, adopt HandleError in the CLI, and
+      keep the domain-specific error type intact.
     </p>
-    <p>This gets ~80% of the benefit at ~5% of the cost, with zero breaking changes.</p>
+    <p>
+      This gets ~80% of the benefit at ~5% of the cost, with zero breaking
+      changes.
+    </p>
   </body>
 </html>

@@ -12,20 +12,20 @@ Fix the root cause of non-deterministic JSON/SARIF output: `encoding/json/v2` se
 
 ## a) FULLY DONE
 
-| #   | Item                                                                                                             | Evidence                                         |
-| --- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| 1   | Added `json.Deterministic(true)` to all 8 production marshal calls                                               | `json.go` (6 calls), `sarif_export.go` (2 calls) |
-| 2   | Verified no marshal calls in `cmd/`, `analysis/` modules                                                         | grep returned no matches                         |
-| 3   | Verified `pipeline/fix_edit.go` does NOT need the flag (`fixEditJSON` has no maps — only `int`, `int`, `[]byte`) | Manual inspection of struct definition           |
-| 4   | Bumped version from v1.4.1 → v1.4.2                                                                              | `version.go:12`                                  |
-| 5   | CHANGELOG.md updated with `[1.4.2]` section + version links at bottom                                            | Both edits applied                               |
-| 6   | AGENTS.md updated with determinism requirement note (any new marshal call MUST pass `json.Deterministic(true)`)  | Added at line 146                                |
-| 7   | Fixed golines formatting issue (lines >120 chars on PrettyJSON/PrettyJSONFiltered)                               | Wrapped to multi-line calls                      |
-| 8   | Build passes                                                                                                     | `go build ./...` — clean                         |
-| 9   | All tests pass with `-race -count=1` across all 4 modules                                                        | Core, Pipeline, Analysis, CLI                    |
-| 10  | GOWORK=off isolation test passes for core module                                                                 | Verified per-module replace directives           |
-| 11  | Linter passes — 0 issues                                                                                         | `golangci-lint run ./...`                        |
-| 12  | Committed (auto-git daemon)                                                                                      | `dbb4d0e` (code), `03f7786` (docs)               |
+| #  | Item                                                                                                             | Evidence                                         |
+| -- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| 1  | Added `json.Deterministic(true)` to all 8 production marshal calls                                               | `json.go` (6 calls), `sarif_export.go` (2 calls) |
+| 2  | Verified no marshal calls in `cmd/`, `analysis/` modules                                                         | grep returned no matches                         |
+| 3  | Verified `pipeline/fix_edit.go` does NOT need the flag (`fixEditJSON` has no maps — only `int`, `int`, `[]byte`) | Manual inspection of struct definition           |
+| 4  | Bumped version from v1.4.1 → v1.4.2                                                                              | `version.go:12`                                  |
+| 5  | CHANGELOG.md updated with `[1.4.2]` section + version links at bottom                                            | Both edits applied                               |
+| 6  | AGENTS.md updated with determinism requirement note (any new marshal call MUST pass `json.Deterministic(true)`)  | Added at line 146                                |
+| 7  | Fixed golines formatting issue (lines >120 chars on PrettyJSON/PrettyJSONFiltered)                               | Wrapped to multi-line calls                      |
+| 8  | Build passes                                                                                                     | `go build ./...` — clean                         |
+| 9  | All tests pass with `-race -count=1` across all 4 modules                                                        | Core, Pipeline, Analysis, CLI                    |
+| 10 | GOWORK=off isolation test passes for core module                                                                 | Verified per-module replace directives           |
+| 11 | Linter passes — 0 issues                                                                                         | `golangci-lint run ./...`                        |
+| 12 | Committed (auto-git daemon)                                                                                      | `dbb4d0e` (code), `03f7786` (docs)               |
 
 ### Files Changed
 
@@ -47,22 +47,22 @@ Nothing. Everything I started, I finished.
 
 ## c) NOT STARTED
 
-| #   | Item                                       | Why                                                                                                                                              | Impact                                                               |
-| --- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| ~~1~~ | ~~**Git tag `v1.4.2` was NOT created**~~ | ~~I bumped `version.go` but never ran `git tag v1.4.2`.~~ **DONE** — Tagged as `v1.5.0` instead (minor bump). All 4 module tags pushed to remote. |
-| 2   | **Consumer repo go.mod bump**              | This is in a different repo (not go-finding). The user mentioned it but it's out of scope for this repo.                                         | Deferred to consumer repo session.                                   |
-| 3   | **Consumer repo `normalizeJSON` deletion** | Same — different repo.                                                                                                                           | Deferred to consumer repo session.                                   |
-| 4   | **`scripts/version-check.sh` not run**     | AGENTS.md says to run it after version changes. Would verify `version.go` matches git tag — but since no tag exists, it would fail.              | Medium — should run after tagging.                                   |
+| #     | Item                                       | Why                                                                                                                                               | Impact                             |
+| ----- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| ~~1~~ | ~~**Git tag `v1.4.2` was NOT created**~~   | ~~I bumped `version.go` but never ran `git tag v1.4.2`.~~ **DONE** — Tagged as `v1.5.0` instead (minor bump). All 4 module tags pushed to remote. |                                    |
+| 2     | **Consumer repo go.mod bump**              | This is in a different repo (not go-finding). The user mentioned it but it's out of scope for this repo.                                          | Deferred to consumer repo session. |
+| 3     | **Consumer repo `normalizeJSON` deletion** | Same — different repo.                                                                                                                            | Deferred to consumer repo session. |
+| 4     | **`scripts/version-check.sh` not run**     | AGENTS.md says to run it after version changes. Would verify `version.go` matches git tag — but since no tag exists, it would fail.               | Medium — should run after tagging. |
 
 ---
 
 ## d) TOTALLY FUCKED UP
 
-| #   | What                                            | Severity | Why It Matters                                                                                                                                                                                                                                                                                                                                                                                  |
-| --- | ----------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~1~~ | ~~**No determinism regression test**~~              | ~~**HIGH**~~ **DONE** — 8 byte-identity regression tests written (`fe216d4`). All 8 proven to fail without `json.Deterministic(true)`. |
-| ~~2~~ | ~~**Never verified Deterministic actually works**~~ | ~~Medium~~ **DONE** — Empirically verified by next session: ALL map types are non-deterministic without the flag. 8 tests prove it. |
-| ~~3~~ | ~~**Git tag omission**~~                            | ~~**HIGH**~~ **DONE** — Tagged as `v1.5.0` and pushed to remote. |
+| #     | What                                                | Severity                                                                                                                               | Why It Matters |
+| ----- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| ~~1~~ | ~~**No determinism regression test**~~              | ~~**HIGH**~~ **DONE** — 8 byte-identity regression tests written (`fe216d4`). All 8 proven to fail without `json.Deterministic(true)`. |                |
+| ~~2~~ | ~~**Never verified Deterministic actually works**~~ | ~~Medium~~ **DONE** — Empirically verified by next session: ALL map types are non-deterministic without the flag. 8 tests prove it.    |                |
+| ~~3~~ | ~~**Git tag omission**~~                            | ~~**HIGH**~~ **DONE** — Tagged as `v1.5.0` and pushed to remote.                                                                       |                |
 
 ---
 

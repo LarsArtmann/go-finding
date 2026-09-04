@@ -23,7 +23,7 @@ Explained the one behavioral breaking change in v1.3.0 with a comparison table:
 | Aspect            | Before (v1.2.1) | After (v1.3.0)           |
 | ----------------- | --------------- | ------------------------ |
 | Severity prefix   | `[ERROR]`       | `🟠 ERROR` (emoji badge) |
-| Suggestion prefix | `Suggestion: `  | `💡 `                    |
+| Suggestion prefix | `Suggestion:`   | `💡`                     |
 | Category suffix   | absent          | `[security]`             |
 
 Presented 3 options (keep, revert+FormatTextRich, options pattern), recommended **B (revert + FormatTextRich)** as the only option consistent with v1.3.0's "additive only, zero breaking changes" principle. User asked to "explain" — explanation delivered, decision deferred to user.

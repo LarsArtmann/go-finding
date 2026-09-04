@@ -65,14 +65,14 @@
 
         /* --- Type stacks (system only — zero external fonts) --- */
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -280,15 +280,27 @@
       }
       .card-problem {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .card-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .card-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
 
       /* --- Issue cards --- */
@@ -301,15 +313,27 @@
       }
       .issue-critical {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-important {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-nice {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .issue h3 {
         margin-bottom: 0.3rem;
@@ -816,9 +840,9 @@
           <div class="hero-badge">FULL CODE REVIEW</div>
           <h1>go-finding — Senior Architect Audit</h1>
           <p class="hero-subtitle">
-            File-by-file review of the top 20 production files (LOC-ranked) plus targeted
-            spot-checks across the codebase. Focus: type-safety, split brains, duplications,
-            architectural debt, bugs.
+            File-by-file review of the top 20 production files (LOC-ranked) plus
+            targeted spot-checks across the codebase. Focus: type-safety, split
+            brains, duplications, architectural debt, bugs.
           </p>
         </div>
 
@@ -863,16 +887,20 @@
         <div class="card card-solution">
           <h4>Bottom line: production-grade, type-safe, well-tested</h4>
           <p>
-            Visited the 20 highest-LOC production files plus targeted spot-checks (Clone,
-            validation, SARIF, LSP, fix engine).
-            <strong>Zero critical bugs. Zero split brains. Zero duplications</strong> (per
-            art-dupl). The codebase reflects many prior review cycles — most issues found in this
-            audit are <em>refinements</em> already documented in <code>TODO_LIST.md</code> via the
-            data-model, naming, and architecture reviews. Type-safety is strong: named types
-            everywhere, <code>Confidence.Clamp()</code>, <code>FixStrategy.Normalize()</code>. The
-            remaining debt is concentrated in two areas: the <code>Validate()</code> complexity (32)
-            and the <code>makezero</code> linter producing false positives on legitimate
-            <code>make([]T, n)</code> patterns.
+            Visited the 20 highest-LOC production files plus targeted
+            spot-checks (Clone, validation, SARIF, LSP, fix engine).
+            <strong
+              >Zero critical bugs. Zero split brains. Zero duplications</strong
+            >
+            (per art-dupl). The codebase reflects many prior review cycles —
+            most issues found in this audit are <em>refinements</em> already
+            documented in <code>TODO_LIST.md</code> via the data-model, naming,
+            and architecture reviews. Type-safety is strong: named types
+            everywhere, <code>Confidence.Clamp()</code>,
+            <code>FixStrategy.Normalize()</code>. The remaining debt is
+            concentrated in two areas: the <code>Validate()</code> complexity
+            (32) and the <code>makezero</code> linter producing false positives
+            on legitimate <code>make([]T, n)</code> patterns.
           </p>
         </div>
 
@@ -903,15 +931,18 @@
               <td>makezero</td>
               <td>4</td>
               <td>0</td>
-              <td>4 — <code>make([]T, n)</code> with non-zero length is correct</td>
+              <td>
+                4 — <code>make([]T, n)</code> with non-zero length is correct
+              </td>
             </tr>
           </tbody>
         </table>
 
         <p>
           <strong>Recommendation:</strong> Disable <code>makezero</code> in
-          <code>.golangci.yml</code> or scope it to <code>make([]T, 0)</code> patterns only. It
-          currently fires on every intentional fixed-length allocation.
+          <code>.golangci.yml</code> or scope it to
+          <code>make([]T, 0)</code> patterns only. It currently fires on every
+          intentional fixed-length allocation.
         </p>
 
         <!-- Findings as Cards -->
@@ -920,9 +951,10 @@
         <div class="card card-warning">
           <h4>Finding.Validate() is a 137-line god-function</h4>
           <p>
-            Single function in <code>finding_validate.go:10-137</code> validates 15+ finding fields.
-            Cyclomatic complexity 32 (gocyclo threshold 25). Behavior is correct but the function is
-            a barrier to extension: adding a new field means modifying the largest function in the
+            Single function in <code>finding_validate.go:10-137</code> validates
+            15+ finding fields. Cyclomatic complexity 32 (gocyclo threshold 25).
+            Behavior is correct but the function is a barrier to extension:
+            adding a new field means modifying the largest function in the
             codebase. Already noted in TODO_LIST from code-quality-scan.
           </p>
         </div>
@@ -930,12 +962,14 @@
         <div class="card card-problem">
           <h4>makezero linter produces 4 false positives</h4>
           <p>
-            Across <code>merge.go:72</code>, <code>finding_methods.go:30,51</code>,
-            <code>pipeline/pipeline.go:48</code>, <code>lsp.go:212</code>. All use
-            <code>make([]T, len(x))</code> with non-zero initial length for direct indexed
-            assignment. The linter wants <code>make([]T, 0, len(x))</code> + <code>append</code>.
-            Both patterns are correct; the current one is more readable and avoids append's bounds
-            checks. Noise that obscures real issues.
+            Across <code>merge.go:72</code>,
+            <code>finding_methods.go:30,51</code>,
+            <code>pipeline/pipeline.go:48</code>, <code>lsp.go:212</code>. All
+            use <code>make([]T, len(x))</code> with non-zero initial length for
+            direct indexed assignment. The linter wants
+            <code>make([]T, 0, len(x))</code> + <code>append</code>. Both
+            patterns are correct; the current one is more readable and avoids
+            append's bounds checks. Noise that obscures real issues.
           </p>
         </div>
 
@@ -943,11 +977,11 @@
           <h4>Reference issues already documented elsewhere</h4>
           <p>
             This review confirms (does not duplicate) issues already in
-            <code>TODO_LIST.md</code> from earlier skills: branded primitive types
-            (data-model-review), <code>FindingProcessor</code> →
-            <code>FindingTransformer</code> rename (naming-review), pipeline/ subpackage split
-            (architecture-review), <code>Position</code> sentinel unification (data-model-review
-            v2.0).
+            <code>TODO_LIST.md</code> from earlier skills: branded primitive
+            types (data-model-review), <code>FindingProcessor</code> →
+            <code>FindingTransformer</code> rename (naming-review), pipeline/
+            subpackage split (architecture-review),
+            <code>Position</code> sentinel unification (data-model-review v2.0).
           </p>
         </div>
 
@@ -955,53 +989,67 @@
         <h2 id="issues"><span class="num">02</span>Issue Cards</h2>
 
         <div class="issue issue-important">
-          <span class="severity severity-important">Important &middot; Type-safety debt</span>
+          <span class="severity severity-important"
+            >Important &middot; Type-safety debt</span
+          >
           <h3>Position zero-value lies about Offset</h3>
           <div class="where">
-            position.go:23-29 &middot; cascades into Range, Finding.Related, FixEdit
+            position.go:23-29 &middot; cascades into Range, Finding.Related,
+            FixEdit
           </div>
           <p>
-            <code>Position{}</code> has <code>Offset=0</code> (valid byte position!) but
-            <code>File=""</code> (invalid). <code>IsZero()</code> returns false. Every consumer must
-            remember <code>HasOffset()</code> rather than offset&gt;0. Documented in AGENTS.md but
-            still bites newcomers.
+            <code>Position{}</code> has <code>Offset=0</code> (valid byte
+            position!) but <code>File=""</code> (invalid).
+            <code>IsZero()</code> returns false. Every consumer must remember
+            <code>HasOffset()</code> rather than offset&gt;0. Documented in
+            AGENTS.md but still bites newcomers.
           </p>
           <div class="callout callout-solution">
             <strong>Fix (v2.0, breaking)</strong>
-            Adopt <code>Option[int]</code> generic for all optional Position fields. Documented as
-            P1 in data-model-review.
+            Adopt <code>Option[int]</code> generic for all optional Position
+            fields. Documented as P1 in data-model-review.
           </div>
         </div>
 
         <div class="issue issue-important">
-          <span class="severity severity-important">Important &middot; Concurrency footgun</span>
+          <span class="severity severity-important"
+            >Important &middot; Concurrency footgun</span
+          >
           <h3>SeverityAliases is a mutable global map</h3>
           <div class="where">severity.go:181</div>
           <p>
-            <code>var SeverityAliases = map[string]Severity{...}</code> is documented as
-            consumer-mutable. Concurrent read-after-write panics on Go maps. P5 in
-            data-model-review.
+            <code>var SeverityAliases = map[string]Severity{...}</code> is
+            documented as consumer-mutable. Concurrent read-after-write panics
+            on Go maps. P5 in data-model-review.
           </p>
         </div>
 
         <div class="issue issue-nice">
-          <span class="severity severity-nice">Nice to have &middot; Linter noise</span>
+          <span class="severity severity-nice"
+            >Nice to have &middot; Linter noise</span
+          >
           <h3>makezero false positives on intentional allocations</h3>
           <div class="where">
-            .golangci.yml &middot; merge.go:72, finding_methods.go:30+51, pipeline.go:48, lsp.go:212
+            .golangci.yml &middot; merge.go:72, finding_methods.go:30+51,
+            pipeline.go:48, lsp.go:212
           </div>
           <p>
-            Five legitimate fixed-length allocations flagged. Either disable makezero or scope it to
-            zero-length patterns.
+            Five legitimate fixed-length allocations flagged. Either disable
+            makezero or scope it to zero-length patterns.
           </p>
         </div>
 
         <div class="issue issue-nice">
-          <span class="severity severity-nice">Nice to have &middot; Naming</span>
+          <span class="severity severity-nice"
+            >Nice to have &middot; Naming</span
+          >
           <h3>Adapters re-exports, Processor verb vague</h3>
-          <div class="where">pipeline/adapters.go:12-24 &middot; pipeline/adapters.go:28-34</div>
+          <div class="where">
+            pipeline/adapters.go:12-24 &middot; pipeline/adapters.go:28-34
+          </div>
           <p>
-            Already covered by naming-review and architecture-review. Listing here for completeness.
+            Already covered by naming-review and architecture-review. Listing
+            here for completeness.
           </p>
         </div>
 
@@ -1013,10 +1061,11 @@
             <div class="text">
               <strong>Clone() is genuinely deep</strong>
               <span
-                ><code>finding_methods.go:21-60</code> deep-copies <code>Range</code>,
-                <code>Related</code> (with each <code>Range</code>), <code>Suppression</code> (with
-                <code>ExpiresAt</code>), <code>Tags</code>, <code>Metadata</code>. No aliasing bugs
-                possible.</span
+                ><code>finding_methods.go:21-60</code> deep-copies
+                <code>Range</code>, <code>Related</code> (with each
+                <code>Range</code>), <code>Suppression</code> (with
+                <code>ExpiresAt</code>), <code>Tags</code>,
+                <code>Metadata</code>. No aliasing bugs possible.</span
               >
             </div>
           </div>
@@ -1025,20 +1074,23 @@
             <div class="text">
               <strong>Pipeline constructor is fail-fast</strong>
               <span
-                ><code>pipeline.go:45-86</code> validates config and creates FixApplier eagerly so
-                backup-dir failures surface at construction, not at first Apply. Strong
-                contract.</span
+                ><code>pipeline.go:45-86</code> validates config and creates
+                FixApplier eagerly so backup-dir failures surface at
+                construction, not at first Apply. Strong contract.</span
               >
             </div>
           </div>
           <div class="strength">
             <div class="check">+</div>
             <div class="text">
-              <strong>FixEngine descending-offset application is correct</strong>
+              <strong
+                >FixEngine descending-offset application is correct</strong
+              >
               <span
-                ><code>fix_engine.go:89-95</code>: sorts edits descending by offset before applying
-                so earlier edits don't shift later ones' positions. Single-pass O(n log n) for sort
-                + O(n) apply. Documented invariants preserved.</span
+                ><code>fix_engine.go:89-95</code>: sorts edits descending by
+                offset before applying so earlier edits don't shift later ones'
+                positions. Single-pass O(n log n) for sort + O(n) apply.
+                Documented invariants preserved.</span
               >
             </div>
           </div>
@@ -1047,10 +1099,10 @@
             <div class="text">
               <strong>FixApplier rollback is comprehensive</strong>
               <span
-                ><code>fix_applier.go:117</code>: on mid-apply cancellation, calls
-                <code>RollbackAll(modified)</code> before returning error. On per-file failure,
-                restores current file then rolls back everything else. Atomicity at the file
-                level.</span
+                ><code>fix_applier.go:117</code>: on mid-apply cancellation,
+                calls <code>RollbackAll(modified)</code> before returning error.
+                On per-file failure, restores current file then rolls back
+                everything else. Atomicity at the file level.</span
               >
             </div>
           </div>
@@ -1059,9 +1111,10 @@
             <div class="text">
               <strong>SARIF round-trip is property-bag based</strong>
               <span
-                ><code>sarif_export.go</code> + <code>sarif_import.go</code>: every non-standard
-                field flows through the <code>go-finding/*</code> property bag. Losses are
-                documented per-field (suppression, critical severity). Tests verify
+                ><code>sarif_export.go</code> + <code>sarif_import.go</code>:
+                every non-standard field flows through the
+                <code>go-finding/*</code> property bag. Losses are documented
+                per-field (suppression, critical severity). Tests verify
                 round-trip.</span
               >
             </div>
@@ -1071,9 +1124,9 @@
             <div class="text">
               <strong>LSP conversion documents its losses</strong>
               <span
-                ><code>lsp.go:68</code>: "This is a lossy conversion - some fields (FixStrategy,
-                Confidence, etc.) are lost." Honest contract; metadata tags preserve what SARIF
-                can't.</span
+                ><code>lsp.go:68</code>: "This is a lossy conversion - some
+                fields (FixStrategy, Confidence, etc.) are lost." Honest
+                contract; metadata tags preserve what SARIF can't.</span
               >
             </div>
           </div>
@@ -1082,9 +1135,11 @@
             <div class="text">
               <strong>Parallel detection uses errgroup correctly</strong>
               <span
-                ><code>pipeline_detect.go:113-143</code>: <code>errgroup.WithContext</code> cancels
-                siblings on first error; mutex-protected <code>append</code> is the only shared
-                state. Go 1.22+ loop variable semantics make the goroutine capture safe.</span
+                ><code>pipeline_detect.go:113-143</code>:
+                <code>errgroup.WithContext</code> cancels siblings on first
+                error; mutex-protected <code>append</code> is the only shared
+                state. Go 1.22+ loop variable semantics make the goroutine
+                capture safe.</span
               >
             </div>
           </div>
@@ -1093,9 +1148,10 @@
             <div class="text">
               <strong>HasFix() / IsAutoFixable() lattice is explicit</strong>
               <span
-                ><code>finding_methods.go:73-99</code> documents the fixability lattice:
-                <code>IsAutoFixable() ⟹ HasFix()</code> (strict subset). Aligns with
-                <code>Validate()</code> semantics for Direct strategy.</span
+                ><code>finding_methods.go:73-99</code> documents the fixability
+                lattice: <code>IsAutoFixable() ⟹ HasFix()</code> (strict
+                subset). Aligns with <code>Validate()</code> semantics for
+                Direct strategy.</span
               >
             </div>
           </div>
@@ -1116,13 +1172,17 @@
               <td>1</td>
               <td><code>pipeline/pipeline_detect.go</code></td>
               <td>327</td>
-              <td class="yes">Clean — parallel/sequential split is exemplary</td>
+              <td class="yes">
+                Clean — parallel/sequential split is exemplary
+              </td>
             </tr>
             <tr>
               <td>2</td>
               <td><code>sarif_export.go</code></td>
               <td>307</td>
-              <td class="yes">Clean — streaming + filtered variants all check ctx</td>
+              <td class="yes">
+                Clean — streaming + filtered variants all check ctx
+              </td>
             </tr>
             <tr>
               <td>3</td>
@@ -1212,13 +1272,17 @@
               <td>17</td>
               <td><code>severity.go</code></td>
               <td>219</td>
-              <td class="yes">Mostly clean — global mutable aliases map (P5)</td>
+              <td class="yes">
+                Mostly clean — global mutable aliases map (P5)
+              </td>
             </tr>
             <tr>
               <td>18</td>
               <td><code>report.go</code></td>
               <td>219</td>
-              <td class="yes">Clean — thread-safe with deprecated Findings field</td>
+              <td class="yes">
+                Clean — thread-safe with deprecated Findings field
+              </td>
             </tr>
             <tr>
               <td>19</td>
@@ -1241,8 +1305,9 @@
           <div class="migration-content">
             <h4>Now: Disable makezero in .golangci.yml</h4>
             <p>
-              Five false positives waste review attention. Either remove <code>makezero</code> from
-              enabled linters or restrict its scope. One-line config change.
+              Five false positives waste review attention. Either remove
+              <code>makezero</code> from enabled linters or restrict its scope.
+              One-line config change.
             </p>
           </div>
         </div>
@@ -1250,10 +1315,14 @@
           <div class="migration-num">2</div>
           <div class="migration-content">
             <h4>
-              Now: Rename <code>fs</code> → <code>strategy</code>, <code>rt</code> →
+              Now: Rename <code>fs</code> → <code>strategy</code>,
+              <code>rt</code> →
               <code>result</code>
             </h4>
-            <p>Trivial; kills 2 varnamelen warnings. Already in TODO_LIST from naming-review.</p>
+            <p>
+              Trivial; kills 2 varnamelen warnings. Already in TODO_LIST from
+              naming-review.
+            </p>
           </div>
         </div>
         <div class="migration-step">
@@ -1261,8 +1330,9 @@
           <div class="migration-content">
             <h4>Short-term: Decompose <code>Finding.Validate()</code></h4>
             <p>
-              Extract per-field validators. Non-breaking; drops complexity from 32 to ~10. Already
-              in TODO_LIST HIGH priority from code-quality-scan.
+              Extract per-field validators. Non-breaking; drops complexity from
+              32 to ~10. Already in TODO_LIST HIGH priority from
+              code-quality-scan.
             </p>
           </div>
         </div>
@@ -1271,9 +1341,9 @@
           <div class="migration-content">
             <h4>v1.0: Apply TODO_LIST.md v1.0 cleanup batch</h4>
             <p>
-              Branded types, SeverityAliases mutex, FindingProcessor rename, GetCategory rename,
-              Info suffix removal, adapters.go re-export removal. All listed in TODO_LIST MEDIUM
-              section.
+              Branded types, SeverityAliases mutex, FindingProcessor rename,
+              GetCategory rename, Info suffix removal, adapters.go re-export
+              removal. All listed in TODO_LIST MEDIUM section.
             </p>
           </div>
         </div>
@@ -1282,16 +1352,17 @@
           <div class="migration-content">
             <h4>v2.0: Apply TODO_LIST.md v2.0 redesign batch</h4>
             <p>
-              Position Option[T], FixStrategy interface union, Finding composition, TagSet. All
-              listed in TODO_LIST DEFERRED v2.0 section.
+              Position Option[T], FixStrategy interface union, Finding
+              composition, TagSet. All listed in TODO_LIST DEFERRED v2.0
+              section.
             </p>
           </div>
         </div>
 
         <footer class="footer">
-          Generated 2026-06-23 &middot; 20 files reviewed in detail, ~95 production files
-          spot-checked via lint + vet + tests &middot; All verdicts backed by reading the actual
-          code
+          Generated 2026-06-23 &middot; 20 files reviewed in detail, ~95
+          production files spot-checked via lint + vet + tests &middot; All
+          verdicts backed by reading the actual code
         </footer>
       </main>
     </div>

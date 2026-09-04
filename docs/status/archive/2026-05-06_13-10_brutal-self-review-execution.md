@@ -89,38 +89,38 @@
 
 ### P0 — Must Do Before v1.0
 
-| #   | Item                                     | Location             | Impact                               |
-| --- | ---------------------------------------- | -------------------- | ------------------------------------ |
-| 1   | Decide `NewFinding` API pattern          | `finding.go`         | Breaking API decision blocking v1.0  |
-| 2   | API stability review                     | All exported symbols | Required for v1.0 lock               |
-| 3   | Centralize triage logic                  | 3 files              | Correctness risk                     |
-| 4   | Decide domain-specific provider location | Architecture         | Affects module structure permanently |
+| # | Item                                     | Location             | Impact                               |
+| - | ---------------------------------------- | -------------------- | ------------------------------------ |
+| 1 | Decide `NewFinding` API pattern          | `finding.go`         | Breaking API decision blocking v1.0  |
+| 2 | API stability review                     | All exported symbols | Required for v1.0 lock               |
+| 3 | Centralize triage logic                  | 3 files              | Correctness risk                     |
+| 4 | Decide domain-specific provider location | Architecture         | Affects module structure permanently |
 
 ### P1 — Should Do Before v1.0
 
-| #   | Item                                               | Location                      | Impact                                  |
-| --- | -------------------------------------------------- | ----------------------------- | --------------------------------------- |
-| 5   | Replace `go.yaml.in/yaml/v3` with `go-faster/yaml` | `cmd/go-finding/config.go:12` | Banned library per how-to-golang policy |
-| 6   | Decompose `FindingsFromSARIF` (CC 90)              | `sarif_import.go`             | Cognitive complexity 90 (threshold 35)  |
-| 7   | Error wrapping consistency audit                   | Various                       | `wrapcheck` linter catches gaps         |
-| 8   | Refactor CLI `run()` for testability               | `cmd/go-finding/main.go`      | Uses global flag state                  |
-| 9   | Add `Properties map[string]any`                    | `finding.go`                  | Structured SARIF round-trip             |
-| 10  | `Confidence` strong type (28 call sites)           | `finding.go:37`               | Type safety                             |
-| 11  | Add `WriteSARIF` error-path tests                  | `sarif_test.go`               | 75% coverage, failing writer untested   |
-| 12  | Context-cancel tests for partial detection         | `pipeline/partial_test.go`    | Cancel paths untested                   |
-| 13  | Unify `Tag` deprecation                            | Various test files            | Inconsistent state                      |
+| #  | Item                                               | Location                      | Impact                                  |
+| -- | -------------------------------------------------- | ----------------------------- | --------------------------------------- |
+| 5  | Replace `go.yaml.in/yaml/v3` with `go-faster/yaml` | `cmd/go-finding/config.go:12` | Banned library per how-to-golang policy |
+| 6  | Decompose `FindingsFromSARIF` (CC 90)              | `sarif_import.go`             | Cognitive complexity 90 (threshold 35)  |
+| 7  | Error wrapping consistency audit                   | Various                       | `wrapcheck` linter catches gaps         |
+| 8  | Refactor CLI `run()` for testability               | `cmd/go-finding/main.go`      | Uses global flag state                  |
+| 9  | Add `Properties map[string]any`                    | `finding.go`                  | Structured SARIF round-trip             |
+| 10 | `Confidence` strong type (28 call sites)           | `finding.go:37`               | Type safety                             |
+| 11 | Add `WriteSARIF` error-path tests                  | `sarif_test.go`               | 75% coverage, failing writer untested   |
+| 12 | Context-cancel tests for partial detection         | `pipeline/partial_test.go`    | Cancel paths untested                   |
+| 13 | Unify `Tag` deprecation                            | Various test files            | Inconsistent state                      |
 
 ### P2 — Nice to Have
 
-| #   | Item                                       | Location             |
-| --- | ------------------------------------------ | -------------------- |
-| 14  | SARIF schema validation test               | `sarif_test.go`      |
-| 15  | Benchmark regression tracking              | CI                   |
-| 16  | `io.WriterTo` for SARIF                    | `sarif.go`           |
-| 17  | Nix flake migration                        | Full project         |
-| 18  | Structured logging (`slog`)                | `cmd/` + `pipeline/` |
-| 19  | `Category.IsValid()` strict validation     | `category.go`        |
-| 20  | Document SARIF round-trip losses for users | User-facing docs     |
+| #  | Item                                       | Location             |
+| -- | ------------------------------------------ | -------------------- |
+| 14 | SARIF schema validation test               | `sarif_test.go`      |
+| 15 | Benchmark regression tracking              | CI                   |
+| 16 | `io.WriterTo` for SARIF                    | `sarif.go`           |
+| 17 | Nix flake migration                        | Full project         |
+| 18 | Structured logging (`slog`)                | `cmd/` + `pipeline/` |
+| 19 | `Category.IsValid()` strict validation     | `category.go`        |
+| 20 | Document SARIF round-trip losses for users | User-facing docs     |
 
 ---
 
@@ -189,33 +189,33 @@ The SARIF import function has cognitive complexity of 90 (threshold is 35). It's
 
 ## f) Top 25 Things to Get Done Next
 
-| Priority | #   | Item                                               | Effort | Impact | Category      |
-| -------- | --- | -------------------------------------------------- | ------ | ------ | ------------- |
-| P0       | 1   | Centralize triage logic (split brain fix)          | M      | HIGH   | Correctness   |
-| P0       | 2   | Decide `NewFinding` API pattern                    | S      | HIGH   | Architecture  |
-| P0       | 3   | API stability review for v1.0 lock                 | M      | HIGH   | Architecture  |
-| P0       | 4   | Replace `go.yaml.in/yaml/v3` with `go-faster/yaml` | S      | MEDIUM | Dependencies  |
-| P0       | 5   | Remove deprecated `diagnostic.go` wrappers         | S      | MEDIUM | Cleanup       |
-| P1       | 6   | `Confidence` strong type (28 call sites)           | L      | HIGH   | Type Safety   |
-| P1       | 7   | Add `Properties map[string]any` to Finding         | M      | MEDIUM | Type Safety   |
-| P1       | 8   | Wire FixProviders through CLI                      | M      | MEDIUM | Features      |
-| P1       | 9   | Decompose `FindingsFromSARIF` (CC 90→<35)          | M      | MEDIUM | Code Quality  |
-| P1       | 10  | `WriteSARIF` error-path tests                      | S      | MEDIUM | Testing       |
-| P1       | 11  | Context-cancel tests (partial detection)           | S      | MEDIUM | Testing       |
-| P1       | 12  | Error wrapping consistency audit                   | S      | LOW    | Code Quality  |
-| P1       | 13  | Refactor CLI `run()` for testability               | M      | MEDIUM | Code Quality  |
-| P1       | 14  | Decide domain-specific provider location           | S      | HIGH   | Architecture  |
-| P2       | 15  | `Category.IsValid()` strict validation             | S      | MEDIUM | Type Safety   |
-| P2       | 16  | Unify `Tag` deprecation (remove `WithTag`)         | S      | LOW    | Cleanup       |
-| P2       | 17  | SARIF schema validation test                       | M      | LOW    | Testing       |
-| P2       | 18  | `io.WriterTo` for SARIF streaming                  | S      | LOW    | Performance   |
-| P2       | 19  | Benchmark regression tracking in CI                | S      | LOW    | Tooling       |
-| P2       | 20  | Structured logging (`slog`) in cmd/pipeline        | M      | MEDIUM | Quality       |
-| P2       | 21  | Nix flake migration (replace justfile)             | L      | MEDIUM | Tooling       |
-| P2       | 22  | Document SARIF round-trip losses for users         | S      | LOW    | Documentation |
-| P3       | 23  | Plugin architecture for detectors                  | M      | MEDIUM | Features      |
-| P3       | 24  | Styled CLI output (`lipgloss`)                     | M      | LOW    | UX            |
-| P3       | 25  | Progress reporting to Pipeline callbacks           | S      | MEDIUM | Features      |
+| Priority | #  | Item                                               | Effort | Impact | Category      |
+| -------- | -- | -------------------------------------------------- | ------ | ------ | ------------- |
+| P0       | 1  | Centralize triage logic (split brain fix)          | M      | HIGH   | Correctness   |
+| P0       | 2  | Decide `NewFinding` API pattern                    | S      | HIGH   | Architecture  |
+| P0       | 3  | API stability review for v1.0 lock                 | M      | HIGH   | Architecture  |
+| P0       | 4  | Replace `go.yaml.in/yaml/v3` with `go-faster/yaml` | S      | MEDIUM | Dependencies  |
+| P0       | 5  | Remove deprecated `diagnostic.go` wrappers         | S      | MEDIUM | Cleanup       |
+| P1       | 6  | `Confidence` strong type (28 call sites)           | L      | HIGH   | Type Safety   |
+| P1       | 7  | Add `Properties map[string]any` to Finding         | M      | MEDIUM | Type Safety   |
+| P1       | 8  | Wire FixProviders through CLI                      | M      | MEDIUM | Features      |
+| P1       | 9  | Decompose `FindingsFromSARIF` (CC 90→<35)          | M      | MEDIUM | Code Quality  |
+| P1       | 10 | `WriteSARIF` error-path tests                      | S      | MEDIUM | Testing       |
+| P1       | 11 | Context-cancel tests (partial detection)           | S      | MEDIUM | Testing       |
+| P1       | 12 | Error wrapping consistency audit                   | S      | LOW    | Code Quality  |
+| P1       | 13 | Refactor CLI `run()` for testability               | M      | MEDIUM | Code Quality  |
+| P1       | 14 | Decide domain-specific provider location           | S      | HIGH   | Architecture  |
+| P2       | 15 | `Category.IsValid()` strict validation             | S      | MEDIUM | Type Safety   |
+| P2       | 16 | Unify `Tag` deprecation (remove `WithTag`)         | S      | LOW    | Cleanup       |
+| P2       | 17 | SARIF schema validation test                       | M      | LOW    | Testing       |
+| P2       | 18 | `io.WriterTo` for SARIF streaming                  | S      | LOW    | Performance   |
+| P2       | 19 | Benchmark regression tracking in CI                | S      | LOW    | Tooling       |
+| P2       | 20 | Structured logging (`slog`) in cmd/pipeline        | M      | MEDIUM | Quality       |
+| P2       | 21 | Nix flake migration (replace justfile)             | L      | MEDIUM | Tooling       |
+| P2       | 22 | Document SARIF round-trip losses for users         | S      | LOW    | Documentation |
+| P3       | 23 | Plugin architecture for detectors                  | M      | MEDIUM | Features      |
+| P3       | 24 | Styled CLI output (`lipgloss`)                     | M      | LOW    | UX            |
+| P3       | 25 | Progress reporting to Pipeline callbacks           | S      | MEDIUM | Features      |
 
 ---
 

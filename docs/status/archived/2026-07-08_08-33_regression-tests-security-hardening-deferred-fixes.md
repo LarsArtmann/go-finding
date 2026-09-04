@@ -27,28 +27,28 @@ This session executed a 12-tier, 54-task comprehensive plan derived from the pri
 
 ### Regression Tests for Prior Session's Fixes (8 tests)
 
-| #   | Test                                                | File                        | Protects Against                                                 |
-| --- | --------------------------------------------------- | --------------------------- | ---------------------------------------------------------------- |
-| 1   | `TestReport_UnmarshalJSON_ConcurrentSafety`         | `json_test.go`              | UnmarshalJSON data race (10 writers + 10 readers, race detector) |
-| 2   | `TestSARIFSuppressionRoundTrip_DifferentRule`       | `sarif_suppression_test.go` | SARIF Suppression.Rule loss when Rule != Finding.Rule            |
-| 3   | `TestLSPRoundTrip_SeverityCritical`                 | `lsp_test.go`               | LSP SeverityCritical collapsed to Error                          |
-| 4   | `TestCorrelate_ZeroLineFindings`                    | `merge_correlate_test.go`   | Findings at Line=0 correlating at confidence 1.0                 |
-| 5   | `TestPipeline_MetricsAvailableOnErrorPath`          | `pipeline_test.go`          | Metrics dropped on error/cancel paths                            |
-| 6   | `TestPipeline_StageAfterHookErrorAborts`            | `pipeline_test.go`          | StageAfter hook errors silently discarded                        |
-| 7   | `TestPipeline_TotalDetectedDeduplicated`            | `pipeline_test.go`          | TotalDetected counting duplicates across iterations              |
-| 8   | `TestPipeline_SuggestFindingsShiftedAfterDirectFix` | `pipeline_test.go`          | Suggest findings retaining stale line numbers after fixes        |
+| # | Test                                                | File                        | Protects Against                                                 |
+| - | --------------------------------------------------- | --------------------------- | ---------------------------------------------------------------- |
+| 1 | `TestReport_UnmarshalJSON_ConcurrentSafety`         | `json_test.go`              | UnmarshalJSON data race (10 writers + 10 readers, race detector) |
+| 2 | `TestSARIFSuppressionRoundTrip_DifferentRule`       | `sarif_suppression_test.go` | SARIF Suppression.Rule loss when Rule != Finding.Rule            |
+| 3 | `TestLSPRoundTrip_SeverityCritical`                 | `lsp_test.go`               | LSP SeverityCritical collapsed to Error                          |
+| 4 | `TestCorrelate_ZeroLineFindings`                    | `merge_correlate_test.go`   | Findings at Line=0 correlating at confidence 1.0                 |
+| 5 | `TestPipeline_MetricsAvailableOnErrorPath`          | `pipeline_test.go`          | Metrics dropped on error/cancel paths                            |
+| 6 | `TestPipeline_StageAfterHookErrorAborts`            | `pipeline_test.go`          | StageAfter hook errors silently discarded                        |
+| 7 | `TestPipeline_TotalDetectedDeduplicated`            | `pipeline_test.go`          | TotalDetected counting duplicates across iterations              |
+| 8 | `TestPipeline_SuggestFindingsShiftedAfterDirectFix` | `pipeline_test.go`          | Suggest findings retaining stale line numbers after fixes        |
 
 ### Deferred Bug Fixes (7 fixes)
 
-| #   | Bug                                                                   | File:Line                            | Impact                                                                                                         |
-| --- | --------------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| 9   | **Path traversal in `filterByFileEdits`**                             | `pipeline_detect.go:329`             | Findings with `Position.File = "../../etc/passwd"` caused reads outside rootDir — **security vulnerability**   |
-| 10  | **TOCTOU race in `groupFindingsBySafePath`**                          | `fix_applier.go:182`                 | Used unresolved path as map key; symlink swap between validation and I/O could redirect writes outside rootDir |
-| 11  | **Rollback errors silently swallowed**                                | `fix_applier.go:131-137`             | Restore/RollbackAll errors discarded with `_ =`; file corruption hidden from caller                            |
-| 12  | **SARIF `Position.Offset` lost**                                      | `sarif_export.go`, `sarif_import.go` | Byte offsets not preserved through SARIF round-trip                                                            |
-| 13  | **LSP round-trip lost Snippet/Suppression/Metadata/RelatedFindingID** | `lsp.go`                             | 4 fields silently dropped on ToLSP/FromLSP round-trip                                                          |
-| 14  | **`resolveLineCol` discarded underlying error**                       | `fix_provider_helpers.go:53`         | Replaced detailed error with bare sentinel                                                                     |
-| 15  | **Provider errors lacked finding context**                            | `fix_engine.go:79`                   | FixEngine resolveErrors didn't identify which finding failed                                                   |
+| #  | Bug                                                                   | File:Line                            | Impact                                                                                                         |
+| -- | --------------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| 9  | **Path traversal in `filterByFileEdits`**                             | `pipeline_detect.go:329`             | Findings with `Position.File = "../../etc/passwd"` caused reads outside rootDir — **security vulnerability**   |
+| 10 | **TOCTOU race in `groupFindingsBySafePath`**                          | `fix_applier.go:182`                 | Used unresolved path as map key; symlink swap between validation and I/O could redirect writes outside rootDir |
+| 11 | **Rollback errors silently swallowed**                                | `fix_applier.go:131-137`             | Restore/RollbackAll errors discarded with `_ =`; file corruption hidden from caller                            |
+| 12 | **SARIF `Position.Offset` lost**                                      | `sarif_export.go`, `sarif_import.go` | Byte offsets not preserved through SARIF round-trip                                                            |
+| 13 | **LSP round-trip lost Snippet/Suppression/Metadata/RelatedFindingID** | `lsp.go`                             | 4 fields silently dropped on ToLSP/FromLSP round-trip                                                          |
+| 14 | **`resolveLineCol` discarded underlying error**                       | `fix_provider_helpers.go:53`         | Replaced detailed error with bare sentinel                                                                     |
+| 15 | **Provider errors lacked finding context**                            | `fix_engine.go:79`                   | FixEngine resolveErrors didn't identify which finding failed                                                   |
 
 ### Quality Improvements (5 improvements)
 

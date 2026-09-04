@@ -162,43 +162,43 @@ Sorted by impact × ease (highest first):
 
 ### Tier 1: Quick Wins (< 15 min each, high impact)
 
-| #   | Task                                                                                 | Impact | Effort |
-| --- | ------------------------------------------------------------------------------------ | ------ | ------ |
-| 1   | Fix `.golangci.yml` to work without `--no-config`                                    | High   | 5 min  |
-| 2   | Extract `DefaultTimeout = 10 * time.Minute` constant, share between pipeline and CLI | Medium | 5 min  |
-| 3   | Use `finding.SeverityInfo.String()` etc. in `parseSeverity`                          | Low    | 5 min  |
-| 4   | Extract default detector names (`"govet"`, `"staticcheck"`) to shared constants      | Low    | 5 min  |
-| 5   | Extract SARIF property key strings to constants (`"go-finding/edit/offset"` etc.)    | Medium | 10 min |
-| 6   | Extract LSP metadata key `"go-finding/lsp-severity"` to constant                     | Low    | 2 min  |
-| 7   | Extract merge tool names (`"merged"`, `"empty"`) to constants                        | Low    | 2 min  |
-| 8   | Add `"related"` relation constant in analysis package                                | Low    | 2 min  |
-| 9   | Fix `%v` → `%w` in `FormatPartialErrors` (partial.go:151)                            | Medium | 5 min  |
-| 10  | Add `ErrPositionUnresolvable` sentinel, remove `//nolint:nilerr` in fix_provider.go  | Medium | 10 min |
+| #  | Task                                                                                 | Impact | Effort |
+| -- | ------------------------------------------------------------------------------------ | ------ | ------ |
+| 1  | Fix `.golangci.yml` to work without `--no-config`                                    | High   | 5 min  |
+| 2  | Extract `DefaultTimeout = 10 * time.Minute` constant, share between pipeline and CLI | Medium | 5 min  |
+| 3  | Use `finding.SeverityInfo.String()` etc. in `parseSeverity`                          | Low    | 5 min  |
+| 4  | Extract default detector names (`"govet"`, `"staticcheck"`) to shared constants      | Low    | 5 min  |
+| 5  | Extract SARIF property key strings to constants (`"go-finding/edit/offset"` etc.)    | Medium | 10 min |
+| 6  | Extract LSP metadata key `"go-finding/lsp-severity"` to constant                     | Low    | 2 min  |
+| 7  | Extract merge tool names (`"merged"`, `"empty"`) to constants                        | Low    | 2 min  |
+| 8  | Add `"related"` relation constant in analysis package                                | Low    | 2 min  |
+| 9  | Fix `%v` → `%w` in `FormatPartialErrors` (partial.go:151)                            | Medium | 5 min  |
+| 10 | Add `ErrPositionUnresolvable` sentinel, remove `//nolint:nilerr` in fix_provider.go  | Medium | 10 min |
 
 ### Tier 2: Medium Effort (15-60 min, medium-high impact)
 
-| #   | Task                                                                                         | Impact | Effort |
-| --- | -------------------------------------------------------------------------------------------- | ------ | ------ |
-| 11  | Decompose `findingFromSarResult` (complexity 28 → <20)                                       | High   | 30 min |
-| 12  | Decompose `applySarifProperties` (complexity 26 → <20)                                       | High   | 30 min |
-| 13  | Improve `LineProvider.CanHandle` coverage to 100%                                            | Low    | 10 min |
-| 14  | Improve `resolvePos` coverage to 100%                                                        | Low    | 10 min |
-| 15  | Add godoc examples for `Diff`, `FormatText`, `FormatMarkdown`                                | Medium | 20 min |
-| 16  | Add `// Deprecated` notice for `DiffFindings` in verify.go (use `finding.Diff` instead)      | Low    | 5 min  |
-| 17  | Add integration test: full CLI run with markdown output                                      | Medium | 15 min |
-| 18  | Add integration test: CLI config file with detectorTimeouts                                  | Medium | 15 min |
-| 19  | Evaluate if `finding.Diff` should replace `DiffFindings` in verify.go (currently both exist) | Medium | 20 min |
-| 20  | Extract conflict reason strings to constants                                                 | Low    | 5 min  |
+| #  | Task                                                                                         | Impact | Effort |
+| -- | -------------------------------------------------------------------------------------------- | ------ | ------ |
+| 11 | Decompose `findingFromSarResult` (complexity 28 → <20)                                       | High   | 30 min |
+| 12 | Decompose `applySarifProperties` (complexity 26 → <20)                                       | High   | 30 min |
+| 13 | Improve `LineProvider.CanHandle` coverage to 100%                                            | Low    | 10 min |
+| 14 | Improve `resolvePos` coverage to 100%                                                        | Low    | 10 min |
+| 15 | Add godoc examples for `Diff`, `FormatText`, `FormatMarkdown`                                | Medium | 20 min |
+| 16 | Add `// Deprecated` notice for `DiffFindings` in verify.go (use `finding.Diff` instead)      | Low    | 5 min  |
+| 17 | Add integration test: full CLI run with markdown output                                      | Medium | 15 min |
+| 18 | Add integration test: CLI config file with detectorTimeouts                                  | Medium | 15 min |
+| 19 | Evaluate if `finding.Diff` should replace `DiffFindings` in verify.go (currently both exist) | Medium | 20 min |
+| 20 | Extract conflict reason strings to constants                                                 | Low    | 5 min  |
 
 ### Tier 3: Larger Effort (1-4 hours, strategic value)
 
-| #   | Task                                                                   | Impact | Effort  |
-| --- | ---------------------------------------------------------------------- | ------ | ------- |
-| 21  | Bump version to v0.3.0 (we've added significant features since v0.2.1) | High   | 30 min  |
-| 22  | Add CHANGELOG.md entry for v0.3.0 with all changes since v0.2.1        | High   | 60 min  |
-| 23  | Migrate justfile → flake.nix (Phase 0-1 from proposal)                 | High   | 2 hours |
-| 24  | Add go-sarif evaluation with pros/cons document                        | Medium | 1 hour  |
-| 25  | Add golangci-lint CI job that uses the project's `.golangci.yml`       | Medium | 30 min  |
+| #  | Task                                                                   | Impact | Effort  |
+| -- | ---------------------------------------------------------------------- | ------ | ------- |
+| 21 | Bump version to v0.3.0 (we've added significant features since v0.2.1) | High   | 30 min  |
+| 22 | Add CHANGELOG.md entry for v0.3.0 with all changes since v0.2.1        | High   | 60 min  |
+| 23 | Migrate justfile → flake.nix (Phase 0-1 from proposal)                 | High   | 2 hours |
+| 24 | Add go-sarif evaluation with pros/cons document                        | Medium | 1 hour  |
+| 25 | Add golangci-lint CI job that uses the project's `.golangci.yml`       | Medium | 30 min  |
 
 ---
 

@@ -119,33 +119,33 @@ All remaining 2-clone groups. **YES** - Most can be eliminated with testify, but
 
 ## Top #25 Things To Get Done Next
 
-| #   | Priority | Task                                      | Clones Eliminated | Effort |
-| --- | -------- | ----------------------------------------- | ----------------- | ------ |
-| 1   | HIGH     | Convert report_test.go to testify         | 6                 | LOW    |
-| 2   | HIGH     | Convert json_test.go to testify           | 4                 | LOW    |
-| 3   | HIGH     | Convert filter_test.go to testify         | 6 (partial)       | LOW    |
-| 4   | MEDIUM   | Convert position_extra_test.go            | 18 (6+4+8)        | MEDIUM |
-| 5   | MEDIUM   | Convert detectors_test.go remaining       | 4                 | LOW    |
-| 6   | MEDIUM   | Convert sarif_test.go to testify          | ~15               | MEDIUM |
-| 7   | MEDIUM   | Convert retry_test.go to testify          | 4                 | LOW    |
-| 8   | MEDIUM   | Convert verify_test.go to testify         | 4                 | LOW    |
-| 9   | MEDIUM   | Convert fix_applier_test.go to testify    | 3                 | LOW    |
-| 10  | MEDIUM   | Convert metrics_test.go to testify        | 3                 | LOW    |
-| 11  | MEDIUM   | Convert partial_test.go to testify        | 3                 | LOW    |
-| 12  | MEDIUM   | Convert bench_test.go to testify          | 3                 | LOW    |
-| 13  | MEDIUM   | Convert cmd/go-finding tests to testify   | 6 (partial)       | MEDIUM |
-| 14  | MEDIUM   | Convert export_test.go severity tests     | 4                 | LOW    |
-| 15  | LOW      | Convert merge_test.go to testify          | 3                 | LOW    |
-| 16  | LOW      | Convert equal_test.go to testify          | 3                 | LOW    |
-| 17  | LOW      | Convert diagnostic_test.go + lsp_test.go  | 3                 | LOW    |
-| 18  | LOW      | Convert fuzz_test.go to testify           | 3                 | LOW    |
-| 19  | LOW      | Inline/remove assertIntEq calls           | 4                 | LOW    |
-| 20  | LOW      | Convert conflict_test.go to testify       | 2                 | LOW    |
-| 21  | LOW      | Convert conflict_extra_test.go to testify | 2                 | LOW    |
-| 22  | LOW      | Convert pipeline_test.go remaining        | ~10               | MEDIUM |
-| 23  | LOW      | Convert example tests (optional)          | ~10               | HIGH   |
-| 24  | LOW      | Remove cross-package clones               | ~6                | HARD   |
-| 25  | LOW      | Final cleanup and verification            | -                 | LOW    |
+| #  | Priority | Task                                      | Clones Eliminated | Effort |
+| -- | -------- | ----------------------------------------- | ----------------- | ------ |
+| 1  | HIGH     | Convert report_test.go to testify         | 6                 | LOW    |
+| 2  | HIGH     | Convert json_test.go to testify           | 4                 | LOW    |
+| 3  | HIGH     | Convert filter_test.go to testify         | 6 (partial)       | LOW    |
+| 4  | MEDIUM   | Convert position_extra_test.go            | 18 (6+4+8)        | MEDIUM |
+| 5  | MEDIUM   | Convert detectors_test.go remaining       | 4                 | LOW    |
+| 6  | MEDIUM   | Convert sarif_test.go to testify          | ~15               | MEDIUM |
+| 7  | MEDIUM   | Convert retry_test.go to testify          | 4                 | LOW    |
+| 8  | MEDIUM   | Convert verify_test.go to testify         | 4                 | LOW    |
+| 9  | MEDIUM   | Convert fix_applier_test.go to testify    | 3                 | LOW    |
+| 10 | MEDIUM   | Convert metrics_test.go to testify        | 3                 | LOW    |
+| 11 | MEDIUM   | Convert partial_test.go to testify        | 3                 | LOW    |
+| 12 | MEDIUM   | Convert bench_test.go to testify          | 3                 | LOW    |
+| 13 | MEDIUM   | Convert cmd/go-finding tests to testify   | 6 (partial)       | MEDIUM |
+| 14 | MEDIUM   | Convert export_test.go severity tests     | 4                 | LOW    |
+| 15 | LOW      | Convert merge_test.go to testify          | 3                 | LOW    |
+| 16 | LOW      | Convert equal_test.go to testify          | 3                 | LOW    |
+| 17 | LOW      | Convert diagnostic_test.go + lsp_test.go  | 3                 | LOW    |
+| 18 | LOW      | Convert fuzz_test.go to testify           | 3                 | LOW    |
+| 19 | LOW      | Inline/remove assertIntEq calls           | 4                 | LOW    |
+| 20 | LOW      | Convert conflict_test.go to testify       | 2                 | LOW    |
+| 21 | LOW      | Convert conflict_extra_test.go to testify | 2                 | LOW    |
+| 22 | LOW      | Convert pipeline_test.go remaining        | ~10               | MEDIUM |
+| 23 | LOW      | Convert example tests (optional)          | ~10               | HIGH   |
+| 24 | LOW      | Remove cross-package clones               | ~6                | HARD   |
+| 25 | LOW      | Final cleanup and verification            | -                 | LOW    |
 
 ---
 

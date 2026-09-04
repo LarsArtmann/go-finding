@@ -16,17 +16,17 @@ The codebase is in **excellent shape**. All tests pass with race detector. Cover
 
 ### Session Work (2026-05-04, 20:00–22:00)
 
-| #   | What                                                                        | Commit    | Impact                              |
-| --- | --------------------------------------------------------------------------- | --------- | ----------------------------------- |
-| 1   | Migrate `go-faster/yaml` → `go.yaml.in/yaml/v3` in `cmd/go-finding/main.go` | `d76fb19` | Eliminated 6 transitive deps        |
-| 2   | Run `go mod tidy` to remove stale deps                                      | `d76fb19` | Clean dependency tree               |
-| 3   | Fix unused parameter `msg` in `pipeline/partial_test.go`                    | `df963cf` | Zero LSP warnings                   |
-| 4   | Remove deprecated `Tag` field from Finding struct                           | `74c09e5` | **Eliminated Tag/Tags split brain** |
-| 5   | Remove `Builder.WithTag()` method                                           | `74c09e5` | Clean API surface                   |
-| 6   | Remove `sarifPropTag` from SARIF round-trip                                 | `74c09e5` | SARIF only exports `Tags`           |
-| 7   | Update all 8 test files to use `Tags` instead of `Tag`                      | `74c09e5` | Consistent test code                |
-| 8   | Archive 24 old status reports                                               | `1e386f2` | Clean docs directory                |
-| 9   | Update AGENTS.md                                                            | `586056a` | Accurate docs                       |
+| # | What                                                                        | Commit    | Impact                              |
+| - | --------------------------------------------------------------------------- | --------- | ----------------------------------- |
+| 1 | Migrate `go-faster/yaml` → `go.yaml.in/yaml/v3` in `cmd/go-finding/main.go` | `d76fb19` | Eliminated 6 transitive deps        |
+| 2 | Run `go mod tidy` to remove stale deps                                      | `d76fb19` | Clean dependency tree               |
+| 3 | Fix unused parameter `msg` in `pipeline/partial_test.go`                    | `df963cf` | Zero LSP warnings                   |
+| 4 | Remove deprecated `Tag` field from Finding struct                           | `74c09e5` | **Eliminated Tag/Tags split brain** |
+| 5 | Remove `Builder.WithTag()` method                                           | `74c09e5` | Clean API surface                   |
+| 6 | Remove `sarifPropTag` from SARIF round-trip                                 | `74c09e5` | SARIF only exports `Tags`           |
+| 7 | Update all 8 test files to use `Tags` instead of `Tag`                      | `74c09e5` | Consistent test code                |
+| 8 | Archive 24 old status reports                                               | `1e386f2` | Clean docs directory                |
+| 9 | Update AGENTS.md                                                            | `586056a` | Accurate docs                       |
 
 ### Prior Session Work (2026-05-04, earlier)
 
@@ -188,53 +188,53 @@ Sorted by impact × effort (highest first):
 
 ### Tier 1: Quick Wins (< 30 min each)
 
-| #   | Task                                                                                              | Impact               | Effort  |
-| --- | ------------------------------------------------------------------------------------------------- | -------------------- | ------- |
-| 1   | **Update FEATURES.md** — Remove `Tag` field, remove "Deprecated" references, update Finding table | High (doc accuracy)  | Low     |
-| 2   | **Update TODO_LIST.md** — Mark Tag/WithTag items as fully complete, update status                 | High (doc accuracy)  | Low     |
-| 3   | **Commit or trash PUBLIC_OR_PRIVATE.md** — Make a decision, don't leave untracked files           | Medium (cleanliness) | Trivial |
-| 4   | **Remove empty `report/` directory** — Ghost directory serves no purpose                          | Low (cleanliness)    | Trivial |
-| 5   | **Add `config.example.yaml` reference to README** — Users can't discover it                       | Medium (UX)          | Low     |
+| # | Task                                                                                              | Impact               | Effort  |
+| - | ------------------------------------------------------------------------------------------------- | -------------------- | ------- |
+| 1 | **Update FEATURES.md** — Remove `Tag` field, remove "Deprecated" references, update Finding table | High (doc accuracy)  | Low     |
+| 2 | **Update TODO_LIST.md** — Mark Tag/WithTag items as fully complete, update status                 | High (doc accuracy)  | Low     |
+| 3 | **Commit or trash PUBLIC_OR_PRIVATE.md** — Make a decision, don't leave untracked files           | Medium (cleanliness) | Trivial |
+| 4 | **Remove empty `report/` directory** — Ghost directory serves no purpose                          | Low (cleanliness)    | Trivial |
+| 5 | **Add `config.example.yaml` reference to README** — Users can't discover it                       | Medium (UX)          | Low     |
 
 ### Tier 2: Important (< 2 hours each)
 
-| #   | Task                                                                                       | Impact                       | Effort |
-| --- | ------------------------------------------------------------------------------------------ | ---------------------------- | ------ |
-| 6   | **Write a flake.nix** — Replace justfile with nix flakes per AGENTS.md policy              | High (build reproducibility) | Medium |
-| 7   | **Add `Confidence` type alias** — `type Confidence float64` with `Clamp()`, `IsValid()`    | Medium (type safety)         | Low    |
-| 8   | **Replace `fmt.Fprintf` with `slog`** in CLI — Structured logging                          | Medium (observability)       | Medium |
-| 9   | **Update CI workflows** — Verify they work with new deps (no go-faster, no testify direct) | High (CI reliability)        | Low    |
-| 10  | **Add `go-apiversion` or API stability marker** — v0.2.1 needs a stability promise         | Medium (API governance)      | Low    |
+| #  | Task                                                                                       | Impact                       | Effort |
+| -- | ------------------------------------------------------------------------------------------ | ---------------------------- | ------ |
+| 6  | **Write a flake.nix** — Replace justfile with nix flakes per AGENTS.md policy              | High (build reproducibility) | Medium |
+| 7  | **Add `Confidence` type alias** — `type Confidence float64` with `Clamp()`, `IsValid()`    | Medium (type safety)         | Low    |
+| 8  | **Replace `fmt.Fprintf` with `slog`** in CLI — Structured logging                          | Medium (observability)       | Medium |
+| 9  | **Update CI workflows** — Verify they work with new deps (no go-faster, no testify direct) | High (CI reliability)        | Low    |
+| 10 | **Add `go-apiversion` or API stability marker** — v0.2.1 needs a stability promise         | Medium (API governance)      | Low    |
 
 ### Tier 3: Valuable (< 4 hours each)
 
-| #   | Task                                                                                           | Impact                      | Effort |
-| --- | ---------------------------------------------------------------------------------------------- | --------------------------- | ------ |
-| 11  | **Add example tests** — Run examples/basic, examples/builder, examples/pipeline in tests       | Medium (example quality)    | Medium |
-| 12  | **Validate FileBackup path** — Ensure `Close()` only removes under `os.TempDir()`              | High (data safety)          | Low    |
-| 13  | **Write README Quick Start** — Current README is minimal, add copy-paste examples              | High (developer experience) | Medium |
-| 14  | **Add CHANGELOG entry for v0.2.1** — Document Tag removal, YAML migration, testify elimination | Medium (release readiness)  | Low    |
-| 15  | **Add `go.mod` min version CI check** — Ensure `go 1.26.2` is enforced                         | Low (consistency)           | Low    |
+| #  | Task                                                                                           | Impact                      | Effort |
+| -- | ---------------------------------------------------------------------------------------------- | --------------------------- | ------ |
+| 11 | **Add example tests** — Run examples/basic, examples/builder, examples/pipeline in tests       | Medium (example quality)    | Medium |
+| 12 | **Validate FileBackup path** — Ensure `Close()` only removes under `os.TempDir()`              | High (data safety)          | Low    |
+| 13 | **Write README Quick Start** — Current README is minimal, add copy-paste examples              | High (developer experience) | Medium |
+| 14 | **Add CHANGELOG entry for v0.2.1** — Document Tag removal, YAML migration, testify elimination | Medium (release readiness)  | Low    |
+| 15 | **Add `go.mod` min version CI check** — Ensure `go 1.26.2` is enforced                         | Low (consistency)           | Low    |
 
 ### Tier 4: Strategic (1+ day each)
 
-| #   | Task                                                                               | Impact                  | Effort            |
-| --- | ---------------------------------------------------------------------------------- | ----------------------- | ----------------- |
-| 16  | **Plugin discovery system** — Auto-detect detectors via `init()` or plugin pattern | High (extensibility)    | High              |
-| 17  | **`Metadata` type as `map[string]any`** — Richer metadata for SARIF fidelity       | Medium (data fidelity)  | Medium (breaking) |
-| 18  | **OpenTelemetry integration** — Add tracing spans to pipeline stages               | Medium (observability)  | High              |
-| 19  | **Comprehensive README rewrite** — Match go-ecosystem best practices               | High (first impression) | Medium            |
-| 20  | **Add `golangci-lint` to CI** — Automated lint enforcement                         | Medium (code quality)   | Low               |
+| #  | Task                                                                               | Impact                  | Effort            |
+| -- | ---------------------------------------------------------------------------------- | ----------------------- | ----------------- |
+| 16 | **Plugin discovery system** — Auto-detect detectors via `init()` or plugin pattern | High (extensibility)    | High              |
+| 17 | **`Metadata` type as `map[string]any`** — Richer metadata for SARIF fidelity       | Medium (data fidelity)  | Medium (breaking) |
+| 18 | **OpenTelemetry integration** — Add tracing spans to pipeline stages               | Medium (observability)  | High              |
+| 19 | **Comprehensive README rewrite** — Match go-ecosystem best practices               | High (first impression) | Medium            |
+| 20 | **Add `golangci-lint` to CI** — Automated lint enforcement                         | Medium (code quality)   | Low               |
 
 ### Tier 5: Nice to Have
 
-| #   | Task                                                                              | Impact              | Effort            |
-| --- | --------------------------------------------------------------------------------- | ------------------- | ----------------- |
-| 21  | **Registry pattern for Category/Tag** — Allow tools to register custom values     | Low (extensibility) | Medium            |
-| 22  | **Benchmark suite** — Track performance regressions                               | Low (performance)   | Low               |
-| 23  | **Fuzz corpus management** — Clean up stale corpus entries causing false failures | Low (test quality)  | Low               |
-| 24  | **`FixEngine` as functions** — Remove unnecessary struct wrapper                  | Low (simplicity)    | Trivial           |
-| 25  | **`Range.End` as `*Position`** — Make optional end explicit                       | Low (correctness)   | Medium (breaking) |
+| #  | Task                                                                              | Impact              | Effort            |
+| -- | --------------------------------------------------------------------------------- | ------------------- | ----------------- |
+| 21 | **Registry pattern for Category/Tag** — Allow tools to register custom values     | Low (extensibility) | Medium            |
+| 22 | **Benchmark suite** — Track performance regressions                               | Low (performance)   | Low               |
+| 23 | **Fuzz corpus management** — Clean up stale corpus entries causing false failures | Low (test quality)  | Low               |
+| 24 | **`FixEngine` as functions** — Remove unnecessary struct wrapper                  | Low (simplicity)    | Trivial           |
+| 25 | **`Range.End` as `*Position`** — Make optional end explicit                       | Low (correctness)   | Medium (breaking) |
 
 ---
 

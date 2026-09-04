@@ -12,23 +12,23 @@
 
 All 15 clone groups identified by `art-dupl -t 40 --semantic` resolved across 10 files:
 
-| #   | File(s)                                        | Technique                                                                          | Before   | After   |
-| --- | ---------------------------------------------- | ---------------------------------------------------------------------------------- | -------- | ------- |
-| 1   | `pipeline/fix_engine_test.go`                  | `FixEdit.Overlaps`: 3 subtests → table-driven                                      | 3 clones | 0       |
-| 2   | `pipeline/pipeline_bugfix_test.go`             | Extracted `directFix()` helper                                                     | 3 clones | 0       |
-| 3   | `equal_test.go`                                | Extracted `testFindingEqualCases()` + `testFindingEqualCase()`                     | 3 clones | 0       |
-| 4   | `pipeline/fix_engine_test.go`                  | `lineColToOffset`: 4 subtests → table-driven                                       | 3 clones | 0       |
-| 5   | `example_test.go`                              | Extracted `newExampleFinding()` helper                                             | 2 clones | 0       |
-| 6   | `report_extra_test.go`                         | Extracted `suppressionFinding()` helper                                            | 2 clones | 0       |
-| 7   | `pipeline/bdd_test.go`                         | Extracted `singleFindingDetector()` helper                                         | 2 clones | 0       |
-| 8   | `cmd/go-finding/main_test.go`                  | Extracted `testOutputSerializationError()` helper                                  | 2 clones | 0       |
-| 9   | `pipeline/fix_engine_test.go`                  | `NearestLineMatch`: 2 subtests → table-driven                                      | 2 clones | 0       |
-| 10  | `pipeline/fix_engine_test.go`                  | `LineRange` SingleLine + OutOfBounds → merged table-driven                         | 2 clones | 0       |
-| 11  | `sarif_test.go`                                | Extracted `testSARIFNaNError()` helper                                             | 2 clones | 0       |
-| 12  | `pipeline/bdd_test.go`                         | 3 detector+config+pipeline tests → `DescribeTable` + `runSingleDetectorPipeline()` | 2 clones | 0       |
-| 13  | `example_test.go` ↔ `examples/builder/main.go` | **ACCEPTED** — cross-package intentional duplication                               | 1 clone  | 1 clone |
-| 14  | `pipeline/fix_engine_test.go`                  | SubstringReplace + SubstringNotFound → merged table-driven                         | 2 clones | 0       |
-| 15  | `coverage_test.go` + `finding_valid_test.go`   | Extracted `runIsValidTests()` helper                                               | 2 clones | 0       |
+| #  | File(s)                                        | Technique                                                                          | Before   | After   |
+| -- | ---------------------------------------------- | ---------------------------------------------------------------------------------- | -------- | ------- |
+| 1  | `pipeline/fix_engine_test.go`                  | `FixEdit.Overlaps`: 3 subtests → table-driven                                      | 3 clones | 0       |
+| 2  | `pipeline/pipeline_bugfix_test.go`             | Extracted `directFix()` helper                                                     | 3 clones | 0       |
+| 3  | `equal_test.go`                                | Extracted `testFindingEqualCases()` + `testFindingEqualCase()`                     | 3 clones | 0       |
+| 4  | `pipeline/fix_engine_test.go`                  | `lineColToOffset`: 4 subtests → table-driven                                       | 3 clones | 0       |
+| 5  | `example_test.go`                              | Extracted `newExampleFinding()` helper                                             | 2 clones | 0       |
+| 6  | `report_extra_test.go`                         | Extracted `suppressionFinding()` helper                                            | 2 clones | 0       |
+| 7  | `pipeline/bdd_test.go`                         | Extracted `singleFindingDetector()` helper                                         | 2 clones | 0       |
+| 8  | `cmd/go-finding/main_test.go`                  | Extracted `testOutputSerializationError()` helper                                  | 2 clones | 0       |
+| 9  | `pipeline/fix_engine_test.go`                  | `NearestLineMatch`: 2 subtests → table-driven                                      | 2 clones | 0       |
+| 10 | `pipeline/fix_engine_test.go`                  | `LineRange` SingleLine + OutOfBounds → merged table-driven                         | 2 clones | 0       |
+| 11 | `sarif_test.go`                                | Extracted `testSARIFNaNError()` helper                                             | 2 clones | 0       |
+| 12 | `pipeline/bdd_test.go`                         | 3 detector+config+pipeline tests → `DescribeTable` + `runSingleDetectorPipeline()` | 2 clones | 0       |
+| 13 | `example_test.go` ↔ `examples/builder/main.go` | **ACCEPTED** — cross-package intentional duplication                               | 1 clone  | 1 clone |
+| 14 | `pipeline/fix_engine_test.go`                  | SubstringReplace + SubstringNotFound → merged table-driven                         | 2 clones | 0       |
+| 15 | `coverage_test.go` + `finding_valid_test.go`   | Extracted `runIsValidTests()` helper                                               | 2 clones | 0       |
 
 ### Net Result
 

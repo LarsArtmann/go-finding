@@ -1,9 +1,9 @@
 # Status Report — 2026-05-27 08:27
 
-**Project:** `github.com/larsartmann/go-finding` v0.4.1  
-**Branch:** `master` (up to date with origin)  
-**Go:** 1.26.3 | **Coverage:** 92.4% | **Lint:** 0 issues | **Tests:** ALL PASS (race detector on)  
-**Working tree:** CLEAN  
+**Project:** `github.com/larsartmann/go-finding` v0.4.1\
+**Branch:** `master` (up to date with origin)\
+**Go:** 1.26.3 | **Coverage:** 92.4% | **Lint:** 0 issues | **Tests:** ALL PASS (race detector on)\
+**Working tree:** CLEAN\
 **TODO status:** 97 done / 93 open (51%)
 
 ---
@@ -28,33 +28,33 @@
 
 ### Session 1 (05:27–05:36): gogenfilter v3 Follow-Up
 
-| #   | Item                                                                          | Commit    |
-| --- | ----------------------------------------------------------------------------- | --------- |
-| 1   | Fix E2E test for `-filter-generated` (flag-acceptance, not output comparison) | `ef29959` |
-| 2   | Add `ExampleGeneratedFileFilter` in `example_test.go`                         | `ef29959` |
-| 3   | `Category.IsValid()` rune-level validation `^[a-z][a-z0-9-]*$`                | `ef29959` |
-| 4   | De Morgan's law applied in IsValid() per staticcheck                          | `ef29959` |
-| 5   | `USAGE_GUIDE.md` generated file filtering section                             | `ef29959` |
-| 6   | `flake.nix` overlay `buildGoModule` with fileset source filtering             | `ef29959` |
-| 7   | `justfile` deleted; AGENTS.md + CONTRIBUTING.md updated to nix                | `ef29959` |
-| 8   | Status report written                                                         | `d05bbcd` |
+| # | Item                                                                          | Commit    |
+| - | ----------------------------------------------------------------------------- | --------- |
+| 1 | Fix E2E test for `-filter-generated` (flag-acceptance, not output comparison) | `ef29959` |
+| 2 | Add `ExampleGeneratedFileFilter` in `example_test.go`                         | `ef29959` |
+| 3 | `Category.IsValid()` rune-level validation `^[a-z][a-z0-9-]*$`                | `ef29959` |
+| 4 | De Morgan's law applied in IsValid() per staticcheck                          | `ef29959` |
+| 5 | `USAGE_GUIDE.md` generated file filtering section                             | `ef29959` |
+| 6 | `flake.nix` overlay `buildGoModule` with fileset source filtering             | `ef29959` |
+| 7 | `justfile` deleted; AGENTS.md + CONTRIBUTING.md updated to nix                | `ef29959` |
+| 8 | Status report written                                                         | `d05bbcd` |
 
 ### Session 2 (05:37–08:27): Deep Audit — Bugs & Code Quality
 
-| #   | Item                                                                                | Severity            | Commit    |
-| --- | ----------------------------------------------------------------------------------- | ------------------- | --------- |
-| 1   | **SARIF import FixStrategy**: replacements → `Direct`, description-only → `Suggest` | 🔴 Bug              | `9323362` |
-| 2   | **CLI double timeout wrapping removed**                                             | 🟠 Correctness      | `3492629` |
-| 3   | **FileBackup preserves original file permissions** on restore                       | 🔴 Bug              | `ec7fd27` |
-| 4   | **DetectorTimeouts validation** rejects negative durations                          | 🟠 Panic prevention | `8c4877f` |
-| 5   | **CLI config errors surfaced** — `toPipelineConfig` returns `(Config, error)`       | 🟠 Silent errors    | `6935b1f` |
-| 6   | **Pipeline.Run() doc comment** corrected (does not "reset state")                   | 🟡 Misleading       | `f315c34` |
-| 7   | **byFindingID unified** — both packages use `cmp.Compare`                           | 🟡 Duplication      | `f315c34` |
-| 8   | **FixApplier wasted allocation** eliminated                                         | 🟢 Waste            | `f315c34` |
-| 9   | **Stray empty comment line** in fix_provider.go removed                             | 🟢 Style            | `f315c34` |
-| 10  | **gci formatting** fixed in pipeline/config.go                                      | 🟢 Style            | `e0e52bb` |
-| 11  | **ErrorCategory.IsValid()** format validation matching Category                     | 🟡 Consistency      | `d110c18` |
-| 12  | **AGENTS.md** updated with 9 new design principle entries                           | 📝 Docs             | `2b89593` |
+| #  | Item                                                                                | Severity            | Commit    |
+| -- | ----------------------------------------------------------------------------------- | ------------------- | --------- |
+| 1  | **SARIF import FixStrategy**: replacements → `Direct`, description-only → `Suggest` | 🔴 Bug              | `9323362` |
+| 2  | **CLI double timeout wrapping removed**                                             | 🟠 Correctness      | `3492629` |
+| 3  | **FileBackup preserves original file permissions** on restore                       | 🔴 Bug              | `ec7fd27` |
+| 4  | **DetectorTimeouts validation** rejects negative durations                          | 🟠 Panic prevention | `8c4877f` |
+| 5  | **CLI config errors surfaced** — `toPipelineConfig` returns `(Config, error)`       | 🟠 Silent errors    | `6935b1f` |
+| 6  | **Pipeline.Run() doc comment** corrected (does not "reset state")                   | 🟡 Misleading       | `f315c34` |
+| 7  | **byFindingID unified** — both packages use `cmp.Compare`                           | 🟡 Duplication      | `f315c34` |
+| 8  | **FixApplier wasted allocation** eliminated                                         | 🟢 Waste            | `f315c34` |
+| 9  | **Stray empty comment line** in fix_provider.go removed                             | 🟢 Style            | `f315c34` |
+| 10 | **gci formatting** fixed in pipeline/config.go                                      | 🟢 Style            | `e0e52bb` |
+| 11 | **ErrorCategory.IsValid()** format validation matching Category                     | 🟡 Consistency      | `d110c18` |
+| 12 | **AGENTS.md** updated with 9 new design principle entries                           | 📝 Docs             | `2b89593` |
 
 ---
 
@@ -89,23 +89,23 @@ The CLI package is the weakest coverage point. Specific gaps:
 
 ## c) NOT STARTED ❌
 
-| #   | Item                                                   | Impact | Effort   | Notes                                                  |
-| --- | ------------------------------------------------------ | ------ | -------- | ------------------------------------------------------ |
-| 1   | CLI generated_filter.go tests (0% coverage)            | High   | 1h       | Unit tests for parseFilterGenTypes, addGeneratedFilter |
-| 2   | `docs/adr/` directory — no ADR files exist             | Medium | 2h       | Key decisions unrecorded outside AGENTS.md             |
-| 3   | govulncheck in CI                                      | High   | 15min    | No security scanning in CI workflow                    |
-| 4   | `--version` flag for CLI                               | Medium | 30min    | Uses `finding.Version` but no flag exposes it          |
-| 5   | Fix FEATURES.md version to 0.4.1                       | Low    | 1min     | Trivial but inconsistent                               |
-| 6   | CRLF line ending handling in `buildLineOffsetIndex`    | Medium | 1h       | Windows files get wrong byte offsets                   |
-| 7   | Signal handling for graceful shutdown (SIGINT/SIGTERM) | High   | 2h       | Interrupt mid-fix leaves files partially modified      |
-| 8   | `--version` flag for CLI                               | Medium | 30min    |                                                        |
-| 9   | Snapshot/golden tests for SARIF output                 | Medium | 1h       | Catches accidental format changes                      |
-| 10  | Repository structure decision (monorepo vs split)      | High   | Decision | Blocks other work                                      |
-| 11  | v1.0 release criteria verification                     | High   | 1h       | Defined but not checked against current state          |
-| 12  | goreleaser for cross-platform releases                 | Medium | 4h       |                                                        |
-| 13  | `PUBLIC_OR_PRIVATE.md` resolution                      | Medium | Decision |                                                        |
-| 14  | ADR for Metadata map[string]string design              | Medium | 30min    | Key architectural decision                             |
-| 15  | Path traversal hardening with `filepath.EvalSymlinks`  | Medium | 30min    | FixApplier uses `filepath.Clean` only                  |
+| #  | Item                                                   | Impact | Effort   | Notes                                                  |
+| -- | ------------------------------------------------------ | ------ | -------- | ------------------------------------------------------ |
+| 1  | CLI generated_filter.go tests (0% coverage)            | High   | 1h       | Unit tests for parseFilterGenTypes, addGeneratedFilter |
+| 2  | `docs/adr/` directory — no ADR files exist             | Medium | 2h       | Key decisions unrecorded outside AGENTS.md             |
+| 3  | govulncheck in CI                                      | High   | 15min    | No security scanning in CI workflow                    |
+| 4  | `--version` flag for CLI                               | Medium | 30min    | Uses `finding.Version` but no flag exposes it          |
+| 5  | Fix FEATURES.md version to 0.4.1                       | Low    | 1min     | Trivial but inconsistent                               |
+| 6  | CRLF line ending handling in `buildLineOffsetIndex`    | Medium | 1h       | Windows files get wrong byte offsets                   |
+| 7  | Signal handling for graceful shutdown (SIGINT/SIGTERM) | High   | 2h       | Interrupt mid-fix leaves files partially modified      |
+| 8  | `--version` flag for CLI                               | Medium | 30min    |                                                        |
+| 9  | Snapshot/golden tests for SARIF output                 | Medium | 1h       | Catches accidental format changes                      |
+| 10 | Repository structure decision (monorepo vs split)      | High   | Decision | Blocks other work                                      |
+| 11 | v1.0 release criteria verification                     | High   | 1h       | Defined but not checked against current state          |
+| 12 | goreleaser for cross-platform releases                 | Medium | 4h       |                                                        |
+| 13 | `PUBLIC_OR_PRIVATE.md` resolution                      | Medium | Decision |                                                        |
+| 14 | ADR for Metadata map[string]string design              | Medium | 30min    | Key architectural decision                             |
+| 15 | Path traversal hardening with `filepath.EvalSymlinks`  | Medium | 30min    | FixApplier uses `filepath.Clean` only                  |
 
 ---
 
@@ -167,53 +167,53 @@ At 506+ lines, `example_test.go` exceeds the 350-line pre-commit threshold (44.6
 
 ### Tier 1: High Impact, Low Effort (Do Now)
 
-| #   | Task                                          | Effort | Impact |
-| --- | --------------------------------------------- | ------ | ------ |
-| 1   | Fix FEATURES.md version → 0.4.1               | 1 min  | Low    |
-| 2   | Clear gopls cache (`go clean -cache`)         | 2 min  | Medium |
-| 3   | Add `--version` flag to CLI                   | 30 min | Medium |
-| 4   | Add govulncheck to CI workflow                | 15 min | High   |
-| 5   | Remove 4 phantom TODO items from TODO_LIST.md | 10 min | Low    |
+| # | Task                                          | Effort | Impact |
+| - | --------------------------------------------- | ------ | ------ |
+| 1 | Fix FEATURES.md version → 0.4.1               | 1 min  | Low    |
+| 2 | Clear gopls cache (`go clean -cache`)         | 2 min  | Medium |
+| 3 | Add `--version` flag to CLI                   | 30 min | Medium |
+| 4 | Add govulncheck to CI workflow                | 15 min | High   |
+| 5 | Remove 4 phantom TODO items from TODO_LIST.md | 10 min | Low    |
 
 ### Tier 2: High Impact, Medium Effort (This Week)
 
-| #   | Task                                           | Effort | Impact |
-| --- | ---------------------------------------------- | ------ | ------ |
-| 6   | CLI generated_filter.go tests → 80%+           | 1-2h   | High   |
-| 7   | CLI toPipelineConfig error path tests          | 1h     | High   |
-| 8   | Fix CRLF handling in buildLineOffsetIndex      | 1h     | Medium |
-| 9   | Add signal handling for graceful shutdown      | 2h     | High   |
-| 10  | Hardening: filepath.EvalSymlinks in FixApplier | 30 min | Medium |
-| 11  | Create `docs/adr/` with initial ADRs           | 2h     | Medium |
+| #  | Task                                           | Effort | Impact |
+| -- | ---------------------------------------------- | ------ | ------ |
+| 6  | CLI generated_filter.go tests → 80%+           | 1-2h   | High   |
+| 7  | CLI toPipelineConfig error path tests          | 1h     | High   |
+| 8  | Fix CRLF handling in buildLineOffsetIndex      | 1h     | Medium |
+| 9  | Add signal handling for graceful shutdown      | 2h     | High   |
+| 10 | Hardening: filepath.EvalSymlinks in FixApplier | 30 min | Medium |
+| 11 | Create `docs/adr/` with initial ADRs           | 2h     | Medium |
 
 ### Tier 3: Strategic / Decisions Needed
 
-| #   | Task                                               | Effort   | Impact |
-| --- | -------------------------------------------------- | -------- | ------ |
-| 12  | Resolve PUBLIC_OR_PRIVATE.md                       | Decision | High   |
-| 13  | Repository structure decision (monorepo vs split)  | Decision | High   |
-| 14  | Verify v1.0 release criteria against current state | 1h       | High   |
-| 15  | Resolve 5 owner-decision TODO items                | Decision | High   |
+| #  | Task                                               | Effort   | Impact |
+| -- | -------------------------------------------------- | -------- | ------ |
+| 12 | Resolve PUBLIC_OR_PRIVATE.md                       | Decision | High   |
+| 13 | Repository structure decision (monorepo vs split)  | Decision | High   |
+| 14 | Verify v1.0 release criteria against current state | 1h       | High   |
+| 15 | Resolve 5 owner-decision TODO items                | Decision | High   |
 
 ### Tier 4: Medium Impact, Medium Effort
 
-| #   | Task                                                        | Effort | Impact |
-| --- | ----------------------------------------------------------- | ------ | ------ |
-| 16  | SARIF snapshot/golden tests                                 | 1h     | Medium |
-| 17  | SubstringProvider ambiguity warning/error                   | 30 min | Medium |
-| 18  | Pre-commit hook: exclude NOTE from todo-check               | 10 min | Low    |
-| 19  | Pre-commit hook: raise file-size limit for \_test.go        | 5 min  | Low    |
-| 20  | `Report.Findings` field: document concurrent access footgun | 15 min | Low    |
+| #  | Task                                                        | Effort | Impact |
+| -- | ----------------------------------------------------------- | ------ | ------ |
+| 16 | SARIF snapshot/golden tests                                 | 1h     | Medium |
+| 17 | SubstringProvider ambiguity warning/error                   | 30 min | Medium |
+| 18 | Pre-commit hook: exclude NOTE from todo-check               | 10 min | Low    |
+| 19 | Pre-commit hook: raise file-size limit for \_test.go        | 5 min  | Low    |
+| 20 | `Report.Findings` field: document concurrent access footgun | 15 min | Low    |
 
 ### Tier 5: Longer Term
 
-| #   | Task                                       | Effort | Impact |
-| --- | ------------------------------------------ | ------ | ------ |
-| 21  | goreleaser for cross-platform binaries     | 4h     | Medium |
-| 22  | Streaming SARIF for very large result sets | 1d     | Low    |
-| 23  | CLI: consider cobra/kong for subcommands   | 4h     | Medium |
-| 24  | Benchmark regression tracking in CI        | 2h     | Medium |
-| 25  | Resolve gopls cache issue root cause       | 1h     | Low    |
+| #  | Task                                       | Effort | Impact |
+| -- | ------------------------------------------ | ------ | ------ |
+| 21 | goreleaser for cross-platform binaries     | 4h     | Medium |
+| 22 | Streaming SARIF for very large result sets | 1d     | Low    |
+| 23 | CLI: consider cobra/kong for subcommands   | 4h     | Medium |
+| 24 | Benchmark regression tracking in CI        | 2h     | Medium |
+| 25 | Resolve gopls cache issue root cause       | 1h     | Low    |
 
 ---
 

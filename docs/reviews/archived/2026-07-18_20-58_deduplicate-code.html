@@ -65,14 +65,14 @@
 
         /* --- Type stacks (system only — zero external fonts) --- */
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -280,15 +280,27 @@
       }
       .card-problem {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .card-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .card-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
 
       /* --- Issue cards --- */
@@ -301,15 +313,27 @@
       }
       .issue-critical {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-important {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-nice {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .issue h3 {
         margin-bottom: 0.3rem;
@@ -812,8 +836,9 @@
           <div class="hero-badge">DEDUPLICATE CODE</div>
           <h1>go-finding Duplication Analysis</h1>
           <p class="hero-subtitle">
-            Semantic clone detection with art-dupl across 188 Go files on 2026-07-18. 1 harmful
-            production clone eliminated. All remaining clones are acceptable test-file patterns.
+            Semantic clone detection with art-dupl across 188 Go files on
+            2026-07-18. 1 harmful production clone eliminated. All remaining
+            clones are acceptable test-file patterns.
           </p>
         </div>
 
@@ -872,7 +897,9 @@
               <td>14</td>
               <td>0 (was 1)</td>
               <td>14</td>
-              <td><span class="badge badge-fixed">1 fixed, rest accepted</span></td>
+              <td>
+                <span class="badge badge-fixed">1 fixed, rest accepted</span>
+              </td>
             </tr>
             <tr>
               <td><code>-t 15</code></td>
@@ -886,7 +913,9 @@
               <td>2427</td>
               <td>0</td>
               <td>2427</td>
-              <td><span class="badge badge-fixed">Noise (1-5 line patterns)</span></td>
+              <td>
+                <span class="badge badge-fixed">Noise (1-5 line patterns)</span>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -894,13 +923,16 @@
         <h2 id="findings"><span class="num">01</span>Findings</h2>
 
         <div class="card card-problem">
-          <h4>Harmful clone found and eliminated: snapshotFindings vs readFindings</h4>
+          <h4>
+            Harmful clone found and eliminated: snapshotFindings vs readFindings
+          </h4>
           <p>
             <code>Report.snapshotFindings()</code> (report_query.go:110) and
             <code>Report.readFindings()</code> (report.go:143) were
-            <strong>byte-for-byte identical implementations</strong> &mdash; both took a shallow
-            snapshot of findings under RLock using the same <code>withReadLock</code> +
-            <code>make + copy</code> pattern. <code>snapshotFindings</code> had a single caller
+            <strong>byte-for-byte identical implementations</strong> &mdash;
+            both took a shallow snapshot of findings under RLock using the same
+            <code>withReadLock</code> + <code>make + copy</code> pattern.
+            <code>snapshotFindings</code> had a single caller
             (<code>Map()</code>); <code>readFindings</code> had four callers.
           </p>
         </div>
@@ -908,21 +940,22 @@
         <div class="card card-solution">
           <h4>Zero production clones at threshold 50+</h4>
           <p>
-            After the fix, <code>art-dupl --semantic -t 50</code> reports 0 production clone groups.
-            The only remaining t50 clones are in
-            <code>pipeline/path_safety_test.go</code> (table-driven test entries that repeat setup
-            patterns &mdash; acceptable).
+            After the fix, <code>art-dupl --semantic -t 50</code> reports 0
+            production clone groups. The only remaining t50 clones are in
+            <code>pipeline/path_safety_test.go</code> (table-driven test entries
+            that repeat setup patterns &mdash; acceptable).
           </p>
         </div>
 
         <div class="card card-solution">
           <h4>All test-file clones are acceptable</h4>
           <p>
-            At t=30, 14 clone groups remain &mdash; all in <code>_test.go</code> files. These are
-            standard test patterns: table-driven assertions, repeated fixture setup, parallel test
+            At t=30, 14 clone groups remain &mdash; all in
+            <code>_test.go</code> files. These are standard test patterns:
+            table-driven assertions, repeated fixture setup, parallel test
             blocks. The deduplicate-code skill explicitly classifies these as
-            <strong>acceptable</strong>: extracting them would take more parameters than the
-            duplicated code has lines.
+            <strong>acceptable</strong>: extracting them would take more
+            parameters than the duplicated code has lines.
           </p>
         </div>
 
@@ -932,17 +965,19 @@
           <span class="severity severity-nice">Eliminated</span>
           <h3>Removed duplicate snapshotFindings method</h3>
           <div class="where">
-            report_query.go:108-117 (deleted) &middot; report_query.go:135 (updated caller)
+            report_query.go:108-117 (deleted) &middot; report_query.go:135
+            (updated caller)
           </div>
           <p>
-            <code>snapshotFindings()</code> was identical to <code>readFindings()</code>. Redirected
-            its single caller (<code>Map()</code>) to <code>readFindings()</code> and deleted the
+            <code>snapshotFindings()</code> was identical to
+            <code>readFindings()</code>. Redirected its single caller
+            (<code>Map()</code>) to <code>readFindings()</code> and deleted the
             duplicate method. 10 lines removed, 0 added.
           </p>
           <div class="callout callout-solution">
             <strong>Verified</strong>
-            Build passes, all tests green, golangci-lint 0 issues, art-dupl confirms the clone group
-            is gone at t=30.
+            Build passes, all tests green, golangci-lint 0 issues, art-dupl
+            confirms the clone group is gone at t=30.
           </div>
         </div>
 
@@ -960,32 +995,46 @@
           <tbody>
             <tr>
               <td>1</td>
-              <td><code>pipeline/path_safety_test.go:11-26 vs 222-237</code></td>
+              <td>
+                <code>pipeline/path_safety_test.go:11-26 vs 222-237</code>
+              </td>
               <td>15</td>
               <td>
-                Test setup helper repeated for independent test cases; extraction would obscure
-                intent
+                Test setup helper repeated for independent test cases;
+                extraction would obscure intent
               </td>
             </tr>
             <tr>
               <td>2</td>
-              <td><code>pipeline/path_safety_test.go:101-115 vs 117-131 vs 206-220</code></td>
+              <td>
+                <code
+                  >pipeline/path_safety_test.go:101-115 vs 117-131 vs
+                  206-220</code
+                >
+              </td>
               <td>14</td>
-              <td>3 table-driven test entries; each tests a distinct path-traversal scenario</td>
+              <td>
+                3 table-driven test entries; each tests a distinct
+                path-traversal scenario
+              </td>
             </tr>
             <tr>
               <td>3</td>
               <td><code>adapter.go:17-22 vs 30-35</code></td>
               <td>5</td>
-              <td>Struct fields mirrored in constructor params; natural Go pattern</td>
+              <td>
+                Struct fields mirrored in constructor params; natural Go pattern
+              </td>
             </tr>
             <tr>
               <td>4</td>
-              <td><code>pipeline/pipeline_detect.go:249-252 vs 257-260</code></td>
+              <td>
+                <code>pipeline/pipeline_detect.go:249-252 vs 257-260</code>
+              </td>
               <td>3</td>
               <td>
-                Same shift logic applied to two different slices; extraction would take more params
-                than lines
+                Same shift logic applied to two different slices; extraction
+                would take more params than lines
               </td>
             </tr>
           </tbody>
@@ -998,8 +1047,8 @@
             <div class="text">
               <strong>Zero harmful production duplication</strong>
               <span
-                >After eliminating snapshotFindings, no production clones remain at any
-                threshold.</span
+                >After eliminating snapshotFindings, no production clones remain
+                at any threshold.</span
               >
             </div>
           </div>
@@ -1008,8 +1057,9 @@
             <div class="text">
               <strong>Dedicated snapshot pattern</strong>
               <span
-                >Three distinct snapshot methods now have clear roles: readFindings (shallow),
-                FindingsSnapshot (deep), readFindingsLocked (under lock).</span
+                >Three distinct snapshot methods now have clear roles:
+                readFindings (shallow), FindingsSnapshot (deep),
+                readFindingsLocked (under lock).</span
               >
             </div>
           </div>
@@ -1018,16 +1068,17 @@
             <div class="text">
               <strong>Test duplication is idiomatic</strong>
               <span
-                >All test-file clones are table-driven patterns or fixture setup &mdash; the
-                deduplicate-code skill classifies these as acceptable.</span
+                >All test-file clones are table-driven patterns or fixture setup
+                &mdash; the deduplicate-code skill classifies these as
+                acceptable.</span
               >
             </div>
           </div>
         </div>
 
         <footer class="footer">
-          Generated 2026-07-18 &middot; art-dupl semantic mode &middot; 188 files &middot; 1 clone
-          eliminated, 0 harmful remaining
+          Generated 2026-07-18 &middot; art-dupl semantic mode &middot; 188
+          files &middot; 1 clone eliminated, 0 harmful remaining
         </footer>
       </main>
     </div>

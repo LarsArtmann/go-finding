@@ -42,14 +42,14 @@
 
 ## Execution Plan (sorted by impact/effort)
 
-| #   | Task                                              | Effort | Impact                         | Package    |
-| --- | ------------------------------------------------- | ------ | ------------------------------ | ---------- |
-| 1   | Remove `hasLineRange` dead code                   | 10min  | **High** — code clarity        | `finding`  |
-| 2   | Add `detectSequential` context-cancel test        | 15min  | **Medium** — coverage          | `pipeline` |
-| 3   | Add `detectPartialSequential` context-cancel test | 15min  | **Medium** — coverage          | `pipeline` |
-| 4   | Add per-package coverage thresholds to CI         | 20min  | **High** — prevents regression | `.github`  |
-| 5   | Run `-count=100` stress test                      | 10min  | **High** — confidence          | all        |
-| 6   | Update TODO_LIST.md: close stale items            | 10min  | **Medium** — hygiene           | docs       |
+| # | Task                                              | Effort | Impact                         | Package    |
+| - | ------------------------------------------------- | ------ | ------------------------------ | ---------- |
+| 1 | Remove `hasLineRange` dead code                   | 10min  | **High** — code clarity        | `finding`  |
+| 2 | Add `detectSequential` context-cancel test        | 15min  | **Medium** — coverage          | `pipeline` |
+| 3 | Add `detectPartialSequential` context-cancel test | 15min  | **Medium** — coverage          | `pipeline` |
+| 4 | Add per-package coverage thresholds to CI         | 20min  | **High** — prevents regression | `.github`  |
+| 5 | Run `-count=100` stress test                      | 10min  | **High** — confidence          | all        |
+| 6 | Update TODO_LIST.md: close stale items            | 10min  | **Medium** — hygiene           | docs       |
 
 ---
 

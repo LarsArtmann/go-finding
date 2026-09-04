@@ -1,7 +1,7 @@
 # Comprehensive Execution Plan: Hardening & API Stability
 
-**Date:** 2026-04-30 00:05  
-**Project:** go-finding  
+**Date:** 2026-04-30 00:05\
+**Project:** go-finding\
 **Status:** Post-Hardening Deepening — v0.x → v1.0 Readiness
 
 ---
@@ -87,32 +87,32 @@
 
 Sorted by: **Impact × Customer Value / Effort**
 
-| #   | Task                                                                           | Package                | Effort | Impact     | Customer Value                | Est |
-| --- | ------------------------------------------------------------------------------ | ---------------------- | ------ | ---------- | ----------------------------- | --- |
-| 1   | Delete stale `basic`/`builder` binaries + update `.gitignore`                  | repo                   | Low    | **High**   | **High** — professionalism    | 30m |
-| 2   | Fix `FixStrategyAI` split brain: decide behavior, fix `HasFix()` or `triage()` | `finding` / `pipeline` | Low    | **High**   | **High** — API honesty        | 45m |
-| 3   | Add `run()` test: `pipeline.New` error path (invalid config)                   | `cmd`                  | Medium | **High**   | **High** — CLI reliability    | 60m |
-| 4   | Add `run()` test: `p.Run` error path (detector failure)                        | `cmd`                  | Medium | **High**   | **High** — CLI reliability    | 60m |
-| 5   | Add `run()` test: metrics output branch                                        | `cmd`                  | Low    | **Medium** | **Medium** — CLI completeness | 30m |
-| 6   | Add `applyTriage` edge cases: all-conflicts early return + apply error         | `pipeline`             | Medium | **Medium** | **Medium** — coverage         | 45m |
-| 7   | Add `detectSequential` error path: context cancellation + detector error       | `pipeline`             | Medium | **Medium** | **Medium** — coverage         | 45m |
-| 8   | Add `detectParallel` error path: goroutine detector failure                    | `pipeline`             | Medium | **Medium** | **Medium** — coverage         | 45m |
-| 9   | Add `hasLineRange` edge case test (Start.Line == 0)                            | `finding`              | Low    | **Low**    | **Low** — coverage            | 30m |
-| 10  | Add `severityToSARIFLevel` / `severityToLSP` default-case tests                | `finding`              | Low    | **Low**    | **Low** — coverage            | 30m |
-| 11  | Add `Range.Contains` edge case: inverted ranges, nil receiver                  | `finding`              | Medium | **Low**    | **Low** — correctness         | 45m |
-| 12  | Add SARIF parser fuzz test: `FindingsFromSARIF` with malformed input           | `finding`              | Medium | **Medium** | **Medium** — security         | 60m |
-| 13  | Add `FindingsFromSARIF` schema validation test                                 | `finding`              | Medium | **Low**    | **Medium** — correctness      | 45m |
-| 14  | Add `govulncheck` step to GitHub Actions CI                                    | `.github`              | Low    | **Medium** | **Medium** — security         | 30m |
-| 15  | Add `RetryConfig.Validate` edge-case tests                                     | `pipeline`             | Low    | **Low**    | **Low** — coverage            | 30m |
-| 16  | Profile memory allocations: run benchmarks with `-benchmem`                    | repo                   | Low    | **Low**    | **Low** — performance         | 30m |
-| 17  | Add benchmark regression tracking script                                       | repo                   | Medium | **Low**    | **Low** — performance         | 45m |
-| 18  | Modernize remaining loops to `slices.Contains` / `maps.Keys`                   | `finding`              | Low    | **Low**    | **Low** — maintenance         | 30m |
-| 19  | Add `go:generate stringer` for `Severity`, `FixStrategy`, `Category`           | `finding`              | Low    | **Low**    | **Medium** — DX               | 45m |
-| 20  | Remove stale TODO items and update `TODO_LIST.md`                              | repo                   | Low    | **Low**    | **Medium** — hygiene          | 30m |
-| 21  | Remove unused `//nolint` directives (audit all 60 matches)                     | repo                   | Low    | **Low**    | **Low** — hygiene             | 30m |
-| 22  | Document SARIF round-trip losses (`RelatedRef.FindingID`, `BeforeCode`)        | `finding`              | Medium | **Low**    | **Low** — docs                | 30m |
-| 23  | Add per-package coverage thresholds in CI                                      | `.github`              | Medium | **Low**    | **Medium** — quality gate     | 45m |
-| 24  | Add `go.work` for local development                                            | repo                   | Low    | **Low**    | **Low** — DX                  | 30m |
+| #  | Task                                                                           | Package                | Effort | Impact     | Customer Value                | Est |
+| -- | ------------------------------------------------------------------------------ | ---------------------- | ------ | ---------- | ----------------------------- | --- |
+| 1  | Delete stale `basic`/`builder` binaries + update `.gitignore`                  | repo                   | Low    | **High**   | **High** — professionalism    | 30m |
+| 2  | Fix `FixStrategyAI` split brain: decide behavior, fix `HasFix()` or `triage()` | `finding` / `pipeline` | Low    | **High**   | **High** — API honesty        | 45m |
+| 3  | Add `run()` test: `pipeline.New` error path (invalid config)                   | `cmd`                  | Medium | **High**   | **High** — CLI reliability    | 60m |
+| 4  | Add `run()` test: `p.Run` error path (detector failure)                        | `cmd`                  | Medium | **High**   | **High** — CLI reliability    | 60m |
+| 5  | Add `run()` test: metrics output branch                                        | `cmd`                  | Low    | **Medium** | **Medium** — CLI completeness | 30m |
+| 6  | Add `applyTriage` edge cases: all-conflicts early return + apply error         | `pipeline`             | Medium | **Medium** | **Medium** — coverage         | 45m |
+| 7  | Add `detectSequential` error path: context cancellation + detector error       | `pipeline`             | Medium | **Medium** | **Medium** — coverage         | 45m |
+| 8  | Add `detectParallel` error path: goroutine detector failure                    | `pipeline`             | Medium | **Medium** | **Medium** — coverage         | 45m |
+| 9  | Add `hasLineRange` edge case test (Start.Line == 0)                            | `finding`              | Low    | **Low**    | **Low** — coverage            | 30m |
+| 10 | Add `severityToSARIFLevel` / `severityToLSP` default-case tests                | `finding`              | Low    | **Low**    | **Low** — coverage            | 30m |
+| 11 | Add `Range.Contains` edge case: inverted ranges, nil receiver                  | `finding`              | Medium | **Low**    | **Low** — correctness         | 45m |
+| 12 | Add SARIF parser fuzz test: `FindingsFromSARIF` with malformed input           | `finding`              | Medium | **Medium** | **Medium** — security         | 60m |
+| 13 | Add `FindingsFromSARIF` schema validation test                                 | `finding`              | Medium | **Low**    | **Medium** — correctness      | 45m |
+| 14 | Add `govulncheck` step to GitHub Actions CI                                    | `.github`              | Low    | **Medium** | **Medium** — security         | 30m |
+| 15 | Add `RetryConfig.Validate` edge-case tests                                     | `pipeline`             | Low    | **Low**    | **Low** — coverage            | 30m |
+| 16 | Profile memory allocations: run benchmarks with `-benchmem`                    | repo                   | Low    | **Low**    | **Low** — performance         | 30m |
+| 17 | Add benchmark regression tracking script                                       | repo                   | Medium | **Low**    | **Low** — performance         | 45m |
+| 18 | Modernize remaining loops to `slices.Contains` / `maps.Keys`                   | `finding`              | Low    | **Low**    | **Low** — maintenance         | 30m |
+| 19 | Add `go:generate stringer` for `Severity`, `FixStrategy`, `Category`           | `finding`              | Low    | **Low**    | **Medium** — DX               | 45m |
+| 20 | Remove stale TODO items and update `TODO_LIST.md`                              | repo                   | Low    | **Low**    | **Medium** — hygiene          | 30m |
+| 21 | Remove unused `//nolint` directives (audit all 60 matches)                     | repo                   | Low    | **Low**    | **Low** — hygiene             | 30m |
+| 22 | Document SARIF round-trip losses (`RelatedRef.FindingID`, `BeforeCode`)        | `finding`              | Medium | **Low**    | **Low** — docs                | 30m |
+| 23 | Add per-package coverage thresholds in CI                                      | `.github`              | Medium | **Low**    | **Medium** — quality gate     | 45m |
+| 24 | Add `go.work` for local development                                            | repo                   | Low    | **Low**    | **Low** — DX                  | 30m |
 
 ---
 

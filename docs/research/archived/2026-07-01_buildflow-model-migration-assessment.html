@@ -35,7 +35,9 @@
         box-sizing: border-box;
       }
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
         background: var(--bg);
         color: var(--text);
         line-height: 1.6;
@@ -245,32 +247,35 @@
       "
     >
       <strong>📦 Resolution Status (updated 2026-07-16):</strong>
-      This is a historical research assessment. go-finding's Finding model was adopted as the basis
-      for BuildFlow's detection pipeline. The multi-module structure proposed here was implemented
-      and shipped in v1.1.0.
+      This is a historical research assessment. go-finding's Finding model was
+      adopted as the basis for BuildFlow's detection pipeline. The multi-module
+      structure proposed here was implemented and shipped in v1.1.0.
     </div>
     <h1>Migration Assessment — BuildFlow/model/ → go-finding</h1>
     <div class="meta">
       <span><strong>Date:</strong> 2026-07-01</span>
       <span><strong>Analyst:</strong> Crush</span>
       <span
-        ><strong>Question:</strong> Should any types from <code>BuildFlow/model/</code> be migrated
-        to <code>go-finding</code>?</span
+        ><strong>Question:</strong> Should any types from
+        <code>BuildFlow/model/</code> be migrated to
+        <code>go-finding</code>?</span
       >
     </div>
     <p class="subtitle">
-      Full read-through of every file in <code>BuildFlow/model/</code> compared against go-finding's
-      core types and <code>pipeline/</code> package. Verdict: <strong>no migration</strong>.
+      Full read-through of every file in <code>BuildFlow/model/</code> compared
+      against go-finding's core types and <code>pipeline/</code> package.
+      Verdict: <strong>no migration</strong>.
     </p>
 
     <div class="verdict-box reject">
       <h3>Verdict: No Migration</h3>
       <p>
-        Every type in <code>BuildFlow/model/</code> is application-level build orchestration policy.
-        go-finding is a static analysis library. The dependency direction is already correct
-        (BuildFlow imports go-finding, not vice versa). Migrating anything upstream would pollute
-        the library with application concerns, violate the "minimal dependencies" design principle,
-        and create a circular conceptual dependency.
+        Every type in <code>BuildFlow/model/</code> is application-level build
+        orchestration policy. go-finding is a static analysis library. The
+        dependency direction is already correct (BuildFlow imports go-finding,
+        not vice versa). Migrating anything upstream would pollute the library
+        with application concerns, violate the "minimal dependencies" design
+        principle, and create a circular conceptual dependency.
       </p>
     </div>
 
@@ -278,24 +283,38 @@
       <h4>Contents</h4>
       <ol>
         <li><a href="#buildflow-inventory">BuildFlow/model/ Inventory</a></li>
-        <li><a href="#gofinding-inventory">go-finding Core Types &amp; Pipeline</a></li>
+        <li>
+          <a href="#gofinding-inventory"
+            >go-finding Core Types &amp; Pipeline</a
+          >
+        </li>
         <li><a href="#type-by-type">Type-by-Type Analysis</a></li>
         <li><a href="#pipeline-comparison">Pipeline Comparison</a></li>
         <li><a href="#architectural-argument">Architectural Argument</a></li>
-        <li><a href="#candidates-rejected">Candidates Considered and Rejected</a></li>
-        <li><a href="#future-direction">Future Direction: What BuildFlow Should Do Instead</a></li>
+        <li>
+          <a href="#candidates-rejected">Candidates Considered and Rejected</a>
+        </li>
+        <li>
+          <a href="#future-direction"
+            >Future Direction: What BuildFlow Should Do Instead</a
+          >
+        </li>
       </ol>
     </div>
 
     <!-- ────────────────────────────────────────── -->
     <h2 id="buildflow-inventory">1. BuildFlow/model/ Inventory</h2>
-    <p>Every file in <code>BuildFlow/model/</code> was read. They group into five categories:</p>
+    <p>
+      Every file in <code>BuildFlow/model/</code> was read. They group into five
+      categories:
+    </p>
 
     <h3>1.1 Build Pipeline Config &amp; Flags</h3>
     <ul class="file-list">
       <li>
-        <code>config.go</code> — <code>Config</code> struct with <code>Validate()</code>: build
-        mode, language, tool paths, max concurrency, file size limits, duplication thresholds
+        <code>config.go</code> — <code>Config</code> struct with
+        <code>Validate()</code>: build mode, language, tool paths, max
+        concurrency, file size limits, duplication thresholds
       </li>
       <li>
         <code>config_substructs.go</code> — <code>ExecutionControl</code>,
@@ -303,49 +322,57 @@
         <code>GoToolchainConfig</code> embedded into <code>Config</code>
       </li>
       <li>
-        <code>build_flags.go</code> — <code>BuildFlags</code>: TrimPath, StripSymbolTable,
-        StripDWARF, Race, LDFlags, Tags
+        <code>build_flags.go</code> — <code>BuildFlags</code>: TrimPath,
+        StripSymbolTable, StripDWARF, Race, LDFlags, Tags
       </li>
       <li>
-        <code>runtime_flags.go</code> — <code>RuntimeFlags</code>: GCTrace, SchedTrace, GOTRACEBACK,
-        GOMAXPROCS, GOGC, GOMEMLIMIT
+        <code>runtime_flags.go</code> — <code>RuntimeFlags</code>: GCTrace,
+        SchedTrace, GOTRACEBACK, GOMAXPROCS, GOGC, GOMEMLIMIT
       </li>
       <li>
-        <code>test_flags.go</code> — <code>TestFlags</code> + <code>FuzzTestFlags</code>: Shuffle,
-        Timeout, Count, CoverMode, CoverProfile, FuzzTime
+        <code>test_flags.go</code> — <code>TestFlags</code> +
+        <code>FuzzTestFlags</code>: Shuffle, Timeout, Count, CoverMode,
+        CoverProfile, FuzzTime
       </li>
     </ul>
     <div class="card red">
       <h4>Verdict: Application-specific</h4>
       <p>
-        These are BuildFlow's CI execution configuration — how to compile, test, and run Go
-        projects. They control <code>go build</code>, <code>go test</code>, and runtime behavior.
-        None of this belongs in a static analysis finding library.
+        These are BuildFlow's CI execution configuration — how to compile, test,
+        and run Go projects. They control <code>go build</code>,
+        <code>go test</code>, and runtime behavior. None of this belongs in a
+        static analysis finding library.
       </p>
     </div>
 
     <h3>1.2 Violation Types &amp; Interface</h3>
     <ul class="file-list">
       <li>
-        <code>base_violation.go</code> — <code>Violation</code> base struct (File, Line, Column,
-        Pattern, Reason, Severity, ViolationType) + interface methods
+        <code>base_violation.go</code> — <code>Violation</code> base struct
+        (File, Line, Column, Pattern, Reason, Severity, ViolationType) +
+        interface methods
       </li>
       <li>
-        <code>violation_interface.go</code> — <code>PrioritizedViolation</code> interface (GetFile,
-        GetSeverity, GetViolationType, GetPriorityValue, GetMessage, GetLine, GetColumn)
+        <code>violation_interface.go</code> —
+        <code>PrioritizedViolation</code> interface (GetFile, GetSeverity,
+        GetViolationType, GetPriorityValue, GetMessage, GetLine, GetColumn)
       </li>
       <li>
-        <code>violation_type.go</code> — <code>ViolationType</code> int enum (Compilation, Runtime,
-        Security, Duplication, Binary, Size, Style, TODO, Linter, Dependency, DocsAge) +
+        <code>violation_type.go</code> — <code>ViolationType</code> int enum
+        (Compilation, Runtime, Security, Duplication, Binary, Size, Style, TODO,
+        Linter, Dependency, DocsAge) +
         <code>DefaultSeverity()</code>
       </li>
       <li>
         <code>code_violations.go</code> — <code>BinaryViolation</code> (embedded
         <code>Violation</code> + Size)
       </li>
-      <li><code>docs_violations.go</code> — <code>AgentsMdExistsViolation</code></li>
       <li>
-        <code>quality_violations.go</code> — <code>FileSizeViolation</code> (LineCount, MaxAllowed)
+        <code>docs_violations.go</code> — <code>AgentsMdExistsViolation</code>
+      </li>
+      <li>
+        <code>quality_violations.go</code> —
+        <code>FileSizeViolation</code> (LineCount, MaxAllowed)
       </li>
       <li>
         <code>violation_sort.go</code> — <code>CompareViolations</code>,
@@ -355,69 +382,78 @@
     <div class="card red">
       <h4>Verdict: Parallel abstraction, already subsumed by go-finding</h4>
       <p>
-        <code>Violation</code> is a strictly simpler version of <code>finding.Finding</code>.
-        <code>ViolationType</code> overlaps with <code>finding.Category</code>.
-        <code>SortViolations</code> duplicates what <code>Severity.Compare()</code> + standard sort
-        already provides. These are BuildFlow's own policy types that happen to reuse
-        <code>finding.Severity</code> — they are not more general than what go-finding already
-        offers.
+        <code>Violation</code> is a strictly simpler version of
+        <code>finding.Finding</code>. <code>ViolationType</code> overlaps with
+        <code>finding.Category</code>. <code>SortViolations</code> duplicates
+        what <code>Severity.Compare()</code> + standard sort already provides.
+        These are BuildFlow's own policy types that happen to reuse
+        <code>finding.Severity</code> — they are not more general than what
+        go-finding already offers.
       </p>
     </div>
 
     <h3>1.3 Build-Step Results &amp; Metadata</h3>
     <ul class="file-list">
       <li>
-        <code>step_result.go</code> — <code>StepResult</code> (Step, Status, Duration, Message,
-        Error, Report, Metadata) + <code>StepDiagnostics</code> (CommandOutput, Command)
+        <code>step_result.go</code> — <code>StepResult</code> (Step, Status,
+        Duration, Message, Error, Report, Metadata) +
+        <code>StepDiagnostics</code> (CommandOutput, Command)
       </li>
       <li>
-        <code>step_metadata.go</code> — <code>StepMetadata</code> (Violations, ToolCapabilities,
-        FilesScanned, TotalFiles, FilesFiltered, DirectoriesExcluded, ModulesProcessed,
-        RepairMetadata, Extra map)
+        <code>step_metadata.go</code> — <code>StepMetadata</code> (Violations,
+        ToolCapabilities, FilesScanned, TotalFiles, FilesFiltered,
+        DirectoriesExcluded, ModulesProcessed, RepairMetadata, Extra map)
       </li>
-      <li><code>step_metadata_builder.go</code> — <code>StepMetadataBuilder</code> fluent API</li>
       <li>
-        <code>step_metadata_json.go</code> — Custom <code>MarshalJSON</code>/<code
-          >UnmarshalJSON</code
-        >
+        <code>step_metadata_builder.go</code> —
+        <code>StepMetadataBuilder</code> fluent API
+      </li>
+      <li>
+        <code>step_metadata_json.go</code> — Custom
+        <code>MarshalJSON</code>/<code>UnmarshalJSON</code>
         for flat JSON backward compatibility
       </li>
       <li>
-        <code>capability_info.go</code> — <code>CapabilityInfo</code> (SupportsAutoFix,
-        FixCapability, SupportsDryRun)
+        <code>capability_info.go</code> —
+        <code>CapabilityInfo</code> (SupportsAutoFix, FixCapability,
+        SupportsDryRun)
       </li>
       <li>
-        <code>repair_metadata.go</code> — <code>RepairMetadata</code>, <code>FixSummary</code>,
-        <code>GolangciMigrateResult</code>, <code>ProjectFixResult</code>,
-        <code>DiskSpaceAutoFixResult</code>, <code>AutoFixStatus</code>, <code>MigrateStatus</code>
+        <code>repair_metadata.go</code> — <code>RepairMetadata</code>,
+        <code>FixSummary</code>, <code>GolangciMigrateResult</code>,
+        <code>ProjectFixResult</code>, <code>DiskSpaceAutoFixResult</code>,
+        <code>AutoFixStatus</code>, <code>MigrateStatus</code>
       </li>
       <li>
-        <code>finding_report.go</code> — <code>FindingSummary</code> (ToolName, FindingCount,
-        SeverityCounts, Original *finding.Report)
+        <code>finding_report.go</code> — <code>FindingSummary</code> (ToolName,
+        FindingCount, SeverityCounts, Original *finding.Report)
       </li>
     </ul>
     <div class="card red">
       <h4>Verdict: BuildFlow execution engine concerns</h4>
       <p>
-        <code>StepResult</code> tracks whether a build step (compile, test, lint)
-        passed/failed/skipped. <code>StepMetadata</code> aggregates execution stats.
-        <code>RepairMetadata</code> encodes BuildFlow-specific repair tools (go-structure-linter,
-        golangci-lint migrator, projectfix, disk-space cleanup).
-        <code>CapabilityInfo</code> describes whether a BuildFlow tool supports auto-fix or dry-run.
-        None of these concepts exist in or belong to a static analysis library.
+        <code>StepResult</code> tracks whether a build step (compile, test,
+        lint) passed/failed/skipped. <code>StepMetadata</code> aggregates
+        execution stats. <code>RepairMetadata</code> encodes BuildFlow-specific
+        repair tools (go-structure-linter, golangci-lint migrator, projectfix,
+        disk-space cleanup). <code>CapabilityInfo</code> describes whether a
+        BuildFlow tool supports auto-fix or dry-run. None of these concepts
+        exist in or belong to a static analysis library.
       </p>
     </div>
 
     <h3>1.4 Validation Result Container</h3>
     <ul class="file-list">
       <li>
-        <code>result.go</code> — <code>ValidationResult[T PrioritizedViolation]</code> generic
-        container with ErrorCount/WarningCount/InfoCount, Duration, Validate(), IsSuccess(), custom
-        JSON
+        <code>result.go</code> —
+        <code>ValidationResult[T PrioritizedViolation]</code> generic container
+        with ErrorCount/WarningCount/InfoCount, Duration, Validate(),
+        IsSuccess(), custom JSON
       </li>
       <li>
         <code>result_helpers.go</code> — <code>GetFilesWithViolations()</code>,
-        <code>GetViolationsByFile()</code>, <code>GetMostSevereViolation()</code>
+        <code>GetViolationsByFile()</code>,
+        <code>GetMostSevereViolation()</code>
       </li>
       <li>
         <code>result_filters.go</code> — <code>FilteredBySeverity()</code>,
@@ -427,33 +463,36 @@
     <div class="card red">
       <h4>Verdict: BuildFlow-specific aggregation</h4>
       <p>
-        <code>ValidationResult[T]</code> is a violation aggregation container for BuildFlow's
-        specific violation types. It is constrained to <code>PrioritizedViolation</code> (a
-        BuildFlow interface). go-finding already has <code>Report</code> with
-        <code>Summary</code> (BySeverity, ByCategory, ByFixStrategy, FilesAffected) that serves the
-        same purpose at the library level.
+        <code>ValidationResult[T]</code> is a violation aggregation container
+        for BuildFlow's specific violation types. It is constrained to
+        <code>PrioritizedViolation</code> (a BuildFlow interface). go-finding
+        already has <code>Report</code> with <code>Summary</code> (BySeverity,
+        ByCategory, ByFixStrategy, FilesAffected) that serves the same purpose
+        at the library level.
       </p>
     </div>
 
     <h3>1.5 Errors, Misc</h3>
     <ul class="file-list">
       <li>
-        <code>errors.go</code> — <code>SerializableError</code>, <code>DependencyError</code> with
-        hardcoded <code>toolInstallCommands</code> map (golangci-lint, art-dupl, sqlc, goimports,
-        etc.)
+        <code>errors.go</code> — <code>SerializableError</code>,
+        <code>DependencyError</code> with hardcoded
+        <code>toolInstallCommands</code> map (golangci-lint, art-dupl, sqlc,
+        goimports, etc.)
       </li>
       <li>
         <code>git_todo.go</code> — <code>LineColumn</code> type alias to
-        <code>finding.Position</code>, <code>GitCheckOptions</code>, <code>GitCheckResult</code>,
+        <code>finding.Position</code>, <code>GitCheckOptions</code>,
+        <code>GitCheckResult</code>,
         <code>SourcePosition</code>
       </li>
       <li>
-        <code>severity.go</code> — <code>SeverityPriority()</code> function mapping
-        <code>finding.Severity</code> → int for sorting
+        <code>severity.go</code> — <code>SeverityPriority()</code> function
+        mapping <code>finding.Severity</code> → int for sorting
       </li>
       <li>
-        <code>metadata_keys.go</code> — <code>MetadataKey</code> branded string type + constants for
-        go-mod and pnpm update keys
+        <code>metadata_keys.go</code> — <code>MetadataKey</code> branded string
+        type + constants for go-mod and pnpm update keys
       </li>
     </ul>
     <div class="card red">
@@ -461,8 +500,9 @@
       <p>
         <code>errors.go</code> hardcodes BuildFlow toolchain knowledge.
         <code>metadata_keys.go</code> encodes BuildFlow module/npm operations.
-        <code>severity.go</code> duplicates <code>finding.Severity.Compare()</code>.
-        <code>git_todo.go</code> mixes git-check options with a position alias.
+        <code>severity.go</code> duplicates
+        <code>finding.Severity.Compare()</code>. <code>git_todo.go</code> mixes
+        git-check options with a position alias.
       </p>
     </div>
 
@@ -480,15 +520,17 @@
         <td><code>Finding</code></td>
         <td>Unified representation of a static analysis issue</td>
         <td>
-          ID, Rule, ToolName, Message, Severity, Position, Range, Category, Tags, FixStrategy,
-          Suggestion, BeforeCode, AfterCode, Confidence, Related, Suppression, Metadata
+          ID, Rule, ToolName, Message, Severity, Position, Range, Category,
+          Tags, FixStrategy, Suggestion, BeforeCode, AfterCode, Confidence,
+          Related, Suppression, Metadata
         </td>
       </tr>
       <tr>
         <td><code>Severity</code></td>
         <td>Issue urgency level</td>
         <td>
-          info &lt; warning &lt; error &lt; critical. Compare(), Badge(), Emoji(), alias system
+          info &lt; warning &lt; error &lt; critical. Compare(), Badge(),
+          Emoji(), alias system
         </td>
       </tr>
       <tr>
@@ -500,9 +542,10 @@
         <td><code>Category</code></td>
         <td>Domain classification of a finding</td>
         <td>
-          16 standard categories (security, style, performance, correctness, complexity,
-          duplication, error-handling, migration, type-safety, structure, configuration,
-          documentation, testing, unused, best-practice, naming). ParseCategory(), IsSecurity()
+          16 standard categories (security, style, performance, correctness,
+          complexity, duplication, error-handling, migration, type-safety,
+          structure, configuration, documentation, testing, unused,
+          best-practice, naming). ParseCategory(), IsSecurity()
         </td>
       </tr>
       <tr>
@@ -513,7 +556,9 @@
       <tr>
         <td><code>Position</code></td>
         <td>Source location (file, line, column, offset)</td>
-        <td>Offset -1 sentinel for "unset". HasOffset(), Compare(), Contains()</td>
+        <td>
+          Offset -1 sentinel for "unset". HasOffset(), Compare(), Contains()
+        </td>
       </tr>
       <tr>
         <td><code>Range</code></td>
@@ -524,8 +569,8 @@
         <td><code>Report</code></td>
         <td>Container for a tool run</td>
         <td>
-          Tool, findings (unexported), Summary (Total, BySeverity, ByCategory, ByFixStrategy,
-          FilesAffected). Thread-safe (sync.RWMutex)
+          Tool, findings (unexported), Summary (Total, BySeverity, ByCategory,
+          ByFixStrategy, FilesAffected). Thread-safe (sync.RWMutex)
         </td>
       </tr>
       <tr>
@@ -537,7 +582,8 @@
         <td>Branded types</td>
         <td>Compile-time-distinct string types</td>
         <td>
-          <code>ID</code>, <code>RuleName</code>, <code>ToolName</code>, <code>FilePath</code>
+          <code>ID</code>, <code>RuleName</code>, <code>ToolName</code>,
+          <code>FilePath</code>
         </td>
       </tr>
     </table>
@@ -555,33 +601,43 @@
       <tr>
         <td><code>Config</code></td>
         <td>
-          MaxIterations, Timeout, ParallelDetectors, Retry, FixProviders, Processors, StageHooks,
-          TriageFunc, ByteLevelConflictDetection
+          MaxIterations, Timeout, ParallelDetectors, Retry, FixProviders,
+          Processors, StageHooks, TriageFunc, ByteLevelConflictDetection
         </td>
       </tr>
       <tr>
         <td><code>PipelineResult</code></td>
         <td>
-          CompletionReason (stable/max-iterations/cancelled/timeout/error), Iterations[],
-          TotalDetected, Verification, PartialErrors, Metrics, Correlations
+          CompletionReason (stable/max-iterations/cancelled/timeout/error),
+          Iterations[], TotalDetected, Verification, PartialErrors, Metrics,
+          Correlations
         </td>
       </tr>
       <tr>
         <td><code>Metrics</code> / <code>MetricsSnapshot</code></td>
-        <td>Per-detector timing, fixes applied, stage durations, total duration. Thread-safe</td>
+        <td>
+          Per-detector timing, fixes applied, stage durations, total duration.
+          Thread-safe
+        </td>
       </tr>
       <tr>
         <td><code>TriageResult</code></td>
-        <td>Findings categorized: Direct (auto-fix), Suggest (display), None (no fix)</td>
+        <td>
+          Findings categorized: Direct (auto-fix), Suggest (display), None (no
+          fix)
+        </td>
       </tr>
       <tr>
         <td><code>FixApplier</code> / <code>FixEngine</code></td>
-        <td>Byte-level edit application with descending-offset, conflict detection</td>
+        <td>
+          Byte-level edit application with descending-offset, conflict detection
+        </td>
       </tr>
       <tr>
         <td><code>FixProvider</code> chain</td>
         <td>
-          OffsetProvider → LineProvider → SubstringProvider (fallback), custom providers prepended
+          OffsetProvider → LineProvider → SubstringProvider (fallback), custom
+          providers prepended
         </td>
       </tr>
       <tr>
@@ -606,17 +662,21 @@
         <td><code>finding.Finding</code></td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          <code>Finding</code> is the strict superset. <code>Violation</code> has fewer fields and
-          exists only because BuildFlow didn't adopt <code>Finding</code> uniformly.
+          <code>Finding</code> is the strict superset.
+          <code>Violation</code> has fewer fields and exists only because
+          BuildFlow didn't adopt <code>Finding</code> uniformly.
         </td>
       </tr>
       <tr>
         <td><code>PrioritizedViolation</code> interface</td>
-        <td><code>finding.Severity.Compare()</code> + <code>slices.SortFunc</code></td>
+        <td>
+          <code>finding.Severity.Compare()</code> + <code>slices.SortFunc</code>
+        </td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          Interface exists to enable generic sorting across violation types. go-finding already has
-          ordering on <code>Severity</code> and <code>Finding</code>.
+          Interface exists to enable generic sorting across violation types.
+          go-finding already has ordering on <code>Severity</code> and
+          <code>Finding</code>.
         </td>
       </tr>
       <tr>
@@ -625,21 +685,27 @@
         <td><span class="tag tag-red">No</span></td>
         <td>
           Overlapping but Category is more general (16 standard + custom).
-          <code>ViolationType</code> encodes BuildFlow-specific concerns (Binary, Size, DocsAge,
-          TODO). <code>DefaultSeverity()</code> is BuildFlow policy, not universal.
+          <code>ViolationType</code> encodes BuildFlow-specific concerns
+          (Binary, Size, DocsAge, TODO). <code>DefaultSeverity()</code> is
+          BuildFlow policy, not universal.
         </td>
       </tr>
       <tr>
         <td><code>BinaryViolation</code></td>
         <td>—</td>
         <td><span class="tag tag-red">No</span></td>
-        <td>BuildFlow-specific: binary files in git. Not a static analysis concept.</td>
+        <td>
+          BuildFlow-specific: binary files in git. Not a static analysis
+          concept.
+        </td>
       </tr>
       <tr>
         <td><code>FileSizeViolation</code></td>
         <td>—</td>
         <td><span class="tag tag-red">No</span></td>
-        <td>BuildFlow-specific: file exceeds max line count. Policy decision.</td>
+        <td>
+          BuildFlow-specific: file exceeds max line count. Policy decision.
+        </td>
       </tr>
       <tr>
         <td><code>AgentsMdExistsViolation</code></td>
@@ -652,8 +718,9 @@
         <td><code>finding.Report</code> + <code>Summary</code></td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          Constrained to <code>PrioritizedViolation</code> (BuildFlow interface).
-          <code>Report</code> already aggregates findings with severity/category breakdowns.
+          Constrained to <code>PrioritizedViolation</code> (BuildFlow
+          interface). <code>Report</code> already aggregates findings with
+          severity/category breakdowns.
         </td>
       </tr>
       <tr>
@@ -670,8 +737,9 @@
         <td>Standard sort on <code>Finding</code></td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          Trivial wrapper around <code>slices.SortFunc</code> with <code>CompareViolations</code>.
-          Not reusable outside BuildFlow's violation hierarchy.
+          Trivial wrapper around <code>slices.SortFunc</code> with
+          <code>CompareViolations</code>. Not reusable outside BuildFlow's
+          violation hierarchy.
         </td>
       </tr>
       <tr>
@@ -679,22 +747,26 @@
         <td>—</td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          Build-step execution outcome (pass/fail/skip). No equivalent in go-finding because
-          go-finding doesn't orchestrate build steps.
+          Build-step execution outcome (pass/fail/skip). No equivalent in
+          go-finding because go-finding doesn't orchestrate build steps.
         </td>
       </tr>
       <tr>
         <td><code>StepMetadata</code></td>
         <td>—</td>
         <td><span class="tag tag-red">No</span></td>
-        <td>BuildFlow execution metadata (files scanned, modules processed, repair reports).</td>
+        <td>
+          BuildFlow execution metadata (files scanned, modules processed, repair
+          reports).
+        </td>
       </tr>
       <tr>
         <td><code>CapabilityInfo</code></td>
         <td>—</td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          Describes whether a BuildFlow tool supports auto-fix / dry-run. Not a finding concept.
+          Describes whether a BuildFlow tool supports auto-fix / dry-run. Not a
+          finding concept.
         </td>
       </tr>
       <tr>
@@ -702,8 +774,8 @@
         <td>—</td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          Hardcoded BuildFlow repair tools (go-structure-linter, golangci-lint migrator, projectfix,
-          disk-space cleanup).
+          Hardcoded BuildFlow repair tools (go-structure-linter, golangci-lint
+          migrator, projectfix, disk-space cleanup).
         </td>
       </tr>
       <tr>
@@ -711,8 +783,10 @@
         <td><code>finding.Report</code> / <code>finding.Summary</code></td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          BuildFlow's adapter wrapper that reduces a <code>*finding.Report</code> to counts. Already
-          holds <code>Original *finding.Report</code> — it's a BuildFlow view, not a library type.
+          BuildFlow's adapter wrapper that reduces a
+          <code>*finding.Report</code> to counts. Already holds
+          <code>Original *finding.Report</code> — it's a BuildFlow view, not a
+          library type.
         </td>
       </tr>
       <tr>
@@ -720,8 +794,9 @@
         <td><code>pipeline.Config</code></td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          BuildFlow config controls CI execution (build modes, tool paths, Go toolchain flags, file
-          size limits). <code>pipeline.Config</code> controls the detect→fix loop. Completely
+          BuildFlow config controls CI execution (build modes, tool paths, Go
+          toolchain flags, file size limits).
+          <code>pipeline.Config</code> controls the detect→fix loop. Completely
           different concerns.
         </td>
       </tr>
@@ -730,15 +805,18 @@
         <td>—</td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          <code>go build</code> flags (TrimPath, StripSymbolTable, StripDWARF, LDFlags). Not static
-          analysis.
+          <code>go build</code> flags (TrimPath, StripSymbolTable, StripDWARF,
+          LDFlags). Not static analysis.
         </td>
       </tr>
       <tr>
         <td><code>RuntimeFlags</code></td>
         <td>—</td>
         <td><span class="tag tag-red">No</span></td>
-        <td>Go runtime env (GODEBUG, GOTRACEBACK, GOMAXPROCS). Not static analysis.</td>
+        <td>
+          Go runtime env (GODEBUG, GOTRACEBACK, GOMAXPROCS). Not static
+          analysis.
+        </td>
       </tr>
       <tr>
         <td><code>TestFlags</code> / <code>FuzzTestFlags</code></td>
@@ -751,8 +829,8 @@
         <td><code>finding.FindingError</code></td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          BuildFlow-specific error wrapper with tool type/family classification. go-finding already
-          has structured errors.
+          BuildFlow-specific error wrapper with tool type/family classification.
+          go-finding already has structured errors.
         </td>
       </tr>
       <tr>
@@ -760,7 +838,8 @@
         <td>—</td>
         <td><span class="tag tag-red">No</span></td>
         <td>
-          Hardcoded install commands for BuildFlow tools (art-dupl, golangci-lint, sqlc, etc.).
+          Hardcoded install commands for BuildFlow tools (art-dupl,
+          golangci-lint, sqlc, etc.).
         </td>
       </tr>
       <tr>
@@ -777,8 +856,9 @@
     <!-- ────────────────────────────────────────── -->
     <h2 id="pipeline-comparison">4. Pipeline Comparison</h2>
     <p>
-      The most likely migration target is <code>pipeline/</code>, since both deal with "running
-      analysis." However, they solve fundamentally different problems:
+      The most likely migration target is <code>pipeline/</code>, since both
+      deal with "running analysis." However, they solve fundamentally different
+      problems:
     </p>
 
     <table>
@@ -790,29 +870,40 @@
       <tr>
         <td><strong>Purpose</strong></td>
         <td>
-          Iterative <strong>detect → triage → fix → verify</strong> loop for automated remediation
+          Iterative <strong>detect → triage → fix → verify</strong> loop for
+          automated remediation
         </td>
         <td>
-          <strong>Build orchestration</strong> — track pass/fail/status of CI steps (compile, test,
-          lint, format, dependency check)
+          <strong>Build orchestration</strong> — track pass/fail/status of CI
+          steps (compile, test, lint, format, dependency check)
         </td>
       </tr>
       <tr>
         <td><strong>Core result</strong></td>
         <td>
-          <code>PipelineResult</code> — iterations, fixes applied, correlations, completion reason
+          <code>PipelineResult</code> — iterations, fixes applied, correlations,
+          completion reason
         </td>
-        <td><code>StepResult</code> — one step's status, duration, error, findings summary</td>
+        <td>
+          <code>StepResult</code> — one step's status, duration, error, findings
+          summary
+        </td>
       </tr>
       <tr>
         <td><strong>Granularity</strong></td>
-        <td>Finds and fixes individual code issues at specific source locations</td>
+        <td>
+          Finds and fixes individual code issues at specific source locations
+        </td>
         <td>Tracks whether a build step completed successfully</td>
       </tr>
       <tr>
         <td><strong>Config</strong></td>
-        <td>MaxIterations, Timeout, FixProviders, Retry, TriageFunc, StageHooks</td>
-        <td>BuildMode, ToolPaths, GoToolchainFlags, FileSizeLimits, DuplThreshold</td>
+        <td>
+          MaxIterations, Timeout, FixProviders, Retry, TriageFunc, StageHooks
+        </td>
+        <td>
+          BuildMode, ToolPaths, GoToolchainFlags, FileSizeLimits, DuplThreshold
+        </td>
       </tr>
       <tr>
         <td><strong>Metrics</strong></td>
@@ -822,9 +913,10 @@
       <tr>
         <td><strong>Relationship</strong></td>
         <td colspan="2">
-          BuildFlow is the <em>caller</em>. It could use go-finding's <code>Pipeline</code> to run
-          detectors internally, but its model types encode CI orchestration concerns that don't
-          belong in a static analysis library.
+          BuildFlow is the <em>caller</em>. It could use go-finding's
+          <code>Pipeline</code> to run detectors internally, but its model types
+          encode CI orchestration concerns that don't belong in a static
+          analysis library.
         </td>
       </tr>
     </table>
@@ -835,17 +927,20 @@
     <div class="card blue">
       <h4>Dependency Direction</h4>
       <p>
-        BuildFlow already imports go-finding (<code>import "github.com/larsartmann/go-finding"</code
-        >). The <code>Violation</code> base struct uses <code>finding.Severity</code>. The
-        <code>ValidationResult</code> counts violations by <code>finding.SeverityCritical</code>,
-        <code>finding.SeverityError</code>, etc. <code>FindingSummary</code> holds
-        <code>Original *finding.Report</code>. <code>LineColumn</code> is aliased to
-        <code>finding.Position</code>.
+        BuildFlow already imports go-finding (<code
+          >import "github.com/larsartmann/go-finding"</code
+        >). The <code>Violation</code> base struct uses
+        <code>finding.Severity</code>. The <code>ValidationResult</code> counts
+        violations by <code>finding.SeverityCritical</code>,
+        <code>finding.SeverityError</code>, etc.
+        <code>FindingSummary</code> holds <code>Original *finding.Report</code>.
+        <code>LineColumn</code> is aliased to <code>finding.Position</code>.
       </p>
       <p>
-        Migrating any of these types upstream would invert the dependency for no benefit — it would
-        make go-finding depend on concepts that only BuildFlow needs, while BuildFlow would still
-        need its own wrappers for its application-specific policy.
+        Migrating any of these types upstream would invert the dependency for no
+        benefit — it would make go-finding depend on concepts that only
+        BuildFlow needs, while BuildFlow would still need its own wrappers for
+        its application-specific policy.
       </p>
     </div>
 
@@ -853,39 +948,47 @@
       <h4>Library vs Application Boundary</h4>
       <p>
         go-finding's design principle #1 is
-        <strong>"minimal dependencies — core types depend only on stdlib."</strong> Every type in
-        BuildFlow/model/ either:
+        <strong
+          >"minimal dependencies — core types depend only on stdlib."</strong
+        >
+        Every type in BuildFlow/model/ either:
       </p>
       <ul>
         <li>
-          Encodes application policy (which tools to install, what file sizes to enforce, which
-          violation types exist)
+          Encodes application policy (which tools to install, what file sizes to
+          enforce, which violation types exist)
         </li>
         <li>
           Depends on BuildFlow-specific packages (<code>buildflow/domain</code>,
-          <code>buildflow/constants</code>, <code>buildflow/modules/errors</code>,
-          <code>buildflow/logger</code>)
+          <code>buildflow/constants</code>,
+          <code>buildflow/modules/errors</code>, <code>buildflow/logger</code>)
         </li>
-        <li>Hardcodes toolchain knowledge (golangci-lint, art-dupl, sqlc, ginkgo, etc.)</li>
+        <li>
+          Hardcodes toolchain knowledge (golangci-lint, art-dupl, sqlc, ginkgo,
+          etc.)
+        </li>
       </ul>
       <p>
-        Bringing any of this into go-finding would violate the library's dependency-free core
-        principle and import application concerns into a library that other consumers expect to be
-        clean.
+        Bringing any of this into go-finding would violate the library's
+        dependency-free core principle and import application concerns into a
+        library that other consumers expect to be clean.
       </p>
     </div>
 
     <div class="card blue">
       <h4>The "Superset" Test</h4>
-      <p>For each overlap area, go-finding already provides the more general abstraction:</p>
+      <p>
+        For each overlap area, go-finding already provides the more general
+        abstraction:
+      </p>
       <ul>
         <li>
-          <code>Finding</code> (16+ fields, builder, validation, JSON, SARIF, LSP) ⊃
-          <code>Violation</code> (7 fields, no serialization)
+          <code>Finding</code> (16+ fields, builder, validation, JSON, SARIF,
+          LSP) ⊃ <code>Violation</code> (7 fields, no serialization)
         </li>
         <li>
-          <code>Category</code> (16 standard + arbitrary custom, parse/validate) ⊃
-          <code>ViolationType</code> (11 fixed int constants)
+          <code>Category</code> (16 standard + arbitrary custom, parse/validate)
+          ⊃ <code>ViolationType</code> (11 fixed int constants)
         </li>
         <li>
           <code>Report</code> + <code>Summary</code> (thread-safe,
@@ -898,9 +1001,9 @@
         </li>
       </ul>
       <p>
-        The migration direction would need to be the opposite — BuildFlow adopting go-finding types
-        more directly — for there to be any value. But even that is a BuildFlow refactor, not a
-        go-finding change.
+        The migration direction would need to be the opposite — BuildFlow
+        adopting go-finding types more directly — for there to be any value. But
+        even that is a BuildFlow refactor, not a go-finding change.
       </p>
     </div>
 
@@ -910,69 +1013,81 @@
     <div class="card yellow">
       <h4>Candidate: <code>ViolationType.DefaultSeverity()</code> mapping</h4>
       <p>
-        <strong>Why considered:</strong> Maps violation categories to default severity — could be
-        useful as a general "category → default severity" concept.
+        <strong>Why considered:</strong> Maps violation categories to default
+        severity — could be useful as a general "category → default severity"
+        concept.
       </p>
       <p>
-        <strong>Why rejected:</strong> The mapping is BuildFlow policy (compilation→critical,
-        docs-age→warning, binary→error). go-finding's <code>Category</code> intentionally does NOT
-        prescribe severity — that's a tool-specific decision. Adding default severities would impose
+        <strong>Why rejected:</strong> The mapping is BuildFlow policy
+        (compilation→critical, docs-age→warning, binary→error). go-finding's
+        <code>Category</code> intentionally does NOT prescribe severity — that's
+        a tool-specific decision. Adding default severities would impose
         opinions the library deliberately avoids.
       </p>
     </div>
 
     <div class="card yellow">
-      <h4>Candidate: <code>CapabilityInfo</code> (auto-fix / dry-run support)</h4>
+      <h4>
+        Candidate: <code>CapabilityInfo</code> (auto-fix / dry-run support)
+      </h4>
       <p>
-        <strong>Why considered:</strong> Describes tool capabilities — seems like it could pair with
-        <code>FixStrategy</code>.
+        <strong>Why considered:</strong> Describes tool capabilities — seems
+        like it could pair with <code>FixStrategy</code>.
       </p>
       <p>
-        <strong>Why rejected:</strong> go-finding already encodes fix capability per-finding via
-        <code>FixStrategy</code> (none/suggest/direct/ai) and <code>HasFix()</code> /
-        <code>IsAutoFixable()</code>. <code>CapabilityInfo</code> describes whether a
-        <em>tool</em> supports a CLI flag (<code>--fix</code>, <code>--dry-run</code>) — that's
+        <strong>Why rejected:</strong> go-finding already encodes fix capability
+        per-finding via <code>FixStrategy</code> (none/suggest/direct/ai) and
+        <code>HasFix()</code> / <code>IsAutoFixable()</code>.
+        <code>CapabilityInfo</code> describes whether a <em>tool</em> supports a
+        CLI flag (<code>--fix</code>, <code>--dry-run</code>) — that's
         BuildFlow's execution concern, not a per-finding property.
       </p>
     </div>
 
     <div class="card yellow">
-      <h4>Candidate: <code>CompareViolations</code> / <code>SortViolations[T]</code></h4>
+      <h4>
+        Candidate: <code>CompareViolations</code> /
+        <code>SortViolations[T]</code>
+      </h4>
       <p>
-        <strong>Why considered:</strong> Canonical sorting of violations by priority → file → line →
-        column.
+        <strong>Why considered:</strong> Canonical sorting of violations by
+        priority → file → line → column.
       </p>
       <p>
-        <strong>Why rejected:</strong> Generic sort on <code>Finding</code> can trivially be done
-        with <code>slices.SortFunc</code> and existing <code>Severity.Compare()</code> /
-        <code>Position.Compare()</code>. The priority formula
-        <code>(severityRank * 1000) + violationType</code> is specific to
-        <code>ViolationType</code>, which is BuildFlow-only. Adding a sorting utility for a type the
-        library doesn't use adds dead code.
+        <strong>Why rejected:</strong> Generic sort on <code>Finding</code> can
+        trivially be done with <code>slices.SortFunc</code> and existing
+        <code>Severity.Compare()</code> / <code>Position.Compare()</code>. The
+        priority formula <code>(severityRank * 1000) + violationType</code> is
+        specific to <code>ViolationType</code>, which is BuildFlow-only. Adding
+        a sorting utility for a type the library doesn't use adds dead code.
       </p>
     </div>
 
     <div class="card yellow">
       <h4>Candidate: <code>SerializableError</code></h4>
       <p>
-        <strong>Why considered:</strong> Structured error for JSON serialization — seems generic.
+        <strong>Why considered:</strong> Structured error for JSON serialization
+        — seems generic.
       </p>
       <p>
-        <strong>Why rejected:</strong> go-finding already has <code>FindingError</code> with
-        <code>Category</code>, <code>Finding</code>, <code>Message</code>, <code>Cause</code>,
-        <code>File</code>, <code>Position</code> — far richer and domain-specific.
-        <code>SerializableError</code> embeds BuildFlow's error classification
-        (<code>BuildFlowError</code>, <code>go-error-family Classified</code>) which go-finding
-        doesn't use.
+        <strong>Why rejected:</strong> go-finding already has
+        <code>FindingError</code> with <code>Category</code>,
+        <code>Finding</code>, <code>Message</code>, <code>Cause</code>,
+        <code>File</code>, <code>Position</code> — far richer and
+        domain-specific. <code>SerializableError</code> embeds BuildFlow's error
+        classification (<code>BuildFlowError</code>,
+        <code>go-error-family Classified</code>) which go-finding doesn't use.
       </p>
     </div>
 
     <!-- ────────────────────────────────────────── -->
-    <h2 id="future-direction">7. Future Direction: What BuildFlow Should Do Instead</h2>
+    <h2 id="future-direction">
+      7. Future Direction: What BuildFlow Should Do Instead
+    </h2>
 
     <p>
-      Instead of migrating types to go-finding, BuildFlow should consider adopting go-finding's
-      existing types more directly:
+      Instead of migrating types to go-finding, BuildFlow should consider
+      adopting go-finding's existing types more directly:
     </p>
 
     <table>
@@ -983,7 +1098,10 @@
       </tr>
       <tr>
         <td><code>Violation</code> base struct (7 fields)</td>
-        <td><code>finding.Finding</code> (16+ fields with builder, validation, SARIF, LSP)</td>
+        <td>
+          <code>finding.Finding</code> (16+ fields with builder, validation,
+          SARIF, LSP)
+        </td>
         <td>Richer data model, free SARIF/LSP export, no parallel hierarchy</td>
       </tr>
       <tr>
@@ -992,7 +1110,9 @@
         <td>Thread-safe, category breakdown, built-in aggregation</td>
       </tr>
       <tr>
-        <td><code>SeverityPriority()</code> + <code>SortViolations[T]</code></td>
+        <td>
+          <code>SeverityPriority()</code> + <code>SortViolations[T]</code>
+        </td>
         <td><code>Severity.Compare()</code> + <code>slices.SortFunc</code></td>
         <td>Eliminate duplicate ordering logic</td>
       </tr>
@@ -1001,25 +1121,27 @@
         <td><code>finding.Category</code> (custom categories allowed)</td>
         <td>
           Use <code>CategoryCorrectness</code>, <code>CategoryStyle</code>,
-          <code>CategoryDuplication</code>, plus custom categories for Binary/Size/DocsAge
+          <code>CategoryDuplication</code>, plus custom categories for
+          Binary/Size/DocsAge
         </td>
       </tr>
     </table>
 
     <p>
-      This is a <strong>BuildFlow refactor</strong> — it changes BuildFlow's code, not go-finding's.
-      go-finding already has everything needed. No migration is required for this direction; it's an
-      adoption question on the consumer side.
+      This is a <strong>BuildFlow refactor</strong> — it changes BuildFlow's
+      code, not go-finding's. go-finding already has everything needed. No
+      migration is required for this direction; it's an adoption question on the
+      consumer side.
     </p>
 
     <div class="verdict-box reject">
       <h3>Final Verdict</h3>
       <p>
-        <strong>No migration from BuildFlow/model/ to go-finding.</strong> Every type is either
-        application-specific build orchestration policy or a strictly simpler duplicate of an
-        existing go-finding abstraction. The dependency direction is correct (BuildFlow →
-        go-finding). go-finding's library boundary and dependency-free core principle must be
-        preserved.
+        <strong>No migration from BuildFlow/model/ to go-finding.</strong> Every
+        type is either application-specific build orchestration policy or a
+        strictly simpler duplicate of an existing go-finding abstraction. The
+        dependency direction is correct (BuildFlow → go-finding). go-finding's
+        library boundary and dependency-free core principle must be preserved.
       </p>
     </div>
   </body>

@@ -59,27 +59,27 @@ graph TD
 
 ## Task Breakdown — Phase 1 (30-100 min each)
 
-| #   | Task                                                    | Impact | Effort    | Files                                                                                    |
-| --- | ------------------------------------------------------- | ------ | --------- | ---------------------------------------------------------------------------------------- |
-| 1   | Eliminate `detectResult` ghost type                     | Med    | 30min     | `pipeline/pipeline.go`, `pipeline/partial.go`                                            |
-| 2   | Consistent structured errors in pipeline                | Med    | 45min     | `pipeline/pipeline.go`, `pipeline/partial.go`, `pipeline/verify.go`, `pipeline/retry.go` |
-| 3   | ~~Fix notifyFinding race~~                              | High   | ~~30min~~ | ~~`pipeline/pipeline.go`, `pipeline/partial.go`~~ **DONE**                               |
-| 4   | Move `diagnostic.go` to `finding/diagnostic` subpackage | High   | 60min     | `diagnostic.go` → `diagnostic/`, `go.mod`                                                |
-| 5   | Consolidate error constructors                          | Low    | 20min     | `errors.go`                                                                              |
+| # | Task                                                    | Impact | Effort    | Files                                                                                    |
+| - | ------------------------------------------------------- | ------ | --------- | ---------------------------------------------------------------------------------------- |
+| 1 | Eliminate `detectResult` ghost type                     | Med    | 30min     | `pipeline/pipeline.go`, `pipeline/partial.go`                                            |
+| 2 | Consistent structured errors in pipeline                | Med    | 45min     | `pipeline/pipeline.go`, `pipeline/partial.go`, `pipeline/verify.go`, `pipeline/retry.go` |
+| 3 | ~~Fix notifyFinding race~~                              | High   | ~~30min~~ | ~~`pipeline/pipeline.go`, `pipeline/partial.go`~~ **DONE**                               |
+| 4 | Move `diagnostic.go` to `finding/diagnostic` subpackage | High   | 60min     | `diagnostic.go` → `diagnostic/`, `go.mod`                                                |
+| 5 | Consolidate error constructors                          | Low    | 20min     | `errors.go`                                                                              |
 
 ## Task Breakdown — Phase 3 (30-100 min each)
 
-| #   | Task                                                                   | Impact | Effort | Files                              |
-| --- | ---------------------------------------------------------------------- | ------ | ------ | ---------------------------------- |
-| 6   | FixEngine unit tests                                                   | High   | 45min  | NEW `pipeline/fix_engine_test.go`  |
-| 7   | FixEngine edge case tests (empty input, out-of-bounds, multiple fixes) | Med    | 30min  | `pipeline/fix_engine_test.go`      |
-| 8   | FileBackup direct tests                                                | Med    | 30min  | NEW `pipeline/file_backup_test.go` |
-| 9   | Partial parallel detection test                                        | Med    | 20min  | `pipeline/partial_test.go`         |
-| 10  | Position edge case tests (intersectionByOffset, checkColumnRange)      | Med    | 30min  | `position_extra_test.go`           |
+| #  | Task                                                                   | Impact | Effort | Files                              |
+| -- | ---------------------------------------------------------------------- | ------ | ------ | ---------------------------------- |
+| 6  | FixEngine unit tests                                                   | High   | 45min  | NEW `pipeline/fix_engine_test.go`  |
+| 7  | FixEngine edge case tests (empty input, out-of-bounds, multiple fixes) | Med    | 30min  | `pipeline/fix_engine_test.go`      |
+| 8  | FileBackup direct tests                                                | Med    | 30min  | NEW `pipeline/file_backup_test.go` |
+| 9  | Partial parallel detection test                                        | Med    | 20min  | `pipeline/partial_test.go`         |
+| 10 | Position edge case tests (intersectionByOffset, checkColumnRange)      | Med    | 30min  | `position_extra_test.go`           |
 
 ## Task Breakdown — Phase 4 (30-100 min each)
 
-| #   | Task                                     | Impact | Effort | Files          |
-| --- | ---------------------------------------- | ------ | ------ | -------------- |
-| 11  | Fix golines formatting across codebase   | Low    | 15min  | Various        |
-| 12  | Update TODO_LIST.md with completed items | Low    | 15min  | `TODO_LIST.md` |
+| #  | Task                                     | Impact | Effort | Files          |
+| -- | ---------------------------------------- | ------ | ------ | -------------- |
+| 11 | Fix golines formatting across codebase   | Low    | 15min  | Various        |
+| 12 | Update TODO_LIST.md with completed items | Low    | 15min  | `TODO_LIST.md` |

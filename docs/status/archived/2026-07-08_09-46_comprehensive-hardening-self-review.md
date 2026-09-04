@@ -6,11 +6,11 @@
 > was subsequently fixed. Path traversal and TOCTOU security fixes were added in the follow-up
 > session (2026-07-08_08-33). All fuzz targets pass (1.76M+ executions).
 
-**Date**: 2026-07-08 09:46  
-**Session**: Regression tests, security hardening, SARIF spec compliance, bug fixes  
-**Commit**: `c0f900f` — `fix: comprehensive correctness and security hardening sweep`  
-**Files changed**: 53 files, +2124/-149  
-**All tests**: PASS (race detector, all 4 modules)  
+**Date**: 2026-07-08 09:46\
+**Session**: Regression tests, security hardening, SARIF spec compliance, bug fixes\
+**Commit**: `c0f900f` — `fix: comprehensive correctness and security hardening sweep`\
+**Files changed**: 53 files, +2124/-149\
+**All tests**: PASS (race detector, all 4 modules)\
 **Lint**: 0 issues
 
 ---

@@ -140,43 +140,43 @@ The CLI's `parseSeverity()` in `cmd/go-finding/config.go` still uses its own map
 
 ### P0 — Must Do (Correctness & Safety)
 
-| #   | Action                                                     | Impact   | Effort |
-| --- | ---------------------------------------------------------- | -------- | ------ |
-| 1   | Fix FixEngine line-offset tracking for multi-fix same-file | Critical | M      |
-| 2   | Fix FixApplier file permissions — preserve original mode   | High     | S      |
-| 3   | Surface FixProvider errors in resolveEdits (don't swallow) | High     | S      |
-| 4   | Surface engine errors in FilterConflictingEdits            | High     | S      |
-| 5   | Add retry-wrapping in Verify stage (parity with detect)    | Medium   | S      |
-| 6   | Fix Position.Adjacent() column check — equality vs +1      | Medium   | S      |
+| # | Action                                                     | Impact   | Effort |
+| - | ---------------------------------------------------------- | -------- | ------ |
+| 1 | Fix FixEngine line-offset tracking for multi-fix same-file | Critical | M      |
+| 2 | Fix FixApplier file permissions — preserve original mode   | High     | S      |
+| 3 | Surface FixProvider errors in resolveEdits (don't swallow) | High     | S      |
+| 4 | Surface engine errors in FilterConflictingEdits            | High     | S      |
+| 5 | Add retry-wrapping in Verify stage (parity with detect)    | Medium   | S      |
+| 6 | Fix Position.Adjacent() column check — equality vs +1      | Medium   | S      |
 
 ### P1 — Should Do (API Quality & DX)
 
-| #   | Action                                                       | Impact | Effort |
-| --- | ------------------------------------------------------------ | ------ | ------ |
-| 7   | Migrate CLI parseSeverity() to use finding.ParseSeverity()   | Medium | S      |
-| 8   | Add go:generate stringer for Severity, FixStrategy, Category | Medium | S      |
-| 9   | Add Confidence.Compare() method                              | Medium | S      |
-| 10  | Add ReportFromSARIF() function                               | Medium | M      |
-| 11  | Correlate() interval tree optimization                       | High   | M      |
-| 12  | Diff.Modified track both before and after versions           | Medium | S      |
-| 13  | Verify stage leverage DiffResult.Modified                    | Medium | S      |
+| #  | Action                                                       | Impact | Effort |
+| -- | ------------------------------------------------------------ | ------ | ------ |
+| 7  | Migrate CLI parseSeverity() to use finding.ParseSeverity()   | Medium | S      |
+| 8  | Add go:generate stringer for Severity, FixStrategy, Category | Medium | S      |
+| 9  | Add Confidence.Compare() method                              | Medium | S      |
+| 10 | Add ReportFromSARIF() function                               | Medium | M      |
+| 11 | Correlate() interval tree optimization                       | High   | M      |
+| 12 | Diff.Modified track both before and after versions           | Medium | S      |
+| 13 | Verify stage leverage DiffResult.Modified                    | Medium | S      |
 
 ### P2 — Nice to Have (Polish & Cleanup)
 
-| #   | Action                                                        | Impact | Effort |
-| --- | ------------------------------------------------------------- | ------ | ------ |
-| 14  | Clean TODO_LIST.md — remove ~100 resolved items               | Low    | M      |
-| 15  | Fill docs/DOMAIN_LANGUAGE.md (currently blank template)       | Low    | M      |
-| 16  | Update docs/v1.0-release-criteria.md version to 0.3.0         | Low    | S      |
-| 17  | Update docs/READINESS_REPORT.md for current state             | Low    | M      |
-| 18  | Unify Tag/Category overlapping string values                  | Medium | M      |
-| 19  | Add Category.IsValid() strict validation against known values | Medium | S      |
-| 20  | Refactor Config to options pattern for callbacks              | Low    | M      |
-| 21  | Remove deprecated ErrInvalidBuilder from builder              | Low    | S      |
-| 22  | Confidence.String() — return "medium" not "0.50"              | Low    | S      |
-| 23  | Add Coverage for cmd/go-finding/main.go:19 (run function)     | Low    | M      |
-| 24  | Tag v0.3.0 in git (version bumped but no tag exists)          | Low    | S      |
-| 25  | Add API stability guarantee document for v1.0 prep            | Medium | M      |
+| #  | Action                                                        | Impact | Effort |
+| -- | ------------------------------------------------------------- | ------ | ------ |
+| 14 | Clean TODO_LIST.md — remove ~100 resolved items               | Low    | M      |
+| 15 | Fill docs/DOMAIN_LANGUAGE.md (currently blank template)       | Low    | M      |
+| 16 | Update docs/v1.0-release-criteria.md version to 0.3.0         | Low    | S      |
+| 17 | Update docs/READINESS_REPORT.md for current state             | Low    | M      |
+| 18 | Unify Tag/Category overlapping string values                  | Medium | M      |
+| 19 | Add Category.IsValid() strict validation against known values | Medium | S      |
+| 20 | Refactor Config to options pattern for callbacks              | Low    | M      |
+| 21 | Remove deprecated ErrInvalidBuilder from builder              | Low    | S      |
+| 22 | Confidence.String() — return "medium" not "0.50"              | Low    | S      |
+| 23 | Add Coverage for cmd/go-finding/main.go:19 (run function)     | Low    | M      |
+| 24 | Tag v0.3.0 in git (version bumped but no tag exists)          | Low    | S      |
+| 25 | Add API stability guarantee document for v1.0 prep            | Medium | M      |
 
 ---
 

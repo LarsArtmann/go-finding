@@ -211,7 +211,7 @@ All exported symbols are classified as:
 | `StageHook`, `StageHookFunc`, `StageEvent`, `StageTiming`       | stable |
 | `LineShiftMap`, `LineShiftEntry`                                | stable |
 | `ConfigFile`                                                    | stable |
-| `FlightRecorderHook`, `FlightRecorderConfig`                    | stable | Unreleased. Chrome Trace Event export. |
+| `FlightRecorderHook`, `FlightRecorderConfig`                    | stable |
 
 ### Functions
 

@@ -14,21 +14,21 @@
 
 ## a) FULLY DONE
 
-| #   | Item                                                                                                   | Evidence                                                        |
-| --- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| 1   | **All 7 PRs resolved**                                                                                 | `gh pr list --state open` returns empty                         |
-| 2   | PR #8 (ginkgo 2.31→2.32) squash-merged via API                                                         | commit `7d0cbaf`                                                |
-| 3   | PR #6 (gomega 1.42.0→1.42.1) rebased onto #8, force-pushed to dependabot branch, squash-merged         | commit `07c0819`                                                |
-| 4   | PR #2 (codecov) — pushed the `file:`→`files:` fix to dependabot branch (commit `52577b1`) before merge | critical silent-breakage fix                                    |
-| 5   | PRs #1, #2, #3, #4, #5 consolidated into one commit and pushed via SSH                                 | commit `0688555`                                                |
-| 6   | PAT `workflow` scope blocker diagnosed and worked around via SSH push                                  | root cause: PAT lacks `workflow` scope, SSH key bypasses it     |
-| 7   | 5 dependabot branches deleted on close                                                                 | confirmed via `gh pr close --delete-branch`                     |
-| 8   | Final master verified: `-race` tests pass on all 4 modules                                             | ran `go test -race -count=1 ./...` per module                   |
-| 9   | `govulncheck ./...` clean on final master                                                              | 0 affected vulns (2 pre-existing stdlib advisories, unrelated)  |
-| 10  | Both workflow YAMLs validated (`python3 yaml.safe_load`)                                               | parse OK                                                        |
-| 11  | Reviews posted on all 7 PRs before merge                                                               | 6 approved + 1 changes-requested (then approved after fix)      |
-| 12  | Local verification of both Go bumps together (gomega + ginkgo) — not just individually                 | proved they rebase cleanly                                      |
-| 13  | Status report from prior turn written                                                                  | `docs/status/2026-07-18_20-19_pr-review-sweep-self-critique.md` |
+| #  | Item                                                                                                   | Evidence                                                        |
+| -- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| 1  | **All 7 PRs resolved**                                                                                 | `gh pr list --state open` returns empty                         |
+| 2  | PR #8 (ginkgo 2.31→2.32) squash-merged via API                                                         | commit `7d0cbaf`                                                |
+| 3  | PR #6 (gomega 1.42.0→1.42.1) rebased onto #8, force-pushed to dependabot branch, squash-merged         | commit `07c0819`                                                |
+| 4  | PR #2 (codecov) — pushed the `file:`→`files:` fix to dependabot branch (commit `52577b1`) before merge | critical silent-breakage fix                                    |
+| 5  | PRs #1, #2, #3, #4, #5 consolidated into one commit and pushed via SSH                                 | commit `0688555`                                                |
+| 6  | PAT `workflow` scope blocker diagnosed and worked around via SSH push                                  | root cause: PAT lacks `workflow` scope, SSH key bypasses it     |
+| 7  | 5 dependabot branches deleted on close                                                                 | confirmed via `gh pr close --delete-branch`                     |
+| 8  | Final master verified: `-race` tests pass on all 4 modules                                             | ran `go test -race -count=1 ./...` per module                   |
+| 9  | `govulncheck ./...` clean on final master                                                              | 0 affected vulns (2 pre-existing stdlib advisories, unrelated)  |
+| 10 | Both workflow YAMLs validated (`python3 yaml.safe_load`)                                               | parse OK                                                        |
+| 11 | Reviews posted on all 7 PRs before merge                                                               | 6 approved + 1 changes-requested (then approved after fix)      |
+| 12 | Local verification of both Go bumps together (gomega + ginkgo) — not just individually                 | proved they rebase cleanly                                      |
+| 13 | Status report from prior turn written                                                                  | `docs/status/2026-07-18_20-19_pr-review-sweep-self-critique.md` |
 
 ---
 

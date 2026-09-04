@@ -225,13 +225,13 @@ The docs-health skill defines 7 core docs. But the project has 10+ additional ma
 
 ## Verification Summary
 
-| Gate                                 | Status     | Notes                                              |
-| ------------------------------------ | ---------- | -------------------------------------------------- |
-| `GOEXPERIMENT=jsonv2 go build ./...` | ✅ PASS    | After both commits                                 |
+| Gate                                 | Status    | Notes                                              |
+| ------------------------------------ | --------- | -------------------------------------------------- |
+| `GOEXPERIMENT=jsonv2 go build ./...` | ✅ PASS   | After both commits                                 |
 | `nix run .#test`                     | ⏭️ SKIPPED | Docs-only changes; should have run                 |
 | `nix run .#lint`                     | ⏭️ SKIPPED | BuildFlow ran golangci-lint (0 issues)             |
 | BuildFlow pre-commit                 | ⚠️ 26/27   | 2 findings remain after auto-fix; not investigated |
-| Git working tree                     | ✅ Clean   | Both commits applied                               |
+| Git working tree                     | ✅ Clean  | Both commits applied                               |
 
 ---
 

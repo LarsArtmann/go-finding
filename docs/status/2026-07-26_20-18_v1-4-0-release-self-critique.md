@@ -14,25 +14,25 @@
 
 ## A) FULLY DONE (verified)
 
-| #   | Task                                                                                          | Verification                                            |
-| --- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| 1   | Quality gate: `go build ./...`                                                                | Exit 0                                                  |
-| 2   | Quality gate: `go test -race -count=1 ./...` (workspace)                                      | All packages `ok`                                       |
-| 3   | Quality gate: Per-module isolation tests (`GOWORK=off` in pipeline, analysis, cmd/go-finding) | All `ok`                                                |
-| 4   | Quality gate: `golangci-lint run ./...`                                                       | 0 issues                                                |
-| 5   | Quality gate: `nix flake check`                                                               | "all checks passed!"                                    |
-| 6   | doc.go: Fixed category count "14 predefined" → "16 predefined"                                | `grep` confirmed 16 constants in `category.go`          |
-| 7   | doc.go: Added `ErrorCode()` / `ErrorFamily()` to Error Handling section                       | Compiles, build OK                                      |
-| 8   | FEATURES.md: Fixed linter count "89" → "84" (2 locations)                                     | `awk` counted 84 entries in `DefaultLinterRegistry` map |
-| 9   | ADR #15 written: go-error-family as core dependency                                           | In `docs/architecture-decisions.md`                     |
-| 10  | AGENTS.md updated: ADR #15 reference + FindingError behavior note                             | 3 edits applied                                         |
-| 11  | `version.go` bumped: `VersionMinor = 3` → `4`                                                 | Build OK                                                |
-| 12  | `CHANGELOG.md`: `[1.4.0] - 2026-07-26` section with full notes                                | Content verified                                        |
-| 13  | `README.md`: Version refs updated (`v1.3.0` → `v1.4.0`, `"1.3.0"` → `"1.4.0"`)                | 2 edits applied                                         |
-| 14  | `API_STABILITY.md`: Version updated + `ErrorCode()`/`ErrorFamily()` added to symbol table     | 3 edits applied                                         |
-| 15  | Git tags: `v1.4.0`, `pipeline/v1.4.0`, `analysis/v1.4.0`, `cmd/go-finding/v1.4.0`             | `version-check.sh` passes                               |
-| 16  | Pushed to remote: all commits + all 4 tags                                                    | `git status` clean, up-to-date with origin              |
-| 17  | GitHub release created: https://github.com/LarsArtmann/go-finding/releases/tag/v1.4.0         | `gh release list` confirms                              |
+| #  | Task                                                                                          | Verification                                            |
+| -- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| 1  | Quality gate: `go build ./...`                                                                | Exit 0                                                  |
+| 2  | Quality gate: `go test -race -count=1 ./...` (workspace)                                      | All packages `ok`                                       |
+| 3  | Quality gate: Per-module isolation tests (`GOWORK=off` in pipeline, analysis, cmd/go-finding) | All `ok`                                                |
+| 4  | Quality gate: `golangci-lint run ./...`                                                       | 0 issues                                                |
+| 5  | Quality gate: `nix flake check`                                                               | "all checks passed!"                                    |
+| 6  | doc.go: Fixed category count "14 predefined" → "16 predefined"                                | `grep` confirmed 16 constants in `category.go`          |
+| 7  | doc.go: Added `ErrorCode()` / `ErrorFamily()` to Error Handling section                       | Compiles, build OK                                      |
+| 8  | FEATURES.md: Fixed linter count "89" → "84" (2 locations)                                     | `awk` counted 84 entries in `DefaultLinterRegistry` map |
+| 9  | ADR #15 written: go-error-family as core dependency                                           | In `docs/architecture-decisions.md`                     |
+| 10 | AGENTS.md updated: ADR #15 reference + FindingError behavior note                             | 3 edits applied                                         |
+| 11 | `version.go` bumped: `VersionMinor = 3` → `4`                                                 | Build OK                                                |
+| 12 | `CHANGELOG.md`: `[1.4.0] - 2026-07-26` section with full notes                                | Content verified                                        |
+| 13 | `README.md`: Version refs updated (`v1.3.0` → `v1.4.0`, `"1.3.0"` → `"1.4.0"`)                | 2 edits applied                                         |
+| 14 | `API_STABILITY.md`: Version updated + `ErrorCode()`/`ErrorFamily()` added to symbol table     | 3 edits applied                                         |
+| 15 | Git tags: `v1.4.0`, `pipeline/v1.4.0`, `analysis/v1.4.0`, `cmd/go-finding/v1.4.0`             | `version-check.sh` passes                               |
+| 16 | Pushed to remote: all commits + all 4 tags                                                    | `git status` clean, up-to-date with origin              |
+| 17 | GitHub release created: https://github.com/LarsArtmann/go-finding/releases/tag/v1.4.0         | `gh release list` confirms                              |
 
 ---
 
@@ -83,15 +83,15 @@
 
 ## C) NOT STARTED
 
-| #   | Task                                                                                                  | Why it matters                                                                        |
-| --- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 1   | `docs/USAGE_GUIDE.md` freshness check                                                                 | May contain stale examples, version refs, or missing v1.4.0 APIs                      |
-| 2   | `docs/DOMAIN_LANGUAGE.md` freshness check                                                             | Domain language should reflect go-error-family integration terms                      |
-| 3   | `docs/integration-guide.md` verification                                                              | Not checked this session or prior session                                             |
-| 4   | Full FEATURES.md vs code verification                                                                 | 1038+ lines, only linter count checked. Other claims may be stale                     |
-| 5   | Go module proxy verification                                                                          | Tags pushed but proxy resolution not confirmed (repo is private — needs `GOPRIVATE`)  |
-| 6   | Sub-module `go mod tidy`                                                                              | Core was tidied in prior session; sub-modules not re-checked after dependency updates |
-| 7   | CONTRIBUTING.md linter count was already correct (84) but I didn't verify it matched — just got lucky |
+| # | Task                                                                                                  | Why it matters                                                                        |
+| - | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1 | `docs/USAGE_GUIDE.md` freshness check                                                                 | May contain stale examples, version refs, or missing v1.4.0 APIs                      |
+| 2 | `docs/DOMAIN_LANGUAGE.md` freshness check                                                             | Domain language should reflect go-error-family integration terms                      |
+| 3 | `docs/integration-guide.md` verification                                                              | Not checked this session or prior session                                             |
+| 4 | Full FEATURES.md vs code verification                                                                 | 1038+ lines, only linter count checked. Other claims may be stale                     |
+| 5 | Go module proxy verification                                                                          | Tags pushed but proxy resolution not confirmed (repo is private — needs `GOPRIVATE`)  |
+| 6 | Sub-module `go mod tidy`                                                                              | Core was tidied in prior session; sub-modules not re-checked after dependency updates |
+| 7 | CONTRIBUTING.md linter count was already correct (84) but I didn't verify it matched — just got lucky |                                                                                       |
 
 ---
 

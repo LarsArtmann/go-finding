@@ -65,14 +65,14 @@
 
         /* --- Type stacks (system only — zero external fonts) --- */
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -503,12 +503,20 @@
       .callout-teal,
       .callout-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 10%,
+          var(--surface-raised)
+        );
       }
       .callout-amber,
       .callout-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 18%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 18%,
+          var(--surface-raised)
+        );
       }
 
       /* --- Strengths --- */
@@ -885,9 +893,10 @@
           <div class="eyebrow">DATA MODEL REVIEW &middot; 2026-06-23</div>
           <h1>go-finding — Type System Audit</h1>
           <p class="subtitle">
-            A first-principles review of the Finding, Position, Range, Severity, FixStrategy and
-            supporting types. Catalogs every type-level weakness and designs a Go-idiomatic model
-            where invalid states are unrepresentable.
+            A first-principles review of the Finding, Position, Range, Severity,
+            FixStrategy and supporting types. Catalogs every type-level weakness
+            and designs a Go-idiomatic model where invalid states are
+            unrepresentable.
           </p>
           <div class="meta">
             <span class="tag amber">Scope: root package types</span>
@@ -928,21 +937,27 @@
         <section id="summary">
           <h2><span class="num">00</span>Summary</h2>
           <p>
-            The model is honest and well-documented — every "gotcha" is called out in
+            The model is honest and well-documented — every "gotcha" is called
+            out in
             <code>AGENTS.md</code> and field doc-comments. That said, the
-            <code>Finding</code> struct mixes six conceptual responsibilities (identity, location,
-            classification, fix, context, extensibility) into one flat shape, and several named
-            types still encode optional state through pointers or asymmetric sentinels. None of
-            these are blocking for v1.0, but two — the <code>Position</code> sentinel split-brain
-            and <code>FixStrategy</code> zero-value normalization — will keep biting consumers until
-            they are type-level invariants rather than runtime conventions.
+            <code>Finding</code> struct mixes six conceptual responsibilities
+            (identity, location, classification, fix, context, extensibility)
+            into one flat shape, and several named types still encode optional
+            state through pointers or asymmetric sentinels. None of these are
+            blocking for v1.0, but two — the <code>Position</code> sentinel
+            split-brain and <code>FixStrategy</code> zero-value normalization —
+            will keep biting consumers until they are type-level invariants
+            rather than runtime conventions.
           </p>
           <div class="callout callout-amber">
             <strong>The bottom line</strong>
-            Adopt branded primitive types (<code>Rule</code>, <code>ToolName</code>,
-            <code>FilePath</code>, <code>FindingID</code>) before v1.0 — cheap, breaking-once,
-            prevents a class of mixups forever. Defer the <code>FixStrategy</code> interface-union
-            and <code>Position</code> redesign to v2.0; document them as known type-level debt.
+            Adopt branded primitive types (<code>Rule</code>,
+            <code>ToolName</code>, <code>FilePath</code>,
+            <code>FindingID</code>) before v1.0 — cheap, breaking-once, prevents
+            a class of mixups forever. Defer the
+            <code>FixStrategy</code> interface-union and
+            <code>Position</code> redesign to v2.0; document them as known
+            type-level debt.
           </div>
         </section>
 
@@ -950,8 +965,9 @@
         <section id="strengths">
           <h2><span class="num">&#9670;</span>What's already excellent</h2>
           <p>
-            Before cataloging problems: the model is unusually disciplined for an organically-grown
-            Go library. Several design choices are exactly right.
+            Before cataloging problems: the model is unusually disciplined for
+            an organically-grown Go library. Several design choices are exactly
+            right.
           </p>
 
           <div class="strengths">
@@ -960,8 +976,9 @@
               <div class="text">
                 <strong>Named types everywhere a concept matters</strong>
                 <span
-                  ><code>Severity</code>, <code>Category</code>, <code>Confidence</code>,
-                  <code>FixStrategy</code>, <code>Tag</code>, <code>SuppressionKind</code>,
+                  ><code>Severity</code>, <code>Category</code>,
+                  <code>Confidence</code>, <code>FixStrategy</code>,
+                  <code>Tag</code>, <code>SuppressionKind</code>,
                   <code>RelationKind</code> are all named — not raw strings.
                   <code>Confidence</code> even has <code>Clamp()</code> +
                   <code>IsValid()</code>.</span
@@ -971,22 +988,30 @@
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
-                <strong>Single extensibility escape hatch, intentionally restricted</strong>
+                <strong
+                  >Single extensibility escape hatch, intentionally
+                  restricted</strong
+                >
                 <span
-                  ><code>Metadata map[string]string</code> (NOT <code>map[string]any</code>).
-                  Documented in <code>finding.go:36-46</code> with a key-namespacing convention.
-                  Lossless for SARIF/JSON interchange.</span
+                  ><code>Metadata map[string]string</code> (NOT
+                  <code>map[string]any</code>). Documented in
+                  <code>finding.go:36-46</code> with a key-namespacing
+                  convention. Lossless for SARIF/JSON interchange.</span
                 >
               </div>
             </div>
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
-                <strong>Structured errors with <code>errors.Is</code> support</strong>
+                <strong
+                  >Structured errors with <code>errors.Is</code> support</strong
+                >
                 <span
-                  ><code>FindingError</code> implements <code>Is()</code>/<code>Unwrap()</code>, has
-                  an <code>ErrorCategory</code> enum, and five sentinel roots. Composes with
-                  <code>errors.Join</code> in <code>Validate()</code>.</span
+                  ><code>FindingError</code> implements
+                  <code>Is()</code>/<code>Unwrap()</code>, has an
+                  <code>ErrorCategory</code> enum, and five sentinel roots.
+                  Composes with <code>errors.Join</code> in
+                  <code>Validate()</code>.</span
                 >
               </div>
             </div>
@@ -995,9 +1020,11 @@
               <div class="text">
                 <strong>Builder enforces invariants at construction</strong>
                 <span
-                  ><code>Builder.Build()</code> validates and normalizes (<code>FixStrategy</code>
-                  "" → "none", clamps Confidence). Consumers who use the Builder get
-                  guaranteed-valid findings.</span
+                  ><code>Builder.Build()</code> validates and normalizes (<code
+                    >FixStrategy</code
+                  >
+                  "" → "none", clamps Confidence). Consumers who use the Builder
+                  get guaranteed-valid findings.</span
                 >
               </div>
             </div>
@@ -1006,9 +1033,10 @@
               <div class="text">
                 <strong>Generics where they pay off</strong>
                 <span
-                  ><code>IntervalIndex[T]</code> for O(log n + k) overlap queries.
-                  <code>ToolAdapter[O any]</code> for tool-output-agnostic adapters. No premature
-                  genericization of simple types.</span
+                  ><code>IntervalIndex[T]</code> for O(log n + k) overlap
+                  queries. <code>ToolAdapter[O any]</code> for
+                  tool-output-agnostic adapters. No premature genericization of
+                  simple types.</span
                 >
               </div>
             </div>
@@ -1018,23 +1046,31 @@
         <!-- Findings -->
         <section id="findings">
           <h2><span class="num">01</span>Problem Catalog</h2>
-          <p>Seventeen issues across six categories, ordered by severity × systemicity.</p>
+          <p>
+            Seventeen issues across six categories, ordered by severity ×
+            systemicity.
+          </p>
 
           <!-- Issue 1 -->
           <div class="issue issue-critical" id="issue-position-sentinel">
-            <span class="severity severity-critical">Blocking &middot; Type-level bug magnet</span>
+            <span class="severity severity-critical"
+              >Blocking &middot; Type-level bug magnet</span
+            >
             <h3>P1 — Position has three different sentinel conventions</h3>
             <div class="where">
-              position.go:23-29 &middot; cascades into Range, Finding, RelatedRef
+              position.go:23-29 &middot; cascades into Range, Finding,
+              RelatedRef
             </div>
             <p>
               <code>Line</code>/<code>Column</code> use 0 = "not set" (1-based).
-              <code>Offset</code> uses -1 = "not set" (0-based, so 0 IS valid). The zero value
-              <code>Position{}</code> therefore has <code>Offset=0</code> (a valid byte position!)
-              but <code>File=""</code> (invalid). <code>Position{}.IsZero()</code> returns
-              <strong>false</strong>. Every consumer must remember to call
-              <code>HasOffset()</code> rather than <code>Offset &gt; 0</code>. Three conventions in
-              four fields.
+              <code>Offset</code> uses -1 = "not set" (0-based, so 0 IS valid).
+              The zero value <code>Position{}</code> therefore has
+              <code>Offset=0</code> (a valid byte position!) but
+              <code>File=""</code> (invalid).
+              <code>Position{}.IsZero()</code> returns <strong>false</strong>.
+              Every consumer must remember to call
+              <code>HasOffset()</code> rather than <code>Offset &gt; 0</code>.
+              Three conventions in four fields.
             </p>
             <pre><code><span class="tok-comment">// Position{} has Offset=0 (valid byte!) but no file.</span>
 <span class="tok-comment">// IsZero() returns false. HasLocation() returns false.</span>
@@ -1046,51 +1082,68 @@ p.HasOffset()  <span class="tok-comment">// true</span>
 p.IsValid()    <span class="tok-comment">// false</span></code></pre>
             <div class="callout callout-teal">
               <strong>Fix (v2.0, breaking)</strong>
-              Use <code>*int</code> (nil = unset) for all three numeric fields, OR adopt a single
-              <code>type Option[T any] struct{ V T; Ok bool }</code> helper. This collapses three
-              conventions to one and makes <code>Position{}</code> mean "unset everywhere".
+              Use <code>*int</code> (nil = unset) for all three numeric fields,
+              OR adopt a single
+              <code>type Option[T any] struct{ V T; Ok bool }</code> helper.
+              This collapses three conventions to one and makes
+              <code>Position{}</code> mean "unset everywhere".
             </div>
           </div>
 
           <!-- Issue 2 -->
           <div class="issue issue-critical" id="issue-fs-zero">
             <span class="severity severity-critical"
-              >Important &middot; Split-brain that NormalizeFixStrategy papers over</span
+              >Important &middot; Split-brain that NormalizeFixStrategy papers
+              over</span
             >
-            <h3>P2 — FixStrategy "" vs "none" is a runtime convention, not a type invariant</h3>
+            <h3>
+              P2 — FixStrategy "" vs "none" is a runtime convention, not a type
+              invariant
+            </h3>
             <div class="where">
-              fix_strategy.go:50-56 &middot; called from Validate, Builder.Build, FromLSP, SARIF
-              import
+              fix_strategy.go:50-56 &middot; called from Validate,
+              Builder.Build, FromLSP, SARIF import
             </div>
             <p>
-              The zero value <code>FixStrategy("")</code> is invalid; consumers must call
-              <code>NormalizeFixStrategy</code> to convert it to <code>"none"</code>. Four entry
-              points do this manually. A fifth entry point — direct struct literal construction —
-              silently produces invalid findings. The existence of
-              <code>NormalizeFixStrategy</code> is itself the smell: it is runtime correction for
-              what should be a type-level invariant.
+              The zero value <code>FixStrategy("")</code> is invalid; consumers
+              must call <code>NormalizeFixStrategy</code> to convert it to
+              <code>"none"</code>. Four entry points do this manually. A fifth
+              entry point — direct struct literal construction — silently
+              produces invalid findings. The existence of
+              <code>NormalizeFixStrategy</code> is itself the smell: it is
+              runtime correction for what should be a type-level invariant.
             </p>
             <div class="callout callout-teal">
               <strong>Fix (v2.0, breaking)</strong>
-              Redesign <code>FixStrategy</code> as an interface-based closed union:
-              <code>type Fix interface{ fixStrategy() }</code> with <code>NoFix</code>,
-              <code>Suggestion{Text string}</code>, <code>Direct{Before, After string}</code>,
-              <code>AIReserved</code> — each constructor validates its own invariants. The "Direct
-              requires BeforeCode" rule becomes a constructor check, not a Validate() clause.
+              Redesign <code>FixStrategy</code> as an interface-based closed
+              union: <code>type Fix interface{ fixStrategy() }</code> with
+              <code>NoFix</code>, <code>Suggestion{Text string}</code>,
+              <code>Direct{Before, After string}</code>,
+              <code>AIReserved</code> — each constructor validates its own
+              invariants. The "Direct requires BeforeCode" rule becomes a
+              constructor check, not a Validate() clause.
             </div>
           </div>
 
           <!-- Issue 3 -->
           <div class="issue issue-important" id="issue-primitive">
-            <span class="severity severity-important">Important &middot; High systemicity</span>
-            <h3>P3 — Primitive obsession: Rule, ToolName, File, Message, ID are raw strings</h3>
+            <span class="severity severity-important"
+              >Important &middot; High systemicity</span
+            >
+            <h3>
+              P3 — Primitive obsession: Rule, ToolName, File, Message, ID are
+              raw strings
+            </h3>
             <div class="where">
-              finding.go:10-47 &middot; 6 distinct domain concepts share the same type
+              finding.go:10-47 &middot; 6 distinct domain concepts share the
+              same type
             </div>
             <p>
-              All six are <code>string</code>. Nothing prevents <code>f.Rule = f.ToolName</code> or
-              <code>ref.FindingID = "some random text"</code>. They are conceptually distinct and
-              never interchangeable — exactly the case branded types exist for.
+              All six are <code>string</code>. Nothing prevents
+              <code>f.Rule = f.ToolName</code> or
+              <code>ref.FindingID = "some random text"</code>. They are
+              conceptually distinct and never interchangeable — exactly the case
+              branded types exist for.
             </p>
             <pre><code><span class="tok-comment">// Current — all interchangeable at compile time</span>
 <span class="tok-keyword">type</span> <span class="tok-type">Finding</span> <span class="tok-keyword">struct</span> {
@@ -1103,100 +1156,130 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
             <div class="callout callout-teal">
               <strong>Fix (v1.0, cheap — DO THIS)</strong>
               Add branded types: <code>type FindingID string</code>,
-              <code>type RuleName string</code>, <code>type ToolName string</code>,
-              <code>type FilePath string</code>. JSON tags stay identical (branded string marshals
-              as string). Compile-time mixup prevention; zero runtime cost; one-time breaking change
-              before the v1.0 API lock.
+              <code>type RuleName string</code>,
+              <code>type ToolName string</code>,
+              <code>type FilePath string</code>. JSON tags stay identical
+              (branded string marshals as string). Compile-time mixup
+              prevention; zero runtime cost; one-time breaking change before the
+              v1.0 API lock.
             </div>
           </div>
 
           <!-- Issue 4 -->
           <div class="issue issue-important" id="issue-pointer-state">
-            <span class="severity severity-important">Important &middot; Five sites</span>
+            <span class="severity severity-important"
+              >Important &middot; Five sites</span
+            >
             <h3>P4 — Pointer fields encode optional state implicitly</h3>
             <div class="where">
-              finding.go:29-33 &middot; suppression.go:20 &middot; errors.go:44-48
+              finding.go:29-33 &middot; suppression.go:20 &middot;
+              errors.go:44-48
             </div>
             <p>
               Five pointer fields encode three states (nil / zero / valid):
               <code>Range *Range</code>, <code>Suppression *Suppression</code>,
-              <code>Suppression.ExpiresAt *time.Time</code>, <code>RelatedRef.Range *Range</code>,
-              <code>FindingError.Finding *Finding</code>. Each is a potential nil-dereference site
-              and forces defensive checks throughout.
+              <code>Suppression.ExpiresAt *time.Time</code>,
+              <code>RelatedRef.Range *Range</code>,
+              <code>FindingError.Finding *Finding</code>. Each is a potential
+              nil-dereference site and forces defensive checks throughout.
             </p>
             <div class="callout callout-teal">
               <strong>Fix (mixed — some v1.0, some v2.0)</strong>
-              v1.0: Keep pointers but document nil-semantics per field (most are already
-              documented). v2.0: Replace <code>*time.Time</code> with
-              <code>ExpiresAt time.Time</code> + <code>HasExpiry bool</code>; replace
-              <code>*Range</code> on Finding with <code>Range</code> +
-              <code>HasRange bool</code> (Range already has <code>IsValid()</code>).
+              v1.0: Keep pointers but document nil-semantics per field (most are
+              already documented). v2.0: Replace <code>*time.Time</code> with
+              <code>ExpiresAt time.Time</code> + <code>HasExpiry bool</code>;
+              replace <code>*Range</code> on Finding with <code>Range</code> +
+              <code>HasRange bool</code> (Range already has
+              <code>IsValid()</code>).
             </div>
           </div>
 
           <!-- Issue 5 -->
           <div class="issue issue-important" id="issue-aliases-mutable">
-            <span class="severity severity-important">Important &middot; Concurrency footgun</span>
+            <span class="severity severity-important"
+              >Important &middot; Concurrency footgun</span
+            >
             <h3>P5 — SeverityAliases is a mutable global map</h3>
-            <div class="where">severity.go:181-191 &middot; consumed by ParseSeverity</div>
+            <div class="where">
+              severity.go:181-191 &middot; consumed by ParseSeverity
+            </div>
             <p>
-              <code>var SeverityAliases = map[string]Severity{...}</code> is a package-level mutable
-              map. The doc-comment invites mutation ("Consumers can add custom aliases via this map
-              before calling ParseSeverity"). Concurrent read-after-write on a Go map is a runtime
-              panic. Library consumers who customize aliases cannot do so safely.
+              <code>var SeverityAliases = map[string]Severity{...}</code> is a
+              package-level mutable map. The doc-comment invites mutation
+              ("Consumers can add custom aliases via this map before calling
+              ParseSeverity"). Concurrent read-after-write on a Go map is a
+              runtime panic. Library consumers who customize aliases cannot do
+              so safely.
             </p>
             <div class="callout callout-teal">
               <strong>Fix (v1.0, low risk)</strong>
               Replace with a
-              <code>func RegisterSeverityAlias(name string, sev Severity)</code> guarded by a
-              <code>sync.RWMutex</code>. Or accept aliases as a parameter to a new
-              <code>ParseSeverityWithAliases(s, aliases)</code>. Either way, kill the global mutable
-              map.
+              <code>func RegisterSeverityAlias(name string, sev Severity)</code>
+              guarded by a <code>sync.RWMutex</code>. Or accept aliases as a
+              parameter to a new
+              <code>ParseSeverityWithAliases(s, aliases)</code>. Either way,
+              kill the global mutable map.
             </div>
           </div>
 
           <!-- Issue 6 -->
           <div class="issue issue-nice" id="issue-flat-struct">
-            <span class="severity severity-nice">Nice to have &middot; Readability</span>
+            <span class="severity severity-nice"
+              >Nice to have &middot; Readability</span
+            >
             <h3>P6 — Finding is a 17-field flat struct mixing six concerns</h3>
             <div class="where">
-              finding.go:8-48 &middot; identity / location / classification / fix / context /
-              extensibility
+              finding.go:8-48 &middot; identity / location / classification /
+              fix / context / extensibility
             </div>
             <p>
-              The field-grouping comments help, but the compiler doesn't enforce them. Composition
-              via embedded structs (<code>Identity</code>, <code>Location</code>,
-              <code>Classification</code>, <code>Fix</code>) would let consumers pass sub-structs to
-              focused functions.
+              The field-grouping comments help, but the compiler doesn't enforce
+              them. Composition via embedded structs (<code>Identity</code>,
+              <code>Location</code>, <code>Classification</code>,
+              <code>Fix</code>) would let consumers pass sub-structs to focused
+              functions.
             </p>
             <div class="callout callout-amber">
               <strong>Decision: DEFER to v2.0</strong>
-              Listed in TODO_LIST.md as "DEFERRED v2 (breaking change)". Composition changes JSON
-              serialization shape — must be batched with other v2.0 breaks.
+              Listed in TODO_LIST.md as "DEFERRED v2 (breaking change)".
+              Composition changes JSON serialization shape — must be batched
+              with other v2.0 breaks.
             </div>
           </div>
 
           <div class="issue issue-nice" id="issue-relatedref-id">
-            <span class="severity severity-nice">Nice to have &middot; Type safety</span>
-            <h3>P7 — RelatedRef.FindingID is raw string, not branded FindingID</h3>
-            <div class="where">finding.go:83 &middot; Correlation.FindingIDs []string</div>
+            <span class="severity severity-nice"
+              >Nice to have &middot; Type safety</span
+            >
+            <h3>
+              P7 — RelatedRef.FindingID is raw string, not branded FindingID
+            </h3>
+            <div class="where">
+              finding.go:83 &middot; Correlation.FindingIDs []string
+            </div>
             <p>
               Once <code>FindingID</code> is a branded type (issue P3),
-              <code>RelatedRef.FindingID</code> and <code>Correlation.FindingIDs</code> should use
-              it. This makes it impossible to put a rule name where a finding ID belongs.
+              <code>RelatedRef.FindingID</code> and
+              <code>Correlation.FindingIDs</code> should use it. This makes it
+              impossible to put a rule name where a finding ID belongs.
             </p>
           </div>
 
           <div class="issue issue-nice" id="issue-tags-set">
-            <span class="severity severity-nice">Nice to have &middot; Semantic clarity</span>
+            <span class="severity severity-nice"
+              >Nice to have &middot; Semantic clarity</span
+            >
             <h3>P8 — Tags []Tag is a slice, not a set</h3>
             <div class="where">
-              finding.go:21 &middot; order-sensitive equality via finding_equal.go
+              finding.go:21 &middot; order-sensitive equality via
+              finding_equal.go
             </div>
             <p>
-              Conceptually Tags is a set (no semantic meaning to order, duplicates are noise). It's
-              a slice. <code>finding_equal.go</code> must therefore do order-insensitive comparison.
-              Constructors don't dedup. A <code>type TagSet map[Tag]struct{}</code> would encode the
+              Conceptually Tags is a set (no semantic meaning to order,
+              duplicates are noise). It's a slice.
+              <code>finding_equal.go</code> must therefore do order-insensitive
+              comparison. Constructors don't dedup. A
+              <code>type TagSet map[Tag]struct{}</code> would encode the
               invariant at the type level.
             </p>
           </div>
@@ -1206,8 +1289,8 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
         <section id="proposal">
           <h2><span class="num">02</span>Target model (sketch)</h2>
           <p>
-            The redesign is staged: cheap branded types land in v1.0, structural changes wait for
-            v2.0. The sketch below shows the target end-state.
+            The redesign is staged: cheap branded types land in v1.0, structural
+            changes wait for v2.0. The sketch below shows the target end-state.
           </p>
           <pre><code><span class="tok-comment">// v1.0 — branded primitive types (no struct shape change)</span>
 <span class="tok-keyword">type</span> (
@@ -1253,8 +1336,9 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
 }</code></pre>
           <div class="callout callout-teal">
             <strong>Why this state is better</strong>
-            Three sentinel conventions collapse to one (<code>Option[T]</code>). The "Direct
-            requires code" rule becomes unrepresentable-as-invalid at construction.
+            Three sentinel conventions collapse to one (<code>Option[T]</code>).
+            The "Direct requires code" rule becomes unrepresentable-as-invalid
+            at construction.
             <code>FindingID</code> mixups become compile errors.
             <code>SeverityAliases</code> mutation becomes safe.
           </div>
@@ -1272,7 +1356,9 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
               <tr>
                 <td>v1.0 branded primitives</td>
                 <td class="yes">Do it — cheap, one-time break</td>
-                <td class="no">Keep raw <code>string</code> — accept forever mixups</td>
+                <td class="no">
+                  Keep raw <code>string</code> — accept forever mixups
+                </td>
               </tr>
               <tr>
                 <td>v1.0 SeverityAliases mutex</td>
@@ -1283,20 +1369,26 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
                 <td>v2.0 Fix union</td>
                 <td class="yes">Closed interface with private tag method</td>
                 <td class="no">
-                  Generics — Go interfaces can't combine with type params cleanly here
+                  Generics — Go interfaces can't combine with type params
+                  cleanly here
                 </td>
               </tr>
               <tr>
                 <td>v2.0 Position Option[T]</td>
                 <td class="yes">Generic <code>Option[T]</code> struct</td>
-                <td class="no"><code>*int</code> — escapes to heap, nil-deref risk remains</td>
+                <td class="no">
+                  <code>*int</code> — escapes to heap, nil-deref risk remains
+                </td>
               </tr>
               <tr>
                 <td>v2.0 Finding composition</td>
                 <td class="yes">
-                  Embed <code>Identity</code>, <code>Location</code>, <code>Fix</code>
+                  Embed <code>Identity</code>, <code>Location</code>,
+                  <code>Fix</code>
                 </td>
-                <td class="no">Keep flat — conflicts with Focus-on-substruct API ergonomics</td>
+                <td class="no">
+                  Keep flat — conflicts with Focus-on-substruct API ergonomics
+                </td>
               </tr>
             </tbody>
           </table>
@@ -1305,7 +1397,9 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
         <!-- Appendix -->
         <section id="appendix">
           <h2><span class="num">03</span>Priority Matrix</h2>
-          <p>Sorted by impact × cost. v1.0 items should land before the API lock.</p>
+          <p>
+            Sorted by impact × cost. v1.0 items should land before the API lock.
+          </p>
           <table class="compare">
             <thead>
               <tr>
@@ -1371,10 +1465,12 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
         <!-- Footer -->
         <footer class="footer">
           <p>
-            Generated 2026-06-23 &middot; Reviewed against <code>finding.go</code>,
-            <code>position.go</code>, <code>fix_strategy.go</code>, <code>severity.go</code>,
-            <code>suppression.go</code>, <code>errors.go</code>, <code>diff.go</code>,
-            <code>correlate.go</code> &middot; All claims verified against source code
+            Generated 2026-06-23 &middot; Reviewed against
+            <code>finding.go</code>, <code>position.go</code>,
+            <code>fix_strategy.go</code>, <code>severity.go</code>,
+            <code>suppression.go</code>, <code>errors.go</code>,
+            <code>diff.go</code>, <code>correlate.go</code> &middot; All claims
+            verified against source code
           </p>
         </footer>
       </main>

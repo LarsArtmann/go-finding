@@ -32,19 +32,19 @@
 
 ### Code Changes (Verified, Committed, Pushed)
 
-| #   | Commit    | Change                                                                                 | Impact                |
-| --- | --------- | -------------------------------------------------------------------------------------- | --------------------- |
-| 1   | `233f255` | Comprehensive full audit status report                                                 | Documentation         |
-| 2   | `a9bbef5` | Fixed 7 stale TODO_LIST entries                                                        | Accuracy              |
-| 3   | `3b8ea9b` | `NewFixApplier` delegates to `NewFixApplierWithProviders`                              | -11 lines duplication |
-| 4   | `8fd42e2` | Decomposed `findingToSARIF` (115→15 lines), merged SARIF builders, extracted constants | Readability           |
-| 5   | `b8cb9c7` | Added `Report.Validate()` + `ToolInfo.Validate()` + 7 tests                            | Consistency           |
-| 6   | `26c94e8` | Marked 3 more stale test TODOs as done                                                 | Accuracy              |
-| 7   | `7df40a9` | File-level exhaustruct exclusions for SARIF/LSP types                                  | -16 nolints           |
-| 8   | `8c5092d` | Removed 3 unused test nolints                                                          | Cleanup               |
-| 9   | `fae92a3` | Fixed `coverage-check.sh` to accept coverage profile argument                          | CI correctness        |
-| 10  | `97a1b48` | SARIF round-trip docs + Nix setup in CONTRIBUTING                                      | Documentation         |
-| 11  | `9f65926` | Updated AGENTS.md                                                                      | Documentation         |
+| #  | Commit    | Change                                                                                 | Impact                |
+| -- | --------- | -------------------------------------------------------------------------------------- | --------------------- |
+| 1  | `233f255` | Comprehensive full audit status report                                                 | Documentation         |
+| 2  | `a9bbef5` | Fixed 7 stale TODO_LIST entries                                                        | Accuracy              |
+| 3  | `3b8ea9b` | `NewFixApplier` delegates to `NewFixApplierWithProviders`                              | -11 lines duplication |
+| 4  | `8fd42e2` | Decomposed `findingToSARIF` (115→15 lines), merged SARIF builders, extracted constants | Readability           |
+| 5  | `b8cb9c7` | Added `Report.Validate()` + `ToolInfo.Validate()` + 7 tests                            | Consistency           |
+| 6  | `26c94e8` | Marked 3 more stale test TODOs as done                                                 | Accuracy              |
+| 7  | `7df40a9` | File-level exhaustruct exclusions for SARIF/LSP types                                  | -16 nolints           |
+| 8  | `8c5092d` | Removed 3 unused test nolints                                                          | Cleanup               |
+| 9  | `fae92a3` | Fixed `coverage-check.sh` to accept coverage profile argument                          | CI correctness        |
+| 10 | `97a1b48` | SARIF round-trip docs + Nix setup in CONTRIBUTING                                      | Documentation         |
+| 11 | `9f65926` | Updated AGENTS.md                                                                      | Documentation         |
 
 ### Specific Improvements
 
@@ -101,48 +101,48 @@ Every task started in this session was completed, verified, and committed.
 
 ### P0 — Blocking Decisions (Need User Input)
 
-| #   | Item                                     | Why Blocked                                 |
-| --- | ---------------------------------------- | ------------------------------------------- |
-| 1   | Decide `NewFinding` API pattern          | Builder-only vs keep both — breaking change |
-| 2   | API stability review for v1.0            | Audit all exported symbols — scope decision |
-| 3   | Decide domain-specific provider location | Inside pipeline/ or separate modules        |
-| 4   | Add `Properties map[string]any`          | Breaking type model change                  |
+| # | Item                                     | Why Blocked                                 |
+| - | ---------------------------------------- | ------------------------------------------- |
+| 1 | Decide `NewFinding` API pattern          | Builder-only vs keep both — breaking change |
+| 2 | API stability review for v1.0            | Audit all exported symbols — scope decision |
+| 3 | Decide domain-specific provider location | Inside pipeline/ or separate modules        |
+| 4 | Add `Properties map[string]any`          | Breaking type model change                  |
 
 ### P1 — Should Do Before v1.0
 
-| #   | Item                                               | Effort   | Impact |
-| --- | -------------------------------------------------- | -------- | ------ |
-| 5   | `io.WriterTo` for SARIF                            | 8min     | Low    |
-| 6   | `Protect Confidence` in direct struct construction | Design   | Low    |
-| 7   | `Finding` struct sub-grouping (v2)                 | Breaking | High   |
+| # | Item                                               | Effort   | Impact |
+| - | -------------------------------------------------- | -------- | ------ |
+| 5 | `io.WriterTo` for SARIF                            | 8min     | Low    |
+| 6 | `Protect Confidence` in direct struct construction | Design   | Low    |
+| 7 | `Finding` struct sub-grouping (v2)                 | Breaking | High   |
 
 ### P2 — Nice to Have
 
-| #   | Item                               | Effort | Impact |
-| --- | ---------------------------------- | ------ | ------ |
-| 8   | Benchmark regression tracking      | 10min  | Medium |
-| 9   | Pipeline benchmarks 10k+ findings  | 10min  | Medium |
-| 10  | Add `golines` to CI                | 15min  | Low    |
-| 11  | SARIF schema validation test       | 30min  | Medium |
-| 12  | Evaluate `go-sarif` vs hand-rolled | Hours  | Medium |
-| 13  | `go/analysis` reverse conversion   | Hours  | Low    |
-| 14  | Document `FixStrategyAI` semantics | 5min   | Low    |
-| 15  | Add `Finding` JSON schema          | 30min  | Low    |
+| #  | Item                               | Effort | Impact |
+| -- | ---------------------------------- | ------ | ------ |
+| 8  | Benchmark regression tracking      | 10min  | Medium |
+| 9  | Pipeline benchmarks 10k+ findings  | 10min  | Medium |
+| 10 | Add `golines` to CI                | 15min  | Low    |
+| 11 | SARIF schema validation test       | 30min  | Medium |
+| 12 | Evaluate `go-sarif` vs hand-rolled | Hours  | Medium |
+| 13 | `go/analysis` reverse conversion   | Hours  | Low    |
+| 14 | Document `FixStrategyAI` semantics | 5min   | Low    |
+| 15 | Add `Finding` JSON schema          | 30min  | Low    |
 
 ### P3 — Future / Deferred
 
-| #   | Item                                                 | Effort   |
-| --- | ---------------------------------------------------- | -------- |
-| 16  | Nix migration (Phases 0-5)                           | Days     |
-| 17  | Plugin architecture for detectors                    | Days     |
-| 18  | Pipeline middleware/interceptor                      | Days     |
-| 19  | Watch mode (`fsnotify`)                              | Hours    |
-| 20  | Structured logging (`slog`)                          | Hours    |
-| 21  | `finding.Diff()`, `FormatText()`, `FormatMarkdown()` | Hours    |
-| 22  | Per-detector timeout                                 | 30min    |
-| 23  | `FuzzFindingsFromJSON` fuzzer                        | 30min    |
-| 24  | BuildFlow integration                                | External |
-| 25  | go-business-rules Severity sharing                   | External |
+| #  | Item                                                 | Effort   |
+| -- | ---------------------------------------------------- | -------- |
+| 16 | Nix migration (Phases 0-5)                           | Days     |
+| 17 | Plugin architecture for detectors                    | Days     |
+| 18 | Pipeline middleware/interceptor                      | Days     |
+| 19 | Watch mode (`fsnotify`)                              | Hours    |
+| 20 | Structured logging (`slog`)                          | Hours    |
+| 21 | `finding.Diff()`, `FormatText()`, `FormatMarkdown()` | Hours    |
+| 22 | Per-detector timeout                                 | 30min    |
+| 23 | `FuzzFindingsFromJSON` fuzzer                        | 30min    |
+| 24 | BuildFlow integration                                | External |
+| 25 | go-business-rules Severity sharing                   | External |
 
 ### Out of Scope (Listed, Not Tracked for Execution)
 

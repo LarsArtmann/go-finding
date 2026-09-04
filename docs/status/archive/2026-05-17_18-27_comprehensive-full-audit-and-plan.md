@@ -177,48 +177,48 @@ Every item below was verified against actual source code in this session.
 
 ### 4.1 P0 — Blocking Decisions (Need User Input)
 
-| #   | Item                                     | Why Blocked                                                     |
-| --- | ---------------------------------------- | --------------------------------------------------------------- |
-| 1   | Decide `NewFinding` API pattern          | Functional options vs builder-only vs 6-param — breaking change |
-| 2   | API stability review for v1.0            | Audit every exported symbol — needs user approval scope         |
-| 3   | Decide domain-specific provider location | Inside `pipeline/` or separate modules — module structure       |
+| # | Item                                     | Why Blocked                                                     |
+| - | ---------------------------------------- | --------------------------------------------------------------- |
+| 1 | Decide `NewFinding` API pattern          | Functional options vs builder-only vs 6-param — breaking change |
+| 2 | API stability review for v1.0            | Audit every exported symbol — needs user approval scope         |
+| 3 | Decide domain-specific provider location | Inside `pipeline/` or separate modules — module structure       |
 
 ### 4.2 P1 — Code Quality (Actionable Now)
 
-| #   | Item                                            | Effort | Impact |
-| --- | ----------------------------------------------- | ------ | ------ |
-| 4   | Add `Report.Validate()` method                  | 10min  | Medium |
-| 5   | Add `ToolInfo.Validate()` method                | 8min   | Medium |
-| 6   | Merge duplicate SARIF result builders           | 10min  | Medium |
-| 7   | Decompose `findingToSARIF` into helpers         | 10min  | High   |
-| 8   | Refactor `applySarifProperties` to table-driven | 10min  | Medium |
-| 9   | Extract SARIF constants from magic strings      | 5min   | Low    |
-| 10  | `WriteSARIF` error-path test                    | 10min  | Medium |
-| 11  | `detectPartialSequential` cancel test           | 10min  | Medium |
-| 12  | `detectPartialParallel` cancel test             | 10min  | Medium |
-| 13  | Extract `outputResults()` from CLI `run()`      | 10min  | High   |
+| #  | Item                                            | Effort | Impact |
+| -- | ----------------------------------------------- | ------ | ------ |
+| 4  | Add `Report.Validate()` method                  | 10min  | Medium |
+| 5  | Add `ToolInfo.Validate()` method                | 8min   | Medium |
+| 6  | Merge duplicate SARIF result builders           | 10min  | Medium |
+| 7  | Decompose `findingToSARIF` into helpers         | 10min  | High   |
+| 8  | Refactor `applySarifProperties` to table-driven | 10min  | Medium |
+| 9  | Extract SARIF constants from magic strings      | 5min   | Low    |
+| 10 | `WriteSARIF` error-path test                    | 10min  | Medium |
+| 11 | `detectPartialSequential` cancel test           | 10min  | Medium |
+| 12 | `detectPartialParallel` cancel test             | 10min  | Medium |
+| 13 | Extract `outputResults()` from CLI `run()`      | 10min  | High   |
 
 ### 4.3 P1 — Type Model Improvements (Breaking)
 
-| #   | Item                                       | Effort | Impact | Breaking? |
-| --- | ------------------------------------------ | ------ | ------ | --------- |
-| 14  | Add `Properties map[string]any` to Finding | 15min  | High   | YES       |
-| 15  | `Category.IsValid()` strict validation     | 8min   | Medium | Minor     |
+| #  | Item                                       | Effort | Impact | Breaking? |
+| -- | ------------------------------------------ | ------ | ------ | --------- |
+| 14 | Add `Properties map[string]any` to Finding | 15min  | High   | YES       |
+| 15 | `Category.IsValid()` strict validation     | 8min   | Medium | Minor     |
 
 ### 4.4 P2 — Nice to Have
 
-| #   | Item                                         | Effort |
-| --- | -------------------------------------------- | ------ |
-| 16  | `io.WriterTo` for Report (SARIF)             | 8min   |
-| 17  | Reduce `//nolint:exhaustruct` (10-15)        | 10min  |
-| 18  | Pipeline benchmarks for 10k+ findings        | 10min  |
-| 19  | Benchmark regression script                  | 10min  |
-| 20  | Add Nix setup to CONTRIBUTING.md             | 8min   |
-| 21  | Document SARIF round-trip losses (user docs) | 8min   |
-| 22  | Document `FixStrategyAI` semantics           | 5min   |
-| 23  | Consumer migration guide v0.1→v0.2           | 10min  |
-| 24  | Per-package coverage thresholds in CI        | 15min  |
-| 25  | Add `golines` to CI                          | 15min  |
+| #  | Item                                         | Effort |
+| -- | -------------------------------------------- | ------ |
+| 16 | `io.WriterTo` for Report (SARIF)             | 8min   |
+| 17 | Reduce `//nolint:exhaustruct` (10-15)        | 10min  |
+| 18 | Pipeline benchmarks for 10k+ findings        | 10min  |
+| 19 | Benchmark regression script                  | 10min  |
+| 20 | Add Nix setup to CONTRIBUTING.md             | 8min   |
+| 21 | Document SARIF round-trip losses (user docs) | 8min   |
+| 22 | Document `FixStrategyAI` semantics           | 5min   |
+| 23 | Consumer migration guide v0.1→v0.2           | 10min  |
+| 24 | Per-package coverage thresholds in CI        | 15min  |
+| 25 | Add `golines` to CI                          | 15min  |
 
 ### 4.5 P3 — Future / Deferred
 

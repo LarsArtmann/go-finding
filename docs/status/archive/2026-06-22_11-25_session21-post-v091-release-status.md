@@ -130,33 +130,33 @@ The v0.9.0 tag contains the fuzz naming collision bug. Anyone who pins v0.9.0 an
 
 ## f) TOP 25 THINGS TO GET DONE NEXT 🎯
 
-| #   | Task                                                                                 | Impact   | Effort | Category  |
-| --- | ------------------------------------------------------------------------------------ | -------- | ------ | --------- |
-| 1   | **Fix go.sum ping-pong in BuildFlow** (disable go-mod-ignore-check or fix stripping) | Critical | 1hr    | BuildFlow |
-| 2   | **Remove 7 deprecated APIs** for v1.0.0                                              | Critical | 2hr    | v1.0.0    |
-| 3   | **Unexport `Report.Findings`** (use `FindingsSnapshot()`)                            | Critical | 1hr    | v1.0.0    |
-| 4   | **Cut v1.0.0 tag**                                                                   | Critical | 1hr    | Release   |
-| 5   | Add `scripts/fuzz-check.sh` (kill ambiguous error)                                   | High     | 30min  | Testing   |
-| 6   | Fix 3 lint warnings (gocyclo, varnamelen ×2)                                         | High     | 15min  | Quality   |
-| 7   | Add CI fuzz job to `ci.yml`                                                          | High     | 30min  | CI        |
-| 8   | Audit all 23 fuzz oracles for empty/zero assumptions                                 | High     | 1hr    | Testing   |
-| 9   | Named string types: `ToolName`, `RuleName`, `FindingID`                              | High     | 2hr    | Types     |
-| 10  | Integration test with downstream consumer (BuildFlow/hierarchical-errors)            | High     | 2hr    | Testing   |
-| 11  | Update FEATURES.md for v0.9.1                                                        | Medium   | 30min  | Docs      |
-| 12  | Document API stability guarantee (Go compat promise style)                           | Medium   | 1hr    | Docs      |
-| 13  | Add godoc examples: `Normalized`, `WithFix`                                          | Medium   | 30min  | Docs      |
-| 14  | Remove phantom `FixStrategyAI` constant                                              | Medium   | 15min  | Cleanup   |
-| 15  | Decide `Properties map[string]any` vs `Metadata` for SARIF                           | Medium   | 2hr    | Design    |
-| 16  | Document `-fuzz` regex+cache behavior in CONTRIBUTING.md                             | Low      | 15min  | Docs      |
-| 17  | Complete CLI FixProviders config                                                     | Medium   | 2hr    | CLI       |
-| 18  | Summary.ByTag map                                                                    | Medium   | 30min  | Feature   |
-| 19  | Benchmark regression check vs baseline                                               | Medium   | 1hr    | Perf      |
-| 20  | Property test: `HasFix ⊇ IsAutoFixable`                                              | Medium   | 15min  | Testing   |
-| 21  | LineShiftMap Range/Column completeness                                               | Medium   | 1hr    | Pipeline  |
-| 22  | SubstringProvider nearest-position heuristic                                         | Medium   | 1hr    | Pipeline  |
-| 23  | Fix golangci-lint LSP phantom warnings                                               | Low      | 15min  | Tooling   |
-| 24  | Position as value object refactor (v2)                                               | High     | 4hr    | v2.0      |
-| 25  | Explore sync.Pool for line offset index                                              | Low      | 2hr    | Perf      |
+| #  | Task                                                                                 | Impact   | Effort | Category  |
+| -- | ------------------------------------------------------------------------------------ | -------- | ------ | --------- |
+| 1  | **Fix go.sum ping-pong in BuildFlow** (disable go-mod-ignore-check or fix stripping) | Critical | 1hr    | BuildFlow |
+| 2  | **Remove 7 deprecated APIs** for v1.0.0                                              | Critical | 2hr    | v1.0.0    |
+| 3  | **Unexport `Report.Findings`** (use `FindingsSnapshot()`)                            | Critical | 1hr    | v1.0.0    |
+| 4  | **Cut v1.0.0 tag**                                                                   | Critical | 1hr    | Release   |
+| 5  | Add `scripts/fuzz-check.sh` (kill ambiguous error)                                   | High     | 30min  | Testing   |
+| 6  | Fix 3 lint warnings (gocyclo, varnamelen ×2)                                         | High     | 15min  | Quality   |
+| 7  | Add CI fuzz job to `ci.yml`                                                          | High     | 30min  | CI        |
+| 8  | Audit all 23 fuzz oracles for empty/zero assumptions                                 | High     | 1hr    | Testing   |
+| 9  | Named string types: `ToolName`, `RuleName`, `FindingID`                              | High     | 2hr    | Types     |
+| 10 | Integration test with downstream consumer (BuildFlow/hierarchical-errors)            | High     | 2hr    | Testing   |
+| 11 | Update FEATURES.md for v0.9.1                                                        | Medium   | 30min  | Docs      |
+| 12 | Document API stability guarantee (Go compat promise style)                           | Medium   | 1hr    | Docs      |
+| 13 | Add godoc examples: `Normalized`, `WithFix`                                          | Medium   | 30min  | Docs      |
+| 14 | Remove phantom `FixStrategyAI` constant                                              | Medium   | 15min  | Cleanup   |
+| 15 | Decide `Properties map[string]any` vs `Metadata` for SARIF                           | Medium   | 2hr    | Design    |
+| 16 | Document `-fuzz` regex+cache behavior in CONTRIBUTING.md                             | Low      | 15min  | Docs      |
+| 17 | Complete CLI FixProviders config                                                     | Medium   | 2hr    | CLI       |
+| 18 | Summary.ByTag map                                                                    | Medium   | 30min  | Feature   |
+| 19 | Benchmark regression check vs baseline                                               | Medium   | 1hr    | Perf      |
+| 20 | Property test: `HasFix ⊇ IsAutoFixable`                                              | Medium   | 15min  | Testing   |
+| 21 | LineShiftMap Range/Column completeness                                               | Medium   | 1hr    | Pipeline  |
+| 22 | SubstringProvider nearest-position heuristic                                         | Medium   | 1hr    | Pipeline  |
+| 23 | Fix golangci-lint LSP phantom warnings                                               | Low      | 15min  | Tooling   |
+| 24 | Position as value object refactor (v2)                                               | High     | 4hr    | v2.0      |
+| 25 | Explore sync.Pool for line offset index                                              | Low      | 2hr    | Perf      |
 
 ---
 

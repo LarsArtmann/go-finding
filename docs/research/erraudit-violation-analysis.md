@@ -18,12 +18,12 @@ go-finding does **not** enforce samber/oops. The project conducted a detailed ev
 ([samber-oops-v1220-assessment.html](./samber-oops-v1220-assessment.html), 2026-06-17) and
 explicitly rejected adoption:
 
-| Metric | Score |
-|---|---|
-| oops quality as a library | 8.5 / 10 |
-| oops fit for go-finding | **3 / 10** |
-| Recommendation | **Do not adopt oops in go-finding** |
-| Recommended action | **Do nothing** |
+| Metric                    | Score                               |
+| ------------------------- | ----------------------------------- |
+| oops quality as a library | 8.5 / 10                            |
+| oops fit for go-finding   | **3 / 10**                          |
+| Recommendation            | **Do not adopt oops in go-finding** |
+| Recommended action        | **Do nothing**                      |
 
 The assessment concluded: "Adopting it would violate the project's minimal-dependency
 philosophy and bloat the binary." oops is a service observability toolkit (user/tenant
@@ -36,13 +36,13 @@ context, HTTP capture, distributed traces, panic recovery); go-finding is a stat
 
 ### With `--enforce-samber-oops` (the command that was run): 58 violations
 
-| Category | Count | Examples |
-|---|---|---|
-| `fmt.Errorf` with `%w` | 40 | `json.go:50`, `sarif_export.go:80`, `format.go:23`, etc. |
-| `errors.New` (sentinels) | 13 | `errors.go:12-16`, `category.go:75`, `severity.go:166`, `json.go:27-28`, `registry.go:16-17` |
-| `errors.Join` | 4 | `finding_validate.go:21`, `report.go:44`, `sarif_types.go:152` |
-| `fmt.Errorf` (no `%w`) | 1 | `confidence.go:75` (`ErrInvalidConfidence` sentinel) |
-| Ignored errors (false positives) | 3 | See section 3 below |
+| Category                         | Count | Examples                                                                                     |
+| -------------------------------- | ----- | -------------------------------------------------------------------------------------------- |
+| `fmt.Errorf` with `%w`           | 40    | `json.go:50`, `sarif_export.go:80`, `format.go:23`, etc.                                     |
+| `errors.New` (sentinels)         | 13    | `errors.go:12-16`, `category.go:75`, `severity.go:166`, `json.go:27-28`, `registry.go:16-17` |
+| `errors.Join`                    | 4     | `finding_validate.go:21`, `report.go:44`, `sarif_types.go:152`                               |
+| `fmt.Errorf` (no `%w`)           | 1     | `confidence.go:75` (`ErrInvalidConfidence` sentinel)                                         |
+| Ignored errors (false positives) | 3     | See section 3 below                                                                          |
 
 ### Without enforcement flags (baseline): 3 violations
 
@@ -91,12 +91,12 @@ discard the target and check success. It is not an ignored function-call error.
 go-finding uses a deliberate, three-layer error design. Replacing all stdlib constructors
 with a single library would collapse these layers and misclassify errors.
 
-| Layer | Pattern | Purpose | Replacing with oops? |
-|---|---|---|---|
-| **Domain errors** | `FindingError` struct with `Category`, `Finding`, `File`, `Position`, `Cause` | Public API; implements go-error-family `Coded` + `Classified` | No — oops has no domain model |
-| **Sentinel errors** | `var ErrValidation = errors.New(...)` | Package-level values for `errors.Is` matching | No — oops sentinels don't support `Is` the same way |
-| **Internal wrapping** | `fmt.Errorf("marshal report: %w", err)` | Add implementation context to errors from stdlib/external calls | No — oops adds observability overhead for internal details |
-| **Error aggregation** | `errors.Join(errs...)` | Collect multiple validation errors into one | No — `errors.Join` is stdlib since Go 1.20 |
+| Layer                 | Pattern                                                                       | Purpose                                                         | Replacing with oops?                                       |
+| --------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------- |
+| **Domain errors**     | `FindingError` struct with `Category`, `Finding`, `File`, `Position`, `Cause` | Public API; implements go-error-family `Coded` + `Classified`   | No — oops has no domain model                              |
+| **Sentinel errors**   | `var ErrValidation = errors.New(...)`                                         | Package-level values for `errors.Is` matching                   | No — oops sentinels don't support `Is` the same way        |
+| **Internal wrapping** | `fmt.Errorf("marshal report: %w", err)`                                       | Add implementation context to errors from stdlib/external calls | No — oops adds observability overhead for internal details |
+| **Error aggregation** | `errors.Join(errs...)`                                                        | Collect multiple validation errors into one                     | No — `errors.Join` is stdlib since Go 1.20                 |
 
 Using `errorfamily.NewRejection()` (as the `--enforce-go-error-family` flag suggests) for all
 of these would **misclassify** internal errors. For example, a "marshal report" error is
@@ -111,13 +111,13 @@ boundary.
 Even if adoption were desired, five call sites use multi-`%w` wrapping, which
 `oops.Wrapf` **cannot express** (it accepts exactly one error to wrap):
 
-| File | Line | Code |
-|---|---|---|
-| `json.go` | 149 | `fmt.Errorf("%w: %w", ErrInvalidFinding, err)` |
-| `pipeline/config_file.go` | 144 | `fmt.Errorf("%w: %q: %w", errResolveDetector, name, err)` |
-| `pipeline/fix_provider_helpers.go` | 57 | `fmt.Errorf("%w: %w", ErrPositionUnresolvable, err)` |
-| `pipeline/fix_applier.go` | 129-133 | `fmt.Errorf("%w (rollback also failed: %w)", backupErr, rollbackErr)` |
-| `pipeline/fix_applier.go` | 160-164 | `fmt.Errorf("%w (rollback also failed: %w)", applyErr, errors.Join(rollbackErrs...))` |
+| File                               | Line    | Code                                                                                  |
+| ---------------------------------- | ------- | ------------------------------------------------------------------------------------- |
+| `json.go`                          | 149     | `fmt.Errorf("%w: %w", ErrInvalidFinding, err)`                                        |
+| `pipeline/config_file.go`          | 144     | `fmt.Errorf("%w: %q: %w", errResolveDetector, name, err)`                             |
+| `pipeline/fix_provider_helpers.go` | 57      | `fmt.Errorf("%w: %w", ErrPositionUnresolvable, err)`                                  |
+| `pipeline/fix_applier.go`          | 129-133 | `fmt.Errorf("%w (rollback also failed: %w)", backupErr, rollbackErr)`                 |
+| `pipeline/fix_applier.go`          | 160-164 | `fmt.Errorf("%w (rollback also failed: %w)", applyErr, errors.Join(rollbackErrs...))` |
 
 Additionally, the project uses `errors.Join` in 10 locations across 9 files for error
 aggregation — a stdlib pattern that oops does not replace.
@@ -126,12 +126,12 @@ aggregation — a stdlib pattern that oops does not replace.
 
 ## 6. Cross-Validation
 
-| Source | Finding |
-|---|---|
+| Source                                   | Finding                                                                                                                                  |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **how-to-golang skill** (project policy) | Mandates `cockroachdb/errors + uniflow` for error wrapping. samber/oops is not listed anywhere — not required, not banned, not mentioned |
-| **go.mod** (all 4 modules) | samber/oops is completely absent — zero imports, zero dependencies |
-| **CI** (`.github/workflows/ci.yml`) | erraudit is **not** wired into CI; the command was run ad-hoc |
-| **Prior assessment** | Explicitly rejected at 3/10 fit |
+| **go.mod** (all 4 modules)               | samber/oops is completely absent — zero imports, zero dependencies                                                                       |
+| **CI** (`.github/workflows/ci.yml`)      | erraudit is **not** wired into CI; the command was run ad-hoc                                                                            |
+| **Prior assessment**                     | Explicitly rejected at 3/10 fit                                                                                                          |
 
 ---
 

@@ -51,24 +51,24 @@ Three rounds of self-audit (38 tasks in R1+R2, 13 of 16 in R3) have been complet
 
 ### Known Issues from Round 3 Audit (16 remaining):
 
-| #   | Issue                                                  | Severity         | Location                              |
-| --- | ------------------------------------------------------ | ---------------- | ------------------------------------- |
-| 1   | `OnFix` callback never called for successful fixes     | **P0**           | pipeline/pipeline.go:466-481          |
-| 2   | Partial detection missing metrics recording            | **P0**           | pipeline/partial.go:63-117            |
-| 3   | `Config` has no validation                             | P1               | pipeline/pipeline.go:63-86            |
-| 4   | `RetryConfig` has no validation                        | P1               | pipeline/retry.go:19-23               |
-| 5   | `FixApplier` no rollback on partial failure            | P1               | pipeline/pipeline.go:522-553          |
-| 6   | `Pipeline` not safe for concurrent Run()               | P1               | pipeline/pipeline.go:99-107           |
-| 7   | `Metrics` exported map fields (thread-unsafe)          | P1               | pipeline/metrics.go:12-14             |
-| 8   | `TotalDuration()` returns negative when EndTime unset  | P1               | pipeline/metrics.go:52-57             |
-| 9   | SARIF `Location` should be `Locations []SarifLocation` | P2               | sarif.go:43                           |
-| 10  | `Report.AddFinding` not goroutine-safe                 | P1               | report.go:37-39                       |
-| 11  | Profiling FD leak in CLI                               | **P0**           | cmd/go-finding/main.go:133-149        |
-| 12  | `DeduplicateByPosition` == `DeduplicateByRule` keys    | **P0 (NEW BUG)** | merge.go:129-144                      |
-| 13  | `Correlation` no JSON tags                             | P2               | merge.go:151-155                      |
-| 14  | `FindingsFromSARIF` always-error stub                  | P2               | sarif.go:281-283                      |
-| 15  | `HasFix` true for Direct even without AfterCode        | P2               | finding.go:90-99                      |
-| 16  | gopls hints (~12 non-critical)                         | P3               | bench_test.go, coverage_test.go, etc. |
+| #  | Issue                                                  | Severity         | Location                              |
+| -- | ------------------------------------------------------ | ---------------- | ------------------------------------- |
+| 1  | `OnFix` callback never called for successful fixes     | **P0**           | pipeline/pipeline.go:466-481          |
+| 2  | Partial detection missing metrics recording            | **P0**           | pipeline/partial.go:63-117            |
+| 3  | `Config` has no validation                             | P1               | pipeline/pipeline.go:63-86            |
+| 4  | `RetryConfig` has no validation                        | P1               | pipeline/retry.go:19-23               |
+| 5  | `FixApplier` no rollback on partial failure            | P1               | pipeline/pipeline.go:522-553          |
+| 6  | `Pipeline` not safe for concurrent Run()               | P1               | pipeline/pipeline.go:99-107           |
+| 7  | `Metrics` exported map fields (thread-unsafe)          | P1               | pipeline/metrics.go:12-14             |
+| 8  | `TotalDuration()` returns negative when EndTime unset  | P1               | pipeline/metrics.go:52-57             |
+| 9  | SARIF `Location` should be `Locations []SarifLocation` | P2               | sarif.go:43                           |
+| 10 | `Report.AddFinding` not goroutine-safe                 | P1               | report.go:37-39                       |
+| 11 | Profiling FD leak in CLI                               | **P0**           | cmd/go-finding/main.go:133-149        |
+| 12 | `DeduplicateByPosition` == `DeduplicateByRule` keys    | **P0 (NEW BUG)** | merge.go:129-144                      |
+| 13 | `Correlation` no JSON tags                             | P2               | merge.go:151-155                      |
+| 14 | `FindingsFromSARIF` always-error stub                  | P2               | sarif.go:281-283                      |
+| 15 | `HasFix` true for Direct even without AfterCode        | P2               | finding.go:90-99                      |
+| 16 | gopls hints (~12 non-critical)                         | P3               | bench_test.go, coverage_test.go, etc. |
 
 ---
 
@@ -119,33 +119,33 @@ This is fine for an unreleased library, but needs documentation.
 
 Sorted by importance/impact/effort:
 
-| #   | Task                                                                    | Severity | Effort | Impact   |
-| --- | ----------------------------------------------------------------------- | -------- | ------ | -------- |
-| 1   | **FIX: DeduplicateByPosition key should NOT include Rule** (regression) | P0       | 5min   | Critical |
-| 2   | Add test verifying DeduplicateByPosition ≠ DeduplicateByRule behavior   | P0       | 10min  | Critical |
-| 3   | **FIX: OnFix callback never called for successful fixes**               | P0       | 15min  | High     |
-| 4   | **FIX: Profiling FD leak in CLI**                                       | P0       | 10min  | High     |
-| 5   | **FIX: Partial detection missing metrics recording**                    | P0       | 15min  | High     |
-| 6   | Add Config.Validate() method                                            | P1       | 15min  | High     |
-| 7   | Add RetryConfig.Validate() method                                       | P1       | 10min  | Medium   |
-| 8   | Guard TotalDuration() against negative return                           | P1       | 5min   | Medium   |
-| 9   | Make Metrics map fields unexported with accessor methods                | P1       | 20min  | High     |
-| 10  | Add sync.Mutex to Pipeline for concurrent Run() safety                  | P1       | 15min  | High     |
-| 11  | Add sync.Mutex to Report.AddFinding                                     | P1       | 10min  | Medium   |
-| 12  | FixApplier rollback all files on partial failure                        | P1       | 30min  | High     |
-| 13  | Fix SARIF Location → Locations (plural, array)                          | P2       | 20min  | Medium   |
-| 14  | Add JSON tags to Correlation struct                                     | P2       | 2min   | Low      |
-| 15  | Remove FindingsFromSARIF always-error stub                              | P2       | 5min   | Low      |
-| 16  | Clarify HasFix vs HasSuggestion boundary                                | P2       | 15min  | Medium   |
-| 17  | Clean up gopls hints (rangeint, newexpr, mapsloop, stringsseq)          | P3       | 15min  | Low      |
-| 18  | Add examples back to examples/ directory                                | P2       | 20min  | Medium   |
-| 19  | Add Pipeline integration test for OnFix callback                        | P1       | 10min  | High     |
-| 20  | Document Pipeline is NOT concurrent-safe (or make it so)                | P1       | 5min   | Medium   |
-| 21  | Add benchmark for Merge with large finding sets                         | P2       | 10min  | Low      |
-| 22  | Review Correlate O(n²) performance                                      | P2       | 20min  | Medium   |
-| 23  | Add gosec/staticcheck to CI linting                                     | P2       | 15min  | Medium   |
-| 24  | Push all commits to origin                                              | —        | 1min   | —        |
-| 25  | Write comprehensive planning doc for Round 4                            | —        | 15min  | —        |
+| #  | Task                                                                    | Severity | Effort | Impact   |
+| -- | ----------------------------------------------------------------------- | -------- | ------ | -------- |
+| 1  | **FIX: DeduplicateByPosition key should NOT include Rule** (regression) | P0       | 5min   | Critical |
+| 2  | Add test verifying DeduplicateByPosition ≠ DeduplicateByRule behavior   | P0       | 10min  | Critical |
+| 3  | **FIX: OnFix callback never called for successful fixes**               | P0       | 15min  | High     |
+| 4  | **FIX: Profiling FD leak in CLI**                                       | P0       | 10min  | High     |
+| 5  | **FIX: Partial detection missing metrics recording**                    | P0       | 15min  | High     |
+| 6  | Add Config.Validate() method                                            | P1       | 15min  | High     |
+| 7  | Add RetryConfig.Validate() method                                       | P1       | 10min  | Medium   |
+| 8  | Guard TotalDuration() against negative return                           | P1       | 5min   | Medium   |
+| 9  | Make Metrics map fields unexported with accessor methods                | P1       | 20min  | High     |
+| 10 | Add sync.Mutex to Pipeline for concurrent Run() safety                  | P1       | 15min  | High     |
+| 11 | Add sync.Mutex to Report.AddFinding                                     | P1       | 10min  | Medium   |
+| 12 | FixApplier rollback all files on partial failure                        | P1       | 30min  | High     |
+| 13 | Fix SARIF Location → Locations (plural, array)                          | P2       | 20min  | Medium   |
+| 14 | Add JSON tags to Correlation struct                                     | P2       | 2min   | Low      |
+| 15 | Remove FindingsFromSARIF always-error stub                              | P2       | 5min   | Low      |
+| 16 | Clarify HasFix vs HasSuggestion boundary                                | P2       | 15min  | Medium   |
+| 17 | Clean up gopls hints (rangeint, newexpr, mapsloop, stringsseq)          | P3       | 15min  | Low      |
+| 18 | Add examples back to examples/ directory                                | P2       | 20min  | Medium   |
+| 19 | Add Pipeline integration test for OnFix callback                        | P1       | 10min  | High     |
+| 20 | Document Pipeline is NOT concurrent-safe (or make it so)                | P1       | 5min   | Medium   |
+| 21 | Add benchmark for Merge with large finding sets                         | P2       | 10min  | Low      |
+| 22 | Review Correlate O(n²) performance                                      | P2       | 20min  | Medium   |
+| 23 | Add gosec/staticcheck to CI linting                                     | P2       | 15min  | Medium   |
+| 24 | Push all commits to origin                                              | —        | 1min   | —        |
+| 25 | Write comprehensive planning doc for Round 4                            | —        | 15min  | —        |
 
 ---
 

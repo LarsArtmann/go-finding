@@ -69,55 +69,55 @@ go-finding is in **excellent shape**: 0 lint issues, all tests pass with race de
 
 ### Commits
 
-| #   | Commit    | Description                                                    |
-| --- | --------- | -------------------------------------------------------------- |
-| 1   | `b3bc2c1` | Expand doc.go to comprehensive 262-line package documentation  |
-| 2   | `556e4ba` | Update USAGE_GUIDE.md with v0.3.0 features (+139 lines)        |
-| 3   | `0d802a4` | Add Fix Providers and Diff sections to README                  |
-| 4   | `ead37b4` | Expand integration guide with full govet example               |
-| 5   | `e5fac64` | API stability review: deprecate RecordFix, fix DefaultRelation |
-| 6   | `6b2c6ce` | Clarify HasFix/IsAutoFixable/HasCodeChange docs                |
-| 7   | `87a1717` | Lift FixApplier creation to Pipeline constructor               |
-| 8   | `25d149f` | Add Report.MergeInto for immutable merge                       |
-| 9   | `7109fbb` | Add seed corpus for fuzz targets                               |
-| 10  | `4ffda3f` | Update AGENTS.md with session 4 changes                        |
+| #  | Commit    | Description                                                    |
+| -- | --------- | -------------------------------------------------------------- |
+| 1  | `b3bc2c1` | Expand doc.go to comprehensive 262-line package documentation  |
+| 2  | `556e4ba` | Update USAGE_GUIDE.md with v0.3.0 features (+139 lines)        |
+| 3  | `0d802a4` | Add Fix Providers and Diff sections to README                  |
+| 4  | `ead37b4` | Expand integration guide with full govet example               |
+| 5  | `e5fac64` | API stability review: deprecate RecordFix, fix DefaultRelation |
+| 6  | `6b2c6ce` | Clarify HasFix/IsAutoFixable/HasCodeChange docs                |
+| 7  | `87a1717` | Lift FixApplier creation to Pipeline constructor               |
+| 8  | `25d149f` | Add Report.MergeInto for immutable merge                       |
+| 9  | `7109fbb` | Add seed corpus for fuzz targets                               |
+| 10 | `4ffda3f` | Update AGENTS.md with session 4 changes                        |
 
 ---
 
 ## A) FULLY DONE (This Session)
 
-| #   | Item                           | Evidence                                                                                                                            |
-| --- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Comprehensive doc.go           | 262 lines covering all features with code examples                                                                                  |
-| 2   | USAGE_GUIDE.md v0.3.0          | Tags, Diff.Modified, SortFindingsByID, ByteLevelConflictDetection, FixEdit, TriageFunc, LSP, Formatting, JSON, go/analysis sections |
-| 3   | README.md pipeline examples    | Fix Providers chain, Diff section, updated feature table                                                                            |
-| 4   | Provider chain docs            | Covered in USAGE_GUIDE (Offset→Line→Substring) and integration guide                                                                |
-| 5   | Tool integration guide         | Full govet example, FindingProcessor, custom FixProvider                                                                            |
-| 6   | API stability review           | Deprecated RecordFix(), fixed DefaultRelation duplicate, updated API_STABILITY.md with Known Pre-v1.0 Concerns                      |
-| 7   | Centralize triage docs         | HasFix/IsAutoFixable/HasCodeChange doc comments clarified                                                                           |
-| 8   | Lift FixApplier to constructor | Eager creation in `pipeline.New()`, tests updated                                                                                   |
-| 9   | Report.Merge() immutability    | `MergeInto()` returns new Report without mutating receiver                                                                          |
-| 10  | Persist fuzz corpus            | Seed files for FuzzFromJSON and FuzzFindingsFromSARIF                                                                               |
+| #  | Item                           | Evidence                                                                                                                            |
+| -- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | Comprehensive doc.go           | 262 lines covering all features with code examples                                                                                  |
+| 2  | USAGE_GUIDE.md v0.3.0          | Tags, Diff.Modified, SortFindingsByID, ByteLevelConflictDetection, FixEdit, TriageFunc, LSP, Formatting, JSON, go/analysis sections |
+| 3  | README.md pipeline examples    | Fix Providers chain, Diff section, updated feature table                                                                            |
+| 4  | Provider chain docs            | Covered in USAGE_GUIDE (Offset→Line→Substring) and integration guide                                                                |
+| 5  | Tool integration guide         | Full govet example, FindingProcessor, custom FixProvider                                                                            |
+| 6  | API stability review           | Deprecated RecordFix(), fixed DefaultRelation duplicate, updated API_STABILITY.md with Known Pre-v1.0 Concerns                      |
+| 7  | Centralize triage docs         | HasFix/IsAutoFixable/HasCodeChange doc comments clarified                                                                           |
+| 8  | Lift FixApplier to constructor | Eager creation in `pipeline.New()`, tests updated                                                                                   |
+| 9  | Report.Merge() immutability    | `MergeInto()` returns new Report without mutating receiver                                                                          |
+| 10 | Persist fuzz corpus            | Seed files for FuzzFromJSON and FuzzFindingsFromSARIF                                                                               |
 
 ## B) PARTIALLY DONE
 
-| #   | Item                | What's done                                     | What remains                                                      |
-| --- | ------------------- | ----------------------------------------------- | ----------------------------------------------------------------- |
-| 1   | CLI coverage (70%)  | All critical paths tested                       | E2E tests for config file, generated filter flags, output formats |
-| 2   | Fuzz corpus         | 2 seed files created                            | 18 more fuzz targets without file-based seeds                     |
-| 3   | API surface cleanup | Leaked internals documented in API_STABILITY.md | Actually unexporting them (breaking change, defer to v1)          |
+| # | Item                | What's done                                     | What remains                                                      |
+| - | ------------------- | ----------------------------------------------- | ----------------------------------------------------------------- |
+| 1 | CLI coverage (70%)  | All critical paths tested                       | E2E tests for config file, generated filter flags, output formats |
+| 2 | Fuzz corpus         | 2 seed files created                            | 18 more fuzz targets without file-based seeds                     |
+| 3 | API surface cleanup | Leaked internals documented in API_STABILITY.md | Actually unexporting them (breaking change, defer to v1)          |
 
 ## C) NOT STARTED (Deferred — Need Focused Sessions)
 
-| #   | Item                              | Effort | Why deferred                                              |
-| --- | --------------------------------- | ------ | --------------------------------------------------------- |
-| 1   | FixEngine line-offset tracking    | High   | Complex; needs careful design for cumulative line shifts  |
-| 2   | Config file YAML support          | Medium | Needs separate serializable Config type (function fields) |
-| 3   | Composable fix strategy interface | High   | Architecture decision; needs ADR                          |
-| 4   | Spatial index for Correlate       | High   | Interval tree implementation; O(n²)→O(n log n)            |
-| 5   | Streaming merge                   | High   | Iterator-based; API design needed                         |
-| 6   | Plugin architecture               | High   | Registry pattern; needs ADR                               |
-| 7   | Pipeline middleware pattern       | High   | `Wrap(Detector) Detector` pattern; needs ADR              |
+| # | Item                              | Effort | Why deferred                                              |
+| - | --------------------------------- | ------ | --------------------------------------------------------- |
+| 1 | FixEngine line-offset tracking    | High   | Complex; needs careful design for cumulative line shifts  |
+| 2 | Config file YAML support          | Medium | Needs separate serializable Config type (function fields) |
+| 3 | Composable fix strategy interface | High   | Architecture decision; needs ADR                          |
+| 4 | Spatial index for Correlate       | High   | Interval tree implementation; O(n²)→O(n log n)            |
+| 5 | Streaming merge                   | High   | Iterator-based; API design needed                         |
+| 6 | Plugin architecture               | High   | Registry pattern; needs ADR                               |
+| 7 | Pipeline middleware pattern       | High   | `Wrap(Detector) Detector` pattern; needs ADR              |
 
 ## D) TOTALLY FUCKED UP
 
@@ -169,33 +169,33 @@ go-finding is in **excellent shape**: 0 lint issues, all tests pass with race de
 
 Sorted by impact × feasibility:
 
-| #   | Item                                                       | Impact | Effort | Category     |
-| --- | ---------------------------------------------------------- | ------ | ------ | ------------ |
-| 1   | Split `pipeline_test.go` into focused test files           | Medium | Low    | Testing      |
-| 2   | Restore CLI test coverage from 70% → 85%+                  | High   | Medium | Testing      |
-| 3   | Add `FindingsSnapshot()` method for v1.0 migration path    | High   | Low    | API          |
-| 4   | Unexport SARIF types (`SarifLog` etc.) — break before v1.0 | Medium | Low    | API          |
-| 5   | Unexport internal constants (`KeySeparator` etc.)          | Medium | Low    | API          |
-| 6   | Decide `FixStrategyAI` fate before v1.0                    | Medium | Low    | API          |
-| 7   | Add FixEngine line-offset tracking                         | High   | High   | Feature      |
-| 8   | Add serializable Config type for YAML support              | Medium | Medium | Feature      |
-| 9   | Add pipeline middleware pattern                            | Medium | High   | Architecture |
-| 10  | Add plugin architecture for detector registration          | Medium | High   | Architecture |
-| 11  | Implement spatial index for Correlate                      | Medium | High   | Performance  |
-| 12  | Implement streaming merge via iterator                     | Low    | High   | Performance  |
-| 13  | Add `RecordFixes(uint)` migration guide for v1.0           | Low    | Low    | Docs         |
-| 14  | Add file-based seed corpus for all 20 fuzz targets         | Low    | Low    | Testing      |
-| 15  | Add fuzz integration to CI                                 | Medium | Low    | Infra        |
-| 16  | Add benchmark regression detection in CI                   | Medium | Medium | Infra        |
-| 17  | Add per-PR coverage threshold gating                       | Medium | Medium | Infra        |
-| 18  | Extract `finding.go` helpers to reduce file size           | Low    | Low    | Code Quality |
-| 19  | Add E2E test for full pipeline cycle with real files       | High   | Medium | Testing      |
-| 20  | Resolve Tag/Category semantic overlap                      | Medium | Medium | Design       |
-| 21  | Add domain event emission from pipeline stages             | Medium | Medium | Architecture |
-| 22  | Create composable fix strategy interface                   | High   | High   | Architecture |
-| 23  | Document breaking change plan for v1.0 (unexport, rename)  | Medium | Low    | Docs         |
-| 24  | Add `go.work` for multi-module development                 | Low    | Low    | Tooling      |
-| 25  | Interactive TUI or watch mode (v2+)                        | Low    | High   | Feature      |
+| #  | Item                                                       | Impact | Effort | Category     |
+| -- | ---------------------------------------------------------- | ------ | ------ | ------------ |
+| 1  | Split `pipeline_test.go` into focused test files           | Medium | Low    | Testing      |
+| 2  | Restore CLI test coverage from 70% → 85%+                  | High   | Medium | Testing      |
+| 3  | Add `FindingsSnapshot()` method for v1.0 migration path    | High   | Low    | API          |
+| 4  | Unexport SARIF types (`SarifLog` etc.) — break before v1.0 | Medium | Low    | API          |
+| 5  | Unexport internal constants (`KeySeparator` etc.)          | Medium | Low    | API          |
+| 6  | Decide `FixStrategyAI` fate before v1.0                    | Medium | Low    | API          |
+| 7  | Add FixEngine line-offset tracking                         | High   | High   | Feature      |
+| 8  | Add serializable Config type for YAML support              | Medium | Medium | Feature      |
+| 9  | Add pipeline middleware pattern                            | Medium | High   | Architecture |
+| 10 | Add plugin architecture for detector registration          | Medium | High   | Architecture |
+| 11 | Implement spatial index for Correlate                      | Medium | High   | Performance  |
+| 12 | Implement streaming merge via iterator                     | Low    | High   | Performance  |
+| 13 | Add `RecordFixes(uint)` migration guide for v1.0           | Low    | Low    | Docs         |
+| 14 | Add file-based seed corpus for all 20 fuzz targets         | Low    | Low    | Testing      |
+| 15 | Add fuzz integration to CI                                 | Medium | Low    | Infra        |
+| 16 | Add benchmark regression detection in CI                   | Medium | Medium | Infra        |
+| 17 | Add per-PR coverage threshold gating                       | Medium | Medium | Infra        |
+| 18 | Extract `finding.go` helpers to reduce file size           | Low    | Low    | Code Quality |
+| 19 | Add E2E test for full pipeline cycle with real files       | High   | Medium | Testing      |
+| 20 | Resolve Tag/Category semantic overlap                      | Medium | Medium | Design       |
+| 21 | Add domain event emission from pipeline stages             | Medium | Medium | Architecture |
+| 22 | Create composable fix strategy interface                   | High   | High   | Architecture |
+| 23 | Document breaking change plan for v1.0 (unexport, rename)  | Medium | Low    | Docs         |
+| 24 | Add `go.work` for multi-module development                 | Low    | Low    | Tooling      |
+| 25 | Interactive TUI or watch mode (v2+)                        | Low    | High   | Feature      |
 
 ## G) TOP #1 QUESTION I CANNOT FIGURE OUT MYSELF
 

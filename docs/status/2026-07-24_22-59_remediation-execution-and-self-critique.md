@@ -18,16 +18,16 @@ Executed all 15 macro-tasks. Found and fixed real drift (5 FEATURES.md correctio
 
 ### Fixes Applied (8 changes)
 
-| #   | File                                                                               | Change                                                                                                                | Verified              |
-| --- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| 1   | `AGENTS.md`                                                                        | Added 4 gotchas: version-check `--match`, doc.go API ref rule, consumer count provenance, interval_index confirmation | ✅                    |
-| 2   | `FEATURES.md`                                                                      | Fixed 5 drift issues: linter count 84→89, fuzz tests 4→6, output formats 6→7, removed rotting "93.6% coverage" metric | ✅                    |
-| 3   | `errors_test.go`                                                                   | Renamed `TestGetCategory` → `TestCategoryOf`                                                                          | ✅ Test passes        |
-| 4   | `.github/dependabot.yml`                                                           | Added gomod tracking for pipeline/, analysis/, cmd/go-finding/ (were missing)                                         | ⚠️ Not YAML-validated |
-| 5   | `docs/planning/2026-07-24_22-04_post-audit-execution-plan.md`                      | Added completion annotation                                                                                           | ✅                    |
-| 6   | `docs/planning/2026-07-22_19-45_v1.3.0-release-blockers-and-post-release.md`       | Added completion annotation                                                                                           | ✅                    |
-| 7   | `docs/planning/2026-07-22_17-56_consumer-driven-api-improvements.md`               | Added completion annotation                                                                                           | ✅                    |
-| 8   | `docs/planning/2026-07-24_22-20_post-session-remediation-and-deep-verification.md` | Added completion annotation                                                                                           | ✅                    |
+| # | File                                                                               | Change                                                                                                                | Verified             |
+| - | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| 1 | `AGENTS.md`                                                                        | Added 4 gotchas: version-check `--match`, doc.go API ref rule, consumer count provenance, interval_index confirmation | ✅                   |
+| 2 | `FEATURES.md`                                                                      | Fixed 5 drift issues: linter count 84→89, fuzz tests 4→6, output formats 6→7, removed rotting "93.6% coverage" metric | ✅                   |
+| 3 | `errors_test.go`                                                                   | Renamed `TestGetCategory` → `TestCategoryOf`                                                                          | ✅ Test passes       |
+| 4 | `.github/dependabot.yml`                                                           | Added gomod tracking for pipeline/, analysis/, cmd/go-finding/ (were missing)                                         | ⚠️ Not YAML-validated |
+| 5 | `docs/planning/2026-07-24_22-04_post-audit-execution-plan.md`                      | Added completion annotation                                                                                           | ✅                   |
+| 6 | `docs/planning/2026-07-22_19-45_v1.3.0-release-blockers-and-post-release.md`       | Added completion annotation                                                                                           | ✅                   |
+| 7 | `docs/planning/2026-07-22_17-56_consumer-driven-api-improvements.md`               | Added completion annotation                                                                                           | ✅                   |
+| 8 | `docs/planning/2026-07-24_22-20_post-session-remediation-and-deep-verification.md` | Added completion annotation                                                                                           | ✅                   |
 
 ### Deep Verification Results (Zero Issues Found)
 

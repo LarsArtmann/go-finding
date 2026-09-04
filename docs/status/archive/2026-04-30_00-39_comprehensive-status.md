@@ -211,33 +211,33 @@
 
 ## F) TOP #25 THINGS TO DO NEXT
 
-| #   | Task                                                                   | Priority  | Effort | Impact                          |
-| --- | ---------------------------------------------------------------------- | --------- | ------ | ------------------------------- |
-| 1   | Commit uncommitted test fixes (uniqueDetName refactor)                 | 🔴 HIGH   | 5min   | Fixes latent test collision     |
-| 2   | Remove `t.Parallel()` from `TestFatalf`                                | 🔴 HIGH   | 2min   | Eliminates data race code smell |
-| 3   | Remove `t.Parallel()` from `TestSetupProfiling_CPUProfileStartFailure` | 🔴 HIGH   | 2min   | Eliminates profiling race       |
-| 4   | Add `Builder.Build()` error path test                                  | 🔴 HIGH   | 10min  | Covers untested validation      |
-| 5   | Add `Verifier.Verify` error-path tests                                 | 🔴 HIGH   | 30min  | Pipeline verification coverage  |
-| 6   | Add `RetryConfig.Validate` edge-case tests                             | 🔴 HIGH   | 20min  | Retry config coverage           |
-| 7   | Fix `DeduplicateByPosition` vs `DeduplicateByRule` behavior test       | 🔴 HIGH   | 15min  | Dedup correctness verification  |
-| 8   | Add SARIF import path tests (rule metadata, help URI)                  | 🔴 HIGH   | 30min  | SARIF import robustness         |
-| 9   | Document `FixStrategyAI` semantics (product decision)                  | 🔴 HIGH   | 15min  | API contract clarity            |
-| 10  | Add `FixApplier` error-path tests (87% → 90%+)                         | 🟡 MEDIUM | 30min  | Fix application robustness      |
-| 11  | Convert retry errors to sentinels                                      | 🟡 MEDIUM | 15min  | Error handling consistency      |
-| 12  | Remove 3 unused `//nolint` directives                                  | 🟡 MEDIUM | 5min   | Code hygiene                    |
-| 13  | Add SARIF round-trip loss documentation                                | 🟡 MEDIUM | 20min  | API contract documentation      |
-| 14  | Add SARIF schema validation test                                       | 🟡 MEDIUM | 30min  | SARIF compliance                |
-| 15  | Modernize stdlib: `slices`, `maps` where applicable                    | 🟡 MEDIUM | 30min  | Code modernization              |
-| 16  | Add `go.work` for local development                                    | 🟡 MEDIUM | 10min  | DX improvement                  |
-| 17  | Add gosec/staticcheck to CI linting                                    | 🟡 MEDIUM | 15min  | Security + quality              |
-| 18  | Add per-package coverage thresholds in CI                              | 🟡 MEDIUM | 20min  | Coverage accountability         |
-| 19  | Add `CONTRIBUTING.md`                                                  | 🟡 MEDIUM | 30min  | Open source readiness           |
-| 20  | Investigate `FixApplier` cross-iteration persistence                   | 🟢 LOW    | 1hr    | Pipeline correctness            |
-| 21  | API stability review for v1.0.0                                        | 🟢 LOW    | 2hr    | Release readiness               |
-| 22  | Decide on stable ID format                                             | 🟢 LOW    | 30min  | API contract                    |
-| 23  | Add GitHub release workflow                                            | 🟢 LOW    | 30min  | Release automation              |
-| 24  | Evaluate `go-sarif` vs hand-rolled SARIF                               | 🟢 LOW    | 2hr    | SARIF compliance                |
-| 25  | Web UI prototype for pipeline monitoring                               | 🟢 LOW    | 1day   | User experience                 |
+| #  | Task                                                                   | Priority  | Effort | Impact                          |
+| -- | ---------------------------------------------------------------------- | --------- | ------ | ------------------------------- |
+| 1  | Commit uncommitted test fixes (uniqueDetName refactor)                 | 🔴 HIGH   | 5min   | Fixes latent test collision     |
+| 2  | Remove `t.Parallel()` from `TestFatalf`                                | 🔴 HIGH   | 2min   | Eliminates data race code smell |
+| 3  | Remove `t.Parallel()` from `TestSetupProfiling_CPUProfileStartFailure` | 🔴 HIGH   | 2min   | Eliminates profiling race       |
+| 4  | Add `Builder.Build()` error path test                                  | 🔴 HIGH   | 10min  | Covers untested validation      |
+| 5  | Add `Verifier.Verify` error-path tests                                 | 🔴 HIGH   | 30min  | Pipeline verification coverage  |
+| 6  | Add `RetryConfig.Validate` edge-case tests                             | 🔴 HIGH   | 20min  | Retry config coverage           |
+| 7  | Fix `DeduplicateByPosition` vs `DeduplicateByRule` behavior test       | 🔴 HIGH   | 15min  | Dedup correctness verification  |
+| 8  | Add SARIF import path tests (rule metadata, help URI)                  | 🔴 HIGH   | 30min  | SARIF import robustness         |
+| 9  | Document `FixStrategyAI` semantics (product decision)                  | 🔴 HIGH   | 15min  | API contract clarity            |
+| 10 | Add `FixApplier` error-path tests (87% → 90%+)                         | 🟡 MEDIUM | 30min  | Fix application robustness      |
+| 11 | Convert retry errors to sentinels                                      | 🟡 MEDIUM | 15min  | Error handling consistency      |
+| 12 | Remove 3 unused `//nolint` directives                                  | 🟡 MEDIUM | 5min   | Code hygiene                    |
+| 13 | Add SARIF round-trip loss documentation                                | 🟡 MEDIUM | 20min  | API contract documentation      |
+| 14 | Add SARIF schema validation test                                       | 🟡 MEDIUM | 30min  | SARIF compliance                |
+| 15 | Modernize stdlib: `slices`, `maps` where applicable                    | 🟡 MEDIUM | 30min  | Code modernization              |
+| 16 | Add `go.work` for local development                                    | 🟡 MEDIUM | 10min  | DX improvement                  |
+| 17 | Add gosec/staticcheck to CI linting                                    | 🟡 MEDIUM | 15min  | Security + quality              |
+| 18 | Add per-package coverage thresholds in CI                              | 🟡 MEDIUM | 20min  | Coverage accountability         |
+| 19 | Add `CONTRIBUTING.md`                                                  | 🟡 MEDIUM | 30min  | Open source readiness           |
+| 20 | Investigate `FixApplier` cross-iteration persistence                   | 🟢 LOW    | 1hr    | Pipeline correctness            |
+| 21 | API stability review for v1.0.0                                        | 🟢 LOW    | 2hr    | Release readiness               |
+| 22 | Decide on stable ID format                                             | 🟢 LOW    | 30min  | API contract                    |
+| 23 | Add GitHub release workflow                                            | 🟢 LOW    | 30min  | Release automation              |
+| 24 | Evaluate `go-sarif` vs hand-rolled SARIF                               | 🟢 LOW    | 2hr    | SARIF compliance                |
+| 25 | Web UI prototype for pipeline monitoring                               | 🟢 LOW    | 1day   | User experience                 |
 
 ---
 

@@ -41,21 +41,21 @@ The codebase is **not** a typical "needs cleanup" target. Evidence gathered in t
 
 ## Skill Applicability Matrix
 
-| Skill (user-listed)           | Real skill                 | Applicable?            | Reason                                                                    |
-| ----------------------------- | -------------------------- | ---------------------- | ------------------------------------------------------------------------- |
-| code-quality-scan             | code-quality-scan          | ✅ **DONE**            | 2 real fixes, report written                                              |
-| naming-review                 | naming-review              | ✅ In progress         | Codebase clean; finish report                                             |
-| data-model-review             | data-model-review          | ✅ Yes                 | Confirm strong model, document                                            |
-| deduplicate-code              | deduplicate-code           | ✅ Yes                 | art-dupl already run; formalize report                                    |
-| go-modularize                 | go-modularize              | ✅ Yes                 | Confirm module boundaries (direction-neutral)                             |
-| architecture-review           | architecture-review        | ✅ Yes                 | Snapshot of design quality                                                |
-| architecture-visualization    | architecture-visualization | ✅ Yes                 | NEW D2 diagrams (durable artifact)                                        |
-| full-code-review              | full-code-review           | ✅ Yes                 | Visit every file, confirm no regressions                                  |
-| docs-health                   | docs-health                | ✅ Yes                 | Audit FEATURES/TODO/ROADMAP/AGENTS drift                                  |
-| update-old-docs               | update-old-docs            | ✅ Yes                 | Annotate 6 stale reports in `docs/reviews/`                               |
-| frontend-design               | frontend-design            | ❌ SKIP                | Pure Go library, no UI                                                    |
-| copywriting                   | copywriting                | ❌ SKIP                | No marketing pages                                                        |
-| nix-flake-migration           | nix-flake-migration        | ❌ SKIP                | Already on flake.nix; migration N/A (nix-review would be the right skill) |
+| Skill (user-listed)           | Real skill                 | Applicable?           | Reason                                                                    |
+| ----------------------------- | -------------------------- | --------------------- | ------------------------------------------------------------------------- |
+| code-quality-scan             | code-quality-scan          | ✅ **DONE**           | 2 real fixes, report written                                              |
+| naming-review                 | naming-review              | ✅ In progress        | Codebase clean; finish report                                             |
+| data-model-review             | data-model-review          | ✅ Yes                | Confirm strong model, document                                            |
+| deduplicate-code              | deduplicate-code           | ✅ Yes                | art-dupl already run; formalize report                                    |
+| go-modularize                 | go-modularize              | ✅ Yes                | Confirm module boundaries (direction-neutral)                             |
+| architecture-review           | architecture-review        | ✅ Yes                | Snapshot of design quality                                                |
+| architecture-visualization    | architecture-visualization | ✅ Yes                | NEW D2 diagrams (durable artifact)                                        |
+| full-code-review              | full-code-review           | ✅ Yes                | Visit every file, confirm no regressions                                  |
+| docs-health                   | docs-health                | ✅ Yes                | Audit FEATURES/TODO/ROADMAP/AGENTS drift                                  |
+| update-old-docs               | update-old-docs            | ✅ Yes                | Annotate 6 stale reports in `docs/reviews/`                               |
+| frontend-design               | frontend-design            | ❌ SKIP               | Pure Go library, no UI                                                    |
+| copywriting                   | copywriting                | ❌ SKIP               | No marketing pages                                                        |
+| nix-flake-migration           | nix-flake-migration        | ❌ SKIP               | Already on flake.nix; migration N/A (nix-review would be the right skill) |
 | docs-freshness-check          | (no such skill)            | ➡️ docs-health         | User's name maps to docs-health                                           |
 | improve-codebase-architecture | (no such skill)            | ➡️ architecture-review | User's name maps to architecture-review                                   |
 

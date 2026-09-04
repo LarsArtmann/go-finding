@@ -58,33 +58,33 @@ Nothing this session. Clean execution with one bug found and fixed (metrics snap
 
 ## f) Top 25 Things
 
-| #   | What                                                                      | Priority | Effort    |
-| --- | ------------------------------------------------------------------------- | -------- | --------- |
-| 1   | Push v0.1.3 to origin                                                     | NOW      | 1min      |
-| 2   | Tag v0.1.3 release                                                        | HIGH     | 2min      |
-| 3   | Fix flaky property test (seed control)                                    | HIGH     | 30min     |
-| 4   | Pre-existing goconst warnings (sarif, coverage_test)                      | LOW      | 10min     |
-| 5   | CLI coverage → 70%+                                                       | MEDIUM   | 2hr       |
-| 6   | FixApplier unit tests                                                     | MEDIUM   | 1hr       |
-| 7   | Decide on FixStrategyAI: implement or remove                              | MEDIUM   | 30min     |
-| 8   | EXECUTION_PLAN_V2.md remaining items (CLI tool #14)                       | MEDIUM   | 4hr       |
-| 9   | Config files (#15 in plan)                                                | MEDIUM   | 3hr       |
-| 10  | Watch mode (#16 in plan)                                                  | LOW      | 4hr       |
-| 11  | go-sarif evaluation (#8 in plan)                                          | LOW      | 2hr       |
-| 12  | Fix `go vet` nix store intermittent                                       | LOW      | env issue |
-| 13  | Consider fuzz test for SARIF parser                                       | MEDIUM   | 2hr       |
-| 14  | Add `-json` flag to CLI for machine-readable output                       | LOW      | 1hr       |
-| 15  | Document pipeline result interpretation                                   | LOW      | 1hr       |
-| 16  | Performance benchmarks for pipeline Run()                                 | LOW      | 1hr       |
-| 17  | Example integration with golangci-lint                                    | MEDIUM   | 3hr       |
-| 18  | Version flag via ldflags in Makefile                                      | LOW      | 30min     |
-| 19  | CONTRIBUTING.md update for v0.1.3 changes                                 | LOW      | 30min     |
-| 20  | Consider removing `.golangci.yml` golines if 100-chars is too restrictive | LOW      | 5min      |
-| 21  | Integration test: full pipeline with real govet                           | MEDIUM   | 2hr       |
-| 22  | Add Example tests for godoc                                               | LOW      | 2hr       |
-| 23  | Consider `errors.Join` for multi-error aggregation                        | LOW      | 1hr       |
-| 24  | Pipeline result JSON serialization                                        | LOW      | 1hr       |
-| 25  | README refresh with v0.1.3 API                                            | LOW      | 30min     |
+| #  | What                                                                      | Priority | Effort    |
+| -- | ------------------------------------------------------------------------- | -------- | --------- |
+| 1  | Push v0.1.3 to origin                                                     | NOW      | 1min      |
+| 2  | Tag v0.1.3 release                                                        | HIGH     | 2min      |
+| 3  | Fix flaky property test (seed control)                                    | HIGH     | 30min     |
+| 4  | Pre-existing goconst warnings (sarif, coverage_test)                      | LOW      | 10min     |
+| 5  | CLI coverage → 70%+                                                       | MEDIUM   | 2hr       |
+| 6  | FixApplier unit tests                                                     | MEDIUM   | 1hr       |
+| 7  | Decide on FixStrategyAI: implement or remove                              | MEDIUM   | 30min     |
+| 8  | EXECUTION_PLAN_V2.md remaining items (CLI tool #14)                       | MEDIUM   | 4hr       |
+| 9  | Config files (#15 in plan)                                                | MEDIUM   | 3hr       |
+| 10 | Watch mode (#16 in plan)                                                  | LOW      | 4hr       |
+| 11 | go-sarif evaluation (#8 in plan)                                          | LOW      | 2hr       |
+| 12 | Fix `go vet` nix store intermittent                                       | LOW      | env issue |
+| 13 | Consider fuzz test for SARIF parser                                       | MEDIUM   | 2hr       |
+| 14 | Add `-json` flag to CLI for machine-readable output                       | LOW      | 1hr       |
+| 15 | Document pipeline result interpretation                                   | LOW      | 1hr       |
+| 16 | Performance benchmarks for pipeline Run()                                 | LOW      | 1hr       |
+| 17 | Example integration with golangci-lint                                    | MEDIUM   | 3hr       |
+| 18 | Version flag via ldflags in Makefile                                      | LOW      | 30min     |
+| 19 | CONTRIBUTING.md update for v0.1.3 changes                                 | LOW      | 30min     |
+| 20 | Consider removing `.golangci.yml` golines if 100-chars is too restrictive | LOW      | 5min      |
+| 21 | Integration test: full pipeline with real govet                           | MEDIUM   | 2hr       |
+| 22 | Add Example tests for godoc                                               | LOW      | 2hr       |
+| 23 | Consider `errors.Join` for multi-error aggregation                        | LOW      | 1hr       |
+| 24 | Pipeline result JSON serialization                                        | LOW      | 1hr       |
+| 25 | README refresh with v0.1.3 API                                            | LOW      | 30min     |
 
 ## g) Top #1 Question
 

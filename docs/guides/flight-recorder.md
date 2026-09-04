@@ -71,13 +71,13 @@ flightRecorder:
 
 ```json
 {
-	"flightRecorder": {
-		"enabled": true,
-		"outputDir": "./traces",
-		"slowStageThreshold": "30s",
-		"minAge": "1m",
-		"maxBytes": 4194304
-	}
+  "flightRecorder": {
+    "enabled": true,
+    "outputDir": "./traces",
+    "slowStageThreshold": "30s",
+    "minAge": "1m",
+    "maxBytes": 4194304
+  }
 }
 ```
 

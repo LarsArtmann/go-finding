@@ -82,32 +82,32 @@ Appropriate library additions for this project:
 
 Sorted by: **Impact × Customer Value / Effort**
 
-| #   | Task                                                                        | Package    | Effort | Impact     | Customer Value                    | Est |
-| --- | --------------------------------------------------------------------------- | ---------- | ------ | ---------- | --------------------------------- | --- |
-| 1   | Fix `FixApplier.Apply` deterministic file ordering                          | `pipeline` | Medium | **High**   | **High** — reproducible fixes     | 60m |
-| 2   | Add `cmd/go-finding` error-path tests (`run` 49% → 80%)                     | `cmd`      | High   | **High**   | **High** — CLI reliability        | 90m |
-| 3   | Fix `examples/pipeline` runtime crash                                       | `examples` | Low    | **High**   | **High** — first user experience  | 30m |
-| 4   | Convert `Builder.Build()` panic → `(Finding, error)`                        | `finding`  | Medium | **High**   | **High** — API correctness        | 60m |
-| 5   | Wire `Correlate()` into Pipeline as optional stage                          | `pipeline` | High   | **High**   | **Medium** — feature completeness | 90m |
-| 6   | Add compile-check tests for all `examples/`                                 | `examples` | Low    | **Medium** | **High** — prevents example rot   | 30m |
-| 7   | Add godoc examples (`ExampleNewFinding`, `ExampleBuilder`, `ExampleFilter`) | `finding`  | Medium | **Medium** | **High** — pkg.go.dev UX          | 60m |
-| 8   | Add `io.WriterTo` for SARIF output                                          | `finding`  | Medium | **Medium** | **Medium** — performance          | 45m |
-| 9   | Add `applyTriage` comprehensive tests                                       | `pipeline` | Medium | **Medium** | **Medium** — coverage gap         | 60m |
-| 10  | Add `go:generate stringer` for enums                                        | `finding`  | Low    | **Low**    | **Medium** — developer UX         | 45m |
-| 11  | Add SARIF parser fuzz test (untrusted input)                                | `finding`  | Medium | **Medium** | **Medium** — security             | 60m |
-| 12  | Remove or implement `FixStrategyAI` phantom                                 | `finding`  | Low    | **Low**    | **Low** — cleanup                 | 30m |
-| 13  | Add `govulncheck` to CI / Makefile                                          | `repo`     | Low    | **Low**    | **Medium** — security             | 30m |
-| 14  | Profile memory allocations on hot paths                                     | `finding`  | High   | **Medium** | **Low** — performance             | 90m |
-| 15  | Add benchmark regression tracking script                                    | `repo`     | Medium | **Low**    | **Low** — performance             | 45m |
-| 16  | Add `severityToSARIFLevel` edge-case tests                                  | `finding`  | Low    | **Low**    | **Low** — coverage                | 30m |
-| 17  | Document SARIF round-trip losses                                            | `finding`  | Medium | **Low**    | **Low** — documentation           | 45m |
-| 18  | Add LSP `toZeroBased` 0-line test                                           | `finding`  | Low    | **Low**    | **Low** — coverage                | 30m |
-| 19  | Add `FindingsFromSARIF` schema validation test                              | `finding`  | Medium | **Low**    | **Medium** — correctness          | 60m |
-| 20  | Add `go.work` for local development                                         | `repo`     | Low    | **Low**    | **Low** — DX                      | 30m |
-| 21  | Review and stabilize API surface for v1.0.0                                 | `finding`  | High   | **Medium** | **High** — stability              | 90m |
-| 22  | Modernize remaining loops to stdlib generics                                | `finding`  | Medium | **Low**    | **Low** — maintenance             | 45m |
-| 23  | Add per-package coverage thresholds                                         | `repo`     | Medium | **Low**    | **Low** — quality gate            | 45m |
-| 24  | Evaluate OTEL instrumentation for Pipeline                                  | `pipeline` | Medium | **Low**    | **Medium** — observability        | 60m |
+| #  | Task                                                                        | Package    | Effort | Impact     | Customer Value                    | Est |
+| -- | --------------------------------------------------------------------------- | ---------- | ------ | ---------- | --------------------------------- | --- |
+| 1  | Fix `FixApplier.Apply` deterministic file ordering                          | `pipeline` | Medium | **High**   | **High** — reproducible fixes     | 60m |
+| 2  | Add `cmd/go-finding` error-path tests (`run` 49% → 80%)                     | `cmd`      | High   | **High**   | **High** — CLI reliability        | 90m |
+| 3  | Fix `examples/pipeline` runtime crash                                       | `examples` | Low    | **High**   | **High** — first user experience  | 30m |
+| 4  | Convert `Builder.Build()` panic → `(Finding, error)`                        | `finding`  | Medium | **High**   | **High** — API correctness        | 60m |
+| 5  | Wire `Correlate()` into Pipeline as optional stage                          | `pipeline` | High   | **High**   | **Medium** — feature completeness | 90m |
+| 6  | Add compile-check tests for all `examples/`                                 | `examples` | Low    | **Medium** | **High** — prevents example rot   | 30m |
+| 7  | Add godoc examples (`ExampleNewFinding`, `ExampleBuilder`, `ExampleFilter`) | `finding`  | Medium | **Medium** | **High** — pkg.go.dev UX          | 60m |
+| 8  | Add `io.WriterTo` for SARIF output                                          | `finding`  | Medium | **Medium** | **Medium** — performance          | 45m |
+| 9  | Add `applyTriage` comprehensive tests                                       | `pipeline` | Medium | **Medium** | **Medium** — coverage gap         | 60m |
+| 10 | Add `go:generate stringer` for enums                                        | `finding`  | Low    | **Low**    | **Medium** — developer UX         | 45m |
+| 11 | Add SARIF parser fuzz test (untrusted input)                                | `finding`  | Medium | **Medium** | **Medium** — security             | 60m |
+| 12 | Remove or implement `FixStrategyAI` phantom                                 | `finding`  | Low    | **Low**    | **Low** — cleanup                 | 30m |
+| 13 | Add `govulncheck` to CI / Makefile                                          | `repo`     | Low    | **Low**    | **Medium** — security             | 30m |
+| 14 | Profile memory allocations on hot paths                                     | `finding`  | High   | **Medium** | **Low** — performance             | 90m |
+| 15 | Add benchmark regression tracking script                                    | `repo`     | Medium | **Low**    | **Low** — performance             | 45m |
+| 16 | Add `severityToSARIFLevel` edge-case tests                                  | `finding`  | Low    | **Low**    | **Low** — coverage                | 30m |
+| 17 | Document SARIF round-trip losses                                            | `finding`  | Medium | **Low**    | **Low** — documentation           | 45m |
+| 18 | Add LSP `toZeroBased` 0-line test                                           | `finding`  | Low    | **Low**    | **Low** — coverage                | 30m |
+| 19 | Add `FindingsFromSARIF` schema validation test                              | `finding`  | Medium | **Low**    | **Medium** — correctness          | 60m |
+| 20 | Add `go.work` for local development                                         | `repo`     | Low    | **Low**    | **Low** — DX                      | 30m |
+| 21 | Review and stabilize API surface for v1.0.0                                 | `finding`  | High   | **Medium** | **High** — stability              | 90m |
+| 22 | Modernize remaining loops to stdlib generics                                | `finding`  | Medium | **Low**    | **Low** — maintenance             | 45m |
+| 23 | Add per-package coverage thresholds                                         | `repo`     | Medium | **Low**    | **Low** — quality gate            | 45m |
+| 24 | Evaluate OTEL instrumentation for Pipeline                                  | `pipeline` | Medium | **Low**    | **Medium** — observability        | 60m |
 
 ---
 

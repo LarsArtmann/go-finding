@@ -12,15 +12,15 @@
 
 ### This Session (2026-06-17 11:21)
 
-| #   | Item                                        | Details                                                                                                                                               |
-| --- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **art-dupl scan @ t=20**                    | Semantic deduplication analysis: 46 clone groups / 117 tokens / 109 clones identified                                                                 |
-| 2   | **Clone Group #3 eliminated (8 tokens)**    | Extracted 4 verbatim-copied utility functions (`findOldOccurrences`, `offsetToLineNumber`, `columnOfOffset`, `pickEvenly`) into `internal/benchutil/` |
-| 3   | **Clone Group #1 eliminated (7 tokens)**    | Extracted `beforeAfterFinding(file, line, col, before, after)` helper for 7 identical Finding struct literals in `pipeline/goast/provider_test.go`    |
-| 4   | **Clone Group #2 eliminated (4 tokens)**    | Extracted `AssertPanics(t, msg, fn)` helper to `testutil_test.go` for 4 panic-test boilerplate sites                                                  |
-| 5   | **Self-review fix: 2 more recover() sites** | Converted `severity_test.go` and `category_test.go` panic tests to `AssertPanics` — consolidating ALL 6 panic-test sites (I had missed 2 first round) |
-| 6   | **Self-review fix: benchutil tests**        | Added comprehensive unit tests for the new `internal/benchutil` package — 4 table-driven functions + integration test (was 0 tests)                   |
-| 7   | **Benchmark regression verified**           | Ran all bench targets — no regression from package extraction (helpers are pre-`ResetTimer` setup)                                                    |
+| # | Item                                        | Details                                                                                                                                               |
+| - | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | **art-dupl scan @ t=20**                    | Semantic deduplication analysis: 46 clone groups / 117 tokens / 109 clones identified                                                                 |
+| 2 | **Clone Group #3 eliminated (8 tokens)**    | Extracted 4 verbatim-copied utility functions (`findOldOccurrences`, `offsetToLineNumber`, `columnOfOffset`, `pickEvenly`) into `internal/benchutil/` |
+| 3 | **Clone Group #1 eliminated (7 tokens)**    | Extracted `beforeAfterFinding(file, line, col, before, after)` helper for 7 identical Finding struct literals in `pipeline/goast/provider_test.go`    |
+| 4 | **Clone Group #2 eliminated (4 tokens)**    | Extracted `AssertPanics(t, msg, fn)` helper to `testutil_test.go` for 4 panic-test boilerplate sites                                                  |
+| 5 | **Self-review fix: 2 more recover() sites** | Converted `severity_test.go` and `category_test.go` panic tests to `AssertPanics` — consolidating ALL 6 panic-test sites (I had missed 2 first round) |
+| 6 | **Self-review fix: benchutil tests**        | Added comprehensive unit tests for the new `internal/benchutil` package — 4 table-driven functions + integration test (was 0 tests)                   |
+| 7 | **Benchmark regression verified**           | Ran all bench targets — no regression from package extraction (helpers are pre-`ResetTimer` setup)                                                    |
 
 **3 commits, all pushed:**
 
@@ -69,7 +69,7 @@
 | **GoASTProvider coverage**      | 80.8%         | Below 95% target — needs more edge case tests                                                                        |
 | **TODO_LIST.md freshness**      | Stale (5/20)  | Still references "session 13" as last update — needs re-sync with current state                                      |
 | **SARIF schema validation**     | Not done      | Blocked on 7K+ line schema vendoring decision                                                                        |
-| **CLI FixProviders via config** | Broken        | `Fix `FixProviders` through CLI config` is open in TODO_LIST.md                                                      |
+| **CLI FixProviders via config** | Broken        | `Fix`FixProviders`through CLI config` is open in TODO_LIST.md                                                        |
 
 ---
 

@@ -1,8 +1,8 @@
 # Clone Elimination Status Report
 
-**Generated:** 2026-04-26 13:28 (Sunday, April 26, 2026)  
-**Author:** Crush AI Assistant  
-**Project:** go-finding (Go static analysis pipeline library)  
+**Generated:** 2026-04-26 13:28 (Sunday, April 26, 2026)\
+**Author:** Crush AI Assistant\
+**Project:** go-finding (Go static analysis pipeline library)\
 **Goal:** Eliminate ALL code duplication detected by `art-dupl --semantic --sort total-tokens -t 15`
 
 ---
@@ -38,8 +38,8 @@
 
 ### B) PARTIALLY DONE
 
-| Task                             | Status     | Notes                                                                                                                                            |
-| -------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Task                             | Status    | Notes                                                                                                                                            |
+| -------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Clone elimination                | ⚠️ PARTIAL | Reduced from 76 to 70 groups (6 eliminated). Remaining 70 groups are in categories below.                                                        |
 | Root package test files          | ⚠️ PARTIAL | errors_test.go, position_test.go, merge_test.go, id_test.go, sarif_test.go DONE. json_test.go, filter_test.go, report_test.go partially updated. |
 | Clean up unused testutil helpers | ⚠️ PARTIAL | Unused helpers exist in testutil_test.go but removing them would introduce more churn                                                            |
@@ -79,7 +79,7 @@ pipeline/testutil_test.go:26,242
 pipeline/verify_test.go:99,140
 ```
 
-**Pattern:** `func(ctx context.Context) ([]finding.Finding, error)` - Detector interface signature  
+**Pattern:** `func(ctx context.Context) ([]finding.Finding, error)` - Detector interface signature\
 **Status:** Architectural - cannot eliminate without redesign
 
 ### 12-Clone Group
@@ -93,7 +93,7 @@ example_test.go:184,287
 pipeline/pipeline_test.go:75,519
 ```
 
-**Pattern:** `specs := []detectorSpec{{Name: "govet"}}` - detectorSpec creation  
+**Pattern:** `specs := []detectorSpec{{Name: "govet"}}` - detectorSpec creation\
 **Status:** Can potentially be refactored with a helper function
 
 ### 11-Clone Group
@@ -104,7 +104,7 @@ internal/detectors/detectors_test.go:97,101,105,162,166
 sarif_test.go:447,543,559
 ```
 
-**Pattern:** Finding struct field comparisons - `if f.Position != pos`  
+**Pattern:** Finding struct field comparisons - `if f.Position != pos`\
 **Status:** Can be refactored to use testify assertions
 
 ### 8-Clone Group
@@ -117,7 +117,7 @@ example_cli_test.go:50,86,97
 example_test.go:174,197
 ```
 
-**Pattern:** Report creation - `NewReport(ToolInfo{Name: "..."})`  
+**Pattern:** Report creation - `NewReport(ToolInfo{Name: "..."})`\
 **Status:** Can use helper function
 
 ### Remaining (19 groups of varying sizes)

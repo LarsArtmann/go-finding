@@ -41,36 +41,36 @@
 
 ### Tier 1: Correctness (1% → 51% impact)
 
-| #   | Task                                                                  | Files                                                          | Effort | Impact |
-| --- | --------------------------------------------------------------------- | -------------------------------------------------------------- | ------ | ------ |
-| 1   | Centralize triage: make `HasFix()` the canonical "is fixable?" source | `finding.go`, `pipeline/pipeline.go`, `pipeline/fix_engine.go` | 10m    | HIGH   |
-| 2   | Fix FixEngine.Apply() to use `HasFix()` instead of its own filter     | `pipeline/fix_engine.go`                                       | 5m     | HIGH   |
+| # | Task                                                                  | Files                                                          | Effort | Impact |
+| - | --------------------------------------------------------------------- | -------------------------------------------------------------- | ------ | ------ |
+| 1 | Centralize triage: make `HasFix()` the canonical "is fixable?" source | `finding.go`, `pipeline/pipeline.go`, `pipeline/fix_engine.go` | 10m    | HIGH   |
+| 2 | Fix FixEngine.Apply() to use `HasFix()` instead of its own filter     | `pipeline/fix_engine.go`                                       | 5m     | HIGH   |
 
 ### Tier 2: Type Safety (4% → 64% impact)
 
-| #   | Task                                                                           | Files                                | Effort | Impact |
-| --- | ------------------------------------------------------------------------------ | ------------------------------------ | ------ | ------ |
-| 3   | Define `type Confidence float64` with `IsValid()`, `String()`, constants       | NEW: `confidence.go`                 | 5m     | MEDIUM |
-| 4   | Migrate `Finding.Confidence` and `Correlation.Confidence` to `Confidence` type | `finding.go`, `merge.go`, + 15 files | 10m    | MEDIUM |
-| 5   | Migrate all Confidence call sites (28 occurrences across 15 files)             | All production + test files          | 10m    | MEDIUM |
+| # | Task                                                                           | Files                                | Effort | Impact |
+| - | ------------------------------------------------------------------------------ | ------------------------------------ | ------ | ------ |
+| 3 | Define `type Confidence float64` with `IsValid()`, `String()`, constants       | NEW: `confidence.go`                 | 5m     | MEDIUM |
+| 4 | Migrate `Finding.Confidence` and `Correlation.Confidence` to `Confidence` type | `finding.go`, `merge.go`, + 15 files | 10m    | MEDIUM |
+| 5 | Migrate all Confidence call sites (28 occurrences across 15 files)             | All production + test files          | 10m    | MEDIUM |
 
 ### Tier 3: Policy & Cleanup (20% → 80% impact)
 
-| #   | Task                                                                        | Files                                | Effort | Impact |
-| --- | --------------------------------------------------------------------------- | ------------------------------------ | ------ | ------ |
-| 6   | Replace `go.yaml.in/yaml/v3` with `go-faster/yaml`                          | `go.mod`, `cmd/go-finding/config.go` | 10m    | MEDIUM |
-| 7   | Remove deprecated `diagnostic.go` wrappers from root package                | `diagnostic.go`                      | 5m     | MEDIUM |
-| 8   | Inline `lock()`/`unlock()` wrappers — use `r.mu.Lock()`/`Unlock()` directly | `report.go`                          | 5m     | LOW    |
-| 9   | Add `WriteSARIF` error-path test with failingWriter                         | NEW in `sarif_test.go`               | 10m    | MEDIUM |
-| 10  | Add context-cancel tests for partial detection                              | `pipeline/partial_test.go`           | 10m    | MEDIUM |
+| #  | Task                                                                        | Files                                | Effort | Impact |
+| -- | --------------------------------------------------------------------------- | ------------------------------------ | ------ | ------ |
+| 6  | Replace `go.yaml.in/yaml/v3` with `go-faster/yaml`                          | `go.mod`, `cmd/go-finding/config.go` | 10m    | MEDIUM |
+| 7  | Remove deprecated `diagnostic.go` wrappers from root package                | `diagnostic.go`                      | 5m     | MEDIUM |
+| 8  | Inline `lock()`/`unlock()` wrappers — use `r.mu.Lock()`/`Unlock()` directly | `report.go`                          | 5m     | LOW    |
+| 9  | Add `WriteSARIF` error-path test with failingWriter                         | NEW in `sarif_test.go`               | 10m    | MEDIUM |
+| 10 | Add context-cancel tests for partial detection                              | `pipeline/partial_test.go`           | 10m    | MEDIUM |
 
 ### Tier 4: Documentation & Verification
 
-| #   | Task                                                                  | Files          | Effort | Impact |
-| --- | --------------------------------------------------------------------- | -------------- | ------ | ------ |
-| 11  | Update `AGENTS.md` with new Confidence type and triage centralization | `AGENTS.md`    | 5m     | LOW    |
-| 12  | Update `TODO_LIST.md` with all completed items                        | `TODO_LIST.md` | 5m     | LOW    |
-| 13  | Full build + test + lint verification                                 | All            | 5m     | HIGH   |
+| #  | Task                                                                  | Files          | Effort | Impact |
+| -- | --------------------------------------------------------------------- | -------------- | ------ | ------ |
+| 11 | Update `AGENTS.md` with new Confidence type and triage centralization | `AGENTS.md`    | 5m     | LOW    |
+| 12 | Update `TODO_LIST.md` with all completed items                        | `TODO_LIST.md` | 5m     | LOW    |
+| 13 | Full build + test + lint verification                                 | All            | 5m     | HIGH   |
 
 ---
 

@@ -184,48 +184,48 @@ finding_validate.go:8:1 — revive: exported method Validate should have comment
 
 ### Tier 1: Immediate Value (1-2 hours each)
 
-| #   | Task                                                                            | Impact                              | Effort  |
-| --- | ------------------------------------------------------------------------------- | ----------------------------------- | ------- |
-| 1   | Expand `ParseSeverity` with aliases (`warn`, `high`, `fatal`, `note`, `advice`) | Eliminates 7 duplicated functions   | Small   |
-| 2   | Add godoc to `Finding.Validate()` (revive lint warning)                         | Zero lint warnings                  | Trivial |
-| 3   | Fix `merge.go:134` goconst — extract `rule` string to constant                  | Zero lint warnings                  | Trivial |
-| 4   | Fix `pipeline/fix_applier.go` noinlineerr warnings                              | Zero lint warnings                  | Trivial |
-| 5   | Move `Detector`/`DetectorFunc` interfaces to root package                       | Uncouples 3 consumers from pipeline | Medium  |
+| # | Task                                                                            | Impact                              | Effort  |
+| - | ------------------------------------------------------------------------------- | ----------------------------------- | ------- |
+| 1 | Expand `ParseSeverity` with aliases (`warn`, `high`, `fatal`, `note`, `advice`) | Eliminates 7 duplicated functions   | Small   |
+| 2 | Add godoc to `Finding.Validate()` (revive lint warning)                         | Zero lint warnings                  | Trivial |
+| 3 | Fix `merge.go:134` goconst — extract `rule` string to constant                  | Zero lint warnings                  | Trivial |
+| 4 | Fix `pipeline/fix_applier.go` noinlineerr warnings                              | Zero lint warnings                  | Trivial |
+| 5 | Move `Detector`/`DetectorFunc` interfaces to root package                       | Uncouples 3 consumers from pipeline | Medium  |
 
 ### Tier 2: High Value (1-3 days each)
 
-| #   | Task                                                                               | Impact                              | Effort |
-| --- | ---------------------------------------------------------------------------------- | ----------------------------------- | ------ |
-| 6   | Add `CategoryForLinter(name string) Category` with golangci-lint + ESLint mappings | Consolidates 3 lookup tables        | Medium |
-| 7   | Add `SeverityAliases` map + `ParseSeverity` promotion in README                    | Discoverability                     | Small  |
-| 8   | Design `ToolAdapter[O any]` generic for tool JSON → Finding                        | Eliminates ~30 files of boilerplate | Large  |
-| 9   | Update `docs/research/consumer-audit.html` with field usage data from this session | Research completeness               | Small  |
-| 10  | Audit Code-Quality-Agent v0.4.2 → v0.6.1 migration path                            | Unblocks adoption                   | Medium |
+| #  | Task                                                                               | Impact                              | Effort |
+| -- | ---------------------------------------------------------------------------------- | ----------------------------------- | ------ |
+| 6  | Add `CategoryForLinter(name string) Category` with golangci-lint + ESLint mappings | Consolidates 3 lookup tables        | Medium |
+| 7  | Add `SeverityAliases` map + `ParseSeverity` promotion in README                    | Discoverability                     | Small  |
+| 8  | Design `ToolAdapter[O any]` generic for tool JSON → Finding                        | Eliminates ~30 files of boilerplate | Large  |
+| 9  | Update `docs/research/consumer-audit.html` with field usage data from this session | Research completeness               | Small  |
+| 10 | Audit Code-Quality-Agent v0.4.2 → v0.6.1 migration path                            | Unblocks adoption                   | Medium |
 
 ### Tier 3: Strategic (1-2 weeks each)
 
-| #   | Task                                                              | Impact                   | Effort |
-| --- | ----------------------------------------------------------------- | ------------------------ | ------ |
-| 11  | Extract `pipeline` to `go-finding-pipeline` sub-module            | 40% smaller core package | Large  |
-| 12  | Move `analysis` subpackage into pipeline or make standalone       | Cleaner dependency graph | Medium |
-| 13  | Deprecate/remove Suppression system (0 consumers)                 | Reduced maintenance      | Small  |
-| 14  | Deprecate/remove `Related` field (0 consumers)                    | API surface reduction    | Small  |
-| 15  | Deprecate/remove `BeforeCode` (2 consumers)                       | API surface reduction    | Small  |
-| 16  | Plan `Report.Findings` encapsulation migration (ADR 10 execution) | Thread safety            | Large  |
+| #  | Task                                                              | Impact                   | Effort |
+| -- | ----------------------------------------------------------------- | ------------------------ | ------ |
+| 11 | Extract `pipeline` to `go-finding-pipeline` sub-module            | 40% smaller core package | Large  |
+| 12 | Move `analysis` subpackage into pipeline or make standalone       | Cleaner dependency graph | Medium |
+| 13 | Deprecate/remove Suppression system (0 consumers)                 | Reduced maintenance      | Small  |
+| 14 | Deprecate/remove `Related` field (0 consumers)                    | API surface reduction    | Small  |
+| 15 | Deprecate/remove `BeforeCode` (2 consumers)                       | API surface reduction    | Small  |
+| 16 | Plan `Report.Findings` encapsulation migration (ADR 10 execution) | Thread safety            | Large  |
 
 ### Tier 4: Polish & Release
 
-| #   | Task                                                              | Impact                | Effort  |
-| --- | ----------------------------------------------------------------- | --------------------- | ------- |
-| 17  | Add benchmarks for pipeline, merge, diff, filter                  | Performance baselines | Medium  |
-| 18  | Add "migration guide" doc for consumers with hand-rolled findings | Adoption              | Medium  |
-| 19  | Update README with consumer audit insights                        | External appeal       | Small   |
-| 20  | Update CHANGELOG for v0.7.0 (all improvements since v0.6.1)       | Release readiness     | Small   |
-| 21  | Tag v0.7.0 with all consumer-driven improvements                  | Milestone             | Trivial |
-| 22  | Plan v1.0 release criteria review                                 | Long-term stability   | Medium  |
-| 23  | Explore external consumer outreach strategy                       | Growth                | Medium  |
-| 24  | Add `FixApplier` goroutine safety for single-use guard            | Correctness           | Small   |
-| 25  | Resolve `Offset=0` semantic ambiguity                             | API clarity           | Medium  |
+| #  | Task                                                              | Impact                | Effort  |
+| -- | ----------------------------------------------------------------- | --------------------- | ------- |
+| 17 | Add benchmarks for pipeline, merge, diff, filter                  | Performance baselines | Medium  |
+| 18 | Add "migration guide" doc for consumers with hand-rolled findings | Adoption              | Medium  |
+| 19 | Update README with consumer audit insights                        | External appeal       | Small   |
+| 20 | Update CHANGELOG for v0.7.0 (all improvements since v0.6.1)       | Release readiness     | Small   |
+| 21 | Tag v0.7.0 with all consumer-driven improvements                  | Milestone             | Trivial |
+| 22 | Plan v1.0 release criteria review                                 | Long-term stability   | Medium  |
+| 23 | Explore external consumer outreach strategy                       | Growth                | Medium  |
+| 24 | Add `FixApplier` goroutine safety for single-use guard            | Correctness           | Small   |
+| 25 | Resolve `Offset=0` semantic ambiguity                             | API clarity           | Medium  |
 
 ---
 
@@ -246,14 +246,14 @@ The question is: **does extracting it add more value (leaner core, independent v
 | Version            | v0.6.1                                                    | ✓      |
 | Tests              | All 7 packages pass                                       | ✓      |
 | Race detector      | Clean                                                     | ✓      |
-| Lint warnings      | 4 (goconst×1, noinlineerr×2, revive×1)                    | ⚠️     |
+| Lint warnings      | 4 (goconst×1, noinlineerr×2, revive×1)                    | ⚠️      |
 | Production files   | 56 `.go` files                                            | —      |
 | Test files         | 69 `_test.go` files                                       | —      |
 | Total LOC          | 28,450                                                    | —      |
 | Root package       | 15,893 lines (56%)                                        | —      |
 | Pipeline package   | 8,861 lines (31%)                                         | —      |
-| Consumer projects  | 15 (all internal)                                         | ⚠️     |
-| External consumers | 0                                                         | ⚠️     |
+| Consumer projects  | 15 (all internal)                                         | ⚠️      |
+| External consumers | 0                                                         | ⚠️      |
 | Go version         | 1.26                                                      | ✓      |
 | Latest tag         | v0.6.1                                                    | ✓      |
 | Dependencies       | golang.org/x/tools, x/sync, go-faster/yaml, ginkgo/gomega | ✓      |

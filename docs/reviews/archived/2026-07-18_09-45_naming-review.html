@@ -65,14 +65,14 @@
 
         /* --- Type stacks (system only — zero external fonts) --- */
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -280,15 +280,27 @@
       }
       .card-problem {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .card-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .card-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
 
       /* --- Issue cards --- */
@@ -301,15 +313,27 @@
       }
       .issue-critical {
         border-left-color: var(--problem);
-        background: color-mix(in srgb, var(--problem) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--problem) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-important {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface-raised)
+        );
       }
       .issue-nice {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 8%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 8%,
+          var(--surface-raised)
+        );
       }
       .issue h3 {
         margin-bottom: 0.3rem;
@@ -800,9 +824,9 @@
       <code>Process()</code>→<code>Transform()</code>,
       <code>GetCategory</code>→<code>CategoryOf</code>,
       <code>ConflictInfo</code>→<code>Conflict</code>,
-      <code>LSPRelatedInfo</code>→<code>LSPRelated</code>. The review appears to have been generated
-      against pre-v1.0.0 code. <code>ToolInfo</code> retains its name (legitimate metadata type, not
-      a vague "info" bag).
+      <code>LSPRelatedInfo</code>→<code>LSPRelated</code>. The review appears to
+      have been generated against pre-v1.0.0 code. <code>ToolInfo</code> retains
+      its name (legitimate metadata type, not a vague "info" bag).
     </div>
     <!-- Full-bleed top bar (optional — remove for quieter reports) -->
     <div class="top-bar">
@@ -837,8 +861,8 @@
           <div class="hero-badge">NAMING REVIEW</div>
           <h1>go-finding Identifier Audit</h1>
           <p class="hero-subtitle">
-            Automated + manual naming review of 1028 exported identifiers across the root finding
-            package, pipeline, and analysis subpackages.
+            Automated + manual naming review of 1028 exported identifiers across
+            the root finding package, pipeline, and analysis subpackages.
           </p>
         </div>
 
@@ -883,12 +907,14 @@
         <div class="card card-solution">
           <h4>Bottom line: naming is strong</h4>
           <p>
-            Zero lying names. Zero Manager/Handler/Helper classes. Zero Impl suffixes. Domain
-            vocabulary (<code>Finding</code>, <code>Severity</code>, <code>Confidence</code>,
-            <code>Position</code>, <code>Range</code>) is excellent. The remaining issues are
-            <code>Processor</code>+<code>Process()</code> vagueness, three <code>Info</code>-suffix
-            types, and one Go style violation (<code>GetCategory</code>). All are fixable in a
-            single PR.
+            Zero lying names. Zero Manager/Handler/Helper classes. Zero Impl
+            suffixes. Domain vocabulary (<code>Finding</code>,
+            <code>Severity</code>, <code>Confidence</code>,
+            <code>Position</code>, <code>Range</code>) is excellent. The
+            remaining issues are <code>Processor</code>+<code>Process()</code>
+            vagueness, three <code>Info</code>-suffix types, and one Go style
+            violation (<code>GetCategory</code>). All are fixable in a single
+            PR.
           </p>
         </div>
 
@@ -899,30 +925,33 @@
           <h4>Processor / Process() — the one vague spot</h4>
           <p>
             <code>pipeline.FindingProcessor</code> +
-            <code>Process(ctx, findings) ([]Finding, error)</code> is the only "trash-can name" in
-            the codebase. <code>Processor</code> says "I do stuff" and <code>Process()</code> says
-            "I do the stuff". The interface actually <strong>transforms</strong> findings between
-            detection and triage — filter, enrich, or rewrite. The doc-comment even says so.
+            <code>Process(ctx, findings) ([]Finding, error)</code> is the only
+            "trash-can name" in the codebase. <code>Processor</code> says "I do
+            stuff" and <code>Process()</code> says "I do the stuff". The
+            interface actually <strong>transforms</strong> findings between
+            detection and triage — filter, enrich, or rewrite. The doc-comment
+            even says so.
           </p>
         </div>
 
         <div class="card card-warning">
           <h4>Three Info-suffix types</h4>
           <p>
-            <code>ToolInfo</code>, <code>ConflictInfo</code>, <code>LSPRelatedInfo</code> all append
-            the vague <code>Info</code> suffix. The data they hold is not arbitrary "information" —
-            it's specific structural data about a tool run, a conflict, or an LSP related location.
+            <code>ToolInfo</code>, <code>ConflictInfo</code>,
+            <code>LSPRelatedInfo</code> all append the vague
+            <code>Info</code> suffix. The data they hold is not arbitrary
+            "information" — it's specific structural data about a tool run, a
+            conflict, or an LSP related location.
           </p>
         </div>
 
         <div class="card card-solution">
           <h4>Zero honesty / lying-name issues</h4>
           <p>
-            Every getter returns without surprising mutation. Every <code>IsX</code>/<code
-              >HasX</code
-            >
-            function returns a bool. No euphemisms (<code>sanitize</code> for <code>delete</code>).
-            This is rare and commendable.
+            Every getter returns without surprising mutation. Every
+            <code>IsX</code>/<code>HasX</code> function returns a bool. No
+            euphemisms (<code>sanitize</code> for <code>delete</code>). This is
+            rare and commendable.
           </p>
         </div>
 
@@ -947,17 +976,25 @@
               <td><code>pipeline/adapters.go:28</code></td>
               <td><code>FindingProcessor</code></td>
               <td>
-                "Processor" says nothing; type's actual job is transforming findings between stages
+                "Processor" says nothing; type's actual job is transforming
+                findings between stages
               </td>
-              <td><code>FindingTransformer</code> or <code>FindingStage</code></td>
+              <td>
+                <code>FindingTransformer</code> or <code>FindingStage</code>
+              </td>
             </tr>
             <tr>
               <td>2</td>
               <td><span class="badge badge-high">High</span></td>
               <td><code>pipeline/adapters.go:33</code></td>
               <td><code>Process(ctx, findings)</code></td>
-              <td>"Process" is a vague verb; method actually applies a transformation</td>
-              <td><code>Transform(ctx, in)</code> or <code>Apply(ctx, in)</code></td>
+              <td>
+                "Process" is a vague verb; method actually applies a
+                transformation
+              </td>
+              <td>
+                <code>Transform(ctx, in)</code> or <code>Apply(ctx, in)</code>
+              </td>
             </tr>
             <tr>
               <td>3</td>
@@ -965,10 +1002,12 @@
               <td><code>errors.go:144</code></td>
               <td><code>GetCategory(err)</code></td>
               <td>
-                Go convention: getters should not use <code>Get</code> prefix (Effective Go, revive
-                rule)
+                Go convention: getters should not use <code>Get</code> prefix
+                (Effective Go, revive rule)
               </td>
-              <td><code>CategoryOf(err)</code> or just <code>Category(err)</code></td>
+              <td>
+                <code>CategoryOf(err)</code> or just <code>Category(err)</code>
+              </td>
             </tr>
             <tr>
               <td>4</td>
@@ -976,8 +1015,8 @@
               <td><code>pipeline/generated_filter.go</code></td>
               <td><code>(*GeneratedFileFilter).Process(...)</code></td>
               <td>
-                Type is named <code>Filter</code> but method is <code>Process</code>; method should
-                match the type's purpose
+                Type is named <code>Filter</code> but method is
+                <code>Process</code>; method should match the type's purpose
               </td>
               <td><code>Filter(ctx, findings)</code></td>
             </tr>
@@ -1003,10 +1042,13 @@
               <td><code>lsp.go:56</code></td>
               <td><code>LSPRelatedInfo</code></td>
               <td>
-                <code>Info</code> suffix carries no domain meaning; struct holds location+message of
-                a related diagnostic
+                <code>Info</code> suffix carries no domain meaning; struct holds
+                location+message of a related diagnostic
               </td>
-              <td><code>LSPRelated</code> (parallel to root <code>RelatedRef</code>)</td>
+              <td>
+                <code>LSPRelated</code> (parallel to root
+                <code>RelatedRef</code>)
+              </td>
             </tr>
             <tr>
               <td>6</td>
@@ -1014,10 +1056,13 @@
               <td><code>pipeline/conflict.go:223</code></td>
               <td><code>ConflictInfo</code></td>
               <td>
-                <code>Info</code> suffix; struct holds one finding + the findings it conflicts with
-                + reason
+                <code>Info</code> suffix; struct holds one finding + the
+                findings it conflicts with + reason
               </td>
-              <td><code>Conflict</code> (so <code>AnalyzeConflicts() []Conflict</code>)</td>
+              <td>
+                <code>Conflict</code> (so
+                <code>AnalyzeConflicts() []Conflict</code>)
+              </td>
             </tr>
             <tr>
               <td>7</td>
@@ -1025,11 +1070,12 @@
               <td><code>report.go:53</code></td>
               <td><code>ToolInfo</code></td>
               <td>
-                <code>Info</code> suffix; struct is metadata about a tool run (name + version)
+                <code>Info</code> suffix; struct is metadata about a tool run
+                (name + version)
               </td>
               <td>
-                <code>Tool</code> (so <code>Report.Tool</code> reads naturally) — or keep as it IS
-                just info
+                <code>Tool</code> (so <code>Report.Tool</code> reads naturally)
+                — or keep as it IS just info
               </td>
             </tr>
           </tbody>
@@ -1053,7 +1099,9 @@
               <td><span class="badge badge-low">Low</span></td>
               <td><code>finding_validate.go:44</code></td>
               <td><code>fs</code> (local var)</td>
-              <td>Abbreviation for <code>strategy</code>; varnamelen flagged it</td>
+              <td>
+                Abbreviation for <code>strategy</code>; varnamelen flagged it
+              </td>
               <td><code>strategy</code></td>
             </tr>
             <tr>
@@ -1075,9 +1123,11 @@
             <div class="text">
               <strong>Domain-perfect central types</strong>
               <span
-                ><code>Finding</code>, <code>Severity</code>, <code>Confidence</code>,
-                <code>Category</code>, <code>Tag</code>, <code>Position</code>, <code>Range</code>,
-                <code>Suppression</code> — every concept wears its domain name on its sleeve.</span
+                ><code>Finding</code>, <code>Severity</code>,
+                <code>Confidence</code>, <code>Category</code>,
+                <code>Tag</code>, <code>Position</code>, <code>Range</code>,
+                <code>Suppression</code> — every concept wears its domain name
+                on its sleeve.</span
               >
             </div>
           </div>
@@ -1102,8 +1152,9 @@
             <div class="text">
               <strong>Idiomatic Go constructors</strong>
               <span
-                ><code>NewReport</code>, <code>NewRange</code>, <code>NewValidationError</code>,
-                <code>Pos()</code>, <code>MustParseCategory</code>. Builder uses
+                ><code>NewReport</code>, <code>NewRange</code>,
+                <code>NewValidationError</code>, <code>Pos()</code>,
+                <code>MustParseCategory</code>. Builder uses
                 <code>WithX</code> consistently.</span
               >
             </div>
@@ -1113,9 +1164,10 @@
             <div class="text">
               <strong>No trash-can classes</strong>
               <span
-                >Zero <code>Manager</code>, <code>Handler</code>, <code>Helper</code>,
-                <code>Util</code>, <code>Impl</code>, <code>Abstract</code>,
-                <code>Base</code> types. Behavior lives in named interfaces (<code>Detector</code>,
+                >Zero <code>Manager</code>, <code>Handler</code>,
+                <code>Helper</code>, <code>Util</code>, <code>Impl</code>,
+                <code>Abstract</code>, <code>Base</code> types. Behavior lives
+                in named interfaces (<code>Detector</code>,
                 <code>FixProvider</code>, <code>ConflictDetector</code>).</span
               >
             </div>
@@ -1125,8 +1177,11 @@
             <div class="text">
               <strong>Command-Query separation holds</strong>
               <span
-                ><code>AddFinding</code>/<code>MergeInto</code>/<code>FilterConflictingEdits</code>
-                are commands. <code>FindByID</code>/<code>ActiveFindings</code>/<code
+                ><code>AddFinding</code>/<code>MergeInto</code>/<code
+                  >FilterConflictingEdits</code
+                >
+                are commands.
+                <code>FindByID</code>/<code>ActiveFindings</code>/<code
                   >CountBySeverity</code
                 >
                 are queries. No mixup.</span
@@ -1146,23 +1201,29 @@
             <p>
               Breaking but cheap. Updates 4 files: <code>adapters.go</code>,
               <code>generated_filter.go</code>,
-              <code>ProcessorFunc</code>→<code>TransformerFunc</code>, tests. Aligns name with
-              doc-comment's actual semantic.
+              <code>ProcessorFunc</code>→<code>TransformerFunc</code>, tests.
+              Aligns name with doc-comment's actual semantic.
             </p>
           </div>
         </div>
         <div class="migration-step">
           <div class="migration-num">2</div>
           <div class="migration-content">
-            <h4>v1.0: Rename <code>GetCategory</code> → <code>CategoryOf</code></h4>
-            <p>Aligns with Go getter convention. Five test/doc references to update.</p>
+            <h4>
+              v1.0: Rename <code>GetCategory</code> → <code>CategoryOf</code>
+            </h4>
+            <p>
+              Aligns with Go getter convention. Five test/doc references to
+              update.
+            </p>
           </div>
         </div>
         <div class="migration-step">
           <div class="migration-num">3</div>
           <div class="migration-content">
             <h4>
-              v1.0: Drop <code>Info</code> suffix from <code>ConflictInfo</code> and
+              v1.0: Drop <code>Info</code> suffix from
+              <code>ConflictInfo</code> and
               <code>LSPRelatedInfo</code>
             </h4>
             <p>
@@ -1176,16 +1237,21 @@
           <div class="migration-num">4</div>
           <div class="migration-content">
             <h4>
-              Now: Rename <code>fs</code> → <code>strategy</code>, <code>rt</code> →
+              Now: Rename <code>fs</code> → <code>strategy</code>,
+              <code>rt</code> →
               <code>result</code>
             </h4>
-            <p>Trivial, non-breaking. Kills both varnamelen warnings from code-quality-scan.</p>
+            <p>
+              Trivial, non-breaking. Kills both varnamelen warnings from
+              code-quality-scan.
+            </p>
           </div>
         </div>
 
         <footer class="footer">
-          Generated 2026-06-23 &middot; 1028 identifiers reviewed across root + pipeline + analysis
-          &middot; Automated via grep + manual classification
+          Generated 2026-06-23 &middot; 1028 identifiers reviewed across root +
+          pipeline + analysis &middot; Automated via grep + manual
+          classification
         </footer>
       </main>
     </div>

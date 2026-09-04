@@ -254,33 +254,33 @@ These are NOT blocking development but ARE blocking clean git operations without
 
 Ranked by impact on path to v1.0:
 
-| #   | Task                                                      | Impact | Effort | Package  |
-| --- | --------------------------------------------------------- | ------ | ------ | -------- |
-| 1   | Remove deprecated `Finding.Tag string` field              | High   | Low    | Root     |
-| 2   | Remove deprecated `ConflictDetector`/`Verifier` structs   | High   | Low    | Pipeline |
-| 3   | Remove phantom `FixStrategyAI` constant                   | High   | Low    | Root     |
-| 4   | Audit exported symbol naming consistency                  | High   | Medium | All      |
-| 5   | Write CHANGELOG.md for v1.0                               | High   | Medium | —        |
-| 6   | Write API stability guarantee doc                         | High   | Low    | Docs     |
-| 7   | Integration test with downstream consumer                 | High   | High   | —        |
-| 8   | Fix OnFix callback (don't report skipped as success)      | Medium | Low    | Pipeline |
-| 9   | Add path validation in FixApplier                         | Medium | Low    | Pipeline |
-| 10  | Refactor CLI run() for testability                        | Medium | Medium | CLI      |
-| 11  | Fix 100 goconst warnings                                  | Medium | Medium | Tests    |
-| 12  | Verify FixApplier goroutine leak fix                      | Medium | Low    | Pipeline |
-| 13  | Split pipeline_test.go (1508 lines)                       | Medium | Medium | Pipeline |
-| 14  | Extract SARIF test builder helpers                        | Low    | Low    | Tests    |
-| 15  | Add `quickBuild()` in root bdd_test.go                    | Low    | Low    | Tests    |
-| 16  | Comprehensive doc.go                                      | Medium | Medium | Root     |
-| 17  | README examples for all exported types                    | Medium | Medium | Docs     |
-| 18  | Fix pre-commit hook (goconst, todo-check, library-policy) | Medium | Medium | CI       |
-| 19  | Add art-dupl CI step                                      | Low    | Low    | CI       |
-| 20  | Fix per-package coverage thresholds bug                   | Low    | Low    | Tests    |
-| 21  | Decide domain-specific provider location                  | Low    | Low    | Pipeline |
-| 22  | Consider io.WriterTo for SARIF                            | Low    | Low    | Root     |
-| 23  | Update AGENTS.md (Go 1.26.2, recent changes)              | Low    | Low    | Docs     |
-| 24  | Verify all examples compile                               | Low    | Low    | Examples |
-| 25  | Prepare v1.0.0 tag and release                            | High   | Low    | —        |
+| #  | Task                                                      | Impact | Effort | Package  |
+| -- | --------------------------------------------------------- | ------ | ------ | -------- |
+| 1  | Remove deprecated `Finding.Tag string` field              | High   | Low    | Root     |
+| 2  | Remove deprecated `ConflictDetector`/`Verifier` structs   | High   | Low    | Pipeline |
+| 3  | Remove phantom `FixStrategyAI` constant                   | High   | Low    | Root     |
+| 4  | Audit exported symbol naming consistency                  | High   | Medium | All      |
+| 5  | Write CHANGELOG.md for v1.0                               | High   | Medium | —        |
+| 6  | Write API stability guarantee doc                         | High   | Low    | Docs     |
+| 7  | Integration test with downstream consumer                 | High   | High   | —        |
+| 8  | Fix OnFix callback (don't report skipped as success)      | Medium | Low    | Pipeline |
+| 9  | Add path validation in FixApplier                         | Medium | Low    | Pipeline |
+| 10 | Refactor CLI run() for testability                        | Medium | Medium | CLI      |
+| 11 | Fix 100 goconst warnings                                  | Medium | Medium | Tests    |
+| 12 | Verify FixApplier goroutine leak fix                      | Medium | Low    | Pipeline |
+| 13 | Split pipeline_test.go (1508 lines)                       | Medium | Medium | Pipeline |
+| 14 | Extract SARIF test builder helpers                        | Low    | Low    | Tests    |
+| 15 | Add `quickBuild()` in root bdd_test.go                    | Low    | Low    | Tests    |
+| 16 | Comprehensive doc.go                                      | Medium | Medium | Root     |
+| 17 | README examples for all exported types                    | Medium | Medium | Docs     |
+| 18 | Fix pre-commit hook (goconst, todo-check, library-policy) | Medium | Medium | CI       |
+| 19 | Add art-dupl CI step                                      | Low    | Low    | CI       |
+| 20 | Fix per-package coverage thresholds bug                   | Low    | Low    | Tests    |
+| 21 | Decide domain-specific provider location                  | Low    | Low    | Pipeline |
+| 22 | Consider io.WriterTo for SARIF                            | Low    | Low    | Root     |
+| 23 | Update AGENTS.md (Go 1.26.2, recent changes)              | Low    | Low    | Docs     |
+| 24 | Verify all examples compile                               | Low    | Low    | Examples |
+| 25 | Prepare v1.0.0 tag and release                            | High   | Low    | —        |
 
 ---
 

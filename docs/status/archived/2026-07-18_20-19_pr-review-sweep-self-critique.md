@@ -13,18 +13,18 @@
 
 ## a) FULLY DONE
 
-| #   | Item                                          | Evidence                                                                                                                                  |
-| --- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Triage all 7 open PRs (all dependabot)        | `gh pr list` enumerated #1–#8                                                                                                             |
-| 2   | Approve **PR #1** setup-go v5→v6              | Reviewed against `action.yml`; only `go-version` used                                                                                     |
-| 3   | Approve **PR #3** goreleaser v6→v7            | All inputs identical across v6/v7                                                                                                         |
-| 4   | Approve **PR #4** checkout v4→v7              | No `pull_request_target`/`workflow_run` in repo workflows, so v7 `allow-unsafe-pr-checkout=false` default is safe                         |
-| 5   | Approve **PR #5** upload-artifact v4→v7       | `name`/`path` stable; new `archive` input defaults to `true`                                                                              |
-| 6   | **Request changes on PR #2** codecov v4→v7    | Caught silent breakage: `file:` input was **removed** in v5; must rename to `files:` or uploads silently no-op                            |
-| 7   | Locally verify **PR #6** gomega 1.42.0→1.42.1 | Applied diff; ran race + module-isolation + vet — all PASS across 4 modules                                                               |
-| 8   | Locally verify **PR #8** ginkgo 2.31.0→2.32.0 | Applied diff; ran race + module-isolation + vet — all PASS across 4 modules                                                               |
-| 9   | Discover root cause of universal CI failure   | **GitHub Actions billing/payments issue** — every job on every PR AND on master fails in ~2s with billing annotation. Not a code problem. |
-| 10  | Clean revert of test patches                  | Working tree restored to session-start state                                                                                              |
+| #  | Item                                          | Evidence                                                                                                                                  |
+| -- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | Triage all 7 open PRs (all dependabot)        | `gh pr list` enumerated #1–#8                                                                                                             |
+| 2  | Approve **PR #1** setup-go v5→v6              | Reviewed against `action.yml`; only `go-version` used                                                                                     |
+| 3  | Approve **PR #3** goreleaser v6→v7            | All inputs identical across v6/v7                                                                                                         |
+| 4  | Approve **PR #4** checkout v4→v7              | No `pull_request_target`/`workflow_run` in repo workflows, so v7 `allow-unsafe-pr-checkout=false` default is safe                         |
+| 5  | Approve **PR #5** upload-artifact v4→v7       | `name`/`path` stable; new `archive` input defaults to `true`                                                                              |
+| 6  | **Request changes on PR #2** codecov v4→v7    | Caught silent breakage: `file:` input was **removed** in v5; must rename to `files:` or uploads silently no-op                            |
+| 7  | Locally verify **PR #6** gomega 1.42.0→1.42.1 | Applied diff; ran race + module-isolation + vet — all PASS across 4 modules                                                               |
+| 8  | Locally verify **PR #8** ginkgo 2.31.0→2.32.0 | Applied diff; ran race + module-isolation + vet — all PASS across 4 modules                                                               |
+| 9  | Discover root cause of universal CI failure   | **GitHub Actions billing/payments issue** — every job on every PR AND on master fails in ~2s with billing annotation. Not a code problem. |
+| 10 | Clean revert of test patches                  | Working tree restored to session-start state                                                                                              |
 
 ---
 

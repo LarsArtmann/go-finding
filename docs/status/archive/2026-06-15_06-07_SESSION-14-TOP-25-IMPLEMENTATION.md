@@ -10,24 +10,24 @@ was built from scratch with full test coverage and CLI wiring.
 
 ## A) FULLY DONE (16/25)
 
-| #   | Task                             | Files                                                             | Impact                                                           |
-| --- | -------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------- |
-| 1   | Go AST FixProvider               | `pipeline/goast/provider.go`                                      | Eliminates SubstringProvider bottleneck for .go files            |
-| 2   | CLI fix provider wiring          | `cmd/go-finding/fix_provider_registry.go`, `config.go`, `main.go` | Users can enable providers via `-fix-provider go-ast` or YAML    |
-| 4   | Fuzz applyEditsToContent         | `pipeline/fix_engine_fuzz_test.go`                                | Found+fixed 2 real bugs: slice bounds panic + negative makeslice |
-| 6   | findingsLocked() accessor        | `report.go`, `report_query.go`, `json.go`                         | All internal access via accessor; v1.0-ready                     |
-| 7   | Combine → MergeIter DRY          | `merge.go`                                                        | Eliminated duplicated dedup+clone logic                          |
-| 9   | Mixed-provider integration tests | `pipeline/fix_provider_integration_test.go`                       | Tests Offset/Line/Substring interleaving + lazy index            |
-| 10  | lineIndexAware documentation     | `docs/guides/fix-providers.md`                                    | Full authoring guide with when/why                               |
-| 11  | Correlate range benchmark        | `correlate_bench_test.go`                                         | Range + point benchmarks at 10/100/1K scale                      |
-| 12  | sync.Pool evaluation             | `docs/architecture-decisions.md` #12                              | Decision: SKIP (<0.1% of FixEngine time)                         |
-| 13  | MergeIter seen map pre-alloc     | `merge.go`                                                        | Pre-sized with total findings count                              |
-| 16  | v1.0.0 breaking changes ADR      | `docs/architecture-decisions.md` #11                              | 6-item consolidated plan                                         |
-| 20  | FixProvider authoring guide      | `docs/guides/fix-providers.md`                                    | Interface, caching, lineIndexAware, testing                      |
-| 21  | MergeIter vs Combine benchmark   | `correlate_bench_test.go`                                         | Direct comparison 5-10 reports × 100-1K findings                 |
-| 22  | IntervalIndex benchmarks         | `correlate_bench_test.go`                                         | Build + Query at 100/1K/10K intervals                            |
-| 3   | benchstat CI regression          | `.github/workflows/ci.yml`                                        | `-count=10`, benchstat comparison, artifact upload               |
-| 5   | Benchmark baseline scripts       | `scripts/bench-baseline.sh`                                       | capture/compare commands                                         |
+| #  | Task                             | Files                                                             | Impact                                                           |
+| -- | -------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 1  | Go AST FixProvider               | `pipeline/goast/provider.go`                                      | Eliminates SubstringProvider bottleneck for .go files            |
+| 2  | CLI fix provider wiring          | `cmd/go-finding/fix_provider_registry.go`, `config.go`, `main.go` | Users can enable providers via `-fix-provider go-ast` or YAML    |
+| 4  | Fuzz applyEditsToContent         | `pipeline/fix_engine_fuzz_test.go`                                | Found+fixed 2 real bugs: slice bounds panic + negative makeslice |
+| 6  | findingsLocked() accessor        | `report.go`, `report_query.go`, `json.go`                         | All internal access via accessor; v1.0-ready                     |
+| 7  | Combine → MergeIter DRY          | `merge.go`                                                        | Eliminated duplicated dedup+clone logic                          |
+| 9  | Mixed-provider integration tests | `pipeline/fix_provider_integration_test.go`                       | Tests Offset/Line/Substring interleaving + lazy index            |
+| 10 | lineIndexAware documentation     | `docs/guides/fix-providers.md`                                    | Full authoring guide with when/why                               |
+| 11 | Correlate range benchmark        | `correlate_bench_test.go`                                         | Range + point benchmarks at 10/100/1K scale                      |
+| 12 | sync.Pool evaluation             | `docs/architecture-decisions.md` #12                              | Decision: SKIP (<0.1% of FixEngine time)                         |
+| 13 | MergeIter seen map pre-alloc     | `merge.go`                                                        | Pre-sized with total findings count                              |
+| 16 | v1.0.0 breaking changes ADR      | `docs/architecture-decisions.md` #11                              | 6-item consolidated plan                                         |
+| 20 | FixProvider authoring guide      | `docs/guides/fix-providers.md`                                    | Interface, caching, lineIndexAware, testing                      |
+| 21 | MergeIter vs Combine benchmark   | `correlate_bench_test.go`                                         | Direct comparison 5-10 reports × 100-1K findings                 |
+| 22 | IntervalIndex benchmarks         | `correlate_bench_test.go`                                         | Build + Query at 100/1K/10K intervals                            |
+| 3  | benchstat CI regression          | `.github/workflows/ci.yml`                                        | `-count=10`, benchstat comparison, artifact upload               |
+| 5  | Benchmark baseline scripts       | `scripts/bench-baseline.sh`                                       | capture/compare commands                                         |
 
 ### Bugs Found and Fixed
 
@@ -49,17 +49,17 @@ None — all 16 completed items are fully implemented, tested, and lint-clean.
 
 ## C) NOT STARTED (9/25)
 
-| #   | Task                                  | Reason                                           |
-| --- | ------------------------------------- | ------------------------------------------------ |
-| 8   | Profile BenchmarkToSARIF with pprof   | Micro-optimization; deferred until needed        |
-| 14  | DeduplicateBy.String() edge case test | Existing test covers all paths; low value        |
-| 15  | Profile pipeline with 10K+ findings   | Need real-world data to profile meaningfully     |
-| 17  | SARIF schema validation test          | Requires vendoring 7K-line schema; high effort   |
-| 18  | golines to treefmt-nix                | Blocked on upstream support                      |
-| 19  | Coverage badge in README              | Cosmetic; codecov badge already exists           |
-| 23  | arena experimental allocation         | Blocked on Go arena proposal                     |
-| 24  | SubstringProvider Boyer-Moore         | GoAST provider eliminates the need for .go files |
-| 25  | Performance analysis HTML update      | Session 13 numbers are close enough; deferred    |
+| #  | Task                                  | Reason                                           |
+| -- | ------------------------------------- | ------------------------------------------------ |
+| 8  | Profile BenchmarkToSARIF with pprof   | Micro-optimization; deferred until needed        |
+| 14 | DeduplicateBy.String() edge case test | Existing test covers all paths; low value        |
+| 15 | Profile pipeline with 10K+ findings   | Need real-world data to profile meaningfully     |
+| 17 | SARIF schema validation test          | Requires vendoring 7K-line schema; high effort   |
+| 18 | golines to treefmt-nix                | Blocked on upstream support                      |
+| 19 | Coverage badge in README              | Cosmetic; codecov badge already exists           |
+| 23 | arena experimental allocation         | Blocked on Go arena proposal                     |
+| 24 | SubstringProvider Boyer-Moore         | GoAST provider eliminates the need for .go files |
+| 25 | Performance analysis HTML update      | Session 13 numbers are close enough; deferred    |
 
 ---
 

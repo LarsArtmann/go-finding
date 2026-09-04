@@ -107,26 +107,26 @@ Core bug fixes, quality improvements, API hardening, and test coverage from the 
 
 ### EXECUTION_PLAN_V2 (13/18 tasks)
 
-| #   | Task                    | Status      |
-| --- | ----------------------- | ----------- |
-| 1   | Fix linting issues      | ✅ Done     |
-| 2   | Structured error types  | ✅ Done     |
-| 3   | Fix conflict detection  | ✅ Done     |
-| 4   | Position/Range methods  | ✅ Done     |
-| 5   | FixApplier error struct | ✅ Done     |
-| 6   | AST-aware fixes         | ✅ Done     |
-| 7   | Go vet converter        | ✅ Done     |
-| 8   | Evaluate go-sarif       | ⬜ Deferred |
-| 9   | Metrics collection      | ✅ Done     |
-| 10  | Verification stage      | ✅ Done     |
-| 11  | Fuzz tests              | ✅ Done     |
-| 12  | Retry logic             | ✅ Done     |
-| 13  | Partial success         | ✅ Done     |
-| 14  | CLI tool                | ✅ Done     |
-| 15  | Config file support     | ✅ Done     |
-| 16  | Watch mode              | ⬜ Pending  |
-| 17  | Web UI                  | ⬜ Deferred |
-| 18  | Property tests          | ✅ Done     |
+| #  | Task                    | Status      |
+| -- | ----------------------- | ----------- |
+| 1  | Fix linting issues      | ✅ Done     |
+| 2  | Structured error types  | ✅ Done     |
+| 3  | Fix conflict detection  | ✅ Done     |
+| 4  | Position/Range methods  | ✅ Done     |
+| 5  | FixApplier error struct | ✅ Done     |
+| 6  | AST-aware fixes         | ✅ Done     |
+| 7  | Go vet converter        | ✅ Done     |
+| 8  | Evaluate go-sarif       | ⬜ Deferred |
+| 9  | Metrics collection      | ✅ Done     |
+| 10 | Verification stage      | ✅ Done     |
+| 11 | Fuzz tests              | ✅ Done     |
+| 12 | Retry logic             | ✅ Done     |
+| 13 | Partial success         | ✅ Done     |
+| 14 | CLI tool                | ✅ Done     |
+| 15 | Config file support     | ✅ Done     |
+| 16 | Watch mode              | ⬜ Pending  |
+| 17 | Web UI                  | ⬜ Deferred |
+| 18 | Property tests          | ✅ Done     |
 
 **Grand total: ~66 audit tasks + 13 execution plan tasks completed.**
 
@@ -154,23 +154,23 @@ testutil_test.go             | t.Helper() added (2 locations)
 
 ## C) NOT STARTED ❌
 
-| #   | Task                                                      | Priority | Effort | Notes                                                       |
-| --- | --------------------------------------------------------- | -------- | ------ | ----------------------------------------------------------- |
-| 1   | Evaluate go-sarif library for SARIF parsing               | P2       | Low    | May replace hand-rolled SARIF code                          |
-| 2   | Watch mode (fsnotify)                                     | P3       | Medium | Continuous analysis during development                      |
-| 3   | Web UI for pipeline monitoring                            | P3       | High   | Separate project, defer indefinitely                        |
-| 4   | cmd/go-finding coverage improvement                       | P2       | Medium | Currently 24.1% — needs CLI integration tests               |
-| 5   | SARIF FindingsFromSARIF complexity reduction              | P2       | Medium | gocognit 90 (>35 threshold)                                 |
-| 6   | golangci-lint warning cleanup                             | P3       | Low    | ~16 warnings (wrapcheck, golines, nlreturn, wsl_v5, nestif) |
-| 7   | godoc/go.dev documentation                                | P3       | Low    | Package-level examples, playground links                    |
-| 8   | CI/CD pipeline setup                                      | P2       | Medium | GitHub Actions, lint + test + coverage                      |
-| 9   | Benchmark regression tracking                             | P3       | Low    | Save benchstat baselines                                    |
-| 10  | Changelog generation                                      | P3       | Low    | Conventional commits → changelog                            |
-| 11  | Version tagging (semver releases)                         | P2       | Low    | Tag v0.1.0, use ldflags in release                          |
-| 12  | API stability review                                      | P2       | Medium | Lock exported API before v1.0                               |
-| 13  | Integration test with real tools                          | P2       | Medium | Run against real govet/staticcheck output                   |
-| 14  | Detectors: add more tools (golangci-lint, errcheck, etc.) | P3       | Medium | Plugin architecture                                         |
-| 15  | Streaming/incremental analysis                            | P3       | High   | Large codebase support                                      |
+| #  | Task                                                      | Priority | Effort | Notes                                                       |
+| -- | --------------------------------------------------------- | -------- | ------ | ----------------------------------------------------------- |
+| 1  | Evaluate go-sarif library for SARIF parsing               | P2       | Low    | May replace hand-rolled SARIF code                          |
+| 2  | Watch mode (fsnotify)                                     | P3       | Medium | Continuous analysis during development                      |
+| 3  | Web UI for pipeline monitoring                            | P3       | High   | Separate project, defer indefinitely                        |
+| 4  | cmd/go-finding coverage improvement                       | P2       | Medium | Currently 24.1% — needs CLI integration tests               |
+| 5  | SARIF FindingsFromSARIF complexity reduction              | P2       | Medium | gocognit 90 (>35 threshold)                                 |
+| 6  | golangci-lint warning cleanup                             | P3       | Low    | ~16 warnings (wrapcheck, golines, nlreturn, wsl_v5, nestif) |
+| 7  | godoc/go.dev documentation                                | P3       | Low    | Package-level examples, playground links                    |
+| 8  | CI/CD pipeline setup                                      | P2       | Medium | GitHub Actions, lint + test + coverage                      |
+| 9  | Benchmark regression tracking                             | P3       | Low    | Save benchstat baselines                                    |
+| 10 | Changelog generation                                      | P3       | Low    | Conventional commits → changelog                            |
+| 11 | Version tagging (semver releases)                         | P2       | Low    | Tag v0.1.0, use ldflags in release                          |
+| 12 | API stability review                                      | P2       | Medium | Lock exported API before v1.0                               |
+| 13 | Integration test with real tools                          | P2       | Medium | Run against real govet/staticcheck output                   |
+| 14 | Detectors: add more tools (golangci-lint, errcheck, etc.) | P3       | Medium | Plugin architecture                                         |
+| 15 | Streaming/incremental analysis                            | P3       | High   | Large codebase support                                      |
 
 ---
 
@@ -234,33 +234,33 @@ The codebase is in good shape for v0.1.0 release.
 
 Sorted by impact × urgency ÷ effort.
 
-| #   | Task                                                            | Impact | Effort  | Priority |
-| --- | --------------------------------------------------------------- | ------ | ------- | -------- |
-| 1   | Commit uncommitted quality improvements (t.Helper, ctx→\_)      | Low    | 2 min   | DO NOW   |
-| 2   | Tag v0.1.0 release                                              | High   | 5 min   | DO NOW   |
-| 3   | Set up GitHub Actions CI (build + vet + test + coverage)        | High   | 30 min  | P0       |
-| 4   | Add cmd/go-finding integration tests (target 60%+ coverage)     | Medium | 45 min  | P1       |
-| 5   | Decompose FindingsFromSARIF to reduce cognitive complexity      | Medium | 20 min  | P1       |
-| 6   | Add API stability review — lock exported symbols for v1.0       | High   | 60 min  | P1       |
-| 7   | Add golangci-lint config and fix top warnings                   | Medium | 30 min  | P1       |
-| 8   | Add CHANGELOG.md auto-generated from conventional commits       | Medium | 15 min  | P2       |
-| 9   | Evaluate go-sarif library vs hand-rolled SARIF code             | Medium | 20 min  | P2       |
-| 10  | Add real govet/staticcheck integration tests                    | Medium | 30 min  | P2       |
-| 11  | Update README with usage examples and godoc badge               | Medium | 20 min  | P2       |
-| 12  | Add release automation (goreleaser or manual tag + ldflags)     | Medium | 20 min  | P2       |
-| 13  | Save benchmark baselines for regression tracking                | Low    | 15 min  | P3       |
-| 14  | Add coverage threshold enforcement in CI                        | Medium | 10 min  | P2       |
-| 15  | Improve internal/detectors coverage to 85%+                     | Low    | 20 min  | P3       |
-| 16  | Add more detector integrations (errcheck, staticcheck advanced) | Medium | 60 min  | P3       |
-| 17  | Plugin architecture for external detector registration          | High   | 90 min  | P3       |
-| 18  | Pipeline middleware/interceptor pattern                         | Medium | 60 min  | P3       |
-| 19  | Watch mode with fsnotify                                        | Low    | 60 min  | P3       |
-| 20  | Streaming/incremental analysis for large codebases              | High   | 120 min | P4       |
-| 21  | Add examples/ directory with runnable Go programs               | Medium | 30 min  | P2       |
-| 22  | Go module doc site (pkg.go.dev optimization)                    | Low    | 15 min  | P3       |
-| 23  | Error wrapping audit (consistent %w usage everywhere)           | Medium | 20 min  | P2       |
-| 24  | Add CONTRIBUTING.md and issue templates                         | Low    | 15 min  | P3       |
-| 25  | Performance profiling and optimization pass                     | Medium | 60 min  | P4       |
+| #  | Task                                                            | Impact | Effort  | Priority |
+| -- | --------------------------------------------------------------- | ------ | ------- | -------- |
+| 1  | Commit uncommitted quality improvements (t.Helper, ctx→\_)      | Low    | 2 min   | DO NOW   |
+| 2  | Tag v0.1.0 release                                              | High   | 5 min   | DO NOW   |
+| 3  | Set up GitHub Actions CI (build + vet + test + coverage)        | High   | 30 min  | P0       |
+| 4  | Add cmd/go-finding integration tests (target 60%+ coverage)     | Medium | 45 min  | P1       |
+| 5  | Decompose FindingsFromSARIF to reduce cognitive complexity      | Medium | 20 min  | P1       |
+| 6  | Add API stability review — lock exported symbols for v1.0       | High   | 60 min  | P1       |
+| 7  | Add golangci-lint config and fix top warnings                   | Medium | 30 min  | P1       |
+| 8  | Add CHANGELOG.md auto-generated from conventional commits       | Medium | 15 min  | P2       |
+| 9  | Evaluate go-sarif library vs hand-rolled SARIF code             | Medium | 20 min  | P2       |
+| 10 | Add real govet/staticcheck integration tests                    | Medium | 30 min  | P2       |
+| 11 | Update README with usage examples and godoc badge               | Medium | 20 min  | P2       |
+| 12 | Add release automation (goreleaser or manual tag + ldflags)     | Medium | 20 min  | P2       |
+| 13 | Save benchmark baselines for regression tracking                | Low    | 15 min  | P3       |
+| 14 | Add coverage threshold enforcement in CI                        | Medium | 10 min  | P2       |
+| 15 | Improve internal/detectors coverage to 85%+                     | Low    | 20 min  | P3       |
+| 16 | Add more detector integrations (errcheck, staticcheck advanced) | Medium | 60 min  | P3       |
+| 17 | Plugin architecture for external detector registration          | High   | 90 min  | P3       |
+| 18 | Pipeline middleware/interceptor pattern                         | Medium | 60 min  | P3       |
+| 19 | Watch mode with fsnotify                                        | Low    | 60 min  | P3       |
+| 20 | Streaming/incremental analysis for large codebases              | High   | 120 min | P4       |
+| 21 | Add examples/ directory with runnable Go programs               | Medium | 30 min  | P2       |
+| 22 | Go module doc site (pkg.go.dev optimization)                    | Low    | 15 min  | P3       |
+| 23 | Error wrapping audit (consistent %w usage everywhere)           | Medium | 20 min  | P2       |
+| 24 | Add CONTRIBUTING.md and issue templates                         | Low    | 15 min  | P3       |
+| 25 | Performance profiling and optimization pass                     | Medium | 60 min  | P4       |
 
 ---
 

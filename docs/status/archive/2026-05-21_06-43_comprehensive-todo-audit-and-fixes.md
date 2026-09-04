@@ -169,33 +169,33 @@ The bulk of remaining items. Notable categories:
 
 Ranked by impact × effort (Pareto principle):
 
-| #   | Item                                                                 | Priority | Effort | Impact                       |
-| --- | -------------------------------------------------------------------- | -------- | ------ | ---------------------------- |
-| 1   | Fix `.golangci.yml` to work without `--no-verify`                    | HIGH     | S      | HIGH — unblocks clean CI     |
-| 2   | Update FEATURES.md for v0.3.0                                        | MED      | S      | HIGH — discoverability       |
-| 3   | Update USAGE_GUIDE.md for v0.3.0                                     | MED      | M      | HIGH — user-facing           |
-| 4   | Triage 89 "Unknown" priority TODO items to correct priority          | PROCESS  | M      | HIGH — enables planning      |
-| 5   | Add ADR for Properties map type decision                             | MED      | S      | MED — prevents relitigation  |
-| 6   | Add ADR for FixProvider plugin architecture                          | MED      | S      | MED — architectural clarity  |
-| 7   | Fix 10 testifylint `require-error` warnings                          | MED      | S      | MED — lint hygiene           |
-| 8   | Fix 6 `paralleltest` warnings — add `t.Parallel()`                   | MED      | S      | MED — test quality           |
-| 9   | Reduce exhaustruct nolints 43 → <25 via constructors                 | MED      | M      | MED — code quality           |
-| 10  | Add `-race` flag to CI workflow                                      | MED      | S      | MED — catch races in CI      |
-| 11  | Add SARIF fuzz test with seed corpus                                 | MED      | M      | HIGH — security              |
-| 12  | Fix `Finding.Key()` cross-tool collision (add ToolName)              | MED      | S      | MED — correctness            |
-| 13  | Fix conflict detection overgrouping (Overlaps → Adjacent)            | MED      | S      | MED — correctness            |
-| 14  | Wire `FilterConflictingEdits` as opt-in Config field                 | MED      | S      | MED — API completeness       |
-| 15  | Add concurrent Report race test                                      | MED      | S      | MED — concurrency safety     |
-| 16  | Fix `DeduplicateByID` skip empty-ID findings                         | MED      | S      | MED — correctness            |
-| 17  | Extract `findingKey` to shared utility (verify.go + merge.go)        | LOW      | S      | LOW — DRY                    |
-| 18  | Fix 225 lint warnings batch 1: goconst (string literals → constants) | MED      | M      | MED — maintainability        |
-| 19  | Fix `.gitignore` line 43 corruption                                  | MED      | S      | LOW — hygiene                |
-| 20  | Complete doc.go (40% → 80%+)                                         | LOW      | M      | MED — discoverability        |
-| 21  | Add `io.WriterTo` for SARIF streaming                                | LOW      | S      | LOW — API completeness       |
-| 22  | Fix partial detection missing metrics recording                      | MED      | S      | MED — observability          |
-| 23  | Add `golines` to CI for consistent line breaking                     | HIGH     | S      | MED — formatting consistency |
-| 24  | Document SARIF critical round-trip loss                              | HIGH     | S      | MED — user awareness         |
-| 25  | Test GoReleaser config                                               | MED      | S      | LOW — release readiness      |
+| #  | Item                                                                 | Priority | Effort | Impact                       |
+| -- | -------------------------------------------------------------------- | -------- | ------ | ---------------------------- |
+| 1  | Fix `.golangci.yml` to work without `--no-verify`                    | HIGH     | S      | HIGH — unblocks clean CI     |
+| 2  | Update FEATURES.md for v0.3.0                                        | MED      | S      | HIGH — discoverability       |
+| 3  | Update USAGE_GUIDE.md for v0.3.0                                     | MED      | M      | HIGH — user-facing           |
+| 4  | Triage 89 "Unknown" priority TODO items to correct priority          | PROCESS  | M      | HIGH — enables planning      |
+| 5  | Add ADR for Properties map type decision                             | MED      | S      | MED — prevents relitigation  |
+| 6  | Add ADR for FixProvider plugin architecture                          | MED      | S      | MED — architectural clarity  |
+| 7  | Fix 10 testifylint `require-error` warnings                          | MED      | S      | MED — lint hygiene           |
+| 8  | Fix 6 `paralleltest` warnings — add `t.Parallel()`                   | MED      | S      | MED — test quality           |
+| 9  | Reduce exhaustruct nolints 43 → <25 via constructors                 | MED      | M      | MED — code quality           |
+| 10 | Add `-race` flag to CI workflow                                      | MED      | S      | MED — catch races in CI      |
+| 11 | Add SARIF fuzz test with seed corpus                                 | MED      | M      | HIGH — security              |
+| 12 | Fix `Finding.Key()` cross-tool collision (add ToolName)              | MED      | S      | MED — correctness            |
+| 13 | Fix conflict detection overgrouping (Overlaps → Adjacent)            | MED      | S      | MED — correctness            |
+| 14 | Wire `FilterConflictingEdits` as opt-in Config field                 | MED      | S      | MED — API completeness       |
+| 15 | Add concurrent Report race test                                      | MED      | S      | MED — concurrency safety     |
+| 16 | Fix `DeduplicateByID` skip empty-ID findings                         | MED      | S      | MED — correctness            |
+| 17 | Extract `findingKey` to shared utility (verify.go + merge.go)        | LOW      | S      | LOW — DRY                    |
+| 18 | Fix 225 lint warnings batch 1: goconst (string literals → constants) | MED      | M      | MED — maintainability        |
+| 19 | Fix `.gitignore` line 43 corruption                                  | MED      | S      | LOW — hygiene                |
+| 20 | Complete doc.go (40% → 80%+)                                         | LOW      | M      | MED — discoverability        |
+| 21 | Add `io.WriterTo` for SARIF streaming                                | LOW      | S      | LOW — API completeness       |
+| 22 | Fix partial detection missing metrics recording                      | MED      | S      | MED — observability          |
+| 23 | Add `golines` to CI for consistent line breaking                     | HIGH     | S      | MED — formatting consistency |
+| 24 | Document SARIF critical round-trip loss                              | HIGH     | S      | MED — user awareness         |
+| 25 | Test GoReleaser config                                               | MED      | S      | LOW — release readiness      |
 
 ---
 

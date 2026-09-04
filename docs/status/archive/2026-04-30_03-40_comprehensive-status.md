@@ -111,20 +111,20 @@
 
 ### From TODO_LIST.md (12 items — all intentionally deferred)
 
-| #   | Item                                   | Deferred To  | Reason                                 |
-| --- | -------------------------------------- | ------------ | -------------------------------------- |
-| 1   | Finding struct sub-grouping            | v2           | Breaking API change                    |
-| 2   | SARIF schema validation test           | Post-v1      | Requires downloading JSON schema       |
-| 3   | FixApplier cross-iteration persistence | v1.1         | Design question                        |
-| 4   | API stability review                   | v0.2.0       | Needs product decisions first          |
-| 5   | BuildFlow integration                  | External     | Depends on external project            |
-| 6   | go-business-rules Severity sharing     | External     | Depends on external project            |
-| 7   | Web UI prototype                       | Out of scope | Not a library concern                  |
-| 8   | Distributed detection                  | Out of scope | Not a library concern                  |
-| 9   | IDE plugin stubs                       | Out of scope | Not a library concern                  |
-| 10  | Watch mode                             | Out of scope | CLI feature, not core                  |
-| 11  | Evaluate go-sarif vs hand-rolled       | Post-v1      | Migration cost assessment              |
-| 12  | Benchmark regression tracking          | Post-v1      | Baseline captured, automation deferred |
+| #  | Item                                   | Deferred To  | Reason                                 |
+| -- | -------------------------------------- | ------------ | -------------------------------------- |
+| 1  | Finding struct sub-grouping            | v2           | Breaking API change                    |
+| 2  | SARIF schema validation test           | Post-v1      | Requires downloading JSON schema       |
+| 3  | FixApplier cross-iteration persistence | v1.1         | Design question                        |
+| 4  | API stability review                   | v0.2.0       | Needs product decisions first          |
+| 5  | BuildFlow integration                  | External     | Depends on external project            |
+| 6  | go-business-rules Severity sharing     | External     | Depends on external project            |
+| 7  | Web UI prototype                       | Out of scope | Not a library concern                  |
+| 8  | Distributed detection                  | Out of scope | Not a library concern                  |
+| 9  | IDE plugin stubs                       | Out of scope | Not a library concern                  |
+| 10 | Watch mode                             | Out of scope | CLI feature, not core                  |
+| 11 | Evaluate go-sarif vs hand-rolled       | Post-v1      | Migration cost assessment              |
+| 12 | Benchmark regression tracking          | Post-v1      | Baseline captured, automation deferred |
 
 ## What Should Improve Next (Top 25)
 

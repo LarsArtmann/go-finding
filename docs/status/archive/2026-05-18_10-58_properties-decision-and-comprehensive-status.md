@@ -33,15 +33,15 @@
 
 ### This Session (User's Instructions — Reject Properties)
 
-| #   | Change                                                                                                                                                                    | Impact                                    |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| 1   | **Document `Metadata` as sole extensibility field** — added explicit note on `Finding.Metadata` field explaining why we do NOT add `Properties map[string]any`            | Architecture: freezes key design decision |
-| 2   | **Update `finding.go` inline comment** — 4-line rationale on Metadata field: keeps struct simple, avoids type-assertion boilerplate, string→string is lossless            | Documentation: source-of-truth            |
-| 3   | **Update `finding.schema.json` description** — Schema now explains: "We intentionally have only string-valued metadata... JSON-serialize complex values"                  | Contract clarity                          |
-| 4   | **Update `AGENTS.md` Design Principle #4** — New principle: "One extensibility field — Finding.Metadata is map[string]string intentionally. NO Properties map[string]any" | Team knowledge                            |
-| 5   | **All tests still pass** — No regressions from doc-only changes                                                                                                           | Verified                                  |
-| 6   | **All tests still pass with race detector**                                                                                                                               | Verified                                  |
-| 7   | **Linter still clean** (0 issues)                                                                                                                                         | Verified                                  |
+| # | Change                                                                                                                                                                    | Impact                                    |
+| - | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| 1 | **Document `Metadata` as sole extensibility field** — added explicit note on `Finding.Metadata` field explaining why we do NOT add `Properties map[string]any`            | Architecture: freezes key design decision |
+| 2 | **Update `finding.go` inline comment** — 4-line rationale on Metadata field: keeps struct simple, avoids type-assertion boilerplate, string→string is lossless            | Documentation: source-of-truth            |
+| 3 | **Update `finding.schema.json` description** — Schema now explains: "We intentionally have only string-valued metadata... JSON-serialize complex values"                  | Contract clarity                          |
+| 4 | **Update `AGENTS.md` Design Principle #4** — New principle: "One extensibility field — Finding.Metadata is map[string]string intentionally. NO Properties map[string]any" | Team knowledge                            |
+| 5 | **All tests still pass** — No regressions from doc-only changes                                                                                                           | Verified                                  |
+| 6 | **All tests still pass with race detector**                                                                                                                               | Verified                                  |
+| 7 | **Linter still clean** (0 issues)                                                                                                                                         | Verified                                  |
 
 ### Fully Done (Roll-Up from All Previous Sessions)
 
@@ -127,47 +127,47 @@ Every task started across all sessions was completed, verified, and tested. The 
 
 ### P0 — Blocking Decisions (Need User Input)
 
-| #   | Item                                     | Why Blocked                                                                 | Since      |
-| --- | ---------------------------------------- | --------------------------------------------------------------------------- | ---------- |
-| 1   | Decide `NewFinding` API pattern          | Builder-only vs keep current 6-param — breaking change                      | 2026-04-30 |
-| 2   | API stability review for v1.0            | Audit all exported symbols — scope decision                                 | 2026-04-30 |
-| 3   | Decide domain-specific provider location | Inside pipeline/ or separate modules — affects module structure permanently | 2026-05-06 |
+| # | Item                                     | Why Blocked                                                                 | Since      |
+| - | ---------------------------------------- | --------------------------------------------------------------------------- | ---------- |
+| 1 | Decide `NewFinding` API pattern          | Builder-only vs keep current 6-param — breaking change                      | 2026-04-30 |
+| 2 | API stability review for v1.0            | Audit all exported symbols — scope decision                                 | 2026-04-30 |
+| 3 | Decide domain-specific provider location | Inside pipeline/ or separate modules — affects module structure permanently | 2026-05-06 |
 
 **Note:** `Properties map[string]any` was previously P0#4 — **REJECTED by user 2026-05-18**. Decision documented in source. See finding.go:45, AGENTS.md, finding.schema.json.
 
 ### P1 — Should Do Before v1.0
 
-| #   | Item                                               | Effort   | Impact             |
-| --- | -------------------------------------------------- | -------- | ------------------ |
-| 4   | Protect `Confidence` in direct struct construction | Design   | Low                |
-| 5   | `Finding` struct sub-grouping (v2)                 | Breaking | High (defer to v2) |
+| # | Item                                               | Effort   | Impact             |
+| - | -------------------------------------------------- | -------- | ------------------ |
+| 4 | Protect `Confidence` in direct struct construction | Design   | Low                |
+| 5 | `Finding` struct sub-grouping (v2)                 | Breaking | High (defer to v2) |
 
 ### P2 — Nice to Have
 
-| #   | Item                                     | Effort | Impact |
-| --- | ---------------------------------------- | ------ | ------ |
-| 6   | Reference JSON schemas in USAGE_GUIDE    | 5min   | Low    |
-| 7   | Wire `bench-compare.sh` into CI          | 15min  | Medium |
-| 8   | Evaluate `go-sarif` vs hand-rolled SARIF | Hours  | Medium |
-| 9   | `go/analysis` reverse conversion         | Hours  | Low    |
+| # | Item                                     | Effort | Impact |
+| - | ---------------------------------------- | ------ | ------ |
+| 6 | Reference JSON schemas in USAGE_GUIDE    | 5min   | Low    |
+| 7 | Wire `bench-compare.sh` into CI          | 15min  | Medium |
+| 8 | Evaluate `go-sarif` vs hand-rolled SARIF | Hours  | Medium |
+| 9 | `go/analysis` reverse conversion         | Hours  | Low    |
 
 ### P3 — Future / Deferred
 
-| #   | Item                                                 | Effort   |
-| --- | ---------------------------------------------------- | -------- |
-| 10  | Per-detector timeout config                          | 30min    |
-| 11  | Structured logging (`slog`)                          | Hours    |
-| 12  | Watch mode (`fsnotify`)                              | Hours    |
-| 13  | Plugin architecture for detectors                    | Days     |
-| 14  | Pipeline middleware/interceptor                      | Days     |
-| 15  | `finding.Diff()`, `FormatText()`, `FormatMarkdown()` | Hours    |
-| 16  | Nix migration (Phases 0-5)                           | Days     |
-| 17  | Semantic merge for conflicts                         | Hours    |
-| 18  | Progress reporting to Pipeline                       | Hours    |
-| 19  | Styled CLI output (`lipgloss`)                       | Hours    |
-| 20  | Interactive TUI (`bubbletea`)                        | Days     |
-| 21  | BuildFlow integration                                | External |
-| 22  | go-business-rules Severity sharing                   | External |
+| #  | Item                                                 | Effort   |
+| -- | ---------------------------------------------------- | -------- |
+| 10 | Per-detector timeout config                          | 30min    |
+| 11 | Structured logging (`slog`)                          | Hours    |
+| 12 | Watch mode (`fsnotify`)                              | Hours    |
+| 13 | Plugin architecture for detectors                    | Days     |
+| 14 | Pipeline middleware/interceptor                      | Days     |
+| 15 | `finding.Diff()`, `FormatText()`, `FormatMarkdown()` | Hours    |
+| 16 | Nix migration (Phases 0-5)                           | Days     |
+| 17 | Semantic merge for conflicts                         | Hours    |
+| 18 | Progress reporting to Pipeline                       | Hours    |
+| 19 | Styled CLI output (`lipgloss`)                       | Hours    |
+| 20 | Interactive TUI (`bubbletea`)                        | Days     |
+| 21 | BuildFlow integration                                | External |
+| 22 | go-business-rules Severity sharing                   | External |
 
 ### Out of Scope (Listed, Not Tracked)
 

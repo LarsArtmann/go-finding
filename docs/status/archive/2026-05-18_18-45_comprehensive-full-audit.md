@@ -300,48 +300,48 @@ The pipeline uses `IsAutoFixable()` for triage, so a finding can be triaged as "
 
 ### P0 — Correctness (Do Before Any Feature Work)
 
-| #   | Item                                                                              | Effort | Impact                           |
-| --- | --------------------------------------------------------------------------------- | ------ | -------------------------------- |
-| 1   | Add `RLock`/`RUnlock` to all Report read methods                                  | 1h     | **Critical** — data race         |
-| 2   | Fix `IsAutoFixable`/`Validate` disagreement                                       | 30m    | **High** — triage inconsistency  |
-| 3   | Add concurrent Report read-write race test                                        | 30m    | **High** — verify fix #1         |
-| 4   | Fix `DeduplicateByID` empty-ID collision                                          | 30m    | **Medium** — silent data loss    |
-| 5   | Use `FilterConflictingEdits` in pipeline instead of line-based conflict detection | 2h     | **Medium** — byte-level accuracy |
+| # | Item                                                                              | Effort | Impact                           |
+| - | --------------------------------------------------------------------------------- | ------ | -------------------------------- |
+| 1 | Add `RLock`/`RUnlock` to all Report read methods                                  | 1h     | **Critical** — data race         |
+| 2 | Fix `IsAutoFixable`/`Validate` disagreement                                       | 30m    | **High** — triage inconsistency  |
+| 3 | Add concurrent Report read-write race test                                        | 30m    | **High** — verify fix #1         |
+| 4 | Fix `DeduplicateByID` empty-ID collision                                          | 30m    | **Medium** — silent data loss    |
+| 5 | Use `FilterConflictingEdits` in pipeline instead of line-based conflict detection | 2h     | **Medium** — byte-level accuracy |
 
 ### P1 — Design (Do Before v1.0 API Lock)
 
-| #   | Item                                                               | Effort | Impact                                   |
-| --- | ------------------------------------------------------------------ | ------ | ---------------------------------------- |
-| 6   | Add `context.Context` + `error` to `FindingProcessor.Process`      | 1h     | **High** — processor failures are silent |
-| 7   | Add pipeline-level FixApplier reuse across iterations              | 1h     | **Medium** — unnecessary temp dirs       |
-| 8   | Enforce Confidence range — unexport or validate at every read site | 1h     | **Medium** — silent out-of-range         |
-| 9   | Deduplicate `defaultMaxIterations` constant                        | 15m    | **Low** — DRY                            |
-| 10  | Make `ComputeSummary` deterministic for expiring suppressions      | 30m    | **Medium** — flaky counts                |
-| 11  | Close `Properties map[string]any` TODO as WONTFIX                  | 15m    | **Low** — already rejected               |
-| 12  | Record `NewFinding` API decision in ADR                            | 15m    | **Low** — documentation                  |
-| 13  | Formal v1.0 API audit — every exported symbol reviewed             | 3h     | **High** — API stability                 |
+| #  | Item                                                               | Effort | Impact                                   |
+| -- | ------------------------------------------------------------------ | ------ | ---------------------------------------- |
+| 6  | Add `context.Context` + `error` to `FindingProcessor.Process`      | 1h     | **High** — processor failures are silent |
+| 7  | Add pipeline-level FixApplier reuse across iterations              | 1h     | **Medium** — unnecessary temp dirs       |
+| 8  | Enforce Confidence range — unexport or validate at every read site | 1h     | **Medium** — silent out-of-range         |
+| 9  | Deduplicate `defaultMaxIterations` constant                        | 15m    | **Low** — DRY                            |
+| 10 | Make `ComputeSummary` deterministic for expiring suppressions      | 30m    | **Medium** — flaky counts                |
+| 11 | Close `Properties map[string]any` TODO as WONTFIX                  | 15m    | **Low** — already rejected               |
+| 12 | Record `NewFinding` API decision in ADR                            | 15m    | **Low** — documentation                  |
+| 13 | Formal v1.0 API audit — every exported symbol reviewed             | 3h     | **High** — API stability                 |
 
 ### P2 — Quality (Nice to Have)
 
-| #   | Item                                                        | Effort | Impact                                |
-| --- | ----------------------------------------------------------- | ------ | ------------------------------------- |
-| 14  | Add `go/analysis` reverse conversion (Finding → Diagnostic) | 3h     | **Medium** — round-trip completeness  |
-| 15  | Add structured logging (slog) to pipeline + CLI             | 2h     | **Medium** — observability            |
-| 16  | Add per-detector timeout configuration                      | 1h     | **Medium** — fine-grained control     |
-| 17  | Surface SubstringProvider ambiguity with metrics/logging    | 30m    | **Low** — silent ambiguity            |
-| 18  | Add `finding.Diff()` utility function                       | 1h     | **Low** — convenience                 |
-| 19  | Add `finding.FormatText()` / `finding.FormatMarkdown()`     | 2h     | **Low** — output flexibility          |
-| 20  | Wire `FilterConflictingEdits` as pipeline option            | 1h     | **Low** — opt-in byte-level conflicts |
+| #  | Item                                                        | Effort | Impact                                |
+| -- | ----------------------------------------------------------- | ------ | ------------------------------------- |
+| 14 | Add `go/analysis` reverse conversion (Finding → Diagnostic) | 3h     | **Medium** — round-trip completeness  |
+| 15 | Add structured logging (slog) to pipeline + CLI             | 2h     | **Medium** — observability            |
+| 16 | Add per-detector timeout configuration                      | 1h     | **Medium** — fine-grained control     |
+| 17 | Surface SubstringProvider ambiguity with metrics/logging    | 30m    | **Low** — silent ambiguity            |
+| 18 | Add `finding.Diff()` utility function                       | 1h     | **Low** — convenience                 |
+| 19 | Add `finding.FormatText()` / `finding.FormatMarkdown()`     | 2h     | **Low** — output flexibility          |
+| 20 | Wire `FilterConflictingEdits` as pipeline option            | 1h     | **Low** — opt-in byte-level conflicts |
 
 ### P3 — Future (Post v1.0)
 
-| #   | Item                                                 | Effort  | Impact                           |
-| --- | ---------------------------------------------------- | ------- | -------------------------------- |
-| 21  | Nix flake migration                                  | 2d      | **Medium** — reproducibility     |
-| 22  | Watch mode with fsnotify                             | 2d      | **Medium** — continuous analysis |
-| 23  | More detector integrations (golangci-lint, errcheck) | 1d each | **Medium** — ecosystem coverage  |
-| 24  | Plugin architecture (runtime detector loading)       | 3d      | **High** — extensibility         |
-| 25  | Interactive TUI for fix review (bubbletea)           | 3d      | **Medium** — UX                  |
+| #  | Item                                                 | Effort  | Impact                           |
+| -- | ---------------------------------------------------- | ------- | -------------------------------- |
+| 21 | Nix flake migration                                  | 2d      | **Medium** — reproducibility     |
+| 22 | Watch mode with fsnotify                             | 2d      | **Medium** — continuous analysis |
+| 23 | More detector integrations (golangci-lint, errcheck) | 1d each | **Medium** — ecosystem coverage  |
+| 24 | Plugin architecture (runtime detector loading)       | 3d      | **High** — extensibility         |
+| 25 | Interactive TUI for fix review (bubbletea)           | 3d      | **Medium** — UX                  |
 
 ---
 

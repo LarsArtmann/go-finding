@@ -27,16 +27,16 @@
 
 These are design decisions that cannot be made autonomously. They affect the core data model and determine whether v1.0.0 can ship.
 
-| #   | Task                                              | Why It Matters                                                                                                                                                                     | Impact   | Effort   | Breaking? |
-| --- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | --------- |
-| 1   | **Decide Position zero-value semantics**          | `Position{}` is both `IsZero()=true` AND `HasOffset()=true` (Offset=0 means "byte 0" AND is the zero value). This semantic trap affects every consumer.                            | Critical | Decision | Yes       |
-| 2   | **Decide Range.End zero-value semantics**         | `Range.End.Line == 0` means "unset" via `HasEnd()`, but some consumers might expect 0 to mean "end of line 0". Ambiguous.                                                          | Critical | Decision | Yes       |
-| 3   | **Decide PositionOffset sentinel design**         | Should Offset use `-1` as "not set"? Or a `*int` pointer? Or a separate `HasOffset bool`? Currently undocumented inconsistency with Line/Column (which use 0).                     | Critical | Decision | Yes       |
-| 4   | **Set v1.0.0 release date and criteria**          | `docs/RELEASE_CRITERIA.md` exists but has no concrete checklist with dates or pass/fail thresholds. Project is at 90% coverage with 0 issues — is v1.0 "now" or "after decisions"? | Critical | 1hr      | No        |
-| 5   | **Decide Report.Findings unexport timing**        | Field is `// Deprecated:` but still public. `FindingsSnapshot()` migration path exists. When to actually unexport? v1.0? v1.1?                                                     | High     | Decision | Yes       |
-| 6   | **Decide Report.Merge() removal timing**          | Deprecated in favor of `MergeInto()`. Currently still exists. When to remove? v1.0.0? v1.1.0?                                                                                      | Medium   | Decision | Yes       |
-| 7   | **Decide FixStrategy empty string normalization** | `FixStrategy ""` passes validation but differs from `FixStrategyNone`. Two valid "no fix" states. Normalize or reject empty?                                                       | Medium   | Decision | Yes       |
-| 8   | **Decide Named string types**                     | `ToolName`, `RuleName`, `FindingID` as named types instead of raw `string`. Would touch 7+ signatures. Compile-time safety vs migration cost.                                      | Medium   | Decision | Yes       |
+| # | Task                                              | Why It Matters                                                                                                                                                                     | Impact   | Effort   | Breaking? |
+| - | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | --------- |
+| 1 | **Decide Position zero-value semantics**          | `Position{}` is both `IsZero()=true` AND `HasOffset()=true` (Offset=0 means "byte 0" AND is the zero value). This semantic trap affects every consumer.                            | Critical | Decision | Yes       |
+| 2 | **Decide Range.End zero-value semantics**         | `Range.End.Line == 0` means "unset" via `HasEnd()`, but some consumers might expect 0 to mean "end of line 0". Ambiguous.                                                          | Critical | Decision | Yes       |
+| 3 | **Decide PositionOffset sentinel design**         | Should Offset use `-1` as "not set"? Or a `*int` pointer? Or a separate `HasOffset bool`? Currently undocumented inconsistency with Line/Column (which use 0).                     | Critical | Decision | Yes       |
+| 4 | **Set v1.0.0 release date and criteria**          | `docs/RELEASE_CRITERIA.md` exists but has no concrete checklist with dates or pass/fail thresholds. Project is at 90% coverage with 0 issues — is v1.0 "now" or "after decisions"? | Critical | 1hr      | No        |
+| 5 | **Decide Report.Findings unexport timing**        | Field is `// Deprecated:` but still public. `FindingsSnapshot()` migration path exists. When to actually unexport? v1.0? v1.1?                                                     | High     | Decision | Yes       |
+| 6 | **Decide Report.Merge() removal timing**          | Deprecated in favor of `MergeInto()`. Currently still exists. When to remove? v1.0.0? v1.1.0?                                                                                      | Medium   | Decision | Yes       |
+| 7 | **Decide FixStrategy empty string normalization** | `FixStrategy ""` passes validation but differs from `FixStrategyNone`. Two valid "no fix" states. Normalize or reject empty?                                                       | Medium   | Decision | Yes       |
+| 8 | **Decide Named string types**                     | `ToolName`, `RuleName`, `FindingID` as named types instead of raw `string`. Would touch 7+ signatures. Compile-time safety vs migration cost.                                      | Medium   | Decision | Yes       |
 
 **Recommendation from all sessions:** Lock v1.0.0 NOW with current semantics documented as-is. Address items 1-3, 5, 7 in v1.1.0 or v2.0.0. The risk of indefinite postponement outweighs the risk of imperfect-but-documented semantics.
 
@@ -44,26 +44,26 @@ These are design decisions that cannot be made autonomously. They affect the cor
 
 ## TIER 2: Quality & Coverage (Actionable Now)
 
-| #   | Task                                                      | Why                                                                                                            | Impact | Effort | Files                                             |
-| --- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------ | ------ | ------------------------------------------------- |
-| 9   | **Fix analysis/ coverage: 79.5% → 90%+**                  | Lowest coverage in project. `adapter.go` has stale test-only imports and undefined symbols in LSP diagnostics. | High   | 1hr    | `analysis/adapter.go`, `analysis/adapter_test.go` |
-| 9a  | Audit analysis/adapter.go for stale imports and dead code | Root cause of low coverage                                                                                     | —      | 15min  | `analysis/`                                       |
-| 9b  | Add tests for uncovered analysis/ code paths              | Bring coverage to 90%+                                                                                         | —      | 45min  | `analysis/adapter_test.go`                        |
-| 10  | **Add tests for `ApplyWithShiftMap`**                     | New v0.7.0 code, untested                                                                                      | Medium | 20min  | `pipeline/fix_applier_test.go`                    |
-| 11  | **Add tests for `groupFindingsBySafePath`**               | New v0.7.0 code, untested                                                                                      | Medium | 20min  | `pipeline/pipeline_detect_test.go`                |
-| 12  | **Add tests for `recordShiftMap`**                        | New v0.7.0 code, untested                                                                                      | Medium | 15min  | `pipeline/pipeline_detect_test.go`                |
-| 13  | **Pipeline coverage: 90.2% → 93%+**                       | Dropped from 92.8% after v0.7.0 new code. Needs targeted tests for new paths.                                  | Medium | 1hr    | `pipeline/`                                       |
+| #  | Task                                                      | Why                                                                                                            | Impact | Effort | Files                                             |
+| -- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------ | ------ | ------------------------------------------------- |
+| 9  | **Fix analysis/ coverage: 79.5% → 90%+**                  | Lowest coverage in project. `adapter.go` has stale test-only imports and undefined symbols in LSP diagnostics. | High   | 1hr    | `analysis/adapter.go`, `analysis/adapter_test.go` |
+| 9a | Audit analysis/adapter.go for stale imports and dead code | Root cause of low coverage                                                                                     | —      | 15min  | `analysis/`                                       |
+| 9b | Add tests for uncovered analysis/ code paths              | Bring coverage to 90%+                                                                                         | —      | 45min  | `analysis/adapter_test.go`                        |
+| 10 | **Add tests for `ApplyWithShiftMap`**                     | New v0.7.0 code, untested                                                                                      | Medium | 20min  | `pipeline/fix_applier_test.go`                    |
+| 11 | **Add tests for `groupFindingsBySafePath`**               | New v0.7.0 code, untested                                                                                      | Medium | 20min  | `pipeline/pipeline_detect_test.go`                |
+| 12 | **Add tests for `recordShiftMap`**                        | New v0.7.0 code, untested                                                                                      | Medium | 15min  | `pipeline/pipeline_detect_test.go`                |
+| 13 | **Pipeline coverage: 90.2% → 93%+**                       | Dropped from 92.8% after v0.7.0 new code. Needs targeted tests for new paths.                                  | Medium | 1hr    | `pipeline/`                                       |
 
 ---
 
 ## TIER 3: Integration Tests (Actionable Now)
 
-| #   | Task                                                               | Why                                                                                     | Impact | Effort | Files                                |
-| --- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------ | ------ | ------------------------------------ |
-| 14  | **Integration test: ConfigFile → ResolveDetectors → Pipeline.Run** | The pieces exist but have never been assembled end-to-end. No proof they work together. | High   | 1hr    | `pipeline/config_file_test.go` (new) |
-| 15  | **Integration test: DetectorRegistry → Build → Pipeline.Run**      | Registry is tested in isolation but never wired through to a full pipeline run.         | Medium | 1hr    | `registry_test.go`                   |
-| 16  | **Integration test: full pipeline with middleware**                | `ComposeMiddleware` is tested standalone but not through a real pipeline.               | Medium | 1hr    | `pipeline/middleware_test.go`        |
-| 17  | **Integration test: type alias backward compat**                   | Verify `pipeline.Detector == finding.Detector` type alias compatibility.                | Low    | 15min  | `pipeline/adapters_test.go`          |
+| #  | Task                                                               | Why                                                                                     | Impact | Effort | Files                                |
+| -- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------ | ------ | ------------------------------------ |
+| 14 | **Integration test: ConfigFile → ResolveDetectors → Pipeline.Run** | The pieces exist but have never been assembled end-to-end. No proof they work together. | High   | 1hr    | `pipeline/config_file_test.go` (new) |
+| 15 | **Integration test: DetectorRegistry → Build → Pipeline.Run**      | Registry is tested in isolation but never wired through to a full pipeline run.         | Medium | 1hr    | `registry_test.go`                   |
+| 16 | **Integration test: full pipeline with middleware**                | `ComposeMiddleware` is tested standalone but not through a real pipeline.               | Medium | 1hr    | `pipeline/middleware_test.go`        |
+| 17 | **Integration test: type alias backward compat**                   | Verify `pipeline.Detector == finding.Detector` type alias compatibility.                | Low    | 15min  | `pipeline/adapters_test.go`          |
 
 ---
 
@@ -85,17 +85,17 @@ These are design decisions that cannot be made autonomously. They affect the cor
 
 ## TIER 5: Documentation (Actionable Now)
 
-| #   | Task                                                                | Why                                                                                                                            | Impact | Effort | Files                                 |
-| --- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------ | ------ | ------------------------------------- |
-| 21  | **Godoc examples: IntervalIndex, MergeIter, LineShiftMap**          | New v0.7.0 features have zero discoverable examples.                                                                           | Medium | 30min  | `example_test.go`                     |
-| 22  | **Godoc examples: DetectorRegistry, MiddlewareFunc, ConfigFile**    | New v0.7.0 features have zero discoverable examples.                                                                           | Medium | 30min  | `example_test.go`                     |
-| 23  | **Update FEATURES.md with v0.7.0 features**                         | Missing: IntervalIndex, MergeIter, LineShiftMap, DetectorRegistry, MiddlewareFunc, ConfigFile, FixStrategyResolver, StageHook. | Medium | 30min  | `FEATURES.md`                         |
-| 24  | **Update README.md with v0.7.0 features**                           | README hasn't been updated since v0.6.1. Missing new feature sections.                                                         | Medium | 30min  | `README.md`                           |
-| 25  | **CHANGELOG.md entry for v0.7.0 IntervalIndex/LineShiftMap wiring** | CHANGELOG covers sessions 10-11 but not the IntervalIndex→Correlate and LineShiftMap→pipeline wiring.                          | Low    | 15min  | `CHANGELOG.md`                        |
-| 26  | **Write v1.0 migration guide**                                      | Consumers need guide for: FindingsSnapshot, unexported types, deprecated APIs.                                                 | High   | 1hr    | `docs/MIGRATION_GUIDE.md` (new)       |
-| 27  | **Add CONTRIBUTING.md section on ConfigFile usage**                 | New ConfigFile feature needs usage docs for contributors.                                                                      | Low    | 30min  | `CONTRIBUTING.md`                     |
-| 28  | **Update doc.go with new feature examples**                         | Package docs don't mention IntervalIndex, MergeIter, StageHook, MiddlewareFunc, etc.                                           | Medium | 30min  | `doc.go`                              |
-| 29  | **Document Tag/Category semantic overlap**                          | `TagSecurity` and `CategorySecurity` have no structural link despite semantic overlap. Document they're separate axes.         | Low    | 15min  | `doc.go` or `docs/DOMAIN_LANGUAGE.md` |
+| #  | Task                                                                | Why                                                                                                                            | Impact | Effort | Files                                 |
+| -- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------ | ------ | ------------------------------------- |
+| 21 | **Godoc examples: IntervalIndex, MergeIter, LineShiftMap**          | New v0.7.0 features have zero discoverable examples.                                                                           | Medium | 30min  | `example_test.go`                     |
+| 22 | **Godoc examples: DetectorRegistry, MiddlewareFunc, ConfigFile**    | New v0.7.0 features have zero discoverable examples.                                                                           | Medium | 30min  | `example_test.go`                     |
+| 23 | **Update FEATURES.md with v0.7.0 features**                         | Missing: IntervalIndex, MergeIter, LineShiftMap, DetectorRegistry, MiddlewareFunc, ConfigFile, FixStrategyResolver, StageHook. | Medium | 30min  | `FEATURES.md`                         |
+| 24 | **Update README.md with v0.7.0 features**                           | README hasn't been updated since v0.6.1. Missing new feature sections.                                                         | Medium | 30min  | `README.md`                           |
+| 25 | **CHANGELOG.md entry for v0.7.0 IntervalIndex/LineShiftMap wiring** | CHANGELOG covers sessions 10-11 but not the IntervalIndex→Correlate and LineShiftMap→pipeline wiring.                          | Low    | 15min  | `CHANGELOG.md`                        |
+| 26 | **Write v1.0 migration guide**                                      | Consumers need guide for: FindingsSnapshot, unexported types, deprecated APIs.                                                 | High   | 1hr    | `docs/MIGRATION_GUIDE.md` (new)       |
+| 27 | **Add CONTRIBUTING.md section on ConfigFile usage**                 | New ConfigFile feature needs usage docs for contributors.                                                                      | Low    | 30min  | `CONTRIBUTING.md`                     |
+| 28 | **Update doc.go with new feature examples**                         | Package docs don't mention IntervalIndex, MergeIter, StageHook, MiddlewareFunc, etc.                                           | Medium | 30min  | `doc.go`                              |
+| 29 | **Document Tag/Category semantic overlap**                          | `TagSecurity` and `CategorySecurity` have no structural link despite semantic overlap. Document they're separate axes.         | Low    | 15min  | `doc.go` or `docs/DOMAIN_LANGUAGE.md` |
 
 ---
 
@@ -119,31 +119,31 @@ These are design decisions that cannot be made autonomously. They affect the cor
 
 ## TIER 7: Code Quality Polish (Actionable Now)
 
-| #   | Task                                                      | Why                                                                                                   | Impact | Effort | Files                                                             |
-| --- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------ | ------ | ----------------------------------------------------------------- |
-| 38  | **slices.Collect modernization pass**                     | 12 candidates identified. Applied `cmp.Or` to 2 locations. Full pass deferred to avoid churn.         | Low    | 30min  | `filter.go`, `report.go`, `pipeline/verify.go`, `sarif_import.go` |
-| 39  | **Add Compare() method to Category**                      | Matching `Severity.Compare()` and `Confidence.Compare()` pattern.                                     | Low    | 15min  | `category.go`                                                     |
-| 40  | **Create v1.0.0 release checklist**                       | `docs/RELEASE_CRITERIA.md` exists but needs concrete checklist with pass/fail thresholds and dates.   | High   | 1hr    | `docs/RELEASE_CRITERIA.md`                                        |
-| 41  | **Audit all deprecated APIs for v1.0.0 removal timeline** | `RecordFix()`, `Report.Merge()`, `Report.Findings`, `CountBySeverity()` free function. Need timeline. | Medium | 1hr    | `docs/API_STABILITY.md`                                           |
+| #  | Task                                                      | Why                                                                                                   | Impact | Effort | Files                                                             |
+| -- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------ | ------ | ----------------------------------------------------------------- |
+| 38 | **slices.Collect modernization pass**                     | 12 candidates identified. Applied `cmp.Or` to 2 locations. Full pass deferred to avoid churn.         | Low    | 30min  | `filter.go`, `report.go`, `pipeline/verify.go`, `sarif_import.go` |
+| 39 | **Add Compare() method to Category**                      | Matching `Severity.Compare()` and `Confidence.Compare()` pattern.                                     | Low    | 15min  | `category.go`                                                     |
+| 40 | **Create v1.0.0 release checklist**                       | `docs/RELEASE_CRITERIA.md` exists but needs concrete checklist with pass/fail thresholds and dates.   | High   | 1hr    | `docs/RELEASE_CRITERIA.md`                                        |
+| 41 | **Audit all deprecated APIs for v1.0.0 removal timeline** | `RecordFix()`, `Report.Merge()`, `Report.Findings`, `CountBySeverity()` free function. Need timeline. | Medium | 1hr    | `docs/API_STABILITY.md`                                           |
 
 ---
 
 ## TIER 8: Blocked / Deferred / v2 (Not Actionable Now)
 
-| #   | Task                                                                        | Status          | Blocker                                             |
-| --- | --------------------------------------------------------------------------- | --------------- | --------------------------------------------------- |
-| 42  | Finding struct sub-grouping (`FindingCore` + `FixInfo` + `SuppressionInfo`) | DEFERRED v2     | Breaking change — wait until v1.0 lock              |
-| 43  | Add `golines` to CI                                                         | BLOCKED         | treefmt-nix doesn't support golines                 |
-| 44  | Fix BuildFlow auto-configure loop                                           | BLOCKED         | External tool generates broken Go code              |
-| 45  | Interactive TUI                                                             | OUT OF SCOPE v1 | —                                                   |
-| 46  | Create `.envrc`                                                             | BLOCKED         | No Nix setup                                        |
-| 47  | SARIF schema validation against official 2.1.0                              | BLOCKED         | Requires vendoring 7K+ line JSON schema             |
-| 48  | Wire into go-structure-linter                                               | DEFERRED        | External project                                    |
-| 49  | Watch mode for continuous analysis                                          | DEFERRED        | —                                                   |
-| 50  | IDE plugin stubs                                                            | OUT OF SCOPE v1 | —                                                   |
-| 51  | Web UI                                                                      | OUT OF SCOPE v1 | —                                                   |
-| 52  | Code generation for enum types                                              | Nice to have    | 7× enum pattern boilerplate; Go generics can't help |
-| 53  | Domain event emission from pipeline stages                                  | Nice to have    | StageHook covers part of this                       |
+| #  | Task                                                                        | Status          | Blocker                                             |
+| -- | --------------------------------------------------------------------------- | --------------- | --------------------------------------------------- |
+| 42 | Finding struct sub-grouping (`FindingCore` + `FixInfo` + `SuppressionInfo`) | DEFERRED v2     | Breaking change — wait until v1.0 lock              |
+| 43 | Add `golines` to CI                                                         | BLOCKED         | treefmt-nix doesn't support golines                 |
+| 44 | Fix BuildFlow auto-configure loop                                           | BLOCKED         | External tool generates broken Go code              |
+| 45 | Interactive TUI                                                             | OUT OF SCOPE v1 | —                                                   |
+| 46 | Create `.envrc`                                                             | BLOCKED         | No Nix setup                                        |
+| 47 | SARIF schema validation against official 2.1.0                              | BLOCKED         | Requires vendoring 7K+ line JSON schema             |
+| 48 | Wire into go-structure-linter                                               | DEFERRED        | External project                                    |
+| 49 | Watch mode for continuous analysis                                          | DEFERRED        | —                                                   |
+| 50 | IDE plugin stubs                                                            | OUT OF SCOPE v1 | —                                                   |
+| 51 | Web UI                                                                      | OUT OF SCOPE v1 | —                                                   |
+| 52 | Code generation for enum types                                              | Nice to have    | 7× enum pattern boilerplate; Go generics can't help |
+| 53 | Domain event emission from pipeline stages                                  | Nice to have    | StageHook covers part of this                       |
 
 ---
 

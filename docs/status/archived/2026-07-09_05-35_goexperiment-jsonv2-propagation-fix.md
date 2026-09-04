@@ -24,23 +24,23 @@ When BuildFlow ran `nix run .#test-race`, the app spawned a fresh shell without 
 
 ## a) FULLY DONE
 
-| #   | Task                                                                | Result                                                                     |
-| --- | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| 1   | Identify root cause of 3 BuildFlow failures                         | DONE — `GOEXPERIMENT=jsonv2` missing from all `mkApp` scripts in flake.nix |
-| 2   | Add `export GOEXPERIMENT=jsonv2` to all 9 app scripts               | DONE — test, test-race, bench, build, vet, lint, coverage, art-dupl, clean |
-| 3   | Add `GOEXPERIMENT=jsonv2` env to `devShells.ci`                     | DONE — was missing entirely                                                |
-| 4   | Verify `go build ./...` with `GOEXPERIMENT=jsonv2`                  | DONE — clean compile                                                       |
-| 5   | Verify `go test -race -count=1 ./...` with `GOEXPERIMENT=jsonv2`    | DONE — all 12 packages pass (root + pipeline + analysis + cmd)             |
-| 6   | Verify `govalid ./...` with `GOEXPERIMENT=jsonv2`                   | DONE — clean (confirmed it fails without the env var)                      |
-| 7   | Verify `go vet ./...` and `go fix ./...` with `GOEXPERIMENT=jsonv2` | DONE — both clean                                                          |
-| 8   | Run `nix flake check`                                               | DONE — `all checks passed!`                                                |
+| # | Task                                                                | Result                                                                     |
+| - | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 1 | Identify root cause of 3 BuildFlow failures                         | DONE — `GOEXPERIMENT=jsonv2` missing from all `mkApp` scripts in flake.nix |
+| 2 | Add `export GOEXPERIMENT=jsonv2` to all 9 app scripts               | DONE — test, test-race, bench, build, vet, lint, coverage, art-dupl, clean |
+| 3 | Add `GOEXPERIMENT=jsonv2` env to `devShells.ci`                     | DONE — was missing entirely                                                |
+| 4 | Verify `go build ./...` with `GOEXPERIMENT=jsonv2`                  | DONE — clean compile                                                       |
+| 5 | Verify `go test -race -count=1 ./...` with `GOEXPERIMENT=jsonv2`    | DONE — all 12 packages pass (root + pipeline + analysis + cmd)             |
+| 6 | Verify `govalid ./...` with `GOEXPERIMENT=jsonv2`                   | DONE — clean (confirmed it fails without the env var)                      |
+| 7 | Verify `go vet ./...` and `go fix ./...` with `GOEXPERIMENT=jsonv2` | DONE — both clean                                                          |
+| 8 | Run `nix flake check`                                               | DONE — `all checks passed!`                                                |
 
 ## b) PARTIALLY DONE
 
-| #   | Task                                                 | Blocked by                                                                                                                                                                                                                                                         |
-| --- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | `go-fix` and `govalid-generate` in BuildFlow context | These are BuildFlow-internal tools that invoke `go`/`govalid` directly, not via `nix run .#*`. They need `GOEXPERIMENT=jsonv2` in the ambient environment. Running BuildFlow from within `nix develop` solves this, but `.buildflow.yml` has no `env` key support. |
-| 2   | Commit all changes                                   | User has not requested a commit. Changes are staged-ready.                                                                                                                                                                                                         |
+| # | Task                                                 | Blocked by                                                                                                                                                                                                                                                         |
+| - | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1 | `go-fix` and `govalid-generate` in BuildFlow context | These are BuildFlow-internal tools that invoke `go`/`govalid` directly, not via `nix run .#*`. They need `GOEXPERIMENT=jsonv2` in the ambient environment. Running BuildFlow from within `nix develop` solves this, but `.buildflow.yml` has no `env` key support. |
+| 2 | Commit all changes                                   | User has not requested a commit. Changes are staged-ready.                                                                                                                                                                                                         |
 
 ## c) NOT STARTED
 
@@ -50,10 +50,10 @@ When BuildFlow ran `nix run .#test-race`, the app spawned a fresh shell without 
 
 ## d) TOTALLY FUCKED UP
 
-| #   | What happened                                                        | Impact                                                                                                                                                                                                                                                       |
-| --- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | **Initial reaction: tried to revert the entire json/v2 migration**   | I panicked and reverted all 9 .go files back to `encoding/json` v1, removing the entire migration the user intended. This was wrong — the migration was correct, the env var propagation was the problem. The user caught this immediately and corrected me. |
-| 2   | **Restored .go files but initially left flake.nix env vars removed** | Had to re-add `GOEXPERIMENT=jsonv2` to `buildGoModule` env and `devShells.default` env that I had also deleted during the failed revert attempt.                                                                                                             |
+| # | What happened                                                        | Impact                                                                                                                                                                                                                                                       |
+| - | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1 | **Initial reaction: tried to revert the entire json/v2 migration**   | I panicked and reverted all 9 .go files back to `encoding/json` v1, removing the entire migration the user intended. This was wrong — the migration was correct, the env var propagation was the problem. The user caught this immediately and corrected me. |
+| 2 | **Restored .go files but initially left flake.nix env vars removed** | Had to re-add `GOEXPERIMENT=jsonv2` to `buildGoModule` env and `devShells.default` env that I had also deleted during the failed revert attempt.                                                                                                             |
 
 ## e) WHAT WE SHOULD IMPROVE
 

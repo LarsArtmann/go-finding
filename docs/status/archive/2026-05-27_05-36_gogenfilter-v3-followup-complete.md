@@ -1,10 +1,10 @@
 # Status Report — 2026-05-27 05:36
 
-**Project:** `github.com/larsartmann/go-finding` v0.4.1  
-**Branch:** `master` (2 commits ahead of origin)  
-**Go:** 1.26.3 | **Coverage:** 92.6% | **Lint:** 0 issues | **Tests:** ALL PASS (race detector on)  
-**LOC:** ~26,876 lines of Go (all files including tests)  
-**Test files:** 66 across 6 packages  
+**Project:** `github.com/larsartmann/go-finding` v0.4.1\
+**Branch:** `master` (2 commits ahead of origin)\
+**Go:** 1.26.3 | **Coverage:** 92.6% | **Lint:** 0 issues | **Tests:** ALL PASS (race detector on)\
+**LOC:** ~26,876 lines of Go (all files including tests)\
+**Test files:** 66 across 6 packages\
 **Dependencies:** 6 direct, 42 total (including transitive)
 
 ---
@@ -93,18 +93,18 @@
 
 ## c) NOT STARTED ❌
 
-| #   | Item                                                                                                      | Impact | Effort   |
-| --- | --------------------------------------------------------------------------------------------------------- | ------ | -------- |
-| 1   | `docs/adr/` directory — no ADR files exist                                                                | Medium | Small    |
-| 2   | `Repository structure` decision — monorepo vs split packages (TODO line 81)                               | High   | Decision |
-| 3   | AI-reserved `FixStrategy` implementation                                                                  | Medium | Medium   |
-| 4   | Snapshot/golden tests for SARIF output                                                                    | Medium | Small    |
-| 5   | govulncheck in CI workflow                                                                                | High   | Small    |
-| 6   | Benchmark regression tracking                                                                             | Medium | Medium   |
-| 7   | goreleaser for cross-platform binaries                                                                    | Medium | Medium   |
-| 8   | Streaming SARIF for very large result sets                                                                | Low    | Large    |
-| 9   | `PUBLIC_OR_PRIVATE.md` decision — is this project public or private?                                      | High   | Decision |
-| 10  | v1.0 release criteria — defined in `docs/v1.0-release-criteria.md` but not verified against current state | High   | Medium   |
+| #  | Item                                                                                                      | Impact | Effort   |
+| -- | --------------------------------------------------------------------------------------------------------- | ------ | -------- |
+| 1  | `docs/adr/` directory — no ADR files exist                                                                | Medium | Small    |
+| 2  | `Repository structure` decision — monorepo vs split packages (TODO line 81)                               | High   | Decision |
+| 3  | AI-reserved `FixStrategy` implementation                                                                  | Medium | Medium   |
+| 4  | Snapshot/golden tests for SARIF output                                                                    | Medium | Small    |
+| 5  | govulncheck in CI workflow                                                                                | High   | Small    |
+| 6  | Benchmark regression tracking                                                                             | Medium | Medium   |
+| 7  | goreleaser for cross-platform binaries                                                                    | Medium | Medium   |
+| 8  | Streaming SARIF for very large result sets                                                                | Low    | Large    |
+| 9  | `PUBLIC_OR_PRIVATE.md` decision — is this project public or private?                                      | High   | Decision |
+| 10 | v1.0 release criteria — defined in `docs/v1.0-release-criteria.md` but not verified against current state | High   | Medium   |
 
 ---
 
@@ -163,53 +163,53 @@ The pre-commit `file-size` check flags `example_test.go` at 506 lines (44.6% ove
 
 ### Tier 1: High Impact, Low Effort (Do Immediately)
 
-| #   | Task                                                                            | Effort | Impact |
-| --- | ------------------------------------------------------------------------------- | ------ | ------ |
-| 1   | Fix version sync: update `version.go` Patch to 1 (or revert CHANGELOG to 0.4.0) | 5 min  | High   |
-| 2   | Add `govulncheck` step to `.github/workflows/ci.yml`                            | 15 min | High   |
-| 3   | Remove 4 phantom TODO items from `TODO_LIST.md`                                 | 10 min | Medium |
-| 4   | Clean gopls cache to fix false diagnostics                                      | 2 min  | Low    |
-| 5   | Fix pre-commit `todo-check` to ignore `NOTE:` comments                          | 10 min | Medium |
+| # | Task                                                                            | Effort | Impact |
+| - | ------------------------------------------------------------------------------- | ------ | ------ |
+| 1 | Fix version sync: update `version.go` Patch to 1 (or revert CHANGELOG to 0.4.0) | 5 min  | High   |
+| 2 | Add `govulncheck` step to `.github/workflows/ci.yml`                            | 15 min | High   |
+| 3 | Remove 4 phantom TODO items from `TODO_LIST.md`                                 | 10 min | Medium |
+| 4 | Clean gopls cache to fix false diagnostics                                      | 2 min  | Low    |
+| 5 | Fix pre-commit `todo-check` to ignore `NOTE:` comments                          | 10 min | Medium |
 
 ### Tier 2: High Impact, Medium Effort (This Week)
 
-| #   | Task                                                                                     | Effort | Impact |
-| --- | ---------------------------------------------------------------------------------------- | ------ | ------ |
-| 6   | CLI test coverage: target 85%+ for `cmd/go-finding`                                      | 2-3h   | High   |
-| 7   | Resolve `PUBLIC_OR_PRIVATE.md` — confirm public status                                   | 15 min | High   |
-| 8   | Verify v1.0 release criteria against current state                                       | 1h     | High   |
-| 9   | Add SARIF snapshot/golden tests                                                          | 1h     | Medium |
-| 10  | Create `docs/adr/` with initial ADRs (Metadata design, FixEngine, pipeline architecture) | 2h     | Medium |
+| #  | Task                                                                                     | Effort | Impact |
+| -- | ---------------------------------------------------------------------------------------- | ------ | ------ |
+| 6  | CLI test coverage: target 85%+ for `cmd/go-finding`                                      | 2-3h   | High   |
+| 7  | Resolve `PUBLIC_OR_PRIVATE.md` — confirm public status                                   | 15 min | High   |
+| 8  | Verify v1.0 release criteria against current state                                       | 1h     | High   |
+| 9  | Add SARIF snapshot/golden tests                                                          | 1h     | Medium |
+| 10 | Create `docs/adr/` with initial ADRs (Metadata design, FixEngine, pipeline architecture) | 2h     | Medium |
 
 ### Tier 3: Medium Impact, Medium Effort (Next Sprint)
 
-| #   | Task                                                                                       | Effort   | Impact |
-| --- | ------------------------------------------------------------------------------------------ | -------- | ------ |
-| 11  | Add benchmark regression tracking in CI                                                    | 2h       | Medium |
-| 12  | Resolve owner-decision items (Position zero-value, Range.End, etc.)                        | Decision | High   |
-| 13  | Update `MIGRATION_TO_NIX_FLAKES_PROPOSAL.md` — mark as complete or update remaining phases | 30 min   | Low    |
-| 14  | Add `--version` flag to CLI                                                                | 30 min   | Medium |
-| 15  | Verify `config.example.yaml` is up to date with all current options                        | 15 min   | Low    |
+| #  | Task                                                                                       | Effort   | Impact |
+| -- | ------------------------------------------------------------------------------------------ | -------- | ------ |
+| 11 | Add benchmark regression tracking in CI                                                    | 2h       | Medium |
+| 12 | Resolve owner-decision items (Position zero-value, Range.End, etc.)                        | Decision | High   |
+| 13 | Update `MIGRATION_TO_NIX_FLAKES_PROPOSAL.md` — mark as complete or update remaining phases | 30 min   | Low    |
+| 14 | Add `--version` flag to CLI                                                                | 30 min   | Medium |
+| 15 | Verify `config.example.yaml` is up to date with all current options                        | 15 min   | Low    |
 
 ### Tier 4: Strategic / Longer Term
 
-| #   | Task                                              | Effort   | Impact |
-| --- | ------------------------------------------------- | -------- | ------ |
-| 16  | Implement AI-reserved `FixStrategy` handler       | 2-3d     | High   |
-| 17  | Evaluate go-sarif vs hand-rolled SARIF types      | Decision | Medium |
-| 18  | goreleaser for cross-platform binary releases     | 4h       | Medium |
-| 19  | Streaming SARIF for very large result sets        | 1d       | Low    |
-| 20  | Repository structure decision (monorepo vs split) | Decision | High   |
+| #  | Task                                              | Effort   | Impact |
+| -- | ------------------------------------------------- | -------- | ------ |
+| 16 | Implement AI-reserved `FixStrategy` handler       | 2-3d     | High   |
+| 17 | Evaluate go-sarif vs hand-rolled SARIF types      | Decision | Medium |
+| 18 | goreleaser for cross-platform binary releases     | 4h       | Medium |
+| 19 | Streaming SARIF for very large result sets        | 1d       | Low    |
+| 20 | Repository structure decision (monorepo vs split) | Decision | High   |
 
 ### Tier 5: Polish & Maintenance
 
-| #   | Task                                                                        | Effort | Impact |
-| --- | --------------------------------------------------------------------------- | ------ | ------ |
-| 21  | Pre-commit file-size limit: raise for `*_test.go` or split large test files | 30 min | Low    |
-| 22  | Archive old status reports (move pre-May-25 to `docs/status/archive/`)      | 5 min  | Low    |
-| 23  | Consistent error message formatting across all packages                     | 2h     | Low    |
-| 24  | Add `//go:build` constraints where appropriate (e.g., fuzz tests)           | 30 min | Low    |
-| 25  | Push 2 local commits to origin/master                                       | 1 min  | Medium |
+| #  | Task                                                                        | Effort | Impact |
+| -- | --------------------------------------------------------------------------- | ------ | ------ |
+| 21 | Pre-commit file-size limit: raise for `*_test.go` or split large test files | 30 min | Low    |
+| 22 | Archive old status reports (move pre-May-25 to `docs/status/archive/`)      | 5 min  | Low    |
+| 23 | Consistent error message formatting across all packages                     | 2h     | Low    |
+| 24 | Add `//go:build` constraints where appropriate (e.g., fuzz tests)           | 30 min | Low    |
+| 25 | Push 2 local commits to origin/master                                       | 1 min  | Medium |
 
 ---
 

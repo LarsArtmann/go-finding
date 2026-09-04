@@ -10,19 +10,19 @@
 
 ### The 1% that delivers 51%
 
-| #   | Task                                 | Why it's the 1%                                                                                                                                                                |
-| --- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| P1  | **Release FlightRecorder as v1.5.0** | The feature is complete, tested, documented in CHANGELOG `[Unreleased]`, but UNRELEASED. No other single action ships as much actual product value. Everything else is polish. |
+| #  | Task                                 | Why it's the 1%                                                                                                                                                                |
+| -- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P1 | **Release FlightRecorder as v1.5.0** | The feature is complete, tested, documented in CHANGELOG `[Unreleased]`, but UNRELEASED. No other single action ships as much actual product value. Everything else is polish. |
 
 > **BLOCKER:** Requires user decision on version number (v1.5.0 vs v1.4.2). SemVer says minor bump for new API. See Q1 in status report.
 
 ### The 4% that delivers 64%
 
-| #   | Task                                     | Why it's in the 4%                                                                                                                           |
-| --- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| P2  | **Commit benchmark baseline**            | CI benchmark regression check has NEVER worked. `/benchmarks/` is gitignored. One-line `.gitignore` fix + `git add benchmarks/baseline.txt`. |
-| P3  | **README Pipeline Features table fix**   | I forgot to add Flight Recorder to the README summary table last session. 2-minute fix.                                                      |
-| P4  | **Harvest FlightRecorder self-critique** | `docs/status/2026-08-01_19-40_flight-recorder-self-critique.md` has actionable open items I didn't route. Quick read + harvest.              |
+| #  | Task                                     | Why it's in the 4%                                                                                                                           |
+| -- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| P2 | **Commit benchmark baseline**            | CI benchmark regression check has NEVER worked. `/benchmarks/` is gitignored. One-line `.gitignore` fix + `git add benchmarks/baseline.txt`. |
+| P3 | **README Pipeline Features table fix**   | I forgot to add Flight Recorder to the README summary table last session. 2-minute fix.                                                      |
+| P4 | **Harvest FlightRecorder self-critique** | `docs/status/2026-08-01_19-40_flight-recorder-self-critique.md` has actionable open items I didn't route. Quick read + harvest.              |
 
 ### The 20% that delivers 80%
 
@@ -411,11 +411,11 @@ All 18 actionable tasks (M02-M19) executed and verified. Quality gate green: all
 
 ### Resolved Questions
 
-| Q   | Question                    | Decision                         | Rationale                                                                                                                                                             |
-| --- | --------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q1  | Version bump for Equal fix? | **Patch (v1.4.2)**               | Documentation always promised order-insensitive equality. The fix aligns code with documented contract, not a new contract. SemVer §7 says bug fixes are patch bumps. |
-| Q2  | `ValidateAll` return type?  | **`map[int]error`** (kept as-is) | O(1) lookup of "did finding N fail?", lazy-allocated (nil for all-valid), no sentinel values needed. Consistent with Go map patterns.                                 |
-| Q3  | Update plan in-place?       | **Yes**                          | Living docs should be current. This plan is updated in-place with DONE markers and this resolution section.                                                           |
+| Q  | Question                    | Decision                         | Rationale                                                                                                                                                             |
+| -- | --------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1 | Version bump for Equal fix? | **Patch (v1.4.2)**               | Documentation always promised order-insensitive equality. The fix aligns code with documented contract, not a new contract. SemVer §7 says bug fixes are patch bumps. |
+| Q2 | `ValidateAll` return type?  | **`map[int]error`** (kept as-is) | O(1) lookup of "did finding N fail?", lazy-allocated (nil for all-valid), no sentinel values needed. Consistent with Go map patterns.                                 |
+| Q3 | Update plan in-place?       | **Yes**                          | Living docs should be current. This plan is updated in-place with DONE markers and this resolution section.                                                           |
 
 ### Remaining Blocked Tasks
 

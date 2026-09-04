@@ -106,37 +106,37 @@ Architecture review identified **11 quick fixes** and **6 larger refactors**. Tw
 
 ### Architecture Quick Fixes (9 remaining)
 
-| #   | Issue                             | File                         | Impact                | Effort |
-| --- | --------------------------------- | ---------------------------- | --------------------- | ------ |
-| 1   | Tag/Tags coexistence validation   | `finding.go:28-29`           | Prevent invalid state | Quick  |
-| 2   | Range End < Start validation      | `position.go:64-67`          | Prevent invalid state | Quick  |
-| 3   | Confidence clamping in Validate() | `finding.go:250`             | Consistency fix       | Quick  |
-| 4   | Position.HasLocation() method     | `position.go:19-21`          | API clarity           | Quick  |
-| 5   | Generic named-func adapter        | `pipeline/pipeline.go:24-95` | DRY reduction         | Quick  |
-| 6   | Generic pointer-equal helper      | `finding.go:309-349`         | DRY reduction         | Quick  |
-| 7   | SARIF write method consolidation  | `sarif.go:159-208`           | DRY reduction         | Quick  |
-| 8   | ValidationBuilder type            | `finding.go:216`             | Reusable pattern      | Quick  |
-| 9   | TriageFunc customizable triage    | `pipeline/pipeline.go:518`   | Extensibility         | Quick  |
+| # | Issue                             | File                         | Impact                | Effort |
+| - | --------------------------------- | ---------------------------- | --------------------- | ------ |
+| 1 | Tag/Tags coexistence validation   | `finding.go:28-29`           | Prevent invalid state | Quick  |
+| 2 | Range End < Start validation      | `position.go:64-67`          | Prevent invalid state | Quick  |
+| 3 | Confidence clamping in Validate() | `finding.go:250`             | Consistency fix       | Quick  |
+| 4 | Position.HasLocation() method     | `position.go:19-21`          | API clarity           | Quick  |
+| 5 | Generic named-func adapter        | `pipeline/pipeline.go:24-95` | DRY reduction         | Quick  |
+| 6 | Generic pointer-equal helper      | `finding.go:309-349`         | DRY reduction         | Quick  |
+| 7 | SARIF write method consolidation  | `sarif.go:159-208`           | DRY reduction         | Quick  |
+| 8 | ValidationBuilder type            | `finding.go:216`             | Reusable pattern      | Quick  |
+| 9 | TriageFunc customizable triage    | `pipeline/pipeline.go:518`   | Extensibility         | Quick  |
 
 ### Architecture Larger Refactors (6 total)
 
-| #   | Issue                                             | Impact                | Effort |
-| --- | ------------------------------------------------- | --------------------- | ------ |
-| 1   | String-typed enums → proper enum types            | Type safety           | Major  |
-| 2   | FindingsReader interface                          | Cross-format import   | Major  |
-| 3   | Config callbacks → composable hooks               | Extensibility         | Major  |
-| 4   | Report splitting (data + serialization)           | Single responsibility | Major  |
-| 5   | Use go-sarif library instead of hand-rolled types | Spec compliance       | Major  |
-| 6   | Use diff-match-patch for FixEngine                | Robustness            | Major  |
+| # | Issue                                             | Impact                | Effort |
+| - | ------------------------------------------------- | --------------------- | ------ |
+| 1 | String-typed enums → proper enum types            | Type safety           | Major  |
+| 2 | FindingsReader interface                          | Cross-format import   | Major  |
+| 3 | Config callbacks → composable hooks               | Extensibility         | Major  |
+| 4 | Report splitting (data + serialization)           | Single responsibility | Major  |
+| 5 | Use go-sarif library instead of hand-rolled types | Spec compliance       | Major  |
+| 6 | Use diff-match-patch for FixEngine                | Robustness            | Major  |
 
 ### Library Replacements (not started)
 
-| #   | Current                    | Replacement                                         | Why             |
-| --- | -------------------------- | --------------------------------------------------- | --------------- |
-| 1   | Hand-rolled SARIF types    | `github.com/owenrumney/go-sarif/v2`                 | Spec compliance |
-| 2   | Hand-rolled LSP types      | `github.com/sourcegraph/go-lsp`                     | Spec compliance |
-| 3   | Manual exponential backoff | `github.com/cenkalti/backoff/v4`                    | Well-tested     |
-| 4   | Manual diff in Preview()   | `github.com/arl/diff` or `github.com/sergi/go-diff` | Robustness      |
+| # | Current                    | Replacement                                         | Why             |
+| - | -------------------------- | --------------------------------------------------- | --------------- |
+| 1 | Hand-rolled SARIF types    | `github.com/owenrumney/go-sarif/v2`                 | Spec compliance |
+| 2 | Hand-rolled LSP types      | `github.com/sourcegraph/go-lsp`                     | Spec compliance |
+| 3 | Manual exponential backoff | `github.com/cenkalti/backoff/v4`                    | Well-tested     |
+| 4 | Manual diff in Preview()   | `github.com/arl/diff` or `github.com/sergi/go-diff` | Robustness      |
 
 ---
 
@@ -200,48 +200,48 @@ All tests pass. Linter is clean. Build is green. Race detector is clean. Fuzz te
 
 ### Tier 1: High Impact, Low Effort (DO FIRST)
 
-| #   | Task                                              | Why                                           | Effort |
-| --- | ------------------------------------------------- | --------------------------------------------- | ------ |
-| 1   | Wire `FixApplier.Close()` in pipeline             | Resource leak — temp dirs never cleaned up    | 5 min  |
-| 2   | Add `Tag`/`Tags` mutual exclusion in `Validate()` | Prevents invalid state                        | 10 min |
-| 3   | Add `Range.IsValid()` to check `End >= Start`     | Prevents silent wrong behavior                | 10 min |
-| 4   | Fix `Validate()` to use `NormalizedConfidence()`  | Consistency with `NewFinding`                 | 5 min  |
-| 5   | Add `Position.HasLocation() bool`                 | API clarity for file-only vs file+line        | 5 min  |
-| 6   | Consolidate SARIF write methods                   | DRY up 4 methods that duplicate marshaling    | 30 min |
-| 7   | Generic `equalPtr[T]` helper in `Finding.Equal()` | DRY up 3 identical nil-check patterns         | 20 min |
-| 8   | Generic named-func adapter with Go 1.24+ generics | DRY up DetectorFunc/ProcessorFunc duplication | 30 min |
+| # | Task                                              | Why                                           | Effort |
+| - | ------------------------------------------------- | --------------------------------------------- | ------ |
+| 1 | Wire `FixApplier.Close()` in pipeline             | Resource leak — temp dirs never cleaned up    | 5 min  |
+| 2 | Add `Tag`/`Tags` mutual exclusion in `Validate()` | Prevents invalid state                        | 10 min |
+| 3 | Add `Range.IsValid()` to check `End >= Start`     | Prevents silent wrong behavior                | 10 min |
+| 4 | Fix `Validate()` to use `NormalizedConfidence()`  | Consistency with `NewFinding`                 | 5 min  |
+| 5 | Add `Position.HasLocation() bool`                 | API clarity for file-only vs file+line        | 5 min  |
+| 6 | Consolidate SARIF write methods                   | DRY up 4 methods that duplicate marshaling    | 30 min |
+| 7 | Generic `equalPtr[T]` helper in `Finding.Equal()` | DRY up 3 identical nil-check patterns         | 20 min |
+| 8 | Generic named-func adapter with Go 1.24+ generics | DRY up DetectorFunc/ProcessorFunc duplication | 30 min |
 
 ### Tier 2: High Impact, Medium Effort
 
-| #   | Task                                                              | Why                                                        | Effort |
-| --- | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------ |
-| 9   | Customizable `TriageFunc` in Config                               | Extensibility for downstream consumers                     | 1 hr   |
-| 10  | `FindingsReader` interface                                        | Cross-format auto-detection                                | 2 hr   |
-| 11  | `ValidationBuilder` type                                          | Reusable across Validate() in Finding, Config, RetryConfig | 1 hr   |
-| 12  | Add tests for examples/basic, examples/builder, examples/pipeline | Coverage gap                                               | 1 hr   |
-| 13  | Replace hand-rolled LSP types with `sourcegraph/go-lsp`           | Spec compliance                                            | 2 hr   |
-| 14  | Use `cenkalti/backoff/v4` for retry logic                         | Well-tested exponential backoff                            | 1 hr   |
+| #  | Task                                                              | Why                                                        | Effort |
+| -- | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------ |
+| 9  | Customizable `TriageFunc` in Config                               | Extensibility for downstream consumers                     | 1 hr   |
+| 10 | `FindingsReader` interface                                        | Cross-format auto-detection                                | 2 hr   |
+| 11 | `ValidationBuilder` type                                          | Reusable across Validate() in Finding, Config, RetryConfig | 1 hr   |
+| 12 | Add tests for examples/basic, examples/builder, examples/pipeline | Coverage gap                                               | 1 hr   |
+| 13 | Replace hand-rolled LSP types with `sourcegraph/go-lsp`           | Spec compliance                                            | 2 hr   |
+| 14 | Use `cenkalti/backoff/v4` for retry logic                         | Well-tested exponential backoff                            | 1 hr   |
 
 ### Tier 3: High Impact, High Effort (PLAN CAREFULLY)
 
-| #   | Task                                                | Why                           | Effort |
-| --- | --------------------------------------------------- | ----------------------------- | ------ |
-| 15  | Proper enum types for Severity/FixStrategy/Category | Compile-time type safety      | 4 hr   |
-| 16  | Replace hand-rolled SARIF types with `go-sarif/v2`  | SARIF 2.1.0 spec compliance   | 4 hr   |
-| 17  | Split Report into data holder + renderer            | Single responsibility         | 3 hr   |
-| 18  | Composable callback hooks (multi-caster)            | Multiple consumers            | 2 hr   |
-| 19  | Remove deprecated `Tag` field                       | API cleanup (breaking change) | 3 hr   |
+| #  | Task                                                | Why                           | Effort |
+| -- | --------------------------------------------------- | ----------------------------- | ------ |
+| 15 | Proper enum types for Severity/FixStrategy/Category | Compile-time type safety      | 4 hr   |
+| 16 | Replace hand-rolled SARIF types with `go-sarif/v2`  | SARIF 2.1.0 spec compliance   | 4 hr   |
+| 17 | Split Report into data holder + renderer            | Single responsibility         | 3 hr   |
+| 18 | Composable callback hooks (multi-caster)            | Multiple consumers            | 2 hr   |
+| 19 | Remove deprecated `Tag` field                       | API cleanup (breaking change) | 3 hr   |
 
 ### Tier 4: Nice-to-Have
 
-| #   | Task                                                   | Why                            | Effort |
-| --- | ------------------------------------------------------ | ------------------------------ | ------ |
-| 20  | Use diff-match-patch in FixEngine                      | More robust string matching    | 3 hr   |
-| 21  | Use diff library in `Finding.Preview()`                | Proper unified diff output     | 1 hr   |
-| 22  | Document go-faster/yaml vs go.yaml.in/yaml coexistence | Reduce confusion               | 15 min |
-| 23  | Commit or remove `PUBLIC_OR_PRIVATE.md`                | Untracked file in working tree | 5 min  |
-| 24  | Update FEATURES.md to reflect current state            | Doc accuracy                   | 30 min |
-| 25  | Update TODO_LIST.md with current status                | Doc accuracy                   | 30 min |
+| #  | Task                                                   | Why                            | Effort |
+| -- | ------------------------------------------------------ | ------------------------------ | ------ |
+| 20 | Use diff-match-patch in FixEngine                      | More robust string matching    | 3 hr   |
+| 21 | Use diff library in `Finding.Preview()`                | Proper unified diff output     | 1 hr   |
+| 22 | Document go-faster/yaml vs go.yaml.in/yaml coexistence | Reduce confusion               | 15 min |
+| 23 | Commit or remove `PUBLIC_OR_PRIVATE.md`                | Untracked file in working tree | 5 min  |
+| 24 | Update FEATURES.md to reflect current state            | Doc accuracy                   | 30 min |
+| 25 | Update TODO_LIST.md with current status                | Doc accuracy                   | 30 min |
 
 ---
 

@@ -8,17 +8,17 @@
 
 ## A. FULLY DONE
 
-| #   | Item                                                                                                                                                                                                                                             | Evidence                                                                                                |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| 1   | **Read all 18 `2026-08-*` historical files**                                                                                                                                                                                                     | 9 status reports, 5 planning docs, 3 reviews/status combos. All classified for forward-looking items.   |
-| 2   | **Read docs-health SKILL.md**                                                                                                                                                                                                                    | Loaded the main skill file, understood HARVEST/BUILD/VERIFY/ANNOTATE/AUDIT modes.                      |
-| 3   | **Read current living docs** (TODO_LIST, ROADMAP, FEATURES, CHANGELOG, version.go)                                                                                                                                                              | Full read of all 4 docs before any edits.                                                               |
-| 4   | **TODO_LIST.md rebuilt** — Updated version ref from v1.4.1 to v1.5.0. Removed all DONE items (correct per skill). Added v1.6.0 release tasks. Added config.ToConfig() doc bug. Added dprint fix. Added consumer repo go.mod bump as BLOCKED. | Verified against code: `version.go` says v1.5.0, `ParseConfidence` at `confidence.go:86`, `Template.Builder` at `finding_builder.go:216`. |
-| 5   | **ROADMAP.md rebuilt** — Updated version from 1.4.1 to 1.5.0. Added v1.5.0 to version history. Removed completed FlightRecorder config-file integration from future directions. Added gzip/pprof. Updated go-linter-sdk section with implemented APIs. | Cross-checked claims against CHANGELOG and AGENTS.md.                                                    |
-| 6   | **FEATURES.md updated** — Added section 5.1 Confidence (with ParseConfidence). Added section 1.3 Template Factory (with Template.Builder). Added deterministic JSON note to section 11. Updated FlightRecorder section with config-file integration. Added 13 new summary matrix rows. | Confidence values verified against `confidence.go:23-27` (0.0, 0.25, 0.5, 0.75, 1.0).                    |
-| 7   | **CHANGELOG.md verified** — [Unreleased] and [1.5.0] sections reviewed. No edits needed (append-only).                                                                                                                                          | Entries cross-referenced against code and AGENTS.md.                                                    |
-| 8   | **Core module tests pass** — `go test -race -count=1 ./...` on core module                                                                                                                                                                       | `ok github.com/larsartmann/go-finding 1.603s`                                                           |
-| 9   | **Cross-file version consistency verified** — TODO_LIST, ROADMAP, FEATURES, CHANGELOG all reference v1.5.0 as current, v1.6.0 as next                                                                                                            | Verified via grep across all 4 files.                                                                   |
+| # | Item                                                                                                                                                                                                                                                                                   | Evidence                                                                                                                                  |
+| - | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | **Read all 18 `2026-08-*` historical files**                                                                                                                                                                                                                                           | 9 status reports, 5 planning docs, 3 reviews/status combos. All classified for forward-looking items.                                     |
+| 2 | **Read docs-health SKILL.md**                                                                                                                                                                                                                                                          | Loaded the main skill file, understood HARVEST/BUILD/VERIFY/ANNOTATE/AUDIT modes.                                                         |
+| 3 | **Read current living docs** (TODO_LIST, ROADMAP, FEATURES, CHANGELOG, version.go)                                                                                                                                                                                                     | Full read of all 4 docs before any edits.                                                                                                 |
+| 4 | **TODO_LIST.md rebuilt** — Updated version ref from v1.4.1 to v1.5.0. Removed all DONE items (correct per skill). Added v1.6.0 release tasks. Added config.ToConfig() doc bug. Added dprint fix. Added consumer repo go.mod bump as BLOCKED.                                           | Verified against code: `version.go` says v1.5.0, `ParseConfidence` at `confidence.go:86`, `Template.Builder` at `finding_builder.go:216`. |
+| 5 | **ROADMAP.md rebuilt** — Updated version from 1.4.1 to 1.5.0. Added v1.5.0 to version history. Removed completed FlightRecorder config-file integration from future directions. Added gzip/pprof. Updated go-linter-sdk section with implemented APIs.                                 | Cross-checked claims against CHANGELOG and AGENTS.md.                                                                                     |
+| 6 | **FEATURES.md updated** — Added section 5.1 Confidence (with ParseConfidence). Added section 1.3 Template Factory (with Template.Builder). Added deterministic JSON note to section 11. Updated FlightRecorder section with config-file integration. Added 13 new summary matrix rows. | Confidence values verified against `confidence.go:23-27` (0.0, 0.25, 0.5, 0.75, 1.0).                                                     |
+| 7 | **CHANGELOG.md verified** — [Unreleased] and [1.5.0] sections reviewed. No edits needed (append-only).                                                                                                                                                                                 | Entries cross-referenced against code and AGENTS.md.                                                                                      |
+| 8 | **Core module tests pass** — `go test -race -count=1 ./...` on core module                                                                                                                                                                                                             | `ok github.com/larsartmann/go-finding 1.603s`                                                                                             |
+| 9 | **Cross-file version consistency verified** — TODO_LIST, ROADMAP, FEATURES, CHANGELOG all reference v1.5.0 as current, v1.6.0 as next                                                                                                                                                  | Verified via grep across all 4 files.                                                                                                     |
 
 ---
 
@@ -51,16 +51,16 @@ I ran `go test -race -count=1 ./...` which only covers the core module in worksp
 
 ## C. NOT STARTED
 
-| #   | Item                                                    | Why Not Started                                                                                                                                        |
-| --- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | **ANNOTATE old status reports**                         | The docs-health ANNOTATE mode is a core procedure. I read 18 reports but annotated zero. Many have open items now resolved that should get `~~done~~` markers. |
-| 2   | **Load skill reference files**                          | The SKILL.md references `references/harvest-guide.md`, `references/build-guide.md`, `references/verify-checklist.md`, `references/resolving-items.md`, `references/health-report-format.md`. I loaded none of them. I operated from the SKILL.md summary only. |
-| 3   | **Health report (AUDIT output)**                        | The AUDIT mode requires printing a health report with two independent scores (Accuracy + Fitness), per-doc findings table, visible math. Not produced.  |
-| 4   | **Fix config.ToConfig() doc bug**                       | `docs/guides/configuration.md:178` calls `config.ToConfig()` but the method is unexported (`toConfig` at `config_file.go:78`). Found, noted in TODO_LIST, but NOT FIXED. The skill says "Fix on sight." A consumer copying this example gets a compile error. |
-| 5   | **Full FEATURES.md vs code verification**               | Added new sections without verifying existing claims (method signatures, status labels, predicate names, config defaults). Flagged as a recurring gap since v1.3.0. |
-| 6   | **Run lint across all 4 modules**                       | Only ran core module tests. No lint run.                                                                                                               |
-| 7   | **Verify CHANGELOG entries against actual code**        | Said "no edits needed" without checking each [Unreleased] entry against the referenced file/line.                                                      |
-| 8   | **Check if removed TODO_LIST DONE items are in CHANGELOG** | The skill says completed items "now live in CHANGELOG." I removed items without verifying each has a CHANGELOG entry.                                  |
+| # | Item                                                       | Why Not Started                                                                                                                                                                                                                                                |
+| - | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | **ANNOTATE old status reports**                            | The docs-health ANNOTATE mode is a core procedure. I read 18 reports but annotated zero. Many have open items now resolved that should get `~~done~~` markers.                                                                                                 |
+| 2 | **Load skill reference files**                             | The SKILL.md references `references/harvest-guide.md`, `references/build-guide.md`, `references/verify-checklist.md`, `references/resolving-items.md`, `references/health-report-format.md`. I loaded none of them. I operated from the SKILL.md summary only. |
+| 3 | **Health report (AUDIT output)**                           | The AUDIT mode requires printing a health report with two independent scores (Accuracy + Fitness), per-doc findings table, visible math. Not produced.                                                                                                         |
+| 4 | **Fix config.ToConfig() doc bug**                          | `docs/guides/configuration.md:178` calls `config.ToConfig()` but the method is unexported (`toConfig` at `config_file.go:78`). Found, noted in TODO_LIST, but NOT FIXED. The skill says "Fix on sight." A consumer copying this example gets a compile error.  |
+| 5 | **Full FEATURES.md vs code verification**                  | Added new sections without verifying existing claims (method signatures, status labels, predicate names, config defaults). Flagged as a recurring gap since v1.3.0.                                                                                            |
+| 6 | **Run lint across all 4 modules**                          | Only ran core module tests. No lint run.                                                                                                                                                                                                                       |
+| 7 | **Verify CHANGELOG entries against actual code**           | Said "no edits needed" without checking each [Unreleased] entry against the referenced file/line.                                                                                                                                                              |
+| 8 | **Check if removed TODO_LIST DONE items are in CHANGELOG** | The skill says completed items "now live in CHANGELOG." I removed items without verifying each has a CHANGELOG entry.                                                                                                                                          |
 
 ---
 
@@ -126,98 +126,98 @@ This is like reading the table of contents of a textbook and claiming you studie
 
 ### Immediate (this session's debt)
 
-| #   | Task                                                                  | Impact | Effort | Evidence                    |
-| --- | --------------------------------------------------------------------- | ------ | ------ | --------------------------- |
-| 1   | Fix `config.ToConfig()` in configuration.md (export or correct doc)   | High   | Low    | D2 — found, not fixed       |
-| 2   | Restore priority emojis in TODO_LIST.md                               | Low    | Low    | D5 — unnecessary style change |
-| 3   | Run lint across all 4 modules                                         | Med    | Low    | C.6 — never ran             |
-| 4   | Run tests for pipeline, analysis, CLI modules                         | Med    | Low    | B.4 — only core tested      |
-| 5   | Run all 6 CI scripts locally                                          | Low    | Low    | Not verified this session   |
+| # | Task                                                                | Impact | Effort | Evidence                      |
+| - | ------------------------------------------------------------------- | ------ | ------ | ----------------------------- |
+| 1 | Fix `config.ToConfig()` in configuration.md (export or correct doc) | High   | Low    | D2 — found, not fixed         |
+| 2 | Restore priority emojis in TODO_LIST.md                             | Low    | Low    | D5 — unnecessary style change |
+| 3 | Run lint across all 4 modules                                       | Med    | Low    | C.6 — never ran               |
+| 4 | Run tests for pipeline, analysis, CLI modules                       | Med    | Low    | B.4 — only core tested        |
+| 5 | Run all 6 CI scripts locally                                        | Low    | Low    | Not verified this session     |
 
 ### ANNOTATE pass (D1 — the biggest gap)
 
-| #   | Task                                                                  | Impact | Effort | Evidence                    |
-| --- | --------------------------------------------------------------------- | ------ | ------ | --------------------------- |
-| 6   | Annotate `2026-08-06_19-40_deterministic-json-fix.md` (v1.4.2 superseded) | Med    | 15min  | References stale v1.4.2     |
-| 7   | Annotate `2026-08-06_19-53_v1-5-0-release.md` (most items resolved)   | Med    | 20min  | Many items marked DONE inline |
-| 8   | Annotate `2026-08-01_19-40_flight-recorder-self-critique.md` (P0 bugs fixed) | Med    | 15min  | All P0 items resolved       |
-| 9   | Annotate `2026-08-02_00-18_pareto-plan-execution-self-critique.md`    | Med    | 20min  | 50-item list, many resolved |
-| 10  | Annotate `2026-08-02_00-26_comprehensive-session-status.md`           | Med    | 20min  | 50-item list, many resolved |
-| 11  | Archive fully-resolved reports to `docs/status/archived/`             | Low    | 15min  | Skill says ARCHIVE when all items resolved |
+| #  | Task                                                                         | Impact | Effort | Evidence                                   |
+| -- | ---------------------------------------------------------------------------- | ------ | ------ | ------------------------------------------ |
+| 6  | Annotate `2026-08-06_19-40_deterministic-json-fix.md` (v1.4.2 superseded)    | Med    | 15min  | References stale v1.4.2                    |
+| 7  | Annotate `2026-08-06_19-53_v1-5-0-release.md` (most items resolved)          | Med    | 20min  | Many items marked DONE inline              |
+| 8  | Annotate `2026-08-01_19-40_flight-recorder-self-critique.md` (P0 bugs fixed) | Med    | 15min  | All P0 items resolved                      |
+| 9  | Annotate `2026-08-02_00-18_pareto-plan-execution-self-critique.md`           | Med    | 20min  | 50-item list, many resolved                |
+| 10 | Annotate `2026-08-02_00-26_comprehensive-session-status.md`                  | Med    | 20min  | 50-item list, many resolved                |
+| 11 | Archive fully-resolved reports to `docs/status/archived/`                    | Low    | 15min  | Skill says ARCHIVE when all items resolved |
 
 ### HARVEST completion (D4 — thin TODO_LIST)
 
-| #   | Task                                                                  | Impact | Effort | Evidence                    |
-| --- | --------------------------------------------------------------------- | ------ | ------ | --------------------------- |
-| 12  | Route docs-freshness.sh false-positive refinement                     | Low    | Med    | T7-T17 report B.3           |
-| 13  | Route FlightRecorder context propagation                              | Low    | Med    | Multiple reports            |
-| 14  | Route FlightRecorder multiple recorder graceful degradation           | Low    | Med    | Multiple reports            |
-| 15  | Route export resolveSafePath/resolveSafePathFrom decision             | Low    | Low    | 3+ reports flag this        |
-| 16  | Route FlightRecorder trace file rotation                              | Low    | Med    | T10-T19 report C            |
-| 17  | Route FlightRecorder compressed trace output (gzip)                   | Low    | Med    | T10-T19 report C            |
-| 18  | Route consumer migration guide (docs/guides/)                         | Med    | Med    | ROADMAP references it       |
-| 19  | Route LSP code action support                                         | Low    | Med    | ROADMAP references it       |
-| 20  | Route PGO investigation                                               | Low    | Med    | ROADMAP references it       |
-| 21  | Route Full FEATURES.md vs code walk                                   | Med    | High   | Recurring since v1.3.0      |
+| #  | Task                                                        | Impact | Effort | Evidence               |
+| -- | ----------------------------------------------------------- | ------ | ------ | ---------------------- |
+| 12 | Route docs-freshness.sh false-positive refinement           | Low    | Med    | T7-T17 report B.3      |
+| 13 | Route FlightRecorder context propagation                    | Low    | Med    | Multiple reports       |
+| 14 | Route FlightRecorder multiple recorder graceful degradation | Low    | Med    | Multiple reports       |
+| 15 | Route export resolveSafePath/resolveSafePathFrom decision   | Low    | Low    | 3+ reports flag this   |
+| 16 | Route FlightRecorder trace file rotation                    | Low    | Med    | T10-T19 report C       |
+| 17 | Route FlightRecorder compressed trace output (gzip)         | Low    | Med    | T10-T19 report C       |
+| 18 | Route consumer migration guide (docs/guides/)               | Med    | Med    | ROADMAP references it  |
+| 19 | Route LSP code action support                               | Low    | Med    | ROADMAP references it  |
+| 20 | Route PGO investigation                                     | Low    | Med    | ROADMAP references it  |
+| 21 | Route Full FEATURES.md vs code walk                         | Med    | High   | Recurring since v1.3.0 |
 
 ### VERIFY (deeper checking)
 
-| #   | Task                                                                  | Impact | Effort | Evidence                    |
-| --- | --------------------------------------------------------------------- | ------ | ------ | --------------------------- |
-| 22  | Verify each CHANGELOG [Unreleased] entry against code                 | Med    | Med    | C.7 — not done              |
-| 23  | Verify removed TODO_LIST DONE items are in CHANGELOG                  | Med    | Low    | C.8 — not done              |
-| 24  | Check FEATURES.md for stale cross-references to section numbers       | Low    | Low    | B.2 — numbering changed     |
-| 25  | Verify FEATURES.md summary matrix status labels against code          | Med    | High   | Never fully done            |
-| 26  | Check ROADMAP "raw ideas" — any now implemented?                      | Low    | Low    | Not verified                |
+| #  | Task                                                            | Impact | Effort | Evidence                |
+| -- | --------------------------------------------------------------- | ------ | ------ | ----------------------- |
+| 22 | Verify each CHANGELOG [Unreleased] entry against code           | Med    | Med    | C.7 — not done          |
+| 23 | Verify removed TODO_LIST DONE items are in CHANGELOG            | Med    | Low    | C.8 — not done          |
+| 24 | Check FEATURES.md for stale cross-references to section numbers | Low    | Low    | B.2 — numbering changed |
+| 25 | Verify FEATURES.md summary matrix status labels against code    | Med    | High   | Never fully done        |
+| 26 | Check ROADMAP "raw ideas" — any now implemented?                | Low    | Low    | Not verified            |
 
 ### FEATURES.md quality
 
-| #   | Task                                                                  | Impact | Effort | Evidence                    |
-| --- | --------------------------------------------------------------------- | ------ | ------ | --------------------------- |
-| 27  | Add `ParseConfidence` to summary matrix with correct status           | Low    | Low    | Added to body, not matrix   |
-| 28  | Add `ValidateAll` to FEATURES.md body (not just matrix)               | Low    | Low    | In matrix only              |
-| 29  | Add deterministic output guarantee section to FEATURES.md             | Low    | Low    | Only in JSON section note   |
-| 30  | Verify all method signatures in FEATURES.md against source            | Med    | High   | Never fully done            |
-| 31  | Update FEATURES.md Examples section (still says "2 runnable examples") | Low    | Low    | May be stale                |
+| #  | Task                                                                   | Impact | Effort | Evidence                  |
+| -- | ---------------------------------------------------------------------- | ------ | ------ | ------------------------- |
+| 27 | Add `ParseConfidence` to summary matrix with correct status            | Low    | Low    | Added to body, not matrix |
+| 28 | Add `ValidateAll` to FEATURES.md body (not just matrix)                | Low    | Low    | In matrix only            |
+| 29 | Add deterministic output guarantee section to FEATURES.md              | Low    | Low    | Only in JSON section note |
+| 30 | Verify all method signatures in FEATURES.md against source             | Med    | High   | Never fully done          |
+| 31 | Update FEATURES.md Examples section (still says "2 runnable examples") | Low    | Low    | May be stale              |
 
 ### Release preparation
 
-| #   | Task                                                                  | Impact | Effort | Evidence                    |
-| --- | --------------------------------------------------------------------- | ------ | ------ | --------------------------- |
-| 32  | Bump version.go to v1.6.0                                             | High   | Low    | TODO_LIST item              |
-| 33  | Move [Unreleased] to [1.6.0] in CHANGELOG                            | High   | Low    | TODO_LIST item              |
-| 34  | Tag all 4 modules with v1.6.0                                         | High   | Low    | TODO_LIST item              |
-| 35  | Run version-check.sh after tagging                                    | High   | Low    | TODO_LIST item              |
-| 36  | Run GOWORK=off isolation tests                                        | High   | Low    | TODO_LIST item              |
-| 37  | Push tags to remote (requires user approval)                         | High   | Low    | TODO_LIST item              |
+| #  | Task                                         | Impact | Effort | Evidence       |
+| -- | -------------------------------------------- | ------ | ------ | -------------- |
+| 32 | Bump version.go to v1.6.0                    | High   | Low    | TODO_LIST item |
+| 33 | Move [Unreleased] to [1.6.0] in CHANGELOG    | High   | Low    | TODO_LIST item |
+| 34 | Tag all 4 modules with v1.6.0                | High   | Low    | TODO_LIST item |
+| 35 | Run version-check.sh after tagging           | High   | Low    | TODO_LIST item |
+| 36 | Run GOWORK=off isolation tests               | High   | Low    | TODO_LIST item |
+| 37 | Push tags to remote (requires user approval) | High   | Low    | TODO_LIST item |
 
 ### Consumer ecosystem
 
-| #   | Task                                                                  | Impact | Effort | Evidence                    |
-| --- | --------------------------------------------------------------------- | ------ | ------ | --------------------------- |
-| 38  | Publish go-linter-sdk v0.2.0 (WithToolName, NewFinding, etc.)        | Med    | Low    | Implemented, not tagged     |
-| 39  | Remove replace directives from go-humanize-linter go.mod             | Med    | Low    | Dev-only, must remove       |
-| 40  | Update go-humanize-linter CHANGELOG                                   | Low    | Low    | Not written                 |
-| 41  | Verify TestCustomGCLIntegration passes against published versions    | Med    | Low    | Currently expected failure  |
-| 42  | Port more linters to go-linter-sdk                                    | Low    | High   | ROADMAP item                |
+| #  | Task                                                              | Impact | Effort | Evidence                   |
+| -- | ----------------------------------------------------------------- | ------ | ------ | -------------------------- |
+| 38 | Publish go-linter-sdk v0.2.0 (WithToolName, NewFinding, etc.)     | Med    | Low    | Implemented, not tagged    |
+| 39 | Remove replace directives from go-humanize-linter go.mod          | Med    | Low    | Dev-only, must remove      |
+| 40 | Update go-humanize-linter CHANGELOG                               | Low    | Low    | Not written                |
+| 41 | Verify TestCustomGCLIntegration passes against published versions | Med    | Low    | Currently expected failure |
+| 42 | Port more linters to go-linter-sdk                                | Low    | High   | ROADMAP item               |
 
 ### Documentation polish
 
-| #   | Task                                                                  | Impact | Effort | Evidence                    |
-| --- | --------------------------------------------------------------------- | ------ | ------ | --------------------------- |
-| 43  | Write docs/guides/deterministic-output.md                             | Low    | Low    | Flagged in v1.5.0 reports   |
-| 44  | Update docs/API_STABILITY.md with v1.5.0+ symbols                      | Med    | Med    | Flagged since v1.3.0        |
-| 45  | Add determinism guarantee to docs/API_STABILITY.md                    | Low    | Low    | Flagged in v1.5.0 reports   |
-| 46  | Update CONTRIBUTING.md project tree                                   | Low    | Low    | Flagged since v1.3.0        |
-| 47  | Create GitHub Release for v1.5.0 with CHANGELOG excerpt               | Low    | Low    | Tags pushed, no release     |
+| #  | Task                                                    | Impact | Effort | Evidence                  |
+| -- | ------------------------------------------------------- | ------ | ------ | ------------------------- |
+| 43 | Write docs/guides/deterministic-output.md               | Low    | Low    | Flagged in v1.5.0 reports |
+| 44 | Update docs/API_STABILITY.md with v1.5.0+ symbols       | Med    | Med    | Flagged since v1.3.0      |
+| 45 | Add determinism guarantee to docs/API_STABILITY.md      | Low    | Low    | Flagged in v1.5.0 reports |
+| 46 | Update CONTRIBUTING.md project tree                     | Low    | Low    | Flagged since v1.3.0      |
+| 47 | Create GitHub Release for v1.5.0 with CHANGELOG excerpt | Low    | Low    | Tags pushed, no release   |
 
 ### Code quality
 
-| #   | Task                                                                  | Impact | Effort | Evidence                    |
-| --- | --------------------------------------------------------------------- | ------ | ------ | --------------------------- |
-| 48  | Extract `marshalOpts` package-level constant for `json.Deterministic` | Low    | Low    | Flagged in 3+ reports       |
-| 49  | Add CI check that flags `json.Marshal` without `json.Deterministic`   | Low    | Med    | Flagged in v1.5.0 reports   |
-| 50  | Consider `testing/quick` property test for determinism                | Low    | Low    | Flagged in v1.5.0 reports   |
+| #  | Task                                                                  | Impact | Effort | Evidence                  |
+| -- | --------------------------------------------------------------------- | ------ | ------ | ------------------------- |
+| 48 | Extract `marshalOpts` package-level constant for `json.Deterministic` | Low    | Low    | Flagged in 3+ reports     |
+| 49 | Add CI check that flags `json.Marshal` without `json.Deterministic`   | Low    | Med    | Flagged in v1.5.0 reports |
+| 50 | Consider `testing/quick` property test for determinism                | Low    | Low    | Flagged in v1.5.0 reports |
 
 ---
 

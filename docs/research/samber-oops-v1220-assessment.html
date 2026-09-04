@@ -341,38 +341,50 @@
           PRO / CONTRA Review
         </h1>
         <div class="hero-meta">
-          github.com/samber/oops &mdash; reviewed for go-finding &mdash; 2026-06-17
+          github.com/samber/oops &mdash; reviewed for go-finding &mdash;
+          2026-06-17
         </div>
         <p class="hero-subtitle">
-          A drop-in structured error library for Go that enriches errors with stack traces,
-          attributes, user/tenant context, and logger integrations. This report evaluates its
-          design, maturity, and fit for the go-finding static-analysis project.
+          A drop-in structured error library for Go that enriches errors with
+          stack traces, attributes, user/tenant context, and logger
+          integrations. This report evaluates its design, maturity, and fit for
+          the go-finding static-analysis project.
         </p>
       </header>
 
       <section>
         <div class="section-label">00 &mdash; Executive Verdict</div>
-        <h2 class="section-title">Excellent observability library, weak fit for go-finding</h2>
+        <h2 class="section-title">
+          Excellent observability library, weak fit for go-finding
+        </h2>
 
         <div class="verdict-box recommend">
-          <h4>Overall assessment: 8.5 / 10 as a library; 3 / 10 as a go-finding dependency</h4>
+          <h4>
+            Overall assessment: 8.5 / 10 as a library; 3 / 10 as a go-finding
+            dependency
+          </h4>
           <p>
-            <strong>samber/oops is a mature, well-designed observability layer for errors.</strong>
-            It captures everything an on-call engineer wants: stack traces, source fragments,
-            structured attributes, trace/span IDs, user/tenant context, and HTTP request/response
-            bodies. It integrates with all major Go loggers and follows semver strictly as a v1
-            library.
+            <strong
+              >samber/oops is a mature, well-designed observability layer for
+              errors.</strong
+            >
+            It captures everything an on-call engineer wants: stack traces,
+            source fragments, structured attributes, trace/span IDs, user/tenant
+            context, and HTTP request/response bodies. It integrates with all
+            major Go loggers and follows semver strictly as a v1 library.
           </p>
           <p>
-            For <strong>go-finding</strong>, however, the fit is poor. go-finding is a library, not
-            a runtime service. It has no users, tenants, HTTP traffic, distributed traces, or
-            production debugging pipelines. oops would add three runtime dependencies and a large
+            For <strong>go-finding</strong>, however, the fit is poor.
+            go-finding is a library, not a runtime service. It has no users,
+            tenants, HTTP traffic, distributed traces, or production debugging
+            pipelines. oops would add three runtime dependencies and a large
             conceptual API surface for problems go-finding does not have.
           </p>
           <p style="margin-top: 0.75rem">
-            <strong>Recommendation:</strong> do not adopt oops in go-finding. If richer error
-            context is ever needed, prefer go-error-family's interfaces (protocol) or lightweight
-            custom types. oops only makes sense if go-finding grows into a long-running service with
+            <strong>Recommendation:</strong> do not adopt oops in go-finding. If
+            richer error context is ever needed, prefer go-error-family's
+            interfaces (protocol) or lightweight custom types. oops only makes
+            sense if go-finding grows into a long-running service with
             observability requirements.
           </p>
         </div>
@@ -395,7 +407,9 @@
               <li>Heavy dependency footprint for a static-analysis library</li>
               <li>Most features irrelevant: users, tenants, HTTP, traces</li>
               <li>No behavioral classification (retry, exit code, audience)</li>
-              <li>Would bloat binary and violate minimal-dependency philosophy</li>
+              <li>
+                Would bloat binary and violate minimal-dependency philosophy
+              </li>
               <li>Observability belongs to consumers, not the library</li>
             </ul>
           </div>
@@ -407,24 +421,27 @@
         <h2 class="section-title">What samber/oops is</h2>
 
         <p>
-          samber/oops is a structured error library that wraps any Go <code>error</code> in an
-          <code>OopsError</code> carrying rich metadata. It is explicitly <em>not</em> a logging
-          library; it is designed to feed existing logging/observability pipelines.
+          samber/oops is a structured error library that wraps any Go
+          <code>error</code> in an <code>OopsError</code> carrying rich
+          metadata. It is explicitly <em>not</em> a logging library; it is
+          designed to feed existing logging/observability pipelines.
         </p>
 
         <p>Core model:</p>
         <ul>
           <li>
-            <strong>Builder API</strong> &mdash; fluent chain ending in terminal methods like
-            <code>.Errorf()</code>, <code>.Wrap()</code>, <code>.Recover()</code>
+            <strong>Builder API</strong> &mdash; fluent chain ending in terminal
+            methods like <code>.Errorf()</code>, <code>.Wrap()</code>,
+            <code>.Recover()</code>
           </li>
           <li>
-            <strong>Context/attributes</strong> &mdash; <code>.With(key, value)</code> supports
-            <code>any</code> values and lazy <code>func() any</code> evaluation
+            <strong>Context/attributes</strong> &mdash;
+            <code>.With(key, value)</code> supports <code>any</code> values and
+            lazy <code>func() any</code> evaluation
           </li>
           <li>
-            <strong>Identity metadata</strong> &mdash; <code>.Code()</code>, <code>.Trace()</code>,
-            <code>.Span()</code>, <code>.In()</code>,
+            <strong>Identity metadata</strong> &mdash; <code>.Code()</code>,
+            <code>.Trace()</code>, <code>.Span()</code>, <code>.In()</code>,
             <code>.Tags()</code>
           </li>
           <li>
@@ -441,34 +458,38 @@
             <code>.Response()</code> with optional body inclusion
           </li>
           <li>
-            <strong>Stack traces</strong> &mdash; automatic, pretty-printed, configurable depth and
-            exclusions
+            <strong>Stack traces</strong> &mdash; automatic, pretty-printed,
+            configurable depth and exclusions
           </li>
           <li>
-            <strong>Panic recovery + assertions</strong> &mdash; <code>.Recover()</code>,
-            <code>.Assert()</code>, <code>.Assertf()</code>
+            <strong>Panic recovery + assertions</strong> &mdash;
+            <code>.Recover()</code>, <code>.Assert()</code>,
+            <code>.Assertf()</code>
           </li>
           <li>
-            <strong>Serialization</strong> &mdash; <code>MarshalJSON()</code>, <code>ToMap()</code>,
-            <code>LogValuer</code> for slog
+            <strong>Serialization</strong> &mdash; <code>MarshalJSON()</code>,
+            <code>ToMap()</code>, <code>LogValuer</code> for slog
           </li>
         </ul>
 
         <p>
-          v1.22.0 (May 2026) refactored the builder to a functional-options linked list, claiming:
+          v1.22.0 (May 2026) refactored the builder to a functional-options
+          linked list, claiming:
         </p>
         <ul>
           <li>-90% error build time, zero allocations when wrapping nil</li>
           <li>-30% to -90% build time and memory for real errors</li>
           <li>
-            New: <code>CallerSkip()</code>, <code>FrameSkip()</code>, <code>AsError[T]()</code>,
-            <code>Layers()</code>, identity-based <code>Is()</code>
+            New: <code>CallerSkip()</code>, <code>FrameSkip()</code>,
+            <code>AsError[T]()</code>, <code>Layers()</code>, identity-based
+            <code>Is()</code>
           </li>
         </ul>
 
         <p class="pull-quote">
-          oops asks <em>"what do I know about this error?"</em> and gives a forensic answer. It does
-          not ask <em>"what should the system do with it?"</em>
+          oops asks <em>"what do I know about this error?"</em> and gives a
+          forensic answer. It does not ask
+          <em>"what should the system do with it?"</em>
         </p>
       </section>
 
@@ -479,90 +500,117 @@
         <div class="card pro">
           <h4>P1. Drop-in replacement for standard errors</h4>
           <p>
-            <code>OopsError</code> implements the <code>error</code> interface and composes with
-            <code>fmt.Errorf("%w")</code>, <code>errors.Is</code>, and <code>errors.As</code>.
-            Existing code can adopt it incrementally without a full rewrite.
+            <code>OopsError</code> implements the <code>error</code> interface
+            and composes with <code>fmt.Errorf("%w")</code>,
+            <code>errors.Is</code>, and <code>errors.As</code>. Existing code
+            can adopt it incrementally without a full rewrite.
           </p>
-          <pre>return oops.Wrapf(dbErr, "could not fetch user %d", id)  // nil if dbErr is nil</pre>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 90%"></div></div>
+          <pre>
+return oops.Wrapf(dbErr, "could not fetch user %d", id)  // nil if dbErr is nil</pre>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 90%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P2. Automatic stack traces with rich formatting</h4>
           <p>
-            Every oops error captures a stack trace. <code>.Stacktrace()</code> pretty-prints it,
-            and <code>.StackFrames()</code> provides raw frames for Sentry-like consumers. Wrapped
-            errors produce annotated multi-layer traces.
+            Every oops error captures a stack trace.
+            <code>.Stacktrace()</code> pretty-prints it, and
+            <code>.StackFrames()</code> provides raw frames for Sentry-like
+            consumers. Wrapped errors produce annotated multi-layer traces.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 95%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 95%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P3. Source code fragments</h4>
           <p>
-            When enabled, <code>.Sources()</code> shows the exact source lines around the error site
-            (Go source files must remain at build-time paths). This is unique among Go error
-            libraries and dramatically speeds up debugging.
+            When enabled, <code>.Sources()</code> shows the exact source lines
+            around the error site (Go source files must remain at build-time
+            paths). This is unique among Go error libraries and dramatically
+            speeds up debugging.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 80%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 80%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P4. Rich, typed context</h4>
           <p>
-            <code>.With(key, value)</code> accepts <code>any</code>, including lazy
-            <code>func() any</code>. This is far more flexible than string-only context maps and
-            lets callers attach structured data without serializing prematurely.
+            <code>.With(key, value)</code> accepts <code>any</code>, including
+            lazy <code>func() any</code>. This is far more flexible than
+            string-only context maps and lets callers attach structured data
+            without serializing prematurely.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 85%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 85%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P5. First-class multi-tenant and HTTP support</h4>
           <p>
-            <code>.User()</code>, <code>.Tenant()</code>, <code>.Request()</code>, and
-            <code>.Response()</code> are purpose-built for SaaS/microservice debugging. Few Go
-            libraries handle this domain as cleanly.
+            <code>.User()</code>, <code>.Tenant()</code>,
+            <code>.Request()</code>, and <code>.Response()</code> are
+            purpose-built for SaaS/microservice debugging. Few Go libraries
+            handle this domain as cleanly.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 85%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 85%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P6. Logger ecosystem integrations</h4>
           <p>
-            Native <code>slog.LogValuer</code> plus provided formatters for zap, logrus, and
-            zerolog. Errors serialize as structured log groups without custom marshaling.
+            Native <code>slog.LogValuer</code> plus provided formatters for zap,
+            logrus, and zerolog. Errors serialize as structured log groups
+            without custom marshaling.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 80%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 80%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P7. Mature project governance</h4>
           <p>
-            v1 with strict semver, ~959 stars, 41+ releases, automated CI, CodeQL, dependabot, and
-            active maintenance. The v1.22.0 release delivered a major performance rewrite. This is a
-            safe dependency for production services.
+            v1 with strict semver, ~959 stars, 41+ releases, automated CI,
+            CodeQL, dependabot, and active maintenance. The v1.22.0 release
+            delivered a major performance rewrite. This is a safe dependency for
+            production services.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 85%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 85%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P8. Panic recovery and assertions</h4>
           <p>
-            <code>.Recover()</code> / <code>.Recoverf()</code> convert panics into structured
-            errors. Assertions are documented as an anti-pattern but available for critical
-            invariants. Both integrate cleanly with the builder.
+            <code>.Recover()</code> / <code>.Recoverf()</code> convert panics
+            into structured errors. Assertions are documented as an anti-pattern
+            but available for critical invariants. Both integrate cleanly with
+            the builder.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 65%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 65%"></div>
+          </div>
         </div>
 
         <div class="card pro">
           <h4>P9. Broad Go version support</h4>
           <p>
-            Requires Go 1.21+, compared to go-error-family's Go 1.26+ requirement. This makes oops
-            easier to adopt in older codebases.
+            Requires Go 1.21+, compared to go-error-family's Go 1.26+
+            requirement. This makes oops easier to adopt in older codebases.
           </p>
-          <div class="impact-bar"><div class="impact-fill pro" style="width: 75%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill pro" style="width: 75%"></div>
+          </div>
         </div>
       </section>
 
@@ -577,81 +625,104 @@
             <code>go.mod</code> lists three runtime dependencies:
             <code>github.com/oklog/ulid/v2</code> (trace IDs),
             <code>github.com/samber/lo</code> (utilities), and
-            <code>go.opentelemetry.io/otel/trace</code> (trace/Span correlation). Test dependencies
-            are noted as stripped on release, but the runtime footprint is real.
+            <code>go.opentelemetry.io/otel/trace</code> (trace/Span
+            correlation). Test dependencies are noted as stripped on release,
+            but the runtime footprint is real.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 75%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 75%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C2. No behavioral classification</h4>
           <p>
-            oops answers "what do I know?" but not "what should the system do?" There is no built-in
-            retry/exit-code/audience/tone model. A consumer still has to build that logic around the
-            error metadata.
+            oops answers "what do I know?" but not "what should the system do?"
+            There is no built-in retry/exit-code/audience/tone model. A consumer
+            still has to build that logic around the error metadata.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 80%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 80%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C3. Heavy API surface for simple use cases</h4>
           <p>
-            The builder exposes 20+ methods. For a project that just needs stack traces and context,
-            this is overkill. The learning curve and cognitive load are higher than pkg/errors or a
-            small custom type.
+            The builder exposes 20+ methods. For a project that just needs stack
+            traces and context, this is overkill. The learning curve and
+            cognitive load are higher than pkg/errors or a small custom type.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 60%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 60%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C4. Builder copies context maps</h4>
           <p>
-            The immutable builder copies the context map at each chain step. v1.22.0 improved this,
-            but it is still fundamentally more allocation-heavy than a simple
+            The immutable builder copies the context map at each chain step.
+            v1.22.0 improved this, but it is still fundamentally more
+            allocation-heavy than a simple
             <code>fmt.Errorf("%w")</code> or a static error type.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 55%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 55%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C5. Source fragments require source at runtime</h4>
           <p>
-            <code>.Sources()</code> reads Go source files from disk at runtime, so it only works
-            when source files remain at their build locations. This breaks in containers that copy
-            only the binary, and it is disabled by default for that reason.
+            <code>.Sources()</code> reads Go source files from disk at runtime,
+            so it only works when source files remain at their build locations.
+            This breaks in containers that copy only the binary, and it is
+            disabled by default for that reason.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 50%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 50%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C6. Hidden wrapping semantics footgun</h4>
           <p>
-            <code>oops.Wrapf(err, "msg: %w", otherErr)</code> uses <code>%w</code> only for string
-            formatting; it does not chain <code>otherErr</code>. The chain is always
-            <code>result &rarr; err</code>. The README explicitly warns about this, but it is a
-            subtle distinction that can surprise users migrating from <code>fmt.Errorf("%w")</code>.
+            <code>oops.Wrapf(err, "msg: %w", otherErr)</code> uses
+            <code>%w</code> only for string formatting; it does not chain
+            <code>otherErr</code>. The chain is always
+            <code>result &rarr; err</code>. The README explicitly warns about
+            this, but it is a subtle distinction that can surprise users
+            migrating from <code>fmt.Errorf("%w")</code>.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 60%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 60%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C7. OTel integration is incomplete</h4>
           <p>
-            <code>go.opentelemetry.io/otel/trace</code> is a runtime dependency, but there is no
-            official OTel SDK integration yet. The README solicits contributions for otel and
-            go-sentry. For teams expecting out-of-the-box observability wiring, this is a gap.
+            <code>go.opentelemetry.io/otel/trace</code> is a runtime dependency,
+            but there is no official OTel SDK integration yet. The README
+            solicits contributions for otel and go-sentry. For teams expecting
+            out-of-the-box observability wiring, this is a gap.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 45%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 45%"></div>
+          </div>
         </div>
 
         <div class="card contra">
           <h4>C8. Assertions are a documented anti-pattern</h4>
           <p>
-            The library includes <code>.Assert()</code> / <code>.Assertf()</code> but acknowledges
-            they may be considered an anti-pattern in Go. Their presence adds API surface for a
-            pattern most Go codebases avoid.
+            The library includes <code>.Assert()</code> /
+            <code>.Assertf()</code> but acknowledges they may be considered an
+            anti-pattern in Go. Their presence adds API surface for a pattern
+            most Go codebases avoid.
           </p>
-          <div class="impact-bar"><div class="impact-fill contra" style="width: 40%"></div></div>
+          <div class="impact-bar">
+            <div class="impact-fill contra" style="width: 40%"></div>
+          </div>
         </div>
       </section>
 
@@ -660,10 +731,11 @@
         <h2 class="section-title">How well does it map to static analysis?</h2>
 
         <p>
-          go-finding is a library for static-analysis findings. Its errors carry domain context:
-          file path, position (line/column), severity, confidence, category, and a reference to the
-          <code>Finding</code>. oops is designed for runtime services with users, tenants, HTTP
-          traffic, and distributed traces.
+          go-finding is a library for static-analysis findings. Its errors carry
+          domain context: file path, position (line/column), severity,
+          confidence, category, and a reference to the
+          <code>Finding</code>. oops is designed for runtime services with
+          users, tenants, HTTP traffic, and distributed traces.
         </p>
 
         <table>
@@ -682,7 +754,10 @@
             </tr>
             <tr>
               <td>File / Position / Finding context</td>
-              <td>Generic <code>With()</code>; no structured static-analysis fields</td>
+              <td>
+                Generic <code>With()</code>; no structured static-analysis
+                fields
+              </td>
               <td><span class="tag tag-neutral">Possible but lossy</span></td>
             </tr>
             <tr>
@@ -714,8 +789,9 @@
         </table>
 
         <p>
-          Most of oops's headline features have no natural use in go-finding. Adopting it would be
-          importing a service observability toolkit into a code-analysis library.
+          Most of oops's headline features have no natural use in go-finding.
+          Adopting it would be importing a service observability toolkit into a
+          code-analysis library.
         </p>
       </section>
 
@@ -763,8 +839,9 @@
         </table>
 
         <p>
-          oops and go-error-family are complements, not competitors. oops is for forensic context;
-          go-error-family is for behavioral decisions. The go-error-family project even ships a
+          oops and go-error-family are complements, not competitors. oops is for
+          forensic context; go-error-family is for behavioral decisions. The
+          go-error-family project even ships a
           <code>bridge/</code> submodule to use both together.
         </p>
       </section>
@@ -776,39 +853,40 @@
         <div class="card contra">
           <h4>Not recommended: adopt oops as a dependency</h4>
           <p>
-            The dependency cost, API surface, and feature mismatch outweigh any benefit. go-finding
-            does not need user/tenant context, HTTP capture, distributed traces, or panic recovery.
-            Adding oops would violate the project's minimal-dependency philosophy and bloat the
-            binary.
+            The dependency cost, API surface, and feature mismatch outweigh any
+            benefit. go-finding does not need user/tenant context, HTTP capture,
+            distributed traces, or panic recovery. Adding oops would violate the
+            project's minimal-dependency philosophy and bloat the binary.
           </p>
         </div>
 
         <div class="card pro">
           <h4>Recommended: do nothing</h4>
           <p>
-            go-finding's existing error system (<code>FindingError</code> with category, file,
-            position, and cause) is already domain-appropriate. For CLI output, the existing
-            formatting is sufficient. For consumers that want richer handling, the library exposes
-            the data they need.
+            go-finding's existing error system (<code>FindingError</code> with
+            category, file, position, and cause) is already domain-appropriate.
+            For CLI output, the existing formatting is sufficient. For consumers
+            that want richer handling, the library exposes the data they need.
           </p>
         </div>
 
         <div class="card neutral">
           <h4>Alternative: consider go-error-family interfaces instead</h4>
           <p>
-            If go-finding wants interoperability with a broader error-handling ecosystem, the
-            lightweight path is implementing go-error-family's small interfaces in a bridge
-            subpackage. That adds no runtime dependencies to consumers and preserves the domain
-            model.
+            If go-finding wants interoperability with a broader error-handling
+            ecosystem, the lightweight path is implementing go-error-family's
+            small interfaces in a bridge subpackage. That adds no runtime
+            dependencies to consumers and preserves the domain model.
           </p>
         </div>
 
         <div class="card neutral">
           <h4>When oops would become relevant</h4>
           <p>
-            If go-finding evolves into a long-running service (e.g., a Language Server, a CI daemon,
-            or a hosted API) with production observability needs, oops would be a strong candidate.
-            Until then, it is premature.
+            If go-finding evolves into a long-running service (e.g., a Language
+            Server, a CI daemon, or a hosted API) with production observability
+            needs, oops would be a strong candidate. Until then, it is
+            premature.
           </p>
         </div>
       </section>
@@ -829,34 +907,49 @@
             <tr>
               <td>Design quality</td>
               <td><span class="tag tag-pro">9 / 10</span></td>
-              <td>Clean builder, drop-in compatibility, separation of concerns</td>
+              <td>
+                Clean builder, drop-in compatibility, separation of concerns
+              </td>
             </tr>
             <tr>
               <td>Implementation quality</td>
               <td><span class="tag tag-pro">8 / 10</span></td>
-              <td>v1.22.0 performance rewrite is solid; context-map copying remains</td>
+              <td>
+                v1.22.0 performance rewrite is solid; context-map copying
+                remains
+              </td>
             </tr>
             <tr>
               <td>Documentation</td>
               <td><span class="tag tag-pro">8 / 10</span></td>
-              <td>Excellent README and examples; "zero deps" claim is misleading</td>
+              <td>
+                Excellent README and examples; "zero deps" claim is misleading
+              </td>
             </tr>
             <tr>
               <td>Maturity / ecosystem</td>
               <td><span class="tag tag-pro">9 / 10</span></td>
-              <td>v1, strict semver, active maintenance, broad logger support</td>
+              <td>
+                v1, strict semver, active maintenance, broad logger support
+              </td>
             </tr>
             <tr>
               <td>Fit for go-finding</td>
               <td><span class="tag tag-contra">3 / 10</span></td>
-              <td>Static-analysis library does not need service observability features</td>
+              <td>
+                Static-analysis library does not need service observability
+                features
+              </td>
             </tr>
             <tr>
               <td><strong>Overall</strong></td>
               <td>
                 <span class="tag tag-pro"><strong>8.5 / 10</strong></span>
               </td>
-              <td>Strong library for the right problem; wrong problem for go-finding</td>
+              <td>
+                Strong library for the right problem; wrong problem for
+                go-finding
+              </td>
             </tr>
           </tbody>
         </table>
@@ -864,8 +957,8 @@
 
       <footer>
         <p>
-          Review generated 2026-06-17 &middot; samber/oops v1.22.0 &middot; based on README, go.mod,
-          release notes, and Context7 documentation
+          Review generated 2026-06-17 &middot; samber/oops v1.22.0 &middot;
+          based on README, go.mod, release notes, and Context7 documentation
         </p>
       </footer>
     </div>

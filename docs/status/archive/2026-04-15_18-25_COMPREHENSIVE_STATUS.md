@@ -51,22 +51,22 @@ The go-finding library has matured significantly since the April 13 status repor
 
 ### Cleanup Executed (April 15 Session)
 
-| #   | What                                                                      | Commit  | Status |
-| --- | ------------------------------------------------------------------------- | ------- | ------ |
-| 1   | Delete Result[T] (222 lines)                                              | cf1d0a2 | Done   |
-| 2   | Delete ASTFixer (155 lines)                                               | bd0f15f | Done   |
-| 3   | Delete dead symbols (ConfidenceScale, HasConflicts, GroupFixesByConflict) | c2e479e | Done   |
-| 4   | Fix FromLSP missing Position.File                                         | 00556fe | Done   |
-| 5   | Add NamedDetectorFunc                                                     | f885182 | Done   |
-| 6   | Fix FixApplier backup path collision + add mutex                          | c8852ec | Done   |
-| 7   | Fix detectParallel suppressed finding inconsistency                       | 84a62db | Done   |
-| 8   | Fix Category.IsValid() for custom categories                              | b7725c7 | Done   |
-| 9   | Unify Report.By\* to delegate to filter package                           | 047ecac | Done   |
-| 10  | Wire Metrics into pipeline                                                | c1bab24 | Done   |
-| 11  | Remove no-op MarshalJSON                                                  | d9a3b97 | Done   |
-| 12  | Add IsValid to Suppression, ErrorCategory, RelatedRef                     | 78989bf | Done   |
-| 13  | Wire GracefulDegradation + RetryConfig                                    | 83ee6a4 | Done   |
-| 14  | Integration tests (backup/restore, graceful, retry, verify)               | e4c69a9 | Done   |
+| #  | What                                                                      | Commit  | Status |
+| -- | ------------------------------------------------------------------------- | ------- | ------ |
+| 1  | Delete Result[T] (222 lines)                                              | cf1d0a2 | Done   |
+| 2  | Delete ASTFixer (155 lines)                                               | bd0f15f | Done   |
+| 3  | Delete dead symbols (ConfidenceScale, HasConflicts, GroupFixesByConflict) | c2e479e | Done   |
+| 4  | Fix FromLSP missing Position.File                                         | 00556fe | Done   |
+| 5  | Add NamedDetectorFunc                                                     | f885182 | Done   |
+| 6  | Fix FixApplier backup path collision + add mutex                          | c8852ec | Done   |
+| 7  | Fix detectParallel suppressed finding inconsistency                       | 84a62db | Done   |
+| 8  | Fix Category.IsValid() for custom categories                              | b7725c7 | Done   |
+| 9  | Unify Report.By\* to delegate to filter package                           | 047ecac | Done   |
+| 10 | Wire Metrics into pipeline                                                | c1bab24 | Done   |
+| 11 | Remove no-op MarshalJSON                                                  | d9a3b97 | Done   |
+| 12 | Add IsValid to Suppression, ErrorCategory, RelatedRef                     | 78989bf | Done   |
+| 13 | Wire GracefulDegradation + RetryConfig                                    | 83ee6a4 | Done   |
+| 14 | Integration tests (backup/restore, graceful, retry, verify)               | e4c69a9 | Done   |
 
 ---
 
@@ -143,48 +143,48 @@ All critical issues from the April 15 audit have been resolved:
 
 ### Immediate (Today)
 
-| #   | Task                                                                         | Effort | Impact     |
-| --- | ---------------------------------------------------------------------------- | ------ | ---------- |
-| 1   | Delete `report/jscpd-report.json` artifact                                   | 2 min  | Clean repo |
-| 2   | Add `govet` binary to .gitignore                                             | 1 min  | Clean repo |
-| 3   | Restart LSP to clear stale astfix.go diagnostics                             | 1 min  | Clean IDE  |
-| 4   | Test `Finding.IsValid()`, `Suppression.IsValid()`, `ErrorCategory.IsValid()` | 15 min | Coverage   |
-| 5   | Test `FilterConflictingFixes()`, `AnalyzeConflicts()`                        | 15 min | Coverage   |
-| 6   | Document SARIF critical round-trip limitation                                | 10 min | Honesty    |
-| 7   | Decide: wire or document `Correlate()`                                       | 15 min | Closure    |
+| # | Task                                                                         | Effort | Impact     |
+| - | ---------------------------------------------------------------------------- | ------ | ---------- |
+| 1 | Delete `report/jscpd-report.json` artifact                                   | 2 min  | Clean repo |
+| 2 | Add `govet` binary to .gitignore                                             | 1 min  | Clean repo |
+| 3 | Restart LSP to clear stale astfix.go diagnostics                             | 1 min  | Clean IDE  |
+| 4 | Test `Finding.IsValid()`, `Suppression.IsValid()`, `ErrorCategory.IsValid()` | 15 min | Coverage   |
+| 5 | Test `FilterConflictingFixes()`, `AnalyzeConflicts()`                        | 15 min | Coverage   |
+| 6 | Document SARIF critical round-trip limitation                                | 10 min | Honesty    |
+| 7 | Decide: wire or document `Correlate()`                                       | 15 min | Closure    |
 
 ### Short Term (This Week)
 
-| #   | Task                                                       | Effort | Impact      |
-| --- | ---------------------------------------------------------- | ------ | ----------- |
-| 8   | Wire `Correlate()` as optional post-merge step             | 60 min | Feature     |
-| 9   | Add SARIF extension to preserve critical level             | 45 min | Correctness |
-| 10  | Create real-world tool integration (staticcheck converter) | 2h     | Adoption    |
-| 11  | Add `cmd/go-finding` CLI binary                            | 3h     | Usability   |
-| 12  | Add configuration file support (YAML)                      | 2h     | Usability   |
-| 13  | Benchmark pipeline performance                             | 1h     | Performance |
-| 14  | Profile memory allocation hotspots                         | 1h     | Performance |
+| #  | Task                                                       | Effort | Impact      |
+| -- | ---------------------------------------------------------- | ------ | ----------- |
+| 8  | Wire `Correlate()` as optional post-merge step             | 60 min | Feature     |
+| 9  | Add SARIF extension to preserve critical level             | 45 min | Correctness |
+| 10 | Create real-world tool integration (staticcheck converter) | 2h     | Adoption    |
+| 11 | Add `cmd/go-finding` CLI binary                            | 3h     | Usability   |
+| 12 | Add configuration file support (YAML)                      | 2h     | Usability   |
+| 13 | Benchmark pipeline performance                             | 1h     | Performance |
+| 14 | Profile memory allocation hotspots                         | 1h     | Performance |
 
 ### Medium Term (Next 2 Weeks)
 
-| #   | Task                                               | Effort | Impact     |
-| --- | -------------------------------------------------- | ------ | ---------- |
-| 15  | Add property-based tests for core ops              | 1h     | Robustness |
-| 16  | Add watch mode for continuous analysis             | 3h     | DX         |
-| 17  | Write comprehensive usage guide                    | 2h     | Adoption   |
-| 18  | Evaluate go-sarif library for optional integration | 30 min | Decision   |
-| 19  | Plan v1.0 release — stabilize API, write CHANGELOG | 2h     | Release    |
-| 20  | Add GitHub release workflow                        | 1h     | Release    |
-| 21  | Create GoDoc examples for all public types         | 2h     | DX         |
-| 22  | Add contribution guidelines (CONTRIBUTING.md)      | 30 min | Community  |
+| #  | Task                                               | Effort | Impact     |
+| -- | -------------------------------------------------- | ------ | ---------- |
+| 15 | Add property-based tests for core ops              | 1h     | Robustness |
+| 16 | Add watch mode for continuous analysis             | 3h     | DX         |
+| 17 | Write comprehensive usage guide                    | 2h     | Adoption   |
+| 18 | Evaluate go-sarif library for optional integration | 30 min | Decision   |
+| 19 | Plan v1.0 release — stabilize API, write CHANGELOG | 2h     | Release    |
+| 20 | Add GitHub release workflow                        | 1h     | Release    |
+| 21 | Create GoDoc examples for all public types         | 2h     | DX         |
+| 22 | Add contribution guidelines (CONTRIBUTING.md)      | 30 min | Community  |
 
 ### Longer Term
 
-| #   | Task                                     | Effort | Impact |
-| --- | ---------------------------------------- | ------ | ------ |
-| 23  | IDE plugin stubs (VS Code)               | 5h     | DX     |
-| 24  | Web UI prototype for pipeline monitoring | 5h     | DX     |
-| 25  | Distributed detection support            | 8h     | Scale  |
+| #  | Task                                     | Effort | Impact |
+| -- | ---------------------------------------- | ------ | ------ |
+| 23 | IDE plugin stubs (VS Code)               | 5h     | DX     |
+| 24 | Web UI prototype for pipeline monitoring | 5h     | DX     |
+| 25 | Distributed detection support            | 8h     | Scale  |
 
 ---
 

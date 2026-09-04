@@ -207,9 +207,9 @@ for _, c := range correlations {
 The `pipeline` package runs a detect → process → triage → apply → verify loop:
 
 ```
- detect ──→ process ──→ triage ──→ apply ──→ verify
-   ↑                                      │
-   └────────────── repeat ────────────────┘ (until stable or max iterations)
+detect ──→ process ──→ triage ──→ apply ──→ verify
+  ↑                                      │
+  └────────────── repeat ────────────────┘ (until stable or max iterations)
 ```
 
 Each iteration runs registered detectors, applies `FindingTransformer` transforms,

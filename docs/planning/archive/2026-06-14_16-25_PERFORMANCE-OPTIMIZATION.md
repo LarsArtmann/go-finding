@@ -24,24 +24,24 @@
 
 ### The 20% that delivers 80% of the result
 
-| #   | Task                             | File                                              | Impact                                                                                                                                                           |
-| --- | -------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4   | File content cache in FixApplier | `pipeline/fix_applier.go`                         | Same file read up to 4× per iteration. Add `map[string][]byte` cache with write-invalidation.                                                                    |
-| 5   | Pre-allocate result slices       | `merge.go`, `conflict.go`, `diff.go`, `verify.go` | `correlateByOverlap`, `correlateByProximity`, `DetectConflicts`, `Diff`, `DiffFindings` all start with nil slices. Pre-allocate with `make([]T, 0, len(input))`. |
-| 6   | Pre-allocate GroupBy maps        | `filter.go:163-200`                               | `GroupBy`, `GroupByFile`, `GroupBySeverity`, `GroupByCategory` don't pre-size their result maps.                                                                 |
-| 7   | Use strings.Builder in dedupKey  | `merge.go:178-196`                                | `fmt.Sprintf` for position/rule dedup keys allocates a format string. `strings.Builder` avoids the format parser overhead.                                       |
-| 8   | Stream subprocess output         | `internal/detectors/govet.go`                     | Replace `cmd.Output()` (full buffer) with `cmd.StdoutPipe()` + `json.Decoder` for streaming JSON parse.                                                          |
+| # | Task                             | File                                              | Impact                                                                                                                                                           |
+| - | -------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4 | File content cache in FixApplier | `pipeline/fix_applier.go`                         | Same file read up to 4× per iteration. Add `map[string][]byte` cache with write-invalidation.                                                                    |
+| 5 | Pre-allocate result slices       | `merge.go`, `conflict.go`, `diff.go`, `verify.go` | `correlateByOverlap`, `correlateByProximity`, `DetectConflicts`, `Diff`, `DiffFindings` all start with nil slices. Pre-allocate with `make([]T, 0, len(input))`. |
+| 6 | Pre-allocate GroupBy maps        | `filter.go:163-200`                               | `GroupBy`, `GroupByFile`, `GroupBySeverity`, `GroupByCategory` don't pre-size their result maps.                                                                 |
+| 7 | Use strings.Builder in dedupKey  | `merge.go:178-196`                                | `fmt.Sprintf` for position/rule dedup keys allocates a format string. `strings.Builder` avoids the format parser overhead.                                       |
+| 8 | Stream subprocess output         | `internal/detectors/govet.go`                     | Replace `cmd.Output()` (full buffer) with `cmd.StdoutPipe()` + `json.Decoder` for streaming JSON parse.                                                          |
 
 ### Remaining work (beyond 80%)
 
-| #   | Task                                     | Impact                                   |
-| --- | ---------------------------------------- | ---------------------------------------- |
-| 9   | Add before/after FixEngine benchmarks    | Verify improvements quantitatively       |
-| 10  | Add LineProvider cached-index benchmarks | Verify index caching benefit             |
-| 11  | Update performance analysis HTML         | Re-run benchmarks, document improvements |
-| 12  | Update AGENTS.md                         | Document performance decisions           |
-| 13  | Full test suite verification             | `go test -race -count=1 ./...`           |
-| 14  | Lint verification                        | `golangci-lint run ./...`                |
+| #  | Task                                     | Impact                                   |
+| -- | ---------------------------------------- | ---------------------------------------- |
+| 9  | Add before/after FixEngine benchmarks    | Verify improvements quantitatively       |
+| 10 | Add LineProvider cached-index benchmarks | Verify index caching benefit             |
+| 11 | Update performance analysis HTML         | Re-run benchmarks, document improvements |
+| 12 | Update AGENTS.md                         | Document performance decisions           |
+| 13 | Full test suite verification             | `go test -race -count=1 ./...`           |
+| 14 | Lint verification                        | `golangci-lint run ./...`                |
 
 ### Explicitly OUT OF SCOPE (to avoid Verschlimmbesserung)
 
@@ -83,16 +83,16 @@ Sorted by importance/impact/effort/customer-value.
 
 ### M1: FixEngine single-pass buffer (8 tasks)
 
-| #   | Sub-task                                                                                 | Est.   |
-| --- | ---------------------------------------------------------------------------------------- | ------ |
-| F1  | Read and understand current `applyEditsWithConflicts` logic                              | 5 min  |
-| F2  | Write `applyEditsToContent(content, appliedEdits)` helper using `bytes.Buffer`           | 10 min |
-| F3  | Refactor `applyEditsWithConflicts` to separate conflict detection from application       | 10 min |
-| F4  | Add pre-allocation size calculation (finalSize = len(content) + Σ(replacement - length)) | 5 min  |
-| F5  | Handle edge case: no applied edits (return original content)                             | 5 min  |
-| F6  | Handle edge case: single edit (skip buffer overhead)                                     | 5 min  |
-| F7  | Verify existing FixEngine tests pass                                                     | 10 min |
-| F8  | Run FixEngine benchmarks to confirm improvement                                          | 10 min |
+| #  | Sub-task                                                                                 | Est.   |
+| -- | ---------------------------------------------------------------------------------------- | ------ |
+| F1 | Read and understand current `applyEditsWithConflicts` logic                              | 5 min  |
+| F2 | Write `applyEditsToContent(content, appliedEdits)` helper using `bytes.Buffer`           | 10 min |
+| F3 | Refactor `applyEditsWithConflicts` to separate conflict detection from application       | 10 min |
+| F4 | Add pre-allocation size calculation (finalSize = len(content) + Σ(replacement - length)) | 5 min  |
+| F5 | Handle edge case: no applied edits (return original content)                             | 5 min  |
+| F6 | Handle edge case: single edit (skip buffer overhead)                                     | 5 min  |
+| F7 | Verify existing FixEngine tests pass                                                     | 10 min |
+| F8 | Run FixEngine benchmarks to confirm improvement                                          | 10 min |
 
 ### M2: FixEngine test verification (3 tasks)
 

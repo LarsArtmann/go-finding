@@ -1,8 +1,8 @@
 # Comprehensive Status Report: go-finding Bug Fixes & Builder API
 
-**Date:** 2026-04-28 13:41 UTC  
-**Branch:** master (5 commits ahead of origin/master)  
-**Scope:** go-finding SDK bug fixes, builder API, test coverage  
+**Date:** 2026-04-28 13:41 UTC\
+**Branch:** master (5 commits ahead of origin/master)\
+**Scope:** go-finding SDK bug fixes, builder API, test coverage\
 **Goal:** Fix 51 bugs identified in SDK audit before go-structure-linter migration
 
 ---
@@ -190,33 +190,33 @@ All previously failing tests now pass. No build failures. No lint errors.
 
 ## F) TOP #25 THINGS TO GET DONE NEXT
 
-| #   | Priority   | Task                                                          | Bug / Feature                      | Est.   |
-| --- | ---------- | ------------------------------------------------------------- | ---------------------------------- | ------ |
-| 1   | **HIGH**   | Push 5 commits to origin/master                               | —                                  | 2min   |
-| 2   | **HIGH**   | Fix M-4: SARIF metadata round-trip for non-string values      | `sarif.go`                         | 15min  |
-| 3   | **HIGH**   | Fix M-8: `Range.LineCount()` for inverted ranges              | `position.go`                      | 10min  |
-| 4   | **HIGH**   | Fix M-15: SARIF export suggestion text when `HasFix()==false` | `sarif.go`                         | 10min  |
-| 5   | **HIGH**   | Add test for `RegisterDetector` concurrent safety             | `cmd/go-finding`                   | 10min  |
-| 6   | **MEDIUM** | Fix M-6: Document `Report.All()` yields copies                | `report.go`                        | 5min   |
-| 7   | **MEDIUM** | Fix M-7: Document `FindByID` returns copy                     | `report.go`                        | 5min   |
-| 8   | **MEDIUM** | Fix M-12: `Correlation` JSON tags camelCase                   | `merge.go`                         | 10min  |
-| 9   | **MEDIUM** | Fix M-13: Rename `ToSARIFFiltered` or document behavior       | `sarif.go`                         | 10min  |
-| 10  | **MEDIUM** | Fix M-16: Add filtered JSON output alternative                | `json.go`                          | 15min  |
-| 11  | **MEDIUM** | Fix M-17: `maxIterations: 0` consistency                      | `cmd/go-finding`                   | 10min  |
-| 12  | **MEDIUM** | Fix M-18: Document `BySeverityAtLeast` excludes invalid       | `filter.go`                        | 5min   |
-| 13  | **MEDIUM** | Clamp `Confidence` in `NewFinding` / `Builder`                | `finding.go`, `finding_builder.go` | 10min  |
-| 14  | **MEDIUM** | Group `Finding` into embedded sub-structs (breaking)          | `finding.go`                       | 30min  |
-| 15  | **LOW**    | Replace test helpers with `finding.NewBuilder`                | `*_test.go` across project         | 45min  |
-| 16  | **LOW**    | Address 15 LOW bugs                                           | various                            | 60min  |
-| 17  | **LOW**    | Remove `samber/do` from go-structure-linter                   | `container.go`                     | 30min  |
-| 18  | **LOW**    | Remove `samber/mo` from go-structure-linter                   | `errors_result.go`                 | 30min  |
-| 19  | **LOW**    | Fix 225 lint warnings in go-structure-linter                  | project-wide                       | 120min |
-| 20  | **LOW**    | Add tests for 15 untested rules                               | `internal/rules/`                  | 225min |
-| 21  | **LOW**    | Consolidate gitignore matching                                | `sensitive_file_rule.go`           | 30min  |
-| 22  | **LOW**    | Create `Project` abstraction in go-structure-linter           | new file                           | 45min  |
-| 23  | **LOW**    | Add go-finding adapter layer in go-structure-linter           | `internal/adapters/`               | 30min  |
-| 24  | **LOW**    | Write migration guide: Issue → Finding                        | `docs/`                            | 30min  |
-| 25  | **LOW**    | Tag v0.2.0 after all MEDIUM fixes                             | git                                | 5min   |
+| #  | Priority   | Task                                                          | Bug / Feature                      | Est.   |
+| -- | ---------- | ------------------------------------------------------------- | ---------------------------------- | ------ |
+| 1  | **HIGH**   | Push 5 commits to origin/master                               | —                                  | 2min   |
+| 2  | **HIGH**   | Fix M-4: SARIF metadata round-trip for non-string values      | `sarif.go`                         | 15min  |
+| 3  | **HIGH**   | Fix M-8: `Range.LineCount()` for inverted ranges              | `position.go`                      | 10min  |
+| 4  | **HIGH**   | Fix M-15: SARIF export suggestion text when `HasFix()==false` | `sarif.go`                         | 10min  |
+| 5  | **HIGH**   | Add test for `RegisterDetector` concurrent safety             | `cmd/go-finding`                   | 10min  |
+| 6  | **MEDIUM** | Fix M-6: Document `Report.All()` yields copies                | `report.go`                        | 5min   |
+| 7  | **MEDIUM** | Fix M-7: Document `FindByID` returns copy                     | `report.go`                        | 5min   |
+| 8  | **MEDIUM** | Fix M-12: `Correlation` JSON tags camelCase                   | `merge.go`                         | 10min  |
+| 9  | **MEDIUM** | Fix M-13: Rename `ToSARIFFiltered` or document behavior       | `sarif.go`                         | 10min  |
+| 10 | **MEDIUM** | Fix M-16: Add filtered JSON output alternative                | `json.go`                          | 15min  |
+| 11 | **MEDIUM** | Fix M-17: `maxIterations: 0` consistency                      | `cmd/go-finding`                   | 10min  |
+| 12 | **MEDIUM** | Fix M-18: Document `BySeverityAtLeast` excludes invalid       | `filter.go`                        | 5min   |
+| 13 | **MEDIUM** | Clamp `Confidence` in `NewFinding` / `Builder`                | `finding.go`, `finding_builder.go` | 10min  |
+| 14 | **MEDIUM** | Group `Finding` into embedded sub-structs (breaking)          | `finding.go`                       | 30min  |
+| 15 | **LOW**    | Replace test helpers with `finding.NewBuilder`                | `*_test.go` across project         | 45min  |
+| 16 | **LOW**    | Address 15 LOW bugs                                           | various                            | 60min  |
+| 17 | **LOW**    | Remove `samber/do` from go-structure-linter                   | `container.go`                     | 30min  |
+| 18 | **LOW**    | Remove `samber/mo` from go-structure-linter                   | `errors_result.go`                 | 30min  |
+| 19 | **LOW**    | Fix 225 lint warnings in go-structure-linter                  | project-wide                       | 120min |
+| 20 | **LOW**    | Add tests for 15 untested rules                               | `internal/rules/`                  | 225min |
+| 21 | **LOW**    | Consolidate gitignore matching                                | `sensitive_file_rule.go`           | 30min  |
+| 22 | **LOW**    | Create `Project` abstraction in go-structure-linter           | new file                           | 45min  |
+| 23 | **LOW**    | Add go-finding adapter layer in go-structure-linter           | `internal/adapters/`               | 30min  |
+| 24 | **LOW**    | Write migration guide: Issue → Finding                        | `docs/`                            | 30min  |
+| 25 | **LOW**    | Tag v0.2.0 after all MEDIUM fixes                             | git                                | 5min   |
 
 ---
 

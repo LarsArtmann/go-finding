@@ -338,11 +338,11 @@ r.Findings = append(r.Findings, f)                   // Data race with AddFindin
 
 ### Options
 
-| #   | Approach                                          | Breaking? | Effort | Safe? |
-| --- | ------------------------------------------------- | --------- | ------ | ----- |
-| A   | Make `Findings` unexported, keep everything else  | Yes       | Low    | Yes   |
-| B   | Keep `Findings` exported with documented caveat   | No        | None   | No    |
-| C   | Replace `Findings` with `[]Finding` getter method | Yes       | Medium | Yes   |
+| # | Approach                                          | Breaking? | Effort | Safe? |
+| - | ------------------------------------------------- | --------- | ------ | ----- |
+| A | Make `Findings` unexported, keep everything else  | Yes       | Low    | Yes   |
+| B | Keep `Findings` exported with documented caveat   | No        | None   | No    |
+| C | Replace `Findings` with `[]Finding` getter method | Yes       | Medium | Yes   |
 
 ### Recommendation
 
@@ -374,18 +374,18 @@ snapshot := report.FindingsSnapshot()
 
 All changes below have been implemented:
 
-| #   | Change                                  | Status  | Migration                                       |
-| --- | --------------------------------------- | ------- | ----------------------------------------------- |
-| 1   | `Report.Findings` unexported            | ✅ Done | Use `FindingsSnapshot()`, `All()`, `FindByID()` |
-| 2   | `Report.Merge` removed                  | ✅ Done | Use `MergeInto(other)`                          |
-| 3   | `RecordFix()` removed                   | ✅ Done | Use `RecordFixes(1)`                            |
-| 4   | SARIF types remain unexported           | ✅ Done | No change needed                                |
-| 5   | `Position.Offset` zero-value semantics  | ✅ Done | Use `HasOffset()`; `-1` sentinel for unset      |
-| 6   | `Config.OnStage` removed                | ✅ Done | Use `StageHooks`                                |
-| 7   | `CountBySeverity()` free function       | ✅ Done | Use `Report.CountBySeverity()`                  |
-| 8   | `SeverityAliases()` removed             | ✅ Done | Use `LookupSeverityAlias()`                     |
-| 9   | `GetCategory()` removed                 | ✅ Done | Use `CategoryOf()`                              |
-| 10  | `HasFix`/`HasSuggestion` free functions | ✅ Done | Use `WithFix`/`WithSuggestion`                  |
+| #  | Change                                  | Status  | Migration                                       |
+| -- | --------------------------------------- | ------- | ----------------------------------------------- |
+| 1  | `Report.Findings` unexported            | ✅ Done | Use `FindingsSnapshot()`, `All()`, `FindByID()` |
+| 2  | `Report.Merge` removed                  | ✅ Done | Use `MergeInto(other)`                          |
+| 3  | `RecordFix()` removed                   | ✅ Done | Use `RecordFixes(1)`                            |
+| 4  | SARIF types remain unexported           | ✅ Done | No change needed                                |
+| 5  | `Position.Offset` zero-value semantics  | ✅ Done | Use `HasOffset()`; `-1` sentinel for unset      |
+| 6  | `Config.OnStage` removed                | ✅ Done | Use `StageHooks`                                |
+| 7  | `CountBySeverity()` free function       | ✅ Done | Use `Report.CountBySeverity()`                  |
+| 8  | `SeverityAliases()` removed             | ✅ Done | Use `LookupSeverityAlias()`                     |
+| 9  | `GetCategory()` removed                 | ✅ Done | Use `CategoryOf()`                              |
+| 10 | `HasFix`/`HasSuggestion` free functions | ✅ Done | Use `WithFix`/`WithSuggestion`                  |
 
 ### Position/Range Zero-Value Decision (Item 5)
 
