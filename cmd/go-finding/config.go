@@ -31,6 +31,10 @@ type pipelineConfigFile struct {
 	GeneratedInclude []string `json:"generatedInclude" yaml:"generatedInclude"`
 	// ByteLevelConflictDetection enables precise byte-level conflict detection during triage.
 	ByteLevelConflictDetection bool `json:"byteLevelConflictDetection" yaml:"byteLevelConflictDetection"`
+	// FixRollbackAllFiles opts into all-or-nothing fix application: when a file
+	// fails, every file modified earlier in the run is rolled back. By default
+	// only the failing file is restored and applied fixes stay on disk.
+	FixRollbackAllFiles bool `json:"fixRollbackAllFiles" yaml:"fixRollbackAllFiles"`
 	// FixProviders enables named fix providers (e.g., "go-ast") for domain-specific edits.
 	FixProviders []string `json:"fixProviders" yaml:"fixProviders"`
 	// FlightRecorder enables Go execution trace recording. This is an alternative
@@ -218,6 +222,7 @@ func (c pipelineConfigFile) toPipelineConfig() (pipeline.Config, error) {
 		Metrics:                    pipeline.NewMetrics(),
 		DetectorTimeouts:           detectorTimeouts,
 		ByteLevelConflictDetection: c.ByteLevelConflictDetection,
+		FixRollbackAllFiles:        c.FixRollbackAllFiles,
 	}, nil
 }
 

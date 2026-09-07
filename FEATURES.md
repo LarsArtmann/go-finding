@@ -42,6 +42,7 @@ The central type representing a single issue detected by a static analysis tool.
 | Range       | `*Range`            | Span-based findings (start/end positions)            |
 | Snippet     | `string`            | Surrounding code context                             |
 | Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                            |
+| GroupID     | `GroupID`           | Logical group this finding belongs to (e.g., clone group) |
 | Related     | `[]RelatedRef`      | Related findings with optional `*Range` span         |
 | Suppression | `*Suppression`      | If suppressed                                        |
 | Metadata    | `map[string]string` | Tool-specific key-value pairs                        |
@@ -392,7 +393,7 @@ Handles Windows paths with colons correctly.
 
 Handles: severity mapping, 0-based conversion, Range, related information, diagnostic tags
 
-`LSPDiagnosticTag` constants (`Unnecessary = 1`, `Deprecated = 2`) with `Tags []LSPDiagnosticTag`. Tags round-trip via `Metadata["go-finding/lsp-diagnostic-tags"]`. Related information includes proper end positions from `RelatedRef.Range`.
+`LSPDiagnosticTag` constants (`Unnecessary = 1`, `Deprecated = 2`) with `Tags []LSPDiagnosticTag`. Tags round-trip via `Metadata["go-finding/lsp-diagnostic-tags"]`, and `ToLSP()` re-emits them from that metadata key, so tags survive repeated conversions. Related information includes proper end positions from `RelatedRef.Range`.
 
 ### LSP → Finding
 
@@ -400,7 +401,7 @@ Handles: severity mapping, 0-based conversion, Range, related information, diagn
 
 Preserves: end position as Range, related information, related range end positions, diagnostic tags in Metadata, raw LSP severity in Metadata
 
-**Full round-trip fidelity via `LSPDiagnosticData`:** When `ToLSP()` populates `diag.Data`, `FromLSP()` restores: ID, Severity (including SeverityCritical), FixStrategy, Confidence, Category, Tags, BeforeCode, AfterCode, Suggestion, Snippet, Suppression, Metadata, and RelatedRef.FindingID (preserved, not regenerated).
+**Full round-trip fidelity via `LSPDiagnosticData`:** When `ToLSP()` populates `diag.Data`, `FromLSP()` restores: ID, Severity (including SeverityCritical), FixStrategy, Confidence, Category, GroupID, Tags, BeforeCode, AfterCode, Suggestion, Snippet, Suppression, Metadata, and RelatedRef.FindingID (preserved, not regenerated).
 
 ---
 
@@ -599,14 +600,25 @@ Domain-specific providers (Go AST, Rust syn, etc.) can be registered via:
 
 `NewFixEngine()` provides pure `Apply(content []byte, fixes []Finding)` that transforms byte content without filesystem access. Delegates to providers, sorts edits descending by offset, applies with overlap protection.
 
+`ApplyWithOutcomes(content, fixes)` returns a `FixApplyResult` with one `FixOutcome` per input finding: `applied`, `no-change`, `refused` (provider matched but produced zero edits), `conflict`, `invalid` (edit dropped as invalid/out of bounds), or `failed` (provider error). Helpers: `OutcomeFor(id)`, `OutcomeCounts()`, `HasErrors()`.
+
 #### FixApplier (filesystem)
 
 `NewFixApplier(rootDir)` applies fixes to actual files with backup/rollback support.
 
+`ApplyWithReport(ctx, fixes)` returns an `ApplyReport`: applied count, applied findings, per-finding outcomes, shift maps, and the rolled-back file list. Soft per-finding failures (provider resolve errors, refused findings) never abort the run or roll anything back.
+
+Rollback policy (`RollbackPolicy`):
+
+- `RollbackPolicyFailingFile` (default) — restores only the failing file; earlier files keep their fixes
+- `RollbackPolicyAllFiles` — legacy all-or-nothing: restores every file modified in the run
+
+Set via `SetRollbackPolicy`, `Config.FixRollbackAllFiles`, or config-file `fixRollbackAllFiles`.
+
 Both support:
 
 - File backup before modification
-- Rollback on failure (restores all modified files)
+- Rollback on failure (scope governed by `RollbackPolicy`)
 - Context cancellation support mid-application
 - Deterministic application order (sorted by path, descending by offset)
 

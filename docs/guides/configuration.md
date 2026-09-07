@@ -128,6 +128,7 @@ flightRecorder:
 | `generatedInclude`           | []string          | —                          | Glob patterns restricting generated-filtering scope         |
 | `byteLevelConflictDetection` | bool              | `false`                    | Enable precise byte-level conflict detection during triage  |
 | `fixProviders`               | []string          | —                          | Named fix providers to enable (e.g., `go-ast`)              |
+| `fixRollbackAllFiles`        | bool              | `false`                    | All-or-nothing fix rollback: on file failure, restore all files modified in the run. Default restores only the failing file |
 | `flightRecorder`             | object            | —                          | Flight recorder settings (see below)                        |
 
 ### Flight Recorder Fields

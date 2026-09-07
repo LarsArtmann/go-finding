@@ -104,7 +104,9 @@ for _, o := range result.Outcomes {
     }
 }
 
-failed := result.FailedOutcomes == nil // via HasErrors(); OutcomeFor(id) for lookups
+if result.HasErrors() {
+    fmt.Println("some findings failed provider resolution")
+}
 ```
 
 Outcomes come in input order, one per input finding. `result.OutcomeFor(id)` looks up a single finding; `result.OutcomeCounts()` tallies by status; `result.HasErrors()` reports provider failures.
