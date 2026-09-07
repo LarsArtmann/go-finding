@@ -210,6 +210,30 @@ func TestFindingJSON(t *testing.T) {
 	g.Expect(parsed.ID).To(Equal(f.ID))
 }
 
+func TestFindingGroupID_JSON(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	f := standardTestFinding()
+	f.GroupID = "clone-group-1"
+
+	data, err := json.Marshal(f)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(ContainSubstring(`"groupId":"clone-group-1"`))
+
+	parsed, err := FromJSON(data)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(parsed.GroupID).To(Equal(GroupID("clone-group-1")))
+	g.Expect(parsed.Equal(f)).To(BeTrue())
+}
+
+func TestFindingGroupID_OmittedWhenEmpty(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	data, err := json.Marshal(standardTestFinding())
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(data)).NotTo(ContainSubstring("groupId"))
+}
+
 func TestSARIFConversion(t *testing.T) {
 	g := NewParallelGomega(t)
 

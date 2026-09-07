@@ -128,6 +128,21 @@ func TestBuilder_Full(t *testing.T) {
 	}
 }
 
+func TestBuilder_GroupID(t *testing.T) {
+	t.Parallel()
+
+	f, err := NewBuilder("clone-detected", "art-dupl", "duplicate code", SeverityWarning, Pos("a.go", 1, 1)).
+		WithGroupID("group-1").
+		Build()
+	if err != nil {
+		t.Fatalf("Build() failed: %v", err)
+	}
+
+	if f.GroupID != GroupID("group-1") {
+		t.Errorf("GroupID = %q, want %q", f.GroupID, "group-1")
+	}
+}
+
 func TestBuilder_Chaining(t *testing.T) {
 	t.Parallel()
 

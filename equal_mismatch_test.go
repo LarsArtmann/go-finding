@@ -140,6 +140,17 @@ func TestFinding_Equal_FieldMismatch_CodeAndMeta(t *testing.T) {
 			false,
 		},
 		{
+			"different group id",
+			base,
+			func() Finding {
+				f := testFindingBase()
+				f.GroupID = "other-group"
+
+				return f
+			}(),
+			false,
+		},
+		{
 			"different confidence",
 			base,
 			func() Finding {

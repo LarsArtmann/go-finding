@@ -157,6 +157,47 @@ func TestReportFindByRule(t *testing.T) {
 	AssertEmpty(t, r.FindByRule("nonexistent"), "nonexistent rule")
 }
 
+func TestReportGroupFindings(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: string(TagTest)})
+	r.AddFinding(Finding{ID: "1", GroupID: "group-a", Message: "a1"})
+	r.AddFinding(Finding{ID: "2", GroupID: "group-a", Message: "a2"})
+	r.AddFinding(Finding{ID: "3", GroupID: "group-b", Message: "b1"})
+	r.AddFinding(Finding{ID: "4", Message: "no group"})
+	r.AddFinding(Finding{
+		ID:          "5",
+		GroupID:     "group-c",
+		Message:     "suppressed",
+		Suppression: &Suppression{Kind: SuppressionInSource, Rule: "test", Reason: string(TagTest)},
+	})
+
+	groups := r.GroupFindings()
+
+	if len(groups) != 2 {
+		t.Fatalf("groups = %d, want 2", len(groups))
+	}
+
+	if len(groups["group-a"]) != 2 {
+		t.Errorf("group-a findings = %d, want 2", len(groups["group-a"]))
+	}
+
+	if len(groups["group-b"]) != 1 {
+		t.Errorf("group-b findings = %d, want 1", len(groups["group-b"]))
+	}
+}
+
+func TestReportGroupFindings_Empty(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: string(TagTest)})
+	r.AddFinding(Finding{ID: "1", Message: "no group"})
+
+	if groups := r.GroupFindings(); groups != nil {
+		t.Errorf("GroupFindings = %v, want nil", groups)
+	}
+}
+
 func TestReportLen(t *testing.T) {
 	t.Parallel()
 

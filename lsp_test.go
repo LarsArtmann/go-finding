@@ -322,3 +322,85 @@ func TestLSPRoundTrip_RelatedFindingID(t *testing.T) {
 			restored.Related[0].FindingID, ID("original-related-id"))
 	}
 }
+
+// TestLSPRoundTrip_GroupID verifies that GroupID survives the LSP round-trip.
+func TestLSPRoundTrip_GroupID(t *testing.T) {
+	t.Parallel()
+
+	original := Finding{
+		ID:       ID("clone-1"),
+		Rule:     "clone-detected",
+		ToolName: "art-dupl",
+		Message:  "duplicate code",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("a.go"), Line: 3},
+		GroupID:  "clone-group-42",
+	}
+
+	restored := FromLSP("file:///a.go", original.ToLSP())
+
+	if restored.GroupID != "clone-group-42" {
+		t.Errorf("GroupID: got %q, want %q", restored.GroupID, "clone-group-42")
+	}
+}
+
+// TestLSPRoundTrip_DiagnosticTags verifies that LSP diagnostic tags stored in
+// metadata by FromLSP are re-emitted on the diagnostic by ToLSP, and that a
+// full round-trip preserves them.
+func TestLSPRoundTrip_DiagnosticTags(t *testing.T) {
+	t.Parallel()
+
+	original := Finding{
+		ID:       ID("unused-1"),
+		Rule:     "unused-code",
+		ToolName: "art-dupl",
+		Message:  "unnecessary code",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("dup.go"), Line: 7},
+		Metadata: map[string]string{LSPDiagnosticTagsKey: "1"},
+	}
+
+	diag := original.ToLSP()
+
+	if len(diag.Tags) != 1 || diag.Tags[0] != LSPDiagnosticTagUnnecessary {
+		t.Fatalf("Tags: got %v, want [%d]", diag.Tags, LSPDiagnosticTagUnnecessary)
+	}
+
+	restored := FromLSP("file:///dup.go", diag)
+
+	if got := restored.Metadata[LSPDiagnosticTagsKey]; got != "1" {
+		t.Errorf("Metadata[%s]: got %q, want %q", LSPDiagnosticTagsKey, got, "1")
+	}
+
+	rediag := restored.ToLSP()
+
+	if len(rediag.Tags) != 1 || rediag.Tags[0] != LSPDiagnosticTagUnnecessary {
+		t.Errorf("re-emitted Tags: got %v, want [%d]", rediag.Tags, LSPDiagnosticTagUnnecessary)
+	}
+}
+
+// TestToLSP_DiagnosticTags_IgnoreMalformed verifies that malformed metadata
+// values do not produce tag entries.
+func TestToLSP_DiagnosticTags_IgnoreMalformed(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		ID:       ID("x"),
+		Rule:     "r",
+		ToolName: "t",
+		Message:  "m",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("a.go"), Line: 1},
+		Metadata: map[string]string{LSPDiagnosticTagsKey: "1,bogus,2"},
+	}
+
+	diag := f.ToLSP()
+
+	if len(diag.Tags) != 2 {
+		t.Fatalf("Tags: got %v, want 2 entries", diag.Tags)
+	}
+
+	if diag.Tags[0] != LSPDiagnosticTagUnnecessary || diag.Tags[1] != LSPDiagnosticTagDeprecated {
+		t.Errorf("Tags: got %v, want [%d %d]", diag.Tags, LSPDiagnosticTagUnnecessary, LSPDiagnosticTagDeprecated)
+	}
+}
