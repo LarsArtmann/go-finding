@@ -13,9 +13,35 @@ import (
 
 // FixApplier handles application of fixes to source files.
 type FixApplier struct {
-	rootDir string
-	backup  *FileBackup
-	engine  *FixEngine
+	rootDir        string
+	backup         *FileBackup
+	engine         *FixEngine
+	rollbackPolicy RollbackPolicy
+}
+
+// RollbackPolicy controls which files are restored when a file fails during a
+// multi-file fix run.
+type RollbackPolicy int
+
+const (
+	// RollbackPolicyFailingFile keeps every file applied so far and restores
+	// only the failing file. Per-finding soft failures (provider resolve
+	// errors, refused findings) never abort the run: they are reported in
+	// ApplyReport.Outcomes while all successfully applied fixes stay on disk.
+	// This is the default and matches consumers that batch independent fixes
+	// (e.g., a lint --fix run across many files).
+	RollbackPolicyFailingFile RollbackPolicy = iota
+
+	// RollbackPolicyAllFiles provides all-or-nothing semantics: any file
+	// failure restores the failing file and every file modified earlier in
+	// the run, preserving the pre-call state of all inputs.
+	RollbackPolicyAllFiles
+)
+
+// SetRollbackPolicy sets the failure behavior for multi-file runs.
+// The default is RollbackPolicyFailingFile.
+func (a *FixApplier) SetRollbackPolicy(p RollbackPolicy) {
+	a.rollbackPolicy = p
 }
 
 // NewFixApplier creates a new FixApplier with default text-based providers.

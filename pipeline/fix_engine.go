@@ -46,10 +46,9 @@ func (e *FixEngine) Apply(
 	content []byte,
 	fixes []finding.Finding,
 ) ([]byte, []finding.Finding, int) {
-	applied, _, conflicts, result, _ := e.ApplyWithConflicts(content, fixes)
-	_ = conflicts
+	result := e.ApplyWithOutcomes(content, fixes)
 
-	return result, applied, len(applied)
+	return result.Content, result.Applied, len(result.Applied)
 }
 
 // ApplyWithConflicts applies findings and returns applied findings, applied edits,
@@ -59,39 +58,119 @@ func (e *FixEngine) ApplyWithConflicts(
 	content []byte,
 	fixes []finding.Finding,
 ) ([]finding.Finding, []FixEdit, []Conflict, []byte, []error) {
+	result := e.ApplyWithOutcomes(content, fixes)
+
+	return result.Applied, result.AppliedEdits, result.Conflicts, result.Content, result.Errors
+}
+
+// ApplyWithOutcomes applies findings and returns the full per-finding result:
+// applied findings, applied edits, conflicts, modified content, provider
+// errors, and one FixOutcome per input finding (in input order) that
+// distinguishes applied / no-change / refused / conflict / invalid / failed.
+func (e *FixEngine) ApplyWithOutcomes(
+	content []byte,
+	fixes []finding.Finding,
+) FixApplyResult {
+	result := FixApplyResult{Content: content}
 	if len(fixes) == 0 {
-		return nil, nil, nil, content, nil
+		return result
 	}
 
 	var (
-		allEdits      []FixEdit
-		resolveErrors []error
-		lineIndex     []int // lazily built by resolveEdits when a lineIndexAware provider handles a finding
+		allEdits  []FixEdit
+		lineIndex []int // lazily built by resolveEdits when a lineIndexAware provider handles a finding
+		resolved  []int // outcome indices whose edits were collected for application
 	)
+
+	result.Outcomes = make([]FixOutcome, 0, len(fixes))
 
 	for _, f := range fixes {
 		if !f.HasCodeChange() {
+			result.Outcomes = append(result.Outcomes, FixOutcome{
+				Finding: f,
+				Status:  FixOutcomeNoChange,
+			})
+
 			continue
 		}
 
 		edits, err := e.resolveEdits(content, &lineIndex, f)
 		if err != nil {
-			resolveErrors = append(resolveErrors, fmt.Errorf("finding %s: %w", f.ID, err))
+			wrapped := fmt.Errorf("finding %s: %w", f.ID, err)
+			result.Errors = append(result.Errors, wrapped)
+			result.Outcomes = append(result.Outcomes, FixOutcome{
+				Finding: f,
+				Status:  FixOutcomeFailed,
+				Err:     wrapped,
+			})
+
+			continue
 		}
 
+		if len(edits) == 0 {
+			result.Outcomes = append(result.Outcomes, FixOutcome{
+				Finding: f,
+				Status:  FixOutcomeRefused,
+			})
+
+			continue
+		}
+
+		resolved = append(resolved, len(result.Outcomes))
+		result.Outcomes = append(result.Outcomes, FixOutcome{
+			Finding: f,
+			Status:  FixOutcomeApplied,
+		})
 		allEdits = append(allEdits, edits...)
 	}
 
 	if len(allEdits) == 0 {
-		return nil, nil, nil, content, resolveErrors
+		return result
 	}
 
 	// Sort descending by offset so later edits don't shift earlier ones.
 	sortEditsDescending(allEdits)
 
-	applied, appliedEdits, conflicts, result := e.applyEditsWithConflicts(content, allEdits)
+	result.Applied, result.AppliedEdits, result.Conflicts, result.Content = e.applyEditsWithConflicts(content, allEdits)
 
-	return applied, appliedEdits, conflicts, result, resolveErrors
+	reconcileOutcomes(&result, resolved)
+
+	return result
+}
+
+// reconcileOutcomes finalizes provisional FixOutcomeApplied statuses against
+// the actual application results: findings whose edits survived are applied,
+// findings in Conflicts are conflicts, and findings whose edits were dropped
+// as invalid or out of bounds are invalid.
+func reconcileOutcomes(result *FixApplyResult, resolved []int) {
+	appliedIDs := make(map[finding.ID]struct{}, len(result.Applied))
+	for _, f := range result.Applied {
+		appliedIDs[f.ID] = struct{}{}
+	}
+
+	conflictIDs := make(map[finding.ID]struct{}, len(result.Conflicts))
+	for _, c := range result.Conflicts {
+		conflictIDs[c.Finding.ID] = struct{}{}
+	}
+
+	for _, idx := range resolved {
+		o := &result.Outcomes[idx]
+
+		switch {
+		case hasID(appliedIDs, o.Finding.ID):
+			o.Status = FixOutcomeApplied
+		case hasID(conflictIDs, o.Finding.ID):
+			o.Status = FixOutcomeConflict
+		default:
+			o.Status = FixOutcomeInvalid
+		}
+	}
+}
+
+func hasID(set map[finding.ID]struct{}, id finding.ID) bool {
+	_, ok := set[id]
+
+	return ok
 }
 
 // resolveEdits tries each provider in order and returns edits from the first match.
