@@ -55,6 +55,7 @@ type LSPDiagnosticData struct {
 	FixStrategy       FixStrategy       `json:"fixStrategy,omitempty"`
 	Confidence        Confidence        `json:"confidence,omitempty"`
 	Category          Category          `json:"category,omitempty"`
+	GroupID           GroupID           `json:"groupId,omitempty"`
 	Tags              []Tag             `json:"tags,omitempty"`
 	BeforeCode        string            `json:"beforeCode,omitempty"`
 	AfterCode         string            `json:"afterCode,omitempty"`
@@ -110,6 +111,7 @@ func (f Finding) ToLSP() LSPDiagnostic {
 			FixStrategy:       f.FixStrategy,
 			Confidence:        f.Confidence,
 			Category:          f.Category,
+			GroupID:           f.GroupID,
 			Tags:              f.Tags,
 			BeforeCode:        f.BeforeCode,
 			AfterCode:         f.AfterCode,
@@ -130,6 +132,11 @@ func (f Finding) ToLSP() LSPDiagnostic {
 	} else {
 		// Single position diagnostic
 		diag.Range.End = diag.Range.Start
+	}
+
+	// Restore LSP diagnostic tags stored in metadata by FromLSP.
+	if v, ok := f.Metadata[LSPDiagnosticTagsKey]; ok {
+		diag.Tags = parseLSPDiagnosticTags(v)
 	}
 
 	// Add related information
@@ -217,6 +224,7 @@ func FromLSP(fileURI FilePath, diag LSPDiagnostic) Finding {
 		f.FixStrategy = diag.Data.FixStrategy
 		f.Confidence = diag.Data.Confidence
 		f.Category = diag.Data.Category
+		f.GroupID = diag.Data.GroupID
 		f.Tags = diag.Data.Tags
 		f.BeforeCode = diag.Data.BeforeCode
 		f.AfterCode = diag.Data.AfterCode
@@ -334,6 +342,25 @@ func severityFromLSP(sev LSPSeverity) Severity {
 	default:
 		return SeverityWarning
 	}
+}
+
+// parseLSPDiagnosticTags parses a comma-separated tag list as written by
+// FromLSP into LSPDiagnosticTag values. Malformed entries are skipped.
+func parseLSPDiagnosticTags(s string) []LSPDiagnosticTag {
+	parts := strings.Split(s, ",")
+
+	tags := make([]LSPDiagnosticTag, 0, len(parts))
+	for _, p := range parts {
+		if n, err := strconv.Atoi(strings.TrimSpace(p)); err == nil {
+			tags = append(tags, LSPDiagnosticTag(n))
+		}
+	}
+
+	if len(tags) == 0 {
+		return nil
+	}
+
+	return tags
 }
 
 // collectRelatedFindingIDs extracts FindingIDs from related refs in order.

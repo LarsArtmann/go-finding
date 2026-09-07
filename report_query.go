@@ -72,6 +72,28 @@ func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 	return Filter(r.ActiveFindings(), ByFixStrategy(fs))
 }
 
+// GroupFindings returns findings grouped by GroupID, excluding suppressed.
+// Findings without a GroupID are omitted. Group order is not deterministic;
+// findings within a group preserve report order.
+// Safe for concurrent use.
+func (r *Report) GroupFindings() map[GroupID][]Finding {
+	groups := make(map[GroupID][]Finding)
+
+	for _, f := range r.ActiveFindings() {
+		if f.GroupID == "" {
+			continue
+		}
+
+		groups[f.GroupID] = append(groups[f.GroupID], f)
+	}
+
+	if len(groups) == 0 {
+		return nil
+	}
+
+	return groups
+}
+
 // FindByID returns the finding with the given ID, or nil if not found.
 // The returned Finding is a shallow copy; modifications to value fields do not
 // affect the report, but mutations to slice/map fields (Tags, Related, Metadata)

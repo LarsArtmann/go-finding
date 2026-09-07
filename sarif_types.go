@@ -36,6 +36,7 @@ const (
 	sarifPropConfidence = "go-finding/confidence"
 	sarifPropSuggestion = "go-finding/suggestion"
 	sarifPropSnippet    = "go-finding/snippet"
+	sarifPropGroupID    = "go-finding/groupId"
 	sarifPropBeforeCode = "go-finding/beforeCode"
 	sarifPropAfterCode  = "go-finding/afterCode"
 	sarifPropEditPrefix = "go-finding/edit/"

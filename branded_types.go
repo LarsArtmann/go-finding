@@ -17,3 +17,7 @@ type ToolName string
 
 // FilePath is a path to a source file.
 type FilePath string
+
+// GroupID groups findings that belong to the same logical set
+// (e.g., a clone group of N duplicated code blocks).
+type GroupID string

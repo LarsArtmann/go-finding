@@ -347,6 +347,10 @@ func sarifProperties(f Finding) map[string]any {
 		props[sarifPropSnippet] = f.Snippet
 	}
 
+	if f.GroupID != "" {
+		props[sarifPropGroupID] = string(f.GroupID)
+	}
+
 	if f.BeforeCode != "" {
 		props[sarifPropBeforeCode] = f.BeforeCode
 	}

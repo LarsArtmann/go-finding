@@ -29,6 +29,7 @@ type Finding struct {
 	Range       *Range       `json:"range,omitempty"`       // For span-based findings
 	Snippet     string       `json:"snippet,omitempty"`     // Surrounding code context
 	Confidence  Confidence   `json:"confidence,omitempty"`  // 0.0-1.0
+	GroupID     GroupID      `json:"groupId,omitempty"`     // Logical group this finding belongs to
 	Related     []RelatedRef `json:"related,omitempty"`     // Related findings
 	Suppression *Suppression `json:"suppression,omitempty"` // If suppressed
 

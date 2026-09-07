@@ -88,6 +88,14 @@ func (b *Builder) WithSnippet(s string) *Builder {
 	return b
 }
 
+// WithGroupID sets the logical group this finding belongs to
+// (e.g., a clone group identifier).
+func (b *Builder) WithGroupID(g GroupID) *Builder {
+	b.f.GroupID = g
+
+	return b
+}
+
 // WithConfidence sets the confidence level (clamped to [0.0, 1.0]).
 func (b *Builder) WithConfidence(c Confidence) *Builder {
 	b.f.Confidence = c.Clamp()

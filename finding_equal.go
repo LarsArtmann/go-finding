@@ -64,6 +64,10 @@ func (f Finding) Equal(other Finding) bool {
 		return false
 	}
 
+	if f.GroupID != other.GroupID {
+		return false
+	}
+
 	if f.Confidence != other.Confidence {
 		return false
 	}
