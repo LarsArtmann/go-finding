@@ -388,6 +388,54 @@ func TestSARIFRoundTrip_PositionOffset(t *testing.T) {
 	}
 }
 
+// TestSARIFRoundTrip_GroupID verifies that GroupID survives a SARIF
+// export/import round-trip via the property bag, and that findings without
+// a GroupID do not gain one.
+func TestSARIFRoundTrip_GroupID(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	f := Finding{
+		ID:       ID("art-dupl:clone-detected:a.go:10:1"),
+		Rule:     "clone-detected",
+		ToolName: "art-dupl",
+		Message:  "duplicate code",
+		Severity: SeverityWarning,
+		Position: Position{File: "a.go", Line: 10, Column: 1},
+		GroupID:  "clone-group-1",
+	}
+
+	report := NewReport(ToolInfo{Name: "art-dupl"})
+	report.AddFinding(f)
+
+	sarifBytes, err := report.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	findings, err := FindingsFromSARIF(context.Background(), sarifBytes)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.HaveLen(1))
+	g.Expect(findings[0].GroupID).To(gomega.Equal(GroupID("clone-group-1")))
+
+	noGroup := Finding{
+		ID:       ID("govet:printf:b.go:1:1"),
+		Rule:     "printf",
+		ToolName: "govet",
+		Message:  "no group",
+		Severity: SeverityWarning,
+		Position: Position{File: "b.go", Line: 1, Column: 1},
+	}
+
+	report2 := NewReport(ToolInfo{Name: "govet"})
+	report2.AddFinding(noGroup)
+
+	sarifBytes2, err := report2.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	findings2, err := FindingsFromSARIF(context.Background(), sarifBytes2)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings2).To(gomega.HaveLen(1))
+	g.Expect(findings2[0].GroupID).To(gomega.Equal(GroupID("")))
+}
+
 // TestSARIFSnippet_BackwardCompat verifies that SARIF region.snippet accepts
 // both the spec-compliant object form ({"text":"..."}) and the common
 // bare-string shorthand used by many SARIF producers.
