@@ -74,6 +74,10 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 		return nil, fmt.Errorf("init fix applier: %w", err)
 	}
 
+	if config.FixRollbackAllFiles {
+		applier.SetRollbackPolicy(RollbackPolicyAllFiles)
+	}
+
 	//nolint:exhaustruct
 	return &Pipeline{
 		config:    config,

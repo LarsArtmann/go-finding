@@ -83,7 +83,7 @@ func TestFixApplier_ApplyToFile_NonexistentFile(t *testing.T) {
 
 	fixes := []finding.Finding{makeFixFinding("1", "old", "new", "", 0)}
 
-	applied, _, err := applier.applyToFile(filepath.Join(tempDir, "missing.go"), fixes)
+	applied, _, _, err := applier.applyToFile(filepath.Join(tempDir, "missing.go"), fixes)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 	g.Expect(applied).To(BeNil())
@@ -99,7 +99,7 @@ func TestFixApplier_ApplyToFile_NoMatchingBeforeCode(t *testing.T) {
 
 	fixes := []finding.Finding{makeFixFinding("1", "nonexistent_code", "replacement", "", 0)}
 
-	applied, _, err := applier.applyToFile(testFile, fixes)
+	applied, _, _, err := applier.applyToFile(testFile, fixes)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(applied).To(BeNil())
 }
@@ -146,7 +146,7 @@ func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {
 
 	fixes := []finding.Finding{makeFixFinding("1", "old()", "new()", "", 0)}
 
-	applied, _, err := applier.applyToFile(testFile, fixes)
+	applied, _, _, err := applier.applyToFile(testFile, fixes)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 
@@ -273,6 +273,48 @@ func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
 		makeFixFinding("2", "old2()", "new2()", "second.go", 0),
 	}
 
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(errors.Is(err, finding.ErrConflict)).To(BeTrue())
+	g.Expect(applied).To(Equal(1))
+
+	// Default policy (RollbackPolicyFailingFile): file 1 keeps its applied fix.
+	data1, rErr := readFile(file1)
+	g.Expect(rErr).NotTo(HaveOccurred())
+	g.Expect(string(data1)).To(Equal("package first\nnew1()\n"))
+
+	// File 2 should be unchanged (write failed, restored from backup).
+	data2, rErr := readFile(file2)
+	g.Expect(rErr).NotTo(HaveOccurred())
+	g.Expect(string(data2)).To(Equal("package second\nold2()\n"))
+}
+
+// TestFixApplier_Apply_FileError_RollbackPolicyAllFiles verifies the
+// all-or-nothing contract: when a file fails, files modified earlier in the
+// run are rolled back to their backups.
+func TestFixApplier_Apply_FileError_RollbackPolicyAllFiles(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+	applier.SetRollbackPolicy(RollbackPolicyAllFiles)
+
+	// File 1: will be successfully modified.
+	file1 := filepath.Join(tempDir, "first.go")
+	writeTestFile(t, file1, []byte("package first\nold1()\n"))
+
+	// File 2: read-only so applyToFile write fails.
+	file2 := filepath.Join(tempDir, "second.go")
+	writeTestFile(t, file2, []byte("package second\nold2()\n"))
+	errChmod := os.Chmod(file2, 0o444) //nolint:gosec // intentional read-only for test
+	g.Expect(errChmod).NotTo(HaveOccurred())
+	t.Cleanup(func() {
+		_ = os.Chmod(file2, 0o644) //nolint:gosec // restore permissions in cleanup
+	})
+
+	fixes := []finding.Finding{
+		makeFixFinding("1", "old1()", "new1()", "first.go", 0),
+		makeFixFinding("2", "old2()", "new2()", "second.go", 0),
+	}
+
 	applied, err := applier.Apply(context.Background(), fixes)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, finding.ErrConflict)).To(BeTrue())
@@ -355,7 +397,7 @@ func TestFixApplier_ApplyToFile_RangeOutOfBounds(t *testing.T) {
 		},
 	}
 
-	applied, _, err := applier.applyToFile(testFile, fixes)
+	applied, _, _, err := applier.applyToFile(testFile, fixes)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(applied).To(BeNil())
 

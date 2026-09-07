@@ -43,6 +43,11 @@ type Config struct {
 	// If nil, default text-based providers (OffsetProvider, LineProvider, SubstringProvider) are used.
 	// Register domain-specific providers (e.g., Go AST, Rust syn) for production accuracy.
 	FixProviders []FixProvider
+	// FixRollbackAllFiles opts into all-or-nothing fix application: when a
+	// file fails, every file modified earlier in the run is rolled back.
+	// By default only the failing file is restored and successfully applied
+	// fixes stay on disk (FixApplier.RollbackPolicyFailingFile).
+	FixRollbackAllFiles bool
 	// DetectorTimeouts configures per-detector timeouts. Map key is detector name,
 	// value is the timeout for that detector. Detectors not in the map use the
 	// global Timeout.
