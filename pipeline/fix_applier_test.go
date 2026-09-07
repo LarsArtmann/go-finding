@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -276,6 +277,7 @@ func TestFixApplier_Apply_FileError_DefaultKeepsEarlierFiles(t *testing.T) {
 		makeFixFinding("2", "old2()", "new2()", "second.go", 0),
 	}
 
+	applied, err := applier.Apply(context.Background(), fixes)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(errors.Is(err, finding.ErrConflict)).To(BeTrue())
 	g.Expect(applied).To(Equal(1))
@@ -332,6 +334,84 @@ func TestFixApplier_Apply_FileError_RollbackPolicyAllFiles(t *testing.T) {
 	data2, rErr := readFile(file2)
 	g.Expect(rErr).NotTo(HaveOccurred())
 	g.Expect(string(data2)).To(Equal("package second\nold2()\n"))
+}
+
+// TestFixApplier_ApplyWithReport_SoftErrorKeepsOtherFiles verifies the
+// issue #28 scenario: one unresolvable finding must not discard clean fixes
+// in the same file or in other files. The failed finding is reported via
+// outcomes and the returned error, while all applied fixes stay on disk.
+func TestFixApplier_ApplyWithReport_SoftErrorKeepsOtherFiles(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+
+	file1 := filepath.Join(tempDir, "first.go")
+	writeTestFile(t, file1, []byte("package first\nold1()\nold2()\n"))
+
+	file2 := filepath.Join(tempDir, "second.go")
+	writeTestFile(t, file2, []byte("package second\nold3()\n"))
+
+	fixes := []finding.Finding{
+		makeFixFinding("good-1", "old1()", "new1()", "first.go", 0),
+		// Position beyond EOF and BeforeCode not in the file: the line
+		// provider errors and the substring provider refuses, so this
+		// finding fails resolution.
+		makeFixFinding("unresolvable", "no-such-text", "fixed()", "first.go", 999),
+		makeFixFinding("good-2", "old3()", "new3()", "second.go", 0),
+	}
+
+	report, err := applier.ApplyWithReport(context.Background(), fixes)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("unresolvable"))
+
+	g.Expect(report.Applied).To(Equal(2))
+	g.Expect(report.AppliedFixes).To(HaveLen(2))
+	g.Expect(report.RolledBack).To(BeEmpty())
+
+	failed := report.FailedOutcomes()
+	g.Expect(failed).To(HaveLen(1))
+	g.Expect(string(failed[0].Finding.ID)).To(Equal("unresolvable"))
+	g.Expect(failed[0].Status).To(Equal(FixOutcomeFailed))
+
+	data1, rErr := readFile(file1)
+	g.Expect(rErr).NotTo(HaveOccurred())
+	g.Expect(string(data1)).To(Equal("package first\nnew1()\nold2()\n"))
+
+	data2, rErr := readFile(file2)
+	g.Expect(rErr).NotTo(HaveOccurred())
+	g.Expect(string(data2)).To(Equal("package second\nnew3()\n"))
+}
+
+// TestFixApplier_ApplyWithReport_RefusedFindingsReported verifies that
+// findings a provider matched but refused are visible in outcomes without
+// failing the run.
+func TestFixApplier_ApplyWithReport_RefusedFindingsReported(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+
+	testFile := filepath.Join(tempDir, "only.go")
+	writeTestFile(t, testFile, []byte("package only\nold()\n"))
+
+	fixes := []finding.Finding{
+		makeFixFinding("good", "old()", "new()", "only.go", 0),
+		makeFixFinding("refused", "no-such-text", "new()", "only.go", 0),
+	}
+
+	report, err := applier.ApplyWithReport(context.Background(), fixes)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(report.Applied).To(Equal(1))
+
+	g.Expect(report.Outcomes).To(HaveLen(2))
+
+	byID := map[string]FixOutcome{}
+	for _, o := range report.Outcomes {
+		byID[string(o.Finding.ID)] = o
+	}
+
+	g.Expect(byID["good"].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(byID["refused"].Status).To(Equal(FixOutcomeRefused))
+	g.Expect(byID["refused"].Err).NotTo(HaveOccurred())
 }
 
 func TestFixApplier_Apply_FixesWithNoFile(t *testing.T) {
@@ -605,8 +685,9 @@ func TestFixApplier_ApplyWithDetails(t *testing.T) {
 }
 
 // saboteurProvider is a test FixProvider that deletes the backup .bak file
-// when Edits is called, then returns an error. This simulates a TOCTOU
-// scenario where the backup becomes unavailable between backup and restore.
+// when Edits is called, then returns a valid edit. Used with a read-only
+// target file, this simulates: write fails AND the backup needed for restore
+// has become unavailable between backup and restore.
 type saboteurProvider struct {
 	backup     *FileBackup
 	targetPath string
@@ -617,19 +698,24 @@ func (*saboteurProvider) CanHandle(f finding.Finding) bool {
 	return f.HasCodeChange()
 }
 
-func (s *saboteurProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error) {
+func (s *saboteurProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
 	bakPath := s.backup.BackupPath(s.targetPath)
 	if bakPath != "" {
 		_ = os.Remove(bakPath) //nolint:gosec // G703: intentional path manipulation in test saboteur
 	}
 
-	return nil, errors.New("sabotaged by test provider")
+	idx := bytes.Index(content, []byte(f.BeforeCode))
+	if idx < 0 {
+		return nil, errors.New("before code not found")
+	}
+
+	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
 }
 
-// TestFixApplier_RollbackErrorNotSwallowed verifies that when both applyToFile
-// fails AND Restore fails (because the .bak file was deleted), the returned
-// error includes BOTH the apply failure and the rollback failure — proving
-// rollback errors are no longer silently swallowed.
+// TestFixApplier_RollbackErrorNotSwallowed verifies that when applyToFile
+// fails hard (write error on a read-only file) AND Restore fails (because the
+// .bak file was deleted), the returned error includes BOTH the apply failure
+// and the rollback failure — proving rollback errors are not silently swallowed.
 func TestFixApplier_RollbackErrorNotSwallowed(t *testing.T) {
 	g := NewParallelGomega(t)
 
@@ -659,6 +745,12 @@ func TestFixApplier_RollbackErrorNotSwallowed(t *testing.T) {
 		Position:    finding.Position{File: "target.go", Line: 1},
 		FixStrategy: finding.FixStrategyDirect,
 	}
+
+	errChmod := os.Chmod(testFile, 0o444) //nolint:gosec // intentional read-only for test
+	g.Expect(errChmod).NotTo(HaveOccurred())
+	t.Cleanup(func() {
+		_ = os.Chmod(testFile, 0o644) //nolint:gosec // restore permissions in cleanup
+	})
 
 	_, err := applier.Apply(context.Background(), []finding.Finding{fix})
 	g.Expect(err).To(HaveOccurred())

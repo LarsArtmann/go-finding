@@ -212,6 +212,7 @@ func (a *FixApplier) ApplyWithReport(
 
 		modified = append(modified, path)
 		report.AppliedFixes = append(report.AppliedFixes, fileApplied...)
+		report.Applied = len(report.AppliedFixes)
 
 		a.recordShiftMap(shiftMap, fileFixes, report.ShiftMaps)
 	}
