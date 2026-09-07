@@ -141,6 +141,20 @@ func TestConfigFile_ConfigFromReader_Error(t *testing.T) {
 	g.Expect(err).To(HaveOccurred())
 }
 
+// TestConfigFile_FixRollbackAllFiles verifies that the config-file field
+// maps to the Config option consumed by the pipeline.
+func TestConfigFile_FixRollbackAllFiles(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	cfg, err := ConfigFromFile([]byte(`{"fixRollbackAllFiles": true}`))
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(cfg.FixRollbackAllFiles).To(BeTrue())
+
+	cfg, err = ConfigFromFile([]byte(`{}`))
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(cfg.FixRollbackAllFiles).To(BeFalse())
+}
+
 // TestConfigFile_ConfigFromFile_BadDurations covers every variant of bad
 // duration strings accepted by ConfigFromFile: the top-level `timeout` field
 // and the per-detector `detectorTimeouts` map. Each case is checked against

@@ -39,6 +39,7 @@ type ConfigFile struct {
 	DryRun                     bool                      `json:"dryRun"`
 	CorrelateFindings          bool                      `json:"correlateFindings"`
 	ByteLevelConflictDetection bool                      `json:"byteLevelConflictDetection"`
+	FixRollbackAllFiles        bool                      `json:"fixRollbackAllFiles"`
 	Severity                   string                    `json:"severity"`
 	DetectorNames              []string                  `json:"detectorNames"`
 	ProviderNames              []string                  `json:"providerNames"`
@@ -111,6 +112,7 @@ func (cf ConfigFile) toConfig() (Config, error) {
 		DryRun:                     cf.DryRun,
 		CorrelateFindings:          cf.CorrelateFindings,
 		ByteLevelConflictDetection: cf.ByteLevelConflictDetection,
+		FixRollbackAllFiles:        cf.FixRollbackAllFiles,
 		DetectorTimeouts:           detectorTimeouts,
 	}, nil
 }

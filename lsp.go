@@ -295,27 +295,34 @@ func FromLSP(fileURI FilePath, diag LSPDiagnostic) Finding {
 		f.Related = append(f.Related, ref)
 	}
 
-	// Preserve raw LSP severity and tags for fidelity.
-	if diag.Severity > 0 || len(diag.Tags) > 0 {
-		if f.Metadata == nil {
-			f.Metadata = make(map[string]string)
-		}
-
-		if diag.Severity > 0 {
-			f.Metadata[LSPSeverityKey] = strconv.Itoa(int(diag.Severity))
-		}
-
-		if len(diag.Tags) > 0 {
-			tagStrs := make([]string, len(diag.Tags))
-			for i, tag := range diag.Tags {
-				tagStrs[i] = strconv.Itoa(int(tag))
-			}
-
-			f.Metadata[LSPDiagnosticTagsKey] = strings.Join(tagStrs, ",")
-		}
-	}
+	preserveLSPFidelity(&f, diag)
 
 	return f
+}
+
+// preserveLSPFidelity stores raw LSP severity and diagnostic tags in the
+// finding's metadata so conversions stay lossless.
+func preserveLSPFidelity(f *Finding, diag LSPDiagnostic) {
+	if diag.Severity <= 0 && len(diag.Tags) == 0 {
+		return
+	}
+
+	if f.Metadata == nil {
+		f.Metadata = make(map[string]string)
+	}
+
+	if diag.Severity > 0 {
+		f.Metadata[LSPSeverityKey] = strconv.Itoa(int(diag.Severity))
+	}
+
+	if len(diag.Tags) > 0 {
+		tagStrs := make([]string, len(diag.Tags))
+		for i, tag := range diag.Tags {
+			tagStrs[i] = strconv.Itoa(int(tag))
+		}
+
+		f.Metadata[LSPDiagnosticTagsKey] = strings.Join(tagStrs, ",")
+	}
 }
 
 func severityToLSP(s Severity) LSPSeverity {
