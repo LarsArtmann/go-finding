@@ -250,7 +250,10 @@ func TestFixApplier_Apply_EmptyFixesList(t *testing.T) {
 	g.Expect(applied).To(Equal(0))
 }
 
-func TestFixApplier_Apply_ApplyToFileErrorRestoresAndRollsBack(t *testing.T) {
+// TestFixApplier_Apply_FileError_DefaultKeepsEarlierFiles verifies the
+// default rollback policy: when one file fails, only the failing file is
+// restored and files applied earlier keep their fixes (issue #28).
+func TestFixApplier_Apply_FileError_DefaultKeepsEarlierFiles(t *testing.T) {
 	g := NewParallelGomega(t)
 
 	tempDir, applier := newTestApplierWithDir(t)
