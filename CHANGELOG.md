@@ -11,7 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-No changes yet.
+### Added
+
+- **`GroupID` on `Finding`** — New optional `GroupID GroupID` field groups findings that belong to the same logical set (e.g., a clone group of N duplicated code blocks from art-dupl). Branded string type like `ID`/`RuleName`/`FilePath`; JSON key `groupId`, omitted when empty. Round-trips losslessly through JSON, SARIF (property `go-finding/groupId`), and LSP (`LSPDiagnosticData.GroupID`). Builder support via `WithGroupID`. `Report.GroupFindings()` returns active findings grouped by `GroupID`, excluding suppressed and ungrouped findings.
+- **`ToLSP` emits LSP diagnostic tags from metadata** — Completes the LSP tag round-trip: a finding that carries `Metadata[LSPDiagnosticTagsKey]` (as written by `FromLSP`) now produces an `LSPDiagnostic` with `Tags` populated, so LSP clients (faded/struck-through rendering for `Unnecessary`) see the tags on every conversion.
+
+### Changed
+
+- **Fix rollback scope is now per-file by default** — Previously, any file failure rolled back every file modified earlier in the run, discarding clean fixes because of one bad file (see issue #28). Now only the failing file is restored and earlier files keep their applied fixes. Opt back into all-or-nothing via `FixApplier.SetRollbackPolicy(RollbackPolicyAllFiles)`, `pipeline.Config.FixRollbackAllFiles`, or the config-file field `fixRollbackAllFiles`. Soft per-finding failures (provider resolve errors, refused findings) no longer abort a run: they are reported while all successfully applied fixes stay on disk.
 
 ## [1.6.0] - 2026-08-08
 
@@ -802,7 +809,8 @@ All APIs deprecated since v0.6.0–v0.9.0 have been removed. See `docs/MIGRATION
 
 ---
 
-[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/larsartmann/go-finding/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/larsartmann/go-finding/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/larsartmann/go-finding/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/larsartmann/go-finding/compare/v1.3.0...v1.4.0

@@ -84,6 +84,31 @@ for _, c := range conflicts {
 }
 ```
 
+### Per-Finding Outcomes
+
+`ApplyWithOutcomes` tells you exactly what happened to each finding — applied, refused, conflicted, or failed. A provider that matches a finding but produces zero edits is reported as `refused` instead of being silently indistinguishable from success:
+
+```go
+result := engine.ApplyWithOutcomes(content, findings)
+
+for _, o := range result.Outcomes {
+    switch o.Status {
+    case pipeline.FixOutcomeApplied:
+    case pipeline.FixOutcomeNoChange:
+    case pipeline.FixOutcomeRefused:
+        fmt.Printf("provider refused %s\n", o.Finding.ID)
+    case pipeline.FixOutcomeConflict:
+    case pipeline.FixOutcomeInvalid:
+    case pipeline.FixOutcomeFailed:
+        fmt.Printf("failed %s: %v\n", o.Finding.ID, o.Err)
+    }
+}
+
+failed := result.FailedOutcomes == nil // via HasErrors(); OutcomeFor(id) for lookups
+```
+
+Outcomes come in input order, one per input finding. `result.OutcomeFor(id)` looks up a single finding; `result.OutcomeCounts()` tallies by status; `result.HasErrors()` reports provider failures.
+
 ### Custom Providers
 
 ```go
@@ -109,13 +134,24 @@ if err != nil { return err }
 // Apply reads files from disk, writes fixes, creates backups
 count, err := applier.Apply(ctx, findings)
 if err != nil {
-    // All modified files are automatically rolled back
+    // The failing file is restored; files fixed earlier keep their fixes.
+    // Inspect report := applier.ApplyWithReport(...) for details.
     return err
 }
 
 // When done, cleanup backups:
 err = applier.Cleanup()
 ```
+
+### Rollback Policy
+
+By default (`RollbackPolicyFailingFile`), a file failure restores only the failing file: independent fixes in other files stay applied. Soft per-finding failures (provider resolve errors, refused findings) never abort the run or roll anything back. For all-or-nothing semantics, opt in:
+
+```go
+applier.SetRollbackPolicy(pipeline.RollbackPolicyAllFiles)
+```
+
+or via pipeline `Config.FixRollbackAllFiles`, or the config-file field `fixRollbackAllFiles`.
 
 ### With Shift Maps
 
@@ -125,6 +161,18 @@ err = applier.Cleanup()
 count, applied, shiftMaps, err := applier.ApplyWithShiftMap(ctx, findings)
 for file, sm := range shiftMaps {
     fmt.Printf("File %s shifted by %d lines\n", file, sm.TotalShift())
+}
+```
+
+### With a Full Report
+
+`ApplyWithReport` combines applied findings, per-finding outcomes, shift maps, and the list of rolled-back files:
+
+```go
+report, err := applier.ApplyWithReport(ctx, findings)
+fmt.Printf("applied %d, rolled back %v\n", report.Applied, report.RolledBack)
+for _, o := range report.FailedOutcomes() {
+    fmt.Printf("failed %s: %v\n", o.Finding.ID, o.Err)
 }
 ```
 

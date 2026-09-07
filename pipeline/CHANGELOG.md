@@ -9,7 +9,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-No changes yet.
+### Added
+
+- **`FixEngine.ApplyWithOutcomes` + `FixApplyResult`** — Per-finding fix outcomes (issue #27). Each input finding gets one `FixOutcome` in input order distinguishing `applied`, `no-change`, `refused` (matched provider produced zero edits without error), `conflict`, `invalid` (edit dropped as invalid/out of bounds), and `failed` (provider error, carried in `Err`). Helpers: `FixApplyResult.OutcomeFor(id)`, `OutcomeCounts()`, `HasErrors()`. `Apply` and `ApplyWithConflicts` delegate to it, so their legacy return shapes are unchanged.
+- **`FixApplier.ApplyWithReport` + `ApplyReport`** — Disk-level fix run reporting: applied findings, per-finding `Outcomes`, shift maps, and `RolledBack` file list. `FailedOutcomes()` isolates provider failures. Soft per-finding failures are returned as a joined error alongside the applied fixes instead of aborting the run.
+- **`RollbackPolicy`** — Configurable failure semantics for multi-file fix runs (issue #28). `RollbackPolicyFailingFile` (new default) restores only the failing file; earlier files keep their fixes. `RollbackPolicyAllFiles` preserves the legacy all-or-nothing rollback. Set via `FixApplier.SetRollbackPolicy`, `Config.FixRollbackAllFiles`, or the config-file field `fixRollbackAllFiles`.
+
+### Changed
+
+- **`applyToFile` no longer fails on provider resolve errors when edits applied** — A file with both applied edits and unresolvable findings is written and counted as applied; the resolve errors surface in `ApplyReport.Outcomes` and the joined error return instead of triggering a full rollback of all previously fixed files.
 
 ## [1.6.0] - 2026-08-08
 
