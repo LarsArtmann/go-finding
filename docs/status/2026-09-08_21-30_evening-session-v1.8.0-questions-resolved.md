@@ -8,7 +8,7 @@
 
 ## Headline
 
-**v1.8.0 shipped** (4 tags pushed, proxy smoke green, drift fixed) through the new `release-preflight.sh` gate. **Q1/Q2/Q3 resolved with evidence.** 39 of 50 §f items done; the rest are externally blocked (billing / public flip) or ROADMAP-tracked by design.
+**v1.8.0 shipped** (4 tags pushed, proxy smoke green, drift fixed) through the new `release-preflight.sh` gate. **Q1/Q2/Q3 resolved with evidence.** §f ledger: **30 done, 2 partial, 16 blocked** (billing/public flip), **2 by-design** (ROADMAP).
 
 ## The 3 Questions (§g of the 18-48 report) — RESOLVED
 
@@ -25,7 +25,7 @@
 - **Tags:** `v1.8.0`, `pipeline/v1.8.0`, `analysis/v1.8.0`, `cmd/go-finding/v1.8.0` — pushed. Proxy smoke: all 4 resolve @v1.8.0. Scratch-module verify: `pipeline@v1.8.0` now pulls core **v1.8.0** (drift class closed).
 - **Contents:** GroupID validation (D7), `Config.OnFixOutcome` (D3), `FixApplier.ApplyDryRun` (D4), `Report.GroupFindingsSorted` + `Group`, `Template.WithGroupID`, unsafe-path failed outcomes, staticcheck before/after fix extension, release preflight. Fixed entry documents the v1.7.0 go.mod drift honestly (non-breaking, verified).
 
-## The 50-Item List (§f) — 39 Done
+## The 50-Item List (§f) — 30 Done, 2 Partial, 16 Blocked, 2 By-Design
 
 **Release integrity (1-4):** all done (see above + `go mod tidy -diff` per module added to preflight).
 
@@ -61,6 +61,6 @@
 
 ---
 
-**Session ledger:** 3/3 questions resolved with evidence, v1.8.0 shipped through the new preflight gate, 39/50 §f items done (11 blocked/by-design), 19 consumer repos bumped + pushed, 2 new features landed for v1.9.0, all local gates green at session end.
+**Session ledger:** 3/3 questions resolved with evidence, v1.8.0 shipped through the new preflight gate, §f ledger 30 done / 2 partial (f15 local-only actionlint, f33 gomend+licenseforge consumer-blocked) / 16 blocked / 2 by-design, 19 consumer repos bumped + pushed, 2 new features landed for v1.9.0, all local gates green at session end.
 
 _Assisted-by: Crush <crush@charm.land>_
