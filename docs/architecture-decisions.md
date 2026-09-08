@@ -530,3 +530,49 @@ simplest correct choice.
 **Reversibility:** Fully reversible. The two methods (`ErrorCode`, `ErrorFamily`) are
 additive. Removing the dependency would only require deleting the import and the two
 methods. No existing consumer code would break.
+
+## 16. Per-File Rollback as `FixApplier` Default
+
+**Status:** Accepted — v1.7.0 (D1 sign-off 2026-09-08).
+
+**Context:** Until v1.6.x, `FixApplier` treated every multi-file fix run as
+all-or-nothing: one hard failure on the last file rolled back every file modified
+earlier in the run, discarding clean, verified fixes. Issue #28 documented the
+concrete failure: a single unresolvable finding on the final file erased all
+applied fixes from every previous file. Additionally, a provider resolve error on
+any finding (a soft, per-finding failure) triggered the same global rollback even
+when other edits in that file had applied cleanly.
+
+Consumers of batch fix tooling expect failure isolation proportional to the
+failure: one bad file should cost that file, not the whole run.
+
+**Decision:** `RollbackPolicyFailingFile` (restore only the failing file) is the
+default rollback policy. `RollbackPolicyAllFiles` preserves the legacy
+all-or-nothing behavior and is opt-in via `FixApplier.SetRollbackPolicy`,
+`pipeline.Config.FixRollbackAllFiles`, or the config-file field
+`fixRollbackAllFiles` (CLI: `-fix-rollback-all`). Soft per-finding failures —
+provider resolve errors, refused findings — never abort a run: applied edits are
+written, failures surface via `ApplyReport.Outcomes` and the joined error return.
+
+**Tradeoffs:**
+
+- **Gain:** Failure isolation matches user expectation; issue #28's scenario now
+  loses one file instead of the whole run.
+- **Gain:** The `RollbackPolicy` type makes failure semantics explicit and
+  testable instead of implicit in control flow.
+- **Cost:** Consumers that relied on all-or-nothing semantics must opt back in
+  explicitly. This is a behavior change shipped in a minor release — justified
+  because the old behavior was a documented bug (#28), the migration is one
+  line, and `docs/guides/consumer-migration-v1.7.md` covers it.
+- **Cost:** `ApplyReport.RolledBack` lists every backed-up file on rollback,
+  including files that were backed up but never modified (content no-ops) —
+  a reporting nuance tests must account for.
+
+**Why not default to `RollbackPolicyAllFiles` with an opt-in per-file flag?** The
+default is what most consumers get; shipping the buggy-equivalent default and
+asking everyone to opt into correctness inverts the burden. Flipping the default
+later (after consumers migrate to the opt-out) would churn consumers twice.
+
+**Reversibility:** Reversible at the API level (swap the default constant) but
+not at the ecosystem level once consumers depend on per-file semantics — which
+is the point: the decision freezes the correct default.

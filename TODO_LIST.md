@@ -30,13 +30,13 @@ decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
 
 | Task                                          | Status    | Impact | Effort | Notes                                                                                                                            |
 | --------------------------------------------- | --------- | ------ | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| D1 sign-off: keep per-file rollback default   | ⬜ `TODO` | High   | Low    | Unlocks ADR-016 + the v1.7.0 release train (version.go, 4 tags, release run). Code/docs ready.                                   |
-| Decide release strategy (backfill vs forward) | ⬜ `TODO` | High   | Low    | D6 user decision. Backfill = `gh workflow run release.yml --ref v1.6.0` (workflow_dispatch ready).                               |
+| D1 sign-off: keep per-file rollback default   | ✅ `DONE` | High   | Low    | **Decided 2026-09-08: SHIP per-file rollback default.** ADR-016 written (`docs/architecture-decisions.md` #16). Unlocked the release train. |
+| Decide release strategy (backfill vs forward) | ✅ `DONE` | High   | Low    | **Decided 2026-09-08 (D6): FORWARD-ONLY v1.7.0.** No v1.5/v1.6 backfill; revisit post-account-switch if desired. Push at tag time. |
 | Re-run Release workflow per decided tags      | ⬜ `TODO` | High   | Low    | Blocked on billing + D6. Proves the cosign v3 bundle-mode fix in anger.                                                          |
 | Verify release assets (CLI binary, notes)     | ⬜ `TODO` | Med    | Low    | After first successful run. Check `HOMEBREW_TAP_GITHUB_TOKEN` secret exists (`gh secret list`).                                  |
 | Ship v1.7.0 (GroupID, outcomes, rollback)     | ⬜ `TODO` | High   | Med    | Requires billing green + D1. Pre-release work: tests, benchmarks, docs, migration guide — all done.                              |
 | Bump consumers to v1.7.0                      | ⬜ `TODO` | High   | Med    | go-humanize-linter + go-linter-sdk, then sweep the remaining 12 Go consumers; guide at `docs/guides/consumer-migration-v1.7.md`. |
-| Comment + close issues #27/#28                | ⬜ `TODO` | Med    | Low    | D2 decision: now vs at release. Fixes verified green locally, changelogged.                                                      |
+| Comment + close issues #27/#28                | ✅ `DONE` | Med    | Low    | **Decided 2026-09-08 (D2): close now** with fix-summary comments + `bug`/`fixed-in-v1.7.0` labels. |
 
 ### Make Repo Public — Phase 2/3
 

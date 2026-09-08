@@ -1,7 +1,7 @@
 # API Stability — go-finding
 
 **Last audited:** 2026-09-08
-**Version:** v1.6.0 (unreleased v1.7.0 work in `[Unreleased]`)
+**Version:** v1.7.0
 
 go-finding follows the [Go 1 Compatibility Promise](https://go.dev/doc/go1compat) philosophy.
 
@@ -215,8 +215,8 @@ All exported symbols are classified as:
 | `LineShiftMap`, `LineShiftEntry`                                         | stable                               |
 | `ConfigFile`                                                             | stable                               |
 | `FlightRecorderHook`, `FlightRecorderConfig`                             | stable                               |
-| `FixOutcome`, `FixOutcomeStatus`, `FixApplyResult`                       | stable (unreleased; ships in v1.7.0) |
-| `RollbackPolicy` (`RollbackPolicyFailingFile`, `RollbackPolicyAllFiles`) | stable (unreleased; ships in v1.7.0) |
+| `FixOutcome`, `FixOutcomeStatus`, `FixApplyResult`                       | stable (v1.7.0) |
+| `RollbackPolicy` (`RollbackPolicyFailingFile`, `RollbackPolicyAllFiles`) | stable (v1.7.0) |
 
 ### Functions
 
@@ -226,15 +226,15 @@ Notable additions:
 
 | Function                                     | Status | Notes                                                                              |
 | -------------------------------------------- | ------ | ---------------------------------------------------------------------------------- |
-| `NewFlightRecorderHook`                      | stable | Unreleased. Constructor for FlightRecorderHook.                                    |
-| `DefaultFlightRecorderConfig`                | stable | Unreleased. Returns default config.                                                |
+| `NewFlightRecorderHook`                      | stable | Added v1.5.0. Constructor for FlightRecorderHook.                                    |
+| `DefaultFlightRecorderConfig`                | stable | Added v1.5.0. Returns default config.                                                |
 | `Detect`                                     | stable | One-shot detection convenience function (v1.3.0)                                   |
 | `ApplyToContent`                             | stable | Content-level fix application without FS (v1.3.0)                                  |
 | `ConfigFromFile` / `ConfigFromReader`        | stable | JSON/YAML config file loading                                                      |
-| `FixEngine.ApplyWithOutcomes`                | stable | Unreleased. Per-finding outcomes; Apply/ApplyWithConflicts delegate to it (v1.7.0) |
-| `FixApplier.ApplyWithReport` / `ApplyReport` | stable | Unreleased. Run report with outcomes, shift maps, RolledBack files (v1.7.0)        |
-| `FixApplier.SetRollbackPolicy`               | stable | Unreleased. Per-file rollback default; AllFiles opt-in (v1.7.0)                    |
-| `ApplyReport.FailedOutcomes`                 | stable | Unreleased. Isolates failed outcomes (v1.7.0)                                      |
+| `FixEngine.ApplyWithOutcomes`                | stable | Added v1.7.0. Per-finding outcomes; Apply/ApplyWithConflicts delegate to it |
+| `FixApplier.ApplyWithReport` / `ApplyReport` | stable | Added v1.7.0. Run report with outcomes, shift maps, RolledBack files        |
+| `FixApplier.SetRollbackPolicy`               | stable | Added v1.7.0. Per-file rollback default; AllFiles opt-in                    |
+| `ApplyReport.FailedOutcomes`                 | stable | Added v1.7.0. Isolates failed outcomes                                      |
 
 ---
 
@@ -284,7 +284,7 @@ All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migratio
 
 ## Current Status
 
-**Unreleased (v1.7.0 train)** — `Finding.GroupID` + `Report.GroupFindings()` + SARIF/LSP round-trip; `FixEngine.ApplyWithOutcomes` + `FixApplyResult` (issue #27); `RollbackPolicy` per-file default + `ApplyWithReport` (issue #28); CLI `-fix-rollback-all` flag. Additive except the documented rollback default change (see CHANGELOG `[Unreleased]`).
+**v1.7.0** — `Finding.GroupID` + `Report.GroupFindings()` + SARIF/LSP round-trip; `FixEngine.ApplyWithOutcomes` + `FixApplyResult` (issue #27); `RollbackPolicy` per-file default + `ApplyWithReport` (issue #28); CLI `-fix-rollback-all` flag. Additive except the documented rollback default change (see CHANGELOG `[1.7.0]`).
 
 **Deterministic output guarantee** — All production JSON marshaling uses `encoding/json/v2` with `json.Deterministic(true)` (`marshalOpts`/`prettyMarshalOpts` in `json.go`), enforced by `scripts/json-deterministic-check.sh` in CI: byte-identical output for identical input across runs.
 
