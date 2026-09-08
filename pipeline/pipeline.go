@@ -78,7 +78,7 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 		applier.SetRollbackPolicy(RollbackPolicyAllFiles)
 	}
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	return &Pipeline{
 		config:    config,
 		detectors: detectors,
@@ -184,7 +184,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		defer cancel()
 	}
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	result := &PipelineResult{
 		Iterations: make([]Iteration, 0, p.config.MaxIterations),
 	}

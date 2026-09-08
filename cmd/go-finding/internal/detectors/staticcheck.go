@@ -22,7 +22,7 @@ func NewStaticcheckDetector(dir string) pipeline.Detector {
 
 			out, err := cmd.Output()
 			if err != nil {
-				exitError := &exec.ExitError{} //nolint:exhaustruct
+				exitError := &exec.ExitError{} //nolint:exhaustruct_v5
 				if errors.As(err, &exitError) && len(out) > 0 {
 					return parseStaticcheckJSON(out, dir), nil
 				}

@@ -124,7 +124,7 @@ func (p *Provider) parse(content []byte, filename string) (*token.FileSet, *ast.
 
 		file, err := parser.ParseFile(fset, filename, content, parser.ParseComments)
 		if err != nil || file == nil {
-			p.cache = parseCache{} //nolint:exhaustruct // intentionally zero: reset to avoid re-attempting known-bad content
+			p.cache = parseCache{} //nolint:exhaustruct_v5 // intentionally zero: reset to avoid re-attempting known-bad content
 
 			return result{fset: nil, file: nil, ok: false}
 		}

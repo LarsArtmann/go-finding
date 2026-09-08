@@ -169,7 +169,7 @@ func FixEditFromSARIFProperties(props map[string]string) *FixEdit {
 		return nil
 	}
 
-	edit := FixEdit{ //nolint:exhaustruct // partial construction from SARIF props
+	edit := FixEdit{ //nolint:exhaustruct_v5 // partial construction from SARIF props
 		Offset: offset,
 		Length: length,
 	}

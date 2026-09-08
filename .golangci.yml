@@ -38,7 +38,7 @@ linters:
     - errname
     - errorlint
     - exhaustive
-    - exhaustruct
+    - exhaustruct_v5
     - exptostd
     - fatcontext
     - forbidigo
@@ -147,7 +147,7 @@ linters:
         - fmt.Println
         - (*strings.Builder).WriteString
         - (*bytes.Buffer).WriteString
-    exhaustruct:
+    exhaustruct_v5:
       exclude:
         - os/exec.Cmd
         - github\.com/larsartmann/go-finding\.Finding
@@ -314,7 +314,7 @@ linters:
       - path: _test\.go
         linters:
           - err113
-          - exhaustruct
+          - exhaustruct_v5
           - goconst
           - wrapcheck
           - unparam
@@ -325,28 +325,28 @@ linters:
           - gochecknoinits
       - path: examples/
         linters:
-          - exhaustruct
+          - exhaustruct_v5
           - forbidigo
           - mnd
       - path: sarif_types\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
           - goconst
       - path: sarif_export\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
       - path: sarif_import\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
       - path: lsp\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
       - path: version\.go
         linters:
           - gochecknoglobals
       - path: filter\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
       - path: confidence\.go
         linters:
           - goconst

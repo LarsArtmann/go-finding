@@ -57,7 +57,7 @@ type FlightRecorderConfig struct {
 // DefaultFlightRecorderConfig returns sensible defaults for pipeline
 // flight recording.
 func DefaultFlightRecorderConfig() FlightRecorderConfig {
-	//nolint:exhaustruct // SlowStageThreshold and Logger are intentionally zero/nil by default
+	//nolint:exhaustruct_v5 // SlowStageThreshold and Logger are intentionally zero/nil by default
 	return FlightRecorderConfig{
 		MinAge:    defaultFRMinAge,
 		MaxBytes:  defaultFRMaxBytes,
@@ -132,7 +132,7 @@ func NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, er
 				)
 			}
 
-			return &FlightRecorderHook{ //nolint:exhaustruct // zero-valued fields are intentional
+			return &FlightRecorderHook{ //nolint:exhaustruct_v5 // zero-valued fields are intentional
 				fr:          recorder,
 				config:      config,
 				degraded:    true,
@@ -143,7 +143,7 @@ func NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, er
 		return nil, fmt.Errorf("start flight recorder: %w", err)
 	}
 
-	return &FlightRecorderHook{ //nolint:exhaustruct // mu, snapshotCount, closed, degraded, snapshotWg are zero-valued intentionally
+	return &FlightRecorderHook{ //nolint:exhaustruct_v5 // mu, snapshotCount, closed, degraded, snapshotWg are zero-valued intentionally
 		fr:          recorder,
 		config:      config,
 		stageStarts: make(map[Stage]time.Time),

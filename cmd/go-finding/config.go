@@ -106,7 +106,7 @@ func loadConfig(
 		return cfg, nil
 	}
 
-	return pipelineConfigFile{ //nolint:exhaustruct
+	return pipelineConfigFile{ //nolint:exhaustruct_v5
 		MaxIterations:     maxIter,
 		ParallelDetectors: parallel,
 		VerifyAfterFix:    verify,
@@ -214,7 +214,7 @@ func (c pipelineConfigFile) toPipelineConfig() (pipeline.Config, error) {
 		detectorTimeouts[name] = d
 	}
 
-	return pipeline.Config{ //nolint:exhaustruct
+	return pipeline.Config{ //nolint:exhaustruct_v5
 		MaxIterations:              maxIter,
 		ParallelDetectors:          c.ParallelDetectors,
 		VerifyAfterFix:             c.VerifyAfterFix,

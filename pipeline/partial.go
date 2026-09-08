@@ -50,7 +50,7 @@ func (p *Pipeline) notifyFinding(f finding.Finding) {
 }
 
 func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult, error) {
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	result := &PartialResult{
 		Errors: make(map[string]error),
 	}
@@ -79,7 +79,7 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 }
 
 func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, error) {
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	result := &PartialResult{
 		Errors: make(map[string]error),
 	}

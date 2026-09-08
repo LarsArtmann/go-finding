@@ -103,7 +103,7 @@ func (cf ConfigFile) toConfig() (Config, error) {
 		detectorTimeouts[name] = d
 	}
 
-	return Config{ //nolint:exhaustruct
+	return Config{ //nolint:exhaustruct_v5
 		MaxIterations:              maxIter,
 		ParallelDetectors:          cf.ParallelDetectors,
 		VerifyAfterFix:             cf.VerifyAfterFix,

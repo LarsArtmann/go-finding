@@ -32,7 +32,7 @@ type FileBackup struct {
 
 // NewFileBackup creates a FileBackup that stores backups in the given directory.
 func NewFileBackup(backupDir string) *FileBackup {
-	fb := &FileBackup{ //nolint:exhaustruct
+	fb := &FileBackup{ //nolint:exhaustruct_v5
 		backupDir: backupDir,
 		backups:   make(map[string]backupEntry),
 	}

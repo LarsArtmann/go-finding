@@ -11,7 +11,7 @@ import (
 // runIteration executes one detect → triage → apply cycle.
 // Returns (true, nil) when the pipeline should stop (no findings found).
 func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bool, error) {
-	iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct
+	iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct_v5
 
 	detectDone := p.stageTiming(StageDetect)
 

@@ -99,7 +99,7 @@ func FromDiagnosticWithSource(
 			finding.RuleName(ruleCode),
 			FromTokenPosition(relatedPos),
 		)
-		f.Related = append(f.Related, finding.RelatedRef{ //nolint:exhaustruct
+		f.Related = append(f.Related, finding.RelatedRef{ //nolint:exhaustruct_v5
 			FindingID: relatedID,
 			Relation:  DefaultRelation,
 			Position:  FromTokenPosition(relatedPos),
@@ -164,7 +164,7 @@ func FormatDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, analyzerName 
 func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 	pos := resolvePos(f.Position, fset)
 
-	diag := analysis.Diagnostic{ //nolint:exhaustruct
+	diag := analysis.Diagnostic{ //nolint:exhaustruct_v5
 		Pos:      pos,
 		Message:  f.Message,
 		Category: string(f.Category),
@@ -193,7 +193,7 @@ func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 
 	for _, ref := range f.Related {
 		relatedPos := resolvePos(ref.Position, fset)
-		diag.Related = append(diag.Related, analysis.RelatedInformation{ //nolint:exhaustruct
+		diag.Related = append(diag.Related, analysis.RelatedInformation{ //nolint:exhaustruct_v5
 			Pos:     relatedPos,
 			Message: string(ref.Relation),
 		})

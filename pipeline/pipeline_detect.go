@@ -32,7 +32,7 @@ func (p *Pipeline) detect(ctx context.Context) (*PartialResult, error) {
 		return nil, err
 	}
 
-	return &PartialResult{Findings: findings}, nil //nolint:exhaustruct
+	return &PartialResult{Findings: findings}, nil //nolint:exhaustruct_v5
 }
 
 // filterActive returns non-suppressed findings, calling OnFinding for each.

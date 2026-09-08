@@ -88,7 +88,7 @@ const DefaultTimeout = 10 * time.Minute
 
 // DefaultConfig returns a sensible default configuration.
 func DefaultConfig() Config {
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	return Config{
 		MaxIterations:     DefaultMaxIterations,
 		ParallelDetectors: true,
