@@ -431,3 +431,24 @@ func TestToLSP_DiagnosticTags_GoldenWire(t *testing.T) {
 		t.Fatalf("round-trip Metadata[%s]: got %q, want %q", LSPDiagnosticTagsKey, got, "1,2")
 	}
 }
+
+// FuzzParseLSPDiagnosticTags verifies that parsing arbitrary metadata values
+// as tag lists never panics and never returns non-nil garbage.
+func FuzzParseLSPDiagnosticTags(f *testing.F) {
+	f.Add("")
+	f.Add("1")
+	f.Add("1,2")
+	f.Add(" , ,, ")
+	f.Add("999999999999999999999")
+	f.Add("-1,abc,3")
+
+	f.Fuzz(func(t *testing.T, s string) {
+		tags := parseLSPDiagnosticTags(s)
+
+		for _, tag := range tags {
+			if tag < 0 {
+				t.Fatalf("negative tag %d parsed from %q", tag, s)
+			}
+		}
+	})
+}

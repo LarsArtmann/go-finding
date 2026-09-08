@@ -865,7 +865,7 @@ func TestFixApplier_ApplyWithReport_BackupFailure(t *testing.T) {
 			g.Expect(string(dataA)).To(Equal(tc.wantFileA))
 
 			if tc.rollAll {
-				g.Expect(report.RolledBack).To(ContainElement("first.go"))
+				g.Expect(report.RolledBack).To(ContainElement(fileA))
 			} else {
 				g.Expect(report.RolledBack).To(BeEmpty())
 			}

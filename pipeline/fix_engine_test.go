@@ -329,3 +329,31 @@ func (upperProvider) Edits(_ []byte, f finding.Finding) ([]FixEdit, error) {
 		},
 	}, nil
 }
+
+// TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable verifies
+// that a provider failure surfaces as a failed outcome whose error chain is
+// matchable with errors.Is — so consumers can react to specific failure
+// causes instead of string matching.
+func TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("package main\n\nold()\n")
+	fix := finding.Finding{
+		ID:         "test:rule:unresolvable",
+		Rule:       "rule",
+		ToolName:   "test",
+		Message:    "fix",
+		BeforeCode: "old()",
+		AfterCode:  "new()",
+		Position:   finding.Pos("test.go", 1000, 1),
+	}
+
+	result := NewFixEngine().ApplyWithOutcomes(content, []finding.Finding{fix})
+
+	g.Expect(result.Outcomes).To(HaveLen(1))
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeFailed))
+	g.Expect(result.Outcomes[0].Err).NotTo(BeNil())
+	g.Expect(result.Outcomes[0].Err).To(MatchError(ErrPositionUnresolvable))
+	g.Expect(result.HasErrors()).To(BeTrue())
+	g.Expect(result.OutcomeFor(fix.ID)).NotTo(BeNil())
+}
