@@ -9,7 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-No changes yet.
+### Added
+
+- **`-fix-rollback-all` flag** — Opt into all-or-nothing rollback on hard file failures (pipeline default is per-file rollback since the rollback-policy change). OR-combined with the config-file `fixRollbackAllFiles` field.
+- **`Fix outcomes:` stderr summary** — After a run with fixes, the CLI prints nonzero per-finding outcome counts (e.g. `applied=3, refused=1, failed=2`) in canonical order, sourced from the pipeline metrics.
 
 ## [1.6.0] - 2026-08-08
 
