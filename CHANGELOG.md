@@ -9,24 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > [analysis/CHANGELOG.md](analysis/CHANGELOG.md),
 > [cmd/go-finding/CHANGELOG.md](cmd/go-finding/CHANGELOG.md).
 
-## [Unreleased]
+## [1.8.0] - 2026-09-08
 
 ### Added
 
-- **`Report.GroupFindingsSorted()` + `Group`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order, `nil` when no grouped findings. Use wherever map iteration order must not leak (tests, serialization, stable output).
-- **`Template.WithGroupID`** — Stamps a `GroupID` onto every finding built from the template (whole template = one clone group); per-finding groups remain available via `Builder.WithGroupID`.
-
-## [Unreleased]
-
-### Added
-
-- **`Report.GroupFindingsSorted()` + `Group`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order. For tests, serialization, and stable output where map iteration order must not leak.
-- **`Template.WithGroupID`** — Stamps one `GroupID` onto every finding built from the template.
+- **`Report.GroupFindingsSorted()` + `Group`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order, `nil` when no grouped findings. For tests, serialization, and stable output where map iteration order must not leak.
+- **`Template.WithGroupID`** — Stamps one `GroupID` onto every finding built from the template (whole template = one clone group); per-finding groups remain available via `Builder.WithGroupID`.
 
 ### Changed
 
 - **`GroupID` validation (D7)** — A set `GroupID` must now be a machine-safe identifier: no whitespace or control characters, at most 128 bytes (empty = not grouped, always valid). The charset stays permissive (underscores, dots, uppercase allowed) so existing consumer formats keep validating; the guard protects SARIF property keys, LSP data, and map keys from corruption. `GroupID.IsValid()` is the standalone check.
 - **Unsafe-path fix findings now surface as failed outcomes (pipeline)** — Findings whose `Position.File` resolves outside the applier root (e.g. `../../etc/passwd`) were previously dropped silently during grouping. They are now reported as `failed` outcomes with a validation-category error and included in the joined error return; safe findings in the same run still apply. See `pipeline/CHANGELOG.md`.
+
+### Fixed
+
+- **Sub-module go.mod core references realigned (v1.8.0 tags)** — The v1.7.0 sub-module tags carried stale `go-finding v1.6.0` requires (the sync fix landed on master after tagging). Verified non-breaking: `pipeline@v1.7.0` and `analysis@v1.7.0` compile standalone against core v1.6.0, so proxy consumers were unaffected in practice — but the metadata was semantically wrong. The v1.8.0 sub-module tags reference core v1.8.0. `scripts/release-preflight.sh` now gates version drift (and every structural check) before any tag exists.
 
 ## [1.7.0] - 2026-09-08
 
