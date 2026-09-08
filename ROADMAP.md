@@ -8,15 +8,15 @@
 
 ## Current Phase: Consumer ecosystem growth
 
-**Current version:** 1.5.0 ([unreleased work](CHANGELOG.md#unreleased) in progress: ParseConfidence, Template.Builder, CI hardening, guides)
+**Current version:** 1.6.0 ([unreleased work](CHANGELOG.md#unreleased) in progress toward v1.7.0: `GroupID` finding groups, per-finding fix outcomes, per-file rollback default)
 
-v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects. v1.4.0 added `go-error-family` integration (unified error classification), community readiness infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), and retired the "zero external deps" principle in favor of a small, deliberate dependency surface. v1.4.1 eliminated all code duplication (zero clones at `-t 1`), consolidated test setup across all 4 modules, and resolved 7 pipeline lint issues. v1.5.0 shipped deterministic JSON/SARIF output, `ValidateAll` batch validation, `FlightRecorderHook` pipeline observability, and the `tagsEqual` fix for order-insensitive equality.
+v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects. v1.4.0 added `go-error-family` integration (unified error classification), community readiness infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), and retired the "zero external deps" principle in favor of a small, deliberate dependency surface. v1.4.1 eliminated all code duplication (zero clones at `-t 1`), consolidated test setup across all 4 modules, and resolved 7 pipeline lint issues. v1.5.0 shipped deterministic JSON/SARIF output, `ValidateAll` batch validation, `FlightRecorderHook` pipeline observability, and the `tagsEqual` fix for order-insensitive equality. v1.6.0 shipped `ParseConfidence`, `Template.Builder`, flight-recorder config-file integration, exported path-safety APIs (`ResolveSafePath` family), and 7 CI structural-check scripts.
 
 The library is production-ready and API-stable. The focus now shifts to growing the consumer ecosystem, expanding language coverage, and completing the public launch.
 
 ---
 
-## v1.0.0-v1.5.0 - API lock, consumer convenience, observability, community readiness
+## v1.0.0-v1.6.0 - API lock, consumer convenience, observability, community readiness
 
 **Status: Released.**
 
@@ -27,6 +27,7 @@ The library is production-ready and API-stable. The focus now shifts to growing 
 - v1.4.0: `go-error-family` integration (`FindingError.ErrorCode()` / `ErrorFamily()`), community infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), documentation accuracy sweep. "Zero external deps" principle retired.
 - v1.4.1: Zero code duplication (extracted `must[T]`, `marshalJSONString`, `decodeConfig`, `fixEditJSON`), test setup consolidated (`NewParallelGomega`), 7 pipeline lint issues resolved.
 - v1.5.0: Deterministic JSON/SARIF output (`json.Deterministic(true)` on all 8 marshal call sites, 8 byte-identity regression tests), `ValidateAll` batch helper, `FlightRecorderHook` (Go runtime execution trace flight recorder for pipeline observability), `tagsEqual` fix (order-insensitive tag equality aligning code with documented contract).
+- v1.6.0: `ParseConfidence` + `Template.Builder` consumer convenience APIs, flight-recorder config-file integration (`FlightRecorderFileConfig` + CLI `flightRecorder` section), exported path-safety boundary (`ResolveSafePath`/`ResolveSafePathFrom`/`ResolveRoot`), per-module CHANGELOGs, go-arch-lint module boundary enforcement, 7 CI structural-check scripts.
 
 ---
 
@@ -65,9 +66,9 @@ Each would live in its own subpackage to keep language-specific dependencies out
 
 ### Consumer ecosystem
 
-- **Consumer migration to v1.3.0/v1.4.x/v1.5.0 APIs** - 14 Go consumers can now simplify their codebases using `BuildOrDefault`, `Template`, `SeverityFromLevel`, `FilePos`, `NewReportFromFindings`, `ApplySimpleFixes`, `ParseConfidence`, and `Template.Builder`. Each consumer independently reinvented these patterns.
+- **Consumer migration to v1.3.0+ APIs** - 14 Go consumers can now simplify their codebases using `BuildOrDefault`, `Template`, `SeverityFromLevel`, `FilePos`, `NewReportFromFindings`, `ApplySimpleFixes`, `ParseConfidence`, and `Template.Builder`. Each consumer independently reinvented these patterns.
 - **More `ToolAdapter[O]` recipes** - Pre-built adapters for revive, ineffassign, errcheck, etc.
-- **go-linter-sdk integration** - The sibling `go-linter-sdk` repo now has `WithToolName`, `RuleFunc.NewFinding`, `FilterRules`, and `ExitCodeByConfidence` (implemented in the 2026-08-08 cross-repo refactor session). The pilot migration of `go-humanize-linter` eliminated 97 LOC. Next: publish go-finding v1.6.0 and go-linter-sdk v0.2.0, then port more linters.
+- **go-linter-sdk integration** - The sibling `go-linter-sdk` repo now has `WithToolName`, `RuleFunc.NewFinding`, `FilterRules`, and `ExitCodeByConfidence` (implemented in the 2026-08-08 cross-repo refactor session). The pilot migration of `go-humanize-linter` eliminated 97 LOC. Next: release go-finding v1.7.0, publish go-linter-sdk v0.2.0, then port more linters.
 
 ### FlightRecorder future directions
 

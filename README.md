@@ -59,7 +59,7 @@ Each module is an independent Go module and is versioned with its own git tag:
 
 | Module   | Import path                                        | Tag                 |
 | -------- | -------------------------------------------------- | ------------------- |
-| Core     | `github.com/larsartmann/go-finding`                | `v1.4.1`            |
+| Core     | `github.com/larsartmann/go-finding`                | `v1.6.0`            |
 | Pipeline | `github.com/larsartmann/go-finding/pipeline`       | `pipeline/v*`       |
 | Analysis | `github.com/larsartmann/go-finding/analysis`       | `analysis/v*`       |
 | CLI      | `github.com/larsartmann/go-finding/cmd/go-finding` | `cmd/go-finding/v*` |
@@ -461,7 +461,7 @@ This project follows [Semantic Versioning](https://semver.org/). The API has bee
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "1.4.0"
+fmt.Println(finding.Version) // "1.6.0"
 ```
 
 ## Documentation
@@ -475,6 +475,12 @@ fmt.Println(finding.Version) // "1.4.0"
 | [docs/USAGE_GUIDE.md](docs/USAGE_GUIDE.md)                                       | Comprehensive usage guide                                |
 | [docs/MIGRATION_v1.0.md](docs/MIGRATION_v1.0.md)                                 | v1.0 migration instructions                              |
 | [docs/guides/consumer-migration-v1.7.md](docs/guides/consumer-migration-v1.7.md) | Upgrade guide: outcomes, rollback default, groups        |
+| [docs/guides/fix-engine.md](docs/guides/fix-engine.md)                           | Fix engine patterns (providers, edits, conflicts)        |
+| [docs/guides/fix-providers.md](docs/guides/fix-providers.md)                     | Writing custom fix providers                             |
+| [docs/guides/finding-groups.md](docs/guides/finding-groups.md)                   | Grouping related findings via SARIF/LSP                  |
+| [docs/guides/flight-recorder.md](docs/guides/flight-recorder.md)                 | Pipeline trace flight recorder                           |
+| [docs/guides/configuration.md](docs/guides/configuration.md)                     | CLI flags, YAML/JSON config, precedence                  |
+| [docs/guides/troubleshooting.md](docs/guides/troubleshooting.md)                 | Common errors and fixes                                  |
 | [docs/ecosystem.md](docs/ecosystem.md)                                           | How go-finding relates to the surrounding SDKs and tools |
 
 ## Related Projects
