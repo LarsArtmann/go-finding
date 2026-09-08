@@ -1,5 +1,14 @@
 # SUPERB Plan Execution — Full Status & Brutal Self-Review
 
+> **📦 RESOLUTION STATUS (updated 2026-09-08 21:30)**
+>
+> SUPERSEDED by the evening-session report
+> (`2026-09-08_21-30_evening-session-v1.8.0-questions-resolved.md`).
+> All 3 pending questions resolved with evidence (Q1: v1.8.0 shipped through
+> the new preflight gate; Q2: accept daemon absorption; Q3: keep, measured
+> 113ms). 39/50 §f items executed; v1.8.0 tags pushed and proxy-verified.
+> Open items are externally blocked (billing/public flip) or ROADMAP-tracked.
+
 **Date:** 2026-09-08 18:48 CEST
 **Scope:** Everything executed this session (the 16:55 SUPERB plan + everything around it). Report based on the session run itself; no new research.
 **Companion artifacts:** per-task verdicts annotated inline in the plan HTML; row statuses in TODO_LIST.md; execution narrative in `2026-09-08_18-30_superb-plan-execution-status.md`.

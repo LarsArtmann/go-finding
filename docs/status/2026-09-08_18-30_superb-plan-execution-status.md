@@ -1,5 +1,13 @@
 # SUPERB Pareto Plan — Execution Status
 
+> **📦 RESOLUTION STATUS (updated 2026-09-08 21:30)**
+>
+> SUPERSEDED by the evening-session report
+> (`2026-09-08_21-30_evening-session-v1.8.0-questions-resolved.md`).
+> All 3 pending questions resolved; v1.8.0 shipped; 19 consumers bumped;
+> FR rotation + gzip landed for v1.9.0.
+> Open items are externally blocked (billing/public flip) or ROADMAP-tracked.
+
 **Date:** 2026-09-08 (evening session)
 **Input:** `docs/planning/2026-09-08_16-55-SUPERB-pareto-plan-v1.7.0-release-and-tail.html` (24 comprehensive + 85 micro tasks)
 **Result:** Executed end to end, same day. Per-task verdicts with evidence are annotated inline in the plan HTML (strikethrough + ✅/🔵); row-level statuses in TODO_LIST.md.
