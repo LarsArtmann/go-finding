@@ -905,6 +905,7 @@
         </div>
 
         <h3>Lint warnings breakdown</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Resolved</s> session 24: all lint findings fixed; lint green across 4 modules since (re-verified 2026-09-08 on golangci-lint 2.13.1).</p>
         <table>
           <thead>
             <tr>
@@ -993,6 +994,7 @@
             >Important &middot; Type-safety debt</span
           >
           <h3>Position zero-value lies about Offset</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Resolved pragmatically</s> v0.9.0: -1 sentinel + HasOffset(); type-safe Option[T] redesign deliberately parked for v2.0 (ROADMAP 'Hardening').</p>
           <div class="where">
             position.go:23-29 &middot; cascades into Range, Finding.Related,
             FixEdit
@@ -1016,6 +1018,7 @@
             >Important &middot; Concurrency footgun</span
           >
           <h3>SeverityAliases is a mutable global map</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Resolved</s>: map removed; RegisterSeverityAlias()/LookupSeverityAlias() API behind sync.RWMutex (v1.x, AGENTS.md).</p>
           <div class="where">severity.go:181</div>
           <p>
             <code>var SeverityAliases = map[string]Severity{...}</code> is
@@ -1029,6 +1032,7 @@
             >Nice to have &middot; Linter noise</span
           >
           <h3>makezero false positives on intentional allocations</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Resolved</s>: .golangci.yml sets makezero always:false — false mode keeps the real make+append catch, drops 23 idiomatic make+copy FPs (AGENTS.md).</p>
           <div class="where">
             .golangci.yml &middot; merge.go:72, finding_methods.go:30+51,
             pipeline.go:48, lsp.go:212
@@ -1044,6 +1048,7 @@
             >Nice to have &middot; Naming</span
           >
           <h3>Adapters re-exports, Processor verb vague</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Resolved</s>: Processor → FindingTransformer (v1.0.0); adapter surface reviewed in the 2026-08-08 consumer-api round (docs/reviews/archived/).</p>
           <div class="where">
             pipeline/adapters.go:12-24 &middot; pipeline/adapters.go:28-34
           </div>

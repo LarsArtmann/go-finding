@@ -971,6 +971,7 @@
         <div class="issue issue-critical">
           <span class="severity severity-critical">Blocking</span>
           <h3>nix build .# fails with stale vendorHash</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Fixed</s> in session 24 (9d71627). Recurred 2026-09-08 via automated go.sum drift with a stale paired vendorHash; fixed again in the v1.7.0 release train. Failure mode is recurring: any go.sum change must update flake.nix vendorHash in the same commit.</p>
           <div class="where">flake.nix:29</div>
           <p>
             The <code>vendorHash</code> field no longer matches the
@@ -994,6 +995,7 @@
         <div class="issue issue-important">
           <span class="severity severity-important">Important</span>
           <h3>gocyclo: Validate() complexity 32 &gt; 25</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Fixed</s> in session 24 (ded53c2): Validate() decomposed into 6 per-field validators, complexity &lt;10 each. Convention recorded in AGENTS.md.</p>
           <div class="where">finding_validate.go:10</div>
           <p>
             Single function validates 15+ fields with branching error
@@ -1012,6 +1014,7 @@
         <div class="issue issue-nice">
           <span class="severity severity-nice">Nice to have</span>
           <h3>varnamelen: short variable names</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Fixed</s> in session 24 (d7dc292): fs→strategy, rt→result renames; varnamelen now enabled with tuned settings in .golangci.yml.</p>
           <div class="where">
             finding_validate.go:44 — fs &middot; splitbrain_test.go:101 — rt
           </div>

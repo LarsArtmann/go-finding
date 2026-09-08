@@ -1100,6 +1100,7 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
               P2 — FixStrategy "" vs "none" is a runtime convention, not a type
               invariant
             </h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Resolved</s>: NormalizeFixStrategy() converts "" to "none" (Builder, SARIF import, Equal short-circuit) — the convention became code.</p>
             <div class="where">
               fix_strategy.go:50-56 &middot; called from Validate,
               Builder.Build, FromLSP, SARIF import
@@ -1134,6 +1135,7 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
               P3 — Primitive obsession: Rule, ToolName, File, Message, ID are
               raw strings
             </h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Resolved</s> v1.1.0: branded types ID/RuleName/ToolName/FilePath (+GroupID v1.7.0) in branded_types.go.</p>
             <div class="where">
               finding.go:10-47 &middot; 6 distinct domain concepts share the
               same type
@@ -1171,6 +1173,7 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
               >Important &middot; Five sites</span
             >
             <h3>P4 — Pointer fields encode optional state implicitly</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> 🔵 Parked for v2.0 by design: pointer-as-state (Range, Suppression, ExpiresAt) — ROADMAP 'Hardening (owner decisions pending)'.</p>
             <div class="where">
               finding.go:29-33 &middot; suppression.go:20 &middot;
               errors.go:44-48
@@ -1200,6 +1203,7 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
               >Important &middot; Concurrency footgun</span
             >
             <h3>P5 — SeverityAliases is a mutable global map</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Resolved</s>: SeverityAliases global removed; RWMutex-guarded Register/Lookup API.</p>
             <div class="where">
               severity.go:181-191 &middot; consumed by ParseSeverity
             </div>
@@ -1228,6 +1232,7 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
               >Nice to have &middot; Readability</span
             >
             <h3>P6 — Finding is a 17-field flat struct mixing six concerns</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> 🔵 Parked for v2.0 by design: Finding sub-struct composition (Identity/Location/Classification/Fix) — changes JSON shape, must batch.</p>
             <div class="where">
               finding.go:8-48 &middot; identity / location / classification /
               fix / context / extensibility
@@ -1254,6 +1259,7 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
             <h3>
               P7 — RelatedRef.FindingID is raw string, not branded FindingID
             </h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Resolved</s> v1.1.0: RelatedRef.FindingID is the branded ID type.</p>
             <div class="where">
               finding.go:83 &middot; Correlation.FindingIDs []string
             </div>
@@ -1270,6 +1276,7 @@ p.IsValid()    <span class="tok-comment">// false</span></code></pre>
               >Nice to have &middot; Semantic clarity</span
             >
             <h3>P8 — Tags []Tag is a slice, not a set</h3>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> 🔵 Parked for v2.0 by design: Tags → TagSet (order-insensitive Equal fast path mitigates in v1.x).</p>
             <div class="where">
               finding.go:21 &middot; order-sensitive equality via
               finding_equal.go

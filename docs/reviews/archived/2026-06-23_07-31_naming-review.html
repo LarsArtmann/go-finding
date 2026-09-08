@@ -902,6 +902,7 @@
 
         <div class="card card-problem">
           <h4>Processor / Process() — the one vague spot</h4>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Executed</s> v1.0.0: FindingProcessor/Process renamed to FindingTransformer (Config.Processors). AGENTS.md records the naming history.</p>
           <p>
             <code>pipeline.FindingProcessor</code> +
             <code>Process(ctx, findings) ([]Finding, error)</code> is the only
@@ -915,6 +916,7 @@
 
         <div class="card card-warning">
           <h4>Three Info-suffix types</h4>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Executed</s> v1.0.0: ConflictInfo → Conflict; SimpleFixResult kept (single remaining Info-suffix type, reviewed and retained).</p>
           <p>
             <code>ToolInfo</code>, <code>ConflictInfo</code>,
             <code>LSPRelatedInfo</code> all append the vague
@@ -926,6 +928,7 @@
 
         <div class="card card-solution">
           <h4>Zero honesty / lying-name issues</h4>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ Confirmed still true at v1.7.0 — zero lying names found in the 2026-09-08 naming spot-check (AGENTS.md diet pass).</p>
           <p>
             Every getter returns without surprising mutation. Every
             <code>IsX</code>/<code>HasX</code> function returns a bool. No
@@ -1177,6 +1180,7 @@
               v1.0: Rename <code>FindingProcessor.Process</code> →
               <code>FindingTransformer.Transform</code>
             </h4>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Executed</s> v1.0.0 (FindingTransformer).</p>
             <p>
               Breaking but cheap. Updates 4 files: <code>adapters.go</code>,
               <code>generated_filter.go</code>,
@@ -1191,6 +1195,7 @@
             <h4>
               v1.0: Rename <code>GetCategory</code> → <code>CategoryOf</code>
             </h4>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Executed</s> v1.0.0 (CategoryOf; doc.go swept for stale references).</p>
             <p>
               Aligns with Go getter convention. Five test/doc references to
               update.
@@ -1205,6 +1210,7 @@
               <code>ConflictInfo</code> and
               <code>LSPRelatedInfo</code>
             </h4>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Executed</s> v1.0.0 (Conflict).</p>
             <p>
               Keep <code>ToolInfo</code> (it IS just metadata).
               <code>ConflictInfo</code>→<code>Conflict</code>,
@@ -1220,6 +1226,7 @@
               <code>rt</code> →
               <code>result</code>
             </h4>
+<p style="margin:8px 0 0;padding:8px 12px;border-left:3px solid #6eb5ff;background:#16161a;font-size:0.92em;color:#f4f4f0"><strong>Per-finding resolution (annotated 2026-09-08):</strong> ✅ <s>Executed</s> session 24 (d7dc292: fs→strategy, rt→result).</p>
             <p>
               Trivial, non-breaking. Kills both varnamelen warnings from
               code-quality-scan.

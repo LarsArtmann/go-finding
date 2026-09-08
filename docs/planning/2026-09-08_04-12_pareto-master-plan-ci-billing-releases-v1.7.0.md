@@ -7,6 +7,36 @@
 > Format note: the pareto-planning skill's canonical output is styled HTML. The user explicitly requested Markdown + mermaid/d2 — honored here; not propagated back into the skill.
 
 ---
+> **Disposition (final annotation pass, 2026-09-08 evening):** this master plan
+> was **executed to completion** by its successor, the SUPERB Pareto Plan
+> (`docs/planning/archived/` — no: still live at
+> `docs/planning/2026-09-08_16-55-SUPERB-pareto-plan-v1.7.0-release-and-tail.html`),
+> which consumed TODO_LIST.md and this plan whole. Outcome by phase:
+>
+> - **Phase 0 (billing unblock):** externally blocked — account switch still
+>   pending; local gates remained the quality bar (per the 2026-09-08 billing
+>   decision). CI dispatch + push runs attempted, all red on billing.
+> - **Phase A (distribution & gates):** ✅ v1.7.0 shipped — 4 tags pushed,
+>   proxy smoke green, issues #27/#28 closed with fix summaries, consumers
+>   bumped (go-humanize-linter @v1.7.0, go-linter-sdk v0.3.0). Release run
+>   BLOCKED on billing; `HOMEBREW_TAP_GITHUB_TOKEN` missing (recorded).
+> - **Phase B (release train):** ✅ all features shipped in v1.7.0.
+> - **Phase C (docs truthfulness):** ✅ docs-health audit + SUPERB tail:
+>   living docs verified, drift guard (`docs-api-check.sh`) wired into CI,
+>   AGENTS.md dieted 37→22 KB, June HTMLs per-finding annotated.
+> - **Phase D (hardening):** ✅ executed — D3 (OnFixOutcome), D4 (ApplyDryRun),
+>   D7 (GroupID validation) decided and implemented; unsafe-path surfacing,
+>   GroupFindingsSorted, test bundle, ADR-016/017/018.
+> - **Phase E (spikes + launch):** 🔵 launch track gated on the public flip
+>   (repo private); IntervalTree NO-GO decided; v2.0 spikes parked in ROADMAP.
+> - **Decision gates:** D1/D2/D6 decided 2026-09-08 (ship per-file rollback,
+>   close issues now, forward-only). D3/D4/D7 decided 2026-09-08 evening via
+>   the blanket execution directive.
+>
+> Full per-task evidence: the SUPERB plan HTML carries per-task strikethrough
+> annotations; TODO_LIST.md carries row-level statuses.
+
+
 
 ## 0.1 Execution Findings (2026-09-08 05:xx CEST, L1-03 complete)
 
@@ -19,7 +49,6 @@
 | Dependabot is ALIVE and noisy (PR bumps + dynamic updates failing/succeeding daily)                                                                        | `gh run list` shows Dependabot Updates entries on 2026-09-06/08                                                                                                                                                                                                                                                                                                                                  | Dependabot PRs will pile up while CI is dead; don't merge any until L1-02 green.                                                                                                                                                                 |
 
 **Net effect on the plan:** L1-03 DONE (diagnosis + mechanical fixes shipped). L1-01/02 frozen on user billing action. All CI-dependent verification (L1-02, L1-08 observation, release re-runs L1-05/06/11) queues behind it. Local work (benchmarks, lint debt, Phase-B tests, docs) proceeds.
-
 ---
 
 ## 0. Research Findings (root causes discovered this session)
