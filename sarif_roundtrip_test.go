@@ -492,3 +492,26 @@ func TestSARIFSnippet_BackwardCompat(t *testing.T) {
 		})
 	}
 }
+
+// TestSARIFGroupID_GoldenWire pins the SARIF property bag wire contract for
+// GroupID: the property key must stay exactly "go-finding/groupId" and the
+// value must round-trip losslessly through export and import.
+func TestSARIFGroupID_GoldenWire(t *testing.T) {
+	g := gomega.NewWithT(t)
+
+	f := standardTestFinding()
+	f.GroupID = "clone-group-1"
+
+	r := NewReport(ToolInfo{Name: "test"})
+	r.AddFinding(f)
+
+	sarif, err := r.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(string(sarif)).To(gomega.ContainSubstring(`"go-finding/groupId": "clone-group-1"`))
+
+	findings, err := FindingsFromSARIF(context.Background(), sarif)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.HaveLen(1))
+	g.Expect(findings[0].GroupID).To(gomega.Equal(GroupID("clone-group-1")))
+	g.Expect(findings[0].Equal(f)).To(gomega.BeTrue())
+}

@@ -68,7 +68,11 @@ jobs:
 
     timeout-minutes: 15
   lint:
+    strategy:
+      matrix:
+        module: [".", "pipeline", "analysis", "cmd/go-finding"]
     runs-on: ubuntu-latest
+    name: lint (${{ matrix.module }})
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
@@ -78,7 +82,9 @@ jobs:
         with:
           version: v2.10.1
           args: --timeout=5m
+          working-directory: ${{ matrix.module }}
       - name: Check formatting
+        working-directory: ${{ matrix.module }}
         run: golangci-lint fmt --diff ./...
 
     timeout-minutes: 15

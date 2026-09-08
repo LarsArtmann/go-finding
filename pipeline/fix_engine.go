@@ -46,7 +46,7 @@ func (e *FixEngine) Apply(
 	content []byte,
 	fixes []finding.Finding,
 ) ([]byte, []finding.Finding, int) {
-	result := e.ApplyWithOutcomes(content, fixes)
+	result := e.apply(content, fixes, false)
 
 	return result.Content, result.Applied, len(result.Applied)
 }
@@ -58,7 +58,7 @@ func (e *FixEngine) ApplyWithConflicts(
 	content []byte,
 	fixes []finding.Finding,
 ) ([]finding.Finding, []FixEdit, []Conflict, []byte, []error) {
-	result := e.ApplyWithOutcomes(content, fixes)
+	result := e.apply(content, fixes, false)
 
 	return result.Applied, result.AppliedEdits, result.Conflicts, result.Content, result.Errors
 }
@@ -71,6 +71,15 @@ func (e *FixEngine) ApplyWithOutcomes(
 	content []byte,
 	fixes []finding.Finding,
 ) FixApplyResult {
+	return e.apply(content, fixes, true)
+}
+
+// apply is the single implementation behind Apply, ApplyWithConflicts, and
+// ApplyWithOutcomes. wantOutcomes controls per-finding outcome bookkeeping:
+// the legacy entry points discard outcomes, so they skip allocating the
+// outcomes slice (one full Finding copy per input) and the reconciliation
+// pass, keeping their pre-outcome allocation profile.
+func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes bool) FixApplyResult {
 	result := FixApplyResult{Content: content}
 	if len(fixes) == 0 {
 		return result
@@ -82,14 +91,25 @@ func (e *FixEngine) ApplyWithOutcomes(
 		resolved  []int // outcome indices whose edits were collected for application
 	)
 
-	result.Outcomes = make([]FixOutcome, 0, len(fixes))
+	if wantOutcomes {
+		result.Outcomes = make([]FixOutcome, 0, len(fixes))
+	}
+
+	addOutcome := func(f finding.Finding, status FixOutcomeStatus, err error) {
+		if !wantOutcomes {
+			return
+		}
+
+		result.Outcomes = append(result.Outcomes, FixOutcome{
+			Finding: f,
+			Status:  status,
+			Err:     err,
+		})
+	}
 
 	for _, f := range fixes {
 		if !f.HasCodeChange() {
-			result.Outcomes = append(result.Outcomes, FixOutcome{
-				Finding: f,
-				Status:  FixOutcomeNoChange,
-			})
+			addOutcome(f, FixOutcomeNoChange, nil)
 
 			continue
 		}
@@ -98,29 +118,22 @@ func (e *FixEngine) ApplyWithOutcomes(
 		if err != nil {
 			wrapped := fmt.Errorf("finding %s: %w", f.ID, err)
 			result.Errors = append(result.Errors, wrapped)
-			result.Outcomes = append(result.Outcomes, FixOutcome{
-				Finding: f,
-				Status:  FixOutcomeFailed,
-				Err:     wrapped,
-			})
+			addOutcome(f, FixOutcomeFailed, wrapped)
 
 			continue
 		}
 
 		if len(edits) == 0 {
-			result.Outcomes = append(result.Outcomes, FixOutcome{
-				Finding: f,
-				Status:  FixOutcomeRefused,
-			})
+			addOutcome(f, FixOutcomeRefused, nil)
 
 			continue
 		}
 
-		resolved = append(resolved, len(result.Outcomes))
-		result.Outcomes = append(result.Outcomes, FixOutcome{
-			Finding: f,
-			Status:  FixOutcomeApplied,
-		})
+		if wantOutcomes {
+			resolved = append(resolved, len(result.Outcomes))
+		}
+
+		addOutcome(f, FixOutcomeApplied, nil)
 		allEdits = append(allEdits, edits...)
 	}
 
@@ -133,7 +146,9 @@ func (e *FixEngine) ApplyWithOutcomes(
 
 	result.Applied, result.AppliedEdits, result.Conflicts, result.Content = e.applyEditsWithConflicts(content, allEdits)
 
-	reconcileOutcomes(&result, resolved)
+	if wantOutcomes {
+		reconcileOutcomes(&result, resolved)
+	}
 
 	return result
 }

@@ -654,3 +654,32 @@ func TestDeterminism_ReportWriteJSON_RawBytesIdentical(t *testing.T) {
 		}
 	}
 }
+
+// TestFindingJSON_GoldenWire pins the exact JSON wire format for Finding so
+// any change to field names, ordering, or the groupId encoding is a conscious
+// decision. Consumers and downstream tools parse these bytes verbatim.
+func TestFindingJSON_GoldenWire(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	goldenNoGroup := `{"id":"test:rule1:file.go:10:5","rule":"rule1","toolName":"test","message":"test message","severity":"error","position":{"file":"file.go","line":10,"column":5,"offset":0},"fixStrategy":"none","confidence":1}`
+	goldenWithGroup := `{"id":"test:rule1:file.go:10:5","rule":"rule1","toolName":"test","message":"test message","severity":"error","position":{"file":"file.go","line":10,"column":5,"offset":0},"fixStrategy":"none","confidence":1,"groupId":"clone-group-1"}`
+
+	t.Run("groupId absent", func(t *testing.T) {
+		data, err := json.Marshal(standardTestFinding())
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(string(data)).To(Equal(goldenNoGroup))
+	})
+
+	t.Run("groupId present", func(t *testing.T) {
+		f := standardTestFinding()
+		f.GroupID = "clone-group-1"
+
+		data, err := json.Marshal(f)
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(string(data)).To(Equal(goldenWithGroup))
+
+		parsed, err := FromJSON(data)
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(parsed.Equal(f)).To(BeTrue())
+	})
+}

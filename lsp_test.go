@@ -404,3 +404,30 @@ func TestToLSP_DiagnosticTags_IgnoreMalformed(t *testing.T) {
 		t.Errorf("Tags: got %v, want [%d %d]", diag.Tags, LSPDiagnosticTagUnnecessary, LSPDiagnosticTagDeprecated)
 	}
 }
+
+// TestToLSP_DiagnosticTags_GoldenWire pins the metadata wire format for LSP
+// diagnostic tags: the key must stay exactly "go-finding/lsp-diagnostic-tags"
+// and the value must be the comma-separated numeric tag list that ToLSP
+// parses and FromLSP writes, including the multi-tag case.
+func TestToLSP_DiagnosticTags_GoldenWire(t *testing.T) {
+	t.Parallel()
+
+	f := standardTestFinding()
+	f.Metadata = map[string]string{LSPDiagnosticTagsKey: "1,2"}
+
+	diag := f.ToLSP()
+
+	if len(diag.Tags) != 2 || diag.Tags[0] != LSPDiagnosticTagUnnecessary || diag.Tags[1] != LSPDiagnosticTagDeprecated {
+		t.Fatalf("Tags: got %v, want [1 2]", diag.Tags)
+	}
+
+	if got := diag.Data.Metadata[LSPDiagnosticTagsKey]; got != "1,2" {
+		t.Fatalf("Data.Metadata[%s]: got %q, want %q", LSPDiagnosticTagsKey, got, "1,2")
+	}
+
+	restored := FromLSP("file:///file.go", diag)
+
+	if got := restored.Metadata[LSPDiagnosticTagsKey]; got != "1,2" {
+		t.Fatalf("round-trip Metadata[%s]: got %q, want %q", LSPDiagnosticTagsKey, got, "1,2")
+	}
+}
