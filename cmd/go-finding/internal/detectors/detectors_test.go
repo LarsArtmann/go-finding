@@ -2,6 +2,7 @@ package detectors
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -292,4 +293,54 @@ func TestParseStaticcheckJSON_FixExtensionRequiresBoth(t *testing.T) {
 	g.Expect(findings[0].FixStrategy).To(Equal(finding.FixStrategySuggest),
 		"before without after must stay suggest-only")
 	g.Expect(findings[0].BeforeCode).To(BeEmpty())
+}
+
+// TestParseStaticcheckJSON_RealCorpus parses REAL staticcheck 2026.2.1 output
+// (captured with `staticcheck -f json ./...` against the flawed fixture in
+// testdata/staticcheck-corpus/; location paths relativized for portability —
+// see corpus.go for regeneration instructions). Guards the parser against
+// real-output drift: field layout, severity mapping, category mapping, and
+// the absence of before/after in genuine tool output.
+func TestParseStaticcheckJSON_RealCorpus(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	data, err := os.ReadFile("testdata/staticcheck-corpus/corpus.jsonl")
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(data).NotTo(BeEmpty(), "corpus fixture must exist")
+
+	findings := parseStaticcheckJSON(data, "")
+	g.Expect(findings).To(HaveLen(3), "real corpus carries exactly three findings")
+
+	byCode := map[finding.RuleName]finding.Finding{}
+	for _, f := range findings {
+		byCode[f.Rule] = f
+	}
+	g.Expect(byCode).To(HaveKey(finding.RuleName("S1002")))
+	g.Expect(byCode).To(HaveKey(finding.RuleName("SA4006")))
+	g.Expect(byCode).To(HaveKey(finding.RuleName("S1025")))
+
+	for code, f := range byCode {
+		g.Expect(f.ToolName).To(Equal(finding.ToolName("staticcheck")), code)
+		g.Expect(f.Severity).To(Equal(finding.SeverityError),
+			"%s: real 2026.2.1 output marks all three as error", code)
+		g.Expect(f.Message).NotTo(BeEmpty(), code)
+		g.Expect(f.Position.File).To(Equal(finding.FilePath("corpus.go")), code)
+		g.Expect(f.Position.Line).To(BeNumerically(">", 0), code)
+		g.Expect(f.Position.Column).To(BeNumerically(">", 0), code)
+		g.Expect(f.FixStrategy).To(Equal(finding.FixStrategySuggest),
+			"%s: real staticcheck output has no before/after", code)
+		g.Expect(f.BeforeCode).To(BeEmpty(), code)
+		g.Expect(f.AfterCode).To(BeEmpty(), code)
+	}
+
+	g.Expect(byCode[finding.RuleName("SA4006")].Category).
+		To(Equal(finding.CategoryCorrectness), "SA* codes are correctness")
+	g.Expect(byCode[finding.RuleName("S1002")].Category).
+		To(Equal(finding.CategoryStyle), "S* (non-SA) codes are style")
+	g.Expect(byCode[finding.RuleName("S1025")].Category).
+		To(Equal(finding.CategoryStyle))
+
+	g.Expect(byCode[finding.RuleName("S1002")].Position.Line).To(Equal(15))
+	g.Expect(byCode[finding.RuleName("SA4006")].Position.Line).To(Equal(20))
+	g.Expect(byCode[finding.RuleName("S1025")].Position.Line).To(Equal(27))
 }

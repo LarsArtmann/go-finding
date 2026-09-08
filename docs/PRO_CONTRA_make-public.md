@@ -1,10 +1,16 @@
 # PRO/CONTRA: Making go-finding Public
 
-> **Date:** 2026-07-24 | **Current state:** Repo is **PRIVATE** (confirmed via GitHub API)
+> **UPDATE 2026-09-08 22:24 CEST — VISIBILITY FLIPPED TO PUBLIC.** Executed via
+> `gh repo edit LarsArtmann/go-finding --visibility public`. Verified: proxy
+> resolves `@v1.8.0` (and all sub-modules' tags) with NO `GOPRIVATE`; `ci.yml`
+> dispatched post-flip (run 34274674104). pkg.go.dev indexing pending (404 at
+> flip time, normal — recheck). Remaining: #11, #12, Phase 3 (14–16).
+>
+> **Date:** 2026-07-24 | **Assessed at:** v1.3.0 (repo flipped at v1.8.0)
 >
 > This document supersedes the resolution banner in `PUBLIC_OR_PRIVATE.md`, which
-> incorrectly claims the repo is already public. It is not. This is a fresh assessment
-> at v1.3.0 with 1,005 commits, 193 Go files, and 112 test files.
+> incorrectly claims the repo is already public. It was not, until 2026-09-08. This
+> was a fresh assessment at v1.3.0 with 1,005 commits, 193 Go files, and 112 test files.
 
 ---
 

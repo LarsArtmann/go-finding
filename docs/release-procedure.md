@@ -126,28 +126,25 @@ git push origin master --tags
 Semantic versioning strictly: `vMAJOR.MINOR.PATCH`. Current core version:
 see `version.go`. Sub-modules track their own independent semver.
 
-## Private-Repo Consumer Setup
+## Consumer Setup
 
-This repository is currently **private**. Until it is made public, every consumer
-must tell the Go toolchain not to use the public proxy/sumdb for it:
+The repository is **public** (since 2026-09-08). No `GOPRIVATE` configuration is
+needed — modules resolve through `proxy.golang.org` like any other Go module:
 
 ```bash
-go env -w GOPRIVATE=github.com/larsartmann/go-finding
-# or, for all repos in this org:
-go env -w GOPRIVATE=github.com/larsartmann/*
+go get github.com/larsartmann/go-finding@latest
 ```
 
-Add this to your environment or CI before running `go mod tidy` / `go get`. Once
-the repo is made public, this is no longer required and the modules resolve
-through `proxy.golang.org` normally.
+(Historical: while the repo was private, consumers had to set
+`GOPRIVATE=github.com/larsartmann/go-finding`. This is no longer required.)
 
 ## Verifying a Release
 
 Confirm each module resolves after pushing its tag:
 
 ```bash
-GOPRIVATE=github.com/larsartmann/go-finding go list -m github.com/larsartmann/go-finding@latest
-GOPRIVATE=github.com/larsartmann/go-finding go list -m github.com/larsartmann/go-finding/pipeline@latest
-GOPRIVATE=github.com/larsartmann/go-finding go list -m github.com/larsartmann/go-finding/analysis@latest
-GOPRIVATE=github.com/larsartmann/go-finding go list -m github.com/larsartmann/go-finding/cmd/go-finding@latest
+go list -m github.com/larsartmann/go-finding@latest
+go list -m github.com/larsartmann/go-finding/pipeline@latest
+go list -m github.com/larsartmann/go-finding/analysis@latest
+go list -m github.com/larsartmann/go-finding/cmd/go-finding@latest
 ```

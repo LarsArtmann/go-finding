@@ -42,12 +42,16 @@ cd pipeline && GOWORK=off GOEXPERIMENT=jsonv2 go build ./...
 
 ### "could not read Username" or "410 Gone" from proxy.golang.org
 
-**Cause:** The repo is private. The public Go proxy cannot resolve it.
+**Cause:** Only possible if you have a stale `GOPRIVATE` setting from when the
+repo was private (before 2026-09-08). The public proxy resolves the module
+normally now.
 
-**Fix:**
+**Fix:** Remove the stale setting and retry:
 
 ```bash
-go env -w GOPRIVATE=github.com/larsartmann/go-finding
+go env -u GOPRIVATE
+go clean -modcache   # only if a bad cached copy lingers
+go get github.com/larsartmann/go-finding@latest
 ```
 
 ---

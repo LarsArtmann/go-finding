@@ -1,8 +1,14 @@
 # PUBLIC OR PRIVATE? — go-finding
 
+> **RESOLVED (2026-09-08):** The repo is now **PUBLIC** — visibility flipped via
+> `gh repo edit`, module proxy resolution verified without `GOPRIVATE`. See
+> [`docs/PRO_CONTRA_make-public.md`](docs/PRO_CONTRA_make-public.md) for the
+> assessment and remaining launch follow-ups.
+
 > **CORRECTION (2026-07-24):** The banner below claiming the repo is public was
-> **incorrect** — the GitHub repo remains `PRIVATE`. A fresh, accurate assessment
-> with an actionable TODO list lives in [`docs/PRO_CONTRA_make-public.md`](docs/PRO_CONTRA_make-public.md).
+> **incorrect** — the GitHub repo remained `PRIVATE` until 2026-09-08. A fresh,
+> accurate assessment with an actionable TODO list lives in
+> [`docs/PRO_CONTRA_make-public.md`](docs/PRO_CONTRA_make-public.md).
 
 **Date:** 2026-05-04 | **Decision:** CONDITIONAL — Public with prerequisites
 **Superseded by:** `docs/PRO_CONTRA_make-public.md` (2026-07-24)
