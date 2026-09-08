@@ -2,10 +2,22 @@
 
 ## Pre-release Checklist
 
+0. **Run the preflight script** (structural gates as code — added after the
+   v1.7.0 sub-module go.mod drift incident):
+
+   ```bash
+   bash scripts/release-preflight.sh
+   ```
+
+   It checks: clean tree, version.go parse, target tags not already taken,
+   version drift (go.mod references), replace directives, go.work sync, test
+   naming, JSON determinism, docs API references, docs freshness, and
+   GOWORK=off builds per module. Add `--bench` / `--stress` to also run the
+   benchmark and stress gates through it. **Do not tag until it passes.**
 1. Verify all tests pass: `GOEXPERIMENT=jsonv2 go test -race -count=1 ./...`
 2. Verify lint passes: `GOEXPERIMENT=jsonv2 golangci-lint run ./...`
 3. Verify the flake: `nix flake check` (treefmt, package build, module isolation)
-4. Run stress test:
+4. Run stress test (or `bash scripts/release-preflight.sh --stress`):
    - stdlib modules (analysis, CLI): `GOEXPERIMENT=jsonv2 go test -race -count=20 ./...`
    - Ginkgo modules (core, pipeline): `GOEXPERIMENT=jsonv2 ginkgo -r --race --repeat=20 --skip-package=examples`
    - **Note:** Ginkgo rejects `go test -count=N` for N>1 (`Only -count=1 is allowed`). Use `ginkgo --repeat=N` instead for the core and pipeline suites.
@@ -112,7 +124,7 @@ git push origin master --tags
 ## Version Scheme
 
 Semantic versioning strictly: `vMAJOR.MINOR.PATCH`. Current core version:
-`1.6.0` (see `version.go`). Sub-modules track their own independent semver.
+see `version.go`. Sub-modules track their own independent semver.
 
 ## Private-Repo Consumer Setup
 
