@@ -135,6 +135,7 @@
               pkgs.gopls
               pkgs.gotools
               pkgs.trash-cli
+              pkgs.dprint
             ];
 
             env = {
@@ -144,6 +145,16 @@
             shellHook = ''
               echo "go-finding dev shell — $(go version)"
               echo "Multi-module workspace active (go.work)"
+              # Install the commit-time formatting gate (source of truth:
+              # scripts/hooks/pre-commit). Re-links when the tracked script
+              # changes, so the gate can never silently rot.
+              if [ -d .git ] && [ -f scripts/hooks/pre-commit ]; then
+                if ! cmp -s scripts/hooks/pre-commit .git/hooks/pre-commit 2>/dev/null; then
+                  cp scripts/hooks/pre-commit .git/hooks/pre-commit
+                  chmod +x .git/hooks/pre-commit
+                  echo "pre-commit hook installed (scripts/hooks/pre-commit)"
+                fi
+              fi
             '';
           };
 

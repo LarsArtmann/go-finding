@@ -115,22 +115,22 @@ flightRecorder:
 
 ### Config File Fields
 
-| Key                          | Type              | Default                    | Description                                                 |
-| ---------------------------- | ----------------- | -------------------------- | ----------------------------------------------------------- |
-| `maxIterations`              | int               | `0` (inherits default 5)   | Max pipeline iterations. Must be >= 0.                      |
-| `parallelDetectors`          | bool              | `false`                    | Run detectors concurrently                                  |
-| `verifyAfterFix`             | bool              | `false`                    | Re-run detectors after fixes to verify                      |
-| `timeout`                    | string            | `"10m"`                    | Pipeline timeout as a duration string                       |
-| `detectorTimeouts`           | map[string]string | —                          | Per-detector timeouts (duration strings)                    |
-| `detectors`                  | []detectorSpec    | `[{govet}, {staticcheck}]` | Detectors to run. Each entry has a `name` field.            |
-| `filterGenerated`            | bool              | `false`                    | Filter findings from auto-generated Go source files         |
-| `filterGenTypes`             | string            | `"all"`                    | Generator types to filter (comma-separated)                 |
-| `generatedExclude`           | []string          | —                          | Glob patterns for files to exclude from generated filtering |
-| `generatedInclude`           | []string          | —                          | Glob patterns restricting generated-filtering scope         |
-| `byteLevelConflictDetection` | bool              | `false`                    | Enable precise byte-level conflict detection during triage  |
-| `fixProviders`               | []string          | —                          | Named fix providers to enable (e.g., `go-ast`)              |
+| Key                          | Type              | Default                    | Description                                                                                                                 |
+| ---------------------------- | ----------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `maxIterations`              | int               | `0` (inherits default 5)   | Max pipeline iterations. Must be >= 0.                                                                                      |
+| `parallelDetectors`          | bool              | `false`                    | Run detectors concurrently                                                                                                  |
+| `verifyAfterFix`             | bool              | `false`                    | Re-run detectors after fixes to verify                                                                                      |
+| `timeout`                    | string            | `"10m"`                    | Pipeline timeout as a duration string                                                                                       |
+| `detectorTimeouts`           | map[string]string | —                          | Per-detector timeouts (duration strings)                                                                                    |
+| `detectors`                  | []detectorSpec    | `[{govet}, {staticcheck}]` | Detectors to run. Each entry has a `name` field.                                                                            |
+| `filterGenerated`            | bool              | `false`                    | Filter findings from auto-generated Go source files                                                                         |
+| `filterGenTypes`             | string            | `"all"`                    | Generator types to filter (comma-separated)                                                                                 |
+| `generatedExclude`           | []string          | —                          | Glob patterns for files to exclude from generated filtering                                                                 |
+| `generatedInclude`           | []string          | —                          | Glob patterns restricting generated-filtering scope                                                                         |
+| `byteLevelConflictDetection` | bool              | `false`                    | Enable precise byte-level conflict detection during triage                                                                  |
+| `fixProviders`               | []string          | —                          | Named fix providers to enable (e.g., `go-ast`)                                                                              |
 | `fixRollbackAllFiles`        | bool              | `false`                    | All-or-nothing fix rollback: on file failure, restore all files modified in the run. Default restores only the failing file |
-| `flightRecorder`             | object            | —                          | Flight recorder settings (see below)                        |
+| `flightRecorder`             | object            | —                          | Flight recorder settings (see below)                                                                                        |
 
 ### Flight Recorder Fields
 

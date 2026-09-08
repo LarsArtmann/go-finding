@@ -8,17 +8,17 @@
 
 ## Implementation Status (updated 2026-09-07)
 
-| Gap | Status | Notes |
-| --- | ------ | ----- |
-| GAP-1: `RelatedRef.Range` | ✅ Implemented | `RelatedRef.Range *Range` (`finding.go`) + used by `ToLSP`/`FromLSP` |
-| GAP-2: `GroupID` | ✅ Implemented (2026-09-07) | `Finding.GroupID`, `WithGroupID`, `Report.GroupFindings()`, SARIF property `go-finding/groupId`, LSP `Data.GroupID` |
-| GAP-3: Per-relationship metadata | ⏸️ Deferred | As recommended — use `Finding.Metadata` |
-| GAP-4: `LSPDiagnosticTag` | ✅ Implemented | Types + `Tags` field on `LSPDiagnostic`; `ToLSP` re-emits tags from `Metadata[LSPDiagnosticTagsKey]` (2026-09-07); `FromLSP` preserves them |
-| GAP-5: Snippet in SARIF | ✅ Implemented | `region.snippet` + property fallback, both directions |
-| GAP-6: `ToLSP` uses `RelatedRef.Range` | ✅ Implemented | Related info carries real spans |
-| GAP-7: Strict `Category.IsValid()` | ✅ Resolved differently | `IsStandard()` (allow-list) vs `IsValid()` (well-formed custom) split; no global registry |
-| GAP-8: `FromLSP` preserves tags | ✅ Implemented | `Metadata[LSPDiagnosticTagsKey]` |
-| GAP-9: `iter.Seq` on `Report.All()` | ✅ Implemented | `report_query.go` |
+| Gap                                    | Status                      | Notes                                                                                                                                       |
+| -------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| GAP-1: `RelatedRef.Range`              | ✅ Implemented              | `RelatedRef.Range *Range` (`finding.go`) + used by `ToLSP`/`FromLSP`                                                                        |
+| GAP-2: `GroupID`                       | ✅ Implemented (2026-09-07) | `Finding.GroupID`, `WithGroupID`, `Report.GroupFindings()`, SARIF property `go-finding/groupId`, LSP `Data.GroupID`                         |
+| GAP-3: Per-relationship metadata       | ⏸️ Deferred                  | As recommended — use `Finding.Metadata`                                                                                                     |
+| GAP-4: `LSPDiagnosticTag`              | ✅ Implemented              | Types + `Tags` field on `LSPDiagnostic`; `ToLSP` re-emits tags from `Metadata[LSPDiagnosticTagsKey]` (2026-09-07); `FromLSP` preserves them |
+| GAP-5: Snippet in SARIF                | ✅ Implemented              | `region.snippet` + property fallback, both directions                                                                                       |
+| GAP-6: `ToLSP` uses `RelatedRef.Range` | ✅ Implemented              | Related info carries real spans                                                                                                             |
+| GAP-7: Strict `Category.IsValid()`     | ✅ Resolved differently     | `IsStandard()` (allow-list) vs `IsValid()` (well-formed custom) split; no global registry                                                   |
+| GAP-8: `FromLSP` preserves tags        | ✅ Implemented              | `Metadata[LSPDiagnosticTagsKey]`                                                                                                            |
+| GAP-9: `iter.Seq` on `Report.All()`    | ✅ Implemented              | `report_query.go`                                                                                                                           |
 
 ---
 

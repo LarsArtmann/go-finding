@@ -214,7 +214,10 @@ jobs:
       - name: Install benchstat
         run: go install golang.org/x/perf/cmd/benchstat@latest
       - name: Run benchmarks (count=10 for statistical significance)
-        run: go test -bench=. -benchmem -count=10 -run='^$' ./... 2>&1 | tee bench-current.txt
+        run: |
+          go test -bench=. -benchmem -count=10 -run='^$' ./... 2>&1 | tee bench-current.txt
+          cd pipeline
+          go test -bench=. -benchmem -count=10 -run='^$' . >> ../bench-current.txt
       - name: Check for regressions vs baseline (fail if >25% slower)
         run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 25
       - name: Upload benchmark results

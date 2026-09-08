@@ -25,27 +25,27 @@
 
 The central type representing a single issue detected by a static analysis tool.
 
-| Field       | Type                | Purpose                                              |
-| ----------- | ------------------- | ---------------------------------------------------- |
-| ID          | `ID`                | Stable unique identifier (`tool:rule:file:line:col`) |
-| Rule        | `RuleName`          | Rule/check name (e.g., `STRONG_ID`)                  |
-| ToolName    | `ToolName`          | Source tool name (e.g., `govet`)                     |
-| Message     | `string`            | Human-readable description                           |
-| Severity    | `Severity`          | info / warning / error / critical                    |
-| Position    | `Position`          | Where the issue is (file, line, column, offset)      |
-| Category    | `Category`          | Domain classification (security, style, etc.)        |
-| Tags        | `[]Tag`             | Multiple classification labels                       |
-| FixStrategy | `FixStrategy`       | none / suggest / direct / ai                         |
-| Suggestion  | `string`            | Human-readable fix description                       |
-| BeforeCode  | `string`            | Code before the fix                                  |
-| AfterCode   | `string`            | Code after the fix                                   |
-| Range       | `*Range`            | Span-based findings (start/end positions)            |
-| Snippet     | `string`            | Surrounding code context                             |
-| Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                            |
+| Field       | Type                | Purpose                                                   |
+| ----------- | ------------------- | --------------------------------------------------------- |
+| ID          | `ID`                | Stable unique identifier (`tool:rule:file:line:col`)      |
+| Rule        | `RuleName`          | Rule/check name (e.g., `STRONG_ID`)                       |
+| ToolName    | `ToolName`          | Source tool name (e.g., `govet`)                          |
+| Message     | `string`            | Human-readable description                                |
+| Severity    | `Severity`          | info / warning / error / critical                         |
+| Position    | `Position`          | Where the issue is (file, line, column, offset)           |
+| Category    | `Category`          | Domain classification (security, style, etc.)             |
+| Tags        | `[]Tag`             | Multiple classification labels                            |
+| FixStrategy | `FixStrategy`       | none / suggest / direct / ai                              |
+| Suggestion  | `string`            | Human-readable fix description                            |
+| BeforeCode  | `string`            | Code before the fix                                       |
+| AfterCode   | `string`            | Code after the fix                                        |
+| Range       | `*Range`            | Span-based findings (start/end positions)                 |
+| Snippet     | `string`            | Surrounding code context                                  |
+| Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                                 |
 | GroupID     | `GroupID`           | Logical group this finding belongs to (e.g., clone group) |
-| Related     | `[]RelatedRef`      | Related findings with optional `*Range` span         |
-| Suppression | `*Suppression`      | If suppressed                                        |
-| Metadata    | `map[string]string` | Tool-specific key-value pairs                        |
+| Related     | `[]RelatedRef`      | Related findings with optional `*Range` span              |
+| Suppression | `*Suppression`      | If suppressed                                             |
+| Metadata    | `map[string]string` | Tool-specific key-value pairs                             |
 
 Key methods: `Validate()` (decomposed into 6 per-field validators for low complexity), `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
 

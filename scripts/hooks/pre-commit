@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Commit-time formatting gate. Installed by the flake devShell shellHook
+# (source of truth: this file). Fast and deterministic — no reason to bypass
+# it with --no-verify.
+set -euo pipefail
+
+if ! command -v dprint >/dev/null 2>&1; then
+	echo "pre-commit: dprint not found — enter the dev shell (nix develop) or install dprint." >&2
+	echo "pre-commit: skipping formatting check this once is NOT recommended; use 'dprint fmt' to fix." >&2
+	exit 1
+fi
+
+if ! dprint check --staged >/dev/null 2>&1; then
+	echo "pre-commit: dprint check failed on staged files." >&2
+	echo "pre-commit: fix with 'dprint fmt' (or 'nix develop -c dprint fmt'), then restage." >&2
+	echo "pre-commit: files needing formatting:" >&2
+	dprint check --staged 2>&1 | tail -n +2 >&2 || true
+	exit 1
+fi
+
+echo "pre-commit: dprint check passed"

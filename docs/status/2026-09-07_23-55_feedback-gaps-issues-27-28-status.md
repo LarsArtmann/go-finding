@@ -14,51 +14,51 @@ The session reviewed 1 feedback document (art-dupl evaluation, 9 gaps) and 2 Git
 
 ## a) FULLY DONE
 
-| # | Item | Evidence |
-|---|------|----------|
-| 1 | Research pass: all 9 feedback gaps + 2 issues verified against current code (several doc claims were stale — 6 gaps already done) | Session research; findings recorded in feedback doc status table |
-| 2 | GAP-2: `Finding.GroupID` (branded type), `WithGroupID` builder, `Equal()` coverage, JSON `groupId` (omitempty) | `branded_types.go`, `finding.go`, `finding_equal.go`, `finding_builder.go` |
-| 3 | GroupID interchange: SARIF property `go-finding/groupId` (export+import), LSP `Data.GroupID` round-trip | `sarif_types.go`, `sarif_export.go`, `sarif_import.go`, `lsp.go` |
-| 4 | `Report.GroupFindings()` (active findings only, nil when ungrouped) | `report_query.go` |
-| 5 | GAP-4 completion: `ToLSP()` re-emits diagnostic tags from `Metadata[LSPDiagnosticTagsKey]` (malformed entries skipped) | `lsp.go` |
-| 6 | Issue #27: `FixEngine.ApplyWithOutcomes` → `FixApplyResult` with one `FixOutcome` per finding (`applied`/`no-change`/`refused`/`conflict`/`invalid`/`failed`), `OutcomeFor`/`OutcomeCounts`/`HasErrors`; legacy `Apply`/`ApplyWithConflicts` delegate unchanged | `pipeline/fix_outcome.go`, `pipeline/fix_engine.go` |
-| 7 | Issue #28: `RollbackPolicy` (`RollbackPolicyFailingFile` default, `RollbackPolicyAllFiles` legacy), `SetRollbackPolicy`, `Config.FixRollbackAllFiles`, config-file `fixRollbackAllFiles`, CLI config parity | `pipeline/fix_applier.go`, `pipeline/config.go`, `pipeline/config_file.go`, `cmd/go-finding/config.go` |
-| 8 | `FixApplier.ApplyWithReport` → `ApplyReport` (applied, outcomes, shift maps, `RolledBack`, `FailedOutcomes()`); soft failures no longer abort runs | `pipeline/fix_applier.go` |
-| 9 | Tests: mixed-status outcomes, empty input, legacy parity, invalid-edit reporting, soft-error-keeps-files (#28 scenario), refused reporting, GroupID (JSON/Equal/builder/SARIF/LSP/report), LSP tag round-trip, config-file mapping, rewritten legacy rollback tests (default + AllFiles variants), saboteur test re-targeted to the hard-error path | `pipeline/fix_outcome_test.go`, `pipeline/fix_applier_test.go`, core test files |
-| 10 | Lint clean (core, pipeline, CLI), `go vet` clean, `go-arch-lint` OK | session runs |
-| 11 | Full suite green: 10 packages, `-race -count=1`, all 4 modules | session run |
-| 12 | CI scripts: test-naming, json-deterministic, go-work-sync, replace-audit, version-drift, docs-freshness (0 stale) | session runs |
-| 13 | Docs: both CHANGELOGs (Unreleased sections), AGENTS.md (key files + 4 new gotchas), FEATURES.md (3 sections), fix-engine guide (outcomes + rollback policy + report), configuration guide (`fixRollbackAllFiles` row), feedback doc annotated with a 9-gap implementation-status table | files listed |
+| #  | Item                                                                                                                                                                                                                                                                                                                                                | Evidence                                                                                               |
+| -- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| 1  | Research pass: all 9 feedback gaps + 2 issues verified against current code (several doc claims were stale — 6 gaps already done)                                                                                                                                                                                                                   | Session research; findings recorded in feedback doc status table                                       |
+| 2  | GAP-2: `Finding.GroupID` (branded type), `WithGroupID` builder, `Equal()` coverage, JSON `groupId` (omitempty)                                                                                                                                                                                                                                      | `branded_types.go`, `finding.go`, `finding_equal.go`, `finding_builder.go`                             |
+| 3  | GroupID interchange: SARIF property `go-finding/groupId` (export+import), LSP `Data.GroupID` round-trip                                                                                                                                                                                                                                             | `sarif_types.go`, `sarif_export.go`, `sarif_import.go`, `lsp.go`                                       |
+| 4  | `Report.GroupFindings()` (active findings only, nil when ungrouped)                                                                                                                                                                                                                                                                                 | `report_query.go`                                                                                      |
+| 5  | GAP-4 completion: `ToLSP()` re-emits diagnostic tags from `Metadata[LSPDiagnosticTagsKey]` (malformed entries skipped)                                                                                                                                                                                                                              | `lsp.go`                                                                                               |
+| 6  | Issue #27: `FixEngine.ApplyWithOutcomes` → `FixApplyResult` with one `FixOutcome` per finding (`applied`/`no-change`/`refused`/`conflict`/`invalid`/`failed`), `OutcomeFor`/`OutcomeCounts`/`HasErrors`; legacy `Apply`/`ApplyWithConflicts` delegate unchanged                                                                                     | `pipeline/fix_outcome.go`, `pipeline/fix_engine.go`                                                    |
+| 7  | Issue #28: `RollbackPolicy` (`RollbackPolicyFailingFile` default, `RollbackPolicyAllFiles` legacy), `SetRollbackPolicy`, `Config.FixRollbackAllFiles`, config-file `fixRollbackAllFiles`, CLI config parity                                                                                                                                         | `pipeline/fix_applier.go`, `pipeline/config.go`, `pipeline/config_file.go`, `cmd/go-finding/config.go` |
+| 8  | `FixApplier.ApplyWithReport` → `ApplyReport` (applied, outcomes, shift maps, `RolledBack`, `FailedOutcomes()`); soft failures no longer abort runs                                                                                                                                                                                                  | `pipeline/fix_applier.go`                                                                              |
+| 9  | Tests: mixed-status outcomes, empty input, legacy parity, invalid-edit reporting, soft-error-keeps-files (#28 scenario), refused reporting, GroupID (JSON/Equal/builder/SARIF/LSP/report), LSP tag round-trip, config-file mapping, rewritten legacy rollback tests (default + AllFiles variants), saboteur test re-targeted to the hard-error path | `pipeline/fix_outcome_test.go`, `pipeline/fix_applier_test.go`, core test files                        |
+| 10 | Lint clean (core, pipeline, CLI), `go vet` clean, `go-arch-lint` OK                                                                                                                                                                                                                                                                                 | session runs                                                                                           |
+| 11 | Full suite green: 10 packages, `-race -count=1`, all 4 modules                                                                                                                                                                                                                                                                                      | session run                                                                                            |
+| 12 | CI scripts: test-naming, json-deterministic, go-work-sync, replace-audit, version-drift, docs-freshness (0 stale)                                                                                                                                                                                                                                   | session runs                                                                                           |
+| 13 | Docs: both CHANGELOGs (Unreleased sections), AGENTS.md (key files + 4 new gotchas), FEATURES.md (3 sections), fix-engine guide (outcomes + rollback policy + report), configuration guide (`fixRollbackAllFiles` row), feedback doc annotated with a 9-gap implementation-status table                                                              | files listed                                                                                           |
 
 ## b) PARTIALLY DONE
 
-| # | Item | What exists | What is missing |
-|---|------|-------------|-----------------|
-| 1 | Rollback policy test coverage | Hard-error path (write failure), AllFiles variant, soft-error path | No explicit test that earlier files keep fixes on **context cancel** or **backup failure** under the default policy (behavior implemented, untested) |
-| 2 | GAP-4 (diagnostic tags) | Types, metadata preservation, ToLSP emission, round-trip test | No golden JSON wire-format test protecting the `go-finding/lsp-diagnostic-tags` metadata spelling |
-| 3 | GAP-2 (GroupID) | Full core + interchange | No golden JSON test protecting the `groupId` key spelling; no group-aware dedup/correlation integration; no usage-guide section or example in `examples/` |
-| 4 | Issue follow-through | Fixes implemented locally | Issues #27/#28 not commented on or linked (no push/close without permission); fixes unreleased |
-| 5 | Config-file parity | Unit test for field mapping | No E2E test proving `fixRollbackAllFiles` reaches the applier via a real config-file run (flight recorder got that treatment in v1.6.0) |
-| 6 | New API documentation | Guide + godoc | `doc.go` package overview not extended; `DOMAIN_LANGUAGE.md` lacks outcome/refused/rollback-policy/GroupID terms |
+| # | Item                          | What exists                                                        | What is missing                                                                                                                                           |
+| - | ----------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | Rollback policy test coverage | Hard-error path (write failure), AllFiles variant, soft-error path | No explicit test that earlier files keep fixes on **context cancel** or **backup failure** under the default policy (behavior implemented, untested)      |
+| 2 | GAP-4 (diagnostic tags)       | Types, metadata preservation, ToLSP emission, round-trip test      | No golden JSON wire-format test protecting the `go-finding/lsp-diagnostic-tags` metadata spelling                                                         |
+| 3 | GAP-2 (GroupID)               | Full core + interchange                                            | No golden JSON test protecting the `groupId` key spelling; no group-aware dedup/correlation integration; no usage-guide section or example in `examples/` |
+| 4 | Issue follow-through          | Fixes implemented locally                                          | Issues #27/#28 not commented on or linked (no push/close without permission); fixes unreleased                                                            |
+| 5 | Config-file parity            | Unit test for field mapping                                        | No E2E test proving `fixRollbackAllFiles` reaches the applier via a real config-file run (flight recorder got that treatment in v1.6.0)                   |
+| 6 | New API documentation         | Guide + godoc                                                      | `doc.go` package overview not extended; `DOMAIN_LANGUAGE.md` lacks outcome/refused/rollback-policy/GroupID terms                                          |
 
 ## c) NOT STARTED
 
-| # | Item | Note |
-|---|------|------|
-| 1 | Benchmark regression check (`scripts/bench-check.sh` / `nix run .#bench`) for the engine rework | **Biggest gap.** `ApplyWithConflicts` now allocates outcome slices + reconciliation maps on the legacy path — unmeasured |
-| 2 | Benchmark for `ApplyWithOutcomes` itself | none exists |
-| 3 | Release: version bump, version.go, tag set (incl. `pipeline/v*`), release-date stamping in CHANGELOGs | Blocking consumer uptake of both fixes |
-| 4 | Semver/ADR decision for the rollback default change (behavior change of documented API default in a minor) | Needs an explicit ADR in `docs/architecture-decisions.md` |
-| 5 | Fuzz coverage for `ApplyWithOutcomes` | `fix_engine_fuzz_test.go` untouched |
-| 6 | CLI: surface refused/failed counts in fix output; optional `-fix-rollback-all` flag | Config-file only today |
-| 7 | Metrics: record refused/failed/conflict counts (`RecordFixes` counts applied only) | |
-| 8 | `OnFix` callback carrying outcome status | Signature change — needs decision |
-| 9 | JSON marshaling for `FixOutcome`/`FixApplyResult` (deterministic) | Consumers will want to report outcomes |
-| 10 | GAP-3 (per-relationship `RelatedRef` metadata) | Deferred per feedback doc — unchanged |
-| 11 | GAP-7 final disposition (registered-categories registry vs. `IsStandard`/`IsValid` split) | Documented as "resolved differently", not decided with maintainer |
-| 12 | HARVEST of this report's next-steps into `TODO_LIST.md`/`ROADMAP.md` | Awaiting instructions |
-| 13 | errors.Is chain assertions for outcome errors (`ErrPositionUnresolvable` reachability) | |
-| 14 | Structured `FindingError` for outcome failures (go-error-family integration) | |
+| #  | Item                                                                                                       | Note                                                                                                                     |
+| -- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 1  | Benchmark regression check (`scripts/bench-check.sh` / `nix run .#bench`) for the engine rework            | **Biggest gap.** `ApplyWithConflicts` now allocates outcome slices + reconciliation maps on the legacy path — unmeasured |
+| 2  | Benchmark for `ApplyWithOutcomes` itself                                                                   | none exists                                                                                                              |
+| 3  | Release: version bump, version.go, tag set (incl. `pipeline/v*`), release-date stamping in CHANGELOGs      | Blocking consumer uptake of both fixes                                                                                   |
+| 4  | Semver/ADR decision for the rollback default change (behavior change of documented API default in a minor) | Needs an explicit ADR in `docs/architecture-decisions.md`                                                                |
+| 5  | Fuzz coverage for `ApplyWithOutcomes`                                                                      | `fix_engine_fuzz_test.go` untouched                                                                                      |
+| 6  | CLI: surface refused/failed counts in fix output; optional `-fix-rollback-all` flag                        | Config-file only today                                                                                                   |
+| 7  | Metrics: record refused/failed/conflict counts (`RecordFixes` counts applied only)                         |                                                                                                                          |
+| 8  | `OnFix` callback carrying outcome status                                                                   | Signature change — needs decision                                                                                        |
+| 9  | JSON marshaling for `FixOutcome`/`FixApplyResult` (deterministic)                                          | Consumers will want to report outcomes                                                                                   |
+| 10 | GAP-3 (per-relationship `RelatedRef` metadata)                                                             | Deferred per feedback doc — unchanged                                                                                    |
+| 11 | GAP-7 final disposition (registered-categories registry vs. `IsStandard`/`IsValid` split)                  | Documented as "resolved differently", not decided with maintainer                                                        |
+| 12 | HARVEST of this report's next-steps into `TODO_LIST.md`/`ROADMAP.md`                                       | Awaiting instructions                                                                                                    |
+| 13 | errors.Is chain assertions for outcome errors (`ErrPositionUnresolvable` reachability)                     |                                                                                                                          |
+| 14 | Structured `FindingError` for outcome failures (go-error-family integration)                               |                                                                                                                          |
 
 ## d) TOTALLY FUCKED UP
 
@@ -141,4 +141,4 @@ Nothing shipped broken — final state is green everywhere. Honest failures duri
 
 ---
 
-*Point-in-time snapshot. Section (f) is brainstorm input for docs-health HARVEST, not a commitment list.*
+_Point-in-time snapshot. Section (f) is brainstorm input for docs-health HARVEST, not a commitment list._
