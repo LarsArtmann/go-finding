@@ -23,6 +23,33 @@ func nanConfidenceFinding() Finding {
 	}
 }
 
+// failOnNthWriter fails every Write call after the first n successes.
+type failOnNthWriter struct {
+	w io.Writer
+	n int
+}
+
+func (f *failOnNthWriter) Write(p []byte) (int, error) {
+	if f.n <= 0 {
+		return 0, errors.New("write failed")
+	}
+
+	f.n--
+
+	return f.w.Write(p)
+}
+
+func TestFinding_WriteJSON_NewlineError(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	var buf bytes.Buffer
+	w := &failOnNthWriter{w: &buf, n: 1}
+
+	err := nanConfidenceFinding().WriteJSON(w)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("writing trailing newline"))
+}
+
 func assertSingleFindingWithID(t *testing.T, got *Report, wantID string) {
 	t.Helper()
 

@@ -111,6 +111,18 @@ func TestSARIFSuppressionKindMapping(t *testing.T) {
 	}
 }
 
+func TestSuppressionSARIF_UnknownKindDefaults(t *testing.T) {
+	t.Parallel()
+
+	if got := suppressionKindToSARIF(SuppressionKind("bogus")); got != "inSource" {
+		t.Errorf("unknown kind default = %q, want %q", got, "inSource")
+	}
+
+	if got := suppressionStatusToSARIF(SuppressionKind("bogus")); got != "accepted" {
+		t.Errorf("unknown status default = %q, want %q", got, "accepted")
+	}
+}
+
 // TestSARIFSuppressionRoundTrip_DifferentRule verifies that Suppression.Rule is
 // preserved when it differs from Finding.Rule. Regression for the SARIF
 // Suppression.Rule loss bug (sarif_export.go:357 / sarif_import.go:247).

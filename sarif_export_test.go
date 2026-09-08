@@ -309,3 +309,18 @@ func TestDeterminism_WriteSARIF_RawBytesIdentical(t *testing.T) {
 		}
 	}
 }
+
+func TestSuppressionToSARIF_AllKinds(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	g.Expect(suppressionKindToSARIF(SuppressionInSource)).To(gomega.Equal(sarifSuppressionKindSource))
+	g.Expect(suppressionKindToSARIF(SuppressionInConfig)).To(gomega.Equal(sarifSuppressionKindExternal))
+	g.Expect(suppressionKindToSARIF(SuppressionInReview)).To(gomega.Equal(sarifSuppressionKindExternal))
+	g.Expect(suppressionKindToSARIF(SuppressionKind("bogus"))).To(gomega.Equal(sarifSuppressionKindSource),
+		"unknown kinds default to source")
+
+	g.Expect(suppressionStatusToSARIF(SuppressionInReview)).To(gomega.Equal(sarifSuppressionStatusReview))
+	g.Expect(suppressionStatusToSARIF(SuppressionInSource)).To(gomega.Equal(sarifSuppressionStatusAccepted))
+	g.Expect(suppressionStatusToSARIF(SuppressionKind("bogus"))).To(gomega.Equal(sarifSuppressionStatusAccepted),
+		"unknown kinds default to accepted")
+}

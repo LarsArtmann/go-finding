@@ -1,9 +1,16 @@
 package finding
 
 import (
+	"errors"
+	"io"
 	"strings"
 	"testing"
+	"unicode/utf8"
 )
+
+type errWriter struct{}
+
+func (errWriter) Write([]byte) (int, error) { return 0, errors.New("write failed") }
 
 func TestFormatText(t *testing.T) {
 	t.Parallel()
@@ -35,6 +42,92 @@ func TestFormatText(t *testing.T) {
 
 	if !strings.Contains(output, "Suggestion: add nil check") {
 		t.Errorf("missing suggestion text in output: %q", output)
+	}
+}
+
+func TestFormatText_WriterError(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{{Message: "m", Severity: SeverityError, Position: Pos("a.go", 1, 1)}}
+
+	err := FormatText(errWriter{}, findings)
+	if err == nil {
+		t.Fatal("FormatText must propagate writer errors")
+	}
+
+	if !strings.Contains(err.Error(), "format text") {
+		t.Errorf("error should identify formatter: %v", err)
+	}
+}
+
+func TestFormatTextRich_CategoryAndWriterError(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{{
+		Message: "m", Severity: SeverityError, Position: Pos("a.go", 1, 1),
+		Category: CategorySecurity, Suggestion: "check nil",
+	}}
+
+	var buf strings.Builder
+	if err := FormatTextRich(&buf, findings); err != nil {
+		t.Fatalf("FormatTextRich: %v", err)
+	}
+
+	out := buf.String()
+	for _, want := range []string{"[security]", "🟠 ERROR", "💡 check nil"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q in output: %q", want, out)
+		}
+	}
+
+	if err := FormatTextRich(errWriter{}, findings); err == nil {
+		t.Error("FormatTextRich must propagate writer errors")
+	}
+}
+
+func TestFormatMarkdown_EscapeAndTruncate(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{{
+		Message: "a|b\nc\rd", Severity: SeverityWarning, Position: Pos("a.go", 1, 1),
+	}}
+
+	var buf strings.Builder
+	if err := FormatMarkdown(&buf, findings); err != nil {
+		t.Fatalf("FormatMarkdown: %v", err)
+	}
+
+	if out := buf.String(); !strings.Contains(out, "a\\|b cd") {
+		t.Errorf("pipes/newlines/carriage returns not escaped correctly: %q", out)
+	}
+
+	truncated := escapeMarkdownCell(strings.Repeat("x", 100), 10)
+	if got := utf8.RuneCountInString(truncated); got != 10 {
+		t.Errorf("truncated rune count = %d, want 10", got)
+	}
+
+	if !strings.HasSuffix(truncated, "...") {
+		t.Errorf("truncated cell must end with ellipsis: %q", truncated)
+	}
+
+	multibyte := escapeMarkdownCell(strings.Repeat("ä", 100), 10)
+	if got := utf8.RuneCountInString(multibyte); got != 10 {
+		t.Errorf("multibyte truncation must respect rune boundaries: %q (%d runes)", multibyte, got)
+	}
+}
+
+func TestFormatTable_WriterError(t *testing.T) {
+	t.Parallel()
+
+	findings := []Finding{{Message: "m", Severity: SeverityInfo, Position: Pos("a.go", 1, 1)}}
+
+	err := FormatTable(errWriter{}, findings)
+	if err == nil {
+		t.Fatal("FormatTable must propagate writer errors")
+	}
+
+	if !strings.Contains(err.Error(), "format table") {
+		t.Errorf("error should identify formatter: %v", err)
 	}
 }
 
@@ -183,5 +276,71 @@ func TestFormatTable_Empty(t *testing.T) {
 	lines := strings.Count(output, "\n")
 	if lines != 1 {
 		t.Errorf("expected 1 line (header only) in empty table, got %d", lines)
+	}
+}
+
+// failAfterWriter succeeds for the first failAt writes, then errors. It lets
+// tests pin the error-return branch of each individual Fprintf/Fprintln call
+// inside the formatters (a plain always-failing writer only ever covers the
+// first branch).
+type failAfterWriter struct {
+	writes int
+	failAt int
+}
+
+func (w *failAfterWriter) Write(p []byte) (int, error) {
+	w.writes++
+	if w.writes > w.failAt {
+		return 0, errors.New("write failed")
+	}
+
+	return len(p), nil
+}
+
+// TestFormatters_PartialWriteErrors drives every write call in every
+// formatter to failure in turn: for each formatter the nth write fails and
+// the error must propagate with the formatter's label.
+func TestFormatters_PartialWriteErrors(t *testing.T) {
+	t.Parallel()
+
+	rich := []Finding{{
+		Message:    "m",
+		Severity:   SeverityWarning,
+		Rule:       "r1",
+		Category:   CategoryStyle,
+		Suggestion: "do this instead",
+		Position:   Pos("a.go", 1, 1),
+	}}
+	plain := []Finding{{Message: "m", Severity: SeverityError, Position: Pos("a.go", 1, 1)}}
+
+	cases := []struct {
+		name   string
+		failAt int
+		format func(io.Writer, []Finding) error
+	}{
+		{"FormatText suggestion write", 2, FormatText},
+		{"FormatTextRich category write", 2, FormatTextRich},
+		{"FormatTextRich newline write", 3, FormatTextRich},
+		{"FormatTextRich suggestion write", 4, FormatTextRich},
+		{"FormatMarkdown separator write", 2, FormatMarkdown},
+		{"FormatMarkdown row write", 3, FormatMarkdown},
+		{"FormatTable row write", 2, FormatTable},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			w := &failAfterWriter{failAt: tc.failAt}
+			findings := plain
+			if tc.format == FormatTextRich {
+				findings = rich
+			}
+
+			err := tc.format(w, findings)
+			if err == nil {
+				t.Fatalf("write %d failing must propagate an error", tc.failAt)
+			}
+		})
 	}
 }

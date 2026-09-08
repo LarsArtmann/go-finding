@@ -150,6 +150,8 @@ func TestFindingHasFix(t *testing.T) {
 			Finding{FixStrategy: FixStrategySuggest, AfterCode: exportTestFixed},
 			true,
 		},
+		{"unknown-strategy", Finding{FixStrategy: FixStrategy("bogus")}, false},
+		{"direct-before-only", Finding{FixStrategy: FixStrategyDirect, BeforeCode: "old"}, true},
 	}
 
 	for _, tt := range tests {
@@ -569,4 +571,54 @@ func TestFinding_Key(t *testing.T) {
 	if otherMessage.Key() == composite.Key() {
 		t.Error("same position but different messages must produce different keys")
 	}
+}
+
+func TestFinding_Validate_ReferenceErrors(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	base := Finding{
+		ID: "id", ToolName: "tool", Rule: "rule", Message: "m",
+		Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
+	}
+
+	missingID := base
+	missingID.Related = []RelatedRef{{Relation: RelationCloneOf}}
+
+	err := missingID.Validate()
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("Related[0] is invalid"))
+
+	unknownRelation := base
+	unknownRelation.Related = []RelatedRef{{FindingID: "x", Relation: RelationKind("bogus")}}
+
+	err = unknownRelation.Validate()
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("Related[0] is invalid"))
+
+	invertedRange := base
+	invertedRange.Related = []RelatedRef{{
+		FindingID: "x",
+		Relation:  RelationCloneOf,
+		Position:  Position{File: "o.go", Line: 1},
+		Range:     &Range{Start: Position{File: "o.go", Line: 5}, End: Position{File: "o.go", Line: 2}},
+	}}
+
+	err = invertedRange.Validate()
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("Related[0].Range is invalid"))
+}
+
+func TestFinding_Validate_SuppressionError(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	f := Finding{
+		ID: "id", ToolName: "tool", Rule: "rule", Message: "m",
+		Severity:    SeverityError,
+		Position:    Position{File: "a.go", Line: 1},
+		Suppression: &Suppression{},
+	}
+
+	err := f.Validate()
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("finding.Suppression is invalid"))
 }
