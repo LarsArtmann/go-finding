@@ -7,6 +7,7 @@ import (
 	"maps"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -20,9 +21,8 @@ type FixApplier struct {
 }
 
 // RollbackPolicy controls which files are restored when a file fails during a
-// fix run. See docs/DOMAIN_LANGUAGE.md ("Fix Application") for the shared
-// vocabulary. The default is documented on RollbackPolicyFailingFile.
-// multi-file fix run.
+// multi-file fix run. See docs/DOMAIN_LANGUAGE.md ("Fix Application") for the
+// shared vocabulary. The default is documented on RollbackPolicyFailingFile.
 type RollbackPolicy int
 
 const (
@@ -186,10 +186,12 @@ func (a *FixApplier) ApplyWithReport(
 		if err != nil {
 			if a.rollbackPolicy == RollbackPolicyAllFiles {
 				if rollbackErr := a.backup.RollbackAll(modified); rollbackErr != nil {
-					return report, fmt.Errorf("%w (rollback also failed: %w)", err, rollbackErr)
+					return report, fmt.Errorf("%w (rollback also failed: %w)%s", err, rollbackErr, rolledBackNote(report.RolledBack))
 				}
 
 				report.RolledBack = append(report.RolledBack, modified...)
+
+				return report, fmt.Errorf("%w%s", err, rolledBackNote(report.RolledBack))
 			}
 
 			return report, err
@@ -202,10 +204,12 @@ func (a *FixApplier) ApplyWithReport(
 
 				if a.rollbackPolicy == RollbackPolicyAllFiles {
 					if rollbackErr := a.backup.RollbackAll(modified); rollbackErr != nil {
-						return report, fmt.Errorf("%w (rollback also failed: %w)", backupErr, rollbackErr)
+						return report, fmt.Errorf("%w (rollback also failed: %w)%s", backupErr, rollbackErr, rolledBackNote(report.RolledBack))
 					}
 
 					report.RolledBack = append(report.RolledBack, modified...)
+
+					return report, fmt.Errorf("%w%s", backupErr, rolledBackNote(report.RolledBack))
 				}
 
 				return report, backupErr
@@ -260,10 +264,20 @@ func (a *FixApplier) handleFileError(report *ApplyReport, path string, modified 
 
 	applyErr := finding.NewConflictError("apply to "+path, err)
 	if len(rollbackErrs) > 0 {
-		return fmt.Errorf("%w (rollback also failed: %w)", applyErr, errors.Join(rollbackErrs...))
+		return fmt.Errorf("%w (rollback also failed: %w)%s", applyErr, errors.Join(rollbackErrs...), rolledBackNote(report.RolledBack))
 	}
 
-	return applyErr
+	return fmt.Errorf("%w%s", applyErr, rolledBackNote(report.RolledBack))
+}
+
+// rolledBackNote renders the rolled-back file list for error messages so
+// callers can see exactly which paths were restored after a failure.
+func rolledBackNote(paths []string) string {
+	if len(paths) == 0 {
+		return ""
+	}
+
+	return " (rolled back: " + strings.Join(paths, ", ") + ")"
 }
 
 // groupFindingsBySafePath groups findings by their resolved filesystem path,
