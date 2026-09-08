@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Fix rollback scope is now per-file by default** — Previously, any file failure rolled back every file modified earlier in the run, discarding clean fixes because of one bad file (see issue #28). Now only the failing file is restored and earlier files keep their applied fixes. Opt back into all-or-nothing via `FixApplier.SetRollbackPolicy(RollbackPolicyAllFiles)`, `pipeline.Config.FixRollbackAllFiles`, or the config-file field `fixRollbackAllFiles`. Soft per-finding failures (provider resolve errors, refused findings) no longer abort a run: they are reported while all successfully applied fixes stay on disk.
 
+### Dependencies
+
+- Refreshed indirect `golang.org/x/` dependencies that drifted in via an automated housekeeping commit (`c04af34`): `x/mod` 0.38.0 → 0.40.0, `x/net` 0.57.0 → 0.58.0, `x/text` 0.40.0 → 0.41.0, `x/tools` 0.48.0 → 0.49.0 (core + pipeline + CLI modules, all `// indirect`; no direct dependency changes). Reviewed and confirmed intentional: kept instead of reverted per no-churn policy. Full test suite green.
+
 ## [1.6.0] - 2026-08-08
 
 ### Added
