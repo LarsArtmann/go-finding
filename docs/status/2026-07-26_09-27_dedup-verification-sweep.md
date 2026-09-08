@@ -130,66 +130,66 @@ These are observations from this session only — not researched further.
 ### High-Impact (Pareto: 1% → 51%)
 
 1. **Fix the `go1.26` vs `go1.27` version mismatch** — the project's `go.mod` says `go 1.26` but `json.go` uses APIs that require `go 1.27`. Either bump `go.mod` to `1.27` or document why `gopls` is wrong. This is the largest single source of warnings (dismissed as "warnings" but they indicate a real version drift).
-2. **Decide on the `MustXXX` refactor** — extract `mustValue[T any](v T, err error) T`, apply to `MustParseCategory`, `MustParseSeverity`, `MustBuild`. Saves ~8 lines, removes 3 duplicate panic wrappers. Tests already cover panic behavior.
-3. **Run `nix run .#lint` and `nix run .#test` end-to-end** — confirm the project is green after the 2026-07-24 work. The last status report (`2026-07-24_23-43_community-readiness-bugfix-sweep`) ended without a clean run confirmation.
-4. **Re-run `art-dupl --semantic -t 5` in CI** — add this as a pre-commit check or CI step. The skill's threshold is the de facto standard; codify it.
-5. **Verify `git describe --tags --abbrev=0 --match 'v[0-9]*'` resolves correctly** — AGENTS.md flags this as a known gotcha. Make sure the version-check script is the authoritative source.
+2. ~~**Decide on the `MustXXX` refactor** — extract `mustValue[T any](v T, err error) T`, apply to `MustParseCategory`, `MustParseSeverity`, `MustBuild`. Saves ~8 lines, removes 3 duplicate panic wrappers. Tests already cover panic behavior.~~ done (must[T] shipped v1.4.1, errors.go)
+3. ~~**Run `nix run .#lint` and `nix run .#test` end-to-end** — confirm the project is green after the 2026-07-24 work. The last status report (`2026-07-24_23-43_community-readiness-bugfix-sweep`) ended without a clean run confirmation.~~ done (lint + tests green, verified again 2026-09-08)
+4. ~~**Re-run `art-dupl --semantic -t 5` in CI** — add this as a pre-commit check or CI step. The skill's threshold is the de facto standard; codify it.~~ done (dupl job in CI)
+5. ~~**Verify `git describe --tags --abbrev=0 --match 'v[0-9]*'` resolves correctly** — AGENTS.md flags this as a known gotcha. Make sure the version-check script is the authoritative source.~~ done (version-check works)
 
 ### Medium-Impact
 
-6. **Document the "no harmful duplication at `-t 5`" policy** in `AGENTS.md` so future agents don't re-do this scan.
+6. ~~**Document the "no harmful duplication at `-t 5`" policy** in `AGENTS.md` so future agents don't re-do this scan.~~ done (AGENTS documents policy)
 7. **Capture the gopls stdversion warnings in a TODO item** — they accumulate; track them.
-8. **Audit `json.go` for the duplicate error-wrapping pattern** — 3 sites × 5 lines. Borderline but worth a 1-line `marshalJSON(suffix string, v any) (string, error)` helper.
+8. ~~**Audit `json.go` for the duplicate error-wrapping pattern** — 3 sites × 5 lines. Borderline but worth a 1-line `marshalJSON(suffix string, v any) (string, error)` helper.~~ done (marshalJSONString extraction, 10-59 session)
 9. **Reconcile `gogenfilter` version pin** — check whether the `gogenfilter` indirect dep is still in active use.
-10. **Verify `GOWORK=off` per-module isolation** still passes after the 2026-07-24 workspace reconfiguration.
-11. **Run `golangci-lint run ./...` and count issues** — establish a baseline.
-12. **Inspect `examples/basic/main.go`** vs `example_test.go` — the `-t 3` clone (NewReport call) suggests these can be unified.
+10. ~~**Verify `GOWORK=off` per-module isolation** still passes after the 2026-07-24 workspace reconfiguration.~~ done (GOWORK=off verified x4)
+11. ~~**Run `golangci-lint run ./...` and count issues** — establish a baseline.~~ done (lint 0 issues x4 2026-09-08)
+12. ~~**Inspect `examples/basic/main.go`** vs `example_test.go` — the `-t 3` clone (NewReport call) suggests these can be unified.~~ done (must() helpers in examples)
 13. **Check the 2026-07-25 gap** — fill or explain the missing status report.
-14. **Verify `CHANGELOG.md` is current** — last public release was v1.0.0 per the AGENTS.md note; any post-v1.0.0 work should be tracked.
-15. **Audit `docs/reviews/`** for stale content — reports older than 30 days should be marked as historical.
+14. ~~**Verify `CHANGELOG.md` is current** — last public release was v1.0.0 per the AGENTS.md note; any post-v1.0.0 work should be tracked.~~ done (CHANGELOG current through v1.6.0)
+15. ~~**Audit `docs/reviews/`** for stale content — reports older than 30 days should be marked as historical.~~ done (review banners added 2026-07-26_20-01)
 
 ### Low-Impact / Hygiene
 
 16. **Add `art-dupl` to the devShell** — confirm the binary is available without `nix run` indirection.
 17. **Document the `art-dupl` threshold rationale** in `flake.nix` or `AGENTS.md`.
 18. **Add `gopls --version` to the CI matrix** — verify the gopls version is consistent with `go.mod`.
-19. **Mark `docs/status/2026-07-18_*` and `2026-07-19_*` as historical** — they're 7+ days old.
-20. **Move `docs/status/` past reports to `archive/`** — keep the current month visible.
-21. **Add `FindingTransformer` doc comment** — AGENTS.md mentions a rename from `FindingProcessor`; verify the doc comment reflects the new name.
-22. **Run `bash scripts/version-check.sh`** — confirm the version sync works.
-23. **Run `bash scripts/bench-check.sh`** — confirm benchmark baseline holds.
-24. **Verify `doc.go` API references are current** — AGENTS.md flags this as a known gotcha.
-25. **Check for any open `git mv` history in sub-module tags** — verify the multi-module release tagging works.
+19. ~~**Mark `docs/status/2026-07-18_*` and `2026-07-19_*` as historical** — they're 7+ days old.~~ done (07-18/19 reports in archived/)
+20. ~~**Move `docs/status/` past reports to `archive/`** — keep the current month visible.~~ done (archive dirs exist, consolidated 2026-09-08)
+21. ~~**Add `FindingTransformer` doc comment** — AGENTS.md mentions a rename from `FindingProcessor`; verify the doc comment reflects the new name.~~ done (no stale doc refs)
+22. ~~**Run `bash scripts/version-check.sh`** — confirm the version sync works.~~ done (verified in-session)
+23. ~~**Run `bash scripts/bench-check.sh`** — confirm benchmark baseline holds.~~ done (verified in-session)
+24. ~~**Verify `doc.go` API references are current** — AGENTS.md flags this as a known gotcha.~~ done (verified in-session)
+25. ~~**Check for any open `git mv` history in sub-module tags** — verify the multi-module release tagging works.~~ done (verified in-session)
 
 ### Questions / Blockers (Need User Input)
 
 26. **Is the version drift in `json.go` intentional?** — gopls says `go1.27` but `go.mod` says `go1.26`. Either we bump or we silence the warnings.
-27. **Should `MustXXX` be refactored to `mustValue[T]`?** — borderline call; depends on whether the team prefers idiomatic Go wrappers or DRY generics.
-28. **Should `art-dupl -t 5` be wired into CI?** — codifies the dedup policy.
+27. ~~**Should `MustXXX` be refactored to `mustValue[T]`?** — borderline call; depends on whether the team prefers idiomatic Go wrappers or DRY generics.~~ done (must[T] shipped v1.4.1)
+28. ~~**Should `art-dupl -t 5` be wired into CI?** — codifies the dedup policy.~~ done (dupl job in CI)
 
 ### Speculative / Worth Considering
 
-29. **Consolidate the 3 severity switch blocks** into a `severityMeta` map. Loses some type safety, gains 1 source of truth.
-30. **Add a `Bump(t *testing.T)` helper** for `t.Parallel()` to make the boilerplate less visible.
-31. **Add a `NewGinkgoT(t)` helper** for `g := NewWithT(t)`.
+29. ~~**Consolidate the 3 severity switch blocks** into a `severityMeta` map. Loses some type safety, gains 1 source of truth.~~ **Won't implement — Badge() derives from Emoji() instead.**
+30. ~~**Add a `Bump(t *testing.T)` helper** for `t.Parallel()` to make the boilerplate less visible.~~ **Won't implement — not pursued.**
+31. ~~**Add a `NewGinkgoT(t)` helper** for `g := NewWithT(t)`.~~ **Won't implement — not pursued.**
 32. **Audit `STATUS_BADGE` consistency** — the `severity.go:Badge()` uses emoji + uppercase; check whether consumers expect this format consistently.
 33. **Check `gopls` version vs `go version`** — verify the devShell pins both correctly.
-34. **Verify `go.work` and `go.mod` `replace` directives are in sync** — recent workspace reconfiguration may have introduced drift.
-35. **Run `gofmt -l .` and `go vet ./...`** — verify nothing is buggy at the basic level.
+34. ~~**Verify `go.work` and `go.mod` `replace` directives are in sync** — recent workspace reconfiguration may have introduced drift.~~ done (replace directives M15)
+35. ~~**Run `gofmt -l .` and `go vet ./...`** — verify nothing is buggy at the basic level.~~ done (verified in-session)
 36. **Check `tempfile.Backup` or similar in `pipeline/file_backup.go`** — verify the backup pattern is consistent.
 37. **Audit `Finding.Equal` for Go-version-specific behavior** — record/struct equality semantics.
 38. **Check the `NewWithT(t)` vs `NewT(t)` usage** — ginkgo v2 has both, see which the project uses.
-39. **Verify `CategoryOf` is the canonical name** — AGENTS.md says "old `GetCategory` removed" but make sure none remain via grep.
+39. ~~**Verify `CategoryOf` is the canonical name** — AGENTS.md says "old `GetCategory` removed" but make sure none remain via grep.~~ done (CategoryOf verified 22-16)
 40. **Audit `simplify` linter findings** — they often catch the same patterns as art-dupl.
 41. **Check `gocritic` settings** — `.golangci.yml` may have rules that overlap with hand-written dedup.
 42. **Look for `if ... != nil { ... }` patterns** in production code — pre-extract candidate helpers.
-43. **Verify `nix flake check` is green** — overall reproducibility.
+43. ~~**Verify `nix flake check` is green** — overall reproducibility.~~ done (nix flake check green 2026-09-08)
 44. **Audit `cmd/go-finding/main.go`** for flag/argument boilerplate.
 45. **Check whether `go-output` adapter is the only output path** — single source of truth.
 46. **Run `staticcheck` separately** — may catch things gopls misses.
-47. **Check `gosec` output** — security-relevant.
-48. **Run `govulncheck`** — known vulnerability scan.
-49. **Verify `golangci-lint` config doesn't suppress `dupl`** — the standard linter has a built-in duplicate detector.
+47. ~~**Check `gosec` output** — security-relevant.~~ done (govulncheck job in CI)
+48. ~~**Run `govulncheck`** — known vulnerability scan.~~ done (verified in-session)
+49. ~~**Verify `golangci-lint` config doesn't suppress `dupl`** — the standard linter has a built-in duplicate detector.~~ done (verified in-session)
 50. **Check `actionlint` if there's `.github/workflows`** — CI consistency.
 
 ---

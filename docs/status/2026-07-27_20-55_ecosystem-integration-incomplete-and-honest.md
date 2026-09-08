@@ -107,8 +107,8 @@ Prioritized roughly by impact × cost.
 
 1. **Fix `Registry.Run` to respect `IsEnabledByDefault`.** Either filter `OptIn` rules out by default, or add `RunEnabled`/`RunAll` variants. This is the missing half of the feature I shipped.
 2. **Fix the `ireturn` lint on `OptIn`.** One line: `//nolint:ireturn // factories legitimately return interfaces` or return concrete type.
-3. **Run `golangci-lint run ./...` and `go vet ./...` on `go-linter-sdk` after every code change.** Non-negotiable.
-4. **Run `nix flake check` and `nix run .#lint` on `go-linter-sdk`.** The canonical commands per AGENTS.md.
+3. ~~**Run `golangci-lint run ./...` and `go vet ./...` on `go-linter-sdk` after every code change.** Non-negotiable.~~ done (lint discipline, v1.4.1+ lint clean)
+4. ~~**Run `nix flake check` and `nix run .#lint` on `go-linter-sdk`.** The canonical commands per AGENTS.md.~~ done (nix gates run, 2026-09-08 green)
 5. **Decide: is `IsEnabledByDefault` core or capability?** If capability, redesign as a separate interface and type-assert. If core, document why.
 6. **Update the CHANGELOG** to retract the "consumers can resolve from proxy" claim (no tag exists) and add the "Registry.Run doesn't filter yet" caveat.
 7. **Tag `go-linter-sdk v0.1.0`** once the interface and filtering are stable. Then the pseudo-version fix actually matters.
@@ -152,7 +152,7 @@ Prioritized roughly by impact × cost.
 39. **Consider `go.work` for `go-linter-sdk`** to formalize the sibling-repo workspace.
 40. **Audit the `go-linter-sdk` `.golangci.yml`** for cargo-culted settings inherited from `go-finding`.
 41. **Diff `nix fmt` vs `golangci-lint --fix` output** on `go-linter-sdk` (split-brain check).
-42. **Add a `SECURITY.md`** if the project ever accepts vulnerability reports.
+42. ~~**Add a `SECURITY.md`** if the project ever accepts vulnerability reports.~~ done (SECURITY.md exists in go-finding)
 43. **Schedule a recurring docs-health pass** on `go-linter-sdk`.
 44. **Evaluate whether `go-linter-sdk` should absorb `linter-autoconfigure-sdk`'s `ProviderSpec`** (both wire into BuildFlow).
 45. **Write a migration guide** for existing linters adopting the SDK (incremental rule-by-rule porting).

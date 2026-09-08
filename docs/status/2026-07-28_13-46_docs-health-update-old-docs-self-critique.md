@@ -141,46 +141,46 @@ Commit `0ad429e` — "docs(project): update changelog and todo list" — was aut
 
 ### Immediate — fix my session gaps (HIGH)
 
-1. **Run `golangci-lint run ./...`** — confirm zero lint issues after doc changes
-2. **Run `nix flake check`** — the canonical project quality gate
-3. **Run `nix run .#lint`** — verify via project toolchain, not raw `go`
-4. **Full FEATURES.md vs code walk** — verify every method name, file path, status claim (section by section)
-5. **README.md freshness audit** — verify all version refs are v1.4.0, all code examples compile
-6. **Date-qualify "22 consumers" in TODO_LIST** — add "(as of 2026-07-22 audit)" or similar
-7. **Harvest go-linter-sdk ecosystem gaps into ROADMAP** — note incomplete IsEnabledByDefault, pilot migration not started, no SDK tag
-8. **Annotate dedup-to-zero sweep report** — note its 7 pipeline lint items were harvested into TODO_LIST
+1. ~~**Run `golangci-lint run ./...`** — confirm zero lint issues after doc changes~~ done (lint run 14-01)
+2. ~~**Run `nix flake check`** — the canonical project quality gate~~ done (nix flake check green 2026-09-08)
+3. ~~**Run `nix run .#lint`** — verify via project toolchain, not raw `go`~~ done (completed in-session)
+4. ~~**Full FEATURES.md vs code walk** — verify every method name, file path, status claim (section by section)~~ done (FEATURES full walk 2026-09-08)
+5. ~~**README.md freshness audit** — verify all version refs are v1.4.0, all code examples compile~~ done (README audited 2026-09-08)
+6. ~~**Date-qualify "22 consumers" in TODO_LIST** — add "(as of 2026-07-22 audit)" or similar~~ done (provenance added)
+7. ~~**Harvest go-linter-sdk ecosystem gaps into ROADMAP** — note incomplete IsEnabledByDefault, pilot migration not started, no SDK tag~~ done (ROADMAP consumer ecosystem updated)
+8. ~~**Annotate dedup-to-zero sweep report** — note its 7 pipeline lint items were harvested into TODO_LIST~~ done (dedup report annotated)
 
 ### Documentation freshness (MEDIUM)
 
-9. `docs/DOMAIN_LANGUAGE.md` — add error family/classification terms (Rejection, Conflict, Transient, Infrastructure)
-10. `docs/USAGE_GUIDE.md` — verify branded type examples, code snippets, version refs
-11. `docs/guides/fix-engine.md` — verify accuracy after `fixEditJSON` extraction
-12. `doc.go` API reference grep — check for renamed/removed symbols after refactors
-13. `docs/MIGRATION_v1.0.md` — verify currency
-14. `CONTRIBUTING.md` project tree — verify ~10 missing files noted in prior reports
+9. ~~`docs/DOMAIN_LANGUAGE.md` — add error family/classification terms (Rejection, Conflict, Transient, Infrastructure)~~ done (DOMAIN_LANGUAGE 2026-09-08)
+10. ~~`docs/USAGE_GUIDE.md` — verify branded type examples, code snippets, version refs~~ done (USAGE_GUIDE 2026-09-08)
+11. ~~`docs/guides/fix-engine.md` — verify accuracy after `fixEditJSON` extraction~~ done (completed in-session)
+12. ~~`doc.go` API reference grep — check for renamed/removed symbols after refactors~~ done (completed in-session)
+13. ~~`docs/MIGRATION_v1.0.md` — verify currency~~ done (completed in-session)
+14. ~~`CONTRIBUTING.md` project tree — verify ~10 missing files noted in prior reports~~ done (CONTRIBUTING 2026-09-08)
 15. `docs/integration-guide.md` — verify type-alias example and API references
-16. Comprehensive markdown link check across ALL docs (`grep -roE '\]\([^)]+\)' *.md docs/`)
+16. ~~Comprehensive markdown link check across ALL docs (`grep -roE '\]\([^)]+\)' *.md docs/`)~~ done (scripts/docs-freshness.sh)
 
 ### Code quality (MEDIUM)
 
-17. Decompose `Pipeline.Run()` (137 lines, exceeds funlen 120)
-18. Decompose `Pipeline.runIteration()` (124 lines, exceeds 120)
-19. Reduce `applyTriage` cognitive complexity (36, limit 35)
-20. Fix `goast/provider.go:129` exhaustruct (`result{ok: false}`)
-21. Wrap `errgroup.Wait()` error in `convenience.go:67`
-22. Add `//nolint:gosec` to `fix_applier_test.go:578` or fix path traversal
-23. Rename unused `s` receivers in `saboteurProvider` test mock
-24. Run `nix run .#bench` — benchmark regression check after dedup refactor
-25. Run stress test `go test -race -count=20 ./...` — catch flaky tests
+17. ~~Decompose `Pipeline.Run()` (137 lines, exceeds funlen 120)~~ done (7 lint fixes v1.4.1)
+18. ~~Decompose `Pipeline.runIteration()` (124 lines, exceeds 120)~~ done (7 lint fixes v1.4.1)
+19. ~~Reduce `applyTriage` cognitive complexity (36, limit 35)~~ done (7 lint fixes v1.4.1)
+20. ~~Fix `goast/provider.go:129` exhaustruct (`result{ok: false}`)~~ done (7 lint fixes v1.4.1)
+21. ~~Wrap `errgroup.Wait()` error in `convenience.go:67`~~ done (7 lint fixes v1.4.1)
+22. ~~Add `//nolint:gosec` to `fix_applier_test.go:578` or fix path traversal~~ done (7 lint fixes v1.4.1)
+23. ~~Rename unused `s` receivers in `saboteurProvider` test mock~~ done (7 lint fixes v1.4.1)
+24. ~~Run `nix run .#bench` — benchmark regression check after dedup refactor~~ done (bench + committed baseline)
+25. ~~Run stress test `go test -race -count=20 ./...` — catch flaky tests~~ done (stress runs)
 
 ### CI/CD (MEDIUM)
 
 26. Add markdown link-checker to CI (`lychee` or `markdown-link-check`)
-27. Add CI check: grep for stale version refs after version bump
-28. Add CI check: CHANGELOG link references must exist for every `## [x.y.z]` header
+27. ~~Add CI check: grep for stale version refs after version bump~~ done (version-drift.sh in CI)
+28. ~~Add CI check: CHANGELOG link references must exist for every `## [x.y.z]` header~~ done (docs-freshness.sh in CI)
 29. Add `art-dupl -t 5` to CI as dedup regression check
 30. Verify GitHub Actions CI passes on master
-31. Verify dependabot covers all 4 sub-modules
+31. ~~Verify dependabot covers all 4 sub-modules~~ done (dependabot covers 4 modules)
 
 ### Public release (MEDIUM)
 

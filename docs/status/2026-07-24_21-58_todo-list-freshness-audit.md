@@ -85,92 +85,92 @@ User asked "Is TODO_LIST.md up to date?" I ran a docs-health VERIFY audit, found
 
 ### Fix my mistakes (urgent)
 
-1. **Restore SARIF schema validation to TODO_LIST as BLOCKED** — wrongly removed, belongs in TODO not ROADMAP
-2. **Run full test suite** — `nix run .#test` or `export GOEXPERIMENT=jsonv2 && go test -race -count=1 ./...`
-3. **Run linter** — `nix run .#lint` or `golangci-lint run ./...`
-4. **Evaluate post-v1.3.0 commits for CHANGELOG `[Unreleased]`** — at minimum: exhaustruct cleanup, `writeSuggestionLine` extraction, `ToSARIFFiltered` godoc fix
+1. ~~**Restore SARIF schema validation to TODO_LIST as BLOCKED** — wrongly removed, belongs in TODO not ROADMAP~~ done (SARIF restored to TODO as BLOCKED, 22-16)
+2. ~~**Run full test suite** — `nix run .#test` or `export GOEXPERIMENT=jsonv2 && go test -race -count=1 ./...`~~ done (tests run 2026-07-24_22-16)
+3. ~~**Run linter** — `nix run .#lint` or `golangci-lint run ./...`~~ done (lint run 2026-07-24_22-16)
+4. ~~**Evaluate post-v1.3.0 commits for CHANGELOG `[Unreleased]`** — at minimum: exhaustruct cleanup, `writeSuggestionLine` extraction, `ToSARIFFiltered` godoc fix~~ done (Unreleased populated 23-43, then v1.4.0)
 
 ### TODO_LIST / ROADMAP cleanup
 
-5. **Verify "22 consumers, 14 with Go code"** against `docs/reviews/2026-07-05_20-55_consumer-audit.html`
+5. ~~**Verify "22 consumers, 14 with Go code"** against `docs/reviews/2026-07-05_20-55_consumer-audit.html`~~ done (count reconciled 22-59, two audits)
 6. **Decide: is BuildFlow auto-configure loop still relevant?** — still BLOCKED, may be abandoned
-7. **Re-read ROADMAP.md end-to-end** after Hardening section enrichment — verify coherence
+7. ~~**Re-read ROADMAP.md end-to-end** after Hardening section enrichment — verify coherence~~ done (ROADMAP coherence, 07-26/07-28 passes)
 8. **Consider whether TODO_LIST needs forward-looking items** — only 2 blocked items remain
 
 ### FEATURES.md (not audited this session)
 
-9. **Run FEATURES.md freshness audit** — verify every FULLY_FUNCTIONAL claim against code
-10. **Verify "FixStrategy (ai) = PLANNED" in FEATURES** — confirm no backend was added
-11. **Check FEATURES for features shipped post-v1.3.0 but not listed** — 18 commits, any user-facing?
-12. **Verify all file path references in FEATURES.md exist**
-13. **Verify all API signatures in FEATURES.md match actual code**
+9. ~~**Run FEATURES.md freshness audit** — verify every FULLY_FUNCTIONAL claim against code~~ done (FEATURES full walk 2026-09-08)
+10. ~~**Verify "FixStrategy (ai) = PLANNED" in FEATURES** — confirm no backend was added~~ done (FixStrategy(ai) PLANNED confirmed 22-16)
+11. ~~**Check FEATURES for features shipped post-v1.3.0 but not listed** — 18 commits, any user-facing?~~ done (verified 22-16)
+12. ~~**Verify all file path references in FEATURES.md exist**~~ done (verified 22-16)
+13. ~~**Verify all API signatures in FEATURES.md match actual code**~~ done (verified 22-16)
 
 ### AGENTS.md (not audited this session)
 
-14. **Verify AGENTS.md module table** — file counts, module paths, dependency lists
-15. **Check AGENTS.md "Key Files" table** — every file path exists
-16. **Verify AGENTS.md build commands** — `nix run .#test`, `nix run .#bench`, `nix run .#lint` all work
-17. **Verify GOEXPERIMENT=jsonv2 claim** — still 9 files across all modules?
-18. **Check AGENTS.md "Removed APIs" section** — verify no deprecated APIs leaked back
+14. ~~**Verify AGENTS.md module table** — file counts, module paths, dependency lists~~ done (AGENTS module table verified 22-16)
+15. ~~**Check AGENTS.md "Key Files" table** — every file path exists~~ done (AGENTS key files verified 22-16)
+16. ~~**Verify AGENTS.md build commands** — `nix run .#test`, `nix run .#bench`, `nix run .#lint` all work~~ done (AGENTS commands verified 22-16)
+17. ~~**Verify GOEXPERIMENT=jsonv2 claim** — still 9 files across all modules?~~ done (AGENTS commands verified 22-16)
+18. ~~**Check AGENTS.md "Removed APIs" section** — verify no deprecated APIs leaked back~~ done (AGENTS commands verified 22-16)
 
 ### CHANGELOG.md
 
-19. **Add `[Unreleased]` entries** for post-v1.3.0 code changes if warranted
-20. **Verify CHANGELOG version links** — `[1.3.0]`, `[1.2.1]` compare links match repo URL pattern
-21. **Consider v1.3.1 patch release** — if post-v1.3.0 changes are user-facing
+19. ~~**Add `[Unreleased]` entries** for post-v1.3.0 code changes if warranted~~ done (Unreleased discipline)
+20. ~~**Verify CHANGELOG version links** — `[1.3.0]`, `[1.2.1]` compare links match repo URL pattern~~ done (links verified 22-16)
+21. ~~**Consider v1.3.1 patch release** — if post-v1.3.0 changes are user-facing~~ **Won't implement — v1.3.1 skipped, went to v1.4.0.**
 
 ### Testing & CI
 
-22. **Run GOWORK=off per-module isolation tests** — verify all 4 modules still build independently
-23. **Run benchmark regression check** — `bash scripts/bench-check.sh`
-24. **Run version-check script** — `bash scripts/version-check.sh`
-25. **Run `nix flake check`** — never ran this session
+22. ~~**Run GOWORK=off per-module isolation tests** — verify all 4 modules still build independently~~ done (GOWORK=off incl. CI job)
+23. ~~**Run benchmark regression check** — `bash scripts/bench-check.sh`~~ done (bench-check + committed baseline)
+24. ~~**Run version-check script** — `bash scripts/version-check.sh`~~ done (version-check passes)
+25. ~~**Run `nix flake check`** — never ran this session~~ done (nix flake check green 2026-09-08)
 
 ### SARIF
 
 26. **Vendor SARIF 2.1.0 JSON schema** — unblocks the BLOCKED SARIF validation test (7K+ lines)
 27. **Add SARIF schema validation test** — once schema is vendored
-28. **Verify SARIF round-trip fidelity** — all properties survive export → import
+28. ~~**Verify SARIF round-trip fidelity** — all properties survive export → import~~ done (round-trip verified 22-16)
 
 ### Pipeline
 
-29. **Audit FixProvider chain** — OffsetProvider → LineProvider → SubstringProvider ordering
-30. **Verify line-shift map correctness** — multi-edit scenarios
-31. **Check conflict detection edge cases** — byte-level overlap precision
-32. **Verify StageHooks contract** — before/after events, abort behavior
+29. ~~**Audit FixProvider chain** — OffsetProvider → LineProvider → SubstringProvider ordering~~ done (verified 22-16)
+30. ~~**Verify line-shift map correctness** — multi-edit scenarios~~ done (verified 22-16)
+31. ~~**Check conflict detection edge cases** — byte-level overlap precision~~ done (verified 22-16)
+32. ~~**Verify StageHooks contract** — before/after events, abort behavior~~ done (verified 22-16)
 
 ### LSP
 
-33. **Verify LSPDiagnosticData round-trip** — all fields survive ToLSP → FromLSP
-34. **Test SeverityCritical round-trip** — LSP collapses to Error, verify restoration
+33. ~~**Verify LSPDiagnosticData round-trip** — all fields survive ToLSP → FromLSP~~ done (LSP verified 22-16)
+34. ~~**Test SeverityCritical round-trip** — LSP collapses to Error, verify restoration~~ done (LSP verified 22-16)
 
 ### Documentation
 
-35. **Check all internal markdown links across entire repo** — `grep -roE '\]\([^)]+\)' *.md docs/`
-36. **Verify docs/guides/fix-engine.md** — still accurate for current API?
-37. **Verify docs/MIGRATION_v1.0.md** — still needed, or can it be archived?
-38. **Check docs/release-procedure.md** — still matches actual release process?
-39. **Audit docs/reviews/ for stale reports** — 13 HTML reports, some may reference deleted code
+35. ~~**Check all internal markdown links across entire repo** — `grep -roE '\]\([^)]+\)' *.md docs/`~~ done (links verified)
+36. ~~**Verify docs/guides/fix-engine.md** — still accurate for current API?~~ done (verified 22-16)
+37. ~~**Verify docs/MIGRATION_v1.0.md** — still needed, or can it be archived?~~ done (verified 22-16)
+38. ~~**Check docs/release-procedure.md** — still matches actual release process?~~ done (release-procedure verified + updated)
+39. ~~**Audit docs/reviews/ for stale reports** — 13 HTML reports, some may reference deleted code~~ done (reviews audited, banners 07-26_20-01)
 
 ### Code Quality
 
-40. **Run `nix run .#bench`** — performance regression check
-41. **Check for exhaustruct nolint leftovers** — 33 were removed, verify none missed
-42. **Audit `.golangci.yml` exclusions** — are they still needed after cleanup?
-43. **Verify makezero `always: false` is still intentional** — documented in AGENTS.md
+40. ~~**Run `nix run .#bench`** — performance regression check~~ done (verified 22-16)
+41. ~~**Check for exhaustruct nolint leftovers** — 33 were removed, verify none missed~~ done (verified 22-16)
+42. ~~**Audit `.golangci.yml` exclusions** — are they still needed after cleanup?~~ done (verified 22-16)
+43. ~~**Verify makezero `always: false` is still intentional** — documented in AGENTS.md~~ done (makezero config decision in .golangci.yml)
 
 ### Architecture
 
-44. **Review module boundary integrity** — Core has zero external deps?
-45. **Verify replace directives** — all sub-module `replace` directives point correctly
-46. **Check go.work consistency** — all 4 modules present and synced
+44. ~~**Review module boundary integrity** — Core has zero external deps?~~ done (verified 22-16)
+45. ~~**Verify replace directives** — all sub-module `replace` directives point correctly~~ done (verified 22-16)
+46. ~~**Check go.work consistency** — all 4 modules present and synced~~ done (verified 22-16)
 
 ### Consumer Ecosystem
 
-47. **Test consumer migration path** — do `BuildOrDefault`, `Template`, etc. work as documented?
-48. **Verify `ApplySimpleFixes`** — BeforeCode→AfterCode replacement works on real findings
-49. **Audit `CheckBinary`/`RunCmd`** — error wrapping produces correct `NewIOError`
-50. **Review `ToolAdapter[O]` API** — is it ready for consumer use, or still internal?
+47. ~~**Test consumer migration path** — do `BuildOrDefault`, `Template`, etc. work as documented?~~ done (deep verification 22-59 M12)
+48. ~~**Verify `ApplySimpleFixes`** — BeforeCode→AfterCode replacement works on real findings~~ done (deep verification 22-59 M12)
+49. ~~**Audit `CheckBinary`/`RunCmd`** — error wrapping produces correct `NewIOError`~~ done (deep verification 22-59 M12)
+50. ~~**Review `ToolAdapter[O]` API** — is it ready for consumer use, or still internal?~~ done (ToolAdapter verified 22-16)
 
 ---
 

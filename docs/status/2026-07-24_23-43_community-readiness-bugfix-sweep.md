@@ -115,21 +115,21 @@ Being brutally honest:
 
 ### Immediate fixes (things I broke or missed — HIGH)
 
-1. **Reconfigure or disable the auto-commit hook** — It writes `Unknown Author` and generic messages. Either set proper git identity in the hook config, or commit manually before it fires.
-2. **Fix CHANGELOG em-dashes** — Change `### Added — Community Readiness` to `### Added (Community Readiness)` and `### Changed — Documentation` to `### Changed (Documentation)`.
-3. **Run `go test -race -count=1 ./...`** — Verify the full test suite passes (not just build + lint).
+1. ~~**Reconfigure or disable the auto-commit hook** — It writes `Unknown Author` and generic messages. Either set proper git identity in the hook config, or commit manually before it fires.~~ done (dprint hook replaced BuildFlow auto-commit 2026-09-08)
+2. ~~**Fix CHANGELOG em-dashes** — Change `### Added — Community Readiness` to `### Added (Community Readiness)` and `### Changed — Documentation` to `### Changed (Documentation)`.~~ done (CHANGELOG headers normalized 2026-07-26_20-01)
+3. ~~**Run `go test -race -count=1 ./...`** — Verify the full test suite passes (not just build + lint).~~ done (full test runs in later sessions)
 4. **Verify README badge URLs resolve** — CI badge, pkg.go.dev badge, codecov badge, Go version badge, license badge. At minimum check HTTP status.
-5. **Verify `examples/` directory exists and compiles** — `go build ./examples/...` or equivalent.
-6. **Read and verify `docs/USAGE_GUIDE.md` is current** — No stale API references, version numbers, or broken patterns.
+5. ~~**Verify `examples/` directory exists and compiles** — `go build ./examples/...` or equivalent.~~ done (examples compile-tested)
+6. ~~**Read and verify `docs/USAGE_GUIDE.md` is current** — No stale API references, version numbers, or broken patterns.~~ done (USAGE_GUIDE verified 2026-09-08)
 7. **Confirm private vulnerability reporting is enabled** — Either via GitHub UI, GraphQL, or confirm it auto-enables on public flip.
 8. **Verify PRO_CONTRA doc file counts** — "193 Go source files", "112 test files", "227 docs files" — re-count against current repo.
 
 ### Public release readiness (MEDIUM)
 
-9. Decide version number: v1.4.0 (minor, public anchor) vs v1.3.1 (patch, doc-only).
+9. ~~Decide version number: v1.4.0 (minor, public anchor) vs v1.3.1 (patch, doc-only).~~ done (v1.4.0 chosen and shipped 2026-07-26)
 10. Decide on GitHub Discussions: enable (community Q&A) or stay issues-only.
 11. Flip repo visibility to public (`gh repo edit --visibility public`).
-12. Tag the release version.
+12. ~~Tag the release version.~~ done (v1.4.0 + v1.4.1 tagged)
 13. Verify GoReleaser cross-platform build works on public tag.
 14. Verify Homebrew tap formula updates (`HOMEBREW_TAP_GITHUB_TOKEN` secret).
 15. Trigger pkg.go.dev indexing via first public `go get`.
@@ -149,7 +149,7 @@ Being brutally honest:
 26. Add markdown link-checker to CI (`lychee` or `markdown-link-check`).
 27. Add "Acknowledgements" section to README.
 28. Cross-link `FEATURES.md` from README more prominently.
-29. Verify `docs/DOMAIN_LANGUAGE.md` is current.
+29. ~~Verify `docs/DOMAIN_LANGUAGE.md` is current.~~ done (DOMAIN_LANGUAGE updated 2026-09-08)
 30. Add CONTRIBUTING.md section on "How to report security issues" → link SECURITY.md.
 31. Add `.github/FUNDING.yml` (optional GitHub Sponsors).
 32. Create social preview image for GitHub repo (og:image for sharing).
@@ -162,11 +162,11 @@ Being brutally honest:
 36. Check `.gitignore` covers all build artifacts (coverage, binaries).
 37. Verify `go env -w GOEXPERIMENT=jsonv2` works as documented (test on clean env).
 38. Review `doc.go` rendering on pkg.go.dev (formatting, examples).
-39. Check if `CONTRIBUTING.md` mentions GOPRIVATE or private-repo setup that needs updating for public.
+39. ~~Check if `CONTRIBUTING.md` mentions GOPRIVATE or private-repo setup that needs updating for public.~~ done (CONTRIBUTING GOPRIVATE-clean 23-43)
 40. Verify GoReleaser `.goreleaser.yml` changelog section configuration.
-41. Run `GOWORK=off go test ./...` in each module dir (per-module isolation).
-42. Run benchmark regression check (`bash scripts/bench-check.sh`).
-43. Verify all 4 sub-module tags exist on git (`pipeline/v*`, `analysis/v*`, `cmd/go-finding/v*`).
+41. ~~Run `GOWORK=off go test ./...` in each module dir (per-module isolation).~~ done (GOWORK=off run verified)
+42. ~~Run benchmark regression check (`bash scripts/bench-check.sh`).~~ done (baseline committed + bench-check works)
+43. ~~Verify all 4 sub-module tags exist on git (`pipeline/v*`, `analysis/v*`, `cmd/go-finding/v*`).~~ done (all sub-module tags exist)
 
 ### Ongoing / triggered (LOW)
 
@@ -174,7 +174,7 @@ Being brutally honest:
 45. Monitor first issues/PRs after public launch.
 46. Consider enabling GitHub Discussions post-launch if issue volume is high.
 47. Consider adding CONTRIBUTING.md "good first issue" guidance.
-48. Review and triage the 91 internal docs (`docs/status/`, `docs/planning/`, `docs/reviews/`) — decide if any should be cleaned up post-launch.
+48. ~~Review and triage the 91 internal docs (`docs/status/`, `docs/planning/`, `docs/reviews/`) — decide if any should be cleaned up post-launch.~~ **Won't implement — user decision, keep 91 internal docs.**
 49. Add release notes template for GoReleaser.
 50. Schedule quarterly dependency update review.
 

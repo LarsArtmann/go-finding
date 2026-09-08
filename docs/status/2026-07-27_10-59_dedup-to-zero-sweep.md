@@ -129,13 +129,13 @@ This is documented in `.golangci.yml` and AGENTS.md. Reversible with one line.
 
 ### High Priority — Fix pre-existing lint issues
 
-1. Decompose `Pipeline.Run()` (137 lines → under 120)
-2. Decompose `Pipeline.runIteration()` (124 lines → under 120)
-3. Reduce `applyTriage` cognitive complexity (36 → under 35)
-4. Fix `goast/provider.go:129` exhaustruct (`result{ok: false}`)
-5. Wrap `errgroup.Wait()` error in `convenience.go:67`
-6. Add `//nolint:gosec` to `fix_applier_test.go:578` or fix the path traversal
-7. Rename unused `s` receivers in `saboteurProvider` to `_`
+1. ~~Decompose `Pipeline.Run()` (137 lines → under 120)~~ done (all 7 fixed v1.4.1, CHANGELOG 1.4.1)
+2. ~~Decompose `Pipeline.runIteration()` (124 lines → under 120)~~ done (all 7 fixed v1.4.1)
+3. ~~Reduce `applyTriage` cognitive complexity (36 → under 35)~~ done (all 7 fixed v1.4.1)
+4. ~~Fix `goast/provider.go:129` exhaustruct (`result{ok: false}`)~~ done (all 7 fixed v1.4.1)
+5. ~~Wrap `errgroup.Wait()` error in `convenience.go:67`~~ done (all 7 fixed v1.4.1)
+6. ~~Add `//nolint:gosec` to `fix_applier_test.go:578` or fix the path traversal~~ done (all 7 fixed v1.4.1)
+7. ~~Rename unused `s` receivers in `saboteurProvider` to `_`~~ done (all 7 fixed v1.4.1)
 
 ### Medium Priority — Consolidate test infrastructure further
 
@@ -154,27 +154,27 @@ This is documented in `.golangci.yml` and AGENTS.md. Reversible with one line.
 
 ### Medium Priority — Documentation
 
-17. **Verify `docs/guides/fix-engine.md`** still references correct API after `fixEditJSON` extraction
-18. **Check `docs/MIGRATION_v1.0.md`** — Does it mention any of the refactored patterns?
-19. **Run `docs-health` skill** — Full documentation audit after these structural changes
-20. **Update `CHANGELOG.md`** if one exists, documenting the deduplication pass
+17. ~~**Verify `docs/guides/fix-engine.md`** still references correct API after `fixEditJSON` extraction~~ done (fix-engine verified)
+18. ~~**Check `docs/MIGRATION_v1.0.md`** — Does it mention any of the refactored patterns?~~ done (verified in-session)
+19. ~~**Run `docs-health` skill** — Full documentation audit after these structural changes~~ done (docs-health 2026-07-28_13-46)
+20. ~~**Update `CHANGELOG.md`** if one exists, documenting the deduplication pass~~ done (CHANGELOG Unreleased became 1.4.1)
 
 ### Lower Priority — Code quality
 
-21. **Run `full-code-review` skill** — Comprehensive review after this structural pass
-22. **Run `code-quality-scan` skill** — Build + lint + duplication analysis
-23. **Run `brutal-self-review` skill** — Self-critique of the refactoring decisions
+21. ~~**Run `full-code-review` skill** — Comprehensive review after this structural pass~~ done (review sessions occurred 07-28)
+22. ~~**Run `code-quality-scan` skill** — Build + lint + duplication analysis~~ done (docs-health session 13-46)
+23. ~~**Run `brutal-self-review` skill** — Self-critique of the refactoring decisions~~ done (self-critique session 14-39)
 24. **Audit for more `if err != nil { return err }` patterns** that could use a helper — the threshold was 1 statement, but art-dupl may not catch 1-line returns that aren't structurally identical
 25. **Check if `lockutil` package** could be used in more places — the AGENTS.md says Report/metrics/etc. use it, but are there missed opportunities?
-26. **Review `examples/` consistency** — `pipeline/examples/main.go` uses `must(err)` pattern; `examples/builder/main.go` uses `must(err)` pattern; `examples/basic/` might benefit from the same
-27. **Consistency audit** — `examples/builder/main.go` has a package-level comment explaining it mirrors `ExampleBuilder` in `example_test.go`. Verify this is still accurate after changes.
+26. ~~**Review `examples/` consistency** — `pipeline/examples/main.go` uses `must(err)` pattern; `examples/builder/main.go` uses `must(err)` pattern; `examples/basic/` might benefit from the same~~ done (examples use must() pattern)
+27. ~~**Consistency audit** — `examples/builder/main.go` has a package-level comment explaining it mirrors `ExampleBuilder` in `example_test.go`. Verify this is still accurate after changes.~~ done (verified in-session)
 
 ### Lower Priority — Architecture
 
 28. **Consider a `testutil` shared module** — Currently `NewParallelGomega` is duplicated 4× (once per module). A `go-finding/testutil` module could host shared test helpers. This is a tradeoff: less duplication vs. more module complexity.
 29. **Evaluate `paralleltest` re-enablement** — Could re-enable `paralleltest` and add `//nolint:paralleltest` only to the 4 `NewParallelGomega` definitions instead of disabling globally
 30. **Benchmark impact** — Run `nix run .#bench` to verify the `severityPriorities` map lookup vs switch doesn't regress hot-path performance
-31. **Check SARIF round-trip** — After `fixEditJSON` extraction, verify SARIF export/import still round-trips `FixEdit` correctly with a manual test
+31. ~~**Check SARIF round-trip** — After `fixEditJSON` extraction, verify SARIF export/import still round-trips `FixEdit` correctly with a manual test~~ done (golden wire tests 2026-09-08)
 
 ### Lower Priority — Tooling
 
@@ -194,11 +194,11 @@ This is documented in `.golangci.yml` and AGENTS.md. Reversible with one line.
 42. **Review `format.go`** — It calls `Badge()` at lines 44 and 151; verify the derived output still formats correctly in text/table output
 43. **Check `FormatTextRich`** — Uses Badge for rich text output; verify no behavioral change in CLI output
 44. **Integration test for CLI output** — Run the CLI and verify text/table/JSON output formats are unchanged after Badge refactor
-45. **Review error message stability** — `marshalJSONString` changed error messages from "marshaling finding" / "marshaling filtered JSON" to unified "marshaling JSON". If consumers pattern-match on these strings, this is a behavioral change. Document in CHANGELOG.
+45. ~~**Review error message stability** — `marshalJSONString` changed error messages from "marshaling finding" / "marshaling filtered JSON" to unified "marshaling JSON". If consumers pattern-match on these strings, this is a behavioral change. Document in CHANGELOG.~~ done (CHANGELOG context)
 46. **Add `.deeplinkignore`** — If art-dupl supports it, add accepted clone patterns to a baseline file for CI mode
 47. **Review `convenience.go`** — `pipeline.Detect` and `pipeline.ApplyToContent` are convenience functions; check for duplication with the main pipeline entry points
-48. **Audit `doc.go` examples** — Run all godoc examples (`go test -run Example ./...`) to verify they still produce expected output after refactors
-49. **Check `examples/` build** — Run `go build ./examples/...` in all module dirs to verify example programs compile
+48. ~~**Audit `doc.go` examples** — Run all godoc examples (`go test -run Example ./...`) to verify they still produce expected output after refactors~~ done (examples run, M13)
+49. ~~**Check `examples/` build** — Run `go build ./examples/...` in all module dirs to verify example programs compile~~ done (examples build)
 50. **Consider a deduplication ADR** — Document the decision to disable `paralleltest` and centralize `t.Parallel()` in an Architecture Decision Record
 
 ---

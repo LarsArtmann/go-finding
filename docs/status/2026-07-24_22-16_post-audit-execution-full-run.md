@@ -130,24 +130,24 @@ Executed all 68 tasks from the post-audit plan. **63 completed, 5 BLOCKED** (SAR
 
 ### Fix my mistakes (urgent)
 
-1. **Commit `doc.go` and `docs/MIGRATION_v1.0.md`** — they're fixed but uncommitted in working tree
-2. **Update AGENTS.md** with version-check `--match` gotcha, interval_index.go rename note
-3. **Update the plan file** with completion status or a summary annotation
+1. ~~**Commit `doc.go` and `docs/MIGRATION_v1.0.md`** — they're fixed but uncommitted in working tree~~ done (committed 3c08c17 + d6c4239)
+2. ~~**Update AGENTS.md** with version-check `--match` gotcha, interval_index.go rename note~~ done (AGENTS gotchas added 22-59)
+3. ~~**Update the plan file** with completion status or a summary annotation~~ done (plan annotated 22-59)
 4. **Review and fix commit messages** if any commits from this session need amending (check if possible without force-push)
 
 ### AGENTS.md memory updates
 
-5. Add gotcha: "version-check.sh uses `--match 'v[0-9]*'` to avoid matching sub-module tags"
-6. Add note: interval_index.go was renamed from interval_tree.go (keep as alias note if anyone greps for old name)
-7. Add note: doc.go godoc references must use current API names (GetCategory→CategoryOf was stale)
+5. ~~Add gotcha: "version-check.sh uses `--match 'v[0-9]*'` to avoid matching sub-module tags"~~ done (AGENTS gotchas 22-59)
+6. ~~Add note: interval_index.go was renamed from interval_tree.go (keep as alias note if anyone greps for old name)~~ done (AGENTS gotchas 22-59)
+7. ~~Add note: doc.go godoc references must use current API names (GetCategory→CategoryOf was stale)~~ done (AGENTS gotchas 22-59)
 
 ### Documentation
 
-8. **Full FEATURES.md audit** — read end-to-end, verify every code example compiles
-9. **Verify consumer count** — check if 22 or 20 is correct, update all references
-10. **Capture benchmark baseline** — run `nix run .#bench > benchmarks/baseline.txt`, commit
-11. **Rename `TestGetCategory` → `TestCategoryOf`** — stale test name
-12. **Update docs/status/ reports** — annotate this session's reports as complete
+8. ~~**Full FEATURES.md audit** — read end-to-end, verify every code example compiles~~ done (FEATURES full walk 2026-09-08)
+9. ~~**Verify consumer count** — check if 22 or 20 is correct, update all references~~ done (consumer count reconciled)
+10. ~~**Capture benchmark baseline** — run `nix run .#bench > benchmarks/baseline.txt`, commit~~ done (benchmarks/baseline.txt committed)
+11. ~~**Rename `TestGetCategory` → `TestCategoryOf`** — stale test name~~ done (TestCategoryOf added 22-59)
+12. ~~**Update docs/status/ reports** — annotate this session's reports as complete~~ done (reports annotated)
 
 ### SARIF (BLOCKED)
 
@@ -160,65 +160,65 @@ Executed all 68 tasks from the post-audit plan. **63 completed, 5 BLOCKED** (SAR
 
 ### Pipeline deep verification
 
-19. **Trace FixProvider chain end-to-end** — verify fallback ordering with a real finding
-20. **Verify multi-edit line shift correctness** — read through line_shift_test.go scenarios
-21. **Audit conflict detection precision** — verify byte-level overlap edge cases
-22. **Verify StageHooks abort behavior** — trace what happens when a hook returns error
+19. ~~**Trace FixProvider chain end-to-end** — verify fallback ordering with a real finding~~ done (verified in-file + 22-59 M10)
+20. ~~**Verify multi-edit line shift correctness** — read through line_shift_test.go scenarios~~ done (verified in-file + 22-59 M10)
+21. ~~**Audit conflict detection precision** — verify byte-level overlap edge cases~~ done (verified in-file + 22-59 M10)
+22. ~~**Verify StageHooks abort behavior** — trace what happens when a hook returns error~~ done (verified in-file + 22-59 M10)
 
 ### LSP deep verification
 
-23. **Trace full LSPDiagnosticData round-trip** — verify every field survives ToLSP→FromLSP
-24. **Test SeverityCritical edge case** — verify it maps to Error in LSP but restores to Critical
+23. ~~**Trace full LSPDiagnosticData round-trip** — verify every field survives ToLSP→FromLSP~~ done (LSP verified)
+24. ~~**Test SeverityCritical edge case** — verify it maps to Error in LSP but restores to Critical~~ done (LSP verified)
 
 ### Consumer ecosystem
 
-25. **Write a consumer integration test** — use BuildOrDefault, Template, ApplySimpleFixes in sequence
-26. **Verify ToolAdapter recipe** — write a minimal adapter for a real tool (revive? errcheck?)
-27. **Test CheckBinary/RunCmd error paths** — verify NewIOError wrapping on missing binary, failed command
+25. ~~**Write a consumer integration test** — use BuildOrDefault, Template, ApplySimpleFixes in sequence~~ done (M12 deep verification)
+26. ~~**Verify ToolAdapter recipe** — write a minimal adapter for a real tool (revive? errcheck?)~~ done (M12 deep verification)
+27. ~~**Test CheckBinary/RunCmd error paths** — verify NewIOError wrapping on missing binary, failed command~~ done (M12 deep verification)
 
 ### Architecture
 
-28. **Verify module boundary integrity** — confirm Core has zero external production deps via `go list`
-29. **Audit replace directive consistency** — verify all sub-modules resolve correctly with GOWORK=off
+28. ~~**Verify module boundary integrity** — confirm Core has zero external production deps via `go list`~~ done (core dep policy evolved by design, go-error-family v1.4.0)
+29. ~~**Audit replace directive consistency** — verify all sub-modules resolve correctly with GOWORK=off~~ done (replace directives M15)
 30. **Check go.sum integrity** — run `go mod verify` in each module
 
 ### Code quality
 
-31. **Run art-dupl** — check for code duplication (`nix run .#art-dupl`)
-32. **Audit all nolint directives** — verify each is still needed
-33. **Check for dead code** — unused exports, unexported functions never called
-34. **Verify error sentinel naming** — all validation errors use named sentinels (per AGENTS.md rule)
+31. ~~**Run art-dupl** — check for code duplication (`nix run .#art-dupl`)~~ done (art-dupl 0 clones)
+32. ~~**Audit all nolint directives** — verify each is still needed~~ done (81 nolints audited)
+33. ~~**Check for dead code** — unused exports, unexported functions never called~~ done (dead code 0)
+34. ~~**Verify error sentinel naming** — all validation errors use named sentinels (per AGENTS.md rule)~~ done (34 named sentinels)
 
 ### CI/CD
 
-35. **Verify GitHub Actions workflows** — do they set GOEXPERIMENT=jsonv2?
-36. **Check dependabot config** — is it tracking the right dependencies?
-37. **Run `nix run .#coverage`** — check test coverage levels
+35. ~~**Verify GitHub Actions workflows** — do they set GOEXPERIMENT=jsonv2?~~ done (M13)
+36. ~~**Check dependabot config** — is it tracking the right dependencies?~~ done (dependabot fixed + verified)
+37. ~~**Run `nix run .#coverage`** — check test coverage levels~~ done (scripts/coverage-check.sh)
 
 ### Release readiness
 
-38. **Assess v1.3.1 need** — are the post-v1.3.0 fixes worth a patch release?
+38. ~~**Assess v1.3.1 need** — are the post-v1.3.0 fixes worth a patch release?~~ **Won't implement — v1.3.1 skipped, went to v1.4.0.**
 39. **If yes: update CHANGELOG, tag, push**
 40. **Verify release-procedure.md** — walk through it step by step
 
 ### Broader documentation
 
-41. **Audit docs/archive/ for stale content** — old proposals that reference deleted code
-42. **Check CONTRIBUTING.md accuracy** — setup steps, dev environment instructions
-43. **Verify docs/USAGE_GUIDE.md examples** — do they compile?
-44. **Check docs/API_STABILITY.md** — are v1.3.0 symbols all listed?
+41. ~~**Audit docs/archive/ for stale content** — old proposals that reference deleted code~~ done (archive audited M14)
+42. ~~**Check CONTRIBUTING.md accuracy** — setup steps, dev environment instructions~~ done (CONTRIBUTING tree verified 2026-09-08)
+43. ~~**Verify docs/USAGE_GUIDE.md examples** — do they compile?~~ done (USAGE_GUIDE updated 2026-09-08)
+44. ~~**Check docs/API_STABILITY.md** — are v1.3.0 symbols all listed?~~ done (API_STABILITY re-verified 2026-09-08)
 
 ### Testing improvements
 
-45. **Add fuzz tests** for ID generation, SARIF parsing, LSP conversion
+45. ~~**Add fuzz tests** for ID generation, SARIF parsing, LSP conversion~~ done (fuzz targets cover ID/SARIF/LSP)
 46. **Add stress tests** — run pipeline with 10K+ findings
 47. **Add property-based tests** — Position/Range algebra properties
-48. **Verify test organization** — confirm no `_extra_test.go` or `_bugfix_test.go` files exist
+48. ~~**Verify test organization** — confirm no `_extra_test.go` or `_bugfix_test.go` files exist~~ done (no such files, M13)
 
 ### Future planning
 
-49. **Assess ROADMAP priorities** — are AI remediation and language expansion still the right next steps?
-50. **Review non-goals** — are any non-goals now achievable/worth revisiting?
+49. ~~**Assess ROADMAP priorities** — are AI remediation and language expansion still the right next steps?~~ done (ROADMAP reviewed 07-26_20-01)
+50. ~~**Review non-goals** — are any non-goals now achievable/worth revisiting?~~ done (non-goals updated in ROADMAP rebuild)
 
 ---
 

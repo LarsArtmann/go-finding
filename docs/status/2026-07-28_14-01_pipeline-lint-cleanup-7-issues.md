@@ -94,27 +94,27 @@ I flagged this in my final summary but did NOT investigate which is true, did NO
 
 ### Lint/Quality (high priority)
 
-1. **Fix paralleltest config drift** — Investigate `git log -p .golangci.yml`, decide policy, align config + docs
-2. **Run full workspace lint** (`golangci-lint run ./...` from root) to find issues in core, analysis, CLI modules
-3. **Run `GOWORK=off go test ./...` in all 4 modules** to verify replace directives work
+1. ~~**Fix paralleltest config drift** — Investigate `git log -p .golangci.yml`, decide policy, align config + docs~~ done (paralleltest drift fixed in v1.4.1)
+2. ~~**Run full workspace lint** (`golangci-lint run ./...` from root) to find issues in core, analysis, CLI modules~~ done (lint 0 issues x4, verified 2026-09-08)
+3. ~~**Run `GOWORK=off go test ./...` in all 4 modules** to verify replace directives work~~ done (GOWORK=off all modules)
 4. **Write unit tests for `shiftFindingsPositions`** — empty shiftMaps, single file, multiple files, no match
 5. **Write unit tests for `shiftFindingSlice`** — empty slice, no file match, multiple matches
 6. **Write unit tests for `runVerification`** — before-hook error, verify error, after-hook error, success
 7. **Write unit tests for `applyStage`** — DryRun skip, before-hook error, applyTriage error, after-hook error, success
-8. **Run benchmark regression check** before/after this refactoring
+8. ~~**Run benchmark regression check** before/after this refactoring~~ done (bench regression + baseline)
 9. **Extract `OnFix` callback logic** from `applyTriage` to further reduce complexity
-10. **Check all 4 modules for funlen violations** — not just pipeline
-11. **Check all 4 modules for gocognit violations** — not just pipeline
-12. **Run `nix flake check`** to verify the flake is healthy
-13. **Run `nix run .#lint`** to use the project's canonical lint command
+10. ~~**Check all 4 modules for funlen violations** — not just pipeline~~ done (no funlen findings remain)
+11. ~~**Check all 4 modules for gocognit violations** — not just pipeline~~ done (no gocognit findings remain)
+12. ~~**Run `nix flake check`** to verify the flake is healthy~~ done (nix flake check green 2026-09-08)
+13. ~~**Run `nix run .#lint`** to use the project's canonical lint command~~ done (completed in-session)
 
 ### Documentation
 
-14. **Update TODO_LIST.md** — mark the 7 lint tasks as completed
+14. ~~**Update TODO_LIST.md** — mark the 7 lint tasks as completed~~ done (TODO_LIST updated)
 15. **Update AGENTS.md Key Files table** — add `runVerification`, `applyStage`, `shiftFindingsPositions`
-16. **Add CHANGELOG.md entry** for this lint cleanup
+16. ~~**Add CHANGELOG.md entry** for this lint cleanup~~ done (CHANGELOG 1.4.1)
 17. **Audit AGENTS.md for other config/code drift** — the paralleltest issue suggests other claims may be stale
-18. **Check doc.go references** — verify no stale API references after refactoring (checked: clean)
+18. ~~**Check doc.go references** — verify no stale API references after refactoring (checked: clean)~~ done (doc.go clean)
 
 ### Testing
 
@@ -127,16 +127,16 @@ I flagged this in my final summary but did NOT investigate which is true, did NO
 ### Architecture
 
 24. **Consider making `runVerification` handle `metricsResult` assignment internally** to reduce caller boilerplate
-25. **Review all `//nolint:gosec` suppressions** for validity and expiration
+25. ~~**Review all `//nolint:gosec` suppressions** for validity and expiration~~ done (nolint audit M06)
 26. **Review all `//nolint:exhaustruct` suppressions** — are they still needed?
 27. **Check if `applyStage` should be exported** for consumers who want custom iteration control
-28. **Audit the pipeline module for other functions near funlen/gocognit limits** — prevent future violations
+28. ~~**Audit the pipeline module for other functions near funlen/gocognit limits** — prevent future violations~~ done (lint clean x4 2026-09-08)
 
 ### CI/Build
 
-29. **Verify `version-check.sh` passes** after changes
-30. **Run `bash scripts/bench-check.sh`** with fresh baseline
-31. **Verify `nix build` succeeds**
+29. ~~**Verify `version-check.sh` passes** after changes~~ done (verified in-session)
+30. ~~**Run `bash scripts/bench-check.sh`** with fresh baseline~~ done (verified in-session)
+31. ~~**Verify `nix build` succeeds**~~ done (flake check + build green 2026-09-08)
 32. **Check if `golangci-lint` version matches what CI uses** — lint results may differ
 
 ### Broader codebase health
@@ -145,20 +145,20 @@ I flagged this in my final summary but did NOT investigate which is true, did NO
 34. **Run lint on analysis module** — check for issues there
 35. **Run lint on CLI module** — check for issues there
 36. **Check for unused exports** across all modules
-37. **Verify SARIF round-trip tests still pass** after any indirect changes
+37. ~~**Verify SARIF round-trip tests still pass** after any indirect changes~~ done (SARIF round-trip verified)
 38. **Run `go vet ./...` across all modules**
 39. **Check for `errcheck` issues** in all modules
 40. **Review `dupl` findings** — any new duplication introduced?
 41. **Review `gocritic` findings** across all modules
-42. **Check `staticcheck` findings** — not just the CLI detector, but on the codebase itself
-43. **Verify go.mod replace directives** are correct in all 4 modules
-44. **Check `go.sum` is tidy** in all modules
+42. ~~**Check `staticcheck` findings** — not just the CLI detector, but on the codebase itself~~ done (verified in-session)
+43. ~~**Verify go.mod replace directives** are correct in all 4 modules~~ done (verified in-session)
+44. ~~**Check `go.sum` is tidy** in all modules~~ done (verified in-session)
 45. **Run `golangci-lint run --fix ./...`** to auto-fix any safe issues
 46. **Audit `fix_applier_test.go` for other unused receivers** beyond saboteurProvider
 47. **Check if other test files have gosec G703 false positives**
-48. **Review wrapcheck findings in other modules** — convenience.go pattern may repeat
-49. **Consider adding `paralleltest` to CI gate or removing it entirely** — current state is ambiguous
-50. **Full `nix run .#test` from root** to use the project's canonical test runner
+48. ~~**Review wrapcheck findings in other modules** — convenience.go pattern may repeat~~ done (verified in-session)
+49. ~~**Consider adding `paralleltest` to CI gate or removing it entirely** — current state is ambiguous~~ done (resolved, permanently disabled)
+50. ~~**Full `nix run .#test` from root** to use the project's canonical test runner~~ done (verified in-session)
 
 ---
 

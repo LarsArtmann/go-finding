@@ -97,40 +97,40 @@ Then the user asked about a release. I flagged that `go-error-family` (commit `9
 
 ### Immediate (HIGH — blocks release)
 
-1. **Bump version.go to 1.4.0** and tag v1.4.0
-2. **Verify `scripts/version-check.sh` passes** with new tag
-3. **Run `nix flake check`** end-to-end (not run this session)
-4. **Push v1.4.0 to remote**
-5. **Verify sub-module tags** (pipeline/v1.4.0, analysis/v1.4.0, cmd/go-finding/v1.4.0)
+1. ~~**Bump version.go to 1.4.0** and tag v1.4.0~~ done (v1.4.0 + 3 sub-module tags, 2026-07-26)
+2. ~~**Verify `scripts/version-check.sh` passes** with new tag~~ done (version-check run, 20-18 session)
+3. ~~**Run `nix flake check`** end-to-end (not run this session)~~ done (nix flake check green, 2026-09-08)
+4. ~~**Push v1.4.0 to remote**~~ done (pushed, 20-18 session)
+5. ~~**Verify sub-module tags** (pipeline/v1.4.0, analysis/v1.4.0, cmd/go-finding/v1.4.0)~~ done (v1.4.0 released)
 
 ### Documentation (MEDIUM)
 
-6. **Write ADR #14** — go-error-family as a core production dependency (context, decision, tradeoffs)
-7. **Full FEATURES.md vs code verification** — walk every status claim against actual code
-8. **README.md freshness audit** — verify install commands, quick start, all code examples
-9. **CONTRIBUTING.md project tree** — verify ~10 missing files noted in prior reports
-10. **doc.go API reference audit** — grep for renamed/removed symbols
-11. **DOMAIN_LANGUAGE.md freshness** — verify all terms still used in code
-12. **USAGE_GUIDE.md freshness** — verify branded type examples, code snippets
+6. ~~**Write ADR #14** — go-error-family as a core production dependency (context, decision, tradeoffs)~~ done (ADR #15, 20-18 session)
+7. ~~**Full FEATURES.md vs code verification** — walk every status claim against actual code~~ done (FEATURES full walk 2026-09-08)
+8. ~~**README.md freshness audit** — verify install commands, quick start, all code examples~~ done (README audited 2026-09-08)
+9. ~~**CONTRIBUTING.md project tree** — verify ~10 missing files noted in prior reports~~ done (CONTRIBUTING tree 2026-09-08)
+10. ~~**doc.go API reference audit** — grep for renamed/removed symbols~~ done (completed in-session)
+11. ~~**DOMAIN_LANGUAGE.md freshness** — verify all terms still used in code~~ done (terms added 2026-09-08)
+12. ~~**USAGE_GUIDE.md freshness** — verify branded type examples, code snippets~~ done (updated 2026-09-08)
 13. **docs/integration-guide.md** — verify type-alias example and API references
 14. **Spot-check 10 prior resolution banners** for accuracy
-15. **Add `[Unreleased]` entries for any remaining post-v1.3.0 commits** not yet captured
+15. ~~**Add `[Unreleased]` entries for any remaining post-v1.3.0 commits** not yet captured~~ done (completed in-session)
 
 ### Code Quality (MEDIUM)
 
 16. **Verify go-error-family v0.9.0 is the latest** — check for newer versions
 17. **Add ErrorCode/ErrorFamily tests** — verify `errors.Is` and family classification work correctly
-18. **Run govulncheck** across all modules
-19. **Run `art-dupl -t 5`** to confirm zero harmful duplication (last run: 2026-07-26)
-20. **Stress test `-count=20`** — run race tests 20x to catch flaky tests
-21. **Benchmark regression check** — `scripts/bench-check.sh` against baseline
-22. **GOWORK=off + GOEXPERIMENT=jsonv2 matrix** — verify all 4 modules in isolation
+18. ~~**Run govulncheck** across all modules~~ done (govulncheck job in CI)
+19. ~~**Run `art-dupl -t 5`** to confirm zero harmful duplication (last run: 2026-07-26)~~ done (art-dupl 0 clones)
+20. ~~**Stress test `-count=20`** — run race tests 20x to catch flaky tests~~ done (stress runs 2026-07-28 + 2026-09-08)
+21. ~~**Benchmark regression check** — `scripts/bench-check.sh` against baseline~~ done (bench + committed baseline)
+22. ~~**GOWORK=off + GOEXPERIMENT=jsonv2 matrix** — verify all 4 modules in isolation~~ done (GOWORK=off matrix in CI)
 
 ### CI/CD (MEDIUM)
 
 23. **Verify GitHub Actions CI passes** on master
 24. **Add CODECOV_TOKEN secret** if not configured
-25. **Verify dependabot covers all 4 sub-modules** (expanded this session, needs validation)
+25. ~~**Verify dependabot covers all 4 sub-modules** (expanded this session, needs validation)~~ done (dependabot covers 4 modules)
 26. **Add `.editorconfig`** for consistent editor behavior
 27. **Add markdown link-checker to CI** (lychee or markdown-link-check)
 28. **Add `actionlint` to CI** for GitHub Actions workflow validation
@@ -146,8 +146,8 @@ Then the user asked about a release. I flagged that `go-error-family` (commit `9
 35. **Submit to awesome-static-analysis**
 36. **Pin Welcome issue** for new contributors
 37. **Enable GitHub Discussions** (or keep issues-only — owner decision)
-38. **Add FUNDING.yml** if desired
-39. **Create CREDITS.md** acknowledging dependencies and contributors
+38. ~~**Add FUNDING.yml** if desired~~ **Won't implement — no FUNDING.yml planned.**
+39. ~~**Create CREDITS.md** acknowledging dependencies and contributors~~ **Won't implement — no CREDITS.md planned.**
 
 ### Architecture / v2.0 (LOW — long-term)
 

@@ -141,25 +141,25 @@ Same class of mistake as #2. The ROADMAP says "Current version: 1.3.0" right aft
 
 ### Immediate (fix release gaps)
 
-1. **Fix CHANGELOG.md link references** — Add `[1.4.0]` link, update `[Unreleased]` to point to `v1.4.0...HEAD`
-2. **Update TODO_LIST.md** — Remove "Tag v1.4.0" item (done), update public-release status
-3. **Update ROADMAP.md** — Change "Current version: 1.3.0" → "1.4.0", add v1.4.0 release bullet
-4. **Amend or follow-up commit** — These are doc fixes that should have been in the release commit
+1. ~~**Fix CHANGELOG.md link references** — Add `[1.4.0]` link, update `[Unreleased]` to point to `v1.4.0...HEAD`~~ done (CHANGELOG links fixed 2026-07-28_13-46)
+2. ~~**Update TODO_LIST.md** — Remove "Tag v1.4.0" item (done), update public-release status~~ done (TODO_LIST fixed 2026-07-28_13-46)
+3. ~~**Update ROADMAP.md** — Change "Current version: 1.3.0" → "1.4.0", add v1.4.0 release bullet~~ done (ROADMAP fixed 2026-07-28_13-46)
+4. ~~**Amend or follow-up commit** — These are doc fixes that should have been in the release commit~~ done (fixed 2026-07-28_13-46)
 
 ### Documentation freshness
 
-5. Full FEATURES.md vs code audit (1038+ lines, only linter count checked)
-6. `docs/USAGE_GUIDE.md` freshness check — version refs, examples, missing v1.4.0 APIs
-7. `docs/DOMAIN_LANGUAGE.md` — add error family/classification terms
+5. ~~Full FEATURES.md vs code audit (1038+ lines, only linter count checked)~~ done (FEATURES full walk 2026-09-08)
+6. ~~`docs/USAGE_GUIDE.md` freshness check — version refs, examples, missing v1.4.0 APIs~~ done (USAGE_GUIDE updated 2026-09-08)
+7. ~~`docs/DOMAIN_LANGUAGE.md` — add error family/classification terms~~ done (DOMAIN_LANGUAGE updated 2026-09-08)
 8. `docs/integration-guide.md` — verify accuracy
-9. CONTRIBUTING.md — verify project tree completeness (prior session added 14 files; may have drifted)
-10. `docs/API_STABILITY.md` — full symbol table audit vs actual exports
+9. ~~CONTRIBUTING.md — verify project tree completeness (prior session added 14 files; may have drifted)~~ done (CONTRIBUTING verified 2026-09-08)
+10. ~~`docs/API_STABILITY.md` — full symbol table audit vs actual exports~~ done (API_STABILITY verified 2026-09-08)
 
 ### Release process hardening
 
 11. Write a release checklist document (`docs/release-checklist.md`)
-12. Add CI check: grep for stale version refs after version bump
-13. Add CI check: CHANGELOG link references must exist for every `## [x.y.z]` header
+12. ~~Add CI check: grep for stale version refs after version bump~~ done (scripts/version-drift.sh in CI)
+13. ~~Add CI check: CHANGELOG link references must exist for every `## [x.y.z]` header~~ done (scripts/docs-freshness.sh in CI)
 14. Consider `goreleaser` for automated release notes from CHANGELOG
 15. Verify Go module proxy resolves `@v1.4.0` (after repo goes public)
 
@@ -177,9 +177,9 @@ Same class of mistake as #2. The ROADMAP says "Current version: 1.3.0" right aft
 22. SARIF schema validation test (BLOCKED on vendoring decision)
 23. Consumer compatibility test suite (BLOCKED on repo visibility)
 24. Fix BuildFlow auto-configure loop (BLOCKED on external tool)
-25. Full `go mod tidy` across all 4 modules
-26. Benchmark regression check against baseline
-27. `doc.go` full API reference audit (every symbol mentioned must exist)
+25. ~~Full `go mod tidy` across all 4 modules~~ done (go mod tidy run)
+26. ~~Benchmark regression check against baseline~~ done (bench regression + committed baseline)
+27. ~~`doc.go` full API reference audit (every symbol mentioned must exist)~~ done (doc.go audited)
 
 ### Architecture / v2.0 planning
 
@@ -188,7 +188,7 @@ Same class of mistake as #2. The ROADMAP says "Current version: 1.3.0" right aft
 30. Pointer-as-state cleanup (ROADMAP "Hardening")
 31. Tags→TagSet migration (ROADMAP "Hardening")
 32. Finding sub-struct composition (ROADMAP "Hardening")
-33. Consumer migration guide for v1.3.0→v1.4.0 convenience APIs
+33. ~~Consumer migration guide for v1.3.0→v1.4.0 convenience APIs~~ done (consumer-migration guides exist)
 
 ### Testing
 
@@ -201,7 +201,7 @@ Same class of mistake as #2. The ROADMAP says "Current version: 1.3.0" right aft
 
 38. Write ADR for multi-module release tagging strategy
 39. Document the `GOEXPERIMENT=jsonv2` requirement in CONTRIBUTING.md
-40. Create consumer integration guide with code examples
+40. ~~Create consumer integration guide with code examples~~ done (consumer-migration guides exist)
 41. Add architecture diagram (D2) showing module dependencies
 42. Write performance characteristics document
 
@@ -210,14 +210,14 @@ Same class of mistake as #2. The ROADMAP says "Current version: 1.3.0" right aft
 43. Improve `nix develop` shell with better tooling
 44. Add `just`/flake target for release creation
 45. Pre-commit hook for CHANGELOG link reference validation
-46. GitHub Action for automated quality gate on PR
+46. ~~GitHub Action for automated quality gate on PR~~ done (ci.yml quality gate exists)
 47. Add `CODEOWNERS` file
 
 ### Observability
 
 48. Add structured logging examples to docs
 49. Document error code taxonomy (`finding.validation`, `finding.io`, etc.)
-50. Create troubleshooting guide for common consumer integration issues
+50. ~~Create troubleshooting guide for common consumer integration issues~~ done (docs/guides/troubleshooting.md)
 
 ---
 
