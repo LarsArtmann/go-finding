@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -760,4 +761,163 @@ func TestFixApplier_RollbackErrorNotSwallowed(t *testing.T) {
 		"error should mention rollback failure: %s", errMsg)
 	g.Expect(errMsg).To(ContainSubstring("restore"),
 		"error should mention restore failure: %s", errMsg)
+}
+
+// TestFixApplier_ApplyWithReport_CancelledContext verifies that a cancelled
+// context stops fix application before the next file is touched, no files are
+// modified, and no outcomes are fabricated for unprocessed files — under both
+// rollback policies.
+func TestFixApplier_ApplyWithReport_CancelledContext(t *testing.T) {
+	scenarios := []struct {
+		name     string
+		rollAll  bool
+	}{{name: "default", rollAll: false}, {name: "AllFiles", rollAll: true}}
+
+	for _, tc := range scenarios {
+		t.Run(tc.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
+
+			tempDir, applier := newTestApplierWithDir(t)
+			if tc.rollAll {
+				applier.SetRollbackPolicy(RollbackPolicyAllFiles)
+			}
+			t.Cleanup(func() { _ = applier.Close() })
+
+			fileA := filepath.Join(tempDir, "a.go")
+			writeTestFile(t, fileA, []byte("package a\noldA()\n"))
+
+			fileB := filepath.Join(tempDir, "b.go")
+			writeTestFile(t, fileB, []byte("package b\noldB()\n"))
+
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+
+			report, err := applier.ApplyWithReport(ctx, []finding.Finding{
+				makeFixFinding("1", "oldA()", "newA()", "a.go", 0),
+				makeFixFinding("2", "oldB()", "newB()", "b.go", 0),
+			})
+			g.Expect(err).To(HaveOccurred())
+			g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
+
+			g.Expect(report.Applied).To(Equal(0))
+			g.Expect(report.Outcomes).To(BeEmpty())
+			g.Expect(report.RolledBack).To(BeEmpty())
+
+			for _, path := range []string{fileA, fileB} {
+				data, readErr := readFile(path)
+				g.Expect(readErr).NotTo(HaveOccurred())
+				g.Expect(data).NotTo(ContainSubstring("new"))
+			}
+		})
+	}
+}
+
+// TestFixApplier_ApplyWithReport_BackupFailure verifies the rollback policy on
+// backup failures: by default earlier files keep their applied fixes; the
+// AllFiles policy rolls them back.
+func TestFixApplier_ApplyWithReport_BackupFailure(t *testing.T) {
+	scenarios := []struct {
+		name        string
+		rollAll     bool
+		wantFileA   string
+	}{
+		{
+			name:      "default keeps earlier file fixes",
+			rollAll:   false,
+			wantFileA: "package first\nnew1()\n",
+		},
+		{
+			name:      "AllFiles rolls back earlier files",
+			rollAll:   true,
+			wantFileA: "package first\nold1()\n",
+		},
+	}
+
+	for _, tc := range scenarios {
+		t.Run(tc.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
+
+			tempDir, applier := newTestApplierWithDir(t)
+			if tc.rollAll {
+				applier.SetRollbackPolicy(RollbackPolicyAllFiles)
+			}
+			t.Cleanup(func() { _ = applier.Close() })
+
+			fileA := filepath.Join(tempDir, "first.go")
+			writeTestFile(t, fileA, []byte("package first\nold1()\n"))
+
+			fileB := filepath.Join(tempDir, "second.go")
+			writeTestFile(t, fileB, []byte("package second\nold2()\n"))
+			errChmod := os.Chmod(fileB, 0o000) //nolint:gosec // unreadable on purpose: backup open fails
+			g.Expect(errChmod).NotTo(HaveOccurred())
+			t.Cleanup(func() {
+				_ = os.Chmod(fileB, 0o644) //nolint:gosec // restore permissions in cleanup
+			})
+
+			report, err := applier.ApplyWithReport(context.Background(), []finding.Finding{
+				makeFixFinding("1", "old1()", "new1()", "first.go", 0),
+				makeFixFinding("2", "old2()", "new2()", "second.go", 0),
+			})
+			g.Expect(err).To(HaveOccurred())
+
+			dataA, readErr := readFile(fileA)
+			g.Expect(readErr).NotTo(HaveOccurred())
+			g.Expect(string(dataA)).To(Equal(tc.wantFileA))
+
+			if tc.rollAll {
+				g.Expect(report.RolledBack).To(ContainElement("first.go"))
+			} else {
+				g.Expect(report.RolledBack).To(BeEmpty())
+			}
+		})
+	}
+}
+
+// TestFixApplier_BackupHygiene verifies that backups stay inside the backup
+// directory (never scatter .bak files into the target tree) and that Close
+// removes the backup directory entirely.
+func TestFixApplier_BackupHygiene(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+
+	fileA := filepath.Join(tempDir, "first.go")
+	writeTestFile(t, fileA, []byte("package first\nold1()\n"))
+
+	fileB := filepath.Join(tempDir, "second.go")
+	writeTestFile(t, fileB, []byte("package second\nold2()\n"))
+	errChmod := os.Chmod(fileB, 0o444) //nolint:gosec // write fails: failing file is restored
+	g.Expect(errChmod).NotTo(HaveOccurred())
+	t.Cleanup(func() {
+		_ = os.Chmod(fileB, 0o644) //nolint:gosec // restore permissions in cleanup
+	})
+
+	_, err := applier.ApplyWithReport(context.Background(), []finding.Finding{
+		makeFixFinding("1", "old1()", "new1()", "first.go", 0),
+		makeFixFinding("2", "old2()", "new2()", "second.go", 0),
+	})
+	g.Expect(err).To(HaveOccurred())
+
+	backupDir := applier.backup.backupDir
+
+	var stray []string
+	walkErr := filepath.WalkDir(tempDir, func(path string, d os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+
+		if !d.IsDir() && strings.HasSuffix(d.Name(), ".bak") {
+			stray = append(stray, path)
+		}
+
+		return nil
+	})
+	g.Expect(walkErr).NotTo(HaveOccurred())
+	g.Expect(stray).To(BeEmpty(), "no .bak files may leak into the target tree")
+
+	g.Expect(backupDir).To(BeADirectory())
+
+	g.Expect(applier.Close()).To(Succeed())
+	g.Expect(backupDir).NotTo(BeAnExistingFile())
+	g.Expect(backupDir).NotTo(BeADirectory())
 }

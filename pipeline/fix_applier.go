@@ -183,7 +183,11 @@ func (a *FixApplier) ApplyWithReport(
 		err := CheckCanceledWithMsg(ctx, "fix application cancelled")
 		if err != nil {
 			if a.rollbackPolicy == RollbackPolicyAllFiles {
-				_ = a.backup.RollbackAll(modified)
+				if rollbackErr := a.backup.RollbackAll(modified); rollbackErr != nil {
+					return report, fmt.Errorf("%w (rollback also failed: %w)", err, rollbackErr)
+				}
+
+				report.RolledBack = append(report.RolledBack, modified...)
 			}
 
 			return report, err
@@ -198,6 +202,8 @@ func (a *FixApplier) ApplyWithReport(
 					if rollbackErr := a.backup.RollbackAll(modified); rollbackErr != nil {
 						return report, fmt.Errorf("%w (rollback also failed: %w)", backupErr, rollbackErr)
 					}
+
+					report.RolledBack = append(report.RolledBack, modified...)
 				}
 
 				return report, backupErr
