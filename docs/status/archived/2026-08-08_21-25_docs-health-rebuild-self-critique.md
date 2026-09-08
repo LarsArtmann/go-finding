@@ -132,69 +132,69 @@ This is like reading the table of contents of a textbook and claiming you studie
 
 ### Immediate (this session's debt)
 
-| # | Task                                                                | Impact | Effort | Evidence                      |
-| - | ------------------------------------------------------------------- | ------ | ------ | ----------------------------- |
-| ~~1~~ | ~~Fix `config.ToConfig()` in configuration.md (export or correct doc)~~ done — T1, fixed and verified in 21-39 session | ~~High~~ | ~~Low~~ | ~~D2 — found, not fixed~~ |
-| ~~2~~ | ~~Restore priority emojis in TODO_LIST.md~~ done — T2, restored in 21-39 session | ~~Low~~ | ~~Low~~ | ~~D5 — unnecessary style change~~ |
-| ~~3~~ | ~~Run lint across all 4 modules~~ done — lint 0 issues x4, verified 2026-09-08 | ~~Med~~ | ~~Low~~ | ~~C.6 — never ran~~ |
-| ~~4~~ | ~~Run tests for pipeline, analysis, CLI modules~~ done — tests green x4, verified 2026-09-08 | ~~Med~~ | ~~Low~~ | ~~B.4 — only core tested~~ |
-| ~~5~~ | ~~Run all 6 CI scripts locally~~ done — all 7 CI scripts green 2026-09-08 | ~~Low~~ | ~~Low~~ | ~~Not verified this session~~ |
+| #     | Task                                                                                                                   | Impact   | Effort  | Evidence                          |
+| ----- | ---------------------------------------------------------------------------------------------------------------------- | -------- | ------- | --------------------------------- |
+| ~~1~~ | ~~Fix `config.ToConfig()` in configuration.md (export or correct doc)~~ done — T1, fixed and verified in 21-39 session | ~~High~~ | ~~Low~~ | ~~D2 — found, not fixed~~         |
+| ~~2~~ | ~~Restore priority emojis in TODO_LIST.md~~ done — T2, restored in 21-39 session                                       | ~~Low~~  | ~~Low~~ | ~~D5 — unnecessary style change~~ |
+| ~~3~~ | ~~Run lint across all 4 modules~~ done — lint 0 issues x4, verified 2026-09-08                                         | ~~Med~~  | ~~Low~~ | ~~C.6 — never ran~~               |
+| ~~4~~ | ~~Run tests for pipeline, analysis, CLI modules~~ done — tests green x4, verified 2026-09-08                           | ~~Med~~  | ~~Low~~ | ~~B.4 — only core tested~~        |
+| ~~5~~ | ~~Run all 6 CI scripts locally~~ done — all 7 CI scripts green 2026-09-08                                              | ~~Low~~  | ~~Low~~ | ~~Not verified this session~~     |
 
 ### ANNOTATE pass (D1 — the biggest gap)
 
-| #  | Task                                                                         | Impact | Effort | Evidence                                   |
-| -- | ---------------------------------------------------------------------------- | ------ | ------ | ------------------------------------------ |
-| ~~6~~  | ~~Annotate `2026-08-06_19-40_deterministic-json-fix.md` (v1.4.2 superseded)~~ done — 21-39 session T6 | ~~Med~~ | ~~15min~~ | ~~References stale v1.4.2~~ |
-| ~~7~~  | ~~Annotate `2026-08-06_19-53_v1-5-0-release.md` (most items resolved)~~ done — 21-39 session T7 | ~~Med~~ | ~~20min~~ | ~~Many items marked DONE inline~~ |
-| ~~8~~  | ~~Annotate `2026-08-01_19-40_flight-recorder-self-critique.md` (P0 bugs fixed)~~ done — 21-39 session T8 | ~~Med~~ | ~~15min~~ | ~~All P0 items resolved~~ |
-| ~~9~~  | ~~Annotate `2026-08-02_00-18_pareto-plan-execution-self-critique.md`~~ done — 21-39 session T9 | ~~Med~~ | ~~20min~~ | ~~50-item list, many resolved~~ |
-| ~~10~~ | ~~Annotate `2026-08-02_00-26_comprehensive-session-status.md`~~ done — 21-39 session T6-T9 | ~~Med~~ | ~~20min~~ | ~~50-item list, many resolved~~ |
+| #      | Task                                                                                                                      | Impact  | Effort    | Evidence                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------------------- | ------- | --------- | ---------------------------------------------- |
+| ~~6~~  | ~~Annotate `2026-08-06_19-40_deterministic-json-fix.md` (v1.4.2 superseded)~~ done — 21-39 session T6                     | ~~Med~~ | ~~15min~~ | ~~References stale v1.4.2~~                    |
+| ~~7~~  | ~~Annotate `2026-08-06_19-53_v1-5-0-release.md` (most items resolved)~~ done — 21-39 session T7                           | ~~Med~~ | ~~20min~~ | ~~Many items marked DONE inline~~              |
+| ~~8~~  | ~~Annotate `2026-08-01_19-40_flight-recorder-self-critique.md` (P0 bugs fixed)~~ done — 21-39 session T8                  | ~~Med~~ | ~~15min~~ | ~~All P0 items resolved~~                      |
+| ~~9~~  | ~~Annotate `2026-08-02_00-18_pareto-plan-execution-self-critique.md`~~ done — 21-39 session T9                            | ~~Med~~ | ~~20min~~ | ~~50-item list, many resolved~~                |
+| ~~10~~ | ~~Annotate `2026-08-02_00-26_comprehensive-session-status.md`~~ done — 21-39 session T6-T9                                | ~~Med~~ | ~~20min~~ | ~~50-item list, many resolved~~                |
 | ~~11~~ | ~~Archive fully-resolved reports to `docs/status/archived/`~~ done — 2026-09-08 L1-29 archived 3, docs-health pass 4 more | ~~Low~~ | ~~15min~~ | ~~Skill says ARCHIVE when all items resolved~~ |
 
 ### HARVEST completion (D4 — thin TODO_LIST)
 
-| #  | Task                                                        | Impact | Effort | Evidence               |
-| -- | ----------------------------------------------------------- | ------ | ------ | ---------------------- |
-| ~~12~~ | ~~Route docs-freshness.sh false-positive refinement~~ done — 2026-08-08_22-11 session + v1.6.0 CHANGELOG | ~~Low~~ | ~~Med~~ | ~~T7-T17 report B.3~~ |
-| ~~13~~ | ~~Route FlightRecorder context propagation~~ done — v1.6.0 CHANGELOG Snapshot ctx | ~~Low~~ | ~~Med~~ | ~~Multiple reports~~ |
-| ~~14~~ | ~~Route FlightRecorder multiple recorder graceful degradation~~ done — v1.6.0 CHANGELOG Degraded mode | ~~Low~~ | ~~Med~~ | ~~Multiple reports~~ |
-| ~~15~~ | ~~Route export resolveSafePath/resolveSafePathFrom decision~~ done — v1.6.0 CHANGELOG ResolveSafePath exports | ~~Low~~ | ~~Low~~ | ~~3+ reports flag this~~ |
-| 16 | Route FlightRecorder trace file rotation                    | Low    | Med    | T10-T19 report C       |
-| 17 | Route FlightRecorder compressed trace output (gzip)         | Low    | Med    | T10-T19 report C       |
-| ~~18~~ | ~~Route consumer migration guide (docs/guides/)~~ done — docs/guides/consumer-migration-v1.7.md | ~~Med~~ | ~~Med~~ | ~~ROADMAP references it~~ |
-| 19 | Route LSP code action support                               | Low    | Med    | ROADMAP references it  |
-| 20 | Route PGO investigation                                     | Low    | Med    | ROADMAP references it  |
-| ~~21~~ | ~~Route Full FEATURES.md vs code walk~~ done — FEATURES full walk 2026-09-08, ~26 fixes | ~~Med~~ | ~~High~~ | ~~Recurring since v1.3.0~~ |
+| #      | Task                                                                                                          | Impact  | Effort   | Evidence                   |
+| ------ | ------------------------------------------------------------------------------------------------------------- | ------- | -------- | -------------------------- |
+| ~~12~~ | ~~Route docs-freshness.sh false-positive refinement~~ done — 2026-08-08_22-11 session + v1.6.0 CHANGELOG      | ~~Low~~ | ~~Med~~  | ~~T7-T17 report B.3~~      |
+| ~~13~~ | ~~Route FlightRecorder context propagation~~ done — v1.6.0 CHANGELOG Snapshot ctx                             | ~~Low~~ | ~~Med~~  | ~~Multiple reports~~       |
+| ~~14~~ | ~~Route FlightRecorder multiple recorder graceful degradation~~ done — v1.6.0 CHANGELOG Degraded mode         | ~~Low~~ | ~~Med~~  | ~~Multiple reports~~       |
+| ~~15~~ | ~~Route export resolveSafePath/resolveSafePathFrom decision~~ done — v1.6.0 CHANGELOG ResolveSafePath exports | ~~Low~~ | ~~Low~~  | ~~3+ reports flag this~~   |
+| 16     | Route FlightRecorder trace file rotation                                                                      | Low     | Med      | T10-T19 report C           |
+| 17     | Route FlightRecorder compressed trace output (gzip)                                                           | Low     | Med      | T10-T19 report C           |
+| ~~18~~ | ~~Route consumer migration guide (docs/guides/)~~ done — docs/guides/consumer-migration-v1.7.md               | ~~Med~~ | ~~Med~~  | ~~ROADMAP references it~~  |
+| 19     | Route LSP code action support                                                                                 | Low     | Med      | ROADMAP references it      |
+| 20     | Route PGO investigation                                                                                       | Low     | Med      | ROADMAP references it      |
+| ~~21~~ | ~~Route Full FEATURES.md vs code walk~~ done — FEATURES full walk 2026-09-08, ~26 fixes                       | ~~Med~~ | ~~High~~ | ~~Recurring since v1.3.0~~ |
 
 ### VERIFY (deeper checking)
 
-| #  | Task                                                            | Impact | Effort | Evidence                |
-| -- | --------------------------------------------------------------- | ------ | ------ | ----------------------- |
-| ~~22~~ | ~~Verify each CHANGELOG [Unreleased] entry against code~~ done — TODO_LIST per-item verification 2026-09-08 | ~~Med~~ | ~~Med~~ | ~~C.7 — not done~~ |
-| ~~23~~ | ~~Verify removed TODO_LIST DONE items are in CHANGELOG~~ done — TODO_LIST per-item verification 2026-09-08 | ~~Med~~ | ~~Low~~ | ~~C.8 — not done~~ |
-| ~~24~~ | ~~Check FEATURES.md for stale cross-references to section numbers~~ done — FEATURES full walk 2026-09-08 | ~~Low~~ | ~~Low~~ | ~~B.2 — numbering changed~~ |
-| ~~25~~ | ~~Verify FEATURES.md summary matrix status labels against code~~ done — FEATURES full walk 2026-09-08 | ~~Med~~ | ~~High~~ | ~~Never fully done~~ |
-| ~~26~~ | ~~Check ROADMAP "raw ideas" — any now implemented?~~ done — ROADMAP raw ideas verified 2026-09-08 | ~~Low~~ | ~~Low~~ | ~~Not verified~~ |
+| #      | Task                                                                                                        | Impact  | Effort   | Evidence                    |
+| ------ | ----------------------------------------------------------------------------------------------------------- | ------- | -------- | --------------------------- |
+| ~~22~~ | ~~Verify each CHANGELOG [Unreleased] entry against code~~ done — TODO_LIST per-item verification 2026-09-08 | ~~Med~~ | ~~Med~~  | ~~C.7 — not done~~          |
+| ~~23~~ | ~~Verify removed TODO_LIST DONE items are in CHANGELOG~~ done — TODO_LIST per-item verification 2026-09-08  | ~~Med~~ | ~~Low~~  | ~~C.8 — not done~~          |
+| ~~24~~ | ~~Check FEATURES.md for stale cross-references to section numbers~~ done — FEATURES full walk 2026-09-08    | ~~Low~~ | ~~Low~~  | ~~B.2 — numbering changed~~ |
+| ~~25~~ | ~~Verify FEATURES.md summary matrix status labels against code~~ done — FEATURES full walk 2026-09-08       | ~~Med~~ | ~~High~~ | ~~Never fully done~~        |
+| ~~26~~ | ~~Check ROADMAP "raw ideas" — any now implemented?~~ done — ROADMAP raw ideas verified 2026-09-08           | ~~Low~~ | ~~Low~~  | ~~Not verified~~            |
 
 ### FEATURES.md quality
 
-| #  | Task                                                                   | Impact | Effort | Evidence                  |
-| -- | ---------------------------------------------------------------------- | ------ | ------ | ------------------------- |
-| ~~27~~ | ~~Add `ParseConfidence` to summary matrix with correct status~~ done — 21-39 session T10 | ~~Low~~ | ~~Low~~ | ~~Added to body, not matrix~~ |
-| ~~28~~ | ~~Add `ValidateAll` to FEATURES.md body (not just matrix)~~ done — FEATURES full walk 2026-09-08 | ~~Low~~ | ~~Low~~ | ~~In matrix only~~ |
-| ~~29~~ | ~~Add deterministic output guarantee section to FEATURES.md~~ done — FEATURES full walk 2026-09-08 | ~~Low~~ | ~~Low~~ | ~~Only in JSON section note~~ |
-| ~~30~~ | ~~Verify all method signatures in FEATURES.md against source~~ done — FEATURES full walk 2026-09-08 | ~~Med~~ | ~~High~~ | ~~Never fully done~~ |
-| ~~31~~ | ~~Update FEATURES.md Examples section (still says "2 runnable examples")~~ done — FEATURES full walk 2026-09-08 | ~~Low~~ | ~~Low~~ | ~~May be stale~~ |
+| #      | Task                                                                                                            | Impact  | Effort   | Evidence                      |
+| ------ | --------------------------------------------------------------------------------------------------------------- | ------- | -------- | ----------------------------- |
+| ~~27~~ | ~~Add `ParseConfidence` to summary matrix with correct status~~ done — 21-39 session T10                        | ~~Low~~ | ~~Low~~  | ~~Added to body, not matrix~~ |
+| ~~28~~ | ~~Add `ValidateAll` to FEATURES.md body (not just matrix)~~ done — FEATURES full walk 2026-09-08                | ~~Low~~ | ~~Low~~  | ~~In matrix only~~            |
+| ~~29~~ | ~~Add deterministic output guarantee section to FEATURES.md~~ done — FEATURES full walk 2026-09-08              | ~~Low~~ | ~~Low~~  | ~~Only in JSON section note~~ |
+| ~~30~~ | ~~Verify all method signatures in FEATURES.md against source~~ done — FEATURES full walk 2026-09-08             | ~~Med~~ | ~~High~~ | ~~Never fully done~~          |
+| ~~31~~ | ~~Update FEATURES.md Examples section (still says "2 runnable examples")~~ done — FEATURES full walk 2026-09-08 | ~~Low~~ | ~~Low~~  | ~~May be stale~~              |
 
 ### Release preparation
 
-| #  | Task                                         | Impact | Effort | Evidence       |
-| -- | -------------------------------------------- | ------ | ------ | -------------- |
-| ~~32~~ | ~~Bump version.go to v1.6.0~~ done — v1.6.0 tagged 2026-08-08 | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
-| ~~33~~ | ~~Move [Unreleased] to [1.6.0] in CHANGELOG~~ done — v1.6.0 CHANGELOG | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
-| ~~34~~ | ~~Tag all 4 modules with v1.6.0~~ done — v1.6.0 + 3 sub-module tags | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
-| ~~35~~ | ~~Run version-check.sh after tagging~~ done — version-check.sh run in release session | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
-| ~~36~~ | ~~Run GOWORK=off isolation tests~~ done — GOWORK=off x4 modules green | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
+| #      | Task                                                                                     | Impact   | Effort  | Evidence           |
+| ------ | ---------------------------------------------------------------------------------------- | -------- | ------- | ------------------ |
+| ~~32~~ | ~~Bump version.go to v1.6.0~~ done — v1.6.0 tagged 2026-08-08                            | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
+| ~~33~~ | ~~Move [Unreleased] to [1.6.0] in CHANGELOG~~ done — v1.6.0 CHANGELOG                    | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
+| ~~34~~ | ~~Tag all 4 modules with v1.6.0~~ done — v1.6.0 + 3 sub-module tags                      | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
+| ~~35~~ | ~~Run version-check.sh after tagging~~ done — version-check.sh run in release session    | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
+| ~~36~~ | ~~Run GOWORK=off isolation tests~~ done — GOWORK=off x4 modules green                    | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
 | ~~37~~ | ~~Push tags to remote (requires user approval)~~ done — pushed, 2026-08-08_22-28 session | ~~High~~ | ~~Low~~ | ~~TODO_LIST item~~ |
 
 ### Consumer ecosystem
@@ -209,20 +209,20 @@ This is like reading the table of contents of a textbook and claiming you studie
 
 ### Documentation polish
 
-| #  | Task                                                    | Impact | Effort | Evidence                  |
-| -- | ------------------------------------------------------- | ------ | ------ | ------------------------- |
+| #      | Task                                                                                                                                                     | Impact  | Effort  | Evidence                      |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------- | ----------------------------- |
 | ~~43~~ | ~~Write docs/guides/deterministic-output.md~~ **Won't implement — subsumed by API_STABILITY.md deterministic-output guarantee + 8 byte-identity tests.** | ~~Low~~ | ~~Low~~ | ~~Flagged in v1.5.0 reports~~ |
-| ~~44~~ | ~~Update docs/API_STABILITY.md with v1.5.0+ symbols~~ done — API_STABILITY audited 2026-09-08 | ~~Med~~ | ~~Med~~ | ~~Flagged since v1.3.0~~ |
-| ~~45~~ | ~~Add determinism guarantee to docs/API_STABILITY.md~~ done — API_STABILITY deterministic-output guarantee row | ~~Low~~ | ~~Low~~ | ~~Flagged in v1.5.0 reports~~ |
-| ~~46~~ | ~~Update CONTRIBUTING.md project tree~~ done — CONTRIBUTING tree verified 2026-09-08 | ~~Low~~ | ~~Low~~ | ~~Flagged since v1.3.0~~ |
-| 47 | Create GitHub Release for v1.5.0 with CHANGELOG excerpt | Low    | Low    | Tags pushed, no release   |
+| ~~44~~ | ~~Update docs/API_STABILITY.md with v1.5.0+ symbols~~ done — API_STABILITY audited 2026-09-08                                                            | ~~Med~~ | ~~Med~~ | ~~Flagged since v1.3.0~~      |
+| ~~45~~ | ~~Add determinism guarantee to docs/API_STABILITY.md~~ done — API_STABILITY deterministic-output guarantee row                                           | ~~Low~~ | ~~Low~~ | ~~Flagged in v1.5.0 reports~~ |
+| ~~46~~ | ~~Update CONTRIBUTING.md project tree~~ done — CONTRIBUTING tree verified 2026-09-08                                                                     | ~~Low~~ | ~~Low~~ | ~~Flagged since v1.3.0~~      |
+| 47     | Create GitHub Release for v1.5.0 with CHANGELOG excerpt                                                                                                  | Low     | Low     | Tags pushed, no release       |
 
 ### Code quality
 
-| #  | Task                                                                  | Impact | Effort | Evidence                  |
-| -- | --------------------------------------------------------------------- | ------ | ------ | ------------------------- |
-| ~~48~~ | ~~Extract `marshalOpts` package-level constant for `json.Deterministic`~~ done — v1.6.0 CHANGELOG marshalOpts | ~~Low~~ | ~~Low~~ | ~~Flagged in 3+ reports~~ |
-| ~~49~~ | ~~Add CI check that flags `json.Marshal` without `json.Deterministic`~~ done — scripts/json-deterministic-check.sh in CI | ~~Low~~ | ~~Med~~ | ~~Flagged in v1.5.0 reports~~ |
+| #      | Task                                                                                                                                | Impact  | Effort  | Evidence                      |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------- | ------- | ------- | ----------------------------- |
+| ~~48~~ | ~~Extract `marshalOpts` package-level constant for `json.Deterministic`~~ done — v1.6.0 CHANGELOG marshalOpts                       | ~~Low~~ | ~~Low~~ | ~~Flagged in 3+ reports~~     |
+| ~~49~~ | ~~Add CI check that flags `json.Marshal` without `json.Deterministic`~~ done — scripts/json-deterministic-check.sh in CI            | ~~Low~~ | ~~Med~~ | ~~Flagged in v1.5.0 reports~~ |
 | ~~50~~ | ~~Consider `testing/quick` property test for determinism~~ **Won't implement — subsumed by the 8 byte-identity determinism tests.** | ~~Low~~ | ~~Low~~ | ~~Flagged in v1.5.0 reports~~ |
 
 ---

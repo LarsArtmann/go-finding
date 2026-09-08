@@ -150,15 +150,15 @@ Nothing was fucked up. However, one significant issue was caught and fixed durin
 
 ### High Impact
 
-1. **Verify doc.go has no other stale API references** — Grep for all function/type names that changed in v1.3-v1.5 era
+1. ~~**Verify doc.go has no other stale API references** — Grep for all function/type names that changed in v1.3-v1.5 era~~ done (doc.go refs updated 2026-09-08)
 2. **Add `ResolveSafePath` usage example to docs/guides/** — Now that it's exported, show consumers how to use it
-3. **Add `Degraded()` documentation to flight-recorder guide** — How to detect and handle degraded mode
-4. **Consider a `pipeline.MarshalOpts` equivalent** — So fix_edit.go doesn't inline `json.Deterministic(true)`
-5. **Add CHANGELOG.md entry for v1.6.0** — These are breaking API changes (Snapshot signature change)
-6. **Version bump** — These changes warrant at least a minor version bump (new exported API + breaking signature change)
-7. **Run `go-arch-lint check`** — Verify the exported path safety functions don't violate boundary rules
+3. ~~**Add `Degraded()` documentation to flight-recorder guide** — How to detect and handle degraded mode~~ done (Degraded() docs in troubleshooting)
+4. ~~**Consider a `pipeline.MarshalOpts` equivalent** — So fix_edit.go doesn't inline `json.Deterministic(true)`~~ done (FixEdit uses marshalOpts, v1.6.0)
+5. ~~**Add CHANGELOG.md entry for v1.6.0** — These are breaking API changes (Snapshot signature change)~~ done (CHANGELOG 1.6.0)
+6. ~~**Version bump** — These changes warrant at least a minor version bump (new exported API + breaking signature change)~~ done (v1.6.0 tagged)
+7. ~~**Run `go-arch-lint check`** — Verify the exported path safety functions don't violate boundary rules~~ done (go-arch-lint run locally, OK 2026-09-08)
 8. **Run art-dupl** — Verify no new duplication was introduced
-9. **Stress test the flight recorder** — Run `-count=20` to verify degraded mode doesn't flake under stress
+9. ~~**Stress test the flight recorder** — Run `-count=20` to verify degraded mode doesn't flake under stress~~ done (stress repeat=20 race passed, mandatory gate 2026-09-08)
 
 ### Medium Impact
 
@@ -168,8 +168,8 @@ Nothing was fucked up. However, one significant issue was caught and fixed durin
 13. **Audit all `context.Background()` in asyncSnapshot callers** — Verify no other diagnostic goroutines share pipeline context
 14. **Add `ErrFlightRecorderDegraded` sentinel** — So consumers can `errors.Is` the snapshot failure reason
 15. **Document the `marshalOpts` pattern in docs/guides/consumer-migration-v1.3.md** — For consumers writing their own MarshalJSON
-16. **Check if `FixEdit.MarshalJSON` determinism matters** — The struct has no maps, so ordering is already deterministic from struct fields. The added `Deterministic(true)` is belt-and-suspenders.
-17. **Verify `flight_recorder_fuzz_test.go` still passes** — The fuzz test was not run this session
+16. ~~**Check if `FixEdit.MarshalJSON` determinism matters** — The struct has no maps, so ordering is already deterministic from struct fields. The added `Deterministic(true)` is belt-and-suspenders.~~ done (FixEdit determinism documented, v1.6.0)
+17. ~~**Verify `flight_recorder_fuzz_test.go` still passes** — The fuzz test was not run this session~~ done (fuzz green 635K + 4.4M execs)
 18. **Add integration test: degraded hook + pipeline run** — Verify a degraded hook doesn't break a real pipeline run
 19. **Consider exporting `sanitizeFilename`** — Consumers building custom trace tooling might want it
 20. **Review the `writeSnapshot` error messages** — Now includes context cancellation, should have consistent error wrapping
@@ -181,30 +181,30 @@ Nothing was fucked up. However, one significant issue was caught and fixed durin
 23. **Consider a `FlightRecorderHook.DegradedReason() string` method** — More informative than just `bool`
 24. **Add a test for `marshalOpts` immutability** — Verify nobody can accidentally mutate the package-level var
 25. **Check `config_file.go` ResolveFlightRecorder with degraded mode** — Does it propagate the degraded state?
-26. **Audit `.golangci.yml` for other unnecessary exclusions** — Are there other paths that could be un-excluded?
+26. ~~**Audit `.golangci.yml` for other unnecessary exclusions** — Are there other paths that could be un-excluded?~~ done (exclusions audited in-session)
 27. **Add `json-deterministic-check.sh` to flake.nix** — So it's available via `nix run`
 28. **Consider a pre-commit hook for json-deterministic-check** — Catch violations before push
 29. **Review all `slog.Logger.Warn` calls in flight_recorder.go** — Ensure consistent log levels
 30. **Add flight recorder degraded mode to CLI output** — User should know their trace isn't being captured
 31. **Consider `ResolveSafePathFrom` returning an error instead of bool** — More Go-idiomatic for the "why" case
-32. **Document path safety API in docs/api-stability-report.md** — New exported API needs stability commitment
-33. **Verify the `docs-freshness.sh` change reduces warnings in CI** — Compare before/after warning counts
+32. ~~**Document path safety API in docs/api-stability-report.md** — New exported API needs stability commitment~~ done (path safety in API_STABILITY)
+33. ~~**Verify the `docs-freshness.sh` change reduces warnings in CI** — Compare before/after warning counts~~ done (freshness warnings resolved 2026-09-08)
 34. **Add a test for the paren-depth awk logic** — Edge case: mismatched parens, escaped parens in strings
 35. **Consider `Snapshot` accepting `io.Writer` instead of always writing to file** — More flexible
 36. **Review `ErrFlightRecorderNotEnabled` semantics** — Now also returned for degraded mode, which is slightly misleading
 37. **Add benchmark: degraded mode overhead** — Verify the `degraded` check doesn't slow down the hot path
 38. **Consider a `FlightRecorderHook.Status()` method** — Combining `Enabled()`, `Degraded()`, snapshot count
-39. **Update FEATURES.md with new exported APIs** — `ResolveSafePath`, `Degraded()`, context-aware `Snapshot`
-40. **Update ROADMAP.md** — Mark these TODO items as done
-41. **Check if `TODO_LIST.md` needs updating** — Remove the completed items
+39. ~~**Update FEATURES.md with new exported APIs** — `ResolveSafePath`, `Degraded()`, context-aware `Snapshot`~~ done (FEATURES updated, walk 2026-09-08)
+40. ~~**Update ROADMAP.md** — Mark these TODO items as done~~ done (ROADMAP marked)
+41. ~~**Check if `TODO_LIST.md` needs updating** — Remove the completed items~~ done (TODO_LIST cleaned)
 42. **Review the `_templ.go` exclusion in formatter** — Is it still needed?
 43. **Consider CI job naming** — `structural-checks` now has 5 steps, might warrant splitting
 44. **Add `--check-deterministic` flag to CLI** — Let users verify their own output determinism
-45. **Consider moving `marshalOpts` to a separate `jsonopts.go` file** — Better discoverability
+45. ~~**Consider moving `marshalOpts` to a separate `jsonopts.go` file** — Better discoverability~~ **Won't implement — stays in json.go by design.**
 46. **Review all exported function doc comments** — Ensure godoc renders correctly for new APIs
 47. **Add `lint:check` Makefile target** — Even though Makefile is deprecated, some CI tools expect it
 48. **Consider a Go workspace-level lint config** — For tools that support workspace linting
-49. **Verify `GOWORK=off go test` passes for pipeline module specifically** — The exports + rename
+49. ~~**Verify `GOWORK=off go test` passes for pipeline module specifically** — The exports + rename~~ done (GOWORK=off pipeline test, 22-28 session)
 50. **Add a session log entry** — Document the asyncSnapshot bug for future reference
 
 ---

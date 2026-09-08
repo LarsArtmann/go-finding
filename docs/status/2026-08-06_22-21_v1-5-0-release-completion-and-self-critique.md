@@ -124,46 +124,46 @@ Complete the v1.5.0 release that was left half-done by the previous session. The
 ### Release polish
 
 8. Create GitHub release for v1.5.0 with CHANGELOG excerpt
-9. Update README.md version references if any point to v1.4.x
-10. Run `nix run .#test` (canonical test command per AGENTS.md)
-11. Run `nix run .#lint` (canonical lint command)
-12. Run `nix run .#bench` and compare against baseline
-13. Run `nix flake check` for Nix correctness
-14. Verify `go.sum` is clean after all changes
-15. Check `docs/release-procedure.md` for any missed steps
+9. ~~Update README.md version references if any point to v1.4.x~~ done (README updated)
+10. ~~Run `nix run .#test` (canonical test command per AGENTS.md)~~ done (nix test green)
+11. ~~Run `nix run .#lint` (canonical lint command)~~ done (nix lint green)
+12. ~~Run `nix run .#bench` and compare against baseline~~ done (bench + extended baseline)
+13. ~~Run `nix flake check` for Nix correctness~~ done (nix flake check green 2026-09-08)
+14. ~~Verify `go.sum` is clean after all changes~~ done (go.sum fixed 2026-09-08)
+15. ~~Check `docs/release-procedure.md` for any missed steps~~ done (release procedure updated 2026-09-08)
 
 ### Documentation
 
-16. Archive `docs/status/2026-08-06_19-40_deterministic-json-fix.md` (references superseded v1.4.2)
-17. Update `docs/release-procedure.md` with pre-tagging checklist (see section e)1)
-18. Update `docs/API_STABILITY.md` with determinism guarantee for all JSON/SARIF methods
+16. ~~Archive `docs/status/2026-08-06_19-40_deterministic-json-fix.md` (references superseded v1.4.2)~~ done (19-40 archived, verified in archived/)
+17. ~~Update `docs/release-procedure.md` with pre-tagging checklist (see section e)1)~~ done (pre-tagging checklist in release-procedure)
+18. ~~Update `docs/API_STABILITY.md` with determinism guarantee for all JSON/SARIF methods~~ done (API_STABILITY updated)
 19. Add determinism note to `docs/integration-guide.md` — "Output is deterministic since v1.5.0"
 20. Consider a `docs/guides/deterministic-output.md` explaining the guarantee
 
 ### Codebase improvements
 
-21. Extract `marshalOpts` package-level constant — single source of truth for `json.Deterministic(true)`
-22. Consider a linter rule or CI check that flags `json.Marshal` calls missing `json.Deterministic`
-23. Fix the `dprint` missing-binary issue in devShell (add to flake.nix or make BuildFlow skip gracefully)
+21. ~~Extract `marshalOpts` package-level constant — single source of truth for `json.Deterministic(true)`~~ done (marshalOpts, v1.6.0)
+22. ~~Consider a linter rule or CI check that flags `json.Marshal` calls missing `json.Deterministic`~~ done (scripts/json-deterministic-check.sh in CI)
+23. ~~Fix the `dprint` missing-binary issue in devShell (add to flake.nix or make BuildFlow skip gracefully)~~ done (dprint 0.56.1 in devShell)
 24. Audit `example_test.go` — `json.Marshal(lintOutput{...})` in example — should it be deterministic?
-25. Consider adding `json.Deterministic(true)` to `MarshalJSON` on types with no maps (defense-in-depth, documents intent)
+25. ~~Consider adding `json.Deterministic(true)` to `MarshalJSON` on types with no maps (defense-in-depth, documents intent)~~ done (FixEdit determinism, v1.6.0)
 26. Consider a table-driven determinism test covering all marshal methods in one function
 27. Consider a `testing/quick` property test: for any valid Finding/Report, serialized output is deterministic
 28. Check if the SARIF `taxonomies` or `rules` arrays have any map fields that need deterministic serialization
 
 ### Process improvements
 
-29. Create a release checklist in `docs/release-procedure.md`
-30. Add release checklist summary to AGENTS.md Important Behaviors section
+29. ~~Create a release checklist in `docs/release-procedure.md`~~ done (release checklist)
+30. ~~Add release checklist summary to AGENTS.md Important Behaviors section~~ done (AGENTS summary updated)
 31. Add a "pre-release checklist" to flake.nix as a devShell app
 32. Consider a `nix run .#release` command that automates version bump + tag + version-check
-33. Add a CI check that verifies sub-module go.mod files have real (non-placeholder) dependency versions before tag creation
+33. ~~Add a CI check that verifies sub-module go.mod files have real (non-placeholder) dependency versions before tag creation~~ done (version-drift.sh + replace-audit.sh in CI)
 
 ### Status report hygiene
 
-34. Audit all `docs/status/` reports for stale version references
-35. Move reports older than v1.4.0 to `docs/status/archived/`
-36. Verify the `docs/status/` directory isn't accumulating stale reports
+34. ~~Audit all `docs/status/` reports for stale version references~~ done (docs-freshness.sh staleness checks)
+35. ~~Move reports older than v1.4.0 to `docs/status/archived/`~~ done (archive dirs populated, consolidated 2026-09-08)
+36. ~~Verify the `docs/status/` directory isn't accumulating stale reports~~ done (stale-report check via docs-freshness)
 37. Consider a convention: status reports reference the version they relate to in the filename
 
 ### Testing improvements
@@ -176,15 +176,15 @@ Complete the v1.5.0 release that was left half-done by the previous session. The
 ### Previous session's open items (still relevant)
 
 42. Consider adding `json.Deterministic(true)` to test-only marshal calls for consistency (not strictly needed but documents intent)
-43. The `fixEditJSON` struct has no maps — confirmed it doesn't need `Deterministic`, but a comment explaining why would help future readers
+43. ~~The `fixEditJSON` struct has no maps — confirmed it doesn't need `Deterministic`, but a comment explaining why would help future readers~~ done (fixEditJSON comment, v1.6.0)
 44. The `branded_types.go` types (`ID`, `RuleName`, etc.) marshal as strings — no map issue, but worth documenting that branded types are deterministic by design
 45. Verify that `MergeIter` (streaming merge with dedup) produces deterministic output when inputs have the same content but different order
 
 ### Cleanup
 
-46. Verify `docs/status/2026-08-06_19-53_v1-5-0-release.md` is fully consistent after all the corrections — some table formatting may be off
-47. Consider consolidating the two v1.5.0 status reports (19-53 and 22-21) into one, or cross-linking them clearly
-48. Check if any other go.mod files in the repo have placeholder versions
+46. ~~Verify `docs/status/2026-08-06_19-53_v1-5-0-release.md` is fully consistent after all the corrections — some table formatting may be off~~ done (19-53 verified consistent)
+47. ~~Consider consolidating the two v1.5.0 status reports (19-53 and 22-21) into one, or cross-linking them clearly~~ done (reports cross-linked, both kept)
+48. ~~Check if any other go.mod files in the repo have placeholder versions~~ done (replace-audit.sh verifies placeholders)
 49. Run `go mod verify` on all 4 modules to ensure checksums are intact
 50. Consider a `make release-check` or `nix run .#release-check` that validates: tags exist, go.mod versions are real, version-check passes, GOWORK=off tests pass
 

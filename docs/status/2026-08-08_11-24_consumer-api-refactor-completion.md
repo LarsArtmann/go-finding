@@ -180,7 +180,7 @@ Adding `ToolName` to `RuleMeta` triggered `exhaustruct` warnings in `examples/mi
 
 1. **Fix `DefaultRegistry()` to use `linter.WithToolName(toolName)`** in `rules.go:36`
 2. **Remove `replace` directives** from humanize-linter `go.mod` (after publishing)
-3. **Publish go-finding v1.6.0** — tag, push, verify `version-check.sh` passes
+3. ~~**Publish go-finding v1.6.0** — tag, push, verify `version-check.sh` passes~~ done (go-finding v1.6.0 published 2026-08-08)
 4. **Update go-linter-sdk `go.mod`** to require `go-finding v1.6.0`
 5. **Publish go-linter-sdk v0.2.0** — tag, push
 6. **Update go-humanize-linter `go.mod`** to require `go-finding v1.6.0` + `go-linter-sdk v0.2.0`
@@ -196,14 +196,14 @@ Adding `ToolName` to `RuleMeta` triggered `exhaustruct` warnings in `examples/mi
 
 ### Documentation
 
-13. **Write go-finding CHANGELOG entry** for `ParseConfidence` + `Template.Builder`
+13. ~~**Write go-finding CHANGELOG entry** for `ParseConfidence` + `Template.Builder`~~ done (CHANGELOG 1.6.0)
 14. **Write go-linter-sdk CHANGELOG entry** for all 5 new APIs
 15. **Write go-humanize-linter CHANGELOG entry** for the refactor
-16. **Update go-finding AGENTS.md** with SDK-consumer-facing API entries
+16. ~~**Update go-finding AGENTS.md** with SDK-consumer-facing API entries~~ done (AGENTS ParseConfidence/Template.Builder entries)
 17. **Update go-linter-sdk AGENTS.md** (if exists) with new API entries
 18. **Update go-humanize-linter AGENTS.md** — remove references to deleted `confidence.go`
 19. **Update go-humanize-linter README.md** if it references `ParseConfidenceLevel`
-20. **Write migration guide** for SDK consumers adopting `WithToolName` + `FilterRules`
+20. ~~**Write migration guide** for SDK consumers adopting `WithToolName` + `FilterRules`~~ done (go-finding migration guide, consumer-migration-v1.7.md)
 21. **Update `docs/planning/2026-08-08_10-55_consumer-api-pareto-execution.md`** — mark all phases as done
 
 ### Testing
@@ -213,7 +213,7 @@ Adding `ToolName` to `RuleMeta` triggered `exhaustruct` warnings in `examples/mi
 24. **Add test verifying `FilterRules` preserves order** (currently implicit)
 25. **Add benchmark for `RuleFunc.NewFinding` vs raw `finding.NewBuilder`** — verify no performance regression
 26. **Add integration test in SDK** that exercises `WithToolName` → `NewFinding` → `FilterRules` → `Run` end-to-end
-27. **Consider property-based test for `ParseConfidence` round-trip** (`ParseConfidence(c.String()) == c`)
+27. ~~**Consider property-based test for `ParseConfidence` round-trip** (`ParseConfidence(c.String()) == c`)~~ done (TestParseConfidence_RoundTrip in 10-52 report)
 
 ### Lint and quality
 
@@ -224,7 +224,7 @@ Adding `ToolName` to `RuleMeta` triggered `exhaustruct` warnings in `examples/mi
 32. **Fix pre-existing `noctx`** in integration test (exec.Command → exec.CommandContext)
 33. **Run `nix run .#lint` in all 3 repos** to verify Nix-based lint passes
 34. **Run `nix run .#test` in all 3 repos** to verify Nix-based test passes
-35. **Run `GOWORK=off go test`** in each module dir to verify replace-directive-free builds
+35. ~~**Run `GOWORK=off go test`** in each module dir to verify replace-directive-free builds~~ done (GOWORK=off verified for go-finding, v1.6.0 session)
 
 ### Architectural improvements
 
@@ -247,7 +247,7 @@ Adding `ToolName` to `RuleMeta` triggered `exhaustruct` warnings in `examples/mi
 46. **Fix the `gci` formatting residual** on `pattern_helpers.go:217` — gofmt and golangci-lint disagree on the chained method indentation after `//nolint`
 47. **Add `// ExampleWithToolName` to SDK example_test.go** — currently only `ExampleRuleFunc_NewFinding` shows the full chain
 48. **Verify `go doc` output** for all new SDK APIs renders correctly
-49. **Run `bash scripts/version-check.sh`** in go-finding before tagging
+49. ~~**Run `bash scripts/version-check.sh`** in go-finding before tagging~~ done (version-check run before v1.6.0 tag)
 50. **Update `docs/MIGRATION_v1.0.md`** or create new migration doc if any of these changes affect consumers
 
 ---

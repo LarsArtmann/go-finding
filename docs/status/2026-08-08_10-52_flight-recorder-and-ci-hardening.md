@@ -156,37 +156,37 @@ The AGENTS.md documents that `GOWORK=off go test ./...` should be run per-module
 
 ### Immediate (this session's leftovers)
 
-1. Add unit test for CLI `validate()` with invalid `flightRecorder.slowStageThreshold`
-2. Update AGENTS.md with `FlightRecorderFileConfig` / `ResolveFlightRecorder()` gotcha
-3. Update AGENTS.md with CLI config-file flight recorder fallback behavior
-4. Update AGENTS.md with new CI scripts documentation
-5. Run `GOWORK=off` per-module isolation tests
-6. Fix `doc.go` guide reference to be godoc-friendly (remove relative path or use full URL)
-7. Consider adding `minAge`/`maxBytes` to CLI `flightRecorderFileConfig` or document the intentional omission
+1. ~~Add unit test for CLI `validate()` with invalid `flightRecorder.slowStageThreshold`~~ done (T2 CLI error-path test)
+2. ~~Update AGENTS.md with `FlightRecorderFileConfig` / `ResolveFlightRecorder()` gotcha~~ done (T1 AGENTS gotchas)
+3. ~~Update AGENTS.md with CLI config-file flight recorder fallback behavior~~ done (T1 AGENTS gotchas)
+4. ~~Update AGENTS.md with new CI scripts documentation~~ done (T1 AGENTS gotchas)
+5. ~~Run `GOWORK=off` per-module isolation tests~~ done (T4 GOWORK=off x4)
+6. ~~Fix `doc.go` guide reference to be godoc-friendly (remove relative path or use full URL)~~ done (T3a doc.go ref fix)
+7. ~~Consider adding `minAge`/`maxBytes` to CLI `flightRecorderFileConfig` or document the intentional omission~~ done (v1.6.0 full parity + AllFields E2E)
 
 ### CI Pipeline Hardening
 
-8. Wire all 4 CI scripts into a GitHub Actions workflow
-9. Add `go-arch-lint` module boundary enforcement to CI
-10. Add docs-freshness check (flag docs >N days without review)
-11. Fix `version-drift.sh` grep to exclude `// indirect` lines
-12. Add per-module CHANGELOG entries (each sub-module tracks own changes)
+8. ~~Wire all 4 CI scripts into a GitHub Actions workflow~~ done (T5 scripts wired into ci.yml)
+9. ~~Add `go-arch-lint` module boundary enforcement to CI~~ done (v1.6.0 arch-check job)
+10. ~~Add docs-freshness check (flag docs >N days without review)~~ done (v1.6.0 docs-freshness job)
+11. ~~Fix `version-drift.sh` grep to exclude `// indirect` lines~~ done (T3b, v1.6.0 CHANGELOG)
+12. ~~Add per-module CHANGELOG entries (each sub-module tracks own changes)~~ done (per-module CHANGELOGs, v1.6.0)
 13. Add `go work edit -json` validation to verify workspace integrity
 14. Add lint-diff check (only lint changed files in PRs)
 15. Add binary size regression check for CLI
 
 ### Testing Gaps
 
-16. Add SARIF schema validation test (unblock by vendoring schema or using a lightweight validator)
+16. ~~Add SARIF schema validation test (unblock by vendoring schema or using a lightweight validator)~~ done (SARIF edge tests, v1.6.0)
 17. Add consumer compatibility test (unblock by making repo public or using GOPRIVATE in CI)
-18. Add multi-module vs monolith benchmark comparison
-19. Add integration test for concurrent detector + flight recorder
-20. Add test for FlightRecorder `writeSnapshot` disk-full error path
-21. Add test for FlightRecorder with `SlowStageThreshold` on the last stage of the last iteration
-22. Add property-based test for `sanitizeFilename` (fuzzing)
-23. Add test for `resolveSafePath` with circular symlinks
-24. Add test for `resolveSafePath` with broken symlinks (dangling)
-25. Add test for `resolveSafePath` with root being a symlink itself
+18. ~~Add multi-module vs monolith benchmark comparison~~ done (docs/reports/2026-08-08_multi-module-vs-monolith.md)
+19. ~~Add integration test for concurrent detector + flight recorder~~ done (concurrent stage test, v1.6.0)
+20. ~~Add test for FlightRecorder `writeSnapshot` disk-full error path~~ done (write-error test, v1.6.0)
+21. ~~Add test for FlightRecorder with `SlowStageThreshold` on the last stage of the last iteration~~ done (last-stage test, v1.6.0)
+22. ~~Add property-based test for `sanitizeFilename` (fuzzing)~~ done (FuzzSanitizeFilename, v1.6.0)
+23. ~~Add test for `resolveSafePath` with circular symlinks~~ done (circular symlink tests, v1.6.0)
+24. ~~Add test for `resolveSafePath` with broken symlinks (dangling)~~ done (dangling symlink tests, v1.6.0)
+25. ~~Add test for `resolveSafePath` with root being a symlink itself~~ done (root-symlink tests, v1.6.0)
 
 ### FlightRecorder Improvements
 
@@ -201,7 +201,7 @@ The AGENTS.md documents that `GOWORK=off go test ./...` should be run per-module
 
 ### Code Quality
 
-34. Consider extracting `flightRecorderFileConfig` to a shared type (currently duplicated between pipeline and CLI)
+34. ~~Consider extracting `flightRecorderFileConfig` to a shared type (currently duplicated between pipeline and CLI)~~ **Won't implement — parity solved it, no shared type needed.**
 35. Add `ConfigFile.Validate()` method to pipeline package (currently validation is CLI-only)
 36. Add `ConfigFile.String()` for debugging
 37. Consider `ConfigFile.Version` field for schema evolution
@@ -210,12 +210,12 @@ The AGENTS.md documents that `GOWORK=off go test ./...` should be run per-module
 
 ### Documentation
 
-40. Add `docs/guides/configuration.md` covering all config file options
-41. Add `docs/guides/troubleshooting.md` for common pipeline errors
+40. ~~Add `docs/guides/configuration.md` covering all config file options~~ done (docs/guides/configuration.md)
+41. ~~Add `docs/guides/troubleshooting.md` for common pipeline errors~~ done (docs/guides/troubleshooting.md)
 42. Add architecture decision record (ADR) for FlightRecorder config-file design
-43. Update README.md with FlightRecorder mention
-44. Add `docs/DOMAIN_LANGUAGE.md` with pipeline domain terms
-45. Add `CHANGELOG.md` entry for all this work
+43. ~~Update README.md with FlightRecorder mention~~ done (README flight recorder row)
+44. ~~Add `docs/DOMAIN_LANGUAGE.md` with pipeline domain terms~~ done (v1.6.0 DOMAIN_LANGUAGE)
+45. ~~Add `CHANGELOG.md` entry for all this work~~ done (v1.6.0 CHANGELOG)
 
 ### Ecosystem
 

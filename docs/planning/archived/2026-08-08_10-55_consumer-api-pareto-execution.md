@@ -85,46 +85,46 @@ graph TD
 
 These tasks are for the go-finding changes already implemented (`ParseConfidence`, `Template.Builder`).
 
-| #   | Task                                                                      | Impact | Effort | Status  |
-| --- | ------------------------------------------------------------------------- | ------ | ------ | ------- |
-| 1.1 | Run `golangci-lint run ./...` on go-finding                               | Medium | 5 min  | ✅ Done — lint 0 issues, verified again 2026-09-08 |
-| 1.2 | Add `[Unreleased]` CHANGELOG entry for ParseConfidence + Template.Builder | Medium | 5 min  | ✅ Done — CHANGELOG [1.6.0] |
+| #   | Task                                                                      | Impact | Effort | Status                                                     |
+| --- | ------------------------------------------------------------------------- | ------ | ------ | ---------------------------------------------------------- |
+| 1.1 | Run `golangci-lint run ./...` on go-finding                               | Medium | 5 min  | ✅ Done — lint 0 issues, verified again 2026-09-08         |
+| 1.2 | Add `[Unreleased]` CHANGELOG entry for ParseConfidence + Template.Builder | Medium | 5 min  | ✅ Done — CHANGELOG [1.6.0]                                |
 | 1.3 | Add ParseConfidence + Template.Builder examples to `example_test.go`      | Low    | 10 min | ✅ Done — ExampleParseConfidence + ExampleTemplate_Builder |
-| 1.4 | Update `doc.go` Confidence prose to mention String/ParseConfidence        | Low    | 5 min  | ✅ Done — doc.go prose updated |
+| 1.4 | Update `doc.go` Confidence prose to mention String/ParseConfidence        | Low    | 5 min  | ✅ Done — doc.go prose updated                             |
 
 ## Phase 2: go-linter-sdk Improvements (90 min)
 
-| #   | Task                                                                          | Impact  | Effort | Status  |
-| --- | ----------------------------------------------------------------------------- | ------- | ------ | ------- |
+| #   | Task                                                                          | Impact  | Effort | Status                                           |
+| --- | ----------------------------------------------------------------------------- | ------- | ------ | ------------------------------------------------ |
 | 2.1 | Add `ToolName finding.ToolName` to `RuleMeta`                                 | HIGH    | 5 min  | ✅ Done — 2026-08-08_11-24 report (sibling repo) |
-| 2.2 | Add `RuleFunc.NewFinding(msg, pos) *finding.Builder`                          | HIGHEST | 10 min | ✅ Done — rule.go:260-279, 3 tests |
-| 2.3 | Add `WithToolName(name)` option to `NewRegistry` + stamp on Register          | HIGH    | 15 min | ✅ Done — registry.go:20-50, 5 tests + compat |
-| 2.4 | Add `FilterRules(all []RuleFunc, enable, disable map[string]bool) []RuleFunc` | Medium  | 10 min | ✅ Done — registry.go:298-317, 4 tests |
-| 2.5 | Add `ExitCodeByConfidence(report, threshold) int`                             | Medium  | 10 min | ✅ Done — registry.go:319-336, 5 tests |
-| 2.6 | Document `IsEnabledByDefault` as metadata-only (godoc)                        | Low     | 5 min  | ✅ Done — metadata-only godoc |
-| 2.7 | Write tests for all additions                                                 | HIGH    | 30 min | ✅ Done — 20 test funcs + 3 examples |
-| 2.8 | Update SDK examples to show new patterns                                      | Low     | 5 min  | ✅ Done — SDK examples updated |
+| 2.2 | Add `RuleFunc.NewFinding(msg, pos) *finding.Builder`                          | HIGHEST | 10 min | ✅ Done — rule.go:260-279, 3 tests               |
+| 2.3 | Add `WithToolName(name)` option to `NewRegistry` + stamp on Register          | HIGH    | 15 min | ✅ Done — registry.go:20-50, 5 tests + compat    |
+| 2.4 | Add `FilterRules(all []RuleFunc, enable, disable map[string]bool) []RuleFunc` | Medium  | 10 min | ✅ Done — registry.go:298-317, 4 tests           |
+| 2.5 | Add `ExitCodeByConfidence(report, threshold) int`                             | Medium  | 10 min | ✅ Done — registry.go:319-336, 5 tests           |
+| 2.6 | Document `IsEnabledByDefault` as metadata-only (godoc)                        | Low     | 5 min  | ✅ Done — metadata-only godoc                    |
+| 2.7 | Write tests for all additions                                                 | HIGH    | 30 min | ✅ Done — 20 test funcs + 3 examples             |
+| 2.8 | Update SDK examples to show new patterns                                      | Low     | 5 min  | ✅ Done — SDK examples updated                   |
 
 ## Phase 3: go-humanize-linter Refactor (90 min)
 
-| #   | Task                                                            | Impact       | Effort | Status  |
-| --- | --------------------------------------------------------------- | ------------ | ------ | ------- |
-| 3.1 | Add `replace` directives for local go-finding + go-linter-sdk   | Prerequisite | 5 min  | ✅ Done — replace directives added |
-| 3.2 | Delete `confidence.go` → `finding.ParseConfidence`              | Medium       | 10 min | ✅ Done — -29 LOC |
-| 3.3 | Delete `makeFindingWithConfidence` → `finding.Template.Builder` | HIGH         | 15 min | ✅ Scope-reduced — kept as thin wrapper using Template.Builder (11-24 §b) |
+| #   | Task                                                            | Impact       | Effort | Status                                                                                       |
+| --- | --------------------------------------------------------------- | ------------ | ------ | -------------------------------------------------------------------------------------------- |
+| 3.1 | Add `replace` directives for local go-finding + go-linter-sdk   | Prerequisite | 5 min  | ✅ Done — replace directives added                                                           |
+| 3.2 | Delete `confidence.go` → `finding.ParseConfidence`              | Medium       | 10 min | ✅ Done — -29 LOC                                                                            |
+| 3.3 | Delete `makeFindingWithConfidence` → `finding.Template.Builder` | HIGH         | 15 min | ✅ Scope-reduced — kept as thin wrapper using Template.Builder (11-24 §b)                    |
 | 3.4 | Add `ToolName` to all 9 `RuleMeta` literals + use `NewFinding`  | HIGH         | 20 min | ✅ Done — ToolName on all 9 RuleMeta; detect* keep direct construction by design (11-24 §e4) |
-| 3.5 | Delete `buildRegistry` + `filterRules` → `linter.FilterRules`   | Medium       | 15 min | ✅ Done — filterRules deleted; buildRegistry kept as wrapper (11-24 §e3) |
-| 3.6 | Delete `exitCodeFromReport` → `linter.ExitCodeByConfidence`     | Medium       | 10 min | ✅ Done — -19 LOC |
-| 3.7 | Replace `findingToTokenPos` → `gotoken.LineColToPos`            | Low          | 10 min | ✅ Done — -30 LOC, gotoken.LineColToPos |
-| 3.8 | Run tests and fix any regressions                               | HIGH         | 15 min | ✅ Done — suites green; TestCustomGCLIntegration expected-fail until published versions |
+| 3.5 | Delete `buildRegistry` + `filterRules` → `linter.FilterRules`   | Medium       | 15 min | ✅ Done — filterRules deleted; buildRegistry kept as wrapper (11-24 §e3)                     |
+| 3.6 | Delete `exitCodeFromReport` → `linter.ExitCodeByConfidence`     | Medium       | 10 min | ✅ Done — -19 LOC                                                                            |
+| 3.7 | Replace `findingToTokenPos` → `gotoken.LineColToPos`            | Low          | 10 min | ✅ Done — -30 LOC, gotoken.LineColToPos                                                      |
+| 3.8 | Run tests and fix any regressions                               | HIGH         | 15 min | ✅ Done — suites green; TestCustomGCLIntegration expected-fail until published versions      |
 
 ## Phase 4: Verify & Ship (30 min)
 
-| #   | Task                                             | Impact   | Effort | Status  |
-| --- | ------------------------------------------------ | -------- | ------ | ------- |
-| 4.1 | Run full test suites in all 3 repos              | HIGH     | 10 min | ✅ Done — all 3 repos go test -race green |
+| #   | Task                                             | Impact   | Effort | Status                                                                   |
+| --- | ------------------------------------------------ | -------- | ------ | ------------------------------------------------------------------------ |
+| 4.1 | Run full test suites in all 3 repos              | HIGH     | 10 min | ✅ Done — all 3 repos go test -race green                                |
 | 4.2 | Commit and push all repos                        | HIGH     | 10 min | ✅ Done — go-finding pushed at v1.6.0; siblings auto-committed by daemon |
-| 4.3 | Verify no Verschlimmbesserung (things got worse) | CRITICAL | 10 min | ✅ Done — humanize net -97 LOC, no signature changes |
+| 4.3 | Verify no Verschlimmbesserung (things got worse) | CRITICAL | 10 min | ✅ Done — humanize net -97 LOC, no signature changes                     |
 
 ---
 

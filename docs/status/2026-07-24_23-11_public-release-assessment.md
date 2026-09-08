@@ -130,72 +130,72 @@ The user asked for a PRO/CONTRA analysis + actionable TODO list for making the r
 
 ### Phase 1: Critical (before `gh repo edit --visibility public`)
 
-| #  | Task                                                                                                                     |
-| -- | ------------------------------------------------------------------------------------------------------------------------ |
-| ~~1~~  | ~~Make `GOEXPERIMENT=jsonv2` prominent in README Installation section (move to top, add `go env -w` one-liner)~~ done — 2026-07-24_23-25 session |
-| ~~2~~  | ~~Remove `GOPRIVATE` warning from README (lines 46-47)~~ done — 2026-07-24_23-25 session |
+| #      | Task                                                                                                                                                         |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ~~1~~  | ~~Make `GOEXPERIMENT=jsonv2` prominent in README Installation section (move to top, add `go env -w` one-liner)~~ done — 2026-07-24_23-25 session             |
+| ~~2~~  | ~~Remove `GOPRIVATE` warning from README (lines 46-47)~~ done — 2026-07-24_23-25 session                                                                     |
 | ~~3~~  | ~~Add GitHub repo description: `gh repo edit --description "Unified data model and pipeline for Go static analysis tools"`~~ done — 2026-07-24_23-25 session |
-| ~~4~~  | ~~Add GitHub topics: `gh repo edit --add-topic go,static-analysis,sarif,lsp,code-quality,golang,static-analysis-tools`~~ done — 2026-07-24_23-25 session |
-| 5  | ~~Verify `go-output` is public~~ ✅ `DONE`                                                                               |
-| 6  | ~~Verify `gogenfilter` is public~~ ✅ `DONE`                                                                             |
-| 7  | Run `GOWORK=off GOEXPERIMENT=off go build ./...` in each module to confirm json/v2 failure mode                          |
-| 8  | Audit pipeline/analysis/CLI for json/v2 production imports (not just core)                                               |
-| 9  | Check GitHub repo settings (issues, wiki, discussions enabled?)                                                          |
-| 10 | Verify existing tags have GitHub Releases (v1.0.0 through v1.3.0)                                                        |
-| ~~11~~ | ~~Verify `LICENSE` file is standard MIT text~~ done — MIT verified 23-43 |
+| ~~4~~  | ~~Add GitHub topics: `gh repo edit --add-topic go,static-analysis,sarif,lsp,code-quality,golang,static-analysis-tools`~~ done — 2026-07-24_23-25 session     |
+| 5      | ~~Verify `go-output` is public~~ ✅ `DONE`                                                                                                                   |
+| 6      | ~~Verify `gogenfilter` is public~~ ✅ `DONE`                                                                                                                 |
+| 7      | Run `GOWORK=off GOEXPERIMENT=off go build ./...` in each module to confirm json/v2 failure mode                                                              |
+| 8      | Audit pipeline/analysis/CLI for json/v2 production imports (not just core)                                                                                   |
+| 9      | Check GitHub repo settings (issues, wiki, discussions enabled?)                                                                                              |
+| 10     | Verify existing tags have GitHub Releases (v1.0.0 through v1.3.0)                                                                                            |
+| ~~11~~ | ~~Verify `LICENSE` file is standard MIT text~~ done — MIT verified 23-43                                                                                     |
 
 ### Phase 2: Community Health (before announcing)
 
-| #      | Task                                                                              |
-| ------ | --------------------------------------------------------------------------------- |
-| ~~12~~     | ~~Create `SECURITY.md` (vulnerability reporting policy)~~ done — SECURITY.md shipped v1.4.0 |
-| ~~13~~     | ~~Create `CODE_OF_CONDUCT.md` (Contributor Covenant v2.1)~~ done — CODE_OF_CONDUCT.md shipped v1.4.0 |
-| ~~14~~     | ~~Create `.github/ISSUE_TEMPLATE/bug_report.yml`~~ done — templates shipped 23-25 |
-| ~~15~~     | ~~Create `.github/ISSUE_TEMPLATE/feature_request.yml`~~ done — templates shipped 23-25 |
-| ~~16~~     | ~~Create `.github/PULL_REQUEST_TEMPLATE.md`~~ done — templates shipped 23-25 |
-| ~~17~~     | ~~Add support policy section to README ("MIT license, best-effort support, no SLA")~~ done — README Support section |
-| ~~18~~ | ~~Decide on 91 internal docs~~ — **No action (user decision: keep as-is)**        |
-| ~~19~~     | ~~Add "Internal docs" note to README if keeping them~~ **Won't implement — keep as-is per Q2 resolution.** |
-| 20     | Verify `doc.go` has package-level comment that renders on pkg.go.dev              |
-| 21     | Check all exported types/functions have GoDoc comments                            |
-| ~~22~~     | ~~Verify `examples/` directory compiles and is referenced in README~~ done — examples compile-tested |
-| ~~23~~     | ~~Add `FUNDING.yml` (optional — GitHub Sponsors)~~ **Won't implement — no FUNDING.yml planned.** |
+| #      | Task                                                                                                                |
+| ------ | ------------------------------------------------------------------------------------------------------------------- |
+| ~~12~~ | ~~Create `SECURITY.md` (vulnerability reporting policy)~~ done — SECURITY.md shipped v1.4.0                         |
+| ~~13~~ | ~~Create `CODE_OF_CONDUCT.md` (Contributor Covenant v2.1)~~ done — CODE_OF_CONDUCT.md shipped v1.4.0                |
+| ~~14~~ | ~~Create `.github/ISSUE_TEMPLATE/bug_report.yml`~~ done — templates shipped 23-25                                   |
+| ~~15~~ | ~~Create `.github/ISSUE_TEMPLATE/feature_request.yml`~~ done — templates shipped 23-25                              |
+| ~~16~~ | ~~Create `.github/PULL_REQUEST_TEMPLATE.md`~~ done — templates shipped 23-25                                        |
+| ~~17~~ | ~~Add support policy section to README ("MIT license, best-effort support, no SLA")~~ done — README Support section |
+| ~~18~~ | ~~Decide on 91 internal docs~~ — **No action (user decision: keep as-is)**                                          |
+| ~~19~~ | ~~Add "Internal docs" note to README if keeping them~~ **Won't implement — keep as-is per Q2 resolution.**          |
+| 20     | Verify `doc.go` has package-level comment that renders on pkg.go.dev                                                |
+| 21     | Check all exported types/functions have GoDoc comments                                                              |
+| ~~22~~ | ~~Verify `examples/` directory compiles and is referenced in README~~ done — examples compile-tested                |
+| ~~23~~ | ~~Add `FUNDING.yml` (optional — GitHub Sponsors)~~ **Won't implement — no FUNDING.yml planned.**                    |
 
 ### Phase 3: Launch
 
-| #  | Task                                                                          |
-| -- | ----------------------------------------------------------------------------- |
+| #      | Task                                                                              |
+| ------ | --------------------------------------------------------------------------------- |
 | ~~24~~ | ~~Tag v1.4.0 as the first public version anchor~~ done — v1.4.0 tagged 2026-07-26 |
-| 25 | Verify GoReleaser produces correct binaries on public tag                     |
-| 26 | Verify `HOMEBREW_TAP_GITHUB_TOKEN` secret exists and tap repo is configured   |
-| 27 | Verify `brew install go-finding` works after release                          |
-| 28 | Verify pkg.go.dev renders documentation after first public `go get`           |
-| 29 | Write blog post: "Seven tools detect issues. Zero route them to remediation." |
-| 30 | Prepare r/golang post (follow their self-promotion rules)                     |
-| 31 | Post in Go Slack #showcase channel                                            |
-| 32 | Post on Twitter/X                                                             |
-| 33 | Submit to [Awesome Go](https://github.com/avelino/awesome-go) via PR          |
-| 34 | Submit to [Awesome SARIF](https://github.com/sarif-standard/awesome-sarif)    |
-| 35 | Add "Used by" section to README once stars/forks appear                       |
+| 25     | Verify GoReleaser produces correct binaries on public tag                         |
+| 26     | Verify `HOMEBREW_TAP_GITHUB_TOKEN` secret exists and tap repo is configured       |
+| 27     | Verify `brew install go-finding` works after release                              |
+| 28     | Verify pkg.go.dev renders documentation after first public `go get`               |
+| 29     | Write blog post: "Seven tools detect issues. Zero route them to remediation."     |
+| 30     | Prepare r/golang post (follow their self-promotion rules)                         |
+| 31     | Post in Go Slack #showcase channel                                                |
+| 32     | Post on Twitter/X                                                                 |
+| 33     | Submit to [Awesome Go](https://github.com/avelino/awesome-go) via PR              |
+| 34     | Submit to [Awesome SARIF](https://github.com/sarif-standard/awesome-sarif)        |
+| 35     | Add "Used by" section to README once stars/forks appear                           |
 
 ### Ongoing / Post-Launch
 
-| #  | Task                                                                               |
-| -- | ---------------------------------------------------------------------------------- |
-| 36 | Track Go 1.27 release — json/v2 stabilization removes `GOEXPERIMENT` requirement   |
-| 37 | When json/v2 stabilizes: remove all `GOEXPERIMENT=jsonv2` from docs, CI, flake.nix |
-| 38 | Set up GitHub Discussions for Q&A (separate from issues)                           |
-| 39 | Add `CONTRIBUTING.md` section on "Adding new detectors"                            |
-| ~~40~~ | ~~Create a logo/visual identity for the project~~ **Won't implement — no logo planned.** |
-| ~~41~~ | ~~Create a project website (Astro + Starlight pattern)~~ **Won't implement — no website planned, ROADMAP non-goal.** |
-| 42 | Add badge for Go Reference (pkg.go.dev) once verified rendering                    |
-| 43 | Monitor first week of issues/PRs — respond within 48h                              |
-| ~~44~~ | ~~Write a "v2.0 vision" roadmap entry (what would justify a major bump)~~ done — v2.0 in ROADMAP Hardening |
-| 45 | Consider a `CHANGELOG.md` entry for "Repo made public"                             |
-| 46 | Update `AGENTS.md` with the new `docs/PRO_CONTRA_make-public.md` reference         |
-| 47 | Run a final full-code-review skill before going public                             |
-| ~~48~~ | ~~Run brutal-self-review skill before going public~~ done — this self-critique series |
-| 49 | Verify all 4 module tags resolve on `proxy.golang.org` after visibility flip       |
+| #      | Task                                                                                                                          |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| 36     | Track Go 1.27 release — json/v2 stabilization removes `GOEXPERIMENT` requirement                                              |
+| 37     | When json/v2 stabilizes: remove all `GOEXPERIMENT=jsonv2` from docs, CI, flake.nix                                            |
+| 38     | Set up GitHub Discussions for Q&A (separate from issues)                                                                      |
+| 39     | Add `CONTRIBUTING.md` section on "Adding new detectors"                                                                       |
+| ~~40~~ | ~~Create a logo/visual identity for the project~~ **Won't implement — no logo planned.**                                      |
+| ~~41~~ | ~~Create a project website (Astro + Starlight pattern)~~ **Won't implement — no website planned, ROADMAP non-goal.**          |
+| 42     | Add badge for Go Reference (pkg.go.dev) once verified rendering                                                               |
+| 43     | Monitor first week of issues/PRs — respond within 48h                                                                         |
+| ~~44~~ | ~~Write a "v2.0 vision" roadmap entry (what would justify a major bump)~~ done — v2.0 in ROADMAP Hardening                    |
+| 45     | Consider a `CHANGELOG.md` entry for "Repo made public"                                                                        |
+| 46     | Update `AGENTS.md` with the new `docs/PRO_CONTRA_make-public.md` reference                                                    |
+| 47     | Run a final full-code-review skill before going public                                                                        |
+| ~~48~~ | ~~Run brutal-self-review skill before going public~~ done — this self-critique series                                         |
+| 49     | Verify all 4 module tags resolve on `proxy.golang.org` after visibility flip                                                  |
 | ~~50~~ | ~~Create a "Migration guide for consumers" (removing GOPRIVATE, adding GOEXPERIMENT)~~ done — consumer-migration guides exist |
 
 ---

@@ -99,44 +99,44 @@
 
 ### go-finding (this repo)
 
-1. Run `golangci-lint run ./...` on the new code
+1. ~~Run `golangci-lint run ./...` on the new code~~ done (lint 0, 22-11 session)
 2. Run `go test -bench=.` to check for allocation regressions in `Template.Builder` vs old `Template.Build`
-3. Add `ParseConfidence` to the "Named types for Confidence" prose in `doc.go`
-4. Add `CHANGELOG.md` entry for `ParseConfidence` and `Template.Builder`
-5. Add `ParseConfidence` and `Template.Builder` examples to `example_test.go`
+3. ~~Add `ParseConfidence` to the "Named types for Confidence" prose in `doc.go`~~ done (doc.go prose, 11-24 Phase 1)
+4. ~~Add `CHANGELOG.md` entry for `ParseConfidence` and `Template.Builder`~~ done (CHANGELOG 1.6.0)
+5. ~~Add `ParseConfidence` and `Template.Builder` examples to `example_test.go`~~ done (examples in example_test.go)
 6. Verify `Template.Builder` is allocation-equivalent to direct `NewBuilder` via benchmark
-7. Run `nix run .#test` to verify the full nix-based test path
-8. Run `nix run .#lint` to verify linter passes
+7. ~~Run `nix run .#test` to verify the full nix-based test path~~ done (nix test green 2026-09-08)
+8. ~~Run `nix run .#lint` to verify linter passes~~ done (nix lint green 2026-09-08)
 9. Consider adding `ParseSeverity(string)` as a complement to `ParseConfidence` and `SeverityFromLevel`
 10. Consider adding `Confidence.MustParse(string) Confidence` panic-on-error variant for tests
-11. Consider whether `ErrInvalidConfidence` should use `must` pattern or named sentinel — currently uses `fmt.Errorf` wrapping which may not be ideal
-12. Update the `docs/reviews/2026-08-08_consumer-api-review.md` with "verified by refactoring go-humanize-linter" once that's done
+11. ~~Consider whether `ErrInvalidConfidence` should use `must` pattern or named sentinel — currently uses `fmt.Errorf` wrapping which may not be ideal~~ done (ErrInvalidConfidence sentinel, v1.6.0)
+12. ~~Update the `docs/reviews/2026-08-08_consumer-api-review.md` with "verified by refactoring go-humanize-linter" once that's done~~ done (review updated by 11-24 refactor)
 13. Check if `analysis/` module also benefits from `Template.Builder` — it uses `NewBuilder` patterns
 14. Check if `cmd/go-finding/` CLI benefits from `ParseConfidence`
-15. Tag a new version (v1.6.0?) with these API additions
+15. ~~Tag a new version (v1.6.0?) with these API additions~~ done (v1.6.0 tagged 2026-08-08)
 
 ### go-linter-sdk (proposed changes)
 
-16. **Implement `Registry` tool name configuration** — add `WithToolName(name)` option or `NewRegistry(opts...)` constructor
-17. **Implement `RuleFunc.NewFinding(message, pos) *Builder`** — pre-fill identity from `RuleMeta`
-18. **Implement `Registry.Filter(enableIDs, disableIDs) []Rule`** or standalone `FilterRules`
-19. **Implement `ExitCodeByConfidence(report, threshold) int`** — tiered exit codes
-20. **Decide `IsEnabledByDefault` semantics** — document as metadata-only OR make it runtime-active
+16. ~~**Implement `Registry` tool name configuration** — add `WithToolName(name)` option or `NewRegistry(opts...)` constructor~~ done (WithToolName, 11-24 Phase 2)
+17. ~~**Implement `RuleFunc.NewFinding(message, pos) *Builder`** — pre-fill identity from `RuleMeta`~~ done (RuleFunc.NewFinding, 11-24)
+18. ~~**Implement `Registry.Filter(enableIDs, disableIDs) []Rule`** or standalone `FilterRules`~~ done (FilterRules, 11-24)
+19. ~~**Implement `ExitCodeByConfidence(report, threshold) int`** — tiered exit codes~~ done (ExitCodeByConfidence, 11-24)
+20. ~~**Decide `IsEnabledByDefault` semantics** — document as metadata-only OR make it runtime-active~~ done (IsEnabledByDefault metadata-only godoc)
 21. Update go-linter-sdk `go.mod` to use new go-finding version once tagged
-22. Add tests for all 5 SDK improvements
-23. Update go-linter-sdk examples to show the new patterns
+22. ~~Add tests for all 5 SDK improvements~~ done (20 test funcs, 11-24)
+23. ~~Update go-linter-sdk examples to show the new patterns~~ done (SDK examples updated)
 24. Update go-linter-sdk AGENTS.md with the new APIs
 
 ### go-humanize-linter (consumer refactor — once SDK is updated)
 
-25. Delete `confidence.go` — replace with `finding.ParseConfidence`
-26. Delete `makeFindingWithConfidence` — replace with `Template.Builder`
-27. Delete `buildRegistry` in main.go — replace with SDK `Filter` helper
-28. Delete `filterRules` in plugin.go — replace with SDK `Filter` helper
-29. Delete `exitCodeFromReport` in main.go — replace with SDK confidence-aware exit code
-30. Replace `findingToTokenPos` in plugin.go with `gotoken.LineColToPos`
+25. ~~Delete `confidence.go` — replace with `finding.ParseConfidence`~~ done (confidence.go deleted, 11-24)
+26. ~~Delete `makeFindingWithConfidence` — replace with `Template.Builder`~~ **Won't implement — kept as thin wrapper by scope decision, 11-24.**
+27. ~~Delete `buildRegistry` in main.go — replace with SDK `Filter` helper~~ **Won't implement — buildRegistry simplified, kept as wrapper.**
+28. ~~Delete `filterRules` in plugin.go — replace with SDK `Filter` helper~~ done (filterRules deleted, 11-24)
+29. ~~Delete `exitCodeFromReport` in main.go — replace with SDK confidence-aware exit code~~ done (exitCodeFromReport deleted, 11-24)
+30. ~~Replace `findingToTokenPos` in plugin.go with `gotoken.LineColToPos`~~ done (findingToTokenPos switched to gotoken.LineColToPos)
 31. Consider using SDK `RuleFunc.NewFinding` once implemented
-32. Verify all tests still pass after refactor
+32. ~~Verify all tests still pass after refactor~~ done (tests pass, 11-24 Phase 4)
 33. Run `go test -bench` before/after to verify no perf regression
 34. Update go-humanize-linter go.mod to new go-finding + go-linter-sdk versions
 35. Update go-humanize-linter AGENTS.md to reflect the new patterns
@@ -156,7 +156,7 @@
 46. Review whether `ParseConfidence` should live in a `parse.go` file instead of `confidence.go` for separation of concerns
 47. Consider `Confidence.Validate() error` as an alternative to `IsValid() bool` for builder chain ergonomics
 48. Check if the `analysis` module's `FromDiagnostic` function could use `Template` internally
-49. Consider a `finding.MustParseConfidence(s) Confidence` for test-only usage
+49. ~~Consider a `finding.MustParseConfidence(s) Confidence` for test-only usage~~ done (ParseConfidence round-trip test in 10-52 report)
 50. Create an issue tracker / TODO entries for items 16-24 in go-linter-sdk repo
 
 ---

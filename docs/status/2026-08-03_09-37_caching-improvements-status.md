@@ -108,12 +108,12 @@ The fast path reduced identical-tag comparison from ~136ns/2allocs to ~44ns/0all
 1. Remove duplicated "resolveSafePath batch caching" entry from AGENTS.md (keep one, cross-reference the other)
 2. Fix `_` discard in `groupFindingsBySafePath` — use `ok` return value
 3. Add CHANGELOG.md entries for the 3 performance optimizations
-4. Run `GOWORK=off go test ./...` in each module directory
-5. Add direct tests for `resolveRoot` — symlink resolution, idempotency, missing root
-6. Add direct tests for `resolveSafePathFrom` — absolute paths, relative paths, containment with pre-resolved root
+4. ~~Run `GOWORK=off go test ./...` in each module directory~~ done (GOWORK=off verified, v1.5.0/v1.6.0 sessions)
+5. ~~Add direct tests for `resolveRoot` — symlink resolution, idempotency, missing root~~ done (resolveRoot tests, v1.6.0 edge tests)
+6. ~~Add direct tests for `resolveSafePathFrom` — absolute paths, relative paths, containment with pre-resolved root~~ done (resolveSafePathFrom tests, v1.6.0 edge tests)
 7. Add test for `tagsEqual` fast path — same-order tags, verify 0 allocations via `testing.AllocsPerRun`
 8. Add test for `NormalizeFixStrategy` short-circuit — verify identical raw values skip normalization
-9. Verify `doc.go` has no stale references to changed symbols
+9. ~~Verify `doc.go` has no stale references to changed symbols~~ done (doc.go checked in-session)
 
 ### Near-Term Caching Improvements
 
@@ -132,7 +132,7 @@ The fast path reduced identical-tag comparison from ~136ns/2allocs to ~44ns/0all
 19. Fuzz test for `resolveSafePathFrom` with pre-resolved root edge cases
 20. Property test: `resolveSafePath(root, path)` == `resolveSafePathFrom(resolveRoot(root), path)` for all inputs
 21. Benchmark `Correlate` with cached vs uncached `GroupByFile`
-22. Race test `groupFindingsBySafePath` `pathCache` with concurrent access (should be fine — local map, but verify)
+22. ~~Race test `groupFindingsBySafePath` `pathCache` with concurrent access (should be fine — local map, but verify)~~ done (pathCache race-tested, -race green)
 23. Benchmark `Equal` with Metadata maps (currently unbenchmarked)
 24. Benchmark `Equal` with Related refs (currently unbenchmarked)
 25. Benchmark `Equal` with Suppression (currently unbenchmarked)
@@ -151,7 +151,7 @@ The fast path reduced identical-tag comparison from ~136ns/2allocs to ~44ns/0all
 ### Code Quality
 
 34. Change `pathCache` type from `map[string]string` to `map[finding.FilePath]string`
-35. Consider exporting `resolveRoot` and `resolveSafePathFrom` for consumer use (flagged in 3+ status reports)
+35. ~~Consider exporting `resolveRoot` and `resolveSafePathFrom` for consumer use (flagged in 3+ status reports)~~ done (ResolveSafePath/From/Root exported, v1.6.0)
 36. Add `//nolint:exhaustruct` comment to `parseCache{}` reset in goast provider (already there — verify consistency)
 37. Audit all `_ =` discards in the pipeline package for missed error returns
 38. Check if `resolveSafePathFrom` needs to handle `resolvedRoot == ""` (empty root edge case)
@@ -161,7 +161,7 @@ The fast path reduced identical-tag comparison from ~136ns/2allocs to ~44ns/0all
 39. Update `docs/architecture-decisions.md` with the path caching split
 40. Update `docs/guides/fix-engine.md` if it references `resolveSafePath` internals
 41. Add caching improvements to `docs/MIGRATION_v1.3.md` or next migration doc
-42. Update `FEATURES.md` if performance characteristics changed
+42. ~~Update `FEATURES.md` if performance characteristics changed~~ done (FEATURES perf claims fixed in 2026-09-08 walk)
 43. Document the caching strategy in `docs/architecture-understanding/` if such docs exist
 
 ### Future Architecture

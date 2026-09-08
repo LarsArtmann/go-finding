@@ -99,7 +99,7 @@ Nothing in the PROJECT is fucked up: working tree is clean, all suites green, no
 
 **Gate (blocking everything else):**
 
-1. Fix GitHub Actions billing/spending limit (USER action).
+1. ~~Fix GitHub Actions billing/spending limit (USER action).~~ **Won't implement — user decision 2026-09-08, ignore billing failure, switching accounts.**
 2. `gh workflow run ci.yml --ref master` → verify ALL jobs green (incl. new lint matrix + extended benchmark job).
 3. Triage whatever the fresh CI run exposes (first real run since July on current HEAD).
 
@@ -110,7 +110,7 @@ Nothing in the PROJECT is fucked up: working tree is clean, all suites green, no
 7. Verify release assets (CLI binary, SBOMs, `.sigstore.json` bundles) on the new release.
 8. D1: sign off per-file rollback default → write ADR-016.
 9. Stamp CHANGELOGs `1.7.0` + date; bump `version.go`; `scripts/version-check.sh`.
-10. Add this session's two fixes to CHANGELOG Unreleased: RolledBack truthfulness fix; negative LSP tag parsing fix.
+10. ~~Add this session's two fixes to CHANGELOG Unreleased: RolledBack truthfulness fix; negative LSP tag parsing fix.~~ done (CHANGELOG Unreleased entries, rollback + negative-tag fixes)
 11. Tag `v1.7.0` + 3 sub-module tags; push; watch Release workflow per tag.
 12. `go get github.com/larsartmann/go-finding@v1.7.0` proxy smoke test.
 13. D2: comment + close issues #27/#28 with fix summaries.
@@ -119,25 +119,25 @@ Nothing in the PROJECT is fucked up: working tree is clean, all suites green, no
 16. Bump go-linter-sdk to v1.7.0; run its suite.
 17. Sweep remaining 12 Go consumers via the audit doc; note stragglers.
 18. Post-release verification closure: CI green on all 4 new tags, releases exist, proxy resolution — record in TODO_LIST.
-19. Push the 14 local commits (or confirm daemon policy) — remote is stale relative to local.
+19. ~~Push the 14 local commits (or confirm daemon policy) — remote is stale relative to local.~~ done (pushed between sessions, per 15-42 report)
 20. Dependabot triage: the PR queue kept moving while CI was dead (checkout 4→7 etc.); review/merge/rebase after CI is green.
 
 **Phase D features (post-D-decisions):**
-21. `Metrics.RecordOutcome(status)` + pipeline wiring + CLI fix summary print.
-22. Deterministic JSON marshaling for `FixOutcome`/`FixApplyResult` (marshalOpts rule + json-deterministic script).
-23. `FindingError`-typed outcome failures (errorfamily classification).
+21. ~~`Metrics.RecordOutcome(status)` + pipeline wiring + CLI fix summary print.~~ done (Metrics.RecordOutcome + CLI summary, 15-42 session)
+22. ~~Deterministic JSON marshaling for `FixOutcome`/`FixApplyResult` (marshalOpts rule + json-deterministic script).~~ done (deterministic FixOutcome/FixApplyResult JSON, 15-42 session)
+23. ~~`FindingError`-typed outcome failures (errorfamily classification).~~ done (FindingError-typed outcome errors, 15-42 session)
 24. D7: GroupID validation decision → implement in identity/spatial validator.
 25. `GroupFindings` deterministic-order option / `GroupFindingsSorted`.
 26. `Template.WithGroupID` + test.
 27. D3: `OnFix` outcome status (breaking change vs new `OnFixOutcome`).
 28. D4: continue-on-hard-error option folded into `ApplyDryRun`.
 29. Applier-level `DryRun` (resolve outcomes read-only, plan/apply UX).
-30. `examples/outcomes` demo program (ApplyWithOutcomes + RollbackPolicy).
-31. Dedupe erroring/static/saboteur provider stubs into `pipeline/testutil_test.go`.
-32. Provider-precedence test: provider A refuses → provider B applies.
-33. Shift-map test: file with applied+refused findings maps correctly.
-34. `RolledBack`-in-error-text test (error message contains restored files).
-35. `LSPDiagnosticData` full wire golden (all fields, not just tags).
+30. ~~`examples/outcomes` demo program (ApplyWithOutcomes + RollbackPolicy).~~ done (pipeline/examples/outcomes, 15-42 session)
+31. ~~Dedupe erroring/static/saboteur provider stubs into `pipeline/testutil_test.go`.~~ done (5 stubs moved to testutil_test.go, 2 remain in TODO_LIST)
+32. ~~Provider-precedence test: provider A refuses → provider B applies.~~ done (provider-precedence tests, 15-42 session)
+33. ~~Shift-map test: file with applied+refused findings maps correctly.~~ done (shift-map mixed-outcome test, 15-42 session)
+34. ~~`RolledBack`-in-error-text test (error message contains restored files).~~ done (RolledBack in error text + pinning tests, 15-42 session)
+35. ~~`LSPDiagnosticData` full wire golden (all fields, not just tags).~~ done (LSPDiagnosticData golden wire test, 15-42 session)
 
 **Deeper hardening / research:**
 36. Consider tightening bench-check threshold for FixEngine hot path (25% may hide a 15% regression).
@@ -146,8 +146,8 @@ Nothing in the PROJECT is fucked up: working tree is clean, all suites green, no
 39. go-cqrs-lint: adopt `ApplyWithReport`/`FailedOutcomes`; re-verify the original #28 scenario end-to-end in that repo.
 40. SARIF clone-group representation research (codeFlow/threadFlow vs properties).
 41. LSP client grouping recipe doc (Data.GroupID) into docs/guides.
-42. Full FEATURES.md per-signature walk (all 16 sections).
-43. Stress-gate decision: mandatory in release procedure or remove (evidence now exists both ways).
+42. ~~Full FEATURES.md per-signature walk (all 16 sections).~~ done (FEATURES full walk, ~26 fixes, 15-42 session)
+43. ~~Stress-gate decision: mandatory in release procedure or remove (evidence now exists both ways).~~ done (stress gate mandatory, 15-42 session)
 44. Extend pre-commit gate: gofumpt/golangci-lint fmt on staged `.go` files (dprint covers md/json/yaml only).
 45. Hook bootstrap for fresh clones (documented in CONTRIBUTING; currently only devShell installs it).
 46. ROADMAP spikes L1-42..46 (Position sentinel, FixStrategy union, pointer-state, TagSet, sub-struct).

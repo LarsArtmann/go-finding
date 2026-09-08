@@ -187,7 +187,6 @@ bash scripts/version-check.sh                                    # Verify versio
 - **Byte-level FixEngine** — `[]byte` edit ops with descending-offset application, O(F+R) single-pass
 - **FixProvider chain** — OffsetProvider → LineProvider → SubstringProvider (fallback); custom providers prepended
 - **lineIndexAware lazy caching** — Line offset index built once per file, only when a LineProvider/SubstringProvider handles a finding
-- **ResolveSafePath batch caching** — Root symlink resolution cached once per batch; per-path results cached within `groupFindingsBySafePath` to avoid redundant `EvalSymlinks` when many findings target the same file. Functions now exported for consumer use: `ResolveSafePath`, `ResolveSafePathFrom`, `ResolveRoot`
 - **GoASTProvider** — AST-aware provider in `pipeline/goast/` (opt-in `go/parser` dependency)
 - **IntervalIndex[T]** — Generic O(n + k) overlap queries (sorted-slice impl); used by Correlate
 - **DetectorRegistry** — Thread-safe plugin architecture with `Register`/`Build`/`BuildAll`
