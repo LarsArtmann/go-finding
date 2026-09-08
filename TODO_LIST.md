@@ -13,26 +13,18 @@
 
 ## 🔴 HIGH Priority
 
-### Unblock CI (THE gate — everything frozen behind this)
-
-GitHub Actions billing/spending limit must be fixed by the account owner. The
-CI workflow was also found `disabled_manually` and has been re-enabled
-(2026-09-08), and the release pipeline's cosign v3 signing failure was fixed
-(commit `722b0d9`). Nothing further can be verified remotely until billing is
-settled: a fresh run (34182192491) failed in seconds with "recent account
-payments have failed or your spending limit needs to be increased".
-
-| Task                                      | Status       | Impact | Effort | Notes                                                                                       |
-| ----------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------------- |
-| Fix GitHub Actions billing/spending limit | 🔵 `BLOCKED` | High   | —      | **User action.** GitHub → Settings → Billing & plans. Then re-run CI via workflow_dispatch. |
-| Verify all CI jobs green on master        | ⬜ `TODO`    | High   | Low    | `gh workflow run ci.yml --ref master` after billing fix; all jobs incl. stress, govulncheck |
-
 ### Post-Release: v1.6.0 → v1.7.0 Verification & Distribution
 
 v1.6.0 tags exist (all 4 modules) but produced **no release run** — the
 workflows were disabled at push time. v1.5.0's core release failed at the
 cosign signing step (root cause fixed); `analysis/v1.5.0` succeeded. Strategy
 decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
+
+> **Billing/CI (2026-09-08):** the user decided to **ignore the GitHub Actions
+> billing failure** — the account is being switched soon. CI stays dark until
+> then; local verification (race ×4, lint ×4, structural scripts, arch-lint,
+> nix flake check) is the active quality gate. After the switch: re-run CI via
+> `gh workflow run ci.yml --ref master` and verify all jobs.
 
 | Task                                          | Status    | Impact | Effort | Notes                                                                                                                     |
 | --------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------- |
@@ -57,10 +49,10 @@ decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
 
 | Task                                     | Status       | Impact | Effort | Notes                                                                                                                                                                                                                     |
 | ---------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full FEATURES.md vs code walk            | ⬜ `TODO`    | Med    | High   | Recurring gap since v1.3.0. Spot-verified 2026-09-08 (outcome/group sections match code); full per-signature walk still open.                                                                                             |
-| Stress tests as mandatory release gate   | ⬜ `TODO`    | Low    | Low    | repeat=20 race run passed 2026-09-08 (core + pipeline). Decide: hard gate in release procedure, or drop as formal step.                                                                                                   |
+| Full FEATURES.md vs code walk            | ✅ `DONE`    | Med    | High   | Completed 2026-09-08: 4 parallel verification passes over all 22 sections; ~26 discrepancies found and fixed (signatures, defaults, complexity claims, CLI formats). See git history + DONE table.                          |
+| Stress tests as mandatory release gate   | ✅ `DONE`    | Low    | Low    | Decided 2026-09-08: step 4 of the release procedure is a **mandatory** gate (repeat=20 race passed 2026-09-08). Recorded in `docs/release-procedure.md`.                                                                   |
 | Fix BuildFlow auto-configure loop        | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact. No longer the commit gate (replaced by dprint hook, see ✅ below).               |
-| Close v1.7.0 follow-ups from master plan | ⬜ `TODO`    | Med    | Med    | Deferred features: Metrics.RecordOutcome + CLI fix summary, outcome JSON deterministic marshaling, GroupID validation decision (D7), OnFix outcome status (D3), ApplyDryRun (D4), examples/outcomes. See plan §2 Phase D. |
+| Ship unblocked Phase D follow-ups        | ✅ `DONE`    | Med    | Med    | Metrics.RecordOutcome + CLI fix summary, deterministic FixOutcome/FixApplyResult JSON + FindingError-typed outcome errors, rolled-back paths in error text, examples/outcomes, SARIF/LSP grouping guide. Remaining follow-ups (GroupID validation D7, OnFix D3, ApplyDryRun D4) stay gated. |
 
 ## ✅ DONE (verified this cycle, 2026-09-08)
 
@@ -92,6 +84,11 @@ decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
 | Archive 3 resolved status reports          | `git mv` to `docs/status/archived/` (2026-09-07 status, 2× 2026-08-08 pareto execution)                                          |
 | docs-freshness warnings resolved           | Point-in-time assessment docs excluded from scan (were permanent false positives)                                                |
 | Run `go-arch-lint check` locally           | Passed ("OK - No warnings found")                                                                                                |
+| Phase D: outcome metrics + JSON + tests    | `Metrics.RecordOutcome`/`OutcomeCounts` + CLI `Fix outcomes:` summary; deterministic `FixOutcome`/`FixApplyResult` JSON; `FindingError`-typed failed outcomes; rolled-back paths in error text; provider-precedence/shift-map/LSP-wire golden tests; `pipeline/examples/outcomes`; test stubs deduped into `testutil_test.go` |
+| FEATURES.md full per-signature walk        | 4 parallel verification passes, all 22 sections; ~26 stale claims fixed (Stable() method, WriteSARIF ctx, provider conditions, 6 CLI formats, O(n+k) complexity, etc.)                              |
+| SARIF/LSP grouping guide                   | `docs/guides/finding-groups.md` (spec-verified: correlationGuid/relatedLocations/codeFlows analysis + LSP recipe); linked from USAGE_GUIDE                                           |
+| Stress-gate decision recorded              | `docs/release-procedure.md` step 4 marked mandatory (2026-09-08)                                                                                                                    |
+| Billing decision recorded                  | User: ignore billing failure, switching accounts; CI re-verify deferred to post-switch                                                                                              |
 
 ## 🟢 LOW Priority
 

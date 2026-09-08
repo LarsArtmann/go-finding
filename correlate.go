@@ -42,7 +42,7 @@ type Correlation struct {
 
 // Correlate finds potentially related findings across tools.
 // Uses two strategies depending on the data:
-//   - For findings with Range: uses IntervalIndex for O(log n + k) overlap queries.
+//   - For findings with Range: uses IntervalIndex for O(n + k) overlap queries.
 //   - For point-only findings: uses line-proximity heuristics (same file + nearby lines).
 //
 // This can be used standalone or enabled in Pipeline via Config.CorrelateFindings.
@@ -50,7 +50,7 @@ type Correlation struct {
 //
 // # Complexity
 //
-// For range-based findings: O(n log n) to build the index, O(log n + k) per query.
+// For range-based findings: O(n log n) to build the index, O(n + k) per query.
 // For point-based findings: O(n) per file with sorted early-break.
 //
 // The maxCorrelations constant (10,000) caps total output across both strategies.

@@ -9,6 +9,11 @@
    - stdlib modules (analysis, CLI): `GOEXPERIMENT=jsonv2 go test -race -count=20 ./...`
    - Ginkgo modules (core, pipeline): `GOEXPERIMENT=jsonv2 ginkgo -r --race --repeat=20 --skip-package=examples`
    - **Note:** Ginkgo rejects `go test -count=N` for N>1 (`Only -count=1 is allowed`). Use `ginkgo --repeat=N` instead for the core and pipeline suites.
+   - **Gate status (decided 2026-09-08): this step is mandatory.** A release
+     must not be tagged until the repeat=20 race run passes. It is the only
+     check that sweeps for concurrency flake — a single-run CI pass routinely
+     misses races that surface under repeated scheduling. Revisit only if a
+     cheaper equivalent lands in CI.
 5. Update `CHANGELOG.md` with release notes
 6. Update `version.go` (core module only)
 

@@ -27,7 +27,7 @@ The central type representing a single issue detected by a static analysis tool.
 
 | Field       | Type                | Purpose                                                   |
 | ----------- | ------------------- | --------------------------------------------------------- |
-| ID          | `ID`                | Stable unique identifier (`tool:rule:file:line:col`)      |
+| ID          | `ID`                | Stable unique identifier (`tool:rule:file:line:col`; hash-based `tool:rule:<hash>` for file-level findings with `Line == 0`) |
 | Rule        | `RuleName`          | Rule/check name (e.g., `STRONG_ID`)                       |
 | ToolName    | `ToolName`          | Source tool name (e.g., `govet`)                          |
 | Message     | `string`            | Human-readable description                                |
@@ -64,7 +64,7 @@ f, err := NewBuilder(RuleName("nilcheck"), ToolName("govet"), "possible nil dere
 ```
 
 - `NewBuilder(rule RuleName, toolName ToolName, message, severity, pos)` — required fields (branded types prevent ID/Rule/Tool mixups at compile time)
-- `WithID()`, `WithCategory()`, `WithTags()`, `WithFixStrategy()`, `WithSuggestion()`, `WithBeforeCode()`, `WithAfterCode()`, `WithRange()`, `WithSnippet()`, `WithConfidence()`, `WithRelated()`, `WithSuppression()`, `WithMetadata()` — optional
+- `WithID()`, `WithCategory()`, `WithTags()` (appends), `WithFixStrategy()`, `WithSuggestion()`, `WithBeforeCode()`, `WithAfterCode()`, `WithRange()`, `WithSnippet()`, `WithGroupID()`, `WithConfidence()`, `WithRelated()` (appends), `WithSuppression()`, `WithMetadata()` — optional
 - `Build()` — returns validated `Finding` or error
 - `BuildOrDefault()` — returns validated `Finding` or zero-value `Finding{}` on error (v1.3.0)
 - `MustBuild()` — panics on invalid state
@@ -230,11 +230,11 @@ Top-level container for a tool run.
 | Create from findings    | `NewReportFromFindings(tool, []F)`  | Yes (v1.3.0) |
 | Add single finding      | `AddFinding(f)`                     | Yes (mutex)  |
 | Add multiple findings   | `AddFindings([])`                   | Yes (mutex)  |
-| Recompute stats         | `ComputeSummary()`                  | No           |
+| Recompute stats         | `ComputeSummary()`                  | Yes (mutex)  |
 | Filter by severity      | `BySeverity(sev)`                   | Read-only    |
 | Filter by category      | `ByCategory(cat)`                   | Read-only    |
 | Filter by fix strategy  | `ByFixStrategy(fs)`                 | Read-only    |
-| Find by ID              | `FindByID(id)` → `*Finding` (copy)  | Read-only    |
+| Find by ID              | `FindByID(id)` → `*Finding` (shallow copy; `Clone()` for deep) | Read-only |
 | Find by rule            | `FindByRule(rule)`                  | Read-only    |
 | Active (non-suppressed) | `ActiveFindings()`                  | Read-only    |
 | Generic filter          | `Filter(predicates...)` → `*Report` | Read-only    |
@@ -242,7 +242,7 @@ Top-level container for a tool run.
 | Iterate                 | `All()` → `iter.Seq[Finding]`       | Read-only    |
 | Count                   | `Len()`                             | Read-only    |
 
-Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffected`, `DurationMs`, `Suppressed`
+Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffected`, `FilesScanned`, `Suppressed`
 
 ---
 
@@ -303,7 +303,7 @@ merged := finding.Combine(reports,
 
 Finds related findings across tools using two strategies depending on data shape:
 
-- **Range-based findings:** `IntervalIndex[T]` provides O(log n + k) overlap queries (`correlate.go:118`)
+- **Range-based findings:** `IntervalIndex[T]` provides O(n + k) overlap queries via a sorted-slice index (not a tree) (`interval_index.go`)
 - **Point-only findings:** line-proximity heuristic (same file, within 5 lines)
 - **Mixed:** cross-correlates range and point findings in the same file
 
@@ -311,7 +311,7 @@ Finds related findings across tools using two strategies depending on data shape
 correlations := finding.Correlate(allFindings)
 ```
 
-Returns `[]Correlation` with `FindingIDs`, `Reason`, and `CorrelationScore`. Capped at 10,000 correlations. Complexity documented: O(n log n) index build + O(log n + k) per query for range findings; O(n) per file for point findings.
+Returns `[]Correlation` with `FindingIDs`, `Reason`, and `Score CorrelationScore`. Capped at 10,000 correlations. Complexity: O(n log n) index build + O(n + k) per query for range findings; O(n) per file for point findings.
 
 > **Honest scope:** Spatial + proximity heuristics only — no semantic analysis. Good for surface-level grouping; not a substitute for rule-level deduplication.
 
@@ -325,7 +325,7 @@ Returns `[]Correlation` with `FindingIDs`, `Reason`, and `CorrelationScore`. Cap
 
 `GenerateID(toolName, rule, pos)` produces:
 
-- `"tool:rule:file:line:col"` when line > 0 (human-readable)
+- `"tool:rule:file:line:col"` when line > 0 and column > 0 (human-readable; column omitted when 0)
 - `"tool:rule:<sha256hash>"` when line == 0 (hash-based)
 
 ### Parsing
@@ -366,12 +366,12 @@ Handles Windows paths with colons correctly.
 | --------------------------------------- | --------------------------------------------------------------------- |
 | `report.ToSARIF()`                      | Full report → SARIF JSON (excludes suppressed by default)             |
 | `report.ToSARIFWithOpts(opts...)`       | Functional options: `WithIncludeSuppressed()`, `WithMinSeverity(sev)` |
-| `report.WriteSARIF(w)`                  | Streaming SARIF output                                                |
-| `report.WriteSARIFWithOpts(w, opts...)` | Streaming output with functional options                              |
+| `report.WriteSARIF(ctx, w)`                  | Streaming SARIF output                                                |
+| `report.WriteSARIFWithOpts(ctx, w, opts...)` | Streaming output with functional options                              |
 
 ### Import
 
-`FindingsFromSARIF(data)` → `([]Finding, error)` — round-trip fidelity via property bag
+`FindingsFromSARIF(ctx, data)` → `([]Finding, error)` — round-trip fidelity via property bag
 
 ### Round-Trip Fidelity
 
@@ -393,7 +393,7 @@ Handles Windows paths with colons correctly.
 
 Handles: severity mapping, 0-based conversion, Range, related information, diagnostic tags
 
-`LSPDiagnosticTag` constants (`Unnecessary = 1`, `Deprecated = 2`) with `Tags []LSPDiagnosticTag`. Tags round-trip via `Metadata["go-finding/lsp-diagnostic-tags"]`, and `ToLSP()` re-emits them from that metadata key, so tags survive repeated conversions. Related information includes proper end positions from `RelatedRef.Range`.
+`LSPDiagnosticTagUnnecessary = 1`, `LSPDiagnosticTagDeprecated = 2` constants with `Tags []LSPDiagnosticTag`. Tags round-trip via `Metadata["go-finding/lsp-diagnostic-tags"]`, and `ToLSP()` re-emits them from that metadata key (negative values rejected as invalid), so tags survive repeated conversions. Related information includes proper end positions from `RelatedRef.Range`.
 
 ### LSP → Finding
 
@@ -427,7 +427,7 @@ Auto-detects suggested fixes and sets `FixStrategyDirect` with `AfterCode`. `ToD
 `analysis.AnalyzerDetector` wraps any `go/analysis.Analyzer` as a `finding.Detector`, running it against Go source and converting its diagnostics to Findings:
 
 ```go
-det := analysis.NewAnalyzerDetector(analyzer,
+det := analysis.NewAnalyzerDetector(analyzer, []string{"./..."},
     analysis.WithSeverity(finding.SeverityWarning),
     analysis.WithFileSet(fset),
 )
@@ -492,6 +492,7 @@ Adapters: `DetectorFunc`, `NamedDetectorFunc(name, fn)`
 | `OnFix`                      | `func(Finding, bool)`  | `nil`   | Per-fix callback                            |
 | `OnIteration`                | `func(int, []Finding)` | `nil`   | Per-iteration callback                      |
 | `StageHooks`                 | `[]StageHook`          | `nil`   | Per-stage before/after hooks with abort     |
+| `FixRollbackAllFiles`        | `bool`                 | `false` | All-or-nothing rollback (default: per-file) |
 | `DetectorTimeouts`           | `map[string]Duration`  | `nil`   | Per-detector timeout overrides              |
 | `Logger`                     | `*slog.Logger`         | `nil`   | Structured logging                          |
 | `TriageFunc`                 | `TriageFunc`           | `nil`   | Custom triage categorization                |
@@ -531,13 +532,13 @@ Processors are executed in order from `Config.Processors`. Use cases: filtering,
 
 | Field             | Type               | Description                      |
 | ----------------- | ------------------ | -------------------------------- |
-| `Stable`          | `bool`             | Reached zero findings            |
+| `Stable()`        | method → `bool`    | Reached zero findings (`Reason == ReasonStable`) |
 | `TotalIterations` | `int`              | Iterations executed              |
 | `Iterations`      | `[]Iteration`      | Per-iteration details            |
 | `TotalDetected`   | `int`              | Total findings across iterations |
 | `Verification`    | `*VerifyResult`    | Post-fix verification            |
 | `PartialErrors`   | `map[string]error` | Per-detector failures            |
-| `Correlations`    | `[]Correlation`    | Cross-tool correlations          |
+| `Correlations`    | `[]finding.Correlation` | Cross-tool correlations     |
 | `Metrics`         | `MetricsSnapshot`  | Timing and counts                |
 
 ### 16.6 Conflict Detection
@@ -582,11 +583,11 @@ type FixProvider interface {
 
 **Default provider chain (tried in order):**
 
-|                     | Provider        | Name                                                | Handles |
-| ------------------- | --------------- | --------------------------------------------------- | ------- |
-| `OffsetProvider`    | `"byte-offset"` | Findings with `Range.Start.Offset >= 0 && End >= 0` |         |
-| `LineProvider`      | `"line-column"` | Findings with `Position.Line > 0`                   |         |
-| `SubstringProvider` | `"substring"`   | Fallback for any finding with `BeforeCode`          |         |
+| Provider            | Name            | Handles                                                     |
+| ------------------- | --------------- | ----------------------------------------------------------- |
+| `OffsetProvider`    | `"byte-offset"` | `HasCodeChange()` and `Range != nil` with `Length() > 0`    |
+| `LineProvider`      | `"line-column"` | `HasCodeChange()` and `Position.Line > 0`                   |
+| `SubstringProvider` | `"substring"`   | Fallback: `HasCodeChange()` and `BeforeCode != ""`          |
 
 Domain-specific providers (Go AST, Rust syn, etc.) can be registered via:
 
@@ -598,9 +599,9 @@ Domain-specific providers (Go AST, Rust syn, etc.) can be registered via:
 
 #### FixEngine (in-memory)
 
-`NewFixEngine()` provides pure `Apply(content []byte, fixes []Finding)` that transforms byte content without filesystem access. Delegates to providers, sorts edits descending by offset, applies with overlap protection.
+`NewFixEngine()` provides pure `Apply(content []byte, fixes []finding.Finding) ([]byte, []finding.Finding, int)` that transforms byte content without filesystem access. Delegates to providers, sorts edits descending by offset, applies with overlap protection.
 
-`ApplyWithOutcomes(content, fixes)` returns a `FixApplyResult` with one `FixOutcome` per input finding: `applied`, `no-change`, `refused` (provider matched but produced zero edits), `conflict`, `invalid` (edit dropped as invalid/out of bounds), or `failed` (provider error). Helpers: `OutcomeFor(id)`, `OutcomeCounts()`, `HasErrors()`.
+`ApplyWithOutcomes(content, fixes)` returns a `FixApplyResult` with one `FixOutcome` per input finding: `applied`, `no-change`, `refused` (provider matched but produced zero edits), `conflict`, `invalid` (edit dropped as invalid/out of bounds), or `failed` (provider error). Helpers: `OutcomeFor(id)`, `OutcomeCounts()`, `HasErrors()`. `FixOutcome` and `FixApplyResult` marshal to deterministic JSON (`errors` carried as message strings); failed outcomes carry a typed `*finding.FindingError` with the finding's position, so consumers can classify via `errorfamily`.
 
 #### FixApplier (filesystem)
 
@@ -633,6 +634,9 @@ Re-runs all detectors after fixes and categorizes findings:
 | `Fixed`       | Original findings no longer detected |
 | `Remaining`   | Original findings still present      |
 | `NewFindings` | Fresh findings introduced by fixes   |
+| `Modified`    | Same key, different content          |
+
+`VerifyResult` also exposes `Resolved int` (count of resolved findings) and `Modified []finding.Finding`.
 
 `DiffFindings(original, post)` — standalone utility for comparing finding sets.
 
@@ -648,6 +652,7 @@ Thread-safe metrics collection:
 | Detector timing       | `RecordDetector()`               |
 | Findings per detector | `RecordDetector()`               |
 | Fixes applied         | `RecordFixes(count)`             |
+| Fix outcome counts    | `RecordOutcome(status)`, `OutcomeCounts()` |
 | Total duration        | `TotalDuration()`                |
 | Point-in-time copy    | `Snapshot()` → `MetricsSnapshot` |
 
@@ -708,7 +713,7 @@ defer hook.Close()
 | `FlightRecorderConfig`          | `MinAge` (buffer retention, default 30s), `MaxBytes` (default 4 MiB), `SlowStageThreshold` (auto-snapshot trigger), `OutputDir`, `Logger` |
 | `NewFlightRecorderHook(config)` | Creates and starts the recorder (only one active at a time)                                                                               |
 | `DefaultFlightRecorderConfig()` | Sensible defaults                                                                                                                         |
-| `Snapshot(reason)`              | Manual on-demand snapshot, returns file path                                                                                              |
+| `Snapshot(ctx, reason)`         | Manual on-demand snapshot, returns file path                                                                                              |
 | `Close()`                       | Stops recorder, waits for in-flight async snapshots                                                                                       |
 
 Implements `StageHook` — `OnStageEvent` **never returns an error** (trace collection is purely diagnostic and must not affect pipeline control flow).
@@ -739,7 +744,7 @@ Runs `staticcheck -f json ./...` and converts JSON output to Findings.
 - Severity: `error` or `warning` based on staticcheck output
 - FixStrategy: `suggest`
 - Confidence: `0.8`
-- Category mapping: S/Q→style, U→unused, P/R/F→performance, A→correctness
+- Category mapping: `SA*`→correctness (takes precedence), S/Q→style, U→unused, P/R/F→performance, default→correctness
 
 > **Note:** Both detectors require the respective tools to be installed and available in `$PATH`.
 
@@ -773,6 +778,8 @@ Binary: `go-finding`
 | `-generated-include`      | (none)  | Comma-separated glob patterns restricting generated-filtering scope |
 | `-byte-level-conflict`    | `false` | Enable precise byte-level conflict detection for overlapping fixes  |
 | `-fix-provider`           | (none)  | Comma-separated fix provider names to enable (e.g., `go-ast`)       |
+| `-fix-rollback-all`       | `false` | All-or-nothing rollback on hard file failures (default: per-file)   |
+| `-include-suppressed`     | `true`  | Include suppressed findings in the report                           |
 | `-trace`                  | `false` | Enable Go execution trace flight recorder for pipeline diagnostics  |
 | `-trace-dir`              | (none)  | Directory for trace snapshot files (default: temp dir)              |
 | `-trace-slow`             | `0`     | Auto-snapshot trace when a stage exceeds this duration (e.g. `30s`) |
@@ -808,13 +815,14 @@ Without `-config`: uses govet + staticcheck with the flag values.
 
 | Format     | Description                                                                                                                        |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `text`     | Human-readable with severity badges: `file:line:col 🟠 ERROR  rule: message [category]` (v1.3.0: badge + category + 💡 suggestion) |
+| `text`     | Human-readable: `file:line:col [SEVERITY] rule: message` + `Suggestion:` lines (`finding.FormatTextRich` with badges/💡 is library-only) |
 | `markdown` | Markdown table with auto-aligned columns (via go-output)                                                                           |
 | `json`     | Full JSON report                                                                                                                   |
-| `csv`      | CSV with auto-quoting and footer row (via go-output)                                                                               |
-| `tsv`      | Tab-separated with footer row (via go-output)                                                                                      |
+| `csv`      | CSV with auto-quoting, clean data export without footer (via go-output)                                                            |
+| `tsv`      | Tab-separated, clean data export without footer (via go-output)                                                                    |
 | `sarif`    | SARIF 2.1.0                                                                                                                        |
-| `table`    | Severity-badged table: SEVERITY, LOCATION, RULE, MESSAGE (v1.3.0)                                                                  |
+
+Severity-badged table output exists as a library API (`finding.FormatTable`), not as a CLI format.
 
 Metrics summary printed to stderr when available.
 
@@ -832,7 +840,7 @@ Test categories:
 - Fuzz tests (`fuzz_test.go`, `id_fuzz_test.go`, `json_fuzz_test.go`, `lsp_fuzz_test.go`, `merge_fuzz_test.go`, `sarif_fuzz_test.go`)
 - Property-based tests (`property_test.go`)
 - Benchmarks (`bench_test.go`)
-- Regression tests alongside the behavior they protect (one `<subject>_test.go` per production file)
+- Regression tests colocated with the behavior they protect (per-subject naming, e.g. `finding_validate_test.go`, `interval_tree_test.go`)
 
 ---
 
@@ -840,12 +848,13 @@ Test categories:
 
 **Status:** PARTIALLY_FUNCTIONAL
 
-Two runnable examples in `examples/`:
+Runnable examples:
 
-| Example    | Description                 |
-| ---------- | --------------------------- |
-| `basic/`   | Direct Finding construction |
-| `builder/` | Builder API usage           |
+| Example                       | Description                 |
+| ----------------------------- | --------------------------- |
+| `examples/basic/`             | Direct Finding construction |
+| `examples/builder/`           | Builder API usage           |
+| `pipeline/examples/outcomes/` | Per-finding outcomes + rollback policy demo |
 
 > **Note:** Examples have no test files (compile-only check via `example_compile_test.go`).
 
@@ -928,12 +937,12 @@ Per-stage before/after hooks with abort capability:
 
 ```go
 config.StageHooks = []pipeline.StageHook{
-    pipeline.StageHookFunc(func(e pipeline.StageEvent) error {
+    pipeline.StageHookFunc(func(_ context.Context, e pipeline.StageEvent) error {
         if e.Stage == pipeline.StageDetect {
             log.Println("detection complete")
         }
         return nil
-    })
+    }),
 }
 ```
 
@@ -956,9 +965,11 @@ Separate subpackage (`pipeline/goast`) keeps `go/parser` as an opt-in within the
 FindingTransformer that removes findings from auto-generated Go files (sqlc, protobuf, mockgen, templ, etc.) via `gogenfilter/v3`:
 
 ```go
-config.Processors = []pipeline.FindingTransformer{
-    pipeline.NewGeneratedFileFilter(),
+filter, err := pipeline.NewGeneratedFileFilter(nil)
+if err != nil {
+    return err
 }
+config.Processors = []pipeline.FindingTransformer{filter}
 ```
 
 Configurable per-generator type, include/exclude patterns.
@@ -1092,7 +1103,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | File backup & rollback                       | FULLY_FUNCTIONAL     | Automatic on fix failure                                                             |
 | Go vet detector                              | PARTIALLY_FUNCTIONAL | Requires `go vet` in PATH                                                            |
 | Staticcheck detector                         | PARTIALLY_FUNCTIONAL | Requires `staticcheck` in PATH                                                       |
-| CLI tool                                     | PARTIALLY_FUNCTIONAL | 7 output formats (text, markdown, csv, tsv, json, sarif, table), config, profiling   |
+| CLI tool                                     | PARTIALLY_FUNCTIONAL | 6 output formats (text, markdown, csv, tsv, json, sarif), config, profiling         |
 | Plugin detector registry                     | FULLY_FUNCTIONAL     | Thread-safe `RegisterDetector`                                                       |
 | Per-detector timeouts                        | FULLY_FUNCTIONAL     | `DetectorTimeouts` map in Config + CLI config file                                   |
 | Structured logging (slog)                    | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                             |
@@ -1100,7 +1111,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | Diff function                                | FULLY_FUNCTIONAL     | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()`                    |
 | FormatText / FormatTextRich / FormatMarkdown | FULLY_FUNCTIONAL     | FormatText: `[SEVERITY]` tag. FormatTextRich: emoji badges, category, 💡 (v1.3.0)    |
 | Config validation                            | FULLY_FUNCTIONAL     | Both pipeline and CLI configs                                                        |
-| Examples                                     | PARTIALLY_FUNCTIONAL | 2 runnable examples (basic, builder), compile-tested                                 |
+| Examples                                     | PARTIALLY_FUNCTIONAL | 3 runnable examples (basic, builder, outcomes), compile-tested                       |
 | `RelatedRef.Range`                           | FULLY_FUNCTIONAL     | Span-based related locations with SARIF/LSP round-trip                               |
 | LSP diagnostic tags                          | FULLY_FUNCTIONAL     | `Unnecessary`/`Deprecated` preserved in metadata                                     |
 | SARIF `region.snippet`                       | FULLY_FUNCTIONAL     | Native SARIF snippet round-trip support                                              |

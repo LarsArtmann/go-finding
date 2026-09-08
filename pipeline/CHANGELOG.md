@@ -23,6 +23,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **`ApplyWithReport` now reports rolled-back files on backup failure and cancellation** — When a file's backup could not be created, or the context was cancelled mid-run, the run aborted but `ApplyReport.RolledBack` silently omitted the files that had actually been restored, and a failing rollback's error was swallowed. Both paths now record every modified file in `RolledBack` (resolved absolute paths) and wrap rollback failures so `errors.Is`/`errors.As` still reach the original cause. Covered by cancel and backup-failure tests for both rollback policies plus an end-to-end pipeline rollback wiring test.
 
+### Added
+
+- **`Metrics.RecordOutcome(status)` + `OutcomeCounts()`** — Aggregate per-finding fix outcomes into printable counts. `MetricsSnapshot.OutcomeCounts` carries a point-in-time copy; the pipeline's fix stage records one outcome per finding automatically, and the CLI prints a `Fix outcomes:` summary line.
+- **Deterministic JSON for `FixOutcome` and `FixApplyResult`** — Custom `MarshalJSON`/`UnmarshalJSON` using `json.Deterministic(true)` (per the repo determinism rule). Errors serialize as message strings and unmarshal as plain errors; finding/status/content round-trip losslessly.
+- **`pipeline/examples/outcomes`** — Runnable demo of per-finding outcomes (`ApplyWithOutcomes`: applied / refused / failed) and the `RollbackPolicy` knob, with a compile check in `pipeline/examples/example_compile_test.go`.
+
+### Changed
+
+- **Failed outcomes carry typed `*finding.FindingError`** — Provider resolution failures are now wrapped as parse-category `FindingError` with the finding's position attached (and `errorfamily` classification), instead of a bare `fmt.Errorf` wrapper. `errors.Is`/`As` chains to the original provider cause are preserved.
+- **Rollback errors now list the restored paths** — `ApplyWithReport` error text embeds `(rolled back: <path1>, <path2>)` on cancellation, backup failure, and hard file failure, alongside the existing `rollback also failed` wrapper. Note `RolledBack` lists every restored file, including files that were backed up but never modified (those restores are content no-ops).
+
 ## [1.6.0] - 2026-08-08
 
 ### Added

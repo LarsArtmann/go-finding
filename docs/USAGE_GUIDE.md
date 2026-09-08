@@ -338,6 +338,11 @@ byRule := finding.GroupBy(findings, func(f finding.Finding) string {
 })
 ```
 
+Clone groups and other logical finding sets travel on `Finding.GroupID`
+(`Report.GroupFindings()` reconstructs them). How `GroupID` maps to SARIF
+and LSP — and how to group diagnostics client-side — is covered in
+[Finding Groups: SARIF and LSP Representation](guides/finding-groups.md).
+
 ## Merging and Deduplication
 
 ```go
