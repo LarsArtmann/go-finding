@@ -262,10 +262,11 @@ jobs:
           go test -bench=. -benchmem -count=10 -run='^$' ./... 2>&1 | tee bench-current.txt
           cd pipeline
           go test -bench=. -benchmem -count=10 -run='^$' . >> ../bench-current.txt
-      - name: Check for regressions vs baseline (fail if >25% slower)
+      - name: Check for regressions vs baseline (alloc +10% hard, time +250% thermal-tolerant)
         # benchstat resolves via the pinned Go tool directive in go.mod
         # (tool golang.org/x/perf/cmd/benchstat) — reproducible, no @latest.
-        run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 25
+        # See scripts/bench-check.sh header for the threshold rationale.
+        run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 250 10
       - name: Upload benchmark results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()

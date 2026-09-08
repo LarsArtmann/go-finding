@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
@@ -182,5 +183,46 @@ func TestDefaultLinterRegistry_Expanded(t *testing.T) {
 				t.Errorf("CategoryForLinter(%q) = %v, want %v", tt.linter, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestLinterRegistry_Names(t *testing.T) {
+	t.Parallel()
+
+	r := &LinterRegistry{}
+	if got := r.Names(); len(got) != 0 {
+		t.Errorf("empty registry Names() = %v, want empty", got)
+	}
+
+	r.Register("zeta", CategoryStyle)
+	r.Register("Alpha", CategoryCorrectness)
+	r.Register("mid", CategorySecurity)
+
+	want := []string{"alpha", "mid", "zeta"}
+	if got := r.Names(); !slices.Equal(got, want) {
+		t.Errorf("Names() = %v, want %v (sorted, lowercased keys)", got, want)
+	}
+}
+
+func TestLinterRegistry_Clone(t *testing.T) {
+	t.Parallel()
+
+	r := &LinterRegistry{}
+	r.Register("gosec", CategorySecurity)
+
+	clone := r.Clone()
+	clone.Register("misspell", CategoryStyle)
+	r.Register("dupl", CategoryDuplication)
+
+	if got := r.Lookup("misspell", CategoryUnused); got != CategoryUnused {
+		t.Errorf("clone registration leaked into original: got %q", got)
+	}
+
+	if got := clone.Lookup("dupl", CategoryUnused); got != CategoryUnused {
+		t.Errorf("original registration leaked into clone: got %q", got)
+	}
+
+	if got := clone.Lookup("gosec", CategoryUnused); got != CategorySecurity {
+		t.Errorf("clone lost original mapping: got %q", got)
 	}
 }

@@ -539,3 +539,34 @@ func TestGroupID_IsValid(t *testing.T) {
 		t.Error("over-length GroupID must be invalid")
 	}
 }
+
+func TestFinding_Key(t *testing.T) {
+	t.Parallel()
+
+	withID := Finding{
+		ID:       "abc123",
+		ToolName: "govet",
+		Position: Position{File: "a.go"},
+		Rule:     "copylocks",
+		Message:  "msg",
+	}
+	if got := withID.Key(); got != "abc123" {
+		t.Errorf("Key() with ID = %q, want %q", got, "abc123")
+	}
+
+	composite := Finding{
+		ToolName: "govet",
+		Position: Position{File: "a.go"},
+		Rule:     "copylocks",
+		Message:  "msg",
+	}
+	if want := "govet\x00a.go\x00copylocks\x00msg"; composite.Key() != want {
+		t.Errorf("Key() without ID = %q, want %q", composite.Key(), want)
+	}
+
+	otherMessage := composite
+	otherMessage.Message = "different"
+	if otherMessage.Key() == composite.Key() {
+		t.Error("same position but different messages must produce different keys")
+	}
+}

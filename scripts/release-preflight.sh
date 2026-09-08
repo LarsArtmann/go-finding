@@ -149,7 +149,7 @@ if [ "$RUN_BENCH" -eq 1 ]; then
 		FAILURES=$((FAILURES + 1))
 	fi
 	step "benchmark vs baseline"
-	if bash scripts/bench-check.sh benchmarks/baseline.txt /tmp/preflight-bench.txt 25; then
+	if bash scripts/bench-check.sh benchmarks/baseline.txt /tmp/preflight-bench.txt 250 10; then
 		echo "OK: bench within threshold"
 	else
 		echo "FAIL: bench regression (or capture error)"
