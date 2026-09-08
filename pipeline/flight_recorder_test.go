@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -679,4 +680,102 @@ func TestFlightRecorderHook_NoRotationByDefault(t *testing.T) {
 	}
 
 	g.Expect(count).To(gomega.Equal(3), "default MaxFiles=0 must not prune")
+}
+
+// countingLogHandler records slog events so tests can assert on lifecycle
+// messages (e.g. prune warnings) without output noise.
+type countingLogHandler struct {
+	mu      sync.Mutex
+	records []slog.Record
+}
+
+func (h *countingLogHandler) Enabled(context.Context, slog.Level) bool { return true }
+
+func (h *countingLogHandler) Handle(_ context.Context, r slog.Record) error {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.records = append(h.records, r)
+	return nil
+}
+
+func (h *countingLogHandler) WithAttrs([]slog.Attr) slog.Handler { return h }
+
+func (h *countingLogHandler) WithGroup(string) slog.Handler { return h }
+
+// countMessageContaining returns how many recorded events contain substr.
+func (h *countingLogHandler) countMessageContaining(substr string) int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	count := 0
+	for _, r := range h.records {
+		if strings.Contains(r.Message, substr) {
+			count++
+		}
+	}
+	return count
+}
+
+// TestFlightRecorderHook_ConcurrentRotation verifies that concurrent snapshots
+// with MaxFiles set race neither each other's WriteTo calls nor the prune pass
+// (self-review d/6): unique paths, final count within the cap, and no
+// double-remove ENOENT warnings from overlapping prune passes. Pruning holds
+// writeMu, so two snapshots can never list and delete the same files.
+// Run under -race (the stress gate does).
+func TestFlightRecorderHook_ConcurrentRotation(t *testing.T) {
+	g := gomega.NewWithT(t)
+
+	dir := t.TempDir()
+	logHandler := &countingLogHandler{}
+
+	hook, err := NewFlightRecorderHook(FlightRecorderConfig{
+		OutputDir: dir,
+		MaxFiles:  4,
+		Logger:    slog.New(logHandler),
+	})
+	if err != nil {
+		t.Fatalf("NewFlightRecorderHook: %v", err)
+	}
+
+	t.Cleanup(func() { hook.Close() })
+
+	const goroutines = 16
+	const perGoroutine = 2
+	total := goroutines * perGoroutine
+
+	paths := make([]string, total)
+	errs := make([]error, total)
+
+	var wg sync.WaitGroup
+	for i := range goroutines {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			for j := range perGoroutine {
+				n := idx*perGoroutine + j
+				paths[n], errs[n] = hook.Snapshot(context.Background(), "rotate")
+			}
+		}(i)
+	}
+
+	wg.Wait()
+
+	for i := range total {
+		g.Expect(errs[i]).To(gomega.Not(gomega.HaveOccurred()), "snapshot %d", i)
+	}
+
+	unique := make(map[string]struct{}, total)
+	for _, p := range paths {
+		unique[p] = struct{}{}
+	}
+	g.Expect(unique).To(gomega.HaveLen(total), "every concurrent snapshot path must be unique")
+
+	traces, err := findTraceFiles(dir)
+	if err != nil {
+		t.Fatalf("findTraceFiles: %v", err)
+	}
+	g.Expect(traces).To(gomega.HaveLen(4), "MaxFiles=4 must hold exactly under concurrent writes")
+
+	g.Expect(logHandler.countMessageContaining("prune: delete failed")).
+		To(gomega.BeZero(), "serialized pruning must never double-remove files")
 }
