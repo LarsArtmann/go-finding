@@ -5,13 +5,22 @@
 # operator's head, not in a script (see docs/status/2026-09-08_18-48 report d/1).
 #
 # Usage:
-#   ./scripts/release-preflight.sh            # structural gates (fast)
-#   ./scripts/release-preflight.sh --bench    # also run bench-check vs baseline
-#   ./scripts/release-preflight.sh --stress   # also run repeat=20 race stress
+#   ./scripts/release-preflight.sh                 # structural gates (fast)
+#   ./scripts/release-preflight.sh --bench         # also run bench-check vs baseline
+#   ./scripts/release-preflight.sh --stress        # also run repeat=20 race stress
+#   ./scripts/release-preflight.sh --post-tag      # post-tag verification mode
 #
 # Always run from the repo root (relative paths).
 # Heavy gates (bench, stress) are opt-in: preflight's job is to make the
 # cheap-to-run, easy-to-forget checks impossible to skip.
+#
+# --post-tag inverts the tag-collision guard (all 4 tags must now EXIST)
+# and additionally runs version-check.sh (version.go == latest tag). Run it
+# right after tagging, before `git push origin --tags`.
+#
+# Self-test: scripts/release-preflight-selftest.sh injects synthetic drift
+# and a tag collision into a disposable git worktree and asserts preflight
+# FAILS on each — proving the gate bites.
 #
 # Verdict discipline: every check prints an explicit OK/FAIL line and the
 # script prints a final verdict. A check that prints nothing is a bug in this
@@ -23,12 +32,14 @@ cd "$(dirname "$0")/.."
 
 RUN_BENCH=0
 RUN_STRESS=0
+POST_TAG=0
 for arg in "$@"; do
 	case "$arg" in
 	--bench) RUN_BENCH=1 ;;
 	--stress) RUN_STRESS=1 ;;
+	--post-tag) POST_TAG=1 ;;
 	*)
-		echo "usage: $0 [--bench] [--stress]"
+		echo "usage: $0 [--bench] [--stress] [--post-tag]"
 		exit 2
 		;;
 	esac
@@ -75,15 +86,26 @@ else
 	FAILURES=$((FAILURES + 1))
 fi
 
-step "target tags do not already exist"
+step "target tags"
 for t in "v${MAJOR}.${MINOR}.${PATCH}" "pipeline/v${MAJOR}.${MINOR}.${PATCH}" "analysis/v${MAJOR}.${MINOR}.${PATCH}" "cmd/go-finding/v${MAJOR}.${MINOR}.${PATCH}"; do
-	if git rev-parse -q --verify "refs/tags/$t" >/dev/null; then
+	if [ "$POST_TAG" -eq 1 ]; then
+		if git rev-parse -q --verify "refs/tags/$t" >/dev/null; then
+			echo "OK: tag $t exists (post-tag mode)"
+		else
+			echo "FAIL: tag $t missing (post-tag mode expects it to exist)"
+			FAILURES=$((FAILURES + 1))
+		fi
+	elif git rev-parse -q --verify "refs/tags/$t" >/dev/null; then
 		echo "FAIL: tag $t already exists"
 		FAILURES=$((FAILURES + 1))
 	else
 		echo "OK: tag $t is new"
 	fi
 done
+
+if [ "$POST_TAG" -eq 1 ]; then
+	run_check "version.go matches latest tag" bash scripts/version-check.sh
+fi
 
 run_check "version drift (go.mod references match version.go)" bash scripts/version-drift.sh
 run_check "replace directives point at ../" bash scripts/replace-audit.sh
@@ -116,7 +138,17 @@ done
 # --- Opt-in heavy gates ---
 
 if [ "$RUN_BENCH" -eq 1 ]; then
-	step "benchmark vs baseline (core)"
+	step "benchmark capture (core + pipeline, count=10)"
+	if {
+		GOEXPERIMENT=jsonv2 go test -run='^$' -bench=. -benchmem -count=10 ./... > /tmp/preflight-bench.txt
+		(cd pipeline && GOEXPERIMENT=jsonv2 go test -run='^$' -bench=. -benchmem -count=10 ./... >> /tmp/preflight-bench.txt)
+	}; then
+		echo "OK: benchmark capture"
+	else
+		echo "FAIL: benchmark capture"
+		FAILURES=$((FAILURES + 1))
+	fi
+	step "benchmark vs baseline"
 	if bash scripts/bench-check.sh benchmarks/baseline.txt /tmp/preflight-bench.txt 25; then
 		echo "OK: bench within threshold"
 	else
@@ -159,5 +191,9 @@ if [ "$FAILURES" -gt 0 ]; then
 	exit 1
 fi
 echo "PREFLIGHT PASS: all checks green. Safe to tag $NEXT_VERSION (+ pipeline/ analysis/ cmd/go-finding/ prefixed variants)."
-echo "Reminder: stress gate is mandatory before tagging (release-procedure step 4)."
+if [ "$POST_TAG" -eq 1 ]; then
+	echo "Post-tag mode: all 4 tags exist and version.go matches. Push with: git push origin --tags"
+else
+	echo "Reminder: stress gate is mandatory before tagging (release-procedure step 4)."
+fi
 exit 0
