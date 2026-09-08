@@ -88,82 +88,70 @@ bash scripts/version-check.sh                                    # Verify versio
 
 ## Important Behaviors (Gotchas)
 
-- **GOEXPERIMENT=jsonv2 required** — The project uses `encoding/json/v2` (Go 1.26 experimental feature). All `nix run .#*` apps and devShells export `GOEXPERIMENT=jsonv2`. Direct `go build`/`go test` outside `nix develop` will fail with "build constraints exclude all Go files" unless you `export GOEXPERIMENT=jsonv2` first. The `GOWORK=off` per-module path needs BOTH `GOWORK=off` and `GOEXPERIMENT=jsonv2`.
-- **Report{} zero-value safe** — Uses value `sync.Mutex`, safe for concurrent use without initialization
-- **Report.findings is unexported** — Use `FindingsSnapshot()` for a deep copy, `All()` for iteration, or `FindByID()` for single lookups
-- **Pipeline.Run() is single-use** — Returns `errAlreadyRan` on second call
-- **NewFixApplier returns error** — Propagates backup dir creation failures
-- **Confidence is a named type** — `type Confidence float64` with `IsValid()`/`Clamp()`
-- **NewFinding accepts Confidence** — Not raw `float64`. Builder defaults to `ConfidenceFull` (1.0) since v1.3.0, appropriate for deterministic static analysis. Override with `.WithConfidence()`.
-- **FixStrategyAI is reserved** — No backend; kept as marker for future AI remediation
-- **GenerateID is length-prefixed** — Uses `writeLenField` (uint32 big-endian) to prevent hash collisions when field values contain colons
-- **Position.Offset uses -1 sentinel** — `Position{}` (zero value) has Offset=0 meaning "byte 0". Constructors (Pos, NewRange, FromLSP, SARIF import) set Offset=-1 for "unset". Use `HasOffset()` (>= 0) to check.
-- **File-level positions valid since v1.3.0** — `validateIdentity()` uses `Position.HasFile()` (File != ""), not `Position.IsValid()` (File != "" && Line > 0). Findings with `FilePos("config.yaml")` (Line=0) pass validation. `Position.IsValid()` still requires Line>0 for backward compat. Use `HasFile()` for file-only checks.
-- **Builder.BuildOrDefault()** — Returns zero-value `Finding{}` on validation error, not panic. Eliminates the error-swallowing boilerplate (SafeBuildFinding / buildFinding) that consumers reinvent. Use `Build()` when you need validation errors.
-- **Template** — Pre-configured builder factory (`NewTemplate(toolName)` + `WithCategory/WithFixStrategy/WithTags` + `Build(rule, msg, sev, pos)`). Stamp common fields once, build many findings. Eliminates `newMigrationFinding` / `buildFixableFinding` patterns.
-- **Template.Builder** — Returns a pre-configured `*Builder` (not a final `Finding`) for per-finding chaining. Use when you need template-level defaults AND per-finding confidence/suggestion: `tmpl.Builder(rule, msg, sev, pos).WithConfidence(c).WithSuggestion(s).MustBuild()`. `Build` delegates to `Builder().BuildOrDefault()`.
-- **ParseConfidence** — Inverse of `Confidence.String()`: `ParseConfidence("high")` returns `ConfidenceHigh`. Also accepts decimals (e.g. `"0.42"`). Empty string defaults to `ConfidenceLow`. Eliminates consumer-side switch statements for `--min-confidence` flags. Error is `ErrInvalidConfidence` sentinel, matchable via `errors.Is`.
-- **NewReportFromFindings(tool, findings)** — One-step report creation: `NewReport` + `AddFindings` + `ComputeSummary`. Eliminates the 4-line boilerplate.
-- **SeverityFromLevel(level, fallback)** — Maps severity strings (canonical + aliases) to `Severity`, returns fallback for unknown. Eliminates consumer-side `mapSeverity()` switches. Aliases expanded: "optional"→Info, "crit"→Critical added.
-- **Severity.PriorityString()** — Reverse mapping: Critical→"critical", Error→"high", Warning→"medium", Info→"low".
-- **FormatTextRich** — New rich text formatter with emoji severity badges, category display, and 💡 suggestion prefix. `FormatText` retains the original `[SEVERITY]` format for backward compatibility.
-- **FormatTable(w, findings)** — Severity-badged table output (SEVERITY, LOCATION, RULE, MESSAGE columns).
-- **ApplySimpleFixes(findings)** — BeforeCode→AfterCode string replacement in core package. 80% case for consumers that don't need the full pipeline FixEngine.
-- **CheckBinary(name) / RunCmd(ctx, name, args)** — External tool helpers for the "run CLI tool → parse JSON" pattern. Returns `NewIOError` on failure.
-- **DefaultLinterRegistry expanded** — Now includes gofumpt, nolintlint, depguard, nakedret, bidichk, tagliatelle, and 15+ more golangci-lint linters.
-- **Range.EndOrStart / EndOffsetOrStart** — Effective end position for line-based (`End.Line == 0` → Start) and offset-based (`End.Offset < 0` → Start) single-point ranges. Used by overlap/intersection/extension to avoid duplicating the "unset means single point" convention.
-- **FixStrategy normalized** — `NormalizeFixStrategy()` converts "" to "none". Called by Builder.Build(), SARIF import, and Equal(). In Equal(), normalization is short-circuited: raw values are compared first, and `NormalizeFixStrategy` is only called when they differ (handles "" vs "none" edge case).
-- **tagsEqual fast path** — `finding_equal.go` checks `slices.Equal(a, b)` before clone+sort. When tags are in the same order (common when findings come from the same tool), `Equal()` makes 0 allocations. Only different-order tag sets trigger the clone+sort fallback (2 allocs).
-- **ResolveSafePath batch caching** — `pipeline/path_safety.go` exports `ResolveRoot(rootDir)` (resolves symlinks once) and `ResolveSafePathFrom(resolvedRoot, relPath)` (per-path resolution). `groupFindingsBySafePath` and `filterByFileEdits` resolve root once and cache per-path results, eliminating redundant `EvalSymlinks` syscalls when many findings target the same file. The convenience wrapper `ResolveSafePath(rootDir, relPath)` remains for single-call use.
-- **HasFix() requires code for Direct** — `FixStrategyDirect` needs BeforeCode or AfterCode for HasFix()=true, aligning with Validate().
-- **math/rand v1/v2 split** — Production uses `math/rand/v2`; tests use `math/rand` (v1) due to `testing/quick` API constraint
-- **FixEngine descending-offset** — All edits resolve against the same original content snapshot; multi-edit correctness proven by tests
-- **LineShiftMap shifts Position + Range** — `ShiftedPosition` shifts line + column (single-line edits); `ShiftedRange` shifts both endpoints
-- **SubstringProvider column-aware** — Disambiguates multiple occurrences by line + column distance
-- **context.Context on I/O** — `WriteSARIF`, `FindingsFromSARIF`, etc. accept context as first arg
-- **StageHooks replace OnStage** — Use `Config.StageHooks` with `StageHook`/`StageHookFunc` for before/after events with abort capability. Both StageBefore and StageAfter errors abort the pipeline.
-- **IsSuppressedAt validates Suppression** — Uses `Suppression.IsActive(now)` which checks `IsValid()` (valid Kind + non-empty Rule) AND not expired. Invalid suppressions are treated as inactive.
-- **Branded types prevent mixups** — `ID`, `RuleName`, `ToolName`, `FilePath` are distinct string types. Use `finding.ID("x")` not raw `"x"` for fields. JSON marshals identically to string.
-- **Validate() decomposed** — `finding_validate.go` delegates to 6 per-field validators (`validateIdentity`, `validateClassification`, `validateFix`, `validateReferences`, `validateSpatial`, `validateSuppression`). Complexity per validator < 10.
-- **SeverityAliases removed** — Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`. Global map guarded by `sync.RWMutex`.
-- **CategoryOf is canonical** — `CategoryOf(err)` returns the category (old `GetCategory` removed)
-- **testify in go.mod is transitive** — `stretchr/testify` appears as `// indirect` in core go.mod because ginkgo/slim-sprig depends on it. It is NOT used directly. Banned per how-to-golang but unavoidable as a transitive dep of ginkgo.
-- **Position.File is FilePath** — Changed from `string` to `FilePath` branded type. Use `finding.FilePath("path")` for string vars; string literals auto-convert. Constructors `Pos`, `NewRange`, `NewRangePtr` accept `FilePath`.
-- **SARIFOption pattern** — Use `ToSARIFWithOpts(WithIncludeSuppressed(), WithMinSeverity(sev))` instead of deprecated `ToSARIFFiltered`. Suppressed findings can now be emitted with SARIF suppression arrays.
-- **LSPDiagnosticData** — `ToLSP()` populates `diag.Data` with ID, Severity, FixStrategy, Confidence, Category, Tags, code data, Snippet, Suppression, Metadata, and RelatedFindingIDs. `FromLSP` restores them. Round-trip is lossless including SeverityCritical (which LSP collapses to Error) and RelatedRef.FindingID (which is preserved instead of regenerated).
-- **Analysis BeforeCode** — `analysis.FromDiagnostic` now extracts `BeforeCode` from TextEdits by reading source file from disk.
-- **GroupByFile returns map[FilePath][]Finding** — Updated to use branded type as map key.
-- **lockutil.Locked/RLocked for mutex boilerplate** — Generic helpers `lockutil.Locked(sync.Locker, fn)` and `lockutil.RLocked(*sync.RWMutex, fn)` consolidate the m.mu.Lock()/defer m.mu.Unlock() pattern. Returns generic T; use `struct{}` for side-effect-only sections. Report/metrics/file_backup/registry/category_linter/etc. all use these.
-- **makezero is `always: false` (intentional)** — `.golangci.yml` sets makezero `always: false`. The `always: true` mode flags the idiomatic `make([]T, len) + copy()` pattern as wrong (23 false positives). The `false` mode still catches the real bug: `make([]T, n) + append` (over-allocation). Idiomatic Go wins. One-line revert in `.golangci.yml` if append-only style is ever desired.
-- **StageTiming closure must be called exactly once** — `Metrics.RecordStage` uses `+=` (`metrics.go:50`), so calling the closure returned by `stageTiming(stage)` more than once double-records the duration. When wrapping a stage that has success AND error/hook-abort paths, invoke the done-closure on exactly one path. Previous bug: `pipeline_iteration.go` called `applyDone()` on both the success path and the hook-error path.
-- **RetryConfig validation uses named sentinels** — `pipeline/retry.go:20-25` defines 6 named sentinel errors (`errMaxRetriesNegative`, `errBaseDelayPositive`, etc.). Consumers can `errors.Is(err, errBaseDelayPositive)`. NEVER inline `errors.New("...")` in validation returns — it breaks `errors.Is()` matching. Any new validation rule must add a named sentinel var.
-- **version-check.sh uses `--match 'v[0-9]*'`** — `git describe --tags --abbrev=0` without the match pattern picks up sub-module directory-prefixed tags (e.g. `analysis/v1.3.0`) alphabetically before the core `v*` tag. The `--match 'v[0-9]*'` filter ensures only core tags are matched. Any script that resolves the core version from git tags must use this flag.
-- **doc.go API references must match current names** — `doc.go` contains godoc prose that references API symbols by name. After ANY rename (e.g. `GetCategory` → `CategoryOf`), grep `doc.go` for the old name. Stale references in godoc mislead consumers reading the package documentation.
-- **FindingError implements go-error-family interfaces** — `ErrorCode()` returns `"finding.<category>"`; `ErrorFamily()` maps ErrorCategory to errorfamily.Family (Validation/Parse→Rejection, Conflict→Conflict, IO→Transient, Internal→Infrastructure). Consumers can call `errorfamily.Classify(err)` on go-finding errors. See ADR #15.
-- **Consumer count is from 2026-07-22 audit** — The v1.0.0 audit (`docs/reviews/archived/2026-07-05_20-55_consumer-audit.html`, 2026-07-05) counted 20 consumers. The v1.3.0-era audit (`docs/planning/archived/2026-07-22_17-56_consumer-driven-api-improvements.md`, 2026-07-22) counted 22 consumers (14 with Go code). The count grows over time — do not assert a specific number without checking the latest data.
-- **must[T] eliminates panic-on-error boilerplate** — `errors.go` defines `func must[T any](v T, err error) T` used by `MustParseCategory`, `MustParseSeverity`, and `Builder.MustBuild`. Any new Must-style constructor should delegate to `must(...)`, not repeat the `if err != nil { panic(err) }` pattern.
-- **NewParallelGomega consolidates test setup** — Each module's `testutil_test.go` defines `NewParallelGomega(t *testing.T) *gomega.GomegaWithT` which calls `t.Helper()`, `t.Parallel()`, and `gomega.NewWithT(t)`. Test functions should use `g := NewParallelGomega(t)` instead of the two-line `t.Parallel(); g := NewWithT(t)` boilerplate. The `paralleltest` linter is disabled in `.golangci.yml` because it cannot trace `t.Parallel()` through the helper.
-- **paralleltest linter disabled (intentional)** — `.golangci.yml` disables `paralleltest` because `t.Parallel()` is centralized inside `NewParallelGomega` helpers across all 4 modules. The linter cannot trace calls through wrapper functions. Re-enabling requires either inlining `t.Parallel()` everywhere or adding `//nolint:paralleltest` to 100+ test functions.
-- **marshalJSONString centralizes marshal-to-string** — `json.go` defines `marshalJSONString(bytes []byte, err error) (string, error)` which wraps marshal errors and returns the string. Used by `Report.JSON()`, `PrettyJSON()`, `PrettyJSONFiltered()`, and `Finding.LineJSON()`.
-- **marshalOpts / prettyMarshalOpts centralize deterministic JSON options** — `json.go` defines two package-level variables: `marshalOpts = json.Deterministic(true)` (compact) and `prettyMarshalOpts` (deterministic + 2-space indent). All production `MarshalJSON`, `PrettyJSON`, `PrettyJSONFiltered`, `WriteJSON`, `ToSARIFWithOpts`, `WriteSARIFWithOpts`, `LineJSON`, and `Finding.WriteJSON` use these. `encoding/json/v2` serializes Go map keys in unspecified order by default — without `Deterministic(true)`, output is non-reproducible. The CI script `json-deterministic-check.sh` enforces this at code level. Any new marshal call in production code MUST use `marshalOpts` or `prettyMarshalOpts`.
-- **Badge() derives from Emoji()** — `Severity.Badge()` returns `Emoji() + " " + strings.ToUpper(string(s))` instead of a duplicate switch. Any new emoji-to-severity mapping only needs to update `Emoji()`.
-- **severityPriorities map replaces switch** — `Severity.PriorityString()` uses a `map[Severity]string` lookup (`severityPriorities`) instead of a switch statement. Add new severity priorities to the map, not a new case.
-- **fixEditJSON is the JSON wire type** — `pipeline/fix_edit.go` defines `fixEditJSON` at package level (not as inner types in Marshal/UnmarshalJSON) to control field tags independently of the `FixEdit` domain type.
-- **FlightRecorderHook wraps Go 1.25 runtime/trace.FlightRecorder** — `pipeline/flight_recorder.go` provides `FlightRecorderHook` implementing `StageHook`. It continuously buffers Go execution trace data and captures snapshots when stages exceed `SlowStageThreshold` or on manual `Snapshot(ctx, reason)`. `OnStageEvent` never returns errors (diagnostic-only). If another flight recorder is already active (Go singleton limit), `NewFlightRecorderHook` enters degraded mode: returns `(hook, nil)` with `Degraded()` true, all snapshots silently skipped. Check `Degraded()` to detect this. `Snapshot` accepts `context.Context` — cancelled contexts skip the write. `asyncSnapshot` uses `context.Background()` internally (pipeline ctx may be cancelled before goroutine executes). `writeMu` serializes concurrent `WriteTo` calls. `Close()` waits for in-flight snapshots before `fr.Stop()`. CLI flags: `-trace`, `-trace-dir`, `-trace-slow`. See https://go.dev/blog/flight-recorder.
-- **ResolveSafePath is the path traversal security boundary** — `pipeline/path_safety.go` exports `ResolveSafePath(rootDir, relPath)` which resolves symlinks and verifies the result stays within `rootDir`. This is the single source of truth for path containment, used by FixApplier and Pipeline to prevent path traversal attacks (e.g., `Position.File = "../../etc/passwd"`). All file paths from Finding data pass through this before any filesystem operation. Consumers can use `ResolveSafePath` / `ResolveSafePathFrom` / `ResolveRoot` for their own path validation.
-- **FlightRecorderFileConfig / ResolveFlightRecorder** — `pipeline/config_file.go` defines `FlightRecorderFileConfig` (5 string-encoded fields: `Enabled`, `OutputDir`, `SlowStageThreshold`, `MinAge`, `MaxBytes`) as the JSON-friendly config representation. `ConfigFile.ResolveFlightRecorder()` constructs a `*FlightRecorderHook` from the config section, returning `(nil, nil)` when `FlightRecorder` is nil or `Enabled` is false. Duration fields use string syntax (e.g. `"30s"`) parsed via `time.ParseDuration`, matching the convention used elsewhere in `ConfigFile`.
-- **CLI config-file flight recorder fallback** — `cmd/go-finding/config.go` has its own `flightRecorderFileConfig` (5 fields: `Enabled`, `OutputDir`, `SlowStageThreshold`, `MinAge`, `MaxBytes`) — now at full parity with the pipeline's `FlightRecorderFileConfig`. The CLI uses config-file flight recorder settings when `-trace` is not set on the command line. Both structs must be kept in sync when new fields are added.
-- **CI scripts guard multi-module architecture** — Seven scripts in `scripts/` protect the 4-module structure: `replace-audit.sh` (verifies all replace directives point to `../`), `version-drift.sh` (cross-checks that all go.mod files reference the same core version), `test-naming.sh` (enforces one-test-file-per-production-file + no `_extra`/`_bugfix`/`coverage` suffixes), `go-work-sync.sh` (verifies go.work entries match directory structure), `docs-freshness.sh` (flags docs not modified in 180 days and docs whose referenced `.go` files changed since the doc was last updated; matches only backtick code spans and markdown links, not prose mentions), `json-deterministic-check.sh` (enforces `json.Deterministic(true)` on all production marshal calls). Additionally, `go-arch-lint` (via `.go-arch-lint.yml`) enforces one-directional package dependency flow across all 4 modules. All wired into `.github/workflows/ci.yml` as separate jobs.
-- **Finding.GroupID groups related findings** — `GroupID GroupID` (branded type in `branded_types.go`) marks findings as members of a logical set (e.g., a clone group for art-dupl). Optional; JSON key `groupId` (omitempty); included in `Equal()`; builder `WithGroupID`; SARIF round-trips it as property `go-finding/groupId`; LSP round-trips it via `LSPDiagnosticData.GroupID`. `Report.GroupFindings()` returns `map[GroupID][]Finding` over active (non-suppressed) grouped findings, nil when none. art-dupl integration gaps are tracked with implementation status in `docs/feedback/2026-06-05_art-dupl-integration-evaluation.md`.
-- **ToLSP re-emits LSP diagnostic tags from metadata** — `LSPDiagnostic.Tags` is populated by `ToLSP()` from `Metadata[LSPDiagnosticTagsKey]` (comma-separated ints, as written by `FromLSP`). A FromLSP-created finding therefore keeps its tags on every subsequent ToLSP conversion, not just through one round-trip. Malformed entries in the metadata value are silently skipped.
-- **FixEngine reports per-finding outcomes** — `FixEngine.ApplyWithOutcomes(content, fixes)` returns a `FixApplyResult` with one `FixOutcome` per input finding (input order): `applied` / `no-change` / `refused` (matched provider produced zero edits without error — previously indistinguishable from success, issue #27) / `conflict` / `invalid` (edit dropped as invalid or out of bounds) / `failed` (provider error in `Err`). `Apply` and `ApplyWithConflicts` delegate to it, so their return shapes and behavior are unchanged.
-- **FixApplier rollback is per-file by default** — `RollbackPolicyFailingFile` (default, zero value) restores only the failing file; earlier files keep their applied fixes. Soft per-finding failures (provider resolve errors, refused findings) never abort the run: `applyToFile` writes valid applied edits and reports resolve errors via outcomes plus the joined error return. `RollbackPolicyAllFiles` preserves the legacy all-or-nothing rollback (set via `SetRollbackPolicy`, `Config.FixRollbackAllFiles`, or config-file `fixRollbackAllFiles`). `ApplyWithReport` returns an `ApplyReport` (applied fixes, outcomes, shift maps, rolled-back files). Before this change, one provider resolve error on the last file discarded all clean edits in all previous files (issue #28).
-- **Run `go test` invocations SEQUENTIALLY on this machine** — Two concurrent `go test`/`go build` runs sharing `GOCACHE=/mnt/buildcache/go-build` produce transient `[build failed]` / `[setup failed]` errors (missing cache entries, "package X is not in std"). A plain retry of the same command succeeds. Don't misdiagnose this as a code or toolchain problem.
-- **FixApplier's `modified` list tracks backed-up files, not written files** — A file whose findings all soft-fail is still backed up (and therefore listed in `report.RolledBack` and the error text `(rolled back: ...)` when restored); restoring it is a content no-op. Tests asserting exact rolled-back lists must expect backed-up-but-unchanged paths too.
-- **`treefmt` is not directly invokable via `nix develop -c treefmt`** (not on the devShell PATH even though `nix flake check` runs it). Fix golines/gofumpt findings by hand and let `golangci-lint run` verify; dprint covers markdown.
-- **`pipeline/examples/` is the pipeline-module examples home** — One runnable program per subdirectory (e.g. `outcomes/`) plus `example_compile_test.go` building each with `go build -o /dev/null`, mirroring the root `examples/` pattern. Arch-lint component `pipeline-examples`.
-- **Billing decision (2026-09-08)** — User chose to IGNORE the GitHub Actions billing failure (account switch planned). Local gates are the quality bar until then: race tests ×4 modules, lint ×4, structural scripts, go-arch-lint, dprint, `nix flake check`. After the switch, `gh workflow run ci.yml --ref master` and verify every job.
-- **Outcome failures are typed** — Failed `FixOutcome.Err` values are `*finding.FindingError` (parse category) with the finding's position attached; `errors.Is`/`As` chains to the original provider cause are preserved. `FixOutcome`/`FixApplyResult` marshal deterministically (errors as message strings). `Metrics.RecordOutcome`/`OutcomeCounts` aggregate them; the CLI prints a `Fix outcomes:` summary. Stress tests are a MANDATORY release gate (release-procedure step 4, decided 2026-09-08).
+_Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived/2026-09-08_agents-gotchas-diet.md`._
+
+### Environment & workflow
+
+- **GOEXPERIMENT=jsonv2 required** — project uses `encoding/json/v2` (Go 1.26 experimental). All `nix run .#*` apps and devShells export it. Direct `go build`/`go test` outside nix need `export GOEXPERIMENT=jsonv2`; the per-module path needs BOTH `GOWORK=off` and `GOEXPERIMENT=jsonv2`. Drop when json/v2 stabilizes (Go 1.27+, tracked in ROADMAP).
+- **Run `go test` invocations SEQUENTIALLY on this machine** — two concurrent `go test`/`go build` runs sharing `GOCACHE=/mnt/buildcache/go-build` produce transient `[build failed]` errors. A plain retry succeeds; don't misdiagnose as code/toolchain problems.
+- **`treefmt` is not invokable via `nix develop -c treefmt`** — fix golines/gofumpt findings by hand, verify with `golangci-lint run`; dprint covers markdown.
+- **CI billing ignored (2026-09-08 decision)** — account switch pending; local gates are the quality bar (race x4, lint x4, structural scripts, go-arch-lint, dprint, `nix flake check`, stress `ginkgo --repeat=20 --race` as MANDATORY release gate). After the switch: `gh workflow run ci.yml --ref master`, verify every job.
+- **Repo is private** — consumers MUST set `GOPRIVATE=github.com/larsartmann/go-finding` (or `github.com/larsartmann/*`) or module resolution 404s on the public proxy.
+- **Multi-module release tagging** — sub-modules need directory-prefixed tags (`pipeline/v*`, `analysis/v*`, `cmd/go-finding/v*`); core uses unprefixed `v*`; sub-modules have no version.go. See `docs/release-procedure.md`.
+- **version-check.sh needs `--match 'v[0-9]*'`** — plain `git describe` picks sub-module tags alphabetically first. Any script resolving the core version from tags must use this flag.
+- **CI scripts guard the 4-module structure** — `replace-audit.sh`, `version-drift.sh`, `test-naming.sh`, `go-work-sync.sh`, `docs-freshness.sh` (backtick spans + links only), `json-deterministic-check.sh`, plus `go-arch-lint` (`.go-arch-lint.yml`, 11 components, one-directional flow cli->pipeline->core, analysis->core). All wired into ci.yml.
+
+### Core type rules
+
+- **Branded types prevent mixups** — `ID`, `RuleName`, `ToolName`, `FilePath`, `GroupID` are distinct string types (`branded_types.go`). Use `finding.ID("x")` / `finding.FilePath("p")`; string literals auto-convert. JSON marshals as plain string. `GroupByFile` returns `map[FilePath][]Finding`.
+- **Confidence is a named type** — `type Confidence float64` with `IsValid()`/`Clamp()`; `NewFinding`/`Builder` accept it (not raw float64), defaulting to `ConfidenceFull`; `ParseConfidence("high")` inverts `String()`, errors match `ErrInvalidConfidence` via `errors.Is`.
+- **Position.Offset uses -1 sentinel** — `Position{}` zero value means byte 0; constructors set Offset=-1 for "unset". Check with `HasOffset()` (>= 0). Line=0 file-only positions are valid: `validateIdentity()` uses `HasFile()`; `Position.IsValid()` still requires Line>0 (backward compat).
+- **GenerateID is length-prefixed** — `writeLenField` (uint32 big-endian) prevents hash collisions when field values contain colons.
+- **Range end conventions** — `Range.EndOrStart` / `EndOffsetOrStart` give the effective end for single-point ranges (`End.Line == 0` or `End.Offset < 0` means "same as Start"); overlap/intersection use them.
+- **FixStrategy normalized** — `NormalizeFixStrategy()` converts "" to "none" (Builder.Build, SARIF import, Equal short-circuit). `FixStrategyAI` is reserved (no backend). `HasFix()` requires BeforeCode/AfterCode for Direct.
+- **tagsEqual fast path** — `Equal()` checks `slices.Equal` before clone+sort; same-order tags cost 0 allocations.
+- **Validate() decomposed** — 6 per-field validators in `finding_validate.go`; add new rules there.
+- **Severity aliases are API** — `RegisterSeverityAlias()`/`LookupSeverityAlias()` (RWMutex-guarded global map); `SeverityFromLevel(level, fallback)` maps strings incl. aliases; `PriorityString()` uses the `severityPriorities` map; `Badge()` derives from `Emoji()` (update only `Emoji()` for new mappings).
+- **Deterministic JSON is mandatory** — all production marshal calls use `marshalOpts` / `prettyMarshalOpts` (`json.Deterministic(true)`); `marshalJSONString` wraps marshal-to-string. `encoding/json/v2` serializes map keys in unspecified order otherwise. Enforced by `json-deterministic-check.sh`. Wire types are separate structs where tags differ (`fixEditJSON`, `fixOutcomeJSON`, `fixApplyResultJSON`); errors serialize as message strings.
+- **FindingError implements go-error-family** — `ErrorCode()` = `"finding.<category>"`, `ErrorFamily()` maps to errorfamily families; `errorfamily.Classify(err)` works on go-finding errors. See ADR #15.
+- **`must[T]`** — `errors.go`; any new Must-constructor delegates to it.
+- **doc.go must match current names** — after ANY rename, grep `doc.go` for the old symbol (godoc prose misleads otherwise).
+- **Consumer count grows** — last audit (2026-07-22) counted 22 consumers (14 with Go code); never assert a fixed number without checking latest data.
+
+### Core API surface
+
+- **Report** — zero-value safe (value mutex); `findings` unexported: use `FindingsSnapshot()` (deep copy), `All()`, `FindByID()`; `NewReportFromFindings(tool, findings)` is the one-step creator.
+- **Builder/Template** — `BuildOrDefault()` returns zero `Finding{}` on invalid input; `Template` stamps common fields (`NewTemplate` + `With*`), `Template.Builder()` returns a chainable `*Builder` for per-finding overrides. Convenience APIs: `ApplySimpleFixes` (core string replace), `CheckBinary`/`RunCmd` (external tool helpers -> `NewIOError`), `FormatTextRich` (emoji; `FormatText` keeps `[SEVERITY]`), `FormatTable`. Full docs: doc.go, README, `docs/guides/`.
+- **Suppression** — `IsSuppressedAt` uses `Suppression.IsActive(now)` (valid Kind + Rule AND not expired); invalid suppressions are inactive.
+- **GroupID groups findings** — optional `Finding.GroupID` (branded); JSON `groupId` (omitempty); in `Equal()`; builder `WithGroupID`; SARIF property `go-finding/groupId`; LSP via `LSPDiagnosticData.GroupID`; `Report.GroupFindings()` returns active grouped findings (map — order unspecified). See `docs/guides/finding-groups.md`.
+- **LSP fidelity** — `LSPDiagnosticData` on `diag.Data` preserves ID/Severity/FixStrategy/Confidence/Category/Tags/code/Snippet/Suppression/Metadata/RelatedFindingIDs; round-trip lossless incl. SeverityCritical (LSP collapses to Error). `ToLSP()` re-emits `Tags` from `Metadata[LSPDiagnosticTagsKey]` (malformed entries skipped; negatives rejected).
+- **SARIF options** — `ToSARIFWithOpts(WithIncludeSuppressed(), WithMinSeverity(sev))`; deprecated `ToSARIFFiltered` retained as alias. SARIF is hand-rolled (ADR #9).
+- **context.Context on I/O** — `WriteSARIF`, `FindingsFromSARIF`, etc. take context first.
+
+### Pipeline behavior
+
+- **Pipeline.Run() is single-use** — second call returns `errAlreadyRan`.
+- **StageHooks** — `Config.StageHooks` with `StageHook`/`StageHookFunc`; both StageBefore and StageAfter errors abort.
+- **StageTiming closure must run exactly once** — `Metrics.RecordStage` uses `+=` (`metrics.go:50`); invoking the done-closure on both success and error paths double-records (past bug in `pipeline_iteration.go`).
+- **RetryConfig validation uses named sentinels** — `pipeline/retry.go`; NEVER inline `errors.New` in validation returns (breaks `errors.Is`).
+- **ResolveSafePath is the path traversal security boundary** — `pipeline/path_safety.go` resolves symlinks and verifies containment within root before ANY filesystem op on Finding paths. `ResolveRoot` + `ResolveSafePathFrom` batch-cache (resolve root once); `ResolveSafePath` is the single-call wrapper.
+- **FixEngine** — byte-level, descending-offset application; all edits resolve against one original content snapshot; O(F+R) single pass. Provider chain: Offset -> Line -> Substring (fallback), custom providers prepended; `lineIndexAware` caches the line index lazily per file. `SubstringProvider` is column-aware.
+- **Fix outcomes (v1.7.0)** — `ApplyWithOutcomes` returns `FixApplyResult` with one `FixOutcome` per input finding (input order): applied / no-change / refused / conflict / invalid / failed. `Apply`/`ApplyWithConflicts` delegate (unchanged shapes). `OutcomeFor`/`OutcomeCounts`/`HasErrors` query. Failed `Err` values are typed `*finding.FindingError` with position; `errors.Is`/`As` reach the provider cause. Guide: `docs/guides/outcomes.md`.
+- **Rollback is per-file by default (ADR-016)** — `RollbackPolicyFailingFile` restores only the failing file; opt into all-or-nothing via `SetRollbackPolicy(RollbackPolicyAllFiles)` / `Config.FixRollbackAllFiles` / config `fixRollbackAllFiles` / CLI `-fix-rollback-all`. Soft per-finding failures never abort: applied edits stay, errors surface in outcomes + joined error. `ApplyWithReport` returns `ApplyReport`; `FailedOutcomes()` isolates failures; `Metrics.RecordOutcome`/`OutcomeCounts` aggregate; CLI prints `Fix outcomes:` summary.
+- **`RolledBack` lists backed-up files, not modified files** — soft-failed files are still backed up; restoring them is a content no-op but they appear in `RolledBack` and the `(rolled back: ...)` error text. Tests must expect them.
+- **NewFixApplier returns error** — propagates backup dir creation failures.
+- **LineShiftMap** — `ShiftedPosition` shifts line+column; `ShiftedRange` shifts both endpoints.
+- **FlightRecorderHook** — wraps Go 1.25 `runtime/trace.FlightRecorder`; snapshots on `SlowStageThreshold` or `Snapshot(ctx, reason)`; `OnStageEvent` never errors; degraded mode when Go's singleton recorder is taken (check `Degraded()`); `Close()` waits for in-flight snapshots. Config via `FlightRecorderFileConfig` + `ResolveFlightRecorder()` (5 string-encoded fields) with full CLI parity (`flightRecorder` config section vs `-trace` flags) — keep both structs in sync. CLI flags: `-trace`, `-trace-dir`, `-trace-slow`.
+- **Analysis BeforeCode** — `analysis.FromDiagnostic` reads source files to extract `BeforeCode` from TextEdits.
+
+### Testing & tooling
+
+- **math/rand split** — production `math/rand/v2`; tests `math/rand` (v1, `testing/quick` constraint).
+- **testify is transitive only** — `// indirect` via ginkgo/slim-sprig; not used directly (banned but unavoidable).
+- **NewParallelGomega** — per-module `testutil_test.go` helper (Helper + Parallel + NewWithT in one). `paralleltest` linter disabled because it can't trace `t.Parallel()` through the helper; re-enabling means inlining or nolint-ing 100+ tests.
+- **makezero `always: false` (intentional)** — `always: true` flags idiomatic `make+copy` (23 FPs); `false` still catches real `make+append` over-allocation.
+- **Stress gate is mandatory** — `ginkgo -r --race --repeat=20 --skip-package=examples` (core, pipeline), `go test -race -count=20` (analysis, CLI) before any tag (release-procedure step 4).
+- **`pipeline/examples/`** — one runnable program per subdir + `example_compile_test.go` (`go build -o /dev/null`), mirroring root `examples/`.
 
 ## CLI Features
 
@@ -181,44 +169,23 @@ bash scripts/version-check.sh                                    # Verify versio
 
 ## Architecture Decisions
 
-- **SARIF hand-rolled** — Not go-sarif. No SARIF library dependency, custom property bag, streaming + context. See ADR #9.
-- **go-error-family integration** — Core module depends on `go-error-family` for unified error classification. `FindingError` implements `Coded` + `Classified`. See ADR #15.
-- **Pipeline split** — `pipeline.go` + `pipeline_detect.go`, both under 350 lines
-- **Byte-level FixEngine** — `[]byte` edit ops with descending-offset application, O(F+R) single-pass
-- **FixProvider chain** — OffsetProvider → LineProvider → SubstringProvider (fallback); custom providers prepended
-- **lineIndexAware lazy caching** — Line offset index built once per file, only when a LineProvider/SubstringProvider handles a finding
-- **GoASTProvider** — AST-aware provider in `pipeline/goast/` (opt-in `go/parser` dependency)
-- **IntervalIndex[T]** — Generic O(n + k) overlap queries (sorted-slice impl); used by Correlate
-- **DetectorRegistry** — Thread-safe plugin architecture with `Register`/`Build`/`BuildAll`
-- **MergeIter** — Streaming `iter.Seq[Finding]` merge with dedup
-- **ConfigFile** — JSON config loading with `ResolveDetectors`/`ResolveProviders`
-- **go-output CLI adapter** — `cmd/go-finding/output_adapter.go` adapts `[]Finding` → `output.Table` for markdown/CSV/TSV. Root `finding` package stays dependency-free. See `docs/PRO_CONTRA_go-output-integration.md`.
-- **Branded primitive types** — `type ID/RuleName/ToolName/FilePath string` in `branded_types.go`. Compile-time type safety preventing ID/Rule/Tool/File mixups. JSON marshals as string. Named `ID` not `FindingID` to avoid revive stutter (`finding.FindingID`).
-- **Validate decomposition** — Monolithic `Validate()` split into 6 per-field validators. Each returns `[]error`, aggregated by `Validate()`.
-- **SeverityAliases thread-safe** — `sync.RWMutex` guarded global map; `RegisterSeverityAlias()` / `LookupSeverityAlias()` API.
-- **FindingTransformer** — Renamed from `FindingProcessor`/`Process()`. Pipeline uses `Config.Processors []FindingTransformer`.
-- **Conflict** — Renamed from `ConflictInfo`. `AnalyzeConflicts() []Conflict`.
-- **SARIFOption pattern** — Functional options (`WithIncludeSuppressed`, `WithMinSeverity`) for SARIF export. `ToSARIF`/`WriteSARIF` delegate to `ToSARIFWithOpts`/`WriteSARIFWithOpts`. Deprecated `ToSARIFFiltered`/`WriteSARIFFiltered` retained as aliases.
-- **LSP data fidelity** — `LSPDiagnosticData` struct on `LSPDiagnostic.Data` preserves go-finding-specific fields (ID, FixStrategy, Confidence, Category, Tags, code data) through LSP round-trip.
-- **CLI flag rename** — `-severity` renamed to `-min-severity` with deprecated alias retained for backward compat.
-- **Analysis BeforeCode extraction** — `analysis.FromDiagnostic` reads source files to extract `BeforeCode` from TextEdit ranges, enabling full fix data on go/analysis findings.
-- **Pipeline convenience functions** — `pipeline.Detect(ctx, detectors...)` for one-shot detection; `pipeline.ApplyToContent(content, fixes)` for content-level fix application without filesystem.
-- **FixEngine guide** — `docs/guides/fix-engine.md` covers all FixEngine usage patterns.
-- **lockutil package** — Generic `lockutil.Locked(sync.Locker, fn) T` and `lockutil.RLocked(*sync.RWMutex, fn) T` helpers eliminate m.mu.Lock()/defer m.mu.Unlock() boilerplate across Report, Metrics, FileBackup, registries, and AST provider. Stdlib only, follows `gotoken` precedent.
-- **FlightRecorderHook** — Wraps Go 1.25 `runtime/trace.FlightRecorder` as a `StageHook`. Stdlib-only (no external dep). Continuously buffers execution trace; snapshots on slow-stage threshold breach or manual `Snapshot(reason)`. `OnStageEvent` never returns errors (diagnostic-only). `Close()` waits for in-flight snapshots before `fr.Stop()` to avoid `WriteTo`/`Stop` data race. See https://go.dev/blog/flight-recorder.
-- **Multi-module release tagging** — Each sub-module needs a **directory-prefixed** git tag to resolve on the Go proxy: `pipeline/v*`, `analysis/v*`, `cmd/go-finding/v*`. Core uses unprefixed `v*`. Sub-modules have no `version.go`; the tag is the version source. See `docs/release-procedure.md`.
-- **Repo is private** — Until made public, consumers MUST set `GOPRIVATE=github.com/larsartmann/go-finding` or module resolution 404s on the public proxy.
-- **go-arch-lint boundary enforcement** — `.go-arch-lint.yml` (v3 format) defines 11 components (core, gotoken, lockutil, examples, pipeline, pipeline-goast, pipeline-internal, pipeline-examples, analysis, cli, cli-detectors). Dependency flow is one-directional: cli → pipeline → core, analysis → core. Test files excluded via `excludeFiles: ["_test\.go$"]`. Run locally with `go-arch-lint check`. Wired into ci.yml `arch-check` job.
+ADR log: `docs/architecture-decisions.md` (#16 = per-file rollback default, v1.7.0). Key structural calls:
+
+- **SARIF hand-rolled, not go-sarif** — custom property bag, streaming + context. ADR #9.
+- **go-error-family integration** — core dependency for unified error classification. ADR #15.
+- **Pipeline split** — `pipeline.go` + `pipeline_detect.go`, both under 350 lines.
+- **FixProvider chain** — Offset -> Line -> Substring (fallback), custom prepended; `lineIndexAware` lazy line-index caching; GoASTProvider in `pipeline/goast/` (opt-in go/parser).
+- **IntervalIndex[T]** — generic sorted-slice O(n + k) overlap queries, used by Correlate (interval-tree NO-GO note in ROADMAP).
+- **DetectorRegistry** — thread-safe plugin architecture (`Register`/`Build`/`BuildAll`); **MergeIter** — streaming `iter.Seq[Finding]` merge with dedup.
+- **ConfigFile** — JSON config loading with `ResolveDetectors`/`ResolveProviders`.
+- **go-output CLI adapter** — markdown/CSV/TSV live in the CLI module only; root `finding` stays without it. See `docs/PRO_CONTRA_go-output-integration.md`.
+- **Naming history** — `FindingTransformer` (was FindingProcessor), `Conflict` (was ConflictInfo), `-min-severity` (was `-severity`, alias retained), `CategoryOf` (was GetCategory).
+- **Pipeline convenience functions** — `pipeline.Detect(ctx, detectors...)`, `pipeline.ApplyToContent(content, fixes)`.
+- **FixEngine guide** — `docs/guides/fix-engine.md`; outcomes guide `docs/guides/outcomes.md`.
 
 ## Test Organization
 
-**One test file per production file.** No `_extra_test.go`, `_bugfix_test.go`, or `coverage_test.go` files. All tests for a subject live in `<subject>_test.go`.
-
-- **No `_extra` suffix files** — If a test file gets too large, split by subject (e.g., `finding_test.go` + `finding_validate_test.go`), not by arbitrary "\_extra" suffix
-- **No `_bugfix` suffix files** — Regression tests belong in the parent test file alongside the behavior they protect
-- **No `coverage_test.go`** — Never name files after a metric. Name them after what they test (`validate_test.go`, `config_file_test.go`)
-- **Shared helpers** go in `testutil_test.go` (or `assert_extra_test.go` folded into it)
-- **Examples** — One `example_test.go` per package; don't fragment into `example_basic_test.go` + `example_cli_test.go` + `example_extra_test.go`
+**One test file per production file.** All tests for a subject live in `<subject>_test.go` — no `_extra`/`_bugfix`/`coverage` suffixes (split by subject, put regression tests in the parent file, never name files after metrics). Shared helpers in `testutil_test.go`; one `example_test.go` per package (don't fragment).
 
 ## Removed APIs (v1.0.0)
 
