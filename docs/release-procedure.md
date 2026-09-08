@@ -16,6 +16,10 @@
      cheaper equivalent lands in CI.
 5. Update `CHANGELOG.md` with release notes
 6. Update `version.go` (core module only)
+7. **Full FEATURES.md walk** — read `FEATURES.md` end to end and verify every
+   row's status against the code being released. The file is the honest feature
+   inventory; a release must not ship with stale rows. Check in particular that
+   nothing is still marked "(unreleased)" for the version being tagged.
 
 ## Multi-Module Tagging
 

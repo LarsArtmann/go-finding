@@ -83,7 +83,7 @@ decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
 | Align golangci-lint local↔CI; migrate `exhaustruct` → `exhaustruct_v5`         | ⬜ `TODO` | Med    | Low    | Local 2.13.1 vs CI 2.10.1; deprecation warning live (15-42 §f.22).                            |
 | `nix fmt` as pre-commit/CI signal for Go treefmt drift                         | ⬜ `TODO` | Low    | Low    | dprint hook covers md only (15-42 §f.23).                                                     |
 | Consider `.golangci.yml` gofumpt/golines autofix config                        | ⬜ `TODO` | Low    | Low    | End hand-fixing loops (15-42 §f.24).                                                          |
-| IntervalTree go/no-go research note in ROADMAP                                 | ⬜ `TODO` | Low    | Low    | Quantify O(log n + k) vs O(n + k) at consumer scale (15-42 §f.25).                            |
+| IntervalTree go/no-go research note in ROADMAP                                 | ✅ `DONE` | Low    | Low    | **Decided 2026-09-08: NO-GO.** Note in ROADMAP "Performance": measured µs-scale at consumer scale, cache-hostile trees, max-End augmentation as future middle path. |
 
 ## 🟢 LOW Priority
 

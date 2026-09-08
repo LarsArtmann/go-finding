@@ -24,11 +24,14 @@ echo ""
 echo "=== Regression check ==="
 
 # benchstat lines with a regression look like:
-#   BenchmarkName-N   1.00µs ±1%   1.30µs ±2%  +30.00%  (p=0.001 n=10+10)
+#   Clone-32   65.59n ±  3%   95.12n ± 23%  +45.03%  (p=0.000 n=10+10)
 # We look for lines with a positive delta and statistical significance (no "~").
 # The delta is a percentage like +30.00% — extract and compare to threshold.
+# NOTE: benchstat strips the "Benchmark" prefix, so comparison lines start with
+# the bare benchmark name. Match on the significance annotation "(p=" that every
+# comparison line carries instead of a name prefix.
 regressions=$(awk '
-    /^[Bb]enchmark/ && /%/ {
+    /\(p=/ && /%/ {
         # Find the percentage field (contains + and %)
         for (i=1; i<=NF; i++) {
             if ($i ~ /^\+[0-9.]+%$/) {

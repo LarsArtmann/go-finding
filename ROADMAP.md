@@ -65,6 +65,14 @@ Each would live in its own subpackage to keep language-specific dependencies out
 - **GitHub Actions action** - first-class SARIF upload with fix PR generation
 - **Profile-guided optimization** - PGO investigation. The pipeline hot path (fix engine, merge) could benefit from PGO profiles.
 
+### Performance
+
+- **IntervalTree go/no-go (decided 2026-09-08: NO-GO)** - `IntervalIndex` answers overlap queries in O(n + k): it binary-searches the Start cutoff, then scans every interval with `Start < end`, filtering by End. A true interval tree would give O(log n + k). Why no-go at current scale: (1) consumers correlate 10²-10⁴ findings per run — measured `IntervalIndex_Query/10000_intervals_100_queries` is ~10-14µs and `Correlate_RangeBased/1000` ~2-3.6ms; worst-case O(n·m) at 10⁴×10⁴ stays in seconds and no consumer reports pain; (2) tree nodes are pointer-heavy and cache-hostile vs the current contiguous slice, and build cost roughly doubles; (3) if scale ever demands it, a cheaper middle path exists first: augment the sorted slice with max-End prefixes (or a second by-End view) to bound the scan window without leaving slice layout. Revisit trigger: a consumer correlating >50k findings per run or `Correlate` dominating a pprof profile.
+
+### json/v2 stabilization watch
+
+The core module requires `GOEXPERIMENT=jsonv2` (Go 1.26 experimental). Track the Go 1.27 release: once `encoding/json/v2` stabilizes (no experiment flag needed), drop the GOEXPERIMENT requirement from `flake.nix`, `AGENTS.md`, `docs/release-procedure.md`, and all `nix run .#*` wrappers in one sweep. Tracked as an ongoing TODO_LIST row; nothing to do until the Go release notes land.
+
 ### Consumer ecosystem
 
 - **Consumer migration to v1.3.0+ APIs** - 14 Go consumers can now simplify their codebases using `BuildOrDefault`, `Template`, `SeverityFromLevel`, `FilePos`, `NewReportFromFindings`, `ApplySimpleFixes`, `ParseConfidence`, and `Template.Builder`. Each consumer independently reinvented these patterns.
