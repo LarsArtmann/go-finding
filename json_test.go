@@ -45,32 +45,29 @@ func TestFinding_WriteJSON_NewlineError(t *testing.T) {
 
 	f := MakeFindingWithID("newline-write", SeverityInfo)
 
-	// Pass 1: count how many writes a successful WriteJSON performs. The
-	// encoder's internal flush granularity is not contractual, so failing a
-	// hardcoded write index is brittle (NaN findings, for example, fail during
-	// encoding after two writes and never reach the newline at all).
-	counter := &writeCounter{}
-	g.Expect(f.WriteJSON(counter)).NotTo(HaveOccurred())
-
-	// Pass 2: fail exactly the last write — the trailing newline.
-	var buf bytes.Buffer
-
-	w := &failOnNthWriter{w: &buf, n: counter.writes - 1}
-
-	err := f.WriteJSON(w)
+	// Fail exactly the trailing-newline write: WriteJSON's newline call is the
+	// only write whose payload is the single byte '\n'. Index-based write
+	// failure is brittle — the encoder's flush granularity is not contractual
+	// and varies across environments (observed: same commit passed CI's test
+	// job and failed the Release run's, 2026-09-08).
+	err := f.WriteJSON(&newlineFailWriter{})
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err.Error()).To(ContainSubstring("writing trailing newline"))
 }
 
-// writeCounter counts Write calls and discards the data.
-type writeCounter struct {
-	writes int
+// newlineFailWriter fails the exact 1-byte "\n" write and buffers everything
+// else. Any error it produces can only originate from the trailing-newline
+// branch of WriteJSON.
+type newlineFailWriter struct {
+	buf bytes.Buffer
 }
 
-func (c *writeCounter) Write(p []byte) (int, error) {
-	c.writes++
+func (w *newlineFailWriter) Write(p []byte) (int, error) {
+	if len(p) == 1 && p[0] == '\n' {
+		return 0, errors.New("write failed")
+	}
 
-	return len(p), nil
+	return w.buf.Write(p)
 }
 
 func assertSingleFindingWithID(t *testing.T, got *Report, wantID string) {
