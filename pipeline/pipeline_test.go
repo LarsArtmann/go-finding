@@ -3,7 +3,9 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -789,4 +791,76 @@ func TestOnFixOutcome_EventOrdering(t *testing.T) {
 	}
 	g.Expect(statuses[finding.ID("ord-applied")]).To(Equal(FixOutcomeApplied))
 	g.Expect(statuses[finding.ID("ord-refused")]).To(Equal(FixOutcomeRefused))
+}
+
+// TestOnFixOutcome_ConcurrentPipelines pins callback safety across concurrent
+// pipeline runs sharing user callbacks: exactly one OnFixOutcome and one
+// legacy OnFix event per fixable finding per run — no lost, duplicated, or
+// interleaved-corrupted events. Temp dirs and fixture files are created up
+// front; only Run executes in the goroutines. Run under -race.
+func TestOnFixOutcome_ConcurrentPipelines(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	const pipelines = 8
+	const findingsPerPipeline = 2
+
+	dirs := make([]string, pipelines)
+	for i := range dirs {
+		dirs[i] = t.TempDir()
+		writeTestFile(t, filepath.Join(dirs[i], "fixme.go"),
+			[]byte("package main\n\nfunc main() {\n\told()\n}\n"))
+	}
+
+	var mu sync.Mutex
+	outcomeCalls := map[string]int{}
+	legacyCalls := map[string]int{}
+
+	var wg sync.WaitGroup
+	for i := range pipelines {
+		wg.Add(1)
+		go func(n int) {
+			defer wg.Done()
+
+			prefix := fmt.Sprintf("p%d-", n)
+			applied := directFix(prefix+"applied", "r1", "tool", "replace old", "old()", "new()", "fixme.go", 4)
+			refused := directFix(prefix+"refused", "r1", "tool", "absent", "nonexistent", "new()", "fixme.go", 5)
+
+			cfg := Config{
+				MaxIterations:     1,
+				ParallelDetectors: false,
+				OnFixOutcome: func(f finding.Finding, _ FixOutcomeStatus, _ error) {
+					mu.Lock()
+					outcomeCalls[string(f.ID)]++
+					mu.Unlock()
+				},
+				OnFix: func(f finding.Finding, _ bool) {
+					mu.Lock()
+					legacyCalls[string(f.ID)]++
+					mu.Unlock()
+				},
+			}
+
+			p, err := New(cfg, dirs[n], mockDetWithFindings("tool", applied, refused))
+			if err != nil {
+				t.Errorf("pipeline %d: New: %v", n, err)
+				return
+			}
+			if _, err := p.Run(context.Background()); err != nil {
+				t.Errorf("pipeline %d: Run: %v", n, err)
+			}
+		}(i)
+	}
+
+	wg.Wait()
+
+	g.Expect(outcomeCalls).To(HaveLen(pipelines*findingsPerPipeline),
+		"one outcome entry per finding per pipeline")
+	g.Expect(legacyCalls).To(HaveLen(pipelines*findingsPerPipeline),
+		"one legacy entry per finding per pipeline")
+	for id, n := range outcomeCalls {
+		g.Expect(n).To(Equal(1), "OnFixOutcome fired %d times for %s", n, id)
+	}
+	for id, n := range legacyCalls {
+		g.Expect(n).To(Equal(1), "OnFix fired %d times for %s", n, id)
+	}
 }

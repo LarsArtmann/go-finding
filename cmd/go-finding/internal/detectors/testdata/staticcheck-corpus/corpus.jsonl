@@ -1,0 +1,3 @@
+{"code":"S1002","severity":"error","location":{"file":"corpus.go","line":15,"column":9},"end":{"file":"corpus.go","line":15,"column":18},"message":"should omit comparison to bool constant, can be simplified to b"}
+{"code":"SA4006","severity":"error","location":{"file":"corpus.go","line":20,"column":2},"end":{"file":"corpus.go","line":20,"column":11},"message":"this value of x is never used"}
+{"code":"S1025","severity":"error","location":{"file":"corpus.go","line":27,"column":9},"end":{"file":"corpus.go","line":27,"column":29},"message":"the argument is already a string, there's no need to use fmt.Sprintf"}
