@@ -475,6 +475,7 @@ fmt.Println(finding.Version) // "1.7.0"
 | [docs/USAGE_GUIDE.md](docs/USAGE_GUIDE.md)                                       | Comprehensive usage guide                                |
 | [docs/MIGRATION_v1.0.md](docs/MIGRATION_v1.0.md)                                 | v1.0 migration instructions                              |
 | [docs/guides/consumer-migration-v1.7.md](docs/guides/consumer-migration-v1.7.md) | Upgrade guide: outcomes, rollback default, groups        |
+| [docs/guides/outcomes.md](docs/guides/outcomes.md)                               | Per-finding fix outcomes, rollback semantics, metrics    |
 | [docs/guides/fix-engine.md](docs/guides/fix-engine.md)                           | Fix engine patterns (providers, edits, conflicts)        |
 | [docs/guides/fix-providers.md](docs/guides/fix-providers.md)                     | Writing custom fix providers                             |
 | [docs/guides/finding-groups.md](docs/guides/finding-groups.md)                   | Grouping related findings via SARIF/LSP                  |
