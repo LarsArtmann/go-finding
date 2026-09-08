@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json/v2"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/LarsArtmann/gogenfilter/v3"
@@ -249,4 +251,67 @@ func ExampleMetrics() {
 	// applied: 2
 	// refused: 1
 	// fixes: 2
+}
+
+// ExampleFixApplier_ApplyDryRun demonstrates plan-without-apply: the dry run
+// reports the outcomes a real fix run would produce (including shift maps)
+// while leaving every file untouched and creating no backups.
+func ExampleFixApplier_ApplyDryRun() {
+	dir, err := os.MkdirTemp("", "dryrun-*")
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+	defer func() { _ = os.RemoveAll(dir) }()
+
+	file := filepath.Join(dir, "dry.go")
+	const original = "package main\n\nfunc main() {\n\told()\n}\n"
+	if err := os.WriteFile(file, []byte(original), 0o600); err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	applier, err := pipeline.NewFixApplier(dir)
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+	defer func() { _ = applier.Close() }()
+
+	fix, ferr := finding.NewBuilder(
+		finding.RuleName("rename"), finding.ToolName("example"),
+		"rename old",
+		finding.SeverityWarning,
+		finding.Pos("dry.go", 4, 2),
+	).
+		WithFixStrategy(finding.FixStrategyDirect).
+		WithBeforeCode("old()").
+		WithAfterCode("new()").
+		Build()
+	if ferr != nil {
+		fmt.Println("error:", ferr)
+
+		return
+	}
+
+	report, err := applier.ApplyDryRun(context.Background(), []finding.Finding{fix})
+	if err != nil {
+		fmt.Println("error:", err)
+
+		return
+	}
+
+	for _, oc := range report.Outcomes {
+		fmt.Println(oc.Finding.Rule, oc.Status)
+	}
+
+	data, _ := os.ReadFile(file)
+	fmt.Println("unchanged:", string(data) == original)
+
+	// Output:
+	// rename applied
+	// unchanged: true
 }

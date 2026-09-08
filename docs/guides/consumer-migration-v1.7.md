@@ -119,3 +119,35 @@ safe, err := pipeline.ResolveSafePath(rootDir, findingPath)
 3. Compile: `GOEXPERIMENT=jsonv2 go build ./...` (jsonv2 is required)
 4. If you consumed `ApplyWithConflicts` reconciliation code — migrate to
    `ApplyWithOutcomes`
+
+---
+
+## Preview: APIs landing in v1.8.0
+
+The following additions shipped after the v1.7.0 tag and release with v1.8.0.
+All are additive — no migration required, but they replace common consumer
+patterns:
+
+**`Config.OnFixOutcome`** — observe per-finding fix results as they happen
+(works alongside metrics; `OnFix` remains but is deprecated):
+
+```go
+cfg := pipeline.Config{
+    OnFixOutcome: func(f finding.Finding, status pipeline.FixOutcomeStatus, err error) {
+        log.Printf("%s: %s", f.ID, status)
+    },
+}
+```
+
+**`FixApplier.ApplyDryRun(ctx, findings)`** — plan/apply workflows: get the
+full `ApplyReport` (outcomes, shift maps) with zero writes and no backups.
+Unsafe-path findings surface as `failed` outcomes instead of being dropped.
+
+**`Finding.GroupID` validation** — `GroupID.IsValid()` (≤128 bytes, no
+whitespace/control chars) is now enforced by `Validate()`. Machine-generated
+IDs (hashes, slugs) pass; free-text labels with spaces now fail validation.
+
+**`Report.GroupFindingsSorted() []Group`** — deterministic group order for
+serialization and stable CLI output (map variant keeps unspecified order).
+
+**`Template.WithGroupID`** — stamp group membership on template-built findings.

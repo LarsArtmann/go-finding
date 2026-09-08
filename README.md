@@ -129,6 +129,27 @@ result, applied := pipeline.ApplyToContent(fileContent, findings)
 // result = modified []byte, applied = count of successful fixes
 ```
 
+### Per-finding fix outcomes (v1.7.0)
+
+Know exactly what happened to each finding during a fix run — no more guessing
+whether a fix was applied, refused, conflicted, or failed:
+
+```go
+result := engine.ApplyWithOutcomes(content, fixes)
+for _, oc := range result.Outcomes {
+    fmt.Println(oc.Finding.ID, oc.Status) // applied / no-change / refused / conflict / invalid / failed
+    if oc.Err != nil {
+        fmt.Println("  cause:", oc.Err)
+    }
+}
+
+// Aggregate: pipeline.Metrics.RecordOutcome + OutcomeCounts feed the CLI's
+// "Fix outcomes:" summary. Full guide: docs/guides/outcomes.md
+```
+
+Plan-before-apply: `applier.ApplyDryRun(ctx, findings)` (v1.8.0) returns the
+same report shape with zero writes.
+
 ## Core Types
 
 | Type                                  | Purpose                                                      |

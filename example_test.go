@@ -849,3 +849,37 @@ func ExampleTemplate_Builder() {
 	// high
 	// use humanize.Bytes instead
 }
+
+// ExampleReport_GroupFindingsSorted demonstrates deterministic grouping of
+// findings by GroupID (e.g. clone groups from art-dupl): groups come back
+// sorted by GroupID, findings inside a group keep report order, and
+// findings without a GroupID are omitted.
+func ExampleReport_GroupFindingsSorted() {
+	report := finding.NewReport(finding.ToolInfo{Name: "clone-detector"})
+
+	build := func(id, group, file string, line int) finding.Finding {
+		return finding.NewBuilder(
+			finding.RuleName("duplicate-code"), finding.ToolName("clone-detector"),
+			"duplicated block",
+			finding.SeverityInfo,
+			finding.Pos(finding.FilePath(file), line, 1),
+		).WithGroupID(finding.GroupID(group)).BuildOrDefault()
+	}
+
+	report.AddFinding(build("a", "grp-2", "b.go", 10))
+	report.AddFinding(build("b", "grp-1", "a.go", 5))
+	report.AddFinding(build("c", "grp-2", "c.go", 1))
+	report.AddFinding(build("d", "", "solo.go", 3)) // no group -> omitted
+
+	for _, g := range report.GroupFindingsSorted() {
+		fmt.Printf("%s:", g.ID)
+		for _, f := range g.Findings {
+			fmt.Printf(" %s:%d", f.Position.File, f.Position.Line)
+		}
+		fmt.Println()
+	}
+
+	// Output:
+	// grp-1: a.go:5
+	// grp-2: b.go:10 c.go:1
+}
