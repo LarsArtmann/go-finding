@@ -356,3 +356,31 @@ fixRollbackAllFiles: true
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(string(out)).NotTo(ContainSubstring("unknown field"))
 }
+
+// TestRun_E2E_FixOutcomesLine_AbsentWithoutFixableFindings pins the
+// conditional behind the "Fix outcomes:" stderr summary: it must appear only
+// when the run recorded outcomes. The built-in detectors (govet, staticcheck)
+// emit no code changes, so no outcomes are recorded and the line stays absent.
+// A presence-assertion e2e requires a fix-emitting detector in the compiled
+// binary, which the dynamic registry does not provide today.
+func TestRun_E2E_FixOutcomesLine_AbsentWithoutFixableFindings(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	bin := buildBinary(t)
+	tmpDir := t.TempDir()
+	initGoModule(t, tmpDir)
+
+	goFile := filepath.Join(tmpDir, "main.go")
+	g.Expect(os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644)).
+		NotTo(HaveOccurred())
+
+	cmd := exec.CommandContext( //nolint:gosec // E2E test
+		context.Background(),
+		bin,
+		"-dir="+tmpDir,
+	)
+	out, err := cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(out)).NotTo(ContainSubstring("Fix outcomes:"),
+		"no fix-emitting detector ran; the summary must stay absent")
+}

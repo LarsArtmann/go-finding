@@ -3,6 +3,8 @@ package pipeline
 import (
 	"encoding/json/v2"
 	"errors"
+	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -308,4 +310,73 @@ func TestFixApplyResult_GoldenWireBytes(t *testing.T) {
 	g.Expect(restored.Outcomes).To(HaveLen(2))
 	g.Expect(restored.Outcomes[1].Status).To(Equal(FixOutcomeFailed))
 	g.Expect(restored.Outcomes[1].Err.Error()).To(Equal("provider boom"))
+}
+
+// TestApplyWithOutcomes_Property_OutcomeCountsSum verifies the core outcome
+// invariant: for any input set, the outcome counts sum to exactly the number
+// of input findings — every finding gets precisely one outcome, whatever its
+// status. Property-style: 100 randomized corpora from a fixed seed.
+func TestApplyWithOutcomes_Property_OutcomeCountsSum(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	rng := rand.New(rand.NewSource(42)) //nolint:gosec // deterministic property corpus
+
+	content := []byte("package main\n\nold()\nold()\nold()\nold()\nold()\nold()\nold()\nold()\n")
+
+	for iter := range 100 {
+		n := rng.Intn(20)
+		fixes := make([]finding.Finding, 0, n)
+
+		for i := range n {
+			var f finding.Finding
+
+			switch rng.Intn(4) {
+			case 0: // applies
+				f = finding.Finding{
+					ID:         finding.ID(fmt.Sprintf("f%d-%d-applied", iter, i)),
+					BeforeCode: "old()",
+					AfterCode:  "new()",
+					Position:   finding.Pos("prop.go", 3+rng.Intn(8), 1),
+					Range: &finding.Range{
+						Start: finding.Position{File: "prop.go", Offset: 13},
+						End:   finding.Position{File: "prop.go", Offset: 18},
+					},
+				}
+			case 1: // refused (pattern absent)
+				f = finding.Finding{
+					ID:         finding.ID(fmt.Sprintf("f%d-%d-refused", iter, i)),
+					BeforeCode: "absent()",
+					AfterCode:  "new()",
+					Position:   finding.Pos("prop.go", 3, 1),
+				}
+			case 2: // no change
+				f = finding.Finding{
+					ID:       finding.ID(fmt.Sprintf("f%d-%d-nochange", iter, i)),
+					Message:  "report only",
+					Position: finding.Pos("prop.go", 3, 1),
+				}
+			default: // no change, different shape
+				f = finding.Finding{
+					ID:       finding.ID(fmt.Sprintf("f%d-%d-plain", iter, i)),
+					Rule:     "r",
+					Position: finding.Pos("prop.go", 4, 1),
+				}
+			}
+
+			fixes = append(fixes, f)
+		}
+
+		result := NewFixEngine().ApplyWithOutcomes(content, fixes)
+
+		g.Expect(result.Outcomes).To(HaveLen(len(fixes)),
+			"iter %d: one outcome per input finding", iter)
+
+		sum := 0
+		for _, count := range result.OutcomeCounts() {
+			sum += count
+		}
+
+		g.Expect(sum).To(Equal(len(fixes)),
+			"iter %d: outcome counts must sum to the number of input findings", iter)
+	}
 }
