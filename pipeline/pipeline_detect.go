@@ -301,6 +301,12 @@ func (p *Pipeline) applyDirectFixes(
 		}
 	}
 
+	if p.config.OnFixOutcome != nil {
+		for _, o := range report.Outcomes {
+			p.config.OnFixOutcome(o.Finding, o.Status, o.Err)
+		}
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}

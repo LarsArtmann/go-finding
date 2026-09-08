@@ -27,8 +27,19 @@ type Config struct {
 	Retry *RetryConfig
 	// OnFinding is called for each finding found.
 	OnFinding func(f finding.Finding)
-	// OnFix is called when a fix is applied.
+	// OnFix is called when a fix stage completes for a finding, with
+	// applied reporting whether its edits landed.
+	//
+	// Deprecated: use [Config.OnFixOutcome] instead — it carries the exact
+	// status (applied, refused, conflict, invalid, failed, ...) and the
+	// error for failed resolutions. Retained for backward compatibility;
+	// setting both makes both fire.
 	OnFix func(f finding.Finding, applied bool)
+	// OnFixOutcome is called once per fixable finding with the per-finding
+	// outcome of the fix stage: the exact [FixOutcomeStatus] and, for
+	// failed resolutions, the typed error. Conflicts, refusals, and
+	// failures are first-class here, unlike the boolean OnFix.
+	OnFixOutcome func(f finding.Finding, status FixOutcomeStatus, err error)
 	// OnIteration is called at the end of each iteration.
 	OnIteration func(iter int, findings []finding.Finding)
 	// Metrics collects timing and count data. If nil, no metrics are collected.
