@@ -203,3 +203,109 @@ func TestFixApplyResult_JSON_RoundTrip(t *testing.T) {
 	g.Expect(parsed.Errors).To(HaveLen(1))
 	g.Expect(parsed.Errors[0].Error()).To(Equal(result.Errors[0].Error()))
 }
+
+// FuzzFixOutcomeUnmarshalJSON verifies that UnmarshalJSON never panics on
+// malformed wire data, and that any outcome it accepts re-marshals cleanly.
+func FuzzFixOutcomeUnmarshalJSON(f *testing.F) {
+	f.Add([]byte(`{"finding":{"id":"a"},"status":"applied"}`))
+	f.Add([]byte(`{"status":"failed","error":"boom"}`))
+	f.Add([]byte(`{"status":42}`))
+	f.Add([]byte(`{"finding":null,"status":""}`))
+	f.Add([]byte(`not json at all`))
+	f.Add([]byte(`{"finding":{"severity":"critical","line":-5},"status":"conflict"}`))
+
+	f.Fuzz(func(t *testing.T, data []byte) {
+		var o FixOutcome
+		if err := o.UnmarshalJSON(data); err != nil {
+			return
+		}
+
+		// Accepted input must round-trip through the deterministic marshaler.
+		remarshaled, err := o.MarshalJSON()
+		if err != nil {
+			t.Fatalf("accepted input re-marshal failed: %v\ninput: %s", err, data)
+		}
+
+		var again FixOutcome
+		if err := again.UnmarshalJSON(remarshaled); err != nil {
+			t.Fatalf("re-unmarshal of marshaled output failed: %v\ninput: %s", err, data)
+		}
+	})
+}
+
+// FuzzFixApplyResultUnmarshalJSON verifies that UnmarshalJSON never panics on
+// malformed wire data, and that any result it accepts re-marshals cleanly.
+func FuzzFixApplyResultUnmarshalJSON(f *testing.F) {
+	f.Add([]byte(`{"outcomes":[{"finding":{"id":"a"},"status":"applied"}]}`))
+	f.Add([]byte(`{"content":"aGVsbG8=","applied":[],"errors":["boom"]}`))
+	f.Add([]byte(`{"appliedEdits":[{"offset":1,"length":2,"replacement":"eHg="}]}`))
+	f.Add([]byte(`{"outcomes":[{"status":"failed","error":123}]}`))
+	f.Add([]byte(`[]`))
+	f.Add([]byte(`{"content":[1,2,3]}`))
+
+	f.Fuzz(func(t *testing.T, data []byte) {
+		var r FixApplyResult
+		if err := r.UnmarshalJSON(data); err != nil {
+			return
+		}
+
+		remarshaled, err := r.MarshalJSON()
+		if err != nil {
+			t.Fatalf("accepted input re-marshal failed: %v\ninput: %s", err, data)
+		}
+
+		var again FixApplyResult
+		if err := again.UnmarshalJSON(remarshaled); err != nil {
+			t.Fatalf("re-unmarshal of marshaled output failed: %v\ninput: %s", err, data)
+		}
+	})
+}
+
+// TestFixApplyResult_GoldenWireBytes pins the exact JSON wire format of a
+// representative FixApplyResult. This is the documented byte-level contract:
+// field names, error-as-message-string, and content encoding must not drift
+// silently. Update this golden only via an intentional, changelogged change.
+func TestFixApplyResult_GoldenWireBytes(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	f := finding.Finding{
+		ID:          "gold-1",
+		Rule:        "r1",
+		ToolName:    "gold",
+		Message:     "msg",
+		Severity:    finding.SeverityWarning,
+		Position:    finding.Position{File: "a.go", Line: 3, Offset: 10},
+		BeforeCode:  "old",
+		AfterCode:   "new",
+		FixStrategy: finding.FixStrategyDirect,
+	}
+
+	res := FixApplyResult{
+		Content: []byte("new content"),
+		Applied: []finding.Finding{f},
+		AppliedEdits: []FixEdit{{
+			Offset:      0,
+			Length:      3,
+			Replacement: []byte("new"),
+			Source:      f,
+		}},
+		Outcomes: []FixOutcome{
+			{Finding: f, Status: FixOutcomeApplied},
+			{Finding: f, Status: FixOutcomeFailed, Err: errors.New("provider boom")},
+		},
+		Errors: []error{errors.New("provider boom")},
+	}
+
+	data, err := res.MarshalJSON()
+	g.Expect(err).NotTo(HaveOccurred())
+
+	golden := `{"content":"bmV3IGNvbnRlbnQ=","applied":[{"id":"gold-1","rule":"r1","toolName":"gold","message":"msg","severity":"warning","position":{"file":"a.go","line":3,"column":0,"offset":10},"fixStrategy":"direct","beforeCode":"old","afterCode":"new","confidence":0}],"appliedEdits":[{"offset":0,"length":3,"replacement":"bmV3"}],"outcomes":[{"finding":{"id":"gold-1","rule":"r1","toolName":"gold","message":"msg","severity":"warning","position":{"file":"a.go","line":3,"column":0,"offset":10},"fixStrategy":"direct","beforeCode":"old","afterCode":"new","confidence":0},"status":"applied"},{"finding":{"id":"gold-1","rule":"r1","toolName":"gold","message":"msg","severity":"warning","position":{"file":"a.go","line":3,"column":0,"offset":10},"fixStrategy":"direct","beforeCode":"old","afterCode":"new","confidence":0},"status":"failed","error":"provider boom"}],"errors":["provider boom"]}`
+
+	g.Expect(string(data)).To(Equal(golden), "wire format drifted from the golden bytes")
+
+	var restored FixApplyResult
+	g.Expect(restored.UnmarshalJSON(data)).To(Succeed())
+	g.Expect(restored.Outcomes).To(HaveLen(2))
+	g.Expect(restored.Outcomes[1].Status).To(Equal(FixOutcomeFailed))
+	g.Expect(restored.Outcomes[1].Err.Error()).To(Equal("provider boom"))
+}

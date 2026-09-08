@@ -209,3 +209,55 @@ func BenchmarkFixEngine_ApplyWithOutcomes_Line_100(b *testing.B) {
 func BenchmarkFixEngine_ApplyWithOutcomes_Line_1000(b *testing.B) {
 	benchmarkOutcomesLine(b, 1000)
 }
+
+// generateMixedOutcomeFixes creates n fixes whose outcome statuses are mixed:
+// every 4th finding is a refusal (BeforeCode absent from content), every 4th
+// is a no-change (no code change), and the rest apply cleanly. This exercises
+// the reconciliation pass across statuses, not just the all-applied path.
+func generateMixedOutcomeFixes(n int, content []byte) []finding.Finding {
+	positions := benchutil.PickEvenly(benchutil.FindOldOccurrences(content), n)
+	fixes := make([]finding.Finding, 0, len(positions))
+
+	for i, pos := range positions {
+		switch {
+		case i%4 == 1:
+			fixes = append(fixes, finding.Finding{
+				BeforeCode: "definitely-not-present()",
+				AfterCode:  "new()",
+				Range: &finding.Range{
+					Start: finding.Position{File: "bench.go", Offset: pos},
+					End:   finding.Position{File: "bench.go", Offset: pos + 5},
+				},
+				Position: finding.Pos("bench.go", benchutil.OffsetToLineNumber(content, pos), 1),
+			})
+		case i%4 == 2:
+			fixes = append(fixes, finding.Finding{
+				Message:  "report only",
+				Position: finding.Pos("bench.go", benchutil.OffsetToLineNumber(content, pos), 1),
+			})
+		default:
+			fixes = append(fixes, finding.Finding{
+				BeforeCode: "old()",
+				AfterCode:  "new()",
+				Range: &finding.Range{
+					Start: finding.Position{File: "bench.go", Offset: pos},
+					End:   finding.Position{File: "bench.go", Offset: pos + 5},
+				},
+				Position: finding.Pos("bench.go", benchutil.OffsetToLineNumber(content, pos), 1),
+			})
+		}
+	}
+
+	return fixes
+}
+
+// BenchmarkFixEngine_ApplyWithOutcomes_Mixed_1000 measures the outcome
+// bookkeeping when statuses are mixed (applied / refused / no-change) at
+// n=1000, confirming the reconciliation pass stays allocation-lean relative
+// to the all-applied variants.
+func BenchmarkFixEngine_ApplyWithOutcomes_Mixed_1000(b *testing.B) {
+	b.Helper()
+
+	content := generateContent(10000)
+	benchmarkApplyWithOutcomes(b, generateMixedOutcomeFixes(1000, content))
+}
