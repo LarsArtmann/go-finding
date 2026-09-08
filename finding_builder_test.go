@@ -514,7 +514,9 @@ func TestTemplate_WithGroupID(t *testing.T) {
 	}
 
 	b := tmpl.Builder(RuleName("dup-block"), "duplicated block", SeverityWarning, pos)
+
 	built := b.MustBuild()
+
 	if built.GroupID != GroupID("clone-42") {
 		t.Errorf("Builder GroupID = %q, want clone-42", built.GroupID)
 	}

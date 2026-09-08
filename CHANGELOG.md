@@ -13,14 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **`Report.GroupFindingsSorted()` + `FindingGroup`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order, `nil` when no grouped findings. Use wherever map iteration order must not leak (tests, serialization, stable output).
+- **`Report.GroupFindingsSorted()` + `Group`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order, `nil` when no grouped findings. Use wherever map iteration order must not leak (tests, serialization, stable output).
 - **`Template.WithGroupID`** — Stamps a `GroupID` onto every finding built from the template (whole template = one clone group); per-finding groups remain available via `Builder.WithGroupID`.
 
 ## [Unreleased]
 
 ### Added
 
-- **`Report.GroupFindingsSorted()` + `FindingGroup`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order. For tests, serialization, and stable output where map iteration order must not leak.
+- **`Report.GroupFindingsSorted()` + `Group`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order. For tests, serialization, and stable output where map iteration order must not leak.
 - **`Template.WithGroupID`** — Stamps one `GroupID` onto every finding built from the template.
 
 ### Changed

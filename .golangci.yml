@@ -152,7 +152,11 @@ linters:
       # deliberately partial-initialized (zero-value design: Finding{},
       # Report{}, Config{}, ...); only foreign structs are worth checking.
       ignore-patterns:
-        - LinterRegistry
+        # v5 matches the FULL string "package/path.TypeName". Our own
+        # domain types are deliberately partial-initialized (zero-value
+        # design); only foreign structs are worth checking.
+        - ^github\.com/larsartmann/go-finding\.[A-Za-z0-9_]+$
+        - ^github\.com/larsartmann/go-finding/[a-z/]+\.[A-Za-z0-9_]+$
     funlen:
       lines: 120
       statements: 80

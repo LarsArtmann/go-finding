@@ -97,9 +97,9 @@ func (r *Report) GroupFindings() map[GroupID][]Finding {
 	return groups
 }
 
-// FindingGroup is one GroupID group of findings, as returned by
+// Group is one GroupID group of findings, as returned by
 // [Report.GroupFindingsSorted].
-type FindingGroup struct {
+type Group struct {
 	// ID is the group's GroupID.
 	ID GroupID
 	// Findings are the group members in report order.
@@ -111,7 +111,7 @@ type FindingGroup struct {
 // variant of [Report.GroupFindings] for tests, serialization, and stable
 // output. Returns nil when no grouped findings exist.
 // Safe for concurrent use.
-func (r *Report) GroupFindingsSorted() []FindingGroup {
+func (r *Report) GroupFindingsSorted() []Group {
 	groups := r.GroupFindings()
 	if len(groups) == 0 {
 		return nil
@@ -124,9 +124,9 @@ func (r *Report) GroupFindingsSorted() []FindingGroup {
 
 	slices.Sort(ids)
 
-	sorted := make([]FindingGroup, 0, len(ids))
+	sorted := make([]Group, 0, len(ids))
 	for _, id := range ids {
-		sorted = append(sorted, FindingGroup{ID: id, Findings: groups[id]})
+		sorted = append(sorted, Group{ID: id, Findings: groups[id]})
 	}
 
 	return sorted

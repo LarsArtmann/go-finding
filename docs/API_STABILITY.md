@@ -237,7 +237,7 @@ Notable additions:
 | `ApplyReport.FailedOutcomes`                  | stable     | Added v1.7.0. Isolates failed outcomes                                      |
 | `FixOutcomeStatus` / `FixOutcome`             | stable     | Added v1.7.0. Six statuses; failed carries typed error                      |
 | `Metrics.RecordOutcome` / `OutcomeCounts`     | stable     | Added v1.7.0. Outcome aggregates in MetricsSnapshot (ADR-017)               |
-| `Report.GroupFindingsSorted` / `FindingGroup` | unreleased | Deterministic GroupID-ordered groups; targets next release                  |
+| `Report.GroupFindingsSorted` / `Group` | unreleased | Deterministic GroupID-ordered groups; targets next release                  |
 
 ---
 
@@ -289,7 +289,7 @@ All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migratio
 
 **v1.7.0** — `Finding.GroupID` + `Report.GroupFindings()` + SARIF/LSP round-trip; `FixEngine.ApplyWithOutcomes` + `FixApplyResult` (issue #27); `RollbackPolicy` per-file default + `ApplyWithReport` (issue #28); CLI `-fix-rollback-all` flag. Additive except the documented rollback default change (see CHANGELOG `[1.7.0]`).
 
-**Unreleased** — `Report.GroupFindingsSorted()` + `FindingGroup` and `Template.WithGroupID` (core); unsafe-path findings surface as failed outcomes instead of silent drops (pipeline).
+**Unreleased** — `Report.GroupFindingsSorted()` + `Group` and `Template.WithGroupID` (core); unsafe-path findings surface as failed outcomes instead of silent drops (pipeline).
 
 **Deterministic output guarantee** — All production JSON marshaling uses `encoding/json/v2` with `json.Deterministic(true)` (`marshalOpts`/`prettyMarshalOpts` in `json.go`), enforced by `scripts/json-deterministic-check.sh` in CI: byte-identical output for identical input across runs.
 
