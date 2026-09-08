@@ -139,3 +139,49 @@ go-error-family ← go-finding ← ┬─ go-linter-sdk
 ```
 
 All roads lead to go-finding. No SDK depends on another SDK. Each SDK depends only on go-finding (plus its own utility deps), keeping the dependency graph flat and composable.
+
+## Consumer Version Sweep (2026-09-08, post-v1.7.0)
+
+Survey of local consumer repos. **Migration relevance:** only `pipeline`-importing
+consumers are affected by the v1.7.0 rollback-default change (ADR-016);
+`core-only` consumers are unaffected (no behavior change in the core package).
+Upgrade guide: [docs/guides/consumer-migration-v1.7.md](guides/consumer-migration-v1.7.md).
+
+| Consumer                     | go-finding | Pipeline? | Rollback migration needed | Last activity |
+| ---------------------------- | ---------- | --------- | ------------------------- | ------------- |
+| go-humanize-linter           | v1.7.0     | no        | no                        | 2026-09-08    |
+| go-linter-sdk (v0.3.0)       | v1.7.0     | no        | no                        | 2026-09-08    |
+| BuildFlow                    | v1.6.0     | yes       | **yes**                   | 2026-09-06    |
+| Code-Quality-Agent           | v1.6.0     | yes       | **yes**                   | 2026-09-06    |
+| erraudit                     | v1.6.0     | yes       | **yes**                   | 2026-09-04    |
+| go-structure-linter          | v1.6.0     | yes       | **yes**                   | 2026-09-06    |
+| hierarchical-errors          | v1.6.0     | yes       | **yes**                   | 2026-08-18    |
+| oxlint-auto-configure        | v1.6.0     | yes       | **yes**                   | 2026-09-04    |
+| template-AUTHORS             | v1.6.0     | yes       | **yes**                   | 2026-09-04    |
+| template-SECURITY            | v1.6.0     | yes       | **yes**                   | 2026-09-04    |
+| Polish-Customs               | v1.6.0     | no        | no                        | 2026-09-04    |
+| go-auto-upgrade              | v1.6.0     | no        | no                        | 2026-09-06    |
+| go-business-rules            | v1.6.0     | no        | no                        | 2026-09-04    |
+| go-checker-helpers           | v1.6.0     | no        | no                        | 2026-09-04    |
+| golangci-lint-auto-configure | v1.6.0     | no        | no                        | 2026-09-03    |
+| library-policy               | v1.6.0     | no        | no                        | 2026-09-04    |
+| linter-autoconfigure-sdk     | v1.6.0     | no        | no                        | 2026-09-04    |
+| template-readme              | v1.6.0     | no        | no                        | 2026-09-04    |
+| branching-flow               | v1.4.1     | no        | no                        | 2026-09-04    |
+| licenseforge                 | v1.4.1     | no        | no                        | 2026-09-04    |
+| md-go-validator              | v1.4.1     | no        | no                        | 2026-09-04    |
+| gomend                       | v1.4.0     | no        | no                        | 2026-09-04    |
+| template-CLI                 | v1.3.0     | no        | no                        | 2026-09-04    |
+
+**Migration note for pipeline consumers (v1.7.0):** the fix rollback scope changed
+from all-files to per-file by default. If your tool relied on all-or-nothing
+semantics, opt back in with `FixApplier.SetRollbackPolicy(RollbackPolicyAllFiles)`,
+`Config.FixRollbackAllFiles`, config-file `fixRollbackAllFiles`, or CLI
+`-fix-rollback-all`. Soft per-finding failures no longer abort runs — check
+`ApplyReport.Outcomes` instead of treating any error as total failure. Full guide:
+[docs/guides/consumer-migration-v1.7.md](guides/consumer-migration-v1.7.md).
+
+Two lead consumers are bumped and verified on v1.7.0 (suites green; one
+pre-existing unrelated failure in go-humanize-linter's generated-file detector,
+present on v1.6.0 as well). Remaining consumers upgrade opportunistically — the
+guide covers the one migration-relevant change.
