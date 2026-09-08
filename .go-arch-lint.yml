@@ -18,7 +18,9 @@ components:
   pipeline-internal:
     in: "pipeline/internal/**"
   pipeline-examples:
-    in: "pipeline/examples"
+    in:
+      - "pipeline/examples"
+      - "pipeline/examples/**"
   analysis:
     in: "analysis"
   cli:

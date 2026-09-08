@@ -905,7 +905,7 @@ type cancelingProvider struct {
 	before string
 }
 
-func (*cancelingProvider) Name() string                    { return "canceling" }
+func (*cancelingProvider) Name() string                       { return "canceling" }
 func (p *cancelingProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
 func (p *cancelingProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
 	if f.BeforeCode == p.before {

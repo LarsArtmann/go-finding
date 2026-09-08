@@ -367,7 +367,7 @@ func (*refusingProvider) Edits([]byte, finding.Finding) ([]FixEdit, error) {
 // first occurrence of BeforeCode with AfterCode.
 type editAtBeforeProvider struct{}
 
-func (*editAtBeforeProvider) Name() string                    { return "edit-at-before" }
+func (*editAtBeforeProvider) Name() string                     { return "edit-at-before" }
 func (*editAtBeforeProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
 
 func (*editAtBeforeProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
