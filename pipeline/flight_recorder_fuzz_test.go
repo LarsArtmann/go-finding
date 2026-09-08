@@ -100,7 +100,10 @@ func FuzzPruneSnapshotsHostileDir(f *testing.F) {
 		if err := os.Symlink(target, filepath.Join(dir, "go-finding-trace-link.trace")); err != nil {
 			t.Fatalf("symlink: %v", err)
 		}
-		if err := os.Symlink(filepath.Join(dir, "missing"), filepath.Join(dir, "go-finding-trace-dangling.trace")); err != nil {
+		if err := os.Symlink(
+			filepath.Join(dir, "missing"),
+			filepath.Join(dir, "go-finding-trace-dangling.trace"),
+		); err != nil {
 			t.Fatalf("dangling symlink: %v", err)
 		}
 

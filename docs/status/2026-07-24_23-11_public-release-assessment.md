@@ -175,7 +175,7 @@ The user asked for a PRO/CONTRA analysis + actionable TODO list for making the r
 | 31     | Post in Go Slack #showcase channel                                                |
 | 32     | Post on Twitter/X                                                                 |
 | 33     | Submit to [Awesome Go](https://github.com/avelino/awesome-go) via PR              |
-| 34     | Submit to Awesome SARIF                                                          |
+| 34     | Submit to Awesome SARIF                                                           |
 | 35     | Add "Used by" section to README once stars/forks appear                           |
 
 ### Ongoing / Post-Launch

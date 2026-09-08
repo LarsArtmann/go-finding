@@ -290,7 +290,7 @@ type failAfterWriter struct {
 
 func (w *failAfterWriter) Write(p []byte) (int, error) {
 	w.writes++
-	if w.writes > w.failAt {
+	if w.writes >= w.failAt {
 		return 0, errors.New("write failed")
 	}
 
@@ -319,7 +319,7 @@ func TestFormatters_PartialWriteErrors(t *testing.T) {
 		findings []Finding
 		format   func(io.Writer, []Finding) error
 	}{
-		{"FormatText suggestion write", 2, plain, FormatText},
+		{"FormatText suggestion write", 2, rich, FormatText},
 		{"FormatTextRich category write", 2, rich, FormatTextRich},
 		{"FormatTextRich newline write", 3, rich, FormatTextRich},
 		{"FormatTextRich suggestion write", 4, rich, FormatTextRich},

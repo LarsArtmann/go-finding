@@ -91,7 +91,7 @@ The FlightRecorder feature (`pipeline/flight_recorder.go`) is shipped with confi
 | Trace file rotation (max-files)               | High   | Low    | **SHIPPED ([Unreleased], post-v1.8.0)** — `MaxFiles` config + `-trace-max-files`; prunes oldest beyond cap |
 | Compressed trace output (gzip)                | Med    | Low    | **SHIPPED ([Unreleased], post-v1.8.0)** — `Compress` config + `-trace-gzip`; `.trace.gz` snapshots         |
 | Automatic pprof capture                       | Med    | Med    | Park — useful but duplicates what `runtime/pprof` flags already give operators                             |
-| Continuous trace sampling (1% knob)           | Med    | Low    | **NO-GO (decided 2026-09-08)** — rationale below the graduated list                                            |
+| Continuous trace sampling (1% knob)           | Med    | Low    | **NO-GO (decided 2026-09-08)** — rationale below the graduated list                                        |
 | Core package trace helper (`finding/tracing`) | Low    | Med    | Rejected — speculative generalization; only one consumer pattern exists (pipeline)                         |
 | OpenTelemetry bridge                          | Low    | High   | Rejected — adds a heavy dependency for a rare use case in static-analysis tooling                          |
 | Trace diff tool                               | Low    | High   | Rejected — niche debugging aid; belongs in consumer tooling, not the library                               |
@@ -106,7 +106,7 @@ Graduated items (actionable when picked up):
 
 **Sampling NO-GO rationale (decided 2026-09-08, evening session):** Go's
 `runtime/trace.FlightRecorder` has no in-process sampling API — once started it records
-continuously, so a "1% knob" could only sample at the *run* level (enable the recorder for
+continuously, so a "1% knob" could only sample at the _run_ level (enable the recorder for
 N% of pipeline runs). That is 3 lines at the caller's construction site
 (`if rand.Float64() < 0.01 { NewFlightRecorderHook(...) }`) and does not belong in library
 config. Sampling pays off for long-lived servers with ambient, always-on tracing;

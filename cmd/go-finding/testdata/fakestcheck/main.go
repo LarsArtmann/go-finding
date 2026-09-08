@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
-	fmt.Println(`{"code":"ST1000","severity":"warning","location":{"file":"main.go","line":4,"column":2},"message":"old() should be new()","before":"old()","after":"new()"}`)
+	fmt.Println(
+		`{"code":"ST1000","severity":"warning","location":{"file":"main.go","line":4,"column":2},"message":"old() should be new()","before":"old()","after":"new()"}`,
+	)
 	os.Exit(1) // staticcheck convention: nonzero when findings exist
 }

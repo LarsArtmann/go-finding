@@ -709,8 +709,14 @@ staticcheck-compatible tools and fixtures (see `testdata/fakestcheck`) that want
 to drive the full detect → fix pipeline:
 
 ```json
-{"code":"S1002","severity":"warning","location":{"file":"main.go","line":4,"column":2},
- "message":"omit comparison to bool constant","before":"b == true","after":"b"}
+{
+  "code": "S1002",
+  "severity": "warning",
+  "location": { "file": "main.go", "line": 4, "column": 2 },
+  "message": "omit comparison to bool constant",
+  "before": "b == true",
+  "after": "b"
+}
 ```
 
 A `before`-only entry (no `after`) stays suggest-only — the extension requires

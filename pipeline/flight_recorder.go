@@ -388,7 +388,10 @@ func (h *FlightRecorderHook) pruneSnapshots(ctx context.Context) {
 			continue
 		}
 
-		snapshots = append(snapshots, snapshotFile{path: filepath.Join(h.config.OutputDir, name), modTime: info.ModTime()})
+		snapshots = append(
+			snapshots,
+			snapshotFile{path: filepath.Join(h.config.OutputDir, name), modTime: info.ModTime()},
+		)
 	}
 
 	if len(snapshots) <= h.config.MaxFiles {

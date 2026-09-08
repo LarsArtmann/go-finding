@@ -328,9 +328,12 @@ jobs:
           done < <(find . -name "*.md" -not -path "./vendor/*")
           exit $rc
 
-      # pkg.go.dev excluded TEMPORARILY: the page 404s until pkg.go.dev finishes
-      # indexing a freshly-public module (can lag hours). Remove the --exclude
-      # once https://pkg.go.dev/github.com/larsartmann/go-finding is live.
+      # Excludes:
+      # - sibling larsartmann repos listed in docs/ecosystem.md that are still
+      #   PRIVATE: they 404 for unauthenticated link checkers (remove entries
+      #   as those repos go public).
+      # - v0.1.x compare links in CHANGELOG.md reference tags that predate the
+      #   v1.x tagging scheme and do not exist.
       - name: Check all markdown links incl. http(s) and archived docs (lychee)
         uses: lycheeverse/lychee-action@649b0e4890508ea3e11ea6b3ee35ce899a25afd5 # v1
         with:
@@ -339,7 +342,8 @@ jobs:
             --max-retries 2
             --timeout 15
             --exclude-loopback
-            --exclude 'pkg\.go\.dev'
+            --exclude 'github\.com/larsartmann/(branching-flow|go-auto-upgrade|go-checker-helpers|go-linter-sdk|hierarchical-errors|linter-autoconfigure-sdk)'
+            --exclude 'github\.com/larsartmann/go-finding/compare/v0\.1\.'
             './**/*.md'
           fail: true
 

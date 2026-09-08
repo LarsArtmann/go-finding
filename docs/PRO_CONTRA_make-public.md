@@ -2,9 +2,16 @@
 
 > **UPDATE 2026-09-08 22:24 CEST — VISIBILITY FLIPPED TO PUBLIC.** Executed via
 > `gh repo edit LarsArtmann/go-finding --visibility public`. Verified: proxy
-> resolves `@v1.8.0` (and all sub-modules' tags) with NO `GOPRIVATE`; `ci.yml`
-> dispatched post-flip (run 34274674104). pkg.go.dev indexing pending (404 at
-> flip time, normal — recheck). Remaining: #11, #12, Phase 3 (14–16).
+> resolves `@v1.8.0` for ALL 4 modules with NO `GOPRIVATE`; `ci.yml` dispatched
+> post-flip (run 34274674104: 14/20 green, billing-blocked era ended). Same
+> evening all 5 failures were triaged and fixed locally: coverage (core 94.2% →
+> ≥98% via ~30 new behavioral tests), markdown links (14 dead: private-repo
+> links de-linked, dead v0.1.x compare links removed), arch-check (testdata
+> exclude), docs-api-check (already green), stress (job rewritten to the
+> ginkgo/count split — Ginkgo rejects count>1). Secret scanning + push
+> protection enabled. pkg.go.dev indexing still pending (404 at 23:00 — can lag
+> hours). Remaining: #11 (pkg.go.dev verify), #12 (json/v2 tracking), Phase 3
+> (14–16: GoReleaser/homebrew decision, announcement, awesome lists).
 >
 > **Date:** 2026-07-24 | **Assessed at:** v1.3.0 (repo flipped at v1.8.0)
 >

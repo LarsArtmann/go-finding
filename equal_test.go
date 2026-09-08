@@ -150,7 +150,7 @@ func TestFinding_Equal_Related(t *testing.T) {
 	diffID.Related = []RelatedRef{mkRef("x2", nil)}
 
 	diffRelation := testFindingBase()
-	diffRelation.Related = []RelatedRef{RelatedRef{
+	diffRelation.Related = []RelatedRef{{
 		FindingID: "x1",
 		Relation:  RelationCauses,
 		Position:  Position{File: "o.go", Line: 2},

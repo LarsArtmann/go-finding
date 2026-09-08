@@ -225,15 +225,15 @@ This opens a web browser with interactive views including:
 
 ## Configuration Reference
 
-| Field                | Type            | Default           | Description                                                                     |
-| -------------------- | --------------- | ----------------- | ------------------------------------------------------------------------------- |
-| `OutputDir`          | `string`        | `os.TempDir()`    | Directory for `.trace` snapshot files                                           |
-| `SlowStageThreshold` | `time.Duration` | `0` (disabled)    | Auto-snapshot when a stage exceeds this duration                                |
-| `MinAge`             | `time.Duration` | `30s`             | How long trace data is reliably retained in the ring buffer                     |
-| `MaxBytes`           | `uint64`        | `4 MiB` (`4<<20`) | Maximum in-memory buffer size                                                   |
-| `MaxFiles`           | `int`           | `0` (unlimited)   | Cap on retained snapshots; oldest pruned after each write                       |
-| `Compress`           | `bool`          | `false`           | gzip snapshots (`.trace.gz`); gunzip before `go tool trace`                      |
-| `Logger`             | `*slog.Logger`  | `nil`             | Receives snapshot lifecycle events                                              |
+| Field                | Type            | Default           | Description                                                 |
+| -------------------- | --------------- | ----------------- | ----------------------------------------------------------- |
+| `OutputDir`          | `string`        | `os.TempDir()`    | Directory for `.trace` snapshot files                       |
+| `SlowStageThreshold` | `time.Duration` | `0` (disabled)    | Auto-snapshot when a stage exceeds this duration            |
+| `MinAge`             | `time.Duration` | `30s`             | How long trace data is reliably retained in the ring buffer |
+| `MaxBytes`           | `uint64`        | `4 MiB` (`4<<20`) | Maximum in-memory buffer size                               |
+| `MaxFiles`           | `int`           | `0` (unlimited)   | Cap on retained snapshots; oldest pruned after each write   |
+| `Compress`           | `bool`          | `false`           | gzip snapshots (`.trace.gz`); gunzip before `go tool trace` |
+| `Logger`             | `*slog.Logger`  | `nil`             | Receives snapshot lifecycle events                          |
 
 ### Config File Fields
 
@@ -241,10 +241,10 @@ This opens a web browser with interactive views including:
 | -------------------- | -------- | --------------------------------------------------------------- |
 | `enabled`            | `bool`   | Must be `true` to activate                                      |
 | `outputDir`          | `string` | Override the output directory                                   |
-| `slowStageThreshold` | `string` | Duration string (e.g. `"30s"`, `"2m"`)                           |
+| `slowStageThreshold` | `string` | Duration string (e.g. `"30s"`, `"2m"`)                          |
 | `minAge`             | `string` | Duration string for ring buffer retention                       |
 | `maxBytes`           | `uint64` | Buffer size in bytes                                            |
-| `maxFiles`           | `int`    | Retained-snapshot cap (prune oldest beyond it; `0` = unlimited)  |
+| `maxFiles`           | `int`    | Retained-snapshot cap (prune oldest beyond it; `0` = unlimited) |
 | `compress`           | `bool`   | gzip snapshot output (`.trace.gz`)                              |
 
 ---
