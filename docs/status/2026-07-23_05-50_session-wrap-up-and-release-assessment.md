@@ -87,7 +87,7 @@
 
 | # | Task                                                                  | Effort | Impact |
 | - | --------------------------------------------------------------------- | ------ | ------ |
-| 1 | **DO NOT release v1.3.1** — zero consumer-facing changes since v1.3.0 | 0 min  | —      |
+| ~~1~~ | ~~**DO NOT release v1.3.1** — zero consumer-facing changes since v1.3.0~~ **Won't implement — superseded, v1.4.0 shipped 2026-07-26 with consumer-facing changes.** | ~~0 min~~ | ~~—~~ |
 
 Since v1.3.0 (`dd1e078`), there are 15 commits. Only 5 touch code/config:
 
@@ -103,49 +103,49 @@ The other 10 are documentation-only. **No new features, no bug fixes, no API cha
 
 | # | Task                                                         | Effort | Impact |
 | - | ------------------------------------------------------------ | ------ | ------ |
-| 2 | Update CHANGELOG.md with v1.3.1 section (docs/refactor only) | 5 min  | LOW    |
-| 3 | Bump `version.go` to 1.3.1                                   | 1 min  | LOW    |
-| 4 | Tag `v1.3.1` + sub-module tags                               | 2 min  | LOW    |
-| 5 | Push tags + create GitHub release                            | 2 min  | LOW    |
+| ~~2~~ | ~~Update CHANGELOG.md with v1.3.1 section (docs/refactor only)~~ **Won't implement — v1.3.1 skipped, went straight to v1.4.0.** | ~~5 min~~ | ~~LOW~~ |
+| ~~3~~ | ~~Bump `version.go` to 1.3.1~~ **Won't implement — v1.3.1 skipped.** | ~~1 min~~ | ~~LOW~~ |
+| ~~4~~ | ~~Tag `v1.3.1` + sub-module tags~~ **Won't implement — v1.3.1 skipped.** | ~~2 min~~ | ~~LOW~~ |
+| ~~5~~ | ~~Push tags + create GitHub release~~ **Won't implement — v1.3.1 skipped.** | ~~2 min~~ | ~~LOW~~ |
 
 ### Sub-module exhaustruct consolidation (high value)
 
 | #  | Task                                                                                                                | Effort | Impact |
 | -- | ------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
-| 6  | Add pipeline type exclusions to `.golangci.yml` (Config, PartialResult, Iteration, FixEdit, FileBackup, parseCache) | 8 min  | MED    |
-| 7  | Remove 14 pipeline `//nolint:exhaustruct` directives                                                                | 5 min  | MED    |
-| 8  | Add analysis type exclusions (Diagnostic, RelatedInformation)                                                       | 5 min  | MED    |
-| 9  | Remove 6 analysis `//nolint:exhaustruct` directives                                                                 | 3 min  | MED    |
-| 10 | Add CLI type exclusions (pipelineConfigFile, Config)                                                                | 5 min  | LOW    |
-| 11 | Remove 2 CLI `//nolint:exhaustruct` directives                                                                      | 2 min  | LOW    |
-| 12 | Verify all config+code in ONE commit (lesson learned)                                                               | 1 min  | HIGH   |
+| ~~6~~  | ~~Add pipeline type exclusions to `.golangci.yml` (Config, PartialResult, Iteration, FixEdit, FileBackup, parseCache)~~ done — all fixed v1.4.1, CHANGELOG 1.4.1 | ~~8 min~~ | ~~MED~~ |
+| ~~7~~  | ~~Remove 14 pipeline `//nolint:exhaustruct` directives~~ done — all fixed v1.4.1 | ~~5 min~~ | ~~MED~~ |
+| ~~8~~  | ~~Add analysis type exclusions (Diagnostic, RelatedInformation)~~ done — all fixed v1.4.1 | ~~5 min~~ | ~~MED~~ |
+| ~~9~~  | ~~Remove 6 analysis `//nolint:exhaustruct` directives~~ done — all fixed v1.4.1 | ~~3 min~~ | ~~MED~~ |
+| ~~10~~ | ~~Add CLI type exclusions (pipelineConfigFile, Config)~~ done — all fixed v1.4.1 | ~~5 min~~ | ~~LOW~~ |
+| ~~11~~ | ~~Remove 2 CLI `//nolint:exhaustruct` directives~~ done — all fixed v1.4.1 | ~~2 min~~ | ~~LOW~~ |
+| ~~12~~ | ~~Verify all config+code in ONE commit (lesson learned)~~ done — all fixed v1.4.1 | ~~1 min~~ | ~~HIGH~~ |
 
 ### Verification
 
 | #  | Task                                                          | Effort | Impact |
 | -- | ------------------------------------------------------------- | ------ | ------ |
-| 13 | Run `GOWORK=off GOEXPERIMENT=jsonv2 go test ./...` per module | 5 min  | MED    |
-| 14 | Run `go test -race -count=20 ./...` stress test               | 10 min | MED    |
-| 15 | Run `nix run .#bench` against baselines                       | 10 min | LOW    |
+| ~~13~~ | ~~Run `GOWORK=off GOEXPERIMENT=jsonv2 go test ./...` per module~~ done — GOWORK=off verified 2026-07-24_22-16 | ~~5 min~~ | ~~MED~~ |
+| ~~14~~ | ~~Run `go test -race -count=20 ./...` stress test~~ done — stress runs 2026-07-28 + 2026-09-08 | ~~10 min~~ | ~~MED~~ |
+| ~~15~~ | ~~Run `nix run .#bench` against baselines~~ done — bench + committed baseline | ~~10 min~~ | ~~LOW~~ |
 | 16 | Raise `max-same-issues` in `.golangci.yml` from 5 to 50       | 1 min  | LOW    |
 
 ### Documentation
 
 | #  | Task                                                          | Effort | Impact |
 | -- | ------------------------------------------------------------- | ------ | ------ |
-| 17 | Verify all `docs/` for stale version references               | 10 min | MED    |
-| 18 | Add `docs/MIGRATION_v1.3.md` for FormatText behavioral change | 10 min | MED    |
+| ~~17~~ | ~~Verify all `docs/` for stale version references~~ done — doc sweeps | ~~10 min~~ | ~~MED~~ |
+| ~~18~~ | ~~Add `docs/MIGRATION_v1.3.md` for FormatText behavioral change~~ done — docs/MIGRATION_v1.3.md | ~~10 min~~ | ~~MED~~ |
 | 19 | Write godoc examples for `Template` and `ApplySimpleFixes`    | 10 min | LOW    |
-| 20 | Update `docs/guides/fix-engine.md` accuracy check             | 5 min  | LOW    |
-| 21 | Update AGENTS.md with exhaustruct cleanup pattern note        | 3 min  | MED    |
+| ~~20~~ | ~~Update `docs/guides/fix-engine.md` accuracy check~~ done — fix-engine verified 2026-07-24_22-16 | ~~5 min~~ | ~~LOW~~ |
+| ~~21~~ | ~~Update AGENTS.md with exhaustruct cleanup pattern note~~ done — AGENTS BuildFlow note | ~~3 min~~ | ~~MED~~ |
 
 ### Code quality
 
 | #  | Task                                                            | Effort | Impact |
 | -- | --------------------------------------------------------------- | ------ | ------ |
-| 22 | Run `nix run .#art-dupl` duplication analysis                   | 5 min  | MED    |
+| ~~22~~ | ~~Run `nix run .#art-dupl` duplication analysis~~ done — art-dupl 0 clones | ~~5 min~~ | ~~MED~~ |
 | 23 | Extract full `formatTextLike` for FormatText/FormatTextRich     | 12 min | MED    |
-| 24 | Review remaining `//nolint` directives (gosec, revive, ireturn) | 10 min | LOW    |
+| ~~24~~ | ~~Review remaining `//nolint` directives (gosec, revive, ireturn)~~ done — nolint audit M06 | ~~10 min~~ | ~~LOW~~ |
 | 25 | Add benchmark tests for v1.3.0 APIs                             | 15 min | LOW    |
 | 26 | Add fuzz tests for SeverityFromLevel, ApplySimpleFixes          | 10 min | LOW    |
 | 27 | Profile pipeline with `go test -cpuprofile`                     | 15 min | LOW    |
@@ -157,11 +157,11 @@ The other 10 are documentation-only. **No new features, no bug fixes, no API cha
 | -- | ----------------------------------------------------- | ------- | ------ |
 | 29 | Add `.editorconfig`                                   | 3 min   | LOW    |
 | 30 | Make repo public (unblocks consumer compat testing)   | 2 min   | HIGH   |
-| 31 | Add CI gate for `GOWORK=off` per-module isolation     | 10 min  | MED    |
-| 32 | Add CI check that `golangci-lint` passes before merge | 5 min   | HIGH   |
+| ~~31~~ | ~~Add CI gate for `GOWORK=off` per-module isolation~~ done — CI GOWORK=off job | ~~10 min~~ | ~~MED~~ |
+| ~~32~~ | ~~Add CI check that `golangci-lint` passes before merge~~ done — lint CI job | ~~5 min~~ | ~~HIGH~~ |
 | 33 | Configure `CODECOV_TOKEN`                             | 2 min   | MED    |
 | 34 | Add `CODEOWNERS` file                                 | 3 min   | LOW    |
-| 35 | Add `SECURITY.md`                                     | 5 min   | LOW    |
+| ~~35~~ | ~~Add `SECURITY.md`~~ done — SECURITY.md shipped v1.4.0 | ~~5 min~~ | ~~LOW~~ |
 | 36 | Add `.git-blame-ignore-revs`                          | 3 min   | LOW    |
 | 37 | Fix BuildFlow auto-configure loop                     | UNKNOWN | MED    |
 

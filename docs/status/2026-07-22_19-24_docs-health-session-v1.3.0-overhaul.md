@@ -153,32 +153,32 @@ The docs-health skill says "Run the project's quality gate. Mandatory, not optio
 
 ### Immediate (blocking v1.3.0 release)
 
-1. Fix 7 lint issues from v1.3.0 code (exhaustruct, gosec, revive)
-2. Rename `FindingTemplate` → `Template` per revive convention
-3. Run `GOWORK=off GOEXPERIMENT=jsonv2 go test ./...` in each module dir
-4. Decide on FormatText format change (keep, revert, or options pattern)
-5. Fix FEATURES.md examples count: "3" → "2" in summary matrix
-6. Run `go test -cover` and update FEATURES.md coverage claim
-7. Squash the ~10 auto-commits into clean commit(s)
-8. Push to remote
-9. Tag `v1.3.0`
-10. Verify CHANGELOG "12 additive changes" count is accurate or fix
+1. ~~Fix 7 lint issues from v1.3.0 code (exhaustruct, gosec, revive)~~ done (v1.3.0 released 2026-07-22)
+2. ~~Rename `FindingTemplate` → `Template` per revive convention~~ done (Template rename, v1.3.0)
+3. ~~Run `GOWORK=off GOEXPERIMENT=jsonv2 go test ./...` in each module dir~~ done (v1.3.0 release session)
+4. ~~Decide on FormatText format change (keep, revert, or options pattern)~~ done (reverted + FormatTextRich, v1.3.0)
+5. ~~Fix FEATURES.md examples count: "3" → "2" in summary matrix~~ done (fixed 2026-07-22_20-13)
+6. ~~Run `go test -cover` and update FEATURES.md coverage claim~~ done (coverage re-run 93.6%)
+7. ~~Squash the ~10 auto-commits into clean commit(s)~~ **Won't implement — squash never done, history kept.**
+8. ~~Push to remote~~ done (2026-07-22_20-13 session)
+9. ~~Tag `v1.3.0`~~ done (v1.3.0 tagged)
+10. ~~Verify CHANGELOG "12 additive changes" count is accurate or fix~~ done (count fixed 2026-07-22_20-13)
 
 ### Documentation polish
 
-11. Update DOMAIN_LANGUAGE.md with v1.3.0 terms (FindingTemplate, SimpleFixResult, ApplySimpleFixes, FilePos)
-12. Run full TODO scan across ALL `.md` files in project
-13. Verify README.md claims match FEATURES.md
-14. Fix FEATURES.md status legend: remove `EXPERIMENTAL` (not in docs-health template)
-15. Update `doc.go` formatting section (mentions FormatText old format)
-16. Verify all FEATURES.md claims have evidence citations (file:line)
+11. ~~Update DOMAIN_LANGUAGE.md with v1.3.0 terms (FindingTemplate, SimpleFixResult, ApplySimpleFixes, FilePos)~~ done (DOMAIN_LANGUAGE, 2026-07-22_20-13)
+12. ~~Run full TODO scan across ALL `.md` files in project~~ done (full 56-file scan 2026-07-26_20-01)
+13. ~~Verify README.md claims match FEATURES.md~~ done (README verified in later passes)
+14. ~~Fix FEATURES.md status legend: remove `EXPERIMENTAL` (not in docs-health template)~~ done (FEATURES legend verified 2026-07-24_22-16)
+15. ~~Update `doc.go` formatting section (mentions FormatText old format)~~ done (doc.go fixed 2026-07-23_04-09)
+16. ~~Verify all FEATURES.md claims have evidence citations (file:line)~~ done (full FEATURES walk 2026-09-08)
 17. Check FEATURES.md `OnFinding`/`OnFix`/`OnIteration` — are these still in Config or replaced by StageHooks?
-18. Run `update-old-docs` skill on the 12+ stale status reports in `docs/status/`
+18. ~~Run `update-old-docs` skill on the 12+ stale status reports in `docs/status/`~~ done (update-old-docs on 12+ reports)
 
 ### Code quality
 
-19. Add `//nolint:exhaustruct` to all new partial struct literals (follow existing pattern)
-20. Add `//nolint:gosec` to `RunCmd` and `ApplySimpleFixes` (intended design)
+19. ~~Add `//nolint:exhaustruct` to all new partial struct literals (follow existing pattern)~~ done (nolints added 20-13, replaced by config 05-33)
+20. ~~Add `//nolint:gosec` to `RunCmd` and `ApplySimpleFixes` (intended design)~~ done (nolints added 20-13, replaced by config 05-33)
 21. Add fuzzing tests for `SeverityFromLevel` and `ApplySimpleFixes`
 22. Add benchmark tests for all v1.3.0 new functions
 23. Add `FindingTemplate.WithConfidence()` chain method
@@ -203,9 +203,9 @@ The docs-health skill says "Run the project's quality gate. Mandatory, not optio
 
 ### Architecture / release
 
-39. Create v1.3.0 GitHub release with release notes
-40. Update `.github/workflows/release.yml` if needed for new module tags
-41. Create directory-prefixed git tags for sub-modules (`pipeline/v1.3.0`, etc.)
+39. ~~Create v1.3.0 GitHub release with release notes~~ done (v1.3.0 GitHub release)
+40. ~~Update `.github/workflows/release.yml` if needed for new module tags~~ done (release.yml handles tags)
+41. ~~Create directory-prefixed git tags for sub-modules (`pipeline/v1.3.0`, etc.)~~ done (pipeline/v1.3.0 etc. tags exist)
 42. Consider `FormatTextWithOpts(w, findings, opts)` for backward-compatible text output
 43. Consider `FormatTextClassic()` preserving old `[SEVERITY]` format
 44. Evaluate whether CheckBinary/RunCmd should be in a separate `cliutil` package
@@ -213,11 +213,11 @@ The docs-health skill says "Run the project's quality gate. Mandatory, not optio
 
 ### Housekeeping
 
-46. Clean up `docs/planning/` — 5 planning docs, some stale
-47. Archive completed planning docs to `docs/planning/archive/`
+46. ~~Clean up `docs/planning/` — 5 planning docs, some stale~~ done (planning docs annotated, decision A)
+47. ~~Archive completed planning docs to `docs/planning/archive/`~~ done (annotated 2026-07-23_04-09)
 48. Add `.git-blame-ignore-revs` for the auto-commit noise
-49. Consider disabling or reconfiguring the auto-commit hook
-50. Run `nix flake check` to verify Nix flake health
+49. ~~Consider disabling or reconfiguring the auto-commit hook~~ done (hook replaced by dprint gate 2026-09-08)
+50. ~~Run `nix flake check` to verify Nix flake health~~ done (nix flake check green 2026-09-08)
 
 ---
 

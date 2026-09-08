@@ -95,56 +95,56 @@ This session:
 
 | # | Task                                                             | Effort | Impact                 |
 | - | ---------------------------------------------------------------- | ------ | ---------------------- |
-| 1 | Annotate stale `04-09` status report as resolved (lint is fixed) | 2 min  | HIGH — removes doc lie |
-| 2 | Update `AGENTS.md` with exhaustruct cleanup pattern note         | 3 min  | MED                    |
+| ~~1~~ | ~~Annotate stale `04-09` status report as resolved (lint is fixed)~~ done — 04-09 annotated, commit ba83f7b | ~~2 min~~ | ~~HIGH — removes doc lie~~ |
+| ~~2~~ | ~~Update `AGENTS.md` with exhaustruct cleanup pattern note~~ done — AGENTS notes added 2026-07-24+ | ~~3 min~~ | ~~MED~~ |
 
 ### Sub-module exhaustruct consolidation
 
 | # | Task                                                                                                                         | Effort | Impact |
 | - | ---------------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
-| 3 | Add pipeline type exclusions to `.golangci.yml` (Config, PartialResult, Iteration, FixEdit, FileBackup, Metrics, parseCache) | 8 min  | MED    |
-| 4 | Remove 14 pipeline `//nolint:exhaustruct` directives after config exclusion                                                  | 5 min  | MED    |
-| 5 | Add analysis type exclusions to `.golangci.yml` (Diagnostic, RelatedInformation)                                             | 5 min  | MED    |
-| 6 | Remove 6 analysis `//nolint:exhaustruct` directives after config exclusion                                                   | 3 min  | MED    |
-| 7 | Add CLI type exclusions (pipelineConfigFile, Config from cmd)                                                                | 5 min  | LOW    |
-| 8 | Remove 2 CLI `//nolint:exhaustruct` directives after config exclusion                                                        | 2 min  | LOW    |
+| ~~3~~ | ~~Add pipeline type exclusions to `.golangci.yml` (Config, PartialResult, Iteration, FixEdit, FileBackup, Metrics, parseCache)~~ done — all 7 fixed v1.4.1, CHANGELOG 1.4.1 | ~~8 min~~ | ~~MED~~ |
+| ~~4~~ | ~~Remove 14 pipeline `//nolint:exhaustruct` directives after config exclusion~~ done — all 7 fixed v1.4.1, CHANGELOG 1.4.1 | ~~5 min~~ | ~~MED~~ |
+| ~~5~~ | ~~Add analysis type exclusions to `.golangci.yml` (Diagnostic, RelatedInformation)~~ done — all 7 fixed v1.4.1, CHANGELOG 1.4.1 | ~~5 min~~ | ~~MED~~ |
+| ~~6~~ | ~~Remove 6 analysis `//nolint:exhaustruct` directives after config exclusion~~ done — all 7 fixed v1.4.1, CHANGELOG 1.4.1 | ~~3 min~~ | ~~MED~~ |
+| ~~7~~ | ~~Add CLI type exclusions (pipelineConfigFile, Config from cmd)~~ done — all 7 fixed v1.4.1, CHANGELOG 1.4.1 | ~~5 min~~ | ~~LOW~~ |
+| ~~8~~ | ~~Remove 2 CLI `//nolint:exhaustruct` directives after config exclusion~~ done — all 7 fixed v1.4.1, CHANGELOG 1.4.1 | ~~2 min~~ | ~~LOW~~ |
 
 ### Verification
 
 | #  | Task                                                                  | Effort | Impact |
 | -- | --------------------------------------------------------------------- | ------ | ------ |
-| 9  | Run `GOWORK=off GOEXPERIMENT=jsonv2 go test ./...` in each module dir | 5 min  | MED    |
-| 10 | Run `go test -race -count=20 ./...` stress test                       | 10 min | MED    |
-| 11 | Run `nix run .#bench` and spot-check against baselines                | 10 min | LOW    |
+| ~~9~~  | ~~Run `GOWORK=off GOEXPERIMENT=jsonv2 go test ./...` in each module dir~~ done — verified 2026-07-24_22-16 | ~~5 min~~ | ~~MED~~ |
+| ~~10~~ | ~~Run `go test -race -count=20 ./...` stress test~~ done — stress runs 2026-07-28 + 2026-09-08 | ~~10 min~~ | ~~MED~~ |
+| ~~11~~ | ~~Run `nix run .#bench` and spot-check against baselines~~ done — baseline committed + bench-check works | ~~10 min~~ | ~~LOW~~ |
 
 ### Release / Infrastructure
 
 | #  | Task                                                                                          | Effort | Impact |
 | -- | --------------------------------------------------------------------------------------------- | ------ | ------ |
-| 12 | Create v1.3.0 sub-module tags (`pipeline/v1.3.0`, `analysis/v1.3.0`, `cmd/go-finding/v1.3.0`) | 5 min  | MED    |
+| ~~12~~ | ~~Create v1.3.0 sub-module tags (`pipeline/v1.3.0`, `analysis/v1.3.0`, `cmd/go-finding/v1.3.0`)~~ done — sub-module v1.3.0 tags, 2026-07-23_05-50 | ~~5 min~~ | ~~MED~~ |
 | 13 | Add `.editorconfig` — BuildFlow flagged it as missing                                         | 3 min  | LOW    |
 | 14 | Make repo public (unblocks consumer compat testing)                                           | 2 min  | HIGH   |
 | 15 | Raise `max-same-issues` in `.golangci.yml` from 5 to 50                                       | 1 min  | LOW    |
-| 16 | Add CI gate for `GOWORK=off` per-module isolation test                                        | 10 min | MED    |
-| 17 | Add CI check that `golangci-lint` passes before merge                                         | 5 min  | HIGH   |
+| ~~16~~ | ~~Add CI gate for `GOWORK=off` per-module isolation test~~ done — module-isolation CI job | ~~10 min~~ | ~~MED~~ |
+| ~~17~~ | ~~Add CI check that `golangci-lint` passes before merge~~ done — lint CI job | ~~5 min~~ | ~~HIGH~~ |
 
 ### Documentation
 
 | #  | Task                                                                   | Effort | Impact |
 | -- | ---------------------------------------------------------------------- | ------ | ------ |
-| 18 | Verify all `docs/` files for stale version references                  | 10 min | MED    |
-| 19 | Add `docs/MIGRATION_v1.3.md` for FormatText/IsValid behavioral changes | 10 min | MED    |
+| ~~18~~ | ~~Verify all `docs/` files for stale version references~~ done — doc sweeps 2026-07-24 sessions | ~~10 min~~ | ~~MED~~ |
+| ~~19~~ | ~~Add `docs/MIGRATION_v1.3.md` for FormatText/IsValid behavioral changes~~ done — docs/MIGRATION_v1.3.md exists | ~~10 min~~ | ~~MED~~ |
 | 20 | Write godoc examples for `Template` and `ApplySimpleFixes`             | 10 min | LOW    |
-| 21 | Update `docs/guides/fix-engine.md` — verify accuracy                   | 5 min  | LOW    |
-| 22 | Review `docs/MIGRATION_v1.0.md` is current                             | 5 min  | LOW    |
-| 23 | Add `CHANGELOG.md` entry for exhaustruct cleanup                       | 3 min  | LOW    |
+| ~~21~~ | ~~Update `docs/guides/fix-engine.md` — verify accuracy~~ done — v1.4.0 released 2026-07-26 | ~~5 min~~ | ~~LOW~~ |
+| ~~22~~ | ~~Review `docs/MIGRATION_v1.0.md` is current~~ done — v1.4.0 released 2026-07-26 | ~~5 min~~ | ~~LOW~~ |
+| ~~23~~ | ~~Add `CHANGELOG.md` entry for exhaustruct cleanup~~ done — CHANGELOG 1.4.x sections | ~~3 min~~ | ~~LOW~~ |
 
 ### Code quality
 
 | #  | Task                                                                         | Effort | Impact |
 | -- | ---------------------------------------------------------------------------- | ------ | ------ |
-| 24 | Run `nix run .#art-dupl` — verify 0 harmful duplication                      | 5 min  | MED    |
-| 25 | Review all remaining `//nolint` directives (gosec, revive, ireturn, goconst) | 10 min | LOW    |
+| ~~24~~ | ~~Run `nix run .#art-dupl` — verify 0 harmful duplication~~ done — art-dupl 0 clones | ~~5 min~~ | ~~MED~~ |
+| ~~25~~ | ~~Review all remaining `//nolint` directives (gosec, revive, ireturn, goconst)~~ done — nolint audit M06 | ~~10 min~~ | ~~LOW~~ |
 | 26 | Extract shared `formatTextLike` for FormatText/FormatTextRich full dedup     | 12 min | MED    |
 | 27 | Add benchmark tests for v1.3.0 APIs                                          | 15 min | LOW    |
 | 28 | Add fuzz tests for SeverityFromLevel and ApplySimpleFixes                    | 10 min | LOW    |
@@ -169,13 +169,13 @@ This session:
 | #  | Task                                                                | Effort  | Impact |
 | -- | ------------------------------------------------------------------- | ------- | ------ |
 | 39 | Configure `CODECOV_TOKEN` secret in GitHub                          | 2 min   | MED    |
-| 40 | Add CI check rejecting `_extra_test.go`/`_bugfix_test.go` filenames | 5 min   | LOW    |
+| ~~40~~ | ~~Add CI check rejecting `_extra_test.go`/`_bugfix_test.go` filenames~~ done — scripts/test-naming.sh | ~~5 min~~ | ~~LOW~~ |
 | 41 | Add release automation CI (auto-tag on version.go change)           | 20 min  | LOW    |
 | 42 | Add `CODEOWNERS` file                                               | 3 min   | LOW    |
-| 43 | Add `SECURITY.md`                                                   | 5 min   | LOW    |
+| ~~43~~ | ~~Add `SECURITY.md`~~ done — SECURITY.md shipped v1.4.0 | ~~5 min~~ | ~~LOW~~ |
 | 44 | Add `.git-blame-ignore-revs` for auto-commit noise                  | 3 min   | LOW    |
 | 45 | Fix BuildFlow auto-configure loop (external tool bug)               | UNKNOWN | MED    |
-| 46 | Evaluate disabling/reconfiguring the auto-commit hook               | 5 min   | MED    |
+| ~~46~~ | ~~Evaluate disabling/reconfiguring the auto-commit hook~~ done — dprint replaced the hook 2026-09-08 | ~~5 min~~ | ~~MED~~ |
 
 ### Misc
 
