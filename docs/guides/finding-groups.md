@@ -13,11 +13,11 @@ finding — it has no position of its own.
 
 ## Current wire representation (shipped)
 
-| Layer | Representation | Lossless round-trip |
-| ----- | -------------- | ------------------- |
-| JSON  | `"groupId"` field on the finding object | yes |
-| SARIF | property bag key `go-finding/groupId` on each result (`sarif_export.go`, `sarif_import.go`) | yes |
-| LSP   | `LSPDiagnosticData.GroupID` inside the diagnostic's `data` property | yes |
+| Layer | Representation                                                                              | Lossless round-trip |
+| ----- | ------------------------------------------------------------------------------------------- | ------------------- |
+| JSON  | `"groupId"` field on the finding object                                                     | yes                 |
+| SARIF | property bag key `go-finding/groupId` on each result (`sarif_export.go`, `sarif_import.go`) | yes                 |
+| LSP   | `LSPDiagnosticData.GroupID` inside the diagnostic's `data` property                         | yes                 |
 
 The property-bag approach is deliberately boring: every SARIF consumer can
 read the property bag, and unknown keys are ignored by tools that do not

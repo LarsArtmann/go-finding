@@ -25,27 +25,27 @@
 
 The central type representing a single issue detected by a static analysis tool.
 
-| Field       | Type                | Purpose                                                   |
-| ----------- | ------------------- | --------------------------------------------------------- |
+| Field       | Type                | Purpose                                                                                                                      |
+| ----------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | ID          | `ID`                | Stable unique identifier (`tool:rule:file:line:col`; hash-based `tool:rule:<hash>` for file-level findings with `Line == 0`) |
-| Rule        | `RuleName`          | Rule/check name (e.g., `STRONG_ID`)                       |
-| ToolName    | `ToolName`          | Source tool name (e.g., `govet`)                          |
-| Message     | `string`            | Human-readable description                                |
-| Severity    | `Severity`          | info / warning / error / critical                         |
-| Position    | `Position`          | Where the issue is (file, line, column, offset)           |
-| Category    | `Category`          | Domain classification (security, style, etc.)             |
-| Tags        | `[]Tag`             | Multiple classification labels                            |
-| FixStrategy | `FixStrategy`       | none / suggest / direct / ai                              |
-| Suggestion  | `string`            | Human-readable fix description                            |
-| BeforeCode  | `string`            | Code before the fix                                       |
-| AfterCode   | `string`            | Code after the fix                                        |
-| Range       | `*Range`            | Span-based findings (start/end positions)                 |
-| Snippet     | `string`            | Surrounding code context                                  |
-| Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                                 |
-| GroupID     | `GroupID`           | Logical group this finding belongs to (e.g., clone group) |
-| Related     | `[]RelatedRef`      | Related findings with optional `*Range` span              |
-| Suppression | `*Suppression`      | If suppressed                                             |
-| Metadata    | `map[string]string` | Tool-specific key-value pairs                             |
+| Rule        | `RuleName`          | Rule/check name (e.g., `STRONG_ID`)                                                                                          |
+| ToolName    | `ToolName`          | Source tool name (e.g., `govet`)                                                                                             |
+| Message     | `string`            | Human-readable description                                                                                                   |
+| Severity    | `Severity`          | info / warning / error / critical                                                                                            |
+| Position    | `Position`          | Where the issue is (file, line, column, offset)                                                                              |
+| Category    | `Category`          | Domain classification (security, style, etc.)                                                                                |
+| Tags        | `[]Tag`             | Multiple classification labels                                                                                               |
+| FixStrategy | `FixStrategy`       | none / suggest / direct / ai                                                                                                 |
+| Suggestion  | `string`            | Human-readable fix description                                                                                               |
+| BeforeCode  | `string`            | Code before the fix                                                                                                          |
+| AfterCode   | `string`            | Code after the fix                                                                                                           |
+| Range       | `*Range`            | Span-based findings (start/end positions)                                                                                    |
+| Snippet     | `string`            | Surrounding code context                                                                                                     |
+| Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                                                                                                    |
+| GroupID     | `GroupID`           | Logical group this finding belongs to (e.g., clone group)                                                                    |
+| Related     | `[]RelatedRef`      | Related findings with optional `*Range` span                                                                                 |
+| Suppression | `*Suppression`      | If suppressed                                                                                                                |
+| Metadata    | `map[string]string` | Tool-specific key-value pairs                                                                                                |
 
 Key methods: `Validate()` (decomposed into 6 per-field validators for low complexity), `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
 
@@ -224,23 +224,23 @@ Methods: `IsExpired(now)`, `IsValid()`, `IsActive(now)`, `SuppressionKind.IsVali
 
 Top-level container for a tool run.
 
-| Feature                 | Method                              | Thread-safe  |
-| ----------------------- | ----------------------------------- | ------------ |
-| Create                  | `NewReport(toolInfo)`               | Yes          |
-| Create from findings    | `NewReportFromFindings(tool, []F)`  | Yes (v1.3.0) |
-| Add single finding      | `AddFinding(f)`                     | Yes (mutex)  |
-| Add multiple findings   | `AddFindings([])`                   | Yes (mutex)  |
-| Recompute stats         | `ComputeSummary()`                  | Yes (mutex)  |
-| Filter by severity      | `BySeverity(sev)`                   | Read-only    |
-| Filter by category      | `ByCategory(cat)`                   | Read-only    |
-| Filter by fix strategy  | `ByFixStrategy(fs)`                 | Read-only    |
-| Find by ID              | `FindByID(id)` → `*Finding` (shallow copy; `Clone()` for deep) | Read-only |
-| Find by rule            | `FindByRule(rule)`                  | Read-only    |
-| Active (non-suppressed) | `ActiveFindings()`                  | Read-only    |
-| Generic filter          | `Filter(predicates...)` → `*Report` | Read-only    |
-| Transform               | `Map(func) → *Report`               | Read-only    |
-| Iterate                 | `All()` → `iter.Seq[Finding]`       | Read-only    |
-| Count                   | `Len()`                             | Read-only    |
+| Feature                 | Method                                                         | Thread-safe  |
+| ----------------------- | -------------------------------------------------------------- | ------------ |
+| Create                  | `NewReport(toolInfo)`                                          | Yes          |
+| Create from findings    | `NewReportFromFindings(tool, []F)`                             | Yes (v1.3.0) |
+| Add single finding      | `AddFinding(f)`                                                | Yes (mutex)  |
+| Add multiple findings   | `AddFindings([])`                                              | Yes (mutex)  |
+| Recompute stats         | `ComputeSummary()`                                             | Yes (mutex)  |
+| Filter by severity      | `BySeverity(sev)`                                              | Read-only    |
+| Filter by category      | `ByCategory(cat)`                                              | Read-only    |
+| Filter by fix strategy  | `ByFixStrategy(fs)`                                            | Read-only    |
+| Find by ID              | `FindByID(id)` → `*Finding` (shallow copy; `Clone()` for deep) | Read-only    |
+| Find by rule            | `FindByRule(rule)`                                             | Read-only    |
+| Active (non-suppressed) | `ActiveFindings()`                                             | Read-only    |
+| Generic filter          | `Filter(predicates...)` → `*Report`                            | Read-only    |
+| Transform               | `Map(func) → *Report`                                          | Read-only    |
+| Iterate                 | `All()` → `iter.Seq[Finding]`                                  | Read-only    |
+| Count                   | `Len()`                                                        | Read-only    |
 
 Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffected`, `FilesScanned`, `Suppressed`
 
@@ -362,10 +362,10 @@ Handles Windows paths with colons correctly.
 
 ### Export
 
-| Method                                  | Description                                                           |
-| --------------------------------------- | --------------------------------------------------------------------- |
-| `report.ToSARIF()`                      | Full report → SARIF JSON (excludes suppressed by default)             |
-| `report.ToSARIFWithOpts(opts...)`       | Functional options: `WithIncludeSuppressed()`, `WithMinSeverity(sev)` |
+| Method                                       | Description                                                           |
+| -------------------------------------------- | --------------------------------------------------------------------- |
+| `report.ToSARIF()`                           | Full report → SARIF JSON (excludes suppressed by default)             |
+| `report.ToSARIFWithOpts(opts...)`            | Functional options: `WithIncludeSuppressed()`, `WithMinSeverity(sev)` |
 | `report.WriteSARIF(ctx, w)`                  | Streaming SARIF output                                                |
 | `report.WriteSARIFWithOpts(ctx, w, opts...)` | Streaming output with functional options                              |
 
@@ -530,16 +530,16 @@ Processors are executed in order from `Config.Processors`. Use cases: filtering,
 
 ### 16.5 Pipeline Result
 
-| Field             | Type               | Description                      |
-| ----------------- | ------------------ | -------------------------------- |
-| `Stable()`        | method → `bool`    | Reached zero findings (`Reason == ReasonStable`) |
-| `TotalIterations` | `int`              | Iterations executed              |
-| `Iterations`      | `[]Iteration`      | Per-iteration details            |
-| `TotalDetected`   | `int`              | Total findings across iterations |
-| `Verification`    | `*VerifyResult`    | Post-fix verification            |
-| `PartialErrors`   | `map[string]error` | Per-detector failures            |
-| `Correlations`    | `[]finding.Correlation` | Cross-tool correlations     |
-| `Metrics`         | `MetricsSnapshot`  | Timing and counts                |
+| Field             | Type                    | Description                                      |
+| ----------------- | ----------------------- | ------------------------------------------------ |
+| `Stable()`        | method → `bool`         | Reached zero findings (`Reason == ReasonStable`) |
+| `TotalIterations` | `int`                   | Iterations executed                              |
+| `Iterations`      | `[]Iteration`           | Per-iteration details                            |
+| `TotalDetected`   | `int`                   | Total findings across iterations                 |
+| `Verification`    | `*VerifyResult`         | Post-fix verification                            |
+| `PartialErrors`   | `map[string]error`      | Per-detector failures                            |
+| `Correlations`    | `[]finding.Correlation` | Cross-tool correlations                          |
+| `Metrics`         | `MetricsSnapshot`       | Timing and counts                                |
 
 ### 16.6 Conflict Detection
 
@@ -583,11 +583,11 @@ type FixProvider interface {
 
 **Default provider chain (tried in order):**
 
-| Provider            | Name            | Handles                                                     |
-| ------------------- | --------------- | ----------------------------------------------------------- |
-| `OffsetProvider`    | `"byte-offset"` | `HasCodeChange()` and `Range != nil` with `Length() > 0`    |
-| `LineProvider`      | `"line-column"` | `HasCodeChange()` and `Position.Line > 0`                   |
-| `SubstringProvider` | `"substring"`   | Fallback: `HasCodeChange()` and `BeforeCode != ""`          |
+| Provider            | Name            | Handles                                                  |
+| ------------------- | --------------- | -------------------------------------------------------- |
+| `OffsetProvider`    | `"byte-offset"` | `HasCodeChange()` and `Range != nil` with `Length() > 0` |
+| `LineProvider`      | `"line-column"` | `HasCodeChange()` and `Position.Line > 0`                |
+| `SubstringProvider` | `"substring"`   | Fallback: `HasCodeChange()` and `BeforeCode != ""`       |
 
 Domain-specific providers (Go AST, Rust syn, etc.) can be registered via:
 
@@ -646,15 +646,15 @@ Re-runs all detectors after fixes and categorizes findings:
 
 Thread-safe metrics collection:
 
-| Metric                | Method                           |
-| --------------------- | -------------------------------- |
-| Stage durations       | `RecordStage()`, `StageTiming()` |
-| Detector timing       | `RecordDetector()`               |
-| Findings per detector | `RecordDetector()`               |
-| Fixes applied         | `RecordFixes(count)`             |
+| Metric                | Method                                     |
+| --------------------- | ------------------------------------------ |
+| Stage durations       | `RecordStage()`, `StageTiming()`           |
+| Detector timing       | `RecordDetector()`                         |
+| Findings per detector | `RecordDetector()`                         |
+| Fixes applied         | `RecordFixes(count)`                       |
 | Fix outcome counts    | `RecordOutcome(status)`, `OutcomeCounts()` |
-| Total duration        | `TotalDuration()`                |
-| Point-in-time copy    | `Snapshot()` → `MetricsSnapshot` |
+| Total duration        | `TotalDuration()`                          |
+| Point-in-time copy    | `Snapshot()` → `MetricsSnapshot`           |
 
 Auto-populated on `Pipeline.Run()` via `PipelineResult.Metrics`.
 
@@ -813,14 +813,14 @@ Without `-config`: uses govet + staticcheck with the flag values.
 
 ### Output Formats
 
-| Format     | Description                                                                                                                        |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Format     | Description                                                                                                                              |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `text`     | Human-readable: `file:line:col [SEVERITY] rule: message` + `Suggestion:` lines (`finding.FormatTextRich` with badges/💡 is library-only) |
-| `markdown` | Markdown table with auto-aligned columns (via go-output)                                                                           |
-| `json`     | Full JSON report                                                                                                                   |
-| `csv`      | CSV with auto-quoting, clean data export without footer (via go-output)                                                            |
-| `tsv`      | Tab-separated, clean data export without footer (via go-output)                                                                    |
-| `sarif`    | SARIF 2.1.0                                                                                                                        |
+| `markdown` | Markdown table with auto-aligned columns (via go-output)                                                                                 |
+| `json`     | Full JSON report                                                                                                                         |
+| `csv`      | CSV with auto-quoting, clean data export without footer (via go-output)                                                                  |
+| `tsv`      | Tab-separated, clean data export without footer (via go-output)                                                                          |
+| `sarif`    | SARIF 2.1.0                                                                                                                              |
 
 Severity-badged table output exists as a library API (`finding.FormatTable`), not as a CLI format.
 
@@ -850,10 +850,10 @@ Test categories:
 
 Runnable examples:
 
-| Example                       | Description                 |
-| ----------------------------- | --------------------------- |
-| `examples/basic/`             | Direct Finding construction |
-| `examples/builder/`           | Builder API usage           |
+| Example                       | Description                                 |
+| ----------------------------- | ------------------------------------------- |
+| `examples/basic/`             | Direct Finding construction                 |
+| `examples/builder/`           | Builder API usage                           |
 | `pipeline/examples/outcomes/` | Per-finding outcomes + rollback policy demo |
 
 > **Note:** Examples have no test files (compile-only check via `example_compile_test.go`).
@@ -1103,7 +1103,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | File backup & rollback                       | FULLY_FUNCTIONAL     | Automatic on fix failure                                                             |
 | Go vet detector                              | PARTIALLY_FUNCTIONAL | Requires `go vet` in PATH                                                            |
 | Staticcheck detector                         | PARTIALLY_FUNCTIONAL | Requires `staticcheck` in PATH                                                       |
-| CLI tool                                     | PARTIALLY_FUNCTIONAL | 6 output formats (text, markdown, csv, tsv, json, sarif), config, profiling         |
+| CLI tool                                     | PARTIALLY_FUNCTIONAL | 6 output formats (text, markdown, csv, tsv, json, sarif), config, profiling          |
 | Plugin detector registry                     | FULLY_FUNCTIONAL     | Thread-safe `RegisterDetector`                                                       |
 | Per-detector timeouts                        | FULLY_FUNCTIONAL     | `DetectorTimeouts` map in Config + CLI config file                                   |
 | Structured logging (slog)                    | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                             |

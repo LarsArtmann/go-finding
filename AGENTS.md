@@ -158,6 +158,12 @@ bash scripts/version-check.sh                                    # Verify versio
 - **ToLSP re-emits LSP diagnostic tags from metadata** — `LSPDiagnostic.Tags` is populated by `ToLSP()` from `Metadata[LSPDiagnosticTagsKey]` (comma-separated ints, as written by `FromLSP`). A FromLSP-created finding therefore keeps its tags on every subsequent ToLSP conversion, not just through one round-trip. Malformed entries in the metadata value are silently skipped.
 - **FixEngine reports per-finding outcomes** — `FixEngine.ApplyWithOutcomes(content, fixes)` returns a `FixApplyResult` with one `FixOutcome` per input finding (input order): `applied` / `no-change` / `refused` (matched provider produced zero edits without error — previously indistinguishable from success, issue #27) / `conflict` / `invalid` (edit dropped as invalid or out of bounds) / `failed` (provider error in `Err`). `Apply` and `ApplyWithConflicts` delegate to it, so their return shapes and behavior are unchanged.
 - **FixApplier rollback is per-file by default** — `RollbackPolicyFailingFile` (default, zero value) restores only the failing file; earlier files keep their applied fixes. Soft per-finding failures (provider resolve errors, refused findings) never abort the run: `applyToFile` writes valid applied edits and reports resolve errors via outcomes plus the joined error return. `RollbackPolicyAllFiles` preserves the legacy all-or-nothing rollback (set via `SetRollbackPolicy`, `Config.FixRollbackAllFiles`, or config-file `fixRollbackAllFiles`). `ApplyWithReport` returns an `ApplyReport` (applied fixes, outcomes, shift maps, rolled-back files). Before this change, one provider resolve error on the last file discarded all clean edits in all previous files (issue #28).
+- **Run `go test` invocations SEQUENTIALLY on this machine** — Two concurrent `go test`/`go build` runs sharing `GOCACHE=/mnt/buildcache/go-build` produce transient `[build failed]` / `[setup failed]` errors (missing cache entries, "package X is not in std"). A plain retry of the same command succeeds. Don't misdiagnose this as a code or toolchain problem.
+- **FixApplier's `modified` list tracks backed-up files, not written files** — A file whose findings all soft-fail is still backed up (and therefore listed in `report.RolledBack` and the error text `(rolled back: ...)` when restored); restoring it is a content no-op. Tests asserting exact rolled-back lists must expect backed-up-but-unchanged paths too.
+- **`treefmt` is not directly invokable via `nix develop -c treefmt`** (not on the devShell PATH even though `nix flake check` runs it). Fix golines/gofumpt findings by hand and let `golangci-lint run` verify; dprint covers markdown.
+- **`pipeline/examples/` is the pipeline-module examples home** — One runnable program per subdirectory (e.g. `outcomes/`) plus `example_compile_test.go` building each with `go build -o /dev/null`, mirroring the root `examples/` pattern. Arch-lint component `pipeline-examples`.
+- **Billing decision (2026-09-08)** — User chose to IGNORE the GitHub Actions billing failure (account switch planned). Local gates are the quality bar until then: race tests ×4 modules, lint ×4, structural scripts, go-arch-lint, dprint, `nix flake check`. After the switch, `gh workflow run ci.yml --ref master` and verify every job.
+- **Outcome failures are typed** — Failed `FixOutcome.Err` values are `*finding.FindingError` (parse category) with the finding's position attached; `errors.Is`/`As` chains to the original provider cause are preserved. `FixOutcome`/`FixApplyResult` marshal deterministically (errors as message strings). `Metrics.RecordOutcome`/`OutcomeCounts` aggregate them; the CLI prints a `Fix outcomes:` summary. Stress tests are a MANDATORY release gate (release-procedure step 4, decided 2026-09-08).
 
 ## CLI Features
 
@@ -166,8 +172,10 @@ bash scripts/version-check.sh                                    # Verify versio
 - YAML/JSON config (`-config`), severity filter (`-min-severity`), profiling
 - `-filter-generated` — removes findings from auto-generated files (sqlc, protobuf, etc.)
 - `-fix-provider go-ast` — enables AST-aware fix provider
+- `-fix-rollback-all` — opt into all-or-nothing rollback (default: per-file)
 - `-byte-level-conflict` — precise overlap detection
 - `-trace` — enable Go execution trace flight recorder for diagnostics (`-trace-dir`, `-trace-slow` for config)
+- `Fix outcomes:` stderr summary after fix stages (canonical order, nonzero counts only)
 - Config-file `flightRecorder` section — alternative to `-trace` flags; supports `enabled`, `outputDir`, `slowStageThreshold`, `minAge`, `maxBytes` (full parity with pipeline `FlightRecorderFileConfig`)
 - Dynamic detector registry (`RegisterDetector`)
 
