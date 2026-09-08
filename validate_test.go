@@ -519,23 +519,23 @@ func TestValidate_GroupID(t *testing.T) {
 func TestGroupID_IsValid(t *testing.T) {
 	t.Parallel()
 
-	if !(GroupID("")).IsValid() {
+	if !GroupID("").IsValid() {
 		t.Error("empty GroupID (not grouped) must be valid")
 	}
 
-	if !(GroupID("clone-42")).IsValid() {
+	if !GroupID("clone-42").IsValid() {
 		t.Error("plain identifier must be valid")
 	}
 
-	if (GroupID("a b")).IsValid() || (GroupID("a\tb")).IsValid() {
+	if GroupID("a b").IsValid() || GroupID("a\tb").IsValid() {
 		t.Error("whitespace must be invalid")
 	}
 
-	if (GroupID("a\x7fb")).IsValid() {
+	if GroupID("a\x7fb").IsValid() {
 		t.Error("DEL control character must be invalid")
 	}
 
-	if (GroupID(strings.Repeat("x", maxGroupIDLen+1))).IsValid() {
+	if GroupID(strings.Repeat("x", maxGroupIDLen+1)).IsValid() {
 		t.Error("over-length GroupID must be invalid")
 	}
 }

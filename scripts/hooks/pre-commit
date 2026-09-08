@@ -2,6 +2,12 @@
 # Commit-time formatting gate. Installed by the flake devShell shellHook
 # (source of truth: this file). Fast and deterministic — no reason to bypass
 # it with --no-verify.
+#
+# Gates:
+#   1. dprint check --staged — markdown/JSON/YAML formatting (non-mutating)
+#   2. nix fmt -- --fail-on-change — Go (gofumpt/goimports/golines) + nixfmt
+#      via treefmt. Mutates files it reformats; on failure the changes are in
+#      your worktree — review with git diff, stage them, and re-commit.
 set -euo pipefail
 
 if ! command -v dprint >/dev/null 2>&1; then
@@ -19,3 +25,17 @@ if ! dprint check --staged >/dev/null 2>&1; then
 fi
 
 echo "pre-commit: dprint check passed"
+
+# treefmt drift signal (DOCS17): treefmt is not on the devShell PATH, but the
+# flake formatter is reachable via nix. Skip gracefully outside nix setups.
+if command -v nix >/dev/null 2>&1; then
+	if ! nix fmt -- --fail-on-change >/dev/null 2>&1; then
+		echo "pre-commit: treefmt (nix fmt) found drift — reformatted files are in your worktree." >&2
+		echo "pre-commit: review with 'git diff', stage them, and re-commit." >&2
+		exit 1
+	fi
+
+	echo "pre-commit: treefmt check passed"
+else
+	echo "pre-commit: nix not found — skipping treefmt check (run 'nix fmt' before pushing)."
+fi

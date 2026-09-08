@@ -186,7 +186,12 @@ func (a *FixApplier) ApplyWithReport(
 		if err != nil {
 			if a.rollbackPolicy == RollbackPolicyAllFiles {
 				if rollbackErr := a.backup.RollbackAll(modified); rollbackErr != nil {
-					return report, fmt.Errorf("%w (rollback also failed: %w)%s", err, rollbackErr, rolledBackNote(report.RolledBack))
+					return report, fmt.Errorf(
+						"%w (rollback also failed: %w)%s",
+						err,
+						rollbackErr,
+						rolledBackNote(report.RolledBack),
+					)
 				}
 
 				report.RolledBack = append(report.RolledBack, modified...)
@@ -204,7 +209,12 @@ func (a *FixApplier) ApplyWithReport(
 
 				if a.rollbackPolicy == RollbackPolicyAllFiles {
 					if rollbackErr := a.backup.RollbackAll(modified); rollbackErr != nil {
-						return report, fmt.Errorf("%w (rollback also failed: %w)%s", backupErr, rollbackErr, rolledBackNote(report.RolledBack))
+						return report, fmt.Errorf(
+							"%w (rollback also failed: %w)%s",
+							backupErr,
+							rollbackErr,
+							rolledBackNote(report.RolledBack),
+						)
 					}
 
 					report.RolledBack = append(report.RolledBack, modified...)
@@ -316,7 +326,12 @@ func (a *FixApplier) handleFileError(report *ApplyReport, path string, modified 
 
 	applyErr := finding.NewConflictError("apply to "+path, err)
 	if len(rollbackErrs) > 0 {
-		return fmt.Errorf("%w (rollback also failed: %w)%s", applyErr, errors.Join(rollbackErrs...), rolledBackNote(report.RolledBack))
+		return fmt.Errorf(
+			"%w (rollback also failed: %w)%s",
+			applyErr,
+			errors.Join(rollbackErrs...),
+			rolledBackNote(report.RolledBack),
+		)
 	}
 
 	return fmt.Errorf("%w%s", applyErr, rolledBackNote(report.RolledBack))
@@ -416,7 +431,10 @@ func (*FixApplier) recordShiftMap(
 // reflected in the outcomes and never fail the file: applied edits stay
 // written. The returned error is reserved for hard I/O failures (stat, read,
 // write).
-func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]finding.Finding, *LineShiftMap, []FixOutcome, error) {
+func (a *FixApplier) applyToFile(
+	path string,
+	fixes []finding.Finding,
+) ([]finding.Finding, *LineShiftMap, []FixOutcome, error) {
 	result, original, info, err := a.loadAndResolve(path, fixes)
 	if err != nil {
 		return nil, nil, nil, err
