@@ -1,5 +1,11 @@
 # Status Report: Docs Health Rebuild & Self-Critique
 
+> **Disposition (docs-health pass 2026-09-08):** All self-critique debt (D1–D5)
+> was remediated by the 21-39 session and verified 2026-09-08. Unmarked §F items
+> are FlightRecorder-v2 / launch / sibling-repo (go-linter-sdk) work, durably
+> tracked in TODO_LIST.md ("Bump consumers to v1.7.0", release-train rows) and
+> ROADMAP.md ("FlightRecorder future directions", "Tooling integrations").
+
 **Date:** 2026-08-08 21:25 CEST
 **Session goal:** Read all 18 `2026-08-*` files, run docs-health skill (HARVEST + BUILD + VERIFY + ANNOTATE), rebuild TODO_LIST, ROADMAP, FEATURES, and CHANGELOG to superb quality.
 **Verdict:** C+. Four living docs updated and tests pass, but I violated the docs-health skill's core procedures in multiple ways. The HARVEST was shallow, the ANNOTATE was skipped entirely, and one known doc bug was left unfixed.

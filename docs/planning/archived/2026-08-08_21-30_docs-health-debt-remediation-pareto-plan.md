@@ -1,5 +1,9 @@
 # SUPERB Pareto Plan — Docs Health Debt Remediation
 
+> **Disposition (docs-health pass 2026-09-08):** FULLY EXECUTED — T1–T15 all
+> done and verified (execution report: `docs/status/2026-08-08_21-39_*.md`;
+> T11 completed by the 2026-09-08 archiving pass).
+
 **Date:** 2026-08-08 21:30 CEST
 **Source:** Self-critique from `docs/status/2026-08-08_21-25_docs-health-rebuild-self-critique.md`
 **Context:** Prior session rebuilt TODO_LIST, ROADMAP, FEATURES, CHANGELOG but skipped ANNOTATE, left a doc bug unfixed, ran an incomplete quality gate, and produced a thin TODO_LIST.
@@ -110,21 +114,21 @@ Sorted by importance/impact/effort/customer-value.
 
 | #   | Phase | Task                                                                        | Impact   | Effort | Customer Value          | Depends On |
 | --- | ----- | --------------------------------------------------------------------------- | -------- | ------ | ----------------------- | ---------- |
-| T1  | 1     | Fix `config.ToConfig()` doc bug in configuration.md                         | Critical | 15 min | Consumer trust          | —          |
-| T2  | 2     | Restore priority emojis in TODO_LIST.md                                     | Med      | 10 min | Consistency             | —          |
-| T3  | 2     | Complete HARVEST: route ~20 missing items from reports to TODO_LIST/ROADMAP | High     | 60 min | Work discovery          | —          |
-| T4  | 2     | Verify each CHANGELOG [Unreleased] entry against code                       | Med      | 30 min | Doc accuracy            | —          |
-| T5  | 2     | Verify removed TODO_LIST DONE items are in CHANGELOG                        | Med      | 15 min | No lost work            | —          |
-| T6  | 3     | Annotate `2026-08-06_19-40_deterministic-json-fix.md`                       | Med      | 30 min | Historical accuracy     | —          |
-| T7  | 3     | Annotate `2026-08-01_19-40_flight-recorder-self-critique.md`                | Med      | 30 min | Historical accuracy     | —          |
-| T8  | 3     | Annotate `2026-08-02_00-18_pareto-plan-execution-self-critique.md`          | Low      | 30 min | Historical accuracy     | —          |
-| T9  | 3     | Annotate `2026-08-02_00-26_comprehensive-session-status.md`                 | Low      | 30 min | Historical accuracy     | —          |
-| T10 | 4     | Complete FEATURES.md summary matrix (add missing rows)                      | Med      | 15 min | Feature discoverability | —          |
-| T11 | 4     | Archive fully-resolved reports to `docs/status/archived/`                   | Low      | 15 min | Navigation              | T6-T9      |
-| T12 | 5     | Run full test suite all 4 modules (`-race -count=1`)                        | Critical | 15 min | Correctness             | T1-T11     |
-| T13 | 5     | Run lint all 4 modules                                                      | Critical | 15 min | Code quality            | T1-T11     |
-| T14 | 5     | Run all 6 CI scripts                                                        | High     | 10 min | CI readiness            | T1-T11     |
-| T15 | 6     | git commit with detailed message + git push                                 | Critical | 10 min | Delivery                | T12-T14    |
+| ~~T1~~  | ~~1~~ done — 21-39 session, verified | ~~Fix `config.ToConfig()` doc bug in configuration.md~~ | ~~Critical~~ | ~~15 min~~ | ~~Consumer trust~~ | ~~—~~ |
+| ~~T2~~  | ~~2~~ done — 21-39 session, verified | ~~Restore priority emojis in TODO_LIST.md~~ | ~~Med~~ | ~~10 min~~ | ~~Consistency~~ | ~~—~~ |
+| ~~T3~~  | ~~2~~ done — 21-39 session, ~20 items added | ~~Complete HARVEST: route ~20 missing items from reports to TODO_LIST/ROADMAP~~ | ~~High~~ | ~~60 min~~ | ~~Work discovery~~ | ~~—~~ |
+| ~~T4~~  | ~~2~~ done — TODO_LIST per-item verification 2026-09-08 + FEATURES walk | ~~Verify each CHANGELOG [Unreleased] entry against code~~ | ~~Med~~ | ~~30 min~~ | ~~Doc accuracy~~ | ~~—~~ |
+| ~~T5~~  | ~~2~~ done — TODO_LIST per-item verification 2026-09-08 | ~~Verify removed TODO_LIST DONE items are in CHANGELOG~~ | ~~Med~~ | ~~15 min~~ | ~~No lost work~~ | ~~—~~ |
+| ~~T6~~  | ~~3~~ done — 21-39 session, archived | ~~Annotate `2026-08-06_19-40_deterministic-json-fix.md`~~ | ~~Med~~ | ~~30 min~~ | ~~Historical accuracy~~ | ~~—~~ |
+| ~~T7~~  | ~~3~~ done — 21-39 session banner + 2026-09-08 inline pass, archived | ~~Annotate `2026-08-01_19-40_flight-recorder-self-critique.md`~~ | ~~Med~~ | ~~30 min~~ | ~~Historical accuracy~~ | ~~—~~ |
+| ~~T8~~  | ~~3~~ done — 21-39 session banner + 2026-09-08 inline pass, archived | ~~Annotate `2026-08-02_00-18_pareto-plan-execution-self-critique.md`~~ | ~~Low~~ | ~~30 min~~ | ~~Historical accuracy~~ | ~~—~~ |
+| ~~T9~~  | ~~3~~ done — 21-39 session banner + 2026-09-08 inline pass, archived | ~~Annotate `2026-08-02_00-26_comprehensive-session-status.md`~~ | ~~Low~~ | ~~30 min~~ | ~~Historical accuracy~~ | ~~—~~ |
+| ~~T10~~ | ~~4~~ done — 21-39 session T10 + FEATURES walk 2026-09-08 | ~~Complete FEATURES.md summary matrix (add missing rows)~~ | ~~Med~~ | ~~15 min~~ | ~~Feature discoverability~~ | ~~—~~ |
+| ~~T11~~ | ~~4~~ done — completed by docs-health pass 2026-09-08, all 4 archived | ~~Archive fully-resolved reports to `docs/status/archived/`~~ | ~~Low~~ | ~~15 min~~ | ~~Navigation~~ | ~~T6-T9~~ |
+| ~~T12~~ | ~~5~~ done — race x4 green 2026-09-08 | ~~Run full test suite all 4 modules (`-race -count=1`)~~ | ~~Critical~~ | ~~15 min~~ | ~~Correctness~~ | ~~T1-T11~~ |
+| ~~T13~~ | ~~5~~ done — lint 0 issues x4 2026-09-08 | ~~Run lint all 4 modules~~ | ~~Critical~~ | ~~15 min~~ | ~~Code quality~~ | ~~T1-T11~~ |
+| ~~T14~~ | ~~5~~ done — all 7 scripts green 2026-09-08 | ~~Run all 6 CI scripts~~ | ~~High~~ | ~~10 min~~ | ~~CI readiness~~ | ~~T1-T11~~ |
+| ~~T15~~ | ~~6~~ done — pushed, 6ee8d20 c5c7926 f4815ba | ~~git commit with detailed message + git push~~ | ~~Critical~~ | ~~10 min~~ | ~~Delivery~~ | ~~T12-T14~~ |
 
 ---
 

@@ -1,5 +1,13 @@
 # SUPERB Pareto Plan — go-finding CI Hardening & Growth Execution
 
+> **Disposition (docs-health pass 2026-09-08):** Phases 1–6 (T1–T19) fully
+> executed and shipped in v1.6.0. Unmarked tasks are Phase 7 launch-track
+> (TODO_LIST.md "Make Repo Public"), Phase 8/9 growth ideas (ROADMAP.md
+> "FlightRecorder future directions", "Tooling integrations", "Language
+> expansion", "Consumer ecosystem"), and Phase 10 v2.0 designs (ROADMAP.md
+> "Hardening (owner decisions pending)"). Superseded as a tracking document by
+> the 2026-09-08 master plan.
+
 **Date:** 2026-08-08 10:55 CEST
 **Source:** Consolidated from TODO_LIST.md (12 open items), status report 2026-08-08 §B-D (8 gaps), status report §F (50 next items), ROADMAP.md (20+ raw ideas)
 
@@ -162,26 +170,26 @@ Sorted by impact/effort/customer-value. ALL open work items included.
 
 | #    | Phase | Task                                                                                                         | Impact   | Effort  | Customer Value       | Depends On |
 | ---- | ----- | ------------------------------------------------------------------------------------------------------------ | -------- | ------- | -------------------- | ---------- |
-| T1   | 1     | AGENTS.md: add 3 gotchas (FlightRecorderFileConfig, ResolveFlightRecorder, config-file fallback, CI scripts) | Critical | 30 min  | Every future session | —          |
-| T2   | 1     | CLI config validation error-path test (invalid slowStageThreshold)                                           | High     | 30 min  | Correctness          | —          |
-| T3a  | 1     | doc.go: fix FlightRecorder guide reference (godoc-friendly)                                                  | Low      | 10 min  | Docs quality         | —          |
-| T3b  | 1     | version-drift.sh: exclude `// indirect` lines from grep                                                      | Low      | 10 min  | CI correctness       | —          |
-| T4   | 1     | GOWORK=off per-module isolation test run (all 4 modules)                                                     | High     | 30 min  | Consumer safety      | —          |
-| T5   | 2     | Wire 4 CI scripts into .github/workflows/ci.yml                                                              | Critical | 45 min  | Automated quality    | T1, T2     |
-| T6   | 3     | CHANGELOG.md: add [Unreleased] entry for all new work                                                        | Critical | 45 min  | Release readiness    | T5         |
-| T7   | 3     | FlightRecorderFileConfig: align CLI fields with pipeline or document omission                                | Medium   | 30 min  | API consistency      | T6         |
-| T8   | 4     | Docs-freshness CI check script + ci.yml job                                                                  | Medium   | 60 min  | Doc accuracy         | T5         |
-| T9   | 4     | Per-module CHANGELOG.md (pipeline/, analysis/, cmd/go-finding/)                                              | Medium   | 60 min  | Consumer visibility  | T6         |
-| T10  | 4     | go-arch-lint module boundary enforcement (script + ci.yml)                                                   | High     | 90 min  | Architecture safety  | T5         |
-| T11  | 4     | Multi-module vs monolith benchmark comparison                                                                | Low      | 60 min  | Data for decisions   | T5         |
-| T12  | 5     | docs/guides/configuration.md (central config reference)                                                      | Medium   | 60 min  | Onboarding           | T7         |
-| T13  | 5     | docs/guides/troubleshooting.md (common pipeline errors)                                                      | Medium   | 90 min  | Support reduction    | —          |
-| T14  | 5     | README.md: add FlightRecorder to feature table                                                               | Low      | 30 min  | Discoverability      | —          |
-| T15  | 5     | docs/DOMAIN_LANGUAGE.md (pipeline domain terms glossary)                                                     | Medium   | 90 min  | Shared vocabulary    | —          |
-| T16  | 6     | resolveSafePath: circular symlinks, dangling symlinks, root-is-symlink tests                                 | Medium   | 45 min  | Security             | —          |
-| T17  | 6     | FlightRecorder: disk-full error path, last-stage threshold, concurrent detector tests                        | Medium   | 60 min  | Correctness          | —          |
-| T18  | 6     | sanitizeFilename property-based / fuzz test                                                                  | Low      | 30 min  | Correctness          | —          |
-| T19  | 6     | SARIF schema validation test (vendor schema or lightweight validator)                                        | Low      | 90 min  | Interop safety       | —          |
+| ~~T1~~   | ~~1~~ done — 11-47 session A, AGENTS.md gotchas | ~~AGENTS.md: add 3 gotchas (FlightRecorderFileConfig, ResolveFlightRecorder, config-file fallback, CI scripts)~~ | ~~Critical~~ | ~~30 min~~ | ~~Every future session~~ | ~~—~~ |
+| ~~T2~~   | ~~1~~ done — 11-47 session T2, TestPipelineConfigFile_Validate | ~~CLI config validation error-path test (invalid slowStageThreshold)~~ | ~~High~~ | ~~30 min~~ | ~~Correctness~~ | ~~—~~ |
+| ~~T3a~~  | ~~1~~ done — v1.6.0 CHANGELOG, doc.go section | ~~doc.go: fix FlightRecorder guide reference (godoc-friendly)~~ | ~~Low~~ | ~~10 min~~ | ~~Docs quality~~ | ~~—~~ |
+| ~~T3b~~  | ~~1~~ done — v1.6.0 CHANGELOG, version-drift.sh | ~~version-drift.sh: exclude `// indirect` lines from grep~~ | ~~Low~~ | ~~10 min~~ | ~~CI correctness~~ | ~~—~~ |
+| ~~T4~~   | ~~1~~ done — 11-47 session T4, all 4 modules PASS | ~~GOWORK=off per-module isolation test run (all 4 modules)~~ | ~~High~~ | ~~30 min~~ | ~~Consumer safety~~ | ~~—~~ |
+| ~~T5~~   | ~~2~~ done — 11-47 session T5, structural-checks + go-work-sync jobs | ~~Wire 4 CI scripts into .github/workflows/ci.yml~~ | ~~Critical~~ | ~~45 min~~ | ~~Automated quality~~ | ~~T1, T2~~ |
+| ~~T6~~   | ~~3~~ done — v1.6.0 CHANGELOG | ~~CHANGELOG.md: add [Unreleased] entry for all new work~~ | ~~Critical~~ | ~~45 min~~ | ~~Release readiness~~ | ~~T5~~ |
+| ~~T7~~   | ~~3~~ done — 12-16 session T7, full parity | ~~FlightRecorderFileConfig: align CLI fields with pipeline or document omission~~ | ~~Medium~~ | ~~30 min~~ | ~~API consistency~~ | ~~T6~~ |
+| ~~T8~~   | ~~4~~ done — v1.6.0 CHANGELOG, scripts/docs-freshness.sh | ~~Docs-freshness CI check script + ci.yml job~~ | ~~Medium~~ | ~~60 min~~ | ~~Doc accuracy~~ | ~~T5~~ |
+| ~~T9~~   | ~~4~~ done — 12-16 session T9, per-module CHANGELOGs | ~~Per-module CHANGELOG.md (pipeline/, analysis/, cmd/go-finding/)~~ | ~~Medium~~ | ~~60 min~~ | ~~Consumer visibility~~ | ~~T6~~ |
+| ~~T10~~  | ~~4~~ done — 12-44 session T10, arch-check job | ~~go-arch-lint module boundary enforcement (script + ci.yml)~~ | ~~High~~ | ~~90 min~~ | ~~Architecture safety~~ | ~~T5~~ |
+| ~~T11~~  | ~~4~~ done — docs/reports/2026-08-08_multi-module-vs-monolith.md | ~~Multi-module vs monolith benchmark comparison~~ | ~~Low~~ | ~~60 min~~ | ~~Data for decisions~~ | ~~T5~~ |
+| ~~T12~~  | ~~5~~ done — docs/guides/configuration.md | ~~docs/guides/configuration.md (central config reference)~~ | ~~Medium~~ | ~~60 min~~ | ~~Onboarding~~ | ~~T7~~ |
+| ~~T13~~  | ~~5~~ done — docs/guides/troubleshooting.md | ~~docs/guides/troubleshooting.md (common pipeline errors)~~ | ~~Medium~~ | ~~90 min~~ | ~~Support reduction~~ | ~~—~~ |
+| ~~T14~~  | ~~5~~ done — README.md flight recorder row | ~~README.md: add FlightRecorder to feature table~~ | ~~Low~~ | ~~30 min~~ | ~~Discoverability~~ | ~~—~~ |
+| ~~T15~~  | ~~5~~ done — v1.6.0 CHANGELOG, DOMAIN_LANGUAGE | ~~docs/DOMAIN_LANGUAGE.md (pipeline domain terms glossary)~~ | ~~Medium~~ | ~~90 min~~ | ~~Shared vocabulary~~ | ~~—~~ |
+| ~~T16~~  | ~~6~~ done — v1.6.0 CHANGELOG, symlink edge tests | ~~resolveSafePath: circular symlinks, dangling symlinks, root-is-symlink tests~~ | ~~Medium~~ | ~~45 min~~ | ~~Security~~ | ~~—~~ |
+| ~~T17~~  | ~~6~~ done — v1.6.0 CHANGELOG, FR edge tests | ~~FlightRecorder: disk-full error path, last-stage threshold, concurrent detector tests~~ | ~~Medium~~ | ~~60 min~~ | ~~Correctness~~ | ~~—~~ |
+| ~~T18~~  | ~~6~~ done — FuzzSanitizeFilename | ~~sanitizeFilename property-based / fuzz test~~ | ~~Low~~ | ~~30 min~~ | ~~Correctness~~ | ~~—~~ |
+| ~~T19~~  | ~~6~~ done — lightweight variant, sarif_properties_test.go | ~~SARIF schema validation test (vendor schema or lightweight validator)~~ | ~~Low~~ | ~~90 min~~ | ~~Interop safety~~ | ~~—~~ |
 | T20  | 7     | Verify GoReleaser + Homebrew tap works on public tag                                                         | High     | 45 min  | Distribution         | T6         |
 | T21  | 7     | Verify pkg.go.dev renders after first public tag                                                             | Medium   | 30 min  | Discoverability      | T20        |
 | T22  | 7     | Write launch announcement (blog/r/golang/Slack)                                                              | High     | 90 min  | Adoption             | T21        |
@@ -189,11 +197,11 @@ Sorted by impact/effort/customer-value. ALL open work items included.
 | T24a | 8     | FlightRecorder trace file rotation (max-files/max-bytes)                                                     | Medium   | 90 min  | Operability          | —          |
 | T24b | 8     | FlightRecorder compressed trace output (gzip)                                                                | Low      | 45 min  | Disk efficiency      | T24a       |
 | T25a | 8     | FlightRecorder automatic pprof capture alongside traces                                                      | Low      | 60 min  | Diagnostics          | —          |
-| T25b | 8     | FlightRecorder context propagation in writeSnapshot                                                          | Low      | 45 min  | Cancellation         | —          |
-| T25c | 8     | FlightRecorder multiple recorder graceful degradation                                                        | Low      | 60 min  | Robustness           | —          |
+| ~~T25b~~ | ~~8~~ done — v1.6.0 CHANGELOG, Snapshot ctx | ~~FlightRecorder context propagation in writeSnapshot~~ | ~~Low~~ | ~~45 min~~ | ~~Cancellation~~ | ~~—~~ |
+| ~~T25c~~ | ~~8~~ done — v1.6.0 CHANGELOG, Degraded mode | ~~FlightRecorder multiple recorder graceful degradation~~ | ~~Low~~ | ~~60 min~~ | ~~Robustness~~ | ~~—~~ |
 | T26a | 8     | FlightRecorder OpenTelemetry bridge                                                                          | Low      | 120 min | Distributed tracing  | —          |
 | T26b | 8     | FlightRecorder trace diff tool                                                                               | Low      | 120 min | Diagnostics          | —          |
-| T27  | 9     | Consumer migration guide (v1.3/v1.4 APIs simplified)                                                         | Medium   | 60 min  | Adoption             | —          |
+| ~~T27~~  | ~~9~~ done — docs/guides/consumer-migration-v1.7.md + v1.3 | ~~Consumer migration guide (v1.3/v1.4 APIs simplified)~~ | ~~Medium~~ | ~~60 min~~ | ~~Adoption~~ | ~~—~~ |
 | T28  | 9     | More ToolAdapter[O] recipes (revive, errcheck, etc.)                                                         | Low      | 90 min  | Ecosystem            | —          |
 | T29  | 9     | LSP code action support (LSPCodeAction wire types)                                                           | Medium   | 90 min  | IDE integration      | —          |
 | T30a | 9     | Language provider: Rust (syn-based)                                                                          | Low      | 120 min | Language expansion   | —          |

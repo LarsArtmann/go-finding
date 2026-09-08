@@ -1,5 +1,12 @@
 # Consumer API Review: go-humanize-linter + go-linter-sdk
 
+> **Disposition (docs-health pass 2026-09-08):** All 9 findings resolved —
+> findings 1/3/4 shipped in go-finding v1.6.0; findings 2/5-9 implemented in
+> the 2026-08-08 refactor session (see
+> `docs/status/2026-08-08_11-24_consumer-api-refactor-completion.md`). SDK
+> changes are implemented but unpublished; publishing/consumer bumps are
+> tracked in TODO_LIST.md ("Bump consumers to v1.7.0").
+
 **Date:** 2026-08-08
 **Scope:** How `go-humanize-linter` and `go-linter-sdk` use `go-finding`, and what improvements would let them do the same or more with less code.
 
@@ -22,6 +29,8 @@ The humanize-linter defines `makeFindingWithConfidence` (23 LOC, called 12+ time
 **Fix implemented:** Added `Template.Builder()` which returns a pre-configured `*Builder` for chaining.
 
 ### 2. `gotoken.LineColToPos` — not discovered
+
+> **Resolved (2026-08-08):** Implemented — `findingToTokenPos` deleted (-30 LOC) in the refactor session (`docs/status/2026-08-08_11-24_consumer-api-refactor-completion.md`).
 
 The humanize-linter's `plugin/plugin.go` reimplements `gotoken.LineColToPos` as `findingToTokenPos` (25 LOC). The existing `gotoken` helper already handles nil-checks, line-bounds, and column offsets.
 
@@ -105,6 +114,8 @@ f := tmpl.Builder(rule, msg, finding.SeverityWarning, pos).
 
 ### 5. Registry should accept a tool name (HIGH IMPACT)
 
+> **Resolved (2026-08-08):** Implemented (Option A) — `RegistryOption`/`WithToolName`, 5 tests (11-24 report, sibling repo).
+
 **Problem:** `Registry.Run()` hardcodes the tool name as `"linter"` (`registry.go:158`). Findings are attributed to a generic "linter" tool, not the actual linter. The humanize-linter works around this by constructing findings with the correct tool name in every `NewBuilder` call, but the report metadata (`finding.ToolInfo`) is wrong.
 
 **Proposed:**
@@ -123,6 +134,8 @@ report, err := registry.Run(ctx, dir, linter.WithToolInfo(finding.ToolInfo{
 **Impact:** Correct tool attribution in reports and SARIF output. Enables the SDK to stamp findings with the correct tool name (see #6).
 
 ### 6. Rule should provide a finding builder factory (HIGHEST IMPACT)
+
+> **Resolved (2026-08-08):** Implemented — `rule.go:260-279`, 3 tests (11-24 report).
 
 **Problem:** Every rule in humanize-linter repeats the rule ID, tool name, severity, and category in every `finding.NewBuilder(...)` call — even though all four are already in `RuleMeta`. The SDK has this metadata but doesn't use it to help build findings.
 
@@ -160,6 +173,8 @@ This is the **single biggest boilerplate eliminator** — it would remove the to
 
 ### 7. Enable/disable rule filtering helper (MEDIUM IMPACT)
 
+> **Resolved (2026-08-08):** Implemented — `registry.go:298-317`, 4 tests (11-24 report).
+
 **Problem:** Two near-identical implementations exist in the humanize-linter:
 
 - `buildRegistry()` in `cmd/go-humanize-linter/main.go:425-455` (30 LOC)
@@ -180,6 +195,8 @@ func FilterRules(all []RuleFunc, enable, disable map[string]bool) []RuleFunc
 
 ### 8. Confidence-aware exit code (MEDIUM IMPACT)
 
+> **Resolved (2026-08-08):** Implemented — `registry.go:319-336`, 5 tests (11-24 report).
+
 **Problem:** The SDK provides `ExitCodeFromReport()` (binary: 0 clean / 1 any finding). The humanize-linter needs tiered exit codes (0 clean / 1 high+full / 2 medium+low) for CI, so it reimplements this as `exitCodeFromReport()` in `main.go:494-512` (18 LOC).
 
 **Proposed:**
@@ -195,6 +212,8 @@ func ExitCodeFromReportWithOpts(report *finding.Report, opts ...ExitOption) int
 **Impact:** Eliminates `exitCodeFromReport` in the consumer (18 LOC). Any confidence-aware linter would benefit.
 
 ### 9. `IsEnabledByDefault` should be consulted at runtime (LOW IMPACT, design change)
+
+> **Resolved (2026-08-08):** Resolved by documentation (option B) — `IsEnabledByDefault` godoc now documents metadata-only semantics.
 
 **Problem:** `IsEnabledByDefault()` is declared on the `Rule` interface and `OptIn()` creates disabled-by-default rules, but **neither `Registry.Run` nor `DetectorsFromRegistry` consult it**. Both iterate `registry.All()` and run every rule unconditionally. The flag is purely informational.
 

@@ -1,5 +1,10 @@
 # Status Report: Pareto Plan T1-T15 Execution — Verification & Push
 
+> **Disposition (docs-health pass 2026-09-08):** T1–T15 all complete and
+> verified (v1.6.0 released 2026-08-08; docs re-verified 2026-09-08). Unmarked
+> §f items are launch-track / consumer / BuildFlow work, durably tracked in
+> TODO_LIST.md ("Make Repo Public", "Bump consumers to v1.7.0", BLOCKED rows).
+
 **Date:** 2026-08-08 21:39 CEST
 **Session scope:** Resume and complete the docs-health debt remediation Pareto plan (`docs/planning/2026-08-08_21-30_docs-health-debt-remediation-pareto-plan.md`), tasks T1-T15.
 **Commits pushed:** `6ee8d20`, `c5c7926`, `f4815ba` → `origin/master`
@@ -103,48 +108,48 @@ This session resumed a Pareto plan where T1-T11 (code/doc changes) were already 
 
 ### Release: v1.6.0 (HIGH — unblocks consumer repos)
 
-1. Bump `version.go` to v1.6.0
-2. Move `[Unreleased]` to `[1.6.0]` in CHANGELOG.md (append-only, retain empty `[Unreleased]`)
-3. Tag all 4 modules: `v1.6.0`, `pipeline/v1.6.0`, `analysis/v1.6.0`, `cmd/go-finding/v1.6.0`
-4. Run `version-check.sh` after tagging
-5. Run GOWORK=off isolation tests per module for v1.6.0
-6. Verify go.mod has real versions at the tagged commit (`git show <tag>:cmd/go-finding/go.mod`)
+1. ~~Bump `version.go` to v1.6.0~~ done (v1.6.0 tagged 2026-08-08)
+2. ~~Move `[Unreleased]` to `[1.6.0]` in CHANGELOG.md (append-only, retain empty `[Unreleased]`)~~ done (v1.6.0 CHANGELOG section)
+3. ~~Tag all 4 modules: `v1.6.0`, `pipeline/v1.6.0`, `analysis/v1.6.0`, `cmd/go-finding/v1.6.0`~~ done (v1.6.0 + 3 sub-module tags exist)
+4. ~~Run `version-check.sh` after tagging~~ done (version-check.sh run in release session)
+5. ~~Run GOWORK=off isolation tests per module for v1.6.0~~ done (GOWORK=off x4 modules green)
+6. ~~Verify go.mod has real versions at the tagged commit (`git show <tag>:cmd/go-finding/go.mod`)~~ done (go.mod verified at tag by 22-28 session)
 
 ### Docs Health (HIGH — from self-critique D-items)
 
-7. Fix 6 docs-freshness.sh out-of-sync warnings:
-   - `docs/PRO_CONTRA_go-output-integration.md` ← `json.go` modified 14d after doc
-   - `docs/PRO_CONTRA_make-public.md` ← `json.go` modified 12d after doc
-   - `docs/READINESS_REPORT.md` ← `doc.go` modified 23d after doc
-   - `docs/RELEASE_CRITERIA.md` ← `sarif_roundtrip_test.go` modified 4d after doc
-   - `docs/release-procedure.md` ← `version.go` modified 9d after doc
-   - `docs/v1.0-release-criteria.md` ← `doc.go` modified 23d after doc
-8. Update `API_STABILITY.md` with v1.5.0+ symbols (FlightRecorderHook, ValidateAll, ParseConfidence, Template.Builder, deterministic output guarantee)
-9. Update `CONTRIBUTING.md` project tree (~10 files missing, regenerate from `git ls-files`)
-10. Full FEATURES.md vs code walk — verify every method signature, status label, and config default against source
-11. Write consumer migration guide (`docs/guides/migration-to-v1.6.md`) — 14 Go consumers can simplify using Template.Builder, ParseConfidence, etc.
+7. ~~Fix 6 docs-freshness.sh out-of-sync warnings:~~ done (point-in-time docs excluded from scan 2026-09-08)
+   ~~- `docs/PRO_CONTRA_go-output-integration.md` ← `json.go` modified 14d after doc~~
+   ~~- `docs/PRO_CONTRA_make-public.md` ← `json.go` modified 12d after doc~~
+   ~~- `docs/READINESS_REPORT.md` ← `doc.go` modified 23d after doc~~
+   ~~- `docs/RELEASE_CRITERIA.md` ← `sarif_roundtrip_test.go` modified 4d after doc~~
+   ~~- `docs/release-procedure.md` ← `version.go` modified 9d after doc~~
+   ~~- `docs/v1.0-release-criteria.md` ← `doc.go` modified 23d after doc~~
+8. ~~Update `API_STABILITY.md` with v1.5.0+ symbols (FlightRecorderHook, ValidateAll, ParseConfidence, Template.Builder, deterministic output guarantee)~~ done (API_STABILITY audited 2026-09-08)
+9. ~~Update `CONTRIBUTING.md` project tree (~10 files missing, regenerate from `git ls-files`)~~ done (CONTRIBUTING tree verified 2026-09-08)
+10. ~~Full FEATURES.md vs code walk — verify every method signature, status label, and config default against source~~ done (FEATURES full walk 2026-09-08)
+11. ~~Write consumer migration guide (`docs/guides/migration-to-v1.6.md`) — 14 Go consumers can simplify using Template.Builder, ParseConfidence, etc.~~ done (docs/guides/consumer-migration-v1.7.md)
 
 ### Verification Gaps (MED — from this session's T4-T5 failures)
 
-12. Grep-verify each `[Unreleased]` CHANGELOG entry against actual Go source code
-13. Grep-verify each `[1.5.0]` CHANGELOG entry against actual Go source code
-14. Run `GOWORK=off GOEXPERIMENT=jsonv2 go test -race -count=1 ./...` in each of the 4 module dirs
-15. Run `nix flake check`
-16. Cross-reference self-critique D1-D5 items to Pareto T1-T15 tasks (confirm full coverage)
+12. ~~Grep-verify each `[Unreleased]` CHANGELOG entry against actual Go source code~~ done (TODO_LIST per-item verification 2026-09-08)
+13. ~~Grep-verify each `[1.5.0]` CHANGELOG entry against actual Go source code~~ done (TODO_LIST per-item verification 2026-09-08)
+14. ~~Run `GOWORK=off GOEXPERIMENT=jsonv2 go test -race -count=1 ./...` in each of the 4 module dirs~~ done (GOWORK=off x4 modules green)
+15. ~~Run `nix flake check`~~ done (nix flake check green 2026-09-08)
+16. ~~Cross-reference self-critique D1-D5 items to Pareto T1-T15 tasks (confirm full coverage)~~ done (D1-D5 mapped to T1-T11 in this file)
 
 ### Code Quality (MED)
 
-17. Export `resolveSafePath` / `resolveSafePathFrom` for consumer path validation (flagged in 3+ reports)
-18. FlightRecorder: add context propagation to `writeSnapshot` (long `WriteTo` calls can't be cancelled)
-19. FlightRecorder: graceful degradation when multiple recorders are active (Go singleton limit — detect + warn, don't fail)
-20. Extract `marshalOpts` as a package-level constant — single source of truth for `json.Deterministic(true)` so new call sites can't forget it
-21. Add CI check (grep-based or staticcheck rule) for `json.Marshal` calls missing `json.Deterministic(true)`
-22. Refine `docs-freshness.sh` false-positive matching — should only check code spans and links, not prose mentions of `.go` filenames
+17. ~~Export `resolveSafePath` / `resolveSafePathFrom` for consumer path validation (flagged in 3+ reports)~~ done (v1.6.0 CHANGELOG ResolveSafePath exports)
+18. ~~FlightRecorder: add context propagation to `writeSnapshot` (long `WriteTo` calls can't be cancelled)~~ done (v1.6.0 CHANGELOG Snapshot ctx)
+19. ~~FlightRecorder: graceful degradation when multiple recorders are active (Go singleton limit — detect + warn, don't fail)~~ done (v1.6.0 CHANGELOG Degraded mode)
+20. ~~Extract `marshalOpts` as a package-level constant — single source of truth for `json.Deterministic(true)` so new call sites can't forget it~~ done (v1.6.0 CHANGELOG marshalOpts)
+21. ~~Add CI check (grep-based or staticcheck rule) for `json.Marshal` calls missing `json.Deterministic(true)`~~ done (scripts/json-deterministic-check.sh in CI)
+22. ~~Refine `docs-freshness.sh` false-positive matching — should only check code spans and links, not prose mentions of `.go` filenames~~ done (2026-08-08_22-11 refinement + v1.6.0 CHANGELOG)
 
 ### Infrastructure (MED-LOW)
 
-23. Fix `dprint` missing-binary in devShell — pre-commit hook bypassed with `--no-verify` on every commit. Add `dprint` to `flake.nix` or make it optional.
-24. Write per-module `golangci-lint` configs (workspace-level lint suffices but loses per-module precision)
+23. ~~Fix `dprint` missing-binary in devShell — pre-commit hook bypassed with `--no-verify` on every commit. Add `dprint` to `flake.nix` or make it optional.~~ done (dprint 0.56.1 in devShell + tracked hook)
+24. ~~Write per-module `golangci-lint` configs (workspace-level lint suffices but loses per-module precision)~~ done (single root .golangci.yml, 2026-08-08_22-11)
 25. Fix BuildFlow auto-configure loop (external tool — detect→repair cycle re-triggers golangci-lint per-module, reporting scoring artifacts)
 
 ### Repo Public Launch (LOW — blocked on private status)
@@ -162,27 +167,27 @@ This session resumed a Pareto plan where T1-T11 (code/doc changes) were already 
 
 ### Docs Hygiene (LOW)
 
-33. Archive remaining 3 annotated reports (flight-recorder self-critique, pareto self-critique, comprehensive session status) — they have RESOLVED banners but weren't moved to `docs/status/archived/`
+33. ~~Archive remaining 3 annotated reports (flight-recorder self-critique, pareto self-critique, comprehensive session status) — they have RESOLVED banners but weren't moved to `docs/status/archived/`~~ done (2026-09-08 L1-29 + this docs-health pass)
 34. Update AGENTS.md with docs-health workflow learnings (annotation conventions, harvest process)
-35. Verify self-critique report (`2026-08-08_21-25_*.md`) claims are accurate
-36. Add `nix flake check` to the documented quality gate in AGENTS.md
-37. Add GOWORK=off per-module tests to the documented quality gate in AGENTS.md
+35. ~~Verify self-critique report (`2026-08-08_21-25_*.md`) claims are accurate~~ done (verified in this session + 2026-09-08 pass)
+36. ~~Add `nix flake check` to the documented quality gate in AGENTS.md~~ done (nix flake check in release procedure)
+37. ~~Add GOWORK=off per-module tests to the documented quality gate in AGENTS.md~~ done (CI module-isolation job)
 
 ### Deeper Improvements (LOW — not on critical path)
 
-38. Consider a `docs-health` CI job that runs `docs-freshness.sh` with strict mode (fail on warnings, not just stale)
-39. Write a `scripts/changelog-verify.sh` that checks each CHANGELOG entry has a corresponding code symbol
+38. ~~Consider a `docs-health` CI job that runs `docs-freshness.sh` with strict mode (fail on warnings, not just stale)~~ **Won't implement — local gates are the quality bar, no strict docs-health CI planned.**
+39. ~~Write a `scripts/changelog-verify.sh` that checks each CHANGELOG entry has a corresponding code symbol~~ **Won't implement — subsumed by planned scripts/docs-api-check.sh drift guard.**
 40. Add a `make-public` checklist to ROADMAP.md tracking all launch tasks
-41. Consider git-blame-based docs-freshness (check if doc content matches code at the doc's last-modified commit, not just timestamp ordering)
-42. Review all `docs/PRO_CONTRA_*.md` files for accuracy — they may reference outdated architectural decisions
-43. Review `docs/READINESS_REPORT.md` for v1.5.0 accuracy — `doc.go` changed significantly
-44. Review `docs/v1.0-release-criteria.md` — may be fully met by v1.5.0
-45. Consider consolidating `docs/RELEASE_CRITERIA.md` and `docs/v1.0-release-criteria.md` if they overlap
-46. Add a `docs/guides/migration/` directory with per-version migration guides
-47. Write a `docs/guides/contributing.md` for external contributors (different from CONTRIBUTING.md which is internal)
-48. Consider automated link checking for docs (markdown link checker)
-49. Review whether `docs/reports/` directory needs its own freshness check
-50. Update ROADMAP.md with v1.6.0 release timeline once consumer repos are unblocked
+41. ~~Consider git-blame-based docs-freshness (check if doc content matches code at the doc's last-modified commit, not just timestamp ordering)~~ **Won't implement — subsumed by scripts/docs-freshness.sh.**
+42. ~~Review all `docs/PRO_CONTRA_*.md` files for accuracy — they may reference outdated architectural decisions~~ done (staleness resolved, TODO_LIST 2026-09-08)
+43. ~~Review `docs/READINESS_REPORT.md` for v1.5.0 accuracy — `doc.go` changed significantly~~ done (staleness resolved, TODO_LIST 2026-09-08)
+44. ~~Review `docs/v1.0-release-criteria.md` — may be fully met by v1.5.0~~ done (staleness resolved, TODO_LIST 2026-09-08)
+45. ~~Consider consolidating `docs/RELEASE_CRITERIA.md` and `docs/v1.0-release-criteria.md` if they overlap~~ done (staleness resolved, TODO_LIST 2026-09-08)
+46. ~~Add a `docs/guides/migration/` directory with per-version migration guides~~ **Won't implement — migration docs live in docs/ root, no migration/ dir planned.**
+47. ~~Write a `docs/guides/contributing.md` for external contributors (different from CONTRIBUTING.md which is internal)~~ **Won't implement — CONTRIBUTING.md covers onboarding, no external guide planned.**
+48. ~~Consider automated link checking for docs (markdown link checker)~~ done (markdown-link-check job in ci.yml)
+49. ~~Review whether `docs/reports/` directory needs its own freshness check~~ **Won't implement — subsumed by scripts/docs-freshness.sh.**
+50. ~~Update ROADMAP.md with v1.6.0 release timeline once consumer repos are unblocked~~ done (ROADMAP updated to v1.6.0)
 
 ---
 
