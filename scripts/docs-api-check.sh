@@ -19,7 +19,7 @@ DOCS=(FEATURES.md docs/API_STABILITY.md docs/DOMAIN_LANGUAGE.md docs/USAGE_GUIDE
 # Lowercase/mixed spans (flags, paths, versions, prose code words) are skipped;
 # the allowlist below covers intentionally non-code uppercase spans.
 ALLOWLIST=(
-	"AI"          # concept, not a symbol
+	"AI" # concept, not a symbol
 	"CPU"
 	"CSV"
 	"IO"
@@ -27,7 +27,7 @@ ALLOWLIST=(
 	"LSP"
 	"SARIF"
 	"TSV"
-	"ID"          # branded type exists, listed to keep the allowlist explicit
+	"ID" # branded type exists, listed to keep the allowlist explicit
 	"OK"
 	"CLI"
 	"TOML"

@@ -41,7 +41,7 @@ func NewAnalyzerDetector(
 	patterns []string,
 	opts ...AnalyzerOption,
 ) *AnalyzerDetector {
-	d := &AnalyzerDetector{ //nolint:exhaustruct_v5
+	d := &AnalyzerDetector{
 		analyzer: a,
 		patterns: patterns,
 		sev:      finding.SeverityWarning,

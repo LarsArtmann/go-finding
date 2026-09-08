@@ -99,7 +99,7 @@ func FromDiagnosticWithSource(
 			finding.RuleName(ruleCode),
 			FromTokenPosition(relatedPos),
 		)
-		f.Related = append(f.Related, finding.RelatedRef{ //nolint:exhaustruct_v5
+		f.Related = append(f.Related, finding.RelatedRef{
 			FindingID: relatedID,
 			Relation:  DefaultRelation,
 			Position:  FromTokenPosition(relatedPos),
