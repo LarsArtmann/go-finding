@@ -304,3 +304,39 @@ func TestPipelineRun_FixRollbackAllFiles_Wiring(t *testing.T) {
 		})
 	}
 }
+
+// TestPipelineRun_MetricsOutcomeCounts verifies the fix stage records the
+// per-finding applier outcomes into the pipeline metrics snapshot. Note the
+// pipeline's conflict pre-filter removes unresolvable candidates before the
+// applier runs, so only genuine applier outcomes are counted here.
+func TestPipelineRun_MetricsOutcomeCounts(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tempDir := t.TempDir()
+
+	file := filepath.Join(tempDir, "a.go")
+	writeTestFile(t, file, []byte("package a\noldA()\n"))
+
+	config := DefaultConfig()
+	config.ParallelDetectors = false
+	config.MaxIterations = 1
+	config.Metrics = NewMetrics()
+
+	detector := &mockDetector{
+		name: "fixer",
+		findings: []finding.Finding{
+			makeFixFinding("fix-a", "oldA()", "newA()", "a.go", 0),
+		},
+	}
+
+	p, err := New(config, tempDir, detector)
+	g.Expect(err).NotTo(HaveOccurred())
+
+	result, runErr := p.Run(context.Background())
+	g.Expect(runErr).NotTo(HaveOccurred())
+
+	g.Expect(result.Metrics.OutcomeCounts).To(Equal(map[FixOutcomeStatus]int{
+		FixOutcomeApplied: 1,
+	}))
+	g.Expect(result.Metrics.FixesApplied).To(Equal(1))
+}

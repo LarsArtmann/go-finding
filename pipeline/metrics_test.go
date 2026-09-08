@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -225,4 +226,58 @@ func TestMetrics_Snapshot_NegativeGuard(t *testing.T) {
 
 	snap := m.Snapshot()
 	g.Expect(snap.TotalDuration).To(Equal(time.Duration(0)))
+}
+
+func TestMetrics_RecordOutcome(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	m := NewMetrics()
+	m.RecordOutcome(FixOutcomeApplied)
+	m.RecordOutcome(FixOutcomeApplied)
+	m.RecordOutcome(FixOutcomeRefused)
+
+	g.Expect(m.OutcomeCounts()).To(Equal(map[FixOutcomeStatus]int{
+		FixOutcomeApplied: 2,
+		FixOutcomeRefused: 1,
+	}))
+
+	snap := m.Snapshot()
+	g.Expect(snap.OutcomeCounts).To(Equal(map[FixOutcomeStatus]int{
+		FixOutcomeApplied: 2,
+		FixOutcomeRefused: 1,
+	}))
+
+	// Snapshot must be a copy: mutating it must not affect the metrics.
+	snap.OutcomeCounts[FixOutcomeApplied] = 99
+	g.Expect(m.OutcomeCounts()[FixOutcomeApplied]).To(Equal(2))
+}
+
+func TestMetrics_RecordOutcome_Concurrent(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	m := NewMetrics()
+
+	statuses := []FixOutcomeStatus{FixOutcomeApplied, FixOutcomeRefused, FixOutcomeFailed}
+
+	var wg sync.WaitGroup
+
+	for _, status := range statuses {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			for range 50 {
+				m.RecordOutcome(status)
+			}
+		}()
+	}
+
+	wg.Wait()
+
+	g.Expect(m.OutcomeCounts()).To(Equal(map[FixOutcomeStatus]int{
+		FixOutcomeApplied: 50,
+		FixOutcomeRefused: 50,
+		FixOutcomeFailed:  50,
+	}))
 }

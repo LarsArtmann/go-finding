@@ -517,3 +517,51 @@ func TestValidate_InvalidMaxIterations(t *testing.T) {
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err.Error()).To(ContainSubstring("maxIterations"))
 }
+
+func TestFormatOutcomeCounts(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		counts map[pipeline.FixOutcomeStatus]int
+		want   string
+	}{
+		{
+			name:   "empty",
+			counts: map[pipeline.FixOutcomeStatus]int{},
+			want:   "",
+		},
+		{
+			name:   "single",
+			counts: map[pipeline.FixOutcomeStatus]int{pipeline.FixOutcomeApplied: 3},
+			want:   "applied=3",
+		},
+		{
+			name: "canonical order regardless of map iteration",
+			counts: map[pipeline.FixOutcomeStatus]int{
+				pipeline.FixOutcomeFailed:  2,
+				pipeline.FixOutcomeApplied: 3,
+				pipeline.FixOutcomeRefused: 1,
+			},
+			want: "applied=3, refused=1, failed=2",
+		},
+		{
+			name: "ignores zero counts",
+			counts: map[pipeline.FixOutcomeStatus]int{
+				pipeline.FixOutcomeApplied:  1,
+				pipeline.FixOutcomeConflict: 0,
+			},
+			want: "applied=1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			g := NewGomegaWithT(t)
+
+			g.Expect(formatOutcomeCounts(tt.counts)).To(Equal(tt.want))
+		})
+	}
+}
