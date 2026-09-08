@@ -148,21 +148,11 @@ linters:
         - (*strings.Builder).WriteString
         - (*bytes.Buffer).WriteString
     exhaustruct_v5:
-      exclude:
-        - os/exec.Cmd
-        - github\.com/larsartmann/go-finding\.Finding
-        - github\.com/larsartmann/go-finding\.Position
-        - github\.com/larsartmann/go-finding\.Range
-        - github\.com/larsartmann/go-finding\.Report
-        - github\.com/larsartmann/go-finding\.Summary
-        - github\.com/larsartmann/go-finding\.ToolInfo
-        - github\.com/larsartmann/go-finding\.ParsedID
-        - github\.com/larsartmann/go-finding\.FindingError
-        - github\.com/larsartmann/go-finding\.Template
-        - github\.com/larsartmann/go-finding\.Builder
-        - github\.com/larsartmann/go-finding\.SimpleFixResult
-        - github\.com/larsartmann/go-finding\.LinterRegistry
-        - github\.com/larsartmann/go-finding\.DetectorRegistry
+      # v5 renamed `exclude` -> `ignore-patterns`. Our own domain types are
+      # deliberately partial-initialized (zero-value design: Finding{},
+      # Report{}, Config{}, ...); only foreign structs are worth checking.
+      ignore-patterns:
+        - LinterRegistry
     funlen:
       lines: 120
       statements: 80
