@@ -136,7 +136,6 @@
               pkgs.gotools
               pkgs.trash-cli
               pkgs.dprint
-              pkgs.benchstat
               pkgs.actionlint
             ];
 

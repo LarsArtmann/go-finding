@@ -103,6 +103,16 @@ for dir in . pipeline analysis cmd/go-finding; do
 	fi
 done
 
+step "go mod tidy -diff per module (tidy-ness)"
+for dir in . pipeline analysis cmd/go-finding; do
+	if (cd "$dir" && GOWORK=off GOEXPERIMENT=jsonv2 GOPRIVATE='github.com/larsartmann/*' go mod tidy -diff); then
+		echo "OK: go.mod tidy in $dir"
+	else
+		echo "FAIL: $dir/go.mod needs 'go mod tidy' (run it with GOWORK=off)"
+		FAILURES=$((FAILURES + 1))
+	fi
+done
+
 # --- Opt-in heavy gates ---
 
 if [ "$RUN_BENCH" -eq 1 ]; then

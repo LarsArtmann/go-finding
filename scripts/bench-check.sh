@@ -18,7 +18,14 @@ if [ ! -f "$baseline" ]; then
 fi
 
 echo "=== Benchmark comparison (threshold: +${threshold}%) ==="
-benchstat "$baseline" "$current" | tee /tmp/benchstat-output.txt
+# benchstat resolution order: PATH binary, else the pinned Go tool directive
+# (go.mod: tool golang.org/x/perf/cmd/benchstat — reproducible comparisons).
+BENCHSTAT=benchstat
+if ! command -v benchstat >/dev/null 2>&1; then
+	BENCHSTAT="go tool benchstat"
+fi
+export GOEXPERIMENT="${GOEXPERIMENT:-jsonv2}"
+$BENCHSTAT "$baseline" "$current" | tee /tmp/benchstat-output.txt
 
 echo ""
 echo "=== Regression check ==="

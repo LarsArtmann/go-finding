@@ -244,14 +244,14 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26"
-      - name: Install benchstat
-        run: go install golang.org/x/perf/cmd/benchstat@latest
       - name: Run benchmarks (count=10 for statistical significance)
         run: |
           go test -bench=. -benchmem -count=10 -run='^$' ./... 2>&1 | tee bench-current.txt
           cd pipeline
           go test -bench=. -benchmem -count=10 -run='^$' . >> ../bench-current.txt
       - name: Check for regressions vs baseline (fail if >25% slower)
+        # benchstat resolves via the pinned Go tool directive in go.mod
+        # (tool golang.org/x/perf/cmd/benchstat) — reproducible, no @latest.
         run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 25
       - name: Upload benchmark results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -282,7 +282,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Check for broken internal markdown links
         run: |
-          # Check relative links in markdown files resolve to existing files
+          # Check relative links in markdown files resolve to existing files.
+          # Code is stripped first (fenced blocks, indented blocks, inline
+          # spans): generic signatures like `NewIntervalIndex[T](intervals)`
+          # otherwise parse as links. \x60 = backtick (avoids shellcheck SC2016).
           rc=0
           while IFS= read -r file; do
             while IFS= read -r link; do
@@ -292,6 +295,8 @@ jobs:
               # Strip anchor from end
               target="${link%%#*}"
               [ -z "$target" ] && continue
+              # Skip targets with spaces (code remnants)
+              [[ "$target" == *" "* ]] && continue
               # Resolve relative to the markdown file's directory
               dir=$(dirname "$file")
               fullpath="$dir/$target"
@@ -299,11 +304,24 @@ jobs:
                 echo "::error file=$file::Broken link: $link (resolved: $fullpath)"
                 rc=1
               fi
-            done < <(grep -oP '\[.*?\]\(\K[^)]+' "$file" 2>/dev/null)
-          done < <(find . -name "*.md" -not -path "./vendor/*" -not -path "./docs/*/archived/*")
+            done < <(awk '/^```/{f=!f;next} f{next} /^ {4}/{next} {print}' "$file" \
+              | sed 's/\x60[^\x60]*\x60//g' \
+              | grep -oP '\[.*?\]\(\K[^)]+' 2>/dev/null)
+          done < <(find . -name "*.md" -not -path "./vendor/*")
           exit $rc
 
-    timeout-minutes: 5
+      - name: Check all markdown links incl. http(s) and archived docs (lychee)
+        uses: lycheeverse/lychee-action@649b0e4890508ea3e11ea6b3ee35ce899a25afd5 # v1
+        with:
+          args: >-
+            --no-progress
+            --max-retries 2
+            --timeout 15
+            --exclude-loopback
+            './**/*.md'
+          fail: true
+
+    timeout-minutes: 10
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
