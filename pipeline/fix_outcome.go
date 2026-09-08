@@ -7,6 +7,8 @@ import (
 // FixOutcomeStatus classifies what happened to a single finding during fix
 // application. Outcomes let callers distinguish applied fixes from silent
 // no-ops (refused findings), conflicts, and provider failures.
+//
+// See docs/DOMAIN_LANGUAGE.md ("Fix Application") for the shared vocabulary.
 type FixOutcomeStatus string
 
 const (

@@ -142,6 +142,7 @@ go-finding/
 │   ├── adapters.go             # Detector, FindingTransformer interfaces
 │   ├── conflict.go             # Fix conflict detection (AnalyzeConflicts)
 │   ├── fix_engine.go           # Byte-level edit engine (descending-offset)
+│   ├── fix_outcome.go          # Per-finding fix outcomes (FixOutcome, FixApplyResult)
 │   ├── fix_edit.go             # FixEdit type (JSON wire format: fixEditJSON)
 │   ├── fix_provider.go         # Composable fix providers (chain of responsibility)
 │   ├── fix_provider_helpers.go # OffsetProvider, LineProvider, SubstringProvider

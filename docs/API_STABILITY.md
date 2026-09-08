@@ -1,7 +1,7 @@
 # API Stability — go-finding
 
-**Last audited:** 2026-08-01
-**Version:** v1.4.1 (unreleased FlightRecorder in `[Unreleased]`)
+**Last audited:** 2026-09-08
+**Version:** v1.6.0 (unreleased v1.7.0 work in `[Unreleased]`)
 
 go-finding follows the [Go 1 Compatibility Promise](https://go.dev/doc/go1compat) philosophy.
 
@@ -135,6 +135,9 @@ All exported symbols are classified as:
 | `NewReportFromFindings`               | stable | One-step report creation (v1.3.0)               |
 | `FilePos`                             | stable | File-level Position constructor (v1.3.0)        |
 | `ParseSeverity` / `MustParseSeverity` | stable | String → Severity                               |
+| `ParseConfidence`                     | stable | String → Confidence; inverse of Confidence.String() (v1.5.0) |
+| `RegisterSeverityAlias` / `LookupSeverityAlias` | stable | Thread-safe severity alias registry (v1.5.0) |
+| `ResolveSafePath` / `ResolveSafePathFrom` / `ResolveRoot` | stable | Path-traversal-safe path resolution (v1.5.0) |
 | `ValidateAll`                         | stable | Batch-validate findings (returns map[int]error) |
 | `ParseCategory` / `MustParseCategory` | stable | String → Category                               |
 | `CategoryForLinter`                   | stable | Linter→category lookup                          |
@@ -212,6 +215,8 @@ All exported symbols are classified as:
 | `LineShiftMap`, `LineShiftEntry`                                | stable |
 | `ConfigFile`                                                    | stable |
 | `FlightRecorderHook`, `FlightRecorderConfig`                    | stable |
+| `FixOutcome`, `FixOutcomeStatus`, `FixApplyResult`              | stable (unreleased; ships in v1.7.0) |
+| `RollbackPolicy` (`RollbackPolicyFailingFile`, `RollbackPolicyAllFiles`) | stable (unreleased; ships in v1.7.0) |
 
 ### Functions
 
@@ -226,6 +231,10 @@ Notable additions:
 | `Detect`                              | stable | One-shot detection convenience function (v1.3.0)  |
 | `ApplyToContent`                      | stable | Content-level fix application without FS (v1.3.0) |
 | `ConfigFromFile` / `ConfigFromReader` | stable | JSON/YAML config file loading                     |
+| `FixEngine.ApplyWithOutcomes`         | stable | Unreleased. Per-finding outcomes; Apply/ApplyWithConflicts delegate to it (v1.7.0) |
+| `FixApplier.ApplyWithReport` / `ApplyReport` | stable | Unreleased. Run report with outcomes, shift maps, RolledBack files (v1.7.0) |
+| `FixApplier.SetRollbackPolicy`        | stable | Unreleased. Per-file rollback default; AllFiles opt-in (v1.7.0) |
+| `ApplyReport.FailedOutcomes`          | stable | Unreleased. Isolates failed outcomes (v1.7.0)     |
 
 ---
 
@@ -275,7 +284,13 @@ All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migratio
 
 ## Current Status
 
-**Unreleased** — FlightRecorder pipeline trace export (`FlightRecorderHook`, `FlightRecorderConfig`, `NewFlightRecorderHook`, `DefaultFlightRecorderConfig`). Additive, zero breaking changes.
+**Unreleased (v1.7.0 train)** — `Finding.GroupID` + `Report.GroupFindings()` + SARIF/LSP round-trip; `FixEngine.ApplyWithOutcomes` + `FixApplyResult` (issue #27); `RollbackPolicy` per-file default + `ApplyWithReport` (issue #28); CLI `-fix-rollback-all` flag. Additive except the documented rollback default change (see CHANGELOG `[Unreleased]`).
+
+**Deterministic output guarantee** — All production JSON marshaling uses `encoding/json/v2` with `json.Deterministic(true)` (`marshalOpts`/`prettyMarshalOpts` in `json.go`), enforced by `scripts/json-deterministic-check.sh` in CI: byte-identical output for identical input across runs.
+
+**v1.6.0** — FlightRecorder config-file section (`FlightRecorderFileConfig`, `ResolveFlightRecorder`), CLI `flightRecorder` config section, 4 CI structural-check scripts, `docs-freshness.sh`, per-module CHANGELOGs, go-arch-lint boundary enforcement, LSP serialization benchmarks, flight recorder + path safety edge case tests.
+
+**v1.5.0** — `ParseConfidence`, `Template.Builder`, `ResolveSafePath` exports, severity alias registry (`RegisterSeverityAlias`/`LookupSeverityAlias`), `FixStrategy` normalization, `HasFix` Direct-code requirement, `Range.EndOrStart`/`EndOffsetOrStart`.
 
 **v1.4.1** — Zero new public APIs. Internal refactoring: extracted `must[T]`, `marshalJSONString`, `fixEditJSON`; consolidated test setup (`NewParallelGomega`); resolved 7 pipeline lint issues; zero code duplication.
 

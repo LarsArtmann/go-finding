@@ -21,6 +21,8 @@ Each tool invents its own types for findings. There is no standardized way to ap
 - **SARIF 2.1.0** — Standard interchange format for CI/CD integration
 - **LSP diagnostics** — IDE integration out of the box
 - **Flight recorder** — Go execution trace capture for pipeline diagnostics, with slow-stage auto-snapshot and manual checkpoints. See [FlightRecorder Guide](docs/guides/flight-recorder.md).
+- **Finding groups** — `GroupID` ties related findings together (e.g. clone groups), round-tripping through JSON, SARIF, and LSP
+- **Per-finding fix outcomes** — Know exactly what happened to every fix: applied, refused, conflict, invalid, or failed — with scoped per-file rollback by default
 
 ## Installation
 

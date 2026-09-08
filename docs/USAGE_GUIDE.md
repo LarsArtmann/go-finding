@@ -877,6 +877,49 @@ cfg := pipeline.Config{
 
 `DefaultTriageFunc` preserves existing behavior (uses `HasFix()` / `IsAutoFixable()` checks).
 
+### Per-Finding Outcomes
+
+`ApplyWithOutcomes` reports exactly what happened to every input finding — no more silent no-ops:
+
+```go
+result := engine.ApplyWithOutcomes(content, fixes)
+
+for _, o := range result.Outcomes {
+    switch o.Status {
+    case pipeline.FixOutcomeApplied:
+    case pipeline.FixOutcomeRefused:  // provider declined, no error
+    case pipeline.FixOutcomeFailed:   // o.Err carries the cause (matchable via errors.Is)
+    case pipeline.FixOutcomeConflict:
+    case pipeline.FixOutcomeInvalid:
+    case pipeline.FixOutcomeNoChange:
+    }
+}
+
+counts := result.OutcomeCounts() // map[FixOutcomeStatus]int
+```
+
+`Apply` and `ApplyWithConflicts` remain available with their original signatures.
+
+### Rollback Policy
+
+On a hard file error, the default policy restores only the failing file; earlier files keep their applied fixes:
+
+```go
+applier.SetRollbackPolicy(pipeline.RollbackPolicyAllFiles) // opt into all-or-nothing
+```
+
+CLI equivalent: `-fix-rollback-all` or config-file `fixRollbackAllFiles: true`. `ApplyWithReport` returns an `ApplyReport` with per-finding outcomes, shift maps, and the list of rolled-back files.
+
+### Finding Groups
+
+Findings that belong to one logical issue (e.g. a clone group of N duplicated blocks) share a `GroupID`:
+
+```go
+f.GroupID = finding.GroupID("clone-group-1") // or .WithGroupID(...) on the Builder
+```
+
+Groups round-trip through JSON (`groupId`), SARIF (`go-finding/groupId` property), and LSP (`LSPDiagnosticData`). `Report.GroupFindings()` returns active findings grouped by ID.
+
 ## LSP Diagnostics
 
 Convert findings to LSP Diagnostics for IDE integration:

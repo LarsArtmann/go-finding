@@ -20,6 +20,8 @@ type FixApplier struct {
 }
 
 // RollbackPolicy controls which files are restored when a file fails during a
+// fix run. See docs/DOMAIN_LANGUAGE.md ("Fix Application") for the shared
+// vocabulary. The default is documented on RollbackPolicyFailingFile.
 // multi-file fix run.
 type RollbackPolicy int
 

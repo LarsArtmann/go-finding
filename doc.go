@@ -13,6 +13,8 @@
 //   - Diff to compare finding sets
 //   - Human-readable text and markdown formatting
 //   - A pipeline for automated detect → triage → fix → verify loops (see github.com/larsartmann/go-finding/pipeline module)
+//   - Finding grouping via GroupID (e.g. clone groups: N findings for one logical issue)
+//   - Per-finding fix outcomes and scoped rollback via the pipeline module's FixEngine
 //
 // # Quick Start
 //
