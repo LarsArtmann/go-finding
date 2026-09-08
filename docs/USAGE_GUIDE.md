@@ -699,6 +699,24 @@ The library ships with detector implementations in `internal/detectors/`:
 - **`govet`** — Wraps `go vet -json` output (`NewGoVetDetector(dir)`)
 - **`staticcheck`** — Wraps staticcheck JSON output (`NewStaticcheckDetector(dir)`)
 
+### Staticcheck Fix Extension (before/after)
+
+The staticcheck parser accepts two OPTIONAL fields beyond real staticcheck output:
+`before` and `after`. When BOTH are present, the finding becomes auto-fixable
+(`FixStrategyDirect` with a literal code replacement) instead of suggest-only.
+Real staticcheck output never includes these fields — the extension exists for
+staticcheck-compatible tools and fixtures (see `testdata/fakestcheck`) that want
+to drive the full detect → fix pipeline:
+
+```json
+{"code":"S1002","severity":"warning","location":{"file":"main.go","line":4,"column":2},
+ "message":"omit comparison to bool constant","before":"b == true","after":"b"}
+```
+
+A `before`-only entry (no `after`) stays suggest-only — the extension requires
+both fields. The parser is regression-guarded against real staticcheck output
+(`testdata/staticcheck-corpus/corpus.jsonl`, captured from staticcheck 2026.2.1).
+
 ## Builder API
 
 For complex finding construction with validation, use the Builder:

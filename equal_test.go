@@ -2,6 +2,7 @@ package finding
 
 import (
 	"testing"
+	"time"
 )
 
 func TestPosition_Equal(t *testing.T) {
@@ -110,6 +111,99 @@ func testFindingEqualCases(t *testing.T, tests []struct {
 	for _, tt := range tests {
 		testFindingEqualCase(t, tt.name, tt.a, tt.b, tt.want)
 	}
+}
+
+func TestFinding_Equal_Related(t *testing.T) {
+	t.Parallel()
+
+	mkRef := func(id string, rng *Range) RelatedRef {
+		return RelatedRef{
+			FindingID: ID(id),
+			Relation:  RelationCloneOf,
+			Position:  Position{File: "o.go", Line: 2},
+			Range:     rng,
+		}
+	}
+
+	relatedNoRange := testFindingBase()
+	relatedNoRange.Related = []RelatedRef{mkRef("x1", nil)}
+
+	sameNoRange := testFindingBase()
+	sameNoRange.Related = []RelatedRef{mkRef("x1", nil)}
+
+	relatedWithRange := testFindingBase()
+	relatedWithRange.Related = []RelatedRef{
+		mkRef("x1", &Range{Start: Position{File: "o.go", Line: 2}, End: Position{File: "o.go", Line: 4}}),
+	}
+
+	sameWithRange := testFindingBase()
+	sameWithRange.Related = []RelatedRef{
+		mkRef("x1", &Range{Start: Position{File: "o.go", Line: 2}, End: Position{File: "o.go", Line: 4}}),
+	}
+
+	otherWithRange := testFindingBase()
+	otherWithRange.Related = []RelatedRef{
+		mkRef("x1", &Range{Start: Position{File: "o.go", Line: 2}, End: Position{File: "o.go", Line: 9}}),
+	}
+
+	diffID := testFindingBase()
+	diffID.Related = []RelatedRef{mkRef("x2", nil)}
+
+	diffRelation := testFindingBase()
+	diffRelation.Related = []RelatedRef{RelatedRef{
+		FindingID: "x1",
+		Relation:  RelationCauses,
+		Position:  Position{File: "o.go", Line: 2},
+	}}
+
+	twoRelated := testFindingBase()
+	twoRelated.Related = []RelatedRef{mkRef("x1", nil), mkRef("x2", nil)}
+
+	tests := []struct {
+		name string
+		a, b Finding
+		want bool
+	}{
+		{"identical related without range", relatedNoRange, sameNoRange, true},
+		{"identical related with range", relatedWithRange, sameWithRange, true},
+		{"range nil vs set", relatedNoRange, relatedWithRange, false},
+		{"different related range", relatedWithRange, otherWithRange, false},
+		{"different related finding id", relatedNoRange, diffID, false},
+		{"different related relation", relatedNoRange, diffRelation, false},
+		{"related length mismatch", relatedNoRange, twoRelated, false},
+	}
+
+	testFindingEqualCases(t, tests)
+}
+
+func TestFinding_Equal_SuppressionExpiry(t *testing.T) {
+	t.Parallel()
+
+	inst := time.Now().Add(time.Hour)
+
+	withExpiry := testFindingBase()
+	withExpiry.Suppression = &Suppression{Kind: SuppressionInSource, Rule: "R1", ExpiresAt: new(inst)}
+
+	sameExpiryOtherPointer := testFindingBase()
+	sameExpiryOtherPointer.Suppression = &Suppression{Kind: SuppressionInSource, Rule: "R1", ExpiresAt: new(inst)}
+
+	noExpiry := testFindingBase()
+	noExpiry.Suppression = &Suppression{Kind: SuppressionInSource, Rule: "R1"}
+
+	noExpiryOther := testFindingBase()
+	noExpiryOther.Suppression = &Suppression{Kind: SuppressionInSource, Rule: "R1"}
+
+	tests := []struct {
+		name string
+		a, b Finding
+		want bool
+	}{
+		{"same expiry instant, distinct pointers", withExpiry, sameExpiryOtherPointer, true},
+		{"expiry set vs nil", withExpiry, noExpiry, false},
+		{"both expiry nil", noExpiry, noExpiryOther, true},
+	}
+
+	testFindingEqualCases(t, tests)
 }
 
 func TestFinding_Equal(t *testing.T) {

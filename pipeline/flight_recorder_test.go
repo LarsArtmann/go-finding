@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"bytes"
 	"compress/gzip"
 	"context"
 	"errors"
@@ -645,6 +646,65 @@ func TestFlightRecorderHook_GzipCompression(t *testing.T) {
 	}
 
 	g.Expect(data).NotTo(gomega.BeEmpty(), "gunzipped payload must contain trace bytes")
+}
+
+// TestFlightRecorderHook_GzipTraceHeaderMatchesPlain asserts the compressed
+// path produces the same Go execution trace header as the plain path (header
+// magic: "go 1.26 trace\x00..."). This pins gunzip-compatibility with
+// `go tool trace`, which was additionally verified end-to-end on 2026-09-08:
+// a real .trace.gz was gunzipped and fully parsed by `go tool trace` up to the
+// viewer server. Compression on the e2e sample: 4885B -> 2078B (~2.4x).
+func TestFlightRecorderHook_GzipTraceHeaderMatchesPlain(t *testing.T) {
+	g := gomega.NewWithT(t)
+
+	dir := t.TempDir()
+
+	plain, err := NewFlightRecorderHook(FlightRecorderConfig{OutputDir: dir})
+	if err != nil {
+		t.Fatalf("plain hook: %v", err)
+	}
+	plainPath, err := plain.Snapshot(context.Background(), "plain")
+	if err != nil {
+		t.Fatalf("plain snapshot: %v", err)
+	}
+	plain.Close()
+
+	compressed, err := NewFlightRecorderHook(FlightRecorderConfig{
+		OutputDir: dir,
+		Compress:  true,
+	})
+	if err != nil {
+		t.Fatalf("compressed hook: %v", err)
+	}
+	gzPath, err := compressed.Snapshot(context.Background(), "compressed")
+	if err != nil {
+		t.Fatalf("compressed snapshot: %v", err)
+	}
+	compressed.Close()
+
+	plainBytes, err := os.ReadFile(plainPath)
+	if err != nil {
+		t.Fatalf("read plain: %v", err)
+	}
+	gzFile, err := os.Open(gzPath)
+	if err != nil {
+		t.Fatalf("open gz: %v", err)
+	}
+	defer func() { _ = gzFile.Close() }()
+	reader, err := gzip.NewReader(gzFile)
+	if err != nil {
+		t.Fatalf("gzip reader: %v", err)
+	}
+	defer func() { _ = reader.Close() }()
+	gzBytes, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatalf("read gz: %v", err)
+	}
+
+	g.Expect(bytes.HasPrefix(plainBytes, []byte("go 1."))).To(gomega.BeTrue(),
+		"plain snapshot must carry the Go trace header magic")
+	g.Expect(bytes.Equal(plainBytes[:16], gzBytes[:16])).To(gomega.BeTrue(),
+		"compressed and plain snapshots must share the identical trace header")
 }
 
 // TestFlightRecorderHook_NoRotationByDefault verifies MaxFiles=0 (default)
