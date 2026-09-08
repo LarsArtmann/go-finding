@@ -554,3 +554,41 @@ func TestNewReportFromFindings_EqualsManual(t *testing.T) {
 			r1.Summary.BySeverity[SeverityError], r2.Summary.BySeverity[SeverityError])
 	}
 }
+
+func TestReportGroupFindingsSorted(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: string(TagTest)})
+	r.AddFinding(Finding{ID: "1", GroupID: "group-z", Message: "z1"})
+	r.AddFinding(Finding{ID: "2", GroupID: "group-a", Message: "a1"})
+	r.AddFinding(Finding{ID: "3", GroupID: "group-a", Message: "a2"})
+	r.AddFinding(Finding{ID: "4", GroupID: "group-m", Message: "m1"})
+	r.AddFinding(Finding{ID: "5", Message: "no group"})
+
+	groups := r.GroupFindingsSorted()
+
+	if len(groups) != 3 {
+		t.Fatalf("groups = %d, want 3", len(groups))
+	}
+
+	wantOrder := []GroupID{"group-a", "group-m", "group-z"}
+	for i, want := range wantOrder {
+		if groups[i].ID != want {
+			t.Errorf("groups[%d].ID = %q, want %q", i, groups[i].ID, want)
+		}
+	}
+
+	if len(groups[0].Findings) != 2 || groups[0].Findings[0].ID != "2" || groups[0].Findings[1].ID != "3" {
+		t.Errorf("group-a members = %v, want [2 3] in report order", groups[0].Findings)
+	}
+}
+
+func TestReportGroupFindingsSorted_Empty(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: string(TagTest)})
+
+	if groups := r.GroupFindingsSorted(); groups != nil {
+		t.Errorf("GroupFindingsSorted = %v, want nil", groups)
+	}
+}

@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > [analysis/CHANGELOG.md](analysis/CHANGELOG.md),
 > [cmd/go-finding/CHANGELOG.md](cmd/go-finding/CHANGELOG.md).
 
+## [Unreleased]
+
+### Added
+
+- **`Report.GroupFindingsSorted()` + `FindingGroup`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order, `nil` when no grouped findings. Use wherever map iteration order must not leak (tests, serialization, stable output).
+- **`Template.WithGroupID`** — Stamps a `GroupID` onto every finding built from the template (whole template = one clone group); per-finding groups remain available via `Builder.WithGroupID`.
+
 ## [1.7.0] - 2026-09-08
 
 ### Added

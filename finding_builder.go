@@ -171,6 +171,7 @@ type Template struct {
 	Category    Category
 	FixStrategy FixStrategy
 	Tags        []Tag
+	GroupID     GroupID
 }
 
 // NewTemplate creates a Template with the given tool name.
@@ -198,6 +199,16 @@ func (t *Template) WithFixStrategy(fs FixStrategy) *Template {
 // built from this template.
 func (t *Template) WithTags(tags ...Tag) *Template {
 	t.Tags = append(t.Tags, tags...)
+
+	return t
+}
+
+// WithGroupID sets the logical group on the template. Every finding built
+// from it joins the same group (e.g. N occurrences of one cloned block).
+// Callers that need per-finding groups should use [Builder.WithGroupID]
+// on the per-finding builder instead of a template-level stamp.
+func (t *Template) WithGroupID(g GroupID) *Template {
+	t.GroupID = g
 
 	return t
 }
@@ -234,6 +245,10 @@ func (t *Template) Builder(rule RuleName, message string, severity Severity, pos
 
 	if len(t.Tags) > 0 {
 		b = b.WithTags(t.Tags...)
+	}
+
+	if t.GroupID != "" {
+		b = b.WithGroupID(t.GroupID)
 	}
 
 	return b

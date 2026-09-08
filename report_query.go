@@ -2,6 +2,7 @@ package finding
 
 import (
 	"iter"
+	"slices"
 	"time"
 )
 
@@ -73,8 +74,10 @@ func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 }
 
 // GroupFindings returns findings grouped by GroupID, excluding suppressed.
-// Findings without a GroupID are omitted. Group order is not deterministic;
-// findings within a group preserve report order.
+// Findings without a GroupID are omitted. Map iteration order is
+// unspecified; when deterministic group order matters (tests, serialization,
+// stable CLI output), use [Report.GroupFindingsSorted]. Findings within a
+// group preserve report order in both variants.
 // Safe for concurrent use.
 func (r *Report) GroupFindings() map[GroupID][]Finding {
 	groups := make(map[GroupID][]Finding)
@@ -92,6 +95,41 @@ func (r *Report) GroupFindings() map[GroupID][]Finding {
 	}
 
 	return groups
+}
+
+// FindingGroup is one GroupID group of findings, as returned by
+// [Report.GroupFindingsSorted].
+type FindingGroup struct {
+	// ID is the group's GroupID.
+	ID GroupID
+	// Findings are the group members in report order.
+	Findings []Finding
+}
+
+// GroupFindingsSorted returns the GroupID groups in deterministic order
+// (sorted by GroupID), excluding suppressed findings. It is the ordered
+// variant of [Report.GroupFindings] for tests, serialization, and stable
+// output. Returns nil when no grouped findings exist.
+// Safe for concurrent use.
+func (r *Report) GroupFindingsSorted() []FindingGroup {
+	groups := r.GroupFindings()
+	if len(groups) == 0 {
+		return nil
+	}
+
+	ids := make([]GroupID, 0, len(groups))
+	for id := range groups {
+		ids = append(ids, id)
+	}
+
+	slices.Sort(ids)
+
+	sorted := make([]FindingGroup, 0, len(ids))
+	for _, id := range ids {
+		sorted = append(sorted, FindingGroup{ID: id, Findings: groups[id]})
+	}
+
+	return sorted
 }
 
 // FindByID returns the finding with the given ID, or nil if not found.

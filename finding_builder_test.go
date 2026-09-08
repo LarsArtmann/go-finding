@@ -499,3 +499,28 @@ func TestTemplate_Builder_WithoutChaining(t *testing.T) {
 		t.Errorf("Category = %v, want %v", f.Category, CategoryStyle)
 	}
 }
+
+func TestTemplate_WithGroupID(t *testing.T) {
+	t.Parallel()
+
+	tmpl := NewTemplate("dupl").
+		WithGroupID(GroupID("clone-42"))
+
+	pos := Pos(FilePath("a.go"), 1, 1)
+
+	f := tmpl.Build(RuleName("dup-block"), "duplicated block", SeverityWarning, pos)
+	if f.GroupID != GroupID("clone-42") {
+		t.Errorf("Build GroupID = %q, want clone-42", f.GroupID)
+	}
+
+	b := tmpl.Builder(RuleName("dup-block"), "duplicated block", SeverityWarning, pos)
+	built := b.MustBuild()
+	if built.GroupID != GroupID("clone-42") {
+		t.Errorf("Builder GroupID = %q, want clone-42", built.GroupID)
+	}
+
+	ungrouped := NewTemplate("solo").Build(RuleName("r"), "m", SeverityInfo, pos)
+	if ungrouped.GroupID != "" {
+		t.Errorf("template without WithGroupID stamped GroupID = %q, want empty", ungrouped.GroupID)
+	}
+}
