@@ -293,7 +293,9 @@ All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migratio
 
 **v1.7.0** — `Finding.GroupID` + `Report.GroupFindings()` + SARIF/LSP round-trip; `FixEngine.ApplyWithOutcomes` + `FixApplyResult` (issue #27); `RollbackPolicy` per-file default + `ApplyWithReport` (issue #28); CLI `-fix-rollback-all` flag. Additive except the documented rollback default change (see CHANGELOG `[1.7.0]`).
 
-**Unreleased** — `Report.GroupFindingsSorted()` + `Group` and `Template.WithGroupID` (core); unsafe-path findings surface as failed outcomes instead of silent drops (pipeline).
+**v1.8.0** — `Report.GroupFindingsSorted()` + `Group` and `Template.WithGroupID` (core); unsafe-path findings surface as failed outcomes instead of silent drops (pipeline).
+
+**v1.9.0** — `FlightRecorderConfig.MaxFiles` + `Compress` and config-file `maxFiles`/`compress` (pipeline); CLI `-trace-max-files`/`-trace-gzip`; rotation serialized against concurrent snapshots. Additive only.
 
 **Deterministic output guarantee** — All production JSON marshaling uses `encoding/json/v2` with `json.Deterministic(true)` (`marshalOpts`/`prettyMarshalOpts` in `json.go`), enforced by `scripts/json-deterministic-check.sh` in CI: byte-identical output for identical input across runs.
 

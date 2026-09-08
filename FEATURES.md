@@ -1151,7 +1151,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | Unsafe-path outcome surfacing                | FULLY_FUNCTIONAL     | Traversal findings become `failed` outcomes instead of silent drops (v1.8.0)         |
 | staticcheck fix extension                    | FULLY_FUNCTIONAL     | Optional `before`/`after` JSON fields make findings auto-fixable (v1.8.0)            |
 | Release preflight gate                       | FULLY_FUNCTIONAL     | `scripts/release-preflight.sh`: structural checks as code before tagging (v1.8.0)    |
-| Flight-recorder rotation + gzip              | FULLY_FUNCTIONAL     | `MaxFiles` pruning + `Compress` `.trace.gz` snapshots ([Unreleased], post-v1.8.0)    |
+| Flight-recorder rotation + gzip              | FULLY_FUNCTIONAL     | `MaxFiles` pruning + `Compress` `.trace.gz` snapshots, rotation serialized under `writeMu` (v1.9.0) |
 
 ---
 
