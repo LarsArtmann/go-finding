@@ -18,8 +18,10 @@ check_version() {
 	local module="$2"
 	local expected="$3"
 
+	# Grep for the module line (any version); under set -euo pipefail a missing
+	# match must not abort the script before the diagnostic prints.
 	local actual
-	actual=$(grep -E "^\s+${module} ${expected}" "$modfile" | grep -v '// indirect' | head -1 | awk '{print $2}')
+	actual=$(grep -E "^\s+${module} v" "$modfile" | grep -v '// indirect' | head -1 | awk '{print $2}' || true)
 	if [ "$actual" != "$expected" ]; then
 		echo "ERROR: $modfile requires ${module} ${actual}, expected ${expected}"
 		ERRORS=$((ERRORS + 1))
