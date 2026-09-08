@@ -51,12 +51,31 @@ GOWORK=off go test ./...                    # Per-module isolation test (run in 
 golangci-lint run ./...                     # Lint
 bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark regression check
 bash scripts/version-check.sh                                    # Verify version.go matches git tag
+bash scripts/release-preflight.sh                                # Pre-tag structural gate (see below)
 ```
 
 > **GOEXPERIMENT=jsonv2 required.** The project imports `encoding/json/v2`.
 > All `nix run .#*` apps and devShells set this env var automatically. Direct `go`
 > commands (outside `nix develop`) require `export GOEXPERIMENT=jsonv2` first — otherwise you get
 > "build constraints exclude all Go files" errors.
+
+### Release preflight (mandatory before any tag)
+
+`scripts/release-preflight.sh` runs the structural gates as code (version drift,
+replace audit, tag collisions, clean tree, GOWORK=off builds, docs checks).
+Born from the v1.7.0 incident where sub-module go.mod files were tagged with a
+stale core reference because the checklist lived in the operator's head.
+`--bench`/`--stress` flags add the heavy gates.
+
+### Dead-gate lesson (2026-09-08: three in one day)
+
+A check that "passes" by not actually running is worse than no check. Found:
+bench-check.sh awk pattern never matched benchstat output; pre-commit hook
+dead via stale local `core.hooksPath`; version-drift.sh aborted silently under
+`set -euo pipefail`. Rules: (1) every check script prints an explicit OK/FAIL
+verdict line, (2) verify a new gate's FAIL path once by intentionally breaking
+something, (3) never pipe a check script's output through filters that can cut
+the verdict line.
 
 ## Module Dependencies (per go.mod)
 

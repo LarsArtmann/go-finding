@@ -1,5 +1,14 @@
 # Status Report — Phase D Execution, FEATURES Walk & Full Verification
 
+> **📦 RESOLUTION STATUS (updated 2026-09-08 18:55)**
+>
+> SUPERSEDED twice: by the SUPERB plan execution status
+> (`2026-09-08_18-30_superb-plan-execution-status.md`) and the brutal
+> self-review (`2026-09-08_18-48_superb-execution-self-review.md`). The v1.7.0
+> release this report prepared for shipped (tags pushed); its open tail
+> (L1-49 D5/D8 feedback annotations = DOCS15) was executed 2026-09-08 evening
+> session. Remaining open items live in the 18-48 report's §f list.
+
 **Date:** 2026-09-08 15:42 CEST
 **Session scope:** Continuation of the Pareto master plan
 (`docs/planning/2026-09-08_04-12_pareto-master-plan-ci-billing-releases-v1.7.0.md`).

@@ -154,6 +154,13 @@ ref := RelatedRef{
 
 **Recommendation:** Defer. Use `Finding.Metadata["go-finding/clone-similarity"]` on the primary finding. Revisit if more consumers need per-relationship metadata.
 
+> **Decision D8 (final, 2026-09-08):** Deferred stands. Revisit trigger is
+> **the second consumer needing per-relationship metadata** (any field that is
+> a property of the finding-pair, not of either finding alone). Until then,
+> `Finding.Metadata` conventions are the sanctioned carrier — adding
+> `RelatedRef.Metadata` for one consumer is not worth the allocation cost on
+> every finding with related refs.
+
 ---
 
 ## Interchange Fidelity Gaps
@@ -231,6 +238,15 @@ This should use `rel.Range` when available.
 `Category("securty").IsValid()` returns `true` — any non-empty lowercase-hyphen string passes. This affects all consumers, not just art-dupl.
 
 **Proposed:** Add a registered-categories set and check against it. Custom categories could be registered at init time or via a `RegisterCategory` function.
+
+> **Decision D5 (final, 2026-09-08):** Resolved differently — no global
+> registry. The split that shipped: `Category.IsStandard()` is the allow-list
+> (canonical, curated set), `Category.IsValid()` stays well-formedness only
+> (non-empty, lowercase-hyphen) so custom categories remain first-class without
+> init-time registration. Rationale: a process-global registry reintroduces the
+> mutable-global/alias-registry complexity removed with `SeverityAliases`; a
+> predicate split expresses the same intent without shared state. This closes
+> GAP-7 — no further action planned.
 
 ### GAP-8: `FromLSP` doesn't preserve `DiagnosticTag`
 
