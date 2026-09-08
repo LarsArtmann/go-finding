@@ -9,7 +9,7 @@
 
 ## Context
 
-The [Split-Brain Audit](../research/SPLIT-BRAIN.html) identified 11 data-model issues where the same concept lives in two or more disagreeing places. This plan resolves all 11. The project is pre-v1.0 (v0.7.0), so breaking changes are acceptable.
+The [Split-Brain Audit](../../research/SPLIT-BRAIN.html) identified 11 data-model issues where the same concept lives in two or more disagreeing places. This plan resolves all 11. The project is pre-v1.0 (v0.7.0), so breaking changes are acceptable.
 
 ### Key constraints
 
