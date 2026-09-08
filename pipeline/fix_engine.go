@@ -116,7 +116,10 @@ func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes 
 
 		edits, err := e.resolveEdits(content, &lineIndex, f)
 		if err != nil {
-			wrapped := fmt.Errorf("finding %s: %w", f.ID, err)
+			wrapped := finding.NewParseError(
+				fmt.Sprintf("resolve edits for finding %s", f.ID),
+				err,
+			).WithPosition(f.Position)
 			result.Errors = append(result.Errors, wrapped)
 			addOutcome(f, FixOutcomeFailed, wrapped)
 

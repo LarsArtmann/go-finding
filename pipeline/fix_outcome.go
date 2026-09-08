@@ -1,6 +1,10 @@
 package pipeline
 
 import (
+	"encoding/json/v2"
+	"errors"
+	"fmt"
+
 	"github.com/larsartmann/go-finding"
 )
 
@@ -84,4 +88,98 @@ func (r FixApplyResult) OutcomeCounts() map[FixOutcomeStatus]int {
 	}
 
 	return counts
+}
+
+// fixOutcomeJSON is the JSON wire type for FixOutcome. Controlling the wire
+// type keeps field tags independent of the domain type and carries the error
+// as a message string (error values do not serialize).
+type fixOutcomeJSON struct {
+	Finding finding.Finding  `json:"finding"`
+	Status  FixOutcomeStatus `json:"status"`
+	Error   string           `json:"error,omitempty"`
+}
+
+// MarshalJSON implements json.Marshaler for FixOutcome. Output is
+// deterministic (see scripts/json-deterministic-check.sh).
+func (o FixOutcome) MarshalJSON() ([]byte, error) { //nolint:recvcheck // value receivers for read-only, pointer for UnmarshalJSON
+	wire := fixOutcomeJSON{Finding: o.Finding, Status: o.Status}
+	if o.Err != nil {
+		wire.Error = o.Err.Error()
+	}
+
+	return json.Marshal(wire, json.Deterministic(true))
+}
+
+// UnmarshalJSON implements json.Unmarshaler for FixOutcome. The error string
+// is restored as a plain error; error identity does not survive
+// serialization, so match on the original error before marshaling.
+func (o *FixOutcome) UnmarshalJSON(data []byte) error {
+	var wire fixOutcomeJSON
+	if err := json.Unmarshal(data, &wire); err != nil {
+		return fmt.Errorf("unmarshal FixOutcome: %w", err)
+	}
+
+	o.Finding = wire.Finding
+	o.Status = wire.Status
+
+	if wire.Error != "" {
+		o.Err = errors.New(wire.Error)
+	}
+
+	return nil
+}
+
+// fixApplyResultJSON is the JSON wire type for FixApplyResult.
+type fixApplyResultJSON struct {
+	// Content is the file content after applying all non-conflicting edits
+	// (base64 in JSON).
+	Content      []byte            `json:"content,omitempty"`
+	Applied      []finding.Finding `json:"applied,omitempty"`
+	AppliedEdits []FixEdit         `json:"appliedEdits,omitempty"`
+	Conflicts    []Conflict        `json:"conflicts,omitempty"`
+	Outcomes     []FixOutcome      `json:"outcomes,omitempty"`
+	Errors       []string          `json:"errors,omitempty"`
+}
+
+// MarshalJSON implements json.Marshaler for FixApplyResult. Output is
+// deterministic; provider errors are serialized as message strings.
+func (r FixApplyResult) MarshalJSON() ([]byte, error) { //nolint:recvcheck // value receivers for read-only, pointer for UnmarshalJSON
+	wire := fixApplyResultJSON{
+		Content:      r.Content,
+		Applied:      r.Applied,
+		AppliedEdits: r.AppliedEdits,
+		Conflicts:    r.Conflicts,
+		Outcomes:     r.Outcomes,
+	}
+
+	for _, err := range r.Errors {
+		if err != nil {
+			wire.Errors = append(wire.Errors, err.Error())
+		}
+	}
+
+	return json.Marshal(wire, json.Deterministic(true))
+}
+
+// UnmarshalJSON implements json.Unmarshaler for FixApplyResult. Errors are
+// restored as plain errors carrying the original message text.
+func (r *FixApplyResult) UnmarshalJSON(data []byte) error {
+	var wire fixApplyResultJSON
+	if err := json.Unmarshal(data, &wire); err != nil {
+		return fmt.Errorf("unmarshal FixApplyResult: %w", err)
+	}
+
+	*r = FixApplyResult{
+		Content:      wire.Content,
+		Applied:      wire.Applied,
+		AppliedEdits: wire.AppliedEdits,
+		Conflicts:    wire.Conflicts,
+		Outcomes:     wire.Outcomes,
+	}
+
+	for _, msg := range wire.Errors {
+		r.Errors = append(r.Errors, errors.New(msg))
+	}
+
+	return nil
 }

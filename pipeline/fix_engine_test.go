@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -357,6 +358,16 @@ func TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable(t *testing.
 	g.Expect(result.Outcomes[0].Err).To(MatchError(ErrPositionUnresolvable))
 	g.Expect(result.HasErrors()).To(BeTrue())
 	g.Expect(result.OutcomeFor(fix.ID)).NotTo(BeNil())
+
+	// Outcome failures are typed as finding.FindingError with the finding's
+	// position attached, so consumers can classify via errorfamily.
+	var fe *finding.FindingError
+	g.Expect(errors.As(result.Outcomes[0].Err, &fe)).To(BeTrue())
+	g.Expect(fe.Category).To(Equal(finding.ErrCategoryParse))
+	g.Expect(fe.Position).NotTo(BeNil())
+	g.Expect(fe.Position.File).To(Equal(finding.FilePath("test.go")))
+	g.Expect(fe.Position.Line).To(Equal(1000))
+	g.Expect(result.Errors[0]).To(MatchError(ErrPositionUnresolvable))
 }
 
 // refusingProvider CanHandles every finding but never produces edits, forcing

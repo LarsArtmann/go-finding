@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"encoding/json/v2"
 	"errors"
 	"testing"
 
@@ -173,4 +174,58 @@ func TestFixApplyResult_OutcomeCounts(t *testing.T) {
 	g.Expect(counts[FixOutcomeApplied]).To(Equal(2))
 	g.Expect(counts[FixOutcomeRefused]).To(Equal(1))
 	g.Expect(counts[FixOutcomeFailed]).To(Equal(1))
+}
+
+func TestFixOutcome_JSON_RoundTrip(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	outcome := FixOutcome{
+		Finding: makeFixFinding("1", "old()", "new()", "a.go", 2),
+		Status:  FixOutcomeFailed,
+		Err:     errors.New("resolve edits failed"),
+	}
+
+	data, err := json.Marshal(outcome, json.Deterministic(true))
+	g.Expect(err).NotTo(HaveOccurred())
+
+	again, err := json.Marshal(outcome, json.Deterministic(true))
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(again)).To(Equal(string(data)))
+
+	var parsed FixOutcome
+	g.Expect(json.Unmarshal(data, &parsed)).To(Succeed())
+	g.Expect(parsed.Finding.Equal(outcome.Finding)).To(BeTrue())
+	g.Expect(parsed.Status).To(Equal(FixOutcomeFailed))
+	g.Expect(parsed.Err).To(MatchError("resolve edits failed"))
+}
+
+func TestFixApplyResult_JSON_RoundTrip(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	result := NewFixEngine().ApplyWithOutcomes(
+		[]byte("old()\n"),
+		[]finding.Finding{
+			makeFixFinding("1", "old()", "new()", "a.go", 1),
+			makeFixFinding("2", "never()", "x()", "a.go", 5),
+		},
+	)
+	g.Expect(result.OutcomeCounts()[FixOutcomeApplied]).To(Equal(1))
+	g.Expect(result.OutcomeCounts()[FixOutcomeFailed]).To(Equal(1))
+
+	data, err := json.Marshal(result, json.Deterministic(true))
+	g.Expect(err).NotTo(HaveOccurred())
+
+	again, err := json.Marshal(result, json.Deterministic(true))
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(again)).To(Equal(string(data)))
+
+	var parsed FixApplyResult
+	g.Expect(json.Unmarshal(data, &parsed)).To(Succeed())
+
+	g.Expect(string(parsed.Content)).To(Equal("new()\n"))
+	g.Expect(parsed.Applied).To(HaveLen(1))
+	g.Expect(parsed.Outcomes).To(HaveLen(2))
+	g.Expect(parsed.OutcomeCounts()).To(Equal(result.OutcomeCounts()))
+	g.Expect(parsed.Errors).To(HaveLen(1))
+	g.Expect(parsed.Errors[0].Error()).To(Equal(result.Errors[0].Error()))
 }
