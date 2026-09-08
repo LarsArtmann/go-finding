@@ -712,7 +712,7 @@ f, err := finding.NewBuilder("unused-var", "my-tool", "variable x is unused",
     WithFixStrategy(finding.FixStrategyDirect).
     WithBeforeCode("x := 1").
     WithAfterCode("_ = x").
-    WithTags(finding.TagUnused, finding.TagBug).
+    WithTags(finding.TagCorrectness, finding.TagBug).
     WithMetadata(map[string]string{"source": "staticcheck"}).
     Build()
 
@@ -765,7 +765,7 @@ f.Tags.Contains(finding.TagSecurity) // true
 f.Tags.IsValid()                      // true (all tags are valid)
 ```
 
-Standard tags: `TagSecurity`, `TagBug`, `TagPerformance`, `TagStyle`, `TagDeprecated`, `TagExperimental`, `TagUnused`, `TagDuplicate`, `TagComplexity`, `TagVulnerability`, `TagCompatibility`.
+Standard tags: `TagSecurity`, `TagPerformance`, `TagStyle`, `TagCorrectness`, `TagBug`, `TagDeprecated`, `TagDocumentation`, `TagComplexity`, `TagTest`, `TagBuild`.
 
 ## Diff
 

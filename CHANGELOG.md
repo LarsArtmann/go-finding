@@ -16,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`Report.GroupFindingsSorted()` + `FindingGroup`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order, `nil` when no grouped findings. Use wherever map iteration order must not leak (tests, serialization, stable output).
 - **`Template.WithGroupID`** — Stamps a `GroupID` onto every finding built from the template (whole template = one clone group); per-finding groups remain available via `Builder.WithGroupID`.
 
+## [Unreleased]
+
+### Added
+
+- **`Report.GroupFindingsSorted()` + `FindingGroup`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order. For tests, serialization, and stable output where map iteration order must not leak.
+- **`Template.WithGroupID`** — Stamps one `GroupID` onto every finding built from the template.
+
+### Changed
+
+- **Unsafe-path fix findings now surface as failed outcomes (pipeline)** — Findings whose `Position.File` resolves outside the applier root (e.g. `../../etc/passwd`) were previously dropped silently during grouping. They are now reported as `failed` outcomes with a validation-category error and included in the joined error return; safe findings in the same run still apply. See `pipeline/CHANGELOG.md`.
+
 ## [1.7.0] - 2026-09-08
 
 ### Added

@@ -13,7 +13,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-DOCS=(FEATURES.md docs/API_STABILITY.md)
+DOCS=(FEATURES.md docs/API_STABILITY.md docs/DOMAIN_LANGUAGE.md docs/USAGE_GUIDE.md)
 
 # Identifier-shaped spans only: exported Go names (CamelCase, digits allowed).
 # Lowercase/mixed spans (flags, paths, versions, prose code words) are skipped;
