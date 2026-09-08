@@ -101,7 +101,6 @@ Diet actions applied to the live file:
 - **Billing decision (2026-09-08)** — User chose to IGNORE the GitHub Actions billing failure (account switch planned). Local gates are the quality bar until then: race tests ×4 modules, lint ×4, structural scripts, go-arch-lint, dprint, `nix flake check`. After the switch, `gh workflow run ci.yml --ref master` and verify every job.
 - **Outcome failures are typed** — Failed `FixOutcome.Err` values are `*finding.FindingError` (parse category) with the finding's position attached; `errors.Is`/`As` chains to the original provider cause are preserved. `FixOutcome`/`FixApplyResult` marshal deterministically (errors as message strings). `Metrics.RecordOutcome`/`OutcomeCounts` aggregate them; the CLI prints a `Fix outcomes:` summary. Stress tests are a MANDATORY release gate (release-procedure step 4, decided 2026-09-08).
 
-
 ## Removed content: Architecture Decisions (pre-diet)
 
 ## Architecture Decisions
@@ -134,4 +133,3 @@ Diet actions applied to the live file:
 - **Multi-module release tagging** — Each sub-module needs a **directory-prefixed** git tag to resolve on the Go proxy: `pipeline/v*`, `analysis/v*`, `cmd/go-finding/v*`. Core uses unprefixed `v*`. Sub-modules have no `version.go`; the tag is the version source. See `docs/release-procedure.md`.
 - **Repo is private** — Until made public, consumers MUST set `GOPRIVATE=github.com/larsartmann/go-finding` or module resolution 404s on the public proxy.
 - **go-arch-lint boundary enforcement** — `.go-arch-lint.yml` (v3 format) defines 11 components (core, gotoken, lockutil, examples, pipeline, pipeline-goast, pipeline-internal, pipeline-examples, analysis, cli, cli-detectors). Dependency flow is one-directional: cli → pipeline → core, analysis → core. Test files excluded via `excludeFiles: ["_test\.go$"]`. Run locally with `go-arch-lint check`. Wired into ci.yml `arch-check` job.
-

@@ -198,23 +198,23 @@ All exported symbols are classified as:
 
 ### Types
 
-| Type                                                                     | Status                               |
-| ------------------------------------------------------------------------ | ------------------------------------ |
-| `Pipeline`, `Config`, `CompletionReason`, `Stage`                        | stable                               |
-| `Iteration`, `PipelineResult`, `PartialResult`                           | stable                               |
-| `FixApplier`, `FixEngine`, `FixEdit`, `FixProvider`, `FixGroup`          | stable                               |
-| `Conflict`, `VerifyResult`, `TriageResult`                               | stable                               |
-| `Metrics`, `MetricsSnapshot`                                             | stable                               |
-| `FileBackup`                                                             | stable                               |
-| `RetryDetector`, `RetryConfig`                                           | stable                               |
-| `GeneratedFileFilter`                                                    | stable                               |
-| `FindingTransformer`, `TransformerFunc`                                  | stable                               |
-| `Detector`, `DetectorFunc` (type aliases)                                | stable                               |
-| `OffsetProvider`, `LineProvider`, `SubstringProvider`                    | stable                               |
-| `StageHook`, `StageHookFunc`, `StageEvent`, `StageTiming`                | stable                               |
-| `LineShiftMap`, `LineShiftEntry`                                         | stable                               |
-| `ConfigFile`                                                             | stable                               |
-| `FlightRecorderHook`, `FlightRecorderConfig`                             | stable                               |
+| Type                                                                     | Status          |
+| ------------------------------------------------------------------------ | --------------- |
+| `Pipeline`, `Config`, `CompletionReason`, `Stage`                        | stable          |
+| `Iteration`, `PipelineResult`, `PartialResult`                           | stable          |
+| `FixApplier`, `FixEngine`, `FixEdit`, `FixProvider`, `FixGroup`          | stable          |
+| `Conflict`, `VerifyResult`, `TriageResult`                               | stable          |
+| `Metrics`, `MetricsSnapshot`                                             | stable          |
+| `FileBackup`                                                             | stable          |
+| `RetryDetector`, `RetryConfig`                                           | stable          |
+| `GeneratedFileFilter`                                                    | stable          |
+| `FindingTransformer`, `TransformerFunc`                                  | stable          |
+| `Detector`, `DetectorFunc` (type aliases)                                | stable          |
+| `OffsetProvider`, `LineProvider`, `SubstringProvider`                    | stable          |
+| `StageHook`, `StageHookFunc`, `StageEvent`, `StageTiming`                | stable          |
+| `LineShiftMap`, `LineShiftEntry`                                         | stable          |
+| `ConfigFile`                                                             | stable          |
+| `FlightRecorderHook`, `FlightRecorderConfig`                             | stable          |
 | `FixOutcome`, `FixOutcomeStatus`, `FixApplyResult`                       | stable (v1.7.0) |
 | `RollbackPolicy` (`RollbackPolicyFailingFile`, `RollbackPolicyAllFiles`) | stable (v1.7.0) |
 
@@ -224,13 +224,13 @@ All exported functions in `pipeline` are **stable**.
 
 Notable additions:
 
-| Function                                     | Status | Notes                                                                              |
-| -------------------------------------------- | ------ | ---------------------------------------------------------------------------------- |
-| `NewFlightRecorderHook`                      | stable | Added v1.5.0. Constructor for FlightRecorderHook.                                    |
-| `DefaultFlightRecorderConfig`                | stable | Added v1.5.0. Returns default config.                                                |
-| `Detect`                                     | stable | One-shot detection convenience function (v1.3.0)                                   |
-| `ApplyToContent`                             | stable | Content-level fix application without FS (v1.3.0)                                  |
-| `ConfigFromFile` / `ConfigFromReader`        | stable | JSON/YAML config file loading                                                      |
+| Function                                     | Status | Notes                                                                       |
+| -------------------------------------------- | ------ | --------------------------------------------------------------------------- |
+| `NewFlightRecorderHook`                      | stable | Added v1.5.0. Constructor for FlightRecorderHook.                           |
+| `DefaultFlightRecorderConfig`                | stable | Added v1.5.0. Returns default config.                                       |
+| `Detect`                                     | stable | One-shot detection convenience function (v1.3.0)                            |
+| `ApplyToContent`                             | stable | Content-level fix application without FS (v1.3.0)                           |
+| `ConfigFromFile` / `ConfigFromReader`        | stable | JSON/YAML config file loading                                               |
 | `FixEngine.ApplyWithOutcomes`                | stable | Added v1.7.0. Per-finding outcomes; Apply/ApplyWithConflicts delegate to it |
 | `FixApplier.ApplyWithReport` / `ApplyReport` | stable | Added v1.7.0. Run report with outcomes, shift maps, RolledBack files        |
 | `FixApplier.SetRollbackPolicy`               | stable | Added v1.7.0. Per-file rollback default; AllFiles opt-in                    |

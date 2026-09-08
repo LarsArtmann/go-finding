@@ -28,15 +28,15 @@ decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
 > nix flake check) is the active quality gate. After the switch: re-run CI via
 > `gh workflow run ci.yml --ref master` and verify all jobs.
 
-| Task                                          | Status    | Impact | Effort | Notes                                                                                                                            |
-| --------------------------------------------- | --------- | ------ | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Task                                          | Status    | Impact | Effort | Notes                                                                                                                                       |
+| --------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1 sign-off: keep per-file rollback default   | ✅ `DONE` | High   | Low    | **Decided 2026-09-08: SHIP per-file rollback default.** ADR-016 written (`docs/architecture-decisions.md` #16). Unlocked the release train. |
-| Decide release strategy (backfill vs forward) | ✅ `DONE` | High   | Low    | **Decided 2026-09-08 (D6): FORWARD-ONLY v1.7.0.** No v1.5/v1.6 backfill; revisit post-account-switch if desired. Push at tag time. |
-| Re-run Release workflow per decided tags      | ⬜ `TODO` | High   | Low    | Blocked on billing + D6. Proves the cosign v3 bundle-mode fix in anger.                                                          |
-| Verify release assets (CLI binary, notes)     | ⬜ `TODO` | Med    | Low    | After first successful run. Check `HOMEBREW_TAP_GITHUB_TOKEN` secret exists (`gh secret list`).                                  |
-| Ship v1.7.0 (GroupID, outcomes, rollback)     | ⬜ `TODO` | High   | Med    | Requires billing green + D1. Pre-release work: tests, benchmarks, docs, migration guide — all done.                              |
-| Bump consumers to v1.7.0                      | ⬜ `TODO` | High   | Med    | go-humanize-linter + go-linter-sdk, then sweep the remaining 12 Go consumers; guide at `docs/guides/consumer-migration-v1.7.md`. |
-| Comment + close issues #27/#28                | ✅ `DONE` | Med    | Low    | **Decided 2026-09-08 (D2): close now** with fix-summary comments + `bug`/`fixed-in-v1.7.0` labels. |
+| Decide release strategy (backfill vs forward) | ✅ `DONE` | High   | Low    | **Decided 2026-09-08 (D6): FORWARD-ONLY v1.7.0.** No v1.5/v1.6 backfill; revisit post-account-switch if desired. Push at tag time.          |
+| Re-run Release workflow per decided tags      | ⬜ `TODO` | High   | Low    | Blocked on billing + D6. Proves the cosign v3 bundle-mode fix in anger.                                                                     |
+| Verify release assets (CLI binary, notes)     | ⬜ `TODO` | Med    | Low    | After first successful run. Check `HOMEBREW_TAP_GITHUB_TOKEN` secret exists (`gh secret list`).                                             |
+| Ship v1.7.0 (GroupID, outcomes, rollback)     | ⬜ `TODO` | High   | Med    | Requires billing green + D1. Pre-release work: tests, benchmarks, docs, migration guide — all done.                                         |
+| Bump consumers to v1.7.0                      | ⬜ `TODO` | High   | Med    | go-humanize-linter + go-linter-sdk, then sweep the remaining 12 Go consumers; guide at `docs/guides/consumer-migration-v1.7.md`.            |
+| Comment + close issues #27/#28                | ✅ `DONE` | Med    | Low    | **Decided 2026-09-08 (D2): close now** with fix-summary comments + `bug`/`fixed-in-v1.7.0` labels.                                          |
 
 ### Make Repo Public — Phase 2/3
 
@@ -75,21 +75,21 @@ decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
 
 ### Docs & quality (unblocked)
 
-| Task                                                                           | Status    | Impact | Effort | Notes                                                                                         |
-| ------------------------------------------------------------------------------ | --------- | ------ | ------ | --------------------------------------------------------------------------------------------- |
-| Write `docs/guides/outcomes.md` consumer guide                                 | ⬜ `TODO` | Med    | Med    | ApplyWithOutcomes patterns, OutcomeFor/Counts/HasErrors, rolled-back semantics (15-42 §f.20). |
-| DOMAIN_LANGUAGE: outcomes/rollback pointer + Metrics term cross-check          | ⬜ `TODO` | Low    | Low    | 15-42 §f.17.                                                                                  |
-| `scripts/docs-api-check.sh`: backtick identifiers in FEATURES.md exist in code | ⬜ `TODO` | Med    | Med    | Mechanical drift guard; would have caught most of the ~26 stale claims (15-42 §f.18, §e.6).   |
-| Align golangci-lint local↔CI; migrate `exhaustruct` → `exhaustruct_v5`         | ⬜ `TODO` | Med    | Low    | Local 2.13.1 vs CI 2.10.1; deprecation warning live (15-42 §f.22).                            |
-| `nix fmt` as pre-commit/CI signal for Go treefmt drift                         | ⬜ `TODO` | Low    | Low    | dprint hook covers md only (15-42 §f.23).                                                     |
-| Consider `.golangci.yml` gofumpt/golines autofix config                        | ⬜ `TODO` | Low    | Low    | End hand-fixing loops (15-42 §f.24).                                                          |
+| Task                                                                           | Status    | Impact | Effort | Notes                                                                                                                                                               |
+| ------------------------------------------------------------------------------ | --------- | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Write `docs/guides/outcomes.md` consumer guide                                 | ⬜ `TODO` | Med    | Med    | ApplyWithOutcomes patterns, OutcomeFor/Counts/HasErrors, rolled-back semantics (15-42 §f.20).                                                                       |
+| DOMAIN_LANGUAGE: outcomes/rollback pointer + Metrics term cross-check          | ⬜ `TODO` | Low    | Low    | 15-42 §f.17.                                                                                                                                                        |
+| `scripts/docs-api-check.sh`: backtick identifiers in FEATURES.md exist in code | ⬜ `TODO` | Med    | Med    | Mechanical drift guard; would have caught most of the ~26 stale claims (15-42 §f.18, §e.6).                                                                         |
+| Align golangci-lint local↔CI; migrate `exhaustruct` → `exhaustruct_v5`         | ⬜ `TODO` | Med    | Low    | Local 2.13.1 vs CI 2.10.1; deprecation warning live (15-42 §f.22).                                                                                                  |
+| `nix fmt` as pre-commit/CI signal for Go treefmt drift                         | ⬜ `TODO` | Low    | Low    | dprint hook covers md only (15-42 §f.23).                                                                                                                           |
+| Consider `.golangci.yml` gofumpt/golines autofix config                        | ⬜ `TODO` | Low    | Low    | End hand-fixing loops (15-42 §f.24).                                                                                                                                |
 | IntervalTree go/no-go research note in ROADMAP                                 | ✅ `DONE` | Low    | Low    | **Decided 2026-09-08: NO-GO.** Note in ROADMAP "Performance": measured µs-scale at consumer scale, cache-hostile trees, max-End augmentation as future middle path. |
 
 ## 🟢 LOW Priority
 
 | Task                                      | Status       | Impact | Effort | Notes                                                                                                                                                                                         |
 | ----------------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FlightRecorder idea triage → scored table | ✅ `DONE` | Low    | Low    | **Done 2026-09-08.** Scored table in ROADMAP "FlightRecorder future directions"; rotation + gzip graduated, 2 marked shipped, 4 rejected with reasons. |
+| FlightRecorder idea triage → scored table | ✅ `DONE`    | Low    | Low    | **Done 2026-09-08.** Scored table in ROADMAP "FlightRecorder future directions"; rotation + gzip graduated, 2 marked shipped, 4 rejected with reasons.                                        |
 | Fix BuildFlow auto-configure loop         | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact. No longer the commit gate (dprint hook replaced it). |
 | Consumer compatibility test               | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code.                                                                                                         |
 

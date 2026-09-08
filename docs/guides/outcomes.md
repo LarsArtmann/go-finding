@@ -18,20 +18,20 @@ Per-finding fix results for content-level (`FixEngine`) and disk-level (`FixAppl
 
 ## Why outcomes?
 
-Before v1.7.0, a fix run answered two questions: how many fixes applied, and which findings were skipped as conflicts. Everything else was invisible: a provider that matched a finding but produced zero edits (a *refusal*) was indistinguishable from success; a provider error on one finding could roll back every clean file in the run (issue #28).
+Before v1.7.0, a fix run answered two questions: how many fixes applied, and which findings were skipped as conflicts. Everything else was invisible: a provider that matched a finding but produced zero edits (a _refusal_) was indistinguishable from success; a provider error on one finding could roll back every clean file in the run (issue #28).
 
 Outcomes make every finding's fate explicit. One `FixOutcome` per input finding, in input order — no silence, no aggregation before you see it.
 
 ## The six statuses
 
-| Status      | Meaning                                                                      | `Err` set? |
-| ----------- | ---------------------------------------------------------------------------- | ---------- |
-| `applied`   | At least one edit for the finding was applied                                 | no         |
-| `no-change` | The finding carries no code change (`HasCodeChange()` false)                   | no         |
-| `refused`   | Every matching provider returned zero edits, without error — it saw the finding and declined | no |
-| `conflict`  | The finding's edits overlapped an earlier finding's edits and were skipped     | no         |
-| `invalid`   | Edits were resolved but dropped as invalid or out of bounds                    | no         |
-| `failed`    | A provider returned an error while resolving the finding to edits              | **yes**    |
+| Status      | Meaning                                                                                      | `Err` set? |
+| ----------- | -------------------------------------------------------------------------------------------- | ---------- |
+| `applied`   | At least one edit for the finding was applied                                                | no         |
+| `no-change` | The finding carries no code change (`HasCodeChange()` false)                                 | no         |
+| `refused`   | Every matching provider returned zero edits, without error — it saw the finding and declined | no         |
+| `conflict`  | The finding's edits overlapped an earlier finding's edits and were skipped                   | no         |
+| `invalid`   | Edits were resolved but dropped as invalid or out of bounds                                  | no         |
+| `failed`    | A provider returned an error while resolving the finding to edits                            | **yes**    |
 
 `refused` is the status that used to be invisible: it is not an error. A provider declining to edit (e.g. the pattern no longer matches after an earlier fix) is a normal, reportable outcome.
 
@@ -106,21 +106,21 @@ for _, path := range report.RolledBack {
 
 `ApplyReport` fields:
 
-| Field         | Contents                                                                 |
-| ------------- | ------------------------------------------------------------------------ |
-| `Applied`     | Number of findings successfully written to disk                          |
-| `AppliedFixes`| Applied findings in application order                                    |
-| `ShiftMaps`   | `map[string]*LineShiftMap` per file with applied edits                    |
-| `Outcomes`    | One `FixOutcome` per *fixable* input finding, in processing order         |
-| `RolledBack`  | File paths restored from backup (see [rollback semantics](#rollback-semantics)) |
+| Field          | Contents                                                                        |
+| -------------- | ------------------------------------------------------------------------------- |
+| `Applied`      | Number of findings successfully written to disk                                 |
+| `AppliedFixes` | Applied findings in application order                                           |
+| `ShiftMaps`    | `map[string]*LineShiftMap` per file with applied edits                          |
+| `Outcomes`     | One `FixOutcome` per _fixable_ input finding, in processing order               |
+| `RolledBack`   | File paths restored from backup (see [rollback semantics](#rollback-semantics)) |
 
 `report.FailedOutcomes()` isolates the `failed` entries.
 
-**Soft vs. hard failures.** A provider resolve error on one finding is *soft*: the run continues, other findings in the same file still apply, and the errors come back both in `Outcomes` and as a joined error return. A hard file failure (write error, backup failure) stops the run and triggers rollback.
+**Soft vs. hard failures.** A provider resolve error on one finding is _soft_: the run continues, other findings in the same file still apply, and the errors come back both in `Outcomes` and as a joined error return. A hard file failure (write error, backup failure) stops the run and triggers rollback.
 
 ## Rollback semantics
 
-Since v1.7.0 the default rollback policy is **per-file** (`RollbackPolicyFailingFile`, ADR-016): a hard failure on one file restores *that file only*; fixes already written to earlier files stay on disk. The previous all-or-nothing behavior is available opt-in:
+Since v1.7.0 the default rollback policy is **per-file** (`RollbackPolicyFailingFile`, ADR-016): a hard failure on one file restores _that file only_; fixes already written to earlier files stay on disk. The previous all-or-nothing behavior is available opt-in:
 
 ```go
 applier.SetRollbackPolicy(pipeline.RollbackPolicyAllFiles)
@@ -130,7 +130,7 @@ or via `pipeline.Config.FixRollbackAllFiles`, the config-file field `fixRollback
 
 Two nuances worth knowing:
 
-- **`RolledBack` lists backed-up files, not modified files.** A file whose findings all soft-fail is still backed up before processing; if a later hard failure triggers rollback under `AllFiles`, restoring that file is a content no-op but the path still appears in `RolledBack` (and in the `(rolled back: ...)` error text). Assert on the paths you expect to have been *restored*, including unchanged ones.
+- **`RolledBack` lists backed-up files, not modified files.** A file whose findings all soft-fail is still backed up before processing; if a later hard failure triggers rollback under `AllFiles`, restoring that file is a content no-op but the path still appears in `RolledBack` (and in the `(rolled back: ...)` error text). Assert on the paths you expect to have been _restored_, including unchanged ones.
 - **Per-finding soft failures never roll back anything.** Only hard file failures (write, backup, cancellation) do.
 
 Migration notes for consumers upgrading from ≤ v1.6.x: see [consumer-migration-v1.7.md](consumer-migration-v1.7.md).
@@ -167,7 +167,7 @@ counts := m.OutcomeCounts() // map[FixOutcomeStatus]int
 
 ## JSON serialization
 
-`FixOutcome` and `FixApplyResult` marshal deterministically (`json.Deterministic(true)`, per the repo-wide determinism rule). Errors serialize as message strings; on unmarshal they come back as plain `errors.New` values — error *identity* does not survive serialization, so match on status, not on the error value, after a round-trip. `FixApplyResult.Content` serializes as base64.
+`FixOutcome` and `FixApplyResult` marshal deterministically (`json.Deterministic(true)`, per the repo-wide determinism rule). Errors serialize as message strings; on unmarshal they come back as plain `errors.New` values — error _identity_ does not survive serialization, so match on status, not on the error value, after a round-trip. `FixApplyResult.Content` serializes as base64.
 
 ---
 

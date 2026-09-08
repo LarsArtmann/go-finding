@@ -1140,10 +1140,10 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | Configuration guide                          | FULLY_FUNCTIONAL     | docs/guides/configuration.md: all CLI flags, config file, library ConfigFile API     |
 | Troubleshooting guide                        | FULLY_FUNCTIONAL     | docs/guides/troubleshooting.md: build, config, pipeline, fix, flight recorder errors |
 | Multi-module benchmark                       | FULLY_FUNCTIONAL     | docs/reports/2026-08-08_multi-module-vs-monolith.md: zero runtime overhead           |
-| Finding groups (GroupID)                     | FULLY_FUNCTIONAL     | Branded `GroupID`; JSON/SARIF/LSP round-trip; `Report.GroupFindings()` (v1.7.0)  |
-| Per-finding fix outcomes                     | FULLY_FUNCTIONAL     | `ApplyWithOutcomes`: applied/no-change/refused/conflict/invalid/failed (v1.7.0)  |
-| Rollback policies                            | FULLY_FUNCTIONAL     | Per-file default + all-files opt-in; config-file `fixRollbackAllFiles` (v1.7.0)  |
-| Fix outcome metrics                          | FULLY_FUNCTIONAL     | `Metrics.RecordOutcome`/`OutcomeCounts` + CLI `Fix outcomes:` summary (v1.7.0)   |
+| Finding groups (GroupID)                     | FULLY_FUNCTIONAL     | Branded `GroupID`; JSON/SARIF/LSP round-trip; `Report.GroupFindings()` (v1.7.0)      |
+| Per-finding fix outcomes                     | FULLY_FUNCTIONAL     | `ApplyWithOutcomes`: applied/no-change/refused/conflict/invalid/failed (v1.7.0)      |
+| Rollback policies                            | FULLY_FUNCTIONAL     | Per-file default + all-files opt-in; config-file `fixRollbackAllFiles` (v1.7.0)      |
+| Fix outcome metrics                          | FULLY_FUNCTIONAL     | `Metrics.RecordOutcome`/`OutcomeCounts` + CLI `Fix outcomes:` summary (v1.7.0)       |
 
 ---
 
