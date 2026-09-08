@@ -273,9 +273,13 @@ func TestGroupFindingsBySafePath_ResolvedPathAsMapKey(t *testing.T) {
 		),
 	}
 
-	byFile := applier.groupFindingsBySafePath(fixes)
+	byFile, dropped := applier.groupFindingsBySafePath(fixes)
 
 	resolved, _ := filepath.EvalSymlinks(linkPath)
+
+	if len(dropped) != 0 {
+		t.Fatalf("expected 0 dropped outcomes for the safe symlink finding, got %d", len(dropped))
+	}
 
 	for key := range byFile {
 		if key == linkPath {
@@ -435,10 +439,22 @@ func TestGroupFindingsBySafePath_PathTraversalFiltered(t *testing.T) {
 		),
 	}
 
-	byFile := applier.groupFindingsBySafePath(fixes)
+	byFile, dropped := applier.groupFindingsBySafePath(fixes)
 
 	if len(byFile) != 1 {
 		t.Fatalf("expected 1 safe file (traversal filtered), got %d groups", len(byFile))
+	}
+
+	if len(dropped) != 1 {
+		t.Fatalf("expected 1 dropped outcome for the traversal finding, got %d", len(dropped))
+	}
+
+	if dropped[0].Status != FixOutcomeFailed {
+		t.Errorf("dropped outcome status = %q, want %q", dropped[0].Status, FixOutcomeFailed)
+	}
+
+	if dropped[0].Err == nil {
+		t.Fatal("dropped outcome must carry a validation error")
 	}
 
 	for _, findings := range byFile {

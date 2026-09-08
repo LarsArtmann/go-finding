@@ -172,9 +172,9 @@ func (a *FixApplier) ApplyWithReport(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) (ApplyReport, error) {
-	byFile := a.groupFindingsBySafePath(fixes)
+	byFile, droppedOutcomes := a.groupFindingsBySafePath(fixes)
 
-	report := ApplyReport{ShiftMaps: make(map[string]*LineShiftMap)}
+	report := ApplyReport{ShiftMaps: make(map[string]*LineShiftMap), Outcomes: droppedOutcomes}
 	var modified []string
 
 	paths := slices.Sorted(maps.Keys(byFile))
@@ -288,10 +288,18 @@ func rolledBackNote(paths []string) string {
 // The root directory is resolved once and each unique file path is resolved
 // at most once, avoiding redundant EvalSymlinks syscalls when many findings
 // target the same file.
-func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string][]finding.Finding {
+//
+// Findings whose path fails the containment check (traversal outside the
+// root) are dropped from the map and returned as failed outcomes carrying a
+// validation error, so callers report them instead of silently losing them.
+func (a *FixApplier) groupFindingsBySafePath(
+	fixes []finding.Finding,
+) (map[string][]finding.Finding, []FixOutcome) {
 	byFile := make(map[string][]finding.Finding)
 	resolvedRoot := ResolveRoot(a.rootDir)
 	pathCache := make(map[string]string, len(fixes))
+
+	var dropped []FixOutcome
 
 	for _, f := range fixes {
 		if f.Position.File == "" {
@@ -307,13 +315,22 @@ func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string
 		}
 
 		if safePath == "" {
+			dropped = append(dropped, FixOutcome{
+				Finding: f,
+				Status:  FixOutcomeFailed,
+				Err: finding.NewValidationError(
+					fmt.Sprintf("unsafe path %q for finding %s: resolves outside root %s", rawPath, f.ID, a.rootDir),
+					nil,
+				).WithPosition(f.Position),
+			})
+
 			continue
 		}
 
 		byFile[safePath] = append(byFile[safePath], f)
 	}
 
-	return byFile
+	return byFile, dropped
 }
 
 // recordShiftMap stores the shift map indexed by relative file path.

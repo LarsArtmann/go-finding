@@ -1071,3 +1071,47 @@ func TestFixApplier_ShiftMapMixedOutcomes(t *testing.T) {
 	g.Expect(shift.ShiftedLine(3)).To(Equal(4))
 	g.Expect(shift.Entries()).To(HaveLen(1))
 }
+
+// TestFixApplier_UnsafePathReportsFailedOutcome verifies that findings whose
+// path fails the containment check (traversal outside root) surface as failed
+// outcomes with a validation error and a joined error return, instead of being
+// silently dropped during grouping.
+func TestFixApplier_UnsafePathReportsFailedOutcome(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+	t.Cleanup(func() { _ = applier.Close() })
+
+	testFile := filepath.Join(tempDir, "safe.go")
+	writeTestFile(t, testFile, []byte("package main\n"))
+
+	fixes := []finding.Finding{
+		makeFixFinding("safe-1", "package main", "package fixed", "safe.go", 0),
+		makeFixFinding("evil-1", "a", "b", "../../../etc/passwd", 1),
+	}
+
+	report, err := applier.ApplyWithReport(context.Background(), fixes)
+
+	g.Expect(err).To(HaveOccurred(), "unsafe path must surface in the joined error return")
+	g.Expect(report.Applied).To(Equal(1), "the safe finding still applies")
+
+	var outcome *FixOutcome
+	for i := range report.Outcomes {
+		if report.Outcomes[i].Finding.ID == finding.ID("evil-1") {
+			outcome = &report.Outcomes[i]
+		}
+	}
+
+	g.Expect(outcome).NotTo(BeNil(), "unsafe finding gets an outcome, not silence")
+	g.Expect(outcome.Status).To(Equal(FixOutcomeFailed))
+
+	var ferr *finding.FindingError
+	g.Expect(errors.As(outcome.Err, &ferr)).To(BeTrue())
+	g.Expect(ferr.Category).To(Equal(finding.ErrCategoryValidation))
+	g.Expect(ferr.Position).NotTo(BeNil())
+	g.Expect(string(ferr.Position.File)).To(Equal("../../../etc/passwd"))
+
+	data, readErr := os.ReadFile(testFile)
+	g.Expect(readErr).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(ContainSubstring("package fixed"))
+}
