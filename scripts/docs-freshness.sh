@@ -25,7 +25,7 @@ SYNC_COUNT=0
 # sources evolve)
 mapfile -t FILES < <({
 	find docs/guides -maxdepth 1 -name "*.md" 2>/dev/null || true
-	find docs -maxdepth 1 -name "*.md" ! -name "MIGRATION*" 		! -name "PRO_CONTRA*" ! -name "READINESS*" 		! -name "RELEASE_CRITERIA*" ! -name "v1.0-release-criteria*" 2>/dev/null || true
+	find docs -maxdepth 1 -name "*.md" ! -name "MIGRATION*" ! -name "PRO_CONTRA*" ! -name "READINESS*" ! -name "RELEASE_CRITERIA*" ! -name "v1.0-release-criteria*" 2>/dev/null || true
 	echo "README.md"
 	echo "TODO_LIST.md"
 	echo "FEATURES.md"
