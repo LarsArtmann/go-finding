@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -356,4 +357,59 @@ func TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable(t *testing.
 	g.Expect(result.Outcomes[0].Err).To(MatchError(ErrPositionUnresolvable))
 	g.Expect(result.HasErrors()).To(BeTrue())
 	g.Expect(result.OutcomeFor(fix.ID)).NotTo(BeNil())
+}
+
+// refusingProvider CanHandles every finding but never produces edits, forcing
+// the engine to fall through to later providers in the chain.
+type refusingProvider struct{}
+
+func (*refusingProvider) Name() string                          { return "refusing" }
+func (*refusingProvider) CanHandle(finding.Finding) bool        { return true }
+func (*refusingProvider) Edits([]byte, finding.Finding) ([]FixEdit, error) {
+	return nil, nil
+}
+
+// editAtBeforeProvider emulates a precise domain provider: it replaces the
+// first occurrence of BeforeCode with AfterCode.
+type editAtBeforeProvider struct{}
+
+func (*editAtBeforeProvider) Name() string                 { return "edit-at-before" }
+func (*editAtBeforeProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
+func (*editAtBeforeProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	idx := bytes.Index(content, []byte(f.BeforeCode))
+	if idx < 0 {
+		return nil, nil
+	}
+
+	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
+}
+
+// TestFixEngine_ProviderPrecedence pins the provider chain contract: providers
+// are tried in registration order; a provider that refuses (zero edits, no
+// error) falls through to the next one; a provider that errors does NOT stop
+// the chain — the first successful provider wins and its edits are used.
+func TestFixEngine_ProviderPrecedence(t *testing.T) {
+	content := []byte("old1()\nold2()\n")
+	fixes := []finding.Finding{makeFixFinding("1", "old1()", "new1()", "m.go", 1)}
+
+	t.Run("refusing provider falls through to next", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		engine := NewFixEngineWithProviders(&refusingProvider{}, &editAtBeforeProvider{})
+		result := engine.ApplyWithOutcomes(content, fixes)
+
+		g.Expect(result.OutcomeCounts()).To(Equal(map[FixOutcomeStatus]int{FixOutcomeApplied: 1}))
+		g.Expect(string(result.Content)).To(Equal("new1()\nold2()\n"))
+	})
+
+	t.Run("erroring provider falls through to next", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		engine := NewFixEngineWithProviders(erroringProvider{}, &editAtBeforeProvider{})
+		result := engine.ApplyWithOutcomes(content, fixes)
+
+		g.Expect(result.OutcomeCounts()).To(Equal(map[FixOutcomeStatus]int{FixOutcomeApplied: 1}))
+		g.Expect(result.Errors).To(BeEmpty())
+		g.Expect(string(result.Content)).To(Equal("new1()\nold2()\n"))
+	})
 }

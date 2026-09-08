@@ -1,6 +1,8 @@
 package finding
 
 import (
+	"encoding/json/v2"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -451,5 +453,75 @@ func FuzzParseLSPDiagnosticTags(f *testing.F) {
 				t.Fatalf("negative tag %d parsed from %q", tag, s)
 			}
 		}
+	})
+}
+
+// TestLSPDiagnosticData_GoldenWire pins the exact JSON wire format of
+// LSPDiagnosticData (the diagnostic's data property). LSP clients may persist
+// these bytes, so any key rename or reordering must be a conscious decision.
+func TestLSPDiagnosticData_GoldenWire(t *testing.T) {
+	t.Parallel()
+
+	assertWire := func(t *testing.T, data *LSPDiagnosticData, golden string) {
+		t.Helper()
+
+		wire, err := json.Marshal(data, marshalOpts)
+		if err != nil {
+			t.Fatalf("marshal LSPDiagnosticData: %v", err)
+		}
+
+		if string(wire) != golden {
+			t.Fatalf("LSPDiagnosticData wire drift:\n got: %s\nwant: %s", wire, golden)
+		}
+
+		again, err := json.Marshal(data, marshalOpts)
+		if err != nil {
+			t.Fatalf("re-marshal: %v", err)
+		}
+
+		if string(again) != string(wire) {
+			t.Fatalf("non-deterministic output:\n %s\n %s", wire, again)
+		}
+
+		var parsed LSPDiagnosticData
+		if err := json.Unmarshal(wire, &parsed); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+
+		// An empty map marshals to nothing (omitempty) and unmarshals as nil;
+		// normalize before comparing so only real drift fails.
+		wantData := *data
+		if len(wantData.Metadata) == 0 {
+			wantData.Metadata = nil
+		}
+
+		if !reflect.DeepEqual(&wantData, &parsed) {
+			t.Fatalf("round-trip mismatch:\n got: %+v\nwant: %+v", &parsed, &wantData)
+		}
+	}
+
+	t.Run("minimal", func(t *testing.T) {
+		t.Parallel()
+
+		diag := standardTestFinding().ToLSP()
+		assertWire(t, diag.Data, `{"id":"test:rule1:file.go:10:5","severity":"error","fixStrategy":"none","confidence":1}`)
+	})
+
+	t.Run("fully populated", func(t *testing.T) {
+		t.Parallel()
+
+		f := standardTestFinding()
+		f.GroupID = "clone-group-1"
+		f.Tags = []Tag{"style", "perf"}
+		f.BeforeCode = "old()"
+		f.AfterCode = "new()"
+		f.Suggestion = "use new()"
+		f.Snippet = "old()"
+		f.Suppression = &Suppression{Kind: SuppressionInSource, Rule: "rule1", Reason: "legacy"}
+		f.Metadata = map[string]string{"gate": "ci", "zebra": "last"}
+		f.Related = []RelatedRef{{FindingID: "test:rule2:file.go:20:1", Relation: RelationCloneOf, Position: Position{File: "file.go", Line: 20}}}
+
+		diag := f.ToLSP()
+		assertWire(t, diag.Data, `{"id":"test:rule1:file.go:10:5","severity":"error","fixStrategy":"none","confidence":1,"groupId":"clone-group-1","tags":["style","perf"],"beforeCode":"old()","afterCode":"new()","suggestion":"use new()","snippet":"old()","suppression":{"kind":"in-source","rule":"rule1","reason":"legacy"},"metadata":{"gate":"ci","zebra":"last"},"relatedFindingIds":["test:rule2:file.go:20:1"]}`)
 	})
 }

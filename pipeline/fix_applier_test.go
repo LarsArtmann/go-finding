@@ -926,3 +926,172 @@ func TestFixApplier_BackupHygiene(t *testing.T) {
 	g.Expect(backupDir).NotTo(BeAnExistingFile())
 	g.Expect(backupDir).NotTo(BeADirectory())
 }
+
+// cancelingProvider cancels the run's context when it sees a specific
+// BeforeCode, and produces valid edits otherwise. It lets tests place the
+// cancellation exactly between two files of a multi-file run.
+type cancelingProvider struct {
+	cancel context.CancelFunc
+	before string
+}
+
+func (*cancelingProvider) Name() string                    { return "canceling" }
+func (p *cancelingProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
+func (p *cancelingProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	if f.BeforeCode == p.before {
+		p.cancel()
+
+		return nil, errors.New("cancelled during edit resolution")
+	}
+
+	idx := bytes.Index(content, []byte(f.BeforeCode))
+	if idx < 0 {
+		return nil, nil
+	}
+
+	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
+}
+
+// TestFixApplier_RolledBackPathsInErrorText verifies that ApplyWithReport
+// embeds the exact file paths that were rolled back in the returned error
+// text, for all three failure paths that trigger rollback: cancellation,
+// backup failure, and hard file failure.
+func TestFixApplier_RolledBackPathsInErrorText(t *testing.T) {
+	t.Run("cancelled after first file", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		tempDir, _ := newTestApplierWithDir(t)
+
+		fileA := filepath.Join(tempDir, "a.go")
+		writeTestFile(t, fileA, []byte("package a\noldA()\n"))
+
+		fileB := filepath.Join(tempDir, "b.go")
+		writeTestFile(t, fileB, []byte("package b\noldB()\n"))
+
+		fileC := filepath.Join(tempDir, "c.go")
+		writeTestFile(t, fileC, []byte("package c\noldC()\n"))
+
+		ctx, cancel := context.WithCancel(context.Background())
+		applier, err := NewFixApplierWithProviders(tempDir, &cancelingProvider{cancel: cancel, before: "oldB()"})
+		g.Expect(err).NotTo(HaveOccurred())
+		applier.SetRollbackPolicy(RollbackPolicyAllFiles)
+		t.Cleanup(func() { _ = applier.Close() })
+
+		report, err := applier.ApplyWithReport(ctx, []finding.Finding{
+			makeFixFinding("1", "oldA()", "newA()", "a.go", 2),
+			makeFixFinding("2", "oldB()", "newB()", "b.go", 2),
+			makeFixFinding("3", "oldC()", "newC()", "c.go", 2),
+		})
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
+
+		errMsg := err.Error()
+		g.Expect(errMsg).To(ContainSubstring("(rolled back: "+fileA+")"),
+			"error should list the rolled-back path: %s", errMsg)
+
+		g.Expect(report.RolledBack).To(ContainElement(fileA))
+
+		data, readErr := readFile(fileA)
+		g.Expect(readErr).NotTo(HaveOccurred())
+		g.Expect(string(data)).To(Equal("package a\noldA()\n"))
+	})
+
+	t.Run("backup failure lists earlier files", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		tempDir, applier := newTestApplierWithDir(t)
+		applier.SetRollbackPolicy(RollbackPolicyAllFiles)
+		t.Cleanup(func() { _ = applier.Close() })
+
+		fileA := filepath.Join(tempDir, "first.go")
+		writeTestFile(t, fileA, []byte("package first\nold1()\n"))
+
+		fileB := filepath.Join(tempDir, "second.go")
+		writeTestFile(t, fileB, []byte("package second\nold2()\n"))
+		errChmod := os.Chmod(fileB, 0o000) //nolint:gosec // unreadable on purpose: backup open fails
+		g.Expect(errChmod).NotTo(HaveOccurred())
+		t.Cleanup(func() {
+			_ = os.Chmod(fileB, 0o644) //nolint:gosec // restore permissions in cleanup
+		})
+
+		report, err := applier.ApplyWithReport(context.Background(), []finding.Finding{
+			makeFixFinding("1", "old1()", "new1()", "first.go", 2),
+			makeFixFinding("2", "old2()", "new2()", "second.go", 2),
+		})
+		g.Expect(err).To(HaveOccurred())
+
+		errMsg := err.Error()
+		g.Expect(errMsg).To(ContainSubstring("(rolled back: "+fileA+")"),
+			"error should list the rolled-back path: %s", errMsg)
+		g.Expect(report.RolledBack).To(ContainElement(fileA))
+	})
+
+	t.Run("hard file failure lists restored files alongside rollback failure", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		tempDir, applier := newTestApplierWithDir(t)
+		applier.SetRollbackPolicy(RollbackPolicyAllFiles)
+		t.Cleanup(func() { _ = applier.Close() })
+
+		fileA := filepath.Join(tempDir, "first.go")
+		writeTestFile(t, fileA, []byte("package first\nold1()\n"))
+
+		fileB := filepath.Join(tempDir, "second.go")
+		writeTestFile(t, fileB, []byte("package second\nold2()\n"))
+		errChmod := os.Chmod(fileB, 0o444) //nolint:gosec // read-only on purpose: backup ok, write fails
+		g.Expect(errChmod).NotTo(HaveOccurred())
+		t.Cleanup(func() {
+			_ = os.Chmod(fileB, 0o644) //nolint:gosec // restore permissions in cleanup
+		})
+
+		report, err := applier.ApplyWithReport(context.Background(), []finding.Finding{
+			makeFixFinding("1", "old1()", "new1()", "first.go", 2),
+			makeFixFinding("2", "old2()", "new2()", "second.go", 2),
+		})
+		g.Expect(err).To(HaveOccurred())
+
+		errMsg := err.Error()
+		g.Expect(errMsg).To(ContainSubstring("rollback also failed"),
+			"error should mention the failed restore of the read-only file: %s", errMsg)
+		g.Expect(errMsg).To(ContainSubstring("(rolled back: "+fileA+")"),
+			"error should list the successfully rolled-back path: %s", errMsg)
+		g.Expect(report.RolledBack).To(ContainElement(fileA))
+	})
+}
+
+// TestFixApplier_ShiftMapMixedOutcomes verifies the per-file line shift map
+// reflects exactly the applied edits, even when other findings in the same
+// file were refused — refused findings contribute no shift entries.
+func TestFixApplier_ShiftMapMixedOutcomes(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+	t.Cleanup(func() { _ = applier.Close() })
+
+	file := filepath.Join(tempDir, "m.go")
+	writeTestFile(t, file, []byte("package m\nold1()\nold2()\n"))
+
+	report, err := applier.ApplyWithReport(context.Background(), []finding.Finding{
+		makeFixFinding("1", "old1()", "new1()\nnew1b()", "m.go", 2),
+		makeFixFinding("2", "never-present()", "x()", "m.go", 3),
+	})
+	g.Expect(err).NotTo(HaveOccurred())
+
+	byID := make(map[finding.ID]FixOutcome, len(report.Outcomes))
+	for _, o := range report.Outcomes {
+		byID[o.Finding.ID] = o
+	}
+
+	g.Expect(byID["1"].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(byID["2"].Status).To(Equal(FixOutcomeRefused))
+	g.Expect(report.Applied).To(Equal(1))
+
+	g.Expect(report.ShiftMaps).To(HaveLen(1))
+	shift, ok := report.ShiftMaps["m.go"]
+	g.Expect(ok).To(BeTrue())
+	g.Expect(shift).NotTo(BeNil())
+
+	// The replacement on line 2 adds one extra line: line 3 moved to 4.
+	g.Expect(shift.ShiftedLine(3)).To(Equal(4))
+	g.Expect(shift.Entries()).To(HaveLen(1))
+}
