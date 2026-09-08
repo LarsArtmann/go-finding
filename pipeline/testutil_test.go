@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -349,4 +350,86 @@ func assertNoSuppressedNotified(t *testing.T, notified []string, mode string) {
 			}
 		}
 	}
+}
+
+// refusingProvider CanHandles every finding but never produces edits, forcing
+// the engine to fall through to later providers in the chain.
+type refusingProvider struct{}
+
+func (*refusingProvider) Name() string                   { return "refusing" }
+func (*refusingProvider) CanHandle(finding.Finding) bool { return true }
+
+func (*refusingProvider) Edits([]byte, finding.Finding) ([]FixEdit, error) {
+	return nil, nil
+}
+
+// editAtBeforeProvider emulates a precise domain provider: it replaces the
+// first occurrence of BeforeCode with AfterCode.
+type editAtBeforeProvider struct{}
+
+func (*editAtBeforeProvider) Name() string                    { return "edit-at-before" }
+func (*editAtBeforeProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
+
+func (*editAtBeforeProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	idx := bytes.Index(content, []byte(f.BeforeCode))
+	if idx < 0 {
+		return nil, nil
+	}
+
+	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
+}
+
+// erroringProvider fails resolution for findings whose rule matches.
+type erroringProvider struct{}
+
+func (erroringProvider) Name() string { return "erroring" }
+
+func (erroringProvider) CanHandle(f finding.Finding) bool {
+	return f.Rule == "unresolvable"
+}
+
+func (erroringProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error) {
+	return nil, errors.New("cannot resolve this finding")
+}
+
+// staticEditProvider always returns the given edits.
+type staticEditProvider struct {
+	edits []FixEdit
+}
+
+func (staticEditProvider) Name() string { return "static" }
+
+func (staticEditProvider) CanHandle(finding.Finding) bool { return true }
+
+func (s staticEditProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error) {
+	return s.edits, nil
+}
+
+// saboteurProvider applies real edits while deleting the file's backup,
+// simulating a backup that has become unavailable between backup and restore.
+type saboteurProvider struct {
+	backup     *FileBackup
+	targetPath string
+}
+
+func (*saboteurProvider) Name() string { return "saboteur" }
+
+func (*saboteurProvider) CanHandle(f finding.Finding) bool {
+	return f.HasCodeChange()
+}
+
+func (s *saboteurProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	bakPath := s.backup.BackupPath(s.targetPath)
+	if bakPath != "" {
+		_ = os.Remove(
+			bakPath,
+		) //nolint:gosec // G703: intentional path manipulation in test saboteur
+	}
+
+	idx := bytes.Index(content, []byte(f.BeforeCode))
+	if idx < 0 {
+		return nil, errors.New("before code not found")
+	}
+
+	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
 }

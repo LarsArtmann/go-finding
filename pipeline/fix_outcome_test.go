@@ -9,19 +9,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// erroringProvider fails resolution for findings whose rule matches.
-type erroringProvider struct{}
-
-func (erroringProvider) Name() string { return "erroring" }
-
-func (erroringProvider) CanHandle(f finding.Finding) bool {
-	return f.Rule == "unresolvable"
-}
-
-func (erroringProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error) {
-	return nil, errors.New("cannot resolve this finding")
-}
-
 // TestFixEngine_ApplyWithOutcomes_MixedStatuses verifies that per-finding
 // outcomes distinguish applied, no-change, refused, conflict, and failed
 // findings (issue #27).
@@ -142,19 +129,6 @@ func TestFixEngine_ApplyWithOutcomes_InvalidEditReported(t *testing.T) {
 	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeInvalid))
 	g.Expect(result.Content).To(Equal(content))
 	g.Expect(result.HasErrors()).To(BeFalse())
-}
-
-// staticEditProvider always returns the given edits.
-type staticEditProvider struct {
-	edits []FixEdit
-}
-
-func (staticEditProvider) Name() string { return "static" }
-
-func (staticEditProvider) CanHandle(finding.Finding) bool { return true }
-
-func (s staticEditProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error) {
-	return s.edits, nil
 }
 
 // TestFixApplyResult_OutcomeCounts verifies counting across statuses.

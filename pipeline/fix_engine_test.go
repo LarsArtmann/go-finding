@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"bytes"
 	"errors"
 	"testing"
 
@@ -368,31 +367,6 @@ func TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable(t *testing.
 	g.Expect(fe.Position.File).To(Equal(finding.FilePath("test.go")))
 	g.Expect(fe.Position.Line).To(Equal(1000))
 	g.Expect(result.Errors[0]).To(MatchError(ErrPositionUnresolvable))
-}
-
-// refusingProvider CanHandles every finding but never produces edits, forcing
-// the engine to fall through to later providers in the chain.
-type refusingProvider struct{}
-
-func (*refusingProvider) Name() string                          { return "refusing" }
-func (*refusingProvider) CanHandle(finding.Finding) bool        { return true }
-func (*refusingProvider) Edits([]byte, finding.Finding) ([]FixEdit, error) {
-	return nil, nil
-}
-
-// editAtBeforeProvider emulates a precise domain provider: it replaces the
-// first occurrence of BeforeCode with AfterCode.
-type editAtBeforeProvider struct{}
-
-func (*editAtBeforeProvider) Name() string                 { return "edit-at-before" }
-func (*editAtBeforeProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
-func (*editAtBeforeProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
-	idx := bytes.Index(content, []byte(f.BeforeCode))
-	if idx < 0 {
-		return nil, nil
-	}
-
-	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
 }
 
 // TestFixEngine_ProviderPrecedence pins the provider chain contract: providers

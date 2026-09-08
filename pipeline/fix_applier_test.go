@@ -685,36 +685,6 @@ func TestFixApplier_ApplyWithDetails(t *testing.T) {
 	g.Expect(fixes).To(BeEmpty())
 }
 
-// saboteurProvider is a test FixProvider that deletes the backup .bak file
-// when Edits is called, then returns a valid edit. Used with a read-only
-// target file, this simulates: write fails AND the backup needed for restore
-// has become unavailable between backup and restore.
-type saboteurProvider struct {
-	backup     *FileBackup
-	targetPath string
-}
-
-func (*saboteurProvider) Name() string { return "saboteur" }
-func (*saboteurProvider) CanHandle(f finding.Finding) bool {
-	return f.HasCodeChange()
-}
-
-func (s *saboteurProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
-	bakPath := s.backup.BackupPath(s.targetPath)
-	if bakPath != "" {
-		_ = os.Remove(
-			bakPath,
-		) //nolint:gosec // G703: intentional path manipulation in test saboteur
-	}
-
-	idx := bytes.Index(content, []byte(f.BeforeCode))
-	if idx < 0 {
-		return nil, errors.New("before code not found")
-	}
-
-	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
-}
-
 // TestFixApplier_RollbackErrorNotSwallowed verifies that when applyToFile
 // fails hard (write error on a read-only file) AND Restore fails (because the
 // .bak file was deleted), the returned error includes BOTH the apply failure
