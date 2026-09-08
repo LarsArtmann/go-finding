@@ -857,7 +857,7 @@ func ExampleTemplate_Builder() {
 func ExampleReport_GroupFindingsSorted() {
 	report := finding.NewReport(finding.ToolInfo{Name: "clone-detector"})
 
-	build := func(id, group, file string, line int) finding.Finding {
+	build := func(group, file string, line int) finding.Finding {
 		return finding.NewBuilder(
 			finding.RuleName("duplicate-code"), finding.ToolName("clone-detector"),
 			"duplicated block",
@@ -866,16 +866,20 @@ func ExampleReport_GroupFindingsSorted() {
 		).WithGroupID(finding.GroupID(group)).BuildOrDefault()
 	}
 
-	report.AddFinding(build("a", "grp-2", "b.go", 10))
-	report.AddFinding(build("b", "grp-1", "a.go", 5))
-	report.AddFinding(build("c", "grp-2", "c.go", 1))
-	report.AddFinding(build("d", "", "solo.go", 3)) // no group -> omitted
+	report.AddFinding(build("grp-2", "b.go", 10))
+	report.AddFinding(build("grp-1", "a.go", 5))
+	report.AddFinding(build("grp-2", "c.go", 1))
+	report.AddFinding(build("", "solo.go", 3)) // no group -> omitted
 
-	for _, g := range report.GroupFindingsSorted() {
+	groups := report.GroupFindingsSorted()
+
+	for _, g := range groups {
 		fmt.Printf("%s:", g.ID)
+
 		for _, f := range g.Findings {
 			fmt.Printf(" %s:%d", f.Position.File, f.Position.Line)
 		}
+
 		fmt.Println()
 	}
 

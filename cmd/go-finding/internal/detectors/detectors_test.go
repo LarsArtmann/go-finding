@@ -267,3 +267,29 @@ func TestParseStaticcheckJSON_AbsolutePath(t *testing.T) {
 
 	g.Expect(findings[0].Position.File).To(Equal(finding.FilePath("/abs/path/main.go")))
 }
+
+func TestParseStaticcheckJSON_FixExtension(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	input := `{"code":"ST1000","severity":"warning","location":{"file":"main.go","line":4,"column":2},"message":"old() should be new()","before":"old()","after":"new()"}`
+	findings := parseStaticcheckJSON([]byte(input), "/project")
+	g.Expect(findings).To(HaveLen(1))
+
+	f := findings[0]
+	g.Expect(f.FixStrategy).To(Equal(finding.FixStrategyDirect))
+	g.Expect(f.BeforeCode).To(Equal("old()"))
+	g.Expect(f.AfterCode).To(Equal("new()"))
+	g.Expect(f.IsAutoFixable()).To(BeTrue())
+}
+
+func TestParseStaticcheckJSON_FixExtensionRequiresBoth(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	input := `{"code":"S1000","severity":"warning","location":{"file":"main.go","line":4,"column":2},"message":"half a fix","before":"old()"}`
+	findings := parseStaticcheckJSON([]byte(input), "")
+	g.Expect(findings).To(HaveLen(1))
+
+	g.Expect(findings[0].FixStrategy).To(Equal(finding.FixStrategySuggest),
+		"before without after must stay suggest-only")
+	g.Expect(findings[0].BeforeCode).To(BeEmpty())
+}
