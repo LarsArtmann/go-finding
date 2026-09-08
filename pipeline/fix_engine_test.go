@@ -343,7 +343,7 @@ func TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable(t *testing.
 		Rule:       "rule",
 		ToolName:   "test",
 		Message:    "fix",
-		BeforeCode: "old()",
+		BeforeCode: "never-present()",
 		AfterCode:  "new()",
 		Position:   finding.Pos("test.go", 1000, 1),
 	}

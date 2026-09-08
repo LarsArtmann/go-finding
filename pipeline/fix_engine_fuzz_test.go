@@ -182,11 +182,17 @@ func FuzzApplyWithOutcomes(f *testing.F) {
 			return
 		}
 
-		offset = offset % max(len(content), 1)
-		length = length % max(len(content)-offset, 1)
-		if length < 0 {
-			length = 0
+		if offset < 0 {
+			offset = -offset
 		}
+
+		offset = offset % max(len(content), 1)
+
+		if length < 0 {
+			length = -length
+		}
+
+		length = length % max(len(content)-offset, 1)
 
 		findingBase := finding.Finding{
 			ID:       "fuzz:rule:content",
