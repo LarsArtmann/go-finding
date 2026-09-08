@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No core-module changes yet.
 
+## [1.9.2] - 2026-09-08
+
+Release-pipeline fix only: no code changes in any module.
+
+### Fixed
+
+- **Homebrew formula template** — the GoReleaser brew `test` stanza used `#{{bin}}`, which Go's template engine evaluates as a call to an undefined function `bin` (first live GoReleaser run failed on exactly this after successfully building, checksumming, and cosign-verifying all platform archives). The correct stanza is `system "#{bin}/go-finding --version"` — `#{bin}` is Ruby/Homebrew interpolation evaluated at install time.
+
 ## [1.9.1] - 2026-09-08
 
 Test-only patch release: no production code changes in any module. Tags exist so the Release workflow finally runs green on a public repo (the v1.9.0 run failed in its test job on an environment-flaky test, before reaching GoReleaser).

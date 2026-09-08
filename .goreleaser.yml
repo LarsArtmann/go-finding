@@ -98,7 +98,7 @@ brews:
     install: |
       bin.install "go-finding"
     test: |
-      system "#{{bin}}/go-finding --version"
+      system "#{bin}/go-finding --version"
 
 nix:
   - name: go-finding
