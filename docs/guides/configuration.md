@@ -42,6 +42,8 @@ This guide covers all configuration options for go-finding: CLI flags, YAML/JSON
 | `-trace`                  | bool     | `false` | Enable Go execution trace flight recorder                                                       |
 | `-trace-dir`              | string   | `""`    | Directory for trace snapshot files (default: temp dir)                                          |
 | `-trace-slow`             | duration | `0`     | Auto-snapshot trace when a pipeline stage exceeds this duration                                 |
+| `-trace-max-files`        | int      | `0`     | Keep at most N trace snapshots, pruning oldest (0 = unlimited)                                  |
+| `-trace-gzip`             | bool     | `false` | Write gzip-compressed `.trace.gz` snapshots                                                     |
 
 ---
 
@@ -82,6 +84,8 @@ flightRecorder:
   slowStageThreshold: "30s"
   minAge: "1m"
   maxBytes: 4194304 # 4 MiB
+  maxFiles: 20
+  compress: true
 ```
 
 ### Full JSON Example
@@ -108,7 +112,9 @@ flightRecorder:
     "outputDir": "./traces",
     "slowStageThreshold": "30s",
     "minAge": "1m",
-    "maxBytes": 4194304
+    "maxBytes": 4194304,
+    "maxFiles": 20,
+    "compress": true
   }
 }
 ```
@@ -141,6 +147,8 @@ flightRecorder:
 | `slowStageThreshold` | string | `""` (disabled)   | Duration string (e.g., `"30s"`, `"2m"`) for auto-snapshot   |
 | `minAge`             | string | `"30s"`           | How long trace data is reliably retained in the ring buffer |
 | `maxBytes`           | uint64 | `4194304` (4 MiB) | Maximum in-memory buffer size                               |
+| `maxFiles`           | int    | `0` (unlimited)   | Cap on retained snapshot files (oldest pruned)              |
+| `compress`           | bool   | `false`           | gzip-compress snapshots (`.trace.gz`)                       |
 
 See [FlightRecorder Guide](flight-recorder.md) for a complete walkthrough.
 

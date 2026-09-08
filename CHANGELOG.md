@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > [analysis/CHANGELOG.md](analysis/CHANGELOG.md),
 > [cmd/go-finding/CHANGELOG.md](cmd/go-finding/CHANGELOG.md).
 
+## [Unreleased]
+
+No core-module changes yet. Pipeline: flight-recorder `MaxFiles` rotation + `Compress` (gzip) snapshots — see `pipeline/CHANGELOG.md`.
+
 ## [1.8.0] - 2026-09-08
 
 ### Added

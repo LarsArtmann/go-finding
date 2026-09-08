@@ -181,7 +181,7 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 - `-fix-provider go-ast` — enables AST-aware fix provider
 - `-fix-rollback-all` — opt into all-or-nothing rollback (default: per-file)
 - `-byte-level-conflict` — precise overlap detection
-- `-trace` — enable Go execution trace flight recorder for diagnostics (`-trace-dir`, `-trace-slow` for config)
+- `-trace` — enable Go execution trace flight recorder for diagnostics (`-trace-dir`, `-trace-slow`, `-trace-max-files`, `-trace-gzip` for config)
 - `Fix outcomes:` stderr summary after fix stages (canonical order, nonzero counts only)
 - Config-file `flightRecorder` section — alternative to `-trace` flags; supports `enabled`, `outputDir`, `slowStageThreshold`, `minAge`, `maxBytes` (full parity with pipeline `FlightRecorderFileConfig`)
 - Dynamic detector registry (`RegisterDetector`)

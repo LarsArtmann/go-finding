@@ -555,7 +555,7 @@ func TestFlightRecorderHook_ConcurrentStageEventsSafe(t *testing.T) {
 // each snapshot prunes the oldest go-finding-trace-* files beyond the cap.
 // Unrelated files in the output dir are never touched.
 func TestFlightRecorderHook_MaxFilesRotation(t *testing.T) {
-	g := NewParallelGomega(t)
+	g := gomega.NewWithT(t)
 
 	dir := t.TempDir()
 
@@ -571,7 +571,7 @@ func TestFlightRecorderHook_MaxFilesRotation(t *testing.T) {
 
 	// Unrelated file must survive pruning.
 	keep := filepath.Join(dir, "unrelated.txt")
-	g.Expect(os.WriteFile(keep, []byte("keep"), 0o600)).NotTo(HaveOccurred())
+	g.Expect(os.WriteFile(keep, []byte("keep"), 0o600)).NotTo(gomega.HaveOccurred())
 
 	for i := range 4 {
 		path, snapErr := hook.Snapshot(context.Background(), fmt.Sprintf("rot%d", i))
@@ -579,7 +579,7 @@ func TestFlightRecorderHook_MaxFilesRotation(t *testing.T) {
 			t.Fatalf("snapshot %d: %v", i, snapErr)
 		}
 
-		g.Expect(path).To(HaveSuffix(".trace"))
+		g.Expect(path).To(gomega.HaveSuffix(".trace"))
 	}
 
 	entries, err := os.ReadDir(dir)
@@ -594,16 +594,16 @@ func TestFlightRecorderHook_MaxFilesRotation(t *testing.T) {
 		}
 	}
 
-	g.Expect(traces).To(HaveLen(2), "MaxFiles=2 must prune older snapshots")
-	g.Expect(traces[0]).To(ContainSubstring("rot2"), "newest snapshots survive")
-	g.Expect(traces[1]).To(ContainSubstring("rot3"))
-	g.Expect(filepath.Join(dir, "unrelated.txt")).To(BeAnExistingFile())
+	g.Expect(traces).To(gomega.HaveLen(2), "MaxFiles=2 must prune older snapshots")
+	g.Expect(traces[0]).To(gomega.ContainSubstring("rot2"), "newest snapshots survive")
+	g.Expect(traces[1]).To(gomega.ContainSubstring("rot3"))
+	g.Expect(filepath.Join(dir, "unrelated.txt")).To(gomega.BeAnExistingFile())
 }
 
 // TestFlightRecorderHook_GzipCompression verifies f/47: Compress writes a
 // .trace.gz file whose payload gunzips to non-empty trace data.
 func TestFlightRecorderHook_GzipCompression(t *testing.T) {
-	g := NewParallelGomega(t)
+	g := gomega.NewWithT(t)
 
 	dir := t.TempDir()
 
@@ -622,7 +622,7 @@ func TestFlightRecorderHook_GzipCompression(t *testing.T) {
 		t.Fatalf("Snapshot: %v", err)
 	}
 
-	g.Expect(path).To(HaveSuffix(".trace.gz"))
+	g.Expect(path).To(gomega.HaveSuffix(".trace.gz"))
 
 	f, err := os.Open(path)
 	if err != nil {
@@ -643,13 +643,13 @@ func TestFlightRecorderHook_GzipCompression(t *testing.T) {
 		t.Fatalf("ReadAll: %v", err)
 	}
 
-	g.Expect(data).NotTo(BeEmpty(), "gunzipped payload must contain trace bytes")
+	g.Expect(data).NotTo(gomega.BeEmpty(), "gunzipped payload must contain trace bytes")
 }
 
 // TestFlightRecorderHook_NoRotationByDefault verifies MaxFiles=0 (default)
 // keeps every snapshot.
 func TestFlightRecorderHook_NoRotationByDefault(t *testing.T) {
-	g := NewParallelGomega(t)
+	g := gomega.NewWithT(t)
 
 	dir := t.TempDir()
 
@@ -678,5 +678,5 @@ func TestFlightRecorderHook_NoRotationByDefault(t *testing.T) {
 		}
 	}
 
-	g.Expect(count).To(Equal(3), "default MaxFiles=0 must not prune")
+	g.Expect(count).To(gomega.Equal(3), "default MaxFiles=0 must not prune")
 }

@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -297,10 +296,8 @@ func (h *FlightRecorderHook) writeSnapshot(ctx context.Context, num int, reason 
 		return "", fmt.Errorf("create trace file %s: %w", path, err)
 	}
 
-	var sink io.Writer = f
 	if h.config.Compress {
 		gz := gzip.NewWriter(f)
-		sink = gz
 
 		h.writeMu.Lock()
 		_, writeErr := h.fr.WriteTo(gz)

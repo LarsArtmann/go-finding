@@ -7,6 +7,12 @@ For root-level changes, see the [root CHANGELOG.md](../../CHANGELOG.md).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- **`-trace-max-files` / `-trace-gzip` flags** — Flight-recorder rotation and gzip compression (config-file fields `flightRecorder.maxFiles` / `flightRecorder.compress` at full parity).
+
 ## [1.8.0] - 2026-09-08
 
 ### Added
