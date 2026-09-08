@@ -37,6 +37,7 @@ This guide covers all configuration options for go-finding: CLI flags, YAML/JSON
 | `-generated-include`      | string   | `""`    | Comma-separated glob patterns restricting generated-filtering scope                             |
 | `-byte-level-conflict`    | bool     | `false` | Enable precise byte-level conflict detection for overlapping fixes                              |
 | `-fix-provider`           | string   | `""`    | Comma-separated fix provider names to enable (e.g., `go-ast`)                                   |
+| `-fix-rollback-all`       | bool     | `false` | Roll back ALL files when any file fails during fix (default: only the failing file is restored) |
 | `-include-suppressed`     | bool     | `true`  | Include suppressed findings in SARIF output                                                     |
 | `-trace`                  | bool     | `false` | Enable Go execution trace flight recorder                                                       |
 | `-trace-dir`              | string   | `""`    | Directory for trace snapshot files (default: temp dir)                                          |

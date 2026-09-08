@@ -44,6 +44,7 @@ type cliFlags struct {
 	generatedInclude  string
 	byteLevelConflict bool
 	fixProviders      string
+	fixRollbackAll    bool
 	includeSuppressed bool
 	trace             bool
 	traceDir          string
@@ -108,6 +109,10 @@ func parseFlags() cliFlags {
 	flag.StringVar(
 		&f.fixProviders, "fix-provider", "",
 		"comma-separated fix provider names to enable (e.g., go-ast)",
+	)
+	flag.BoolVar(
+		&f.fixRollbackAll, "fix-rollback-all", false,
+		"roll back ALL files when any file fails during fix (default: only the failing file is restored)",
 	)
 	flag.BoolVar(
 		&f.includeSuppressed, "include-suppressed", true,
@@ -187,6 +192,10 @@ func run() int {
 
 	if f.byteLevelConflict || cfg.ByteLevelConflictDetection {
 		pipelineCfg.ByteLevelConflictDetection = true
+	}
+
+	if f.fixRollbackAll || cfg.FixRollbackAllFiles {
+		pipelineCfg.FixRollbackAllFiles = true
 	}
 
 	if f.filterGenerated || cfg.FilterGenerated {

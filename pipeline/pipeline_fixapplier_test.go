@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -234,3 +235,72 @@ func TestFixApplier_RangeFixEmptyBeforeCode(t *testing.T) {
 }
 
 // BenchmarkParallelDetection benchmarks parallel vs sequential detection.
+
+// TestPipelineRun_FixRollbackAllFiles_Wiring verifies that
+// Config.FixRollbackAllFiles reaches the applier through pipeline.New: with
+// the default policy a hard file error keeps fixes applied to earlier files,
+// with the AllFiles policy earlier files are rolled back (issue #28).
+func TestPipelineRun_FixRollbackAllFiles_Wiring(t *testing.T) {
+	scenarios := []struct {
+		name        string
+		rollbackAll bool
+		wantFileA   string
+	}{
+		{
+			name:        "default keeps earlier file fixes",
+			rollbackAll: false,
+			wantFileA:   "package a\nnewA()\n",
+		},
+		{
+			name:        "AllFiles rolls back earlier files",
+			rollbackAll: true,
+			wantFileA:   "package a\noldA()\n",
+		},
+	}
+
+	for _, tc := range scenarios {
+		t.Run(tc.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
+
+			tempDir := t.TempDir()
+
+			fileA := filepath.Join(tempDir, "a.go")
+			writeTestFile(t, fileA, []byte("package a\noldA()\n"))
+
+			fileB := filepath.Join(tempDir, "b.go")
+			writeTestFile(t, fileB, []byte("package b\noldB()\n"))
+			errChmod := os.Chmod(fileB, 0o444) //nolint:gosec // intentional read-only for test
+			g.Expect(errChmod).NotTo(HaveOccurred())
+			t.Cleanup(func() {
+				_ = os.Chmod(fileB, 0o644) //nolint:gosec // restore permissions in cleanup
+			})
+
+			config := DefaultConfig()
+			config.ParallelDetectors = false
+			config.MaxIterations = 1
+			config.FixRollbackAllFiles = tc.rollbackAll
+
+			detector := &mockDetector{
+				name: "fixer",
+				findings: []finding.Finding{
+					makeFixFinding("fix-a", "oldA()", "newA()", "a.go", 0),
+					makeFixFinding("fix-b", "oldB()", "newB()", "b.go", 0),
+				},
+			}
+
+			p, err := New(config, tempDir, detector)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			_, runErr := p.Run(context.Background())
+			g.Expect(runErr).To(HaveOccurred())
+
+			contentA, readErr := readFile(fileA)
+			g.Expect(readErr).NotTo(HaveOccurred())
+			g.Expect(string(contentA)).To(Equal(tc.wantFileA))
+
+			contentB, readErr := readFile(fileB)
+			g.Expect(readErr).NotTo(HaveOccurred())
+			g.Expect(string(contentB)).To(Equal("package b\noldB()\n"))
+		})
+	}
+}

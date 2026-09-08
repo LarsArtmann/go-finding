@@ -298,3 +298,61 @@ func TestRun_E2E_FilterGenerated(t *testing.T) {
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(string(outTypes)).To(ContainSubstring("Done:"))
 }
+
+// TestRun_E2E_FixRollbackAll_Flag verifies the -fix-rollback-all flag is
+// accepted and the CLI completes a normal run with it (smoke: catches flag
+// registration typos; full rollback behavior is covered by pipeline tests).
+func TestRun_E2E_FixRollbackAll_Flag(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	bin := buildBinary(t)
+	tmpDir := t.TempDir()
+	initGoModule(t, tmpDir)
+
+	goFile := filepath.Join(tmpDir, "main.go")
+	g.Expect(os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644)).
+		NotTo(HaveOccurred())
+
+	cmd := exec.CommandContext( //nolint:gosec // E2E test
+		context.Background(),
+		bin,
+		"-dir="+tmpDir,
+		"-fix-rollback-all",
+	)
+	out, err := cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(out)).NotTo(ContainSubstring("flag provided but not defined"))
+}
+
+// TestRun_E2E_FixRollbackAllViaConfigFile verifies the config-file field
+// fixRollbackAllFiles parses and the CLI completes a normal run with it.
+func TestRun_E2E_FixRollbackAllViaConfigFile(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	bin := buildBinary(t)
+	tmpDir := t.TempDir()
+	initGoModule(t, tmpDir)
+
+	cfgContent := `
+maxIterations: 1
+detectors:
+  - name: govet
+fixRollbackAllFiles: true
+`
+	cfgFile := filepath.Join(tmpDir, "config.yaml")
+	g.Expect(os.WriteFile(cfgFile, []byte(cfgContent), 0o644)).NotTo(HaveOccurred())
+
+	goFile := filepath.Join(tmpDir, "main.go")
+	g.Expect(os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644)).
+		NotTo(HaveOccurred())
+
+	cmd := exec.CommandContext( //nolint:gosec // E2E test
+		context.Background(),
+		bin,
+		"-config="+cfgFile,
+		"-dir="+tmpDir,
+	)
+	out, err := cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(out)).NotTo(ContainSubstring("unknown field"))
+}
