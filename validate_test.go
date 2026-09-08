@@ -568,6 +568,7 @@ func TestFinding_Key(t *testing.T) {
 
 	otherMessage := composite
 	otherMessage.Message = "different"
+
 	if otherMessage.Key() == composite.Key() {
 		t.Error("same position but different messages must produce different keys")
 	}

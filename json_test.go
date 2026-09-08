@@ -54,6 +54,7 @@ func TestFinding_WriteJSON_NewlineError(t *testing.T) {
 
 	// Pass 2: fail exactly the last write — the trailing newline.
 	var buf bytes.Buffer
+
 	w := &failOnNthWriter{w: &buf, n: counter.writes - 1}
 
 	err := f.WriteJSON(w)
@@ -68,6 +69,7 @@ type writeCounter struct {
 
 func (c *writeCounter) Write(p []byte) (int, error) {
 	c.writes++
+
 	return len(p), nil
 }
 
