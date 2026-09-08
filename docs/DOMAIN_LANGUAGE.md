@@ -119,8 +119,12 @@ Things that happen in the domain.
 | ------------------ | -------------------------------------------------------------- | ----------------------------- |
 | StageHook          | Interface for before/after stage boundary notifications        | Abort on error                |
 | FlightRecorderHook | Wraps `runtime/trace.FlightRecorder`; snapshots on slow stages | Diagnostic-only, never aborts |
-| Metrics            | Timing and count data: stage durations, detector times, fixes  | Collected during pipeline run |
-| MetricsSnapshot    | Immutable point-in-time copy of Metrics                        | Returned in PipelineResult    |
+| Metrics            | Timing and count data: stage durations, detector times, fixes, per-finding fix outcome counts (`RecordOutcome`/`OutcomeCounts`) | Collected during pipeline run |
+| MetricsSnapshot    | Immutable point-in-time copy of Metrics (incl. `OutcomeCounts`) | Returned in PipelineResult    |
+
+The outcome counts aggregate the statuses defined in
+[Fix Application (pipeline)](#fix-application-pipeline); rollback semantics are
+defined there as well.
 
 ---
 
