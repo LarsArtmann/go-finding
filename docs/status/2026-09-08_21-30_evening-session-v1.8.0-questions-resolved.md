@@ -12,11 +12,11 @@
 
 ## The 3 Questions (§g of the 18-48 report) — RESOLVED
 
-| Q | Decision | Evidence |
-| --- | --- | --- |
+| Q                      | Decision                                    | Evidence                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Q1** tag remediation | **v1.8.0** — full minor release, not v1.7.1 | Blast radius quantified first (f/3): scratch modules proved `pipeline@v1.7.0` and `analysis@v1.7.0` compile standalone against core v1.6.0 — drift was metadata-wrong, non-breaking. v1.7.1 patch tags at master would have leaked the unreleased minor features (OnFixOutcome, ApplyDryRun, GroupID validation) into a patch release. The [Unreleased] tail was stress-gated green first (f/16). |
-| **Q2** commit hygiene | **Accept daemon absorption** | Daemon sweeps within seconds (measured twice: absorbed my staged batch mid-commit). Racing it is futile; accurate records live in session reports + fix partial batches on sight. |
-| **Q3** pre-commit cost | **Keep as-is** | `nix fmt -- --fail-on-change`: ~113ms warm, ~1s cold eval. Negligible even at daemon frequency. |
+| **Q2** commit hygiene  | **Accept daemon absorption**                | Daemon sweeps within seconds (measured twice: absorbed my staged batch mid-commit). Racing it is futile; accurate records live in session reports + fix partial batches on sight.                                                                                                                                                                                                                 |
+| **Q3** pre-commit cost | **Keep as-is**                              | `nix fmt -- --fail-on-change`: ~113ms warm, ~1s cold eval. Negligible even at daemon frequency.                                                                                                                                                                                                                                                                                                   |
 
 ## v1.8.0 Release Record
 
