@@ -352,13 +352,14 @@ func severityFromLSP(sev LSPSeverity) Severity {
 }
 
 // parseLSPDiagnosticTags parses a comma-separated tag list as written by
-// FromLSP into LSPDiagnosticTag values. Malformed entries are skipped.
+// FromLSP into LSPDiagnosticTag values. Malformed entries and non-positive
+// numbers (LSP tags start at 1) are skipped.
 func parseLSPDiagnosticTags(s string) []LSPDiagnosticTag {
 	parts := strings.Split(s, ",")
 
 	tags := make([]LSPDiagnosticTag, 0, len(parts))
 	for _, p := range parts {
-		if n, err := strconv.Atoi(strings.TrimSpace(p)); err == nil {
+		if n, err := strconv.Atoi(strings.TrimSpace(p)); err == nil && n > 0 {
 			tags = append(tags, LSPDiagnosticTag(n))
 		}
 	}
