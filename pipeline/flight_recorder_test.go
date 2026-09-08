@@ -1,10 +1,14 @@
 package pipeline
 
 import (
+	"compress/gzip"
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -640,7 +644,6 @@ func TestFlightRecorderHook_GzipCompression(t *testing.T) {
 	}
 
 	g.Expect(data).NotTo(BeEmpty(), "gunzipped payload must contain trace bytes")
-	g.Expect(data[0]).To(Equal(byte(0x00)), "trace header: 'go 1.' header starts with 0x00? no — first byte of trace is 'g'")
 }
 
 // TestFlightRecorderHook_NoRotationByDefault verifies MaxFiles=0 (default)
