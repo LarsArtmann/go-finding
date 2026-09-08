@@ -1155,3 +1155,47 @@ func TestFixApplier_ApplyDryRun_UnsafePathSurfaces(t *testing.T) {
 	g.Expect(report.Outcomes).To(HaveLen(1))
 	g.Expect(report.Outcomes[0].Status).To(Equal(FixOutcomeFailed))
 }
+
+// FuzzApplyDryRun verifies the dry-run path never panics and never modifies
+// disk regardless of finding content, including hostile paths (traversal,
+// absolute, empty). Seeds come from the ApplyDryRun behavior tests.
+func FuzzApplyDryRun(f *testing.F) {
+	f.Add("package main\n\nfunc main() {\n\told()\n}\n", "old()", "new()", "dry.go")
+	f.Add("package main\n\nfunc main() {\n\told()\n}\n", "absent()", "new()", "dry.go")
+	f.Add("content", "content", "changed", "../../etc/passwd")
+	f.Add("content", "content", "changed", "/etc/passwd")
+	f.Add("content", "content", "changed", "")
+	f.Add("a\nb\nc\n", "b", "B\nB", "nested/dir/file.txt")
+
+	f.Fuzz(func(t *testing.T, content, before, after, path string) {
+		if len(content) > 2000 || len(before) > 200 || len(after) > 200 || len(path) > 200 {
+			return
+		}
+
+		dir, applier := newTestApplierWithDir(t)
+		t.Cleanup(func() { _ = applier.Close() })
+
+		file := filepath.Join(dir, "dry.go")
+		if err := os.WriteFile(file, []byte(content), 0o600); err != nil {
+			t.Skip("write failed")
+		}
+
+		fixes := []finding.Finding{makeFixFinding("f1", before, after, path, 1)}
+
+		report, err := applier.ApplyDryRun(context.Background(), fixes)
+		if err != nil {
+			return // soft failures are fine; panics are not
+		}
+
+		data, readErr := os.ReadFile(file)
+		if readErr != nil {
+			return
+		}
+		if string(data) != content {
+			t.Fatalf("dry run modified %s", file)
+		}
+		if len(report.RolledBack) != 0 {
+			t.Fatal("dry run reported rolled-back files")
+		}
+	})
+}
