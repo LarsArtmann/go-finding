@@ -702,7 +702,9 @@ func (*saboteurProvider) CanHandle(f finding.Finding) bool {
 func (s *saboteurProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
 	bakPath := s.backup.BackupPath(s.targetPath)
 	if bakPath != "" {
-		_ = os.Remove(bakPath) //nolint:gosec // G703: intentional path manipulation in test saboteur
+		_ = os.Remove(
+			bakPath,
+		) //nolint:gosec // G703: intentional path manipulation in test saboteur
 	}
 
 	idx := bytes.Index(content, []byte(f.BeforeCode))
@@ -769,8 +771,8 @@ func TestFixApplier_RollbackErrorNotSwallowed(t *testing.T) {
 // rollback policies.
 func TestFixApplier_ApplyWithReport_CancelledContext(t *testing.T) {
 	scenarios := []struct {
-		name     string
-		rollAll  bool
+		name    string
+		rollAll bool
 	}{{name: "default", rollAll: false}, {name: "AllFiles", rollAll: true}}
 
 	for _, tc := range scenarios {
@@ -817,9 +819,9 @@ func TestFixApplier_ApplyWithReport_CancelledContext(t *testing.T) {
 // AllFiles policy rolls them back.
 func TestFixApplier_ApplyWithReport_BackupFailure(t *testing.T) {
 	scenarios := []struct {
-		name        string
-		rollAll     bool
-		wantFileA   string
+		name      string
+		rollAll   bool
+		wantFileA string
 	}{
 		{
 			name:      "default keeps earlier file fixes",
@@ -848,7 +850,10 @@ func TestFixApplier_ApplyWithReport_BackupFailure(t *testing.T) {
 
 			fileB := filepath.Join(tempDir, "second.go")
 			writeTestFile(t, fileB, []byte("package second\nold2()\n"))
-			errChmod := os.Chmod(fileB, 0o000) //nolint:gosec // unreadable on purpose: backup open fails
+			errChmod := os.Chmod(
+				fileB,
+				0o000,
+			) //nolint:gosec // unreadable on purpose: backup open fails
 			g.Expect(errChmod).NotTo(HaveOccurred())
 			t.Cleanup(func() {
 				_ = os.Chmod(fileB, 0o644) //nolint:gosec // restore permissions in cleanup

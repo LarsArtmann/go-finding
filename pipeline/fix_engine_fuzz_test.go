@@ -55,7 +55,12 @@ func FuzzApplyEditsToContent(f *testing.F) {
 		}
 
 		if len(result) != expectedLen {
-			t.Errorf("length mismatch: got %d, want %d (content=%d)", len(result), expectedLen, len(content))
+			t.Errorf(
+				"length mismatch: got %d, want %d (content=%d)",
+				len(result),
+				expectedLen,
+				len(content),
+			)
 		}
 	})
 }
@@ -172,7 +177,7 @@ func naiveApplyEdits(content []byte, edits []FixEdit) []byte {
 // content, valid outcome statuses, and consistency between the applied list
 // and the outcome counts.
 func FuzzApplyWithOutcomes(f *testing.F) {
-	f.Add([]byte("old() and old()"), 0, 5, byte(0)) // offset fix
+	f.Add([]byte("old() and old()"), 0, 5, byte(0))              // offset fix
 	f.Add([]byte("line1: old()\nline2: old()"), 100, 5, byte(1)) // unresolvable position
 	f.Add([]byte(""), 0, 1, byte(0))                             // empty content
 	f.Add([]byte("x"), 0, 1, byte(2))                            // no code change
@@ -230,18 +235,22 @@ func FuzzApplyWithOutcomes(f *testing.F) {
 		}
 
 		if len(result.Outcomes) != len(fixes) {
-			t.Fatalf("outcomes = %d, want %d (one per input finding)", len(result.Outcomes), len(fixes))
+			t.Fatalf(
+				"outcomes = %d, want %d (one per input finding)",
+				len(result.Outcomes),
+				len(fixes),
+			)
 		}
 
 		counts := result.OutcomeCounts()
 
 		validStatuses := map[FixOutcomeStatus]bool{
-			FixOutcomeApplied:   true,
-			FixOutcomeNoChange:  true,
-			FixOutcomeRefused:   true,
-			FixOutcomeConflict:  true,
-			FixOutcomeInvalid:   true,
-			FixOutcomeFailed:    true,
+			FixOutcomeApplied:  true,
+			FixOutcomeNoChange: true,
+			FixOutcomeRefused:  true,
+			FixOutcomeConflict: true,
+			FixOutcomeInvalid:  true,
+			FixOutcomeFailed:   true,
 		}
 
 		appliedOutcomes := 0
@@ -257,7 +266,11 @@ func FuzzApplyWithOutcomes(f *testing.F) {
 		}
 
 		if counts[FixOutcomeApplied] != appliedOutcomes {
-			t.Fatalf("OutcomeCounts applied = %d, want %d", counts[FixOutcomeApplied], appliedOutcomes)
+			t.Fatalf(
+				"OutcomeCounts applied = %d, want %d",
+				counts[FixOutcomeApplied],
+				appliedOutcomes,
+			)
 		}
 
 		if counts[FixOutcomeApplied] != len(result.Applied) {

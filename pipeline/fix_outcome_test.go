@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"errors"
-
 	"testing"
 
 	"github.com/larsartmann/go-finding"
