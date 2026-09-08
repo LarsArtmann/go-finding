@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No core-module changes yet.
 
+## [1.9.1] - 2026-09-08
+
+Test-only patch release: no production code changes in any module. Tags exist so the Release workflow finally runs green on a public repo (the v1.9.0 run failed in its test job on an environment-flaky test, before reaching GoReleaser).
+
+### Fixed
+
+- **`TestFinding_WriteJSON_NewlineError` made environment-robust** — The test pinned the Nth write call, but the encoder's internal flush granularity is not contractual and varies across environments (the same commit passed CI's test job and failed the Release run's). It now fails exactly the semantic target — the single-byte `\n` trailing-newline write — via a writer that rejects only that payload. Also: `docs-api-check.sh` now exits loudly (code 2) when ripgrep is missing instead of reporting every identifier as absent, and its CI job installs ripgrep; the CI stress job is split per suite type (ginkgo suites reject `go test -count>1`).
+
 ## [1.9.0] - 2026-09-08
 
 No core-module API changes. Pipeline: flight-recorder `MaxFiles` rotation + `Compress` (gzip) snapshots, with rotation now serialized against concurrent writes — see `pipeline/CHANGELOG.md`. CLI: `-trace-max-files` / `-trace-gzip` flags; staticcheck parser regression-guarded against real tool output.

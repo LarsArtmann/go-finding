@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 No pipeline-module changes yet.
 
+## [1.9.1] - 2026-09-08
+
+Version-alignment release with core v1.9.1. No pipeline-module code changes.
+
 ## [1.9.0] - 2026-09-08
 
 ### Added
