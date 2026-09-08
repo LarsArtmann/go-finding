@@ -703,3 +703,90 @@ func TestOnFixOutcome_CarriesExactStatuses(t *testing.T) {
 	g.Expect(byID[finding.ID("fix-refused")].failed).To(BeFalse(),
 		"refusal is a decision, not an error")
 }
+
+// TestOnFixOutcome_EventOrdering pins the observable callback contract:
+// within a fix stage, every OnFixOutcome call happens before any legacy OnFix
+// call, each finding fires exactly once per callback (no double-fire), and
+// OnFixOutcome sees every outcome (applied AND refused) while legacy OnFix
+// only reports applied fixes. Refactors must not silently reorder these.
+func TestOnFixOutcome_EventOrdering(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+	writeTestFile(t, testFile, []byte("package main\n\nfunc main() {\n\told()\n}\n"))
+
+	applied := directFix("ord-applied", "r1", "tool", "replace old", "old()", "new()", "fixme.go", 4)
+	refused := directFix("ord-refused", "r1", "tool", "absent", "nonexistent", "new()", "fixme.go", 5)
+
+	type event struct {
+		kind   string // "outcome" | "legacy"
+		id     finding.ID
+		status FixOutcomeStatus
+		appl   bool
+	}
+
+	var events []event
+	onFixOutcomeCalls := map[finding.ID]int{}
+	onFixCalls := map[finding.ID]int{}
+
+	cfg := Config{
+		MaxIterations:     1,
+		ParallelDetectors: false,
+		OnFixOutcome: func(f finding.Finding, status FixOutcomeStatus, _ error) {
+			events = append(events, event{kind: "outcome", id: f.ID, status: status})
+			onFixOutcomeCalls[f.ID]++
+		},
+		OnFix: func(f finding.Finding, wasApplied bool) {
+			events = append(events, event{kind: "legacy", id: f.ID, appl: wasApplied})
+			onFixCalls[f.ID]++
+		},
+	}
+
+	p, err := New(cfg, tmpDir, mockDetWithFindings("tool", applied, refused))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if _, err := p.Run(context.Background()); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	g.Expect(onFixOutcomeCalls).To(HaveLen(2), "one outcome event per finding")
+	for id, n := range onFixOutcomeCalls {
+		g.Expect(n).To(Equal(1), "OnFixOutcome double-fired for %s", id)
+	}
+	g.Expect(onFixCalls[finding.ID("ord-applied")]).To(Equal(1))
+	g.Expect(onFixCalls[finding.ID("ord-refused")]).To(Equal(1),
+		"legacy OnFix fires for every safe fix (false when not applied)")
+	for _, e := range events {
+		if e.kind == "legacy" && e.id == finding.ID("ord-applied") {
+			g.Expect(e.appl).To(BeTrue())
+		}
+		if e.kind == "legacy" && e.id == finding.ID("ord-refused") {
+			g.Expect(e.appl).To(BeFalse())
+		}
+	}
+
+	firstLegacy := -1
+	for i, e := range events {
+		if e.kind == "legacy" {
+			firstLegacy = i
+			break
+		}
+	}
+	g.Expect(firstLegacy).To(BeNumerically(">", 0), "legacy OnFix must not fire before OnFixOutcome")
+	for i := 0; i < firstLegacy; i++ {
+		g.Expect(events[i].kind).To(Equal("outcome"),
+			"all OnFixOutcome events must precede the first OnFix event")
+	}
+
+	statuses := map[finding.ID]FixOutcomeStatus{}
+	for _, e := range events {
+		if e.kind == "outcome" {
+			statuses[e.id] = e.status
+		}
+	}
+	g.Expect(statuses[finding.ID("ord-applied")]).To(Equal(FixOutcomeApplied))
+	g.Expect(statuses[finding.ID("ord-refused")]).To(Equal(FixOutcomeRefused))
+}

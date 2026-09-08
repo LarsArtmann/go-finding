@@ -384,3 +384,46 @@ func TestRun_E2E_FixOutcomesLine_AbsentWithoutFixableFindings(t *testing.T) {
 	g.Expect(string(out)).NotTo(ContainSubstring("Fix outcomes:"),
 		"no fix-emitting detector ran; the summary must stay absent")
 }
+
+// TestRun_E2E_FixOutcomesLine_PresentWithFixableFindings drives the FULL
+// production path end to end: the CLI's staticcheck detector shells out to a
+// `staticcheck` binary, which this test replaces with the fakestcheck fixture
+// (built from testdata/fakestcheck) via PATH. The fixture emits a finding
+// carrying the before/after fix extension, so triage marks it Direct, the
+// SubstringProvider applies it, and the "Fix outcomes:" summary must appear
+// with an applied count.
+func TestRun_E2E_FixOutcomesLine_PresentWithFixableFindings(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	bin := buildBinary(t)
+
+	fixtureDir := t.TempDir()
+	fixture := filepath.Join(fixtureDir, "staticcheck")
+	build := exec.CommandContext(context.Background(), "go", "build", "-o", fixture, "./testdata/fakestcheck")
+	build.Dir, _ = filepath.Abs(".")
+	out, err := build.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred(), "build fixture: %s", string(out))
+
+	tmpDir := t.TempDir()
+	initGoModule(t, tmpDir)
+
+	goFile := filepath.Join(tmpDir, "main.go")
+	g.Expect(os.WriteFile(goFile, []byte("package main\n\nfunc main() {\n\told()\n}\n"), 0o644)).
+		NotTo(HaveOccurred())
+
+	cmd := exec.CommandContext( //nolint:gosec // E2E test
+		context.Background(),
+		bin,
+		"-dir="+tmpDir,
+	)
+	cmd.Env = append(os.Environ(), "PATH="+fixtureDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	out, err = cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(string(out)).To(ContainSubstring("Fix outcomes:"), "fix-emitting detector ran; summary must appear")
+	g.Expect(string(out)).To(ContainSubstring("applied=1"), "the one fixture fix must be applied: %s", string(out))
+
+	fixed, readErr := os.ReadFile(goFile)
+	g.Expect(readErr).NotTo(HaveOccurred())
+	g.Expect(string(fixed)).To(ContainSubstring("new()"), "the fix must be written to disk")
+	g.Expect(string(fixed)).NotTo(ContainSubstring("old()"))
+}

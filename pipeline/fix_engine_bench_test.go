@@ -1,7 +1,10 @@
 package pipeline
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -261,3 +264,49 @@ func BenchmarkFixEngine_ApplyWithOutcomes_Mixed_1000(b *testing.B) {
 	content := generateContent(10000)
 	benchmarkApplyWithOutcomes(b, generateMixedOutcomeFixes(1000, content))
 }
+
+// benchmarkFixApplierRun measures ApplyWithReport (writes + backups) vs
+// ApplyDryRun (read-only) on the same fix set, quantifying the plan-mode cost.
+func benchmarkFixApplierRun(b *testing.B, dryRun bool) {
+	b.Helper()
+
+	const lines = 200
+
+	content := generateContent(lines)
+
+	dir := b.TempDir()
+	file := filepath.Join(dir, "bench.go")
+	if err := os.WriteFile(file, content, 0o600); err != nil {
+		b.Fatal(err)
+	}
+
+	fixes := generateOffsetFixes(50, content)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		applier, err := NewFixApplier(dir)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		if dryRun {
+			if _, err := applier.ApplyDryRun(context.Background(), fixes); err != nil {
+				b.Fatal(err)
+			}
+		} else if _, err := applier.ApplyWithReport(context.Background(), fixes); err != nil {
+			b.Fatal(err)
+		}
+
+		_ = applier.Close()
+
+		// Restore original content so iterations are identical.
+		if err := os.WriteFile(file, content, 0o600); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkFixApplier_ApplyWithReport_50(b *testing.B) { benchmarkFixApplierRun(b, false) }
+func BenchmarkFixApplier_ApplyDryRun_50(b *testing.B)     { benchmarkFixApplierRun(b, true) }

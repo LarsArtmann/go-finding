@@ -59,6 +59,12 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 				Column int    `json:"column"`
 			} `json:"location"`
 			Message string `json:"message"`
+			// Before/After are an optional go-finding extension to the
+			// staticcheck JSON line format: when both are present the finding
+			// is auto-fixable (FixStrategyDirect with literal replacement)
+			// instead of suggest-only. Real staticcheck output omits them.
+			Before string `json:"before"`
+			After  string `json:"after"`
 		}
 
 		err := json.Unmarshal([]byte(line), &entry)
@@ -79,6 +85,13 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 
 		cat := staticcheckCategory(entry.Code)
 
+		strategy := finding.FixStrategySuggest
+		var before, after string
+		if entry.Before != "" && entry.After != "" {
+			strategy = finding.FixStrategyDirect
+			before, after = entry.Before, entry.After
+		}
+
 		findings = append(findings, finding.Finding{
 			ID:          finding.GenerateID(DetectorNameStaticcheck, finding.RuleName(entry.Code), pos),
 			Rule:        finding.RuleName(entry.Code),
@@ -87,7 +100,9 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 			Severity:    sev,
 			Position:    pos,
 			Category:    cat,
-			FixStrategy: finding.FixStrategySuggest,
+			FixStrategy: strategy,
+			BeforeCode:  before,
+			AfterCode:   after,
 			Confidence:  defaultStaticcheckConfidence,
 		})
 	}
