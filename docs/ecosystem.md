@@ -140,38 +140,43 @@ go-error-family ← go-finding ← ┬─ go-linter-sdk
 
 All roads lead to go-finding. No SDK depends on another SDK. Each SDK depends only on go-finding (plus its own utility deps), keeping the dependency graph flat and composable.
 
-## Consumer Version Sweep (2026-09-08, post-v1.7.0)
+## Consumer Version Sweep (2026-09-08, post-v1.9.0)
 
-Survey of local consumer repos. **Migration relevance:** only `pipeline`-importing
-consumers are affected by the v1.7.0 rollback-default change (ADR-016);
-`core-only` consumers are unaffected (no behavior change in the core package).
+Survey of local consumer repos. **v1.9.0 is additive only** (flight-recorder
+rotation + gzip; no migration needed). The v1.7.0 rollback-default change
+(ADR-016) remains the last migration-relevant change for `pipeline` consumers.
 Upgrade guide: [docs/guides/consumer-migration-v1.7.md](guides/consumer-migration-v1.7.md).
 
-| Consumer                     | go-finding | Pipeline? | Rollback migration needed | Last activity |
-| ---------------------------- | ---------- | --------- | ------------------------- | ------------- |
-| go-humanize-linter           | v1.7.0     | no        | no                        | 2026-09-08    |
-| go-linter-sdk (v0.3.0)       | v1.7.0     | no        | no                        | 2026-09-08    |
-| BuildFlow                    | v1.6.0     | yes       | **yes**                   | 2026-09-06    |
-| Code-Quality-Agent           | v1.6.0     | yes       | **yes**                   | 2026-09-06    |
-| erraudit                     | v1.6.0     | yes       | **yes**                   | 2026-09-04    |
-| go-structure-linter          | v1.6.0     | yes       | **yes**                   | 2026-09-06    |
-| hierarchical-errors          | v1.6.0     | yes       | **yes**                   | 2026-08-18    |
-| oxlint-auto-configure        | v1.6.0     | yes       | **yes**                   | 2026-09-04    |
-| template-AUTHORS             | v1.6.0     | yes       | **yes**                   | 2026-09-04    |
-| template-SECURITY            | v1.6.0     | yes       | **yes**                   | 2026-09-04    |
-| Polish-Customs               | v1.6.0     | no        | no                        | 2026-09-04    |
-| go-auto-upgrade              | v1.6.0     | no        | no                        | 2026-09-06    |
-| go-business-rules            | v1.6.0     | no        | no                        | 2026-09-04    |
-| go-checker-helpers           | v1.6.0     | no        | no                        | 2026-09-04    |
-| golangci-lint-auto-configure | v1.6.0     | no        | no                        | 2026-09-03    |
-| library-policy               | v1.6.0     | no        | no                        | 2026-09-04    |
-| linter-autoconfigure-sdk     | v1.6.0     | no        | no                        | 2026-09-04    |
-| template-readme              | v1.6.0     | no        | no                        | 2026-09-04    |
-| branching-flow               | v1.4.1     | no        | no                        | 2026-09-04    |
-| licenseforge                 | v1.4.1     | no        | no                        | 2026-09-04    |
-| md-go-validator              | v1.4.1     | no        | no                        | 2026-09-04    |
-| gomend                       | v1.4.0     | no        | no                        | 2026-09-04    |
-| template-CLI                 | v1.3.0     | no        | no                        | 2026-09-04    |
+| Consumer                     | go-finding | Pipeline? | State (verified 2026-09-08 evening)                                        |
+| ---------------------------- | ---------- | --------- | -------------------------------------------------------------------------- |
+| BuildFlow                    | v1.8.0     | yes       | bumped, builds; `TestNoLintPathExclusions` fails (pre-existing at v1.6.0)  |
+| Code-Quality-Agent           | v1.8.0     | yes       | bumped, vendored, green                                                    |
+| erraudit                     | v1.8.0     | yes       | bumped, builds; `TestRunner_OopsFix_NoFixWhenInterveningWork` pre-existing |
+| go-structure-linter          | v1.8.0     | yes       | bumped, builds; output-suite failure pre-existing                          |
+| hierarchical-errors          | v1.8.0     | yes       | bumped, builds; `TestRunner_OopsFix_NoFixWhenNoGuard` pre-existing         |
+| oxlint-auto-configure        | v1.8.0     | yes       | bumped, vendored, green                                                    |
+| template-AUTHORS             | v1.8.0     | yes       | bumped, green                                                              |
+| template-SECURITY            | v1.8.0     | yes       | bumped, green                                                              |
+| go-humanize-linter           | v1.8.0     | no        | bumped, fully green                                                        |
+| branching-flow               | v1.8.0     | no        | bumped, builds; pkg/errors + pkg/fs build failures pre-existing at v1.4.1  |
+| md-go-validator              | v1.8.0     | no        | bumped, green                                                              |
+| template-CLI                 | v1.8.0     | no        | bumped, green                                                              |
+| Polish-Customs               | v1.8.0     | no        | bumped, green                                                              |
+| go-auto-upgrade              | v1.8.0     | no        | bumped, green                                                              |
+| go-business-rules            | v1.8.0     | no        | bumped, builds; pre-existing test failures                                 |
+| go-checker-helpers           | v1.8.0     | no        | bumped, green                                                              |
+| library-policy               | v1.8.0     | no        | bumped, builds; pre-existing test failures; git hooks issue #74            |
+| linter-autoconfigure-sdk     | v1.8.0     | no        | bumped, green                                                              |
+| template-readme              | v1.8.0     | no        | bumped, green                                                              |
+| go-linter-sdk (v0.3.0)       | v1.7.0     | no        | pending opportunistic bump                                                 |
+| golangci-lint-auto-configure | v1.6.0     | no        | pending opportunistic bump                                                 |
+| licenseforge                 | v1.4.1     | no        | **blocked**: broken buildflow/tool-sdk replace — issue #46                 |
+| gomend                       | v1.4.0     | no        | **blocked**: 12 missing BuildFlow replace targets — issue #1               |
+| art-dupl                     | (none)     | no        | GroupID integration gap (GAP-2); bump + wiring pending                     |
+
+**Pre-existing failures are not go-finding regressions:** every failing repo was
+re-tested at its OLD go-finding version during the v1.8.0 sweep and failed
+identically there.
 
 **Migration note for pipeline consumers (v1.7.0):** the fix rollback scope changed
 from all-files to per-file by default. If your tool relied on all-or-nothing
@@ -180,8 +185,3 @@ semantics, opt back in with `FixApplier.SetRollbackPolicy(RollbackPolicyAllFiles
 `-fix-rollback-all`. Soft per-finding failures no longer abort runs — check
 `ApplyReport.Outcomes` instead of treating any error as total failure. Full guide:
 [docs/guides/consumer-migration-v1.7.md](guides/consumer-migration-v1.7.md).
-
-Two lead consumers are bumped and verified on v1.7.0 (suites green; one
-pre-existing unrelated failure in go-humanize-linter's generated-file detector,
-present on v1.6.0 as well). Remaining consumers upgrade opportunistically — the
-guide covers the one migration-relevant change.
