@@ -37,10 +37,26 @@ go-finding -trace -trace-slow 30s ./...
 
 When any pipeline stage exceeds 30 seconds, a snapshot is captured automatically with a filename like `go-finding-trace-001-detect-iter1.trace`.
 
+### Rotation: Cap Retained Snapshots
+
+```bash
+go-finding -trace -trace-slow 10s -trace-max-files 20 ./...
+```
+
+After each successful snapshot, the oldest `go-finding-trace-*` files beyond the cap are deleted (best-effort, only the hook's own files are ever touched). Default: unlimited. Set this for long `-trace-slow` runs to avoid unbounded disk growth.
+
+### Compressed Snapshots
+
+```bash
+go-finding -trace -trace-gzip ./...
+```
+
+Snapshots are written as `.trace.gz` files (often 5-10x smaller). `go tool trace` does not read gzip directly — gunzip first (see [Analyzing Traces](#analyzing-traces-with-go-tool-trace)).
+
 ### Full Example
 
 ```bash
-go-finding -trace -trace-dir ./traces -trace-slow 10s ./...
+go-finding -trace -trace-dir ./traces -trace-slow 10s -trace-max-files 20 -trace-gzip ./...
 ```
 
 Output:
@@ -65,6 +81,8 @@ flightRecorder:
   slowStageThreshold: "30s"
   minAge: "1m"
   maxBytes: 4194304 # 4 MiB
+  maxFiles: 20 # prune oldest snapshots beyond this cap (0 = unlimited)
+  compress: true # .trace.gz snapshots (gunzip before `go tool trace`)
 ```
 
 ### JSON
@@ -76,7 +94,9 @@ flightRecorder:
     "outputDir": "./traces",
     "slowStageThreshold": "30s",
     "minAge": "1m",
-    "maxBytes": 4194304
+    "maxBytes": 4194304,
+    "maxFiles": 20,
+    "compress": true
   }
 }
 ```
@@ -122,6 +142,8 @@ import "github.com/larsartmann/go-finding/pipeline"
 hook, err := pipeline.NewFlightRecorderHook(pipeline.FlightRecorderConfig{
     OutputDir:          "./traces",
     SlowStageThreshold: 10 * time.Second,
+    MaxFiles:           20, // prune oldest snapshots beyond 20 (0 = unlimited)
+    Compress:           true, // write .trace.gz snapshots
 })
 if err != nil { return err }
 defer hook.Close()
@@ -171,6 +193,17 @@ Trace files are standard Go execution traces. Open them with the built-in tool:
 go tool trace traces/go-finding-trace-001-detect-iter1.trace
 ```
 
+### Compressed Snapshots (.trace.gz)
+
+`go tool trace` cannot read gzip directly. Decompress first:
+
+```bash
+gunzip -k traces/go-finding-trace-001-detect-iter1.trace.gz
+go tool trace traces/go-finding-trace-001-detect-iter1.trace
+```
+
+The `-k` flag keeps the compressed original. The decompressed file is byte-for-byte the trace the recorder produced.
+
 This opens a web browser with interactive views including:
 
 - **View trace** — Timeline of goroutines, network, and syscall blocks
@@ -192,23 +225,27 @@ This opens a web browser with interactive views including:
 
 ## Configuration Reference
 
-| Field                | Type            | Default           | Description                                                 |
-| -------------------- | --------------- | ----------------- | ----------------------------------------------------------- |
-| `OutputDir`          | `string`        | `os.TempDir()`    | Directory for `.trace` snapshot files                       |
-| `SlowStageThreshold` | `time.Duration` | `0` (disabled)    | Auto-snapshot when a stage exceeds this duration            |
-| `MinAge`             | `time.Duration` | `30s`             | How long trace data is reliably retained in the ring buffer |
-| `MaxBytes`           | `uint64`        | `4 MiB` (`4<<20`) | Maximum in-memory buffer size                               |
-| `Logger`             | `*slog.Logger`  | `nil`             | Receives snapshot lifecycle events                          |
+| Field                | Type            | Default           | Description                                                                     |
+| -------------------- | --------------- | ----------------- | ------------------------------------------------------------------------------- |
+| `OutputDir`          | `string`        | `os.TempDir()`    | Directory for `.trace` snapshot files                                           |
+| `SlowStageThreshold` | `time.Duration` | `0` (disabled)    | Auto-snapshot when a stage exceeds this duration                                |
+| `MinAge`             | `time.Duration` | `30s`             | How long trace data is reliably retained in the ring buffer                     |
+| `MaxBytes`           | `uint64`        | `4 MiB` (`4<<20`) | Maximum in-memory buffer size                                                   |
+| `MaxFiles`           | `int`           | `0` (unlimited)   | Cap on retained snapshots; oldest pruned after each write                       |
+| `Compress`           | `bool`          | `false`           | gzip snapshots (`.trace.gz`); gunzip before `go tool trace`                      |
+| `Logger`             | `*slog.Logger`  | `nil`             | Receives snapshot lifecycle events                                              |
 
 ### Config File Fields
 
-| YAML Key             | Type     | Description                               |
-| -------------------- | -------- | ----------------------------------------- |
-| `enabled`            | `bool`   | Must be `true` to activate                |
-| `outputDir`          | `string` | Override the output directory             |
-| `slowStageThreshold` | `string` | Duration string (e.g. `"30s"`, `"2m"`)    |
-| `minAge`             | `string` | Duration string for ring buffer retention |
-| `maxBytes`           | `uint64` | Buffer size in bytes                      |
+| YAML Key             | Type     | Description                                                     |
+| -------------------- | -------- | --------------------------------------------------------------- |
+| `enabled`            | `bool`   | Must be `true` to activate                                      |
+| `outputDir`          | `string` | Override the output directory                                   |
+| `slowStageThreshold` | `string` | Duration string (e.g. `"30s"`, `"2m"`)                           |
+| `minAge`             | `string` | Duration string for ring buffer retention                       |
+| `maxBytes`           | `uint64` | Buffer size in bytes                                            |
+| `maxFiles`           | `int`    | Retained-snapshot cap (prune oldest beyond it; `0` = unlimited)  |
+| `compress`           | `bool`   | gzip snapshot output (`.trace.gz`)                              |
 
 ---
 
@@ -220,13 +257,14 @@ The flight recorder wraps `runtime/trace.FlightRecorder`, which continuously rec
 
 1. **Construction** — `NewFlightRecorderHook` creates the output directory, initializes the `trace.FlightRecorder`, and calls `Start()`.
 2. **Pipeline execution** — Registered as a `StageHook`, it receives `StageBefore` and `StageAfter` events. If `SlowStageThreshold` is set, stages exceeding it trigger an async snapshot.
-3. **Snapshots** — `Snapshot(ctx, reason)` or `writeSnapshot(ctx, num, reason)` calls `fr.WriteTo(file)` to dump the ring buffer to a `.trace` file. A `sync.Mutex` (`writeMu`) serializes concurrent writes. The context is checked for cancellation before writing.
-4. **Shutdown** — `Close()` is idempotent. It waits for in-flight snapshot goroutines to finish, then calls `fr.Stop()`.
+3. **Snapshots** — `Snapshot(ctx, reason)` or `writeSnapshot(ctx, num, reason)` calls `fr.WriteTo(file)` to dump the ring buffer to a `.trace` (or `.trace.gz`) file. A `sync.Mutex` (`writeMu`) serializes concurrent writes and the post-write rotation pass. The context is checked for cancellation before writing.
+4. **Rotation** — when `MaxFiles` is set, each successful snapshot prunes the oldest `go-finding-trace-*` files beyond the cap. Pruning holds `writeMu`, so concurrent snapshots cannot list/delete overlapping sets.
+5. **Shutdown** — `Close()` is idempotent. It waits for in-flight snapshot goroutines to finish, then calls `fr.Stop()`.
 
 ### Thread Safety
 
 - Only one flight recorder can be active globally (Go runtime constraint).
-- `WriteTo` is not safe for concurrent use — `writeMu` serializes calls.
+- `WriteTo` is not safe for concurrent use — `writeMu` serializes calls, including the rotation pass.
 - `Close()` waits for in-flight snapshots before stopping to avoid a data race between `WriteTo` and `Stop`.
 
 ### Error Handling

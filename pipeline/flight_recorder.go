@@ -101,8 +101,9 @@ type FlightRecorderHook struct {
 	degraded      bool
 	snapshotWg    sync.WaitGroup
 
-	// writeMu serializes concurrent WriteTo calls.
-	// runtime/trace.FlightRecorder.WriteTo is NOT safe for concurrent use.
+	// writeMu serializes snapshot file operations: WriteTo calls (which are
+	// NOT safe for concurrent use) and prune listing/deletion, so concurrent
+	// snapshots cannot race each other's rotation.
 	writeMu sync.Mutex
 }
 
@@ -342,10 +343,17 @@ const traceSnapshotPrefix = "go-finding-trace-"
 // pruneSnapshots deletes the oldest snapshot files beyond config.MaxFiles.
 // Best-effort: deletion errors are logged, never returned — pruning must not
 // fail a successful snapshot. A no-op when MaxFiles is unset.
+//
+// Holds writeMu for the entire list-and-delete pass: two concurrent snapshots
+// would otherwise prune overlapping file sets simultaneously (double-remove
+// ENOENT noise) and modtime ties could prune nondeterministically.
 func (h *FlightRecorderHook) pruneSnapshots(ctx context.Context) {
 	if h.config.MaxFiles <= 0 {
 		return
 	}
+
+	h.writeMu.Lock()
+	defer h.writeMu.Unlock()
 
 	entries, err := os.ReadDir(h.config.OutputDir)
 	if err != nil {

@@ -91,7 +91,7 @@ The FlightRecorder feature (`pipeline/flight_recorder.go`) is shipped with confi
 | Trace file rotation (max-files)               | High   | Low    | **SHIPPED ([Unreleased], post-v1.8.0)** — `MaxFiles` config + `-trace-max-files`; prunes oldest beyond cap |
 | Compressed trace output (gzip)                | Med    | Low    | **SHIPPED ([Unreleased], post-v1.8.0)** — `Compress` config + `-trace-gzip`; `.trace.gz` snapshots         |
 | Automatic pprof capture                       | Med    | Med    | Park — useful but duplicates what `runtime/pprof` flags already give operators                             |
-| Continuous trace sampling (1% knob)           | Med    | Low    | Park — rotation has now landed (unblocked); still parked pending a design decision on sampling overhead    |
+| Continuous trace sampling (1% knob)           | Med    | Low    | **NO-GO (decided 2026-09-08)** — rationale below the graduated list                                            |
 | Core package trace helper (`finding/tracing`) | Low    | Med    | Rejected — speculative generalization; only one consumer pattern exists (pipeline)                         |
 | OpenTelemetry bridge                          | Low    | High   | Rejected — adds a heavy dependency for a rare use case in static-analysis tooling                          |
 | Trace diff tool                               | Low    | High   | Rejected — niche debugging aid; belongs in consumer tooling, not the library                               |
@@ -103,6 +103,17 @@ Graduated items (actionable when picked up):
 
 - **Trace file rotation** - Add `MaxFiles` to `FlightRecorderConfig`/`FlightRecorderFileConfig`; on snapshot, delete oldest `.trace` files beyond the cap. Pairs naturally with the existing `MaxBytes` field.
 - **Compressed trace output** - Add `Compress bool` (config `compressed`); wrap snapshot writes in `gzip.Writer` with `.trace.gz` suffix. Default off to preserve `go tool trace` compatibility expectations.
+
+**Sampling NO-GO rationale (decided 2026-09-08, evening session):** Go's
+`runtime/trace.FlightRecorder` has no in-process sampling API — once started it records
+continuously, so a "1% knob" could only sample at the *run* level (enable the recorder for
+N% of pipeline runs). That is 3 lines at the caller's construction site
+(`if rand.Float64() < 0.01 { NewFlightRecorderHook(...) }`) and does not belong in library
+config. Sampling pays off for long-lived servers with ambient, always-on tracing;
+go-finding pipelines are short, explicit runs where the recorder is already opt-in
+(`-trace` / config `enabled: true`) — the user has already decided to pay the cost, and we
+have no overhead measurements suggesting a problem. Revisit trigger: a long-lived consumer
+embedding pipelines that measures FlightRecorder overhead as material.
 
 ### Hardening (owner decisions pending)
 

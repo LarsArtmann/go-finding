@@ -7,6 +7,10 @@ For root-level changes, see the [root CHANGELOG.md](../CHANGELOG.md).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+No analysis-module changes yet.
+
 ## [1.8.0] - 2026-09-08
 
 Version-alignment release with core v1.8.0. No analysis-module API changes;
