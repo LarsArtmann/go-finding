@@ -10,7 +10,7 @@ Everything is additive unless explicitly marked **behavior change**.
 
 ## Rollback default changed (behavior change, issue #28)
 
-**Before (≤ v1.6.0):** one file failure restored *every* file modified earlier
+**Before (≤ v1.6.0):** one file failure restored _every_ file modified earlier
 in the run — one bad file nuked all clean fixes.
 
 **After (v1.7.0):** only the failing file is restored; earlier files keep their

@@ -466,16 +466,16 @@ fmt.Println(finding.Version) // "1.4.0"
 
 ## Documentation
 
-| Document                                         | Purpose                                                  |
-| ------------------------------------------------ | -------------------------------------------------------- |
-| [FEATURES.md](FEATURES.md)                       | Honest feature inventory with status                     |
-| [ROADMAP.md](ROADMAP.md)                         | Long-term direction and future ideas                     |
-| [TODO_LIST.md](TODO_LIST.md)                     | Short-term actionable tasks                              |
-| [CHANGELOG.md](CHANGELOG.md)                     | Versioned change history                                 |
-| [docs/USAGE_GUIDE.md](docs/USAGE_GUIDE.md)       | Comprehensive usage guide                                |
-| [docs/MIGRATION_v1.0.md](docs/MIGRATION_v1.0.md) | v1.0 migration instructions                              |
-| [docs/guides/consumer-migration-v1.7.md](docs/guides/consumer-migration-v1.7.md) | Upgrade guide: outcomes, rollback default, groups   |
-| [docs/ecosystem.md](docs/ecosystem.md)           | How go-finding relates to the surrounding SDKs and tools |
+| Document                                                                         | Purpose                                                  |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| [FEATURES.md](FEATURES.md)                                                       | Honest feature inventory with status                     |
+| [ROADMAP.md](ROADMAP.md)                                                         | Long-term direction and future ideas                     |
+| [TODO_LIST.md](TODO_LIST.md)                                                     | Short-term actionable tasks                              |
+| [CHANGELOG.md](CHANGELOG.md)                                                     | Versioned change history                                 |
+| [docs/USAGE_GUIDE.md](docs/USAGE_GUIDE.md)                                       | Comprehensive usage guide                                |
+| [docs/MIGRATION_v1.0.md](docs/MIGRATION_v1.0.md)                                 | v1.0 migration instructions                              |
+| [docs/guides/consumer-migration-v1.7.md](docs/guides/consumer-migration-v1.7.md) | Upgrade guide: outcomes, rollback default, groups        |
+| [docs/ecosystem.md](docs/ecosystem.md)                                           | How go-finding relates to the surrounding SDKs and tools |
 
 ## Related Projects
 

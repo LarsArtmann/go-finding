@@ -417,8 +417,9 @@ func TestToLSP_DiagnosticTags_GoldenWire(t *testing.T) {
 
 	diag := f.ToLSP()
 
-	if len(diag.Tags) != 2 || diag.Tags[0] != LSPDiagnosticTagUnnecessary || diag.Tags[1] != LSPDiagnosticTagDeprecated {
-		t.Fatalf("Tags: got %v, want [1 2]", diag.Tags)
+	wantTags := []LSPDiagnosticTag{LSPDiagnosticTagUnnecessary, LSPDiagnosticTagDeprecated}
+	if len(diag.Tags) != len(wantTags) || diag.Tags[0] != wantTags[0] || diag.Tags[1] != wantTags[1] {
+		t.Fatalf("Tags: got %v, want %v", diag.Tags, wantTags)
 	}
 
 	if got := diag.Data.Metadata[LSPDiagnosticTagsKey]; got != "1,2" {

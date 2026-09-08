@@ -665,12 +665,16 @@ func TestFindingJSON_GoldenWire(t *testing.T) {
 	goldenWithGroup := `{"id":"test:rule1:file.go:10:5","rule":"rule1","toolName":"test","message":"test message","severity":"error","position":{"file":"file.go","line":10,"column":5,"offset":0},"fixStrategy":"none","confidence":1,"groupId":"clone-group-1"}`
 
 	t.Run("groupId absent", func(t *testing.T) {
+		t.Parallel()
+
 		data, err := json.Marshal(standardTestFinding())
 		g.Expect(err).NotTo(HaveOccurred())
 		g.Expect(string(data)).To(Equal(goldenNoGroup))
 	})
 
 	t.Run("groupId present", func(t *testing.T) {
+		t.Parallel()
+
 		f := standardTestFinding()
 		f.GroupID = "clone-group-1"
 

@@ -113,37 +113,37 @@ All exported symbols are classified as:
 
 ### Key Functions
 
-| Function                              | Status | Notes                                           |
-| ------------------------------------- | ------ | ----------------------------------------------- |
-| `Combine`                             | stable | Merge reports with dedup                        |
-| `Correlate`                           | stable | Find related findings                           |
-| `Diff`                                | stable | Compare finding sets by ID                      |
-| `Filter` / `FilterInPlace`            | stable | Filter by predicates                            |
-| `GenerateID`                          | stable | Deterministic ID                                |
-| `ParseID`                             | stable | Parse generated ID                              |
-| `FindingsFromSARIF`                   | stable | SARIF import                                    |
-| `FindingsFromReader`                  | stable | Streaming SARIF import                          |
-| `FindingsFromJSON`                    | stable | JSON import                                     |
-| `ReportFromJSON`                      | stable | JSON → Report                                   |
-| `FromJSON`                            | stable | JSON → Finding                                  |
-| `FromLSP`                             | stable | LSP → Finding                                   |
-| `FormatText` / `FormatMarkdown`       | stable | Human-readable output                           |
-| `FormatTextRich` / `FormatTable`      | stable | Emoji-badged / table output (v1.3.0)            |
-| `ApplySimpleFixes`                    | stable | BeforeCode→AfterCode replacement (v1.3.0)       |
-| `CheckBinary` / `RunCmd`              | stable | External tool helpers (v1.3.0)                  |
-| `SeverityFromLevel`                   | stable | String→Severity with aliases (v1.3.0)           |
-| `NewReportFromFindings`               | stable | One-step report creation (v1.3.0)               |
-| `FilePos`                             | stable | File-level Position constructor (v1.3.0)        |
-| `ParseSeverity` / `MustParseSeverity` | stable | String → Severity                               |
-| `ParseConfidence`                     | stable | String → Confidence; inverse of Confidence.String() (v1.5.0) |
-| `RegisterSeverityAlias` / `LookupSeverityAlias` | stable | Thread-safe severity alias registry (v1.5.0) |
-| `ResolveSafePath` / `ResolveSafePathFrom` / `ResolveRoot` | stable | Path-traversal-safe path resolution (v1.5.0) |
-| `ValidateAll`                         | stable | Batch-validate findings (returns map[int]error) |
-| `ParseCategory` / `MustParseCategory` | stable | String → Category                               |
-| `CategoryForLinter`                   | stable | Linter→category lookup                          |
-| `RegisterLinterCategory`              | stable | Register linter mapping                         |
-| `NewToolAdapter`                      | stable | Generic adapter constructor                     |
-| `FromSARIFLevel`                      | stable | SARIF level → Severity                          |
+| Function                                                  | Status | Notes                                                        |
+| --------------------------------------------------------- | ------ | ------------------------------------------------------------ |
+| `Combine`                                                 | stable | Merge reports with dedup                                     |
+| `Correlate`                                               | stable | Find related findings                                        |
+| `Diff`                                                    | stable | Compare finding sets by ID                                   |
+| `Filter` / `FilterInPlace`                                | stable | Filter by predicates                                         |
+| `GenerateID`                                              | stable | Deterministic ID                                             |
+| `ParseID`                                                 | stable | Parse generated ID                                           |
+| `FindingsFromSARIF`                                       | stable | SARIF import                                                 |
+| `FindingsFromReader`                                      | stable | Streaming SARIF import                                       |
+| `FindingsFromJSON`                                        | stable | JSON import                                                  |
+| `ReportFromJSON`                                          | stable | JSON → Report                                                |
+| `FromJSON`                                                | stable | JSON → Finding                                               |
+| `FromLSP`                                                 | stable | LSP → Finding                                                |
+| `FormatText` / `FormatMarkdown`                           | stable | Human-readable output                                        |
+| `FormatTextRich` / `FormatTable`                          | stable | Emoji-badged / table output (v1.3.0)                         |
+| `ApplySimpleFixes`                                        | stable | BeforeCode→AfterCode replacement (v1.3.0)                    |
+| `CheckBinary` / `RunCmd`                                  | stable | External tool helpers (v1.3.0)                               |
+| `SeverityFromLevel`                                       | stable | String→Severity with aliases (v1.3.0)                        |
+| `NewReportFromFindings`                                   | stable | One-step report creation (v1.3.0)                            |
+| `FilePos`                                                 | stable | File-level Position constructor (v1.3.0)                     |
+| `ParseSeverity` / `MustParseSeverity`                     | stable | String → Severity                                            |
+| `ParseConfidence`                                         | stable | String → Confidence; inverse of Confidence.String() (v1.5.0) |
+| `RegisterSeverityAlias` / `LookupSeverityAlias`           | stable | Thread-safe severity alias registry (v1.5.0)                 |
+| `ResolveSafePath` / `ResolveSafePathFrom` / `ResolveRoot` | stable | Path-traversal-safe path resolution (v1.5.0)                 |
+| `ValidateAll`                                             | stable | Batch-validate findings (returns map[int]error)              |
+| `ParseCategory` / `MustParseCategory`                     | stable | String → Category                                            |
+| `CategoryForLinter`                                       | stable | Linter→category lookup                                       |
+| `RegisterLinterCategory`                                  | stable | Register linter mapping                                      |
+| `NewToolAdapter`                                          | stable | Generic adapter constructor                                  |
+| `FromSARIFLevel`                                          | stable | SARIF level → Severity                                       |
 
 ### Report Methods
 
@@ -198,24 +198,24 @@ All exported symbols are classified as:
 
 ### Types
 
-| Type                                                            | Status |
-| --------------------------------------------------------------- | ------ |
-| `Pipeline`, `Config`, `CompletionReason`, `Stage`               | stable |
-| `Iteration`, `PipelineResult`, `PartialResult`                  | stable |
-| `FixApplier`, `FixEngine`, `FixEdit`, `FixProvider`, `FixGroup` | stable |
-| `Conflict`, `VerifyResult`, `TriageResult`                      | stable |
-| `Metrics`, `MetricsSnapshot`                                    | stable |
-| `FileBackup`                                                    | stable |
-| `RetryDetector`, `RetryConfig`                                  | stable |
-| `GeneratedFileFilter`                                           | stable |
-| `FindingTransformer`, `TransformerFunc`                         | stable |
-| `Detector`, `DetectorFunc` (type aliases)                       | stable |
-| `OffsetProvider`, `LineProvider`, `SubstringProvider`           | stable |
-| `StageHook`, `StageHookFunc`, `StageEvent`, `StageTiming`       | stable |
-| `LineShiftMap`, `LineShiftEntry`                                | stable |
-| `ConfigFile`                                                    | stable |
-| `FlightRecorderHook`, `FlightRecorderConfig`                    | stable |
-| `FixOutcome`, `FixOutcomeStatus`, `FixApplyResult`              | stable (unreleased; ships in v1.7.0) |
+| Type                                                                     | Status                               |
+| ------------------------------------------------------------------------ | ------------------------------------ |
+| `Pipeline`, `Config`, `CompletionReason`, `Stage`                        | stable                               |
+| `Iteration`, `PipelineResult`, `PartialResult`                           | stable                               |
+| `FixApplier`, `FixEngine`, `FixEdit`, `FixProvider`, `FixGroup`          | stable                               |
+| `Conflict`, `VerifyResult`, `TriageResult`                               | stable                               |
+| `Metrics`, `MetricsSnapshot`                                             | stable                               |
+| `FileBackup`                                                             | stable                               |
+| `RetryDetector`, `RetryConfig`                                           | stable                               |
+| `GeneratedFileFilter`                                                    | stable                               |
+| `FindingTransformer`, `TransformerFunc`                                  | stable                               |
+| `Detector`, `DetectorFunc` (type aliases)                                | stable                               |
+| `OffsetProvider`, `LineProvider`, `SubstringProvider`                    | stable                               |
+| `StageHook`, `StageHookFunc`, `StageEvent`, `StageTiming`                | stable                               |
+| `LineShiftMap`, `LineShiftEntry`                                         | stable                               |
+| `ConfigFile`                                                             | stable                               |
+| `FlightRecorderHook`, `FlightRecorderConfig`                             | stable                               |
+| `FixOutcome`, `FixOutcomeStatus`, `FixApplyResult`                       | stable (unreleased; ships in v1.7.0) |
 | `RollbackPolicy` (`RollbackPolicyFailingFile`, `RollbackPolicyAllFiles`) | stable (unreleased; ships in v1.7.0) |
 
 ### Functions
@@ -224,17 +224,17 @@ All exported functions in `pipeline` are **stable**.
 
 Notable additions:
 
-| Function                              | Status | Notes                                             |
-| ------------------------------------- | ------ | ------------------------------------------------- |
-| `NewFlightRecorderHook`               | stable | Unreleased. Constructor for FlightRecorderHook.   |
-| `DefaultFlightRecorderConfig`         | stable | Unreleased. Returns default config.               |
-| `Detect`                              | stable | One-shot detection convenience function (v1.3.0)  |
-| `ApplyToContent`                      | stable | Content-level fix application without FS (v1.3.0) |
-| `ConfigFromFile` / `ConfigFromReader` | stable | JSON/YAML config file loading                     |
-| `FixEngine.ApplyWithOutcomes`         | stable | Unreleased. Per-finding outcomes; Apply/ApplyWithConflicts delegate to it (v1.7.0) |
-| `FixApplier.ApplyWithReport` / `ApplyReport` | stable | Unreleased. Run report with outcomes, shift maps, RolledBack files (v1.7.0) |
-| `FixApplier.SetRollbackPolicy`        | stable | Unreleased. Per-file rollback default; AllFiles opt-in (v1.7.0) |
-| `ApplyReport.FailedOutcomes`          | stable | Unreleased. Isolates failed outcomes (v1.7.0)     |
+| Function                                     | Status | Notes                                                                              |
+| -------------------------------------------- | ------ | ---------------------------------------------------------------------------------- |
+| `NewFlightRecorderHook`                      | stable | Unreleased. Constructor for FlightRecorderHook.                                    |
+| `DefaultFlightRecorderConfig`                | stable | Unreleased. Returns default config.                                                |
+| `Detect`                                     | stable | One-shot detection convenience function (v1.3.0)                                   |
+| `ApplyToContent`                             | stable | Content-level fix application without FS (v1.3.0)                                  |
+| `ConfigFromFile` / `ConfigFromReader`        | stable | JSON/YAML config file loading                                                      |
+| `FixEngine.ApplyWithOutcomes`                | stable | Unreleased. Per-finding outcomes; Apply/ApplyWithConflicts delegate to it (v1.7.0) |
+| `FixApplier.ApplyWithReport` / `ApplyReport` | stable | Unreleased. Run report with outcomes, shift maps, RolledBack files (v1.7.0)        |
+| `FixApplier.SetRollbackPolicy`               | stable | Unreleased. Per-file rollback default; AllFiles opt-in (v1.7.0)                    |
+| `ApplyReport.FailedOutcomes`                 | stable | Unreleased. Isolates failed outcomes (v1.7.0)                                      |
 
 ---
 
