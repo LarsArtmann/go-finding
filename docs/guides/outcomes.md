@@ -116,7 +116,7 @@ for _, path := range report.RolledBack {
 
 `report.FailedOutcomes()` isolates the `failed` entries.
 
-**Soft vs. hard failures.** A provider resolve error on one finding is _soft_: the run continues, other findings in the same file still apply, and the errors come back both in `Outcomes` and as a joined error return. A hard file failure (write error, backup failure) stops the run and triggers rollback.
+**Soft vs. hard failures.** A provider resolve error on one finding is _soft_: the run continues, other findings in the same file still apply, and the errors come back both in `Outcomes` and as a joined error return. A finding whose path fails the containment check (traversal outside the root) is also soft: it surfaces as a `failed` outcome with a validation-category error instead of being silently dropped. A hard file failure (write error, backup failure) stops the run and triggers rollback.
 
 ## Rollback semantics
 

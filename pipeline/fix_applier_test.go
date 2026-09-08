@@ -130,8 +130,16 @@ func TestFixApplier_PathTraversal_Skipped(t *testing.T) {
 	}
 
 	applied, err := applier.Apply(context.Background(), fixes)
-	g.Expect(err).NotTo(HaveOccurred())
+
+	// Since the outcome-surfacing change, the traversal finding is reported
+	// as a soft failure (joined validation error) instead of being silently
+	// dropped. The safe fix still applies and /etc/passwd is untouched.
+	g.Expect(err).To(HaveOccurred())
 	g.Expect(applied).To(Equal(1))
+
+	data, readErr := os.ReadFile(testFile)
+	g.Expect(readErr).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(ContainSubstring("// fixed"))
 }
 
 func TestFixApplier_ApplyToFile_ReadOnlyFile(t *testing.T) {

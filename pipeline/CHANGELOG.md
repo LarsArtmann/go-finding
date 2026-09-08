@@ -7,6 +7,12 @@ For root-level changes, see the [root CHANGELOG.md](../CHANGELOG.md).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- **Unsafe-path findings now surface as failed outcomes instead of being silently dropped** — Findings whose `Position.File` fails the path-containment check (traversal outside the root, e.g. `../../etc/passwd`) previously vanished during grouping with no signal. They are now reported as `FixOutcomeFailed` entries (validation-category `*finding.FindingError` with the finding's position) and included in the joined error return of `ApplyWithReport` (and the `Apply`/`ApplyWithDetails`/`ApplyWithShiftMap` delegators). Safe findings in the same run still apply; nothing about the security boundary itself changed.
+
 ## [1.7.0] - 2026-09-08
 
 ### Added
