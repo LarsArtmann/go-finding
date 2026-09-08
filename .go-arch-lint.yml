@@ -108,6 +108,7 @@ commonComponents:
 
 excludeFiles:
   - "_test\\.go$"
+  - "/testdata/"
 
 allow:
   depOnAnyVendor: true
