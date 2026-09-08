@@ -121,12 +121,12 @@ decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
 | Fix BuildFlow auto-configure loop         | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact. No longer the commit gate (dprint hook replaced it). |
 | Consumer compatibility test               | 🟡 `READY`   | Low    | —      | **Unblocked 2026-09-08** — repo is PUBLIC, proxy resolution verified (no `GOPRIVATE` needed). 22 known consumers, 14 with Go code. Still needs someone to actually run the matrix.        |
 
-### Post-account-switch CI work (gated on billing fix)
+### Post-public CI work (billing gate dissolved 2026-09-08 — repo is PUBLIC, Actions free)
 
 | Task                                                        | Status       | Impact | Effort | Notes                                                                                                                                                        |
 | ----------------------------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Re-run + verify ALL CI jobs on master                       | 🔵 `BLOCKED` | High   | Low    | Attempted 2026-09-08 (run 34247500002): all jobs red on billing, logs unavailable. Re-run after the account switch.                                          |
-| Dependabot PR triage                                        | 🔵 `BLOCKED` | Med    | Med    | Needs green CI to validate #23/#24/#25/#29 (billing).                                                                                                        |
+| Re-run + verify ALL CI jobs on master                       | 🟡 `READY`   | High   | Low    | Unblocked 2026-09-08: public flip makes Actions free. Post-flip dispatch (run 34274674104): 13/20 green; coverage/link/arch/stress/docs-api failures triaged + fixed same evening — re-verify on next push. | 
+| Dependabot PR triage                                        | 🟡 `READY`   | Med    | Med    | Unblocked by public flip; needs a green CI run to validate #23/#24/#25/#29.                                                                                 |
 | CI `workflow_dispatch` inputs for module-scoped runs        | ✅ `DONE`    | Low    | Low    | **Done 2026-09-08:** `modules` input scopes the lint matrix on dispatch runs (`.github/workflows/ci.yml`).                                                   |
 | Gate CI benchmark job on `bench-check.sh` regression        | ✅ `DONE`    | Low    | Low    | **Verified 2026-09-08:** job already gates on bench-check.sh - and the release train fixed the awk no-op that had silently disabled the check.               |
 | Evaluate `ginkgo --repeat=N` in CI vs sampled stress matrix | ✅ `DONE`    | Low    | Low    | **Decided 2026-09-08:** CI keeps `go test -race -count=20` only; ginkgo repeat stays the local mandatory release gate (note in `docs/release-procedure.md`). |

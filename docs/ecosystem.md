@@ -54,7 +54,7 @@ Four Go modules with Unix-style decomposition:
 
 Shared scaffolding for **linters** (tools that find code issues). Eliminates the Violation-to-Finding converter layer by codifying the `go-structure-linter` pattern: rules emit `finding.Finding` directly.
 
-- **Repo:** [github.com/larsartmann/go-linter-sdk](https://github.com/larsartmann/go-linter-sdk)
+- **Repo:** github.com/larsartmann/go-linter-sdk
 - **Depends on:** go-finding
 - **Core types:** `Rule` interface, `RuleFunc` adapter, `RuleMeta`, `Registry`
 - **Execution paths:**
@@ -66,7 +66,7 @@ Shared scaffolding for **linters** (tools that find code issues). Eliminates the
 
 Shared foundation for **auto-configurers** (tools that fix linter config files like `.golangci.yml` or `.oxlintrc.json`). Owns config round-trip, finding emission for config issues, and a provider spec for BuildFlow integration.
 
-- **Repo:** [github.com/larsartmann/linter-autoconfigure-sdk](https://github.com/larsartmann/linter-autoconfigure-sdk)
+- **Repo:** github.com/larsartmann/linter-autoconfigure-sdk
 - **Depends on:** go-finding, go-atomic-write
 - **Core types:** `ConfigIssue`, `ProviderSpec`, `ConfigError`
 - **What it owns:**
@@ -80,7 +80,7 @@ Shared foundation for **auto-configurers** (tools that fix linter config files l
 
 Shared utilities for BuildFlow **checker modules** (gomod-checker, nix-checker, flake-meta-checker, todo-checker, etc.). The lowest-abstraction SDK: a bag of utility functions, not a framework.
 
-- **Repo:** [github.com/larsartmann/go-checker-helpers](https://github.com/larsartmann/go-checker-helpers)
+- **Repo:** github.com/larsartmann/go-checker-helpers
 - **Depends on:** go-finding, go-error-family
 - **What it owns:**
   - Finding construction: `NewFinding[T]`, `NewSuggestFinding`, `SafeBuildFinding`, `NewReport`

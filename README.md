@@ -511,16 +511,16 @@ go-finding is the hub of an ecosystem of SDKs and tools. See [`docs/ecosystem.md
 
 **Ecosystem SDKs** (shared plumbing for tools that emit findings):
 
-- [go-linter-sdk](https://github.com/larsartmann/go-linter-sdk) — Rule + Registry scaffolding for linters
-- [linter-autoconfigure-sdk](https://github.com/larsartmann/linter-autoconfigure-sdk) — Config round-trip + finding emission for auto-configurers
-- [go-checker-helpers](https://github.com/larsartmann/go-checker-helpers) — Finding builders, fix pipeline, and safe I/O for BuildFlow checkers
+- go-linter-sdk — Rule + Registry scaffolding for linters
+- linter-autoconfigure-sdk — Config round-trip + finding emission for auto-configurers
+- go-checker-helpers — Finding builders, fix pipeline, and safe I/O for BuildFlow checkers
 
 **Tools using go-finding:**
 
 - [art-dupl](https://github.com/larsartmann/art-dupl) — Code duplication detection
-- [branching-flow](https://github.com/larsartmann/branching-flow) — Go code quality analyzer
-- [hierarchical-errors](https://github.com/larsartmann/hierarchical-errors) — Error handling pattern detector
-- [go-auto-upgrade](https://github.com/larsartmann/go-auto-upgrade) — Dependency upgrade automation
+- branching-flow — Go code quality analyzer
+- hierarchical-errors — Error handling pattern detector
+- go-auto-upgrade — Dependency upgrade automation
 
 **Standards:**
 
