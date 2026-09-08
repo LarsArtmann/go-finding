@@ -576,3 +576,73 @@ later (after consumers migrate to the opt-out) would churn consumers twice.
 **Reversibility:** Reversible at the API level (swap the default constant) but
 not at the ecosystem level once consumers depend on per-file semantics — which
 is the point: the decision freezes the correct default.
+
+## 17. Outcome Metrics as Pipeline-Native Aggregates
+
+**Status:** Accepted — v1.7.0.
+
+**Context:** With per-finding fix outcomes (issue #27), consumers need
+aggregate visibility: how many findings applied, how many were refused, how
+many failed. Two places could own that aggregation — the caller reducing
+`ApplyReport.Outcomes` itself, or the pipeline's existing `Metrics` collector,
+which already tracks stage durations, detector times, and applied-fix counts.
+
+**Decision:** `Metrics.RecordOutcome(status)` / `Metrics.OutcomeCounts()` own
+the aggregation. The pipeline's fix stage records one outcome per finding
+automatically (`pipeline_detect.go`), `MetricsSnapshot.OutcomeCounts` carries a
+point-in-time copy in `PipelineResult`, and the CLI prints a `Fix outcomes:`
+summary in canonical status order (nonzero counts only).
+
+**Tradeoffs:**
+
+- **Gain:** Every pipeline consumer gets outcome telemetry for free, including
+  CLI users; no per-caller reduction boilerplate.
+- **Gain:** Metrics already has the mutex discipline and snapshot pattern —
+  counts ride the existing infrastructure with no new locking surface.
+- **Cost:** The counts are aggregate-only; callers needing per-finding detail
+  still read `ApplyReport.Outcomes`. Metrics is not a finding store.
+- **Cost:** Double bookkeeping risk — `fixesApplied` (count) and
+  `applied`-outcome counts can diverge if future stages record one but not the
+  other. Mitigated by the property test pinning the invariant at the engine
+  level and the fix stage recording both from one `ApplyReport`.
+
+**Alternatives:** Callback-based aggregation (`OnOutcome` per finding) was
+rejected as redundant with `StageHooks` and heavier than a counter.
+
+**Reversibility:** Additive; removing the recording would only drop telemetry.
+
+## 18. Typed Outcome Errors via `*finding.FindingError`
+
+**Status:** Accepted — v1.7.0.
+
+**Context:** Failed fix outcomes initially carried `fmt.Errorf`-wrapped
+provider errors. Consumers filtering outcome failures by error type or
+position had to parse message strings; `errors.Is`/`errors.As` stopped at the
+wrapper; and the pipeline's error-classification story
+(`errorfamily.Classify`, ADR #15) did not apply to fix failures.
+
+**Decision:** Failed `FixOutcome.Err` values are `*finding.FindingError`
+(parse category) constructed with the finding's position attached, wrapping
+the original provider error as `Cause`. The `errors.Is`/`errors.As` chain
+reaches the provider cause; `errorfamily.Classify` routes them as Rejection.
+Serialization stays message-string-only (errors do not carry identity through
+JSON — match on status, not error value, after a round-trip).
+
+**Tradeoffs:**
+
+- **Gain:** Uniform error classification across the library (detection and
+  fixing produce the same error shape); position-bearing failures render
+  actionable messages for free.
+- **Cost:** Parse category is a slight stretch for provider failures (they are
+  "resolution" failures, not syntax errors). Rejection-family routing is still
+  correct (do not retry automatically), and the cause chain preserves the
+  precise origin.
+- **Cost:** Typed errors in a public result struct freeze `*finding.FindingError`
+  into the outcome API contract.
+
+**Alternatives:** A dedicated `OutcomeError` type was rejected — it would
+duplicate `FindingError`'s fields (position, category, cause) without adding
+information.
+
+**Reversibility:** Low: swapping the error type later would break consumers
+matching on `*finding.FindingError`. The type is stable since v1.4.0 (ADR #15).
