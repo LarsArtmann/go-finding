@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **`FixApplier.ApplyDryRun` (D4)** — Plan/apply UX: resolves every fix against current file contents and returns the `ApplyReport` a real run would produce (would-apply counts, per-finding outcomes, shift maps) without writing, backing up, or rolling back anything. `RolledBack` is always empty; unsafe paths and provider failures surface exactly as in a real run.
 - **`Config.OnFixOutcome` (D3)** — Outcome-status callback fired once per fixable finding with the exact `FixOutcomeStatus` and the typed error for failed resolutions. Additive successor to the boolean `Config.OnFix` (now deprecated, still functional; setting both fires both).
 
 ### Changed

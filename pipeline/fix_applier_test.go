@@ -1097,3 +1097,61 @@ func TestFixApplier_UnsafePathReportsFailedOutcome(t *testing.T) {
 	g.Expect(readErr).NotTo(HaveOccurred())
 	g.Expect(string(data)).To(ContainSubstring("package fixed"))
 }
+
+// TestFixApplier_ApplyDryRun verifies D4: ApplyDryRun reports the outcomes
+// a real run would produce while leaving every file untouched and creating
+// no backups.
+func TestFixApplier_ApplyDryRun(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+	t.Cleanup(func() { _ = applier.Close() })
+
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
+	testFile := filepath.Join(tempDir, "dry.go")
+	writeTestFile(t, testFile, []byte(original))
+
+	fixes := []finding.Finding{
+		makeFixFinding("apply-me", "old()", "new()\nnew2()", "dry.go", 4),
+		makeFixFinding("refuse-me", "absent()", "new()", "dry.go", 4),
+	}
+
+	report, err := applier.ApplyDryRun(context.Background(), fixes)
+
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(report.Applied).To(Equal(1), "would apply the one resolvable fix")
+	g.Expect(report.RolledBack).To(BeEmpty(), "dry run never rolls back")
+
+	byID := make(map[finding.ID]FixOutcome, len(report.Outcomes))
+	for _, o := range report.Outcomes {
+		byID[o.Finding.ID] = o
+	}
+
+	g.Expect(byID[finding.ID("apply-me")].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(byID[finding.ID("refuse-me")].Status).To(Equal(FixOutcomeRefused))
+
+	data, readErr := os.ReadFile(testFile)
+	g.Expect(readErr).NotTo(HaveOccurred())
+	g.Expect(string(data)).To(Equal(original), "dry run must not modify the file")
+
+	g.Expect(report.ShiftMaps).To(HaveKey("dry.go"), "shift maps are still computed")
+}
+
+// TestFixApplier_ApplyDryRun_UnsafePathSurfaces verifies unsafe paths are
+// reported as failed outcomes in dry runs too, with no file access.
+func TestFixApplier_ApplyDryRun_UnsafePathSurfaces(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	_, applier := newTestApplierWithDir(t)
+	t.Cleanup(func() { _ = applier.Close() })
+
+	fixes := []finding.Finding{
+		makeFixFinding("evil", "a", "b", "../../../etc/passwd", 1),
+	}
+
+	report, err := applier.ApplyDryRun(context.Background(), fixes)
+
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(report.Outcomes).To(HaveLen(1))
+	g.Expect(report.Outcomes[0].Status).To(Equal(FixOutcomeFailed))
+}

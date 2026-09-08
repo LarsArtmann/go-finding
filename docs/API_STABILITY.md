@@ -224,20 +224,20 @@ All exported functions in `pipeline` are **stable**.
 
 Notable additions:
 
-| Function                                      | Status     | Notes                                                                       |
-| --------------------------------------------- | ---------- | --------------------------------------------------------------------------- |
-| `NewFlightRecorderHook`                       | stable     | Added v1.5.0. Constructor for FlightRecorderHook.                           |
-| `DefaultFlightRecorderConfig`                 | stable     | Added v1.5.0. Returns default config.                                       |
-| `Detect`                                      | stable     | One-shot detection convenience function (v1.3.0)                            |
-| `ApplyToContent`                              | stable     | Content-level fix application without FS (v1.3.0)                           |
-| `ConfigFromFile` / `ConfigFromReader`         | stable     | JSON/YAML config file loading                                               |
-| `FixEngine.ApplyWithOutcomes`                 | stable     | Added v1.7.0. Per-finding outcomes; Apply/ApplyWithConflicts delegate to it |
-| `FixApplier.ApplyWithReport` / `ApplyReport`  | stable     | Added v1.7.0. Run report with outcomes, shift maps, RolledBack files        |
-| `FixApplier.SetRollbackPolicy`                | stable     | Added v1.7.0. Per-file rollback default; AllFiles opt-in                    |
-| `ApplyReport.FailedOutcomes`                  | stable     | Added v1.7.0. Isolates failed outcomes                                      |
-| `FixOutcomeStatus` / `FixOutcome`             | stable     | Added v1.7.0. Six statuses; failed carries typed error                      |
-| `Metrics.RecordOutcome` / `OutcomeCounts`     | stable     | Added v1.7.0. Outcome aggregates in MetricsSnapshot (ADR-017)               |
-| `Report.GroupFindingsSorted` / `Group` | unreleased | Deterministic GroupID-ordered groups; targets next release                  |
+| Function                                     | Status     | Notes                                                                       |
+| -------------------------------------------- | ---------- | --------------------------------------------------------------------------- |
+| `NewFlightRecorderHook`                      | stable     | Added v1.5.0. Constructor for FlightRecorderHook.                           |
+| `DefaultFlightRecorderConfig`                | stable     | Added v1.5.0. Returns default config.                                       |
+| `Detect`                                     | stable     | One-shot detection convenience function (v1.3.0)                            |
+| `ApplyToContent`                             | stable     | Content-level fix application without FS (v1.3.0)                           |
+| `ConfigFromFile` / `ConfigFromReader`        | stable     | JSON/YAML config file loading                                               |
+| `FixEngine.ApplyWithOutcomes`                | stable     | Added v1.7.0. Per-finding outcomes; Apply/ApplyWithConflicts delegate to it |
+| `FixApplier.ApplyWithReport` / `ApplyReport` | stable     | Added v1.7.0. Run report with outcomes, shift maps, RolledBack files        |
+| `FixApplier.SetRollbackPolicy`               | stable     | Added v1.7.0. Per-file rollback default; AllFiles opt-in                    |
+| `ApplyReport.FailedOutcomes`                 | stable     | Added v1.7.0. Isolates failed outcomes                                      |
+| `FixOutcomeStatus` / `FixOutcome`            | stable     | Added v1.7.0. Six statuses; failed carries typed error                      |
+| `Metrics.RecordOutcome` / `OutcomeCounts`    | stable     | Added v1.7.0. Outcome aggregates in MetricsSnapshot (ADR-017)               |
+| `Report.GroupFindingsSorted` / `Group`       | unreleased | Deterministic GroupID-ordered groups; targets next release                  |
 
 ---
 

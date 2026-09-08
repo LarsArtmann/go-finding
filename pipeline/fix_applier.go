@@ -241,6 +241,58 @@ func (a *FixApplier) ApplyWithReport(
 	return report, errors.Join(softErrs...)
 }
 
+// ApplyDryRun resolves every fix against the current file contents and
+// reports the outcomes and counts a real run would produce — without
+// writing, backing up, or rolling back anything (D4). Files are read only.
+//
+// The report semantics match ApplyWithReport with two differences:
+// Applied/AppliedFixes are the WOULD-apply counts against the current
+// content, and RolledBack is always empty because nothing is modified.
+// Soft per-finding failures (provider errors, unsafe paths) surface as
+// failed outcomes and in the joined error return, exactly like a real run.
+// Because nothing is written, edits in one file cannot conflict with edits
+// resolved later in the same dry run beyond per-file overlap rules.
+func (a *FixApplier) ApplyDryRun(
+	ctx context.Context,
+	fixes []finding.Finding,
+) (ApplyReport, error) {
+	byFile, droppedOutcomes := a.groupFindingsBySafePath(fixes)
+
+	report := ApplyReport{ShiftMaps: make(map[string]*LineShiftMap), Outcomes: droppedOutcomes}
+
+	for _, path := range slices.Sorted(maps.Keys(byFile)) {
+		if err := CheckCanceledWithMsg(ctx, "dry run cancelled"); err != nil {
+			return report, err
+		}
+
+		result, original, _, err := a.loadAndResolve(path, byFile[path])
+		if err != nil {
+			return report, err
+		}
+
+		report.Outcomes = append(report.Outcomes, result.Outcomes...)
+
+		if len(result.AppliedEdits) == 0 {
+			continue
+		}
+
+		report.AppliedFixes = append(report.AppliedFixes, result.Applied...)
+
+		a.recordShiftMap(NewLineShiftMap(original, result.AppliedEdits), byFile[path], report.ShiftMaps)
+	}
+
+	report.Applied = len(report.AppliedFixes)
+
+	var softErrs []error
+	for _, o := range report.Outcomes {
+		if o.Err != nil {
+			softErrs = append(softErrs, o.Err)
+		}
+	}
+
+	return report, errors.Join(softErrs...)
+}
+
 // handleFileError restores the failing file, applies the rollback policy to
 // files modified earlier in the run, and wraps the failure.
 func (a *FixApplier) handleFileError(report *ApplyReport, path string, modified []string, err error) error {
@@ -365,22 +417,16 @@ func (*FixApplier) recordShiftMap(
 // written. The returned error is reserved for hard I/O failures (stat, read,
 // write).
 func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]finding.Finding, *LineShiftMap, []FixOutcome, error) {
-	info, err := os.Stat(path)
+	result, original, info, err := a.loadAndResolve(path, fixes)
 	if err != nil {
-		return nil, nil, nil, ioErrorAt("stat file", err, path)
+		return nil, nil, nil, err
 	}
 
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, nil, nil, ioErrorAt("read file", err, path)
-	}
-
-	result := a.engine.ApplyWithOutcomes(content, fixes)
 	if len(result.AppliedEdits) == 0 {
 		return nil, nil, result.Outcomes, nil
 	}
 
-	shiftMap := NewLineShiftMap(content, result.AppliedEdits)
+	shiftMap := NewLineShiftMap(original, result.AppliedEdits)
 
 	err = os.WriteFile( //nolint:gosec // intentional file write
 		path,
@@ -392,4 +438,23 @@ func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]findin
 	}
 
 	return result.Applied, shiftMap, result.Outcomes, nil
+}
+
+// loadAndResolve stats and reads the file, then resolves the fixes against
+// its content without modifying anything. Shared by the applying and the
+// dry-run paths.
+func (a *FixApplier) loadAndResolve(path string, fixes []finding.Finding) (FixApplyResult, []byte, os.FileInfo, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return FixApplyResult{}, nil, nil, ioErrorAt("stat file", err, path)
+	}
+
+	content, err := os.ReadFile(path) //nolint:gosec // test-controlled path
+	if err != nil {
+		return FixApplyResult{}, nil, nil, ioErrorAt("read file", err, path)
+	}
+
+	result := a.engine.ApplyWithOutcomes(content, fixes)
+
+	return result, content, info, nil
 }
