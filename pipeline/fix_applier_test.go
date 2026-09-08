@@ -986,10 +986,16 @@ func TestFixApplier_RolledBackPathsInErrorText(t *testing.T) {
 		g.Expect(errors.Is(err, context.Canceled)).To(BeTrue())
 
 		errMsg := err.Error()
-		g.Expect(errMsg).To(ContainSubstring("(rolled back: "+fileA+")"),
-			"error should list the rolled-back path: %s", errMsg)
+		g.Expect(errMsg).To(ContainSubstring("(rolled back: "),
+			"error should list the rolled-back paths: %s", errMsg)
+		g.Expect(errMsg).To(ContainSubstring(fileA),
+			"error should list the applied-then-rolled-back path: %s", errMsg)
+		// b.go was backed up (so restored as a content no-op) even though its
+		// finding soft-failed; the note lists every restored path.
+		g.Expect(errMsg).To(ContainSubstring(fileB),
+			"error should list the backed-up-then-restored path: %s", errMsg)
 
-		g.Expect(report.RolledBack).To(ContainElement(fileA))
+		g.Expect(report.RolledBack).To(ContainElements(fileA, fileB))
 
 		data, readErr := readFile(fileA)
 		g.Expect(readErr).NotTo(HaveOccurred())
