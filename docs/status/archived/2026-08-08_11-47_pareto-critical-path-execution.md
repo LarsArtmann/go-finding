@@ -1,5 +1,11 @@
 # Status Report: Pareto Plan Execution — T1-T6 Critical Path
 
+> **Disposition (docs-health pass 2026-09-08):** Superseded — all T1–T19 plan
+> tasks shipped in v1.6.0. Unmarked §F items are launch-track / FlightRecorder-v2 /
+> v2.0-design items, durably tracked in TODO_LIST.md ("Make Repo Public",
+> "Post-account-switch CI work") and ROADMAP.md ("FlightRecorder future
+> directions", "Hardening (owner decisions pending)").
+
 **Date:** 2026-08-08 11:47 CEST
 **Session:** Executed the "Do First" critical path (T1-T6) from `docs/planning/2026-08-08_10-55_ci-hardening-and-growth-pareto-plan.md`
 **Base:** v1.5.0 (2026-08-06) → 19 commits ahead, unreleased
@@ -92,21 +98,21 @@ The CHANGELOG [Unreleased] section documents the new work, but the `### Changed`
 
 ### Do Next (High Value)
 
-1. **T7** — FlightRecorderFileConfig parity (CLI has 3 fields, pipeline has 5)
-2. **T10** — go-arch-lint module boundary CI
-3. **T16** — resolveSafePath edge case tests (circular symlinks, dangling symlinks, root-is-symlink)
-4. **T17** — FlightRecorder edge case tests (disk-full, last-stage threshold, concurrent detectors)
-5. **T8** — Docs-freshness CI check script + ci.yml job
-6. **T9** — Per-module CHANGELOG entries (pipeline/, analysis/, cmd/go-finding/)
+1. ~~**T7** — FlightRecorderFileConfig parity (CLI has 3 fields, pipeline has 5)~~ done (T7, v1.6.0 CHANGELOG full parity)
+2. ~~**T10** — go-arch-lint module boundary CI~~ done (T10, v1.6.0 CHANGELOG arch-check job)
+3. ~~**T16** — resolveSafePath edge case tests (circular symlinks, dangling symlinks, root-is-symlink)~~ done (T16, v1.6.0 CHANGELOG symlink tests)
+4. ~~**T17** — FlightRecorder edge case tests (disk-full, last-stage threshold, concurrent detectors)~~ done (T17, v1.6.0 CHANGELOG FR edge tests)
+5. ~~**T8** — Docs-freshness CI check script + ci.yml job~~ done (T8, scripts/docs-freshness.sh in CI)
+6. ~~**T9** — Per-module CHANGELOG entries (pipeline/, analysis/, cmd/go-finding/)~~ done (T9, per-module CHANGELOGs v1.6.0)
 
 ### Do Later (Medium Value)
 
-7. **T12** — docs/guides/configuration.md (central config reference)
-8. **T11** — Multi-module vs monolith benchmark comparison
-9. **T13** — docs/guides/troubleshooting.md
-10. **T14** — README.md FlightRecorder mention in feature table
-11. **T15** — docs/DOMAIN_LANGUAGE.md
-12. **T18** — sanitizeFilename fuzz test
+7. ~~**T12** — docs/guides/configuration.md (central config reference)~~ done (T12, docs/guides/configuration.md)
+8. ~~**T11** — Multi-module vs monolith benchmark comparison~~ done (T11, docs/reports/2026-08-08_multi-module-vs-monolith.md)
+9. ~~**T13** — docs/guides/troubleshooting.md~~ done (T13, docs/guides/troubleshooting.md)
+10. ~~**T14** — README.md FlightRecorder mention in feature table~~ done (T14, README.md flight recorder row)
+11. ~~**T15** — docs/DOMAIN_LANGUAGE.md~~ done (T15, v1.6.0 CHANGELOG DOMAIN_LANGUAGE)
+12. ~~**T18** — sanitizeFilename fuzz test~~ done (T18, FuzzSanitizeFilename v1.6.0)
 
 ### Do When Ready (Launch Track — Needs Repo Public)
 
@@ -182,59 +188,59 @@ Config-file options are documented piecemeal across `flight-recorder.md`, `fix-e
 
 ### Immediate (This Session's Debt)
 
-1. Update TODO_LIST.md notes for CI script entries to mention ci.yml wiring
+1. ~~Update TODO_LIST.md notes for CI script entries to mention ci.yml wiring~~ done (TODO_LIST rebuilt 2026-09-08)
 2. Push to remote and verify GitHub Actions runs the new jobs
-3. Soft-reference the flight-recorder guide back in doc.go (not a filesystem path)
+3. ~~Soft-reference the flight-recorder guide back in doc.go (not a filesystem path)~~ done (v1.6.0 CHANGELOG doc.go section)
 
 ### Critical Path Continuation (T7-T11)
 
-4. **T7:** Align CLI flightRecorderFileConfig fields with pipeline FlightRecorderFileConfig (add MinAge + MaxBytes or document intentional omission)
-5. **T10:** Research go-arch-lint, write config, run locally, fix violations, add ci.yml job
-6. **T16:** Write circular symlink test for resolveSafePath
-7. **T16:** Write dangling/broken symlink test for resolveSafePath
-8. **T16:** Write root-is-symlink test for resolveSafePath
-9. **T17:** Write disk-full error path test for FlightRecorder
-10. **T17:** Write last-stage SlowStageThreshold test for FlightRecorder
-11. **T17:** Write concurrent detector + flight recorder test
-12. **T8:** Design + write scripts/docs-freshness.sh
-13. **T8:** Add docs-freshness job to ci.yml
+4. ~~**T7:** Align CLI flightRecorderFileConfig fields with pipeline FlightRecorderFileConfig (add MinAge + MaxBytes or document intentional omission)~~ done (T7, v1.6.0 CHANGELOG full parity)
+5. ~~**T10:** Research go-arch-lint, write config, run locally, fix violations, add ci.yml job~~ done (T10, v1.6.0 CHANGELOG arch-check)
+6. ~~**T16:** Write circular symlink test for resolveSafePath~~ done (T16, v1.6.0 CHANGELOG symlink tests)
+7. ~~**T16:** Write dangling/broken symlink test for resolveSafePath~~ done (T16, v1.6.0 CHANGELOG symlink tests)
+8. ~~**T16:** Write root-is-symlink test for resolveSafePath~~ done (T16, v1.6.0 CHANGELOG symlink tests)
+9. ~~**T17:** Write disk-full error path test for FlightRecorder~~ done (T17, v1.6.0 CHANGELOG FR edge tests)
+10. ~~**T17:** Write last-stage SlowStageThreshold test for FlightRecorder~~ done (T17, v1.6.0 CHANGELOG FR edge tests)
+11. ~~**T17:** Write concurrent detector + flight recorder test~~ done (T17, v1.6.0 CHANGELOG FR edge tests)
+12. ~~**T8:** Design + write scripts/docs-freshness.sh~~ done (T8, scripts/docs-freshness.sh in CI)
+13. ~~**T8:** Add docs-freshness job to ci.yml~~ done (T8, scripts/docs-freshness.sh in CI)
 
 ### Module Documentation (T9)
 
-14. Create pipeline/CHANGELOG.md skeleton
-15. Create analysis/CHANGELOG.md skeleton
-16. Create cmd/go-finding/CHANGELOG.md skeleton
-17. Populate each with [Unreleased] entries from git log
-18. Add cross-reference from root CHANGELOG.md to sub-module changelogs
-19. Update AGENTS.md Project Documentation Files table with sub-module CHANGELOGs
+14. ~~Create pipeline/CHANGELOG.md skeleton~~ done (T9, per-module CHANGELOGs v1.6.0)
+15. ~~Create analysis/CHANGELOG.md skeleton~~ done (T9, per-module CHANGELOGs v1.6.0)
+16. ~~Create cmd/go-finding/CHANGELOG.md skeleton~~ done (T9, per-module CHANGELOGs v1.6.0)
+17. ~~Populate each with [Unreleased] entries from git log~~ done (T9, per-module CHANGELOGs v1.6.0)
+18. ~~Add cross-reference from root CHANGELOG.md to sub-module changelogs~~ done (T9, per-module CHANGELOGs v1.6.0)
+19. ~~Update AGENTS.md Project Documentation Files table with sub-module CHANGELOGs~~ done (T9, per-module CHANGELOGs v1.6.0)
 
 ### Documentation (T12-T15)
 
-20. Write docs/guides/configuration.md (central config reference)
-21. Add YAML + JSON examples for each config section
-22. Write docs/guides/troubleshooting.md (common pipeline errors)
-23. Add FlightRecorder to README.md feature table
-24. Write docs/DOMAIN_LANGUAGE.md (pipeline domain terms glossary)
+20. ~~Write docs/guides/configuration.md (central config reference)~~ done (docs/guides/configuration.md)
+21. ~~Add YAML + JSON examples for each config section~~ done (docs/guides/troubleshooting.md)
+22. ~~Write docs/guides/troubleshooting.md (common pipeline errors)~~ done (README.md flight recorder row)
+23. ~~Add FlightRecorder to README.md feature table~~ done (v1.6.0 CHANGELOG DOMAIN_LANGUAGE)
+24. ~~Write docs/DOMAIN_LANGUAGE.md (pipeline domain terms glossary)~~ done (FuzzSanitizeFilename v1.6.0)
 
 ### Testing Gaps (T18-T19)
 
-25. Write sanitizeFilename property-based / fuzz test
-26. Evaluate SARIF schema vendoring vs lightweight JSON validator
-27. Implement SARIF schema validation test
+25. ~~Write sanitizeFilename property-based / fuzz test~~ done (v1.6.0 CHANGELOG SARIF edge tests)
+26. ~~Evaluate SARIF schema vendoring vs lightweight JSON validator~~ done (v1.6.0 CHANGELOG SARIF edge tests)
+27. ~~Implement SARIF schema validation test~~ done (v1.6.0 CHANGELOG SARIF edge tests)
 
 ### Release Prep
 
-28. Tag v1.5.1 (patch: FlightRecorder config-file integration + CI hardening)
-29. Tag sub-module versions: pipeline/v1.5.1, analysis/v1.5.1, cmd/go-finding/v1.5.1
-30. Run scripts/version-check.sh against new tags
-31. Verify `go get github.com/larsartmann/go-finding@v1.5.1` resolves
+28. ~~Tag v1.5.1 (patch: FlightRecorder config-file integration + CI hardening)~~ done (superseded, v1.6.0 tagged 2026-08-08)
+29. ~~Tag sub-module versions: pipeline/v1.5.1, analysis/v1.5.1, cmd/go-finding/v1.5.1~~ done (superseded, v1.6.0 tagged 2026-08-08)
+30. ~~Run scripts/version-check.sh against new tags~~ done (superseded, v1.6.0 tagged 2026-08-08)
+31. ~~Verify `go get github.com/larsartmann/go-finding@v1.5.1` resolves~~ done (superseded, v1.6.0 tagged 2026-08-08)
 
 ### Multi-Module Quality
 
-32. **T11:** Create single-module variant for benchmark comparison
-33. **T11:** Run benchstat comparison (multi-module vs monolith)
-34. **T11:** Write results to docs/reports/
-35. Add `paths-ignore` verification for new CI jobs (confirm markdown changes don't trigger)
+32. ~~**T11:** Create single-module variant for benchmark comparison~~ done (T11, benchmark report file exists)
+33. ~~**T11:** Run benchstat comparison (multi-module vs monolith)~~ done (T11, benchmark report file exists)
+34. ~~**T11:** Write results to docs/reports/~~ done (T11, benchmark report file exists)
+35. ~~Add `paths-ignore` verification for new CI jobs (confirm markdown changes don't trigger)~~ done (verified, 21-39 session scripts green)
 36. Consider splitting `structural-checks` job into 3 parallel jobs for faster feedback
 
 ### FlightRecorder v2 (T24-T26)
@@ -248,7 +254,7 @@ Config-file options are documented piecemeal across `flight-recorder.md`, `fix-e
 
 ### Ecosystem Expansion (T27-T31)
 
-43. Write consumer migration guide (v1.3/v1.4 API simplifications)
+43. ~~Write consumer migration guide (v1.3/v1.4 API simplifications)~~ done (docs/guides/consumer-migration-v1.7.md)
 44. Write ToolAdapter recipes for revive, errcheck, ineffassign
 45. Design LSPCodeAction wire type + ToCodeActions() method
 46. Design language provider interface for non-Go languages

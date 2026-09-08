@@ -1129,8 +1129,8 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | Severity aliases                             | FULLY_FUNCTIONAL     | 11 severity aliases + SeverityFromLevel + PriorityString (v1.3.0)                    |
 | SubstringProvider column-aware               | FULLY_FUNCTIONAL     | Nearest-position heuristic with line+column disambiguation                           |
 | Template factory                             | FULLY_FUNCTIONAL     | Pre-configured builder: stamp common fields once, build many findings                |
-| Template.Builder (per-finding chaining)      | FULLY_FUNCTIONAL     | Returns *Builder from template for confidence/suggestion overrides (unreleased)      |
-| ParseConfidence                              | FULLY_FUNCTIONAL     | Inverse of Confidence.String(); named levels + decimals + empty default (unreleased) |
+| Template.Builder (per-finding chaining)      | FULLY_FUNCTIONAL     | Returns *Builder from template for confidence/suggestion overrides (v1.6.0)         |
+| ParseConfidence                              | FULLY_FUNCTIONAL     | Inverse of Confidence.String(); named levels + decimals + empty default (v1.6.0)     |
 | Deterministic JSON/SARIF output              | FULLY_FUNCTIONAL     | json.Deterministic(true) on all 8 marshal calls; 8 byte-identity regression tests    |
 | ValidateAll (batch validation)               | FULLY_FUNCTIONAL     | Batch helper returning map[int]error for invalid findings                            |
 | FlightRecorderHook                           | FULLY_FUNCTIONAL     | Go runtime execution trace flight recorder for pipeline observability                |
@@ -1140,6 +1140,10 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | Configuration guide                          | FULLY_FUNCTIONAL     | docs/guides/configuration.md: all CLI flags, config file, library ConfigFile API     |
 | Troubleshooting guide                        | FULLY_FUNCTIONAL     | docs/guides/troubleshooting.md: build, config, pipeline, fix, flight recorder errors |
 | Multi-module benchmark                       | FULLY_FUNCTIONAL     | docs/reports/2026-08-08_multi-module-vs-monolith.md: zero runtime overhead           |
+| Finding groups (GroupID)                     | FULLY_FUNCTIONAL     | Branded `GroupID`; JSON/SARIF/LSP round-trip; `Report.GroupFindings()` (unreleased)  |
+| Per-finding fix outcomes                     | FULLY_FUNCTIONAL     | `ApplyWithOutcomes`: applied/no-change/refused/conflict/invalid/failed (unreleased)   |
+| Rollback policies                            | FULLY_FUNCTIONAL     | Per-file default + all-files opt-in; config-file `fixRollbackAllFiles` (unreleased)   |
+| Fix outcome metrics                          | FULLY_FUNCTIONAL     | `Metrics.RecordOutcome`/`OutcomeCounts` + CLI `Fix outcomes:` summary (unreleased)    |
 
 ---
 

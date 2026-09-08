@@ -109,64 +109,64 @@
 
 | # | Task                                                                                  | Impact | Effort | Evidence                                   |
 | - | ------------------------------------------------------------------------------------- | ------ | ------ | ------------------------------------------ |
-| 1 | Add CHANGELOG `### Fixed` entries for Equal tag-order, WriteTo race, sanitizeFilename | High   | Low    | §d.1, §d.3 — behavior changes undocumented |
-| 2 | Add CHANGELOG `### Added` entry for `ValidateAll`                                     | High   | Low    | §d.3 — new API undocumented                |
-| 3 | Write tests for `ValidateAll` (nil, empty, all-valid, all-invalid, mixed)             | High   | Low    | §d.2 — untested exported function          |
-| 4 | Update Pareto plan status: all 18 tasks → ✅ DONE                                     | Med    | Low    | §b.3 — plan doesn't reflect reality        |
-| 5 | Consider whether `Finding.Equal` tag-order change warrants SemVer note                | High   | Low    | §d.1 — semantic breaking change            |
+| ~~1~~ | ~~Add CHANGELOG `### Fixed` entries for Equal tag-order, WriteTo race, sanitizeFilename~~ done — v1.5.0 CHANGELOG Fixed entries | ~~High~~ | ~~Low~~ | ~~§d.1, §d.3 — behavior changes undocumented~~ |
+| ~~2~~ | ~~Add CHANGELOG `### Added` entry for `ValidateAll`~~ done — v1.5.0 CHANGELOG Added entry | ~~High~~ | ~~Low~~ | ~~§d.3 — new API undocumented~~ |
+| ~~3~~ | ~~Write tests for `ValidateAll` (nil, empty, all-valid, all-invalid, mixed)~~ done — tests shipped in 2026-08-02_00-26 session | ~~High~~ | ~~Low~~ | ~~§d.2 — untested exported function~~ |
+| ~~4~~ | ~~Update Pareto plan status: all 18 tasks → ✅ DONE~~ done — plan marked EXECUTED, in-file header | ~~Med~~ | ~~Low~~ | ~~§b.3 — plan doesn't reflect reality~~ |
+| ~~5~~ | ~~Consider whether `Finding.Equal` tag-order change warrants SemVer note~~ done — shipped as v1.5.0 | ~~High~~ | ~~Low~~ | ~~§d.1 — semantic breaking change~~ |
 
 ### 🟡 MEDIUM Priority — Close gaps
 
 | #  | Task                                                              | Impact | Effort | Evidence                            |
 | -- | ----------------------------------------------------------------- | ------ | ------ | ----------------------------------- |
-| 6  | Full FEATURES.md vs code audit (every method, every field)        | Med    | High   | §b.1, §d.5 — only 4 numbers checked |
+| ~~6~~  | ~~Full FEATURES.md vs code audit (every method, every field)~~ done — FEATURES full walk 2026-09-08 | ~~Med~~ | ~~High~~ | ~~§b.1, §d.5 — only 4 numbers checked~~ |
 | 7  | Test the CI markdown-link-checker script locally                  | Med    | Low    | §c.3 — untested bash                |
 | 8  | Test the CI changelog-check script locally                        | Med    | Low    | §c.3 — untested bash                |
-| 9  | Optimize `tagsEqual` to avoid clone+sort on every Equal call      | Med    | Low    | §d.4 — allocation on hot path       |
-| 10 | Check `doc.go` for FlightRecorder + ValidateAll references        | Low    | Low    | §c.6 — never checked                |
+| ~~9~~  | ~~Optimize `tagsEqual` to avoid clone+sort on every Equal call~~ done — tagsEqual fast path, 2026-08-03 session | ~~Med~~ | ~~Low~~ | ~~§d.4 — allocation on hot path~~ |
+| ~~10~~ | ~~Check `doc.go` for FlightRecorder + ValidateAll references~~ done — doc.go updated 2026-08-08 | ~~Low~~ | ~~Low~~ | ~~§c.6 — never checked~~ |
 | 11 | Per-file HTML review annotations (specific findings, not generic) | Low    | Med    | §d.6 — generic comment              |
-| 12 | FlightRecorder ConfigFile integration                             | Med    | Med    | TODO_LIST MEDIUM                    |
-| 13 | Write `docs/guides/flight-recorder.md` user guide                 | Med    | Low    | TODO_LIST MEDIUM                    |
-| 14 | FlightRecorder `example_test.go`                                  | Low    | Low    | TODO_LIST MEDIUM                    |
-| 15 | CLI integration test for `-trace` flag                            | Low    | Med    | TODO_LIST MEDIUM                    |
-| 16 | Release FlightRecorder (tag v1.5.0 or v1.4.2)                     | High   | Low    | Blocked on Q1                       |
+| ~~12~~ | ~~FlightRecorder ConfigFile integration~~ done — v1.6.0 CHANGELOG, ConfigFile flight recorder integration | ~~Med~~ | ~~Med~~ | ~~TODO_LIST MEDIUM~~ |
+| ~~13~~ | ~~Write `docs/guides/flight-recorder.md` user guide~~ done — docs/guides/flight-recorder.md | ~~Med~~ | ~~Low~~ | ~~TODO_LIST MEDIUM~~ |
+| ~~14~~ | ~~FlightRecorder `example_test.go`~~ done — example_test.go, 2026-08-08 session | ~~Low~~ | ~~Low~~ | ~~TODO_LIST MEDIUM~~ |
+| ~~15~~ | ~~CLI integration test for `-trace` flag~~ done — CLI E2E trace tests, 2026-08-08 session | ~~Low~~ | ~~Med~~ | ~~TODO_LIST MEDIUM~~ |
+| ~~16~~ | ~~Release FlightRecorder (tag v1.5.0 or v1.4.2)~~ done — v1.5.0 tagged 2026-08-06 | ~~High~~ | ~~Low~~ | ~~Blocked on Q1~~ |
 
 ### 🟢 LOW Priority — Polish
 
 | #  | Task                                                      | Impact | Effort  | Evidence                           |
 | -- | --------------------------------------------------------- | ------ | ------- | ---------------------------------- |
-| 17 | Per-module golangci-lint configs                          | Low    | Med     | TODO_LIST LOW                      |
-| 18 | go-arch-lint module boundary CI                           | Low    | Med     | TODO_LIST LOW                      |
-| 19 | `go.work sync` idempotency CI                             | Low    | Med     | TODO_LIST LOW                      |
-| 20 | Replace directive audit CI                                | Low    | Low     | TODO_LIST LOW                      |
-| 21 | Version drift detection CI                                | Low    | Low     | TODO_LIST LOW                      |
-| 22 | Test filename convention CI                               | Low    | Low     | TODO_LIST LOW                      |
-| 23 | Docs-freshness CI check                                   | Low    | Med     | TODO_LIST LOW                      |
-| 24 | Per-module CHANGELOG entries                              | Low    | Med     | TODO_LIST LOW                      |
-| 25 | Multi-module vs monolith benchmark                        | Low    | Med     | TODO_LIST LOW                      |
-| 26 | SARIF/LSP/FilePath round-trip benchmark                   | Low    | Med     | TODO_LIST LOW                      |
-| 27 | TOCTOU symlink swap runtime test                          | Low    | Med     | TODO_LIST LOW                      |
+| ~~17~~ | ~~Per-module golangci-lint configs~~ done — single root lint config, 2026-08-08_22-11 session | ~~Low~~ | ~~Med~~ | ~~TODO_LIST LOW~~ |
+| ~~18~~ | ~~go-arch-lint module boundary CI~~ done — v1.6.0 CHANGELOG, arch-check job | ~~Low~~ | ~~Med~~ | ~~TODO_LIST LOW~~ |
+| ~~19~~ | ~~`go.work sync` idempotency CI~~ done — scripts/go-work-sync.sh in CI | ~~Low~~ | ~~Med~~ | ~~TODO_LIST LOW~~ |
+| ~~20~~ | ~~Replace directive audit CI~~ done — scripts/replace-audit.sh in CI | ~~Low~~ | ~~Low~~ | ~~TODO_LIST LOW~~ |
+| ~~21~~ | ~~Version drift detection CI~~ done — scripts/version-drift.sh in CI | ~~Low~~ | ~~Low~~ | ~~TODO_LIST LOW~~ |
+| ~~22~~ | ~~Test filename convention CI~~ done — scripts/test-naming.sh in CI | ~~Low~~ | ~~Low~~ | ~~TODO_LIST LOW~~ |
+| ~~23~~ | ~~Docs-freshness CI check~~ done — scripts/docs-freshness.sh in CI | ~~Low~~ | ~~Med~~ | ~~TODO_LIST LOW~~ |
+| ~~24~~ | ~~Per-module CHANGELOG entries~~ done — per-module CHANGELOGs, v1.6.0 | ~~Low~~ | ~~Med~~ | ~~TODO_LIST LOW~~ |
+| ~~25~~ | ~~Multi-module vs monolith benchmark~~ done — docs/reports/2026-08-08_multi-module-vs-monolith.md | ~~Low~~ | ~~Med~~ | ~~TODO_LIST LOW~~ |
+| ~~26~~ | ~~SARIF/LSP/FilePath round-trip benchmark~~ done — v1.6.0 CHANGELOG, LSP benchmarks | ~~Low~~ | ~~Med~~ | ~~TODO_LIST LOW~~ |
+| ~~27~~ | ~~TOCTOU symlink swap runtime test~~ done — v1.6.0 CHANGELOG, TOCTOU tests | ~~Low~~ | ~~Med~~ | ~~TODO_LIST LOW~~ |
 | 28 | D2 SVG re-render (check if d2 CLI available)              | Low    | Low     | §c.2 — skipped                     |
-| 29 | Convert FlightRecorder tests to Ginkgo BDD                | Low    | Med     | §c.5 — justified skip              |
+| ~~29~~ | ~~Convert FlightRecorder tests to Ginkgo BDD~~ **Won't implement — Ginkgo conversion deliberately skipped.** | ~~Low~~ | ~~Med~~ | ~~§c.5 — justified skip~~ |
 | 30 | `Finding.Equal` fuzz test (random tag permutations)       | Low    | Low     | Would strengthen the property test |
-| 31 | `tagsEqual` benchmark (measure allocation overhead)       | Low    | Low     | §d.4 — no perf data                |
-| 32 | Consider `ValidateAll` return type (map vs slice)         | Low    | Low     | §e.7 — design question             |
+| ~~31~~ | ~~`tagsEqual` benchmark (measure allocation overhead)~~ done — tagsEqual benchmarks, 2026-08-03 session | ~~Low~~ | ~~Low~~ | ~~§d.4 — no perf data~~ |
+| ~~32~~ | ~~Consider `ValidateAll` return type (map vs slice)~~ **Won't implement — map kept by Q2 decision in-file.** | ~~Low~~ | ~~Low~~ | ~~§e.7 — design question~~ |
 | 33 | Narrow `writeMu` scope in FlightRecorder                  | Low    | Low     | §e.8 — only lock around WriteTo    |
-| 34 | Add `ValidateAll` to FEATURES.md summary matrix           | Low    | Low     | New API not in feature list        |
-| 35 | Add `tagsEqual` to AGENTS.md Important Behaviors          | Low    | Low     | §e.10                              |
+| ~~34~~ | ~~Add `ValidateAll` to FEATURES.md summary matrix~~ done — FEATURES matrix row, 21-39 session T10 | ~~Low~~ | ~~Low~~ | ~~New API not in feature list~~ |
+| ~~35~~ | ~~Add `tagsEqual` to AGENTS.md Important Behaviors~~ done — AGENTS.md tagsEqual gotcha | ~~Low~~ | ~~Low~~ | ~~§e.10~~ |
 | 36 | Verify `.envrc` works with direnv                         | Low    | Low     | §c.3 — never tested                |
 | 37 | Add `ValidateAll` example to MIGRATION_v1.3.md            | Low    | Low     | §e.11                              |
 | 38 | Check if any consumer code depends on tag-order in Equal  | Low    | High    | §d.1 — blast radius unknown        |
 | 39 | SARIF binary snippet form support                         | Low    | Low     | TODO_LIST candidate                |
 | 40 | `resolveSafePath` fuzz target                             | Low    | Med     | TODO_LIST candidate                |
 | 41 | `GenerateID` collision property test                      | Low    | Low     | Plan F064                          |
-| 42 | SARIF round-trip property test                            | Low    | Low     | Plan F062                          |
-| 43 | LSP round-trip property test                              | Low    | Low     | Plan F063                          |
+| ~~42~~ | ~~SARIF round-trip property test~~ done — v1.6.0 edge tests + 2026-09-08 golden wire tests | ~~Low~~ | ~~Low~~ | ~~Plan F062~~ |
+| ~~43~~ | ~~LSP round-trip property test~~ done — v1.6.0 benchmarks + 2026-09-08 golden wire tests | ~~Low~~ | ~~Low~~ | ~~Plan F063~~ |
 | 44 | GoReleaser + Homebrew tap verification                    | Med    | Low     | TODO_LIST Phase 3                  |
 | 45 | Write announcement blog/r/golang post                     | Med    | Med     | TODO_LIST Phase 3                  |
 | 46 | Submit to Awesome Go                                      | Low    | Low     | TODO_LIST Phase 3                  |
 | 47 | Track Go json/v2 stabilization (Go 1.27+)                 | Low    | Ongoing | TODO_LIST                          |
-| 48 | go-linter-sdk: wire IsEnabledByDefault into Registry.Run  | Med    | Med     | Blocked — sibling repo             |
+| ~~48~~ | ~~go-linter-sdk: wire IsEnabledByDefault into Registry.Run~~ done — metadata-only godoc, 2026-08-08_11-24 session | ~~Med~~ | ~~Med~~ | ~~Blocked — sibling repo~~ |
 | 49 | go-linter-sdk: create first git tag                       | Med    | Low     | Blocked — sibling repo             |
 | 50 | go-linter-sdk: pilot migration (port go-structure-linter) | Med    | High    | Blocked — sibling repo             |
 

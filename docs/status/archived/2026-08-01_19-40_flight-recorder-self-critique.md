@@ -101,33 +101,33 @@
 
 ### P0 — Fix the bugs I shipped
 
-1. **Add `writeMu sync.Mutex` to serialize concurrent `WriteTo` calls** — Prevents the "already in progress" error
-2. **Fix `SanitizeFilename("")` to return `"snapshot"`** — Prevents malformed filenames
-3. **Add test for concurrent snapshot serialization** — Prove the mutex works
-4. **Add test for `MkdirAll` error path** — Pass `/dev/null/x` as output dir
-5. **Run `GOWORK=off go test` in pipeline module** — Verify `WaitGroup.Go` doesn't break per-module builds
+1. ~~**Add `writeMu sync.Mutex` to serialize concurrent `WriteTo` calls** — Prevents the "already in progress" error~~ done (v1.5.0 CHANGELOG, writeMu race fix)
+2. ~~**Fix `SanitizeFilename("")` to return `"snapshot"`** — Prevents malformed filenames~~ done (v1.5.0 CHANGELOG, sanitizeFilename fix)
+3. ~~**Add test for concurrent snapshot serialization** — Prove the mutex works~~ done (test shipped, in-file §d.1 FIXED marker)
+4. ~~**Add test for `MkdirAll` error path** — Pass `/dev/null/x` as output dir~~ done (test shipped, in-file §d.4 FIXED marker)
+5. ~~**Run `GOWORK=off go test` in pipeline module** — Verify `WaitGroup.Go` doesn't break per-module builds~~ done (verified in 2026-08-06 v1.5.0 release session)
 
 ### P1 — Close the feature gap
 
-6. **Add `FlightRecorderConfig` to `ConfigFile` schema** — YAML/JSON config support
-7. **Add `FlightRecorder` section to `config_file.go`** — Parse from config
-8. **Write `docs/guides/flight-recorder.md`** — Full user guide
-9. **Add `CHANGELOG.md` entry** — Under unreleased
-10. **Add `FEATURES.md` entry** — Mark as DONE
-11. **Write `example_test.go`** — Godoc runnable examples
-12. **Check `doc.go` for API reference updates** — Ensure new symbols are documented
-13. **Convert tests to Ginkgo BDD** — Match pipeline convention
-14. **Add CLI integration test** — Automated `-trace` flag test
+6. ~~**Add `FlightRecorderConfig` to `ConfigFile` schema** — YAML/JSON config support~~ done (v1.6.0 CHANGELOG, FlightRecorderFileConfig)
+7. ~~**Add `FlightRecorder` section to `config_file.go`** — Parse from config~~ done (v1.6.0 CHANGELOG, CLI flightRecorder section)
+8. ~~**Write `docs/guides/flight-recorder.md`** — Full user guide~~ done (exists, docs/guides/flight-recorder.md)
+9. ~~**Add `CHANGELOG.md` entry** — Under unreleased~~ done (v1.5.0 CHANGELOG)
+10. ~~**Add `FEATURES.md` entry** — Mark as DONE~~ done (FEATURES updated, in-file Resolution appendix)
+11. ~~**Write `example_test.go`** — Godoc runnable examples~~ done (example_test.go, 2026-08-08 session)
+12. ~~**Check `doc.go` for API reference updates** — Ensure new symbols are documented~~ done (doc.go updated 2026-08-08)
+13. ~~**Convert tests to Ginkgo BDD** — Match pipeline convention~~ **Won't implement — Ginkgo conversion deliberately skipped.**
+14. ~~**Add CLI integration test** — Automated `-trace` flag test~~ done (CLI E2E -trace tests, 2026-08-08 session)
 15. **Add benchmark** — `BenchmarkPipelineWithFlightRecorder`
 
 ### P2 — Polish and hardening
 
-16. **Context propagation through `writeSnapshot`** — Allow cancellation
-17. **Detect pre-existing flight recorder** — Handle `Start()` error gracefully with a helpful message
+16. ~~**Context propagation through `writeSnapshot`** — Allow cancellation~~ done (v1.6.0 CHANGELOG, Snapshot ctx signature)
+17. ~~**Detect pre-existing flight recorder** — Handle `Start()` error gracefully with a helpful message~~ done (v1.6.0 CHANGELOG, Degraded mode)
 18. **Add trace file count limit** — Prevent disk fill on long runs with `-trace-slow`
 19. **Add trace file size metric** — Log snapshot sizes to metrics
-20. **Add `-trace-min-age` CLI flag** — Currently hardcoded to 30s default
-21. **Add `-trace-max-bytes` CLI flag** — Currently hardcoded to 4 MiB
+20. ~~**Add `-trace-min-age` CLI flag** — Currently hardcoded to 30s default~~ done (v1.6.0 CHANGELOG, config-file minAge full parity)
+21. ~~**Add `-trace-max-bytes` CLI flag** — Currently hardcoded to 4 MiB~~ done (v1.6.0 CHANGELOG, config-file maxBytes full parity)
 22. **Consider `io.Discard` mode** — Flight recorder enabled but snapshots discarded (overhead measurement only)
 23. **Add `SnapshotN()` method** — Return last N snapshots as `[][]byte`
 24. **Add `Snapshots() []string`** — Return all snapshot file paths
@@ -148,16 +148,16 @@
 
 ### P4 — Operational
 
-36. **Nix flake check** — Verify the full build passes
-37. **Version bump** — This is a feature, warrants at least minor version bump
-38. **Release notes draft** — Document the flight recorder as a headline feature
-39. **README.md update** — Mention flight recorder in the features list
-40. **docs/DOMAIN_LANGUAGE.md** — Add "Flight Recorder", "Trace Snapshot", "Slow Stage Threshold" terms
-41. **CI pipeline** — Ensure `-trace` doesn't break CI runs
-42. **Performance regression check** — Run `bench-check.sh` to verify no regression
-43. **Consumer migration guide** — How consumers enable flight recording via library API
-44. **go tool trace guide** — How to interpret the trace output for pipeline-specific patterns
-45. **Troubleshooting guide** — Common trace analysis scenarios (slow detector, fix contention, GC pause)
+36. ~~**Nix flake check** — Verify the full build passes~~ done (nix flake check green 2026-09-08)
+37. ~~**Version bump** — This is a feature, warrants at least minor version bump~~ done (v1.5.0 tagged 2026-08-06)
+38. ~~**Release notes draft** — Document the flight recorder as a headline feature~~ done (v1.5.0 CHANGELOG release notes)
+39. ~~**README.md update** — Mention flight recorder in the features list~~ done (README.md feature list)
+40. ~~**docs/DOMAIN_LANGUAGE.md** — Add "Flight Recorder", "Trace Snapshot", "Slow Stage Threshold" terms~~ done (v1.6.0 CHANGELOG, DOMAIN_LANGUAGE)
+41. ~~**CI pipeline** — Ensure `-trace` doesn't break CI runs~~ done (E2E trace-config tests in suite)
+42. ~~**Performance regression check** — Run `bench-check.sh` to verify no regression~~ done (benchmarks/baseline.txt + bench-check.sh)
+43. ~~**Consumer migration guide** — How consumers enable flight recording via library API~~ done (docs/guides/consumer-migration-v1.7.md)
+44. ~~**go tool trace guide** — How to interpret the trace output for pipeline-specific patterns~~ done (docs/guides/flight-recorder.md)
+45. ~~**Troubleshooting guide** — Common trace analysis scenarios (slow detector, fix contention, GC pause)~~ done (v1.6.0 CHANGELOG, troubleshooting guide)
 
 ### P5 — Future experiments
 

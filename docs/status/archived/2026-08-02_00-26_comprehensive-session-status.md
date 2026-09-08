@@ -112,22 +112,22 @@
 
 | # | Task                                                     | Impact | Effort |
 | - | -------------------------------------------------------- | ------ | ------ |
-| 1 | Cut release v1.4.2 (tag all 4 modules, push)             | HIGH   | 30min  |
-| 2 | Verify `version.go` matches new tag                      | HIGH   | 5min   |
-| 3 | Run `scripts/version-check.sh` post-tag                  | HIGH   | 5min   |
-| 4 | Update CHANGELOG `[Unreleased]` → `[1.4.2] - 2026-08-02` | HIGH   | 5min   |
+| ~~1~~ | ~~Cut release v1.4.2 (tag all 4 modules, push)~~ done — v1.5.0 tagged 2026-08-06 | ~~HIGH~~ | ~~30min~~ |
+| ~~2~~ | ~~Verify `version.go` matches new tag~~ done — v1.5.0 tagged 2026-08-06 | ~~HIGH~~ | ~~5min~~ |
+| ~~3~~ | ~~Run `scripts/version-check.sh` post-tag~~ done — v1.5.0 tagged 2026-08-06 | ~~HIGH~~ | ~~5min~~ |
+| ~~4~~ | ~~Update CHANGELOG `[Unreleased]` → `[1.4.2] - 2026-08-02`~~ done — v1.5.0 CHANGELOG | ~~HIGH~~ | ~~5min~~ |
 
 ### Documentation gaps (from this session's self-critique — not addressed)
 
 | #  | Task                                                           | Impact | Effort |
 | -- | -------------------------------------------------------------- | ------ | ------ |
-| 5  | Add `ValidateAll` to `doc.go` package overview                 | Medium | 10min  |
-| 6  | Add `FlightRecorder` to `doc.go` package overview              | Medium | 10min  |
-| 7  | Add `ValidateAll` to `FEATURES.md` summary matrix              | Low    | 5min   |
+| ~~5~~  | ~~Add `ValidateAll` to `doc.go` package overview~~ done — doc.go updated, TODO_LIST 2026-09-08 | ~~Medium~~ | ~~10min~~ |
+| ~~6~~  | ~~Add `FlightRecorder` to `doc.go` package overview~~ done — doc.go updated, TODO_LIST 2026-09-08 | ~~Medium~~ | ~~10min~~ |
+| ~~7~~  | ~~Add `ValidateAll` to `FEATURES.md` summary matrix~~ done — FEATURES matrix row, 21-39 session T10 | ~~Low~~ | ~~5min~~ |
 | 8  | Add `ValidateAll` usage example to `MIGRATION_v1.3.md`         | Low    | 10min  |
-| 9  | Document `tagsEqual` helper in `AGENTS.md` Important Behaviors | Low    | 5min   |
-| 10 | Full FEATURES.md vs code audit (not just 4 spot-checks)        | Medium | 100min |
-| 11 | Verify all `doc.go` API references match current symbol names  | Low    | 15min  |
+| ~~9~~  | ~~Document `tagsEqual` helper in `AGENTS.md` Important Behaviors~~ done — AGENTS.md tagsEqual gotcha | ~~Low~~ | ~~5min~~ |
+| ~~10~~ | ~~Full FEATURES.md vs code audit (not just 4 spot-checks)~~ done — FEATURES full walk 2026-09-08 | ~~Medium~~ | ~~100min~~ |
+| ~~11~~ | ~~Verify all `doc.go` API references match current symbol names~~ done — doc.go updated 2026-09-08 | ~~Low~~ | ~~15min~~ |
 
 ### Test gaps
 
@@ -137,8 +137,8 @@
 | 13 | Test CI `markdown-link-check` bash script locally           | Medium | 10min  |
 | 14 | Test `.envrc` with `direnv allow`                           | Low    | 5min   |
 | 15 | Add `resolveSafePath` fuzz target (M17 sub-task F061)       | Low    | 15min  |
-| 16 | Add SARIF round-trip property test (F062)                   | Low    | 15min  |
-| 17 | Add LSP round-trip property test (F063)                     | Low    | 15min  |
+| ~~16~~ | ~~Add SARIF round-trip property test (F062)~~ done — v1.6.0 edge tests + golden wire tests 2026-09-08 | ~~Low~~ | ~~15min~~ |
+| ~~17~~ | ~~Add LSP round-trip property test (F063)~~ done — v1.6.0 benchmarks + golden wire tests 2026-09-08 | ~~Low~~ | ~~15min~~ |
 | 18 | Add GenerateID collision property test (F064)               | Low    | 15min  |
 | 19 | Add `ValidateAll` benchmark (large slice performance)       | Low    | 10min  |
 | 20 | Increase `testing/quick` iteration count for property tests | Low    | 5min   |
@@ -147,18 +147,18 @@
 
 | #  | Task                                                                                        | Impact | Effort |
 | -- | ------------------------------------------------------------------------------------------- | ------ | ------ |
-| 21 | Resolve `ValidateAll` return type (map vs ordered slice)                                    | Low    | 30min  |
+| ~~21~~ | ~~Resolve `ValidateAll` return type (map vs ordered slice)~~ **Won't implement — ValidateAll return type kept by decision.** | ~~Low~~ | ~~30min~~ |
 | 22 | Add `ValidateAll` godoc example (`ExampleValidateAll`)                                      | Low    | 10min  |
-| 23 | Consider canonical tag ordering at Finding construction (eliminates `tagsEqual` clone-sort) | Low    | 30min  |
+| ~~23~~ | ~~Consider canonical tag ordering at Finding construction (eliminates `tagsEqual` clone-sort)~~ done — solved via tagsEqual fast path, 2026-08-03 | ~~Low~~ | ~~30min~~ |
 | 24 | SARIF binary snippet form support (M18 sub-task F067)                                       | Low    | 20min  |
 
 ### CI / Infrastructure
 
 | #  | Task                                                                       | Impact | Effort |
 | -- | -------------------------------------------------------------------------- | ------ | ------ |
-| 25 | Add test-filename convention CI check (M16 sub-task F058)                  | Low    | 10min  |
+| ~~25~~ | ~~Add test-filename convention CI check (M16 sub-task F058)~~ done — scripts/test-naming.sh in CI | ~~Low~~ | ~~10min~~ |
 | 26 | Add release-dry-run CI job (M16 sub-task F055)                             | Low    | 15min  |
-| 27 | Add benchmark regression CI job (uses committed `benchmarks/baseline.txt`) | Medium | 30min  |
+| ~~27~~ | ~~Add benchmark regression CI job (uses committed `benchmarks/baseline.txt`)~~ done — CI benchmark job + extended baseline | ~~Medium~~ | ~~30min~~ |
 | 28 | Verify Dependabot covers all 4 sub-modules                                 | Low    | 5min   |
 | 29 | Add `gosec` to CI (currently only in local lint)                           | Low    | 10min  |
 
@@ -166,18 +166,18 @@
 
 | #  | Task                                                          | Impact | Effort |
 | -- | ------------------------------------------------------------- | ------ | ------ |
-| 30 | FlightRecorder ConfigFile integration (route via YAML config) | Medium | 60min  |
-| 31 | FlightRecorder guide (`docs/guides/flight-recorder.md`)       | Low    | 30min  |
-| 32 | Add `example_test.go` for FlightRecorder usage                | Low    | 15min  |
-| 33 | CLI integration test (end-to-end `-trace` flag)               | Medium | 30min  |
+| ~~30~~ | ~~FlightRecorder ConfigFile integration (route via YAML config)~~ done — v1.6.0 CHANGELOG, ConfigFile integration | ~~Medium~~ | ~~60min~~ |
+| ~~31~~ | ~~FlightRecorder guide (`docs/guides/flight-recorder.md`)~~ done — docs/guides/flight-recorder.md | ~~Low~~ | ~~30min~~ |
+| ~~32~~ | ~~Add `example_test.go` for FlightRecorder usage~~ done — example_test.go, 2026-08-08 session | ~~Low~~ | ~~15min~~ |
+| ~~33~~ | ~~CLI integration test (end-to-end `-trace` flag)~~ done — CLI E2E trace tests, 2026-08-08 session | ~~Medium~~ | ~~30min~~ |
 | 34 | FlightRecorder trace rotation (prevent unbounded disk growth) | Low    | 60min  |
-| 35 | Multiple flight recorder support (currently global singleton) | Low    | 45min  |
+| ~~35~~ | ~~Multiple flight recorder support (currently global singleton)~~ done — v1.6.0 CHANGELOG, Degraded mode | ~~Low~~ | ~~45min~~ |
 
 ### Architecture / v2.0 prep
 
 | #  | Task                                                                 | Impact | Effort |
 | -- | -------------------------------------------------------------------- | ------ | ------ |
-| 36 | Document v2.0 breaking changes in ROADMAP                            | Low    | 30min  |
+| ~~36~~ | ~~Document v2.0 breaking changes in ROADMAP~~ done — v2.0 tracked in ROADMAP Hardening | ~~Low~~ | ~~30min~~ |
 | 37 | Design `Finding` builder v2 (fluent + compile-time validation)       | Low    | 60min  |
 | 38 | Investigate PGO (profile-guided optimization) for pipeline hot paths | Low    | 60min  |
 | 39 | Consider `iter.Seq[Finding]` migration for streaming pipeline        | Low    | 90min  |
@@ -190,18 +190,18 @@
 | 41 | Public launch announcement blog post                 | Medium | 60min  |
 | 42 | Submit to Awesome Go                                 | Low    | 10min  |
 | 43 | Write GoDev package discovery entry                  | Low    | 30min  |
-| 44 | go-linter-sdk: wire `IsEnabledByDefault` + tag (M24) | Medium | 45min  |
+| ~~44~~ | ~~go-linter-sdk: wire `IsEnabledByDefault` + tag (M24)~~ done — metadata-only godoc, 2026-08-08_11-24 session | ~~Medium~~ | ~~45min~~ |
 | 45 | go-linter-sdk: pilot migration (M25)                 | Medium | 90min  |
 
 ### Housekeeping
 
 | #  | Task                                                                         | Impact | Effort |
 | -- | ---------------------------------------------------------------------------- | ------ | ------ |
-| 46 | Commit the untracked self-critique report                                    | Medium | 1min   |
-| 47 | Commit this session's changes (CHANGELOG, tests, plan update)                | Medium | 1min   |
+| ~~46~~ | ~~Commit the untracked self-critique report~~ done — committed, in-file RESOLVED banner | ~~Medium~~ | ~~1min~~ |
+| ~~47~~ | ~~Commit this session's changes (CHANGELOG, tests, plan update)~~ done — committed, in-file RESOLVED banner | ~~Medium~~ | ~~1min~~ |
 | 48 | Clean up `PUBLIC_OR_PRIVATE.md` (may be stale)                               | Low    | 5min   |
-| 49 | Audit `.golangci.yml` for linter currency (new linters in golangci-lint v2?) | Low    | 15min  |
-| 50 | Review `flake.nix` for dependency updates (Go 1.26.5 → latest?)              | Low    | 10min  |
+| ~~49~~ | ~~Audit `.golangci.yml` for linter currency (new linters in golangci-lint v2?)~~ done — 2026-08-08_22-11 un-exclusions + lint matrix green | ~~Low~~ | ~~15min~~ |
+| ~~50~~ | ~~Review `flake.nix` for dependency updates (Go 1.26.5 → latest?)~~ done — v1.5.0 CHANGELOG + vendorHash update 2026-09-08 | ~~Low~~ | ~~10min~~ |
 
 ---
 
