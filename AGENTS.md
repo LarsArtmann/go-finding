@@ -217,3 +217,5 @@ See `docs/MIGRATION_v1.0.md` for migration details.
 ---
 
 _Assisted-by: Crush <crush@charm.land>_
+
+- **Push release tags in batches of ≤3** — GitHub creates NO workflow events when a single push updates more than three tags; pushing all 4 release tags + master at once silently skipped every Release trigger (discovered at v1.9.0: no auto run; manual `gh workflow run Release --ref vX.Y.Z` worked). Procedure: push master, then the 4 tags split into two pushes (3+1), or dispatch Release manually.
