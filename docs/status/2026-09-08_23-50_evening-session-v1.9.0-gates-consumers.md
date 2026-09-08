@@ -1,0 +1,97 @@
+# Evening Session — v1.9.0 Shipped Through Full Gate Cycle; Repo-Public Mid-Session Pivot; Consumer Rot Documented
+
+**Date:** 2026-09-08 21:58–00:00+ CEST
+**Trigger:** User blanket directive (same pattern as the previous session): "READ, UNDERSTAND, RESEARCH, REFLECT. Break this down... Execute and Verify them one step at a time. Repeat until done."
+**Predecessors:** `docs/status/2026-09-08_21-51_evening-session-self-review.md` (§f list + §g questions), `docs/status/2026-09-08_22-24_go-public-launch.md` (PARALLEL session — repo made public at 22:24).
+
+---
+
+## Headline
+
+**v1.9.0 shipped** (4 tags, proxy ×4 green, post-tag preflight green) with every gate mode of the new preflight actually executed — and the gate-design work caught **four real bugs by execution**: a dead `--bench` mode, a self-test whose drift injection stopped working at v1.9.0, a 25%-time benchmark threshold that was physically un-satisfiable on this machine, and an environment-flaky test that failed the first live Release run since v1.4.0. Mid-session, a **parallel session made the repo PUBLIC** (22:24), dissolving the CI-billing blocker and making Q3 moot in the best way: Dependabot PRs now validate with real CI. Consumer-side rot is now documented where its owners work: **5 issues filed across 4 repos**, including the discovery that `hierarchical-errors` is `erraudit`'s pre-rename name (two "failing consumers" were one repo).
+
+## The three §g questions — decided and executed
+
+| Q | Decision | Evidence |
+| --- | --- | --- |
+| **Q1 v1.9.0 cadence** | **Tag now**, after closing the known FR-tail gaps | flight-recorder.md guide + concurrent-rotation fix + .trace.gz e2e + sampling decision all landed first; release train ran preflight-first (fixing the d/7 ordering failure from last session). Patch follow-up (v1.9.1) became necessary when the first live Release run exposed an environment-flaky test (see below). |
+| **Q2 cross-repo consumer repairs** | **Diagnose precisely, file issues in each repo; fix only mechanical, go-finding-adjacent breakage** | 7 repos' pre-existing failures re-captured with exact output; gomend/licenseforge breakage root-caused to missing BuildFlow replace targets (12 + 1 paths listed per repo); library-policy hooks root-caused (nix store GC) and healed by devShell entry. Fixing other repos' test logic from here = guessing in someone else's domain; filed instead: gomend#1, licenseforge#46, library-policy#74, erraudit#3, go-structure-linter#2. |
+| **Q3 Dependabot without CI** | **Moot** — the parallel session's public flip made Actions free; PRs now run the full CI matrix | Diffs reviewed (ginkgo 2.32.1/gomega 1.43.0 test-deps; sbom-action SHA verified real via `gh api`); #29 closed as superseded by #25; `@dependabot rebase` requested on #23/#24/#25 so they re-run against the fixed workflows; merge on green. |
+
+## a) FULLY DONE (verified)
+
+| # | Item | Evidence |
+| --- | --- | --- |
+| 1 | **f4 baseline regen + bench gate redesigned on evidence** | Two full-suite captures showed +26..150% "regressions" on unchanged code; direct experiment isolated the cause: `IntervalIndex_Query/1000` = 9.3µ fresh vs 20.1µ late-suite (n=10, p=0.000) — **thermal throttling during sustained runs**; allocations ±0% everywhere. `bench-check.sh` now hard-fails alloc regressions >10% (deterministic) and time >250% (algorithmic); verified both directions (noise passes, synthetic alloc regression fails). ci.yml + preflight updated; README rationale written. |
+| 2 | **f1 preflight `--bench` executed — dead-gate bug found & fixed** | The mode never captured benchmarks (compared against stale `/tmp/preflight-bench.txt`). Fixed to capture core+pipeline count=10 itself; executed green in the v1.9.0 train. |
+| 3 | **f2 preflight `--stress` executed** | ginkgo repeat=20 core+pipeline, count=20 analysis+CLI — all green in-train. |
+| 4 | **f3 self-test built, run, and self-repaired** | `release-preflight-selftest.sh`: injects tag-collision + version-drift into a disposable worktree, asserts FAIL on each; wired as CI job (`preflight-selftest` — **green on runners**). First local run caught its own flaw (hardcoded injection == current version → no drift); rewritten version-relative; both injections verified caught. |
+| 5 | **f5 `--post-tag` mode** | Inverts tag-collision guard + runs version-check; executed green after tagging v1.9.0. |
+| 6 | **f6 [Unreleased] headers** | analysis/CHANGELOG.md got its header; all 4 modules verified exactly one. |
+| 7 | **f7+f11 flight-recorder.md** | Rotation + gzip + gunzip instructions across all 6 touchpoints (quick start, config YAML/JSON, programmatic, config reference ×2 tables, how-it-works). |
+| 8 | **f8 prune serialization (d/6 closed)** | `pruneSnapshots` holds `writeMu` for list+delete; concurrent-rotation test (16×2 snapshots, MaxFiles=4, `-race`, zero double-remove warnings via counting slog handler). |
+| 9 | **f9 sampling decision — NO-GO, written** | ROADMAP: no in-process sampling API exists (only run-level coin flips = 3 caller lines); workload mismatch (short opt-in runs vs long-lived servers); no overhead data. Revisit trigger: long-lived consumer with measured overhead. |
+| 10 | **f10 .trace.gz e2e** | Real snapshot → gunzip → `go tool trace` parsed fully to the viewer server; header magic `go 1.26 trace\0` pinned by a permanent header-equality test (compressed vs plain first-16-bytes identical). |
+| 11 | **f12 fuzz hostile-dir prune** | Symlinks (incl. dangling + out-of-dir targets), dirs masquerading as snapshots, fuzzed filename bytes; invariants: protected files + targets never touched, own-file count ≤ MaxFiles. Seeds green. |
+| 12 | **f13 numbering-under-concurrency** | Already covered by `TestFlightRecorderHook_ConcurrentSnapshotsDoNotCollide` (n=10 unique paths); the new rotation test re-asserts uniqueness under pruning at 32 concurrent snapshots. |
+| 13 | **f14 concurrent callback test** | `TestOnFixOutcome_ConcurrentPipelines`: 8 parallel pipelines × shared callbacks, exactly-once per finding per run, `-race` clean. |
+| 14 | **f15 staticcheck real corpus** | Real staticcheck 2026.2.1 run against a flawed fixture (`testdata/staticcheck-corpus/`), captured as JSONL (paths relativized); `TestParseStaticcheckJSON_RealCorpus` pins field layout, severity/category mapping, no-before/after. |
+| 15 | **f26 all-systems conclusion written** | AGENTS.md: declined — warns/fails without darwin builders; revisit trigger documented. |
+| 16 | **f27 USAGE_GUIDE staticcheck extension** | before/after fields, both-required rule, fixture + corpus pointers. |
+| 17 | **f28 ecosystem sweep table** | Rewritten post-v1.9.0: 19 bumped repos with per-repo state, 2 blocked with issue links, pre-existing failures explicitly non-regressions, art-dupl + 2 opportunistic pending. |
+| 18 | **v1.9.0 release train** | Preflight (default) → bench → stress → selftest all green BEFORE tagging; annotated tags ×4; proxy resolves all 4 modules; `--post-tag` green. |
+| 19 | **CI triage (f31 partial)** | All 5 post-flip failures root-caused + fixed: stress (ginkgo rejects `go test -count>1` — job split per protocol), arch (testdata exclude), coverage (94.2→98.3% via targeted tests), lychee (private siblings + v0.1.x compare excludes; pkg.go.dev exclude REMOVED — page live), docs-api-check (healed by tree state). |
+| 20 | **pkg.go.dev live** (f41) | Renders v1.8.0 full docs; temporary lychee exclude removed per the dead-gate warning. |
+
+## b) PARTIALLY DONE
+
+| Item | Done | Missing |
+| --- | --- | --- |
+| f34-37 Dependabot | Diffs reviewed; SHA verified; #29 closed; rebases requested; #23 CI re-running | #24/#25 rebase runs pending at report time; MERGE still to be executed on green |
+| f31 CI verification | Master CI dispatched; PR CIs running with fixed workflows | Final green confirmation + the version-check/docs-api-check/stress trio on post-rebase runs needs reading (stale pre-rebase results at report time) |
+| f33 Release runs | First live Release run since v1.4.0 executed — failed on the flaky test (now fixed) | v1.9.1 needed to get a green Release run; GoReleaser/Homebrew steps still unexercised past the test job (`HOMEBREW_TAP_GITHUB_TOKEN` still missing) |
+| f19-f24 consumer triage | erraudit#3 (+dup #4/#5/#6 closed with pointers), go-structure-linter#2, gomend#1, licenseforge#46, library-policy#74 | BuildFlow / branching-flow / go-business-rules failures not re-captured tonight (verified pre-existing last session; cited in ecosystem table) |
+
+## c) NOT STARTED / RECLASSIFIED
+
+- **f25 art-dupl** — recomputed: art-dupl has **no go-finding dependency at all**; "bump" is inapplicable and GroupID wiring is a feature-level integration (art-dupl's finding-output architecture). Accurately marked pending in the ecosystem table; not secretly counted as done.
+- **f29-30 report supersessions** — this report supersedes 21-51; banners to be stamped by the next session (convention).
+- **f32 HOMEBREW secret / f38 release backfill / f39 dispatch-input verify** — untouched (blocked on user action / D6 decision / next dispatch).
+
+## d) TOTALLY FUCKED UP (or nearly)
+
+1. **The 4-tags-one-push mistake**: `git push origin master --tags` pushes 4 tags; GitHub creates **no** workflow events for pushes updating more than 3 tags — the Release workflow silently never triggered. Detected by absence, healed by manual dispatch. Lesson recorded in AGENTS.md (push tags in batches ≤3 or dispatch).
+2. **The parallel session's flaky test burned two fix attempts**: first their NaN-based expectation (could never pass — NaN fails at encoding, 2 writes in, never reaching the newline); then my two-pass write-counter fix — deterministic locally, **environment-flaky on runners** (same commit: CI test job green, Release run red — jsontext flush granularity varies by environment). Final fix targets the semantically exact 1-byte `"\n"` write. Lesson: never pin non-contractual internals; target observable semantics.
+3. **A misfiled issue ×2**: `gh issue create` in `~/projects/hierarchical-errors` filed into erraudit — which revealed the actual truth (the repo was RENAMED; GitHub redirects the old remote). Two closed-with-pointer issues later, the correct one exists (erraudit#3). Lesson: use `gh -R` explicitly for cross-repo operations.
+4. **coverage.out was stale** when I first gap-analyzed (coverage-check.sh never writes a profile) — nearly wrote tests against month-old data. Caught by noticing writer-error tests existed despite "uncovered" blocks.
+5. **Off-by-one in failAfterWriter** (`>` vs `>=`) plus a wrong fixture (no-suggestion finding in a suggestion test) — two compile-clean, logic-wrong iterations that the tests caught immediately. The tests working is the system working.
+
+## e) Systemic improvements (this session's lessons)
+
+1. **Execute every mode of every gate** — the f-list's premise was validated three times over (--bench dead, selftest injection dead, 25% threshold dead). Gates rot in exactly the modes nobody runs.
+2. **Thermal noise is a first-class benchmark constraint** on this APU: same-session full-suite comparisons only; allocations are the portable signal. Documented in bench-check.sh + benchmarks/README.md.
+3. **Cross-repo gh operations need `-R`** — local directory names lie after renames (hierarchical-errors → erraudit).
+4. **Parallel sessions mutate the world** — AGENTS.md entries from the 22-24 session (public flip) changed Q3's answer mid-session. Re-reading AGENTS.md beats assuming session-start state.
+5. **Daemon absorption continues** — several of my commits landed as `chore: auto-commit` batches seconds after staging; batch accuracy lives in these reports (policy unchanged).
+
+## Session ledger (mechanical count of the §f 21-51 list, 1-50)
+
+- **Hard-done this session:** f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13(verified-covered), f14, f15, f26, f27, f28 = **18**
+- **Partially done:** f34-37 (review+rebase, merge pending), f31/f33 (dispatched/first run failed→fixed, green pending) = **3 partial**
+- **Reclassified honest:** f25 (inapplicable as stated), f16/f17 (issues filed, consumer-side fix owed), f18 (healed + issue), f19-f21 (issues filed), f22-f24 (cited, not re-captured)
+- **Blocked/user-gated:** f32 (secret), f38 (backfill decision), f39 (dispatch verify), f40-f44 (launch remainder), f45 (v2.0 spike), f46-f50 (ROADMAP/deferred)
+- Plus: v1.9.0 shipped (Q1), Q3 mooted by the public flip, CI resurrected and 5/5 failures fixed.
+
+## What's next (for the resuming session)
+
+1. **v1.9.1** once master CI is green (flaky-test fix + any CI stragglers): preflight default → tag → push (tags in batches ≤3!) → watch the FULL Release run (GoReleaser + cosign + sbom + the missing HOMEBREW secret step) → proxy smoke.
+2. **Merge #23/#24/#25 on green** (rebase runs in flight at report time); re-check `pkg.go.dev` sub-module rendering.
+3. File BuildFlow/branching-flow/go-business-rules diagnostic issues (evidence in ecosystem table + 21-30 report) or fix from here if the user prefers.
+4. Stamp SUPERSEDED banners on the 21-30 + 21-51 reports (f29 convention).
+5. Consider flagging the stale `~/projects/hierarchical-errors` clone to the user (duplicate of erraudit pre-rename).
+
+---
+
+**All local gates green at report time** (race ×4, lint ×4 0-issues, 7 structural scripts, arch-lint, dprint, treefmt, `nix flake check`, stress ×4, bench vs fresh baseline, preflight all modes, selftest). Tree clean; everything pushed through HEAD + v1.9.0 tags ×4.
+
+_Assisted-by: Crush <crush@charm.land>_

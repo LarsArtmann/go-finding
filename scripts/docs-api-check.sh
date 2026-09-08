@@ -9,7 +9,15 @@
 #
 # Usage: ./scripts/docs-api-check.sh
 # Exits 0 if every documented identifier resolves, 1 with a list otherwise.
+# Exits 2 if ripgrep is missing: without `rg` every identifier would count as
+# missing and the check would wolf-cry (observed on a bare CI runner).
 set -euo pipefail
+
+if ! command -v rg >/dev/null 2>&1; then
+	echo "ERROR: ripgrep (rg) is required but not installed."
+	echo "  Install ripgrep (apt-get install ripgrep / nix shell nixpkgs#ripgrep)."
+	exit 2
+fi
 
 cd "$(dirname "$0")/.."
 
