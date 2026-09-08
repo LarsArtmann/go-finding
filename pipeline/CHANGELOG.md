@@ -19,6 +19,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **`applyToFile` no longer fails on provider resolve errors when edits applied** — A file with both applied edits and unresolvable findings is written and counted as applied; the resolve errors surface in `ApplyReport.Outcomes` and the joined error return instead of triggering a full rollback of all previously fixed files.
 
+### Fixed
+
+- **`ApplyWithReport` now reports rolled-back files on backup failure and cancellation** — When a file's backup could not be created, or the context was cancelled mid-run, the run aborted but `ApplyReport.RolledBack` silently omitted the files that had actually been restored, and a failing rollback's error was swallowed. Both paths now record every modified file in `RolledBack` (resolved absolute paths) and wrap rollback failures so `errors.Is`/`errors.As` still reach the original cause. Covered by cancel and backup-failure tests for both rollback policies plus an end-to-end pipeline rollback wiring test.
+
 ## [1.6.0] - 2026-08-08
 
 ### Added
