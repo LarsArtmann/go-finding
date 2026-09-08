@@ -433,3 +433,48 @@ func (s *saboteurProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, 
 
 	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
 }
+
+// cancelingProvider cancels the run's context when it sees a specific
+// BeforeCode, and produces valid edits otherwise. It lets tests place the
+// cancellation exactly between two files of a multi-file run.
+type cancelingProvider struct {
+	cancel context.CancelFunc
+	before string
+}
+
+func (*cancelingProvider) Name() string                       { return "canceling" }
+func (p *cancelingProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
+func (p *cancelingProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	if f.BeforeCode == p.before {
+		p.cancel()
+
+		return nil, errors.New("cancelled during edit resolution")
+	}
+
+	idx := bytes.Index(content, []byte(f.BeforeCode))
+	if idx < 0 {
+		return nil, nil
+	}
+
+	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
+}
+
+// upperProvider is a test provider that only handles direct fixes.
+type upperProvider struct{}
+
+func (upperProvider) Name() string { return "test-upper" }
+
+func (upperProvider) CanHandle(f finding.Finding) bool {
+	return f.FixStrategy == finding.FixStrategyDirect && f.BeforeCode != ""
+}
+
+func (upperProvider) Edits(_ []byte, f finding.Finding) ([]FixEdit, error) {
+	return []FixEdit{
+		{
+			Offset:      0,
+			Length:      len(f.BeforeCode),
+			Replacement: []byte(f.AfterCode),
+			Source:      f,
+		},
+	}, nil
+}

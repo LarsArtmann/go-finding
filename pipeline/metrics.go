@@ -8,9 +8,22 @@ import (
 	"github.com/larsartmann/go-finding/lockutil"
 )
 
-// Metrics collects timing and count data from pipeline execution.
-// All fields are unexported; use accessor methods for thread-safe reads.
-// Use Snapshot() for a point-in-time copy of all metrics.
+// Metrics collects timing and count data from pipeline execution:
+// per-stage durations, per-detector times and finding counts, applied fix
+// counts, and per-finding fix outcome counts (see RecordOutcome).
+//
+// The pipeline records into Metrics automatically as it runs; consumers
+// either read the MetricsSnapshot returned in PipelineResult or construct
+// one directly. All methods are safe for concurrent use. All fields are
+// unexported; use the accessor methods for thread-safe reads and
+// [Metrics.Snapshot] for a point-in-time copy of everything.
+//
+//	m := NewMetrics()
+//	m.RecordDetector("govet", 5*time.Millisecond, 3)
+//	m.RecordOutcome(FixOutcomeApplied)
+//	m.RecordOutcome(FixOutcomeRefused)
+//
+//	counts := m.OutcomeCounts() // map[FixOutcomeStatus]int
 type Metrics struct {
 	mu             sync.Mutex
 	stageDurations map[Stage]time.Duration

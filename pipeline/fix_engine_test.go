@@ -311,26 +311,6 @@ func TestFixEngine_Apply_WithCustomProvider(t *testing.T) {
 	g.Expect(string(result)).To(Equal("HELLO world"))
 }
 
-// upperProvider is a test provider that only handles direct fixes.
-type upperProvider struct{}
-
-func (upperProvider) Name() string { return "test-upper" }
-
-func (upperProvider) CanHandle(f finding.Finding) bool {
-	return f.FixStrategy == finding.FixStrategyDirect && f.BeforeCode != ""
-}
-
-func (upperProvider) Edits(_ []byte, f finding.Finding) ([]FixEdit, error) {
-	return []FixEdit{
-		{
-			Offset:      0,
-			Length:      len(f.BeforeCode),
-			Replacement: []byte(f.AfterCode),
-			Source:      f,
-		},
-	}, nil
-}
-
 // TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable verifies
 // that a provider failure surfaces as a failed outcome whose error chain is
 // matchable with errors.Is — so consumers can react to specific failure

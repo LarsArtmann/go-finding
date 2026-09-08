@@ -228,3 +228,25 @@ func ExampleGeneratedFileFilter() {
 	// passed: 1
 	// generated-file-filter
 }
+
+// ExampleMetrics demonstrates recording fix outcomes and reading them back
+// from a snapshot, the way the pipeline's fix stage does.
+func ExampleMetrics() {
+	m := pipeline.NewMetrics()
+
+	m.RecordOutcome(pipeline.FixOutcomeApplied)
+	m.RecordOutcome(pipeline.FixOutcomeApplied)
+	m.RecordOutcome(pipeline.FixOutcomeRefused)
+	m.RecordFixes(2)
+
+	snap := m.Snapshot()
+
+	fmt.Println("applied:", snap.OutcomeCounts[pipeline.FixOutcomeApplied])
+	fmt.Println("refused:", snap.OutcomeCounts[pipeline.FixOutcomeRefused])
+	fmt.Println("fixes:", snap.FixesApplied)
+
+	// Output:
+	// applied: 2
+	// refused: 1
+	// fixes: 2
+}

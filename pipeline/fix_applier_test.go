@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -903,31 +902,6 @@ func TestFixApplier_BackupHygiene(t *testing.T) {
 	g.Expect(applier.Close()).To(Succeed())
 	g.Expect(backupDir).NotTo(BeAnExistingFile())
 	g.Expect(backupDir).NotTo(BeADirectory())
-}
-
-// cancelingProvider cancels the run's context when it sees a specific
-// BeforeCode, and produces valid edits otherwise. It lets tests place the
-// cancellation exactly between two files of a multi-file run.
-type cancelingProvider struct {
-	cancel context.CancelFunc
-	before string
-}
-
-func (*cancelingProvider) Name() string                       { return "canceling" }
-func (p *cancelingProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
-func (p *cancelingProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
-	if f.BeforeCode == p.before {
-		p.cancel()
-
-		return nil, errors.New("cancelled during edit resolution")
-	}
-
-	idx := bytes.Index(content, []byte(f.BeforeCode))
-	if idx < 0 {
-		return nil, nil
-	}
-
-	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
 }
 
 // TestFixApplier_RolledBackPathsInErrorText verifies that ApplyWithReport
