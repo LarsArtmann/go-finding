@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`GroupID` validation (D7)** — A set `GroupID` must now be a machine-safe identifier: no whitespace or control characters, at most 128 bytes (empty = not grouped, always valid). The charset stays permissive (underscores, dots, uppercase allowed) so existing consumer formats keep validating; the guard protects SARIF property keys, LSP data, and map keys from corruption. `GroupID.IsValid()` is the standalone check.
 - **Unsafe-path fix findings now surface as failed outcomes (pipeline)** — Findings whose `Position.File` resolves outside the applier root (e.g. `../../etc/passwd`) were previously dropped silently during grouping. They are now reported as `failed` outcomes with a validation-category error and included in the joined error return; safe findings in the same run still apply. See `pipeline/CHANGELOG.md`.
 
 ## [1.7.0] - 2026-09-08

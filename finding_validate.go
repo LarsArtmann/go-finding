@@ -12,6 +12,7 @@ func (f Finding) Validate() error {
 	var errs []error
 
 	errs = append(errs, f.validateIdentity()...)
+	errs = append(errs, f.validateGroupID()...)
 	errs = append(errs, f.validateClassification()...)
 	errs = append(errs, f.validateFix()...)
 	errs = append(errs, f.validateReferences()...)
@@ -60,6 +61,22 @@ func (f Finding) validateIdentity() []error {
 	}
 
 	return errs
+}
+
+// validateGroupID checks that a set GroupID is a machine-safe identifier.
+// The empty GroupID ("not grouped") is always valid.
+func (f Finding) validateGroupID() []error {
+	if f.GroupID.IsValid() {
+		return nil
+	}
+
+	if len(f.GroupID) > maxGroupIDLen {
+		return []error{NewValidationError(
+			fmt.Sprintf("finding.GroupID %q is invalid: longer than %d bytes", f.GroupID, maxGroupIDLen), nil)}
+	}
+
+	return []error{NewValidationError(
+		fmt.Sprintf("finding.GroupID %q is invalid: no whitespace or control characters allowed", f.GroupID), nil)}
 }
 
 // validateClassification checks Category/Tags consistency.

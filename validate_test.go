@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -469,5 +470,72 @@ func TestFixStrategyString(t *testing.T) {
 		if got := tt.fs.String(); got != tt.want {
 			t.Errorf("FixStrategy(%q).String() = %q, want %q", tt.fs, got, tt.want)
 		}
+	}
+}
+
+func TestValidate_GroupID(t *testing.T) {
+	t.Parallel()
+
+	base := func(g GroupID) Finding {
+		return Finding{
+			ID:       "id",
+			Rule:     "rule",
+			ToolName: "tool",
+			Message:  "msg",
+			Severity: SeverityWarning,
+			Position: Pos("a.go", 1, 1),
+			GroupID:  g,
+		}
+	}
+
+	valid := []GroupID{
+		"",
+		"clone-42",
+		"clone_42",
+		"art-dupl/2026/a",
+		"CloneGroup",
+		GroupID(strings.Repeat("x", maxGroupIDLen)),
+	}
+	for _, g := range valid {
+		if err := base(g).Validate(); err != nil {
+			t.Errorf("GroupID %q: unexpected error: %v", g, err)
+		}
+	}
+
+	invalid := []GroupID{
+		"has space",
+		"tab\tinside",
+		"newline\ninside",
+		"nul\x00byte",
+		GroupID(strings.Repeat("x", maxGroupIDLen+1)),
+	}
+	for _, g := range invalid {
+		if err := base(g).Validate(); err == nil {
+			t.Errorf("GroupID %q: expected validation error, got nil", g)
+		}
+	}
+}
+
+func TestGroupID_IsValid(t *testing.T) {
+	t.Parallel()
+
+	if !(GroupID("")).IsValid() {
+		t.Error("empty GroupID (not grouped) must be valid")
+	}
+
+	if !(GroupID("clone-42")).IsValid() {
+		t.Error("plain identifier must be valid")
+	}
+
+	if (GroupID("a b")).IsValid() || (GroupID("a\tb")).IsValid() {
+		t.Error("whitespace must be invalid")
+	}
+
+	if (GroupID("a\x7fb")).IsValid() {
+		t.Error("DEL control character must be invalid")
+	}
+
+	if (GroupID(strings.Repeat("x", maxGroupIDLen+1))).IsValid() {
+		t.Error("over-length GroupID must be invalid")
 	}
 }
