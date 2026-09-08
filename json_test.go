@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json/v2"
 	"errors"
+	"io"
 	"math"
 	"sync"
 	"testing"
@@ -42,12 +43,32 @@ func (f *failOnNthWriter) Write(p []byte) (int, error) {
 func TestFinding_WriteJSON_NewlineError(t *testing.T) {
 	g := NewParallelGomega(t)
 
-	var buf bytes.Buffer
-	w := &failOnNthWriter{w: &buf, n: 1}
+	f := MakeFindingWithID("newline-write", SeverityInfo)
 
-	err := nanConfidenceFinding().WriteJSON(w)
+	// Pass 1: count how many writes a successful WriteJSON performs. The
+	// encoder's internal flush granularity is not contractual, so failing a
+	// hardcoded write index is brittle (NaN findings, for example, fail during
+	// encoding after two writes and never reach the newline at all).
+	counter := &writeCounter{}
+	g.Expect(f.WriteJSON(counter)).NotTo(HaveOccurred())
+
+	// Pass 2: fail exactly the last write — the trailing newline.
+	var buf bytes.Buffer
+	w := &failOnNthWriter{w: &buf, n: counter.writes - 1}
+
+	err := f.WriteJSON(w)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(err.Error()).To(ContainSubstring("writing trailing newline"))
+}
+
+// writeCounter counts Write calls and discards the data.
+type writeCounter struct {
+	writes int
+}
+
+func (c *writeCounter) Write(p []byte) (int, error) {
+	c.writes++
+	return len(p), nil
 }
 
 func assertSingleFindingWithID(t *testing.T, got *Report, wantID string) {

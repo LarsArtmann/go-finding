@@ -235,9 +235,9 @@ jobs:
           go-version: "1.26"
       - name: Install ginkgo CLI
         run: go install github.com/onsi/ginkgo/v2/ginkgo@v2.32.0
-      - name: Stress ginkgo suites (-repeat=20: core, pipeline)
+      - name: Stress ginkgo suites (core, pipeline, repeat=20)
         run: ginkgo -r --race --repeat=20 --skip-package=examples --trace
-      - name: Stress stdlib suites (-count=20: analysis, cli)
+      - name: Stress stdlib suites (analysis, cli, count=20)
         run: go test -race -count=20 ./analysis/... ./cmd/...
 
     timeout-minutes: 30

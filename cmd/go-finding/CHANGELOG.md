@@ -9,9 +9,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+No CLI-module changes yet.
+
+## [1.9.0] - 2026-09-08
+
 ### Added
 
 - **`-trace-max-files` / `-trace-gzip` flags** — Flight-recorder rotation and gzip compression (config-file fields `flightRecorder.maxFiles` / `flightRecorder.compress` at full parity).
+- **Staticcheck parser regression guard** — `TestParseStaticcheckJSON_RealCorpus` parses real staticcheck 2026.2.1 JSON output captured against a flawed fixture (`testdata/staticcheck-corpus/`), pinning field layout, severity/category mapping, and the absence of fix fields in genuine tool output.
 
 ## [1.8.0] - 2026-09-08
 

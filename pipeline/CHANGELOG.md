@@ -9,10 +9,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+No pipeline-module changes yet.
+
+## [1.9.0] - 2026-09-08
+
 ### Added
 
 - **`FlightRecorderConfig.MaxFiles` + trace rotation** — After each successful snapshot, the oldest `go-finding-trace-*` files beyond the cap are deleted (best-effort; deletion errors are logged, never surfaced). Default 0 = unlimited. Pruning matches only this hook's snapshot files and sorts by modification time.
-- **`FlightRecorderConfig.Compress`** — Wraps snapshot output in gzip (`.trace.gz` suffix). Default false preserves plain `.trace` files that open directly with `go tool trace`. Config-file fields `maxFiles` and `compress` added to `FlightRecorderFileConfig`.
+- **`FlightRecorderConfig.Compress`** — Wraps snapshot output in gzip (`.trace.gz` suffix). Default false preserves plain `.trace` files that open directly with `go tool trace`; compressed files gunzip losslessly — verified end-to-end with `go tool trace` and pinned by a header-equality test. Config-file fields `maxFiles` and `compress` added to `FlightRecorderFileConfig`.
+
+### Fixed
+
+- **Snapshot rotation is serialized** — `pruneSnapshots` now holds the same mutex as `WriteTo`, so two concurrent snapshots can never list and delete overlapping file sets (previously possible: double-remove ENOENT warnings and nondeterministic pruning on same-second modtime ties). Pinned by a concurrent-rotation test under `-race` and a hostile-directory fuzz target.
 
 ## [1.8.0] - 2026-09-08
 

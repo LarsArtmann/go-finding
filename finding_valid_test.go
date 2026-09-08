@@ -280,10 +280,10 @@ func TestValidateAll(t *testing.T) {
 func TestValidate_InvalidTag(t *testing.T) {
 	g := NewParallelGomega(t)
 
-	f := ValidFinding()
-	f.Tags = []Tag{Correctness, ""}
+	f := MakeFindingWithID("tag-test", SeverityWarning)
+	f.Tags = []Tag{TagCorrectness, ""}
 
-	errs := f.Validate()
-	g.Expect(errs).NotTo(BeNil())
-	g.Expect(errs[0].Error()).To(ContainSubstring("Tags[1]"))
+	err := f.Validate()
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("Tags[1]"))
 }

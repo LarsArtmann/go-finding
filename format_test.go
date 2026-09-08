@@ -314,17 +314,18 @@ func TestFormatters_PartialWriteErrors(t *testing.T) {
 	plain := []Finding{{Message: "m", Severity: SeverityError, Position: Pos("a.go", 1, 1)}}
 
 	cases := []struct {
-		name   string
-		failAt int
-		format func(io.Writer, []Finding) error
+		name     string
+		failAt   int
+		findings []Finding
+		format   func(io.Writer, []Finding) error
 	}{
-		{"FormatText suggestion write", 2, FormatText},
-		{"FormatTextRich category write", 2, FormatTextRich},
-		{"FormatTextRich newline write", 3, FormatTextRich},
-		{"FormatTextRich suggestion write", 4, FormatTextRich},
-		{"FormatMarkdown separator write", 2, FormatMarkdown},
-		{"FormatMarkdown row write", 3, FormatMarkdown},
-		{"FormatTable row write", 2, FormatTable},
+		{"FormatText suggestion write", 2, plain, FormatText},
+		{"FormatTextRich category write", 2, rich, FormatTextRich},
+		{"FormatTextRich newline write", 3, rich, FormatTextRich},
+		{"FormatTextRich suggestion write", 4, rich, FormatTextRich},
+		{"FormatMarkdown separator write", 2, plain, FormatMarkdown},
+		{"FormatMarkdown row write", 3, plain, FormatMarkdown},
+		{"FormatTable row write", 2, plain, FormatTable},
 	}
 
 	for _, tc := range cases {
@@ -332,12 +333,8 @@ func TestFormatters_PartialWriteErrors(t *testing.T) {
 			t.Parallel()
 
 			w := &failAfterWriter{failAt: tc.failAt}
-			findings := plain
-			if tc.format == FormatTextRich {
-				findings = rich
-			}
 
-			err := tc.format(w, findings)
+			err := tc.format(w, tc.findings)
 			if err == nil {
 				t.Fatalf("write %d failing must propagate an error", tc.failAt)
 			}

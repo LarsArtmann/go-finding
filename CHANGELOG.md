@@ -11,7 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-No core-module changes yet. Pipeline: flight-recorder `MaxFiles` rotation + `Compress` (gzip) snapshots — see `pipeline/CHANGELOG.md`.
+No core-module changes yet.
+
+## [1.9.0] - 2026-09-08
+
+No core-module API changes. Pipeline: flight-recorder `MaxFiles` rotation + `Compress` (gzip) snapshots, with rotation now serialized against concurrent writes — see `pipeline/CHANGELOG.md`. CLI: `-trace-max-files` / `-trace-gzip` flags; staticcheck parser regression-guarded against real tool output.
+
+### Changed
+
+- **Benchmark regression gate redesigned (evidence-based)** — Sustained full-suite benchmark runs thermally depress later benchmarks on the dev machine (identical code measured -9%..+150% depending on suite position; `IntervalIndex_Query/1000` = 9.3µ fresh vs 20.1µ late-suite, n=10, p=0.000 both). `bench-check.sh` now fails on allocation regressions beyond +10% (deterministic signal, ±0% on unchanged code) and on time regressions beyond 3.5x (algorithmic blowouts). Fine-grained cross-session time comparison stays a manual, filtered-benchmark exercise. Baseline regenerated at v1.9.0.
+- **`release-preflight.sh` hardened** — new `--post-tag` mode (all 4 tags must exist + `version-check.sh` runs), `--bench` mode now captures benchmarks itself (previously compared against a stale temp file — a dead-gate bug found by executing the mode), and `scripts/release-preflight-selftest.sh` injects a synthetic tag collision + version drift into a disposable worktree and asserts the gate FAILS on each (wired as a CI job).
 
 ## [1.8.0] - 2026-09-08
 
