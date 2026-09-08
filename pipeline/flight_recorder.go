@@ -1,13 +1,16 @@
 package pipeline
 
 import (
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime/trace"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -48,6 +51,17 @@ type FlightRecorderConfig struct {
 	// OutputDir is where snapshot .trace files are written.
 	// Default: os.TempDir().
 	OutputDir string
+
+	// MaxFiles caps how many snapshot files are retained in OutputDir.
+	// After each successful snapshot, the oldest go-finding-trace-* files
+	// beyond this cap are deleted. 0 means unlimited (default) — long
+	// -trace-slow runs should set it to avoid unbounded disk growth.
+	MaxFiles int
+
+	// Compress wraps snapshot output in gzip (.trace.gz suffix).
+	// Default: false (plain .trace files open directly with `go tool trace`).
+	// Compressed files must be gunzipped first.
+	Compress bool
 
 	// Logger receives snapshot lifecycle events (written, failed).
 	// If nil, events are silently dropped.
@@ -270,7 +284,12 @@ func (h *FlightRecorderHook) writeSnapshot(ctx context.Context, num int, reason 
 		return "", fmt.Errorf("snapshot cancelled before write: %w", err)
 	}
 
-	filename := fmt.Sprintf("go-finding-trace-%03d-%s.trace", num, sanitizeFilename(reason))
+	suffix := ".trace"
+	if h.config.Compress {
+		suffix = ".trace.gz"
+	}
+
+	filename := fmt.Sprintf("go-finding-trace-%03d-%s%s", num, sanitizeFilename(reason), suffix)
 	path := filepath.Join(h.config.OutputDir, filename)
 
 	f, err := os.Create(path)
@@ -278,21 +297,111 @@ func (h *FlightRecorderHook) writeSnapshot(ctx context.Context, num int, reason 
 		return "", fmt.Errorf("create trace file %s: %w", path, err)
 	}
 
-	h.writeMu.Lock()
-	_, writeErr := h.fr.WriteTo(f)
-	h.writeMu.Unlock()
+	var sink io.Writer = f
+	if h.config.Compress {
+		gz := gzip.NewWriter(f)
+		sink = gz
 
-	if writeErr != nil {
-		_ = f.Close()
+		h.writeMu.Lock()
+		_, writeErr := h.fr.WriteTo(gz)
+		h.writeMu.Unlock()
 
-		return "", fmt.Errorf("write trace to %s: %w", path, writeErr)
+		if writeErr == nil {
+			writeErr = gz.Close()
+		} else {
+			_ = gz.Close()
+		}
+
+		if writeErr != nil {
+			_ = f.Close()
+
+			return "", fmt.Errorf("write trace to %s: %w", path, writeErr)
+		}
+	} else {
+		h.writeMu.Lock()
+		_, writeErr := h.fr.WriteTo(f)
+		h.writeMu.Unlock()
+
+		if writeErr != nil {
+			_ = f.Close()
+
+			return "", fmt.Errorf("write trace to %s: %w", path, writeErr)
+		}
 	}
 
 	if err := f.Close(); err != nil {
 		return "", fmt.Errorf("close trace file %s: %w", path, err)
 	}
 
+	h.pruneSnapshots(ctx)
+
 	return path, nil
+}
+
+// traceSnapshotPrefix/traceSnapshotSuffixes identify this hook's snapshot
+// files during pruning. Only files matching BOTH are ever deleted.
+const traceSnapshotPrefix = "go-finding-trace-"
+
+// pruneSnapshots deletes the oldest snapshot files beyond config.MaxFiles.
+// Best-effort: deletion errors are logged, never returned — pruning must not
+// fail a successful snapshot. A no-op when MaxFiles is unset.
+func (h *FlightRecorderHook) pruneSnapshots(ctx context.Context) {
+	if h.config.MaxFiles <= 0 {
+		return
+	}
+
+	entries, err := os.ReadDir(h.config.OutputDir)
+	if err != nil {
+		h.log(ctx, slog.LevelWarn, "flight recorder prune: read output dir failed", slog.String("error", err.Error()))
+
+		return
+	}
+
+	type snapshotFile struct {
+		path    string
+		modTime time.Time
+	}
+
+	var snapshots []snapshotFile
+
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+
+		name := e.Name()
+		if !strings.HasPrefix(name, traceSnapshotPrefix) {
+			continue
+		}
+
+		if !strings.HasSuffix(name, ".trace") && !strings.HasSuffix(name, ".trace.gz") {
+			continue
+		}
+
+		info, err := e.Info()
+		if err != nil {
+			continue
+		}
+
+		snapshots = append(snapshots, snapshotFile{path: filepath.Join(h.config.OutputDir, name), modTime: info.ModTime()})
+	}
+
+	if len(snapshots) <= h.config.MaxFiles {
+		return
+	}
+
+	sort.Slice(snapshots, func(i, j int) bool { return snapshots[i].modTime.Before(snapshots[j].modTime) })
+
+	for _, old := range snapshots[:len(snapshots)-h.config.MaxFiles] {
+		if err := os.Remove(old.path); err != nil {
+			h.log(ctx, slog.LevelWarn, "flight recorder prune: delete failed",
+				slog.String("path", old.path), slog.String("error", err.Error()))
+
+			continue
+		}
+
+		h.log(ctx, slog.LevelInfo, "flight recorder pruned old snapshot", slog.String("path", old.path))
+	}
 }
 
 // Degraded reports whether the hook is operating in degraded mode because

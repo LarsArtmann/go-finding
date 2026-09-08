@@ -27,6 +27,8 @@ type FlightRecorderFileConfig struct {
 	SlowStageThreshold string `json:"slowStageThreshold"`
 	MinAge             string `json:"minAge"`
 	MaxBytes           uint64 `json:"maxBytes"`
+	MaxFiles           int    `json:"maxFiles"`
+	Compress           bool   `json:"compress"`
 }
 
 type ConfigFile struct {
@@ -196,6 +198,12 @@ func (cf ConfigFile) ResolveFlightRecorder() (*FlightRecorderHook, error) {
 	if cf.FlightRecorder.MaxBytes != 0 {
 		config.MaxBytes = cf.FlightRecorder.MaxBytes
 	}
+
+	if cf.FlightRecorder.MaxFiles != 0 {
+		config.MaxFiles = cf.FlightRecorder.MaxFiles
+	}
+
+	config.Compress = cf.FlightRecorder.Compress
 
 	return NewFlightRecorderHook(config)
 }

@@ -50,6 +50,8 @@ type cliFlags struct {
 	trace             bool
 	traceDir          string
 	traceSlow         time.Duration
+	traceMaxFiles     int
+	traceGzip         bool
 }
 
 func parseFlags() cliFlags {
@@ -130,6 +132,14 @@ func parseFlags() cliFlags {
 	flag.DurationVar(
 		&f.traceSlow, "trace-slow", 0,
 		"auto-snapshot trace when a pipeline stage exceeds this duration (e.g. 30s)",
+	)
+	flag.IntVar(
+		&f.traceMaxFiles, "trace-max-files", 0,
+		"keep at most N trace snapshot files, pruning oldest (0 = unlimited)",
+	)
+	flag.BoolVar(
+		&f.traceGzip, "trace-gzip", false,
+		"write gzip-compressed .trace.gz snapshots",
 	)
 	flag.Parse()
 
@@ -219,6 +229,8 @@ func run() int {
 		}
 
 		frConfig.SlowStageThreshold = f.traceSlow
+		frConfig.MaxFiles = f.traceMaxFiles
+		frConfig.Compress = f.traceGzip
 
 		var frErr error
 
@@ -258,6 +270,12 @@ func run() int {
 		if cfg.FlightRecorder.MaxBytes != 0 {
 			frConfig.MaxBytes = cfg.FlightRecorder.MaxBytes
 		}
+
+		if cfg.FlightRecorder.MaxFiles != 0 {
+			frConfig.MaxFiles = cfg.FlightRecorder.MaxFiles
+		}
+
+		frConfig.Compress = cfg.FlightRecorder.Compress
 
 		var frErr error
 

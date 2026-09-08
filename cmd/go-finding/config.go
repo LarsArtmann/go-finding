@@ -48,6 +48,8 @@ type flightRecorderFileConfig struct {
 	SlowStageThreshold string `json:"slowStageThreshold" yaml:"slowStageThreshold"`
 	MinAge             string `json:"minAge"             yaml:"minAge"`
 	MaxBytes           uint64 `json:"maxBytes"           yaml:"maxBytes"`
+	MaxFiles           int    `json:"maxFiles"           yaml:"maxFiles"`
+	Compress           bool   `json:"compress"           yaml:"compress"`
 }
 
 type detectorSpec struct {
