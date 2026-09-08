@@ -233,10 +233,14 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26"
-      - name: Stress test (-count=20)
-        run: go test -race -count=20 ./...
+      - name: Install ginkgo CLI
+        run: go install github.com/onsi/ginkgo/v2/ginkgo@v2.32.0
+      - name: Stress ginkgo suites (-repeat=20: core, pipeline)
+        run: ginkgo -r --race --repeat=20 --skip-package=examples --trace
+      - name: Stress stdlib suites (-count=20: analysis, cli)
+        run: go test -race -count=20 ./analysis/... ./cmd/...
 
-    timeout-minutes: 15
+    timeout-minutes: 30
   dupl:
     runs-on: ubuntu-latest
     steps:

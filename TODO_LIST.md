@@ -129,7 +129,7 @@ decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
 | Dependabot PR triage                                        | 🟡 `READY`   | Med    | Med    | Unblocked by public flip; needs a green CI run to validate #23/#24/#25/#29.                                                                                 |
 | CI `workflow_dispatch` inputs for module-scoped runs        | ✅ `DONE`    | Low    | Low    | **Done 2026-09-08:** `modules` input scopes the lint matrix on dispatch runs (`.github/workflows/ci.yml`).                                                   |
 | Gate CI benchmark job on `bench-check.sh` regression        | ✅ `DONE`    | Low    | Low    | **Verified 2026-09-08:** job already gates on bench-check.sh - and the release train fixed the awk no-op that had silently disabled the check.               |
-| Evaluate `ginkgo --repeat=N` in CI vs sampled stress matrix | ✅ `DONE`    | Low    | Low    | **Decided 2026-09-08:** CI keeps `go test -race -count=20` only; ginkgo repeat stays the local mandatory release gate (note in `docs/release-procedure.md`). |
+| Evaluate `ginkgo --repeat=N` in CI vs sampled stress matrix | 🔁 `REVISED` | Low    | Low    | **Revised 2026-09-08 evening:** the "CI keeps `go test -count=20` only" decision was wrong — Ginkgo rejects count>1, so CI stress failed instantly and stressed nothing. CI now mirrors the local split: `ginkgo -repeat=20` (core, pipeline) + `go test -count=20` (analysis, CLI), timeout 30m. |
 
 ---
 

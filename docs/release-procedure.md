@@ -26,12 +26,13 @@
      check that sweeps for concurrency flake — a single-run CI pass routinely
      misses races that surface under repeated scheduling. Revisit only if a
      cheaper equivalent lands in CI.
-   - **CI stress scope (decided 2026-09-08): CI keeps `go test -race
-     -count=20` only; `ginkgo --repeat=20` stays a local-release gate.** The
-     ginkgo repeat sweep costs ~5 minutes per module and is redundant with the
-     count=20 race run for routine pushes; it earns its cost once per release,
-     locally, where it is already mandatory. Revisit if CI flakes show
-     scheduling-dependent races the count=20 run misses.
+   - **CI stress scope (revised 2026-09-08 evening): CI now mirrors this
+     split** — `ginkgo -r --race --repeat=20 --skip-package=examples` for
+     core/pipeline plus `go test -race -count=20 ./analysis/... ./cmd/...`.
+     The earlier decision ("CI keeps count=20 only") was wrong: Ginkgo rejects
+     `go test -count=N` for N>1 outright, so the CI stress job failed instantly
+     on the core suite and never actually stressed anything (first observed
+     publicly on run 34274674104 after the repo went public).
 5. Update `CHANGELOG.md` with release notes
 6. Update `version.go` (core module only)
 7. **Full FEATURES.md walk** — read `FEATURES.md` end to end and verify every

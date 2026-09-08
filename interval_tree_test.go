@@ -70,3 +70,15 @@ func TestIntervalTree_AdjacentNoOverlap(t *testing.T) {
 	g.Expect(tree.Query(5, 10)).To(gomega.HaveLen(1)) // only b
 	g.Expect(tree.Query(0, 10)).To(gomega.HaveLen(2)) // both
 }
+
+func TestIntervalIndex_Len(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	g.Expect(NewIntervalIndex[int](nil).Len()).To(gomega.Equal(0))
+
+	idx := NewIntervalIndex[int]([]Interval[int]{
+		{Start: 0, End: 5, Value: 1},
+		{Start: 10, End: 15, Value: 2},
+	})
+	g.Expect(idx.Len()).To(gomega.Equal(2))
+}

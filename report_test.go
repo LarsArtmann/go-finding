@@ -592,3 +592,18 @@ func TestReportGroupFindingsSorted_Empty(t *testing.T) {
 		t.Errorf("GroupFindingsSorted = %v, want nil", groups)
 	}
 }
+
+func TestReport_WithFinding_Chaining(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "tool"})
+	got := r.WithFinding(Finding{Message: "one"}).WithFinding(Finding{Message: "two"})
+
+	if got != r {
+		t.Fatal("WithFinding must return the same report for chaining")
+	}
+
+	if n := len(r.FindingsSnapshot()); n != 2 {
+		t.Errorf("findings after chaining = %d, want 2", n)
+	}
+}
