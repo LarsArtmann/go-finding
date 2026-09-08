@@ -89,7 +89,7 @@ decision needed: backfill v1.5.0/v1.6.0 releases vs forward-only v1.7.0.
 
 | Task                                      | Status       | Impact | Effort | Notes                                                                                                                                                                                         |
 | ----------------------------------------- | ------------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FlightRecorder idea triage → scored table | ⬜ `TODO`    | Low    | Low    | Score rotation/gzip/pprof/OTel/diff/AI; graduate top 1-2 into ROADMAP (L1-47).                                                                                                                |
+| FlightRecorder idea triage → scored table | ✅ `DONE` | Low    | Low    | **Done 2026-09-08.** Scored table in ROADMAP "FlightRecorder future directions"; rotation + gzip graduated, 2 marked shipped, 4 rejected with reasons. |
 | Fix BuildFlow auto-configure loop         | 🔵 `BLOCKED` | Med    | —      | External tool. BuildFlow's detect→repair cycle re-triggers golangci-lint per-module, reporting "2 findings" that are a scoring artifact. No longer the commit gate (dprint hook replaced it). |
 | Consumer compatibility test               | 🔵 `BLOCKED` | Low    | —      | Repo is private; consumers need `GOPRIVATE` set. 22 known consumers, 14 with Go code.                                                                                                         |
 

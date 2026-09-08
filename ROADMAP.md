@@ -73,18 +73,27 @@ Each would live in its own subpackage to keep language-specific dependencies out
 
 ### FlightRecorder future directions
 
-The FlightRecorder feature (`pipeline/flight_recorder.go`) is shipped with config-file integration (`FlightRecorderFileConfig` + `ResolveFlightRecorder()`). Remaining growth areas:
+The FlightRecorder feature (`pipeline/flight_recorder.go`) is shipped with config-file integration (`FlightRecorderFileConfig` + `ResolveFlightRecorder()`).
 
-- **Trace file rotation** - Long-running pipelines with `-trace-slow` can produce hundreds of numbered `.trace` files. Add max-files or rotation.
-- **Compressed trace output** - gzip trace files to reduce disk usage.
-- **Context propagation** - `writeSnapshot` doesn't accept a context. Long-running `WriteTo` calls can't be cancelled.
-- **Multiple recorder support** - Go's "one active recorder at a time" limit. Hook should detect pre-existing recorder and degrade gracefully.
-- **Automatic pprof capture** - Capture CPU/heap profiles alongside trace snapshots.
-- **Core package trace helper** - Generalize beyond pipeline: `finding.TraceSnapshot()` in a `finding/tracing` sub-package.
-- **OpenTelemetry bridge** - Convert trace snapshots to OTel spans for distributed tracing integration.
-- **Trace diff tool** - Compare two trace snapshots to identify what changed between fast/slow pipeline runs.
-- **AI-assisted trace analysis** - Feed trace data to an LLM for anomaly detection in stage timing.
-- **Continuous trace sampling** - Sample 1% of pipeline runs with full tracing for production observability.
+**Triage (2026-09-08, FR1):** each idea scored Impact × Effort from the perspective of pipeline consumers. Two shipped along the way (context propagation, multi-recorder degradation); two graduated to actionable ROADMAP items below; the rest stay parked with reasons.
+
+| Idea                                   | Impact | Effort | Verdict                                                                                          |
+| -------------------------------------- | ------ | ------ | ------------------------------------------------------------------------------------------------ |
+| Trace file rotation (max-files)        | High   | Low    | **GRADUATED** — long `-trace-slow` runs produce hundreds of `.trace` files; cap + prune oldest     |
+| Compressed trace output (gzip)         | Med    | Low    | **GRADUATED** — wrap `WriteTo` in `gzip.Writer`; opt-in config field                              |
+| Automatic pprof capture                | Med    | Med    | Park — useful but duplicates what `runtime/pprof` flags already give operators                     |
+| Continuous trace sampling (1% knob)    | Med    | Low    | Park — revisit once rotation lands (sampling without rotation is a disk hazard)                   |
+| Core package trace helper (`finding/tracing`) | Low | Med | Rejected — speculative generalization; only one consumer pattern exists (pipeline)          |
+| OpenTelemetry bridge                   | Low    | High   | Rejected — adds a heavy dependency for a rare use case in static-analysis tooling                 |
+| Trace diff tool                        | Low    | High   | Rejected — niche debugging aid; belongs in consumer tooling, not the library                       |
+| AI-assisted trace analysis             | Low    | High   | Rejected — LLM analysis is consumer territory; the library's job is capturing the trace           |
+| Context propagation                    | —      | —      | **Shipped v1.5.0** — `Snapshot(ctx, reason)` accepts context; cancelled contexts skip the write   |
+| Multiple recorder support              | —      | —      | **Shipped v1.6.0** — `Degraded()` mode degrades gracefully when Go's singleton recorder is taken  |
+
+Graduated items (actionable when picked up):
+
+- **Trace file rotation** - Add `MaxFiles` to `FlightRecorderConfig`/`FlightRecorderFileConfig`; on snapshot, delete oldest `.trace` files beyond the cap. Pairs naturally with the existing `MaxBytes` field.
+- **Compressed trace output** - Add `Compress bool` (config `compressed`); wrap snapshot writes in `gzip.Writer` with `.trace.gz` suffix. Default off to preserve `go tool trace` compatibility expectations.
 
 ### Hardening (owner decisions pending)
 
