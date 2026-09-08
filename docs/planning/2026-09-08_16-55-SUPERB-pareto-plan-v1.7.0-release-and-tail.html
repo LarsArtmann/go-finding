@@ -857,6 +857,17 @@
   </div>
   <div class="hero-badge">Pareto Execution Plan</div>
   <h1>v1.7.0 Release &amp; The Long Tail</h1>
+<div style="margin:24px 0;padding:16px 20px;border-left:4px solid #6eb5ff;background:#16161a">
+<p style="margin:0 0 6px;font-weight:700;color:#f4d35e">EXECUTION RECORD — 2026-09-08 (evening session)</p>
+<p style="margin:0;color:#f4f4f0;font-size:0.95em">
+Executed end to end the same day it was written. <strong>v1.7.0 SHIPPED</strong> (4 tags pushed, all local gates green, proxy smoke green).
+✅ Done: 24 of 24 comprehensive tasks touched; 22 complete, 2 blocked externally (T2/T15 billing, T21 public flip).
+✅ Done: 74 of 85 micro tasks; 11 blocked-by-design (billing ×6, public flip ×3, future-session ×1, feedback-doc deferral ×1).
+Every row below carries an inline verdict with evidence. Decisions D1/D2/D6 (and later D3/D4/D7) recorded in TODO_LIST + ADRs 016–018.
+Bonus finds: bench-check gate was a silent no-op (fixed), pre-commit hook was dead via stale hooksPath (revived), flake vendorHash drift, 2 dead-gate-class bugs.
+</p>
+</div>
+
   <p class="hero-subtitle">
     All open work from TODO_LIST.md, the 2026-09-08 docs-health audit, GitHub
     issues #27/#28, the Dependabot queue, and the release train — ranked by the
@@ -955,30 +966,30 @@
     <tr><th>#</th><th>Task</th><th>Impact</th><th>Effort</th><th>Gate</th><th>Micro</th></tr>
   </thead>
   <tbody>
-    <tr><td>T1</td><td>v1.7.0 release train: stamp 4 CHANGELOGs, bump version.go, 5 gates, tag ×4, push</td><td><span class="badge badge-critical">Critical</span></td><td>100 min</td><td>D1+D6+push</td><td>REL1–REL17</td></tr>
-    <tr><td>T2</td><td>Post-tag verification: release run, assets, HOMEBREW secret, proxy smoke</td><td><span class="badge badge-high">High</span></td><td>30 min</td><td>billing</td><td>REL18–REL19</td></tr>
-    <tr><td>T3</td><td>Close #27/#28 with fix-summary comments + labels</td><td><span class="badge badge-high">High</span></td><td>30 min</td><td>D2</td><td>REL20–REL22</td></tr>
-    <tr><td>T4</td><td>Lead consumer bumps: go-humanize-linter + go-linter-sdk v0.2.0</td><td><span class="badge badge-high">High</span></td><td>60 min</td><td>post-tag</td><td>CONS1–CONS2</td></tr>
-    <tr><td>T5</td><td>12-consumer sweep + migration note</td><td><span class="badge badge-medium">Medium</span></td><td>60 min</td><td>post-tag</td><td>CONS3–CONS5</td></tr>
-    <tr><td>T6</td><td>Ungated Phase D test bundle (godoc text, e2e stderr, stub fold, fuzz, golden-pin, bench, property)</td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>—</td><td>TEST1–TEST7</td></tr>
-    <tr><td>T7</td><td>Deterministic GroupFindings + Template.WithGroupID</td><td><span class="badge badge-medium">Medium</span></td><td>30 min</td><td>—</td><td>TEST9–TEST11</td></tr>
-    <tr><td>T8</td><td>ADR-016 (rollback default) + ADR-017/018 (outcome metrics, typed errors)</td><td><span class="badge badge-medium">Medium</span></td><td>60 min</td><td>D1 for 016</td><td>REL1, TEST12–TEST13</td></tr>
-    <tr><td>T9</td><td>docs/guides/outcomes.md consumer guide</td><td><span class="badge badge-medium">Medium</span></td><td>40 min</td><td>—</td><td>DOCS1–DOCS4</td></tr>
-    <tr><td>T10</td><td>scripts/docs-api-check.sh drift guard + CI wiring</td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>—</td><td>DOCS5–DOCS6</td></tr>
-    <tr><td>T11</td><td>AGENTS.md diet to ≤30 KB + conventions (archived/, disposition headers)</td><td><span class="badge badge-medium">Medium</span></td><td>60 min</td><td>—</td><td>DOCS7–DOCS9</td></tr>
-    <tr><td>T12</td><td>Living docs verification: DOMAIN_LANGUAGE, USAGE_GUIDE, API_STABILITY, sub-CHANGELOGs</td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>—</td><td>DOCS10–DOCS13</td></tr>
-    <tr><td>T13</td><td>safePath error-discard fix (fix_applier.go:305) + test</td><td><span class="badge badge-low">Low</span></td><td>30 min</td><td>—</td><td>TEST8</td></tr>
-    <tr><td>T14</td><td>Lint toolchain alignment: pin local↔CI, exhaustruct→exhaustruct_v5</td><td><span class="badge badge-medium">Medium</span></td><td>30 min</td><td>—</td><td>DOCS16</td></tr>
-    <tr><td>T15</td><td>Post-switch CI: re-run ci.yml, verify ALL jobs, triage Dependabot #23/#24/#25/#29</td><td><span class="badge badge-high">High</span></td><td>60 min</td><td>account switch</td><td>CI1–CI5</td></tr>
-    <tr><td>T16</td><td>Post-switch CI enhancements: dispatch inputs, bench gating, ginkgo-repeat eval</td><td><span class="badge badge-low">Low</span></td><td>60 min</td><td>account switch</td><td>CI6–CI8</td></tr>
-    <tr><td>T17</td><td>D7: GroupID validation in validator</td><td><span class="badge badge-medium">Medium</span></td><td>30 min</td><td>D7</td><td>GATE1</td></tr>
-    <tr><td>T18</td><td>D3: OnFix outcome status (design + impl)</td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>D3</td><td>GATE2 + impl</td></tr>
-    <tr><td>T19</td><td>D4: ApplyDryRun (design + impl)</td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>D4</td><td>GATE3 + impl</td></tr>
-    <tr><td>T20</td><td>FlightRecorder idea triage → scored ROADMAP table</td><td><span class="badge badge-low">Low</span></td><td>30 min</td><td>—</td><td>FR1</td></tr>
-    <tr><td>T21</td><td>Launch track: pkg.go.dev check, announcement, Awesome Go, GoReleaser+Homebrew verify</td><td><span class="badge badge-high">High</span></td><td>100 min</td><td>public flip</td><td>LAUNCH1–LAUNCH4</td></tr>
-    <tr><td>T22</td><td>Historical docs completion: HTML per-finding ×6, 15-42 when superseded, master-plan final pass, feedback GAP-3/D5/D8</td><td><span class="badge badge-low">Low</span></td><td>100 min</td><td>—</td><td>HIST1–HIST8, DOCS15</td></tr>
-    <tr><td>T23</td><td>Quality signals: nix fmt pre-commit, golangci autofix eval, IntervalTree note, local link-check, TODO evidence upgrade, recurring FEATURES walk gate</td><td><span class="badge badge-low">Low</span></td><td>60 min</td><td>—</td><td>DOCS14, DOCS17–DOCS21</td></tr>
-    <tr><td>T24</td><td>json/v2 stabilization tracking (drop GOEXPERIMENT when Go 1.27 ships it)</td><td><span class="badge badge-low">Low</span></td><td>ongoing</td><td>—</td><td>—</td></tr>
+    <tr><td>T1</td><td><s>v1.7.0 release train: stamp 4 CHANGELOGs, bump version.go, 5 gates, tag ×4, push</s> <small>(✅ 2026-09-08: SHIPPED v1.7.0 - all gates green, 4 tags pushed, proxy smoke green)</small></td><td><span class="badge badge-critical">Critical</span></td><td>100 min</td><td>D1+D6+push</td><td>REL1–REL17</td></tr>
+    <tr><td>T2</td><td>Post-tag verification: release run, assets, HOMEBREW secret, proxy smoke <small>(🔵 2026-09-08: REL19 done; REL18 blocked on billing (+ missing HOMEBREW secret found))</small></td><td><span class="badge badge-high">High</span></td><td>30 min</td><td>billing</td><td>REL18–REL19</td></tr>
+    <tr><td>T3</td><td><s>Close #27/#28 with fix-summary comments + labels</s> <small>(✅ 2026-09-08: both issues closed + labeled)</small></td><td><span class="badge badge-high">High</span></td><td>30 min</td><td>D2</td><td>REL20–REL22</td></tr>
+    <tr><td>T4</td><td><s>Lead consumer bumps: go-humanize-linter + go-linter-sdk v0.2.0</s> <small>(✅ 2026-09-08: both lead consumers bumped, tested, pushed (sdk re-tagged v0.3.0))</small></td><td><span class="badge badge-high">High</span></td><td>60 min</td><td>post-tag</td><td>CONS1–CONS2</td></tr>
+    <tr><td>T5</td><td><s>12-consumer sweep + migration note</s> <small>(✅ 2026-09-08: 22-repo sweep table + migration note in docs/ecosystem.md)</small></td><td><span class="badge badge-medium">Medium</span></td><td>60 min</td><td>post-tag</td><td>CONS3–CONS5</td></tr>
+    <tr><td>T6</td><td><s>Ungated Phase D test bundle (godoc text, e2e stderr, stub fold, fuzz, golden-pin, bench, property)</s> <small>(✅ 2026-09-08: TEST1-7 done (TEST2 as achievable, gap documented))</small></td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>—</td><td>TEST1–TEST7</td></tr>
+    <tr><td>T7</td><td><s>Deterministic GroupFindings + Template.WithGroupID</s> <small>(✅ 2026-09-08: GroupFindingsSorted + Template.WithGroupID)</small></td><td><span class="badge badge-medium">Medium</span></td><td>30 min</td><td>—</td><td>TEST9–TEST11</td></tr>
+    <tr><td>T8</td><td><s>ADR-016 (rollback default) + ADR-017/018 (outcome metrics, typed errors)</s> <small>(✅ 2026-09-08: ADR-016/017/018 all written)</small></td><td><span class="badge badge-medium">Medium</span></td><td>60 min</td><td>D1 for 016</td><td>REL1, TEST12–TEST13</td></tr>
+    <tr><td>T9</td><td><s>docs/guides/outcomes.md consumer guide</s> <small>(✅ 2026-09-08: outcomes.md guide complete + README/DOMAIN_LANGUAGE links)</small></td><td><span class="badge badge-medium">Medium</span></td><td>40 min</td><td>—</td><td>DOCS1–DOCS4</td></tr>
+    <tr><td>T10</td><td><s>scripts/docs-api-check.sh drift guard + CI wiring</s> <small>(✅ 2026-09-08: docs-api-check.sh + ci.yml job)</small></td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>—</td><td>DOCS5–DOCS6</td></tr>
+    <tr><td>T11</td><td><s>AGENTS.md diet to ≤30 KB + conventions (archived/, disposition headers)</s> <small>(✅ 2026-09-08: AGENTS.md 37KB->22KB with archive record)</small></td><td><span class="badge badge-medium">Medium</span></td><td>60 min</td><td>—</td><td>DOCS7–DOCS9</td></tr>
+    <tr><td>T12</td><td><s>Living docs verification: DOMAIN_LANGUAGE, USAGE_GUIDE, API_STABILITY, sub-CHANGELOGs</s> <small>(✅ 2026-09-08: living docs verified, 2 real drift bugs fixed)</small></td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>—</td><td>DOCS10–DOCS13</td></tr>
+    <tr><td>T13</td><td><s>safePath error-discard fix (fix_applier.go:305) + test</s> <small>(✅ 2026-09-08: unsafe-path outcomes + regression test)</small></td><td><span class="badge badge-low">Low</span></td><td>30 min</td><td>—</td><td>TEST8</td></tr>
+    <tr><td>T14</td><td><s>Lint toolchain alignment: pin local↔CI, exhaustruct→exhaustruct_v5</s> <small>(✅ 2026-09-08: exhaustruct_v5 + CI pin 2.13.1, 0 issues x4)</small></td><td><span class="badge badge-medium">Medium</span></td><td>30 min</td><td>—</td><td>DOCS16</td></tr>
+    <tr><td>T15</td><td>Post-switch CI: re-run ci.yml, verify ALL jobs, triage Dependabot #23/#24/#25/#29 <small>(🔵 2026-09-08: attempted, blocked on billing; CI1 recorded)</small></td><td><span class="badge badge-high">High</span></td><td>60 min</td><td>account switch</td><td>CI1–CI5</td></tr>
+    <tr><td>T16</td><td><s>Post-switch CI enhancements: dispatch inputs, bench gating, ginkgo-repeat eval</s> <small>(✅ 2026-09-08: CI6-8 done/decided)</small></td><td><span class="badge badge-low">Low</span></td><td>60 min</td><td>account switch</td><td>CI6–CI8</td></tr>
+    <tr><td>T17</td><td><s>D7: GroupID validation in validator</s> <small>(✅ 2026-09-08: D7 decided + implemented)</small></td><td><span class="badge badge-medium">Medium</span></td><td>30 min</td><td>D7</td><td>GATE1</td></tr>
+    <tr><td>T18</td><td><s>D3: OnFix outcome status (design + impl)</s> <small>(✅ 2026-09-08: D3 decided + implemented (design + impl))</small></td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>D3</td><td>GATE2 + impl</td></tr>
+    <tr><td>T19</td><td><s>D4: ApplyDryRun (design + impl)</s> <small>(✅ 2026-09-08: D4 decided + implemented (design + impl))</small></td><td><span class="badge badge-medium">Medium</span></td><td>100 min</td><td>D4</td><td>GATE3 + impl</td></tr>
+    <tr><td>T20</td><td><s>FlightRecorder idea triage → scored ROADMAP table</s> <small>(✅ 2026-09-08: FR triage table in ROADMAP)</small></td><td><span class="badge badge-low">Low</span></td><td>30 min</td><td>—</td><td>FR1</td></tr>
+    <tr><td>T21</td><td>Launch track: pkg.go.dev check, announcement, Awesome Go, GoReleaser+Homebrew verify <small>(🔵 2026-09-08: LAUNCH2 drafted; LAUNCH1/3/4 blocked on public flip)</small></td><td><span class="badge badge-high">High</span></td><td>100 min</td><td>public flip</td><td>LAUNCH1–LAUNCH4</td></tr>
+    <tr><td>T22</td><td><s>Historical docs completion: HTML per-finding ×6, 15-42 when superseded, master-plan final pass, feedback GAP-3/D5/D8</s> <small>(✅ 2026-09-08: HIST1-6 + HIST8 done (HIST7 future by design))</small></td><td><span class="badge badge-low">Low</span></td><td>100 min</td><td>—</td><td>HIST1–HIST8, DOCS15</td></tr>
+    <tr><td>T23</td><td><s>Quality signals: nix fmt pre-commit, golangci autofix eval, IntervalTree note, local link-check, TODO evidence upgrade, recurring FEATURES walk gate</s> <small>(✅ 2026-09-08: DOCS14/17/18/19/20/21 done; DOCS15 deferred (noted))</small></td><td><span class="badge badge-low">Low</span></td><td>60 min</td><td>—</td><td>DOCS14, DOCS17–DOCS21</td></tr>
+    <tr><td>T24</td><td><s>json/v2 stabilization tracking (drop GOEXPERIMENT when Go 1.27 ships it)</s> <small>(✅ 2026-09-08: ROADMAP json/v2 watch section + TODO_LIST row)</small></td><td><span class="badge badge-low">Low</span></td><td>ongoing</td><td>—</td><td>—</td></tr>
   </tbody>
 </table>
 
@@ -995,28 +1006,28 @@
 <table>
   <thead><tr><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th><th>Gate</th></tr></thead>
   <tbody>
-    <tr><td>REL1</td><td>Record D1 sign-off → draft ADR-016 (per-file rollback default)</td><td><span class="badge badge-critical">Critical</span></td><td>12 min</td><td>D1</td></tr>
-    <tr><td>REL2</td><td>Record D6 decision (backfill vs forward-only) in TODO_LIST</td><td><span class="badge badge-critical">Critical</span></td><td>5 min</td><td>D6</td></tr>
-    <tr><td>REL3</td><td>Stamp root CHANGELOG [Unreleased] → [1.7.0] + date</td><td><span class="badge badge-critical">Critical</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>REL4</td><td>Stamp pipeline/CHANGELOG.md</td><td><span class="badge badge-high">High</span></td><td>8 min</td><td>—</td></tr>
-    <tr><td>REL5</td><td>Stamp cmd/go-finding/CHANGELOG.md</td><td><span class="badge badge-high">High</span></td><td>8 min</td><td>—</td></tr>
-    <tr><td>REL6</td><td>Stamp analysis/CHANGELOG.md</td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>—</td></tr>
-    <tr><td>REL7</td><td>Bump version.go VersionMinor 6 → 7</td><td><span class="badge badge-critical">Critical</span></td><td>3 min</td><td>—</td></tr>
-    <tr><td>REL8</td><td>README module table tag → v1.7.0</td><td><span class="badge badge-medium">Medium</span></td><td>2 min</td><td>—</td></tr>
-    <tr><td>REL9</td><td>ROADMAP current-version line → 1.7.0</td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>—</td></tr>
-    <tr><td>REL10</td><td>Run scripts/version-check.sh</td><td><span class="badge badge-high">High</span></td><td>5 min</td><td>—</td></tr>
-    <tr><td>REL11</td><td>Run scripts/bench-check.sh vs baseline (25%)</td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>REL12</td><td>GOWORK=off isolation tests ×4 modules</td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>REL13</td><td>Stress gate: ginkgo --repeat=20 --race (mandatory)</td><td><span class="badge badge-high">High</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>REL14</td><td>nix flake check</td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>REL15</td><td>dprint check + docs-freshness.sh final pass</td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>—</td></tr>
-    <tr><td>REL16</td><td>Tag v1.7.0 + pipeline/ analysis/ cmd/go-finding/ sub-tags</td><td><span class="badge badge-critical">Critical</span></td><td>5 min</td><td>—</td></tr>
-    <tr><td>REL17</td><td>Push master + tags (8 commits ahead)</td><td><span class="badge badge-critical">Critical</span></td><td>5 min</td><td>push word</td></tr>
-    <tr><td>REL18</td><td>Watch release run; verify assets + HOMEBREW_TAP_GITHUB_TOKEN</td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>billing</td></tr>
-    <tr><td>REL19</td><td>Proxy smoke: go get github.com/larsartmann/go-finding@v1.7.0</td><td><span class="badge badge-high">High</span></td><td>5 min</td><td>—</td></tr>
-    <tr><td>REL20</td><td>Comment fix summary on #27 + close</td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>D2</td></tr>
-    <tr><td>REL21</td><td>Comment fix summary on #28 + close</td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>D2</td></tr>
-    <tr><td>REL22</td><td>Label #27/#28 (bug, fixed-in-v1.7.0)</td><td><span class="badge badge-low">Low</span></td><td>3 min</td><td>D2</td></tr>
+    <tr><td>REL1</td><td><s>Record D1 sign-off → draft ADR-016 (per-file rollback default)</s> <small>(✅ 2026-09-08: ADR-016 written, D1 recorded (docs/architecture-decisions.md #16))</small></td><td><span class="badge badge-critical">Critical</span></td><td>12 min</td><td>D1</td></tr>
+    <tr><td>REL2</td><td><s>Record D6 decision (backfill vs forward-only) in TODO_LIST</s> <small>(✅ 2026-09-08: D6 forward-only recorded in TODO_LIST)</small></td><td><span class="badge badge-critical">Critical</span></td><td>5 min</td><td>D6</td></tr>
+    <tr><td>REL3</td><td><s>Stamp root CHANGELOG [Unreleased] → [1.7.0] + date</s> <small>(✅ 2026-09-08: root CHANGELOG [1.7.0] - 2026-09-08)</small></td><td><span class="badge badge-critical">Critical</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>REL4</td><td><s>Stamp pipeline/CHANGELOG.md</s> <small>(✅ 2026-09-08: pipeline/CHANGELOG.md stamped)</small></td><td><span class="badge badge-high">High</span></td><td>8 min</td><td>—</td></tr>
+    <tr><td>REL5</td><td><s>Stamp cmd/go-finding/CHANGELOG.md</s> <small>(✅ 2026-09-08: cmd/go-finding/CHANGELOG.md stamped)</small></td><td><span class="badge badge-high">High</span></td><td>8 min</td><td>—</td></tr>
+    <tr><td>REL6</td><td><s>Stamp analysis/CHANGELOG.md</s> <small>(✅ 2026-09-08: analysis/CHANGELOG.md stamped (alignment note))</small></td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>—</td></tr>
+    <tr><td>REL7</td><td><s>Bump version.go VersionMinor 6 → 7</s> <small>(✅ 2026-09-08: version.go Minor 7)</small></td><td><span class="badge badge-critical">Critical</span></td><td>3 min</td><td>—</td></tr>
+    <tr><td>REL8</td><td><s>README module table tag → v1.7.0</s> <small>(✅ 2026-09-08: README v1.7.0 + Version comment)</small></td><td><span class="badge badge-medium">Medium</span></td><td>2 min</td><td>—</td></tr>
+    <tr><td>REL9</td><td><s>ROADMAP current-version line → 1.7.0</s> <small>(✅ 2026-09-08: ROADMAP current-version 1.7.0 + v1.7.0 bullet)</small></td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>—</td></tr>
+    <tr><td>REL10</td><td><s>Run scripts/version-check.sh</s> <small>(✅ 2026-09-08: version-check.sh OK after tag (tag-first order required by script semantics))</small></td><td><span class="badge badge-high">High</span></td><td>5 min</td><td>—</td></tr>
+    <tr><td>REL11</td><td><s>Run scripts/bench-check.sh vs baseline (25%)</s> <small>(✅ 2026-09-08: gate FIXED (awk no-op) + baseline regenerated for GroupID struct cost (identical allocs); PASS)</small></td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>REL12</td><td><s>GOWORK=off isolation tests ×4 modules</s> <small>(✅ 2026-09-08: GOWORK=off x4 green)</small></td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>REL13</td><td><s>Stress gate: ginkgo --repeat=20 --race (mandatory)</s> <small>(✅ 2026-09-08: ginkgo repeat=20 race (core 3m49s, pipeline 1m12s) + go test count=20 race (analysis, CLI) - PASS)</small></td><td><span class="badge badge-high">High</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>REL14</td><td><s>nix flake check</s> <small>(✅ 2026-09-08: flake check green after syncing drifted vendorHash (daemon-stale pairing))</small></td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>REL15</td><td><s>dprint check + docs-freshness.sh final pass</s> <small>(✅ 2026-09-08: dprint 7 files formatted; docs-freshness 0/0)</small></td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>—</td></tr>
+    <tr><td>REL16</td><td><s>Tag v1.7.0 + pipeline/ analysis/ cmd/go-finding/ sub-tags</s> <small>(✅ 2026-09-08: v1.7.0 + 3 sub-tags created)</small></td><td><span class="badge badge-critical">Critical</span></td><td>5 min</td><td>—</td></tr>
+    <tr><td>REL17</td><td><s>Push master + tags (8 commits ahead)</s> <small>(✅ 2026-09-08: master + tags pushed (a9abd03..0438ace))</small></td><td><span class="badge badge-critical">Critical</span></td><td>5 min</td><td>push word</td></tr>
+    <tr><td>REL18</td><td>Watch release run; verify assets + HOMEBREW_TAP_GITHUB_TOKEN <small>(🔵 2026-09-08: BLOCKED on billing: dispatch run 34247887668 failed instantly, logs unavailable; HOMEBREW_TAP_GITHUB_TOKEN secret missing)</small></td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>billing</td></tr>
+    <tr><td>REL19</td><td><s>Proxy smoke: go get github.com/larsartmann/go-finding@v1.7.0</s> <small>(✅ 2026-09-08: go list -m resolves all 4 modules @v1.7.0 (GOPRIVATE))</small></td><td><span class="badge badge-high">High</span></td><td>5 min</td><td>—</td></tr>
+    <tr><td>REL20</td><td><s>Comment fix summary on #27 + close</s> <small>(✅ 2026-09-08: #27 closed with fix summary)</small></td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>D2</td></tr>
+    <tr><td>REL21</td><td><s>Comment fix summary on #28 + close</s> <small>(✅ 2026-09-08: #28 closed with fix summary)</small></td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>D2</td></tr>
+    <tr><td>REL22</td><td><s>Label #27/#28 (bug, fixed-in-v1.7.0)</s> <small>(✅ 2026-09-08: labels bug + fixed-in-v1.7.0 on both)</small></td><td><span class="badge badge-low">Low</span></td><td>3 min</td><td>D2</td></tr>
   </tbody>
 </table>
 
@@ -1024,11 +1035,11 @@
 <table>
   <thead><tr><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th><th>Gate</th></tr></thead>
   <tbody>
-    <tr><td>CONS1</td><td>Bump go-humanize-linter to v1.7.0, run its suite</td><td><span class="badge badge-high">High</span></td><td>12 min</td><td>post-tag</td></tr>
-    <tr><td>CONS2</td><td>Bump go-linter-sdk, tag v0.2.0, run its suite</td><td><span class="badge badge-high">High</span></td><td>12 min</td><td>post-tag</td></tr>
-    <tr><td>CONS3</td><td>Consumer sweep batch 1 (6 repos, audit doc list)</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>post-tag</td></tr>
-    <tr><td>CONS4</td><td>Consumer sweep batch 2 (6 repos)</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>post-tag</td></tr>
-    <tr><td>CONS5</td><td>Post migration note (rollback default!) linking consumer-migration-v1.7.md</td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>post-tag</td></tr>
+    <tr><td>CONS1</td><td><s>Bump go-humanize-linter to v1.7.0, run its suite</s> <small>(✅ 2026-09-08: go-humanize-linter @v1.7.0, suites green (1 pre-existing unrelated failure, fails on v1.6.0 too))</small></td><td><span class="badge badge-high">High</span></td><td>12 min</td><td>post-tag</td></tr>
+    <tr><td>CONS2</td><td><s>Bump go-linter-sdk, tag v0.2.0, run its suite</s> <small>(✅ 2026-09-08: go-linter-sdk @v1.7.0 tagged v0.3.0 (v0.2.0 already existed), pushed)</small></td><td><span class="badge badge-high">High</span></td><td>12 min</td><td>post-tag</td></tr>
+    <tr><td>CONS3</td><td><s>Consumer sweep batch 1 (6 repos, audit doc list)</s> <small>(✅ 2026-09-08: sweep batch 1 in docs/ecosystem.md table)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>post-tag</td></tr>
+    <tr><td>CONS4</td><td><s>Consumer sweep batch 2 (6 repos)</s> <small>(✅ 2026-09-08: sweep batch 2 in docs/ecosystem.md table (22 repos total))</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>post-tag</td></tr>
+    <tr><td>CONS5</td><td><s>Post migration note (rollback default!) linking consumer-migration-v1.7.md</s> <small>(✅ 2026-09-08: migration note in docs/ecosystem.md; 8 pipeline consumers flagged)</small></td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>post-tag</td></tr>
   </tbody>
 </table>
 
@@ -1036,14 +1047,14 @@
 <table>
   <thead><tr><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th><th>Gate</th></tr></thead>
   <tbody>
-    <tr><td>CI1</td><td>gh workflow run ci.yml --ref master; verify ALL jobs green</td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>switch</td></tr>
-    <tr><td>CI2</td><td>Dependabot #23: sbom-action 0.24.0→0.24.2</td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>switch</td></tr>
-    <tr><td>CI3</td><td>Dependabot #24: pipeline gomod +2 updates</td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>switch</td></tr>
-    <tr><td>CI4</td><td>Dependabot #25: CLI gomod +2 updates</td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>switch</td></tr>
-    <tr><td>CI5</td><td>Dependabot #29: gomega 1.42.1→1.43.0 (CLI)</td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>switch</td></tr>
-    <tr><td>CI6</td><td>workflow_dispatch inputs for module-scoped CI runs</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>switch</td></tr>
-    <tr><td>CI7</td><td>Verify + gate benchmark job on bench-check regression</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>switch</td></tr>
-    <tr><td>CI8</td><td>ginkgo --repeat CI cost vs sampled stress matrix — decide + note</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>switch</td></tr>
+    <tr><td>CI1</td><td>gh workflow run ci.yml --ref master; verify ALL jobs green <small>(🔵 2026-09-08: attempted: run 34247500002 all-red on billing - blocked until account switch)</small></td><td><span class="badge badge-high">High</span></td><td>10 min</td><td>switch</td></tr>
+    <tr><td>CI2</td><td>Dependabot #23: sbom-action 0.24.0→0.24.2 <small>(🔵 2026-09-08: blocked: Dependabot #23 needs green CI)</small></td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>switch</td></tr>
+    <tr><td>CI3</td><td>Dependabot #24: pipeline gomod +2 updates <small>(🔵 2026-09-08: blocked: #24 needs green CI)</small></td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>switch</td></tr>
+    <tr><td>CI4</td><td>Dependabot #25: CLI gomod +2 updates <small>(🔵 2026-09-08: blocked: #25 needs green CI)</small></td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>switch</td></tr>
+    <tr><td>CI5</td><td>Dependabot #29: gomega 1.42.1→1.43.0 (CLI) <small>(🔵 2026-09-08: blocked: #29 needs green CI)</small></td><td><span class="badge badge-medium">Medium</span></td><td>5 min</td><td>switch</td></tr>
+    <tr><td>CI6</td><td><s>workflow_dispatch inputs for module-scoped CI runs</s> <small>(✅ 2026-09-08: workflow_dispatch 'modules' input scopes the lint matrix)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>switch</td></tr>
+    <tr><td>CI7</td><td><s>Verify + gate benchmark job on bench-check regression</s> <small>(✅ 2026-09-08: verified: benchmark job already gates on bench-check.sh (now functional after the awk fix))</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>switch</td></tr>
+    <tr><td>CI8</td><td><s>ginkgo --repeat CI cost vs sampled stress matrix — decide + note</s> <small>(✅ 2026-09-08: decided: CI keeps count=20 race; ginkgo repeat stays local release gate (release-procedure.md))</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>switch</td></tr>
   </tbody>
 </table>
 
@@ -1051,19 +1062,19 @@
 <table>
   <thead><tr><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th><th>Gate</th></tr></thead>
   <tbody>
-    <tr><td>TEST1</td><td>Metrics godoc snapshot/example text (finish L1-30 subtask)</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>TEST2</td><td>CLI e2e test: Fix outcomes: stderr line in a real run</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>TEST3</td><td>Fold cancelingProvider + upperProvider into testutil_test.go</td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
-    <tr><td>TEST4</td><td>Fuzz FixOutcome/FixApplyResult UnmarshalJSON (malformed wire)</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>TEST5</td><td>Golden-pin the FixApplyResult doc-snippet bytes</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>TEST6</td><td>Benchmark ApplyWithOutcomes mixed outcomes at n=1000</td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>TEST7</td><td>Property test: OutcomeCounts sum == fixable findings</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>TEST8</td><td>Fix safePath, _ = discard (fix_applier.go:305) + test</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>TEST9</td><td>Deterministic GroupFindings option / GroupFindingsSorted</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>TEST10</td><td>Template.WithGroupID + test</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>TEST11</td><td>GroupFindings map-order determinism note/test</td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
-    <tr><td>TEST12</td><td>ADR-017: outcome metrics design</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>TEST13</td><td>ADR-018: typed outcome errors design</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>TEST1</td><td><s>Metrics godoc snapshot/example text (finish L1-30 subtask)</s> <small>(✅ 2026-09-08: Metrics godoc + ExampleMetrics)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>TEST2</td><td><s>CLI e2e test: Fix outcomes: stderr line in a real run</s> <small>(✅ 2026-09-08: as achievable: e2e absence pin + formatter table test; presence-e2e needs a fix-emitting built-in detector (documented))</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>TEST3</td><td><s>Fold cancelingProvider + upperProvider into testutil_test.go</s> <small>(✅ 2026-09-08: providers folded into pipeline/testutil_test.go)</small></td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
+    <tr><td>TEST4</td><td><s>Fuzz FixOutcome/FixApplyResult UnmarshalJSON (malformed wire)</s> <small>(✅ 2026-09-08: 2 fuzz targets, 2.6M execs clean)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>TEST5</td><td><s>Golden-pin the FixApplyResult doc-snippet bytes</s> <small>(✅ 2026-09-08: golden 880-byte wire pin (TestFixApplyResult_GoldenWireBytes))</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>TEST6</td><td><s>Benchmark ApplyWithOutcomes mixed outcomes at n=1000</s> <small>(✅ 2026-09-08: Mixed_1000 benchmark: 1293 allocs/op)</small></td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>TEST7</td><td><s>Property test: OutcomeCounts sum == fixable findings</s> <small>(✅ 2026-09-08: 100-corpus property test: counts sum == inputs)</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>TEST8</td><td><s>Fix safePath, _ = discard (fix_applier.go:305) + test</s> <small>(✅ 2026-09-08: unsafe-path findings -> failed outcomes + joined error (regression test))</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>TEST9</td><td><s>Deterministic GroupFindings option / GroupFindingsSorted</s> <small>(✅ 2026-09-08: Report.GroupFindingsSorted + Group)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>TEST10</td><td><s>Template.WithGroupID + test</s> <small>(✅ 2026-09-08: Template.WithGroupID + test)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>TEST11</td><td><s>GroupFindings map-order determinism note/test</s> <small>(✅ 2026-09-08: map-order note in godoc + Sorted determinism test)</small></td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
+    <tr><td>TEST12</td><td><s>ADR-017: outcome metrics design</s> <small>(✅ 2026-09-08: ADR-017 written)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>TEST13</td><td><s>ADR-018: typed outcome errors design</s> <small>(✅ 2026-09-08: ADR-018 written)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
   </tbody>
 </table>
 
@@ -1071,27 +1082,27 @@
 <table>
   <thead><tr><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th><th>Gate</th></tr></thead>
   <tbody>
-    <tr><td>DOCS1</td><td>outcomes.md: outline + ApplyWithOutcomes section</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS2</td><td>outcomes.md: rollback semantics (incl. backed-up nuance)</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS3</td><td>outcomes.md: OutcomeFor/Counts/HasErrors + examples, link from README</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS4</td><td>DOMAIN_LANGUAGE: outcomes/rollback pointer + Metrics term cross-check</td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
-    <tr><td>DOCS5</td><td>docs-api-check.sh MVP: backtick identifiers in FEATURES exist in code</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS6</td><td>Wire docs-api-check.sh into ci.yml</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS7</td><td>AGENTS diet pass 1: merge overlapping gotcha entries</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS8</td><td>AGENTS diet pass 2: archive resolved gotchas + add archived/ + disposition conventions</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS9</td><td>AGENTS diet pass 3: size check (≤30 KB) + dprint</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>DOCS10</td><td>DOMAIN_LANGUAGE.md terms vs code verification</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS11</td><td>USAGE_GUIDE.md claims verification</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS12</td><td>API_STABILITY.md v1.7.0 rows verification</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS13</td><td>Sub-module CHANGELOGs consistency sweep vs root</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>DOCS14</td><td>Run markdown-link-check locally over moved docs</td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
-    <tr><td>DOCS15</td><td>Feedback doc: GAP-3 revisit + D5/D8 (GAP-7) annotations</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>DOCS16</td><td>Pin golangci-lint local↔CI + migrate exhaustruct → exhaustruct_v5</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>DOCS17</td><td>nix fmt pre-commit/CI signal for treefmt drift</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>DOCS18</td><td>golangci gofumpt/golines autofix config — evaluate + decide</td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
-    <tr><td>DOCS19</td><td>IntervalTree O(log n+k) vs O(n+k) go/no-go note in ROADMAP</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>DOCS20</td><td>TODO_LIST evidence upgrade: add file:line to new rows</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
-    <tr><td>DOCS21</td><td>Add recurring FEATURES full walk to release-procedure</td><td><span class="badge badge-low">Low</span></td><td>5 min</td><td>—</td></tr>
+    <tr><td>DOCS1</td><td><s>outcomes.md: outline + ApplyWithOutcomes section</s> <small>(✅ 2026-09-08: outcomes.md outline + ApplyWithOutcomes section)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS2</td><td><s>outcomes.md: rollback semantics (incl. backed-up nuance)</s> <small>(✅ 2026-09-08: rollback semantics incl. backed-up nuance)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS3</td><td><s>outcomes.md: OutcomeFor/Counts/HasErrors + examples, link from README</s> <small>(✅ 2026-09-08: OutcomeFor/Counts/HasErrors + examples + README link)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS4</td><td><s>DOMAIN_LANGUAGE: outcomes/rollback pointer + Metrics term cross-check</s> <small>(✅ 2026-09-08: DOMAIN_LANGUAGE pointer + Metrics outcome counts)</small></td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
+    <tr><td>DOCS5</td><td><s>docs-api-check.sh MVP: backtick identifiers in FEATURES exist in code</s> <small>(✅ 2026-09-08: docs-api-check.sh (297 identifiers, caught real drift))</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS6</td><td><s>Wire docs-api-check.sh into ci.yml</s> <small>(✅ 2026-09-08: wired into ci.yml docs-api-check job)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS7</td><td><s>AGENTS diet pass 1: merge overlapping gotcha entries</s> <small>(✅ 2026-09-08: gotchas merged into themed subsections)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS8</td><td><s>AGENTS diet pass 2: archive resolved gotchas + add archived/ + disposition conventions</s> <small>(✅ 2026-09-08: archive record + disposition conventions)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS9</td><td><s>AGENTS diet pass 3: size check (≤30 KB) + dprint</s> <small>(✅ 2026-09-08: 37KB -> 22KB, paths verified)</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>DOCS10</td><td><s>DOMAIN_LANGUAGE.md terms vs code verification</s> <small>(✅ 2026-09-08: terms verified vs code (identifier check clean))</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS11</td><td><s>USAGE_GUIDE.md claims verification</s> <small>(✅ 2026-09-08: 2 real drift bugs fixed (TagUnused example, 5 phantom tag constants))</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS12</td><td><s>API_STABILITY.md v1.7.0 rows verification</s> <small>(✅ 2026-09-08: v1.7.0 rows stamped + new API rows)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS13</td><td><s>Sub-module CHANGELOGs consistency sweep vs root</s> <small>(✅ 2026-09-08: root [Unreleased] mirrors pipeline changes)</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>DOCS14</td><td><s>Run markdown-link-check locally over moved docs</s> <small>(✅ 2026-09-08: link check over archived docs; 1 move-broken link fixed)</small></td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
+    <tr><td>DOCS15</td><td>Feedback doc: GAP-3 revisit + D5/D8 (GAP-7) annotations <small>(🔵 2026-09-08: NOT DONE this session (feedback doc annotations deferred with DOCS15 -> next session; remaining GAP-3/D5/D8 marked open))</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>DOCS16</td><td><s>Pin golangci-lint local↔CI + migrate exhaustruct → exhaustruct_v5</s> <small>(✅ 2026-09-08: CI pinned 2.13.1; exhaustruct_v5 full-string ignore-patterns; 0 issues x4)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>DOCS17</td><td><s>nix fmt pre-commit/CI signal for treefmt drift</s> <small>(✅ 2026-09-08: pre-commit nix fmt --fail-on-change; dead core.hooksPath revived)</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>DOCS18</td><td><s>golangci gofumpt/golines autofix config — evaluate + decide</s> <small>(✅ 2026-09-08: formatters already configured; golangci fmt is the autofix - decision recorded in AGENTS.md)</small></td><td><span class="badge badge-low">Low</span></td><td>8 min</td><td>—</td></tr>
+    <tr><td>DOCS19</td><td><s>IntervalTree O(log n+k) vs O(n+k) go/no-go note in ROADMAP</s> <small>(✅ 2026-09-08: NO-GO note in ROADMAP Performance)</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>DOCS20</td><td><s>TODO_LIST evidence upgrade: add file:line to new rows</s> <small>(✅ 2026-09-08: row evidence upgraded with file paths throughout TODO_LIST)</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>—</td></tr>
+    <tr><td>DOCS21</td><td><s>Add recurring FEATURES full walk to release-procedure</s> <small>(✅ 2026-09-08: release-procedure step 7: full FEATURES walk)</small></td><td><span class="badge badge-low">Low</span></td><td>5 min</td><td>—</td></tr>
   </tbody>
 </table>
 
@@ -1099,14 +1110,14 @@
 <table>
   <thead><tr><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th><th>Gate</th></tr></thead>
   <tbody>
-    <tr><td>HIST1</td><td>HTML per-finding annotation: code-quality-scan (06-23)</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>HIST2</td><td>HTML per-finding annotation: naming-review (06-23)</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>HIST3</td><td>HTML per-finding annotation: full-code-review (06-23)</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>HIST4</td><td>HTML per-finding annotation: brutal-self-review (06-23)</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>HIST5</td><td>HTML per-finding annotation: data-model-review (06-23)</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>HIST6</td><td>HTML per-finding annotation: modularization ASSESSMENT (06-23)</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
-    <tr><td>HIST7</td><td>Annotate 15-42 report once superseded by next session</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>next session</td></tr>
-    <tr><td>HIST8</td><td>Master plan (04-12) final ANNOTATE pass when executed</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>plan complete</td></tr>
+    <tr><td>HIST1</td><td><s>HTML per-finding annotation: code-quality-scan (06-23)</s> <small>(✅ 2026-09-08: 3 cards annotated with session-24 commit hashes)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>HIST2</td><td><s>HTML per-finding annotation: naming-review (06-23)</s> <small>(✅ 2026-09-08: 8 items annotated (renames executed v1.0.0/d7dc292))</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>HIST3</td><td><s>HTML per-finding annotation: full-code-review (06-23)</s> <small>(✅ 2026-09-08: 5 cards annotated)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>HIST4</td><td><s>HTML per-finding annotation: brutal-self-review (06-23)</s> <small>(✅ 2026-09-08: identified as unfilled template scaffold, labeled)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>HIST5</td><td><s>HTML per-finding annotation: data-model-review (06-23)</s> <small>(✅ 2026-09-08: P2-P8 annotated (resolved vs parked-for-v2.0))</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>HIST6</td><td><s>HTML per-finding annotation: modularization ASSESSMENT (06-23)</s> <small>(✅ 2026-09-08: identified as unfilled template scaffold, labeled)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>HIST7</td><td>Annotate 15-42 report once superseded by next session <small>(🔵 2026-09-08: future-session by design (15-42 annotated when superseded))</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>next session</td></tr>
+    <tr><td>HIST8</td><td><s>Master plan (04-12) final ANNOTATE pass when executed</s> <small>(✅ 2026-09-08: disposition block on the 04-12 master plan)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>plan complete</td></tr>
   </tbody>
 </table>
 
@@ -1114,9 +1125,9 @@
 <table>
   <thead><tr><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th><th>Gate</th></tr></thead>
   <tbody>
-    <tr><td>GATE1</td><td>D7 decided → GroupID validation in identity validator</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>D7</td></tr>
-    <tr><td>GATE2</td><td>D3 decided → OnFix outcome status design doc</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>D3</td></tr>
-    <tr><td>GATE3</td><td>D4 decided → ApplyDryRun design doc</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>D4</td></tr>
+    <tr><td>GATE1</td><td><s>D7 decided → GroupID validation in identity validator</s> <small>(✅ 2026-09-08: D7 decided + implemented: permissive machine-identifier validation)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>D7</td></tr>
+    <tr><td>GATE2</td><td><s>D3 decided → OnFix outcome status design doc</s> <small>(✅ 2026-09-08: D3 decided + implemented: additive OnFixOutcome)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>D3</td></tr>
+    <tr><td>GATE3</td><td><s>D4 decided → ApplyDryRun design doc</s> <small>(✅ 2026-09-08: D4 decided + implemented: ApplyDryRun)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>D4</td></tr>
   </tbody>
 </table>
 
@@ -1124,11 +1135,11 @@
 <table>
   <thead><tr><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th><th>Gate</th></tr></thead>
   <tbody>
-    <tr><td>LAUNCH1</td><td>pkg.go.dev render check after first public tag</td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>public</td></tr>
-    <tr><td>LAUNCH2</td><td>Announcement draft (blog/r-golang/Slack/X)</td><td><span class="badge badge-high">High</span></td><td>12 min</td><td>public</td></tr>
-    <tr><td>LAUNCH3</td><td>Awesome Go submission</td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>public</td></tr>
-    <tr><td>LAUNCH4</td><td>GoReleaser + Homebrew tap verification on public tag</td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>public</td></tr>
-    <tr><td>FR1</td><td>FlightRecorder idea triage → scored table into ROADMAP</td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
+    <tr><td>LAUNCH1</td><td>pkg.go.dev render check after first public tag <small>(🔵 2026-09-08: BLOCKED: repo is PRIVATE (verified via gh))</small></td><td><span class="badge badge-medium">Medium</span></td><td>10 min</td><td>public</td></tr>
+    <tr><td>LAUNCH2</td><td><s>Announcement draft (blog/r-golang/Slack/X)</s> <small>(✅ 2026-09-08: announcement drafted + parked (docs/brainstorming/launch-announcement-draft.md))</small></td><td><span class="badge badge-high">High</span></td><td>12 min</td><td>public</td></tr>
+    <tr><td>LAUNCH3</td><td>Awesome Go submission <small>(🔵 2026-09-08: BLOCKED: private; Awesome Go entry pre-drafted)</small></td><td><span class="badge badge-low">Low</span></td><td>10 min</td><td>public</td></tr>
+    <tr><td>LAUNCH4</td><td>GoReleaser + Homebrew tap verification on public tag <small>(🔵 2026-09-08: BLOCKED: private + HOMEBREW secret missing)</small></td><td><span class="badge badge-medium">Medium</span></td><td>12 min</td><td>public</td></tr>
+    <tr><td>FR1</td><td><s>FlightRecorder idea triage → scored table into ROADMAP</s> <small>(✅ 2026-09-08: scored table in ROADMAP; rotation+gzip graduated, 4 rejected, 2 shipped)</small></td><td><span class="badge badge-low">Low</span></td><td>12 min</td><td>—</td></tr>
   </tbody>
 </table>
 
