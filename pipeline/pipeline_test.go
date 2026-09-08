@@ -650,3 +650,56 @@ func TestPipeline_SuggestFindingsShiftedAfterDirectFix(t *testing.T) {
 		"suggest finding line should shift +2 after direct fix added 2 lines",
 	)
 }
+
+// TestOnFixOutcome_CarriesExactStatuses verifies D3: the OnFixOutcome
+// callback receives the per-finding FixOutcomeStatus (and error for failed
+// resolutions), distinguishing applied from refused outcomes that the
+// boolean OnFix collapses.
+func TestOnFixOutcome_CarriesExactStatuses(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+	original := "package main\n\nfunc main() {\n\told()\n}\n"
+	writeTestFile(t, testFile, []byte(original))
+
+	appliedFix := directFix("fix-applied", "r1", "tool", "replace old", "old()", "new()", "fixme.go", 4)
+	refusedFix := directFix("fix-refused", "r1", "tool", "absent", "nonexistent", "new()", "fixme.go", 5)
+
+	type call struct {
+		id     finding.ID
+		status FixOutcomeStatus
+		failed bool
+	}
+
+	var calls []call
+
+	cfg := Config{
+		MaxIterations:     1,
+		ParallelDetectors: false,
+		OnFixOutcome: func(f finding.Finding, status FixOutcomeStatus, err error) {
+			calls = append(calls, call{id: f.ID, status: status, failed: err != nil})
+		},
+	}
+
+	p, err := New(cfg, tmpDir, mockDetWithFindings("tool", appliedFix, refusedFix))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if _, err := p.Run(context.Background()); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	byID := make(map[finding.ID]call, len(calls))
+	for _, c := range calls {
+		byID[c.id] = c
+	}
+
+	g.Expect(byID[finding.ID("fix-applied")].status).To(Equal(FixOutcomeApplied))
+	g.Expect(byID[finding.ID("fix-applied")].failed).To(BeFalse())
+
+	g.Expect(byID[finding.ID("fix-refused")].status).To(Equal(FixOutcomeRefused))
+	g.Expect(byID[finding.ID("fix-refused")].failed).To(BeFalse(),
+		"refusal is a decision, not an error")
+}
