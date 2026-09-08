@@ -8,6 +8,20 @@
 
 ---
 
+## 0.1 Execution Findings (2026-09-08 05:xx CEST, L1-03 complete)
+
+| Finding | Evidence | Resolution |
+|---|---|---|
+| **CI workflow was `disabled_manually`, not just billing-blocked** | `gh api .../actions/workflows` → ci.yml state `disabled_manually` | Re-enabled via `gh workflow enable ci.yml` (commit `722b0d9`). |
+| **Billing broke AGAIN after a brief working window** | Release run 31125816682 (2026-08-06): `test` job PASSED in 2m53s — Actions worked that day. Fresh CI run 34182192491 (2026-09-08): every job failed in seconds with "job was not started because recent account payments have failed or your spending limit needs to be increased" | **L1-01 remains USER-OWNED and is THE blocker.** Nothing else in Phase 0/A is verifiable until billing is settled. |
+| **v1.5.0 release failure root cause = cosign v3 signing, not a 4h hang** | `--log-failed`: GoReleaser `signs:` used cosign v2 flags `--output-certificate`/`--output-signature` (+ explicit oidc-issuer); cosign v3 (installed by cosign-installer v4) rejects the combination: "cannot specify service URLs and use signing config". All builds/SBOMs/checksums had already succeeded (2m22s into the release step); the 4h08m run total includes a ~3.5h queue/wait tail. | Fixed in commit `722b0d9`: `.goreleaser.yml` now uses the cosign v3 bundle format (`sign-blob --bundle=${signature} --yes` + `signature: "${artifact}.sigstore.json"`), per GoReleaser's cosign v3 migration note. |
+| **v1.6.0 tags produced no Release run because the workflows were disabled/ billing-dead at push time (2026-08-08)** — the tagged commit has no `[skip ci]` | `git log -1 8fbd332` (clean message); release.yml `on.push.tags` patterns match all 4 tags; zero runs exist for them | Added `workflow_dispatch:` to release.yml; when D6=backfill is chosen, re-run with `gh workflow run release.yml --ref v1.6.0` (also possible per sub-module tag). Same trigger added to ci.yml so CI can be started manually without code churn. |
+| Dependabot is ALIVE and noisy (PR bumps + dynamic updates failing/succeeding daily) | `gh run list` shows Dependabot Updates entries on 2026-09-06/08 | Dependabot PRs will pile up while CI is dead; don't merge any until L1-02 green. |
+
+**Net effect on the plan:** L1-03 DONE (diagnosis + mechanical fixes shipped). L1-01/02 frozen on user billing action. All CI-dependent verification (L1-02, L1-08 observation, release re-runs L1-05/06/11) queues behind it. Local work (benchmarks, lint debt, Phase-B tests, docs) proceeds.
+
+---
+
 ## 0. Research Findings (root causes discovered this session)
 
 | Finding | Evidence | Consequence for the plan |

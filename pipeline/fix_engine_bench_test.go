@@ -145,3 +145,67 @@ func BenchmarkFixEngine_Substring_1(b *testing.B)    { benchmarkSubstringProvide
 func BenchmarkFixEngine_Substring_10(b *testing.B)   { benchmarkSubstringProvider(b, 10) }
 func BenchmarkFixEngine_Substring_100(b *testing.B)  { benchmarkSubstringProvider(b, 100) }
 func BenchmarkFixEngine_Substring_1000(b *testing.B) { benchmarkSubstringProvider(b, 1000) }
+
+// ApplyWithOutcomes benchmarks — the canonical entry point since the outcome
+// rework (Apply/ApplyWithConflicts delegate here). Mirrors the offset and line
+// provider variants above so benchstat can attribute outcome-bookkeeping cost.
+
+func benchmarkApplyWithOutcomes(b *testing.B, fixes []finding.Finding) {
+	b.Helper()
+
+	content := generateContent(10000)
+	engine := NewFixEngine()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for range b.N {
+		engine.ApplyWithOutcomes(content, fixes)
+	}
+}
+
+func benchmarkOutcomesOffset(b *testing.B, fixCount int) {
+	b.Helper()
+
+	content := generateContent(10000)
+	benchmarkApplyWithOutcomes(b, generateOffsetFixes(fixCount, content))
+}
+
+func benchmarkOutcomesLine(b *testing.B, fixCount int) {
+	b.Helper()
+
+	content := generateContent(10000)
+	benchmarkApplyWithOutcomes(b, generateLineFixes(fixCount, content))
+}
+
+func BenchmarkFixEngine_ApplyWithOutcomes_Offset_1(b *testing.B) {
+	benchmarkOutcomesOffset(b, 1)
+}
+
+func BenchmarkFixEngine_ApplyWithOutcomes_Offset_10(b *testing.B) {
+	benchmarkOutcomesOffset(b, 10)
+}
+
+func BenchmarkFixEngine_ApplyWithOutcomes_Offset_100(b *testing.B) {
+	benchmarkOutcomesOffset(b, 100)
+}
+
+func BenchmarkFixEngine_ApplyWithOutcomes_Offset_1000(b *testing.B) {
+	benchmarkOutcomesOffset(b, 1000)
+}
+
+func BenchmarkFixEngine_ApplyWithOutcomes_Line_1(b *testing.B) {
+	benchmarkOutcomesLine(b, 1)
+}
+
+func BenchmarkFixEngine_ApplyWithOutcomes_Line_10(b *testing.B) {
+	benchmarkOutcomesLine(b, 10)
+}
+
+func BenchmarkFixEngine_ApplyWithOutcomes_Line_100(b *testing.B) {
+	benchmarkOutcomesLine(b, 100)
+}
+
+func BenchmarkFixEngine_ApplyWithOutcomes_Line_1000(b *testing.B) {
+	benchmarkOutcomesLine(b, 1000)
+}
