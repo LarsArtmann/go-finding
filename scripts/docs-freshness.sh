@@ -19,10 +19,13 @@ NOW=$(date +%s)
 STALE_COUNT=0
 SYNC_COUNT=0
 
-# Find living documentation files (exclude archived, reviews, status reports)
+# Find living documentation files (exclude archived, reviews, status reports,
+# and known point-in-time assessment/criteria documents — they intentionally
+# describe a moment in history and will always warn once their referenced
+# sources evolve)
 mapfile -t FILES < <({
 	find docs/guides -maxdepth 1 -name "*.md" 2>/dev/null || true
-	find docs -maxdepth 1 -name "*.md" ! -name "MIGRATION*" 2>/dev/null || true
+	find docs -maxdepth 1 -name "*.md" ! -name "MIGRATION*" 		! -name "PRO_CONTRA*" ! -name "READINESS*" 		! -name "RELEASE_CRITERIA*" ! -name "v1.0-release-criteria*" 2>/dev/null || true
 	echo "README.md"
 	echo "TODO_LIST.md"
 	echo "FEATURES.md"
