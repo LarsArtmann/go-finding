@@ -7,6 +7,13 @@ For root-level changes, see the [root CHANGELOG.md](../../CHANGELOG.md).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.8.0] - 2026-09-08
+
+### Added
+
+- **staticcheck detector fix extension** — staticcheck-format JSON lines may carry `before`/`after` fields; when both are present the parsed finding becomes auto-fixable (`FixStrategyDirect` with literal replacement) and flows through the fix pipeline into `Fix outcomes:`. Real staticcheck output (without the fields) is unaffected. Enables auto-fix-capable external tools that emulate the staticcheck JSON format.
+- **Presence e2e for `Fix outcomes:`** — `testdata/fakestcheck` fixture binary drives the full production path (detector → triage → fix → summary) in `TestRun_E2E_FixOutcomesLine_PresentWithFixableFindings`.
+
 ## [1.7.0] - 2026-09-08
 
 ### Added

@@ -8,15 +8,15 @@
 
 ## Current Phase: Consumer ecosystem growth
 
-**Current version:** 1.7.0 ([unreleased work](CHANGELOG.md#unreleased) will accumulate toward v1.8.0)
+**Current version:** 1.8.0 ([unreleased work](CHANGELOG.md#unreleased) will accumulate toward v1.9.0)
 
-v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects. v1.4.0 added `go-error-family` integration (unified error classification), community readiness infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), and retired the "zero external deps" principle in favor of a small, deliberate dependency surface. v1.4.1 eliminated all code duplication (zero clones at `-t 1`), consolidated test setup across all 4 modules, and resolved 7 pipeline lint issues. v1.5.0 shipped deterministic JSON/SARIF output, `ValidateAll` batch validation, `FlightRecorderHook` pipeline observability, and the `tagsEqual` fix for order-insensitive equality. v1.6.0 shipped `ParseConfidence`, `Template.Builder`, flight-recorder config-file integration, exported path-safety APIs (`ResolveSafePath` family), and 7 CI structural-check scripts. v1.7.0 shipped `GroupID` finding groups, per-finding fix outcomes (`ApplyWithOutcomes`/`ApplyWithReport`), per-file rollback default (ADR-016), typed outcome errors, and outcome metrics.
+v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects. v1.4.0 added `go-error-family` integration (unified error classification), community readiness infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), and retired the "zero external deps" principle in favor of a small, deliberate dependency surface. v1.4.1 eliminated all code duplication (zero clones at `-t 1`), consolidated test setup across all 4 modules, and resolved 7 pipeline lint issues. v1.5.0 shipped deterministic JSON/SARIF output, `ValidateAll` batch validation, `FlightRecorderHook` pipeline observability, and the `tagsEqual` fix for order-insensitive equality. v1.6.0 shipped `ParseConfidence`, `Template.Builder`, flight-recorder config-file integration, exported path-safety APIs (`ResolveSafePath` family), and 7 CI structural-check scripts. v1.7.0 shipped `GroupID` finding groups, per-finding fix outcomes (`ApplyWithOutcomes`/`ApplyWithReport`), per-file rollback default (ADR-016), typed outcome errors, and outcome metrics. v1.8.0 shipped `GroupID` validation, `Config.OnFixOutcome`, `FixApplier.ApplyDryRun`, `Report.GroupFindingsSorted`, `Template.WithGroupID`, unsafe-path outcome surfacing, the staticcheck fix-extension, and the release-preflight gate (sub-module go.mod drift corrected in tags).
 
 The library is production-ready and API-stable. The focus now shifts to growing the consumer ecosystem, expanding language coverage, and completing the public launch.
 
 ---
 
-## v1.0.0-v1.7.0 - API lock, consumer convenience, observability, community readiness
+## v1.0.0-v1.8.0 - API lock, consumer convenience, observability, community readiness
 
 **Status: Released.**
 
@@ -29,6 +29,7 @@ The library is production-ready and API-stable. The focus now shifts to growing 
 - v1.5.0: Deterministic JSON/SARIF output (`json.Deterministic(true)` on all 8 marshal call sites, 8 byte-identity regression tests), `ValidateAll` batch helper, `FlightRecorderHook` (Go runtime execution trace flight recorder for pipeline observability), `tagsEqual` fix (order-insensitive tag equality aligning code with documented contract).
 - v1.6.0: `ParseConfidence` + `Template.Builder` consumer convenience APIs, flight-recorder config-file integration (`FlightRecorderFileConfig` + CLI `flightRecorder` section), exported path-safety boundary (`ResolveSafePath`/`ResolveSafePathFrom`/`ResolveRoot`), per-module CHANGELOGs, go-arch-lint module boundary enforcement, 7 CI structural-check scripts.
 - v1.7.0: `GroupID` finding groups (JSON/SARIF/LSP round-trip, `Report.GroupFindings()`), per-finding fix outcomes (`FixEngine.ApplyWithOutcomes`, `FixApplier.ApplyWithReport`, `Metrics.RecordOutcome`/`OutcomeCounts`), per-file rollback default (`RollbackPolicyFailingFile`, ADR-016; issue #28), typed outcome errors (`*finding.FindingError`), negative-LSP-tag rejection (`FuzzParseLSPDiagnosticTags`), LSP tag re-emission.
+- v1.8.0: `GroupID` validation (machine-safe identifiers, D7), `Config.OnFixOutcome` (D3), `FixApplier.ApplyDryRun` plan/apply (D4), `Report.GroupFindingsSorted()` + `Group`, `Template.WithGroupID`, unsafe-path findings surface as failed outcomes, staticcheck detector `before`/`after` fix extension, `scripts/release-preflight.sh` (structural pre-tag gate; v1.7.0 sub-module go.mod drift corrected — verified non-breaking, see CHANGELOG Fixed).
 
 ---
 

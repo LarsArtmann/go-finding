@@ -1144,6 +1144,13 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | Per-finding fix outcomes                     | FULLY_FUNCTIONAL     | `ApplyWithOutcomes`: applied/no-change/refused/conflict/invalid/failed (v1.7.0)      |
 | Rollback policies                            | FULLY_FUNCTIONAL     | Per-file default + all-files opt-in; config-file `fixRollbackAllFiles` (v1.7.0)      |
 | Fix outcome metrics                          | FULLY_FUNCTIONAL     | `Metrics.RecordOutcome`/`OutcomeCounts` + CLI `Fix outcomes:` summary (v1.7.0)       |
+| GroupID validation                           | FULLY_FUNCTIONAL     | `GroupID.IsValid()`: machine-safe identifiers, enforced by `Validate()` (v1.8.0)     |
+| Sorted finding groups                        | FULLY_FUNCTIONAL     | `Report.GroupFindingsSorted()` + `Group`; `Template.WithGroupID` (v1.8.0)            |
+| Fix outcome callback                         | FULLY_FUNCTIONAL     | `Config.OnFixOutcome` status callback; `OnFix` deprecated (v1.8.0)                   |
+| Dry-run fix planning                         | FULLY_FUNCTIONAL     | `FixApplier.ApplyDryRun`: full ApplyReport, zero writes (v1.8.0)                     |
+| Unsafe-path outcome surfacing                | FULLY_FUNCTIONAL     | Traversal findings become `failed` outcomes instead of silent drops (v1.8.0)         |
+| staticcheck fix extension                    | FULLY_FUNCTIONAL     | Optional `before`/`after` JSON fields make findings auto-fixable (v1.8.0)            |
+| Release preflight gate                       | FULLY_FUNCTIONAL     | `scripts/release-preflight.sh`: structural checks as code before tagging (v1.8.0)   |
 
 ---
 

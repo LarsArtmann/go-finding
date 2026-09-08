@@ -237,7 +237,11 @@ Notable additions:
 | `ApplyReport.FailedOutcomes`                 | stable     | Added v1.7.0. Isolates failed outcomes                                      |
 | `FixOutcomeStatus` / `FixOutcome`            | stable     | Added v1.7.0. Six statuses; failed carries typed error                      |
 | `Metrics.RecordOutcome` / `OutcomeCounts`    | stable     | Added v1.7.0. Outcome aggregates in MetricsSnapshot (ADR-017)               |
-| `Report.GroupFindingsSorted` / `Group`       | unreleased | Deterministic GroupID-ordered groups; targets next release                  |
+| `Report.GroupFindingsSorted` / `Group`       | stable     | Added v1.8.0. Deterministic GroupID-ordered groups                          |
+| `GroupID.IsValid` (validation)               | stable     | Added v1.8.0. Machine-safe identifiers; enforced by `Validate()` (D7)       |
+| `Config.OnFixOutcome`                        | stable     | Added v1.8.0. Outcome-status callback; `OnFix` deprecated (D3)              |
+| `FixApplier.ApplyDryRun`                     | stable     | Added v1.8.0. Plan/apply report with zero writes (D4)                       |
+| `Template.WithGroupID`                       | stable     | Added v1.8.0. Group stamp on template-built findings                        |
 
 ---
 
