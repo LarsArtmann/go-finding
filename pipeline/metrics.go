@@ -16,6 +16,7 @@ type Metrics struct {
 	stageDurations map[Stage]time.Duration
 	detectorTimes  map[string]time.Duration
 	findingsFound  map[string]int
+	outcomeCounts  map[FixOutcomeStatus]int
 	fixesApplied   int
 	startTime      time.Time
 	endTime        time.Time
@@ -28,6 +29,7 @@ func NewMetrics() *Metrics {
 		stageDurations: make(map[Stage]time.Duration),
 		detectorTimes:  make(map[string]time.Duration),
 		findingsFound:  make(map[string]int),
+		outcomeCounts:  make(map[FixOutcomeStatus]int),
 	}
 }
 
@@ -69,6 +71,23 @@ func (m *Metrics) RecordFixes(count uint) {
 		m.fixesApplied += int(count)
 
 		return struct{}{}
+	})
+}
+
+// RecordOutcome records one fix outcome status, aggregating the per-finding
+// results of the fix stage into printable counts.
+func (m *Metrics) RecordOutcome(status FixOutcomeStatus) {
+	record(m, func() struct{} {
+		m.outcomeCounts[status]++
+
+		return struct{}{}
+	})
+}
+
+// OutcomeCounts returns a copy of the recorded fix outcome counts.
+func (m *Metrics) OutcomeCounts() map[FixOutcomeStatus]int {
+	return readMetrics(m, func() map[FixOutcomeStatus]int {
+		return maps.Clone(m.outcomeCounts)
 	})
 }
 
@@ -128,6 +147,7 @@ type MetricsSnapshot struct {
 	StageDurations map[Stage]time.Duration
 	DetectorTimes  map[string]time.Duration
 	FindingsFound  map[string]int
+	OutcomeCounts  map[FixOutcomeStatus]int
 	FixesApplied   int
 	TotalDuration  time.Duration
 }
@@ -167,6 +187,9 @@ func (m *Metrics) Snapshot() MetricsSnapshot {
 		findings := make(map[string]int, len(m.findingsFound))
 		maps.Copy(findings, m.findingsFound)
 
+		outcomes := make(map[FixOutcomeStatus]int, len(m.outcomeCounts))
+		maps.Copy(outcomes, m.outcomeCounts)
+
 		total := time.Duration(0)
 
 		if !m.endTime.IsZero() && !m.startTime.IsZero() {
@@ -181,6 +204,7 @@ func (m *Metrics) Snapshot() MetricsSnapshot {
 			StageDurations: stages,
 			DetectorTimes:  detectors,
 			FindingsFound:  findings,
+			OutcomeCounts:  outcomes,
 			FixesApplied:   m.fixesApplied,
 			TotalDuration:  total,
 		}

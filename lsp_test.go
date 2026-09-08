@@ -504,7 +504,11 @@ func TestLSPDiagnosticData_GoldenWire(t *testing.T) {
 		t.Parallel()
 
 		diag := standardTestFinding().ToLSP()
-		assertWire(t, diag.Data, `{"id":"test:rule1:file.go:10:5","severity":"error","fixStrategy":"none","confidence":1}`)
+		assertWire(
+			t,
+			diag.Data,
+			`{"id":"test:rule1:file.go:10:5","severity":"error","fixStrategy":"none","confidence":1}`,
+		)
 	})
 
 	t.Run("fully populated", func(t *testing.T) {
@@ -519,9 +523,17 @@ func TestLSPDiagnosticData_GoldenWire(t *testing.T) {
 		f.Snippet = "old()"
 		f.Suppression = &Suppression{Kind: SuppressionInSource, Rule: "rule1", Reason: "legacy"}
 		f.Metadata = map[string]string{"gate": "ci", "zebra": "last"}
-		f.Related = []RelatedRef{{FindingID: "test:rule2:file.go:20:1", Relation: RelationCloneOf, Position: Position{File: "file.go", Line: 20}}}
+		f.Related = []RelatedRef{{
+			FindingID: "test:rule2:file.go:20:1",
+			Relation:  RelationCloneOf,
+			Position:  Position{File: "file.go", Line: 20},
+		}}
 
 		diag := f.ToLSP()
-		assertWire(t, diag.Data, `{"id":"test:rule1:file.go:10:5","severity":"error","fixStrategy":"none","confidence":1,"groupId":"clone-group-1","tags":["style","perf"],"beforeCode":"old()","afterCode":"new()","suggestion":"use new()","snippet":"old()","suppression":{"kind":"in-source","rule":"rule1","reason":"legacy"},"metadata":{"gate":"ci","zebra":"last"},"relatedFindingIds":["test:rule2:file.go:20:1"]}`)
+		assertWire(
+			t,
+			diag.Data,
+			`{"id":"test:rule1:file.go:10:5","severity":"error","fixStrategy":"none","confidence":1,"groupId":"clone-group-1","tags":["style","perf"],"beforeCode":"old()","afterCode":"new()","suggestion":"use new()","snippet":"old()","suppression":{"kind":"in-source","rule":"rule1","reason":"legacy"},"metadata":{"gate":"ci","zebra":"last"},"relatedFindingIds":["test:rule2:file.go:20:1"]}`,
+		)
 	})
 }

@@ -10,6 +10,7 @@ import (
 	"runtime/pprof"
 	"slices"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -349,7 +350,35 @@ func writeResults(
 			len(result.Metrics.DetectorTimes))
 	}
 
+	if len(result.Metrics.OutcomeCounts) > 0 {
+		fmt.Fprintf(os.Stderr, "Fix outcomes: %s\n", formatOutcomeCounts(result.Metrics.OutcomeCounts))
+	}
+
 	return 0
+}
+
+// fixOutcomeOrder is the canonical display order for fix outcome counts.
+var fixOutcomeOrder = []pipeline.FixOutcomeStatus{
+	pipeline.FixOutcomeApplied,
+	pipeline.FixOutcomeNoChange,
+	pipeline.FixOutcomeRefused,
+	pipeline.FixOutcomeConflict,
+	pipeline.FixOutcomeInvalid,
+	pipeline.FixOutcomeFailed,
+}
+
+// formatOutcomeCounts renders nonzero outcome counts in canonical order,
+// e.g. "applied=3, refused=1, failed=2".
+func formatOutcomeCounts(counts map[pipeline.FixOutcomeStatus]int) string {
+	parts := make([]string, 0, len(counts))
+
+	for _, status := range fixOutcomeOrder {
+		if n := counts[status]; n > 0 {
+			parts = append(parts, fmt.Sprintf("%s=%d", status, n))
+		}
+	}
+
+	return strings.Join(parts, ", ")
 }
 
 func setupProfiling(cpuprof, memprof string) (func(), error) {

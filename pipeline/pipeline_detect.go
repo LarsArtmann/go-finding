@@ -288,20 +288,28 @@ func shiftFindingSlice(findings []finding.Finding, file string, shiftMap *LineSh
 
 // applyDirectFixes applies deterministic fixes to files and returns the applied findings
 // and a per-file line shift map for updating remaining findings' line numbers.
+// Per-finding outcomes are recorded in the pipeline metrics.
 func (p *Pipeline) applyDirectFixes(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) ([]finding.Finding, map[string]*LineShiftMap, error) {
-	applied, appliedFixes, shiftMaps, err := p.applier.ApplyWithShiftMap(ctx, fixes)
+	report, err := p.applier.ApplyWithReport(ctx, fixes)
+
+	if p.metrics != nil {
+		for _, o := range report.Outcomes {
+			p.metrics.RecordOutcome(o.Status)
+		}
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if p.metrics != nil && applied > 0 {
-		p.metrics.RecordFixes(uint(applied))
+	if p.metrics != nil && report.Applied > 0 {
+		p.metrics.RecordFixes(uint(report.Applied))
 	}
 
-	return appliedFixes, shiftMaps, nil
+	return report.AppliedFixes, report.ShiftMaps, nil
 }
 
 // byteConflictEngine returns a FixEngine with custom providers if configured,
