@@ -1,6 +1,6 @@
-# Evening Session — v1.9.0 Shipped Through Full Gate Cycle; Repo-Public Mid-Session Pivot; Consumer Rot Documented
+# Evening Session — v1.9.0→v1.9.2 Shipped, Release Pipeline Resurrected; Repo-Public Mid-Session Pivot; Consumer Rot Documented
 
-**Date:** 2026-09-08 21:58–00:00+ CEST
+**Date:** 2026-09-08 21:58–00:45+ CEST
 **Trigger:** User blanket directive (same pattern as the previous session): "READ, UNDERSTAND, RESEARCH, REFLECT. Break this down... Execute and Verify them one step at a time. Repeat until done."
 **Predecessors:** `docs/status/2026-09-08_21-51_evening-session-self-review.md` (§f list + §g questions), `docs/status/2026-09-08_22-24_go-public-launch.md` (PARALLEL session — repo made public at 22:24).
 
@@ -8,7 +8,9 @@
 
 ## Headline
 
-**v1.9.0 shipped** (4 tags, proxy ×4 green, post-tag preflight green) with every gate mode of the new preflight actually executed — and the gate-design work caught **four real bugs by execution**: a dead `--bench` mode, a self-test whose drift injection stopped working at v1.9.0, a 25%-time benchmark threshold that was physically un-satisfiable on this machine, and an environment-flaky test that failed the first live Release run since v1.4.0. Mid-session, a **parallel session made the repo PUBLIC** (22:24), dissolving the CI-billing blocker and making Q3 moot in the best way: Dependabot PRs now validate with real CI. Consumer-side rot is now documented where its owners work: **5 issues filed across 4 repos**, including the discovery that `hierarchical-errors` is `erraudit`'s pre-rename name (two "failing consumers" were one repo).
+**v1.9.0 → v1.9.1 → v1.9.2 shipped in one evening** (proxy ×4 green each, post-tag preflight green), and the **release pipeline came alive for the first time since v1.4.0**: core v1.9.2 has a published GitHub Release with 34 assets (all platform archives, rpm/deb/apk packages, SBOMs, sigstore signatures, checksums) — reached by fixing two release-config bugs the first live runs exposed (a Go-template error in the Homebrew formula stanza, and a benchmark-job timeout on 2-core runners). All three Dependabot PRs (#23/#24/#25) reviewed, rebased onto the fixed workflows, and **merged**; #29 closed as superseded. The gate-design work caught **four real bugs by execution**: a dead preflight `--bench` mode, a self-test whose drift injection stopped working at v1.9.0, a 25%-time benchmark threshold physically un-satisfiable on this machine, and an environment-flaky test. Mid-session, a **parallel session made the repo PUBLIC** (22:24), dissolving the CI-billing blocker and making Q3 moot in the best way. Consumer-side rot is now documented where its owners work: **5 issues filed across 4 repos**, including the discovery that `hierarchical-errors` is `erraudit`'s pre-rename name.
+
+**Patch-train rationale:** v1.9.0 = FR rotation+gzip + gates (test-job flake blocked its Release run) → v1.9.1 = robust newline test + CI ripgrep/stress-split fixes (Homebrew template still broken in its tag) → v1.9.2 = `#{{bin}}` → `#{bin}` formula fix (Ruby interpolation, not Go template) → **full release published**. Two racing Release runs on v1.9.2 produced one 422-duplicate-asset loser; the winner published everything.
 
 ## The three §g questions — decided and executed
 
@@ -84,11 +86,12 @@
 
 ## What's next (for the resuming session)
 
-1. **v1.9.1** once master CI is green (flaky-test fix + any CI stragglers): preflight default → tag → push (tags in batches ≤3!) → watch the FULL Release run (GoReleaser + cosign + sbom + the missing HOMEBREW secret step) → proxy smoke.
-2. **Merge #23/#24/#25 on green** (rebase runs in flight at report time); re-check `pkg.go.dev` sub-module rendering.
-3. File BuildFlow/branching-flow/go-business-rules diagnostic issues (evidence in ecosystem table + 21-30 report) or fix from here if the user prefers.
-4. Stamp SUPERSEDED banners on the 21-30 + 21-51 reports (f29 convention).
-5. Consider flagging the stale `~/projects/hierarchical-errors` clone to the user (duplicate of erraudit pre-rename).
+1. **Confirm the final master CI run green** (dispatched 00:40 with the 45-minute benchmark timeout; the previous run was 20/20 jobs green with only the benchmark cancelled at its old 15-minute cap).
+2. File BuildFlow/branching-flow/go-business-rules diagnostic issues (evidence in ecosystem table + 21-30 report) or fix from here if the user prefers.
+3. Stamp SUPERSEDED banners on the 21-30 + 21-51 reports (f29 convention).
+4. Consider flagging the stale `~/projects/hierarchical-errors` clone to the user (duplicate of erraudit pre-rename).
+5. Post-release polish: `pkg.go.dev` sub-module rendering check; Homebrew tap formula is deliberately `skip_upload: true` (create the tap repo + `HOMEBREW_TAP_GITHUB_TOKEN` secret when ready to distribute via brew); v1.5.0–v1.8.0 release backfill decision (D6).
+6. Consumer bumps to v1.9.2 are opportunistic (additive changes only since v1.8.0).
 
 ---
 
