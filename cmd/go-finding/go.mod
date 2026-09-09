@@ -10,7 +10,7 @@ require (
 	github.com/larsartmann/go-output v0.38.0
 	github.com/larsartmann/go-output/delimited v0.38.0
 	github.com/larsartmann/go-output/markdown v0.38.0
-	github.com/onsi/gomega v1.42.1
+	github.com/onsi/gomega v1.43.0
 )
 
 require (
