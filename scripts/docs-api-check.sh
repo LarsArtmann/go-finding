@@ -100,8 +100,14 @@ version_gt() { # $1 > $2 in semver (M.m.p, dot-separated)
 	local a b IFS=.
 	read -r a1 a2 a3 <<<"$1"
 	read -r b1 b2 b3 <<<"$2"
-	[ "$a1" -ne "$b1" ] && { [ "$a1" -gt "$b1" ]; return; }
-	[ "$a2" -ne "$b2" ] && { [ "$a2" -gt "$b2" ]; return; }
+	[ "$a1" -ne "$b1" ] && {
+		[ "$a1" -gt "$b1" ]
+		return
+	}
+	[ "$a2" -ne "$b2" ] && {
+		[ "$a2" -gt "$b2" ]
+		return
+	}
 	[ "$a3" -gt "$b3" ]
 }
 

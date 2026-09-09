@@ -140,8 +140,8 @@ done
 if [ "$RUN_BENCH" -eq 1 ]; then
 	step "benchmark capture (core + pipeline, count=10)"
 	if {
-		GOEXPERIMENT=jsonv2 go test -run='^$' -bench=. -benchmem -count=10 ./... > /tmp/preflight-bench.txt
-		(cd pipeline && GOEXPERIMENT=jsonv2 go test -run='^$' -bench=. -benchmem -count=10 ./... >> /tmp/preflight-bench.txt)
+		GOEXPERIMENT=jsonv2 go test -run='^$' -bench=. -benchmem -count=10 ./... >/tmp/preflight-bench.txt
+		(cd pipeline && GOEXPERIMENT=jsonv2 go test -run='^$' -bench=. -benchmem -count=10 ./... >>/tmp/preflight-bench.txt)
 	}; then
 		echo "OK: benchmark capture"
 	else
