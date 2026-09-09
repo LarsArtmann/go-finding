@@ -283,7 +283,9 @@ jobs:
           path: |
             bench-current.txt
             benchmarks/baseline.txt
-    timeout-minutes: 15
+    # count=10 across core+pipeline needs >15min on a 2-core runner (observed:
+    # job cancelled at the timeout with everything else green, 2026-09-08).
+    timeout-minutes: 45
   changelog-check:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
