@@ -74,6 +74,39 @@ else
 	FAILURES=$((FAILURES + 1))
 fi
 
+step "commits pushed to upstream"
+if upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null); then
+	if [ -z "$(git log '@{u}..HEAD' --oneline)" ]; then
+		echo "OK: no unpushed commits (upstream $upstream)"
+	else
+		echo "FAIL: unpushed commits — tags and CI would run against code GitHub does not have. Push first:"
+		git log '@{u}..HEAD' --oneline
+		FAILURES=$((FAILURES + 1))
+	fi
+else
+	echo "FAIL: current branch has no upstream — run: git push -u origin <branch>"
+	FAILURES=$((FAILURES + 1))
+fi
+
+step "worktree hygiene (no strays outside the repo)"
+here=$(pwd -P)
+main_worktree=$(cd "$(git rev-parse --git-common-dir)/.." && pwd -P)
+strays=0
+while IFS= read -r wt; do
+	[ "$wt" = "$here" ] && continue
+	[ "$wt" = "$main_worktree" ] && continue
+	echo "FAIL: stray worktree: $wt — remove with: git worktree remove \"$wt\""
+	strays=$((strays + 1))
+done < <(git worktree list --porcelain | sed -n 's/^worktree //p')
+if [ "$strays" -gt 0 ]; then
+	FAILURES=$((FAILURES + strays))
+elif [ -n "$(git worktree prune --dry-run)" ]; then
+	echo "FAIL: prunable worktree registrations exist — run: git worktree prune"
+	FAILURES=$((FAILURES + 1))
+else
+	echo "OK: no stray or prunable worktrees"
+fi
+
 step "version.go parses"
 MAJOR=$(sed -n 's/^const VersionMajor = //p' version.go)
 MINOR=$(sed -n 's/^const VersionMinor = //p' version.go)

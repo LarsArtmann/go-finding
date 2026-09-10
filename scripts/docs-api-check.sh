@@ -135,3 +135,28 @@ echo "OK: no version claims beyond v$MAJOR.$MINOR.$PATCH in FEATURES.md"
 if [ "$UNRELEASED_COUNT" -gt 0 ]; then
 	echo "NOTE: FEATURES.md mentions 'unreleased' ${UNRELEASED_COUNT}x — fine mid-cycle, must be 0 at tag time (release-procedure step 7)."
 fi
+
+# --- Version-stamp completeness guard (README must state the CURRENT version) ---
+# The README's `finding.Version` example is the canonical current-version
+# stamp; v1.9.1/v1.9.2 shipped while it silently lagged. FEATURES.md is
+# covered by the overclaim guard above (per-feature stamps must not exceed
+# version.go); here we require README's stamp to exist AND match version.go.
+mapfile -t stamps < <(grep -oE 'finding\.Version\) // "[0-9]+\.[0-9]+\.[0-9]+"' README.md || true)
+if [ "${#stamps[@]}" -eq 0 ]; then
+	echo "ERROR: README.md has no current-version stamp."
+	echo "  Add a line like: fmt.Println(finding.Version) // \"$MAJOR.$MINOR.$PATCH\""
+	exit 1
+fi
+stamp_errors=0
+for stamp in "${stamps[@]}"; do
+	stamped=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' <<<"$stamp")
+	if [ "$stamped" != "$MAJOR.$MINOR.$PATCH" ]; then
+		echo "ERROR: README.md version stamp ($stamped) lags version.go ($MAJOR.$MINOR.$PATCH)."
+		echo "  Update the finding.Version example in README.md to \"$MAJOR.$MINOR.$PATCH\"."
+		stamp_errors=$((stamp_errors + 1))
+	fi
+done
+if [ "$stamp_errors" -gt 0 ]; then
+	exit 1
+fi
+echo "OK: README.md version stamp matches version.go (v$MAJOR.$MINOR.$PATCH)"

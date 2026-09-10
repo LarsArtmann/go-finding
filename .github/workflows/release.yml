@@ -14,6 +14,14 @@ permissions:
   packages: write
   id-token: write
 
+# Queue duplicate triggers instead of racing them: at v1.9.2 a manual dispatch
+# raced the tag-push auto-trigger and the loser died on a 422 duplicate-asset
+# error. One queueing group serializes every release run, so duplicate
+# triggers are safe by construction.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   test:
     runs-on: ubuntu-latest
