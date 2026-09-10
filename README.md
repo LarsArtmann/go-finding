@@ -59,9 +59,10 @@ Each module is an independent Go module and is versioned with its own git tag:
 
 | Module   | Import path                                        | Tag                 |
 | -------- | -------------------------------------------------- | ------------------- |
-| Core     | `github.com/larsartmann/go-finding`                | `v1.8.0`            |
+| Core     | `github.com/larsartmann/go-finding`                | `v1.10.0`           |
 | Pipeline | `github.com/larsartmann/go-finding/pipeline`       | `pipeline/v*`       |
 | Analysis | `github.com/larsartmann/go-finding/analysis`       | `analysis/v*`       |
+| Tool SDK | `github.com/larsartmann/go-finding/toolsdk`        | `toolsdk/v*`        |
 | CLI      | `github.com/larsartmann/go-finding/cmd/go-finding` | `cmd/go-finding/v*` |
 
 See [`docs/release-procedure.md`](docs/release-procedure.md) for details.
@@ -187,6 +188,7 @@ Key packages:
 - `finding` — core types, filtering, grouping, merging, SARIF, LSP, formatting
 - `pipeline` — detect → triage → fix → verify loop
 - `analysis` — `go/analysis.Diagnostic` ↔ `Finding` conversion
+- `toolsdk` — declarative plugin contract for external tools (`Spec`, triggers, registry)
 - `cmd/go-finding` — CLI tool with JSON/YAML config
 
 ## Filtering
@@ -482,7 +484,7 @@ This project follows [Semantic Versioning](https://semver.org/). The API has bee
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "1.8.0"
+fmt.Println(finding.Version) // "1.10.0"
 ```
 
 ## Documentation
@@ -515,11 +517,12 @@ go-finding is the hub of an ecosystem of SDKs and tools. See [`docs/ecosystem.md
 - linter-autoconfigure-sdk — Config round-trip + finding emission for auto-configurers
 - go-checker-helpers — Finding builders, fix pipeline, and safe I/O for BuildFlow checkers
 
-**Tools using go-finding:**
+**Tools in the ecosystem** (several consume go-finding today; see
+[`docs/ecosystem.md`](docs/ecosystem.md) for per-tool status):
 
-- [art-dupl](https://github.com/larsartmann/art-dupl) — Code duplication detection
+- [art-dupl](https://github.com/larsartmann/art-dupl) — Code duplication detection (go-finding integration designed, GroupID wiring pending)
 - branching-flow — Go code quality analyzer
-- hierarchical-errors — Error handling pattern detector
+- erraudit (formerly hierarchical-errors) — Error handling pattern detector
 - go-auto-upgrade — Dependency upgrade automation
 
 **Standards:**
