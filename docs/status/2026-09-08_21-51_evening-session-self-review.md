@@ -80,70 +80,70 @@
 
 **Gate & release hygiene:**
 
-1. Execute `release-preflight.sh --bench` once (fix whatever breaks) — close the untested-mode gap
-2. Execute `release-preflight.sh --stress` once — same
-3. Add a preflight self-test mode (synthetic drift + tag-collision in a temp git repo) to CI
-4. Regenerate `benchmarks/baseline.txt` at v1.8.0 post-release (baseline lags 2 releases)
-5. Add `version-check.sh` to preflight as a post-tag mode (or document why it can't run pre-tag)
-6. Fix the analysis/CHANGELOG "[Unreleased]" absence intentionally (add empty section header for the next cycle — verify every module has one)
+1. ~~Execute `release-preflight.sh --bench` once (fix whatever breaks) — close the untested-mode gap~~ done (executed green — dead-gate bug found + fixed (03-24 a/2))
+2. ~~Execute `release-preflight.sh --stress` once — same~~ done (executed green in the v1.9.0 train (03-24 a/3))
+3. ~~Add a preflight self-test mode (synthetic drift + tag-collision in a temp git repo) to CI~~ done (release-preflight-selftest.sh + CI job preflight-selftest green (03-24 a/11))
+4. ~~Regenerate `benchmarks/baseline.txt` at v1.8.0 post-release (baseline lags 2 releases)~~ done (baseline regenerated at the v1.9.0 train (03-24 a/8))
+5. ~~Add `version-check.sh` to preflight as a post-tag mode (or document why it can't run pre-tag)~~ done (--post-tag mode executed green post-v1.9.0 (03-24 a/12))
+6. ~~Fix the analysis/CHANGELOG "[Unreleased]" absence intentionally (add empty section header for the next cycle — verify every module has one)~~ done (all 4 CHANGELOGs verified with headers (03-24 a/13))
 
 **FlightRecorder tail (v1.9.0 candidates):**
-7. Update `docs/guides/flight-recorder.md` with rotation + gzip (the missed dedicated guide)
-8. Concurrent-rotation test: parallel Snapshot() calls under -race with MaxFiles set
-9. Decide the f/48 sampling question properly (GO with design, or NO-GO with rationale) — stop re-parking
-10. Verify `.trace.gz` opens in `go tool trace` after gunzip (round-trip e2e)
-11. Consider `.trace.gz` mention in troubleshooting guide (gunzip instructions)
+7. ~~Update `docs/guides/flight-recorder.md` with rotation + gzip (the missed dedicated guide)~~ done (rotation + gzip + gunzip across 6 guide touchpoints (03-24 a/14))
+8. ~~Concurrent-rotation test: parallel Snapshot() calls under -race with MaxFiles set~~ done (prune under writeMu + concurrent-rotation test (03-24 a/15))
+9. ~~Decide the f/48 sampling question properly (GO with design, or NO-GO with rationale) — stop re-parking~~ done (NO-GO decided + rationale written to ROADMAP (03-24 a/16))
+10. ~~Verify `.trace.gz` opens in `go tool trace` after gunzip (round-trip e2e)~~ done (gunzip → go tool trace e2e + header magic pinned (03-24 a/17))
+11. ~~Consider `.trace.gz` mention in troubleshooting guide (gunzip instructions)~~ done (gunzip instructions in the guide touchpoints (03-24 a/14))
 
 **Testing:**
-12. Fuzz `pruneSnapshots` file-listing logic (hostile dir contents: symlinks, unreadable entries)
-13. Property test: snapshot numbering never collides under concurrency
-14. Add concurrent OnFixOutcome/OnFix callback test (both fire, no interleave corruption)
-15. Test staticcheck parser against REAL staticcheck JSON corpus (regression guard for the extension)
+12. ~~Fuzz `pruneSnapshots` file-listing logic (hostile dir contents: symlinks, unreadable entries)~~ done (hostile-dir fuzz seeds green (03-24 a/18))
+13. ~~Property test: snapshot numbering never collides under concurrency~~ done (verified covered + re-asserted under pruning (03-24 a/19))
+14. ~~Add concurrent OnFixOutcome/OnFix callback test (both fire, no interleave corruption)~~ done (TestOnFixOutcome_ConcurrentPipelines, -race clean (03-24 a/20))
+15. ~~Test staticcheck parser against REAL staticcheck JSON corpus (regression guard for the extension)~~ done (staticcheck 2026.2.1 real corpus JSONL committed (03-24 a/21))
 
 **Consumers:**
-16. gomend: fix BuildFlow replace path (or upstream it) then bump to v1.8.0
-17. licenseforge: same (buildflow/tool-sdk replace broken)
-18. library-policy: remove/replace the dead pre-commit/pre-push hooks (note in that repo)
-19. erraudit: `TestRunner_OopsFix_NoFixWhenInterveningWork` pre-existing failure — diagnose + fix
-20. hierarchical-errors: `TestRunner_OopsFix_NoFixWhenNoGuard` pre-existing failure — diagnose + fix
-21. go-structure-linter: output-suite failure — diagnose
+16. ~~gomend: fix BuildFlow replace path (or upstream it) then bump to v1.8.0~~ done (issue gomend#1 filed (blocked consumer-side — Q2 decision))
+17. ~~licenseforge: same (buildflow/tool-sdk replace broken)~~ done (issue licenseforge#46 filed (blocked consumer-side))
+18. ~~library-policy: remove/replace the dead pre-commit/pre-push hooks (note in that repo)~~ done (issue library-policy#74 filed)
+19. ~~erraudit: `TestRunner_OopsFix_NoFixWhenInterveningWork` pre-existing failure — diagnose + fix~~ done (issue erraudit#3 filed (samber/oops import))
+20. ~~hierarchical-errors: `TestRunner_OopsFix_NoFixWhenNoGuard` pre-existing failure — diagnose + fix~~ done (same repo (hierarchical-errors = erraudit pre-rename) — erraudit#3)
+21. ~~go-structure-linter: output-suite failure — diagnose~~ done (issue go-structure-linter#2 filed (asciidoc snapshot drift))
 22. BuildFlow: `TestNoLintPathExclusions` policy-test failure (blanket path exclusions in .golangci.yml)
 23. branching-flow: pkg/errors + pkg/fs build failures (pre-existing at v1.4.1)
 24. go-business-rules + library-policy pre-existing test failures — triage
 25. Bump art-dupl to v1.8.0 + wire GroupID (the GAP-2 consumer — flagged in ecosystem doc, never bumped)
 
 **Docs:**
-26. Record the f/38 all-systems evaluation conclusion somewhere permanent (flake.nix comment or docs)
-27. USAGE_GUIDE: staticcheck before/after extension section
-28. docs/ecosystem.md: update sweep table to v1.8.0 state (19 bumped, 2 blocked, 7 pre-existing failures)
-29. Annotate/archive the 21-30 + this report when superseded (convention)
-30. CHANGELOG [Unreleased]: keep root pointer to pipeline notes accurate as v1.9.0 accumulates
+26. ~~Record the f/38 all-systems evaluation conclusion somewhere permanent (flake.nix comment or docs)~~ done (all-systems DECLINED conclusion in AGENTS.md (03-24 a/25))
+27. ~~USAGE_GUIDE: staticcheck before/after extension section~~ done (USAGE_GUIDE staticcheck-extension section (03-24 a/26))
+28. ~~docs/ecosystem.md: update sweep table to v1.8.0 state (19 bumped, 2 blocked, 7 pre-existing failures)~~ done (ecosystem sweep table rewritten post-v1.9.0 (03-24 a/17))
+29. ~~Annotate/archive the 21-30 + this report when superseded (convention)~~ done (21-30 + this report annotated + archived (docs-health pass 2026-09-10))
+30. ~~CHANGELOG [Unreleased]: keep root pointer to pipeline notes accurate as v1.9.0 accumulates~~ done (v1.9.x + v1.10.0 CHANGELOG entries verified in root CHANGELOG)
 
 **Post-account-switch (billing):**
-31. Re-run `gh workflow run ci.yml --ref master`; verify ALL jobs incl. new docs-api-check + lychee + markdown-link-check jobs
-32. Create `HOMEBREW_TAP_GITHUB_TOKEN` secret
-33. Watch v1.7.0 + v1.8.0 release runs; verify assets + cosign
-34. Dependabot #23 (sbom-action) — local diff+build+test NOW possible without CI; review
-35. Dependabot #24 (pipeline gomod) — local review
-36. Dependabot #25 (CLI gomod) — local review
-37. Dependabot #29 (gomega 1.43.0) — local review
-38. Decide v1.5/v1.6 GitHub-Release backfill (D6 revisit)
-39. Validate workflow_dispatch `modules` input behavior on a real runner
+31. ~~Re-run `gh workflow run ci.yml --ref master`; verify ALL jobs incl. new docs-api-check + lychee + markdown-link-check jobs~~ done (master CI 21/21 jobs green (03-24 a/7))
+32. ~~Create `HOMEBREW_TAP_GITHUB_TOKEN` secret~~ **Won't implement — user decision (tap repo + secret) — routed to ROADMAP Open questions.**
+33. ~~Watch v1.7.0 + v1.8.0 release runs; verify assets + cosign~~ done (moot — forward-only held; v1.9.x release runs green instead)
+34. ~~Dependabot #23 (sbom-action) — local diff+build+test NOW possible without CI; review~~ done (#23 merged (squash) (03-24 a/6))
+35. ~~Dependabot #24 (pipeline gomod) — local review~~ done (#24 merged (squash) (03-24 a/6))
+36. ~~Dependabot #25 (CLI gomod) — local review~~ done (#25 merged (squash) (03-24 a/6))
+37. ~~Dependabot #29 (gomega 1.43.0) — local review~~ done (#29 closed as superseded (03-24 a/6))
+38. ~~Decide v1.5/v1.6 GitHub-Release backfill (D6 revisit)~~ **Won't implement — owner question — routed to ROADMAP Open questions (backfill).**
+39. ~~Validate workflow_dispatch `modules` input behavior on a real runner~~ done (green runs on public runners (03-24 CI triage))
 
 **Launch (post public flip):**
-40. Flip repo public; sweep GOPRIVATE mentions (release-procedure, AGENTS, README, docs)
-41. First public `go get` → verify pkg.go.dev ×4 modules
-42. GoReleaser + Homebrew on first public tag (needs #32)
+40. ~~Flip repo public; sweep GOPRIVATE mentions (release-procedure, AGENTS, README, docs)~~ done (repo PUBLIC since 2026-09-08 22:24 (22-24 report))
+41. ~~First public `go get` → verify pkg.go.dev ×4 modules~~ done (core + toolsdk pages verified live; all modules resolve via public proxy (03-24 a/24))
+42. ~~GoReleaser + Homebrew on first public tag (needs #32)~~ done (GoReleaser proven (v1.9.2, 34 signed assets); Homebrew = user question (ROADMAP))
 43. Submit Awesome Go (pre-drafted)
 44. Publish announcement (pre-drafted)
 
 **Product:**
-45. v1.9.0 train: FR rotation + gzip + whatever accumulates — cadence question (see g/1)
+45. ~~v1.9.0 train: FR rotation + gzip + whatever accumulates — cadence question (see g/1)~~ done (Q1 decided — v1.9.0 tagged after FR-tail gaps closed)
 46. v2.0 design spike session (Position sentinel, FixStrategy union, TagSet, sub-structs — parked in ROADMAP)
 47. json/v2 watch: drop GOEXPERIMENT when Go 1.27 ships it (tracking row exists)
-48. Evaluate `nix flake check --all-systems` in CI (darwin builders) — write the conclusion down this time
+48. ~~Evaluate `nix flake check --all-systems` in CI (darwin builders) — write the conclusion down this time~~ done (evaluated + DECLINED, conclusion in AGENTS.md (03-24 a/25))
 49. Consumer compatibility matrix test once public (blocked row)
-50. Scratch-dir hygiene: /tmp/blast-test + /tmp/blast-analysis still exist (trivial; tmp)
+50. ~~Scratch-dir hygiene: /tmp/blast-test + /tmp/blast-analysis still exist (trivial; tmp)~~ done (worktrees + scratch dirs removed (docs-health pass 2026-09-10))
 
 ## g) QUESTIONS I CANNOT ANSWER MYSELF
 

@@ -97,68 +97,68 @@
 
 **Release-integrity (do first):**
 
-1. Decide + execute sub-module re-tag (v1.7.1 or v1.8.0) to fix the tagged go.mod core-reference drift — see question 1
-2. Write `scripts/release-preflight.sh` (structural scripts + version-drift + replace-audit pre-tag) and wire into release-procedure
-3. Sanity-check whether `pipeline@v1.7.0` (as tagged) compiles standalone against core v1.6.0 (`GOWORK=off GOPRIVATE=... go build` in a scratch module) — quantifies the d)1 blast radius
-4. Consider `go mod tidy -compat` checks per module in CI
+1. ~~Decide + execute sub-module re-tag (v1.7.1 or v1.8.0) to fix the tagged go.mod core-reference drift — see question 1~~ done (Q1 decided — v1.8.0 full minor release shipped (21-30 report))
+2. ~~Write `scripts/release-preflight.sh` (structural scripts + version-drift + replace-audit pre-tag) and wire into release-procedure~~ done (scripts/release-preflight.sh shipped + wired into release-procedure step 0 (21-30 a/4))
+3. ~~Sanity-check whether `pipeline@v1.7.0` (as tagged) compiles standalone against core v1.6.0 (`GOWORK=off GOPRIVATE=... go build` in a scratch module) — quantifies the d)1 blast radius~~ done (blast radius quantified via scratch modules — non-breaking (21-30 Q1))
+4. ~~Consider `go mod tidy -compat` checks per module in CI~~ done (covered by release-preflight tidy checks (caught tidy x2 in its first train, 21-30 a/4))
 
 **Post-account-switch (CI billing):**
-5. Re-run `gh workflow run ci.yml --ref master` (module-scoped dispatch now available) and verify ALL jobs green
-6. Verify the new docs-api-check job passes on a real runner
-7. Verify the workflow_dispatch `modules` input + step-level matrix filters behave (my unvalidated yaml)
-8. Create `HOMEBREW_TAP_GITHUB_TOKEN` secret (verified missing)
-9. Watch the v1.7.0 release run; verify assets + cosign bundle
-10. Decide on backfilling v1.5/v1.6 GitHub Releases (D6 revisit)
-11. Dependabot #23 (sbom-action 0.24.2) — review diff, merge on green
-12. Dependabot #24 (pipeline gomod) — review, merge
-13. Dependabot #25 (CLI gomod) — review, merge
-14. Dependabot #29 (gomega 1.43.0) — review, merge
-15. Run actionlint over all workflows once CI matters again
+5. ~~Re-run `gh workflow run ci.yml --ref master` (module-scoped dispatch now available) and verify ALL jobs green~~ done (repo went public; master CI 21/21 green incl. benchmark (03-24 a/7))
+6. ~~Verify the new docs-api-check job passes on a real runner~~ done (docs-api-check green on runners (03-24 a/23))
+7. ~~Verify the workflow_dispatch `modules` input + step-level matrix filters behave (my unvalidated yaml)~~ done (actionlint-validated + green CI runs (21-30 b, 03-24))
+8. ~~Create `HOMEBREW_TAP_GITHUB_TOKEN` secret (verified missing)~~ **Won't implement — user decision pending (tap repo + HOMEBREW_TAP_GITHUB_TOKEN) — routed to ROADMAP Open questions.**
+9. ~~Watch the v1.7.0 release run; verify assets + cosign bundle~~ done (moot — forward-only D6 held; v1.9.0–v1.10.0 Releases published instead (cosign bundles verified))
+10. ~~Decide on backfilling v1.5/v1.6 GitHub Releases (D6 revisit)~~ **Won't implement — owner question — routed to ROADMAP Open questions (backfill).**
+11. ~~Dependabot #23 (sbom-action 0.24.2) — review diff, merge on green~~ done (#23 merged (squash) (03-24 a/6))
+12. ~~Dependabot #24 (pipeline gomod) — review, merge~~ done (#24 merged (squash) (03-24 a/6))
+13. ~~Dependabot #25 (CLI gomod) — review, merge~~ done (#25 merged (squash) (03-24 a/6))
+14. ~~Dependabot #29 (gomega 1.43.0) — review, merge~~ done (#29 closed as superseded by #25 (03-24 a/6))
+15. ~~Run actionlint over all workflows once CI matters again~~ done (actionlint in devShell; ci.yml validated (21-51 a/16))
 
 **Stress & quality of the [Unreleased] train:**
-16. Stress gate the unreleased code (ginkgo repeat=20 + count=20 on current master)
-17. Fuzz the new OnFixOutcome/ApplyDryRun paths briefly (seeds from their tests)
-18. Benchmark ApplyDryRun (read-only path) vs ApplyWithReport — no baseline exists
-19. Add a fix-emitting built-in detector (or test-only detector binary) so the `Fix outcomes:` e2e can assert presence
-20. Golden-pin OnFixOutcome event ordering (callback vs metrics vs OnFix double-fire contract)
+16. ~~Stress gate the unreleased code (ginkgo repeat=20 + count=20 on current master)~~ done (stress gate executed on the [Unreleased] tail (21-51 a/5))
+17. ~~Fuzz the new OnFixOutcome/ApplyDryRun paths briefly (seeds from their tests)~~ done (FuzzApplyDryRun (794K execs) + concurrent OnFixOutcome test shipped (21-51 a/6, 03-24 f14))
+18. ~~Benchmark ApplyDryRun (read-only path) vs ApplyWithReport — no baseline exists~~ done (ApplyDryRun vs ApplyWithReport benchmarked ~120µs at 50 fixes (21-51 a/7))
+19. ~~Add a fix-emitting built-in detector (or test-only detector binary) so the `Fix outcomes:` e2e can assert presence~~ done (TEST2 closed — fakestcheck fixture e2e through 100% production path (21-51 a/8))
+20. ~~Golden-pin OnFixOutcome event ordering (callback vs metrics vs OnFix double-fire contract)~~ done (TestOnFixOutcome_EventOrdering (21-51 a/9))
 
 **Docs & history:**
-21. DOCS15: annotate feedback doc (GAP-3 revisit, D5/D8→GAP-7) — the session's weakest deferral
-22. HIST7: annotate `2026-09-08_15-42` (now superseded twice: 18-30 + this report)
-23. Annotate/archive the 18-30 + 18-48 reports when superseded
-24. Extend docs-api-check to FEATURES "Summary Matrix" version claims (unreleased vs tagged)
-25. Add docs-api-check to the pre-commit or release-preflight (not just CI)
-26. Real markdown-link-check in CI covers archived dirs (my ad-hoc checker skipped http links)
-27. README quickstart: refresh with one v1.7.0 outcomes snippet (currently v1.6-era examples)
+21. ~~DOCS15: annotate feedback doc (GAP-3 revisit, D5/D8→GAP-7) — the session's weakest deferral~~ done (D5 + D8 final annotations in feedback doc (21-51 a/10))
+22. ~~HIST7: annotate `2026-09-08_15-42` (now superseded twice: 18-30 + this report)~~ done (15-42 annotated + archived (21-51 a/11; docs-health pass 2026-09-10))
+23. ~~Annotate/archive the 18-30 + 18-48 reports when superseded~~ done (annotated + archived (docs-health pass 2026-09-10))
+24. ~~Extend docs-api-check to FEATURES "Summary Matrix" version claims (unreleased vs tagged)~~ done (version-claim guard fail-path verified (21-51 a/12))
+25. ~~Add docs-api-check to the pre-commit or release-preflight (not just CI)~~ done (wired into preflight + CI (21-51 a/12))
+26. ~~Real markdown-link-check in CI covers archived dirs (my ad-hoc checker skipped http links)~~ done (lychee step added; internal check covers archived dirs (21-51 a/13))
+27. ~~README quickstart: refresh with one v1.7.0 outcomes snippet (currently v1.6-era examples)~~ done (README outcomes quickstart + outcomes guide (21-51 a/14))
 28. pkg.go.dev check: add runnable Example for GroupFindingsSorted and ApplyDryRun
-29. Update `docs/guides/consumer-migration-v1.7.md` with the post-release [Unreleased] APIs preview
-30. AGENTS.md: add the release-preflight + dead-gate lessons as gotchas (3 silent-gate war stories in one day)
+29. ~~Update `docs/guides/consumer-migration-v1.7.md` with the post-release [Unreleased] APIs preview~~ done (consumer-migration guide updated (21-51 a/14))
+30. ~~AGENTS.md: add the release-preflight + dead-gate lessons as gotchas (3 silent-gate war stories in one day)~~ done (AGENTS preflight + dead-gate gotchas added (21-51 a/14))
 
 **Consumers:**
-31. Bump the 8 pipeline-import consumers (BuildFlow, Code-Quality-Agent, erraudit, go-structure-linter, hierarchical-errors, oxlint-auto-configure, template-AUTHORS, template-SECURITY) with the rollback migration guide
-32. Fix go-humanize-linter's pre-existing `TestIsGeneratedFile_FilenameOnly` failure (fails on v1.6.0 too — consumer bug, not ours)
-33. Bump the 5 older consumers (branching-flow, gomend, licenseforge, md-go-validator, template-CLI) past v1.4.x
+31. ~~Bump the 8 pipeline-import consumers (BuildFlow, Code-Quality-Agent, erraudit, go-structure-linter, hierarchical-errors, oxlint-auto-configure, template-AUTHORS, template-SECURITY) with the rollback migration guide~~ done (19 consumer repos bumped to v1.8.0 with migration guide (21-51 a/15))
+32. ~~Fix go-humanize-linter's pre-existing `TestIsGeneratedFile_FilenameOnly` failure (fails on v1.6.0 too — consumer bug, not ours)~~ done (go-humanize-linter fully green (21-51 a/15))
+33. ~~Bump the 5 older consumers (branching-flow, gomend, licenseforge, md-go-validator, template-CLI) past v1.4.x~~ done (bumped where possible; gomend/licenseforge blocked on their BuildFlow replaces → issues #1/#46 filed (21-51 b))
 34. Consumer compatibility test once repo is public (BLOCKED row)
 
 **Toolchain:**
-35. Measure pre-commit hook latency (nix fmt cost per commit); consider caching or narrowing
-36. benchstat into devShell (kill the go-run shim workaround)
-37. actionlint into devShell
-38. Evaluate `nix flake check --all-systems` feasibility (darwin/aarch64 currently skipped)
-39. treefmt cache check (`.treefmt-cache` age) — is the daemon's hook re-evaluating every file every commit?
-40. Pin `golang.org/x/perf` benchstat version in a tool directive for reproducible comparisons
+35. ~~Measure pre-commit hook latency (nix fmt cost per commit); consider caching or narrowing~~ done (~113ms warm measured; gate kept (21-51 a/3, Q3))
+36. ~~benchstat into devShell (kill the go-run shim workaround)~~ done (benchstat pinned via go.mod tool directive (21-51 a/16))
+37. ~~actionlint into devShell~~ done (actionlint in devShell (21-51 a/16))
+38. ~~Evaluate `nix flake check --all-systems` feasibility (darwin/aarch64 currently skipped)~~ done (evaluated + DECLINED, conclusion in AGENTS.md (03-24 a/25))
+39. ~~treefmt cache check (`.treefmt-cache` age) — is the daemon's hook re-evaluating every file every commit?~~ done (113ms warm implies cache effective (21-51 b, noted))
+40. ~~Pin `golang.org/x/perf` benchstat version in a tool directive for reproducible comparisons~~ done (pinned via go.mod tool directive (21-51 a/16))
 
 **Launch (post public flip):**
-41. Flip repo public; sweep GOPRIVATE mentions (release-procedure, AGENTS, README)
-42. First public `go get` → verify pkg.go.dev for all 4 modules (LAUNCH1)
-43. Verify GoReleaser + Homebrew on first public tag (LAUNCH4, needs secret from #8)
+41. ~~Flip repo public; sweep GOPRIVATE mentions (release-procedure, AGENTS, README)~~ done (repo PUBLIC since 2026-09-08 22:24; GOPRIVATE swept (22-24 report))
+42. ~~First public `go get` → verify pkg.go.dev for all 4 modules (LAUNCH1)~~ done (pkg.go.dev renders (core verified 03-24 a/24; toolsdk verified 2026-09-10))
+43. ~~Verify GoReleaser + Homebrew on first public tag (LAUNCH4, needs secret from #8)~~ done (GoReleaser proven — v1.9.2 published with 34 signed assets; Homebrew remains a user question (ROADMAP))
 44. Submit Awesome Go (entry pre-drafted) (LAUNCH3)
 45. Publish announcement (drafted) (LAUNCH2)
 
 **Product tail:**
-46. Implement graduated FlightRecorder rotation (MaxFiles) — top-scored idea
-47. Implement gzip trace output (second graduate)
-48. Revisit continuous trace sampling after rotation lands
+46. ~~Implement graduated FlightRecorder rotation (MaxFiles) — top-scored idea~~ done (SHIPPED v1.9.0 — MaxFiles + -trace-max-files, rotation under writeMu)
+47. ~~Implement gzip trace output (second graduate)~~ done (SHIPPED v1.9.0 — Compress + -trace-gzip, go tool trace e2e pinned)
+48. ~~Revisit continuous trace sampling after rotation lands~~ done (NO-GO decided + rationale in ROADMAP (03-24 a/16))
 49. v2.0 spike decisions parked in ROADMAP (Position sentinel, FixStrategy union, TagSet, sub-structs) — schedule a design session
 50. json/v2 watch: drop GOEXPERIMENT when Go 1.27 ships (tracking row exists)
 

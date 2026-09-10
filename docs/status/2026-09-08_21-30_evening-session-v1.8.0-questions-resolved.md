@@ -52,12 +52,18 @@
 
 ## Remaining Open (all externally blocked or by-design)
 
-- Billing/account switch → CI dispatch verify, lychee + docs-api-check jobs on real runners, `HOMEBREW_TAP_GITHUB_TOKEN` secret, Dependabot #23/#24/#25/#29, v1.7.0/v1.8.0 release runs.
-- Public flip → pkg.go.dev, GoReleaser+Homebrew, Awesome Go, announcement (all prepped).
-- gomend + licenseforge consumer bumps (their broken replaces).
-- 7 consumers' pre-existing test failures (consumer-side bugs; verified not ours).
-- v1.9.0 train holds: FR rotation + gzip ([Unreleased]) + whatever accumulates.
+- ~~Billing/account switch → CI dispatch verify, lychee + docs-api-check jobs on real runners, `HOMEBREW_TAP_GITHUB_TOKEN` secret, Dependabot #23/#24/#25/#29, v1.7.0/v1.8.0 release runs.~~ resolved: repo went PUBLIC (Actions free); CI 21/21 green incl. docs-api-check + lychee; Dependabot #23/#24/#25 merged, #29 closed; release runs green at v1.9.x; brew secret = user question (ROADMAP Open questions).
+- ~~Public flip → pkg.go.dev, GoReleaser+Homebrew, Awesome Go, announcement (all prepped).~~ resolved: flip done 22:24; pkg.go.dev live; GoReleaser proven (v1.9.2, 34 assets); Awesome Go + announcement still owed (TODO_LIST).
+- ~~gomend + licenseforge consumer bumps (their broken replaces).~~ blocked consumer-side; issues gomend#1 + licenseforge#46 filed.
+- ~~7 consumers' pre-existing test failures (consumer-side bugs; verified not ours).~~ 5 issues filed (gomend#1, licenseforge#46, library-policy#74, erraudit#3, go-structure-linter#2); remainder owed (TODO_LIST).
+- ~~v1.9.0 train holds: FR rotation + gzip ([Unreleased]) + whatever accumulates.~~ SHIPPED v1.9.0.
 - f/49 v2.0 design spike, f/50 json/v2 watch: ROADMAP.
+
+---
+
+## Resolution (2026-09-10)
+
+Superseded by `2026-09-08_21-51_evening-session-self-review.md` → `2026-09-08_22-24_go-public-launch.md` + `2026-09-08_22-59_ci-triage-and-public-stabilization.md` → `2026-09-08_23-50_evening-session-v1.9.0-gates-consumers.md` → `2026-09-09_03-24_late-night-session-self-review.md`. All "Remaining Open" items above are resolved, moot, or routed (TODO_LIST/ROADMAP). Archived by the docs-health pass.
 
 ---
 
