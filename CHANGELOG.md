@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > **Sub-module changelogs:** [pipeline/CHANGELOG.md](pipeline/CHANGELOG.md),
 > [analysis/CHANGELOG.md](analysis/CHANGELOG.md),
-> [cmd/go-finding/CHANGELOG.md](cmd/go-finding/CHANGELOG.md).
+> [cmd/go-finding/CHANGELOG.md](cmd/go-finding/CHANGELOG.md),
+> [toolsdk/CHANGELOG.md](toolsdk/CHANGELOG.md).
 
 ## [Unreleased]
 
