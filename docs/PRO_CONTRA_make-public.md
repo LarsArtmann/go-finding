@@ -15,7 +15,8 @@
 >
 > **Date:** 2026-07-24 | **Assessed at:** v1.3.0 (repo flipped at v1.8.0)
 >
-> This document supersedes the resolution banner in `PUBLIC_OR_PRIVATE.md`, which
+> This document supersedes the resolution banner in `PUBLIC_OR_PRIVATE.md`
+> (now archived at `docs/archive/PUBLIC_OR_PRIVATE.md`), which
 > incorrectly claims the repo is already public. It was not, until 2026-09-08. This
 > was a fresh assessment at v1.3.0 with 1,005 commits, 193 Go files, and 112 test files.
 

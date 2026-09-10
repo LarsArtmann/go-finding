@@ -176,7 +176,7 @@ Prioritized roughly by impact × cost.
 
 ## Resolution (2026-08-01)
 
-This is the most recent ecosystem integration report. Nearly all items remain **STILL OPEN** — the `go-linter-sdk` work lives in a sibling repo and cannot be resolved from `go-finding` directly. The key gaps (`Registry.Run` doesn't filter by `IsEnabledByDefault`, no SDK git tag, pilot migration not started) are now tracked in ROADMAP.md "Consumer ecosystem" section under "go-linter-sdk integration." The three design questions in section (g) above are still unanswered — they require an owner decision on SDK architecture direction.
+This is the most recent ecosystem integration report. ~~Nearly all items remain **STILL OPEN**~~ **UPDATE 2026-09-10:** the SDK gaps since closed — `IsEnabledByDefault` runtime behavior shipped (2026-08-08 refactor session), the SDK is tagged (v0.3.0) and its pilot consumer (go-humanize-linter, −97 LOC) migrated; per-repo consumer state lives in `docs/ecosystem.md` and [ROADMAP.md](../../ROADMAP.md) "Consumer ecosystem". The `go-linter-sdk` work lives in a sibling repo and cannot be resolved from `go-finding` directly. The three design questions in section (g) above are still unanswered — they require an owner decision on SDK architecture direction.
 
 ---
 

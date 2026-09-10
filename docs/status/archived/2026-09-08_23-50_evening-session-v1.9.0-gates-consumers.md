@@ -47,12 +47,12 @@
 
 ## b) PARTIALLY DONE
 
-| Item                    | Done                                                                                                                 | Missing                                                                                                                                             |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| f34-37 Dependabot       | Diffs reviewed; SHA verified; #29 closed; rebases requested; #23 CI re-running                                       | ~~#24/#25 rebase runs pending at report time; MERGE still to be executed on green~~ RESOLVED: #23/#24/#25 merged (squash), #29 closed (03-24 a/6)                    |
-| f31 CI verification     | Master CI dispatched; PR CIs running with fixed workflows                                                            | ~~Final green confirmation...~~ RESOLVED: master CI 21/21 green incl. benchmark at 45min (03-24 a/7)                                               |
-| f33 Release runs        | First live Release run since v1.4.0 executed — failed on the flaky test (now fixed)                                  | ~~v1.9.1 needed...~~ RESOLVED: v1.9.2 published with 34 assets; brew = user question (ROADMAP)                                                     |
-| f19-f24 consumer triage | erraudit#3 (+dup #4/#5/#6 closed with pointers), go-structure-linter#2, gomend#1, licenseforge#46, library-policy#74 | BuildFlow / branching-flow / go-business-rules failures not re-captured tonight (verified pre-existing last session; cited in ecosystem table)      |
+| Item                    | Done                                                                                                                 | Missing                                                                                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| f34-37 Dependabot       | Diffs reviewed; SHA verified; #29 closed; rebases requested; #23 CI re-running                                       | ~~#24/#25 rebase runs pending at report time; MERGE still to be executed on green~~ RESOLVED: #23/#24/#25 merged (squash), #29 closed (03-24 a/6) |
+| f31 CI verification     | Master CI dispatched; PR CIs running with fixed workflows                                                            | ~~Final green confirmation...~~ RESOLVED: master CI 21/21 green incl. benchmark at 45min (03-24 a/7)                                              |
+| f33 Release runs        | First live Release run since v1.4.0 executed — failed on the flaky test (now fixed)                                  | ~~v1.9.1 needed...~~ RESOLVED: v1.9.2 published with 34 assets; brew = user question (ROADMAP)                                                    |
+| f19-f24 consumer triage | erraudit#3 (+dup #4/#5/#6 closed with pointers), go-structure-linter#2, gomend#1, licenseforge#46, library-policy#74 | BuildFlow / branching-flow / go-business-rules failures not re-captured tonight (verified pre-existing last session; cited in ecosystem table)    |
 
 ## c) NOT STARTED / RECLASSIFIED
 

@@ -89,18 +89,18 @@ The FlightRecorder feature (`pipeline/flight_recorder.go`) is shipped with confi
 
 **Triage (2026-09-08, FR1):** each idea scored Impact × Effort from the perspective of pipeline consumers. Two shipped along the way (context propagation, multi-recorder degradation); two graduated to actionable ROADMAP items below; the rest stay parked with reasons.
 
-| Idea                                          | Impact | Effort | Verdict                                                                                                    |
-| --------------------------------------------- | ------ | ------ | ---------------------------------------------------------------------------------------------------------- |
+| Idea                                          | Impact | Effort | Verdict                                                                                                           |
+| --------------------------------------------- | ------ | ------ | ----------------------------------------------------------------------------------------------------------------- |
 | Trace file rotation (max-files)               | High   | Low    | **SHIPPED v1.9.0** — `MaxFiles` config + `-trace-max-files`; prunes oldest beyond cap, serialized under `writeMu` |
-| Compressed trace output (gzip)                | Med    | Low    | **SHIPPED v1.9.0** — `Compress` config + `-trace-gzip`; `.trace.gz` snapshots, `go tool trace` e2e verified      |
-| Automatic pprof capture                       | Med    | Med    | Park — useful but duplicates what `runtime/pprof` flags already give operators                             |
-| Continuous trace sampling (1% knob)           | Med    | Low    | **NO-GO (decided 2026-09-08)** — rationale below the graduated list                                        |
-| Core package trace helper (`finding/tracing`) | Low    | Med    | Rejected — speculative generalization; only one consumer pattern exists (pipeline)                         |
-| OpenTelemetry bridge                          | Low    | High   | Rejected — adds a heavy dependency for a rare use case in static-analysis tooling                          |
-| Trace diff tool                               | Low    | High   | Rejected — niche debugging aid; belongs in consumer tooling, not the library                               |
-| AI-assisted trace analysis                    | Low    | High   | Rejected — LLM analysis is consumer territory; the library's job is capturing the trace                    |
-| Context propagation                           | —      | —      | **Shipped v1.5.0** — `Snapshot(ctx, reason)` accepts context; cancelled contexts skip the write            |
-| Multiple recorder support                     | —      | —      | **Shipped v1.6.0** — `Degraded()` mode degrades gracefully when Go's singleton recorder is taken           |
+| Compressed trace output (gzip)                | Med    | Low    | **SHIPPED v1.9.0** — `Compress` config + `-trace-gzip`; `.trace.gz` snapshots, `go tool trace` e2e verified       |
+| Automatic pprof capture                       | Med    | Med    | Park — useful but duplicates what `runtime/pprof` flags already give operators                                    |
+| Continuous trace sampling (1% knob)           | Med    | Low    | **NO-GO (decided 2026-09-08)** — rationale below the graduated list                                               |
+| Core package trace helper (`finding/tracing`) | Low    | Med    | Rejected — speculative generalization; only one consumer pattern exists (pipeline)                                |
+| OpenTelemetry bridge                          | Low    | High   | Rejected — adds a heavy dependency for a rare use case in static-analysis tooling                                 |
+| Trace diff tool                               | Low    | High   | Rejected — niche debugging aid; belongs in consumer tooling, not the library                                      |
+| AI-assisted trace analysis                    | Low    | High   | Rejected — LLM analysis is consumer territory; the library's job is capturing the trace                           |
+| Context propagation                           | —      | —      | **Shipped v1.5.0** — `Snapshot(ctx, reason)` accepts context; cancelled contexts skip the write                   |
+| Multiple recorder support                     | —      | —      | **Shipped v1.6.0** — `Degraded()` mode degrades gracefully when Go's singleton recorder is taken                  |
 
 Graduated items: rotation and gzip both **shipped in v1.9.0** (see the triage table above); nothing currently graduated.
 

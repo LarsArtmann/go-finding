@@ -115,28 +115,28 @@ A second agent/user session is actively editing this repo in parallel:
 
 ## f) NEXT (prioritized, superseding the older list where overlapping)
 
-1. Push local master (ahead ~10+ commits) and confirm run is 20/20 green
-2. Re-check pkg.go.dev for all 4 module paths; remove the TEMPORARY lychee
-   exclude once live (grep ci.yml for `pkg\\.go\\.dev`)
-3. Re-point/repair GitHub Releases: create v1.8.0 (or v1.9.0, see #4) release
-   with notes; stop "Latest" pointing at analysis/
-4. Finish the in-flight v1.9.0 release prep the parallel session started
-5. Decide homebrew: create tap repo + `HOMEBREW_TAP_GITHUB_TOKEN`, or drop the
-   homebrew step from GoReleaser
-6. Diagnose why GoReleaser produced no releases since v1.5.0 (check release
-   workflow runs on tag pushes)
+1. ~~Push local master (ahead ~10+ commits) and confirm run is 20/20 green~~ done (master CI 21/21 jobs green (03-24 a/7))
+2. ~~Re-check pkg.go.dev for all 4 module paths; remove the TEMPORARY lychee~~ done (lychee pkg.go.dev exclude removed; pages live (03-24 a/24; toolsdk verified 2026-09-10))
+   ~~exclude once live (grep ci.yml for `pkg\\.go\\.dev`)~~
+3. ~~Re-point/repair GitHub Releases: create v1.8.0 (or v1.9.0, see #4) release~~ done (v1.9.2 published with 34 assets; Latest = core v1.10.0)
+   ~~with notes; stop "Latest" pointing at analysis/~~
+4. ~~Finish the in-flight v1.9.0 release prep the parallel session started~~ done (v1.9.0 → v1.9.1 → v1.9.2 shipped (03-24 a/1-3))
+5. ~~Decide homebrew: create tap repo + `HOMEBREW_TAP_GITHUB_TOKEN`, or drop the~~ **Won't implement — user decision (tap repo + HOMEBREW_TAP_GITHUB_TOKEN) — routed to ROADMAP Open questions.**
+   ~~homebrew step from GoReleaser~~
+6. ~~Diagnose why GoReleaser produced no releases since v1.5.0 (check release~~ done (root-caused via live runs — flaky test (v1.9.1), formula template (v1.9.2), bench timeout (45min))
+   ~~workflow runs on tag pushes)~~
 7. Branch protection on master once 20/20 green (require the run)
-8. Confirm Dependabot PRs still validate against the fixed CI
+8. ~~Confirm Dependabot PRs still validate against the fixed CI~~ done (#23/#24/#25 merged on green; #29 closed (03-24 a/6))
 9. Run consumer compatibility matrix (22 consumers) — still `READY`, unowned
 10. Announcement decision + draft finalization (`docs/brainstorming/launch-announcement-draft.md`)
 11. awesome-go PR; social preview image; pin repo; enable Discussions
 12. Review ROADMAP/TODO_LIST once for strategy-sensitive public content
-13. Track json/v2 stabilization; drop GOEXPERIMENT when Go 1.27 lands it
-14. Decide `.buildflow.yml` (tracked, 600-mode internal config)
+13. ~~Track json/v2 stabilization; drop GOEXPERIMENT when Go 1.27 lands it~~ done (tracked in ROADMAP "json/v2 stabilization watch")
+14. ~~Decide `.buildflow.yml` (tracked, 600-mode internal config)~~ done (.buildflow.yml removed (commit fc724d4))
 15. Boundary README (or relocation) for docs/status, docs/reviews, docs/planning
-16. Post-v1.9.0: re-run bench-check baseline update if perf-relevant changes landed
+16. ~~Post-v1.9.0: re-run bench-check baseline update if perf-relevant changes landed~~ done (baseline regenerated in the v1.9.0 train (03-24 a/8))
 17. Add "Releases" link to README nav
-18. Consider CODEOWNERS (single author, but future-proofs reviews)
+18. ~~Consider CODEOWNERS (single author, but future-proofs reviews)~~ done (.github/CODEOWNERS exists)
 19. SECURITY.md: verify private vulnerability reporting is enabled on GitHub
 20. Post-launch retro once CI is green and pkg.go.dev renders
 

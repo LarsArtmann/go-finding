@@ -77,6 +77,8 @@
 
 ## f) Up to 50 things we should get done next
 
+> **Status (2026-09-10 docs-health pass):** items 1–9 shipped through v1.7.0→v1.10.0 (see CHANGELOG). Items 10–13, 15–18, 21, 22 DONE (AGENTS diet 37→22KB + toolsdk rows; DOMAIN_LANGUAGE cross-checked; USAGE_GUIDE/API_STABILITY verified + v1.10.0 rows; sub-module CHANGELOGs incl. new toolsdk/CHANGELOG; 15-42 annotated + archived; master plan dispositioned + archived; docs-api-check shipped v1.8.0; lychee in CI; feedback D5/D8 done; FEATURES walk now release-procedure step 7). Item 14 (HTML per-finding annotation) remains OPEN. Item 19 partially routed; item 20 done (TODO_LIST rebuilt 2026-09-10 with file/report citations).
+
 **Release train (user-gated, from TODO_LIST):**
 
 1. D1 sign-off → ADR-016 + v1.7.0 release train. 2. D6 backfill-vs-forward decision. 3. Re-run release.yml + verify assets. 4. Check `HOMEBREW_TAP_GITHUB_TOKEN`. 5. Ship v1.7.0 (4 tags). 6. Bump consumers (go-humanize-linter, go-linter-sdk + sweep 12 more). 7. D2: comment+close issues #27/#28. 8. Post-account-switch: `gh workflow run ci.yml` and verify ALL jobs. 9. Dependabot triage after CI green.

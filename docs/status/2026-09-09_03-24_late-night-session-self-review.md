@@ -1,8 +1,8 @@
 # Late-Night Session — Brutal Self-Review: v1.9.0→v1.9.2 Shipped, Release Pipeline Resurrected, CI Fully Green — at the Cost of Three Wasted CI Cycles, One Skipped Stress Gate, and a Foreign-Repo Deletion I Should Not Have Done
 
 **Date written:** 2026-09-09 03:24 CEST (work performed 2026-09-08 21:58–00:45 CEST; report is 2.5h late — see d/8)
-**Session input:** User blanket directive ("READ, UNDERSTAND, RESEARCH, REFLECT... Execute and Verify... Repeat until done"), resolving the 3 §g questions from `docs/status/2026-09-08_21-51_evening-session-self-review.md` + working its §f list.
-**Session narrative:** `docs/status/2026-09-08_23-50_evening-session-v1.9.0-gates-consumers.md` (written mid-session at ~00:00; partially updated at 00:40 — its "final CI green" claim was still a hope at that point, now fact).
+**Session input:** User blanket directive ("READ, UNDERSTAND, RESEARCH, REFLECT... Execute and Verify... Repeat until done"), resolving the 3 §g questions from `docs/status/archived/2026-09-08_21-51_evening-session-self-review.md` + working its §f list.
+**Session narrative:** `docs/status/archived/2026-09-08_23-50_evening-session-v1.9.0-gates-consumers.md` (written mid-session at ~00:00; partially updated at 00:40 — its "final CI green" claim was still a hope at that point, now fact).
 
 ---
 
@@ -39,24 +39,24 @@
 
 ## b) PARTIALLY DONE
 
-| Item                                    | Done                                                                                            | Missing                                                                                                                                                                                                                                            |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| f29 supersession banners                | Noted as next-session work in my report                                                         | The 2-minute banners on the 21-30 + 21-51 reports were NEVER stamped — while I was literally writing a report about conventions. Inexcusable deferral.                                                                                             |
-| Version-stamp surface for v1.9.1/v1.9.2 | Root + 4 module CHANGELOGs stamped                                                              | FEATURES.md / API_STABILITY.md / README got v1.9.0 rows only — no 1.9.1/1.9.2 rows or "latest version" mentions. The version-claim guard only catches claims BEYOND version.go, so stale "latest" text fails NO gate — silent drift by design gap. |
-| Session report accuracy                 | 23-50 report written and partially updated                                                      | Its "Date: 21:58–00:45" end-time was an estimate, not `date`-derived; the report was further edited ~00:40 and this review written 03:24. The prior session's d/8 timestamp lesson: half-learned.                                                  |
-| pkg.go.dev sub-modules                  | Core page verified live                                                                         | pipeline/analysis/CLI pages never checked (was in my own "what's next" list within the same session).                                                                                                                                              |
-| f33 Release observation                 | Core v1.9.2 + 3 sub-module releases published; GoReleaser/cosign/sbom path exercised end-to-end | nix `nur-packages` push outcome unknown (`skip_upload: auto` — never checked); Homebrew tap intentionally not pushed (`skip_upload: true`); v1.5.0–v1.8.0 backfill undecided (D6).                                                                 |
-| f22-f24 remaining consumer issues       | Cited with evidence in ecosystem table                                                          | BuildFlow / branching-flow / go-business-rules issues never filed — I wrote "file or fix" in two reports and did neither.                                                                                                                          |
+| Item                                    | Done                                                                                                                                                                      | Missing                                                                                                                                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| f29 supersession banners                | ~~Noted as next-session work in my report~~ RESOLVED 2026-09-10: superseded reports annotated inline + archived (docs-health pass)                                        | ~~The 2-minute banners on the 21-30 + 21-51 reports were NEVER stamped — while I was literally writing a report about conventions. Inexcusable deferral.~~                                        |
+| Version-stamp surface for v1.9.1/v1.9.2 | ~~Root + 4 module CHANGELOGs stamped~~ + RESOLVED 2026-09-10: API_STABILITY carries explicit zero-API-change rows; FEATURES needs no rows (no product changes)            | ~~FEATURES.md / API_STABILITY.md / README got v1.9.0 rows only...silent drift by design gap.~~ guard extension lives in TODO_LIST                                                                 |
+| Session report accuracy                 | 23-50 report written and partially updated                                                                                                                                | Its "Date: 21:58–00:45" end-time was an estimate, not `date`-derived; the report was further edited ~00:40 and this review written 03:24. The prior session's d/8 timestamp lesson: half-learned. |
+| pkg.go.dev sub-modules                  | ~~Core page verified live~~ + RESOLVED 2026-09-10: toolsdk page verified rendering (v1.10.0)                                                                              | ~~pipeline/analysis/CLI pages never checked (was in my own "what's next" list within the same session).~~                                                                                         |
+| f33 Release observation                 | ~~Core v1.9.2 + 3 sub-module releases published...~~ + RESOLVED 2026-09-10: nur-packages repo does not exist → nothing was pushed (skip_upload: auto had nothing to push) | ~~nix `nur-packages` push outcome unknown...backfill undecided (D6).~~ Homebrew + backfill → ROADMAP Open questions                                                                               |
+| f22-f24 remaining consumer issues       | Cited with evidence in ecosystem table                                                                                                                                    | BuildFlow / branching-flow / go-business-rules issues never filed — I wrote "file or fix" in two reports and did neither.                                                                         |
 
 ## c) NOT STARTED
 
-| Item                                                             | Honest reason                                                                                                                                                                                                     |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Consumer bumps to v1.9.x                                         | Zero consumers moved past v1.8.0. Rationalized as "additive, opportunistic" — true, but the ecosystem table now advertises v1.9.2 with no consumer on it.                                                         |
-| Scratch-dir + worktree hygiene                                   | `/tmp/v180-bench` (MY worktree, created this session, never removed — still registered), `/tmp/f10`, plus pre-existing `/tmp/blast-*` and two older `/tmp/go-finding-*` worktrees all confirmed present at 03:24. |
-| `docs-freshness` warning for release-procedure.md                | Flagged in preflight output ("version.go modified after doc"), seen twice, ignored twice.                                                                                                                         |
-| art-dupl GroupID integration (f25)                               | Correctly reclassified as feature-level work (no go-finding dep exists) — but no issue/ROADMAP row was filed IN art-dupl to carry the intent.                                                                     |
-| README v1.9.x rows, AGENTS "Multi-module release tagging" update | The release-procedure batching rule landed ONLY in AGENTS.md — the operator-facing `docs/release-procedure.md` (the file the procedure actually reads) was never updated.                                         |
+| Item                                                                 | Honest reason                                                                                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Consumer bumps to v1.9.x                                             | Zero consumers moved past v1.8.0. Rationalized as "additive, opportunistic" — true, but the ecosystem table now advertises v1.9.2 with no consumer on it.                                                                                                                                           |
+| ~~Scratch-dir + worktree hygiene~~                                   | ~~`/tmp/v180-bench` (MY worktree, created this session, never removed — still registered), `/tmp/f10`, plus pre-existing `/tmp/blast-*` and two older `/tmp/go-finding-*` worktrees all confirmed present at 03:24.~~ done 2026-09-10: worktrees removed + pruned, /tmp/f10 + /tmp/blast-* trashed. |
+| ~~`docs-freshness` warning for release-procedure.md~~                | ~~Flagged in preflight output ("version.go modified after doc"), seen twice, ignored twice.~~ done 2026-09-10: release-procedure.md updated alongside the version.go 1.10.0 bump.                                                                                                                   |
+| art-dupl GroupID integration (f25)                                   | Correctly reclassified as feature-level work (no go-finding dep exists) — but no issue/ROADMAP row was filed IN art-dupl to carry the intent.                                                                                                                                                       |
+| ~~README v1.9.x rows, AGENTS "Multi-module release tagging" update~~ | ~~The release-procedure batching rule landed ONLY in AGENTS.md — the operator-facing `docs/release-procedure.md` (the file the procedure actually reads) was never updated.~~ done 2026-09-10: batching + dispatch rules written into release-procedure.md; AGENTS tagging list includes toolsdk.   |
 
 ## d) TOTALLY FUCKED UP (or came dangerously close)
 
@@ -86,26 +86,26 @@
 
 **Release & CI hygiene (1-10)**
 
-1. Stamp SUPERSEDED banners on 21-30 + 21-51 reports (b/ carry-over; 2 minutes)
+1. ~~Stamp SUPERSEDED banners on 21-30 + 21-51 reports (b/ carry-over; 2 minutes)~~ done (21-30 + 21-51 annotated inline + archived (docs-health pass 2026-09-10))
 2. Add unpushed-commits check to preflight (e/1)
 3. Add `concurrency: cancel-in-progress: false` to release.yml (e/2)
-4. Write tag-batching + dispatch-if-silent rules into docs/release-procedure.md (e/3)
+4. ~~Write tag-batching + dispatch-if-silent rules into docs/release-procedure.md (e/3)~~ done (release-procedure.md gained "Tag pushing: batches of ≤3" + "Queue, don't race, releases" sections)
 5. Version-stamp completeness guard (FEATURES/README must mention current version at tag) (e/4)
 6. Remove `/tmp/v180-bench` worktree (mine) + prune the two older `/tmp/go-finding-*` worktrees + `/tmp/f10`, `/tmp/blast-*` scratch dirs
 7. Check pkg.go.dev rendering for pipeline/analysis/CLI modules
-8. Resolve the docs-freshness warning on release-procedure.md (it will fire again at every version bump otherwise)
+8. ~~Resolve the docs-freshness warning on release-procedure.md (it will fire again at every version bump otherwise)~~ done (release-procedure.md updated alongside the version.go 1.10.0 bump; docs-freshness gate green)
 9. Decide + execute v1.5.0–v1.8.0 release backfill (D6, now unblocked — needs user input, see g/2)
 10. Verify the nix `nur-packages` push behavior from the v1.9.2 run (skip_upload: auto — did anything land?)
 
 **Docs truth (11-18)**
-11. FEATURES.md + API_STABILITY.md + README rows for v1.9.1/v1.9.2 (b/ drift)
-12. Ecosystem table: add v1.9.2 note ("no consumers yet; additive since v1.8.0")
-13. AGENTS: add "runner-runtime budget" gotcha (e/8) + "gh -R always" (e/6)
-14. AGENTS: correct/extend the daemon-commit guidance with "stage-check before authoring grand messages" (d/7)
-15. Record the two-runs-one-loser v1.9.2 story in the release-procedure troubleshooting section
-16. Stamp this report's lineage (21-30 → 21-51 → 23-50 → this) once the next session supersedes
-17. Re-verify the 23-50 report's claims against final state (it was edited mid-flight; e.g. "20/20 green" was aspirational then, factual now — make the report say which is which)
-18. Update FEATURES "CLI flags" section if -trace-max-files/-trace-gzip rows need version stamps (verify)
+11. ~~FEATURES.md + API_STABILITY.md + README rows for v1.9.1/v1.9.2 (b/ drift)~~ done (no product/API changes in v1.9.1/v1.9.2 — API_STABILITY carries zero-API-change rows; README refs updated to v1.10.0)
+12. ~~Ecosystem table: add v1.9.2 note ("no consumers yet; additive since v1.8.0")~~ done (ecosystem.md Consumer Version Sweep already states "v1.9.0 is additive only")
+13. ~~AGENTS: add "runner-runtime budget" gotcha (e/8) + "gh -R always" (e/6)~~ done (both gotchas added to AGENTS.md)
+14. ~~AGENTS: correct/extend the daemon-commit guidance with "stage-check before authoring grand messages" (d/7)~~ done (daemon stage-check gotcha added to AGENTS.md)
+15. ~~Record the two-runs-one-loser v1.9.2 story in the release-procedure troubleshooting section~~ done ("Queue, don't race, releases" section added to release-procedure.md)
+16. ~~Stamp this report's lineage (21-30 → 21-51 → 23-50 → this) once the next session supersedes~~ done (lineage stamped via Resolution appendices + archiving (docs-health pass 2026-09-10))
+17. ~~Re-verify the 23-50 report's claims against final state (it was edited mid-flight; e.g. "20/20 green" was aspirational then, factual now — make the report say which is which)~~ done (23-50 annotated + archived; claims re-verified against final state)
+18. ~~Update FEATURES "CLI flags" section if -trace-max-files/-trace-gzip rows need version stamps (verify)~~ done (both flags added to the FEATURES CLI table with (v1.9.0) stamps)
 
 **Dependabot / deps (19-22)**
 19. Confirm dependabot stops re-opening gomega bumps now that #25 merged (watch next cycle)

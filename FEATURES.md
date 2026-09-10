@@ -758,32 +758,32 @@ Binary: `go-finding`
 
 ### Flags
 
-| Flag                      | Default | Description                                                         |
-| ------------------------- | ------- | ------------------------------------------------------------------- |
-| `-dir`                    | `.`     | Root directory to analyze                                           |
-| `-format`                 | `text`  | Output format: `text`, `markdown`, `csv`, `tsv`, `json`, `sarif`    |
-| `-min-severity`           | `info`  | Minimum severity filter (deprecated alias: `-severity`)             |
-| `-max-iterations`         | `1`     | Pipeline iterations                                                 |
-| `-parallel`               | `true`  | Run detectors in parallel                                           |
-| `-verify`                 | `false` | Re-run detectors after fixes                                        |
-| `-timeout`                | `10m`   | Pipeline timeout                                                    |
-| `-config`                 | (none)  | YAML/JSON config file                                               |
-| `-output`                 | (none)  | Write output to file (default: stdout)                              |
-| `-version`                | `false` | Print version and exit                                              |
-| `-cpuprof`                | (none)  | CPU profile output                                                  |
-| `-memprof`                | (none)  | Memory profile output                                               |
-| `-filter-generated`       | `false` | Filter out findings from auto-generated files                       |
-| `-filter-generated-types` | `all`   | Comma-separated generator types (sqlc, templ, mockgen, protobuf, …) |
-| `-generated-exclude`      | (none)  | Comma-separated glob patterns to exclude from generated filtering   |
-| `-generated-include`      | (none)  | Comma-separated glob patterns restricting generated-filtering scope |
-| `-byte-level-conflict`    | `false` | Enable precise byte-level conflict detection for overlapping fixes  |
-| `-fix-provider`           | (none)  | Comma-separated fix provider names to enable (e.g., `go-ast`)       |
-| `-fix-rollback-all`       | `false` | All-or-nothing rollback on hard file failures (default: per-file)   |
-| `-include-suppressed`     | `true`  | Include suppressed findings in the report                           |
-| `-trace`                  | `false` | Enable Go execution trace flight recorder for pipeline diagnostics  |
-| `-trace-dir`              | (none)  | Directory for trace snapshot files (default: temp dir)              |
-| `-trace-slow`             | `0`     | Auto-snapshot trace when a stage exceeds this duration (e.g. `30s`) |
-| `-trace-max-files`        | `0`     | Keep at most N trace snapshots; prunes oldest beyond the cap (v1.9.0) |
+| Flag                      | Default | Description                                                                 |
+| ------------------------- | ------- | --------------------------------------------------------------------------- |
+| `-dir`                    | `.`     | Root directory to analyze                                                   |
+| `-format`                 | `text`  | Output format: `text`, `markdown`, `csv`, `tsv`, `json`, `sarif`            |
+| `-min-severity`           | `info`  | Minimum severity filter (deprecated alias: `-severity`)                     |
+| `-max-iterations`         | `1`     | Pipeline iterations                                                         |
+| `-parallel`               | `true`  | Run detectors in parallel                                                   |
+| `-verify`                 | `false` | Re-run detectors after fixes                                                |
+| `-timeout`                | `10m`   | Pipeline timeout                                                            |
+| `-config`                 | (none)  | YAML/JSON config file                                                       |
+| `-output`                 | (none)  | Write output to file (default: stdout)                                      |
+| `-version`                | `false` | Print version and exit                                                      |
+| `-cpuprof`                | (none)  | CPU profile output                                                          |
+| `-memprof`                | (none)  | Memory profile output                                                       |
+| `-filter-generated`       | `false` | Filter out findings from auto-generated files                               |
+| `-filter-generated-types` | `all`   | Comma-separated generator types (sqlc, templ, mockgen, protobuf, …)         |
+| `-generated-exclude`      | (none)  | Comma-separated glob patterns to exclude from generated filtering           |
+| `-generated-include`      | (none)  | Comma-separated glob patterns restricting generated-filtering scope         |
+| `-byte-level-conflict`    | `false` | Enable precise byte-level conflict detection for overlapping fixes          |
+| `-fix-provider`           | (none)  | Comma-separated fix provider names to enable (e.g., `go-ast`)               |
+| `-fix-rollback-all`       | `false` | All-or-nothing rollback on hard file failures (default: per-file)           |
+| `-include-suppressed`     | `true`  | Include suppressed findings in the report                                   |
+| `-trace`                  | `false` | Enable Go execution trace flight recorder for pipeline diagnostics          |
+| `-trace-dir`              | (none)  | Directory for trace snapshot files (default: temp dir)                      |
+| `-trace-slow`             | `0`     | Auto-snapshot trace when a stage exceeds this duration (e.g. `30s`)         |
+| `-trace-max-files`        | `0`     | Keep at most N trace snapshots; prunes oldest beyond the cap (v1.9.0)       |
 | `-trace-gzip`             | `false` | Write `.trace.gz` compressed snapshots; gunzip for `go tool trace` (v1.9.0) |
 
 ### Config File (YAML/JSON)

@@ -89,72 +89,72 @@ indexing (404 at last check, normal within the first hour).
 
 **Today — stabilize the public state**
 
-| #  | Task                                                                                                | Why                                                   |
-| -- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| ~~1~~  | ~~Wait for run 34274674104 to finish; read `--log-failed`; triage the 5 failures~~ done — run 34274674104 triaged — all 5 failures root-caused + fixed (22-59 report) | ~~Red CI on a fresh public repo is the storefront~~ |
-| ~~2~~  | ~~Fix `markdown-link-check` findings~~ done — 14 dead URLs fixed (22-59 step 6) | ~~Broken public docs links~~ |
-| ~~3~~  | ~~Fix `docs-api-check` drift (documented identifiers vs code)~~ done — already green locally; rg-exit guard added (22-59 step 8, 03-24 a/23) | ~~Public API doc accuracy~~ |
-| ~~4~~  | ~~Fix `arch-check` (go-arch-lint) failure~~ done — testdata exclude added to .go-arch-lint.yml (22-59 step 7) | ~~Structural gate credibility~~ |
-| ~~5~~  | ~~Investigate `coverage` failure (threshold vs Codecov upload/token)~~ done — coverage 94.2% → 98.3% with real tests (22-59 steps 2-3, 03-24 a/22) | ~~Coverage is a headline metric~~ |
-| ~~6~~  | ~~Investigate `stress` failure (flake vs real; race repeat=20)~~ done — CI stress split per suite type; green (22-59 step 5, 03-24 a/3) | ~~It is the MANDATORY release gate~~ |
-| ~~7~~  | ~~Recheck pkg.go.dev (all 4 module paths); force re-index if 404 persists >1h~~ done — core page live (03-24 a/24); toolsdk page verified 2026-09-10 | ~~TODO #11~~ |
-| ~~8~~  | ~~Verify proxy resolution for `pipeline/v1.8.0`, `analysis/v1.8.0` (or latest), `cmd/go-finding` tags~~ done — all 4 sub-modules resolve via public proxy (22-59 step 10) | ~~Core verified this session; sub-modules not~~ |
-| ~~9~~  | ~~Create GitHub Release for v1.8.0 (at minimum manual notes + binaries)~~ done — superseded — v1.9.2 published with 34 assets; Latest = core v1.10.0 | ~~4 tags with no releases; "Latest" points at analysis/~~ |
-| ~~10~~ | ~~Diagnose GoReleaser: why v1.5.0–v1.8.0 produced no releases~~ done — root-caused via live runs — flaky test (v1.9.1), formula template (v1.9.2), bench timeout (45min) | ~~Silent pipeline death~~ |
-| ~~11~~ | ~~Create or consciously drop `HOMEBREW_TAP_GITHUB_TOKEN` (+ tap repo)~~ **Won't implement — user decision (tap repo + HOMEBREW_TAP_GITHUB_TOKEN) — routed to ROADMAP Open questions.** | ~~Secret confirmed missing~~ |
-| ~~12~~ | ~~Enable secret scanning + push protection (free)~~ done — secret scanning + push protection enabled via API (22-59 step 9) | ~~Public-repo supply-chain hygiene~~ |
-| 13 | Add branch protection on master (require green CI once achieved)                                    | Now meaningful because CI runs                        |
-| ~~14~~ | ~~Rewrite TODO_LIST "Post-account-switch CI work" section (gate dissolved)~~ done — section rewritten (22-59 step 11); TODO_LIST fully rebuilt 2026-09-10 | ~~Doc truth~~ |
-| ~~15~~ | ~~Decide `.buildflow.yml` (tracked, mode 600, internal)~~ done — .buildflow.yml removed (commit fc724d4) | ~~Public hygiene~~ |
+| #      | Task                                                                                                                                                                                   | Why                                                       |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| ~~1~~  | ~~Wait for run 34274674104 to finish; read `--log-failed`; triage the 5 failures~~ done — run 34274674104 triaged — all 5 failures root-caused + fixed (22-59 report)                  | ~~Red CI on a fresh public repo is the storefront~~       |
+| ~~2~~  | ~~Fix `markdown-link-check` findings~~ done — 14 dead URLs fixed (22-59 step 6)                                                                                                        | ~~Broken public docs links~~                              |
+| ~~3~~  | ~~Fix `docs-api-check` drift (documented identifiers vs code)~~ done — already green locally; rg-exit guard added (22-59 step 8, 03-24 a/23)                                           | ~~Public API doc accuracy~~                               |
+| ~~4~~  | ~~Fix `arch-check` (go-arch-lint) failure~~ done — testdata exclude added to .go-arch-lint.yml (22-59 step 7)                                                                          | ~~Structural gate credibility~~                           |
+| ~~5~~  | ~~Investigate `coverage` failure (threshold vs Codecov upload/token)~~ done — coverage 94.2% → 98.3% with real tests (22-59 steps 2-3, 03-24 a/22)                                     | ~~Coverage is a headline metric~~                         |
+| ~~6~~  | ~~Investigate `stress` failure (flake vs real; race repeat=20)~~ done — CI stress split per suite type; green (22-59 step 5, 03-24 a/3)                                                | ~~It is the MANDATORY release gate~~                      |
+| ~~7~~  | ~~Recheck pkg.go.dev (all 4 module paths); force re-index if 404 persists >1h~~ done — core page live (03-24 a/24); toolsdk page verified 2026-09-10                                   | ~~TODO #11~~                                              |
+| ~~8~~  | ~~Verify proxy resolution for `pipeline/v1.8.0`, `analysis/v1.8.0` (or latest), `cmd/go-finding` tags~~ done — all 4 sub-modules resolve via public proxy (22-59 step 10)              | ~~Core verified this session; sub-modules not~~           |
+| ~~9~~  | ~~Create GitHub Release for v1.8.0 (at minimum manual notes + binaries)~~ done — superseded — v1.9.2 published with 34 assets; Latest = core v1.10.0                                   | ~~4 tags with no releases; "Latest" points at analysis/~~ |
+| ~~10~~ | ~~Diagnose GoReleaser: why v1.5.0–v1.8.0 produced no releases~~ done — root-caused via live runs — flaky test (v1.9.1), formula template (v1.9.2), bench timeout (45min)               | ~~Silent pipeline death~~                                 |
+| ~~11~~ | ~~Create or consciously drop `HOMEBREW_TAP_GITHUB_TOKEN` (+ tap repo)~~ **Won't implement — user decision (tap repo + HOMEBREW_TAP_GITHUB_TOKEN) — routed to ROADMAP Open questions.** | ~~Secret confirmed missing~~                              |
+| ~~12~~ | ~~Enable secret scanning + push protection (free)~~ done — secret scanning + push protection enabled via API (22-59 step 9)                                                            | ~~Public-repo supply-chain hygiene~~                      |
+| 13     | Add branch protection on master (require green CI once achieved)                                                                                                                       | Now meaningful because CI runs                            |
+| ~~14~~ | ~~Rewrite TODO_LIST "Post-account-switch CI work" section (gate dissolved)~~ done — section rewritten (22-59 step 11); TODO_LIST fully rebuilt 2026-09-10                              | ~~Doc truth~~                                             |
+| ~~15~~ | ~~Decide `.buildflow.yml` (tracked, mode 600, internal)~~ done — .buildflow.yml removed (commit fc724d4)                                                                               | ~~Public hygiene~~                                        |
 
 **This week — launch proper**
 
-| #  | Task                                                                            | Why                                                  |
-| -- | ------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| 16 | Decide announcement timing (see questions)                                      | Strategy                                             |
-| 17 | Finalize announcement draft (`docs/brainstorming/launch-announcement-draft.md`) | Exists, unreviewed                                   |
-| 18 | r/golang post                                                                   | Adoption                                             |
-| 19 | Go Slack (#golang / #tools)                                                     | Adoption                                             |
-| 20 | X/Twitter thread                                                                | Adoption                                             |
-| 21 | awesome-go PR                                                                   | Discoverability                                      |
-| 22 | GitHub social preview image                                                     | First impression in link unfurls                     |
-| 23 | Pin repo on LarsArtmann profile                                                 | Discoverability                                      |
-| 24 | Enable GitHub Discussions (support channel vs issue spam)                       | Community load management                            |
-| 25 | Run consumer compatibility matrix (22 consumers, 14 with Go code) — now `READY` | Unblocked this session; validates the public promise |
-| 26 | Verify all README badges resolve truthfully post-flip (codecov, pkg.go.dev, CI) | Badges were unread in private era                    |
-| ~~27~~ | ~~Verify Dependabot PRs still flow (public)~~ done — PRs ran the full CI matrix post-flip; #23/#24/#25 merged, #29 closed (03-24 a/6) | ~~Dependency freshness~~ |
-| 28 | Add explanatory README for `docs/status                                         | reviews                                              |
-| 29 | Review ROADMAP/TODO_LIST for strategy-sensitive content you don't want public   | One-time pass; keep-decision stands unless changed   |
-| 30 | SECURITY.md: enable GitHub private vulnerability reporting                      | Public repos need a working intake                   |
+| #      | Task                                                                                                                                  | Why                                                  |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| 16     | Decide announcement timing (see questions)                                                                                            | Strategy                                             |
+| 17     | Finalize announcement draft (`docs/brainstorming/launch-announcement-draft.md`)                                                       | Exists, unreviewed                                   |
+| 18     | r/golang post                                                                                                                         | Adoption                                             |
+| 19     | Go Slack (#golang / #tools)                                                                                                           | Adoption                                             |
+| 20     | X/Twitter thread                                                                                                                      | Adoption                                             |
+| 21     | awesome-go PR                                                                                                                         | Discoverability                                      |
+| 22     | GitHub social preview image                                                                                                           | First impression in link unfurls                     |
+| 23     | Pin repo on LarsArtmann profile                                                                                                       | Discoverability                                      |
+| 24     | Enable GitHub Discussions (support channel vs issue spam)                                                                             | Community load management                            |
+| 25     | Run consumer compatibility matrix (22 consumers, 14 with Go code) — now `READY`                                                       | Unblocked this session; validates the public promise |
+| 26     | Verify all README badges resolve truthfully post-flip (codecov, pkg.go.dev, CI)                                                       | Badges were unread in private era                    |
+| ~~27~~ | ~~Verify Dependabot PRs still flow (public)~~ done — PRs ran the full CI matrix post-flip; #23/#24/#25 merged, #29 closed (03-24 a/6) | ~~Dependency freshness~~                             |
+| 28     | Add explanatory README for `docs/status                                                                                               | reviews                                              |
+| 29     | Review ROADMAP/TODO_LIST for strategy-sensitive content you don't want public                                                         | One-time pass; keep-decision stands unless changed   |
+| 30     | SECURITY.md: enable GitHub private vulnerability reporting                                                                            | Public repos need a working intake                   |
 
 **Next 2–4 weeks — engineering tail**
 
-| #  | Task                                                                                   | Why                                         |
-| -- | -------------------------------------------------------------------------------------- | ------------------------------------------- |
-| ~~31~~ | ~~Track json/v2 stabilization (Go 1.27); drop `GOEXPERIMENT` when it lands~~ done — tracked in ROADMAP "json/v2 stabilization watch" | ~~TODO #12; removes biggest adoption friction~~ |
-| 32 | Consider a compat shim or docs pattern for pre-1.26 users                              | Adoption friction                           |
-| 33 | Tag protection rules (core `v*` vs sub-module prefixes)                                | Release integrity                           |
-| ~~34~~ | ~~Re-tag/patch to re-trigger GoReleaser end-to-end (v1.8.1 or v1.9.0)~~ done — proven end-to-end — v1.9.0/v1.9.1/v1.9.2 Release runs (34-asset signed release) | ~~Prove the pipeline, not just hope~~ |
-| 35 | Blog post on lars.software (website-launch pattern)                                    | Durable launch content                      |
-| ~~36~~ | ~~pkg.go.dev example rendering pass (example_test.go is 22KB — confirm godoc shows well)~~ done — pkg.go.dev renders full docs incl. examples (core 03-24 a/24; toolsdk 2026-09-10) | ~~pkg.go.dev is the landing page~~ |
-| 37 | Add repo to profile README + ecosystem listing with sibling projects                   | Cross-discovery                             |
-| 38 | CI: cache tuning so wall-clock of stress job doesn't dominate iteration                | Free minutes ≠ free time                    |
-| 39 | Consider Making "Latest" release semantics explicit in release-procedure.md            | Prevents recurrence of #9                   |
-| 40 | Post-launch retro status report                                                        | Docs-health habit                           |
+| #      | Task                                                                                                                                                                                | Why                                             |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| ~~31~~ | ~~Track json/v2 stabilization (Go 1.27); drop `GOEXPERIMENT` when it lands~~ done — tracked in ROADMAP "json/v2 stabilization watch"                                                | ~~TODO #12; removes biggest adoption friction~~ |
+| 32     | Consider a compat shim or docs pattern for pre-1.26 users                                                                                                                           | Adoption friction                               |
+| 33     | Tag protection rules (core `v*` vs sub-module prefixes)                                                                                                                             | Release integrity                               |
+| ~~34~~ | ~~Re-tag/patch to re-trigger GoReleaser end-to-end (v1.8.1 or v1.9.0)~~ done — proven end-to-end — v1.9.0/v1.9.1/v1.9.2 Release runs (34-asset signed release)                      | ~~Prove the pipeline, not just hope~~           |
+| 35     | Blog post on lars.software (website-launch pattern)                                                                                                                                 | Durable launch content                          |
+| ~~36~~ | ~~pkg.go.dev example rendering pass (example_test.go is 22KB — confirm godoc shows well)~~ done — pkg.go.dev renders full docs incl. examples (core 03-24 a/24; toolsdk 2026-09-10) | ~~pkg.go.dev is the landing page~~              |
+| 37     | Add repo to profile README + ecosystem listing with sibling projects                                                                                                                | Cross-discovery                                 |
+| 38     | CI: cache tuning so wall-clock of stress job doesn't dominate iteration                                                                                                             | Free minutes ≠ free time                        |
+| 39     | Consider Making "Latest" release semantics explicit in release-procedure.md                                                                                                         | Prevents recurrence of #9                       |
+| 40     | Post-launch retro status report                                                                                                                                                     | Docs-health habit                               |
 
 **Backlog / nice-to-have**
 
-| #  | Task                                                                                        | Why                      |
-| -- | ------------------------------------------------------------------------------------------- | ------------------------ |
-| 41 | FUNDING.yml (optional, consciously skipped in July)                                         | Sustainability           |
-| 42 | `.github/FUNDING` vs GitHub Sponsors decision                                               | Same                     |
-| 43 | Issue label system + triage cadence doc                                                     | Public issue inflow      |
-| 44 | PR welcome policy in CONTRIBUTING (what gets merged)                                        | Sets expectations        |
-| 45 | Changelog entry convention for repo-level changes (or explicitly exclude)                   | CHANGELOG purity         |
-| 46 | Consider `goreleaser` GitHub-Actions-only release (drop homebrew) if tap is not wanted      | Simplification           |
-| 47 | Social proof: benchmark table vs golangci-lint output status quo                            | Sales page (README) ammo |
-| 48 | Monitor stars/forks/issues weekly; first-responders SLA per README support policy           | Maintenance reality      |
-| 49 | GOPRIVATE mentions in `scripts/release-preflight.sh` (defensive, harmless) — leave or clean | Hygiene                  |
+| #      | Task                                                                                                                                                                               | Why                        |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| 41     | FUNDING.yml (optional, consciously skipped in July)                                                                                                                                | Sustainability             |
+| 42     | `.github/FUNDING` vs GitHub Sponsors decision                                                                                                                                      | Same                       |
+| 43     | Issue label system + triage cadence doc                                                                                                                                            | Public issue inflow        |
+| 44     | PR welcome policy in CONTRIBUTING (what gets merged)                                                                                                                               | Sets expectations          |
+| 45     | Changelog entry convention for repo-level changes (or explicitly exclude)                                                                                                          | CHANGELOG purity           |
+| 46     | Consider `goreleaser` GitHub-Actions-only release (drop homebrew) if tap is not wanted                                                                                             | Simplification             |
+| 47     | Social proof: benchmark table vs golangci-lint output status quo                                                                                                                   | Sales page (README) ammo   |
+| 48     | Monitor stars/forks/issues weekly; first-responders SLA per README support policy                                                                                                  | Maintenance reality        |
+| 49     | GOPRIVATE mentions in `scripts/release-preflight.sh` (defensive, harmless) — leave or clean                                                                                        | Hygiene                    |
 | ~~50~~ | ~~Archive `PUBLIC_OR_PRIVATE.md` into `docs/archive/` — question answered, doc now historical~~ done — archived to docs/archive/PUBLIC_OR_PRIVATE.md (docs-health pass 2026-09-10) | ~~Reduce top-level noise~~ |
 
 ## g) QUESTIONS (cannot answer myself)
