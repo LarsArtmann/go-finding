@@ -49,6 +49,8 @@ GitHub Issues?" → issue review → this report + a comprehensive Pareto plan.
 
 ## f) Up to 50 things next (top slice — full 85-task plan: `docs/planning/2026-09-08_16-55-SUPERB-pareto-plan-v1.7.0-release-and-tail.html`)
 
+> **Executed the same evening** via the SUPERB plan — v1.7.0 shipped, #27/#28 closed, D1/D2/D3/D4/D6/D7 decided. Per-task verdicts live in the plan HTML's EXECUTION RECORD (per-row strikethroughs) and in `2026-09-08_18-30` / `2026-09-08_18-48`. Remaining tails: REL18/CI1 billing → mooted by the public flip; Homebrew → ROADMAP "Open questions"; LAUNCH track → TODO_LIST.
+
 1. REL1 D1 sign-off → ADR-016. 2. REL2 D6 decision record. 3. REL3–REL6 stamp 4 CHANGELOGs. 4. REL7 version.go 6→7. 5. REL8–REL9 README/ROADMAP version refs. 6. REL10 version-check. 7. REL11 bench-check. 8. REL12 GOWORK=off ×4. 9. REL13 stress gate. 10. REL14 nix flake check. 11. REL15 dprint+freshness. 12. REL16 tag ×4. 13. REL17 push (8 commits + tags). 14. REL18 release run + assets (billing-gated). 15. REL19 proxy smoke. 16. REL20–REL22 comment+close+label #27/#28 (D2). 17. CONS1 humanize bump. 18. CONS2 SDK v0.2.0. 19. CONS3–CONS4 consumer sweep. 20. CONS5 migration note. 21. CI1 full CI verify (switch). 22. CI2–CI5 Dependabot #23/#24/#25/#29. 23. CI6–CI8 CI enhancements. 24. TEST1–TEST7 Phase D test bundle. 25. TEST8 safePath discard fix. 26. TEST9–TEST11 GroupFindings/WithGroupID. 27. TEST12–TEST13 ADR-017/018. 28. DOCS1–DOCS3 outcomes guide. 29. DOCS4 DOMAIN_LANGUAGE pointer. 30. DOCS5–DOCS6 docs-api-check.sh. 31. DOCS7–DOCS9 AGENTS diet. 32. DOCS10–DOCS13 living-docs verification. 33. DOCS14 link-check. 34. DOCS15 feedback GAP annotations. 35. DOCS16 lint alignment. 36. DOCS17–DOCS21 quality signals. 37. HIST1–HIST8 historical docs completion. 38. GATE1–GATE3 D7/D3/D4 designs. 39. LAUNCH1–LAUNCH4 launch track. 40. FR1 FlightRecorder triage. (41–85: the per-task granularity of 24–40 — see the plan HTML.)
 
 ## g) Questions I CANNOT figure out myself
@@ -56,6 +58,12 @@ GitHub Issues?" → issue review → this report + a comprehensive Pareto plan.
 1. **D1 — rollback default:** confirm shipping v1.7.0 with `RollbackPolicyFailingFile` as the default? One word unlocks ADR-016 + the whole REL train (all gates already green).
 2. **D6 + push — release strategy:** forward-only v1.7.0 (recommended; backfill v1.5/v1.6 later if ever) — and do I push the 8 local commits + new tags once stamped?
 3. **D2 — issues:** close #27/#28 now with fix-summary comments (recommended), or at tag time?
+
+---
+
+## Resolution (2026-09-10)
+
+Superseded by `2026-09-08_18-30_superb-plan-execution-status.md` + `2026-09-08_18-48_superb-execution-self-review.md` (execution + self-review), then `2026-09-08_21-30` → `2026-09-09_03-24` (v1.8.0–v1.9.2 trains). The §g questions were all answered: D1 shipped as ADR-016 (per-file default), D6 = forward-only, D2 = closed at release with labels. The plan HTML moved to `docs/planning/archived/`. Archived by the docs-health pass.
 
 ---
 

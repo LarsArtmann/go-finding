@@ -49,9 +49,9 @@
 
 | Item                    | Done                                                                                                                 | Missing                                                                                                                                             |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| f34-37 Dependabot       | Diffs reviewed; SHA verified; #29 closed; rebases requested; #23 CI re-running                                       | #24/#25 rebase runs pending at report time; MERGE still to be executed on green                                                                     |
-| f31 CI verification     | Master CI dispatched; PR CIs running with fixed workflows                                                            | Final green confirmation + the version-check/docs-api-check/stress trio on post-rebase runs needs reading (stale pre-rebase results at report time) |
-| f33 Release runs        | First live Release run since v1.4.0 executed — failed on the flaky test (now fixed)                                  | v1.9.1 needed to get a green Release run; GoReleaser/Homebrew steps still unexercised past the test job (`HOMEBREW_TAP_GITHUB_TOKEN` still missing) |
+| f34-37 Dependabot       | Diffs reviewed; SHA verified; #29 closed; rebases requested; #23 CI re-running                                       | ~~#24/#25 rebase runs pending at report time; MERGE still to be executed on green~~ RESOLVED: #23/#24/#25 merged (squash), #29 closed (03-24 a/6)                    |
+| f31 CI verification     | Master CI dispatched; PR CIs running with fixed workflows                                                            | ~~Final green confirmation...~~ RESOLVED: master CI 21/21 green incl. benchmark at 45min (03-24 a/7)                                               |
+| f33 Release runs        | First live Release run since v1.4.0 executed — failed on the flaky test (now fixed)                                  | ~~v1.9.1 needed...~~ RESOLVED: v1.9.2 published with 34 assets; brew = user question (ROADMAP)                                                     |
 | f19-f24 consumer triage | erraudit#3 (+dup #4/#5/#6 closed with pointers), go-structure-linter#2, gomend#1, licenseforge#46, library-policy#74 | BuildFlow / branching-flow / go-business-rules failures not re-captured tonight (verified pre-existing last session; cited in ecosystem table)      |
 
 ## c) NOT STARTED / RECLASSIFIED
@@ -86,12 +86,12 @@
 
 ## What's next (for the resuming session)
 
-1. **Confirm the final master CI run green** (dispatched 00:40 with the 45-minute benchmark timeout; the previous run was 20/20 jobs green with only the benchmark cancelled at its old 15-minute cap).
+1. ~~**Confirm the final master CI run green** (dispatched 00:40 with the 45-minute benchmark timeout; the previous run was 20/20 jobs green with only the benchmark cancelled at its old 15-minute cap).~~ done — 21/21 jobs green (03-24 a/7)
 2. File BuildFlow/branching-flow/go-business-rules diagnostic issues (evidence in ecosystem table + 21-30 report) or fix from here if the user prefers.
-3. Stamp SUPERSEDED banners on the 21-30 + 21-51 reports (f29 convention).
-4. Consider flagging the stale `~/projects/hierarchical-errors` clone to the user (duplicate of erraudit pre-rename).
-5. Post-release polish: `pkg.go.dev` sub-module rendering check; Homebrew tap formula is deliberately `skip_upload: true` (create the tap repo + `HOMEBREW_TAP_GITHUB_TOKEN` secret when ready to distribute via brew); v1.5.0–v1.8.0 release backfill decision (D6).
-6. Consumer bumps to v1.9.2 are opportunistic (additive changes only since v1.8.0).
+3. ~~Stamp SUPERSEDED banners on the 21-30 + 21-51 reports (f29 convention).~~ done — both annotated + archived (docs-health pass 2026-09-10)
+4. ~~Consider flagging the stale `~/projects/hierarchical-errors` clone to the user (duplicate of erraudit pre-rename).~~ done — routed to ROADMAP "Open questions"
+5. ~~Post-release polish: `pkg.go.dev` sub-module rendering check;~~ done (toolsdk page verified 2026-09-10; core live 03-24 a/24); ~~Homebrew tap formula...~~ + ~~backfill decision (D6)~~ → routed to ROADMAP "Open questions"
+6. ~~Consumer bumps to v1.9.2 are opportunistic (additive changes only since v1.8.0).~~ superseded by v1.10.0 — no consumer past v1.8.0 yet (TODO_LIST row)
 
 ---
 
