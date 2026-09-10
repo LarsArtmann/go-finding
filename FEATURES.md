@@ -1066,6 +1066,39 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 
 ---
 
+## 23. Tool SDK (`toolsdk` sub-module, v1.10.0+)
+
+**Status:** FULLY_FUNCTIONAL
+
+The `github.com/larsartmann/go-finding/toolsdk` sub-module is the stable
+contract external tools implement so BuildFlow can consume them as DAG
+providers without importing BuildFlow internals. A tool declares one `Spec`
+(typically a package-level var) and self-registers at init:
+
+```go
+var Provider = toolsdk.Register(toolsdk.Spec{
+    Name:        "branching-flow",
+    Description: "Semantic analysis (14 analyzers)",
+    Trigger:     toolsdk.OnGoFiles(),
+    Detect:      myDetector, // a finding.Detector
+})
+```
+
+- `Spec` — name, description, `Trigger`, `DependsOn`, `Inputs`, and any of
+  `Detect` (`finding.Detector`), `Repair` (`Repairer`), `HealthCheck`.
+  `Register` validates and panics on malformed specs (programming error).
+- `Trigger` constructors: `OnGoFiles`, `OnGoModule`, `OnFiles`, `AnyLanguage`.
+- `Repairer`/`RepairerFunc`/`RepairResult` — repair contract; BuildFlow
+  measures fix counts by re-detection, never self-reporting.
+- Registry: `All()` returns specs in registration order; test-isolation
+  helpers `SnapshotForTest`/`RestoreForTest`/`ResetForTest`.
+- Dry-run plumbing: `WithDryRun`/`DryRunFromContext`.
+
+The module depends only on the core module. Evidence: `toolsdk/spec.go`,
+`toolsdk/registry.go`, `toolsdk/triggers.go`, `toolsdk/dryrun.go`.
+
+---
+
 ## Summary Matrix
 
 | Feature                                      | Status               | Notes                                                                                               |
@@ -1152,6 +1185,7 @@ Both return `NewIOError` on failure for `errors.Is(err, ErrIO)` matching.
 | staticcheck fix extension                    | FULLY_FUNCTIONAL     | Optional `before`/`after` JSON fields make findings auto-fixable (v1.8.0)                           |
 | Release preflight gate                       | FULLY_FUNCTIONAL     | `scripts/release-preflight.sh`: structural checks as code before tagging (v1.8.0)                   |
 | Flight-recorder rotation + gzip              | FULLY_FUNCTIONAL     | `MaxFiles` pruning + `Compress` `.trace.gz` snapshots, rotation serialized under `writeMu` (v1.9.0) |
+| Tool SDK (`toolsdk` sub-module)              | FULLY_FUNCTIONAL     | `Spec` + triggers + registry plugin contract for external tools (v1.10.0)                           |
 
 ---
 

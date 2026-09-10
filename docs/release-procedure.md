@@ -51,6 +51,7 @@ Go module proxy can resolve it:
 | Core     | `github.com/larsartmann/go-finding`                | `v*` (no prefix)    | `version.go`          |
 | Pipeline | `github.com/larsartmann/go-finding/pipeline`       | `pipeline/v*`       | tag (no `version.go`) |
 | Analysis | `github.com/larsartmann/go-finding/analysis`       | `analysis/v*`       | tag (no `version.go`) |
+| Tool SDK | `github.com/larsartmann/go-finding/toolsdk`        | `toolsdk/v*`        | tag (no `version.go`) |
 | CLI      | `github.com/larsartmann/go-finding/cmd/go-finding` | `cmd/go-finding/v*` | tag (no `version.go`) |
 
 > Sub-modules do **not** have a `version.go`; the git tag is the single source of
@@ -106,7 +107,7 @@ git push origin pipeline/v0.1.0
 #    lightweight GitHub Release (no binary — library modules need none).
 ```
 
-Repeat for `analysis/v*` and `cmd/go-finding/v*` as needed. Only tag a
+Repeat for `analysis/v*`, `toolsdk/v*`, and `cmd/go-finding/v*` as needed. Only tag a
 sub-module when it has meaningful changes since its previous tag.
 
 ### All modules at once (coordinated release)
@@ -118,9 +119,35 @@ workspace):
 git tag -a v1.3.0                 -m "Release v1.3.0"
 git tag -a pipeline/v1.3.0        -m "pipeline v1.3.0"
 git tag -a analysis/v1.3.0        -m "analysis v1.3.0"
+git tag -a toolsdk/v1.3.0         -m "toolsdk v1.3.0"   # when the SDK changes too
 git tag -a cmd/go-finding/v1.3.0  -m "cli v1.3.0"
-git push origin master --tags
+git push origin master
+git push origin v1.3.0 pipeline/v1.3.0 analysis/v1.3.0   # batches of ≤3, see below
+git push origin toolsdk/v1.3.0 cmd/go-finding/v1.3.0
 ```
+
+### Tag pushing: batches of ≤3
+
+A single `git push` that updates **more than three tags creates no workflow
+events**: at v1.9.0, pushing master + 4 release tags in one push silently
+skipped every Release trigger (no run, no error — detected only by absence).
+Always split tag pushes into batches of ≤3, or dispatch Release manually:
+
+```bash
+gh workflow run Release --ref vX.Y.Z   # dispatch if no run appeared
+```
+
+After a release train, **verify the Release run exists before assuming it
+does** (`gh run list --workflow=release.yml`); silence is the failure mode.
+
+### Queue, don't race, releases
+
+Do not manually dispatch Release "to be sure" without first checking whether
+the tag push already triggered it. At v1.9.2 a manual dispatch raced the
+auto-triggered run: two concurrent GoReleaser runs, one failed with a 422
+duplicate-asset error (the published release itself was fine — the red run was
+self-inflicted noise). Check `gh run list` first; if a run is queued/in
+progress, wait for it.
 
 ## Version Scheme
 

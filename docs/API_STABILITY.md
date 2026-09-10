@@ -297,6 +297,10 @@ All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migratio
 
 **v1.9.0** — `FlightRecorderConfig.MaxFiles` + `Compress` and config-file `maxFiles`/`compress` (pipeline); CLI `-trace-max-files`/`-trace-gzip`; rotation serialized against concurrent snapshots. Additive only.
 
+**v1.9.1 / v1.9.2** — Zero public API changes in any module (test robustness + release-pipeline fixes only).
+
+**v1.10.0** — Zero core-module API changes. Added the `toolsdk` sub-module (`toolsdk/v1.10.0`): `Spec`, `Trigger` constructors (`OnGoFiles`, `OnGoModule`, `OnFiles`, `AnyLanguage`), `Register`/`All`, `Repairer`/`RepairResult`, dry-run context helpers. Depends only on the core module.
+
 **Deterministic output guarantee** — All production JSON marshaling uses `encoding/json/v2` with `json.Deterministic(true)` (`marshalOpts`/`prettyMarshalOpts` in `json.go`), enforced by `scripts/json-deterministic-check.sh` in CI: byte-identical output for identical input across runs.
 
 **v1.6.0** — FlightRecorder config-file section (`FlightRecorderFileConfig`, `ResolveFlightRecorder`), CLI `flightRecorder` config section, 4 CI structural-check scripts, `docs-freshness.sh`, per-module CHANGELOGs, go-arch-lint boundary enforcement, LSP serialization benchmarks, flight recorder + path safety edge case tests.
