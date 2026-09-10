@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > [analysis/CHANGELOG.md](analysis/CHANGELOG.md),
 > [cmd/go-finding/CHANGELOG.md](cmd/go-finding/CHANGELOG.md).
 
+## [Unreleased]
+
+### Added
+
+- **Release workflow concurrency guard** — the Release workflow now runs under a
+  queueing concurrency group (`cancel-in-progress: false`), so a manual dispatch
+  can no longer race the tag-push auto-trigger into two concurrent GoReleaser
+  runs (the v1.9.2 422 duplicate-asset failure is now impossible by construction).
+- **Preflight unpushed-commits gate** — `release-preflight.sh` fails when commits
+  exist in `@{u}..HEAD` or the branch has no upstream, closing the gap that let
+  CI be dispatched twice against unpushed commits on 2026-09-08.
+- **Preflight worktree-hygiene gate** — fails on any git worktree registered
+  outside the repo (the /tmp strays that went unnoticed for two days) and on
+  prunable worktree registrations.
+- **Docs version-stamp guard** — `docs-api-check.sh` now requires the README
+  `finding.Version` example to exist and to match `version.go`, so the
+  current-version stamp can no longer silently lag a release (v1.9.1/v1.9.2
+  slipped this way).
+- **Preflight self-test covers `--post-tag` failure path** — the self-test
+  injects a missing tag in post-tag mode and asserts preflight FAILs; previously
+  only the happy path was proven.
+
+### Fixed
+
+- **flake.nix vendorHash refreshed** after the indirect dependency bumps
+  (`golang.org/x/net`, `golang.org/x/text`, `golang.org/x/tools`); the module
+  sums left half-tidied by that bump were completed with `go mod tidy`, and
+  `nix flake check` passes again.
+
 ## [1.10.0] - 2026-09-10
 
 No core-module code changes.

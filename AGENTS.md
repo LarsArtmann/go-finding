@@ -64,10 +64,18 @@ bash scripts/release-preflight.sh                                # Pre-tag struc
 ### Release preflight (mandatory before any tag)
 
 `scripts/release-preflight.sh` runs the structural gates as code (version drift,
-replace audit, tag collisions, clean tree, GOWORK=off builds, docs checks).
-Born from the v1.7.0 incident where sub-module go.mod files were tagged with a
-stale core reference because the checklist lived in the operator's head.
-`--bench`/`--stress` flags add the heavy gates.
+replace audit, tag collisions, clean tree, unpushed commits, worktree hygiene,
+GOWORK=off builds, docs checks incl. the README version stamp). Born from the
+v1.7.0 incident where sub-module go.mod files were tagged with a stale core
+reference because the checklist lived in the operator's head.
+`--bench`/`--stress` flags add the heavy gates. `scripts/release-preflight-selftest.sh`
+injects three failure classes (tag collision, version drift, post-tag missing
+tag) into a disposable worktree and asserts preflight FAILs on each.
+
+The Release workflow (`release.yml`) runs under a queueing concurrency group
+(`cancel-in-progress: false`), so a manual dispatch can no longer race the
+tag-push auto-trigger (v1.9.2 produced two concurrent GoReleaser runs, one 422
+duplicate-asset loser).
 
 ### Dead-gate lesson (2026-09-08: three in one day)
 
@@ -123,7 +131,8 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 - **pkg.go.dev is LIVE (2026-09-08 evening)** — https://pkg.go.dev/github.com/larsartmann/go-finding renders (v1.8.0, full docs); the temporary lychee `pkg.go.dev` exclude was REMOVED. Lychee now excludes only still-private sibling repos (remove entries as they go public) and CHANGELOG `v0.1.x` compare links (tags predate the v1.x scheme).
 - **Multi-module release tagging** — sub-modules need directory-prefixed tags (`pipeline/v*`, `analysis/v*`, `toolsdk/v*`, `cmd/go-finding/v*`); core uses unprefixed `v*`; sub-modules have no version.go. See `docs/release-procedure.md`.
 - **version-check.sh needs `--match 'v[0-9]*'`** — plain `git describe` picks sub-module tags alphabetically first. Any script resolving the core version from tags must use this flag.
-- **CI scripts guard the 5-module structure** — `replace-audit.sh`, `version-drift.sh`, `test-naming.sh`, `go-work-sync.sh`, `docs-freshness.sh` (backtick spans + links only), `docs-api-check.sh` (documented identifiers must exist in code), `json-deterministic-check.sh`, plus `go-arch-lint` (`.go-arch-lint.yml`, 11 components, one-directional flow cli->pipeline->core, analysis->core). All wired into ci.yml.
+- **CI scripts guard the 5-module structure** — `replace-audit.sh`, `version-drift.sh`, `test-naming.sh`, `go-work-sync.sh`, `docs-freshness.sh` (backtick spans + links only), `docs-api-check.sh` (documented identifiers must exist in code; README `finding.Version` stamp must exist and match version.go), `json-deterministic-check.sh`, plus `go-arch-lint` (`.go-arch-lint.yml`, 11 components, one-directional flow cli->pipeline->core, analysis->core). All wired into ci.yml.
+- **go.mod/go.sum bumps invalidate `flake.nix` `vendorHash`** — run `nix flake check` after any dependency change; a stale hash fails the go-modules fixed-output derivation with a `hash mismatch` (2026-09-10: indirect x/net, x/text, x/tools bumps stale-dated it; complete the bump with `go mod tidy` per module BEFORE updating the hash, or you iterate the bootstrap loop twice).
 - **Push release tags in batches of ≤3** — GitHub creates NO workflow events when a single push updates more than three tags; pushing all release tags + master at once silently skipped every Release trigger (discovered at v1.9.0: no auto run; manual `gh workflow run Release --ref vX.Y.Z` worked). Procedure: push master, then the tags split into pushes of ≤3, or dispatch Release manually.
 - **CI job runtime must fit its runner class** — before adding or retuning a CI job, state its expected runtime vs the runner (2-core public runners need ~45min for the count=10 benchmark job; a 15min cap silently cancelled it for a full session). A gate that times out is a dead gate.
 - **`gh -R` for all cross-repo operations** — local directory names lie after renames (e.g. `~/projects/hierarchical-errors` is erraudit's pre-rename remote; `gh issue create` there filed into erraudit twice). Always `gh -R owner/repo ...` and `gh repo view` before the first cross-repo write.

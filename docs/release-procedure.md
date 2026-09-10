@@ -9,11 +9,15 @@
    bash scripts/release-preflight.sh
    ```
 
-   It checks: clean tree, version.go parse, target tags not already taken,
-   version drift (go.mod references), replace directives, go.work sync, test
-   naming, JSON determinism, docs API references, docs freshness, and
-   GOWORK=off builds per module. Add `--bench` / `--stress` to also run the
-   benchmark and stress gates through it. **Do not tag until it passes.**
+   It checks: clean tree, unpushed commits (nothing in `@{u}..HEAD`; the branch
+   must have an upstream — tags and CI run against what GitHub has, not your
+   working copy), worktree hygiene (no stray or prunable worktrees outside the
+   repo), version.go parse, target tags not already taken, version drift
+   (go.mod references), replace directives, go.work sync, test naming, JSON
+   determinism, docs API references (including the README version stamp), docs
+   freshness, and GOWORK=off builds per module. Add `--bench` / `--stress` to
+   also run the benchmark and stress gates through it. **Do not tag until it
+   passes.**
 1. Verify all tests pass: `GOEXPERIMENT=jsonv2 go test -race -count=1 ./...`
 2. Verify lint passes: `GOEXPERIMENT=jsonv2 golangci-lint run ./...`
 3. Verify the flake: `nix flake check` (treefmt, package build, module isolation)
@@ -34,7 +38,10 @@
      on the core suite and never actually stressed anything (first observed
      publicly on run 34274674104 after the repo went public).
 5. Update `CHANGELOG.md` with release notes
-6. Update `version.go` (core module only)
+6. Update `version.go` (core module only) **and the README version stamp** —
+   the `fmt.Println(finding.Version) // "X.Y.Z"` example in README.md must
+   match version.go exactly; `docs-api-check.sh` (wired into preflight and CI)
+   fails on a stale or missing stamp (v1.9.1/v1.9.2 shipped while it lagged).
 7. **Full FEATURES.md walk** — read `FEATURES.md` end to end and verify every
    row's status against the code being released. The file is the honest feature
    inventory; a release must not ship with stale rows. Check in particular that

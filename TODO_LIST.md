@@ -12,20 +12,12 @@
 > v1.9.0–v1.9.2 released, v1.10.0 + `toolsdk/v1.10.0` released with 34-asset
 > GitHub Releases, pkg.go.dev renders (core + toolsdk verified), the stale
 > `/tmp` worktrees are removed, and the tag-batching/dispatch rules are now in
-> `docs/release-procedure.md`. Everything below is what actually remains.
+> `docs/release-procedure.md`. The former 🔴 HIGH "Release & CI integrity"
+> section (concurrency group, unpushed-commits gate, version-stamp guard,
+> post-tag self-test, worktree-hygiene gate, `nix flake check` follow-up) is
+> DONE — see CHANGELOG.md [Unreleased]. Everything below is what actually remains.
 
 ---
-
-## 🔴 HIGH Priority — Release & CI integrity
-
-| Task                                                          | Impact | Effort | Notes                                                                                                                                                                                                                                                        |
-| ------------------------------------------------------------- | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `release.yml` concurrency group (`cancel-in-progress: false`) | High   | Low    | Manual dispatch can still race the auto-trigger (v1.9.2 produced two concurrent GoReleaser runs, one 422 duplicate-asset loser). A queueing concurrency group makes duplicate triggers safe by construction. `.github/workflows/release.yml` has none today. |
-| Unpushed-commits check in `release-preflight.sh`              | High   | Low    | Preflight checks uncommitted but not `@{u}..HEAD`; the 2026-09-08 session dispatched CI twice against unpushed commits (~3 wasted runs). Add `git log @{u}..HEAD` guard (report §e/1).                                                                       |
-| Version-stamp completeness guard                              | Med    | Low    | The version-claim guard only catches claims BEYOND `version.go`; nothing requires FEATURES/README to mention the current version, so "latest" text can silently lag (v1.9.1/v1.9.2 slipped this way). Extend `scripts/docs-api-check.sh`.                    |
-| Preflight `--post-tag` failure-path test                      | Low    | Low    | Only the happy path executed; inject a missing tag and assert FAIL (report item 37).                                                                                                                                                                         |
-| Worktree-hygiene check (preflight mode or CI job)             | Low    | Low    | `git worktree list` strays in /tmp went unnoticed for 2 days; assert none in CI or preflight (report item 36). The strays themselves are now removed.                                                                                                        |
-| `nix flake check` after `.goreleaser.yml` changes             | Low    | Low    | Report item 49: verify the flake's vendored copy/vendorHash is unaffected when release config changes (next flake run closes it).                                                                                                                            |
 
 ## 🟠 HIGH-MED Priority — Consumer ecosystem
 
