@@ -5,4 +5,5 @@ use (
 	./analysis
 	./cmd/go-finding
 	./pipeline
+	./toolsdk
 )

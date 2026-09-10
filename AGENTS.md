@@ -18,9 +18,10 @@ Unix-style decomposition — each module does one thing well, composes via repla
 | **Core**     | `github.com/larsartmann/go-finding`                | go-error-family              | —              |
 | **Pipeline** | `github.com/larsartmann/go-finding/pipeline`       | x/sync, gogenfilter          | Core           |
 | **Analysis** | `github.com/larsartmann/go-finding/analysis`       | x/tools                      | Core           |
+| **Tool SDK** | `github.com/larsartmann/go-finding/toolsdk`        | —                            | Core           |
 | **CLI**      | `github.com/larsartmann/go-finding/cmd/go-finding` | yaml, go-output, gogenfilter | Core, Pipeline |
 
-`go.work` coordinates all 4 modules for development. Each sub-module has `replace` directives for `GOWORK=off` CI/consumer builds.
+`go.work` coordinates all 5 modules for development. Each sub-module has `replace` directives for `GOWORK=off` CI/consumer builds.
 
 ## Key Files
 
@@ -37,6 +38,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 | **Fix engine**      | `pipeline/fix_engine.go`, `pipeline/fix_provider.go`, `pipeline/fix_applier.go`, `pipeline/fix_outcome.go`, `pipeline/fix_edit.go`, `pipeline/conflict.go`, `pipeline/goast/provider.go`                                 |
 | **Pipeline extras** | `pipeline/stage_hook.go`, `pipeline/flight_recorder.go`, `pipeline/line_shift.go`, `pipeline/metrics.go`, `pipeline/retry.go`, `pipeline/partial.go`, `pipeline/generated_filter.go`                                     |
 | **Analysis**        | `analysis/analysis.go` (go/analysis ↔ Finding)                                                                                                                                                                           |
+| **Tool SDK**        | `toolsdk/spec.go` (Spec contract), `toolsdk/registry.go` (Register/All), `toolsdk/triggers.go` (Trigger constructors), `toolsdk/dryrun.go` — BuildFlow provider plugin contract (sub-module, see Module Dependencies)      |
 | **Detectors**       | `cmd/go-finding/internal/detectors/govet.go`, `staticcheck.go`, `helpers.go`                                                                                                                                             |
 | **CLI**             | `cmd/go-finding/main.go`, `config.go`, `registry.go`, `fix_provider_registry.go`, `generated_filter.go`, `output_adapter.go`                                                                                             |
 
@@ -84,6 +86,7 @@ the verdict line.
 | **Core** (`.`)              | go-error-family              | ginkgo/v2, gomega |
 | **Pipeline** (`pipeline/`)  | x/sync, gogenfilter          | ginkgo/v2, gomega |
 | **Analysis** (`analysis/`)  | x/tools                      | (stdlib testing)  |
+| **Tool SDK** (`toolsdk/`)   | — (core only)                | (stdlib testing)  |
 | **CLI** (`cmd/go-finding/`) | yaml, go-output, gogenfilter | gomega            |
 
 ### Old Dependencies (now isolated to sub-modules)

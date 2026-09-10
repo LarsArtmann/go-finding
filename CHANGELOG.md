@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No core-module changes yet.
 
+### Added
+
+- **`toolsdk` sub-module** (`github.com/larsartmann/go-finding/toolsdk`): the BuildFlow
+  provider plugin contract, migrated from `github.com/larsartmann/buildflow/tool-sdk`.
+  External tools declare a `Spec` (name, trigger, inputs, `Detect`/`Repair` via core
+  `finding` interfaces) and self-register at init; BuildFlow discovers them via `All()`
+  and converts each into a DAG provider. Depends only on the core module. First release:
+  `toolsdk/v1.10.0`, aligned with this root release.
+
 ## [1.9.2] - 2026-09-08
 
 Release-pipeline fix only: no code changes in any module.
