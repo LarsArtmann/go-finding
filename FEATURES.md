@@ -783,6 +783,8 @@ Binary: `go-finding`
 | `-trace`                  | `false` | Enable Go execution trace flight recorder for pipeline diagnostics  |
 | `-trace-dir`              | (none)  | Directory for trace snapshot files (default: temp dir)              |
 | `-trace-slow`             | `0`     | Auto-snapshot trace when a stage exceeds this duration (e.g. `30s`) |
+| `-trace-max-files`        | `0`     | Keep at most N trace snapshots; prunes oldest beyond the cap (v1.9.0) |
+| `-trace-gzip`             | `false` | Write `.trace.gz` compressed snapshots; gunzip for `go tool trace` (v1.9.0) |
 
 ### Config File (YAML/JSON)
 
