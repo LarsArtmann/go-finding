@@ -30,6 +30,7 @@
 | Opportunistic consumer bumps to v1.10.0                          | Low    | Med    | Additive since v1.8.0; no consumer is past v1.8.0 yet. Leads: go-linter-sdk, golangci-lint-auto-configure (report items 26/29). gomend + licenseforge stay blocked on their broken BuildFlow replace paths (issues #1/#46). |
 | Re-check library-policy after hook issue #74 resolves            | Low    | Low    | Verify the devShell hook healing stuck (report item 30).                                                                                                                                                                    |
 | Consumer compatibility matrix as CI job                          | Med    | Med    | Unblocked (repo public); validate the public promise mechanically (report item 42).                                                                                                                                         |
+| Tag missing v1.10.0 sub-module releases                          | High   | Low    | v1.10.0 released core + `toolsdk` only; `pipeline/v1.10.0`, `analysis/v1.10.0`, `cmd/go-finding/v1.10.0` do not exist, so proxy consumers cannot resolve those modules at v1.10.0. Tag per `docs/release-procedure.md` (push ≤3 tags per push). Local `cmd/go-finding` require already bumped to `pipeline v1.10.0` (2026-09-11, version-drift gate green). |
 
 ## 🟡 MEDIUM Priority — Testing & code quality
 
