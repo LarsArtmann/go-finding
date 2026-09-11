@@ -89,7 +89,11 @@ samber/oops REJECTED at 3/10 fit). NEVER interpret runs with
 flags contradict the model; the 79-violation reports they produce are
 artifacts. Intentional patterns carry `//nolint:erraudit // <reason>`;
 audit staleness with `erraudit nolint-audit .` from the repo root (the
-`./...` form silently scans nothing). CI wiring is blocked
+`./...` form silently scans nothing). `--no-suppress` surfaces those
+documented suppressions BY DESIGN (audit mode) — a run with
+`--no-suppress --enforce-samber-oops --enforce-generic-return` regenerates
+the ~79-violation artifact and proves nothing. Blessed invocation:
+`nix run .#error-audit`. CI wiring is blocked
 because the erraudit repo is private (no `go install` from public runners
 without credentials).
 

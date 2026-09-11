@@ -206,6 +206,25 @@ executable instead of prose.
 GOEXPERIMENT=jsonv2 erraudit ./... --type-aware   # per module; or ./scripts/error-audit.sh
 ```
 
+### Forensics: why the 79-violation report keeps recurring (2026-09-11, evening)
+
+The same artifact was re-run and re-reported twice after §9 landed. A/B evidence from
+the root module (post-fix code, suppressions present):
+
+| Invocation | Violations | Meaning |
+| ---------- | ---------- | ------- |
+| `--type-aware` (blessed) | **0** | real state |
+| `--type-aware --no-suppress` | 3 | documented suppressions resurface **by design** (audit mode) |
+| `--type-aware --enforce-samber-oops --enforce-generic-return` | 76 | both flags contradict the project's documented model |
+| `--no-suppress --enforce-samber-oops --enforce-generic-return` | 80 | the recurring paste (~79 reported) |
+
+Diagnosis: the flagged code in the recurring paste literally contains the
+`//nolint:erraudit` reason text, so the run had `--no-suppress`; the "project enforces
+samber/oops" wording proves `--enforce-samber-oops`. Neither flag reflects this
+project's policy. There is no erraudit config-file mechanism to pin policy in-repo
+(no config flag exists as of erraudit v0.4.0); the blessed path is
+`./scripts/error-audit.sh` / `nix run .#error-audit`.
+
 ---
 
 _Assisted-by: Crush_

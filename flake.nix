@@ -221,6 +221,13 @@
               art-dupl . -t 50 "$@"
             '';
 
+            error-audit =
+              mkApp "error-audit"
+                "Gate error-handling violations with erraudit (requires erraudit in PATH; see AGENTS.md)"
+                ''
+                  bash scripts/error-audit.sh "$@"
+                '';
+
             clean = mkApp "clean" "Clean build and test artifacts" ''
               export GOEXPERIMENT=jsonv2
               trash-put coverage.out 2>/dev/null || true
