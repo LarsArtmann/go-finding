@@ -71,7 +71,7 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 					rng,
 				) + ":" + randomSeedFile(
 					rng,
-				) + ":" + string(rune('A')+rune(rng.Intn(26)))), //nolint:gosec // test-only random character generation
+				) + ":" + string(rune('A')+rune(rng.Intn(26)))),
 				Severity: sevFromInt(rng.Intn(4)),
 			}
 		}
@@ -219,7 +219,7 @@ func TestProperty_FindingEqualTagOrderInvariant(t *testing.T) {
 		tagsB := make([]Tag, n)
 
 		for i := range tagsA {
-			tag := Tag(string(rune('a') + rune(rng.Intn(26)))) //nolint:gosec // test-only random character generation
+			tag := Tag(string(rune('a') + rune(rng.Intn(26))))
 			tagsA[i] = tag
 			tagsB[n-1-i] = tag
 		}

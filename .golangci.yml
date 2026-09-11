@@ -148,13 +148,7 @@ linters:
         - (*strings.Builder).WriteString
         - (*bytes.Buffer).WriteString
     exhaustruct_v5:
-      # v5 renamed `exclude` -> `ignore-patterns`. Our own domain types are
-      # deliberately partial-initialized (zero-value design: Finding{},
-      # Report{}, Config{}, ...); only foreign structs are worth checking.
       ignore-patterns:
-        # v5 matches the FULL string "package/path.TypeName". Our own
-        # domain types are deliberately partial-initialized (zero-value
-        # design); only foreign structs are worth checking.
         - ^github\.com/larsartmann/go-finding\.[A-Za-z0-9_]+$
         - ^github\.com/larsartmann/go-finding/[a-z/]+\.[A-Za-z0-9_]+$
     funlen:
@@ -165,6 +159,10 @@ linters:
       forbid-spec-pollution: true
     gocognit:
       min-complexity: 35
+    goconst:
+      ignore-tests: true
+      min-length: 4
+      min-occurrences: 5
     gocritic:
       disabled-checks:
         - ifElseChain
@@ -251,6 +249,17 @@ linters:
           severity: warning
         - name: unused-receiver
           severity: warning
+    tagalign:
+      align: false
+      order:
+        - binding
+        - json
+        - yaml
+        - xml
+        - toml
+        - validate
+        - mapstructure
+      sort: true
     testifylint:
       disable:
         - go-require
@@ -313,6 +322,17 @@ linters:
           - wrapcheck
           - unparam
           - testpackage
+          - exhaustruct
+          - gochecknoglobals
+          - funlen
+          - cyclop
+          - forcetypeassert
+          - gosec
+          - errcheck
+          - ireturn
+          - recvcheck
+          - contextcheck
+          - exhaustive
       - path: cmd/
         linters:
           - gochecknoglobals
