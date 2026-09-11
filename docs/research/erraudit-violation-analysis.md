@@ -185,7 +185,7 @@ executable instead of prose.
 | **3 false positives suppressed** | `id.go` hash writes ×2 and `errors.go` `AsType` ok-pattern now carry `//nolint:erraudit` with a reason (verified: still false positives on current code) |
 | **3 CRITICAL context_loss FIXED** | `pipeline/file_backup.go` (backup dir now carried via `ioErrorAt`), `pipeline/pipeline.go` ×2 (`rootDir=%q` added to validate-config and fix-applier errors) |
 | **2 legacy `errors.As` migrated** | `cmd/go-finding/internal/detectors/{govet,staticcheck}.go` → `errors.AsType[*exec.ExitError]` (the genuine Go 1.26 modernization) |
-| **Intentional patterns documented** | 16 `//nolint:erraudit // <reason>` directives on verified-intentional sites (deferred cleanup, error-path secondary closes, best-effort CLI output, partial-results `g.Wait()`, invalid-edit skip, external-tool JSON tolerance) |
+| **Intentional patterns documented** | 24 `//nolint:erraudit // <reason>` directives on verified-intentional sites (deferred cleanup, error-path secondary closes, best-effort CLI output, partial-results `g.Wait()`, invalid-edit skip, external-tool JSON tolerance, `AsType` ok-patterns) |
 | **Gate script added** | `scripts/error-audit.sh` — runs `erraudit ./... --type-aware` in all 5 modules, prints per-module violation counts and an explicit OK/FAIL verdict; FAIL path verified by injecting a violation (exit 1) and re-verifying clean (exit 0) |
 | **generic_return warnings: intentionally not applied** | All 21 come from `--enforce-generic-return`, which erraudit itself ships off by default ("returning error is standard Go practice"). Bespoke error types for every formatter/helper would be non-idiomatic; the domain boundary already returns `*FindingError`. |
 
@@ -196,7 +196,9 @@ executable instead of prose.
   fetch it from a public-repo runner without credentials. Reintroducing
   `GOPRIVATE`/token plumbing was deliberately avoided (it was removed when this repo
   went public). Revisit when erraudit is public or a fine-grained token is acceptable.
-- Suppression hygiene: `erraudit nolint-audit ./...` reports stale directives.
+- Suppression hygiene: `erraudit nolint-audit .` from the repo root reports stale
+  directives (verified 2026-09-11: 27 needed, 0 stale). NOTE: the `./...` form
+  silently scans nothing — always pass `.`.
 
 ### Canonical invocation (repeat of section 7)
 

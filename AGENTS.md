@@ -88,7 +88,8 @@ samber/oops REJECTED at 3/10 fit). NEVER interpret runs with
 `--enforce-samber-oops`/`--enforce-generic-return` as defect lists — those
 flags contradict the model; the 79-violation reports they produce are
 artifacts. Intentional patterns carry `//nolint:erraudit // <reason>`;
-audit staleness with `erraudit nolint-audit ./...`. CI wiring is blocked
+audit staleness with `erraudit nolint-audit .` from the repo root (the
+`./...` form silently scans nothing). CI wiring is blocked
 because the erraudit repo is private (no `go install` from public runners
 without credentials).
 

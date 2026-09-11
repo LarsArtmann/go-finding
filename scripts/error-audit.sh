@@ -4,7 +4,8 @@
 # Runs erraudit (github.com/larsartmann/erraudit) with --type-aware in every
 # module of the workspace and fails on any violation. Intentional patterns are
 # suppressed in code via //nolint:erraudit directives WITH a reason; audit the
-# directives for staleness with: erraudit nolint-audit ./...
+# directives for staleness with: erraudit nolint-audit .
+# (from the repo root — the ./... form silently scans nothing)
 #
 # Do NOT add --enforce-samber-oops, --enforce-go-error-family, or
 # --enforce-generic-return here: those flags contradict this project's
