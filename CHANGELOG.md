@@ -34,6 +34,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Error-handling hardening — erraudit gate now 0 violations across all 5 modules** —
+  fixed 3 critical context-loss errors (`FileBackup` backup-dir failures now carry
+  the directory via `ioErrorAt`; `NewPipeline` config-validation and fix-applier
+  failures now include `rootDir`), migrated the govet/staticcheck detectors from
+  `errors.As` to `errors.AsType`, and documented 27 intentional patterns with
+  reasoned `//nolint:erraudit` directives (`nolint-audit`: 0 stale).
+- **New gate: `scripts/error-audit.sh`** — runs the erraudit hierarchical
+  error-handling analyzer in every module with an explicit OK/FAIL verdict;
+  the FAIL path is proven by injected-violation self-test. Policy and the
+  samber/oops rejection are documented in
+  `docs/research/erraudit-violation-analysis.md` §9. CI wiring is blocked
+  until the erraudit repository is public.
+- **Version drift fixed** — `cmd/go-finding` now requires `pipeline v1.10.0`
+  (the v1.10.0 release bumped sub-module requires on master but missed this
+  one); alignment tags `pipeline/v1.10.0`, `analysis/v1.10.0`, and
+  `cmd/go-finding/v1.10.0` created at master (push pending, ≤3-per-push rule).
 - **flake.nix vendorHash refreshed** after the indirect dependency bumps
   (`golang.org/x/net`, `golang.org/x/text`, `golang.org/x/tools`); the module
   sums left half-tidied by that bump were completed with `go mod tidy`, and
