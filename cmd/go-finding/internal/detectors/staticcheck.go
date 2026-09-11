@@ -22,7 +22,10 @@ func NewStaticcheckDetector(dir string) pipeline.Detector {
 
 			out, err := cmd.Output()
 			if err != nil {
-				if _, ok := errors.AsType[*exec.ExitError](err); ok && len(out) > 0 { //nolint:erraudit // ok-pattern type assertion
+				if _, ok := errors.AsType[*exec.ExitError](
+					err,
+				); ok &&
+					len(out) > 0 { //nolint:erraudit // ok-pattern type assertion
 					return parseStaticcheckJSON(out, dir), nil
 				}
 

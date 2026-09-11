@@ -303,7 +303,10 @@ func outputText(w io.Writer, report *finding.Report) {
 	findings := report.FindingsSnapshot()
 
 	if len(findings) == 0 {
-		_, _ = fmt.Fprintln(w, "No findings.") //nolint:erraudit // best-effort terminal output; outputText has no error return
+		_, _ = fmt.Fprintln(
+			w,
+			"No findings.",
+		) //nolint:erraudit // best-effort terminal output; outputText has no error return
 
 		return
 	}

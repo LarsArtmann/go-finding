@@ -54,6 +54,7 @@ golangci-lint run ./...                     # Lint
 bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark regression check
 bash scripts/version-check.sh                                    # Verify version.go matches git tag
 bash scripts/release-preflight.sh                                # Pre-tag structural gate (see below)
+bash scripts/error-audit.sh                                      # erraudit gate: error-handling violations, all 5 modules (see below)
 ```
 
 > **GOEXPERIMENT=jsonv2 required.** The project imports `encoding/json/v2`.
@@ -76,6 +77,20 @@ The Release workflow (`release.yml`) runs under a queueing concurrency group
 (`cancel-in-progress: false`), so a manual dispatch can no longer race the
 tag-push auto-trigger (v1.9.2 produced two concurrent GoReleaser runs, one 422
 duplicate-asset loser).
+
+### erraudit gate (2026-09-11)
+
+`bash scripts/error-audit.sh` runs `erraudit ./... --type-aware` (hierarchical
+error-handling analyzer) in all 5 modules; 0 violations is the green state.
+Policy: sentinel errors (`errors.New`) + `*FindingError` + stdlib `fmt.Errorf`
+wrapping are the documented model (docs/research/erraudit-violation-analysis.md;
+samber/oops REJECTED at 3/10 fit). NEVER interpret runs with
+`--enforce-samber-oops`/`--enforce-generic-return` as defect lists — those
+flags contradict the model; the 79-violation reports they produce are
+artifacts. Intentional patterns carry `//nolint:erraudit // <reason>`;
+audit staleness with `erraudit nolint-audit ./...`. CI wiring is blocked
+because the erraudit repo is private (no `go install` from public runners
+without credentials).
 
 ### Dead-gate lesson (2026-09-08: three in one day)
 
