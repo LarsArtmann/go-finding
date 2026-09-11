@@ -199,6 +199,6 @@ func writeLenField(h io.Writer, field string) {
 	// Strings exceeding 4GB are impossible in practice.
 	binary.BigEndian.PutUint32(buf[:], uint32(len(field))) //nolint:gosec
 
-	_, _ = h.Write(buf[:])
-	_, _ = h.Write([]byte(field))
+	_, _ = h.Write(buf[:])     //nolint:erraudit // hash.Write is documented to never return an error
+	_, _ = h.Write([]byte(field)) //nolint:erraudit // hash.Write is documented to never return an error
 }

@@ -159,7 +159,7 @@ func NewInternalError(message string, cause error) *FindingError {
 
 // IsFindingError returns true if err is a *FindingError.
 func IsFindingError(err error) bool {
-	_, ok := errors.AsType[*FindingError](err)
+	_, ok := errors.AsType[*FindingError](err) //nolint:erraudit // ok-pattern type assertion; first return is a value, not an ignored error
 
 	return ok
 }
