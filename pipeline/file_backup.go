@@ -69,7 +69,7 @@ func (fb *FileBackup) Backup(path string) error {
 	if err != nil {
 		return ioErrorAt("open file for backup", err, path)
 	}
-	defer func() { _ = f.Close() }()
+	defer func() { _ = f.Close() }() //nolint:erraudit // read-only handle; Close error cannot affect the backup already taken
 
 	data, err := io.ReadAll(f)
 	if err != nil {
@@ -88,7 +88,7 @@ func (fb *FileBackup) Backup(path string) error {
 
 	err = os.MkdirAll(fb.backupDir, 0o750)
 	if err != nil {
-		return finding.NewIOError("create backup dir", err)
+		return ioErrorAt("create backup dir", err, fb.backupDir)
 	}
 
 	err = os.WriteFile(

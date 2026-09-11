@@ -60,7 +60,7 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 
 	err = config.Validate()
 	if err != nil {
-		return nil, fmt.Errorf("validate config (detectors=%d): %w", len(detectors), err)
+		return nil, fmt.Errorf("validate config (rootDir=%q, detectors=%d): %w", rootDir, len(detectors), err)
 	}
 
 	// Create FixApplier eagerly so errors are caught early.
@@ -71,7 +71,7 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("init fix applier: %w", err)
+		return nil, fmt.Errorf("init fix applier (rootDir=%q): %w", rootDir, err)
 	}
 
 	if config.FixRollbackAllFiles {
@@ -164,7 +164,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	defer func() {
 		if p.applier != nil {
-			_ = p.applier.Close()
+			_ = p.applier.Close() //nolint:erraudit // best-effort deferred cleanup
 			p.applier = nil
 		}
 

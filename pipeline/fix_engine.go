@@ -253,7 +253,7 @@ func (*FixEngine) applyEditsWithConflicts(
 	// a single-pass application in Phase 2.
 	for _, edit := range edits {
 		err := edit.Validate()
-		if err != nil {
+		if err != nil { //nolint:erraudit // invalid edits are intentionally excluded from application
 			continue
 		}
 

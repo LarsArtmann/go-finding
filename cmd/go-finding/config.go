@@ -303,18 +303,18 @@ func outputText(w io.Writer, report *finding.Report) {
 	findings := report.FindingsSnapshot()
 
 	if len(findings) == 0 {
-		_, _ = fmt.Fprintln(w, "No findings.")
+		_, _ = fmt.Fprintln(w, "No findings.") //nolint:erraudit // best-effort terminal output; outputText has no error return
 
 		return
 	}
 
 	if err := finding.FormatText(w, findings); err != nil {
-		_, _ = fmt.Fprintf(w, "warning: %v\n", err)
+		_, _ = fmt.Fprintf(w, "warning: %v\n", err) //nolint:erraudit // best-effort terminal output
 	}
 
-	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(findings))
+	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(findings)) //nolint:erraudit // best-effort terminal output
 	if report.Summary.Total > 0 {
-		_, _ = fmt.Fprintf(
+		_, _ = fmt.Fprintf( //nolint:erraudit // best-effort terminal output
 			w, "  By severity: %d info, %d warning, %d error, %d critical\n",
 			report.Summary.BySeverity[finding.SeverityInfo],
 			report.Summary.BySeverity[finding.SeverityWarning],
