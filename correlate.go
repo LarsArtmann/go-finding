@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"cmp"
 	"fmt"
 	"maps"
 	"slices"
@@ -169,7 +170,7 @@ func correlateByOverlap(findings []Finding, correlations []Correlation) []Correl
 // correlateByProximity uses line-proximity heuristics for point-based findings.
 func correlateByProximity(findings []Finding, correlations []Correlation) []Correlation {
 	slices.SortFunc(findings, func(a, b Finding) int {
-		return a.Position.Line - b.Position.Line
+		return cmp.Compare(a.Position.Line, b.Position.Line)
 	})
 
 	for i, f1 := range findings {
