@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestToLSP(t *testing.T) { //nolint:gocognit,funlen // comprehensive table-driven test
+func TestToLSP(t *testing.T) { //nolint:gocognit // comprehensive table-driven test
 	t.Parallel()
 
 	t.Run("with range", func(t *testing.T) {

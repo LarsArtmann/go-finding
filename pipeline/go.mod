@@ -20,7 +20,7 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20260604005048-7023385849c0 // indirect
-	github.com/larsartmann/go-error-family v0.10.0 // indirect
+	github.com/larsartmann/go-error-family v0.10.1 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
