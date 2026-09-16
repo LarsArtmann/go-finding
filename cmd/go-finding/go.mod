@@ -31,8 +31,3 @@ require (
 	golang.org/x/term v0.46.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
 )
-
-replace (
-	github.com/larsartmann/go-finding => ../..
-	github.com/larsartmann/go-finding/pipeline => ../../pipeline
-)

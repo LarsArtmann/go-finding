@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
-# Verifies all sub-module replace directives point at correct relative paths.
+# Verifies sub-module replace directives:
+#   - library sub-modules (analysis, pipeline, toolsdk) MUST point at the
+#     correct relative core path (GOWORK=off builds resolve local source),
+#   - cmd/go-finding must have NO replace directives: Go refuses
+#     `go install module@version` when the target module's go.mod carries
+#     replaces, and the README promises that install path.
 # Usage: ./scripts/replace-audit.sh
-# Fails with exit code 1 if any replace directive is missing or points to the wrong path.
+# Fails with exit code 1 if any replace directive is missing, points to the
+# wrong path, or appears in cmd/go-finding.
 
 set -euo pipefail
 
@@ -20,12 +26,21 @@ check_replace() {
 	fi
 }
 
+check_no_replace() {
+	local modfile="$1"
+
+	if grep -qE '^replace |^\treplace ' "$modfile"; then
+		echo "ERROR: $modfile must not contain replace directives (breaks go install module@version)"
+		ERRORS=$((ERRORS + 1))
+	fi
+}
+
 echo "Checking replace directives..."
 
 check_replace "analysis/go.mod" "github.com/larsartmann/go-finding" "../"
 check_replace "pipeline/go.mod" "github.com/larsartmann/go-finding" "../"
-check_replace "cmd/go-finding/go.mod" "github.com/larsartmann/go-finding" "../.."
-check_replace "cmd/go-finding/go.mod" "github.com/larsartmann/go-finding/pipeline" "../../pipeline"
+check_replace "toolsdk/go.mod" "github.com/larsartmann/go-finding" "../"
+check_no_replace "cmd/go-finding/go.mod"
 
 if [ "$ERRORS" -gt 0 ]; then
 	echo "FAIL: $ERRORS replace directive issue(s) found."
