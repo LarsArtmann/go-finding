@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+## [1.11.0] - 2026-09-17
+
+### Added
+
 - **Release workflow concurrency guard** — the Release workflow now runs under a
   queueing concurrency group (`cancel-in-progress: false`), so a manual dispatch
   can no longer race the tag-push auto-trigger into two concurrent GoReleaser
@@ -34,6 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Integer underflow in correlation proximity sorting** — `correlateByProximity`
+  computed line deltas with subtraction (`a.Line - b.Line`), which wraps for
+  negative deltas under wide line ranges and silently mis-sorts correlated
+  findings. Replaced with `cmp.Compare` (8a9b7c8); ordering is pinned by test.
 - **Error-handling hardening — erraudit gate now 0 violations across all 5 modules** —
   fixed 3 critical context-loss errors (`FileBackup` backup-dir failures now carry
   the directory via `ioErrorAt`; `NewPipeline` config-validation and fix-applier

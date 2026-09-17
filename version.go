@@ -6,7 +6,7 @@ import "fmt"
 const VersionMajor = 1
 
 // VersionMinor is the minor version number.
-const VersionMinor = 10
+const VersionMinor = 11
 
 // VersionPatch is the patch version number.
 const VersionPatch = 0

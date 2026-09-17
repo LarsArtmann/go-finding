@@ -5,8 +5,8 @@ go 1.26.7
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.6.0
 	github.com/go-faster/yaml v0.4.6
-	github.com/larsartmann/go-finding v1.10.0
-	github.com/larsartmann/go-finding/pipeline v1.10.0
+	github.com/larsartmann/go-finding v1.11.0
+	github.com/larsartmann/go-finding/pipeline v1.11.0
 	github.com/larsartmann/go-output v0.38.0
 	github.com/larsartmann/go-output/delimited v0.38.0
 	github.com/larsartmann/go-output/markdown v0.38.0

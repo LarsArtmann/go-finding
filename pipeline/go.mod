@@ -4,7 +4,7 @@ go 1.26.7
 
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.6.0
-	github.com/larsartmann/go-finding v1.10.0
+	github.com/larsartmann/go-finding v1.11.0
 	github.com/onsi/ginkgo/v2 v2.32.1
 	github.com/onsi/gomega v1.43.0
 	golang.org/x/sync v0.23.0
@@ -21,6 +21,7 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20260604005048-7023385849c0 // indirect
 	github.com/larsartmann/go-error-family v0.10.1 // indirect
+	github.com/larsartmann/go-finding/pipeline v1.11.0
 	github.com/segmentio/asm v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
