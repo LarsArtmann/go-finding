@@ -38,6 +38,10 @@ type Pipeline struct {
 	callbackMu sync.Mutex  // protects OnFinding from parallel goroutines
 	applier    *FixApplier // reused across iterations
 	ran        bool        // prevents multiple Run calls
+	// outcomeKeys tracks finding identities already recorded in
+	// PipelineResult.Outcomes, deduplicating artifact repeats from
+	// re-detection after an applied fix.
+	outcomeKeys map[string]struct{}
 }
 
 // New creates a new Pipeline with the given configuration.
@@ -155,6 +159,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	p.ran = true
 	p.findings = p.findings[:0]
 	p.iterations = 0
+	p.outcomeKeys = nil
 
 	if p.metrics != nil {
 		p.metrics.SetStart(time.Now())

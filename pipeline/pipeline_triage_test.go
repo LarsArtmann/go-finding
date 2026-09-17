@@ -51,7 +51,7 @@ func TestApplyDirectFixes(t *testing.T) {
 
 	p.applier, _ = NewFixApplier(tempDir)
 
-	applied, _, err := p.applyDirectFixes(context.Background(), fixes)
+	applied, _, err := p.applyDirectFixes(context.Background(), fixes, &PipelineResult{})
 	if err != nil {
 		t.Fatalf("applyDirectFixes: %v", err)
 	}
@@ -92,7 +92,7 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 		t.Fatalf("create fix applier: %v", err)
 	}
 
-	applied, _, err := p.applyDirectFixes(context.Background(), fixes)
+	applied, _, err := p.applyDirectFixes(context.Background(), fixes, &PipelineResult{})
 	if err != nil {
 		t.Fatalf("applyDirectFixes: %v", err)
 	}

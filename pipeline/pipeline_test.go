@@ -864,3 +864,127 @@ func TestOnFixOutcome_ConcurrentPipelines(t *testing.T) {
 		g.Expect(n).To(Equal(1), "OnFix fired %d times for %s", n, id)
 	}
 }
+
+// TestPipelineResult_Outcomes_DeduplicatesRedetectedFindings pins the
+// PipelineResult.Outcomes contract: with re-detection after an applied fix,
+// the same finding re-fires and refuses on the already-fixed content, so the
+// result keeps only the first outcome per finding identity while the
+// OnFixOutcome callback still observes every repeat as it happens.
+func TestPipelineResult_Outcomes_DeduplicatesRedetectedFindings(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+	writeTestFile(t, testFile, []byte("package main\n\nfunc main() {\n\told()\n}\n"))
+
+	// The static mock detector re-emits the same finding every iteration.
+	fix := directFix("dedup-1", "r1", "tool", "replace old", "old()", "new()", "fixme.go", 4)
+
+	type callback struct {
+		status FixOutcomeStatus
+	}
+	var callbacks []callback
+
+	cfg := Config{
+		MaxIterations:     2,
+		ParallelDetectors: false,
+		OnFixOutcome: func(_ finding.Finding, status FixOutcomeStatus, _ error) {
+			callbacks = append(callbacks, callback{status: status})
+		},
+	}
+
+	p, err := New(cfg, tmpDir, mockDetWithFindings("tool", fix))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	g.Expect(result.TotalIterations).To(Equal(2), "setup: re-detection must occur")
+
+	statuses := make([]FixOutcomeStatus, 0, len(callbacks))
+	for _, c := range callbacks {
+		statuses = append(statuses, c.status)
+	}
+	g.Expect(statuses).To(Equal([]FixOutcomeStatus{FixOutcomeApplied, FixOutcomeRefused}),
+		"callback sees the raw per-iteration outcomes: applied, then the artifact refusal")
+
+	g.Expect(result.Outcomes).To(HaveLen(1),
+		"artifact repeats from re-detection must be deduplicated from the result")
+	g.Expect(result.Outcomes[0].Finding.ID).To(Equal(finding.ID("dedup-1")))
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeApplied),
+		"first outcome wins: the applied result, not the artifact refusal")
+	g.Expect(result.Outcomes[0].Err).To(BeNil())
+}
+
+// TestPipelineResult_Outcomes_PopulatedWithoutCallback verifies the result
+// field is populated even when no OnFixOutcome callback is configured —
+// collecting outcomes must not require callback plumbing.
+func TestPipelineResult_Outcomes_PopulatedWithoutCallback(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+	writeTestFile(t, testFile, []byte("package main\n\nfunc main() {\n\told()\n}\n"))
+
+	appliedFix := directFix("res-applied", "r1", "tool", "replace old", "old()", "new()", "fixme.go", 4)
+	refusedFix := directFix("res-refused", "r1", "tool", "absent", "nonexistent", "new()", "fixme.go", 5)
+
+	cfg := Config{
+		MaxIterations:     1,
+		ParallelDetectors: false,
+	}
+
+	p, err := New(cfg, tmpDir, mockDetWithFindings("tool", appliedFix, refusedFix))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	byID := make(map[finding.ID]FixOutcomeStatus, len(result.Outcomes))
+	for _, o := range result.Outcomes {
+		byID[o.Finding.ID] = o.Status
+	}
+
+	g.Expect(byID).To(HaveLen(2), "one outcome per finding")
+	g.Expect(byID[finding.ID("res-applied")]).To(Equal(FixOutcomeApplied))
+	g.Expect(byID[finding.ID("res-refused")]).To(Equal(FixOutcomeRefused))
+}
+
+// TestPipelineResult_Outcomes_EmptyInDryRun verifies DryRun mode leaves
+// PipelineResult.Outcomes empty: no fix application runs, so no outcomes
+// are recorded.
+func TestPipelineResult_Outcomes_EmptyInDryRun(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "fixme.go")
+	writeTestFile(t, testFile, []byte("package main\n\nfunc main() {\n\told()\n}\n"))
+
+	fix := directFix("dry-1", "r1", "tool", "replace old", "old()", "new()", "fixme.go", 4)
+
+	cfg := Config{
+		MaxIterations:     1,
+		ParallelDetectors: false,
+		DryRun:            true,
+	}
+
+	p, err := New(cfg, tmpDir, mockDetWithFindings("tool", fix))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	result, err := p.Run(context.Background())
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	g.Expect(result.Outcomes).To(BeEmpty())
+}

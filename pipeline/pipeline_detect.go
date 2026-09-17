@@ -235,7 +235,7 @@ func (p *Pipeline) applyTriage(
 		return nil
 	}
 
-	applied, shiftMaps, err := p.applyDirectFixes(ctx, safeFixes)
+	applied, shiftMaps, err := p.applyDirectFixes(ctx, safeFixes, result)
 	if err != nil {
 		return fmt.Errorf("apply fixes: %w", err)
 	}
@@ -288,10 +288,12 @@ func shiftFindingSlice(findings []finding.Finding, file string, shiftMap *LineSh
 
 // applyDirectFixes applies deterministic fixes to files and returns the applied findings
 // and a per-file line shift map for updating remaining findings' line numbers.
-// Per-finding outcomes are recorded in the pipeline metrics.
+// Per-finding outcomes are recorded in the pipeline metrics and in
+// result.Outcomes (first outcome per finding identity).
 func (p *Pipeline) applyDirectFixes(
 	ctx context.Context,
 	fixes []finding.Finding,
+	result *PipelineResult,
 ) ([]finding.Finding, map[string]*LineShiftMap, error) {
 	report, err := p.applier.ApplyWithReport(ctx, fixes)
 
@@ -307,6 +309,8 @@ func (p *Pipeline) applyDirectFixes(
 		}
 	}
 
+	p.recordFixOutcomes(result, report.Outcomes)
+
 	if err != nil {
 		return nil, nil, err
 	}
@@ -316,6 +320,28 @@ func (p *Pipeline) applyDirectFixes(
 	}
 
 	return report.AppliedFixes, report.ShiftMaps, nil
+}
+
+// recordFixOutcomes appends outcomes to result.Outcomes, keeping only the
+// first outcome per finding identity (Finding.Key). When re-detection
+// re-fires a finding whose fix already applied, the repeat refuses on the
+// fixed content — the first outcome is the meaningful one, so repeats are
+// dropped. Unlike the OnFixOutcome callback, which fires for every outcome
+// as it happens, the result field is the deduplicated record.
+func (p *Pipeline) recordFixOutcomes(result *PipelineResult, outcomes []FixOutcome) {
+	for _, o := range outcomes {
+		key := o.Finding.Key()
+		if _, seen := p.outcomeKeys[key]; seen {
+			continue
+		}
+
+		if p.outcomeKeys == nil {
+			p.outcomeKeys = make(map[string]struct{}, len(outcomes))
+		}
+
+		p.outcomeKeys[key] = struct{}{}
+		result.Outcomes = append(result.Outcomes, o)
+	}
 }
 
 // byteConflictEngine returns a FixEngine with custom providers if configured,

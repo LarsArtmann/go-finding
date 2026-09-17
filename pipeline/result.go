@@ -38,6 +38,14 @@ type PipelineResult struct {
 	// Correlations holds cross-tool finding correlations when
 	// Config.CorrelateFindings is enabled.
 	Correlations []finding.Correlation
+	// Outcomes holds the per-finding fix outcomes across all iterations,
+	// first outcome per finding identity. With re-detection after an
+	// applied fix, the same finding re-fires and refuses on the
+	// already-fixed content — later repeats are artifacts, so only the
+	// first outcome is kept. Populated alongside Config.OnFixOutcome
+	// whenever fix application ran; empty in DryRun mode or when nothing
+	// was fixable.
+	Outcomes []FixOutcome
 }
 
 // Stable reports whether the pipeline reached a clean state (no findings).
