@@ -72,15 +72,10 @@ func TestRegisterLinterCategory(t *testing.T) {
 	t.Parallel()
 
 	// Parallel tests assert built-in lookups against the shared
-	// DefaultLinterRegistry, so this test registers only a name unique to
-	// itself — mutating "govet" here raced TestCategoryForLinter under
-	// repeat=20 stress (the override path is identical map assignment, so
-	// overriding our own registration covers the same code path).
+	// DefaultLinterRegistry, which also persists across -count iterations,
+	// so the global function is pinned with a unique name and no pre-state
+	// assertion; override-with-known-prestate runs on an isolated registry.
 	const uniqueLinter = "test-register-linter-category-unique"
-
-	if got := CategoryForLinter(uniqueLinter); got != CategoryCorrectness {
-		t.Fatalf("unregistered linter: CategoryForLinter(%q) = %q, want fallback %q", uniqueLinter, got, CategoryCorrectness)
-	}
 
 	RegisterLinterCategory(uniqueLinter, CategorySecurity)
 
@@ -88,10 +83,12 @@ func TestRegisterLinterCategory(t *testing.T) {
 		t.Errorf("after registration: CategoryForLinter(%q) = %q, want %q", uniqueLinter, got, CategorySecurity)
 	}
 
-	RegisterLinterCategory(uniqueLinter, CategoryStyle)
+	r := &LinterRegistry{}
+	r.Register("govet", CategoryCorrectness)
+	r.Register("govet", CategorySecurity)
 
-	if got := CategoryForLinter(uniqueLinter); got != CategoryStyle {
-		t.Errorf("after override: CategoryForLinter(%q) = %q, want %q", uniqueLinter, got, CategoryStyle)
+	if got := r.Lookup("govet", CategoryCorrectness); got != CategorySecurity {
+		t.Errorf("after override: Lookup(%q) = %q, want %q", "govet", got, CategorySecurity)
 	}
 }
 
