@@ -486,7 +486,7 @@ This project follows [Semantic Versioning](https://semver.org/). The API has bee
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "1.11.0"
+fmt.Println(finding.Version) // "1.12.0"
 ```
 
 ## Documentation

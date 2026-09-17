@@ -1182,7 +1182,7 @@ The module depends only on the core module. Evidence: `toolsdk/spec.go`,
 | GroupID validation                           | FULLY_FUNCTIONAL     | `GroupID.IsValid()`: machine-safe identifiers, enforced by `Validate()` (v1.8.0)                    |
 | Sorted finding groups                        | FULLY_FUNCTIONAL     | `Report.GroupFindingsSorted()` + `Group`; `Template.WithGroupID` (v1.8.0)                           |
 | Fix outcome callback                         | FULLY_FUNCTIONAL     | `Config.OnFixOutcome` status callback; `OnFix` deprecated (v1.8.0)                                  |
-| Result-level fix outcomes                    | FULLY_FUNCTIONAL     | `PipelineResult.Outcomes`: deduped first-outcome-per-finding record (post-v1.11.0)                  |
+| Result-level fix outcomes                    | FULLY_FUNCTIONAL     | `PipelineResult.Outcomes`: deduped first-outcome-per-finding record (v1.12.0)                       |
 | Dry-run fix planning                         | FULLY_FUNCTIONAL     | `FixApplier.ApplyDryRun`: full ApplyReport, zero writes (v1.8.0)                                    |
 | Unsafe-path outcome surfacing                | FULLY_FUNCTIONAL     | Traversal findings become `failed` outcomes instead of silent drops (v1.8.0)                        |
 | staticcheck fix extension                    | FULLY_FUNCTIONAL     | Optional `before`/`after` JSON fields make findings auto-fixable (v1.8.0)                           |
