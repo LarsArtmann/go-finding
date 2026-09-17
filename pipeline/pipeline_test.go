@@ -880,16 +880,13 @@ func TestPipelineResult_Outcomes_DeduplicatesRedetectedFindings(t *testing.T) {
 	// The static mock detector re-emits the same finding every iteration.
 	fix := directFix("dedup-1", "r1", "tool", "replace old", "old()", "new()", "fixme.go", 4)
 
-	type callback struct {
-		status FixOutcomeStatus
-	}
-	var callbacks []callback
+	var callbackStatuses []FixOutcomeStatus
 
 	cfg := Config{
 		MaxIterations:     2,
 		ParallelDetectors: false,
 		OnFixOutcome: func(_ finding.Finding, status FixOutcomeStatus, _ error) {
-			callbacks = append(callbacks, callback{status: status})
+			callbackStatuses = append(callbackStatuses, status)
 		},
 	}
 
@@ -904,12 +901,7 @@ func TestPipelineResult_Outcomes_DeduplicatesRedetectedFindings(t *testing.T) {
 	}
 
 	g.Expect(result.TotalIterations).To(Equal(2), "setup: re-detection must occur")
-
-	statuses := make([]FixOutcomeStatus, 0, len(callbacks))
-	for _, c := range callbacks {
-		statuses = append(statuses, c.status)
-	}
-	g.Expect(statuses).To(Equal([]FixOutcomeStatus{FixOutcomeApplied, FixOutcomeRefused}),
+	g.Expect(callbackStatuses).To(Equal([]FixOutcomeStatus{FixOutcomeApplied, FixOutcomeRefused}),
 		"callback sees the raw per-iteration outcomes: applied, then the artifact refusal")
 
 	g.Expect(result.Outcomes).To(HaveLen(1),

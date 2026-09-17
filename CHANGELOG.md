@@ -14,7 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Nothing yet.
+- **`PipelineResult.Outcomes` (pipeline)** — per-finding fix outcomes are now exposed on the
+  pipeline result itself, populated alongside the `Config.OnFixOutcome` callback whenever fix
+  application ran. Deduplicated to the first outcome per finding identity, so re-detected
+  findings whose fix already applied no longer force every in-process consumer to hand-roll a
+  collector plus dedup (issue #32). Empty in `DryRun` mode or when nothing was fixable.
 
 ### Fixed
 

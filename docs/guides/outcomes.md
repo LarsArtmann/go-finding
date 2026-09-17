@@ -1,6 +1,6 @@
 # Fix Outcomes Guide
 
-Per-finding fix results for content-level (`FixEngine`) and disk-level (`FixApplier`) fix runs. Covers the six outcome statuses, rollback semantics, error typing, and metrics aggregation introduced in v1.7.0.
+Per-finding fix results for content-level (`FixEngine`), disk-level (`FixApplier`), and pipeline-level (`PipelineResult`) fix runs. Covers the six outcome statuses, rollback semantics, error typing, metrics aggregation, and result deduplication.
 
 ## Table of Contents
 
@@ -9,6 +9,7 @@ Per-finding fix results for content-level (`FixEngine`) and disk-level (`FixAppl
 - [Content-level: ApplyWithOutcomes](#content-level-applywithoutcomes)
 - [Querying results: OutcomeFor / OutcomeCounts / HasErrors](#querying-results-outcomefor--outcomecounts--haserrors)
 - [Disk-level: ApplyWithReport](#disk-level-applywithreport)
+- [Pipeline-level: PipelineResult.Outcomes](#pipeline-level-pipelineresultoutcomes)
 - [Rollback semantics](#rollback-semantics)
 - [Typed outcome errors](#typed-outcome-errors)
 - [Metrics aggregation](#metrics-aggregation)
@@ -117,6 +118,30 @@ for _, path := range report.RolledBack {
 `report.FailedOutcomes()` isolates the `failed` entries.
 
 **Soft vs. hard failures.** A provider resolve error on one finding is _soft_: the run continues, other findings in the same file still apply, and the errors come back both in `Outcomes` and as a joined error return. A finding whose path fails the containment check (traversal outside the root) is also soft: it surfaces as a `failed` outcome with a validation-category error instead of being silently dropped. A hard file failure (write error, backup failure) stops the run and triggers rollback.
+
+## Pipeline-level: PipelineResult.Outcomes
+
+Consumers driving `pipeline.Pipeline` in-process do not need the `Config.OnFixOutcome` callback to observe per-finding results — `PipelineResult.Outcomes` carries them on the result struct, alongside `Correlations`:
+
+```go
+p, err := pipeline.New(cfg, rootDir, detector)
+if err != nil {
+    return err
+}
+
+result, err := p.Run(ctx)
+if err != nil {
+    return err
+}
+
+for _, o := range result.Outcomes {
+    fmt.Printf("%s: %s\n", o.Finding.ID, o.Status)
+}
+```
+
+Unlike the per-run `Outcomes` slices above, the result field accumulates **across all iterations** and is deduplicated to the **first outcome per finding identity**: after a fix is applied, re-detection re-fires the same finding and the provider refuses on the already-fixed content — that repeat is an artifact, so only the first outcome is kept. The `OnFixOutcome` callback still observes every repeat as it happens; the two surfaces have different contracts.
+
+The field is populated whenever fix application ran (even when `Run` later aborts with an error) and stays empty in `DryRun` mode or when nothing was fixable.
 
 ## Rollback semantics
 
