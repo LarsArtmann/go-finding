@@ -11,6 +11,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 No CLI-module changes yet.
 
+## [1.12.0] - 2026-09-17
+
+Build hygiene: go.sum resynced against the published v1.11.0 sibling tags and
+the indirect `go-branded-id` dependency bumped to v0.6.0. Requires core and
+pipeline v1.12.0. No CLI surface changes.
+
+## [1.11.0] - 2026-09-17
+
+Version-alignment release with core v1.11.0. No CLI-module code changes.
+
+## [1.10.0] - 2026-09-10
+
+Version-alignment release with core v1.10.0. No CLI-module code changes.
+
 ## [1.9.2] - 2026-09-08
 
 Version-alignment release with core v1.9.2 (release-pipeline fix; no module code changes).

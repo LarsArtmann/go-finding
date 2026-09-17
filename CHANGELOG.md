@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+## [1.12.0] - 2026-09-17
+
+### Added
+
 - **`PipelineResult.Outcomes` (pipeline)** — per-finding fix outcomes are now exposed on the
   pipeline result itself, populated alongside the `Config.OnFixOutcome` callback whenever fix
   application ran. Deduplicated to the first outcome per finding identity, so re-detected
@@ -22,7 +32,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Nothing yet.
+- **Flaky linter-category registry tests** — `TestRegisterLinterCategory` overrode the shared
+  global registry entry `govet` while parallel tests asserted the built-in mapping, so the
+  stress gate failed nondeterministically (observed as `govet maps to correctness` receiving
+  `security` on CI repeat=20). The global function is now pinned with a name unique to the
+  test and no pre-state assertion (the registry also persists across `-count` iterations);
+  override semantics are pinned on an isolated registry. Test-only; no library behavior change.
+- **Dependency graph hygiene** — dropped stray `go-finding/pipeline` requires from the
+  analysis, pipeline, and toolsdk go.mod files (declared dependencies that no code imports),
+  restored the toolsdk `go` directive to match go.work (`1.26.7`), and re-attached the toolsdk
+  package doc comment to its `package` statement (revive `package-comments`).
+- **`cmd/go-finding` go.sum resync** — checksums now match the published v1.11.0 tags and the
+  indirect `go-branded-id` bump (v0.5.1 → v0.6.0).
 
 ## [1.11.0] - 2026-09-17
 

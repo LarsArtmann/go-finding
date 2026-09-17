@@ -11,6 +11,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 No analysis-module changes yet.
 
+## [1.12.0] - 2026-09-17
+
+Module hygiene: dropped the stray `go-finding/pipeline` require from go.mod (the
+analysis module does not depend on the pipeline module). No API changes.
+
+## [1.11.0] - 2026-09-17
+
+Version-alignment release with core v1.11.0. No analysis-module changes.
+
+## [1.10.0] - 2026-09-10
+
+Version-alignment release with core v1.10.0. No analysis-module changes.
+
 ## [1.9.2] - 2026-09-08
 
 Version-alignment release with core v1.9.2 (release-pipeline fix; no module code changes).

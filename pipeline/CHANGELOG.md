@@ -11,7 +11,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Nothing yet.
+
+## [1.12.0] - 2026-09-17
+
+### Added
+
 - **`PipelineResult.Outcomes`** — Per-finding fix outcomes on the pipeline result (issue #32), populated alongside `Config.OnFixOutcome` whenever fix application ran — no callback closure needed to collect them. Deduplicated to the first outcome per finding identity: after a fix is applied, re-detection re-fires the same finding and refuses on the already-fixed content, and those artifact repeats are dropped (the callback still observes every outcome as it happens). Empty in `DryRun` mode or when nothing was fixable. Guide: `docs/guides/outcomes.md` ("Pipeline-level").
+
+## [1.11.0] - 2026-09-17
+
+Version-alignment release with core v1.11.0. No pipeline-module code changes.
+
+## [1.10.0] - 2026-09-10
+
+Version-alignment release with core v1.10.0. No pipeline-module code changes.
 
 ## [1.9.2] - 2026-09-08
 

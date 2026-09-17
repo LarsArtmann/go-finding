@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > Sub-modules have no `version.go`; the directory-prefixed git tag
 > (`toolsdk/v*`) is the single source of truth for this module's version.
 
+## [Unreleased]
+
+No toolsdk-module changes yet.
+
+## [1.12.0] - 2026-09-17
+
+Module hygiene: re-attached the package doc comment to its `package` statement
+(revive `package-comments`), dropped the stray `go-finding/pipeline` require
+from go.mod, and restored the `go` directive to `1.26.7` to match go.work.
+No API changes.
+
+## [1.11.0] - 2026-09-17
+
+Version-alignment release with core v1.11.0: the go-error-family dependency
+became an explicit indirect require, and CI wiring (arch graph, lint matrix)
+now covers the module. No API changes.
+
 ## [1.10.0] - 2026-09-10
 
 First release. The BuildFlow provider plugin contract, migrated from
