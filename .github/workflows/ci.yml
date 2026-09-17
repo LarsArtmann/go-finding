@@ -75,7 +75,7 @@ jobs:
   lint:
     strategy:
       matrix:
-        module: [".", "pipeline", "analysis", "cmd/go-finding"]
+        module: [".", "pipeline", "analysis", "toolsdk", "cmd/go-finding"]
     runs-on: ubuntu-latest
     name: lint (${{ matrix.module }})
     steps:
@@ -93,6 +93,7 @@ jobs:
             (matrix.module == '.' && (contains(inputs.modules, 'core') || contains(inputs.modules, '.'))) ||
             (matrix.module == 'pipeline' && contains(inputs.modules, 'pipeline')) ||
             (matrix.module == 'analysis' && contains(inputs.modules, 'analysis')) ||
+            (matrix.module == 'toolsdk' && contains(inputs.modules, 'toolsdk')) ||
             (matrix.module == 'cmd/go-finding' && contains(inputs.modules, 'cli'))
           }}
         with:
@@ -107,6 +108,7 @@ jobs:
             (matrix.module == '.' && (contains(inputs.modules, 'core') || contains(inputs.modules, '.'))) ||
             (matrix.module == 'pipeline' && contains(inputs.modules, 'pipeline')) ||
             (matrix.module == 'analysis' && contains(inputs.modules, 'analysis')) ||
+            (matrix.module == 'toolsdk' && contains(inputs.modules, 'toolsdk')) ||
             (matrix.module == 'cmd/go-finding' && contains(inputs.modules, 'cli'))
           }}
         working-directory: ${{ matrix.module }}

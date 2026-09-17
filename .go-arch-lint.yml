@@ -23,6 +23,9 @@ components:
       - "pipeline/examples/**"
   analysis:
     in: "analysis"
+  toolsdk:
+    in: "toolsdk"
+
   cli:
     in: "cmd/go-finding"
   cli-detectors:
@@ -81,6 +84,11 @@ deps:
     anyVendorDeps: true
 
   analysis:
+    mayDependOn:
+      - core
+    anyVendorDeps: true
+
+  toolsdk:
     mayDependOn:
       - core
     anyVendorDeps: true
