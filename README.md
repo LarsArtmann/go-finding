@@ -149,7 +149,9 @@ for _, oc := range result.Outcomes {
 ```
 
 Plan-before-apply: `applier.ApplyDryRun(ctx, findings)` (v1.8.0) returns the
-same report shape with zero writes.
+same report shape with zero writes. Whole-pipeline runs expose the same
+per-finding record on `PipelineResult.Outcomes`, deduplicated to the first
+outcome per finding.
 
 ## Core Types
 

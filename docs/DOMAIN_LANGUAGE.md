@@ -155,7 +155,7 @@ defined there as well.
 
 | Term            | Definition                                                                                                           | Context                        |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| Fix Outcome     | Per-finding result of a fix attempt: one of applied, no-change, refused, conflict, invalid, failed                   | `FixApplyResult.Outcomes`      |
+| Fix Outcome     | Per-finding result of a fix attempt: one of applied, no-change, refused, conflict, invalid, failed                   | `FixApplyResult.Outcomes`, `PipelineResult.Outcomes` (deduped) |
 | Applied         | The finding's edits were resolved and written into the content                                                       | `FixOutcomeApplied`            |
 | No-change       | The finding carries no code change (`BeforeCode`/`AfterCode` absent)                                                 | `FixOutcomeNoChange`           |
 | Refused         | Every matching provider returned zero edits without error — the provider saw the finding and declined                | `FixOutcomeRefused`            |
