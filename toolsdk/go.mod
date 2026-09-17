@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-finding/toolsdk
 
-go 1.26
+go 1.26.7
 
 require github.com/larsartmann/go-finding v1.11.0
 

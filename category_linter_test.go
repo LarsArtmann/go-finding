@@ -71,46 +71,27 @@ func TestCategoryForLinterCaseInsensitive(t *testing.T) {
 func TestRegisterLinterCategory(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name           string
-		linter         string
-		preRegistered  Category
-		override       Category
-		postRegistered Category
-	}{
-		{
-			name:           "registers new mapping",
-			linter:         "my-custom-linter",
-			preRegistered:  CategoryCorrectness,
-			override:       CategorySecurity,
-			postRegistered: CategorySecurity,
-		},
-		{
-			name:           "overrides existing mapping",
-			linter:         "govet",
-			preRegistered:  CategoryCorrectness,
-			override:       CategorySecurity,
-			postRegistered: CategorySecurity,
-		},
+	// Parallel tests assert built-in lookups against the shared
+	// DefaultLinterRegistry, so this test registers only a name unique to
+	// itself — mutating "govet" here raced TestCategoryForLinter under
+	// repeat=20 stress (the override path is identical map assignment, so
+	// overriding our own registration covers the same code path).
+	const uniqueLinter = "test-register-linter-category-unique"
+
+	if got := CategoryForLinter(uniqueLinter); got != CategoryCorrectness {
+		t.Fatalf("unregistered linter: CategoryForLinter(%q) = %q, want fallback %q", uniqueLinter, got, CategoryCorrectness)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+	RegisterLinterCategory(uniqueLinter, CategorySecurity)
 
-			if got := CategoryForLinter(tt.linter); got != tt.preRegistered {
-				t.Fatalf("unexpected pre-registration category: %q", got)
-			}
+	if got := CategoryForLinter(uniqueLinter); got != CategorySecurity {
+		t.Errorf("after registration: CategoryForLinter(%q) = %q, want %q", uniqueLinter, got, CategorySecurity)
+	}
 
-			RegisterLinterCategory(tt.linter, tt.override)
+	RegisterLinterCategory(uniqueLinter, CategoryStyle)
 
-			if got := CategoryForLinter(tt.linter); got != tt.postRegistered {
-				t.Errorf("after registration: CategoryForLinter(%q) = %q, want %q", tt.linter, got, tt.postRegistered)
-			}
-
-			// Restore original mapping to keep the global registry pristine for other tests.
-			RegisterLinterCategory(tt.linter, tt.preRegistered)
-		})
+	if got := CategoryForLinter(uniqueLinter); got != CategoryStyle {
+		t.Errorf("after override: CategoryForLinter(%q) = %q, want %q", uniqueLinter, got, CategoryStyle)
 	}
 }
 
