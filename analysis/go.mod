@@ -9,7 +9,6 @@ require (
 
 require (
 	github.com/larsartmann/go-error-family v0.10.1 // indirect
-	github.com/larsartmann/go-finding/pipeline v1.11.0
 	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
 )
