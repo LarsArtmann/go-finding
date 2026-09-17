@@ -45,7 +45,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 ## Testing & Build
 
 ```bash
-nix run .#test                              # Run tests (all modules via go.work)
+nix run .#test                              # Run tests (ROOT module only — ./... does not cross module boundaries, even with go.work active; verified 2026-09-17. Test sub-modules per the GOWORK=off line below)
 nix run .#bench                             # Run benchmarks
 nix run .#lint                              # Run linter
 go test -race -count=1 ./...                # Full suite with race detector (workspace)
