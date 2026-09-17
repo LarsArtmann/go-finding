@@ -240,7 +240,7 @@ Notable additions:
 | `Report.GroupFindingsSorted` / `Group`       | stable | Added v1.8.0. Deterministic GroupID-ordered groups                          |
 | `GroupID.IsValid` (validation)               | stable | Added v1.8.0. Machine-safe identifiers; enforced by `Validate()` (D7)       |
 | `Config.OnFixOutcome`                        | stable | Added v1.8.0. Outcome-status callback; `OnFix` deprecated (D3)              |
-| `PipelineResult.Outcomes`                    | stable | Deduplicated per-finding outcomes on the result; post-v1.11.0 (issue #32)  |
+| `PipelineResult.Outcomes`                    | stable | Deduplicated per-finding outcomes on the result; post-v1.11.0 (issue #32)   |
 | `FixApplier.ApplyDryRun`                     | stable | Added v1.8.0. Plan/apply report with zero writes (D4)                       |
 | `Template.WithGroupID`                       | stable | Added v1.8.0. Group stamp on template-built findings                        |
 

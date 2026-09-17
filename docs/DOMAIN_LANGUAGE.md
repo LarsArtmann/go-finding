@@ -153,17 +153,17 @@ defined there as well.
 
 ## Fix Application (pipeline)
 
-| Term            | Definition                                                                                                           | Context                        |
-| --------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| Term            | Definition                                                                                                           | Context                                                        |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | Fix Outcome     | Per-finding result of a fix attempt: one of applied, no-change, refused, conflict, invalid, failed                   | `FixApplyResult.Outcomes`, `PipelineResult.Outcomes` (deduped) |
-| Applied         | The finding's edits were resolved and written into the content                                                       | `FixOutcomeApplied`            |
-| No-change       | The finding carries no code change (`BeforeCode`/`AfterCode` absent)                                                 | `FixOutcomeNoChange`           |
-| Refused         | Every matching provider returned zero edits without error — the provider saw the finding and declined                | `FixOutcomeRefused`            |
-| Conflict        | The finding's edits overlapped an earlier finding's edits and were skipped                                           | `FixOutcomeConflict`           |
-| Invalid         | The finding's edits were resolved but dropped as out-of-bounds during application                                    | `FixOutcomeInvalid`            |
-| Failed          | A provider error occurred; the cause is carried in `FixOutcome.Err` and matchable via `errors.Is`                    | `FixOutcomeFailed`             |
-| Rollback Policy | Scope of restoration after a hard file error: default restores only the failing file; `AllFiles` restores everything | `FixApplier.SetRollbackPolicy` |
-| Shift Map       | Line-offset mapping from before-fix to after-fix content, keeping later findings resolvable after earlier edits      | `ApplyReport.ShiftMaps`        |
+| Applied         | The finding's edits were resolved and written into the content                                                       | `FixOutcomeApplied`                                            |
+| No-change       | The finding carries no code change (`BeforeCode`/`AfterCode` absent)                                                 | `FixOutcomeNoChange`                                           |
+| Refused         | Every matching provider returned zero edits without error — the provider saw the finding and declined                | `FixOutcomeRefused`                                            |
+| Conflict        | The finding's edits overlapped an earlier finding's edits and were skipped                                           | `FixOutcomeConflict`                                           |
+| Invalid         | The finding's edits were resolved but dropped as out-of-bounds during application                                    | `FixOutcomeInvalid`                                            |
+| Failed          | A provider error occurred; the cause is carried in `FixOutcome.Err` and matchable via `errors.Is`                    | `FixOutcomeFailed`                                             |
+| Rollback Policy | Scope of restoration after a hard file error: default restores only the failing file; `AllFiles` restores everything | `FixApplier.SetRollbackPolicy`                                 |
+| Shift Map       | Line-offset mapping from before-fix to after-fix content, keeping later findings resolvable after earlier edits      | `ApplyReport.ShiftMaps`                                        |
 
 ---
 
