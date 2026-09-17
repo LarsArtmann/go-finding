@@ -1,27 +1,3 @@
-// Package toolsdk is the stable contract that external tools implement so
-// BuildFlow can consume them as DAG providers WITHOUT each tool importing
-// BuildFlow internals or writing per-tool glue.
-//
-// A tool declares a single Spec (typically in a package-level var) describing
-// its name, trigger, file inputs, and detection/repair capabilities expressed
-// against the canonical go-finding types. The tool then registers it:
-//
-//	var Provider = toolsdk.Register(toolsdk.Spec{
-//	    Name:        "branching-flow",
-//	    Description: "Semantic analysis (14 analyzers)",
-//	    Trigger:     toolsdk.OnGoFiles(),
-//	    Inputs:      []string{"**/*.go"},
-//	    DependsOn:   []string{"go-fix", "workspace-build-verify"},
-//	    Detect:      analysis.NewDetector(),  // a finding.Detector
-//	})
-//
-// BuildFlow discovers registered specs via toolsdk.All() and converts each into
-// a domain.Tool via its internal ToolFromSpec converter. Adding a new tool is a
-// one-file change in the tool's own repo — zero files in BuildFlow.
-//
-// Design constraint: this package depends ONLY on go-finding (the ecosystem
-// hub). It must never import BuildFlow's domain/execution/tools packages, so
-// tools that target this SDK are not coupled to BuildFlow's release cycle.
 package toolsdk
 
 import (
