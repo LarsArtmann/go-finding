@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-finding/cmd/go-finding
 
-go 1.26.7
+go 1.26
 
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.6.0

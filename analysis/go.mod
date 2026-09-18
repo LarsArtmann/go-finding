@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-finding/analysis
 
-go 1.26.7
+go 1.26
 
 require (
 	github.com/larsartmann/go-finding v1.12.0
