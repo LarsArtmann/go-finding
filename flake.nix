@@ -80,7 +80,9 @@
           ...
         }:
         let
-          goPkg = pkgs.go_1_26;
+          # 2026-09-19: go-linter-sdk's go.mod floor is >= 1.27.1, which
+          # nixpkgs go_1_26 (1.26.7) cannot satisfy (GOTOOLCHAIN=local).
+          goPkg = pkgs.go_1_27;
 
           mkApp = name: _description: script: {
             type = "app";
