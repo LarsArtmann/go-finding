@@ -86,7 +86,12 @@ func (f Finding) validateClassification() []error {
 	for i, tag := range f.Tags {
 		if !tag.IsValid() {
 			errs = append(errs, NewValidationError(
-				fmt.Sprintf("finding.Tags[%d] %q is invalid: tags must follow the lowercase-hyphenated convention (first char a-z, then a-z0-9-)", i, tag), nil,
+				fmt.Sprintf(
+					"finding.Tags[%d] %q is invalid: tags must follow the lowercase-hyphenated convention (first char a-z, then a-z0-9-)",
+					i,
+					tag,
+				),
+				nil,
 			))
 		}
 	}

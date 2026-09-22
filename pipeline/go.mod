@@ -1,10 +1,10 @@
 module github.com/larsartmann/go-finding/pipeline
 
-go 1.27
+go 1.27.1
 
 require (
-	github.com/LarsArtmann/gogenfilter/v3 v3.6.0
-	github.com/larsartmann/go-finding v1.12.0
+	github.com/LarsArtmann/gogenfilter/v3 v3.6.1
+	github.com/larsartmann/go-finding v1.13.0
 	github.com/onsi/ginkgo/v2 v2.32.2
 	github.com/onsi/gomega v1.43.0
 	golang.org/x/sync v0.23.0
@@ -12,7 +12,7 @@ require (
 
 require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
-	github.com/bmatcuk/doublestar/v4 v4.10.0 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.10.2 // indirect
 	github.com/go-faster/errors v0.8.0 // indirect
 	github.com/go-faster/jx v1.2.0 // indirect
 	github.com/go-faster/yaml v0.4.6 // indirect
