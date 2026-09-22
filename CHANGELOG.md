@@ -12,13 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-09-22
+
 ### Added
 
-- Nothing yet.
+- **`toolsdk.Trigger.NotRequires`** — disqualifying file patterns that express
+  ownership deference: a tool whose NotRequires pattern matches does not run
+  (e.g. a standalone formatter deferring to a repo's own treefmt config).
+  Field-for-field parity with BuildFlow's `domain/tool.Trigger`; see
+  [toolsdk/CHANGELOG.md](toolsdk/CHANGELOG.md).
 
 ### Fixed
 
-- Nothing yet.
+- **Tag validation error message** — the finding-validation error for invalid
+  `Tags` entries claimed "tags must be non-empty" even for non-empty tags that
+  violated the lowercase-hyphenated convention; the message now states the
+  actual contract (first char a-z, then a-z0-9-).
 
 ## [1.12.0] - 2026-09-17
 
