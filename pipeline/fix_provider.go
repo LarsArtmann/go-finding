@@ -251,25 +251,24 @@ func pickNearestOccurrence(lineIndex, occurrences []int, f finding.Finding) int 
 	// This naturally accounts for intra-line proximity.
 	if f.Position.Column > 0 {
 		target := lineIndex[f.Position.Line-1] + (f.Position.Column - 1)
-		bestDist := absInt(occurrences[0] - target)
 
-		for _, off := range occurrences[1:] {
-			d := absInt(off - target)
-			if d < bestDist {
-				bestDist = d
-				best = off
-			}
-		}
-
-		return best
+		return nearestBy(occurrences, func(off int) int { return absInt(off - target) })
 	}
 
 	// Line-only fallback: minimize line distance.
-	bestDist := offsetLineDistance(lineIndex, occurrences[0], f.Position.Line)
+	return nearestBy(occurrences, func(off int) int {
+		return offsetLineDistance(lineIndex, off, f.Position.Line)
+	})
+}
+
+// nearestBy returns the occurrence with the smallest distance as measured by
+// dist. Ties keep the earliest occurrence.
+func nearestBy(occurrences []int, dist func(int) int) int {
+	best := occurrences[0]
+	bestDist := dist(best)
 
 	for _, off := range occurrences[1:] {
-		d := offsetLineDistance(lineIndex, off, f.Position.Line)
-		if d < bestDist {
+		if d := dist(off); d < bestDist {
 			bestDist = d
 			best = off
 		}

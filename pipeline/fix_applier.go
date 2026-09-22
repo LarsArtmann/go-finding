@@ -163,6 +163,16 @@ func (r ApplyReport) FailedOutcomes() []FixOutcome {
 	return failed
 }
 
+// newApplyReport groups fixes by safe path (dropping unsafe-path findings as
+// failed outcomes) and initializes the report every apply path shares.
+func (a *FixApplier) newApplyReport(
+	fixes []finding.Finding,
+) (map[string][]finding.Finding, ApplyReport) {
+	byFile, droppedOutcomes := a.groupFindingsBySafePath(fixes)
+
+	return byFile, ApplyReport{ShiftMaps: make(map[string]*LineShiftMap), Outcomes: droppedOutcomes}
+}
+
 // ApplyWithReport applies fixes and returns a detailed report (applied fixes,
 // per-finding outcomes, line shift maps, rolled-back files) plus any error.
 // Files are processed in sorted path order. Soft per-finding failures are
@@ -172,9 +182,8 @@ func (a *FixApplier) ApplyWithReport(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) (ApplyReport, error) {
-	byFile, droppedOutcomes := a.groupFindingsBySafePath(fixes)
+	byFile, report := a.newApplyReport(fixes)
 
-	report := ApplyReport{ShiftMaps: make(map[string]*LineShiftMap), Outcomes: droppedOutcomes}
 	var modified []string
 
 	paths := slices.Sorted(maps.Keys(byFile))
@@ -266,9 +275,7 @@ func (a *FixApplier) ApplyDryRun(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) (ApplyReport, error) {
-	byFile, droppedOutcomes := a.groupFindingsBySafePath(fixes)
-
-	report := ApplyReport{ShiftMaps: make(map[string]*LineShiftMap), Outcomes: droppedOutcomes}
+	byFile, report := a.newApplyReport(fixes)
 
 	for _, path := range slices.Sorted(maps.Keys(byFile)) {
 		if err := CheckCanceledWithMsg(ctx, "dry run cancelled"); err != nil {

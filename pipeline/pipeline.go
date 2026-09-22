@@ -194,14 +194,21 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		Iterations: make([]Iteration, 0, p.config.MaxIterations),
 	}
 
+	// exitResult stamps the final iteration count and publishes result to the
+	// deferred metrics snapshot before an early return from Run.
+	exitResult := func(err error) (*PipelineResult, error) {
+		result.TotalIterations = len(result.Iterations)
+		metricsResult = result
+
+		return result, err
+	}
+
 	for p.iterations < p.config.MaxIterations {
 		err := CheckCanceledWithMsg(ctx, "pipeline cancelled")
 		if err != nil {
 			result.Reason = reasonFromContext(ctx)
-			result.TotalIterations = len(result.Iterations)
-			metricsResult = result
 
-			return result, err
+			return exitResult(err)
 		}
 
 		p.log(
@@ -218,10 +225,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 				result.Reason = ReasonError
 			}
 
-			result.TotalIterations = len(result.Iterations)
-			metricsResult = result
-
-			return result, err
+			return exitResult(err)
 		}
 
 		if done {
