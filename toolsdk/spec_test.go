@@ -115,3 +115,29 @@ func TestOnGoFiles(t *testing.T) {
 		t.Errorf("unexpected OnGoFiles trigger: %+v", tr)
 	}
 }
+
+// TestTriggerCarriesNotRequires pins the Trigger field surface that mirrors
+// BuildFlow's domain/tool.Trigger: NotRequires expresses ownership
+// deference (disqualifying patterns), and a spec that sets it must be able
+// to round-trip the value through the struct — consumers convert it
+// field-for-field.
+func TestTriggerCarriesNotRequires(t *testing.T) {
+	want := []string{"**/treefmt.toml", "**/.treefmt.toml"}
+
+	got := Trigger{
+		Files:       []string{"**/*.nix"},
+		Language:    "nix",
+		Requires:    []string{"flake.nix"},
+		NotRequires: want,
+	}
+
+	if len(got.NotRequires) != len(want) {
+		t.Fatalf("NotRequires length = %d, want %d", len(got.NotRequires), len(want))
+	}
+
+	for i := range want {
+		if got.NotRequires[i] != want[i] {
+			t.Errorf("NotRequires[%d] = %q, want %q", i, got.NotRequires[i], want[i])
+		}
+	}
+}

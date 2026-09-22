@@ -57,6 +57,15 @@ type Trigger struct {
 	// At least one pattern must match (OR within group). Example: a Go module
 	// tool might require "go.mod" or "go.work". Empty means no prerequisites.
 	Requires []string
+
+	// NotRequires are disqualifying file patterns: if ANY of them matches,
+	// the tool does not run. This expresses ownership deference: when a repo
+	// carries its own toolchain config (e.g. treefmt.toml), a standalone
+	// formatter for the same file types would fight it on every run, so it
+	// defers instead. Field-for-field parity with BuildFlow's
+	// domain/tool.Trigger.NotRequires — a spec that omits the field silently
+	// loses the deference behavior at conversion time.
+	NotRequires []string
 }
 
 // Repairer applies fixes to files. Tools implement this when they can

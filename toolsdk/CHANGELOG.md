@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No toolsdk-module changes yet.
 
+## [1.13.0] - 2026-09-22
+
+`Trigger` gains `NotRequires []string`: disqualifying file patterns that
+express ownership deference (a tool whose NotRequires pattern matches does
+not run, e.g. a standalone formatter deferring to a repo's own treefmt
+config). Field-for-field parity with BuildFlow's `domain/tool.Trigger`.
+
 ## [1.12.0] - 2026-09-17
 
 Module hygiene: re-attached the package doc comment to its `package` statement
