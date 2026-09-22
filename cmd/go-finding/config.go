@@ -52,6 +52,20 @@ type flightRecorderFileConfig struct {
 	Compress           bool   `json:"compress"           yaml:"compress"`
 }
 
+// toPipeline converts the YAML/JSON-shaped struct into pipeline's config-file
+// representation so duration parsing and defaults live in one place.
+func (c flightRecorderFileConfig) toPipeline() pipeline.FlightRecorderFileConfig {
+	return pipeline.FlightRecorderFileConfig{
+		Enabled:            c.Enabled,
+		OutputDir:          c.OutputDir,
+		SlowStageThreshold: c.SlowStageThreshold,
+		MinAge:             c.MinAge,
+		MaxBytes:           c.MaxBytes,
+		MaxFiles:           c.MaxFiles,
+		Compress:           c.Compress,
+	}
+}
+
 type detectorSpec struct {
 	Name string `json:"name" yaml:"name"`
 }
@@ -150,18 +164,8 @@ func (c pipelineConfigFile) validate() error {
 	}
 
 	if c.FlightRecorder != nil {
-		if c.FlightRecorder.SlowStageThreshold != "" {
-			if _, err := time.ParseDuration(c.FlightRecorder.SlowStageThreshold); err != nil {
-				return fmt.Errorf("invalid flightRecorder.slowStageThreshold %q: %w",
-					c.FlightRecorder.SlowStageThreshold, err)
-			}
-		}
-
-		if c.FlightRecorder.MinAge != "" {
-			if _, err := time.ParseDuration(c.FlightRecorder.MinAge); err != nil {
-				return fmt.Errorf("invalid flightRecorder.minAge %q: %w",
-					c.FlightRecorder.MinAge, err)
-			}
+		if _, err := pipeline.ResolveFlightRecorderConfig(c.FlightRecorder.toPipeline()); err != nil {
+			return fmt.Errorf("%w: %w", errInvalidConfig, err)
 		}
 	}
 

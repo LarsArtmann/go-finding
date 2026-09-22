@@ -154,6 +154,55 @@ func (cf ConfigFile) ResolveDetectors(registry *finding.DetectorRegistry) ([]fin
 	return detectors, nil
 }
 
+// ResolveFlightRecorderConfig converts a [FlightRecorderFileConfig] with
+// string-encoded durations into a resolved [FlightRecorderConfig] with
+// defaults applied. Returns an error when a duration field cannot be parsed.
+func ResolveFlightRecorderConfig(fc FlightRecorderFileConfig) (FlightRecorderConfig, error) {
+	config := DefaultFlightRecorderConfig()
+
+	if fc.OutputDir != "" {
+		config.OutputDir = fc.OutputDir
+	}
+
+	if fc.SlowStageThreshold != "" {
+		d, err := time.ParseDuration(fc.SlowStageThreshold)
+		if err != nil {
+			return FlightRecorderConfig{}, fmt.Errorf(
+				"parse flightRecorder.slowStageThreshold %q: %w",
+				fc.SlowStageThreshold,
+				err,
+			)
+		}
+
+		config.SlowStageThreshold = d
+	}
+
+	if fc.MinAge != "" {
+		d, err := time.ParseDuration(fc.MinAge)
+		if err != nil {
+			return FlightRecorderConfig{}, fmt.Errorf(
+				"parse flightRecorder.minAge %q: %w",
+				fc.MinAge,
+				err,
+			)
+		}
+
+		config.MinAge = d
+	}
+
+	if fc.MaxBytes != 0 {
+		config.MaxBytes = fc.MaxBytes
+	}
+
+	if fc.MaxFiles != 0 {
+		config.MaxFiles = fc.MaxFiles
+	}
+
+	config.Compress = fc.Compress
+
+	return config, nil
+}
+
 // ResolveFlightRecorder constructs a [FlightRecorderHook] from the config's
 // FlightRecorder section. Returns (nil, nil) when flight recording is not
 // enabled. The caller is responsible for appending the returned hook to
@@ -163,47 +212,10 @@ func (cf ConfigFile) ResolveFlightRecorder() (*FlightRecorderHook, error) {
 		return nil, nil
 	}
 
-	config := DefaultFlightRecorderConfig()
-
-	if cf.FlightRecorder.OutputDir != "" {
-		config.OutputDir = cf.FlightRecorder.OutputDir
+	config, err := ResolveFlightRecorderConfig(*cf.FlightRecorder)
+	if err != nil {
+		return nil, err
 	}
-
-	if cf.FlightRecorder.SlowStageThreshold != "" {
-		d, err := time.ParseDuration(cf.FlightRecorder.SlowStageThreshold)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"parse flightRecorder.slowStageThreshold %q: %w",
-				cf.FlightRecorder.SlowStageThreshold,
-				err,
-			)
-		}
-
-		config.SlowStageThreshold = d
-	}
-
-	if cf.FlightRecorder.MinAge != "" {
-		d, err := time.ParseDuration(cf.FlightRecorder.MinAge)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"parse flightRecorder.minAge %q: %w",
-				cf.FlightRecorder.MinAge,
-				err,
-			)
-		}
-
-		config.MinAge = d
-	}
-
-	if cf.FlightRecorder.MaxBytes != 0 {
-		config.MaxBytes = cf.FlightRecorder.MaxBytes
-	}
-
-	if cf.FlightRecorder.MaxFiles != 0 {
-		config.MaxFiles = cf.FlightRecorder.MaxFiles
-	}
-
-	config.Compress = cf.FlightRecorder.Compress
 
 	return NewFlightRecorderHook(config)
 }

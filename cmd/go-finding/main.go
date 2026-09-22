@@ -146,6 +146,27 @@ func parseFlags() cliFlags {
 	return f
 }
 
+// installFlightRecorder builds the flight recorder hook, registers it as a
+// pipeline stage hook, and announces the setup on stderr. source decorates the
+// announcement: "" for -trace flags, " via config" for the config file.
+func installFlightRecorder(
+	pipelineCfg *pipeline.Config,
+	frConfig pipeline.FlightRecorderConfig,
+	source string,
+) (*pipeline.FlightRecorderHook, error) {
+	hook, err := pipeline.NewFlightRecorderHook(frConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineCfg.StageHooks = append(pipelineCfg.StageHooks, hook)
+
+	fmt.Fprintf(os.Stderr, "Flight recorder enabled%s (output: %s, slow threshold: %v)\n",
+		source, frConfig.OutputDir, frConfig.SlowStageThreshold)
+
+	return hook, nil
+}
+
 func run() int {
 	f := parseFlags()
 
@@ -232,62 +253,24 @@ func run() int {
 		frConfig.MaxFiles = f.traceMaxFiles
 		frConfig.Compress = f.traceGzip
 
-		var frErr error
+		var err error
 
-		frHook, frErr = pipeline.NewFlightRecorderHook(frConfig)
-		if frErr != nil {
-			return fatalf("creating flight recorder", frErr)
+		frHook, err = installFlightRecorder(&pipelineCfg, frConfig, "")
+		if err != nil {
+			return fatalf("creating flight recorder", err)
 		}
-
-		pipelineCfg.StageHooks = append(pipelineCfg.StageHooks, frHook)
-
-		fmt.Fprintf(os.Stderr, "Flight recorder enabled (output: %s, slow threshold: %v)\n",
-			frConfig.OutputDir, frConfig.SlowStageThreshold)
 	} else if cfg.FlightRecorder != nil && cfg.FlightRecorder.Enabled {
-		frConfig := pipeline.DefaultFlightRecorderConfig()
-		if cfg.FlightRecorder.OutputDir != "" {
-			frConfig.OutputDir = cfg.FlightRecorder.OutputDir
+		frConfig, err := pipeline.ResolveFlightRecorderConfig(cfg.FlightRecorder.toPipeline())
+		if err != nil {
+			return fatalf("resolving flight recorder config", err)
 		}
 
-		if cfg.FlightRecorder.SlowStageThreshold != "" {
-			d, err := time.ParseDuration(cfg.FlightRecorder.SlowStageThreshold)
-			if err != nil {
-				return fatalf("parsing flightRecorder.slowStageThreshold", err)
-			}
+		var installErr error
 
-			frConfig.SlowStageThreshold = d
+		frHook, installErr = installFlightRecorder(&pipelineCfg, frConfig, " via config")
+		if installErr != nil {
+			return fatalf("creating flight recorder", installErr)
 		}
-
-		if cfg.FlightRecorder.MinAge != "" {
-			d, err := time.ParseDuration(cfg.FlightRecorder.MinAge)
-			if err != nil {
-				return fatalf("parsing flightRecorder.minAge", err)
-			}
-
-			frConfig.MinAge = d
-		}
-
-		if cfg.FlightRecorder.MaxBytes != 0 {
-			frConfig.MaxBytes = cfg.FlightRecorder.MaxBytes
-		}
-
-		if cfg.FlightRecorder.MaxFiles != 0 {
-			frConfig.MaxFiles = cfg.FlightRecorder.MaxFiles
-		}
-
-		frConfig.Compress = cfg.FlightRecorder.Compress
-
-		var frErr error
-
-		frHook, frErr = pipeline.NewFlightRecorderHook(frConfig)
-		if frErr != nil {
-			return fatalf("creating flight recorder", frErr)
-		}
-
-		pipelineCfg.StageHooks = append(pipelineCfg.StageHooks, frHook)
-
-		fmt.Fprintf(os.Stderr, "Flight recorder enabled via config (output: %s, slow threshold: %v)\n",
-			frConfig.OutputDir, frConfig.SlowStageThreshold)
 	}
 
 	p, err := pipeline.New(pipelineCfg, f.dir, detectorList...)
