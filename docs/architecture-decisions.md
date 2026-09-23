@@ -694,7 +694,10 @@ one finding N times as N "applied fixes".
 - **Gain:** go/analysis suggested fixes round-trip losslessly; whole-file
   rewrites are expressible; SARIF interop matches real-world multi-edit fixes.
 - **Cost:** `Finding` grows a slice field (24-byte header; nil for all legacy
-  findings — allocation profile unchanged, verified by the bench gate).
+  findings). Measured: +11..25% B/op on Finding-copy benchmarks (GroupByFile,
+  Correlate, MergeIter/Combine) with allocs/op flat (+0..3%) — the slice
+  header does not fit existing padding, unlike the v1.7.0 GroupID addition.
+  Baseline regenerated with rationale in `benchmarks/README.md`.
 - **Cost:** Duplicate representation (`Edits` vs `BeforeCode`/`AfterCode`)
   with a documented precedence rule instead of one normalized form. Removing
   the legacy pair would break every existing consumer for cosmetics.
