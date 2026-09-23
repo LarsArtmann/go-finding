@@ -261,3 +261,65 @@ flowchart TD
   v1.13.0-completion vs v1.14.0-fold decision. Tier status: T1 done; T3 gated on owner
   timing; T2/T4/T12/T17/T20/T22 gated on T2; T5-T11, T13-T16, T18-T19, T21, T23-T26 open
   (unblocked); T25 partially done (F25.2-F25.5 checked off).
+- 2026-09-23 17:00-19:30 — **EXECUTION ROUND 2 (whole-list directive)**:
+  - **T2 RESOLVED: COMPLETE v1.13.0 (fold was impossible)** — proxy.golang.org already
+    served core + toolsdk v1.13.0 (fetched 09-22), so the version is publicly
+    consumable regardless of preference. Executed: core GitHub Release published via
+    LOCAL goreleaser 2.17.1 in a clean worktree at 450824e (17 assets: 5 archives,
+    8 packages, 5 SBOMs, checksums; `--skip=sign,nix` — cosign keyless is CI-only and
+    the config's nix pipe has a latent `{{binary}}` template bug that only CI's
+    skip_upload path avoids; **fix that template before the next goreleaser config
+    change**). CI parity required GITHUB_TOKEN + syft from nixpkgs.
+  - Sibling tags pipeline/v1.13.0, analysis/v1.13.0, cmd/go-finding/v1.13.0 created
+    ANNOTATED+SSH-SIGNED at 450824e and pushed ONE PER PUSH; the triggered Release
+    workflows failed fast (go-1.26 pin frozen at those refs — expected); the three
+    library releases were created manually in the workflow's exact format. Proxy
+    verified for all 3. **F2.6 amendment: Edits/TextEdit are NOT in v1.13.0** (they
+    landed post-tag); the render check applies to the v1.14.0 train.
+  - Resync: CLI pipeline require -> v1.13.0, go.sum refreshed, flake vendorHash
+    updated; version-drift GREEN. Master CI full-green pending on latest runs.
+  - **T3 done**: #36 closed as completed with evidence comment (github-voice checked,
+    0 FAIL/0 WARN).
+  - **T4 resolved**: labels stay v1.14.0 (feature ships next release); README's live
+    "v1.14.0" claim fixed to "(unreleased)".
+  - **T5 done** (one-tag-per-push procedure + AGENTS gotcha), **T6 done** (preflight
+    expects 5 tags; selftest 4/4 incl. incomplete-train injection; F6.2 config knob
+    deliberately NOT added — serialized pushing makes mid-train --post-tag states
+    transient), **T7 done** (changelog-drift gate wired into ci.yml + preflight;
+    immediately caught 3 real missing v1.13.0 sections, backfilled; FAIL path proven),
+    **T8 done** (README version-literal sweep; stale-table and future-literal
+    injections both exit 1), **T9 done** (nix job; first-green watch in latest runs),
+    **T10 done** (nolint-audit demoted to advisory after stripping its 24 "safe to
+    remove" suggestions turned the gate RED at every site — false-positive oracle
+    documented in AGENTS; version printout + noise filter + proven FAIL path),
+    **T13 done** (Edits-display consistency: intentionally loose, pinned by test +
+    ADR #19 addendum + field doc), **T14 done** (Applied ordering + partial-conflict
+    semantics pinned and documented), **T15 done** (EditListProvider benches x8,
+    ungated; bench-check awk warning fixed), **T16 done** (FuzzTextEditValidate +
+    FuzzEditListProvider, 45s campaigns, 5.5M execs, no findings),
+    **T17 partially done** (pipeline exports ResolveFlightRecorderConfig + wording
+    pinned; CLI delegation BLOCKED until pipeline/v1.14.0 — the no-replace policy
+    forbids requiring unreleased siblings), **T18 done WITHOUT filing junk**
+    (BuildFlow test + branching-flow builds verified FIXED on current HEAD;
+    go-business-rules root-caused to the go1.26 directive and FIXED directly,
+    pushed 431d8cd; art-dupl GAP-2 already filed as #1), **T19 done**
+    (consumer-compat CI job; all 5 modules resolve/build/run from proxy @ v1.13.0),
+    **T20 done** (go-linter-sdk bumped v1.10.0->v1.13.0, race-green, pushed
+    6f3231b; golangci-lint-auto-configure already at v1.13.0; delta-sweep section
+    added to ecosystem.md), **T21 done** (branch protection 17 checks,
+    enforce_admins=false — the ON setting bounced the first push; tag ruleset
+    protect-release-tags; private vulnerability reporting enabled; boundary
+    READMEs for docs/status+planning+reviews), **T22 draft finalized** (submission
+    itself pending owner fork of awesome-go), **T23 done** (finding-groups refresh,
+    DOMAIN_LANGUAGE terms, CLI edit-list docs, examples/multi-edit, GenerateID
+    note, Preview() multi-hunk, Conflict dedup; F23.8 gopls note moot after LSP
+    restart), **T24 done** (99.0% total coverage incl. IntervalIndex/correlate;
+    rotation modtime tie-fix; hostile-dir fuzz 40s clean; formatter failAt=1;
+    full-workspace race green; nearestBy tie pinned; CLI -version prints core
+    version), **F25.1 done** (.gitignore /go/; trash itself operator-only),
+    **f/26 done** (CI lint pin v2.13.1->v2.13.2 to match nix; AGENTS gotcha),
+    **f/27 done** (scripts/link-check.sh), **f/28 done** (scripts/pre-push-verify.sh).
+  - Open questions remaining for owner: awesome-go submission, homebrew tap,
+    ApplySimpleFixes philosophy, art-dupl-report.html policy, v1.5-v1.8 release
+    backfill, hierarchical-errors clone, T12 erraudit migration (needs v1.14.0),
+    T17 CLI delegation (needs v1.14.0), gomend/licenseforge (upstream-blocked).
