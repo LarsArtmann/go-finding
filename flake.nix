@@ -117,7 +117,20 @@
             projectRootFile = "go.mod";
             programs = {
               gofumpt.enable = true;
-              goimports.enable = true;
+              # goimports shells out to `go list`, which refuses go.mod's
+              # `go 1.27` floor unless a matching toolchain is on PATH (the
+              # sandbox has no network for GOTOOLCHAIN=auto downloads, and
+              # pkgs.gotools propagates an older go). Ship go_1_27 alongside.
+              goimports = {
+                enable = true;
+                package = pkgs.symlinkJoin {
+                  name = "goimports-with-go";
+                  paths = [
+                    pkgs.gotools
+                    pkgs.go_1_27
+                  ];
+                };
+              };
               golines = {
                 enable = true;
                 maxLength = 120;

@@ -12,6 +12,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`finding.TextEdit` and `Finding.Edits` (issue #36)** — typed multi-edit fix
+  representation: `Start`/`End` positions plus `NewText`, with `HasSpan`,
+  `IsInsertion`, `IsDeletion`, `EffectiveFile`, and `Validate` helpers,
+  order-independent list equality, and builder support via `WithEdits`. When
+  set, `Edits` is the authoritative machine representation of the fix;
+  `BeforeCode`/`AfterCode` remain the first-edit display summary. Direct fixes
+  now validate with either representation ("requires BeforeCode, AfterCode, or
+  Edits"). SARIF export/import round-trips edit lists, including byte offsets
+  via `region.byteOffset`/`byteLength`.
+
+### Changed
+
+- **`ApplySimpleFixes` refuses multi-edit findings** — findings whose `Edits`
+  list more than one edit are skipped with an actionable reason pointing at the
+  pipeline `FixApplier`, instead of silently fixing only the first edit.
+- **`FixEngine` applied counts are per finding, not per edit (pipeline)** — a
+  multi-edit fix counts once in `Apply`/`ApplyWithConflicts` results and
+  `ApplyReport.Applied`, matching "number of successful fixes" semantics.
+- **Multi-edit suggested fixes are lossless (analysis)** —
+  `FromDiagnosticWithSource` carries all `TextEdits` of a diagnostic's first
+  `SuggestedFix` into `Finding.Edits` (previously edits 2..N were silently
+  dropped, issue #36); `ToDiagnostic` reconstructs the full edit list.
+  Alternative fixes (`SuggestedFixes` 1..N) remain first-wins and are now
+  documented as such.
+
 ## [1.13.0] - 2026-09-22
 
 ### Added
