@@ -94,7 +94,7 @@ jobs:
             (matrix.module == 'cmd/go-finding' && contains(inputs.modules, 'cli'))
           }}
         with:
-          version: v2.13.1
+          version: v2.13.2
           args: --timeout=5m
           working-directory: ${{ matrix.module }}
       - name: Check formatting
