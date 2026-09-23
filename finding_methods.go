@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"fmt"
 	"maps"
 	"strings"
 	"time"
@@ -169,13 +170,39 @@ func (f Finding) HasRange() bool {
 }
 
 // Preview returns a unified-diff-style preview of the fix, or empty string if
-// the finding has no fixable code change (BeforeCode and AfterCode both empty).
+// the finding has no fixable code change (BeforeCode and AfterCode both empty
+// and no Edits list).
+//
+// Findings with a typed Edits list render one "-/+" pair per edit, prefixed
+// by the edit's start position: spans show removals as a location (TextEdit
+// does not carry the removed text), insertions show only the added text.
+// BeforeCode/AfterCode findings render as a single "- old" / "+ new" pair.
 func (f Finding) Preview() string {
 	if !f.HasCodeChange() {
 		return ""
 	}
 
 	var b strings.Builder
+
+	if len(f.Edits) > 0 {
+		for _, e := range f.Edits {
+			loc := e.Start.String()
+
+			if e.HasSpan() {
+				if e.Start.Offset >= 0 && e.End.Offset > e.Start.Offset {
+					fmt.Fprintf(&b, "- %s: %d bytes\n", loc, e.End.Offset-e.Start.Offset)
+				} else {
+					fmt.Fprintf(&b, "- %s: span\n", loc)
+				}
+			}
+
+			if e.NewText != "" {
+				fmt.Fprintf(&b, "+ %s: %s\n", loc, e.NewText)
+			}
+		}
+
+		return b.String()
+	}
 
 	if f.BeforeCode != "" {
 		b.WriteString("- ")

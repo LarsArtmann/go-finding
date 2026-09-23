@@ -420,3 +420,41 @@ func TestRelationKind_Constants(t *testing.T) {
 		}
 	}
 }
+
+func TestPreview_MultiEdit(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	// Edit-only finding (no display pair): Preview must render per-edit
+	// lines instead of empty output.
+	editOnly := Finding{
+		FixStrategy: FixStrategyDirect,
+		Edits: []TextEdit{
+			{
+				Start:   Position{File: "a.go", Line: 3, Column: 2, Offset: 40},
+				End:     Position{File: "a.go", Line: 3, Column: 11, Offset: 49},
+				NewText: "cacheEnabled",
+			},
+			{
+				Start:   Position{File: "a.go", Line: 7, Column: 1, Offset: 90},
+				End:     Position{Offset: -1},
+				NewText: "added line",
+			},
+		},
+	}
+
+	g.Expect(editOnly.HasCodeChange()).To(BeTrue())
+	g.Expect(editOnly.Preview()).To(Equal("- a.go:3:2: 9 bytes\n+ a.go:3:2: cacheEnabled\n+ a.go:7:1: added line\n"))
+
+	// Insertion (no span) renders only the added text.
+	insertion := Finding{
+		FixStrategy: FixStrategyDirect,
+		Edits: []TextEdit{
+			{Start: Position{File: "a.go", Line: 2, Column: 1}, End: Position{Offset: -1}, NewText: "\tinserted"},
+		},
+	}
+	g.Expect(insertion.Preview()).To(Equal("+ a.go:2:1: \tinserted\n"))
+
+	// Display-pair findings keep the original rendering.
+	pair := Finding{BeforeCode: "old", AfterCode: "new"}
+	g.Expect(pair.Preview()).To(Equal("- old\n+ new\n"))
+}
