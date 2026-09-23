@@ -139,7 +139,7 @@ for _, o := range result.Outcomes {
 }
 ```
 
-Unlike the per-run `Outcomes` slices above, the result field accumulates **across all iterations** and is deduplicated to the **first outcome per finding identity**: after a fix is applied, re-detection re-fires the same finding and the provider refuses on the already-fixed content — that repeat is an artifact, so only the first outcome is kept. The `OnFixOutcome` callback still observes every repeat as it happens; the two surfaces have different contracts.
+Unlike the per-run `Outcomes` slices above, the result field accumulates **across all iterations** and is deduplicated to the **first outcome per finding identity**: after a fix is applied, re-detection re-fires the same finding and the provider refuses on the already-fixed content — that repeat is an artifact, so only the first outcome is kept. The `OnFixOutcome` callback still observes every repeat as it happens; the two surfaces have different contracts. The same holds for `Metrics.RecordOutcome` / `OutcomeCounts` (and the CLI `Fix outcomes:` summary): they count **every** outcome raw, including artifact repeats, so `applied=1` on the result can coexist with an extra `refused` in the counts. Only `PipelineResult.Outcomes` is deduped.
 
 The field is populated whenever fix application ran (even when `Run` later aborts with an error) and stays empty in `DryRun` mode or when nothing was fixable.
 

@@ -1,5 +1,7 @@
 # Session Status: erraudit Forensics — the Recurring 79-Violation Artifact, Solved
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot. The push question was answered by events (tags pushed 2026-09-11; v1.11.0+ shipped). Done items struck inline; erraudit CI wiring and gate maturity remain open in `TODO_LIST.md`. Do not action from this file.
+
 **Date:** 2026-09-11 07:25 CEST
 **Repo:** go-finding @ master `332ec85` (clean tree; auto-daemon committed)
 **Scope:** This report covers the follow-up round (06:43 → 07:25) after the first status report (`2026-09-11_06-43_erraudit-gate-error-hardening-v1100-alignment.md`) and references the full session. Carry-forward items are marked.
@@ -45,19 +47,19 @@ The user re-pasted the same 79-violation erraudit artifact a second time. This r
 
 | Item                                            | Done                                                                  | Missing                                                                                                              |
 | ----------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| v1.10.0 sub-module release completion (carried) | tags exist locally; go.mod aligned; preflight structural checks green | **push** (user-gated), Release-workflow confirmation, proxy `go get` verification                                    |
+| ~~v1.10.0 sub-module release completion (carried)~~ done — tags pushed 2026-09-11; v1.11.0 shipped 2026-09-17 | tags exist locally; go.mod aligned; preflight structural checks green | **push** (user-gated), Release-workflow confirmation, proxy `go get` verification                                    |
 | erraudit CI integration (carried)               | local gate + proven FAIL path                                         | `ci.yml` wiring blocked on private erraudit repo (or PAT secret)                                                     |
 | Error-gate maturity                             | gates violations; flake app added                                     | no `nolint-audit` phase in the gate; no erraudit version pin (`dev` binary); `[feature:logger]` noise on FAIL output |
-| Documentation of this round                     | research doc + AGENTS updated                                         | **CHANGELOG [Unreleased] not updated** for the flake app + forensics additions                                       |
+| ~~Documentation of this round~~ done — gate work in CHANGELOG [1.11.0]; blessed invocation in AGENTS.md | research doc + AGENTS updated                                         | **CHANGELOG [Unreleased] not updated** for the flake app + forensics additions                                       |
 
 ## c) NOT STARTED
 
-- The three questions from the 06:43 report remain **unanswered by the user** (push? consumer string-matching? erraudit CI path?) — re-asked in §g.
+- ~~The three questions from the 06:43 report remain **unanswered by the user** (push? consumer string-matching? erraudit CI path?) — re-asked in §g.~~ mooted: push happened 2026-09-11; erraudit CI still blocked (TODO_LIST); adopt-oops remains declined.
 - Consumer error-message compatibility sweep (3 changed message formats).
-- Stress gate before next tag push (mandatory, not yet run).
-- `go-arch-lint` run (not run this session; no package-boundary changes, honest gap).
+- ~~Stress gate before next tag push (mandatory, not yet run).~~ done — green in the v1.12.0 train.
+- ~~`go-arch-lint` run (not run this session; no package-boundary changes, honest gap).~~ done — green.
 - Upstreaming the 2 erraudit bugs (AsType-ok false positive; `nolint-audit ./...` no-op).
-- docs-health HARVEST of the f-lists into TODO_LIST/ROADMAP (two reports' worth now).
+- ~~docs-health HARVEST of the f-lists into TODO_LIST/ROADMAP (two reports' worth now).~~ done — 2026-09-23 docs-health pass.
 
 ## d) TOTALLY FUCKED UP
 
@@ -85,14 +87,14 @@ Process-level (this round, mine):
 
 _Release & push (user-gated):_
 
-1. Push `master`; push the 3 alignment tags in ONE push; confirm Release workflow.
-2. Verify proxy resolution (`go get pipeline@v1.10.0`, GOWORK=off) + pkg.go.dev.
+1. ~~Push `master`; push the 3 alignment tags in ONE push; confirm Release workflow.~~ done (master + tags pushed 2026-09-11)
+2. ~~Verify proxy resolution (`go get pipeline@v1.10.0`, GOWORK=off) + pkg.go.dev.~~ done (proxy + pkg.go.dev verified through v1.12.0)
 3. Decide sub-module GitHub Releases vs tag-only (procedure ambiguity).
 4. Answer the 3 standing questions (§g) — several items below unblock on them.
 
 _This round's loose ends:_
-5. ★ Add `nix run .#error-audit` to CHANGELOG [Unreleased] Added.
-6. ★ Add the nix form to AGENTS.md "Testing & Build" command block (canonical form).
+5. ~~★ Add `nix run .#error-audit` to CHANGELOG [Unreleased] Added.~~ done (covered by CHANGELOG [1.11.0] error-audit entry)
+6. ~~★ Add the nix form to AGENTS.md "Testing & Build" command block (canonical form).~~ done (AGENTS.md carries the blessed invocation nix run .#error-audit)
 7. ★ Pin a minimum erraudit version in `error-audit.sh` (binary reports `dev`; gates shouldn't float).
 8. ★ Add `nolint-audit .` phase to `error-audit.sh` (stale directives fail the gate).
 9. ★ Filter `[feature:logger]` stderr noise from FAIL output.
@@ -118,8 +120,8 @@ _Error model / DDD:_
 25. BDD suite for the error contract (Is/Unwrap/AsType/CategoryOf invariants).
 
 _Gates & hygiene:_
-26. Run `go-arch-lint` (close the honest gap).
-27. Run the mandatory stress gate before next tag push.
+26. ~~Run `go-arch-lint` (close the honest gap).~~ done (go-arch-lint green)
+27. ~~Run the mandatory stress gate before next tag push.~~ done (stress green (v1.12.0 train))
 28. Silence golangci-lint "unknown linter erraudit" nolint warning (config allowlist).
 29. Verify pre-commit hook alive (`core.hooksPath` gotcha) — still unchecked.
 30. Scoreboard audit: OK/FAIL verdict line in every `scripts/*.sh` (dead-gate rule as code).
@@ -131,7 +133,7 @@ _Consumers & ecosystem:_
 34. Update `docs/ecosystem.md` consumer table post-push.
 
 _Docs health:_
-35. HARVEST both 2026-09-11 f-lists into TODO_LIST/ROADMAP (docs-health).
+35. ~~HARVEST both 2026-09-11 f-lists into TODO_LIST/ROADMAP (docs-health).~~ done (docs-health pass 2026-09-23)
 36. ANNOTATE older reports claiming "all gates green" on 2026-09-10 (version-drift was red).
 37. Cross-link erraudit policy one-liner into README dev section.
 38. Document erraudit install in flake devShell docs.

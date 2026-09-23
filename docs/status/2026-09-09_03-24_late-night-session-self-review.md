@@ -1,5 +1,7 @@
 # Late-Night Session — Brutal Self-Review: v1.9.0→v1.9.2 Shipped, Release Pipeline Resurrected, CI Fully Green — at the Cost of Three Wasted CI Cycles, One Skipped Stress Gate, and a Foreign-Repo Deletion I Should Not Have Done
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot (v1.9.0-v1.9.2 era). Most items were already struck by the 2026-09-10 pass; the 2026-09-23 pass struck items later closed by v1.10.0-v1.12.0. Still-open items live in `TODO_LIST.md` / `ROADMAP.md` "Open questions". Do not action from this file.
+
 **Date written:** 2026-09-09 03:24 CEST (work performed 2026-09-08 21:58–00:45 CEST; report is 2.5h late — see d/8)
 **Session input:** User blanket directive ("READ, UNDERSTAND, RESEARCH, REFLECT... Execute and Verify... Repeat until done"), resolving the 3 §g questions from `docs/status/archived/2026-09-08_21-51_evening-session-self-review.md` + working its §f list.
 **Session narrative:** `docs/status/archived/2026-09-08_23-50_evening-session-v1.9.0-gates-consumers.md` (written mid-session at ~00:00; partially updated at 00:40 — its "final CI green" claim was still a hope at that point, now fact).

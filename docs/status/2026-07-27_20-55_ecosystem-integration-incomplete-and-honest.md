@@ -1,5 +1,7 @@
 # Status Report — Ecosystem Integration Session
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot; see the Resolution section at the bottom (2026-08-01, updated 2026-09-10). The SDK work lives in the sibling `go-linter-sdk` repo (tagged v0.3.0+). Do not action from this file.
+
 **Date:** 2026-07-27 20:55 CEST
 **Scope:** Reacting to the "check integrations + plan + fix" thread across `go-finding`, `go-linter-sdk`, `linter-autoconfigure-sdk`, `go-policy-dsl`, and their consumer repos (`go-structure-linter`, `branching-flow`, `erraudit`, `oxlint-auto-configure`, `golangci-lint-auto-configure`, `library-policy`, `BuildFlow`).
 **Commits this session:** None authored by me (auto-git daemon may have committed; unverified).

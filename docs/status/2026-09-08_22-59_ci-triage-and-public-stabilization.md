@@ -1,5 +1,7 @@
 # Status Report: CI Triage + Public Launch Stabilization
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot. All five CI failures were fixed and verified same-week (struck inline); remaining launch/hardening tails live in `TODO_LIST.md`. Do not action from this file.
+
 > **Date:** 2026-09-08 22:33–23:00 CEST | **Session:** post-flip CI failure triage and fixes
 > **Context:** Follow-up to `2026-09-08_22-24_go-public-launch.md`. The repo went
 > public at 22:24; post-flip CI run 34274674104 finished 14/20 green with 5 real

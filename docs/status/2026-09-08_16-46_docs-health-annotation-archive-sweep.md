@@ -1,5 +1,7 @@
 # Status Report — Docs-Health Full Audit: Annotate, Archive, Living-Docs Rebuild
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot of the prior docs-health pass; its f) already carries a 2026-09-10 status note and the remaining tails were re-triaged on 2026-09-23. Do not action from this file.
+
 **Date:** 2026-09-08 16:46 CEST
 **Session scope:** User-directed full docs-health AUDIT over ALL `**/2026-0*` files — view everything, execute the docs-health skill "fucking superbly", make all 6 living docs superb, annotate (inline strikethrough) + archive fully-done `.md` files.
 **Skill loaded:** `docs-health` SKILL.md + 5 references (harvest-guide, verify-checklist, resolving-items, health-report-format) + both annotation scripts (`annotate-prose.py`, `annotate-rows.py`).

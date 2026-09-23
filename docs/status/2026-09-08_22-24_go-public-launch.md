@@ -1,5 +1,7 @@
 # Status Report: go-finding Made Public — Launch & Verification
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot of the public flip. Stabilization items were closed same-week (struck inline); launch-track and public-hardening tails live in `TODO_LIST.md`. Do not action from this file.
+
 > **Date:** 2026-09-08 22:24–22:40 CEST | **Session:** visibility flip + verification
 > **Trigger:** User instruction "just make it public" after the public/private
 > assessment conversation (grounded in `docs/PRO_CONTRA_make-public.md`, 2026-07-24).

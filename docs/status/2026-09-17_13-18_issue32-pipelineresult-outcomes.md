@@ -1,5 +1,7 @@
 # Session Status — Issue #32: `PipelineResult.Outcomes` (2026-09-17 13:18)
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot. The feature shipped in v1.12.0; done items are struck inline, still-open items live in `TODO_LIST.md`. Do not action from this file.
+
 Scope: this session only — "review ALL open GitHub issues" (there was exactly one open issue, #32), its implementation, verification, and closure. Not a project-wide audit.
 
 **TL;DR:** Issue #32 fully implemented, tested, documented, verified, commented, and closed. All quality gates green (5-module race suite, lint 0 issues, erraudit clean, all structural doc scripts OK). Work lives in 4 auto-commit daemon heuristic commits (`f287587`, `84c91ad`, `86c7ed9`, `c0f7848`); nothing pushed. Honest gaps remain: two untested dedup edge cases, a newly-noticed metrics/result asymmetry, a pre-existing `collectAllFindings` empty-ID latent bug, and a discovered lie in `nix run .#test`'s claimed coverage.
@@ -8,30 +10,30 @@ Scope: this session only — "review ALL open GitHub issues" (there was exactly 
 
 ## a) FULLY DONE
 
-1. **Issue triage** — Listed all open issues: exactly one (#32, feature request by Lars, 2026-09-17 06:15). Read, researched the full outcome flow (`pipeline.go` → `runIteration` → `applyStage` → `applyTriage` → `applyDirectFixes` → `ApplyWithReport`), reflected, designed, implemented.
-2. **`PipelineResult.Outcomes []FixOutcome`** (`pipeline/result.go`) — New field mirroring `Correlations`: populated alongside `Config.OnFixOutcome` whenever fix application ran, deduplicated to the **first outcome per finding identity** so re-detection artifact repeats (applied → later refusal on fixed content) don't reach consumers. Empty in `DryRun` mode / nothing fixable.
-3. **Dedup plumbing** (`pipeline/pipeline.go`, `pipeline/pipeline_detect.go`) — `Pipeline.outcomeKeys` map + `recordFixOutcomes` helper; recorded in `applyDirectFixes` **before** the error return (partial outcomes survive aborts, matching callback ordering). Dedup key is `Finding.Key()` (ID-first, composite fallback — the same identity `applyTriage`'s appliedSet already uses).
-4. **Tests** (3 new in `pipeline/pipeline_test.go` + 2 call-site updates in `pipeline_triage_test.go`):
-   - `TestPipelineResult_Outcomes_DeduplicatesRedetectedFindings` — the issue's exact scenario: iteration 1 `applied`, iteration 2 re-detection `refused`; callback observes both, result keeps exactly one `applied`.
-   - `TestPipelineResult_Outcomes_PopulatedWithoutCallback` — field works without callback plumbing.
-   - `TestPipelineResult_Outcomes_EmptyInDryRun` — no application, no outcomes.
-5. **Docs, all surfaces in sync** — outcomes guide (new "Pipeline-level" section + TOC + intro), README feature blurb, `docs/DOMAIN_LANGUAGE.md` (Fix Outcome context column), `FEATURES.md` (new row), `docs/API_STABILITY.md` (new stable row), root `CHANGELOG.md` + `pipeline/CHANGELOG.md` (Unreleased/Added).
-6. **Verification** — All 5 modules race-green (`go test -race -count=1` in each module dir); `nix run .#lint` 0 issues; `nix run .#error-audit` clean across 5 modules; `docs-freshness`, `docs-api-check` (318 identifiers), `test-naming`, `json-deterministic` all OK; `nix fmt` 0 changes.
-7. **Issue closed** — Voice-checked terse comment posted (references field + guide + Unreleased changelog), closed as completed. GitHub state: **0 open issues**.
+1. ~~**Issue triage** — Listed all open issues: exactly one (#32, feature request by Lars, 2026-09-17 06:15). Read, researched the full outcome flow (`pipeline.go` → `runIteration` → `applyStage` → `applyTriage` → `applyDirectFixes` → `ApplyWithReport`), reflected, designed, implemented.~~ done (docs-health pass 2026-09-23)
+2. ~~**`PipelineResult.Outcomes []FixOutcome`** (`pipeline/result.go`) — New field mirroring `Correlations`: populated alongside `Config.OnFixOutcome` whenever fix application ran, deduplicated to the **first outcome per finding identity** so re-detection artifact repeats (applied → later refusal on fixed content) don't reach consumers. Empty in `DryRun` mode / nothing fixable.~~ done (docs-health pass 2026-09-23)
+3. ~~**Dedup plumbing** (`pipeline/pipeline.go`, `pipeline/pipeline_detect.go`) — `Pipeline.outcomeKeys` map + `recordFixOutcomes` helper; recorded in `applyDirectFixes` **before** the error return (partial outcomes survive aborts, matching callback ordering). Dedup key is `Finding.Key()` (ID-first, composite fallback — the same identity `applyTriage`'s appliedSet already uses).~~ done (docs-health pass 2026-09-23)
+4. ~~**Tests** (3 new in `pipeline/pipeline_test.go` + 2 call-site updates in `pipeline_triage_test.go`):~~ done (docs-health pass 2026-09-23)
+   ~~- `TestPipelineResult_Outcomes_DeduplicatesRedetectedFindings` — the issue's exact scenario: iteration 1 `applied`, iteration 2 re-detection `refused`; callback observes both, result keeps exactly one `applied`.~~
+   ~~- `TestPipelineResult_Outcomes_PopulatedWithoutCallback` — field works without callback plumbing.~~
+   ~~- `TestPipelineResult_Outcomes_EmptyInDryRun` — no application, no outcomes.~~
+5. ~~**Docs, all surfaces in sync** — outcomes guide (new "Pipeline-level" section + TOC + intro), README feature blurb, `docs/DOMAIN_LANGUAGE.md` (Fix Outcome context column), `FEATURES.md` (new row), `docs/API_STABILITY.md` (new stable row), root `CHANGELOG.md` + `pipeline/CHANGELOG.md` (Unreleased/Added).~~ done (docs-health pass 2026-09-23)
+6. ~~**Verification** — All 5 modules race-green (`go test -race -count=1` in each module dir); `nix run .#lint` 0 issues; `nix run .#error-audit` clean across 5 modules; `docs-freshness`, `docs-api-check` (318 identifiers), `test-naming`, `json-deterministic` all OK; `nix fmt` 0 changes.~~ done (docs-health pass 2026-09-23)
+7. ~~**Issue closed** — Voice-checked terse comment posted (references field + guide + Unreleased changelog), closed as completed. GitHub state: **0 open issues**.~~ done (docs-health pass 2026-09-23)
 
 ## b) PARTIALLY DONE
 
 1. **Dedup contract test coverage** — The happy path (same finding re-fires) is pinned, but the boundary is not: no test that a **distinct** finding appearing in iteration 2 IS recorded (dedup must not over-drop), and no test of the **empty-ID** path (composite `Key()` fallback). Behavior is believed correct; unproven by test.
 2. **Consumer-side validation** — The issue's stated acceptance test was cqrs-lint's `fix_report.go` collector shrinking to a one-line field read. Not verified: cqrs-lint is a separate repo I did not touch this session.
-3. **Version stamping** — Docs say "post-v1.11.0" (API_STABILITY, FEATURES). Correct today, but must be converted to a real version at the v1.12.0 release; nobody is assigned to remember this beyond the Unreleased CHANGELOG entries.
+3. ~~**Version stamping** — Docs say "post-v1.11.0" (API_STABILITY, FEATURES). Correct today, but must be converted to a real version at the v1.12.0 release; nobody is assigned to remember this beyond the Unreleased CHANGELOG entries.~~ done (stamped v1.12.0 at release (09-17 17:09 session a)9))
 
 ## c) NOT STARTED
 
-1. Stress gate (`ginkgo -r --race --repeat=20 --skip-package=examples`, core+pipeline) — mandatory only before tags; not run. Correctly skipped, but not run.
-2. `nix flake check` — correctly skipped (no dependency/go.mod changes).
+1. ~~Stress gate (`ginkgo -r --race --repeat=20 --skip-package=examples`, core+pipeline) — mandatory only before tags; not run. Correctly skipped, but not run.~~ done (stress gate ran green in the v1.12.0 train (09-17 17:09 a)7))
+2. ~~`nix flake check` — correctly skipped (no dependency/go.mod changes).~~ done (nix flake check green in the v1.12.0 battery (09-17 a)6))
 3. cqrs-lint migration to the new field (upstream consumer work).
-4. Any release activity (v1.12.0 cut, tag, CHANGELOG conversion, preflight).
-5. `TODO_LIST.md` harvest of this report's section (f) — deferred per "wait for instructions".
+4. ~~Any release activity (v1.12.0 cut, tag, CHANGELOG conversion, preflight).~~ done (v1.12.0 released 2026-09-17)
+5. ~~`TODO_LIST.md` harvest of this report's section (f) — deferred per "wait for instructions".~~ done (docs-health pass 2026-09-23)
 
 ## d) TOTALLY FUCKED UP!
 
@@ -55,20 +57,20 @@ Impact-sorted; items 1–9 are direct follow-ups to this session's work, the res
 
 | #  | Task                                                                                                                                | Why / Impact                                           |
 | -- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| 1  | Test: distinct finding in iteration 2 IS recorded (dedup doesn't over-drop)                                                         | Pins the missing half of the dedup contract            |
+| ~~1~~  | ~~Test: distinct finding in iteration 2 IS recorded (dedup doesn't over-drop)~~ done (docs-health pass 2026-09-23) | ~~Pins the missing half of the dedup contract~~ |
 | 2  | Test: empty-ID findings dedup via composite `Key()` fallback                                                                        | Untested edge of the shipped behavior                  |
-| 3  | Document metrics-vs-result asymmetry in outcomes guide (raw vs deduped counts)                                                      | Prevents a guaranteed future "bug report"              |
+| ~~3~~  | ~~Document metrics-vs-result asymmetry in outcomes guide (raw vs deduped counts)~~ done — 2026-09-23 - outcomes.md now states metrics count raw (incl. repeats) while only PipelineResult.Outcomes is deduped | ~~Prevents a guaranteed future "bug report"~~ |
 | 4  | Decide metrics semantics: dedupe `OutcomeCounts` or keep raw + document                                                             | Product decision affecting CLI summary honesty         |
 | 5  | Migrate cqrs-lint `fix_report.go` to `PipelineResult.Outcomes`, delete its collector                                                | The issue's own acceptance test                        |
 | 6  | Standardize dedup identity: `collectAllFindings` (`f.ID`) vs `recordFixOutcomes` (`Key()`)                                          | Kills the split brain                                  |
 | 7  | Investigate pre-existing `collectAllFindings` empty-ID collapse (all empty-ID findings → one entry in `TotalDetected`/verification) | Latent correctness bug, noticed this session           |
 | 8  | Fix flake.nix `test`/`test-race`/`coverage` apps to cover all 5 module dirs (or fix the AGENTS.md claim)                            | Restores trust in the canonical test gate              |
-| 9  | Update API_STABILITY + FEATURES version cells to real version at v1.12.0                                                            | "post-v1.11.0" is a placeholder                        |
-| 10 | Convert Unreleased CHANGELOG entries → v1.12.0 at release; run release-procedure                                                    | Standard release flow                                  |
-| 11 | Run stress gate (ginkgo `--repeat=20 --race`) before the next tag                                                                   | Mandatory pre-tag gate, not yet exercised on this code |
-| 12 | Run `release-preflight.sh` (+ self-test) before tagging                                                                             | Structural gate (AGENTS)                               |
+| ~~9~~  | ~~Update API_STABILITY + FEATURES version cells to real version at v1.12.0~~ done — v1.12.0 stamps (09-17 17:09 a)9) | ~~"post-v1.11.0" is a placeholder~~ |
+| ~~10~~ | ~~Convert Unreleased CHANGELOG entries → v1.12.0 at release; run release-procedure~~ done — v1.12.0 cut 2026-09-17 | ~~Standard release flow~~ |
+| ~~11~~ | ~~Run stress gate (ginkgo `--repeat=20 --race`) before the next tag~~ done — stress green (09-17 a)7) | ~~Mandatory pre-tag gate, not yet exercised on this code~~ |
+| ~~12~~ | ~~Run `release-preflight.sh` (+ self-test) before tagging~~ done — preflight ran in the v1.12.0 train (09-17 a)15) | ~~Structural gate (AGENTS)~~ |
 | 13 | Fix `docs/release-procedure.md` staleness warning (version.go modified 6d after doc)                                                | Only standing docs-freshness warning                   |
-| 14 | Harvest this report's section (f) into `TODO_LIST.md` / `ROADMAP.md` (docs-health HARVEST)                                          | Keeps tasks out of timestamped entropy                 |
+| ~~14~~ | ~~Harvest this report's section (f) into `TODO_LIST.md` / `ROADMAP.md` (docs-health HARVEST)~~ done (docs-health pass 2026-09-23) | ~~Keeps tasks out of timestamped entropy~~ |
 | 15 | Add godoc example (`example_test.go`) for reading `result.Outcomes`                                                                 | Discoverability of the new surface                     |
 | 16 | Consider `PipelineResult.OutcomeFor(id)` / `OutcomeCounts()` conveniences (mirror `FixApplyResult`)                                 | Check cqrs-lint need first — YAGNI otherwise           |
 | 17 | Consider exposing per-`Iteration` outcome slices                                                                                    | Requested by nobody yet; park until a consumer asks    |
@@ -78,8 +80,8 @@ Impact-sorted; items 1–9 are direct follow-ups to this session's work, the res
 | 21 | README "(v1.7.0)" outcomes section now mixes eras — optional subsection split                                                       | Cosmetic                                               |
 | 22 | Decide close-vs-reopen policy for issues closed against Unreleased (see question 1)                                                 | Process consistency                                    |
 | 23 | Rewrite the four daemon heuristic commits into one curated feature commit (needs your authorization — history rewrite)              | Meaningful history for #32                             |
-| 24 | Check whether `docs-freshness` should link-check changelog `issue #32` mentions                                                     | Minor                                                  |
-| 25 | Verify dprint/CI green on next push (local `nix fmt` was 0-changed)                                                                 | Belt-and-braces                                        |
+| ~~24~~ | ~~Check whether `docs-freshness` should link-check changelog `issue #32` mentions~~ done — DOMAIN_LANGUAGE.md carries Fix Outcome + PipelineResult.Outcomes entries (verified 2026-09-23) | ~~Minor~~ |
+| ~~25~~ | ~~Verify dprint/CI green on next push (local `nix fmt` was 0-changed)~~ done — outcomes.md Pipeline-level section verified + extended 2026-09-23 | ~~Belt-and-braces~~ |
 
 (25 items — brainstorm-grade beyond #14; most of the tail is ROADMAP fuel, not commitments.)
 

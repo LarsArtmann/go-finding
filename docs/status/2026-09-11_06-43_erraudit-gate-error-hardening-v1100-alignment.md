@@ -1,5 +1,7 @@
 # Session Status: erraudit Gate, Error-Management Hardening & v1.10.0 Release Repair
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot. The v1.10.0 push items completed days later (sub-module tags pushed 2026-09-11; v1.11.0+ shipped). Done items struck inline; still-open items live in `TODO_LIST.md`. Do not action from this file.
+
 **Date:** 2026-09-11 06:43 CEST
 **Repo:** go-finding @ master (`bbf748c` + uncommitted doc edits absorbed by auto-daemon)
 **Trigger:** User pasted an erraudit report showing 79 violations (58 ERROR / 21 WARNING) and demanded "SUPERB ERROR MANAGEMENT #DDD", then "fix what makes sense", then this status report.
@@ -27,24 +29,24 @@ The pasted 79-violation report was an **artifact of wrong tool flags** (`--enfor
 
 | #  | Item                                                                                                                 | Evidence                                                                                                                                                   |
 | -- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1  | erraudit findings reproduced & verified (not trusted from paste)                                                     | baseline 3 FP; flag combo 79 — exact match with user's report                                                                                              |
-| 2  | 3 baseline false positives suppressed with reasons                                                                   | `id.go:202-203` (hash.Write never errors), `errors.go:164` (AsType ok-pattern) — `//nolint:erraudit // <reason>`                                           |
-| 3  | 3 CRITICAL context-loss errors FIXED                                                                                 | `pipeline/file_backup.go:91` (backup dir via `ioErrorAt`), `pipeline/pipeline.go:63,74` (`rootDir=%q`)                                                     |
-| 4  | 2 genuine `errors.As` → `errors.AsType` migrations                                                                   | `cmd/go-finding/internal/detectors/{govet,staticcheck}.go`                                                                                                 |
-| 5  | 24 intentional patterns documented with reasons                                                                      | 12 pipeline + 13 CLI… net 24; `nolint-audit`: **27 needed, 0 stale**                                                                                       |
-| 6  | erraudit gate script with explicit verdict                                                                           | `scripts/error-audit.sh`; **FAIL path proven** (injected violation → exit 1; removed → exit 0)                                                             |
-| 7  | 0 error-handling violations across all 5 modules                                                                     | root, pipeline, analysis, toolsdk, cmd/go-finding                                                                                                          |
-| 8  | Pre-existing version-drift gate failure FIXED                                                                        | `cmd/go-finding/go.mod` pipeline require `v1.9.2 → v1.10.0`; GOWORK=off build OK                                                                           |
-| 9  | Missing v1.10.0 sub-module alignment tags CREATED (local)                                                            | `pipeline/v1.10.0`, `analysis/v1.10.0`, `cmd/go-finding/v1.10.0` — annotated, at `bbf748c`, format matches `pipeline v1.9.2 — version alignment` precedent |
-| 10 | Docs updated: research addendum §9, AGENTS.md (gate section + command), CHANGELOG [Unreleased], TODO_LIST (tag item) | all committed by daemon                                                                                                                                    |
-| 11 | Full verification matrix                                                                                             | race tests ×5 modules OK · golangci-lint 0 issues ×3 touched modules · 7 structural scripts OK · `nix flake check` OK · `nix fmt` 0 changed                |
-| 12 | Tool quirks discovered & documented                                                                                  | `nolint-audit ./...` silently scans nothing (use `.`); preflight exit code must not be read after `                                                        |
+| ~~1~~  | ~~erraudit findings reproduced & verified (not trusted from paste)~~ done (docs-health pass 2026-09-23) | ~~baseline 3 FP; flag combo 79 — exact match with user's report~~ |
+| ~~2~~  | ~~3 baseline false positives suppressed with reasons~~ done (docs-health pass 2026-09-23) | ~~`id.go:202-203` (hash.Write never errors), `errors.go:164` (AsType ok-pattern) — `//nolint:erraudit // <reason>`~~ |
+| ~~3~~  | ~~3 CRITICAL context-loss errors FIXED~~ done (docs-health pass 2026-09-23) | ~~`pipeline/file_backup.go:91` (backup dir via `ioErrorAt`), `pipeline/pipeline.go:63,74` (`rootDir=%q`)~~ |
+| ~~4~~  | ~~2 genuine `errors.As` → `errors.AsType` migrations~~ done (docs-health pass 2026-09-23) | ~~`cmd/go-finding/internal/detectors/{govet,staticcheck}.go`~~ |
+| ~~5~~  | ~~24 intentional patterns documented with reasons~~ done (docs-health pass 2026-09-23) | ~~12 pipeline + 13 CLI… net 24; `nolint-audit`: **27 needed, 0 stale**~~ |
+| ~~6~~  | ~~erraudit gate script with explicit verdict~~ done (docs-health pass 2026-09-23) | ~~`scripts/error-audit.sh`; **FAIL path proven** (injected violation → exit 1; removed → exit 0)~~ |
+| ~~7~~  | ~~0 error-handling violations across all 5 modules~~ done (docs-health pass 2026-09-23) | ~~root, pipeline, analysis, toolsdk, cmd/go-finding~~ |
+| ~~8~~  | ~~Pre-existing version-drift gate failure FIXED~~ done (docs-health pass 2026-09-23) | ~~`cmd/go-finding/go.mod` pipeline require `v1.9.2 → v1.10.0`; GOWORK=off build OK~~ |
+| ~~9~~  | ~~Missing v1.10.0 sub-module alignment tags CREATED (local)~~ done (docs-health pass 2026-09-23) | ~~`pipeline/v1.10.0`, `analysis/v1.10.0`, `cmd/go-finding/v1.10.0` — annotated, at `bbf748c`, format matches `pipeline v1.9.2 — version alignment` precedent~~ |
+| ~~10~~ | ~~Docs updated: research addendum §9, AGENTS.md (gate section + command), CHANGELOG [Unreleased], TODO_LIST (tag item)~~ done (docs-health pass 2026-09-23) | ~~all committed by daemon~~ |
+| ~~11~~ | ~~Full verification matrix~~ done (docs-health pass 2026-09-23) | ~~race tests ×5 modules OK · golangci-lint 0 issues ×3 touched modules · 7 structural scripts OK · `nix flake check` OK · `nix fmt` 0 changed~~ |
+| ~~12~~ | ~~Tool quirks discovered & documented~~ done (docs-health pass 2026-09-23) | ~~`nolint-audit ./...` silently scans nothing (use `.`); preflight exit code must not be read after `~~ |
 
 ## b) PARTIALLY DONE
 
 | Item                                  | Done                                                                                | Missing                                                                                                                                                             |
 | ------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| v1.10.0 sub-module release completion | go.mod aligned; 3 alignment tags created locally; preflight structural checks green | **Push** (user-gated): `master` then 3 tags in one push; then Release-workflow confirmation + proxy `go get` verification + pkg.go.dev                              |
+| ~~v1.10.0 sub-module release completion~~ done — the 3 sub-module v1.10.0 tags were created 2026-09-11 and pushed; v1.11.0 shipped 2026-09-17 | go.mod aligned; 3 alignment tags created locally; preflight structural checks green | **Push** (user-gated): `master` then 3 tags in one push; then Release-workflow confirmation + proxy `go get` verification + pkg.go.dev                              |
 | erraudit CI integration               | Local gate exists and is proven                                                     | `ci.yml` wiring **blocked**: erraudit repo is PRIVATE (no `go install` from public runners without credentials); token plumbing deliberately not reintroduced       |
 | Error-management gate maturity        | Gates violations, prints verdicts                                                   | No `nolint-audit` phase (stale directives only caught manually); `[feature:logger]` stderr noise printed on FAIL; no version pin (`erraudit version` reports `dev`) |
 
@@ -53,8 +55,8 @@ The pasted 79-violation report was an **artifact of wrong tool flags** (`--enfor
 - Pushing anything (explicitly user-gated; never push without request).
 - Consumer compatibility sweep for the 3 changed error-message formats (see f-14).
 - Upstreaming the 2 erraudit detector/tooling bugs found this session (f-10, f-11).
-- Stress gate (`ginkgo --repeat=20 --race`) — mandatory before next _tag push_, not required for today's changes; **not run**.
-- `go-arch-lint` (arch-check job) — **not run this session**; low risk (no package-boundary changes) but honest gap in the "all gates green" claim.
+- ~~Stress gate (`ginkgo --repeat=20 --race`) — mandatory before next _tag push_, not required for today's changes; **not run**.~~ done — green in the v1.12.0 train.
+- ~~`go-arch-lint` (arch-check job) — **not run this session**; low risk (no package-boundary changes) but honest gap in the "all gates green" claim.~~ done — green (re-verified 2026-09-23).
 - DDD error-model v2 discussions (typed `Detect` error, branded error codes) — deliberately not started (would be API churn without a driver).
 
 ## d) TOTALLY FUCKED UP
@@ -82,11 +84,11 @@ Process-level (my own failures this session, all caught but all real):
 
 _Release & push (blocked on user):_
 
-1. Push `master` (docs/CHANGELOG/TODO updates land).
-2. Push the 3 alignment tags in ONE push (≤3-per-push rule) — Release workflow auto-triggers.
-3. Confirm Release workflow run(s) green after tag push.
-4. Verify proxy resolution: `go get github.com/larsartmann/go-finding/pipeline@v1.10.0` (GOWORK=off, no GOPRIVATE).
-5. Verify pkg.go.dev renders the new module versions.
+1. ~~Push `master` (docs/CHANGELOG/TODO updates land).~~ done (master pushed; v1.11.0+ shipped)
+2. ~~Push the 3 alignment tags in ONE push (≤3-per-push rule) — Release workflow auto-triggers.~~ done (tags pushed 2026-09-11)
+3. ~~Confirm Release workflow run(s) green after tag push.~~ done (Release runs green for v1.10.0-v1.12.0)
+4. ~~Verify proxy resolution: `go get github.com/larsartmann/go-finding/pipeline@v1.10.0` (GOWORK=off, no GOPRIVATE).~~ done (proxy serves all modules (later release trains verified))
+5. ~~Verify pkg.go.dev renders the new module versions.~~ done (pkg.go.dev renders (verified through v1.12.0))
 6. Decide: do sub-module tags need GitHub Releases, or tag-only is fine (procedure currently ambiguous).
 
 _erraudit gate evolution:_
@@ -114,8 +116,8 @@ _Error model / DDD:_
 26. BDD (Ginkgo) suite for the error contract: Is/Unwrap/AsType/CategoryOf invariants.
 
 _CI & gates hygiene:_
-27. Run `go-arch-lint` (arch-check) to close today's honest gap.
-28. Run the mandatory stress gate before the next tag push (`ginkgo -r --race --repeat=20` + `go test -race -count=20` split).
+27. ~~Run `go-arch-lint` (arch-check) to close today's honest gap.~~ done (go-arch-lint green)
+28. ~~Run the mandatory stress gate before the next tag push (`ginkgo -r --race --repeat=20` + `go test -race -count=20` split).~~ done (stress green in the v1.12.0 train)
 29. Silence golangci-lint's "unknown linters in //nolint: erraudit" warning (config allowlist) — cosmetic.
 30. Verify pre-commit hook alive (`git config core.hooksPath` gotcha) — not checked this session.
 31. Add `govulncheck` + arch-check to the local preflight routine docs (currently CI-only in muscle memory).
@@ -127,10 +129,10 @@ _Consumers & ecosystem:_
 35. Notify consumers of the error-message format changes in release notes if f-18 finds matches.
 
 _Docs health:_
-36. docs-health ANNOTATE pass: older status reports claiming "all gates green" on 2026-09-10 (version-drift was red) — annotate, don't rewrite.
+36. ~~docs-health ANNOTATE pass: older status reports claiming "all gates green" on 2026-09-10 (version-drift was red) — annotate, don't rewrite.~~ done (the 2026-09-10 and 2026-09-23 docs-health passes annotated the September chain)
 37. Cross-link the erraudit policy from `docs/research/` §9 into README's development section (one line).
 38. Add `error-audit.sh` to the flake devShell documentation (install hint for fresh machines).
-39. Harvest this report's f-list into TODO_LIST/ROADMAP via docs-health HARVEST (this section is the input, not the tomb).
+39. ~~Harvest this report's f-list into TODO_LIST/ROADMAP via docs-health HARVEST (this section is the input, not the tomb).~~ done (docs-health pass 2026-09-23)
 
 _Type-model & code (DDD v2 candidates, all API-affecting — needs a driver):_
 40. Branded `ErrorCode` type (compile-time distinction from arbitrary strings).

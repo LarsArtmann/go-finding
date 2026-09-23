@@ -1,5 +1,7 @@
 # Status Report — Release & CI Integrity Hardening Session
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot. All six implemented gates shipped in v1.11.0 (see CHANGELOG Added); the v1.10.0 train was completed 2026-09-11 via sub-module tags. Residual release-integrity work lives in `TODO_LIST.md`. Do not action from this file.
+
 **Date:** 2026-09-10 08:03 CEST (Thursday)
 **Session scope:** The 6-item 🔴 HIGH "Release & CI integrity" section of TODO_LIST.md (harvested 2026-09-10 from the 2026-09-09 self-review report §f), executed end to end: concurrency group, unpushed-commits gate, version-stamp guard, post-tag failure-path self-test, worktree-hygiene gate, and the `nix flake check` follow-up.
 **Method:** READ → UNDERSTAND → RESEARCH → THINK → REFLECT → Execute per item; every new gate's FAIL path was intentionally triggered and verified once (dead-gate discipline).
