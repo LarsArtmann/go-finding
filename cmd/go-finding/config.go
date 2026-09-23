@@ -99,6 +99,7 @@ func (c flightRecorderFileConfig) resolve() (pipeline.FlightRecorderConfig, erro
 
 	return resolved, nil
 }
+
 type detectorSpec struct {
 	Name string `json:"name" yaml:"name"`
 }
