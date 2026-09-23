@@ -99,3 +99,18 @@ for _, diag := range diagnostics {
 
 Because the group id survives JSON → SARIF → LSP → back, no additional
 state is needed on the server side.
+
+## Relation to edit lists (multi-edit fixes)
+
+Since the typed edit-list feature, a SARIF result can carry TWO independent
+extensions from this project:
+
+1. the `go-finding/groupId` property-bag key (this document) — which clone
+   group a result belongs to, and
+2. `artifactChanges` with per-edit `replacement` entries on the fix — how
+   the suggested fix is applied byte-for-byte (see
+   [fix-engine.md](fix-engine.md) and ADR #19 in
+   `docs/architecture-decisions.md`).
+
+The axes are orthogonal: a finding may have a GroupID and no fix, an
+edit-list fix and no group, or both. Neither is derived from the other.

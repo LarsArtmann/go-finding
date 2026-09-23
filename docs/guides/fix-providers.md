@@ -17,10 +17,18 @@ Finding → FixEngine → [Provider1, Provider2, ...] → FixEdit[] → applyEdi
 
 | Provider            | Name          | Handles                             | Accuracy |
 | ------------------- | ------------- | ----------------------------------- | -------- |
+| `EditListProvider`  | `edit-list`   | Findings with a typed `Edits` list  | Exact    |
 | `OffsetProvider`    | `byte-offset` | Findings with byte-offset Range     | Exact    |
 | `LineProvider`      | `line-column` | Findings with line/column Position  | High     |
 | `SubstringProvider` | `substring`   | Findings with BeforeCode (fallback) | Medium   |
 | `goast.Provider`    | `go-ast`      | `.go` files with any code change    | Highest  |
+
+The default chain order is EditList → byte-offset → line-column → substring
+(a typed edit list is the most precise representation, so it wins before any
+content guessing); custom providers are prepended. `EditListProvider` resolves
+byte offsets directly and line/column entries through the shared line index;
+lists spanning files fail with `ErrEditCrossFile`, stale/out-of-bounds offsets
+with `ErrEditStale`.
 
 ## Writing a Custom Provider
 

@@ -23,6 +23,9 @@ const (
 // GenerateID creates a stable, unique identifier for a finding.
 // Format: "tool:rule:file:line:col" (human-readable)
 // If line is 0, uses hash-based ID for stability.
+// Deliberately NOT derived from the finding's fix data (BeforeCode/AfterCode
+// or the Edits list): a fix's internal shape may be refined without changing
+// the finding's identity.
 func GenerateID(toolName ToolName, rule RuleName, pos Position) ID {
 	if pos.Line == 0 {
 		// Hash-based for position-less findings.
