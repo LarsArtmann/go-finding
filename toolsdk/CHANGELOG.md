@@ -11,7 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-No toolsdk-module changes yet.
+### Documented
+
+- **golangci-lint `exhaustruct_v5` panic on Go 1.27 promoted-field keys** is an
+  upstream pinning issue, not a toolsdk defect: golangci-lint (v2.13.2 and
+  master) vendors `dev.gaijin.team/go/exhaustruct/v5` v5.0.3, whose analyzer
+  predates `promotedKeysVersion = "go1.27"`; the fix shipped in v5.2.0
+  (`analyzer/missing-fields-visitor.go`). Consumers gating on
+  `exhaustruct_v5` (fleet repos triaging toolsdk findings with that linter)
+  should ask golangci-lint to bump the dep rather than disable the linter —
+  tracked upstream in golangci/golangci-lint#6780.
 
 ## [1.13.0] - 2026-09-22
 
