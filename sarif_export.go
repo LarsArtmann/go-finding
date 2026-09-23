@@ -260,6 +260,13 @@ func findingFixRegion(f Finding) sarifRegion {
 }
 
 func sarifFixes(f Finding) []sarifFix {
+	if len(f.Edits) > 0 {
+		return []sarifFix{{
+			Description: sarifMessage{Text: f.Suggestion},
+			Changes:     sarifArtifactChangesFromEdits(f),
+		}}
+	}
+
 	if f.HasFix() {
 		region := findingFixRegion(f)
 
@@ -282,6 +289,59 @@ func sarifFixes(f Finding) []sarifFix {
 	}
 
 	return nil
+}
+
+// sarifArtifactChangesFromEdits groups the finding's typed edit list into one
+// artifact change per target file. Edits with an empty Start.File belong to
+// the finding's own file.
+func sarifArtifactChangesFromEdits(f Finding) []sarifArtifactChange {
+	byFile := make(map[FilePath][]sarifReplacement)
+	order := make([]FilePath, 0, len(f.Edits))
+
+	for _, edit := range f.Edits {
+		file := edit.EffectiveFile(f.Position.File)
+		if _, seen := byFile[file]; !seen {
+			order = append(order, file)
+		}
+
+		byFile[file] = append(byFile[file], sarifReplacement{
+			DeletedRegion: sarifEditRegion(edit),
+			InsertedText:  sarifMessage{Text: edit.NewText},
+		})
+	}
+
+	changes := make([]sarifArtifactChange, 0, len(order))
+	for _, file := range order {
+		changes = append(changes, sarifArtifactChange{
+			ArtifactLocation: sarifArtifactLocation{URI: string(file)},
+			Replacements:     byFile[file],
+		})
+	}
+
+	return changes
+}
+
+// sarifEditRegion renders a TextEdit span as a SARIF region, carrying line and
+// byte coordinates so the round-trip preserves both.
+func sarifEditRegion(edit TextEdit) sarifRegion {
+	region := sarifRegion{
+		StartLine:   edit.Start.Line,
+		StartColumn: edit.Start.Column,
+		ByteOffset:  max(edit.Start.Offset, 0),
+	}
+
+	if !edit.HasSpan() {
+		return region
+	}
+
+	region.EndLine = edit.End.Line
+	region.EndColumn = edit.End.Column
+
+	if edit.End.Offset >= 0 {
+		region.ByteLength = max(edit.End.Offset-edit.Start.Offset, 0)
+	}
+
+	return region
 }
 
 func sarifRelatedLocs(f Finding) []sarifRelatedLoc {

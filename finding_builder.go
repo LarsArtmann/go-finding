@@ -74,6 +74,15 @@ func (b *Builder) WithAfterCode(code string) *Builder {
 	return b
 }
 
+// WithEdits appends typed text edits to the fix. When set, the edit list is
+// the authoritative fix representation; BeforeCode/AfterCode remain the
+// display summary of the first edit.
+func (b *Builder) WithEdits(edits ...TextEdit) *Builder {
+	b.f.Edits = append(b.f.Edits, edits...)
+
+	return b
+}
+
 // WithRange sets the source range.
 func (b *Builder) WithRange(r Range) *Builder {
 	b.f.Range = &r

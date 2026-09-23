@@ -60,6 +60,10 @@ func (f Finding) Equal(other Finding) bool {
 		return false
 	}
 
+	if !editsEqual(f.Edits, other.Edits) {
+		return false
+	}
+
 	if f.Snippet != other.Snippet {
 		return false
 	}

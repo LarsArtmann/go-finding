@@ -96,6 +96,7 @@ func findingFromSarResult(r sarifResult, toolName string) Finding {
 		if len(r.Fixes[0].Changes) > 0 && len(r.Fixes[0].Changes[0].Replacements) > 0 {
 			f.AfterCode = r.Fixes[0].Changes[0].Replacements[0].InsertedText.Text
 			f.FixStrategy = FixStrategyDirect
+			f.Edits = editsFromSarifChanges(r.Fixes[0].Changes)
 		} else {
 			f.FixStrategy = FixStrategySuggest
 		}
@@ -151,6 +152,52 @@ func findingFromSarResult(r sarifResult, toolName string) Finding {
 	f.FixStrategy = NormalizeFixStrategy(f.FixStrategy)
 
 	return f
+}
+
+// editsFromSarifChanges converts every artifact change's replacements into a
+// typed edit list, preserving per-edit file, line/column, and byte offset
+// coordinates. Edits without byte offsets use the -1 sentinel.
+func editsFromSarifChanges(changes []sarifArtifactChange) []TextEdit {
+	var edits []TextEdit
+
+	for _, change := range changes {
+		file := FilePath(change.ArtifactLocation.URI)
+
+		for _, rep := range change.Replacements {
+			edit := TextEdit{
+				Start: Position{
+					File:   file,
+					Line:   rep.DeletedRegion.StartLine,
+					Column: rep.DeletedRegion.StartColumn,
+					Offset: -1,
+				},
+				End:     Position{Offset: -1},
+				NewText: rep.InsertedText.Text,
+			}
+
+			if rep.DeletedRegion.ByteOffset > 0 {
+				edit.Start.Offset = rep.DeletedRegion.ByteOffset
+			}
+
+			if rep.DeletedRegion.EndLine > 0 || rep.DeletedRegion.EndColumn > 0 ||
+				rep.DeletedRegion.ByteLength > 0 {
+				edit.End = Position{
+					File:   file,
+					Line:   rep.DeletedRegion.EndLine,
+					Column: rep.DeletedRegion.EndColumn,
+					Offset: -1,
+				}
+
+				if rep.DeletedRegion.ByteOffset > 0 {
+					edit.End.Offset = rep.DeletedRegion.ByteOffset + rep.DeletedRegion.ByteLength
+				}
+			}
+
+			edits = append(edits, edit)
+		}
+	}
+
+	return edits
 }
 
 // applySarifPosition sets the Position and Range fields from SARIF locations.

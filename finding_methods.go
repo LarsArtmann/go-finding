@@ -79,7 +79,8 @@ func (f Finding) IsSuppressedAt(now time.Time) bool {
 //   - IsAutoFixable() ⟹ HasFix()  (strict subset)
 //   - HasFix() requires a valid FixStrategy AND code data where applicable
 //
-// Returns true for FixStrategyDirect when BeforeCode or AfterCode is present.
+// Returns true for FixStrategyDirect when BeforeCode, AfterCode, or an edit
+// list is present.
 // Returns true for FixStrategySuggest/FixStrategyAI when AfterCode is present.
 // Returns false for FixStrategyNone, empty strategy, or any strategy missing
 // required code data.
@@ -93,7 +94,7 @@ func (f Finding) HasFix() bool {
 	case FixStrategyNone:
 		return false
 	case FixStrategyDirect:
-		return f.BeforeCode != "" || f.AfterCode != ""
+		return f.BeforeCode != "" || f.AfterCode != "" || f.HasEditList()
 	case FixStrategySuggest, FixStrategyAI:
 		return f.AfterCode != ""
 	default:
@@ -102,11 +103,13 @@ func (f Finding) HasFix() bool {
 }
 
 // IsAutoFixable reports whether the pipeline can automatically apply this fix.
-// Stricter than HasFix: requires FixStrategyDirect AND (BeforeCode or AfterCode).
+// Stricter than HasFix: requires FixStrategyDirect AND (BeforeCode, AfterCode,
+// or an edit list).
 // Use HasFix() to check if any fix exists; use IsAutoFixable() to check if
 // the pipeline will attempt auto-application.
 func (f Finding) IsAutoFixable() bool {
-	return f.Normalized().FixStrategy == FixStrategyDirect && (f.BeforeCode != "" || f.AfterCode != "")
+	return f.Normalized().FixStrategy == FixStrategyDirect &&
+		(f.BeforeCode != "" || f.AfterCode != "" || f.HasEditList())
 }
 
 // HasSuggestion returns true if this finding has a human-readable suggestion.
@@ -147,10 +150,17 @@ func (f Finding) String() string {
 }
 
 // HasCodeChange reports whether the finding carries any code change data
-// (BeforeCode or AfterCode). This is a low-level check used by the FixEngine;
-// prefer HasFix() or IsAutoFixable() for higher-level fixability decisions.
+// (BeforeCode, AfterCode, or an edit list). This is a low-level check used by
+// the FixEngine; prefer HasFix() or IsAutoFixable() for higher-level fixability
+// decisions.
 func (f Finding) HasCodeChange() bool {
-	return f.BeforeCode != "" || f.AfterCode != ""
+	return f.BeforeCode != "" || f.AfterCode != "" || f.HasEditList()
+}
+
+// HasEditList reports whether the finding carries a typed edit list
+// (Finding.Edits), the authoritative multi-edit fix representation.
+func (f Finding) HasEditList() bool {
+	return len(f.Edits) > 0
 }
 
 // HasRange reports whether the finding has a valid range set.

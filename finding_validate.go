@@ -141,10 +141,18 @@ func (f Finding) validateFix() []error {
 		))
 	}
 
-	if f.BeforeCode == "" && f.AfterCode == "" && strategy == FixStrategyDirect {
+	if f.BeforeCode == "" && f.AfterCode == "" && !f.HasEditList() && strategy == FixStrategyDirect {
 		errs = append(errs, NewValidationError(
-			"finding.FixStrategyDirect requires BeforeCode or AfterCode", nil,
+			"finding.FixStrategyDirect requires BeforeCode, AfterCode, or Edits", nil,
 		))
+	}
+
+	for i, edit := range f.Edits {
+		if err := edit.Validate(); err != nil {
+			errs = append(errs, NewValidationError(
+				fmt.Sprintf("finding.Edits[%d] is invalid", i), err,
+			))
+		}
 	}
 
 	return errs

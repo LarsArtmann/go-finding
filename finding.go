@@ -24,6 +24,11 @@ type Finding struct {
 	Suggestion  string      `json:"suggestion,omitempty"` // Human-readable fix description
 	BeforeCode  string      `json:"beforeCode,omitempty"` // Code before the fix
 	AfterCode   string      `json:"afterCode,omitempty"`  // Code after the fix
+	// Edits is the full typed edit list of the fix. When set, it is the
+	// authoritative machine representation; BeforeCode/AfterCode carry the
+	// first edit as a display summary. Empty for single-edit findings built
+	// via Builder/BeforeCode only.
+	Edits []TextEdit `json:"edits,omitempty"`
 
 	// Context
 	Range       *Range       `json:"range,omitempty"`       // For span-based findings

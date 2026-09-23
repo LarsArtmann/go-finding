@@ -166,6 +166,8 @@ type sarifRegion struct {
 	StartColumn int                   `json:"startColumn,omitempty"`
 	EndLine     int                   `json:"endLine,omitempty"`
 	EndColumn   int                   `json:"endColumn,omitempty"`
+	ByteOffset  int                   `json:"byteOffset,omitempty"`
+	ByteLength  int                   `json:"byteLength,omitempty"`
 	Snippet     *sarifArtifactContent `json:"snippet,omitempty"`
 }
 
