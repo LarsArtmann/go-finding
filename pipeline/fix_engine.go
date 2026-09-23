@@ -89,8 +89,9 @@ func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes 
 
 	var (
 		allEdits  []FixEdit
-		lineIndex []int // lazily built by resolveEdits when a lineIndexAware provider handles a finding
-		resolved  []int // outcome indices whose edits were collected for application
+		editOwner []int // parallel to allEdits: index into fixes of the finding that produced each edit
+		lineIndex []int  // lazily built by resolveEdits when a lineIndexAware provider handles a finding
+		resolved  []int  // outcome indices whose edits were collected for application
 	)
 
 	if wantOutcomes {
@@ -109,7 +110,7 @@ func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes 
 		})
 	}
 
-	for _, f := range fixes {
+	for i, f := range fixes {
 		if !f.HasCodeChange() {
 			addOutcome(f, FixOutcomeNoChange, nil)
 
@@ -140,6 +141,9 @@ func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes 
 
 		addOutcome(f, FixOutcomeApplied, nil)
 		allEdits = append(allEdits, edits...)
+		for range edits {
+			editOwner = append(editOwner, i)
+		}
 	}
 
 	if len(allEdits) == 0 {
@@ -149,8 +153,8 @@ func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes 
 	// Sort descending by offset so later edits don't shift earlier ones.
 	sortEditsDescending(allEdits)
 
-	result.Applied, result.AppliedEdits, result.Conflicts, result.Content = e.applyEditsWithConflicts(content, allEdits)
-	result.Applied = dedupAppliedFindings(result.Applied)
+	result.Applied, result.AppliedEdits, result.Conflicts, result.Content =
+		e.applyEditsWithConflicts(content, allEdits, editOwner, len(fixes))
 
 	if wantOutcomes {
 		reconcileOutcomes(&result, resolved)
@@ -192,36 +196,6 @@ func hasID(set map[finding.ID]struct{}, id finding.ID) bool {
 	_, ok := set[id]
 
 	return ok
-}
-
-// dedupAppliedFindings collapses the duplicate findings a multi-edit fix
-// appends once per applied edit: Applied and AppliedFixes describe FINDINGS
-// (one entry per fix), AppliedEdits keeps per-edit granularity. Comparison is
-// full equality so distinct ID-less findings never collapse into each other;
-// quadratic scan is fine because Applied is per-file findings, not edits.
-func dedupAppliedFindings(applied []finding.Finding) []finding.Finding {
-	if len(applied) < 2 {
-		return applied
-	}
-
-	deduped := make([]finding.Finding, 0, len(applied))
-
-	for _, f := range applied {
-		duplicate := false
-
-		for _, kept := range deduped {
-			if f.Equal(kept) {
-				duplicate = true
-				break
-			}
-		}
-
-		if !duplicate {
-			deduped = append(deduped, f)
-		}
-	}
-
-	return deduped
 }
 
 // resolveEdits tries each provider in order and returns edits from the first match.
@@ -268,10 +242,15 @@ func (e *FixEngine) resolveEdits(content []byte, lineIndex *[]int, f finding.Fin
 }
 
 // applyEditsWithConflicts applies edits and tracks which were skipped due to overlaps.
-// Edits must be sorted descending by offset (highest first).
+// Edits must be sorted descending by offset (highest first). owner is parallel
+// to edits and carries each edit's input-finding index; a finding is appended
+// to applied only once (first edit of it that applies), keeping Applied
+// per finding while AppliedEdits keeps per-edit granularity.
 func (*FixEngine) applyEditsWithConflicts(
 	content []byte,
 	edits []FixEdit,
+	owner []int,
+	ownerCount int,
 ) ([]finding.Finding, []FixEdit, []Conflict, []byte) {
 	var (
 		applied      []finding.Finding
@@ -279,12 +258,13 @@ func (*FixEngine) applyEditsWithConflicts(
 		conflicts    []Conflict
 	)
 
+	seen := make([]bool, ownerCount)
 	frontier := len(content) + 1
 
 	// Phase 1: Walk edits in descending offset order, detecting conflicts
 	// via the frontier boundary. Non-conflicting edits are collected for
 	// a single-pass application in Phase 2.
-	for _, edit := range edits {
+	for j, edit := range edits {
 		err := edit.Validate()
 		if err != nil { //nolint:erraudit // invalid edits are intentionally excluded from application
 			continue
@@ -312,7 +292,11 @@ func (*FixEngine) applyEditsWithConflicts(
 			continue
 		}
 
-		applied = append(applied, edit.Source)
+		if o := owner[j]; !seen[o] {
+			seen[o] = true
+			applied = append(applied, edit.Source)
+		}
+
 		appliedEdits = append(appliedEdits, edit)
 		frontier = edit.Offset
 	}
