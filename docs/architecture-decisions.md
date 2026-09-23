@@ -646,3 +646,69 @@ information.
 
 **Reversibility:** Low: swapping the error type later would break consumers
 matching on `*finding.FindingError`. The type is stable since v1.4.0 (ADR #15).
+
+## 19. Typed Edit Lists for Multi-Edit Fixes
+
+**Status:** Accepted — issue #36 fix (Unreleased, targeting v1.14.0).
+
+**Context:** A fix was modeled as a single `BeforeCode`→`AfterCode` string
+pair. Real suggested fixes are edit lists: go/analysis diagnostics routinely
+carry 2..N `TextEdits` (e.g. rename a declaration and every reference), and a
+whole-file rewrite cannot be expressed as one contiguous replacement at all.
+Issue #36 documented three loss spots: the analysis bridge kept only edit[0]
+of a suggested fix, `ToDiagnostic` re-emitted a single synthetic edit, and
+SARIF had no faithful wire representation for multi-edit artifact changes.
+Anything that did apply multiple edits (the engine, per edit) also counted
+one finding N times as N "applied fixes".
+
+**Decision:**
+
+- `finding.TextEdit{Start, End Position; NewText string}` lives in **core**
+  (pipeline depends on core, never the reverse). `Finding.Edits []TextEdit`
+  is the authoritative machine representation of a direct fix;
+  `BeforeCode`/`AfterCode` remain as the first-edit display summary and stay
+  the only representation for legacy single-edit consumers.
+- Insertion convention follows the existing `Position` zero-value rules:
+  `End` unset (`Offset` -1 sentinel) or `End == Start` both mean "insert at
+  Start". `Position{}` is byte 0, not "unset".
+- Edit-list equality is **order-independent** (`editsEqual` sorts before
+  comparing): the applier applies descending-by-offset regardless of list
+  order, so two findings with reordered identical edits are the same fix.
+- The pipeline gains `EditListProvider`, first in the default chain
+  (EditList → Offset → Line → Substring): a typed edit list is the most
+  precise representation, so it wins before any content-guessing provider.
+- Refuse-don't-half-apply at every layer: `ApplySimpleFixes` skips multi-edit
+  findings with a pointer to the pipeline applier; `EditListProvider` fails
+  cross-file lists with `ErrEditCrossFile` and stale/out-of-bounds offsets
+  with `ErrEditStale`, both surfacing as `FixOutcomeFailed` with the provider
+  cause in the `errors.Is` chain.
+- Applied accounting is per finding: the engine dedups applied findings, so a
+  multi-edit fix counts once everywhere (`Apply`, `ApplyWithConflicts`,
+  `ApplyReport.Applied`).
+- SARIF carries edit lists as per-file `artifactChanges` with one `replacement`
+  per edit; `region.byteOffset`/`byteLength` are pointer fields so byte offset
+  0 survives `omitempty`.
+
+**Tradeoffs:**
+
+- **Gain:** go/analysis suggested fixes round-trip losslessly; whole-file
+  rewrites are expressible; SARIF interop matches real-world multi-edit fixes.
+- **Cost:** `Finding` grows a slice field (24-byte header; nil for all legacy
+  findings — allocation profile unchanged, verified by the bench gate).
+- **Cost:** Duplicate representation (`Edits` vs `BeforeCode`/`AfterCode`)
+  with a documented precedence rule instead of one normalized form. Removing
+  the legacy pair would break every existing consumer for cosmetics.
+- **Cost:** Multi-file fixes are unsupported and fail loudly rather than
+  partially applying — deliberately out of scope until a consumer needs them
+  (the `Conflict` machinery and rollback policy are file-scoped today).
+
+**Alternatives:** A dedicated `MultiFix` finding type was rejected — it would
+fork every consumer API (filters, SARIF, LSP, merge) for a difference that is
+one field on `Fix`. Keeping `FixEdit` (pipeline-only byte edits) as the
+finding-level model was rejected — findings must serialize standalone (JSON,
+SARIF, LSP) without pipeline types, and positions-not-offsets keeps edits
+human-readable and line-shift-resolvable.
+
+**Reversibility:** Medium: the field is additive and nil-safe, but once
+producers emit `Edits` and consumers depend on edit-order independence, the
+semantics are frozen like any public equality contract.

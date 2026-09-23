@@ -9,7 +9,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-No analysis-module changes yet.
+### Fixed
+
+- **Multi-edit suggested fixes are no longer lossy (issue #36)** —
+  `FromDiagnosticWithSource` carried only the first `TextEdit` of a
+  diagnostic's suggested fix into `BeforeCode`/`AfterCode`, silently dropping
+  edits 2..N. It now builds the full `Finding.Edits` list (new in core) from
+  every text edit, keeping `BeforeCode`/`AfterCode` as the first-edit display
+  summary. `ToDiagnostic` reconstructs a suggested fix with the complete edit
+  list (previously it emitted a single synthetic edit), so go/analysis
+  round-trips are lossless. Alternative fixes (`SuggestedFixes` 1..N) are
+  separate fix proposals, not additional edits — the first still wins and the
+  limitation is now documented on both functions.
 
 ## [1.12.0] - 2026-09-17
 

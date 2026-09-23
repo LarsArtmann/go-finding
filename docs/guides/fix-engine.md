@@ -5,6 +5,7 @@ The FixEngine applies byte-level edits to source code based on `Finding` data. T
 ## Table of Contents
 
 - [Quick Start: ApplyToContent](#quick-start-applytocontent)
+- [Multi-Edit Fixes (Edits field)](#multi-edit-fixes-edits-field)
 - [Simple Fixes (Core Package)](#simple-fixes-core-package)
 - [Standalone FixEngine](#standalone-fixengine)
 - [Disk-Based FixApplier](#disk-based-fixapplier)
@@ -42,7 +43,43 @@ result, applied := pipeline.ApplyToContent(content, findings)
 fmt.Printf("Applied %d fixes\n", applied)
 ```
 
-`ApplyToContent` uses the default FixProvider chain (Offset → Line → Substring) and returns the modified content. No filesystem access — perfect for editor buffers, git blobs, or API responses.
+`ApplyToContent` uses the default FixProvider chain (EditList → Offset → Line → Substring) and returns the modified content. No filesystem access — perfect for editor buffers, git blobs, or API responses.
+
+### Multi-Edit Fixes (Edits field)
+
+A finding can carry a typed edit list instead of (or alongside) a single
+BeforeCode→AfterCode pair. When `Finding.Edits` is set, it is the authoritative
+machine representation — all edits of the fix apply in one pass:
+
+```go
+f := finding.NewBuilder("rename-var", "mytool", "x is a misleading name",
+    finding.SeverityWarning, finding.Pos("main.go", 5, 5)).
+    WithFixStrategy(finding.FixStrategyDirect).
+    WithEdits(
+        finding.TextEdit{ // the declaration
+            Start: finding.Position{File: "main.go", Line: 5, Column: 5},
+            End:   finding.Position{File: "main.go", Line: 5, Column: 6},
+            NewText: "count",
+        },
+        finding.TextEdit{ // the usage two lines down
+            Start: finding.Position{File: "main.go", Line: 7, Column: 3},
+            End:   finding.Position{File: "main.go", Line: 7, Column: 4},
+            NewText: "count",
+        },
+    ).
+    BuildOrDefault()
+```
+
+Offsets resolve directly when present (`Position.Offset >= 0`); line/column
+edits resolve through the same lazy line index the `LineProvider` uses.
+
+Conventions: `End` unset (`Offset` -1) or equal to `Start` means an insertion at
+`Start`; `Position{}` (offset 0) is byte 0, not "unset". Edit order does not
+matter — the engine applies edits descending by offset. Lists spanning multiple
+files fail loudly (`pipeline.ErrEditCrossFile`); stale or out-of-bounds offsets
+fail with `pipeline.ErrEditStale` instead of applying a partial fix. The
+go/analysis bridge (`analysis.FromDiagnosticWithSource`) fills `Edits` from
+every `TextEdit` of a suggested fix, so multi-edit analyzer fixes are lossless.
 
 ---
 
@@ -63,7 +100,7 @@ for file, fileResults := range results {
 }
 ```
 
-`ApplySimpleFixes` reads each file, applies `strings.Replace` with count=1 per finding, and writes back. Findings without BeforeCode/AfterCode are skipped automatically.
+`ApplySimpleFixes` reads each file, applies `strings.Replace` with count=1 per finding, and writes back. Findings without BeforeCode/AfterCode are skipped automatically. Findings whose `Edits` list carries more than one edit are refused with a pointer here — use the pipeline `FixApplier`, which applies full edit lists.
 
 ---
 
@@ -223,13 +260,15 @@ The GoAST provider:
 
 The default chain resolves fix locations in this order:
 
-| Provider              | Match Criteria         | Resolution                |
-| --------------------- | ---------------------- | ------------------------- |
-| **OffsetProvider**    | `Position.Offset >= 0` | Direct byte offset        |
-| **LineProvider**      | `Position.Line > 0`    | Line+column → byte offset |
-| **SubstringProvider** | `BeforeCode != ""`     | Find substring in content |
+| Provider              | Match Criteria         | Resolution                     |
+| --------------------- | ---------------------- | ------------------------------ |
+| **EditListProvider**  | `len(Finding.Edits) > 0` | Typed edits, offsets or line/col |
+| **OffsetProvider**    | `Position.Offset >= 0` | Direct byte offset             |
+| **LineProvider**      | `Position.Line > 0`    | Line+column → byte offset      |
+| **SubstringProvider** | `BeforeCode != ""`     | Find substring in content       |
 
-Each provider:
+`EditListProvider` runs first because a typed edit list is the most precise
+representation — no content guessing. Each provider:
 
 1. `CanHandle(finding) bool` — Can this provider resolve this finding?
 2. `Edits(content, finding) ([]FixEdit, error)` — Produce byte-level edits

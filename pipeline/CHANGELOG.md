@@ -11,7 +11,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- Nothing yet.
+- **`EditListProvider` (issue #36)** — resolves a finding's typed edit list
+  (`Finding.Edits`, new in core) to byte-level edits: byte offsets directly,
+  line/column via the shared line index. Runs first in the default provider
+  chain (before Offset, Line, and Substring) because it is the most precise
+  representation with no content guessing. Multi-edit fixes apply in a single
+  pass alongside all other findings. Loud failures instead of partial
+  application: lists spanning files fail with `ErrEditCrossFile`; stale or
+  out-of-bounds offsets fail with `ErrEditStale` (both surface as
+  `FixOutcomeFailed` with the provider cause in the error chain).
+
+### Changed
+
+- **Applied counts are per finding, not per edit** — `FixEngine.Apply` and
+  `ApplyWithConflicts` now deduplicate applied findings, so a multi-edit fix
+  counts once and `FixApplier` results match their documented "number of
+  successful fixes" semantics (previously each edit of the same finding was
+  counted and re-listed).
+
 
 ## [1.12.0] - 2026-09-17
 

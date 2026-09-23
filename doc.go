@@ -71,6 +71,9 @@
 //   - Range: Start and end positions with spatial operations (Contains, Overlaps, Adjacent)
 //   - Suppression: Mark findings as suppressed with kind, reason, and optional expiry
 //   - FixEdit: Byte-level edit operation (offset, length, replacement)
+//   - TextEdit: Typed multi-edit fix representation (start/end positions + replacement
+//     text); Finding.Edits carries the full edit list of a fix, with
+//     BeforeCode/AfterCode as the first-edit display summary
 //
 // # Validation
 //
@@ -238,6 +241,8 @@
 // Simple BeforeCode→AfterCode fixes without the pipeline:
 //
 //	results := finding.ApplySimpleFixes(findingsWithFixes)
+//	// Findings with a multi-edit Edits list are refused there — use the
+//	// pipeline FixApplier (EditListProvider) for those.
 //
 // External tool integration:
 //
@@ -294,6 +299,7 @@
 //
 // The FixEngine resolves findings to byte-level edits via a provider chain:
 //
+//   - EditListProvider: Typed Finding.Edits lists (offsets or line/column)
 //   - OffsetProvider: Direct byte offset ranges
 //   - LineProvider: Line/column positions converted to byte offsets
 //   - SubstringProvider: BeforeCode text matching (fallback)

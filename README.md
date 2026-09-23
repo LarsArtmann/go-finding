@@ -153,6 +153,28 @@ same report shape with zero writes. Whole-pipeline runs expose the same
 per-finding record on `PipelineResult.Outcomes`, deduplicated to the first
 outcome per finding.
 
+### Multi-edit fixes (v1.14.0)
+
+Fixes that touch more than one place carry a typed edit list. `Finding.Edits`
+is the authoritative machine representation; `BeforeCode`/`AfterCode` stay as
+the first-edit display summary:
+
+```go
+f := finding.NewBuilder("rename-var", "mytool", "x is a misleading name",
+    finding.SeverityWarning, finding.Pos("main.go", 5, 5)).
+    WithFixStrategy(finding.FixStrategyDirect).
+    WithEdits(
+        finding.TextEdit{Start: finding.Pos("main.go", 5, 5), End: finding.Pos("main.go", 5, 6), NewText: "count"},
+        finding.TextEdit{Start: finding.Pos("main.go", 7, 3), End: finding.Pos("main.go", 7, 4), NewText: "count"},
+    ).
+    MustBuild()
+
+// The pipeline applies the whole list in one pass; applied counts stay
+// per finding (one fix, two edits). The go/analysis bridge fills Edits from
+// every TextEdit of a suggested fix, so analyzer fixes are lossless (issue #36).
+// core finding.ApplySimpleFixes refuses multi-edit lists — use the pipeline.
+```
+
 ## Core Types
 
 | Type                                  | Purpose                                                      |
@@ -309,13 +331,18 @@ func (d *MyDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 The pipeline resolves findings to byte-level edits via a composable provider chain:
 
 ```go
-// Default chain: OffsetProvider → LineProvider → SubstringProvider
+// Default chain: EditListProvider → OffsetProvider → LineProvider → SubstringProvider
 applier, err := pipeline.NewFixApplier(rootDir)
 defer applier.Close()
 
 // Custom providers for AST-aware transformations
 applier, err = pipeline.NewFixApplierWithProviders(rootDir, myASTProvider)
 ```
+
+`EditListProvider` (first in the chain) resolves typed `Finding.Edits` lists —
+byte offsets directly, line/column via the line index. Lists spanning files
+fail with `pipeline.ErrEditCrossFile`; stale or out-of-bounds offsets fail
+with `pipeline.ErrEditStale` — never a silent partial application.
 
 A built-in Go AST provider disambiguates BeforeCode occurrences structurally:
 
