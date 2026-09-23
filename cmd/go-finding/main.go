@@ -171,7 +171,7 @@ func run() int {
 	f := parseFlags()
 
 	if f.showVer {
-		_, _ = fmt.Fprintln(os.Stdout, version) //nolint:erraudit // version output is best-effort
+		_, _ = fmt.Fprintln(os.Stdout, version)
 
 		return 0
 	}
@@ -396,10 +396,10 @@ func setupProfiling(cpuprof, memprof string) (func(), error) {
 			)
 		}
 
-		stopFuncs = append(stopFuncs, func() { _ = f.Close() }) //nolint:erraudit // best-effort profiling cleanup
+		stopFuncs = append(stopFuncs, func() { _ = f.Close() })
 
 		if err := pprof.StartCPUProfile(f); err != nil {
-			_ = f.Close() //nolint:erraudit // profiling failed to start; Close error is secondary
+			_ = f.Close()
 
 			fmt.Fprintf(os.Stderr, "Error starting CPU profile: %v\n", err)
 
@@ -412,13 +412,13 @@ func setupProfiling(cpuprof, memprof string) (func(), error) {
 	if memprof != "" {
 		stopFuncs = append(stopFuncs, func() {
 			f, err := os.Create(memprof)
-			if err != nil { //nolint:erraudit // profiling is best-effort; failure already reported to stderr
+			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error creating memory profile: %v\n", err)
 
 				return
 			}
 
-			defer func() { _ = f.Close() }() //nolint:erraudit // best-effort profiling cleanup
+			defer func() { _ = f.Close() }()
 
 			if err := pprof.WriteHeapProfile(f); err != nil {
 				fmt.Fprintf(os.Stderr, "Error writing heap profile: %v\n", err)

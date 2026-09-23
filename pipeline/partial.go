@@ -118,7 +118,7 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 		})
 	}
 
-	_ = g.Wait() //nolint:erraudit // workers always return nil; errors are collected in result.Errors and ctxErr
+	_ = g.Wait()
 
 	if hasCtxErr {
 		return result, ctxErr

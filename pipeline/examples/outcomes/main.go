@@ -91,7 +91,7 @@ func demoApplierRollback() error {
 		return fmt.Errorf("create demo dir: %w", err)
 	}
 
-	defer func() { _ = os.RemoveAll(dir) }() //nolint:erraudit // best-effort demo cleanup
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	file := filepath.Join(dir, "demo.go")
 	if err := os.WriteFile(file, []byte(demoContent), 0o600); err != nil {
@@ -103,7 +103,7 @@ func demoApplierRollback() error {
 		return err
 	}
 
-	defer func() { _ = applier.Close() }() //nolint:erraudit // best-effort demo cleanup
+	defer func() { _ = applier.Close() }()
 
 	// RollbackPolicyFailingFile (default): on a hard file failure only the
 	// failing file is restored; use RollbackPolicyAllFiles for
