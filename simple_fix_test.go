@@ -230,7 +230,10 @@ func TestApplySimpleFixes_MultiEditListRefused(t *testing.T) {
 			AfterCode:   "",
 			FixStrategy: FixStrategyDirect,
 			Edits: []TextEdit{
-				{Start: Position{File: FilePath(filePath), Offset: 14}, End: Position{File: FilePath(filePath), Offset: 29}},
+				{
+					Start: Position{File: FilePath(filePath), Offset: 14},
+					End:   Position{File: FilePath(filePath), Offset: 29},
+				},
 				{Start: Position{File: FilePath(filePath), Offset: 31}, NewText: "false {"},
 			},
 		},

@@ -162,14 +162,14 @@ func (s *sarifArtifactContent) UnmarshalJSON(data []byte) error {
 // value is also carried in the go-finding/snippet property for lossless
 // round-trip. See ADR #9.
 type sarifRegion struct {
-	StartLine   int                   `json:"startLine,omitempty"`
-	StartColumn int                   `json:"startColumn,omitempty"`
-	EndLine     int                   `json:"endLine,omitempty"`
-	EndColumn   int                   `json:"endColumn,omitempty"`
+	StartLine   int `json:"startLine,omitempty"`
+	StartColumn int `json:"startColumn,omitempty"`
+	EndLine     int `json:"endLine,omitempty"`
+	EndColumn   int `json:"endColumn,omitempty"`
 	// ByteOffset/ByteLength are pointers so byte offset 0 (start of file) is
 	// distinguishable from "unset" under omitempty.
-	ByteOffset *int                 `json:"byteOffset,omitempty"`
-	ByteLength *int                 `json:"byteLength,omitempty"`
+	ByteOffset *int                  `json:"byteOffset,omitempty"`
+	ByteLength *int                  `json:"byteLength,omitempty"`
 	Snippet    *sarifArtifactContent `json:"snippet,omitempty"`
 }
 

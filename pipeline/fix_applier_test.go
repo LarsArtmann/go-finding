@@ -1229,7 +1229,10 @@ func TestFixApplier_AppliesMultiEditFinding(t *testing.T) {
 			Edits: []finding.TextEdit{
 				{
 					Start: finding.Position{File: finding.FilePath("multi.go"), Offset: declOff},
-					End:   finding.Position{File: finding.FilePath("multi.go"), Offset: declOff + len("var useLegacy = true\n")},
+					End: finding.Position{
+						File:   finding.FilePath("multi.go"),
+						Offset: declOff + len("var useLegacy = true\n"),
+					},
 				},
 				{
 					Start:   finding.Position{File: finding.FilePath("multi.go"), Offset: condOff},

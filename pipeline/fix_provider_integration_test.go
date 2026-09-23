@@ -197,7 +197,12 @@ func TestEditListProvider_AppliesAllEditsInOnePass(t *testing.T) {
 		Edits: []finding.TextEdit{
 			{
 				Start: finding.Position{File: "main.go", Line: 3, Column: 1, Offset: declOff},
-				End:   finding.Position{File: "main.go", Line: 3, Column: 22, Offset: declOff + len("var useLegacy = true\n")},
+				End: finding.Position{
+					File:   "main.go",
+					Line:   3,
+					Column: 22,
+					Offset: declOff + len("var useLegacy = true\n"),
+				},
 			},
 			{
 				Start:   finding.Position{File: "main.go", Line: 6, Column: 5, Offset: condOff},
