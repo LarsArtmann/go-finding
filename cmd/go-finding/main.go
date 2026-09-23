@@ -260,7 +260,7 @@ func run() int {
 			return fatalf("creating flight recorder", err)
 		}
 	} else if cfg.FlightRecorder != nil && cfg.FlightRecorder.Enabled {
-		frConfig, err := pipeline.ResolveFlightRecorderConfig(cfg.FlightRecorder.toPipeline())
+		frConfig, err := cfg.FlightRecorder.resolve()
 		if err != nil {
 			return fatalf("resolving flight recorder config", err)
 		}

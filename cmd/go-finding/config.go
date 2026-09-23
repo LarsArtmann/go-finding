@@ -52,20 +52,53 @@ type flightRecorderFileConfig struct {
 	Compress           bool   `json:"compress"           yaml:"compress"`
 }
 
-// toPipeline converts the YAML/JSON-shaped struct into pipeline's config-file
-// representation so duration parsing and defaults live in one place.
-func (c flightRecorderFileConfig) toPipeline() pipeline.FlightRecorderFileConfig {
-	return pipeline.FlightRecorderFileConfig{
-		Enabled:            c.Enabled,
-		OutputDir:          c.OutputDir,
-		SlowStageThreshold: c.SlowStageThreshold,
-		MinAge:             c.MinAge,
-		MaxBytes:           c.MaxBytes,
-		MaxFiles:           c.MaxFiles,
-		Compress:           c.Compress,
-	}
-}
+// resolve parses the string-encoded duration fields and applies pipeline
+// defaults. The CLI keeps its own resolver (mirroring pipeline's
+// ConfigFile.ResolveFlightRecorder) because the no-replace policy pins it to
+// published pipeline versions.
+func (c flightRecorderFileConfig) resolve() (pipeline.FlightRecorderConfig, error) {
+	resolved := pipeline.DefaultFlightRecorderConfig()
 
+	if c.OutputDir != "" {
+		resolved.OutputDir = c.OutputDir
+	}
+
+	if c.SlowStageThreshold != "" {
+		d, err := time.ParseDuration(c.SlowStageThreshold)
+		if err != nil {
+			return pipeline.FlightRecorderConfig{}, fmt.Errorf(
+				"invalid flightRecorder.slowStageThreshold %q: %w",
+				c.SlowStageThreshold, err,
+			)
+		}
+
+		resolved.SlowStageThreshold = d
+	}
+
+	if c.MinAge != "" {
+		d, err := time.ParseDuration(c.MinAge)
+		if err != nil {
+			return pipeline.FlightRecorderConfig{}, fmt.Errorf(
+				"invalid flightRecorder.minAge %q: %w",
+				c.MinAge, err,
+			)
+		}
+
+		resolved.MinAge = d
+	}
+
+	if c.MaxBytes != 0 {
+		resolved.MaxBytes = c.MaxBytes
+	}
+
+	if c.MaxFiles != 0 {
+		resolved.MaxFiles = c.MaxFiles
+	}
+
+	resolved.Compress = c.Compress
+
+	return resolved, nil
+}
 type detectorSpec struct {
 	Name string `json:"name" yaml:"name"`
 }
@@ -164,7 +197,7 @@ func (c pipelineConfigFile) validate() error {
 	}
 
 	if c.FlightRecorder != nil {
-		if _, err := pipeline.ResolveFlightRecorderConfig(c.FlightRecorder.toPipeline()); err != nil {
+		if _, err := c.FlightRecorder.resolve(); err != nil {
 			return fmt.Errorf("%w: %w", errInvalidConfig, err)
 		}
 	}
