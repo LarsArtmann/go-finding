@@ -126,7 +126,10 @@
             };
           };
 
-          packages.default = mkGoFinding pkgs.buildGoModule;
+          # go.mod floor is 1.27 (ginkgo 2.32.2 + go-linter-sdk chain); the
+          # nixpkgs default go (1.26.7, GOTOOLCHAIN=local) cannot satisfy it —
+          # same reason devShells/apps pin goPkg = pkgs.go_1_27.
+          packages.default = mkGoFinding (pkgs.buildGoModule.override { go = pkgs.go_1_27; });
 
           devShells.default = pkgs.mkShell {
             packages = [
@@ -239,7 +242,7 @@
         };
 
       flake.overlays.default = final: _prev: {
-        go-finding = mkGoFinding final.buildGoModule;
+        go-finding = mkGoFinding (final.buildGoModule.override { go = final.go_1_27; });
       };
     };
 }
