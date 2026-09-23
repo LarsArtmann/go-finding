@@ -21,7 +21,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 | **Tool SDK** | `github.com/larsartmann/go-finding/toolsdk`        | —                            | Core           |
 | **CLI**      | `github.com/larsartmann/go-finding/cmd/go-finding` | yaml, go-output, gogenfilter | Core, Pipeline |
 
-`go.work` coordinates all 5 modules for development. Each sub-module has `replace` directives for `GOWORK=off` CI/consumer builds.
+`go.work` coordinates all 5 modules for development. Library sub-modules (`pipeline`, `analysis`, `toolsdk`) carry `replace github.com/larsartmann/go-finding => ../` for `GOWORK=off` builds; **`cmd/go-finding` must have NO replace directives** (enforced by `scripts/replace-audit.sh` — `go install module@version` refuses modules with replaces). Consequence: the CLI is pinned to PUBLISHED sibling-module versions, so it cannot call a new pipeline/analysis API until that module is tagged and the CLI `go.mod` bumped — dedupe CLI-side instead of exporting new sibling APIs for it (learned 2026-09-22 dedup pass).
 
 ## Key Files
 
