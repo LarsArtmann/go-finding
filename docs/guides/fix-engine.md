@@ -233,6 +233,33 @@ For byte-level precision (detecting overlaps between offset-based and line-based
 cfg.ByteLevelConflictDetection = true
 ```
 
+### Partial conflicts (multi-edit findings)
+
+When SOME edits of a multi-edit finding conflict but others survive, the
+finding intentionally appears in **both** lists:
+
+- the surviving edits are applied, so the finding is in `Applied` and its
+  outcome is `FixOutcomeApplied` (a surviving edit means the fix was
+  applied — partially, not fully, which the per-edit `AppliedEdits` list
+  shows), and
+- the skipped edit records a `Conflict` whose `Finding` is the same
+  finding and whose `ConflictsWith` names the already-applied finding(s)
+  it overlapped.
+
+Consumers should therefore not treat "in Conflicts" as "not applied";
+check `Outcomes`/`Applied` for the authoritative per-finding status.
+Pinned by `TestFixEngine_Apply_PartialEditConflict_AppliedAndConflicts`.
+
+### Applied ordering
+
+`Applied` follows **application order** — descending offset of each
+finding's first surviving edit — not input order. `Outcomes` stays in
+input order. For a batch of `[single(2..3), multi(4..6, 0..1)]` the
+applied list is `[multi, single]` while the outcomes list remains
+`[single, multi]`. Offsets ties between different findings have no
+guaranteed order (`sortEditsDescending` is intentionally unstable).
+Pinned by `TestFixEngine_Apply_MixedEditKinds_AppliedOrdering`.
+
 ---
 
 ## Go AST Provider

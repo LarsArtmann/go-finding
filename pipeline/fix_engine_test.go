@@ -395,6 +395,7 @@ func TestFixEngine_Apply_MixedEditKinds_AppliedOrdering(t *testing.T) {
 		Message:     "m",
 		Severity:    finding.SeverityWarning,
 		FixStrategy: finding.FixStrategyDirect,
+		Position:    finding.Position{File: "a.go"},
 		Edits: []finding.TextEdit{
 			{
 				Start:   finding.Position{File: "a.go", Offset: 4},
@@ -473,6 +474,7 @@ func TestFixEngine_Apply_PartialEditConflict_AppliedAndConflicts(t *testing.T) {
 		Message:     "m",
 		Severity:    finding.SeverityWarning,
 		FixStrategy: finding.FixStrategyDirect,
+		Position:    finding.Position{File: "a.go"},
 		Edits: []finding.TextEdit{
 			{
 				Start:   finding.Position{File: "a.go", Offset: 2},

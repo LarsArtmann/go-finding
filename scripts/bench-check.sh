@@ -56,9 +56,9 @@ echo "=== Regression check ==="
 # tolerant), alloc_threshold for B/op and allocs/op (deterministic signal).
 regressions=$(awk -v time_thr="$time_threshold" -v alloc_thr="$alloc_threshold" '
     /^(goos|goarch|pkg|cpu):/ { next }
-    /sec\/op/  && /\│/ { unit = "time"; next }
-    /B\/op/    && /\│/ { unit = "bytes"; next }
-    /allocs\/op/ && /\│/ { unit = "allocs"; next }
+    /sec\/op/  && /│/ { unit = "time"; next }
+    /B\/op/    && /│/ { unit = "bytes"; next }
+    /allocs\/op/ && /│/ { unit = "allocs"; next }
     /\(p=/ && /%/ {
         thr = (unit == "time") ? time_thr : alloc_thr
         for (i = 1; i <= NF; i++) {
