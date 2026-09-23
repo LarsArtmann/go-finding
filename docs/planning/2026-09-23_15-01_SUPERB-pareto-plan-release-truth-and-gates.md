@@ -254,3 +254,10 @@ flowchart TD
   4-57, none lost). F25.3 done: all 5 pkg.go.dev v1.12.0 pages fetched and render; the
   09-17 marker amended to encode full evidence scope. F25.4/F25.5 done: ROADMAP gained
   the multi-edit follow-ups raw-ideas block + parked-launch-nice-to-haves note.
+- 2026-09-23 15:50 — **final verdict run `35866986437`: COMPLETED, 22/23 jobs green.**
+  benchmark + stress both SUCCESS under go 1.27. The single red is `structural-checks` =
+  `version-drift.sh` (cmd/go-finding requires pipeline v1.12.0, expected v1.13.0) — the
+  documented T2-gated state. Master CI is now as green as it can be without the owner's
+  v1.13.0-completion vs v1.14.0-fold decision. Tier status: T1 done; T3 gated on owner
+  timing; T2/T4/T12/T17/T20/T22 gated on T2; T5-T11, T13-T16, T18-T19, T21, T23-T26 open
+  (unblocked); T25 partially done (F25.2-F25.5 checked off).
