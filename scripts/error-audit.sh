@@ -33,7 +33,7 @@ if ! command -v erraudit >/dev/null 2>&1; then
 	exit 1
 fi
 
-export GOEXPERIMENT=jsonv2
+# GOEXPERIMENT=jsonv2 not needed since Go 1.27: encoding/json/v2 is GA.
 
 NOLINT_AUDIT=0
 MODULES=()

@@ -43,7 +43,6 @@ BENCHSTAT=benchstat
 if ! command -v benchstat >/dev/null 2>&1; then
 	BENCHSTAT="go tool benchstat"
 fi
-export GOEXPERIMENT="${GOEXPERIMENT:-jsonv2}"
 $BENCHSTAT "$baseline" "$current" | tee /tmp/benchstat-output.txt
 
 echo ""

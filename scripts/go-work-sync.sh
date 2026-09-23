@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 # Verifies that 'go work sync' is idempotent (running it twice produces no changes).
 # Usage: ./scripts/go-work-sync.sh
-# Requires GOEXPERIMENT=jsonv2 in the environment.
+# encoding/json/v2 is GA since Go 1.27; no GOEXPERIMENT needed.
 
 set -euo pipefail
-
-if [ -z "${GOEXPERIMENT:-}" ]; then
-	echo "WARNING: GOEXPERIMENT not set. Export GOEXPERIMENT=jsonv2 before running."
-fi
 
 echo "Running go work sync (first pass)..."
 go work sync

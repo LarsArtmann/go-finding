@@ -153,7 +153,12 @@ func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes 
 	// Sort descending by offset so later edits don't shift earlier ones.
 	sortEditsDescending(allEdits)
 
-	result.Applied, result.AppliedEdits, result.Conflicts, result.Content = e.applyEditsWithConflicts(content, allEdits, editOwner, len(fixes))
+	result.Applied, result.AppliedEdits, result.Conflicts, result.Content = e.applyEditsWithConflicts(
+		content,
+		allEdits,
+		editOwner,
+		len(fixes),
+	)
 
 	if wantOutcomes {
 		reconcileOutcomes(&result, resolved)

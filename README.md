@@ -26,16 +26,10 @@ Each tool invents its own types for findings. There is no standardized way to ap
 
 ## Installation
 
-> **Prerequisite — Go 1.26+ with `GOEXPERIMENT=jsonv2`.**
-> This library uses `encoding/json/v2` (experimental in Go 1.26). Enable it once globally:
->
-> ```bash
-> go install golang.org/dl/go1.26@latest && go1.26 download   # if not already on 1.26
-> go env -w GOEXPERIMENT=jsonv2
-> ```
->
-> Without this, `go get` fails with `build constraints exclude all Go files`.
-> When Go stabilizes json/v2 (expected 1.27+), this step disappears.
+> **Prerequisite — Go 1.27+.**
+> This library uses `encoding/json/v2`, which is stable and enabled by default
+> since Go 1.27 — no `GOEXPERIMENT` setup required. (On Go 1.26 or older the
+> import fails with `build constraints exclude all Go files`; upgrade instead.)
 
 **Core types only**:
 
@@ -488,9 +482,7 @@ nix run .#bench                    # Run benchmarks
 nix run .#lint                     # Lint
 ```
 
-> **Requires `GOEXPERIMENT=jsonv2`.** The project uses `encoding/json/v2` (experimental in Go 1.26).
-> All `nix run .#*` commands set this automatically. For direct `go` commands, export it first:
-> `export GOEXPERIMENT=jsonv2 && go test -race -count=1 ./...`
+> `encoding/json/v2` is stable since Go 1.27 — no `GOEXPERIMENT` needed anywhere.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 

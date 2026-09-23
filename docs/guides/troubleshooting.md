@@ -8,27 +8,20 @@ Common errors, their causes, and fixes.
 
 ### "build constraints exclude all Go files"
 
-**Cause:** The project uses `encoding/json/v2` (experimental in Go 1.26). Without `GOEXPERIMENT=jsonv2`, the compiler excludes all files that import it.
+**Cause:** Your Go toolchain is older than the module floor. Since Go 1.27,
+`encoding/json/v2` is stable and enabled by default — no `GOEXPERIMENT` is
+needed. On Go 1.26 or older, files importing it are excluded.
 
 **Fix:**
 
 ```bash
-go env -w GOEXPERIMENT=jsonv2
+go version            # must be >= the go directive in go.mod (1.27)
+go mod tidy           # or just upgrade the toolchain
 ```
 
-Or for a single command:
-
-```bash
-GOEXPERIMENT=jsonv2 go build ./...
-```
-
-If using Nix, the devShell sets this automatically:
-
-```bash
-nix develop
-```
-
-> When Go stabilizes json/v2 (expected 1.27+), this step disappears.
+Historical (Go 1.26 era): this used to require `go env -w GOEXPERIMENT=jsonv2`.
+That requirement is gone; if you still have `GOEXPERIMENT=jsonv2` set globally
+it is harmless, and `GOEXPERIMENT=nojsonv2` would now BREAK the build.
 
 ### Per-module builds fail with "cannot find module"
 
@@ -37,7 +30,7 @@ nix develop
 **Fix:** Always set `GOWORK=off` when building a single module:
 
 ```bash
-cd pipeline && GOWORK=off GOEXPERIMENT=jsonv2 go build ./...
+cd pipeline && GOWORK=off go build ./...
 ```
 
 ### "could not read Username" or "410 Gone" from proxy.golang.org

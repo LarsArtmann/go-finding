@@ -116,7 +116,7 @@ safe, err := pipeline.ResolveSafePath(rootDir, findingPath)
 
 1. `go get github.com/larsartmann/go-finding@v1.7.0` (+ sub-modules as needed)
 2. If you run multi-file fixes and need all-or-nothing: opt back in (see above)
-3. Compile: `GOEXPERIMENT=jsonv2 go build ./...` (jsonv2 is required)
+3. Compile: `go build ./...` (needs Go 1.27+, where `encoding/json/v2` is GA)
 4. If you consumed `ApplyWithConflicts` reconciliation code — migrate to
    `ApplyWithOutcomes`
 

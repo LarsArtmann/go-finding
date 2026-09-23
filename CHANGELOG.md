@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`GOEXPERIMENT=jsonv2` no longer required** — `encoding/json/v2` is stable
+  and enabled by default since Go 1.27, and the toolchain floor was already
+  `go 1.27`. The env var was removed from the flake, CI/Release workflows,
+  scripts, and all docs. Consumers must build with Go 1.27+ (previously:
+  Go 1.26 + the experiment flag).
+
 ### Added
 
 - **`pipeline.EditListProvider` (issue #36)** — resolves a finding's typed edit

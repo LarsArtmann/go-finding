@@ -27,7 +27,6 @@ Minimal, self-contained steps to reproduce. A failing test case is ideal:
 
 ```bash
 # commands to run, e.g.
-export GOEXPERIMENT=jsonv2
 go test -run ExampleFoo ./...
 ```
 
@@ -36,7 +35,7 @@ go test -run ExampleFoo ./...
 - **go-finding version:** (`go list -m github.com/larsartmann/go-finding`)
 - **Go version:** (`go version`)
 - **OS / arch:**
-- **GOEXPERIMENT:** (run `go env GOEXPERIMENT`)
+- **GOEXPERIMENT:** (only if you set it manually; the project needs none)
 
 ## Additional context
 

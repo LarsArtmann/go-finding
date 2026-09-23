@@ -7,14 +7,13 @@
 # Usage: bash scripts/consumer-compat-check.sh [version]
 #   version defaults to "latest"; pass e.g. v1.10.0 to pin.
 #
-# GOEXPERIMENT=jsonv2 is part of the current public contract (core uses
+# encoding/json/v2 is GA since Go 1.27 (core imports it; the go.mod floor
 # encoding/json/v2; drop this export when json/v2 stabilizes, see ROADMAP).
 # Fails with exit code 1 if any module fails to resolve, build, or run.
 
 set -euo pipefail
 
 VERSION="${1:-latest}"
-export GOEXPERIMENT=jsonv2
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT

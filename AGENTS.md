@@ -57,10 +57,10 @@ bash scripts/release-preflight.sh                                # Pre-tag struc
 bash scripts/error-audit.sh                                      # erraudit gate: error-handling violations, all 5 modules (see below)
 ```
 
-> **GOEXPERIMENT=jsonv2 required.** The project imports `encoding/json/v2`.
-> All `nix run .#*` apps and devShells set this env var automatically. Direct `go`
-> commands (outside `nix develop`) require `export GOEXPERIMENT=jsonv2` first — otherwise you get
-> "build constraints exclude all Go files" errors.
+> **json/v2 is GA (verified 2026-09-23).** The project imports `encoding/json/v2`,
+> which is stable and default-on since Go 1.27 — no `GOEXPERIMENT` is needed
+> anywhere (dropped from flake, workflows, scripts, docs). `GOEXPERIMENT=nojsonv2`
+> would now BREAK the build. Direct `go` commands just need a 1.27+ toolchain.
 
 ### Release preflight (mandatory before any tag)
 
@@ -150,7 +150,7 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 
 ### Environment & workflow
 
-- **GOEXPERIMENT=jsonv2 required** — project uses `encoding/json/v2` (Go 1.26 experimental). All `nix run .#*` apps and devShells export it. Direct `go build`/`go test` outside nix need `export GOEXPERIMENT=jsonv2`; the per-module path needs BOTH `GOWORK=off` and `GOEXPERIMENT=jsonv2`. Drop when json/v2 stabilizes (Go 1.27+, tracked in ROADMAP).
+- **GOEXPERIMENT=jsonv2 DROPPED (2026-09-23)** — `encoding/json/v2` is GA since Go 1.27 (release notes: v2 is the default `encoding/json` backend; opt-out is `nojsonv2`). All env exports removed from flake.nix, workflows, scripts, and docs. Anything still telling you to export jsonv2 is stale. The per-module path still needs `GOWORK=off`.
 - **CI/Release `go-version` pins must track the toolchain floor** — when the `go.mod`/`go.work` floor bumps, a stale `go-version:` pin in ci.yml/release.yml fails EVERY job with `go.work requires go >= 1.27` while local gates stay green (the devShell already runs the newer toolchain). This silently killed 6+ master CI runs and both v1.13.0 Release runs (2026-09-20 → 09-23) before anyone looked. Rule: a toolchain-floor bump is a SAME-COMMIT edit of every `go-version:` in both workflows.
 - **Run `go test` invocations SEQUENTIALLY on this machine** — two concurrent `go test`/`go build` runs sharing `GOCACHE=/mnt/buildcache/go-build` produce transient `[build failed]` errors. A plain retry succeeds; don't misdiagnose as code/toolchain problems. This includes `go mod edit`: editing go.mod requires while a background stress/test run is active invalidates the module graph mid-run and produces phantom failures like `could not import ... (invalid package name: "")` in go/packages-based tests (v1.12.0 stress run 1, 2026-09-17). Bump requires only on a quiet tree.
 - **Formatting has three coordinated signals** — treefmt is not on the devShell PATH; use `nix fmt` (canonical gate, also in the pre-commit hook via `--fail-on-change`), `golangci-lint fmt` (local autofix; `.golangci.yml` formatters mirror treefmt rules: gofumpt, goimports, golines@120), and dprint (markdown/JSON/YAML, pre-commit). Do NOT let the two Go formatters' rules diverge. If the pre-commit hook seems dead, check `git config core.hooksPath` — a stale `.githooks` value once silently disabled it.

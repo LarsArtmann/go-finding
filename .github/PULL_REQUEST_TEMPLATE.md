@@ -16,7 +16,7 @@
 
 ## Checklist
 
-- [ ] Tests pass: `export GOEXPERIMENT=jsonv2 && go test -race -count=1 ./...`
+- [ ] Tests pass: `go test -race -count=1 ./...`
 - [ ] Lint passes: `golangci-lint run ./...` (or `nix run .#lint`)
 - [ ] New code is covered by tests
 - [ ] No deprecated APIs introduced (the API is frozen since `v1.0.0`)
