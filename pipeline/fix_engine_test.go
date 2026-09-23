@@ -519,3 +519,62 @@ func TestFixEngine_Apply_Substring_NearestTieKeepsEarliest(t *testing.T) {
 	g.Expect(count).To(Equal(1))
 	g.Expect(string(result)).To(Equal("Xbab"))
 }
+
+// Pins Conflict dedup for multi-edit findings: when several edits of ONE
+// finding conflict, they merge into a single Conflict entry whose
+// ConflictsWith accumulates every overlapped finding.
+func TestFixEngine_Apply_MultiEditConflict_DedupedPerFinding(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("0123456789abcdefghij")
+	mk := func(id string, start int) finding.Finding {
+		return finding.Finding{
+			ID:          finding.ID(id),
+			Rule:        "r",
+			ToolName:    "t",
+			Message:     "m",
+			Severity:    finding.SeverityWarning,
+			Position:    finding.Position{File: "a.go"},
+			FixStrategy: finding.FixStrategyDirect,
+			Edits: []finding.TextEdit{{
+				Start:   finding.Position{File: "a.go", Offset: start},
+				End:     finding.Position{File: "a.go", Offset: start + 1},
+				NewText: "X",
+			}},
+		}
+	}
+
+	early := mk("early", 2)   // applied, frontier moves to 2
+	late := mk("late", 8)     // applied first (higher offset)
+	multi := finding.Finding{ // both of its edits conflict
+		ID:          "multi",
+		Rule:        "r",
+		ToolName:    "t",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		Position:    finding.Position{File: "a.go"},
+		FixStrategy: finding.FixStrategyDirect,
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 8},
+				End:     finding.Position{File: "a.go", Offset: 9},
+				NewText: "M",
+			},
+			{
+				Start:   finding.Position{File: "a.go", Offset: 2},
+				End:     finding.Position{File: "a.go", Offset: 3},
+				NewText: "M",
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result := engine.ApplyWithOutcomes(content, []finding.Finding{early, late, multi})
+
+	g.Expect(result.Conflicts).To(HaveLen(1))
+	g.Expect(result.Conflicts[0].Finding.ID).To(Equal(finding.ID("multi")))
+	g.Expect(result.Conflicts[0].ConflictsWith).To(HaveLen(2))
+	g.Expect(result.Conflicts[0].ConflictsWith[0].ID).To(Equal(finding.ID("late")))
+	g.Expect(result.Conflicts[0].ConflictsWith[1].ID).To(Equal(finding.ID("early")))
+	g.Expect(result.Outcomes[2].Status).To(Equal(FixOutcomeConflict))
+}

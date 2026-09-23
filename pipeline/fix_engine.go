@@ -287,11 +287,17 @@ func (*FixEngine) applyEditsWithConflicts(
 				}
 			}
 
-			conflicts = append(conflicts, Conflict{
-				Finding:       edit.Source,
-				ConflictsWith: conflictsWith,
-				Reason:        ReasonOverlappingEdit,
-			})
+			// One finding = one Conflict entry: a multi-edit fix whose
+			// several edits all conflict merges into the first entry.
+			if idx := conflictIndexFor(conflicts, edit.Source.ID); idx >= 0 {
+				conflicts[idx].ConflictsWith = append(conflicts[idx].ConflictsWith, conflictsWith...)
+			} else {
+				conflicts = append(conflicts, Conflict{
+					Finding:       edit.Source,
+					ConflictsWith: conflictsWith,
+					Reason:        ReasonOverlappingEdit,
+				})
+			}
 
 			continue
 		}
@@ -356,4 +362,16 @@ func applyEditsToContent(content []byte, edits []FixEdit) []byte {
 	result = append(result, content[prevEnd:]...)
 
 	return result
+}
+
+// conflictIndexFor returns the index of the Conflict entry recorded for the
+// given finding ID, or -1.
+func conflictIndexFor(conflicts []Conflict, id finding.ID) int {
+	for i := range conflicts {
+		if conflicts[i].Finding.ID == id {
+			return i
+		}
+	}
+
+	return -1
 }
