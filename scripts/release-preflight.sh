@@ -14,7 +14,7 @@
 # Heavy gates (bench, stress) are opt-in: preflight's job is to make the
 # cheap-to-run, easy-to-forget checks impossible to skip.
 #
-# --post-tag inverts the tag-collision guard (all 4 tags must now EXIST)
+# --post-tag inverts the tag-collision guard (all 5 tags must now EXIST)
 # and additionally runs version-check.sh (version.go == latest tag). Run it
 # right after tagging, before `git push origin --tags`.
 #
@@ -120,7 +120,7 @@ else
 fi
 
 step "target tags"
-for t in "v${MAJOR}.${MINOR}.${PATCH}" "pipeline/v${MAJOR}.${MINOR}.${PATCH}" "analysis/v${MAJOR}.${MINOR}.${PATCH}" "cmd/go-finding/v${MAJOR}.${MINOR}.${PATCH}"; do
+for t in "v${MAJOR}.${MINOR}.${PATCH}" "pipeline/v${MAJOR}.${MINOR}.${PATCH}" "analysis/v${MAJOR}.${MINOR}.${PATCH}" "toolsdk/v${MAJOR}.${MINOR}.${PATCH}" "cmd/go-finding/v${MAJOR}.${MINOR}.${PATCH}"; do
 	if [ "$POST_TAG" -eq 1 ]; then
 		if git rev-parse -q --verify "refs/tags/$t" >/dev/null; then
 			echo "OK: tag $t exists (post-tag mode)"
@@ -223,9 +223,9 @@ if [ "$FAILURES" -gt 0 ]; then
 	echo "PREFLIGHT FAIL: $FAILURES check(s) failed. Do NOT tag."
 	exit 1
 fi
-echo "PREFLIGHT PASS: all checks green. Safe to tag $NEXT_VERSION (+ pipeline/ analysis/ cmd/go-finding/ prefixed variants)."
+echo "PREFLIGHT PASS: all checks green. Safe to tag $NEXT_VERSION (+ pipeline/ analysis/ toolsdk/ cmd/go-finding/ prefixed variants)."
 if [ "$POST_TAG" -eq 1 ]; then
-	echo "Post-tag mode: all 4 tags exist and version.go matches. Push with: git push origin --tags"
+	echo "Post-tag mode: all 5 tags exist and version.go matches. Push tags ONE PER PUSH (see docs/release-procedure.md)."
 else
 	echo "Reminder: stress gate is mandatory before tagging (release-procedure step 4)."
 fi

@@ -129,23 +129,48 @@ git tag -a analysis/v1.3.0        -m "analysis v1.3.0"
 git tag -a toolsdk/v1.3.0         -m "toolsdk v1.3.0"   # when the SDK changes too
 git tag -a cmd/go-finding/v1.3.0  -m "cli v1.3.0"
 git push origin master
-git push origin v1.3.0 pipeline/v1.3.0 analysis/v1.3.0   # batches of ≤3, see below
-git push origin toolsdk/v1.3.0 cmd/go-finding/v1.3.0
+git push origin v1.3.0                      # ONE tag per push (see below)
+git push origin pipeline/v1.3.0             # wait for its Release run to
+for t in analysis/v1.3.0 toolsdk/v1.3.0 cmd/go-finding/v1.3.0; do
+  git push origin "$t"                      # complete before the next push
+done
 ```
 
-### Tag pushing: batches of ≤3
+After all five Release runs complete, land the resync commit on master: bump
+`cmd/go-finding/go.mod` requires to the new version, `go mod tidy`, commit
+(`chore(release): resync cmd/go-finding to published vX.Y.Z siblings`), push.
+The tagged commit itself runs red `module-isolation` EXPECTEDLY — the CLI
+go.sum cannot carry the new checksums before the tags exist.
 
-A single `git push` that updates **more than three tags creates no workflow
-events**: at v1.9.0, pushing master + 4 release tags in one push silently
-skipped every Release trigger (no run, no error — detected only by absence).
-Always split tag pushes into batches of ≤3, or dispatch Release manually:
+### Tag pushing: ONE tag per push, serialized runs
+
+Two incidents shaped this rule:
+
+1. **v1.9.0** — a single `git push` that updates **more than three tags
+   creates no workflow events** at all (no run, no error; detected only by
+   absence).
+2. **v1.12.0** — even legal batches of 3 raced each other: GitHub's
+   Release concurrency group uses latest-queued-wins, so pushing 3 tags
+   near-simultaneously queued 3 runs and CANCELLED the older two. Whole
+   modules silently lost their Release runs.
+
+Therefore: push **one tag per push** and wait for that tag's Release run to
+reach a terminal state before pushing the next:
 
 ```bash
-gh workflow run Release --ref vX.Y.Z   # dispatch if no run appeared
+git push origin "$TAG"
+gh run list --workflow=release.yml --limit 1   # watch until completed
+gh run rerun <id>                              # if cancelled — ONE at a time,
+                                               # wait for completion, then next
 ```
 
-After a release train, **verify the Release run exists before assuming it
-does** (`gh run list --workflow=release.yml`); silence is the failure mode.
+Never queue several reruns at once (they cancel each other again). After
+the train, **verify every tag has a run AND a GitHub Release before
+assuming it does** (`gh run list --workflow=release.yml` +
+`gh release list`); silence is the failure mode.
+
+If a run truly never appeared (the v1.9.0 failure mode), dispatch it
+manually — after checking no run is queued/in progress:
 
 ### Queue, don't race, releases
 
