@@ -166,9 +166,11 @@ type sarifRegion struct {
 	StartColumn int                   `json:"startColumn,omitempty"`
 	EndLine     int                   `json:"endLine,omitempty"`
 	EndColumn   int                   `json:"endColumn,omitempty"`
-	ByteOffset  int                   `json:"byteOffset,omitempty"`
-	ByteLength  int                   `json:"byteLength,omitempty"`
-	Snippet     *sarifArtifactContent `json:"snippet,omitempty"`
+	// ByteOffset/ByteLength are pointers so byte offset 0 (start of file) is
+	// distinguishable from "unset" under omitempty.
+	ByteOffset *int                 `json:"byteOffset,omitempty"`
+	ByteLength *int                 `json:"byteLength,omitempty"`
+	Snippet    *sarifArtifactContent `json:"snippet,omitempty"`
 }
 
 // sarifFix represents a fix to be applied to the artifact.

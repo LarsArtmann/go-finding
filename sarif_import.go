@@ -175,12 +175,12 @@ func editsFromSarifChanges(changes []sarifArtifactChange) []TextEdit {
 				NewText: rep.InsertedText.Text,
 			}
 
-			if rep.DeletedRegion.ByteOffset > 0 {
-				edit.Start.Offset = rep.DeletedRegion.ByteOffset
+			if rep.DeletedRegion.ByteOffset != nil {
+				edit.Start.Offset = *rep.DeletedRegion.ByteOffset
 			}
 
 			if rep.DeletedRegion.EndLine > 0 || rep.DeletedRegion.EndColumn > 0 ||
-				rep.DeletedRegion.ByteLength > 0 {
+				rep.DeletedRegion.ByteLength != nil {
 				edit.End = Position{
 					File:   file,
 					Line:   rep.DeletedRegion.EndLine,
@@ -188,8 +188,8 @@ func editsFromSarifChanges(changes []sarifArtifactChange) []TextEdit {
 					Offset: -1,
 				}
 
-				if rep.DeletedRegion.ByteOffset > 0 {
-					edit.End.Offset = rep.DeletedRegion.ByteOffset + rep.DeletedRegion.ByteLength
+				if rep.DeletedRegion.ByteOffset != nil && rep.DeletedRegion.ByteLength != nil {
+					edit.End.Offset = *rep.DeletedRegion.ByteOffset + *rep.DeletedRegion.ByteLength
 				}
 			}
 

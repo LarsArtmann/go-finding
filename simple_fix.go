@@ -18,6 +18,10 @@ type SimpleFixResult struct {
 // written back. Findings without BeforeCode or AfterCode are skipped.
 // This is the 80% case for consumers that don't need the full pipeline FixEngine.
 //
+// Findings carrying a multi-edit list (more than one TextEdit) are refused,
+// not half-applied: this helper applies a single string replacement per
+// finding. Use the pipeline module's FixApplier for edit lists.
+//
 // Returns a map of file path to per-finding results. If a file cannot be read,
 // all its findings are marked as not applied with the error reason.
 func ApplySimpleFixes(findings []Finding) map[FilePath][]SimpleFixResult {
@@ -41,6 +45,16 @@ func applyFixesToFile(file FilePath, findings []Finding) []SimpleFixResult {
 	anyApplied := false
 
 	for _, f := range findings {
+		if len(f.Edits) > 1 {
+			fileResults = append(fileResults, SimpleFixResult{
+				FindingID: f.ID,
+				Applied:   false,
+				Reason:    "finding has a multi-edit fix list; use pipeline.FixApplier",
+			})
+
+			continue
+		}
+
 		if f.BeforeCode == "" || f.AfterCode == "" {
 			fileResults = append(fileResults, SimpleFixResult{
 				FindingID: f.ID,

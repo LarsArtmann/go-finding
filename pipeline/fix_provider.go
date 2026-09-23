@@ -2,6 +2,8 @@ package pipeline
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -43,6 +45,118 @@ type FixProvider interface {
 // avoiding O(n) rebuilds per finding (where n = file size).
 type lineIndexAware interface {
 	EditsWithLineIndex(content []byte, lineIndex []int, f finding.Finding) ([]FixEdit, error)
+}
+
+// EditListProvider applies a finding's explicit edit list (Finding.Edits)
+// verbatim: every TextEdit becomes a byte-level FixEdit. It is the most
+// precise provider — no substring guessing, no line heuristics — and runs
+// first in the default chain, so multi-edit fixes (e.g. declaration removal
+// plus condition rewrite) apply completely instead of being truncated to
+// the first edit.
+//
+// Errors rather than half-applies: an edit list targeting another file than
+// the finding's, carrying stale offsets outside the current content, or
+// lacking any resolvable position fails the finding (surfaced as a
+// FixOutcomeFailed by the engine).
+type EditListProvider struct{}
+
+// Name returns the provider name.
+func (EditListProvider) Name() string { return "edit-list" }
+
+// CanHandle reports whether the finding carries a typed edit list.
+func (EditListProvider) CanHandle(f finding.Finding) bool {
+	return f.HasEditList()
+}
+
+// Edits produces byte-level edits from the finding's edit list.
+func (p EditListProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	return p.EditsWithLineIndex(content, buildLineOffsetIndex(content), f)
+}
+
+// EditsWithLineIndex produces byte-level edits using a pre-built line offset
+// index for resolving edits that lack byte offsets but carry line/column.
+func (EditListProvider) EditsWithLineIndex(content []byte, idx []int, f finding.Finding) ([]FixEdit, error) {
+	fixEdits := make([]FixEdit, 0, len(f.Edits))
+
+	for i, edit := range f.Edits {
+		if err := checkEditFile(edit, f); err != nil {
+			return nil, fmt.Errorf("edit %d: %w", i, err)
+		}
+
+		start, err := editListOffset(edit.Start, idx, len(content))
+		if err != nil {
+			return nil, fmt.Errorf("edit %d start: %w", i, err)
+		}
+
+		end := start
+
+		if edit.HasSpan() {
+			end, err = editListOffset(edit.End, idx, len(content))
+			if err != nil {
+				return nil, fmt.Errorf("edit %d end: %w", i, err)
+			}
+		}
+
+		if end < start {
+			return nil, fmt.Errorf("edit %d: end offset %d before start %d: %w", i, end, start, ErrEditStale)
+		}
+
+		if start < 0 || end > len(content) {
+			return nil, fmt.Errorf(
+				"edit %d: offsets [%d, %d) out of bounds for %d bytes: %w",
+				i, start, end, len(content), ErrEditStale,
+			)
+		}
+
+		fixEdits = append(fixEdits, FixEdit{
+			Offset:      start,
+			Length:      end - start,
+			Replacement: []byte(edit.NewText),
+			Source:      f,
+		})
+	}
+
+	return fixEdits, nil
+}
+
+// ErrEditStale indicates an edit list's coordinates don't match the current
+// file content (stale offsets from a changed file, or wrong coordinates).
+var ErrEditStale = errors.New("edit list does not match current content")
+
+// checkEditFile rejects edits that target a file other than the finding's:
+// partially applying a multi-file fix would leave files half-fixed.
+func checkEditFile(edit finding.TextEdit, f finding.Finding) error {
+	if file := edit.Start.File; file != "" && file != f.Position.File {
+		return fmt.Errorf(
+			"targets %q, not the finding's file %q: %w", file, f.Position.File, ErrEditCrossFile,
+		)
+	}
+
+	if file := edit.End.File; file != "" && file != f.Position.File {
+		return fmt.Errorf(
+			"end targets %q, not the finding's file %q: %w", file, f.Position.File, ErrEditCrossFile,
+		)
+	}
+
+	return nil
+}
+
+// ErrEditCrossFile indicates a fix's edit list spans multiple files, which
+// the per-file FixEngine cannot apply.
+var ErrEditCrossFile = errors.New("multi-file fix")
+
+// editListOffset resolves an edit position to a byte offset: directly when
+// the offset is set, via the line offset index otherwise.
+func editListOffset(p finding.Position, idx []int, contentLen int) (int, error) {
+	if p.HasOffset() {
+		return p.Offset, nil
+	}
+
+	if p.Line > 0 {
+		return resolveLineCol(idx, contentLen, p.Line, p.Column)
+	}
+
+	return 0, fmt.Errorf("%w: %+v", ErrPositionUnresolvable, p)
 }
 
 // OffsetProvider handles findings with byte-offset Range information.

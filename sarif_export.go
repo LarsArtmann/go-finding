@@ -327,7 +327,10 @@ func sarifEditRegion(edit TextEdit) sarifRegion {
 	region := sarifRegion{
 		StartLine:   edit.Start.Line,
 		StartColumn: edit.Start.Column,
-		ByteOffset:  max(edit.Start.Offset, 0),
+	}
+
+	if edit.Start.HasOffset() {
+		region.ByteOffset = sarifIntPtr(edit.Start.Offset)
 	}
 
 	if !edit.HasSpan() {
@@ -337,11 +340,21 @@ func sarifEditRegion(edit TextEdit) sarifRegion {
 	region.EndLine = edit.End.Line
 	region.EndColumn = edit.End.Column
 
-	if edit.End.Offset >= 0 {
-		region.ByteLength = max(edit.End.Offset-edit.Start.Offset, 0)
+	if edit.Start.HasOffset() && edit.End.HasOffset() {
+		region.ByteLength = sarifIntPtr(max(edit.End.Offset-edit.Start.Offset, 0))
 	}
 
 	return region
+}
+
+// sarifIntPtr returns a pointer to v, or nil for negative v (the offset
+// "unset" sentinel).
+func sarifIntPtr(v int) *int {
+	if v < 0 {
+		return nil
+	}
+
+	return &v
 }
 
 func sarifRelatedLocs(f Finding) []sarifRelatedLoc {

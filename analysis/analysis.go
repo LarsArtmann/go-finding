@@ -27,7 +27,10 @@ const DefaultRelation = finding.RelationRelated
 // Data loss: go/analysis.Diagnostic does not carry Confidence, Tags, or Suppression.
 // The Category is mapped from d.Category (which may be empty for analyzers that
 // don't set it). go/analysis pass/fact results (d.PackageFact, d.FileFact) are not
-// represented — only message-level diagnostics are converted.
+// represented — only message-level diagnostics are converted. Of multiple
+// SuggestedFixes (which are alternatives), only the first is carried — but ALL
+// TextEdits of that fix are preserved losslessly in Finding.Edits;
+// BeforeCode/AfterCode hold the first edit as a display summary.
 //
 // BeforeCode extraction reads the source file from disk. For in-memory or test
 // scenarios, use FromDiagnosticWithSource instead.
@@ -63,16 +66,30 @@ func FromDiagnosticWithSource(
 
 	var suggestion, beforeCode, afterCode string
 
+	var edits []finding.TextEdit
+
 	if len(d.SuggestedFixes) > 0 {
 		fixStrategy = finding.FixStrategyDirect
 
 		suggestion = d.SuggestedFixes[0].Message
 
-		if len(d.SuggestedFixes[0].TextEdits) > 0 {
-			edit := d.SuggestedFixes[0].TextEdits[0]
+		textEdits := d.SuggestedFixes[0].TextEdits
+
+		if len(textEdits) > 0 {
+			edit := textEdits[0]
 			afterCode = string(edit.NewText)
 
 			beforeCode = extractBeforeCode(fset, edit, source)
+
+			edits = make([]finding.TextEdit, 0, len(textEdits))
+
+			for _, e := range textEdits {
+				edits = append(edits, finding.TextEdit{
+					Start:   FromTokenPosition(fset.Position(e.Pos)),
+					End:     FromTokenPosition(fset.Position(e.End)),
+					NewText: string(e.NewText),
+				})
+			}
 		}
 	}
 
@@ -90,6 +107,7 @@ func FromDiagnosticWithSource(
 		Suggestion:  suggestion,
 		BeforeCode:  beforeCode,
 		AfterCode:   afterCode,
+		Edits:       edits,
 	}
 
 	for _, info := range d.Related {
@@ -160,7 +178,9 @@ func FormatDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, analyzerName 
 //
 // The conversion is lossy: Severity, Confidence, Tags, Suppression, Metadata,
 // and FixStrategy are not representable in analysis.Diagnostic.
-// BeforeCode/AfterCode are converted to a SuggestedFix with TextEdit when present.
+// When the finding carries an edit list (Edits), every edit becomes a TextEdit
+// of a single SuggestedFix. Otherwise BeforeCode/AfterCode are converted to a
+// SuggestedFix with one TextEdit when present.
 func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 	pos := resolvePos(f.Position, fset)
 
@@ -170,7 +190,14 @@ func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 		Category: string(f.Category),
 	}
 
-	if f.HasFix() && f.Position.File != "" {
+	if len(f.Edits) > 0 {
+		diag.SuggestedFixes = []analysis.SuggestedFix{
+			{
+				Message:   f.Suggestion,
+				TextEdits: textEditsFromFinding(f, fset),
+			},
+		}
+	} else if f.HasFix() && f.Position.File != "" {
 		endPos := resolveEndPos(f, fset)
 		newText := []byte(f.AfterCode)
 
@@ -200,6 +227,36 @@ func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 	}
 
 	return diag
+}
+
+// textEditsFromFinding converts the finding's typed edit list back to
+// go/analysis TextEdits. Edits whose file is not in fset (unresolvable
+// positions) are skipped; an insertion edit (no span) resolves End to Pos.
+func textEditsFromFinding(f finding.Finding, fset *token.FileSet) []analysis.TextEdit {
+	textEdits := make([]analysis.TextEdit, 0, len(f.Edits))
+
+	for _, edit := range f.Edits {
+		pos := resolvePos(edit.Start, fset)
+		if pos == token.NoPos {
+			continue
+		}
+
+		end := pos
+
+		if edit.HasSpan() {
+			if resolvedEnd := resolvePos(edit.End, fset); resolvedEnd != token.NoPos {
+				end = resolvedEnd
+			}
+		}
+
+		textEdits = append(textEdits, analysis.TextEdit{
+			Pos:     pos,
+			End:     end,
+			NewText: []byte(edit.NewText),
+		})
+	}
+
+	return textEdits
 }
 
 // resolvePos converts a finding.Position to a token.Pos by looking up the file in fset.

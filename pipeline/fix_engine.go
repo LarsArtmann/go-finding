@@ -15,11 +15,13 @@ type FixEngine struct {
 	providers []FixProvider
 }
 
-// NewFixEngine creates an engine with the default text-based providers:
-// OffsetProvider (byte offsets), LineProvider (line/column), SubstringProvider (fallback).
+// NewFixEngine creates an engine with the default providers:
+// EditListProvider (explicit edit lists), OffsetProvider (byte offsets),
+// LineProvider (line/column), SubstringProvider (fallback).
 func NewFixEngine() *FixEngine {
 	return &FixEngine{
 		providers: []FixProvider{
+			EditListProvider{},
 			&OffsetProvider{},
 			&LineProvider{},
 			&SubstringProvider{},
