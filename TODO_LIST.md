@@ -6,11 +6,11 @@
 > Owner questions (release fold-in, ApplySimpleFixes philosophy, brew/nix, report policy)
 > live in [ROADMAP.md](ROADMAP.md) "Open questions" — not here.
 
-> **Harvested 2026-09-23** from `docs/status/2026-09-23_14-10_issue-36-followup-gates-flake-repair-bench-regression.md`,
-> `2026-09-23_05-13_issue-36-multiedit-fix-review.md`,
-> `2026-09-23_03-16_art-dupl-dedup-pass-session-status.md`,
-> `2026-09-17_17-09_v1.12.0-release-status.md`, and
-> `2026-09-08_22-24_go-public-launch.md`, every item re-verified against the tree
+> **Harvested 2026-09-23** from `docs/status/archived/2026-09-23_14-10_issue-36-followup-gates-flake-repair-bench-regression.md`,
+> `docs/status/archived/2026-09-23_05-13_issue-36-multiedit-fix-review.md`,
+> `docs/status/archived/2026-09-23_03-16_art-dupl-dedup-pass-session-status.md`,
+> `docs/status/archived/2026-09-17_17-09_v1.12.0-release-status.md`, and
+> `docs/status/archived/2026-09-08_22-24_go-public-launch.md`, every item re-verified against the tree
 > before inclusion. Superseded 2026-09-10 harvest: v1.10.0 sub-module tags exist and are
 > pushed (the "Tag missing v1.10.0 releases" row is done); the 🔴 Release & CI integrity
 > section shipped in v1.11.0. New since that harvest: the multi-edit (issue #36)
@@ -85,7 +85,7 @@
 
 ---
 
-_Multi-edit feature candidates tracked here and in ROADMAP "Raw Ideas": GoASTProvider typed Edits output, LSP CodeAction TextEditEdits, AlternativeFixes (SuggestedFixes 1..N), multi-file fixes in FixApplier, `Preview()` multi-hunk, `pipeline/examples/multi-edit`, DOMAIN_LANGUAGE edit-list entries, CLI `-fix-provider edit-list` docs, GenerateID Edits-exclusion doc, `Conflict.ConflictsWith` dedup, stale gopls "unused: editsEqual" warning — all Low/Med, see the 14:10 report §f table for the full scored list._
+_Multi-edit feature candidates tracked here and in ROADMAP "Raw Ideas": GoASTProvider typed Edits output, LSP CodeAction TextEditEdits, AlternativeFixes (SuggestedFixes 1..N), multi-file fixes in FixApplier, `Preview()` multi-hunk, `pipeline/examples/multi-edit`, DOMAIN_LANGUAGE edit-list entries, CLI `-fix-provider edit-list` docs, GenerateID Edits-exclusion doc, `Conflict.ConflictsWith` dedup, stale gopls "unused: editsEqual" warning — all Low/Med, see `docs/status/archived/2026-09-23_14-10_issue-36-followup-gates-flake-repair-bench-regression.md` §f for the full scored list._
 
 _FlightRecorder future ideas (pprof capture, OTel bridge, trace diff) and the deferred breaking changes with concrete designs are tracked in [ROADMAP.md](ROADMAP.md)._
 
