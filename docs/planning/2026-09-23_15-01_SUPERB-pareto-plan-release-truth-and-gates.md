@@ -235,3 +235,22 @@ flowchart TD
 ## Annotation log (plan is a snapshot; annotate, never rewrite)
 
 - 2026-09-23 15:01 — plan created from TODO_LIST @ post-sweep state + 14:50 status report.
+
+- 2026-09-23 15:20 — **T1 EXECUTED**: master pushed (`22299d0..9605441`, then `..0856287`).
+  CI run `35864784734` verified the Go-pin fix (`test (1.27, ubuntu)` SUCCESS; the
+  go.work-requires-1.27 setup failure class is gone) but surfaced three previously-masked
+  failures. Two fixed the same hour: `lint (analysis)` (varnamelen + wsl_v5 in
+  `analysis_diagnostic_test.go`; lint 0 issues, tests race-green) and
+  `markdown-link-check` (depth-broken `../../ROADMAP.md` link in the archived 07-27
+  report after today's git mv; now `../../../`). The third, `structural-checks`, is the
+  EXPECTED red: `version-drift.sh` fails on `cmd/go-finding` requiring `pipeline v1.12.0`
+  vs expected v1.13.0 — by design until T2 (folding the require forward now would trade a
+  visible failure for an unresolvable consumer breakage).
+- 2026-09-23 15:35 — **verification run `35866986437`**: lint ×5 SUCCESS,
+  markdown-link-check SUCCESS, and arch/coverage/docs-api/docs-freshness/dupl/
+  go-work-sync/govulncheck/module-isolation/preflight-selftest/version-check/test ×2 all
+  SUCCESS. Only `structural-checks` red (T2-gated, expected); benchmark + stress pending.
+- 2026-09-23 15:40 — F25.2 done: all 14 archived reports re-checked post-dprint (markers
+  4-57, none lost). F25.3 done: all 5 pkg.go.dev v1.12.0 pages fetched and render; the
+  09-17 marker amended to encode full evidence scope. F25.4/F25.5 done: ROADMAP gained
+  the multi-edit follow-ups raw-ideas block + parked-launch-nice-to-haves note.
