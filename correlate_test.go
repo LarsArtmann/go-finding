@@ -3,7 +3,6 @@ package finding
 import (
 	"fmt"
 	"testing"
-
 	"testing/quick"
 )
 
@@ -43,7 +42,14 @@ func TestCorrelate_SameToolPointInRange(t *testing.T) {
 
 	findings := []Finding{
 		correlateRangeFinding("range", "sameTool", "x.go", 4, 6),
-		{ID: "point", ToolName: "sameTool", Rule: "r", Message: "m", Severity: SeverityWarning, Position: Pos("x.go", 5, 1)},
+		{
+			ID:       "point",
+			ToolName: "sameTool",
+			Rule:     "r",
+			Message:  "m",
+			Severity: SeverityWarning,
+			Position: Pos("x.go", 5, 1),
+		},
 	}
 
 	if got := Correlate(findings); len(got) != 0 {
@@ -91,6 +97,7 @@ func TestNewIntervalIndex_SortsByStartThenEnd(t *testing.T) {
 	}
 
 	idx := NewIntervalIndex(intervals)
+
 	hits := idx.Query(5, 6)
 	if len(hits) != 2 {
 		t.Fatalf("expected 2 overlaps, got %d", len(hits))
@@ -116,6 +123,7 @@ func TestCorrelate_QuickSanity(t *testing.T) {
 	f := func(a, b uint8) bool {
 		f1 := correlateRangeFinding("a", "toolA", "x.go", int(a)%20+1, int(a)%20+2)
 		f2 := correlateRangeFinding("b", "toolB", "x.go", int(b)%20+1, int(b)%20+2)
+
 		for _, c := range Correlate([]Finding{f1, f2}) {
 			for _, id := range c.FindingIDs {
 				if id != "a" && id != "b" {
