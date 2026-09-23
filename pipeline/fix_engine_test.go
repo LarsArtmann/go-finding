@@ -503,3 +503,19 @@ func TestFixEngine_Apply_PartialEditConflict_AppliedAndConflicts(t *testing.T) {
 	g.Expect(result.Outcomes[1].Status).To(Equal(FixOutcomeApplied))
 	g.Expect(string(result.Content)).To(Equal("ZbcYef"))
 }
+
+// Pins the nearestBy tie-break: two occurrences equidistant from the
+// finding's position resolve to the EARLIEST one (strict-less comparison).
+func TestFixEngine_Apply_Substring_NearestTieKeepsEarliest(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	engine := NewFixEngine()
+	content := []byte("abab")
+	fixes := []finding.Finding{
+		{BeforeCode: "a", AfterCode: "X", Position: finding.Pos("a.go", 1, 2)},
+	}
+
+	result, _, count := engine.Apply(content, fixes)
+	g.Expect(count).To(Equal(1))
+	g.Expect(string(result)).To(Equal("Xbab"))
+}
