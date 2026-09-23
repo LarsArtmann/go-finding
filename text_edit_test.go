@@ -2,8 +2,11 @@ package finding
 
 import (
 	"context"
+	"encoding/json/v2"
 	"errors"
 	"testing"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestTextEdit_HasSpan(t *testing.T) {
@@ -18,7 +21,7 @@ func TestTextEdit_HasSpan(t *testing.T) {
 	g.Expect(replacement.IsInsertion()).To(BeFalse())
 	g.Expect(replacement.IsDeletion()).To(BeFalse())
 
-	insertion := TextEdit{Start: Pos("a.go", 1, 1), NewText: "x"}
+	insertion := TextEdit{Start: Pos("a.go", 1, 1), End: Position{Offset: -1}, NewText: "x"}
 	g.Expect(insertion.HasSpan()).To(BeFalse())
 	g.Expect(insertion.IsInsertion()).To(BeTrue())
 
@@ -49,7 +52,7 @@ func TestTextEdit_Validate(t *testing.T) {
 		},
 		{
 			name:    "insertion without span is valid",
-			edit:    TextEdit{Start: Pos("a.go", 1, 1), NewText: "x"},
+			edit:    TextEdit{Start: Pos("a.go", 1, 1), End: Position{Offset: -1}, NewText: "x"},
 			wantErr: false,
 		},
 		{
@@ -61,7 +64,7 @@ func TestTextEdit_Validate(t *testing.T) {
 		},
 		{
 			name: "zero start position means byte zero and is valid",
-			edit: TextEdit{Start: Position{}, NewText: "x"},
+			edit: TextEdit{Start: Position{}, End: Position{Offset: -1}, NewText: "x"},
 		},
 		{
 			name:    "unset start position is invalid",
@@ -169,7 +172,7 @@ func TestFinding_Equal_WithEdits(t *testing.T) {
 	}
 
 	first := TextEdit{Start: Pos("a.go", 2, 1), End: Pos("a.go", 2, 5)}
-	second := TextEdit{Start: Pos("a.go", 4, 1), NewText: "inserted"}
+	second := TextEdit{Start: Pos("a.go", 4, 1), End: Position{Offset: -1}, NewText: "inserted"}
 
 	g.Expect(base([]TextEdit{first, second}).Equal(base([]TextEdit{first, second}))).To(BeTrue())
 	g.Expect(base([]TextEdit{first, second}).Equal(base([]TextEdit{second, first}))).To(BeTrue())
@@ -205,7 +208,7 @@ func TestFinding_FixPredicates_WithEditsOnly(t *testing.T) {
 		Severity:    SeverityError,
 		Position:    Pos("a.go", 1, 1),
 		FixStrategy: FixStrategyDirect,
-		Edits:       []TextEdit{{Start: Pos("a.go", 1, 1), NewText: "x"}},
+		Edits:       []TextEdit{{Start: Pos("a.go", 1, 1), End: Position{Offset: -1}, NewText: "x"}},
 	}
 
 	g.Expect(f.HasCodeChange()).To(BeTrue())
@@ -231,12 +234,12 @@ func TestFinding_JSONRoundTrip_WithEdits(t *testing.T) {
 		},
 	}
 
-	data, err := marshalJSONString(f)
+	data, err := json.Marshal(f, marshalOpts)
 	g.Expect(err).NotTo(HaveOccurred())
 
-	var restored Finding
-	g.Expect(unmarshalFinding(data, &restored)).To(Succeed())
-	g.Expect(restored.Equal(f)).To(BeTrue(), "edits must survive JSON round-trip: %s", data)
+	var roundTripped Finding
+	unmarshalJSON(t, data, &roundTripped)
+	g.Expect(roundTripped.Equal(f)).To(BeTrue(), "edits must survive JSON round-trip: %s", data)
 }
 
 func TestSARIF_RoundTrip_WithEdits(t *testing.T) {

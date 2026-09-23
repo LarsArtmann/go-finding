@@ -14,24 +14,26 @@ import (
 // Finding instead of being truncated to the first edit.
 //
 // Conventions:
-//   - End is the zero Position for a pure insertion at Start (mirrors
-//     [Range.EndOrStart]: End.Line == 0 or End.Offset < 0 means "at Start").
+//   - An insertion is expressed either by an unset End (Position{Offset: -1})
+//     or by End == Start (zero-length span); both resolve to a byte-level
+//     no-removal insertion, mirroring go/analysis's Pos == End convention.
 //   - Empty NewText means a pure deletion of the span.
 //   - Empty Start.File means "same file as the finding" (single-file default).
-//   - Start follows the Position zero-value convention: Position{} (Offset 0)
-//     means byte 0 of the finding's file, not "unset"; the unset form is
+//   - Start and End follow the Position zero-value convention: Position{}
+//     (Offset 0) means byte 0, not "unset"; the unset form is
 //     Position{Offset: -1}.
 //
 // BeforeCode/AfterCode on Finding remain the single-edit display summary;
 // Edits is the authoritative machine representation when set.
 type TextEdit struct {
 	Start   Position `json:"start"`             // Span start (inclusive).
-	End     Position `json:"end"`               // Span end (exclusive); zero value = insertion at Start.
+	End     Position `json:"end"`               // Span end (exclusive); unset (Offset -1) or equal to Start = insertion.
 	NewText string   `json:"newText,omitempty"` // Replacement text; empty = pure deletion.
 }
 
 // HasSpan reports whether the edit replaces a span, as opposed to being a
-// pure insertion at Start.
+// pure insertion at Start (End unset, following the same convention as
+// [Range.HasEnd]).
 func (e TextEdit) HasSpan() bool {
 	return e.End.Line > 0 || e.End.Offset >= 0
 }

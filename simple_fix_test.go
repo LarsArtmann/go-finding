@@ -206,3 +206,57 @@ func TestApplySimpleFixes_FileNotFound(t *testing.T) {
 		t.Error("Reason should explain why fix was skipped")
 	}
 }
+
+func TestApplySimpleFixes_MultiEditListRefused(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	filePath := filepath.Join(dir, "test.go")
+
+	content := "package main\n\nvar x = true\n\nif x {\n}\n"
+	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
+		t.Fatalf("setup: %v", err)
+	}
+
+	findings := []Finding{
+		{
+			ID:          "1",
+			Rule:        "r",
+			ToolName:    "t",
+			Message:     "m",
+			Severity:    SeverityWarning,
+			Position:    Position{File: FilePath(filePath), Line: 3},
+			BeforeCode:  "var x = true\n",
+			AfterCode:   "",
+			FixStrategy: FixStrategyDirect,
+			Edits: []TextEdit{
+				{Start: Position{File: FilePath(filePath), Offset: 14}, End: Position{File: FilePath(filePath), Offset: 29}},
+				{Start: Position{File: FilePath(filePath), Offset: 31}, NewText: "false {"},
+			},
+		},
+	}
+
+	results := ApplySimpleFixes(findings)
+
+	fileResults := results[FilePath(filePath)]
+	if len(fileResults) != 1 {
+		t.Fatalf("expected 1 result, got %d", len(fileResults))
+	}
+
+	if fileResults[0].Applied {
+		t.Fatal("multi-edit finding must not be half-applied")
+	}
+
+	if fileResults[0].Reason != "finding has a multi-edit fix list; use pipeline.FixApplier" {
+		t.Errorf("Reason = %q, want the FixApplier pointer", fileResults[0].Reason)
+	}
+
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+
+	if string(data) != content {
+		t.Errorf("file was modified despite refusal: %q", string(data))
+	}
+}
