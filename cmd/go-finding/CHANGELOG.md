@@ -19,6 +19,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   duplicated flag/config plumbing extracted into `installFlightRecorder` and
   `flightRecorderFileConfig.resolve()` (no behavior change beyond messages).
 
+## [1.13.0] - 2026-09-22
+
+Lockstep release with core v1.13.0. No CLI surface changes: go.sum resynced
+against the published v1.12.0 sibling tags and the `ginkgo` test dependency
+bumped. Requires core and pipeline v1.12.0 (the v1.13.0 sibling resync landed
+on master after tagging).
+
 ## [1.12.0] - 2026-09-17
 
 Build hygiene: go.sum resynced against the published v1.11.0 sibling tags and
