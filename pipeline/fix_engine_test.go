@@ -382,23 +382,24 @@ func TestFixEngine_ProviderPrecedence(t *testing.T) {
 // Pins the Applied ordering semantics for a mixed multi-edit/single-edit
 // batch: Applied follows APPLICATION order (descending offset of each
 // finding's first surviving edit), not input order. Outcomes stay in input
-// order. See docs/guides/fix-engine.md "Applied ordering".
+// order. Offsets are deliberately tie-free (sortEditsDescending is unstable).
+// See docs/guides/fix-engine.md "Applied ordering".
 func TestFixEngine_Apply_MixedEditKinds_AppliedOrdering(t *testing.T) {
 	g := NewParallelGomega(t)
 
 	content := []byte("abcdef")
 	multi := finding.Finding{
 		ID:          "multi",
-		ToolName:    "t",
 		Rule:        "r",
+		ToolName:    "t",
 		Message:     "m",
 		Severity:    finding.SeverityWarning,
 		FixStrategy: finding.FixStrategyDirect,
 		Edits: []finding.TextEdit{
 			{
-				Start:   finding.Position{File: "a.go", Offset: 2},
-				End:     finding.Position{File: "a.go", Offset: 4},
-				NewText: "XY",
+				Start:   finding.Position{File: "a.go", Offset: 4},
+				End:     finding.Position{File: "a.go", Offset: 6},
+				NewText: "G",
 			},
 			{
 				Start:   finding.Position{File: "a.go", Offset: 0},
@@ -409,8 +410,8 @@ func TestFixEngine_Apply_MixedEditKinds_AppliedOrdering(t *testing.T) {
 	}
 	single := finding.Finding{
 		ID:          "single",
-		ToolName:    "t",
 		Rule:        "r",
+		ToolName:    "t",
 		Message:     "m",
 		Severity:    finding.SeverityWarning,
 		FixStrategy: finding.FixStrategyDirect,
@@ -435,37 +436,40 @@ func TestFixEngine_Apply_MixedEditKinds_AppliedOrdering(t *testing.T) {
 	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeApplied))
 	g.Expect(result.Outcomes[1].Finding.ID).To(Equal(finding.ID("multi")))
 	g.Expect(result.Outcomes[1].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(result.Conflicts).To(BeEmpty())
+	g.Expect(string(result.Content)).To(Equal("ZbWdG"))
 }
 
 // Pins partial-conflict semantics for a multi-edit finding: when one of its
 // edits conflicts and another survives, the finding appears in Applied AND in
 // Conflicts, and its outcome is Applied (a surviving edit means the fix was
-// applied). See docs/guides/fix-engine.md "Partial conflicts".
+// applied). Offsets are deliberately tie-free (sortEditsDescending is
+// unstable). See docs/guides/fix-engine.md "Partial conflicts".
 func TestFixEngine_Apply_PartialEditConflict_AppliedAndConflicts(t *testing.T) {
 	g := NewParallelGomega(t)
 
 	content := []byte("abcdef")
 	first := finding.Finding{
 		ID:          "first",
-		ToolName:    "t",
 		Rule:        "r",
+		ToolName:    "t",
 		Message:     "m",
 		Severity:    finding.SeverityWarning,
 		FixStrategy: finding.FixStrategyDirect,
-		BeforeCode:  "c",
+		BeforeCode:  "d",
 		AfterCode:   "Y",
 		Edits: []finding.TextEdit{
 			{
-				Start:   finding.Position{File: "a.go", Offset: 2},
-				End:     finding.Position{File: "a.go", Offset: 3},
+				Start:   finding.Position{File: "a.go", Offset: 3},
+				End:     finding.Position{File: "a.go", Offset: 4},
 				NewText: "Y",
 			},
 		},
 	}
 	partial := finding.Finding{
 		ID:          "partial",
-		ToolName:    "t",
 		Rule:        "r",
+		ToolName:    "t",
 		Message:     "m",
 		Severity:    finding.SeverityWarning,
 		FixStrategy: finding.FixStrategyDirect,
@@ -495,5 +499,5 @@ func TestFixEngine_Apply_PartialEditConflict_AppliedAndConflicts(t *testing.T) {
 	g.Expect(result.Conflicts[0].ConflictsWith[0].ID).To(Equal(finding.ID("first")))
 	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeApplied))
 	g.Expect(result.Outcomes[1].Status).To(Equal(FixOutcomeApplied))
-	g.Expect(string(result.Content)).To(Equal("ZXYef"))
+	g.Expect(string(result.Content)).To(Equal("ZbcYef"))
 }
