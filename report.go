@@ -68,8 +68,14 @@ type Summary struct {
 	ByCategory    map[Category]int    `json:"byCategory,omitempty"`    // Count by category
 	ByFixStrategy map[FixStrategy]int `json:"byFixStrategy,omitempty"` // Count by fix strategy
 	FilesAffected int                 `json:"filesAffected,omitempty"` // Unique files with findings
-	FilesScanned  int                 `json:"filesScanned,omitempty"`  // Total files scanned (including clean files)
+	FilesScanned  int                 `json:"filesScanned"`            // Total files scanned (including clean files); always emitted — "scanned 0" is coverage evidence, not an omission
 	Suppressed    int                 `json:"suppressed,omitempty"`    // Count of suppressed findings
+
+	// SkippedModules lists nested go.mod modules under the analysis target
+	// that the tool did NOT analyze (go tooling treats nested go.mod files as
+	// hard module boundaries). Tools whose analysis is module-agnostic leave
+	// it nil, which omits the field.
+	SkippedModules []string `json:"skippedModules,omitempty"`
 }
 
 // NewReport creates a new report with the given tool info.
