@@ -116,6 +116,37 @@ func TestOnGoFiles(t *testing.T) {
 	}
 }
 
+// TestSpecCarriesModuleFanOut pins the Spec field surface that mirrors
+// BuildFlow's domain/tool.DAGTopology: ModuleFanOut declares per-module
+// execution in multi-module workspaces, and consumers convert it
+// field-for-field at spec-to-tool conversion time.
+func TestSpecCarriesModuleFanOut(t *testing.T) {
+	ResetForTest()
+
+	detector := finding.NamedDetectorFunc("fanout-tool", func(context.Context) ([]finding.Finding, error) {
+		return nil, nil
+	})
+
+	Register(Spec{
+		Name:         "fanout-tool",
+		Description:  "runs per Go module",
+		Trigger:      OnGoFiles(),
+		DependsOn:    []string{"go-fix"},
+		ModuleFanOut: true,
+		Detect:       detector,
+	})
+
+	got := All()[0]
+	if !got.ModuleFanOut {
+		t.Error("ModuleFanOut must round-trip through the registry")
+	}
+
+	plain := Spec{Name: "t", Description: "d", Detect: detector}
+	if plain.ModuleFanOut {
+		t.Error("zero-value Spec must default ModuleFanOut to false")
+	}
+}
+
 // TestTriggerCarriesNotRequires pins the Trigger field surface that mirrors
 // BuildFlow's domain/tool.Trigger: NotRequires expresses ownership
 // deference (disqualifying patterns), and a spec that sets it must be able

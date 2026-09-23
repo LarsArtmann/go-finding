@@ -11,6 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **`ResolveFlightRecorderConfig`** — exported mapping from
+  `FlightRecorderFileConfig` (JSON/YAML-friendly section) to
+  `FlightRecorderConfig`: parses the string-encoded durations and applies
+  defaults, so embedders and the CLI no longer mirror that logic.
+  `ConfigFile.ResolveFlightRecorder` now delegates to it. Duration errors
+  read `parse flightRecorder.<field> %q` — wording is contract and pinned
+  by test.
+
 - **`EditListProvider` (issue #36)** — resolves a finding's typed edit list
   (`Finding.Edits`, new in core) to byte-level edits: byte offsets directly,
   line/column via the shared line index. Runs first in the default provider

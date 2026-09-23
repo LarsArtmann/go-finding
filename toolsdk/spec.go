@@ -24,6 +24,14 @@ type Spec struct {
 	// These are plain strings mapped to domain.ToolName at conversion time.
 	DependsOn []string
 
+	// ModuleFanOut declares that the tool runs once per Go module in a
+	// multi-module workspace rather than once at the repo root. BuildFlow maps
+	// it to its DAGTopology.ModuleFanOut at conversion time; a spec that omits
+	// the field silently loses per-module fan-out there. Field-for-field
+	// parity with BuildFlow's domain/tool.DAGTopology — the same parity rule
+	// as Trigger.NotRequires.
+	ModuleFanOut bool
+
 	// Inputs are the file patterns this tool reads. Used to derive data-flow
 	// edges and to gate the tool on file presence. Empty = always file-relevant.
 	Inputs []string

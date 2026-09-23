@@ -77,9 +77,9 @@ echo "== self-test 4/4: post-tag mode detects INCOMPLETE tag set (toolsdk missin
 INJECTED_TAGS=()
 for prefix in "" "pipeline/" "analysis/" "cmd/go-finding/"; do
 	tag="${prefix}${MISSING_TAG}"
-	# -m is required: the repo sets tag.gpgSign=true, so a bare `git tag`
-	# creates a signed annotated tag and opens an editor.
-	git -C "$WORKTREE" tag -m "selftest injected" "$tag" HEAD
+	# update-ref (lightweight, no tag object): annotated tags would require
+	# committer identity, which CI runners do not have.
+	git -C "$WORKTREE" update-ref "refs/tags/$tag" HEAD
 	INJECTED_TAGS+=("$tag")
 done
 expect_fail "post-tag incomplete tag set detected" \

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Nothing yet.
+
 ### Documented
 
 - **golangci-lint `exhaustruct_v5` panic on Go 1.27 promoted-field keys** is an
