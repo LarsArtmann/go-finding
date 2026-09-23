@@ -117,7 +117,7 @@ func TestConfigFile_ResolveFlightRecorder(t *testing.T) {
 		}}
 		_, err := cf.ResolveFlightRecorder()
 		g.Expect(err).To(HaveOccurred())
-		g.Expect(err.Error()).To(ContainSubstring("slowStageThreshold"))
+		g.Expect(err.Error()).To(ContainSubstring("parse flightRecorder.slowStageThreshold"))
 	})
 
 	t.Run("bad minAge returns error", func(t *testing.T) {
@@ -129,7 +129,7 @@ func TestConfigFile_ResolveFlightRecorder(t *testing.T) {
 		}}
 		_, err := cf.ResolveFlightRecorder()
 		g.Expect(err).To(HaveOccurred())
-		g.Expect(err.Error()).To(ContainSubstring("minAge"))
+		g.Expect(err.Error()).To(ContainSubstring("parse flightRecorder.minAge"))
 	})
 }
 
