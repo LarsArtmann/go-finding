@@ -8,6 +8,7 @@ plan of record): carry typed edits end-to-end (diagnostic → finding → applie
 ## a) FULLY DONE (verified green)
 
 ### Review & verification
+
 - All three compounding loss spots from the issue confirmed in source:
   `analysis/analysis.go` kept only `TextEdits[0]`; `Finding` was single-edit
   (`BeforeCode`/`AfterCode`); `ToDiagnostic` reconstructed exactly one TextEdit.
@@ -15,6 +16,7 @@ plan of record): carry typed edits end-to-end (diagnostic → finding → applie
   per finding — only the Finding model and the bridge were single-edit.
 
 ### Core module (`github.com/larsartmann/go-finding`)
+
 - New `text_edit.go`: `TextEdit{Start, End Position; NewText string}` mirroring
   go/analysis / LSP TextEdit. Methods: `HasSpan`, `IsInsertion`, `IsDeletion`,
   `EffectiveFile`, `Validate` (sentinel errors: `errEditNoLocation`,
@@ -40,6 +42,7 @@ plan of record): carry typed edits end-to-end (diagnostic → finding → applie
   ("use pipeline.FixApplier") instead of half-applying edit 0.
 
 ### Analysis module
+
 - `FromDiagnosticWithSource`/`FromDiagnostic` carry ALL TextEdits of
   `SuggestedFixes[0]` into `Finding.Edits`; BeforeCode/AfterCode = edit 0.
   Doc comments rewritten (remaining loss: SuggestedFixes 1..N are
@@ -49,6 +52,7 @@ plan of record): carry typed edits end-to-end (diagnostic → finding → applie
   retained for Edits-less findings.
 
 ### Pipeline module
+
 - New `EditListProvider` (`edit-list`), FIRST in the default chain (now 4
   providers). Verbatim byte-level application; line/col fallback through the
   shared line offset index (`lineIndexAware`); refuses loudly instead of
@@ -62,6 +66,7 @@ plan of record): carry typed edits end-to-end (diagnostic → finding → applie
   full-equality dedup (O(n²) on findings count, fine at per-file scale).
 
 ### Tests (issue's three verification items all covered)
+
 - Core: `text_edit_test.go` (validate table, sentinels, equal/compare,
   editsEqual order-independence, builder, fix predicates, JSON round-trip,
   SARIF round-trip incl. byte-0 insertion), validate cases in
@@ -78,6 +83,7 @@ plan of record): carry typed edits end-to-end (diagnostic → finding → applie
   validate message test.
 
 ### Gates run (all green)
+
 - Tests: workspace mode + `GOWORK=off` per module for ALL 5 modules; race for
   core/gotoken/lockutil, analysis, pipeline(+goast); CLI module build+tests.
 - `nix run .#lint`: 0 issues (after `t.Parallel` fix + `golangci-lint fmt` +
@@ -116,6 +122,7 @@ plan of record): carry typed edits end-to-end (diagnostic → finding → applie
 ## d) TOTALLY FUCKED UP? — nothing unrecoverable
 
 Self-caught and fixed during the session (kept for honesty):
+
 1. First dedup design (composite key id+pos+message) collapsed distinct
    ID-less findings — existing test caught it; replaced with equality dedup.
 2. Initially designed "zero End = insertion", contradicting the project's
@@ -147,6 +154,7 @@ Self-caught and fixed during the session (kept for honesty):
 ## f) NEXT UP TO 50 THINGS
 
 Docs & issue (immediate):
+
 1. ADR #17: typed edit list on Finding (motivation, alternatives, conventions).
 2. CHANGELOG Unreleased entry (core+analysis+pipeline; breaking? no — additive;
    Applied-count semantics change noted).
@@ -172,33 +180,33 @@ Quality gates to finish:
 
 Release (operator decisions):
 18. Decide: complete v1.13.0 (push 3 missing tags + resync CLI go.mod) vs fold
-    into v1.14.0 containing this feature.
+into v1.14.0 containing this feature.
 19. If v1.14.0: bump version.go, CHANGELOG cut, preflight (incl. --bench),
-    tag push in batches ≤3, rerun cancelled Release runs ONE AT A TIME.
+tag push in batches ≤3, rerun cancelled Release runs ONE AT A TIME.
 20. After tags: resync CLI go.mod to new sibling versions; resync commit.
 21. Verify pkg.go.dev renders new TextEdit/Edits APIs.
 
 Follow-up engineering (candidates, not committed):
 22. Conflict.ConflictsWith dedup (same finding twice on multi-edit overlap).
 23. `ApplySimpleFixes`: byte-level application of single-edit lists (offsets
-    known) instead of string matching — or keep refusing (decide).
+known) instead of string matching — or keep refusing (decide).
 24. LSP: expose Edits as LSP CodeAction TextEditEdits (LSPDiagnosticData
-    currently single-fix).
+currently single-fix).
 25. Multi-FILE fix support in FixApplier (currently refused loudly; would need
-    per-file grouping + atomic cross-file rollback policy).
+per-file grouping + atomic cross-file rollback policy).
 26. SuggestedFixes 1..N (alternatives) representation on Finding (e.g.
-    AlternativeFixes) — documented as lossy today.
+AlternativeFixes) — documented as lossy today.
 27. erraudit T13/T14 migration once tags exist (upstream repo work).
 28. gogenfilter/generated-file awareness for edit-list findings.
 29. GoASTProvider: emit Finding.Edits (typed) instead of raw FixEdits, so CLI
-    dry-runs and SARIF export benefit.
+dry-runs and SARIF export benefit.
 30. Fuzz: TextEdit.Validate + EditListProvider against random coordinates.
 31. Benchmark: editsEqual allocation profile on large edit lists.
 32. Examples: pipeline/examples/multi-edit showing bridge → applier.
 33. Consider `Edits` in `Preview()` (multi-hunk preview).
 34. Consider `GenerateID` stability guarantees doc (Edits excluded — deliberate).
 35. docs/DOMAIN_LANGUAGE.md: "edit list", "insertion", "span" entries if file
-    exists for it.
+exists for it.
 36. Release preflight selftest: add incomplete-tag-set failure class.
 37. CLI flag `-fix-provider edit-list` docs (it's default now; registry names).
 38. Update `docs/PRO_CONTRA_go-output-integration.md`? No — unrelated; skip.
@@ -218,5 +226,66 @@ above is what I'd actually do.)
    safe) or teach it byte-level application so the no-pipeline path is also
    lossless?
 
+## h) ADDENDUM — residual gates + fallout fixes (same day, follow-up pass)
+
+All remaining gates ran (next-up items 10-17 done). Fallout found and fixed:
+
+- **erraudit / go-arch-lint**: 0 violations, no warnings — green as-is.
+- **Stress gates**: `ginkgo -r --race --repeat=20 --skip-package=examples`
+  green in core (10 suites, 5m42s) and pipeline (3 suites, 1m26s);
+  `GOWORK=off go test -race -count=20 ./...` green in analysis (4.2s) and
+  CLI (26.6s + detectors 5.7s).
+- **`nix flake check` was BROKEN since the Sep 20-22 go 1.27 go.mod bump**
+  (nobody ran it locally; CI has no nix jobs — a silent dead gate). Three
+  causes, all fixed in `flake.nix`:
+  1. `packages.default`/overlay still built with nixpkgs default go (1.26.7,
+     GOTOOLCHAIN=local) → "go.mod requires go >= 1.27". Fixed: both call
+     sites now `buildGoModule.override { go = pkgs.go_1_27; }`.
+  2. `vendorHash` changed under go 1.27 (proxyVendor output differs across
+     toolchains) → regenerated.
+  3. treefmt-check: `goimports` (nixpkgs gotools, built with go 1.26.7)
+     embeds its build-time GOROOT and falls back to that `go` when none is
+     on PATH; go.mod's 1.27 floor made it attempt a GOTOOLCHAIN download —
+     fatal in the offline sandbox. Outside the sandbox the same fallback
+     silently DOWNLOADED a full go1.27.0 toolchain into the repo
+     (`./go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.0...` — still sitting
+     there, untracked, read-only; candidate for `trash`, operator call).
+     Fixed: `programs.goimports.package` is a wrapper exporting
+     `PATH=go_1_27/bin` + `GOTOOLCHAIN=local` before exec'ing real goimports.
+  After all three: `nix flake check` fully green (plain form, per the
+  documented `--all-systems` decision).
+- **Benchmark gate FAILED on first run — real regression, fixed properly.**
+  The `dedupAppliedFindings` full-equality O(n²) dedup cost +288%..+706%
+  time on applier/GoAST benchmarks (GoAST_1000: 974µ → 7853µ). Replaced with
+  O(1) owner-index tracking: `apply()` records each edit's owning input
+  finding (`editOwner`, parallel to `allEdits`) and
+  `applyEditsWithConflicts` appends a finding to `Applied` once, on its
+  first applied edit. Same per-finding semantics, no post-hoc dedup.
+  Residual intentional cost: `Finding` grew by the `Edits` slice header
+  (+24 B/copy) → ~+10-13% B/op on copy-heavy benchmarks — same class as the
+  v1.7.0 GroupID precedent; baseline regenerated with rationale in
+  `benchmarks/README.md`.
+- **test-naming gate was red** (pre-existing, not from this fix):
+  `summary_coverage_test.go` (another session's file) violates the
+  "never name files after metrics" rule. Merged its two Summary-contract
+  tests into `report_test.go` (Summary lives in report.go) and `git rm`'d
+  the file. Gate green.
+- **Docs written** (next-up items 1-7): CHANGELOG entries (root + pipeline +
+  analysis Unreleased), ADR (typed edit lists — note: the plan-of-record
+  said "#17" but the log already had #17 and #18, so it landed as **#19**),
+  fix-engine guide (multi-edit section + 4-provider chain table), doc.go
+  (TextEdit/EditListProvider), README (multi-edit section + updated default
+  chain), AGENTS.md (core multi-edit rules, pipeline Applied-per-finding
+  gotcha, ADR pointer, text_edit.go in key files). outcomes.md left as-is
+  (provider-agnostic already; multi-edit failures surface as ordinary
+  `failed` outcomes).
+- Doc gates after edits: docs-api-check (318 identifiers OK),
+  docs-freshness OK, dprint clean, version-check OK, replace-audit OK,
+  go-work-sync OK, json-deterministic OK.
+- **Known residual (operator-blocked)**: `version-drift.sh` still reports
+  `cmd/go-finding requires pipeline v1.12.0, expected v1.13.0` — resolves
+  only when the missing v1.13.0 sibling tags are pushed (question 2).
+
 ---
+
 _Assisted-by: Crush <crush@charm.land>_

@@ -260,12 +260,12 @@ The GoAST provider:
 
 The default chain resolves fix locations in this order:
 
-| Provider              | Match Criteria         | Resolution                     |
-| --------------------- | ---------------------- | ------------------------------ |
+| Provider              | Match Criteria           | Resolution                       |
+| --------------------- | ------------------------ | -------------------------------- |
 | **EditListProvider**  | `len(Finding.Edits) > 0` | Typed edits, offsets or line/col |
-| **OffsetProvider**    | `Position.Offset >= 0` | Direct byte offset             |
-| **LineProvider**      | `Position.Line > 0`    | Line+column → byte offset      |
-| **SubstringProvider** | `BeforeCode != ""`     | Find substring in content       |
+| **OffsetProvider**    | `Position.Offset >= 0`   | Direct byte offset               |
+| **LineProvider**      | `Position.Line > 0`      | Line+column → byte offset        |
+| **SubstringProvider** | `BeforeCode != ""`       | Find substring in content        |
 
 `EditListProvider` runs first because a typed edit list is the most precise
 representation — no content guessing. Each provider:

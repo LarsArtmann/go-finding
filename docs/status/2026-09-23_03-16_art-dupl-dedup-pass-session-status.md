@@ -10,17 +10,17 @@
 
 ## a) FULLY DONE
 
-| # | Item | Evidence |
-|---|------|----------|
+| # | Item                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Evidence                                                                                                |
+| - | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | 1 | **Group 1 — CLI flight-recorder setup duplication** (biggest clone, main.go flag branch vs config branch): extracted `installFlightRecorder` (shared tail: hook creation, `StageHooks` append, stderr announcement — both message prefixes preserved byte-identical) and `flightRecorderFileConfig.resolve()` in config.go (single home for duration parsing). `validate()` now delegates to `resolve()` (third copy of duration knowledge eliminated). | e2e tests assert both `"Flight recorder enabled"` and `"Flight recorder enabled via config"` — all pass |
-| 2 | **Group 4 — pipeline.go duplicated early-exit epilogue** (`TotalIterations` stamp + `metricsResult = result` + return, at both cancel and error paths): extracted `exitResult` closure. | pipeline module suite green |
-| 3 | **Group 7 — fix_provider.go twin argmin loops** (differed only in distance function: byte-distance vs line-distance): extracted `nearestBy(occurrences, dist func(int) int)`. | pipeline suite green |
-| 4 | **Group 8 — fix_applier.go duplicated prologue** (`ApplyWithReport` vs `ApplyDryRun`): extracted `newApplyReport` (group-by-safe-path + report init). | pipeline suite green |
-| 5 | **Group 13 — sarif_import.go lazy-init guard** (`if f.Suppression == nil {...}` twice in one function): extracted `ensureSuppression(f)`. | root suite green |
-| 6 | **Judgment documented for all 8 accepted groups** (rationale in section e/f below and in session summary): intentional similarity, not negligence. | art-dupl re-run: actionable 13 → 8, all 8 = accepted set |
-| 7 | **All verification gates green:** root + pipeline + CLI module test suites (incl. CLI e2e), `-race` on root and pipeline main packages, `nix fmt` (fixed 1 blank line), `nix run .#lint` (0 issues), `nix run .#error-audit` (0 violations, 5 modules), art-dupl re-run confirmed eliminations. | outputs in session |
-| 8 | **AGENTS.md gotcha corrected:** "each sub-module has replace directives" was wrong for `cmd/go-finding` — it must have NONE (`replace-audit.sh` enforces; `go install module@version` refuses replaces) → CLI is pinned to published sibling versions and cannot consume unreleased sibling-module APIs. | AGENTS.md Module Structure section |
-| 9 | **Key constraint discovered and worked around:** first attempt exported `pipeline.ResolveFlightRecorderConfig` for CLI reuse; `GOWORK=off` CLI build failed against published `pipeline v1.12.0`; export reverted (net-zero public API change) and solved CLI-side instead. | CLI builds + tests green against published deps |
+| 2 | **Group 4 — pipeline.go duplicated early-exit epilogue** (`TotalIterations` stamp + `metricsResult = result` + return, at both cancel and error paths): extracted `exitResult` closure.                                                                                                                                                                                                                                                                 | pipeline module suite green                                                                             |
+| 3 | **Group 7 — fix_provider.go twin argmin loops** (differed only in distance function: byte-distance vs line-distance): extracted `nearestBy(occurrences, dist func(int) int)`.                                                                                                                                                                                                                                                                           | pipeline suite green                                                                                    |
+| 4 | **Group 8 — fix_applier.go duplicated prologue** (`ApplyWithReport` vs `ApplyDryRun`): extracted `newApplyReport` (group-by-safe-path + report init).                                                                                                                                                                                                                                                                                                   | pipeline suite green                                                                                    |
+| 5 | **Group 13 — sarif_import.go lazy-init guard** (`if f.Suppression == nil {...}` twice in one function): extracted `ensureSuppression(f)`.                                                                                                                                                                                                                                                                                                               | root suite green                                                                                        |
+| 6 | **Judgment documented for all 8 accepted groups** (rationale in section e/f below and in session summary): intentional similarity, not negligence.                                                                                                                                                                                                                                                                                                      | art-dupl re-run: actionable 13 → 8, all 8 = accepted set                                                |
+| 7 | **All verification gates green:** root + pipeline + CLI module test suites (incl. CLI e2e), `-race` on root and pipeline main packages, `nix fmt` (fixed 1 blank line), `nix run .#lint` (0 issues), `nix run .#error-audit` (0 violations, 5 modules), art-dupl re-run confirmed eliminations.                                                                                                                                                         | outputs in session                                                                                      |
+| 8 | **AGENTS.md gotcha corrected:** "each sub-module has replace directives" was wrong for `cmd/go-finding` — it must have NONE (`replace-audit.sh` enforces; `go install module@version` refuses replaces) → CLI is pinned to published sibling versions and cannot consume unreleased sibling-module APIs.                                                                                                                                                | AGENTS.md Module Structure section                                                                      |
+| 9 | **Key constraint discovered and worked around:** first attempt exported `pipeline.ResolveFlightRecorderConfig` for CLI reuse; `GOWORK=off` CLI build failed against published `pipeline v1.12.0`; export reverted (net-zero public API change) and solved CLI-side instead.                                                                                                                                                                             | CLI builds + tests green against published deps                                                         |
 
 **Net diff:** 5 extractions across 4 modules' files, ~90 lines of duplicated logic removed, zero public API change, zero behavior change except error-message wording (see b-1).
 
@@ -33,12 +33,14 @@
 ## c) NOT STARTED (deliberate or missed — honest split)
 
 **Deliberate (out of scope / release-time):**
+
 - CHANGELOG.md / per-module CHANGELOGs for the refactor + wording change
 - Stress gate (`ginkgo --repeat=20 --race`, `go test -count=20` for analysis/CLI) — release-procedure step, not a session gate
 - `nix flake check` — no dependency/go.mod changes, so vendorHash cannot be stale
 - TODO_LIST.md harvest of section (f) — waiting for user per instruction
 
 **Missed (should have run, cheap):**
+
 - Remaining CI structural scripts (`test-naming.sh`, `docs-freshness.sh`, `docs-api-check.sh`, `json-deterministic-check.sh`, `replace-audit.sh`) — near-certainly unaffected (no go.mod, doc identifiers, or marshal changes), but "near-certainly" is not "verified"
 - Full `-race` across ALL packages (ran root + pipeline main packages only; CLI, goast, examples packages got plain `-count=1`)
 
@@ -62,6 +64,7 @@ Nothing else: no ghost systems created (all five new helpers are wired into live
 ## f) NEXT — session-derived backlog (impact-ordered)
 
 **Split brain / structure:**
+
 1. At next pipeline release: export `ResolveFlightRecorderConfig(fc FlightRecorderFileConfig)`, tag pipeline, bump CLI `go.mod`, collapse CLI `resolve()` to a delegation → kills the duration-parsing split brain permanently.
 2. Consider folding CLI `flightRecorderFileConfig` into pipeline's struct (or generating the YAML mirror) so the 7-field struct mirror can't drift.
 3. Accuracy-sweep AGENTS.md structural claims against reality (module table, replace policy, gate commands) — one focused pass.
