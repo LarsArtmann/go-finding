@@ -176,6 +176,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0 # changelog-drift.sh enumerates tags
       - name: Verify replace directives
         run: bash scripts/replace-audit.sh
       - name: Verify version drift
@@ -184,6 +186,8 @@ jobs:
         run: bash scripts/test-naming.sh
       - name: Verify JSON determinism
         run: bash scripts/json-deterministic-check.sh
+      - name: Verify CHANGELOG sections exist for release tags
+        run: bash scripts/changelog-drift.sh
 
     timeout-minutes: 5
   go-work-sync:

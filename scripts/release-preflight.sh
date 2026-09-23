@@ -145,6 +145,7 @@ run_check "replace directives point at ../" bash scripts/replace-audit.sh
 run_check "go.work matches directory structure" bash scripts/go-work-sync.sh
 run_check "test file naming" bash scripts/test-naming.sh
 run_check "JSON deterministic marshal" bash scripts/json-deterministic-check.sh
+run_check "CHANGELOG sections exist for release tags" bash scripts/changelog-drift.sh
 run_check "docs API references" bash scripts/docs-api-check.sh
 run_check "docs freshness" bash scripts/docs-freshness.sh
 
