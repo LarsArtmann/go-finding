@@ -310,3 +310,41 @@ func FuzzDedupKey(f *testing.F) {
 		}
 	})
 }
+
+// FuzzTextEditValidate exercises TextEdit.Validate against arbitrary
+// coordinate combinations. Invariants: never panics, deterministic verdict,
+// and no "valid" verdict for an edit with inverted byte offsets.
+func FuzzTextEditValidate(f *testing.F) {
+	f.Add(0, 0, 0, -1, 0, 0, "", "x")       // insertion at byte 0
+	f.Add(0, 1, 1, 5, 1, 6, "f.go", "new")  // line/col span
+	f.Add(3, 0, 0, 9, 0, 0, "f.go", "")     // byte-span deletion
+	f.Add(9, 0, 0, 3, 0, 0, "f.go", "x")    // inverted byte span
+	f.Add(-1, 0, 0, -1, 0, 0, "", "x")      // no location at all
+	f.Add(-2, 0, 0, -1, 0, 0, "f.go", "x")  // invalid negative offset
+	f.Add(2, 0, 0, -1, 0, 0, "f.go", "y")   // start offset set, end unset
+	f.Add(0, 1, 1, 0, 1, 1, "a.go", "b.go") // cross-file span (seed below)
+
+	f.Fuzz(func(t *testing.T, so, sl, sc, eo, el, ec int, startFile, text string) {
+		edit := TextEdit{
+			Start:   Position{File: FilePath(startFile), Offset: so, Line: sl, Column: sc},
+			End:     Position{Offset: eo, Line: el, Column: ec},
+			NewText: text,
+		}
+
+		err1 := edit.Validate()
+
+		err2 := edit.Validate()
+
+		if (err1 == nil) != (err2 == nil) {
+			t.Fatalf("Validate is non-deterministic for %+v", edit)
+		}
+
+		_, _, _ = edit.IsInsertion(), edit.IsDeletion(), edit.EffectiveFile("fallback.go")
+
+		if err1 == nil &&
+			edit.Start.Offset >= 0 && edit.End.Offset >= 0 &&
+			edit.End.Offset < edit.Start.Offset {
+			t.Fatalf("Validate accepted inverted byte offsets: %+v", edit)
+		}
+	})
+}
