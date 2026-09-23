@@ -1,7 +1,7 @@
 # Benchmark Baseline
 
-Captured: 2026-09-08 evening (regenerated post-v1.8.0, including the FlightRecorder [Unreleased] tail)
-Environment: AMD RYZEN AI MAX+ 395 (32 threads), Linux, Go 1.26.7 with GOEXPERIMENT=jsonv2
+Captured: 2026-09-23 (regenerated for the multi-edit `Finding.Edits` field, issue #36)
+Environment: AMD RYZEN AI MAX+ 395 (32 threads), Linux, Go 1.27.1 with GOEXPERIMENT=jsonv2
 Command (multi-module — plain `go test ./...` from the root covers only the core module):
 
 ```bash
@@ -26,6 +26,14 @@ check; time regressions beyond **+250%** (3.5x) fail it. See the header of
   struct and enriched the LSP round-trip (tag re-emission). Finding-copy benchmarks
   (`Clone`, `Correlate`, `MergeNoDedup`, `LSPRoundTrip`) pay a real CPU cost for the
   larger struct — with **identical allocation profiles** (B/op and allocs/op unchanged).
+- **2026-09-23 regeneration rationale (issue #36, multi-edit fixes):** `Finding` gained the
+  `Edits []TextEdit` field (+24-byte slice header per copy). Unlike `GroupID`, it does not
+  fit existing padding, so Finding-copy benchmarks pay a real **B/op** cost (+11%..+25% on
+  `GroupByFile`, `Correlate`, `MergeIter`/`Combine`) with **flat allocs/op** (+0..+3%).
+  Time is unchanged except noise. An intermediate full-equality O(n²) applied-findings
+  dedup briefly regressed `GoAST_1000` +706% and applier benches +288..332% — replaced by
+  O(1) owner-index tracking (`editOwner`) before this baseline was captured; the engine's
+  `Applied` stays per finding with zero measurable cost.
 - **2026-09-08 evening finding (thermal noise, gate redesign):** on identical code,
   `IntervalIndex_Query/1000` measured 9.3µ in a fresh filtered run but 20.1µ late in a
   sustained full-suite run (n=10, p=0.000 both) — late-suite benchmarks are thermally

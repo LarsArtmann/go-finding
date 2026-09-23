@@ -252,8 +252,8 @@ All remaining gates ran (next-up items 10-17 done). Fallout found and fixed:
      there, untracked, read-only; candidate for `trash`, operator call).
      Fixed: `programs.goimports.package` is a wrapper exporting
      `PATH=go_1_27/bin` + `GOTOOLCHAIN=local` before exec'ing real goimports.
-  After all three: `nix flake check` fully green (plain form, per the
-  documented `--all-systems` decision).
+     After all three: `nix flake check` fully green (plain form, per the
+     documented `--all-systems` decision).
 - **Benchmark gate FAILED on first run — real regression, fixed properly.**
   The `dedupAppliedFindings` full-equality O(n²) dedup cost +288%..+706%
   time on applier/GoAST benchmarks (GoAST_1000: 974µ → 7853µ). Replaced with
@@ -262,9 +262,10 @@ All remaining gates ran (next-up items 10-17 done). Fallout found and fixed:
   `applyEditsWithConflicts` appends a finding to `Applied` once, on its
   first applied edit. Same per-finding semantics, no post-hoc dedup.
   Residual intentional cost: `Finding` grew by the `Edits` slice header
-  (+24 B/copy) → ~+10-13% B/op on copy-heavy benchmarks — same class as the
-  v1.7.0 GroupID precedent; baseline regenerated with rationale in
-  `benchmarks/README.md`.
+  (+24 B/copy) → +11..25% B/op on Finding-copy benchmarks (GroupByFile,
+  Correlate, MergeIter/Combine) with flat allocs/op — the struct-growth
+  class of the v1.7.0 GroupID precedent; baseline regenerated with
+  rationale in `benchmarks/README.md`.
 - **test-naming gate was red** (pre-existing, not from this fix):
   `summary_coverage_test.go` (another session's file) violates the
   "never name files after metrics" rule. Merged its two Summary-contract

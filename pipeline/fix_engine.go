@@ -90,8 +90,8 @@ func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes 
 	var (
 		allEdits  []FixEdit
 		editOwner []int // parallel to allEdits: index into fixes of the finding that produced each edit
-		lineIndex []int  // lazily built by resolveEdits when a lineIndexAware provider handles a finding
-		resolved  []int  // outcome indices whose edits were collected for application
+		lineIndex []int // lazily built by resolveEdits when a lineIndexAware provider handles a finding
+		resolved  []int // outcome indices whose edits were collected for application
 	)
 
 	if wantOutcomes {
@@ -153,8 +153,7 @@ func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes 
 	// Sort descending by offset so later edits don't shift earlier ones.
 	sortEditsDescending(allEdits)
 
-	result.Applied, result.AppliedEdits, result.Conflicts, result.Content =
-		e.applyEditsWithConflicts(content, allEdits, editOwner, len(fixes))
+	result.Applied, result.AppliedEdits, result.Conflicts, result.Content = e.applyEditsWithConflicts(content, allEdits, editOwner, len(fixes))
 
 	if wantOutcomes {
 		reconcileOutcomes(&result, resolved)
