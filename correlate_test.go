@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"fmt"
 	"testing"
 
 	"testing/quick"
@@ -19,65 +20,52 @@ func correlateRangeFinding(id, tool string, file FilePath, start, end int) Findi
 	}
 }
 
-// TestCorrelate_GuardBranches drives the branch guards left uncovered by the
-// BDD suite: nil ranges, zero lines, same-tool point findings, the
-// maxCorrelations cap, and the disjoint-range overlap guard.
-func TestCorrelate_GuardBranches(t *testing.T) {
+// TestCorrelate_ZeroLinePointsSkipped pins the zero-line guard in the
+// proximity strategy: point findings without a line never correlate.
+func TestCorrelate_ZeroLinePointsSkipped(t *testing.T) {
 	t.Parallel()
 
-	t.Run("nil-range and zero-line findings are skipped", func(t *testing.T) {
-		t.Parallel()
+	findings := []Finding{
+		{ID: "a", ToolName: "toolA", Rule: "r", Message: "m", Severity: SeverityWarning, Position: Pos("x.go", 0, 1)},
+		{ID: "b", ToolName: "toolB", Rule: "r", Message: "m", Severity: SeverityWarning, Position: Pos("x.go", 3, 1)},
+	}
 
-		findings := []Finding{
-			correlateRangeFinding("a", "toolA", "x.go", 1, 3),
-			{ID: "norange", ToolName: "toolB", Rule: "r", Message: "m", Severity: SeverityWarning, Position: Pos("x.go", 1, 1)},
-			correlateRangeFinding("zeroline", "toolC", "x.go", 1, 3),
-		}
-		findings[2].Position.Line = 0
+	if got := Correlate(findings); len(got) != 0 {
+		t.Fatalf("zero-line point findings must not correlate, got %d", len(got))
+	}
+}
 
-		got := Correlate(findings)
-		if len(got) != 0 {
-			t.Fatalf("expected no correlations from uncorrelatable findings, got %d", len(got))
-		}
-	})
+// TestCorrelate_SameToolPointInRange pins the same-tool guard in the
+// range-and-point strategy: a point inside a range of the SAME tool is
+// not correlated.
+func TestCorrelate_SameToolPointInRange(t *testing.T) {
+	t.Parallel()
 
-	t.Run("disjoint ranges do not correlate", func(t *testing.T) {
-		t.Parallel()
+	findings := []Finding{
+		correlateRangeFinding("range", "sameTool", "x.go", 4, 6),
+		{ID: "point", ToolName: "sameTool", Rule: "r", Message: "m", Severity: SeverityWarning, Position: Pos("x.go", 5, 1)},
+	}
 
-		findings := []Finding{
-			correlateRangeFinding("a", "toolA", "x.go", 1, 2),
-			correlateRangeFinding("b", "toolB", "x.go", 50, 51),
-		}
+	if got := Correlate(findings); len(got) != 0 {
+		t.Fatalf("same-tool point-in-range must not correlate, got %d", len(got))
+	}
+}
 
-		got := Correlate(findings)
-		if len(got) != 0 {
-			t.Fatalf("disjoint ranges must not correlate, got %d", len(got))
-		}
-	})
+// TestCorrelate_MaxCorrelationsCap pins the O(n^2) hang guard: 150 pairwise-
+// overlapping range findings with pairwise-distinct tools would produce
+// >10000 correlations; the result must be capped at exactly maxCorrelations.
+func TestCorrelate_MaxCorrelationsCap(t *testing.T) {
+	t.Parallel()
 
-	t.Run("same-tool point findings do not correlate", func(t *testing.T) {
-		t.Parallel()
+	findings := make([]Finding, 0, 150)
+	for i := range 150 {
+		findings = append(findings,
+			correlateRangeFinding(fmt.Sprintf("f%d", i), fmt.Sprintf("tool%d", i), "x.go", 1, 2))
+	}
 
-		sameLine := Finding{
-			ID: "p1", Rule: "r", Message: "m", Severity: SeverityWarning,
-			ToolName: "sameTool",
-			Position: Pos("x.go", 5, 1),
-		}
-		findings := []Finding{
-			correlateRangeFinding("range", "otherTool", "x.go", 4, 6),
-			sameLine,
-			{ID: "p2", ToolName: "sameTool", Rule: "r", Message: "m", Severity: SeverityWarning, Position: Pos("x.go", 5, 3)},
-		}
-
-		got := Correlate(findings)
-		for _, c := range got {
-			for _, id := range c.FindingIDs {
-				if id == "p2" {
-					t.Fatalf("same-tool point finding must not correlate: %+v", c)
-				}
-			}
-		}
-	})
+	if got, want := len(Correlate(findings)), maxCorrelations; got != want {
+		t.Fatalf("cap: got %d correlations, want %d", got, want)
+	}
 }
 
 // TestNewIntervalIndex_EmptyInput pins the empty-index contract: queries on
@@ -113,8 +101,15 @@ func TestNewIntervalIndex_SortsByStartThenEnd(t *testing.T) {
 	}
 }
 
-// TestCorrelate_QuickSanity keeps a quick-check lens on Correlate: any pair
-// of findings must produce correlations whose IDs reference real findings.
+// TestCorrelate_QuickSanity keeps a quick-check lens on Correlate: any
+// correlation it produces must reference real finding IDs.
+//
+// Consciously accepted uncovered guards (checked 2026-09-23): the
+// f2.Position.Line == 0 check inside correlateByProximity's inner loop is
+// unreachable through Correlate (ascending line sort places zero-line
+// findings first, where the outer-loop guard already skips them), and the
+// proximity-strategy maxCorrelations return is shadowed by the earlier
+// overlap cap. Both remain as defense in depth.
 func TestCorrelate_QuickSanity(t *testing.T) {
 	t.Parallel()
 
@@ -134,5 +129,20 @@ func TestCorrelate_QuickSanity(t *testing.T) {
 
 	if err := quick.Check(f, nil); err != nil {
 		t.Fatalf("quick: %v", err)
+	}
+}
+
+// TestOverlapLength_DisjointReturnsZero pins the disjoint guard of
+// overlapLength directly (unreachable through Correlate with sorted,
+// overlapping-only inputs).
+func TestOverlapLength_DisjointReturnsZero(t *testing.T) {
+	t.Parallel()
+
+	if got := overlapLength(1, 2, 5, 6); got != 0 {
+		t.Fatalf("disjoint ranges must have zero overlap, got %d", got)
+	}
+
+	if got := overlapLength(5, 6, 1, 2); got != 0 {
+		t.Fatalf("inverted argument order must have zero overlap, got %d", got)
 	}
 }

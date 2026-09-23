@@ -64,6 +64,9 @@ git-town.toml
 # Nix build output
 /result
 
+# Stray Go toolchain download (GOROOT fallback once dumped ./go here; trash it)
+/go/
+
 # Override buildflow-managed ignores: go.work is tracked for multi-module dev
 !go.work
 !go.work.sum
