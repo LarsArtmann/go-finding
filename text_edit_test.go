@@ -37,6 +37,8 @@ func TestTextEdit_EffectiveFile(t *testing.T) {
 }
 
 func TestTextEdit_Validate(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		edit    TextEdit
