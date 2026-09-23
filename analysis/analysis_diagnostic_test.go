@@ -160,7 +160,7 @@ const multiEditSource = "package main\n\nvar useLegacy = true\n\nfunc main() {\n
 func multiEditDiagnostic(t *testing.T, fset *token.FileSet, file *ast.File) *analysis.Diagnostic {
 	t.Helper()
 
-	tf := fset.File(file.Pos())
+	tokenFile := fset.File(file.Pos())
 
 	declOffset := strings.Index(multiEditSource, "var useLegacy = true\n")
 	if declOffset < 0 {
@@ -173,20 +173,20 @@ func multiEditDiagnostic(t *testing.T, fset *token.FileSet, file *ast.File) *ana
 	}
 
 	return &analysis.Diagnostic{
-		Pos:     tf.Pos(condOff),
+		Pos:     tokenFile.Pos(condOff),
 		Message: "legacy flag must go",
 		SuggestedFixes: []analysis.SuggestedFix{
 			{
 				Message: "inline the condition and drop the declaration",
 				TextEdits: []analysis.TextEdit{
 					{
-						Pos:     tf.Pos(declOffset),
-						End:     tf.Pos(declOffset + len("var useLegacy = true\n")),
+						Pos:     tokenFile.Pos(declOffset),
+						End:     tokenFile.Pos(declOffset + len("var useLegacy = true\n")),
 						NewText: nil,
 					},
 					{
-						Pos:     tf.Pos(condOff),
-						End:     tf.Pos(condOff + len("useLegacy {")),
+						Pos:     tokenFile.Pos(condOff),
+						End:     tokenFile.Pos(condOff + len("useLegacy {")),
 						NewText: []byte("false {"),
 					},
 				},
@@ -215,6 +215,7 @@ func TestFromDiagnosticWithSource_MultiEditFixCarriesAllEdits(t *testing.T) {
 
 	first := f.Edits[0]
 	declOffset := strings.Index(multiEditSource, "var useLegacy = true\n")
+
 	if first.Start.Offset != declOffset || first.End.Offset != declOffset+len("var useLegacy = true\n") {
 		t.Errorf("Edits[0] span = [%d, %d), want [%d, %d)",
 			first.Start.Offset, first.End.Offset,
