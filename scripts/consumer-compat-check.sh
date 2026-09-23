@@ -7,8 +7,8 @@
 # Usage: bash scripts/consumer-compat-check.sh [version]
 #   version defaults to "latest"; pass e.g. v1.10.0 to pin.
 #
-# encoding/json/v2 is GA since Go 1.27 (core imports it; the go.mod floor
-# encoding/json/v2; drop this export when json/v2 stabilizes, see ROADMAP).
+# No GOEXPERIMENT needed: encoding/json/v2 is GA since Go 1.27, which the
+# go.mod floor already requires.
 # Fails with exit code 1 if any module fails to resolve, build, or run.
 
 set -euo pipefail
