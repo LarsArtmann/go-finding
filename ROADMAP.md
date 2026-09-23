@@ -86,6 +86,17 @@ The core module requires `GOEXPERIMENT=jsonv2` (Go 1.26 experimental). Track the
 - **More `ToolAdapter[O]` recipes** - Pre-built adapters for revive, ineffassign, errcheck, etc.
 - **go-linter-sdk integration** - The sibling `go-linter-sdk` repo now has `WithToolName`, `RuleFunc.NewFinding`, `FilterRules`, and `ExitCodeByConfidence` (implemented in the 2026-08-08 cross-repo refactor session). The pilot migration of `go-humanize-linter` eliminated 97 LOC; go-linter-sdk tagged v0.3.0. Next: port more linters onto the SDK and keep the consumer matrix current (see `docs/ecosystem.md`).
 
+### Multi-edit feature follow-ups (from the v1.14.0-candidate surface, 2026-09-23)
+
+- **GoASTProvider typed Edits output** - emit `Finding.Edits` instead of raw `FixEdit` so CLI dry-runs and SARIF export benefit.
+- **LSP CodeAction TextEditEdits** - expose `Finding.Edits` as code-action edits (`LSPDiagnosticData` is single-fix today).
+- **AlternativeFixes representation** - carry `SuggestedFixes 1..N` (alternatives) instead of documented first-wins lossiness.
+- **Multi-file fixes in FixApplier** - per-file grouping + atomic cross-file rollback policy; currently refused loudly.
+- **`Preview()` multi-hunk** - render multi-edit findings as hunks.
+- **`pipeline/examples/multi-edit`** - runnable bridge to applier example.
+
+Launch-track nice-to-haves consciously parked (2026-09-23 docs sweep): social preview image, GitHub Discussions, profile pin, FUNDING.yml, post-launch retro — revisit on an adoption signal.
+
 ### FlightRecorder future directions
 
 The FlightRecorder feature (`pipeline/flight_recorder.go`) is shipped with config-file integration (`FlightRecorderFileConfig` + `ResolveFlightRecorder()`).
