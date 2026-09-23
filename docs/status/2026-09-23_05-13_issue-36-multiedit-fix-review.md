@@ -1,5 +1,11 @@
 # Status: Issue #36 Review → Multi-Edit Fix Implementation (2026-09-23 05:13)
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot,
+> fully dispositioned. The c)/f) open items were executed by the same-day
+> follow-up session (see `2026-09-23_14-10_...md`) or harvested into
+> `TODO_LIST.md` / `ROADMAP.md` — do not action from this file. Issue #36
+> remains OPEN (closing comment still pending, tracked in TODO_LIST).
+
 Session scope: "Review all open GitHub issues." Exactly one open issue existed:
 [#36 — FromDiagnosticWithSource drops TextEdits 2..N (multi-edit fixes are lossy)](https://github.com/LarsArtmann/go-finding/issues/36).
 The review verified every claim against source, then implemented Option A (the
@@ -107,17 +113,17 @@ plan of record): carry typed edits end-to-end (diagnostic → finding → applie
 
 ## c) NOT STARTED (was queued in this session's plan)
 
-- Docs: ADR #17 entry (Finding carries typed edit list), CHANGELOG
+- ~~Docs: ADR #17 entry (Finding carries typed edit list), CHANGELOG
   (Unreleased), `docs/guides/fix-engine.md` provider-chain update (now 4),
   `doc.go` fix/TextEdit mention, AGENTS.md gotcha updates (provider chain,
-  Applied-per-finding accounting).
+  Applied-per-finding accounting).~~ done by the 14:10 follow-up session (ADR landed as #19; see its a)7).
 - Issue #36: closing comment (github-voice skill loaded at write time, not yet).
-- Gates not yet run: `error-audit.sh` (erraudit binary availability?),
+- ~~Gates not yet run: `error-audit.sh` (erraudit binary availability?),
   go-arch-lint, `nix flake check`, stress gate (`ginkgo --repeat=20 --race`
   core+pipeline, `go test -race -count=20` analysis+CLI) — mandatory before
-  any tag, not yet exercised this session.
-- Benchmarks: not run (dedup is O(n²) on applied-findings count; expected
-  noise-level, unmeasured).
+  any tag, not yet exercised this session.~~ done by the 14:10 follow-up session (all green).
+- ~~Benchmarks: not run (dedup is O(n²) on applied-findings count; expected
+  noise-level, unmeasured).~~ done by the 14:10 follow-up session — and the expectation was wrong: +288..706% regressions caught and fixed.
 
 ## d) TOTALLY FUCKED UP? — nothing unrecoverable
 
@@ -155,28 +161,28 @@ Self-caught and fixed during the session (kept for honesty):
 
 Docs & issue (immediate):
 
-1. ADR #17: typed edit list on Finding (motivation, alternatives, conventions).
-2. CHANGELOG Unreleased entry (core+analysis+pipeline; breaking? no — additive;
-   Applied-count semantics change noted).
-3. `docs/guides/fix-engine.md`: add EditListProvider to the chain table/flow.
-4. `docs/guides/outcomes.md`: mention multi-edit findings & failed outcomes for
-   cross-file/stale lists.
-5. `doc.go`: Finding.Edits + EditListProvider in the fix section.
-6. README: multi-edit fixes section (bridge → applier, one code sample).
-7. AGENTS.md: provider chain now 4 (edit-list first); Applied = per finding;
-   ApplySimpleFixes refuses multi-edit lists.
+1. ~~ADR #17: typed edit list on Finding (motivation, alternatives, conventions).~~ done (14:10 follow-up session (h-addendum, docs))
+2. ~~CHANGELOG Unreleased entry (core+analysis+pipeline; breaking? no — additive;~~ done (14:10 follow-up session)
+   ~~Applied-count semantics change noted).~~
+3. ~~`docs/guides/fix-engine.md`: add EditListProvider to the chain table/flow.~~ done (14:10 follow-up session)
+4. ~~`docs/guides/outcomes.md`: mention multi-edit findings & failed outcomes for~~ done (Won't implement as listed: guide kept provider-agnostic; multi-edit failures documented as ordinary failed outcomes)
+   ~~cross-file/stale lists.~~
+5. ~~`doc.go`: Finding.Edits + EditListProvider in the fix section.~~ done (14:10 follow-up session)
+6. ~~README: multi-edit fixes section (bridge → applier, one code sample).~~ done (14:10 follow-up session)
+7. ~~AGENTS.md: provider chain now 4 (edit-list first); Applied = per finding;~~ done (14:10 follow-up session)
+   ~~ApplySimpleFixes refuses multi-edit lists.~~
 8. Comment + close issue #36 with verification evidence (github-voice).
 9. Note in issue: consumer adoption requires analysis+pipeline tags.
 
 Quality gates to finish:
-10. `error-audit.sh` (all 5 modules) — new code should pass (sentinels + %w).
-11. go-arch-lint (`nix` or script).
-12. `nix flake check` (vendorHash unaffected — no dep changes; verify).
-13. Stress gate: ginkgo --repeat=20 --race (core, pipeline).
-14. Stress gate: go test -race -count=20 (analysis, CLI).
-15. Bench spot-check (fix engine apply + dedup path) vs baseline.
-16. `docs-freshness.sh` after doc edits.
-17. Re-run full lint + fmt after doc edits (dprint covers markdown).
+10. ~~`error-audit.sh` (all 5 modules) — new code should pass (sentinels + %w).~~ done (14:10 follow-up session (0 violations, 5 modules))
+11. ~~go-arch-lint (`nix` or script).~~ done (14:10 follow-up session (no warnings))
+12. ~~`nix flake check` (vendorHash unaffected — no dep changes; verify).~~ done (14:10 follow-up session (3 root causes fixed, fully green))
+13. ~~Stress gate: ginkgo --repeat=20 --race (core, pipeline).~~ done (14:10 follow-up session)
+14. ~~Stress gate: go test -race -count=20 (analysis, CLI).~~ done (14:10 follow-up session)
+15. ~~Bench spot-check (fix engine apply + dedup path) vs baseline.~~ done (14:10 follow-up session (real regression caught + fixed, baseline regenerated))
+16. ~~`docs-freshness.sh` after doc edits.~~ done (14:10 follow-up session)
+17. ~~Re-run full lint + fmt after doc edits (dprint covers markdown).~~ done (14:10 follow-up session)
 
 Release (operator decisions):
 18. Decide: complete v1.13.0 (push 3 missing tags + resync CLI go.mod) vs fold
