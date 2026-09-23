@@ -320,6 +320,7 @@ func TestFormatters_PartialWriteErrors(t *testing.T) {
 		format   func(io.Writer, []Finding) error
 	}{
 		{"FormatText suggestion write", 2, rich, FormatText},
+		{"FormatTextRich main severity/message write", 1, rich, FormatTextRich},
 		{"FormatTextRich category write", 2, rich, FormatTextRich},
 		{"FormatTextRich newline write", 3, rich, FormatTextRich},
 		{"FormatTextRich suggestion write", 4, rich, FormatTextRich},

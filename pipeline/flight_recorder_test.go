@@ -575,7 +575,16 @@ func TestFlightRecorderHook_MaxFilesRotation(t *testing.T) {
 	keep := filepath.Join(dir, "unrelated.txt")
 	g.Expect(os.WriteFile(keep, []byte("keep"), 0o600)).NotTo(gomega.HaveOccurred())
 
+	// base is in the past so every stamped file stays older than the
+	// just-written snapshot (real now), keeping "newest survives" true.
+	base := time.Now().Add(-24 * time.Hour)
 	for i := range 4 {
+		// Stamp existing traces strictly increasing BEFORE the next prune:
+		// on filesystems with coarse timestamp granularity the real
+		// modtimes could tie within the same second, making the
+		// modtime-sorted prune order nondeterministic.
+		stampExistingTraces(g, dir, base.Add(time.Duration(i)*time.Hour))
+
 		path, snapErr := hook.Snapshot(context.Background(), fmt.Sprintf("rot%d", i))
 		if snapErr != nil {
 			t.Fatalf("snapshot %d: %v", i, snapErr)
@@ -838,4 +847,23 @@ func TestFlightRecorderHook_ConcurrentRotation(t *testing.T) {
 
 	g.Expect(logHandler.countMessageContaining("prune: delete failed")).
 		To(gomega.BeZero(), "serialized pruning must never double-remove files")
+}
+
+// stampExistingTraces sets every trace file in dir to the given modtime,
+// making prune order deterministic regardless of filesystem timestamp
+// granularity (same-second ties made modtime-sorted pruning arbitrary).
+func stampExistingTraces(g *gomega.WithT, dir string, stamp time.Time) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+		return
+	}
+
+	for _, e := range entries {
+		if !strings.HasPrefix(e.Name(), "go-finding-trace-") {
+			continue
+		}
+
+		g.Expect(os.Chtimes(filepath.Join(dir, e.Name()), stamp, stamp)).NotTo(gomega.HaveOccurred())
+	}
 }
