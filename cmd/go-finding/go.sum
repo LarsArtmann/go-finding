@@ -35,8 +35,8 @@ github.com/larsartmann/go-error-family v0.10.1 h1:lf1RNjpdK7k+tCzphkg5qRolAY76U8
 github.com/larsartmann/go-error-family v0.10.1/go.mod h1:SYSVwVMTkw2GcqXI4khjMYOg7ey39o8sh7rXC9LfNcY=
 github.com/larsartmann/go-finding v1.13.0 h1:JTLKvlNb6C9Yldwu1Iojyte7c6ng8frzGTdq5DNEvcc=
 github.com/larsartmann/go-finding v1.13.0/go.mod h1:0ebJF4MSuJDqO1+u2SK/QVJF+vJfwxJDuzTSjc39eIs=
-github.com/larsartmann/go-finding/pipeline v1.12.0 h1:6yTdAYs1akGB+B06JrU+ZaXBKQTYP4V5vpTPVeaM0RI=
-github.com/larsartmann/go-finding/pipeline v1.12.0/go.mod h1:xGlNIpqdUnzCH9IPh2BCm3kxv3+oI/P1C2SXTehaNHk=
+github.com/larsartmann/go-finding/pipeline v1.13.0 h1:IZlbUEiR3JZT1Hx11DBhatePUedlW7LkjaeL9tSpVSc=
+github.com/larsartmann/go-finding/pipeline v1.13.0/go.mod h1:lLH6bjnSgQaXiGj859Ft32YHYBDIFy0uTdUNBPAVauQ=
 github.com/larsartmann/go-output v0.38.0 h1:Ng8TWCQndPvM3qyNqz2Y5sGdKqiAGsq5CL2xEA0IOxs=
 github.com/larsartmann/go-output v0.38.0/go.mod h1:p/0OyNTPUomYEjnWoyX7ZXrJX2cf4jOBwJmFU85vm1w=
 github.com/larsartmann/go-output/delimited v0.38.0 h1:6s/6Fm3vyZypBu6PuXmx2pJDVRWL8/7WMCZEiHU4yNE=
