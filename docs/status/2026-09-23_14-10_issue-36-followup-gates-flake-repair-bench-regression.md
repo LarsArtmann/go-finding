@@ -1,5 +1,13 @@
 # Status: Issue #36 Follow-up — Gates, flake.nix Repair, Bench Regression, Docs (2026-09-23 14:10)
 
+> **Disposition (2026-09-23 docs-health pass):** point-in-time snapshot, fully
+> dispositioned. Open items (§f table, §g questions) were harvested into
+> `TODO_LIST.md` and `ROADMAP.md` "Open questions" the same day — do not action
+> from this file. Found later the same day: both v1.13.0 Release runs and 6+
+> master CI runs had failed since 2026-09-20 on workflow `go-version: "1.26"`
+> pins vs the `go 1.27` toolchain floor (§b1's "operator-blocked" state had a
+> second, undiscovered root cause) — fixed in-tree, see CHANGELOG [Unreleased].
+
 Session scope: continuation pass after the 05:13 session (see
 [`2026-09-23_05-13_issue-36-multiedit-fix-review.md`](2026-09-23_05-13_issue-36-multiedit-fix-review.md),
 whose addendum h) was written by this pass). Task: run the residual gates,
@@ -14,59 +22,59 @@ woven into d) and e); the honest answers are there, especially d)1 and d)2.
 
 All evidence from this session's runs; auto-commit chain 6843570..2992d87.
 
-1. **erraudit gate** — `bash scripts/error-audit.sh`: 0 violations across
-   all 5 modules ("OK: erraudit clean").
-2. **go-arch-lint** — `go-arch-lint check`: "OK - No warnings found".
-3. **Stress gates (mandatory pre-tag form)** —
-   `ginkgo -r --race --repeat=20 --skip-package=examples`: core-root run
-   10 suites / 5m42s PASS; pipeline-dir run 3 suites / 1m26s PASS.
-   `GOWORK=off go test -race -count=20 ./...`: analysis 4.2s PASS;
-   CLI 26.6s + internal/detectors 5.7s PASS.
-4. **`nix flake check` repaired from dead → green** ("all checks passed!").
-   Three root causes, three fixes, all in `flake.nix`:
-   - Package build + overlay ran nixpkgs default go (1.26.7,
-     GOTOOLCHAIN=local) against go.mod's `go 1.27` floor → both call sites
-     now `buildGoModule.override { go = pkgs.go_1_27; }`.
-   - `vendorHash` differs across toolchains under proxyVendor → regenerated
-     to `sha256-V5ymN6...`.
-   - treefmt-check: goimports (nixpkgs gotools, built with go 1.26.7) embeds
-     its build-time GOROOT and falls back to that `go` when none is on PATH;
-     the 1.27 floor triggered a GOTOOLCHAIN download → fatal offline.
-     Fixed by wrapping `programs.goimports.package`: `PATH=go_1_27/bin`,
-     `GOTOOLCHAIN=local`, exec real goimports (verified against a
-     clean-tree `env -i` repro before rerunning the check).
-5. **Benchmark regression caught and properly fixed** — first full run
-   FAILED: my O(n²) `dedupAppliedFindings` cost +288%/+332%
-   (FixApplier_50) and +706% (GoAST_1000, 974µ → 7853µ). Replaced with O(1)
-   owner-index tracking (`editOwner` parallel to `allEdits`;
-   `applyEditsWithConflicts` appends a finding once, on its first applied
-   edit — `pipeline/fix_engine.go`). Second full run: time regressions gone,
-   allocs/op flat (+0..3%). Residual +11..25% B/op on Finding-copy benches
-   is the intentional `Edits` field (+24 B/copy). Baseline regenerated
-   (851 lines, `benchmarks/baseline.txt`), rationale appended to
-   `benchmarks/README.md`, `bench-check.sh` PASS against the new baseline.
-6. **test-naming gate repaired** (pre-existing red, not from the #36 fix):
-   `summary_coverage_test.go` violated the no-metrics-names rule; its two
-   Summary-contract tests merged into `report_test.go` (Summary lives in
-   `report.go`), original `git rm`'d. Gate: "OK: all test files follow
-   naming conventions."
-7. **Docs complete** — root + pipeline + analysis CHANGELOG `[Unreleased]`
-   entries; **ADR #19** (the plan-of-record said "#17" but the log already
-   had 17 and 18 — verified before writing); `docs/guides/fix-engine.md`
-   (multi-edit section + ToC + 4-provider chain table + ApplySimpleFixes
-   refusal note); `doc.go` (TextEdit type list, provider chain,
-   ApplySimpleFixes note); `README.md` (multi-edit section, updated default
-   chain + loud-failure semantics); `AGENTS.md` (core multi-edit rules,
-   FixEngine per-finding gotcha, EditListProvider bullet, ADR pointer,
-   `text_edit.go` in key files); addendum h) in the 05-13 report.
-8. **Post-edit gate sweep all green** — docs-api-check (318 identifiers),
-   docs-freshness, dprint, version-check, replace-audit, go-work-sync,
-   json-deterministic, `nix run .#lint` (0 issues), `golangci-lint fmt` +
-   `nix fmt` clean, GOWORK=off isolation tests for core + pipeline, build +
-   vet green.
-9. **ADR #19 false claim fixed during this self-review** (see d)1):
-   "allocation profile unchanged, verified by the bench gate" replaced with
-   the real measured numbers.
+1. ~~**erraudit gate** — `bash scripts/error-audit.sh`: 0 violations across~~ done (docs-health pass 2026-09-23)
+   ~~all 5 modules ("OK: erraudit clean").~~
+2. ~~**go-arch-lint** — `go-arch-lint check`: "OK - No warnings found".~~ done (docs-health pass 2026-09-23)
+3. ~~**Stress gates (mandatory pre-tag form)** —~~ done (docs-health pass 2026-09-23)
+   ~~`ginkgo -r --race --repeat=20 --skip-package=examples`: core-root run~~
+   ~~10 suites / 5m42s PASS; pipeline-dir run 3 suites / 1m26s PASS.~~
+   ~~`GOWORK=off go test -race -count=20 ./...`: analysis 4.2s PASS;~~
+   ~~CLI 26.6s + internal/detectors 5.7s PASS.~~
+4. ~~**`nix flake check` repaired from dead → green** ("all checks passed!").~~ done (docs-health pass 2026-09-23)
+   ~~Three root causes, three fixes, all in `flake.nix`:~~
+   ~~- Package build + overlay ran nixpkgs default go (1.26.7,~~
+     ~~GOTOOLCHAIN=local) against go.mod's `go 1.27` floor → both call sites~~
+     ~~now `buildGoModule.override { go = pkgs.go_1_27; }`.~~
+   ~~- `vendorHash` differs across toolchains under proxyVendor → regenerated~~
+     ~~to `sha256-V5ymN6...`.~~
+   ~~- treefmt-check: goimports (nixpkgs gotools, built with go 1.26.7) embeds~~
+     ~~its build-time GOROOT and falls back to that `go` when none is on PATH;~~
+     ~~the 1.27 floor triggered a GOTOOLCHAIN download → fatal offline.~~
+     ~~Fixed by wrapping `programs.goimports.package`: `PATH=go_1_27/bin`,~~
+     ~~`GOTOOLCHAIN=local`, exec real goimports (verified against a~~
+     ~~clean-tree `env -i` repro before rerunning the check).~~
+5. ~~**Benchmark regression caught and properly fixed** — first full run~~ done (docs-health pass 2026-09-23)
+   ~~FAILED: my O(n²) `dedupAppliedFindings` cost +288%/+332%~~
+   ~~(FixApplier_50) and +706% (GoAST_1000, 974µ → 7853µ). Replaced with O(1)~~
+   ~~owner-index tracking (`editOwner` parallel to `allEdits`;~~
+   ~~`applyEditsWithConflicts` appends a finding once, on its first applied~~
+   ~~edit — `pipeline/fix_engine.go`). Second full run: time regressions gone,~~
+   ~~allocs/op flat (+0..3%). Residual +11..25% B/op on Finding-copy benches~~
+   ~~is the intentional `Edits` field (+24 B/copy). Baseline regenerated~~
+   ~~(851 lines, `benchmarks/baseline.txt`), rationale appended to~~
+   ~~`benchmarks/README.md`, `bench-check.sh` PASS against the new baseline.~~
+6. ~~**test-naming gate repaired** (pre-existing red, not from the #36 fix):~~ done (docs-health pass 2026-09-23)
+   ~~`summary_coverage_test.go` violated the no-metrics-names rule; its two~~
+   ~~Summary-contract tests merged into `report_test.go` (Summary lives in~~
+   ~~`report.go`), original `git rm`'d. Gate: "OK: all test files follow~~
+   ~~naming conventions."~~
+7. ~~**Docs complete** — root + pipeline + analysis CHANGELOG `[Unreleased]`~~ done (docs-health pass 2026-09-23)
+   ~~entries; **ADR #19** (the plan-of-record said "#17" but the log already~~
+   ~~had 17 and 18 — verified before writing); `docs/guides/fix-engine.md`~~
+   ~~(multi-edit section + ToC + 4-provider chain table + ApplySimpleFixes~~
+   ~~refusal note); `doc.go` (TextEdit type list, provider chain,~~
+   ~~ApplySimpleFixes note); `README.md` (multi-edit section, updated default~~
+   ~~chain + loud-failure semantics); `AGENTS.md` (core multi-edit rules,~~
+   ~~FixEngine per-finding gotcha, EditListProvider bullet, ADR pointer,~~
+   ~~`text_edit.go` in key files); addendum h) in the 05-13 report.~~
+8. ~~**Post-edit gate sweep all green** — docs-api-check (318 identifiers),~~ done (docs-health pass 2026-09-23)
+   ~~docs-freshness, dprint, version-check, replace-audit, go-work-sync,~~
+   ~~json-deterministic, `nix run .#lint` (0 issues), `golangci-lint fmt` +~~
+   ~~`nix fmt` clean, GOWORK=off isolation tests for core + pipeline, build +~~
+   ~~vet green.~~
+9. ~~**ADR #19 false claim fixed during this self-review** (see d)1):~~ done (docs-health pass 2026-09-23)
+   ~~"allocation profile unchanged, verified by the bench gate" replaced with~~
+   ~~the real measured numbers.~~
 
 ## b) PARTIALLY DONE
 
@@ -91,9 +99,9 @@ All evidence from this session's runs; auto-commit chain 6843570..2992d87.
 
 ## c) NOT STARTED (deliberately, this pass)
 
-1. **TODO_LIST/ROADMAP harvest** (docs-health HARVEST) of the ~38-item
-   next-up list in the 05-13 report plus section f) below — deferred to
-   explicit instruction (user said: report, then wait).
+1. ~~**TODO_LIST/ROADMAP harvest** (docs-health HARVEST) of the ~38-item~~ done (harvested into TODO_LIST/ROADMAP by the 2026-09-23 docs-health pass)
+   ~~next-up list in the 05-13 report plus section f) below — deferred to~~
+   ~~explicit instruction (user said: report, then wait).~~
 2. **CI nix job** for `nix flake check` / `nix run .#lint` — new finding
    this session (gate was silently dead for ~3 days; CI has zero nix
    jobs). Nothing started.
@@ -186,7 +194,7 @@ All evidence from this session's runs; auto-commit chain 6843570..2992d87.
 | 2  | Comment + close #36 (load github-voice first)                            | High   | S      | Docs/Issue |
 | 3  | CI job for `nix flake check` + `nix run .#lint`                          | High   | M      | Quality    |
 | 4  | Fix provisional "v1.14.0" labels once version is decided                 | High   | S      | Docs       |
-| 5  | docs-health HARVEST both 2026-09-23 reports → TODO_LIST/ROADMAP          | High   | S      | Docs       |
+| ~~5~~  | ~~docs-health HARVEST both 2026-09-23 reports → TODO_LIST/ROADMAP~~ done (docs-health pass 2026-09-23) | ~~High~~ | ~~S~~ | ~~Docs~~ |
 | 6  | After tags: resync CLI go.mod; verify pkg.go.dev renders Edits API       | High   | S      | Release    |
 | 7  | release-preflight: tag-set completeness check + selftest class           | High   | M      | Quality    |
 | 8  | erraudit T13/T14 migration once sibling tags exist (carried)             | High   | M      | Feature    |

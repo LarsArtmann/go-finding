@@ -21,7 +21,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 | **Tool SDK** | `github.com/larsartmann/go-finding/toolsdk`        | —                            | Core           |
 | **CLI**      | `github.com/larsartmann/go-finding/cmd/go-finding` | yaml, go-output, gogenfilter | Core, Pipeline |
 
-`go.work` coordinates all 5 modules for development. Library sub-modules (`pipeline`, `analysis`, `toolsdk`) carry `replace github.com/larsartmann/go-finding => ../` for `GOWORK=off` builds; **`cmd/go-finding` must have NO replace directives** (enforced by `scripts/replace-audit.sh` — `go install module@version` refuses modules with replaces). Consequence: the CLI is pinned to PUBLISHED sibling-module versions, so it cannot call a new pipeline/analysis API until that module is tagged and the CLI `go.mod` bumped — dedupe CLI-side instead of exporting new sibling APIs for it (learned 2026-09-22 dedup pass).
+`go.work` coordinates all 5 modules for development. Library sub-modules (`pipeline`, `analysis`, `toolsdk`) carry `replace github.com/larsartmann/go-finding => ../` for `GOWORK=off` builds; **`cmd/go-finding` must have NO replace directives** (enforced by `scripts/replace-audit.sh` — `go install module@version` refuses modules with replaces). Consequence: the CLI is pinned to PUBLISHED sibling-module versions, so it cannot call a new pipeline/analysis API until that module is tagged and the CLI `go.mod` bumped — dedupe CLI-side instead of exporting new sibling APIs for it (learned 2026-09-22/23 dedup pass).
 
 ## Key Files
 
@@ -105,7 +105,10 @@ dead via stale local `core.hooksPath`; version-drift.sh aborted silently under
 `set -euo pipefail`. Rules: (1) every check script prints an explicit OK/FAIL
 verdict line, (2) verify a new gate's FAIL path once by intentionally breaking
 something, (3) never pipe a check script's output through filters that can cut
-the verdict line.
+the verdict line, (4) a doc claim of "verified by X" requires X to have
+FINISHED and its output read before the claim is written (2026-09-23: an ADR
+carried "allocation profile unchanged, verified by the bench gate" while the
+bench was still running; the bench then FAILED with +706%).
 
 ## Module Dependencies (per go.mod)
 
@@ -143,6 +146,7 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 ### Environment & workflow
 
 - **GOEXPERIMENT=jsonv2 required** — project uses `encoding/json/v2` (Go 1.26 experimental). All `nix run .#*` apps and devShells export it. Direct `go build`/`go test` outside nix need `export GOEXPERIMENT=jsonv2`; the per-module path needs BOTH `GOWORK=off` and `GOEXPERIMENT=jsonv2`. Drop when json/v2 stabilizes (Go 1.27+, tracked in ROADMAP).
+- **CI/Release `go-version` pins must track the toolchain floor** — when the `go.mod`/`go.work` floor bumps, a stale `go-version:` pin in ci.yml/release.yml fails EVERY job with `go.work requires go >= 1.27` while local gates stay green (the devShell already runs the newer toolchain). This silently killed 6+ master CI runs and both v1.13.0 Release runs (2026-09-20 → 09-23) before anyone looked. Rule: a toolchain-floor bump is a SAME-COMMIT edit of every `go-version:` in both workflows.
 - **Run `go test` invocations SEQUENTIALLY on this machine** — two concurrent `go test`/`go build` runs sharing `GOCACHE=/mnt/buildcache/go-build` produce transient `[build failed]` errors. A plain retry succeeds; don't misdiagnose as code/toolchain problems. This includes `go mod edit`: editing go.mod requires while a background stress/test run is active invalidates the module graph mid-run and produces phantom failures like `could not import ... (invalid package name: "")` in go/packages-based tests (v1.12.0 stress run 1, 2026-09-17). Bump requires only on a quiet tree.
 - **Formatting has three coordinated signals** — treefmt is not on the devShell PATH; use `nix fmt` (canonical gate, also in the pre-commit hook via `--fail-on-change`), `golangci-lint fmt` (local autofix; `.golangci.yml` formatters mirror treefmt rules: gofumpt, goimports, golines@120), and dprint (markdown/JSON/YAML, pre-commit). Do NOT let the two Go formatters' rules diverge. If the pre-commit hook seems dead, check `git config core.hooksPath` — a stale `.githooks` value once silently disabled it.
 - **`nix flake check --all-systems` evaluated and DECLINED (2026-09-08)** — `--all-systems` warns about incompatible systems on this machine (darwin derivations without remote builders configured) and would fail the check. Decision: plain `nix flake check` stays the local + CI gate; revisit `--all-systems` only if darwin builders or remote builder config are added. This closes the f/38 evaluation (previously performed but written nowhere).
@@ -174,6 +178,7 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 - **FindingError implements go-error-family** — `ErrorCode()` = `"finding.<category>"`, `ErrorFamily()` maps to errorfamily families; `errorfamily.Classify(err)` works on go-finding errors. See ADR #15.
 - **`must[T]`** — `errors.go`; any new Must-constructor delegates to it.
 - **doc.go must match current names** — after ANY rename, grep `doc.go` for the old symbol (godoc prose misleads otherwise).
+- **Module-coverage evidence lives in Summary** — `Summary.FilesScanned` is always serialized ("scanned 0" is evidence, not an omission); `Summary.SkippedModules` carries nested go.mod modules a tool deliberately skipped; module-agnostic tools leave it nil and their JSON is unchanged.
 - **Consumer count grows** — last audit (2026-07-22) counted 22 consumers (14 with Go code); never assert a fixed number without checking latest data.
 
 ### Core API surface
