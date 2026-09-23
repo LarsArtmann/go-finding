@@ -153,7 +153,7 @@ same report shape with zero writes. Whole-pipeline runs expose the same
 per-finding record on `PipelineResult.Outcomes`, deduplicated to the first
 outcome per finding.
 
-### Multi-edit fixes (v1.14.0)
+### Multi-edit fixes (unreleased)
 
 Fixes that touch more than one place carry a typed edit list. `Finding.Edits`
 is the authoritative machine representation; `BeforeCode`/`AfterCode` stay as

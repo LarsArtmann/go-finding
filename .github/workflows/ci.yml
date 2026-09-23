@@ -292,6 +292,22 @@ jobs:
     # count=10 across core+pipeline needs >15min on a 2-core runner (observed:
     # job cancelled at the timeout with everything else green, 2026-09-08).
     timeout-minutes: 45
+  nix:
+    # The nix gates (nix flake check, nix run .#lint) ran local-only for the
+    # project's whole life; the flake silently rotted for 3 days in Sep 2026
+    # (go.mod bumps staled vendorHash) because no CI job ran it. This job is
+    # the antidote. Budget: cold nix install + first go-modules build on a
+    # 2-core runner needs well over 15min (same runner class as the benchmark
+    # job's 45min precedent), hence the generous timeout.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+      - name: Nix flake check
+        run: nix flake check
+      - name: Nix lint (golangci-lint via flake app)
+        run: nix run .#lint
+    timeout-minutes: 45
   changelog-check:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'

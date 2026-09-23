@@ -160,3 +160,51 @@ if [ "$stamp_errors" -gt 0 ]; then
 	exit 1
 fi
 echo "OK: README.md version stamp matches version.go (v$MAJOR.$MINOR.$PATCH)"
+
+# --- README version-literal sweep (the module table is not the only stamp) ---
+# The v1.10.0 incident: a stale version sat in the README module table for two
+# releases, found by accident. The finding.Version stamp guard above covers one
+# line; this sweeps EVERY `vX.Y.Z` literal in README.md. Rules:
+#   1. Table-cell stamps (`| `vX.Y.Z` |`) must equal version.go — these claim
+#      "current", so stale OR future both fail.
+#   2. Any other v-literal may be historical (e.g. "since v1.0.0") but must not
+#      EXCEED version.go — future-version claims fail like FEATURES overclaims.
+#   3. URLs are stripped first (the SARIF 2.1.0 spec link is not a release).
+#      `(unreleased)` is the legal mid-cycle word for unreleased features.
+CURRENT="$MAJOR.$MINOR.$PATCH"
+gt_current() { # returns 0 if $1 > $CURRENT (numeric per component)
+	local a b IFS=.
+	read -r a1 a2 a3 <<<"$1"
+	read -r b1 b2 b3 <<<"$CURRENT"
+	if [ "$a1" -ne "$b1" ]; then [ "$a1" -gt "$b1" ]; return; fi
+	if [ "$a2" -ne "$b2" ]; then [ "$a2" -gt "$b2" ]; return; fi
+	[ "$a3" -gt "$b3" ]
+}
+sweep_errors=0
+# Strip URLs (link targets), then scan line by line.
+mapfile -t literal_lines < <(sed -E 's|\((https?://[^)]*)\)|(url)|g' README.md)
+for line in "${literal_lines[@]}"; do
+	if grep -qE '`v[0-9]+\.[0-9]+\.[0-9]+`' <<<"$line" && grep -qE '^\s*\|' <<<"$line"; then
+		# Table-cell stamp: must be exactly current.
+		for v in $(grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' <<<"$line"); do
+			if [ "${v#v}" != "$CURRENT" ]; then
+				echo "ERROR: README.md table-cell stamp $v != current v$CURRENT: $line"
+				echo "  Module-table stamps claim the CURRENT release — update to v$CURRENT."
+				sweep_errors=$((sweep_errors + 1))
+			fi
+		done
+	else
+		# Prose literals: only future versions fail.
+		for v in $(grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' <<<"$line" || true); do
+			if gt_current "${v#v}"; then
+				echo "ERROR: README.md claims future version $v (beyond v$CURRENT): $line"
+				echo "  Use \"(unreleased)\" until the version is tagged, or bump version.go first."
+				sweep_errors=$((sweep_errors + 1))
+			fi
+		done
+	fi
+done
+if [ "$sweep_errors" -gt 0 ]; then
+	exit 1
+fi
+echo "OK: README.md version literals pass the sweep (stamps current, no future claims)"
