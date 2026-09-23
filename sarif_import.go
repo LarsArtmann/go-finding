@@ -283,11 +283,7 @@ func applySarifProperties(f *Finding, props map[string]any) {
 func applySuppressionProperties(f *Finding, props map[string]any) {
 	// Restore exact suppression kind from property (overrides SARIF kind mapping).
 	if v, ok := stringProp(props, sarifPropSuppressionKind); ok {
-		if f.Suppression == nil {
-			f.Suppression = &Suppression{}
-		}
-
-		f.Suppression.Kind = SuppressionKind(v)
+		ensureSuppression(f).Kind = SuppressionKind(v)
 	}
 
 	// Restore suppression Rule from property, falling back to finding's Rule.
@@ -310,13 +306,19 @@ func applySuppressionProperties(f *Finding, props map[string]any) {
 	if v, ok := stringProp(props, sarifPropSuppressionExpiry); ok {
 		t, err := time.Parse("2006-01-02T15:04:05Z07:00", v)
 		if err == nil {
-			if f.Suppression == nil {
-				f.Suppression = &Suppression{}
-			}
-
-			f.Suppression.ExpiresAt = &t
+			ensureSuppression(f).ExpiresAt = &t
 		}
 	}
+}
+
+// ensureSuppression materializes the finding's suppression struct if absent and
+// returns it for field assignment.
+func ensureSuppression(f *Finding) *Suppression {
+	if f.Suppression == nil {
+		f.Suppression = &Suppression{}
+	}
+
+	return f.Suppression
 }
 
 // stringProp extracts a string property from a SARIF property bag.
