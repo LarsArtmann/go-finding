@@ -310,3 +310,106 @@ func benchmarkFixApplierRun(b *testing.B, dryRun bool) {
 
 func BenchmarkFixApplier_ApplyWithReport_50(b *testing.B) { benchmarkFixApplierRun(b, false) }
 func BenchmarkFixApplier_ApplyDryRun_50(b *testing.B)     { benchmarkFixApplierRun(b, true) }
+
+// generateEditListFixes creates n fixes carrying typed Edits with byte
+// offsets — exercises the EditListProvider direct-offset path.
+func generateEditListFixes(n int, content []byte) []finding.Finding {
+	positions := benchutil.PickEvenly(benchutil.FindOldOccurrences(content), n)
+	fixes := make([]finding.Finding, 0, len(positions))
+
+	for _, pos := range positions {
+		fixes = append(fixes, finding.Finding{
+			BeforeCode: "old()",
+			AfterCode:  "new()",
+			Position:   finding.Pos("bench.go", benchutil.OffsetToLineNumber(content, pos), 1),
+			Edits: []finding.TextEdit{{
+				Start:   finding.Position{File: "bench.go", Offset: pos},
+				End:     finding.Position{File: "bench.go", Offset: pos + 5},
+				NewText: "new()",
+			}},
+		})
+	}
+
+	return fixes
+}
+
+// generateEditListLineColFixes creates n fixes whose typed Edits carry only
+// line/column (no byte offsets) — exercises EditListProvider's shared
+// line-index resolution path.
+func generateEditListLineColFixes(n int, content []byte) []finding.Finding {
+	positions := benchutil.PickEvenly(benchutil.FindOldOccurrences(content), n)
+	fixes := make([]finding.Finding, 0, len(positions))
+
+	for _, pos := range positions {
+		line := benchutil.OffsetToLineNumber(content, pos)
+		col := benchutil.ColumnOfOffset(content, pos)
+
+		fixes = append(fixes, finding.Finding{
+			BeforeCode: "old()",
+			AfterCode:  "new()",
+			Position:   finding.Pos("bench.go", line, col),
+			Edits: []finding.TextEdit{{
+				Start:   finding.Pos("bench.go", line, col),
+				End:     finding.Pos("bench.go", line, col+5),
+				NewText: "new()",
+			}},
+		})
+	}
+
+	return fixes
+}
+
+// EditListProvider (direct offset) benchmarks.
+
+func benchmarkEditListProvider(b *testing.B, fixCount int) {
+	b.Helper()
+
+	content := generateContent(10000)
+	fixes := generateEditListFixes(fixCount, content)
+	engine := NewFixEngine()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for range b.N {
+		engine.Apply(content, fixes)
+	}
+}
+
+func BenchmarkFixEngine_EditListProvider_1(b *testing.B)    { benchmarkEditListProvider(b, 1) }
+func BenchmarkFixEngine_EditListProvider_10(b *testing.B)   { benchmarkEditListProvider(b, 10) }
+func BenchmarkFixEngine_EditListProvider_100(b *testing.B)  { benchmarkEditListProvider(b, 100) }
+func BenchmarkFixEngine_EditListProvider_1000(b *testing.B) { benchmarkEditListProvider(b, 1000) }
+
+// EditListProvider (line/col resolution) benchmarks.
+
+func benchmarkEditListLineColProvider(b *testing.B, fixCount int) {
+	b.Helper()
+
+	content := generateContent(10000)
+	fixes := generateEditListLineColFixes(fixCount, content)
+	engine := NewFixEngine()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for range b.N {
+		engine.Apply(content, fixes)
+	}
+}
+
+func BenchmarkFixEngine_EditListProviderLineCol_1(b *testing.B) {
+	benchmarkEditListLineColProvider(b, 1)
+}
+
+func BenchmarkFixEngine_EditListProviderLineCol_10(b *testing.B) {
+	benchmarkEditListLineColProvider(b, 10)
+}
+
+func BenchmarkFixEngine_EditListProviderLineCol_100(b *testing.B) {
+	benchmarkEditListLineColProvider(b, 100)
+}
+
+func BenchmarkFixEngine_EditListProviderLineCol_1000(b *testing.B) {
+	benchmarkEditListLineColProvider(b, 1000)
+}

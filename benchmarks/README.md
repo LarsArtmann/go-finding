@@ -45,3 +45,11 @@ check; time regressions beyond **+250%** (3.5x) fail it. See the header of
   the suspect change instead of comparing full-suite captures across sessions.
 - `bench-check.sh` resolves benchstat via the PATH, else the pinned Go tool directive
   (`go.mod: tool golang.org/x/perf/cmd/benchstat`) — no `@latest` installs.
+
+- 2026-09-23: added `BenchmarkFixEngine_EditListProvider_{1,10,100,1000}`
+  (direct byte offsets) and `BenchmarkFixEngine_EditListProviderLineCol_{...}`
+  (line/col resolution via the shared line index) for the v1.14.0
+  EditListProvider. These are NOT in `baseline.txt` yet — benchstat gates
+  only benchmarks present in both files, so they run ungated until the next
+  baseline regeneration (which still requires a failed-gate justification
+  per the Verschlimmbesser rules).
