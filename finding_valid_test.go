@@ -144,6 +144,24 @@ func TestFinding_Validate(t *testing.T) {
 			errContains: "Edits[0]",
 		},
 		{
+			// Contract pin: when both representations are set, BeforeCode/
+			// AfterCode are a human display summary (possibly truncated), so
+			// validators intentionally do NOT require them to agree with
+			// Edits[0] (ADR #19, "Edits-display consistency is loose").
+			name: "mismatched display pair with edit list stays valid",
+			mutate: func(f *Finding) {
+				f.FixStrategy = FixStrategyDirect
+				f.BeforeCode = "before"
+				f.AfterCode = "after"
+				f.Edits = []TextEdit{{
+					Start:   Pos("a.go", 1, 1),
+					End:     Pos("a.go", 1, 5),
+					NewText: "completely different replacement",
+				}}
+			},
+			wantErr: false,
+		},
+		{
 			name:    "nil range is valid",
 			mutate:  func(*Finding) {},
 			wantErr: false,

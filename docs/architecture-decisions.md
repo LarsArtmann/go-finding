@@ -668,6 +668,14 @@ one finding N times as N "applied fixes".
   is the authoritative machine representation of a direct fix;
   `BeforeCode`/`AfterCode` remain as the first-edit display summary and stay
   the only representation for legacy single-edit consumers.
+- **Edits↔display-pair consistency is intentionally loose** (decided
+  2026-09-23): when a producer sets both, `Validate` does not require
+  `Edits[0].NewText == AfterCode` or any BeforeCode relation — the display
+  pair may be truncated or contextualized for humans, and enforcing
+  structural equality would false-reject legitimate producers. Consumers
+  must apply `Edits` and treat the display pair as documentation. Pinned by
+  the "mismatched display pair with edit list stays valid" test in
+  `finding_valid_test.go`.
 - Insertion convention follows the existing `Position` zero-value rules:
   `End` unset (`Offset` -1 sentinel) or `End == Start` both mean "insert at
   Start". `Position{}` is byte 0, not "unset".

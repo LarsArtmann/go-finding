@@ -378,3 +378,122 @@ func TestFixEngine_ProviderPrecedence(t *testing.T) {
 		g.Expect(string(result.Content)).To(Equal("new1()\nold2()\n"))
 	})
 }
+
+// Pins the Applied ordering semantics for a mixed multi-edit/single-edit
+// batch: Applied follows APPLICATION order (descending offset of each
+// finding's first surviving edit), not input order. Outcomes stay in input
+// order. See docs/guides/fix-engine.md "Applied ordering".
+func TestFixEngine_Apply_MixedEditKinds_AppliedOrdering(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("abcdef")
+	multi := finding.Finding{
+		ID:          "multi",
+		ToolName:    "t",
+		Rule:        "r",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		FixStrategy: finding.FixStrategyDirect,
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 2},
+				End:     finding.Position{File: "a.go", Offset: 4},
+				NewText: "XY",
+			},
+			{
+				Start:   finding.Position{File: "a.go", Offset: 0},
+				End:     finding.Position{File: "a.go", Offset: 1},
+				NewText: "Z",
+			},
+		},
+	}
+	single := finding.Finding{
+		ID:          "single",
+		ToolName:    "t",
+		Rule:        "r",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		FixStrategy: finding.FixStrategyDirect,
+		BeforeCode:  "c",
+		AfterCode:   "W",
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 2},
+				End:     finding.Position{File: "a.go", Offset: 3},
+				NewText: "W",
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result := engine.ApplyWithOutcomes(content, []finding.Finding{single, multi})
+
+	g.Expect(result.Applied).To(HaveLen(2))
+	g.Expect(result.Applied[0].ID).To(Equal(finding.ID("multi")))
+	g.Expect(result.Applied[1].ID).To(Equal(finding.ID("single")))
+	g.Expect(result.Outcomes[0].Finding.ID).To(Equal(finding.ID("single")))
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(result.Outcomes[1].Finding.ID).To(Equal(finding.ID("multi")))
+	g.Expect(result.Outcomes[1].Status).To(Equal(FixOutcomeApplied))
+}
+
+// Pins partial-conflict semantics for a multi-edit finding: when one of its
+// edits conflicts and another survives, the finding appears in Applied AND in
+// Conflicts, and its outcome is Applied (a surviving edit means the fix was
+// applied). See docs/guides/fix-engine.md "Partial conflicts".
+func TestFixEngine_Apply_PartialEditConflict_AppliedAndConflicts(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("abcdef")
+	first := finding.Finding{
+		ID:          "first",
+		ToolName:    "t",
+		Rule:        "r",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		FixStrategy: finding.FixStrategyDirect,
+		BeforeCode:  "c",
+		AfterCode:   "Y",
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 2},
+				End:     finding.Position{File: "a.go", Offset: 3},
+				NewText: "Y",
+			},
+		},
+	}
+	partial := finding.Finding{
+		ID:          "partial",
+		ToolName:    "t",
+		Rule:        "r",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		FixStrategy: finding.FixStrategyDirect,
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 2},
+				End:     finding.Position{File: "a.go", Offset: 4},
+				NewText: "XY",
+			},
+			{
+				Start:   finding.Position{File: "a.go", Offset: 0},
+				End:     finding.Position{File: "a.go", Offset: 1},
+				NewText: "Z",
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result := engine.ApplyWithOutcomes(content, []finding.Finding{first, partial})
+
+	g.Expect(result.Applied).To(HaveLen(2))
+	g.Expect(result.Applied[0].ID).To(Equal(finding.ID("first")))
+	g.Expect(result.Applied[1].ID).To(Equal(finding.ID("partial")))
+	g.Expect(result.Conflicts).To(HaveLen(1))
+	g.Expect(result.Conflicts[0].Finding.ID).To(Equal(finding.ID("partial")))
+	g.Expect(result.Conflicts[0].ConflictsWith).To(HaveLen(1))
+	g.Expect(result.Conflicts[0].ConflictsWith[0].ID).To(Equal(finding.ID("first")))
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(result.Outcomes[1].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(string(result.Content)).To(Equal("ZXYef"))
+}

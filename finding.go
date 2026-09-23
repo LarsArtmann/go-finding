@@ -27,7 +27,11 @@ type Finding struct {
 	// Edits is the full typed edit list of the fix. When set, it is the
 	// authoritative machine representation; BeforeCode/AfterCode carry the
 	// first edit as a display summary. Empty for single-edit findings built
-	// via Builder/BeforeCode only.
+	// via Builder/BeforeCode only. When both representations are set, they
+	// are intentionally loose: the display pair may be truncated or
+	// contextualized for humans, so Validate does not require it to agree
+	// with Edits[0] (ADR #19). Consumers must apply Edits, never reconstruct
+	// the fix from the display pair.
 	Edits []TextEdit `json:"edits,omitempty"`
 
 	// Context

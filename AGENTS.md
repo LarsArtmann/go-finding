@@ -88,8 +88,13 @@ samber/oops REJECTED at 3/10 fit). NEVER interpret runs with
 `--enforce-samber-oops`/`--enforce-generic-return` as defect lists — those
 flags contradict the model; the 79-violation reports they produce are
 artifacts. Intentional patterns carry `//nolint:erraudit // <reason>`;
-audit staleness with `erraudit nolint-audit .` from the repo root (the
-`./...` form silently scans nothing). `--no-suppress` surfaces those
+NEVER remove directives based on `erraudit nolint-audit .` — verified
+2026-09-23: it false-reports type-aware-suppressing directives as STALE
+(it analyzes with go/parser only; stripping its 24 "safe to remove" hits
+turned the gate red at every one of those sites). Use the advisory
+listing via `scripts/error-audit.sh --nolint-audit`; the only safe
+staleness test is remove-one-directive → run the gate → observe red →
+restore. `--no-suppress` surfaces those
 documented suppressions BY DESIGN (audit mode) — a run with
 `--no-suppress --enforce-samber-oops --enforce-generic-return` regenerates
 the ~79-violation artifact and proves nothing. Blessed invocation:
