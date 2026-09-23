@@ -14,6 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`pipeline.EditListProvider` (issue #36)** — resolves a finding's typed edit
+  list (`Finding.Edits`) to byte-level edits: byte offsets directly, line/column
+  via the shared line index. Runs first in the default provider chain (before
+  Offset, Line, and Substring). Loud failures instead of partial application:
+  lists spanning files fail with `ErrEditCrossFile`; stale or out-of-bounds
+  offsets fail with `ErrEditStale` (both surface as `FixOutcomeFailed` with the
+  provider cause in the error chain). See
+  [pipeline/CHANGELOG.md](pipeline/CHANGELOG.md).
+- **`Summary.FilesScanned` always serialized + `Summary.SkippedModules`** —
+  a report can now say "scanned 0 files" as coverage evidence instead of
+  omitting the field (clean full scans emit `"filesScanned": 0`), and monorepo
+  coverage boundaries have a home: `SkippedModules` carries the nested go.mod
+  modules a tool deliberately did not analyze; module-agnostic tools leave it
+  nil and their JSON is unchanged.
 - **`finding.TextEdit` and `Finding.Edits` (issue #36)** — typed multi-edit fix
   representation: `Start`/`End` positions plus `NewText`, with `HasSpan`,
   `IsInsertion`, `IsDeletion`, `EffectiveFile`, and `Validate` helpers,
@@ -38,6 +52,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   dropped, issue #36); `ToDiagnostic` reconstructs the full edit list.
   Alternative fixes (`SuggestedFixes` 1..N) remain first-wins and are now
   documented as such.
+
+### Fixed
+
+- **CI and Release workflow Go pins matched to the toolchain floor** — both
+  workflows pinned `go-version: "1.26"` while `go.mod`/`go.work` require
+  `go 1.27`, so every master CI run since 2026-09-20 failed at setup and both
+  v1.13.0 Release runs died in the test job (`go.work requires go >= 1.27`),
+  leaving v1.13.0 with no GitHub Release. Pins are now `1.27`; the red runs
+  were invisible to local gates, which already ran Go 1.27.
 
 ## [1.13.0] - 2026-09-22
 

@@ -9,7 +9,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-No CLI-module changes yet.
+### Changed
+
+- **Flight-recorder config error messages** — config-branch failures now read
+  `resolving flight recorder config: invalid flightRecorder.<field> ...` (was
+  `parsing flightRecorder.<field> ...`), and `validate()` errors carry an
+  `invalid config:` prefix via the shared wrapper. Tests assert presence, not
+  wording; consumers grepping the old prefixes would notice. Behind the change:
+  duplicated flag/config plumbing extracted into `installFlightRecorder` and
+  `flightRecorderFileConfig.resolve()` (no behavior change beyond messages).
 
 ## [1.12.0] - 2026-09-17
 

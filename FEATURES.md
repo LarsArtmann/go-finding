@@ -46,6 +46,7 @@ The central type representing a single issue detected by a static analysis tool.
 | Related     | `[]RelatedRef`      | Related findings with optional `*Range` span                                                                                 |
 | Suppression | `*Suppression`      | If suppressed                                                                                                                |
 | Metadata    | `map[string]string` | Tool-specific key-value pairs                                                                                                |
+| Edits       | `[]TextEdit`        | Typed multi-edit fix list (authoritative when set; `BeforeCode`/`AfterCode` become the first-edit display summary) (v1.14.0)  |
 
 Key methods: `Validate()` (decomposed into 6 per-field validators for low complexity), `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
 
@@ -242,7 +243,7 @@ Top-level container for a tool run.
 | Iterate                 | `All()` → `iter.Seq[Finding]`                                  | Read-only    |
 | Count                   | `Len()`                                                        | Read-only    |
 
-Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffected`, `FilesScanned`, `Suppressed`
+Summary stats: `Total`, `BySeverity`, `ByCategory`, `ByFixStrategy`, `FilesAffected`, `FilesScanned` (always serialized — "scanned 0" is coverage evidence, not an omission), `SkippedModules` (nested go.mod modules a tool deliberately did not analyze), `Suppressed`
 
 ---
 
@@ -539,6 +540,7 @@ Processors are executed in order from `Config.Processors`. Use cases: filtering,
 | `Verification`    | `*VerifyResult`         | Post-fix verification                            |
 | `PartialErrors`   | `map[string]error`      | Per-detector failures                            |
 | `Correlations`    | `[]finding.Correlation` | Cross-tool correlations                          |
+| `Outcomes`        | `[]FixOutcome`          | Per-finding fix outcomes, deduped to the first outcome per finding identity (v1.12.0) |
 | `Metrics`         | `MetricsSnapshot`       | Timing and counts                                |
 
 ### 16.6 Conflict Detection
@@ -585,6 +587,7 @@ type FixProvider interface {
 
 | Provider            | Name            | Handles                                                  |
 | ------------------- | --------------- | -------------------------------------------------------- |
+| `EditListProvider`  | `"edit-list"`   | `HasEditList()` findings: byte offsets directly, line/col via the shared line index; cross-file lists fail `ErrEditCrossFile`, stale offsets fail `ErrEditStale` (loud, never half-applies) (v1.14.0) |
 | `OffsetProvider`    | `"byte-offset"` | `HasCodeChange()` and `Range != nil` with `Length() > 0` |
 | `LineProvider`      | `"line-column"` | `HasCodeChange()` and `Position.Line > 0`                |
 | `SubstringProvider` | `"substring"`   | Fallback: `HasCodeChange()` and `BeforeCode != ""`       |
@@ -601,7 +604,7 @@ Domain-specific providers (Go AST, Rust syn, etc.) can be registered via:
 
 `NewFixEngine()` provides pure `Apply(content []byte, fixes []finding.Finding) ([]byte, []finding.Finding, int)` that transforms byte content without filesystem access. Delegates to providers, sorts edits descending by offset, applies with overlap protection.
 
-`ApplyWithOutcomes(content, fixes)` returns a `FixApplyResult` with one `FixOutcome` per input finding: `applied`, `no-change`, `refused` (provider matched but produced zero edits), `conflict`, `invalid` (edit dropped as invalid/out of bounds), or `failed` (provider error). Helpers: `OutcomeFor(id)`, `OutcomeCounts()`, `HasErrors()`. `FixOutcome` and `FixApplyResult` marshal to deterministic JSON (`errors` carried as message strings); failed outcomes carry a typed `*finding.FindingError` with the finding's position, so consumers can classify via `errorfamily`.
+`ApplyWithOutcomes(content, fixes)` returns a `FixApplyResult` with one `FixOutcome` per input finding: `applied`, `no-change`, `refused` (provider matched but produced zero edits), `conflict`, `invalid` (edit dropped as invalid/out of bounds), or `failed` (provider error). Applied counts are per FINDING, not per edit: a multi-edit fix counts once (v1.14.0). Helpers: `OutcomeFor(id)`, `OutcomeCounts()`, `HasErrors()`. `FixOutcome` and `FixApplyResult` marshal to deterministic JSON (`errors` carried as message strings); failed outcomes carry a typed `*finding.FindingError` with the finding's position, so consumers can classify via `errorfamily`.
 
 #### FixApplier (filesystem)
 
@@ -1189,6 +1192,8 @@ The module depends only on the core module. Evidence: `toolsdk/spec.go`,
 | Release preflight gate                       | FULLY_FUNCTIONAL     | `scripts/release-preflight.sh`: structural checks as code before tagging (v1.8.0)                   |
 | Flight-recorder rotation + gzip              | FULLY_FUNCTIONAL     | `MaxFiles` pruning + `Compress` `.trace.gz` snapshots, rotation serialized under `writeMu` (v1.9.0) |
 | Tool SDK (`toolsdk` sub-module)              | FULLY_FUNCTIONAL     | `Spec` + triggers + registry plugin contract for external tools (v1.10.0)                           |
+| Multi-edit fixes (typed edit lists)          | FULLY_FUNCTIONAL     | `Finding.Edits` + `TextEdit`; lossless go/analysis round-trip; `EditListProvider` first in chain (v1.14.0) |
+| Module-coverage evidence                     | FULLY_FUNCTIONAL     | `Summary.FilesScanned` always serialized + `Summary.SkippedModules` (unreleased)                    |
 
 ---
 
