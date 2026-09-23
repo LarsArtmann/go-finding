@@ -150,6 +150,7 @@ func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes 
 	sortEditsDescending(allEdits)
 
 	result.Applied, result.AppliedEdits, result.Conflicts, result.Content = e.applyEditsWithConflicts(content, allEdits)
+	result.Applied = dedupAppliedFindings(result.Applied)
 
 	if wantOutcomes {
 		reconcileOutcomes(&result, resolved)
@@ -191,6 +192,51 @@ func hasID(set map[finding.ID]struct{}, id finding.ID) bool {
 	_, ok := set[id]
 
 	return ok
+}
+
+// appliedFindingKey identifies a finding by ID plus position and message, so
+// findings without IDs (common in tests and lightweight usage) still dedup
+// correctly while distinct findings never collapse into each other.
+type appliedFindingKey struct {
+	id      finding.ID
+	file    finding.FilePath
+	line    int
+	column  int
+	message string
+}
+
+func appliedFindingKeyOf(f finding.Finding) appliedFindingKey {
+	return appliedFindingKey{
+		id:      f.ID,
+		file:    f.Position.File,
+		line:    f.Position.Line,
+		column:  f.Position.Column,
+		message: f.Message,
+	}
+}
+
+// dedupAppliedFindings collapses the duplicate findings a multi-edit fix
+// appends once per applied edit: Applied and AppliedFixes describe FINDINGS
+// (one entry per fix), AppliedEdits keeps per-edit granularity.
+func dedupAppliedFindings(applied []finding.Finding) []finding.Finding {
+	if len(applied) < 2 {
+		return applied
+	}
+
+	seen := make(map[appliedFindingKey]struct{}, len(applied))
+	deduped := make([]finding.Finding, 0, len(applied))
+
+	for _, f := range applied {
+		key := appliedFindingKeyOf(f)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+
+		seen[key] = struct{}{}
+		deduped = append(deduped, f)
+	}
+
+	return deduped
 }
 
 // resolveEdits tries each provider in order and returns edits from the first match.

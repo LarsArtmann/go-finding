@@ -212,9 +212,10 @@ func TestEditListProvider_AppliesAllEditsInOnePass(t *testing.T) {
 
 	g.Expect(result.Outcomes).To(HaveLen(1))
 	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeApplied))
-	// Applied carries one entry per applied EDIT (existing engine accounting),
-	// so a fully-applied 2-edit finding appears twice.
-	g.Expect(result.Applied).To(HaveLen(2))
+	// Applied describes findings (one entry per fix); AppliedEdits keeps
+	// per-edit granularity.
+	g.Expect(result.Applied).To(HaveLen(1))
+	g.Expect(result.AppliedEdits).To(HaveLen(2))
 
 	// The decl edit removes exactly the "var useLegacy = true\n" line, so the
 	// blank lines before and after it merge into the double blank shown here.
