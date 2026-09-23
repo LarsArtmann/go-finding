@@ -119,19 +119,20 @@
             projectRootFile = "go.mod";
             programs = {
               gofumpt.enable = true;
-              # goimports shells out to `go list`, which refuses go.mod's
-              # `go 1.27` floor unless a matching toolchain is on PATH (the
-              # sandbox has no network for GOTOOLCHAIN=auto downloads, and
-              # pkgs.gotools propagates an older go). Ship go_1_27 alongside.
+              # goimports shells out to `go list`. With no go on PATH it
+              # falls back to its build-time GOROOT (nixpkgs gotools =
+              # go 1.26.7), which cannot satisfy go.mod's `go 1.27` floor
+              # and tries a GOTOOLCHAIN download — fatal inside the offline
+              # treefmt-check sandbox (and, outside it, silently downloads a
+              # stray toolchain into the repo's HOME). Wrap it: go_1_27 on
+              # PATH, toolchain switching forbidden.
               goimports = {
                 enable = true;
-                package = pkgs.symlinkJoin {
-                  name = "goimports-with-go";
-                  paths = [
-                    pkgs.gotools
-                    pkgs.go_1_27
-                  ];
-                };
+                package = pkgs.writeShellScriptBin "goimports" ''
+                  export PATH="${pkgs.go_1_27}/bin:$PATH"
+                  export GOTOOLCHAIN=local
+                  exec "${pkgs.gotools}/bin/goimports" "$@"
+                '';
               };
               golines = {
                 enable = true;

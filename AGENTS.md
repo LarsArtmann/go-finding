@@ -27,7 +27,7 @@ Unix-style decomposition — each module does one thing well, composes via repla
 
 | Area                | Files                                                                                                                                                                                                                    |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Core types**      | `finding.go`, `finding_methods.go`, `finding_validate.go`, `finding_equal.go`, `position.go`, `range.go`, `report.go`, `filter.go`, `merge.go`, `diff.go`, `format.go`, `json.go`, `id.go`, `errors.go`, `simple_fix.go` |
+| **Core types**      | `finding.go`, `finding_methods.go`, `finding_validate.go`, `finding_equal.go`, `position.go`, `range.go`, `text_edit.go`, `report.go`, `filter.go`, `merge.go`, `diff.go`, `format.go`, `json.go`, `id.go`, `errors.go`, `simple_fix.go` |
 | **Named types**     | `severity.go`, `confidence.go`, `category.go`, `category_linter.go`, `tag.go`, `fix_strategy.go`, `suppression.go`, `branded_types.go`                                                                                   |
 | **SARIF**           | `sarif_types.go`, `sarif_export.go`, `sarif_import.go` (hand-rolled, not go-sarif — see ADR #9)                                                                                                                          |
 | **LSP**             | `lsp.go`                                                                                                                                                                                                                 |
@@ -228,12 +228,12 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 
 ## Architecture Decisions
 
-ADR log: `docs/architecture-decisions.md` (#16 = per-file rollback default, v1.7.0). Key structural calls:
+ADR log: `docs/architecture-decisions.md` (#19 = typed edit lists for multi-edit fixes, issue #36; #16 = per-file rollback default, v1.7.0). Key structural calls:
 
 - **SARIF hand-rolled, not go-sarif** — custom property bag, streaming + context. ADR #9.
 - **go-error-family integration** — core dependency for unified error classification. ADR #15.
 - **Pipeline split** — `pipeline.go` + `pipeline_detect.go`, both under 350 lines.
-- **FixProvider chain** — Offset -> Line -> Substring (fallback), custom prepended; `lineIndexAware` lazy line-index caching; GoASTProvider in `pipeline/goast/` (opt-in go/parser).
+- **FixProvider chain** — EditList -> Offset -> Line -> Substring (fallback), custom prepended; `lineIndexAware` lazy line-index caching; GoASTProvider in `pipeline/goast/` (opt-in go/parser). Typed edit lists for multi-edit fixes: ADR #19.
 - **IntervalIndex[T]** — generic sorted-slice O(n + k) overlap queries, used by Correlate (interval-tree NO-GO note in ROADMAP).
 - **DetectorRegistry** — thread-safe plugin architecture (`Register`/`Build`/`BuildAll`); **MergeIter** — streaming `iter.Seq[Finding]` merge with dedup.
 - **ConfigFile** — JSON config loading with `ResolveDetectors`/`ResolveProviders`.
