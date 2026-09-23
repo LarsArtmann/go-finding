@@ -1199,3 +1199,53 @@ func FuzzApplyDryRun(f *testing.F) {
 		}
 	})
 }
+
+// TestFixApplier_AppliesMultiEditFinding end-to-end (issue #36): a finding
+// whose edit list rewrites a condition AND removes a declaration must apply
+// both edits in one pass against the file on disk.
+func TestFixApplier_AppliesMultiEditFinding(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	tempDir, applier := newTestApplierWithDir(t)
+	defer func() { _ = applier.Close() }()
+
+	testFile := filepath.Join(tempDir, "multi.go")
+	source := []byte("package main\n\nvar useLegacy = true\n\nfunc main() {\n\tif useLegacy {\n\t\tpanic(1)\n\t}\n}\n")
+	writeTestFile(t, testFile, source)
+
+	declOff := bytes.Index(source, []byte("var useLegacy = true\n"))
+	condOff := bytes.Index(source, []byte("useLegacy {"))
+
+	fixes := []finding.Finding{
+		{
+			ID:          "1",
+			Rule:        "legacy-flag",
+			ToolName:    "tool",
+			Message:     "legacy flag must go",
+			BeforeCode:  "var useLegacy = true\n",
+			Position:    finding.Position{File: finding.FilePath("multi.go"), Line: 6, Column: 5},
+			FixStrategy: finding.FixStrategyDirect,
+			Edits: []finding.TextEdit{
+				{
+					Start: finding.Position{File: finding.FilePath("multi.go"), Offset: declOff},
+					End:   finding.Position{File: finding.FilePath("multi.go"), Offset: declOff + len("var useLegacy = true\n")},
+				},
+				{
+					Start:   finding.Position{File: finding.FilePath("multi.go"), Offset: condOff},
+					End:     finding.Position{File: finding.FilePath("multi.go"), Offset: condOff + len("useLegacy {")},
+					NewText: "false {",
+				},
+			},
+		},
+	}
+
+	applied, err := applier.Apply(context.Background(), fixes)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(applied).To(Equal(1))
+
+	data, rErr := readFile(testFile)
+	g.Expect(rErr).NotTo(HaveOccurred())
+
+	expected := "package main\n\n\nfunc main() {\n\tif false {\n\t\tpanic(1)\n\t}\n}\n"
+	g.Expect(string(data)).To(Equal(expected), "both edits must land on disk; half-application is the bug")
+}

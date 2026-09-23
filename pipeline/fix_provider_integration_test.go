@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -172,4 +173,155 @@ func TestPickNearestOccurrence_Branches(t *testing.T) {
 			t.Fatalf("col1: got %d, want 0", best)
 		}
 	})
+}
+
+// TestEditListProvider_AppliesAllEditsInOnePass reproduces the issue #36
+// scenario: a multi-edit fix (declaration removal + condition rewrite, the
+// erraudit legacyerrors shape) must apply completely via the default engine.
+func TestEditListProvider_AppliesAllEditsInOnePass(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("package main\n\nvar useLegacy = true\n\nfunc main() {\n\tif useLegacy {\n\t\tpanic(1)\n\t}\n}\n")
+
+	declOff := bytes.Index(content, []byte("var useLegacy = true\n"))
+	condOff := bytes.Index(content, []byte("useLegacy {"))
+
+	f := finding.Finding{
+		ID:          "1",
+		Rule:        "legacy-flag",
+		ToolName:    "tool",
+		Message:     "legacy flag must go",
+		Severity:    finding.SeverityWarning,
+		Position:    finding.Position{File: "main.go", Line: 6, Column: 5},
+		FixStrategy: finding.FixStrategyDirect,
+		Edits: []finding.TextEdit{
+			{
+				Start: finding.Position{File: "main.go", Line: 3, Column: 1, Offset: declOff},
+				End:   finding.Position{File: "main.go", Line: 3, Column: 22, Offset: declOff + len("var useLegacy = true\n")},
+			},
+			{
+				Start:   finding.Position{File: "main.go", Line: 6, Column: 5, Offset: condOff},
+				End:     finding.Position{File: "main.go", Line: 6, Column: 16, Offset: condOff + len("useLegacy {")},
+				NewText: "false {",
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result := engine.ApplyWithOutcomes(content, []finding.Finding{f})
+
+	g.Expect(result.Outcomes).To(HaveLen(1))
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeApplied))
+	// Applied carries one entry per applied EDIT (existing engine accounting),
+	// so a fully-applied 2-edit finding appears twice.
+	g.Expect(result.Applied).To(HaveLen(2))
+
+	// The decl edit removes exactly the "var useLegacy = true\n" line, so the
+	// blank lines before and after it merge into the double blank shown here.
+	expected := "package main\n\n\nfunc main() {\n\tif false {\n\t\tpanic(1)\n\t}\n}\n"
+	g.Expect(string(result.Content)).To(Equal(expected), "both edits must apply; half-application is the bug")
+}
+
+func TestEditListProvider_LineColumnOnlyEdits(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("package main\n\nfunc main() {\n\told()\n}\n")
+
+	f := finding.Finding{
+		ID:          "1",
+		BeforeCode:  "old()",
+		Position:    finding.Position{File: "main.go", Line: 4, Column: 2},
+		FixStrategy: finding.FixStrategyDirect,
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "main.go", Line: 4, Column: 2, Offset: -1},
+				End:     finding.Position{File: "main.go", Line: 4, Column: 7, Offset: -1},
+				NewText: "new()",
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result, applied, count := engine.Apply(content, []finding.Finding{f})
+
+	g.Expect(count).To(Equal(1))
+	g.Expect(applied).To(HaveLen(1))
+	g.Expect(string(result)).To(Equal("package main\n\nfunc main() {\n\tnew()\n}\n"))
+}
+
+func TestEditListProvider_CrossFileEditListRefused(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("package main\n\nvar x = true\n")
+
+	f := finding.Finding{
+		ID:          "1",
+		Position:    finding.Position{File: "main.go", Line: 3},
+		FixStrategy: finding.FixStrategyDirect,
+		Edits: []finding.TextEdit{
+			{
+				Start: finding.Position{File: "other.go", Line: 1, Column: 1, Offset: 0},
+				End:   finding.Position{File: "other.go", Line: 1, Column: 2, Offset: 1},
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result := engine.ApplyWithOutcomes(content, []finding.Finding{f})
+
+	g.Expect(result.Outcomes).To(HaveLen(1))
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeFailed))
+	g.Expect(result.Outcomes[0].Err).To(HaveOccurred())
+	g.Expect(errors.Is(result.Outcomes[0].Err, ErrEditCrossFile)).To(BeTrue(),
+		"cross-file edit lists must fail loudly, not half-apply")
+	g.Expect(string(result.Content)).To(Equal(string(content)))
+}
+
+func TestEditListProvider_StaleOffsetsRefused(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("package main\n")
+
+	f := finding.Finding{
+		ID:          "1",
+		Position:    finding.Position{File: "main.go", Line: 1},
+		FixStrategy: finding.FixStrategyDirect,
+		Edits: []finding.TextEdit{
+			{
+				Start: finding.Position{File: "main.go", Line: 9, Column: 1, Offset: 500},
+				End:   finding.Position{File: "main.go", Line: 9, Column: 5, Offset: 505},
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result := engine.ApplyWithOutcomes(content, []finding.Finding{f})
+
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeFailed))
+	g.Expect(errors.Is(result.Outcomes[0].Err, ErrEditStale)).To(BeTrue())
+}
+
+func TestEditListProvider_PureInsertion(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("package main\n")
+
+	f := finding.Finding{
+		ID:          "1",
+		Position:    finding.Position{File: "main.go", Line: 1},
+		FixStrategy: finding.FixStrategyDirect,
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "main.go", Line: 1, Column: 1, Offset: 0},
+				End:     finding.Position{Offset: -1},
+				NewText: "import \"fmt\"\n",
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result, _, count := engine.Apply(content, []finding.Finding{f})
+
+	g.Expect(count).To(Equal(1))
+	g.Expect(string(result)).To(Equal("import \"fmt\"\npackage main\n"))
 }
