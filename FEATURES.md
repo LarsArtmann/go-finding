@@ -25,28 +25,28 @@
 
 The central type representing a single issue detected by a static analysis tool.
 
-| Field       | Type                | Purpose                                                                                                                      |
-| ----------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| ID          | `ID`                | Stable unique identifier (`tool:rule:file:line:col`; hash-based `tool:rule:<hash>` for file-level findings with `Line == 0`) |
-| Rule        | `RuleName`          | Rule/check name (e.g., `STRONG_ID`)                                                                                          |
-| ToolName    | `ToolName`          | Source tool name (e.g., `govet`)                                                                                             |
-| Message     | `string`            | Human-readable description                                                                                                   |
-| Severity    | `Severity`          | info / warning / error / critical                                                                                            |
-| Position    | `Position`          | Where the issue is (file, line, column, offset)                                                                              |
-| Category    | `Category`          | Domain classification (security, style, etc.)                                                                                |
-| Tags        | `[]Tag`             | Multiple classification labels                                                                                               |
-| FixStrategy | `FixStrategy`       | none / suggest / direct / ai                                                                                                 |
-| Suggestion  | `string`            | Human-readable fix description                                                                                               |
-| BeforeCode  | `string`            | Code before the fix                                                                                                          |
-| AfterCode   | `string`            | Code after the fix                                                                                                           |
-| Range       | `*Range`            | Span-based findings (start/end positions)                                                                                    |
-| Snippet     | `string`            | Surrounding code context                                                                                                     |
-| Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                                                                                                    |
-| GroupID     | `GroupID`           | Logical group this finding belongs to (e.g., clone group)                                                                    |
-| Related     | `[]RelatedRef`      | Related findings with optional `*Range` span                                                                                 |
-| Suppression | `*Suppression`      | If suppressed                                                                                                                |
-| Metadata    | `map[string]string` | Tool-specific key-value pairs                                                                                                |
-| Edits       | `[]TextEdit`        | Typed multi-edit fix list (authoritative when set; `BeforeCode`/`AfterCode` become the first-edit display summary) (unreleased)  |
+| Field       | Type                | Purpose                                                                                                                         |
+| ----------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| ID          | `ID`                | Stable unique identifier (`tool:rule:file:line:col`; hash-based `tool:rule:<hash>` for file-level findings with `Line == 0`)    |
+| Rule        | `RuleName`          | Rule/check name (e.g., `STRONG_ID`)                                                                                             |
+| ToolName    | `ToolName`          | Source tool name (e.g., `govet`)                                                                                                |
+| Message     | `string`            | Human-readable description                                                                                                      |
+| Severity    | `Severity`          | info / warning / error / critical                                                                                               |
+| Position    | `Position`          | Where the issue is (file, line, column, offset)                                                                                 |
+| Category    | `Category`          | Domain classification (security, style, etc.)                                                                                   |
+| Tags        | `[]Tag`             | Multiple classification labels                                                                                                  |
+| FixStrategy | `FixStrategy`       | none / suggest / direct / ai                                                                                                    |
+| Suggestion  | `string`            | Human-readable fix description                                                                                                  |
+| BeforeCode  | `string`            | Code before the fix                                                                                                             |
+| AfterCode   | `string`            | Code after the fix                                                                                                              |
+| Range       | `*Range`            | Span-based findings (start/end positions)                                                                                       |
+| Snippet     | `string`            | Surrounding code context                                                                                                        |
+| Confidence  | `Confidence`        | Named type, 0.0–1.0 scale                                                                                                       |
+| GroupID     | `GroupID`           | Logical group this finding belongs to (e.g., clone group)                                                                       |
+| Related     | `[]RelatedRef`      | Related findings with optional `*Range` span                                                                                    |
+| Suppression | `*Suppression`      | If suppressed                                                                                                                   |
+| Metadata    | `map[string]string` | Tool-specific key-value pairs                                                                                                   |
+| Edits       | `[]TextEdit`        | Typed multi-edit fix list (authoritative when set; `BeforeCode`/`AfterCode` become the first-edit display summary) (unreleased) |
 
 Key methods: `Validate()` (decomposed into 6 per-field validators for low complexity), `IsValid()`, `Clone()`, `Key()`, `Equal()`, `String()`, `Preview()`, `HasFix()`, `HasSuggestion()`, `IsSuppressed()`, `NormalizedConfidence()`
 
@@ -531,17 +531,17 @@ Processors are executed in order from `Config.Processors`. Use cases: filtering,
 
 ### 16.5 Pipeline Result
 
-| Field             | Type                    | Description                                      |
-| ----------------- | ----------------------- | ------------------------------------------------ |
-| `Stable()`        | method → `bool`         | Reached zero findings (`Reason == ReasonStable`) |
-| `TotalIterations` | `int`                   | Iterations executed                              |
-| `Iterations`      | `[]Iteration`           | Per-iteration details                            |
-| `TotalDetected`   | `int`                   | Total findings across iterations                 |
-| `Verification`    | `*VerifyResult`         | Post-fix verification                            |
-| `PartialErrors`   | `map[string]error`      | Per-detector failures                            |
-| `Correlations`    | `[]finding.Correlation` | Cross-tool correlations                          |
+| Field             | Type                    | Description                                                                           |
+| ----------------- | ----------------------- | ------------------------------------------------------------------------------------- |
+| `Stable()`        | method → `bool`         | Reached zero findings (`Reason == ReasonStable`)                                      |
+| `TotalIterations` | `int`                   | Iterations executed                                                                   |
+| `Iterations`      | `[]Iteration`           | Per-iteration details                                                                 |
+| `TotalDetected`   | `int`                   | Total findings across iterations                                                      |
+| `Verification`    | `*VerifyResult`         | Post-fix verification                                                                 |
+| `PartialErrors`   | `map[string]error`      | Per-detector failures                                                                 |
+| `Correlations`    | `[]finding.Correlation` | Cross-tool correlations                                                               |
 | `Outcomes`        | `[]FixOutcome`          | Per-finding fix outcomes, deduped to the first outcome per finding identity (v1.12.0) |
-| `Metrics`         | `MetricsSnapshot`       | Timing and counts                                |
+| `Metrics`         | `MetricsSnapshot`       | Timing and counts                                                                     |
 
 ### 16.6 Conflict Detection
 
@@ -585,12 +585,12 @@ type FixProvider interface {
 
 **Default provider chain (tried in order):**
 
-| Provider            | Name            | Handles                                                  |
-| ------------------- | --------------- | -------------------------------------------------------- |
+| Provider            | Name            | Handles                                                                                                                                                                                                  |
+| ------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `EditListProvider`  | `"edit-list"`   | `HasEditList()` findings: byte offsets directly, line/col via the shared line index; cross-file lists fail `ErrEditCrossFile`, stale offsets fail `ErrEditStale` (loud, never half-applies) (unreleased) |
-| `OffsetProvider`    | `"byte-offset"` | `HasCodeChange()` and `Range != nil` with `Length() > 0` |
-| `LineProvider`      | `"line-column"` | `HasCodeChange()` and `Position.Line > 0`                |
-| `SubstringProvider` | `"substring"`   | Fallback: `HasCodeChange()` and `BeforeCode != ""`       |
+| `OffsetProvider`    | `"byte-offset"` | `HasCodeChange()` and `Range != nil` with `Length() > 0`                                                                                                                                                 |
+| `LineProvider`      | `"line-column"` | `HasCodeChange()` and `Position.Line > 0`                                                                                                                                                                |
+| `SubstringProvider` | `"substring"`   | Fallback: `HasCodeChange()` and `BeforeCode != ""`                                                                                                                                                       |
 
 Domain-specific providers (Go AST, Rust syn, etc.) can be registered via:
 
@@ -1106,94 +1106,94 @@ The module depends only on the core module. Evidence: `toolsdk/spec.go`,
 
 ## Summary Matrix
 
-| Feature                                      | Status               | Notes                                                                                               |
-| -------------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------- |
-| Finding type                                 | FULLY_FUNCTIONAL     | Core data model with branded types (ID, RuleName, ToolName, FilePath)                               |
-| Builder API                                  | FULLY_FUNCTIONAL     | Fluent construction with validation                                                                 |
-| Position & Range                             | FULLY_FUNCTIONAL     | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent)                                   |
-| Severity (4 levels)                          | FULLY_FUNCTIONAL     | With comparison operators                                                                           |
-| FixStrategy (none/suggest/direct)            | FULLY_FUNCTIONAL     | Production auto-fix for `direct`                                                                    |
-| FixStrategy (ai)                             | PLANNED              | Constant exists, no AI backend                                                                      |
-| Category (16 standard + custom)              | FULLY_FUNCTIONAL     | Domain classification                                                                               |
-| Tags (multi-label)                           | FULLY_FUNCTIONAL     | Singular Tag field removed                                                                          |
-| Suppression                                  | FULLY_FUNCTIONAL     | With TTL/expiry support                                                                             |
-| Report container                             | FULLY_FUNCTIONAL     | Thread-safe, with summary statistics                                                                |
-| Filtering & sorting                          | FULLY_FUNCTIONAL     | Composable predicates + grouping                                                                    |
-| Report merging                               | FULLY_FUNCTIONAL     | 3 deduplication strategies                                                                          |
-| Cross-tool correlation                       | FULLY_FUNCTIONAL     | IntervalIndex for range findings + proximity for points; capped at 10K                              |
-| ID generation & parsing                      | FULLY_FUNCTIONAL     | Hash-based fallback, Windows path handling                                                          |
-| JSON serialization                           | FULLY_FUNCTIONAL     | Streaming support, drops invalid findings                                                           |
-| SARIF 2.1.0 export/import                    | FULLY_FUNCTIONAL     | Round-trip via property bag                                                                         |
-| LSP conversion                               | FULLY_FUNCTIONAL     | Position, severity, rule, message, related ranges, diagnostic tags survive                          |
-| go/analysis integration                      | FULLY_FUNCTIONAL     | Bidirectional conversion (Diagnostic ↔ Finding)                                                     |
-| AnalyzerDetector                             | FULLY_FUNCTIONAL     | Wraps `go/analysis.Analyzer` as a `Detector`                                                        |
-| Structured errors                            | FULLY_FUNCTIONAL     | 5 categories, errors.Is support                                                                     |
-| Pipeline (detect→fix→verify)                 | FULLY_FUNCTIONAL     | Iterative loop with configurable behavior                                                           |
-| Finding transformers                         | FULLY_FUNCTIONAL     | Composable transforms between detect and triage (FindingTransformer)                                |
-| Conflict detection                           | FULLY_FUNCTIONAL     | Overlapping fix detection                                                                           |
-| FixEdit (byte-level edits)                   | FULLY_FUNCTIONAL     | Offset, Length, Replacement with Overlaps/Validate                                                  |
-| FixProvider interface                        | FULLY_FUNCTIONAL     | Composable providers: Offset, Line, Substring + custom                                              |
-| Fix application                              | PARTIALLY_FUNCTIONAL | Byte-level FixEngine + filesystem FixApplier, backup/rollback                                       |
-| Verification                                 | FULLY_FUNCTIONAL     | Diff-based: fixed / remaining / new                                                                 |
-| Metrics                                      | FULLY_FUNCTIONAL     | Thread-safe, snapshot support                                                                       |
-| Retry (exponential backoff)                  | FULLY_FUNCTIONAL     | With jitter                                                                                         |
-| Partial success                              | FULLY_FUNCTIONAL     | Graceful degradation on detector failure                                                            |
-| File backup & rollback                       | FULLY_FUNCTIONAL     | Automatic on fix failure                                                                            |
-| Go vet detector                              | PARTIALLY_FUNCTIONAL | Requires `go vet` in PATH                                                                           |
-| Staticcheck detector                         | PARTIALLY_FUNCTIONAL | Requires `staticcheck` in PATH                                                                      |
-| CLI tool                                     | PARTIALLY_FUNCTIONAL | 6 output formats (text, markdown, csv, tsv, json, sarif), config, profiling                         |
-| Plugin detector registry                     | FULLY_FUNCTIONAL     | Thread-safe `RegisterDetector`                                                                      |
-| Per-detector timeouts                        | FULLY_FUNCTIONAL     | `DetectorTimeouts` map in Config + CLI config file                                                  |
-| Structured logging (slog)                    | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                                            |
-| Stage hooks/callbacks                        | FULLY_FUNCTIONAL     | `StageHooks` with abort capability                                                                  |
-| Diff function                                | FULLY_FUNCTIONAL     | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()`                                   |
-| FormatText / FormatTextRich / FormatMarkdown | FULLY_FUNCTIONAL     | FormatText: `[SEVERITY]` tag. FormatTextRich: emoji badges, category, 💡 (v1.3.0)                   |
-| Config validation                            | FULLY_FUNCTIONAL     | Both pipeline and CLI configs                                                                       |
-| Examples                                     | PARTIALLY_FUNCTIONAL | 3 runnable examples (basic, builder, outcomes), compile-tested                                      |
-| `RelatedRef.Range`                           | FULLY_FUNCTIONAL     | Span-based related locations with SARIF/LSP round-trip                                              |
-| LSP diagnostic tags                          | FULLY_FUNCTIONAL     | `Unnecessary`/`Deprecated` preserved in metadata                                                    |
-| SARIF `region.snippet`                       | FULLY_FUNCTIONAL     | Native SARIF snippet round-trip support                                                             |
-| Comprehensive `doc.go`                       | FULLY_FUNCTIONAL     | Full package documentation with examples and architecture notes                                     |
-| DetectorRegistry                             | FULLY_FUNCTIONAL     | Thread-safe plugin-style detector constructor registry                                              |
-| IntervalIndex[T]                             | FULLY_FUNCTIONAL     | Generic O(n + k) overlap queries; used by Correlate                                                 |
-| LineShiftMap                                 | FULLY_FUNCTIONAL     | Byte-offset-aware line+column shift tracking after edits                                            |
-| MergeIter                                    | FULLY_FUNCTIONAL     | Streaming iter.Seq merge with deduplication                                                         |
-| ConfigFile (pipeline)                        | FULLY_FUNCTIONAL     | JSON config loading + ResolveDetectors/ResolveProviders                                             |
-| StageHook                                    | FULLY_FUNCTIONAL     | Per-stage before/after hooks with abort capability                                                  |
-| GoASTProvider                                | FULLY_FUNCTIONAL     | AST-aware fix provider for .go files (go/parser)                                                    |
-| GeneratedFileFilter                          | FULLY_FUNCTIONAL     | Removes findings from auto-generated files (sqlc, protobuf, etc.)                                   |
-| ToolAdapter[O]                               | FULLY_FUNCTIONAL     | Generic tool→Finding converter adapter                                                              |
-| CategoryForLinter                            | FULLY_FUNCTIONAL     | 84 linter→category mappings, case-insensitive                                                       |
-| Severity aliases                             | FULLY_FUNCTIONAL     | 11 severity aliases + SeverityFromLevel + PriorityString (v1.3.0)                                   |
-| SubstringProvider column-aware               | FULLY_FUNCTIONAL     | Nearest-position heuristic with line+column disambiguation                                          |
-| Template factory                             | FULLY_FUNCTIONAL     | Pre-configured builder: stamp common fields once, build many findings                               |
-| Template.Builder (per-finding chaining)      | FULLY_FUNCTIONAL     | Returns *Builder from template for confidence/suggestion overrides (v1.6.0)                         |
-| ParseConfidence                              | FULLY_FUNCTIONAL     | Inverse of Confidence.String(); named levels + decimals + empty default (v1.6.0)                    |
-| Deterministic JSON/SARIF output              | FULLY_FUNCTIONAL     | json.Deterministic(true) on all 8 marshal calls; 8 byte-identity regression tests                   |
-| ValidateAll (batch validation)               | FULLY_FUNCTIONAL     | Batch helper returning map[int]error for invalid findings                                           |
-| FlightRecorderHook                           | FULLY_FUNCTIONAL     | Go runtime execution trace flight recorder for pipeline observability                               |
-| FlightRecorder config-file integration       | FULLY_FUNCTIONAL     | FlightRecorderFileConfig + ResolveFlightRecorder(); 5 fields via YAML/JSON                          |
-| go-arch-lint module boundary CI              | FULLY_FUNCTIONAL     | 11 components, one-directional flow enforced; wired into ci.yml arch-check job                      |
-| Docs-freshness CI                            | FULLY_FUNCTIONAL     | Staleness + code-doc sync checks; wired into ci.yml docs-freshness job                              |
-| Configuration guide                          | FULLY_FUNCTIONAL     | docs/guides/configuration.md: all CLI flags, config file, library ConfigFile API                    |
-| Troubleshooting guide                        | FULLY_FUNCTIONAL     | docs/guides/troubleshooting.md: build, config, pipeline, fix, flight recorder errors                |
-| Multi-module benchmark                       | FULLY_FUNCTIONAL     | docs/reports/2026-08-08_multi-module-vs-monolith.md: zero runtime overhead                          |
-| Finding groups (GroupID)                     | FULLY_FUNCTIONAL     | Branded `GroupID`; JSON/SARIF/LSP round-trip; `Report.GroupFindings()` (v1.7.0)                     |
-| Per-finding fix outcomes                     | FULLY_FUNCTIONAL     | `ApplyWithOutcomes`: applied/no-change/refused/conflict/invalid/failed (v1.7.0)                     |
-| Rollback policies                            | FULLY_FUNCTIONAL     | Per-file default + all-files opt-in; config-file `fixRollbackAllFiles` (v1.7.0)                     |
-| Fix outcome metrics                          | FULLY_FUNCTIONAL     | `Metrics.RecordOutcome`/`OutcomeCounts` + CLI `Fix outcomes:` summary (v1.7.0)                      |
-| GroupID validation                           | FULLY_FUNCTIONAL     | `GroupID.IsValid()`: machine-safe identifiers, enforced by `Validate()` (v1.8.0)                    |
-| Sorted finding groups                        | FULLY_FUNCTIONAL     | `Report.GroupFindingsSorted()` + `Group`; `Template.WithGroupID` (v1.8.0)                           |
-| Fix outcome callback                         | FULLY_FUNCTIONAL     | `Config.OnFixOutcome` status callback; `OnFix` deprecated (v1.8.0)                                  |
-| Result-level fix outcomes                    | FULLY_FUNCTIONAL     | `PipelineResult.Outcomes`: deduped first-outcome-per-finding record (v1.12.0)                       |
-| Dry-run fix planning                         | FULLY_FUNCTIONAL     | `FixApplier.ApplyDryRun`: full ApplyReport, zero writes (v1.8.0)                                    |
-| Unsafe-path outcome surfacing                | FULLY_FUNCTIONAL     | Traversal findings become `failed` outcomes instead of silent drops (v1.8.0)                        |
-| staticcheck fix extension                    | FULLY_FUNCTIONAL     | Optional `before`/`after` JSON fields make findings auto-fixable (v1.8.0)                           |
-| Release preflight gate                       | FULLY_FUNCTIONAL     | `scripts/release-preflight.sh`: structural checks as code before tagging (v1.8.0)                   |
-| Flight-recorder rotation + gzip              | FULLY_FUNCTIONAL     | `MaxFiles` pruning + `Compress` `.trace.gz` snapshots, rotation serialized under `writeMu` (v1.9.0) |
-| Tool SDK (`toolsdk` sub-module)              | FULLY_FUNCTIONAL     | `Spec` + triggers + registry plugin contract for external tools (v1.10.0)                           |
+| Feature                                      | Status               | Notes                                                                                                         |
+| -------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Finding type                                 | FULLY_FUNCTIONAL     | Core data model with branded types (ID, RuleName, ToolName, FilePath)                                         |
+| Builder API                                  | FULLY_FUNCTIONAL     | Fluent construction with validation                                                                           |
+| Position & Range                             | FULLY_FUNCTIONAL     | Full spatial algebra (Contains, Overlaps, Intersection, Adjacent)                                             |
+| Severity (4 levels)                          | FULLY_FUNCTIONAL     | With comparison operators                                                                                     |
+| FixStrategy (none/suggest/direct)            | FULLY_FUNCTIONAL     | Production auto-fix for `direct`                                                                              |
+| FixStrategy (ai)                             | PLANNED              | Constant exists, no AI backend                                                                                |
+| Category (16 standard + custom)              | FULLY_FUNCTIONAL     | Domain classification                                                                                         |
+| Tags (multi-label)                           | FULLY_FUNCTIONAL     | Singular Tag field removed                                                                                    |
+| Suppression                                  | FULLY_FUNCTIONAL     | With TTL/expiry support                                                                                       |
+| Report container                             | FULLY_FUNCTIONAL     | Thread-safe, with summary statistics                                                                          |
+| Filtering & sorting                          | FULLY_FUNCTIONAL     | Composable predicates + grouping                                                                              |
+| Report merging                               | FULLY_FUNCTIONAL     | 3 deduplication strategies                                                                                    |
+| Cross-tool correlation                       | FULLY_FUNCTIONAL     | IntervalIndex for range findings + proximity for points; capped at 10K                                        |
+| ID generation & parsing                      | FULLY_FUNCTIONAL     | Hash-based fallback, Windows path handling                                                                    |
+| JSON serialization                           | FULLY_FUNCTIONAL     | Streaming support, drops invalid findings                                                                     |
+| SARIF 2.1.0 export/import                    | FULLY_FUNCTIONAL     | Round-trip via property bag                                                                                   |
+| LSP conversion                               | FULLY_FUNCTIONAL     | Position, severity, rule, message, related ranges, diagnostic tags survive                                    |
+| go/analysis integration                      | FULLY_FUNCTIONAL     | Bidirectional conversion (Diagnostic ↔ Finding)                                                               |
+| AnalyzerDetector                             | FULLY_FUNCTIONAL     | Wraps `go/analysis.Analyzer` as a `Detector`                                                                  |
+| Structured errors                            | FULLY_FUNCTIONAL     | 5 categories, errors.Is support                                                                               |
+| Pipeline (detect→fix→verify)                 | FULLY_FUNCTIONAL     | Iterative loop with configurable behavior                                                                     |
+| Finding transformers                         | FULLY_FUNCTIONAL     | Composable transforms between detect and triage (FindingTransformer)                                          |
+| Conflict detection                           | FULLY_FUNCTIONAL     | Overlapping fix detection                                                                                     |
+| FixEdit (byte-level edits)                   | FULLY_FUNCTIONAL     | Offset, Length, Replacement with Overlaps/Validate                                                            |
+| FixProvider interface                        | FULLY_FUNCTIONAL     | Composable providers: Offset, Line, Substring + custom                                                        |
+| Fix application                              | PARTIALLY_FUNCTIONAL | Byte-level FixEngine + filesystem FixApplier, backup/rollback                                                 |
+| Verification                                 | FULLY_FUNCTIONAL     | Diff-based: fixed / remaining / new                                                                           |
+| Metrics                                      | FULLY_FUNCTIONAL     | Thread-safe, snapshot support                                                                                 |
+| Retry (exponential backoff)                  | FULLY_FUNCTIONAL     | With jitter                                                                                                   |
+| Partial success                              | FULLY_FUNCTIONAL     | Graceful degradation on detector failure                                                                      |
+| File backup & rollback                       | FULLY_FUNCTIONAL     | Automatic on fix failure                                                                                      |
+| Go vet detector                              | PARTIALLY_FUNCTIONAL | Requires `go vet` in PATH                                                                                     |
+| Staticcheck detector                         | PARTIALLY_FUNCTIONAL | Requires `staticcheck` in PATH                                                                                |
+| CLI tool                                     | PARTIALLY_FUNCTIONAL | 6 output formats (text, markdown, csv, tsv, json, sarif), config, profiling                                   |
+| Plugin detector registry                     | FULLY_FUNCTIONAL     | Thread-safe `RegisterDetector`                                                                                |
+| Per-detector timeouts                        | FULLY_FUNCTIONAL     | `DetectorTimeouts` map in Config + CLI config file                                                            |
+| Structured logging (slog)                    | FULLY_FUNCTIONAL     | Optional `Logger *slog.Logger` in Config                                                                      |
+| Stage hooks/callbacks                        | FULLY_FUNCTIONAL     | `StageHooks` with abort capability                                                                            |
+| Diff function                                | FULLY_FUNCTIONAL     | `Diff(before, after)` by ID, `DiffResult.HasChanges()`, `Stats()`                                             |
+| FormatText / FormatTextRich / FormatMarkdown | FULLY_FUNCTIONAL     | FormatText: `[SEVERITY]` tag. FormatTextRich: emoji badges, category, 💡 (v1.3.0)                             |
+| Config validation                            | FULLY_FUNCTIONAL     | Both pipeline and CLI configs                                                                                 |
+| Examples                                     | PARTIALLY_FUNCTIONAL | 3 runnable examples (basic, builder, outcomes), compile-tested                                                |
+| `RelatedRef.Range`                           | FULLY_FUNCTIONAL     | Span-based related locations with SARIF/LSP round-trip                                                        |
+| LSP diagnostic tags                          | FULLY_FUNCTIONAL     | `Unnecessary`/`Deprecated` preserved in metadata                                                              |
+| SARIF `region.snippet`                       | FULLY_FUNCTIONAL     | Native SARIF snippet round-trip support                                                                       |
+| Comprehensive `doc.go`                       | FULLY_FUNCTIONAL     | Full package documentation with examples and architecture notes                                               |
+| DetectorRegistry                             | FULLY_FUNCTIONAL     | Thread-safe plugin-style detector constructor registry                                                        |
+| IntervalIndex[T]                             | FULLY_FUNCTIONAL     | Generic O(n + k) overlap queries; used by Correlate                                                           |
+| LineShiftMap                                 | FULLY_FUNCTIONAL     | Byte-offset-aware line+column shift tracking after edits                                                      |
+| MergeIter                                    | FULLY_FUNCTIONAL     | Streaming iter.Seq merge with deduplication                                                                   |
+| ConfigFile (pipeline)                        | FULLY_FUNCTIONAL     | JSON config loading + ResolveDetectors/ResolveProviders                                                       |
+| StageHook                                    | FULLY_FUNCTIONAL     | Per-stage before/after hooks with abort capability                                                            |
+| GoASTProvider                                | FULLY_FUNCTIONAL     | AST-aware fix provider for .go files (go/parser)                                                              |
+| GeneratedFileFilter                          | FULLY_FUNCTIONAL     | Removes findings from auto-generated files (sqlc, protobuf, etc.)                                             |
+| ToolAdapter[O]                               | FULLY_FUNCTIONAL     | Generic tool→Finding converter adapter                                                                        |
+| CategoryForLinter                            | FULLY_FUNCTIONAL     | 84 linter→category mappings, case-insensitive                                                                 |
+| Severity aliases                             | FULLY_FUNCTIONAL     | 11 severity aliases + SeverityFromLevel + PriorityString (v1.3.0)                                             |
+| SubstringProvider column-aware               | FULLY_FUNCTIONAL     | Nearest-position heuristic with line+column disambiguation                                                    |
+| Template factory                             | FULLY_FUNCTIONAL     | Pre-configured builder: stamp common fields once, build many findings                                         |
+| Template.Builder (per-finding chaining)      | FULLY_FUNCTIONAL     | Returns *Builder from template for confidence/suggestion overrides (v1.6.0)                                   |
+| ParseConfidence                              | FULLY_FUNCTIONAL     | Inverse of Confidence.String(); named levels + decimals + empty default (v1.6.0)                              |
+| Deterministic JSON/SARIF output              | FULLY_FUNCTIONAL     | json.Deterministic(true) on all 8 marshal calls; 8 byte-identity regression tests                             |
+| ValidateAll (batch validation)               | FULLY_FUNCTIONAL     | Batch helper returning map[int]error for invalid findings                                                     |
+| FlightRecorderHook                           | FULLY_FUNCTIONAL     | Go runtime execution trace flight recorder for pipeline observability                                         |
+| FlightRecorder config-file integration       | FULLY_FUNCTIONAL     | FlightRecorderFileConfig + ResolveFlightRecorder(); 5 fields via YAML/JSON                                    |
+| go-arch-lint module boundary CI              | FULLY_FUNCTIONAL     | 11 components, one-directional flow enforced; wired into ci.yml arch-check job                                |
+| Docs-freshness CI                            | FULLY_FUNCTIONAL     | Staleness + code-doc sync checks; wired into ci.yml docs-freshness job                                        |
+| Configuration guide                          | FULLY_FUNCTIONAL     | docs/guides/configuration.md: all CLI flags, config file, library ConfigFile API                              |
+| Troubleshooting guide                        | FULLY_FUNCTIONAL     | docs/guides/troubleshooting.md: build, config, pipeline, fix, flight recorder errors                          |
+| Multi-module benchmark                       | FULLY_FUNCTIONAL     | docs/reports/2026-08-08_multi-module-vs-monolith.md: zero runtime overhead                                    |
+| Finding groups (GroupID)                     | FULLY_FUNCTIONAL     | Branded `GroupID`; JSON/SARIF/LSP round-trip; `Report.GroupFindings()` (v1.7.0)                               |
+| Per-finding fix outcomes                     | FULLY_FUNCTIONAL     | `ApplyWithOutcomes`: applied/no-change/refused/conflict/invalid/failed (v1.7.0)                               |
+| Rollback policies                            | FULLY_FUNCTIONAL     | Per-file default + all-files opt-in; config-file `fixRollbackAllFiles` (v1.7.0)                               |
+| Fix outcome metrics                          | FULLY_FUNCTIONAL     | `Metrics.RecordOutcome`/`OutcomeCounts` + CLI `Fix outcomes:` summary (v1.7.0)                                |
+| GroupID validation                           | FULLY_FUNCTIONAL     | `GroupID.IsValid()`: machine-safe identifiers, enforced by `Validate()` (v1.8.0)                              |
+| Sorted finding groups                        | FULLY_FUNCTIONAL     | `Report.GroupFindingsSorted()` + `Group`; `Template.WithGroupID` (v1.8.0)                                     |
+| Fix outcome callback                         | FULLY_FUNCTIONAL     | `Config.OnFixOutcome` status callback; `OnFix` deprecated (v1.8.0)                                            |
+| Result-level fix outcomes                    | FULLY_FUNCTIONAL     | `PipelineResult.Outcomes`: deduped first-outcome-per-finding record (v1.12.0)                                 |
+| Dry-run fix planning                         | FULLY_FUNCTIONAL     | `FixApplier.ApplyDryRun`: full ApplyReport, zero writes (v1.8.0)                                              |
+| Unsafe-path outcome surfacing                | FULLY_FUNCTIONAL     | Traversal findings become `failed` outcomes instead of silent drops (v1.8.0)                                  |
+| staticcheck fix extension                    | FULLY_FUNCTIONAL     | Optional `before`/`after` JSON fields make findings auto-fixable (v1.8.0)                                     |
+| Release preflight gate                       | FULLY_FUNCTIONAL     | `scripts/release-preflight.sh`: structural checks as code before tagging (v1.8.0)                             |
+| Flight-recorder rotation + gzip              | FULLY_FUNCTIONAL     | `MaxFiles` pruning + `Compress` `.trace.gz` snapshots, rotation serialized under `writeMu` (v1.9.0)           |
+| Tool SDK (`toolsdk` sub-module)              | FULLY_FUNCTIONAL     | `Spec` + triggers + registry plugin contract for external tools (v1.10.0)                                     |
 | Multi-edit fixes (typed edit lists)          | FULLY_FUNCTIONAL     | `Finding.Edits` + `TextEdit`; lossless go/analysis round-trip; `EditListProvider` first in chain (unreleased) |
-| Module-coverage evidence                     | FULLY_FUNCTIONAL     | `Summary.FilesScanned` always serialized + `Summary.SkippedModules` (unreleased)                    |
+| Module-coverage evidence                     | FULLY_FUNCTIONAL     | `Summary.FilesScanned` always serialized + `Summary.SkippedModules` (unreleased)                              |
 
 ---
 

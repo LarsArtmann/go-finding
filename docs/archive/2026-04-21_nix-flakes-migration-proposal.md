@@ -1,5 +1,7 @@
 # Migration to Nix Flakes — Proposal
 
+> **Superseded (2026-09-23 docs-health pass):** the Nix migration completed long ago — `flake.nix` with devShell, apps (`nix run .#test`/`.#lint`/`.#error-audit`), treefmt, and GoReleaser-aligned packaging is the only supported build path. Historical only.
+
 **Status:** Draft | **Date:** 2026-04-21 | **Project:** go-finding
 
 ---

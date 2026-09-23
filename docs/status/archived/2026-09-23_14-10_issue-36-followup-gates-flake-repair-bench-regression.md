@@ -33,16 +33,16 @@ All evidence from this session's runs; auto-commit chain 6843570..2992d87.
 4. ~~**`nix flake check` repaired from dead → green** ("all checks passed!").~~ done (docs-health pass 2026-09-23)
    ~~Three root causes, three fixes, all in `flake.nix`:~~
    ~~- Package build + overlay ran nixpkgs default go (1.26.7,~~
-     ~~GOTOOLCHAIN=local) against go.mod's `go 1.27` floor → both call sites~~
-     ~~now `buildGoModule.override { go = pkgs.go_1_27; }`.~~
+   ~~GOTOOLCHAIN=local) against go.mod's `go 1.27` floor → both call sites~~
+   ~~now `buildGoModule.override { go = pkgs.go_1_27; }`.~~
    ~~- `vendorHash` differs across toolchains under proxyVendor → regenerated~~
-     ~~to `sha256-V5ymN6...`.~~
+   ~~to `sha256-V5ymN6...`.~~
    ~~- treefmt-check: goimports (nixpkgs gotools, built with go 1.26.7) embeds~~
-     ~~its build-time GOROOT and falls back to that `go` when none is on PATH;~~
-     ~~the 1.27 floor triggered a GOTOOLCHAIN download → fatal offline.~~
-     ~~Fixed by wrapping `programs.goimports.package`: `PATH=go_1_27/bin`,~~
-     ~~`GOTOOLCHAIN=local`, exec real goimports (verified against a~~
-     ~~clean-tree `env -i` repro before rerunning the check).~~
+   ~~its build-time GOROOT and falls back to that `go` when none is on PATH;~~
+   ~~the 1.27 floor triggered a GOTOOLCHAIN download → fatal offline.~~
+   ~~Fixed by wrapping `programs.goimports.package`: `PATH=go_1_27/bin`,~~
+   ~~`GOTOOLCHAIN=local`, exec real goimports (verified against a~~
+   ~~clean-tree `env -i` repro before rerunning the check).~~
 5. ~~**Benchmark regression caught and properly fixed** — first full run~~ done (docs-health pass 2026-09-23)
    ~~FAILED: my O(n²) `dedupAppliedFindings` cost +288%/+332%~~
    ~~(FixApplier_50) and +706% (GoAST_1000, 974µ → 7853µ). Replaced with O(1)~~
@@ -188,36 +188,36 @@ All evidence from this session's runs; auto-commit chain 6843570..2992d87.
 
 ## f) Next tasks (impact-ordered; "carried" = from the 05-13 list)
 
-| #  | Task                                                                     | Impact | Effort | Category   |
-| -- | ------------------------------------------------------------------------ | ------ | ------ | ---------- |
-| 1  | Operator: push 3 missing v1.13.0 tags OR declare v1.14.0 fold-in         | Crit   | S      | Release    |
-| 2  | Comment + close #36 (load github-voice first)                            | High   | S      | Docs/Issue |
-| 3  | CI job for `nix flake check` + `nix run .#lint`                          | High   | M      | Quality    |
-| 4  | Fix provisional "v1.14.0" labels once version is decided                 | High   | S      | Docs       |
-| ~~5~~  | ~~docs-health HARVEST both 2026-09-23 reports → TODO_LIST/ROADMAP~~ done (docs-health pass 2026-09-23) | ~~High~~ | ~~S~~ | ~~Docs~~ |
-| 6  | After tags: resync CLI go.mod; verify pkg.go.dev renders Edits API       | High   | S      | Release    |
-| 7  | release-preflight: tag-set completeness check + selftest class           | High   | M      | Quality    |
-| 8  | erraudit T13/T14 migration once sibling tags exist (carried)             | High   | M      | Feature    |
-| 9  | Test: mixed multi-edit/single Applied ordering semantics                 | Med    | S      | Test       |
-| 10 | Test+document: finding in applied AND conflicts on partial-edit conflict | Med    | S      | Test/Docs  |
-| 11 | Decide + implement Edits↔BeforeCode/AfterCode consistency rule           | Med    | M      | Design     |
-| 12 | Trash stray `./go` toolchain + add `go/` to .gitignore                   | Med    | S      | Cleanup    |
-| 13 | ApplySimpleFixes: keep refusal vs byte-level (decide, carried)           | Med    | M      | Feature    |
-| 14 | LSP: expose Finding.Edits as CodeAction TextEditEdits (carried)          | Med    | M      | Feature    |
-| 15 | GoASTProvider: emit typed Edits instead of raw FixEdits (carried)        | Med    | S      | Feature    |
-| 16 | EditListProvider benchmark (carried bench gap)                           | Med    | S      | Quality    |
-| 17 | Fuzz TextEdit.Validate + EditListProvider (carried)                      | Med    | M      | Test       |
-| 18 | bench-check.sh awk escape warning fix                                    | Low    | S      | Quality    |
-| 19 | Conflict.ConflictsWith dedup on multi-edit overlap (carried)             | Low    | S      | Cleanup    |
-| 20 | pipeline/examples/multi-edit runnable example (carried)                  | Low    | S      | Docs       |
-| 21 | DOMAIN_LANGUAGE.md: edit list / insertion / span entries (carried)       | Low    | S      | Docs       |
-| 22 | CLI `-fix-provider edit-list` docs (carried)                             | Low    | S      | Docs       |
-| 23 | Preview() multi-hunk support (carried)                                   | Low    | M      | Feature    |
-| 24 | GenerateID stability doc (Edits excluded deliberately) (carried)         | Low    | S      | Docs       |
-| 25 | Silence stale gopls "unused: editsEqual" warning                         | Low    | S      | Quality    |
-| 26 | AlternativeFixes representation for SuggestedFixes 1..N (carried)        | Low    | M      | Feature    |
-| 27 | Multi-file fix support in FixApplier (carried, large)                    | Low    | L      | Feature    |
-| 28 | Evaluate dropping GOEXPERIMENT=jsonv2 on Go 1.27 (ROADMAP-carried)       | Med    | M      | Cleanup    |
+| #     | Task                                                                                                   | Impact   | Effort | Category   |
+| ----- | ------------------------------------------------------------------------------------------------------ | -------- | ------ | ---------- |
+| 1     | Operator: push 3 missing v1.13.0 tags OR declare v1.14.0 fold-in                                       | Crit     | S      | Release    |
+| 2     | Comment + close #36 (load github-voice first)                                                          | High     | S      | Docs/Issue |
+| 3     | CI job for `nix flake check` + `nix run .#lint`                                                        | High     | M      | Quality    |
+| 4     | Fix provisional "v1.14.0" labels once version is decided                                               | High     | S      | Docs       |
+| ~~5~~ | ~~docs-health HARVEST both 2026-09-23 reports → TODO_LIST/ROADMAP~~ done (docs-health pass 2026-09-23) | ~~High~~ | ~~S~~  | ~~Docs~~   |
+| 6     | After tags: resync CLI go.mod; verify pkg.go.dev renders Edits API                                     | High     | S      | Release    |
+| 7     | release-preflight: tag-set completeness check + selftest class                                         | High     | M      | Quality    |
+| 8     | erraudit T13/T14 migration once sibling tags exist (carried)                                           | High     | M      | Feature    |
+| 9     | Test: mixed multi-edit/single Applied ordering semantics                                               | Med      | S      | Test       |
+| 10    | Test+document: finding in applied AND conflicts on partial-edit conflict                               | Med      | S      | Test/Docs  |
+| 11    | Decide + implement Edits↔BeforeCode/AfterCode consistency rule                                         | Med      | M      | Design     |
+| 12    | Trash stray `./go` toolchain + add `go/` to .gitignore                                                 | Med      | S      | Cleanup    |
+| 13    | ApplySimpleFixes: keep refusal vs byte-level (decide, carried)                                         | Med      | M      | Feature    |
+| 14    | LSP: expose Finding.Edits as CodeAction TextEditEdits (carried)                                        | Med      | M      | Feature    |
+| 15    | GoASTProvider: emit typed Edits instead of raw FixEdits (carried)                                      | Med      | S      | Feature    |
+| 16    | EditListProvider benchmark (carried bench gap)                                                         | Med      | S      | Quality    |
+| 17    | Fuzz TextEdit.Validate + EditListProvider (carried)                                                    | Med      | M      | Test       |
+| 18    | bench-check.sh awk escape warning fix                                                                  | Low      | S      | Quality    |
+| 19    | Conflict.ConflictsWith dedup on multi-edit overlap (carried)                                           | Low      | S      | Cleanup    |
+| 20    | pipeline/examples/multi-edit runnable example (carried)                                                | Low      | S      | Docs       |
+| 21    | DOMAIN_LANGUAGE.md: edit list / insertion / span entries (carried)                                     | Low      | S      | Docs       |
+| 22    | CLI `-fix-provider edit-list` docs (carried)                                                           | Low      | S      | Docs       |
+| 23    | Preview() multi-hunk support (carried)                                                                 | Low      | M      | Feature    |
+| 24    | GenerateID stability doc (Edits excluded deliberately) (carried)                                       | Low      | S      | Docs       |
+| 25    | Silence stale gopls "unused: editsEqual" warning                                                       | Low      | S      | Quality    |
+| 26    | AlternativeFixes representation for SuggestedFixes 1..N (carried)                                      | Low      | M      | Feature    |
+| 27    | Multi-file fix support in FixApplier (carried, large)                                                  | Low      | L      | Feature    |
+| 28    | Evaluate dropping GOEXPERIMENT=jsonv2 on Go 1.27 (ROADMAP-carried)                                     | Med      | M      | Cleanup    |
 
 ## g) Questions (cannot be answered from the repo)
 

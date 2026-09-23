@@ -1,5 +1,7 @@
 # Finding SDK — Unified Pipeline & Data Model Proposal
 
+> **Superseded (2026-09-23 docs-health pass):** this April 2025 proposal shipped as go-finding v1.0.0 (2026-06-24) and evolved far past it (pipeline, SARIF, LSP, multi-module). Historical only.
+
 **Status:** Draft v2 | **Date:** 2026-04-10
 
 ---

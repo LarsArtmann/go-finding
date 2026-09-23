@@ -45,12 +45,12 @@ The user re-pasted the same 79-violation erraudit artifact a second time. This r
 
 ## b) PARTIALLY DONE
 
-| Item                                            | Done                                                                  | Missing                                                                                                              |
-| ----------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Item                                                                                                          | Done                                                                  | Missing                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | ~~v1.10.0 sub-module release completion (carried)~~ done — tags pushed 2026-09-11; v1.11.0 shipped 2026-09-17 | tags exist locally; go.mod aligned; preflight structural checks green | **push** (user-gated), Release-workflow confirmation, proxy `go get` verification                                    |
-| erraudit CI integration (carried)               | local gate + proven FAIL path                                         | `ci.yml` wiring blocked on private erraudit repo (or PAT secret)                                                     |
-| Error-gate maturity                             | gates violations; flake app added                                     | no `nolint-audit` phase in the gate; no erraudit version pin (`dev` binary); `[feature:logger]` noise on FAIL output |
-| ~~Documentation of this round~~ done — gate work in CHANGELOG [1.11.0]; blessed invocation in AGENTS.md | research doc + AGENTS updated                                         | **CHANGELOG [Unreleased] not updated** for the flake app + forensics additions                                       |
+| erraudit CI integration (carried)                                                                             | local gate + proven FAIL path                                         | `ci.yml` wiring blocked on private erraudit repo (or PAT secret)                                                     |
+| Error-gate maturity                                                                                           | gates violations; flake app added                                     | no `nolint-audit` phase in the gate; no erraudit version pin (`dev` binary); `[feature:logger]` noise on FAIL output |
+| ~~Documentation of this round~~ done — gate work in CHANGELOG [1.11.0]; blessed invocation in AGENTS.md       | research doc + AGENTS updated                                         | **CHANGELOG [Unreleased] not updated** for the flake app + forensics additions                                       |
 
 ## c) NOT STARTED
 
