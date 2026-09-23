@@ -140,6 +140,22 @@ go-error-family ← go-finding ← ┬─ go-linter-sdk
 
 All roads lead to go-finding. No SDK depends on another SDK. Each SDK depends only on go-finding (plus its own utility deps), keeping the dependency graph flat and composable.
 
+## Consumer Version Delta Sweep (2026-09-23, post-v1.13.0)
+
+Verified on this date, on top of the full 2026-09-08 sweep below:
+
+| Consumer                     | go-finding | Verified state (2026-09-23)                                                                                                 |
+| ---------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| golangci-lint-auto-configure | v1.13.0    | already on v1.13.0 (core + toolsdk), session bump                                                                           |
+| go-linter-sdk                | v1.13.0    | bumped from v1.10.0, 5 pkgs race-green, pushed (6f3231b); go.work aligned to 1.27.1                                         |
+| go-business-rules            | v1.12.0    | tests were failing on the go1.26 directive (stdlib json/v2 stdversion gate); bumped to `go 1.27.0`, green, pushed (431d8cd) |
+| branching-flow               | v1.8.0     | pkg/errors + pkg/fs now BUILD on current HEAD (8a8890e2) — the v1.8.0-era failure note is stale                             |
+| BuildFlow                    | v1.8.0     | `TestNoLintPathExclusions` PASSES on current HEAD (5b3483a) — the pre-existing-failure note is stale                        |
+| art-dupl                     | (none)     | GAP-2 intent filed as art-dupl#1; bump still pending                                                                        |
+
+Not re-swept this round: the remaining v1.8.0-era rows below stand as of their
+date; bumps are opportunistic per consumer.
+
 ## Consumer Version Sweep (2026-09-08, post-v1.9.0)
 
 Survey of local consumer repos. **v1.9.0 is additive only** (flight-recorder

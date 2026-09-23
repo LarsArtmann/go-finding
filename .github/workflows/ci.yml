@@ -289,6 +289,21 @@ jobs:
     # count=10 across core+pipeline needs >15min on a 2-core runner (observed:
     # job cancelled at the timeout with everything else green, 2026-09-08).
     timeout-minutes: 45
+  consumer-compat:
+    # The public promise is "plain go get works for every module with no
+    # GOPRIVATE and no replace directives". This gate runs the exact
+    # consumer flow (proxy resolution, build, run, CLI install) against
+    # the published version, so a broken train is caught mechanically.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+      - name: Verify all modules resolve, build, and run from the proxy
+        run: bash scripts/consumer-compat-check.sh latest
+
+    timeout-minutes: 15
   nix:
     # The nix gates (nix flake check, nix run .#lint) ran local-only for the
     # project's whole life; the flake silently rotted for 3 days in Sep 2026

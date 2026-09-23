@@ -1,12 +1,16 @@
 # Launch Announcement Draft (LAUNCH2)
 
-> **Status:** DRAFT — parked until the repo goes public. Content derived from
-> FEATURES.md and CHANGELOG v1.7.0 (verified 2026-09-08). Adapt tone/length
-> per channel. Do not publish while the repo is PRIVATE.
+> **Status:** READY (finalized 2026-09-23). Repo is PUBLIC, Latest release is
+> v1.13.0 with full GoReleaser assets, master CI is green (23 jobs incl. nix +
+> consumer-compat), pkg.go.dev renders all 5 modules, and the consumer-compat
+> gate resolves/builds/runs every module from the proxy. Toolchain note: Go
+> 1.27+ floor, and since json/v2 went GA there is NO GOEXPERIMENT setup.
+> Pending: v1.14.0 train (multi-edit feature, issue #36) and the actual
+> Awesome Go submission (needs an awesome-go fork + PR).
 
 ## Short version (X/Mastodon/Slack line)
 
-go-finding: one Finding data model + fix pipeline for Go static analysis. Plug govet, staticcheck, art-dupl (or your own detector) into a detect → triage → fix → verify loop with per-finding outcomes, per-file rollback, and SARIF/LSP interop. Now at v1.7.0. https://github.com/LarsArtmann/go-finding
+go-finding: one Finding data model + fix pipeline for Go static analysis. Plug govet, staticcheck, art-dupl (or your own detector) into a detect → triage → fix → verify loop with per-finding outcomes, typed multi-edit fixes, per-file rollback, and SARIF/LSP interop. Now at v1.13.0. https://github.com/LarsArtmann/go-finding
 
 ## Announcement post (blog / r/golang)
 
@@ -43,10 +47,12 @@ Feedback welcome — especially from tool authors who want their linter on the f
 - **Category:** Code Analysis (or Linters/Tools)
 - **Repo:** https://github.com/LarsArtmann/go-finding
 
-## Launch checklist (when the flip happens)
+## Launch checklist state (2026-09-23)
 
-1. Flip repo visibility to public; remove `GOPRIVATE` requirement (release-procedure.md "Private-Repo Consumer Setup").
-2. First `go get github.com/larsartmann/go-finding@latest` to trigger pkg.go.dev rendering; verify module pages for all 4 modules (LAUNCH1).
-3. Verify the GoReleaser release assets and Homebrew tap on the first public tag — requires creating `HOMEBREW_TAP_GITHUB_TOKEN` first (missing as of 2026-09-08) (LAUNCH4).
-4. Submit to Awesome Go (entry above) (LAUNCH3).
-5. Publish the announcement (drafts above) (LAUNCH2).
+1. ~~Flip repo visibility to public; remove `GOPRIVATE`~~ DONE 2026-09-08.
+2. ~~pkg.go.dev rendering for all modules~~ DONE — all 5 modules render; v1.13.0 verified via the consumer-compat gate (proxy resolve + build + run + CLI install for all 5).
+3. GoReleaser assets: v1.13.0 published with 17 assets (5 platform archives, 8 packages, 5 SBOMs, checksums); sigstore signing was skipped for this recovery release (cosign keyless is CI-only) — restore full signing on the next workflow-run train.
+4. Homebrew tap: still pending `LarsArtmann/homebrew-tap` + `HOMEBREW_TAP_GITHUB_TOKEN` (ROADMAP open question).
+5. Awesome Go: submit the entry above (fork + PR) when ready.
+6. Submit to Awesome Go (entry above) (LAUNCH3).
+7. Publish the announcement (drafts above) (LAUNCH2).
