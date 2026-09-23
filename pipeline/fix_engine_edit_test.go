@@ -134,10 +134,11 @@ func TestFixEngine_Providers(t *testing.T) {
 
 	engine := NewFixEngine()
 	providers := engine.Providers()
-	g.Expect(providers).To(HaveLen(3))
-	g.Expect(providers[0].Name()).To(Equal("byte-offset"))
-	g.Expect(providers[1].Name()).To(Equal("line-column"))
-	g.Expect(providers[2].Name()).To(Equal("substring"))
+	g.Expect(providers).To(HaveLen(4))
+	g.Expect(providers[0].Name()).To(Equal("edit-list"))
+	g.Expect(providers[1].Name()).To(Equal("byte-offset"))
+	g.Expect(providers[2].Name()).To(Equal("line-column"))
+	g.Expect(providers[3].Name()).To(Equal("substring"))
 }
 
 func TestFixEngine_ApplyWithConflicts_NoConflicts(t *testing.T) {

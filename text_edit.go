@@ -18,6 +18,9 @@ import (
 //     [Range.EndOrStart]: End.Line == 0 or End.Offset < 0 means "at Start").
 //   - Empty NewText means a pure deletion of the span.
 //   - Empty Start.File means "same file as the finding" (single-file default).
+//   - Start follows the Position zero-value convention: Position{} (Offset 0)
+//     means byte 0 of the finding's file, not "unset"; the unset form is
+//     Position{Offset: -1}.
 //
 // BeforeCode/AfterCode on Finding remain the single-edit display summary;
 // Edits is the authoritative machine representation when set.

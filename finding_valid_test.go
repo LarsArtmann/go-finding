@@ -109,7 +109,39 @@ func TestFinding_Validate(t *testing.T) {
 				f.FixStrategy = FixStrategyDirect
 			},
 			wantErr:     true,
-			errContains: "BeforeCode or AfterCode",
+			errContains: "BeforeCode, AfterCode, or Edits",
+		},
+		{
+			name: "direct fix with only an edit list is valid",
+			mutate: func(f *Finding) {
+				f.FixStrategy = FixStrategyDirect
+				f.Edits = []TextEdit{{
+					Start:   Pos("a.go", 1, 1),
+					End:     Pos("a.go", 1, 5),
+					NewText: "fixed",
+				}}
+			},
+			wantErr: false,
+		},
+		{
+			name: "inverted edit span is invalid",
+			mutate: func(f *Finding) {
+				f.Edits = []TextEdit{{
+					Start:   Pos("a.go", 2, 1),
+					End:     Pos("a.go", 1, 1),
+					NewText: "x",
+				}}
+			},
+			wantErr:     true,
+			errContains: "Edits[0]",
+		},
+		{
+			name: "edit without any location is invalid",
+			mutate: func(f *Finding) {
+				f.Edits = []TextEdit{{Start: Position{Offset: -1}, NewText: "x"}}
+			},
+			wantErr:     true,
+			errContains: "Edits[0]",
 		},
 		{
 			name:    "nil range is valid",
