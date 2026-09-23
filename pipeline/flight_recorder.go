@@ -307,11 +307,11 @@ func (h *FlightRecorderHook) writeSnapshot(ctx context.Context, num int, reason 
 		if writeErr == nil {
 			writeErr = gz.Close()
 		} else {
-			_ = gz.Close()
+			_ = gz.Close() //nolint:erraudit // write already failed; primary writeErr is preserved
 		}
 
 		if writeErr != nil {
-			_ = f.Close()
+			_ = f.Close() //nolint:erraudit // Close error must not mask the returned writeErr
 
 			return "", fmt.Errorf("write trace to %s: %w", path, writeErr)
 		}
@@ -321,7 +321,7 @@ func (h *FlightRecorderHook) writeSnapshot(ctx context.Context, num int, reason 
 		h.writeMu.Unlock()
 
 		if writeErr != nil {
-			_ = f.Close()
+			_ = f.Close() //nolint:erraudit // Close error must not mask the returned writeErr
 
 			return "", fmt.Errorf("write trace to %s: %w", path, writeErr)
 		}
@@ -384,7 +384,7 @@ func (h *FlightRecorderHook) pruneSnapshots(ctx context.Context) {
 		}
 
 		info, err := e.Info()
-		if err != nil {
+		if err != nil { //nolint:erraudit // unreadable entries are intentionally skipped during retention scan
 			continue
 		}
 

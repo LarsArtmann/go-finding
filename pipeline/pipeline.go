@@ -169,7 +169,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	defer func() {
 		if p.applier != nil {
-			_ = p.applier.Close()
+			_ = p.applier.Close() //nolint:erraudit // best-effort deferred cleanup
 			p.applier = nil
 		}
 

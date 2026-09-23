@@ -29,7 +29,7 @@ func NewGoVetDetector(dir string) pipeline.Detector {
 				if _, ok := errors.AsType[*exec.ExitError](
 					err,
 				); ok &&
-					len(out) > 0 {
+					len(out) > 0 { //nolint:erraudit // ok-pattern type assertion
 					return parseGoVetJSON(out, dir), nil
 				}
 
@@ -58,7 +58,7 @@ func parseGoVetJSON(data []byte, dir string) []finding.Finding {
 		}
 
 		err := json.Unmarshal(raw, &entries)
-		if err != nil {
+		if err != nil { //nolint:erraudit // malformed go vet entries are intentionally skipped
 			continue
 		}
 

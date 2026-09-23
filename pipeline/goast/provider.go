@@ -111,7 +111,7 @@ func (p *Provider) parse(content []byte, filename string) (*token.FileSet, *ast.
 
 		// Content changed (different pointer): verify with hash.
 		h := fnv.New64a()
-		_, _ = h.Write(content)
+		_, _ = h.Write(content) //nolint:erraudit // hash.Write is documented to never return an error
 		hash := h.Sum64()
 
 		if p.cache.hash == hash && p.cache.file != nil {

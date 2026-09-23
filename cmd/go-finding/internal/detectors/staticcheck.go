@@ -25,7 +25,7 @@ func NewStaticcheckDetector(dir string) pipeline.Detector {
 				if _, ok := errors.AsType[*exec.ExitError](
 					err,
 				); ok &&
-					len(out) > 0 {
+					len(out) > 0 { //nolint:erraudit // ok-pattern type assertion
 					return parseStaticcheckJSON(out, dir), nil
 				}
 
@@ -70,7 +70,7 @@ func parseStaticcheckJSON(data []byte, dir string) []finding.Finding {
 		}
 
 		err := json.Unmarshal([]byte(line), &entry)
-		if err != nil {
+		if err != nil { //nolint:erraudit // malformed staticcheck lines are intentionally skipped
 			continue
 		}
 
