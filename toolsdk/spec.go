@@ -30,6 +30,14 @@ type Spec struct {
 	// the field silently loses per-module fan-out there. Field-for-field
 	// parity with BuildFlow's domain/tool.DAGTopology — the same parity rule
 	// as Trigger.NotRequires.
+	//
+	// Consumer contract (enforced by BuildFlow's conversion, not by specs):
+	// when ModuleFanOut is set, the converter wraps Detect/Repair so the
+	// input's WorkDir wins over the context's, the resolved directory is
+	// written back onto the context, and per-module progress is emitted —
+	// specs must NOT self-wrap with their own WorkDir/progress adapters, and
+	// callbacks MUST analyze the working directory from the context
+	// (finding.WorkingDirFromContext), never the process working directory.
 	ModuleFanOut bool
 
 	// Inputs are the file patterns this tool reads. Used to derive data-flow
