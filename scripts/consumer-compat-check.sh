@@ -9,7 +9,7 @@
 #
 # No GOEXPERIMENT needed: encoding/json/v2 is GA since Go 1.27, which the
 # go.mod floor already requires.
-# Fails with exit code 1 if any module fails to resolve, build, or run.
+# Fails with exit code 1 if any module fails to resolve, build, vet, or run.
 
 set -euo pipefail
 
@@ -39,10 +39,11 @@ check_import_module() {
 		go get "${module}@${VERSION}" >/dev/null
 		cp "$probe_file" main.go
 		echo "ok" >expected.txt
+		go vet . >/dev/null 2>&1
 		go run . >actual.txt 2>err.txt
 		diff -q expected.txt actual.txt >/dev/null
 	) >/dev/null 2>&1
-	verdict $? "$name resolves from proxy, builds, and runs (${module}@${VERSION})"
+	verdict $? "$name resolves from proxy, builds, vets, and runs (${module}@${VERSION})"
 }
 
 check_cli_module() {
@@ -138,7 +139,7 @@ func main() {
 }
 EOF
 
-echo "Consumer compatibility check (proxy resolution, no replaces/workspace/GOPRIVATE)..."
+echo "Consumer compatibility check (proxy resolution + vet, no replaces/workspace/GOPRIVATE)..."
 
 check_import_module core "github.com/larsartmann/go-finding" "$PROBES/core.go"
 check_import_module pipeline "github.com/larsartmann/go-finding/pipeline" "$PROBES/pipeline.go"
@@ -150,4 +151,4 @@ if [ "$FAILURES" -gt 0 ]; then
 	echo "FAIL: $FAILURES module(s) failed the consumer compatibility check."
 	exit 1
 fi
-echo "PASS: all 5 modules resolve, build, and run as an external consumer."
+echo "PASS: all modules resolve, build, vet, and run as an external consumer."

@@ -18,7 +18,7 @@ QUICK=0
 [ "${1:-}" = "--quick" ] && QUICK=1
 
 RACE="-race"
-$QUICK && RACE=""
+[ "$QUICK" -eq 1 ] && RACE=""
 
 FAILED=0
 step() { echo ""; echo "=== $1 ==="; }
@@ -33,6 +33,18 @@ check() {
 		exit 1
 	fi
 }
+
+step "disk space on shared build cache"
+BUILDCACHE_FREE_KB=$(df -k /mnt/buildcache 2>/dev/null | awk 'NR==2 {print $4}')
+if [ -z "$BUILDCACHE_FREE_KB" ]; then
+	echo "SKIP: /mnt/buildcache not mounted"
+elif [ "$BUILDCACHE_FREE_KB" -lt $((5 * 1024 * 1024)) ]; then
+	echo "FAIL: /mnt/buildcache has less than 5 GiB free ($((BUILDCACHE_FREE_KB / 1024 / 1024)) GiB)"
+	echo "      builds will die with misleading 'no space left' errors; recover with: go clean -cache"
+	exit 1
+else
+	echo "OK: /mnt/buildcache has $((BUILDCACHE_FREE_KB / 1024 / 1024)) GiB free"
+fi
 
 step "formatting (treefmt via nix fmt --fail-on-change)"
 check "nix fmt" nix fmt

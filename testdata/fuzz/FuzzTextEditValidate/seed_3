@@ -1,0 +1,9 @@
+go test fuzz v1
+int(-76)
+int(-44)
+int(-37)
+int(0)
+int(-99)
+int(-29)
+string("0")
+string("0")

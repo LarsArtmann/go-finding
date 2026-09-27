@@ -1,0 +1,9 @@
+go test fuzz v1
+[]byte("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+int(0)
+int(99)
+int(-62)
+int(3)
+int(62)
+int(4)
+string("0")

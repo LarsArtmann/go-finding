@@ -113,7 +113,7 @@ nix:
     path: pkgs/go-finding/default.nix
     install: |
       mkdir -p $out/bin
-      cp -vr ./{{binary}} $out/bin/go-finding
+      cp -vr ./{{ .Binary }} $out/bin/go-finding
 
 nfpms:
   - id: default

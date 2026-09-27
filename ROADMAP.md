@@ -127,7 +127,10 @@ config. Sampling pays off for long-lived servers with ambient, always-on tracing
 go-finding pipelines are short, explicit runs where the recorder is already opt-in
 (`-trace` / config `enabled: true`) — the user has already decided to pay the cost, and we
 have no overhead measurements suggesting a problem. Revisit trigger: a long-lived consumer
-embedding pipelines that measures FlightRecorder overhead as material.
+embedding pipelines that measures FlightRecorder overhead as material. Backstop review
+date: **2027-01-31** — if the trigger has not fired by then, re-examine whether the trigger
+definition still matches how consumers actually embed pipelines (the trigger is
+event-based; the date exists so the decision cannot silently rot).
 
 ### Hardening (owner decisions pending)
 
@@ -149,7 +152,7 @@ session that raised it.
 
 - **Homebrew/nix distribution** — GoReleaser renders a validated Homebrew formula but ships it with `skip_upload: true`: the `LarsArtmann/homebrew-tap` repo does not exist and `HOMEBREW_TAP_GITHUB_TOKEN` was never created (likewise `nur-packages` for nix). Either create the tap repo + secret, or drop/comment the brew/nix sections until wanted. (Raised in `docs/status/archived/2026-09-09_03-24_late-night-session-self-review.md` §g/1.)
 - **GitHub Release backfill for v1.5.0–v1.8.0** — those tags have no GitHub Releases (GoReleaser was billing-dead; v1.4.0 was the last published until the v1.9.2 resurrection). Backfill with source-only/notes-only releases, or leave history as-is with v1.9.2 as the first real one? (§g/2; the D6 decision "forward-only" was taken while CI was dark and is worth revisiting now that releases work.)
-- **Stale `~/projects/hierarchical-errors` clone** — `hierarchical-errors` is erraudit's pre-rename name (GitHub redirects). Is the local clone stale and removable? (§g/3.)
+- ~~**Stale `~/projects/hierarchical-errors` clone**~~ **RESOLVED 2026-09-27: the directory no longer exists** (already removed operator-side; nothing to decide). (§g/3.)
 - ~~**v1.13.0 completion vs v1.14.0 fold-in**~~ **RESOLVED 2026-09-23: completed.** The module proxy had already fetched core + toolsdk v1.13.0 (public since 09-22), so folding was impossible without a retract. All 5 tags exist at 450824e with GitHub Releases (Latest = v1.13.0, full GoReleaser assets); proxy + consumer-compat verified for all 5 modules; version-drift green. The multi-edit feature ships in v1.14.0. Execution record: the plan's annotation log (2026-09-23 17:00-19:30 entry).
 - **`ApplySimpleFixes` philosophy** — keep refusing multi-edit findings (current: safe, points users at the pipeline `FixApplier`) or teach it byte-level application so the no-pipeline path is also lossless? (§g/3, same report.)
 - **`art-dupl-report.html` policy** — the generated art-dupl report is tracked and churns ~800 lines of diff per run. Keep committing it, gitignore it, or commit only at milestones? (Raised in `docs/status/archived/2026-09-23_03-16_art-dupl-dedup-pass-session-status.md` §g/1.)

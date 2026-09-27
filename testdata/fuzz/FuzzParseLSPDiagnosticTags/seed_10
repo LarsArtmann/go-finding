@@ -1,0 +1,2 @@
+go test fuzz v1
+string("\xee\xb2\xec,\uec8b,\xee\xb2\xec,\uec8b")
