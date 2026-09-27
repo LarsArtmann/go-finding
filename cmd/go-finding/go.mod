@@ -8,9 +8,9 @@ require (
 	github.com/larsartmann/go-finding v1.13.0
 	github.com/larsartmann/go-finding/pipeline v1.13.0
 	github.com/larsartmann/go-output v0.38.2
-	github.com/larsartmann/go-output/delimited v0.38.0
-	github.com/larsartmann/go-output/markdown v0.38.1
-	github.com/onsi/gomega v1.43.1
+	github.com/larsartmann/go-output/delimited v0.38.2
+	github.com/larsartmann/go-output/markdown v0.38.2
+	github.com/onsi/gomega v1.44.0
 )
 
 require (
