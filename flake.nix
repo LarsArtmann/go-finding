@@ -28,7 +28,7 @@
       version = self.rev or self.dirtyRev or "dev";
       # go_1_27 vendor output (proxyVendor) differs from go_1_26's —
       # regenerated 2026-09-23 when the package build moved to go_1_27.
-      vendorHash = "sha256-/ALJE8Wd9Fxw/uU0zFCd5gPlbhb29ZYfYuFfE2IivL4=";
+      vendorHash = "sha256-WvlTdkNdhBCvHfrx24dV1qHt6dLhsn8SOWwPq9Po7ps=";
       proxyVendor = true;
 
       goSrc = lib.fileset.toSource {
