@@ -1,12 +1,12 @@
 module github.com/larsartmann/go-finding/pipeline
 
-go 1.27
+go 1.27.1
 
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.6.1
 	github.com/larsartmann/go-finding v1.13.0
-	github.com/onsi/ginkgo/v2 v2.32.2
-	github.com/onsi/gomega v1.43.0
+	github.com/onsi/ginkgo/v2 v2.33.0
+	github.com/onsi/gomega v1.43.1
 	golang.org/x/sync v0.23.0
 )
 
@@ -20,10 +20,10 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20260604005048-7023385849c0 // indirect
-	github.com/larsartmann/go-error-family v0.10.1 // indirect
+	github.com/larsartmann/go-error-family v0.10.2 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/exp v0.0.0-20260812173653-3d80eb74bc5b // indirect
 	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/net v0.59.0 // indirect

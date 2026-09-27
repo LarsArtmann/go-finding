@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-finding/analysis
 
-go 1.27
+go 1.27.1
 
 require (
 	github.com/larsartmann/go-finding v1.13.0
@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/larsartmann/go-error-family v0.10.1 // indirect
+	github.com/larsartmann/go-error-family v0.10.2 // indirect
 	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
 )
