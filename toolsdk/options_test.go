@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/larsartmann/go-finding/finding"
+	"github.com/larsartmann/go-finding"
 )
 
 func TestOptionValidate(t *testing.T) {
