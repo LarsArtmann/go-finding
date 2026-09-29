@@ -48,23 +48,22 @@ func (o Option) Validate() error {
 		return fmt.Errorf("toolsdk option %q invalid: empty Kind", o.Name)
 	}
 
-	if o.Default == nil {
-		return nil
-	}
-
-	var ok bool
+	var defaultOK bool
 	switch o.Kind {
 	case OptionKindInt:
-		_, ok = o.Default.(int)
+		_, defaultOK = o.Default.(int)
 	case OptionKindString:
-		_, ok = o.Default.(string)
+		_, defaultOK = o.Default.(string)
 	case OptionKindBool:
-		_, ok = o.Default.(bool)
+		_, defaultOK = o.Default.(bool)
 	default:
 		return fmt.Errorf("toolsdk option %q invalid: unknown Kind %q", o.Name, o.Kind)
 	}
 
-	if !ok {
+	switch {
+	case o.Default == nil:
+		return nil
+	case !defaultOK:
 		return fmt.Errorf("toolsdk option %q invalid: Default %T does not match Kind %q",
 			o.Name, o.Default, o.Kind)
 	}

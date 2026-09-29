@@ -177,7 +177,7 @@ func TestRegisterRejectsBadOptions(t *testing.T) {
 		}
 
 		msg, ok := r.(string)
-		if !ok || !strings.Contains(msg, "declares option \"threshold\" twice") {
+		if !ok || !strings.Contains(msg, "declares option threshold twice") {
 			t.Fatalf("panic = %v, want duplicate-option message", r)
 		}
 	}()
