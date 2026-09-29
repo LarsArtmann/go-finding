@@ -96,6 +96,19 @@ func mustValidate(s Spec) {
 	if s.Detect == nil && s.Repair == nil {
 		panic("toolsdk.Register: Spec " + s.Name + " has no Detect or Repair capability")
 	}
+
+	seen := make(map[string]bool, len(s.Options))
+	for _, o := range s.Options {
+		if err := o.Validate(); err != nil {
+			panic("toolsdk.Register: Spec " + s.Name + ": " + err.Error())
+		}
+
+		if seen[o.Name] {
+			panic("toolsdk.Register: Spec " + s.Name + " declares option " + o.Name + " twice")
+		}
+
+		seen[o.Name] = true
+	}
 }
 
 // EnsureContext returns a non-nil context. Convenience for Detect/Repair
