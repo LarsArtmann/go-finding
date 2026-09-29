@@ -21,11 +21,14 @@ RACE="-race"
 [ "$QUICK" -eq 1 ] && RACE=""
 
 FAILED=0
-step() { echo ""; echo "=== $1 ==="; }
+step() {
+	echo ""
+	echo "=== $1 ==="
+}
 check() {
 	local label="$1"
 	shift
-	if "$@" > /tmp/pre-push-last.log 2>&1; then
+	if "$@" >/tmp/pre-push-last.log 2>&1; then
 		echo "OK: $label"
 	else
 		echo "FAIL: $label"
@@ -50,7 +53,7 @@ step "formatting (treefmt via nix fmt --fail-on-change)"
 check "nix fmt" nix fmt
 
 step "workflow lint"
-command -v actionlint > /dev/null && check "actionlint" actionlint .github/workflows/ci.yml .github/workflows/release.yml ||
+command -v actionlint >/dev/null && check "actionlint" actionlint .github/workflows/ci.yml .github/workflows/release.yml ||
 	echo "SKIP: actionlint not installed"
 
 step "race tests per module"

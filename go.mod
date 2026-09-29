@@ -1,9 +1,9 @@
 module github.com/larsartmann/go-finding
 
-go 1.27.1
+go 1.27
 
 require (
-	github.com/larsartmann/go-error-family v0.10.2
+	github.com/larsartmann/go-error-family v0.11.0
 	github.com/onsi/ginkgo/v2 v2.33.0
 	github.com/onsi/gomega v1.43.1
 )

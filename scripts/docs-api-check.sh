@@ -176,8 +176,14 @@ gt_current() { # returns 0 if $1 > $CURRENT (numeric per component)
 	local a b IFS=.
 	read -r a1 a2 a3 <<<"$1"
 	read -r b1 b2 b3 <<<"$CURRENT"
-	if [ "$a1" -ne "$b1" ]; then [ "$a1" -gt "$b1" ]; return; fi
-	if [ "$a2" -ne "$b2" ]; then [ "$a2" -gt "$b2" ]; return; fi
+	if [ "$a1" -ne "$b1" ]; then
+		[ "$a1" -gt "$b1" ]
+		return
+	fi
+	if [ "$a2" -ne "$b2" ]; then
+		[ "$a2" -gt "$b2" ]
+		return
+	fi
 	[ "$a3" -gt "$b3" ]
 }
 sweep_errors=0
