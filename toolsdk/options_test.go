@@ -15,7 +15,10 @@ func testOptionSpec(t *testing.T) Spec {
 	return Spec{
 		Name:        "tool",
 		Description: "test tool",
-		Detect:      finding.NamedDetectorFunc("tool", func(context.Context) ([]finding.Finding, error) { return nil, nil }),
+		Detect: finding.NamedDetectorFunc(
+			"tool",
+			func(context.Context) ([]finding.Finding, error) { return nil, nil },
+		),
 		Options: []Option{
 			{Name: "threshold", Kind: OptionKindInt, Default: 5},
 			{Name: "mode", Kind: OptionKindString},
@@ -93,8 +96,13 @@ func TestWithOptionsRoundTrip(t *testing.T) {
 		t.Fatal("OptionsFromContext on a plain context must report absent")
 	}
 
-	if _, ok := OptionsFromContext(nil); ok { //nolint:staticcheck // SA1012: nil-context handling is the documented contract
+	nilValues, nilOK := OptionsFromContext(nil) //nolint:staticcheck // SA1012: nil ctx is the contract under test
+	if nilOK {
 		t.Fatal("OptionsFromContext on nil context must report absent")
+	}
+
+	if nilValues != nil {
+		t.Fatal("OptionsFromContext on nil context must return nil values")
 	}
 
 	values := OptionValues{"threshold": 10}
@@ -222,7 +230,10 @@ func TestRegisterRejectsBadOptions(t *testing.T) {
 			spec: Spec{
 				Name:        "dup-options-tool",
 				Description: "must fail registration",
-				Detect:      finding.NamedDetectorFunc("dup-options-tool", func(context.Context) ([]finding.Finding, error) { return nil, nil }),
+				Detect: finding.NamedDetectorFunc(
+					"dup-options-tool",
+					func(context.Context) ([]finding.Finding, error) { return nil, nil },
+				),
 				Options: []Option{
 					{Name: "threshold", Kind: OptionKindInt, Default: 5},
 					{Name: "threshold", Kind: OptionKindInt, Default: 6},
@@ -235,7 +246,10 @@ func TestRegisterRejectsBadOptions(t *testing.T) {
 			spec: Spec{
 				Name:        "bad-option-tool",
 				Description: "must fail registration",
-				Detect:      finding.NamedDetectorFunc("bad-option-tool", func(context.Context) ([]finding.Finding, error) { return nil, nil }),
+				Detect: finding.NamedDetectorFunc(
+					"bad-option-tool",
+					func(context.Context) ([]finding.Finding, error) { return nil, nil },
+				),
 				Options: []Option{
 					{Name: "threshold", Kind: OptionKind("float")},
 				},
