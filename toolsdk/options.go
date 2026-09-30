@@ -2,7 +2,25 @@ package toolsdk
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"maps"
+)
+
+// Sentinel errors for option declarations and per-run option values. The
+// wrapped detail names the offending option; match with errors.Is.
+var (
+	// ErrInvalidOption reports a malformed Option declaration: empty name,
+	// empty or unknown kind, or a Default that does not match the kind.
+	ErrInvalidOption = errors.New("toolsdk: invalid option declaration")
+	// ErrDuplicateOption reports a Spec declaring the same option name twice.
+	ErrDuplicateOption = errors.New("toolsdk: duplicate option declaration")
+	// ErrUnknownOption reports consumer-supplied values naming an option the
+	// Spec does not declare — usually a config typo.
+	ErrUnknownOption = errors.New("toolsdk: unknown option")
+	// ErrOptionKindMismatch reports a consumer-supplied value whose Go type
+	// does not match the declared OptionKind.
+	ErrOptionKindMismatch = errors.New("toolsdk: option kind mismatch")
 )
 
 // OptionKind classifies the value shape of a declared Spec option. The SDK
@@ -39,33 +57,35 @@ type Option struct {
 }
 
 // Validate checks the declaration itself: non-empty name, known kind, and a
-// default (when set) that matches the declared kind.
-func (o Option) Validate() error {
+// default (when set) that matches the declared kind. Returns an error
+// matching ErrInvalidOption.
+func (opt Option) Validate() error {
 	switch {
-	case o.Name == "":
-		return fmt.Errorf("toolsdk option declaration invalid: empty Name")
-	case o.Kind == "":
-		return fmt.Errorf("toolsdk option %q invalid: empty Kind", o.Name)
+	case opt.Name == "":
+		return fmt.Errorf("%w: empty Name", ErrInvalidOption)
+	case opt.Kind == "":
+		return fmt.Errorf("%w: option %q: empty Kind", ErrInvalidOption, opt.Name)
 	}
 
-	var defaultOK bool
-	switch o.Kind {
+	var defaultMatchesKind bool
+
+	switch opt.Kind {
 	case OptionKindInt:
-		_, defaultOK = o.Default.(int)
+		_, defaultMatchesKind = opt.Default.(int)
 	case OptionKindString:
-		_, defaultOK = o.Default.(string)
+		_, defaultMatchesKind = opt.Default.(string)
 	case OptionKindBool:
-		_, defaultOK = o.Default.(bool)
+		_, defaultMatchesKind = opt.Default.(bool)
 	default:
-		return fmt.Errorf("toolsdk option %q invalid: unknown Kind %q", o.Name, o.Kind)
+		return fmt.Errorf("%w: option %q: unknown Kind %q", ErrInvalidOption, opt.Name, opt.Kind)
 	}
 
 	switch {
-	case o.Default == nil:
+	case opt.Default == nil:
 		return nil
-	case !defaultOK:
-		return fmt.Errorf("toolsdk option %q invalid: Default %T does not match Kind %q",
-			o.Name, o.Default, o.Kind)
+	case !defaultMatchesKind:
+		return fmt.Errorf("%w: option %q: Default %T does not match Kind %q",
+			ErrInvalidOption, opt.Name, opt.Default, opt.Kind)
 	}
 
 	return nil
@@ -75,36 +95,42 @@ func (o Option) Validate() error {
 type optionsCtxKey struct{}
 
 // OptionValues are per-run option values a consumer resolved for one tool,
-// keyed by the declared Option.Name.
+// keyed by the declared Option.Name. Treated as read-only once handed to
+// WithOptions, which snapshots the map.
 type OptionValues map[string]any
 
 // WithOptions returns a context carrying values for the tool's declared
 // options. BuildFlow's execution layer calls it when constructing the
 // context for a Detect/Repair call; tools read them back via
-// OptionsFromContext. Nil or empty values are equivalent to not calling it.
+// OptionsFromContext. The map is snapshotted: later mutation of the caller's
+// map does not affect the run. Nil or empty values CLEAR any options
+// inherited from a parent context — each run carries exactly the values it
+// set, and a run that sets none runs on the tool's defaults.
 func WithOptions(ctx context.Context, values OptionValues) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	if len(values) == 0 {
-		return ctx
-	}
+	frozen := make(OptionValues, len(values))
+	maps.Copy(frozen, values)
 
-	return context.WithValue(ctx, optionsCtxKey{}, values)
+	return context.WithValue(ctx, optionsCtxKey{}, frozen)
 }
 
 // OptionsFromContext reads the per-run option values from the context.
-// Returns (nil, false) when none were set; the tool then applies its own
-// defaults.
+// Returns (nil, false) when none were set (or an empty set was set); the
+// tool then applies its own defaults.
 func OptionsFromContext(ctx context.Context) (OptionValues, bool) {
 	if ctx == nil {
 		return nil, false
 	}
 
-	v, ok := ctx.Value(optionsCtxKey{}).(OptionValues)
+	values, ok := ctx.Value(optionsCtxKey{}).(OptionValues)
+	if !ok || len(values) == 0 {
+		return nil, false
+	}
 
-	return v, ok
+	return values, true
 }
 
 // ValidateOptions checks consumer-supplied values against the spec's
@@ -119,37 +145,40 @@ func (s Spec) ValidateOptions(values OptionValues) error {
 	}
 
 	declared := make(map[string]Option, len(s.Options))
-	for _, o := range s.Options {
-		if err := o.Validate(); err != nil {
+	for _, opt := range s.Options {
+		if err := opt.Validate(); err != nil {
 			return err
 		}
 
-		if _, dup := declared[o.Name]; dup {
-			return fmt.Errorf("toolsdk spec %q declares option %q twice", s.Name, o.Name)
+		if _, dup := declared[opt.Name]; dup {
+			return fmt.Errorf("%w: spec %q declares option %q twice",
+				ErrDuplicateOption, s.Name, opt.Name)
 		}
 
-		declared[o.Name] = o
+		declared[opt.Name] = opt
 	}
 
 	for name, value := range values {
-		o, known := declared[name]
+		decl, known := declared[name]
 		if !known {
-			return fmt.Errorf("toolsdk spec %q does not declare option %q", s.Name, name)
+			return fmt.Errorf("%w: spec %q does not declare option %q",
+				ErrUnknownOption, s.Name, name)
 		}
 
-		var ok bool
-		switch o.Kind {
+		var matchesKind bool
+
+		switch decl.Kind {
 		case OptionKindInt:
-			_, ok = value.(int)
+			_, matchesKind = value.(int)
 		case OptionKindString:
-			_, ok = value.(string)
+			_, matchesKind = value.(string)
 		case OptionKindBool:
-			_, ok = value.(bool)
+			_, matchesKind = value.(bool)
 		}
 
-		if !ok {
-			return fmt.Errorf("toolsdk spec %q option %q: got %T, want kind %q",
-				s.Name, name, value, o.Kind)
+		if !matchesKind {
+			return fmt.Errorf("%w: spec %q option %q: got %T, want kind %q",
+				ErrOptionKindMismatch, s.Name, name, value, decl.Kind)
 		}
 	}
 

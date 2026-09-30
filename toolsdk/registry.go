@@ -98,16 +98,16 @@ func mustValidate(s Spec) {
 	}
 
 	seen := make(map[string]bool, len(s.Options))
-	for _, o := range s.Options {
-		if err := o.Validate(); err != nil {
+	for _, opt := range s.Options {
+		if err := opt.Validate(); err != nil {
 			panic("toolsdk.Register: Spec " + s.Name + ": " + err.Error())
 		}
 
-		if seen[o.Name] {
-			panic("toolsdk.Register: Spec " + s.Name + " declares option " + o.Name + " twice")
+		if seen[opt.Name] {
+			panic("toolsdk.Register: Spec " + s.Name + " declares option " + opt.Name + " twice")
 		}
 
-		seen[o.Name] = true
+		seen[opt.Name] = true
 	}
 }
 
