@@ -21,7 +21,20 @@ First consumer: branching-flow (BuildFlow issue #17 migration).
 
 ### Added
 
-- Nothing yet.
+- `Spec.Options []Option` — declares the tunable knobs a tool's Detect/Repair
+  reads from the context — plus the per-run value channel `WithOptions` /
+  `OptionsFromContext` and `Spec.ValidateOptions`. Kind-only validation at
+  the SDK layer (int/string/bool); range and semantic validation stay with
+  the tool implementation. Unknown option names fail loudly so a consumer
+  config typo cannot silently run on defaults. Declarations are validated at
+  registration (`Register` panics on malformed or duplicate options).
+  Validation errors match the exported sentinels `ErrInvalidOption`,
+  `ErrDuplicateOption`, `ErrUnknownOption`, and `ErrOptionKindMismatch` via
+  `errors.Is`. `WithOptions` snapshots the values map (later caller mutation
+  does not affect the run) and nil/empty values clear any options inherited
+  from a parent context, so a run carries exactly the values it set.
+  First consumer: art-dupl's `threshold` knob (its fixed 5-statement floor
+  becomes settable per run without rebuilding art-dupl).
 
 ### Documented
 

@@ -44,6 +44,14 @@ type Spec struct {
 	// edges and to gate the tool on file presence. Empty = always file-relevant.
 	Inputs []string
 
+	// Options declares the tunable knobs this tool reads from the context
+	// via OptionsFromContext. Declarations power consumer-side validation
+	// (ValidateOptions) and documentation; the VALUES are set by the
+	// consumer per run via WithOptions. Kind checking only — range and
+	// semantic validation stay with the tool implementation. Empty = the
+	// tool takes no options (the common case).
+	Options []Option
+
 	// Detect is the canonical go-finding Detector. nil = this tool does not
 	// detect (it may only repair, generate, or execute commands).
 	// The working directory is read via finding.WorkingDirFromContext(ctx).

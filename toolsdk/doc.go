@@ -33,6 +33,11 @@
 // a domain.Tool via its internal ToolFromSpec converter. Adding a new tool is a
 // one-file change in the tool's own repo — zero files in BuildFlow.
 //
+// Per-run knobs: a Spec declares its tunable knobs in Spec.Options and reads
+// the per-run values via OptionsFromContext; the consumer (BuildFlow's
+// execution layer) validates them against the declarations with
+// Spec.ValidateOptions and injects them via WithOptions.
+//
 // Design constraint: this package depends ONLY on go-finding (the ecosystem
 // hub). It must never import BuildFlow's domain/execution/tools packages, so
 // tools that target this SDK are not coupled to BuildFlow's release cycle.
