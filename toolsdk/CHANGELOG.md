@@ -9,15 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > Sub-modules have no `version.go`; the directory-prefixed git tag
 > (`toolsdk/v*`) is the single source of truth for this module's version.
 
-## [1.13.1] - 2026-09-23
-
-`Spec` gains `ModuleFanOut bool`: declares that the tool runs once per Go
-module in a multi-module workspace rather than once at the repo root.
-Field-for-field parity with BuildFlow's `domain/tool.DAGTopology` — a spec
-that omits the field silently loses per-module fan-out at conversion time.
-First consumer: branching-flow (BuildFlow issue #17 migration).
-
-## [Unreleased]
+## [1.14.0] - 2026-10-01
 
 ### Added
 
@@ -46,6 +38,14 @@ First consumer: branching-flow (BuildFlow issue #17 migration).
   `exhaustruct_v5` (fleet repos triaging toolsdk findings with that linter)
   should ask golangci-lint to bump the dep rather than disable the linter —
   tracked upstream in golangci/golangci-lint#6780.
+
+## [1.13.1] - 2026-09-23
+
+`Spec` gains `ModuleFanOut bool`: declares that the tool runs once per Go
+module in a multi-module workspace rather than once at the repo root.
+Field-for-field parity with BuildFlow's `domain/tool.DAGTopology` — a spec
+that omits the field silently loses per-module fan-out at conversion time.
+First consumer: branching-flow (BuildFlow issue #17 migration).
 
 ## [1.13.0] - 2026-09-22
 
