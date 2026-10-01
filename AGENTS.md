@@ -71,7 +71,17 @@ v1.7.0 incident where sub-module go.mod files were tagged with a stale core
 reference because the checklist lived in the operator's head.
 `--bench`/`--stress` flags add the heavy gates. `scripts/release-preflight-selftest.sh`
 injects three failure classes (tag collision, version drift, post-tag missing
+
 tag) into a disposable worktree and asserts preflight FAILs on each.
+
+**Preflight is lockstep/core-centric for target tags (observed toolsdk/v1.14.0,
+2026-10-01)** — it derives all five target tags from core's `version.go`
+(`scripts/release-preflight.sh:123`), so a sub-module-ONLY release (core still
+v1.13.0, toolsdk at v1.14.0) fails 5× "tag vX already exists" as false
+positives. For a sub-module-only tag, the real collision check is that the
+actual target (`toolsdk/v1.14.0`) does not exist; every other gate must still
+be green. Also: the script's GOWORK=off build/tidy loops (lines ~153/163) skip
+`toolsdk` — run `GOWORK=off go -C toolsdk build ./... && vet` manually.
 
 The Release workflow (`release.yml`) runs under a queueing concurrency group
 (`cancel-in-progress: false`), so a manual dispatch can no longer race the
@@ -167,6 +177,7 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 - **Keep the golangci-lint-action pin in sync with the nix binary** — CI pinned v2.13.1 while nixpkgs shipped v2.13.2; patch drift changed wsl_v5/varnamelen verdicts, so local "0 issues" and CI red disagreed (f/26, 2026-09-23). When buildflow bumps the nix golangci-lint, bump `version:` in ci.yml's lint job to match.
 - **`/mnt/buildcache` can hit 100%** — the shared GOCACHE grew to 167G and made every write fail ("no space left on device" from go build). Recovery: `go clean -cache` (and `-fuzzcache` after fuzz campaigns). If builds fail with space errors, check `df /mnt/buildcache` first, not the code.
 - **Push release tags ONE PER PUSH (≤3-batch rule superseded 2026-09-23)** — two failure classes: (1) a single push updating >3 tags creates NO workflow events (v1.9.0, silent); (2) even legal batches of 3 raced each other — the Release concurrency group is latest-queued-wins, so near-simultaneous pushes cancelled the older QUEUED runs (v1.12.0: core + analysis lost their runs). Rule: push master, then one tag per push; watch each tag's Release run to a terminal state (`gh run list --workflow=release.yml`) before the next push; re-run cancelled runs STRICTLY ONE AT A TIME (`gh run rerun <id>`, wait for `completed`). Queueing several reruns cancels the rest again. After the train: resync commit (CLI requires + go.sum) lands on master; the tagged commit's `module-isolation` red is EXPECTED until then. Full flow: `docs/release-procedure.md` "Tag pushing". Also: `toolsdk/v*` was missing from release.yml triggers until 4f37ec2 (toolsdk releases needed manual dispatch before that).
+- **Master BRANCH pushes can drop the CI event too (2026-10-01, f394f54)** — the push updated origin/master but created NO ci.yml run (and no cancel, despite ci.yml's `cancel-in-progress: true` concurrency — proof the event never fired, same class as the v1.9.0 tag incident). After ANY master push, verify a CI run exists for the pushed SHA (`gh run list --workflow=ci.yml --json headSha`); if absent, check nothing is queued/in progress, then `gh workflow run ci.yml --ref master` and watch it green before tagging.
 - **CI job runtime must fit its runner class** — before adding or retuning a CI job, state its expected runtime vs the runner (2-core public runners need ~45min for the count=10 benchmark job; a 15min cap silently cancelled it for a full session). A gate that times out is a dead gate.
 - **`gh -R` for all cross-repo operations** — local directory names lie after renames (e.g. `~/projects/hierarchical-errors` is erraudit's pre-rename remote; `gh issue create` there filed into erraudit twice). Always `gh -R owner/repo ...` and `gh repo view` before the first cross-repo write.
 - **Author commit messages AFTER `git status` confirms the batch** — the auto-commit daemon absorbs staged files seconds after staging; grand batch-sized messages routinely land over 1-3 file diffs. Check what is actually staged before writing the message.
