@@ -42,11 +42,11 @@ NEXT_MINOR=$((INJECT_COLLISION_MINOR + 1))
 # family must stay hypothetical (toolsdk/v1.14.0 broke scenario 4 on
 # 2026-10-01 by claiming the next-minor slot ahead of core).
 tag_exists() { git rev-parse -q --verify "refs/tags/$1" >/dev/null 2>&1; }
-while tag_exists "v${NEXT_MAJOR}.${NEXT_MINOR}.0" \
-	|| tag_exists "pipeline/v${NEXT_MAJOR}.${NEXT_MINOR}.0" \
-	|| tag_exists "analysis/v${NEXT_MAJOR}.${NEXT_MINOR}.0" \
-	|| tag_exists "toolsdk/v${NEXT_MAJOR}.${NEXT_MINOR}.0" \
-	|| tag_exists "cmd/go-finding/v${NEXT_MAJOR}.${NEXT_MINOR}.0"; do
+while tag_exists "v${NEXT_MAJOR}.${NEXT_MINOR}.0" ||
+	tag_exists "pipeline/v${NEXT_MAJOR}.${NEXT_MINOR}.0" ||
+	tag_exists "analysis/v${NEXT_MAJOR}.${NEXT_MINOR}.0" ||
+	tag_exists "toolsdk/v${NEXT_MAJOR}.${NEXT_MINOR}.0" ||
+	tag_exists "cmd/go-finding/v${NEXT_MAJOR}.${NEXT_MINOR}.0"; do
 	NEXT_MINOR=$((NEXT_MINOR + 1))
 done
 
