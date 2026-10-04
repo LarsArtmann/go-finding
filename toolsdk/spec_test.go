@@ -172,3 +172,40 @@ func TestTriggerCarriesNotRequires(t *testing.T) {
 		}
 	}
 }
+
+// TestSpecCarriesSwitchCases pins the R6 surface: SwitchCases mirrors
+// BuildFlow's domain/tool.SwitchCase (Suffix + FindingRuleIDs +
+// ExcludedRuleIDs) so SDK specs can express gotcha-#194 mutual-exclusion
+// topologies instead of racing mutating repair cases.
+func TestSpecCarriesSwitchCases(t *testing.T) {
+	want := SwitchCase{
+		Suffix:          "fix-hash-mismatch",
+		FindingRuleIDs:  []string{"fod-hash-mismatch"},
+		ExcludedRuleIDs: []string{"gomod-stale", "vendor-inconsistency"},
+	}
+
+	got := Spec{
+		Name:         "example",
+		Description:  "example tool",
+		ModuleFanOut: false,
+		SwitchCases:  []SwitchCase{want},
+	}
+
+	if len(got.SwitchCases) != 1 {
+		t.Fatalf("SwitchCases length = %d, want 1", len(got.SwitchCases))
+	}
+
+	c := got.SwitchCases[0]
+
+	if c.Suffix != want.Suffix {
+		t.Errorf("Suffix = %q, want %q", c.Suffix, want.Suffix)
+	}
+
+	if len(c.FindingRuleIDs) != len(want.FindingRuleIDs) || c.FindingRuleIDs[0] != want.FindingRuleIDs[0] {
+		t.Errorf("FindingRuleIDs = %v, want %v", c.FindingRuleIDs, want.FindingRuleIDs)
+	}
+
+	if len(c.ExcludedRuleIDs) != len(want.ExcludedRuleIDs) || c.ExcludedRuleIDs[0] != want.ExcludedRuleIDs[0] {
+		t.Errorf("ExcludedRuleIDs = %v, want %v", c.ExcludedRuleIDs, want.ExcludedRuleIDs)
+	}
+}

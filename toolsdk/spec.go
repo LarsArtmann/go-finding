@@ -40,6 +40,19 @@ type Spec struct {
 	// (finding.WorkingDirFromContext), never the process working directory.
 	ModuleFanOut bool
 
+	// SwitchCases declares conditional repair paths keyed on the diagnose
+	// output's finding rule IDs (R6: gotcha-#194 parity). BuildFlow maps
+	// them to DAGTopology.SwitchCases verbatim; a spec that omits the field
+	// keeps the plain detect→repair topology. Field-for-field parity with
+	// BuildFlow's domain/tool.SwitchCase.
+	//
+	// Mutual exclusion is the SPEC AUTHOR'S responsibility: go-workflow runs
+	// EVERY case whose predicate matches, in parallel, so cases gating
+	// mutating repairs on one diagnose gate must encode precedence via
+	// ExcludedRuleIDs (at most one case runs per diagnosis) or lose writes
+	// to racing siblings.
+	SwitchCases []SwitchCase
+
 	// Inputs are the file patterns this tool reads. Used to derive data-flow
 	// edges and to gate the tool on file presence. Empty = always file-relevant.
 	Inputs []string
@@ -90,6 +103,26 @@ type Trigger struct {
 	// domain/tool.Trigger.NotRequires — a spec that omits the field silently
 	// loses the deference behavior at conversion time.
 	NotRequires []string
+}
+
+// SwitchCase declares one conditional repair path gated on the diagnose
+// step's finding rule IDs. Field-for-field mirror of BuildFlow's
+// domain/tool.SwitchCase: Suffix names the DAG node, FindingRuleIDs select
+// the case (any match runs it), ExcludedRuleIDs suppress it (any match
+// skips it) — encode case precedence there so at most one mutating case
+// runs per diagnosis.
+type SwitchCase struct {
+	// Suffix is appended to the tool name to form the DAG node name
+	// (e.g. "fix-hash-mismatch" → "nix-hash-fix:fix-hash-mismatch").
+	Suffix string
+
+	// FindingRuleIDs lists the finding rule IDs that trigger this case.
+	// The case runs when ANY of these rule IDs appears in the diagnose output.
+	FindingRuleIDs []string
+
+	// ExcludedRuleIDs suppresses this case when ANY of these rule IDs
+	// appears in the diagnose output.
+	ExcludedRuleIDs []string
 }
 
 // Repairer applies fixes to files. Tools implement this when they can
