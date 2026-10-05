@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > Sub-modules have no `version.go`; the directory-prefixed git tag
 > (`toolsdk/v*`) is the single source of truth for this module's version.
 
+## [1.15.0] - 2026-10-05
+
+### Added
+
+- **`Spec.SwitchCases` with `ExcludedRuleIDs`** — SDK-registered tools can now
+  express conditional repair paths keyed on the diagnose output's finding rule
+  IDs (R6 / gotcha-#194 parity): `Suffix` names the DAG node, `FindingRuleIDs`
+  select which findings route to the case, `ExcludedRuleIDs` encode precedence
+  so at most one mutating repair case runs per diagnosis (go-workflow runs
+  every predicate-matching case in parallel; mutual exclusion is the spec
+  author's responsibility). Consumers map the field verbatim — BuildFlow's
+  `ToolFromSpec` mirrors it into `DAGTopology.SwitchCases`, with field parity
+  pinned by test.
+
 ## [1.14.0] - 2026-10-01
 
 ### Added

@@ -12,14 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- **`GOEXPERIMENT=jsonv2` no longer required** — `encoding/json/v2` is stable
-  and enabled by default since Go 1.27, and the toolchain floor was already
-  `go 1.27`. The env var was removed from the flake, CI/Release workflows,
-  scripts, and all docs. Consumers must build with Go 1.27+ (previously:
-  Go 1.26 + the experiment flag).
-
 ### Added
 
 - **`pipeline.EditListProvider` (issue #36)** — resolves a finding's typed edit
@@ -30,12 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   offsets fail with `ErrEditStale` (both surface as `FixOutcomeFailed` with the
   provider cause in the error chain). See
   [pipeline/CHANGELOG.md](pipeline/CHANGELOG.md).
-- **`Summary.FilesScanned` always serialized + `Summary.SkippedModules`** —
-  a report can now say "scanned 0 files" as coverage evidence instead of
-  omitting the field (clean full scans emit `"filesScanned": 0`), and monorepo
-  coverage boundaries have a home: `SkippedModules` carries the nested go.mod
-  modules a tool deliberately did not analyze; module-agnostic tools leave it
-  nil and their JSON is unchanged.
 - **`finding.TextEdit` and `Finding.Edits` (issue #36)** — typed multi-edit fix
   representation: `Start`/`End` positions plus `NewText`, with `HasSpan`,
   `IsInsertion`, `IsDeletion`, `EffectiveFile`, and `Validate` helpers,
@@ -69,6 +55,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   v1.13.0 Release runs died in the test job (`go.work requires go >= 1.27`),
   leaving v1.13.0 with no GitHub Release. Pins are now `1.27`; the red runs
   were invisible to local gates, which already ran Go 1.27.
+
+## [1.14.0] - 2026-10-05
+
+Root release: the toolsdk options channel (PR #41), the toolsdk switch-topology
+API, report coverage evidence, and the json/v2 GA build change. Sub-module
+releases ride along: [toolsdk/v1.14.0](toolsdk/CHANGELOG.md) (options channel)
+and [toolsdk/v1.15.0](toolsdk/CHANGELOG.md) (`Spec.SwitchCases`).
+
+### Added
+
+- **toolsdk options channel (PR #41)** — tools can declare typed `Option`s
+  (name, kind, default) on their `Spec`; consumers pass per-run values that are
+  validated against the declarations (`ErrUnknownOption` on typos,
+  `ErrInvalidOption`/`ErrDuplicateOption` on malformed specs).
+- **toolsdk `Spec.SwitchCases` + `ExcludedRuleIDs` (toolsdk/v1.15.0)** — SDK
+  tools can declare conditional repair paths keyed on diagnose finding rule
+  IDs, mirroring BuildFlow's `domain/tool.SwitchCase` field-for-field; mutual
+  exclusion of mutating repair cases is encoded via `ExcludedRuleIDs`
+  (go-workflow runs every predicate-matching case in parallel).
+- **`Summary.FilesScanned` always serialized + `Summary.SkippedModules`** —
+  a report can now say "scanned 0 files" as coverage evidence instead of
+  omitting the field (clean full scans emit `"filesScanned": 0`), and monorepo
+  coverage boundaries have a home: `SkippedModules` carries the nested go.mod
+  modules a tool deliberately did not analyze; module-agnostic tools leave it
+  nil and their JSON is unchanged.
+
+### Changed
+
+- **`GOEXPERIMENT=jsonv2` no longer required** — `encoding/json/v2` is stable
+  and enabled by default since Go 1.27, and the toolchain floor was already
+  `go 1.27`. The env var was removed from the flake, CI/Release workflows,
+  scripts, and all docs. Consumers must build with Go 1.27+ (previously:
+  Go 1.26 + the experiment flag).
 
 ## [1.13.0] - 2026-09-22
 
