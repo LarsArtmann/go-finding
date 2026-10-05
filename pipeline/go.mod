@@ -4,7 +4,7 @@ go 1.27
 
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.6.1
-	github.com/larsartmann/go-finding v1.13.0
+	github.com/larsartmann/go-finding v1.14.0
 	github.com/onsi/ginkgo/v2 v2.33.0
 	github.com/onsi/gomega v1.44.0
 	golang.org/x/sync v0.23.0
