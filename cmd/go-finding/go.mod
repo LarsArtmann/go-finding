@@ -6,7 +6,7 @@ require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.6.1
 	github.com/go-faster/yaml v0.4.6
 	github.com/larsartmann/go-finding v1.14.0
-	github.com/larsartmann/go-finding/pipeline v1.13.0
+	github.com/larsartmann/go-finding/pipeline v1.14.0
 	github.com/larsartmann/go-output v0.38.4
 	github.com/larsartmann/go-output/delimited v0.38.4
 	github.com/larsartmann/go-output/markdown v0.38.4
@@ -24,11 +24,9 @@ require (
 	github.com/segmentio/asm v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa // indirect
 	golang.org/x/net v0.59.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/term v0.46.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
-	golang.org/x/tools v0.51.0 // indirect
 )
