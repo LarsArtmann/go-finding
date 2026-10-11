@@ -31,13 +31,13 @@ func TestPipelineSurfacesV2Coverage(t *testing.T) {
 	t.Parallel()
 
 	first := &v2Detector{
-		mockDetector:   mockDetector{name: "v2-first"},
+		name:           "v2-first",
 		filesScanned:   3,
 		skippedModules: []string{"mod-a", "mod-b"},
 	}
 
 	second := &v2Detector{
-		mockDetector:   mockDetector{name: "v2-second"},
+		name:           "v2-second",
 		filesScanned:   2,
 		skippedModules: []string{"mod-b", "mod-c"},
 	}
@@ -90,7 +90,7 @@ func TestDetectPartialAccumulatesCoverageFromSuccessfulDetectors(t *testing.T) {
 	failing := &mockDetector{name: "boom", err: errors.New("boom")}
 
 	healthy := &v2Detector{
-		mockDetector:   mockDetector{name: "v2-healthy"},
+		name:           "v2-healthy",
 		filesScanned:   7,
 		skippedModules: []string{"nested"},
 	}
@@ -122,7 +122,7 @@ func TestRetryDetectorPreservesV2Coverage(t *testing.T) {
 	t.Parallel()
 
 	inner := &v2Detector{
-		mockDetector:   mockDetector{name: "v2-inner"},
+		name:           "v2-inner",
 		filesScanned:   4,
 		skippedModules: []string{"vendored"},
 	}
@@ -157,10 +157,8 @@ func TestConvenienceDetectRunsV2Detector(t *testing.T) {
 	t.Parallel()
 
 	v2 := &v2Detector{
-		mockDetector: mockDetector{
-			name:     "v2-convenience",
-			findings: []finding.Finding{{ID: "1"}},
-		},
+		name:         "v2-convenience",
+		findings:     []finding.Finding{{ID: "1"}},
 		filesScanned: 9,
 	}
 
