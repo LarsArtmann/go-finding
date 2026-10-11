@@ -94,7 +94,11 @@ jobs:
             (matrix.module == 'cmd/go-finding' && contains(inputs.modules, 'cli'))
           }}
         with:
-          version: v2.13.2
+          # v2.14.0 is built with go1.27.2 (matches the nix devshell pin):
+          # v2.13.2 binaries are built with an older Go whose export-data
+          # decoder (max v4) cannot read the Go 1.27 stdlib (v5), so lint
+          # typecheck-fails every package with "could not import" cascades.
+          version: v2.14.0
           args: --timeout=5m
           working-directory: ${{ matrix.module }}
       - name: Check formatting
