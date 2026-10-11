@@ -3,7 +3,7 @@ package pipeline
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -19,7 +19,13 @@ func mockDetectorWithFinding(name, id, rule, tool, msg string) *mockDetector {
 	return &mockDetector{
 		name: name,
 		findings: []finding.Finding{
-			{ID: id, Rule: rule, ToolName: tool, Message: msg, Severity: finding.SeverityError},
+			{
+				ID:       finding.ID(id),
+				Rule:     finding.RuleName(rule),
+				ToolName: finding.ToolName(tool),
+				Message:  msg,
+				Severity: finding.SeverityError,
+			},
 		},
 	}
 }
@@ -48,8 +54,7 @@ func correlateTestDetectors() (*mockDetector, *mockDetector) {
 }
 
 func TestPipelineRun_PerDetectorTimeout(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	cfg := DefaultConfig()
 	cfg.ParallelDetectors = false
@@ -71,8 +76,7 @@ func TestPipelineRun_PerDetectorTimeout(t *testing.T) {
 }
 
 func TestPipelineRun_PerDetectorTimeout_UnaffectedDetector(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	cfg := DefaultConfig()
 	cfg.ParallelDetectors = false
@@ -98,8 +102,7 @@ func TestPipelineRun_PerDetectorTimeout_UnaffectedDetector(t *testing.T) {
 }
 
 func TestPipelineRun_CorrelateFindings(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	detA, detB := correlateTestDetectors()
 
@@ -116,12 +119,11 @@ func TestPipelineRun_CorrelateFindings(t *testing.T) {
 	}
 
 	g.Expect(result.Correlations).NotTo(BeEmpty())
-	g.Expect(result.Correlations[0].FindingIDs).To(Equal([]string{"a1", "b1"}))
+	g.Expect(result.Correlations[0].FindingIDs).To(Equal([]finding.ID{"a1", "b1"}))
 }
 
 func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	detA, detB := correlateTestDetectors()
 
@@ -141,8 +143,7 @@ func TestPipelineRun_NoCorrelateWhenDisabled(t *testing.T) {
 }
 
 func TestPipelineRun_StructuredLogging(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	var buf bytes.Buffer
 
@@ -197,17 +198,28 @@ func TestPipelineRun_StructuredLogging(t *testing.T) {
 }
 
 func TestPipelineRun_OnStage(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	var stages []string
 
 	cfg := DefaultConfig()
 	cfg.ParallelDetectors = false
 	cfg.MaxIterations = 1
-	cfg.OnStage = func(stage Stage, iteration, count int) {
-		stages = append(stages, fmt.Sprintf("%s:%d:%d", stage, iteration, count))
-	}
+	cfg.StageHooks = []StageHook{StageHookFunc(func(_ context.Context, event StageEvent) error {
+		if event.Timing != StageAfter {
+			return nil
+		}
+
+		count := len(event.Findings)
+
+		if event.Stage == StageApply {
+			count = event.Applied
+		}
+
+		stages = append(stages, fmt.Sprintf("%s:%d:%d", event.Stage, event.Iteration, count))
+
+		return nil
+	})}
 
 	findings := []finding.Finding{pipelineTestFinding(1)}
 	detector := &mockDetector{name: "test", findings: findings}
@@ -243,8 +255,7 @@ func TestReasonFromContext(t *testing.T) {
 	t.Parallel()
 
 	t.Run("cancelled", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 
@@ -253,8 +264,7 @@ func TestReasonFromContext(t *testing.T) {
 	})
 
 	t.Run("timeout", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 0)
 		defer cancel()

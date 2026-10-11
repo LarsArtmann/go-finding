@@ -41,7 +41,7 @@ func NewAnalyzerDetector(
 	patterns []string,
 	opts ...AnalyzerOption,
 ) *AnalyzerDetector {
-	d := &AnalyzerDetector{ //nolint:exhaustruct
+	d := &AnalyzerDetector{
 		analyzer: a,
 		patterns: patterns,
 		sev:      finding.SeverityWarning,
@@ -59,6 +59,9 @@ func (d *AnalyzerDetector) Name() string {
 	return d.analyzer.Name
 }
 
+// Compile-time interface assertion — catches missing methods at build time.
+var _ finding.Detector = (*AnalyzerDetector)(nil)
+
 // Detect runs the analyzer on the configured packages and converts
 // diagnostics to findings.
 func (d *AnalyzerDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
@@ -67,7 +70,7 @@ func (d *AnalyzerDetector) Detect(ctx context.Context) ([]finding.Finding, error
 		fset = token.NewFileSet()
 	}
 
-	cfg := &packages.Config{ //nolint:exhaustruct
+	cfg := &packages.Config{ //nolint:exhaustruct_v5
 		Context: ctx,
 		Fset:    fset,
 		Tests:   false,
@@ -134,7 +137,7 @@ func (d *AnalyzerDetector) runAnalyzer(
 ) ([]*analysis.Diagnostic, error) {
 	var diagnostics []*analysis.Diagnostic
 
-	pass := &analysis.Pass{ //nolint:exhaustruct
+	pass := &analysis.Pass{ //nolint:exhaustruct_v5
 		Analyzer:   d.analyzer,
 		Fset:       fset,
 		Files:      pkg.Syntax,

@@ -1,10 +1,22 @@
 package finding
 
 import (
+	"fmt"
 	"maps"
 	"strings"
 	"time"
 )
+
+// Normalized returns a copy of the finding with FixStrategy normalized
+// (empty string converted to FixStrategyNone). Use this when you need
+// the canonical form after direct struct construction, since Validate()
+// has a value receiver and cannot mutate the original.
+func (f Finding) Normalized() Finding {
+	result := f
+	result.FixStrategy = NormalizeFixStrategy(f.FixStrategy)
+
+	return result
+}
 
 // Clone returns a deep copy of the finding.
 func (f Finding) Clone() Finding {
@@ -55,19 +67,35 @@ func (f Finding) IsSuppressed() bool {
 
 // IsSuppressedAt returns true if this finding is suppressed at the given time.
 // Use this in tests for deterministic suppression checks.
+// A finding is suppressed only if its Suppression is valid (correct Kind and
+// non-empty Rule) and not expired, consistent with [Suppression.IsActive].
 func (f Finding) IsSuppressedAt(now time.Time) bool {
-	return f.Suppression != nil && !f.Suppression.IsExpired(now)
+	return f.Suppression != nil && f.Suppression.IsActive(now)
 }
 
 // HasFix reports whether this finding has any fix available. This is the
-// canonical "is fixable?" check. Returns true for FixStrategyDirect (always),
-// and for FixStrategySuggest/FixStrategyAI when AfterCode is present.
+// canonical "is fixable?" check.
+//
+// Fixability lattice:
+//   - IsAutoFixable() ⟹ HasFix()  (strict subset)
+//   - HasFix() requires a valid FixStrategy AND code data where applicable
+//
+// Returns true for FixStrategyDirect when BeforeCode, AfterCode, or an edit
+// list is present.
+// Returns true for FixStrategySuggest/FixStrategyAI when AfterCode is present.
+// Returns false for FixStrategyNone, empty strategy, or any strategy missing
+// required code data.
+//
+// Note: HasFix() respects Validate() semantics — a FixStrategyDirect finding
+// without code data returns false (it would fail validation).
 func (f Finding) HasFix() bool {
-	switch f.FixStrategy {
+	strategy := NormalizeFixStrategy(f.FixStrategy)
+
+	switch strategy {
 	case FixStrategyNone:
 		return false
 	case FixStrategyDirect:
-		return true
+		return f.BeforeCode != "" || f.AfterCode != "" || f.HasEditList()
 	case FixStrategySuggest, FixStrategyAI:
 		return f.AfterCode != ""
 	default:
@@ -76,11 +104,13 @@ func (f Finding) HasFix() bool {
 }
 
 // IsAutoFixable reports whether the pipeline can automatically apply this fix.
-// Stricter than HasFix: requires FixStrategyDirect AND (BeforeCode or AfterCode).
+// Stricter than HasFix: requires FixStrategyDirect AND (BeforeCode, AfterCode,
+// or an edit list).
 // Use HasFix() to check if any fix exists; use IsAutoFixable() to check if
 // the pipeline will attempt auto-application.
 func (f Finding) IsAutoFixable() bool {
-	return f.FixStrategy == FixStrategyDirect && (f.BeforeCode != "" || f.AfterCode != "")
+	return f.Normalized().FixStrategy == FixStrategyDirect &&
+		(f.BeforeCode != "" || f.AfterCode != "" || f.HasEditList())
 }
 
 // HasSuggestion returns true if this finding has a human-readable suggestion.
@@ -103,9 +133,9 @@ func (f Finding) String() string {
 	var b strings.Builder
 	b.WriteString(string(f.Severity))
 	b.WriteByte(' ')
-	b.WriteString(f.ToolName)
+	b.WriteString(string(f.ToolName))
 	b.WriteString(" [")
-	b.WriteString(f.Rule)
+	b.WriteString(string(f.Rule))
 	b.WriteString("] ")
 	b.WriteString(f.Position.String())
 	b.WriteString(": ")
@@ -121,10 +151,17 @@ func (f Finding) String() string {
 }
 
 // HasCodeChange reports whether the finding carries any code change data
-// (BeforeCode or AfterCode). This is a low-level check used by the FixEngine;
-// prefer HasFix() or IsAutoFixable() for higher-level fixability decisions.
+// (BeforeCode, AfterCode, or an edit list). This is a low-level check used by
+// the FixEngine; prefer HasFix() or IsAutoFixable() for higher-level fixability
+// decisions.
 func (f Finding) HasCodeChange() bool {
-	return f.BeforeCode != "" || f.AfterCode != ""
+	return f.BeforeCode != "" || f.AfterCode != "" || f.HasEditList()
+}
+
+// HasEditList reports whether the finding carries a typed edit list
+// (Finding.Edits), the authoritative multi-edit fix representation.
+func (f Finding) HasEditList() bool {
+	return len(f.Edits) > 0
 }
 
 // HasRange reports whether the finding has a valid range set.
@@ -133,13 +170,39 @@ func (f Finding) HasRange() bool {
 }
 
 // Preview returns a unified-diff-style preview of the fix, or empty string if
-// the finding has no fixable code change (BeforeCode and AfterCode both empty).
+// the finding has no fixable code change (BeforeCode and AfterCode both empty
+// and no Edits list).
+//
+// Findings with a typed Edits list render one "-/+" pair per edit, prefixed
+// by the edit's start position: spans show removals as a location (TextEdit
+// does not carry the removed text), insertions show only the added text.
+// BeforeCode/AfterCode findings render as a single "- old" / "+ new" pair.
 func (f Finding) Preview() string {
 	if !f.HasCodeChange() {
 		return ""
 	}
 
 	var b strings.Builder
+
+	if len(f.Edits) > 0 {
+		for _, e := range f.Edits {
+			loc := e.Start.String()
+
+			if e.HasSpan() {
+				if e.Start.Offset >= 0 && e.End.Offset > e.Start.Offset {
+					fmt.Fprintf(&b, "- %s: %d bytes\n", loc, e.End.Offset-e.Start.Offset)
+				} else {
+					fmt.Fprintf(&b, "- %s: span\n", loc)
+				}
+			}
+
+			if e.NewText != "" {
+				fmt.Fprintf(&b, "+ %s: %s\n", loc, e.NewText)
+			}
+		}
+
+		return b.String()
+	}
 
 	if f.BeforeCode != "" {
 		b.WriteString("- ")

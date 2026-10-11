@@ -14,7 +14,7 @@ const (
 )
 
 func benchPosition(fileFmt string, mod, i int) Position {
-	return Position{File: fmt.Sprintf(fileFmt, i%mod), Line: i + 1}
+	return Position{File: FilePath(fmt.Sprintf(fileFmt, i%mod)), Line: i + 1}
 }
 
 func benchReport(i int) *Report {
@@ -32,7 +32,7 @@ func BenchmarkClone(b *testing.B) {
 			Start: Position{Line: 42, Column: 10},
 			End:   Position{Line: 42, Column: 20},
 		},
-		Related:  []RelatedRef{{FindingID: "related1", Relation: "related"}},
+		Related:  []RelatedRef{{FindingID: ID("related1"), Relation: "related"}},
 		Category: CategorySecurity,
 	}
 
@@ -89,7 +89,7 @@ func BenchmarkParseID(b *testing.B) {
 
 	for b.Loop() {
 		for _, id := range ids {
-			ParseID(id)
+			ParseID(ID(id))
 		}
 	}
 }
@@ -98,7 +98,7 @@ func BenchmarkFilter(b *testing.B) {
 	findings := make([]Finding, 1000)
 	for i := range findings {
 		findings[i] = Finding{
-			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
+			ID:       ID(fmt.Sprintf("tool:rule:file.go:%d", i)),
 			Severity: sevFromInt(i % 4),
 			Category: CategoryStyle,
 			Position: Position{File: benchFile, Line: i + 1},
@@ -116,7 +116,7 @@ func BenchmarkFilterMultiple(b *testing.B) {
 	findings := make([]Finding, 1000)
 	for i := range findings {
 		findings[i] = Finding{
-			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
+			ID:       ID(fmt.Sprintf("tool:rule:file.go:%d", i)),
 			Severity: sevFromInt(i % 4),
 			Category: []Category{CategoryStyle, CategorySecurity, CategoryPerformance, CategoryCorrectness}[i%4],
 			Position: benchPosition("file%d.go", 10, i),
@@ -155,7 +155,7 @@ func BenchmarkMerge(b *testing.B) {
 		reports[i] = benchReport(i)
 		for j := range 200 {
 			reports[i].AddFinding(Finding{
-				ID:       fmt.Sprintf("tool%d:rule:file%d.go:%d", i, j%10, j),
+				ID:       ID(fmt.Sprintf("tool%d:rule:file%d.go:%d", i, j%10, j)),
 				Severity: sevFromInt(j % 4),
 				Position: benchPosition("file%d.go", 10, j),
 			})
@@ -173,8 +173,8 @@ func BenchmarkCorrelate(b *testing.B) {
 	findings := make([]Finding, 200)
 	for i := range findings {
 		findings[i] = Finding{
-			ID:       fmt.Sprintf("tool%d:rule:file.go:%d", i%5, i),
-			ToolName: fmt.Sprintf("tool%d", i%5),
+			ID:       ID(fmt.Sprintf("tool%d:rule:file.go:%d", i%5, i)),
+			ToolName: ToolName(fmt.Sprintf("tool%d", i%5)),
 			Position: benchPosition("file%d.go", 5, i),
 		}
 	}
@@ -192,7 +192,7 @@ func BenchmarkMergeNoDedup(b *testing.B) {
 		reports[i] = benchReport(i)
 		for j := range 500 {
 			reports[i].AddFinding(Finding{
-				ID:       fmt.Sprintf("tool%d:rule:file.go:%d:%d", i, j, i),
+				ID:       ID(fmt.Sprintf("tool%d:rule:file.go:%d:%d", i, j, i)),
 				Severity: sevFromInt(j % 4),
 			})
 		}
@@ -209,7 +209,7 @@ func sarifBenchReport() *Report {
 	report := NewReport(ToolInfo{Name: "bench", Version: benchVersion})
 	for i := range 100 {
 		report.AddFinding(Finding{
-			ID:       fmt.Sprintf("tool:rule:file.go:%d", i),
+			ID:       ID(fmt.Sprintf("tool:rule:file.go:%d", i)),
 			Rule:     benchRule,
 			Message:  "test finding",
 			Severity: sevFromInt(i % 4),
@@ -244,6 +244,59 @@ func BenchmarkFromSARIF(b *testing.B) {
 	}
 }
 
+func lspBenchFinding() Finding {
+	return Finding{
+		ID:          "tool:SA1000:main.go:42:10",
+		Rule:        benchRule,
+		ToolName:    "staticcheck",
+		Message:     "test finding for LSP benchmark",
+		Severity:    SeverityError,
+		Confidence:  ConfidenceHigh,
+		Category:    CategorySecurity,
+		Position:    Position{File: FilePath(benchMainFile), Line: 42, Column: 10, Offset: 500},
+		FixStrategy: FixStrategyDirect,
+		BeforeCode:  "old code",
+		AfterCode:   "new code",
+		Tags:        []Tag{"security", "bug"},
+		Metadata:    map[string]string{"key1": "val1", "key2": "val2"},
+	}
+}
+
+func BenchmarkToLSP(b *testing.B) {
+	f := lspBenchFinding()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = f.ToLSP()
+	}
+}
+
+func BenchmarkFromLSP(b *testing.B) {
+	f := lspBenchFinding()
+	diag := f.ToLSP()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = FromLSP(FilePath(benchMainFile), diag)
+	}
+}
+
+func BenchmarkLSPRoundTrip(b *testing.B) {
+	f := lspBenchFinding()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		diag := f.ToLSP()
+		_ = FromLSP(FilePath(benchMainFile), diag)
+	}
+}
+
 func BenchmarkFindingKey(b *testing.B) {
 	f := Finding{
 		ID:       "tool:rule:file.go:42:10",
@@ -272,5 +325,70 @@ func BenchmarkFindingKey_NoID(b *testing.B) {
 
 	for b.Loop() {
 		_ = f.Key()
+	}
+}
+
+func BenchmarkEqual_IdenticalWithTags(b *testing.B) {
+	a := Finding{
+		ID:          "tool:rule:file.go:42:10",
+		Rule:        benchRule,
+		ToolName:    "govet",
+		Message:     "possible nil deref",
+		Severity:    SeverityError,
+		Position:    Position{File: benchFile, Line: 42, Column: 10},
+		Category:    CategorySecurity,
+		Tags:        []Tag{"security", "nil-safety", "critical"},
+		FixStrategy: FixStrategyDirect,
+		BeforeCode:  "x.foo",
+		AfterCode:   "x.foo()",
+	}
+	other := a
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = a.Equal(other)
+	}
+}
+
+func BenchmarkEqual_TagsDifferentOrder(b *testing.B) {
+	a := Finding{
+		ID:       "tool:rule:file.go:42:10",
+		Rule:     benchRule,
+		Severity: SeverityError,
+		Position: Position{File: benchFile, Line: 42, Column: 10},
+		Tags:     []Tag{"security", "nil-safety", "critical"},
+	}
+	other := Finding{
+		ID:       "tool:rule:file.go:42:10",
+		Rule:     benchRule,
+		Severity: SeverityError,
+		Position: Position{File: benchFile, Line: 42, Column: 10},
+		Tags:     []Tag{"critical", "security", "nil-safety"},
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = a.Equal(other)
+	}
+}
+
+func BenchmarkEqual_NoTags(b *testing.B) {
+	a := Finding{
+		ID:       "tool:rule:file.go:42:10",
+		Rule:     benchRule,
+		Severity: SeverityError,
+		Position: Position{File: benchFile, Line: 42, Column: 10},
+	}
+	other := a
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = a.Equal(other)
 	}
 }

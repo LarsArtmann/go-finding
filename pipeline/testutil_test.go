@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -10,7 +11,17 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-finding"
+	"github.com/onsi/gomega"
 )
+
+// NewParallelGomega marks the test as parallel and returns a gomega.GomegaWithT,
+// consolidating the t.Parallel() + gomega.NewWithT(t) boilerplate.
+func NewParallelGomega(t *testing.T) *gomega.GomegaWithT {
+	t.Helper()
+	t.Parallel()
+
+	return gomega.NewWithT(t)
+}
 
 const helloProgram = "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n"
 
@@ -43,7 +54,7 @@ func newMockDetector(name, toolName string, findings ...finding.Finding) *mockDe
 			{
 				ID:       "1",
 				Rule:     "r1",
-				ToolName: toolName,
+				ToolName: finding.ToolName(toolName),
 				Message:  "m",
 				Severity: finding.SeverityError,
 			},
@@ -53,7 +64,7 @@ func newMockDetector(name, toolName string, findings ...finding.Finding) *mockDe
 	return &mockDetector{name: name, findings: findings}
 }
 
-func mockDet(name, findingID string) *mockDetector {
+func mockDet(name string, findingID finding.ID) *mockDetector {
 	return &mockDetector{name: name, findings: []finding.Finding{{ID: findingID}}}
 }
 
@@ -74,28 +85,37 @@ func slowTestDetector(name string, delay time.Duration) *mockDetector {
 
 func testFinding(id, rule, tool, msg string, sev finding.Severity, file string) finding.Finding {
 	return finding.Finding{
-		ID:       id,
-		Rule:     rule,
-		ToolName: tool,
+		ID:       finding.ID(id),
+		Rule:     finding.RuleName(rule),
+		ToolName: finding.ToolName(tool),
 		Message:  msg,
 		Severity: sev,
-		Position: finding.Position{File: file},
+		Position: finding.Position{File: finding.FilePath(file)},
 	}
+}
+
+// registerFindingDetector registers a single-finding detector factory with the
+// given registry under `name`, producing findings tagged with the provided
+// `tool`. Both fields that the mocks and production detectors care about.
+func registerFindingDetector(registry *finding.DetectorRegistry, name, tool string, f finding.Finding) {
+	registry.MustRegister(name, func() finding.Detector {
+		return newMockDetector(name, tool, f)
+	})
 }
 
 func findingWithRange(id, file string, line, startLine, endLine int) finding.Finding {
 	return finding.Finding{
-		ID:       id,
-		Position: finding.Position{File: file, Line: line},
+		ID:       finding.ID(id),
+		Position: finding.Position{File: finding.FilePath(file), Line: line},
 		Range: &finding.Range{
-			Start: finding.Position{File: file, Line: startLine},
-			End:   finding.Position{File: file, Line: endLine},
+			Start: finding.Position{File: finding.FilePath(file), Line: startLine},
+			End:   finding.Position{File: finding.FilePath(file), Line: endLine},
 		},
 	}
 }
 
 func findingAt(id, file string, line int) finding.Finding {
-	return finding.Finding{ID: id, Position: finding.Position{File: file, Line: line}}
+	return finding.Finding{ID: finding.ID(id), Position: finding.Position{File: finding.FilePath(file), Line: line}}
 }
 
 func findings(fixSpecs ...any) []finding.Finding {
@@ -253,13 +273,13 @@ func newTestApplierWithDir(t *testing.T) (string, *FixApplier) {
 
 func makeFixFinding(id, before, after, file string, line int) finding.Finding {
 	return finding.Finding{
-		ID:          id,
+		ID:          finding.ID(id),
 		Rule:        "r1",
 		ToolName:    "tool",
 		Message:     "replace " + before + " with " + after,
 		BeforeCode:  before,
 		AfterCode:   after,
-		Position:    finding.Position{File: file, Line: line},
+		Position:    finding.Position{File: finding.FilePath(file), Line: line},
 		FixStrategy: finding.FixStrategyDirect,
 	}
 }
@@ -272,7 +292,7 @@ func makeErrorDetector(errMsg string) Detector {
 
 func makeFindingDetectorFunc(id string) DetectorFunc {
 	return DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
-		return []finding.Finding{{ID: id}}, nil
+		return []finding.Finding{{ID: finding.ID(id)}}, nil
 	})
 }
 
@@ -283,18 +303,18 @@ func assertFindingErrorIO(t *testing.T, fe *finding.FindingError, file string) {
 		t.Errorf("category = %q, want %q", fe.Category, finding.ErrCategoryIO)
 	}
 
-	if fe.Position.File != file {
+	if string(fe.Position.File) != file {
 		t.Errorf("file = %q, want %q", fe.Position.File, file)
 	}
 }
 
 func makeFixFindingWithRange(id, before, after, file string, line, col int) finding.Finding {
 	return finding.Finding{
-		ID:          id,
+		ID:          finding.ID(id),
 		BeforeCode:  before,
 		AfterCode:   after,
-		Position:    finding.Position{File: file, Line: line, Column: col},
-		Range:       finding.NewRangePtr(file, line, col, line, col+len(before)),
+		Position:    finding.Position{File: finding.FilePath(file), Line: line, Column: col},
+		Range:       finding.NewRangePtr(finding.FilePath(file), line, col, line, col+len(before)),
 		FixStrategy: finding.FixStrategyDirect,
 	}
 }
@@ -313,7 +333,7 @@ func assertNoSuppressedFindings(t *testing.T, findings []finding.Finding, mode s
 
 	for _, f := range findings {
 		for _, sid := range suppressedIDs() {
-			if f.ID == sid {
+			if string(f.ID) == sid {
 				t.Errorf("suppressed finding %s present in %s results", f.ID, mode)
 			}
 		}
@@ -330,4 +350,131 @@ func assertNoSuppressedNotified(t *testing.T, notified []string, mode string) {
 			}
 		}
 	}
+}
+
+// refusingProvider CanHandles every finding but never produces edits, forcing
+// the engine to fall through to later providers in the chain.
+type refusingProvider struct{}
+
+func (*refusingProvider) Name() string                   { return "refusing" }
+func (*refusingProvider) CanHandle(finding.Finding) bool { return true }
+
+func (*refusingProvider) Edits([]byte, finding.Finding) ([]FixEdit, error) {
+	return nil, nil
+}
+
+// editAtBeforeProvider emulates a precise domain provider: it replaces the
+// first occurrence of BeforeCode with AfterCode.
+type editAtBeforeProvider struct{}
+
+func (*editAtBeforeProvider) Name() string                     { return "edit-at-before" }
+func (*editAtBeforeProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
+
+func (*editAtBeforeProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	idx := bytes.Index(content, []byte(f.BeforeCode))
+	if idx < 0 {
+		return nil, nil
+	}
+
+	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
+}
+
+// erroringProvider fails resolution for findings whose rule matches.
+type erroringProvider struct{}
+
+func (erroringProvider) Name() string { return "erroring" }
+
+func (erroringProvider) CanHandle(f finding.Finding) bool {
+	return f.Rule == "unresolvable"
+}
+
+func (erroringProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error) {
+	return nil, errors.New("cannot resolve this finding")
+}
+
+// staticEditProvider always returns the given edits.
+type staticEditProvider struct {
+	edits []FixEdit
+}
+
+func (staticEditProvider) Name() string { return "static" }
+
+func (staticEditProvider) CanHandle(finding.Finding) bool { return true }
+
+func (s staticEditProvider) Edits(_ []byte, _ finding.Finding) ([]FixEdit, error) {
+	return s.edits, nil
+}
+
+// saboteurProvider applies real edits while deleting the file's backup,
+// simulating a backup that has become unavailable between backup and restore.
+type saboteurProvider struct {
+	backup     *FileBackup
+	targetPath string
+}
+
+func (*saboteurProvider) Name() string { return "saboteur" }
+
+func (*saboteurProvider) CanHandle(f finding.Finding) bool {
+	return f.HasCodeChange()
+}
+
+func (s *saboteurProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	bakPath := s.backup.BackupPath(s.targetPath)
+	if bakPath != "" {
+		_ = os.Remove(
+			bakPath,
+		) //nolint:gosec // G703: intentional path manipulation in test saboteur
+	}
+
+	idx := bytes.Index(content, []byte(f.BeforeCode))
+	if idx < 0 {
+		return nil, errors.New("before code not found")
+	}
+
+	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
+}
+
+// cancelingProvider cancels the run's context when it sees a specific
+// BeforeCode, and produces valid edits otherwise. It lets tests place the
+// cancellation exactly between two files of a multi-file run.
+type cancelingProvider struct {
+	cancel context.CancelFunc
+	before string
+}
+
+func (*cancelingProvider) Name() string                       { return "canceling" }
+func (p *cancelingProvider) CanHandle(f finding.Finding) bool { return f.HasCodeChange() }
+func (p *cancelingProvider) Edits(content []byte, f finding.Finding) ([]FixEdit, error) {
+	if f.BeforeCode == p.before {
+		p.cancel()
+
+		return nil, errors.New("cancelled during edit resolution")
+	}
+
+	idx := bytes.Index(content, []byte(f.BeforeCode))
+	if idx < 0 {
+		return nil, nil
+	}
+
+	return []FixEdit{newReplacementEdit(idx, len(f.BeforeCode), f)}, nil
+}
+
+// upperProvider is a test provider that only handles direct fixes.
+type upperProvider struct{}
+
+func (upperProvider) Name() string { return "test-upper" }
+
+func (upperProvider) CanHandle(f finding.Finding) bool {
+	return f.FixStrategy == finding.FixStrategyDirect && f.BeforeCode != ""
+}
+
+func (upperProvider) Edits(_ []byte, f finding.Finding) ([]FixEdit, error) {
+	return []FixEdit{
+		{
+			Offset:      0,
+			Length:      len(f.BeforeCode),
+			Replacement: []byte(f.AfterCode),
+			Source:      f,
+		},
+	}, nil
 }

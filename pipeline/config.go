@@ -27,8 +27,19 @@ type Config struct {
 	Retry *RetryConfig
 	// OnFinding is called for each finding found.
 	OnFinding func(f finding.Finding)
-	// OnFix is called when a fix is applied.
+	// OnFix is called when a fix stage completes for a finding, with
+	// applied reporting whether its edits landed.
+	//
+	// Deprecated: use [Config.OnFixOutcome] instead — it carries the exact
+	// status (applied, refused, conflict, invalid, failed, ...) and the
+	// error for failed resolutions. Retained for backward compatibility;
+	// setting both makes both fire.
 	OnFix func(f finding.Finding, applied bool)
+	// OnFixOutcome is called once per fixable finding with the per-finding
+	// outcome of the fix stage: the exact [FixOutcomeStatus] and, for
+	// failed resolutions, the typed error. Conflicts, refusals, and
+	// failures are first-class here, unlike the boolean OnFix.
+	OnFixOutcome func(f finding.Finding, status FixOutcomeStatus, err error)
 	// OnIteration is called at the end of each iteration.
 	OnIteration func(iter int, findings []finding.Finding)
 	// Metrics collects timing and count data. If nil, no metrics are collected.
@@ -38,11 +49,16 @@ type Config struct {
 	CorrelateFindings bool
 	// Processors are chained between detection and triage.
 	// Each processor transforms the findings before triage categorizes them.
-	Processors []FindingProcessor
+	Processors []FindingTransformer
 	// FixProviders are custom fix providers for domain-specific transformations.
 	// If nil, default text-based providers (OffsetProvider, LineProvider, SubstringProvider) are used.
 	// Register domain-specific providers (e.g., Go AST, Rust syn) for production accuracy.
 	FixProviders []FixProvider
+	// FixRollbackAllFiles opts into all-or-nothing fix application: when a
+	// file fails, every file modified earlier in the run is rolled back.
+	// By default only the failing file is restored and successfully applied
+	// fixes stay on disk (FixApplier.RollbackPolicyFailingFile).
+	FixRollbackAllFiles bool
 	// DetectorTimeouts configures per-detector timeouts. Map key is detector name,
 	// value is the timeout for that detector. Detectors not in the map use the
 	// global Timeout.
@@ -50,13 +66,6 @@ type Config struct {
 	// Logger provides optional structured logging for pipeline events.
 	// If nil, no logging occurs. Use slog.Default() for standard logging.
 	Logger *slog.Logger
-	// OnStage is called when a pipeline stage completes. See Stage constants for values.
-	// Iteration is 1-based. The findings count reflects findings available after that stage.
-	//
-	// Deprecated: Use [StageHooks] instead. OnStage only fires after stage completion
-	// and cannot abort the pipeline. StageHooks provides before/after events with
-	// context and abort capability.
-	OnStage func(stage Stage, iteration, findingsCount int)
 	// ByteLevelConflictDetection enables precise byte-level conflict detection
 	// during triage instead of the default position-based filtering.
 	// When true, FixEngine resolves each fix to actual byte offsets and detects
@@ -90,7 +99,7 @@ const DefaultTimeout = 10 * time.Minute
 
 // DefaultConfig returns a sensible default configuration.
 func DefaultConfig() Config {
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	return Config{
 		MaxIterations:     DefaultMaxIterations,
 		ParallelDetectors: true,

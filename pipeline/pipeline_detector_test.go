@@ -9,8 +9,7 @@ import (
 )
 
 func TestDetectParallel_SuppressionConsistency(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	makeFindings := func() []finding.Finding {
 		return []finding.Finding{
@@ -61,7 +60,7 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 		config := DefaultConfig()
 		config.ParallelDetectors = parallel
 		config.OnFinding = func(f finding.Finding) {
-			notified = append(notified, f.ID)
+			notified = append(notified, string(f.ID))
 		}
 
 		d1 := &mockDetector{name: "d1", findings: makeFindings()}
@@ -100,8 +99,7 @@ func TestDetectParallel_SuppressionConsistency(t *testing.T) {
 
 // TestDetectorFunc tests the DetectorFunc adapter.
 func TestDetectorFunc(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	called := false
 	f := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -119,12 +117,11 @@ func TestDetectorFunc(t *testing.T) {
 		t.Error("function was not called")
 	}
 
-	g.Expect(f.Name()).To(Equal("anonymous"))
+	g.Expect(f.Name()).To(Equal(""))
 }
 
 func TestNamedDetectorFunc(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	fn := makeFindingDetectorFunc("test")
 
@@ -138,7 +135,7 @@ func TestNamedDetectorFunc(t *testing.T) {
 	}
 
 	g.Expect(findings).To(HaveLen(1))
-	g.Expect(findings[0].ID).To(Equal("test"))
+	g.Expect(findings[0].ID).To(Equal(finding.ID("test")))
 }
 
 // TestFixApplier tests the FixApplier.

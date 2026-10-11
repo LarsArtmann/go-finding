@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"bytes"
 	"context"
 	"math"
 	"strings"
@@ -10,12 +11,11 @@ import (
 )
 
 func TestToSARIF_WithRelated(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:       "f1",
 				Rule:     "r1",
@@ -66,7 +66,7 @@ func testSARIFNaNHandled(t *testing.T, fn func(*Report) ([]byte, error)) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m", Severity: SeverityError,
 				Position: Position{File: "a.go"}, Confidence: Confidence(math.NaN()),
@@ -87,7 +87,7 @@ func TestToSARIF_NaNConfidence(t *testing.T) {
 func TestToSARIFFiltered_NaNConfidence(t *testing.T) {
 	t.Parallel()
 	testSARIFNaNHandled(t, func(r *Report) ([]byte, error) {
-		return r.ToSARIFFiltered(SeverityError)
+		return r.ToSARIFWithOpts(WithMinSeverity(SeverityError))
 	})
 }
 
@@ -113,7 +113,7 @@ func TestWriteSARIFFiltered(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m",
 				Severity: SeverityError, Position: Position{File: "a.go"},
@@ -127,7 +127,7 @@ func TestWriteSARIFFiltered(t *testing.T) {
 
 	var buf strings.Builder
 
-	err := r.WriteSARIFFiltered(context.Background(), &buf, SeverityWarning)
+	err := r.WriteSARIFWithOpts(context.Background(), &buf, WithMinSeverity(SeverityWarning))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	data := buf.String()
@@ -170,7 +170,7 @@ func TestFindingsFromSARIF_RoundTrip(t *testing.T) {
 		ToolName:    "govet",
 		Message:     "invalid format",
 		Severity:    SeverityCritical,
-		Position:    Position{File: "main.go", Line: 10, Column: 5},
+		Position:    Pos("main.go", 10, 5),
 		Category:    CategoryCorrectness,
 		Tags:        []Tag{"printf"},
 		FixStrategy: FixStrategySuggest,
@@ -240,4 +240,87 @@ func TestSeverityToSARIFLevel(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDeterminism_ToSARIF_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "det-sarif", Version: "1.0"})
+	r.AddFinding(Finding{
+		ID:       "f1",
+		Rule:     "r1",
+		Severity: SeverityError,
+		Position: Position{File: FilePath("a.go"), Line: 10},
+		Metadata: map[string]string{"zebra": "z", "alpha": "a", "mike": "m", "delta": "d"},
+		Tags:     []Tag{"tag-c", "tag-a", "tag-b"},
+	})
+	r.AddFinding(Finding{
+		ID:       "f2",
+		Rule:     "r2",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("b.go"), Line: 20},
+		Metadata: map[string]string{"k2": "v2", "k0": "v0", "k1": "v1"},
+	})
+	r.ComputeSummary()
+
+	first, err := r.ToSARIF()
+	if err != nil {
+		t.Fatalf("first ToSARIF: %v", err)
+	}
+
+	for range 100 {
+		got, err := r.ToSARIF()
+		if err != nil {
+			t.Fatalf("ToSARIF: %v", err)
+		}
+
+		if !bytes.Equal(first, got) {
+			t.Fatalf("non-deterministic ToSARIF output")
+		}
+	}
+}
+
+func TestDeterminism_WriteSARIF_RawBytesIdentical(t *testing.T) {
+	t.Parallel()
+
+	r := NewReport(ToolInfo{Name: "det-sarif", Version: "1.0"})
+	r.AddFinding(Finding{
+		ID:       "f1",
+		Rule:     "r1",
+		Severity: SeverityError,
+		Position: Position{File: FilePath("a.go"), Line: 10},
+		Metadata: map[string]string{"zebra": "z", "alpha": "a", "mike": "m"},
+	})
+	r.ComputeSummary()
+
+	var first bytes.Buffer
+	if err := r.WriteSARIF(context.Background(), &first); err != nil {
+		t.Fatalf("first WriteSARIF: %v", err)
+	}
+
+	for range 100 {
+		var buf bytes.Buffer
+		if err := r.WriteSARIF(context.Background(), &buf); err != nil {
+			t.Fatalf("WriteSARIF: %v", err)
+		}
+
+		if !bytes.Equal(first.Bytes(), buf.Bytes()) {
+			t.Fatalf("non-deterministic WriteSARIF output")
+		}
+	}
+}
+
+func TestSuppressionToSARIF_AllKinds(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	g.Expect(suppressionKindToSARIF(SuppressionInSource)).To(gomega.Equal(sarifSuppressionKindSource))
+	g.Expect(suppressionKindToSARIF(SuppressionInConfig)).To(gomega.Equal(sarifSuppressionKindExternal))
+	g.Expect(suppressionKindToSARIF(SuppressionInReview)).To(gomega.Equal(sarifSuppressionKindExternal))
+	g.Expect(suppressionKindToSARIF(SuppressionKind("bogus"))).To(gomega.Equal(sarifSuppressionKindSource),
+		"unknown kinds default to source")
+
+	g.Expect(suppressionStatusToSARIF(SuppressionInReview)).To(gomega.Equal(sarifSuppressionStatusReview))
+	g.Expect(suppressionStatusToSARIF(SuppressionInSource)).To(gomega.Equal(sarifSuppressionStatusAccepted))
+	g.Expect(suppressionStatusToSARIF(SuppressionKind("bogus"))).To(gomega.Equal(sarifSuppressionStatusAccepted),
+		"unknown kinds default to accepted")
 }

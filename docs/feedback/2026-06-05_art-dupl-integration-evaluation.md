@@ -1,8 +1,26 @@
 # Feedback Report: go-finding as Output Target for art-dupl
 
+> **Resolution (2026-09-23 docs-health pass):** this evaluation is fully superseded. All implementable gaps shipped (see the Implementation Status table below, updated 2026-09-07); the art-dupl integration itself now runs the other way — art-dupl reports drive go-finding dedup passes (2026-09-23 dedup pass used `art-dupl --type-aware --html` directly), and follow-up integration work is tracked as art-dupl issues #2/#3/#4. The GAP-2 GroupID consumer-intent issue in art-dupl remains unfiled (TODO_LIST). Kept in place as the canonical GAP inventory.
+
 **Date:** 2026-06-05
 **Author:** Lars Artmann (via Crush)
 **Context:** Evaluation of go-finding as the interchange/output layer for [art-dupl](https://github.com/LarsArtmann/art-dupl) — a Go code clone detection tool. art-dupl detects duplicated code via suffix tree + hash-based methods on ASTs and outputs results in text, HTML, JSON, SARIF, and plumbing formats.
+
+---
+
+## Implementation Status (updated 2026-09-07)
+
+| Gap                                    | Status                      | Notes                                                                                                                                       |
+| -------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| GAP-1: `RelatedRef.Range`              | ✅ Implemented              | `RelatedRef.Range *Range` (`finding.go`) + used by `ToLSP`/`FromLSP`                                                                        |
+| GAP-2: `GroupID`                       | ✅ Implemented (2026-09-07) | `Finding.GroupID`, `WithGroupID`, `Report.GroupFindings()`, SARIF property `go-finding/groupId`, LSP `Data.GroupID`                         |
+| GAP-3: Per-relationship metadata       | ⏸️ Deferred                  | As recommended — use `Finding.Metadata`                                                                                                     |
+| GAP-4: `LSPDiagnosticTag`              | ✅ Implemented              | Types + `Tags` field on `LSPDiagnostic`; `ToLSP` re-emits tags from `Metadata[LSPDiagnosticTagsKey]` (2026-09-07); `FromLSP` preserves them |
+| GAP-5: Snippet in SARIF                | ✅ Implemented              | `region.snippet` + property fallback, both directions                                                                                       |
+| GAP-6: `ToLSP` uses `RelatedRef.Range` | ✅ Implemented              | Related info carries real spans                                                                                                             |
+| GAP-7: Strict `Category.IsValid()`     | ✅ Resolved differently     | `IsStandard()` (allow-list) vs `IsValid()` (well-formed custom) split; no global registry                                                   |
+| GAP-8: `FromLSP` preserves tags        | ✅ Implemented              | `Metadata[LSPDiagnosticTagsKey]`                                                                                                            |
+| GAP-9: `iter.Seq` on `Report.All()`    | ✅ Implemented              | `report_query.go`                                                                                                                           |
 
 ---
 
@@ -138,6 +156,13 @@ ref := RelatedRef{
 
 **Recommendation:** Defer. Use `Finding.Metadata["go-finding/clone-similarity"]` on the primary finding. Revisit if more consumers need per-relationship metadata.
 
+> **Decision D8 (final, 2026-09-08):** Deferred stands. Revisit trigger is
+> **the second consumer needing per-relationship metadata** (any field that is
+> a property of the finding-pair, not of either finding alone). Until then,
+> `Finding.Metadata` conventions are the sanctioned carrier — adding
+> `RelatedRef.Metadata` for one consumer is not worth the allocation cost on
+> every finding with related refs.
+
 ---
 
 ## Interchange Fidelity Gaps
@@ -215,6 +240,15 @@ This should use `rel.Range` when available.
 `Category("securty").IsValid()` returns `true` — any non-empty lowercase-hyphen string passes. This affects all consumers, not just art-dupl.
 
 **Proposed:** Add a registered-categories set and check against it. Custom categories could be registered at init time or via a `RegisterCategory` function.
+
+> **Decision D5 (final, 2026-09-08):** Resolved differently — no global
+> registry. The split that shipped: `Category.IsStandard()` is the allow-list
+> (canonical, curated set), `Category.IsValid()` stays well-formedness only
+> (non-empty, lowercase-hyphen) so custom categories remain first-class without
+> init-time registration. Rationale: a process-global registry reintroduces the
+> mutable-global/alias-registry complexity removed with `SeverityAliases`; a
+> predicate split expresses the same intent without shared state. This closes
+> GAP-7 — no further action planned.
 
 ### GAP-8: `FromLSP` doesn't preserve `DiagnosticTag`
 

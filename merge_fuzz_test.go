@@ -18,15 +18,15 @@ func FuzzMergeRandom(f *testing.F) {
 		findings := make([]Finding, n)
 		for i := range findings {
 			findings[i] = Finding{
-				ID:       randomSeedID(rng),
-				Rule:     randomSeedRule(rng),
+				ID:       ID(randomSeedID(rng)),
+				Rule:     RuleName(randomSeedRule(rng)),
 				Severity: randomSeverity(rng),
 				Position: Position{
-					File:   randomSeedFile(rng),
+					File:   FilePath(randomSeedFile(rng)),
 					Line:   rng.Intn(1000),
 					Column: rng.Intn(200),
 				},
-				ToolName: randomSeedTool(rng),
+				ToolName: ToolName(randomSeedTool(rng)),
 			}
 		}
 
@@ -44,10 +44,10 @@ func FuzzMergeRandom(f *testing.F) {
 			t.Fatal("Merge returned nil")
 		}
 
-		if !dedup && len(merged.Findings) != len(findings) {
+		if !dedup && len(merged.findings) != len(findings) {
 			t.Fatalf(
 				"merge without dedup: got %d findings, want %d",
-				len(merged.Findings),
+				len(merged.findings),
 				len(findings),
 			)
 		}

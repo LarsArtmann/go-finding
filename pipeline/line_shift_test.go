@@ -8,8 +8,7 @@ import (
 )
 
 func TestNewLineShiftMap_NoEdits(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	m := NewLineShiftMap([]byte("hello\nworld\n"), nil)
 	g.Expect(m.ShiftedLine(1)).To(gomega.Equal(1))
@@ -17,8 +16,7 @@ func TestNewLineShiftMap_NoEdits(t *testing.T) {
 }
 
 func TestNewLineShiftMap_PureInsertion(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	// "line1\nline2\nline3\nline4\n"
 	// Insert 2 new lines before "line3" (offset 12)
@@ -41,8 +39,7 @@ func TestNewLineShiftMap_PureInsertion(t *testing.T) {
 }
 
 func TestNewLineShiftMap_ReplacementNoLineChange(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	original := []byte("line1\nline2\n")
 
@@ -59,8 +56,7 @@ func TestNewLineShiftMap_ReplacementNoLineChange(t *testing.T) {
 }
 
 func TestNewLineShiftMap_ReplacementAddsLines(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	// Replace "line2\n" (1 line) with "line2a\nline2b\n" (2 lines)
 	original := []byte("line1\nline2\nline3\n")
@@ -81,8 +77,7 @@ func TestNewLineShiftMap_ReplacementAddsLines(t *testing.T) {
 }
 
 func TestNewLineShiftMap_Deletion(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	// Delete "line3\n" (offset 12, length 6)
 	original := []byte("line1\nline2\nline3\nline4\n")
@@ -103,8 +98,7 @@ func TestNewLineShiftMap_Deletion(t *testing.T) {
 }
 
 func TestNewLineShiftMap_MultipleEdits(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	original := []byte("line1\nline2\nline3\nline4\nline5\n")
 
@@ -131,8 +125,7 @@ func TestNewLineShiftMap_MultipleEdits(t *testing.T) {
 }
 
 func TestNewLineShiftMap_Entries(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	original := []byte("a\nb\nc\n")
 	edit := FixEdit{
@@ -147,8 +140,7 @@ func TestNewLineShiftMap_Entries(t *testing.T) {
 }
 
 func TestLineShiftMap_ShiftedPosition_LineOnly(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	// Insert 2 lines before line 3.
 	original := []byte("line1\nline2\nline3\nline4\n")
@@ -163,8 +155,7 @@ func TestLineShiftMap_ShiftedPosition_LineOnly(t *testing.T) {
 }
 
 func TestLineShiftMap_ShiftedPosition_ColumnShift(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	// Single-line edit: replace "ab" with "abcde" at offset 6 on line 2.
 	// "line1\nab here\nline3\n"
@@ -191,8 +182,7 @@ func TestLineShiftMap_ShiftedPosition_ColumnShift(t *testing.T) {
 }
 
 func TestLineShiftMap_ShiftedRange(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	// Insert 1 line before line 3.
 	original := []byte("line1\nline2\nline3\nline4\n")
@@ -211,16 +201,14 @@ func TestLineShiftMap_ShiftedRange(t *testing.T) {
 }
 
 func TestLineShiftMap_ShiftedRange_Nil(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	m := NewLineShiftMap([]byte("x\n"), nil)
 	g.Expect(m.ShiftedRange(nil)).To(gomega.BeNil())
 }
 
 func TestLineShiftMap_ShiftedPosition_NoEntries(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	m := NewLineShiftMap([]byte("a\nb\n"), nil)
 	pos := finding.Position{Line: 2, Column: 3}

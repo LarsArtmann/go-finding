@@ -6,6 +6,12 @@ type Range struct {
 	End   Position `json:"end"`   // Optional: end position
 }
 
+// SameFile reports whether the range's Start and End are in the same file.
+// Returns true when End.File is empty (single-file convention) or matches Start.File.
+func (r Range) SameFile() bool {
+	return r.End.File == "" || r.End.File == r.Start.File
+}
+
 // IsValid returns true if the range has a valid start position.
 func (r Range) IsValid() bool {
 	return r.Start.IsValid()
@@ -33,6 +39,30 @@ func (r Range) IsInverted() bool {
 // HasEnd returns true if the range has an end position set.
 func (r Range) HasEnd() bool {
 	return r.End.Line > 0 || r.End.Offset >= 0
+}
+
+// EndOrStart returns the effective end position of the range.
+// A range with no end (End.Line == 0) is treated as a single point
+// at Start. This matches the convention used for line-based range
+// arithmetic (overlap, intersection, extension), where a single-point
+// range's effective end equals its start.
+func (r Range) EndOrStart() Position {
+	if r.End.Line == 0 {
+		return r.Start
+	}
+
+	return r.End
+}
+
+// EndOffsetOrStart returns the effective end byte offset of the range.
+// A range with no offset end (End.Offset < 0) is treated as a single
+// point at Start. This is the offset-based counterpart to EndOrStart.
+func (r Range) EndOffsetOrStart() int {
+	if r.End.Offset < 0 {
+		return r.Start.Offset
+	}
+
+	return r.End.Offset
 }
 
 // LineCount returns the number of lines spanned by the range.
@@ -68,11 +98,8 @@ func (r Range) Length() int {
 	}
 
 	length := r.End.Offset - r.Start.Offset
-	if length < 0 {
-		return 0
-	}
 
-	return length
+	return max(length, 0)
 }
 
 // Equal reports whether two ranges are identical.
@@ -133,20 +160,23 @@ func (r Range) checkColumnRange(p Position) bool {
 }
 
 // containsByOffset checks if position is within range using byte offsets.
+// Respects the Offset sentinel convention: End.Offset < 0 means "unset", so a
+// range without an end offset is treated as a single point at Start.Offset
+// (via [Range.EndOffsetOrStart]). Offset 0 is a valid byte offset (start of file).
 func (r Range) containsByOffset(p Position) bool {
-	if r.Start.Offset >= 0 && p.Offset >= 0 {
-		if p.Offset < r.Start.Offset {
-			return false
-		}
-
-		if r.End.Offset > 0 && p.Offset > r.End.Offset {
-			return false
-		}
-
-		return true
+	if r.Start.Offset < 0 || p.Offset < 0 {
+		return false
 	}
 
-	return false
+	if p.Offset < r.Start.Offset {
+		return false
+	}
+
+	if p.Offset > r.EndOffsetOrStart() {
+		return false
+	}
+
+	return true
 }
 
 // Contains reports whether the position is within the range.
@@ -165,28 +195,31 @@ func (r Range) Contains(p Position) bool {
 }
 
 // HasOffset reports whether the byte offset is set (not the -1 sentinel).
-// Note: Position{} has Offset=0, which HasOffset reports as true despite
-// being the zero value. Use IsZero() to check for complete unset state.
+// Position{} (the Go zero value) has Offset=0, which HasOffset reports as true —
+// byte 0 is a valid offset. Constructors (Pos, NewRange, FromLSP, SARIF import)
+// set Offset to -1 when no byte offset is available, so HasOffset returns false.
 func (p Position) HasOffset() bool {
 	return p.Offset >= 0
 }
 
 // Pos is a convenience constructor for Position.
 // It creates a Position with the given file, line, and column.
-func Pos(file string, line, column int) Position {
-	return Position{File: file, Line: line, Column: column} //nolint:exhaustruct
+// Offset is set to -1 (unset) since byte offset is not provided.
+func Pos(file FilePath, line, column int) Position {
+	return Position{File: file, Line: line, Column: column, Offset: -1}
 }
 
 // NewRange creates a Range with the given file, start/end lines, and columns.
-func NewRange(file string, startLine, startCol, endLine, endCol int) Range {
+// Offsets are set to -1 (unset) since byte offsets are not provided.
+func NewRange(file FilePath, startLine, startCol, endLine, endCol int) Range {
 	return Range{
-		Start: Position{File: file, Line: startLine, Column: startCol}, //nolint:exhaustruct
-		End:   Position{File: file, Line: endLine, Column: endCol},     //nolint:exhaustruct
+		Start: Position{File: file, Line: startLine, Column: startCol, Offset: -1},
+		End:   Position{File: file, Line: endLine, Column: endCol, Offset: -1},
 	}
 }
 
 // NewRangePtr creates a pointer to a Range with the given file, start/end lines, and columns.
-func NewRangePtr(file string, startLine, startCol, endLine, endCol int) *Range {
+func NewRangePtr(file FilePath, startLine, startCol, endLine, endCol int) *Range {
 	r := NewRange(file, startLine, startCol, endLine, endCol)
 
 	return &r

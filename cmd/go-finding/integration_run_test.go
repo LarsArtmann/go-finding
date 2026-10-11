@@ -69,8 +69,7 @@ func TestSetupProfiling(t *testing.T) {
 }
 
 func TestRunWithConfig(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")
 
@@ -106,12 +105,12 @@ detectors:
 	if err != nil {
 		t.Fatalf("toPipelineConfig: %v", err)
 	}
+
 	g.Expect(pc.MaxIterations).To(Equal(1))
 }
 
 func TestRunWithInvalidSeverity(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	// Test that run returns error for bad severity — this exercises parseSeverity via the run() path.
 	// Since run() reads flags, test parseSeverity directly instead.
 	_, err := parseSeverity("bogus")
@@ -120,8 +119,7 @@ func TestRunWithInvalidSeverity(t *testing.T) {
 }
 
 func TestLoadConfig_WithInvalidDetector(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.yaml")

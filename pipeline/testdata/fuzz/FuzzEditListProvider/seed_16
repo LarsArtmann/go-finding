@@ -1,0 +1,9 @@
+go test fuzz v1
+[]byte("\n0")
+int(5)
+int(2)
+int(1)
+int(-85)
+int(2)
+int(-52)
+string("0")

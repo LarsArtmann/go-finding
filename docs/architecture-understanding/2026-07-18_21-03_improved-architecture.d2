@@ -1,0 +1,66 @@
+direction: down
+
+current: "v1.x — Current State (2026-07-18)" {
+  shape: rectangle
+  style.fill: "#16161a"
+  style.stroke: "#6eb5ff"
+
+  v1_finding: "Finding (flat struct)\n20+ fields, no grouping" {shape: rectangle}
+  v1_position: "Position (3 sentinel conventions)\n0=unset for Line/Col\n-1=unset for Offset\nzero-value Position{} = valid" {shape: rectangle}
+  v1_fix: "FixStrategy (string union)\nNormalizeFixStrategy workaround\nDirect requires BeforeCode = runtime check" {shape: rectangle}
+  v1_tags: "Tags []Tag\n(order-sensitive equality)" {shape: rectangle}
+  v1_ptrs: "Pointer-as-state\nRange *Range, Suppression *Suppression\n(nil/zero/valid = 3 states)" {shape: rectangle}
+}
+
+target: "v2.0 — Target State (from TODO_LIST)" {
+  shape: rectangle
+  style.fill: "#18181d"
+  style.stroke: "#ffb347"
+
+  v2_finding: "Finding (composed sub-structs)\nIdentity{ID,Rule,ToolName}\nLocation{Position,Range}\nClassification{Category,Tags,Confidence}\nFix{Strategy,Suggestion,BeforeCode,AfterCode}" {
+    shape: rectangle
+    style.fill: "#18181d"
+  }
+
+  v2_position: "Position (single sentinel)\nOption[T] generic helper\none convention for all fields" {
+    shape: rectangle
+    style.fill: "#18181d"
+  }
+
+  v2_fix: "FixStrategy (interface union)\ntype Fix interface { isFix() }\nNoFix, Suggestion{Text},\nDirect{Before,After}, AIReserved\nImpossible states unrepresentable" {
+    shape: rectangle
+    style.fill: "#18181d"
+  }
+
+  v2_tags: "TagSet map[Tag]struct{}\n(set semantics at type level\nno order-sensitive equality)" {
+    shape: rectangle
+    style.fill: "#18181d"
+  }
+
+  v2_ptrs: "Value + bool pairs\nRange (value), Suppression (value)\nhasRange bool, hasSuppression bool\n(2 states instead of 3)" {
+    shape: rectangle
+    style.fill: "#18181d"
+  }
+}
+
+v1_finding -> v2_finding: "compose into sub-structs\n(breaking: JSON shape change)"
+v1_position -> v2_position: "adopt Option[T]\n(breaking: API change)"
+v1_fix -> v2_fix: "interface-based union\n(breaking: eliminates NormalizeFixStrategy)"
+v1_tags -> v2_tags: "map[Tag]struct{}\n(breaking: equality change)"
+v1_ptrs -> v2_ptrs: "eliminate nil/zero ambiguity\n(breaking: field type changes)"
+
+benefits: "Benefits of v2.0" {
+  shape: rectangle
+  style.fill: "#18181d"
+  style.stroke: "#7dff95"
+
+  b1: "Impossible states unrepresentable" {shape: text}
+  b2: "Focused functions accept sub-structs\n(e.g. validateLocation(Location{}))" {shape: text}
+  b3: "No runtime normalization needed\n(types enforce invariants)" {shape: text}
+  b4: "Cleaner equality semantics\n(set comparison, not order-sensitive)" {shape: text}
+}
+
+v2_finding -> benefits: "enables"
+v2_position -> benefits: "enables"
+v2_fix -> benefits: "enables"
+v2_tags -> benefits: "enables"

@@ -5,7 +5,649 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+> **Sub-module changelogs:** [pipeline/CHANGELOG.md](pipeline/CHANGELOG.md),
+> [analysis/CHANGELOG.md](analysis/CHANGELOG.md),
+> [cmd/go-finding/CHANGELOG.md](cmd/go-finding/CHANGELOG.md),
+> [toolsdk/CHANGELOG.md](toolsdk/CHANGELOG.md).
+
 ## [Unreleased]
+
+### Added
+
+- **`DetectResult` + `DetectorV2` coverage channel (T07b)** — detectors that
+  can measure their own coverage implement `DetectorV2.DetectV2(ctx)` and
+  return `DetectResult{Findings, FilesScanned, SkippedModules}`; hosts call
+  `RunDetect(ctx, d)` (uses v2 when implemented, falls back to plain `Detect`
+  with coverage zeroed — documented, not an error) and `Report.AddDetectResult`
+  to feed findings plus coverage into a report. `FilesScanned` accumulates
+  across detectors, `SkippedModules` unions in first-seen order, and both
+  survive `ComputeSummary` recomputation. Answers "did the tool actually see
+  every file?" from the interchange (Summary.FilesScanned/SkippedModules
+  shipped in v1.14.0 with no way for a Detector to populate them).
+  Source-compatible: `Detector` is unchanged, `DetectorV2` embeds it.
+
+### Fixed
+
+- **CI and Release workflow Go pins matched to the toolchain floor** — both
+  workflows pinned `go-version: "1.26"` while `go.mod`/`go.work` require
+  `go 1.27`, so every master CI run since 2026-09-20 failed at setup and both
+  v1.13.0 Release runs died in the test job (`go.work requires go >= 1.27`),
+  leaving v1.13.0 with no GitHub Release. Pins are now `1.27`; the red runs
+  were invisible to local gates, which already ran Go 1.27.
+
+## [1.14.0] - 2026-10-05
+
+Root release: the toolsdk options channel (PR #41), the toolsdk switch-topology
+API, report coverage evidence, and the json/v2 GA build change. Sub-module
+releases ride along: [toolsdk/v1.14.0](toolsdk/CHANGELOG.md) (options channel)
+and [toolsdk/v1.15.0](toolsdk/CHANGELOG.md) (`Spec.SwitchCases`). Train
+completed 2026-10-11: [pipeline/v1.14.0](pipeline/CHANGELOG.md) (typed edit
+lists end-to-end), [analysis/v1.14.0](analysis/CHANGELOG.md) (lossless
+multi-edit round-trips), and
+[cmd/go-finding/v1.14.0](cmd/go-finding/CHANGELOG.md) (CLI pinned to the
+v1.14.0 siblings).
+
+### Added
+
+- **toolsdk options channel (PR #41)** — tools can declare typed `Option`s
+  (name, kind, default) on their `Spec`; consumers pass per-run values that are
+  validated against the declarations (`ErrUnknownOption` on typos,
+  `ErrInvalidOption`/`ErrDuplicateOption` on malformed specs).
+- **toolsdk `Spec.SwitchCases` + `ExcludedRuleIDs` (toolsdk/v1.15.0)** — SDK
+  tools can declare conditional repair paths keyed on diagnose finding rule
+  IDs, mirroring BuildFlow's `domain/tool.SwitchCase` field-for-field; mutual
+  exclusion of mutating repair cases is encoded via `ExcludedRuleIDs`
+  (go-workflow runs every predicate-matching case in parallel).
+- **`Summary.FilesScanned` always serialized + `Summary.SkippedModules`** —
+  a report can now say "scanned 0 files" as coverage evidence instead of
+  omitting the field (clean full scans emit `"filesScanned": 0`), and monorepo
+  coverage boundaries have a home: `SkippedModules` carries the nested go.mod
+  modules a tool deliberately did not analyze; module-agnostic tools leave it
+  nil and their JSON is unchanged.
+- **`finding.TextEdit` and `Finding.Edits` (issue #36)** — typed multi-edit fix
+  representation: `Start`/`End` positions plus `NewText`, with `HasSpan`,
+  `IsInsertion`, `IsDeletion`, `EffectiveFile`, and `Validate` helpers,
+  order-independent list equality, and builder support via `WithEdits`. When
+  set, `Edits` is the authoritative machine representation of the fix;
+  `BeforeCode`/`AfterCode` remain the first-edit display summary. Direct fixes
+  now validate with either representation ("requires BeforeCode, AfterCode, or
+  Edits"). SARIF export/import round-trips edit lists, including byte offsets
+  via `region.byteOffset`/`byteLength`.
+- **`pipeline.EditListProvider` (issue #36)** — resolves a finding's typed edit
+  list (`Finding.Edits`) to byte-level edits: byte offsets directly, line/column
+  via the shared line index. Runs first in the default provider chain (before
+  Offset, Line, and Substring). Loud failures instead of partial application:
+  lists spanning files fail with `ErrEditCrossFile`; stale or out-of-bounds
+  offsets fail with `ErrEditStale` (both surface as `FixOutcomeFailed` with the
+  provider cause in the error chain). See
+  [pipeline/CHANGELOG.md](pipeline/CHANGELOG.md).
+
+### Changed
+
+- **`GOEXPERIMENT=jsonv2` no longer required** — `encoding/json/v2` is stable
+  and enabled by default since Go 1.27, and the toolchain floor was already
+  `go 1.27`. The env var was removed from the flake, CI/Release workflows,
+  scripts, and all docs. Consumers must build with Go 1.27+ (previously:
+  Go 1.26 + the experiment flag).
+- **`ApplySimpleFixes` refuses multi-edit findings** — findings whose `Edits`
+  list more than one edit are skipped with an actionable reason pointing at the
+  pipeline `FixApplier`, instead of silently fixing only the first edit.
+- **`FixEngine` applied counts are per finding, not per edit (pipeline)** — a
+  multi-edit fix counts once in `Apply`/`ApplyWithConflicts` results and
+  `ApplyReport.Applied`, matching "number of successful fixes" semantics.
+- **Multi-edit suggested fixes are lossless (analysis)** —
+  `FromDiagnosticWithSource` carries all `TextEdits` of a diagnostic's first
+  `SuggestedFix` into `Finding.Edits` (previously edits 2..N were silently
+  dropped, issue #36); `ToDiagnostic` reconstructs the full edit list.
+  Alternative fixes (`SuggestedFixes` 1..N) remain first-wins and are now
+  documented as such.
+
+## [1.13.0] - 2026-09-22
+
+### Added
+
+- **`toolsdk.Trigger.NotRequires`** — disqualifying file patterns that express
+  ownership deference: a tool whose NotRequires pattern matches does not run
+  (e.g. a standalone formatter deferring to a repo's own treefmt config).
+  Field-for-field parity with BuildFlow's `domain/tool.Trigger`; see
+  [toolsdk/CHANGELOG.md](toolsdk/CHANGELOG.md).
+
+### Fixed
+
+- **Tag validation error message** — the finding-validation error for invalid
+  `Tags` entries claimed "tags must be non-empty" even for non-empty tags that
+  violated the lowercase-hyphenated convention; the message now states the
+  actual contract (first char a-z, then a-z0-9-).
+
+## [1.12.0] - 2026-09-17
+
+### Added
+
+- **`PipelineResult.Outcomes` (pipeline)** — per-finding fix outcomes are now exposed on the
+  pipeline result itself, populated alongside the `Config.OnFixOutcome` callback whenever fix
+  application ran. Deduplicated to the first outcome per finding identity, so re-detected
+  findings whose fix already applied no longer force every in-process consumer to hand-roll a
+  collector plus dedup (issue #32). Empty in `DryRun` mode or when nothing was fixable.
+
+### Fixed
+
+- **Flaky linter-category registry tests** — `TestRegisterLinterCategory` overrode the shared
+  global registry entry `govet` while parallel tests asserted the built-in mapping, so the
+  stress gate failed nondeterministically (observed as `govet maps to correctness` receiving
+  `security` on CI repeat=20). The global function is now pinned with a name unique to the
+  test and no pre-state assertion (the registry also persists across `-count` iterations);
+  override semantics are pinned on an isolated registry. Test-only; no library behavior change.
+- **Dependency graph hygiene** — dropped stray `go-finding/pipeline` requires from the
+  analysis, pipeline, and toolsdk go.mod files (declared dependencies that no code imports),
+  restored the toolsdk `go` directive to match go.work (`1.26.7`), and re-attached the toolsdk
+  package doc comment to its `package` statement (revive `package-comments`).
+- **`cmd/go-finding` go.sum resync** — checksums now match the published v1.11.0 tags and the
+  indirect `go-branded-id` bump (v0.5.1 → v0.6.0).
+
+## [1.11.0] - 2026-09-17
+
+### Added
+
+- **Release workflow concurrency guard** — the Release workflow now runs under a
+  queueing concurrency group (`cancel-in-progress: false`), so a manual dispatch
+  can no longer race the tag-push auto-trigger into two concurrent GoReleaser
+  runs (the v1.9.2 422 duplicate-asset failure is now impossible by construction).
+- **Preflight unpushed-commits gate** — `release-preflight.sh` fails when commits
+  exist in `@{u}..HEAD` or the branch has no upstream, closing the gap that let
+  CI be dispatched twice against unpushed commits on 2026-09-08.
+- **Preflight worktree-hygiene gate** — fails on any git worktree registered
+  outside the repo (the /tmp strays that went unnoticed for two days) and on
+  prunable worktree registrations.
+- **Docs version-stamp guard** — `docs-api-check.sh` now requires the README
+  `finding.Version` example to exist and to match `version.go`, so the
+  current-version stamp can no longer silently lag a release (v1.9.1/v1.9.2
+  slipped this way).
+- **Preflight self-test covers `--post-tag` failure path** — the self-test
+  injects a missing tag in post-tag mode and asserts preflight FAILs; previously
+  only the happy path was proven.
+
+### Fixed
+
+- **Integer underflow in correlation proximity sorting** — `correlateByProximity`
+  computed line deltas with subtraction (`a.Line - b.Line`), which wraps for
+  negative deltas under wide line ranges and silently mis-sorts correlated
+  findings. Replaced with `cmp.Compare` (8a9b7c8); ordering is pinned by test.
+- **Error-handling hardening — erraudit gate now 0 violations across all 5 modules** —
+  fixed 3 critical context-loss errors (`FileBackup` backup-dir failures now carry
+  the directory via `ioErrorAt`; `NewPipeline` config-validation and fix-applier
+  failures now include `rootDir`), migrated the govet/staticcheck detectors from
+  `errors.As` to `errors.AsType`, and documented 27 intentional patterns with
+  reasoned `//nolint:erraudit` directives (`nolint-audit`: 0 stale).
+- **New gate: `scripts/error-audit.sh`** — runs the erraudit hierarchical
+  error-handling analyzer in every module with an explicit OK/FAIL verdict;
+  the FAIL path is proven by injected-violation self-test. Policy and the
+  samber/oops rejection are documented in
+  `docs/research/erraudit-violation-analysis.md` §9. CI wiring is blocked
+  until the erraudit repository is public.
+- **Version drift fixed** — `cmd/go-finding` now requires `pipeline v1.10.0`
+  (the v1.10.0 release bumped sub-module requires on master but missed this
+  one); alignment tags `pipeline/v1.10.0`, `analysis/v1.10.0`, and
+  `cmd/go-finding/v1.10.0` created at master (push pending, ≤3-per-push rule).
+- **flake.nix vendorHash refreshed** after the indirect dependency bumps
+  (`golang.org/x/net`, `golang.org/x/text`, `golang.org/x/tools`); the module
+  sums left half-tidied by that bump were completed with `go mod tidy`, and
+  `nix flake check` passes again.
+
+## [1.10.0] - 2026-09-10
+
+No core-module code changes.
+
+### Added
+
+- **`toolsdk` sub-module** (`github.com/larsartmann/go-finding/toolsdk`): the BuildFlow
+  provider plugin contract, migrated from `github.com/larsartmann/buildflow/tool-sdk`.
+  External tools declare a `Spec` (name, trigger, inputs, `Detect`/`Repair` via core
+  `finding` interfaces) and self-register at init; BuildFlow discovers them via `All()`
+  and converts each into a DAG provider. Depends only on the core module. First release:
+  `toolsdk/v1.10.0`, aligned with this root release.
+
+## [1.9.2] - 2026-09-08
+
+Release-pipeline fix only: no code changes in any module.
+
+### Fixed
+
+- **Homebrew formula template** — the GoReleaser brew `test` stanza used `#{{bin}}`, which Go's template engine evaluates as a call to an undefined function `bin` (first live GoReleaser run failed on exactly this after successfully building, checksumming, and cosign-verifying all platform archives). The correct stanza is `system "#{bin}/go-finding --version"` — `#{bin}` is Ruby/Homebrew interpolation evaluated at install time.
+
+## [1.9.1] - 2026-09-08
+
+Test-only patch release: no production code changes in any module. Tags exist so the Release workflow finally runs green on a public repo (the v1.9.0 run failed in its test job on an environment-flaky test, before reaching GoReleaser).
+
+### Fixed
+
+- **`TestFinding_WriteJSON_NewlineError` made environment-robust** — The test pinned the Nth write call, but the encoder's internal flush granularity is not contractual and varies across environments (the same commit passed CI's test job and failed the Release run's). It now fails exactly the semantic target — the single-byte `\n` trailing-newline write — via a writer that rejects only that payload. Also: `docs-api-check.sh` now exits loudly (code 2) when ripgrep is missing instead of reporting every identifier as absent, and its CI job installs ripgrep; the CI stress job is split per suite type (ginkgo suites reject `go test -count>1`).
+
+## [1.9.0] - 2026-09-08
+
+No core-module API changes. Pipeline: flight-recorder `MaxFiles` rotation + `Compress` (gzip) snapshots, with rotation now serialized against concurrent writes — see `pipeline/CHANGELOG.md`. CLI: `-trace-max-files` / `-trace-gzip` flags; staticcheck parser regression-guarded against real tool output.
+
+### Changed
+
+- **Benchmark regression gate redesigned (evidence-based)** — Sustained full-suite benchmark runs thermally depress later benchmarks on the dev machine (identical code measured -9%..+150% depending on suite position; `IntervalIndex_Query/1000` = 9.3µ fresh vs 20.1µ late-suite, n=10, p=0.000 both). `bench-check.sh` now fails on allocation regressions beyond +10% (deterministic signal, ±0% on unchanged code) and on time regressions beyond 3.5x (algorithmic blowouts). Fine-grained cross-session time comparison stays a manual, filtered-benchmark exercise. Baseline regenerated at v1.9.0.
+- **`release-preflight.sh` hardened** — new `--post-tag` mode (all 4 tags must exist + `version-check.sh` runs), `--bench` mode now captures benchmarks itself (previously compared against a stale temp file — a dead-gate bug found by executing the mode), and `scripts/release-preflight-selftest.sh` injects a synthetic tag collision + version drift into a disposable worktree and asserts the gate FAILS on each (wired as a CI job).
+
+## [1.8.0] - 2026-09-08
+
+### Added
+
+- **`Report.GroupFindingsSorted()` + `Group`** — Deterministic variant of `GroupFindings()`: groups sorted by `GroupID`, members in report order, `nil` when no grouped findings. For tests, serialization, and stable output where map iteration order must not leak.
+- **`Template.WithGroupID`** — Stamps one `GroupID` onto every finding built from the template (whole template = one clone group); per-finding groups remain available via `Builder.WithGroupID`.
+
+### Changed
+
+- **`GroupID` validation (D7)** — A set `GroupID` must now be a machine-safe identifier: no whitespace or control characters, at most 128 bytes (empty = not grouped, always valid). The charset stays permissive (underscores, dots, uppercase allowed) so existing consumer formats keep validating; the guard protects SARIF property keys, LSP data, and map keys from corruption. `GroupID.IsValid()` is the standalone check.
+- **Unsafe-path fix findings now surface as failed outcomes (pipeline)** — Findings whose `Position.File` resolves outside the applier root (e.g. `../../etc/passwd`) were previously dropped silently during grouping. They are now reported as `failed` outcomes with a validation-category error and included in the joined error return; safe findings in the same run still apply. See `pipeline/CHANGELOG.md`.
+
+### Fixed
+
+- **Sub-module go.mod core references realigned (v1.8.0 tags)** — The v1.7.0 sub-module tags carried stale `go-finding v1.6.0` requires (the sync fix landed on master after tagging). Verified non-breaking: `pipeline@v1.7.0` and `analysis@v1.7.0` compile standalone against core v1.6.0, so proxy consumers were unaffected in practice — but the metadata was semantically wrong. The v1.8.0 sub-module tags reference core v1.8.0. `scripts/release-preflight.sh` now gates version drift (and every structural check) before any tag exists.
+
+## [1.7.0] - 2026-09-08
+
+### Added
+
+- **`GroupID` on `Finding`** — New optional `GroupID GroupID` field groups findings that belong to the same logical set (e.g., a clone group of N duplicated code blocks from art-dupl). Branded string type like `ID`/`RuleName`/`FilePath`; JSON key `groupId`, omitted when empty. Round-trips losslessly through JSON, SARIF (property `go-finding/groupId`), and LSP (`LSPDiagnosticData.GroupID`). Builder support via `WithGroupID`. `Report.GroupFindings()` returns active findings grouped by `GroupID`, excluding suppressed and ungrouped findings.
+- **`ToLSP` emits LSP diagnostic tags from metadata** — Completes the LSP tag round-trip: a finding that carries `Metadata[LSPDiagnosticTagsKey]` (as written by `FromLSP`) now produces an `LSPDiagnostic` with `Tags` populated, so LSP clients (faded/struck-through rendering for `Unnecessary`) see the tags on every conversion.
+
+### Changed
+
+- **Fix rollback scope is now per-file by default** — Previously, any file failure rolled back every file modified earlier in the run, discarding clean fixes because of one bad file (see issue #28). Now only the failing file is restored and earlier files keep their applied fixes. Opt back into all-or-nothing via `FixApplier.SetRollbackPolicy(RollbackPolicyAllFiles)`, `pipeline.Config.FixRollbackAllFiles`, or the config-file field `fixRollbackAllFiles`. Soft per-finding failures (provider resolve errors, refused findings) no longer abort a run: they are reported while all successfully applied fixes stay on disk.
+
+### Fixed
+
+- **`ToLSP` no longer emits negative diagnostic tags** — Malformed `Metadata[LSPDiagnosticTagsKey]` values (e.g. `"-1,abc,3"`) previously produced `LSPDiagnostic.Tags` containing negative numbers, which are invalid per the LSP specification (tags are 1-based: 1 = Unnecessary, 2 = Deprecated). Negative values are now rejected during parsing. Found by the new `FuzzParseLSPDiagnosticTags` fuzz target and pinned by a golden-wire test.
+
+### Dependencies
+
+- Refreshed indirect `golang.org/x/` dependencies that drifted in via an automated housekeeping commit (`c04af34`): `x/mod` 0.38.0 → 0.40.0, `x/net` 0.57.0 → 0.58.0, `x/text` 0.40.0 → 0.41.0, `x/tools` 0.48.0 → 0.49.0 (core + pipeline + CLI modules, all `// indirect`; no direct dependency changes). Reviewed and confirmed intentional: kept instead of reverted per no-churn policy. Full test suite green.
+
+## [1.6.0] - 2026-08-08
+
+### Added
+
+- **`pipeline.FlightRecorderFileConfig` + `ConfigFile.ResolveFlightRecorder()`** — Flight recorder configuration via JSON config files. The `FlightRecorderFileConfig` struct exposes 5 fields (`Enabled`, `OutputDir`, `SlowStageThreshold`, `MinAge`, `MaxBytes`) as string-encoded durations matching the ConfigFile convention. `ResolveFlightRecorder()` constructs a `*FlightRecorderHook` from the config section, returning `(nil, nil)` when disabled. Enables pipeline consumers to configure trace recording without CLI flags.
+- **CLI `flightRecorder` config section** — YAML/JSON config files now support a `flightRecorder` section as an alternative to `-trace`, `-trace-dir`, and `-trace-slow` flags. Fields: `enabled`, `outputDir`, `slowStageThreshold`, `minAge`, `maxBytes` (full parity with `pipeline.FlightRecorderFileConfig`).
+- **4 CI structural-check scripts** — `scripts/replace-audit.sh` (verifies replace directives), `scripts/version-drift.sh` (cross-checks go.mod version references), `scripts/test-naming.sh` (enforces test naming conventions), `scripts/go-work-sync.sh` (verifies go.work sync idempotency). Wired into `.github/workflows/ci.yml` as `structural-checks` and `go-work-sync` jobs.
+- **`scripts/docs-freshness.sh`** — Checks documentation freshness against code changes. Flags docs not modified in N days (default 180) and docs whose referenced source files have been modified since the doc was last updated. Wired into ci.yml as `docs-freshness` job.
+- **Per-module CHANGELOGs** — `pipeline/CHANGELOG.md`, `analysis/CHANGELOG.md`, `cmd/go-finding/CHANGELOG.md` with cross-references from root CHANGELOG.md.
+- **go-arch-lint module boundary enforcement** — `.go-arch-lint.yml` defines 11 component boundaries across all 4 modules. Enforces one-directional dependency flow (cmd → pipeline → core, analysis → core). Wired into ci.yml as `arch-check` job.
+- **E2E test for 5-field flightRecorder config** — `TestRun_E2E_TraceViaConfigFile_AllFields` verifies `minAge` and `maxBytes` reach the pipeline when set via YAML config.
+- **resolveSafePath edge case tests** — Circular symlinks (self-referential and mutual), dangling symlinks, root-is-symlink, and root-is-symlink path traversal in `pipeline/path_safety_test.go`.
+- **FlightRecorder edge case tests** — Snapshot write error (permission denied), slow last-stage snapshot during pipeline run, concurrent stage events safety with race detector in `pipeline/flight_recorder_test.go`.
+- **TOCTOU path safety tests** — Symlink swap attack tests for `resolveSafePath` in `pipeline/path_safety_test.go`.
+- **LSP serialization benchmarks** — `BenchmarkToLSP`, `BenchmarkFromLSP`, `BenchmarkLSPRoundTrip` in `bench_test.go`.
+- **FlightRecorder user guide** — `docs/guides/flight-recorder.md` covering CLI flags, config-file integration, programmatic API, and snapshot workflow.
+- **`ParseConfidence(string) (Confidence, error)`** — Inverse of `Confidence.String()`. Parses named levels ("none", "low", "medium", "high", "full"), decimal strings (e.g. "0.42"), and empty string (defaults to `ConfidenceLow`). Case-insensitive, trims whitespace. Returns `ErrInvalidConfidence` sentinel error, matchable via `errors.Is`. Eliminates the per-consumer switch statement every CLI linter reinvents for its `--min-confidence` flag.
+- **`Template.Builder(rule, message, severity, pos) *Builder`** — Returns a pre-configured `*Builder` from the template, allowing per-finding chaining (confidence, suggestion, before/after code, metadata) before the terminal `Build()`/`MustBuild()`/`BuildOrDefault()` call. `Template.Build()` delegates to `Builder().BuildOrDefault()` for backward compatibility. Eliminates the `makeFindingWithConfidence` / `buildFixableFinding` factory patterns consumers reinvent when they need both template-level defaults AND per-finding overrides.
+- **Configuration guide** — `docs/guides/configuration.md` covers all CLI flags, YAML/JSON config file format, CLI vs config precedence, library ConfigFile API, and runtime defaults.
+- **Troubleshooting guide** — `docs/guides/troubleshooting.md` covers build/setup errors, config file errors, pipeline runtime errors, fix application errors, flight recorder issues, and finding validation errors.
+- **Multi-module benchmark report** — `docs/reports/2026-08-08_multi-module-vs-monolith.md` quantifies zero runtime overhead, negligible build overhead, and significant dependency isolation benefit.
+- **sanitizeFilename fuzz test** — `FuzzSanitizeFilename` in `pipeline/flight_recorder_fuzz_test.go` verifies non-empty output, no consecutive hyphens, no leading/trailing hyphens, and only safe filename characters across random inputs.
+- **SARIF schema compliance edge cases** — 5 new tests in `sarif_properties_test.go`: multiple findings, file-level positions, minimal findings, empty reports, and suppressed findings.
+- **`pipeline.ResolveSafePath`, `ResolveSafePathFrom`, `ResolveRoot`** — Exported the path-traversal security boundary as public API so external callers can validate finding file paths without duplicating logic. `ResolveSafePath(rootDir, relPath)` is the convenience wrapper; `ResolveRoot(rootDir)` (resolve symlinks once) + `ResolveSafePathFrom(resolvedRoot, relPath)` (per-path resolution) enable batch optimization.
+- **`pipeline.FlightRecorderHook.Degraded()`** — When a second flight recorder is created while one is already active (Go singleton limit), `NewFlightRecorderHook` now returns a degraded hook instead of an error. `Degraded()` returns true; all snapshot operations silently no-op. Callers can detect this state without error handling.
+- **`scripts/json-deterministic-check.sh`** — CI script enforcing `json.Deterministic(true)` on all production marshal calls via paren-depth-aware source scanning. Excludes `doc.go`. Wired into ci.yml.
+
+### Changed
+
+- **doc.go FlightRecorder section** — Updated field list to include `minAge` and `maxBytes`; added soft reference to the project's FlightRecorder guide.
+- **version-drift.sh** — Excludes `// indirect` lines from grep to prevent false positives when a module appears as both direct and indirect dependency.
+- **docs/guides/flight-recorder.md** — Updated YAML and JSON config examples to include all 5 fields (`minAge`, `maxBytes`).
+- **README.md** — Added FlightRecorder to feature list with link to guide; enhanced Pipeline description with observability mention.
+- **docs/DOMAIN_LANGUAGE.md** — Added Observability section (StageHook, FlightRecorderHook, Metrics, MetricsSnapshot) and Pipeline Configuration section (Iteration, CompletionReason, DryRun, GracefulDegradation, ByteLevelConflictDetection, VerifyAfterFix).
+- **`pipeline.FlightRecorderHook.Snapshot` signature** — Now accepts `context.Context` as first parameter: `Snapshot(ctx, reason)`. Cancelled contexts skip the trace write and return `context.Cause(ctx)` wrapped in a descriptive error. **Breaking change** for callers using the v1.5.0 `Snapshot(reason)` signature — update to `Snapshot(ctx, reason)`.
+- **`pipeline.NewFlightRecorderHook` singleton behavior** — On "flight recorder already enabled" runtime error, now returns `(degradedHook, nil)` instead of `(nil, err)`. Callers that previously checked `err != nil` for this case now get a safe no-op degraded hook.
+- **Centralized JSON marshal options** — `marshalOpts` and `prettyMarshalOpts` package-level variables in `json.go` replace duplicated `json.Deterministic(true)` literals across all marshal methods. SARIF export (`ToSARIFWithOpts`, `WriteSARIFWithOpts`) now reuses `prettyMarshalOpts`.
+- **`scripts/docs-freshness.sh`** — Tightened Go-file reference matching to only backtick code spans (`` `filename.go` ``) and markdown link targets (`[text](filename.go)`), excluding prose mentions that caused false positives.
+
+### Fixed
+
+- **`pipeline.FixEdit.MarshalJSON` non-deterministic output** — Missing `json.Deterministic(true)` caused non-reproducible fix serialization (map keys in random order). Now uses `marshalOpts`.
+
+## [1.5.0] - 2026-08-06
+
+Deterministic output, batch validation, pipeline observability, and tag equality fix.
+
+### Added
+
+- **`ValidateAll(findings []Finding) map[int]error`** — Batch validation helper. Returns a map of index → error for all invalid findings in a slice, or nil if all are valid. Lazy-allocates only when at least one finding is invalid. Use for validating detector output or config-loaded findings without manual loop boilerplate.
+- **`pipeline.FlightRecorderHook`** — Go runtime execution trace flight recorder for pipeline observability. Wraps Go 1.25+'s `runtime/trace.FlightRecorder` to continuously buffer trace data in memory, snapshotting on demand or automatically when a pipeline stage exceeds a configurable slow-stage threshold. Invaluable for diagnosing slow detectors, fix contention, or unexpected pipeline stalls.
+  - `NewFlightRecorderHook(config FlightRecorderConfig) (*FlightRecorderHook, error)` — creates and starts the recorder
+  - `FlightRecorderConfig` — `MinAge` (buffer retention, default 30s), `MaxBytes` (default 4 MiB), `SlowStageThreshold` (auto-snapshot trigger, default off), `OutputDir` (default temp), `Logger`
+  - `DefaultFlightRecorderConfig()` — sensible defaults
+  - Implements `StageHook` — `OnStageEvent` never returns an error (trace collection is purely diagnostic)
+  - `Snapshot(reason) (path, error)` — manual on-demand snapshot
+  - `Close()` — stops recorder, waits for in-flight async snapshots
+  - CLI flags: `-trace` (enable), `-trace-dir` (output directory), `-trace-slow` (auto-snapshot threshold, e.g. `30s`)
+- **Determinism regression tests** — `TestDeterminism_*_RawBytesIdentical` test suite (8 tests) verifying all JSON/SARIF marshal paths produce byte-identical output across 100 invocations. Tests compare raw `[]byte`, not parsed structures. The SARIF test is proven to fail without `json.Deterministic(true)`.
+
+### Changed
+
+- Go module dependencies and Nix flake toolchain versions synchronized across all sub-modules.
+
+### Fixed
+
+- **Non-deterministic JSON/SARIF output** — All `json.Marshal`/`json.MarshalWrite` calls in production code now pass `json.Deterministic(true)`, ensuring Go map keys (SARIF `properties` bag, `Summary.bySeverity`, `Summary.byCategory`, `Finding.Metadata`, etc.) serialize in sorted order on every run. Previously, `encoding/json/v2` serialized `map[string]any` keys (SARIF properties) in unspecified order, making every consumer that snapshots or diffs SARIF output flaky. Affects `Report.MarshalJSON`, `Report.PrettyJSON`, `Report.PrettyJSONFiltered`, `Report.WriteJSON`, `Finding.LineJSON`, `Finding.WriteJSON`, `Report.ToSARIFWithOpts`, and `Report.WriteSARIFWithOpts`.
+- **`Finding.Equal()` tag-order sensitivity** — Was using `slices.Equal` for tag comparison, making findings with the same tags in different order compare as unequal. The documentation and ROADMAP always claimed order-insensitive equality. Fixed with a `tagsEqual` helper that clones, sorts, then compares. This is a semantic behavior change that aligns the implementation with the documented contract.
+- **`FlightRecorderHook` concurrent `WriteTo` race** — `runtime/trace.FlightRecorder.WriteTo` is not concurrency-safe. Two slow stages firing snapshots concurrently would produce an "already in progress" error. Fixed by adding a `writeMu sync.Mutex` that serializes WriteTo calls.
+- **`sanitizeFilename("")` produced malformed filenames** — Empty reason strings produced filenames like `go-finding-trace-000-.trace`. Now returns `"snapshot"` as the default reason label when sanitization yields an empty string.
+
+## [1.4.1] - 2026-07-28
+
+Internal refactoring and test-infrastructure sweep. No public API changes.
+
+### Changed
+
+- **Code duplication eliminated (zero clones at `-t 5`).** Extracted internal helpers that the same pattern was reinvented across files: `must[T any]` generic (errors.go, used by `MustParseCategory`/`MustParseSeverity`/`Builder.MustBuild`), `marshalJSONString` (json.go, used by 4 marshal-to-string methods), `decodeConfig` (pipeline/config_file.go), package-level `fixEditJSON` wire type (pipeline/fix_edit.go), and `must(err)` in examples.
+- **`Severity.Badge()` now derives from `Emoji()`.** Single switch instead of duplicate 4-case logic. `Severity.PriorityString()` uses a `severityPriorities` map lookup instead of a switch.
+- **Test setup consolidated.** `NewParallelGomega(t *testing.T)` helper added to `testutil_test.go` in all 4 modules, replacing 112 occurrences of the `t.Parallel()` + `NewWithT(t)` two-line boilerplate.
+- **`paralleltest` linter disabled (again).** Commit `59121e8` had inadvertently re-added `paralleltest` to the `enable` list in `.golangci.yml` (with a comment stating it _should_ be disabled), causing `golangci-lint` to report 93 false positives. Moved to the `disable` list where the documentation intended. The linter cannot trace `t.Parallel()` through the `NewParallelGomega` helper wrapper.
+- Go module dependencies and Nix flake toolchain versions synchronized across all sub-modules.
+
+### Fixed
+
+- **7 pipeline lint issues resolved.** `Pipeline.Run()` decomposed via `runVerification()` extraction (funlen). `Pipeline.runIteration()` decomposed via `applyStage()` extraction (funlen). `applyTriage` complexity reduced via `shiftFindingsPositions()`/`shiftFindingSlice()` extraction (gocognit). `goast/provider.go` exhaustruct fixed with explicit zero values. `convenience.go` `errgroup.Wait()` error wrapped (wrapcheck). `fix_applier_test.go` gosec G703 suppressed with justification. `saboteurProvider` unused receivers removed (revive).
+- **Release gate unblocked.** Lint (`nix run .#lint`) was failing the pre-release checklist due to the `paralleltest` config drift above; now passes cleanly across all 4 modules.
+
+## [1.4.0] - 2026-07-26
+
+Error classification integration, community readiness infrastructure, and documentation accuracy sweep. The core module gains its first production dependency (`go-error-family`) to enable unified error classification across consumer codebases.
+
+### Added
+
+- **`FindingError.ErrorCode()` and `FindingError.ErrorFamily()`** — Integration with `go-error-family` library. `ErrorCode()` returns `"finding.<category>"`; `ErrorFamily()` maps `ErrorCategory` to error families (Rejection, Conflict, Transient, Infrastructure) for use with `errorfamily.Classify()`.
+- `SECURITY.md` — Vulnerability reporting policy (GitHub private advisories, 72h SLA).
+- `CODE_OF_CONDUCT.md` — Contributor Covenant v2.1.
+- `.github/ISSUE_TEMPLATE/bug_report.md` — Structured bug report template with environment section.
+- `.github/ISSUE_TEMPLATE/feature_request.md` — Feature request template with API sketch.
+- `.github/ISSUE_TEMPLATE/config.yml` — Issue chooser with security advisory contact link.
+- `.github/PULL_REQUEST_TEMPLATE.md` — PR checklist with GOEXPERIMENT test/lint commands.
+- **ADR #15** — `go-error-family` as core dependency decision documented.
+
+### Changed
+
+- README: Added prominent `GOEXPERIMENT=jsonv2` prerequisite block at top of Installation.
+- README: Removed `GOPRIVATE` warning (no longer needed once public).
+- README: Added `## Support` section (MIT, best-effort, latest-minor-only policy).
+- README: Fixed stale version references (`v1.2.1` → `v1.3.0`, `"1.2.0"` → `"1.3.0"`).
+- README: Removed redundant `Requires Go 1.26 or later.` line (now covered by Prerequisites block).
+- SECURITY.md: Replaced stale hardcoded version table with prose-only "latest minor release" policy.
+- GitHub repo: Set description and 11 topics for discoverability.
+- `PUBLIC_OR_PRIVATE.md`: Corrected false "public" banner (repo was private; GitHub API confirmed).
+- Dependabot: Expanded to track all 4 sub-modules (core, pipeline, analysis, CLI).
+- Removed inline `exhaustruct` `nolint` comments superseded by `.golangci.yml` config exclusions.
+- Extracted `writeSuggestionLine` helper to reduce `FormatText`/`FormatTextRich` duplication.
+- **Retired "zero external deps" principle** — Core module now depends on `go-error-family`. All docs, README, AGENTS.md, and ADR #9 updated to reflect a small, deliberate dependency surface instead of zero-dep claims.
+
+### Fixed
+
+- Replaced deprecated `ToSARIFFiltered` reference in godoc with `ToSARIFWithOpts`.
+- `doc.go`: Fixed stale category count ("14 predefined" → "16 predefined").
+- `doc.go`: Added `ErrorCode()` and `ErrorFamily()` documentation to Error Handling section.
+- `FEATURES.md`: Fixed stale linter count ("89 mappings" → "84 mappings" in two places).
+- `go.mod`: Moved `go-error-family` from indirect to direct require block.
+
+## [1.3.0] - 2026-07-22
+
+Consumer-driven API improvements. 11 additive APIs eliminating the boilerplate every consumer independently reinvents, without breaking changes to existing types or signatures. Driven by a full audit of all 22 consumer projects.
+
+### Added
+
+- **`NewReportFromFindings(tool, findings)`** — One-step report creation (NewReport + AddFindings + ComputeSummary). Eliminates the 4-line boilerplate in 5+ consumers.
+- **`Builder.BuildOrDefault() Finding`** — Returns zero-value Finding on validation error instead of panicking. Eliminates the SafeBuildFinding / buildFinding error-swallowing pattern.
+- **`Template` type** — Pre-configured builder factory: stamp tool name, category, fix strategy, and tags once, then build many findings with `Build(rule, msg, sev, pos)`. Eliminates `newMigrationFinding` / `buildFixableFinding` patterns.
+- **`FilePos(file FilePath) Position`** — Constructor for file-level positions (Line=0, Offset=-1). For findings that apply to an entire file (config issues, project checks).
+- **`SeverityFromLevel(level, fallback) Severity`** — Maps severity strings (canonical + aliases) to Severity, returns fallback for unknown. Eliminates consumer-side `mapSeverity()` switches.
+- **`Severity.PriorityString() string`** — Reverse mapping: Critical→"critical", Error→"high", Warning→"medium", Info→"low".
+- **`FormatTable(w, findings)`** — Severity-badged table output (SEVERITY, LOCATION, RULE, MESSAGE columns).
+- **`FormatTextRich(w, findings)`** — Rich text output with emoji severity badges, category display, and 💡 suggestion prefix. `FormatText` retains the original `[SEVERITY]` format for backward compatibility.
+- **`ApplySimpleFixes(findings) map[FilePath][]SimpleFixResult`** — BeforeCode→AfterCode string replacement in core package. 80% case for consumers that don't need the full pipeline FixEngine.
+- **`CheckBinary(name) (string, error)`** — Wraps `exec.LookPath` with finding error. Standardizes the "run CLI tool → parse JSON" pattern.
+- **`RunCmd(ctx, name, args) ([]byte, error)`** — Wraps `exec.CommandContext` with finding error. For external tool integration.
+
+### Changed
+
+- **Builder default Confidence is now `ConfidenceFull`** — `NewBuilder` now passes `ConfidenceFull` (1.0) instead of `0` (ConfidenceNone). More semantically correct for deterministic static analysis. Override with `.WithConfidence()`.
+- **`validateIdentity()` uses `HasFile()` instead of `IsValid()`** — File-level positions (File set, Line=0) now pass validation. `Position.IsValid()` still requires Line>0 for backward compatibility. Use `HasFile()` for file-only checks.
+- **Severity aliases expanded** — Added "optional"→Info and "crit"→Critical to the pre-registered alias map.
+- **DefaultLinterRegistry expanded** — Added 20+ new golangci-lint linters (gofumpt, nolintlint, depguard, nakedret, bidichk, tagliatelle, mirror, etc.).
+
+## [1.2.1] - 2026-07-19
+
+Post-v1.2.0 correctness, security, and dependency modernization release. 40 commits covering 15+ bug fixes (range geometry, thread safety, SARIF/LSP round-trip fidelity, path traversal), `encoding/json/v2` migration, go-output v0.30.4, dependabot PR merges, and comprehensive skills audit sweep (8 review reports + 2 architecture diagrams).
+
+### Fixed
+
+- **`Range.containsByOffset` respected Offset=0 sentinel** — Previously used `> 0` instead of `>= 0` for the end offset upper bound, causing single-point ranges at offset 0 and ranges with `End.Offset = -1` (unset sentinel) to incorrectly contain all higher offsets. Now uses `EndOffsetOrStart()` for consistency with overlap/intersection logic.
+- **`Report.UnmarshalJSON` data race** — Wrote to struct fields without acquiring the write lock. Now uses `withLock` for thread safety, consistent with all other Report methods.
+- **`Finding.IsSuppressedAt` inconsistent with `Suppression.IsActive`** — `IsSuppressedAt` didn't validate the suppression (missing `IsValid` check), so findings with invalid suppressions (e.g., missing `Rule`) were incorrectly treated as suppressed. Now delegates to `Suppression.IsActive`.
+- **SARIF `Suppression.Rule` lost in round-trip** — Export didn't include `Suppression.Rule`; import fabricated it from `Finding.Rule`. Now exports/imports via `go-finding/suppression-rule` property.
+- **SARIF `Suppression.Reason` fabricated from Kind** — Import used the Kind string as Reason when Reason was empty. Now exports/imports the actual Reason via `go-finding/suppression-reason` property.
+- **SARIF `Confidence` stored unclamped** — Export property used raw `f.Confidence` instead of `f.NormalizedConfidence()`, allowing invalid values (>1.0) to round-trip. Now clamps to [0.0, 1.0].
+- **LSP `SeverityCritical` lost in round-trip** — LSP collapses `critical` and `error` into the same severity. Now stores the exact severity in `LSPDiagnosticData.Severity` and restores it in `FromLSP`.
+- **`correlateByProximity` false correlations at Line=0** — Findings with `Position.Line == 0` (unset) correlated with confidence 1.0 due to zero line difference. Now skips findings without line info.
+- **Pipeline metrics dropped on error/cancel paths** — `metricsResult` was only set on the success path. Now set before every early return so metrics are available for debugging failures.
+- **Pipeline `TotalIterations` zero on error/cancel** — Was only set after the loop exited normally. Now set before every early return.
+- **Pipeline `TotalDetected` counted duplicates** — Used raw `p.findings` (accumulated across iterations) instead of the deduplicated set. Now uses `collectAllFindings` for accurate unique count.
+- **Pipeline StageAfter hook errors silently discarded** — All `StageAfter` and `StageBefore Verify` hook errors were swallowed with `_ =`. Now propagated, aborting the pipeline per documented contract.
+- **Pipeline `StageAfter Triage` conflicts always 0** — Passed `iter.Conflicts` before conflict detection ran. Conflicts are now correctly reported in `StageAfter Apply` (where they're computed), and the `Conflicts` field doc updated.
+- **Pipeline suggest findings not shifted after direct fixes** — Only `iter.findings` was shifted; `iter.suggest` retained stale line numbers. Now both are shifted.
+- **Pipeline provider errors during byte-level conflict detection swallowed** — Errors were logged but never surfaced to callers. Now recorded in `result.PartialErrors`.
+- **Pipeline silent file read failure in conflict detection** — When a file couldn't be read, all fixes bypassed conflict detection with no log entry. Now logs a warning.
+- **SARIF `Position.Offset` lost in round-trip** — Byte offsets were not preserved through SARIF export/import. Now carried via `go-finding/start-offset` and `go-finding/end-offset` properties.
+- **LSP round-trip lost Snippet, Suppression, Metadata, RelatedRef.FindingID** — `LSPDiagnosticData` now carries these fields; `FromLSP` restores them. `RelatedRef.FindingID` is preserved instead of regenerated.
+- **`resolveLineCol` discarded underlying error** — Replaced detailed error (line/col/contentLen context) with bare sentinel. Now wraps with `fmt.Errorf("%w: %w", ...)`.
+- **Provider errors lack finding context** — FixEngine `resolveErrors` now include the finding ID in the error message.
+- **Pipeline `collectAllFindings` called twice** — When `VerifyAfterFix` was enabled, findings were collected once for verification and again for `TotalDetected`. Now cached.
+- **Path traversal vulnerability in `filterByFileEdits`** — Findings with `Position.File = "../../etc/passwd"` caused reads outside rootDir. Now uses shared `resolveSafePath` containment check.
+- **TOCTOU race in `groupFindingsBySafePath`** — Used unresolved path as map key; symlink swap between validation and I/O could redirect writes outside rootDir. Now uses resolved (symlink-evaluated) path as map key.
+- **FixApplier rollback errors silently swallowed** — `Restore` and `RollbackAll` errors were discarded with `_ =`. Now propagated to the caller so file corruption is visible.
+
+### Changed
+
+- **`applyTriage` signature updated** — Now accepts `*PipelineResult` to record provider errors in `PartialErrors`.
+- **Error messages normalized** — Retry config errors now use lowercase field names consistent with config errors. Missing colons added to error wrapping in CLI config and pipeline config file.
+- **`dedupKey` duplication eliminated** — Extracted `positionDedupKey` helper in `merge.go`.
+- **`Suppression.IsExpired` boundary documented** — At the exact `ExpiresAt` instant, the suppression is still active (expired only strictly after). Documented and tested.
+- **SARIF `sarifRegion.Snippet` spec compliance fixed** — Changed `Snippet string` to `Snippet *sarifArtifactContent` per SARIF 2.1.0 §3.30.13 (object form `{"text": "..."}`). Custom `UnmarshalJSON` accepts both the spec-compliant object and bare string (backward compat).
+- **Migrated to `encoding/json/v2`** — All 9 JSON-handling files across all modules now use `encoding/json/v2`. Requires `GOEXPERIMENT=jsonv2` env var for all Go tool invocations (set automatically in all nix apps and devShells).
+- **go-output v0.30.1 API migration** — `cmd/go-finding/output_adapter.go` updated: `TableData`→`Table`, `NewTableData`→`NewTable`, `RenderTableData`→`RenderTable`.
+- **GOEXPERIMENT=jsonv2 propagation in flake.nix** — Added `export GOEXPERIMENT=jsonv2` to all 9 `mkApp` scripts and `devShells.ci`.
+
+## [1.2.0] - 2026-07-06
+
+Internal refactor release: new shared `lockutil` package, test suite defragmentation, and version constant sync.
+
+### Added
+
+- **`lockutil` package** — Generic helpers `lockutil.Locked(sync.Locker, fn) T` and `lockutil.RLocked(*sync.RWMutex, fn) T` that eliminate `m.mu.Lock()/defer m.mu.Unlock()` boilerplate around short critical sections. Returns generic `T` so callers can return values directly; use `struct{}` for side-effect-only sections. Stdlib-only, follows `gotoken` precedent as a public shared utility subpackage.
+
+### Changed
+
+- **Mutex boilerplate migrated to `lockutil`** — Report, Metrics, DetectorRegistry, LinterRegistry, FileBackup, GoASTProvider, CLI detector/fix-provider registries, and SARIF import now use `Locked`/`RLocked` instead of manual `Lock()/defer Unlock()` patterns. Behavior-preserving refactor; no public API changes beyond the new `lockutil` import.
+- **`PrettyJSONFiltered` TOCTOU fixed (again)** — Consolidated the previous manual fix into the `withReadLock` helper, making the single-snapshot guarantee structural rather than convention-based.
+- **SARIF import guard inlined** — `checkSARIFReadContext` unexported helper replaced with direct `ctx.Err()` guard at each entry point. No API change.
+- **`lineProviderOffset` extracted** — Shared helper deduplicating offset resolution between insertion and replacement edit builders in the fix provider chain.
+
+### Fixed
+
+- **`version.go` synced to 1.2.0** — Was stale at `1.0.0` despite the v1.1.0 release. The `Version` constant now reflects the actual release.
+
+### Test Suite
+
+- **Test defragmentation** — Eliminated `_extra_test.go`, `_bugfix_test.go`, and `coverage_test.go` naming. All tests consolidated into canonical `<subject>_test.go` files (e.g., `assert_extra_test.go` → `testutil_test.go`, `coverage_test.go` → `validate_test.go`). Shared helpers centralized in `testutil_test.go`. No production code affected.
+
+## [1.1.0] - 2026-07-06
+
+Multi-module workspace split, type safety improvements, and SARIF/LSP fidelity.
+
+### Breaking Changes
+
+- **`Position.File` type changed from `string` to `FilePath`** — Compile-time safety preventing file path mixups with IDs, rule names, and tool names. String literals auto-convert (`Position{File: "main.go"}` still compiles). String variables need explicit wrapping: `Position{File: FilePath(someVar)}`. Constructors `Pos`, `NewRange`, `NewRangePtr` now accept `FilePath`. JSON serialization unchanged.
+- **`GroupByFile` return type changed** — Now returns `map[FilePath][]Finding` instead of `map[string][]Finding`.
+- **`ByFile` parameter type changed** — Now accepts `FilePath` instead of `string`.
+- **`FindingError.File` type changed** — Now `FilePath` instead of `string`.
+- **`FixGroup.File` type changed** — Now `FilePath` instead of `string`.
+- **`Suppression.Rule` type changed** — Now `RuleName` instead of `string`.
+- **CLI `-severity` renamed to `-min-severity`** — Deprecated alias `-severity` retained for backward compatibility.
+- **`ToSARIFFiltered` / `WriteSARIFFiltered` removed** — Use `ToSARIFWithOpts(WithMinSeverity(sev))` / `WriteSARIFWithOpts(w, WithMinSeverity(sev))` instead.
+- **`FromLSP` parameter changed** — First parameter is now `FilePath` instead of `string`.
+
+### Added
+
+- **Multi-module Go workspace** — Project split into 4 independently versioned modules coordinated via `go.work` + `replace` directives:
+  - Core (`.`): stdlib-only Finding domain model (zero external production deps)
+  - Pipeline (`pipeline/`): detect→triage→fix→verify loop
+  - Analysis (`analysis/`): go/analysis adapter
+  - CLI (`cmd/go-finding/`): govet + staticcheck detectors
+- **`pipeline.Detect()`** — One-shot concurrent detection without the full pipeline. The simplest entry point for running detectors.
+- **`pipeline.ApplyToContent()`** — Apply fixes to in-memory `[]byte` content without filesystem operations.
+- **`SARIFOption` pattern** — Functional options for SARIF export: `WithIncludeSuppressed()`, `WithMinSeverity(sev)`. New APIs: `ToSARIFWithOpts()`, `WriteSARIFWithOpts()`.
+- **SARIF suppression round-trip** — Suppressed findings now emit SARIF `suppressions` arrays when `WithIncludeSuppressed()` is used, instead of being silently dropped. Full round-trip preserves Kind, Reason, Rule, and ExpiresAt.
+- **`LSPDiagnosticData`** — `LSPDiagnostic.Data` field carries go-finding-specific data (ID, FixStrategy, Confidence, Category, Tags, code data) for lossless LSP round-trip.
+- **`RelationKind.IsValid()`** — Validates relation kind against standard values.
+- **`RelatedRef.IsValid()`** — Now checks both FindingID and Relation validity.
+- **`Position.HasFile()`** — Check whether a file path is set, independent of line completeness.
+- **`Position.OffsetUnknown = -1`** — Named constant for the "no offset" sentinel.
+- **`Finding.IsInvalid()`** — Inverse of IsValid, deprecated `FilterInvalid` as alias.
+- **Exported registry errors** — `ErrDetectorRegistered`, `ErrUnknownDetector` now exported for `errors.Is`.
+- **CLI `--include-suppressed`** — Controls whether suppressed findings appear in SARIF output.
+- **`docs/guides/fix-engine.md`** — Full guide covering standalone FixEngine, FixApplier, custom providers, and conflict detection.
+
+### Fixed
+
+- **`IsAutoFixable()` now normalizes FixStrategy first** — Was checking raw strategy, missing findings with empty strategy.
+- **`Position.IsValid()` requires `Line > 0`** — Was returning true for positions with only a file path.
+- **`columnCoincident` / `offsetCoincident`** — Renamed from `columnAdjacent`/`offsetAdjacent`. Fixed `> 0` to `>= 0` for inclusive boundary.
+- **Staticcheck SA codes map to `CategoryCorrectness`** — Were incorrectly mapped to `CategoryStyle`.
+- **`file_backup.go` race condition** — Changed `enabled bool` to `enabled atomic.Bool`.
+- **`PrettyJSONFiltered` TOCTOU** — Now snapshots findings once instead of twice.
+- **`FixApplier.ApplyWithDetails`** — Now returns only applied fixes instead of input fixes.
+- **`groupFindingsBySafePath` O(N) syscalls** — Cached resolved root (O(N) → O(1)).
+- **`escapeMarkdownCell` panic** — Fixed `maxLen > 0` to `maxLen > 3`.
+- **`DetectorFunc.Name()` / `TransformerFunc.Name()`** — Changed from `"anonymous"` to `""`.
+- **`retry.Config` validation** — `BaseDelay > 0` required when `MaxRetries > 0`.
+- **`writeOutput` Close() error** — Now checked and propagated.
+- **CLI SIGINT/SIGTERM handling** — Added `signal.NotifyContext` for graceful shutdown.
+- **`gotoken.NodeByteRange`** — Added `start <= end` validation.
+- **IntervalIndex complexity doc** — Corrected O(log n+k) to O(n+k).
+
+### Deprecated
+
+- **`ToSARIFFiltered(minSeverity)`** — Removed. Use `ToSARIFWithOpts(WithMinSeverity(sev))`.
+- **`WriteSARIFFiltered(ctx, w, minSeverity)`** — Removed. Use `WriteSARIFWithOpts(ctx, w, WithMinSeverity(sev))`.
+- **`FilterInvalid`** — Deprecated as alias for `Filter(IsInvalid)`.
+
+### Removed
+
+- `Report.Findings` field (use `FindingsSnapshot()`)
+- `Report.Merge()` (use `MergeInto()`)
+- `Config.OnStage` (use `StageHooks`)
+- `Metrics.RecordFix()` (use `RecordFixes(1)`)
+- `CountBySeverity()` free function (use `Report.CountBySeverity()`)
+- `SeverityAliases()` (use `RegisterSeverityAlias()`/`LookupSeverityAlias()`)
+- `GetCategory()` (use `CategoryOf()`)
+- `ConflictInfo` (use `Conflict`)
+- `LSPRelatedInfo` (use `LSPRelated`)
+- `FindingProcessor` (use `FindingTransformer`)
+
+## [1.0.0] - 2026-06-24
+
+First stable release. The API is now frozen — future breaking changes require a major version bump.
+
+### Breaking Changes — Deprecated APIs Removed
+
+All APIs deprecated since v0.6.0–v0.9.0 have been removed. See `docs/MIGRATION_v1.0.md` for the full migration guide.
+
+- **`Report.Findings` field unexported** → `findings`. Use `FindingsSnapshot()` for a deep copy, `All()` for iteration, `FindByID()` for single lookups, or `Len()` for count.
+- **`Report.Merge()` removed** → Use `Report.MergeInto()` which returns a new Report without mutating the receiver.
+- **`Config.OnStage` removed** → Use `Config.StageHooks` with `StageHook`/`StageHookFunc` for before/after events with abort capability.
+- **`Metrics.RecordFix()` removed** → Use `Metrics.RecordFixes(1)` which batches multiple recordings in a single mutex acquisition.
+- **`CountBySeverity()` free function removed** → Use `Report.CountBySeverity(sev)` method.
+- **`SeverityAliases()` removed** → Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`.
+- **`GetCategory()` removed** → Use `CategoryOf()` (Go convention: no `Get` prefix).
+- **`HasFix` free function removed** → Use `WithFix` (consistent with `BySeverity`, `ByCategory` naming).
+- **`HasSuggestion` free function removed** → Use `WithSuggestion`.
+
+### Added
+
+- **Branded primitive types** — `ID`, `RuleName`, `ToolName`, `FilePath` in `branded_types.go`. Compile-time type safety preventing ID/Rule/Tool/File mixups. JSON marshals identically to string.
+- **`Validate()` decomposition** — Monolithic `Validate()` split into 6 per-field validators (`validateIdentity`, `validateClassification`, `validateFix`, `validateReferences`, `validateSpatial`, `validateSuppression`).
+- **Thread-safe `SeverityAliases`** — Global alias map guarded by `sync.RWMutex`. Use `RegisterSeverityAlias()` / `LookupSeverityAlias()`.
+- **`FindingTransformer`** — Renamed from `FindingProcessor`/`Process()`. Pipeline uses `Config.Processors []FindingTransformer`.
+- **`CategoryOf`** — Renamed from `GetCategory` (Go convention: no `Get` prefix).
+- **`Conflict`** — Renamed from `ConflictInfo`. `AnalyzeConflicts() []Conflict`.
+- **`LSPRelated`** — Renamed from `LSPRelatedInfo`.
+- **CSV and TSV output formats** — CLI `-format csv` and `-format tsv` produce clean, machine-readable data exports via go-output's delimited writers.
+- **Markdown output via go-output** — CLI `-format markdown` uses go-output's `MarkdownTable` renderer with auto-aligned column widths.
+- **Format validation** — Unknown `-format` values now return a clear error listing all supported formats.
+
+### Changed
+
+- **`Report` custom JSON marshaling** — `MarshalJSON`/`UnmarshalJSON` implemented via internal `reportJSON` DTO to support the unexported `findings` field.
+- **CLI adapter pattern** — `cmd/go-finding/output_adapter.go` adapts `[]Finding` → go-output's `TableData`. Root `finding` package stays dependency-free.
+- **go-output dependency** — Added `github.com/larsartmann/go-output` v0.17.2 as CLI-only dep. Root `finding` package unaffected.
+
+## [0.9.1] - 2026-06-18
+
+### Fixed
+
+- **Fuzz target naming collisions** — Three fuzz function names were regex substrings of other names, causing Go's `-fuzz` flag (which uses regex matching) to match multiple targets and refuse to run. `FuzzFilter` → `FuzzFilterPredicates`, `FuzzGroupBy` → `FuzzGroupByKey`, `FuzzApplyEditsToContent_Overlapping` → `FuzzApplyOverlappingEdits`. Seed corpus directories renamed to match. This broke `buildflow check test-fuzz` (20/23 targets failed).
+- **FuzzMergeByPosition oracle** — The fuzz test asserted that equal dedup keys always merge to one finding. This was wrong: `DeduplicateByPosition` intentionally skips findings with empty `Position.File` (a position without a file is not a meaningful dedup key, see `merge.go:146`). Corrected the oracle to assert the real two-case semantics: merge only when keys match AND both files are non-empty.
+
+### Changed
+
+- **`sortEditsDescending` extracted** — Moved from inline `slices.SortFunc` call in `fix_engine.go` to a named helper in `fix_edit.go`. Pure internal refactor; no behavior change. The helper is used by both `FixEngine.ApplyWithConflicts` and the fuzz test harness.
+
+### Added
+
+- **`pipeline/export_test.go`** — Standard Go `export_test.go` bridge pattern. Centralizes the `rangeFix`, `offsetFix`, `offsetFixWithID` test helpers and exposes them to the external `pipeline_test` package via `ExportRangeFix` / `ExportOffsetFix` / `ExportOffsetFixWithID` wrappers. Eliminates helper duplication across `bdd_test.go` and `fix_engine_test.go`.
+
+### Removed
+
+- **9 unused transitive test dependencies from `go.sum`** — `testify`, `go-spew`, `gkampitakis/*`, `joshdk/go-junit`, `kr/*`, `maruel/natural`, `mfridman/tparse`, `pmezard/go-difflib`, `tidwall/gjson`. Canonicalized via BuildFlow's `go-mod-tidy` step (verified deterministic across two independent runs).
+
+## [0.9.0] - 2026-06-18
+
+### Fixed — Split-Brain Resolution (11 issues)
+
+- **Position zero-value semantics (#1)** — `Position.Offset` now uses `-1` as the explicit "unset" sentinel. `Position{}` (zero value) has `Offset=0` meaning "byte 0" (valid). `IsZero()` and `HasOffset()` no longer return contradictory results. All constructors updated.
+- **FixStrategy `""` vs `"none"` (#2)** — `NormalizeFixStrategy()` helper converts empty string to `FixStrategyNone`. Called by `Builder.Build()`, `Equal()`, and SARIF import. `Finding.Normalized()` method added for explicit normalization.
+- **HasFix/Validate alignment (#3)** — `HasFix()` now requires `BeforeCode` or `AfterCode` for `FixStrategyDirect`, aligning with `Validate()`. Documented fixability lattice: `IsAutoFixable() ⟹ HasFix()`.
+- **Category/Tags consistency (#4)** — `Validate()` now rejects findings where `Category` and `Tags` contain conflicting standard categories.
+- **Summary.DurationMs removed (#5)** — Vestigial caller-set field removed. `Metrics.TotalDuration()` is the single source of truth for timing.
+- **Finding identity documented (#6)** — `GenerateID()` output is canonical identity (ADR #12). `Key()` documented as fallback.
+- **SARIF fix-region consistency (#7)** — `findingFixRegion()` now respects `Range.End` coordinates, matching the location region for multi-line findings.
+- **SARIF property bag doctrine (#8)** — Documented boundary between `map[string]string` (public API) and `map[string]any` (SARIF wire format requirement).
+- **Suppression validation (#9)** — `Suppression.IsValid()` now calls `Kind.IsValid()`, rejecting unknown kinds like `"bogus"`.
+- **Category/Tag twin methods (#10)** — Documented `IsValid` (input validation) vs `IsStandard` (allow-list filtering) contract.
+- **HasFix name shadowing (#11)** — Added `WithFix`/`WithSuggestion` as canonical `FilterFunc` names. Deprecated `HasFix`/`HasSuggestion` free functions.
+
+### Added
+
+- **Finding.Normalized()** — Returns a copy with `FixStrategy` canonicalized (empty → "none").
+- **NormalizeFixStrategy()** — Helper that converts `""` to `FixStrategyNone`.
+- **WithFix / WithSuggestion FilterFuncs** — Canonical replacements for deprecated `HasFix`/`HasSuggestion` free functions.
+- **ADR #12** — Canonical finding identity definition.
+- **ADR #13** — Category/Tags deprecation plan for v1.0.0.
+- **splitbrain_test.go** — 6 integration tests verifying all critical split-brain fixes.
+
+### Removed
+
+- **Summary.DurationMs** — Field was caller-set, never computed by `ComputeSummary()`. Use `Metrics.TotalDuration()` instead.
+
+### Changed
+
+- **Position.IsZero()** — Now checks `Offset < 0` instead of `Offset == 0`. `Position{}.IsZero()` returns `false` (Offset=0 is valid byte offset).
+- **Position.Offset** — Constructors (`Pos`, `NewRange`, `FromLSP`, SARIF import) now set `Offset: -1` when no byte offset is available.
+- **HasFix()** — Returns `false` for `FixStrategyDirect` without code data (was `true`). Aligns with `Validate()`.
+
+## [0.8.0] - 2026-06-17
 
 ### Added
 
@@ -21,6 +663,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Benchmark regression CI gate** — `scripts/bench-check.sh` + CI job fails on >25% regression vs baseline.
 - **Dependabot** — `.github/dependabot.yml` for gomod + github-actions.
 - **CLI resolveFixProviders error surfacing** — Unknown fix provider names now return an error instead of being silently skipped.
+- **CLI `-filter-generated-types` new detectors** — Added 7 new generator types from gogenfilter v3.2.0: `counterfeiter`, `easyjson`, `ent`, `go-swagger`, `gqlgen`, `mockery`, `msgp`. Registry now covers all 19 upstream `FilterOption` values.
 
 ### Changed
 
@@ -31,6 +674,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AGENTS.md trimmed** — Reduced from 399 → 115 lines by removing session changelogs (kept in git history + CHANGELOG.md).
 - **RELEASE_CRITERIA.md rewritten** — Concrete pass/fail thresholds, owner-decision blockers documented.
 - **OnStage unified into fireStageHook** — Eliminated the split brain where every stage boundary called both `notifyStage()` (legacy `OnStage` callback) and `fireStageHook()` (`StageHooks`). Now `fireStageHook` fires the legacy `OnStage` callback internally on `StageAfter` events, giving a single notification call per stage boundary. `Config.OnStage` is marked deprecated in favor of `Config.StageHooks` which provides before/after events with context and abort capability.
+- **gogenfilter v3.1.0 → v3.2.0** — Picks up 7 new generator detectors (counterfeiter, easyjson, ent, go-swagger, gqlgen, mockery, msgp), absolute-path content detection fix, new `FilterWithContent`/`FilterDetailedWithContent` APIs (pre-read content to avoid redundant I/O), and `FilterResult.Is()` helper. `flake.nix` vendorHash updated.
 
 ### Removed
 
@@ -129,6 +773,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Coverage: root 97.2%, analysis 98.5%, pipeline 93.6%, internal/detectors 95.9%, cmd/go-finding 90.7%. Total 93.4%.
 - 9+ new tests: `TestToLSP_RelatedWithRange`, `TestFromLSP_RelatedWithRange`, `TestFromLSP_PreservesDiagnosticTags`, `TestSARIF_RoundTrip_RelatedRefRange`, `TestSARIF_RegionSnippet`, `TestFinding_Equal_RelatedRefRange`, `TestFinding_Validate_InvertedRelatedRange`, `TestDeduplicateBy_String`, plus `TestClone` updated and schema round-trip extended.
 - `go test -race -count=1 ./...` passes; `golangci-lint run ./...` reports 0 issues.
+
+## [0.4.3] - 2026-06-01
+
+### Changed — Breaking
+
+- **`context.Context` added to SARIF I/O functions** — All SARIF export and import functions that perform I/O now accept `context.Context` as their first parameter, enabling cancellation and timeout control in production pipelines. Affected signatures:
+  - `Report.WriteSARIF(ctx context.Context, w io.Writer) error`
+  - `Report.WriteSARIFFiltered(ctx context.Context, w io.Writer, minSeverity Severity) error`
+  - `FindingsFromSARIF(ctx context.Context, data []byte) ([]Finding, error)`
+  - `FindingsFromReader(ctx context.Context, r io.Reader) ([]Finding, error)`
+  - `Report.WriteTo(w io.Writer)` unchanged (already satisfies `io.WriterTo`).
 
 ## [0.4.2] - 2026-06-01
 
@@ -397,3 +1052,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gopkg.in/yaml.v3` — YAML config support in CLI
 - `golang.org/x/sync` — errgroup for parallel detection
 - `golang.org/x/tools` — go/analysis framework integration
+
+---
+
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/larsartmann/go-finding/compare/v1.5.0...v1.6.0
+[1.5.0]: https://github.com/larsartmann/go-finding/compare/v1.4.1...v1.5.0
+[1.4.1]: https://github.com/larsartmann/go-finding/compare/v1.4.0...v1.4.1
+[1.4.0]: https://github.com/larsartmann/go-finding/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/larsartmann/go-finding/compare/v1.2.1...v1.3.0
+[1.2.1]: https://github.com/larsartmann/go-finding/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/larsartmann/go-finding/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/larsartmann/go-finding/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/larsartmann/go-finding/compare/v0.9.1...v1.0.0
+[0.9.1]: https://github.com/larsartmann/go-finding/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/larsartmann/go-finding/compare/v0.8.0...v0.9.0
+[0.8.0]: https://github.com/larsartmann/go-finding/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/larsartmann/go-finding/compare/v0.6.1...v0.7.0
+[0.6.1]: https://github.com/larsartmann/go-finding/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/larsartmann/go-finding/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/larsartmann/go-finding/compare/v0.4.3...v0.5.0
+[0.4.3]: https://github.com/larsartmann/go-finding/compare/v0.4.2...v0.4.3
+[0.4.2]: https://github.com/larsartmann/go-finding/compare/v0.4.1...v0.4.2
+[0.4.1]: https://github.com/larsartmann/go-finding/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/larsartmann/go-finding/compare/v0.2.1...v0.4.0
+[0.2.1]: https://github.com/larsartmann/go-finding/compare/v0.1.3...v0.2.1
+[0.1.0]: https://github.com/larsartmann/go-finding/releases/tag/v0.1.0

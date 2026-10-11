@@ -18,6 +18,8 @@ const (
 )
 
 // IsStandard returns true if the tag is one of the predefined standard constants.
+// Use IsStandard for allow-list filtering (e.g., "only show findings with known tags").
+// Use IsValid for input validation (accepts any well-formed custom tag).
 func (t Tag) IsStandard() bool {
 	switch t {
 	case TagSecurity, TagPerformance, TagStyle, TagCorrectness,
@@ -32,7 +34,8 @@ func (t Tag) IsStandard() bool {
 // IsValid returns true if the tag is a non-empty lowercase-hyphenated string.
 // This rejects typos like "Security" or "SOME_TAG".
 // Custom tags are valid as long as they match the format.
-// Use IsStandard to check for predefined constants only.
+// Use IsValid for input validation (accepts custom values).
+// Use IsStandard to check for predefined constants only (allow-list filtering).
 func (t Tag) IsValid() bool {
 	return isValidLowercaseHyphen(string(t))
 }

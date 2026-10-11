@@ -1,0 +1,79 @@
+direction: down
+
+cmd: "cmd/go-finding\n(CLI composition root)" {
+  shape: package
+  style.fill: "#f4d35e"
+}
+
+pipeline_pkg: "pipeline\n(orchestrator + 22 files)" {
+  shape: package
+  style.fill: "#ffb347"
+
+  pipeline_core: "pipeline.go\nRun()" {
+    shape: rectangle
+  }
+  detect: "pipeline_detect.go\ndetect / triage / apply" {
+    shape: rectangle
+  }
+  iter: "pipeline_iteration.go" {
+    shape: rectangle
+  }
+  adapters: "adapters.go\n(DEPRECATED re-exports)" {
+    shape: rectangle
+    style.fill: "#ff6b6b"
+  }
+  config: "config.go + config_file.go" {
+    shape: rectangle
+  }
+  fix_engine: "fix_engine.go + fix_provider.go +\nfix_applier.go + fix_edit.go" {
+    shape: rectangle
+  }
+  conflict: "conflict.go" {
+    shape: rectangle
+  }
+  infra: "file_backup + retry +\npartial + metrics + line_shift" {
+    shape: rectangle
+  }
+  stages: "stage.go + stage_hook.go +\nverify.go + generated_filter.go" {
+    shape: rectangle
+  }
+}
+
+goast: "pipeline/goast\n(opt-in go/parser)" {
+  shape: package
+  style.fill: "#6eb5ff"
+}
+
+analysis: "analysis\n(go/analysis bridge)" {
+  shape: package
+  style.fill: "#6eb5ff"
+}
+
+detectors: "internal/detectors\ngovet + staticcheck" {
+  shape: package
+  style.fill: "#6eb5ff"
+}
+
+root: "finding (root)\nDomain types: Finding, Severity,\nPosition, Range, Report, ...\nDepends on stdlib ONLY" {
+  shape: package
+  style.fill: "#7dff95"
+}
+
+external: "External\ngolang.org/x/tools\nx/sync, gogenfilter,\ngo-output, ginkgo" {
+  shape: cloud
+  style.fill: "#e8e8e2"
+}
+
+cmd -> pipeline_pkg: "wires"
+cmd -> detectors: "registers"
+cmd -> goast: "opts in"
+pipeline_pkg -> root: "depends on"
+goast -> root: "depends on"
+analysis -> root: "depends on"
+analysis -> external: "golang.org/x/tools"
+detectors -> root: "depends on"
+detectors -> external: "shells out"
+pipeline_pkg -> external: "gogenfilter"
+cmd -> external: "go-output"
+
+adapters -> root: "RE-EXPORTS\n(leaky boundary)"

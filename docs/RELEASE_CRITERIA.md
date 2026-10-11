@@ -1,7 +1,8 @@
 # v1.0.0 Release Criteria
 
-**Last updated:** 2026-06-17
-**Current version:** 0.7.0
+**Last updated:** 2026-07-16
+**Released as:** 1.0.0 (project now at 1.3.0)
+**Status:** ✅ RELEASED — historical record, criteria met for v1.0.0
 
 ---
 
@@ -19,7 +20,7 @@
 | Report merging + deduplication (ID/position/rule) | ✅     | —                                         |
 | Cross-tool correlation                            | ✅     | IntervalIndex-backed                      |
 | Diff (before/after comparison)                    | ✅     | —                                         |
-| Test coverage ≥ 90% all packages                  | ✅     | Root 92.3%, Pipeline 95.2%, CLI 91.2%     |
+| Test coverage ≥ 90% all packages                  | ✅     | Root 93.6%, Pipeline 95.2%, CLI 91.2%     |
 | Zero lint warnings                                | ✅     | `nix run .#lint` exits 0                  |
 | Race detector clean                               | ✅     | `go test -race -count=1 ./...` green      |
 | Comprehensive godoc examples (29+)                | ✅     | `Example*` functions run                  |
@@ -40,35 +41,38 @@
 
 ---
 
-## Release Blockers (OWNER DECISIONS REQUIRED)
+## Release Blockers — RESOLVED ✅
 
-These three items require an explicit decision from the project owner. They are
-irreversible breaking changes that affect every consumer. **Pick a direction
-before tagging v1.0.0.**
+All three blockers have been resolved. The decisions and implementations are
+documented below for reference.
 
-### Blocker 1: Position zero-value semantics (#1)
+### Blocker 1: Position zero-value semantics (#1) — RESOLVED ✅
 
-**Problem:** `Position.Offset = 0` means both "byte offset 0" (valid) and "unset"
-(the zero value). `Position{}.HasOffset()` returns `true` while
-`Position{}.IsZero()` also returns `true`. The struct lies about its own state.
+**Decision:** Option A — use `-1` sentinel for "unset" offset.
 
-**Recommendation:** Option A — use `-1` sentinel for "unset" offset.
+**Implementation:**
 
-- Pro: least invasive, no field-type change
-- Con: negative offset is a footgun; `uint` can't represent it; needs validation
+- `Position.IsZero()` now checks `Offset < 0` instead of `Offset == 0`
+- All constructors (Pos, NewRange, FromLSP, SARIF import) set `Offset: -1`
+- `Position{}` (zero value) has `Offset=0` = "byte 0" (valid) = `IsZero()=false`
+- `HasOffset()` unchanged (`>= 0`)
+- No more contradiction between IsZero() and HasOffset()
 
 **Alternatives:** Option B (`*int` pointers — nil-safe but nil-deref risk), Option C
 (separate `HasOffset bool` — explicit but struct grows).
 
 **Cascades to:** `Range.End` (same ambiguity), `Position.Line == 0`.
 
-### Blocker 2: FixStrategy "" vs FixStrategyNone (#24)
+### Blocker 2: FixStrategy "" vs FixStrategyNone (#24) — RESOLVED ✅
 
-**Problem:** Two valid "no fix" states: the empty string `""` (zero value) and
-`FixStrategyNone` (`"none"`). `Finding.Validate()` accepts both. This is a type smell.
+**Decision:** Normalize `""` to `FixStrategyNone` via `NormalizeFixStrategy()`.
 
-**Recommendation:** Normalize `""` to `FixStrategyNone` in `Validate()` or
-normalize on construction in the Builder. Document that `""` is treated as `"none"`.
+**Implementation:**
+
+- `NormalizeFixStrategy()` helper added to fix_strategy.go
+- Called by `Builder.Build()`, `findingFromSarResult()`, and `Finding.Equal()`
+- `Validate()` treats `""` as valid but normalizes to `"none"`
+- One canonical "no fix" state: `FixStrategyNone`
 
 ### Blocker 3: Report.Findings unexport timing (#25)
 
@@ -80,41 +84,47 @@ mutex (encapsulation risk). Internal migration is done (`findingsLocked()`,
 `FindingsSnapshot()`, `All()`, `FindByID()`, `AddFinding()`. This is the
 documented migration path (ADR #11).
 
+**Status:** Internal migration complete. Unexport scheduled for v1.0.0 tag.
+
 ---
 
 ## Should Have
 
-| Criterion                           | Status | Notes                             |
-| ----------------------------------- | ------ | --------------------------------- |
-| API stability guarantee document    | ✅     | `docs/API_STABILITY.md`           |
-| Real-world tool integration guide   | ✅     | `docs/integration-guide.md`       |
-| USAGE_GUIDE.md complete for v0.7.0+ | 🟡     | Needs v0.7.0 feature additions    |
-| v1.0 Migration Guide                | ✅     | `docs/MIGRATION_v1.0.md`          |
-| Benchmark regression CI gate        | ✅     | `benchmark` CI job with benchstat |
-| Dependabot for dependency updates   | ✅     | `.github/dependabot.yml`          |
+| Criterion                         | Status | Notes                             |
+| --------------------------------- | ------ | --------------------------------- |
+| API stability guarantee document  | ✅     | `docs/API_STABILITY.md`           |
+| Real-world tool integration guide | ✅     | `docs/integration-guide.md`       |
+| USAGE_GUIDE.md complete           | ✅     | `docs/USAGE_GUIDE.md`             |
+| v1.0 Migration Guide              | ✅     | `docs/MIGRATION_v1.0.md`          |
+| Benchmark regression CI gate      | ✅     | `benchmark` CI job with benchstat |
+| Dependabot for dependency updates | ✅     | `.github/dependabot.yml`          |
 
 ---
 
-## Deprecated API Removal Timeline (v1.0.0)
+## Deprecated API Removal — COMPLETED ✅
 
-These APIs are deprecated and scheduled for removal in v1.0.0:
+All deprecated APIs have been removed in v1.0.0:
 
-| API                               | Replacement                       | Deprecated Since | v1.0 Action  |
-| --------------------------------- | --------------------------------- | ---------------- | ------------ |
-| `Report.Findings` (public field)  | `Report.FindingsSnapshot()`       | v0.7.0           | **Unexport** |
-| `Report.Merge()`                  | `Report.MergeInto()`              | v0.6.0           | **Remove**   |
-| `OnStage` callback                | `StageHooks`                      | v0.7.0           | **Remove**   |
-| `Metrics.RecordFix()`             | `Metrics.RecordFixes(1)`          | v0.6.0           | **Remove**   |
-| `CountBySeverity()` free function | `Report.CountBySeverity()` method | v0.6.0           | **Remove**   |
+| API                               | Replacement                 | Action Taken   |
+| --------------------------------- | --------------------------- | -------------- |
+| `Report.Findings` (public field)  | `Report.FindingsSnapshot()` | **Unexported** |
+| `Report.Merge()`                  | `Report.MergeInto()`        | **Removed**    |
+| `Config.OnStage` callback         | `Config.StageHooks`         | **Removed**    |
+| `Metrics.RecordFix()`             | `Metrics.RecordFixes(1)`    | **Removed**    |
+| `CountBySeverity()` free function | `Report.CountBySeverity()`  | **Removed**    |
+| `SeverityAliases()`               | `LookupSeverityAlias()`     | **Removed**    |
+| `GetCategory()`                   | `CategoryOf()`              | **Removed**    |
+| `HasFix` free function            | `WithFix`                   | **Removed**    |
+| `HasSuggestion` free function     | `WithSuggestion`            | **Removed**    |
 
 ---
 
-## Minimum Bar for v1.0.0
+## Minimum Bar for v1.0.0 — ALL MET ✅
 
-1. All "Must Have" items complete ✅
-2. All three OWNER DECISION blockers resolved
-3. All deprecated APIs removed
-4. No breaking changes after release without major version bump
-5. CI/CD running green (test, lint, race, benchmark)
-6. API stability guarantee published
-7. Migration guide available for consumers
+1. ✅ All "Must Have" items complete
+2. ✅ All three OWNER DECISION blockers resolved
+3. ✅ All deprecated APIs removed
+4. ✅ No breaking changes after release without major version bump
+5. ✅ CI/CD running green (test, lint, race, benchmark)
+6. ✅ API stability guarantee published (`docs/API_STABILITY.md`)
+7. ✅ Migration guide available (`docs/MIGRATION_v1.0.md`)

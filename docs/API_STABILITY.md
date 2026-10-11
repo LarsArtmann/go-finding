@@ -1,13 +1,13 @@
 # API Stability — go-finding
 
-**Last audited:** 2026-06-09
-**Version:** v0.6.1
+**Last audited:** 2026-09-08
+**Version:** v1.7.0
 
 go-finding follows the [Go 1 Compatibility Promise](https://go.dev/doc/go1compat) philosophy.
 
 ## Commitment
 
-Once we tag v1.0.0:
+Since v1.0.0:
 
 1. **No breaking changes** in any minor or patch release (v1.x.y)
 2. Breaking changes require a **major version bump** (v2.0.0)
@@ -24,13 +24,14 @@ All exported symbols are classified as:
 
 ### Core Types
 
-| Type       | Status | Notes                                                                                   |
-| ---------- | ------ | --------------------------------------------------------------------------------------- |
-| `Finding`  | stable | Core data type. Fields may be added but never removed or renamed.                       |
-| `Report`   | stable | Thread-safe container. `Findings` slice is public; use accessors for concurrent safety. |
-| `Position` | stable | File/Line/Column/Offset. Zero-value is valid ("unpositioned").                          |
-| `Range`    | stable | Start/End Position. `IsValid()` checks End >= Start.                                    |
-| `Builder`  | stable | Fluent Finding builder.                                                                 |
+| Type       | Status | Notes                                                                                                   |
+| ---------- | ------ | ------------------------------------------------------------------------------------------------------- |
+| `Finding`  | stable | Core data type. Fields may be added but never removed or renamed.                                       |
+| `Report`   | stable | Thread-safe container. `findings` slice is unexported; use `FindingsSnapshot()`, `All()`, `FindByID()`. |
+| `Position` | stable | File/Line/Column/Offset. Zero-value is valid ("unpositioned").                                          |
+| `Range`    | stable | Start/End Position. `IsValid()` checks End >= Start.                                                    |
+| `Builder`  | stable | Fluent Finding builder. `BuildOrDefault()` returns zero-value on invalid.                               |
+| `Template` | stable | Pre-configured builder factory (v1.3.0). Stamp common fields, build many findings.                      |
 
 ### Named Types
 
@@ -48,19 +49,29 @@ All exported symbols are classified as:
 | `RelationKind`     | stable | Related, Causes, IsCausedBy                       |
 | `LSPSeverity`      | stable | Named int: Error/Warning/Info/Hint                |
 | `LSPDiagnosticTag` | stable | Named int: Unnecessary(1), Deprecated(2)          |
+| `ID`               | stable | Branded string type (v1.2.0). Prevents ID mixups. |
+| `RuleName`         | stable | Branded string type (v1.2.0)                      |
+| `ToolName`         | stable | Branded string type (v1.2.0)                      |
+| `FilePath`         | stable | Branded string type (v1.2.0)                      |
 
 ### Supporting Types
 
-| Type           | Status | Notes                                           |
-| -------------- | ------ | ----------------------------------------------- |
-| `ToolInfo`     | stable | Name + Version                                  |
-| `Summary`      | stable | Aggregated statistics. New fields may be added. |
-| `Suppression`  | stable | Kind/Reason/ExpiresAt                           |
-| `Correlation`  | stable | Score + finding pair                            |
-| `ModifiedPair` | stable | Before/After from Diff                          |
-| `ParsedID`     | stable | ID parse result                                 |
-| `RelatedRef`   | stable | Related finding reference                       |
-| `DiffResult`   | stable | Diff comparison result                          |
+| Type               | Status | Notes                                             |
+| ------------------ | ------ | ------------------------------------------------- |
+| `ToolInfo`         | stable | Name + Version                                    |
+| `Summary`          | stable | Aggregated statistics. New fields may be added.   |
+| `Suppression`      | stable | Kind/Reason/ExpiresAt                             |
+| `Correlation`      | stable | Score + finding pair                              |
+| `ModifiedPair`     | stable | Before/After from Diff                            |
+| `ParsedID`         | stable | ID parse result                                   |
+| `RelatedRef`       | stable | Related finding reference                         |
+| `DiffResult`       | stable | Diff comparison result                            |
+| `SimpleFixResult`  | stable | Result of ApplySimpleFixes (v1.3.0)               |
+| `Interval[T]`      | stable | Generic interval for overlap queries              |
+| `IntervalIndex[T]` | stable | Generic O(n+k) interval index for overlap queries |
+| `DetectorRegistry` | stable | Thread-safe plugin registry for detectors         |
+| `LinterRegistry`   | stable | Linter→category mapping registry (84 linters)     |
+| `SARIFOption`      | stable | Functional option for SARIF export                |
 
 ### Interfaces and Functions
 
@@ -76,96 +87,110 @@ All exported symbols are classified as:
 
 ### LSP Wire Types
 
-| Type             | Status | Notes               |
-| ---------------- | ------ | ------------------- |
-| `LSPDiagnostic`  | stable | Full LSP diagnostic |
-| `LSPPosition`    | stable |                     |
-| `LSPRange`       | stable |                     |
-| `LSPLocation`    | stable |                     |
-| `LSPRelatedInfo` | stable |                     |
+| Type            | Status | Notes               |
+| --------------- | ------ | ------------------- |
+| `LSPDiagnostic` | stable | Full LSP diagnostic |
+| `LSPPosition`   | stable |                     |
+| `LSPRange`      | stable |                     |
+| `LSPLocation`   | stable |                     |
+| `LSPRelated`    | stable |                     |
 
 ### Error Types
 
-| Symbol               | Status | Notes                                |
-| -------------------- | ------ | ------------------------------------ |
-| `FindingError`       | stable | Structured error with Category/Cause |
-| `NewValidationError` | stable | Constructor                          |
-| `NewParseError`      | stable | Constructor                          |
-| `NewIOError`         | stable | Constructor                          |
-| `NewConflictError`   | stable | Constructor                          |
-| `NewInternalError`   | stable | Constructor                          |
-| `GetCategory`        | stable | Extract ErrorCategory from error     |
-| `IsCategory`         | stable | Check error category                 |
-| `IsFindingError`     | stable | Type assertion                       |
+| Symbol               | Status | Notes                                         |
+| -------------------- | ------ | --------------------------------------------- |
+| `FindingError`       | stable | Structured error with Category/Cause          |
+| `NewValidationError` | stable | Constructor                                   |
+| `NewParseError`      | stable | Constructor                                   |
+| `NewIOError`         | stable | Constructor                                   |
+| `NewConflictError`   | stable | Constructor                                   |
+| `NewInternalError`   | stable | Constructor                                   |
+| `CategoryOf`         | stable | Extract ErrorCategory from error              |
+| `IsCategory`         | stable | Check error category                          |
+| `IsFindingError`     | stable | Type assertion                                |
+| `ErrorCode()`        | stable | go-error-family Coded interface (v1.4.0)      |
+| `ErrorFamily()`      | stable | go-error-family Classified interface (v1.4.0) |
 
 ### Key Functions
 
-| Function                              | Status | Notes                       |
-| ------------------------------------- | ------ | --------------------------- |
-| `Combine`                             | stable | Merge reports with dedup    |
-| `Correlate`                           | stable | Find related findings       |
-| `Diff`                                | stable | Compare finding sets by ID  |
-| `Filter` / `FilterInPlace`            | stable | Filter by predicates        |
-| `GenerateID`                          | stable | Deterministic ID            |
-| `ParseID`                             | stable | Parse generated ID          |
-| `FindingsFromSARIF`                   | stable | SARIF import                |
-| `FindingsFromReader`                  | stable | Streaming SARIF import      |
-| `FindingsFromJSON`                    | stable | JSON import                 |
-| `ReportFromJSON`                      | stable | JSON → Report               |
-| `FromJSON`                            | stable | JSON → Finding              |
-| `FromLSP`                             | stable | LSP → Finding               |
-| `FormatText` / `FormatMarkdown`       | stable | Human-readable output       |
-| `ParseSeverity` / `MustParseSeverity` | stable | String → Severity           |
-| `ParseCategory` / `MustParseCategory` | stable | String → Category           |
-| `CategoryForLinter`                   | stable | Linter→category lookup      |
-| `RegisterLinterCategory`              | stable | Register linter mapping     |
-| `NewToolAdapter`                      | stable | Generic adapter constructor |
-| `FromSARIFLevel`                      | stable | SARIF level → Severity      |
+| Function                                                  | Status | Notes                                                        |
+| --------------------------------------------------------- | ------ | ------------------------------------------------------------ |
+| `Combine`                                                 | stable | Merge reports with dedup                                     |
+| `Correlate`                                               | stable | Find related findings                                        |
+| `Diff`                                                    | stable | Compare finding sets by ID                                   |
+| `Filter` / `FilterInPlace`                                | stable | Filter by predicates                                         |
+| `GenerateID`                                              | stable | Deterministic ID                                             |
+| `ParseID`                                                 | stable | Parse generated ID                                           |
+| `FindingsFromSARIF`                                       | stable | SARIF import                                                 |
+| `FindingsFromReader`                                      | stable | Streaming SARIF import                                       |
+| `FindingsFromJSON`                                        | stable | JSON import                                                  |
+| `ReportFromJSON`                                          | stable | JSON → Report                                                |
+| `FromJSON`                                                | stable | JSON → Finding                                               |
+| `FromLSP`                                                 | stable | LSP → Finding                                                |
+| `FormatText` / `FormatMarkdown`                           | stable | Human-readable output                                        |
+| `FormatTextRich` / `FormatTable`                          | stable | Emoji-badged / table output (v1.3.0)                         |
+| `ApplySimpleFixes`                                        | stable | BeforeCode→AfterCode replacement (v1.3.0)                    |
+| `CheckBinary` / `RunCmd`                                  | stable | External tool helpers (v1.3.0)                               |
+| `SeverityFromLevel`                                       | stable | String→Severity with aliases (v1.3.0)                        |
+| `NewReportFromFindings`                                   | stable | One-step report creation (v1.3.0)                            |
+| `FilePos`                                                 | stable | File-level Position constructor (v1.3.0)                     |
+| `ParseSeverity` / `MustParseSeverity`                     | stable | String → Severity                                            |
+| `ParseConfidence`                                         | stable | String → Confidence; inverse of Confidence.String() (v1.5.0) |
+| `RegisterSeverityAlias` / `LookupSeverityAlias`           | stable | Thread-safe severity alias registry (v1.5.0)                 |
+| `ResolveSafePath` / `ResolveSafePathFrom` / `ResolveRoot` | stable | Path-traversal-safe path resolution (v1.5.0)                 |
+| `ValidateAll`                                             | stable | Batch-validate findings (returns map[int]error)              |
+| `ParseCategory` / `MustParseCategory`                     | stable | String → Category                                            |
+| `CategoryForLinter`                                       | stable | Linter→category lookup                                       |
+| `RegisterLinterCategory`                                  | stable | Register linter mapping                                      |
+| `NewToolAdapter`                                          | stable | Generic adapter constructor                                  |
+| `FromSARIFLevel`                                          | stable | SARIF level → Severity                                       |
 
 ### Report Methods
 
-| Method                              | Status         | Notes                                            |
-| ----------------------------------- | -------------- | ------------------------------------------------ |
-| `Report.Merge`                      | **deprecated** | Use `MergeInto`. Removed in v1.0.0.              |
-| `Report.MergeInto`                  | stable         | Returns new Report, no mutation                  |
-| `Report.AddFinding` / `AddFindings` | stable         | Thread-safe                                      |
-| `Report.All`                        | stable         | `iter.Seq[Finding]`                              |
-| `Report.ActiveFindings`             | stable         | Non-suppressed                                   |
-| `Report.ComputeSummary` / `At`      | stable         |                                                  |
-| `Report.FindByID` / `FindByRule`    | stable         |                                                  |
-| `Report.FindingsSnapshot`           | stable         | Deep-cloned                                      |
-| `Report.Validate`                   | stable         |                                                  |
-| `Report.ToSARIF` / `WriteSARIF`     | stable         |                                                  |
-| `Report.PrettyJSON` / `Filtered`    | stable         |                                                  |
-| `Report.Filter` / `Map`             | stable         | Transform                                        |
-| `Report.Len` / `CountBySeverity`    | stable         | Counts                                           |
-| `CountBySeverity` (free function)   | **deprecated** | Use `Report.CountBySeverity`. Removed in v1.0.0. |
+| Method                              | Status | Notes                           |
+| ----------------------------------- | ------ | ------------------------------- |
+| `Report.MergeInto`                  | stable | Returns new Report, no mutation |
+| `Report.AddFinding` / `AddFindings` | stable | Thread-safe                     |
+| `Report.All`                        | stable | `iter.Seq[Finding]`             |
+| `Report.ActiveFindings`             | stable | Non-suppressed                  |
+| `Report.ComputeSummary` / `At`      | stable |                                 |
+| `Report.FindByID` / `FindByRule`    | stable |                                 |
+| `Report.FindingsSnapshot`           | stable | Deep-cloned                     |
+| `Report.Validate`                   | stable |                                 |
+| `Report.ToSARIF` / `WriteSARIF`     | stable |                                 |
+| `Report.PrettyJSON` / `Filtered`    | stable |                                 |
+| `Report.Filter` / `Map`             | stable | Transform                       |
+| `Report.Len` / `CountBySeverity`    | stable | Counts                          |
 
 ### Filter Constructors
 
 | Constructor                                                                                                                           | Status |
 | ------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | `ByCategory`, `ByConfidence`, `ByConfidenceAtLeast`, `ByFile`, `ByFixStrategy`, `ByRule`, `BySeverity`, `BySeverityAtLeast`, `ByTool` | stable |
-| `AnyOf`, `Negate`, `FilterInvalid`, `NotSuppressed`, `HasFix`, `HasSuggestion`                                                        | stable |
+| `AnyOf`, `Negate`, `FilterInvalid`, `NotSuppressed`, `WithFix`, `WithSuggestion`                                                      | stable |
 
 ### Constants
 
-| Constant                                    | Status       | Notes                         |
-| ------------------------------------------- | ------------ | ----------------------------- |
-| `Severity*` (Info/Warning/Error/Critical)   | stable       |                               |
-| `Category*` (Correctness/Security/etc.)     | stable       |                               |
-| `FixStrategyDirect/Suggest`                 | stable       |                               |
-| `FixStrategyAI`                             | **reserved** | No backend. Won't auto-apply. |
-| `RelationKind*`, `SuppressionKind*`, `Tag*` | stable       |                               |
-| `VersionMajor/Minor/Patch`, `Version`       | stable       |                               |
-| `LSPSeverity*`, `LSPDiagnosticTag*`         | stable       |                               |
-| `LSPSeverityKey`, `LSPDiagnosticTagsKey`    | stable       | Metadata keys                 |
+| Constant                                    | Status       | Notes                                       |
+| ------------------------------------------- | ------------ | ------------------------------------------- |
+| `Severity*` (Info/Warning/Error/Critical)   | stable       |                                             |
+| `Category*` (Correctness/Security/etc.)     | stable       |                                             |
+| `FixStrategyDirect/Suggest`                 | stable       |                                             |
+| `FixStrategyAI`                             | **reserved** | No backend. Won't auto-apply.               |
+| `RelationKind*`, `SuppressionKind*`, `Tag*` | stable       |                                             |
+| `VersionMajor/Minor/Patch`, `Version`       | stable       |                                             |
+| `OffsetUnknown`                             | stable       | Sentinel for unset Position offset (v1.2.0) |
+| `Severity.Badge()` / `PriorityString()`     | stable       | Methods on Severity (v1.3.0)                |
+| `LSPSeverity*`, `LSPDiagnosticTag*`         | stable       |                                             |
+| `LSPSeverityKey`, `LSPDiagnosticTagsKey`    | stable       | Metadata keys                               |
 
-### Variables
+### Functions
 
-| Variable          | Status | Notes                 |
-| ----------------- | ------ | --------------------- |
-| `SeverityAliases` | stable | Map of alias→Severity |
+| Function                | Status | Notes                                        |
+| ----------------------- | ------ | -------------------------------------------- |
+| `RegisterSeverityAlias` | stable | Add custom severity alias                    |
+| `LookupSeverityAlias`   | stable | Look up canonical Severity                   |
+| `CategoryOf`            | stable | Category from error (replaces `GetCategory`) |
 
 ---
 
@@ -173,23 +198,51 @@ All exported symbols are classified as:
 
 ### Types
 
-| Type                                                            | Status |
-| --------------------------------------------------------------- | ------ |
-| `Pipeline`, `Config`, `CompletionReason`, `Stage`               | stable |
-| `Iteration`, `PipelineResult`, `PartialResult`                  | stable |
-| `FixApplier`, `FixEngine`, `FixEdit`, `FixProvider`, `FixGroup` | stable |
-| `ConflictInfo`, `VerifyResult`, `TriageResult`                  | stable |
-| `Metrics`, `MetricsSnapshot`                                    | stable |
-| `FileBackup`                                                    | stable |
-| `RetryDetector`, `RetryConfig`                                  | stable |
-| `GeneratedFileFilter`                                           | stable |
-| `FindingProcessor`, `ProcessorFunc`                             | stable |
-| `Detector`, `DetectorFunc` (type aliases)                       | stable |
-| `OffsetProvider`, `LineProvider`, `SubstringProvider`           | stable |
+| Type                                                                     | Status          |
+| ------------------------------------------------------------------------ | --------------- |
+| `Pipeline`, `Config`, `CompletionReason`, `Stage`                        | stable          |
+| `Iteration`, `PipelineResult`, `PartialResult`                           | stable          |
+| `FixApplier`, `FixEngine`, `FixEdit`, `FixProvider`, `FixGroup`          | stable          |
+| `Conflict`, `VerifyResult`, `TriageResult`                               | stable          |
+| `Metrics`, `MetricsSnapshot`                                             | stable          |
+| `FileBackup`                                                             | stable          |
+| `RetryDetector`, `RetryConfig`                                           | stable          |
+| `GeneratedFileFilter`                                                    | stable          |
+| `FindingTransformer`, `TransformerFunc`                                  | stable          |
+| `Detector`, `DetectorFunc` (type aliases)                                | stable          |
+| `OffsetProvider`, `LineProvider`, `SubstringProvider`                    | stable          |
+| `StageHook`, `StageHookFunc`, `StageEvent`, `StageTiming`                | stable          |
+| `LineShiftMap`, `LineShiftEntry`                                         | stable          |
+| `ConfigFile`                                                             | stable          |
+| `FlightRecorderHook`, `FlightRecorderConfig`                             | stable          |
+| `FixOutcome`, `FixOutcomeStatus`, `FixApplyResult`                       | stable (v1.7.0) |
+| `RollbackPolicy` (`RollbackPolicyFailingFile`, `RollbackPolicyAllFiles`) | stable (v1.7.0) |
 
 ### Functions
 
 All exported functions in `pipeline` are **stable**.
+
+Notable additions:
+
+| Function                                     | Status | Notes                                                                       |
+| -------------------------------------------- | ------ | --------------------------------------------------------------------------- |
+| `NewFlightRecorderHook`                      | stable | Added v1.5.0. Constructor for FlightRecorderHook.                           |
+| `DefaultFlightRecorderConfig`                | stable | Added v1.5.0. Returns default config.                                       |
+| `Detect`                                     | stable | One-shot detection convenience function (v1.3.0)                            |
+| `ApplyToContent`                             | stable | Content-level fix application without FS (v1.3.0)                           |
+| `ConfigFromFile` / `ConfigFromReader`        | stable | JSON/YAML config file loading                                               |
+| `FixEngine.ApplyWithOutcomes`                | stable | Added v1.7.0. Per-finding outcomes; Apply/ApplyWithConflicts delegate to it |
+| `FixApplier.ApplyWithReport` / `ApplyReport` | stable | Added v1.7.0. Run report with outcomes, shift maps, RolledBack files        |
+| `FixApplier.SetRollbackPolicy`               | stable | Added v1.7.0. Per-file rollback default; AllFiles opt-in                    |
+| `ApplyReport.FailedOutcomes`                 | stable | Added v1.7.0. Isolates failed outcomes                                      |
+| `FixOutcomeStatus` / `FixOutcome`            | stable | Added v1.7.0. Six statuses; failed carries typed error                      |
+| `Metrics.RecordOutcome` / `OutcomeCounts`    | stable | Added v1.7.0. Outcome aggregates in MetricsSnapshot (ADR-017)               |
+| `Report.GroupFindingsSorted` / `Group`       | stable | Added v1.8.0. Deterministic GroupID-ordered groups                          |
+| `GroupID.IsValid` (validation)               | stable | Added v1.8.0. Machine-safe identifiers; enforced by `Validate()` (D7)       |
+| `Config.OnFixOutcome`                        | stable | Added v1.8.0. Outcome-status callback; `OnFix` deprecated (D3)              |
+| `PipelineResult.Outcomes`                    | stable | Deduplicated per-finding outcomes on the result; added v1.12.0 (issue #32)  |
+| `FixApplier.ApplyDryRun`                     | stable | Added v1.8.0. Plan/apply report with zero writes (D4)                       |
+| `Template.WithGroupID`                       | stable | Added v1.8.0. Group stamp on template-built findings                        |
 
 ---
 
@@ -208,27 +261,22 @@ These are not yet locked:
 - `FixEdit` internal representation (JSON format may evolve)
 - SARIF internal types (unexported) — not part of public API
 
-## Known Pre-v1.0 Concerns
-
-### Reserved Placeholders
+## Reserved Placeholders
 
 - `FixStrategyAI` and `NeedsAI()` are published with no backend. Pipeline triage treats `FixStrategyAI` the same as `FixStrategySuggest` (no auto-apply).
 
-### Deprecations
+## Removed APIs (v1.0.0)
 
-- `Report.Merge()` — deprecated in favor of `MergeInto()`. Will be removed in v1.0.0.
-- `RecordFix()` — superseded by `RecordFixes(uint)`. Will be removed in v1.0.0.
+All deprecated APIs have been removed. See `docs/MIGRATION_v1.0.md` for migration details.
 
-### Encapsulation Risks
-
-- `Report.Findings` is a public slice. Use `AddFinding`/`AddFindings`/`FindByID`/`All()` for thread-safe access. ADR 10 documents the migration path via `FindingsSnapshot()`.
-
-### Owner Decisions (pre-v1.0)
-
-1. `Position` zero-value safety — Is `Position{}` valid or an error?
-2. `Range.End` zero-value ambiguity — Required vs optional?
-3. `PositionOffset` sentinel design — Need `OffsetUndefined`?
-4. `Report.Merge()` semantics — Should be removed after deprecation period.
+- `Report.Findings` field → unexported (`findings`). Use `FindingsSnapshot()`, `All()`, `FindByID()`.
+- `Report.Merge()` → Use `MergeInto()`.
+- `Config.OnStage` → Use `StageHooks`.
+- `Metrics.RecordFix()` → Use `RecordFixes(1)`.
+- `CountBySeverity()` free function → Use `Report.CountBySeverity()`.
+- `SeverityAliases()` → Use `LookupSeverityAlias()`.
+- `GetCategory()` → Use `CategoryOf()`.
+- `HasFix` / `HasSuggestion` free functions → Use `WithFix` / `WithSuggestion`.
 
 ## Deprecation Policy
 
@@ -244,4 +292,24 @@ These are not yet locked:
 
 ## Current Status
 
-**Pre-release** (v0.6.1). API is stabilizing but not yet locked. Target: v1.0.0 lock after resolving owner-decision items.
+**v1.7.0** — `Finding.GroupID` + `Report.GroupFindings()` + SARIF/LSP round-trip; `FixEngine.ApplyWithOutcomes` + `FixApplyResult` (issue #27); `RollbackPolicy` per-file default + `ApplyWithReport` (issue #28); CLI `-fix-rollback-all` flag. Additive except the documented rollback default change (see CHANGELOG `[1.7.0]`).
+
+**v1.8.0** — `Report.GroupFindingsSorted()` + `Group` and `Template.WithGroupID` (core); unsafe-path findings surface as failed outcomes instead of silent drops (pipeline).
+
+**v1.9.0** — `FlightRecorderConfig.MaxFiles` + `Compress` and config-file `maxFiles`/`compress` (pipeline); CLI `-trace-max-files`/`-trace-gzip`; rotation serialized against concurrent snapshots. Additive only.
+
+**v1.9.1 / v1.9.2** — Zero public API changes in any module (test robustness + release-pipeline fixes only).
+
+**v1.10.0** — Zero core-module API changes. Added the `toolsdk` sub-module (`toolsdk/v1.10.0`): `Spec`, `Trigger` constructors (`OnGoFiles`, `OnGoModule`, `OnFiles`, `AnyLanguage`), `Register`/`All`, `Repairer`/`RepairResult`, dry-run context helpers. Depends only on the core module.
+
+**Deterministic output guarantee** — All production JSON marshaling uses `encoding/json/v2` with `json.Deterministic(true)` (`marshalOpts`/`prettyMarshalOpts` in `json.go`), enforced by `scripts/json-deterministic-check.sh` in CI: byte-identical output for identical input across runs.
+
+**v1.6.0** — FlightRecorder config-file section (`FlightRecorderFileConfig`, `ResolveFlightRecorder`), CLI `flightRecorder` config section, 4 CI structural-check scripts, `docs-freshness.sh`, per-module CHANGELOGs, go-arch-lint boundary enforcement, LSP serialization benchmarks, flight recorder + path safety edge case tests.
+
+**v1.5.0** — `ParseConfidence`, `Template.Builder`, `ResolveSafePath` exports, severity alias registry (`RegisterSeverityAlias`/`LookupSeverityAlias`), `FixStrategy` normalization, `HasFix` Direct-code requirement, `Range.EndOrStart`/`EndOffsetOrStart`.
+
+**v1.4.1** — Zero new public APIs. Internal refactoring: extracted `must[T]`, `marshalJSONString`, `fixEditJSON`; consolidated test setup (`NewParallelGomega`); resolved 7 pipeline lint issues; zero code duplication.
+
+**v1.4.0** — 2 additive APIs: `FindingError.ErrorCode()`, `FindingError.ErrorFamily()` for go-error-family integration.
+
+**v1.3.0** — 11 additive APIs: Template, FormatTextRich, ApplySimpleFixes, BuildOrDefault, NewReportFromFindings, FilePos, SeverityFromLevel, PriorityString, CheckBinary, RunCmd, FormatTable.

@@ -2,9 +2,9 @@ package pipeline
 
 import (
 	"bytes"
-	"cmp"
-	"slices"
 	"testing"
+
+	"github.com/larsartmann/go-finding"
 )
 
 // FuzzApplyEditsToContent verifies that the optimized single-pass edit application
@@ -30,10 +30,7 @@ func FuzzApplyEditsToContent(f *testing.F) {
 			return
 		}
 
-		// Sort descending by offset (required by applyEditsToContent)
-		slices.SortFunc(edits, func(a, b FixEdit) int {
-			return cmp.Compare(b.Offset, a.Offset)
-		})
+		sortEditsDescending(edits)
 
 		result := applyEditsToContent(content, edits)
 
@@ -58,7 +55,12 @@ func FuzzApplyEditsToContent(f *testing.F) {
 		}
 
 		if len(result) != expectedLen {
-			t.Errorf("length mismatch: got %d, want %d (content=%d)", len(result), expectedLen, len(content))
+			t.Errorf(
+				"length mismatch: got %d, want %d (content=%d)",
+				len(result),
+				expectedLen,
+				len(content),
+			)
 		}
 	})
 }
@@ -66,7 +68,7 @@ func FuzzApplyEditsToContent(f *testing.F) {
 // FuzzApplyEditsToContent_Overlapping verifies that applyEditsToContent does not
 // panic even when edits overlap (it is not required to produce correct results
 // for overlapping edits, but it must not crash).
-func FuzzApplyEditsToContent_Overlapping(f *testing.F) {
+func FuzzApplyOverlappingEdits(f *testing.F) {
 	f.Add([]byte("hello"), []byte{0, 3, 1, 3})
 	f.Add([]byte("test"), []byte{0, 2, 1, 2, 2, 1})
 
@@ -82,9 +84,7 @@ func FuzzApplyEditsToContent_Overlapping(f *testing.F) {
 			return
 		}
 
-		slices.SortFunc(edits, func(a, b FixEdit) int {
-			return cmp.Compare(b.Offset, a.Offset)
-		})
+		sortEditsDescending(edits)
 
 		// Must not panic
 		_ = applyEditsToContent(content, edits)
@@ -170,4 +170,112 @@ func naiveApplyEdits(content []byte, edits []FixEdit) []byte {
 	}
 
 	return result
+}
+
+// FuzzApplyWithOutcomes verifies the core invariants of ApplyWithOutcomes for
+// arbitrary inputs: one outcome per input finding in input order, non-nil
+// content, valid outcome statuses, and consistency between the applied list
+// and the outcome counts.
+func FuzzApplyWithOutcomes(f *testing.F) {
+	f.Add([]byte("old() and old()"), 0, 5, byte(0))              // offset fix
+	f.Add([]byte("line1: old()\nline2: old()"), 100, 5, byte(1)) // unresolvable position
+	f.Add([]byte(""), 0, 1, byte(0))                             // empty content
+	f.Add([]byte("x"), 0, 1, byte(2))                            // no code change
+
+	f.Fuzz(func(t *testing.T, content []byte, offset, length int, mode byte) {
+		if len(content) > 2000 {
+			return
+		}
+
+		if offset < 0 {
+			offset = -offset
+		}
+
+		offset = offset % max(len(content), 1)
+
+		if length < 0 {
+			length = -length
+		}
+
+		length = length % max(len(content)-offset, 1)
+
+		findingBase := finding.Finding{
+			ID:       "fuzz:rule:content",
+			Rule:     "rule",
+			ToolName: "fuzz",
+			Message:  "fuzz fix",
+			Position: finding.Pos("fuzz.go", 1, 1),
+		}
+
+		var fixes []finding.Finding
+
+		switch mode % 3 {
+		case 0: // offset-based fix
+			fixes = []finding.Finding{findingBase}
+			fixes[0].BeforeCode = string(content[offset : offset+length])
+			fixes[0].AfterCode = "NEW"
+			fixes[0].Range = &finding.Range{
+				Start: finding.Position{File: "fuzz.go", Offset: offset},
+				End:   finding.Position{File: "fuzz.go", Offset: offset + length},
+			}
+		case 1: // line-based fix, position likely unresolvable
+			fixes = []finding.Finding{findingBase}
+			fixes[0].BeforeCode = "old()"
+			fixes[0].AfterCode = "NEW()"
+			fixes[0].Position = finding.Pos("fuzz.go", 100000, 1)
+		default: // no code change
+			fixes = []finding.Finding{findingBase}
+		}
+
+		engine := NewFixEngine()
+		result := engine.ApplyWithOutcomes(content, fixes)
+
+		if result.Content == nil {
+			t.Fatal("ApplyWithOutcomes returned nil content")
+		}
+
+		if len(result.Outcomes) != len(fixes) {
+			t.Fatalf(
+				"outcomes = %d, want %d (one per input finding)",
+				len(result.Outcomes),
+				len(fixes),
+			)
+		}
+
+		counts := result.OutcomeCounts()
+
+		validStatuses := map[FixOutcomeStatus]bool{
+			FixOutcomeApplied:  true,
+			FixOutcomeNoChange: true,
+			FixOutcomeRefused:  true,
+			FixOutcomeConflict: true,
+			FixOutcomeInvalid:  true,
+			FixOutcomeFailed:   true,
+		}
+
+		appliedOutcomes := 0
+
+		for _, o := range result.Outcomes {
+			if !validStatuses[o.Status] {
+				t.Fatalf("invalid outcome status %q", o.Status)
+			}
+
+			if o.Status == FixOutcomeApplied {
+				appliedOutcomes++
+			}
+		}
+
+		if counts[FixOutcomeApplied] != appliedOutcomes {
+			t.Fatalf(
+				"OutcomeCounts applied = %d, want %d",
+				counts[FixOutcomeApplied],
+				appliedOutcomes,
+			)
+		}
+
+		if counts[FixOutcomeApplied] != len(result.Applied) {
+			t.Fatalf("applied outcome count %d != len(result.Applied) %d",
+				counts[FixOutcomeApplied], len(result.Applied))
+		}
+	})
 }

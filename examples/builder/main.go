@@ -1,4 +1,8 @@
-// builder demonstrates the fluent Finding builder API.
+// builder demonstrates the fluent Finding builder API. This block
+// intentionally mirrors ExampleBuilder in example_test.go: the demo program
+// is a standalone binary for `go run`, while the testable example feeds the
+// godoc with a verifiable `// Output:` snapshot. Sharing the snippet would
+// require an indirection that obscures both forms.
 package main
 
 import (
@@ -8,17 +12,22 @@ import (
 	finding "github.com/larsartmann/go-finding"
 )
 
+// must calls log.Fatal if err is non-nil.
+func must(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
-	f, err := finding.NewBuilder("staticcheck", "SA1000", "invalid regular expression", finding.SeverityError, finding.Pos("pkg/validate.go", 24, 8)).
+	f, err := finding.NewBuilder(finding.RuleName("SA1000"), finding.ToolName("staticcheck"), "invalid regular expression", finding.SeverityError, finding.Pos("pkg/validate.go", 24, 8)).
 		WithCategory(finding.CategoryCorrectness).
 		WithConfidence(0.95).
 		WithBeforeCode("oldPattern").
 		WithAfterCode("newPattern").
 		WithFixStrategy(finding.FixStrategyDirect).
 		Build()
-	if err != nil {
-		log.Fatal(err)
-	}
+	must(err)
 
 	fmt.Printf("Finding: %s (%s)\n", f.ID, f.Rule)
 	fmt.Printf("Position: %s\n", f.Position)
@@ -29,9 +38,7 @@ func main() {
 	}
 
 	json, err := f.LineJSON()
-	if err != nil {
-		log.Fatal(err)
-	}
+	must(err)
 
 	fmt.Println(json)
 }

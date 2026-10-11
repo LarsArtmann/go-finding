@@ -19,6 +19,7 @@ func detectorSpecs(names ...string) []detectorSpec {
 	for i, name := range names {
 		specs[i] = detectorSpec{Name: name}
 	}
+
 	return specs
 }
 
@@ -30,6 +31,7 @@ func govetConfig(iterations int, timeout ...string) pipelineConfigFile {
 	if len(timeout) > 0 {
 		cfg.Timeout = timeout[0]
 	}
+
 	return cfg
 }
 
@@ -45,6 +47,7 @@ func runWithArgs(t *testing.T, args ...string) int {
 
 func writeConfig(t *testing.T, path string, content []byte) {
 	t.Helper()
+
 	if err := os.WriteFile(path, content, 0o644); err != nil {
 		t.Fatalf("write config: %v", err)
 	}
@@ -53,8 +56,10 @@ func writeConfig(t *testing.T, path string, content []byte) {
 // saveRestoreFlags saves the current flag state and registers a cleanup to restore it.
 func saveRestoreFlags(t *testing.T) {
 	t.Helper()
+
 	savedCommandLine := flag.CommandLine
 	savedArgs := os.Args
+
 	t.Cleanup(func() {
 		flag.CommandLine = savedCommandLine
 		os.Args = savedArgs
@@ -63,7 +68,8 @@ func saveRestoreFlags(t *testing.T) {
 
 func requireOutputResults(t *testing.T, w *bytes.Buffer, report *finding.Report, format string) {
 	t.Helper()
-	if err := outputResults(w, report, format); err != nil {
+
+	if err := outputResults(w, report, format, true); err != nil {
 		t.Fatalf("outputResults error: %v", err)
 	}
 }
@@ -103,8 +109,7 @@ detectors:
 }
 
 func TestLoadConfig_JSON(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "config.json")
@@ -122,8 +127,7 @@ func TestLoadConfig_JSON(t *testing.T) {
 }
 
 func TestLoadConfig_NoFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	cfg, err := loadConfig("", 2, true, true, 5*time.Minute)
 	if err != nil {
@@ -135,8 +139,7 @@ func TestLoadConfig_NoFile(t *testing.T) {
 }
 
 func TestLoadConfig_MissingFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	_, err := loadConfig("/nonexistent/config.yaml", 1, true, false, 10*time.Minute)
 	g.Expect(err).To(HaveOccurred())
@@ -203,6 +206,58 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "invalid flightRecorder slowStageThreshold",
+			cfg: pipelineConfigFile{
+				MaxIterations: 1,
+				Detectors:     detectorSpecs("govet"),
+				FlightRecorder: &flightRecorderFileConfig{
+					Enabled:            true,
+					SlowStageThreshold: "not-a-duration",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid flightRecorder config",
+			cfg: pipelineConfigFile{
+				MaxIterations: 1,
+				Detectors:     detectorSpecs("govet"),
+				FlightRecorder: &flightRecorderFileConfig{
+					Enabled:            true,
+					SlowStageThreshold: "30s",
+					OutputDir:          "/tmp/traces",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid flightRecorder minAge",
+			cfg: pipelineConfigFile{
+				MaxIterations: 1,
+				Detectors:     detectorSpecs("govet"),
+				FlightRecorder: &flightRecorderFileConfig{
+					Enabled: true,
+					MinAge:  "not-a-duration",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid flightRecorder config with all fields",
+			cfg: pipelineConfigFile{
+				MaxIterations: 1,
+				Detectors:     detectorSpecs("govet"),
+				FlightRecorder: &flightRecorderFileConfig{
+					Enabled:            true,
+					SlowStageThreshold: "30s",
+					MinAge:             "1m",
+					MaxBytes:           1 << 20,
+					OutputDir:          "/tmp/traces",
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "empty is valid",
 			cfg: pipelineConfigFile{
 				MaxIterations: 0,
@@ -215,8 +270,7 @@ func TestPipelineConfigFile_Validate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			err := tt.cfg.validate()
 			if tt.wantErr {

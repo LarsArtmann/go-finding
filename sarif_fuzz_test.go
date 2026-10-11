@@ -2,7 +2,7 @@ package finding
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -21,11 +21,11 @@ func FuzzToSARIF(f *testing.F) {
 		r := NewReport(ToolInfo{Name: tool})
 		r.AddFinding(Finding{
 			ID:       "id",
-			Rule:     rule,
-			ToolName: tool,
+			Rule:     RuleName(rule),
+			ToolName: ToolName(tool),
 			Message:  msg,
 			Severity: FromSARIFLevel(level),
-			Position: Position{File: file, Line: line, Column: col},
+			Position: Position{File: FilePath(file), Line: line, Column: col},
 		})
 		r.ComputeSummary()
 

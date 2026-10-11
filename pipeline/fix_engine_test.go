@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -8,8 +9,7 @@ import (
 )
 
 func TestFixEngine_Apply_EmptyInput(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 
@@ -25,8 +25,7 @@ func TestFixEngine_Apply_EmptyInput(t *testing.T) {
 }
 
 func TestFixEngine_Apply_NoMatchingFixes(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc main() {}")
@@ -45,8 +44,7 @@ func TestFixEngine_Apply_NoMatchingFixes(t *testing.T) {
 }
 
 func TestFixEngine_Apply_FixWithNoCode(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main")
@@ -65,11 +63,7 @@ func makeRangeFix(
 	startLine, startCol, endLine, endCol int,
 	before, after string,
 ) finding.Finding {
-	return finding.Finding{
-		BeforeCode: before, AfterCode: after,
-		Range:    finding.NewRangePtr(file, startLine, startCol, endLine, endCol),
-		Position: finding.Pos(file, startLine, startCol),
-	}
+	return rangeFix(file, startLine, startCol, endLine, endCol, before, after)
 }
 
 func twoLineRangeFixes() ([]byte, []finding.Finding) {
@@ -81,16 +75,7 @@ func twoLineRangeFixes() ([]byte, []finding.Finding) {
 }
 
 func makeOffsetFix(id, before, after string, startOff, endOff int) finding.Finding {
-	return finding.Finding{
-		ID:         id,
-		BeforeCode: before,
-		AfterCode:  after,
-		Range: &finding.Range{
-			Start: finding.Position{File: "a.go", Offset: startOff},
-			End:   finding.Position{File: "a.go", Offset: endOff},
-		},
-		Position: finding.Pos("a.go", 4, 2),
-	}
+	return offsetFixWithID(id, before, after, startOff, endOff)
 }
 
 func overlappingOffsetFixes() []finding.Finding {
@@ -128,8 +113,7 @@ func TestFixEngine_Apply_LineRange(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			engine := NewFixEngine()
 			result, _, count := engine.Apply([]byte(tt.content), []finding.Finding{tt.fix})
 			g.Expect(count).To(Equal(tt.wantCount))
@@ -139,8 +123,7 @@ func TestFixEngine_Apply_LineRange(t *testing.T) {
 }
 
 func TestFixEngine_Apply_LineRange_MultiLine(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc old() {\n\treturn\n}\n\nfunc main() {}")
@@ -162,8 +145,7 @@ func TestFixEngine_Apply_LineRange_MultiLine(t *testing.T) {
 }
 
 func TestFixEngine_Apply_LineRange_DescendingOrder(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\nline2: old\nline3: old\nline4: old")
@@ -195,8 +177,7 @@ func TestFixEngine_Apply_Substring(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			engine := NewFixEngine()
 			fixes := []finding.Finding{
 				{BeforeCode: tt.before, AfterCode: tt.after, Position: finding.Pos("a.go", 1, 1)},
@@ -209,8 +190,7 @@ func TestFixEngine_Apply_Substring(t *testing.T) {
 }
 
 func TestFixEngine_Apply_SubstringInsertion(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc main() {}")
@@ -241,8 +221,7 @@ func TestFixEngine_Apply_NearestLineMatch(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			fixes := []finding.Finding{
 				{BeforeCode: "X", AfterCode: "Y", Position: finding.Pos("a.go", tt.line, tt.col)},
@@ -273,8 +252,7 @@ func TestFixEngine_Apply_NearestColumnMatch(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			fixes := []finding.Finding{
 				{BeforeCode: "X", AfterCode: "Y", Position: finding.Pos("a.go", 1, tt.col)},
@@ -287,8 +265,7 @@ func TestFixEngine_Apply_NearestColumnMatch(t *testing.T) {
 }
 
 func TestFixEngine_Apply_ByteOffset(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc main() {\n\told()\n}")
@@ -313,8 +290,7 @@ func TestFixEngine_Apply_ByteOffset(t *testing.T) {
 }
 
 func TestFixEngine_Apply_WithCustomProvider(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	custom := &upperProvider{}
 	engine := NewFixEngineWithProviders(custom)
@@ -335,22 +311,270 @@ func TestFixEngine_Apply_WithCustomProvider(t *testing.T) {
 	g.Expect(string(result)).To(Equal("HELLO world"))
 }
 
-// upperProvider is a test provider that only handles direct fixes.
-type upperProvider struct{}
+// TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable verifies
+// that a provider failure surfaces as a failed outcome whose error chain is
+// matchable with errors.Is — so consumers can react to specific failure
+// causes instead of string matching.
+func TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable(t *testing.T) {
+	g := NewParallelGomega(t)
 
-func (upperProvider) Name() string { return "test-upper" }
+	content := []byte("package main\n\nold()\n")
+	fix := finding.Finding{
+		ID:         "test:rule:unresolvable",
+		Rule:       "rule",
+		ToolName:   "test",
+		Message:    "fix",
+		BeforeCode: "never-present()",
+		AfterCode:  "new()",
+		Position:   finding.Pos("test.go", 1000, 1),
+	}
 
-func (upperProvider) CanHandle(f finding.Finding) bool {
-	return f.FixStrategy == finding.FixStrategyDirect && f.BeforeCode != ""
+	result := NewFixEngine().ApplyWithOutcomes(content, []finding.Finding{fix})
+
+	g.Expect(result.Outcomes).To(HaveLen(1))
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeFailed))
+	g.Expect(result.Outcomes[0].Err).NotTo(BeNil())
+	g.Expect(result.Outcomes[0].Err).To(MatchError(ErrPositionUnresolvable))
+	g.Expect(result.HasErrors()).To(BeTrue())
+	g.Expect(result.OutcomeFor(fix.ID)).NotTo(BeNil())
+
+	// Outcome failures are typed as finding.FindingError with the finding's
+	// position attached, so consumers can classify via errorfamily.
+	fe, ok := errors.AsType[*finding.FindingError](result.Outcomes[0].Err)
+	g.Expect(ok).To(BeTrue())
+	g.Expect(fe.Category).To(Equal(finding.ErrCategoryParse))
+	g.Expect(fe.Position).NotTo(BeNil())
+	g.Expect(fe.Position.File).To(Equal(finding.FilePath("test.go")))
+	g.Expect(fe.Position.Line).To(Equal(1000))
+	g.Expect(result.Errors[0]).To(MatchError(ErrPositionUnresolvable))
 }
 
-func (upperProvider) Edits(_ []byte, f finding.Finding) ([]FixEdit, error) {
-	return []FixEdit{
-		{
-			Offset:      0,
-			Length:      len(f.BeforeCode),
-			Replacement: []byte(f.AfterCode),
-			Source:      f,
+// TestFixEngine_ProviderPrecedence pins the provider chain contract: providers
+// are tried in registration order; a provider that refuses (zero edits, no
+// error) falls through to the next one; a provider that errors does NOT stop
+// the chain — the first successful provider wins and its edits are used.
+func TestFixEngine_ProviderPrecedence(t *testing.T) {
+	content := []byte("old1()\nold2()\n")
+	fixes := []finding.Finding{makeFixFinding("1", "old1()", "new1()", "m.go", 1)}
+
+	t.Run("refusing provider falls through to next", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		engine := NewFixEngineWithProviders(&refusingProvider{}, &editAtBeforeProvider{})
+		result := engine.ApplyWithOutcomes(content, fixes)
+
+		g.Expect(result.OutcomeCounts()).To(Equal(map[FixOutcomeStatus]int{FixOutcomeApplied: 1}))
+		g.Expect(string(result.Content)).To(Equal("new1()\nold2()\n"))
+	})
+
+	t.Run("erroring provider falls through to next", func(t *testing.T) {
+		g := NewParallelGomega(t)
+
+		engine := NewFixEngineWithProviders(erroringProvider{}, &editAtBeforeProvider{})
+		result := engine.ApplyWithOutcomes(content, fixes)
+
+		g.Expect(result.OutcomeCounts()).To(Equal(map[FixOutcomeStatus]int{FixOutcomeApplied: 1}))
+		g.Expect(result.Errors).To(BeEmpty())
+		g.Expect(string(result.Content)).To(Equal("new1()\nold2()\n"))
+	})
+}
+
+// Pins the Applied ordering semantics for a mixed multi-edit/single-edit
+// batch: Applied follows APPLICATION order (descending offset of each
+// finding's first surviving edit), not input order. Outcomes stay in input
+// order. Offsets are deliberately tie-free (sortEditsDescending is unstable).
+// See docs/guides/fix-engine.md "Applied ordering".
+func TestFixEngine_Apply_MixedEditKinds_AppliedOrdering(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("abcdef")
+	multi := finding.Finding{
+		ID:          "multi",
+		Rule:        "r",
+		ToolName:    "t",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		FixStrategy: finding.FixStrategyDirect,
+		Position:    finding.Position{File: "a.go"},
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 4},
+				End:     finding.Position{File: "a.go", Offset: 6},
+				NewText: "G",
+			},
+			{
+				Start:   finding.Position{File: "a.go", Offset: 0},
+				End:     finding.Position{File: "a.go", Offset: 1},
+				NewText: "Z",
+			},
 		},
-	}, nil
+	}
+	single := finding.Finding{
+		ID:          "single",
+		Rule:        "r",
+		ToolName:    "t",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		FixStrategy: finding.FixStrategyDirect,
+		BeforeCode:  "c",
+		AfterCode:   "W",
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 2},
+				End:     finding.Position{File: "a.go", Offset: 3},
+				NewText: "W",
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result := engine.ApplyWithOutcomes(content, []finding.Finding{single, multi})
+
+	g.Expect(result.Applied).To(HaveLen(2))
+	g.Expect(result.Applied[0].ID).To(Equal(finding.ID("multi")))
+	g.Expect(result.Applied[1].ID).To(Equal(finding.ID("single")))
+	g.Expect(result.Outcomes[0].Finding.ID).To(Equal(finding.ID("single")))
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(result.Outcomes[1].Finding.ID).To(Equal(finding.ID("multi")))
+	g.Expect(result.Outcomes[1].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(result.Conflicts).To(BeEmpty())
+	g.Expect(string(result.Content)).To(Equal("ZbWdG"))
+}
+
+// Pins partial-conflict semantics for a multi-edit finding: when one of its
+// edits conflicts and another survives, the finding appears in Applied AND in
+// Conflicts, and its outcome is Applied (a surviving edit means the fix was
+// applied). Offsets are deliberately tie-free (sortEditsDescending is
+// unstable). See docs/guides/fix-engine.md "Partial conflicts".
+func TestFixEngine_Apply_PartialEditConflict_AppliedAndConflicts(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("abcdef")
+	first := finding.Finding{
+		ID:          "first",
+		Rule:        "r",
+		ToolName:    "t",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		FixStrategy: finding.FixStrategyDirect,
+		BeforeCode:  "d",
+		AfterCode:   "Y",
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 3},
+				End:     finding.Position{File: "a.go", Offset: 4},
+				NewText: "Y",
+			},
+		},
+	}
+	partial := finding.Finding{
+		ID:          "partial",
+		Rule:        "r",
+		ToolName:    "t",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		FixStrategy: finding.FixStrategyDirect,
+		Position:    finding.Position{File: "a.go"},
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 2},
+				End:     finding.Position{File: "a.go", Offset: 4},
+				NewText: "XY",
+			},
+			{
+				Start:   finding.Position{File: "a.go", Offset: 0},
+				End:     finding.Position{File: "a.go", Offset: 1},
+				NewText: "Z",
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result := engine.ApplyWithOutcomes(content, []finding.Finding{first, partial})
+
+	g.Expect(result.Applied).To(HaveLen(2))
+	g.Expect(result.Applied[0].ID).To(Equal(finding.ID("first")))
+	g.Expect(result.Applied[1].ID).To(Equal(finding.ID("partial")))
+	g.Expect(result.Conflicts).To(HaveLen(1))
+	g.Expect(result.Conflicts[0].Finding.ID).To(Equal(finding.ID("partial")))
+	g.Expect(result.Conflicts[0].ConflictsWith).To(HaveLen(1))
+	g.Expect(result.Conflicts[0].ConflictsWith[0].ID).To(Equal(finding.ID("first")))
+	g.Expect(result.Outcomes[0].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(result.Outcomes[1].Status).To(Equal(FixOutcomeApplied))
+	g.Expect(string(result.Content)).To(Equal("ZbcYef"))
+}
+
+// Pins the nearestBy tie-break: two occurrences equidistant from the
+// finding's position resolve to the EARLIEST one (strict-less comparison).
+func TestFixEngine_Apply_Substring_NearestTieKeepsEarliest(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	engine := NewFixEngine()
+	content := []byte("abab")
+	fixes := []finding.Finding{
+		{BeforeCode: "a", AfterCode: "X", Position: finding.Pos("a.go", 1, 2)},
+	}
+
+	result, _, count := engine.Apply(content, fixes)
+	g.Expect(count).To(Equal(1))
+	g.Expect(string(result)).To(Equal("Xbab"))
+}
+
+// Pins Conflict dedup for multi-edit findings: when several edits of ONE
+// finding conflict, they merge into a single Conflict entry whose
+// ConflictsWith accumulates every overlapped finding.
+func TestFixEngine_Apply_MultiEditConflict_DedupedPerFinding(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	content := []byte("0123456789abcdefghij")
+	mk := func(id string, start int) finding.Finding {
+		return finding.Finding{
+			ID:          finding.ID(id),
+			Rule:        "r",
+			ToolName:    "t",
+			Message:     "m",
+			Severity:    finding.SeverityWarning,
+			Position:    finding.Position{File: "a.go"},
+			FixStrategy: finding.FixStrategyDirect,
+			Edits: []finding.TextEdit{{
+				Start:   finding.Position{File: "a.go", Offset: start},
+				End:     finding.Position{File: "a.go", Offset: start + 1},
+				NewText: "X",
+			}},
+		}
+	}
+
+	early := mk("early", 2)   // applied, frontier moves to 2
+	late := mk("late", 8)     // applied first (higher offset)
+	multi := finding.Finding{ // both of its edits conflict
+		ID:          "multi",
+		Rule:        "r",
+		ToolName:    "t",
+		Message:     "m",
+		Severity:    finding.SeverityWarning,
+		Position:    finding.Position{File: "a.go"},
+		FixStrategy: finding.FixStrategyDirect,
+		Edits: []finding.TextEdit{
+			{
+				Start:   finding.Position{File: "a.go", Offset: 8},
+				End:     finding.Position{File: "a.go", Offset: 9},
+				NewText: "M",
+			},
+			{
+				Start:   finding.Position{File: "a.go", Offset: 2},
+				End:     finding.Position{File: "a.go", Offset: 3},
+				NewText: "M",
+			},
+		},
+	}
+
+	engine := NewFixEngine()
+	result := engine.ApplyWithOutcomes(content, []finding.Finding{early, late, multi})
+
+	g.Expect(result.Conflicts).To(HaveLen(1))
+	g.Expect(result.Conflicts[0].Finding.ID).To(Equal(finding.ID("multi")))
+	g.Expect(result.Conflicts[0].ConflictsWith).To(HaveLen(2))
+	g.Expect(result.Conflicts[0].ConflictsWith[0].ID).To(Equal(finding.ID("late")))
+	g.Expect(result.Conflicts[0].ConflictsWith[1].ID).To(Equal(finding.ID("early")))
+	g.Expect(result.Outcomes[2].Status).To(Equal(FixOutcomeConflict))
 }

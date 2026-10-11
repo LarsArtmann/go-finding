@@ -3,6 +3,8 @@ package finding
 import (
 	"errors"
 	"fmt"
+
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 // Sentinel errors for use with errors.Is.
@@ -44,7 +46,7 @@ type FindingError struct {
 	Finding  *Finding      // Associated finding (may be nil)
 	Message  string        // Human-readable message
 	Cause    error         // Underlying cause (may be nil)
-	File     string        // File path (if applicable)
+	File     FilePath      // File path (if applicable)
 	Position *Position     // Position in file (if applicable)
 }
 
@@ -80,6 +82,28 @@ func (e *FindingError) Is(target error) bool {
 	}
 }
 
+// ErrorCode implements errorfamily.Coded.
+func (e *FindingError) ErrorCode() string {
+	return "finding." + string(e.Category)
+}
+
+// ErrorFamily implements errorfamily.Classified, mapping ErrorCategory to
+// go-error-family families for integration with Classify().
+func (e *FindingError) ErrorFamily() errorfamily.Family {
+	switch e.Category {
+	case ErrCategoryValidation, ErrCategoryParse:
+		return errorfamily.Rejection
+	case ErrCategoryConflict:
+		return errorfamily.Conflict
+	case ErrCategoryIO:
+		return errorfamily.Transient
+	case ErrCategoryInternal:
+		return errorfamily.Infrastructure
+	default:
+		return errorfamily.Transient
+	}
+}
+
 // WithFinding sets the finding on a copy of the FindingError and returns it.
 func (e *FindingError) WithFinding(f Finding) *FindingError {
 	clone := *e
@@ -101,7 +125,7 @@ func (e *FindingError) WithPosition(pos Position) *FindingError {
 
 // newCategorizedError creates a FindingError with the given category.
 func newCategorizedError(cat ErrorCategory, message string, cause error) *FindingError {
-	return &FindingError{ //nolint:exhaustruct
+	return &FindingError{
 		Category: cat,
 		Message:  message,
 		Cause:    cause,
@@ -135,13 +159,15 @@ func NewInternalError(message string, cause error) *FindingError {
 
 // IsFindingError returns true if err is a *FindingError.
 func IsFindingError(err error) bool {
-	_, ok := errors.AsType[*FindingError](err)
+	_, ok := errors.AsType[*FindingError](
+		err,
+	) //nolint:erraudit // ok-pattern type assertion; first return is a value, not an ignored error
 
 	return ok
 }
 
-// GetCategory returns the category of the error, or empty string if not a FindingError.
-func GetCategory(err error) ErrorCategory {
+// CategoryOf returns the category of the error, or empty string if not a FindingError.
+func CategoryOf(err error) ErrorCategory {
 	if findingErr, ok := errors.AsType[*FindingError](err); ok {
 		return findingErr.Category
 	}
@@ -151,5 +177,16 @@ func GetCategory(err error) ErrorCategory {
 
 // IsCategory returns true if err is a FindingError with the given category.
 func IsCategory(err error, cat ErrorCategory) bool {
-	return GetCategory(err) == cat
+	return CategoryOf(err) == cat
+}
+
+// must returns v or panics if err is non-nil. Used by Must-style constructors
+// (MustParseCategory, MustParseSeverity, Builder.MustBuild) to eliminate the
+// repetitive `if err != nil { panic(err) }` boilerplate.
+func must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+
+	return v
 }

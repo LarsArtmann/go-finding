@@ -225,12 +225,113 @@ func TestMustParseSeverity(t *testing.T) {
 func TestMustParseSeverity_Panics(t *testing.T) {
 	t.Parallel()
 
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Errorf("MustParseSeverity(%q) should panic", "invalid")
-		}
-	}()
+	AssertPanics(t, "MustParseSeverity(\"invalid\") should panic", func() {
+		MustParseSeverity("invalid")
+	})
+}
 
-	MustParseSeverity("invalid")
+func TestSeverityFromLevel(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		level    string
+		fallback Severity
+		want     Severity
+	}{
+		// Canonical names
+		{"info", SeverityWarning, SeverityInfo},
+		{"warning", SeverityInfo, SeverityWarning},
+		{"error", SeverityInfo, SeverityError},
+		{"critical", SeverityInfo, SeverityCritical},
+
+		// Aliases
+		{"warn", SeverityError, SeverityWarning},
+		{"high", SeverityInfo, SeverityError},
+		{"medium", SeverityError, SeverityWarning},
+		{"low", SeverityError, SeverityInfo},
+		{"advice", SeverityError, SeverityInfo},
+		{"optional", SeverityError, SeverityInfo},
+		{"crit", SeverityInfo, SeverityCritical},
+		{"fatal", SeverityInfo, SeverityCritical},
+		{"note", SeverityError, SeverityInfo},
+		{"suggestion", SeverityError, SeverityInfo},
+
+		// Unknown — fallback
+		{"bogus", SeverityWarning, SeverityWarning},
+		{"", SeverityError, SeverityError},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.level, func(t *testing.T) {
+			t.Parallel()
+
+			got := SeverityFromLevel(tt.level, tt.fallback)
+			if got != tt.want {
+				t.Errorf("SeverityFromLevel(%q, %v) = %v, want %v",
+					tt.level, tt.fallback, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSeverity_Emoji(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		sev  Severity
+		want string
+	}{
+		{SeverityCritical, "🔴"},
+		{SeverityError, "🟠"},
+		{SeverityWarning, "🟡"},
+		{SeverityInfo, "🟢"},
+		{Severity("bogus"), ""},
+	}
+
+	for _, tt := range tests {
+		if got := tt.sev.Emoji(); got != tt.want {
+			t.Errorf("Emoji(%q) = %q, want %q", tt.sev, got, tt.want)
+		}
+	}
+}
+
+func TestSeverity_Badge(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		sev  Severity
+		want string
+	}{
+		{SeverityCritical, "🔴 CRITICAL"},
+		{SeverityError, "🟠 ERROR"},
+		{SeverityWarning, "🟡 WARNING"},
+		{SeverityInfo, "🟢 INFO"},
+		{Severity("bogus"), "bogus"},
+	}
+
+	for _, tt := range tests {
+		if got := tt.sev.Badge(); got != tt.want {
+			t.Errorf("Badge(%q) = %q, want %q", tt.sev, got, tt.want)
+		}
+	}
+}
+
+func TestSeverityAlias_RegisterAndLookup(t *testing.T) {
+	t.Parallel()
+
+	RegisterSeverityAlias("blocker", SeverityError)
+
+	got, ok := LookupSeverityAlias("blocker")
+	if !ok || got != SeverityError {
+		t.Errorf("LookupSeverityAlias(%q) = %q, %v, want %q, true", "blocker", got, ok, SeverityError)
+	}
+
+	if _, ok := LookupSeverityAlias("never-registered"); ok {
+		t.Error("unknown alias must not resolve")
+	}
+
+	parsed, err := ParseSeverity("blocker")
+	if err != nil || parsed != SeverityError {
+		t.Errorf("ParseSeverity(%q) = %q, %v, want %q, nil", "blocker", parsed, err, SeverityError)
+	}
 }

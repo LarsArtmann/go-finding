@@ -7,7 +7,7 @@ project_name: go-finding
 
 before:
   hooks:
-    - go mod tidy
+    - go mod download
 
 builds:
   - id: go-finding
@@ -70,12 +70,11 @@ changelog:
 
 signs:
   - cmd: cosign
-    certificate: "${artifact}.pem"
+    signature: "${artifact}.sigstore.json"
     args:
       - sign-blob
-      - "--oidc-issuer=https://token.actions.githubusercontent.com"
-      - "--output-certificate=${certificate}"
-      - "--output-signature=${signature}"
+      - "--bundle=${signature}"
+      - "--yes"
       - "${artifact}"
     artifacts: all
     output: true
@@ -99,7 +98,7 @@ brews:
     install: |
       bin.install "go-finding"
     test: |
-      system "#{{bin}}/go-finding --version"
+      system "#{bin}/go-finding --version"
 
 nix:
   - name: go-finding
@@ -114,7 +113,7 @@ nix:
     path: pkgs/go-finding/default.nix
     install: |
       mkdir -p $out/bin
-      cp -vr ./{{binary}} $out/bin/go-finding
+      cp -vr ./{{ .Binary }} $out/bin/go-finding
 
 nfpms:
   - id: default

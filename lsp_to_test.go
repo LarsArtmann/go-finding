@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestToLSP(t *testing.T) { //nolint:gocognit,funlen // comprehensive table-driven test
+func TestToLSP(t *testing.T) { //nolint:gocognit // comprehensive table-driven test
 	t.Parallel()
 
 	t.Run("with range", func(t *testing.T) {
@@ -26,7 +26,7 @@ func TestToLSP(t *testing.T) { //nolint:gocognit,funlen // comprehensive table-d
 				t.Errorf("ToLSP Severity = %d, want %d", got, want)
 			}
 
-			if got, want := diag.Code, f.Rule; got != want {
+			if got, want := diag.Code, f.Rule; got != string(want) {
 				t.Errorf("ToLSP Code = %q, want %q", got, want)
 			}
 

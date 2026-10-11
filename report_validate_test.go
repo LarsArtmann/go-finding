@@ -7,7 +7,7 @@ import (
 )
 
 func validFinding(rule, tool, msg string) Finding {
-	return NewFinding(rule, tool, msg, SeverityWarning, Pos("test.go", 1, 1), 0.5)
+	return NewFinding(RuleName(rule), ToolName(tool), msg, SeverityWarning, Pos("test.go", 1, 1), 0.5)
 }
 
 func TestReport_FindingsSnapshot(t *testing.T) {
@@ -41,17 +41,17 @@ func TestReport_FindingsSnapshot(t *testing.T) {
 
 	snapshot[0].Message = "modified"
 
-	if r.Findings[0].Message == "modified" {
+	if r.findings[0].Message == "modified" {
 		t.Error("FindingsSnapshot() did not clone: modification leaked back to report")
 	}
 
 	snapshot[0].Tags[0] = "modified-tag"
-	if r.Findings[0].Tags[0] == "modified-tag" {
+	if r.findings[0].Tags[0] == "modified-tag" {
 		t.Error("FindingsSnapshot() did not deep-clone Tags")
 	}
 
 	snapshot[0].Metadata["key"] = "modified-value"
-	if r.Findings[0].Metadata["key"] == "modified-value" {
+	if r.findings[0].Metadata["key"] == "modified-value" {
 		t.Error("FindingsSnapshot() did not deep-clone Metadata")
 	}
 }
@@ -152,7 +152,7 @@ func TestReport_All_IteratorReleasesLock(t *testing.T) {
 
 func suppressionFinding(id string, expiresAt *time.Time) Finding {
 	return Finding{
-		ID:       id,
+		ID:       ID(id),
 		Rule:     "rule",
 		ToolName: "tool",
 		Message:  "test",

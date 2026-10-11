@@ -47,6 +47,19 @@ func indexLineColToOffset(index []int, contentLen, line, col int) (int, error) {
 	return offset, nil
 }
 
+// resolveLineCol resolves a line/column to a byte offset, returning
+// ErrPositionUnresolvable on failure. The underlying error is wrapped so
+// callers can inspect the specific cause (invalid line, beyond EOF, column
+// overflow) via errors.Is/As.
+func resolveLineCol(idx []int, contentLen, line, col int) (int, error) {
+	offset, err := indexLineColToOffset(idx, contentLen, line, col)
+	if err != nil {
+		return 0, fmt.Errorf("%w: %w", ErrPositionUnresolvable, err)
+	}
+
+	return offset, nil
+}
+
 // buildLineOffsetIndex returns a slice where index[i] is the byte offset of
 // the start of line i+1 (1-based line number → 0-based slice index).
 func buildLineOffsetIndex(content []byte) []int {

@@ -15,18 +15,25 @@ import (
 
 // filterTypeRegistry maps user-facing type strings to gogenfilter.FilterOption values.
 var filterTypeRegistry = map[string]gogenfilter.FilterOption{
-	"all":          gogenfilter.FilterAll,
-	"sqlc":         gogenfilter.FilterSQLC,
-	"templ":        gogenfilter.FilterTempl,
-	"go-enum":      gogenfilter.FilterGoEnum,
-	"protobuf":     gogenfilter.FilterProtobuf,
-	"oapi-codegen": gogenfilter.FilterOapi,
-	"deepcopy-gen": gogenfilter.FilterDeepcopy,
-	"wire":         gogenfilter.FilterWire,
-	"moq":          gogenfilter.FilterMoq,
-	"mockgen":      gogenfilter.FilterMockgen,
-	"stringer":     gogenfilter.FilterStringer,
-	"generic":      gogenfilter.FilterGeneric,
+	"all":           gogenfilter.FilterAll,
+	"counterfeiter": gogenfilter.FilterCounterfeiter,
+	"deepcopy-gen":  gogenfilter.FilterDeepcopy,
+	"easyjson":      gogenfilter.FilterEasyjson,
+	"ent":           gogenfilter.FilterEnt,
+	"generic":       gogenfilter.FilterGeneric,
+	"go-enum":       gogenfilter.FilterGoEnum,
+	"go-swagger":    gogenfilter.FilterGoSwagger,
+	"gqlgen":        gogenfilter.FilterGqlgen,
+	"mockgen":       gogenfilter.FilterMockgen,
+	"mockery":       gogenfilter.FilterMockery,
+	"moq":           gogenfilter.FilterMoq,
+	"msgp":          gogenfilter.FilterMsgp,
+	"oapi-codegen":  gogenfilter.FilterOapi,
+	"protobuf":      gogenfilter.FilterProtobuf,
+	"sqlc":          gogenfilter.FilterSQLC,
+	"stringer":      gogenfilter.FilterStringer,
+	"templ":         gogenfilter.FilterTempl,
+	"wire":          gogenfilter.FilterWire,
 }
 
 // addGeneratedFilter creates a GeneratedFileFilter processor and appends it
@@ -56,6 +63,7 @@ func addGeneratedFilter(
 	if excl := splitCommaList(generatedExclude); len(excl) > 0 {
 		configs = append(configs, gogenfilter.WithExcludePatterns(excl...))
 	}
+
 	if excl := cfg.GeneratedExclude; len(excl) > 0 {
 		configs = append(configs, gogenfilter.WithExcludePatterns(excl...))
 	}
@@ -63,6 +71,7 @@ func addGeneratedFilter(
 	if incl := splitCommaList(generatedInclude); len(incl) > 0 {
 		configs = append(configs, gogenfilter.WithIncludePatterns(incl...))
 	}
+
 	if incl := cfg.GeneratedInclude; len(incl) > 0 {
 		configs = append(configs, gogenfilter.WithIncludePatterns(incl...))
 	}
@@ -123,7 +132,9 @@ func splitCommaList(s string) []string {
 	if s == "" {
 		return nil
 	}
+
 	parts := strings.Split(s, ",")
+
 	result := make([]string, 0, len(parts))
 	for _, p := range parts {
 		p = strings.TrimSpace(p)
@@ -131,5 +142,27 @@ func splitCommaList(s string) []string {
 			result = append(result, p)
 		}
 	}
+
+	return result
+}
+
+// uniqueStrings returns the input slice with duplicates removed, preserving order.
+func uniqueStrings(in []string) []string {
+	if len(in) <= 1 {
+		return in
+	}
+
+	seen := make(map[string]struct{}, len(in))
+	result := make([]string, 0, len(in))
+
+	for _, s := range in {
+		if _, ok := seen[s]; ok {
+			continue
+		}
+
+		seen[s] = struct{}{}
+		result = append(result, s)
+	}
+
 	return result
 }

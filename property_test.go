@@ -39,7 +39,7 @@ func TestProperty_GroupByFileCoversAll(t *testing.T) {
 	property := func(files []string) bool {
 		findings := make([]Finding, len(files))
 		for i, f := range files {
-			findings[i] = Finding{Position: Position{File: f}}
+			findings[i] = Finding{Position: Position{File: FilePath(f)}}
 		}
 
 		groups := GroupByFile(findings)
@@ -67,11 +67,11 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 		findings := make([]Finding, n)
 		for i := range findings {
 			findings[i] = Finding{
-				ID: randomSeedRule(
+				ID: ID(randomSeedRule(
 					rng,
 				) + ":" + randomSeedFile(
 					rng,
-				) + ":" + string(rune('A')+rune(rng.Intn(26))), //nolint:gosec // test-only random character generation
+				) + ":" + string(rune('A')+rune(rng.Intn(26)))),
 				Severity: sevFromInt(rng.Intn(4)),
 			}
 		}
@@ -79,7 +79,7 @@ func TestProperty_MergePreservesAll(t *testing.T) {
 		reports := splitSeedFindings(findings, rng)
 		merged := Combine(reports, WithDeduplication(false))
 
-		return len(merged.Findings) == len(findings)
+		return len(merged.findings) == len(findings)
 	}
 
 	checkProperty(t, property)
@@ -99,18 +99,22 @@ func TestProperty_IDRoundTrip(t *testing.T) {
 			return true
 		}
 
-		id := GenerateID(tool, rule, Position{File: file, Line: int(line), Column: int(col)})
+		id := GenerateID(
+			ToolName(tool),
+			RuleName(rule),
+			Position{File: FilePath(file), Line: int(line), Column: int(col)},
+		)
 
 		p := ParseID(id)
 		if !p.OK() {
 			return false
 		}
 
-		if p.Tool != tool {
+		if string(p.Tool) != tool {
 			return false
 		}
 
-		if p.Rule != rule {
+		if string(p.Rule) != rule {
 			return false
 		}
 
@@ -149,7 +153,7 @@ func TestProperty_MergeDedupReducesOrPreserves(t *testing.T) {
 
 		merged := Combine([]*Report{report, report}, WithDeduplication(true))
 
-		return len(merged.Findings) <= len(findings)*2
+		return len(merged.findings) <= len(findings)*2
 	}
 
 	checkProperty(t, property)
@@ -162,6 +166,125 @@ func TestProperty_FilterEmptyReturnsEmpty(t *testing.T) {
 		result := Filter(nil, BySeverity(SeverityError))
 
 		return len(result) == 0
+	}
+
+	checkPropertyAny(t, property)
+}
+
+// TestProperty_RangeContainsImpliesOverlaps verifies that if Range A contains
+// a point from Range B, then A must also overlap B. This is a consistency
+// invariant between Contains and Overlaps.
+func TestProperty_RangeContainsImpliesOverlaps(t *testing.T) {
+	t.Parallel()
+
+	property := func(startA, endA, pointLine uint16) bool {
+		if endA < startA {
+			startA, endA = endA, startA
+		}
+
+		rangeA := Range{
+			Start: Position{File: "f.go", Line: int(startA)},
+			End:   Position{File: "f.go", Line: int(endA)},
+		}
+
+		p := Position{File: "f.go", Line: int(pointLine)}
+
+		if rangeA.Contains(p) {
+			// If A contains the point, a single-point range at that point
+			// must overlap A.
+			rangeB := Range{
+				Start: Position{File: "f.go", Line: int(pointLine)},
+				End:   Position{File: "f.go", Line: int(pointLine)},
+			}
+
+			return rangeA.Overlaps(rangeB)
+		}
+
+		return true
+	}
+
+	checkPropertyAny(t, property)
+}
+
+// TestProperty_FindingEqualTagOrderInvariant verifies that two Findings with
+// the same Tags in different order are Equal.
+func TestProperty_FindingEqualTagOrderInvariant(t *testing.T) {
+	t.Parallel()
+
+	property := func(seed int64) bool {
+		rng := rand.New(rand.NewSource(seed))
+		n := rng.Intn(6) + 1
+
+		tagsA := make([]Tag, n)
+		tagsB := make([]Tag, n)
+
+		for i := range tagsA {
+			tag := Tag(string(rune('a') + rune(rng.Intn(26))))
+			tagsA[i] = tag
+			tagsB[n-1-i] = tag
+		}
+
+		a := Finding{
+			ID:       "test-id",
+			Rule:     "test-rule",
+			ToolName: "test-tool",
+			Severity: SeverityWarning,
+			Tags:     tagsA,
+		}
+		b := a
+		b.Tags = tagsB
+
+		return a.Equal(b)
+	}
+
+	checkProperty(t, property)
+}
+
+// TestProperty_RangeContainsReflexive verifies that a Range contains its own
+// Start position.
+func TestProperty_RangeContainsReflexive(t *testing.T) {
+	t.Parallel()
+
+	property := func(line, col uint16) bool {
+		if line == 0 {
+			return true
+		}
+
+		r := Range{
+			Start: Position{File: "f.go", Line: int(line), Column: int(col)},
+			End:   Position{File: "f.go", Line: int(line), Column: int(col)},
+		}
+
+		return r.Contains(Position{File: "f.go", Line: int(line), Column: int(col)})
+	}
+
+	checkPropertyAny(t, property)
+}
+
+// TestProperty_RangeOverlapsSymmetric verifies that if A overlaps B,
+// then B overlaps A.
+func TestProperty_RangeOverlapsSymmetric(t *testing.T) {
+	t.Parallel()
+
+	property := func(startA, endA, startB, endB uint16) bool {
+		if endA < startA {
+			startA, endA = endA, startA
+		}
+
+		if endB < startB {
+			startB, endB = endB, startB
+		}
+
+		rangeA := Range{
+			Start: Position{File: "f.go", Line: int(startA)},
+			End:   Position{File: "f.go", Line: int(endA)},
+		}
+		rangeB := Range{
+			Start: Position{File: "f.go", Line: int(startB)},
+			End:   Position{File: "f.go", Line: int(endB)},
+		}
+
+		return rangeA.Overlaps(rangeB) == rangeB.Overlaps(rangeA)
 	}
 
 	checkPropertyAny(t, property)

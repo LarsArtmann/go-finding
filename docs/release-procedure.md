@@ -2,52 +2,220 @@
 
 ## Pre-release Checklist
 
-1. Verify all tests pass: `go test -race -count=1 ./...`
-2. Verify lint passes: `golangci-lint run ./...`
-3. Run stress test: `go test -race -count=20 ./...`
-4. Update `CHANGELOG.md` with release notes
-5. Update `version.go` if major/minor bump
+0. **Run the preflight script** (structural gates as code — added after the
+   v1.7.0 sub-module go.mod drift incident):
+
+   ```bash
+   bash scripts/release-preflight.sh
+   ```
+
+   It checks: clean tree, unpushed commits (nothing in `@{u}..HEAD`; the branch
+   must have an upstream — tags and CI run against what GitHub has, not your
+   working copy), worktree hygiene (no stray or prunable worktrees outside the
+   repo), version.go parse, target tags not already taken, version drift
+   (go.mod references), replace directives, go.work sync, test naming, JSON
+   determinism, docs API references (including the README version stamp), docs
+   freshness, and GOWORK=off builds per module. Add `--bench` / `--stress` to
+   also run the benchmark and stress gates through it. **Do not tag until it
+   passes.**
+1. Verify all tests pass: `GOEXPERIMENT=jsonv2 go test -race -count=1 ./...`
+2. Verify lint passes: `GOEXPERIMENT=jsonv2 golangci-lint run ./...`
+3. Verify the flake: `nix flake check` (treefmt, package build, module isolation)
+4. Run stress test (or `bash scripts/release-preflight.sh --stress`):
+   - stdlib modules (analysis, CLI): `GOEXPERIMENT=jsonv2 go test -race -count=20 ./...`
+   - Ginkgo modules (core, pipeline): `GOEXPERIMENT=jsonv2 ginkgo -r --race --repeat=20 --skip-package=examples`
+   - **Note:** Ginkgo rejects `go test -count=N` for N>1 (`Only -count=1 is allowed`). Use `ginkgo --repeat=N` instead for the core and pipeline suites.
+   - **Gate status (decided 2026-09-08): this step is mandatory.** A release
+     must not be tagged until the repeat=20 race run passes. It is the only
+     check that sweeps for concurrency flake — a single-run CI pass routinely
+     misses races that surface under repeated scheduling. Revisit only if a
+     cheaper equivalent lands in CI.
+   - **CI stress scope (revised 2026-09-08 evening): CI now mirrors this
+     split** — `ginkgo -r --race --repeat=20 --skip-package=examples` for
+     core/pipeline plus `go test -race -count=20 ./analysis/... ./cmd/...`.
+     The earlier decision ("CI keeps count=20 only") was wrong: Ginkgo rejects
+     `go test -count=N` for N>1 outright, so the CI stress job failed instantly
+     on the core suite and never actually stressed anything (first observed
+     publicly on run 34274674104 after the repo went public).
+5. Update `CHANGELOG.md` with release notes
+6. Update `version.go` (core module only) **and the README version stamp** —
+   the `fmt.Println(finding.Version) // "X.Y.Z"` example in README.md must
+   match version.go exactly; `docs-api-check.sh` (wired into preflight and CI)
+   fails on a stale or missing stamp (v1.9.1/v1.9.2 shipped while it lagged).
+   The bump commit must land BEFORE the tag is pushed, and the tag's tree must
+   carry it — verify with `git show <tag>:version.go`. The v1.14.0 core tag
+   self-reports "1.13.0" because its bump commit landed after tagging, and
+   `protect-release-tags` blocks the retag (found 2026-10-11).
+7. **Full FEATURES.md walk** — read `FEATURES.md` end to end and verify every
+   row's status against the code being released. The file is the honest feature
+   inventory; a release must not ship with stale rows. Check in particular that
+   nothing is still marked "(unreleased)" for the version being tagged.
+
+## Multi-Module Tagging
+
+This is a **multi-module repository** (see `go.work`). Each sub-module is an
+independent Go module and must be tagged with a **directory-prefixed** tag so the
+Go module proxy can resolve it:
+
+| Module   | Import path                                        | Tag prefix          | Version source        |
+| -------- | -------------------------------------------------- | ------------------- | --------------------- |
+| Core     | `github.com/larsartmann/go-finding`                | `v*` (no prefix)    | `version.go`          |
+| Pipeline | `github.com/larsartmann/go-finding/pipeline`       | `pipeline/v*`       | tag (no `version.go`) |
+| Analysis | `github.com/larsartmann/go-finding/analysis`       | `analysis/v*`       | tag (no `version.go`) |
+| Tool SDK | `github.com/larsartmann/go-finding/toolsdk`        | `toolsdk/v*`        | tag (no `version.go`) |
+| CLI      | `github.com/larsartmann/go-finding/cmd/go-finding` | `cmd/go-finding/v*` | tag (no `version.go`) |
+
+> Sub-modules do **not** have a `version.go`; the git tag is the single source of
+> truth for their version.
 
 ## Release Steps
 
-### For a new version (e.g., v0.2.0):
+### Core module (e.g., v0.2.0)
+
+All release work happens directly on `master` — no release branches.
 
 ```bash
 # 1. Ensure clean working tree
 git status
 
-# 2. Create release branch
-git checkout -b release/v0.2.0
+# 2. Update CHANGELOG.md (move "Unreleased" items into the new version)
 
-# 3. Update CHANGELOG.md
-# Move items from "Unreleased" to new version section
+# 3. Update version.go
+#    Edit VersionMajor / VersionMinor / VersionPatch
 
-# 4. Update version.go if needed
-# Edit Version variable
-
-# 5. Commit
+# 4. Commit on master
 git add CHANGELOG.md version.go
 git commit -m "chore: prepare release v0.2.0"
 
-# 6. Tag
+# 5. Tag (NO prefix for core)
 git tag -a v0.2.0 -m "Release v0.2.0"
 
-# 7. Push
-git push origin release/v0.2.0 --tags
+# 6. Push master and tags
+git push origin master --tags
 
-# 8. Create GitHub Release from tag
-# Use the CHANGELOG entries as release notes
+# 7. The release.yml workflow triggers on v* and builds the CLI binary via GoReleaser.
 ```
 
-### GoReleaser (when configured):
+### Sub-module (e.g., pipeline v0.1.0)
+
+Sub-modules are versioned **independently** from core. Their first release starts
+at `v0.1.0`. Bump according to semver based on changes _in that module_ since its
+last tag.
 
 ```bash
-git tag -a v0.2.0 -m "Release v0.2.0"
-git push origin v0.2.0
-# GoReleaser workflow triggers automatically
+# 1. Ensure clean working tree
+git status
+
+# 2. (Optional) add a CHANGELOG note for the sub-module.
+
+# 3. Tag with the DIRECTORY PREFIX
+git tag -a pipeline/v0.1.0 -m "pipeline v0.1.0"
+
+# 4. Push the tag
+git push origin pipeline/v0.1.0
+
+# 5. The release.yml workflow triggers on pipeline/v*, runs tests, and creates a
+#    lightweight GitHub Release (no binary — library modules need none).
 ```
+
+Repeat for `analysis/v*`, `toolsdk/v*`, and `cmd/go-finding/v*` as needed. Only tag a
+sub-module when it has meaningful changes since its previous tag.
+
+### All modules at once (coordinated release)
+
+To align all modules to the same version (e.g., after a breaking change across the
+workspace):
+
+```bash
+git tag -a v1.3.0                 -m "Release v1.3.0"
+git tag -a pipeline/v1.3.0        -m "pipeline v1.3.0"
+git tag -a analysis/v1.3.0        -m "analysis v1.3.0"
+git tag -a toolsdk/v1.3.0         -m "toolsdk v1.3.0"   # when the SDK changes too
+git tag -a cmd/go-finding/v1.3.0  -m "cli v1.3.0"
+git push origin master
+git push origin v1.3.0                      # ONE tag per push (see below)
+git push origin pipeline/v1.3.0             # wait for its Release run to
+for t in analysis/v1.3.0 toolsdk/v1.3.0 cmd/go-finding/v1.3.0; do
+  git push origin "$t"                      # complete before the next push
+done
+```
+
+Tag order (v1.14.0 onward): push the LIBRARY tags first (`v*`, `pipeline/v*`,
+`analysis/v*`, `toolsdk/v*` — one per push, each watched to a terminal
+Release run), then land the resync commit on master: bump
+`cmd/go-finding/go.mod` requires to the new versions, `go mod tidy`, refresh
+the flake `vendorHash`, commit
+(`chore(release): resync cmd/go-finding to published vX.Y.Z siblings`), push,
+and wait for green CI. Only THEN push `cmd/go-finding/vX.Y.Z` pointing AT the
+resync commit, so `go install cmd/go-finding@vX.Y.Z` builds the CLI with the
+new sibling engine — tagging cmd before the resync ships a binary pinned to
+the PREVIOUS engine (the v1.13.0 CLI pinned pipeline v1.12.0). GoReleaser
+binaries still attach only to core `v*` releases; sub-module tags get
+lightweight releases by design.
+
+### Tag pushing: ONE tag per push, serialized runs
+
+Two incidents shaped this rule:
+
+1. **v1.9.0** — a single `git push` that updates **more than three tags
+   creates no workflow events** at all (no run, no error; detected only by
+   absence).
+2. **v1.12.0** — even legal batches of 3 raced each other: GitHub's
+   Release concurrency group uses latest-queued-wins, so pushing 3 tags
+   near-simultaneously queued 3 runs and CANCELLED the older two. Whole
+   modules silently lost their Release runs.
+
+Therefore: push **one tag per push** and wait for that tag's Release run to
+reach a terminal state before pushing the next:
+
+```bash
+git push origin "$TAG"
+gh run list --workflow=release.yml --limit 1   # watch until completed
+gh run rerun <id>                              # if cancelled — ONE at a time,
+                                               # wait for completion, then next
+```
+
+Never queue several reruns at once (they cancel each other again). After
+the train, **verify every tag has a run AND a GitHub Release before
+assuming it does** (`gh run list --workflow=release.yml` +
+`gh release list`); silence is the failure mode.
+
+If a run truly never appeared (the v1.9.0 failure mode), dispatch it
+manually — after checking no run is queued/in progress:
+
+### Queue, don't race, releases
+
+Do not manually dispatch Release "to be sure" without first checking whether
+the tag push already triggered it. At v1.9.2 a manual dispatch raced the
+auto-triggered run: two concurrent GoReleaser runs, one failed with a 422
+duplicate-asset error (the published release itself was fine — the red run was
+self-inflicted noise). Check `gh run list` first; if a run is queued/in
+progress, wait for it.
 
 ## Version Scheme
 
-- Pre-v1: `v0.MINOR.PATCH` — breaking changes allowed in minor
-- Post-v1: `vMAJOR.MINOR.PATCH` — semantic versioning strictly
+Semantic versioning strictly: `vMAJOR.MINOR.PATCH`. Current core version:
+see `version.go`. Sub-modules track their own independent semver.
+
+## Consumer Setup
+
+The repository is **public** (since 2026-09-08). No `GOPRIVATE` configuration is
+needed — modules resolve through `proxy.golang.org` like any other Go module:
+
+```bash
+go get github.com/larsartmann/go-finding@latest
+```
+
+(Historical: while the repo was private, consumers had to set
+`GOPRIVATE=github.com/larsartmann/go-finding`. This is no longer required.)
+
+## Verifying a Release
+
+Confirm each module resolves after pushing its tag:
+
+```bash
+go list -m github.com/larsartmann/go-finding@latest
+go list -m github.com/larsartmann/go-finding/pipeline@latest
+go list -m github.com/larsartmann/go-finding/analysis@latest
+go list -m github.com/larsartmann/go-finding/cmd/go-finding@latest
+```

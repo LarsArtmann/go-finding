@@ -1,7 +1,7 @@
 version: "2"
 run:
   timeout: 5m
-  go: 1.26.3
+  go: "1.27"
   build-tags:
     - goexperiment.arenas
     - goexperiment.goroutineleakprofile
@@ -10,6 +10,7 @@ run:
     - goexperiment.simd
   allow-parallel-runners: true
   allow-serial-runners: true
+  issues-exit-code: 1
 output:
   formats: {}
 linters:
@@ -26,7 +27,6 @@ linters:
     - copyloopvar
     - cyclop
     - decorder
-    - depguard
     - dogsled
     - dupl
     - dupword
@@ -38,7 +38,7 @@ linters:
     - errname
     - errorlint
     - exhaustive
-    - exhaustruct
+    - exhaustruct_v5
     - exptostd
     - fatcontext
     - forbidigo
@@ -87,11 +87,9 @@ linters:
     - nilnil
     - nlreturn
     - noctx
-    - noinlineerr
     - nolintlint
     - nonamedreturns
     - nosprintfhostport
-    - paralleltest
     - perfsprint
     - prealloc
     - predeclared
@@ -124,41 +122,47 @@ linters:
     - wrapcheck
     - wsl_v5
     - zerologlint
+  disable:
+    - depguard
+    - noinlineerr
+    - paralleltest
   settings:
     cyclop:
       max-complexity: 25
-    depguard:
-      rules:
-        main:
-          allow:
-            - $gostd
-            - github.com/LarsArtmann/gogenfilter
-            - github.com/larsartmann/go-finding
-          deny:
-            - desc: deprecated since Go 1.16, use io and os
-              pkg: io/ioutil
-          files:
-            - $all
-            - "!$test"
-          list-mode: lax
-        test:
-          allow:
-            - $gostd
-            - github.com/LarsArtmann/gogenfilter
-            - github.com/larsartmann/go-finding
-            - github.com/onsi/ginkgo
-            - github.com/onsi/gomega
-          files:
-            - $test
-          list-mode: lax
-    exhaustruct:
-      exclude:
-        - os/exec.Cmd
+    errcheck:
+      exclude-functions:
+        - (*os.File).Close
+        - (io.Closer).Close
+        - (*sql.DB).Close
+        - (*sql.Rows).Close
+        - (*sql.Stmt).Close
+        - (net.Conn).Close
+        - (*net.TCPConn).Close
+        - (*net.UDPConn).Close
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - fmt.Print
+        - fmt.Printf
+        - fmt.Println
+        - (*strings.Builder).WriteString
+        - (*bytes.Buffer).WriteString
+    exhaustruct_v5:
+      ignore-patterns:
+        - ^github\.com/larsartmann/go-finding\.[A-Za-z0-9_]+$
+        - ^github\.com/larsartmann/go-finding/[a-z/]+\.[A-Za-z0-9_]+$
     funlen:
       lines: 120
       statements: 80
+    ginkgolinter:
+      forbid-focus-container: true
+      forbid-spec-pollution: true
     gocognit:
       min-complexity: 35
+    goconst:
+      ignore-tests: true
+      min-len: 4
+      min-occurrences: 5
     gocritic:
       disabled-checks:
         - ifElseChain
@@ -187,7 +191,9 @@ linters:
         - stdlib
         - generic
         - github.com/larsartmann/go-finding/pipeline.Detector
-        - github.com/larsartmann/go-finding/pipeline.FindingProcessor
+        - github.com/larsartmann/go-finding/pipeline.FindingTransformer
+    makezero:
+      always: false
     mnd:
       ignored-functions:
         - fmt.Errorf
@@ -243,6 +249,21 @@ linters:
           severity: warning
         - name: unused-receiver
           severity: warning
+    tagalign:
+      align: false
+      order:
+        - binding
+        - json
+        - yaml
+        - xml
+        - toml
+        - validate
+        - mapstructure
+      sort: true
+    testifylint:
+      disable:
+        - go-require
+      enable-all: true
     varnamelen:
       ignore-map-index-ok: true
       ignore-names:
@@ -270,7 +291,7 @@ linters:
         - s
         - c
         - w
-        - n
+        - "n"
         - h
         - e
         - k
@@ -296,39 +317,50 @@ linters:
       - path: _test\.go
         linters:
           - err113
-          - exhaustruct
+          - exhaustruct_v5
           - goconst
           - wrapcheck
           - unparam
           - testpackage
+          - exhaustruct
+          - gochecknoglobals
+          - funlen
+          - cyclop
+          - forcetypeassert
+          - gosec
+          - errcheck
+          - ireturn
+          - recvcheck
+          - contextcheck
+          - exhaustive
       - path: cmd/
         linters:
           - gochecknoglobals
           - gochecknoinits
       - path: examples/
         linters:
-          - exhaustruct
+          - exhaustruct_v5
           - forbidigo
           - mnd
       - path: sarif_types\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
           - goconst
       - path: sarif_export\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
       - path: sarif_import\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
       - path: lsp\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
       - path: version\.go
         linters:
           - gochecknoglobals
       - path: filter\.go
         linters:
-          - exhaustruct
+          - exhaustruct_v5
       - path: confidence\.go
         linters:
           - goconst
@@ -340,6 +372,9 @@ linters:
         linters:
           - goconst
           - gochecknoglobals
+      - path: json\.go
+        linters:
+          - gochecknoglobals
       - path: _test\.go
         text: unused
         linters:
@@ -348,6 +383,7 @@ linters:
       - \.gen\.go$
       - _templ\.go$
       - cmd/go-finding/
+      - pipeline/
       - vendor/
 formatters:
   enable:
@@ -355,6 +391,7 @@ formatters:
     - goimports
     - gofumpt
     - golines
+    - swaggo
   settings:
     golines:
       max-len: 120
@@ -363,6 +400,7 @@ formatters:
     paths:
       - _templ\.go$
       - cmd/go-finding/
+      - pipeline/
 issues:
   max-issues-per-linter: 100
   max-same-issues: 5

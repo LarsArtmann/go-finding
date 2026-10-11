@@ -1,5 +1,7 @@
 # API Stability Report — v1.0.0 Audit
 
+> **HISTORICAL SNAPSHOT (2026-05-18):** Point-in-time API audit at v1.0.0. Project is now at v1.2.0. For current API stability info, see `docs/API_STABILITY.md`.
+
 **Date:** 2026-05-18
 **Scope:** All exported symbols in root, pipeline, and analysis packages
 **Total symbols:** 317 (root: 206, pipeline: 106, analysis: 5)

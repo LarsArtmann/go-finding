@@ -11,8 +11,7 @@ import (
 )
 
 func TestStageHook_RecordsEvents(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	var (
 		mu     sync.Mutex
@@ -65,8 +64,7 @@ func TestStageHook_RecordsEvents(t *testing.T) {
 }
 
 func TestStageHook_BeforeHookAborts(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	abortErr := errors.New("hook abort")
 

@@ -1,18 +1,19 @@
 package main
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/go-faster/yaml"
 	"github.com/larsartmann/go-finding"
-	"github.com/larsartmann/go-finding/internal/detectors"
+	"github.com/larsartmann/go-finding/cmd/go-finding/internal/detectors"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
@@ -30,8 +31,73 @@ type pipelineConfigFile struct {
 	GeneratedInclude []string `json:"generatedInclude" yaml:"generatedInclude"`
 	// ByteLevelConflictDetection enables precise byte-level conflict detection during triage.
 	ByteLevelConflictDetection bool `json:"byteLevelConflictDetection" yaml:"byteLevelConflictDetection"`
+	// FixRollbackAllFiles opts into all-or-nothing fix application: when a file
+	// fails, every file modified earlier in the run is rolled back. By default
+	// only the failing file is restored and applied fixes stay on disk.
+	FixRollbackAllFiles bool `json:"fixRollbackAllFiles" yaml:"fixRollbackAllFiles"`
 	// FixProviders enables named fix providers (e.g., "go-ast") for domain-specific edits.
 	FixProviders []string `json:"fixProviders" yaml:"fixProviders"`
+	// FlightRecorder enables Go execution trace recording. This is an alternative
+	// to the -trace CLI flag for YAML/JSON config users.
+	FlightRecorder *flightRecorderFileConfig `json:"flightRecorder" yaml:"flightRecorder"`
+}
+
+type flightRecorderFileConfig struct {
+	Enabled            bool   `json:"enabled"            yaml:"enabled"`
+	OutputDir          string `json:"outputDir"          yaml:"outputDir"`
+	SlowStageThreshold string `json:"slowStageThreshold" yaml:"slowStageThreshold"`
+	MinAge             string `json:"minAge"             yaml:"minAge"`
+	MaxBytes           uint64 `json:"maxBytes"           yaml:"maxBytes"`
+	MaxFiles           int    `json:"maxFiles"           yaml:"maxFiles"`
+	Compress           bool   `json:"compress"           yaml:"compress"`
+}
+
+// resolve parses the string-encoded duration fields and applies pipeline
+// defaults. The CLI keeps its own resolver (mirroring pipeline's
+// ConfigFile.ResolveFlightRecorder) because the no-replace policy pins it to
+// published pipeline versions.
+func (c flightRecorderFileConfig) resolve() (pipeline.FlightRecorderConfig, error) {
+	resolved := pipeline.DefaultFlightRecorderConfig()
+
+	if c.OutputDir != "" {
+		resolved.OutputDir = c.OutputDir
+	}
+
+	if c.SlowStageThreshold != "" {
+		d, err := time.ParseDuration(c.SlowStageThreshold)
+		if err != nil {
+			return pipeline.FlightRecorderConfig{}, fmt.Errorf(
+				"invalid flightRecorder.slowStageThreshold %q: %w",
+				c.SlowStageThreshold, err,
+			)
+		}
+
+		resolved.SlowStageThreshold = d
+	}
+
+	if c.MinAge != "" {
+		d, err := time.ParseDuration(c.MinAge)
+		if err != nil {
+			return pipeline.FlightRecorderConfig{}, fmt.Errorf(
+				"invalid flightRecorder.minAge %q: %w",
+				c.MinAge, err,
+			)
+		}
+
+		resolved.MinAge = d
+	}
+
+	if c.MaxBytes != 0 {
+		resolved.MaxBytes = c.MaxBytes
+	}
+
+	if c.MaxFiles != 0 {
+		resolved.MaxFiles = c.MaxFiles
+	}
+
+	resolved.Compress = c.Compress
+
+	return resolved, nil
 }
 
 type detectorSpec struct {
@@ -61,10 +127,7 @@ func loadConfig(
 	if configFile != "" {
 		data, err := os.ReadFile(configFile)
 		if err != nil {
-			return pipelineConfigFile{}, fmt.Errorf(
-				"reading config %q (maxIter=%d, timeout=%v, parallel=%v, verify=%v): %w",
-				configFile, maxIter, timeout, parallel, verify, err,
-			)
+			return pipelineConfigFile{}, fmt.Errorf("reading config %q: %w", configFile, err)
 		}
 
 		var cfg pipelineConfigFile
@@ -73,30 +136,27 @@ func loadConfig(
 		case ".yaml", ".yml":
 			if err := yaml.Unmarshal(data, &cfg); err != nil {
 				return pipelineConfigFile{}, fmt.Errorf(
-					"parsing YAML config %q (maxIter=%d, timeout=%v, parallel=%v, verify=%v): %w",
-					configFile, maxIter, timeout, parallel, verify, err,
+					"parsing YAML config %q: %w",
+					configFile, err,
 				)
 			}
 		default:
 			if err := json.Unmarshal(data, &cfg); err != nil {
 				return pipelineConfigFile{}, fmt.Errorf(
-					"parsing config %q (maxIter=%d, timeout=%v, parallel=%v, verify=%v): %w",
-					configFile, maxIter, timeout, parallel, verify, err,
+					"parsing config %q: %w",
+					configFile, err,
 				)
 			}
 		}
 
 		if err := cfg.validate(); err != nil {
-			return pipelineConfigFile{}, fmt.Errorf(
-				"invalid config %q (maxIter=%d, timeout=%v, parallel=%v, verify=%v): %w",
-				configFile, maxIter, timeout, parallel, verify, err,
-			)
+			return pipelineConfigFile{}, fmt.Errorf("invalid config %q: %w", configFile, err)
 		}
 
 		return cfg, nil
 	}
 
-	return pipelineConfigFile{ //nolint:exhaustruct
+	return pipelineConfigFile{ //nolint:exhaustruct_v5
 		MaxIterations:     maxIter,
 		ParallelDetectors: parallel,
 		VerifyAfterFix:    verify,
@@ -125,7 +185,7 @@ func (c pipelineConfigFile) validate() error {
 
 	for _, d := range c.Detectors {
 		if _, ok := lookupDetectorBuilder(d.Name); !ok {
-			return fmt.Errorf("%w %q (available: %s)", errUnknownDetector, d.Name,
+			return fmt.Errorf("%w: %q (available: %s)", errUnknownDetector, d.Name,
 				strings.Join(availableDetectorNames(), ", "))
 		}
 	}
@@ -134,6 +194,12 @@ func (c pipelineConfigFile) validate() error {
 		if _, ok := lookupFixProvider(name); !ok {
 			return fmt.Errorf("%w: %q (available: %s)", ErrUnknownFixProvider, name,
 				strings.Join(availableFixProviderNames(), ", "))
+		}
+	}
+
+	if c.FlightRecorder != nil {
+		if _, err := c.FlightRecorder.resolve(); err != nil {
+			return fmt.Errorf("%w: %w", errInvalidConfig, err)
 		}
 	}
 
@@ -188,7 +254,7 @@ func (c pipelineConfigFile) toPipelineConfig() (pipeline.Config, error) {
 		detectorTimeouts[name] = d
 	}
 
-	return pipeline.Config{ //nolint:exhaustruct
+	return pipeline.Config{ //nolint:exhaustruct_v5
 		MaxIterations:              maxIter,
 		ParallelDetectors:          c.ParallelDetectors,
 		VerifyAfterFix:             c.VerifyAfterFix,
@@ -196,26 +262,50 @@ func (c pipelineConfigFile) toPipelineConfig() (pipeline.Config, error) {
 		Metrics:                    pipeline.NewMetrics(),
 		DetectorTimeouts:           detectorTimeouts,
 		ByteLevelConflictDetection: c.ByteLevelConflictDetection,
+		FixRollbackAllFiles:        c.FixRollbackAllFiles,
 	}, nil
 }
 
-func writeOutput(report *finding.Report, format, outputFile string) error {
-	w := os.Stdout
-
-	if outputFile != "" {
-		f, err := os.Create(outputFile)
-		if err != nil {
-			return fmt.Errorf("creating output file %s: %w", outputFile, err)
-		}
-
-		defer func() { _ = f.Close() }()
-		w = f
+func writeOutput(report *finding.Report, format, outputFile string, includeSuppressed bool) error {
+	if outputFile == "" {
+		return outputResults(os.Stdout, report, format, includeSuppressed)
 	}
 
-	return outputResults(w, report, format)
+	f, err := os.Create(outputFile)
+	if err != nil {
+		return fmt.Errorf("creating output file %s: %w", outputFile, err)
+	}
+
+	writeErr := outputResults(f, report, format, includeSuppressed)
+	closeErr := f.Close()
+
+	if writeErr != nil {
+		return writeErr
+	}
+
+	if closeErr != nil {
+		return fmt.Errorf("closing output file %s: %w", outputFile, closeErr)
+	}
+
+	return nil
 }
 
-func outputResults(w io.Writer, report *finding.Report, format string) error {
+// supportedFormats is the complete set of CLI output format names.
+var supportedFormats = []string{"text", "markdown", "csv", "tsv", "json", "sarif"}
+
+func outputResults(w io.Writer, report *finding.Report, format string, includeSuppressed bool) error {
+	if !slices.Contains(supportedFormats, format) {
+		return fmt.Errorf("unsupported format %q (supported: %s)", format, strings.Join(supportedFormats, ", "))
+	}
+
+	if isGoOutputFormat(format) {
+		if err := renderGoOutput(w, report, format); err != nil {
+			return fmt.Errorf("writing %s: %w", format, err)
+		}
+
+		return nil
+	}
+
 	switch format {
 	case "json":
 		out, err := report.PrettyJSON()
@@ -227,17 +317,18 @@ func outputResults(w io.Writer, report *finding.Report, format string) error {
 			return fmt.Errorf("writing JSON: %w", err)
 		}
 	case "sarif":
-		out, err := report.ToSARIF()
+		var opts []finding.SARIFOption
+		if includeSuppressed {
+			opts = append(opts, finding.WithIncludeSuppressed())
+		}
+
+		out, err := report.ToSARIFWithOpts(opts...)
 		if err != nil {
 			return fmt.Errorf("serializing SARIF: %w", err)
 		}
 
 		if _, err := fmt.Fprintln(w, string(out)); err != nil {
 			return fmt.Errorf("writing SARIF: %w", err)
-		}
-	case "markdown":
-		if err := finding.FormatMarkdown(w, report.FindingsSnapshot()); err != nil {
-			return fmt.Errorf("writing markdown: %w", err)
 		}
 	default:
 		outputText(w, report)
@@ -250,18 +341,21 @@ func outputText(w io.Writer, report *finding.Report) {
 	findings := report.FindingsSnapshot()
 
 	if len(findings) == 0 {
-		_, _ = fmt.Fprintln(w, "No findings.")
+		_, _ = fmt.Fprintln(
+			w,
+			"No findings.",
+		) //nolint:erraudit // best-effort terminal output; outputText has no error return
 
 		return
 	}
 
 	if err := finding.FormatText(w, findings); err != nil {
-		_, _ = fmt.Fprintf(w, "warning: %v\n", err)
+		_, _ = fmt.Fprintf(w, "warning: %v\n", err) //nolint:erraudit // best-effort terminal output
 	}
 
-	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(findings))
+	_, _ = fmt.Fprintf(w, "\n%d finding(s)\n", len(findings)) //nolint:erraudit // best-effort terminal output
 	if report.Summary.Total > 0 {
-		_, _ = fmt.Fprintf(
+		_, _ = fmt.Fprintf( //nolint:erraudit // best-effort terminal output
 			w, "  By severity: %d info, %d warning, %d error, %d critical\n",
 			report.Summary.BySeverity[finding.SeverityInfo],
 			report.Summary.BySeverity[finding.SeverityWarning],

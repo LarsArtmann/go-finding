@@ -2,6 +2,7 @@ package finding
 
 import (
 	"iter"
+	"slices"
 	"time"
 )
 
@@ -10,19 +11,18 @@ import (
 // making it suitable for v1.0 migration from direct Findings slice access.
 // Each Finding is fully cloned via Clone(), so mutations are isolated.
 func (r *Report) FindingsSnapshot() []Finding {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return withReadLock(r, func() []Finding {
+		if len(r.findings) == 0 {
+			return nil
+		}
 
-	if len(r.Findings) == 0 {
-		return nil
-	}
+		snapshot := make([]Finding, len(r.findings))
+		for i, f := range r.findings {
+			snapshot[i] = f.Clone()
+		}
 
-	snapshot := make([]Finding, len(r.Findings))
-	for i, f := range r.Findings {
-		snapshot[i] = f.Clone()
-	}
-
-	return snapshot
+		return snapshot
+	})
 }
 
 // ActiveFindings returns all non-suppressed findings.
@@ -30,19 +30,18 @@ func (r *Report) FindingsSnapshot() []Finding {
 // in tests, filter Findings directly with IsSuppressedAt.
 // Safe for concurrent use.
 func (r *Report) ActiveFindings() []Finding {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return withReadLock(r, func() []Finding {
+		now := time.Now()
+		active := make([]Finding, 0, len(r.findings))
 
-	now := time.Now()
-	active := make([]Finding, 0, len(r.findingsLocked()))
-
-	for _, f := range r.findingsLocked() {
-		if !f.IsSuppressedAt(now) {
-			active = append(active, f)
+		for _, f := range r.findings {
+			if !f.IsSuppressedAt(now) {
+				active = append(active, f)
+			}
 		}
-	}
 
-	return active
+		return active
+	})
 }
 
 // BySeverity returns findings filtered by severity, excluding suppressed.
@@ -55,10 +54,9 @@ func (r *Report) BySeverity(sev Severity) []Finding {
 // CountBySeverity returns the count of findings for the given severity,
 // including suppressed findings. Uses the pre-computed summary.
 func (r *Report) CountBySeverity(sev Severity) int {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	return r.Summary.BySeverity[sev]
+	return withReadLock(r, func() int {
+		return r.Summary.BySeverity[sev]
+	})
 }
 
 // ByCategory returns findings filtered by category, excluding suppressed.
@@ -75,47 +73,104 @@ func (r *Report) ByFixStrategy(fs FixStrategy) []Finding {
 	return Filter(r.ActiveFindings(), ByFixStrategy(fs))
 }
 
+// GroupFindings returns findings grouped by GroupID, excluding suppressed.
+// Findings without a GroupID are omitted. Map iteration order is
+// unspecified; when deterministic group order matters (tests, serialization,
+// stable CLI output), use [Report.GroupFindingsSorted]. Findings within a
+// group preserve report order in both variants.
+// Safe for concurrent use.
+func (r *Report) GroupFindings() map[GroupID][]Finding {
+	groups := make(map[GroupID][]Finding)
+
+	for _, f := range r.ActiveFindings() {
+		if f.GroupID == "" {
+			continue
+		}
+
+		groups[f.GroupID] = append(groups[f.GroupID], f)
+	}
+
+	if len(groups) == 0 {
+		return nil
+	}
+
+	return groups
+}
+
+// Group is one GroupID group of findings, as returned by
+// [Report.GroupFindingsSorted].
+type Group struct {
+	// ID is the group's GroupID.
+	ID GroupID
+	// Findings are the group members in report order.
+	Findings []Finding
+}
+
+// GroupFindingsSorted returns the GroupID groups in deterministic order
+// (sorted by GroupID), excluding suppressed findings. It is the ordered
+// variant of [Report.GroupFindings] for tests, serialization, and stable
+// output. Returns nil when no grouped findings exist.
+// Safe for concurrent use.
+func (r *Report) GroupFindingsSorted() []Group {
+	groups := r.GroupFindings()
+	if len(groups) == 0 {
+		return nil
+	}
+
+	ids := make([]GroupID, 0, len(groups))
+	for id := range groups {
+		ids = append(ids, id)
+	}
+
+	slices.Sort(ids)
+
+	sorted := make([]Group, 0, len(ids))
+	for _, id := range ids {
+		sorted = append(sorted, Group{ID: id, Findings: groups[id]})
+	}
+
+	return sorted
+}
+
 // FindByID returns the finding with the given ID, or nil if not found.
 // The returned Finding is a shallow copy; modifications to value fields do not
 // affect the report, but mutations to slice/map fields (Tags, Related, Metadata)
 // will be shared. Use Clone() for a deep copy.
 // Safe for concurrent use.
-func (r *Report) FindByID(id string) *Finding {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+func (r *Report) FindByID(id ID) *Finding {
+	return withReadLock(r, func() *Finding {
+		for i, f := range r.findings {
+			if f.ID == id {
+				cp := r.findings[i]
 
-	for _, f := range r.findingsLocked() {
-		if f.ID == id {
-			cp := f
-
-			return &cp
+				return &cp
+			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 // FindByRule returns all non-suppressed findings matching the given rule name.
 // Safe for concurrent use.
-func (r *Report) FindByRule(rule string) []Finding {
+func (r *Report) FindByRule(rule RuleName) []Finding {
 	return Filter(r.ActiveFindings(), ByRule(rule))
 }
 
 // Len returns the number of findings in the report.
 // Safe for concurrent use.
 func (r *Report) Len() int {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	return len(r.findingsLocked())
+	return withReadLock(r, func() int {
+		return len(r.findings)
+	})
 }
 
 // Filter returns a new report containing only findings that match all predicates.
 // Safe for concurrent use.
 func (r *Report) Filter(predicates ...FilterFunc) *Report {
-	r.mu.RLock()
-	filtered := Filter(r.findingsLocked(), predicates...)
-	r.mu.RUnlock()
+	filtered := withReadLock(r, func() []Finding {
+		return Filter(r.findings, predicates...)
+	})
 
 	result := NewReport(r.Tool)
 	result.AddFindings(filtered)
@@ -126,10 +181,7 @@ func (r *Report) Filter(predicates ...FilterFunc) *Report {
 // Map returns a new report with the given function applied to each finding.
 // Safe for concurrent use.
 func (r *Report) Map(fn func(Finding) Finding) *Report {
-	r.mu.RLock()
-	findings := make([]Finding, len(r.findingsLocked()))
-	copy(findings, r.findingsLocked())
-	r.mu.RUnlock()
+	findings := r.readFindings()
 
 	result := NewReport(r.Tool)
 	for _, f := range findings {

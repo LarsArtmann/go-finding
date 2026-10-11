@@ -2,15 +2,14 @@ package finding
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"testing"
 
 	"github.com/onsi/gomega"
 )
 
-func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+func TestSARIF_RoundTripPreservesBeforeCodeAndID(t *testing.T) {
+	g := NewParallelGomega(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -38,21 +37,20 @@ func TestSARIF_RoundTripPreservesBeforeCodeAndFindingID(t *testing.T) {
 
 	f := findings[0]
 
-	g.Expect(f.ID).To(gomega.Equal("test:R1:a.go:1:1"))
-	g.Expect(f.Rule).To(gomega.Equal("R1"))
+	g.Expect(f.ID).To(gomega.Equal(ID("test:R1:a.go:1:1")))
+	g.Expect(f.Rule).To(gomega.Equal(RuleName("R1")))
 	g.Expect(f.Message).To(gomega.Equal("msg"))
 	g.Expect(f.AfterCode).To(gomega.Equal("new code"))
 
 	g.Expect(f.BeforeCode).To(gomega.Equal("old code"))
 
 	g.Expect(f.Related).To(gomega.HaveLen(1))
-	g.Expect(f.Related[0].FindingID).To(gomega.Equal("related-123"))
+	g.Expect(f.Related[0].FindingID).To(gomega.Equal(ID("related-123")))
 	g.Expect(f.Related[0].Relation).To(gomega.Equal(RelationKind("causes")))
 }
 
 func TestSARIF_TagsRoundTrip(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -77,8 +75,7 @@ func TestSARIF_TagsRoundTrip(t *testing.T) {
 }
 
 func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -88,7 +85,7 @@ func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 		Message:     "msg",
 		Severity:    SeverityError,
 		Position:    Pos("a.go", 1, 1),
-		Suppression: &Suppression{Kind: SuppressionInSource, Reason: "won't fix"},
+		Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R1", Reason: "won't fix"},
 	})
 	report.ComputeSummary()
 
@@ -101,8 +98,7 @@ func TestSARIF_SuppressedFindingsExcludedFromRoundTrip(t *testing.T) {
 }
 
 func TestSARIF_RoundTrip_EditProperties(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	report := NewReport(ToolInfo{Name: "test"})
 	report.AddFinding(Finding{
@@ -176,8 +172,8 @@ func TestFindingFromSarResult_GeneratesIDWithoutProperties(t *testing.T) {
 
 	f := findingFromSarResult(r, "tool")
 	g.Expect(f.ID).NotTo(gomega.BeEmpty())
-	g.Expect(f.ID).To(gomega.ContainSubstring("tool"))
-	g.Expect(f.ID).To(gomega.ContainSubstring("R1"))
+	g.Expect(string(f.ID)).To(gomega.ContainSubstring("tool"))
+	g.Expect(string(f.ID)).To(gomega.ContainSubstring("R1"))
 }
 
 func TestFindingsFromSARIF_FixWithEmptyChanges(t *testing.T) {
@@ -287,4 +283,166 @@ func TestSARIF_SchemaCompliance(t *testing.T) {
 	g.Expect(props[sarifPropToolName]).To(gomega.Equal("t"))
 	g.Expect(props[sarifPropCategory]).To(gomega.Equal("security"))
 	g.Expect(props[sarifPropMetaPrefix+"key"]).To(gomega.Equal("val"))
+}
+
+// sarifExtractResults unmarshals SARIF JSON and returns the results array.
+func sarifExtractResults(t *testing.T, g *gomega.WithT, data []byte) []map[string]any {
+	t.Helper()
+
+	var log map[string]any
+	g.Expect(json.Unmarshal(data, &log)).NotTo(gomega.HaveOccurred())
+
+	runs, ok := log["runs"].([]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	run, ok := runs[0].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	results, ok := run["results"].([]any)
+	g.Expect(ok).To(gomega.BeTrue())
+
+	out := make([]map[string]any, len(results))
+	for i, r := range results {
+		out[i], ok = r.(map[string]any)
+		g.Expect(ok).To(gomega.BeTrue())
+	}
+
+	return out
+}
+
+func TestSARIF_SchemaCompliance_MultipleFindings(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewWithT(t)
+
+	r := NewReport(ToolInfo{Name: "multi"})
+	r.AddFinding(Finding{
+		ID: "a:r:f.go:1:1", Rule: "R1", ToolName: "t", Message: "first",
+		Severity: SeverityWarning, Position: Pos("f.go", 1, 1),
+	})
+	r.AddFinding(Finding{
+		ID: "b:r:f.go:2:1", Rule: "R2", ToolName: "t", Message: "second",
+		Severity: SeverityError, Position: Pos("f.go", 2, 1),
+	})
+	r.ComputeSummary()
+
+	data, err := r.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	results := sarifExtractResults(t, g, data)
+	g.Expect(results).To(gomega.HaveLen(2))
+}
+
+func TestSARIF_SchemaCompliance_FileLevelPosition(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewWithT(t)
+
+	r := NewReport(ToolInfo{Name: "file-level"})
+	r.AddFinding(Finding{
+		ID: "x:r:config.yaml:0:0", Rule: "R1", ToolName: "t", Message: "config issue",
+		Severity: SeverityInfo, Position: FilePos("config.yaml"),
+	})
+	r.ComputeSummary()
+
+	data, err := r.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	results := sarifExtractResults(t, g, data)
+	result := results[0]
+
+	locs, ok := result["locations"].([]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	loc, ok := locs[0].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	pl, ok := loc["physicalLocation"].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	al, ok := pl["artifactLocation"].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	g.Expect(al["uri"]).To(gomega.Equal("config.yaml"))
+
+	if region, hasRegion := pl["region"].(map[string]any); hasRegion {
+		if startLine, ok := region["startLine"]; ok {
+			g.Expect(startLine).To(gomega.Equal(float64(0)),
+				"file-level position region should have startLine=0")
+		}
+	}
+}
+
+func TestSARIF_SchemaCompliance_MinimalFinding(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewWithT(t)
+
+	r := NewReport(ToolInfo{Name: "minimal"})
+	r.AddFinding(Finding{
+		ID: "m:r:f.go:1:1", Rule: "R1", ToolName: "t", Message: "minimal",
+		Severity: SeverityInfo, Position: Pos("f.go", 1, 1),
+	})
+	r.ComputeSummary()
+
+	data, err := r.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	results := sarifExtractResults(t, g, data)
+	result := results[0]
+
+	_, hasFixes := result["fixes"]
+	g.Expect(hasFixes).To(gomega.BeFalse(), "minimal finding should not emit fixes")
+
+	_, hasRelated := result["relatedLocations"]
+	g.Expect(hasRelated).To(gomega.BeFalse(), "minimal finding should not emit relatedLocations")
+}
+
+func TestSARIF_SchemaCompliance_EmptyReport(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewWithT(t)
+
+	r := NewReport(ToolInfo{Name: "empty", Version: "0.0.0"})
+	r.ComputeSummary()
+
+	data, err := r.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	var log map[string]any
+	g.Expect(json.Unmarshal(data, &log)).NotTo(gomega.HaveOccurred())
+	g.Expect(log["version"]).To(gomega.Equal("2.1.0"))
+	g.Expect(log["$schema"]).To(gomega.ContainSubstring("sarif-schema-2.1.0"))
+
+	runs, ok := log["runs"].([]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	g.Expect(runs).To(gomega.HaveLen(1))
+	run, ok := runs[0].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	tool, ok := run["tool"].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	driver, ok := tool["driver"].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	g.Expect(driver["name"]).To(gomega.Equal("empty"))
+}
+
+func TestSARIF_SchemaCompliance_SuppressedFinding(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewWithT(t)
+
+	r := NewReport(ToolInfo{Name: "suppressed"})
+	r.AddFinding(Finding{
+		ID:          "s:r:f.go:1:1",
+		Rule:        "R1",
+		ToolName:    "t",
+		Message:     "suppressed issue",
+		Severity:    SeverityWarning,
+		Position:    Pos("f.go", 1, 1),
+		Suppression: &Suppression{Kind: SuppressionInSource, Rule: "nolint", Reason: "intentional"},
+	})
+	r.ComputeSummary()
+
+	data, err := r.ToSARIFWithOpts(WithIncludeSuppressed())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	results := sarifExtractResults(t, g, data)
+	g.Expect(results).To(gomega.HaveLen(1))
+	result := results[0]
+
+	suppressions, ok := result["suppressions"].([]any)
+	g.Expect(ok).To(gomega.BeTrue(), "suppressed finding should emit suppressions array")
+	g.Expect(suppressions).To(gomega.HaveLen(1))
+	sup, ok := suppressions[0].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	g.Expect(sup["kind"]).To(gomega.Equal("inSource"))
 }

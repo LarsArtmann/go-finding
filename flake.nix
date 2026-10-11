@@ -11,7 +11,6 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    systems.url = "github:nix-systems/default";
   };
 
   outputs =
@@ -20,13 +19,14 @@
       nixpkgs,
       flake-parts,
       treefmt-nix,
-      systems,
     }:
     let
       inherit (nixpkgs) lib;
 
       version = self.rev or self.dirtyRev or "dev";
-      vendorHash = "sha256-VfIcwelBWyCoDVhqCgIXYDWNZQb4WI9tPJrU6tTxdWI=";
+      # go_1_27 vendor output (proxyVendor) differs from go_1_26's —
+      # regenerated 2026-09-23 when the package build moved to go_1_27.
+      vendorHash = "sha256-GP+M2qo/sGPKktmdQFy4FRpLfIMJI3oJYuSAzQxA8sI=";
       proxyVendor = true;
 
       goSrc = lib.fileset.toSource {
@@ -38,23 +38,40 @@
         buildGoModule:
         buildGoModule {
           pname = "go-finding";
-          inherit version vendorHash;
+          inherit version vendorHash proxyVendor;
           src = goSrc;
+          # Multi-module: build from cmd/go-finding module.
+          # Remove go.work so buildGoModule uses replace directives (GOWORK=off).
+          postPatch = "rm -f go.work";
+          modRoot = "cmd/go-finding";
+          subPackages = [ "." ];
           ldflags = [
             "-s"
             "-w"
           ];
+          env = {
+          };
           meta = {
             description = "Code quality finding framework for Go";
             homepage = "https://github.com/LarsArtmann/go-finding";
             license = lib.licenses.mit;
-            maintainers = [ lib.maintainers.larsartmann ];
+            maintainers = [
+              {
+                name = "Lars Artmann";
+                github = "LarsArtmann";
+              }
+            ];
             mainProgram = "go-finding";
           };
         };
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import systems;
+      # Inline systems: nixpkgs 26.11 dropped x86_64-darwin, which github:nix-systems/default still lists.
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
 
       imports = [
         treefmt-nix.flakeModule
@@ -67,9 +84,11 @@
           ...
         }:
         let
-          goPkg = pkgs.go_1_26;
+          # 2026-09-19: go-linter-sdk's go.mod floor is >= 1.27.1, which
+          # nixpkgs go_1_26 (1.26.7) cannot satisfy (GOTOOLCHAIN=local).
+          goPkg = pkgs.go_1_27;
 
-          mkApp = name: description: script: {
+          mkApp = name: _description: script: {
             type = "app";
             program = "${
               pkgs.writeShellApplication {
@@ -86,9 +105,14 @@
               description = "Unified data model and pipeline for static analysis tools";
               mainProgram = name;
               homepage = "https://github.com/larsartmann/go-finding";
-              license = pkgs.lib.licenses.mit;
-              platforms = pkgs.lib.platforms.unix;
-              maintainers = [ pkgs.lib.maintainers.larsartmann ];
+              license = lib.licenses.mit;
+              platforms = lib.platforms.unix;
+              maintainers = [
+                {
+                  name = "Lars Artmann";
+                  github = "LarsArtmann";
+                }
+              ];
             };
           };
         in
@@ -97,7 +121,21 @@
             projectRootFile = "go.mod";
             programs = {
               gofumpt.enable = true;
-              goimports.enable = true;
+              # goimports shells out to `go list`. With no go on PATH it
+              # falls back to its build-time GOROOT (nixpkgs gotools =
+              # go 1.26.7), which cannot satisfy go.mod's `go 1.27` floor
+              # and tries a GOTOOLCHAIN download — fatal inside the offline
+              # treefmt-check sandbox (and, outside it, silently downloads a
+              # stray toolchain into the repo's HOME). Wrap it: go_1_27 on
+              # PATH, toolchain switching forbidden.
+              goimports = {
+                enable = true;
+                package = pkgs.writeShellScriptBin "goimports" ''
+                  export PATH="${pkgs.go_1_27}/bin:$PATH"
+                  export GOTOOLCHAIN=local
+                  exec "${pkgs.gotools}/bin/goimports" "$@"
+                '';
+              };
               golines = {
                 enable = true;
                 maxLength = 120;
@@ -106,7 +144,10 @@
             };
           };
 
-          packages.default = mkGoFinding pkgs.buildGoModule;
+          # go.mod floor is 1.27 (ginkgo 2.32.2 + go-linter-sdk chain); the
+          # nixpkgs default go (1.26.7, GOTOOLCHAIN=local) cannot satisfy it —
+          # same reason devShells/apps pin goPkg = pkgs.go_1_27.
+          packages.default = mkGoFinding (pkgs.buildGoModule.override { go = pkgs.go_1_27; });
 
           devShells.default = pkgs.mkShell {
             packages = [
@@ -117,12 +158,26 @@
               pkgs.gopls
               pkgs.gotools
               pkgs.trash-cli
+              pkgs.dprint
+              pkgs.actionlint
             ];
 
-            GOWORK = "off";
+            env = {
+            };
 
             shellHook = ''
               echo "go-finding dev shell — $(go version)"
+              echo "Multi-module workspace active (go.work)"
+              # Install the commit-time formatting gate (source of truth:
+              # scripts/hooks/pre-commit). Re-links when the tracked script
+              # changes, so the gate can never silently rot.
+              if [ -d .git ] && [ -f scripts/hooks/pre-commit ]; then
+                if ! cmp -s scripts/hooks/pre-commit .git/hooks/pre-commit 2>/dev/null; then
+                  cp scripts/hooks/pre-commit .git/hooks/pre-commit
+                  chmod +x .git/hooks/pre-commit
+                  echo "pre-commit hook installed (scripts/hooks/pre-commit)"
+                fi
+              fi
             '';
           };
 
@@ -132,15 +187,13 @@
               pkgs.golangci-lint
             ];
 
-            GOWORK = "off";
+            env = {
+            };
           };
 
           checks = {
             format = config.treefmt.build.check self;
             build = config.packages.default;
-            test = config.packages.default.overrideAttrs (_: {
-              doCheck = true;
-            });
           };
 
           apps = {
@@ -181,6 +234,13 @@
               art-dupl . -t 50 "$@"
             '';
 
+            error-audit =
+              mkApp "error-audit"
+                "Gate error-handling violations with erraudit (requires erraudit in PATH; see AGENTS.md)"
+                ''
+                  bash scripts/error-audit.sh "$@"
+                '';
+
             clean = mkApp "clean" "Clean build and test artifacts" ''
               trash-put coverage.out 2>/dev/null || true
               go clean -testcache
@@ -189,7 +249,7 @@
         };
 
       flake.overlays.default = final: _prev: {
-        go-finding = mkGoFinding final.buildGoModule;
+        go-finding = mkGoFinding (final.buildGoModule.override { go = final.go_1_27; });
       };
     };
 }

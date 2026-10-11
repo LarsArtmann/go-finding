@@ -11,7 +11,7 @@ import (
 // runIteration executes one detect → triage → apply cycle.
 // Returns (true, nil) when the pipeline should stop (no findings found).
 func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bool, error) {
-	iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct
+	iter := Iteration{Number: p.iterations + 1} //nolint:exhaustruct_v5
 
 	detectDone := p.stageTiming(StageDetect)
 
@@ -28,15 +28,23 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		return false, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
 	}
 
-	_ = p.fireStageHook(ctx, StageAfter, StageDetect, iter.Number, detResult.Findings, 0, 0)
+	// Coverage evidence tracks the FINAL scan (post-fix state on the last
+	// iteration); later iterations overwrite earlier ones.
+	result.FilesScanned = detResult.FilesScanned
+	result.SkippedModules = detResult.SkippedModules
+
+	hookErr := p.fireStageHook(ctx, StageAfter, StageDetect, iter.Number, detResult.Findings, 0, 0)
+	if hookErr != nil {
+		return false, fmt.Errorf("iteration %d: after detect: %w", p.iterations+1, hookErr)
+	}
 
 	findings := detResult.Findings
 
 	for _, proc := range p.config.Processors {
-		findings, err = proc.Process(ctx, findings)
+		findings, err = proc.Transform(ctx, findings)
 		if err != nil {
 			return false, fmt.Errorf(
-				"iteration %d: processor %s: %w",
+				"iteration %d: transformer %s: %w",
 				p.iterations+1,
 				proc.Name(),
 				err,
@@ -45,7 +53,10 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	}
 
 	if len(p.config.Processors) > 0 {
-		_ = p.fireStageHook(ctx, StageAfter, StageProcess, iter.Number, findings, 0, 0)
+		hookErr := p.fireStageHook(ctx, StageAfter, StageProcess, iter.Number, findings, 0, 0)
+		if hookErr != nil {
+			return false, fmt.Errorf("iteration %d: after process: %w", p.iterations+1, hookErr)
+		}
 	}
 
 	for name, detErr := range detResult.Errors {
@@ -86,26 +97,13 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		slog.Int("none", len(triage.None)),
 	)
 
-	_ = p.fireStageHook(ctx, StageAfter, StageTriage, iter.Number, findings, 0, iter.Conflicts)
+	hookErr = p.fireStageHook(ctx, StageAfter, StageTriage, iter.Number, findings, 0, 0)
+	if hookErr != nil {
+		return false, fmt.Errorf("iteration %d: after triage: %w", p.iterations+1, hookErr)
+	}
 
-	if !p.config.DryRun {
-		err := p.fireStageHook(ctx, StageBefore, StageApply, iter.Number, triage.Direct, 0, 0)
-		if err != nil {
-			return false, fmt.Errorf("iteration %d: before apply: %w", p.iterations+1, err)
-		}
-
-		applyDone := p.stageTiming(StageApply)
-
-		err = p.applyTriage(ctx, triage.Direct, &iter)
-		if err != nil {
-			applyDone()
-
-			return false, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
-		}
-
-		applyDone()
-
-		_ = p.fireStageHook(ctx, StageAfter, StageApply, iter.Number, triage.Direct, iter.Applied, iter.Conflicts)
+	if err := p.applyStage(ctx, &iter, triage.Direct, result); err != nil {
+		return false, fmt.Errorf("iteration %d: %w", p.iterations+1, err)
 	}
 
 	result.Iterations = append(result.Iterations, iter)
@@ -118,11 +116,55 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 	return false, nil
 }
 
+// applyStage fires before/after hooks around the fix application phase.
+// Skipped entirely in DryRun mode.
+func (p *Pipeline) applyStage(
+	ctx context.Context,
+	iter *Iteration,
+	directFixes []finding.Finding,
+	result *PipelineResult,
+) error {
+	if p.config.DryRun {
+		return nil
+	}
+
+	err := p.fireStageHook(ctx, StageBefore, StageApply, iter.Number, directFixes, 0, 0)
+	if err != nil {
+		return fmt.Errorf("before apply: %w", err)
+	}
+
+	applyDone := p.stageTiming(StageApply)
+
+	err = p.applyTriage(ctx, directFixes, iter, result)
+	if err != nil {
+		applyDone()
+
+		return err
+	}
+
+	applyDone()
+
+	hookErr := p.fireStageHook(
+		ctx,
+		StageAfter,
+		StageApply,
+		iter.Number,
+		directFixes,
+		iter.Applied,
+		iter.Conflicts,
+	)
+	if hookErr != nil {
+		return fmt.Errorf("after apply: %w", hookErr)
+	}
+
+	return nil
+}
+
 // collectAllFindings gathers all findings from all iterations for verification.
 func (*Pipeline) collectAllFindings(
 	result *PipelineResult,
 ) []finding.Finding {
-	seen := make(map[string]struct{})
+	seen := make(map[finding.ID]struct{})
 
 	var all []finding.Finding
 

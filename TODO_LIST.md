@@ -1,213 +1,85 @@
 # TODO List
 
-**Generated:** 2026-05-20
-**Updated:** 2026-06-14 (session 13: LineProvider index caching, Correlate pre-allocation, benchmark fixes)
-**Files Processed:** 235
+> Short-term, actionable, bounded work items, verified against the actual code.
+> Completed items live in [CHANGELOG.md](CHANGELOG.md).
+> Long-term ideas and deferred breaking changes live in [ROADMAP.md](ROADMAP.md).
+> Owner questions (ApplySimpleFixes philosophy, brew/nix, report policy)
+> live in [ROADMAP.md](ROADMAP.md) "Open questions" — not here.
 
-## 🔴 HIGH Priority
+> **Rebuilt 2026-09-23 (evening)** after the whole-list execution round: the
+> v1.13.0 train was COMPLETED (all 5 tags + GitHub Releases, Latest = v1.13.0,
+> proxy + consumer-compat verified), issue #36 closed, the release-integrity
+> gates landed (changelog-drift, README version sweep, CI nix job,
+> consumer-compat job, one-tag-per-push procedure, 5-tag preflight), the
+> testing bundle landed (99% root coverage, fuzz campaigns, ordering/conflict
+> pins), GOEXPERIMENT=jsonv2 was dropped (json/v2 GA in Go 1.27), and the four
+> planned consumer filings resolved without filing (two claims verified stale,
+> one fixed directly in go-business-rules 431d8cd, art-dupl GAP-2 already
+> filed as #1). Execution record: the annotation log in
+> `docs/planning/2026-09-23_15-01_SUPERB-pareto-plan-release-truth-and-gates.md`.
+>
+> **Updated 2026-09-27:** dependabot train resolved (#37 merged; #38's go.work
+> floor + vendorHash fixed and merged — all 5 modules now on the bumped deps
+> with `go 1.27.1`; #39 superseded), the `.goreleaser.yml` nix-pipe
+> `{{binary}}` template bug is FIXED (renders as `{{ .Binary }}`; drop
+> `--skip=nix` from the local procedure after the next successful render),
+> consumer-compat now `go vet`s every resolved library module, the fuzz
+> campaigns' corpus entries are committed as seeds (145 across
+> FuzzEditListProvider/FuzzTextEditValidate/FuzzParseLSPDiagnosticTags),
+> pkg.go.dev v1.13.0 pages render-verified (core + pipeline), the sampling
+> NO-GO backstop review date is set (2027-01-31), the stale
+> hierarchical-errors clone question resolved itself (directory gone), and
+> pre-push-verify gained a `/mnt/buildcache` df guard.
 
-- [x] Add bounds checks in `findingFromSARIF` — bounds checks exist via `applySarifPosition`
-- [x] Document SARIF critical round-trip loss — documented in doc.go, USAGE_GUIDE.md, FEATURES.md
-- [ ] `Finding` struct sub-grouping — **DEFERRED v2** (breaking change)
-- [ ] Add `golines` to CI — **BLOCKED** (treefmt-nix doesn't support golines yet)
-- [x] Clean up gopls hints (~12 non-critical) — production code: 0 rangeint, 0 newexpr, 2 mapsloop fixed
-- [x] Implement art-dupl integration gaps (GAP-1, GAP-4, GAP-5, GAP-6, GAP-8) — fully implemented, tested, lint clean
-- [x] Expand `doc.go` to comprehensive package documentation
-- [x] Update `USAGE_GUIDE.md` for v0.4.x
-- [x] Create `.github/workflows/ci.yml` — test, lint, race jobs on PR/push — `.github/workflows/ci.yml` exists with 5 jobs
-- [x] Push 4 unpushed commits to origin — all commits pushed, v0.5.0 tagged
-- [x] Fix `FixApplier` lifecycle — lifted to Pipeline constructor; `NewFixApplier` returns error
-- [x] Restore `cmd/go-finding` test coverage from 70.0% toward 95% — now 90.7%
-- [x] Update `README.md` with badges, pipeline diagram, API overview
-- [x] Fix pre-commit hook failures — `goconst`, `todo-check`, `library-policy` → All passing. Fixed `err :=` redeclaration bugs in sarif_export.go/sarif_import.go (introduced by previous commit), removed duplicate `pipeline/pipeline_new_test.go`, fixed `FindingsSnapshot()` nil-for-empty behavior.
+---
 
-## 🟡 MEDIUM Priority
+## 🔴 HIGH Priority — next train (v1.14.0) & gates that need a tag
 
-- [x] Fix `pipeline/partial.go:107` — uses `IsContextError()`
-- [x] Fix `pipeline/fix_applier.go` — `fmt` import actively used
-- [x] Fix `cmd/go-finding/integration_test.go:108` — no duplicate, separate functions
-- [x] Fix `examples/builder/main.go` compile error — correctly handles both values
-- [x] Fix `.golangci.yml` to work without `--no-verify` / `--no-config` flag — removed 6 invalid linter names
-- [x] Fix `.golangci.yml` indentation — normalized to 2-space by BuildFlow auto-configure
-- [ ] Fix BuildFlow auto-configure loop — **BLOCKED** (external tool)
-- [x] Fix `IsAutoFixable()`/`Validate()` agreement for Direct+AfterCode-only findings
-- [x] Fix `Finding.Key()` cross-tool collision — `GenerateID` now length-prefixed hash
-- [x] Fix `Pipeline.Run()` single-use contract — `ran` bool guard added
-- [x] Fix OnFix callback inaccuracy — reports false for skipped fixes
-- [x] Fix partial detection missing metrics
-- [x] Fix `Metrics.StageTiming` value receiver bug — uses `MetricsSnapshot` value
-- [x] Fix `FixEngine.Apply()` to use `HasCodeChange()`
-- [x] Fix conflict detection overgrouping — documented as intentional design
-- [x] Fix `DeduplicateByID` — skips findings with empty ID
-- [x] Fix `%v` → proper error wrapping in `FormatPartialErrors`
-- [x] Fix `Range.LineCount()` for inverted ranges
-- [x] Fix `TestProperty_IDRoundTrip` flakiness
-- [x] Refactor CLI `run()` for testability
-- [x] Fix `NewFixApplier` error handling — propagates `MkdirTemp` error
-- [x] Fix 10 testifylint `require-error` warnings — migrated to gomega
-- [x] Fix 6 `paralleltest` warnings — all test functions have `t.Parallel()`
-- [x] Update `FEATURES.md` for v0.4.x
-- [x] Fix `.gitignore` line 43 corruption
-- [x] FixEngine: line-offset tracking for cumulative line shifts across multi-fix — `LineShiftMap` in `pipeline/line_shift.go` with 7 tests
-- [~] ~~Make fix strategy composable as interface~~ — REMOVED: ghost system with zero consumers. `FixStrategy.CanAutoApply()` is the single source of truth.
-- [x] Add pipeline stage hooks — pre/post hooks for detect, triage, fix, verify — `StageHook` interface in `pipeline/stage_hook.go` with 2 tests
-- [x] Add `DeduplicateBy.String()` method — consistent with all other named types
-- [x] Mark 225 lint warnings phantom — `go-structure-linter` is external
-- [x] Mark `GitAuthorProvider` phantom — `rule_service.go` does not exist
-- [x] Mark `.git/hooks/pre-commit` executable — already executable
-- [ ] Interactive TUI — **OUT OF SCOPE v1**
-- [ ] Phase 3: Create `.envrc` — **BLOCKED** (no Nix setup)
+| Task                                                                                                    | Impact | Effort | Notes                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------- | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cut the v1.14.0 train for the multi-edit feature (Edits, EditListProvider, ResolveFlightRecorderConfig) | Crit   | L      | DONE 2026-10-11: pipeline/analysis tagged at 9c675c7 (pre-DetectorV2, consumer-proven against published core v1.14.0), cmd tagged at the resync commit 13cc091 so `go install` ships the new engine; master CI 20/20 green for the first time since Oct 5.                                   |
+| CLI: delegate `flightRecorderFileConfig.resolve()` to `pipeline.ResolveFlightRecorderConfig`            | Med    | S      | Prepared design in place; UNBLOCKED — pipeline/v1.14.0 tagged 2026-10-11. Kills the duration-parse split brain; wording family then unified via the pinned pipeline messages.                                                                                 |
+| Restore sigstore signing on the next workflow-run release train                                         | Med    | S      | v1.13.0 shipped WITHOUT `.sigstore.json` bundles (recovery release ran GoReleaser locally where cosign keyless has no OIDC). Checksums.txt is unsigned too.                                 |
+| erraudit T13/T14 migration onto tagged analysis/pipeline APIs 🔒(after v1.14.0)                         | High   | M      | Blocked on the Edits bridge being TAGGED (not in v1.13.0). Also file the upstream erraudit issue: `nolint-audit` false-reports type-aware directives as stale (verified 2026-09-23, 24/24). |
+| Build `scripts/release-train.sh` + post-release verification (T11)                                      | Med    | L      | The prep→verify→tag→serialized-push→rerun→resync→postflight sequence ran manually three times now; encode it (proxy ×5, clean-dir `go get` ×5, assets, pkg.go.dev backoff).                 |
 
-## 🟢 LOW Priority
+## toolsdk/v1.16.0 train — fixes on master since 10429a5 (updated 2026-10-11)
 
-- [x] API stability review — audit all exported symbols for v1.0.0 lock (docs/API_STABILITY.md)
-- [x] Decide `FixStrategyAI` fate — keep as RESERVED placeholder
-- [x] Document `BySeverityAtLeast` excludes invalid severities
-- [x] Document `Report.All()` yields copies — with shallow copy caveat
-- [x] Document `FindByID` returns copy — with shallow copy caveat
-- [x] Make `Key()` NUL separator `"\x00"` a named constant
-- [x] Document SARIF round-trip losses in user-facing docs
-- [x] Document FixStrategyAI placeholder semantics
-- [x] Document Correlate complexity — O(n·k) normal, O(k²) worst case, 10K cap
-- [ ] `Position` zero-value safety — **OWNER_DECISION** (breaking change)
-- [ ] `Range.End` zero-value ambiguity — **OWNER_DECISION** (breaking change)
-- [x] Add `finding.FormatText()`
-- [x] Add `finding.FormatMarkdown()`
-- [x] Write API stability guarantee document — `docs/API_STABILITY.md`
-- [x] Decide stable ID format
-- [x] Add `Finding` JSON schema — `docs/schemas/finding.json`
-- [x] Protect `Confidence` in direct struct construction
-- [x] Clamp `Confidence` in `Builder.WithConfidence`
-- [x] Remove deprecated `Finding.Tag string` field — field does not exist
-- [x] Remove deprecated `ConflictDetector`/`Verifier` structs
-- [x] Remove phantom `FixStrategyAI` constant — decided KEEP as RESERVED
-- [x] `Correlation` JSON tags camelCase
-- [x] Make Metrics exported map fields unexported with accessor methods
-- [x] Add `Config.Validate()` method with cross-field validation
-- [x] Add `RetryConfig.Validate()` method
-- [x] Wire `FilterConflictingEdits` as opt-in pipeline Config field + test
-- [x] Handle empty-ID findings in `FilterConflictingEdits`
-- [x] Populate `ConflictInfo.ConflictsWith` in edit-level conflict detection
-- [x] Consistent structured errors in pipeline
-- [x] Add per-detector timeout to `Config` and `RetryDetector`
-- [x] Customizable `TriageFunc` in Config
-- [x] Replace hardcoded detector builders with registry lookup in CLI
-- [x] Add pipeline integration test for OnFix callback
-- [x] Add pipeline integration test with multiple concurrent detectors
-- [x] Add `io.WriterTo` for SARIF streaming output
-- [ ] Add SARIF schema validation test against SARIF 2.1.0 JSON schema — **BLOCKED** (requires vendoring 7K+ line schema)
-- [x] Mark GoReleaser as done — `.goreleaser.yml` exists
-- [x] Mark Modernize as done — uses `slices.*`, `maps.*`, `iter.Seq`, `errors.AsType`
-- [x] Merge duplicate SARIF result builders
-- [x] Extract SARIF property key strings to named constants
-- [x] Remove `FindingsFromSARIF` always-error stub
-- [x] Split `sarif.go` into `sarif_types.go`, `sarif_export.go`, `sarif_import.go`
-- [x] Add `Range.IsValid()` to check `End >= Start`
-- [x] Add `Position.HasLocation() bool`
-- [x] Add `DiffResult` convenience methods
-- [x] Add `iter.Seq[Finding]` on `Report.All()`
-- [x] Add `Position.IsZero()` helper
-- [x] Add `Range.IsSingleLine()` helper
-- [x] Add `Finding.HasRange()` helper
-- [x] Add `Category.IsSecurity()` helper
-- [x] Add `Tag.IsStandard()` method
-- [x] Add `Report.CountBySeverity()` convenience method
-- [x] Add `Range.Contains(p Position) bool`
-- [x] Add `finding.Diff()`
-- [x] Add `go/analysis` reverse conversion: `ToDiagnostic()`
-- [x] Evaluate `go-sarif` vs hand-rolled — **OWNER_DECISION** (strategic) → Decision: keep hand-rolled. See docs/architecture-decisions.md #9.
-- [x] Config file support for library/pipeline (YAML) — `ConfigFromFile`/`ConfigFromReader` in `pipeline/config_file.go`
-- [x] Plugin architecture for external detector registration — `DetectorRegistry` in `registry.go` with Register/Build/BuildAll/Names/Has
-- [~] ~~Pipeline middleware/interceptor pattern~~ — REMOVED: ghost system, never wired into Config/Pipeline.Run. `StageHook` covers the same use case at finer granularity.
-- [x] Per-detector timeout configuration
-- [x] Add structured logging (`slog`) to pipeline + CLI
-- [x] Progress reporting callback for pipeline
-- [x] Implement spatial index for `Correlate` — `IntervalIndex[T]` in `interval_tree.go` with O(log n + k) queries, 5 tests
-- [x] Implement streaming merge — `MergeIter()` returning `iter.Seq[Finding]` in `merge.go` with 4 tests
-- [x] Extract `findingKey` to shared utility
-- [x] Modernize to Go 1.21+ stdlib
-- [x] Reduce `FindingsFromSARIF` cognitive complexity
-- [x] Consolidate SARIF write methods
-- [x] Inline `lock()`/`unlock()` wrappers in `report.go`
-- [x] Add GitHub release workflow — `.github/workflows/release.yml` exists with GoReleaser
-- [x] Add GoReleaser multi-module config
-- [x] Add gosec/staticcheck to CI — golangci-lint already includes both
-- [x] Benchmark regression tracking — `benchmark` CI job in `.github/workflows/ci.yml`
-- [x] Persist fuzz corpus / seed corpus — 20 fuzz targets with file-based corpus in testdata/fuzz/
-- [x] Add LICENSE file
-- [x] Add godoc examples for key APIs
-- [x] Set up pkg.go.dev documentation — badge in README
-- [x] Create `CONTRIBUTING.md`
-- [x] Create real-world tool integration guide with govet example — `docs/integration-guide.md`
-- [x] Add `Finding` JSON schema
-- [x] Remove `samber/do/v2` — not in codebase
-- [x] Remove `samber/mo` — not in codebase
-- [x] Add tests for 15 untested rule files — `internal/rules/` doesn't exist
-- [x] Remove `replace` directive from go.mod
-- [x] Delete `internal/events/events.go` — not in codebase
-- [ ] Wire into go-structure-linter — **DEFERRED** (external project, not our repo)
-- [x] Remove stale `//nolint` directives — audited: all 80 are legitimate
-- [x] Archive old status reports
-- [x] Remove personal tool configs
-- [x] Add `go.work` for local multi-module development — **WONTFIX** (single module, no need)
-- [x] LineProvider/SubstringProvider line offset index caching — `lineIndexAware` interface in `pipeline/fix_provider.go`, lazy build via `*[]int` in `pipeline/fix_engine.go`. LineProvider 1000 fixes: 150ms → 859μs (175×), 86MB → 4MB allocs
-- [x] Correlate pre-allocation — pre-sized `correlations` with `min(len(findings), maxCorrelations)` and `withRange`/`withoutRange` with `len(fileFindings)` in `merge.go`. 113μs → 83μs (27%), 75 → 51 allocs (32%)
-- [x] FixEngine benchmark offset bug fix — `generateOffsetFixes` used Range width 4 but BeforeCode "old()" is 5 chars; OffsetProvider always rejected, silently testing SubstringProvider. Now uses correct offsets from `findOldOccurrences`
-- [x] Dedicated LineProvider/SubstringProvider benchmarks — `BenchmarkFixEngine_LineProvider_*` and `BenchmarkFixEngine_Substring_*` in `pipeline/fix_engine_bench_test.go`
-- [x] Evaluate SARIF struct pooling — **SKIP** (312KB/100 findings; bytes dominated by un-poolable JSON buffer + per-finding strings; struct headers are ~0.2% of total; sync.Pool complexity/risk unjustified)
-- [ ] Watch mode — **DEFERRED**
-- [ ] IDE plugin stubs — **OUT OF SCOPE v1**
-- [ ] Web UI — **OUT OF SCOPE v1**
+| Task                                                                                                               | Impact | Effort | Notes                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------ | ------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Push master (8+ commits: #44/#43/#42 fixes, `Spec.Outputs`, dryrun tests, docs)                                    | Crit   | S      | Nothing is consumable until pushed; verify a ci.yml run exists for the pushed SHA (one-push-one-event gotcha).                                                                                                                                                         |
+| Verify downstream spec compatibility BEFORE tagging — DONE 2026-10-11                                              | —      | —      | All 12 blank-imported BuildFlow specs pass the new `Trigger.Validate` (resolved from go-finding master via BuildFlow `tools/go.mod` replace). One dirty spec found and fixed in its own repo: oxlint-auto-configure `Language: "javascript"` → `"js"` (startup panic). |
+| Cut toolsdk/v1.16.0: release-preflight `--bench --stress`, stress `ginkgo -r --race --repeat=20`, one-tag-one-push | Crit   | M      | Carries: Trigger validation (#44), typed accessors (#43), `RepairResult.ModifiedFiles`/`Facts` (#42), `Spec.Outputs` (write contract, consumed by BuildFlow's DAG edge derivation), `DryRunFromContext` nil-context fix, round-trip fidelity + dryrun tests.           |
+| Correct the "11 specs" figure issue #44 carries (actual: 12)                                                       | Low    | S      | Re-derived from BuildFlow `tools/providers/sdk_imports.go` on 2026-10-11; correct in the close comment or release notes.                                                                                                                                               |
+| Post-tag: proxy `go get` verification + pkg.go.dev render check for toolsdk/v1.16.0                                | Med    | S      | Standard train tail; consumer bumps (BuildFlow drops its `../go-finding/toolsdk` replace + deletes the `legacyWriteContracts` shim once go-auto-upgrade declares `Outputs`).                                                                                           |
+| Add toolsdk to preflight's GOWORK=off build/tidy loops (script skips it today)                                     | Low    | S      | AGENTS.md documents the manual workaround; fix the script instead.                                                                                                                                                                                                     |
 
-## ⚪ Unknown / Owner Decision
+## 🟠 HIGH-MED Priority — follow-ups & ecosystem
 
-- [x] Decide `NewFinding` API pattern — accepts `Confidence` type; Builder for complex cases
-- [x] Define v1.0.0 release criteria — `docs/RELEASE_CRITERIA.md`
-- [x] Decide domain-specific FixProvider module location — separate modules
-- [x] Decide `Properties map[string]any` — WONTFIX, intentionally rejected
-- [x] Repository structure — flat root package is intentional for a library (not an application)
-- [x] `Correlation` JSON tags camelCase
-- [ ] `PositionOffset` sentinel design — **OWNER_DECISION** (breaking change)
-- [x] Add `ToolInfo.Validate()` method + tests
-- [x] Add `RetryConfig.Validate()` method
-- [ ] `Report.Merge()` → return new `*Report` instead of mutating receiver — **DEPRECATED**, will be removed v1.0.0; use MergeInto
-- [ ] Fix `FixProviders` through CLI config
+| Task                                                       | Impact | Effort | Notes                                                                                                                                                                      |
+| ---------------------------------------------------------- | ------ | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Opportunistic consumer bumps beyond the leads              | Low    | Med    | go-linter-sdk + golangci-lint-auto-configure are on v1.13.0 (done); the remaining v1.8.0-era rows bump per consumer. gomend + licenseforge stay blocked upstream (#1/#46). |
+| Watch erraudit upstream for the nolint-audit staleness fix | Low    | Low    | Once fixed, the advisory listing in `scripts/error-audit.sh --nolint-audit` becomes usable as a removal oracle again.                                                      |
+| Re-check library-policy after hook issue #74 resolves      | Low    | Low    | #74 still OPEN (verified 2026-09-23).                                                                                                                                      |
+| Diet AGENTS.md under 220 lines (go-structure-linter gate)  | Med    | Med    | 283 lines vs max 220 (2026-10-11): move bulk (e.g. the Key Files table) to docs/ and keep pointers. Each cut needs a memory-loss check — curated context, not filler.      |
 
-## Recently Completed (2026-06-05)
+## 🟡 MEDIUM Priority — testing & code quality
 
-- GAP-1: `RelatedRef.Range *Range` — deep-clone, validation, equality, SARIF round-trip
-- GAP-4: `LSPDiagnosticTag` type + `Unnecessary(1)` / `Deprecated(2)` constants; `Tags` on `LSPDiagnostic`
-- GAP-5: `Snippet` field on `SarifRegion`; `findingRegion()` populates; `applySarifPosition()` reads back
-- GAP-6: `ToLSP()` emits proper `LSPRange` end from `rel.Range`; `sarifRelatedLocs()` uses `rel.Range`
-- GAP-8: `FromLSP()` preserves `DiagnosticTag` values in metadata; reconstructs `RelatedRef.Range`
-- 9 new tests added; JSON schema updated; 0 lint issues; race clean
-- Comprehensive status report written to `docs/status/2026-06-05_02-20_comprehensive-status-update.md`
-- `doc.go` expanded from ~40% to full package documentation
-- `USAGE_GUIDE.md` refreshed for v0.4.x features
-- `README.md` Fix Providers and Diff sections added
+| Task                                                                                 | Impact | Effort | Notes                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------ | ------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dependabot watch: gomega bumps merged; pin-vs-dependabot decision for actions/* SHAs | Low    | Low    | #25 merged; sbom bump was manual review.                                                                                                                                                        |
+| Periodic `/mnt/buildcache` hygiene                                                   | Low    | Low    | The shared GOCACHE hit 100% (167G) and broke every build; `go clean -cache` recovered. A df guard (<5 GiB = FAIL) now runs in pre-push-verify (2026-09-27); a periodic prune/cron remains open. |
 
-## art-dupl Integration Evaluation Summary
+## 🟢 LOW Priority — launch & product
 
-| Gap                                | Status          | Rationale                                                                      |
-| ---------------------------------- | --------------- | ------------------------------------------------------------------------------ |
-| GAP-1 `RelatedRef.Range`           | ✅ DONE         | Span-based related locations fully supported                                   |
-| GAP-2 `GroupID`                    | ❌ DEFERRED     | One-consumer justification insufficient; use `Metadata["go-finding/group-id"]` |
-| GAP-3 Per-relationship metadata    | ❌ DEFERRED     | Low value; `Finding.Metadata` workaround exists                                |
-| GAP-4 `DiagnosticTag`              | ✅ DONE         | `Unnecessary`/`Deprecated` tags in LSP diagnostics                             |
-| GAP-5 `Snippet` in SARIF           | ✅ DONE         | `region.snippet` round-trips properly                                          |
-| GAP-6 `ToLSP` uses `rel.Range`     | ✅ DONE         | Proper LSP ranges for related info                                             |
-| GAP-7 Strict `Category.IsValid()`  | ❌ BY DESIGN    | `IsValid()` checks format; `IsStandard()` checks membership                    |
-| GAP-8 `FromLSP` preserves tags     | ✅ DONE         | Tags stored in metadata as comma-separated integers                            |
-| GAP-9 `iter.Seq` on `Report.All()` | ✅ ALREADY DONE | Go 1.26 `iter.Seq` implemented                                                 |
+| Task                                                                      | Impact | Effort | Notes                                                                                                                                 |
+| ------------------------------------------------------------------------- | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Submit Awesome Go entry (LAUNCH3)                                         | Med    | Low    | Entry text ready in `docs/brainstorming/launch-announcement-draft.md` (finalized 2026-09-23); needs an awesome-go fork + PR. 🔒 owner |
+| Create `LarsArtmann/homebrew-tap` + `HOMEBREW_TAP_GITHUB_TOKEN` (LAUNCH4) | Med    | S      | goreleaser brews section renders but ships `skip_upload: true` until the tap repo + secret exist. ROADMAP open question. 🔒 owner     |
+| CONTRIBUTING / release-runbook page for public audience                   | Low    | Med    | Release procedure is internal-facing.                                                                                                 |
+| v2.0 design spike session                                                 | Low    | High   | Parked in [ROADMAP.md](ROADMAP.md) "Hardening": Position sentinel, FixStrategy union, TagSet, sub-structs.                            |
+| Sampling NO-GO review date (e.g. 2027-01 calendar entry)                  | Low    | Low    | DONE 2026-09-27: backstop date 2027-01-31 set in ROADMAP.                                                                             |
 
 ---
 
 _Assisted-by: Crush <crush@charm.land>_
-
-<!--
-Notes for maintainers:
-- Use `[x]` for done, `[ ]` for open.
-- Prefix WONTFIX/DEFERRED/BLOCKED items with the reason in bold.
-- Keep items actionable and bounded.
-- Archive completed items older than 30 days into docs/status/archive/todo-history.md.
--->

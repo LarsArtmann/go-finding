@@ -2,7 +2,7 @@ package finding
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"testing"
 )
@@ -33,12 +33,12 @@ func testConvert(out testOutput) ([]Finding, error) {
 	findings := make([]Finding, 0, len(out.Issues))
 	for _, issue := range out.Issues {
 		findings = append(findings, Finding{
-			ID:       GenerateID("test", issue.Rule, Position{File: issue.File, Line: issue.Line}),
-			Rule:     issue.Rule,
+			ID:       GenerateID("test", RuleName(issue.Rule), Position{File: FilePath(issue.File), Line: issue.Line}),
+			Rule:     RuleName(issue.Rule),
 			ToolName: "test-tool",
 			Message:  issue.Message,
 			Severity: SeverityError,
-			Position: Position{File: issue.File, Line: issue.Line},
+			Position: Position{File: FilePath(issue.File), Line: issue.Line},
 		})
 	}
 
@@ -157,36 +157,24 @@ func TestToolAdapter_NilPanics(t *testing.T) {
 	t.Run("nil run", func(t *testing.T) {
 		t.Parallel()
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic for nil function")
-			}
-		}()
-
-		NewToolAdapter[testOutput]("x", nil, testParse, testConvert)
+		AssertPanics(t, "expected panic for nil function", func() {
+			NewToolAdapter("x", nil, testParse, testConvert)
+		})
 	})
 
 	t.Run("nil parse", func(t *testing.T) {
 		t.Parallel()
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic for nil function")
-			}
-		}()
-
-		NewToolAdapter[testOutput]("x", run, nil, testConvert)
+		AssertPanics(t, "expected panic for nil function", func() {
+			NewToolAdapter("x", run, nil, testConvert)
+		})
 	})
 
 	t.Run("nil convert", func(t *testing.T) {
 		t.Parallel()
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic for nil function")
-			}
-		}()
-
-		NewToolAdapter[testOutput]("x", run, testParse, nil)
+		AssertPanics(t, "expected panic for nil function", func() {
+			NewToolAdapter("x", run, testParse, nil)
+		})
 	})
 }

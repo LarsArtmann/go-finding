@@ -2,8 +2,9 @@ package finding
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -27,7 +28,7 @@ func TestWriteSARIFFiltered_WriterError(t *testing.T) {
 
 	r := simpleSARIFReport()
 
-	err := r.WriteSARIFFiltered(context.Background(), &failWriter{}, SeverityWarning)
+	err := r.WriteSARIFWithOpts(context.Background(), &failWriter{}, WithMinSeverity(SeverityWarning))
 	g.Expect(err).To(gomega.HaveOccurred())
 	g.Expect(err).To(gomega.MatchError(gomega.ContainSubstring("encoding SARIF")))
 }
@@ -38,7 +39,7 @@ func TestWriteTo(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m",
 				Severity: SeverityError, Position: Position{File: "a.go", Line: 1},
@@ -95,9 +96,9 @@ func TestWriteSARIFFiltered_CancelledContext(t *testing.T) {
 
 	var buf strings.Builder
 
-	err := r.WriteSARIFFiltered(ctx, &buf, SeverityWarning)
+	err := r.WriteSARIFWithOpts(ctx, &buf, WithMinSeverity(SeverityWarning))
 	g.Expect(err).To(gomega.HaveOccurred())
-	g.Expect(err.Error()).To(gomega.ContainSubstring("writing SARIF filtered"))
+	g.Expect(err.Error()).To(gomega.ContainSubstring("writing SARIF"))
 }
 
 func TestFindingsFromSARIF_CancelledContext(t *testing.T) {
@@ -121,8 +122,8 @@ func TestFindingsFromReader(t *testing.T) {
 	findings, err := FindingsFromReader(context.Background(), strings.NewReader(sarif))
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(findings).To(gomega.HaveLen(1))
-	g.Expect(findings[0].Rule).To(gomega.Equal("printf"))
-	g.Expect(findings[0].ToolName).To(gomega.Equal("govet"))
+	g.Expect(findings[0].Rule).To(gomega.Equal(RuleName("printf")))
+	g.Expect(findings[0].ToolName).To(gomega.Equal(ToolName("govet")))
 }
 
 func TestFindingsFromReader_CancelledContext(t *testing.T) {
@@ -276,8 +277,8 @@ func TestFindingFromSarResult_WithFix(t *testing.T) {
 
 	f := findingFromSarResult(r, "staticcheck")
 
-	g.Expect(f.Rule).To(gomega.Equal("SA1000"))
-	g.Expect(f.ToolName).To(gomega.Equal("staticcheck"))
+	g.Expect(f.Rule).To(gomega.Equal(RuleName("SA1000")))
+	g.Expect(f.ToolName).To(gomega.Equal(ToolName("staticcheck")))
 	g.Expect(f.Message).To(gomega.Equal("unused variable"))
 	g.Expect(f.Severity).To(gomega.Equal(SeverityWarning))
 	g.Expect(f.Suggestion).To(gomega.Equal("remove unused variable"))
@@ -306,4 +307,211 @@ func TestFindingFromSarResult_RankAsConfidence(t *testing.T) {
 
 	f := findingFromSarResult(r, "tool")
 	g.Expect(f.Confidence).To(gomega.BeNumerically("~", 0.75, 0.01))
+}
+
+// TestSARIFRoundTrip_PositionOffset verifies that Position.Offset survives
+// the SARIF export → import cycle, including the edge cases of offset=0
+// (valid, means byte 0) and offset=-1 (sentinel, means unset/not exported).
+func TestSARIFRoundTrip_PositionOffset(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name        string
+		startOffset int
+		endOffset   int
+		hasRange    bool
+	}{
+		{"offset_zero", 0, -1, false},
+		{"offset_positive", 42, -1, false},
+		{"offset_large", 99999, -1, false},
+		{"range_both_offsets", 10, 50, true},
+		{"range_start_only", 10, -1, true},
+		{"unset_offset", -1, -1, false},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
+
+			f := Finding{
+				ID:       ID("test:offset:" + tc.name),
+				Rule:     "offset-test",
+				ToolName: "test",
+				Message:  "test",
+				Severity: SeverityWarning,
+				Position: Position{
+					File:   "test.go",
+					Line:   1,
+					Column: 1,
+					Offset: tc.startOffset,
+				},
+			}
+
+			if tc.hasRange {
+				f.Range = &Range{
+					Start: f.Position,
+					End: Position{
+						File:   "test.go",
+						Line:   5,
+						Column: 10,
+						Offset: tc.endOffset,
+					},
+				}
+			}
+
+			report := NewReport(ToolInfo{Name: "test"})
+			report.AddFinding(f)
+
+			sarifBytes, err := report.ToSARIF()
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+
+			findings, err := FindingsFromSARIF(context.Background(), sarifBytes)
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+			g.Expect(findings).To(gomega.HaveLen(1))
+
+			got := findings[0]
+
+			if tc.startOffset >= 0 {
+				g.Expect(got.Position.Offset).To(gomega.Equal(tc.startOffset),
+					"Position.Offset not preserved")
+			} else {
+				g.Expect(got.Position.HasOffset()).To(gomega.BeFalse(),
+					"unset offset should not be exported/imported")
+			}
+
+			if tc.hasRange && tc.endOffset >= 0 {
+				g.Expect(got.Range).NotTo(gomega.BeNil())
+				g.Expect(got.Range.End.Offset).To(gomega.Equal(tc.endOffset),
+					"Range.End.Offset not preserved")
+			}
+		})
+	}
+}
+
+// TestSARIFRoundTrip_GroupID verifies that GroupID survives a SARIF
+// export/import round-trip via the property bag, and that findings without
+// a GroupID do not gain one.
+func TestSARIFRoundTrip_GroupID(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	f := Finding{
+		ID:       ID("art-dupl:clone-detected:a.go:10:1"),
+		Rule:     "clone-detected",
+		ToolName: "art-dupl",
+		Message:  "duplicate code",
+		Severity: SeverityWarning,
+		Position: Position{File: "a.go", Line: 10, Column: 1},
+		GroupID:  "clone-group-1",
+	}
+
+	report := NewReport(ToolInfo{Name: "art-dupl"})
+	report.AddFinding(f)
+
+	sarifBytes, err := report.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	findings, err := FindingsFromSARIF(context.Background(), sarifBytes)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.HaveLen(1))
+	g.Expect(findings[0].GroupID).To(gomega.Equal(GroupID("clone-group-1")))
+
+	noGroup := Finding{
+		ID:       ID("govet:printf:b.go:1:1"),
+		Rule:     "printf",
+		ToolName: "govet",
+		Message:  "no group",
+		Severity: SeverityWarning,
+		Position: Position{File: "b.go", Line: 1, Column: 1},
+	}
+
+	report2 := NewReport(ToolInfo{Name: "govet"})
+	report2.AddFinding(noGroup)
+
+	sarifBytes2, err := report2.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	findings2, err := FindingsFromSARIF(context.Background(), sarifBytes2)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings2).To(gomega.HaveLen(1))
+	g.Expect(findings2[0].GroupID).To(gomega.Equal(GroupID("")))
+}
+
+// TestSARIFSnippet_BackwardCompat verifies that SARIF region.snippet accepts
+// both the spec-compliant object form ({"text":"..."}) and the common
+// bare-string shorthand used by many SARIF producers.
+func TestSARIFSnippet_BackwardCompat(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name     string
+		snippet  string
+		wantText string
+	}{
+		{
+			name:     "object form",
+			snippet:  `{"text":"code here"}`,
+			wantText: "code here",
+		},
+		{
+			name:     "bare string",
+			snippet:  `"bare string snippet"`,
+			wantText: "bare string snippet",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
+
+			sarif := fmt.Sprintf(`{
+				"version": "2.1.0",
+				"$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+				"runs": [{
+					"tool": {"driver": {"name": "test"}},
+					"results": [{
+						"ruleId": "r1",
+						"level": "warning",
+						"message": {"text": "msg"},
+						"locations": [{
+							"physicalLocation": {
+								"artifactLocation": {"uri": "a.go"},
+								"region": {
+									"startLine": 1,
+									"snippet": %s
+								}
+							}
+						}]
+					}]
+				}]
+			}`, tc.snippet)
+
+			findings, err := FindingsFromSARIF(context.Background(), []byte(sarif))
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+			g.Expect(findings).To(gomega.HaveLen(1))
+			g.Expect(findings[0].Snippet).To(gomega.Equal(tc.wantText))
+		})
+	}
+}
+
+// TestSARIFGroupID_GoldenWire pins the SARIF property bag wire contract for
+// GroupID: the property key must stay exactly "go-finding/groupId" and the
+// value must round-trip losslessly through export and import.
+func TestSARIFGroupID_GoldenWire(t *testing.T) {
+	g := gomega.NewWithT(t)
+
+	f := standardTestFinding()
+	f.GroupID = "clone-group-1"
+
+	r := NewReport(ToolInfo{Name: "test"})
+	r.AddFinding(f)
+
+	sarif, err := r.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(string(sarif)).To(gomega.ContainSubstring(`"go-finding/groupId": "clone-group-1"`))
+
+	findings, err := FindingsFromSARIF(context.Background(), sarif)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(findings).To(gomega.HaveLen(1))
+	g.Expect(findings[0].GroupID).To(gomega.Equal(GroupID("clone-group-1")))
+	g.Expect(findings[0].Equal(f)).To(gomega.BeTrue())
 }

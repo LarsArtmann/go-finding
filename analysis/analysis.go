@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"os"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/larsartmann/go-finding/internal/gotoken"
+	"github.com/larsartmann/go-finding/gotoken"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -22,9 +23,34 @@ const DefaultRelation = finding.RelationRelated
 // The ruleCode parameter provides a rule identifier (since go/analysis.Diagnostic doesn't have Code).
 // The defaultSeverity is used because go/analysis.Diagnostics don't carry severity;
 // if empty, SeverityWarning is used.
+//
+// Data loss: go/analysis.Diagnostic does not carry Confidence, Tags, or Suppression.
+// The Category is mapped from d.Category (which may be empty for analyzers that
+// don't set it). go/analysis pass/fact results (d.PackageFact, d.FileFact) are not
+// represented — only message-level diagnostics are converted. Of multiple
+// SuggestedFixes (which are alternatives), only the first is carried — but ALL
+// TextEdits of that fix are preserved losslessly in Finding.Edits;
+// BeforeCode/AfterCode hold the first edit as a display summary.
+//
+// BeforeCode extraction reads the source file from disk. For in-memory or test
+// scenarios, use FromDiagnosticWithSource instead.
 func FromDiagnostic(
 	d *analysis.Diagnostic,
 	fset *token.FileSet,
+	toolName, ruleCode string,
+	defaultSeverity ...finding.Severity,
+) finding.Finding {
+	return FromDiagnosticWithSource(d, fset, nil, toolName, ruleCode, defaultSeverity...)
+}
+
+// FromDiagnosticWithSource converts a go/analysis.Diagnostic to a Finding using
+// the provided source bytes for BeforeCode extraction. When source is nil, reads
+// the file from disk (same behavior as FromDiagnostic). When source is non-nil,
+// uses it directly — no filesystem access.
+func FromDiagnosticWithSource(
+	d *analysis.Diagnostic,
+	fset *token.FileSet,
+	source []byte,
 	toolName, ruleCode string,
 	defaultSeverity ...finding.Severity,
 ) finding.Finding {
@@ -38,37 +64,60 @@ func FromDiagnostic(
 
 	fixStrategy := finding.FixStrategyNone
 
-	var suggestion, afterCode string
+	var suggestion, beforeCode, afterCode string
+
+	var edits []finding.TextEdit
 
 	if len(d.SuggestedFixes) > 0 {
 		fixStrategy = finding.FixStrategyDirect
 
 		suggestion = d.SuggestedFixes[0].Message
-		if len(d.SuggestedFixes[0].TextEdits) > 0 {
-			afterCode = string(d.SuggestedFixes[0].TextEdits[0].NewText)
+
+		textEdits := d.SuggestedFixes[0].TextEdits
+
+		if len(textEdits) > 0 {
+			edit := textEdits[0]
+			afterCode = string(edit.NewText)
+
+			beforeCode = extractBeforeCode(fset, edit, source)
+
+			edits = make([]finding.TextEdit, 0, len(textEdits))
+
+			for _, e := range textEdits {
+				edits = append(edits, finding.TextEdit{
+					Start:   FromTokenPosition(fset.Position(e.Pos)),
+					End:     FromTokenPosition(fset.Position(e.End)),
+					NewText: string(e.NewText),
+				})
+			}
 		}
 	}
 
-	id := finding.GenerateID(toolName, ruleCode, findingPos)
+	id := finding.GenerateID(finding.ToolName(toolName), finding.RuleName(ruleCode), findingPos)
 
-	//nolint:exhaustruct
 	f := finding.Finding{
 		ID:          id,
-		Rule:        ruleCode,
-		ToolName:    toolName,
+		Rule:        finding.RuleName(ruleCode),
+		ToolName:    finding.ToolName(toolName),
 		Message:     d.Message,
 		Severity:    sev,
 		Position:    findingPos,
 		Category:    finding.Category(d.Category),
 		FixStrategy: fixStrategy,
 		Suggestion:  suggestion,
+		BeforeCode:  beforeCode,
 		AfterCode:   afterCode,
+		Edits:       edits,
 	}
 
 	for _, info := range d.Related {
 		relatedPos := fset.Position(info.Pos)
-		relatedID := finding.GenerateID(toolName, ruleCode, FromTokenPosition(relatedPos))
-		f.Related = append(f.Related, finding.RelatedRef{ //nolint:exhaustruct
+		relatedID := finding.GenerateID(
+			finding.ToolName(toolName),
+			finding.RuleName(ruleCode),
+			FromTokenPosition(relatedPos),
+		)
+		f.Related = append(f.Related, finding.RelatedRef{
 			FindingID: relatedID,
 			Relation:  DefaultRelation,
 			Position:  FromTokenPosition(relatedPos),
@@ -81,7 +130,7 @@ func FromDiagnostic(
 // FromTokenPosition creates a Position from a token.Position.
 func FromTokenPosition(pos token.Position) finding.Position {
 	return finding.Position{
-		File:   pos.Filename,
+		File:   finding.FilePath(pos.Filename),
 		Line:   pos.Line,
 		Column: pos.Column,
 		Offset: pos.Offset,
@@ -97,8 +146,8 @@ func NodePosition(fset *token.FileSet, node ast.Node) finding.Position {
 func NodeRange(fset *token.FileSet, node ast.Node) finding.Range {
 	if node == nil {
 		return finding.Range{
-			Start: finding.Position{}, //nolint:exhaustruct
-			End:   finding.Position{}, //nolint:exhaustruct
+			Start: finding.Position{Offset: -1},
+			End:   finding.Position{Offset: -1},
 		}
 	}
 
@@ -129,17 +178,26 @@ func FormatDiagnostic(d *analysis.Diagnostic, fset *token.FileSet, analyzerName 
 //
 // The conversion is lossy: Severity, Confidence, Tags, Suppression, Metadata,
 // and FixStrategy are not representable in analysis.Diagnostic.
-// BeforeCode/AfterCode are converted to a SuggestedFix with TextEdit when present.
+// When the finding carries an edit list (Edits), every edit becomes a TextEdit
+// of a single SuggestedFix. Otherwise BeforeCode/AfterCode are converted to a
+// SuggestedFix with one TextEdit when present.
 func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 	pos := resolvePos(f.Position, fset)
 
-	diag := analysis.Diagnostic{ //nolint:exhaustruct
+	diag := analysis.Diagnostic{ //nolint:exhaustruct_v5
 		Pos:      pos,
 		Message:  f.Message,
 		Category: string(f.Category),
 	}
 
-	if f.HasFix() && f.Position.File != "" {
+	if len(f.Edits) > 0 {
+		diag.SuggestedFixes = []analysis.SuggestedFix{
+			{
+				Message:   f.Suggestion,
+				TextEdits: textEditsFromFinding(f, fset),
+			},
+		}
+	} else if f.HasFix() && f.Position.File != "" {
 		endPos := resolveEndPos(f, fset)
 		newText := []byte(f.AfterCode)
 
@@ -162,13 +220,43 @@ func ToDiagnostic(f finding.Finding, fset *token.FileSet) analysis.Diagnostic {
 
 	for _, ref := range f.Related {
 		relatedPos := resolvePos(ref.Position, fset)
-		diag.Related = append(diag.Related, analysis.RelatedInformation{ //nolint:exhaustruct
+		diag.Related = append(diag.Related, analysis.RelatedInformation{ //nolint:exhaustruct_v5
 			Pos:     relatedPos,
 			Message: string(ref.Relation),
 		})
 	}
 
 	return diag
+}
+
+// textEditsFromFinding converts the finding's typed edit list back to
+// go/analysis TextEdits. Edits whose file is not in fset (unresolvable
+// positions) are skipped; an insertion edit (no span) resolves End to Pos.
+func textEditsFromFinding(f finding.Finding, fset *token.FileSet) []analysis.TextEdit {
+	textEdits := make([]analysis.TextEdit, 0, len(f.Edits))
+
+	for _, edit := range f.Edits {
+		pos := resolvePos(edit.Start, fset)
+		if pos == token.NoPos {
+			continue
+		}
+
+		end := pos
+
+		if edit.HasSpan() {
+			if resolvedEnd := resolvePos(edit.End, fset); resolvedEnd != token.NoPos {
+				end = resolvedEnd
+			}
+		}
+
+		textEdits = append(textEdits, analysis.TextEdit{
+			Pos:     pos,
+			End:     end,
+			NewText: []byte(edit.NewText),
+		})
+	}
+
+	return textEdits
 }
 
 // resolvePos converts a finding.Position to a token.Pos by looking up the file in fset.
@@ -178,7 +266,7 @@ func resolvePos(p finding.Position, fset *token.FileSet) token.Pos {
 		return token.NoPos
 	}
 
-	file := gotoken.FindFileByName(fset, p.File)
+	file := gotoken.FindFileByName(fset, string(p.File))
 	if file == nil {
 		return token.NoPos
 	}
@@ -213,4 +301,41 @@ func nodeStartPos(fset *token.FileSet, node ast.Node) token.Position {
 	}
 
 	return fset.Position(node.Pos())
+}
+
+// extractBeforeCode reads the text being replaced by a TextEdit.
+// Uses source bytes when provided; falls back to reading from disk.
+func extractBeforeCode(fset *token.FileSet, edit analysis.TextEdit, source []byte) string {
+	if edit.End <= edit.Pos {
+		return ""
+	}
+
+	startPos := fset.Position(edit.Pos)
+	endPos := fset.Position(edit.End)
+
+	if !startPos.IsValid() || !endPos.IsValid() || startPos.Offset >= endPos.Offset {
+		return ""
+	}
+
+	startOff := startPos.Offset
+	endOff := endPos.Offset
+
+	if source != nil {
+		if startOff >= 0 && endOff <= len(source) && startOff < endOff {
+			return string(source[startOff:endOff])
+		}
+
+		return ""
+	}
+
+	src, err := os.ReadFile(startPos.Filename)
+	if err != nil {
+		return ""
+	}
+
+	if startOff >= 0 && endOff <= len(src) && startOff < endOff {
+		return string(src[startOff:endOff])
+	}
+
+	return ""
 }

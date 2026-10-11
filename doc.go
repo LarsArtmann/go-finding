@@ -8,11 +8,13 @@
 //   - Position tracking with range support
 //   - SARIF 2.1.0 output generation and import
 //   - LSP Diagnostic conversion
-//   - go/analysis integration (see analysis subpackage)
+//   - go/analysis integration (see github.com/larsartmann/go-finding/analysis module)
 //   - Report merging, deduplication, and cross-tool correlation
 //   - Diff to compare finding sets
 //   - Human-readable text and markdown formatting
-//   - A pipeline for automated detect → triage → fix → verify loops
+//   - A pipeline for automated detect → triage → fix → verify loops (see github.com/larsartmann/go-finding/pipeline module)
+//   - Finding grouping via GroupID (e.g. clone groups: N findings for one logical issue)
+//   - Per-finding fix outcomes and scoped rollback via the pipeline module's FixEngine
 //
 // # Quick Start
 //
@@ -35,11 +37,20 @@
 //	    WithConfidence(finding.ConfidenceHigh).
 //	    Build()
 //
+// Or use BuildOrDefault to skip error handling (returns Finding{} on error):
+//
+//	f := finding.NewBuilder("rule", "tool", "msg", finding.SeverityError, finding.Pos("a.go", 1, 1)).
+//	    BuildOrDefault()
+//
 // Create a report:
 //
 //	report := finding.NewReport(finding.ToolInfo{Name: "my-tool"})
 //	report.AddFinding(f)
 //	report.ComputeSummary()
+//
+// Or in one step:
+//
+//	report := finding.NewReportFromFindings(finding.ToolInfo{Name: "my-tool"}, []finding.Finding{f})
 //
 // Output as SARIF:
 //
@@ -52,14 +63,17 @@
 //   - Finding: A single issue detected by a tool
 //   - Report: Thread-safe container for all findings from a tool run
 //   - Severity: info, warning, error, critical (with comparison operators)
-//   - Confidence: Named float64 type with IsValid/Clamp, range [0.0, 1.0]
+//   - Confidence: Named float64 type with IsValid/Clamp/Compare/String/ParseConfidence, range [0.0, 1.0]
 //   - FixStrategy: none, suggest, direct, ai (ai is reserved)
-//   - Category: 14 predefined + custom (security, style, performance, etc.)
+//   - Category: 16 predefined + custom (security, style, performance, etc.)
 //   - Tag: Multi-label classification (security, bug, deprecated, etc.)
 //   - Position: File, line, column, offset location
 //   - Range: Start and end positions with spatial operations (Contains, Overlaps, Adjacent)
 //   - Suppression: Mark findings as suppressed with kind, reason, and optional expiry
 //   - FixEdit: Byte-level edit operation (offset, length, replacement)
+//   - TextEdit: Typed multi-edit fix representation (start/end positions + replacement
+//     text); Finding.Edits carries the full edit list of a fix, with
+//     BeforeCode/AfterCode as the first-edit display summary
 //
 // # Validation
 //
@@ -81,7 +95,7 @@
 //
 // Combine with Negate for inverse filters, AnyOf for union:
 //
-//	nonAuto := finding.Filter(findings, finding.Negate(finding.HasFix))
+//	nonAuto := finding.Filter(findings, finding.Negate(finding.WithFix))
 //	warnOrErr := finding.Filter(findings, finding.AnyOf(
 //	    finding.BySeverity(finding.SeverityWarning),
 //	    finding.BySeverity(finding.SeverityError),
@@ -126,15 +140,15 @@
 //
 // Export and import SARIF format for CI/CD integration:
 //
-//	data, err := report.ToSARIF()           // all findings
-//	data, err := report.ToSARIFFiltered(sev) // filtered by severity + suppression
+//	data, err := report.ToSARIF()                                  // all findings
+//	data, err := report.ToSARIFWithOpts(finding.WithMinSeverity(sev)) // filtered by severity
 //
 // Import back:
 //
 //	findings, err := finding.FindingsFromSARIF(ctx, data)
 //	findings, err := finding.FindingsFromReader(ctx, reader) // streaming
 //
-// WriteSARIF/WriteSARIFFiltered stream directly to io.Writer.
+// WriteSARIF/WriteSARIFWithOpts stream directly to io.Writer.
 // Report.WriteTo implements io.WriterTo for io.Copy compatibility.
 //
 // go-finding-specific properties are preserved in the SARIF property bag for full round-trip fidelity.
@@ -149,9 +163,10 @@
 //
 //	f := finding.FromLSP(uri, lspDiag)
 //
-// LSP conversion is lossy: FixStrategy, Confidence, BeforeCode, AfterCode, Suppression,
-// Metadata, Category, and Tags are not preserved through LSP round-trips.
-// Diagnostic tags (unnecessary, deprecated) are preserved via Metadata.
+// LSP conversion preserves go-finding-specific fields via LSPDiagnosticData on diag.Data:
+// FixStrategy, Confidence, BeforeCode, AfterCode, Suppression, Metadata, Category, Tags,
+// and RelatedFindingIDs are round-tripped. Diagnostic tags (unnecessary, deprecated)
+// are preserved via Metadata.
 //
 // # Error Handling
 //
@@ -161,8 +176,10 @@
 //	errors.Is(err, finding.ErrValidation) // true
 //
 // Five error categories: Validation, IO, Parse, Conflict, Internal.
-// Use IsFindingError, GetCategory, IsCategory for programmatic handling.
+// Use IsFindingError, CategoryOf, IsCategory for programmatic handling.
 // FindingError supports WithFinding and WithPosition for attaching context.
+// ErrorCode returns "finding.<category>" for use with go-error-family classification.
+// ErrorFamily maps the category to an errorfamily.Family (Rejection, Conflict, etc.).
 //
 // # Suppression
 //
@@ -183,8 +200,54 @@
 //
 // Human-readable output formats:
 //
-//	finding.FormatText(os.Stdout, findings)    // single-line per finding
+//	finding.FormatText(os.Stdout, findings)     // [SEVERITY] tag + suggestion
+//	finding.FormatTextRich(os.Stdout, findings) // emoji badge + category + 💡 suggestion
+//	finding.FormatTable(os.Stdout, findings)   // severity-badged table
 //	finding.FormatMarkdown(os.Stdout, findings) // markdown table
+//
+// # Convenience APIs (v1.3.0)
+//
+// Eliminate common boilerplate with these helper functions:
+//
+// Stamp common fields once, build many findings:
+//
+//	tmpl := finding.NewTemplate("my-linter").
+//	    WithCategory(finding.CategoryStyle).
+//	    WithFixStrategy(finding.FixStrategySuggest)
+//	f1 := tmpl.Build("R1", "msg 1", finding.SeverityInfo, finding.Pos("a.go", 1, 1))
+//	f2 := tmpl.Build("R2", "msg 2", finding.SeverityWarning, finding.Pos("b.go", 2, 3))
+//
+// For per-finding confidence/suggestion, use Template.Builder (returns *Builder):
+//
+//	f := tmpl.Builder("R1", "msg", finding.SeverityWarning, finding.Pos("a.go", 1, 1)).
+//	    WithConfidence(finding.ConfidenceHigh).
+//	    WithSuggestion("use foo.Bar() instead").
+//	    MustBuild()
+//
+// Confidence parsing (inverse of String):
+//
+//	c, err := finding.ParseConfidence("high") // → ConfidenceHigh
+//
+// File-level positions (config files, project checks):
+//
+//	f := finding.NewBuilder("config", "tool", "missing field",
+//	    finding.SeverityError, finding.FilePos("config.yaml")).BuildOrDefault()
+//
+// Severity mapping from external tools:
+//
+//	sev := finding.SeverityFromLevel("warn", finding.SeverityInfo) // → SeverityWarning
+//	priority := finding.SeverityError.PriorityString()              // → "high"
+//
+// Simple BeforeCode→AfterCode fixes without the pipeline:
+//
+//	results := finding.ApplySimpleFixes(findingsWithFixes)
+//	// Findings with a multi-edit Edits list are refused there — use the
+//	// pipeline FixApplier (EditListProvider) for those.
+//
+// External tool integration:
+//
+//	path, err := finding.CheckBinary("golangci-lint")
+//	output, err := finding.RunCmd(ctx, "golangci-lint", "run", "--out-format", "json", "./...")
 //
 // # JSON
 //
@@ -206,8 +269,8 @@
 //
 // # Pipeline
 //
-// The pipeline subpackage (github.com/larsartmann/go-finding/pipeline) provides an
-// automated detect → triage → fix → verify loop:
+// The pipeline module (github.com/larsartmann/go-finding/pipeline) provides an
+// automated detect → triage → fix → verify loop. Import it separately:
 //
 //	p, err := pipeline.New(pipeline.Config{
 //	    MaxIterations:     3,
@@ -220,7 +283,7 @@
 // Pipeline features:
 //   - Configurable iterations with early termination
 //   - Parallel or sequential detector execution
-//   - FindingProcessor chain between detection and triage
+//   - FindingTransformer chain between detection and triage
 //   - Customizable TriageFunc for categorizing findings
 //   - Byte-level FixEngine with composable FixProvider chain
 //   - Conflict detection (position-based or byte-level)
@@ -228,13 +291,15 @@
 //   - Retry with exponential backoff for flaky detectors
 //   - Graceful degradation on detector failures
 //   - Structured logging via slog
-//   - Stage and iteration callbacks
+//   - Stage and iteration callbacks (StageHook with before/after events)
 //   - Metrics collection with snapshots
+//   - Flight recorder (Go execution trace via runtime/trace.FlightRecorder)
 //
 // # Fix Providers
 //
 // The FixEngine resolves findings to byte-level edits via a provider chain:
 //
+//   - EditListProvider: Typed Finding.Edits lists (offsets or line/column)
 //   - OffsetProvider: Direct byte offset ranges
 //   - LineProvider: Line/column positions converted to byte offsets
 //   - SubstringProvider: BeforeCode text matching (fallback)
@@ -257,6 +322,21 @@
 //
 // Thread-safe. Use with ConfigFile.ResolveDetectors for config-driven pipelines.
 //
+// # Flight Recorder
+//
+// The pipeline module includes a flight recorder (pipeline.FlightRecorderHook) that
+// captures Go execution traces for diagnostics. It wraps runtime/trace.FlightRecorder
+// and is registered as a StageHook:
+//
+//	hook, err := pipeline.NewFlightRecorderHook(pipeline.DefaultFlightRecorderConfig())
+//	cfg.StageHooks = append(cfg.StageHooks, hook)
+//
+// Snapshots are written on demand via hook.Snapshot(ctx, reason) or automatically when a
+// stage exceeds SlowStageThreshold. The CLI exposes -trace, -trace-dir, and -trace-slow
+// flags. YAML/JSON config files support a flightRecorder section with enabled, outputDir,
+// slowStageThreshold, minAge, and maxBytes fields. For a complete walkthrough with examples,
+// see the FlightRecorder guide in the project documentation.
+//
 // # Interval Index
 //
 // Efficient overlap queries over half-open ranges in O(log n + k):
@@ -277,18 +357,17 @@
 //
 // # Converting from go/analysis
 //
-// Convert from the standard Go analysis framework using the analysis subpackage:
+// Convert from the standard Go analysis framework using the analysis module
+// (github.com/larsartmann/go-finding/analysis), imported separately:
 //
 //	f := analysis.FromDiagnostic(diag, pass.Fset, "my-analyzer", "RULE001")
 //
 // # Known Limitations
 //
+// LSP conversion preserves go-finding-specific fields via LSPDiagnosticData.
 // SeverityCritical maps to SARIF level "error" (SARIF 2.1.0 has no "critical" level).
 // The original severity is preserved in the SARIF property bag for round-trip fidelity.
 //
-// LSP conversion is lossy: FixStrategy, Confidence, BeforeCode, AfterCode, Suppression,
-// Metadata, Category, and Tags are not preserved through LSP round-trips.
-//
-// Report.Findings is a public slice — external code can bypass the mutex.
-// Use AddFinding/AddFindings for thread-safe access.
+// Report.findings is unexported for thread safety. Use AddFinding/AddFindings
+// for writes, FindingsSnapshot/All/FindByID for reads.
 package finding

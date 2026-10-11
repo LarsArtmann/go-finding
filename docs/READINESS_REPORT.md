@@ -1,5 +1,7 @@
 # go-finding SDK Readiness Report
 
+> **HISTORICAL DOCUMENT (2026-04-24):** Pre-v1.0 readiness assessment from v0.x. Project has since reached v1.2.0. Retained for reference.
+
 **Date:** 2026-04-24
 **Assessed by:** Crush
 
@@ -11,13 +13,13 @@ Strong core library with real bugs that needed fixing. After applying 5 blocking
 
 ## Blocking Issues Found & Fixed
 
-| #   | Issue                                                                                                                                                                                                                               | Severity | Fix                                                     |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------- |
-| 1   | **Pipeline tests didn't compile** — unused `"errors"` import in `verify_test.go`                                                                                                                                                    | Blocker  | Removed import                                          |
-| 2   | **Data races in CLI tests** — `TestRun_BadSeverity`, `TestRun_MissingConfig`, `TestRun_NoDetectors`, `TestRun_BadProfilingPath` all called `t.Parallel()` while modifying global state (`flag.CommandLine`, `os.Args`, `os.Stderr`) | Blocker  | Removed `t.Parallel()` from tests touching global state |
-| 3   | **`TestFatalf` race** — replaced `os.Stderr` globally while other parallel tests wrote to it                                                                                                                                        | Blocker  | Removed `t.Parallel()`                                  |
-| 4   | **Stale `AGENTS.md`** — referenced `pipeline/astfix.go` which doesn't exist                                                                                                                                                         | Medium   | Updated to `pipeline/fix_applier.go`                    |
-| 5   | **Outdated README stats** — showed 81.1% total coverage, actual is 94.8%                                                                                                                                                            | Medium   | Updated to real numbers                                 |
+| # | Issue                                                                                                                                                                                                                               | Severity | Fix                                                     |
+| - | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------- |
+| 1 | **Pipeline tests didn't compile** — unused `"errors"` import in `verify_test.go`                                                                                                                                                    | Blocker  | Removed import                                          |
+| 2 | **Data races in CLI tests** — `TestRun_BadSeverity`, `TestRun_MissingConfig`, `TestRun_NoDetectors`, `TestRun_BadProfilingPath` all called `t.Parallel()` while modifying global state (`flag.CommandLine`, `os.Args`, `os.Stderr`) | Blocker  | Removed `t.Parallel()` from tests touching global state |
+| 3 | **`TestFatalf` race** — replaced `os.Stderr` globally while other parallel tests wrote to it                                                                                                                                        | Blocker  | Removed `t.Parallel()`                                  |
+| 4 | **Stale `AGENTS.md`** — referenced `pipeline/astfix.go` which doesn't exist                                                                                                                                                         | Medium   | Updated to `pipeline/fix_applier.go`                    |
+| 5 | **Outdated README stats** — showed 81.1% total coverage, actual is 94.8%                                                                                                                                                            | Medium   | Updated to real numbers                                 |
 
 ---
 

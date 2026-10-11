@@ -1,0 +1,2 @@
+go test fuzz v1
+[]byte("{\"version\":\"2.1.0\",\"runs\":[{\"tool\":{\"driver\":{\"name\":\"test\"}},\"results\":[{\"ruleId\":\"r1\",\"level\":\"warning\",\"message\":{\"text\":\"test\"},\"locations\":[{\"physicalLocation\":{\"artifactLocation\":{\"uri\":\"a.go\"},\"region\":{\"startLine\":1}}}],\"suppressions\":[{\"kind\":\"inSource\",\"status\":\"accepted\"}],\"properties\":{\"go-finding/suppression-rule\":\"waived-rule\",\"go-finding/suppression-reason\":\"intentionally unused\"}}]}]}")

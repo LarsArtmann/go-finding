@@ -49,17 +49,15 @@ These decisions need product input. They are documented here for visibility.
 
 ## 4. Suppression Expiry
 
-**Current:** `Suppression.ExpiresAt` field exists but is not enforced.
+**Current:** `Suppression.ExpiresAt` field exists and is enforced via `IsActive(now)` which checks expiry.
 
-**Question:** Should the pipeline skip expired suppressions automatically?
-
-**Recommendation:** Defer to v1.1. Add `IsActive()` method that checks expiry, but don't auto-filter.
+**Status:** Resolved in v1.1. `IsActive()` checks validity + expiry; `IsSuppressedAt()` uses it for pipeline filtering.
 
 ---
 
 ## 5. API Stability for v1.0.0
 
-**Current:** v0.2.1 — API-stable beta. All three conditions below are resolved.
+**Current:** v1.3.0 — API-stable. All three conditions below are resolved.
 
 **Status:** All blocking decisions resolved:
 
@@ -67,7 +65,7 @@ These decisions need product input. They are documented here for visibility.
 - [x] Builder.Build() error return is stable — Returns `(Finding, error)` since v0.2.0
 - [x] ID format is finalized (#2 above) — Resolved: keep readable format (A) for v1
 
-**Next target:** v1.0.0 = production release with API stability guarantee.
+**Status:** v1.0.0 released. API stability guarantee published (`docs/API_STABILITY.md`).
 
 ---
 
@@ -95,9 +93,8 @@ These decisions need product input. They are documented here for visibility.
 - Providers are domain-specific and would import heavy dependencies (go/ast, Rust parser, etc.).
 - Separate modules allow consumers to import only what they need.
 - The `FixProvider` interface in `pipeline/` is the contract; implementations live outside.
-- Example: `github.com/larsartmann/go-finding-provider-goast` as a separate repo.
 
-**Status:** Resolved — providers live in separate modules.
+**Status:** Resolved — GoAST provider lives at `pipeline/goast/` within the pipeline module (uses only stdlib `go/parser`, no external deps). Future non-Go providers should be separate repos.
 
 ---
 
@@ -167,7 +164,7 @@ func (r *Report) ToSARIF() ([]byte, error) {
     rep := report.NewV22Report()
     run := sarif.NewRunWithInformationURI(r.Tool.Name, "")
 
-    for _, f := range r.Findings {
+    for _, f := range r.FindingsSnapshot() {
         if f.IsSuppressed() {
             continue
         }
@@ -268,7 +265,7 @@ Adapting these would require wrapping go-sarif's API, adding even more adapter c
 
 ### 9.5 Dependency Argument
 
-Adding `go-sarif` means every consumer of `go-finding` transitively depends on it. Our design principle #1 is "core types depend only on stdlib." The `finding` package currently has **zero** third-party dependencies in the root package. Breaking that for a builder API we do not need would be a regression.
+Adding `go-sarif` means every consumer of `go-finding` transitively depends on it. The `finding` package intentionally keeps its dependency surface minimal. Adding a heavy SARIF library for a builder API we do not need would be a regression.
 
 ---
 
@@ -320,7 +317,7 @@ Adding `go-sarif` means every consumer of `go-finding` transitively depends on i
 ## 10. Report.Findings Encapsulation
 
 **Date:** 2026-06-08
-**Status:** Proposed (requires v1.0 milestone)
+**Status:** Implemented in v1.0.0 — Option A adopted.
 
 ### Context
 
@@ -341,15 +338,15 @@ r.Findings = append(r.Findings, f)                   // Data race with AddFindin
 
 ### Options
 
-| #   | Approach                                          | Breaking? | Effort | Safe? |
-| --- | ------------------------------------------------- | --------- | ------ | ----- |
-| A   | Make `Findings` unexported, keep everything else  | Yes       | Low    | Yes   |
-| B   | Keep `Findings` exported with documented caveat   | No        | None   | No    |
-| C   | Replace `Findings` with `[]Finding` getter method | Yes       | Medium | Yes   |
+| # | Approach                                          | Breaking? | Effort | Safe? |
+| - | ------------------------------------------------- | --------- | ------ | ----- |
+| A | Make `Findings` unexported, keep everything else  | Yes       | Low    | Yes   |
+| B | Keep `Findings` exported with documented caveat   | No        | None   | No    |
+| C | Replace `Findings` with `[]Finding` getter method | Yes       | Medium | Yes   |
 
 ### Recommendation
 
-**Option A** for v1.0. Rename `Findings` to `findings` (unexported). The existing accessor methods (`FindingsSnapshot`, `All`, `FindByID`, `Filter`, `Map`) provide all needed access patterns. Direct mutation was never documented as safe.
+**Option A adopted in v1.0.0.** `Findings` renamed to `findings` (unexported). The existing accessor methods (`FindingsSnapshot`, `All`, `FindByID`, `Filter`, `Map`) provide all needed access patterns. Direct mutation was never documented as safe.
 
 ### Migration Guide (v1.0)
 
@@ -365,24 +362,30 @@ snapshot := report.FindingsSnapshot()
 
 ### Decision
 
-**Deferred to v1.0.** This is a breaking change that must happen before the v1.0 stability guarantee. All necessary migration infrastructure is already in place.
+**Implemented in v1.0.0.** All necessary migration infrastructure was in place since v0.7.0.
 
 ---
 
 ## 11. v1.0.0 Breaking Changes Plan
 
-**Status:** Planning — all changes are backward-compatible in v0.x.
+**Status:** Implemented in v1.0.0.
 
 ### Consolidated v1.0 Breaking Changes
 
-| #   | Change                                  | Current (v0.x)                     | v1.0                               | Migration                                           |
-| --- | --------------------------------------- | ---------------------------------- | ---------------------------------- | --------------------------------------------------- |
-| 1   | `Report.Findings` unexport              | Exported field                     | `findings` (unexported)            | Use `FindingsSnapshot()`, `All()`, `readFindings()` |
-| 2   | `Report.Merge` removed                  | Deprecated, calls `MergeInto`      | Removed                            | Use `MergeInto(other)`                              |
-| 3   | `RecordFix()` removed                   | Deprecated, calls `RecordFixes(1)` | Removed                            | Use `RecordFixes(1)`                                |
-| 4   | SARIF types remain unexported           | Unexported                         | Stays unexported                   | No change needed                                    |
-| 5   | `Position.Offset` zero-value semantics  | `0` is valid but also `IsZero()`   | Add `OffsetSet` field or sentinel  | Use `HasOffset()`                                   |
-| 6   | `findingsLocked()` becomes `findings()` | Internal accessor                  | Field unexported, accessor renamed | Internal only                                       |
+All changes below have been implemented:
+
+| #  | Change                                  | Status  | Migration                                       |
+| -- | --------------------------------------- | ------- | ----------------------------------------------- |
+| 1  | `Report.Findings` unexported            | ✅ Done | Use `FindingsSnapshot()`, `All()`, `FindByID()` |
+| 2  | `Report.Merge` removed                  | ✅ Done | Use `MergeInto(other)`                          |
+| 3  | `RecordFix()` removed                   | ✅ Done | Use `RecordFixes(1)`                            |
+| 4  | SARIF types remain unexported           | ✅ Done | No change needed                                |
+| 5  | `Position.Offset` zero-value semantics  | ✅ Done | Use `HasOffset()`; `-1` sentinel for unset      |
+| 6  | `Config.OnStage` removed                | ✅ Done | Use `StageHooks`                                |
+| 7  | `CountBySeverity()` free function       | ✅ Done | Use `Report.CountBySeverity()`                  |
+| 8  | `SeverityAliases()` removed             | ✅ Done | Use `LookupSeverityAlias()`                     |
+| 9  | `GetCategory()` removed                 | ✅ Done | Use `CategoryOf()`                              |
+| 10 | `HasFix`/`HasSuggestion` free functions | ✅ Done | Use `WithFix`/`WithSuggestion`                  |
 
 ### Position/Range Zero-Value Decision (Item 5)
 
@@ -397,9 +400,7 @@ and passes `HasOffset() == true`, while also satisfying `IsZero() == true`.
 | B      | Add `OffsetSet bool` field                 | Yes — struct size   | Medium  |
 | C      | Keep as-is, document the trap              | No                  | Low     |
 
-**Recommendation:** Option A for v1.0. Change `Offset` to default `-1`
-(like `Column` defaults to `0` = "not set" with `Line > 0` indicating set).
-This is the cleanest approach: impossible to confuse "byte 0" with "not set".
+**Recommendation adopted:** Option A in v0.9.0/v1.0.0. `Offset` defaults to `-1` (sentinel for unset).
 
 ### Internal Migration Progress (v0.x → v1.0)
 
@@ -414,12 +415,52 @@ The following refactors prepare for v1.0 without breaking consumers:
 
 ### Decision
 
-**Plan approved.** Execute all 6 items at v1.0.0 release in a single commit.
-No gradual unexporting — one clean break.
+**Plan executed in v1.0.0.** All items implemented in a single release.
 
 ---
 
-## 12. sync.Pool for Line Offset Index
+## 12. Canonical Finding Identity
+
+**Decision:** `GenerateID()` output is the canonical finding identity. Two findings are identical if and only if their IDs are equal.
+
+**Rationale:**
+
+- `GenerateID` uses `tool:rule:file:line:col` — deterministic and collision-resistant.
+- `Key()` is a fallback for findings without an ID; it includes `Message` in the composite key, which is a deliberate difference (pre-GenerateID consumers needed message-based fallback).
+- `dedupKey()` strategies (ByID, ByPosition, ByRule) are deliberate relaxations of canonical identity for merge scenarios, not competing definitions.
+
+**Implementation:**
+
+- `Finding.Key()` documented as fallback only; references this ADR.
+- `Finding.Equal()` compares all fields including ID.
+- `Diff()` and `MergeIter()` use ID as the primary key.
+
+**Status:** Resolved — GenerateID is canonical.
+
+---
+
+## 13. Category/Tags Relationship — Deprecation Plan
+
+**Decision:** Category and Tags will coexist until v1.0.0. Category will be deprecated in favor of Tags (strictly more expressive). The validation invariant (added in this session) prevents conflicts in the meantime.
+
+**Current behavior:**
+
+- `Finding.Category` is a single-value classification (one domain).
+- `Finding.Tags` is a multi-value classification (multiple labels).
+- Six values are defined as constants in both types (security, style, performance, correctness, complexity, documentation).
+- `Validate()` now rejects findings where Category and Tags contain conflicting standard categories.
+
+**Migration plan (v1.0.0):**
+
+1. v0.8.0: Add `// Deprecated:` comment to `Finding.Category` field. (Done — invariant active.)
+2. v0.9.0: Add `Finding.PrimaryCategory()` method that returns `Tags[0]` or derived primary.
+3. v1.0.0: Remove `Category` field. Consumers migrate to `Tags`. `Summary.ByCategory` becomes `Summary.ByTag`.
+
+**Status:** Open — invariant active, full deprecation deferred to v1.0.0 batch.
+
+---
+
+## 14. sync.Pool for Line Offset Index
 
 **Status:** Evaluated — **SKIP**.
 
@@ -441,3 +482,244 @@ and the lazy `*[]int` pointer in `resolveEdits`.
 **Conclusion:** The complexity of pool lifecycle management (reset, Put/Get, potential
 for stale data) is not justified for a <0.1% improvement. Revisit only if profiling
 shows line index allocation as a hot path on very large batches (>100K files).
+
+---
+
+## 15. go-error-family as Core Dependency
+
+**Status:** Accepted — v1.4.0.
+
+**Context:** The core `finding` package historically depended only on the Go standard
+library. Error handling was purely internal: `FindingError` had sentinel errors
+(`ErrValidation`, `ErrIO`, etc.) and `ErrorCategory` classification, but consumers had
+no standardized way to classify go-finding errors alongside errors from other libraries.
+
+The `go-error-family` library (`github.com/larsartmann/go-error-family`) provides a
+unified error classification system with `Family` values (Rejection, Conflict,
+Transient, Infrastructure) and `Classify()` for routing errors to retry, logging, or
+user-facing strategies. Integrating it into go-finding allows consumers to handle
+go-finding errors uniformly with all their other errors.
+
+**Decision:** Accept `go-error-family` v0.9.0 as a direct production dependency of the
+core module. `FindingError` now implements two `go-error-family` interfaces:
+
+- `errorfamily.Coded` via `ErrorCode()` — returns `"finding.<category>"` (e.g., `"finding.validation"`)
+- `errorfamily.Classified` via `ErrorFamily()` — maps categories to families:
+  - Validation, Parse → Rejection
+  - Conflict → Conflict
+  - IO → Transient
+  - Internal → Infrastructure
+
+**Tradeoffs:**
+
+- **Gain:** Consumers can call `errorfamily.Classify(err)` on any error, including
+  go-finding errors, and get a consistent family for retry/log/escalation decisions.
+  No more per-library error type switching.
+- **Gain:** Error codes (`"finding.io"`, `"finding.parse"`) are stable, structured
+  identifiers for observability and dashboards.
+- **Cost:** Core module gains one external dependency. The "zero external deps"
+  principle is retired in favor of a small, deliberate dependency surface.
+- **Cost:** Consumers who do not use `go-error-family` are unaffected — `ErrorCode()`
+  and `ErrorFamily()` are additive methods that do not change existing behavior.
+
+**Why not vendor or inline?** The `go-error-family` library is small and focused, but
+it is actively developed. Inlining would freeze the API surface and create a
+maintenance burden. Vendoring would duplicate the code. A direct dependency is the
+simplest correct choice.
+
+**Reversibility:** Fully reversible. The two methods (`ErrorCode`, `ErrorFamily`) are
+additive. Removing the dependency would only require deleting the import and the two
+methods. No existing consumer code would break.
+
+## 16. Per-File Rollback as `FixApplier` Default
+
+**Status:** Accepted — v1.7.0 (D1 sign-off 2026-09-08).
+
+**Context:** Until v1.6.x, `FixApplier` treated every multi-file fix run as
+all-or-nothing: one hard failure on the last file rolled back every file modified
+earlier in the run, discarding clean, verified fixes. Issue #28 documented the
+concrete failure: a single unresolvable finding on the final file erased all
+applied fixes from every previous file. Additionally, a provider resolve error on
+any finding (a soft, per-finding failure) triggered the same global rollback even
+when other edits in that file had applied cleanly.
+
+Consumers of batch fix tooling expect failure isolation proportional to the
+failure: one bad file should cost that file, not the whole run.
+
+**Decision:** `RollbackPolicyFailingFile` (restore only the failing file) is the
+default rollback policy. `RollbackPolicyAllFiles` preserves the legacy
+all-or-nothing behavior and is opt-in via `FixApplier.SetRollbackPolicy`,
+`pipeline.Config.FixRollbackAllFiles`, or the config-file field
+`fixRollbackAllFiles` (CLI: `-fix-rollback-all`). Soft per-finding failures —
+provider resolve errors, refused findings — never abort a run: applied edits are
+written, failures surface via `ApplyReport.Outcomes` and the joined error return.
+
+**Tradeoffs:**
+
+- **Gain:** Failure isolation matches user expectation; issue #28's scenario now
+  loses one file instead of the whole run.
+- **Gain:** The `RollbackPolicy` type makes failure semantics explicit and
+  testable instead of implicit in control flow.
+- **Cost:** Consumers that relied on all-or-nothing semantics must opt back in
+  explicitly. This is a behavior change shipped in a minor release — justified
+  because the old behavior was a documented bug (#28), the migration is one
+  line, and `docs/guides/consumer-migration-v1.7.md` covers it.
+- **Cost:** `ApplyReport.RolledBack` lists every backed-up file on rollback,
+  including files that were backed up but never modified (content no-ops) —
+  a reporting nuance tests must account for.
+
+**Why not default to `RollbackPolicyAllFiles` with an opt-in per-file flag?** The
+default is what most consumers get; shipping the buggy-equivalent default and
+asking everyone to opt into correctness inverts the burden. Flipping the default
+later (after consumers migrate to the opt-out) would churn consumers twice.
+
+**Reversibility:** Reversible at the API level (swap the default constant) but
+not at the ecosystem level once consumers depend on per-file semantics — which
+is the point: the decision freezes the correct default.
+
+## 17. Outcome Metrics as Pipeline-Native Aggregates
+
+**Status:** Accepted — v1.7.0.
+
+**Context:** With per-finding fix outcomes (issue #27), consumers need
+aggregate visibility: how many findings applied, how many were refused, how
+many failed. Two places could own that aggregation — the caller reducing
+`ApplyReport.Outcomes` itself, or the pipeline's existing `Metrics` collector,
+which already tracks stage durations, detector times, and applied-fix counts.
+
+**Decision:** `Metrics.RecordOutcome(status)` / `Metrics.OutcomeCounts()` own
+the aggregation. The pipeline's fix stage records one outcome per finding
+automatically (`pipeline_detect.go`), `MetricsSnapshot.OutcomeCounts` carries a
+point-in-time copy in `PipelineResult`, and the CLI prints a `Fix outcomes:`
+summary in canonical status order (nonzero counts only).
+
+**Tradeoffs:**
+
+- **Gain:** Every pipeline consumer gets outcome telemetry for free, including
+  CLI users; no per-caller reduction boilerplate.
+- **Gain:** Metrics already has the mutex discipline and snapshot pattern —
+  counts ride the existing infrastructure with no new locking surface.
+- **Cost:** The counts are aggregate-only; callers needing per-finding detail
+  still read `ApplyReport.Outcomes`. Metrics is not a finding store.
+- **Cost:** Double bookkeeping risk — `fixesApplied` (count) and
+  `applied`-outcome counts can diverge if future stages record one but not the
+  other. Mitigated by the property test pinning the invariant at the engine
+  level and the fix stage recording both from one `ApplyReport`.
+
+**Alternatives:** Callback-based aggregation (`OnOutcome` per finding) was
+rejected as redundant with `StageHooks` and heavier than a counter.
+
+**Reversibility:** Additive; removing the recording would only drop telemetry.
+
+## 18. Typed Outcome Errors via `*finding.FindingError`
+
+**Status:** Accepted — v1.7.0.
+
+**Context:** Failed fix outcomes initially carried `fmt.Errorf`-wrapped
+provider errors. Consumers filtering outcome failures by error type or
+position had to parse message strings; `errors.Is`/`errors.As` stopped at the
+wrapper; and the pipeline's error-classification story
+(`errorfamily.Classify`, ADR #15) did not apply to fix failures.
+
+**Decision:** Failed `FixOutcome.Err` values are `*finding.FindingError`
+(parse category) constructed with the finding's position attached, wrapping
+the original provider error as `Cause`. The `errors.Is`/`errors.As` chain
+reaches the provider cause; `errorfamily.Classify` routes them as Rejection.
+Serialization stays message-string-only (errors do not carry identity through
+JSON — match on status, not error value, after a round-trip).
+
+**Tradeoffs:**
+
+- **Gain:** Uniform error classification across the library (detection and
+  fixing produce the same error shape); position-bearing failures render
+  actionable messages for free.
+- **Cost:** Parse category is a slight stretch for provider failures (they are
+  "resolution" failures, not syntax errors). Rejection-family routing is still
+  correct (do not retry automatically), and the cause chain preserves the
+  precise origin.
+- **Cost:** Typed errors in a public result struct freeze `*finding.FindingError`
+  into the outcome API contract.
+
+**Alternatives:** A dedicated `OutcomeError` type was rejected — it would
+duplicate `FindingError`'s fields (position, category, cause) without adding
+information.
+
+**Reversibility:** Low: swapping the error type later would break consumers
+matching on `*finding.FindingError`. The type is stable since v1.4.0 (ADR #15).
+
+## 19. Typed Edit Lists for Multi-Edit Fixes
+
+**Status:** Accepted — issue #36 fix (Unreleased, targeting v1.14.0).
+
+**Context:** A fix was modeled as a single `BeforeCode`→`AfterCode` string
+pair. Real suggested fixes are edit lists: go/analysis diagnostics routinely
+carry 2..N `TextEdits` (e.g. rename a declaration and every reference), and a
+whole-file rewrite cannot be expressed as one contiguous replacement at all.
+Issue #36 documented three loss spots: the analysis bridge kept only edit[0]
+of a suggested fix, `ToDiagnostic` re-emitted a single synthetic edit, and
+SARIF had no faithful wire representation for multi-edit artifact changes.
+Anything that did apply multiple edits (the engine, per edit) also counted
+one finding N times as N "applied fixes".
+
+**Decision:**
+
+- `finding.TextEdit{Start, End Position; NewText string}` lives in **core**
+  (pipeline depends on core, never the reverse). `Finding.Edits []TextEdit`
+  is the authoritative machine representation of a direct fix;
+  `BeforeCode`/`AfterCode` remain as the first-edit display summary and stay
+  the only representation for legacy single-edit consumers.
+- **Edits↔display-pair consistency is intentionally loose** (decided
+  2026-09-23): when a producer sets both, `Validate` does not require
+  `Edits[0].NewText == AfterCode` or any BeforeCode relation — the display
+  pair may be truncated or contextualized for humans, and enforcing
+  structural equality would false-reject legitimate producers. Consumers
+  must apply `Edits` and treat the display pair as documentation. Pinned by
+  the "mismatched display pair with edit list stays valid" test in
+  `finding_valid_test.go`.
+- Insertion convention follows the existing `Position` zero-value rules:
+  `End` unset (`Offset` -1 sentinel) or `End == Start` both mean "insert at
+  Start". `Position{}` is byte 0, not "unset".
+- Edit-list equality is **order-independent** (`editsEqual` sorts before
+  comparing): the applier applies descending-by-offset regardless of list
+  order, so two findings with reordered identical edits are the same fix.
+- The pipeline gains `EditListProvider`, first in the default chain
+  (EditList → Offset → Line → Substring): a typed edit list is the most
+  precise representation, so it wins before any content-guessing provider.
+- Refuse-don't-half-apply at every layer: `ApplySimpleFixes` skips multi-edit
+  findings with a pointer to the pipeline applier; `EditListProvider` fails
+  cross-file lists with `ErrEditCrossFile` and stale/out-of-bounds offsets
+  with `ErrEditStale`, both surfacing as `FixOutcomeFailed` with the provider
+  cause in the `errors.Is` chain.
+- Applied accounting is per finding: the engine dedups applied findings, so a
+  multi-edit fix counts once everywhere (`Apply`, `ApplyWithConflicts`,
+  `ApplyReport.Applied`).
+- SARIF carries edit lists as per-file `artifactChanges` with one `replacement`
+  per edit; `region.byteOffset`/`byteLength` are pointer fields so byte offset
+  0 survives `omitempty`.
+
+**Tradeoffs:**
+
+- **Gain:** go/analysis suggested fixes round-trip losslessly; whole-file
+  rewrites are expressible; SARIF interop matches real-world multi-edit fixes.
+- **Cost:** `Finding` grows a slice field (24-byte header; nil for all legacy
+  findings). Measured: +11..25% B/op on Finding-copy benchmarks (GroupByFile,
+  Correlate, MergeIter/Combine) with allocs/op flat (+0..3%) — the slice
+  header does not fit existing padding, unlike the v1.7.0 GroupID addition.
+  Baseline regenerated with rationale in `benchmarks/README.md`.
+- **Cost:** Duplicate representation (`Edits` vs `BeforeCode`/`AfterCode`)
+  with a documented precedence rule instead of one normalized form. Removing
+  the legacy pair would break every existing consumer for cosmetics.
+- **Cost:** Multi-file fixes are unsupported and fail loudly rather than
+  partially applying — deliberately out of scope until a consumer needs them
+  (the `Conflict` machinery and rollback policy are file-scoped today).
+
+**Alternatives:** A dedicated `MultiFix` finding type was rejected — it would
+fork every consumer API (filters, SARIF, LSP, merge) for a difference that is
+one field on `Fix`. Keeping `FixEdit` (pipeline-only byte edits) as the
+finding-level model was rejected — findings must serialize standalone (JSON,
+SARIF, LSP) without pipeline types, and positions-not-offsets keeps edits
+human-readable and line-shift-resolvable.
+
+**Reversibility:** Medium: the field is additive and nil-safe, but once
+producers emit `Edits` and consumers depend on edit-order independence, the
+semantics are frozen like any public equality contract.

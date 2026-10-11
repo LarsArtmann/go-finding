@@ -4,6 +4,8 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"strings"
+	"sync"
 )
 
 // Severity represents the severity level of a finding.
@@ -16,6 +18,14 @@ const (
 	SeverityError    Severity = "error"
 	SeverityCritical Severity = "critical"
 )
+
+// severityPriorities maps each canonical severity to its priority label.
+var severityPriorities = map[Severity]string{
+	SeverityCritical: "critical",
+	SeverityError:    "high",
+	SeverityWarning:  "medium",
+	SeverityInfo:     "low",
+}
 
 // IsValid returns true if the severity is a valid value.
 func (s Severity) IsValid() bool {
@@ -86,20 +96,15 @@ func (s Severity) String() string {
 }
 
 // Badge returns a human-readable severity badge with emoji (e.g., "🔴 CRITICAL").
+// Derived from [Severity.Emoji] and the uppercased severity name.
 // Returns the string value unchanged for unknown severities.
 func (s Severity) Badge() string {
-	switch s {
-	case SeverityCritical:
-		return "🔴 CRITICAL"
-	case SeverityError:
-		return "🟠 ERROR"
-	case SeverityWarning:
-		return "🟡 WARNING"
-	case SeverityInfo:
-		return "🟢 INFO"
+	emoji := s.Emoji()
+	if emoji == "" {
+		return string(s)
 	}
 
-	return string(s)
+	return emoji + " " + strings.ToUpper(string(s))
 }
 
 // Emoji returns the emoji representing the severity level.
@@ -152,22 +157,6 @@ func severityRank(s Severity) int {
 	return -1
 }
 
-// CountBySeverity counts findings by severity level.
-// Only valid severities are included in the result.
-//
-// Deprecated: Use Report.CountBySeverity instead.
-func CountBySeverity(findings []Finding) map[Severity]int {
-	counts := make(map[Severity]int)
-
-	for _, f := range findings {
-		if f.Severity.IsValid() {
-			counts[f.Severity]++
-		}
-	}
-
-	return counts
-}
-
 // isValidWith returns true if both severities are valid.
 func (s Severity) isValidWith(other Severity) bool {
 	return s.IsValid() && other.IsValid()
@@ -176,23 +165,49 @@ func (s Severity) isValidWith(other Severity) bool {
 // errInvalidSeverity is returned when parsing an invalid severity string.
 var errInvalidSeverity = errors.New("invalid severity")
 
-// SeverityAliases maps common alternative severity strings to canonical Severity values.
-// Consumers can add custom aliases via this map before calling ParseSeverity.
-var SeverityAliases = map[string]Severity{
-	"warn":       SeverityWarning,
-	"high":       SeverityError,
-	"medium":     SeverityWarning,
-	"low":        SeverityInfo,
-	"fatal":      SeverityCritical,
-	"critical":   SeverityCritical,
-	"note":       SeverityInfo,
-	"advice":     SeverityInfo,
-	"suggestion": SeverityInfo,
+// severityAliases maps common alternative severity strings to canonical Severity values.
+// Guarded by severityAliasesMu for concurrent read/write safety.
+var (
+	severityAliases = map[string]Severity{
+		"warn":       SeverityWarning,
+		"high":       SeverityError,
+		"medium":     SeverityWarning,
+		"low":        SeverityInfo,
+		"fatal":      SeverityCritical,
+		"critical":   SeverityCritical,
+		"crit":       SeverityCritical,
+		"note":       SeverityInfo,
+		"advice":     SeverityInfo,
+		"optional":   SeverityInfo,
+		"suggestion": SeverityInfo,
+	}
+	severityAliasesMu sync.RWMutex
+)
+
+// RegisterSeverityAlias adds a custom severity alias for use by ParseSeverity.
+// This is safe to call concurrently. If the alias already exists, it is overwritten.
+func RegisterSeverityAlias(name string, sev Severity) {
+	severityAliasesMu.Lock()
+	defer severityAliasesMu.Unlock()
+
+	severityAliases[name] = sev
+}
+
+// LookupSeverityAlias returns the canonical Severity for the given alias, if it exists.
+// This is safe to call concurrently.
+func LookupSeverityAlias(name string) (Severity, bool) {
+	severityAliasesMu.RLock()
+	defer severityAliasesMu.RUnlock()
+
+	sev, ok := severityAliases[name]
+
+	return sev, ok
 }
 
 // ParseSeverity parses a string into a Severity.
 // It accepts the canonical names (info, warning, error, critical) and common aliases
-// defined in SeverityAliases (warn, high, medium, low, fatal, note, advice, suggestion).
+// (warn, high, medium, low, fatal, note, advice, suggestion) registered via
+// RegisterSeverityAlias.
 // Returns an error if the string is not a valid severity level or alias.
 func ParseSeverity(s string) (Severity, error) {
 	sev := Severity(s)
@@ -200,7 +215,7 @@ func ParseSeverity(s string) (Severity, error) {
 		return sev, nil
 	}
 
-	if alias, ok := SeverityAliases[s]; ok {
+	if alias, ok := LookupSeverityAlias(s); ok {
 		return alias, nil
 	}
 
@@ -210,10 +225,34 @@ func ParseSeverity(s string) (Severity, error) {
 
 // MustParseSeverity parses a string into a Severity, panicking on invalid input.
 func MustParseSeverity(s string) Severity {
-	sev, err := ParseSeverity(s)
-	if err != nil {
-		panic(err)
+	return must(ParseSeverity(s))
+}
+
+// SeverityFromLevel maps a severity level string to a canonical Severity.
+// It tries canonical names first, then registered aliases, and falls back
+// to the provided fallback if the level is unrecognized. This eliminates the
+// severity-mapping switch statements that every consumer independently writes.
+func SeverityFromLevel(level string, fallback Severity) Severity {
+	sev := Severity(level)
+	if sev.IsValid() {
+		return sev
 	}
 
-	return sev
+	if alias, ok := LookupSeverityAlias(level); ok {
+		return alias
+	}
+
+	return fallback
+}
+
+// PriorityString returns a priority label for the severity, which is the
+// reverse mapping of severity levels to common priority terms.
+// Critical→"critical", Error→"high", Warning→"medium", Info→"low".
+// Returns the string value unchanged for unknown severities.
+func (s Severity) PriorityString() string {
+	if p, ok := severityPriorities[s]; ok {
+		return p
+	}
+
+	return string(s)
 }

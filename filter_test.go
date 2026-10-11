@@ -42,7 +42,7 @@ func runFilterCase(t *testing.T, tc filterTestCase) {
 
 func makeFixStrategyFindings(id2, id3 FixStrategy) []Finding {
 	return []Finding{
-		{ID: "1", FixStrategy: FixStrategyDirect},
+		{ID: "1", FixStrategy: FixStrategyDirect, AfterCode: "fixed()"},
 		{ID: "2", FixStrategy: id2},
 		{ID: "3", FixStrategy: id3},
 	}
@@ -51,7 +51,7 @@ func makeFixStrategyFindings(id2, id3 FixStrategy) []Finding {
 func makeFindingsWithSeverity(sev ...Severity) []Finding {
 	findings := make([]Finding, len(sev))
 	for i, s := range sev {
-		findings[i] = Finding{ID: string(rune('1' + i)), Severity: s}
+		findings[i] = Finding{ID: ID(string(rune('1' + i))), Severity: s}
 	}
 
 	return findings
@@ -60,7 +60,7 @@ func makeFindingsWithSeverity(sev ...Severity) []Finding {
 func makeFindingsWithCategory(cats ...Category) []Finding {
 	findings := make([]Finding, len(cats))
 	for i, c := range cats {
-		findings[i] = Finding{ID: string(rune('1' + i)), Category: c}
+		findings[i] = Finding{ID: ID(string(rune('1' + i))), Category: c}
 	}
 
 	return findings
@@ -170,7 +170,7 @@ func TestNotSuppressed(t *testing.T) {
 
 	findings := []Finding{
 		{ID: "1"},
-		{ID: "2", Suppression: &Suppression{Kind: SuppressionInSource}},
+		{ID: "2", Suppression: &Suppression{Kind: SuppressionInSource, Rule: "R2"}},
 	}
 	runFilterCase(t, newFilterCase("not suppressed", findings, NotSuppressed, 1))
 }
@@ -179,7 +179,7 @@ func TestHasFix(t *testing.T) {
 	t.Parallel()
 
 	findings := makeFixStrategyFindings(FixStrategyNone, FixStrategyAI)
-	runFilterCase(t, newFilterCase("has fix", findings, HasFix, 1))
+	runFilterCase(t, newFilterCase("has fix", findings, WithFix, 1))
 }
 
 func TestHasSuggestion(t *testing.T) {
@@ -190,5 +190,5 @@ func TestHasSuggestion(t *testing.T) {
 		{ID: "2", BeforeCode: "old", AfterCode: "new"},
 		{ID: "3"},
 	}
-	runFilterCase(t, newFilterCase("has suggestion", findings, HasSuggestion, 2))
+	runFilterCase(t, newFilterCase("has suggestion", findings, WithSuggestion, 2))
 }

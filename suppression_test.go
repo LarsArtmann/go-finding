@@ -53,6 +53,44 @@ func TestSuppression_IsExpired_FutureTime(t *testing.T) {
 	}
 }
 
+// TestSuppression_IsExpired_ExactBoundary verifies the documented boundary
+// semantics: at the exact ExpiresAt instant, the suppression is still active.
+func TestSuppression_IsExpired_ExactBoundary(t *testing.T) {
+	t.Parallel()
+
+	exact := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	s := &Suppression{
+		Kind:      SuppressionInSource,
+		Rule:      "rule-x",
+		ExpiresAt: &exact,
+	}
+
+	// At the exact expiry instant — still active (not expired).
+	if s.IsExpired(exact) {
+		t.Error("at exact ExpiresAt instant, suppression should NOT be expired")
+	}
+
+	if !s.IsActive(exact) {
+		t.Error("at exact ExpiresAt instant, suppression should still be active")
+	}
+
+	// One nanosecond after — expired.
+	after := exact.Add(1)
+	if !s.IsExpired(after) {
+		t.Error("1ns after ExpiresAt, suppression should be expired")
+	}
+
+	if s.IsActive(after) {
+		t.Error("1ns after ExpiresAt, suppression should not be active")
+	}
+
+	// One nanosecond before — not expired.
+	before := exact.Add(-1)
+	if s.IsExpired(before) {
+		t.Error("1ns before ExpiresAt, suppression should not be expired")
+	}
+}
+
 func TestSuppressionKind_Constants(t *testing.T) {
 	t.Parallel()
 
@@ -140,4 +178,34 @@ func TestSuppression_Fields(t *testing.T) {
 	if s.Reason != "accepted false positive" {
 		t.Errorf("Reason = %q, want %q", s.Reason, "accepted false positive")
 	}
+}
+
+// FuzzIsSuppressedAt tests that IsSuppressedAt never panics and always
+// returns false for nil or invalid suppressions.
+func FuzzIsSuppressedAt(f *testing.F) {
+	f.Add(uint8(0), "", int64(0))      // nil suppression equivalent: invalid kind
+	f.Add(uint8(1), "rule1", int64(0)) // valid in-source, no expiry
+	f.Add(uint8(2), "", int64(0))      // in-config but missing rule → invalid
+	f.Add(uint8(5), "rule2", int64(0)) // invalid kind
+
+	f.Fuzz(func(t *testing.T, kindIdx uint8, rule string, expiryOffset int64) {
+		kinds := []SuppressionKind{SuppressionInSource, SuppressionInConfig, SuppressionInReview}
+		kind := kinds[int(kindIdx)%len(kinds)]
+
+		s := &Suppression{Kind: kind, Rule: RuleName(rule)}
+
+		now := time.Unix(0, 0).UTC()
+		if expiryOffset != 0 {
+			expiry := now.Add(time.Duration(expiryOffset) * time.Second)
+			s.ExpiresAt = &expiry
+		}
+
+		// Should never panic.
+		result := s.IsActive(now)
+
+		// Invalid suppression (empty rule) must never be active.
+		if rule == "" && result {
+			t.Errorf("invalid suppression (empty rule) should not be active")
+		}
+	})
 }

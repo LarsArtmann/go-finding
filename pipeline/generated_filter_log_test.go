@@ -39,7 +39,7 @@ func TestGeneratedFileFilter_LogFilterError(t *testing.T) {
 		{ID: "1", Position: finding.Position{File: "missing.go"}},
 	}
 
-	result, err := gf.Process(t.Context(), findings)
+	result, err := gf.Transform(t.Context(), findings)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
 	}
@@ -77,7 +77,7 @@ func TestGeneratedFileFilter_LogFilterError_NilLogger(t *testing.T) {
 		{ID: "1", Position: finding.Position{File: "missing.go"}},
 	}
 
-	result, err := gf.Process(t.Context(), findings)
+	result, err := gf.Transform(t.Context(), findings)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
 	}

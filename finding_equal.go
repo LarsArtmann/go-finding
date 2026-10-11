@@ -36,12 +36,16 @@ func (f Finding) Equal(other Finding) bool {
 		return false
 	}
 
-	if !slices.Equal(f.Tags, other.Tags) {
+	if !tagsEqual(f.Tags, other.Tags) {
 		return false
 	}
 
+	// Short-circuit: when raw strategies are identical, their normalized forms
+	// are also identical. Only normalize when they differ (handles "" vs "none").
 	if f.FixStrategy != other.FixStrategy {
-		return false
+		if NormalizeFixStrategy(f.FixStrategy) != NormalizeFixStrategy(other.FixStrategy) {
+			return false
+		}
 	}
 
 	if f.Suggestion != other.Suggestion {
@@ -56,7 +60,15 @@ func (f Finding) Equal(other Finding) bool {
 		return false
 	}
 
+	if !editsEqual(f.Edits, other.Edits) {
+		return false
+	}
+
 	if f.Snippet != other.Snippet {
+		return false
+	}
+
+	if f.GroupID != other.GroupID {
 		return false
 	}
 
@@ -77,6 +89,33 @@ func (f Finding) Equal(other Finding) bool {
 	}
 
 	return maps.Equal(f.Metadata, other.Metadata)
+}
+
+// tagsEqual reports whether two tag slices contain the same elements
+// regardless of order. Tags are an unordered set of classification labels.
+func tagsEqual(a, b []Tag) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	if len(a) == 0 {
+		return true
+	}
+
+	// Fast path: tags already in the same order. This is the common case when
+	// comparing findings from the same tool, and avoids 2 allocations + 2 sorts.
+	if slices.Equal(a, b) {
+		return true
+	}
+
+	// Tags differ in order — fall back to sorted comparison for set equality.
+	sortedA := slices.Clone(a)
+	sortedB := slices.Clone(b)
+
+	slices.Sort(sortedA)
+	slices.Sort(sortedB)
+
+	return slices.Equal(sortedA, sortedB)
 }
 
 func (f Finding) equalRange(other Finding) bool {

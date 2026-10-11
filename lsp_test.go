@@ -1,7 +1,10 @@
 package finding
 
 import (
+	"encoding/json/v2"
+	"reflect"
 	"testing"
+	"time"
 )
 
 func TestSeverityToLSP(t *testing.T) {
@@ -82,15 +85,15 @@ func TestFromLSP(t *testing.T) {
 
 	f := FromLSP("file:///test.go", diag)
 
-	if got, want := f.ID, "golangci-lint:unused-var:file:///test.go:5:10"; got != want {
+	if got, want := f.ID, "golangci-lint:unused-var:file:///test.go:5:10"; string(got) != want {
 		t.Errorf("FromLSP ID = %q, want %q", got, want)
 	}
 
-	if got, want := f.Rule, "unused-var"; got != want {
+	if got, want := f.Rule, "unused-var"; string(got) != want {
 		t.Errorf("FromLSP Rule = %q, want %q", got, want)
 	}
 
-	if got, want := f.ToolName, "golangci-lint"; got != want {
+	if got, want := f.ToolName, "golangci-lint"; string(got) != want {
 		t.Errorf("FromLSP ToolName = %q, want %q", got, want)
 	}
 
@@ -110,7 +113,7 @@ func TestFromLSP(t *testing.T) {
 		t.Errorf("FromLSP Position.Column = %d, want %d (0-based→1-based)", got, want)
 	}
 
-	if got, want := f.Position.File, "file:///test.go"; got != want {
+	if got, want := string(f.Position.File), "file:///test.go"; got != want {
 		t.Errorf("FromLSP Position.File = %q, want %q", got, want)
 	}
 
@@ -184,7 +187,7 @@ func TestFromLSPRelated(t *testing.T) {
 	diag.Code = "dupl"
 	diag.Source = "dupl"
 	diag.Message = "clone detected"
-	diag.Related = []LSPRelatedInfo{
+	diag.Related = []LSPRelated{
 		{
 			Location: LSPLocation{
 				URI:   "file:///other.go",
@@ -204,11 +207,333 @@ func TestFromLSPRelated(t *testing.T) {
 		t.Errorf("FromLSP Related[0].Relation = %q, want %q", got, want)
 	}
 
-	if got, want := f.Related[0].Position.File, "file:///other.go"; got != want {
+	if got, want := string(f.Related[0].Position.File), "file:///other.go"; got != want {
 		t.Errorf("FromLSP Related[0].File = %q, want %q", got, want)
 	}
 
 	if got, want := f.Related[0].Position.Line, 10; got != want {
 		t.Errorf("FromLSP Related[0].Line = %d, want %d", got, want)
 	}
+}
+
+// TestLSPRoundTrip_SeverityCritical verifies that SeverityCritical survives an
+// LSP round-trip. LSP collapses critical → error, so the exact severity must be
+// carried in LSPDiagnosticData. Regression for lsp.go:51.
+func TestLSPRoundTrip_SeverityCritical(t *testing.T) {
+	t.Parallel()
+
+	original := Finding{
+		ID:         ID("crit-1"),
+		Rule:       "critical-rule",
+		ToolName:   "tool",
+		Message:    "critical issue",
+		Severity:   SeverityCritical,
+		Position:   Position{File: FilePath("main.go"), Line: 5},
+		Confidence: ConfidenceHigh,
+	}
+
+	diag := original.ToLSP()
+
+	// LSP diagnostic severity must be Error (critical is not representable).
+	if diag.Severity != LSPSeverityError {
+		t.Errorf("LSP severity: got %d, want %d (LSPSeverityError)", int(diag.Severity), int(LSPSeverityError))
+	}
+
+	restored := FromLSP("file:///main.go", diag)
+
+	if restored.Severity != SeverityCritical {
+		t.Errorf("round-trip severity: got %q, want %q (SeverityCritical)",
+			restored.Severity, SeverityCritical)
+	}
+}
+
+// TestLSPRoundTrip_SnippetMetadataSuppression verifies that Snippet, Metadata,
+// and Suppression survive the LSP round-trip via LSPDiagnosticData.
+func TestLSPRoundTrip_SnippetMetadataSuppression(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now().UTC().Truncate(time.Second)
+	original := Finding{
+		ID:       ID("full-1"),
+		Rule:     "rule-x",
+		ToolName: "tool",
+		Message:  "test",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("main.go"), Line: 3},
+		Snippet:  "var x = unused",
+		Metadata: map[string]string{"custom-key": "custom-val"},
+		Suppression: &Suppression{
+			Kind:   SuppressionInSource,
+			Rule:   "rule-x",
+			Reason: "intentional",
+		},
+	}
+
+	restored := FromLSP("file:///main.go", original.ToLSP())
+
+	if restored.Snippet != "var x = unused" {
+		t.Errorf("Snippet: got %q, want %q", restored.Snippet, "var x = unused")
+	}
+
+	if restored.Metadata["custom-key"] != "custom-val" {
+		t.Errorf("Metadata[custom-key]: got %q, want %q", restored.Metadata["custom-key"], "custom-val")
+	}
+
+	if restored.Suppression == nil {
+		t.Fatal("expected Suppression to survive round-trip")
+	}
+
+	if restored.Suppression.Kind != SuppressionInSource {
+		t.Errorf("Suppression.Kind: got %q, want %q", restored.Suppression.Kind, SuppressionInSource)
+	}
+
+	if restored.Suppression.Rule != "rule-x" {
+		t.Errorf("Suppression.Rule: got %q, want %q", restored.Suppression.Rule, "rule-x")
+	}
+
+	_ = now // expiry not tested here; IsExpired boundary tested separately
+}
+
+// TestLSPRoundTrip_RelatedFindingID verifies that RelatedRef.FindingID survives
+// the LSP round-trip instead of being regenerated.
+func TestLSPRoundTrip_RelatedFindingID(t *testing.T) {
+	t.Parallel()
+
+	original := Finding{
+		ID:       ID("main-1"),
+		Rule:     "rule-a",
+		ToolName: "tool",
+		Message:  "main",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("main.go"), Line: 1},
+		Related: []RelatedRef{{
+			FindingID: ID("original-related-id"),
+			Relation:  "caused-by",
+			Position:  Position{File: FilePath("other.go"), Line: 5},
+		}},
+	}
+
+	restored := FromLSP("file:///main.go", original.ToLSP())
+
+	if len(restored.Related) != 1 {
+		t.Fatalf("Related length: got %d, want 1", len(restored.Related))
+	}
+
+	if restored.Related[0].FindingID != ID("original-related-id") {
+		t.Errorf("Related[0].FindingID: got %q, want %q (should NOT be regenerated)",
+			restored.Related[0].FindingID, ID("original-related-id"))
+	}
+}
+
+// TestLSPRoundTrip_GroupID verifies that GroupID survives the LSP round-trip.
+func TestLSPRoundTrip_GroupID(t *testing.T) {
+	t.Parallel()
+
+	original := Finding{
+		ID:       ID("clone-1"),
+		Rule:     "clone-detected",
+		ToolName: "art-dupl",
+		Message:  "duplicate code",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("a.go"), Line: 3},
+		GroupID:  "clone-group-42",
+	}
+
+	restored := FromLSP("file:///a.go", original.ToLSP())
+
+	if restored.GroupID != "clone-group-42" {
+		t.Errorf("GroupID: got %q, want %q", restored.GroupID, "clone-group-42")
+	}
+}
+
+// TestLSPRoundTrip_DiagnosticTags verifies that LSP diagnostic tags stored in
+// metadata by FromLSP are re-emitted on the diagnostic by ToLSP, and that a
+// full round-trip preserves them.
+func TestLSPRoundTrip_DiagnosticTags(t *testing.T) {
+	t.Parallel()
+
+	original := Finding{
+		ID:       ID("unused-1"),
+		Rule:     "unused-code",
+		ToolName: "art-dupl",
+		Message:  "unnecessary code",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("dup.go"), Line: 7},
+		Metadata: map[string]string{LSPDiagnosticTagsKey: "1"},
+	}
+
+	diag := original.ToLSP()
+
+	if len(diag.Tags) != 1 || diag.Tags[0] != LSPDiagnosticTagUnnecessary {
+		t.Fatalf("Tags: got %v, want [%d]", diag.Tags, LSPDiagnosticTagUnnecessary)
+	}
+
+	restored := FromLSP("file:///dup.go", diag)
+
+	if got := restored.Metadata[LSPDiagnosticTagsKey]; got != "1" {
+		t.Errorf("Metadata[%s]: got %q, want %q", LSPDiagnosticTagsKey, got, "1")
+	}
+
+	rediag := restored.ToLSP()
+
+	if len(rediag.Tags) != 1 || rediag.Tags[0] != LSPDiagnosticTagUnnecessary {
+		t.Errorf("re-emitted Tags: got %v, want [%d]", rediag.Tags, LSPDiagnosticTagUnnecessary)
+	}
+}
+
+// TestToLSP_DiagnosticTags_IgnoreMalformed verifies that malformed metadata
+// values do not produce tag entries.
+func TestToLSP_DiagnosticTags_IgnoreMalformed(t *testing.T) {
+	t.Parallel()
+
+	f := Finding{
+		ID:       ID("x"),
+		Rule:     "r",
+		ToolName: "t",
+		Message:  "m",
+		Severity: SeverityWarning,
+		Position: Position{File: FilePath("a.go"), Line: 1},
+		Metadata: map[string]string{LSPDiagnosticTagsKey: "1,bogus,2"},
+	}
+
+	diag := f.ToLSP()
+
+	if len(diag.Tags) != 2 {
+		t.Fatalf("Tags: got %v, want 2 entries", diag.Tags)
+	}
+
+	if diag.Tags[0] != LSPDiagnosticTagUnnecessary || diag.Tags[1] != LSPDiagnosticTagDeprecated {
+		t.Errorf("Tags: got %v, want [%d %d]", diag.Tags, LSPDiagnosticTagUnnecessary, LSPDiagnosticTagDeprecated)
+	}
+}
+
+// TestToLSP_DiagnosticTags_GoldenWire pins the metadata wire format for LSP
+// diagnostic tags: the key must stay exactly "go-finding/lsp-diagnostic-tags"
+// and the value must be the comma-separated numeric tag list that ToLSP
+// parses and FromLSP writes, including the multi-tag case.
+func TestToLSP_DiagnosticTags_GoldenWire(t *testing.T) {
+	t.Parallel()
+
+	f := standardTestFinding()
+	f.Metadata = map[string]string{LSPDiagnosticTagsKey: "1,2"}
+
+	diag := f.ToLSP()
+
+	wantTags := []LSPDiagnosticTag{LSPDiagnosticTagUnnecessary, LSPDiagnosticTagDeprecated}
+	if len(diag.Tags) != len(wantTags) || diag.Tags[0] != wantTags[0] || diag.Tags[1] != wantTags[1] {
+		t.Fatalf("Tags: got %v, want %v", diag.Tags, wantTags)
+	}
+
+	if got := diag.Data.Metadata[LSPDiagnosticTagsKey]; got != "1,2" {
+		t.Fatalf("Data.Metadata[%s]: got %q, want %q", LSPDiagnosticTagsKey, got, "1,2")
+	}
+
+	restored := FromLSP("file:///file.go", diag)
+
+	if got := restored.Metadata[LSPDiagnosticTagsKey]; got != "1,2" {
+		t.Fatalf("round-trip Metadata[%s]: got %q, want %q", LSPDiagnosticTagsKey, got, "1,2")
+	}
+}
+
+// FuzzParseLSPDiagnosticTags verifies that parsing arbitrary metadata values
+// as tag lists never panics and never returns non-nil garbage.
+func FuzzParseLSPDiagnosticTags(f *testing.F) {
+	f.Add("")
+	f.Add("1")
+	f.Add("1,2")
+	f.Add(" , ,, ")
+	f.Add("999999999999999999999")
+	f.Add("-1,abc,3")
+
+	f.Fuzz(func(t *testing.T, s string) {
+		tags := parseLSPDiagnosticTags(s)
+
+		for _, tag := range tags {
+			if tag < 0 {
+				t.Fatalf("negative tag %d parsed from %q", tag, s)
+			}
+		}
+	})
+}
+
+// TestLSPDiagnosticData_GoldenWire pins the exact JSON wire format of
+// LSPDiagnosticData (the diagnostic's data property). LSP clients may persist
+// these bytes, so any key rename or reordering must be a conscious decision.
+func TestLSPDiagnosticData_GoldenWire(t *testing.T) {
+	t.Parallel()
+
+	assertWire := func(t *testing.T, data *LSPDiagnosticData, golden string) {
+		t.Helper()
+
+		wire, err := json.Marshal(data, marshalOpts)
+		if err != nil {
+			t.Fatalf("marshal LSPDiagnosticData: %v", err)
+		}
+
+		if string(wire) != golden {
+			t.Fatalf("LSPDiagnosticData wire drift:\n got: %s\nwant: %s", wire, golden)
+		}
+
+		again, err := json.Marshal(data, marshalOpts)
+		if err != nil {
+			t.Fatalf("re-marshal: %v", err)
+		}
+
+		if string(again) != string(wire) {
+			t.Fatalf("non-deterministic output:\n %s\n %s", wire, again)
+		}
+
+		var parsed LSPDiagnosticData
+		if err := json.Unmarshal(wire, &parsed); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+
+		// An empty map marshals to nothing (omitempty) and unmarshals as nil;
+		// normalize before comparing so only real drift fails.
+		wantData := *data
+		if len(wantData.Metadata) == 0 {
+			wantData.Metadata = nil
+		}
+
+		if !reflect.DeepEqual(&wantData, &parsed) {
+			t.Fatalf("round-trip mismatch:\n got: %+v\nwant: %+v", &parsed, &wantData)
+		}
+	}
+
+	t.Run("minimal", func(t *testing.T) {
+		t.Parallel()
+
+		diag := standardTestFinding().ToLSP()
+		assertWire(
+			t,
+			diag.Data,
+			`{"id":"test:rule1:file.go:10:5","severity":"error","fixStrategy":"none","confidence":1}`,
+		)
+	})
+
+	t.Run("fully populated", func(t *testing.T) {
+		t.Parallel()
+
+		f := standardTestFinding()
+		f.GroupID = "clone-group-1"
+		f.Tags = []Tag{"style", "perf"}
+		f.BeforeCode = "old()"
+		f.AfterCode = "new()"
+		f.Suggestion = "use new()"
+		f.Snippet = "old()"
+		f.Suppression = &Suppression{Kind: SuppressionInSource, Rule: "rule1", Reason: "legacy"}
+		f.Metadata = map[string]string{"gate": "ci", "zebra": "last"}
+		f.Related = []RelatedRef{{
+			FindingID: "test:rule2:file.go:20:1",
+			Relation:  RelationCloneOf,
+			Position:  Position{File: "file.go", Line: 20},
+		}}
+
+		diag := f.ToLSP()
+		assertWire(
+			t,
+			diag.Data,
+			`{"id":"test:rule1:file.go:10:5","severity":"error","fixStrategy":"none","confidence":1,"groupId":"clone-group-1","tags":["style","perf"],"beforeCode":"old()","afterCode":"new()","suggestion":"use new()","snippet":"old()","suppression":{"kind":"in-source","rule":"rule1","reason":"legacy"},"metadata":{"gate":"ci","zebra":"last"},"relatedFindingIds":["test:rule2:file.go:20:1"]}`,
+		)
+	})
 }

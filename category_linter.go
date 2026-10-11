@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/larsartmann/go-finding/lockutil"
 )
 
 // LinterRegistry maps linter/analyzer names to Categories.
@@ -19,7 +21,7 @@ type LinterRegistry struct {
 
 // NewLinterRegistry creates a registry pre-populated with the given mappings.
 func NewLinterRegistry(items map[string]Category) *LinterRegistry {
-	r := &LinterRegistry{items: make(map[string]Category, len(items))} //nolint:exhaustruct
+	r := &LinterRegistry{items: make(map[string]Category, len(items))}
 	for k, v := range items {
 		r.items[strings.ToLower(k)] = v
 	}
@@ -30,50 +32,60 @@ func NewLinterRegistry(items map[string]Category) *LinterRegistry {
 // Lookup returns the Category for a linter name (case-insensitive).
 // Returns the provided fallback if the name is not registered.
 func (r *LinterRegistry) Lookup(name string, fallback Category) Category {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return readLinter(r, func() Category {
+		if cat, ok := r.items[strings.ToLower(name)]; ok {
+			return cat
+		}
 
-	if cat, ok := r.items[strings.ToLower(name)]; ok {
-		return cat
-	}
-
-	return fallback
+		return fallback
+	})
 }
 
 // Register adds or overrides a Category mapping for a linter name.
 func (r *LinterRegistry) Register(name string, cat Category) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	writeLinter(r, func() struct{} {
+		if r.items == nil {
+			r.items = make(map[string]Category)
+		}
 
-	if r.items == nil {
-		r.items = make(map[string]Category)
-	}
+		r.items[strings.ToLower(name)] = cat
 
-	r.items[strings.ToLower(name)] = cat
+		return struct{}{}
+	})
 }
 
 // Names returns all registered linter names in sorted order.
 func (r *LinterRegistry) Names() []string {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	return slices.Sorted(maps.Keys(r.items))
+	return readLinter(r, func() []string {
+		return slices.Sorted(maps.Keys(r.items))
+	})
 }
 
 // Clone returns a deep copy of the registry.
 func (r *LinterRegistry) Clone() *LinterRegistry {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	return readLinter(r, func() *LinterRegistry {
+		return &LinterRegistry{items: maps.Clone(r.items)}
+	})
+}
 
-	return &LinterRegistry{items: maps.Clone(r.items)} //nolint:exhaustruct
+// readLinter runs fn while holding r.mu.RLock and returns its result.
+func readLinter[T any](r *LinterRegistry, fn func() T) T {
+	return lockutil.RLocked(&r.mu, fn)
+}
+
+// writeLinter runs fn while holding r.mu.Lock and returns its result.
+func writeLinter[T any](r *LinterRegistry, fn func() T) T {
+	return lockutil.Locked(&r.mu, fn)
 }
 
 // DefaultLinterRegistry is the global registry with built-in linter→category mappings.
 var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	// Security
-	"gosec":      CategorySecurity,
-	"noctx":      CategorySecurity,
-	"errchkjson": CategorySecurity,
+	"gosec":         CategorySecurity,
+	"noctx":         CategorySecurity,
+	"errchkjson":    CategorySecurity,
+	"bidichk":       CategorySecurity,
+	"nosprintfhost": CategorySecurity,
 
 	// Correctness
 	"govet":         CategoryCorrectness,
@@ -89,6 +101,13 @@ var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	"gosimple":      CategoryCorrectness,
 	"deadcode":      CategoryCorrectness,
 	"varcheck":      CategoryCorrectness,
+	"nakedret":      CategoryCorrectness,
+	"rowserrcheck":  CategoryCorrectness,
+	"sqlclosecheck": CategoryCorrectness,
+	"wastedassign":  CategoryCorrectness,
+	"exportloopref": CategoryCorrectness,
+	"nilnesserr":    CategoryCorrectness,
+	"recvcheck":     CategoryCorrectness,
 
 	// Performance
 	"prealloc":   CategoryPerformance,
@@ -116,18 +135,27 @@ var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	"nilnil":    CategoryErrorHandling,
 
 	// Style
-	"misspell":   CategoryStyle,
-	"revive":     CategoryStyle,
-	"gofmt":      CategoryStyle,
-	"goimports":  CategoryStyle,
-	"gci":        CategoryStyle,
-	"wsl_v5":     CategoryStyle,
-	"dupword":    CategoryStyle,
-	"godot":      CategoryStyle,
-	"lll":        CategoryStyle,
-	"whitespace": CategoryStyle,
-	"nlreturn":   CategoryStyle,
-	"golint":     CategoryStyle,
+	"misspell":       CategoryStyle,
+	"revive":         CategoryStyle,
+	"gofmt":          CategoryStyle,
+	"gofumpt":        CategoryStyle,
+	"goimports":      CategoryStyle,
+	"gci":            CategoryStyle,
+	"wsl":            CategoryStyle,
+	"wsl_v5":         CategoryStyle,
+	"dupword":        CategoryStyle,
+	"godot":          CategoryStyle,
+	"lll":            CategoryStyle,
+	"whitespace":     CategoryStyle,
+	"nlreturn":       CategoryStyle,
+	"golint":         CategoryStyle,
+	"dogsled":        CategoryStyle,
+	"nolintlint":     CategoryStyle,
+	"forbidigo":      CategoryStyle,
+	"gomnd":          CategoryStyle,
+	"varnamelen":     CategoryStyle,
+	"tagalign":       CategoryStyle,
+	"nonamedreturns": CategoryStyle,
 
 	// Testing
 	"paralleltest":     CategoryTesting,
@@ -146,11 +174,16 @@ var DefaultLinterRegistry = NewLinterRegistry(map[string]Category{
 	"gochecksumtype":  CategoryTypeSafety,
 	"copyloopvar":     CategoryTypeSafety,
 	"intrange":        CategoryTypeSafety,
+	"tagliatelle":     CategoryTypeSafety,
 
 	// Structure
 	"sloglint":    CategoryStructure,
 	"loggercheck": CategoryStructure,
 	"unused":      CategoryUnused,
+
+	// Best practice
+	"depguard": CategoryBestPractice,
+	"mirror":   CategoryBestPractice,
 
 	// Configuration
 	"gomodguard_v2": CategoryConfiguration,

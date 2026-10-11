@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func FuzzFilter(f *testing.F) {
+func FuzzFilterPredicates(f *testing.F) {
 	f.Add("warning", "cat1", "file1.go", "tool1")
 	f.Add("error", "cat2", "file2.go", "tool2")
 	f.Add("info", "", "", "")
@@ -35,8 +35,8 @@ func FuzzFilter(f *testing.F) {
 				ID:       "F1",
 				Severity: severity,
 				Category: Category(category),
-				ToolName: tool,
-				Position: Position{File: file, Line: 1},
+				ToolName: ToolName(tool),
+				Position: Position{File: FilePath(file), Line: 1},
 			},
 			{
 				ID:       "F2",
@@ -74,7 +74,7 @@ func FuzzFilter(f *testing.F) {
 	})
 }
 
-func FuzzGroupBy(f *testing.F) {
+func FuzzGroupByKey(f *testing.F) {
 	f.Add("key1", "key2", "key1")
 	f.Add("", "", "")
 	f.Add("a", "a", "a")
@@ -112,13 +112,13 @@ func FuzzFilterByFile(f *testing.F) {
 	f.Fuzz(func(t *testing.T, target, file1, file2 string) {
 		g := NewWithT(t)
 		findings := []Finding{
-			{ID: "F1", Position: Position{File: file1}},
-			{ID: "F2", Position: Position{File: file2}},
+			{ID: "F1", Position: Position{File: FilePath(file1)}},
+			{ID: "F2", Position: Position{File: FilePath(file2)}},
 		}
 
-		result := Filter(findings, ByFile(target))
+		result := Filter(findings, ByFile(FilePath(target)))
 		for _, f := range result {
-			g.Expect(f.Position.File).To(Equal(target))
+			g.Expect(f.Position.File).To(Equal(FilePath(target)))
 		}
 	})
 }
@@ -129,9 +129,9 @@ func FuzzGroupByFile(f *testing.F) {
 	f.Fuzz(func(t *testing.T, file1, file2, file3 string) {
 		g := NewWithT(t)
 		findings := []Finding{
-			{ID: "F1", Position: Position{File: file1}},
-			{ID: "F2", Position: Position{File: file2}},
-			{ID: "F3", Position: Position{File: file3}},
+			{ID: "F1", Position: Position{File: FilePath(file1)}},
+			{ID: "F2", Position: Position{File: FilePath(file2)}},
+			{ID: "F3", Position: Position{File: FilePath(file3)}},
 		}
 
 		groups := GroupByFile(findings)
@@ -157,11 +157,11 @@ func FuzzMerge_DedupByID(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id1, id2, id3 string) {
 		g := NewWithT(t)
 		r1 := NewReport(ToolInfo{Name: "tool1"})
-		r1.AddFinding(Finding{ID: id1, Severity: SeverityWarning})
-		r1.AddFinding(Finding{ID: id2, Severity: SeverityError})
+		r1.AddFinding(Finding{ID: ID(id1), Severity: SeverityWarning})
+		r1.AddFinding(Finding{ID: ID(id2), Severity: SeverityError})
 
 		r2 := NewReport(ToolInfo{Name: "tool2"})
-		r2.AddFinding(Finding{ID: id3, Severity: SeverityInfo})
+		r2.AddFinding(Finding{ID: ID(id3), Severity: SeverityInfo})
 
 		merged := Combine(
 			[]*Report{r1, r2},
@@ -171,18 +171,18 @@ func FuzzMerge_DedupByID(f *testing.F) {
 
 		seen := make(map[string]int)
 
-		for _, f := range merged.Findings {
+		for _, f := range merged.findings {
 			if f.ID == "" {
 				continue
 			}
 
-			seen[f.ID]++
-			g.Expect(seen[f.ID]).To(BeNumerically("<=", 1))
+			seen[string(f.ID)]++
+			g.Expect(seen[string(f.ID)]).To(BeNumerically("<=", 1))
 		}
 
 		// Without dedup: total should be sum
 		noDedup := Combine([]*Report{r1, r2}, WithDeduplication(false))
-		g.Expect(noDedup.Findings).To(HaveLen(3))
+		g.Expect(noDedup.findings).To(HaveLen(3))
 	})
 }
 
@@ -197,13 +197,13 @@ func FuzzMerge_Idempotent(f *testing.F) {
 		}
 
 		r := NewReport(ToolInfo{Name: "tool"})
-		r.AddFinding(Finding{ID: id1})
-		r.AddFinding(Finding{ID: id2})
+		r.AddFinding(Finding{ID: ID(id1)})
+		r.AddFinding(Finding{ID: ID(id2)})
 
 		merged1 := Combine([]*Report{r})
 		merged2 := Combine([]*Report{merged1})
 
-		g.Expect(merged2.Findings).To(HaveLen(len(merged1.Findings)))
+		g.Expect(merged2.findings).To(HaveLen(len(merged1.findings)))
 	})
 }
 
@@ -214,8 +214,8 @@ func FuzzCorrelate(f *testing.F) {
 	f.Fuzz(func(t *testing.T, tool1, tool2 string, line1, line2 int, file string) {
 		g := NewWithT(t)
 		findings := []Finding{
-			{ID: "F1", ToolName: tool1, Position: Position{File: file, Line: line1}},
-			{ID: "F2", ToolName: tool2, Position: Position{File: file, Line: line2}},
+			{ID: "F1", ToolName: ToolName(tool1), Position: Position{File: FilePath(file), Line: line1}},
+			{ID: "F2", ToolName: ToolName(tool2), Position: Position{File: FilePath(file), Line: line2}},
 		}
 
 		correlations := Correlate(findings)
@@ -243,21 +243,28 @@ func FuzzMergeByPosition(f *testing.F) {
 		r1 := NewReport(ToolInfo{Name: "t1"})
 		r1.AddFinding(Finding{
 			ID:       "A",
-			Position: Position{File: file1, Line: line1, Column: col1},
+			Position: Position{File: FilePath(file1), Line: line1, Column: col1},
 		})
 
 		r2 := NewReport(ToolInfo{Name: "t2"})
 		r2.AddFinding(Finding{
 			ID:       "B",
-			Position: Position{File: file2, Line: line2, Column: col2},
+			Position: Position{File: FilePath(file2), Line: line2, Column: col2},
 		})
 
 		merged := Combine([]*Report{r1, r2}, WithDeduplicateBy(DeduplicateByPosition))
 		key1 := fmt.Sprintf("%s:%d:%d", file1, line1, col1)
 		key2 := fmt.Sprintf("%s:%d:%d", file2, line2, col2)
 
-		if key1 == key2 {
-			g.Expect(merged.Findings).To(HaveLen(1))
+		// DeduplicateByPosition intentionally skips findings whose Position.File
+		// is empty (see dedupKey in merge.go): a position without a file is not a
+		// meaningful dedup key. So two findings merge only when they share a key
+		// AND that key is backed by a non-empty file. When they do not merge,
+		// both are retained (IDs "A"/"B" differ, so no other strategy applies).
+		if key1 == key2 && file1 != "" && file2 != "" {
+			g.Expect(merged.findings).To(HaveLen(1))
+		} else {
+			g.Expect(merged.findings).To(HaveLen(2))
 		}
 	})
 }
@@ -269,9 +276,9 @@ func FuzzDedupKey(f *testing.F) {
 	f.Fuzz(func(t *testing.T, id, file string, line, col int, rule string) {
 		g := NewWithT(t)
 		f := Finding{
-			ID:       id,
-			Rule:     rule,
-			Position: Position{File: file, Line: line, Column: col},
+			ID:       ID(id),
+			Rule:     RuleName(rule),
+			Position: Position{File: FilePath(file), Line: line, Column: col},
 		}
 
 		k1, ok1 := dedupKey(f, MergeOptions{DeduplicateBy: DeduplicateByID}) //nolint:varnamelen
@@ -300,6 +307,44 @@ func FuzzDedupKey(f *testing.F) {
 			g.Expect(k1).To(BeEmpty())
 			g.Expect(k2).To(BeEmpty())
 			g.Expect(k3).To(BeEmpty())
+		}
+	})
+}
+
+// FuzzTextEditValidate exercises TextEdit.Validate against arbitrary
+// coordinate combinations. Invariants: never panics, deterministic verdict,
+// and no "valid" verdict for an edit with inverted byte offsets.
+func FuzzTextEditValidate(f *testing.F) {
+	f.Add(0, 0, 0, -1, 0, 0, "", "x")       // insertion at byte 0
+	f.Add(0, 1, 1, 5, 1, 6, "f.go", "new")  // line/col span
+	f.Add(3, 0, 0, 9, 0, 0, "f.go", "")     // byte-span deletion
+	f.Add(9, 0, 0, 3, 0, 0, "f.go", "x")    // inverted byte span
+	f.Add(-1, 0, 0, -1, 0, 0, "", "x")      // no location at all
+	f.Add(-2, 0, 0, -1, 0, 0, "f.go", "x")  // invalid negative offset
+	f.Add(2, 0, 0, -1, 0, 0, "f.go", "y")   // start offset set, end unset
+	f.Add(0, 1, 1, 0, 1, 1, "a.go", "b.go") // cross-file span (seed below)
+
+	f.Fuzz(func(t *testing.T, so, sl, sc, eo, el, ec int, startFile, text string) {
+		edit := TextEdit{
+			Start:   Position{File: FilePath(startFile), Offset: so, Line: sl, Column: sc},
+			End:     Position{Offset: eo, Line: el, Column: ec},
+			NewText: text,
+		}
+
+		err1 := edit.Validate()
+
+		err2 := edit.Validate()
+
+		if (err1 == nil) != (err2 == nil) {
+			t.Fatalf("Validate is non-deterministic for %+v", edit)
+		}
+
+		_, _, _ = edit.IsInsertion(), edit.IsDeletion(), edit.EffectiveFile("fallback.go")
+
+		if err1 == nil &&
+			edit.Start.Offset >= 0 && edit.End.Offset >= 0 &&
+			edit.End.Offset < edit.Start.Offset {
+			t.Fatalf("Validate accepted inverted byte offsets: %+v", edit)
 		}
 	})
 }

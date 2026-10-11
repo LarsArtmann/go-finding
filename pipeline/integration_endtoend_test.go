@@ -2,7 +2,7 @@ package pipeline
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"strings"
 	"testing"
@@ -16,28 +16,17 @@ import (
 // end-to-end through the Pipeline. This is the "ConfigFile feature actually
 // works" proof that was missing.
 func TestIntegration_ConfigFileToPipelineRun(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	// 1. Register detectors in a registry.
 	registry := finding.NewDetectorRegistry()
-	registry.MustRegister("alpha", func() finding.Detector {
-		return newMockDetector("alpha", "alpha-tool", finding.Finding{
-			ID:       "alpha-1",
-			Rule:     "unused-var",
-			ToolName: "alpha-tool",
-			Message:  "unused variable x",
-			Severity: finding.SeverityWarning,
-		})
+	registerFindingDetector(registry, "alpha", "alpha-tool", finding.Finding{
+		ID: "alpha-1", Rule: "unused-var", ToolName: "alpha-tool",
+		Message: "unused variable x", Severity: finding.SeverityWarning,
 	})
-	registry.MustRegister("beta", func() finding.Detector {
-		return newMockDetector("beta", "beta-tool", finding.Finding{
-			ID:       "beta-1",
-			Rule:     "ineffassign",
-			ToolName: "beta-tool",
-			Message:  "ineffectual assignment",
-			Severity: finding.SeverityError,
-		})
+	registerFindingDetector(registry, "beta", "beta-tool", finding.Finding{
+		ID: "beta-1", Rule: "ineffassign", ToolName: "beta-tool",
+		Message: "ineffectual assignment", Severity: finding.SeverityError,
 	})
 
 	// 2. Parse config file (keep the ConfigFile to resolve detectors).
@@ -76,8 +65,7 @@ func TestIntegration_ConfigFileToPipelineRun(t *testing.T) {
 // TestIntegration_ConfigFileUnknownDetector verifies that an unknown detector
 // name in the config produces a clear error wrapping errResolveDetector.
 func TestIntegration_ConfigFileUnknownDetector(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	registry := finding.NewDetectorRegistry()
 
@@ -93,27 +81,16 @@ func TestIntegration_ConfigFileUnknownDetector(t *testing.T) {
 // DetectorRegistry populated with constructors can drive a full Pipeline run
 // via BuildAll. This was tested in isolation only.
 func TestIntegration_DetectorRegistryBuildAllToPipelineRun(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	registry := finding.NewDetectorRegistry()
-	registry.MustRegister("govet", func() finding.Detector {
-		return newMockDetector("govet", "vet", finding.Finding{
-			ID:       "vet-1",
-			Rule:     "printf",
-			ToolName: "vet",
-			Message:  "invalid format string",
-			Severity: finding.SeverityError,
-		})
+	registerFindingDetector(registry, "govet", "vet", finding.Finding{
+		ID: "vet-1", Rule: "printf", ToolName: "vet",
+		Message: "invalid format string", Severity: finding.SeverityError,
 	})
-	registry.MustRegister("staticcheck", func() finding.Detector {
-		return newMockDetector("staticcheck", "sc", finding.Finding{
-			ID:       "sc-1",
-			Rule:     "SA1000",
-			ToolName: "sc",
-			Message:  "invalid regular expression",
-			Severity: finding.SeverityWarning,
-		})
+	registerFindingDetector(registry, "staticcheck", "sc", finding.Finding{
+		ID: "sc-1", Rule: "SA1000", ToolName: "sc",
+		Message: "invalid regular expression", Severity: finding.SeverityWarning,
 	})
 
 	// BuildAll returns detectors in sorted name order.
@@ -138,8 +115,7 @@ func TestIntegration_DetectorRegistryBuildAllToPipelineRun(t *testing.T) {
 // TestIntegration_DetectorRegistryPartialBuild verifies selective Build of a
 // subset of registered detectors.
 func TestIntegration_DetectorRegistryPartialBuild(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	registry := finding.NewDetectorRegistry()
 	registry.MustRegister("a", func() finding.Detector { return newMockDetector("a", "ta") })
@@ -188,8 +164,7 @@ func TestIntegration_TypeAliasesCompileMatch(t *testing.T) {
 // TestIntegration_ConfigFromReader verifies the streaming reader path produces
 // the same Config as the byte-slice path.
 func TestIntegration_ConfigFromReader(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	raw := `{"maxIterations": 7, "timeout": "30s", "parallelDetectors": true}`
 

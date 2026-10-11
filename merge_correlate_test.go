@@ -9,16 +9,18 @@ import (
 
 func makeRangeFinding(id, tool, rule, file string, startLine, endLine int) Finding {
 	return Finding{
-		ID: id, ToolName: tool, Rule: rule,
+		ID: ID(id), ToolName: ToolName(tool), Rule: RuleName(rule),
 		Severity: SeverityError, Message: "test",
-		Position: Position{File: file, Line: startLine},
-		Range:    &Range{Start: Position{File: file, Line: startLine}, End: Position{File: file, Line: endLine}},
+		Position: Position{File: FilePath(file), Line: startLine},
+		Range: &Range{
+			Start: Position{File: FilePath(file), Line: startLine},
+			End:   Position{File: FilePath(file), Line: endLine},
+		},
 	}
 }
 
 func TestCorrelate(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []Finding{
 		makeFinding("1", "govet", "nilcheck", "a.go", 10),
@@ -37,7 +39,7 @@ func TestCorrelate(t *testing.T) {
 	g.Expect(c.Score).To(BeNumerically("~", wantConf, 0.0001))
 
 	hasID := func(id string) bool {
-		return slices.Contains(c.FindingIDs, id)
+		return slices.Contains(c.FindingIDs, ID(id))
 	}
 
 	g.Expect(hasID("1")).To(BeTrue())
@@ -45,8 +47,7 @@ func TestCorrelate(t *testing.T) {
 }
 
 func TestCorrelate_OverlappingRanges(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []Finding{
 		makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
@@ -61,8 +62,7 @@ func TestCorrelate_OverlappingRanges(t *testing.T) {
 }
 
 func TestCorrelate_PointWithinRange(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []Finding{
 		makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
@@ -75,35 +75,41 @@ func TestCorrelate_PointWithinRange(t *testing.T) {
 	g.Expect(correlations[0].Reason).To(Equal("point within range"))
 }
 
-func TestCorrelate_NonOverlappingRanges(t *testing.T) {
-	g := NewWithT(t)
+func TestCorrelate_NoCorrelations(t *testing.T) {
 	t.Parallel()
 
-	findings := []Finding{
-		makeRangeFinding("1", "govet", "r1", "a.go", 10, 15),
-		makeRangeFinding("2", "staticcheck", "r2", "a.go", 20, 25),
+	tests := []struct {
+		name     string
+		findings []Finding
+	}{
+		{
+			name: "NonOverlappingRanges",
+			findings: []Finding{
+				makeRangeFinding("1", "govet", "r1", "a.go", 10, 15),
+				makeRangeFinding("2", "staticcheck", "r2", "a.go", 20, 25),
+			},
+		},
+		{
+			name: "SameToolFiltered",
+			findings: []Finding{
+				makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
+				makeRangeFinding("2", "govet", "r2", "a.go", 15, 25),
+			},
+		},
 	}
 
-	correlations := Correlate(findings)
-	g.Expect(correlations).To(BeEmpty())
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
 
-func TestCorrelate_SameToolFiltered(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
-
-	findings := []Finding{
-		makeRangeFinding("1", "govet", "r1", "a.go", 10, 20),
-		makeRangeFinding("2", "govet", "r2", "a.go", 15, 25),
+			correlations := Correlate(tt.findings)
+			g.Expect(correlations).To(BeEmpty())
+		})
 	}
-
-	correlations := Correlate(findings)
-	g.Expect(correlations).To(BeEmpty())
 }
 
 func TestCorrelate_TooFewFindings(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []Finding{
 		{ID: "1", ToolName: "govet", Position: Position{File: "a.go", Line: 10}},
@@ -128,8 +134,7 @@ func TestCloneFindings_EmptySlice(t *testing.T) {
 }
 
 func TestCloneFindings_DeepCopy(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	original := []Finding{
 		{
@@ -180,10 +185,27 @@ func TestMerge_DeduplicateByID_EmptyIDs(t *testing.T) {
 		WithDeduplicateBy(DeduplicateByID),
 	)
 
-	if len(merged.Findings) != 2 {
+	if len(merged.findings) != 2 {
 		t.Errorf(
 			"got %d findings, want 2 (empty-ID findings should NOT collide)",
-			len(merged.Findings),
+			len(merged.findings),
 		)
 	}
+}
+
+// TestCorrelate_ZeroLineFindings verifies that findings with Line == 0 (no line
+// info) are NOT correlated by proximity. Regression for correlate.go:175 —
+// before the fix, zero-line findings correlated at confidence 1.0 because the
+// line-diff was 0.
+func TestCorrelate_ZeroLineFindings(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	// Two findings from different tools, both with Line == 0.
+	findings := []Finding{
+		makeFinding("1", "govet", "rule-a", "a.go", 0),
+		makeFinding("2", "staticcheck", "rule-b", "a.go", 0),
+	}
+
+	correlations := Correlate(findings)
+	g.Expect(correlations).To(BeEmpty(), "findings without line info must not correlate")
 }

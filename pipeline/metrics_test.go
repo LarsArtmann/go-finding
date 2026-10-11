@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -32,8 +33,7 @@ func runPipelineWithMetrics(t *testing.T, config Config, det Detector) *Pipeline
 }
 
 func TestNewMetrics(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	g.Expect(m).NotTo(BeNil())
 
@@ -44,8 +44,7 @@ func TestNewMetrics(t *testing.T) {
 }
 
 func TestMetrics_RecordStage(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.RecordStage(StageDetect, 100*time.Millisecond)
 	m.RecordStage(StageDetect, 50*time.Millisecond)
@@ -56,8 +55,7 @@ func TestMetrics_RecordStage(t *testing.T) {
 }
 
 func TestMetrics_RecordDetector(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.RecordDetector("staticcheck", 50*time.Millisecond, 10)
 	m.RecordDetector("staticcheck", 30*time.Millisecond, 5)
@@ -84,14 +82,12 @@ func TestMetrics_RecordFixes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			m := NewMetrics()
 
 			for _, count := range tt.fixes {
 				if count == 1 {
-					m.RecordFix()
+					m.RecordFixes(1)
 				} else {
 					m.RecordFixes(count)
 				}
@@ -103,8 +99,7 @@ func TestMetrics_RecordFixes(t *testing.T) {
 }
 
 func TestMetrics_StageTiming(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	done := m.StageTiming(StageDetect)
 
@@ -115,8 +110,7 @@ func TestMetrics_StageTiming(t *testing.T) {
 }
 
 func TestMetrics_TotalDuration(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.SetStart(time.Now())
 
@@ -129,12 +123,11 @@ func TestMetrics_TotalDuration(t *testing.T) {
 }
 
 func TestMetrics_Snapshot(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.RecordStage("detect", 100*time.Millisecond)
 	m.RecordDetector("govet", 50*time.Millisecond, 5)
-	m.RecordFix()
+	m.RecordFixes(1)
 	m.SetStart(time.Now().Add(-1 * time.Second))
 	m.SetEnd(time.Now())
 
@@ -154,8 +147,7 @@ func TestMetrics_Snapshot(t *testing.T) {
 }
 
 func TestPipeline_MetricsIntegration(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	count := 0
 	detector := DetectorFunc(func(_ context.Context) ([]finding.Finding, error) {
@@ -181,8 +173,7 @@ func TestPipeline_MetricsIntegration(t *testing.T) {
 }
 
 func TestMetrics_TotalDuration_NoEnd(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 	m := NewMetrics()
 	m.SetStart(time.Now())
 
@@ -191,8 +182,7 @@ func TestMetrics_TotalDuration_NoEnd(t *testing.T) {
 }
 
 func TestMetricsSnapshot_StageDuration(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	snap := MetricsSnapshot{
 		StageDurations: map[Stage]time.Duration{
@@ -205,8 +195,7 @@ func TestMetricsSnapshot_StageDuration(t *testing.T) {
 }
 
 func TestPipeline_NilMetricsNoPanic(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	detector := &mockDetector{
 		name:     "test",
@@ -218,8 +207,7 @@ func TestPipeline_NilMetricsNoPanic(t *testing.T) {
 }
 
 func TestMetrics_TotalDuration_NegativeGuard(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	m := NewMetrics()
 	m.SetStart(time.Now())
@@ -230,8 +218,7 @@ func TestMetrics_TotalDuration_NegativeGuard(t *testing.T) {
 }
 
 func TestMetrics_Snapshot_NegativeGuard(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	m := NewMetrics()
 	m.SetStart(time.Now())
@@ -239,4 +226,54 @@ func TestMetrics_Snapshot_NegativeGuard(t *testing.T) {
 
 	snap := m.Snapshot()
 	g.Expect(snap.TotalDuration).To(Equal(time.Duration(0)))
+}
+
+func TestMetrics_RecordOutcome(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	m := NewMetrics()
+	m.RecordOutcome(FixOutcomeApplied)
+	m.RecordOutcome(FixOutcomeApplied)
+	m.RecordOutcome(FixOutcomeRefused)
+
+	g.Expect(m.OutcomeCounts()).To(Equal(map[FixOutcomeStatus]int{
+		FixOutcomeApplied: 2,
+		FixOutcomeRefused: 1,
+	}))
+
+	snap := m.Snapshot()
+	g.Expect(snap.OutcomeCounts).To(Equal(map[FixOutcomeStatus]int{
+		FixOutcomeApplied: 2,
+		FixOutcomeRefused: 1,
+	}))
+
+	// Snapshot must be a copy: mutating it must not affect the metrics.
+	snap.OutcomeCounts[FixOutcomeApplied] = 99
+	g.Expect(m.OutcomeCounts()[FixOutcomeApplied]).To(Equal(2))
+}
+
+func TestMetrics_RecordOutcome_Concurrent(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	m := NewMetrics()
+
+	statuses := []FixOutcomeStatus{FixOutcomeApplied, FixOutcomeRefused, FixOutcomeFailed}
+
+	var wg sync.WaitGroup
+
+	for _, status := range statuses {
+		wg.Go(func() {
+			for range 50 {
+				m.RecordOutcome(status)
+			}
+		})
+	}
+
+	wg.Wait()
+
+	g.Expect(m.OutcomeCounts()).To(Equal(map[FixOutcomeStatus]int{
+		FixOutcomeApplied: 50,
+		FixOutcomeRefused: 50,
+		FixOutcomeFailed:  50,
+	}))
 }

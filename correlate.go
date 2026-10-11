@@ -1,6 +1,7 @@
 package finding
 
 import (
+	"cmp"
 	"fmt"
 	"maps"
 	"slices"
@@ -35,14 +36,14 @@ func (s CorrelationScore) String() string {
 
 // Correlation represents a relationship between two or more findings.
 type Correlation struct {
-	FindingIDs []string         `json:"findingIds"`
+	FindingIDs []ID             `json:"findingIds"`
 	Reason     string           `json:"reason"` // Why they're correlated
 	Score      CorrelationScore `json:"score"`  // 0.0-1.0 correlation strength
 }
 
 // Correlate finds potentially related findings across tools.
 // Uses two strategies depending on the data:
-//   - For findings with Range: uses IntervalIndex for O(log n + k) overlap queries.
+//   - For findings with Range: uses IntervalIndex for O(n + k) overlap queries.
 //   - For point-only findings: uses line-proximity heuristics (same file + nearby lines).
 //
 // This can be used standalone or enabled in Pipeline via Config.CorrelateFindings.
@@ -50,7 +51,7 @@ type Correlation struct {
 //
 // # Complexity
 //
-// For range-based findings: O(n log n) to build the index, O(log n + k) per query.
+// For range-based findings: O(n log n) to build the index, O(n + k) per query.
 // For point-based findings: O(n) per file with sorted early-break.
 //
 // The maxCorrelations constant (10,000) caps total output across both strategies.
@@ -152,7 +153,7 @@ func correlateByOverlap(findings []Finding, correlations []Correlation) []Correl
 
 			if score > minCorrelationScore {
 				correlations = append(correlations, Correlation{
-					FindingIDs: []string{f1.ID, f2.ID},
+					FindingIDs: []ID{f1.ID, f2.ID},
 					Reason:     reasonOverlappingRanges,
 					Score:      CorrelationScore(score),
 				})
@@ -169,12 +170,20 @@ func correlateByOverlap(findings []Finding, correlations []Correlation) []Correl
 // correlateByProximity uses line-proximity heuristics for point-based findings.
 func correlateByProximity(findings []Finding, correlations []Correlation) []Correlation {
 	slices.SortFunc(findings, func(a, b Finding) int {
-		return a.Position.Line - b.Position.Line
+		return cmp.Compare(a.Position.Line, b.Position.Line)
 	})
 
 	for i, f1 := range findings {
+		if f1.Position.Line == 0 {
+			continue
+		}
+
 		for _, f2 := range findings[i+1:] {
 			if f1.ToolName == f2.ToolName {
+				continue
+			}
+
+			if f2.Position.Line == 0 {
 				continue
 			}
 
@@ -186,7 +195,7 @@ func correlateByProximity(findings []Finding, correlations []Correlation) []Corr
 			confidence := 1.0 - (float64(lineDiff) / correlationScoreScale)
 			if confidence > minCorrelationScore {
 				correlations = append(correlations, Correlation{
-					FindingIDs: []string{f1.ID, f2.ID},
+					FindingIDs: []ID{f1.ID, f2.ID},
 					Reason:     "same file, nearby lines",
 					Score:      CorrelationScore(confidence),
 				})
@@ -227,7 +236,7 @@ func correlateRangesAndPoints(
 
 			if score > minCorrelationScore {
 				correlations = append(correlations, Correlation{
-					FindingIDs: []string{pointFinding.ID, rangeFinding.ID},
+					FindingIDs: []ID{pointFinding.ID, rangeFinding.ID},
 					Reason:     "point within range",
 					Score:      CorrelationScore(score),
 				})

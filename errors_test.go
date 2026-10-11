@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	errorfamily "github.com/larsartmann/go-error-family"
 	. "github.com/onsi/gomega"
 )
 
@@ -30,8 +31,7 @@ func TestFindingErrorError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			got := tt.err.Error()
 			g.Expect(got).To(Equal(tt.expected))
@@ -40,8 +40,7 @@ func TestFindingErrorError(t *testing.T) {
 }
 
 func TestFindingErrorUnwrap(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	cause := errors.New("underlying error")
 	err := NewValidationError("validation failed", cause)
@@ -50,8 +49,7 @@ func TestFindingErrorUnwrap(t *testing.T) {
 }
 
 func TestFindingErrorWithFinding(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	f := Finding{
 		ID:       "test:1",
@@ -70,8 +68,7 @@ func TestFindingErrorWithFinding(t *testing.T) {
 }
 
 func TestFindingErrorWithPosition(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	pos := Position{File: "test.go", Line: 20, Column: 10}
 	err := NewIOError("read failed", nil).WithPosition(pos)
@@ -114,8 +111,7 @@ func TestIsFindingError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			got := IsFindingError(tt.err)
 			g.Expect(got).To(Equal(tt.expected))
@@ -123,7 +119,7 @@ func TestIsFindingError(t *testing.T) {
 	}
 }
 
-func TestGetCategory(t *testing.T) {
+func TestCategoryOf(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -155,18 +151,16 @@ func TestGetCategory(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
-			got := GetCategory(tt.err)
+			got := CategoryOf(tt.err)
 			g.Expect(got).To(Equal(tt.expected))
 		})
 	}
 }
 
 func TestIsCategory(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	err := NewValidationError("test", nil)
 
@@ -192,8 +186,7 @@ func TestErrorCategoryConstructors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(tt.err.Category).To(Equal(tt.expected))
 		})
@@ -220,8 +213,7 @@ func TestSentinelErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			g.Expect(errors.Is(tt.err, tt.target)).To(Equal(tt.want))
 		})
@@ -229,18 +221,63 @@ func TestSentinelErrors(t *testing.T) {
 }
 
 func TestSentinelErrors_Wrapped(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	err := fmt.Errorf("wrapped: %w", NewValidationError("test", nil))
 	g.Expect(errors.Is(err, ErrValidation)).To(BeTrue())
 }
 
 func TestFindingError_Is_UnknownCategory(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	err := &FindingError{Category: ErrorCategory("custom"), Message: "custom error"}
 	g.Expect(errors.Is(err, ErrValidation)).To(BeFalse())
 	g.Expect(errors.Is(err, ErrInternal)).To(BeFalse())
+}
+
+func TestFindingError_ErrorCode(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		err  *FindingError
+		want string
+	}{
+		{"validation", NewValidationError("bad", nil), "finding.validation"},
+		{"io", NewIOError("read failed", nil), "finding.io"},
+		{"parse", NewParseError("unparseable", nil), "finding.parse"},
+		{"conflict", NewConflictError("overlapping", nil), "finding.conflict"},
+		{"internal", NewInternalError("boom", nil), "finding.internal"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
+			g.Expect(tt.err.ErrorCode()).To(Equal(tt.want))
+		})
+	}
+}
+
+func TestFindingError_ErrorFamily(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		err  *FindingError
+		want errorfamily.Family
+	}{
+		{"validation is rejection", NewValidationError("bad", nil), errorfamily.Rejection},
+		{"parse is rejection", NewParseError("unparseable", nil), errorfamily.Rejection},
+		{"conflict is conflict", NewConflictError("overlapping", nil), errorfamily.Conflict},
+		{"io is transient", NewIOError("read failed", nil), errorfamily.Transient},
+		{"internal is infrastructure", NewInternalError("boom", nil), errorfamily.Infrastructure},
+		{"unknown defaults to transient", &FindingError{Category: ErrorCategory("custom")}, errorfamily.Transient},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
+			g.Expect(tt.err.ErrorFamily()).To(Equal(tt.want))
+		})
+	}
 }

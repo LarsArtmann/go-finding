@@ -34,12 +34,12 @@ func Verify(
 			return nil, err
 		}
 
-		findings, err := d.Detect(ctx)
+		result, err := finding.RunDetect(ctx, d)
 		if err != nil {
 			return nil, fmt.Errorf("verify: detector %s: %w", d.Name(), err)
 		}
 
-		for _, f := range findings {
+		for _, f := range result.Findings {
 			if !f.IsSuppressed() {
 				postFindings = append(postFindings, f)
 			}

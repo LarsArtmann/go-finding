@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"maps"
 	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 
@@ -15,9 +14,36 @@ import (
 
 // FixApplier handles application of fixes to source files.
 type FixApplier struct {
-	rootDir string
-	backup  *FileBackup
-	engine  *FixEngine
+	rootDir        string
+	backup         *FileBackup
+	engine         *FixEngine
+	rollbackPolicy RollbackPolicy
+}
+
+// RollbackPolicy controls which files are restored when a file fails during a
+// multi-file fix run. See docs/DOMAIN_LANGUAGE.md ("Fix Application") for the
+// shared vocabulary. The default is documented on RollbackPolicyFailingFile.
+type RollbackPolicy int
+
+const (
+	// RollbackPolicyFailingFile keeps every file applied so far and restores
+	// only the failing file. Per-finding soft failures (provider resolve
+	// errors, refused findings) never abort the run: they are reported in
+	// ApplyReport.Outcomes while all successfully applied fixes stay on disk.
+	// This is the default and matches consumers that batch independent fixes
+	// (e.g., a lint --fix run across many files).
+	RollbackPolicyFailingFile RollbackPolicy = iota
+
+	// RollbackPolicyAllFiles provides all-or-nothing semantics: any file
+	// failure restores the failing file and every file modified earlier in
+	// the run, preserving the pre-call state of all inputs.
+	RollbackPolicyAllFiles
+)
+
+// SetRollbackPolicy sets the failure behavior for multi-file runs.
+// The default is RollbackPolicyFailingFile.
+func (a *FixApplier) SetRollbackPolicy(p RollbackPolicy) {
+	a.rollbackPolicy = p
 }
 
 // NewFixApplier creates a new FixApplier with default text-based providers.
@@ -67,45 +93,98 @@ func (a *FixApplier) Close() error {
 
 // ioErrorAt creates an IO error with position info.
 func ioErrorAt(msg string, err error, path string) error {
-	pos := finding.Position{File: path} //nolint:exhaustruct
+	pos := finding.Position{File: finding.FilePath(path), Offset: -1}
 
 	return finding.NewIOError(msg, err).WithPosition(pos)
 }
 
 // Apply applies the given fixes to files and returns the number of successful fixes.
-// If an error occurs, all previously modified files are rolled back to their backups.
+// On a file failure, rollback scope is governed by the applier's RollbackPolicy:
+// by default only the failing file is restored and earlier files keep their fixes.
 func (a *FixApplier) Apply(ctx context.Context, fixes []finding.Finding) (int, error) {
-	applied, _, _, err := a.ApplyWithShiftMap(ctx, fixes)
+	report, err := a.ApplyWithReport(ctx, fixes)
 
-	return applied, err
+	return report.Applied, err
 }
 
 // ApplyWithDetails applies the given fixes and returns the count of successful fixes,
 // the list of successfully applied findings, and any error.
-// If an error occurs, all previously modified files are rolled back to their backups.
+// On a file failure, rollback scope is governed by the applier's RollbackPolicy:
+// by default only the failing file is restored and earlier files keep their fixes.
 func (a *FixApplier) ApplyWithDetails(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) (int, []finding.Finding, error) {
-	applied, _, _, err := a.ApplyWithShiftMap(ctx, fixes)
+	report, err := a.ApplyWithReport(ctx, fixes)
 
-	return applied, fixes, err
+	return report.Applied, report.AppliedFixes, err
 }
 
 // ApplyWithShiftMap applies fixes and returns the count, applied findings,
 // a per-file line shift map, and any error. The shift map can be used to
 // update remaining findings' line numbers after fixes are applied.
+// On a file failure, rollback scope is governed by the applier's RollbackPolicy:
+// by default only the failing file is restored and earlier files keep their fixes.
 func (a *FixApplier) ApplyWithShiftMap(
 	ctx context.Context,
 	fixes []finding.Finding,
 ) (int, []finding.Finding, map[string]*LineShiftMap, error) {
-	byFile := a.groupFindingsBySafePath(fixes)
+	report, err := a.ApplyWithReport(ctx, fixes)
 
-	var (
-		applied   []finding.Finding
-		modified  []string
-		shiftMaps = make(map[string]*LineShiftMap)
-	)
+	return report.Applied, report.AppliedFixes, report.ShiftMaps, err
+}
+
+// ApplyReport is the detailed result of one FixApplier run.
+type ApplyReport struct {
+	// Applied is the number of findings successfully written to disk.
+	Applied int
+	// AppliedFixes lists the applied findings in application order.
+	AppliedFixes []finding.Finding
+	// ShiftMaps maps relative file paths to line shift maps for files with
+	// applied edits.
+	ShiftMaps map[string]*LineShiftMap
+	// Outcomes holds one entry per fixable input finding, in processing
+	// order, distinguishing applied / no-change / refused / conflict /
+	// invalid / failed findings. Failed outcomes carry the provider error.
+	Outcomes []FixOutcome
+	// RolledBack lists the file paths restored from backup due to a failure.
+	RolledBack []string
+}
+
+// FailedOutcomes returns the outcomes with Status FixOutcomeFailed.
+func (r ApplyReport) FailedOutcomes() []FixOutcome {
+	failed := make([]FixOutcome, 0, len(r.Outcomes))
+	for _, o := range r.Outcomes {
+		if o.Status == FixOutcomeFailed {
+			failed = append(failed, o)
+		}
+	}
+
+	return failed
+}
+
+// newApplyReport groups fixes by safe path (dropping unsafe-path findings as
+// failed outcomes) and initializes the report every apply path shares.
+func (a *FixApplier) newApplyReport(
+	fixes []finding.Finding,
+) (map[string][]finding.Finding, ApplyReport) {
+	byFile, droppedOutcomes := a.groupFindingsBySafePath(fixes)
+
+	return byFile, ApplyReport{ShiftMaps: make(map[string]*LineShiftMap), Outcomes: droppedOutcomes}
+}
+
+// ApplyWithReport applies fixes and returns a detailed report (applied fixes,
+// per-finding outcomes, line shift maps, rolled-back files) plus any error.
+// Files are processed in sorted path order. Soft per-finding failures are
+// collected in the report and returned as a joined error at the end; a hard
+// file failure stops the run and restores files according to RollbackPolicy.
+func (a *FixApplier) ApplyWithReport(
+	ctx context.Context,
+	fixes []finding.Finding,
+) (ApplyReport, error) {
+	byFile, report := a.newApplyReport(fixes)
+
+	var modified []string
 
 	paths := slices.Sorted(maps.Keys(byFile))
 
@@ -114,75 +193,218 @@ func (a *FixApplier) ApplyWithShiftMap(
 
 		err := CheckCanceledWithMsg(ctx, "fix application cancelled")
 		if err != nil {
-			_ = a.backup.RollbackAll(modified)
+			if a.rollbackPolicy == RollbackPolicyAllFiles {
+				if rollbackErr := a.backup.RollbackAll(modified); rollbackErr != nil {
+					return report, fmt.Errorf(
+						"%w (rollback also failed: %w)%s",
+						err,
+						rollbackErr,
+						rolledBackNote(report.RolledBack),
+					)
+				}
 
-			return len(applied), applied, shiftMaps, err
+				report.RolledBack = append(report.RolledBack, modified...)
+
+				return report, fmt.Errorf("%w%s", err, rolledBackNote(report.RolledBack))
+			}
+
+			return report, err
 		}
 
 		if a.backup.IsEnabled() {
 			err := a.backup.Backup(path)
 			if err != nil {
-				_ = a.backup.RollbackAll(modified)
+				backupErr := finding.NewIOError("backup "+path, err)
 
-				return len(applied), applied, shiftMaps, finding.NewIOError("backup "+path, err)
+				if a.rollbackPolicy == RollbackPolicyAllFiles {
+					if rollbackErr := a.backup.RollbackAll(modified); rollbackErr != nil {
+						return report, fmt.Errorf(
+							"%w (rollback also failed: %w)%s",
+							backupErr,
+							rollbackErr,
+							rolledBackNote(report.RolledBack),
+						)
+					}
+
+					report.RolledBack = append(report.RolledBack, modified...)
+
+					return report, fmt.Errorf("%w%s", backupErr, rolledBackNote(report.RolledBack))
+				}
+
+				return report, backupErr
 			}
 		}
 
-		fileApplied, shiftMap, err := a.applyToFile(path, fileFixes)
+		fileApplied, shiftMap, outcomes, err := a.applyToFile(path, fileFixes)
+		report.Outcomes = append(report.Outcomes, outcomes...)
 		if err != nil {
-			if a.backup.IsEnabled() {
-				_ = a.backup.Restore(path)
-			}
-
-			_ = a.backup.RollbackAll(modified)
-
-			return len(applied), applied, shiftMaps, finding.NewConflictError("apply to "+path, err)
+			return report, a.handleFileError(&report, path, modified, err)
 		}
 
 		modified = append(modified, path)
-		applied = append(applied, fileApplied...)
+		report.AppliedFixes = append(report.AppliedFixes, fileApplied...)
+		report.Applied = len(report.AppliedFixes)
 
-		a.recordShiftMap(shiftMap, fileFixes, shiftMaps)
+		a.recordShiftMap(shiftMap, fileFixes, report.ShiftMaps)
 	}
 
-	return len(applied), applied, shiftMaps, nil
+	report.Applied = len(report.AppliedFixes)
+
+	var softErrs []error
+	for _, o := range report.Outcomes {
+		if o.Err != nil {
+			softErrs = append(softErrs, o.Err)
+		}
+	}
+
+	return report, errors.Join(softErrs...)
+}
+
+// ApplyDryRun resolves every fix against the current file contents and
+// reports the outcomes and counts a real run would produce — without
+// writing, backing up, or rolling back anything (D4). Files are read only.
+//
+// The report semantics match ApplyWithReport with two differences:
+// Applied/AppliedFixes are the WOULD-apply counts against the current
+// content, and RolledBack is always empty because nothing is modified.
+// Soft per-finding failures (provider errors, unsafe paths) surface as
+// failed outcomes and in the joined error return, exactly like a real run.
+// Because nothing is written, edits in one file cannot conflict with edits
+// resolved later in the same dry run beyond per-file overlap rules.
+func (a *FixApplier) ApplyDryRun(
+	ctx context.Context,
+	fixes []finding.Finding,
+) (ApplyReport, error) {
+	byFile, report := a.newApplyReport(fixes)
+
+	for _, path := range slices.Sorted(maps.Keys(byFile)) {
+		if err := CheckCanceledWithMsg(ctx, "dry run cancelled"); err != nil {
+			return report, err
+		}
+
+		result, original, _, err := a.loadAndResolve(path, byFile[path])
+		if err != nil {
+			return report, err
+		}
+
+		report.Outcomes = append(report.Outcomes, result.Outcomes...)
+
+		if len(result.AppliedEdits) == 0 {
+			continue
+		}
+
+		report.AppliedFixes = append(report.AppliedFixes, result.Applied...)
+
+		a.recordShiftMap(NewLineShiftMap(original, result.AppliedEdits), byFile[path], report.ShiftMaps)
+	}
+
+	report.Applied = len(report.AppliedFixes)
+
+	var softErrs []error
+	for _, o := range report.Outcomes {
+		if o.Err != nil {
+			softErrs = append(softErrs, o.Err)
+		}
+	}
+
+	return report, errors.Join(softErrs...)
+}
+
+// handleFileError restores the failing file, applies the rollback policy to
+// files modified earlier in the run, and wraps the failure.
+func (a *FixApplier) handleFileError(report *ApplyReport, path string, modified []string, err error) error {
+	var rollbackErrs []error
+
+	if a.backup.IsEnabled() {
+		if restoreErr := a.backup.Restore(path); restoreErr != nil {
+			rollbackErrs = append(rollbackErrs, fmt.Errorf("restore %s: %w", path, restoreErr))
+		} else {
+			report.RolledBack = append(report.RolledBack, path)
+		}
+	}
+
+	if a.rollbackPolicy == RollbackPolicyAllFiles {
+		if rollbackErr := a.backup.RollbackAll(modified); rollbackErr != nil {
+			rollbackErrs = append(rollbackErrs, fmt.Errorf("rollback: %w", rollbackErr))
+		} else {
+			report.RolledBack = append(report.RolledBack, modified...)
+		}
+	}
+
+	applyErr := finding.NewConflictError("apply to "+path, err)
+	if len(rollbackErrs) > 0 {
+		return fmt.Errorf(
+			"%w (rollback also failed: %w)%s",
+			applyErr,
+			errors.Join(rollbackErrs...),
+			rolledBackNote(report.RolledBack),
+		)
+	}
+
+	return fmt.Errorf("%w%s", applyErr, rolledBackNote(report.RolledBack))
+}
+
+// rolledBackNote renders the rolled-back file list for error messages so
+// callers can see exactly which paths were restored after a failure.
+func rolledBackNote(paths []string) string {
+	if len(paths) == 0 {
+		return ""
+	}
+
+	return " (rolled back: " + strings.Join(paths, ", ") + ")"
 }
 
 // groupFindingsBySafePath groups findings by their resolved filesystem path,
 // skipping findings without a file or with unsafe path traversal.
-func (a *FixApplier) groupFindingsBySafePath(fixes []finding.Finding) map[string][]finding.Finding {
+// Uses the resolved path (not the raw join) as the map key, preventing
+// TOCTOU races where a symlink is swapped between validation and file I/O.
+//
+// The root directory is resolved once and each unique file path is resolved
+// at most once, avoiding redundant EvalSymlinks syscalls when many findings
+// target the same file.
+//
+// Findings whose path fails the containment check (traversal outside the
+// root) are dropped from the map and returned as failed outcomes carrying a
+// validation error, so callers report them instead of silently losing them.
+func (a *FixApplier) groupFindingsBySafePath(
+	fixes []finding.Finding,
+) (map[string][]finding.Finding, []FixOutcome) {
 	byFile := make(map[string][]finding.Finding)
+	resolvedRoot := ResolveRoot(a.rootDir)
+	pathCache := make(map[string]string, len(fixes))
+
+	var dropped []FixOutcome
 
 	for _, f := range fixes {
 		if f.Position.File == "" {
 			continue
 		}
 
-		path := filepath.Join(a.rootDir, f.Position.File)
+		rawPath := string(f.Position.File)
 
-		cleanPath := filepath.Clean(path)
-
-		cleanRoot := filepath.Clean(a.rootDir)
-
-		resolved, err := filepath.EvalSymlinks(cleanPath)
-		if err == nil {
-			cleanPath = resolved
+		safePath, cached := pathCache[rawPath]
+		if !cached {
+			safePath, _ = ResolveSafePathFrom(resolvedRoot, rawPath)
+			pathCache[rawPath] = safePath
 		}
 
-		resolvedRoot, err := filepath.EvalSymlinks(cleanRoot)
-		if err == nil {
-			cleanRoot = resolvedRoot
-		}
+		if safePath == "" {
+			dropped = append(dropped, FixOutcome{
+				Finding: f,
+				Status:  FixOutcomeFailed,
+				Err: finding.NewValidationError(
+					fmt.Sprintf("unsafe path %q for finding %s: resolves outside root %s", rawPath, f.ID, a.rootDir),
+					nil,
+				).WithPosition(f.Position),
+			})
 
-		if cleanPath != cleanRoot &&
-			!strings.HasPrefix(cleanPath, cleanRoot+string(os.PathSeparator)) {
 			continue
 		}
 
-		byFile[path] = append(byFile[path], f)
+		byFile[safePath] = append(byFile[safePath], f)
 	}
 
-	return byFile
+	return byFile, dropped
 }
 
 // recordShiftMap stores the shift map indexed by relative file path.
@@ -199,7 +421,7 @@ func (*FixApplier) recordShiftMap(
 
 	for _, f := range fileFixes {
 		if f.Position.File != "" {
-			relPath = f.Position.File
+			relPath = string(f.Position.File)
 
 			break
 		}
@@ -211,37 +433,53 @@ func (*FixApplier) recordShiftMap(
 }
 
 // applyToFile applies fixes to a single file using byte-level edits.
-// Returns the applied findings and an optional line shift map.
-func (a *FixApplier) applyToFile(path string, fixes []finding.Finding) ([]finding.Finding, *LineShiftMap, error) {
-	info, err := os.Stat(path)
+// Returns the applied findings, an optional line shift map, and per-finding
+// outcomes. Soft failures (provider resolve errors, refused findings) are
+// reflected in the outcomes and never fail the file: applied edits stay
+// written. The returned error is reserved for hard I/O failures (stat, read,
+// write).
+func (a *FixApplier) applyToFile(
+	path string,
+	fixes []finding.Finding,
+) ([]finding.Finding, *LineShiftMap, []FixOutcome, error) {
+	result, original, info, err := a.loadAndResolve(path, fixes)
 	if err != nil {
-		return nil, nil, ioErrorAt("stat file", err, path)
+		return nil, nil, nil, err
 	}
 
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, nil, ioErrorAt("read file", err, path)
+	if len(result.AppliedEdits) == 0 {
+		return nil, nil, result.Outcomes, nil
 	}
 
-	appliedFixes, appliedEdits, _, newContent, resolveErrors := a.engine.ApplyWithConflicts(content, fixes)
-
-	if len(appliedFixes) == 0 {
-		return nil, nil, errors.Join(resolveErrors...)
-	}
-
-	var shiftMap *LineShiftMap
-	if len(appliedEdits) > 0 {
-		shiftMap = NewLineShiftMap(content, appliedEdits)
-	}
+	shiftMap := NewLineShiftMap(original, result.AppliedEdits)
 
 	err = os.WriteFile( //nolint:gosec // intentional file write
 		path,
-		newContent,
+		result.Content,
 		info.Mode(),
 	)
 	if err != nil {
-		return nil, nil, ioErrorAt("write file", err, path)
+		return nil, nil, nil, ioErrorAt("write file", err, path)
 	}
 
-	return appliedFixes, shiftMap, errors.Join(resolveErrors...)
+	return result.Applied, shiftMap, result.Outcomes, nil
+}
+
+// loadAndResolve stats and reads the file, then resolves the fixes against
+// its content without modifying anything. Shared by the applying and the
+// dry-run paths.
+func (a *FixApplier) loadAndResolve(path string, fixes []finding.Finding) (FixApplyResult, []byte, os.FileInfo, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return FixApplyResult{}, nil, nil, ioErrorAt("stat file", err, path)
+	}
+
+	content, err := os.ReadFile(path) //nolint:gosec // test-controlled path
+	if err != nil {
+		return FixApplyResult{}, nil, nil, ioErrorAt("read file", err, path)
+	}
+
+	result := a.engine.ApplyWithOutcomes(content, fixes)
+
+	return result, content, info, nil
 }

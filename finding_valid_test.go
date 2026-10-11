@@ -29,8 +29,7 @@ func TestIsAutoFixable_ValidateAgreement(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
 			f.FixStrategy = tc.fixStrategy
@@ -110,7 +109,57 @@ func TestFinding_Validate(t *testing.T) {
 				f.FixStrategy = FixStrategyDirect
 			},
 			wantErr:     true,
-			errContains: "BeforeCode or AfterCode",
+			errContains: "BeforeCode, AfterCode, or Edits",
+		},
+		{
+			name: "direct fix with only an edit list is valid",
+			mutate: func(f *Finding) {
+				f.FixStrategy = FixStrategyDirect
+				f.Edits = []TextEdit{{
+					Start:   Pos("a.go", 1, 1),
+					End:     Pos("a.go", 1, 5),
+					NewText: "fixed",
+				}}
+			},
+			wantErr: false,
+		},
+		{
+			name: "inverted edit span is invalid",
+			mutate: func(f *Finding) {
+				f.Edits = []TextEdit{{
+					Start:   Pos("a.go", 2, 1),
+					End:     Pos("a.go", 1, 1),
+					NewText: "x",
+				}}
+			},
+			wantErr:     true,
+			errContains: "Edits[0]",
+		},
+		{
+			name: "edit without any location is invalid",
+			mutate: func(f *Finding) {
+				f.Edits = []TextEdit{{Start: Position{Offset: -1}, NewText: "x"}}
+			},
+			wantErr:     true,
+			errContains: "Edits[0]",
+		},
+		{
+			// Contract pin: when both representations are set, BeforeCode/
+			// AfterCode are a human display summary (possibly truncated), so
+			// validators intentionally do NOT require them to agree with
+			// Edits[0] (ADR #19, "Edits-display consistency is loose").
+			name: "mismatched display pair with edit list stays valid",
+			mutate: func(f *Finding) {
+				f.FixStrategy = FixStrategyDirect
+				f.BeforeCode = "before"
+				f.AfterCode = "after"
+				f.Edits = []TextEdit{{
+					Start:   Pos("a.go", 1, 1),
+					End:     Pos("a.go", 1, 5),
+					NewText: "completely different replacement",
+				}}
+			},
+			wantErr: false,
 		},
 		{
 			name:    "nil range is valid",
@@ -136,8 +185,7 @@ func TestFinding_Validate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			f := NewFinding("r", "t", "m", SeverityError, Pos("a.go", 1, 1), 0.5)
 			tt.mutate(&f)
@@ -218,7 +266,7 @@ func TestFinding_IsValid(t *testing.T) {
 				ToolName: "t",
 				Message:  "m",
 				Severity: SeverityError,
-				Position: Position{File: "a.go", Line: -1},
+				Position: Position{},
 			},
 			false,
 		},
@@ -237,4 +285,55 @@ func TestFinding_IsValid(t *testing.T) {
 	}
 
 	runIsValidTests(t, tests)
+}
+
+func TestValidateAll(t *testing.T) {
+	t.Parallel()
+
+	validFinding := NewFinding("rule1", "tool", "msg", SeverityError, Pos("a.go", 1, 1), 0.5)
+	invalidFinding := Finding{}
+
+	tests := []struct {
+		name     string
+		findings []Finding
+		wantNil  bool
+		wantKeys []int
+	}{
+		{"nil slice", nil, true, nil},
+		{"empty slice", []Finding{}, true, nil},
+		{"all valid", []Finding{validFinding, validFinding}, true, nil},
+		{"all invalid", []Finding{invalidFinding, invalidFinding}, false, []int{0, 1}},
+		{"mixed valid and invalid", []Finding{validFinding, invalidFinding}, false, []int{1}},
+		{"single invalid at index 0", []Finding{invalidFinding}, false, []int{0}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewParallelGomega(t)
+
+			result := ValidateAll(tt.findings)
+			if tt.wantNil {
+				g.Expect(result).To(BeNil())
+			} else {
+				g.Expect(result).NotTo(BeNil())
+				g.Expect(result).To(HaveLen(len(tt.wantKeys)))
+
+				for _, key := range tt.wantKeys {
+					g.Expect(result).To(HaveKey(key))
+					g.Expect(result[key]).To(HaveOccurred())
+				}
+			}
+		})
+	}
+}
+
+func TestValidate_InvalidTag(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	f := MakeFindingWithID("tag-test", SeverityWarning)
+	f.Tags = []Tag{TagCorrectness, ""}
+
+	err := f.Validate()
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err.Error()).To(ContainSubstring("Tags[1]"))
 }

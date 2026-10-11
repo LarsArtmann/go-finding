@@ -10,6 +10,7 @@ import (
 
 func TestSplitCommaList(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name  string
 		input string
@@ -26,6 +27,7 @@ func TestSplitCommaList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			got := splitCommaList(tt.input)
 			g := NewWithT(t)
 			g.Expect(got).To(Equal(tt.want))
@@ -34,17 +36,20 @@ func TestSplitCommaList(t *testing.T) {
 }
 
 func TestMustKeys(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	keys := mustKeys(filterTypeRegistry)
 	g.Expect(keys).NotTo(BeEmpty())
 	g.Expect(keys).To(ContainElement("all"))
 	g.Expect(keys).To(ContainElement("sqlc"))
+	g.Expect(keys).To(ContainElement("mockery"))
+	g.Expect(keys).To(ContainElement("go-swagger"))
+	g.Expect(keys).To(HaveLen(19))
 }
 
 func TestParseFilterGenTypes(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name       string
 		cliTypes   string
@@ -56,6 +61,7 @@ func TestParseFilterGenTypes(t *testing.T) {
 		{"cli all", "all", "", false, 1},
 		{"single type", "sqlc", "", false, 1},
 		{"multiple types", "sqlc,mockgen", "", false, 2},
+		{"v3.2.0 new types", "counterfeiter,easyjson,ent,go-swagger,gqlgen,mockery,msgp", "", false, 7},
 		{"config fallback", "", "protobuf", false, 1},
 		{"unknown type", "nonexistent", "", true, 0},
 		{"with spaces", " sqlc , mockgen ", "", false, 2},
@@ -64,12 +70,12 @@ func TestParseFilterGenTypes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 
 			opts, err := parseFilterGenTypes(tt.cliTypes, tt.configType)
 			if tt.wantErr {
 				g.Expect(err).To(HaveOccurred())
+
 				return
 			}
 
@@ -80,8 +86,7 @@ func TestParseFilterGenTypes(t *testing.T) {
 }
 
 func TestAddGeneratedFilter_Integration(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	pipelineCfg := testPipelineConfig()
 	cfg := pipelineConfigFile{}
@@ -97,8 +102,7 @@ func TestAddGeneratedFilter_Integration(t *testing.T) {
 }
 
 func TestAddGeneratedFilter_WithExcludeInclude(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	pipelineCfg := testPipelineConfig()
 	cfg := pipelineConfigFile{
@@ -112,7 +116,7 @@ func TestAddGeneratedFilter_WithExcludeInclude(t *testing.T) {
 }
 
 func testPipelineConfig() pipeline.Config {
-	return pipeline.Config{ //nolint:exhaustruct
+	return pipeline.Config{
 		MaxIterations:     1,
 		ParallelDetectors: false,
 		Timeout:           30 * time.Second,

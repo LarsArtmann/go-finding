@@ -30,7 +30,8 @@ import (
 	"unsafe"
 
 	"github.com/larsartmann/go-finding"
-	"github.com/larsartmann/go-finding/internal/gotoken"
+	"github.com/larsartmann/go-finding/gotoken"
+	"github.com/larsartmann/go-finding/lockutil"
 	"github.com/larsartmann/go-finding/pipeline"
 )
 
@@ -58,12 +59,15 @@ func (*Provider) Name() string { return "go-ast" }
 
 // CanHandle reports whether the finding targets a .go file and has a code change.
 func (*Provider) CanHandle(f finding.Finding) bool {
-	return f.HasCodeChange() && strings.HasSuffix(f.Position.File, ".go")
+	return f.HasCodeChange() && strings.HasSuffix(string(f.Position.File), ".go")
 }
+
+// Compile-time interface assertion — catches missing methods at build time.
+var _ pipeline.FixProvider = (*Provider)(nil)
 
 // Edits converts a finding into byte-level edits using the parsed Go AST.
 func (p *Provider) Edits(content []byte, f finding.Finding) ([]pipeline.FixEdit, error) {
-	fset, file, ok := p.parse(content, f.Position.File)
+	fset, file, ok := p.parse(content, string(f.Position.File))
 	if !ok {
 		return nil, nil
 	}
@@ -94,36 +98,43 @@ func (p *Provider) parse(content []byte, filename string) (*token.FileSet, *ast.
 	// findings in the same file within a single ApplyWithConflicts call.
 	contentPtr := unsafe.Pointer(unsafe.SliceData(content)) //nolint:gosec // cache key, never dereferenced
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	if p.cache.contentP == contentPtr && p.cache.file != nil {
-		return p.cache.fset, p.cache.file, true
+	type result struct {
+		fset *token.FileSet
+		file *ast.File
+		ok   bool
 	}
 
-	// Content changed (different pointer): verify with hash.
-	h := fnv.New64a()
-	_, _ = h.Write(content)
-	hash := h.Sum64()
+	res := lockutil.Locked(&p.mu, func() result {
+		if p.cache.contentP == contentPtr && p.cache.file != nil {
+			return result{fset: p.cache.fset, file: p.cache.file, ok: true}
+		}
 
-	if p.cache.hash == hash && p.cache.file != nil {
-		p.cache.contentP = contentPtr
+		// Content changed (different pointer): verify with hash.
+		h := fnv.New64a()
+		_, _ = h.Write(content) //nolint:erraudit // hash.Write is documented to never return an error
+		hash := h.Sum64()
 
-		return p.cache.fset, p.cache.file, true
-	}
+		if p.cache.hash == hash && p.cache.file != nil {
+			p.cache.contentP = contentPtr
 
-	fset := token.NewFileSet()
+			return result{fset: p.cache.fset, file: p.cache.file, ok: true}
+		}
 
-	file, err := parser.ParseFile(fset, filename, content, parser.ParseComments)
-	if err != nil || file == nil {
-		p.cache = parseCache{} //nolint:exhaustruct // intentionally zero: reset to avoid re-attempting known-bad content
+		fset := token.NewFileSet()
 
-		return nil, nil, false
-	}
+		file, err := parser.ParseFile(fset, filename, content, parser.ParseComments)
+		if err != nil || file == nil {
+			p.cache = parseCache{} //nolint:exhaustruct_v5 // intentionally zero: reset to avoid re-attempting known-bad content
 
-	p.cache = parseCache{hash: hash, fset: fset, file: file, contentP: contentPtr}
+			return result{fset: nil, file: nil, ok: false}
+		}
 
-	return fset, file, true
+		p.cache = parseCache{hash: hash, fset: fset, file: file, contentP: contentPtr}
+
+		return result{fset: fset, file: file, ok: true}
+	})
+
+	return res.fset, res.file, res.ok
 }
 
 // offsetRangeEdits handles findings with explicit byte-offset ranges.
@@ -250,5 +261,4 @@ func newEdit(offset, length int, f finding.Finding) pipeline.FixEdit {
 	}
 }
 
-// Compile-time interface check.
 var _ pipeline.FixProvider = (*Provider)(nil)

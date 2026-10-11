@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
+	"slices"
 	"sync"
 	"time"
 
@@ -13,27 +13,46 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// detect runs all detectors and collects findings.
+// detect runs all detectors and collects findings plus coverage evidence.
 func (p *Pipeline) detect(ctx context.Context) (*PartialResult, error) {
 	if p.config.GracefulDegradation {
 		return p.DetectPartial(ctx)
 	}
 
-	var findings []finding.Finding
-
-	var err error
+	var (
+		combined finding.DetectResult
+		err      error
+	)
 
 	if p.config.ParallelDetectors {
-		findings, err = p.detectParallel(ctx)
+		combined, err = p.detectParallel(ctx)
 	} else {
-		findings, err = p.detectSequential(ctx)
+		combined, err = p.detectSequential(ctx)
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &PartialResult{Findings: findings}, nil //nolint:exhaustruct
+	return &PartialResult{
+		Findings:       combined.Findings,
+		FilesScanned:   combined.FilesScanned,
+		SkippedModules: combined.SkippedModules,
+	}, nil
+}
+
+// mergeDetectResult accumulates src into dst: findings append, FilesScanned
+// sums (detectors scan disjoint trees by convention), SkippedModules unions
+// in first-seen order.
+func mergeDetectResult(dst *finding.DetectResult, src finding.DetectResult) {
+	dst.Findings = append(dst.Findings, src.Findings...)
+	dst.FilesScanned += src.FilesScanned
+
+	for _, module := range src.SkippedModules {
+		if !slices.Contains(dst.SkippedModules, module) {
+			dst.SkippedModules = append(dst.SkippedModules, module)
+		}
+	}
 }
 
 // filterActive returns non-suppressed findings, calling OnFinding for each.
@@ -61,10 +80,12 @@ func (p *Pipeline) recordDetectorMetrics(
 	}
 }
 
-// runOneDetector executes a single detector, recording metrics and filtering
-// suppressed findings. It returns the active findings or an error.
+// runOneDetector executes a single detector through the richest contract it
+// implements (DetectorV2 preferred via finding.RunDetect), recording metrics
+// and filtering suppressed findings. It returns the run result with active
+// findings plus coverage evidence, or an error.
 // If a per-detector timeout is configured, it takes precedence over the global timeout.
-func (p *Pipeline) runOneDetector(ctx context.Context, d Detector) ([]finding.Finding, error) {
+func (p *Pipeline) runOneDetector(ctx context.Context, d Detector) (finding.DetectResult, error) {
 	if timeout, ok := p.config.DetectorTimeouts[d.Name()]; ok && timeout > 0 {
 		var cancel context.CancelFunc
 
@@ -74,61 +95,63 @@ func (p *Pipeline) runOneDetector(ctx context.Context, d Detector) ([]finding.Fi
 
 	start := time.Now()
 
-	findings, err := d.Detect(ctx)
+	result, err := finding.RunDetect(ctx, d)
 	elapsed := time.Since(start)
 
 	if err != nil {
 		p.recordDetectorMetrics(d.Name(), elapsed, nil)
 
-		return nil, fmt.Errorf("detector %s: %w", d.Name(), err)
+		return finding.DetectResult{}, fmt.Errorf("detector %s: %w", d.Name(), err)
 	}
 
-	p.recordDetectorMetrics(d.Name(), elapsed, findings)
+	p.recordDetectorMetrics(d.Name(), elapsed, result.Findings)
 
-	return p.filterActive(findings), nil
+	result.Findings = p.filterActive(result.Findings)
+
+	return result, nil
 }
 
 // detectSequential runs detectors one at a time.
-func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, error) {
-	var allFindings []finding.Finding
+func (p *Pipeline) detectSequential(ctx context.Context) (finding.DetectResult, error) {
+	var combined finding.DetectResult
 
 	for _, d := range p.detectors {
 		err := CheckCanceled(ctx)
 		if err != nil {
-			return nil, err
+			return finding.DetectResult{}, err
 		}
 
-		findings, err := p.runOneDetector(ctx, d)
+		result, err := p.runOneDetector(ctx, d)
 		if err != nil {
-			return nil, err
+			return finding.DetectResult{}, err
 		}
 
-		allFindings = append(allFindings, findings...)
+		mergeDetectResult(&combined, result)
 	}
 
-	return allFindings, nil
+	return combined, nil
 }
 
 // detectParallel runs detectors concurrently using errgroup.
-func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error) {
+func (p *Pipeline) detectParallel(ctx context.Context) (finding.DetectResult, error) {
 	var (
-		mu          sync.Mutex
-		allFindings []finding.Finding
+		mu       sync.Mutex
+		combined finding.DetectResult
 	)
 
 	g, ctx := errgroup.WithContext(ctx)
 
 	for _, d := range p.detectors {
 		g.Go(func() error {
-			findings, err := p.runOneDetector(ctx, d)
+			result, err := p.runOneDetector(ctx, d)
 			if err != nil {
 				return err
 			}
 
 			mu.Lock()
+			defer mu.Unlock()
 
-			allFindings = append(allFindings, findings...)
-			mu.Unlock()
+			mergeDetectResult(&combined, result)
 
 			return nil
 		})
@@ -136,10 +159,10 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 
 	err := g.Wait()
 	if err != nil {
-		return nil, fmt.Errorf("parallel detection: %w", err)
+		return finding.DetectResult{}, fmt.Errorf("parallel detection: %w", err)
 	}
 
-	return allFindings, nil
+	return combined, nil
 }
 
 // triage categorizes findings using the configured TriageFunc (or default).
@@ -177,10 +200,12 @@ func DefaultTriageFunc(findings []finding.Finding) *TriageResult {
 }
 
 // applyTriage handles conflict detection and fix application for one iteration.
+// Provider errors from byte-level conflict detection are recorded in result.PartialErrors.
 func (p *Pipeline) applyTriage(
 	ctx context.Context,
 	fixes []finding.Finding,
 	iter *Iteration,
+	result *PipelineResult,
 ) error {
 	if len(fixes) == 0 {
 		return nil
@@ -205,6 +230,14 @@ func (p *Pipeline) applyTriage(
 			ctx, "provider errors during conflict detection",
 			slog.Int("errors", len(providerErrors)),
 		)
+
+		if result.PartialErrors == nil {
+			result.PartialErrors = make(map[string]error)
+		}
+
+		for i, providerErr := range providerErrors {
+			result.PartialErrors[fmt.Sprintf("provider-%d", i)] = providerErr
+		}
 	}
 
 	if iter.Conflicts > 0 {
@@ -226,7 +259,7 @@ func (p *Pipeline) applyTriage(
 		return nil
 	}
 
-	applied, shiftMaps, err := p.applyDirectFixes(ctx, safeFixes)
+	applied, shiftMaps, err := p.applyDirectFixes(ctx, safeFixes, result)
 	if err != nil {
 		return fmt.Errorf("apply fixes: %w", err)
 	}
@@ -234,15 +267,7 @@ func (p *Pipeline) applyTriage(
 	iter.Applied = len(applied)
 
 	// Shift remaining findings' positions and ranges based on applied edits.
-	for file, shiftMap := range shiftMaps {
-		for i := range iter.findings {
-			f := &iter.findings[i]
-			if f.Position.File == file {
-				f.Position = shiftMap.ShiftedPosition(f.Position)
-				f.Range = shiftMap.ShiftedRange(f.Range)
-			}
-		}
-	}
+	shiftFindingsPositions(shiftMaps, iter)
 
 	if p.config.OnFix != nil {
 		appliedSet := make(map[string]struct{}, len(applied))
@@ -263,22 +288,84 @@ func (p *Pipeline) applyTriage(
 	return nil
 }
 
+// shiftFindingsPositions updates line/column information for all findings
+// in an iteration after fixes have been applied, using per-file line shift maps.
+func shiftFindingsPositions(
+	shiftMaps map[string]*LineShiftMap,
+	iter *Iteration,
+) {
+	for file, shiftMap := range shiftMaps {
+		shiftFindingSlice(iter.findings, file, shiftMap)
+		shiftFindingSlice(iter.suggest, file, shiftMap)
+	}
+}
+
+func shiftFindingSlice(findings []finding.Finding, file string, shiftMap *LineShiftMap) {
+	for i := range findings {
+		f := &findings[i]
+		if f.Position.File == finding.FilePath(file) {
+			f.Position = shiftMap.ShiftedPosition(f.Position)
+			f.Range = shiftMap.ShiftedRange(f.Range)
+		}
+	}
+}
+
 // applyDirectFixes applies deterministic fixes to files and returns the applied findings
 // and a per-file line shift map for updating remaining findings' line numbers.
+// Per-finding outcomes are recorded in the pipeline metrics and in
+// result.Outcomes (first outcome per finding identity).
 func (p *Pipeline) applyDirectFixes(
 	ctx context.Context,
 	fixes []finding.Finding,
+	result *PipelineResult,
 ) ([]finding.Finding, map[string]*LineShiftMap, error) {
-	applied, appliedFixes, shiftMaps, err := p.applier.ApplyWithShiftMap(ctx, fixes)
+	report, err := p.applier.ApplyWithReport(ctx, fixes)
+
+	if p.metrics != nil {
+		for _, o := range report.Outcomes {
+			p.metrics.RecordOutcome(o.Status)
+		}
+	}
+
+	if p.config.OnFixOutcome != nil {
+		for _, o := range report.Outcomes {
+			p.config.OnFixOutcome(o.Finding, o.Status, o.Err)
+		}
+	}
+
+	p.recordFixOutcomes(result, report.Outcomes)
+
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if p.metrics != nil && applied > 0 {
-		p.metrics.RecordFixes(uint(applied))
+	if p.metrics != nil && report.Applied > 0 {
+		p.metrics.RecordFixes(uint(report.Applied))
 	}
 
-	return appliedFixes, shiftMaps, nil
+	return report.AppliedFixes, report.ShiftMaps, nil
+}
+
+// recordFixOutcomes appends outcomes to result.Outcomes, keeping only the
+// first outcome per finding identity (Finding.Key). When re-detection
+// re-fires a finding whose fix already applied, the repeat refuses on the
+// fixed content — the first outcome is the meaningful one, so repeats are
+// dropped. Unlike the OnFixOutcome callback, which fires for every outcome
+// as it happens, the result field is the deduplicated record.
+func (p *Pipeline) recordFixOutcomes(result *PipelineResult, outcomes []FixOutcome) {
+	for _, o := range outcomes {
+		key := o.Finding.Key()
+		if _, seen := p.outcomeKeys[key]; seen {
+			continue
+		}
+
+		if p.outcomeKeys == nil {
+			p.outcomeKeys = make(map[string]struct{}, len(outcomes))
+		}
+
+		p.outcomeKeys[key] = struct{}{}
+		result.Outcomes = append(result.Outcomes, o)
+	}
 }
 
 // byteConflictEngine returns a FixEngine with custom providers if configured,
@@ -293,15 +380,18 @@ func (p *Pipeline) byteConflictEngine() *FixEngine {
 
 // filterByFileEdits groups fixes by file, reads each file's content,
 // and uses byte-level FilterConflictingEdits for precise conflict detection.
+// All file paths are validated against rootDir to prevent path traversal.
 func (p *Pipeline) filterByFileEdits(
-	_ context.Context,
+	ctx context.Context,
 	fixes []finding.Finding,
 	engine *FixEngine,
 ) ([]finding.Finding, []error) {
-	byFile := make(map[string][]finding.Finding)
+	byFile := make(map[finding.FilePath][]finding.Finding, len(fixes))
 	for _, f := range fixes {
 		byFile[f.Position.File] = append(byFile[f.Position.File], f)
 	}
+
+	resolvedRoot := ResolveRoot(p.rootDir)
 
 	var (
 		result    []finding.Finding
@@ -309,10 +399,25 @@ func (p *Pipeline) filterByFileEdits(
 	)
 
 	for file, fileFixes := range byFile {
-		fullPath := filepath.Join(p.rootDir, file)
+		safePath, ok := ResolveSafePathFrom(resolvedRoot, string(file))
+		if !ok {
+			p.log(
+				ctx, "skipping unsafe file path for conflict detection",
+				slog.String("file", string(file)),
+				slog.Int("fixes", len(fileFixes)),
+			)
 
-		content, err := os.ReadFile(filepath.Clean(fullPath))
+			continue
+		}
+
+		content, err := os.ReadFile(safePath)
 		if err != nil {
+			p.log(
+				ctx, "could not read file for conflict detection; including all fixes",
+				slog.String("file", string(file)),
+				slog.String("error", err.Error()),
+				slog.Int("fixes", len(fileFixes)),
+			)
 			result = append(result, fileFixes...)
 
 			continue

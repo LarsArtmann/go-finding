@@ -89,21 +89,21 @@ func ByFixStrategy(fs FixStrategy) FilterFunc {
 }
 
 // ByTool returns a filter for the given tool name.
-func ByTool(tool string) FilterFunc {
+func ByTool(tool ToolName) FilterFunc {
 	return func(f Finding) bool {
 		return f.ToolName == tool
 	}
 }
 
 // ByRule returns a filter for the given rule.
-func ByRule(rule string) FilterFunc {
+func ByRule(rule RuleName) FilterFunc {
 	return func(f Finding) bool {
 		return f.Rule == rule
 	}
 }
 
 // ByFile returns a filter for findings in the given file.
-func ByFile(file string) FilterFunc {
+func ByFile(file FilePath) FilterFunc {
 	return func(f Finding) bool {
 		return f.Position.File == file
 	}
@@ -149,13 +149,13 @@ func AnyOf(predicates ...FilterFunc) FilterFunc {
 	}
 }
 
-// HasFix returns a filter for findings with fixes.
-func HasFix(f Finding) bool {
+// WithFix returns a filter for findings with fixes.
+func WithFix(f Finding) bool {
 	return f.HasFix()
 }
 
-// HasSuggestion returns a filter for findings with suggestions.
-func HasSuggestion(f Finding) bool {
+// WithSuggestion returns a filter for findings with suggestions.
+func WithSuggestion(f Finding) bool {
 	return f.HasSuggestion()
 }
 
@@ -172,10 +172,13 @@ func GroupBy(findings []Finding, keyFn func(Finding) string) map[string][]Findin
 }
 
 // GroupByFile groups findings by file path.
-func GroupByFile(findings []Finding) map[string][]Finding {
-	return GroupBy(findings, func(finding Finding) string {
-		return finding.Position.File
-	})
+func GroupByFile(findings []Finding) map[FilePath][]Finding {
+	groups := make(map[FilePath][]Finding, len(findings))
+	for _, f := range findings {
+		groups[f.Position.File] = append(groups[f.Position.File], f)
+	}
+
+	return groups
 }
 
 // GroupBySeverity groups findings by severity.

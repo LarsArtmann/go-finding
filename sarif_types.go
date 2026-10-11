@@ -1,5 +1,11 @@
 package finding
 
+import (
+	"encoding/json/v2"
+	"errors"
+	"fmt"
+)
+
 // SARIF types for Report generation.
 // These are simplified representations of SARIF 2.1.0.
 
@@ -9,6 +15,14 @@ const sarifConfidenceScale = 100.0
 const (
 	sarifVersion = "2.1.0"
 	sarifSchema  = "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
+)
+
+// SARIF suppression kind/status string constants (SARIF 2.1.0 §3.27.6-3.27.7).
+const (
+	sarifSuppressionKindSource     = "inSource"
+	sarifSuppressionKindExternal   = "inExternalConfiguration"
+	sarifSuppressionStatusAccepted = "accepted"
+	sarifSuppressionStatusReview   = "underReview"
 )
 
 const (
@@ -22,11 +36,20 @@ const (
 	sarifPropConfidence = "go-finding/confidence"
 	sarifPropSuggestion = "go-finding/suggestion"
 	sarifPropSnippet    = "go-finding/snippet"
+	sarifPropGroupID    = "go-finding/groupId"
 	sarifPropBeforeCode = "go-finding/beforeCode"
 	sarifPropAfterCode  = "go-finding/afterCode"
 	sarifPropEditPrefix = "go-finding/edit/"
 	sarifPropPrefix     = "go-finding/"
 	sarifPropMetaPrefix = "go-finding/meta/"
+
+	sarifPropSuppressionKind   = "go-finding/suppression-kind"
+	sarifPropSuppressionRule   = "go-finding/suppression-rule"
+	sarifPropSuppressionReason = "go-finding/suppression-reason"
+	sarifPropSuppressionExpiry = "go-finding/suppression-expiry"
+
+	sarifPropStartOffset = "go-finding/start-offset"
+	sarifPropEndOffset   = "go-finding/end-offset"
 )
 
 // sarifLog represents a SARIF log file containing run results.
@@ -54,15 +77,31 @@ type sarifDriver struct {
 }
 
 // sarifResult represents a single finding in SARIF format.
+//
+// Doctrine boundary: Properties uses map[string]any because the SARIF 2.1.0
+// specification requires propertyBag.properties to accept arbitrary JSON values.
+// This is the ONLY place in go-finding where map[string]any is used; the public
+// Finding.Metadata type is map[string]string by design (see finding.go).
+// The coercion between these two representations is centralized in
+// sarifProperties() (export) and applySarifProperties() (import).
 type sarifResult struct {
-	RuleID     string            `json:"ruleId"`
-	Level      string            `json:"level"`
-	Message    sarifMessage      `json:"message"`
-	Locations  []sarifLocation   `json:"locations"`
-	Fixes      []sarifFix        `json:"fixes,omitempty"`
-	Related    []sarifRelatedLoc `json:"relatedLocations,omitempty"`
-	Rank       float64           `json:"rank,omitempty"`
-	Properties map[string]any    `json:"properties,omitempty"`
+	RuleID       string             `json:"ruleId"`
+	Level        string             `json:"level"`
+	Message      sarifMessage       `json:"message"`
+	Locations    []sarifLocation    `json:"locations"`
+	Fixes        []sarifFix         `json:"fixes,omitempty"`
+	Related      []sarifRelatedLoc  `json:"relatedLocations,omitempty"`
+	Suppressions []sarifSuppression `json:"suppressions,omitempty"`
+	Rank         float64            `json:"rank,omitempty"`
+	Properties   map[string]any     `json:"properties,omitempty"`
+}
+
+// sarifSuppression represents a suppression entry on a SARIF result.
+// SARIF 2.1.0 §3.27.
+type sarifSuppression struct {
+	Kind          string `json:"kind"`                    // "inSource" or "inExternalConfiguration"
+	Status        string `json:"status,omitempty"`        // "accepted" or "underReview"
+	Justification string `json:"justification,omitempty"` // Why it's suppressed
 }
 
 // sarifMessage represents a message in SARIF format.
@@ -86,13 +125,52 @@ type sarifArtifactLocation struct {
 	URI string `json:"uri"`
 }
 
+// sarifArtifactContent represents the SARIF artifactContent object,
+// used for region.snippet per SARIF 2.1.0 §3.30.13.
+type sarifArtifactContent struct {
+	Text string `json:"text,omitempty"`
+}
+
+// UnmarshalJSON accepts both the spec-compliant object form ({"text":"..."})
+// and the common bare-string shorthand ("snippet"), ensuring backward
+// compatibility with SARIF producers that emit bare strings.
+func (s *sarifArtifactContent) UnmarshalJSON(data []byte) error {
+	// Try object form first (anonymous struct avoids infinite recursion).
+	var obj struct {
+		Text string `json:"text,omitempty"`
+	}
+
+	objErr := json.Unmarshal(data, &obj)
+	if objErr == nil {
+		s.Text = obj.Text
+
+		return nil
+	}
+
+	// Fall back to bare string.
+	strErr := json.Unmarshal(data, &s.Text)
+	if strErr != nil {
+		return fmt.Errorf("unmarshal snippet: %w", errors.Join(objErr, strErr))
+	}
+
+	return nil
+}
+
 // sarifRegion represents a code region in a text document.
+//
+// Snippet is a *sarifArtifactContent per SARIF 2.1.0 §3.30.13. The snippet
+// value is also carried in the go-finding/snippet property for lossless
+// round-trip. See ADR #9.
 type sarifRegion struct {
-	StartLine   int    `json:"startLine,omitempty"`
-	StartColumn int    `json:"startColumn,omitempty"`
-	EndLine     int    `json:"endLine,omitempty"`
-	EndColumn   int    `json:"endColumn,omitempty"`
-	Snippet     string `json:"snippet,omitempty"`
+	StartLine   int `json:"startLine,omitempty"`
+	StartColumn int `json:"startColumn,omitempty"`
+	EndLine     int `json:"endLine,omitempty"`
+	EndColumn   int `json:"endColumn,omitempty"`
+	// ByteOffset/ByteLength are pointers so byte offset 0 (start of file) is
+	// distinguishable from "unset" under omitempty.
+	ByteOffset *int                  `json:"byteOffset,omitempty"`
+	ByteLength *int                  `json:"byteLength,omitempty"`
+	Snippet    *sarifArtifactContent `json:"snippet,omitempty"`
 }
 
 // sarifFix represents a fix to be applied to the artifact.

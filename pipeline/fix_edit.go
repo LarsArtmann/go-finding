@@ -1,13 +1,24 @@
 package pipeline
 
 import (
-	"encoding/json"
+	"cmp"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/larsartmann/go-finding"
 )
+
+// sortEditsDescending sorts FixEdits in descending offset order, which is
+// required by applyEditsToContent so later (lower-offset) edits don't shift
+// the byte positions of earlier (higher-offset) ones.
+func sortEditsDescending(edits []FixEdit) {
+	slices.SortFunc(edits, func(a, b FixEdit) int {
+		return cmp.Compare(b.Offset, a.Offset)
+	})
+}
 
 // FixEdit represents a single byte-level edit operation. //nolint:recvcheck // value receivers for read-only, pointer for UnmarshalJSON
 // Edits are applied to file content at specific byte offsets,
@@ -78,32 +89,28 @@ func (e FixEdit) Validate() error {
 	return nil
 }
 
+// fixEditJSON is the JSON wire representation of FixEdit, used by
+// MarshalJSON/UnmarshalJSON to control field tags independently of the domain type.
+type fixEditJSON struct {
+	Offset      int    `json:"offset"`
+	Length      int    `json:"length"`
+	Replacement []byte `json:"replacement,omitempty"`
+}
+
 // MarshalJSON implements json.Marshaler for FixEdit.
 // Replacement is base64-encoded per JSON spec for []byte fields.
 // Source is omitted from JSON output (use property bag for SARIF round-tripping).
 func (e FixEdit) MarshalJSON() ([]byte, error) {
-	type jsonEdit struct {
-		Offset      int    `json:"offset"`
-		Length      int    `json:"length"`
-		Replacement []byte `json:"replacement,omitempty"`
-	}
-
-	return json.Marshal(jsonEdit{ //nolint:wrapcheck // standard JSON marshaling
+	return json.Marshal(fixEditJSON{ //nolint:wrapcheck // standard JSON marshaling
 		Offset:      e.Offset,
 		Length:      e.Length,
 		Replacement: e.Replacement,
-	})
+	}, json.Deterministic(true))
 }
 
 // UnmarshalJSON implements json.Unmarshaler for FixEdit.
 func (e *FixEdit) UnmarshalJSON(data []byte) error {
-	type jsonEdit struct {
-		Offset      int    `json:"offset"`
-		Length      int    `json:"length"`
-		Replacement []byte `json:"replacement,omitempty"`
-	}
-
-	var j jsonEdit
+	var j fixEditJSON
 
 	err := json.Unmarshal(data, &j)
 	if err != nil {
@@ -162,7 +169,7 @@ func FixEditFromSARIFProperties(props map[string]string) *FixEdit {
 		return nil
 	}
 
-	edit := FixEdit{ //nolint:exhaustruct // partial construction from SARIF props
+	edit := FixEdit{ //nolint:exhaustruct_v5 // partial construction from SARIF props
 		Offset: offset,
 		Length: length,
 	}

@@ -11,8 +11,7 @@ import (
 )
 
 func TestTriage(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	findings := []finding.Finding{
 		{ID: "1", FixStrategy: finding.FixStrategyDirect, BeforeCode: "old", AfterCode: "new"},
@@ -33,8 +32,7 @@ func TestTriage(t *testing.T) {
 }
 
 func TestApplyDirectFixes(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "fixme.go")
@@ -53,7 +51,7 @@ func TestApplyDirectFixes(t *testing.T) {
 
 	p.applier, _ = NewFixApplier(tempDir)
 
-	applied, _, err := p.applyDirectFixes(context.Background(), fixes)
+	applied, _, err := p.applyDirectFixes(context.Background(), fixes, &PipelineResult{})
 	if err != nil {
 		t.Fatalf("applyDirectFixes: %v", err)
 	}
@@ -72,8 +70,7 @@ func TestApplyDirectFixes(t *testing.T) {
 }
 
 func TestApplyDirectFixes_NoMetrics(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "fixme.go")
@@ -95,7 +92,7 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 		t.Fatalf("create fix applier: %v", err)
 	}
 
-	applied, _, err := p.applyDirectFixes(context.Background(), fixes)
+	applied, _, err := p.applyDirectFixes(context.Background(), fixes, &PipelineResult{})
 	if err != nil {
 		t.Fatalf("applyDirectFixes: %v", err)
 	}
@@ -104,8 +101,7 @@ func TestApplyDirectFixes_NoMetrics(t *testing.T) {
 }
 
 func TestDryRun(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 
@@ -156,8 +152,7 @@ func TestDryRun(t *testing.T) {
 }
 
 func TestApplyTriage_DirectFixesApplied(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "fixme.go")
@@ -198,8 +193,7 @@ func TestApplyTriage_DirectFixesApplied(t *testing.T) {
 }
 
 func TestApplyTriage_ConflictingFixes(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "fixme.go")
@@ -248,8 +242,7 @@ func TestApplyTriage_ConflictingFixes(t *testing.T) {
 }
 
 func TestApplyTriage_OnFixCallback(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "fixme.go")
@@ -285,13 +278,12 @@ func TestApplyTriage_OnFixCallback(t *testing.T) {
 }
 
 func TestApplyTriage_EmptyFixes(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	p := &Pipeline{config: DefaultConfig()}
 	iter := &Iteration{Number: 1}
 
-	err := p.applyTriage(context.Background(), nil, iter)
+	err := p.applyTriage(context.Background(), nil, iter, &PipelineResult{})
 	if err != nil {
 		t.Fatalf("applyTriage with nil fixes: %v", err)
 	}
@@ -302,8 +294,7 @@ func TestApplyTriage_EmptyFixes(t *testing.T) {
 }
 
 func TestApplyTriage_AllConflicting(t *testing.T) {
-	g := NewWithT(t)
-	t.Parallel()
+	g := NewParallelGomega(t)
 
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "fixme.go")
@@ -318,7 +309,7 @@ func TestApplyTriage_AllConflicting(t *testing.T) {
 
 	iter := &Iteration{Number: 1}
 
-	err := p.applyTriage(context.Background(), fixes, iter)
+	err := p.applyTriage(context.Background(), fixes, iter, &PipelineResult{})
 	if err != nil {
 		t.Fatalf("applyTriage: %v", err)
 	}

@@ -1,7 +1,7 @@
 package pipeline
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -27,8 +27,7 @@ func TestLineColToOffset(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			idx := buildLineOffsetIndex(content)
 
 			offset, err := indexLineColToOffset(idx, len(content), tt.line, tt.col)
@@ -43,8 +42,7 @@ func TestLineColToOffset(t *testing.T) {
 }
 
 func TestFindAllOccurrences(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	content := []byte("abcabc")
 	needle := []byte("abc")
@@ -54,8 +52,7 @@ func TestFindAllOccurrences(t *testing.T) {
 }
 
 func TestOffsetLineDistance(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	content := []byte("a\nb\nc")
 	lineIndex := buildLineOffsetIndex(content)
@@ -86,8 +83,7 @@ func TestFixEdit_Overlaps(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			g := NewWithT(t)
+			g := NewParallelGomega(t)
 			g.Expect(tt.a.Overlaps(tt.b)).To(Equal(tt.overlap))
 		})
 	}
@@ -97,20 +93,17 @@ func TestFixEdit_Validate(t *testing.T) {
 	t.Parallel()
 
 	t.Run("valid edit", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 		g.Expect(FixEdit{Offset: 0, Length: 5}.Validate()).NotTo(HaveOccurred())
 	})
 
 	t.Run("negative offset", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 		g.Expect(FixEdit{Offset: -1}.Validate()).To(HaveOccurred())
 	})
 
 	t.Run("negative length", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 		g.Expect(FixEdit{Offset: 0, Length: -1}.Validate()).To(HaveOccurred())
 	})
 }
@@ -119,41 +112,37 @@ func TestFixEdit_Helpers(t *testing.T) {
 	t.Parallel()
 
 	t.Run("EndOffset", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 		g.Expect(FixEdit{Offset: 10, Length: 5}.EndOffset()).To(Equal(15))
 	})
 
 	t.Run("IsInsert", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 		g.Expect(FixEdit{Offset: 10, Length: 0, Replacement: []byte("x")}.IsInsert()).To(BeTrue())
 		g.Expect(FixEdit{Offset: 10, Length: 1}.IsInsert()).To(BeFalse())
 	})
 
 	t.Run("IsDelete", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 		g.Expect(FixEdit{Offset: 10, Length: 5}.IsDelete()).To(BeTrue())
 		g.Expect(FixEdit{Offset: 10, Length: 5, Replacement: []byte("x")}.IsDelete()).To(BeFalse())
 	})
 }
 
 func TestFixEngine_Providers(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	providers := engine.Providers()
-	g.Expect(providers).To(HaveLen(3))
-	g.Expect(providers[0].Name()).To(Equal("byte-offset"))
-	g.Expect(providers[1].Name()).To(Equal("line-column"))
-	g.Expect(providers[2].Name()).To(Equal("substring"))
+	g.Expect(providers).To(HaveLen(4))
+	g.Expect(providers[0].Name()).To(Equal("edit-list"))
+	g.Expect(providers[1].Name()).To(Equal("byte-offset"))
+	g.Expect(providers[2].Name()).To(Equal("line-column"))
+	g.Expect(providers[3].Name()).To(Equal("substring"))
 }
 
 func TestFixEngine_ApplyWithConflicts_NoConflicts(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content, fixes := twoLineRangeFixes()
@@ -165,8 +154,7 @@ func TestFixEngine_ApplyWithConflicts_NoConflicts(t *testing.T) {
 }
 
 func TestFixEngine_ApplyWithConflicts_OverlappingEdits(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 	content := []byte("package main\n\nfunc main() {\n\told()\n}")
@@ -175,10 +163,10 @@ func TestFixEngine_ApplyWithConflicts_OverlappingEdits(t *testing.T) {
 
 	applied, _, conflicts, result, _ := engine.ApplyWithConflicts(content, fixes)
 	g.Expect(applied).To(HaveLen(1))
-	g.Expect(applied[0].ID).To(Equal("fix1"))
+	g.Expect(applied[0].ID).To(Equal(finding.ID("fix1")))
 	g.Expect(conflicts).To(HaveLen(1))
 	g.Expect(conflicts[0].Reason).To(Equal("overlapping edit"))
-	g.Expect(conflicts[0].Finding.ID).To(Equal("fix2"))
+	g.Expect(conflicts[0].Finding.ID).To(Equal(finding.ID("fix2")))
 	g.Expect(string(result)).To(Equal("package main\n\nfunc main() {\n\tnew()\n}"))
 }
 
@@ -186,8 +174,7 @@ func TestFixEdit_JSON(t *testing.T) {
 	t.Parallel()
 
 	t.Run("marshal and unmarshal round-trip", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		edit := FixEdit{Offset: 10, Length: 5, Replacement: []byte("hello")}
 
@@ -202,8 +189,7 @@ func TestFixEdit_JSON(t *testing.T) {
 	})
 
 	t.Run("pure deletion omits replacement", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		edit := FixEdit{Offset: 10, Length: 5}
 		data, err := json.Marshal(edit)
@@ -212,8 +198,7 @@ func TestFixEdit_JSON(t *testing.T) {
 	})
 
 	t.Run("source not included in JSON", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		edit := FixEdit{
 			Offset:      10,
@@ -231,8 +216,7 @@ func TestFixEdit_SARIFProperties(t *testing.T) {
 	t.Parallel()
 
 	t.Run("round-trip", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		edit := FixEdit{Offset: 42, Length: 10, Replacement: []byte("new code")}
 		props := edit.ToSARIFProperties()
@@ -245,8 +229,7 @@ func TestFixEdit_SARIFProperties(t *testing.T) {
 	})
 
 	t.Run("missing offset returns nil", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		props := map[string]string{"go-finding/edit/length": "5"}
 		got := FixEditFromSARIFProperties(props)
@@ -254,8 +237,7 @@ func TestFixEdit_SARIFProperties(t *testing.T) {
 	})
 
 	t.Run("pure deletion has no replacement", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		edit := FixEdit{Offset: 10, Length: 5}
 		props := edit.ToSARIFProperties()
@@ -271,8 +253,7 @@ func TestFilterConflictingEdits(t *testing.T) {
 	t.Parallel()
 
 	t.Run("no conflicts", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		engine := NewFixEngine()
 		content, fixes := twoLineRangeFixes()
@@ -283,8 +264,7 @@ func TestFilterConflictingEdits(t *testing.T) {
 	})
 
 	t.Run("overlapping edits filtered", func(t *testing.T) {
-		t.Parallel()
-		g := NewWithT(t)
+		g := NewParallelGomega(t)
 
 		engine := NewFixEngine()
 		content := []byte("package main\n\nfunc main() {\n\told()\n}")
@@ -293,13 +273,12 @@ func TestFilterConflictingEdits(t *testing.T) {
 		result, errs := FilterConflictingEdits(content, fixes, engine)
 		g.Expect(errs).To(BeEmpty())
 		g.Expect(result).To(HaveLen(1))
-		g.Expect(result[0].ID).To(Equal("fix1"))
+		g.Expect(result[0].ID).To(Equal(finding.ID("fix1")))
 	})
 }
 
 func TestFixEngine_MultipleLineEdits_SameFile(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 
@@ -322,8 +301,7 @@ func TestFixEngine_MultipleLineEdits_SameFile(t *testing.T) {
 }
 
 func TestFixEngine_LineEdits_DifferentLengths(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
+	g := NewParallelGomega(t)
 
 	engine := NewFixEngine()
 

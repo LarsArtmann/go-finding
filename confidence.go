@@ -3,6 +3,8 @@ package finding
 import (
 	"cmp"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 // Confidence represents the certainty level of a finding on a 0.0–1.0 scale.
@@ -66,4 +68,44 @@ func (c Confidence) String() string {
 	default:
 		return fmt.Sprintf("%.2f", float64(c))
 	}
+}
+
+// ErrInvalidConfidence is returned by ParseConfidence when the input string is
+// not a recognized confidence level name or a valid decimal number.
+var ErrInvalidConfidence = fmt.Errorf("invalid confidence level: use %s, %s, %s, %s, %s, or a decimal in [0.0, 1.0]",
+	ConfidenceNone, ConfidenceLow, ConfidenceMedium, ConfidenceHigh, ConfidenceFull)
+
+// ParseConfidence converts a confidence level string to a Confidence value.
+// It is the inverse of [Confidence.String]: every named level ("none", "low",
+// "medium", "high", "full") maps back to its constant. Decimal strings (e.g.
+// "0.42") are also accepted and clamped to [0.0, 1.0]. An empty string defaults
+// to ConfidenceLow.
+//
+// This eliminates the per-consumer switch statements that every CLI linter
+// reinvents for its --min-confidence flag.
+func ParseConfidence(s string) (Confidence, error) {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "", "low":
+		return ConfidenceLow, nil
+	case "none":
+		return ConfidenceNone, nil
+	case "medium":
+		return ConfidenceMedium, nil
+	case "high":
+		return ConfidenceHigh, nil
+	case "full":
+		return ConfidenceFull, nil
+	}
+
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return ConfidenceNone, fmt.Errorf("%w: %q", ErrInvalidConfidence, s)
+	}
+
+	c := Confidence(f)
+	if !c.IsValid() {
+		return ConfidenceNone, fmt.Errorf("%w: %q", ErrInvalidConfidence, s)
+	}
+
+	return c, nil
 }

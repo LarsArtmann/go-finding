@@ -84,7 +84,7 @@ func (testFact) AFact() {}
 
 // stubAnalyzer is a minimal analyzer that reports a diagnostic for every function declaration.
 //
-//nolint:gochecknoglobals
+
 var stubAnalyzer = &analysis.Analyzer{
 	Name: "stub",
 	Doc:  "reports every function declaration",

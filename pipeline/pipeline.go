@@ -38,6 +38,10 @@ type Pipeline struct {
 	callbackMu sync.Mutex  // protects OnFinding from parallel goroutines
 	applier    *FixApplier // reused across iterations
 	ran        bool        // prevents multiple Run calls
+	// outcomeKeys tracks finding identities already recorded in
+	// PipelineResult.Outcomes, deduplicating artifact repeats from
+	// re-detection after an applied fix.
+	outcomeKeys map[string]struct{}
 }
 
 // New creates a new Pipeline with the given configuration.
@@ -60,7 +64,7 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 
 	err = config.Validate()
 	if err != nil {
-		return nil, fmt.Errorf("validate config (detectors=%d): %w", len(detectors), err)
+		return nil, fmt.Errorf("validate config (rootDir=%q, detectors=%d): %w", rootDir, len(detectors), err)
 	}
 
 	// Create FixApplier eagerly so errors are caught early.
@@ -71,10 +75,14 @@ func New(config Config, rootDir string, detectors ...Detector) (*Pipeline, error
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("init fix applier: %w", err)
+		return nil, fmt.Errorf("init fix applier (rootDir=%q): %w", rootDir, err)
 	}
 
-	//nolint:exhaustruct
+	if config.FixRollbackAllFiles {
+		applier.SetRollbackPolicy(RollbackPolicyAllFiles)
+	}
+
+	//nolint:exhaustruct_v5
 	return &Pipeline{
 		config:    config,
 		detectors: detectors,
@@ -103,7 +111,6 @@ func (p *Pipeline) log(ctx context.Context, msg string, attrs ...slog.Attr) {
 }
 
 // fireStageHook sends a StageEvent to all registered StageHooks.
-// It also fires the legacy OnStage callback on StageAfter events.
 // Returns the first error encountered, which aborts the pipeline.
 func (p *Pipeline) fireStageHook(
 	ctx context.Context,
@@ -114,16 +121,6 @@ func (p *Pipeline) fireStageHook(
 	applied int,
 	conflicts int,
 ) error {
-	// Legacy OnStage callback fires after each stage completion.
-	if timing == StageAfter && p.config.OnStage != nil {
-		count := len(findings)
-		if stage == StageApply {
-			count = applied
-		}
-
-		p.config.OnStage(stage, iteration, count)
-	}
-
 	if len(p.config.StageHooks) == 0 {
 		return nil
 	}
@@ -162,6 +159,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 	p.ran = true
 	p.findings = p.findings[:0]
 	p.iterations = 0
+	p.outcomeKeys = nil
 
 	if p.metrics != nil {
 		p.metrics.SetStart(time.Now())
@@ -171,7 +169,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 
 	defer func() {
 		if p.applier != nil {
-			_ = p.applier.Close()
+			_ = p.applier.Close() //nolint:erraudit // best-effort deferred cleanup
 			p.applier = nil
 		}
 
@@ -191,9 +189,18 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		defer cancel()
 	}
 
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	result := &PipelineResult{
 		Iterations: make([]Iteration, 0, p.config.MaxIterations),
+	}
+
+	// exitResult stamps the final iteration count and publishes result to the
+	// deferred metrics snapshot before an early return from Run.
+	exitResult := func(err error) (*PipelineResult, error) {
+		result.TotalIterations = len(result.Iterations)
+		metricsResult = result
+
+		return result, err
 	}
 
 	for p.iterations < p.config.MaxIterations {
@@ -201,7 +208,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		if err != nil {
 			result.Reason = reasonFromContext(ctx)
 
-			return result, err
+			return exitResult(err)
 		}
 
 		p.log(
@@ -218,7 +225,7 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 				result.Reason = ReasonError
 			}
 
-			return result, err
+			return exitResult(err)
 		}
 
 		if done {
@@ -237,29 +244,69 @@ func (p *Pipeline) Run(ctx context.Context) (*PipelineResult, error) {
 		result.Correlations = finding.Correlate(p.findings)
 	}
 
+	// Collect unique findings once — used for verification (if enabled) and
+	// TotalDetected below. Avoids a redundant dedup pass.
+	allFindings := p.collectAllFindings(result)
+
 	// Optional final verification
 	if p.config.VerifyAfterFix && len(p.detectors) > 0 {
-		allOriginal := p.collectAllFindings(result)
+		if err := p.runVerification(ctx, result, allFindings); err != nil {
+			metricsResult = result
 
-		_ = p.fireStageHook(ctx, StageBefore, StageVerify, result.TotalIterations, allOriginal, 0, 0)
-
-		verifyDone := p.stageTiming(StageVerify)
-		verifyResult, err := Verify(ctx, p.detectors, allOriginal)
-
-		verifyDone()
-
-		if err != nil {
-			return result, fmt.Errorf("verify: %w", err)
+			return result, err
 		}
-
-		_ = p.fireStageHook(ctx, StageAfter, StageVerify, result.TotalIterations, allOriginal, 0, 0)
-
-		result.Verification = verifyResult
 	}
 
-	result.TotalDetected = len(p.findings)
+	result.TotalDetected = len(allFindings)
 
 	metricsResult = result
 
 	return result, nil
+}
+
+// runVerification runs the optional post-fix verification stage,
+// firing before/after hooks around the Verify call.
+func (p *Pipeline) runVerification(
+	ctx context.Context,
+	result *PipelineResult,
+	allFindings []finding.Finding,
+) error {
+	hookErr := p.fireStageHook(
+		ctx,
+		StageBefore,
+		StageVerify,
+		result.TotalIterations,
+		allFindings,
+		0,
+		0,
+	)
+	if hookErr != nil {
+		return fmt.Errorf("before verify: %w", hookErr)
+	}
+
+	verifyDone := p.stageTiming(StageVerify)
+	verifyResult, err := Verify(ctx, p.detectors, allFindings)
+
+	verifyDone()
+
+	if err != nil {
+		return fmt.Errorf("verify: %w", err)
+	}
+
+	hookErr = p.fireStageHook(
+		ctx,
+		StageAfter,
+		StageVerify,
+		result.TotalIterations,
+		allFindings,
+		0,
+		0,
+	)
+	if hookErr != nil {
+		return fmt.Errorf("after verify: %w", hookErr)
+	}
+
+	result.Verification = verifyResult
+
+	return nil
 }

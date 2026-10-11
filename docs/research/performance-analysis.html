@@ -48,7 +48,9 @@
       }
 
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
         background: var(--bg);
         color: var(--text);
         line-height: 1.6;
@@ -123,7 +125,8 @@
       }
 
       code {
-        font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+        font-family:
+          "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
         font-size: 0.88em;
         background: var(--code-bg);
         padding: 0.1em 0.35em;
@@ -569,10 +572,11 @@
         <span>🐧 Linux / Go 1.26.3</span>
       </div>
       <p class="description">
-        A comprehensive performance review of the go-finding static analysis library across CPU,
-        RAM, DISK/IO, Network, GPU, and concurrency dimensions. All benchmark data collected from
-        <code>go test -bench=. -benchmem</code> on the actual codebase. Algorithmic complexities
-        derived from source analysis.
+        A comprehensive performance review of the go-finding static analysis
+        library across CPU, RAM, DISK/IO, Network, GPU, and concurrency
+        dimensions. All benchmark data collected from
+        <code>go test -bench=. -benchmem</code> on the actual codebase.
+        Algorithmic complexities derived from source analysis.
       </p>
     </div>
 
@@ -628,21 +632,25 @@
 
     <div class="callout success">
       <p>
-        <strong>✅ OPTIMIZED (2026-06-14):</strong> The FixEngine bottleneck has been fixed. The
-        <code>offsetLineDistance</code> function was rewritten from O(n) byte-by-byte scan to O(log
-        n) binary search on the line offset index. The <code>applyEditsWithConflicts</code>
-        method was rewritten to use a single-pass pre-allocated buffer instead of per-edit
-        <code>append</code> chains. Combined impact: <strong>452× faster</strong> (291s → 644ms for
-        1000 edits). Additionally, GroupBy maps pre-allocated, dedupKey uses strings.Builder,
+        <strong>✅ OPTIMIZED (2026-06-14):</strong> The FixEngine bottleneck has
+        been fixed. The <code>offsetLineDistance</code> function was rewritten
+        from O(n) byte-by-byte scan to O(log n) binary search on the line offset
+        index. The <code>applyEditsWithConflicts</code>
+        method was rewritten to use a single-pass pre-allocated buffer instead
+        of per-edit
+        <code>append</code> chains. Combined impact:
+        <strong>452× faster</strong> (291s → 644ms for 1000 edits).
+        Additionally, GroupBy maps pre-allocated, dedupKey uses strings.Builder,
         Diff/DiffFindings results pre-allocated.
       </p>
     </div>
 
     <p>
-      go-finding is a <strong>CPU-bound, memory-efficient</strong> library with excellent
-      single-thread performance for its core data operations and strong parallel scaling for
-      detector execution. The primary performance concern was the <code>FixEngine</code>'s edit
-      resolution path, which exhibited super-linear time scaling due to per-occurrence O(n) newline
+      go-finding is a <strong>CPU-bound, memory-efficient</strong> library with
+      excellent single-thread performance for its core data operations and
+      strong parallel scaling for detector execution. The primary performance
+      concern was the <code>FixEngine</code>'s edit resolution path, which
+      exhibited super-linear time scaling due to per-occurrence O(n) newline
       counting in <code>offsetLineDistance</code>. This has been resolved.
     </p>
 
@@ -650,25 +658,31 @@
       <div class="insight-card green-card">
         <h4>Strengths</h4>
         <p>
-          Zero-allocation hot paths (Key, Equal early-return, FilterInPlace GC-safe). Parallel
-          detector execution delivers ~5× throughput with 5 detectors. Streaming SARIF/JSON via
-          <code>json.Encoder</code> avoids full-buffer allocation. Root package has zero external
-          dependencies beyond stdlib.
+          Zero-allocation hot paths (Key, Equal early-return, FilterInPlace
+          GC-safe). Parallel detector execution delivers ~5× throughput with 5
+          detectors. Streaming SARIF/JSON via
+          <code>json.Encoder</code> avoids full-buffer allocation. Root package
+          has zero external dependencies beyond stdlib.
         </p>
       </div>
       <div class="insight-card red-card">
-        <h4>RESOLVED: FixEngine byte-copy bottleneck <span class="badge excellent">FIXED</span></h4>
+        <h4>
+          RESOLVED: FixEngine byte-copy bottleneck
+          <span class="badge excellent">FIXED</span>
+        </h4>
         <p>
-          <strong>Was:</strong> <code>applyEditsWithConflicts</code> created a new
-          <code>[]byte</code> per edit. Combined with <code>offsetLineDistance</code> O(n)
-          per-occurrence scanning, this caused 291s for 1000 edits.<br /><br />
-          <strong>Fix applied:</strong> (1) Separated conflict detection from application, using a
-          single-pass pre-allocated buffer for edit application (O(F+R) not O(N×F)). (2) Rewrote
-          <code>offsetLineDistance</code> to use binary search on the line offset index (O(log n)
-          not O(n)). (3) Build line offset index once per SubstringProvider.Edits call instead of
-          scanning per occurrence.<br /><br />
-          <strong>Result:</strong> 291s → 644ms (452× faster). Memory: 443MB → 525MB (+18% from
-          index allocation, acceptable tradeoff).
+          <strong>Was:</strong> <code>applyEditsWithConflicts</code> created a
+          new <code>[]byte</code> per edit. Combined with
+          <code>offsetLineDistance</code> O(n) per-occurrence scanning, this
+          caused 291s for 1000 edits.<br /><br />
+          <strong>Fix applied:</strong> (1) Separated conflict detection from
+          application, using a single-pass pre-allocated buffer for edit
+          application (O(F+R) not O(N×F)). (2) Rewrote
+          <code>offsetLineDistance</code> to use binary search on the line
+          offset index (O(log n) not O(n)). (3) Build line offset index once per
+          SubstringProvider.Edits call instead of scanning per occurrence.<br /><br />
+          <strong>Result:</strong> 291s → 644ms (452× faster). Memory: 443MB →
+          525MB (+18% from index allocation, acceptable tradeoff).
         </p>
         <div class="severity">
           <span class="badge excellent">Resolved</span>
@@ -677,10 +691,11 @@
       <div class="insight-card yellow-card">
         <h4>Moderate Concern</h4>
         <p>
-          SARIF import/export generates 15–22 allocations per finding due to intermediate struct
-          construction. Streaming variants (<code>WriteSARIF</code>,
-          <code>FindingsFromReader</code>) already mitigate output-side allocation, but the
-          per-finding struct graph remains allocation-heavy.
+          SARIF import/export generates 15–22 allocations per finding due to
+          intermediate struct construction. Streaming variants
+          (<code>WriteSARIF</code>,
+          <code>FindingsFromReader</code>) already mitigate output-side
+          allocation, but the per-finding struct graph remains allocation-heavy.
         </p>
         <div class="severity">
           <span class="badge fair">Moderate</span>
@@ -695,8 +710,8 @@
 
     <h3>Benchmark Results (measured)</h3>
     <p>
-      All measurements from <code>go test -bench=. -benchmem -count=1</code> on AMD Ryzen AI MAX+
-      395 (32 threads).
+      All measurements from <code>go test -bench=. -benchmem -count=1</code> on
+      AMD Ryzen AI MAX+ 395 (32 threads).
     </p>
 
     <div class="table-wrap">
@@ -966,16 +981,17 @@
 
     <div class="callout warning">
       <p>
-        <strong>Notation:</strong> n = finding/element count, p = predicate count, k = query result
-        size, g = conflict group size, F = file content size in bytes. The
-        <code>FixEngine</code> term O(n×F) means each edit re-copies the entire file content.
+        <strong>Notation:</strong> n = finding/element count, p = predicate
+        count, k = query result size, g = conflict group size, F = file content
+        size in bytes. The <code>FixEngine</code> term O(n×F) means each edit
+        re-copies the entire file content.
       </p>
     </div>
 
     <h3>CPU Hot Paths</h3>
     <p>
-      Ranked by wall-clock time consumed in a typical pipeline run (detect → triage → apply →
-      verify):
+      Ranked by wall-clock time consumed in a typical pipeline run (detect →
+      triage → apply → verify):
     </p>
 
     <div class="perf-bar-container">
@@ -1000,7 +1016,9 @@
 
     <div class="perf-bar-container">
       <div class="perf-bar-label">
-        <span class="name">3. SARIF Import (JSON unmarshal + struct construction)</span>
+        <span class="name"
+          >3. SARIF Import (JSON unmarshal + struct construction)</span
+        >
         <span class="detail">2233 allocs / 100 findings</span>
       </div>
       <div class="perf-bar-track">
@@ -1010,7 +1028,9 @@
 
     <div class="perf-bar-container">
       <div class="perf-bar-label">
-        <span class="name">4. SARIF Export (struct construction + JSON marshal)</span>
+        <span class="name"
+          >4. SARIF Export (struct construction + JSON marshal)</span
+        >
         <span class="detail">1510 allocs / 100 findings</span>
       </div>
       <div class="perf-bar-track">
@@ -1020,7 +1040,9 @@
 
     <div class="perf-bar-container">
       <div class="perf-bar-label">
-        <span class="name">5. Correlate (cross-tool finding relationships)</span>
+        <span class="name"
+          >5. Correlate (cross-tool finding relationships)</span
+        >
         <span class="detail">Interval index build + queries</span>
       </div>
       <div class="perf-bar-track">
@@ -1060,11 +1082,18 @@
 
     <h3>SHA-256 Cost Analysis</h3>
     <p>
-      The hash-based ID path (<code>GenerateID</code> when <code>pos.Line == 0</code>) uses SHA-256
-      via <code>crypto/sha256</code>. This is 4× more expensive than the positional path (205 ns vs
-      50 ns) and allocates 8× more (208 B vs 72 B). The hash path includes:
+      The hash-based ID path (<code>GenerateID</code> when
+      <code>pos.Line == 0</code>) uses SHA-256 via <code>crypto/sha256</code>.
+      This is 4× more expensive than the positional path (205 ns vs 50 ns) and
+      allocates 8× more (208 B vs 72 B). The hash path includes:
     </p>
-    <ul style="margin: 0.5rem 0 0.5rem 1.5rem; color: var(--text-muted); font-size: 0.88rem">
+    <ul
+      style="
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        color: var(--text-muted);
+        font-size: 0.88rem;
+      "
+    >
       <li><code>sha256.New()</code> — hash instance allocation</li>
       <li>3× <code>writeLenField</code> — binary encoding + Write calls</li>
       <li><code>h.Sum()</code> — digest allocation</li>
@@ -1072,8 +1101,9 @@
       <li><code>strings.Builder</code> — final ID string assembly</li>
     </ul>
     <p>
-      For high-throughput pipelines with many position-less findings, consider caching IDs or
-      switching to a faster hash (xxHash, FNV-1a) if collision resistance requirements allow.
+      For high-throughput pipelines with many position-less findings, consider
+      caching IDs or switching to a faster hash (xxHash, FNV-1a) if collision
+      resistance requirements allow.
     </p>
 
     <!-- ═══════════════════════════════════════════════════════════ -->
@@ -1083,8 +1113,8 @@
 
     <h3>Finding Struct Memory Footprint</h3>
     <p>
-      The <code>Finding</code> struct is the fundamental unit of memory. Its size determines
-      per-finding overhead for all operations:
+      The <code>Finding</code> struct is the fundamental unit of memory. Its
+      size determines per-finding overhead for all operations:
     </p>
 
     <div class="table-wrap">
@@ -1212,9 +1242,10 @@
 
     <div class="callout">
       <p>
-        <strong>Estimated total:</strong> A typical Finding with a Range, no Related, no Tags, and
-        no Metadata occupies approximately <strong>320–400 bytes</strong> including string data and
-        heap allocations. A Finding with Related refs, Tags, and Metadata can exceed
+        <strong>Estimated total:</strong> A typical Finding with a Range, no
+        Related, no Tags, and no Metadata occupies approximately
+        <strong>320–400 bytes</strong> including string data and heap
+        allocations. A Finding with Related refs, Tags, and Metadata can exceed
         <strong>1 KB</strong>.
       </p>
     </div>
@@ -1330,31 +1361,36 @@
       <div class="insight-card green-card">
         <h4>Zero-Allocation Hot Paths</h4>
         <p>
-          <code>Finding.Key()</code> (3.4 ns, 0 allocs), <code>Clone()</code> simple (18 ns, 0
-          allocs), <code>FilterInPlace</code> (in-place compaction, 0 heap growth),
-          <code>Pipeline.DryRun</code> (61 allocs for 10k findings — amortized to 0.006
-          allocs/finding). These paths are GC-neutral and safe for high-frequency invocation.
+          <code>Finding.Key()</code> (3.4 ns, 0 allocs),
+          <code>Clone()</code> simple (18 ns, 0 allocs),
+          <code>FilterInPlace</code> (in-place compaction, 0 heap growth),
+          <code>Pipeline.DryRun</code> (61 allocs for 10k findings — amortized
+          to 0.006 allocs/finding). These paths are GC-neutral and safe for
+          high-frequency invocation.
         </p>
       </div>
       <div class="insight-card yellow-card">
         <h4>Moderate GC Pressure</h4>
         <p>
-          <code>Merge</code> allocates ~700 KB per 1000 findings (Clone per finding).
-          <code>Correlate</code> creates IntervalIndex + result Correlations per call.
-          <code>GroupByFile</code> creates a map entry per unique file. All are proportional to
-          input size with no hidden quadratic factors.
+          <code>Merge</code> allocates ~700 KB per 1000 findings (Clone per
+          finding). <code>Correlate</code> creates IntervalIndex + result
+          Correlations per call. <code>GroupByFile</code> creates a map entry
+          per unique file. All are proportional to input size with no hidden
+          quadratic factors.
         </p>
       </div>
       <div class="insight-card red-card">
         <h4>High GC Pressure</h4>
         <p>
-          <strong>SARIF Import:</strong> 2233 allocs/100 findings = ~22 allocs per finding. Each
-          <code>findingFromSarResult</code> creates Finding, Position, Range, RelatedRef slice, and
-          Metadata map independently. <br /><br />
-          <strong>SARIF Export:</strong> 1510 allocs/100 findings = ~15 allocs per finding.
-          <code>findingToSARIF</code> decomposes into sarifResult + locations + fixes + properties.
+          <strong>SARIF Import:</strong> 2233 allocs/100 findings = ~22 allocs
+          per finding. Each <code>findingFromSarResult</code> creates Finding,
+          Position, Range, RelatedRef slice, and Metadata map independently.
           <br /><br />
-          <strong>FixEngine:</strong> 20,036 allocs for 1000 edits — new []byte per edit.
+          <strong>SARIF Export:</strong> 1510 allocs/100 findings = ~15 allocs
+          per finding. <code>findingToSARIF</code> decomposes into sarifResult +
+          locations + fixes + properties. <br /><br />
+          <strong>FixEngine:</strong> 20,036 allocs for 1000 edits — new []byte
+          per edit.
         </p>
       </div>
     </div>
@@ -1381,37 +1417,52 @@
             <td><code>sync.Mutex</code></td>
             <td class="file">pipeline/metrics.go:14</td>
             <td>Metrics maps + counters</td>
-            <td><span class="badge good">Low</span> Optional, infrequent writes</td>
+            <td>
+              <span class="badge good">Low</span> Optional, infrequent writes
+            </td>
           </tr>
           <tr>
             <td><code>sync.Mutex</code></td>
             <td class="file">pipeline/pipeline.go:38</td>
             <td>OnFinding callback</td>
-            <td><span class="badge fair">Medium</span> Per-finding in parallel mode</td>
+            <td>
+              <span class="badge fair">Medium</span> Per-finding in parallel
+              mode
+            </td>
           </tr>
           <tr>
             <td><code>sync.Mutex</code></td>
             <td class="file">pipeline/pipeline_detect.go:115</td>
             <td>Parallel detection findings append</td>
-            <td><span class="badge fair">Medium</span> Once per detector completion</td>
+            <td>
+              <span class="badge fair">Medium</span> Once per detector
+              completion
+            </td>
           </tr>
           <tr>
             <td><code>sync.RWMutex</code></td>
             <td class="file">registry.go:24</td>
             <td>DetectorRegistry.builders</td>
-            <td><span class="badge excellent">Negligible</span> Setup-time only</td>
+            <td>
+              <span class="badge excellent">Negligible</span> Setup-time only
+            </td>
           </tr>
           <tr>
             <td><code>sync.RWMutex</code></td>
             <td class="file">category_linter.go</td>
             <td>linterCategories map</td>
-            <td><span class="badge excellent">Negligible</span> Read-heavy after init</td>
+            <td>
+              <span class="badge excellent">Negligible</span> Read-heavy after
+              init
+            </td>
           </tr>
           <tr>
             <td><code>sync.WaitGroup</code></td>
             <td class="file">via errgroup</td>
             <td>Parallel detector goroutines</td>
-            <td><span class="badge good">Low</span> Bounded by detector count</td>
+            <td>
+              <span class="badge good">Low</span> Bounded by detector count
+            </td>
           </tr>
         </tbody>
       </table>
@@ -1424,8 +1475,9 @@
 
     <h3>I/O Operations Inventory</h3>
     <p>
-      go-finding performs disk I/O in three distinct phases: fix application, generated file
-      detection, and byte-level conflict detection. All I/O is synchronous and blocking.
+      go-finding performs disk I/O in three distinct phases: fix application,
+      generated file detection, and byte-level conflict detection. All I/O is
+      synchronous and blocking.
     </p>
 
     <div class="table-wrap">
@@ -1517,10 +1569,11 @@
     <div class="callout warning">
       <p>
         <strong>File content is read multiple times for the same file:</strong>
-        In a single pipeline iteration with fix application, the same file may be read (1) by
-        GeneratedFileFilter, (2) by ByteLevelConflictDetection, (3) by FixApplier for backup, and
-        (4) by FixApplier for edit application. No content cache exists. For monorepos with large
-        files, this quadruples I/O bandwidth consumption.
+        In a single pipeline iteration with fix application, the same file may
+        be read (1) by GeneratedFileFilter, (2) by ByteLevelConflictDetection,
+        (3) by FixApplier for backup, and (4) by FixApplier for edit
+        application. No content cache exists. For monorepos with large files,
+        this quadruples I/O bandwidth consumption.
       </p>
     </div>
 
@@ -1592,9 +1645,10 @@
 
     <h3>Disk Space: Backup Directory</h3>
     <p>
-      The <code>FixApplier</code> creates a temporary directory (<code>os.MkdirTemp</code>) at
-      construction time. For each file modified, a backup copy is stored. Disk usage scales linearly
-      with total file size modified: <strong>backup_size = Σ(file_sizes_modified)</strong>. The
+      The <code>FixApplier</code> creates a temporary directory
+      (<code>os.MkdirTemp</code>) at construction time. For each file modified,
+      a backup copy is stored. Disk usage scales linearly with total file size
+      modified: <strong>backup_size = Σ(file_sizes_modified)</strong>. The
       backup directory is cleaned up via <code>Close()</code>, which calls
       <code>os.RemoveAll</code>. If the process crashes, backups persist in
       <code>/tmp/go-finding-backups-*</code>.
@@ -1626,15 +1680,17 @@
     </div>
 
     <p>
-      go-finding has <strong>zero network footprint</strong>. No HTTP server, no HTTP client, no
-      remote procedure calls, no telemetry. All operations are entirely local. The library does not
-      import <code>net/http</code>, <code>net/rpc</code>, or any networking package.
+      go-finding has <strong>zero network footprint</strong>. No HTTP server, no
+      HTTP client, no remote procedure calls, no telemetry. All operations are
+      entirely local. The library does not import <code>net/http</code>,
+      <code>net/rpc</code>, or any networking package.
     </p>
 
     <h3>Subprocess Execution</h3>
     <p>
-      The primary I/O-bound operation is subprocess execution for external analysis tools. Detectors
-      like govet and staticcheck shell out to external binaries via
+      The primary I/O-bound operation is subprocess execution for external
+      analysis tools. Detectors like govet and staticcheck shell out to external
+      binaries via
       <code>exec.CommandContext</code>:
     </p>
 
@@ -1652,7 +1708,9 @@
         <tbody>
           <tr>
             <td>govet</td>
-            <td class="file">exec.CommandContext(ctx, "go", "vet", "-json", "./...")</td>
+            <td class="file">
+              exec.CommandContext(ctx, "go", "vet", "-json", "./...")
+            </td>
             <td>stdout pipe → JSON parse</td>
             <td><span class="badge excellent">ctx.Cancel()</span></td>
             <td><span class="badge excellent">Per-detector</span></td>
@@ -1680,29 +1738,33 @@
       <div class="insight-card cyan-card">
         <h4>Output Capture</h4>
         <p>
-          <code>cmd.Output()</code> captures the entire stdout into a single <code>[]byte</code>
-          buffer before parsing. For tools that produce very large JSON output (e.g., staticcheck on
-          a monorepo with 10,000+ findings), this can consume significant memory. There is no
-          streaming subprocess output — the full JSON is buffered, then parsed.
+          <code>cmd.Output()</code> captures the entire stdout into a single
+          <code>[]byte</code>
+          buffer before parsing. For tools that produce very large JSON output
+          (e.g., staticcheck on a monorepo with 10,000+ findings), this can
+          consume significant memory. There is no streaming subprocess output —
+          the full JSON is buffered, then parsed.
         </p>
       </div>
       <div class="insight-card blue-card">
         <h4>Parallel Subprocess Execution</h4>
         <p>
-          When <code>ParallelDetectors=true</code> (default), all detectors run concurrently via
-          <code>errgroup.WithContext</code>. This means multiple subprocess instances execute
-          simultaneously, competing for CPU cores, memory, and disk I/O. The Go runtime's
-          <code>GOMAXPROCS</code> does not limit subprocess parallelism — the OS scheduler
-          determines actual concurrency.
+          When <code>ParallelDetectors=true</code> (default), all detectors run
+          concurrently via <code>errgroup.WithContext</code>. This means
+          multiple subprocess instances execute simultaneously, competing for
+          CPU cores, memory, and disk I/O. The Go runtime's
+          <code>GOMAXPROCS</code> does not limit subprocess parallelism — the OS
+          scheduler determines actual concurrency.
         </p>
       </div>
       <div class="insight-card yellow-card">
         <h4>Process Startup Overhead</h4>
         <p>
-          Each <code>exec.Command</code> incurs: fork+exec syscall (~1-5 ms), dynamic linker
-          loading, Go runtime initialization (for Go-based tools like staticcheck), and tool warmup
-          (package loading, type checking). For govet on a medium project, this is typically 2–30
-          seconds — dwarfing all in-process computation.
+          Each <code>exec.Command</code> incurs: fork+exec syscall (~1-5 ms),
+          dynamic linker loading, Go runtime initialization (for Go-based tools
+          like staticcheck), and tool warmup (package loading, type checking).
+          For govet on a medium project, this is typically 2–30 seconds —
+          dwarfing all in-process computation.
         </p>
       </div>
     </div>
@@ -1710,7 +1772,9 @@
     <!-- ═══════════════════════════════════════════════════════════ -->
     <!-- CONCURRENCY & PARALLELISM                                     -->
     <!-- ═══════════════════════════════════════════════════════════ -->
-    <h2 id="concurrency"><span class="icon">🔀</span>Concurrency & Parallelism</h2>
+    <h2 id="concurrency">
+      <span class="icon">🔀</span>Concurrency & Parallelism
+    </h2>
 
     <h3>Parallel Detection Benchmarks</h3>
     <div class="table-wrap">
@@ -1778,11 +1842,13 @@
 
     <div class="callout success">
       <p>
-        <strong>Excellent parallel scaling.</strong> With 5 detectors, parallel execution achieves
-        4.9× speedup — near-linear scaling. The <code>errgroup.WithContext</code>
-        pattern ensures first-error cancellation while partial-success mode collects results from
-        all detectors regardless of individual failures. Allocation overhead is minimal (270 vs 182
-        allocs — +88 allocs for mutex + slice appends).
+        <strong>Excellent parallel scaling.</strong> With 5 detectors, parallel
+        execution achieves 4.9× speedup — near-linear scaling. The
+        <code>errgroup.WithContext</code>
+        pattern ensures first-error cancellation while partial-success mode
+        collects results from all detectors regardless of individual failures.
+        Allocation overhead is minimal (270 vs 182 allocs — +88 allocs for mutex
+        + slice appends).
       </p>
     </div>
 
@@ -1826,7 +1892,10 @@
             <td>Report</td>
             <td><span class="badge excellent">Yes</span></td>
             <td>sync.RWMutex</td>
-            <td>All methods lock appropriately. Findings field still public (deprecated).</td>
+            <td>
+              All methods lock appropriately. Findings field still public
+              (deprecated).
+            </td>
           </tr>
           <tr>
             <td>Metrics</td>
@@ -1862,7 +1931,10 @@
             <td>FixApplier</td>
             <td><span class="badge fair">Sequential</span></td>
             <td>Not designed for parallel file writes</td>
-            <td>Apply processes files in sorted order. Parallelism within Apply is unsafe.</td>
+            <td>
+              Apply processes files in sorted order. Parallelism within Apply is
+              unsafe.
+            </td>
           </tr>
           <tr>
             <td>linterCategories</td>
@@ -1877,10 +1949,12 @@
     <h3>Context Propagation</h3>
     <p>
       Context cancellation is propagated through all pipeline stages. The
-      <code>IsContextError()</code> function is the canonical check used in retry, partial, and
-      verify paths. <code>context.Canceled</code> and <code>context.DeadlineExceeded</code>
-      are propagated immediately rather than silently swallowed. Per-detector timeouts
-      (<code>Config.DetectorTimeouts</code>) override the global timeout.
+      <code>IsContextError()</code> function is the canonical check used in
+      retry, partial, and verify paths. <code>context.Canceled</code> and
+      <code>context.DeadlineExceeded</code>
+      are propagated immediately rather than silently swallowed. Per-detector
+      timeouts (<code>Config.DetectorTimeouts</code>) override the global
+      timeout.
     </p>
 
     <!-- ═══════════════════════════════════════════════════════════ -->
@@ -1908,41 +1982,49 @@
     </div>
 
     <p>
-      go-finding has <strong>no GPU acceleration</strong> whatsoever. All computation runs on the
-      CPU. This is the correct design decision for the current scope because:
+      go-finding has <strong>no GPU acceleration</strong> whatsoever. All
+      computation runs on the CPU. This is the correct design decision for the
+      current scope because:
     </p>
 
     <div class="insight-grid">
       <div class="insight-card green-card">
         <h4>Why GPU is Not Applicable</h4>
         <p>
-          Static analysis is inherently <strong>branch-heavy, data-dependent computation</strong>.
-          AST traversal, type inference, control-flow analysis, and rule matching involve irregular
-          memory access patterns and conditional logic — the exact workload GPUs handle poorly. GPU
-          SIMT architecture excels at uniform, lockstep computation (matrix math, image processing),
-          not graph traversal.
+          Static analysis is inherently
+          <strong>branch-heavy, data-dependent computation</strong>. AST
+          traversal, type inference, control-flow analysis, and rule matching
+          involve irregular memory access patterns and conditional logic — the
+          exact workload GPUs handle poorly. GPU SIMT architecture excels at
+          uniform, lockstep computation (matrix math, image processing), not
+          graph traversal.
         </p>
       </div>
       <div class="insight-card yellow-card">
         <h4>Where GPU Could Help (Future)</h4>
         <p>
-          <strong>1. Large-scale file scanning:</strong> Scanning millions of files for
-          generated-file patterns (regex/substring) could benefit from GPU-parallel string matching.
-          Currently handled by gogenfilter (CPU).<br /><br />
-          <strong>2. AI fix suggestions:</strong> <code>FixStrategyAI</code> is reserved but
-          unimplemented. If LLM-based fix generation is added, GPU inference (via ONNX Runtime,
-          CUDA) would be essential for local model execution.<br /><br />
-          <strong>3. Semantic similarity:</strong> Finding correlation could use embedding-based
-          similarity (GPU-accelerated) instead of line-proximity heuristics.
+          <strong>1. Large-scale file scanning:</strong> Scanning millions of
+          files for generated-file patterns (regex/substring) could benefit from
+          GPU-parallel string matching. Currently handled by gogenfilter
+          (CPU).<br /><br />
+          <strong>2. AI fix suggestions:</strong> <code>FixStrategyAI</code> is
+          reserved but unimplemented. If LLM-based fix generation is added, GPU
+          inference (via ONNX Runtime, CUDA) would be essential for local model
+          execution.<br /><br />
+          <strong>3. Semantic similarity:</strong> Finding correlation could use
+          embedding-based similarity (GPU-accelerated) instead of line-proximity
+          heuristics.
         </p>
       </div>
       <div class="insight-card blue-card">
         <h4>Hardware Acceleration Present</h4>
         <p>
-          The <code>bytes.Index</code> and <code>bytes.Count</code> functions used in
-          <code>SubstringProvider</code> and <code>LineShiftMap</code> are SIMD-optimized by the Go
-          runtime on supported platforms (AVX2/SSE4.2 on x86, NEON on ARM). This provides implicit
-          hardware acceleration for string operations without explicit GPU code.
+          The <code>bytes.Index</code> and <code>bytes.Count</code> functions
+          used in <code>SubstringProvider</code> and
+          <code>LineShiftMap</code> are SIMD-optimized by the Go runtime on
+          supported platforms (AVX2/SSE4.2 on x86, NEON on ARM). This provides
+          implicit hardware acceleration for string operations without explicit
+          GPU code.
         </p>
       </div>
     </div>
@@ -2020,10 +2102,11 @@
 
     <div class="callout critical">
       <p>
-        <strong>*Linear but at an unacceptable constant factor.</strong> FixEngine scales linearly
-        in edit count, but each edit costs O(F) where F = file content size. For a 10 KB file with
-        1000 edits, that's 10 GB of byte copies. The benchmark uses synthetic content, but
-        real-world impact on large files is severe. See
+        <strong>*Linear but at an unacceptable constant factor.</strong>
+        FixEngine scales linearly in edit count, but each edit costs O(F) where
+        F = file content size. For a 10 KB file with 1000 edits, that's 10 GB of
+        byte copies. The benchmark uses synthetic content, but real-world impact
+        on large files is severe. See
         <a href="#recommendations">Recommendation #1</a> for the fix.
       </p>
     </div>
@@ -2057,10 +2140,12 @@
 
     <div class="callout success">
       <p>
-        <strong>Correlate scales sub-linearly</strong> thanks to the IntervalIndex (O(log n + k) per
-        query) and the 10,000 correlation cap (<code>maxCorrelations</code>). The proximity
-        heuristic uses sorted early-break, limiting inner loop iterations to
-        <code>maxLineDiff</code> (5 lines) of neighbors. Excellent scaling to 10k+ findings.
+        <strong>Correlate scales sub-linearly</strong> thanks to the
+        IntervalIndex (O(log n + k) per query) and the 10,000 correlation cap
+        (<code>maxCorrelations</code>). The proximity heuristic uses sorted
+        early-break, limiting inner loop iterations to
+        <code>maxLineDiff</code> (5 lines) of neighbors. Excellent scaling to
+        10k+ findings.
       </p>
     </div>
 
@@ -2139,25 +2224,31 @@
     <!-- ═══════════════════════════════════════════════════════════ -->
     <h2 id="recommendations"><span class="icon">🎯</span>Recommendations</h2>
 
-    <p>Prioritized by impact (Pareto principle — 80% benefit from 20% of effort):</p>
+    <p>
+      Prioritized by impact (Pareto principle — 80% benefit from 20% of effort):
+    </p>
 
     <div class="insight-grid">
       <div class="insight-card green-card">
         <h4>
-          1. ✅ FixEngine byte-copy bottleneck — RESOLVED <span class="badge excellent">DONE</span>
+          1. ✅ FixEngine byte-copy bottleneck — RESOLVED
+          <span class="badge excellent">DONE</span>
         </h4>
         <p>
           <strong>Problem:</strong> <code>applyEditsWithConflicts</code> at
-          <code>fix_engine.go:169</code> creates a new <code>[]byte</code> per edit via
+          <code>fix_engine.go:169</code> creates a new <code>[]byte</code> per
+          edit via
           <code
-            >append(append(append(nil, result[:offset]...), replacement...), result[end:]...)</code
+            >append(append(append(nil, result[:offset]...), replacement...),
+            result[end:]...)</code
           >. This is O(F) per edit where F = file size.<br /><br />
-          <strong>Fix:</strong> Use <code>bytes.Buffer</code> with <code>Write</code> calls, or
-          pre-allocate a destination slice and use <code>copy()</code>. Since edits are applied
-          descending by offset, a single-pass <code>bytes.Buffer</code> from right to left
-          eliminates all intermediate copies.<br /><br />
-          <strong>Expected impact:</strong> ~100× reduction in allocations for 1000 edits (443 MB →
-          ~5 MB). Wall time: 291s → ~3s.
+          <strong>Fix:</strong> Use <code>bytes.Buffer</code> with
+          <code>Write</code> calls, or pre-allocate a destination slice and use
+          <code>copy()</code>. Since edits are applied descending by offset, a
+          single-pass <code>bytes.Buffer</code> from right to left eliminates
+          all intermediate copies.<br /><br />
+          <strong>Expected impact:</strong> ~100× reduction in allocations for
+          1000 edits (443 MB → ~5 MB). Wall time: 291s → ~3s.
         </p>
         <div class="severity">
           <span class="badge poor">Critical</span>
@@ -2166,15 +2257,20 @@
       </div>
 
       <div class="insight-card yellow-card">
-        <h4>2. Add file content cache for FixApplier <span class="badge fair">P1</span></h4>
+        <h4>
+          2. Add file content cache for FixApplier
+          <span class="badge fair">P1</span>
+        </h4>
         <p>
-          <strong>Problem:</strong> Same file read up to 4× per iteration (GeneratedFileFilter,
-          ByteLevelConflictDetection, Backup, Apply).<br /><br />
-          <strong>Fix:</strong> Add a <code>map[string][]byte</code> content cache to
-          <code>FixApplier</code> (or a <code>FileContentCache</code> interface). Populate on first
-          read, invalidate after write.<br /><br />
-          <strong>Expected impact:</strong> 4× reduction in file I/O for fix-heavy workloads.
-          Especially impactful for monorepos with large files on slow disks.
+          <strong>Problem:</strong> Same file read up to 4× per iteration
+          (GeneratedFileFilter, ByteLevelConflictDetection, Backup, Apply).<br /><br />
+          <strong>Fix:</strong> Add a <code>map[string][]byte</code> content
+          cache to <code>FixApplier</code> (or a
+          <code>FileContentCache</code> interface). Populate on first read,
+          invalidate after write.<br /><br />
+          <strong>Expected impact:</strong> 4× reduction in file I/O for
+          fix-heavy workloads. Especially impactful for monorepos with large
+          files on slow disks.
         </p>
         <div class="severity">
           <span class="badge fair">High</span>
@@ -2183,14 +2279,19 @@
       </div>
 
       <div class="insight-card yellow-card">
-        <h4>3. Pool SARIF struct allocations <span class="badge fair">P1</span></h4>
+        <h4>
+          3. Pool SARIF struct allocations <span class="badge fair">P1</span>
+        </h4>
         <p>
-          <strong>Problem:</strong> SARIF export creates 15 allocs/finding, import creates 22. These
-          are short-lived structs immediately serialized/deserialized.<br /><br />
-          <strong>Fix:</strong> Use <code>sync.Pool</code> for <code>sarifResult</code>,
-          <code>sarifLocation</code>, <code>sarifRegion</code> structs. Reset fields on return.<br /><br />
-          <strong>Expected impact:</strong> ~50% reduction in GC pressure during SARIF batch
-          processing. Throughput improvement for large result sets (10k+ findings).
+          <strong>Problem:</strong> SARIF export creates 15 allocs/finding,
+          import creates 22. These are short-lived structs immediately
+          serialized/deserialized.<br /><br />
+          <strong>Fix:</strong> Use <code>sync.Pool</code> for
+          <code>sarifResult</code>, <code>sarifLocation</code>,
+          <code>sarifRegion</code> structs. Reset fields on return.<br /><br />
+          <strong>Expected impact:</strong> ~50% reduction in GC pressure during
+          SARIF batch processing. Throughput improvement for large result sets
+          (10k+ findings).
         </p>
         <div class="severity">
           <span class="badge fair">Moderate</span>
@@ -2201,12 +2302,15 @@
       <div class="insight-card orange-card">
         <h4>4. Stream subprocess output <span class="badge fair">P2</span></h4>
         <p>
-          <strong>Problem:</strong> <code>cmd.Output()</code> buffers entire subprocess stdout
-          before parsing. For staticcheck on a large repo, this can be 100+ MB of JSON.<br /><br />
-          <strong>Fix:</strong> Use <code>cmd.StdoutPipe()</code> + <code>json.Decoder</code> to
-          stream-parse JSON output line by line or token by token.<br /><br />
-          <strong>Expected impact:</strong> Peak memory reduction proportional to output size.
-          Enables processing of very large tool outputs without OOM.
+          <strong>Problem:</strong> <code>cmd.Output()</code> buffers entire
+          subprocess stdout before parsing. For staticcheck on a large repo,
+          this can be 100+ MB of JSON.<br /><br />
+          <strong>Fix:</strong> Use <code>cmd.StdoutPipe()</code> +
+          <code>json.Decoder</code> to stream-parse JSON output line by line or
+          token by token.<br /><br />
+          <strong>Expected impact:</strong> Peak memory reduction proportional
+          to output size. Enables processing of very large tool outputs without
+          OOM.
         </p>
         <div class="severity">
           <span class="badge fair">Moderate</span>
@@ -2215,15 +2319,19 @@
       </div>
 
       <div class="insight-card blue-card">
-        <h4>5. Cache LineOffsetIndex across findings <span class="badge good">P2</span></h4>
+        <h4>
+          5. Cache LineOffsetIndex across findings
+          <span class="badge good">P2</span>
+        </h4>
         <p>
           <strong>Problem:</strong> <code>LineProvider.Edits</code> calls
-          <code>buildLineOffsetIndex(content)</code> for each finding, even when multiple findings
-          target the same file.<br /><br />
-          <strong>Fix:</strong> Accept an optional pre-built index, or have FixEngine build the
-          index once per file and pass it to all providers for that file.<br /><br />
-          <strong>Expected impact:</strong> Eliminates redundant O(F) line scans when applying
-          multiple fixes to the same file.
+          <code>buildLineOffsetIndex(content)</code> for each finding, even when
+          multiple findings target the same file.<br /><br />
+          <strong>Fix:</strong> Accept an optional pre-built index, or have
+          FixEngine build the index once per file and pass it to all providers
+          for that file.<br /><br />
+          <strong>Expected impact:</strong> Eliminates redundant O(F) line scans
+          when applying multiple fixes to the same file.
         </p>
         <div class="severity">
           <span class="badge good">Low-Med</span>
@@ -2237,14 +2345,16 @@
           <span class="badge excellent">DONE</span>
         </h4>
         <p>
-          <strong>Problem:</strong> GroupBy maps and dedupKey used unsized allocation and
-          fmt.Sprintf.<br /><br />
+          <strong>Problem:</strong> GroupBy maps and dedupKey used unsized
+          allocation and fmt.Sprintf.<br /><br />
           <strong>Fix applied:</strong> Pre-allocated
           GroupBy/GroupByFile/GroupBySeverity/GroupByCategory result maps with
-          <code>make(map, len(findings))</code>. Replaced <code>fmt.Sprintf</code> in dedupKey with
-          <code>strings.Builder</code> + <code>strconv.Itoa</code>. Pre-allocated
-          Diff/DiffFindings/DetectConflicts result slices.<br /><br />
-          <strong>Expected impact:</strong> ~28% faster GroupByFile, ~35% faster Merge with dedup.
+          <code>make(map, len(findings))</code>. Replaced
+          <code>fmt.Sprintf</code> in dedupKey with
+          <code>strings.Builder</code> + <code>strconv.Itoa</code>.
+          Pre-allocated Diff/DiffFindings/DetectConflicts result slices.<br /><br />
+          <strong>Expected impact:</strong> ~28% faster GroupByFile, ~35% faster
+          Merge with dedup.
         </p>
         <div class="severity">
           <span class="badge excellent">Resolved</span>
@@ -2276,7 +2386,9 @@
           </tr>
           <tr>
             <td>Parallel detection</td>
-            <td>4.9× speedup with 5 detectors, errgroup + context propagation</td>
+            <td>
+              4.9× speedup with 5 detectors, errgroup + context propagation
+            </td>
             <td><span class="badge excellent">Optimal</span></td>
           </tr>
           <tr>
@@ -2286,7 +2398,9 @@
           </tr>
           <tr>
             <td>Pipeline DryRun scaling</td>
-            <td>Linear time/memory, sub-log allocation growth to 10k findings</td>
+            <td>
+              Linear time/memory, sub-log allocation growth to 10k findings
+            </td>
             <td><span class="badge excellent">Optimal</span></td>
           </tr>
           <tr>
@@ -2326,39 +2440,43 @@
     <h4>Startup Cost</h4>
     <p>
       Near-zero. No <code>init()</code> functions in hot paths. The
-      <code>category_linter.go</code> map (70+ entries) is a package-level var initialized at first
-      use. <code>DetectrackRegistry</code> constructors are lazy.
+      <code>category_linter.go</code> map (70+ entries) is a package-level var
+      initialized at first use. <code>DetectrackRegistry</code> constructors are
+      lazy.
     </p>
 
     <h4>Error Handling Overhead</h4>
     <p>
-      Success paths have zero error-handling overhead. Error paths use <code>fmt.Errorf</code> with
-      <code>%w</code> (one allocation for the formatted string) and <code>errors.Join</code> (one
-      allocation for the joined error slice). Validation uses <code>errors.Join(errs...)</code>
+      Success paths have zero error-handling overhead. Error paths use
+      <code>fmt.Errorf</code> with <code>%w</code> (one allocation for the
+      formatted string) and <code>errors.Join</code> (one allocation for the
+      joined error slice). Validation uses <code>errors.Join(errs...)</code>
       which returns nil for empty slices — no allocation when valid.
     </p>
 
     <h4>Retry & Backoff</h4>
     <p>
       <code>RetryDetector</code> uses exponential backoff with jitter:
-      <code>delay = min(2^attempt × baseDelay, maxDelay) + rand(quarter)</code>. Uses
-      <code>math/rand/v2</code> (lock-free, no global mutex contention). Backoff is clamped to
-      MaxDelay after jitter to prevent cap overshoot.
+      <code>delay = min(2^attempt × baseDelay, maxDelay) + rand(quarter)</code>.
+      Uses <code>math/rand/v2</code> (lock-free, no global mutex contention).
+      Backoff is clamped to MaxDelay after jitter to prevent cap overshoot.
     </p>
 
     <h4>CPU Profiling Support</h4>
     <p>
       The CLI supports <code>-cpuprof</code> and <code>-memprof</code> flags for
-      <code>runtime/pprof</code>. Profiles can be analyzed with <code>go tool pprof</code>. The
-      benchmark suite in <code>bench_test.go</code> covers 15 operations with
+      <code>runtime/pprof</code>. Profiles can be analyzed with
+      <code>go tool pprof</code>. The benchmark suite in
+      <code>bench_test.go</code> covers 15 operations with
       <code>b.ReportAllocs()</code> on allocation-sensitive paths.
     </p>
 
     <h4>Binary Size</h4>
     <p>
-      The root package compiles to a lean binary with only stdlib dependencies. The full CLI with
-      all subpackages (pipeline, analysis, gogenfilter, yaml) adds approximately 8-12 MB to the
-      binary. GoReleaser config supports UPX compression and SBOM generation.
+      The root package compiles to a lean binary with only stdlib dependencies.
+      The full CLI with all subpackages (pipeline, analysis, gogenfilter, yaml)
+      adds approximately 8-12 MB to the binary. GoReleaser config supports UPX
+      compression and SBOM generation.
     </p>
 
     <!-- ═══════════════════════════════════════════════════════════ -->
@@ -2366,9 +2484,11 @@
     <!-- ═══════════════════════════════════════════════════════════ -->
     <div class="footer">
       <p>
-        Generated from source code analysis and live benchmarks on 2026-06-14.<br />
+        Generated from source code analysis and live benchmarks on
+        2026-06-14.<br />
         go-finding v0.7.0 · Go 1.26.3 · AMD Ryzen AI MAX+ 395 (32 threads)<br />
-        Benchmark command: <code>go test -bench=. -benchmem -count=1 ./...</code>
+        Benchmark command:
+        <code>go test -bench=. -benchmem -count=1 ./...</code>
       </p>
     </div>
   </body>

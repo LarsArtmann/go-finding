@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"cmp"
 	"fmt"
 	"slices"
 
@@ -16,11 +15,13 @@ type FixEngine struct {
 	providers []FixProvider
 }
 
-// NewFixEngine creates an engine with the default text-based providers:
-// OffsetProvider (byte offsets), LineProvider (line/column), SubstringProvider (fallback).
+// NewFixEngine creates an engine with the default providers:
+// EditListProvider (explicit edit lists), OffsetProvider (byte offsets),
+// LineProvider (line/column), SubstringProvider (fallback).
 func NewFixEngine() *FixEngine {
 	return &FixEngine{
 		providers: []FixProvider{
+			EditListProvider{},
 			&OffsetProvider{},
 			&LineProvider{},
 			&SubstringProvider{},
@@ -47,10 +48,9 @@ func (e *FixEngine) Apply(
 	content []byte,
 	fixes []finding.Finding,
 ) ([]byte, []finding.Finding, int) {
-	applied, _, conflicts, result, _ := e.ApplyWithConflicts(content, fixes)
-	_ = conflicts
+	result := e.apply(content, fixes, false)
 
-	return result, applied, len(applied)
+	return result.Content, result.Applied, len(result.Applied)
 }
 
 // ApplyWithConflicts applies findings and returns applied findings, applied edits,
@@ -59,42 +59,147 @@ func (e *FixEngine) Apply(
 func (e *FixEngine) ApplyWithConflicts(
 	content []byte,
 	fixes []finding.Finding,
-) ([]finding.Finding, []FixEdit, []ConflictInfo, []byte, []error) {
+) ([]finding.Finding, []FixEdit, []Conflict, []byte, []error) {
+	result := e.apply(content, fixes, false)
+
+	return result.Applied, result.AppliedEdits, result.Conflicts, result.Content, result.Errors
+}
+
+// ApplyWithOutcomes applies findings and returns the full per-finding result:
+// applied findings, applied edits, conflicts, modified content, provider
+// errors, and one FixOutcome per input finding (in input order) that
+// distinguishes applied / no-change / refused / conflict / invalid / failed.
+func (e *FixEngine) ApplyWithOutcomes(
+	content []byte,
+	fixes []finding.Finding,
+) FixApplyResult {
+	return e.apply(content, fixes, true)
+}
+
+// apply is the single implementation behind Apply, ApplyWithConflicts, and
+// ApplyWithOutcomes. wantOutcomes controls per-finding outcome bookkeeping:
+// the legacy entry points discard outcomes, so they skip allocating the
+// outcomes slice (one full Finding copy per input) and the reconciliation
+// pass, keeping their pre-outcome allocation profile.
+func (e *FixEngine) apply(content []byte, fixes []finding.Finding, wantOutcomes bool) FixApplyResult {
+	result := FixApplyResult{Content: content}
 	if len(fixes) == 0 {
-		return nil, nil, nil, content, nil
+		return result
 	}
 
 	var (
-		allEdits      []FixEdit
-		resolveErrors []error
-		lineIndex     []int // lazily built by resolveEdits when a lineIndexAware provider handles a finding
+		allEdits  []FixEdit
+		editOwner []int // parallel to allEdits: index into fixes of the finding that produced each edit
+		lineIndex []int // lazily built by resolveEdits when a lineIndexAware provider handles a finding
+		resolved  []int // outcome indices whose edits were collected for application
 	)
 
-	for _, f := range fixes {
+	if wantOutcomes {
+		result.Outcomes = make([]FixOutcome, 0, len(fixes))
+	}
+
+	addOutcome := func(f finding.Finding, status FixOutcomeStatus, err error) {
+		if !wantOutcomes {
+			return
+		}
+
+		result.Outcomes = append(result.Outcomes, FixOutcome{
+			Finding: f,
+			Status:  status,
+			Err:     err,
+		})
+	}
+
+	for i, f := range fixes {
 		if !f.HasCodeChange() {
+			addOutcome(f, FixOutcomeNoChange, nil)
+
 			continue
 		}
 
 		edits, err := e.resolveEdits(content, &lineIndex, f)
 		if err != nil {
-			resolveErrors = append(resolveErrors, err)
+			wrapped := finding.NewParseError(
+				fmt.Sprintf("resolve edits for finding %s", f.ID),
+				err,
+			).WithPosition(f.Position)
+			result.Errors = append(result.Errors, wrapped)
+			addOutcome(f, FixOutcomeFailed, wrapped)
+
+			continue
 		}
 
+		if len(edits) == 0 {
+			addOutcome(f, FixOutcomeRefused, nil)
+
+			continue
+		}
+
+		if wantOutcomes {
+			resolved = append(resolved, len(result.Outcomes))
+		}
+
+		addOutcome(f, FixOutcomeApplied, nil)
 		allEdits = append(allEdits, edits...)
+		for range edits {
+			editOwner = append(editOwner, i)
+		}
 	}
 
 	if len(allEdits) == 0 {
-		return nil, nil, nil, content, resolveErrors
+		return result
 	}
 
 	// Sort descending by offset so later edits don't shift earlier ones.
-	slices.SortFunc(allEdits, func(a, b FixEdit) int {
-		return cmp.Compare(b.Offset, a.Offset)
-	})
+	sortEditsDescending(allEdits)
 
-	applied, appliedEdits, conflicts, result := e.applyEditsWithConflicts(content, allEdits)
+	result.Applied, result.AppliedEdits, result.Conflicts, result.Content = e.applyEditsWithConflicts(
+		content,
+		allEdits,
+		editOwner,
+		len(fixes),
+	)
 
-	return applied, appliedEdits, conflicts, result, resolveErrors
+	if wantOutcomes {
+		reconcileOutcomes(&result, resolved)
+	}
+
+	return result
+}
+
+// reconcileOutcomes finalizes provisional FixOutcomeApplied statuses against
+// the actual application results: findings whose edits survived are applied,
+// findings in Conflicts are conflicts, and findings whose edits were dropped
+// as invalid or out of bounds are invalid.
+func reconcileOutcomes(result *FixApplyResult, resolved []int) {
+	appliedIDs := make(map[finding.ID]struct{}, len(result.Applied))
+	for _, f := range result.Applied {
+		appliedIDs[f.ID] = struct{}{}
+	}
+
+	conflictIDs := make(map[finding.ID]struct{}, len(result.Conflicts))
+	for _, c := range result.Conflicts {
+		conflictIDs[c.Finding.ID] = struct{}{}
+	}
+
+	for _, idx := range resolved {
+		o := &result.Outcomes[idx]
+
+		switch {
+		case hasID(appliedIDs, o.Finding.ID):
+			o.Status = FixOutcomeApplied
+		case hasID(conflictIDs, o.Finding.ID):
+			o.Status = FixOutcomeConflict
+		default:
+			o.Status = FixOutcomeInvalid
+		}
+	}
+}
+
+func hasID(set map[finding.ID]struct{}, id finding.ID) bool {
+	_, ok := set[id]
+
+	return ok
 }
 
 // resolveEdits tries each provider in order and returns edits from the first match.
@@ -141,25 +246,31 @@ func (e *FixEngine) resolveEdits(content []byte, lineIndex *[]int, f finding.Fin
 }
 
 // applyEditsWithConflicts applies edits and tracks which were skipped due to overlaps.
-// Edits must be sorted descending by offset (highest first).
+// Edits must be sorted descending by offset (highest first). owner is parallel
+// to edits and carries each edit's input-finding index; a finding is appended
+// to applied only once (first edit of it that applies), keeping Applied
+// per finding while AppliedEdits keeps per-edit granularity.
 func (*FixEngine) applyEditsWithConflicts(
 	content []byte,
 	edits []FixEdit,
-) ([]finding.Finding, []FixEdit, []ConflictInfo, []byte) {
+	owner []int,
+	ownerCount int,
+) ([]finding.Finding, []FixEdit, []Conflict, []byte) {
 	var (
 		applied      []finding.Finding
 		appliedEdits []FixEdit
-		conflicts    []ConflictInfo
+		conflicts    []Conflict
 	)
 
+	seen := make([]bool, ownerCount)
 	frontier := len(content) + 1
 
 	// Phase 1: Walk edits in descending offset order, detecting conflicts
 	// via the frontier boundary. Non-conflicting edits are collected for
 	// a single-pass application in Phase 2.
-	for _, edit := range edits {
+	for j, edit := range edits {
 		err := edit.Validate()
-		if err != nil {
+		if err != nil { //nolint:erraudit // invalid edits are intentionally excluded from application
 			continue
 		}
 
@@ -176,16 +287,26 @@ func (*FixEngine) applyEditsWithConflicts(
 				}
 			}
 
-			conflicts = append(conflicts, ConflictInfo{
-				Finding:       edit.Source,
-				ConflictsWith: conflictsWith,
-				Reason:        ReasonOverlappingEdit,
-			})
+			// One finding = one Conflict entry: a multi-edit fix whose
+			// several edits all conflict merges into the first entry.
+			if idx := conflictIndexFor(conflicts, edit.Source.ID); idx >= 0 {
+				conflicts[idx].ConflictsWith = append(conflicts[idx].ConflictsWith, conflictsWith...)
+			} else {
+				conflicts = append(conflicts, Conflict{
+					Finding:       edit.Source,
+					ConflictsWith: conflictsWith,
+					Reason:        ReasonOverlappingEdit,
+				})
+			}
 
 			continue
 		}
 
-		applied = append(applied, edit.Source)
+		if o := owner[j]; !seen[o] {
+			seen[o] = true
+			applied = append(applied, edit.Source)
+		}
+
 		appliedEdits = append(appliedEdits, edit)
 		frontier = edit.Offset
 	}
@@ -241,4 +362,16 @@ func applyEditsToContent(content []byte, edits []FixEdit) []byte {
 	result = append(result, content[prevEnd:]...)
 
 	return result
+}
+
+// conflictIndexFor returns the index of the Conflict entry recorded for the
+// given finding ID, or -1.
+func conflictIndexFor(conflicts []Conflict, id finding.ID) int {
+	for i := range conflicts {
+		if conflicts[i].Finding.ID == id {
+			return i
+		}
+	}
+
+	return -1
 }

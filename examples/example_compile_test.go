@@ -9,12 +9,11 @@ import (
 func TestExamplesCompile(t *testing.T) {
 	t.Parallel()
 
-	tests := []string{"./basic", "./builder", "./pipeline"}
+	tests := []string{"./basic", "./builder"}
 	for _, path := range tests {
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
 
-			//nolint:gosec // intentionally building known example directories
 			cmd := exec.CommandContext(t.Context(), "go", "build", "-o", "/dev/null", path)
 
 			out, err := cmd.CombinedOutput()
@@ -34,14 +33,12 @@ func TestExamplesRun(t *testing.T) {
 	}{
 		{"./basic", "Report has 1 finding(s)"},
 		{"./builder", "Fix available: oldPattern → newPattern"},
-		{"./pipeline", "Iterations: 1"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {
 			t.Parallel()
 
-			//nolint:gosec // intentionally running known example directories
 			cmd := exec.CommandContext(t.Context(), "go", "run", tt.path)
 
 			out, err := cmd.CombinedOutput()

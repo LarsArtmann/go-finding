@@ -1,11 +1,31 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      modules:
+        description: "Modules to lint (all | core | pipeline | analysis | cli, comma-separated)"
+        required: false
+        default: "all"
   push:
     branches: [master]
     tags: ["v*"]
+    paths-ignore:
+      - "**/*.md"
+      - docs/**
+      - LICENSE
+      - .gitignore
+      - "**/*.svg"
+      - "**/*.png"
   pull_request:
     branches: [master]
+    paths-ignore:
+      - "**/*.md"
+      - docs/**
+      - LICENSE
+      - .gitignore
+      - "**/*.svg"
+      - "**/*.png"
 
 permissions:
   contents: read
@@ -14,12 +34,12 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: ["1.26"]
+        go-version: ["1.27"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go-version }}
       - run: go mod download
@@ -28,87 +48,323 @@ jobs:
       - run: go test -race -count=1 -coverprofile=coverage.out ./...
       - run: go tool cover -func=coverage.out
 
+    timeout-minutes: 15
   coverage:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"
+          go-version: "1.27"
       - run: go test -race -count=1 -coverprofile=coverage.out ./...
       - name: Enforce per-package coverage thresholds
         run: bash scripts/coverage-check.sh coverage.out
-      - uses: codecov/codecov-action@v7
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: ./coverage.out
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
+    timeout-minutes: 15
   lint:
+    strategy:
+      matrix:
+        module: [".", "pipeline", "analysis", "toolsdk", "cmd/go-finding"]
     runs-on: ubuntu-latest
+    name: lint (${{ matrix.module }})
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"
-      - uses: golangci/golangci-lint-action@v6
+          go-version: "1.27"
+      # Module scoping for workflow_dispatch runs (inputs.modules): steps
+      # skip when their module is not selected. Push/PR runs lint everything.
+      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        if: >-
+          ${{
+            github.event_name != 'workflow_dispatch' ||
+            inputs.modules == 'all' ||
+            (matrix.module == '.' && (contains(inputs.modules, 'core') || contains(inputs.modules, '.'))) ||
+            (matrix.module == 'pipeline' && contains(inputs.modules, 'pipeline')) ||
+            (matrix.module == 'analysis' && contains(inputs.modules, 'analysis')) ||
+            (matrix.module == 'toolsdk' && contains(inputs.modules, 'toolsdk')) ||
+            (matrix.module == 'cmd/go-finding' && contains(inputs.modules, 'cli'))
+          }}
         with:
-          version: v2.10.1
+          # v2.14.0 is built with go1.27.2 (matches the nix devshell pin):
+          # v2.13.2 binaries are built with an older Go whose export-data
+          # decoder (max v4) cannot read the Go 1.27 stdlib (v5), so lint
+          # typecheck-fails every package with "could not import" cascades.
+          version: v2.14.0
           args: --timeout=5m
+          working-directory: ${{ matrix.module }}
       - name: Check formatting
+        if: >-
+          ${{
+            github.event_name != 'workflow_dispatch' ||
+            inputs.modules == 'all' ||
+            (matrix.module == '.' && (contains(inputs.modules, 'core') || contains(inputs.modules, '.'))) ||
+            (matrix.module == 'pipeline' && contains(inputs.modules, 'pipeline')) ||
+            (matrix.module == 'analysis' && contains(inputs.modules, 'analysis')) ||
+            (matrix.module == 'toolsdk' && contains(inputs.modules, 'toolsdk')) ||
+            (matrix.module == 'cmd/go-finding' && contains(inputs.modules, 'cli'))
+          }}
+        working-directory: ${{ matrix.module }}
         run: golangci-lint fmt --diff ./...
 
+    timeout-minutes: 15
+  preflight-selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+      - name: Release preflight self-test (injected drift + tag collision must FAIL)
+        run: bash scripts/release-preflight-selftest.sh
+
+    timeout-minutes: 20
+  version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Verify version.go matches git tag
+        run: bash scripts/version-check.sh
+
+    timeout-minutes: 5
   govulncheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"
+          go-version: "1.27"
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
       - name: Run govulncheck
         run: govulncheck ./...
 
+    timeout-minutes: 15
+  module-isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+      - name: Build each module standalone (GOWORK=off)
+        run: |
+          for mod in . pipeline analysis cmd/go-finding; do
+            echo "=== $mod ==="
+            (cd "$mod" && GOWORK=off go build ./...)
+          done
+      - name: Test each module standalone (GOWORK=off)
+        run: |
+          for mod in . pipeline analysis cmd/go-finding; do
+            echo "=== $mod ==="
+            (cd "$mod" && GOWORK=off go test -count=1 ./...)
+          done
+
+    timeout-minutes: 15
+  structural-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # changelog-drift.sh enumerates tags
+      - name: Verify replace directives
+        run: bash scripts/replace-audit.sh
+      - name: Verify version drift
+        run: bash scripts/version-drift.sh
+      - name: Verify test naming conventions
+        run: bash scripts/test-naming.sh
+      - name: Verify JSON determinism
+        run: bash scripts/json-deterministic-check.sh
+      - name: Verify CHANGELOG sections exist for release tags
+        run: bash scripts/changelog-drift.sh
+
+    timeout-minutes: 5
+  go-work-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+      - name: Verify go.work sync
+        run: bash scripts/go-work-sync.sh
+
+    timeout-minutes: 5
+  docs-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Check documentation freshness
+        run: bash scripts/docs-freshness.sh
+
+    timeout-minutes: 5
+  docs-api-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # docs-api-check.sh searches code with ripgrep; without it every
+      # identifier counts as missing (observed on first public-repo run).
+      - name: Install ripgrep
+        run: sudo apt-get update -q && sudo apt-get install -y -q ripgrep
+      - name: Check documented API identifiers exist in code
+        run: bash scripts/docs-api-check.sh
+
+    timeout-minutes: 5
+  arch-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+      - name: Install go-arch-lint
+        run: go install github.com/fe3dback/go-arch-lint@latest
+      - name: Check module boundaries
+        run: go-arch-lint check
+
+    timeout-minutes: 5
   stress:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"
-      - name: Stress test (-count=20)
-        run: go test -race -count=20 ./...
+          go-version: "1.27"
+      - name: Install ginkgo CLI
+        run: go install github.com/onsi/ginkgo/v2/ginkgo@v2.32.0
+      - name: Stress ginkgo suites (core, pipeline, repeat=20)
+        run: ginkgo -r --race --repeat=20 --skip-package=examples --trace
+      - name: Stress stdlib suites (analysis, cli, count=20)
+        run: go test -race -count=20 ./analysis/... ./cmd/...
 
+    timeout-minutes: 30
   dupl:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"
+          go-version: "1.27"
       - name: Install art-dupl
         run: go install github.com/LarsArtmann/art-dupl/cmd/art-dupl@latest
       - name: Check duplication (threshold 50)
         run: art-dupl . -t 50
 
+    timeout-minutes: 15
   benchmark:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26"
-      - name: Install benchstat
-        run: go install golang.org/x/perf/cmd/benchstat@latest
+          go-version: "1.27"
       - name: Run benchmarks (count=10 for statistical significance)
-        run: go test -bench=. -benchmem -count=10 -run='^$' ./... 2>&1 | tee bench-current.txt
-      - name: Check for regressions vs baseline (fail if >25% slower)
-        run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 25
+        run: |
+          go test -bench=. -benchmem -count=10 -run='^$' ./... 2>&1 | tee bench-current.txt
+          cd pipeline
+          go test -bench=. -benchmem -count=10 -run='^$' . >> ../bench-current.txt
+      - name: Check for regressions vs baseline (alloc +10% hard, time +250% thermal-tolerant)
+        # benchstat resolves via the pinned Go tool directive in go.mod
+        # (tool golang.org/x/perf/cmd/benchstat) — reproducible, no @latest.
+        # See scripts/bench-check.sh header for the threshold rationale.
+        run: bash scripts/bench-check.sh benchmarks/baseline.txt bench-current.txt 250 10
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: benchmark-results
           path: |
             bench-current.txt
             benchmarks/baseline.txt
+    # count=10 across core+pipeline needs >15min on a 2-core runner (observed:
+    # job cancelled at the timeout with everything else green, 2026-09-08).
+    timeout-minutes: 45
+  consumer-compat:
+    # The public promise is "plain go get works for every module with no
+    # GOPRIVATE and no replace directives". This gate runs the exact
+    # consumer flow (proxy resolution, build, run, CLI install) against
+    # the published version, so a broken train is caught mechanically.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+      - name: Verify all modules resolve, build, and run from the proxy
+        run: bash scripts/consumer-compat-check.sh latest
+
+    timeout-minutes: 15
+  nix:
+    # The nix gates (nix flake check, nix run .#lint) ran local-only for the
+    # project's whole life; the flake silently rotted for 3 days in Sep 2026
+    # (go.mod bumps staled vendorHash) because no CI job ran it. This job is
+    # the antidote. Budget: cold nix install + first go-modules build on a
+    # 2-core runner needs well over 15min (same runner class as the benchmark
+    # job's 45min precedent), hence the generous timeout.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+      - name: Nix flake check
+        run: nix flake check
+      - name: Nix lint (golangci-lint via flake app)
+        run: nix run .#lint
+    timeout-minutes: 45
+  changelog-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Verify CHANGELOG.md was updated
+        run: |
+          if ! git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "^CHANGELOG.md$"; then
+            echo "::warning::CHANGELOG.md was not updated. Please add an entry under [Unreleased]."
+          fi
+
+    timeout-minutes: 5
+  markdown-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check for broken internal markdown links
+        run: bash scripts/link-check.sh
+
+      # Excludes:
+      # - sibling larsartmann repos listed in docs/ecosystem.md that are still
+      #   PRIVATE: they 404 for unauthenticated link checkers (remove entries
+      #   as those repos go public).
+      # - v0.1.x compare links in CHANGELOG.md reference tags that predate the
+      #   v1.x tagging scheme and do not exist.
+      - name: Check all markdown links incl. http(s) and archived docs (lychee)
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --no-progress
+            --max-retries 2
+            --timeout 15
+            --exclude-loopback
+            --exclude 'github\.com/larsartmann/(branching-flow|go-auto-upgrade|go-checker-helpers|go-linter-sdk|hierarchical-errors|linter-autoconfigure-sdk)'
+            --exclude 'github\.com/larsartmann/go-finding/compare/v0\.1\.'
+            './**/*.md'
+          fail: true
+
+    timeout-minutes: 10
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

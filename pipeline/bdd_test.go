@@ -159,17 +159,17 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			_, err := p.Run(context.Background())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(HaveLen(1))
-			Expect(found[0].Rule).To(Equal("r1"))
+			Expect(found[0].Rule).To(Equal(finding.RuleName("r1")))
 		})
 	})
 
 	Describe("finding processors", func() {
-		It("ProcessorFunc adapter works", func() {
-			fn := pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
+		It("TransformerFunc adapter works", func() {
+			fn := pipeline.TransformerFunc(func(findings []finding.Finding) []finding.Finding {
 				return findings[:1]
 			})
-			Expect(fn.Name()).To(Equal("anonymous"))
-			result, err := fn.Process(context.Background(), []finding.Finding{
+			Expect(fn.Name()).To(Equal(""))
+			result, err := fn.Transform(context.Background(), []finding.Finding{
 				mustBuild("r1", "t", "m", finding.SeverityError, "f.go", 1,
 					finding.FixStrategyNone, "", ""),
 				mustBuild("r2", "t", "m", finding.SeverityInfo, "f.go", 2,
@@ -177,13 +177,13 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(result).To(HaveLen(1))
-			Expect(result[0].Rule).To(Equal("r1"))
+			Expect(result[0].Rule).To(Equal(finding.RuleName("r1")))
 		})
 
-		It("NamedProcessorFunc sets the name", func() {
-			p := pipeline.NamedProcessorFunc(
+		It("NamedTransformerFunc sets the name", func() {
+			p := pipeline.NamedTransformerFunc(
 				"severity-filter",
-				pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
+				pipeline.TransformerFunc(func(findings []finding.Finding) []finding.Finding {
 					return findings
 				}),
 			)
@@ -193,9 +193,9 @@ var _ = Describe("Pipeline Lifecycle", func() {
 		It("chains processors between detection and triage in the pipeline", func() {
 			var processed [][]finding.Finding
 
-			filter := pipeline.NamedProcessorFunc(
+			filter := pipeline.NamedTransformerFunc(
 				"only-errors",
-				pipeline.ProcessorFunc(func(findings []finding.Finding) []finding.Finding {
+				pipeline.TransformerFunc(func(findings []finding.Finding) []finding.Finding {
 					processed = append(processed, findings)
 
 					return finding.Filter(findings, finding.BySeverity(finding.SeverityError))
@@ -219,7 +219,7 @@ var _ = Describe("Pipeline Lifecycle", func() {
 			cfg := pipeline.DefaultConfig()
 			cfg.DryRun = true
 			cfg.MaxIterations = 1
-			cfg.Processors = []pipeline.FindingProcessor{filter}
+			cfg.Processors = []pipeline.FindingTransformer{filter}
 
 			p, err := pipeline.New(cfg, ".", detector)
 			Expect(err).NotTo(HaveOccurred())
@@ -244,7 +244,7 @@ func mustBuild(
 	rule, tool, msg string, sev finding.Severity, file string, line int,
 	fs finding.FixStrategy, before, after string,
 ) finding.Finding {
-	f, err := finding.NewBuilder(rule, tool, msg, sev, finding.Pos(file, line, 1)).
+	f, err := finding.NewBuilder(finding.RuleName(rule), finding.ToolName(tool), msg, sev, finding.Pos(finding.FilePath(file), line, 1)).
 		WithFixStrategy(fs).
 		WithBeforeCode(before).
 		WithAfterCode(after).
@@ -277,12 +277,7 @@ func lineRangeFix(
 	before, after, file string,
 	startLine, startCol, endLine, endCol int,
 ) finding.Finding {
-	return finding.Finding{
-		BeforeCode: before,
-		AfterCode:  after,
-		Range:      finding.NewRangePtr(file, startLine, startCol, endLine, endCol),
-		Position:   finding.Pos(file, startLine, startCol),
-	}
+	return pipeline.ExportRangeFix(file, startLine, startCol, endLine, endCol, before, after)
 }
 
 func codeFix(before, after string, line, col int) finding.Finding {
@@ -294,13 +289,5 @@ func codeFix(before, after string, line, col int) finding.Finding {
 }
 
 func offsetFix(before, after string, startOff, endOff int) finding.Finding {
-	return finding.Finding{
-		BeforeCode: before,
-		AfterCode:  after,
-		Range: &finding.Range{
-			Start: finding.Position{File: "a.go", Offset: startOff},
-			End:   finding.Position{File: "a.go", Offset: endOff},
-		},
-		Position: finding.Pos("a.go", 4, 2),
-	}
+	return pipeline.ExportOffsetFix(before, after, startOff, endOff)
 }

@@ -7,7 +7,7 @@ type Stage string
 const (
 	// StageDetect is the detection stage where detectors run.
 	StageDetect Stage = "detect"
-	// StageProcess is the processor stage where FindingProcessors transform results.
+	// StageProcess is the processor stage where FindingTransformers transform results.
 	StageProcess Stage = "process"
 	// StageTriage is the triage stage where findings are categorized by fix strategy.
 	StageTriage Stage = "triage"

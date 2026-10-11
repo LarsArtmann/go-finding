@@ -6,9 +6,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"runtime/pprof"
 	"slices"
 	"strconv"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/larsartmann/go-finding"
@@ -42,20 +45,40 @@ type cliFlags struct {
 	generatedInclude  string
 	byteLevelConflict bool
 	fixProviders      string
+	fixRollbackAll    bool
+	includeSuppressed bool
+	trace             bool
+	traceDir          string
+	traceSlow         time.Duration
+	traceMaxFiles     int
+	traceGzip         bool
 }
 
 func parseFlags() cliFlags {
 	var f cliFlags
 
 	flag.StringVar(&f.dir, "dir", ".", "root directory to analyze")
-	flag.StringVar(&f.format, "format", "text", "output format: text, markdown, json, sarif")
+	flag.StringVar(&f.format, "format", "text", "output format: text, markdown, csv, tsv, json, sarif")
+	flag.StringVar(
+		&f.minSev,
+		"min-severity",
+		"info",
+		"minimum severity: info, warning, error, critical",
+	)
 	flag.StringVar(
 		&f.minSev,
 		"severity",
 		"info",
-		"minimum severity: info, warning, error, critical",
+		"deprecated alias for -min-severity",
 	)
-	flag.IntVar(&f.maxIter, "max-iterations", 1, "maximum pipeline iterations (default: 1 for CLI, library uses "+strconv.Itoa(pipeline.DefaultMaxIterations)+")")
+	flag.IntVar(
+		&f.maxIter,
+		"max-iterations",
+		1,
+		"maximum pipeline iterations (default: 1 for CLI, library uses "+strconv.Itoa(
+			pipeline.DefaultMaxIterations,
+		)+")",
+	)
 	flag.BoolVar(&f.parallel, "parallel", true, "run detectors in parallel")
 	flag.BoolVar(&f.verify, "verify", false, "verify fixes by re-running detectors")
 	flag.DurationVar(&f.timeout, "timeout", pipeline.DefaultTimeout, "pipeline timeout")
@@ -90,16 +113,65 @@ func parseFlags() cliFlags {
 		&f.fixProviders, "fix-provider", "",
 		"comma-separated fix provider names to enable (e.g., go-ast)",
 	)
+	flag.BoolVar(
+		&f.fixRollbackAll, "fix-rollback-all", false,
+		"roll back ALL files when any file fails during fix (default: only the failing file is restored)",
+	)
+	flag.BoolVar(
+		&f.includeSuppressed, "include-suppressed", true,
+		"include suppressed findings in SARIF output",
+	)
+	flag.BoolVar(
+		&f.trace, "trace", false,
+		"enable Go execution trace flight recorder for diagnostics",
+	)
+	flag.StringVar(
+		&f.traceDir, "trace-dir", "",
+		"directory for trace snapshot files (default: temp dir)",
+	)
+	flag.DurationVar(
+		&f.traceSlow, "trace-slow", 0,
+		"auto-snapshot trace when a pipeline stage exceeds this duration (e.g. 30s)",
+	)
+	flag.IntVar(
+		&f.traceMaxFiles, "trace-max-files", 0,
+		"keep at most N trace snapshot files, pruning oldest (0 = unlimited)",
+	)
+	flag.BoolVar(
+		&f.traceGzip, "trace-gzip", false,
+		"write gzip-compressed .trace.gz snapshots",
+	)
 	flag.Parse()
 
 	return f
+}
+
+// installFlightRecorder builds the flight recorder hook, registers it as a
+// pipeline stage hook, and announces the setup on stderr. source decorates the
+// announcement: "" for -trace flags, " via config" for the config file.
+func installFlightRecorder(
+	pipelineCfg *pipeline.Config,
+	frConfig pipeline.FlightRecorderConfig,
+	source string,
+) (*pipeline.FlightRecorderHook, error) {
+	hook, err := pipeline.NewFlightRecorderHook(frConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineCfg.StageHooks = append(pipelineCfg.StageHooks, hook)
+
+	fmt.Fprintf(os.Stderr, "Flight recorder enabled%s (output: %s, slow threshold: %v)\n",
+		source, frConfig.OutputDir, frConfig.SlowStageThreshold)
+
+	return hook, nil
 }
 
 func run() int {
 	f := parseFlags()
 
 	if f.showVer {
-		_, _ = fmt.Fprintln(os.Stdout, version)
+		_, _ = fmt.Fprintln(os.Stdout, version) //nolint:erraudit // version output is best-effort
 
 		return 0
 	}
@@ -136,11 +208,8 @@ func run() int {
 		return fatalf("parsing config", err)
 	}
 
-	// Merge fix provider names from CLI flag and config file.
-	fixProviderNames := cfg.FixProviders
-	if f.fixProviders != "" {
-		fixProviderNames = append(fixProviderNames, splitCommaList(f.fixProviders)...)
-	}
+	// Merge fix provider names from CLI flag and config file, deduplicating.
+	fixProviderNames := uniqueStrings(append(slices.Clone(cfg.FixProviders), splitCommaList(f.fixProviders)...))
 
 	if len(fixProviderNames) > 0 {
 		providers, err := resolveFixProviders(fixProviderNames)
@@ -157,6 +226,10 @@ func run() int {
 		pipelineCfg.ByteLevelConflictDetection = true
 	}
 
+	if f.fixRollbackAll || cfg.FixRollbackAllFiles {
+		pipelineCfg.FixRollbackAllFiles = true
+	}
+
 	if f.filterGenerated || cfg.FilterGenerated {
 		if err := addGeneratedFilter(
 			&pipelineCfg, cfg,
@@ -166,14 +239,53 @@ func run() int {
 		}
 	}
 
+	// Set up flight recorder BEFORE pipeline construction so the hook
+	// is registered in Config.StageHooks at creation time.
+	var frHook *pipeline.FlightRecorderHook
+
+	if f.trace {
+		frConfig := pipeline.DefaultFlightRecorderConfig()
+		if f.traceDir != "" {
+			frConfig.OutputDir = f.traceDir
+		}
+
+		frConfig.SlowStageThreshold = f.traceSlow
+		frConfig.MaxFiles = f.traceMaxFiles
+		frConfig.Compress = f.traceGzip
+
+		var err error
+
+		frHook, err = installFlightRecorder(&pipelineCfg, frConfig, "")
+		if err != nil {
+			return fatalf("creating flight recorder", err)
+		}
+	} else if cfg.FlightRecorder != nil && cfg.FlightRecorder.Enabled {
+		frConfig, err := cfg.FlightRecorder.resolve()
+		if err != nil {
+			return fatalf("resolving flight recorder config", err)
+		}
+
+		var installErr error
+
+		frHook, installErr = installFlightRecorder(&pipelineCfg, frConfig, " via config")
+		if installErr != nil {
+			return fatalf("creating flight recorder", installErr)
+		}
+	}
+
 	p, err := pipeline.New(pipelineCfg, f.dir, detectorList...)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "invalid pipeline config: %v\n", err)
 
+		if frHook != nil {
+			frHook.Close()
+		}
+
 		return 1
 	}
 
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
 
 	fmt.Fprintf(
 		os.Stderr,
@@ -185,11 +297,23 @@ func run() int {
 	)
 
 	result, err := p.Run(ctx)
+
+	// On error or timeout, capture a final trace snapshot.
+	if err != nil && frHook != nil && frHook.Enabled() {
+		if snapPath, snapErr := frHook.Snapshot(ctx, "pipeline-error"); snapErr == nil {
+			fmt.Fprintf(os.Stderr, "Trace snapshot: %s\n", snapPath)
+		}
+	}
+
+	if frHook != nil {
+		frHook.Close()
+	}
+
 	if err != nil {
 		return fatalf("running pipeline", err)
 	}
 
-	return writeResults(result, sev, f.format, f.outputFile)
+	return writeResults(result, sev, f.format, f.outputFile, f.includeSuppressed)
 }
 
 func writeResults(
@@ -197,6 +321,7 @@ func writeResults(
 	minSev finding.Severity,
 	format string,
 	outputFile string,
+	includeSuppressed bool,
 ) int {
 	var allFindings []finding.Finding
 	for _, iter := range result.Iterations {
@@ -212,7 +337,7 @@ func writeResults(
 	report.AddFindings(filtered)
 	report.ComputeSummary()
 
-	if err := writeOutput(report, format, outputFile); err != nil {
+	if err := writeOutput(report, format, outputFile, includeSuppressed); err != nil {
 		return fatalf("writing output", err)
 	}
 
@@ -226,7 +351,35 @@ func writeResults(
 			len(result.Metrics.DetectorTimes))
 	}
 
+	if len(result.Metrics.OutcomeCounts) > 0 {
+		fmt.Fprintf(os.Stderr, "Fix outcomes: %s\n", formatOutcomeCounts(result.Metrics.OutcomeCounts))
+	}
+
 	return 0
+}
+
+// fixOutcomeOrder is the canonical display order for fix outcome counts.
+var fixOutcomeOrder = []pipeline.FixOutcomeStatus{
+	pipeline.FixOutcomeApplied,
+	pipeline.FixOutcomeNoChange,
+	pipeline.FixOutcomeRefused,
+	pipeline.FixOutcomeConflict,
+	pipeline.FixOutcomeInvalid,
+	pipeline.FixOutcomeFailed,
+}
+
+// formatOutcomeCounts renders nonzero outcome counts in canonical order,
+// e.g. "applied=3, refused=1, failed=2".
+func formatOutcomeCounts(counts map[pipeline.FixOutcomeStatus]int) string {
+	parts := make([]string, 0, len(counts))
+
+	for _, status := range fixOutcomeOrder {
+		if n := counts[status]; n > 0 {
+			parts = append(parts, fmt.Sprintf("%s=%d", status, n))
+		}
+	}
+
+	return strings.Join(parts, ", ")
 }
 
 func setupProfiling(cpuprof, memprof string) (func(), error) {
@@ -243,10 +396,10 @@ func setupProfiling(cpuprof, memprof string) (func(), error) {
 			)
 		}
 
-		stopFuncs = append(stopFuncs, func() { _ = f.Close() })
+		stopFuncs = append(stopFuncs, func() { _ = f.Close() }) //nolint:erraudit // best-effort profiling cleanup
 
 		if err := pprof.StartCPUProfile(f); err != nil {
-			_ = f.Close()
+			_ = f.Close() //nolint:erraudit // profiling failed to start; Close error is secondary
 
 			fmt.Fprintf(os.Stderr, "Error starting CPU profile: %v\n", err)
 
@@ -259,13 +412,13 @@ func setupProfiling(cpuprof, memprof string) (func(), error) {
 	if memprof != "" {
 		stopFuncs = append(stopFuncs, func() {
 			f, err := os.Create(memprof)
-			if err != nil {
+			if err != nil { //nolint:erraudit // profiling is best-effort; failure already reported to stderr
 				fmt.Fprintf(os.Stderr, "Error creating memory profile: %v\n", err)
 
 				return
 			}
 
-			defer func() { _ = f.Close() }()
+			defer func() { _ = f.Close() }() //nolint:erraudit // best-effort profiling cleanup
 
 			if err := pprof.WriteHeapProfile(f); err != nil {
 				fmt.Fprintf(os.Stderr, "Error writing heap profile: %v\n", err)

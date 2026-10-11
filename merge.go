@@ -22,15 +22,15 @@ const emptyToolName = "empty"
 // Use Report.MergeInto(other) to combine two reports without mutation.
 func Combine(reports []*Report, opts ...MergeOption) *Report {
 	if len(reports) == 0 {
-		return NewReport(ToolInfo{Name: emptyToolName}) //nolint:exhaustruct
+		return NewReport(ToolInfo{Name: emptyToolName})
 	}
 
 	if len(reports) == 1 {
 		r := reports[0]
 
-		result := &Report{ //nolint:exhaustruct
+		result := &Report{
 			Tool:     r.Tool,
-			Findings: cloneFindings(r.readFindings()),
+			findings: cloneFindings(r.readFindings()),
 		}
 		result.ComputeSummary()
 
@@ -52,12 +52,12 @@ func Combine(reports []*Report, opts ...MergeOption) *Report {
 		findings = append(findings, f)
 	}
 
-	merged := &Report{ //nolint:exhaustruct
+	merged := &Report{
 		Tool: ToolInfo{
 			Name:    mergedToolName,
 			Version: "",
 		},
-		Findings: findings,
+		findings: findings,
 	}
 	merged.ComputeSummary()
 
@@ -104,7 +104,7 @@ func (d DeduplicateBy) String() string {
 	case DeduplicateByPosition:
 		return "position"
 	case DeduplicateByRule:
-		return "rule" //nolint:goconst // enum display name, not a repeated constant
+		return "rule"
 	default:
 		return fmt.Sprintf("unknown(%d)", d)
 	}
@@ -134,6 +134,22 @@ func WithDeduplicateBy(by DeduplicateBy) MergeOption {
 // dedupKeyOverhead accounts for 3 colons + two decimal integers (up to 20 chars).
 const dedupKeyOverhead = 23
 
+// positionDedupKey builds a deterministic key from a tool/rule prefix and the
+// finding's position (file:line:column). The caller must ensure Position.File is set.
+func positionDedupKey(prefix string, f Finding) string {
+	var b strings.Builder
+	b.Grow(len(prefix) + len(f.Position.File) + dedupKeyOverhead)
+	b.WriteString(prefix)
+	b.WriteByte(':')
+	b.WriteString(string(f.Position.File))
+	b.WriteByte(':')
+	b.WriteString(strconv.Itoa(f.Position.Line))
+	b.WriteByte(':')
+	b.WriteString(strconv.Itoa(f.Position.Column))
+
+	return b.String()
+}
+
 func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 	switch opts.DeduplicateBy {
 	case DeduplicateByID:
@@ -141,41 +157,21 @@ func dedupKey(finding Finding, opts MergeOptions) (string, bool) {
 			return "", false
 		}
 
-		return finding.ID, true
+		return string(finding.ID), true
 	case DeduplicateByPosition:
 		if finding.Position.File == "" {
 			return "", false
 		}
 
-		var b strings.Builder
-		b.Grow(len(finding.ToolName) + len(finding.Position.File) + dedupKeyOverhead)
-		b.WriteString(finding.ToolName)
-		b.WriteByte(':')
-		b.WriteString(finding.Position.File)
-		b.WriteByte(':')
-		b.WriteString(strconv.Itoa(finding.Position.Line))
-		b.WriteByte(':')
-		b.WriteString(strconv.Itoa(finding.Position.Column))
-
-		return b.String(), true
+		return positionDedupKey(string(finding.ToolName), finding), true
 	case DeduplicateByRule:
 		if finding.Position.File == "" {
 			return "", false
 		}
 
-		var b strings.Builder
-		b.Grow(len(finding.Rule) + len(finding.Position.File) + dedupKeyOverhead)
-		b.WriteString(finding.Rule)
-		b.WriteByte(':')
-		b.WriteString(finding.Position.File)
-		b.WriteByte(':')
-		b.WriteString(strconv.Itoa(finding.Position.Line))
-		b.WriteByte(':')
-		b.WriteString(strconv.Itoa(finding.Position.Column))
-
-		return b.String(), true
+		return positionDedupKey(string(finding.Rule), finding), true
 	default:
-		return finding.ID, true
+		return string(finding.ID), true
 	}
 }
 

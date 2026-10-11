@@ -1,0 +1,87 @@
+direction: down
+
+cmd: "cmd/go-finding\n(CLI composition root)" {
+  shape: package
+  style.fill: "#f4d35e"
+}
+
+pipeline_facade: "pipeline\n(facade + orchestrator,\n8 files, re-exports)" {
+  shape: package
+  style.fill: "#ffb347"
+
+  pipeline_core: "pipeline.go + pipeline_detect.go +\npipeline_iteration.go" {
+    shape: rectangle
+  }
+  stages: "stage.go + stage_hook.go +\nverify.go + result.go" {
+    shape: rectangle
+  }
+  generated_filter: "generated_filter.go" {
+    shape: rectangle
+  }
+}
+
+pipeline_fix: "pipeline/fix\n(byte-level fix engine,\n6 files)" {
+  shape: package
+  style.fill: "#ffd700"
+
+  fix_engine: "fix_engine + fix_provider +\nfix_applier + fix_edit +\nfix_provider_helpers + line_shift" {
+    shape: rectangle
+  }
+}
+
+pipeline_conflict: "pipeline/conflict\n(overlapping fix detection)" {
+  shape: package
+  style.fill: "#ffd700"
+}
+
+pipeline_config: "pipeline/config\n(JSON/YAML loading)" {
+  shape: package
+  style.fill: "#ffd700"
+}
+
+pipeline_infra: "pipeline/infra\n(file_backup, retry,\npartial, metrics)" {
+  shape: package
+  style.fill: "#ffd700"
+}
+
+goast: "pipeline/goast\n(opt-in go/parser)" {
+  shape: package
+  style.fill: "#6eb5ff"
+}
+
+analysis: "analysis\n(go/analysis bridge)" {
+  shape: package
+  style.fill: "#6eb5ff"
+}
+
+detectors: "internal/detectors\ngovet + staticcheck" {
+  shape: package
+  style.fill: "#6eb5ff"
+}
+
+root: "finding (root)\nDomain types with branded IDs:\nFindingID, RuleName, ToolName, FilePath\nFix as interface union (v2.0)" {
+  shape: package
+  style.fill: "#7dff95"
+}
+
+external: "External\n(gogenfilter, go-output,\nx/tools, x/sync, ginkgo)" {
+  shape: cloud
+  style.fill: "#e8e8e2"
+}
+
+cmd -> pipeline_facade: "wires"
+cmd -> detectors: "registers"
+cmd -> goast: "opts in"
+pipeline_facade -> pipeline_fix: "uses"
+pipeline_facade -> pipeline_conflict: "uses"
+pipeline_facade -> pipeline_config: "loads"
+pipeline_facade -> pipeline_infra: "owns"
+pipeline_fix -> root: "depends on"
+pipeline_conflict -> root: "depends on"
+goast -> root: "depends on"
+analysis -> root: "depends on"
+analysis -> external: "golang.org/x/tools"
+detectors -> root: "depends on"
+detectors -> external: "shells out"
+pipeline_facade -> external: "gogenfilter"
+cmd -> external: "go-output"

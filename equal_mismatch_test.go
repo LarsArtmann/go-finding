@@ -140,6 +140,17 @@ func TestFinding_Equal_FieldMismatch_CodeAndMeta(t *testing.T) {
 			false,
 		},
 		{
+			"different group id",
+			base,
+			func() Finding {
+				f := testFindingBase()
+				f.GroupID = "other-group"
+
+				return f
+			}(),
+			false,
+		},
+		{
 			"different confidence",
 			base,
 			func() Finding {
@@ -200,7 +211,7 @@ func TestRange_Compare(t *testing.T) {
 	t.Parallel()
 
 	rng := func(f string, sl, el int) Range {
-		return NewRange(f, sl, 0, el, 0)
+		return NewRange(FilePath(f), sl, 0, el, 0)
 	}
 
 	tests := []struct {

@@ -1,7 +1,7 @@
 package finding
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"strings"
 	"testing"
 
@@ -11,7 +11,7 @@ import (
 func simpleSARIFReport() *Report {
 	return &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID: "f1", Rule: "r1", Message: "m",
 				Severity: SeverityError, Position: Position{File: "a.go"},
@@ -115,12 +115,11 @@ func TestFromSARIFLevel(t *testing.T) {
 }
 
 func TestToSARIF(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "test-tool", Version: "1.0"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:       "f1",
 				Rule:     "SA1000",
@@ -162,14 +161,13 @@ func TestToSARIF(t *testing.T) {
 }
 
 func TestToSARIFFiltered(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	suppression := expiringSuppression(t, "test")
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{ID: "f1", Severity: SeverityCritical, Rule: "r1", Position: Position{File: "a.go"}},
 			{ID: "f2", Severity: SeverityError, Rule: "r2", Position: Position{File: "a.go"}},
 			{ID: "f3", Severity: SeverityWarning, Rule: "r3", Position: Position{File: "a.go"}},
@@ -184,9 +182,9 @@ func TestToSARIFFiltered(t *testing.T) {
 		},
 	}
 
-	data, err := r.ToSARIFFiltered(SeverityError)
+	data, err := r.ToSARIFWithOpts(WithMinSeverity(SeverityError))
 	if err != nil {
-		t.Fatalf("ToSARIFFiltered: %v", err)
+		t.Fatalf("ToSARIFWithOpts: %v", err)
 	}
 
 	log := unmarshalSARIF(t, data)
@@ -207,14 +205,13 @@ func TestToSARIFFiltered(t *testing.T) {
 }
 
 func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	suppression := expiringSuppression(t, "won't fix")
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{ID: "f1", Rule: "r1", Severity: SeverityError, Position: Position{File: "a.go"}},
 			{
 				ID:          "f2",
@@ -242,12 +239,11 @@ func TestToSARIF_SuppressedFindingsExcluded(t *testing.T) {
 }
 
 func TestToSARIF_WithFix(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:          "f1",
 				Rule:        "fix-rule",
@@ -283,7 +279,7 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:       "f1",
 				Rule:     "r1",
@@ -313,12 +309,11 @@ func TestToSARIF_WithMetadata(t *testing.T) {
 }
 
 func TestToSARIF_SuggestionOnly(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewWithT(t)
+	g := NewParallelGomega(t)
 
 	r := &Report{
 		Tool: ToolInfo{Name: "tool"},
-		Findings: []Finding{
+		findings: []Finding{
 			{
 				ID:          "f1",
 				Rule:        "r1",
