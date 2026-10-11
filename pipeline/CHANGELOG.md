@@ -11,6 +11,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Pipeline adopts the DetectorV2 coverage channel** — every detect path
+  (`Pipeline.detect` sequential + parallel, `DetectPartial` sequential +
+  parallel, the convenience `Detect`, `Verify` re-detection, and
+  `RetryDetector`) now dispatches through `finding.RunDetect`, so a
+  `DetectorV2` implementation's coverage evidence flows end-to-end:
+  `PartialResult` gains `FilesScanned`/`SkippedModules` (summed/unioned
+  across successful detectors only), and `PipelineResult` carries the
+  FINAL scan's coverage (post-fix state on the last iteration). V1-only
+  detectors keep working untouched with zeroed coverage — the documented
+  "no measurement" contract, not an empty-tree claim. `RetryDetector`
+  implements `DetectV2` when its inner detector does, so coverage
+  survives the retry decorator. The convenience `Detect` keeps its
+  `[]Finding` signature (coverage surfaces through the Pipeline types).
+  Pinned by `detect_v2_coverage_test.go` (v2 surfacing, v1 zeroing,
+  partial accumulation, retry pass-through, convenience dispatch).
 - **`ResolveFlightRecorderConfig`** — exported mapping from
   `FlightRecorderFileConfig` (JSON/YAML-friendly section) to
   `FlightRecorderConfig`: parses the string-encoded durations and applies
