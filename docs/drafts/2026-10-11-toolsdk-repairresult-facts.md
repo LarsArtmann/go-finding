@@ -1,3 +1,5 @@
+> **OUTCOME (2026-10-11): filed as [#42](https://github.com/LarsArtmann/go-finding/issues/42), fixed on master the same day (commit 10429a5: `RepairResult.ModifiedFiles` + `Facts []Fact`, non-gating contract documented in spec.go), issue closed. Remaining consumer half (BuildFlow mapping, go-auto-upgrade emission) tracked in those repos' TODO lists — BuildFlow's mapping landed 2026-10-11 on the switch-over branch.**
+
 <!-- proposed title:
 RepairResult has no structured facts channel — provenance degrades into Description prose
 labels: enhancement

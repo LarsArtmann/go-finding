@@ -1,3 +1,5 @@
+> **OUTCOME (2026-10-11): filed as [#43](https://github.com/LarsArtmann/go-finding/issues/43), fixed on master the same day (commit 10429a5: `StringFromContext`/`IntFromContext`/`BoolFromContext` + `ErrOptionKindMismatch`), issue closed with evidence. This draft is historical; the shipped contract is in `options.go` + `options_test.go`.**
+
 <!-- proposed title:
 Typed option accessors: every tool re-implements kind-assert + default boilerplate (23 lines for one option in go-auto-upgrade)
 labels: enhancement

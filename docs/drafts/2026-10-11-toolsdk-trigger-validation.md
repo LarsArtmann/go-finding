@@ -1,3 +1,5 @@
+> **OUTCOME (2026-10-11): filed as [#44](https://github.com/LarsArtmann/go-finding/issues/44), fixed on master the same day (commit 10429a5: `Trigger.Validate` + `ErrInvalidTrigger` + `ValidLanguages`, wired into `mustValidate`), issue closed. The downstream break risk the issue predicted was REAL and verified 2026-10-11: BuildFlow's oxlint-auto-configure spec registered `Language: "javascript"` (not in the six-code set) and panicked at startup against this master — fixed in the sibling repo.**
+
 <!-- proposed title:
 Register validates Options but not Trigger — a typo'd Language registers fine and then silently never matches
 labels: bug
