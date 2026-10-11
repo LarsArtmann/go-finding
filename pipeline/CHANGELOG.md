@@ -26,6 +26,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `[]Finding` signature (coverage surfaces through the Pipeline types).
   Pinned by `detect_v2_coverage_test.go` (v2 surfacing, v1 zeroing,
   partial accumulation, retry pass-through, convenience dispatch).
+
+## [1.14.0] - 2026-10-11
+
+### Added
+
 - **`ResolveFlightRecorderConfig`** — exported mapping from
   `FlightRecorderFileConfig` (JSON/YAML-friendly section) to
   `FlightRecorderConfig`: parses the string-encoded durations and applies
@@ -33,7 +38,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `ConfigFile.ResolveFlightRecorder` now delegates to it. Duration errors
   read `parse flightRecorder.<field> %q` — wording is contract and pinned
   by test.
-
 - **`EditListProvider` (issue #36)** — resolves a finding's typed edit list
   (`Finding.Edits`, new in core) to byte-level edits: byte offsets directly,
   line/column via the shared line index. Runs first in the default provider

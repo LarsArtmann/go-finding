@@ -26,39 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   shipped in v1.14.0 with no way for a Detector to populate them).
   Source-compatible: `Detector` is unchanged, `DetectorV2` embeds it.
 
-- **`pipeline.EditListProvider` (issue #36)** — resolves a finding's typed edit
-  list (`Finding.Edits`) to byte-level edits: byte offsets directly, line/column
-  via the shared line index. Runs first in the default provider chain (before
-  Offset, Line, and Substring). Loud failures instead of partial application:
-  lists spanning files fail with `ErrEditCrossFile`; stale or out-of-bounds
-  offsets fail with `ErrEditStale` (both surface as `FixOutcomeFailed` with the
-  provider cause in the error chain). See
-  [pipeline/CHANGELOG.md](pipeline/CHANGELOG.md).
-- **`finding.TextEdit` and `Finding.Edits` (issue #36)** — typed multi-edit fix
-  representation: `Start`/`End` positions plus `NewText`, with `HasSpan`,
-  `IsInsertion`, `IsDeletion`, `EffectiveFile`, and `Validate` helpers,
-  order-independent list equality, and builder support via `WithEdits`. When
-  set, `Edits` is the authoritative machine representation of the fix;
-  `BeforeCode`/`AfterCode` remain the first-edit display summary. Direct fixes
-  now validate with either representation ("requires BeforeCode, AfterCode, or
-  Edits"). SARIF export/import round-trips edit lists, including byte offsets
-  via `region.byteOffset`/`byteLength`.
-
-### Changed
-
-- **`ApplySimpleFixes` refuses multi-edit findings** — findings whose `Edits`
-  list more than one edit are skipped with an actionable reason pointing at the
-  pipeline `FixApplier`, instead of silently fixing only the first edit.
-- **`FixEngine` applied counts are per finding, not per edit (pipeline)** — a
-  multi-edit fix counts once in `Apply`/`ApplyWithConflicts` results and
-  `ApplyReport.Applied`, matching "number of successful fixes" semantics.
-- **Multi-edit suggested fixes are lossless (analysis)** —
-  `FromDiagnosticWithSource` carries all `TextEdits` of a diagnostic's first
-  `SuggestedFix` into `Finding.Edits` (previously edits 2..N were silently
-  dropped, issue #36); `ToDiagnostic` reconstructs the full edit list.
-  Alternative fixes (`SuggestedFixes` 1..N) remain first-wins and are now
-  documented as such.
-
 ### Fixed
 
 - **CI and Release workflow Go pins matched to the toolchain floor** — both
@@ -73,7 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Root release: the toolsdk options channel (PR #41), the toolsdk switch-topology
 API, report coverage evidence, and the json/v2 GA build change. Sub-module
 releases ride along: [toolsdk/v1.14.0](toolsdk/CHANGELOG.md) (options channel)
-and [toolsdk/v1.15.0](toolsdk/CHANGELOG.md) (`Spec.SwitchCases`).
+and [toolsdk/v1.15.0](toolsdk/CHANGELOG.md) (`Spec.SwitchCases`). Train
+completed 2026-10-11: [pipeline/v1.14.0](pipeline/CHANGELOG.md) (typed edit
+lists end-to-end), [analysis/v1.14.0](analysis/CHANGELOG.md) (lossless
+multi-edit round-trips), and
+[cmd/go-finding/v1.14.0](cmd/go-finding/CHANGELOG.md) (CLI pinned to the
+v1.14.0 siblings).
 
 ### Added
 
@@ -92,6 +64,23 @@ and [toolsdk/v1.15.0](toolsdk/CHANGELOG.md) (`Spec.SwitchCases`).
   coverage boundaries have a home: `SkippedModules` carries the nested go.mod
   modules a tool deliberately did not analyze; module-agnostic tools leave it
   nil and their JSON is unchanged.
+- **`finding.TextEdit` and `Finding.Edits` (issue #36)** — typed multi-edit fix
+  representation: `Start`/`End` positions plus `NewText`, with `HasSpan`,
+  `IsInsertion`, `IsDeletion`, `EffectiveFile`, and `Validate` helpers,
+  order-independent list equality, and builder support via `WithEdits`. When
+  set, `Edits` is the authoritative machine representation of the fix;
+  `BeforeCode`/`AfterCode` remain the first-edit display summary. Direct fixes
+  now validate with either representation ("requires BeforeCode, AfterCode, or
+  Edits"). SARIF export/import round-trips edit lists, including byte offsets
+  via `region.byteOffset`/`byteLength`.
+- **`pipeline.EditListProvider` (issue #36)** — resolves a finding's typed edit
+  list (`Finding.Edits`) to byte-level edits: byte offsets directly, line/column
+  via the shared line index. Runs first in the default provider chain (before
+  Offset, Line, and Substring). Loud failures instead of partial application:
+  lists spanning files fail with `ErrEditCrossFile`; stale or out-of-bounds
+  offsets fail with `ErrEditStale` (both surface as `FixOutcomeFailed` with the
+  provider cause in the error chain). See
+  [pipeline/CHANGELOG.md](pipeline/CHANGELOG.md).
 
 ### Changed
 
@@ -100,6 +89,18 @@ and [toolsdk/v1.15.0](toolsdk/CHANGELOG.md) (`Spec.SwitchCases`).
   `go 1.27`. The env var was removed from the flake, CI/Release workflows,
   scripts, and all docs. Consumers must build with Go 1.27+ (previously:
   Go 1.26 + the experiment flag).
+- **`ApplySimpleFixes` refuses multi-edit findings** — findings whose `Edits`
+  list more than one edit are skipped with an actionable reason pointing at the
+  pipeline `FixApplier`, instead of silently fixing only the first edit.
+- **`FixEngine` applied counts are per finding, not per edit (pipeline)** — a
+  multi-edit fix counts once in `Apply`/`ApplyWithConflicts` results and
+  `ApplyReport.Applied`, matching "number of successful fixes" semantics.
+- **Multi-edit suggested fixes are lossless (analysis)** —
+  `FromDiagnosticWithSource` carries all `TextEdits` of a diagnostic's first
+  `SuggestedFix` into `Finding.Edits` (previously edits 2..N were silently
+  dropped, issue #36); `ToDiagnostic` reconstructs the full edit list.
+  Alternative fixes (`SuggestedFixes` 1..N) remain first-wins and are now
+  documented as such.
 
 ## [1.13.0] - 2026-09-22
 

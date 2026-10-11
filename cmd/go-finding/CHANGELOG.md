@@ -7,7 +7,11 @@ For root-level changes, see the [root CHANGELOG.md](../../CHANGELOG.md).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [1.14.0] - 2026-10-11
+
+Lockstep completion of the core v1.14.0 train: requires core and pipeline
+v1.14.0 (the sibling resync landed before this tag, so the binary ships the
+pipeline v1.14.0 fix engine, including `EditListProvider`).
 
 ### Changed
 
