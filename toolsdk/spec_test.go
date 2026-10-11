@@ -39,6 +39,63 @@ func TestRegisterAndAll(t *testing.T) {
 	}
 }
 
+// TestRegisterAllRoundTripFullTriggerFidelity pins the registry round trip:
+// EVERY Trigger field a spec registers must come back from All() unchanged.
+// The earlier test asserted Language only, so a registry copy that dropped
+// NotRequires (the ownership-deference field) would have gone unnoticed.
+func TestRegisterAllRoundTripFullTriggerFidelity(t *testing.T) {
+	snapshot := SnapshotForTest()
+	t.Cleanup(func() { RestoreForTest(snapshot) })
+	ResetForTest()
+
+	detector := finding.NamedDetectorFunc("trigger-fidelity-tool", func(context.Context) ([]finding.Finding, error) {
+		return nil, nil
+	})
+
+	want := Trigger{
+		Files:       []string{"**/*.go", "go.mod"},
+		Language:    "go",
+		Requires:    []string{"**/go.mod", "**/go.work"},
+		NotRequires: []string{"**/vendor/**", "**/testdata/**"},
+	}
+
+	Register(Spec{
+		Name:        "trigger-fidelity-tool",
+		Description: "round-trip fidelity probe",
+		Trigger:     want,
+		Inputs:      []string{"**/*.go"},
+		Outputs:     []string{"**/*.go"},
+		Detect:      detector,
+	})
+
+	all := All()
+	if len(all) != 1 {
+		t.Fatalf("expected 1 registered spec, got %d", len(all))
+	}
+
+	got := all[0].Trigger
+
+	if got.Language != want.Language {
+		t.Errorf("Language round trip: got %q, want %q", got.Language, want.Language)
+	}
+
+	if !slices.Equal(got.Files, want.Files) {
+		t.Errorf("Files round trip: got %v, want %v", got.Files, want.Files)
+	}
+
+	if !slices.Equal(got.Requires, want.Requires) {
+		t.Errorf("Requires round trip: got %v, want %v", got.Requires, want.Requires)
+	}
+
+	if !slices.Equal(got.NotRequires, want.NotRequires) {
+		t.Errorf("NotRequires round trip: got %v, want %v", got.NotRequires, want.NotRequires)
+	}
+
+	if !slices.Equal(all[0].Outputs, []string{"**/*.go"}) {
+		t.Errorf("Outputs round trip: got %v, want %v", all[0].Outputs, []string{"**/*.go"})
+	}
+}
+
 func TestRegisterRequiresName(t *testing.T) {
 	ResetForTest()
 

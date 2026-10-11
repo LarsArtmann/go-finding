@@ -132,7 +132,10 @@ var validLanguages = []string{
 
 // ValidLanguages returns every Trigger.Language code Register accepts, in
 // documented order, as a fresh copy. The empty string (language-agnostic)
-// is the zero value and valid without being listed.
+// is the zero value and valid without being listed. The set is fixed by
+// this SDK release: a consumer accepting specs built against a newer SDK
+// may see codes this version rejects at Register (release-coupled by
+// design; the pin in TestValidLanguagesListsDocumentedSet guards drift).
 func ValidLanguages() []string {
 	return slices.Clone(validLanguages)
 }

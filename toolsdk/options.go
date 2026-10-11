@@ -159,6 +159,12 @@ func BoolFromContext(ctx context.Context, name string, fallback bool) (bool, err
 
 // valueFromContext is the shared implementation behind the typed
 // *FromContext accessors; kind only shapes the error message.
+//
+// No public ValueFromContext[T] by design: with T=any the type assertion
+// accepts every stored value and the kind check silently disappears; the
+// three concrete accessors keep the kind contract visible at the call site.
+// Re-propose only when a tool genuinely needs a fourth kind (see
+// OptionKind).
 func valueFromContext[T any](ctx context.Context, name string, fallback T, kind OptionKind) (T, error) {
 	values, _ := OptionsFromContext(ctx)
 

@@ -14,6 +14,9 @@
 // capability (Detect or Repair), Options must be well-formed and unique, and
 // the Trigger must be valid — Language is "" (language-agnostic) or one of
 // ValidLanguages, with no empty patterns in Files/Requires/NotRequires.
+// SwitchCases are deliberately NOT validated at Register time (deferred
+// 2026-10-11: no registered spec expresses them yet; Suffix/rule-ID checks
+// land with the first real consumer).
 // Tests that mutate the process-global
 // registry must snapshot with SnapshotForTest and restore via
 // t.Cleanup(RestoreForTest) — the registry is shared for the whole process

@@ -12,8 +12,13 @@ func WithDryRun(ctx context.Context, dryRun bool) context.Context {
 }
 
 // DryRunFromContext reads the dry-run flag from the context.
-// Returns false when no dry-run value was set.
+// Returns false when no dry-run value was set (including a nil context —
+// same miss contract as OptionsFromContext).
 func DryRunFromContext(ctx context.Context) bool {
+	if ctx == nil {
+		return false
+	}
+
 	if v, ok := ctx.Value(dryRunCtxKey{}).(bool); ok {
 		return v
 	}
