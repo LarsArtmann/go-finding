@@ -12,7 +12,7 @@ func TestDryRunFromContext_DefaultsFalse(t *testing.T) {
 		t.Error("fresh context must read as dry-run=false")
 	}
 
-	if DryRunFromContext(nil) { //nolint:staticcheck // SA1012: nil is the point — the contract says nil reads as false, not panic
+	if DryRunFromContext(nil) { //nolint:staticcheck // SA1012: nil ctx is the contract under test
 		t.Error("nil context must read as dry-run=false, not panic")
 	}
 }

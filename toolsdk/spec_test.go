@@ -45,6 +45,7 @@ func TestRegisterAndAll(t *testing.T) {
 // NotRequires (the ownership-deference field) would have gone unnoticed.
 func TestRegisterAllRoundTripFullTriggerFidelity(t *testing.T) {
 	snapshot := SnapshotForTest()
+
 	t.Cleanup(func() { RestoreForTest(snapshot) })
 	ResetForTest()
 
