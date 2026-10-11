@@ -16,6 +16,26 @@ import (
 type PartialResult struct {
 	Findings []finding.Finding
 	Errors   map[string]error
+	// FilesScanned sums the coverage evidence of the successful detectors
+	// (finding.RunDetect contract: zero for v1-only detectors means no
+	// measurement, not an empty tree).
+	FilesScanned int
+	// SkippedModules unions the nested module roots successful detectors
+	// deliberately skipped, in first-seen order.
+	SkippedModules []string
+}
+
+// mergeCoverage accumulates one detector run into a PartialResult: findings
+// append, FilesScanned sums, SkippedModules unions in first-seen order.
+func mergeCoverage(dst *PartialResult, res finding.DetectResult) {
+	dst.Findings = append(dst.Findings, res.Findings...)
+	dst.FilesScanned += res.FilesScanned
+
+	for _, module := range res.SkippedModules {
+		if !slices.Contains(dst.SkippedModules, module) {
+			dst.SkippedModules = append(dst.SkippedModules, module)
+		}
+	}
 }
 
 // HasErrors reports whether any detector failed.
@@ -61,7 +81,7 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 			return result, err
 		}
 
-		findings, err := p.runOneDetector(ctx, d)
+		detResult, err := p.runOneDetector(ctx, d)
 		if err != nil {
 			if IsContextError(err) {
 				return result, err
@@ -72,7 +92,7 @@ func (p *Pipeline) detectPartialSequential(ctx context.Context) (*PartialResult,
 			continue
 		}
 
-		result.Findings = append(result.Findings, findings...)
+		mergeCoverage(result, detResult)
 	}
 
 	return result, nil
@@ -94,7 +114,7 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 
 	for _, d := range p.detectors {
 		g.Go(func() error {
-			findings, err := p.runOneDetector(gctx, d)
+			detResult, err := p.runOneDetector(gctx, d)
 
 			mu.Lock()
 			defer mu.Unlock()
@@ -112,7 +132,7 @@ func (p *Pipeline) detectPartialParallel(ctx context.Context) (*PartialResult, e
 				return nil // Don't propagate to errgroup — collect partial results
 			}
 
-			result.Findings = append(result.Findings, findings...)
+			mergeCoverage(result, detResult)
 
 			return nil
 		})

@@ -46,6 +46,14 @@ type PipelineResult struct {
 	// whenever fix application ran; empty in DryRun mode or when nothing
 	// was fixable.
 	Outcomes []FixOutcome
+	// FilesScanned is the coverage evidence from the FINAL detect stage:
+	// how many files the detectors examined on the last scan (post-fix),
+	// summed across detectors. Zero with v1-only detectors is the
+	// documented "no measurement" contract, not an empty-tree claim.
+	FilesScanned int
+	// SkippedModules lists nested module roots the detectors deliberately
+	// did not descend into during the final scan, unioned first-seen.
+	SkippedModules []string
 }
 
 // Stable reports whether the pipeline reached a clean state (no findings).

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"slices"
 	"sync"
 	"time"
 
@@ -12,27 +13,46 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// detect runs all detectors and collects findings.
+// detect runs all detectors and collects findings plus coverage evidence.
 func (p *Pipeline) detect(ctx context.Context) (*PartialResult, error) {
 	if p.config.GracefulDegradation {
 		return p.DetectPartial(ctx)
 	}
 
-	var findings []finding.Finding
-
-	var err error
+	var (
+		combined finding.DetectResult
+		err      error
+	)
 
 	if p.config.ParallelDetectors {
-		findings, err = p.detectParallel(ctx)
+		combined, err = p.detectParallel(ctx)
 	} else {
-		findings, err = p.detectSequential(ctx)
+		combined, err = p.detectSequential(ctx)
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &PartialResult{Findings: findings}, nil //nolint:exhaustruct_v5
+	return &PartialResult{
+		Findings:       combined.Findings,
+		FilesScanned:   combined.FilesScanned,
+		SkippedModules: combined.SkippedModules,
+	}, nil
+}
+
+// mergeDetectResult accumulates src into dst: findings append, FilesScanned
+// sums (detectors scan disjoint trees by convention), SkippedModules unions
+// in first-seen order.
+func mergeDetectResult(dst *finding.DetectResult, src finding.DetectResult) {
+	dst.Findings = append(dst.Findings, src.Findings...)
+	dst.FilesScanned += src.FilesScanned
+
+	for _, module := range src.SkippedModules {
+		if !slices.Contains(dst.SkippedModules, module) {
+			dst.SkippedModules = append(dst.SkippedModules, module)
+		}
+	}
 }
 
 // filterActive returns non-suppressed findings, calling OnFinding for each.
@@ -60,10 +80,12 @@ func (p *Pipeline) recordDetectorMetrics(
 	}
 }
 
-// runOneDetector executes a single detector, recording metrics and filtering
-// suppressed findings. It returns the active findings or an error.
+// runOneDetector executes a single detector through the richest contract it
+// implements (DetectorV2 preferred via finding.RunDetect), recording metrics
+// and filtering suppressed findings. It returns the run result with active
+// findings plus coverage evidence, or an error.
 // If a per-detector timeout is configured, it takes precedence over the global timeout.
-func (p *Pipeline) runOneDetector(ctx context.Context, d Detector) ([]finding.Finding, error) {
+func (p *Pipeline) runOneDetector(ctx context.Context, d Detector) (finding.DetectResult, error) {
 	if timeout, ok := p.config.DetectorTimeouts[d.Name()]; ok && timeout > 0 {
 		var cancel context.CancelFunc
 
@@ -73,61 +95,63 @@ func (p *Pipeline) runOneDetector(ctx context.Context, d Detector) ([]finding.Fi
 
 	start := time.Now()
 
-	findings, err := d.Detect(ctx)
+	result, err := finding.RunDetect(ctx, d)
 	elapsed := time.Since(start)
 
 	if err != nil {
 		p.recordDetectorMetrics(d.Name(), elapsed, nil)
 
-		return nil, fmt.Errorf("detector %s: %w", d.Name(), err)
+		return finding.DetectResult{}, fmt.Errorf("detector %s: %w", d.Name(), err)
 	}
 
-	p.recordDetectorMetrics(d.Name(), elapsed, findings)
+	p.recordDetectorMetrics(d.Name(), elapsed, result.Findings)
 
-	return p.filterActive(findings), nil
+	result.Findings = p.filterActive(result.Findings)
+
+	return result, nil
 }
 
 // detectSequential runs detectors one at a time.
-func (p *Pipeline) detectSequential(ctx context.Context) ([]finding.Finding, error) {
-	var allFindings []finding.Finding
+func (p *Pipeline) detectSequential(ctx context.Context) (finding.DetectResult, error) {
+	var combined finding.DetectResult
 
 	for _, d := range p.detectors {
 		err := CheckCanceled(ctx)
 		if err != nil {
-			return nil, err
+			return finding.DetectResult{}, err
 		}
 
-		findings, err := p.runOneDetector(ctx, d)
+		result, err := p.runOneDetector(ctx, d)
 		if err != nil {
-			return nil, err
+			return finding.DetectResult{}, err
 		}
 
-		allFindings = append(allFindings, findings...)
+		mergeDetectResult(&combined, result)
 	}
 
-	return allFindings, nil
+	return combined, nil
 }
 
 // detectParallel runs detectors concurrently using errgroup.
-func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error) {
+func (p *Pipeline) detectParallel(ctx context.Context) (finding.DetectResult, error) {
 	var (
-		mu          sync.Mutex
-		allFindings []finding.Finding
+		mu       sync.Mutex
+		combined finding.DetectResult
 	)
 
 	g, ctx := errgroup.WithContext(ctx)
 
 	for _, d := range p.detectors {
 		g.Go(func() error {
-			findings, err := p.runOneDetector(ctx, d)
+			result, err := p.runOneDetector(ctx, d)
 			if err != nil {
 				return err
 			}
 
 			mu.Lock()
+			defer mu.Unlock()
 
-			allFindings = append(allFindings, findings...)
-			mu.Unlock()
+			mergeDetectResult(&combined, result)
 
 			return nil
 		})
@@ -135,10 +159,10 @@ func (p *Pipeline) detectParallel(ctx context.Context) ([]finding.Finding, error
 
 	err := g.Wait()
 	if err != nil {
-		return nil, fmt.Errorf("parallel detection: %w", err)
+		return finding.DetectResult{}, fmt.Errorf("parallel detection: %w", err)
 	}
 
-	return allFindings, nil
+	return combined, nil
 }
 
 // triage categorizes findings using the configured TriageFunc (or default).

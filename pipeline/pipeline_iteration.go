@@ -28,6 +28,11 @@ func (p *Pipeline) runIteration(ctx context.Context, result *PipelineResult) (bo
 		return false, fmt.Errorf("iteration %d: detect: %w", p.iterations+1, err)
 	}
 
+	// Coverage evidence tracks the FINAL scan (post-fix state on the last
+	// iteration); later iterations overwrite earlier ones.
+	result.FilesScanned = detResult.FilesScanned
+	result.SkippedModules = detResult.SkippedModules
+
 	hookErr := p.fireStageHook(ctx, StageAfter, StageDetect, iter.Number, detResult.Findings, 0, 0)
 	if hookErr != nil {
 		return false, fmt.Errorf("iteration %d: after detect: %w", p.iterations+1, hookErr)

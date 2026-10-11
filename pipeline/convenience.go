@@ -40,14 +40,14 @@ func Detect(ctx context.Context, detectors ...Detector) ([]finding.Finding, erro
 				return err
 			}
 
-			findings, err := d.Detect(ctx)
+			result, err := finding.RunDetect(ctx, d)
 			if err != nil {
 				return fmt.Errorf("detector %s: %w", d.Name(), err)
 			}
 
 			var active []finding.Finding
 
-			for _, f := range findings {
+			for _, f := range result.Findings {
 				if !f.IsSuppressed() {
 					active = append(active, f)
 				}
