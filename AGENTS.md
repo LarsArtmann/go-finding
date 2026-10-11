@@ -230,6 +230,7 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 
 ### Testing & tooling
 
+- **`nix run .#lint` covers the ROOT module only** — same module-boundary blind spot as `.#test`: its `golangci-lint run ./...` never reaches toolsdk/pipeline/analysis/CLI, while CI lints each module separately (2026-10-11: master's `lint (toolsdk)` job was red on 4 findings while local reported "0 issues"). Lint sub-modules directly: run `golangci-lint run ./...` inside each module dir; the devShell binary matches the ci.yml action pin (2.14.0), so local per-module runs have CI parity.
 - **math/rand split** — production `math/rand/v2`; tests `math/rand` (v1, `testing/quick` constraint).
 - **testify is transitive only** — `// indirect` via ginkgo/slim-sprig; not used directly (banned but unavoidable).
 - **NewParallelGomega** — per-module `testutil_test.go` helper (Helper + Parallel + NewWithT in one). `paralleltest` linter disabled because it can't trace `t.Parallel()` through the helper; re-enabling means inlining or nolint-ing 100+ tests.
