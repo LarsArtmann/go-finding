@@ -38,6 +38,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (structural anti-lie design) and nothing downstream gates on a fact.
   Hosts surface provenance without string-matching `Description`. Existing
   specs compile unchanged.
+- **`Spec.Outputs` write contract** — file patterns the tool WRITES, the
+  mirror of `Inputs`. Hosts derive producer ordering (this tool runs after
+  the writers of its Inputs and before the readers of its Outputs) and key
+  result caches on it. Declared by repairers whose writes other tools'
+  ordering or caching must respect (e.g. a migrator rewriting `**/*.go`);
+  empty = the tool writes nothing hosts must order around. First consumed
+  by BuildFlow's DAG edge derivation during the go-auto-upgrade
+  switch-over: without it the host lost 8 producer-ordering edges (caught
+  by its edge-count snapshot).
+- **Registry round-trip fidelity + dry-run coverage** —
+  `TestRegisterAllRoundTripFullTriggerFidelity` pins every `Trigger` field
+  through `Register` → `All()` (previously only `Language`); `dryrun.go`
+  gained its first tests, which caught `DryRunFromContext(nil)` panicking
+  where `OptionsFromContext` nil-checks — the nil context now reads as the
+  documented miss (false), same contract as the options channel.
 
 ## [1.15.0] - 2026-10-05
 
