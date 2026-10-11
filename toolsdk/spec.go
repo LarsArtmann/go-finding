@@ -121,7 +121,7 @@ type Trigger struct {
 
 // validLanguages is the fixed Trigger.Language vocabulary Register accepts,
 // in documented order. Never mutated; exported read-only via ValidLanguages.
-var validLanguages = []string{
+var validLanguages = []string{ //nolint:gochecknoglobals // fixed read-only vocabulary, exported via ValidLanguages; never mutated
 	"go",
 	"js",
 	"ts",

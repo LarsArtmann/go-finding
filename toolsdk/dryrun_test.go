@@ -12,7 +12,7 @@ func TestDryRunFromContext_DefaultsFalse(t *testing.T) {
 		t.Error("fresh context must read as dry-run=false")
 	}
 
-	if DryRunFromContext(nil) {
+	if DryRunFromContext(nil) { //nolint:staticcheck // SA1012: nil is the point — the contract says nil reads as false, not panic
 		t.Error("nil context must read as dry-run=false, not panic")
 	}
 }
@@ -35,6 +35,7 @@ func TestDryRunContextValueIsolation(t *testing.T) {
 	t.Parallel()
 
 	ctx := WithDryRun(context.Background(), true)
+
 	child, cancel := context.WithCancel(ctx)
 	defer cancel()
 
