@@ -10,8 +10,11 @@
 // (tools/providers/sdk_registry.go::ToolFromSpec); nothing flows back.
 //
 // Registration rules (validated eagerly by Register, gotcha #21): Name and a
-// trimmed non-empty Description are required, and the Spec must carry a
-// capability (Detect or Repair). Tests that mutate the process-global
+// trimmed non-empty Description are required, the Spec must carry a
+// capability (Detect or Repair), Options must be well-formed and unique, and
+// the Trigger must be valid — Language is "" (language-agnostic) or one of
+// ValidLanguages, with no empty patterns in Files/Requires/NotRequires.
+// Tests that mutate the process-global
 // registry must snapshot with SnapshotForTest and restore via
 // t.Cleanup(RestoreForTest) — the registry is shared for the whole process
 // and the workspace test gate runs shuffled.

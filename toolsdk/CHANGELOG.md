@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > Sub-modules have no `version.go`; the directory-prefixed git tag
 > (`toolsdk/v*`) is the single source of truth for this module's version.
 
+## [Unreleased]
+
+### Added
+
+- **`Trigger` validation at registration (issue #44)** — `Register` now
+  panics on a malformed `Trigger`: `Language` must be `""` (language-agnostic)
+  or one of the exported `ValidLanguages()` (`go`, `js`, `ts`, `python`,
+  `nix`, `rust`), and `Files`/`Requires`/`NotRequires` must not contain
+  empty patterns. A typo'd `Language` (e.g. `"golang"`) used to register
+  cleanly and then silently never match downstream — exactly the startup
+  failure mode the `Register` panic convention exists to prevent. The panic
+  message names the field and the valid set; direct checks match the new
+  `ErrInvalidTrigger` sentinel via `errors.Is`.
+- **Typed option accessors (issue #43)** — `StringFromContext`,
+  `IntFromContext`, and `BoolFromContext` read one declared option from the
+  context and apply the tool's fallback on any miss (name unset, empty
+  value set, nil context, nil value). A present value whose Go type does
+  not match the accessor yields an error matching `ErrOptionKindMismatch`.
+  Tools stop hand-rolling the lookup/assert/fallback plumbing; range and
+  semantic validation stays tool-side, and declaration enforcement remains
+  `Spec.ValidateOptions`' job.
+- **`RepairResult` structured provenance (issue #42)** — additive,
+  non-gating fields: `ModifiedFiles []string` (files the repair wrote, or
+  would write under dry-run) and `Facts []Fact` (tool-defined key/value
+  provenance, e.g. `baseline-failed` = `true`). Facts describe what the run
+  did, never its effect: fix counts remain measured by re-detection
+  (structural anti-lie design) and nothing downstream gates on a fact.
+  Hosts surface provenance without string-matching `Description`. Existing
+  specs compile unchanged.
+
 ## [1.15.0] - 2026-10-05
 
 ### Added

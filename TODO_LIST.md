@@ -50,6 +50,7 @@
 | Opportunistic consumer bumps beyond the leads              | Low    | Med    | go-linter-sdk + golangci-lint-auto-configure are on v1.13.0 (done); the remaining v1.8.0-era rows bump per consumer. gomend + licenseforge stay blocked upstream (#1/#46). |
 | Watch erraudit upstream for the nolint-audit staleness fix | Low    | Low    | Once fixed, the advisory listing in `scripts/error-audit.sh --nolint-audit` becomes usable as a removal oracle again.                                                      |
 | Re-check library-policy after hook issue #74 resolves      | Low    | Low    | #74 still OPEN (verified 2026-09-23).                                                                                                                                      |
+| Diet AGENTS.md under 220 lines (go-structure-linter gate)  | Med    | Med    | 283 lines vs max 220 (2026-10-11): move bulk (e.g. the Key Files table) to docs/ and keep pointers. Each cut needs a memory-loss check — curated context, not filler.      |
 
 ## 🟡 MEDIUM Priority — testing & code quality
 
