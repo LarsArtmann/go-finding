@@ -112,7 +112,14 @@ type Trigger struct {
 
 // validLanguages is the fixed Trigger.Language vocabulary Register accepts,
 // in documented order. Never mutated; exported read-only via ValidLanguages.
-var validLanguages = []string{"go", "js", "ts", "python", "nix", "rust"} //nolint:gochecknoglobals // fixed language vocabulary, cloned on export
+var validLanguages = []string{
+	"go",
+	"js",
+	"ts",
+	"python",
+	"nix",
+	"rust",
+}
 
 // ValidLanguages returns every Trigger.Language code Register accepts, in
 // documented order, as a fresh copy. The empty string (language-agnostic)

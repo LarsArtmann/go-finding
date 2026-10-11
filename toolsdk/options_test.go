@@ -314,27 +314,27 @@ func TestTypedOptionAccessorsFallback(t *testing.T) {
 
 	tests := []struct {
 		name string
-		ctx  context.Context
+		ctx  func() context.Context
 	}{
-		{name: "plain context", ctx: context.Background()},
-		{name: "nil context", ctx: nil},
-		{name: "empty option set", ctx: empty},
-		{name: "unknown option name", ctx: set},
+		{name: "plain context", ctx: context.Background},
+		{name: "nil context", ctx: func() context.Context { return nil }},
+		{name: "empty option set", ctx: func() context.Context { return empty }},
+		{name: "unknown option name", ctx: func() context.Context { return set }},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got, err := StringFromContext(tt.ctx, "missing", "all"); err != nil || got != "all" {
+			if got, err := StringFromContext(tt.ctx(), "missing", "all"); err != nil || got != "all" {
 				t.Fatalf("StringFromContext = (%q, %v), want fallback (all, nil)", got, err)
 			}
 
-			if got, err := IntFromContext(tt.ctx, "missing", 5); err != nil || got != 5 {
+			if got, err := IntFromContext(tt.ctx(), "missing", 5); err != nil || got != 5 {
 				t.Fatalf("IntFromContext = (%d, %v), want fallback (5, nil)", got, err)
 			}
 
-			if got, err := BoolFromContext(tt.ctx, "missing", true); err != nil || !got {
+			if got, err := BoolFromContext(tt.ctx(), "missing", true); err != nil || !got {
 				t.Fatalf("BoolFromContext = (%t, %v), want fallback (true, nil)", got, err)
 			}
 		})

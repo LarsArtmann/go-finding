@@ -567,8 +567,8 @@ func TestIoErrorAt_WrapsCorrectly(t *testing.T) {
 	g.Expect(errors.Is(err, finding.ErrIO)).To(BeTrue())
 	g.Expect(errors.Is(err, os.ErrPermission)).To(BeTrue())
 
-	var fe *finding.FindingError
-	g.Expect(errors.As(err, &fe)).To(BeTrue())
+	fe, ok := errors.AsType[*finding.FindingError](err)
+	g.Expect(ok).To(BeTrue())
 
 	assertFindingErrorIO(t, fe, "file.go")
 }
@@ -1088,8 +1088,8 @@ func TestFixApplier_UnsafePathReportsFailedOutcome(t *testing.T) {
 	g.Expect(outcome).NotTo(BeNil(), "unsafe finding gets an outcome, not silence")
 	g.Expect(outcome.Status).To(Equal(FixOutcomeFailed))
 
-	var ferr *finding.FindingError
-	g.Expect(errors.As(outcome.Err, &ferr)).To(BeTrue())
+	ferr, ok := errors.AsType[*finding.FindingError](outcome.Err)
+	g.Expect(ok).To(BeTrue())
 	g.Expect(ferr.Category).To(Equal(finding.ErrCategoryValidation))
 	g.Expect(ferr.Position).NotTo(BeNil())
 	g.Expect(string(ferr.Position.File)).To(Equal("../../../etc/passwd"))

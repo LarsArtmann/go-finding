@@ -98,8 +98,8 @@ func TestIoErrorAt(t *testing.T) {
 
 	err := ioErrorAt("read failed", os.ErrNotExist, "foo.go")
 
-	var fe *finding.FindingError
-	g.Expect(errors.As(err, &fe)).To(BeTrue())
+	fe, ok := errors.AsType[*finding.FindingError](err)
+	g.Expect(ok).To(BeTrue())
 
 	assertFindingErrorIO(t, fe, "foo.go")
 }

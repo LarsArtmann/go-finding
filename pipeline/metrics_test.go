@@ -262,9 +262,7 @@ func TestMetrics_RecordOutcome_Concurrent(t *testing.T) {
 	var wg sync.WaitGroup
 
 	for _, status := range statuses {
-
 		wg.Go(func() {
-
 			for range 50 {
 				m.RecordOutcome(status)
 			}

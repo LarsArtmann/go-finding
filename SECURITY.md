@@ -25,14 +25,32 @@ This keeps the report private to the maintainer and the reporting user until a f
 is coordinated. Until then, please keep the report confidential to avoid exposing
 users to exploitation.
 
+## Security Practices
+
+- **Private intake only** — vulnerability reports arrive exclusively through
+  GitHub's private vulnerability reporting; public issues are closed and
+  redirected here.
+- **Acknowledgement within 72 hours** — every report receives a triage
+  response within that window, followed by status updates as the fix
+  progresses.
+- **Fix scope** — security-relevant fixes target the latest minor release;
+  the frozen `1.x` API keeps upgrading to the patched release non-breaking.
+- **Coordinated disclosure** — fixes land first, then a GitHub Security
+  Advisory publishes with credit to the reporter (anonymous credit on
+  request). Reporters are asked to hold public details until the advisory
+  is out.
+- **Dependency hygiene** — `govulncheck` and Dependabot track the dependency
+  surface; vulnerabilities already fixed upstream are handled by upgrading.
+
 ## Scope
 
-This policy covers the `go-finding` library itself, including the four Go modules
+This policy covers the `go-finding` library itself, including the five Go modules
 in this repository:
 
 - `github.com/larsartmann/go-finding` (core)
 - `github.com/larsartmann/go-finding/pipeline`
 - `github.com/larsartmann/go-finding/analysis`
+- `github.com/larsartmann/go-finding/toolsdk` (BuildFlow provider SDK)
 - `github.com/larsartmann/go-finding/cmd/go-finding` (CLI)
 
 It does **not** cover vulnerabilities in the tools that go-finding wraps (govet,

@@ -340,8 +340,8 @@ func TestApplyWithOutcomes_FailedOutcomeWrapsErrPositionUnresolvable(t *testing.
 
 	// Outcome failures are typed as finding.FindingError with the finding's
 	// position attached, so consumers can classify via errorfamily.
-	var fe *finding.FindingError
-	g.Expect(errors.As(result.Outcomes[0].Err, &fe)).To(BeTrue())
+	fe, ok := errors.AsType[*finding.FindingError](result.Outcomes[0].Err)
+	g.Expect(ok).To(BeTrue())
 	g.Expect(fe.Category).To(Equal(finding.ErrCategoryParse))
 	g.Expect(fe.Position).NotTo(BeNil())
 	g.Expect(fe.Position.File).To(Equal(finding.FilePath("test.go")))

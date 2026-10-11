@@ -305,6 +305,7 @@ func TestValidLanguagesListsDocumentedSet(t *testing.T) {
 	}
 
 	got[0] = "mutated"
+
 	if ValidLanguages()[0] != "go" {
 		t.Error("ValidLanguages() must return a copy immune to caller mutation")
 	}
@@ -339,7 +340,10 @@ func TestRegisterRejectsInvalidTriggerLanguage(t *testing.T) {
 		Name:        "typo-tool",
 		Description: "must fail registration",
 		Trigger:     Trigger{Language: "golang"},
-		Detect:      finding.NamedDetectorFunc("typo-tool", func(context.Context) ([]finding.Finding, error) { return nil, nil }),
+		Detect: finding.NamedDetectorFunc(
+			"typo-tool",
+			func(context.Context) ([]finding.Finding, error) { return nil, nil },
+		),
 	})
 }
 
@@ -362,7 +366,10 @@ func TestRegisterRejectsEmptyTriggerPattern(t *testing.T) {
 		Name:        "empty-pattern-tool",
 		Description: "must fail registration",
 		Trigger:     Trigger{Files: []string{""}},
-		Detect:      finding.NamedDetectorFunc("empty-pattern-tool", func(context.Context) ([]finding.Finding, error) { return nil, nil }),
+		Detect: finding.NamedDetectorFunc(
+			"empty-pattern-tool",
+			func(context.Context) ([]finding.Finding, error) { return nil, nil },
+		),
 	})
 }
 
