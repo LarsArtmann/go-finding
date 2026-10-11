@@ -102,7 +102,28 @@ func (d *RetryDetector) Name() string {
 }
 
 // Detect implements Detector, retrying on error up to MaxRetries times.
+// V2-aware: when the inner detector implements DetectorV2, DetectV2 runs
+// instead so coverage evidence survives the retry decorator.
 func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
+	result, err := d.detectWithRetry(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Findings, nil
+}
+
+// DetectV2 implements DetectorV2 when the inner detector supports it,
+// retrying on error up to MaxRetries times and passing coverage through.
+// On a v1-only inner detector the returned DetectResult carries zeroed
+// coverage (the RunDetect fallback contract).
+func (d *RetryDetector) DetectV2(ctx context.Context) (finding.DetectResult, error) {
+	return d.detectWithRetry(ctx)
+}
+
+// detectWithRetry is the shared retry loop; dispatches through
+// finding.RunDetect so the inner detector's richest contract is used.
+func (d *RetryDetector) detectWithRetry(ctx context.Context) (finding.DetectResult, error) {
 	var lastErr error
 
 	for attempt := 0; attempt <= d.config.MaxRetries; attempt++ {
@@ -111,23 +132,23 @@ func (d *RetryDetector) Detect(ctx context.Context) ([]finding.Finding, error) {
 
 			_, err := WaitWithContext(ctx, time.After(delay))
 			if err != nil {
-				return nil, err
+				return finding.DetectResult{}, err
 			}
 		}
 
-		findings, err := d.inner.Detect(ctx)
+		result, err := finding.RunDetect(ctx, d.inner)
 		if err == nil {
-			return findings, nil
+			return result, nil
 		}
 
 		if IsContextError(err) {
-			return nil, fmt.Errorf("detector %s detect: %w", d.inner.Name(), err)
+			return finding.DetectResult{}, fmt.Errorf("detector %s detect: %w", d.inner.Name(), err)
 		}
 
 		lastErr = err
 	}
 
-	return nil, fmt.Errorf(
+	return finding.DetectResult{}, fmt.Errorf(
 		"detector %s failed after %d retries: %w",
 		d.inner.Name(),
 		d.config.MaxRetries,
