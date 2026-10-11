@@ -33,13 +33,16 @@ func (s *coverageDetectorV2) DetectV2(context.Context) (DetectResult, error) {
 }
 
 func coverageFinding(file string) Finding {
-	return NewFinding("rule-1", "testtool", "test finding", SeverityWarning, Position{File: FilePath(file), Line: 1}, ConfidenceHigh)
+	return NewFinding("rule-1", "testtool", "test finding",
+		SeverityWarning, Position{File: FilePath(file), Line: 1}, ConfidenceHigh)
 }
 
 func TestRunDetectPrefersV2(t *testing.T) {
 	d := &coverageDetectorV2{
-		coverageDetector: coverageDetector{name: "v2"},
-		result: DetectResult{
+		coverageDetector{
+			name: "v2",
+		},
+		DetectResult{
 			Findings:       []Finding{coverageFinding("a.go")},
 			FilesScanned:   42,
 			SkippedModules: []string{"nested/module"},
@@ -87,7 +90,7 @@ func TestRunDetectPropagatesErrors(t *testing.T) {
 		t.Errorf("v1 error = %v, want errDetectBoom", err)
 	}
 
-	v2 := &coverageDetectorV2{coverageDetector: coverageDetector{name: "v2", err: errDetectBoom}}
+	v2 := &coverageDetectorV2{coverageDetector{name: "v2", err: errDetectBoom}, DetectResult{}}
 	if _, err := RunDetect(context.Background(), v2); !errors.Is(err, errDetectBoom) {
 		t.Errorf("v2 error = %v, want errDetectBoom", err)
 	}
@@ -140,7 +143,8 @@ func TestComputeSummaryPreservesCoverage(t *testing.T) {
 	r.ComputeSummaryAt(time.Now())
 
 	if r.Summary.FilesScanned != 7 {
-		t.Errorf("FilesScanned after ComputeSummary = %d, want 7 (coverage must survive recomputation)", r.Summary.FilesScanned)
+		t.Errorf("FilesScanned after ComputeSummary = %d, want 7 (coverage must survive recomputation)",
+			r.Summary.FilesScanned)
 	}
 
 	if len(r.Summary.SkippedModules) != 1 || r.Summary.SkippedModules[0] != "nested" {
@@ -152,25 +156,26 @@ func TestAddDetectResultConcurrent(t *testing.T) {
 	r := NewReport(ToolInfo{Name: "tool"})
 
 	const workers = 8
+
 	const runsPerWorker = 50
 
 	var wg sync.WaitGroup
 
 	for range workers {
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-
+		wg.Go(func() {
 			for range runsPerWorker {
 				r.AddDetectResult(DetectResult{FilesScanned: 1})
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
 
 	if r.Summary.FilesScanned != workers*runsPerWorker {
-		t.Errorf("FilesScanned = %d, want %d (no lost updates under -race)", r.Summary.FilesScanned, workers*runsPerWorker)
+		t.Errorf(
+			"FilesScanned = %d, want %d (no lost updates under -race)",
+			r.Summary.FilesScanned,
+			workers*runsPerWorker,
+		)
 	}
 }

@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`DetectResult` + `DetectorV2` coverage channel (T07b)** — detectors that
+  can measure their own coverage implement `DetectorV2.DetectV2(ctx)` and
+  return `DetectResult{Findings, FilesScanned, SkippedModules}`; hosts call
+  `RunDetect(ctx, d)` (uses v2 when implemented, falls back to plain `Detect`
+  with coverage zeroed — documented, not an error) and `Report.AddDetectResult`
+  to feed findings plus coverage into a report. `FilesScanned` accumulates
+  across detectors, `SkippedModules` unions in first-seen order, and both
+  survive `ComputeSummary` recomputation. Answers "did the tool actually see
+  every file?" from the interchange (Summary.FilesScanned/SkippedModules
+  shipped in v1.14.0 with no way for a Detector to populate them).
+  Source-compatible: `Detector` is unchanged, `DetectorV2` embeds it.
+
 - **`pipeline.EditListProvider` (issue #36)** — resolves a finding's typed edit
   list (`Finding.Edits`) to byte-level edits: byte offsets directly, line/column
   via the shared line index. Runs first in the default provider chain (before

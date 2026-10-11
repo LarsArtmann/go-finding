@@ -2,6 +2,7 @@ package finding
 
 import (
 	"context"
+	"slices"
 )
 
 // DetectResult carries everything one detector run produced: its findings
@@ -46,14 +47,17 @@ type DetectorV2 interface {
 // DetectorV2's DetectV2 when available, plain Detect otherwise. V1
 // detectors produce a result with coverage zeroed — that is the documented
 // contract, not an error (the host cannot know what a v1 detector scanned).
+// The detector's error is passed through unwrapped: callers layer their own
+// context (the pipeline adds "detector %s:"), and a wrapper here would only
+// duplicate it.
 func RunDetect(ctx context.Context, d Detector) (DetectResult, error) {
 	if v2, ok := d.(DetectorV2); ok {
-		return v2.DetectV2(ctx)
+		return v2.DetectV2(ctx) //nolint:wrapcheck // deliberate pass-through: the caller owns error context
 	}
 
 	findings, err := d.Detect(ctx)
 	if err != nil {
-		return DetectResult{}, err
+		return DetectResult{}, err //nolint:wrapcheck // deliberate pass-through: the caller owns error context
 	}
 
 	return DetectResult{Findings: findings}, nil
@@ -83,11 +87,5 @@ func (r *Report) AddDetectResult(res DetectResult) {
 // skippedModuleLocked reports whether module is already recorded.
 // Caller MUST hold r.mu.
 func (r *Report) skippedModuleLocked(module string) bool {
-	for _, existing := range r.Summary.SkippedModules {
-		if existing == module {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(r.Summary.SkippedModules, module)
 }
