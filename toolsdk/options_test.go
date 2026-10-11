@@ -278,3 +278,136 @@ func TestRegisterRejectsBadOptions(t *testing.T) {
 		})
 	}
 }
+
+// TestTypedOptionAccessorsReadValues covers the happy path (issue #43): each
+// accessor returns the typed per-run value without error.
+func TestTypedOptionAccessorsReadValues(t *testing.T) {
+	t.Parallel()
+
+	ctx := WithOptions(context.Background(), OptionValues{
+		"mode":      "strict",
+		"threshold": 7,
+		"verbose":   true,
+	})
+
+	if got, err := StringFromContext(ctx, "mode", "all"); err != nil || got != "strict" {
+		t.Fatalf("StringFromContext = (%q, %v), want (strict, nil)", got, err)
+	}
+
+	if got, err := IntFromContext(ctx, "threshold", 5); err != nil || got != 7 {
+		t.Fatalf("IntFromContext = (%d, %v), want (7, nil)", got, err)
+	}
+
+	if got, err := BoolFromContext(ctx, "verbose", false); err != nil || !got {
+		t.Fatalf("BoolFromContext = (%t, %v), want (true, nil)", got, err)
+	}
+}
+
+// TestTypedOptionAccessorsFallback covers every miss shape (issue #43):
+// unset name, empty set, nil context, and unknown name all yield the
+// tool's fallback with no error.
+func TestTypedOptionAccessorsFallback(t *testing.T) {
+	t.Parallel()
+
+	set := WithOptions(context.Background(), OptionValues{"mode": "strict"})
+	empty := WithOptions(context.Background(), OptionValues{})
+
+	tests := []struct {
+		name string
+		ctx  context.Context
+	}{
+		{name: "plain context", ctx: context.Background()},
+		{name: "nil context", ctx: nil},
+		{name: "empty option set", ctx: empty},
+		{name: "unknown option name", ctx: set},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got, err := StringFromContext(tt.ctx, "missing", "all"); err != nil || got != "all" {
+				t.Fatalf("StringFromContext = (%q, %v), want fallback (all, nil)", got, err)
+			}
+
+			if got, err := IntFromContext(tt.ctx, "missing", 5); err != nil || got != 5 {
+				t.Fatalf("IntFromContext = (%d, %v), want fallback (5, nil)", got, err)
+			}
+
+			if got, err := BoolFromContext(tt.ctx, "missing", true); err != nil || !got {
+				t.Fatalf("BoolFromContext = (%t, %v), want fallback (true, nil)", got, err)
+			}
+		})
+	}
+}
+
+// TestTypedOptionAccessorsNilValueFallsBack pins that a nil stored value is
+// treated as "nothing set": the accessor yields the fallback, no error.
+func TestTypedOptionAccessorsNilValueFallsBack(t *testing.T) {
+	t.Parallel()
+
+	ctx := WithOptions(context.Background(), OptionValues{"mode": nil})
+
+	got, err := StringFromContext(ctx, "mode", "all")
+	if err != nil || got != "all" {
+		t.Fatalf("StringFromContext with nil value = (%q, %v), want fallback (all, nil)", got, err)
+	}
+}
+
+// TestTypedOptionAccessorsKindMismatch covers the belt-and-braces check
+// (issue #43): a present value of the wrong Go type fails with
+// ErrOptionKindMismatch naming the option and both kinds.
+func TestTypedOptionAccessorsKindMismatch(t *testing.T) {
+	t.Parallel()
+
+	ctx := WithOptions(context.Background(), OptionValues{
+		"mode":      42,
+		"threshold": "7",
+		"verbose":   "yes",
+	})
+
+	tests := []struct {
+		name     string
+		read     func() error
+		contains string
+	}{
+		{
+			name: "string accessor sees int value",
+			read: func() error {
+				_, err := StringFromContext(ctx, "mode", "all")
+
+				return err
+			},
+			contains: `option "mode": got int, want kind "string"`,
+		},
+		{
+			name: "int accessor sees string value",
+			read: func() error {
+				_, err := IntFromContext(ctx, "threshold", 5)
+
+				return err
+			},
+			contains: `option "threshold": got string, want kind "int"`,
+		},
+		{
+			name: "bool accessor sees string value",
+			read: func() error {
+				_, err := BoolFromContext(ctx, "verbose", true)
+
+				return err
+			},
+			contains: `option "verbose": got string, want kind "bool"`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := tt.read()
+			if !errors.Is(err, ErrOptionKindMismatch) || !strings.Contains(err.Error(), tt.contains) {
+				t.Fatalf("err = %v, want ErrOptionKindMismatch containing %q", err, tt.contains)
+			}
+		})
+	}
+}

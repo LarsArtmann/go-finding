@@ -2,6 +2,9 @@ package toolsdk
 
 import (
 	"context"
+	"errors"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/larsartmann/go-finding"
@@ -207,5 +210,200 @@ func TestSpecCarriesSwitchCases(t *testing.T) {
 
 	if len(c.ExcludedRuleIDs) != len(want.ExcludedRuleIDs) || c.ExcludedRuleIDs[0] != want.ExcludedRuleIDs[0] {
 		t.Errorf("ExcludedRuleIDs = %v, want %v", c.ExcludedRuleIDs, want.ExcludedRuleIDs)
+	}
+}
+
+// TestTriggerValidate covers Trigger.Validate (issue #44): Language must be
+// "" or one of ValidLanguages, and Files/Requires/NotRequires must not
+// contain empty patterns. Includes the natural "golang" typo that used to
+// register cleanly and then silently never match downstream.
+func TestTriggerValidate(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		trigger  Trigger
+		wantErr  error
+		contains string
+	}{
+		{name: "zero value is language-agnostic", trigger: Trigger{}},
+		{name: "language go", trigger: Trigger{Language: "go"}},
+		{name: "language js", trigger: Trigger{Language: "js"}},
+		{name: "language ts", trigger: Trigger{Language: "ts"}},
+		{name: "language python", trigger: Trigger{Language: "python"}},
+		{name: "language nix", trigger: Trigger{Language: "nix"}},
+		{name: "language rust", trigger: Trigger{Language: "rust"}},
+		{
+			name:     "golang typo",
+			trigger:  Trigger{Language: "golang"},
+			wantErr:  ErrInvalidTrigger,
+			contains: `Language "golang"`,
+		},
+		{
+			name:     "language is case-sensitive",
+			trigger:  Trigger{Language: "Go"},
+			wantErr:  ErrInvalidTrigger,
+			contains: `Language "Go"`,
+		},
+		{
+			name:     "empty Files pattern",
+			trigger:  Trigger{Files: []string{"**/*.go", ""}},
+			wantErr:  ErrInvalidTrigger,
+			contains: "Files contains an empty pattern",
+		},
+		{
+			name:     "empty Requires pattern",
+			trigger:  Trigger{Requires: []string{""}},
+			wantErr:  ErrInvalidTrigger,
+			contains: "Requires contains an empty pattern",
+		},
+		{
+			name:     "empty NotRequires pattern",
+			trigger:  Trigger{NotRequires: []string{""}},
+			wantErr:  ErrInvalidTrigger,
+			contains: "NotRequires contains an empty pattern",
+		},
+		{
+			name: "valid full trigger",
+			trigger: Trigger{
+				Files:       []string{"**/*.nix"},
+				Language:    "nix",
+				Requires:    []string{"**/flake.nix"},
+				NotRequires: []string{"**/treefmt.toml"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := tt.trigger.Validate()
+			if tt.wantErr == nil {
+				if err != nil {
+					t.Fatalf("Validate() = %v, want nil", err)
+				}
+
+				return
+			}
+
+			if !errors.Is(err, tt.wantErr) || !strings.Contains(err.Error(), tt.contains) {
+				t.Fatalf("Validate() = %v, want %v containing %q", err, tt.wantErr, tt.contains)
+			}
+		})
+	}
+}
+
+func TestValidLanguagesListsDocumentedSet(t *testing.T) {
+	t.Parallel()
+
+	want := []string{"go", "js", "ts", "python", "nix", "rust"}
+
+	got := ValidLanguages()
+	if !slices.Equal(got, want) {
+		t.Fatalf("ValidLanguages() = %v, want %v", got, want)
+	}
+
+	got[0] = "mutated"
+	if ValidLanguages()[0] != "go" {
+		t.Error("ValidLanguages() must return a copy immune to caller mutation")
+	}
+}
+
+func TestRegisterRejectsInvalidTriggerLanguage(t *testing.T) {
+	ResetForTest()
+
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal(`Register with Language "golang" must panic`)
+		}
+
+		msg, ok := r.(string)
+		if !ok {
+			t.Fatalf("panic = %v, want string message", r)
+		}
+
+		for _, want := range []string{
+			"Spec typo-tool",
+			`Language "golang"`,
+			"go, js, ts, python, nix, rust",
+		} {
+			if !strings.Contains(msg, want) {
+				t.Errorf("panic message %q must contain %q", msg, want)
+			}
+		}
+	}()
+
+	Register(Spec{
+		Name:        "typo-tool",
+		Description: "must fail registration",
+		Trigger:     Trigger{Language: "golang"},
+		Detect:      finding.NamedDetectorFunc("typo-tool", func(context.Context) ([]finding.Finding, error) { return nil, nil }),
+	})
+}
+
+func TestRegisterRejectsEmptyTriggerPattern(t *testing.T) {
+	ResetForTest()
+
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("Register with an empty Files pattern must panic")
+		}
+
+		msg, ok := r.(string)
+		if !ok || !strings.Contains(msg, "Files contains an empty pattern") {
+			t.Fatalf("panic = %v, want message naming Files empty pattern", r)
+		}
+	}()
+
+	Register(Spec{
+		Name:        "empty-pattern-tool",
+		Description: "must fail registration",
+		Trigger:     Trigger{Files: []string{""}},
+		Detect:      finding.NamedDetectorFunc("empty-pattern-tool", func(context.Context) ([]finding.Finding, error) { return nil, nil }),
+	})
+}
+
+// TestRepairResultCarriesFactsAndModifiedFiles pins the provenance surface
+// (issue #42): ModifiedFiles records what the repair wrote, Facts carry
+// tool-defined key/value provenance, and both stay non-gating — fix counts
+// remain measured by re-detection, never self-reported.
+func TestRepairResultCarriesFactsAndModifiedFiles(t *testing.T) {
+	t.Parallel()
+
+	result := RepairResult{
+		Description:   "migrated 2 go.mod files",
+		ModifiedFiles: []string{"go.mod", "tools/go.mod"},
+		Facts: []Fact{
+			{Key: "baseline-failed", Value: "true"},
+			{Key: "failure-cache-suppressed", Value: "true"},
+		},
+	}
+
+	if result.Description != "migrated 2 go.mod files" {
+		t.Errorf("Description = %q", result.Description)
+	}
+
+	if want := []string{"go.mod", "tools/go.mod"}; !slices.Equal(result.ModifiedFiles, want) {
+		t.Errorf("ModifiedFiles = %v, want %v", result.ModifiedFiles, want)
+	}
+
+	if len(result.Facts) != 2 {
+		t.Fatalf("Facts length = %d, want 2", len(result.Facts))
+	}
+
+	if result.Facts[0].Key != "baseline-failed" || result.Facts[0].Value != "true" {
+		t.Errorf("Facts[0] = %+v, want baseline-failed=true", result.Facts[0])
+	}
+
+	if result.Facts[1].Key != "failure-cache-suppressed" || result.Facts[1].Value != "true" {
+		t.Errorf("Facts[1] = %+v, want failure-cache-suppressed=true", result.Facts[1])
+	}
+
+	var zero RepairResult
+	if zero.ModifiedFiles != nil || zero.Facts != nil {
+		t.Error("zero-value RepairResult must have nil ModifiedFiles and Facts (additive fields only)")
 	}
 }
