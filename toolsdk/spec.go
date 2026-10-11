@@ -61,6 +61,15 @@ type Spec struct {
 	// edges and to gate the tool on file presence. Empty = always file-relevant.
 	Inputs []string
 
+	// Outputs are the file patterns this tool writes (its write contract).
+	// Hosts use them for producer ordering (this tool runs after the writers
+	// of its Inputs and before the readers of its Outputs) and result-cache
+	// keying. Example: a migrator that rewrites Go sources declares
+	// ["**/*.go"] so hosts order it after codegen and fix tools. Empty = the
+	// tool writes nothing hosts must order around (detect-only tools, and
+	// repairers whose effects are invisible to other tools' caching).
+	Outputs []string
+
 	// Options declares the tunable knobs this tool reads from the context
 	// via OptionsFromContext. Declarations power consumer-side validation
 	// (ValidateOptions) and documentation; the VALUES are set by the
