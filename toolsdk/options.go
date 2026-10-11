@@ -133,6 +133,49 @@ func OptionsFromContext(ctx context.Context) (OptionValues, bool) {
 	return values, true
 }
 
+// StringFromContext reads one string option from the context, applying
+// fallback when the name is unset, no values were set, the context is nil,
+// or the stored value is nil. A present value whose Go type is not string
+// yields an error matching ErrOptionKindMismatch. Declaration enforcement
+// (unknown names, kinds versus the Spec) is Spec.ValidateOptions' job, which
+// consumers run before the tool.
+func StringFromContext(ctx context.Context, name string, fallback string) (string, error) {
+	return valueFromContext(ctx, name, fallback, OptionKindString)
+}
+
+// IntFromContext reads one int option from the context under the same
+// contract as StringFromContext: any miss yields fallback, a present value
+// of the wrong Go type yields ErrOptionKindMismatch.
+func IntFromContext(ctx context.Context, name string, fallback int) (int, error) {
+	return valueFromContext(ctx, name, fallback, OptionKindInt)
+}
+
+// BoolFromContext reads one bool option from the context under the same
+// contract as StringFromContext: any miss yields fallback, a present value
+// of the wrong Go type yields ErrOptionKindMismatch.
+func BoolFromContext(ctx context.Context, name string, fallback bool) (bool, error) {
+	return valueFromContext(ctx, name, fallback, OptionKindBool)
+}
+
+// valueFromContext is the shared implementation behind the typed
+// *FromContext accessors; kind only shapes the error message.
+func valueFromContext[T any](ctx context.Context, name string, fallback T, kind OptionKind) (T, error) {
+	values, _ := OptionsFromContext(ctx)
+
+	value, present := values[name]
+	if !present || value == nil {
+		return fallback, nil
+	}
+
+	typed, ok := value.(T)
+	if !ok {
+		return fallback, fmt.Errorf("%w: option %q: got %T, want kind %q",
+			ErrOptionKindMismatch, name, value, kind)
+	}
+
+	return typed, nil
+}
+
 // ValidateOptions checks consumer-supplied values against the spec's
 // declared Options. Unknown names are rejected (a config typo fails loudly
 // instead of silently running on defaults) and value kinds must match the

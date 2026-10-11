@@ -24,9 +24,10 @@ var defaultRegistry = &registry{} //nolint:gochecknoglobals // process-global re
 //	var Provider = toolsdk.Register(toolsdk.Spec{...})
 //
 // Panics on invalid specs (empty Name, empty Description, no Detect/Repair
-// capability, or malformed/duplicate Options declarations) because a
-// malformed registration is a programming error that should surface at
-// startup, not at runtime.
+// capability, malformed/duplicate Options declarations, or an invalid
+// Trigger — unknown Language or empty patterns) because a malformed
+// registration is a programming error that should surface at startup, not
+// at runtime.
 func Register(s Spec) Spec {
 	mustValidate(s)
 
@@ -109,6 +110,10 @@ func mustValidate(s Spec) {
 		}
 
 		seen[opt.Name] = true
+	}
+
+	if err := s.Trigger.Validate(); err != nil {
+		panic("toolsdk.Register: Spec " + s.Name + ": " + err.Error())
 	}
 }
 

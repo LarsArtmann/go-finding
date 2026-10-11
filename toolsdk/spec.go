@@ -2,6 +2,10 @@ package toolsdk
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/larsartmann/go-finding"
 )
@@ -87,7 +91,8 @@ type Trigger struct {
 	Files []string
 
 	// Language is the target language code: "go", "js", "ts", "python", "nix",
-	// "rust", or "" for language-agnostic.
+	// "rust", or "" for language-agnostic (see ValidLanguages). Register
+	// rejects any other value at startup.
 	Language string
 
 	// Requires are prerequisite file patterns the tool needs to function.
@@ -103,6 +108,49 @@ type Trigger struct {
 	// domain/tool.Trigger.NotRequires — a spec that omits the field silently
 	// loses the deference behavior at conversion time.
 	NotRequires []string
+}
+
+// validLanguages is the fixed Trigger.Language vocabulary Register accepts,
+// in documented order. Never mutated; exported read-only via ValidLanguages.
+var validLanguages = []string{"go", "js", "ts", "python", "nix", "rust"} //nolint:gochecknoglobals // fixed language vocabulary, cloned on export
+
+// ValidLanguages returns every Trigger.Language code Register accepts, in
+// documented order, as a fresh copy. The empty string (language-agnostic)
+// is the zero value and valid without being listed.
+func ValidLanguages() []string {
+	return slices.Clone(validLanguages)
+}
+
+// ErrInvalidTrigger reports a malformed Trigger declaration: an unknown
+// Language code or an empty pattern in Files/Requires/NotRequires. The
+// wrapped detail names the offending field; match with errors.Is.
+var ErrInvalidTrigger = errors.New("toolsdk: invalid trigger declaration")
+
+// Validate checks the trigger declaration: Language must be "" (language-
+// agnostic) or one of ValidLanguages, and none of Files, Requires, or
+// NotRequires may contain an empty pattern (an empty glob matches nothing
+// and is always a spec-authoring bug). Register panics on the first error.
+func (t Trigger) Validate() error {
+	if t.Language != "" && !slices.Contains(validLanguages, t.Language) {
+		return fmt.Errorf("%w: Language %q (want \"\" or one of: %s)",
+			ErrInvalidTrigger, t.Language, strings.Join(validLanguages, ", "))
+	}
+
+	for _, field := range []struct {
+		name     string
+		patterns []string
+	}{
+		{"Files", t.Files},
+		{"Requires", t.Requires},
+		{"NotRequires", t.NotRequires},
+	} {
+		if slices.Contains(field.patterns, "") {
+			return fmt.Errorf("%w: %s contains an empty pattern (an empty glob matches nothing)",
+				ErrInvalidTrigger, field.name)
+		}
+	}
+
+	return nil
 }
 
 // SwitchCase declares one conditional repair path gated on the diagnose
@@ -135,11 +183,38 @@ type Repairer interface {
 	Repair(ctx context.Context) (RepairResult, error)
 }
 
+// Fact is one tool-defined provenance pair carried in RepairResult.Facts.
+type Fact struct {
+	// Key names the provenance fact (e.g. "baseline-failed").
+	Key string
+
+	// Value carries the fact's value (e.g. "true").
+	Value string
+}
+
 // RepairResult describes the outcome of a repair run. Only Description is
-// meaningful to BuildFlow; fix counts are measured by re-detection, not
-// self-reported (structural anti-lie design).
+// meaningful to BuildFlow's fix measurement: fix counts are measured by
+// re-detection, not self-reported (structural anti-lie design).
+//
+// ModifiedFiles and Facts are a structured provenance channel, additive and
+// non-gating: they record what the run did (files written; tool-defined
+// key/value pairs such as "baseline-failed" = "true") so hosts can surface
+// context without string-matching Description. Facts describe the run, they
+// never claim its effect — nothing downstream gates on a fact, and Detect
+// re-measures the actual fix.
 type RepairResult struct {
+	// Description is a human-readable summary of what the repair did.
 	Description string
+
+	// ModifiedFiles lists files the repair wrote (or would write under
+	// dry-run), typically as paths relative to the run's working directory
+	// (finding.WorkingDirFromContext). Informational: no consumer gates on
+	// the list. Nil or empty when the repair touched nothing.
+	ModifiedFiles []string
+
+	// Facts are tool-defined provenance key/value pairs. Nil or empty when
+	// the tool has nothing to record.
+	Facts []Fact
 }
 
 // RepairerFunc adapts a function to the Repairer interface.
