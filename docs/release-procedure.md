@@ -42,6 +42,10 @@
    the `fmt.Println(finding.Version) // "X.Y.Z"` example in README.md must
    match version.go exactly; `docs-api-check.sh` (wired into preflight and CI)
    fails on a stale or missing stamp (v1.9.1/v1.9.2 shipped while it lagged).
+   The bump commit must land BEFORE the tag is pushed, and the tag's tree must
+   carry it — verify with `git show <tag>:version.go`. The v1.14.0 core tag
+   self-reports "1.13.0" because its bump commit landed after tagging, and
+   `protect-release-tags` blocks the retag (found 2026-10-11).
 7. **Full FEATURES.md walk** — read `FEATURES.md` end to end and verify every
    row's status against the code being released. The file is the honest feature
    inventory; a release must not ship with stale rows. Check in particular that
@@ -136,11 +140,18 @@ for t in analysis/v1.3.0 toolsdk/v1.3.0 cmd/go-finding/v1.3.0; do
 done
 ```
 
-After all five Release runs complete, land the resync commit on master: bump
-`cmd/go-finding/go.mod` requires to the new version, `go mod tidy`, commit
-(`chore(release): resync cmd/go-finding to published vX.Y.Z siblings`), push.
-The tagged commit itself runs red `module-isolation` EXPECTEDLY — the CLI
-go.sum cannot carry the new checksums before the tags exist.
+Tag order (v1.14.0 onward): push the LIBRARY tags first (`v*`, `pipeline/v*`,
+`analysis/v*`, `toolsdk/v*` — one per push, each watched to a terminal
+Release run), then land the resync commit on master: bump
+`cmd/go-finding/go.mod` requires to the new versions, `go mod tidy`, refresh
+the flake `vendorHash`, commit
+(`chore(release): resync cmd/go-finding to published vX.Y.Z siblings`), push,
+and wait for green CI. Only THEN push `cmd/go-finding/vX.Y.Z` pointing AT the
+resync commit, so `go install cmd/go-finding@vX.Y.Z` builds the CLI with the
+new sibling engine — tagging cmd before the resync ships a binary pinned to
+the PREVIOUS engine (the v1.13.0 CLI pinned pipeline v1.12.0). GoReleaser
+binaries still attach only to core `v*` releases; sub-module tags get
+lightweight releases by design.
 
 ### Tag pushing: ONE tag per push, serialized runs
 
