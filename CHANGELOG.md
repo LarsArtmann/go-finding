@@ -1070,8 +1070,7 @@ All APIs deprecated since v0.6.0–v0.9.0 have been removed. See `docs/MIGRATION
 
 ---
 
-[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.15.0...HEAD
-[1.15.0]: https://github.com/larsartmann/go-finding/compare/v1.14.0...v1.15.0
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.14.0...HEAD
 [1.14.0]: https://github.com/larsartmann/go-finding/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/larsartmann/go-finding/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/larsartmann/go-finding/compare/v1.11.0...v1.12.0
