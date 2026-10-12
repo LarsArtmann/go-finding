@@ -8,19 +8,19 @@
 
 ## a) FULLY DONE
 
-| # | Item | Evidence |
-|---|------|----------|
-| 1 | **`feat/detector-v2-coverage` merged to master** (5 commits, fast-forward, linear history) — DetectResult/DetectorV2 coverage-evidence channel + pipeline adoption of `RunDetect` | `535f358` is ancestor of `e37bf77` |
-| 2 | **x/sync 0.23.0 → 0.24.0 landed** (cherry-pick of dependabot PR #45, authorship preserved) + `go work sync` verified idempotent | `f11ea8e`, 9 files across all 5 modules |
-| 3 | **flake.nix vendorHash refreshed** for the bump (hash taken from the stale-FOD failure output; `nix build .` green after) | `895ff56` |
-| 4 | **Full local gate sweep**: all 5 modules `go test -race -count=1` green; `GOWORK=off` builds green; `go-work-sync.sh` OK; toolsdk lint 0 issues at **exact CI parity** (golangci-lint 2.14.0 locally = ci.yml pin) | run sequentially per GOCACHE gotcha |
-| 5 | **dependabot PRs #45/#46 closed** with supersession comments; their remote branches auto-pruned afterwards (proxy confirmed satisfied) | `gh pr list --state open` → 0 |
-| 6 | **codecov dependabot branch resolved as superseded** — master already pins `codecov-action@303a32d7… # v7.1.1` and uses `files:`; rebase conflict proved it; branch left in place (not merged, content already on master) | ci.yml:66-71 |
-| 7 | **4 pre-existing toolsdk lint findings fixed** (gochecknoglobals on `validLanguages`, SA1012 nil-ctx test nolint using the repo's established pattern, 2× wsl_v5 whitespace) — CI `lint (toolsdk)` went red→green | `293f658`, `77687aa`; run 38163349658 |
-| 8 | **README version stamp synced to v1.14.0** (module table + `finding.Version` example) — `docs-api-check.sh` verified green locally | `e37bf77` |
-| 9 | **AGENTS.md gotcha recorded**: `nix run .#lint` covers the ROOT module only — the blind spot that hid the toolsdk findings behind a green local run | `00c90df` |
-| 10 | **Branch hygiene**: merged `feat/detector-v2-coverage` deleted (local + remote, safe `-d` since ff-merged) | — |
-| 11 | **CI event-drop gotcha honored**: verified a ci.yml run exists for every pushed SHA (895ff56, 77687aa; docs-only pushes 00c90df/e37bf77 legitimately skip via `paths-ignore`) | `gh run list` checks |
+| #  | Item                                                                                                                                                                                                                      | Evidence                                |
+| -- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| 1  | **`feat/detector-v2-coverage` merged to master** (5 commits, fast-forward, linear history) — DetectResult/DetectorV2 coverage-evidence channel + pipeline adoption of `RunDetect`                                         | `535f358` is ancestor of `e37bf77`      |
+| 2  | **x/sync 0.23.0 → 0.24.0 landed** (cherry-pick of dependabot PR #45, authorship preserved) + `go work sync` verified idempotent                                                                                           | `f11ea8e`, 9 files across all 5 modules |
+| 3  | **flake.nix vendorHash refreshed** for the bump (hash taken from the stale-FOD failure output; `nix build .` green after)                                                                                                 | `895ff56`                               |
+| 4  | **Full local gate sweep**: all 5 modules `go test -race -count=1` green; `GOWORK=off` builds green; `go-work-sync.sh` OK; toolsdk lint 0 issues at **exact CI parity** (golangci-lint 2.14.0 locally = ci.yml pin)        | run sequentially per GOCACHE gotcha     |
+| 5  | **dependabot PRs #45/#46 closed** with supersession comments; their remote branches auto-pruned afterwards (proxy confirmed satisfied)                                                                                    | `gh pr list --state open` → 0           |
+| 6  | **codecov dependabot branch resolved as superseded** — master already pins `codecov-action@303a32d7… # v7.1.1` and uses `files:`; rebase conflict proved it; branch left in place (not merged, content already on master) | ci.yml:66-71                            |
+| 7  | **4 pre-existing toolsdk lint findings fixed** (gochecknoglobals on `validLanguages`, SA1012 nil-ctx test nolint using the repo's established pattern, 2× wsl_v5 whitespace) — CI `lint (toolsdk)` went red→green         | `293f658`, `77687aa`; run 38163349658   |
+| 8  | **README version stamp synced to v1.14.0** (module table + `finding.Version` example) — `docs-api-check.sh` verified green locally                                                                                        | `e37bf77`                               |
+| 9  | **AGENTS.md gotcha recorded**: `nix run .#lint` covers the ROOT module only — the blind spot that hid the toolsdk findings behind a green local run                                                                       | `00c90df`                               |
+| 10 | **Branch hygiene**: merged `feat/detector-v2-coverage` deleted (local + remote, safe `-d` since ff-merged)                                                                                                                | —                                       |
+| 11 | **CI event-drop gotcha honored**: verified a ci.yml run exists for every pushed SHA (895ff56, 77687aa; docs-only pushes 00c90df/e37bf77 legitimately skip via `paths-ignore`)                                             | `gh run list` checks                    |
 
 **CI accounting on the last code run (38163349658, commit 77687aa)**: 18/20 jobs green — incl. benchmark (20m26s), stress (7m26s), nix, coverage, govulncheck, consumer-compat, module-isolation, both OS test matrices. Remaining red: `structural-checks` (see b) and `docs-api-check` (fixed since, locally verified).
 
@@ -44,7 +44,7 @@ Fixed by `e37bf77` and verified by running the actual gate script (`docs-api-che
 
 1. **Reading `docs/release-procedure.md` end-to-end** — mandatory step 0 before any tag; interrupted mid-research.
 2. **CHANGELOG cuts** (pipeline, analysis, root, cmd) — [Unreleased] sections still primed, untouched.
-3. **FEATURES.md "(unreleased)" label flips** (5 mentions; must be 0 for *shipped* features at tag time — release-procedure step 7).
+3. **FEATURES.md "(unreleased)" label flips** (5 mentions; must be 0 for _shipped_ features at tag time — release-procedure step 7).
 4. **Tag pushes** (pipeline/analysis/cmd v1.14.0) — none.
 5. **Resync commit** (cmd pin bump via `go get pipeline@v1.14.0`, go.sum, vendorHash) — none.
 6. **Mandatory pre-tag gates**: stress (`ginkgo -r --race --repeat=20`, `go test -race -count=20`), `release-preflight.sh --bench --stress` (expect its documented false positives: 2 existing v1.14.0 tags + mid-train version-drift), manual `GOWORK=off` toolsdk build+vet (preflight skips it).
@@ -83,6 +83,7 @@ Fixed by `e37bf77` and verified by running the actual gate script (`docs-api-che
 ## f) NEXT THINGS (prioritized, session-derived)
 
 **The v1.14.0 train (decision + execution):**
+
 1. Answer Q1 (tag target strategy, see g) — blocks everything below.
 2. Read `docs/release-procedure.md` fully; reconcile with TODO_LIST:36-44.
 3. Verify `analysis/*` and `cmd/go-finding/*` latest tags + diffs-since-tag (are v1.14.0 tags needed for content or lockstep only?).
