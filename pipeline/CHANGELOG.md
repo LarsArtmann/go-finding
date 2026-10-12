@@ -11,6 +11,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Nothing yet.
+
+## [1.15.0] - 2026-10-12
+
+Coverage-channel release: every detect path now dispatches through core's
+`finding.RunDetect`, riding the core [v1.15.0](../CHANGELOG.md)
+`DetectorV2` feature end-to-end.
+
+### Added
+
 - **Pipeline adopts the DetectorV2 coverage channel** — every detect path
   (`Pipeline.detect` sequential + parallel, `DetectPartial` sequential +
   parallel, the convenience `Detect`, `Verify` re-detection, and
@@ -163,3 +173,18 @@ Version-alignment release with core v1.9.1. No pipeline-module code changes.
 ### Changed
 
 - Go module dependencies synchronized across all sub-modules.
+
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.15.0...HEAD
+[1.15.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.14.0...pipeline/v1.15.0
+[1.14.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.13.0...pipeline/v1.14.0
+[1.13.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.12.0...pipeline/v1.13.0
+[1.12.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.11.0...pipeline/v1.12.0
+[1.11.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.10.0...pipeline/v1.11.0
+[1.10.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.9.2...pipeline/v1.10.0
+[1.9.2]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.9.1...pipeline/v1.9.2
+[1.9.1]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.9.0...pipeline/v1.9.1
+[1.9.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.8.0...pipeline/v1.9.0
+[1.8.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.7.0...pipeline/v1.8.0
+[1.7.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.6.0...pipeline/v1.7.0
+[1.6.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.5.0...pipeline/v1.6.0
+[1.5.0]: https://github.com/larsartmann/go-finding/compare/pipeline/v1.4.1...pipeline/v1.5.0

@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+## [1.15.0] - 2026-10-12
+
+Coverage-evidence release: detectors that can measure their own scan coverage
+now flow that evidence end-to-end. Sub-module release rides along:
+[pipeline/v1.15.0](pipeline/CHANGELOG.md) (every detect path dispatches
+through the new channel).
+
+### Added
+
 - **`DetectResult` + `DetectorV2` coverage channel (T07b)** — detectors that
   can measure their own coverage implement `DetectorV2.DetectV2(ctx)` and
   return `DetectResult{Findings, FilesScanned, SkippedModules}`; hosts call
@@ -1055,7 +1070,18 @@ All APIs deprecated since v0.6.0–v0.9.0 have been removed. See `docs/MIGRATION
 
 ---
 
-[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.15.0...HEAD
+[1.15.0]: https://github.com/larsartmann/go-finding/compare/v1.14.0...v1.15.0
+[1.14.0]: https://github.com/larsartmann/go-finding/compare/v1.13.0...v1.14.0
+[1.13.0]: https://github.com/larsartmann/go-finding/compare/v1.12.0...v1.13.0
+[1.12.0]: https://github.com/larsartmann/go-finding/compare/v1.11.0...v1.12.0
+[1.11.0]: https://github.com/larsartmann/go-finding/compare/v1.10.0...v1.11.0
+[1.10.0]: https://github.com/larsartmann/go-finding/compare/v1.9.2...v1.10.0
+[1.9.2]: https://github.com/larsartmann/go-finding/compare/v1.9.1...v1.9.2
+[1.9.1]: https://github.com/larsartmann/go-finding/compare/v1.9.0...v1.9.1
+[1.9.0]: https://github.com/larsartmann/go-finding/compare/v1.8.0...v1.9.0
+[1.8.0]: https://github.com/larsartmann/go-finding/compare/v1.7.0...v1.8.0
+[1.7.0]: https://github.com/larsartmann/go-finding/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/larsartmann/go-finding/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/larsartmann/go-finding/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/larsartmann/go-finding/compare/v1.4.0...v1.4.1
