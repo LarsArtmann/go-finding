@@ -1,0 +1,1 @@
+Implemented option 1: `finding.Relativize` (relativize.go, pure-copy semantics, input slice untouched) plus the `GenerateID` path-form doc note (id.go). 5 tests, golangci clean, changelog under Unreleased. Closing as fixed: rides the next release; consumers like branching-flow's pkg/finding/normalize.go can drop their hand-rolled copy once it ships.

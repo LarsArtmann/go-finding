@@ -83,7 +83,7 @@ func TestRelativizeLeavesUnrelatedPathsAlone(t *testing.T) {
 func TestRelativizeRelativeRootAndEmptyRootNoOp(t *testing.T) {
 	t.Parallel()
 
-	wd, err := os.Getwd()
+	workingDir, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("getwd: %v", err)
 	}
@@ -91,7 +91,7 @@ func TestRelativizeRelativeRootAndEmptyRootNoOp(t *testing.T) {
 	f := finding.Finding{
 		ToolName: "branching-flow",
 		Rule:     "COMPOSITION_mixin",
-		Position: finding.Position{File: finding.FilePath(filepath.Join(wd, "filter.go")), Line: 1, Column: 2},
+		Position: finding.Position{File: finding.FilePath(filepath.Join(workingDir, "filter.go")), Line: 1, Column: 2},
 	}
 	f.ID = finding.GenerateID(f.ToolName, f.Rule, f.Position)
 
@@ -146,13 +146,14 @@ func TestRelativizeRegeneratesHashIDsForFileLevelFindings(t *testing.T) {
 	rootOne, rootTwo := t.TempDir(), t.TempDir()
 
 	f := func(root string) finding.Finding {
-		x := finding.Finding{
+		hostPath := finding.Finding{
 			ToolName: "branching-flow",
 			Rule:     "PROJECT_CHECK",
 			Position: finding.Position{File: finding.FilePath(filepath.Join(root, "pkg", "cfg.go"))},
 		}
-		x.ID = finding.GenerateID(x.ToolName, x.Rule, x.Position)
-		return x
+		hostPath.ID = finding.GenerateID(hostPath.ToolName, hostPath.Rule, hostPath.Position)
+
+		return hostPath
 	}
 
 	one, two := f(rootOne), f(rootTwo)
