@@ -322,7 +322,6 @@ linters:
           - wrapcheck
           - unparam
           - testpackage
-          - exhaustruct
           - gochecknoglobals
           - funlen
           - cyclop
@@ -402,5 +401,5 @@ formatters:
       - cmd/go-finding/
       - pipeline/
 issues:
-  max-issues-per-linter: 100
-  max-same-issues: 5
+  max-issues-per-linter: 0
+  max-same-issues: 0
