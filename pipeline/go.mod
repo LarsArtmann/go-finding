@@ -3,7 +3,7 @@ module github.com/larsartmann/go-finding/pipeline
 go 1.27
 
 require (
-	github.com/LarsArtmann/gogenfilter/v3 v3.6.1
+	github.com/LarsArtmann/gogenfilter/v3 v3.7.0
 	github.com/larsartmann/go-finding v1.15.0
 	github.com/onsi/ginkgo/v2 v2.33.1
 	github.com/onsi/gomega v1.44.0
