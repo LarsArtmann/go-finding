@@ -346,8 +346,6 @@ func TestPipelineConfigFile_ToPipelineConfig(t *testing.T) {
 	}
 }
 
-//nolint:paralleltest // manipulates global pprof CPU profile state and os.Stderr
-
 // TestFlightRecorderResolveDelegatesWording pins the delegation to
 // pipeline.ResolveFlightRecorderConfig: the duration-error wording is the
 // pipeline's contract ("parse flightRecorder.<field>"), and this fails if a
