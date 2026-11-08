@@ -17,20 +17,21 @@ import (
 	finding "github.com/larsartmann/go-finding"
 )
 
-// fakeTree is a deterministic stand-in for a filesystem walk.
-var fakeTree = map[string]string{
-	"clean.go":        "package ok\n",
-	"dirty.go":        "package dirty\nfunc TODO() {}\n",
-	"vendor/x/a.go":   "package x\nfunc TODO() {}\n",
-	"vendor/x/nest.go": "package x\n",
-}
-
 // todoLinter is a DetectorV2: it reports findings plus coverage evidence.
 type todoLinter struct {
-	root string
+	tree map[string]string // deterministic stand-in for a filesystem walk
 }
 
-func (l *todoLinter) Name() string { return "todo-linter" }
+func newTodoLinter() *todoLinter {
+	return &todoLinter{tree: map[string]string{
+		"clean.go":         "package ok\n",
+		"dirty.go":         "package dirty\nfunc TODO() {}\n",
+		"vendor/x/a.go":    "package x\nfunc TODO() {}\n",
+		"vendor/x/nest.go": "package x\n",
+	}}
+}
+
+func (*todoLinter) Name() string { return "todo-linter" }
 
 // Detect keeps the v1 contract as a thin wrapper over DetectV2 so both
 // methods agree on the findings for the same run.
@@ -39,22 +40,28 @@ func (l *todoLinter) Detect(ctx context.Context) ([]finding.Finding, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return res.Findings, nil
 }
 
 func (l *todoLinter) DetectV2(ctx context.Context) (finding.DetectResult, error) {
 	res := finding.DetectResult{}
-	for path, src := range fakeTree {
+
+	for path, src := range l.tree {
 		if strings.HasPrefix(path, "vendor/") {
 			if path == "vendor/x/a.go" {
 				res.SkippedModules = append(res.SkippedModules, "vendor/x")
 			}
+
 			continue // vendored module: deliberately not scanned
 		}
+
 		res.FilesScanned++ // clean files count as evidence too
-		if ctx.Err() != nil {
-			return finding.DetectResult{}, ctx.Err()
+
+		if err := ctx.Err(); err != nil {
+			return finding.DetectResult{}, fmt.Errorf("context cancelled during scan: %w", err)
 		}
+
 		if strings.Contains(src, "TODO") {
 			res.Findings = append(res.Findings, finding.NewFinding(
 				"no-todo", finding.ToolName(l.Name()), "TODO marker found",
@@ -63,16 +70,18 @@ func (l *todoLinter) DetectV2(ctx context.Context) (finding.DetectResult, error)
 			))
 		}
 	}
+
 	return res, nil
 }
 
 func main() {
 	report := finding.NewReport(finding.ToolInfo{Name: "todo-linter", Version: "1.0.0"})
 
-	res, err := finding.RunDetect(context.Background(), &todoLinter{root: "."})
+	res, err := finding.RunDetect(context.Background(), newTodoLinter())
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	report.AddDetectResult(res)
 	report.ComputeSummary()
 

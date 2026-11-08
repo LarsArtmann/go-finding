@@ -9,7 +9,7 @@ import (
 func TestExamplesCompile(t *testing.T) {
 	t.Parallel()
 
-	tests := []string{"./basic", "./builder"}
+	tests := []string{"./basic", "./builder", "./detectorv2"}
 	for _, path := range tests {
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
@@ -33,6 +33,7 @@ func TestExamplesRun(t *testing.T) {
 	}{
 		{"./basic", "Report has 1 finding(s)"},
 		{"./builder", "Fix available: oldPattern → newPattern"},
+		{"./detectorv2", "files scanned: 2"},
 	}
 
 	for _, tt := range tests {

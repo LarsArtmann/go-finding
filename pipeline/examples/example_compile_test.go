@@ -9,7 +9,7 @@ import (
 func TestExamplesCompile(t *testing.T) {
 	t.Parallel()
 
-	tests := []string{"./outcomes", "./multi-edit"}
+	tests := []string{"./outcomes", "./multi-edit", "./detectorv2"}
 	for _, path := range tests {
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
