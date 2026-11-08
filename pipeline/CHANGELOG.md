@@ -13,6 +13,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Nothing yet.
 
+## [1.15.1] - 2026-11-08
+
+Train-completion release: the module requires move to core v1.15.1 (the
+core tag itself went out 2026-11-04; this sibling tag completes the train
+per the lockstep-version convention). No pipeline code changes since
+[v1.15.0](#1150---2026-10-12) beyond the require bump and go.sum
+completion (`/go.mod` hash lines the 09-27 dependency bumps had omitted).
+
 ## [1.15.0] - 2026-10-12
 
 Coverage-channel release: every detect path now dispatches through core's

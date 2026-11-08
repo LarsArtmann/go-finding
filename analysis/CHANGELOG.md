@@ -7,6 +7,15 @@ For root-level changes, see the [root CHANGELOG.md](../CHANGELOG.md).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.15.1] - 2026-11-08
+
+Train-completion release: the module requires move to core v1.15.1 (the
+core tag itself went out 2026-11-04; this sibling tag completes the train
+per the lockstep-version convention). No analysis code changes since
+[v1.14.0](#1140---2026-10-11) beyond the require bump and go.sum
+completion (`/go.mod` hash lines the 09-27 dependency bumps had
+omitted).
+
 ## [1.14.0] - 2026-10-11
 
 ### Fixed
