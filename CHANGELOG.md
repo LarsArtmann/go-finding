@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Release workflow no longer fails after publishing (v1.15.1 run
+  41863470480 class)** — the goreleaser nixpkgs pipe targeted
+  `LarsArtmann/nur-packages`, which does not exist, so every release run
+  died with `nixpkgs: could not get default branch: 404` AFTER the assets
+  were published (the run went red on a shipped release; the earlier
+  cosign-action theory was wrong — the installer and all 17 signatures
+  succeeded). `nix.skip_upload` is now `true` (the formula still renders to
+  `dist/nix/`); the deprecated `brews` pipe migrated to `homebrew_casks`
+  and `archives.format_overrides` to the current `formats` list
+  (`goreleaser check` clean, snapshot render verified).
+
 - **Completed the missing `/go.mod` hash lines in the sub-module `go.sum`
   files** (pipeline, analysis, toolsdk; cmd was completed in the v1.15.1
   tagged commit). The dependency-bump commits (9bae0ba, 4398a6f) wrote
