@@ -5,18 +5,22 @@
 # operator's head, not in a script (see docs/status/2026-09-08_18-48 report d/1).
 #
 # Usage:
-#   ./scripts/release-preflight.sh                 # structural gates (fast)
-#   ./scripts/release-preflight.sh --bench         # also run bench-check vs baseline
-#   ./scripts/release-preflight.sh --stress        # also run repeat=20 race stress
-#   ./scripts/release-preflight.sh --post-tag      # post-tag verification mode
-#
-# Always run from the repo root (relative paths).
+#   ./scripts/release-preflight.sh                    # structural gates (fast)
+#   ./scripts/release-preflight.sh --bench            # also run bench-check vs baseline
+#   ./scripts/release-preflight.sh --stress           # also run repeat=20 race stress
+#   ./scripts/release-preflight.sh --post-tag         # post-tag verification mode
+#   ./scripts/release-preflight.sh --tag vX.Y.Z       # assert the stamp before tagging
+## Always run from the repo root (relative paths).
 # Heavy gates (bench, stress) are opt-in: preflight's job is to make the
 # cheap-to-run, easy-to-forget checks impossible to skip.
 #
 # --post-tag inverts the tag-collision guard (all 5 tags must now EXIST)
 # and additionally runs version-check.sh (version.go == latest tag). Run it
 # right after tagging, before `git push origin --tags`.
+#
+# --tag vX.Y.Z runs the stamp gate (scripts/stamp-gate.sh): version.go must
+# equal the tag you are ABOUT to create and that tag must not exist yet —
+# the v1.14.0/v1.15.1 stale-stamp incident class, killed at creation time.
 #
 # Self-test: scripts/release-preflight-selftest.sh injects synthetic drift
 # and a tag collision into a disposable git worktree and asserts preflight
@@ -33,16 +37,26 @@ cd "$(dirname "$0")/.."
 RUN_BENCH=0
 RUN_STRESS=0
 POST_TAG=0
-for arg in "$@"; do
-	case "$arg" in
+TAG_ARG=""
+while [ "$#" -gt 0 ]; do
+	case "$1" in
 	--bench) RUN_BENCH=1 ;;
 	--stress) RUN_STRESS=1 ;;
 	--post-tag) POST_TAG=1 ;;
+	--tag)
+		if [ "$#" -lt 2 ]; then
+			echo "usage: $0 [--bench] [--stress] [--post-tag] [--tag vX.Y.Z]"
+			exit 2
+		fi
+		TAG_ARG="$2"
+		shift
+		;;
 	*)
-		echo "usage: $0 [--bench] [--stress] [--post-tag]"
+		echo "usage: $0 [--bench] [--stress] [--post-tag] [--tag vX.Y.Z]"
 		exit 2
 		;;
 	esac
+	shift
 done
 
 FAILURES=0
@@ -138,6 +152,8 @@ done
 
 if [ "$POST_TAG" -eq 1 ]; then
 	run_check "version.go matches latest tag" bash scripts/version-check.sh
+elif [ -n "$TAG_ARG" ]; then
+	run_check "stamp gate (version.go == intended tag $TAG_ARG)" bash scripts/stamp-gate.sh "$TAG_ARG"
 fi
 
 run_check "version drift (go.mod references match version.go)" bash scripts/version-drift.sh
@@ -151,7 +167,7 @@ run_check "docs freshness" bash scripts/docs-freshness.sh
 
 step "GOWORK=off build per module"
 for dir in . pipeline analysis cmd/go-finding; do
-	if (cd "$dir" && GOWORK=off GOEXPERIMENT=jsonv2 go build ./...); then
+	if (cd "$dir" && GOWORK=off go build ./...); then
 		echo "OK: GOWORK=off build in $dir"
 	else
 		echo "FAIL: GOWORK=off build in $dir"
@@ -161,7 +177,7 @@ done
 
 step "go mod tidy -diff per module (tidy-ness)"
 for dir in . pipeline analysis cmd/go-finding; do
-	if (cd "$dir" && GOWORK=off GOEXPERIMENT=jsonv2 GOPRIVATE='github.com/larsartmann/*' go mod tidy -diff); then
+	if (cd "$dir" && GOWORK=off GOPRIVATE='github.com/larsartmann/*' go mod tidy -diff); then
 		echo "OK: go.mod tidy in $dir"
 	else
 		echo "FAIL: $dir/go.mod needs 'go mod tidy' (run it with GOWORK=off)"
@@ -174,8 +190,8 @@ done
 if [ "$RUN_BENCH" -eq 1 ]; then
 	step "benchmark capture (core + pipeline, count=10)"
 	if {
-		GOEXPERIMENT=jsonv2 go test -run='^$' -bench=. -benchmem -count=10 ./... >/tmp/preflight-bench.txt
-		(cd pipeline && GOEXPERIMENT=jsonv2 go test -run='^$' -bench=. -benchmem -count=10 ./... >>/tmp/preflight-bench.txt)
+		go test -run='^$' -bench=. -benchmem -count=10 ./... >/tmp/preflight-bench.txt
+		(cd pipeline && go test -run='^$' -bench=. -benchmem -count=10 ./... >>/tmp/preflight-bench.txt)
 	}; then
 		echo "OK: benchmark capture"
 	else
@@ -193,14 +209,14 @@ fi
 
 if [ "$RUN_STRESS" -eq 1 ]; then
 	step "stress: ginkgo repeat=20 (core)"
-	if (GOEXPERIMENT=jsonv2 ginkgo -r --race --repeat=20 --skip-package=examples); then
+	if (ginkgo -r --race --repeat=20 --skip-package=examples); then
 		echo "OK: core stress"
 	else
 		echo "FAIL: core stress"
 		FAILURES=$((FAILURES + 1))
 	fi
 	step "stress: ginkgo repeat=20 (pipeline)"
-	if (cd pipeline && GOEXPERIMENT=jsonv2 ginkgo -r --race --repeat=20 --skip-package=examples); then
+	if (cd pipeline && ginkgo -r --race --repeat=20 --skip-package=examples); then
 		echo "OK: pipeline stress"
 	else
 		echo "FAIL: pipeline stress"
@@ -208,7 +224,7 @@ if [ "$RUN_STRESS" -eq 1 ]; then
 	fi
 	for dir in analysis cmd/go-finding; do
 		step "stress: go test -race -count=20 ($dir)"
-		if (cd "$dir" && GOEXPERIMENT=jsonv2 go test -race -count=20 ./...); then
+		if (cd "$dir" && go test -race -count=20 ./...); then
 			echo "OK: $dir stress"
 		else
 			echo "FAIL: $dir stress"
