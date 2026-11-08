@@ -118,7 +118,9 @@ jobs:
           go-version: "1.27"
       # Module scoping for workflow_dispatch runs (inputs.modules): steps
       # skip when their module is not selected. Push/PR runs lint everything.
-      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+      - name: Lint module
+        id: lint
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         if: >-
           ${{
             github.event_name != 'workflow_dispatch' ||
@@ -138,6 +140,7 @@ jobs:
           args: --timeout=5m
           working-directory: ${{ matrix.module }}
       - name: Check formatting
+        id: fmt
         if: >-
           ${{
             github.event_name != 'workflow_dispatch' ||
@@ -150,6 +153,21 @@ jobs:
           }}
         working-directory: ${{ matrix.module }}
         run: golangci-lint fmt --diff ./...
+
+      # One surface for the five lint legs: each matrix leg appends its
+      # verdict to the same job summary, so a red leg names its module at a
+      # glance (the 2026-10-11 blind spot — local lint covered the root
+      # module only and CI red showed as bare "lint" in the checks list).
+      - name: Record module lint verdict in the job summary
+        if: always()
+        run: |
+          {
+            echo "| Module | Lint | Format |"
+            echo "| ------ | ---- | ------ |"
+            echo "| \`${{ matrix.module }}\` | ${{ steps.lint.outcome == 'success' && '✅' || steps.lint.outcome }} | ${{ steps.fmt.outcome == 'success' && '✅' || steps.fmt.outcome }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          LINT_MODULE: ${{ matrix.module }}
 
     timeout-minutes: 15
   preflight-selftest:
