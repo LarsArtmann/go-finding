@@ -31,7 +31,26 @@ permissions:
   contents: read
 
 jobs:
+  # Branch protection requires the BARE job name "test", but a matrix job
+  # reports as "test (1.27, ubuntu-latest)" — the required context can never
+  # match (the dependabot-merge blockage, T22). Shape: the matrix runs as
+  # test-matrix, and this aggregate job satisfies the bare context.
   test:
+    needs: test-matrix
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Required-context aggregate (bare `test`)
+        run: |
+          if [ "${{ needs.test-matrix.result }}" = "success" ]; then
+            echo "OK: all test matrix legs green"
+          else
+            echo "FAIL: test matrix concluded '${{ needs.test-matrix.result }}'"
+            exit 1
+          fi
+
+    timeout-minutes: 5
+  test-matrix:
     strategy:
       matrix:
         go-version: ["1.27"]
@@ -69,7 +88,24 @@ jobs:
           fail_ci_if_error: false
 
     timeout-minutes: 15
+  # Same required-context shape as `test` above: matrix legs run as
+  # lint-matrix, the bare `lint` context is satisfied by the aggregate.
   lint:
+    needs: lint-matrix
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Required-context aggregate (bare `lint`)
+        run: |
+          if [ "${{ needs.lint-matrix.result }}" = "success" ]; then
+            echo "OK: all lint matrix legs green"
+          else
+            echo "FAIL: lint matrix concluded '${{ needs.lint-matrix.result }}'"
+            exit 1
+          fi
+
+    timeout-minutes: 5
+  lint-matrix:
     strategy:
       matrix:
         module: [".", "pipeline", "analysis", "toolsdk", "cmd/go-finding"]
