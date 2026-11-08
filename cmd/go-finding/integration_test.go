@@ -347,3 +347,17 @@ func TestPipelineConfigFile_ToPipelineConfig(t *testing.T) {
 }
 
 //nolint:paralleltest // manipulates global pprof CPU profile state and os.Stderr
+
+// TestFlightRecorderResolveDelegatesWording pins the delegation to
+// pipeline.ResolveFlightRecorderConfig: the duration-error wording is the
+// pipeline's contract ("parse flightRecorder.<field>"), and this fails if a
+// re-mirrored CLI parser ever drifts from it.
+func TestFlightRecorderResolveDelegatesWording(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	cfg := flightRecorderFileConfig{Enabled: true, SlowStageThreshold: "not-a-duration"}
+
+	_, err := cfg.resolve()
+
+	g.Expect(err).To(MatchError(ContainSubstring("parse flightRecorder.slowStageThreshold")))
+}

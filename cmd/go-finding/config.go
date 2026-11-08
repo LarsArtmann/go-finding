@@ -52,52 +52,23 @@ type flightRecorderFileConfig struct {
 	Compress           bool   `json:"compress"           yaml:"compress"`
 }
 
-// resolve parses the string-encoded duration fields and applies pipeline
-// defaults. The CLI keeps its own resolver (mirroring pipeline's
-// ConfigFile.ResolveFlightRecorder) because the no-replace policy pins it to
-// published pipeline versions.
+// resolve delegates to pipeline.ResolveFlightRecorderConfig: the mapping
+// (string-encoded durations, defaults, error wording) lives in the pipeline
+// module, so the CLI can no longer drift from it. The CLI struct stays
+// because it carries yaml tags; ResolveFlightRecorderConfig shipped in
+// pipeline v1.15.1, which cmd/go-finding requires.
 func (c flightRecorderFileConfig) resolve() (pipeline.FlightRecorderConfig, error) {
-	resolved := pipeline.DefaultFlightRecorderConfig()
-
-	if c.OutputDir != "" {
-		resolved.OutputDir = c.OutputDir
+	file := pipeline.FlightRecorderFileConfig{
+		Enabled:            c.Enabled,
+		OutputDir:          c.OutputDir,
+		SlowStageThreshold: c.SlowStageThreshold,
+		MinAge:             c.MinAge,
+		MaxBytes:           c.MaxBytes,
+		MaxFiles:           c.MaxFiles,
+		Compress:           c.Compress,
 	}
 
-	if c.SlowStageThreshold != "" {
-		d, err := time.ParseDuration(c.SlowStageThreshold)
-		if err != nil {
-			return pipeline.FlightRecorderConfig{}, fmt.Errorf(
-				"invalid flightRecorder.slowStageThreshold %q: %w",
-				c.SlowStageThreshold, err,
-			)
-		}
-
-		resolved.SlowStageThreshold = d
-	}
-
-	if c.MinAge != "" {
-		d, err := time.ParseDuration(c.MinAge)
-		if err != nil {
-			return pipeline.FlightRecorderConfig{}, fmt.Errorf(
-				"invalid flightRecorder.minAge %q: %w",
-				c.MinAge, err,
-			)
-		}
-
-		resolved.MinAge = d
-	}
-
-	if c.MaxBytes != 0 {
-		resolved.MaxBytes = c.MaxBytes
-	}
-
-	if c.MaxFiles != 0 {
-		resolved.MaxFiles = c.MaxFiles
-	}
-
-	resolved.Compress = c.Compress
-
-	return resolved, nil
+	return pipeline.ResolveFlightRecorderConfig(&file)
 }
 
 type detectorSpec struct {
