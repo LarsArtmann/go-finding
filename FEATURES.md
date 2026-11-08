@@ -1195,7 +1195,7 @@ The module depends only on the core module. Evidence: `toolsdk/spec.go`,
 | Tool SDK (`toolsdk` sub-module)              | FULLY_FUNCTIONAL     | `Spec` + triggers + registry plugin contract for external tools (v1.10.0)                                                                                 |
 | Multi-edit fixes (typed edit lists)          | FULLY_FUNCTIONAL     | `Finding.Edits` + `TextEdit`; lossless go/analysis round-trip; `EditListProvider` first in chain (v1.14.0)                                                |
 | Module-coverage evidence                     | FULLY_FUNCTIONAL     | `Summary.FilesScanned` always serialized + `Summary.SkippedModules` (v1.14.0)                                                                             |
-| Detector coverage channel                    | FULLY_FUNCTIONAL     | `DetectorV2.DetectV2` returns `DetectResult{Findings, FilesScanned, SkippedModules}`; `RunDetect` + `Report.AddDetectResult` feed it end-to-end (v1.15.0) |
+| Detector coverage channel                    | FULLY_FUNCTIONAL     | `DetectorV2.DetectV2` returns `DetectResult{Findings, FilesScanned, SkippedModules}`; `RunDetect` + `Report.AddDetectResult` feed it end-to-end (v1.15.0); guide: [docs/guides/detector-coverage.md](docs/guides/detector-coverage.md) |
 
 ---
 

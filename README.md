@@ -18,6 +18,7 @@ Each tool invents its own types for findings. There is no standardized way to ap
 
 - **Unified Finding type** — Common model for all static analysis tools
 - **Pipeline** — Automated detect → triage → fix → verify loop with retry, partial success, and observability hooks
+- **Coverage evidence** — Know whether a detector actually SAW your code: `DetectorV2` reports files scanned and modules skipped, so "0 findings" becomes checkable instead of ambiguous. See [Detector Coverage Guide](docs/guides/detector-coverage.md).
 - **SARIF 2.1.0** — Standard interchange format for CI/CD integration
 - **LSP diagnostics** — IDE integration out of the box
 - **Flight recorder** — Go execution trace capture for pipeline diagnostics, with slow-stage auto-snapshot and manual checkpoints. See [FlightRecorder Guide](docs/guides/flight-recorder.md).
@@ -378,6 +379,24 @@ detector := finding.NewToolAdapter("staticcheck",
 )
 ```
 
+### DetectorV2: report coverage, not just findings
+
+Wrap your detector with `DetectV2` so hosts can verify the tool actually
+scanned the tree (v1-only detectors keep working — `RunDetect` falls back):
+
+```go
+func (l *myLinter) DetectV2(ctx context.Context) (finding.DetectResult, error) {
+	findings, files, skipped, err := l.scan(ctx)
+	if err != nil {
+		return finding.DetectResult{}, err
+	}
+	return finding.DetectResult{Findings: findings, FilesScanned: files, SkippedModules: skipped}, nil
+}
+// report.AddDetectResult(res) accumulates filesScanned across detectors.
+```
+
+Full contract (v1 fallback semantics, host integration): [docs/guides/detector-coverage.md](docs/guides/detector-coverage.md).
+
 ### CategoryForLinter
 
 70+ built-in linter→category mappings:
@@ -523,6 +542,7 @@ fmt.Println(finding.Version) // "1.15.1"
 | [docs/guides/fix-engine.md](docs/guides/fix-engine.md)                           | Fix engine patterns (providers, edits, conflicts)        |
 | [docs/guides/fix-providers.md](docs/guides/fix-providers.md)                     | Writing custom fix providers                             |
 | [docs/guides/finding-groups.md](docs/guides/finding-groups.md)                   | Grouping related findings via SARIF/LSP                  |
+| [docs/guides/detector-coverage.md](docs/guides/detector-coverage.md)             | Coverage evidence: DetectorV2, DetectResult, RunDetect   |
 | [docs/guides/flight-recorder.md](docs/guides/flight-recorder.md)                 | Pipeline trace flight recorder                           |
 | [docs/guides/configuration.md](docs/guides/configuration.md)                     | CLI flags, YAML/JSON config, precedence                  |
 | [docs/guides/troubleshooting.md](docs/guides/troubleshooting.md)                 | Common errors and fixes                                  |
