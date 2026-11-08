@@ -7,6 +7,12 @@ For root-level changes, see the [root CHANGELOG.md](../CHANGELOG.md).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Nothing yet.
+
 ## [1.15.1] - 2026-11-08
 
 Train-completion release: the module requires move to core v1.15.1 (the
@@ -81,3 +87,17 @@ No changes yet. The analysis module is stable since v1.5.0.
 ### Added
 
 - **`FromDiagnostic` BeforeCode extraction** — Reads source files to extract `BeforeCode` from `TextEdit` ranges, enabling full fix data on go/analysis findings.
+
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/analysis/v1.15.1...HEAD
+[1.15.1]: https://github.com/larsartmann/go-finding/compare/analysis/v1.14.0...analysis/v1.15.1
+[1.14.0]: https://github.com/larsartmann/go-finding/compare/analysis/v1.13.0...analysis/v1.14.0
+[1.13.0]: https://github.com/larsartmann/go-finding/compare/analysis/v1.12.0...analysis/v1.13.0
+[1.12.0]: https://github.com/larsartmann/go-finding/compare/analysis/v1.11.0...analysis/v1.12.0
+[1.11.0]: https://github.com/larsartmann/go-finding/compare/analysis/v1.10.0...analysis/v1.11.0
+[1.10.0]: https://github.com/larsartmann/go-finding/compare/analysis/v1.9.2...analysis/v1.10.0
+[1.9.2]: https://github.com/larsartmann/go-finding/compare/analysis/v1.9.1...analysis/v1.9.2
+[1.9.1]: https://github.com/larsartmann/go-finding/compare/analysis/v1.9.0...analysis/v1.9.1
+[1.8.0]: https://github.com/larsartmann/go-finding/compare/analysis/v1.7.0...analysis/v1.8.0
+[1.7.0]: https://github.com/larsartmann/go-finding/compare/analysis/v1.6.0...analysis/v1.7.0
+[1.5.0]: https://github.com/larsartmann/go-finding/compare/analysis/v1.4.1...analysis/v1.5.0
+[1.4.1]: https://github.com/larsartmann/go-finding/compare/analysis/v1.4.0...analysis/v1.4.1

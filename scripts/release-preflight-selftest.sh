@@ -11,6 +11,11 @@
 #      (only the happy path was proven before; report item 37).
 #   4. Post-tag incomplete tag SET — 4 of 5 tags exist but toolsdk/v* is
 #      missing; the incomplete v1.13.0 train (2 of 5 pushed) must be caught.
+#   5. Stale stamp — scripts/stamp-gate.sh with version.go disagreeing with
+#      the intended tag must FAIL with the exact mismatch line (the
+#      v1.14.0/v1.15.1 stale-stamp incident class).
+#   6. Stamp-gate wiring — a matching stamp passes standalone, and preflight
+#      --tag invokes the gate (its FAIL propagates into the preflight verdict).
 #
 # The main repo is never modified (the worktree is disposable); the temp
 # worktree is removed on exit. Returns non-zero if any injection was NOT
@@ -100,9 +105,38 @@ for tag in "${INJECTED_TAGS[@]}"; do
 	git tag -d "$tag" >/dev/null
 done
 
+echo "== self-test 5/6: stamp gate catches a stale stamp (restore version.go first) =="
+git -C "$WORKTREE" restore version.go
+NEXT_TAG="v${NEXT_MAJOR}.${NEXT_MINOR}.0"
+WORKTREE_STAMP="v${NEXT_MAJOR}.$(sed -n 's/^const VersionMinor = //p' "$WORKTREE/version.go").$(sed -n 's/^const VersionPatch = //p' "$WORKTREE/version.go")"
+if out=$(cd "$WORKTREE" && bash scripts/stamp-gate.sh "$NEXT_TAG" 2>&1); then
+	echo "FAIL: stamp gate exited 0 with stale stamp $WORKTREE_STAMP vs intended $NEXT_TAG (gate is dead)"
+	FAILURES=$((FAILURES + 1))
+elif grep -qF "FAIL: stamp-gate: version.go ($WORKTREE_STAMP) != intended tag $NEXT_TAG" <<<"$out"; then
+	echo "OK: stale stamp detected"
+else
+	echo "FAIL: stamp gate failed but wrong verdict line:"
+	echo "$out"
+	FAILURES=$((FAILURES + 1))
+fi
+
+echo "== self-test 6/6: matching stamp passes + preflight --tag wiring =="
+sed -i "s/^const VersionMinor = .*/const VersionMinor = $NEXT_MINOR/" "$WORKTREE/version.go"
+NEXT_PATCH=$(sed -n 's/^const VersionPatch = //p' "$WORKTREE/version.go")
+MATCH_TAG="v${NEXT_MAJOR}.${NEXT_MINOR}.${NEXT_PATCH}"
+if out=$(cd "$WORKTREE" && bash scripts/stamp-gate.sh "$MATCH_TAG" 2>&1) &&
+	grep -qF "OK: stamp-gate: version.go ($MATCH_TAG) == intended tag $MATCH_TAG" <<<"$out"; then
+	echo "OK: matching stamp accepted"
+else
+	echo "FAIL: stamp gate rejected a matching stamp ($MATCH_TAG)"
+	FAILURES=$((FAILURES + 1))
+fi
+expect_fail "preflight --tag wiring fires the stamp gate" \
+	"FAIL: stamp-gate: tag $LATEST_TAG already exists" --tag "$LATEST_TAG"
+
 if [ "$FAILURES" -gt 0 ]; then
 	echo "SELF-TEST FAIL: $FAILURES injection(s) not caught. Do NOT trust the preflight gate."
 	exit 1
 fi
 
-echo "SELF-TEST PASS: preflight catches injected tag collision, version drift, post-tag missing tag, and incomplete tag set."
+echo "SELF-TEST PASS: preflight catches injected tag collision, version drift, post-tag missing tag, incomplete tag set, stale stamp, and stamp-gate wiring."

@@ -57,5 +57,5 @@ if [ "$STAMP" = "$VERSION" ]; then
 	exit 0
 fi
 
-echo "FAIL: stamp-gate: version.go ($STAMP) != intended tag $VERSION — bump version.go (or fix the tag name) BEFORE creating the tag"
+echo "FAIL: stamp-gate: version.go ($STAMP) != intended tag $VERSION. Bump version.go (or fix the tag name) BEFORE creating the tag"
 exit 1

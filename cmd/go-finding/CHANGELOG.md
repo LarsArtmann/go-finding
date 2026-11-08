@@ -7,6 +7,25 @@ For root-level changes, see the [root CHANGELOG.md](../../CHANGELOG.md).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Nothing yet.
+
+## [1.15.1] - 2026-11-08
+
+Train-completion release: requires core v1.15.1 and pipeline v1.15.1, and —
+unlike trains before the v1.14.0 lesson — this tag points at the fully
+resynced commit, so `go install github.com/larsartmann/go-finding/cmd/go-finding@v1.15.1`
+builds with the v1.15.1 engine. No CLI surface changes beyond the require
+bump and go.sum completion (the 09-27 dependency bumps had left zip-hash-only
+go.sum entries).
+
+Known defect (disclosed): v1.15.1 artifacts self-report `--version` 1.15.0 —
+the version.go patch bump landed after the core tag was pushed. The corrected
+stamp rides the next train (see the root CHANGELOG [1.15.1] entry).
+
 ## [1.15.0] - 2026-10-12
 
 Lockstep completion of the core v1.15.0 train: requires core and pipeline
@@ -97,3 +116,19 @@ Version-alignment release with core v1.9.1. No CLI-module code changes.
 ### Added
 
 - **`-trace`, `-trace-dir`, `-trace-slow` CLI flags** — Enable Go execution trace flight recorder from the command line.
+
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.15.1...HEAD
+[1.15.1]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.15.0...cmd/go-finding/v1.15.1
+[1.15.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.14.0...cmd/go-finding/v1.15.0
+[1.14.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.13.0...cmd/go-finding/v1.14.0
+[1.13.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.12.0...cmd/go-finding/v1.13.0
+[1.12.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.11.0...cmd/go-finding/v1.12.0
+[1.11.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.10.0...cmd/go-finding/v1.11.0
+[1.10.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.9.2...cmd/go-finding/v1.10.0
+[1.9.2]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.9.1...cmd/go-finding/v1.9.2
+[1.9.1]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.9.0...cmd/go-finding/v1.9.1
+[1.9.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.8.0...cmd/go-finding/v1.9.0
+[1.8.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.7.0...cmd/go-finding/v1.8.0
+[1.7.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.6.0...cmd/go-finding/v1.7.0
+[1.6.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.5.0...cmd/go-finding/v1.6.0
+[1.5.0]: https://github.com/larsartmann/go-finding/compare/cmd/go-finding/v1.4.1...cmd/go-finding/v1.5.0
