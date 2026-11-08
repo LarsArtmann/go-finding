@@ -173,6 +173,7 @@ run_check "JSON deterministic marshal" bash scripts/json-deterministic-check.sh
 run_check "CHANGELOG sections exist for release tags" bash scripts/changelog-drift.sh
 run_check "docs API references" bash scripts/docs-api-check.sh
 run_check "docs freshness" bash scripts/docs-freshness.sh
+run_check "shellcheck all scripts" bash scripts/shellcheck-gate.sh
 if [ "$RUN_LINKS" -eq 1 ]; then
 	run_check "CHANGELOG compare links resolve (gh api)" bash scripts/verify-compare-links.sh
 fi

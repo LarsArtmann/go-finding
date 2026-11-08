@@ -163,12 +163,12 @@ stage_postflight() {
 	verdict postflight "release assets + stamp"
 	gh release view "v${ver}" --json assets --jq '.assets | length' |
 		xargs -I{} echo "core release assets: {}"
-	gh release view "cmd/go-finding/v${ver}" --json assets --jq '.assets | length' >/dev/null 2>&1 &&
-		echo "OK: cmd release exists" ||
-		{
-			echo "FAIL: cmd release missing"
-			failed=1
-		}
+	if gh release view "cmd/go-finding/v${ver}" --json assets --jq '.assets | length' >/dev/null 2>&1; then
+		echo "OK: cmd release exists"
+	else
+		echo "FAIL: cmd release missing"
+		failed=1
+	fi
 
 	verdict postflight "pkg.go.dev render (one backoff retry)"
 	for mod in "" "/pipeline" "/analysis" "/toolsdk" "/cmd/go-finding"; do
@@ -211,7 +211,8 @@ stage_dry() {
 	echo "unpushed commits: $pending"
 	echo "existing v$(core_version) tag family:"
 	for prefix in "" "pipeline/" "analysis/" "toolsdk/" "cmd/go-finding/"; do
-		local t="${prefix}v$(core_version)"
+		local t
+		t="${prefix}v$(core_version)"
 		git rev-parse -q --verify "refs/tags/$t" >/dev/null &&
 			echo "  EXISTS: $t" ||
 			echo "  new:    $t"

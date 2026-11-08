@@ -12,10 +12,10 @@ echo "Running go work sync (second pass — should be a no-op)..."
 go work sync
 
 # Check if go.work or any go.mod changed after the second sync.
-if ! git diff --exit-code go.work */go.mod >/dev/null 2>&1; then
+if ! git diff --exit-code -- go.work ./*/go.mod >/dev/null 2>&1; then
 	echo "ERROR: go work sync produced changes on second run (not idempotent)."
 	echo "Diff:"
-	git diff go.work */go.mod
+	git diff -- go.work ./*/go.mod
 	exit 1
 fi
 

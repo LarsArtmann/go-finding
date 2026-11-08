@@ -70,6 +70,7 @@ for file in "${FILES[@]}"; do
 			break # one stale reference per doc is enough
 		fi
 	done < <({
+		# shellcheck disable=SC2016 # the single-quoted regex is intentional
 		grep -oP '`\K[a-zA-Z0-9_/]+\.go(?=`)' "$file" 2>/dev/null || true
 		grep -oP '\]\(\K[a-zA-Z0-9_/]+\.go(?=\))' "$file" 2>/dev/null || true
 	} | sort -u | head -20)

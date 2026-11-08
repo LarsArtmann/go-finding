@@ -35,7 +35,7 @@ for file in "${FILES[@]}"; do
 		# Skip comment lines.
 		trimmed="${line#"${line%%[![:space:]]*}"}"
 		case "$trimmed" in
-		\/\/*) continue ;;
+		//*) continue ;;
 		esac
 
 		# Extract the call statement: from this line to the matching ')'

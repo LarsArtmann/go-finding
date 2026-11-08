@@ -17,10 +17,6 @@ cd "$(dirname "$0")/.."
 QUICK=0
 [ "${1:-}" = "--quick" ] && QUICK=1
 
-RACE="-race"
-[ "$QUICK" -eq 1 ] && RACE=""
-
-FAILED=0
 step() {
 	echo ""
 	echo "=== $1 ==="

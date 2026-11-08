@@ -38,7 +38,6 @@ git worktree add --quiet --detach "$WORKTREE" HEAD
 # creating drift the moment version.go reached v1.9.0).
 LATEST_TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*')
 INJECT_COLLISION_MINOR=$(sed -n 's/^const VersionMinor = //p' "$WORKTREE/version.go")
-INJECT_COLLISION_PATCH=$(sed -n 's/^const VersionPatch = //p' "$WORKTREE/version.go")
 LATEST_MINOR=$(echo "$LATEST_TAG" | cut -d. -f2)
 LATEST_PATCH=$(echo "$LATEST_TAG" | cut -d. -f3)
 NEXT_MAJOR=$(sed -n 's/^const VersionMajor = //p' "$WORKTREE/version.go")

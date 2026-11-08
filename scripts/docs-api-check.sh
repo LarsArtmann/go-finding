@@ -59,6 +59,7 @@ is_allowed() {
 
 # Collect the candidate identifiers.
 mapfile -t candidates < <(
+	# shellcheck disable=SC2016 # single-quoted backtick regex is intentional
 	cat "${DOCS[@]}" |
 		grep -o '`[^`]*`' |
 		tr -d '`' |
@@ -97,7 +98,7 @@ MINOR=$(sed -n 's/^const VersionMinor = //p' version.go)
 PATCH=$(sed -n 's/^const VersionPatch = //p' version.go)
 
 version_gt() { # $1 > $2 in semver (M.m.p, dot-separated)
-	local a b IFS=.
+	local a1 a2 a3 b1 b2 b3 IFS=.
 	read -r a1 a2 a3 <<<"$1"
 	read -r b1 b2 b3 <<<"$2"
 	[ "$a1" -ne "$b1" ] && {
@@ -173,7 +174,7 @@ echo "OK: README.md version stamp matches version.go (v$MAJOR.$MINOR.$PATCH)"
 #      `(unreleased)` is the legal mid-cycle word for unreleased features.
 CURRENT="$MAJOR.$MINOR.$PATCH"
 gt_current() { # returns 0 if $1 > $CURRENT (numeric per component)
-	local a b IFS=.
+	local a1 a2 a3 IFS=.
 	read -r a1 a2 a3 <<<"$1"
 	read -r b1 b2 b3 <<<"$CURRENT"
 	if [ "$a1" -ne "$b1" ]; then
@@ -190,15 +191,17 @@ sweep_errors=0
 # Strip URLs (link targets), then scan line by line.
 mapfile -t literal_lines < <(sed -E 's|\((https?://[^)]*)\)|(url)|g' README.md)
 for line in "${literal_lines[@]}"; do
+	# shellcheck disable=SC2016 # single-quoted backtick regex is intentional
 	if grep -qE '`v[0-9]+\.[0-9]+\.[0-9]+`' <<<"$line" && grep -qE '^\s*\|' <<<"$line"; then
 		# Table-cell stamp: must be exactly current.
-		for v in $(grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' <<<"$line"); do
+		while IFS= read -r v; do
+			[ -z "$v" ] && continue
 			if [ "${v#v}" != "$CURRENT" ]; then
 				echo "ERROR: README.md table-cell stamp $v != current v$CURRENT: $line"
 				echo "  Module-table stamps claim the CURRENT release — update to v$CURRENT."
 				sweep_errors=$((sweep_errors + 1))
 			fi
-		done
+		done < <(grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' <<<"$line")
 	else
 		# Prose literals: only future versions fail.
 		for v in $(grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' <<<"$line" || true); do
