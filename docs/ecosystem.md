@@ -140,6 +140,57 @@ go-error-family ← go-finding ← ┬─ go-linter-sdk
 
 All roads lead to go-finding. No SDK depends on another SDK. Each SDK depends only on go-finding (plus its own utility deps), keeping the dependency graph flat and composable.
 
+## Consumer Pin Sweep (2026-11-08, code-search verified)
+
+Fresh sweep via GitHub code search over `LarsArtmann/*` `go.mod` files
+(`gh search code "larsartmann/go-finding" --filename go.mod`), each pin read
+from the repo's DEFAULT-branch go.mod via the API. Build/test states were
+NOT re-verified this round — this table is pin evidence only (per-repo
+build verdicts from earlier sweeps below are historical).
+
+**Counts: 23 consumer repos require go-finding (default-branch go.mod);
+21 on core v1.15.1, 2 on v1.15.0. Submodule reach: toolsdk v1.16.0 ×14,
+pipeline v1.15.0 ×7, analysis v1.14.0 ×2.**
+
+| Consumer                        | core    | pipeline | analysis | toolsdk  |
+| ------------------------------- | ------- | -------- | -------- | -------- |
+| branching-flow                  | v1.15.1 | —        | —        | v1.16.0  |
+| BuildFlow                       | v1.15.1 | v1.15.0  | v1.14.0  | v1.16.0  |
+| clean-wizard                    | v1.15.0 | v1.15.0  | —        | v1.16.0  |
+| dependabot-auto-configure       | v1.15.1 | —        | —        | v1.16.0  |
+| erraudit                        | v1.15.1 | v1.15.0  | v1.14.0  | v1.16.0  |
+| go-auto-upgrade                 | v1.15.1 | —        | —        | v1.16.0  |
+| go-business-rules               | v1.15.1 | —        | —        | —        |
+| go-checker-helpers              | v1.15.1 | —        | —        | —        |
+| go-humanize-linter              | v1.15.1 | —        | —        | —        |
+| golangci-lint-auto-configure    | v1.15.1 | —        | —        | v1.16.0  |
+| go-linter-sdk                   | v1.15.1 | —        | —        | —        |
+| go-structure-linter             | v1.15.1 | v1.15.0  | —        | v1.16.0  |
+| go-version-auto-configure       | v1.15.1 | —        | —        | v1.16.0  |
+| io-surface                      | v1.15.1 | —        | —        | v1.16.0  |
+| licenseforge                    | v1.15.1 | —        | —        | v1.16.0  |
+| linter-autoconfigure-sdk        | v1.15.1 | —        | —        | v1.16.0  |
+| md-go-validator                 | v1.15.0 | —        | —        | —        |
+| oxlint-auto-configure           | v1.15.1 | v1.15.0  | —        | v1.16.0  |
+| Polish-Customs                  | v1.15.1 | —        | —        | —        |
+| securitymd                      | v1.15.1 | —        | —        | v1.16.0  |
+| template-AUTHORS                | v1.15.1 | v1.15.0  | —        | —        |
+| template-readme                 | v1.15.1 | —        | —        | —        |
+| testing                         | v1.15.1 | —        | —        | —        |
+
+Sweep notes (2026-11-08):
+
+- **erraudit's default branch (master) still pins analysis v1.14.0 /
+  pipeline v1.15.0**; the v1.15.1 bump of both landed on the `cmdguard-v5`
+  branch (commit c78b8db5, 2026-11-08) and rides that branch's merge to
+  master.
+- **licenseforge is no longer blocked** — its default branch now pins
+  core v1.15.1 + toolsdk v1.16.0 (the v1.8.0-era "broken buildflow
+  replace" row below is stale).
+- `cmdguard`, `go-branded-id`, `go-cqrs-lite`, `go-health`, `project-meta`
+  matched the code search but carry NO go.mod require of go-finding
+  (docs/test references only) — not counted as consumers.
+
 ## Consumer Version Delta Sweep (2026-09-23, post-v1.13.0)
 
 Verified on this date, on top of the full 2026-09-08 sweep below:

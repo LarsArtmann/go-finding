@@ -206,7 +206,7 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 - **`must[T]`** — `errors.go`; any new Must-constructor delegates to it.
 - **doc.go must match current names** — after ANY rename, grep `doc.go` for the old symbol (godoc prose misleads otherwise).
 - **Module-coverage evidence lives in Summary** — `Summary.FilesScanned` is always serialized ("scanned 0" is evidence, not an omission); `Summary.SkippedModules` carries nested go.mod modules a tool deliberately skipped; module-agnostic tools leave it nil and their JSON is unchanged.
-- **Consumer count grows** — last audit (2026-07-22) counted 22 consumers (14 with Go code); never assert a fixed number without checking latest data.
+- **Consumer count grows** — audited 2026-11-08 via code search: 23 consumer repos require go-finding on their default branch (21 on core v1.15.1, 2 on v1.15.0); submodule reach: toolsdk x14, pipeline x7, analysis x2. Table + notes in docs/ecosystem.md; never assert a fixed number without re-running the sweep.
 
 ### Core API surface
 
