@@ -56,7 +56,7 @@ step "workflow lint"
 command -v actionlint >/dev/null && check "actionlint" actionlint .github/workflows/ci.yml .github/workflows/release.yml ||
 	echo "SKIP: actionlint not installed"
 
-step "race tests per module"
+step "tests per module (quick mode: no -race)"
 for mod in . pipeline analysis toolsdk cmd/go-finding; do
 	if [ "$QUICK" -eq 1 ]; then
 		check "test $mod" bash -c "cd '$mod' && GOWORK=off go test -count=1 ./..."
