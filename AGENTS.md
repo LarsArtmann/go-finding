@@ -101,7 +101,11 @@ artifacts. Intentional patterns carry `//nolint:erraudit // <reason>`;
 NEVER remove directives based on `erraudit nolint-audit .` — verified
 2026-09-23: it false-reports type-aware-suppressing directives as STALE
 (it analyzes with go/parser only; stripping its 24 "safe to remove" hits
-turned the gate red at every one of those sites). Use the advisory
+turned the gate red at every one of those sites). RE-VERIFIED 2026-11-08
+(erraudit 5c841cf): the false-stale NO LONGER REPRODUCES on the current
+tree — `erraudit nolint-audit .` reports 27 needed / 0 stale, same under
+`--type-aware` and `--max`; no issue was filed (premise failed to
+reproduce). The operational advice stands regardless: use the advisory
 listing via `scripts/error-audit.sh --nolint-audit`; the only safe
 staleness test is remove-one-directive → run the gate → observe red →
 restore. `--no-suppress` surfaces those
