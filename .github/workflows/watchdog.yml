@@ -1,0 +1,36 @@
+name: CI Watchdog
+
+# Alerts on the silent CI-drop and red-master failure classes:
+#   1. a pushed master commit with NO ci.yml run (f394f54, 2026-10-01), and
+#   2. master sitting red unnoticed (the 4-day v1.15.1 class).
+# The schedule's own run goes RED on either condition — that red X is the
+# alert surface. No external notification infra is involved.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-watchdog
+  cancel-in-progress: false
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Assert every pushed master commit has a CI run, and master is green
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          head_sha="$(git rev-parse origin/master)"
+          bash scripts/ci-watchdog.sh "$head_sha"
+          bash scripts/ci-watchdog.sh master-green
+          echo "WATCHDOG VERDICT: OK (run exists for $head_sha, master green)"
