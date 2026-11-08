@@ -721,7 +721,7 @@ defer hook.Close()
 
 Implements `StageHook` — `OnStageEvent` **never returns an error** (trace collection is purely diagnostic and must not affect pipeline control flow).
 
-CLI flags: `-trace` (enable), `-trace-dir` (output directory), `-trace-slow` (auto-snapshot threshold, e.g. `30s`). Config file `flightRecorder` section: `enabled`, `outputDir`, `slowStageThreshold`, `minAge`, `maxBytes` (full parity with `pipeline.FlightRecorderFileConfig`). See [Flight Recorder Guide](docs/guides/flight-recorder.md).
+CLI flags: `-trace` (enable), `-trace-dir` (output directory), `-trace-slow` (auto-snapshot threshold, e.g. `30s`). Config file `flightRecorder` section: `enabled`, `outputDir`, `slowStageThreshold`, `minAge`, `maxBytes` (full parity with `pipeline.FlightRecorderFileConfig`). Hosts holding a `FlightRecorderFileConfig` without a `ConfigFile` call the package-level `pipeline.ResolveFlightRecorderConfig(fc)` (v1.14.0); `ConfigFile.ResolveFlightRecorder()` wraps the same resolver. See [Flight Recorder Guide](docs/guides/flight-recorder.md).
 
 ---
 
@@ -1173,6 +1173,7 @@ The module depends only on the core module. Evidence: `toolsdk/spec.go`,
 | ValidateAll (batch validation)               | FULLY_FUNCTIONAL     | Batch helper returning map[int]error for invalid findings                                                                                                 |
 | FlightRecorderHook                           | FULLY_FUNCTIONAL     | Go runtime execution trace flight recorder for pipeline observability                                                                                     |
 | FlightRecorder config-file integration       | FULLY_FUNCTIONAL     | FlightRecorderFileConfig + ResolveFlightRecorder(); 5 fields via YAML/JSON                                                                                |
+| ResolveFlightRecorderConfig export           | FULLY_FUNCTIONAL     | Package-level resolver for hosts holding a FlightRecorderFileConfig without a ConfigFile (v1.14.0)                                                        |
 | go-arch-lint module boundary CI              | FULLY_FUNCTIONAL     | 11 components, one-directional flow enforced; wired into ci.yml arch-check job                                                                            |
 | Docs-freshness CI                            | FULLY_FUNCTIONAL     | Staleness + code-doc sync checks; wired into ci.yml docs-freshness job                                                                                    |
 | Configuration guide                          | FULLY_FUNCTIONAL     | docs/guides/configuration.md: all CLI flags, config file, library ConfigFile API                                                                          |
