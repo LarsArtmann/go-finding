@@ -4,8 +4,19 @@
 # directives, no workspace, no GOPRIVATE. Turns the "plain go get works"
 # promise into a mechanical gate.
 #
-# Usage: bash scripts/consumer-compat-check.sh [version]
+# Usage:
+#   bash scripts/consumer-compat-check.sh [version]   # proxy mode (default)
+#   bash scripts/consumer-compat-check.sh --head      # at-HEAD mode
+#
 #   version defaults to "latest"; pass e.g. v1.10.0 to pin.
+#
+# At-HEAD mode (--head) swaps the proxy for `replace` directives against the
+# WORKING TREE: a fresh consumer module compiles, vets, and runs the same
+# probes against the current commit's API surface. This catches API drift
+# BEFORE a train — proxy mode can only prove versions that are already
+# published. The CLI probe builds the checked-out cmd module and asserts
+# --version prints EXACTLY the version.go stamp (the loose semver grep of
+# proxy mode cannot catch the v1.15.1 self-reports-1.15.0 class).
 #
 # No GOEXPERIMENT needed: encoding/json/v2 is GA since Go 1.27, which the
 # go.mod floor already requires.
@@ -13,7 +24,20 @@
 
 set -euo pipefail
 
-VERSION="${1:-latest}"
+MODE=proxy
+VERSION=latest
+for arg in "$@"; do
+	case "$arg" in
+	--head) MODE=head ;;
+	latest | v*) VERSION="$arg" ;;
+	*)
+		echo "usage: $0 [--head] [version]"
+		exit 2
+		;;
+	esac
+done
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
@@ -36,14 +60,26 @@ check_import_module() {
 	(
 		cd "$dir"
 		go mod init compat.local >/dev/null 2>&1
-		go get "${module}@${VERSION}" >/dev/null
+		if [ "$MODE" = head ]; then
+			# Resolve the module (and core, its dependency root) from the
+			# working tree — the at-HEAD API-drift check.
+			printf '\nreplace github.com/larsartmann/go-finding => %s\n' "$REPO_ROOT" >>go.mod
+			printf 'replace %s => %s\n' "$module" "$REPO_ROOT/${module#github.com/larsartmann/go-finding}" >>go.mod
+			GOWORK=off go mod tidy >/dev/null 2>&1
+		else
+			go get "${module}@${VERSION}" >/dev/null
+		fi
 		cp "$probe_file" main.go
 		echo "ok" >expected.txt
 		go vet . >/dev/null 2>&1
 		go run . >actual.txt 2>err.txt
 		diff -q expected.txt actual.txt >/dev/null
 	) >/dev/null 2>&1
-	verdict $? "$name resolves from proxy, builds, vets, and runs (${module}@${VERSION})"
+	if [ "$MODE" = head ]; then
+		verdict $? "$name builds, vets, and runs against the WORKING TREE at-HEAD ($module)"
+	else
+		verdict $? "$name resolves from proxy, builds, vets, and runs (${module}@${VERSION})"
+	fi
 }
 
 check_cli_module() {
@@ -54,10 +90,22 @@ check_cli_module() {
 		cd "$dir"
 		export GOBIN="$dir/bin"
 		mkdir -p "$GOBIN"
-		go install "${module}@${VERSION}" >/dev/null
-		"$GOBIN/go-finding" -version | grep -Eq '[0-9]+\.[0-9]+\.[0-9]+'
+		if [ "$MODE" = head ]; then
+			# Build the checked-out CLI module and assert the EXACT stamp.
+			(cd "$REPO_ROOT/cmd/go-finding" && GOWORK=off go build -o "$GOBIN/go-finding" .) >/dev/null 2>&1
+			local stamp
+			stamp="v$(sed -n 's/^const VersionMajor = //p' "$REPO_ROOT/version.go").$(sed -n 's/^const VersionMinor = //p' "$REPO_ROOT/version.go").$(sed -n 's/^const VersionPatch = //p' "$REPO_ROOT/version.go")"
+			[ "$($GOBIN/go-finding -version)" = "$stamp" ]
+		else
+			go install "${module}@${VERSION}" >/dev/null
+			"$GOBIN/go-finding" -version | grep -Eq '[0-9]+\.[0-9]+\.[0-9]+'
+		fi
 	) >/dev/null 2>&1
-	verdict $? "$name installs from proxy and -version prints semver (${module}@${VERSION})"
+	if [ "$MODE" = head ]; then
+		verdict $? "$name builds from the working tree and -version prints the exact version.go stamp"
+	else
+		verdict $? "$name installs from proxy and -version prints semver (${module}@${VERSION})"
+	fi
 }
 
 PROBES="$(mktemp -d)"
