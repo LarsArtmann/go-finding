@@ -1,6 +1,6 @@
 # Feedback Report: go-finding as Output Target for art-dupl
 
-> **Resolution (2026-09-23 docs-health pass):** this evaluation is fully superseded. All implementable gaps shipped (see the Implementation Status table below, updated 2026-09-07); the art-dupl integration itself now runs the other way — art-dupl reports drive go-finding dedup passes (2026-09-23 dedup pass used `art-dupl --type-aware --html` directly), and follow-up integration work is tracked as art-dupl issues #2/#3/#4. The GAP-2 GroupID consumer-intent issue in art-dupl remains unfiled (TODO_LIST). Kept in place as the canonical GAP inventory.
+> **Resolution (2026-09-23 docs-health pass):** this evaluation is fully superseded. All implementable gaps shipped (see the Implementation Status table below, updated 2026-09-07); the art-dupl integration itself now runs the other way — art-dupl reports drive go-finding dedup passes (2026-09-23 dedup pass used `art-dupl --type-aware --html` directly), and follow-up integration work is tracked as art-dupl issues #2/#3/#4. ~~The GAP-2 GroupID consumer-intent issue in art-dupl remains unfiled (TODO_LIST).~~ Filed as art-dupl#1 (verified 2026-09-23). Kept in place as the canonical GAP inventory.
 
 **Date:** 2026-06-05
 **Author:** Lars Artmann (via Crush)
