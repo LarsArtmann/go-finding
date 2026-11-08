@@ -6,8 +6,9 @@ Thank you for your interest in contributing to `go-finding`. This document outli
 
 ### Prerequisites
 
-- Go 1.26 or later
-- `golangci-lint` (for linting)
+- Go 1.27 or later (`encoding/json/v2` is GA since 1.27 — no GOEXPERIMENT setup)
+- `golangci-lint` (for linting; the nix devShell pins the CI-matching version)
+- This is a **multi-module workspace**: root + `pipeline/` + `analysis/` + `toolsdk/` + `cmd/go-finding/`. Plain `go test ./...` from the root covers the ROOT module only — sub-modules need `GOWORK=off go test ./...` inside their directory.
 
 ### Nix Setup (optional)
 
@@ -58,11 +59,13 @@ go vet ./...
 If you have [Nix](https://nixos.org/) with flakes enabled:
 
 ```bash
-nix run .#test                              # Run all tests with -race
+nix run .#test                              # Run all tests with -race (ROOT module only)
 nix run .#bench                             # Run benchmarks
-nix run .#lint                              # golangci-lint
+nix run .#lint                              # golangci-lint (ROOT module only)
 nix run .#check                             # All checks (fmt + lint + test)
 nix build                                   # Build the CLI binary
+nix fmt                                     # treefmt — the canonical format gate
+nix flake check                             # flake-level gate
 ```
 
 ### Using Go directly
@@ -237,13 +240,34 @@ return fmt.Errorf("detector %s: %w", d.Name(), err)
 
 ### Before Submitting
 
-1. Run the full test suite: `go test -race -count=1 ./...`
-2. Run vet: `go vet ./...`
-3. Run linter: `golangci-lint run ./...`
-4. Verify all examples build: `go build ./...`
-5. Ensure GoDoc examples pass: `go test -run Example ./...`
-6. Check test coverage has not decreased
-7. Verify benchmarks still work: `go test -bench=. -benchmem ./...`
+1. Run the full battery locally — it mirrors CI:
+   `bash scripts/pre-push-verify.sh` (formatting, race tests per module,
+   structural gates, lint; `--quick` for the fast subset)
+2. Verify all examples build and run: `go test ./examples/` and the same in
+   `pipeline/examples/`
+3. Check test coverage has not decreased
+4. Verify benchmarks stay within thresholds (alloc +10% hard fail):
+   `bash scripts/bench-check.sh benchmarks/baseline.txt <capture> 250 10`
+5. New exported API: doc comment + `FEATURES.md` row +
+   `docs/api-stability-report.md` entry
+
+### Release runbook (maintainers)
+
+Releases run as TRAINS. The authoritative procedure is
+[docs/release-procedure.md](docs/release-procedure.md); the stages are
+encoded in `scripts/release-train.sh` (`dry` prints the plan). The
+non-negotiables:
+
+- `bash scripts/release-preflight.sh --tag vX.Y.Z` immediately before
+  creating any tag (the stamp gate — version.go must equal the tag; both
+  v1.14.0 and v1.15.1 shipped stale stamps before this existed)
+- The repeat=20 race stress gate before any tag, or a WRITTEN no-op
+  justification in the train log
+- ONE tag per push, each Release run watched to a terminal state
+- Library tags first, then the cmd resync commit, then the cmd tag at the
+  resynced commit
+- After the train: `scripts/release-train.sh postflight X.Y.Z` (proxy,
+  clean-dir consumer, assets, pkg.go.dev, stamp-vs-tag)
 
 ### PR Guidelines
 

@@ -143,7 +143,7 @@ event-based; the date exists so the decision cannot silently rot).
 
 ### Hardening (owner decisions pending)
 
-These are known design tensions deferred because they require breaking changes. Concrete designs from the [data-model review](docs/reviews/archived/2026-07-18_21-10_data-model-review.html).
+These are known design tensions deferred because they require breaking changes. Concrete designs from the [data-model review](docs/reviews/archived/2026-07-18_21-10_data-model-review.html). Spike agenda: [docs/planning/2026-11-08_v2-design-spike-agenda.md](docs/planning/2026-11-08_v2-design-spike-agenda.md) (decision-per-item format; every item ends CHANGE/KEEP/REJECT).
 
 - **Position zero-value** - `Position{}` has `Offset=0` (valid byte 0), not "unset" (`position.go:33-38`: 0=unset for Line/Column, -1=unset for Offset). Resolved pragmatically in v0.9.0 with `-1` sentinel, but a type-safe redesign using `Option[T]` generic helpers is still on the table for v2.0.
 - **`Range.End` zero-value ambiguity** - same class of issue as Position.
