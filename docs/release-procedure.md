@@ -61,6 +61,17 @@
    (`scripts/release-preflight-selftest.sh`). A green preflight WITHOUT
    `--tag` is not stamp evidence — the check only runs when you pass the
    intended tag.
+
+   If the CHANGELOG carries compare links for the new version, also run
+   `bash scripts/release-preflight.sh --links` (authenticated `gh api` per
+   pair — the authority on compare-link validity; lychee 429/502 flakes on
+   valid pairs do not count as evidence).
+
+   After the train's Release runs, the `release-gate` job in release.yml
+   re-checks the stamp at the ARTIFACT level: it installs the just-pushed
+   tag from the module proxy (core probe / `go-finding --version`) and fails
+   the run when the printed version differs from the tag name. A red
+   release-gate job is a shipped-defect signal, not CI noise.
 7. **Full FEATURES.md walk** — read `FEATURES.md` end to end and verify every
    row's status against the code being released. The file is the honest feature
    inventory; a release must not ship with stale rows. Check in particular that
@@ -196,7 +207,71 @@ assuming it does** (`gh run list --workflow=release.yml` +
 `gh release list`); silence is the failure mode.
 
 If a run truly never appeared (the v1.9.0 failure mode), dispatch it
-manually — after checking no run is queued/in progress:
+manually — after checking no run is queued/in progress.
+
+### Phased CI red: what is EXPECTED at each train phase
+
+Not every red run during a train is a regression. These jobs are
+STRUCTURALLY red at specific phases — the proof pattern is the v1.15.1 tag
+tree (`pipeline` still required v1.13.0 while its tag built green):
+
+| Phase                                          | Structurally red job                                   | Why it cannot be green yet                                                |
+| ---------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------- |
+| After the version bump, BEFORE the core tag     | `version-check`                                        | Compares version.go to the NEAREST EXISTING tag — the tag does not exist. |
+| Before the resync commit                        | `version-drift`                                        | Sub-module requires still point at the previous core version.             |
+| The core tag's own commit                       | `module-isolation`                                     | CLI go.sum cannot carry checksums for tags that do not exist yet; the resync lands on master immediately after. |
+| Sibling tag pushed, resync not landed           | same as above                                          | The `replace => ../` directives make every GOWORK=off gate green locally while consumers of the PUBLISHED module would break. |
+
+The release gate is the Release workflow ON THE TAG itself, plus the
+`release-gate` consumer-proof job — not master CI color mid-train. Do not
+"fix" a phased red by weakening the gate; land the phase that un-reds it.
+
+### Stress on sibling-tag trains (the d/1 rule, 2026-11-08)
+
+The v1.15.1 sibling tags went out without the repeat=20 race stress on a
+no-delta rationale. Rule: **a sibling-tag train carries the stress gate, or
+the train log carries a WRITTEN no-op justification** (what changed in the
+module since its last tag, why repetition cannot surface anything new).
+Silent rationalizations do not count — the justification is written BEFORE
+the tag is pushed, into the train notes or the tag's release notes.
+
+### Files to gates: what validates what
+
+| Change                                      | Gate that bites                                                                                |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `version.go`                                | `stamp-gate.sh --tag` (pre-tag), `version-check.sh` (post-tag), README stamp via `docs-api-check.sh` |
+| any `go.mod` require of a sibling            | `version-drift.sh`, `replace-audit.sh` (replaces must point at `../`)                          |
+| `go.work` / module set                      | `go-work-sync.sh`, `nix flake check` (vendorHash)                                              |
+| `CHANGELOG.md` compare links                | `verify-compare-links.sh --links` (authority), lychee + token in CI (flake-prone first pass)   |
+| CHANGELOG sections vs tags                  | `changelog-drift.sh`                                                                           |
+| Deterministic JSON marshal                  | `json-deterministic-check.sh`                                                                  |
+| Docs API claims (identifiers, versions)     | `docs-api-check.sh`, `docs-freshness.sh`, docs-gates battery                                   |
+| Release publish correctness (nix/homebrew)  | `goreleaser check` locally; the Release run itself (nix pipe is skip_upload since v1.15.1's 404) |
+
+### Local GoReleaser recovery recipe
+
+When the Release run failed AFTER assets were published (the v1.15.1
+pattern — red run, shipped release), do NOT re-dispatch blindly (duplicate
+assets, 422 race). Options in order:
+
+1. Diagnose from the failed run's log (`gh run view <id> --log-failed`).
+2. Render-test locally without publishing:
+   `git tag -a v0.0.0-snaptest -m tmp HEAD && goreleaser release --snapshot
+   --clean --skip=sign,publish,sbom && git tag -d v0.0.0-snaptest`
+   (snapshot needs a plain-semver tag at HEAD; the throwaway tag is local
+   only and deleted in the same command).
+3. If assets are complete and signed, the release itself is healthy — fix
+   the workflow/config on master and record the incident; never retag
+   release tags (`protect-release-tags` blocks it).
+
+### Interrupted trains
+
+If a train stops mid-way (tag pushed, run failed, operator unavailable):
+write the state into `docs/status/` (what is tagged, what is missing, what
+is expected-red) BEFORE leaving. The next session resumes from that report —
+the v1.15.1 train sat abandoned for 4 days with nobody recording which
+fails were structural and which were defects, and the defect hunt restarted
+from zero.
 
 ### Queue, don't race, releases
 
