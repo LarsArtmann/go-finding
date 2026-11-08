@@ -363,6 +363,13 @@ jobs:
             --exclude 'github\.com/larsartmann/go-finding/compare/v0\.1\.'
             './**/*.md'
           fail: true
+        env:
+          # Authenticated requests: anonymous lychee runs flake on VALID
+          # github.com links with 429/502 (the v1.15.0 train class). Any
+          # remaining red on a compare link gets cross-checked against
+          # scripts/verify-compare-links.sh (the authoritative verdict)
+          # before links are edited.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     timeout-minutes: 10
 concurrency:

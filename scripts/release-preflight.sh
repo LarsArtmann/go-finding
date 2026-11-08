@@ -10,7 +10,9 @@
 #   ./scripts/release-preflight.sh --stress           # also run repeat=20 race stress
 #   ./scripts/release-preflight.sh --post-tag         # post-tag verification mode
 #   ./scripts/release-preflight.sh --tag vX.Y.Z       # assert the stamp before tagging
-## Always run from the repo root (relative paths).
+#   ./scripts/release-preflight.sh --links            # also verify CHANGELOG compare links (network)
+#
+# Always run from the repo root (relative paths).
 # Heavy gates (bench, stress) are opt-in: preflight's job is to make the
 # cheap-to-run, easy-to-forget checks impossible to skip.
 #
@@ -21,6 +23,10 @@
 # --tag vX.Y.Z runs the stamp gate (scripts/stamp-gate.sh): version.go must
 # equal the tag you are ABOUT to create and that tag must not exist yet —
 # the v1.14.0/v1.15.1 stale-stamp incident class, killed at creation time.
+#
+# --links runs scripts/verify-compare-links.sh (authenticated gh api per
+# CHANGELOG compare pair). Opt-in because it needs gh auth + network; the
+# lychee CI job flakes on valid pairs with 429/502, this is the verdict.
 #
 # Self-test: scripts/release-preflight-selftest.sh injects synthetic drift
 # and a tag collision into a disposable git worktree and asserts preflight
@@ -38,21 +44,23 @@ RUN_BENCH=0
 RUN_STRESS=0
 POST_TAG=0
 TAG_ARG=""
+RUN_LINKS=0
 while [ "$#" -gt 0 ]; do
 	case "$1" in
 	--bench) RUN_BENCH=1 ;;
 	--stress) RUN_STRESS=1 ;;
 	--post-tag) POST_TAG=1 ;;
+	--links) RUN_LINKS=1 ;;
 	--tag)
 		if [ "$#" -lt 2 ]; then
-			echo "usage: $0 [--bench] [--stress] [--post-tag] [--tag vX.Y.Z]"
+			echo "usage: $0 [--bench] [--stress] [--post-tag] [--tag vX.Y.Z] [--links]"
 			exit 2
 		fi
 		TAG_ARG="$2"
 		shift
 		;;
 	*)
-		echo "usage: $0 [--bench] [--stress] [--post-tag] [--tag vX.Y.Z]"
+		echo "usage: $0 [--bench] [--stress] [--post-tag] [--tag vX.Y.Z] [--links]"
 		exit 2
 		;;
 	esac
@@ -164,6 +172,9 @@ run_check "JSON deterministic marshal" bash scripts/json-deterministic-check.sh
 run_check "CHANGELOG sections exist for release tags" bash scripts/changelog-drift.sh
 run_check "docs API references" bash scripts/docs-api-check.sh
 run_check "docs freshness" bash scripts/docs-freshness.sh
+if [ "$RUN_LINKS" -eq 1 ]; then
+	run_check "CHANGELOG compare links resolve (gh api)" bash scripts/verify-compare-links.sh
+fi
 
 step "GOWORK=off build per module"
 for dir in . pipeline analysis cmd/go-finding; do
