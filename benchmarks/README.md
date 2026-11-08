@@ -53,3 +53,14 @@ check; time regressions beyond **+250%** (3.5x) fail it. See the header of
   only benchmarks present in both files, so they run ungated until the next
   baseline regeneration (which still requires a failed-gate justification
   per the Verschlimmbesser rules).
+
+## CI benchmark verdicts
+
+- **2026-11-08 — PASS** (run 42456449428, job `benchmark`, master @ b4f30df,
+  post-v1.15.1-train code with `RunDetect` wired into every detect path).
+  Gate verdict line: `✅ PASS: No benchmark regressed beyond time +250% /
+  alloc +10%.` Sampled rows: `ToSARIF` 491.5µ ± 1% (-4 GOMAXPROCS),
+  `FixEngine_Apply_1000` 802.5µ ± 20%, core geomean 14.31µ (sec/op, -4).
+  This closes the open question whether the v1.14.0/v1.15.x detector-coverage
+  channel (`DetectResult` collection) measurably slowed detection: the CI
+  numbers against `baseline.txt` say it did not regress beyond thresholds.
