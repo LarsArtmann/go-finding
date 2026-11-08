@@ -63,9 +63,13 @@ check_import_module() {
 		go mod init compat.local >/dev/null 2>&1
 		if [ "$MODE" = head ]; then
 			# Resolve the module (and core, its dependency root) from the
-			# working tree — the at-HEAD API-drift check.
+			# working tree — the at-HEAD API-drift check. For the core leg the
+			# first line is the only replace (a second, trailing-slash
+			# duplicate is a CONFLICTING-REPLACEMENT error, not idempotent).
 			printf '\nreplace github.com/larsartmann/go-finding => %s\n' "$REPO_ROOT" >>go.mod
-			printf 'replace %s => %s\n' "$module" "$REPO_ROOT/${module#github.com/larsartmann/go-finding}" >>go.mod
+			if [ "$module" != "github.com/larsartmann/go-finding" ]; then
+				printf 'replace %s => %s\n' "$module" "$REPO_ROOT/${module#github.com/larsartmann/go-finding}" >>go.mod
+			fi
 			GOWORK=off go mod tidy >/dev/null 2>&1
 		else
 			go get "${module}@${VERSION}" >/dev/null
@@ -76,6 +80,12 @@ check_import_module() {
 		go run . >actual.txt 2>err.txt
 		diff -q expected.txt actual.txt >/dev/null
 	) >/dev/null 2>&1 || rc=$?
+	if [ "$rc" -ne 0 ] && [ "${COMPAT_DEBUG:-0}" = 1 ]; then
+		echo "--- $name go.mod:" >&2
+		cat "$dir/go.mod" >&2
+		echo "--- $name err.txt:" >&2
+		cat "$dir/err.txt" 2>/dev/null >&2 || true
+	fi
 	if [ "$MODE" = head ]; then
 		verdict "$rc" "$name builds, vets, and runs against the WORKING TREE at-HEAD ($module)"
 	else
