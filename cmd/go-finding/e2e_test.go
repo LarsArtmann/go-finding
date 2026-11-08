@@ -427,3 +427,28 @@ func TestRun_E2E_FixOutcomesLine_PresentWithFixableFindings(t *testing.T) {
 	g.Expect(string(fixed)).To(ContainSubstring("new()"), "the fix must be written to disk")
 	g.Expect(string(fixed)).NotTo(ContainSubstring("old()"))
 }
+
+func TestRun_E2E_NoCoverageLineForV1Detectors(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	bin := buildBinary(t)
+	tmpDir := t.TempDir()
+	initGoModule(t, tmpDir)
+	goFile := filepath.Join(tmpDir, "main.go")
+	g.Expect(os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644)).
+		NotTo(HaveOccurred())
+
+	cmd := exec.CommandContext( //nolint:gosec // E2E test
+		context.Background(),
+		bin,
+		"-dir="+tmpDir,
+	)
+	out, err := cmd.CombinedOutput()
+	g.Expect(err).NotTo(HaveOccurred())
+
+	// The Coverage line rides stderr when a detector reports coverage
+	// evidence (DetectorV2). The built-in detectors are v1-only, and the
+	// RunDetect fallback zeroes coverage - printing "scanned 0" there would
+	// claim evidence that does not exist. Pin the absence.
+	g.Expect(string(out)).NotTo(ContainSubstring("Coverage: scanned "))
+}

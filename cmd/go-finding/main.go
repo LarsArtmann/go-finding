@@ -355,6 +355,18 @@ func writeResults(
 		fmt.Fprintf(os.Stderr, "Fix outcomes: %s\n", formatOutcomeCounts(result.Metrics.OutcomeCounts))
 	}
 
+	// Coverage evidence goes to stderr so stdout stays machine-readable for
+	// every output format (the report JSON already carries the fields; this
+	// surfaces them for humans who never open the JSON).
+	if result.FilesScanned > 0 || len(result.SkippedModules) > 0 {
+		fmt.Fprintf(os.Stderr, "Coverage: scanned %d file(s)", result.FilesScanned)
+		if len(result.SkippedModules) > 0 {
+			fmt.Fprintf(os.Stderr, ", skipped %d module(s): %s",
+				len(result.SkippedModules), strings.Join(result.SkippedModules, ", "))
+		}
+		fmt.Fprintln(os.Stderr)
+	}
+
 	return 0
 }
 
