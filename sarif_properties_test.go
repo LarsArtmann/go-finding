@@ -467,7 +467,7 @@ var (
 	categories  = []Category{CategoryCorrectness, CategorySecurity, CategoryPerformance}
 )
 
-func (propSarifFinding) Generate(r *rand.Rand, size int) reflect.Value {
+func (propSarifFinding) Generate(r *rand.Rand, _ int) reflect.Value {
 	tagAlphabet := []Tag{TagSecurity, TagPerformance, "custom-tag"}
 
 	f := Finding{
@@ -521,21 +521,40 @@ func TestSARIFRoundTripProperty(t *testing.T) {
 		var buf bytes.Buffer
 		if err := report.WriteSARIF(context.Background(), &buf); err != nil {
 			t.Logf("export failed: %v", err)
+
 			return false
 		}
 
 		imported, err := FindingsFromSARIF(context.Background(), buf.Bytes())
 		if err != nil {
 			t.Logf("import failed: %v", err)
+
 			return false
 		}
 
 		if len(imported) != 1 {
 			t.Logf("imported %d findings, want 1", len(imported))
+
 			return false
 		}
 
-		return imported[0].Equal(original)
+		result := imported[0]
+
+		// Documented synthesis (ADR #19): importing a Before/After fix
+		// without an edit list materializes the single replacement edit
+		// from the display summary. The pair round-trips losslessly; the
+		// edit list is derived. Pin its content, then compare without it.
+		if len(original.Edits) == 0 && len(result.Edits) == 1 {
+			if result.Edits[0].NewText != original.AfterCode {
+				t.Logf("synthesized edit newText %q != AfterCode %q", result.Edits[0].NewText, original.AfterCode)
+
+				return false
+			}
+
+			result.Edits = nil
+		}
+
+		return result.Equal(original)
 	}
 
 	checkPropertyAny(t, property)
