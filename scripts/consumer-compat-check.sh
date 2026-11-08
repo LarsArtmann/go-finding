@@ -61,20 +61,21 @@ check_import_module() {
 	(
 		cd "$dir"
 		go mod init compat.local >/dev/null 2>&1
+		cp "$probe_file" main.go
 		if [ "$MODE" = head ]; then
 			# Resolve the module (and core, its dependency root) from the
-			# working tree — the at-HEAD API-drift check. For the core leg the
-			# first line is the only replace (a second, trailing-slash
-			# duplicate is a CONFLICTING-REPLACEMENT error, not idempotent).
+			# working tree — the at-HEAD API-drift check. The probe source is
+			# copied FIRST: `go mod tidy` derives the require from actual
+			# imports, and a replace alone adds nothing. The suffix keeps its
+			# leading slash — appending another would double it.
 			printf '\nreplace github.com/larsartmann/go-finding => %s\n' "$REPO_ROOT" >>go.mod
 			if [ "$module" != "github.com/larsartmann/go-finding" ]; then
-				printf 'replace %s => %s\n' "$module" "$REPO_ROOT/${module#github.com/larsartmann/go-finding}" >>go.mod
+				printf 'replace %s => %s\n' "$module" "$REPO_ROOT${module#github.com/larsartmann/go-finding}" >>go.mod
 			fi
 			GOWORK=off go mod tidy >/dev/null 2>&1
 		else
 			go get "${module}@${VERSION}" >/dev/null
 		fi
-		cp "$probe_file" main.go
 		echo "ok" >expected.txt
 		go vet . >/dev/null 2>&1
 		go run . >actual.txt 2>err.txt
@@ -103,16 +104,30 @@ check_cli_module() {
 		export GOBIN="$dir/bin"
 		mkdir -p "$GOBIN"
 		if [ "$MODE" = head ]; then
-			# Build the checked-out CLI module and assert the EXACT stamp.
-			(cd "$REPO_ROOT/cmd/go-finding" && GOWORK=off go build -o "$GOBIN/go-finding" .) >/dev/null 2>&1
+			# Build the CLI as an at-HEAD consumer would see it: a wrapper
+			# module replacing core AND cmd onto the working tree, so the
+			# binary is stamped from the LOCAL version.go — not from the
+			# published (possibly stamp-defective) core tag. Then assert the
+			# EXACT stamp: this probe would have failed red on the v1.15.1
+			# self-reports-1.15.0 class at build time.
+			go mod init compat.local >/dev/null 2>&1
+			printf 'require %s v0.0.0-local\n\nreplace %s => %s\nreplace github.com/larsartmann/go-finding => %s\n' \
+				"$module" "$module" "$REPO_ROOT/cmd/go-finding" "$REPO_ROOT" >>go.mod
+			GOWORK=off go build -o "$GOBIN/go-finding" "$module" >/dev/null 2>&1
 			local stamp
 			stamp="v$(sed -n 's/^const VersionMajor = //p' "$REPO_ROOT/version.go").$(sed -n 's/^const VersionMinor = //p' "$REPO_ROOT/version.go").$(sed -n 's/^const VersionPatch = //p' "$REPO_ROOT/version.go")"
-			[ "$($GOBIN/go-finding -version)" = "$stamp" ]
+			# finding.Version has no leading v; the stamp does.
+			[ "$("$GOBIN/go-finding" -version)" = "${stamp#v}" ]
 		else
 			go install "${module}@${VERSION}" >/dev/null
 			"$GOBIN/go-finding" -version | grep -Eq '[0-9]+\.[0-9]+\.[0-9]+'
 		fi
 	) >/dev/null 2>&1 || rc=$?
+	if [ "$rc" -ne 0 ] && [ "${COMPAT_DEBUG:-0}" = 1 ] && [ "$MODE" = head ]; then
+		echo "--- cli go.mod:" >&2; cat "$dir/go.mod" >&2
+		echo "--- binary says:" >&2; "$dir/bin/go-finding" -version 2>&1 >&2 || true
+		echo "--- expected stamp:" >&2
+	fi
 	if [ "$MODE" = head ]; then
 		verdict "$rc" "$name builds from the working tree and -version prints the exact version.go stamp"
 	else
