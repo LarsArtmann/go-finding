@@ -134,11 +134,10 @@ check_cli_module() {
 		fi
 	) >/dev/null 2>&1 || rc=$?
 	if [ "$rc" -ne 0 ] && [ "${COMPAT_DEBUG:-0}" = 1 ] && [ "$MODE" = head ]; then
-		echo "--- cli go.mod:" >&2
-		cat "$dir/go.mod" >&2
+		echo "--- cli (copied module) go.mod replaces:" >&2
+		grep -A2 "^replace" "$dir/cli/go.mod" >&2 || true
 		echo "--- binary says:" >&2
 		"$dir/bin/go-finding" -version 2>&1 >&2 || true
-		echo "--- expected stamp:" >&2
 	fi
 	if [ "$MODE" = head ]; then
 		verdict "$rc" "$name builds from the working tree and -version prints the exact version.go stamp"
