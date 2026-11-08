@@ -43,13 +43,17 @@ These symbols are production-ready, well-tested, and their signatures will not c
 - `Builder` struct and all methods
 - `Summary` struct
 - `ToolInfo` struct and `Validate` method
-- `Report` struct and all methods
+- `Report` struct and all methods (including `AddDetectResult`)
+- `DetectResult` struct (coverage evidence: `Findings`, `FilesScanned`, `SkippedModules`)
+- `Detector` interface, `DetectorFunc` adapter
+- `DetectorV2` interface (optional richer detect contract; `Detector` stays unchanged)
 - `LSPDiagnostic`, `LSPRange`, `LSPPosition`, `LSPRelatedInfo`, `LSPLocation` types
 
 **Constructors:**
 
 - `NewFinding`, `NewReport`, `NewBuilder`
 - `Pos`, `NewRange`, `NewRangePtr`
+- `RunDetect` (dispatch through the richest detect contract; v1 fallback zeroes coverage)
 
 **Functions:**
 
@@ -103,6 +107,8 @@ These symbols are production-ready, well-tested, and their signatures will not c
 - `DetectPartial`, `FormatPartialErrors`, `ErrPartialDetection`
 - `IsContextError`, `CheckCanceled`, `CheckCanceledWithMsg`, `WaitWithContext`
 - `DefaultMaxIterations` constant
+- `PipelineResult.FilesScanned` field (coverage evidence from the final detect stage, v1.15.0)
+- `ResolveFlightRecorderConfig`, `FlightRecorderFileConfig` (flight-recorder file config parity, v1.15.x)
 
 #### Analysis Package
 
