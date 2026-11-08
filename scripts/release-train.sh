@@ -150,16 +150,14 @@ stage_postflight() {
 	verdict postflight "clean-dir go get x5"
 	local scratch
 	scratch=$(mktemp -d)
-	(cd "$scratch" &&
-		go mod init postflight-consumer >/dev/null &&
-		for mod in "" "/pipeline" "/analysis" "/toolsdk" "/cmd/go-finding"; do
-			go get "github.com/larsartmann/go-finding${mod}@v${ver}" &&
-				echo "OK: clean-dir go get ${mod:-/core}" ||
-				{
-					echo "FAIL: clean-dir go get ${mod:-/core}"
-					failed=1
-				}
-		done)
+	for mod in "" "/pipeline" "/analysis" "/toolsdk" "/cmd/go-finding"; do
+		if (cd "$scratch" && go mod init postflight-consumer >/dev/null 2>&1; cd "$scratch" && go get "github.com/larsartmann/go-finding${mod}@v${ver}"); then
+			echo "OK: clean-dir go get ${mod:-/core}"
+		else
+			echo "FAIL: clean-dir go get ${mod:-/core}"
+			failed=1
+		fi
+	done
 	rm -rf "$scratch"
 
 	verdict postflight "release assets + stamp"
@@ -189,11 +187,9 @@ stage_postflight() {
 	done
 
 	verdict postflight "stamp vs tag"
-	local printed
-	printed=$("$("$go_env" 2>/dev/null || echo go)" env GOPATH)/bin/go-finding --version 2>/dev/null ||
-		printed=""
+	local printed=""
 	if [ -x "$(go env GOPATH)/bin/go-finding" ]; then
-		printed="$(go env GOPATH)/bin/go-finding --version"
+		printed="$("$(go env GOPATH)/bin/go-finding" --version)"
 		echo "installed CLI reports: $printed (tag says ${ver})"
 		[ "$printed" = "$ver" ] || failed=1
 	else
