@@ -142,6 +142,9 @@ defined there as well.
 | GracefulDegradation        | Continue on detector failures, collecting partial results          | Partial errors in result       |
 | ByteLevelConflictDetection | Precise byte-overlap detection for conflicting fixes               | More accurate than range-based |
 | VerifyAfterFix             | Re-run detectors after fixes to confirm resolution                 | Final verification pass        |
+| DetectResult               | Findings plus scan-coverage evidence returned by a detector        | `DetectorV2.DetectV2(ctx)`     |
+| DetectorV2                 | Detector that can measure its own scan coverage                    | Optional; embeds `Detector`    |
+| Coverage evidence          | FilesScanned / SkippedModules a run actually saw or skipped        | Feeds `Summary` via `Report.AddDetectResult` |
 
 ---
 

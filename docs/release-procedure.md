@@ -18,12 +18,12 @@
    freshness, and GOWORK=off builds per module. Add `--bench` / `--stress` to
    also run the benchmark and stress gates through it. **Do not tag until it
    passes.**
-1. Verify all tests pass: `GOEXPERIMENT=jsonv2 go test -race -count=1 ./...`
-2. Verify lint passes: `GOEXPERIMENT=jsonv2 golangci-lint run ./...`
+1. Verify all tests pass: `go test -race -count=1 ./...`
+2. Verify lint passes: `golangci-lint run ./...`
 3. Verify the flake: `nix flake check` (treefmt, package build, module isolation)
 4. Run stress test (or `bash scripts/release-preflight.sh --stress`):
-   - stdlib modules (analysis, CLI): `GOEXPERIMENT=jsonv2 go test -race -count=20 ./...`
-   - Ginkgo modules (core, pipeline): `GOEXPERIMENT=jsonv2 ginkgo -r --race --repeat=20 --skip-package=examples`
+   - stdlib modules (analysis, CLI): `go test -race -count=20 ./...`
+   - Ginkgo modules (core, pipeline): `ginkgo -r --race --repeat=20 --skip-package=examples`
    - **Note:** Ginkgo rejects `go test -count=N` for N>1 (`Only -count=1 is allowed`). Use `ginkgo --repeat=N` instead for the core and pipeline suites.
    - **Gate status (decided 2026-09-08): this step is mandatory.** A release
      must not be tagged until the repeat=20 race run passes. It is the only

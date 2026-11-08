@@ -76,7 +76,7 @@ func TestIntervalIndex_Len(t *testing.T) {
 
 	g.Expect(NewIntervalIndex[int](nil).Len()).To(gomega.Equal(0))
 
-	idx := NewIntervalIndex[int]([]Interval[int]{
+	idx := NewIntervalIndex([]Interval[int]{
 		{Start: 0, End: 5, Value: 1},
 		{Start: 10, End: 15, Value: 2},
 	})
