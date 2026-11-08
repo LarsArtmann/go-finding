@@ -22,9 +22,9 @@ tiers below are a dependency chain, not just a value sort.
 
 | Tier     | Tasks (of 27) | Share of tasks         | Cumulative value | Why                                                                                                           |
 | -------- | ------------- | ---------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
-| ~~       | **1%**        | T1                     | 1 task           | **~51%**                                                                                                      |
-| ~~       | **4%**        | T1 + T2 + T3           | 3 tasks          | **~64%**                                                                                                      |
-| ~~       | **20%**       | T1–T9 (+T4 resolution) | 9 tasks          | **~80%**                                                                                                      |
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| **20%**  | T1–T9 (+T4 resolution) | 9 tasks        | **~80%**         | The whole release-integrity cluster: one-tag-per-push procedure, tag-set preflight, CHANGELOG-drift gate, README stamp sweep, CI nix job. These five gates make every September failure class mechanically impossible. |~~ superseded — all gates landed 2026-09-23
 | **last** | T10–T27       | 18 tasks               | **→100%**        | Multi-edit follow-ups, fuzz/bench, consumer ecosystem, launch hardening, docs tails, hygiene, forward design. |
 
 ## Step 2 — Comprehensive plan (medium granularity, 30–100 min each, 27 tasks, ALL TODOs)
@@ -67,107 +67,107 @@ Execution rank = strict work order within dependency limits. 🔒 = operator.
 
 | Rank | ID  | Task (≤12 min) | Depends                                                                                                             |
 | ---- | --- | -------------- | ------------------------------------------------------------------------------------------------------------------- |
-| ~~   | 1   | F1.1           | Final pre-push gate: `nix flake check` green + `git status` clean (9 commits staged by daemon)                      |
-| ~~   | 2   | F1.2           | `git push origin master` (authorized)                                                                               |
-| ~~   | 3   | F1.3           | Watch CI: confirm the `test` job passes setup under go 1.27 (previously died at ~5s)                                |
-| ~~   | 4   | F1.4           | If red → triage logs; if green → record run id + date in this plan's annotation log                                 |
-| ~~   | 5   | F3.1           | Load github-voice skill; draft #36 closing comment (fix summary + tag-dependency note)                              |
-| ~~   | 6   | F3.2           | Post comment; close #36 as completed; strike the TODO row                                                           |
-| ~~   | 7   | F5.1           | Rewrite release-procedure "Tag pushing" section: one tag per push + serialized rerun flow                           |
-| ~~   | 8   | F5.2           | Update AGENTS.md tagging gotcha cross-reference (≤3 rule superseded)                                                |
-| ~~   | 9   | F5.3           | Gates: docs-freshness + dprint on the two docs                                                                      |
-| ~~   | 10  | F6.1           | release-preflight: post-tag mode expects all 5 tags (core, pipeline, analysis, toolsdk, cmd)                        |
-| ~~   | 11  | F6.2           | Mid-cycle tag-list config so expected-missing tags don't false-FAIL                                                 |
-| ~~   | 12  | F6.3           | Selftest 4th injection: missing toolsdk tag → assert exact FAIL line                                                |
-| ~~   | 13  | F6.4           | Run selftest end-to-end; record 4/4 PASS                                                                            |
-| ~~   | 14  | F7.1           | Write `scripts/changelog-drift.sh`: map each `v*`/`<prefix>/v*` tag to its module CHANGELOG section                 |
-| ~~   | 15  | F7.2           | Add OK/FAIL verdict line; prove FAIL path by temporarily renaming a section                                         |
-| ~~   | 16  | F7.3           | Wire into ci.yml structural-checks job + preflight docs gates                                                       |
-| ~~   | 17  | F8.1           | Extend docs-api-check: sweep all `vX.Y.Z` literals in README against version.go allowlist                           |
-| ~~   | 18  | F8.2           | Injection test: stale module-table cell → exit 1 (dead-gate rule)                                                   |
-| ~~   | 19  | F9.1           | Add CI nix job: `nix flake check` + `nix run .#lint`, nix installed via Determinate installer action                |
-| ~~   | 20  | F9.2           | State runner-runtime budget + job timeout (gotcha: 2-core runners, ~45min benchmark precedent)                      |
-| ~~   | 21  | F9.3           | actionlint + dispatch + watch first green                                                                           |
-| ~~   | 22  | F2.1           | 🔒 Owner decision: complete v1.13.0 vs fold into v1.14.0 (ROADMAP OQ)                                               |
-| ~~   | 23  | F2.2           | (completion) `gh workflow run Release --ref v1.13.0`; watch to success (assets present)                             |
-| ~~   | 24  | F2.3           | (completion) Create 3 annotated sibling tags (pipeline, analysis, cmd) at the release commit                        |
-| ~~   | 25  | F2.4           | (completion) Push tags ONE PER PUSH; run cancelled releases strictly serialized if any                              |
-| ~~   | 26  | F2.5           | Bump CLI go.mod requires to v1.13.0 + `go mod tidy` + resync commit                                                 |
-| ~~   | 27  | F2.6           | Verify proxy ×4, Release assets, pkg.go.dev renders `TextEdit`/`Edits`                                              |
-| ~~   | 28  | F2.7           | (fold-in alternative) version.go 1.14.0, CHANGELOG cuts, preflight `--bench --stress`, serialized tags              |
-| ~~   | 29  | F4.1           | Locate the 4 provisional "(v1.14.0)" spots (README heading, ADR #19, AGENTS, CHANGELOG target)                      |
-| ~~   | 30  | F4.2           | Apply the decision (confirm labels or rename); docs-api-check + dprint green                                        |
-| ~~   | 31  | F12.1          | erraudit: pin new sibling versions, read T13/T14 tickets                                                            |
-| ~~   | 32  | F12.2          | Migrate erraudit T13 (analysis API) onto tagged version                                                             |
-| ~~   | 33  | F12.3          | Migrate erraudit T14 (pipeline API) onto tagged version                                                             |
-| ~~   | 34  | F12.4          | Test + upstream PR to erraudit (`gh -R` discipline)                                                                 |
-| ~~   | 35  | F17.1          | Pipeline: export `ResolveFlightRecorderConfig(FlightRecorderFileConfig)` + doc                                      |
-| ~~   | 36  | F17.2          | CLI: `flightRecorderFileConfig.resolve()` → delegation; delete the mirrored parser                                  |
-| ~~   | 37  | F17.3          | Unify duration-error wording family (CLI "invalid" vs pipeline "parse")                                             |
-| ~~   | 38  | F17.4          | Pin the wording in a test (config branch + validate)                                                                |
-| ~~   | 39  | F13.1          | Decide Edits↔display-pair rule: validate vs document-loose (design note in ADR #19 addendum)                        |
-| ~~   | 40  | F13.2          | Implement validator OR write the "intentionally loose" doc contract                                                 |
-| ~~   | 41  | F13.3          | Tests for the chosen rule                                                                                           |
-| ~~   | 42  | F14.1          | Test: mixed multi/single-edit findings → `Applied` ordering semantics                                               |
-| ~~   | 43  | F14.2          | Test: partial-edit conflict → finding appears in applied AND conflicts                                              |
-| ~~   | 44  | F14.3          | Document both semantics in `docs/guides/fix-engine.md`                                                              |
-| ~~   | 45  | F15.1          | BenchmarkEditListProvider (offset + line/col paths)                                                                 |
-| ~~   | 46  | F15.2          | Compare vs baseline; regenerate baseline only if gate-justified (rationale in benchmarks/README)                    |
-| ~~   | 47  | F15.3          | Fix bench-check.sh awk escape-sequence warning                                                                      |
-| ~~   | 48  | F16.1          | FuzzTextEditValidate: seed review + 30s campaign                                                                    |
-| ~~   | 49  | F16.2          | FuzzEditListProvider: content+coordinate corpus + 30s campaign                                                      |
-| ~~   | 50  | F16.3          | Triage any findings; file or fix                                                                                    |
-| ~~   | 51  | F18.0          | For every filing below: `gh repo view` first (cross-repo discipline)                                                |
-| ~~   | 52  | F18.1          | BuildFlow: capture `TestNoLintPathExclusions` output; file issue                                                    |
-| ~~   | 53  | F18.2          | branching-flow: fresh pkg/errors + pkg/fs build output; file issue                                                  |
-| ~~   | 54  | F18.3          | go-business-rules: fresh test-failure output; file issue                                                            |
-| ~~   | 55  | F18.4          | art-dupl: file GAP-2 GroupID integration intent (cross-link feedback doc)                                           |
-| ~~   | 56  | F19.1          | Consumer matrix script: clone/build/test known consumer set, allowlist known-broken                                 |
-| ~~   | 57  | F19.2          | CI job wrapper + timeout budget; first run + triage                                                                 |
-| ~~   | 58  | F20.1          | ecosystem.md re-sweep: recount consumers, fresh version table, date stamp                                           |
-| ~~   | 59  | F20.2          | Bump lead consumers (go-linter-sdk, golangci-lint-auto-configure) to v1.13.x; verify builds                         |
-| ~~   | 60  | F20.3          | Update sweep heading (drop "post-v1.9.0"); note v1.13 additive                                                      |
-| ~~   | 61  | F21.1          | Branch protection ruleset: require green CI on master                                                               |
-| ~~   | 62  | F21.2          | Tag protection rules (core `v*` vs sub-module prefixes)                                                             |
-| ~~   | 63  | F21.3          | Enable private vulnerability reporting; verify SECURITY.md intake instructions                                      |
-| ~~   | 64  | F21.4          | Boundary READMEs for docs/status, docs/reviews, docs/planning (public-journal effect)                               |
-| ~~   | 65  | F22.1          | Finalize launch announcement draft (post-green CI + correct Latest release)                                         |
-| ~~   | 66  | F22.2          | Submit Awesome Go PR                                                                                                |
-| ~~   | 67  | F23.1          | finding-groups.md: refresh vs sarif_export.go edit-list changes (clears freshness warning)                          |
-| ~~   | 68  | F23.2          | DOMAIN_LANGUAGE.md: edit list / insertion / span entries                                                            |
-| ~~   | 69  | F23.3          | CLI docs: `-fix-provider edit-list` (default chain, registry names)                                                 |
-| ~~   | 70  | F23.4          | `pipeline/examples/multi-edit` + example_compile_test entry                                                         |
-| ~~   | 71  | F23.5          | GenerateID doc note: Edits excluded deliberately                                                                    |
-| ~~   | 72  | F23.6          | `Preview()` multi-hunk support                                                                                      |
-| ~~   | 73  | F23.7          | `Conflict.ConflictsWith` dedup on multi-edit overlap                                                                |
-| ~~   | 74  | F23.8          | Silence stale gopls "unused: editsEqual" warning                                                                    |
-| ~~   | 75  | F24.1          | modtime-tie case in concurrent-rotation test (assert count, not identity)                                           |
-| ~~   | 76  | F24.2          | `FuzzPruneSnapshotsHostileDir` real 30s+ campaign                                                                   |
-| ~~   | 77  | F24.3          | Formatter partial-write matrix: FormatTextRich failAt=1                                                             |
-| ~~   | 78  | F24.4          | IntervalIndex/correlate uncovered stmts → 99% or documented accept                                                  |
-| ~~   | 79  | F24.5          | Full-workspace `-race` pass (all modules, all packages)                                                             |
-| ~~   | 80  | F24.6          | nearestBy tie-break table test (ties keep earliest)                                                                 |
-| ~~   | 81  | F24.7          | CLI `-version` output verification (what does the binary print?)                                                    |
-| ~~   | 82  | F25.1          | 🔒 `trash ./go` stray toolchain + add `go/` to `.gitignore`                                                         |
-| ~~   | 83  | F25.2          | Post-dprint marker recheck across ALL 14 archived reports (grep + check-rows)                                       |
-| ~~   | 84  | F25.3          | Fetch 4 remaining v1.12.0 pkg.go.dev pages; amend the 09-17 marker to encode true evidence scope                    |
-| ~~   | 85  | F25.4          | Route dropped launch nice-to-haves (social preview, Discussions, pin, FUNDING, retro) to ROADMAP or Won't-implement |
-| ~~   | 86  | F25.5          | Structure multi-edit feature candidates as ROADMAP "Raw Ideas" entries                                              |
-| ~~   | 87  | F26.1          | Check Go 1.27 release notes: encoding/json/v2 stability                                                             |
-| ~~   | 88  | F26.2          | If stable: sweep GOEXPERIMENT from flake/workflows/README/AGENTS; full test matrix                                  |
-| ~~   | 89  | F26.3          | If not: update ROADMAP watch wording with the 1.27 finding                                                          |
-| ~~   | 90  | F27.1          | v2.0 design spike agenda (Position sentinel, FixStrategy union, TagSet, sub-structs)                                |
-| ~~   | 91  | F27.2          | Sampling NO-GO: set calendar review date (e.g. 2027-01) in ROADMAP                                                  |
-| ~~   | 92  | F27.3          | CONTRIBUTING / public release-runbook page                                                                          |
-| ~~   | 93  | F27.4          | Brew/nix distribution + v1.5–v1.8 backfill: written proposals for both Open questions                               |
-| ~~   | 94  | F10.1          | error-audit.sh: add `nolint-audit .` phase with verdict line                                                        |
-| ~~   | 95  | F10.2          | error-audit.sh: erraudit version check (decide pin mechanism; binary reports `dev`)                                 |
-| ~~   | 96  | F10.3          | Filter `[feature:logger]` stderr noise on FAIL output                                                               |
-| ~~   | 97  | F10.4          | Prove FAIL path once (inject a violation, assert exit 1 + clean verdict)                                            |
-| ~~   | 98  | F11.1          | `scripts/release-train.sh` skeleton: prep → verify → tag → push → rerun → resync → postflight stages                |
-| ~~   | 99  | F11.2          | Post-release verification script: proxy ×5, clean-dir `go get` ×5, assets, pkg.go.dev backoff                       |
-| ~~   | 100 | F11.3          | Self-test + link from release-procedure; first dry run                                                              |
-| ~~   | 101 | F27.4b         | gomend/licenseforge #1/#46 watch note (blocked upstream; no action until owner moves)                               |
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| T1  | Push master (9 commits incl. Go-pin fix) and verify CI runs green under go 1.27                                                                                  | 1%   | Crit   | S      | Trust: badge, docs, fixes visible             | —                          |~~ done at 9605441 (annotation log 15:20)
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| T10 | error-audit.sh maturity: nolint-audit phase + erraudit version pin + FAIL-noise filter                                                                           | last | Med    | M      | Error gate self-contained                     | —                          |~~ done (nolint-audit demoted to advisory)
+~~| T11 | `scripts/release-train.sh` + post-release verification script (proxy ×5, go get ×5, assets, pkg.go.dev backoff)                                                  | last | Med    | L      | Release cost drops, verification mechanical   | T5–T7                      |~~ routed — TODO_LIST (2026-11-08)
+~~| T12 | erraudit T13/T14 migration onto tagged sibling APIs 🔒(after T2)                                                                                                 | last | High   | M      | Consumer adopts Edits                         | T2                         |~~ routed — TODO_LIST (unblocked since v1.14.0)
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| T2  | Complete v1.13.0 OR fold into v1.14.0 🔒 (Release rerun, 3 sibling tags, CLI resync, proxy + pkg.go.dev verify)                                                  | 4%   | Crit   | M      | Consumers can `go get` the multi-edit feature | T1 + owner decision        |~~ done at 450824e — COMPLETE chosen (log 17:00-19:30)
+~~| T1  | Push master (9 commits incl. Go-pin fix) and verify CI runs green under go 1.27                                                                                  | 1%   | Crit   | S      | Trust: badge, docs, fixes visible             | —                          |~~ done at 9605441 (annotation log 15:20)
+~~| T16 | Fuzz `TextEdit.Validate` + `EditListProvider` (30s+ campaigns, not seeds-only)                                                                                   | last | Med    | M      | Parser/applier robustness                     | —                          |~~ done (5.5M execs, zero findings)
+~~| T2  | Complete v1.13.0 OR fold into v1.14.0 🔒 (Release rerun, 3 sibling tags, CLI resync, proxy + pkg.go.dev verify)                                                  | 4%   | Crit   | M      | Consumers can `go get` the multi-edit feature | T1 + owner decision        |~~ done at 450824e — COMPLETE chosen (log 17:00-19:30)
+~~| T18 | Consumer issue filings: BuildFlow, branching-flow, go-business-rules, art-dupl GAP-2                                                                             | last | Med    | M      | Ecosystem honesty upstream                    | —                          |~~ done without junk (2 stale, 1 fixed 431d8cd, GAP-2 filed)
+~~| T2  | Complete v1.13.0 OR fold into v1.14.0 🔒 (Release rerun, 3 sibling tags, CLI resync, proxy + pkg.go.dev verify)                                                  | 4%   | Crit   | M      | Consumers can `go get` the multi-edit feature | T1 + owner decision        |~~ done at 450824e — COMPLETE chosen (log 17:00-19:30)
+~~| **20%**  | T1–T9 (+T4 resolution) | 9 tasks        | **~80%**         | The whole release-integrity cluster: one-tag-per-push procedure, tag-set preflight, CHANGELOG-drift gate, README stamp sweep, CI nix job. These five gates make every September failure class mechanically impossible. |~~ superseded — all gates landed 2026-09-23
+~~| T21 | Launch hardening: branch protection, tag protection, private vulnerability reporting, boundary READMEs                                                           | last | Med    | S      | Public-repo supply-chain hygiene              | T1                         |~~ done (protection + ruleset + vuln reporting + READMEs)
+~~| T22 | Announcement finalization + Awesome Go submission                                                                                                                | last | Med    | S      | Adoption                                      | T2 (green story)           |~~ done — draft finalized; submission routed to TODO_LIST LAUNCH3 (owner)
+~~| **20%**  | T1–T9 (+T4 resolution) | 9 tasks        | **~80%**         | The whole release-integrity cluster: one-tag-per-push procedure, tag-set preflight, CHANGELOG-drift gate, README stamp sweep, CI nix job. These five gates make every September failure class mechanically impossible. |~~ superseded — all gates landed 2026-09-23
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| T25 | Hygiene: trash `./go` toolchain 🔒, post-dprint marker recheck, pkg.go.dev marker amend, dropped-item routing, ROADMAP raw-ideas structure                       | last | Low    | S      | Ledger clean                                  | —                          |~~ done (F25.1-F25.5; trash operator-only)
+~~| **20%**  | T1–T9 (+T4 resolution) | 9 tasks        | **~80%**         | The whole release-integrity cluster: one-tag-per-push procedure, tag-set preflight, CHANGELOG-drift gate, README stamp sweep, CI nix job. These five gates make every September failure class mechanically impossible. |~~ superseded — all gates landed 2026-09-23
+~~| T1  | Push master (9 commits incl. Go-pin fix) and verify CI runs green under go 1.27                                                                                  | 1%   | Crit   | S      | Trust: badge, docs, fixes visible             | —                          |~~ done at 9605441 (annotation log 15:20)
+~~| 28   | F2.7   | (fold-in alternative) version.go 1.14.0, CHANGELOG cuts, preflight `--bench --stress`, serialized tags              | 22        |~~ NOT-DO — fold-in alternative not taken (completion path chosen)
+~~| 29   | F4.1   | Locate the 4 provisional "(v1.14.0)" spots (README heading, ADR #19, AGENTS, CHANGELOG target)                      | 22        |~~ done — labels stay v1.14.0
+~~| T2  | Complete v1.13.0 OR fold into v1.14.0 🔒 (Release rerun, 3 sibling tags, CLI resync, proxy + pkg.go.dev verify)                                                  | 4%   | Crit   | M      | Consumers can `go get` the multi-edit feature | T1 + owner decision        |~~ done at 450824e — COMPLETE chosen (log 17:00-19:30)
+~~| T18 | Consumer issue filings: BuildFlow, branching-flow, go-business-rules, art-dupl GAP-2                                                                             | last | Med    | M      | Ecosystem honesty upstream                    | —                          |~~ done without junk (2 stale, 1 fixed 431d8cd, GAP-2 filed)
+~~| 32   | F12.2  | Migrate erraudit T13 (analysis API) onto tagged version                                                             | 31        |~~ routed — TODO_LIST (unblocked since v1.14.0)
+~~| 33   | F12.3  | Migrate erraudit T14 (pipeline API) onto tagged version                                                             | 32        |~~ routed — TODO_LIST (unblocked since v1.14.0)
+~~| 34   | F12.4  | Test + upstream PR to erraudit (`gh -R` discipline)                                                                 | 33        |~~ routed — TODO_LIST (unblocked since v1.14.0)
+~~| T9  | CI nix job (`nix flake check` + `nix run .#lint`) with runner-runtime budget                                                                                     | 20%  | High   | M      | Local-only gates stop rotting                 | T1                         |~~ done (first green run 35881376042)
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| T9  | CI nix job (`nix flake check` + `nix run .#lint`) with runner-runtime budget                                                                                     | 20%  | High   | M      | Local-only gates stop rotting                 | T1                         |~~ done (first green run 35881376042)
+~~| 38   | F17.4  | Pin the wording in a test (config branch + validate)                                                                | 37        |~~ done — wording pinned pipeline-side
+~~| 39   | F13.1  | Decide Edits↔display-pair rule: validate vs document-loose (design note in ADR #19 addendum)                        | —         |~~ done — intentionally loose + ADR #19
+~~| 40   | F13.2  | Implement validator OR write the "intentionally loose" doc contract                                                 | 39        |~~ done — intentionally loose + ADR #19
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| T9  | CI nix job (`nix flake check` + `nix run .#lint`) with runner-runtime budget                                                                                     | 20%  | High   | M      | Local-only gates stop rotting                 | T1                         |~~ done (first green run 35881376042)
+~~| T18 | Consumer issue filings: BuildFlow, branching-flow, go-business-rules, art-dupl GAP-2                                                                             | last | Med    | M      | Ecosystem honesty upstream                    | —                          |~~ done without junk (2 stale, 1 fixed 431d8cd, GAP-2 filed)
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| 46   | F15.2  | Compare vs baseline; regenerate baseline only if gate-justified (rationale in benchmarks/README)                    | 45        |~~ done — benches x8; awk fixed
+~~| 47   | F15.3  | Fix bench-check.sh awk escape-sequence warning                                                                      | 46        |~~ done — benches x8; awk fixed
+~~| 48   | F16.1  | FuzzTextEditValidate: seed review + 30s campaign                                                                    | —         |~~ done — 5.5M execs, zero findings
+~~| 49   | F16.2  | FuzzEditListProvider: content+coordinate corpus + 30s campaign                                                      | 48        |~~ done — 5.5M execs, zero findings
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| 52   | F18.1  | BuildFlow: capture `TestNoLintPathExclusions` output; file issue                                                    | 51        |~~ done without junk
+~~| 53   | F18.2  | branching-flow: fresh pkg/errors + pkg/fs build output; file issue                                                  | 51        |~~ done without junk
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| 55   | F18.4  | art-dupl: file GAP-2 GroupID integration intent (cross-link feedback doc)                                           | 51        |~~ done without junk
+~~| 56   | F19.1  | Consumer matrix script: clone/build/test known consumer set, allowlist known-broken                                 | 4         |~~ done — consumer-compat job
+~~| 57   | F19.2  | CI job wrapper + timeout budget; first run + triage                                                                 | 56        |~~ done — consumer-compat job
+~~| T9  | CI nix job (`nix flake check` + `nix run .#lint`) with runner-runtime budget                                                                                     | 20%  | High   | M      | Local-only gates stop rotting                 | T1                         |~~ done (first green run 35881376042)
+~~| 59   | F20.2  | Bump lead consumers (go-linter-sdk, golangci-lint-auto-configure) to v1.13.x; verify builds                         | 58        |~~ done — leads bumped; fresh sweep → TODO_LIST (2026-11-08)
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| 61   | F21.1  | Branch protection ruleset: require green CI on master                                                               | 4         |~~ done
+~~| 62   | F21.2  | Tag protection rules (core `v*` vs sub-module prefixes)                                                             | 61        |~~ done
+~~| 63   | F21.3  | Enable private vulnerability reporting; verify SECURITY.md intake instructions                                      | 61        |~~ done
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| 65   | F22.1  | Finalize launch announcement draft (post-green CI + correct Latest release)                                         | 27        |~~ done — draft finalized (submission owner-gated)
+~~| 66   | F22.2  | Submit Awesome Go PR                                                                                                | 65        |~~ routed — TODO_LIST LAUNCH3 (owner)
+~~| 67   | F23.1  | finding-groups.md: refresh vs sarif_export.go edit-list changes (clears freshness warning)                          | —         |~~ done
+~~| 68   | F23.2  | DOMAIN_LANGUAGE.md: edit list / insertion / span entries                                                            | —         |~~ done
+~~| 69   | F23.3  | CLI docs: `-fix-provider edit-list` (default chain, registry names)                                                 | —         |~~ done
+~~| 70   | F23.4  | `pipeline/examples/multi-edit` + example_compile_test entry                                                         | —         |~~ done
+~~| 71   | F23.5  | GenerateID doc note: Edits excluded deliberately                                                                    | —         |~~ done
+~~| 72   | F23.6  | `Preview()` multi-hunk support                                                                                      | —         |~~ done
+~~| 73   | F23.7  | `Conflict.ConflictsWith` dedup on multi-edit overlap                                                                | —         |~~ done
+~~| 74   | F23.8  | Silence stale gopls "unused: editsEqual" warning                                                                    | —         |~~ done — moot after LSP restart
+~~| 75   | F24.1  | modtime-tie case in concurrent-rotation test (assert count, not identity)                                           | —         |~~ done
+~~| T9  | CI nix job (`nix flake check` + `nix run .#lint`) with runner-runtime budget                                                                                     | 20%  | High   | M      | Local-only gates stop rotting                 | T1                         |~~ done (first green run 35881376042)
+~~| 77   | F24.3  | Formatter partial-write matrix: FormatTextRich failAt=1                                                             | —         |~~ done
+~~| 78   | F24.4  | IntervalIndex/correlate uncovered stmts → 99% or documented accept                                                  | —         |~~ done
+~~| 79   | F24.5  | Full-workspace `-race` pass (all modules, all packages)                                                             | —         |~~ done
+~~| **20%**  | T1–T9 (+T4 resolution) | 9 tasks        | **~80%**         | The whole release-integrity cluster: one-tag-per-push procedure, tag-set preflight, CHANGELOG-drift gate, README stamp sweep, CI nix job. These five gates make every September failure class mechanically impossible. |~~ superseded — all gates landed 2026-09-23
+~~| T9  | CI nix job (`nix flake check` + `nix run .#lint`) with runner-runtime budget                                                                                     | 20%  | High   | M      | Local-only gates stop rotting                 | T1                         |~~ done (first green run 35881376042)
+~~| **4%**   | T1 + T2 + T3           | 3 tasks        | **~64%**         | Release truth (v1.13.0 actually released, Latest correct, CLI resync, pkg.go.dev renders `Edits`) + issue #36 closed with evidence.                                                                                    |~~ superseded — executed (T2 at 450824e, #36 closed)
+~~| 83   | F25.2  | Post-dprint marker recheck across ALL 14 archived reports (grep + check-rows)                                       | —         |~~ done — all 14 re-checked
+~~| 84   | F25.3  | Fetch 4 remaining v1.12.0 pkg.go.dev pages; amend the 09-17 marker to encode true evidence scope                    | —         |~~ done — all 5 pages fetched; marker amended
+~~| 85   | F25.4  | Route dropped launch nice-to-haves (social preview, Discussions, pin, FUNDING, retro) to ROADMAP or Won't-implement | —         |~~ done — ROADMAP blocks added
+~~| 86   | F25.5  | Structure multi-edit feature candidates as ROADMAP "Raw Ideas" entries                                              | —         |~~ done — ROADMAP blocks added
+~~| 87   | F26.1  | Check Go 1.27 release notes: encoding/json/v2 stability                                                             | —         |~~ done — json/v2 GA; full sweep
+~~| T9  | CI nix job (`nix flake check` + `nix run .#lint`) with runner-runtime budget                                                                                     | 20%  | High   | M      | Local-only gates stop rotting                 | T1                         |~~ done (first green run 35881376042)
+~~| 89   | F26.3  | If not: update ROADMAP watch wording with the 1.27 finding                                                          | 87        |~~ NOT-DO — stable branch taken (F26.2)
+~~| 90   | F27.1  | v2.0 design spike agenda (Position sentinel, FixStrategy union, TagSet, sub-structs)                                | —         |~~ routed — TODO_LIST (v2.0 spike)
+~~| 91   | F27.2  | Sampling NO-GO: set calendar review date (e.g. 2027-01) in ROADMAP                                                  | —         |~~ done — 2027-01-31 set in ROADMAP (09-27)
+~~| 92   | F27.3  | CONTRIBUTING / public release-runbook page                                                                          | —         |~~ routed — TODO_LIST (CONTRIBUTING)
+~~| 93   | F27.4  | Brew/nix distribution + v1.5–v1.8 backfill: written proposals for both Open questions                               | —         |~~ routed — ROADMAP Open questions
+~~| 94   | F10.1  | error-audit.sh: add `nolint-audit .` phase with verdict line                                                        | —         |~~ done-with-change — nolint-audit demoted to advisory (false oracle)
+~~| 95   | F10.2  | error-audit.sh: erraudit version check (decide pin mechanism; binary reports `dev`)                                 | 94        |~~ done — version printout added
+~~| **1%**   | T1                     | 1 task         | **~51%**         | `git push`: makes the Go-pin fix effective (CI green), publishes the docs sweep, and is the precondition for the Release rerun. One command, half the outcome.                                                         |~~ superseded — executed (T1 done at 9605441)
+~~| 97   | F10.4  | Prove FAIL path once (inject a violation, assert exit 1 + clean verdict)                                            | 96        |~~ done — FAIL path proven
+~~| 98   | F11.1  | `scripts/release-train.sh` skeleton: prep → verify → tag → push → rerun → resync → postflight stages                | 9, 13, 16 |~~ routed — TODO_LIST (release-train.sh, 2026-11-08)
+~~| T24 | Testing-quality bundle: modtime-tie, hostile-dir fuzz campaign, formatter matrix, IntervalIndex 99%, full `-race`, nearestBy tie, FR wording pin, CLI `-version` | last | Low    | M      | Coverage where it's thin                      | —                          |~~ done (99.0% coverage; full battery)
+~~| 100  | F11.3  | Self-test + link from release-procedure; first dry run                                                              | 99        |~~ routed — TODO_LIST (release-train.sh, 2026-11-08)
+~~| 101  | F27.4b | gomend/licenseforge #1/#46 watch note (blocked upstream; no action until owner moves)                               | —         |~~ routed — TODO_LIST (blocked upstream)
 
 ## Execution graph
 

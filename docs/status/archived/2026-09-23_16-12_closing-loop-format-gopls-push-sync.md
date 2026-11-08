@@ -24,10 +24,10 @@
 
 | Item | Done                                  | Missing                                           |
 | ---- | ------------------------------------- | ------------------------------------------------- |
-| ~~   | This segment's purpose (loop closure) | All gates green, all pushed, no open diffs        |
-| ~~   | Marker-amendment cycle                | Content correct, evidence scope now fully encoded |
-| ~~   | 15:58 report accuracy                 | All factual claims re-verified and hold           |
-| ~~   | Plan annotation log                   | Current through the final 22/23 verdict           |
+~~| This segment's purpose (loop closure) | All gates green, all pushed, no open diffs        | It advanced ZERO plan-tier tasks — T2 is owner-gated and T5–T27 await the go-ahead; the backlog is fully staged but frozen on answers |~~ verified — the whole-list round superseded it within the hour (18:13 report)
+~~| Marker-amendment cycle                | Content correct, evidence scope now fully encoded | Needed a post-hoc repo-wide fmt pass — the edit and its formatting were not one atomic step (see d/1)                                 |~~ verified — one-command edit cycles adopted as discipline (e1)
+~~| 15:58 report accuracy                 | All factual claims re-verified and hold           | It was written while 1 unformatted file + 1 unpushed daemon commit still existed — the loop closed AFTER the report (see d/2)         |~~ verified — superseded by later loops; all claims re-verified
+~~| Plan annotation log                   | Current through the final 22/23 verdict           | Will need a T2-decision entry the moment you answer g/1                                                                               |~~ verified — log carried through the final verdict (22-07 report)
 
 ## c) NOT STARTED (unchanged from the 15:58 report — owner-gated or queued)
 

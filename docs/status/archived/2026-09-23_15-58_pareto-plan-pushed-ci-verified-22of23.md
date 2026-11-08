@@ -30,11 +30,11 @@
 
 | Item | Done                             | Missing                                                                                 |
 | ---- | -------------------------------- | --------------------------------------------------------------------------------------- |
-| ~~   | T1 "CI green"                    | 22/23 green; Go-pin class eliminated                                                    |
-| ~~   | T3 (#36 close)                   | Evidence packaged (fix on master, verified; comment plan known)                         |
-| ~~   | Plan tiers 20% + rest            | 27-task plan + 101 micro-tasks written with dependencies and graph                      |
-| ~~   | gopls stale-diagnostics handling | Restart cleared the false `undefined: tf` project errors                                |
-| ~~   | Daemon-commit curation           | 3 of this segment's 5 pushes carry detailed authored messages (plan, link fix, verdict) |
+~~| T1 "CI green"                    | 22/23 green; Go-pin class eliminated                                                    | `structural-checks` stays red on version-drift until the owner's T2 decision — master CI is 1 job short of fully green |~~ done at 450824e — version-drift green after resync; master fully green at c1bb7be
+~~| T3 (#36 close)                   | Evidence packaged (fix on master, verified; comment plan known)                         | Not posted/closed — gated on the owner's timing answer (14:10 §g/1)                                                    |~~ verified 2026-11-08 — #36 CLOSED
+~~| Plan tiers 20% + rest            | 27-task plan + 101 micro-tasks written with dependencies and graph                      | T4–T27 not executed (planning segment; T5–T11 etc. unblocked and ready)                                                |~~ superseded — executed 2026-09-23 17:00-19:30 whole-list round (18-13 report + plan annotation log); open tails → TODO_LIST
+~~| gopls stale-diagnostics handling | Restart cleared the false `undefined: tf` project errors                                | The 14:10 report's separate "unused: editsEqual" stale warning (different file) still open                             |~~ verified — moot after LSP restart (16:12 report a3)
+~~| Daemon-commit curation           | 3 of this segment's 5 pushes carry detailed authored messages (plan, link fix, verdict) | The analysis-lint fix itself rode in a `chore: auto-commit 1 file` batch (bb82d7a) — see d/6                           |~~ NOT-DO — daemon heuristic history accepted as standing policy
 
 ## c) NOT STARTED
 

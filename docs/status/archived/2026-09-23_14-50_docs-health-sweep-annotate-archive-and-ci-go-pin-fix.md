@@ -31,12 +31,12 @@
 
 | Item | Done                          | Missing                                                                                       |
 | ---- | ----------------------------- | --------------------------------------------------------------------------------------------- |
-| ~~   | Release story                 | Root cause fixed in-tree; CHANGELOG entry written; TODO/ROADMAP updated                       |
-| ~~   | Annotation evidence depth     | All 14 files dispositioned; every marker cites evidence                                       |
-| ~~   | Post-dprint marker integrity  | Spot-checked 4/14 archived files after `dprint fmt` reformatted their tables (markers intact) |
-| ~~   | TODO_LIST launch-tail routing | Bounded items harvested with evidence                                                         |
-| ~~   | Multi-edit feature candidates | Captured in a TODO_LIST footnote pointing at the archived 14:10 §f table                      |
-| ~~   | pkg.go.dev verification       | v1.12.0 CORE page fetched and confirmed rendering                                             |
+~~| Release story                 | Root cause fixed in-tree; CHANGELOG entry written; TODO/ROADMAP updated                       | Everything still needs a PUSH: CI is red on GitHub until then, v1.13.0 has no GitHub Release (Latest = v1.12.0), and the 3 sibling v1.13.0 tags are missing — all operator-gated |~~ done at 450824e — v1.13.0 completed 2026-09-23; Latest = v1.15.1 as of 2026-11-08
+~~| Annotation evidence depth     | All 14 files dispositioned; every marker cites evidence                                       | a)-section "FULLY DONE" rows were struck wholesale with point-in-time `p` markers (trusting the authoring session's claims + my spot checks), NOT re-executed per item           |~~ superseded — the 15:58 pass F25.3 amended the marker with full evidence scope
+~~| Post-dprint marker integrity  | Spot-checked 4/14 archived files after `dprint fmt` reformatted their tables (markers intact) | The other 10 not re-checked post-fmt (fmt only adjusts padding; risk low but unverified)                                                                                         |~~ verified — all 14 re-checked 2026-09-23 15:40 (F25.2)
+~~| TODO_LIST launch-tail routing | Bounded items harvested with evidence                                                         | A few 09-08-era launch nice-to-haves silently dropped (social preview, Discussions, pin repo, FUNDING, post-launch retro) without ROADMAP routing or Won't-implement markers     |~~ verified — ROADMAP parked-launch-nice-to-haves note (F25.4)
+~~| Multi-edit feature candidates | Captured in a TODO_LIST footnote pointing at the archived 14:10 §f table                      | Not structured as ROADMAP "Raw Ideas" entries (LSP CodeAction edits, AlternativeFixes, multi-file fixes, Preview multi-hunk, GoAST typed Edits)                                  |~~ verified — ROADMAP "Multi-edit feature follow-ups" block (F25.5)
+~~| pkg.go.dev verification       | v1.12.0 CORE page fetched and confirmed rendering                                             | The archived 09-17 marker implies module-wide confirmation — only 1 of 5 pages actually fetched (see d/2)                                                                        |~~ routed — core+pipeline pages verified 2026-09-27 @ v1.13.0; analysis/toolsdk/cmd → TODO_LIST (2026-11-08)
 
 ## c) NOT STARTED (deliberately — operator-gated or out of scope)
 
