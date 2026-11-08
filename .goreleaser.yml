@@ -44,7 +44,8 @@ archives:
         {{- else }}{{ .Arch }}{{ end }}
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
     files:
       - LICENSE*
       - README*
@@ -82,7 +83,12 @@ signs:
 sboms:
   - artifacts: archive
 
-brews:
+# homebrew_casks is the goreleaser 2.x replacement for the deprecated
+# `brews` pipe (schema migrated 2026-11-08). skip_upload: true keeps the
+# behavior identical to before (formula/cask written to dist/ only, nothing
+# pushed); switching publishing on is LAUNCH4's job and will re-verify the
+# cask body against the real tap repo first.
+homebrew_casks:
   - name: go-finding
     skip_upload: true
     homepage: "https://github.com/LarsArtmann/go-finding"
@@ -91,18 +97,21 @@ brews:
     repository:
       owner: LarsArtmann
       name: homebrew-tap
-    directory: Formula
+    directory: Casks
     commit_author:
       name: goreleaserbot
       email: goreleaser@larsartmann.com
-    install: |
-      bin.install "go-finding"
-    test: |
-      system "#{bin}/go-finding --version"
+    binaries:
+      - go-finding
 
 nix:
   - name: go-finding
-    skip_upload: auto
+    # skip_upload: true, NOT auto (run 41863470480, v1.15.1): "auto" uploads
+    # on the latest semver, and the configured target repo
+    # LarsArtmann/nur-packages does not exist -> 404 -> the whole release
+    # failed AFTER publishing (exit 1, red run on a shipped release). The
+    # formula is still written to dist/nix/ for manual inspection.
+    skip_upload: true
     repository:
       owner: LarsArtmann
       name: nur-packages
