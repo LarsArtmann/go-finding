@@ -104,6 +104,8 @@ Each would live in its own subpackage to keep language-specific dependencies out
 
 Launch-track nice-to-haves consciously parked (2026-09-23 docs sweep): social preview image, GitHub Discussions, profile pin, FUNDING.yml, post-launch retro — revisit on an adoption signal.
 
+Release-ecosystem nice-to-haves consciously parked (2026-11-08 routing from the 2026-09-23 status reports): OpenSSF Scorecard baseline, GoReleaser release-notes template review, milestone automation (auto-create next milestone), release dashboard one-liner (5 modules' tag vs proxy), stress-gate sharding/profile, registry targeted `-count=200` CI job — revisit on an adoption/ops signal.
+
 ### FlightRecorder future directions
 
 The FlightRecorder feature (`pipeline/flight_recorder.go`) is shipped with config-file integration (`FlightRecorderFileConfig` + `ResolveFlightRecorder()`).
