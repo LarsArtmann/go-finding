@@ -252,18 +252,18 @@ verified open today — do not re-derive); 25–50 = session-new tails.
 | 4  | `scripts/verify-compare-links.sh` + preflight wiring                                                         | High   | S-M    |
 | 5  | Pre-tag stamp gate: assert version.go == intended tag name BEFORE the ref exists (d/e1)                       | High   | S      |
 | 6  | release-procedure.md truth pass: phased-CI-red reality, push→verify→tag order, stress-on-sibling-tags rule, files-to-gates map, GoReleaser recovery recipe | High | M |
-| 7  | `docs/guides/detector-coverage.md` (DetectorV2/DetectResult/RunDetect/AddDetectResult)                       | High   | M      |
+~~| 7  | `docs/guides/detector-coverage.md` (DetectorV2/DetectResult/RunDetect/AddDetectResult)                       | High   | M      |~~ done at `9751a2b`
 | 8  | README: sell the coverage channel (front page has zero DetectorV2 mention)                                    | High   | S      |
 | 9  | ADR #20 for the DetectorV2 coverage channel (docs/architecture-decisions.md)                                                                   | Med    | S      |
 | 10 | Complete compare-ref sets in analysis/cmd CHANGELOGs (zero refs today; headers render as literal text)        | Med    | S      |
 | 11 | DetectorV2 runnable example + compile-gate wiring                                                             | Med    | S-M    |
-| 12 | api-stability-report.md: DetectorV2/DetectResult/RunDetect/AddDetectResult identifiers                        | Med    | S      |
+~~| 12 | api-stability-report.md: DetectorV2/DetectResult/RunDetect/AddDetectResult identifiers                        | Med    | S      |~~ done at `d22f574`
 | 13 | CI release gate: `go install cmd@vX.Y.Z` + `--version` smoke + stamp comparison per train                     | High   | M      |
 | 14 | CLI: delegate `flightRecorderFileConfig.resolve()` to `pipeline.ResolveFlightRecorderConfig`                  | Med    | S      |
 | 15 | erraudit T13/T14 migration onto tagged APIs + file the upstream `nolint-audit` false-stale issue              | High   | M      |
 | 16 | Make erraudit CI-wirable (public repo or vendored binary)                                                     | Med    | M      |
 | 17 | `scripts/release-train.sh` + post-release verifier (manual train ran five times now)                          | Med    | L      |
-| 18 | pkg.go.dev render checks: core v1.15.1 + analysis/toolsdk/cmd pages                                           | Med    | S      |
+~~| 18 | pkg.go.dev render checks: core v1.15.1 + analysis/toolsdk/cmd pages                                           | Med    | S      |~~ verified — all five module pages render (cmd crawled after re-trigger)
 | 19 | 🔒 Phase-aware version gates OR documented exception (every train ships mid-red; 3 precedents now)            | High   | S/M    |
 | 20 | 🔒 Sub-module versioning: toolsdk independent vs lockstep (preflight lockstep check misfires each core train) | High   | S(dec) |
 | 21 | 🔒 Dependabot gomod config: collapse to `/` entry vs keep 4 dirs                                              | Med    | S      |
@@ -280,7 +280,7 @@ verified open today — do not re-derive); 25–50 = session-new tails.
 | 32 | CI-event watchdog: assert a ci.yml run exists per pushed SHA                                                  | Low    | S      |
 | 33 | Detached long-wait runner (CI polls + local gates; e/6)                                                       | Low    | S      |
 | 34 | Consumer-migration guide section for `PipelineResult.Outcomes` adopters                                       | Low    | S      |
-| 35 | SARIF round-trip property/fuzz test                                                                           | Med    | S      |
+~~| 35 | SARIF round-trip property/fuzz test                                                                           | Med    | S      |~~ done at `93e6898`
 | 36 | go.work.sum freshness gate                                                                                    | Low    | S      |
 | 37 | Boundary READMEs for docs/feedback + docs/research (status/planning/reviews have them)                        | Low    | S      |
 | 38 | shellcheck for scripts/ (devShell + gate)                                                                     | Low    | S      |
