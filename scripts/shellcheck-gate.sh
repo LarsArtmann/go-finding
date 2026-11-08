@@ -13,8 +13,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 if ! command -v shellcheck >/dev/null; then
+	# SKIP exits 0 on purpose: preflight runs outside the devShell too, and an
+	# environment without the binary is not a finding — the devShell and CI
+	# (nix job) always have it.
 	echo "SKIP: shellcheck not installed (devShell provides it: nix develop)"
-	exit 2
+	exit 0
 fi
 
 if output=$(shellcheck scripts/*.sh scripts/hooks/* 2>&1); then
