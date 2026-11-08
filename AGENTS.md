@@ -244,6 +244,7 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 - **makezero `always: false` (intentional)** — `always: true` flags idiomatic `make+copy` (23 FPs); `false` still catches real `make+append` over-allocation.
 - **Stress gate is mandatory** — `ginkgo -r --race --repeat=20 --skip-package=examples` (core, pipeline), `go test -race -count=20` (analysis, CLI) before any tag (release-procedure step 4). CI stress now mirrors this exact split (ginkgo CLI pinned v2.32.0, job timeout 30m): the old `go test -count=20 ./...` job failed instantly on ginkgo suites ("Only -count=1 is allowed") and stressed nothing — invisible while CI was billing-dead.
 - **`pipeline/examples/`** — one runnable program per subdir + `example_compile_test.go` (`go build -o /dev/null`), mirroring root `examples/`.
+- **Fuzz seeds: curated `seed_N` convention, negligible cost** — `testdata/fuzz/<FuzzName>/` commits only human-named entries (`seed_N`, `basic`, `empty`); fuzzer-generated hex-hash filenames are gitignored (that IS the promotion policy: a campaign hit worth keeping gets renamed `seed_N+1` and committed deliberately). Measured 2026-11-08: the full committed corpus (192 files across core+pipeline targets) executes in ~20 ms of test time inside the normal `go test` run — no trimming policy needed.
 
 ## CLI Features
 
