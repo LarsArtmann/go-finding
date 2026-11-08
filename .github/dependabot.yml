@@ -1,3 +1,12 @@
+# Collapsed 2026-11-08 (T21): ONE gomod entry at "/" covers all five nested
+# modules — Dependabot treats a repo-root gomod config as workspace-wide, and
+# the per-module entries produced competing PRs where the root PR superseded
+# them (they auto-closed on rebase as satisfied; the 2026-09-27 pattern).
+# Per-module labels are gone with the per-module entries; the bump mechanics
+# (go.work bump + tidy + vendorHash fix-up) are documented in AGENTS.md.
+# The 2026-09-27 failed "Dependabot Updates" run (36348692826) was GitHub
+# updater infra ("Failed to parse GITHUB_REGISTRIES_PROXY"), not config;
+# runs have been green since.
 version: 2
 updates:
   - package-ecosystem: "gomod"
@@ -8,45 +17,6 @@ updates:
     labels:
       - "dependencies"
       - "go"
-    groups:
-      gomod:
-        patterns:
-          - "*"
-  - package-ecosystem: "gomod"
-    directory: "/pipeline"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "go"
-      - "pipeline"
-    groups:
-      gomod:
-        patterns:
-          - "*"
-  - package-ecosystem: "gomod"
-    directory: "/analysis"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "go"
-      - "analysis"
-    groups:
-      gomod:
-        patterns:
-          - "*"
-  - package-ecosystem: "gomod"
-    directory: "/cmd/go-finding"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "go"
-      - "cli"
     groups:
       gomod:
         patterns:
