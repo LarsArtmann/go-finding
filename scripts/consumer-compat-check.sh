@@ -56,6 +56,7 @@ verdict() {
 check_import_module() {
 	local name="$1" module="$2" probe_file="$3"
 	local dir="$WORK/$name"
+	local rc=0
 	mkdir -p "$dir"
 	(
 		cd "$dir"
@@ -74,17 +75,18 @@ check_import_module() {
 		go vet . >/dev/null 2>&1
 		go run . >actual.txt 2>err.txt
 		diff -q expected.txt actual.txt >/dev/null
-	) >/dev/null 2>&1
+	) >/dev/null 2>&1 || rc=$?
 	if [ "$MODE" = head ]; then
-		verdict $? "$name builds, vets, and runs against the WORKING TREE at-HEAD ($module)"
+		verdict "$rc" "$name builds, vets, and runs against the WORKING TREE at-HEAD ($module)"
 	else
-		verdict $? "$name resolves from proxy, builds, vets, and runs (${module}@${VERSION})"
+		verdict "$rc" "$name resolves from proxy, builds, vets, and runs (${module}@${VERSION})"
 	fi
 }
 
 check_cli_module() {
 	local name="$1" module="$2"
 	local dir="$WORK/$name"
+	local rc=0
 	mkdir -p "$dir"
 	(
 		cd "$dir"
@@ -100,11 +102,11 @@ check_cli_module() {
 			go install "${module}@${VERSION}" >/dev/null
 			"$GOBIN/go-finding" -version | grep -Eq '[0-9]+\.[0-9]+\.[0-9]+'
 		fi
-	) >/dev/null 2>&1
+	) >/dev/null 2>&1 || rc=$?
 	if [ "$MODE" = head ]; then
-		verdict $? "$name builds from the working tree and -version prints the exact version.go stamp"
+		verdict "$rc" "$name builds from the working tree and -version prints the exact version.go stamp"
 	else
-		verdict $? "$name installs from proxy and -version prints semver (${module}@${VERSION})"
+		verdict "$rc" "$name installs from proxy and -version prints semver (${module}@${VERSION})"
 	fi
 }
 
