@@ -71,10 +71,23 @@
    `--tag` is not stamp evidence — the check only runs when you pass the
    intended tag.
 
+   Corollary (the v1.15.1 repeat): a green CI run on the PRE-tag commit
+   proves nothing about the tag — that run compared the stamp against the
+   PREVIOUS nearest tag. After pushing ANY core tag, run
+   `bash scripts/version-check.sh` locally (it compares against the new
+   nearest tag the moment the tag exists) and `git show <tag>:version.go`.
+
    If the CHANGELOG carries compare links for the new version, also run
    `bash scripts/release-preflight.sh --links` (authenticated `gh api` per
    pair — the authority on compare-link validity; lychee 429/502 flakes on
    valid pairs do not count as evidence).
+
+   Compare-ref convention (the v1.15.0 lesson): `[Unreleased]` points at the
+   last EXISTING tag (`vX.Y.Z...HEAD`); the new version's own ref is added in
+   a POST-tag commit once the tag resolves — a pre-tag ref 404s in lychee.
+   And when proving a consumer pin at an exact commit, `go get <mod>@<sha>`
+   LAST and never `go mod tidy` afterward — tidy in a clean dir silently
+   re-resolves the pin to `@latest`, validating the WRONG version.
 
    After the train's Release runs, the `release-gate` job in release.yml
    re-checks the stamp at the ARTIFACT level: it installs the just-pushed
@@ -273,6 +286,8 @@ the tag is pushed, into the train notes or the tag's release notes.
 | Deterministic JSON marshal                  | `json-deterministic-check.sh`                                                                  |
 | Docs API claims (identifiers, versions)     | `docs-api-check.sh`, `docs-freshness.sh`, docs-gates battery                                   |
 | Release publish correctness (nix/homebrew)  | `goreleaser check` locally; the Release run itself (nix pipe is skip_upload since v1.15.1's 404) |
+| Benchmark regression claims                  | the CI benchmark job on a clean runner — LOCAL `--bench` numbers are invalid under heavy machine load (uniform 2-4x time inflation, flat allocs; observed load avg 186 during the v1.14.0 train) |
+| go.sum completeness after dependency bumps   | `go-worksum-check.sh` + a cold-cache build (`module-isolation`); warm-cache local builds stay green on zip-hash-only entries |
 
 ### Local GoReleaser recovery recipe
 

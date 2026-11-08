@@ -11,17 +11,10 @@
 
 ## Module Structure (Multi-Module Go Workspace)
 
-Unix-style decomposition — each module does one thing well, composes via replace directives.
-
-| Module       | Path                                               | External Deps                | Depends on     |
-| ------------ | -------------------------------------------------- | ---------------------------- | -------------- |
-| **Core**     | `github.com/larsartmann/go-finding`                | go-error-family              | —              |
-| **Pipeline** | `github.com/larsartmann/go-finding/pipeline`       | x/sync, gogenfilter          | Core           |
-| **Analysis** | `github.com/larsartmann/go-finding/analysis`       | x/tools                      | Core           |
-| **Tool SDK** | `github.com/larsartmann/go-finding/toolsdk`        | —                            | Core           |
-| **CLI**      | `github.com/larsartmann/go-finding/cmd/go-finding` | yaml, go-output, gogenfilter | Core, Pipeline |
-
-`go.work` coordinates all 5 modules for development. Library sub-modules (`pipeline`, `analysis`, `toolsdk`) carry `replace github.com/larsartmann/go-finding => ../` for `GOWORK=off` builds; **`cmd/go-finding` must have NO replace directives** (enforced by `scripts/replace-audit.sh` — `go install module@version` refuses modules with replaces). Consequence: the CLI is pinned to PUBLISHED sibling-module versions, so it cannot call a new pipeline/analysis API until that module is tagged and the CLI `go.mod` bumped — dedupe CLI-side instead of exporting new sibling APIs for it (learned 2026-09-22/23 dedup pass).
+Five modules, one purpose each: **Core** `github.com/larsartmann/go-finding`;
+**Pipeline** `.../pipeline`; **Analysis** `.../analysis`; **Tool SDK**
+`.../toolsdk`; **CLI** `.../cmd/go-finding`. `go.work` coordinates all five;
+cmd/go-finding must have NO replace directives (see Module Dependencies).
 
 ## Key Files
 
@@ -36,37 +29,27 @@ nix run .#lint                              # Run linter
 go test -race -count=1 ./...                # Full suite with race detector (workspace)
 GOWORK=off go test ./...                    # Per-module isolation test (run in each module dir)
 golangci-lint run ./...                     # Lint
-bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 25  # Benchmark regression check
-bash scripts/version-check.sh                                    # Verify version.go matches git tag
-bash scripts/release-preflight.sh                                # Pre-tag structural gate (see below)
-bash scripts/error-audit.sh                                      # erraudit gate: error-handling violations, all 5 modules (see below)
+bash scripts/bench-check.sh benchmarks/baseline.txt current.txt 250  # Benchmark regression check
+bash scripts/version-check.sh   # version.go vs git tag (run after ANY tag push)
+bash scripts/release-preflight.sh [--tag vX.Y.Z] [--links]  # see below
+bash scripts/error-audit.sh     # erraudit gate, all 5 modules (see below)
 ```
-
-> **json/v2 is GA (verified 2026-09-23).** The project imports `encoding/json/v2`,
-> which is stable and default-on since Go 1.27 — no `GOEXPERIMENT` is needed
-> anywhere (dropped from flake, workflows, scripts, docs). `GOEXPERIMENT=nojsonv2`
-> would now BREAK the build. Direct `go` commands just need a 1.27+ toolchain.
 
 ### Release preflight (mandatory before any tag)
 
-`scripts/release-preflight.sh` runs the structural gates as code (version drift,
-replace audit, tag collisions, clean tree, unpushed commits, worktree hygiene,
-GOWORK=off builds, docs checks incl. the README version stamp). Born from the
-v1.7.0 incident where sub-module go.mod files were tagged with a stale core
-reference because the checklist lived in the operator's head.
-`--bench`/`--stress` flags add the heavy gates. `scripts/release-preflight-selftest.sh`
-injects three failure classes (tag collision, version drift, post-tag missing
+`scripts/release-preflight.sh` runs the structural gates as code (born from the
+v1.7.0 stale-sub-module-require incident); `scripts/release-preflight-selftest.sh`
+injects failure classes (tag collision, version drift, post-tag missing,
+incomplete set, stale stamp, stamp wiring) into a disposable worktree and
+asserts preflight FAILs on each. Flags: `--bench`, `--stress`, `--post-tag`,
+`--tag vX.Y.Z` (stamp gate), `--links` (compare-link verification).
 
-tag) into a disposable worktree and asserts preflight FAILs on each.
-
-**Preflight is lockstep/core-centric for target tags (observed toolsdk/v1.14.0,
-2026-10-01)** — it derives all five target tags from core's `version.go`
-(`scripts/release-preflight.sh:123`), so a sub-module-ONLY release (core still
-v1.13.0, toolsdk at v1.14.0) fails 5× "tag vX already exists" as false
-positives. For a sub-module-only tag, the real collision check is that the
-actual target (`toolsdk/v1.14.0`) does not exist; every other gate must still
-be green. Also: the script's GOWORK=off build/tidy loops (lines ~153/163) skip
-`toolsdk` — run `GOWORK=off go -C toolsdk build ./... && vet` manually.
+**Preflight is lockstep/core-centric for target tags** — it derives all five
+target tags from core's `version.go`, so a sub-module-ONLY release (e.g.
+toolsdk while core stays put) fails the tag-collision checks as false
+positives; the sub-module-only recipe is in docs/release-procedure.md. The
+GOWORK=off build/tidy loops cover all five modules since 2026-11-08 (the old
+toolsdk-skip blind spot is closed).
 
 The Release workflow (`release.yml`) runs under a queueing concurrency group
 (`cancel-in-progress: false`), so a manual dispatch can no longer race the
@@ -75,102 +58,72 @@ duplicate-asset loser).
 
 ### erraudit gate (2026-09-11)
 
-`bash scripts/error-audit.sh` runs `erraudit ./... --type-aware` (hierarchical
-error-handling analyzer) in all 5 modules; 0 violations is the green state.
-Policy: sentinel errors (`errors.New`) + `*FindingError` + stdlib `fmt.Errorf`
-wrapping are the documented model (docs/research/erraudit-violation-analysis.md;
-samber/oops REJECTED at 3/10 fit). NEVER interpret runs with
-`--enforce-samber-oops`/`--enforce-generic-return` as defect lists — those
-flags contradict the model; the 79-violation reports they produce are
-artifacts. Intentional patterns carry `//nolint:erraudit // <reason>`;
-NEVER remove directives based on `erraudit nolint-audit .` — verified
-2026-09-23: it false-reports type-aware-suppressing directives as STALE
-(it analyzes with go/parser only; stripping its 24 "safe to remove" hits
-turned the gate red at every one of those sites). RE-VERIFIED 2026-11-08
-(erraudit 5c841cf): the false-stale NO LONGER REPRODUCES on the current
-tree — `erraudit nolint-audit .` reports 27 needed / 0 stale, same under
-`--type-aware` and `--max`; no issue was filed (premise failed to
-reproduce). The operational advice stands regardless: use the advisory
-listing via `scripts/error-audit.sh --nolint-audit`; the only safe
-staleness test is remove-one-directive → run the gate → observe red →
-restore. `--no-suppress` surfaces those
-documented suppressions BY DESIGN (audit mode) — a run with
-`--no-suppress --enforce-samber-oops --enforce-generic-return` regenerates
-the ~79-violation artifact and proves nothing. Blessed invocation:
-`nix run .#error-audit`. CI wiring is blocked
-because the erraudit repo is private (no `go install` from public runners
-without credentials).
+`bash scripts/error-audit.sh` runs `erraudit ./... --type-aware` in all 5
+modules; 0 violations is green. Policy: sentinel errors + `*FindingError` +
+stdlib `fmt.Errorf` wrapping (samber/oops REJECTED at 3/10 fit;
+docs/research/erraudit-violation-analysis.md). NEVER interpret runs with
+`--enforce-samber-oops`/`--enforce-generic-return` as defect lists (the
+~79-violation reports are artifacts of flags that contradict the model).
+`nolint-audit` staleness: re-verified 2026-11-08 (erraudit 5c841cf) — the
+2026-09-23 false-stale does NOT reproduce (27 needed / 0 stale in all modes);
+no upstream issue was filed. The only safe staleness test remains
+remove-one-directive -> gate red -> restore. Blessed invocation:
+`nix run .#error-audit`. CI wiring blocked: the erraudit repo is PRIVATE (no
+`go install` from public runners).
 
-### Dead-gate lesson (2026-09-08: three in one day)
+### Dead-gate rules (born 2026-09-08, three dead gates in one day)
 
-A check that "passes" by not actually running is worse than no check. Found:
-bench-check.sh awk pattern never matched benchstat output; pre-commit hook
-dead via stale local `core.hooksPath`; version-drift.sh aborted silently under
-`set -euo pipefail`. Rules: (1) every check script prints an explicit OK/FAIL
-verdict line, (2) verify a new gate's FAIL path once by intentionally breaking
-something, (3) never pipe a check script's output through filters that can cut
-the verdict line, (4) a doc claim of "verified by X" requires X to have
-FINISHED and its output read before the claim is written (2026-09-23: an ADR
-carried "allocation profile unchanged, verified by the bench gate" while the
-bench was still running; the bench then FAILED with +706%).
+(1) every check script prints an explicit OK/FAIL verdict line; (2) prove a
+gate's FAIL path once by breaking something; (3) never pipe a check's output
+through a filter that can cut the verdict line (the `| tail` exit-code trap
+bites twice now); (4) "verified by X" requires X FINISHED and its output read.
 
-## Module Dependencies (per go.mod)
+## Module Dependencies
 
-| Module                      | Production Deps              | Test Deps         |
-| --------------------------- | ---------------------------- | ----------------- |
-| **Core** (`.`)              | go-error-family              | ginkgo/v2, gomega |
-| **Pipeline** (`pipeline/`)  | x/sync, gogenfilter          | ginkgo/v2, gomega |
-| **Analysis** (`analysis/`)  | x/tools                      | (stdlib testing)  |
-| **Tool SDK** (`toolsdk/`)   | — (core only)                | (stdlib testing)  |
-| **CLI** (`cmd/go-finding/`) | yaml, go-output, gogenfilter | gomega            |
-
-### Old Dependencies (now isolated to sub-modules)
-
-- `golang.org/x/tools` — go/analysis framework (**analysis module only**)
-- `golang.org/x/sync` — errgroup (**pipeline module only**)
-- `github.com/go-faster/yaml` — YAML config (**CLI module only**)
-- `github.com/onsi/ginkgo/v2` + `gomega` — BDD testing (core + pipeline test deps)
-- `github.com/LarsArtmann/gogenfilter/v3` — Auto-generated Go file detection (pipeline + CLI)
-- `github.com/larsartmann/go-output` — CLI output formatting (CLI module only)
+Per-module deps live in each `go.mod` (source of truth); sub-modules carry
+`replace github.com/larsartmann/go-finding => ../` for GOWORK=off builds while
+**cmd/go-finding must have NO replace directives** (`scripts/replace-audit.sh`
+enforces it). Consequence: the CLI is pinned to PUBLISHED siblings — no new
+sibling API until that module is tagged and the CLI require bumped (dedupe
+CLI-side instead; learned 2026-09-22/23). Old deps are isolated per module
+(x/tools -> analysis, x/sync -> pipeline, yaml + go-output -> CLI).
 
 ## Design Principles
 
-1. **Minimal dependencies** — core module keeps a small, deliberate dependency surface
+1. **Minimal dependencies** — core keeps a small, deliberate dependency surface
 2. **Immutable** — Findings are data, not state machines
-3. **Lossless** — Conversions (SARIF, LSP) preserve all data via Metadata/Tags/Data fields
-4. **One extensibility field** — `Finding.Metadata` is `map[string]string`. NO `Properties map[string]any`
-5. **Compatible** — Works with existing Go analysis tools
-6. **Resilient** — Retry logic, partial success, nil-safe metrics
-7. **Multi-module** — Unix-style decomposition: each module has a single purpose and composes independently. Dual go.work + replace strategy.
+3. **Lossless** — SARIF/LSP round-trips preserve everything via Metadata/Tags/Data
+4. **One extensibility field** — `Metadata map[string]string`; NO `Properties map[string]any`
+5. **Compatible + resilient** — works with existing Go tools; retry, partial success, nil-safe metrics
+6. **Multi-module** — one purpose per module, composed via go.work + published tags
 
 ## Important Behaviors (Gotchas)
 
-_Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived/2026-09-08_agents-gotchas-diet.md`._
+_Diet passes 2026-09-08 + 2026-11-08; full earlier text lives in those dates'
+archived status/planning docs; release war stories moved to docs/release-procedure.md._
 
 ### Environment & workflow
 
-- **GOEXPERIMENT=jsonv2 DROPPED (2026-09-23)** — `encoding/json/v2` is GA since Go 1.27 (release notes: v2 is the default `encoding/json` backend; opt-out is `nojsonv2`). All env exports removed from flake.nix, workflows, scripts, and docs. Anything still telling you to export jsonv2 is stale. The per-module path still needs `GOWORK=off`.
-- **CI/Release `go-version` pins must track the toolchain floor** — when the `go.mod`/`go.work` floor bumps, a stale `go-version:` pin in ci.yml/release.yml fails EVERY job with `go.work requires go >= 1.27` while local gates stay green (the devShell already runs the newer toolchain). This silently killed 6+ master CI runs and both v1.13.0 Release runs (2026-09-20 → 09-23) before anyone looked. Rule: a toolchain-floor bump is a SAME-COMMIT edit of every `go-version:` in both workflows.
+- **GOEXPERIMENT=jsonv2 DROPPED (2026-09-23)** — `encoding/json/v2` is GA since Go 1.27; anything telling you to export it is stale. The per-module path still needs `GOWORK=off`.
+- **CI/Release `go-version` pins must track the toolchain floor** — a floor bump with a stale `go-version:` pin fails EVERY CI job while local gates stay green (it silently killed 6+ master runs + both v1.13.0 Release runs). Rule: a floor bump is a SAME-COMMIT edit of every `go-version:` in both workflows.
 - **Run `go test` invocations SEQUENTIALLY on this machine** — two concurrent `go test`/`go build` runs sharing `GOCACHE=/mnt/buildcache/go-build` produce transient `[build failed]` errors. A plain retry succeeds; don't misdiagnose as code/toolchain problems. This includes `go mod edit`: editing go.mod requires while a background stress/test run is active invalidates the module graph mid-run and produces phantom failures like `could not import ... (invalid package name: "")` in go/packages-based tests (v1.12.0 stress run 1, 2026-09-17). Bump requires only on a quiet tree.
 - **Formatting has three coordinated signals** — treefmt is not on the devShell PATH; use `nix fmt` (canonical gate, also in the pre-commit hook via `--fail-on-change`), `golangci-lint fmt` (local autofix; `.golangci.yml` formatters mirror treefmt rules: gofumpt, goimports, golines@120), and dprint (markdown/JSON/YAML, pre-commit). Do NOT let the two Go formatters' rules diverge. If the pre-commit hook seems dead, check `git config core.hooksPath` — a stale `.githooks` value once silently disabled it.
-- **`nix flake check --all-systems` evaluated and DECLINED (2026-09-08)** — `--all-systems` warns about incompatible systems on this machine (darwin derivations without remote builders configured) and would fail the check. Decision: plain `nix flake check` stays the local + CI gate; revisit `--all-systems` only if darwin builders or remote builder config are added. This closes the f/38 evaluation (previously performed but written nowhere).
-- **CI billing superseded (2026-09-08 evening)** — the account-switch gate was bypassed by making the repo PUBLIC: Actions on public repos are free/unlimited. Post-flip `ci.yml` dispatched (run 34274674104) — verify every job; the last private-repo run had ALL 20 jobs fail in 43s from billing (no logs). Until the first green public run, local gates remain the quality bar (race x4, lint x4, structural scripts, go-arch-lint, dprint, `nix flake check`, stress `ginkgo --repeat=20 --race` as MANDATORY release gate).
-- **Repo is PUBLIC (2026-09-08)** — visibility flipped via `gh repo edit`; module proxy resolution verified: plain `go get github.com/larsartmann/go-finding@v1.8.0` works for all modules with NO `GOPRIVATE` (5 modules since `toolsdk/v1.10.0`). Public-repo Actions are free, which dissolves the CI billing blocker. Secret scanning + push protection enabled same day.
-- **pkg.go.dev is LIVE (2026-09-08 evening)** — https://pkg.go.dev/github.com/larsartmann/go-finding renders (v1.8.0, full docs); the temporary lychee `pkg.go.dev` exclude was REMOVED. Lychee now excludes only still-private sibling repos (remove entries as they go public) and CHANGELOG `v0.1.x` compare links (tags predate the v1.x scheme).
-- **Multi-module release tagging** — sub-modules need directory-prefixed tags (`pipeline/v*`, `analysis/v*`, `toolsdk/v*`, `cmd/go-finding/v*`); core uses unprefixed `v*`; sub-modules have no version.go. See `docs/release-procedure.md`. The tagged commit's CI `module-isolation` job is EXPECTED red (v1.11.0 and v1.12.0 both shipped this way): the CLI module's go.sum cannot carry the new version's checksums until the tags are pushed; the resync commit lands on master immediately after. Consumers are unaffected — proxy + `go get` verify independently.
-- **v1.14.0 train lessons (2026-10-11)** — (1) The published core `v1.14.0` tag self-reports `finding.Version` = "1.13.0": the version.go bump commit landed AFTER the tag was pushed, and retagging is blocked (`protect-release-tags`). Rule: the bump must be IN the tagged commit — verify `git show <tag>:version.go` before pushing any core tag. (2) `cmd/go-finding/v*` tags now point at the RESYNC commit (v1.14.0 = 13cc091), so `go install cmd/go-finding@vX` builds with the new sibling engine; the historical tags-first-then-resync order shipped CLIs pinned to the PREVIOUS engine (v1.13.0 CLI pinned pipeline v1.12.0). Library tags still go first; only the cmd tag moves after resync. (3) A sub-module tag whose module calls not-yet-tagged core APIs is consumer-broken while looking green locally — the `replace => ../` masks it in every GOWORK=off gate. Proof before tagging: clean-dir consumer module resolving the tag commit via the proxy (`go get <mod>@<sha>` + build). pipeline/v1.14.0 was therefore tagged at pre-DetectorV2 9c675c7, not HEAD. (4) Local `release-preflight.sh --bench` numbers are invalid under heavy machine load (uniform 2-4x time inflation with flat allocs while load avg was 186); the CI benchmark job on a clean runner is the authoritative bench evidence.
-- **v1.15.0 train lessons (2026-10-12)** — (1) CHANGELOG compare links must never reference a not-yet-pushed tag: pre-tag `[X.Y.Z]: compare/vA...vX.Y.Z` refs 404 in the lychee CI job. Convention: `[Unreleased]` points at the last EXISTING tag (`v1.14.0...HEAD`); the version's own ref is added in a POST-tag commit once it resolves. The long-missing 1.7.0-1.14.0 refs likely existed because trains never added them. (2) The lychee job flakes on VALID github.com links with 429/502 (anonymous runner rate limits/infra — observed `[502]` on months-old v1.9.x compares). Verdict path: check every compare pair via authenticated `gh api repos/.../compare/<pair>` (200 = valid) or `gh run rerun --failed`; do NOT treat red as broken links without API proof. (3) Core-phase CI reds are structural, not regressions: `version-check` (compares version.go to the nearest tag) and `version-drift` (all 4 sub-module requires = version.go) CANNOT be green before the core tag / resync respectively — proven by the v1.14.0 tag tree (pipeline required v1.13.0). The release gate is release.yml on the tag itself; sub-module require bumps ride the post-tag commits (replaces keep every GOWORK=off gate green with any require version). (4) `go mod tidy` in a clean-dir consumer silently re-resolves `go get <mod>@<sha>` pins to `@latest` — pin via `go get @<sha>` LAST and never tidy afterward, or the consumer-proof check validates the WRONG version.
-- **v1.15.1 stamp miss (2026-11-04, the v1.14.0 stamp lesson REPEATED) + cold-cache go.sum rot** — the core tag went out with version.go still reading 1.15.0: the CI run on the tagged commit had passed EARLIER THAT DAY (pre-tag, so version-check compared against v1.15.0), and the tag push itself re-ran CI red for 4 days before anyone looked. Rule hardened: after pushing ANY core tag, run `scripts/version-check.sh` locally (it compares against the NEW nearest tag the moment the tag exists) and `git show <tag>:version.go` — a green PRE-tag CI run proves nothing about the tag. Same train: the 09-27 dependency-bump commits wrote zip-hash-only go.sum entries (missing `/go.mod h1:` lines) in all four sub-modules — warm-cache local builds stayed green while cold-cache CI (`module-isolation`: `missing go.sum entry for go.mod file`; `go-work-sync`: sync materialized divergent indirect requires) stayed red. Rule: a dependency bump is not complete until `GOWORK=off go mod tidy` has run per module AND a cold-cache build (fresh `GOMODCACHE`, or just trust CI's cold runner) reproduces green. Master-green restoration sequence for an incomplete train: complete go.sums → bump version.go post-tag → bump sibling requires → CHANGELOG section for the tag (changelog-drift) → sibling tags one-per-push → cmd resync at the end.
+- **`nix flake check --all-systems` DECLINED (2026-09-08)** — darwin derivations with no remote builders would fail it; plain `nix flake check` stays the gate. Revisit only if darwin builders are added.
+- **Repo state (2026-09-08)** — PUBLIC (free Actions, no `GOPRIVATE` needed for any module; secret scanning + push protection on); pkg.go.dev renders for all five modules. Lychee excludes only still-private sibling repos (remove as they go public) and CHANGELOG `v0.1.x` compare links.
+- **Tagged-commit CI `module-isolation` is EXPECTED red mid-train** (the CLI go.sum cannot carry checksums for tags that do not exist yet); the phased-red table in docs/release-procedure.md lists every structurally-red job per train phase.
+- **v1.14.0 train lessons (2026-10-11, distilled)** — stamp-in-tagged-commit, cmd-tag-at-resync-commit, and the replace-masking consumer-breakage class are now GATES (stamp-gate.sh, version-lattice.sh, consumer-compat --head) and procedure sections. Local --bench numbers under heavy machine load are invalid; the CI benchmark job is authoritative. Full war story: docs/release-procedure.md + the 10-11 status report.
+- **v1.15.0 train lessons (2026-10-12, distilled)** — compare-ref convention + lychee verdict path + phased-CI-red reality + the tidy-re-resolves-pins trap are all in docs/release-procedure.md now; the mechanical verdict is scripts/verify-compare-links.sh.
+- **v1.15.1 stamp miss (2026-11-04, REPEAT of v1.14.0) + cold-cache go.sum rot** — a green PRE-tag CI run proves nothing about the tag; the post-push checks are in release-procedure.md (stamp-gate section). go.sum completeness is now GATED (`go-worksum-check.sh`). Restoration sequence for an incomplete train: complete go.sums → post-tag stamp fix → sibling requires → CHANGELOG section for the tag (changelog-drift) → sibling tags one-per-push → cmd resync last.
 - **version-check.sh needs `--match 'v[0-9]*'`** — plain `git describe` picks sub-module tags alphabetically first. Any script resolving the core version from tags must use this flag.
-- **Dependabot gomod PRs need a manual fix-up commit (2026-09-27 pattern)** — when a bump raises a module's `go` directive, dependabot does NOT touch `go.work`, and every workspace go command dies with `requires go >= 1.27.1, but go.work lists go 1.27` (takes down test/lint/stress/benchmark/coverage/govulncheck/go-work-sync/arch-check at once), plus the vendorHash goes stale. Fix pattern: worktree the PR branch → bump `go.work`'s `go` line → `go work sync` → `go mod tidy` per module (expect no diffs) → take the vendorHash the CI nix job PRINTS in its error (`To correct the hash mismatch ... use "sha256-..."`; a local `nix build` confirms) → commit `go.work`+`flake.nix` to the PR branch → admin-merge. Dependabot PRs are structurally unmergeable via the UI: branch protection's required contexts are bare job names (`test`) while the workflow reports matrix-expanded names (`test (1.27, ubuntu-latest)`) — merge with `gh pr merge --admin`, which the direct-push protection config (`enforce_admins: false`) permits. The `/` directory config covers ALL nested modules, so a root gomod PR supersedes the sibling-directory PRs (they auto-close on rebase as satisfied).
-- **CI scripts guard the 5-module structure** — `replace-audit.sh`, `version-drift.sh`, `test-naming.sh`, `go-work-sync.sh`, `docs-freshness.sh` (backtick spans + links only), `docs-api-check.sh` (documented identifiers must exist in code; README `finding.Version` stamp must exist and match version.go), `json-deterministic-check.sh`, plus `go-arch-lint` (`.go-arch-lint.yml`, 11 components, one-directional flow cli->pipeline->core, analysis->core). All wired into ci.yml.
-- **go.mod/go.sum bumps invalidate `flake.nix` `vendorHash`** — run `nix flake check` after any dependency change; a stale hash fails the go-modules fixed-output derivation with a `hash mismatch` (2026-09-10: indirect x/net, x/text, x/tools bumps stale-dated it; complete the bump with `go mod tidy` per module BEFORE updating the hash, or you iterate the bootstrap loop twice).
-- **Branch protection is configured for DIRECT pushes (2026-09-23)** — master requires 17 status checks with `enforce_admins: false`: with admin enforcement ON, GitHub rejects every direct push that hasn't pre-run the checks (impossible on a new commit — the first protected push of the day bounced). Admins bypass the merge gates; the required checks still bind future PRs. Tag deletion/force-update on release tags is blocked by the `protect-release-tags` ruleset. Private vulnerability reporting is ENABLED (SECURITY.md intake works).
+- **Dependabot gomod PRs need a manual fix-up commit (2026-09-27 pattern)** — a `go` directive bump leaves `go.work` behind (every workspace go command dies until `go.work`'s `go` line is bumped + `go work sync` + per-module tidy), and the vendorHash goes stale (take the hash the CI nix job prints). Merge with `gh pr merge --admin` — admin bypass is the direct-push path; the required-context mismatch that forced it is fixed since 2026-11-08 (wrapper jobs) but branch protection still needs the expanded names for PRs. The gomod config is collapsed to `/` since 2026-11-08, so root PRs cover all modules.
+- **CI scripts guard the 5-module structure** — all `scripts/*.sh` gates plus `go-arch-lint` (`.go-arch-lint.yml`, one-directional flow cli->pipeline->core) are wired into ci.yml; the files-to-gates map in docs/release-procedure.md says which gate bites on which change.
+- **go.mod/go.sum bumps invalidate `flake.nix` `vendorHash`** — complete the bump with `go mod tidy` per module BEFORE updating the hash, then `nix flake check` (or iterate the bootstrap loop twice).
+- **Branch protection is configured for DIRECT pushes** — required checks with `enforce_admins: false` (admins bypass merge gates; the checks bind future PRs; the bare-context mismatch is wrapper-fixed since 2026-11-08). Release tags cannot be deleted/force-updated (`protect-release-tags`). Private vulnerability reporting is ENABLED.
 - **Keep the golangci-lint-action pin in sync with the nix binary** — CI pinned v2.13.1 while nixpkgs shipped v2.13.2; patch drift changed wsl_v5/varnamelen verdicts, so local "0 issues" and CI red disagreed (f/26, 2026-09-23). When buildflow bumps the nix golangci-lint, bump `version:` in ci.yml's lint job to match.
 - **Buildcache prune policy (decided 2026-11-08)** — recovery stays `go clean -cache`; a periodic cron is deliberately NOT added (the pre-push-verify df guard FAILs below 5 GiB, which has caught every real event; a cron pruning a shared cache mid-build is a bigger hazard than the disk filling). Act on the guard, not on a schedule.
 - **gopls SA1012 noise on nil-ctx contract tests (accepted 2026-11-08)** — toolsdk's `DryRunFromContext(nil)` tests carry `//nolint:staticcheck` which the golangci gate honors (0 issues) but gopls ignores, so the editor shows SA1012 on those lines. Switching to `//lint:ignore` was tested and REJECTED: golangci's staticcheck then reports the directive itself (1 finding). Accept the editor-only noise; the gate is the truth.
 - **`/mnt/buildcache` can hit 100%** — the shared GOCACHE grew to 167G and made every write fail ("no space left on device" from go build). Recovery: `go clean -cache` (and `-fuzzcache` after fuzz campaigns). If builds fail with space errors, check `df /mnt/buildcache` first, not the code.
-- **Push release tags ONE PER PUSH (≤3-batch rule superseded 2026-09-23)** — two failure classes: (1) a single push updating >3 tags creates NO workflow events (v1.9.0, silent); (2) even legal batches of 3 raced each other — the Release concurrency group is latest-queued-wins, so near-simultaneous pushes cancelled the older QUEUED runs (v1.12.0: core + analysis lost their runs). Rule: push master, then one tag per push; watch each tag's Release run to a terminal state (`gh run list --workflow=release.yml`) before the next push; re-run cancelled runs STRICTLY ONE AT A TIME (`gh run rerun <id>`, wait for `completed`). Queueing several reruns cancels the rest again. After the train: resync commit (CLI requires + go.sum) lands on master; the tagged commit's `module-isolation` red is EXPECTED until then. Full flow: `docs/release-procedure.md` "Tag pushing". Also: `toolsdk/v*` was missing from release.yml triggers until 4f37ec2 (toolsdk releases needed manual dispatch before that).
+- **Push release tags ONE PER PUSH** — >3 tags per push creates NO events (v1.9.0); batched pushes race the Release queue and cancel runs (v1.12.0); queued reruns cancel each other. Watch each tag's run to a terminal state; full flow in docs/release-procedure.md "Tag pushing".
 - **Master BRANCH pushes can drop the CI event too (2026-10-01, f394f54)** — the push updated origin/master but created NO ci.yml run (and no cancel, despite ci.yml's `cancel-in-progress: true` concurrency — proof the event never fired, same class as the v1.9.0 tag incident). After ANY master push, verify a CI run exists for the pushed SHA (`gh run list --workflow=ci.yml --json headSha`); if absent, check nothing is queued/in progress, then `gh workflow run ci.yml --ref master` and watch it green before tagging.
 - **CI job runtime must fit its runner class** — before adding or retuning a CI job, state its expected runtime vs the runner (2-core public runners need ~45min for the count=10 benchmark job; a 15min cap silently cancelled it for a full session). A gate that times out is a dead gate.
 - **`gh -R` for all cross-repo operations** — local directory names lie after renames (e.g. `~/projects/hierarchical-errors` is erraudit's pre-rename remote; `gh issue create` there filed into erraudit twice). Always `gh -R owner/repo ...` and `gh repo view` before the first cross-repo write.
@@ -235,33 +188,24 @@ _Updated 2026-09-08 diet pass; pre-diet text archived in `docs/planning/archived
 
 ## CLI Features
 
-- Built-in govet and staticcheck detectors
-- Text, markdown, CSV, TSV, JSON, SARIF output (markdown/CSV/TSV via go-output adapter)
-- YAML/JSON config (`-config`), severity filter (`-min-severity`), profiling
-- `-filter-generated` — removes findings from auto-generated files (sqlc, protobuf, etc.)
-- `-fix-provider go-ast` — enables AST-aware fix provider
-- `-fix-rollback-all` — opt into all-or-nothing rollback (default: per-file)
-- `-byte-level-conflict` — precise overlap detection
-- `-trace` — enable Go execution trace flight recorder for diagnostics (`-trace-dir`, `-trace-slow`, `-trace-max-files`, `-trace-gzip` for config)
-- `Fix outcomes:` stderr summary after fix stages (canonical order, nonzero counts only)
-- Config-file `flightRecorder` section — alternative to `-trace` flags; supports `enabled`, `outputDir`, `slowStageThreshold`, `minAge`, `maxBytes` (full parity with pipeline `FlightRecorderFileConfig`)
-- Dynamic detector registry (`RegisterDetector`)
+Flag surface lives in README + FEATURES. Gotchas beyond the flag list:
+markdown/CSV/TSV render via the go-output adapter (CLI module only); the
+flightRecorder config section delegates to `pipeline.ResolveFlightRecorderConfig`
+(one parser); `RegisterDetector` is the dynamic registry hook; the `Coverage:`
+stderr line appears ONLY when a detector reports coverage evidence (DetectorV2;
+v1-only runs print nothing — pinned by e2e test).
 
 ## Architecture Decisions
 
-ADR log: `docs/architecture-decisions.md` (#19 = typed edit lists for multi-edit fixes, issue #36; #16 = per-file rollback default, v1.7.0). Key structural calls:
-
-- **SARIF hand-rolled, not go-sarif** — custom property bag, streaming + context. ADR #9.
-- **go-error-family integration** — core dependency for unified error classification. ADR #15.
-- **Pipeline split** — `pipeline.go` + `pipeline_detect.go`, both under 350 lines.
-- **FixProvider chain** — EditList -> Offset -> Line -> Substring (fallback), custom prepended; `lineIndexAware` lazy line-index caching; GoASTProvider in `pipeline/goast/` (opt-in go/parser). Typed edit lists for multi-edit fixes: ADR #19.
-- **IntervalIndex[T]** — generic sorted-slice O(n + k) overlap queries, used by Correlate (interval-tree NO-GO note in ROADMAP).
-- **DetectorRegistry** — thread-safe plugin architecture (`Register`/`Build`/`BuildAll`); **MergeIter** — streaming `iter.Seq[Finding]` merge with dedup.
-- **ConfigFile** — JSON config loading with `ResolveDetectors`/`ResolveProviders`.
-- **go-output CLI adapter** — markdown/CSV/TSV live in the CLI module only; root `finding` stays without it. See `docs/PRO_CONTRA_go-output-integration.md`.
-- **Naming history** — `FindingTransformer` (was FindingProcessor), `Conflict` (was ConflictInfo), `-min-severity` (was `-severity`, alias retained), `CategoryOf` (was GetCategory).
-- **Pipeline convenience functions** — `pipeline.Detect(ctx, detectors...)`, `pipeline.ApplyToContent(content, fixes)`.
-- **FixEngine guide** — `docs/guides/fix-engine.md`; outcomes guide `docs/guides/outcomes.md`.
+ADR log: `docs/architecture-decisions.md` (SARIF hand-rolled #9, go-error-family
+#15, per-file rollback #16, typed edit lists #19, coverage channel #20). Facts
+not recoverable from the ADR text alone: the FixProvider chain order is
+EditList -> Offset -> Line -> Substring with custom providers prepended;
+markdown/CSV/TSV render only in the CLI module (root `finding` stays without
+go-output); naming history: `FindingTransformer` (was FindingProcessor),
+`Conflict` (was ConflictInfo), `-min-severity` (was `-severity`, alias kept),
+`CategoryOf` (was GetCategory). Guides: `docs/guides/fix-engine.md`,
+`docs/guides/outcomes.md`, `docs/guides/detector-coverage.md`.
 
 ## Test Organization
 
