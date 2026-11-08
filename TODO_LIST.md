@@ -87,15 +87,21 @@
 | Create `LarsArtmann/homebrew-tap` + `HOMEBREW_TAP_GITHUB_TOKEN` (LAUNCH4)| Med    | S      | goreleaser brews section renders but ships `skip_upload: true`. ROADMAP open question. 🔒 owner.              |
 | CONTRIBUTING / public release-runbook page                              | Low    | Med    | Release procedure is internal-facing.                                                                        |
 | v2.0 design spike session                                               | Low    | High   | Parked in [ROADMAP.md](ROADMAP.md) "Hardening": Position sentinel, FixStrategy union, TagSet, sub-structs.    |
-| Periodic `/mnt/buildcache` prune                                        | Low    | Low    | The df guard (<5 GiB = FAIL) runs in pre-push-verify; a periodic prune/cron remains open.                    |
 | CI-event watchdog: assert a ci.yml run exists for every pushed master SHA | Low   | S      | Script the documented manual check (the 2026-10-01 f394f54 silent-drop class). (10-12 f28.)                  |
 | Consumer-compat-at-HEAD CI check (train-prep e.1)                       | Low    | S      | Consumer-compat pins a tagged version; an at-HEAD variant would catch API drift before a train. (10-11 20-46 item 19.) |
 | Version-lattice guard script (train-prep e.5)                           | Low    | S      | Guard that all module versions/tags form a coherent lattice before a train (subsumed partly by version-drift). (10-11 20-46 item 20.) |
 | Red-master alerting (train-prep e.2)                                    | Low    | S      | Master CI sat red for 4 days unnoticed twice this quarter; a Slack/notify hook or a scheduled check would catch it. (10-11 20-46 item 21.) |
-| Per-module lint flake app (train-prep e.3)                              | Low    | S      | Per-module golangci-lint job results surfaced as one flake view instead of 5 separate jobs. (10-11 20-46 item 22.) |
 | Detached long-gate runner (nohup + log + verdict line) for local stress/bench | Low | S    | An interrupted poll killed a stress gate once (10-12 d4/e4).                                                  |
 | gopls noise: SA1012 on the two nolint'd nil-ctx test lines (editor-only) | Low   | S      | gopls ignores golangci nolint — accept or switch to `//lint:ignore` (10-11 20-46 item 29).                   |
-| ROADMAP triage: detector-level provenance channel idea post-T07b        | Low    | S      | Already in ROADMAP raw ideas; decide keep/park on the next consumer signal.                                  |
+
+## Standing watches (checked each session, not actionable tasks)
+
+| Watch                                        | Where it bites                                                          | Last checked |
+| -------------------------------------------- | ----------------------------------------------------------------------- | ------------ |
+| library-policy hooks issue #74               | consumer build breakage; blocks that repo's bumps                        | 2026-11-08   |
+| Dependabot Updates scheduled run             | updater-infra failures (the 2026-09-27 GITHUB_REGISTRIES_PROXY class)    | 2026-11-08 (green since Nov 1) |
+| erraudit upstream behavior changes           | the error-audit gate's verdicts (see AGENTS nolint-audit re-verification)| 2026-11-08   |
+| CI-event watchdog scheduled run              | master red / silent CI drop (runs every 30 min; red X = the alert)       | live         |
 
 ---
 

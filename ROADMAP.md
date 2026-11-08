@@ -58,7 +58,7 @@ This is the largest open product direction and the original motivation for the l
 
 ### Detector-level provenance channel (the RepairResult.Facts twin)
 
-`RepairResult.Facts` (#42) gives repairs a structured provenance channel; detectors have none — hosts wanting detect-side context (e.g. how many (migrator, file) pairs a go-auto-upgrade run's failure cache suppressed at detect time, the glue-era `RunRecord.FailureCacheSuppressed` telemetry) must string-match Description or lose the data. Shape idea: an additive, non-gating annotations channel on the detect output, mirroring the Facts contract (describe the run, never claim its effect). Trigger: a second consumer needing detect-side context, or the go-auto-upgrade switch-over's detect-side telemetry delta being judged material (raised 2026-10-11; owner decision pending).
+`RepairResult.Facts` (#42) gives repairs a structured provenance channel; detectors have none — hosts wanting detect-side context (e.g. how many (migrator, file) pairs a go-auto-upgrade run's failure cache suppressed at detect time, the glue-era `RunRecord.FailureCacheSuppressed` telemetry) must string-match Description or lose the data. Shape idea: an additive, non-gating annotations channel on the detect output, mirroring the Facts contract (describe the run, never claim its effect). Trigger: a second consumer needing detect-side context, or the go-auto-upgrade switch-over's detect-side telemetry delta being judged material (raised 2026-10-11; owner decision pending). **Triage 2026-11-08 (T42): PARKED** — stays idea-only until one of the two named triggers fires; no consumer demand signal has arrived since it was raised.
 
 ### Language expansion
 
