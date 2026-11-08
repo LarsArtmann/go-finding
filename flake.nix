@@ -160,6 +160,7 @@
               pkgs.trash-cli
               pkgs.dprint
               pkgs.actionlint
+              pkgs.shellcheck
             ];
 
             env = {
