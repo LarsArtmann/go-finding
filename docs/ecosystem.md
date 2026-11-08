@@ -149,14 +149,15 @@ NOT re-verified this round — this table is pin evidence only (per-repo
 build verdicts from earlier sweeps below are historical).
 
 **Counts: 23 consumer repos require go-finding (default-branch go.mod);
-21 on core v1.15.1, 2 on v1.15.0. Submodule reach: toolsdk v1.16.0 ×14,
+all 23 on core v1.15.1 after the same-day bump batch (clean-wizard,
+md-go-validator bumped 2026-11-08). Submodule reach: toolsdk v1.16.0 ×14,
 pipeline v1.15.0 ×7, analysis v1.14.0 ×2.**
 
 | Consumer                        | core    | pipeline | analysis | toolsdk  |
 | ------------------------------- | ------- | -------- | -------- | -------- |
 | branching-flow                  | v1.15.1 | —        | —        | v1.16.0  |
 | BuildFlow                       | v1.15.1 | v1.15.0  | v1.14.0  | v1.16.0  |
-| clean-wizard                    | v1.15.0 | v1.15.0  | —        | v1.16.0  |
+| clean-wizard                    | v1.15.1 | v1.15.1  | —        | v1.16.0  |
 | dependabot-auto-configure       | v1.15.1 | —        | —        | v1.16.0  |
 | erraudit                        | v1.15.1 | v1.15.0  | v1.14.0  | v1.16.0  |
 | go-auto-upgrade                 | v1.15.1 | —        | —        | v1.16.0  |
@@ -170,7 +171,7 @@ pipeline v1.15.0 ×7, analysis v1.14.0 ×2.**
 | io-surface                      | v1.15.1 | —        | —        | v1.16.0  |
 | licenseforge                    | v1.15.1 | —        | —        | v1.16.0  |
 | linter-autoconfigure-sdk        | v1.15.1 | —        | —        | v1.16.0  |
-| md-go-validator                 | v1.15.0 | —        | —        | —        |
+| md-go-validator                 | v1.15.1 | —        | —        | —        |
 | oxlint-auto-configure           | v1.15.1 | v1.15.0  | —        | v1.16.0  |
 | Polish-Customs                  | v1.15.1 | —        | —        | —        |
 | securitymd                      | v1.15.1 | —        | —        | v1.16.0  |
