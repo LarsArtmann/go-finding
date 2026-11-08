@@ -155,41 +155,41 @@ push; the plan's wrong F2.6 premise; disk exhaustion). NEW reflections this pass
 
 | #  | Task | Why                                                                                                                                     | Effort                                           |
 | -- | ---- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-~~| 1    | Decide + cut the v1.14.0 train (CHANGELOG cuts, labels flip, preflight `--bench --stress`, 5 signed tags one-per-push, serialized runs) | ships Edits; closes #36 publicly                 |
-~~| 2    | Post-train resync (CLI requires → v1.14.0, go.sum, vendorHash, drift green)                                                             | procedure proven today                           |
-~~| 3    | CLI delegation of `ResolveFlightRecorderConfig` (delete the mirrored parser)                                                            | prepared; unblocked by #1                        |
-~~| 4    | erraudit T13/T14 migration + upstream issue: nolint-audit false-stale reports (24/24 verified)                                          | consumer adoption + tool truth                   |
-~~| 5    | Fix `.goreleaser.yml` nix-pipe `{{binary}}` template bug                                                                                | latent CI hazard on goreleaser bumps             |
-~~| 6    | Restore cosign signing on the next workflow-run train                                                                                   | v1.13.0 shipped unsigned                         |
-~~| 7    | Decide the toolsdk/v1.13.1 lockstep exception (accept ahead-state or re-align)                                                          | convention now has an unaccepted live exception  |
-~~| 8    | `scripts/release-train.sh` + post-release verifier (T11)                                                                                | manual train ran 3×                              |
-~~| 9    | Add the local-GoReleaser recovery recipe to release-procedure.md                                                                        | de-entomb today's discovery                      |
-~~| 10   | pkg.go.dev render check for all 5 modules @ v1.13.0 (+ Edits on v1.14.0)                                                                | close the human-facing verification              |
-~~| 11   | Download + execute one v1.13.0 release asset (`-version`)                                                                               | artifact-path proof                              |
-~~| 12   | Promote fuzz corpus as committed seeds; re-run 30s campaigns after                                                                      | recovers today's wiped coverage                  |
-~~| 13   | Sweep `ResolveFlightRecorderConfig` into API_STABILITY.md / FEATURES pipeline surface                                                   | exported-but-undocumented gap                    |
-~~| 14   | Add `df /mnt/buildcache` guard to pre-push-verify.sh                                                                                    | today's failure mode                             |
-~~| 15   | Awesome Go PR from the finalized entry (owner fork)                                                                                     | adoption                                         |
-~~| 16   | Homebrew tap repo + `HOMEBREW_TAP_GITHUB_TOKEN` (LAUNCH4)                                                                               | brews section renders-and-skips                  |
-~~| 17   | CONTRIBUTING / public release-runbook page (F27.3)                                                                                      | procedure is internal-facing                     |
-~~| 18   | v2.0 design spike agenda (T27.1)                                                                                                        | Position sentinel, FixStrategy union, TagSet     |
-~~| 19   | Sampling NO-GO calendar date in ROADMAP (T27.2)                                                                                         | revisit trigger needs a date                     |
-~~| 20   | Brew/nix distribution + v1.5–v1.8 backfill proposals (T27.4)                                                                            | two ROADMAP open questions need owner-ready text |
-~~| 21   | gomend/licenseforge #1/#46 watch note (F27.4b)                                                                                          | blocked upstream; keep visible                   |
-~~| 22   | Stale `~/projects/hierarchical-errors` clone decision (ROADMAP OQ)                                                                      | one remote check + trash call                    |
-~~| 23   | `ApplySimpleFixes` philosophy decision (ROADMAP OQ)                                                                                     | producer-facing API contract                     |
-~~| 24   | `art-dupl-report.html` tracked-vs-ignored decision (ROADMAP OQ)                                                                         | 800-line diff churn                              |
-~~| 25   | Dependabot/actions-SHA pin-vs-bot decision                                                                                              | supply-chain consistency                         |
-~~| 26   | Re-promote FuzzTextEditValidate/FuzzEditListProvider as CI-nightly candidates                                                           | keeps applier coverage moving                    |
-~~| 27   | Extend consumer-compat with `go vet` per resolved module                                                                                | cheap API-drift signal                           |
-~~| 28   | Benchmark a v1.13.0 release-asset binary vs local build                                                                                 | goreleaser output equivalence                    |
-~~| 29   | Remove `--skip=nix` after #5 so local/CI goreleaser paths match                                                                         | kills a documented divergence                    |
-~~| 30   | Tag-protection ruleset: verify it actually blocks a deletion (dry test on a scratch tag)                                                | dead-gate rule applies to rulesets too           |
-~~| 31   | Boundary README pass over docs/feedback + docs/research                                                                                 | same public-journal effect as status/planning    |
-~~| 32   | Rotate the stress gate: add pipeline/examples compile to release preflight                                                              | examples are part of the published surface       |
-~~| 33   | Consider dependabot for the nix flake inputs                                                                                            | input drift bit the project once already         |
-~~| 34   | Document the 3-module vs 5-module release-rerun policy in release-procedure                                                             | v1.13.0 set the precedent                        |
-~~| 35   | v1.15.0 candidate list from ROADMAP raw-ideas block                                                                                     | keeps the post-train momentum pointed            |
+| ~~ | 1    | Decide + cut the v1.14.0 train (CHANGELOG cuts, labels flip, preflight `--bench --stress`, 5 signed tags one-per-push, serialized runs) | ships Edits; closes #36 publicly                 |
+| ~~ | 2    | Post-train resync (CLI requires → v1.14.0, go.sum, vendorHash, drift green)                                                             | procedure proven today                           |
+| ~~ | 3    | CLI delegation of `ResolveFlightRecorderConfig` (delete the mirrored parser)                                                            | prepared; unblocked by #1                        |
+| ~~ | 4    | erraudit T13/T14 migration + upstream issue: nolint-audit false-stale reports (24/24 verified)                                          | consumer adoption + tool truth                   |
+| ~~ | 5    | Fix `.goreleaser.yml` nix-pipe `{{binary}}` template bug                                                                                | latent CI hazard on goreleaser bumps             |
+| ~~ | 6    | Restore cosign signing on the next workflow-run train                                                                                   | v1.13.0 shipped unsigned                         |
+| ~~ | 7    | Decide the toolsdk/v1.13.1 lockstep exception (accept ahead-state or re-align)                                                          | convention now has an unaccepted live exception  |
+| ~~ | 8    | `scripts/release-train.sh` + post-release verifier (T11)                                                                                | manual train ran 3×                              |
+| ~~ | 9    | Add the local-GoReleaser recovery recipe to release-procedure.md                                                                        | de-entomb today's discovery                      |
+| ~~ | 10   | pkg.go.dev render check for all 5 modules @ v1.13.0 (+ Edits on v1.14.0)                                                                | close the human-facing verification              |
+| ~~ | 11   | Download + execute one v1.13.0 release asset (`-version`)                                                                               | artifact-path proof                              |
+| ~~ | 12   | Promote fuzz corpus as committed seeds; re-run 30s campaigns after                                                                      | recovers today's wiped coverage                  |
+| ~~ | 13   | Sweep `ResolveFlightRecorderConfig` into API_STABILITY.md / FEATURES pipeline surface                                                   | exported-but-undocumented gap                    |
+| ~~ | 14   | Add `df /mnt/buildcache` guard to pre-push-verify.sh                                                                                    | today's failure mode                             |
+| ~~ | 15   | Awesome Go PR from the finalized entry (owner fork)                                                                                     | adoption                                         |
+| ~~ | 16   | Homebrew tap repo + `HOMEBREW_TAP_GITHUB_TOKEN` (LAUNCH4)                                                                               | brews section renders-and-skips                  |
+| ~~ | 17   | CONTRIBUTING / public release-runbook page (F27.3)                                                                                      | procedure is internal-facing                     |
+| ~~ | 18   | v2.0 design spike agenda (T27.1)                                                                                                        | Position sentinel, FixStrategy union, TagSet     |
+| ~~ | 19   | Sampling NO-GO calendar date in ROADMAP (T27.2)                                                                                         | revisit trigger needs a date                     |
+| ~~ | 20   | Brew/nix distribution + v1.5–v1.8 backfill proposals (T27.4)                                                                            | two ROADMAP open questions need owner-ready text |
+| ~~ | 21   | gomend/licenseforge #1/#46 watch note (F27.4b)                                                                                          | blocked upstream; keep visible                   |
+| ~~ | 22   | Stale `~/projects/hierarchical-errors` clone decision (ROADMAP OQ)                                                                      | one remote check + trash call                    |
+| ~~ | 23   | `ApplySimpleFixes` philosophy decision (ROADMAP OQ)                                                                                     | producer-facing API contract                     |
+| ~~ | 24   | `art-dupl-report.html` tracked-vs-ignored decision (ROADMAP OQ)                                                                         | 800-line diff churn                              |
+| ~~ | 25   | Dependabot/actions-SHA pin-vs-bot decision                                                                                              | supply-chain consistency                         |
+| ~~ | 26   | Re-promote FuzzTextEditValidate/FuzzEditListProvider as CI-nightly candidates                                                           | keeps applier coverage moving                    |
+| ~~ | 27   | Extend consumer-compat with `go vet` per resolved module                                                                                | cheap API-drift signal                           |
+| ~~ | 28   | Benchmark a v1.13.0 release-asset binary vs local build                                                                                 | goreleaser output equivalence                    |
+| ~~ | 29   | Remove `--skip=nix` after #5 so local/CI goreleaser paths match                                                                         | kills a documented divergence                    |
+| ~~ | 30   | Tag-protection ruleset: verify it actually blocks a deletion (dry test on a scratch tag)                                                | dead-gate rule applies to rulesets too           |
+| ~~ | 31   | Boundary README pass over docs/feedback + docs/research                                                                                 | same public-journal effect as status/planning    |
+| ~~ | 32   | Rotate the stress gate: add pipeline/examples compile to release preflight                                                              | examples are part of the published surface       |
+| ~~ | 33   | Consider dependabot for the nix flake inputs                                                                                            | input drift bit the project once already         |
+| ~~ | 34   | Document the 3-module vs 5-module release-rerun policy in release-procedure                                                             | v1.13.0 set the precedent                        |
+| ~~ | 35   | v1.15.0 candidate list from ROADMAP raw-ideas block                                                                                     | keeps the post-train momentum pointed            |
 
 ## g) Top #3 questions I can NOT figure out myself
 

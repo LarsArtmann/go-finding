@@ -53,15 +53,15 @@ T27 CLI `Coverage:` stderr line (e2e pins the v1-silence contract); T29 SARIF ro
 
 ## f) Up to 50 things we should get done next
 
-| # | Item                                                                                                                                    | Size |
-| - | --------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-~~| 1 | Corpus drain batch 1: 10 April-era archived reports through the emit-keys flow; lower the audit_max ratchet (327 items; 35 April files) | XL   |~~ routed — 2026-11-08 12:48 self-critique §f 1 (unchanged, XL)
-~~| 2 | LAUNCH4 finish: verify `HOMEBREW_TAP_GITHUB_TOKEN` secret exists, flip `homebrew_casks.skip_upload` off at the v1.16.0 train            | S    |~~ routed — 2026-11-08 12:48 self-critique §f 2
-~~| 3 | LAUNCH3 Awesome Go PR: owner go required (external comms)                                                                               | S    |~~ routed — 2026-11-08 12:48 self-critique §f 3
-~~| 4 | T25: LIVE runner render of the nix pipe (snapshot proof exists; live is train-gated)                                                    | S    |~~ routed — 2026-11-08 12:48 self-critique §f 4
-~~| 5 | v2.0 spike SESSION (agenda written, decisions CHANGE/KEEP/REJECT per item)                                                              | 60m  |~~ routed — 2026-11-08 12:48 self-critique §f 5
-~~| 6 | Verify the rerun of run 42473455406 goes green (lychee 502/504 flake class; API proof 76/76 already in hand)                            | S    |~~ verified — rerun re-flaked on different links; superseded by the lychee-exclusion fix 0b722ee, CI green run 42475326942
-~~| 7 | Detached long-gate runner (only remaining hygiene idea)                                                                                 | S    |~~ routed — 2026-11-08 12:48 self-critique §f 7
+| #  | Item | Size                                                                                                                                    |
+| -- | ---- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~ | 1    | Corpus drain batch 1: 10 April-era archived reports through the emit-keys flow; lower the audit_max ratchet (327 items; 35 April files) |
+| ~~ | 2    | LAUNCH4 finish: verify `HOMEBREW_TAP_GITHUB_TOKEN` secret exists, flip `homebrew_casks.skip_upload` off at the v1.16.0 train            |
+| ~~ | 3    | LAUNCH3 Awesome Go PR: owner go required (external comms)                                                                               |
+| ~~ | 4    | T25: LIVE runner render of the nix pipe (snapshot proof exists; live is train-gated)                                                    |
+| ~~ | 5    | v2.0 spike SESSION (agenda written, decisions CHANGE/KEEP/REJECT per item)                                                              |
+| ~~ | 6    | Verify the rerun of run 42473455406 goes green (lychee 502/504 flake class; API proof 76/76 already in hand)                            |
+| ~~ | 7    | Detached long-gate runner (only remaining hygiene idea)                                                                                 |
 
 ## g) Gotchas discovered this session
 
