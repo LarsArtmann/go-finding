@@ -723,3 +723,58 @@ human-readable and line-shift-resolvable.
 **Reversibility:** Medium: the field is additive and nil-safe, but once
 producers emit `Edits` and consumers depend on edit-order independence, the
 semantics are frozen like any public equality contract.
+
+## 20. Coverage Evidence Channel (`DetectorV2`/`DetectResult`)
+
+**Status:** Accepted — shipped in v1.15.0 (`detect_result.go`).
+
+**Context:** A report with zero findings is ambiguous. It can mean a clean
+tree, a detector that never looked at anything, or a vendored module the
+tool silently skipped. Since v1.14.0 the report summary carried
+`Summary.FilesScanned` and `Summary.SkippedModules`, but the `Detector`
+interface returns `[]Finding` only — there was no channel for a detector to
+report what it examined, so every provider-built report rendered
+`filesScanned: 0` and consumers could not distinguish a real zero from a
+missing measurement. The naive fix (changing `Detector.Detect` to return a
+result struct) would break every existing detector in the ecosystem the
+same day.
+
+**Decision:** keep `Detector` untouched; add an OPTIONAL richer contract
+beside it:
+
+- `DetectResult{Findings []Finding; FilesScanned int; SkippedModules []string}`
+  carries the run's issues plus its coverage measurement.
+- `DetectorV2` embeds `Detector` and adds `DetectV2(ctx) (DetectResult, error)`.
+  The v1 method stays part of the interface, so a `DetectorV2` value is
+  usable anywhere a `Detector` is, and `DetectV2`/`Detect` must agree on the
+  findings for the same run.
+- `RunDetect(ctx, d)` dispatches through the richest contract the value
+  implements. V1-only detectors produce coverage-zeroed results BY
+  CONTRACT — zero from a v1 detector means "unknown", never "verified
+  empty" (documented, tested).
+- `Report.AddDetectResult` is the single ingestion point: findings append,
+  `FilesScanned` sums across detectors, `SkippedModules` unions first-seen.
+  `ComputeSummary` deliberately does not touch either field — coverage
+  survives summary recomputation.
+- Every pipeline detect path (stage runner, `pipeline.Detect`, the retry
+  wrapper, detect-verify) dispatches through `RunDetect`, so a DetectorV2
+  plugged into the pipeline contributes coverage with no host changes.
+
+**Tradeoffs:**
+
+- **Gain:** "did the tool see every file?" becomes checkable; `filesScanned`
+  is always serialized so "scanned 0" is evidence, not an omission; skipped
+  modules make coverage arithmetic auditable.
+- **Gain:** zero breakage — v1 detectors and v1-only hosts keep compiling
+  and behaving identically.
+- **Cost:** two detect methods on v2 detectors; `Detect` is a thin wrapper
+  (the guide mandates delegating to `DetectV2`) and drift between them is a
+  real (if unlikely) hazard.
+- **Cost:** the `d.(DetectorV2)` type assertion is opt-in trust: nothing
+  forces `DetectV2` to tell the truth about coverage. It is measurement
+  reporting, not verification.
+- **Cost:** `filesScanned: 0` from v1-only detectors remains ambiguous for
+  consumers who mix contract generations; the JSON cannot say "unknown"
+  (an explicit would-break-schema change was rejected).
+
+Guide: `docs/guides/detector-coverage.md`.
