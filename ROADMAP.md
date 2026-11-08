@@ -163,6 +163,7 @@ session that raised it.
 - ~~**v1.13.0 completion vs v1.14.0 fold-in**~~ **RESOLVED 2026-09-23: completed.** The module proxy had already fetched core + toolsdk v1.13.0 (public since 09-22), so folding was impossible without a retract. All 5 tags exist at 450824e with GitHub Releases (Latest = v1.13.0, full GoReleaser assets); proxy + consumer-compat verified for all 5 modules; version-drift green. The multi-edit feature ships in v1.14.0. Execution record: the plan's annotation log (2026-09-23 17:00-19:30 entry).
 - **`ApplySimpleFixes` philosophy** — keep refusing multi-edit findings (current: safe, points users at the pipeline `FixApplier`) or teach it byte-level application so the no-pipeline path is also lossless? (§g/3, same report.)
 - **`art-dupl-report.html` policy** — the generated art-dupl report is tracked and churns ~800 lines of diff per run. Keep committing it, gitignore it, or commit only at milestones? (Raised in `docs/status/archived/2026-09-23_03-16_art-dupl-dedup-pass-session-status.md` §g/1.)
+- **Launch comms mode** — the announcement draft (`docs/brainstorming/launch-announcement-draft.md`) is two trains behind (still says "Pending: v1.14.0"). Push a launch (announcement + README selling + demo), or accept quiet-maintenance mode where releases land without comms? (Raised in `docs/status/archived/2026-10-12_15-10_v1.15.0-release-train-complete_status.md` §g/2.)
 
 ---
 
