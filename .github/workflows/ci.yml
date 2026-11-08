@@ -421,15 +421,19 @@ jobs:
             --timeout 15
             --exclude-loopback
             --exclude 'github\.com/larsartmann/(branching-flow|go-auto-upgrade|go-checker-helpers|go-linter-sdk|hierarchical-errors|linter-autoconfigure-sdk)'
-            --exclude 'github\.com/larsartmann/go-finding/compare/v0\.1\.'
+            --exclude 'github\.com/larsartmann/go-finding/compare/'
+            --exclude 'github\.com/[Ll]arsArtmann/go-finding/releases/tag/'
+            --exclude 'github\.com/larsartmann/go-finding/issues$'
             './**/*.md'
           fail: true
         env:
-          # Authenticated requests: anonymous lychee runs flake on VALID
-          # github.com links with 429/502 (the v1.15.0 train class). Any
-          # remaining red on a compare link gets cross-checked against
-          # scripts/verify-compare-links.sh (the authoritative verdict)
-          # before links are edited.
+          # Authenticated requests help API-rate-limit classes, but github.com
+          # HTML endpoints 500/502/504 RANDOMLY for anonymous checkers (two
+          # consecutive CI runs flaked on DIFFERENT compare pairs, 2026-11-08;
+          # all pairs verified valid via authenticated gh api). The compare/
+          # releases/issues classes of this repo are therefore excluded here
+          # and owned by scripts/verify-compare-links.sh (authenticated gh api
+          # per pair, wired into preflight --links) — T9 is the authority.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     timeout-minutes: 10
