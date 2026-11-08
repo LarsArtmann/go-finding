@@ -2,6 +2,15 @@
 
 ## Pre-release Checklist
 
+> **Driver:** `scripts/release-train.sh` encodes the train as stages
+> (`dry` | `prep` | `verify` | `stress` | `tag` | `push` | `resync` |
+> `postflight`) with the ordering and guards below built in — start there;
+> this document is the manual the stages implement. `dry` prints the plan
+> for the current tree. The `postflight` stage is the post-release verifier:
+> proxy ×5, clean-dir `go get` ×5, release assets, pkg.go.dev backoff, and
+> the stamp-vs-tag probe (it fails red on the v1.15.1 shipped stamp defect
+> when run against that tag — proven 2026-11-08).
+
 0. **Run the preflight script** (structural gates as code — added after the
    v1.7.0 sub-module go.mod drift incident):
 
