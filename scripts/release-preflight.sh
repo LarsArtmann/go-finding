@@ -167,6 +167,7 @@ fi
 run_check "version drift (go.mod references match version.go)" bash scripts/version-drift.sh
 run_check "replace directives point at ../" bash scripts/replace-audit.sh
 run_check "go.work matches directory structure" bash scripts/go-work-sync.sh
+run_check "go.work.sum freshness" bash scripts/go-worksum-check.sh
 run_check "test file naming" bash scripts/test-naming.sh
 run_check "JSON deterministic marshal" bash scripts/json-deterministic-check.sh
 run_check "CHANGELOG sections exist for release tags" bash scripts/changelog-drift.sh
