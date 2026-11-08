@@ -154,7 +154,7 @@ The user asked for a PRO/CONTRA analysis + actionable TODO list for making the r
 | ~~15~~ | ~~Create `.github/ISSUE_TEMPLATE/feature_request.yml`~~ done — templates shipped 23-25                              |
 | ~~16~~ | ~~Create `.github/PULL_REQUEST_TEMPLATE.md`~~ done — templates shipped 23-25                                        |
 | ~~17~~ | ~~Add support policy section to README ("MIT license, best-effort support, no SLA")~~ done — README Support section |
-| ~~18~~ | ~~Decide on 91 internal docs~~ NOT-DO — owner decision: keep as-is                                          |
+| ~~18~~ | ~~Decide on 91 internal docs~~ NOT-DO — owner decision: keep as-is                                                  |
 | ~~19~~ | ~~Add "Internal docs" note to README if keeping them~~ **Won't implement — keep as-is per Q2 resolution.**          |
 | 20     | Verify `doc.go` has package-level comment that renders on pkg.go.dev                                                |
 | 21     | Check all exported types/functions have GoDoc comments                                                              |

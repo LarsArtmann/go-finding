@@ -153,31 +153,31 @@ all 23 on core v1.15.1 after the same-day bump batch (clean-wizard,
 md-go-validator bumped 2026-11-08). Submodule reach: toolsdk v1.16.0 ×14,
 pipeline v1.15.0 ×7, analysis v1.14.0 ×2.**
 
-| Consumer                        | core    | pipeline | analysis | toolsdk  |
-| ------------------------------- | ------- | -------- | -------- | -------- |
-| branching-flow                  | v1.15.1 | —        | —        | v1.16.0  |
-| BuildFlow                       | v1.15.1 | v1.15.0  | v1.14.0  | v1.16.0  |
-| clean-wizard                    | v1.15.1 | v1.15.1  | —        | v1.16.0  |
-| dependabot-auto-configure       | v1.15.1 | —        | —        | v1.16.0  |
-| erraudit                        | v1.15.1 | v1.15.0  | v1.14.0  | v1.16.0  |
-| go-auto-upgrade                 | v1.15.1 | —        | —        | v1.16.0  |
-| go-business-rules               | v1.15.1 | —        | —        | —        |
-| go-checker-helpers              | v1.15.1 | —        | —        | —        |
-| go-humanize-linter              | v1.15.1 | —        | —        | —        |
-| golangci-lint-auto-configure    | v1.15.1 | —        | —        | v1.16.0  |
-| go-linter-sdk                   | v1.15.1 | —        | —        | —        |
-| go-structure-linter             | v1.15.1 | v1.15.0  | —        | v1.16.0  |
-| go-version-auto-configure       | v1.15.1 | —        | —        | v1.16.0  |
-| io-surface                      | v1.15.1 | —        | —        | v1.16.0  |
-| licenseforge                    | v1.15.1 | —        | —        | v1.16.0  |
-| linter-autoconfigure-sdk        | v1.15.1 | —        | —        | v1.16.0  |
-| md-go-validator                 | v1.15.1 | —        | —        | —        |
-| oxlint-auto-configure           | v1.15.1 | v1.15.0  | —        | v1.16.0  |
-| Polish-Customs                  | v1.15.1 | —        | —        | —        |
-| securitymd                      | v1.15.1 | —        | —        | v1.16.0  |
-| template-AUTHORS                | v1.15.1 | v1.15.0  | —        | —        |
-| template-readme                 | v1.15.1 | —        | —        | —        |
-| testing                         | v1.15.1 | —        | —        | —        |
+| Consumer                     | core    | pipeline | analysis | toolsdk |
+| ---------------------------- | ------- | -------- | -------- | ------- |
+| branching-flow               | v1.15.1 | —        | —        | v1.16.0 |
+| BuildFlow                    | v1.15.1 | v1.15.0  | v1.14.0  | v1.16.0 |
+| clean-wizard                 | v1.15.1 | v1.15.1  | —        | v1.16.0 |
+| dependabot-auto-configure    | v1.15.1 | —        | —        | v1.16.0 |
+| erraudit                     | v1.15.1 | v1.15.0  | v1.14.0  | v1.16.0 |
+| go-auto-upgrade              | v1.15.1 | —        | —        | v1.16.0 |
+| go-business-rules            | v1.15.1 | —        | —        | —       |
+| go-checker-helpers           | v1.15.1 | —        | —        | —       |
+| go-humanize-linter           | v1.15.1 | —        | —        | —       |
+| golangci-lint-auto-configure | v1.15.1 | —        | —        | v1.16.0 |
+| go-linter-sdk                | v1.15.1 | —        | —        | —       |
+| go-structure-linter          | v1.15.1 | v1.15.0  | —        | v1.16.0 |
+| go-version-auto-configure    | v1.15.1 | —        | —        | v1.16.0 |
+| io-surface                   | v1.15.1 | —        | —        | v1.16.0 |
+| licenseforge                 | v1.15.1 | —        | —        | v1.16.0 |
+| linter-autoconfigure-sdk     | v1.15.1 | —        | —        | v1.16.0 |
+| md-go-validator              | v1.15.1 | —        | —        | —       |
+| oxlint-auto-configure        | v1.15.1 | v1.15.0  | —        | v1.16.0 |
+| Polish-Customs               | v1.15.1 | —        | —        | —       |
+| securitymd                   | v1.15.1 | —        | —        | v1.16.0 |
+| template-AUTHORS             | v1.15.1 | v1.15.0  | —        | —       |
+| template-readme              | v1.15.1 | —        | —        | —       |
+| testing                      | v1.15.1 | —        | —        | —       |
 
 Sweep notes (2026-11-08):
 

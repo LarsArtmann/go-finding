@@ -30,7 +30,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 verdict() { printf '\n== %s: %s ==\n' "$1" "$2"; }
-die() { echo "TRAIN FAIL: $*" >&2; exit 1; }
+die() {
+	echo "TRAIN FAIL: $*" >&2
+	exit 1
+}
 
 usage() {
 	sed -n '2,30p' "$0" | grep -E '^#\s+(prep|verify|stress|tag|push|resync|postflight|dry)' |
@@ -151,7 +154,10 @@ stage_postflight() {
 	local scratch
 	scratch=$(mktemp -d)
 	for mod in "" "/pipeline" "/analysis" "/toolsdk" "/cmd/go-finding"; do
-		if (cd "$scratch" && go mod init postflight-consumer >/dev/null 2>&1; cd "$scratch" && go get "github.com/larsartmann/go-finding${mod}@v${ver}"); then
+		if (
+			cd "$scratch" && go mod init postflight-consumer >/dev/null 2>&1
+			cd "$scratch" && go get "github.com/larsartmann/go-finding${mod}@v${ver}"
+		); then
 			echo "OK: clean-dir go get ${mod:-/core}"
 		else
 			echo "FAIL: clean-dir go get ${mod:-/core}"
@@ -225,14 +231,22 @@ case "${1:-}" in
 prep) stage_prep ;;
 verify) stage_verify ;;
 stress) stage_stress ;;
-tag) shift
-	stage_tag "$@" ;;
-push) shift
-	stage_push "$@" ;;
-resync) shift
-	stage_resync "$@" ;;
-postflight) shift
-	stage_postflight "$@" ;;
+tag)
+	shift
+	stage_tag "$@"
+	;;
+push)
+	shift
+	stage_push "$@"
+	;;
+resync)
+	shift
+	stage_resync "$@"
+	;;
+postflight)
+	shift
+	stage_postflight "$@"
+	;;
 dry) stage_dry ;;
 *) usage ;;
 esac

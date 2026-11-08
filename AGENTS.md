@@ -212,6 +212,7 @@ go-output); naming history: `FindingTransformer` (was FindingProcessor),
 **One test file per production file.** All tests for a subject live in `<subject>_test.go` — no `_extra`/`_bugfix`/`coverage` suffixes (split by subject, put regression tests in the parent file, never name files after metrics). Shared helpers in `testutil_test.go`; one `example_test.go` per package (don't fragment).
 
 ## Removed APIs
+
 Deprecated APIs from v0.6.0–v0.9.0 are gone (see `docs/MIGRATION_v1.0.md`).
 
 ---

@@ -33,12 +33,12 @@ measurement that makes "0 findings" checkable.
 
 Four pieces, all in the core module:
 
-| Identifier                           | Kind      | Purpose                                                       | Evidence                        |
-| ------------------------------------ | --------- | ------------------------------------------------------------- | ------------------------------- |
-| `finding.DetectResult`               | struct    | One detector run: `Findings`, `FilesScanned`, `SkippedModules` | `detect_result.go:15`           |
-| `finding.DetectorV2`                 | interface | Optional richer contract: `Detector` + `DetectV2(ctx)`         | `detect_result.go:39`           |
-| `finding.RunDetect(ctx, d)`          | func      | Runs the richest contract the detector implements              | `detect_result.go:53`           |
-| `(*finding.Report).AddDetectResult`  | method    | Adds findings + records coverage into `Report.Summary`         | `detect_result.go:72`           |
+| Identifier                          | Kind      | Purpose                                                        | Evidence              |
+| ----------------------------------- | --------- | -------------------------------------------------------------- | --------------------- |
+| `finding.DetectResult`              | struct    | One detector run: `Findings`, `FilesScanned`, `SkippedModules` | `detect_result.go:15` |
+| `finding.DetectorV2`                | interface | Optional richer contract: `Detector` + `DetectV2(ctx)`         | `detect_result.go:39` |
+| `finding.RunDetect(ctx, d)`         | func      | Runs the richest contract the detector implements              | `detect_result.go:53` |
+| `(*finding.Report).AddDetectResult` | method    | Adds findings + records coverage into `Report.Summary`         | `detect_result.go:72` |
 
 `DetectResult.FilesScanned` counts files actually examined, **including
 clean ones**. Zero is legal evidence (an empty target tree) — that is why

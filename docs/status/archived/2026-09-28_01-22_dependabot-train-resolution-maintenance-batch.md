@@ -27,19 +27,19 @@ main thread.
    ~~go-work-sync and arch-check at once. The nix job failed separately on a~~
    ~~stale `vendorHash`. Executed:~~
    ~~- **#37 (pipeline, 2 updates)**: all 27 checks already green → merged~~
-     ~~(admin; see d/diagnosis on why UI merge is structurally impossible).~~
-     ~~Master run 36348612320: SUCCESS.~~
+   ~~(admin; see d/diagnosis on why UI merge is structurally impossible).~~
+   ~~Master run 36348612320: SUCCESS.~~
    ~~- **#38 (root, 5 updates — the comprehensive one covering all 5 modules)**:~~
-     ~~fixed in an isolated worktree: `go.work` → 1.27.1, `go work sync`,~~
-     ~~`go mod tidy` ×5 (no diffs — dependabot's sums were complete), `go~~
+   ~~fixed in an isolated worktree: `go.work` → 1.27.1, `go work sync`,~~
+   ~~`go mod tidy` ×5 (no diffs — dependabot's sums were complete), `go~~
      ~~build` green, `vendorHash` updated to the hash the CI nix job PRINTS in~~
-     ~~its error (`To correct the hash mismatch ... use "sha256-..."`), then~~
-     ~~confirmed by a local `nix build`. Fix-up commit pushed to the PR branch;~~
-     ~~full CI re-run green including the ~45-min benchmark job; merged 21:05~~
-     ~~(fface19).~~
+   ~~its error (`To correct the hash mismatch ... use "sha256-..."`), then~~
+   ~~confirmed by a local `nix build`. Fix-up commit pushed to the PR branch;~~
+   ~~full CI re-run green including the ~45-min benchmark job; merged 21:05~~
+   ~~(fface19).~~
    ~~- **#39 (cmd, 4 updates)**: verified fully superseded (master's~~
-     ~~cmd/go-finding/go.mod already carries go-output v0.38.2, markdown~~
-     ~~v0.38.1, gomega v1.43.1) → `@dependabot rebase` → dependabot CLOSED it.~~
+   ~~cmd/go-finding/go.mod already carries go-output v0.38.2, markdown~~
+   ~~v0.38.1, gomega v1.43.1) → `@dependabot rebase` → dependabot CLOSED it.~~
 2. ~~**`.goreleaser.yml` nix-pipe template bug FIXED** (standing TODO row):~~ done (docs-health pass 2026-11-08)
    ~~`{{binary}}` → `{{ .Binary }}`. Verified against GoReleaser source~~
    ~~(internal/pipe/nix/nix.go templates `install` with `WithArtifact`, which~~
@@ -49,14 +49,14 @@ main thread.
    ~~them) and were deliberately scoped out.~~
 3. ~~**pre-push-verify.sh hardened** (report item #12):~~ done (docs-health pass 2026-11-08)
    ~~- New first-step `/mnt/buildcache` df guard: FAIL below 5 GiB free with~~
-     ~~the recovery command printed, SKIP when unmounted, OK with a number~~
-     ~~otherwise — all three paths proven before landing (dead-gate rule #2).~~
-     ~~55–57 GiB free at run time.~~
+   ~~the recovery command printed, SKIP when unmounted, OK with a number~~
+   ~~otherwise — all three paths proven before landing (dead-gate rule #2).~~
+   ~~55–57 GiB free at run time.~~
    ~~- **Fixed the dead `--quick` flag**: `$QUICK && RACE=""` executes "0"/"1"~~
-     ~~as a command; `set -e` ignores failures inside an AND-list, so --quick~~
-     ~~silently NEVER skipped the race detector. Now `[ "$QUICK" -eq 1 ]`.~~
-     ~~Both modes proven end-to-end (quick = plain tests, full = `-race`, full~~
-     ~~suite PASS).~~
+   ~~as a command; `set -e` ignores failures inside an AND-list, so --quick~~
+   ~~silently NEVER skipped the race detector. Now `[ "$QUICK" -eq 1 ]`.~~
+   ~~Both modes proven end-to-end (quick = plain tests, full = `-race`, full~~
+   ~~suite PASS).~~
 4. ~~**Fuzz corpus promoted to committed seeds** (Top-25 #22): 145 entries —~~ done (docs-health pass 2026-11-08)
    ~~`FuzzEditListProvider` 25 (pipeline), `FuzzParseLSPDiagnosticTags` 102,~~
    ~~`FuzzTextEditValidate` 18 (root) — all executing green as regular test~~
@@ -214,58 +214,58 @@ Impact-sorted; items 1–7 are the v1.14.0 cluster. Items marked (NEW) come
 from this session's observations; unmarked carry over from the standing
 lists.
 
-| #  | Task                                                                                                              | Why                                                                                                  | Effort |
-| -- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------ |
-~~| 1  | Decide + cut the v1.14.0 train (CHANGELOG cuts, labels flip, preflight `--bench --stress`, 5 tags one-per-push)   | ships Edits; dependabot bumps are accumulating on master meanwhile                                   | L      |~~ done at 9c675c7 — completed 2026-10-11
-~~| 2  | Render-verify the nix pipe during that train — validates the `{{ .Binary }}` fix in anger, then drop `--skip=nix` | the one unproven fix this session shipped                                                            | S      |~~ routed — TODO_LIST (render-verify during the next train)
-~~| 3  | Post-train resync (CLI requires → v1.14.0, go.sum, vendorHash, version-drift green)                               | documented procedure                                                                                 | S      |~~ done at 13cc091 — 2026-10-11
-~~| 4  | CLI delegation of `ResolveFlightRecorderConfig` (delete the mirrored parser)                                      | unblocked the moment pipeline/v1.14.0 exists                                                         | S      |~~ routed — TODO_LIST (unblocked since v1.14.0)
-~~| 5  | erraudit T13/T14 migration onto tagged APIs + upstream `nolint-audit` issue                                       | consumer adoption of Edits                                                                           | M      |~~ routed — TODO_LIST (unblocked since v1.14.0)
-~~| 6  | Restore cosign signing on the workflow-run train                                                                  | v1.13.0 shipped unsigned; supply-chain parity                                                        | S      |~~ verified — RESTORED (v1.15.0/v1.15.1 ship 17 sigstore bundles, checked 2026-11-08)
-~~| 7  | Migrate the two goreleaser deprecations (`brews`, `archives.format_overrides.format`)                             | NEW: will become errors on the next goreleaser major; saw them today                                 | S      |~~ routed — TODO_LIST (still present in .goreleaser.yml, 2026-11-08)
-~~| 8  | Investigate the failed scheduled "Dependabot Updates" run 36348692826 on master                                   | NEW: noticed, deferred, never explained                                                              | S      |~~ routed — TODO_LIST (2026-11-08)
-~~| 9  | Fix required-context vs matrix-job-name mismatch in branch protection so external PRs can merge without admin     | NEW: dependabot PRs are structurally unmergeable today (bare `test` vs `test (1.27, ubuntu-latest)`) | S      |~~ routed — TODO_LIST (owner-gated; still blocks non-admin merges)
-~~| 10 | Dependabot gomod config decision: collapse to the `/` entry only (one PR supersedes siblings) vs keep 4 dirs      | NEW: each directive-raising PR costs a manual go.work+vendorHash fix-up                              | S      |~~ routed — TODO_LIST (owner-gated; 4 dirs still configured)
-~~| 11 | `scripts/release-train.sh` + post-release verifier (T11)                                                          | the manual train has run 3×                                                                          | L      |~~ routed — TODO_LIST (2026-11-08)
-~~| 12 | pkg.go.dev: verify analysis/toolsdk/cmd pages; after v1.14.0 verify Edits docs render (d7 lesson applies)         | finish b1 honestly                                                                                   | S      |~~ routed — TODO_LIST (2026-11-08)
-~~| 13 | Measure the test-time cost of the 145 committed seeds (expect ~ms; confirm)                                       | NEW: unverified claim baked into a gate-relevant commit                                              | S      |~~ routed — TODO_LIST (2026-11-08)
-~~| 14 | Corpus follow-up: decide curated-vs-uncurated policy for promoted seeds; optional minimization pass               | NEW: 145 raw entries committed; policy was honored in form, not spirit                               | M      |~~ routed — TODO_LIST (2026-11-08)
-~~| 15 | Re-derive lost FuzzEditListProvider corpus entries (09-23 report said 59; cache had 25) if the delta matters      | NEW: cache pruning silently ate coverage                                                             | S      |~~ routed — parked (cache-pruned delta; 25 seeds cover the invariants)
-~~| 16 | Document the `seed_N` seed-promotion convention in AGENTS testing section                                         | NEW: policy currently only encoded in a .gitignore                                                   | S      |~~ routed — TODO_LIST (2026-11-08)
-~~| 17 | Document the CLI-vet exclusion in consumer-compat's header (or find a vet path for main packages)                 | NEW: header implies all modules are vetted; CLI is not                                               | S      |~~ verified — consumer-compat header documents vet coverage (line 12)
-~~| 18 | Add the goreleaser deprecations as a durable TODO_LIST row (said in chat, never written down)                     | NEW: practice what e5 preaches                                                                       | XS     |~~ verified — TODO_LIST row added (2026-11-08 rebuild)
-~~| 19 | flake.nix vendorHash comment says "regenerated 2026-09-23" — stale since the #38 fix                              | NEW: comment rot noticed today                                                                       | XS     |~~ verified — comment refreshed 2026-11-08
-~~| 20 | Fix the lying "race tests per module" section header in pre-push-verify quick mode                                | NEW: quick mode runs plain tests under a header that says race                                       | XS     |~~ verified — header fixed 2026-11-08 ("tests per module (quick mode: no -race)")
-~~| 21 | Add shellcheck to the flake devShell + as a gate for scripts/                                                     | NEW: the dead `--quick` bug is exactly what shellcheck flags                                         | S      |~~ routed — TODO_LIST (2026-11-08)
-~~| 22 | Consider a `git worktree`-based dependabot auto-fixup workflow (pushes go.work+vendorHash to PR branches)         | NEW: makes item 10's tax disappear; risky, owner call                                                | M      |~~ routed — parked (owner call; per-PR tax documented)
-~~| 23 | Apply the dependabot go.work/vendorHash check to sibling repos (go-output, go-linter-sdk, …)                      | NEW: same multi-module pattern likely bleeds                                                         | M      |~~ routed — parked (sibling repos act per-repo)
-~~| 24 | Fold this report's f-list into TODO_LIST/ROADMAP (docs-health HARVEST)                                            | the skill's loop-closing rule; TODO_LIST is the interactive surface                                  | S      |~~ verified — TODO_LIST rebuilt 2026-11-08 from this + sibling reports
-~~| 25 | Write the session annotation-log entry in docs/planning/                                                          | NEW: b5 — the running log was not appended this session                                              | S      |~~ verified — this report + TODO_LIST header carry the record
-~~| 26 | CLI release-asset vs local-build benchmark (validates goreleaser output equivalence)                              | Top-25 #24                                                                                           | S      |~~ routed — parked (never demanded)
-~~| 27 | ApplySimpleFixes philosophy decision (ROADMAP OQ)                                                                 | API-contract clarity                                                                                 | M      |~~ routed — ROADMAP Open questions
-~~| 28 | art-dupl-report.html tracked-vs-ignored decision (800-line churn per run)                                         | ROADMAP OQ                                                                                           | S      |~~ routed — ROADMAP Open questions
-~~| 29 | Dependabot/actions SHA pin-vs-bot decision                                                                        | supply-chain consistency OQ                                                                          | S      |~~ routed — TODO_LIST (standing watch)
-~~| 30 | Awesome Go PR from the finalized entry                                                                            | adoption; owner fork                                                                                 | S      |~~ routed — TODO_LIST LAUNCH3 (owner)
-~~| 31 | Homebrew tap repo + `HOMEBREW_TAP_GITHUB_TOKEN`                                                                   | brews section renders-and-skips                                                                      | S      |~~ routed — TODO_LIST LAUNCH4 (owner)
-~~| 32 | CONTRIBUTING / public release-runbook page                                                                        | release procedure is internal-facing                                                                 | M      |~~ routed — TODO_LIST (2026-11-08)
-~~| 33 | v2.0 design spike agenda (Position sentinel, FixStrategy union, TagSet)                                           | T27.1                                                                                                | M      |~~ routed — TODO_LIST/ROADMAP Hardening
-~~| 34 | Brew/nix distribution + v1.5–v1.8 backfill written proposals                                                      | T27.4 owner-ready text                                                                               | M      |~~ routed — ROADMAP Open questions
-~~| 35 | gomend/licenseforge watch note upkeep (#1/#46)                                                                    | blocked upstream; keep visible                                                                       | S      |~~ routed — TODO_LIST (blocked upstream)
-~~| 36 | Opportunistic consumer bumps after v1.14.0 (go-linter-sdk, golangci-lint-auto-configure, go-business-rules, …)    | ecosystem                                                                                            | M      |~~ routed — TODO_LIST (2026-11-08)
-~~| 37 | Re-check library-policy after hook issue #74 resolves                                                             | standing watch                                                                                       | XS     |~~ routed — TODO_LIST (standing watch)
-~~| 38 | Consider running golangci-lint across all 5 modules in pre-push-verify (CI parity; cost tradeoff)                 | local gate covers root only today                                                                    | S      |~~ routed — parked (CI lints each module; pre-push covers root)
-~~| 39 | Consider `nix flake check` in pre-push-verify (currently only `nix fmt`; flake check runs in CI)                  | closes the d6 gap class locally                                                                      | S      |~~ routed — parked (flake check runs in CI nix job + release flow)
-~~| 40 | Make the df-guard threshold env-configurable (`PRE_PUSH_MIN_FREE_GIB`)                                            | NEW: 5 GiB is a hardcoded guess                                                                      | XS     |~~ routed — parked (5 GiB works; no demand signal)
-~~| 41 | `/mnt/buildcache` periodic prune/cron (the guard fails fast; it does not clean)                                   | standing TODO row                                                                                    | S      |~~ routed — TODO_LIST (2026-11-08)
-~~| 42 | Verify PR #39's closure reason (dependabot's comment was not read; "superseded" is inferred from master state)    | NEW: d3 class, close the loop                                                                        | XS     |~~ verified — #39 CLOSED (superseded by the root gomod PR; checked 2026-11-08)
-~~| 43 | Sweep open PRs/branches for other stale dependabot branches after the config decision                             | NEW: avoid zombie branches                                                                           | XS     |~~ verified — no stale dependabot branches remain except the codecov one (TODO row)
-~~| 44 | Keep the golangci-lint-action pin synced with the nix binary on buildflow bumps                                   | standing gotcha (f/26)                                                                               | XS     |~~ verified — standing AGENTS gotcha
-~~| 45 | CI billing/watch: the benchmark job's 45-min runtime on 2-core runners — consider split or baseline caching       | runtime-class gotcha; job is the long pole in every wait                                             | M      |~~ routed — parked (job green since; revisit if it times out)
-~~| 46 | Decide whether `docs-freshness`'s informational warning (FEATURES.md ↔ fuzz_test.go 0d) deserves a fix or silence | NEW: it fired green-but-noisy today                                                                  | XS     |~~ routed — parked (warning-level; informative by design)
-~~| 47 | Consider quieting the daemon for `.config/metadata.yaml` (e5 structural fix)                                      | NEW: every session risks the same blur                                                               | S      |~~ routed — parked (metadata rides along; mentioned when it does)
-~~| 48 | After the train: update launch announcement draft to v1.14.0 reality                                              | T22 follow-through                                                                                   | S      |~~ routed — ROADMAP launch-comms question (owner)
-~~| 49 | ROADMAP: keep the 2027-01-31 sampling backstop visible (calendar entry if a mechanism exists)                     | a date nobody sees is a wish, not a backstop                                                         | XS     |~~ verified — in ROADMAP with revisit trigger
-~~| 50 | Post-train consumer-compat + proxy verification of v1.14.0 ×5 modules (existing script now also vets)             | close the loop the same way v1.13.0 was closed                                                       | S      |~~ verified — v1.15.x proxy verification done (2026-11-08 go get of published tags)
+| #  | Task | Why                                                                                                               | Effort                                                                                               |
+| -- | ---- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| ~~ | 1    | Decide + cut the v1.14.0 train (CHANGELOG cuts, labels flip, preflight `--bench --stress`, 5 tags one-per-push)   | ships Edits; dependabot bumps are accumulating on master meanwhile                                   |
+| ~~ | 2    | Render-verify the nix pipe during that train — validates the `{{ .Binary }}` fix in anger, then drop `--skip=nix` | the one unproven fix this session shipped                                                            |
+| ~~ | 3    | Post-train resync (CLI requires → v1.14.0, go.sum, vendorHash, version-drift green)                               | documented procedure                                                                                 |
+| ~~ | 4    | CLI delegation of `ResolveFlightRecorderConfig` (delete the mirrored parser)                                      | unblocked the moment pipeline/v1.14.0 exists                                                         |
+| ~~ | 5    | erraudit T13/T14 migration onto tagged APIs + upstream `nolint-audit` issue                                       | consumer adoption of Edits                                                                           |
+| ~~ | 6    | Restore cosign signing on the workflow-run train                                                                  | v1.13.0 shipped unsigned; supply-chain parity                                                        |
+| ~~ | 7    | Migrate the two goreleaser deprecations (`brews`, `archives.format_overrides.format`)                             | NEW: will become errors on the next goreleaser major; saw them today                                 |
+| ~~ | 8    | Investigate the failed scheduled "Dependabot Updates" run 36348692826 on master                                   | NEW: noticed, deferred, never explained                                                              |
+| ~~ | 9    | Fix required-context vs matrix-job-name mismatch in branch protection so external PRs can merge without admin     | NEW: dependabot PRs are structurally unmergeable today (bare `test` vs `test (1.27, ubuntu-latest)`) |
+| ~~ | 10   | Dependabot gomod config decision: collapse to the `/` entry only (one PR supersedes siblings) vs keep 4 dirs      | NEW: each directive-raising PR costs a manual go.work+vendorHash fix-up                              |
+| ~~ | 11   | `scripts/release-train.sh` + post-release verifier (T11)                                                          | the manual train has run 3×                                                                          |
+| ~~ | 12   | pkg.go.dev: verify analysis/toolsdk/cmd pages; after v1.14.0 verify Edits docs render (d7 lesson applies)         | finish b1 honestly                                                                                   |
+| ~~ | 13   | Measure the test-time cost of the 145 committed seeds (expect ~ms; confirm)                                       | NEW: unverified claim baked into a gate-relevant commit                                              |
+| ~~ | 14   | Corpus follow-up: decide curated-vs-uncurated policy for promoted seeds; optional minimization pass               | NEW: 145 raw entries committed; policy was honored in form, not spirit                               |
+| ~~ | 15   | Re-derive lost FuzzEditListProvider corpus entries (09-23 report said 59; cache had 25) if the delta matters      | NEW: cache pruning silently ate coverage                                                             |
+| ~~ | 16   | Document the `seed_N` seed-promotion convention in AGENTS testing section                                         | NEW: policy currently only encoded in a .gitignore                                                   |
+| ~~ | 17   | Document the CLI-vet exclusion in consumer-compat's header (or find a vet path for main packages)                 | NEW: header implies all modules are vetted; CLI is not                                               |
+| ~~ | 18   | Add the goreleaser deprecations as a durable TODO_LIST row (said in chat, never written down)                     | NEW: practice what e5 preaches                                                                       |
+| ~~ | 19   | flake.nix vendorHash comment says "regenerated 2026-09-23" — stale since the #38 fix                              | NEW: comment rot noticed today                                                                       |
+| ~~ | 20   | Fix the lying "race tests per module" section header in pre-push-verify quick mode                                | NEW: quick mode runs plain tests under a header that says race                                       |
+| ~~ | 21   | Add shellcheck to the flake devShell + as a gate for scripts/                                                     | NEW: the dead `--quick` bug is exactly what shellcheck flags                                         |
+| ~~ | 22   | Consider a `git worktree`-based dependabot auto-fixup workflow (pushes go.work+vendorHash to PR branches)         | NEW: makes item 10's tax disappear; risky, owner call                                                |
+| ~~ | 23   | Apply the dependabot go.work/vendorHash check to sibling repos (go-output, go-linter-sdk, …)                      | NEW: same multi-module pattern likely bleeds                                                         |
+| ~~ | 24   | Fold this report's f-list into TODO_LIST/ROADMAP (docs-health HARVEST)                                            | the skill's loop-closing rule; TODO_LIST is the interactive surface                                  |
+| ~~ | 25   | Write the session annotation-log entry in docs/planning/                                                          | NEW: b5 — the running log was not appended this session                                              |
+| ~~ | 26   | CLI release-asset vs local-build benchmark (validates goreleaser output equivalence)                              | Top-25 #24                                                                                           |
+| ~~ | 27   | ApplySimpleFixes philosophy decision (ROADMAP OQ)                                                                 | API-contract clarity                                                                                 |
+| ~~ | 28   | art-dupl-report.html tracked-vs-ignored decision (800-line churn per run)                                         | ROADMAP OQ                                                                                           |
+| ~~ | 29   | Dependabot/actions SHA pin-vs-bot decision                                                                        | supply-chain consistency OQ                                                                          |
+| ~~ | 30   | Awesome Go PR from the finalized entry                                                                            | adoption; owner fork                                                                                 |
+| ~~ | 31   | Homebrew tap repo + `HOMEBREW_TAP_GITHUB_TOKEN`                                                                   | brews section renders-and-skips                                                                      |
+| ~~ | 32   | CONTRIBUTING / public release-runbook page                                                                        | release procedure is internal-facing                                                                 |
+| ~~ | 33   | v2.0 design spike agenda (Position sentinel, FixStrategy union, TagSet)                                           | T27.1                                                                                                |
+| ~~ | 34   | Brew/nix distribution + v1.5–v1.8 backfill written proposals                                                      | T27.4 owner-ready text                                                                               |
+| ~~ | 35   | gomend/licenseforge watch note upkeep (#1/#46)                                                                    | blocked upstream; keep visible                                                                       |
+| ~~ | 36   | Opportunistic consumer bumps after v1.14.0 (go-linter-sdk, golangci-lint-auto-configure, go-business-rules, …)    | ecosystem                                                                                            |
+| ~~ | 37   | Re-check library-policy after hook issue #74 resolves                                                             | standing watch                                                                                       |
+| ~~ | 38   | Consider running golangci-lint across all 5 modules in pre-push-verify (CI parity; cost tradeoff)                 | local gate covers root only today                                                                    |
+| ~~ | 39   | Consider `nix flake check` in pre-push-verify (currently only `nix fmt`; flake check runs in CI)                  | closes the d6 gap class locally                                                                      |
+| ~~ | 40   | Make the df-guard threshold env-configurable (`PRE_PUSH_MIN_FREE_GIB`)                                            | NEW: 5 GiB is a hardcoded guess                                                                      |
+| ~~ | 41   | `/mnt/buildcache` periodic prune/cron (the guard fails fast; it does not clean)                                   | standing TODO row                                                                                    |
+| ~~ | 42   | Verify PR #39's closure reason (dependabot's comment was not read; "superseded" is inferred from master state)    | NEW: d3 class, close the loop                                                                        |
+| ~~ | 43   | Sweep open PRs/branches for other stale dependabot branches after the config decision                             | NEW: avoid zombie branches                                                                           |
+| ~~ | 44   | Keep the golangci-lint-action pin synced with the nix binary on buildflow bumps                                   | standing gotcha (f/26)                                                                               |
+| ~~ | 45   | CI billing/watch: the benchmark job's 45-min runtime on 2-core runners — consider split or baseline caching       | runtime-class gotcha; job is the long pole in every wait                                             |
+| ~~ | 46   | Decide whether `docs-freshness`'s informational warning (FEATURES.md ↔ fuzz_test.go 0d) deserves a fix or silence | NEW: it fired green-but-noisy today                                                                  |
+| ~~ | 47   | Consider quieting the daemon for `.config/metadata.yaml` (e5 structural fix)                                      | NEW: every session risks the same blur                                                               |
+| ~~ | 48   | After the train: update launch announcement draft to v1.14.0 reality                                              | T22 follow-through                                                                                   |
+| ~~ | 49   | ROADMAP: keep the 2027-01-31 sampling backstop visible (calendar entry if a mechanism exists)                     | a date nobody sees is a wish, not a backstop                                                         |
+| ~~ | 50   | Post-train consumer-compat + proxy verification of v1.14.0 ×5 modules (existing script now also vets)             | close the loop the same way v1.13.0 was closed                                                       |
 
 ## g) Up to 3 questions I can NOT figure out myself
 

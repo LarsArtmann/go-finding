@@ -19,23 +19,23 @@ release truth first, then gates, then the long tail.
    ~~core + toolsdk v1.13.0 (fetched 09-22), so folding into v1.14.0 was impossible~~
    ~~without a retract — completion was the only coherent path. Executed:~~
    ~~- Core GitHub Release published via **local GoReleaser 2.17.1** in a clean~~
-     ~~worktree at 450824e: 17 assets (5 platform archives, 8 deb/rpm/apk packages,~~
-     ~~5 SBOMs, checksums). `--skip=sign,nix` (cosign keyless is CI-only; the config's~~
-     ~~nix pipe has a latent `{{binary}}` template bug — see d2). Local runs needed~~
-     ~~CI parity: `GITHUB_TOKEN` present + syft from nixpkgs.~~
+   ~~worktree at 450824e: 17 assets (5 platform archives, 8 deb/rpm/apk packages,~~
+   ~~5 SBOMs, checksums). `--skip=sign,nix` (cosign keyless is CI-only; the config's~~
+   ~~nix pipe has a latent `{{binary}}` template bug — see d2). Local runs needed~~
+   ~~CI parity: `GITHUB_TOKEN` present + syft from nixpkgs.~~
    ~~- Sibling tags `pipeline/v1.13.0`, `analysis/v1.13.0`, `cmd/go-finding/v1.13.0`~~
-     ~~created **annotated + SSH-signed** at 450824e, pushed ONE PER PUSH; their~~
-     ~~triggered Release workflows failed fast on the frozen go-1.26 pin (expected),~~
-     ~~and the three library releases were created manually in the workflow's exact~~
-     ~~format (title/body/prerelease).~~
+   ~~created **annotated + SSH-signed** at 450824e, pushed ONE PER PUSH; their~~
+   ~~triggered Release workflows failed fast on the frozen go-1.26 pin (expected),~~
+   ~~and the three library releases were created manually in the workflow's exact~~
+   ~~format (title/body/prerelease).~~
    ~~- Resync: CLI pipeline require → v1.13.0, go.sum refreshed, flake vendorHash~~
-     ~~updated. **version-drift GREEN — the mid-cycle red is gone, which dissolves~~
-     ~~owner question #3 (no --mid-cycle mode needed).**~~
+   ~~updated. **version-drift GREEN — the mid-cycle red is gone, which dissolves~~
+   ~~owner question #3 (no --mid-cycle mode needed).**~~
    ~~- Verification: proxy serves all 5 modules @ v1.13.0 (`.info` checked);~~
-     ~~`scripts/consumer-compat-check.sh v1.13.0` resolves, builds, and RUNS all 5~~
-     ~~modules as an external consumer, including `go install cmd/go-finding@v1.13.0`~~
-     ~~printing `1.13.0`. GitHub Releases: Latest = v1.13.0 + 3 library pre-releases~~
-     ~~- toolsdk.~~
+   ~~`scripts/consumer-compat-check.sh v1.13.0` resolves, builds, and RUNS all 5~~
+   ~~modules as an external consumer, including `go install cmd/go-finding@v1.13.0`~~
+   ~~printing `1.13.0`. GitHub Releases: Latest = v1.13.0 + 3 library pre-releases~~
+   ~~- toolsdk.~~
 2. ~~**T3: issue #36 CLOSED** as completed, closing comment drafted via github-voice~~ done (docs-health pass 2026-11-08)
    ~~(checker: 0 FAIL, 0 WARN), evidence: FromDiagnostic fills `Edits` with all~~
    ~~TextEdits, ToDiagnostic re-emits, SARIF artifactChanges, per-finding accounting;~~
@@ -241,33 +241,33 @@ release truth first, then gates, then the long tail.
 
 ## f) Top #25 next (impact-sorted; first 7 are the v1.14.0 cluster)
 
-| #  | Task                                                                                                            | Why                                                           | Effort |
-| -- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
-~~| 1  | Watch pending CI run 35886575285 to verdict; confirm consumer-compat's first green                              | last unverified gate                                          | 0      |~~ verified — run SUCCESS (22-07 closing report)
-~~| 2  | Decide + cut the v1.14.0 train (CHANGELOG cuts, labels flip, preflight `--bench --stress`, 5 tags one-per-push) | ships Edits, closes the #36 loop publicly                     | L      |~~ done at 9c675c7 — v1.14.0 train completed 2026-10-11
-~~| 3  | Post-train resync: CLI requires → v1.14.0, go.sum, vendorHash, version-drift green                              | same procedure as today's resync                              | S      |~~ done at 13cc091 — 2026-10-11
-~~| 4  | CLI delegation of `ResolveFlightRecorderConfig` (delete the mirrored parser)                                    | prepared; unblocked the moment pipeline/v1.14.0 exists        | S      |~~ routed — TODO_LIST (2026-11-08; unblocked since v1.14.0)
-~~| 5  | erraudit T13/T14 migration onto tagged APIs + upstream `nolint-audit` false-stale issue                         | consumer adoption of Edits                                    | M      |~~ routed — TODO_LIST (2026-11-08; unblocked since v1.14.0)
-~~| 6  | Fix `.goreleaser.yml` nix-pipe `{{binary}}` template bug                                                        | unblocks local dry-runs; latent CI hazard on goreleaser bumps | S      |~~ verified — fixed 2026-09-28 ({{ .Binary }}; goreleaser check passes)
-~~| 7  | Restore cosign signing on the next workflow-run train (v1.13.0 shipped unsigned)                                | supply-chain parity with v1.12.0                              | S      |~~ verified — v1.15.0 AND v1.15.1 ship 17 sigstore bundles (checked 2026-11-08)
-~~| 8  | `scripts/release-train.sh` (T11) + post-release verifier                                                        | the manual train has run 3×                                   | L      |~~ routed — TODO_LIST (2026-11-08)
-~~| 9  | pkg.go.dev render check for v1.13.0 pages (and Edits on v1.14.0)                                                | close b1 properly                                             | S      |~~ routed — core+pipeline verified 09-27; rest → TODO_LIST
-~~| 10 | Awesome Go PR from the finalized entry (owner fork)                                                             | adoption                                                      | S      |~~ routed — TODO_LIST LAUNCH3 (owner-gated)
-~~| 11 | Homebrew tap repo + `HOMEBREW_TAP_GITHUB_TOKEN` (LAUNCH4)                                                       | brews section currently renders-and-skips                     | S      |~~ routed — TODO_LIST LAUNCH4 (owner-gated)
-~~| 12 | Add `/mnt/buildcache` df guard to pre-push-verify.sh                                                            | today's failure mode                                          | S      |~~ verified — landed 2026-09-27
-~~| 13 | CONTRIBUTING / public release-runbook page (F27.3)                                                              | the release procedure is internal-facing                      | M      |~~ routed — TODO_LIST (2026-11-08)
-~~| 14 | v2.0 design spike agenda (T27.1)                                                                                | Position sentinel, FixStrategy union, TagSet                  | M      |~~ routed — TODO_LIST/ROADMAP Hardening
-~~| 15 | Sampling NO-GO calendar date in ROADMAP (T27.2)                                                                 | revisit trigger needs a date                                  | S      |~~ verified — 2027-01-31 set in ROADMAP (2026-09-27)
-~~| 16 | Brew/nix distribution + v1.5–v1.8 backfill written proposals (T27.4)                                            | two ROADMAP open questions need owner-ready text              | M      |~~ routed — ROADMAP Open questions
-~~| 17 | F27.4b watch note: gomend/licenseforge #1/#46                                                                   | blocked upstream; keep visible                                | S      |~~ routed — TODO_LIST (blocked upstream)
-~~| 18 | Stale `~/projects/hierarchical-errors` clone decision (ROADMAP OQ)                                              | one `git -C remote -v` + trash call                           | S      |~~ verified — RESOLVED 2026-09-27 (directory gone; ROADMAP struck)
-~~| 19 | `ApplySimpleFixes` philosophy decision (ROADMAP OQ)                                                             | API-contract clarity for producers                            | M      |~~ routed — ROADMAP Open questions
-~~| 20 | `art-dupl-report.html` tracked-vs-ignored decision (ROADMAP OQ)                                                 | 800-line diff churn per run                                   | S      |~~ routed — ROADMAP Open questions
-~~| 21 | Dependabot/actions-SHA pin-vs-bot decision                                                                      | supply-chain consistency                                      | S      |~~ routed — TODO_LIST (standing watch)
-~~| 22 | FuzzEditListProvider corpus promotion: commit the 59 "interesting" corpus entries as seeds                      | keeps the campaign's coverage                                 | S      |~~ verified — 145 seeds committed 2026-09-27
-~~| 23 | Extend consumer-compat to also `go vet` each resolved module (cheap signal)                                     | catches API drift beyond build                                | S      |~~ verified — landed 2026-09-27 (vets all import-module probes)
-~~| 24 | Benchmark the CLI binary from the v1.13.0 release assets vs local build                                         | validates goreleaser output equivalence                       | S      |~~ routed — parked (never demanded; consumer-compat covers the install path)
-~~| 25 | Consider `--skip=nix` removal after #6 (keep local/CI goreleaser paths identical)                               | removes a documented divergence                               | S      |~~ routed — TODO_LIST (render-verify during the next train)
+| #  | Task | Why                                                                                                             | Effort                                                        |
+| -- | ---- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| ~~ | 1    | Watch pending CI run 35886575285 to verdict; confirm consumer-compat's first green                              | last unverified gate                                          |
+| ~~ | 2    | Decide + cut the v1.14.0 train (CHANGELOG cuts, labels flip, preflight `--bench --stress`, 5 tags one-per-push) | ships Edits, closes the #36 loop publicly                     |
+| ~~ | 3    | Post-train resync: CLI requires → v1.14.0, go.sum, vendorHash, version-drift green                              | same procedure as today's resync                              |
+| ~~ | 4    | CLI delegation of `ResolveFlightRecorderConfig` (delete the mirrored parser)                                    | prepared; unblocked the moment pipeline/v1.14.0 exists        |
+| ~~ | 5    | erraudit T13/T14 migration onto tagged APIs + upstream `nolint-audit` false-stale issue                         | consumer adoption of Edits                                    |
+| ~~ | 6    | Fix `.goreleaser.yml` nix-pipe `{{binary}}` template bug                                                        | unblocks local dry-runs; latent CI hazard on goreleaser bumps |
+| ~~ | 7    | Restore cosign signing on the next workflow-run train (v1.13.0 shipped unsigned)                                | supply-chain parity with v1.12.0                              |
+| ~~ | 8    | `scripts/release-train.sh` (T11) + post-release verifier                                                        | the manual train has run 3×                                   |
+| ~~ | 9    | pkg.go.dev render check for v1.13.0 pages (and Edits on v1.14.0)                                                | close b1 properly                                             |
+| ~~ | 10   | Awesome Go PR from the finalized entry (owner fork)                                                             | adoption                                                      |
+| ~~ | 11   | Homebrew tap repo + `HOMEBREW_TAP_GITHUB_TOKEN` (LAUNCH4)                                                       | brews section currently renders-and-skips                     |
+| ~~ | 12   | Add `/mnt/buildcache` df guard to pre-push-verify.sh                                                            | today's failure mode                                          |
+| ~~ | 13   | CONTRIBUTING / public release-runbook page (F27.3)                                                              | the release procedure is internal-facing                      |
+| ~~ | 14   | v2.0 design spike agenda (T27.1)                                                                                | Position sentinel, FixStrategy union, TagSet                  |
+| ~~ | 15   | Sampling NO-GO calendar date in ROADMAP (T27.2)                                                                 | revisit trigger needs a date                                  |
+| ~~ | 16   | Brew/nix distribution + v1.5–v1.8 backfill written proposals (T27.4)                                            | two ROADMAP open questions need owner-ready text              |
+| ~~ | 17   | F27.4b watch note: gomend/licenseforge #1/#46                                                                   | blocked upstream; keep visible                                |
+| ~~ | 18   | Stale `~/projects/hierarchical-errors` clone decision (ROADMAP OQ)                                              | one `git -C remote -v` + trash call                           |
+| ~~ | 19   | `ApplySimpleFixes` philosophy decision (ROADMAP OQ)                                                             | API-contract clarity for producers                            |
+| ~~ | 20   | `art-dupl-report.html` tracked-vs-ignored decision (ROADMAP OQ)                                                 | 800-line diff churn per run                                   |
+| ~~ | 21   | Dependabot/actions-SHA pin-vs-bot decision                                                                      | supply-chain consistency                                      |
+| ~~ | 22   | FuzzEditListProvider corpus promotion: commit the 59 "interesting" corpus entries as seeds                      | keeps the campaign's coverage                                 |
+| ~~ | 23   | Extend consumer-compat to also `go vet` each resolved module (cheap signal)                                     | catches API drift beyond build                                |
+| ~~ | 24   | Benchmark the CLI binary from the v1.13.0 release assets vs local build                                         | validates goreleaser output equivalence                       |
+| ~~ | 25   | Consider `--skip=nix` removal after #6 (keep local/CI goreleaser paths identical)                               | removes a documented divergence                               |
 
 ## g) Top #1 question I can NOT figure out myself
 

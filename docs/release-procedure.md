@@ -237,12 +237,12 @@ Not every red run during a train is a regression. These jobs are
 STRUCTURALLY red at specific phases — the proof pattern is the v1.15.1 tag
 tree (`pipeline` still required v1.13.0 while its tag built green):
 
-| Phase                                          | Structurally red job                                   | Why it cannot be green yet                                                |
-| ---------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------- |
-| After the version bump, BEFORE the core tag     | `version-check`                                        | Compares version.go to the NEAREST EXISTING tag — the tag does not exist. |
-| Before the resync commit                        | `version-drift`                                        | Sub-module requires still point at the previous core version.             |
-| The core tag's own commit                       | `module-isolation`                                     | CLI go.sum cannot carry checksums for tags that do not exist yet; the resync lands on master immediately after. |
-| Sibling tag pushed, resync not landed           | same as above                                          | The `replace => ../` directives make every GOWORK=off gate green locally while consumers of the PUBLISHED module would break. |
+| Phase                                       | Structurally red job | Why it cannot be green yet                                                                                                    |
+| ------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| After the version bump, BEFORE the core tag | `version-check`      | Compares version.go to the NEAREST EXISTING tag — the tag does not exist.                                                     |
+| Before the resync commit                    | `version-drift`      | Sub-module requires still point at the previous core version.                                                                 |
+| The core tag's own commit                   | `module-isolation`   | CLI go.sum cannot carry checksums for tags that do not exist yet; the resync lands on master immediately after.               |
+| Sibling tag pushed, resync not landed       | same as above        | The `replace => ../` directives make every GOWORK=off gate green locally while consumers of the PUBLISHED module would break. |
 
 The release gate is the Release workflow ON THE TAG itself, plus the
 `release-gate` consumer-proof job — not master CI color mid-train. Do not
@@ -276,18 +276,18 @@ the tag is pushed, into the train notes or the tag's release notes.
 
 ### Files to gates: what validates what
 
-| Change                                      | Gate that bites                                                                                |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `version.go`                                | `stamp-gate.sh --tag` (pre-tag), `version-check.sh` (post-tag), README stamp via `docs-api-check.sh` |
-| any `go.mod` require of a sibling            | `version-drift.sh`, `replace-audit.sh` (replaces must point at `../`)                          |
-| `go.work` / module set                      | `go-work-sync.sh`, `nix flake check` (vendorHash)                                              |
-| `CHANGELOG.md` compare links                | `verify-compare-links.sh --links` (authority), lychee + token in CI (flake-prone first pass)   |
-| CHANGELOG sections vs tags                  | `changelog-drift.sh`                                                                           |
-| Deterministic JSON marshal                  | `json-deterministic-check.sh`                                                                  |
-| Docs API claims (identifiers, versions)     | `docs-api-check.sh`, `docs-freshness.sh`, docs-gates battery                                   |
-| Release publish correctness (nix/homebrew)  | `goreleaser check` locally; the Release run itself (nix pipe is skip_upload since v1.15.1's 404) |
-| Benchmark regression claims                  | the CI benchmark job on a clean runner — LOCAL `--bench` numbers are invalid under heavy machine load (uniform 2-4x time inflation, flat allocs; observed load avg 186 during the v1.14.0 train) |
-| go.sum completeness after dependency bumps   | `go-worksum-check.sh` + a cold-cache build (`module-isolation`); warm-cache local builds stay green on zip-hash-only entries |
+| Change                                     | Gate that bites                                                                                                                                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `version.go`                               | `stamp-gate.sh --tag` (pre-tag), `version-check.sh` (post-tag), README stamp via `docs-api-check.sh`                                                                                             |
+| any `go.mod` require of a sibling          | `version-drift.sh`, `replace-audit.sh` (replaces must point at `../`)                                                                                                                            |
+| `go.work` / module set                     | `go-work-sync.sh`, `nix flake check` (vendorHash)                                                                                                                                                |
+| `CHANGELOG.md` compare links               | `verify-compare-links.sh --links` (authority), lychee + token in CI (flake-prone first pass)                                                                                                     |
+| CHANGELOG sections vs tags                 | `changelog-drift.sh`                                                                                                                                                                             |
+| Deterministic JSON marshal                 | `json-deterministic-check.sh`                                                                                                                                                                    |
+| Docs API claims (identifiers, versions)    | `docs-api-check.sh`, `docs-freshness.sh`, docs-gates battery                                                                                                                                     |
+| Release publish correctness (nix/homebrew) | `goreleaser check` locally; the Release run itself (nix pipe is skip_upload since v1.15.1's 404)                                                                                                 |
+| Benchmark regression claims                | the CI benchmark job on a clean runner — LOCAL `--bench` numbers are invalid under heavy machine load (uniform 2-4x time inflation, flat allocs; observed load avg 186 during the v1.14.0 train) |
+| go.sum completeness after dependency bumps | `go-worksum-check.sh` + a cold-cache build (`module-isolation`); warm-cache local builds stay green on zip-hash-only entries                                                                     |
 
 ### Local GoReleaser recovery recipe
 

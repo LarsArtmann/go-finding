@@ -4,7 +4,6 @@ Orientation map for fresh sessions. `ls`/grep stay the source of truth; this
 table adds the WHY for non-obvious files. Keep in sync when files are added
 or renamed (the AGENTS.md pointer must keep working).
 
-
 | Area                | Files                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Core types**      | `finding.go`, `finding_methods.go`, `finding_validate.go`, `finding_equal.go`, `position.go`, `range.go`, `text_edit.go`, `report.go`, `filter.go`, `merge.go`, `diff.go`, `format.go`, `json.go`, `id.go`, `errors.go`, `simple_fix.go`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -24,16 +23,16 @@ or renamed (the AGENTS.md pointer must keep working).
 
 ## Release & CI tooling (added/expanded 2026-11-08)
 
-| Tool | Purpose |
-| --- | --- |
-| `scripts/stamp-gate.sh` | Pre-tag gate: version.go == the tag you are about to create; wired into preflight `--tag` |
-| `scripts/verify-compare-links.sh` | Authenticated `gh api` per CHANGELOG compare pair; the authority lychee cannot be |
-| `scripts/release-train.sh` | Train driver: prep/verify/stress/tag/push/resync/postflight stages + dry plan |
-| `scripts/ci-watchdog.sh` | Asserts a CI run exists per pushed SHA; master-green check; powers watchdog.yml |
-| `scripts/go-worksum-check.sh` | go.work.sum freshness (graph, parse, `--sync` idempotence) |
-| `scripts/version-lattice.sh` | Published tags' core requires must resolve; cmd-require == pipeline latest |
-| `scripts/shellcheck-gate.sh` | Zero-findings gate over scripts/ + scripts/hooks/ |
-| `scripts/consumer-compat-check.sh --head` | Consumer probes against the WORKING TREE (API drift before a train); CLI stamp asserted exactly |
-| `.github/workflows/watchdog.yml` | 30-min schedule: red X = missing CI run or red master |
-| `.github/workflows/ci.yml` `test`/`lint` | Aggregate wrapper jobs satisfying the bare required contexts (matrix legs run as test-matrix/lint-matrix with a per-module job summary) |
-| `release.yml` `release-gate` | Consumer-proof install of the just-pushed tag; fails the Release run on stamp-vs-tag mismatch |
+| Tool                                      | Purpose                                                                                                                                 |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/stamp-gate.sh`                   | Pre-tag gate: version.go == the tag you are about to create; wired into preflight `--tag`                                               |
+| `scripts/verify-compare-links.sh`         | Authenticated `gh api` per CHANGELOG compare pair; the authority lychee cannot be                                                       |
+| `scripts/release-train.sh`                | Train driver: prep/verify/stress/tag/push/resync/postflight stages + dry plan                                                           |
+| `scripts/ci-watchdog.sh`                  | Asserts a CI run exists per pushed SHA; master-green check; powers watchdog.yml                                                         |
+| `scripts/go-worksum-check.sh`             | go.work.sum freshness (graph, parse, `--sync` idempotence)                                                                              |
+| `scripts/version-lattice.sh`              | Published tags' core requires must resolve; cmd-require == pipeline latest                                                              |
+| `scripts/shellcheck-gate.sh`              | Zero-findings gate over scripts/ + scripts/hooks/                                                                                       |
+| `scripts/consumer-compat-check.sh --head` | Consumer probes against the WORKING TREE (API drift before a train); CLI stamp asserted exactly                                         |
+| `.github/workflows/watchdog.yml`          | 30-min schedule: red X = missing CI run or red master                                                                                   |
+| `.github/workflows/ci.yml` `test`/`lint`  | Aggregate wrapper jobs satisfying the bare required contexts (matrix legs run as test-matrix/lint-matrix with a per-module job summary) |
+| `release.yml` `release-gate`              | Consumer-proof install of the just-pushed tag; fails the Release run on stamp-vs-tag mismatch                                           |

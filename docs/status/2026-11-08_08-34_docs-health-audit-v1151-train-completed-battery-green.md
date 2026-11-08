@@ -60,7 +60,7 @@ all 8 non-archived 2026-0* files unannotated; docs-gates battery unadopted.
    run `scripts/version-check.sh` AFTER any core tag push; a dependency
    bump is not complete until per-module tidy + cold-cache green); the
    package-level FR resolver noted in the FlightRecorderHook bullet.
-9. **ANNOTATE — all 8 non-archived 2026-0* files dispositioned** (521 inline
+9. __ANNOTATE — all 8 non-archived 2026-0_ files dispositioned_* (521 inline
    verdicts total): 5 status reports (14:50, 15:58, 16:12, 18:13, 22:07),
    the 09-28 dependabot report, the 09-30 PR41 report, and the SUPERB
    pareto plan (all 27 T-rows + 101 micro-rows struck). Every open tail
@@ -123,9 +123,9 @@ all 8 non-archived 2026-0* files unannotated; docs-gates battery unadopted.
    run 41863470480) and TODO row written; no fix attempted (action input/
    version pin unknown without research outside this session's scope).
 4. **Consumer verification depth**: pipeline@v1.15.1 clean-dir `go get`
-   + cmd clean-dir `go install` proven; analysis@v1.15.1 verified only
-   via its green Release run + CI module-isolation (no explicit clean-dir
-   probe). The 10-12 report's sha-proof bar was applied to one of three.
+   - cmd clean-dir `go install` proven; analysis@v1.15.1 verified only
+     via its green Release run + CI module-isolation (no explicit clean-dir
+     probe). The 10-12 report's sha-proof bar was applied to one of three.
 5. **AGENTS diet**: line count refreshed in the row (286 vs 220), no lines
    actually cut; the release-war-stories distillation into
    release-procedure.md (which would enable the diet) not started.
@@ -244,58 +244,58 @@ _(Impact-sorted; 1–24 = the rebuilt TODO_LIST's HIGH/owner clusters (all
 verified open today — do not re-derive); 25–50 = session-new tails.
 🔒 = owner-gated. Full evidence per row in TODO_LIST.md.)_
 
-| #  | Task                                                                                                          | Impact | Effort |
-| -- | ------------------------------------------------------------------------------------------------------------- | ------ | ------ |
-| 1  | Diagnose the v1.15.1 Release-run cosign-action failure (run 41863470480; assets shipped, run red)             | High   | S      |
-| 2  | Read CI benchmark job numbers vs `benchmarks/baseline.txt` (RunDetect touched every detect path)              | High   | S      |
-| 3  | Pass `GITHUB_TOKEN` to lychee in ci.yml (kills the 429/502 flake class) OR exclude compare/ links + script    | High   | S      |
-| 4  | `scripts/verify-compare-links.sh` + preflight wiring                                                         | High   | S-M    |
-| 5  | Pre-tag stamp gate: assert version.go == intended tag name BEFORE the ref exists (d/e1)                       | High   | S      |
-| 6  | release-procedure.md truth pass: phased-CI-red reality, push→verify→tag order, stress-on-sibling-tags rule, files-to-gates map, GoReleaser recovery recipe | High | M |
-~~| 7  | `docs/guides/detector-coverage.md` (DetectorV2/DetectResult/RunDetect/AddDetectResult)                       | High   | M      |~~ done at `9751a2b`
-| 8  | README: sell the coverage channel (front page has zero DetectorV2 mention)                                    | High   | S      |
-| 9  | ADR #20 for the DetectorV2 coverage channel (docs/architecture-decisions.md)                                                                   | Med    | S      |
-| 10 | Complete compare-ref sets in analysis/cmd CHANGELOGs (zero refs today; headers render as literal text)        | Med    | S      |
-| 11 | DetectorV2 runnable example + compile-gate wiring                                                             | Med    | S-M    |
-~~| 12 | api-stability-report.md: DetectorV2/DetectResult/RunDetect/AddDetectResult identifiers                        | Med    | S      |~~ done at `d22f574`
-| 13 | CI release gate: `go install cmd@vX.Y.Z` + `--version` smoke + stamp comparison per train                     | High   | M      |
-| 14 | CLI: delegate `flightRecorderFileConfig.resolve()` to `pipeline.ResolveFlightRecorderConfig`                  | Med    | S      |
-| 15 | erraudit T13/T14 migration onto tagged APIs + file the upstream `nolint-audit` false-stale issue              | High   | M      |
-| 16 | Make erraudit CI-wirable (public repo or vendored binary)                                                     | Med    | M      |
-| 17 | `scripts/release-train.sh` + post-release verifier (manual train ran five times now)                          | Med    | L      |
-~~| 18 | pkg.go.dev render checks: core v1.15.1 + analysis/toolsdk/cmd pages                                           | Med    | S      |~~ verified — all five module pages render (cmd crawled after re-trigger)
-| 19 | 🔒 Phase-aware version gates OR documented exception (every train ships mid-red; 3 precedents now)            | High   | S/M    |
-| 20 | 🔒 Sub-module versioning: toolsdk independent vs lockstep (preflight lockstep check misfires each core train) | High   | S(dec) |
-| 21 | 🔒 Dependabot gomod config: collapse to `/` entry vs keep 4 dirs                                              | Med    | S      |
-| 22 | 🔒 Branch protection: fix required-context vs matrix-job-name mismatch (blocks every non-admin PR)            | Med    | S      |
-| 23 | 🔒 codecov action branch: open the PR or delete it                                                            | Med    | S      |
-| 24 | 🔒 Launch comms mode: announcement (two trains stale) vs quiet-maintenance (ROADMAP OQ)                       | Med    | S      |
-| 25 | Annotate + archive the six 2026-10 train reports (b/1; the battery's next cadence target at 60d)              | Med    | M      |
-| 26 | Drain the audit-all backlog via sampled sweeps (327 pre-canon items, ratchet 340)                             | Low    | XL     |
-| 27 | goreleaser deprecations (`brews`, `format_overrides.format`) migrate before the next goreleaser major         | Med    | S      |
-| 28 | Render-verify the nix pipe on the next train, then drop `--skip=nix`                                          | Low    | S      |
-| 29 | Investigate the failed scheduled "Dependabot Updates" run (36348692826, 09-28; never explained)               | Low    | S      |
-| 30 | CLI surfaces `Summary.FilesScanned`/`SkippedModules` (coverage flows end-to-end; CLI never shows it)          | Med    | S-M    |
-| 31 | ecosystem.md fresh sweep (delta section dated 09-23) + consumer-count audit refresh                           | Low    | M      |
-| 32 | CI-event watchdog: assert a ci.yml run exists per pushed SHA                                                  | Low    | S      |
-| 33 | Detached long-wait runner (CI polls + local gates; e/6)                                                       | Low    | S      |
-| 34 | Consumer-migration guide section for `PipelineResult.Outcomes` adopters                                       | Low    | S      |
-~~| 35 | SARIF round-trip property/fuzz test                                                                           | Med    | S      |~~ done at `93e6898`
-| 36 | go.work.sum freshness gate                                                                                    | Low    | S      |
-| 37 | Boundary READMEs for docs/feedback + docs/research (status/planning/reviews have them)                        | Low    | S      |
-| 38 | shellcheck for scripts/ (devShell + gate)                                                                     | Low    | S      |
-| 39 | seed_N convention documented in AGENTS testing section                                                        | Low    | S      |
-| 40 | Fuzz seed cost measurement + curated-vs-raw policy                                                            | Low    | S      |
-| 41 | Diet AGENTS.md under 220 lines (286 today) after the release-procedure distillation                           | Med    | M      |
-| 42 | gopls noise: SA1012 on the two nolint'd nil-ctx test lines (accept or `//lint:ignore`)                        | Low    | S      |
-| 43 | `/mnt/buildcache` periodic prune (guard exists; cleaner doesn't)                                              | Low    | S      |
-| 44 | Consumer bumps beyond the leads (per-repo)                                                                    | Low    | Med    |
-| 45 | Watch erraudit upstream nolint-audit fix; re-check library-policy #74; actions-SHA pin-vs-bot (standing)      | Low    | Low    |
-| 46 | CONTRIBUTING / public release-runbook page                                                                    | Low    | M      |
-| 47 | v2.0 design spike agenda (Position sentinel, FixStrategy union, TagSet)                                       | Low    | M      |
-| 48 | LAUNCH3 Awesome Go PR + LAUNCH4 homebrew tap (owner forks)                                                    | Med    | S      |
-| 49 | Brew/nix distribution + v1.5–v1.8 backfill proposals (ROADMAP OQs need owner-ready text)                      | Low    | M      |
-| 50 | Codify "verify one FAIL path per new gate" + toolchain-floor-same-commit-pin as release-procedure step-0 rows  | Med    | S      |
+| #  | Task                                                                                                                                                       | Impact                                                                                 | Effort |
+| -- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------ |
+| 1  | Diagnose the v1.15.1 Release-run cosign-action failure (run 41863470480; assets shipped, run red)                                                          | High                                                                                   | S      |
+| 2  | Read CI benchmark job numbers vs `benchmarks/baseline.txt` (RunDetect touched every detect path)                                                           | High                                                                                   | S      |
+| 3  | Pass `GITHUB_TOKEN` to lychee in ci.yml (kills the 429/502 flake class) OR exclude compare/ links + script                                                 | High                                                                                   | S      |
+| 4  | `scripts/verify-compare-links.sh` + preflight wiring                                                                                                       | High                                                                                   | S-M    |
+| 5  | Pre-tag stamp gate: assert version.go == intended tag name BEFORE the ref exists (d/e1)                                                                    | High                                                                                   | S      |
+| 6  | release-procedure.md truth pass: phased-CI-red reality, push→verify→tag order, stress-on-sibling-tags rule, files-to-gates map, GoReleaser recovery recipe | High                                                                                   | M      |
+| ~~ | 7                                                                                                                                                          | `docs/guides/detector-coverage.md` (DetectorV2/DetectResult/RunDetect/AddDetectResult) | High   |
+| 8  | README: sell the coverage channel (front page has zero DetectorV2 mention)                                                                                 | High                                                                                   | S      |
+| 9  | ADR #20 for the DetectorV2 coverage channel (docs/architecture-decisions.md)                                                                               | Med                                                                                    | S      |
+| 10 | Complete compare-ref sets in analysis/cmd CHANGELOGs (zero refs today; headers render as literal text)                                                     | Med                                                                                    | S      |
+| 11 | DetectorV2 runnable example + compile-gate wiring                                                                                                          | Med                                                                                    | S-M    |
+| ~~ | 12                                                                                                                                                         | api-stability-report.md: DetectorV2/DetectResult/RunDetect/AddDetectResult identifiers | Med    |
+| 13 | CI release gate: `go install cmd@vX.Y.Z` + `--version` smoke + stamp comparison per train                                                                  | High                                                                                   | M      |
+| 14 | CLI: delegate `flightRecorderFileConfig.resolve()` to `pipeline.ResolveFlightRecorderConfig`                                                               | Med                                                                                    | S      |
+| 15 | erraudit T13/T14 migration onto tagged APIs + file the upstream `nolint-audit` false-stale issue                                                           | High                                                                                   | M      |
+| 16 | Make erraudit CI-wirable (public repo or vendored binary)                                                                                                  | Med                                                                                    | M      |
+| 17 | `scripts/release-train.sh` + post-release verifier (manual train ran five times now)                                                                       | Med                                                                                    | L      |
+| ~~ | 18                                                                                                                                                         | pkg.go.dev render checks: core v1.15.1 + analysis/toolsdk/cmd pages                    | Med    |
+| 19 | 🔒 Phase-aware version gates OR documented exception (every train ships mid-red; 3 precedents now)                                                         | High                                                                                   | S/M    |
+| 20 | 🔒 Sub-module versioning: toolsdk independent vs lockstep (preflight lockstep check misfires each core train)                                              | High                                                                                   | S(dec) |
+| 21 | 🔒 Dependabot gomod config: collapse to `/` entry vs keep 4 dirs                                                                                           | Med                                                                                    | S      |
+| 22 | 🔒 Branch protection: fix required-context vs matrix-job-name mismatch (blocks every non-admin PR)                                                         | Med                                                                                    | S      |
+| 23 | 🔒 codecov action branch: open the PR or delete it                                                                                                         | Med                                                                                    | S      |
+| 24 | 🔒 Launch comms mode: announcement (two trains stale) vs quiet-maintenance (ROADMAP OQ)                                                                    | Med                                                                                    | S      |
+| 25 | Annotate + archive the six 2026-10 train reports (b/1; the battery's next cadence target at 60d)                                                           | Med                                                                                    | M      |
+| 26 | Drain the audit-all backlog via sampled sweeps (327 pre-canon items, ratchet 340)                                                                          | Low                                                                                    | XL     |
+| 27 | goreleaser deprecations (`brews`, `format_overrides.format`) migrate before the next goreleaser major                                                      | Med                                                                                    | S      |
+| 28 | Render-verify the nix pipe on the next train, then drop `--skip=nix`                                                                                       | Low                                                                                    | S      |
+| 29 | Investigate the failed scheduled "Dependabot Updates" run (36348692826, 09-28; never explained)                                                            | Low                                                                                    | S      |
+| 30 | CLI surfaces `Summary.FilesScanned`/`SkippedModules` (coverage flows end-to-end; CLI never shows it)                                                       | Med                                                                                    | S-M    |
+| 31 | ecosystem.md fresh sweep (delta section dated 09-23) + consumer-count audit refresh                                                                        | Low                                                                                    | M      |
+| 32 | CI-event watchdog: assert a ci.yml run exists per pushed SHA                                                                                               | Low                                                                                    | S      |
+| 33 | Detached long-wait runner (CI polls + local gates; e/6)                                                                                                    | Low                                                                                    | S      |
+| 34 | Consumer-migration guide section for `PipelineResult.Outcomes` adopters                                                                                    | Low                                                                                    | S      |
+| ~~ | 35                                                                                                                                                         | SARIF round-trip property/fuzz test                                                    | Med    |
+| 36 | go.work.sum freshness gate                                                                                                                                 | Low                                                                                    | S      |
+| 37 | Boundary READMEs for docs/feedback + docs/research (status/planning/reviews have them)                                                                     | Low                                                                                    | S      |
+| 38 | shellcheck for scripts/ (devShell + gate)                                                                                                                  | Low                                                                                    | S      |
+| 39 | seed_N convention documented in AGENTS testing section                                                                                                     | Low                                                                                    | S      |
+| 40 | Fuzz seed cost measurement + curated-vs-raw policy                                                                                                         | Low                                                                                    | S      |
+| 41 | Diet AGENTS.md under 220 lines (286 today) after the release-procedure distillation                                                                        | Med                                                                                    | M      |
+| 42 | gopls noise: SA1012 on the two nolint'd nil-ctx test lines (accept or `//lint:ignore`)                                                                     | Low                                                                                    | S      |
+| 43 | `/mnt/buildcache` periodic prune (guard exists; cleaner doesn't)                                                                                           | Low                                                                                    | S      |
+| 44 | Consumer bumps beyond the leads (per-repo)                                                                                                                 | Low                                                                                    | Med    |
+| 45 | Watch erraudit upstream nolint-audit fix; re-check library-policy #74; actions-SHA pin-vs-bot (standing)                                                   | Low                                                                                    | Low    |
+| 46 | CONTRIBUTING / public release-runbook page                                                                                                                 | Low                                                                                    | M      |
+| 47 | v2.0 design spike agenda (Position sentinel, FixStrategy union, TagSet)                                                                                    | Low                                                                                    | M      |
+| 48 | LAUNCH3 Awesome Go PR + LAUNCH4 homebrew tap (owner forks)                                                                                                 | Med                                                                                    | S      |
+| 49 | Brew/nix distribution + v1.5–v1.8 backfill proposals (ROADMAP OQs need owner-ready text)                                                                   | Low                                                                                    | M      |
+| 50 | Codify "verify one FAIL path per new gate" + toolchain-floor-same-commit-pin as release-procedure step-0 rows                                              | Med                                                                                    | S      |
 
 ## g) THREE QUESTIONS I CANNOT ANSWER MYSELF
 
