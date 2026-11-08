@@ -1,8 +1,12 @@
 package finding
 
 import (
+	"bytes"
 	"context"
 	"encoding/json/v2"
+	"fmt"
+	"math/rand"
+	"reflect"
 	"testing"
 
 	"github.com/onsi/gomega"
@@ -445,4 +449,94 @@ func TestSARIF_SchemaCompliance_SuppressedFinding(t *testing.T) {
 	sup, ok := suppressions[0].(map[string]any)
 	g.Expect(ok).To(gomega.BeTrue())
 	g.Expect(sup["kind"]).To(gomega.Equal("inSource"))
+}
+
+// propSarifFinding generates VALID findings for the round-trip property:
+// strings are non-empty where validation requires it, positions carry
+// line/column >= 1, and the optional fields (confidence, category, tags,
+// group) come from a small valid alphabet. Deliberately no suppressions
+// (excluded from SARIF export by default) and no edits (ApplySimpleFixes
+// refuses multi-edit; the edit path has dedicated example tests).
+// quick.Value dispatches on the zero value of the parameter type, so the
+// property takes this wrapper, whose Generate ignores the embedded zero.
+type propSarifFinding struct{ Finding }
+
+var (
+	severities  = []Severity{SeverityInfo, SeverityWarning, SeverityError, SeverityCritical}
+	confidences = []Confidence{ConfidenceFull, ConfidenceHigh, 0.5}
+	categories  = []Category{CategoryCorrectness, CategorySecurity, CategoryPerformance}
+)
+
+func (propSarifFinding) Generate(r *rand.Rand, size int) reflect.Value {
+	tagAlphabet := []Tag{TagSecurity, TagPerformance, "custom-tag"}
+
+	f := Finding{
+		Rule:       RuleName(fmt.Sprintf("rule%d", r.Intn(100))),
+		ToolName:   ToolName(fmt.Sprintf("tool%d", r.Intn(10))),
+		Message:    fmt.Sprintf("message %d", r.Intn(1000)),
+		Severity:   severities[r.Intn(len(severities))],
+		Confidence: confidences[r.Intn(len(confidences))],
+		Category:   categories[r.Intn(len(categories))],
+		Position:   Pos(FilePath(fmt.Sprintf("file%d.go", r.Intn(50))), r.Intn(500)+1, r.Intn(80)+1),
+	}
+
+	// ID-less findings import back with a GENERATED id (documented
+	// GenerateID behavior), so the property generates real IDs up front.
+	f.ID = GenerateID(f.ToolName, f.Rule, f.Position)
+
+	if r.Intn(2) == 0 {
+		n := r.Intn(3) + 1
+		for range n {
+			f.Tags = append(f.Tags, tagAlphabet[r.Intn(len(tagAlphabet))])
+		}
+	}
+
+	if r.Intn(3) == 0 {
+		f.GroupID = GroupID(fmt.Sprintf("group%d", r.Intn(20)))
+	}
+
+	if r.Intn(4) == 0 {
+		f.FixStrategy = FixStrategyDirect
+		f.BeforeCode = "old"
+		f.AfterCode = "new"
+	}
+
+	return reflect.ValueOf(propSarifFinding{Finding: f})
+}
+
+// TestSARIFRoundTripProperty is the randomized losslessness property the
+// example tests cannot cover: for valid findings, export to SARIF and
+// import back must produce a finding Equal to the original (modulo the
+// documented normalization: empty FixStrategy becomes "none").
+func TestSARIFRoundTripProperty(t *testing.T) {
+	t.Parallel()
+
+	property := func(wrapped propSarifFinding) bool {
+		original := wrapped.Finding
+		report := NewReport(ToolInfo{Name: string(original.ToolName)})
+		original.FixStrategy = NormalizeFixStrategy(original.FixStrategy)
+		report.AddFinding(original)
+		report.ComputeSummary()
+
+		var buf bytes.Buffer
+		if err := report.WriteSARIF(context.Background(), &buf); err != nil {
+			t.Logf("export failed: %v", err)
+			return false
+		}
+
+		imported, err := FindingsFromSARIF(context.Background(), buf.Bytes())
+		if err != nil {
+			t.Logf("import failed: %v", err)
+			return false
+		}
+
+		if len(imported) != 1 {
+			t.Logf("imported %d findings, want 1", len(imported))
+			return false
+		}
+
+		return imported[0].Equal(original)
+	}
+
+	checkPropertyAny(t, property)
 }
