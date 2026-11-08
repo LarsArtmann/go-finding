@@ -1,0 +1,7 @@
+{
+  "cadence": {
+    "struck_rows": 1,
+    "oldest_days": 60,
+    "max_unarchived": 8
+  }
+}
