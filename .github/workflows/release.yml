@@ -97,3 +97,92 @@ jobs:
             --title "$name" \
             --notes "Library module release for \`$tag\`." \
             --prerelease
+
+  # Consumer-proof release gate: installs the JUST-PUSHED tag from the module
+  # proxy and asserts the version stamp matches the tag name. This is the
+  # v1.14.0/v1.15.1 stale-stamp incident class caught at release time — both
+  # shipped with version.go bumped AFTER the tag, so the artifacts self-
+  # reported the previous version for days before anyone noticed.
+  #
+  # - core tag (vX.Y.Z): compile a probe consumer against core@tag; the
+  #   probe prints finding.Version, which must equal X.Y.Z.
+  # - cmd tag (cmd/go-finding/vX.Y.Z): go install the CLI at the tag and
+  #   assert `--version` prints X.Y.Z (a plain go install build stamps from
+  #   finding.Version; goreleaser overrides via ldflags).
+  #
+  # Budget: two proxy installs + small builds, ~2-4 min on ubuntu-latest.
+  # Sub-module tags (pipeline/analysis/toolsdk) resolve via the proxy too:
+  # a clean consumer module requiring the tagged module must build.
+  release-gate:
+    needs: [release, release-library-module]
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+
+      - name: Consumer proof (install + stamp-vs-tag)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          MOD_ROOT="github.com/larsartmann/go-finding"
+          VERDICT="FAIL"
+
+          case "$TAG" in
+            cmd/go-finding/v*)
+              version="${TAG#cmd/go-finding/v}"
+              echo "gate: cmd tag $TAG -> go install + --version must print $version"
+              go install "$MOD_ROOT/cmd/go-finding@v$version"
+              printed="$(go-finding --version)"
+              echo "gate: --version printed: $printed"
+              if [ "$printed" = "$version" ]; then
+                VERDICT="OK"
+              fi
+              ;;
+            v*)
+              version="${TAG#v}"
+              echo "gate: core tag $TAG -> consumer probe must print finding.Version $version"
+              scratch="$(mktemp -d)"
+              cd "$scratch"
+              go mod init consumer-proof >/dev/null
+              go get "$MOD_ROOT@v$version"
+              cat > main.go <<EOF
+          package main
+
+          import (
+          	"fmt"
+
+          	finding "$MOD_ROOT"
+          )
+
+          func main() { fmt.Println(finding.Version) }
+          EOF
+              go mod tidy
+              printed="$(go run .)"
+              echo "gate: probe printed: $printed"
+              if [ "$printed" = "$version" ]; then
+                VERDICT="OK"
+              fi
+              ;;
+            pipeline/*|analysis/*|toolsdk/*)
+              version="${TAG##*/v}"
+              mod="$MOD_ROOT/${TAG%/*}"
+              echo "gate: sub-module tag $TAG -> clean consumer must resolve + build"
+              scratch="$(mktemp -d)"
+              cd "$scratch"
+              go mod init consumer-proof >/dev/null
+              go get "$mod@v$version"
+              VERDICT="OK"
+              ;;
+            *)
+              echo "gate: unknown tag shape: $TAG"
+              ;;
+          esac
+
+          echo "RELEASE GATE VERDICT: $VERDICT (tag=$TAG)"
+          if [ "$VERDICT" != "OK" ]; then
+            exit 1
+          fi
