@@ -106,8 +106,8 @@ archived status/planning docs; release war stories moved to docs/release-procedu
 
 - **GOEXPERIMENT=jsonv2 DROPPED (2026-09-23)** — `encoding/json/v2` is GA since Go 1.27; anything telling you to export it is stale. The per-module path still needs `GOWORK=off`.
 - **CI/Release `go-version` pins must track the toolchain floor** — a floor bump with a stale `go-version:` pin fails EVERY CI job while local gates stay green (it silently killed 6+ master runs + both v1.13.0 Release runs). Rule: a floor bump is a SAME-COMMIT edit of every `go-version:` in both workflows.
-- **Run `go test` invocations SEQUENTIALLY on this machine** — two concurrent `go test`/`go build` runs sharing `GOCACHE=/mnt/buildcache/go-build` produce transient `[build failed]` errors. A plain retry succeeds; don't misdiagnose as code/toolchain problems. This includes `go mod edit`: editing go.mod requires while a background stress/test run is active invalidates the module graph mid-run and produces phantom failures like `could not import ... (invalid package name: "")` in go/packages-based tests (v1.12.0 stress run 1, 2026-09-17). Bump requires only on a quiet tree.
-- **Formatting has three coordinated signals** — treefmt is not on the devShell PATH; use `nix fmt` (canonical gate, also in the pre-commit hook via `--fail-on-change`), `golangci-lint fmt` (local autofix; `.golangci.yml` formatters mirror treefmt rules: gofumpt, goimports, golines@120), and dprint (markdown/JSON/YAML, pre-commit). Do NOT let the two Go formatters' rules diverge. If the pre-commit hook seems dead, check `git config core.hooksPath` — a stale `.githooks` value once silently disabled it.
+- **Run `go test` invocations SEQUENTIALLY on this machine** — concurrent go runs sharing `GOCACHE=/mnt/buildcache/go-build` produce transient `[build failed]` errors (retry succeeds; don't misdiagnose). Bump go.mod requires only on a quiet tree: editing requires mid-run produced phantom `could not import ... (invalid package name: "")` failures in go/packages tests (v1.12.0 stress run 1).
+- **Formatting has three coordinated signals** — `nix fmt` (canonical gate), `golangci-lint fmt` (autofix; `.golangci.yml` mirrors treefmt: gofumpt, goimports, golines@120), dprint (markdown/JSON/YAML). If the pre-commit hook seems dead, check `git config core.hooksPath` — a stale `.githooks` value once silently disabled it.
 - **`nix flake check --all-systems` DECLINED (2026-09-08)** — darwin derivations with no remote builders would fail it; plain `nix flake check` stays the gate. Revisit only if darwin builders are added.
 - **Repo state (2026-09-08)** — PUBLIC (free Actions, no `GOPRIVATE` needed for any module; secret scanning + push protection on); pkg.go.dev renders for all five modules. Lychee excludes only still-private sibling repos (remove as they go public) and CHANGELOG `v0.1.x` compare links.
 - **Tagged-commit CI `module-isolation` is EXPECTED red mid-train** (the CLI go.sum cannot carry checksums for tags that do not exist yet); the phased-red table in docs/release-procedure.md lists every structurally-red job per train phase.
@@ -211,11 +211,8 @@ go-output); naming history: `FindingTransformer` (was FindingProcessor),
 
 **One test file per production file.** All tests for a subject live in `<subject>_test.go` — no `_extra`/`_bugfix`/`coverage` suffixes (split by subject, put regression tests in the parent file, never name files after metrics). Shared helpers in `testutil_test.go`; one `example_test.go` per package (don't fragment).
 
-## Removed APIs (v1.0.0)
-
-All deprecated APIs from v0.6.0–v0.9.0 have been removed. No deprecated APIs remain.
-
-See `docs/MIGRATION_v1.0.md` for migration details.
+## Removed APIs
+Deprecated APIs from v0.6.0–v0.9.0 are gone (see `docs/MIGRATION_v1.0.md`).
 
 ---
 
