@@ -254,7 +254,7 @@ verified open today — do not re-derive); 25–50 = session-new tails.
 | 6  | release-procedure.md truth pass: phased-CI-red reality, push→verify→tag order, stress-on-sibling-tags rule, files-to-gates map, GoReleaser recovery recipe | High | M |
 | 7  | `docs/guides/detector-coverage.md` (DetectorV2/DetectResult/RunDetect/AddDetectResult)                       | High   | M      |
 | 8  | README: sell the coverage channel (front page has zero DetectorV2 mention)                                    | High   | S      |
-| 9  | ADR #20 for the DetectorV2 coverage channel                                                                   | Med    | S      |
+| 9  | ADR #20 for the DetectorV2 coverage channel (docs/architecture-decisions.md)                                                                   | Med    | S      |
 | 10 | Complete compare-ref sets in analysis/cmd CHANGELOGs (zero refs today; headers render as literal text)        | Med    | S      |
 | 11 | DetectorV2 runnable example + compile-gate wiring                                                             | Med    | S-M    |
 | 12 | api-stability-report.md: DetectorV2/DetectResult/RunDetect/AddDetectResult identifiers                        | Med    | S      |
