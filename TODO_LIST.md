@@ -59,6 +59,7 @@
 | Submit Awesome Go entry (LAUNCH3) — owner fork + PR; needs owner go on external comms — owner fork + PR                     | Med    | Low    | Entry text ready in `docs/brainstorming/launch-announcement-draft.md`. 🔒 owner.                           |
 | LAUNCH4: tap repo EXISTS (public); verify `HOMEBREW_TAP_GITHUB_TOKEN` secret exists + flip `homebrew_casks.skip_upload` off | Med    | S      | goreleaser brews section renders but ships `skip_upload: true`. ROADMAP open question. 🔒 owner.           |
 | v2.0 design spike SESSION (agenda written: docs/planning/2026-11-08_v2-design-spike-agenda.md)                              | Low    | High   | Parked in [ROADMAP.md](ROADMAP.md) "Hardening": Position sentinel, FixStrategy union, TagSet, sub-structs. |
+| `scripts/pre-push-verify.sh`: include shellcheck-gate + version-lattice in its structural list | Low | S | New gates from 2026-11-08 are preflight-wired but not yet in the pre-push battery. (2026-11-08 12:48 self-critique f/42.) |
 | Detached long-gate runner (nohup + log + verdict line) for local stress/bench                                               | Low    | S      | An interrupted poll killed a stress gate once (10-12 d4/e4).                                               |
 
 ## Standing watches (checked each session, not actionable tasks)
