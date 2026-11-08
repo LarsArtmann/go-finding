@@ -8,7 +8,7 @@
 
 ## Current Phase: Consumer ecosystem growth
 
-**Current version:** 1.13.0 ([unreleased work](CHANGELOG.md#unreleased) will accumulate toward the next release)
+**Current version:** 1.15.1 ([unreleased work](CHANGELOG.md#unreleased) will accumulate toward the next release)
 
 v1.0.0 locked the API (2026-06-24). v1.1.0 added multi-module workspace, branded type safety, SARIF suppression round-trip, LSP data fidelity. v1.2.0 extracted `lockutil`, defragmented tests. v1.2.1 shipped 15+ correctness/security fixes, `encoding/json/v2` migration. v1.3.0 added 12 consumer-driven convenience APIs based on a full audit of 22 consumer projects. v1.4.0 added `go-error-family` integration (unified error classification), community readiness infrastructure (SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates), and retired the "zero external deps" principle in favor of a small, deliberate dependency surface. v1.4.1 eliminated all code duplication (zero clones at `-t 1`), consolidated test setup across all 4 modules, and resolved 7 pipeline lint issues. v1.5.0 shipped deterministic JSON/SARIF output, `ValidateAll` batch validation, `FlightRecorderHook` pipeline observability, and the `tagsEqual` fix for order-insensitive equality. v1.6.0 shipped `ParseConfidence`, `Template.Builder`, flight-recorder config-file integration, exported path-safety APIs (`ResolveSafePath` family), and 7 CI structural-check scripts. v1.7.0 shipped `GroupID` finding groups, per-finding fix outcomes (`ApplyWithOutcomes`/`ApplyWithReport`), per-file rollback default (ADR-016), typed outcome errors, and outcome metrics. v1.8.0 shipped `GroupID` validation, `Config.OnFixOutcome`, `FixApplier.ApplyDryRun`, `Report.GroupFindingsSorted`, `Template.WithGroupID`, unsafe-path outcome surfacing, the staticcheck fix-extension, and the release-preflight gate (sub-module go.mod drift corrected in tags). v1.9.0 shipped flight-recorder rotation + gzip, the redesign of the bench/CI gates on measured evidence, and the release-preflight self-test; v1.9.1/v1.9.2 were pipeline-verification patch releases that resurrected the GitHub Release pipeline (34-asset signed releases). v1.10.0 added the `toolsdk` sub-module (the BuildFlow provider plugin contract, migrated out of BuildFlow). v1.11.0 was a release-integrity hardening release (Release concurrency guard, preflight unpushed-commits + worktree-hygiene gates, docs version-stamp guard, erraudit gate at 0 violations across all 5 modules, correlation proximity-sort underflow fix). v1.12.0 exposed `PipelineResult.Outcomes` (per-finding fix outcomes on the pipeline result, issue #32) and fixed the flaky linter-category registry tests plus dependency-graph hygiene. v1.13.0 added `toolsdk.Trigger.NotRequires` (ownership deference) and fixed the tag-validation error message.
 
@@ -16,7 +16,7 @@ The library is production-ready and API-stable. The focus now shifts to growing 
 
 ---
 
-## v1.0.0-v1.13.0 - API lock, consumer convenience, observability, community readiness, release integrity
+## v1.0.0-v1.15.1 - API lock, consumer convenience, observability, community readiness, release integrity
 
 **Status: Released.**
 
@@ -36,6 +36,9 @@ The library is production-ready and API-stable. The focus now shifts to growing 
 - v1.11.0: Release-integrity hardening — Release workflow concurrency guard, preflight unpushed-commits + worktree-hygiene gates, docs version-stamp guard, preflight self-test `--post-tag` coverage, correlation proximity-sort underflow fix, erraudit gate at 0 violations across all 5 modules (`scripts/error-audit.sh`).
 - v1.12.0: `PipelineResult.Outcomes` (per-finding fix outcomes on the pipeline result, issue #32), flaky linter-category registry tests fixed at root cause, dependency-graph hygiene (stray requires dropped, toolsdk go directive restored).
 - v1.13.0: `toolsdk.Trigger.NotRequires` (disqualifying patterns for ownership deference), tag-validation error message states the actual charset contract.
+- v1.14.0: typed multi-edit edit lists — `Finding.Edits` + `TextEdit` (ADR #19), `EditListProvider` first in the fix chain (loud cross-file/stale-offset failures), `Summary.FilesScanned`/`SkippedModules` coverage fields, `pipeline.ResolveFlightRecorderConfig` export; the train itself produced the tag-ordering lessons now encoded in AGENTS (stamp in the tagged commit, consumer-proof before sibling tags, cmd tag at the resync commit).
+- v1.15.0: coverage-evidence release — `DetectResult` + `DetectorV2` (`RunDetect` falls back to plain `Detect` with coverage zeroed), `Report.AddDetectResult` feeds findings plus coverage into a report; pipeline dispatches every detect path through the channel.
+- v1.15.1: dependency refresh + release-infrastructure patch train (go.work ignore rules, cmd go.sum completion, golangci config convergence). Known stamp defect: the tagged artifact self-reports "1.15.0" — the v1.14.0 stamp lesson repeated; corrected post-tag and the sibling v1.15.1 tags completed the train.
 
 ---
 
