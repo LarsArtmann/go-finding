@@ -112,7 +112,7 @@ This session focused on **research and evaluation** of `samber/ro` (reactive ext
 
 ## Top #25 Things to Get Done Next
 
-1. ~~samber/ro evaluation~~ (COMPLETED - not needed)
+1. ~~samber/ro evaluation~~ done — evaluated, not needed
 2. Fix unused import in json_test.go (was pre-existing, now fixed)
 3. Add more detector implementations (govet, staticcheck complete)
 4. Implement file watching mode for continuous analysis

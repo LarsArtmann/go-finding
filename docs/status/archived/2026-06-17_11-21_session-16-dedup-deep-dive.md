@@ -69,7 +69,7 @@
 | **GoASTProvider coverage**      | 80.8%         | Below 95% target — needs more edge case tests                                                                        |
 | **TODO_LIST.md freshness**      | Stale (5/20)  | Still references "session 13" as last update — needs re-sync with current state                                      |
 | **SARIF schema validation**     | Not done      | Blocked on 7K+ line schema vendoring decision                                                                        |
-| **CLI FixProviders via config** | Broken        | `Fix`FixProviders`through CLI config` is open in TODO_LIST.md                                                        |
+| **CLI FixProviders via config** | Broken        | `Fix`/`FixProviders` via CLI config is open in TODO_LIST.md                                                        |
 
 ---
 

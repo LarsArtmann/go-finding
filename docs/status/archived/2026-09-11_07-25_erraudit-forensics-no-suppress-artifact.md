@@ -54,7 +54,7 @@ The user re-pasted the same 79-violation erraudit artifact a second time. This r
 
 ## c) NOT STARTED
 
-- ~~The three questions from the 06:43 report remain **unanswered by the user** (push? consumer string-matching? erraudit CI path?) — re-asked in §g.~~ mooted: push happened 2026-09-11; erraudit CI still blocked (TODO_LIST); adopt-oops remains declined.
+- ~~The three questions from the 06:43 report remain **unanswered by the user** (push? consumer string-matching? erraudit CI path?) — re-asked in §g.~~ superseded — push happened 2026-09-11; erraudit CI still blocked (TODO_LIST); adopt-oops remains declined
 - Consumer error-message compatibility sweep (3 changed message formats).
 - ~~Stress gate before next tag push (mandatory, not yet run).~~ done — green in the v1.12.0 train.
 - ~~`go-arch-lint` run (not run this session; no package-boundary changes, honest gap).~~ done — green.

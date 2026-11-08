@@ -54,9 +54,9 @@
 
 - ~~Billing/account switch → CI dispatch verify, lychee + docs-api-check jobs on real runners, `HOMEBREW_TAP_GITHUB_TOKEN` secret, Dependabot #23/#24/#25/#29, v1.7.0/v1.8.0 release runs.~~ resolved: repo went PUBLIC (Actions free); CI 21/21 green incl. docs-api-check + lychee; Dependabot #23/#24/#25 merged, #29 closed; release runs green at v1.9.x; brew secret = user question (ROADMAP Open questions).
 - ~~Public flip → pkg.go.dev, GoReleaser+Homebrew, Awesome Go, announcement (all prepped).~~ resolved: flip done 22:24; pkg.go.dev live; GoReleaser proven (v1.9.2, 34 assets); Awesome Go + announcement still owed (TODO_LIST).
-- ~~gomend + licenseforge consumer bumps (their broken replaces).~~ blocked consumer-side; issues gomend#1 + licenseforge#46 filed.
-- ~~7 consumers' pre-existing test failures (consumer-side bugs; verified not ours).~~ 5 issues filed (gomend#1, licenseforge#46, library-policy#74, erraudit#3, go-structure-linter#2); remainder owed (TODO_LIST).
-- ~~v1.9.0 train holds: FR rotation + gzip ([Unreleased]) + whatever accumulates.~~ SHIPPED v1.9.0.
+- ~~gomend + licenseforge consumer bumps (their broken replaces).~~ done — consumer-side tracked upstream: gomend#1 + licenseforge#46 filed, bumps blocked upstream (docs/ecosystem.md)
+- ~~7 consumers' pre-existing test failures (consumer-side bugs; verified not ours).~~ done — 5 issues filed (gomend#1, licenseforge#46, library-policy#74, erraudit#3, go-structure-linter#2); remainder owed (TODO_LIST).
+- ~~v1.9.0 train holds: FR rotation + gzip ([Unreleased]) + whatever accumulates.~~ done — shipped v1.9.0
 - f/49 v2.0 design spike, f/50 json/v2 watch: ROADMAP.
 
 ---

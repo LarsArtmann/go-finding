@@ -562,7 +562,7 @@ No `converters/` directory. Converters live in each tool as a single file.
 
 ### Consumer Use Cases
 
-1. **Unified report** — Run all tools, merge `Report`s, output single SARIF for GitHub Code Scanning
+1. **Unified report** — Run all tools, merge `Report` instances, output single SARIF for GitHub Code Scanning
 2. **Auto-fix pipeline** — Filter `FixStrategy == "direct"`, apply, re-run until stable
 3. **AI fix pipeline** — Filter `FixStrategy == "suggest"`, send to AI with `BeforeCode`/`AfterCode` context, apply
 4. **Quality dashboard** — Aggregate `Summary` across tools, track trends over time

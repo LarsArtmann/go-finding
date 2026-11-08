@@ -38,7 +38,7 @@ No CHANGELOG cuts, no tag pushes, no version bumps beyond what's listed in (a). 
 
 ### 2. docs-api-check green locally, not yet re-proven in CI
 
-Fixed by `e37bf77` and verified by running the actual gate script (`docs-api-check.sh` → "OK: README.md version stamp matches version.go"). But README pushes are `paths-ignore`d, so no CI run exists for `e37bf77`; the gate's next CI proof rides along with the next code push (e.g. the train's resync commit).
+Fixed by `e37bf77` and verified by running the actual gate script (`docs-api-check.sh` → "OK: README.md version stamp matches version.go"). But README pushes are excluded via `paths-ignore`, so no CI run exists for `e37bf77`; the gate's next CI proof rides along with the next code push (e.g. the train's resync commit).
 
 ## c) NOT STARTED
 

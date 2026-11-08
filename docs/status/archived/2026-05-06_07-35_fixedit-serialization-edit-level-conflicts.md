@@ -174,7 +174,7 @@ Nothing partially done — all started items are complete.
    or `Key()` method instead of `ID` for cases where findings don't have stable IDs.
 
 4. **FixApplier.Close() is never called in pipeline** — `applyDirectFixes` creates a new
-   `FixApplier` per call but never `defer close`s it. Temp backup directories leak. This is
+   `FixApplier` per call but never defers the close. Temp backup directories leak. This is
    a pre-existing bug but critical to fix.
 
 5. **Pipeline.Run() mutates internal state** — `p.findings` and `p.iterations` are mutated

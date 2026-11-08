@@ -60,7 +60,7 @@ Both root causes of the original `test-fuzz: [Failed] 20 fuzz tests failed (3 pa
 | Deprecated APIs           | 7 entries              | `Report.Findings`, `Report.Merge()`, `OnStage`, `Metrics.RecordFix()`, `CountBySeverity()`, `Finding.Tag`, `ConflictDetector`/`Verifier` structs. All scheduled for v1.0.0 removal.                   |
 | CLI FixProviders config   | Incomplete             | ConfigFile → ResolveProviders path exists but error handling for unknown providers is rough.                                                                                                          |
 | Category/Tags deprecation | ADR #13 planned        | Twin-method contract documented but migration path not yet enforced.                                                                                                                                  |
-| LSP diagnostics           | Stale phantom warnings | `golangci_lint_ls` reports `gochecknoglobals` on `export_test.go` Export\* funcs that are actually `func`s (not `var`s). `golangci-lint` CLI does not reproduce. LSP restart failed in prior session. |
+| LSP diagnostics           | Stale phantom warnings | `golangci_lint_ls` reports `gochecknoglobals` on `export_test.go` Export\* funcs that are actually `func` declarations (not `var` declarations). `golangci-lint` CLI does not reproduce. LSP restart failed in prior session. |
 
 ---
 

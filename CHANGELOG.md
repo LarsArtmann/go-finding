@@ -108,7 +108,7 @@ v1.14.0 siblings).
 
 ### Added
 
-- **toolsdk options channel (PR #41)** — tools can declare typed `Option`s
+- **toolsdk options channel (PR #41)** — tools can declare typed `Option` entries
   (name, kind, default) on their `Spec`; consumers pass per-run values that are
   validated against the declarations (`ErrUnknownOption` on typos,
   `ErrInvalidOption`/`ErrDuplicateOption` on malformed specs).
