@@ -3,7 +3,7 @@ module github.com/larsartmann/go-finding/analysis
 go 1.27
 
 require (
-	github.com/larsartmann/go-finding v1.15.0
+	github.com/larsartmann/go-finding v1.15.1
 	golang.org/x/tools v0.52.0
 )
 

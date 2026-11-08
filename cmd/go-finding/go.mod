@@ -5,7 +5,7 @@ go 1.27
 require (
 	github.com/LarsArtmann/gogenfilter/v3 v3.7.0
 	github.com/go-faster/yaml v0.4.6
-	github.com/larsartmann/go-finding v1.15.0
+	github.com/larsartmann/go-finding v1.15.1
 	github.com/larsartmann/go-finding/pipeline v1.15.0
 	github.com/larsartmann/go-output v0.38.7
 	github.com/larsartmann/go-output/delimited v0.38.7
@@ -32,5 +32,4 @@ require (
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/term v0.47.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
-	golang.org/x/tools v0.52.0 // indirect
 )

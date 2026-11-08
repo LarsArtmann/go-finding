@@ -14,6 +14,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Nothing yet.
+
+### Fixed
+
+- **Completed the missing `/go.mod` hash lines in the sub-module `go.sum`
+  files** (pipeline, analysis, toolsdk; cmd was completed in the v1.15.1
+  tagged commit). The dependency-bump commits (9bae0ba, 4398a6f) wrote
+  zip-hash-only entries, so cold-cache CI builds failed with `missing
+  go.sum entry for go.mod file` (`module-isolation` job) and `go work sync`
+  materialized divergent indirect requires on its second pass
+  (`go-work-sync` job).
+
+- **v1.15.1 stamp + train completion** — version.go bumped to 1.15.1 (the
+  tagged artifact self-reports "1.15.0": the bump missed the tagged commit,
+  repeating the v1.14.0 stamp lesson) and all sibling requires moved to
+  core v1.15.1. The pipeline/analysis/cmd tags at v1.15.1 complete the
+  train after this commit.
+
+## [1.15.1] - 2026-11-04
+
+Patch train: dependency refresh and release-infrastructure fixes. No API
+changes. Known stamp defect: the tagged artifact self-reports
+`finding.Version` "1.15.0" — the version bump missed the tagged commit
+(the v1.14.0 stamp lesson repeated); corrected on master post-tag.
+Sibling v1.15.1 tags (pipeline, analysis, cmd) complete the train.
+
+### Added
+
 - **`finding.Relativize`**: rewrites findings whose `Position.File` is an
   absolute path under a given root into root-relative slash paths and
   regenerates their IDs, making IDs checkout-independent — the CLI lane
@@ -27,7 +55,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Nothing yet.
+- **go.work committed with correct ignore rules and the cmd/go-finding
+  go.sum completed** — the resync state that the v1.15.1 tag carries
+  (49669e3).
+- **All dependencies updated to latest** across the five modules
+  (9bae0ba, 4398a6f).
+- **golangci-lint config converged** via golangci-lint-auto-configure
+  (26863a3), eliminating drift between the hand-maintained and generated
+  config.
 
 ## [1.15.0] - 2026-10-12
 
@@ -1079,7 +1114,8 @@ All APIs deprecated since v0.6.0–v0.9.0 have been removed. See `docs/MIGRATION
 
 ---
 
-[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.15.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-finding/compare/v1.15.1...HEAD
+[1.15.1]: https://github.com/larsartmann/go-finding/compare/v1.15.0...v1.15.1
 [1.15.0]: https://github.com/larsartmann/go-finding/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/larsartmann/go-finding/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/larsartmann/go-finding/compare/v1.12.0...v1.13.0
