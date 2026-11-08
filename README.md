@@ -5,7 +5,7 @@ A Go library providing a unified data model and pipeline for static analysis too
 [![CI](https://github.com/larsartmann/go-finding/actions/workflows/ci.yml/badge.svg)](https://github.com/larsartmann/go-finding/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/larsartmann/go-finding.svg)](https://pkg.go.dev/github.com/larsartmann/go-finding)
 [![codecov](https://codecov.io/gh/larsartmann/go-finding/branch/master/graph/badge.svg)](https://codecov.io/gh/larsartmann/go-finding)
-[![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.27+-00ADD8?logo=go)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Why
@@ -53,7 +53,7 @@ Each module is an independent Go module and is versioned with its own git tag:
 
 | Module   | Import path                                        | Tag                 |
 | -------- | -------------------------------------------------- | ------------------- |
-| Core     | `github.com/larsartmann/go-finding`                | `v1.15.0`           |
+| Core     | `github.com/larsartmann/go-finding`                | `v1.15.1`           |
 | Pipeline | `github.com/larsartmann/go-finding/pipeline`       | `pipeline/v*`       |
 | Analysis | `github.com/larsartmann/go-finding/analysis`       | `analysis/v*`       |
 | Tool SDK | `github.com/larsartmann/go-finding/toolsdk`        | `toolsdk/v*`        |
@@ -505,7 +505,7 @@ This project follows [Semantic Versioning](https://semver.org/). The API has bee
 The current version is available programmatically:
 
 ```go
-fmt.Println(finding.Version) // "1.15.0"
+fmt.Println(finding.Version) // "1.15.1"
 ```
 
 ## Documentation
