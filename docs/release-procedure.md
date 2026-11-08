@@ -16,8 +16,8 @@
    (go.mod references), replace directives, go.work sync, test naming, JSON
    determinism, docs API references (including the README version stamp), docs
    freshness, and GOWORK=off builds per module. Add `--bench` / `--stress` to
-   also run the benchmark and stress gates through it. **Do not tag until it
-   passes.**
+   also run the benchmark and stress gates through it. Add `--tag vX.Y.Z` to
+   also run the stamp gate (below). **Do not tag until it passes.**
 1. Verify all tests pass: `go test -race -count=1 ./...`
 2. Verify lint passes: `golangci-lint run ./...`
 3. Verify the flake: `nix flake check` (treefmt, package build, module isolation)
@@ -46,6 +46,21 @@
    carry it — verify with `git show <tag>:version.go`. The v1.14.0 core tag
    self-reports "1.13.0" because its bump commit landed after tagging, and
    `protect-release-tags` blocks the retag (found 2026-10-11).
+
+   **Stamp gate (mandatory, added 2026-11-08 after the v1.15.1 repeat of the
+   v1.14.0 class):** immediately before creating ANY tag, run
+
+   ```bash
+   bash scripts/release-preflight.sh --tag vX.Y.Z
+   # or standalone: bash scripts/stamp-gate.sh vX.Y.Z
+   ```
+
+   It asserts version.go equals the tag you are about to create and that the
+   tag does not exist yet (works for the prefixed sub-module variants too).
+   The selftest injects a stale stamp and proves the exact FAIL line
+   (`scripts/release-preflight-selftest.sh`). A green preflight WITHOUT
+   `--tag` is not stamp evidence — the check only runs when you pass the
+   intended tag.
 7. **Full FEATURES.md walk** — read `FEATURES.md` end to end and verify every
    row's status against the code being released. The file is the honest feature
    inventory; a release must not ship with stale rows. Check in particular that

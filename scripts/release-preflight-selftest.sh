@@ -75,22 +75,22 @@ expect_fail() {
 	FAILURES=$((FAILURES + 1))
 }
 
-echo "== self-test 1/4: tag collision (injecting $LATEST_TAG) =="
+echo "== self-test 1/6: tag collision (injecting $LATEST_TAG) =="
 sed -i -e "s/^const VersionMinor = .*/const VersionMinor = $LATEST_MINOR/" \
 	-e "s/^const VersionPatch = .*/const VersionPatch = $LATEST_PATCH/" "$WORKTREE/version.go"
 expect_fail "tag collision detected" "FAIL: tag $LATEST_TAG already exists"
 git -C "$WORKTREE" restore version.go
 
-echo "== self-test 2/4: version drift (injecting v-increment minor $NEXT_MINOR) =="
+echo "== self-test 2/6: version drift (injecting v-increment minor $NEXT_MINOR) =="
 sed -i "s/^const VersionMinor = .*/const VersionMinor = $NEXT_MINOR/" "$WORKTREE/version.go"
 expect_fail "version drift detected" "FAIL: version drift"
 
-echo "== self-test 3/4: post-tag mode detects missing tag (still on v-injected version.go) =="
+echo "== self-test 3/6: post-tag mode detects missing tag (still on v-injected version.go) =="
 MISSING_PATCH=$(sed -n 's/^const VersionPatch = //p' "$WORKTREE/version.go")
 MISSING_TAG="v$(sed -n 's/^const VersionMajor = //p' "$WORKTREE/version.go").$NEXT_MINOR.$MISSING_PATCH"
 expect_fail "post-tag missing tag detected" "FAIL: tag $MISSING_TAG missing (post-tag mode expects it to exist)" --post-tag
 
-echo "== self-test 4/4: post-tag mode detects INCOMPLETE tag set (toolsdk missing) =="
+echo "== self-test 4/6: post-tag mode detects INCOMPLETE tag set (toolsdk missing) =="
 INJECTED_TAGS=()
 for prefix in "" "pipeline/" "analysis/" "cmd/go-finding/"; do
 	tag="${prefix}${MISSING_TAG}"
