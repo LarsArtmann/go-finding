@@ -3,5 +3,6 @@
     "struck_rows": 1,
     "oldest_days": 60,
     "max_unarchived": 8
-  }
+  },
+  "audit_max": 340
 }
