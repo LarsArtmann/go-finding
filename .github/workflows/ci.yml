@@ -360,6 +360,13 @@ jobs:
           go-version: "1.27"
       - name: Verify all modules resolve, build, and run from the proxy
         run: bash scripts/consumer-compat-check.sh latest
+      - name: Verify the working tree against a fresh consumer (at-HEAD API drift)
+        # Proxy mode can only prove versions already published; the at-HEAD
+        # variant compiles the same consumer probes against THIS commit's
+        # tree, catching API drift BEFORE a train ships it. The CLI leg also
+        # asserts the binary stamps EXACTLY the working-tree version.go
+        # (the v1.15.1 self-reports-1.15.0 class).
+        run: bash scripts/consumer-compat-check.sh --head
 
     timeout-minutes: 15
   nix:

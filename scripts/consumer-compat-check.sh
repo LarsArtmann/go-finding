@@ -28,7 +28,7 @@ MODE=proxy
 VERSION=latest
 for arg in "$@"; do
 	case "$arg" in
-	--head) MODE=head ;;
+	--head) MODE="head" ;;
 	latest | v*) VERSION="$arg" ;;
 	*)
 		echo "usage: $0 [--head] [version]"
@@ -110,10 +110,20 @@ check_cli_module() {
 			# published (possibly stamp-defective) core tag. Then assert the
 			# EXACT stamp: this probe would have failed red on the v1.15.1
 			# self-reports-1.15.0 class at build time.
-			go mod init compat.local >/dev/null 2>&1
-			printf 'require %s v0.0.0-local\n\nreplace %s => %s\nreplace github.com/larsartmann/go-finding => %s\n' \
-				"$module" "$module" "$REPO_ROOT/cmd/go-finding" "$REPO_ROOT" >>go.mod
-			GOWORK=off go build -o "$GOBIN/go-finding" "$module" >/dev/null 2>&1
+			# Build the CLI as an at-HEAD consumer would: copy the CLI module
+			# out of the working tree and retarget its `replace ../` to the
+			# repo root, so the binary is stamped from the LOCAL version.go,
+			# not from the published (possibly stamp-defective) core tag.
+			# (A wrapper module with a local require does not survive go mod
+			# tidy: the unresolvable pseudo-version require gets dropped.)
+			# This probe would have failed red on the v1.15.1
+			# self-reports-1.15.0 class at build time.
+			cp -r "$REPO_ROOT/cmd/go-finding" "$dir/cli"
+			# The CLI module carries no replace (replace-audit enforces that
+			# for `go install module@version`); the COPY appends one so the
+			# build resolves core from the working tree.
+			printf '\nreplace github.com/larsartmann/go-finding => %s\n' "$REPO_ROOT" >>"$dir/cli/go.mod"
+			(cd "$dir/cli" && GOWORK=off go mod tidy >/dev/null 2>&1 && GOWORK=off go build -o "$GOBIN/go-finding" .) >/dev/null 2>&1
 			local stamp
 			stamp="v$(sed -n 's/^const VersionMajor = //p' "$REPO_ROOT/version.go").$(sed -n 's/^const VersionMinor = //p' "$REPO_ROOT/version.go").$(sed -n 's/^const VersionPatch = //p' "$REPO_ROOT/version.go")"
 			# finding.Version has no leading v; the stamp does.
