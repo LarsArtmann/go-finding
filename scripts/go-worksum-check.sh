@@ -1,17 +1,23 @@
 #!/usr/bin/env bash
 # go.work.sum freshness gate.
 #
-# Two failure classes:
-#   1. BROKEN — a checksum entry does not match the module it names. Every
-#      workspace go command dies with a checksum-mismatch error, which the
-#      09-27 dependency bumps produced when go.sum files drifted from the
-#      workspace view.
-#   2. STALE — entries for module@version pairs the workspace graph no
-#      longer requires. Harmless at build time, but they mask real drift:
-#      a reader cannot tell served checksums from dead ones.
+# Legs:
+#   1. WORKSPACE GRAPH — `go list -m all` in workspace mode. Missing or
+#      corrupted checksums die here with the checksum-mismatch error class
+#      the 09-27 dependency bumps produced in cold-cache CI.
+#   2. LINE HYGIENE — every go.work.sum line parses as `module version hash`.
+#   3. SYNC IDEMPOTENCE (--sync, opt-in because it mutates the tree) —
+#      `go work sync` must leave go.work and go.work.sum unchanged. A diff
+#      proves the files were stale or incomplete; the diff IS the fix.
 #
-# Usage: ./scripts/go-worksum-check.sh
-# Exit codes: 0 = fresh, 1 = stale or broken, 2 = setup error.
+# Deliberately NOT a gate: entries for module versions outside the current
+# workspace graph. go.work.sum legitimately accumulates supersets (test
+# deps of dependencies, tool graphs, pruned-history residue); pruning them
+# is not required for correctness and flagging them is a false-positive
+# machine (proven 2026-11-08: ~140 such entries on a healthy tree).
+#
+# Usage: ./scripts/go-worksum-check.sh [--sync]
+# Exit codes: 0 = fresh, 1 = findings, 2 = setup error.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -19,6 +25,17 @@ cd "$(dirname "$0")/.."
 FAILURES=0
 
 step() { printf '\n== %s ==\n' "$1"; }
+
+SYNC=0
+for arg in "$@"; do
+	case "$arg" in
+	--sync) SYNC=1 ;;
+	*)
+		echo "usage: $0 [--sync]"
+		exit 2
+		;;
+	esac
+done
 
 step "workspace graph resolves (missing/broken checksums class)"
 if ! graph=$(go list -m all 2>&1); then
@@ -28,7 +45,7 @@ if ! graph=$(go list -m all 2>&1); then
 fi
 echo "OK: workspace graph resolves ($(echo "$graph" | wc -l | tr -d ' ') modules)"
 
-step "go.work.sum entries exist and are parseable"
+step "go.work.sum lines parse"
 if [ ! -f go.work.sum ]; then
 	echo "FAIL: go.work.sum missing"
 	exit 1
@@ -38,22 +55,28 @@ if [ "${bad_lines:-0}" -gt 0 ]; then
 	echo "FAIL: $bad_lines unparseable line(s) in go.work.sum"
 	FAILURES=$((FAILURES + 1))
 else
-	echo "OK: all go.work.sum lines parse"
+	echo "OK: all $(grep -c '' go.work.sum | tr -d ' ') lines parse"
 fi
 
-step "every go.work.sum entry is in the workspace graph (staleness class)"
-stale=0
-while IFS= read -r pair; do
-	[ -z "$pair" ] && continue
-	if ! grep -qE "^${pair//\//\\/}( |$)" <<<"$graph"; then
-		echo "FAIL: stale entry (not in workspace graph): $pair"
-		stale=$((stale + 1))
+if [ "$SYNC" -eq 1 ]; then
+	step "go work sync idempotence (stale/incomplete class)"
+	git diff --quiet -- go.work go.work.sum ||
+		{
+			echo "FAIL: pre-existing uncommitted changes to go.work/go.work.sum — commit or restore first"
+			exit 1
+		}
+	go work sync >/dev/null 2>&1 || {
+		echo "FAIL: go work sync errored"
+		exit 1
+	}
+	if git diff --quiet -- go.work go.work.sum; then
+		echo "OK: go work sync changed nothing"
+	else
+		echo "FAIL: go work sync rewrote go.work/go.work.sum — the files were stale."
+		echo "The working tree now holds the CORRECTED files; review and commit them:"
+		git diff --stat -- go.work go.work.sum
+		FAILURES=$((FAILURES + 1))
 	fi
-done < <(awk '{print $1 " " $2}' go.work.sum | grep -v '/go.mod ' | sort -u)
-if [ "$stale" -gt 0 ]; then
-	FAILURES=$((FAILURES + 1))
-else
-	echo "OK: no stale go.work.sum entries"
 fi
 
 echo "GO.WORK.SUM VERDICT: $([ "$FAILURES" -eq 0 ] && echo PASS || echo "FAIL ($FAILURES class(es))")"
