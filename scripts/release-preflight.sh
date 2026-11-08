@@ -177,7 +177,7 @@ if [ "$RUN_LINKS" -eq 1 ]; then
 fi
 
 step "GOWORK=off build per module"
-for dir in . pipeline analysis cmd/go-finding; do
+for dir in . pipeline analysis toolsdk cmd/go-finding; do
 	if (cd "$dir" && GOWORK=off go build ./...); then
 		echo "OK: GOWORK=off build in $dir"
 	else
@@ -187,7 +187,7 @@ for dir in . pipeline analysis cmd/go-finding; do
 done
 
 step "go mod tidy -diff per module (tidy-ness)"
-for dir in . pipeline analysis cmd/go-finding; do
+for dir in . pipeline analysis toolsdk cmd/go-finding; do
 	if (cd "$dir" && GOWORK=off GOPRIVATE='github.com/larsartmann/*' go mod tidy -diff); then
 		echo "OK: go.mod tidy in $dir"
 	else

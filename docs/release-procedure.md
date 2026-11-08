@@ -235,6 +235,23 @@ The release gate is the Release workflow ON THE TAG itself, plus the
 `release-gate` consumer-proof job — not master CI color mid-train. Do not
 "fix" a phased red by weakening the gate; land the phase that un-reds it.
 
+**Decision (2026-11-08, T19): documented exception, NOT phase-aware gates.**
+The gates stay strict in every phase; this table is the interpretation
+guide for a human reading a train's red runs. A flag like
+`preflight --phase` would weaken the gate by configuration, exactly the
+"no gate weakened to make a task pass" anti-pattern.
+
+**Sub-module-only releases (toolsdk, T20 decision: versioning stays
+INDEPENDENT).** Preflight derives its target-tag list from core's
+version.go, so a sub-module-only tag (e.g. `toolsdk/v1.16.0` while core
+sits at v1.15.1) fails the "tag already exists" checks as false positives.
+For a sub-module-only release: run every OTHER gate green (since 2026-11-08
+the GOWORK=off build/tidy loops include toolsdk, closing the old blind
+spot), then verify the actual target tag does not exist and the clean-dir
+consumer proof (`go get <mod>@<tag>` in a scratch module + build) passes
+before pushing. The toolsdk GOWORK=off manual line in older docs is
+obsolete — the loop covers it now.
+
 ### Stress on sibling-tag trains (the d/1 rule, 2026-11-08)
 
 The v1.15.1 sibling tags went out without the repeat=20 race stress on a
