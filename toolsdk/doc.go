@@ -48,3 +48,19 @@
 // hub). It must never import BuildFlow's domain/execution/tools packages, so
 // tools that target this SDK are not coupled to BuildFlow's release cycle.
 package toolsdk
+//
+// # The dry-run contract
+//
+// BuildFlow's --dry-run promises "show what would be executed without
+// running". The pipeline threads the flag to your Repair function via
+// WithDryRun (read it back with DryRunFromContext): a repair that mutates
+// files MUST short-circuit the write when the flag is set and report what it
+// WOULD have done instead (a "dry-run: N ..." message and a no-op verdict).
+// Detection has no such out: detectors are read-only by design and always
+// run for real, so their findings stay truthful under the flag. Two nets
+// back this contract in BuildFlow: a source audit that fails any in-process
+// write site without a dry-run guard or allowlisted reason, and a post-hoc
+// decorator that fails the step if a declared output file changed during a
+// dry-run repair. A repairer that forgets the flag ships as a red step, not
+// as a silently mutated user tree (issue #98: go-auto-upgrade did exactly
+// that).
