@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
-### Fixed
+### Changed- CI lint stack raised to v2.15.0 (action `version:` pin, was v2.14.0; the rationale comment now matches), with the errorfamily `wrapcheck` exemption added to `.golangci.yml` (`- go-error-family.` import-path sig — the fleet convention; v2.15's signature-based wrapcheck otherwise flags errorfamily constructors as unwrapped externals). Verified green locally with the v2.15.0 binary across the root and the analysis, pipeline, and toolsdk sub-modules.### Fixed
 
 - **Release workflow no longer fails after publishing (v1.15.1 run
   41863470480 class)** — the goreleaser nixpkgs pipe targeted
