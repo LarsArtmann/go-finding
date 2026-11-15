@@ -7,7 +7,7 @@ require (
 	github.com/larsartmann/go-finding v1.15.1
 	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
-	golang.org/x/sync v0.24.0
+	golang.org/x/sync v0.25.0
 )
 
 require (
