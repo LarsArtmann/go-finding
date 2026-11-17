@@ -516,7 +516,7 @@ var _ = Describe("ID Generation User Stories", func() {
 		pos := finding.Pos("main.go", 0, 0)
 		id := finding.GenerateID("govet", "nilcheck", pos)
 
-		Expect(finding.IsHashID(string(id))).To(BeTrue())
+		Expect(finding.IsHashID(id)).To(BeTrue())
 	})
 
 	It("parses IDs back into components", func() {

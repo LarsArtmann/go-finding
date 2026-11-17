@@ -78,7 +78,7 @@ func findingsFromsarifLog(log sarifLog) []Finding {
 // findingFromSarResult converts a single sarifResult into a Finding.
 func findingFromSarResult(r sarifResult, toolName string) Finding {
 	f := Finding{
-		Rule:     RuleName(r.RuleID),
+		Rule:     r.RuleID,
 		Severity: FromSARIFLevel(r.Level),
 		Message:  r.Message.Text,
 		ToolName: ToolName(toolName),

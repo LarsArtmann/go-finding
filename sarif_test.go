@@ -20,7 +20,7 @@ func simpleSARIFReport() *Report {
 	}
 }
 
-func assertRulePresent(t *testing.T, rules map[string]struct{}, ruleID string, wantPresent bool) {
+func assertRulePresent(t *testing.T, rules map[RuleName]struct{}, ruleID RuleName, wantPresent bool) {
 	t.Helper()
 
 	_, ok := rules[ruleID]
@@ -192,7 +192,7 @@ func TestToSARIFFiltered(t *testing.T) {
 	results := log.Runs[0].Results
 	g.Expect(results).To(gomega.HaveLen(2))
 
-	rules := make(map[string]struct{})
+	rules := make(map[RuleName]struct{})
 	for _, res := range results {
 		rules[res.RuleID] = struct{}{}
 	}

@@ -106,6 +106,6 @@ func FuzzIsHashID(f *testing.F) {
 	f.Add("")
 
 	f.Fuzz(func(_ *testing.T, id string) {
-		_ = IsHashID(id) // must not panic
+		_ = IsHashID(ID(id)) // must not panic
 	})
 }

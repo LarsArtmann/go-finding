@@ -50,7 +50,7 @@ func TestIsHashID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if got := IsHashID(tt.id); got != tt.want {
+		if got := IsHashID(ID(tt.id)); got != tt.want {
 			t.Errorf("IsHashID(%q) = %v, want %v", tt.id, got, tt.want)
 		}
 	}

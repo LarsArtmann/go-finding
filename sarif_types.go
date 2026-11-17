@@ -85,7 +85,7 @@ type sarifDriver struct {
 // The coercion between these two representations is centralized in
 // sarifProperties() (export) and applySarifProperties() (import).
 type sarifResult struct {
-	RuleID       string             `json:"ruleId"`
+	RuleID       RuleName           `json:"ruleId"`
 	Level        string             `json:"level"`
 	Message      sarifMessage       `json:"message"`
 	Locations    []sarifLocation    `json:"locations"`

@@ -160,7 +160,7 @@ func (r *Report) buildsarifLog(results []sarifResult) sarifLog {
 
 func findingToSARIF(f Finding) sarifResult {
 	result := sarifResult{
-		RuleID:       string(f.Rule),
+		RuleID:       f.Rule,
 		Level:        severityToSARIFLevel(f.Severity),
 		Message:      sarifMessage{Text: f.Message},
 		Locations:    sarifLocations(f),

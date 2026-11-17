@@ -72,7 +72,7 @@ func ExampleGenerateID() {
 	// Hash-based ID when line is 0
 	posNoLine := finding.Position{File: "main.go"}
 	hashID := finding.GenerateID("govet", "printf", posNoLine)
-	fmt.Println(finding.IsHashID(string(hashID)))
+	fmt.Println(finding.IsHashID(hashID))
 
 	// Output:
 	// govet:printf:main.go:42:5

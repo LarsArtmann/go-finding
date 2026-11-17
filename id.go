@@ -173,8 +173,8 @@ func parseInt(s string, result *int) error {
 }
 
 // IsHashID returns true if the ID appears to be hash-based.
-func IsHashID(id string) bool {
-	parts := strings.Split(id, ":")
+func IsHashID(id ID) bool {
+	parts := strings.Split(string(id), ":")
 	if len(parts) != idPartCount {
 		return false
 	}

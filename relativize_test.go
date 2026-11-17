@@ -169,7 +169,7 @@ func TestRelativizeRegeneratesHashIDsForFileLevelFindings(t *testing.T) {
 		t.Errorf("relativized hash IDs must agree across hosts: %q vs %q", gotOne.ID, gotTwo.ID)
 	}
 
-	if !finding.IsHashID(string(gotOne.ID)) {
+	if !finding.IsHashID(gotOne.ID) {
 		t.Errorf("relativized file-level ID must stay hash-based, got %q", gotOne.ID)
 	}
 }

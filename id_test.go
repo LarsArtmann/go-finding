@@ -125,7 +125,7 @@ func TestGenerateID(t *testing.T) {
 			check: func(t *testing.T, got string) {
 				t.Helper()
 
-				if !IsHashID(got) {
+				if !IsHashID(ID(got)) {
 					t.Errorf("expected hash-based ID, got %q", got)
 				}
 			},
