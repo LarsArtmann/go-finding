@@ -21,16 +21,16 @@ everything asserted only by the prior reports (labeled "per report" below).
 
 ## a) FULLY DONE
 
-| # | Item | Evidence |
-| - | ---- | -------- |
-| 1 | **go-finding: clean tree, master == origin/master** | `git rev-list --left-right --count` → 0/0, `git status` clean |
-| 2 | **Lint stack bumped v2.14.0 → v2.15.0** (ci.yml action pin + rationale comment updated to go1.27.4) — landed 11-14 via daemon commit `d4fa74d` | `git show d4fa74d` (this session) |
-| 3 | **errorfamily `wrapcheck` exemption** added to `.golangci.yml` (fleet convention import-path sig) — `db58fb0` 11-14 | `git show db58fb0` |
-| 4 | **`toolsdk.RaceEnabled` build-tag pair** (`race_on.go`/`race_off.go`, fleet-wide copy of the go-cqrs-lite idiom, for BuildFlow providers) — `8562d6b` 11-14 | `git show 8562d6b` |
-| 5 | toolsdk `doc.go` +16 lines (11-12) and three flake.lock bumps (11-10, 11-12, 11-15) — all committed | `git show 2a44be1 d8bea5d 5319d0a c04d884` |
-| 6 | **SDK: v0.24.0 fully released 2026-11-11** — uniform 20-module bump, vendorHash recomputed, 20 tags, verify-external 20/20 PASS, GitHub Release `--latest`, issues #16/#19 closed, docs bookkeeping `bf9045a` | per 15-03 report (its scope line lists the live commands) |
-| 7 | **SDK: clean tree, master == origin/master**; since the release only flake.lock bumps + the 15-03 report itself landed (`095f419`, `0b79ed1`) | `git status`, `git log` (this session) |
-| 8 | go-finding prior-session tail (per 11-08 reports, not re-verified): docs diet pass, v1.15.1 train, 23-consumer audit all closed | docs/status/2026-11-08 ×2 |
+| # | Item                                                                                                                                                                                                          | Evidence                                                      |
+| - | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 1 | **go-finding: clean tree, master == origin/master**                                                                                                                                                           | `git rev-list --left-right --count` → 0/0, `git status` clean |
+| 2 | **Lint stack bumped v2.14.0 → v2.15.0** (ci.yml action pin + rationale comment updated to go1.27.4) — landed 11-14 via daemon commit `d4fa74d`                                                                | `git show d4fa74d` (this session)                             |
+| 3 | **errorfamily `wrapcheck` exemption** added to `.golangci.yml` (fleet convention import-path sig) — `db58fb0` 11-14                                                                                           | `git show db58fb0`                                            |
+| 4 | **`toolsdk.RaceEnabled` build-tag pair** (`race_on.go`/`race_off.go`, fleet-wide copy of the go-cqrs-lite idiom, for BuildFlow providers) — `8562d6b` 11-14                                                   | `git show 8562d6b`                                            |
+| 5 | toolsdk `doc.go` +16 lines (11-12) and three flake.lock bumps (11-10, 11-12, 11-15) — all committed                                                                                                           | `git show 2a44be1 d8bea5d 5319d0a c04d884`                    |
+| 6 | **SDK: v0.24.0 fully released 2026-11-11** — uniform 20-module bump, vendorHash recomputed, 20 tags, verify-external 20/20 PASS, GitHub Release `--latest`, issues #16/#19 closed, docs bookkeeping `bf9045a` | per 15-03 report (its scope line lists the live commands)     |
+| 7 | **SDK: clean tree, master == origin/master**; since the release only flake.lock bumps + the 15-03 report itself landed (`095f419`, `0b79ed1`)                                                                 | `git status`, `git log` (this session)                        |
+| 8 | go-finding prior-session tail (per 11-08 reports, not re-verified): docs diet pass, v1.15.1 train, 23-consumer audit all closed                                                                               | docs/status/2026-11-08 ×2                                     |
 
 ## b) PARTIALLY DONE
 
@@ -105,6 +105,7 @@ alignment; B1 (v0.19.2 GitHub Release backfill) and B2 (Go proposal filing) — 
 Brainstorm + queue fuel, roughly impact-ordered within groups. GF = go-finding, SDK = project-discovery-sdk.
 
 **Defect repair (GF — do first):**
+
 1. Repair root CHANGELOG [Unreleased] mangle (split heading/paragraph/`### Fixed`).
 2. Add `RaceEnabled` entry to root + toolsdk CHANGELOGs ([Unreleased] / Added).
 3. Verify the nix devshell golangci-lint binary == ci.yml v2.15.0 pin, then fix the two stale "(2.14.0)" claims in AGENTS.md.

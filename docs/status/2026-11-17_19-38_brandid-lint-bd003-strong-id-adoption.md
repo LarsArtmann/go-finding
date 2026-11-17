@@ -7,16 +7,16 @@
 
 **VERIFIED (fresh command output this session):**
 
-| Gate | Command | Result |
-| --- | --- | --- |
-| brandid-lint (BD001+BD002+BD003) | `brandid-lint -rules all .` (run twice) | exit 0, zero findings (includes BD001 clean) |
-| Root module tests + race | `go test -race -count=1 .` | pass (43 ginkgo specs + full suite) |
-| Root module tests | `go test -count=1 .` | pass |
-| go vet | `go vet .` | clean |
-| golangci-lint (root) | `golangci-lint run ./...` | 0 issues (pre-existing `erraudit` nolint warning only) |
-| JSON determinism | `bash scripts/json-deterministic-check.sh` | OK |
-| Workspace build (all 5 modules) | `go build ./...` under go.work | clean |
-| Doc drift | `rg IsHashID doc.go README.md docs/guides/` | no signature references |
+| Gate                             | Command                                     | Result                                                 |
+| -------------------------------- | ------------------------------------------- | ------------------------------------------------------ |
+| brandid-lint (BD001+BD002+BD003) | `brandid-lint -rules all .` (run twice)     | exit 0, zero findings (includes BD001 clean)           |
+| Root module tests + race         | `go test -race -count=1 .`                  | pass (43 ginkgo specs + full suite)                    |
+| Root module tests                | `go test -count=1 .`                        | pass                                                   |
+| go vet                           | `go vet .`                                  | clean                                                  |
+| golangci-lint (root)             | `golangci-lint run ./...`                   | 0 issues (pre-existing `erraudit` nolint warning only) |
+| JSON determinism                 | `bash scripts/json-deterministic-check.sh`  | OK                                                     |
+| Workspace build (all 5 modules)  | `go build ./...` under go.work              | clean                                                  |
+| Doc drift                        | `rg IsHashID doc.go README.md docs/guides/` | no signature references                                |
 
 **NOT VERIFIED (and why):**
 
@@ -73,7 +73,7 @@
 
 ## f) Up to 50 Things To Get Done Next
 
-*(brainstorm per status-report skill; most are ROADMAP fuel, HARVEST must apply routing rigor — owner instruction set N=50)*
+_(brainstorm per status-report skill; most are ROADMAP fuel, HARVEST must apply routing rigor — owner instruction set N=50)_
 
 **Release & API (1-10)**
 
@@ -149,4 +149,4 @@
 
 ---
 
-*WAITING FOR INSTRUCTIONS. Per the status-report skill, section (f) is the primary HARVEST input for TODO_LIST.md / ROADMAP.md — say the word and I run docs-health HARVEST. Per the Crush harness contract I did not commit this report; the auto-commit daemon picks it up.*
+_WAITING FOR INSTRUCTIONS. Per the status-report skill, section (f) is the primary HARVEST input for TODO_LIST.md / ROADMAP.md — say the word and I run docs-health HARVEST. Per the Crush harness contract I did not commit this report; the auto-commit daemon picks it up._
