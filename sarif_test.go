@@ -154,7 +154,7 @@ func TestToSARIF(t *testing.T) {
 	g.Expect(run.Results).To(gomega.HaveLen(1))
 
 	result := run.Results[0]
-	g.Expect(result.RuleID).To(gomega.Equal("SA1000"))
+	g.Expect(result.RuleID).To(gomega.Equal(RuleName("SA1000")))
 	g.Expect(string(SeverityError)).To(gomega.Equal(result.Level))
 	g.Expect(result.Message.Text).To(gomega.Equal("bad code"))
 	g.Expect(result.Locations[0].PhysicalLocation.ArtifactLocation.URI).To(gomega.Equal("main.go"))
