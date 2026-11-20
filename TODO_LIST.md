@@ -51,6 +51,7 @@
 | Watch erraudit upstream for the nolint-audit staleness fix | Low    | Low    | Once fixed, `scripts/error-audit.sh --nolint-audit` becomes a usable removal oracle again. |
 | Re-check library-policy after hook issue #74 resolves      | Low    | Low    | #74 still OPEN (verified 2026-09-23).                                                      |
 | Dependabot watch: actions/* SHA pin-vs-bot decision        | Low    | Low    | Standing watch.                                                                            |
+| DetectorV2 docs: cross-link go-linter-sdk's `docs/ADOPTION.md` | Low | Low | Fleet docs synergy: the consumer repo's adoption report shows real DetectorV2 coverage evidence. Routed from go-linter-sdk 07-40 report item 44 (2026-11-19). |
 
 ## 🟢 LOW Priority — launch & hygiene
 
