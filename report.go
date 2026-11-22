@@ -17,11 +17,11 @@ import (
 // ActiveFindings, etc.) acquire a read lock; write methods (AddFinding,
 // AddFindings, MergeInto) acquire a write lock.
 type Report struct {
-	mu             sync.RWMutex
-	Tool           ToolInfo `json:"tool"` // Tool metadata
-	findings       []Finding
-	Summary        Summary        `json:"summary"` // Aggregated statistics
-	runProperties  map[string]any
+	mu            sync.RWMutex
+	Tool          ToolInfo `json:"tool"` // Tool metadata
+	findings      []Finding
+	Summary       Summary `json:"summary"` // Aggregated statistics
+	runProperties map[string]any
 }
 
 // Validate returns an error if the Report is invalid.
