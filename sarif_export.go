@@ -151,8 +151,9 @@ func (r *Report) buildsarifLog(results []sarifResult) sarifLog {
 		Schema:  sarifSchema,
 		Runs: []sarifRun{
 			{
-				Tool:    sarifTool{Driver: sarifDriverFromReport(r)},
-				Results: results,
+				Tool:       sarifTool{Driver: sarifDriverFromReport(r)},
+				Results:    results,
+				Properties: r.RunProperties(),
 			},
 		},
 	}

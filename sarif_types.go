@@ -61,8 +61,9 @@ type sarifLog struct {
 
 // sarifRun represents a single analysis run in a SARIF log.
 type sarifRun struct {
-	Tool    sarifTool     `json:"tool"`
-	Results []sarifResult `json:"results"`
+	Tool       sarifTool      `json:"tool"`
+	Results    []sarifResult  `json:"results"`
+	Properties map[string]any `json:"properties,omitempty"`
 }
 
 // sarifTool defines the static analysis tool that generated the results.

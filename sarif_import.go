@@ -21,6 +21,30 @@ func FindingsFromSARIF(ctx context.Context, data []byte) ([]Finding, error) {
 	return findingsFromSARIFLog(data)
 }
 
+// RunPropertiesFromSARIF extracts the run-level propertyBag
+// (runs[].properties) a producer recorded via Report.SetRunProperty.
+// Complements FindingsFromSARIF, which cannot carry run-level facts because
+// it returns per-result Findings only. Nil when the log has no runs or the
+// run carries no propertyBag.
+func RunPropertiesFromSARIF(ctx context.Context, data []byte) (map[string]any, error) {
+	if err := ctx.Err(); err != nil { //nolint:noinlineerr // guard clause; err used once
+		return nil, fmt.Errorf("reading SARIF run properties: %w", err)
+	}
+
+	var log sarifLog
+
+	err := json.Unmarshal(data, &log)
+	if err != nil {
+		return nil, fmt.Errorf("parsing SARIF: %w", err)
+	}
+
+	if len(log.Runs) == 0 {
+		return nil, nil
+	}
+
+	return log.Runs[0].Properties, nil
+}
+
 // FindingsFromReader parses SARIF JSON from an io.Reader and returns Findings.
 // It extracts go-finding-specific properties for round-trip fidelity.
 // The context is checked for cancellation before decoding begins.

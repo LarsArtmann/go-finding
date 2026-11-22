@@ -3,6 +3,7 @@ package finding
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"sync"
 	"time"
 
@@ -16,10 +17,11 @@ import (
 // ActiveFindings, etc.) acquire a read lock; write methods (AddFinding,
 // AddFindings, MergeInto) acquire a write lock.
 type Report struct {
-	mu       sync.RWMutex
-	Tool     ToolInfo `json:"tool"` // Tool metadata
-	findings []Finding
-	Summary  Summary `json:"summary"` // Aggregated statistics
+	mu             sync.RWMutex
+	Tool           ToolInfo `json:"tool"` // Tool metadata
+	findings       []Finding
+	Summary        Summary        `json:"summary"` // Aggregated statistics
+	runProperties  map[string]any
 }
 
 // Validate returns an error if the Report is invalid.
@@ -127,6 +129,32 @@ func (r *Report) AddFindings(findings []Finding) {
 		r.findings = append(r.findings, findings...)
 
 		return struct{}{}
+	})
+}
+
+// SetRunProperty records one per-run metadata entry for the SARIF run-level
+// propertyBag (runs[].properties). Per-run facts — an enforcement posture,
+// a scan root, a tool version tag — belong here ONCE, not copied onto every
+// result (LarsArtmann/go-finding#53).
+// Safe for concurrent use.
+func (r *Report) SetRunProperty(key string, value any) {
+	withLock(r, func() struct{} {
+		if r.runProperties == nil {
+			r.runProperties = make(map[string]any, 1)
+		}
+
+		r.runProperties[key] = value
+
+		return struct{}{}
+	})
+}
+
+// RunProperties returns a copy of the per-run metadata recorded with
+// SetRunProperty. Nil when none was recorded.
+// Safe for concurrent use.
+func (r *Report) RunProperties() map[string]any {
+	return withReadLock(r, func() map[string]any {
+		return maps.Clone(r.runProperties)
 	})
 }
 
