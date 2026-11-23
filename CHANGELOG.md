@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [1.16.0] - 2026-11-22
+
 ### Added
 
 - **Run-level SARIF propertyBag** (`runs[].properties`, SARIF 2.1.0 §3.10.1):
