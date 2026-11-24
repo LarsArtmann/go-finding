@@ -13,6 +13,7 @@ type SARIFOption func(*sarifExportConfig)
 type sarifExportConfig struct {
 	includeSuppressed bool
 	minSeverity       Severity
+	coverageEnvelope  bool
 }
 
 // WithIncludeSuppressed causes SARIF export to include suppressed findings
@@ -26,6 +27,15 @@ func WithIncludeSuppressed() SARIFOption {
 // WithMinSeverity filters findings below the given severity level.
 func WithMinSeverity(sev Severity) SARIFOption {
 	return func(c *sarifExportConfig) { c.minSeverity = sev }
+}
+
+// WithCoverageEnvelope includes the report's coverage summary in the SARIF
+// run's propertyBag under the "go-finding/coverage" key: files scanned,
+// files affected, suppressed count, total findings, and the skipped-module
+// list. Consumers need this to distinguish "no findings" from "nothing was
+// scanned" (see Summary.FilesScanned) without parsing a second output format.
+func WithCoverageEnvelope() SARIFOption {
+	return func(c *sarifExportConfig) { c.coverageEnvelope = true }
 }
 
 func defaultSarifConfig() sarifExportConfig {
@@ -73,7 +83,7 @@ func (r *Report) ToSARIFWithOpts(opts ...SARIFOption) ([]byte, error) {
 		opt(&cfg)
 	}
 
-	log := r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg))
+	log := r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg), cfg)
 
 	data, err := json.Marshal(log, prettyMarshalOpts...)
 	if err != nil {
@@ -108,7 +118,7 @@ func (r *Report) WriteSARIFWithOpts(ctx context.Context, w io.Writer, opts ...SA
 
 	err = json.MarshalWrite(
 		w,
-		r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg)),
+		r.buildsarifLog(sarifResultsFromFindings(r.readFindings(), cfg), cfg),
 		prettyMarshalOpts...,
 	)
 	if err != nil {
@@ -145,7 +155,13 @@ func (c *countingWriter) Write(p []byte) (int, error) {
 	return n, err //nolint:wrapcheck // passthrough writer — wrapping would be misleading
 }
 
-func (r *Report) buildsarifLog(results []sarifResult) sarifLog {
+func (r *Report) buildsarifLog(results []sarifResult, cfg sarifExportConfig) sarifLog {
+	properties := r.RunProperties()
+
+	if cfg.coverageEnvelope {
+		properties = withCoverageProperties(properties, r.Summary)
+	}
+
 	return sarifLog{
 		Version: sarifVersion,
 		Schema:  sarifSchema,
@@ -153,10 +169,34 @@ func (r *Report) buildsarifLog(results []sarifResult) sarifLog {
 			{
 				Tool:       sarifTool{Driver: sarifDriverFromReport(r)},
 				Results:    results,
-				Properties: r.RunProperties(),
+				Properties: properties,
 			},
 		},
 	}
+}
+
+// withCoverageProperties returns properties with the "go-finding/coverage"
+// envelope merged in, copying the caller's map first so RunProperties()
+// results are never mutated through an export call.
+func withCoverageProperties(properties map[string]any, summary Summary) map[string]any {
+	merged := make(map[string]any, len(properties)+1)
+	for key, value := range properties {
+		merged[key] = value
+	}
+
+	coverage := map[string]any{
+		"filesScanned":  summary.FilesScanned,
+		"filesAffected": summary.FilesAffected,
+		"total":         summary.Total,
+		"suppressed":    summary.Suppressed,
+	}
+	if len(summary.SkippedModules) > 0 {
+		coverage["skippedModules"] = summary.SkippedModules
+	}
+
+	merged["go-finding/coverage"] = coverage
+
+	return merged
 }
 
 func findingToSARIF(f Finding) sarifResult {
