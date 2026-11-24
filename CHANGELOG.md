@@ -12,7 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- **SARIF coverage envelope** (`WithCoverageEnvelope()` export option): with
+  it, `ToSARIFWithOpts` merges a `go-finding/coverage` object into the run's
+  propertyBag — `filesScanned`, `filesAffected`, `total`, `suppressed`, and
+  `skippedModules` (omitted when nil) — so consumers can distinguish "no
+  findings" from "nothing was scanned" without parsing a second output
+  format. Without the option the propertyBag is untouched, and the export
+  never mutates the report's own run properties (the merge copies first).
 
 ## [1.16.0] - 2026-11-22
 

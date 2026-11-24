@@ -324,3 +324,61 @@ func TestSuppressionToSARIF_AllKinds(t *testing.T) {
 	g.Expect(suppressionStatusToSARIF(SuppressionKind("bogus"))).To(gomega.Equal(sarifSuppressionStatusAccepted),
 		"unknown kinds default to accepted")
 }
+
+func TestToSARIFWithOpts_CoverageEnvelope(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	r := MakeReport("cov-tool", "1.2.3")
+	r.AddFinding(Finding{
+		ID: "f1", Rule: "r1", Message: "m",
+		Severity: SeverityError, Position: Position{File: "a.go"},
+	})
+	r.Summary = Summary{
+		Total:          3,
+		FilesScanned:   42,
+		FilesAffected:  1,
+		Suppressed:     2,
+		SkippedModules: []string{"example.com/nested"},
+	}
+
+	data, err := r.ToSARIF()
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	defaults := unmarshalSARIF(t, data)
+	g.Expect(defaults.Runs[0].Properties).NotTo(gomega.HaveKey("go-finding/coverage"),
+		"without WithCoverageEnvelope the run propertyBag must stay untouched")
+
+	data, err = r.ToSARIFWithOpts(WithCoverageEnvelope())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	enveloped := unmarshalSARIF(t, data)
+	coverage, ok := enveloped.Runs[0].Properties["go-finding/coverage"].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue(), "coverage envelope must be a JSON object")
+	g.Expect(coverage["filesScanned"]).To(gomega.BeNumerically("==", 42))
+	g.Expect(coverage["filesAffected"]).To(gomega.BeNumerically("==", 1))
+	g.Expect(coverage["total"]).To(gomega.BeNumerically("==", 3))
+	g.Expect(coverage["suppressed"]).To(gomega.BeNumerically("==", 2))
+
+	skipped, ok := coverage["skippedModules"].([]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	g.Expect(skipped).To(gomega.Equal([]any{"example.com/nested"}))
+
+	g.Expect(r.RunProperties()).NotTo(gomega.HaveKey("go-finding/coverage"),
+		"export must not mutate the report's own run properties")
+}
+
+func TestToSARIFWithOpts_CoverageEnvelope_OmitsEmptySkippedModules(t *testing.T) {
+	g := NewParallelGomega(t)
+
+	r := MakeSimpleReport("cov-tool")
+	r.Summary = Summary{FilesScanned: 7}
+
+	data, err := r.ToSARIFWithOpts(WithCoverageEnvelope())
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	enveloped := unmarshalSARIF(t, data)
+	coverage, ok := enveloped.Runs[0].Properties["go-finding/coverage"].(map[string]any)
+	g.Expect(ok).To(gomega.BeTrue())
+	g.Expect(coverage).NotTo(gomega.HaveKey("skippedModules"),
+		"nil SkippedModules must omit the key (omitempty parity)")
+}
